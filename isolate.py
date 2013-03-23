@@ -1283,8 +1283,8 @@ def load_isolate_for_config(isolate_dir, content, variables):
         ', '.join(sorted(set(isolate.config_variables) - set(variables))))
   config = isolate.by_config.get(config)
   if not config:
-    raise ExecutionError('Failed to load configuration for (%s) = (%s)' % (
-        ', '.join(isolate.config_variables), ', '.join(map(str, config))))
+    raise ExecutionError('Failed to load configuration for (%s)' %
+        ', '.join(isolate.config_variables))
   # Merge tracked and untracked variables, isolate.py doesn't care about the
   # trackability of the variables, only the build tool does.
   dependencies = [

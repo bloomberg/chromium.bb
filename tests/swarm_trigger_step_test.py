@@ -117,14 +117,17 @@ def MockUrlOpenNoZip(url, data=None, content_type=None):
 
 class ManifestTest(unittest.TestCase):
   def setUp(self):
+    self.old_gethostname = swarm_trigger_step.socket.gethostname
     self.old_sleep = swarm_trigger_step.time.sleep
     self.old_url_open = swarm_trigger_step.run_isolated.url_open
     self.old_ZipFile = swarm_trigger_step.zipfile.ZipFile
 
+    swarm_trigger_step.socket.gethostname = lambda: 'vm1-m4'
     swarm_trigger_step.time.sleep = lambda x: None
     swarm_trigger_step.zipfile.ZipFile = MockZipFile
 
   def tearDown(self):
+    swarm_trigger_step.socket.gethostname = self.old_gethostname
     swarm_trigger_step.time.sleep = self.old_sleep
     swarm_trigger_step.run_isolated.url_open = self.old_url_open
     swarm_trigger_step.zipfile.ZipFile = self.old_ZipFile

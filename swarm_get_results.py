@@ -85,8 +85,15 @@ def main():
   url = options.url.rstrip('/')
   test_name = args[0]
   test_keys = get_test_keys(url, test_name)
-  print_results(swarm_get_results(url, test_keys, not options.no_wait))
-  return 0
+
+  outputs = swarm_get_results(url, test_keys, not options.no_wait)
+  print_results(outputs)
+
+  exit_codes = []
+  for output in outputs:
+    exit_codes.extend(map(int, output['exit_codes'].split(',')))
+
+  return max(exit_codes)
 
 
 if __name__ == '__main__':

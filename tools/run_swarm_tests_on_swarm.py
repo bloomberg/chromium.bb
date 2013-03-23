@@ -38,7 +38,10 @@ def main():
 
   prefix = getpass.getuser() + '-' + datetime.datetime.now().isoformat() + '-'
 
+  # Note that the swarm and the isolate code use different strings for the
+  # different oses.
   oses = ('win32', 'linux2', 'darwin')
+  isolate_oses = ('win', 'linux', 'mac')
   tests = [
     os.path.relpath(i, ROOT_DIR)
     for i in glob.iglob(os.path.join(ROOT_DIR, '..', 'tests', '*_test.py'))
@@ -56,24 +59,28 @@ def main():
 
     print('Archiving')
     hashvals = []
-    for test in tests:
-      subprocess.check_call(
-          [
-            sys.executable,
-            'isolate.py',
-            'hashtable',
-            '--isolate', os.path.join(ROOT_DIR, 'run_a_test.isolate'),
-            '--isolated', isolated,
-            '--outdir', options.isolate_server,
-            '--variable', 'TEST_EXECUTABLE', test,
+    for i, test in enumerate(tests):
+      hashvals.append([])
+      for platform in isolate_oses:
+        subprocess.check_call(
+            [
+                sys.executable,
+                'isolate.py',
+                'hashtable',
+                '--isolate', os.path.join(ROOT_DIR, 'run_a_test.isolate'),
+                '--isolated', isolated,
+                '--outdir', options.isolate_server,
+                '--variable', 'TEST_EXECUTABLE', test,
+                '--variable', 'OS', platform,
           ],
           cwd=os.path.dirname(ROOT_DIR))
-      hashvals.append(hashlib.sha1(open(isolated, 'rb').read()).hexdigest())
+        hashvals[i].append(
+            hashlib.sha1(open(isolated, 'rb').read()).hexdigest())
 
     print('\nTriggering')
     for i, test in enumerate(tests):
       sys.stdout.write('  %s: ' % os.path.basename(test))
-      for platform in oses:
+      for j, platform in enumerate(oses):
         sys.stdout.write(platform)
         if platform != oses[-1]:
           sys.stdout.write(', ')
@@ -85,7 +92,7 @@ def main():
               '--swarm-url', options.swarm_server,
               '--test-name-prefix', prefix,
               '--data-server', options.isolate_server,
-              '--run_from_hash', hashvals[i],
+              '--run_from_hash', hashvals[i][j],
               'swarm_client_tests_' + platform + os.path.basename(test),
               # Number of shards.
               '1',
@@ -98,7 +105,7 @@ def main():
     for i, test in enumerate(tests):
       print('  %s' % os.path.basename(test))
       for platform in oses:
-        result = result or subprocess.call(
+        process = subprocess.Popen(
             [
               sys.executable,
               'swarm_get_results.py',
@@ -106,9 +113,23 @@ def main():
               prefix + 'swarm_client_tests_' + platform +
                 os.path.basename(test),
             ],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
             cwd=os.path.dirname(ROOT_DIR))
+        stdout, _ = process.communicate()
+
+        # Only print the output for failures, successes are unexciting.
+        if process.returncode:
+          print stdout
+        result = result or process.returncode
   finally:
     shutil.rmtree(tempdir)
+
+  if result:
+    print 'Some Swarm failures were detected :('
+  else:
+    print 'No Swarm errors detected :)'
+
   return result
 
 

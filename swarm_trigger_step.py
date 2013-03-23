@@ -130,12 +130,10 @@ class Manifest(object):
     # This separation of vlans isn't required anymore, but it is
     # still a useful separation to keep.
     hostname = socket.gethostname().lower().split('.', 1)[0]
-    vlan = ''
+    vlan = None
     if hostname.endswith('-m1'):
       vlan = 'm1'
     elif hostname.endswith('m4'):
-      vlan = 'm4'
-    else:
       vlan = 'm4'
 
     # Construct test case
@@ -157,7 +155,6 @@ class Manifest(object):
           'config_name': self.target_platform,
           'dimensions': {
             'os': self.target_platform,
-            'vlan': vlan
           },
         },
       ],
@@ -165,6 +162,9 @@ class Manifest(object):
       'restart_on_failure': True,
       'cleanup': 'root',
     }
+
+    if vlan:
+      test_case['configurations'][0]['dimensions']['vlan'] = vlan
 
     return json.dumps(test_case)
 
