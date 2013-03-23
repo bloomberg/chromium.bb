@@ -218,7 +218,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   // Requests geolocation permission through embedder js api.
   void AskEmbedderForGeolocationPermission(int bridge_id,
                                            const GURL& requesting_frame,
-                                           GeolocationCallback callback);
+                                           const GeolocationCallback& callback);
   // Cancels pending geolocation request.
   void CancelGeolocationRequest(int bridge_id);
   // Embedder sets permission to allow or deny geolocation request.

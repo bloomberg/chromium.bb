@@ -500,7 +500,7 @@ void BrowserPluginGuest::LoadRedirect(
 void BrowserPluginGuest::AskEmbedderForGeolocationPermission(
     int bridge_id,
     const GURL& requesting_frame,
-    GeolocationCallback callback) {
+    const GeolocationCallback& callback) {
   if (geolocation_request_callback_map_.size() >=
           kNumMaxOutstandingPermissionRequests) {
     // Deny the geolocation request.
