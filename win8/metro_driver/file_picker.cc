@@ -228,7 +228,7 @@ HRESULT OpenFilePickerSession::SinglePickerDone(SingleFileAsyncOp* async,
       LOG(ERROR) << "NULL IStorageItem";
     }
   } else {
-    LOG(ERROR) << "Unexpected async status " << status;
+    LOG(ERROR) << "Unexpected async status " << static_cast<int>(status);
   }
 
   event_.Signal();
@@ -260,7 +260,7 @@ HRESULT OpenFilePickerSession::MultiPickerDone(MultiFileAsyncOp* async,
       LOG(ERROR) << "NULL StorageFileVectorCollection";
     }
   } else {
-    LOG(ERROR) << "Unexpected async status " << status;
+    LOG(ERROR) << "Unexpected async status " << static_cast<int>(status);
   }
 
   event_.Signal();
@@ -597,7 +597,7 @@ HRESULT SaveFilePickerSession::FilePickerDone(SaveFileAsyncOp* async,
       LOG(ERROR) << "NULL IStorageItem";
     }
   } else {
-    LOG(ERROR) << "Unexpected async status " << status;
+    LOG(ERROR) << "Unexpected async status " << static_cast<int>(status);
   }
 
   event_.Signal();

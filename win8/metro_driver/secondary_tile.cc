@@ -77,7 +77,8 @@ HRESULT TileRequestCompleter::Respond(winfoundtn::IAsyncOperation<bool>* async,
         break;
     }
   } else {
-    LOG(ERROR) << __FUNCTION__ << " Unexpected async status " << status;
+    LOG(ERROR) << __FUNCTION__ << " Unexpected async status "
+               << static_cast<int>(status);
     pin_state = type_ == PIN ?
         base::win::METRO_PIN_RESULT_ERROR :
         base::win::METRO_UNPIN_RESULT_ERROR;

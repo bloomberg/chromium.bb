@@ -16,23 +16,27 @@
         'check_sdk_script': 'util/check_sdk_patch.py',
         'output_path': '<(INTERMEDIATE_DIR)/check_sdk_patch',
       },
-      'actions': [
-        {
-          'action_name': 'check_sdk_patch_action',
-          'inputs': [
-            '<(check_sdk_script)',
+      'conditions': [
+        ['MSVS_VERSION=="2010" or MSVS_VERSION=="2010e"', {
+          'actions': [
+            {
+              'action_name': 'check_sdk_patch_action',
+              'inputs': [
+                '<(check_sdk_script)',
+              ],
+              'outputs': [
+                # This keeps the ninja build happy and provides a slightly
+                # helpful error message if the sdk is missing.
+                '<(output_path)'
+              ],
+              'action': ['python',
+                        '<(check_sdk_script)',
+                        '<(windows_sdk_path)',
+                        '<(output_path)',
+                        ],
+            },
           ],
-          'outputs': [
-            # This keeps the ninja build happy and provides a slightly helpful
-            # error messge if the sdk is missing.
-            '<(output_path)'
-          ],
-          'action': ['python',
-                     '<(check_sdk_script)',
-                     '<(windows_sdk_path)',
-                     '<(output_path)',
-                     ],
-        },
+        }],
       ],
     },
     {
