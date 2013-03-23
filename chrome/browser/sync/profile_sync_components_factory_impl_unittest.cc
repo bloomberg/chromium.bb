@@ -12,6 +12,7 @@
 #include "chrome/browser/sync/profile_sync_components_factory_impl.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -32,6 +33,7 @@ class ProfileSyncComponentsFactoryImplTest : public testing::Test {
 
   // Returns the collection of default datatypes.
   static std::vector<syncer::ModelType> DefaultDatatypes() {
+    chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
     std::vector<syncer::ModelType> datatypes;
     datatypes.push_back(syncer::APPS);
     datatypes.push_back(syncer::APP_SETTINGS);
@@ -47,6 +49,11 @@ class ProfileSyncComponentsFactoryImplTest : public testing::Test {
     datatypes.push_back(syncer::PREFERENCES);
     datatypes.push_back(syncer::SEARCH_ENGINES);
     datatypes.push_back(syncer::SESSIONS);
+    if (channel == chrome::VersionInfo::CHANNEL_UNKNOWN ||
+        channel == chrome::VersionInfo::CHANNEL_DEV ||
+        channel == chrome::VersionInfo::CHANNEL_CANARY) {
+      datatypes.push_back(syncer::SYNCED_NOTIFICATIONS);
+    }
     datatypes.push_back(syncer::PROXY_TABS);
     datatypes.push_back(syncer::THEMES);
     datatypes.push_back(syncer::TYPED_URLS);

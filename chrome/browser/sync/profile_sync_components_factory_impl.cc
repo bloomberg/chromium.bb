@@ -59,6 +59,7 @@
 #include "chrome/browser/webdata/autofill_profile_syncable_service.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "sync/api/syncable_service.h"
@@ -240,12 +241,15 @@ void ProfileSyncComponentsFactoryImpl::RegisterDesktopDataTypes(
 
   // Synced Notifications sync is disabled by default.
   // TODO(petewil): Switch to enabled by default once datatype support is done.
-  if (command_line_->HasSwitch(switches::kEnableSyncSyncedNotifications)) {
-#if !defined(OS_ANDROID)
-    pss->RegisterDataTypeController(
-        new UIDataTypeController(
-            syncer::SYNCED_NOTIFICATIONS, this, profile_, pss));
-#endif
+  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
+  if (!command_line_->HasSwitch(switches::kDisableSyncSyncedNotifications)) {
+    if (channel == chrome::VersionInfo::CHANNEL_UNKNOWN ||
+        channel == chrome::VersionInfo::CHANNEL_CANARY ||
+        channel == chrome::VersionInfo::CHANNEL_DEV) {
+      pss->RegisterDataTypeController(
+          new UIDataTypeController(
+              syncer::SYNCED_NOTIFICATIONS, this, profile_, pss));
+    }
   }
 
 #if defined(OS_LINUX) || defined(OS_WIN) || defined(OS_CHROMEOS)
