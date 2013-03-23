@@ -188,10 +188,10 @@ void NetworkStateListDetailedView::NetworkIconChanged() {
 
 void NetworkStateListDetailedView::Init() {
   CreateScrollableList();
+  CreateNetworkExtra();
   CreateHeaderEntry();
   CreateHeaderButtons();
   CreateMobileAccount();
-  CreateNetworkExtra();
   NetworkStateHandler* handler = NetworkStateHandler::Get();
   NetworkStateList network_list;
   handler->RequestScan();
@@ -355,6 +355,13 @@ void NetworkStateListDetailedView::CreateNetworkExtra() {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
   views::View* bottom_row = new views::View();
+  views::BoxLayout* layout = new views::BoxLayout(
+      views::BoxLayout::kHorizontal,
+      kTrayMenuBottomRowPadding,
+      kTrayMenuBottomRowPadding,
+      kTrayMenuBottomRowPaddingBetweenItems);
+  layout->set_spread_blank_space(true);
+  bottom_row->SetLayoutManager(layout);
 
   if (list_type_ == LIST_TYPE_NETWORK) {
     other_wifi_ = new TrayPopupLabelButton(
