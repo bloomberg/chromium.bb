@@ -29,7 +29,7 @@ void CreateTestNativeHostManifest(base::FilePath manifest_path) {
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_user_data_dir));
   test_user_data_dir = test_user_data_dir.AppendASCII("native_messaging");
   test_user_data_dir = test_user_data_dir.AppendASCII("native_hosts");
-#ifdef OS_POSIX
+#if defined(OS_POSIX)
   base::FilePath host_path = test_user_data_dir.AppendASCII("echo.py");
 #else
   base::FilePath host_path = test_user_data_dir.AppendASCII("echo.bat");

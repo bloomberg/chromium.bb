@@ -585,7 +585,7 @@ bool DownloadItemImpl::GetFileExternallyRemoved() const {
 }
 
 bool DownloadItemImpl::IsDangerous() const {
-#ifdef OS_WIN
+#if defined(OS_WIN)
   // TODO(noelutz): At this point only the windows views UI supports
   // warnings based on dangerous content.
   return (danger_type_ == DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE ||

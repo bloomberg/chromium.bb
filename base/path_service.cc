@@ -4,7 +4,7 @@
 
 #include "base/path_service.h"
 
-#ifdef OS_WIN
+#if defined(OS_WIN)
 #include <windows.h>
 #include <shellapi.h>
 #include <shlobj.h>

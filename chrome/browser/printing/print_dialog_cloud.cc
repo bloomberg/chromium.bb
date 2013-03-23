@@ -141,7 +141,7 @@ bool GetPageSetupParameters(const std::string& json,
 
 string16 GetSwitchValueString16(const CommandLine& command_line,
                                 const char* switchName) {
-#ifdef OS_WIN
+#if defined(OS_WIN)
   CommandLine::StringType native_switch_val;
   native_switch_val = command_line.GetSwitchValueNative(switchName);
   return string16(native_switch_val);

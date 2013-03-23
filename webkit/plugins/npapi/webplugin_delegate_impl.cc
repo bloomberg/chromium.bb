@@ -157,7 +157,7 @@ void WebPluginDelegateImpl::SetFocus(bool focused) {
   // mode when it loses focus, and its full screen window causes the browser to
   // lose focus.
   has_webkit_focus_ = focused;
-#ifndef OS_WIN
+#if !defined(OS_WIN)
   if (containing_view_has_focus_)
     SetPluginHasFocus(focused);
 #else
@@ -176,7 +176,7 @@ void WebPluginDelegateImpl::SetContentAreaHasFocus(bool has_focus) {
   containing_view_has_focus_ = has_focus;
   if (!windowless_)
     return;
-#ifndef OS_WIN  // See SetFocus above.
+#if !defined(OS_WIN)  // See SetFocus above.
   SetPluginHasFocus(containing_view_has_focus_ && has_webkit_focus_);
 #endif
 }

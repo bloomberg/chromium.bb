@@ -175,7 +175,7 @@ FlagsUI::FlagsUI(content::WebUI* web_ui)
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   Profile* profile = Profile::FromWebUI(web_ui);
 
-#ifdef OS_CHROMEOS
+#if defined(OS_CHROMEOS)
   chromeos::DeviceSettingsService::Get()->GetOwnershipStatusAsync(
       base::Bind(&FlagsUI::FinishInitialization,
                  weak_factory_.GetWeakPtr(), profile));
@@ -203,7 +203,7 @@ void FlagsUI::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterListPref(prefs::kEnabledLabsExperiments);
 }
 
-#ifdef OS_CHROMEOS
+#if defined(OS_CHROMEOS)
 // static
 void FlagsUI::RegisterUserPrefs(PrefRegistrySyncable* registry) {
   registry->RegisterListPref(prefs::kEnabledLabsExperiments,

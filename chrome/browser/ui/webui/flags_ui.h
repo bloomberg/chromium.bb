@@ -9,7 +9,7 @@
 #include "content/public/browser/web_ui_controller.h"
 #include "ui/base/layout.h"
 
-#ifdef OS_CHROMEOS
+#if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #endif
 
@@ -29,12 +29,12 @@ class FlagsUI : public content::WebUIController {
   static base::RefCountedMemory* GetFaviconResourceBytes(
       ui::ScaleFactor scale_factor);
   static void RegisterPrefs(PrefRegistrySimple* registry);
-#ifdef OS_CHROMEOS
+#if defined(OS_CHROMEOS)
   static void RegisterUserPrefs(PrefRegistrySyncable* registry);
 #endif
 
  private:
-#ifdef OS_CHROMEOS
+#if defined(OS_CHROMEOS)
   // On ChromeOS verifying if the owner is signed in is async operation and only
   // after finishing it the UI can be properly populated. This function is the
   // callback for whether the owner is signed in. It will respectively pick the

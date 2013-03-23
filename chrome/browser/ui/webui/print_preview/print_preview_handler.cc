@@ -215,7 +215,7 @@ void PrintToPdfCallback(Metafile* metafile, const base::FilePath& path) {
       base::Bind(&base::DeletePointer<Metafile>, metafile));
 }
 
-#ifdef OS_CHROMEOS
+#if defined(OS_CHROMEOS)
 void PrintToPdfCallbackWithCheck(Metafile* metafile,
                                  drive::DriveFileError error,
                                  const base::FilePath& path) {
@@ -915,7 +915,7 @@ void PrintPreviewHandler::PostPrintToPdfTask() {
   printing::PreviewMetafile* metafile = new printing::PreviewMetafile;
   metafile->InitFromData(static_cast<const void*>(data->front()), data->size());
   // PrintToPdfCallback takes ownership of |metafile|.
-#ifdef OS_CHROMEOS
+#if defined(OS_CHROMEOS)
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   drive::util::PrepareWritableFileAndRun(
       Profile::FromBrowserContext(preview_web_contents()->GetBrowserContext()),

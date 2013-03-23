@@ -71,7 +71,7 @@ void SaveScreenshot(const base::FilePath& screenshot_path,
 }
 
 // TODO(kinaba): crbug.com/140425, remove this ungly #ifdef dispatch.
-#ifdef OS_CHROMEOS
+#if defined(OS_CHROMEOS)
 void SaveScreenshotToDrive(scoped_refptr<base::RefCountedBytes> png_data,
                            drive::DriveFileError error,
                            const base::FilePath& local_path) {

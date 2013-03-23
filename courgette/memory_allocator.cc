@@ -9,7 +9,7 @@
 #include "base/file_util.h"
 #include "base/stringprintf.h"
 
-#ifdef OS_WIN
+#if defined(OS_WIN)
 
 namespace courgette {
 

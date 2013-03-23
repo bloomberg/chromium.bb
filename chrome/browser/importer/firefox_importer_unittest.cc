@@ -498,7 +498,7 @@ TEST_F(FirefoxProfileImporterTest, MAYBE_IMPORTER(Firefox35Importer)) {
 TEST(FirefoxImporterTest, MAYBE_NSS(Firefox2NSS3Decryptor)) {
   base::FilePath nss_path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &nss_path));
-#ifdef OS_MACOSX
+#if defined(OS_MACOSX)
   nss_path = nss_path.AppendASCII("firefox2_nss_mac");
 #else
   nss_path = nss_path.AppendASCII("firefox2_nss");
@@ -523,7 +523,7 @@ TEST(FirefoxImporterTest, MAYBE_NSS(Firefox2NSS3Decryptor)) {
 TEST(FirefoxImporterTest, MAYBE_NSS(Firefox3NSS3Decryptor)) {
   base::FilePath nss_path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &nss_path));
-#ifdef OS_MACOSX
+#if defined(OS_MACOSX)
   nss_path = nss_path.AppendASCII("firefox3_nss_mac");
 #else
   nss_path = nss_path.AppendASCII("firefox3_nss");

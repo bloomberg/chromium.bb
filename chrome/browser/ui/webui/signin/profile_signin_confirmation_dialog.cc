@@ -269,7 +269,7 @@ std::string ProfileSigninConfirmationDialog::GetDialogArgs() const {
   DictionaryValue dict;
   dict.SetString("username", username_);
   dict.SetBoolean("promptForNewProfile", prompt_for_new_profile_);
-#ifdef OS_WIN
+#if defined(OS_WIN)
   dict.SetBoolean("hideTitle", true);
 #endif
   base::JSONWriter::Write(&dict, &data);

@@ -28,7 +28,7 @@ ExecuteGetJavascriptUrlTest::ExecuteGetJavascriptUrlTest(
     NPP id, NPNetscapeFuncs *host_functions)
   : PluginTest(id, host_functions),
     test_started_(false),
-#ifdef OS_WIN
+#if defined(OS_WIN)
     window_(NULL),
 #endif
     npn_evaluate_context_(false) {
@@ -46,7 +46,7 @@ NPError ExecuteGetJavascriptUrlTest::SetWindow(NPWindow* pNPWindow) {
                                   reinterpret_cast<void*>(SELF_URL_STREAM_ID));
     test_started_ = true;
 
-#ifdef OS_WIN
+#if defined(OS_WIN)
     HWND window_handle = reinterpret_cast<HWND>(pNPWindow->window);
     if (!::GetProp(window_handle, L"Plugin_Instance")) {
       // TODO: this propery leaks.
@@ -64,7 +64,7 @@ NPError ExecuteGetJavascriptUrlTest::SetWindow(NPWindow* pNPWindow) {
   return NPERR_NO_ERROR;
 }
 
-#ifdef OS_WIN
+#if defined(OS_WIN)
 void CALLBACK ExecuteGetJavascriptUrlTest::TimerProc(
     HWND window, UINT message, UINT_PTR timer_id, DWORD elapsed_time) {
   ExecuteGetJavascriptUrlTest* this_instance =
@@ -171,7 +171,7 @@ NPError ExecuteGetJavascriptUrlTest::DestroyStream(NPStream *stream,
     return NPERR_INVALID_PARAM;
   }
 
-#ifdef OS_WIN
+#if defined(OS_WIN)
   KillTimer(window_, kNPNEvaluateTimerID);
 #endif
 

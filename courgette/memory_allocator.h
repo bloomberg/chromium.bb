@@ -55,7 +55,7 @@ typedef bool CheckBool;
 
 namespace courgette {
 
-#ifdef OS_WIN
+#if defined(OS_WIN)
 
 // Manages a temporary file.  The file is created in the %TEMP% folder and
 // is deleted when the file handle is closed.

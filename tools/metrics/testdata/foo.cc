@@ -12,7 +12,7 @@
 
 #if !defined(OS_CAT)
 
-#ifdef OS_WIN
+#if defined(OS_WIN)
 
 #endif  // !OS_ANDROID && !OS_IOS
 #endif  // OS_CAT

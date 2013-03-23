@@ -4,5 +4,5 @@
 
 #if defined(OS_ANDROID)
 
-#ifdef OS_WIN
+#if defined(OS_WIN)
 

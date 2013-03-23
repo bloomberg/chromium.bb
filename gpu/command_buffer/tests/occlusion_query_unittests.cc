@@ -68,7 +68,7 @@ void OcclusionQueryTest::DrawRect(float x, float z, float scale, float* color) {
 }
 
 TEST_F(OcclusionQueryTest, Occlusion) {
-#ifdef OS_MACOSX
+#if defined(OS_MACOSX)
   EXPECT_TRUE(GLTestHelper::HasExtension("GL_EXT_occlusion_query_boolean"))
       << "GL_EXT_occlusion_query_boolean is required on OSX";
 #endif

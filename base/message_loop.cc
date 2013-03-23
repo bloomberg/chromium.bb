@@ -142,7 +142,7 @@ MessageLoop::MessageLoop(Type type)
       exception_restoration_(false),
       message_histogram_(NULL),
       run_loop_(NULL),
-#ifdef OS_WIN
+#if defined(OS_WIN)
       os_modal_loop_(false),
 #endif  // OS_WIN
       next_sequence_num_(0) {
