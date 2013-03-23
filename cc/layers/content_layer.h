@@ -59,8 +59,11 @@ class CC_EXPORT ContentLayer : public TiledLayer {
   virtual LayerUpdater* Updater() const OVERRIDE;
   virtual void CreateUpdaterIfNeeded() OVERRIDE;
 
+  void UpdateCanUseLCDText();
+
   ContentLayerClient* client_;
   scoped_refptr<LayerUpdater> updater_;
+  bool can_use_lcd_text_last_frame_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentLayer);
 };

@@ -682,6 +682,7 @@ public:
         if (m_testLayer)
             m_testLayer->SetOpacity(0);
     }
+    virtual void DidChangeLayerCanUseLCDText() OVERRIDE {}
 
 private:
     Layer* m_testLayer;
@@ -1884,6 +1885,7 @@ public:
             *opaque = gfx::RectF(rect.width(), rect.height());
             canvas->drawRect(rect, paint);
         }
+        virtual void DidChangeLayerCanUseLCDText() OVERRIDE {}
     };
 
     virtual void BeginTest() OVERRIDE
@@ -2247,6 +2249,105 @@ private:
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestPinchZoomScrollbarNewRootLayer)
+
+class LayerTreeHostTestLCDNotification : public LayerTreeHostTest {
+public:
+    class NotificationClient : public ContentLayerClient {
+    public:
+        NotificationClient()
+            : layer_(0)
+            , paint_count_(0)
+            , lcd_notification_count_(0)
+        {
+        }
+
+        void set_layer(Layer* layer) { layer_ = layer; }
+        int paint_count() const { return paint_count_; }
+        int lcd_notification_count() const { return lcd_notification_count_; }
+
+        virtual void PaintContents(SkCanvas* canvas,
+                                   gfx::Rect clip,
+                                   gfx::RectF* opaque) OVERRIDE
+        {
+            ++paint_count_;
+        }
+        virtual void DidChangeLayerCanUseLCDText() OVERRIDE
+        {
+            ++lcd_notification_count_;
+            layer_->SetNeedsDisplay();
+        }
+
+    private:
+        Layer* layer_;
+        int paint_count_;
+        int lcd_notification_count_;
+    };
+
+    virtual void SetupTree() OVERRIDE
+    {
+        scoped_refptr<ContentLayer> root_layer = ContentLayer::Create(&client_);
+        root_layer->SetIsDrawable(true);
+        root_layer->SetBounds(gfx::Size(1, 1));
+
+        layer_tree_host()->SetRootLayer(root_layer);
+        client_.set_layer(root_layer.get());
+
+        // The expecations are based on the assumption that the default
+        // LCD settings are:
+        EXPECT_EQ(true, layer_tree_host()->settings().can_use_lcd_text);
+        EXPECT_EQ(false, root_layer->can_use_lcd_text());
+
+        LayerTreeHostTest::SetupTree();
+    }
+
+    virtual void BeginTest() OVERRIDE
+    {
+        PostSetNeedsCommitToMainThread();
+    }
+    virtual void AfterTest() OVERRIDE { }
+
+    virtual void DidCommit() OVERRIDE
+    {
+        switch (layer_tree_host()->commit_number()) {
+        case 1:
+            // The first update consists one LCD notification and one paint.
+            EXPECT_EQ(1, client_.lcd_notification_count());
+            EXPECT_EQ(1, client_.paint_count());
+            // LCD text must have been enabled on the layer.
+            EXPECT_EQ(true, layer_tree_host()->root_layer()->can_use_lcd_text());
+            PostSetNeedsCommitToMainThread();
+            break;
+        case 2:
+            // Since nothing changed on layer, there should be no notification
+            // or paint on the second update.
+            EXPECT_EQ(1, client_.lcd_notification_count());
+            EXPECT_EQ(1, client_.paint_count());
+            // LCD text must not have changed.
+            EXPECT_EQ(true, layer_tree_host()->root_layer()->can_use_lcd_text());
+            // Change layer opacity that should trigger lcd notification.
+            layer_tree_host()->root_layer()->SetOpacity(0.5);
+            // No need to request a commit - setting opacity will do it.
+            break;
+        default:
+            // Verify that there is not extra commit due to layer invalidation.
+            EXPECT_EQ(3, layer_tree_host()->commit_number());
+            // LCD notification count should have incremented due to
+            // change in layer opacity.
+            EXPECT_EQ(2, client_.lcd_notification_count());
+            // Paint count should be incremented due to invalidation.
+            EXPECT_EQ(2, client_.paint_count());
+            // LCD text must have been disabled on the layer due to opacity.
+            EXPECT_EQ(false, layer_tree_host()->root_layer()->can_use_lcd_text());
+            EndTest();
+            break;
+        }
+    }
+
+private:
+    NotificationClient client_;
+};
+
+SINGLE_THREAD_TEST_F(LayerTreeHostTestLCDNotification)
 
 }  // namespace
 }  // namespace cc

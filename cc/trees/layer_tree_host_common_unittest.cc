@@ -149,6 +149,7 @@ public:
     MockContentLayerClient() { }
     virtual ~MockContentLayerClient() { }
     virtual void PaintContents(SkCanvas* canvas, gfx::Rect clip, gfx::RectF* opaque) OVERRIDE { }
+    virtual void DidChangeLayerCanUseLCDText() OVERRIDE { }
 };
 
 scoped_refptr<ContentLayer> createDrawableContentLayer(ContentLayerClient* delegate)

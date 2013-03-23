@@ -29,6 +29,7 @@ class CC_EXPORT PictureImageLayer : public PictureLayer, ContentLayerClient {
       SkCanvas* canvas,
       gfx::Rect clip,
       gfx::RectF* opaque) OVERRIDE;
+  virtual void DidChangeLayerCanUseLCDText() OVERRIDE {}
 
  private:
   PictureImageLayer();

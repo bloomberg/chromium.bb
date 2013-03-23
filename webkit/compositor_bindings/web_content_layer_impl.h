@@ -42,6 +42,7 @@ class WebContentLayerImpl : public WebKit::WebContentLayer,
   virtual void PaintContents(SkCanvas* canvas,
                              gfx::Rect clip,
                              gfx::RectF* opaque) OVERRIDE;
+  virtual void DidChangeLayerCanUseLCDText() OVERRIDE;
 
   scoped_ptr<WebLayerImpl> layer_;
   WebKit::WebContentLayerClient* client_;
@@ -49,6 +50,8 @@ class WebContentLayerImpl : public WebKit::WebContentLayer,
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebContentLayerImpl);
+  bool can_use_lcd_text_;
+  bool ignore_lcd_text_change_;
 };
 
 }  // namespace webkit

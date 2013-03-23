@@ -22,6 +22,10 @@ class CC_EXPORT ContentLayerClient {
                              gfx::Rect clip,
                              gfx::RectF* opaque) = 0;
 
+  // Called by the content layer during the update phase.
+  // If the client paints LCD text, it may want to invalidate the layer.
+  virtual void DidChangeLayerCanUseLCDText() = 0;
+
  protected:
   virtual ~ContentLayerClient() {}
 };

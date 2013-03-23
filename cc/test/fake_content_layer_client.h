@@ -21,6 +21,7 @@ class FakeContentLayerClient : public cc::ContentLayerClient {
   virtual void PaintContents(SkCanvas* canvas,
                              gfx::Rect rect,
                              gfx::RectF* opaque_rect) OVERRIDE;
+  virtual void DidChangeLayerCanUseLCDText() OVERRIDE {}
 
   void set_paint_all_opaque(bool opaque) { paint_all_opaque_ = opaque; }
 
