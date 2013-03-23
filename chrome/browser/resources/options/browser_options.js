@@ -206,6 +206,7 @@ cr.define('options', function() {
         if (loadTimeData.getBoolean('profileIsManaged')) {
           $('profiles-create').disabled = true;
           $('profiles-delete').disabled = true;
+          $('profiles-list').canDeleteItems = false;
         }
       }
 
