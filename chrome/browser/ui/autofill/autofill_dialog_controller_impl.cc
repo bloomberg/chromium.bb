@@ -1396,8 +1396,9 @@ bool AutofillDialogControllerImpl::IsCompleteProfile(
     const AutofillProfile& profile) {
   const std::string app_locale = AutofillCountry::ApplicationLocale();
   for (size_t i = 0; i < requested_shipping_fields_.size(); ++i) {
-    if (profile.GetInfo(requested_shipping_fields_[i].type,
-                        app_locale).empty()) {
+    AutofillFieldType type = requested_shipping_fields_[i].type;
+    if (type != ADDRESS_HOME_LINE2 &&
+        profile.GetInfo(type, app_locale).empty()) {
       return false;
     }
   }

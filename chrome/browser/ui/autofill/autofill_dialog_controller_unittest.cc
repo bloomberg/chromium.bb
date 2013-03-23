@@ -286,6 +286,7 @@ TEST_F(AutofillDialogControllerTest, AutofillProfiles) {
 
   // A full profile should be picked up.
   AutofillProfile full_profile(autofill_test::GetFullProfile());
+  full_profile.SetRawInfo(ADDRESS_HOME_LINE2, string16());
   controller()->GetTestingManager()->AddTestingProfile(&full_profile);
   shipping_model = controller()->MenuModelForSection(SECTION_SHIPPING);
   EXPECT_EQ(2, shipping_model->GetItemCount());
