@@ -78,17 +78,6 @@ MediaGalleriesDialogController::~MediaGalleriesDialogController() {
     select_folder_dialog_->ListenerDestroyed();
 }
 
-string16 ConstructGalleryNameFromMetadata(
-    const string16& vendor_name,
-    const string16& model_name,
-    uint64 size_in_bytes) {
-  return MediaStorageUtil::GetDisplayNameForDevice(
-      size_in_bytes,
-      MediaStorageUtil::GetFullProductName(UTF16ToUTF8(vendor_name),
-                                           UTF16ToUTF8(model_name)));
-
-}
-
 // static
 string16 MediaGalleriesDialogController::GetGalleryDisplayName(
     const MediaGalleryPrefInfo& gallery) {
@@ -108,8 +97,10 @@ string16 MediaGalleriesDialogController::GetGalleryDisplayNameNoAttachment(
   if (name.empty())
     name = gallery.volume_label;
   if (name.empty()) {
-    name = ConstructGalleryNameFromMetadata(
-        gallery.vendor_name, gallery.model_name, gallery.total_size_in_bytes);
+    name = MediaStorageUtil::GetDisplayNameForDevice(
+      gallery.total_size_in_bytes,
+      MediaStorageUtil::GetFullProductName(UTF16ToUTF8(gallery.vendor_name),
+                                           UTF16ToUTF8(gallery.model_name)));
   }
 
   return name;
@@ -205,7 +196,9 @@ void MediaGalleriesDialogController::DidToggleGallery(
   KnownGalleryPermissions::iterator iter =
       known_galleries_.find(gallery->pref_id);
   if (iter != known_galleries_.end()) {
-    DCHECK_NE(iter->second.allowed, enabled);
+    if (iter->second.allowed == enabled)
+      return;
+
     iter->second.allowed = enabled;
     if (ContainsKey(toggled_galleries_, gallery->pref_id))
       toggled_galleries_.erase(gallery->pref_id);
@@ -222,8 +215,6 @@ void MediaGalleriesDialogController::DidToggleGallery(
       return;
     }
   }
-
-  NOTREACHED();
 }
 
 void MediaGalleriesDialogController::DialogFinished(bool accepted) {
