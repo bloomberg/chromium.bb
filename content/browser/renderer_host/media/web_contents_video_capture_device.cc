@@ -989,7 +989,7 @@ void BackingStoreCopier::StartCopy(
   TRACE_EVENT_ASYNC_BEGIN1("mirroring", "Capture", this,
                            "frame_number", frame_number);
 
-  if (!view->IsSurfaceAvailableForCopy()) {
+  if (view && !view->IsSurfaceAvailableForCopy()) {
     // Fallback to the more expensive renderer-side copy if the surface and
     // backing store are not accessible.
     rwh->GetSnapshotFromRenderer(
