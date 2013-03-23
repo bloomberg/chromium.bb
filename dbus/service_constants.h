@@ -267,6 +267,7 @@ const char kLibCrosServiceInterface[] = "org.chromium.LibCrosServiceInterface";
 const char kResolveNetworkProxy[] = "ResolveNetworkProxy";
 const char kCheckLiveness[] = "CheckLiveness";
 const char kSetDisplayPower[] = "SetDisplayPower";
+const char kSetDisplaySoftwareDimming[] = "SetDisplaySoftwareDimming";
 // Values
 enum DisplayPowerState {
   DISPLAY_POWER_ALL_ON = 0,
