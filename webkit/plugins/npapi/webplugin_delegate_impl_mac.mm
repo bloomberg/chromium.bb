@@ -17,6 +17,7 @@
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
+#include "skia/ext/skia_utils_mac.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 #include "webkit/plugins/npapi/plugin_instance.h"
@@ -24,10 +25,6 @@
 #include "webkit/plugins/npapi/plugin_web_event_converter_mac.h"
 #include "webkit/plugins/npapi/webplugin.h"
 #include "webkit/plugins/npapi/webplugin_accelerated_surface_mac.h"
-
-#if defined(USE_SKIA)
-#include "skia/ext/skia_utils_mac.h"
-#endif
 
 using WebKit::WebCursorInfo;
 using WebKit::WebKeyboardEvent;
@@ -280,12 +277,8 @@ void WebPluginDelegateImpl::UpdateGeometryAndContext(
 
 void WebPluginDelegateImpl::Paint(WebKit::WebCanvas* canvas,
                                   const gfx::Rect& rect) {
-#if defined(USE_SKIA)
   gfx::SkiaBitLocker bit_locker(canvas);
   CGContextRef context = bit_locker.cgContext();
-#else
-  CGContextRef context = canvas;
-#endif
   CGPaint(context, rect);
 }
 
