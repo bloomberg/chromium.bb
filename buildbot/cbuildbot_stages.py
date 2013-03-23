@@ -976,15 +976,15 @@ class InitSDKStage(bs.BuilderStage):
     if self._latest_toolchain and self._build_config['gcc_githash']:
       self._env['USE'] = 'git_gcc'
       self._env['GCC_GITHASH'] = self._build_config['gcc_githash']
+    self._use_sdk = (self._build_config['use_sdk'] and not self._options.no_sdk)
 
   def _PerformStage(self):
-    use_sdk = (self._build_config['use_sdk'] and not self._options.no_sdk)
     chroot_path = os.path.join(self._build_root, constants.DEFAULT_CHROOT_DIR)
     if not os.path.isdir(chroot_path) or self._build_config['chroot_replace']:
       commands.MakeChroot(
           buildroot=self._build_root,
           replace=self._build_config['chroot_replace'],
-          use_sdk=use_sdk,
+          use_sdk=self._use_sdk,
           chrome_root=self._options.chrome_root,
           extra_env=self._env)
     else:
@@ -1009,7 +1009,7 @@ class SetupBoardStage(InitSDKStage):
     # Skip updating the chroot for bots that just replaced it, unless we need
     # to upgrade the toolchain.
     chroot_upgrade = (not self._build_config['chroot_replace'] or
-                      self._latest_toolchain)
+                      self._latest_toolchain) and self._use_sdk
 
     # Iterate through boards to setup.
     chroot_path = os.path.join(self._build_root, constants.DEFAULT_CHROOT_DIR)
