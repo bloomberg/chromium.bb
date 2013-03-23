@@ -84,6 +84,7 @@ class CC_EXPORT PictureLayerImpl : public LayerImpl,
   PictureLayerImpl* PendingTwin() const;
   PictureLayerImpl* ActiveTwin() const;
   float MinimumContentsScale() const;
+  void UpdateLCDTextStatus();
 
   virtual void GetDebugBorderProperties(
       SkColor* color, float* width) const OVERRIDE;
@@ -106,6 +107,7 @@ class CC_EXPORT PictureLayerImpl : public LayerImpl,
   float raster_device_scale_;
   float raster_source_scale_;
   bool raster_source_scale_was_animating_;
+  bool is_using_lcd_text_;
 
   friend class PictureLayer;
   DISALLOW_COPY_AND_ASSIGN(PictureLayerImpl);

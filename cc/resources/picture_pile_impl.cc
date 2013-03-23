@@ -28,13 +28,14 @@ PicturePileImpl::ClonesForDrawing::ClonesForDrawing(
 PicturePileImpl::ClonesForDrawing::~ClonesForDrawing() {
 }
 
-scoped_refptr<PicturePileImpl> PicturePileImpl::Create() {
-  return make_scoped_refptr(new PicturePileImpl());
+scoped_refptr<PicturePileImpl> PicturePileImpl::Create(bool enable_lcd_text) {
+  return make_scoped_refptr(new PicturePileImpl(enable_lcd_text));
 }
 
 scoped_refptr<PicturePileImpl> PicturePileImpl::CreateFromOther(
-    const PicturePileBase* other) {
-  return make_scoped_refptr(new PicturePileImpl(other));
+    const PicturePileBase* other,
+    bool enable_lcd_text) {
+  return make_scoped_refptr(new PicturePileImpl(other, enable_lcd_text));
 }
 
 scoped_refptr<PicturePileImpl> PicturePileImpl::CreateCloneForDrawing(
@@ -42,18 +43,22 @@ scoped_refptr<PicturePileImpl> PicturePileImpl::CreateCloneForDrawing(
   return make_scoped_refptr(new PicturePileImpl(other, thread_index));
 }
 
-PicturePileImpl::PicturePileImpl()
-    : clones_for_drawing_(ClonesForDrawing(this, 0)) {
+PicturePileImpl::PicturePileImpl(bool enable_lcd_text)
+    : enable_lcd_text_(enable_lcd_text),
+      clones_for_drawing_(ClonesForDrawing(this, 0)) {
 }
 
-PicturePileImpl::PicturePileImpl(const PicturePileBase* other)
+PicturePileImpl::PicturePileImpl(const PicturePileBase* other,
+                                 bool enable_lcd_text)
     : PicturePileBase(other),
+      enable_lcd_text_(enable_lcd_text),
       clones_for_drawing_(ClonesForDrawing(this, num_raster_threads())) {
 }
 
 PicturePileImpl::PicturePileImpl(
     const PicturePileImpl* other, unsigned thread_index)
     : PicturePileBase(other, thread_index),
+      enable_lcd_text_(other->enable_lcd_text_),
       clones_for_drawing_(ClonesForDrawing(this, 0)) {
 }
 
@@ -142,9 +147,9 @@ void PicturePileImpl::Raster(
 
       if (slow_down_raster_scale_factor_for_debug_) {
         for (int j = 0; j < slow_down_raster_scale_factor_for_debug_; ++j)
-          (*i)->Raster(canvas, content_clip, contents_scale);
+          (*i)->Raster(canvas, content_clip, contents_scale, enable_lcd_text_);
       } else {
-        (*i)->Raster(canvas, content_clip, contents_scale);
+        (*i)->Raster(canvas, content_clip, contents_scale, enable_lcd_text_);
       }
 
       // Don't allow pictures underneath to draw where this picture did.

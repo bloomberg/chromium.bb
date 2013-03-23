@@ -126,8 +126,9 @@ class TestablePicturePileImpl : public PicturePileImpl {
   }
 
  protected:
-  virtual ~TestablePicturePileImpl() {
-  }
+  TestablePicturePileImpl() : PicturePileImpl(false) {}
+
+  virtual ~TestablePicturePileImpl() {}
 
   FakeContentLayerClient client_;
 };

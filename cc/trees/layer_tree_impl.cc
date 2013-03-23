@@ -496,6 +496,10 @@ base::TimeTicks LayerTreeImpl::CurrentFrameTime() const {
   return layer_tree_host_impl_->CurrentFrameTime();
 }
 
+void LayerTreeImpl::SetNeedsCommit() {
+  layer_tree_host_impl_->SetNeedsCommit();
+}
+
 void LayerTreeImpl::SetNeedsRedraw() {
   layer_tree_host_impl_->setNeedsRedraw();
 }

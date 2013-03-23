@@ -19,9 +19,10 @@ struct RenderingStats;
 
 class CC_EXPORT PicturePileImpl : public PicturePileBase {
  public:
-  static scoped_refptr<PicturePileImpl> Create();
+  static scoped_refptr<PicturePileImpl> Create(bool enable_lcd_text);
   static scoped_refptr<PicturePileImpl> CreateFromOther(
-      const PicturePileBase* other);
+      const PicturePileBase* other,
+      bool enable_lcd_text);
 
   // Get paint-safe version of this picture for a specific thread.
   PicturePileImpl* GetCloneForDrawingOnThread(unsigned thread_index) const;
@@ -61,8 +62,8 @@ class CC_EXPORT PicturePileImpl : public PicturePileBase {
  protected:
   friend class PicturePile;
 
-  PicturePileImpl();
-  PicturePileImpl(const PicturePileBase* other);
+  PicturePileImpl(bool enable_lcd_text);
+  PicturePileImpl(const PicturePileBase* other, bool enable_lcd_text);
   virtual ~PicturePileImpl();
 
  private:
@@ -80,9 +81,12 @@ class CC_EXPORT PicturePileImpl : public PicturePileBase {
 
   PicturePileImpl(const PicturePileImpl* other, unsigned thread_index);
 
-  // Once instantiated, |clones_for_drawing_| can't be modified.
-  // This guarantees thread-safe access during the life
-  // time of a PicturePileImpl instance.
+  bool enable_lcd_text_;
+
+  // Once instantiated, |clones_for_drawing_| can't be modified.  This
+  // guarantees thread-safe access during the life time of a PicturePileImpl
+  // instance.  This member variable must be last so that other member
+  // variables have already been initialized and can be clonable.
   const ClonesForDrawing clones_for_drawing_;
 
   DISALLOW_COPY_AND_ASSIGN(PicturePileImpl);

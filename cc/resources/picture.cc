@@ -9,6 +9,8 @@
 #include "skia/ext/analysis_canvas.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkData.h"
+#include "third_party/skia/include/core/SkDrawFilter.h"
+#include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/utils/SkPictureUtils.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/skia_util.h"
@@ -16,6 +18,19 @@
 namespace {
 // URI label for a lazily decoded SkPixelRef.
 const char labelLazyDecoded[] = "lazy";
+
+class DisableLCDTextFilter : public SkDrawFilter {
+ public:
+  // SkDrawFilter interface.
+  virtual bool filter(SkPaint* paint, SkDrawFilter::Type type) {
+    if (type != SkDrawFilter::kText_Type)
+      return true;
+
+    paint->setLCDRenderText(false);
+    return true;
+  }
+};
+
 }
 
 namespace cc {
@@ -116,16 +131,22 @@ void Picture::Record(ContentLayerClient* painter,
 void Picture::Raster(
     SkCanvas* canvas,
     gfx::Rect content_rect,
-    float contents_scale) {
+    float contents_scale,
+    bool enable_lcd_text) {
   TRACE_EVENT2("cc", "Picture::Raster",
                "layer width", layer_rect_.width(),
                "layer height", layer_rect_.height());
   DCHECK(picture_);
 
+  DisableLCDTextFilter disable_lcd_text_filter;
+
   canvas->save();
   canvas->clipRect(gfx::RectToSkRect(content_rect));
   canvas->scale(contents_scale, contents_scale);
   canvas->translate(layer_rect_.x(), layer_rect_.y());
+  // Pictures by default have LCD text enabled.
+  if (!enable_lcd_text)
+    canvas->setDrawFilter(&disable_lcd_text_filter);
   canvas->drawPicture(*picture_);
   canvas->restore();
 }

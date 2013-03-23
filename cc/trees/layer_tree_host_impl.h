@@ -219,6 +219,8 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandlerClient,
   virtual void SetVisible(bool visible);
   bool visible() const { return visible_; }
 
+  void SetNeedsCommit() { client_->SetNeedsCommitOnImplThread(); }
+
   size_t memory_allocation_limit_bytes() const {
     return managed_memory_policy_.bytes_limit_when_visible;
   }

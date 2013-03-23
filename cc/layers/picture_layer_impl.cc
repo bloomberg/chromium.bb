@@ -27,7 +27,7 @@ namespace cc {
 
 PictureLayerImpl::PictureLayerImpl(LayerTreeImpl* tree_impl, int id)
     : LayerImpl(tree_impl, id),
-      pile_(PicturePileImpl::Create()),
+      pile_(PicturePileImpl::Create(true)),
       last_content_scale_(0),
       ideal_contents_scale_(0),
       is_mask_(false),
@@ -37,7 +37,8 @@ PictureLayerImpl::PictureLayerImpl(LayerTreeImpl* tree_impl, int id)
       raster_page_scale_(0.f),
       raster_device_scale_(0.f),
       raster_source_scale_(0.f),
-      raster_source_scale_was_animating_(false) {
+      raster_source_scale_was_animating_(false),
+      is_using_lcd_text_(true) {
 }
 
 PictureLayerImpl::~PictureLayerImpl() {
@@ -74,11 +75,12 @@ void PictureLayerImpl::PushPropertiesTo(LayerImpl* base_layer) {
   layer_impl->SetIsMask(is_mask_);
   layer_impl->TransferTilingSet(tilings_.Pass());
   layer_impl->pile_ = pile_;
-  pile_ = PicturePileImpl::Create();
+  pile_ = PicturePileImpl::Create(is_using_lcd_text_);
 
   layer_impl->raster_page_scale_ = raster_page_scale_;
   layer_impl->raster_device_scale_ = raster_device_scale_;
   layer_impl->raster_source_scale_ = raster_source_scale_;
+  layer_impl->is_using_lcd_text_ = is_using_lcd_text_;
 }
 
 
@@ -221,6 +223,8 @@ void PictureLayerImpl::DumpLayerProperties(std::string*, int indent) const {
 }
 
 void PictureLayerImpl::UpdateTilePriorities() {
+  UpdateLCDTextStatus();
+
   int current_source_frame_number = layer_tree_impl()->source_frame_number();
   double current_frame_time =
       (layer_tree_impl()->CurrentFrameTime() - base::TimeTicks()).InSecondsF();
@@ -406,6 +410,7 @@ void PictureLayerImpl::SyncFromActiveLayer(const PictureLayerImpl* other) {
   raster_page_scale_ = other->raster_page_scale_;
   raster_device_scale_ = other->raster_device_scale_;
   raster_source_scale_ = other->raster_source_scale_;
+  is_using_lcd_text_ = other->is_using_lcd_text_;
 
   // Add synthetic invalidations for any recordings that were dropped.  As
   // tiles are updated to point to this new pile, this will force the dropping
@@ -789,6 +794,45 @@ float PictureLayerImpl::MinimumContentsScale() const {
     return setting_min;
 
   return std::max(1.f / min_dimension, setting_min);
+}
+
+void PictureLayerImpl::UpdateLCDTextStatus() {
+  // Once this layer is not using lcd text, don't switch back.
+  if (!is_using_lcd_text_)
+    return;
+
+  if (is_using_lcd_text_ == can_use_lcd_text())
+    return;
+
+  is_using_lcd_text_ = can_use_lcd_text();
+
+  // As a trade-off between jank and drawing with the incorrect resources,
+  // don't ever update the active tree's resources in place.  Instead,
+  // update lcd text on the pending tree.  If this is the active tree and
+  // there is no pending twin, then call set needs commit to create one.
+  if (layer_tree_impl()->IsActiveTree() && !PendingTwin()) {
+    // TODO(enne): Handle this by updating these resources in-place instead.
+    layer_tree_impl()->SetNeedsCommit();
+    return;
+  }
+
+  // The heuristic of never switching back to lcd text enabled implies that
+  // this property needs to be synchronized to the pending tree right now.
+  PictureLayerImpl* pending_layer =
+      layer_tree_impl()->IsActiveTree() ? PendingTwin() : this;
+  if (layer_tree_impl()->IsActiveTree() &&
+      pending_layer->is_using_lcd_text_ == is_using_lcd_text_)
+    return;
+
+  // Further tiles created due to new tilings should be considered invalidated.
+  pending_layer->invalidation_.Union(gfx::Rect(bounds()));
+  pending_layer->is_using_lcd_text_ = is_using_lcd_text_;
+  pending_layer->pile_ = PicturePileImpl::CreateFromOther(pending_layer->pile_,
+                                                          is_using_lcd_text_);
+
+  // TODO(enne): if we tracked text regions, we could just invalidate those
+  // directly rather than tossing away every tile.
+  pending_layer->tilings_->Invalidate(gfx::Rect(bounds()));
 }
 
 void PictureLayerImpl::GetDebugBorderProperties(

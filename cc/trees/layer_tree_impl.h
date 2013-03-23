@@ -66,6 +66,7 @@ class CC_EXPORT LayerTreeImpl {
   int MaxTextureSize() const;
   bool PinchGestureActive() const;
   base::TimeTicks CurrentFrameTime() const;
+  void SetNeedsCommit();
 
   // Tree specific methods exposed to layer-impl tree.
   // ---------------------------------------------------------------------------

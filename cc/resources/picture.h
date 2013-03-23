@@ -50,7 +50,10 @@ class CC_EXPORT Picture
   bool HasRecording() const { return picture_.get() != NULL; }
 
   // Apply this contents scale and raster the content rect into the canvas.
-  void Raster(SkCanvas* canvas, gfx::Rect content_rect, float contents_scale);
+  void Raster(SkCanvas* canvas,
+              gfx::Rect content_rect,
+              float contents_scale,
+              bool enable_lcd_text);
 
   void GatherPixelRefs(
       const gfx::Rect& layer_rect,

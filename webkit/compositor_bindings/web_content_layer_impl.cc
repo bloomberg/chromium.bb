@@ -75,7 +75,10 @@ void WebContentLayerImpl::PaintContents(SkCanvas* canvas,
     return;
 
   WebKit::WebFloatRect web_opaque;
-  client_->paintContents(canvas, clip, can_use_lcd_text_, web_opaque);
+  // For picture layers, always record with LCD text.  PictureLayerImpl
+  // will turn this off later during rasterization.
+  bool use_lcd_text = usingPictureLayer() || can_use_lcd_text_;
+  client_->paintContents(canvas, clip, use_lcd_text, web_opaque);
   *opaque = web_opaque;
 }
 
