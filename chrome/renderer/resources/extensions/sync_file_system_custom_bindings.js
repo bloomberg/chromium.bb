@@ -24,6 +24,19 @@ binding.registerCustomHook(function(bindingsAPI) {
   }
   forEach(['getFileStatus'], bindFileEntryFunction);
 
+  // Functions which take in an [instanceOf=EntryArray].
+  function bindFileEntryArrayFunction(i, functionName) {
+    apiFunctions.setUpdateArgumentsPostValidate(
+        functionName, function(entries, callback) {
+      var fileSystemUrlArray = [];
+      for (var i=0; i < entries.length; i++) {
+        fileSystemUrlArray.push(entries[i].toURL());
+      }
+      return [fileSystemUrlArray, callback];
+    });
+  }
+  forEach(['getFileStatuses'], bindFileEntryArrayFunction);
+
   // Functions which take in an [instanceOf=DOMFileSystem].
   function bindFileSystemFunction(i, functionName) {
     apiFunctions.setUpdateArgumentsPostValidate(

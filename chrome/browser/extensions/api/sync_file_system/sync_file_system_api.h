@@ -5,9 +5,12 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_SYNC_FILE_SYSTEM_SYNC_FILE_SYSTEM_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_SYNC_FILE_SYSTEM_SYNC_FILE_SYSTEM_API_H_
 
+#include <map>
+
 #include "base/platform_file.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/sync_file_system/conflict_resolution_policy.h"
+#include "chrome/common/extensions/api/sync_file_system.h"
 #include "webkit/fileapi/syncable/sync_file_status.h"
 #include "webkit/fileapi/syncable/sync_status_code.h"
 #include "webkit/quota/quota_types.h"
@@ -49,6 +52,28 @@ class SyncFileSystemGetFileStatusFunction
   void DidGetFileStatus(
       const sync_file_system::SyncStatusCode sync_service_status,
       const sync_file_system::SyncFileStatus sync_file_status);
+};
+
+class SyncFileSystemGetFileStatusesFunction
+    : public AsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("syncFileSystem.getFileStatuses",
+                             SYNCFILESYSTEM_GETFILESYNCSTATUSES)
+  SyncFileSystemGetFileStatusesFunction();
+
+ protected:
+  virtual ~SyncFileSystemGetFileStatusesFunction();
+  virtual bool RunImpl() OVERRIDE;
+
+ private:
+  unsigned int num_expected_results_;
+  unsigned int num_results_received_;
+  std::map<std::string, sync_file_system::SyncStatusCode> sync_status_codes_;
+  std::map<std::string, api::sync_file_system::FileStatus> file_sync_statuses_;
+  void DidGetFileStatus(
+      const std::string& file_path,
+      sync_file_system::SyncStatusCode sync_status_code,
+      sync_file_system::SyncFileStatus sync_file_statuses);
 };
 
 class SyncFileSystemGetUsageAndQuotaFunction

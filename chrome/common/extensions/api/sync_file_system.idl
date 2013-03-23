@@ -78,6 +78,19 @@ namespace syncFileSystem {
     SyncDirection? direction;
   };
 
+  dictionary FileStatusInfo {
+    // File path of one of the FileEntry's originally given to getFileStatuses.
+    DOMString file_path;
+
+    // The status value can be <code>'synced'</code>,
+    // <code>'pending'</code> or <code>'conflicting'</code>.
+    FileStatus status;
+
+    // Optional error that is only returned if there was a problem retrieving
+    // the FileStatus for the given file.
+    DOMString? error;
+  };
+
   dictionary StorageInfo {
     long usageBytes;
     long quotaBytes;
@@ -100,6 +113,9 @@ namespace syncFileSystem {
 
   // A callback type for getFileStatus.
   callback GetFileStatusCallback = void (FileStatus status);
+
+  // A callback type for getFileStatuses.
+  callback GetFileStatusesCallback = void (FileStatusInfo[] status);
 
   // A callback type for getConflictResolutionPolicy.
   callback GetConflictResolutionPolicyCallback =
@@ -145,6 +161,11 @@ namespace syncFileSystem {
     // the service's conflict resolution policy is set to <code>'manual'</code>.
     static void getFileStatus([instanceOf=FileEntry] object fileEntry,
                               GetFileStatusCallback callback);
+
+    // Returns each $ref:FileStatus for the given <code>fileEntry</code> array.
+    // Typically called with the result from dirReader.readEntries().
+    static void getFileStatuses([instanceOf=EntryArray] object fileEntries,
+                                GetFileStatusesCallback callback);
   };
 
   interface Events {
