@@ -151,14 +151,14 @@ enum VariationID {
   SUGGEST_TRIAL_STARTED_2013_Q1_ID_MIN = 3310060,
   SUGGEST_TRIAL_STARTED_2013_Q1_ID_MAX = 3310079,
 
-  // Name: InstantExtended field trial on Beta channel.
+  // Name: More IDs for the InstantExtended field trial.
   // Range: 3310080 - 3310085
   EXTENDED_INSTANT_ID_BETA_GROUP_1   = 3310080,
   EXTENDED_INSTANT_ID_BETA_CONTROL_1 = 3310081,
   EXTENDED_INSTANT_ID_BETA_GROUP_2   = 3310082,
   EXTENDED_INSTANT_ID_BETA_CONTROL_2 = 3310083,
-  EXTENDED_INSTANT_ID_BETA_GROUP_3   = 3310084,
-  EXTENDED_INSTANT_ID_BETA_CONTROL_3 = 3310085,
+  EXTENDED_INSTANT_ID_CANARY_GROUP_2 = 3310084,
+  EXTENDED_INSTANT_ID_DEV_GROUP_2    = 3310085,
 
   // Reserve 100 IDs to be used by autocomplete dynamic field trials.
   // The dynamic field trials are activated by a call to
