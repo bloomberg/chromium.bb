@@ -1513,17 +1513,21 @@ bool LayerTreeHostImpl::ScrollBy(gfx::Point viewport_point,
 
   gfx::Vector2dF pending_delta = scroll_delta;
   bool did_scroll = false;
-
-  if (top_controls_manager_ && CurrentlyScrollingLayer() == RootScrollLayer()) {
-    pending_delta = top_controls_manager_->ScrollBy(pending_delta);
-    UpdateMaxScrollOffset();
-  }
+  bool consume_by_top_controls = top_controls_manager_ &&
+      (CurrentlyScrollingLayer() == RootScrollLayer() || scroll_delta.y() < 0);
 
   for (LayerImpl* layer_impl = CurrentlyScrollingLayer();
        layer_impl;
        layer_impl = layer_impl->parent()) {
     if (!layer_impl->scrollable())
       continue;
+
+    // Only allow bubble scrolling when the scroll is in the direction to make
+    // the top controls visible.
+    if (consume_by_top_controls && layer_impl == RootScrollLayer()) {
+      pending_delta = top_controls_manager_->ScrollBy(pending_delta);
+      UpdateMaxScrollOffset();
+    }
 
     gfx::Vector2dF applied_delta;
     // Gesture events need to be transformed from viewport coordinates to local
