@@ -453,20 +453,21 @@ void FFmpegAudioDecoder::RunDecodeLoop(
           total_frames *= codec_context_->channels;
           skip_frames *= codec_context_->channels;
         }
-        converter_bus_->set_frames(total_frames);
-        DCHECK_EQ(decoded_audio_size,
-                  (converter_bus_->frames() - skip_frames) * bytes_per_frame_);
 
+        converter_bus_->set_frames(total_frames);
         for (int i = 0; i < converter_bus_->channels(); ++i) {
           converter_bus_->SetChannelData(i, reinterpret_cast<float*>(
               av_frame_->extended_data[i]));
         }
 
+        const int frames_to_interleave = decoded_audio_size / bytes_per_frame_;
+        DCHECK_EQ(frames_to_interleave, converter_bus_->frames() - skip_frames);
+
         output = new DataBuffer(decoded_audio_size);
         output->SetDataSize(decoded_audio_size);
         converter_bus_->ToInterleavedPartial(
-            skip_frames, converter_bus_->frames() - skip_frames,
-            bits_per_channel_ / 8, output->GetWritableData());
+            skip_frames, frames_to_interleave, bits_per_channel_ / 8,
+            output->GetWritableData());
       } else {
         output = DataBuffer::CopyFrom(
             av_frame_->extended_data[0] + start_sample * bytes_per_frame_,
