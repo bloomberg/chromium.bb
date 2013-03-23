@@ -146,7 +146,14 @@ GdkColor NativeThemeGtk2::GetSystemGdkColor(ColorId color_id) const {
     // will require careful threading through existing menu code though.
     case kColorId_FocusedMenuItemBackgroundColor:
       return GetMenuItemStyle()->bg[GTK_STATE_SELECTED];
+    case kColorId_HoverMenuItemBackgroundColor:
+      return GetMenuItemStyle()->bg[GTK_STATE_PRELIGHT];
+    case kColorId_FocusedMenuButtonBorderColor:
+      return GetEntryStyle()->bg[GTK_STATE_NORMAL];
+    case kColorId_HoverMenuButtonBorderColor:
+      return GetEntryStyle()->text_aa[GTK_STATE_PRELIGHT];
     case kColorId_MenuBorderColor:
+    case kColorId_EnabledMenuButtonBorderColor:
     case kColorId_MenuSeparatorColor: {
       return GetMenuItemStyle()->text[GTK_STATE_INSENSITIVE];
     }
@@ -171,7 +178,7 @@ GdkColor NativeThemeGtk2::GetSystemGdkColor(ColorId color_id) const {
     case kColorId_TextButtonHighlightColor:
       return GetButtonStyle()->base[GTK_STATE_SELECTED];
     case kColorId_TextButtonHoverColor:
-      return GetButtonStyle()->text[GTK_STATE_NORMAL];
+      return GetButtonStyle()->text[GTK_STATE_PRELIGHT];
 
     // Textfield
     case kColorId_TextfieldDefaultColor:

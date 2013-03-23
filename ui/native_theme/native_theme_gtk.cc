@@ -20,6 +20,15 @@ const SkColor kInvalidColorIdColor = SkColorSetRGB(255, 0, 128);
 const SkColor kFocusedBorderColor = SkColorSetRGB(0x4D, 0x90, 0xFE);
 const SkColor kUnfocusedBorderColor = SkColorSetRGB(0xD9, 0xD9, 0xD9);
 
+// MenuItem
+const SkColor kFocusedMenuItemBackgroundColor = SkColorSetARGB(13, 0, 0, 0);
+const SkColor kHoverMenuItemBackgroundColor = SkColorSetRGB(204, 204, 204);
+
+// MenuButton
+const SkColor kEnabledMenuButtonBorderColor = SkColorSetARGB(36, 0, 0, 0);
+const SkColor kFocusedMenuButtonBorderColor = SkColorSetARGB(72, 0, 0, 0);
+const SkColor kHoverMenuButtonBorderColor = SkColorSetARGB(72, 0, 0, 0);
+
 // TextButton:
 const SkColor kTextButtonBackgroundColor = SkColorSetRGB(0xde, 0xde, 0xde);
 const SkColor kTextButtonEnabledColor = SkColorSetRGB(6, 45, 117);
@@ -58,6 +67,18 @@ SkColor NativeThemeGtk::GetSystemColor(ColorId color_id) const {
       return kFocusedBorderColor;
     case kColorId_UnfocusedBorderColor:
       return kUnfocusedBorderColor;
+
+    // MenuItem
+    case kColorId_FocusedMenuItemBackgroundColor:
+      return kFocusedMenuItemBackgroundColor;
+    case kColorId_HoverMenuItemBackgroundColor:
+      return kHoverMenuItemBackgroundColor;
+    case kColorId_EnabledMenuButtonBorderColor:
+      return kEnabledMenuButtonBorderColor;
+    case kColorId_FocusedMenuButtonBorderColor:
+      return kFocusedMenuButtonBorderColor;
+    case kColorId_HoverMenuButtonBorderColor:
+      return kHoverMenuButtonBorderColor;
 
     // TextButton:
     case kColorId_TextButtonBackgroundColor:

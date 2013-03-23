@@ -25,9 +25,14 @@ const SkColor kMenuHighlightBackgroundColor = SkColorSetA(SK_ColorBLACK, 15);
 const SkColor kMenuInvertedSchemeHighlightBackgroundColor =
     SkColorSetRGB(48, 48, 48);
 const SkColor kMenuBorderColor = SkColorSetRGB(0xBA, 0xBA, 0xBA);
+const SkColor kEnabledMenuButtonBorderColor = SkColorSetARGB(36, 0, 0, 0);
+const SkColor kFocusedMenuButtonBorderColor = SkColorSetARGB(72, 0, 0, 0);
+const SkColor kHoverMenuButtonBorderColor = SkColorSetARGB(72, 0, 0, 0);
 const SkColor kMenuSeparatorColor = SkColorSetRGB(0xE9, 0xE9, 0xE9);
 const SkColor kEnabledMenuItemForegroundColor = SK_ColorBLACK;
 const SkColor kDisabledMenuItemForegroundColor = SkColorSetRGB(161, 161, 146);
+const SkColor kHoverMenuItemBackgroundColor =
+    SkColorSetARGB(204, 255, 255, 255);
 
 }  // namespace
 
@@ -39,6 +44,15 @@ bool CommonThemeGetSystemColor(NativeTheme::ColorId color_id, SkColor* color) {
     case NativeTheme::kColorId_MenuBorderColor:
       *color = kMenuBorderColor;
       break;
+    case NativeTheme::kColorId_EnabledMenuButtonBorderColor:
+      *color = kEnabledMenuButtonBorderColor;
+      break;
+    case NativeTheme::kColorId_FocusedMenuButtonBorderColor:
+      *color = kFocusedMenuButtonBorderColor;
+      break;
+    case NativeTheme::kColorId_HoverMenuButtonBorderColor:
+      *color = kHoverMenuButtonBorderColor;
+      break;
     case NativeTheme::kColorId_MenuSeparatorColor:
       *color = kMenuSeparatorColor;
       break;
@@ -47,6 +61,9 @@ bool CommonThemeGetSystemColor(NativeTheme::ColorId color_id, SkColor* color) {
       break;
     case NativeTheme::kColorId_FocusedMenuItemBackgroundColor:
       *color = kMenuHighlightBackgroundColor;
+      break;
+    case NativeTheme::kColorId_HoverMenuItemBackgroundColor:
+      *color = kHoverMenuItemBackgroundColor;
       break;
     case NativeTheme::kColorId_EnabledMenuItemForegroundColor:
       *color = kEnabledMenuItemForegroundColor;

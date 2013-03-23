@@ -27,7 +27,7 @@ namespace views {
 void MenuConfig::Init(const NativeTheme* theme) {
 #if defined(USE_AURA)
   if (theme == ui::NativeThemeAura::instance()) {
-    InitAura();
+    InitAura(theme);
     return;
   }
 #endif

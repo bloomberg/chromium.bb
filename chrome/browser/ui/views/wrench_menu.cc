@@ -71,15 +71,9 @@ using views::View;
 namespace {
 
 // Colors used for buttons.
-const SkColor kHotBorderColor = SkColorSetARGB(72, 0, 0, 0);
-const SkColor kBorderColor = SkColorSetARGB(36, 0, 0, 0);
-const SkColor kPushedBorderColor = SkColorSetARGB(72, 0, 0, 0);
-const SkColor kHotBackgroundColor = SkColorSetARGB(204, 255, 255, 255);
-const SkColor kBackgroundColor = SkColorSetARGB(102, 255, 255, 255);
-const SkColor kPushedBackgroundColor = SkColorSetARGB(13, 0, 0, 0);
-const SkColor kTouchBackgroundColor = SkColorSetARGB(247, 255, 255, 255);
-const SkColor kHotTouchBackgroundColor = SkColorSetARGB(247, 242, 242, 242);
-const SkColor kPushedTouchBackgroundColor = SkColorSetARGB(247, 235, 235, 235);
+const SkColor kEnabledTouchBackgroundColor = SkColorSetARGB(247, 255, 255, 255);
+const SkColor kHoverTouchBackgroundColor = SkColorSetARGB(247, 242, 242, 242);
+const SkColor kFocusedTouchBackgroundColor = SkColorSetARGB(247, 235, 235, 235);
 
 const SkColor kTouchButtonText = 0xff5a5a5a;
 
@@ -187,58 +181,58 @@ class MenuButtonBackground : public views::Background {
       if (type_ != RIGHT_BUTTON) {
         border = 1;
         canvas->FillRect(gfx::Rect(0, 0, border, h),
-                         border_color(CustomButton::STATE_NORMAL));
+                         BorderColor(view, CustomButton::STATE_NORMAL));
       }
       canvas->FillRect(gfx::Rect(border, 0, w - border, h),
                        touch_background_color(state));
       return;
     }
 #endif
+    const SkColor background = BackgroundColor(view, state);
+    const SkColor border = BorderColor(view, state);
     switch (TypeAdjustedForRTL()) {
       case LEFT_BUTTON:
-        canvas->FillRect(gfx::Rect(1, 1, w, h - 2), background_color(state));
-        canvas->FillRect(gfx::Rect(2, 0, w, 1), border_color(state));
-        canvas->FillRect(gfx::Rect(1, 1, 1, 1), border_color(state));
-        canvas->FillRect(gfx::Rect(0, 2, 1, h - 4), border_color(state));
-        canvas->FillRect(gfx::Rect(1, h - 2, 1, 1), border_color(state));
-        canvas->FillRect(gfx::Rect(2, h - 1, w, 1), border_color(state));
+        canvas->FillRect(gfx::Rect(1, 1, w, h - 2), background);
+        canvas->FillRect(gfx::Rect(2, 0, w, 1), border);
+        canvas->FillRect(gfx::Rect(1, 1, 1, 1), border);
+        canvas->FillRect(gfx::Rect(0, 2, 1, h - 4), border);
+        canvas->FillRect(gfx::Rect(1, h - 2, 1, 1), border);
+        canvas->FillRect(gfx::Rect(2, h - 1, w, 1), border);
         break;
 
       case CENTER_BUTTON: {
-        canvas->FillRect(gfx::Rect(1, 1, w - 2, h - 2),
-                         background_color(state));
+        canvas->FillRect(gfx::Rect(1, 1, w - 2, h - 2), background);
         SkColor left_color = state != CustomButton::STATE_NORMAL ?
-            border_color(state) : border_color(left_button_->state());
+            border : BorderColor(view, left_button_->state());
         canvas->FillRect(gfx::Rect(0, 0, 1, h), left_color);
-        canvas->FillRect(gfx::Rect(1, 0, w - 2, 1), border_color(state));
-        canvas->FillRect(gfx::Rect(1, h - 1, w - 2, 1), border_color(state));
+        canvas->FillRect(gfx::Rect(1, 0, w - 2, 1), border);
+        canvas->FillRect(gfx::Rect(1, h - 1, w - 2, 1),
+                         border);
         SkColor right_color = state != CustomButton::STATE_NORMAL ?
-            border_color(state) : border_color(right_button_->state());
+            border : BorderColor(view, right_button_->state());
         canvas->FillRect(gfx::Rect(w - 1, 0, 1, h), right_color);
         break;
       }
 
       case RIGHT_BUTTON:
-        canvas->FillRect(gfx::Rect(0, 1, w - 1, h - 2),
-                         background_color(state));
-        canvas->FillRect(gfx::Rect(0, 0, w - 2, 1), border_color(state));
-        canvas->FillRect(gfx::Rect(w - 2, 1, 1, 1), border_color(state));
-        canvas->FillRect(gfx::Rect(w - 1, 2, 1, h - 4), border_color(state));
-        canvas->FillRect(gfx::Rect(w - 2, h - 2, 1, 1), border_color(state));
-        canvas->FillRect(gfx::Rect(0, h - 1, w - 2, 1), border_color(state));
+        canvas->FillRect(gfx::Rect(0, 1, w - 1, h - 2), background);
+        canvas->FillRect(gfx::Rect(0, 0, w - 2, 1), border);
+        canvas->FillRect(gfx::Rect(w - 2, 1, 1, 1), border);
+        canvas->FillRect(gfx::Rect(w - 1, 2, 1, h - 4), border);
+        canvas->FillRect(gfx::Rect(w - 2, h - 2, 1, 1), border);
+        canvas->FillRect(gfx::Rect(0, h - 1, w - 2, 1), border);
         break;
 
       case SINGLE_BUTTON:
-        canvas->FillRect(gfx::Rect(1, 1, w - 2, h - 2),
-                         background_color(state));
-        canvas->FillRect(gfx::Rect(2, 0, w - 4, 1), border_color(state));
-        canvas->FillRect(gfx::Rect(1, 1, 1, 1), border_color(state));
-        canvas->FillRect(gfx::Rect(0, 2, 1, h - 4), border_color(state));
-        canvas->FillRect(gfx::Rect(1, h - 2, 1, 1), border_color(state));
-        canvas->FillRect(gfx::Rect(2, h - 1, w - 4, 1), border_color(state));
-        canvas->FillRect(gfx::Rect(w - 2, 1, 1, 1), border_color(state));
-        canvas->FillRect(gfx::Rect(w - 1, 2, 1, h - 4), border_color(state));
-        canvas->FillRect(gfx::Rect(w - 2, h - 2, 1, 1), border_color(state));
+        canvas->FillRect(gfx::Rect(1, 1, w - 2, h - 2), background);
+        canvas->FillRect(gfx::Rect(2, 0, w - 4, 1), border);
+        canvas->FillRect(gfx::Rect(1, 1, 1, 1), border);
+        canvas->FillRect(gfx::Rect(0, 2, 1, h - 4), border);
+        canvas->FillRect(gfx::Rect(1, h - 2, 1, 1), border);
+        canvas->FillRect(gfx::Rect(2, h - 1, w - 4, 1), border);
+        canvas->FillRect(gfx::Rect(w - 2, 1, 1, 1), border);
+        canvas->FillRect(gfx::Rect(w - 1, 2, 1, h - 4), border);
+        canvas->FillRect(gfx::Rect(w - 2, h - 2, 1, 1), border);
         break;
 
       default:
@@ -248,27 +242,41 @@ class MenuButtonBackground : public views::Background {
   }
 
  private:
-  static SkColor border_color(CustomButton::ButtonState state) {
+  static SkColor BorderColor(View* view, CustomButton::ButtonState state) {
+    ui::NativeTheme* theme = view->GetNativeTheme();
     switch (state) {
-      case CustomButton::STATE_HOVERED: return kHotBorderColor;
-      case CustomButton::STATE_PRESSED: return kPushedBorderColor;
-      default:                          return kBorderColor;
+      case CustomButton::STATE_HOVERED:
+        return theme->GetSystemColor(
+            ui::NativeTheme::kColorId_HoverMenuButtonBorderColor);
+      case CustomButton::STATE_PRESSED:
+        return theme->GetSystemColor(
+            ui::NativeTheme::kColorId_FocusedMenuButtonBorderColor);
+      default:
+        return theme->GetSystemColor(
+            ui::NativeTheme::kColorId_EnabledMenuButtonBorderColor);
     }
   }
 
-  static SkColor background_color(CustomButton::ButtonState state) {
+  static SkColor BackgroundColor(View* view, CustomButton::ButtonState state) {
+    ui::NativeTheme* theme = view->GetNativeTheme();
     switch (state) {
-      case CustomButton::STATE_HOVERED: return kHotBackgroundColor;
-      case CustomButton::STATE_PRESSED: return kPushedBackgroundColor;
-      default:                          return kBackgroundColor;
+      case CustomButton::STATE_HOVERED:
+        return theme->GetSystemColor(
+            ui::NativeTheme::kColorId_HoverMenuItemBackgroundColor);
+      case CustomButton::STATE_PRESSED:
+        return theme->GetSystemColor(
+            ui::NativeTheme::kColorId_FocusedMenuItemBackgroundColor);
+      default:
+        return theme->GetSystemColor(
+            ui::NativeTheme::kColorId_MenuBackgroundColor);
     }
   }
 
   static SkColor touch_background_color(CustomButton::ButtonState state) {
     switch (state) {
-      case CustomButton::STATE_HOVERED: return kHotTouchBackgroundColor;
-      case CustomButton::STATE_PRESSED: return kPushedTouchBackgroundColor;
-      default:                          return kTouchBackgroundColor;
+      case CustomButton::STATE_HOVERED: return kHoverTouchBackgroundColor;
+      case CustomButton::STATE_PRESSED: return kFocusedTouchBackgroundColor;
+      default:                          return kEnabledTouchBackgroundColor;
     }
   }
 
@@ -410,6 +418,7 @@ class WrenchMenu::CutCopyPasteView : public WrenchMenuView {
  public:
   CutCopyPasteView(WrenchMenu* menu,
                    MenuModel* menu_model,
+                   const ui::NativeTheme* native_theme,
                    int cut_index,
                    int copy_index,
                    int paste_index)
@@ -434,7 +443,7 @@ class WrenchMenu::CutCopyPasteView : public WrenchMenuView {
       copy->SetTextColor(views::Button::STATE_NORMAL, kTouchButtonText);
       paste->SetTextColor(views::Button::STATE_NORMAL, kTouchButtonText);
     } else {
-      SkColor text_color = GetNativeTheme()->GetSystemColor(
+      SkColor text_color = native_theme->GetSystemColor(
           ui::NativeTheme::kColorId_EnabledMenuItemForegroundColor);
       cut->SetTextColor(views::Button::STATE_NORMAL, text_color);
       copy->SetTextColor(views::Button::STATE_NORMAL, text_color);
@@ -488,6 +497,7 @@ class WrenchMenu::ZoomView : public WrenchMenuView {
  public:
   ZoomView(WrenchMenu* menu,
            MenuModel* menu_model,
+           const ui::NativeTheme* native_theme,
            int decrement_index,
            int increment_index,
            int fullscreen_index)
@@ -545,14 +555,14 @@ class WrenchMenu::ZoomView : public WrenchMenuView {
       increment_button_->SetTextColor(views::Button::STATE_NORMAL,
                                       kTouchButtonText);
     } else {
-      SkColor enabled_text_color = GetNativeTheme()->GetSystemColor(
+      SkColor enabled_text_color = native_theme->GetSystemColor(
           ui::NativeTheme::kColorId_EnabledMenuItemForegroundColor);
       zoom_label_->SetEnabledColor(enabled_text_color);
       decrement_button_->SetTextColor(views::Button::STATE_NORMAL,
                                       enabled_text_color);
       increment_button_->SetTextColor(views::Button::STATE_NORMAL,
                                       enabled_text_color);
-      SkColor disabled_text_color = GetNativeTheme()->GetSystemColor(
+      SkColor disabled_text_color = native_theme->GetSystemColor(
           ui::NativeTheme::kColorId_DisabledMenuItemForegroundColor);
       decrement_button_->SetTextColor(views::Button::STATE_DISABLED,
                                       disabled_text_color);
@@ -820,11 +830,15 @@ bool WrenchMenu::IsShowing() {
   return menu_runner_.get() && menu_runner_->IsRunning();
 }
 
-const views::MenuConfig& WrenchMenu::GetMenuConfig() const {
+const ui::NativeTheme* WrenchMenu::GetNativeTheme() const {
   views::Widget* browser_widget = views::Widget::GetWidgetForNativeView(
       browser_->window()->GetNativeWindow());
   DCHECK(browser_widget);
-  return MenuConfig::instance(browser_widget->GetNativeTheme());
+  return browser_widget->GetNativeTheme();
+}
+
+const views::MenuConfig& WrenchMenu::GetMenuConfig() const {
+  return MenuConfig::instance(GetNativeTheme());
 }
 
 string16 WrenchMenu::GetTooltipText(int id,
@@ -1048,6 +1062,8 @@ void WrenchMenu::PopulateMenu(MenuItemView* parent,
     if (model->GetTypeAt(i) == MenuModel::TYPE_SUBMENU)
       PopulateMenu(item, model->GetSubmenuModelAt(i), next_id);
 
+    const ui::NativeTheme* native_theme = GetNativeTheme();
+
     switch (model->GetCommandIdAt(i)) {
       case IDC_CUT:
         DCHECK_EQ(MenuModel::TYPE_COMMAND, model->GetTypeAt(i));
@@ -1055,7 +1071,8 @@ void WrenchMenu::PopulateMenu(MenuItemView* parent,
         DCHECK_EQ(IDC_COPY, model->GetCommandIdAt(i + 1));
         DCHECK_EQ(IDC_PASTE, model->GetCommandIdAt(i + 2));
         item->SetTitle(l10n_util::GetStringUTF16(IDS_EDIT2));
-        item->AddChildView(new CutCopyPasteView(this, model, i, i + 1, i + 2));
+        item->AddChildView(new CutCopyPasteView(this, model, native_theme,
+                                                i, i + 1, i + 2));
         i += 2;
         break;
 
@@ -1064,7 +1081,8 @@ void WrenchMenu::PopulateMenu(MenuItemView* parent,
         DCHECK_EQ(IDC_ZOOM_PLUS, model->GetCommandIdAt(i + 1));
         DCHECK_EQ(IDC_FULLSCREEN, model->GetCommandIdAt(i + 2));
         item->SetTitle(l10n_util::GetStringUTF16(IDS_ZOOM_MENU2));
-        item->AddChildView(new ZoomView(this, model, i, i + 1, i + 2));
+        item->AddChildView(new ZoomView(this, model, native_theme,
+                                        i, i + 1, i + 2));
         i += 2;
         break;
 

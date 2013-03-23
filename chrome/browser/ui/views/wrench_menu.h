@@ -102,6 +102,8 @@ class WrenchMenu : public views::MenuDelegate,
   typedef std::pair<ui::MenuModel*,int> Entry;
   typedef std::map<int,Entry> IDToEntry;
 
+  const ui::NativeTheme* GetNativeTheme() const;
+
   // Populates |parent| with all the child menus in |model|. Recursively invokes
   // |PopulateMenu| for any submenu. |next_id| is incremented for every menu
   // that is created.

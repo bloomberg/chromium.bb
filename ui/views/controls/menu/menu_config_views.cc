@@ -24,12 +24,11 @@ static const int kMenuCornerRadiusForAura = 2;
 
 #if !defined(OS_WIN)
 void MenuConfig::Init(const ui::NativeTheme* theme) {
-  InitAura();
+  InitAura(theme);
 }
 #endif
 
-void MenuConfig::InitAura() {
-  ui::NativeTheme* theme = ui::NativeThemeAura::instance();
+void MenuConfig::InitAura(const ui::NativeTheme* theme) {
   text_color = theme->GetSystemColor(
       ui::NativeTheme::kColorId_EnabledMenuItemForegroundColor);
   menu_horizontal_border_size = 0;
@@ -64,7 +63,8 @@ void MenuConfig::InitAura() {
 const MenuConfig& MenuConfig::instance(const ui::NativeTheme* theme) {
   static MenuConfig* views_instance = NULL;
   if (!views_instance)
-    views_instance = new MenuConfig(ui::NativeTheme::instance());
+    views_instance = new MenuConfig(theme ?
+        theme : ui::NativeTheme::instance());
   return *views_instance;
 }
 #endif

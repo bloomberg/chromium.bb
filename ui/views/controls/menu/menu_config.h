@@ -137,7 +137,7 @@ struct VIEWS_EXPORT MenuConfig {
 
   // TODO: temporary until we standardize.
 #if defined(USE_AURA)
-  void InitAura();
+  void InitAura(const ui::NativeTheme* theme);
 #endif
 
   // Adjust some values for a new UI style.
