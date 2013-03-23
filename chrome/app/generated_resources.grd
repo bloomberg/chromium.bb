@@ -1289,6 +1289,9 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
         <message name="IDS_FEEDBACK" desc="The text label of the Report Bug menu item">
           &amp;Report an issue...
         </message>
+        <message name="IDS_FEEDBACK_ALT" desc="The alternate text label of the Report Bug menu item, for a field trial">
+          &amp;Send Feedback
+        </message>
         <message name="IDS_DEV_TOOLS" desc="The text label of the Developer Tools menu item">
           &amp;Developer tools
         </message>
@@ -1311,6 +1314,9 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
         </message>
         <message name="IDS_FEEDBACK" desc="In Title Case: The text label of the Report Bug menu item">
           &amp;Report an Issue...
+        </message>
+        <message name="IDS_FEEDBACK_ALT" desc="The alternate text label of the Report Bug menu item, for a field trial">
+          &amp;Send Feedback
         </message>
         <message name="IDS_DEV_TOOLS" desc="In Title Case: The text label of the Developer Tools menu item">
           &amp;Developer Tools
@@ -8446,6 +8452,9 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       </message>
       <message name="IDS_REPORT_AN_ISSUE" desc="Text of the button which allows the user to report an issue with Chrome.">
         Report an issue
+      </message>
+      <message name="IDS_SEND_FEEDBACK" desc="Text of the button which allows the user to report an issue with chrome, alternate text for a field trial">
+        Send Feedback
       </message>
 
       <!-- Upgrade bubble messages -->

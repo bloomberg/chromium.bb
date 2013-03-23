@@ -1307,6 +1307,8 @@
         'browser/ui/search_engines/template_url_fetcher_ui_callbacks.h',
         'browser/ui/search_engines/template_url_table_model.cc',
         'browser/ui/search_engines/template_url_table_model.h',
+        'browser/ui/send_feedback_experiment.cc',
+        'browser/ui/send_feedback_experiment.h',
         'browser/ui/simple_message_box.h',
         'browser/ui/singleton_tabs.cc',
         'browser/ui/singleton_tabs.h',
