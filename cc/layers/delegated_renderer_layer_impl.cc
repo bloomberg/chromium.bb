@@ -11,6 +11,7 @@
 #include "cc/layers/render_pass_sink.h"
 #include "cc/output/delegated_frame_data.h"
 #include "cc/quads/render_pass_draw_quad.h"
+#include "cc/quads/solid_color_draw_quad.h"
 #include "cc/trees/layer_tree_impl.h"
 
 namespace cc {
@@ -219,6 +220,8 @@ void DelegatedRendererLayerImpl::AppendContributingRenderPasses(
 void DelegatedRendererLayerImpl::AppendQuads(
     QuadSink* quad_sink,
     AppendQuadsData* append_quads_data) {
+  AppendRainbowDebugBorder(quad_sink, append_quads_data);
+
   if (render_passes_in_draw_order_.empty())
     return;
 
@@ -251,6 +254,78 @@ void DelegatedRendererLayerImpl::AppendQuads(
         render_passes_in_draw_order_[render_pass_index];
     AppendRenderPassQuads(
         quad_sink, append_quads_data, delegated_render_pass, frame_size);
+  }
+}
+
+void DelegatedRendererLayerImpl::AppendRainbowDebugBorder(
+    QuadSink* quad_sink,
+    AppendQuadsData* append_quads_data) {
+  if (!ShowDebugBorders())
+    return;
+
+  SharedQuadState* shared_quad_state =
+      quad_sink->UseSharedQuadState(CreateSharedQuadState());
+
+  SkColor color;
+  float border_width;
+  GetDebugBorderProperties(&color, &border_width);
+
+  SkColor colors[] = {
+    0x80ff0000,  // Red.
+    0x80ffa500,  // Orange.
+    0x80ffff00,  // Yellow.
+    0x80008000,  // Green.
+    0x800000ff,  // Blue.
+    0x80ee82ee,  // Violet.
+  };
+  const int kNumColors = arraysize(colors);
+
+  const int kStripeWidth = 300;
+  const int kStripeHeight = 300;
+
+  for (size_t i = 0; ; ++i) {
+    // For horizontal lines.
+    int x =  kStripeWidth * i;
+    int width = std::min(kStripeWidth, content_bounds().width() - x - 1);
+
+    // For vertical lines.
+    int y = kStripeHeight * i;
+    int height = std::min(kStripeHeight, content_bounds().height() - y - 1);
+
+    gfx::Rect top(x, 0, width, border_width);
+    gfx::Rect bottom(x,
+                     content_bounds().height() - border_width,
+                     width,
+                     border_width);
+    gfx::Rect left(0, y, border_width, height);
+    gfx::Rect right(content_bounds().width() - border_width,
+                    y,
+                    border_width,
+                    height);
+
+    if (top.IsEmpty() && left.IsEmpty())
+      break;
+
+    if (!top.IsEmpty()) {
+      scoped_ptr<SolidColorDrawQuad> top_quad = SolidColorDrawQuad::Create();
+      top_quad->SetNew(shared_quad_state, top, colors[i % kNumColors]);
+      quad_sink->Append(top_quad.PassAs<DrawQuad>(), append_quads_data);
+
+      scoped_ptr<SolidColorDrawQuad> bottom_quad = SolidColorDrawQuad::Create();
+      bottom_quad->SetNew(
+          shared_quad_state, bottom, colors[kNumColors - 1 - (i % kNumColors)]);
+      quad_sink->Append(bottom_quad.PassAs<DrawQuad>(), append_quads_data);
+    }
+    if (!left.IsEmpty()) {
+      scoped_ptr<SolidColorDrawQuad> left_quad = SolidColorDrawQuad::Create();
+      left_quad->SetNew(
+          shared_quad_state, left, colors[kNumColors - 1 - (i % kNumColors)]);
+      quad_sink->Append(left_quad.PassAs<DrawQuad>(), append_quads_data);
+
+      scoped_ptr<SolidColorDrawQuad> right_quad = SolidColorDrawQuad::Create();
+      right_quad->SetNew(shared_quad_state, right, colors[i % kNumColors]);
+      quad_sink->Append(right_quad.PassAs<DrawQuad>(), append_quads_data);
+    }
   }
 }
 

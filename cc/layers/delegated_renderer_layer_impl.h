@@ -57,6 +57,9 @@ class CC_EXPORT DelegatedRendererLayerImpl : public LayerImpl {
   void CreateChildIdIfNeeded();
   void ClearChildId();
 
+  void AppendRainbowDebugBorder(QuadSink* quad_sink,
+                                AppendQuadsData* append_quads_data);
+
   void SetRenderPasses(
       ScopedPtrVector<RenderPass>* render_passes_in_draw_order);
   void ClearRenderPasses();
