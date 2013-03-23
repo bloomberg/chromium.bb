@@ -444,8 +444,7 @@ TEST_F(WalletItemsTest, CreateLegalDocument) {
 
 TEST_F(WalletItemsTest, LegalDocumentGetUrl) {
   WalletItems::LegalDocument legal_doc("doc_id", "display_name");
-  EXPECT_EQ("https://wallet.google.com/customer/gadget/legaldocument.html?"
-            "docId=doc_id",
+  EXPECT_EQ("https://wallet.google.com/legaldocument?docId=doc_id",
             legal_doc.GetUrl().spec());
 }
 

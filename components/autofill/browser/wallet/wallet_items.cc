@@ -19,7 +19,7 @@ namespace wallet {
 namespace {
 
 const char kLegalDocumentUrl[] =
-    "https://wallet.google.com/customer/gadget/legaldocument.html?docId=";
+    "https://wallet.google.com/legaldocument?docId=";
 
 WalletItems::MaskedInstrument::Type
     TypeFromString(const std::string& type_string) {
