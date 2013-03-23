@@ -124,3 +124,5 @@ Later modifications (see chromium.patch):
   CLAMPED_FLOAT_TO_UBYTE (src/mesa/main/macros.h) in chromium version
   of mesa.  They produce slightly different results than the
   un-optimized versions that are used when DEBUG is defined.
+
+- Cleaned up redundant comparison in nvvertparse.c.

@@ -573,8 +573,7 @@ Parse_MaskedDstReg(struct parse_state *parseState, struct prog_dst_register *dst
          RETURN_ERROR;
       dstReg->Index = idx;
    }
-   else if (parseState->isStateProgram && token[0] == 'c' &&
-            parseState->isStateProgram) {
+   else if (parseState->isStateProgram && token[0] == 'c') {
       /* absolute program parameter register */
       /* Only valid for vertex state programs */
       dstReg->File = PROGRAM_ENV_PARAM;
