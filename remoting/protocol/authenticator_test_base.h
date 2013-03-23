@@ -44,6 +44,7 @@ class AuthenticatorTestBase : public testing::Test {
                                        Authenticator* receiver);
   virtual void SetUp() OVERRIDE;
   void RunAuthExchange();
+  void RunHostInitiatedAuthExchange();
   void RunChannelAuth(bool expected_fail);
 
   void OnHostConnected(net::Error error,
@@ -54,6 +55,7 @@ class AuthenticatorTestBase : public testing::Test {
   MessageLoop message_loop_;
 
   scoped_refptr<RsaKeyPair> key_pair_;
+  std::string host_public_key_;
   std::string host_cert_;
   scoped_ptr<Authenticator> host_;
   scoped_ptr<Authenticator> client_;
