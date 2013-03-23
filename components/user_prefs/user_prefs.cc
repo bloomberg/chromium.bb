@@ -14,8 +14,10 @@ namespace components {
 namespace {
 
 void* UserDataKey() {
-  // We just need a unique constant. Use the address of this static member.
-  return reinterpret_cast<void*>(&UserPrefs::Get);
+  // We just need a unique constant. Use the address of a static that
+  // COMDAT folding won't touch in an optimizing linker.
+  static int data_key = 0;
+  return reinterpret_cast<void*>(&data_key);
 }
 
 }  // namespace
