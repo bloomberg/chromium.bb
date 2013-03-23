@@ -252,7 +252,7 @@ void DownloadShelfView::Layout() {
                                 max_download_x + kDownloadPadding;
   // Align vertically with show_all_view_.
   arrow_image_->SetBounds(next_x,
-                          CenterPosition(show_all_size.height(), height()),
+                          CenterPosition(image_size.height(), height()),
                           image_size.width(), image_size.height());
   next_x += image_size.width() + kDownloadsTitlePadding;
   show_all_view_->SetBounds(next_x,
