@@ -246,6 +246,11 @@ BrowserPpapiHost*
   return NULL;
 }
 
+bool ContentBrowserClient::SupportsBrowserPlugin(
+    BrowserContext* browser_context, const GURL& site_url) {
+  return false;
+}
+
 bool ContentBrowserClient::AllowPepperSocketAPI(
     BrowserContext* browser_context,
     const GURL& url,

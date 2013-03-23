@@ -44,6 +44,8 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   virtual void ResourceDispatcherHostCreated() OVERRIDE;
   virtual AccessTokenStore* CreateAccessTokenStore() OVERRIDE;
   virtual std::string GetDefaultDownloadName() OVERRIDE;
+  virtual bool SupportsBrowserPlugin(content::BrowserContext* browser_context,
+                                     const GURL& url) OVERRIDE;
   virtual WebContentsViewDelegate* GetWebContentsViewDelegate(
       WebContents* web_contents) OVERRIDE;
 

@@ -10,6 +10,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/common/content_switches.h"
 #include "content/shell/geolocation/shell_access_token_store.h"
 #include "content/shell/shell.h"
 #include "content/shell/shell_browser_context.h"
@@ -158,6 +159,12 @@ void ShellContentBrowserClient::ResourceDispatcherHostCreated() {
 
 std::string ShellContentBrowserClient::GetDefaultDownloadName() {
   return "download";
+}
+
+bool ShellContentBrowserClient::SupportsBrowserPlugin(
+    content::BrowserContext* browser_context, const GURL& url) {
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableBrowserPluginForAllViewTypes);
 }
 
 WebContentsViewDelegate* ShellContentBrowserClient::GetWebContentsViewDelegate(

@@ -478,6 +478,11 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual content::BrowserPpapiHost* GetExternalBrowserPpapiHost(
       int plugin_child_id);
 
+  // Returns true if the given browser_context and site_url support hosting
+  // BrowserPlugins.
+  virtual bool SupportsBrowserPlugin(BrowserContext* browser_context,
+                                     const GURL& site_url);
+
   // Returns true if renderer processes can use Pepper TCP/UDP sockets from
   // the given origin and connection type.
   virtual bool AllowPepperSocketAPI(BrowserContext* browser_context,

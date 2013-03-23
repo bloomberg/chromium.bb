@@ -368,6 +368,7 @@ void RenderProcessHost::SetMaxRendererProcessCount(size_t count) {
 RenderProcessHostImpl::RenderProcessHostImpl(
     BrowserContext* browser_context,
     StoragePartitionImpl* storage_partition_impl,
+    bool supports_browser_plugin,
     bool is_guest)
         : fast_shutdown_started_(false),
           deleting_soon_(false),
@@ -386,6 +387,7 @@ RenderProcessHostImpl::RenderProcessHostImpl(
 #if defined(OS_ANDROID)
           dummy_shutdown_event_(false, false),
 #endif
+          supports_browser_plugin_(supports_browser_plugin),
           is_guest_(is_guest) {
   widget_helper_ = new RenderWidgetHelper();
 
@@ -539,11 +541,11 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   MediaInternals* media_internals = MediaInternals::GetInstance();;
   // Add BrowserPluginMessageFilter to ensure it gets the first stab at messages
   // from guests.
-  // TODO(fsamuel): Call out to the ContentBrowserClient to decide whether or
-  // not to install the BrowserPluginMessageFilter.
-  scoped_refptr<BrowserPluginMessageFilter> bp_message_filter(
-      new BrowserPluginMessageFilter(GetID(), IsGuest()));
-  channel_->AddFilter(bp_message_filter);
+  if (supports_browser_plugin_) {
+    scoped_refptr<BrowserPluginMessageFilter> bp_message_filter(
+        new BrowserPluginMessageFilter(GetID(), IsGuest()));
+    channel_->AddFilter(bp_message_filter);
+  }
 
   scoped_refptr<RenderMessageFilter> render_message_filter(
       new RenderMessageFilter(

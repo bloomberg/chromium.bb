@@ -1971,6 +1971,26 @@ content::BrowserPpapiHost*
   return NULL;
 }
 
+bool ChromeContentBrowserClient::SupportsBrowserPlugin(
+    content::BrowserContext* browser_context, const GURL& site_url) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBrowserPluginForAllViewTypes))
+    return true;
+
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile)->extension_service();
+  if (!service)
+    return false;
+
+  const Extension* extension = service->extensions()->
+      GetExtensionOrAppByURL(ExtensionURLInfo(site_url));
+  if (!extension)
+    return false;
+
+  return extension->HasAPIPermission(APIPermission::kWebView);
+}
+
 bool ChromeContentBrowserClient::AllowPepperSocketAPI(
     content::BrowserContext* browser_context,
     const GURL& url,

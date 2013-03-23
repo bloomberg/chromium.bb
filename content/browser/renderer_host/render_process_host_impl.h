@@ -61,6 +61,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
  public:
   RenderProcessHostImpl(BrowserContext* browser_context,
                         StoragePartitionImpl* storage_partition_impl,
+                        bool supports_browser_plugin,
                         bool is_guest);
   virtual ~RenderProcessHostImpl();
 
@@ -311,6 +312,10 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // will never will be signaled.
   base::WaitableEvent dummy_shutdown_event_;
 #endif
+
+  // Indicates whether this is a RenderProcessHost that has permission to embed
+  // Browser Plugins.
+  bool supports_browser_plugin_;
 
   // Indicates whether this is a RenderProcessHost of a Browser Plugin guest
   // renderer.
