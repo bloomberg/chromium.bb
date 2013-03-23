@@ -123,12 +123,12 @@ class BookmarksFunction : public AsyncExtensionFunction,
   virtual void Loaded(BookmarkModel* model, bool ids_reassigned) OVERRIDE;
 };
 
-class BookmarksGetTreeFunction : public BookmarksFunction {
+class BookmarksGetFunction : public BookmarksFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bookmarks.get", BOOKMARKS_GET)
 
  protected:
-  virtual ~BookmarksGetTreeFunction() {}
+  virtual ~BookmarksGetFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
@@ -145,12 +145,23 @@ class BookmarksGetChildrenFunction : public BookmarksFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-class BookmarksGetFunction : public BookmarksFunction {
+class BookmarksGetRecentFunction : public BookmarksFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bookmarks.getRecent", BOOKMARKS_GETRECENT)
 
  protected:
-  virtual ~BookmarksGetFunction() {}
+  virtual ~BookmarksGetRecentFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
+};
+
+class BookmarksGetTreeFunction : public BookmarksFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("bookmarks.getTree", BOOKMARKS_GETTREE)
+
+ protected:
+  virtual ~BookmarksGetTreeFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
@@ -158,21 +169,10 @@ class BookmarksGetFunction : public BookmarksFunction {
 
 class BookmarksGetSubTreeFunction : public BookmarksFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("bookmarks.getTree", BOOKMARKS_GETTREE)
-
- protected:
-  virtual ~BookmarksGetSubTreeFunction() {}
-
-  // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
-};
-
-class BookmarksGetRecentFunction : public BookmarksFunction {
- public:
   DECLARE_EXTENSION_FUNCTION("bookmarks.getSubTree", BOOKMARKS_GETSUBTREE)
 
  protected:
-  virtual ~BookmarksGetRecentFunction() {}
+  virtual ~BookmarksGetSubTreeFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;

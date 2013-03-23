@@ -304,7 +304,7 @@ void BookmarksAPI::OnListenerAdded(const EventListenerInfo& details) {
   ExtensionSystem::Get(profile_)->event_router()->UnregisterObserver(this);
 }
 
-bool BookmarksGetTreeFunction::RunImpl() {
+bool BookmarksGetFunction::RunImpl() {
   scoped_ptr<bookmarks::Get::Params> params(
       bookmarks::Get::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -369,7 +369,7 @@ bool BookmarksGetChildrenFunction::RunImpl() {
   return true;
 }
 
-bool BookmarksGetFunction::RunImpl() {
+bool BookmarksGetRecentFunction::RunImpl() {
   scoped_ptr<bookmarks::GetRecent::Params> params(
       bookmarks::GetRecent::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -393,7 +393,7 @@ bool BookmarksGetFunction::RunImpl() {
   return true;
 }
 
-bool BookmarksGetSubTreeFunction::RunImpl() {
+bool BookmarksGetTreeFunction::RunImpl() {
   std::vector<linked_ptr<BookmarkTreeNode> > nodes;
   const BookmarkNode* node =
       BookmarkModelFactory::GetForProfile(profile())->root_node();
@@ -402,7 +402,7 @@ bool BookmarksGetSubTreeFunction::RunImpl() {
   return true;
 }
 
-bool BookmarksGetRecentFunction::RunImpl() {
+bool BookmarksGetSubTreeFunction::RunImpl() {
   scoped_ptr<bookmarks::GetSubTree::Params> params(
       bookmarks::GetSubTree::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -451,8 +451,8 @@ bool BookmarksSearchFunction::RunImpl() {
 
 // static
 bool BookmarksRemoveFunction::ExtractIds(const ListValue* args,
-                                        std::list<int64>* ids,
-                                        bool* invalid_id) {
+                                         std::list<int64>* ids,
+                                         bool* invalid_id) {
   std::string id_string;
   if (!args->GetString(0, &id_string))
     return false;
@@ -562,8 +562,8 @@ bool BookmarksCreateFunction::RunImpl() {
 
 // static
 bool BookmarksMoveFunction::ExtractIds(const ListValue* args,
-                                      std::list<int64>* ids,
-                                      bool* invalid_id) {
+                                       std::list<int64>* ids,
+                                       bool* invalid_id) {
   // For now, Move accepts ID parameters in the same way as an Update.
   return BookmarksUpdateFunction::ExtractIds(args, ids, invalid_id);
 }
@@ -636,8 +636,8 @@ bool BookmarksMoveFunction::RunImpl() {
 
 // static
 bool BookmarksUpdateFunction::ExtractIds(const ListValue* args,
-                                        std::list<int64>* ids,
-                                        bool* invalid_id) {
+                                         std::list<int64>* ids,
+                                         bool* invalid_id) {
   // For now, Update accepts ID parameters in the same way as an Remove.
   return BookmarksRemoveFunction::ExtractIds(args, ids, invalid_id);
 }
