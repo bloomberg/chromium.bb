@@ -104,6 +104,7 @@
         'base/cert_database_win.cc',
         'base/cert_status_flags.cc',
         'base/cert_status_flags.h',
+        'base/cert_trust_anchor_provider.h',
         'base/cert_verifier.cc',
         'base/cert_verifier.h',
         'base/cert_verify_proc.cc',

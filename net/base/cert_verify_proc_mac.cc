@@ -347,11 +347,17 @@ CertVerifyProcMac::CertVerifyProcMac() {}
 
 CertVerifyProcMac::~CertVerifyProcMac() {}
 
-int CertVerifyProcMac::VerifyInternal(X509Certificate* cert,
-                                      const std::string& hostname,
-                                      int flags,
-                                      CRLSet* crl_set,
-                                      CertVerifyResult* verify_result) {
+bool CertVerifyProcMac::SupportsAdditionalTrustAnchors() const {
+  return false;
+}
+
+int CertVerifyProcMac::VerifyInternal(
+    X509Certificate* cert,
+    const std::string& hostname,
+    int flags,
+    CRLSet* crl_set,
+    const CertificateList& additional_trust_anchors,
+    CertVerifyResult* verify_result) {
   ScopedCFTypeRef<CFArrayRef> trust_policies;
   OSStatus status = CreateTrustPolicies(hostname, flags, &trust_policies);
   if (status)

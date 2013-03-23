@@ -7,6 +7,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
@@ -17,11 +18,13 @@
 #include "net/base/cert_verify_result.h"
 #include "net/base/completion_callback.h"
 #include "net/base/expiring_cache.h"
+#include "net/base/hash_value.h"
 #include "net/base/net_export.h"
 #include "net/base/x509_cert_types.h"
 
 namespace net {
 
+class CertTrustAnchorProvider;
 class CertVerifierJob;
 class CertVerifierRequest;
 class CertVerifierWorker;
@@ -39,6 +42,16 @@ class NET_EXPORT_PRIVATE MultiThreadedCertVerifier
   // When the verifier is destroyed, all certificate verifications requests are
   // canceled, and their completion callbacks will not be called.
   virtual ~MultiThreadedCertVerifier();
+
+  // Configures a source of additional certificates that should be treated as
+  // trust anchors during verification, provided that the underlying
+  // CertVerifyProc supports additional trust beyond the default implementation.
+  // The CertTrustAnchorProvider will only be accessed on the same
+  // thread that Verify() is called on; that is, it will not be
+  // accessed from worker threads.
+  // It must outlive the MultiThreadedCertVerifier.
+  void SetCertTrustAnchorProvider(
+      CertTrustAnchorProvider* trust_anchor_provider);
 
   // CertVerifier implementation
   virtual int Verify(X509Certificate* cert,
@@ -63,35 +76,23 @@ class NET_EXPORT_PRIVATE MultiThreadedCertVerifier
   FRIEND_TEST_ALL_PREFIXES(MultiThreadedCertVerifierTest, CancelRequest);
   FRIEND_TEST_ALL_PREFIXES(MultiThreadedCertVerifierTest,
                            RequestParamsComparators);
+  FRIEND_TEST_ALL_PREFIXES(MultiThreadedCertVerifierTest,
+                           CertTrustAnchorProvider);
 
   // Input parameters of a certificate verification request.
   struct NET_EXPORT_PRIVATE RequestParams {
     RequestParams(const SHA1HashValue& cert_fingerprint_arg,
                   const SHA1HashValue& ca_fingerprint_arg,
                   const std::string& hostname_arg,
-                  int flags_arg);
+                  int flags_arg,
+                  const CertificateList& additional_trust_anchors);
+    ~RequestParams();
 
-    bool operator<(const RequestParams& other) const {
-      // |flags| is compared before |cert_fingerprint|, |ca_fingerprint|, and
-      // |hostname| under assumption that integer comparisons are faster than
-      // memory and string comparisons.
-      if (flags != other.flags)
-        return flags < other.flags;
-      int rv = memcmp(cert_fingerprint.data, other.cert_fingerprint.data,
-                      sizeof(cert_fingerprint.data));
-      if (rv != 0)
-        return rv < 0;
-      rv = memcmp(ca_fingerprint.data, other.ca_fingerprint.data,
-                  sizeof(ca_fingerprint.data));
-      if (rv != 0)
-        return rv < 0;
-      return hostname < other.hostname;
-    }
+    bool operator<(const RequestParams& other) const;
 
-    SHA1HashValue cert_fingerprint;
-    SHA1HashValue ca_fingerprint;
     std::string hostname;
     int flags;
+    std::vector<SHA1HashValue> hash_values;
   };
 
   // CachedResult contains the result of a certificate verification.
@@ -131,6 +132,7 @@ class NET_EXPORT_PRIVATE MultiThreadedCertVerifier
   void HandleResult(X509Certificate* cert,
                     const std::string& hostname,
                     int flags,
+                    const CertificateList& additional_trust_anchors,
                     int error,
                     const CertVerifyResult& verify_result);
 
@@ -156,6 +158,8 @@ class NET_EXPORT_PRIVATE MultiThreadedCertVerifier
   uint64 inflight_joins_;
 
   scoped_refptr<CertVerifyProc> verify_proc_;
+
+  CertTrustAnchorProvider* trust_anchor_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(MultiThreadedCertVerifier);
 };

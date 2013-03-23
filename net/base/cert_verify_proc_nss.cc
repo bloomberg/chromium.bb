@@ -39,6 +39,11 @@
 #define SEC_ERROR_CERT_SIGNATURE_ALGORITHM_DISABLED -8016
 #endif
 
+#if NSS_VERSION_NUM < 31402
+// Added in NSS 3.14.2.
+#define cert_pi_useOnlyTrustAnchors static_cast<CERTValParamInType>(14)
+#endif
+
 namespace net {
 
 namespace {
@@ -48,6 +53,11 @@ typedef scoped_ptr_malloc<
     crypto::NSSDestroyer<CERTCertificatePolicies,
                          CERT_DestroyCertificatePoliciesExtension> >
     ScopedCERTCertificatePolicies;
+
+typedef scoped_ptr_malloc<
+    CERTCertList,
+    crypto::NSSDestroyer<CERTCertList, CERT_DestroyCertList> >
+    ScopedCERTCertList;
 
 // ScopedCERTValOutParam manages destruction of values in the CERTValOutParam
 // array that cvout points to.  cvout must be initialized as passed to
@@ -313,12 +323,15 @@ SECOidTag GetFirstCertPolicy(CERTCertificate* cert_handle);
 // Verification results are stored in an array of CERTValOutParam.
 // If policy_oids is not NULL and num_policy_oids is positive, policies
 // are also checked.
+// additional_trust_anchors is an optional list of certificates that can be
+// trusted as anchors when building a certificate chain.
 // Caller must initialize cvout before calling this function.
 SECStatus PKIXVerifyCert(CERTCertificate* cert_handle,
                          bool check_revocation,
                          bool cert_io_enabled,
                          const SECOidTag* policy_oids,
                          int num_policy_oids,
+                         CERTCertList* additional_trust_anchors,
                          CERTValOutParam* cvout) {
   bool use_crl = check_revocation;
   bool use_ocsp = check_revocation;
@@ -408,10 +421,10 @@ SECStatus PKIXVerifyCert(CERTCertificate* cert_handle,
   revocation_flags.chainTests.cert_rev_method_independent_flags =
       revocation_method_independent_flags;
 
+
   std::vector<CERTValInParam> cvin;
-  cvin.reserve(5);
+  cvin.reserve(7);
   CERTValInParam in_param;
-  // No need to set cert_pi_trustAnchors here.
   in_param.type = cert_pi_revocationFlags;
   in_param.value.pointer.revocation = &revocation_flags;
   cvin.push_back(in_param);
@@ -419,6 +432,14 @@ SECStatus PKIXVerifyCert(CERTCertificate* cert_handle,
     in_param.type = cert_pi_policyOID;
     in_param.value.arraySize = num_policy_oids;
     in_param.value.array.oids = policy_oids;
+    cvin.push_back(in_param);
+  }
+  if (additional_trust_anchors) {
+    in_param.type = cert_pi_trustAnchors;
+    in_param.value.pointer.chain = additional_trust_anchors;
+    cvin.push_back(in_param);
+    in_param.type = cert_pi_useOnlyTrustAnchors;
+    in_param.value.scalar.b = PR_FALSE;
     cvin.push_back(in_param);
   }
   in_param.type = cert_pi_end;
@@ -639,7 +660,8 @@ bool VerifyEV(CERTCertificate* cert_handle,
               int flags,
               CRLSet* crl_set,
               EVRootCAMetadata* metadata,
-              SECOidTag ev_policy_oid) {
+              SECOidTag ev_policy_oid,
+              CERTCertList* additional_trust_anchors) {
   CERTValOutParam cvout[3];
   int cvout_index = 0;
   cvout[cvout_index].type = cert_po_certList;
@@ -663,6 +685,7 @@ bool VerifyEV(CERTCertificate* cert_handle,
       flags & CertVerifier::VERIFY_CERT_IO_ENABLED,
       &ev_policy_oid,
       1,
+      additional_trust_anchors,
       cvout);
   if (status != SECSuccess)
     return false;
@@ -693,17 +716,40 @@ bool VerifyEV(CERTCertificate* cert_handle,
   return metadata->HasEVPolicyOID(fingerprint, ev_policy_oid);
 }
 
+CERTCertList* CertificateListToCERTCertList(const CertificateList& list) {
+  CERTCertList* result = CERT_NewCertList();
+  for (size_t i = 0; i < list.size(); ++i) {
+#if defined(OS_IOS)
+    // X509Certificate::os_cert_handle() on iOS is a SecCertificateRef; convert
+    // it to an NSS CERTCertificate.
+    CERTCertificate* cert = x509_util_ios::CreateNSSCertHandleFromOSHandle(
+        list[i]->os_cert_handle());
+#else
+    CERTCertificate* cert = list[i]->os_cert_handle();
+#endif
+    CERT_AddCertToListTail(result, CERT_DupCertificate(cert));
+  }
+  return result;
+}
+
 }  // namespace
 
 CertVerifyProcNSS::CertVerifyProcNSS() {}
 
 CertVerifyProcNSS::~CertVerifyProcNSS() {}
 
-int CertVerifyProcNSS::VerifyInternal(X509Certificate* cert,
-                                      const std::string& hostname,
-                                      int flags,
-                                      CRLSet* crl_set,
-                                      CertVerifyResult* verify_result) {
+bool CertVerifyProcNSS::SupportsAdditionalTrustAnchors() const {
+  // This requires APIs introduced in 3.14.2.
+  return NSS_VersionCheck("3.14.2");
+}
+
+int CertVerifyProcNSS::VerifyInternal(
+    X509Certificate* cert,
+    const std::string& hostname,
+    int flags,
+    CRLSet* crl_set,
+    const CertificateList& additional_trust_anchors,
+    CertVerifyResult* verify_result) {
 #if defined(OS_IOS)
   // For iOS, the entire chain must be loaded into NSS's in-memory certificate
   // store.
@@ -751,8 +797,14 @@ int CertVerifyProcNSS::VerifyInternal(X509Certificate* cert,
   if (check_revocation)
     verify_result->cert_status |= CERT_STATUS_REV_CHECKING_ENABLED;
 
+  ScopedCERTCertList trust_anchors;
+  if (SupportsAdditionalTrustAnchors() && !additional_trust_anchors.empty()) {
+    trust_anchors.reset(
+        CertificateListToCERTCertList(additional_trust_anchors));
+  }
+
   status = PKIXVerifyCert(cert_handle, check_revocation, cert_io_enabled,
-                          NULL, 0, cvout);
+                          NULL, 0, trust_anchors.get(), cvout);
 
   if (status == SECSuccess) {
     AppendPublicKeyHashes(cvout[cvout_cert_list_index].value.pointer.chain,
@@ -800,7 +852,8 @@ int CertVerifyProcNSS::VerifyInternal(X509Certificate* cert,
     return MapCertStatusToNetError(verify_result->cert_status);
 
   if ((flags & CertVerifier::VERIFY_EV_CERT) && is_ev_candidate &&
-      VerifyEV(cert_handle, flags, crl_set, metadata, ev_policy_oid)) {
+      VerifyEV(cert_handle, flags, crl_set, metadata, ev_policy_oid,
+               trust_anchors.get())) {
     verify_result->cert_status |= CERT_STATUS_IS_EV;
   }
 

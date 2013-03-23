@@ -15,6 +15,8 @@ class CertVerifyProcAndroid : public CertVerifyProc {
  public:
   CertVerifyProcAndroid();
 
+  virtual bool SupportsAdditionalTrustAnchors() const OVERRIDE;
+
  protected:
   virtual ~CertVerifyProcAndroid();
 
@@ -23,6 +25,7 @@ class CertVerifyProcAndroid : public CertVerifyProc {
                              const std::string& hostname,
                              int flags,
                              CRLSet* crl_set,
+                             const CertificateList& additional_trust_anchors,
                              CertVerifyResult* verify_result) OVERRIDE;
 };
 

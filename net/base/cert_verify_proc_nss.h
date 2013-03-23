@@ -15,6 +15,8 @@ class NET_EXPORT_PRIVATE CertVerifyProcNSS : public CertVerifyProc {
  public:
   CertVerifyProcNSS();
 
+  virtual bool SupportsAdditionalTrustAnchors() const OVERRIDE;
+
  protected:
   virtual ~CertVerifyProcNSS();
 
@@ -23,6 +25,7 @@ class NET_EXPORT_PRIVATE CertVerifyProcNSS : public CertVerifyProc {
                              const std::string& hostname,
                              int flags,
                              CRLSet* crl_set,
+                             const CertificateList& additional_trust_anchors,
                              CertVerifyResult* verify_result) OVERRIDE;
 };
 

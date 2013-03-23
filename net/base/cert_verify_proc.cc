@@ -74,6 +74,7 @@ int CertVerifyProc::Verify(X509Certificate* cert,
                            const std::string& hostname,
                            int flags,
                            CRLSet* crl_set,
+                           const CertificateList& additional_trust_anchors,
                            CertVerifyResult* verify_result) {
   verify_result->Reset();
   verify_result->verified_cert = cert;
@@ -94,7 +95,8 @@ int CertVerifyProc::Verify(X509Certificate* cert,
     flags |= CertVerifier::VERIFY_REV_CHECKING_ENABLED_EV_ONLY;
   }
 
-  int rv = VerifyInternal(cert, hostname, flags, crl_set, verify_result);
+  int rv = VerifyInternal(cert, hostname, flags, crl_set,
+                          additional_trust_anchors, verify_result);
 
   // This check is done after VerifyInternal so that VerifyInternal can fill
   // in the list of public key hashes.

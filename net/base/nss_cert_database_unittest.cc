@@ -101,6 +101,7 @@ class CertDatabaseNSSTest : public testing::Test {
 
   scoped_refptr<CryptoModule> slot_;
   NSSCertDatabase* cert_db_;
+  const CertificateList empty_cert_list_;
 
  private:
   bool CleanupSlotContents() {
@@ -541,7 +542,7 @@ TEST_F(CertDatabaseNSSTest, DISABLED_ImportServerCert) {
   int flags = 0;
   CertVerifyResult verify_result;
   int error = verify_proc->Verify(goog_cert, "www.google.com", flags,
-                                  NULL, &verify_result);
+                                  NULL, empty_cert_list_, &verify_result);
   EXPECT_EQ(OK, error);
   EXPECT_EQ(0U, verify_result.cert_status);
 }
@@ -568,7 +569,7 @@ TEST_F(CertDatabaseNSSTest, ImportServerCert_SelfSigned) {
   int flags = 0;
   CertVerifyResult verify_result;
   int error = verify_proc->Verify(puny_cert, "xn--wgv71a119e.com", flags,
-                                  NULL, &verify_result);
+                                  NULL, empty_cert_list_, &verify_result);
   EXPECT_EQ(ERR_CERT_AUTHORITY_INVALID, error);
   EXPECT_EQ(CERT_STATUS_AUTHORITY_INVALID, verify_result.cert_status);
 }
@@ -603,7 +604,7 @@ TEST_F(CertDatabaseNSSTest, ImportServerCert_SelfSigned_Trusted) {
   int flags = 0;
   CertVerifyResult verify_result;
   int error = verify_proc->Verify(puny_cert, "xn--wgv71a119e.com", flags,
-                                  NULL, &verify_result);
+                                  NULL, empty_cert_list_, &verify_result);
   EXPECT_EQ(OK, error);
   EXPECT_EQ(0U, verify_result.cert_status);
 }
@@ -635,7 +636,7 @@ TEST_F(CertDatabaseNSSTest, ImportCaAndServerCert) {
   int flags = 0;
   CertVerifyResult verify_result;
   int error = verify_proc->Verify(certs[0], "127.0.0.1", flags,
-                                  NULL, &verify_result);
+                                  NULL, empty_cert_list_, &verify_result);
   EXPECT_EQ(OK, error);
   EXPECT_EQ(0U, verify_result.cert_status);
 }
@@ -679,7 +680,7 @@ TEST_F(CertDatabaseNSSTest, ImportCaAndServerCert_DistrustServer) {
   int flags = 0;
   CertVerifyResult verify_result;
   int error = verify_proc->Verify(certs[0], "127.0.0.1", flags,
-                                  NULL, &verify_result);
+                                  NULL, empty_cert_list_, &verify_result);
   EXPECT_EQ(ERR_CERT_REVOKED, error);
   EXPECT_EQ(CERT_STATUS_REVOKED, verify_result.cert_status);
 }
@@ -723,7 +724,7 @@ TEST_F(CertDatabaseNSSTest, TrustIntermediateCa) {
   int flags = 0;
   CertVerifyResult verify_result;
   int error = verify_proc->Verify(certs[0], "127.0.0.1", flags,
-                                  NULL, &verify_result);
+                                  NULL, empty_cert_list_, &verify_result);
   EXPECT_EQ(OK, error);
   EXPECT_EQ(0U, verify_result.cert_status);
 
@@ -756,7 +757,7 @@ TEST_F(CertDatabaseNSSTest, TrustIntermediateCa) {
   // Server cert should fail to verify.
   CertVerifyResult verify_result2;
   error = verify_proc->Verify(certs[0], "127.0.0.1", flags,
-                              NULL, &verify_result2);
+                              NULL, empty_cert_list_, &verify_result2);
   EXPECT_EQ(ERR_CERT_REVOKED, error);
   EXPECT_EQ(CERT_STATUS_REVOKED, verify_result2.cert_status);
 }
@@ -791,7 +792,7 @@ TEST_F(CertDatabaseNSSTest, TrustIntermediateCa2) {
   int flags = 0;
   CertVerifyResult verify_result;
   int error = verify_proc->Verify(certs[0], "127.0.0.1", flags,
-                                  NULL, &verify_result);
+                                  NULL, empty_cert_list_, &verify_result);
   EXPECT_EQ(OK, error);
   EXPECT_EQ(0U, verify_result.cert_status);
 
@@ -802,7 +803,7 @@ TEST_F(CertDatabaseNSSTest, TrustIntermediateCa2) {
   // Server cert should fail to verify.
   CertVerifyResult verify_result2;
   error = verify_proc->Verify(certs[0], "127.0.0.1", flags,
-                              NULL, &verify_result2);
+                              NULL, empty_cert_list_, &verify_result2);
   EXPECT_EQ(ERR_CERT_AUTHORITY_INVALID, error);
   EXPECT_EQ(CERT_STATUS_AUTHORITY_INVALID, verify_result2.cert_status);
 }
@@ -847,7 +848,7 @@ TEST_F(CertDatabaseNSSTest, TrustIntermediateCa3) {
   int flags = 0;
   CertVerifyResult verify_result;
   int error = verify_proc->Verify(certs[0], "127.0.0.1", flags,
-                                  NULL, &verify_result);
+                                  NULL, empty_cert_list_, &verify_result);
   EXPECT_EQ(OK, error);
   EXPECT_EQ(0U, verify_result.cert_status);
 
@@ -858,7 +859,7 @@ TEST_F(CertDatabaseNSSTest, TrustIntermediateCa3) {
   // Server cert should fail to verify.
   CertVerifyResult verify_result2;
   error = verify_proc->Verify(certs[0], "127.0.0.1", flags,
-                              NULL, &verify_result2);
+                              NULL, empty_cert_list_, &verify_result2);
   EXPECT_EQ(ERR_CERT_AUTHORITY_INVALID, error);
   EXPECT_EQ(CERT_STATUS_AUTHORITY_INVALID, verify_result2.cert_status);
 }
@@ -909,7 +910,7 @@ TEST_F(CertDatabaseNSSTest, TrustIntermediateCa4) {
   int flags = 0;
   CertVerifyResult verify_result;
   int error = verify_proc->Verify(certs[0], "127.0.0.1", flags,
-                                  NULL, &verify_result);
+                                  NULL, empty_cert_list_, &verify_result);
   EXPECT_EQ(ERR_CERT_REVOKED, error);
   EXPECT_EQ(CERT_STATUS_REVOKED, verify_result.cert_status);
 
@@ -920,7 +921,7 @@ TEST_F(CertDatabaseNSSTest, TrustIntermediateCa4) {
   // Server cert should verify.
   CertVerifyResult verify_result2;
   error = verify_proc->Verify(certs[0], "127.0.0.1", flags,
-                              NULL, &verify_result2);
+                              NULL, empty_cert_list_, &verify_result2);
   EXPECT_EQ(OK, error);
   EXPECT_EQ(0U, verify_result2.cert_status);
 }

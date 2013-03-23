@@ -18,6 +18,7 @@ namespace net {
 class CertVerifyResult;
 class CRLSet;
 class X509Certificate;
+typedef std::vector<scoped_refptr<X509Certificate> > CertificateList;
 
 // Class to perform certificate path building and verification for various
 // certificate uses. All methods of this class must be thread-safe, as they
@@ -49,11 +50,21 @@ class NET_EXPORT CertVerifyProc
   //
   // |crl_set| points to an optional CRLSet structure which can be used to
   // avoid revocation checks over the network.
+  //
+  // |additional_trust_anchors| lists certificates that can be trusted when
+  // building a certificate chain, in addition to the anchors known to the
+  // implementation.
   int Verify(X509Certificate* cert,
              const std::string& hostname,
              int flags,
              CRLSet* crl_set,
+             const CertificateList& additional_trust_anchors,
              CertVerifyResult* verify_result);
+
+  // Returns true if the implementation supports passing additional trust
+  // anchors to the Verify() call. The |additional_trust_anchors| parameter
+  // passed to Verify() is ignored when this returns false.
+  virtual bool SupportsAdditionalTrustAnchors() const = 0;
 
  protected:
   friend class base::RefCountedThreadSafe<CertVerifyProc>;
@@ -69,6 +80,7 @@ class NET_EXPORT CertVerifyProc
                              const std::string& hostname,
                              int flags,
                              CRLSet* crl_set,
+                             const CertificateList& additional_trust_anchors,
                              CertVerifyResult* verify_result) = 0;
 
   // Returns true if |cert| is explicitly blacklisted.

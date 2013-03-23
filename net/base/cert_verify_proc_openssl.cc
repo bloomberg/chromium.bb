@@ -163,11 +163,17 @@ CertVerifyProcOpenSSL::CertVerifyProcOpenSSL() {}
 
 CertVerifyProcOpenSSL::~CertVerifyProcOpenSSL() {}
 
-int CertVerifyProcOpenSSL::VerifyInternal(X509Certificate* cert,
-                                          const std::string& hostname,
-                                          int flags,
-                                          CRLSet* crl_set,
-                                          CertVerifyResult* verify_result) {
+bool CertVerifyProcOpenSSL::SupportsAdditionalTrustAnchors() const {
+  return false;
+}
+
+int CertVerifyProcOpenSSL::VerifyInternal(
+    X509Certificate* cert,
+    const std::string& hostname,
+    int flags,
+    CRLSet* crl_set,
+    const CertificateList& additional_trust_anchors,
+    CertVerifyResult* verify_result) {
   crypto::EnsureOpenSSLInit();
 
   if (!cert->VerifyNameMatch(hostname))

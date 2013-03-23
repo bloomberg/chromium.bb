@@ -9,6 +9,7 @@
 #include "base/format_macros.h"
 #include "base/stringprintf.h"
 #include "net/base/cert_test_util.h"
+#include "net/base/cert_trust_anchor_provider.h"
 #include "net/base/cert_verify_proc.h"
 #include "net/base/cert_verify_result.h"
 #include "net/base/net_errors.h"
@@ -16,7 +17,11 @@
 #include "net/base/test_completion_callback.h"
 #include "net/base/test_data_directory.h"
 #include "net/base/x509_certificate.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using testing::Mock;
+using testing::ReturnRef;
 
 namespace net {
 
@@ -34,16 +39,29 @@ class MockCertVerifyProc : public CertVerifyProc {
   virtual ~MockCertVerifyProc() {}
 
   // CertVerifyProc implementation
+  virtual bool SupportsAdditionalTrustAnchors() const OVERRIDE {
+    return false;
+  }
+
   virtual int VerifyInternal(X509Certificate* cert,
                              const std::string& hostname,
                              int flags,
                              CRLSet* crl_set,
+                             const CertificateList& additional_trust_anchors,
                              CertVerifyResult* verify_result) OVERRIDE {
     verify_result->Reset();
     verify_result->verified_cert = cert;
     verify_result->cert_status = CERT_STATUS_COMMON_NAME_INVALID;
     return ERR_CERT_COMMON_NAME_INVALID;
   }
+};
+
+class MockCertTrustAnchorProvider : public CertTrustAnchorProvider {
+ public:
+  MockCertTrustAnchorProvider() {}
+  virtual ~MockCertTrustAnchorProvider() {}
+
+  MOCK_METHOD0(GetAdditionalTrustAnchors, const CertificateList&());
 };
 
 }  // namespace
@@ -248,6 +266,11 @@ TEST_F(MultiThreadedCertVerifierTest, RequestParamsComparators) {
   SHA1HashValue z_key;
   memset(z_key.data, 'z', sizeof(z_key.data));
 
+  const CertificateList empty_list;
+  CertificateList test_list;
+  test_list.push_back(
+      ImportCertFromFile(GetTestCertsDirectory(), "ok_cert.pem"));
+
   struct {
     // Keys to test
     MultiThreadedCertVerifier::RequestParams key1;
@@ -261,43 +284,53 @@ TEST_F(MultiThreadedCertVerifierTest, RequestParamsComparators) {
   } tests[] = {
     {  // Test for basic equivalence.
       MultiThreadedCertVerifier::RequestParams(a_key, a_key, "www.example.test",
-                                               0),
+                                               0, test_list),
       MultiThreadedCertVerifier::RequestParams(a_key, a_key, "www.example.test",
-                                               0),
+                                               0, test_list),
       0,
     },
     {  // Test that different certificates but with the same CA and for
        // the same host are different validation keys.
       MultiThreadedCertVerifier::RequestParams(a_key, a_key, "www.example.test",
-                                               0),
+                                               0, test_list),
       MultiThreadedCertVerifier::RequestParams(z_key, a_key, "www.example.test",
-                                               0),
+                                               0, test_list),
       -1,
     },
     {  // Test that the same EE certificate for the same host, but with
        // different chains are different validation keys.
       MultiThreadedCertVerifier::RequestParams(a_key, z_key, "www.example.test",
-                                               0),
+                                               0, test_list),
       MultiThreadedCertVerifier::RequestParams(a_key, a_key, "www.example.test",
-                                               0),
+                                               0, test_list),
       1,
     },
     {  // The same certificate, with the same chain, but for different
        // hosts are different validation keys.
       MultiThreadedCertVerifier::RequestParams(a_key, a_key,
-                                               "www1.example.test", 0),
+                                               "www1.example.test", 0,
+                                               test_list),
       MultiThreadedCertVerifier::RequestParams(a_key, a_key,
-                                               "www2.example.test", 0),
+                                               "www2.example.test", 0,
+                                               test_list),
       -1,
     },
     {  // The same certificate, chain, and host, but with different flags
        // are different validation keys.
       MultiThreadedCertVerifier::RequestParams(a_key, a_key, "www.example.test",
-                                               CertVerifier::VERIFY_EV_CERT),
+                                               CertVerifier::VERIFY_EV_CERT,
+                                               test_list),
       MultiThreadedCertVerifier::RequestParams(a_key, a_key, "www.example.test",
-                                               0),
+                                               0, test_list),
       1,
-    }
+    },
+    {  // Different additional_trust_anchors.
+      MultiThreadedCertVerifier::RequestParams(a_key, a_key, "www.example.test",
+                                               0, empty_list),
+      MultiThreadedCertVerifier::RequestParams(a_key, a_key, "www.example.test",
+                                               0, test_list),
+      -1,
+    },
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
     SCOPED_TRACE(base::StringPrintf("Test[%" PRIuS "]", i));
@@ -322,6 +355,65 @@ TEST_F(MultiThreadedCertVerifierTest, RequestParamsComparators) {
         FAIL() << "Invalid expectation. Can be only -1, 0, 1";
     }
   }
+}
+
+TEST_F(MultiThreadedCertVerifierTest, CertTrustAnchorProvider) {
+  MockCertTrustAnchorProvider trust_provider;
+  verifier_.SetCertTrustAnchorProvider(&trust_provider);
+
+  scoped_refptr<X509Certificate> test_cert(
+      ImportCertFromFile(GetTestCertsDirectory(), "ok_cert.pem"));
+  ASSERT_TRUE(test_cert);
+
+  const CertificateList empty_cert_list;
+  CertificateList cert_list;
+  cert_list.push_back(test_cert);
+
+  // Check that Verify() asks the |trust_provider| for the current list of
+  // additional trust anchors.
+  int error;
+  CertVerifyResult verify_result;
+  TestCompletionCallback callback;
+  CertVerifier::RequestHandle request_handle;
+  EXPECT_CALL(trust_provider, GetAdditionalTrustAnchors())
+      .WillOnce(ReturnRef(empty_cert_list));
+  error = verifier_.Verify(test_cert, "www.example.com", 0, NULL,
+                           &verify_result, callback.callback(),
+                           &request_handle, BoundNetLog());
+  Mock::VerifyAndClearExpectations(&trust_provider);
+  ASSERT_EQ(ERR_IO_PENDING, error);
+  ASSERT_TRUE(request_handle);
+  error = callback.WaitForResult();
+  EXPECT_EQ(ERR_CERT_COMMON_NAME_INVALID, error);
+  ASSERT_EQ(1u, verifier_.requests());
+  ASSERT_EQ(0u, verifier_.cache_hits());
+
+  // The next Verify() uses the cached result.
+  EXPECT_CALL(trust_provider, GetAdditionalTrustAnchors())
+      .WillOnce(ReturnRef(empty_cert_list));
+  error = verifier_.Verify(test_cert, "www.example.com", 0, NULL,
+                           &verify_result, callback.callback(),
+                           &request_handle, BoundNetLog());
+  Mock::VerifyAndClearExpectations(&trust_provider);
+  EXPECT_EQ(ERR_CERT_COMMON_NAME_INVALID, error);
+  EXPECT_FALSE(request_handle);
+  ASSERT_EQ(2u, verifier_.requests());
+  ASSERT_EQ(1u, verifier_.cache_hits());
+
+  // Another Verify() for the same certificate but with a different list of
+  // trust anchors will not reuse the cache.
+  EXPECT_CALL(trust_provider, GetAdditionalTrustAnchors())
+      .WillOnce(ReturnRef(cert_list));
+  error = verifier_.Verify(test_cert, "www.example.com", 0, NULL,
+                           &verify_result, callback.callback(),
+                           &request_handle, BoundNetLog());
+  Mock::VerifyAndClearExpectations(&trust_provider);
+  ASSERT_EQ(ERR_IO_PENDING, error);
+  ASSERT_TRUE(request_handle != NULL);
+  error = callback.WaitForResult();
+  EXPECT_EQ(ERR_CERT_COMMON_NAME_INVALID, error);
+  ASSERT_EQ(3u, verifier_.requests());
+  ASSERT_EQ(1u, verifier_.cache_hits());
 }
 
 }  // namespace net

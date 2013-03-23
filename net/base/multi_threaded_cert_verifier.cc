@@ -4,7 +4,7 @@
 
 #include "net/base/multi_threaded_cert_verifier.h"
 
-#include <vector>
+#include <algorithm>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -15,6 +15,7 @@
 #include "base/synchronization/lock.h"
 #include "base/time.h"
 #include "base/threading/worker_pool.h"
+#include "net/base/cert_trust_anchor_provider.h"
 #include "net/base/cert_verify_proc.h"
 #include "net/base/crl_set.h"
 #include "net/base/net_errors.h"
@@ -187,12 +188,14 @@ class CertVerifierWorker {
                      const std::string& hostname,
                      int flags,
                      CRLSet* crl_set,
+                     const CertificateList& additional_trust_anchors,
                      MultiThreadedCertVerifier* cert_verifier)
       : verify_proc_(verify_proc),
         cert_(cert),
         hostname_(hostname),
         flags_(flags),
         crl_set_(crl_set),
+        additional_trust_anchors_(additional_trust_anchors),
         origin_loop_(MessageLoop::current()),
         cert_verifier_(cert_verifier),
         canceled_(false),
@@ -223,7 +226,7 @@ class CertVerifierWorker {
   void Run() {
     // Runs on a worker thread.
     error_ = verify_proc_->Verify(cert_, hostname_, flags_, crl_set_,
-                                  &verify_result_);
+                                  additional_trust_anchors_, &verify_result_);
 #if defined(USE_NSS) || defined(OS_IOS)
     // Detach the thread from NSPR.
     // Calling NSS functions attaches the thread to NSPR, which stores
@@ -248,7 +251,8 @@ class CertVerifierWorker {
       base::AutoLock locked(lock_);
       if (!canceled_) {
         cert_verifier_->HandleResult(cert_, hostname_, flags_,
-                                     error_, verify_result_);
+                                     additional_trust_anchors_, error_,
+                                     verify_result_);
       }
     }
     delete this;
@@ -286,6 +290,7 @@ class CertVerifierWorker {
   const std::string hostname_;
   const int flags_;
   scoped_refptr<CRLSet> crl_set_;
+  const CertificateList additional_trust_anchors_;
   MessageLoop* const origin_loop_;
   MultiThreadedCertVerifier* const cert_verifier_;
 
@@ -382,13 +387,20 @@ MultiThreadedCertVerifier::MultiThreadedCertVerifier(
       requests_(0),
       cache_hits_(0),
       inflight_joins_(0),
-      verify_proc_(verify_proc) {
+      verify_proc_(verify_proc),
+      trust_anchor_provider_(NULL) {
   CertDatabase::GetInstance()->AddObserver(this);
 }
 
 MultiThreadedCertVerifier::~MultiThreadedCertVerifier() {
   STLDeleteValues(&inflight_);
   CertDatabase::GetInstance()->RemoveObserver(this);
+}
+
+void MultiThreadedCertVerifier::SetCertTrustAnchorProvider(
+    CertTrustAnchorProvider* trust_anchor_provider) {
+  DCHECK(CalledOnValidThread());
+  trust_anchor_provider_ = trust_anchor_provider;
 }
 
 int MultiThreadedCertVerifier::Verify(X509Certificate* cert,
@@ -408,8 +420,13 @@ int MultiThreadedCertVerifier::Verify(X509Certificate* cert,
 
   requests_++;
 
+  const CertificateList empty_cert_list;
+  const CertificateList& additional_trust_anchors =
+      trust_anchor_provider_ ?
+          trust_anchor_provider_->GetAdditionalTrustAnchors() : empty_cert_list;
+
   const RequestParams key(cert->fingerprint(), cert->ca_fingerprint(),
-                          hostname, flags);
+                          hostname, flags, additional_trust_anchors);
   const CertVerifierCache::value_type* cached_entry =
       cache_.Get(key, CacheValidityPeriod(base::Time::Now()));
   if (cached_entry) {
@@ -430,9 +447,9 @@ int MultiThreadedCertVerifier::Verify(X509Certificate* cert,
     job = j->second;
   } else {
     // Need to make a new request.
-    CertVerifierWorker* worker = new CertVerifierWorker(verify_proc_, cert,
-                                                        hostname, flags,
-                                                        crl_set, this);
+    CertVerifierWorker* worker =
+        new CertVerifierWorker(verify_proc_, cert, hostname, flags, crl_set,
+                               additional_trust_anchors, this);
     job = new CertVerifierJob(
         worker,
         BoundNetLog::Make(net_log.net_log(), NetLog::SOURCE_CERT_VERIFIER_JOB));
@@ -464,11 +481,33 @@ MultiThreadedCertVerifier::RequestParams::RequestParams(
     const SHA1HashValue& cert_fingerprint_arg,
     const SHA1HashValue& ca_fingerprint_arg,
     const std::string& hostname_arg,
-    int flags_arg)
-    : cert_fingerprint(cert_fingerprint_arg),
-      ca_fingerprint(ca_fingerprint_arg),
-      hostname(hostname_arg),
-      flags(flags_arg) {}
+    int flags_arg,
+    const CertificateList& additional_trust_anchors)
+    : hostname(hostname_arg),
+      flags(flags_arg) {
+  hash_values.reserve(2 + additional_trust_anchors.size());
+  hash_values.push_back(cert_fingerprint_arg);
+  hash_values.push_back(ca_fingerprint_arg);
+  for (size_t i = 0; i < additional_trust_anchors.size(); ++i)
+    hash_values.push_back(additional_trust_anchors[i]->fingerprint());
+}
+
+MultiThreadedCertVerifier::RequestParams::~RequestParams() {}
+
+bool MultiThreadedCertVerifier::RequestParams::operator<(
+    const RequestParams& other) const {
+  // |flags| is compared before |cert_fingerprint|, |ca_fingerprint|, and
+  // |hostname| under assumption that integer comparisons are faster than
+  // memory and string comparisons.
+  if (flags != other.flags)
+    return flags < other.flags;
+  if (hostname != other.hostname)
+    return hostname < other.hostname;
+  return std::lexicographical_compare(
+      hash_values.begin(), hash_values.end(),
+      other.hash_values.begin(), other.hash_values.end(),
+      net::SHA1HashValueLessThan());
+}
 
 // HandleResult is called by CertVerifierWorker on the origin message loop.
 // It deletes CertVerifierJob.
@@ -476,12 +515,13 @@ void MultiThreadedCertVerifier::HandleResult(
     X509Certificate* cert,
     const std::string& hostname,
     int flags,
+    const CertificateList& additional_trust_anchors,
     int error,
     const CertVerifyResult& verify_result) {
   DCHECK(CalledOnValidThread());
 
   const RequestParams key(cert->fingerprint(), cert->ca_fingerprint(),
-                          hostname, flags);
+                          hostname, flags, additional_trust_anchors);
 
   CachedResult cached_result;
   cached_result.error = error;

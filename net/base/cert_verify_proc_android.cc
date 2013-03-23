@@ -77,11 +77,17 @@ CertVerifyProcAndroid::CertVerifyProcAndroid() {}
 
 CertVerifyProcAndroid::~CertVerifyProcAndroid() {}
 
-int CertVerifyProcAndroid::VerifyInternal(X509Certificate* cert,
-                                          const std::string& hostname,
-                                          int flags,
-                                          CRLSet* crl_set,
-                                          CertVerifyResult* verify_result) {
+bool CertVerifyProcAndroid::SupportsAdditionalTrustAnchors() const {
+  return false;
+}
+
+int CertVerifyProcAndroid::VerifyInternal(
+    X509Certificate* cert,
+    const std::string& hostname,
+    int flags,
+    CRLSet* crl_set,
+    const CertificateList& additional_trust_anchors,
+    CertVerifyResult* verify_result) {
   if (!cert->VerifyNameMatch(hostname))
     verify_result->cert_status |= CERT_STATUS_COMMON_NAME_INVALID;
 

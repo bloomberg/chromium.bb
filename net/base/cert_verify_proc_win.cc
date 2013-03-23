@@ -519,11 +519,17 @@ CertVerifyProcWin::CertVerifyProcWin() {}
 
 CertVerifyProcWin::~CertVerifyProcWin() {}
 
-int CertVerifyProcWin::VerifyInternal(X509Certificate* cert,
-                                      const std::string& hostname,
-                                      int flags,
-                                      CRLSet* crl_set,
-                                      CertVerifyResult* verify_result) {
+bool CertVerifyProcWin::SupportsAdditionalTrustAnchors() const {
+  return false;
+}
+
+int CertVerifyProcWin::VerifyInternal(
+    X509Certificate* cert,
+    const std::string& hostname,
+    int flags,
+    CRLSet* crl_set,
+    const CertificateList& additional_trust_anchors,
+    CertVerifyResult* verify_result) {
   PCCERT_CONTEXT cert_handle = cert->os_cert_handle();
   if (!cert_handle)
     return ERR_UNEXPECTED;

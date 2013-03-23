@@ -15,6 +15,8 @@ class CertVerifyProcWin : public CertVerifyProc {
  public:
   CertVerifyProcWin();
 
+  virtual bool SupportsAdditionalTrustAnchors() const OVERRIDE;
+
  protected:
   virtual ~CertVerifyProcWin();
 
@@ -23,6 +25,7 @@ class CertVerifyProcWin : public CertVerifyProc {
                              const std::string& hostname,
                              int flags,
                              CRLSet* crl_set,
+                             const CertificateList& additional_trust_anchors,
                              CertVerifyResult* verify_result) OVERRIDE;
 };
 
