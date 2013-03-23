@@ -345,9 +345,6 @@ class WebContents : public PageNavigator,
   // times, subsequent calls are ignored.
   virtual void OnCloseStarted() = 0;
 
-  // Returns true if underlying WebContentsView should accept drag-n-drop.
-  virtual bool ShouldAcceptDragAndDrop() const = 0;
-
   // A render view-originated drag has ended. Informs the render view host and
   // WebContentsDelegate.
   virtual void SystemDragEnded() = 0;

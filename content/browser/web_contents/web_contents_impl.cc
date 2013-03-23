@@ -1841,18 +1841,6 @@ void WebContentsImpl::OnCloseStarted() {
     close_start_time_ = base::TimeTicks::Now();
 }
 
-bool WebContentsImpl::ShouldAcceptDragAndDrop() const {
-#if defined(OS_CHROMEOS)
-  // ChromeOS panels (pop-ups) do not take drag-n-drop.
-  // See http://crosbug.com/2413
-  if (delegate_ && delegate_->IsPopupOrPanel(this))
-    return false;
-  return true;
-#else
-  return true;
-#endif
-}
-
 void WebContentsImpl::SystemDragEnded() {
   if (GetRenderViewHost())
     GetRenderViewHostImpl()->DragSourceSystemDragEnded();
