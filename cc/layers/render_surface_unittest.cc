@@ -20,139 +20,159 @@
 namespace cc {
 namespace {
 
-#define EXECUTE_AND_VERIFY_SURFACE_CHANGED(codeToTest)                  \
-    renderSurface->ResetPropertyChangedFlag();                          \
-    codeToTest;                                                         \
-    EXPECT_TRUE(renderSurface->SurfacePropertyChanged())
+#define EXECUTE_AND_VERIFY_SURFACE_CHANGED(codeToTest)                         \
+  render_surface->ResetPropertyChangedFlag();                                  \
+  codeToTest;                                                                  \
+  EXPECT_TRUE(render_surface->SurfacePropertyChanged())
 
-#define EXECUTE_AND_VERIFY_SURFACE_DID_NOT_CHANGE(codeToTest)           \
-    renderSurface->ResetPropertyChangedFlag();                          \
-    codeToTest;                                                         \
-    EXPECT_FALSE(renderSurface->SurfacePropertyChanged())
+#define EXECUTE_AND_VERIFY_SURFACE_DID_NOT_CHANGE(codeToTest)                  \
+  render_surface->ResetPropertyChangedFlag();                                  \
+  codeToTest;                                                                  \
+  EXPECT_FALSE(render_surface->SurfacePropertyChanged())
 
-TEST(RenderSurfaceTest, verifySurfaceChangesAreTrackedProperly)
-{
-    //
-    // This test checks that SurfacePropertyChanged() has the correct behavior.
-    //
+TEST(RenderSurfaceTest, VerifySurfaceChangesAreTrackedProperly) {
+  //
+  // This test checks that SurfacePropertyChanged() has the correct behavior.
+  //
 
-    FakeImplProxy proxy;
-    FakeLayerTreeHostImpl hostImpl(&proxy);
-    scoped_ptr<LayerImpl> owningLayer = LayerImpl::Create(hostImpl.active_tree(), 1);
-    owningLayer->CreateRenderSurface();
-    ASSERT_TRUE(owningLayer->render_surface());
-    RenderSurfaceImpl* renderSurface = owningLayer->render_surface();
-    gfx::Rect testRect = gfx::Rect(gfx::Point(3, 4), gfx::Size(5, 6));
-    owningLayer->ResetAllChangeTrackingForSubtree();
+  FakeImplProxy proxy;
+  FakeLayerTreeHostImpl host_impl(&proxy);
+  scoped_ptr<LayerImpl> owning_layer =
+      LayerImpl::Create(host_impl.active_tree(), 1);
+  owning_layer->CreateRenderSurface();
+  ASSERT_TRUE(owning_layer->render_surface());
+  RenderSurfaceImpl* render_surface = owning_layer->render_surface();
+  gfx::Rect test_rect = gfx::Rect(gfx::Point(3, 4), gfx::Size(5, 6));
+  owning_layer->ResetAllChangeTrackingForSubtree();
 
-    // Currently, the contentRect, clipRect, and owningLayer->layerPropertyChanged() are
-    // the only sources of change.
-    EXECUTE_AND_VERIFY_SURFACE_CHANGED(renderSurface->SetClipRect(testRect));
-    EXECUTE_AND_VERIFY_SURFACE_CHANGED(renderSurface->SetContentRect(testRect));
+  // Currently, the content_rect, clip_rect, and
+  // owning_layer->layerPropertyChanged() are the only sources of change.
+  EXECUTE_AND_VERIFY_SURFACE_CHANGED(render_surface->SetClipRect(test_rect));
+  EXECUTE_AND_VERIFY_SURFACE_CHANGED(render_surface->SetContentRect(test_rect));
 
-    owningLayer->SetOpacity(0.5f);
-    EXPECT_TRUE(renderSurface->SurfacePropertyChanged());
-    owningLayer->ResetAllChangeTrackingForSubtree();
+  owning_layer->SetOpacity(0.5f);
+  EXPECT_TRUE(render_surface->SurfacePropertyChanged());
+  owning_layer->ResetAllChangeTrackingForSubtree();
 
-    // Setting the surface properties to the same values again should not be considered "change".
-    EXECUTE_AND_VERIFY_SURFACE_DID_NOT_CHANGE(renderSurface->SetClipRect(testRect));
-    EXECUTE_AND_VERIFY_SURFACE_DID_NOT_CHANGE(renderSurface->SetContentRect(testRect));
+  // Setting the surface properties to the same values again should not be
+  // considered "change".
+  EXECUTE_AND_VERIFY_SURFACE_DID_NOT_CHANGE(
+      render_surface->SetClipRect(test_rect));
+  EXECUTE_AND_VERIFY_SURFACE_DID_NOT_CHANGE(
+      render_surface->SetContentRect(test_rect));
 
-    scoped_ptr<LayerImpl> dummyMask = LayerImpl::Create(hostImpl.active_tree(), 2);
-    gfx::Transform dummyMatrix;
-    dummyMatrix.Translate(1.0, 2.0);
+  scoped_ptr<LayerImpl> dummy_mask =
+      LayerImpl::Create(host_impl.active_tree(), 2);
+  gfx::Transform dummy_matrix;
+  dummy_matrix.Translate(1.0, 2.0);
 
-    // The rest of the surface properties are either internal and should not cause change,
-    // or they are already accounted for by the owninglayer->layerPropertyChanged().
-    EXECUTE_AND_VERIFY_SURFACE_DID_NOT_CHANGE(renderSurface->SetDrawOpacity(0.5f));
-    EXECUTE_AND_VERIFY_SURFACE_DID_NOT_CHANGE(renderSurface->SetDrawTransform(dummyMatrix));
-    EXECUTE_AND_VERIFY_SURFACE_DID_NOT_CHANGE(renderSurface->SetReplicaDrawTransform(dummyMatrix));
-    EXECUTE_AND_VERIFY_SURFACE_DID_NOT_CHANGE(renderSurface->ClearLayerLists());
+  // The rest of the surface properties are either internal and should not cause
+  // change, or they are already accounted for by the
+  // owninglayer->layerPropertyChanged().
+  EXECUTE_AND_VERIFY_SURFACE_DID_NOT_CHANGE(
+      render_surface->SetDrawOpacity(0.5f));
+  EXECUTE_AND_VERIFY_SURFACE_DID_NOT_CHANGE(
+      render_surface->SetDrawTransform(dummy_matrix));
+  EXECUTE_AND_VERIFY_SURFACE_DID_NOT_CHANGE(
+      render_surface->SetReplicaDrawTransform(dummy_matrix));
+  EXECUTE_AND_VERIFY_SURFACE_DID_NOT_CHANGE(render_surface->ClearLayerLists());
 }
 
-TEST(RenderSurfaceTest, sanityCheckSurfaceCreatesCorrectSharedQuadState)
-{
-    FakeImplProxy proxy;
-    FakeLayerTreeHostImpl hostImpl(&proxy);
-    scoped_ptr<LayerImpl> rootLayer = LayerImpl::Create(hostImpl.active_tree(), 1);
+TEST(RenderSurfaceTest, SanityCheckSurfaceCreatesCorrectSharedQuadState) {
+  FakeImplProxy proxy;
+  FakeLayerTreeHostImpl host_impl(&proxy);
+  scoped_ptr<LayerImpl> root_layer =
+      LayerImpl::Create(host_impl.active_tree(), 1);
 
-    scoped_ptr<LayerImpl> owningLayer = LayerImpl::Create(hostImpl.active_tree(), 2);
-    owningLayer->CreateRenderSurface();
-    ASSERT_TRUE(owningLayer->render_surface());
-    owningLayer->draw_properties().render_target = owningLayer.get();
-    RenderSurfaceImpl* renderSurface = owningLayer->render_surface();
+  scoped_ptr<LayerImpl> owning_layer =
+      LayerImpl::Create(host_impl.active_tree(), 2);
+  owning_layer->CreateRenderSurface();
+  ASSERT_TRUE(owning_layer->render_surface());
+  owning_layer->draw_properties().render_target = owning_layer.get();
+  RenderSurfaceImpl* render_surface = owning_layer->render_surface();
 
-    rootLayer->AddChild(owningLayer.Pass());
+  root_layer->AddChild(owning_layer.Pass());
 
-    gfx::Rect contentRect = gfx::Rect(gfx::Point(), gfx::Size(50, 50));
-    gfx::Rect clipRect = gfx::Rect(gfx::Point(5, 5), gfx::Size(40, 40));
-    gfx::Transform origin;
+  gfx::Rect content_rect = gfx::Rect(gfx::Point(), gfx::Size(50, 50));
+  gfx::Rect clip_rect = gfx::Rect(gfx::Point(5, 5), gfx::Size(40, 40));
+  gfx::Transform origin;
 
-    origin.Translate(30, 40);
+  origin.Translate(30, 40);
 
-    renderSurface->SetDrawTransform(origin);
-    renderSurface->SetContentRect(contentRect);
-    renderSurface->SetClipRect(clipRect);
-    renderSurface->SetDrawOpacity(1.f);
+  render_surface->SetDrawTransform(origin);
+  render_surface->SetContentRect(content_rect);
+  render_surface->SetClipRect(clip_rect);
+  render_surface->SetDrawOpacity(1.f);
 
-    QuadList quadList;
-    SharedQuadStateList sharedStateList;
-    MockQuadCuller mockQuadCuller(&quadList, &sharedStateList);
-    AppendQuadsData appendQuadsData;
+  QuadList quad_list;
+  SharedQuadStateList shared_state_list;
+  MockQuadCuller mock_quad_culler(&quad_list, &shared_state_list);
+  AppendQuadsData append_quads_data;
 
-    bool forReplica = false;
-    renderSurface->AppendQuads(&mockQuadCuller, &appendQuadsData, forReplica, RenderPass::Id(2, 0));
+  bool for_replica = false;
+  render_surface->AppendQuads(
+      &mock_quad_culler, &append_quads_data, for_replica, RenderPass::Id(2, 0));
 
-    ASSERT_EQ(1u, sharedStateList.size());
-    SharedQuadState* sharedQuadState = sharedStateList[0];
+  ASSERT_EQ(1u, shared_state_list.size());
+  SharedQuadState* shared_quad_state = shared_state_list[0];
 
-    EXPECT_EQ(30, sharedQuadState->content_to_target_transform.matrix().getDouble(0, 3));
-    EXPECT_EQ(40, sharedQuadState->content_to_target_transform.matrix().getDouble(1, 3));
-    EXPECT_RECT_EQ(contentRect, gfx::Rect(sharedQuadState->visible_content_rect));
-    EXPECT_EQ(1, sharedQuadState->opacity);
+  EXPECT_EQ(
+      30.0,
+      shared_quad_state->content_to_target_transform.matrix().getDouble(0, 3));
+  EXPECT_EQ(
+      40.0,
+      shared_quad_state->content_to_target_transform.matrix().getDouble(1, 3));
+  EXPECT_RECT_EQ(content_rect,
+                 gfx::Rect(shared_quad_state->visible_content_rect));
+  EXPECT_EQ(1.f, shared_quad_state->opacity);
 }
 
 class TestRenderPassSink : public RenderPassSink {
-public:
-    virtual void AppendRenderPass(scoped_ptr<RenderPass> renderPass) OVERRIDE { m_renderPasses.push_back(renderPass.Pass()); }
+ public:
+  virtual void AppendRenderPass(scoped_ptr<RenderPass> render_pass) OVERRIDE {
+    render_passes_.push_back(render_pass.Pass());
+  }
 
-    const ScopedPtrVector<RenderPass>& renderPasses() const { return m_renderPasses; }
+  const ScopedPtrVector<RenderPass>& RenderPasses() const {
+    return render_passes_;
+  }
 
-private:
-    ScopedPtrVector<RenderPass> m_renderPasses;
+ private:
+  ScopedPtrVector<RenderPass> render_passes_;
 };
 
-TEST(RenderSurfaceTest, sanityCheckSurfaceCreatesCorrectRenderPass)
-{
-    FakeImplProxy proxy;
-    FakeLayerTreeHostImpl hostImpl(&proxy);
-    scoped_ptr<LayerImpl> rootLayer = LayerImpl::Create(hostImpl.active_tree(), 1);
+TEST(RenderSurfaceTest, SanityCheckSurfaceCreatesCorrectRenderPass) {
+  FakeImplProxy proxy;
+  FakeLayerTreeHostImpl host_impl(&proxy);
+  scoped_ptr<LayerImpl> root_layer =
+      LayerImpl::Create(host_impl.active_tree(), 1);
 
-    scoped_ptr<LayerImpl> owningLayer = LayerImpl::Create(hostImpl.active_tree(), 2);
-    owningLayer->CreateRenderSurface();
-    ASSERT_TRUE(owningLayer->render_surface());
-    owningLayer->draw_properties().render_target = owningLayer.get();
-    RenderSurfaceImpl* renderSurface = owningLayer->render_surface();
+  scoped_ptr<LayerImpl> owning_layer =
+      LayerImpl::Create(host_impl.active_tree(), 2);
+  owning_layer->CreateRenderSurface();
+  ASSERT_TRUE(owning_layer->render_surface());
+  owning_layer->draw_properties().render_target = owning_layer.get();
+  RenderSurfaceImpl* render_surface = owning_layer->render_surface();
 
-    rootLayer->AddChild(owningLayer.Pass());
+  root_layer->AddChild(owning_layer.Pass());
 
-    gfx::Rect contentRect = gfx::Rect(gfx::Point(), gfx::Size(50, 50));
-    gfx::Transform origin;
-    origin.Translate(30, 40);
+  gfx::Rect content_rect = gfx::Rect(gfx::Point(), gfx::Size(50, 50));
+  gfx::Transform origin;
+  origin.Translate(30.0, 40.0);
 
-    renderSurface->SetScreenSpaceTransform(origin);
-    renderSurface->SetContentRect(contentRect);
+  render_surface->SetScreenSpaceTransform(origin);
+  render_surface->SetContentRect(content_rect);
 
-    TestRenderPassSink passSink;
+  TestRenderPassSink pass_sink;
 
-    renderSurface->AppendRenderPasses(&passSink);
+  render_surface->AppendRenderPasses(&pass_sink);
 
-    ASSERT_EQ(1u, passSink.renderPasses().size());
-    RenderPass* pass = passSink.renderPasses()[0];
+  ASSERT_EQ(1u, pass_sink.RenderPasses().size());
+  RenderPass* pass = pass_sink.RenderPasses()[0];
 
-    EXPECT_EQ(RenderPass::Id(2, 0), pass->id);
-    EXPECT_RECT_EQ(contentRect, pass->output_rect);
-    EXPECT_EQ(origin, pass->transform_to_root_target);
+  EXPECT_EQ(RenderPass::Id(2, 0), pass->id);
+  EXPECT_RECT_EQ(content_rect, pass->output_rect);
+  EXPECT_EQ(origin, pass->transform_to_root_target);
 }
 
 }  // namespace
