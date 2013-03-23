@@ -8,7 +8,7 @@
 
 var cr = {};
 
-cr.googleTranslate = (function() {
+cr.googleTranslate = (function(key) {
   // Internal states.
   var lib;
   var libReady = false;
@@ -110,7 +110,7 @@ cr.googleTranslate = (function() {
      */
     onTranslateElementLoad: function() {
       try {
-        lib = google.translate.TranslateService({});
+        lib = google.translate.TranslateService({'key': key});
       } catch (err) {
         error = true;
         return;
@@ -120,4 +120,4 @@ cr.googleTranslate = (function() {
       checkLibReady();
     }
   };
-})();
+})/* Calling code '(|key|);' will be appended by TranslateHelper in C++ here. */

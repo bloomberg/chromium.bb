@@ -394,9 +394,13 @@ void TranslateManager::OnURLFetchComplete(const net::URLFetcher* source) {
           GetRawDataResource(IDR_TRANSLATE_JS);
       DCHECK(translate_script_.empty());
       str.CopyToString(&translate_script_);
+      std::string argument = "('";
+      std::string api_key = google_apis::GetAPIKey();
+      argument += net::EscapeQueryParamValue(api_key, true);
+      argument += "');\n";
       std::string data;
       source->GetResponseAsString(&data);
-      translate_script_ += "\n" + data;
+      translate_script_ += argument + data;
       // We'll expire the cached script after some time, to make sure long
       // running browsers still get fixes that might get pushed with newer
       // scripts.
