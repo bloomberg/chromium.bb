@@ -134,7 +134,8 @@ logging::LogMessageHandlerFunction g_logging_old_handler = NULL;
 // String sent in the "hello" message to the plugin to describe features.
 const char ChromotingInstance::kApiFeatures[] =
     "highQualityScaling injectKeyEvent sendClipboardItem remapKey trapKey "
-    "notifyClientDimensions notifyClientResolution pauseVideo pauseAudio";
+    "notifyClientDimensions notifyClientResolution pauseVideo pauseAudio "
+    "asyncPin";
 
 bool ChromotingInstance::ParseAuthMethods(const std::string& auth_methods_str,
                                           ClientConfig* config) {
@@ -171,6 +172,7 @@ ChromotingInstance::ChromotingInstance(PP_Instance pp_instance)
       key_mapper_(&input_tracker_),
 #endif
       input_handler_(&key_mapper_),
+      use_async_pin_dialog_(false),
       weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   RequestInputEvents(PP_INPUTEVENT_CLASS_MOUSE | PP_INPUTEVENT_CLASS_WHEEL);
   RequestFilteringInputEvents(PP_INPUTEVENT_CLASS_KEYBOARD);
@@ -270,14 +272,25 @@ void ChromotingInstance::HandleMessage(const pp::Var& message) {
     if (!data->GetString("hostJid", &config.host_jid) ||
         !data->GetString("hostPublicKey", &config.host_public_key) ||
         !data->GetString("localJid", &config.local_jid) ||
-        !data->GetString("sharedSecret", &config.shared_secret) ||
         !data->GetString("authenticationMethods", &auth_methods) ||
         !ParseAuthMethods(auth_methods, &config) ||
         !data->GetString("authenticationTag", &config.authentication_tag)) {
       LOG(ERROR) << "Invalid connect() data.";
       return;
     }
-
+    if (use_async_pin_dialog_) {
+      config.fetch_secret_callback =
+          base::Bind(&ChromotingInstance::FetchSecretFromDialog,
+                     this->AsWeakPtr());
+    } else {
+      std::string shared_secret;
+      if (!data->GetString("sharedSecret", &shared_secret)) {
+        LOG(ERROR) << "sharedSecret not specified in connect().";
+        return;
+      }
+      config.fetch_secret_callback =
+          base::Bind(&ChromotingInstance::FetchSecretFromString, shared_secret);
+    }
     Connect(config);
   } else if (method == "disconnect") {
     Disconnect();
@@ -373,6 +386,15 @@ void ChromotingInstance::HandleMessage(const pp::Var& message) {
       return;
     }
     PauseAudio(pause);
+  } else if (method == "useAsyncPinDialog") {
+    use_async_pin_dialog_ = true;
+  } else if (method == "onPinFetched") {
+    std::string pin;
+    if (!data->GetString("pin", &pin)) {
+      LOG(ERROR) << "Invalid onPinFetched.";
+      return;
+    }
+    OnPinFetched(pin);
   }
 }
 
@@ -422,6 +444,23 @@ void ChromotingInstance::OnConnectionReady(bool ready) {
   scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
   data->SetBoolean("ready", ready);
   PostChromotingMessage("onConnectionReady", data.Pass());
+}
+
+void ChromotingInstance::FetchSecretFromDialog(
+    const protocol::SecretFetchedCallback& secret_fetched_callback) {
+  // Once the Session object calls this function, it won't continue the
+  // authentication until the callback is called (or connection is canceled).
+  // So, it's impossible to reach this with a callback already registered.
+  DCHECK(secret_fetched_callback_.is_null());
+  secret_fetched_callback_ = secret_fetched_callback;
+  scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
+  PostChromotingMessage("fetchPin", data.Pass());
+}
+
+void ChromotingInstance::FetchSecretFromString(
+    const std::string& shared_secret,
+    const protocol::SecretFetchedCallback& secret_fetched_callback) {
+  secret_fetched_callback.Run(shared_secret);
 }
 
 protocol::ClipboardStub* ChromotingInstance::GetClipboardStub() {
@@ -648,6 +687,15 @@ void ChromotingInstance::PauseAudio(bool pause) {
   protocol::AudioControl audio_control;
   audio_control.set_enable(!pause);
   host_connection_->host_stub()->ControlAudio(audio_control);
+}
+
+void ChromotingInstance::OnPinFetched(const std::string& pin) {
+  if (!secret_fetched_callback_.is_null()) {
+    secret_fetched_callback_.Run(pin);
+    secret_fetched_callback_.Reset();
+  } else {
+    VLOG(1) << "Ignored OnPinFetched received without a pending fetch.";
+  }
 }
 
 ChromotingStats* ChromotingInstance::GetStats() {

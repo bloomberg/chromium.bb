@@ -39,6 +39,7 @@
 #include "remoting/protocol/cursor_shape_stub.h"
 #include "remoting/protocol/input_event_tracker.h"
 #include "remoting/protocol/mouse_input_filter.h"
+#include "remoting/protocol/negotiating_authenticator.h"
 
 namespace base {
 class DictionaryValue;
@@ -120,20 +121,6 @@ class ChromotingInstance :
   void SetDesktopSize(const SkISize& size, const SkIPoint& dpi);
   void OnFirstFrameReceived();
 
-  // Message handlers for messages that come from JavaScript. Called
-  // from HandleMessage().
-  void Connect(const ClientConfig& config);
-  void Disconnect();
-  void OnIncomingIq(const std::string& iq);
-  void ReleaseAllKeys();
-  void InjectKeyEvent(const protocol::KeyEvent& event);
-  void RemapKey(uint32 in_usb_keycode, uint32 out_usb_keycode);
-  void TrapKey(uint32 usb_keycode, bool trap);
-  void SendClipboardItem(const std::string& mime_type, const std::string& item);
-  void NotifyClientResolution(int width, int height, int x_dpi, int y_dpi);
-  void PauseVideo(bool pause);
-  void PauseAudio(bool pause);
-
   // Return statistics record by ChromotingClient.
   // If no connection is currently active then NULL will be returned.
   ChromotingStats* GetStats();
@@ -163,6 +150,27 @@ class ChromotingInstance :
  private:
   FRIEND_TEST_ALL_PREFIXES(ChromotingInstanceTest, TestCaseSetup);
 
+  // Used as the |FetchSecretCallback| for IT2Me (or Me2Me from old webapps).
+  // Immediately calls |secret_fetched_callback| with |shared_secret|.
+  static void FetchSecretFromString(
+      const std::string& shared_secret,
+      const protocol::SecretFetchedCallback& secret_fetched_callback);
+
+  // Message handlers for messages that come from JavaScript. Called
+  // from HandleMessage().
+  void Connect(const ClientConfig& config);
+  void Disconnect();
+  void OnIncomingIq(const std::string& iq);
+  void ReleaseAllKeys();
+  void InjectKeyEvent(const protocol::KeyEvent& event);
+  void RemapKey(uint32 in_usb_keycode, uint32 out_usb_keycode);
+  void TrapKey(uint32 usb_keycode, bool trap);
+  void SendClipboardItem(const std::string& mime_type, const std::string& item);
+  void NotifyClientResolution(int width, int height, int x_dpi, int y_dpi);
+  void PauseVideo(bool pause);
+  void PauseAudio(bool pause);
+  void OnPinFetched(const std::string& pin);
+
   // Helper method to post messages to the webapp.
   void PostChromotingMessage(const std::string& method,
                              scoped_ptr<base::DictionaryValue> data);
@@ -182,6 +190,11 @@ class ChromotingInstance :
 
   // Returns true if there is a ConnectionToHost and it is connected.
   bool IsConnected();
+
+  // Used as the |FetchSecretCallback| for Me2Me connections.
+  // Uses the PIN request dialog in the webapp to obtain the shared secret.
+  void FetchSecretFromDialog(
+      const protocol::SecretFetchedCallback& secret_fetched_callback);
 
   bool initialized_;
 
@@ -209,6 +222,10 @@ class ChromotingInstance :
   // jingle_glue objects. This is used when if we start a sandboxed jingle
   // connection.
   scoped_refptr<PepperXmppProxy> xmpp_proxy_;
+
+  // PIN Fetcher.
+  bool use_async_pin_dialog_;
+  protocol::SecretFetchedCallback secret_fetched_callback_;
 
   base::WeakPtrFactory<ChromotingInstance> weak_factory_;
 

@@ -54,8 +54,8 @@ void ChromotingClient::Start(
 
   scoped_ptr<protocol::Authenticator> authenticator(
       protocol::NegotiatingAuthenticator::CreateForClient(
-          config_.authentication_tag,
-          config_.shared_secret, config_.authentication_methods));
+          config_.authentication_tag, config_.fetch_secret_callback,
+          config_.authentication_methods));
 
   // Create a WeakPtr to ourself for to use for all posted tasks.
   weak_ptr_ = weak_factory_.GetWeakPtr();
