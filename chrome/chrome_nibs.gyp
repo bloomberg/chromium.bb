@@ -211,6 +211,8 @@
         'browser/ui/cocoa/nsview_additions.mm',
         'browser/ui/cocoa/one_click_signin_view_controller.h',
         'browser/ui/cocoa/one_click_signin_view_controller.mm',
+        'browser/ui/cocoa/screen_capture_notification_ui_cocoa.h',
+        'browser/ui/cocoa/screen_capture_notification_ui_cocoa.mm',
         'browser/ui/cocoa/speech_recognition_window_controller.h',
         'browser/ui/cocoa/speech_recognition_window_controller.mm',
         'browser/ui/cocoa/status_bubble_mac.h',

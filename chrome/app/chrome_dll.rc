@@ -225,6 +225,17 @@ BEGIN
     PUSHBUTTON      "None",IDC_MessagesNone,121,7,56,13
 END
 
+IDD_SCREEN_CAPTURE_NOTIFICATION DIALOGEX 0, 0, 145, 24
+STYLE DS_SETFONT | WS_POPUP
+EXSTYLE WS_EX_TOPMOST | WS_EX_TOOLWINDOW
+FONT 9, "Microsoft Sans Serif", 400, 0, 0x0
+BEGIN
+    DEFPUSHBUTTON   "kDisconnectButton",IDC_SCREEN_CAPTURE_STOP,68,5,70,14
+    LTEXT           "kSharingWith",IDC_SCREEN_CAPTURE_TEXT,18,7,43,8
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDVERT,6,6,1,12
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDVERT,8,6,1,12
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //

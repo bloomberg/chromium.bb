@@ -35,3 +35,10 @@
 
 #define IDD_IPC_SETTINGS                3000
 
+#define IDD_SCREEN_CAPTURE_NOTIFICATION 3100
+#define IDC_SCREEN_CAPTURE_STOP         3101
+#define IDC_SCREEN_CAPTURE_TEXT         3102
+
+#ifndef IDC_STATIC
+#define IDC_STATIC                -1
+#endif

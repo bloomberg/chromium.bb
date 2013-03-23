@@ -62,6 +62,7 @@
       'app/nibs/InfoBarContainer.xib',
       'app/nibs/Notification.xib',
       'app/nibs/Panel.xib',
+      'app/nibs/ScreenCaptureNotification.xib',
     ],  # mac_untranslated_xibs
     'mac_all_xibs': [
       '<@(mac_translated_xibs)',

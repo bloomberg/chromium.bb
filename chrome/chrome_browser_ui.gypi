@@ -729,6 +729,8 @@
         'browser/ui/cocoa/rect_path_utils.mm',
         'browser/ui/cocoa/restart_browser.h',
         'browser/ui/cocoa/restart_browser.mm',
+        'browser/ui/cocoa/screen_capture_notification_ui_cocoa.h',
+        'browser/ui/cocoa/screen_capture_notification_ui_cocoa.mm',
         'browser/ui/cocoa/simple_message_box_mac.mm',
         'browser/ui/cocoa/speech_recognition_bubble_cocoa.mm',
         'browser/ui/cocoa/speech_recognition_window_controller.h',
@@ -1103,6 +1105,7 @@
         'browser/ui/gtk/rounded_window.h',
         'browser/ui/gtk/sad_tab_gtk.cc',
         'browser/ui/gtk/sad_tab_gtk.h',
+        'browser/ui/gtk/screen_capture_notification_ui_gtk.cc',
         'browser/ui/gtk/script_bubble_gtk.cc',
         'browser/ui/gtk/script_bubble_gtk.h',
         'browser/ui/gtk/simple_message_box_gtk.cc',
@@ -1262,6 +1265,7 @@
         'browser/ui/screen_capture_infobar_delegate.h',
         'browser/ui/screen_capture_notification_ui.h',
         'browser/ui/screen_capture_notification_ui_stub.cc',
+        'browser/ui/screen_capture_notification_ui_win.cc',
         'browser/ui/search/instant_commit_type.h',
         'browser/ui/search/instant_controller.cc',
         'browser/ui/search/instant_controller.h',
@@ -2558,6 +2562,9 @@
             '../dbus/dbus.gyp:dbus',
             '../third_party/undoview/undoview.gyp:undoview',
           ],
+          'sources!': [
+            'browser/ui/screen_capture_notification_ui_stub.cc',
+          ],
         }],
         ['enable_themes==0', {
           'sources!': [
@@ -2760,6 +2767,7 @@
             'browser/ui/certificate_dialogs.h',
             'browser/ui/crypto_module_password_dialog.cc',
             'browser/ui/crypto_module_password_dialog_nss.cc',
+            'browser/ui/screen_capture_notification_ui_stub.cc',
             'browser/ui/startup/autolaunch_prompt.cc',
             'browser/ui/views/frame/taskbar_decorator.cc',
             'browser/ui/views/simple_message_box_views.cc',

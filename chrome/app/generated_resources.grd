@@ -9900,12 +9900,18 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_CRITICAL_NOTIFICATION_DISMISS" desc="The dismiss button label">
         Don't restart
       </message>
-      
+
       <!-- Screen Capture strings -->
+      <message name="IDS_MEDIA_SCREEN_CAPTURE_NOTIFICATION_TITLE" desc="Text shown on the button that stops screen capture.">
+        Screen capture - <ph name="APP_NAME">$1<ex>Sharing App</ex></ph>
+      </message>
       <message name="IDS_MEDIA_SCREEN_CAPTURE_NOTIFICATION_TEXT" desc="label used in screen capture notification UI to show the screen sharing status">
         <ph name="APP_NAME">$1<ex>Google Cast</ex></ph> is sharing your screen
       </message>
-      
+      <message name="IDS_MEDIA_SCREEN_CAPTURE_NOTIFICATION_STOP" desc="Text shown on the button that stops screen capture.">
+        Stop
+      </message>
+
       <!-- SSL Blocking Page -->
       <message name="IDS_SSL_BLOCKING_PAGE_TITLE" desc="The title of the SSL blocking page.">
         SSL Error
