@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/time.h"
 #include "cc/base/cc_export.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebScrollbar.h"
 
 namespace gfx {
 class Point;
@@ -50,6 +51,10 @@ class CC_EXPORT InputHandlerClient {
   // Should only be called if ScrollBegin() returned ScrollStarted.
   virtual bool ScrollBy(gfx::Point viewport_point,
                         gfx::Vector2dF scroll_delta) = 0;
+
+  virtual bool ScrollVerticallyByPage(
+      gfx::Point viewport_point,
+      WebKit::WebScrollbar::ScrollDirection direction) = 0;
 
   // Stop scrolling the selected layer. Should only be called if ScrollBegin()
   // returned ScrollStarted.

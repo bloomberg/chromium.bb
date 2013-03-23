@@ -542,6 +542,39 @@ TEST_F(LayerTreeHostImplTest, scrollByReturnsCorrectValue)
     EXPECT_TRUE(m_hostImpl->ScrollBy(gfx::Point(), gfx::Vector2d(5000, 5000)));
 }
 
+TEST_F(LayerTreeHostImplTest, scrollVerticallyByPageReturnsCorrectValue)
+{
+    setupScrollAndContentsLayers(gfx::Size(200, 2000));
+    m_hostImpl->SetViewportSize(gfx::Size(100, 1000), gfx::Size(100, 1000));
+
+    initializeRendererAndDrawFrame();
+
+    EXPECT_EQ(InputHandlerClient::ScrollStarted,
+        m_hostImpl->ScrollBegin(gfx::Point(0, 0), InputHandlerClient::Wheel));
+
+    // Trying to scroll without a vertical scrollbar will fail.
+    EXPECT_FALSE(m_hostImpl->ScrollVerticallyByPage(
+          gfx::Point(), WebKit::WebScrollbar::ScrollForward));
+    EXPECT_FALSE(m_hostImpl->ScrollVerticallyByPage(
+          gfx::Point(), WebKit::WebScrollbar::ScrollBackward));
+
+    scoped_ptr<cc::ScrollbarLayerImpl> vertical_scrollbar(
+        cc::ScrollbarLayerImpl::Create(
+            m_hostImpl->active_tree(),
+            20,
+            scoped_ptr<ScrollbarGeometryFixedThumb>()));
+    vertical_scrollbar->SetBounds(gfx::Size(15, 1000));
+    m_hostImpl->RootScrollLayer()->SetVerticalScrollbarLayer(
+        vertical_scrollbar.get());
+
+    // Trying to scroll with a vertical scrollbar will succeed.
+    EXPECT_TRUE(m_hostImpl->ScrollVerticallyByPage(
+          gfx::Point(), WebKit::WebScrollbar::ScrollForward));
+    EXPECT_FLOAT_EQ(875.f, m_hostImpl->RootScrollLayer()->scroll_delta().y());
+    EXPECT_TRUE(m_hostImpl->ScrollVerticallyByPage(
+          gfx::Point(), WebKit::WebScrollbar::ScrollBackward));
+}
+
 TEST_F(LayerTreeHostImplTest, clearRootRenderSurfaceAndHitTestTouchHandlerRegion)
 {
     setupScrollAndContentsLayers(gfx::Size(100, 100));

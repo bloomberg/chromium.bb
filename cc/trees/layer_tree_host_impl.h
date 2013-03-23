@@ -91,6 +91,9 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandlerClient,
       InputHandlerClient::ScrollInputType type) OVERRIDE;
   virtual bool ScrollBy(gfx::Point viewport_point,
                         gfx::Vector2dF scroll_delta) OVERRIDE;
+  virtual bool ScrollVerticallyByPage(
+      gfx::Point viewport_point,
+      WebKit::WebScrollbar::ScrollDirection direction) OVERRIDE;
   virtual void ScrollEnd() OVERRIDE;
   virtual void PinchGestureBegin() OVERRIDE;
   virtual void PinchGestureUpdate(float magnify_delta,

@@ -1587,6 +1587,49 @@ bool LayerTreeHostImpl::ScrollBy(gfx::Point viewport_point,
   return did_scroll;
 }
 
+// This implements scrolling by page as described here:
+// http://msdn.microsoft.com/en-us/library/windows/desktop/ms645601(v=vs.85).aspx#_win32_The_Mouse_Wheel
+// for events with WHEEL_PAGESCROLL set.
+bool LayerTreeHostImpl::ScrollVerticallyByPage(
+    gfx::Point viewport_point,
+    WebKit::WebScrollbar::ScrollDirection direction) {
+  DCHECK(wheel_scrolling_);
+
+  for (LayerImpl* layer_impl = CurrentlyScrollingLayer();
+       layer_impl;
+       layer_impl = layer_impl->parent()) {
+    if (!layer_impl->scrollable())
+      continue;
+
+    if (!layer_impl->vertical_scrollbar_layer())
+      continue;
+
+    float height = layer_impl->vertical_scrollbar_layer()->bounds().height();
+
+    // These magical values match WebKit and are designed to scroll nearly the
+    // entire visible content height but leave a bit of overlap.
+    float page = std::max(height * 0.875f, 1.f);
+    if (direction == WebKit::WebScrollbar::ScrollBackward)
+      page = -page;
+
+    gfx::Vector2dF delta = gfx::Vector2dF(0.f, page);
+
+    gfx::Vector2dF applied_delta = ScrollLayerWithLocalDelta(layer_impl, delta);
+
+    if (!applied_delta.IsZero()) {
+      active_tree()->DidUpdateScroll();
+      client_->SetNeedsCommitOnImplThread();
+      client_->SetNeedsRedrawOnImplThread();
+      client_->RenewTreePriority();
+      return true;
+    }
+
+    active_tree_->SetCurrentlyScrollingLayer(layer_impl);
+  }
+
+  return false;
+}
+
 void LayerTreeHostImpl::ClearCurrentlyScrollingLayer() {
   active_tree_->ClearCurrentlyScrollingLayer();
   did_lock_scrolling_layer_ = false;
