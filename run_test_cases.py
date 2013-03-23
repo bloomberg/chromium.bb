@@ -786,15 +786,16 @@ def normalize_testing_time(data, duration, returncode):
     if i['output'] is not None:
       if i.get('crashed'):
         i['duration'] = startup_duration
+        assert i['returncode'] != 0
         i['returncode'] = returncode or i['returncode']
       else:
+        assert i['returncode'] != None
         # Distribute the one-time process startup cost across the test cases
         # that ran if the startup cost was above 10ms.
         if startup_duration > 0.01 and data_ran:
           distributed_duration = startup_duration / len(data_ran)
           for i in data_ran:
             i['duration'] += distributed_duration
-        i['returncode'] = returncode or i['returncode']
       break
   return data
 
@@ -919,11 +920,14 @@ class Runner(object):
       data.append(i)
       self.decider.got_result(i['returncode'] == 0)
       need_to_retry = i['returncode'] != 0 and try_count < self.retries
-      if try_count:
-        line = '%s (%.2fs) - retry #%d' % (
-            i['test_case'], i['duration'] or 0, try_count)
+      if i['duration'] is not None:
+        duration = '(%.2fs)' % i['duration']
       else:
-        line = '%s (%.2fs)' % (i['test_case'], i['duration'] or 0)
+        duration = '<unknown>'
+      if try_count:
+        line = '%s %s - retry #%d' % (i['test_case'], duration, try_count)
+      else:
+        line = '%s %s' % (i['test_case'], duration)
       if self.verbose or i['returncode'] != 0 or try_count > 0:
         # Print output in one of three cases:
         #   --verbose was specified.
