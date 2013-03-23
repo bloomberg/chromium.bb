@@ -399,6 +399,12 @@ bool ChromeContentClient::CanHandleWhileSwappedOut(
   // Any Chrome-specific messages (apart from those listed in
   // CanSendWhileSwappedOut) that must be handled by the browser when sent from
   // swapped out renderers.
+  switch (msg.type()) {
+    case ChromeViewHostMsg_Snapshot::ID:
+      return true;
+    default:
+      break;
+  }
   return false;
 }
 

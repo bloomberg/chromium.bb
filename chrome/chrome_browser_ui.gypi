@@ -1306,6 +1306,8 @@
         'browser/ui/simple_message_box.h',
         'browser/ui/singleton_tabs.cc',
         'browser/ui/singleton_tabs.h',
+        'browser/ui/snapshot_tab_helper.cc',
+        'browser/ui/snapshot_tab_helper.h',
         'browser/ui/startup/autolaunch_prompt.cc',
         'browser/ui/startup/autolaunch_prompt_win.cc',
         'browser/ui/startup/autolaunch_prompt.h',
