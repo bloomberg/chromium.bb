@@ -16,37 +16,21 @@ Usage example:
     --namespace extensions windows.json tabs.json
 """
 
+import optparse
+import os
+import sys
+
+from cpp_bundle_generator import CppBundleGenerator
 from cpp_generator import CppGenerator
 from cpp_type_generator import CppTypeGenerator
 from dart_generator import DartGenerator
-from cpp_bundle_generator import CppBundleGenerator
-from model import Model, UnixName
-import idl_schema
 import json_schema
-
-import optparse
-import os.path
-import sys
+from model import Model, UnixName
+from schema_loader import SchemaLoader
 
 # Names of supported code generators, as specified on the command-line.
 # First is default.
 GENERATORS = ['cpp', 'cpp-bundle', 'dart']
-
-def _LoadSchema(schema):
-  schema_filename, schema_extension = os.path.splitext(schema)
-
-  if schema_extension == '.json':
-    api_defs = json_schema.Load(schema)
-  elif schema_extension == '.idl':
-    api_defs = idl_schema.Load(schema)
-  else:
-    sys.exit('Did not recognize file extension %s for schema %s' %
-             (schema_extension, schema))
-  if len(api_defs) != 1:
-    sys.exit('File %s has multiple schemas. Files are only allowed to contain a'
-             ' single schema.' % schema)
-
-  return api_defs
 
 def GenerateSchema(generator,
                    filenames,
@@ -54,13 +38,15 @@ def GenerateSchema(generator,
                    destdir,
                    root_namespace,
                    dart_overrides_dir):
+  schema_loader = SchemaLoader(os.path.dirname(os.path.relpath(
+      os.path.normpath(filenames[0]), root)))
   # Merge the source files into a single list of schemas.
   api_defs = []
   for filename in filenames:
     schema = os.path.normpath(filename)
     schema_filename, schema_extension = os.path.splitext(schema)
     path, short_filename = os.path.split(schema_filename)
-    api_def = _LoadSchema(schema)
+    api_def = schema_loader.LoadSchema(schema)
 
     # If compiling the C++ model code, delete 'nocompile' nodes.
     if generator == 'cpp':
@@ -68,33 +54,6 @@ def GenerateSchema(generator,
     api_defs.extend(api_def)
 
   api_model = Model()
-
-  # Load type dependencies into the model.
-  #
-  # HACK(kalman): bundle mode doesn't work with dependencies, because not all
-  # schemas work in bundle mode.
-  #
-  # TODO(kalman): load dependencies lazily (get rid of the 'dependencies' list)
-  # and this problem will go away.
-  if generator != 'cpp-bundle':
-    for target_namespace in api_defs:
-      for referenced_schema in target_namespace.get('dependencies', []):
-        split_schema = referenced_schema.split(':', 1)
-        if len(split_schema) > 1:
-          if split_schema[0] != 'api':
-            continue
-          else:
-            referenced_schema = split_schema[1]
-
-        referenced_schema_path = os.path.join(
-            os.path.dirname(schema), '%s.json' % UnixName(referenced_schema))
-        referenced_api_defs = json_schema.Load(referenced_schema_path)
-
-        for namespace in referenced_api_defs:
-          api_model.AddNamespace(
-              namespace,
-              os.path.relpath(referenced_schema_path, root),
-              include_compiler_options=True)
 
   # For single-schema compilation make sure that the first (i.e. only) schema
   # is the default one.
@@ -125,6 +84,7 @@ def GenerateSchema(generator,
 
   # Construct the type generator with all the namespaces in this model.
   type_generator = CppTypeGenerator(api_model,
+                                    schema_loader,
                                     default_namespace=default_namespace)
 
   if generator == 'cpp-bundle':

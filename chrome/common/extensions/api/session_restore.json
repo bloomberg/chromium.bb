@@ -5,7 +5,6 @@
 [
   {
     "namespace": "sessionRestore",
-    "dependencies": [ "tabs", "windows" ],
     "types": [
       {
         "id": "ClosedEntry",

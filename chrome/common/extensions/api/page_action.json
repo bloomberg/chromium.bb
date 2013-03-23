@@ -5,7 +5,6 @@
 [
   {
     "namespace": "pageAction",
-    "dependencies": [ "tabs" ],
     "types": [
       {
         "id": "ImageDataType",

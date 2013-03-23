@@ -10,6 +10,16 @@ import unittest
 
 from collections import defaultdict
 
+class _FakeSchemaLoader(object):
+  def __init__(self, model):
+    self._model = model
+
+  def ResolveType(self, type_name, default):
+    parts = type_name.rsplit('.', 1)
+    if len(parts) == 1:
+      return default if type_name in default.types else None
+    return self._model.namespaces[parts[0]]
+
 class CppTypeGeneratorTest(unittest.TestCase):
   def setUp(self):
     self.models = defaultdict(model.Model)
@@ -43,7 +53,7 @@ class CppTypeGeneratorTest(unittest.TestCase):
     m = model.Model()
     m.AddNamespace(self.windows_json[0], 'path/to/windows.json')
     m.AddNamespace(self.tabs_json[0], 'path/to/tabs.json')
-    manager = CppTypeGenerator(m)
+    manager = CppTypeGenerator(m, _FakeSchemaLoader(m))
 
     self.assertEquals('', manager.GenerateIncludes().Render())
     self.assertEquals('#include "path/to/tabs.h"',
@@ -52,11 +62,13 @@ class CppTypeGeneratorTest(unittest.TestCase):
                       'struct Tab;\n'
                       '}',
                       manager.GenerateForwardDeclarations().Render())
-    manager = CppTypeGenerator(self.models.get('permissions'))
+    manager = CppTypeGenerator(self.models.get('permissions'),
+                               _FakeSchemaLoader(m))
     self.assertEquals('', manager.GenerateIncludes().Render())
     self.assertEquals('', manager.GenerateIncludes().Render())
     self.assertEquals('', manager.GenerateForwardDeclarations().Render())
-    manager = CppTypeGenerator(self.models.get('content_settings'))
+    manager = CppTypeGenerator(self.models.get('content_settings'),
+                               _FakeSchemaLoader(m))
     self.assertEquals('', manager.GenerateIncludes().Render())
 
   def testGenerateIncludesAndForwardDeclarationsDependencies(self):
@@ -67,7 +79,9 @@ class CppTypeGeneratorTest(unittest.TestCase):
     m.AddNamespace(self.browser_action_json[0], 'path/to/browser_action.json')
     dependency_tester = m.AddNamespace(self.dependency_tester_json[0],
                                        'path/to/dependency_tester.json')
-    manager = CppTypeGenerator(m, default_namespace=dependency_tester)
+    manager = CppTypeGenerator(m,
+                               _FakeSchemaLoader(m),
+                               default_namespace=dependency_tester)
     self.assertEquals('#include "path/to/browser_action.h"\n'
                       '#include "path/to/font_settings.h"',
                       manager.GenerateIncludes().Render())
@@ -78,7 +92,7 @@ class CppTypeGeneratorTest(unittest.TestCase):
                       manager.GenerateForwardDeclarations().Render())
 
   def testGetCppTypeSimple(self):
-    manager = CppTypeGenerator(self.models.get('tabs'))
+    manager = CppTypeGenerator(self.models.get('tabs'), _FakeSchemaLoader(None))
     self.assertEquals(
         'int',
         manager.GetCppType(self.tabs.types['Tab'].properties['id'].type_))
@@ -90,31 +104,35 @@ class CppTypeGeneratorTest(unittest.TestCase):
         manager.GetCppType(self.tabs.types['Tab'].properties['selected'].type_))
 
   def testStringAsType(self):
-    manager = CppTypeGenerator(self.models.get('font_settings'))
+    manager = CppTypeGenerator(self.models.get('font_settings'),
+                               _FakeSchemaLoader(None))
     self.assertEquals(
         'std::string',
         manager.GetCppType(self.font_settings.types['FakeStringType']))
 
   def testArrayAsType(self):
-    manager = CppTypeGenerator(self.models.get('browser_action'))
+    manager = CppTypeGenerator(self.models.get('browser_action'),
+                               _FakeSchemaLoader(None))
     self.assertEquals(
         'std::vector<int>',
         manager.GetCppType(self.browser_action.types['ColorArray']))
 
   def testGetCppTypeArray(self):
-    manager = CppTypeGenerator(self.models.get('windows'))
+    manager = CppTypeGenerator(self.models.get('windows'),
+                                _FakeSchemaLoader(None))
     self.assertEquals(
         'std::vector<linked_ptr<Window> >',
         manager.GetCppType(
             self.windows.functions['getAll'].callback.params[0].type_))
-    manager = CppTypeGenerator(self.models.get('permissions'))
+    manager = CppTypeGenerator(self.models.get('permissions'),
+                               _FakeSchemaLoader(None))
     self.assertEquals(
         'std::vector<std::string>',
         manager.GetCppType(
             self.permissions.types['Permissions'].properties['origins'].type_))
 
   def testGetCppTypeLocalRef(self):
-    manager = CppTypeGenerator(self.models.get('tabs'))
+    manager = CppTypeGenerator(self.models.get('tabs'), _FakeSchemaLoader(None))
     self.assertEquals(
         'Tab',
         manager.GetCppType(self.tabs.functions['get'].callback.params[0].type_))
@@ -123,14 +141,15 @@ class CppTypeGeneratorTest(unittest.TestCase):
     m = model.Model()
     m.AddNamespace(self.windows_json[0], 'path/to/windows.json')
     m.AddNamespace(self.tabs_json[0], 'path/to/tabs.json')
-    manager = CppTypeGenerator(m)
+    manager = CppTypeGenerator(m, _FakeSchemaLoader(m))
     self.assertEquals(
         'std::vector<linked_ptr<tabs::Tab> >',
         manager.GetCppType(
             self.windows.types['Window'].properties['tabs'].type_))
 
   def testGetCppTypeWithPadForGeneric(self):
-    manager = CppTypeGenerator(self.models.get('permissions'))
+    manager = CppTypeGenerator(self.models.get('permissions'),
+                               _FakeSchemaLoader(None))
     self.assertEquals('std::vector<std::string>',
         manager.GetCppType(
             self.permissions.types['Permissions'].properties['origins'].type_,

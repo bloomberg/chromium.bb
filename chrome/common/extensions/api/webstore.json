@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 [
-  { 
+  {
     "namespace": "webstore",
 
     // Any webpage can use the webstore API.

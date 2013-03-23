@@ -24,11 +24,6 @@ namespace extensions {
 namespace {
 
 const char kChromeHidden[] = "chromeHidden";
-const char kUnavailableMessage[] = "You do not have permission to access this "
-                                   "API. Ensure that the required permission "
-                                   "or manifest property is included in your "
-                                   "manifest.json.";
-
 const char kValidateCallbacks[] = "validateCallbacks";
 const char kValidateAPI[] = "validateAPI";
 
@@ -41,8 +36,7 @@ ChromeV8Context::ChromeV8Context(v8::Handle<v8::Context> v8_context,
     : v8_context_(v8_context),
       web_frame_(web_frame),
       extension_(extension),
-      context_type_(context_type),
-      available_extension_apis_initialized_(false) {
+      context_type_(context_type) {
   VLOG(1) << "Created context:\n"
           << "  extension id: " << GetExtensionID() << "\n"
           << "  frame:        " << web_frame_ << "\n"
@@ -154,29 +148,13 @@ bool ChromeV8Context::CallChromeHiddenMethod(
   return true;
 }
 
-const std::set<std::string>& ChromeV8Context::GetAvailableExtensionAPIs() {
-  if (!available_extension_apis_initialized_) {
-    available_extension_apis_ =
-        ExtensionAPI::GetSharedInstance()->GetAPIsForContext(
-            context_type_,
-            extension_,
-            UserScriptSlave::GetDataSourceURLForFrame(web_frame_));
-    available_extension_apis_initialized_ = true;
-  }
-  return available_extension_apis_;
-}
-
 Feature::Availability ChromeV8Context::GetAvailability(
     const std::string& api_name) {
-  const std::set<std::string>& available_apis = GetAvailableExtensionAPIs();
-
-  // TODO(cduvall/kalman): Switch to ExtensionAPI::IsAvailable() once Features
-  // are complete.
-  if (available_apis.find(api_name) != available_apis.end())
-    return Feature::CreateAvailability(Feature::IS_AVAILABLE, "");
-
-  return Feature::CreateAvailability(Feature::INVALID_CONTEXT,
-                                     kUnavailableMessage);
+  return ExtensionAPI::GetSharedInstance()->IsAvailable(
+      api_name,
+      extension_,
+      context_type_,
+      UserScriptSlave::GetDataSourceURLForFrame(web_frame_));
 }
 
 void ChromeV8Context::DispatchOnLoadEvent(bool is_incognito_process,

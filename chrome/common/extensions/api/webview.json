@@ -6,7 +6,6 @@
   {
     "namespace": "webview",
     "nodoc": true,
-    "dependencies": [ "extension", "tabs" ],
     "types": [
       // TODO(fsamuel): We should be usng tabs.InjectDetails. However, due to a
       // bug in the JSON compiler, we are currently copying-and-pasting this

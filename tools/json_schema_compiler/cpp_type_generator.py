@@ -25,25 +25,15 @@ class CppTypeGenerator(object):
   """Manages the types of properties and provides utilities for getting the
   C++ type out of a model.Property
   """
-  def __init__(self, model, default_namespace=None):
+  def __init__(self, model, schema_loader, default_namespace=None):
     """Creates a cpp_type_generator. The given root_namespace should be of the
     format extensions::api::sub. The generator will generate code suitable for
     use in the given model's namespace.
     """
-    self._type_namespaces = {}
     self._default_namespace = default_namespace
-
-    for referenced_namespace in model.namespaces.values():
-      if self._default_namespace is None:
-        self._default_namespace = referenced_namespace
-      for type_name in referenced_namespace.types:
-        # Allow $refs to refer to just 'Type' within referenced_namespaces.
-        # Otherwise they must be qualified with 'namespace.Type'.
-        type_aliases = ['%s.%s' % (referenced_namespace.name, type_name)]
-        if referenced_namespace is self._default_namespace:
-          type_aliases.append(type_name)
-        for alias in type_aliases:
-          self._type_namespaces[alias] = referenced_namespace
+    if self._default_namespace is None:
+      self._default_namespace = model.namespaces.values()[0]
+    self._schema_loader = schema_loader
 
   def GetCppNamespaceName(self, namespace):
     """Gets the mapped C++ namespace name for the given namespace relative to
@@ -81,7 +71,7 @@ class CppTypeGenerator(object):
     """Translates a model.Property or model.Type into its C++ type.
 
     If REF types from different namespaces are referenced, will resolve
-    using self._type_namespaces.
+    using self._schema_loader.
 
     Use |is_ptr| if the type is optional. This will wrap the type in a
     scoped_ptr if possible (it is not possible to wrap an enum).
@@ -178,7 +168,8 @@ class CppTypeGenerator(object):
     """Finds the model.Type with name |qualified_name|. If it's not from
     |self._default_namespace| then it needs to be qualified.
     """
-    namespace = self._type_namespaces.get(full_name, None)
+    namespace = self._schema_loader.ResolveType(full_name,
+                                                self._default_namespace)
     if namespace is None:
       raise KeyError('Cannot resolve type %s. Maybe it needs a prefix '
                      'if it comes from another namespace?' % full_name)

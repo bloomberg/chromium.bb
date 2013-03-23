@@ -98,10 +98,7 @@ class ChromeV8Context {
       v8::Handle<v8::Value>* argv,
       v8::Handle<v8::Value>* result) const;
 
-  // Returns the set of extension APIs that are available to this context. If no
-  // APIs are available, returns an empty set.
-  const std::set<std::string>& GetAvailableExtensionAPIs();
-
+  // Returns the availability of the API |api_name|.
   Feature::Availability GetAvailability(const std::string& api_name);
 
   // Returns a string description of the type of context this is.
@@ -124,10 +121,6 @@ class ChromeV8Context {
 
   // Owns and structures the JS that is injected to set up extension bindings.
   scoped_ptr<ModuleSystem> module_system_;
-
-  // The extension APIs available to this context.
-  std::set<std::string> available_extension_apis_;
-  bool available_extension_apis_initialized_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeV8Context);
 };

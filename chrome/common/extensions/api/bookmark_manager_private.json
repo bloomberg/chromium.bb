@@ -6,7 +6,6 @@
   {
     "namespace": "bookmarkManagerPrivate",
     "nodoc": true,
-    "dependencies": [ "bookmarks" ],
     "types": [
       {
         "id": "BookmarkNodeDataElement",

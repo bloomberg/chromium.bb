@@ -8,6 +8,7 @@
 
 import cc_generator
 import code
+import compiler
 import cpp_type_generator
 import cpp_util
 import h_generator
@@ -211,7 +212,9 @@ updateEverything();
       (api_def, file_path) = self._LoadModel(filedir, filename)
       namespace = api_model.AddNamespace(api_def, file_path)
       type_generator = cpp_type_generator.CppTypeGenerator(
-         'previewserver::api', namespace, namespace.unix_name)
+           namespace,
+           compiler.TypeNamespaceResolver(filedir),
+           namespace.unix_name)
 
       # Get the model's dependencies.
       for dependency in api_def.get('dependencies', []):

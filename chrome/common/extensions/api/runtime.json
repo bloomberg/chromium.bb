@@ -5,7 +5,6 @@
 [
   {
     "namespace": "runtime",
-    "dependencies": [ "events", "tabs" ],
     "documentation_permissions_required": ["runtime"],
     "types": [
       {

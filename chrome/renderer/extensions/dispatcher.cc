@@ -975,32 +975,13 @@ void Dispatcher::DidCreateScriptContext(
 
   GetOrCreateChrome(v8_context);
 
-  // Loading JavaScript is expensive, so only run the full API bindings
-  // generation mechanisms in extension pages (NOT all web pages).
-  switch (context_type) {
-    case Feature::UNSPECIFIED_CONTEXT:
-    case Feature::WEB_PAGE_CONTEXT:
-      // TODO(kalman): see comment below about ExtensionAPI.
-      InstallBindings(module_system.get(), v8_context, "app");
-      InstallBindings(module_system.get(), v8_context, "webstore");
-      break;
-    case Feature::BLESSED_EXTENSION_CONTEXT:
-    case Feature::UNBLESSED_EXTENSION_CONTEXT:
-    case Feature::CONTENT_SCRIPT_CONTEXT: {
-      if (extension && !extension->is_platform_app())
-        module_system->Require("miscellaneous_bindings");
-      module_system->Require("json");  // see paranoid comment in json.js
-
-      // TODO(kalman): move this code back out of the switch and execute it
-      // regardless of |context_type|. ExtensionAPI knows how to return the
-      // correct APIs, however, until it doesn't have a 2MB overhead we can't
-      // load it in every process.
-      RegisterSchemaGeneratedBindings(module_system.get(),
-                                      context,
-                                      v8_context);
-      break;
-    }
-  }
+  if (extension && !extension->is_platform_app())
+    module_system->Require("miscellaneous_bindings");
+  // See paranoid comment in json.js. http://crbug.com/223170
+  module_system->Require("json");
+  RegisterSchemaGeneratedBindings(module_system.get(),
+                                  context,
+                                  v8_context);
 
   bool is_within_platform_app = IsWithinPlatformApp(frame);
   // Inject custom JS into the platform app context.
