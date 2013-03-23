@@ -213,6 +213,9 @@ void AutofillDialogViewAndroid::UpdateProgressBar(double value) {
 }
 
 void AutofillDialogViewAndroid::ModelChanged() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_AutofillDialogGlue_modelChanged(env, java_object_.obj(), false);
+
   UpdateSection(SECTION_EMAIL);
   UpdateSection(SECTION_CC);
   UpdateSection(SECTION_BILLING);

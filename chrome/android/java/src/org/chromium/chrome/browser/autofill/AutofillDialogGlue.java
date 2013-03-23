@@ -55,6 +55,7 @@ public class AutofillDialogGlue implements AutofillDialogDelegate {
      * Notifies the dialog that the underlying model is changed and all sections will be updated.
      * @param fetchingIsActive If true, the data is being fetched and is not yet available.
      */
+    @CalledByNative
     private void modelChanged(boolean fetchingIsActive) {
         mAutofillDialog.modelChanged(fetchingIsActive);
     }
