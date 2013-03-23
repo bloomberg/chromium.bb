@@ -44,7 +44,7 @@ class ProviderImpl::PollingThread : public base::Thread {
 
   // Schedule a notification to the |provider_| which lives on a different
   // thread (|creator_loop_| is its message loop).
-  void ScheduleDoNotify(const DeviceData* device_data,
+  void ScheduleDoNotify(const scoped_refptr<const DeviceData>& device_data,
                         DeviceData::Type device_data_type);
 
   enum { kDesiredSamplingIntervalMs = 100 };
@@ -113,7 +113,8 @@ void ProviderImpl::PollingThread::Initialize(DataFetcherFactory factory,
 }
 
 void ProviderImpl::PollingThread::ScheduleDoNotify(
-    const DeviceData* device_data, DeviceData::Type device_data_type) {
+    const scoped_refptr<const DeviceData>& device_data,
+    DeviceData::Type device_data_type) {
   DCHECK(MessageLoop::current() == message_loop());
 
   creator_loop_->PostTask(FROM_HERE,
@@ -259,11 +260,9 @@ void ProviderImpl::ScheduleInitializePollingThread(
                                     device_data_type));
 }
 
-void ProviderImpl::DoNotify(const DeviceData* device_data,
+void ProviderImpl::DoNotify(const scoped_refptr<const DeviceData>& data,
     DeviceData::Type device_data_type) {
   DCHECK(MessageLoop::current() == creator_loop_);
-
-  scoped_refptr<const DeviceData> data(device_data);
 
   // Update last notification of this type.
   last_notifications_map_[device_data_type] = data;

@@ -47,7 +47,7 @@ class ProviderImpl : public Provider {
 
   // Method for notifying observers of a data update.
   // Runs on the creator_thread_.
-  void DoNotify(const DeviceData* device_data,
+  void DoNotify(const scoped_refptr<const DeviceData>& data,
                 DeviceData::Type device_data_type);
 
   static bool ShouldFireEvent(const DeviceData* old_data,
