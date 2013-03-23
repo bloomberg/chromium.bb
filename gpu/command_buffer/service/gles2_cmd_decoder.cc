@@ -9965,6 +9965,10 @@ error::Error GLES2DecoderImpl::HandleGenMailboxCHROMIUM(
 
 void GLES2DecoderImpl::DoProduceTextureCHROMIUM(GLenum target,
                                                 const GLbyte* mailbox) {
+  TRACE_EVENT2("gpu", "GLES2DecoderImpl::DoProduceTextureCHROMIUM",
+      "context", GetLogPrefix(),
+      "mailbox[0]", static_cast<unsigned char>(mailbox[0]));
+
   Texture* texture = GetTextureInfoForTarget(target);
   if (!texture) {
     LOCAL_SET_GL_ERROR(
@@ -10000,6 +10004,10 @@ void GLES2DecoderImpl::DoProduceTextureCHROMIUM(GLenum target,
 
 void GLES2DecoderImpl::DoConsumeTextureCHROMIUM(GLenum target,
                                                 const GLbyte* mailbox) {
+  TRACE_EVENT2("gpu", "GLES2DecoderImpl::DoConsumeTextureCHROMIUM",
+      "context", GetLogPrefix(),
+      "mailbox[0]", static_cast<unsigned char>(mailbox[0]));
+
   Texture* texture = GetTextureInfoForTarget(target);
   if (!texture) {
     LOCAL_SET_GL_ERROR(
