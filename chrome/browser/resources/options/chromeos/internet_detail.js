@@ -275,6 +275,9 @@ cr.define('options.internet', function() {
         this.handleNameServerTypeChange_);
       $('user-dns-radio').addEventListener('click',
         this.handleNameServerTypeChange_);
+
+      $('google-dns-label').innerHTML =
+        loadTimeData.getString('googleNameServers');
     },
 
     /**

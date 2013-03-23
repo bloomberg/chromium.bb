@@ -1208,7 +1208,7 @@ Press any key to continue exploring.
     Automatic name servers
   </message>
   <message name="IDS_OPTIONS_SETTINGS_INTERNET_GOOGLE_NAME_SERVERS" desc="In the name server type radio for static ip configuration, labels the Google DNS selection.">
-    Google name servers
+    Google name servers - <ph name="BEGIN_LINK">&lt;a href="https://developers.google.com/speed/public-dns" target="_blank"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;</ph>
   </message>
   <message name="IDS_OPTIONS_SETTINGS_INTERNET_USER_NAME_SERVERS" desc="In the name server type radio for static ip configuration, labels the user DNS selection.">
     Custom name servers
