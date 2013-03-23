@@ -902,6 +902,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     // also be added to chrome/browser/chromeos/login/chrome_restart_request.cc.
     cc::switches::kBackgroundColorInsteadOfCheckerboard,
     cc::switches::kCompositeToMailbox,
+    cc::switches::kDisableColorEstimator,
     cc::switches::kDisableImplSidePainting,
     cc::switches::kDisableThreadedAnimation,
     cc::switches::kEnableCompositorFrameMessage,
@@ -928,8 +929,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     cc::switches::kTopControlsShowThreshold,
     cc::switches::kTraceAllRenderedFrames,
     cc::switches::kTraceOverdraw,
-    cc::switches::kUseCheapnessEstimator,
-    cc::switches::kUseColorEstimator,
+    cc::switches::kUseCheapnessEstimator
   };
   renderer_cmd->CopySwitchesFrom(browser_cmd, kSwitchNames,
                                  arraysize(kSwitchNames));
