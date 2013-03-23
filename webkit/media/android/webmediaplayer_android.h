@@ -8,15 +8,21 @@
 #include <jni.h>
 
 #include "base/basictypes.h"
-#include "base/message_loop.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop.h"
 #include "base/time.h"
+#include "cc/layers/video_frame_provider.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayer.h"
 
 namespace WebKit {
 class WebVideoFrame;
+}
+
+namespace webkit {
+class WebLayerImpl;
 }
 
 namespace webkit_media {
@@ -30,6 +36,9 @@ class WebVideoFrameImpl;
 // WebKit::WebMediaPlayer on Android.
 class WebMediaPlayerAndroid
     : public WebKit::WebMediaPlayer,
+#ifdef REMOVE_WEBVIDEOFRAME
+      public cc::VideoFrameProvider,
+#endif
       public MessageLoop::DestructionObserver {
  public:
   // Resource loading.
@@ -94,6 +103,7 @@ class WebMediaPlayerAndroid
   virtual unsigned audioDecodedByteCount() const;
   virtual unsigned videoDecodedByteCount() const;
 
+#ifndef REMOVE_WEBVIDEOFRAME
   // Methods called from VideoLayerChromium. These methods are running on the
   // compositor thread.
   virtual WebKit::WebVideoFrame* getCurrentFrame();
@@ -102,6 +112,15 @@ class WebMediaPlayerAndroid
   // This gets called both on compositor and main thread to set the callback
   // target when a frame is produced.
   virtual void setStreamTextureClient(WebKit::WebStreamTextureClient* client);
+#else
+  // cc::VideoFrameProvider implementation. These methods are running on the
+  // compositor thread.
+  virtual void SetVideoFrameProviderClient(
+      cc::VideoFrameProvider::Client* client) OVERRIDE;
+  virtual scoped_refptr<media::VideoFrame> GetCurrentFrame() OVERRIDE;
+  virtual void PutCurrentFrame(const scoped_refptr<media::VideoFrame>& frame)
+      OVERRIDE;
+#endif
 
   // Media player callback handlers.
   virtual void OnMediaPrepared(base::TimeDelta duration);
@@ -195,8 +214,8 @@ class WebMediaPlayerAndroid
   // Size of the video.
   WebKit::WebSize natural_size_;
 
-  // The video frame object used for renderering by WebKit.
-  scoped_ptr<WebVideoFrameImpl> web_video_frame_;
+  // The video frame object used for rendering by the compositor.
+  scoped_refptr<media::VideoFrame> current_frame_;
 
   // Message loop for main renderer thread.
   MessageLoop* main_loop_;
@@ -250,6 +269,12 @@ class WebMediaPlayerAndroid
 
   // Whether media player needs external surface.
   bool needs_external_surface_;
+
+  // A pointer back to the compositor to inform it about state changes. This is
+  // not NULL while the compositor is actively using this webmediaplayer.
+  cc::VideoFrameProvider::Client* video_frame_provider_client_;
+
+  scoped_ptr<webkit::WebLayerImpl> video_weblayer_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerAndroid);
 };

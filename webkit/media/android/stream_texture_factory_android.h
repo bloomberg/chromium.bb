@@ -5,6 +5,9 @@
 #ifndef WEBKIT_MEDIA_ANDROID_STREAM_TEXTURE_FACTORY_ANDROID_H_
 #define WEBKIT_MEDIA_ANDROID_STREAM_TEXTURE_FACTORY_ANDROID_H_
 
+#include "cc/layers/video_frame_provider.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebVideoFrame.h"
+
 namespace WebKit {
 class WebStreamTextureClient;
 }
@@ -25,7 +28,11 @@ class StreamTextureProxy {
 
   // Setting the target for callback when a frame is available. This function
   // could be called on both the main thread and the compositor thread.
+#ifndef REMOVE_WEBVIDEOFRAME
   virtual void SetClient(WebKit::WebStreamTextureClient* client) = 0;
+#else
+  virtual void SetClient(cc::VideoFrameProvider::Client* client) = 0;
+#endif
 };
 
 

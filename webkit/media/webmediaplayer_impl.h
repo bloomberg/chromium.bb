@@ -26,6 +26,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
+#include "cc/layers/video_frame_provider.h"
 #include "googleurl/src/gurl.h"
 #include "media/base/audio_renderer_sink.h"
 #include "media/base/decryptor.h"
@@ -54,6 +55,10 @@ class ChunkDemuxer;
 class MediaLog;
 }
 
+namespace webkit {
+class WebLayerImpl;
+}
+
 namespace webkit_media {
 
 class BufferedDataSource;
@@ -64,6 +69,9 @@ class WebMediaPlayerParams;
 
 class WebMediaPlayerImpl
     : public WebKit::WebMediaPlayer,
+#ifdef REMOVE_WEBVIDEOFRAME
+      public cc::VideoFrameProvider,
+#endif
       public MessageLoop::DestructionObserver,
       public base::SupportsWeakPtr<WebMediaPlayerImpl> {
  public:
@@ -141,8 +149,17 @@ class WebMediaPlayerImpl
   virtual unsigned audioDecodedByteCount() const;
   virtual unsigned videoDecodedByteCount() const;
 
+#ifndef REMOVE_WEBVIDEOFRAME
   virtual WebKit::WebVideoFrame* getCurrentFrame();
   virtual void putCurrentFrame(WebKit::WebVideoFrame* web_video_frame);
+#else
+  // cc::VideoFrameProvider implementation.
+  virtual void SetVideoFrameProviderClient(
+      cc::VideoFrameProvider::Client* client) OVERRIDE;
+  virtual scoped_refptr<media::VideoFrame> GetCurrentFrame() OVERRIDE;
+  virtual void PutCurrentFrame(const scoped_refptr<media::VideoFrame>& frame)
+      OVERRIDE;
+#endif
 
   virtual bool copyVideoTextureToPlatformTexture(
       WebKit::WebGraphicsContext3D* web_graphics_context,
@@ -340,6 +357,14 @@ class WebMediaPlayerImpl
   media::SkCanvasVideoRenderer skcanvas_video_renderer_;
   scoped_refptr<media::VideoFrame> current_frame_;
   bool pending_repaint_;
+
+  // The compositor layer for displaying the video content when using composited
+  // playback.
+  scoped_ptr<webkit::WebLayerImpl> video_weblayer_;
+
+  // A pointer back to the compositor to inform it about state changes. This is
+  // not NULL while the compositor is actively using this webmediaplayer.
+  cc::VideoFrameProvider::Client* video_frame_provider_client_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerImpl);
 };

@@ -15,6 +15,7 @@
 #include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
 #include "base/synchronization/waitable_event.h"
+#include "cc/layers/video_layer.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "media/audio/null_audio_sink.h"
 #include "media/base/bind_to_loop.h"
@@ -34,6 +35,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRuntimeFeatures.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "v8/include/v8.h"
+#include "webkit/compositor_bindings/web_layer_impl.h"
 #include "webkit/media/buffered_data_source.h"
 #include "webkit/media/filter_helpers.h"
 #include "webkit/media/webaudiosourceprovider_impl.h"
@@ -145,7 +147,8 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       is_local_source_(false),
       supports_save_(true),
       starting_(false),
-      pending_repaint_(false) {
+      pending_repaint_(false),
+      video_frame_provider_client_(NULL) {
   media_log_->AddEvent(
       media_log_->CreateEvent(media::MediaLogEvent::WEBMEDIAPLAYER_CREATED));
 
@@ -216,6 +219,11 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
 }
 
 WebMediaPlayerImpl::~WebMediaPlayerImpl() {
+#ifdef REMOVE_WEBVIDEOFRAME
+  SetVideoFrameProviderClient(NULL);
+  GetClient()->setWebLayer(NULL);
+#endif
+
   DCHECK(main_loop_->BelongsToCurrentThread());
   Destroy();
   media_log_->AddEvent(
@@ -661,6 +669,7 @@ unsigned WebMediaPlayerImpl::videoDecodedByteCount() const {
   return stats.video_bytes_decoded;
 }
 
+#ifndef REMOVE_WEBVIDEOFRAME
 WebKit::WebVideoFrame* WebMediaPlayerImpl::getCurrentFrame() {
   base::AutoLock auto_lock(lock_);
   if (current_frame_)
@@ -677,6 +686,30 @@ void WebMediaPlayerImpl::putCurrentFrame(
   }
   delete web_video_frame;
 }
+#else
+void WebMediaPlayerImpl::SetVideoFrameProviderClient(
+    cc::VideoFrameProvider::Client* client) {
+  // This is called from both the main renderer thread and the compositor
+  // thread (when the main thread is blocked).
+  if (video_frame_provider_client_)
+    video_frame_provider_client_->StopUsingProvider();
+  video_frame_provider_client_ = client;
+}
+
+scoped_refptr<media::VideoFrame> WebMediaPlayerImpl::GetCurrentFrame() {
+  base::AutoLock auto_lock(lock_);
+  return current_frame_;
+}
+
+void WebMediaPlayerImpl::PutCurrentFrame(
+    const scoped_refptr<media::VideoFrame>& frame) {
+  if (!accelerated_compositing_reported_) {
+    accelerated_compositing_reported_ = true;
+    DCHECK(frame_->view()->isAcceleratedCompositingActive());
+    UMA_HISTOGRAM_BOOLEAN("Media.AcceleratedCompositingActive", true);
+  }
+}
+#endif
 
 bool WebMediaPlayerImpl::copyVideoTextureToPlatformTexture(
     WebKit::WebGraphicsContext3D* web_graphics_context,
@@ -967,6 +1000,15 @@ void WebMediaPlayerImpl::OnPipelineBufferingState(
   switch (buffering_state) {
     case media::Pipeline::kHaveMetadata:
       SetReadyState(WebMediaPlayer::ReadyStateHaveMetadata);
+
+#ifdef REMOVE_WEBVIDEOFRAME
+      if (hasVideo() && GetClient()->needsWebLayerForVideo()) {
+        DCHECK(!video_weblayer_);
+        video_weblayer_.reset(
+            new webkit::WebLayerImpl(cc::VideoLayer::Create(this)));
+        GetClient()->setWebLayer(video_weblayer_.get());
+      }
+#endif
       break;
     case media::Pipeline::kPrerollCompleted:
       SetReadyState(WebMediaPlayer::ReadyStateHaveEnoughData);
@@ -1119,16 +1161,17 @@ void WebMediaPlayerImpl::SetReadyState(WebMediaPlayer::ReadyState state) {
   DCHECK(main_loop_->BelongsToCurrentThread());
   DVLOG(1) << "SetReadyState: " << state;
 
+#ifndef REMOVE_WEBVIDEOFRAME
   if (ready_state_ == WebMediaPlayer::ReadyStateHaveNothing &&
       state >= WebMediaPlayer::ReadyStateHaveMetadata) {
     if (!hasVideo())
       GetClient()->disableAcceleratedCompositing();
-  } else if (state == WebMediaPlayer::ReadyStateHaveEnoughData) {
-    if (is_local_source_ &&
-        network_state_ == WebMediaPlayer::NetworkStateLoading) {
-      SetNetworkState(WebMediaPlayer::NetworkStateLoaded);
-    }
-  }
+  } else
+#endif
+  if (state == WebMediaPlayer::ReadyStateHaveEnoughData &&
+      is_local_source_ &&
+      network_state_ == WebMediaPlayer::NetworkStateLoading)
+    SetNetworkState(WebMediaPlayer::NetworkStateLoaded);
 
   ready_state_ = state;
   // Always notify to ensure client has the latest value.

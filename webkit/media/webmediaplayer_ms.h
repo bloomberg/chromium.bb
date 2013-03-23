@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
+#include "cc/layers/video_frame_provider.h"
 #include "googleurl/src/gurl.h"
 #include "media/filters/skcanvas_video_renderer.h"
 #include "skia/ext/platform_canvas.h"
@@ -22,6 +23,10 @@ class WebVideoFrame;
 
 namespace media {
 class MediaLog;
+}
+
+namespace webkit {
+class WebLayerImpl;
 }
 
 namespace webkit_media {
@@ -47,6 +52,9 @@ class WebMediaPlayerDelegate;
 //   WebKit client of this media player object.
 class WebMediaPlayerMS
     : public WebKit::WebMediaPlayer,
+#ifdef REMOVE_WEBVIDEOFRAME
+      public cc::VideoFrameProvider,
+#endif
       public base::SupportsWeakPtr<WebMediaPlayerMS> {
  public:
   // Construct a WebMediaPlayerMS with reference to the client, and
@@ -120,8 +128,17 @@ class WebMediaPlayerMS
   virtual unsigned audioDecodedByteCount() const OVERRIDE;
   virtual unsigned videoDecodedByteCount() const OVERRIDE;
 
+#ifndef REMOVE_WEBVIDEOFRAME
   virtual WebKit::WebVideoFrame* getCurrentFrame() OVERRIDE;
   virtual void putCurrentFrame(WebKit::WebVideoFrame* web_video_frame) OVERRIDE;
+#else
+  // VideoFrameProvider implementation.
+  virtual void SetVideoFrameProviderClient(
+      cc::VideoFrameProvider::Client* client) OVERRIDE;
+  virtual scoped_refptr<media::VideoFrame> GetCurrentFrame() OVERRIDE;
+  virtual void PutCurrentFrame(const scoped_refptr<media::VideoFrame>& frame)
+      OVERRIDE;
+#endif
 
  private:
   // The callback for VideoFrameProvider to signal a new frame is available.
@@ -155,9 +172,12 @@ class WebMediaPlayerMS
   base::WeakPtr<WebMediaPlayerDelegate> delegate_;
 
   MediaStreamClient* media_stream_client_;
-  scoped_refptr<VideoFrameProvider> video_frame_provider_;
+  scoped_refptr<webkit_media::VideoFrameProvider> video_frame_provider_;
   bool paused_;
-  // |current_frame_| is updated only on main thread.
+
+  // |current_frame_| is updated only on main thread. The object it holds
+  // can be freed on the compositor thread if it is the last to hold a
+  // reference but media::VideoFrame is a thread-safe ref-pointer.
   scoped_refptr<media::VideoFrame> current_frame_;
   // |current_frame_used_| is updated on both main and compositing thread.
   // It's used to track whether |current_frame_| was painted for detecting
@@ -165,6 +185,13 @@ class WebMediaPlayerMS
   bool current_frame_used_;
   base::Lock current_frame_lock_;
   bool pending_repaint_;
+
+  scoped_ptr<webkit::WebLayerImpl> video_weblayer_;
+
+  // A pointer back to the compositor to inform it about state changes. This is
+  // not NULL while the compositor is actively using this webmediaplayer.
+  cc::VideoFrameProvider::Client* video_frame_provider_client_;
+
   bool received_first_frame_;
   bool sequence_started_;
   base::TimeDelta start_time_;
