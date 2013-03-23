@@ -48,6 +48,6 @@
 
 // Exports
 window.ImageUtil = ImageUtil;
-window.Gallery = Gallery;
+window.FileCopyManagerWrapper = FileCopyManagerWrapper;
 
 })();
