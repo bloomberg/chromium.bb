@@ -92,6 +92,8 @@ def _MakeEnterLine(filenode, interface, arg, handle_errors, callback, meta):
       return 'EnterInstance enter(%s, %s);' % (arg[1], callback)
   elif arg[0] == 'PP_Resource':
     api_name = interface.GetName()
+    if api_name.endswith('Trusted'):
+      api_name = api_name[:-len('Trusted')]
     if api_name.endswith('_Dev'):
       api_name = api_name[:-len('_Dev')]
     api_name += '_API'
@@ -102,6 +104,9 @@ def _MakeEnterLine(filenode, interface, arg, handle_errors, callback, meta):
     if api_basename.endswith('_dev'):
       # Clip off _dev suffix.
       api_basename = api_basename[:-len('_dev')]
+    if api_basename.endswith('_trusted'):
+      # Clip off _trusted suffix.
+      api_basename = api_basename[:-len('_trusted')]
     meta.AddApi(api_basename + '_api')
 
     if callback is None:

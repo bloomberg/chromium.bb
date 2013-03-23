@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From trusted/ppb_buffer_trusted.idl modified Mon Jan 14 14:31:34 2013.
+// From trusted/ppb_buffer_trusted.idl modified Wed Feb  6 15:21:31 2013.
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/trusted/ppb_buffer_trusted.h"
 #include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/enter.h"
-#include "ppapi/thunk/ppb_buffer_trusted_api.h"
+#include "ppapi/thunk/ppb_buffer_api.h"
 #include "ppapi/thunk/ppb_instance_api.h"
 #include "ppapi/thunk/resource_creation_api.h"
 #include "ppapi/thunk/thunk.h"
@@ -19,7 +19,7 @@ namespace thunk {
 namespace {
 
 int32_t GetSharedMemory(PP_Resource buffer, int* handle) {
-  EnterResource<PPB_BufferTrusted_API> enter(buffer, true);
+  EnterResource<PPB_Buffer_API> enter(buffer, true);
   if (enter.failed())
     return enter.retval();
   return enter.object()->GetSharedMemory(handle);

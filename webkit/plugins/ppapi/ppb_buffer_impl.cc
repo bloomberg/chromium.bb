@@ -16,7 +16,6 @@
 #include "webkit/plugins/ppapi/resource_helper.h"
 
 using ::ppapi::thunk::PPB_Buffer_API;
-using ::ppapi::thunk::PPB_BufferTrusted_API;
 
 namespace webkit {
 namespace ppapi {
@@ -53,10 +52,6 @@ PPB_Buffer_Impl* PPB_Buffer_Impl::AsPPB_Buffer_Impl() {
 }
 
 PPB_Buffer_API* PPB_Buffer_Impl::AsPPB_Buffer_API() {
-  return this;
-}
-
-PPB_BufferTrusted_API* PPB_Buffer_Impl::AsPPB_BufferTrusted_API() {
   return this;
 }
 

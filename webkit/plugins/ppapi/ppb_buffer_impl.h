@@ -10,7 +10,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/shared_memory.h"
 #include "ppapi/thunk/ppb_buffer_api.h"
-#include "ppapi/thunk/ppb_buffer_trusted_api.h"
 #include "ppapi/shared_impl/resource.h"
 #include "webkit/plugins/webkit_plugins_export.h"
 
@@ -19,8 +18,7 @@ namespace ppapi {
 
 class WEBKIT_PLUGINS_EXPORT PPB_Buffer_Impl :
     public ::ppapi::Resource,
-    public ::ppapi::thunk::PPB_Buffer_API,
-    public ::ppapi::thunk::PPB_BufferTrusted_API {
+    public ::ppapi::thunk::PPB_Buffer_API {
  public:
   virtual ~PPB_Buffer_Impl();
 
@@ -35,7 +33,6 @@ class WEBKIT_PLUGINS_EXPORT PPB_Buffer_Impl :
 
   // Resource overrides.
   virtual ::ppapi::thunk::PPB_Buffer_API* AsPPB_Buffer_API() OVERRIDE;
-  virtual ::ppapi::thunk::PPB_BufferTrusted_API* AsPPB_BufferTrusted_API();
 
   // PPB_Buffer_API implementation.
   virtual PP_Bool Describe(uint32_t* size_in_bytes) OVERRIDE;
@@ -43,7 +40,7 @@ class WEBKIT_PLUGINS_EXPORT PPB_Buffer_Impl :
   virtual void* Map() OVERRIDE;
   virtual void Unmap() OVERRIDE;
 
-  // PPB_BufferTrusted_API implementation.
+  // Trusted.
   virtual int32_t GetSharedMemory(int* handle) OVERRIDE;
 
  private:

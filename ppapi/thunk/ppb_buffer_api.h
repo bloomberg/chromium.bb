@@ -20,6 +20,9 @@ class PPAPI_THUNK_EXPORT PPB_Buffer_API {
   virtual PP_Bool IsMapped() = 0;
   virtual void* Map() = 0;
   virtual void Unmap() = 0;
+
+  // Trusted API
+  virtual int32_t GetSharedMemory(int* handle) = 0;
 };
 
 }  // namespace thunk

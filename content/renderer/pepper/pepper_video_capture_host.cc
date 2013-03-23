@@ -18,7 +18,6 @@ using ppapi::HostResource;
 using ppapi::TrackedCallback;
 using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_Buffer_API;
-using ppapi::thunk::PPB_BufferTrusted_API;
 using webkit::ppapi::HostGlobals;
 using webkit::ppapi::PPB_Buffer_Impl;
 
@@ -203,7 +202,7 @@ void PepperVideoCaptureHost::OnDeviceInfoReceived(
     // Add the serialized shared memory handle to params. FileDescriptor is
     // treated in special case.
     {
-      EnterResourceNoLock<PPB_BufferTrusted_API> enter(res, true);
+      EnterResourceNoLock<PPB_Buffer_API> enter(res, true);
       DCHECK(enter.succeeded());
       int handle;
       int32_t result = enter.object()->GetSharedMemory(&handle);

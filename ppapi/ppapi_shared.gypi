@@ -145,7 +145,6 @@
           'thunk/ppb_browser_font_trusted_thunk.cc',
           'thunk/ppb_buffer_api.h',
           'thunk/ppb_buffer_thunk.cc',
-          'thunk/ppb_buffer_trusted_api.h',
           'thunk/ppb_buffer_trusted_thunk.cc',
           'thunk/ppb_char_set_thunk.cc',
           'thunk/ppb_console_thunk.cc',

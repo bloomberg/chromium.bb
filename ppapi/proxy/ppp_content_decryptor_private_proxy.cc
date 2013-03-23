@@ -18,13 +18,11 @@
 #include "ppapi/shared_impl/var_tracker.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_buffer_api.h"
-#include "ppapi/thunk/ppb_buffer_trusted_api.h"
 #include "ppapi/thunk/ppb_instance_api.h"
 #include "ppapi/thunk/thunk.h"
 
 using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_Buffer_API;
-using ppapi::thunk::PPB_BufferTrusted_API;
 using ppapi::thunk::PPB_Instance_API;
 
 namespace ppapi {
@@ -46,7 +44,7 @@ PP_Bool ShareHostBufferResourceToPlugin(
     base::SharedMemoryHandle* shared_mem_handle) {
   if (!dispatcher || resource == 0 || !shared_mem_handle)
     return PP_FALSE;
-  EnterResourceNoLock<PPB_BufferTrusted_API> enter(resource, true);
+  EnterResourceNoLock<PPB_Buffer_API> enter(resource, true);
   if (enter.failed())
     return PP_FALSE;
   int handle;

@@ -35,6 +35,9 @@ class Buffer : public thunk::PPB_Buffer_API, public Resource {
   virtual void* Map() OVERRIDE;
   virtual void Unmap() OVERRIDE;
 
+  // Trusted
+  virtual int32_t GetSharedMemory(int* handle) OVERRIDE;
+
  private:
   base::SharedMemory shm_;
   uint32_t size_;

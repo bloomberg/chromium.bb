@@ -16,7 +16,6 @@
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/thunk/enter.h"
-#include "ppapi/thunk/ppb_buffer_trusted_api.h"
 #include "ppapi/thunk/resource_creation_api.h"
 #include "ppapi/thunk/thunk.h"
 
@@ -58,6 +57,11 @@ void* Buffer::Map() {
 void Buffer::Unmap() {
   if (--map_count_ == 0)
     shm_.Unmap();
+}
+
+int32_t Buffer::GetSharedMemory(int* out_handle) {
+  NOTREACHED();
+  return PP_ERROR_NOTSUPPORTED;
 }
 
 PPB_Buffer_Proxy::PPB_Buffer_Proxy(Dispatcher* dispatcher)
@@ -124,7 +128,7 @@ void PPB_Buffer_Proxy::OnMsgCreate(
   if (local_buffer_resource == 0)
     return;
 
-  thunk::EnterResourceNoLock<thunk::PPB_BufferTrusted_API> trusted_buffer(
+  thunk::EnterResourceNoLock<thunk::PPB_Buffer_API> trusted_buffer(
       local_buffer_resource, false);
   if (trusted_buffer.failed())
     return;
