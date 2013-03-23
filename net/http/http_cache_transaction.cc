@@ -53,6 +53,15 @@ bool NonErrorResponse(int status_code) {
   return status_code_range == 2 || status_code_range == 3;
 }
 
+// Error codes that will be considered indicative of a page being offline/
+// unreachable for LOAD_FROM_CACHE_IF_OFFLINE.
+bool IsOfflineError(int error) {
+  return (error == net::ERR_NAME_NOT_RESOLVED ||
+          error == net::ERR_INTERNET_DISCONNECTED ||
+          error == net::ERR_ADDRESS_UNREACHABLE ||
+          error == net::ERR_CONNECTION_TIMED_OUT);
+}
+
 }  // namespace
 
 namespace net {
@@ -142,6 +151,7 @@ HttpCache::Transaction::Transaction(
       cache_pending_(false),
       done_reading_(false),
       vary_mismatch_(false),
+      couldnt_conditionalize_request_(false),
       io_buf_len_(0),
       read_offset_(0),
       effective_load_flags_(0),
@@ -811,6 +821,21 @@ int HttpCache::Transaction::DoSendRequestComplete(int result) {
 
   if (!cache_)
     return ERR_UNEXPECTED;
+
+  // If requested, and we have a readable cache entry, and we have
+  // an error indicating that we're offline as opposed to in contact
+  // with a bad server, read from cache anyway.
+  if ((effective_load_flags_ & LOAD_FROM_CACHE_IF_OFFLINE) &&
+      IsOfflineError(result) && mode_ == READ_WRITE && entry_ && !partial_) {
+    UpdateTransactionPattern(PATTERN_NOT_COVERED);
+    response_.server_data_unavailable = true;
+    return SetupEntryForRead();
+  }
+
+  // If we tried to conditionalize the request and failed, we know
+  // we won't be reading from the cache after this point.
+  if (couldnt_conditionalize_request_)
+    mode_ = WRITE;
 
   if (result == OK) {
     next_state_ = STATE_SUCCESSFUL_SEND_REQUEST;
@@ -1765,33 +1790,21 @@ int HttpCache::Transaction::BeginCacheValidation() {
 
   if (skip_validation) {
     UpdateTransactionPattern(PATTERN_ENTRY_USED);
-    if (partial_.get()) {
-      if (truncated_ || is_sparse_ || !invalid_range_) {
-        // We are going to return the saved response headers to the caller, so
-        // we may need to adjust them first.
-        next_state_ = STATE_PARTIAL_HEADERS_RECEIVED;
-        return OK;
-      } else {
-        partial_.reset();
-      }
-    }
-    cache_->ConvertWriterToReader(entry_);
-    mode_ = READ;
-
-    if (entry_->disk_entry->GetDataSize(kMetadataIndex))
-      next_state_ = STATE_CACHE_READ_METADATA;
+    return SetupEntryForRead();
   } else {
     // Make the network request conditional, to see if we may reuse our cached
     // response.  If we cannot do so, then we just resort to a normal fetch.
-    // Our mode remains READ_WRITE for a conditional request.  We'll switch to
-    // either READ or WRITE mode once we hear back from the server.
+    // Our mode remains READ_WRITE for a conditional request.  Even if the
+    // conditionalization fails, we don't switch to WRITE mode until we
+    // know we won't be falling back to using the cache entry in the
+    // LOAD_FROM_CACHE_IF_OFFLINE case.
     if (!ConditionalizeRequest()) {
+      couldnt_conditionalize_request_ = true;
       UpdateTransactionPattern(PATTERN_ENTRY_CANT_CONDITIONALIZE);
       if (partial_.get())
         return DoRestartPartialRequest();
 
       DCHECK_NE(206, response_.headers->response_code());
-      mode_ = WRITE;
     }
     next_state_ = STATE_SEND_REQUEST;
   }
@@ -2146,6 +2159,27 @@ void HttpCache::Transaction::FailRangeRequest() {
   response_ = *new_response_;
   partial_->FixResponseHeaders(response_.headers, false);
 }
+
+int HttpCache::Transaction::SetupEntryForRead() {
+  network_trans_.reset();
+  if (partial_.get()) {
+    if (truncated_ || is_sparse_ || !invalid_range_) {
+      // We are going to return the saved response headers to the caller, so
+      // we may need to adjust them first.
+      next_state_ = STATE_PARTIAL_HEADERS_RECEIVED;
+      return OK;
+    } else {
+      partial_.reset();
+    }
+  }
+  cache_->ConvertWriterToReader(entry_);
+  mode_ = READ;
+
+  if (entry_->disk_entry->GetDataSize(kMetadataIndex))
+    next_state_ = STATE_CACHE_READ_METADATA;
+  return OK;
+}
+
 
 int HttpCache::Transaction::ReadFromNetwork(IOBuffer* data, int data_len) {
   read_buf_ = data;

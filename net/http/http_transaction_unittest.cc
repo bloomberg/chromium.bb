@@ -38,7 +38,8 @@ const MockTransaction kSimpleGET_Transaction = {
   "<html><body>Google Blah Blah</body></html>",
   TEST_MODE_NORMAL,
   NULL,
-  0
+  0,
+  net::OK
 };
 
 const MockTransaction kSimplePOST_Transaction = {
@@ -53,7 +54,8 @@ const MockTransaction kSimplePOST_Transaction = {
   "<html><body>Google Blah Blah</body></html>",
   TEST_MODE_NORMAL,
   NULL,
-  0
+  0,
+  net::OK
 };
 
 const MockTransaction kTypicalGET_Transaction = {
@@ -69,7 +71,8 @@ const MockTransaction kTypicalGET_Transaction = {
   "<html><body>Google Blah Blah</body></html>",
   TEST_MODE_NORMAL,
   NULL,
-  0
+  0,
+  net::OK
 };
 
 const MockTransaction kETagGET_Transaction = {
@@ -85,7 +88,8 @@ const MockTransaction kETagGET_Transaction = {
   "<html><body>Google Blah Blah</body></html>",
   TEST_MODE_NORMAL,
   NULL,
-  0
+  0,
+  net::OK
 };
 
 const MockTransaction kRangeGET_Transaction = {
@@ -100,7 +104,8 @@ const MockTransaction kRangeGET_Transaction = {
   "<html><body>Google Blah Blah</body></html>",
   TEST_MODE_NORMAL,
   NULL,
-  0
+  0,
+  net::OK
 };
 
 static const MockTransaction* const kBuiltinMockTransactions[] = {
@@ -233,6 +238,14 @@ int MockNetworkTransaction::Start(const net::HttpRequestInfo* request,
   const MockTransaction* t = FindMockTransaction(request->url);
   if (!t)
     return net::ERR_FAILED;
+
+  // Return immediately if we're returning in error.
+  if (net::OK != t->return_code) {
+    if (test_mode_ & TEST_MODE_SYNC_NET_START)
+      return t->return_code;
+    CallbackLater(callback, t->return_code);
+    return net::ERR_IO_PENDING;
+  }
 
   std::string resp_status = t->status;
   std::string resp_headers = t->response_headers;

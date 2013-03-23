@@ -64,6 +64,9 @@ struct MockTransaction {
   int test_mode;
   MockTransactionHandler handler;
   net::CertStatus cert_status;
+  // Value returned by MockNetworkTransaction::Start (potentially
+  // asynchronously if |!(test_mode & TEST_MODE_SYNC_NET_START)|.)
+  net::Error return_code;
 };
 
 extern const MockTransaction kSimpleGET_Transaction;

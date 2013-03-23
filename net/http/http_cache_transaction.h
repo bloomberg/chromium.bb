@@ -313,6 +313,9 @@ class HttpCache::Transaction : public HttpTransaction {
   // satisfiable).
   void FailRangeRequest();
 
+  // Setups the transaction for reading from the cache entry.
+  int SetupEntryForRead();
+
   // Reads data from the network.
   int ReadFromNetwork(IOBuffer* data, int data_len);
 
@@ -413,6 +416,7 @@ class HttpCache::Transaction : public HttpTransaction {
   bool cache_pending_;  // We are waiting for the HttpCache.
   bool done_reading_;
   bool vary_mismatch_;  // The request doesn't match the stored vary data.
+  bool couldnt_conditionalize_request_;
   scoped_refptr<IOBuffer> read_buf_;
   int io_buf_len_;
   int read_offset_;

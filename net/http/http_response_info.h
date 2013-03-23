@@ -59,6 +59,11 @@ class NET_EXPORT HttpResponseInfo {
   // when reloading previously visited pages (without going over the network).
   bool was_cached;
 
+  // True if the request was fetched from cache rather than the network
+  // because of a LOAD_FROM_CACHE_IF_OFFLINE flag when the system
+  // was unable to contact the server.
+  bool server_data_unavailable;
+
   // True if the request was fetched over a SPDY channel.
   bool was_fetched_via_spdy;
 

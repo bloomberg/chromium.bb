@@ -90,6 +90,7 @@ enum {
 
 HttpResponseInfo::HttpResponseInfo()
     : was_cached(false),
+      server_data_unavailable(false),
       was_fetched_via_spdy(false),
       was_npn_negotiated(false),
       was_fetched_via_proxy(false),
@@ -98,6 +99,7 @@ HttpResponseInfo::HttpResponseInfo()
 
 HttpResponseInfo::HttpResponseInfo(const HttpResponseInfo& rhs)
     : was_cached(rhs.was_cached),
+      server_data_unavailable(rhs.server_data_unavailable),
       was_fetched_via_spdy(rhs.was_fetched_via_spdy),
       was_npn_negotiated(rhs.was_npn_negotiated),
       was_fetched_via_proxy(rhs.was_fetched_via_proxy),
@@ -119,6 +121,7 @@ HttpResponseInfo::~HttpResponseInfo() {
 
 HttpResponseInfo& HttpResponseInfo::operator=(const HttpResponseInfo& rhs) {
   was_cached = rhs.was_cached;
+  server_data_unavailable = rhs.server_data_unavailable;
   was_fetched_via_spdy = rhs.was_fetched_via_spdy;
   was_npn_negotiated = rhs.was_npn_negotiated;
   was_fetched_via_proxy = rhs.was_fetched_via_proxy;

@@ -33,7 +33,8 @@ const MockTransaction kGZip_Transaction = {
   "",
   TEST_MODE_NORMAL,
   &GZipServer,
-  0
+  0,
+  net::OK
 };
 
 }  // namespace

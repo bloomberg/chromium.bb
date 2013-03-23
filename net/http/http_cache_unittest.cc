@@ -156,7 +156,10 @@ void RunTransactionTestWithRequestAndLogAndDelegate(
   rv = trans->Start(&request, callback.callback(), net_log);
   if (rv == net::ERR_IO_PENDING)
     rv = callback.WaitForResult();
-  ASSERT_EQ(net::OK, rv);
+  ASSERT_EQ(trans_info.return_code, rv);
+
+  if (net::OK != rv)
+    return;
 
   const net::HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -250,7 +253,8 @@ const MockTransaction kFastNoStoreGET_Transaction = {
   "<html><body>Google Blah Blah</body></html>",
   TEST_MODE_SYNC_NET_START,
   &FastTransactionServer::FastNoStoreHandler,
-  0
+  0,
+  net::OK
 };
 
 // This class provides a handler for kRangeGET_TransactionOK so that the range
@@ -391,7 +395,8 @@ const MockTransaction kRangeGET_TransactionOK = {
   "rg: 40-49 ",
   TEST_MODE_NORMAL,
   &RangeTransactionServer::RangeHandler,
-  0
+  0,
+  net::OK
 };
 
 // Verifies the response headers (|response|) match a partial content
@@ -844,6 +849,107 @@ TEST(HttpCache, SimpleGET_LoadPreferringCache_VaryMismatch) {
   EXPECT_EQ(2, cache.network_layer()->transaction_count());
   EXPECT_EQ(1, cache.disk_cache()->open_count());
   EXPECT_EQ(1, cache.disk_cache()->create_count());
+  RemoveMockTransaction(&transaction);
+}
+
+// Tests that LOAD_FROM_CACHE_IF_OFFLINE returns proper response on
+// network success
+TEST(HttpCache, SimpleGET_CacheOverride_Network) {
+  MockHttpCache cache;
+
+  // Prime cache.
+  MockTransaction transaction(kSimpleGET_Transaction);
+  transaction.load_flags |= net::LOAD_FROM_CACHE_IF_OFFLINE;
+  transaction.response_headers = "Cache-Control: no-cache\n";
+
+  AddMockTransaction(&transaction);
+  RunTransactionTest(cache.http_cache(), transaction);
+  EXPECT_EQ(1, cache.network_layer()->transaction_count());
+  EXPECT_EQ(1, cache.disk_cache()->create_count());
+  RemoveMockTransaction(&transaction);
+
+  // Re-run transaction; make sure the result came from the network,
+  // not the cache.
+  transaction.data = "Changed data.";
+  AddMockTransaction(&transaction);
+  net::HttpResponseInfo response_info;
+  RunTransactionTestWithResponseInfo(cache.http_cache(), transaction,
+                                     &response_info);
+
+  EXPECT_EQ(2, cache.network_layer()->transaction_count());
+  EXPECT_FALSE(response_info.server_data_unavailable);
+
+  RemoveMockTransaction(&transaction);
+}
+
+// Tests that LOAD_FROM_CACHE_IF_OFFLINE returns proper response on
+// offline failure
+TEST(HttpCache, SimpleGET_CacheOverride_Offline) {
+  MockHttpCache cache;
+
+  // Prime cache.
+  MockTransaction transaction(kSimpleGET_Transaction);
+  transaction.load_flags |= net::LOAD_FROM_CACHE_IF_OFFLINE;
+  transaction.response_headers = "Cache-Control: no-cache\n";
+
+  AddMockTransaction(&transaction);
+  RunTransactionTest(cache.http_cache(), transaction);
+  EXPECT_EQ(1, cache.network_layer()->transaction_count());
+  EXPECT_EQ(1, cache.disk_cache()->create_count());
+  RemoveMockTransaction(&transaction);
+
+  // Network failure with offline error; should return cache entry above +
+  // flag signalling stale data.
+  transaction.return_code = net::ERR_NAME_NOT_RESOLVED;
+  AddMockTransaction(&transaction);
+
+  MockHttpRequest request(transaction);
+  net::TestCompletionCallback callback;
+  scoped_ptr<net::HttpTransaction> trans;
+  int rv = cache.http_cache()->CreateTransaction(
+      net::DEFAULT_PRIORITY, &trans, NULL);
+  EXPECT_EQ(net::OK, rv);
+  ASSERT_TRUE(trans.get());
+  rv = trans->Start(&request, callback.callback(), net::BoundNetLog());
+  EXPECT_EQ(net::OK, callback.GetResult(rv));
+
+  const net::HttpResponseInfo* response_info = trans->GetResponseInfo();
+  ASSERT_TRUE(response_info);
+  EXPECT_TRUE(response_info->server_data_unavailable);
+  EXPECT_TRUE(response_info->was_cached);
+  ReadAndVerifyTransaction(trans.get(), transaction);
+  EXPECT_EQ(2, cache.network_layer()->transaction_count());
+
+  RemoveMockTransaction(&transaction);
+}
+
+// Tests that LOAD_FROM_CACHE_IF_OFFLINE returns proper response on
+// non-offline failure failure
+TEST(HttpCache, SimpleGET_CacheOverride_NonOffline) {
+  MockHttpCache cache;
+
+  // Prime cache.
+  MockTransaction transaction(kSimpleGET_Transaction);
+  transaction.load_flags |= net::LOAD_FROM_CACHE_IF_OFFLINE;
+  transaction.response_headers = "Cache-Control: no-cache\n";
+
+  AddMockTransaction(&transaction);
+  RunTransactionTest(cache.http_cache(), transaction);
+  EXPECT_EQ(1, cache.network_layer()->transaction_count());
+  EXPECT_EQ(1, cache.disk_cache()->create_count());
+  RemoveMockTransaction(&transaction);
+
+  // Network failure with non-offline error; should fail with that error.
+  transaction.return_code = net::ERR_PROXY_CONNECTION_FAILED;
+  AddMockTransaction(&transaction);
+
+  net::HttpResponseInfo response_info2;
+  RunTransactionTestWithResponseInfo(cache.http_cache(), transaction,
+                                     &response_info2);
+
+  EXPECT_EQ(2, cache.network_layer()->transaction_count());
+  EXPECT_FALSE(response_info2.server_data_unavailable);
+
   RemoveMockTransaction(&transaction);
 }
 
