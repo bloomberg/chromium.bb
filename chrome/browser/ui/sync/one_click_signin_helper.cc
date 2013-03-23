@@ -919,9 +919,8 @@ void OneClickSigninHelper::ShowInfoBarUIThread(
   if (!helper)
     return;
 
-  if (auto_accept != AUTO_ACCEPT_NONE) {
+  if (auto_accept != AUTO_ACCEPT_NONE)
     helper->auto_accept_ = auto_accept;
-  }
 
   if (source != SyncPromoUI::SOURCE_UNKNOWN &&
       helper->source_ == SyncPromoUI::SOURCE_UNKNOWN) {
@@ -1041,6 +1040,31 @@ bool OneClickSigninHelper::OnFormSubmitted(const content::PasswordForm& form) {
   }
 
   return true;
+}
+
+void OneClickSigninHelper::NavigateToPendingEntry(
+    const GURL& url,
+    content::NavigationController::ReloadType reload_type) {
+  VLOG(1) << "OneClickSigninHelper::NavigateToPendingEntry: url=" << url.spec();
+  // If the tab navigates to a new page, and this page is not a valid Gaia
+  // sign in redirect or reponse, or the expected continue URL, make sure to
+  // clear the internal state.  This is needed to detect navigations in the
+  // middle of the sign in process that may redirect back to the sign in
+  // process (see crbug.com/181163 for details).
+  const GURL continue_url =
+      SyncPromoUI::GetNextPageURLForSyncPromoURL(
+          SyncPromoUI::GetSyncPromoURL(GURL(),
+                                       SyncPromoUI::SOURCE_START_PAGE,
+                                       false));
+  GURL::Replacements replacements;
+  replacements.ClearQuery();
+
+  if (!IsValidGaiaSigninRedirectOrResponseURL(url) &&
+      continue_url_.is_valid() &&
+      url.ReplaceComponents(replacements) !=
+          continue_url_.ReplaceComponents(replacements)) {
+    CleanTransientState();
+  }
 }
 
 void OneClickSigninHelper::DidStopLoading(

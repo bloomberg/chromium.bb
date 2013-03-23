@@ -10,6 +10,7 @@
 #include "base/gtest_prod_util.h"
 #include "chrome/browser/signin/signin_tracker.h"
 #include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -188,6 +189,9 @@ class OneClickSigninHelper
 
   // content::WebContentsObserver overrides.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void NavigateToPendingEntry(
+      const GURL& url,
+      content::NavigationController::ReloadType reload_type) OVERRIDE;
   virtual void DidStopLoading(
       content::RenderViewHost* render_view_host) OVERRIDE;
 
