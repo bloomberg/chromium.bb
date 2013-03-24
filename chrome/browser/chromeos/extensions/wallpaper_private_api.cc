@@ -205,6 +205,7 @@ bool WallpaperPrivateGetStringsFunction::RunImpl() {
              IDS_WALLPAPER_MANAGER_SHOW_CUSTOM_WALLPAPER_ON_START_WARNING);
   SET_STRING("accessFileFailure", IDS_WALLPAPER_MANAGER_ACCESS_FILE_FAILURE);
   SET_STRING("invalidWallpaper", IDS_WALLPAPER_MANAGER_INVALID_WALLPAPER);
+  SET_STRING("surpriseMeLabel", IDS_WALLPAPER_MANAGER_SURPRISE_ME_LABEL);
   SET_STRING("learnMore", IDS_LEARN_MORE);
 #undef SET_STRING
 
@@ -295,13 +296,13 @@ void WallpaperFunctionBase::OnFailureOrCancel(const std::string& error) {
   SendResponse(false);
 }
 
-WallpaperPrivateSetWallpaperIfExistFunction::
-    WallpaperPrivateSetWallpaperIfExistFunction() {}
+WallpaperPrivateSetWallpaperIfExistsFunction::
+    WallpaperPrivateSetWallpaperIfExistsFunction() {}
 
-WallpaperPrivateSetWallpaperIfExistFunction::
-    ~WallpaperPrivateSetWallpaperIfExistFunction() {}
+WallpaperPrivateSetWallpaperIfExistsFunction::
+    ~WallpaperPrivateSetWallpaperIfExistsFunction() {}
 
-bool WallpaperPrivateSetWallpaperIfExistFunction::RunImpl() {
+bool WallpaperPrivateSetWallpaperIfExistsFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &urlOrFile_));
   EXTENSION_FUNCTION_VALIDATE(!urlOrFile_.empty());
 
@@ -354,13 +355,13 @@ bool WallpaperPrivateSetWallpaperIfExistFunction::RunImpl() {
 
   task_runner->PostTask(FROM_HERE,
       base::Bind(
-          &WallpaperPrivateSetWallpaperIfExistFunction::
+          &WallpaperPrivateSetWallpaperIfExistsFunction::
               ReadFileAndInitiateStartDecode,
           this, wallpaper_path, fallback_path));
   return true;
 }
 
-void WallpaperPrivateSetWallpaperIfExistFunction::
+void WallpaperPrivateSetWallpaperIfExistsFunction::
     ReadFileAndInitiateStartDecode(const base::FilePath& file_path,
                                    const base::FilePath& fallback_path) {
   DCHECK(BrowserThread::GetBlockingPool()->IsRunningSequenceOnCurrentThread(
@@ -374,7 +375,7 @@ void WallpaperPrivateSetWallpaperIfExistFunction::
   if (file_util::PathExists(path) &&
       file_util::ReadFileToString(path, &data)) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-        base::Bind(&WallpaperPrivateSetWallpaperIfExistFunction::StartDecode,
+        base::Bind(&WallpaperPrivateSetWallpaperIfExistsFunction::StartDecode,
                    this, data));
     return;
   }
@@ -383,12 +384,11 @@ void WallpaperPrivateSetWallpaperIfExistFunction::
         path.BaseName().value().c_str());
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&WallpaperPrivateSetWallpaperIfExistFunction::
-                 OnFailureOrCancel,
+      base::Bind(&WallpaperPrivateSetWallpaperIfExistsFunction::OnFileNotExists,
                  this, error));
 }
 
-void WallpaperPrivateSetWallpaperIfExistFunction::OnWallpaperDecoded(
+void WallpaperPrivateSetWallpaperIfExistsFunction::OnWallpaperDecoded(
     const gfx::ImageSkia& wallpaper) {
   // Set wallpaper_decoder_ to null since the decoding already finished.
   wallpaper_decoder_ = NULL;
@@ -406,8 +406,15 @@ void WallpaperPrivateSetWallpaperIfExistFunction::OnWallpaperDecoded(
   };
   std::string email = chromeos::UserManager::Get()->GetLoggedInUser()->email();
   wallpaper_manager->SetUserWallpaperInfo(email, info, is_persistent);
+  SetResult(base::Value::CreateBooleanValue(true));
   SendResponse(true);
 }
+
+void WallpaperPrivateSetWallpaperIfExistsFunction::OnFileNotExists(
+    const std::string& error) {
+  SetResult(base::Value::CreateBooleanValue(false));
+  OnFailureOrCancel(error);
+};
 
 WallpaperPrivateSetWallpaperFunction::WallpaperPrivateSetWallpaperFunction() {
 }

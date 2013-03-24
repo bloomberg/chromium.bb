@@ -31,7 +31,7 @@
         ]
       },
       {
-        "name": "setWallpaperIfExist",
+        "name": "setWallpaperIfExists",
         "type": "function",
         "description": "Sets wallpaper if it exists in the local file system with specified layout",
         "nodoc": "true",
@@ -53,7 +53,12 @@
           {
             "type": "function",
             "name": "callback",
-            "parameters": []
+            "parameters": [
+              {
+                "type": "boolean",
+                "name": "exists"
+              }
+            ]
           }
         ]
       },

@@ -54,22 +54,25 @@ class WallpaperFunctionBase : public AsyncExtensionFunction {
   virtual void OnWallpaperDecoded(const gfx::ImageSkia& wallpaper) = 0;
 };
 
-class WallpaperPrivateSetWallpaperIfExistFunction
+class WallpaperPrivateSetWallpaperIfExistsFunction
     : public WallpaperFunctionBase {
  public:
-  DECLARE_EXTENSION_FUNCTION("wallpaperPrivate.setWallpaperIfExist",
-                             WALLPAPERPRIVATE_SETWALLPAPERIFEXIST)
+  DECLARE_EXTENSION_FUNCTION("wallpaperPrivate.setWallpaperIfExists",
+                             WALLPAPERPRIVATE_SETWALLPAPERIFEXISTS)
 
-  WallpaperPrivateSetWallpaperIfExistFunction();
+  WallpaperPrivateSetWallpaperIfExistsFunction();
 
  protected:
-  virtual ~WallpaperPrivateSetWallpaperIfExistFunction();
+  virtual ~WallpaperPrivateSetWallpaperIfExistsFunction();
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
 
  private:
   virtual void OnWallpaperDecoded(const gfx::ImageSkia& wallpaper) OVERRIDE;
+
+  // File doesn't exist. Sets javascript callback parameter to false.
+  void OnFileNotExists(const std::string& error);
 
   // Reads file specified by |file_path|. If success, post a task to start
   // decoding the file.
