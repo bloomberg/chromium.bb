@@ -11,7 +11,7 @@
     'libjingle_additional_deps%': [],
     'libjingle_peerconnection_additional_deps%': [],
     'libjingle_source%': "source",
-    'libpeer_target_type%': '<(component)',
+    'libpeer_target_type%': 'static_library',
   },
   'target_defaults': {
     'defines': [
@@ -490,9 +490,8 @@
       ],
       'dependencies': [
         '<(DEPTH)/third_party/jsoncpp/jsoncpp.gyp:jsoncpp',
+        'libjingle_p2p_constants',
         '<@(libjingle_additional_deps)',
-        'libjingle_media_base_constants',
-        'libjingle_p2p_base_constants',
       ],
       'export_dependent_settings': [
         '<(DEPTH)/third_party/jsoncpp/jsoncpp.gyp:jsoncpp',
@@ -567,12 +566,58 @@
             '<(libjingle_source)/talk/base/opensslstreamadapter.cc',
           ],
         }],
-        ['enable_webrtc==1', {
-          'dependencies': [
-            '<(DEPTH)/third_party/libsrtp/libsrtp.gyp:libsrtp',
-            '<(DEPTH)/third_party/webrtc/modules/modules.gyp:media_file',
-            '<(DEPTH)/third_party/webrtc/modules/modules.gyp:video_capture_module',
-          ],
+      ],
+    },  # target libjingle
+    # This has to be is a separate project due to a bug in MSVS 2008 and the
+    # current toolset on android.  The problem is that we have two files named
+    # "constants.cc" and MSVS/android doesn't handle this properly.
+    # GYP currently has guards to catch this, so if you want to remove it,
+    # run GYP and if GYP has removed the validation check, then we can assume
+    # that the toolchains have been fixed (we currently use VS2010 and later,
+    # so VS2008 isn't a concern anymore).
+    {
+      'target_name': 'libjingle_p2p_constants',
+      'type': 'static_library',
+      'sources': [
+        '<(libjingle_source)/talk/p2p/base/constants.cc',
+        '<(libjingle_source)/talk/p2p/base/constants.h',
+      ],
+    },  # target libjingle_p2p_constants
+    {
+      'target_name': 'peerconnection_server',
+      'type': 'executable',
+      'sources': [
+        '<(libjingle_source)/talk/examples/peerconnection/server/data_socket.cc',
+        '<(libjingle_source)/talk/examples/peerconnection/server/data_socket.h',
+        '<(libjingle_source)/talk/examples/peerconnection/server/main.cc',
+        '<(libjingle_source)/talk/examples/peerconnection/server/peer_channel.cc',
+        '<(libjingle_source)/talk/examples/peerconnection/server/peer_channel.h',
+        '<(libjingle_source)/talk/examples/peerconnection/server/utils.cc',
+        '<(libjingle_source)/talk/examples/peerconnection/server/utils.h',
+      ],
+      'include_dirs': [
+        '<(libjingle_source)',
+      ],
+      'dependencies': [
+        'libjingle',
+      ],
+      # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+      'msvs_disabled_warnings': [ 4309, ],
+    }, # target peerconnection_server
+  ],
+  'conditions': [
+    ['enable_webrtc==1', {
+      'targets': [
+        {
+          'target_name': 'libpeerconnection',
+          'type': '<(libpeer_target_type)',
+          'all_dependent_settings': {
+            'conditions': [
+              ['"<(libpeer_target_type)"=="static_library"', {
+                'defines': [ 'LIBPEERCONNECTION_LIB=1' ],
+              }],
+            ],
+          },
           'sources': [
             '<(libjingle_source)/talk/app/webrtc/audiotrack.cc',
             '<(libjingle_source)/talk/app/webrtc/audiotrack.h',
@@ -628,6 +673,8 @@
             '<(libjingle_source)/talk/media/base/capturerenderadapter.h',
             '<(libjingle_source)/talk/media/base/codec.cc',
             '<(libjingle_source)/talk/media/base/codec.h',
+            '<(libjingle_source)/talk/media/base/constants.cc',
+            '<(libjingle_source)/talk/media/base/constants.h',
             '<(libjingle_source)/talk/media/base/cryptoparams.h',
             '<(libjingle_source)/talk/media/base/filemediaengine.cc',
             '<(libjingle_source)/talk/media/base/filemediaengine.h',
@@ -656,10 +703,14 @@
             '<(libjingle_source)/talk/media/webrtc/webrtcpassthroughrender.cc',
             '<(libjingle_source)/talk/media/webrtc/webrtcvideocapturer.cc',
             '<(libjingle_source)/talk/media/webrtc/webrtcvideocapturer.h',
+            '<(libjingle_source)/talk/media/webrtc/webrtcvideoengine.cc',
+            '<(libjingle_source)/talk/media/webrtc/webrtcvideoengine.h',
             '<(libjingle_source)/talk/media/webrtc/webrtcvideoframe.cc',
             '<(libjingle_source)/talk/media/webrtc/webrtcvideoframe.h',
             '<(libjingle_source)/talk/media/webrtc/webrtcvie.h',
             '<(libjingle_source)/talk/media/webrtc/webrtcvoe.h',
+            '<(libjingle_source)/talk/media/webrtc/webrtcvoiceengine.cc',
+            '<(libjingle_source)/talk/media/webrtc/webrtcvoiceengine.h',
             '<(libjingle_source)/talk/session/media/audiomonitor.cc',
             '<(libjingle_source)/talk/session/media/audiomonitor.h',
             '<(libjingle_source)/talk/session/media/call.cc',
@@ -696,6 +747,19 @@
             '<(libjingle_source)/talk/session/tunnel/tunnelsessionclient.h',
           ],
           'conditions': [
+            ['"<(libpeer_target_type)"=="shared_library"', {
+              # Used to control symbol export/import.
+              'defines': [ 'LIBPEERCONNECTION_IMPLEMENTATION=1' ],
+            }],
+            ['OS=="win" and "<(libpeer_target_type)"=="shared_library"', {
+              'link_settings': {
+                'libraries': [
+                  '-lsecur32.lib',
+                  '-lcrypt32.lib',
+                  '-liphlpapi.lib',
+                ],
+              },
+            }],
             ['enabled_libjingle_device_manager==1', {
               'sources!': [
                 '<(libjingle_source)/talk/media/devices/dummydevicemanager.cc',
@@ -770,89 +834,9 @@
               ],
             }],
           ],
-        }],
-      ],
-    },  # target libjingle
-    # This has to be is a separate project due to a bug in MSVS 2008 and the
-    # current toolset on android.  The problem is that we have two files named
-    # "constants.cc" and MSVS/android doesn't handle this properly.
-    # GYP currently has guards to catch this, so if you want to remove it,
-    # run GYP and if GYP has removed the validation check, then we can assume
-    # that the toolchains have been fixed (we currently use VS2010 and later,
-    # so VS2008 isn't a concern anymore).
-    {
-      'target_name': 'libjingle_p2p_base_constants',
-      'type': 'static_library',
-      'sources': [
-        '<(libjingle_source)/talk/p2p/base/constants.cc',
-        '<(libjingle_source)/talk/p2p/base/constants.h',
-      ],
-    },  # target libjingle_p2p_base_constants
-    {
-      'target_name': 'libjingle_media_base_constants',
-      'type': 'static_library',
-      'sources': [
-        '<(libjingle_source)/talk/media/base/constants.cc',
-        '<(libjingle_source)/talk/media/base/constants.h',
-      ],
-    },  # target libjingle_media_base_constants
-    {
-      'target_name': 'peerconnection_server',
-      'type': 'executable',
-      'sources': [
-        '<(libjingle_source)/talk/examples/peerconnection/server/data_socket.cc',
-        '<(libjingle_source)/talk/examples/peerconnection/server/data_socket.h',
-        '<(libjingle_source)/talk/examples/peerconnection/server/main.cc',
-        '<(libjingle_source)/talk/examples/peerconnection/server/peer_channel.cc',
-        '<(libjingle_source)/talk/examples/peerconnection/server/peer_channel.h',
-        '<(libjingle_source)/talk/examples/peerconnection/server/utils.cc',
-        '<(libjingle_source)/talk/examples/peerconnection/server/utils.h',
-      ],
-      'include_dirs': [
-        '<(libjingle_source)',
-      ],
-      'dependencies': [
-        'libjingle',
-      ],
-      # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-      'msvs_disabled_warnings': [ 4309, ],
-    }, # target peerconnection_server
-  ],
-  'conditions': [
-    ['enable_webrtc==1', {
-      'targets': [
-        {
-          'target_name': 'libpeerconnection',
-          'type': '<(libpeer_target_type)',
-          'all_dependent_settings': {
-            'conditions': [
-              ['"<(libpeer_target_type)"=="static_library"', {
-                'defines': [ 'LIBPEERCONNECTION_LIB=1' ],
-              }],
-            ],
-          },
-          'sources': [
-            '<(libjingle_source)/talk/media/webrtc/webrtcvideoengine.cc',
-            '<(libjingle_source)/talk/media/webrtc/webrtcvideoengine.h',
-            '<(libjingle_source)/talk/media/webrtc/webrtcvoiceengine.cc',
-            '<(libjingle_source)/talk/media/webrtc/webrtcvoiceengine.h',
-          ],
-          'conditions': [
-            ['"<(libpeer_target_type)"=="shared_library"', {
-              # Used to control symbol export/import.
-              'defines': [ 'LIBPEERCONNECTION_IMPLEMENTATION=1' ],
-            }],
-            ['OS=="win" and "<(libpeer_target_type)"=="shared_library"', {
-              'link_settings': {
-                'libraries': [
-                  '-lsecur32.lib',
-                  '-lcrypt32.lib',
-                  '-liphlpapi.lib',
-                ],
-              },
-            }],
-          ],
           'dependencies': [
+            '<(DEPTH)/third_party/libsrtp/libsrtp.gyp:libsrtp',
+            '<(DEPTH)/third_party/webrtc/modules/modules.gyp:video_capture_module',
             '<(DEPTH)/third_party/webrtc/modules/modules.gyp:video_render_module',
             '<(DEPTH)/third_party/webrtc/system_wrappers/source/system_wrappers.gyp:system_wrappers',
             '<(DEPTH)/third_party/webrtc/video_engine/video_engine.gyp:video_engine_core',
