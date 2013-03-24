@@ -61,73 +61,69 @@ message Fingerprint {
       optional PerformanceStatistics performance_statistics = 5;
     }
 
-    // Username currently logged into computer / device.
-    // TODO(isherman): This seems like TMI.
-    optional string user_name = 1;
+    // A hash of the concatenatation of:
+    //   * The username of the user currently logged into computer / device.
+    //   * The user-assigned computer or device name.
+    optional fixed64 user_and_device_name_hash = 1;
 
     // Build version string for the current operating system.
     optional string operating_system_build = 2;
 
-    // e.g. User-assigned computer name.
-    // TODO(isherman): This seems like TMI.
-    optional string device_name = 3;
-
     // Browser install time (hours since epoch).
-    optional int64 browser_install_time_hours = 4;
+    optional int64 browser_install_time_hours = 3;
 
     // Fonts installed on the machine.
-    repeated string font = 5;
+    repeated string font = 4;
 
     // Plug-ins installed on the machine.
-    repeated Plugin plugin = 6;
+    repeated Plugin plugin = 5;
 
     // Delta in ms of the device's time zone from UTC.
-    optional int64 utc_offset_ms = 7;
+    optional int64 utc_offset_ms = 6;
 
     // IETF-formatted language tag. e.g. "en", "en-US", "es-419", etc.
     // http://en.wikipedia.org/wiki/IETF_language_tag
-    optional string browser_language = 8;
+    optional string browser_language = 7;
 
     // User-requested language code of viewed sites. Languages in
     // accept-languages.
-    repeated string requested_language = 9;
+    repeated string requested_language = 8;
 
     // Default charset of the browser. (e.g. ISO-8859-1, obtained from
     // document.defaultCharset)
-    optional string charset = 10;
+    optional string charset = 9;
 
     // The number of physical screens.
-    optional int32 screen_count = 11;
+    optional int32 screen_count = 10;
 
     // Information about the user's monitor's physical screen size.
     // (e.g. 1024 x 768)
-    optional Dimension screen_size = 12;
+    optional Dimension screen_size = 11;
 
     // The color depth of the user's screen (obtained from screen.colorDepth
     // or screen.pixelDepth)
-    optional int32 screen_color_depth = 13;
+    optional int32 screen_color_depth = 12;
 
     // Information about the size of the portion of the screen that is unusable
     // to a program (i.e. on Windows, the portion of the screen that is taken
     // up by the taskbar)
-    optional Dimension unavailable_screen_size = 14;
+    optional Dimension unavailable_screen_size = 13;
 
-    optional string user_agent = 15;
+    optional string user_agent = 14;
 
     // Total size of each hard drive partition.
-    repeated int32 partition_size = 16;
+    repeated int32 partition_size = 15;
 
-    optional Cpu cpu = 17;
+    optional Cpu cpu = 16;
 
     // Total RAM in bytes.
-    optional int64 ram = 18;
+    optional int64 ram = 17;
 
     // Graphics card being used.
-    optional Graphics graphics_card = 19;
+    optional Graphics graphics_card = 18;
 
     // Build version string for browser.
-    optional string browser_build = 20;
-
+    optional string browser_build = 19;
   }
 
   // Contains properties relating to more transient computer / browser state.

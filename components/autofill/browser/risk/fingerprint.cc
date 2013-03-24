@@ -314,7 +314,8 @@ void FingerprintDataLoader::FillFingerprint() {
   AddCpuInfoToFingerprint(machine);
   AddGpuInfoToFingerprint(machine);
 
-  // TODO(isherman): Store the partition size of the hard drives?
+  // TODO(isherman): Record the user_and_device_name_hash.
+  // TODO(isherman): Record the partition size of the hard drives?
 
   Fingerprint_TransientState* transient_state =
       fingerprint->mutable_transient_state();
