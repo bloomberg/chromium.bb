@@ -7939,6 +7939,12 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_FEEDBACK_SEND_REPORT" desc="Text for OK button of the send feedback dialog">
         Send feedback
       </message>
+      <message name="IDS_FEEDBACK_LAUNCHER_TITLE" desc="Dialog title for app launcher feedback dialog">
+        Send Feedback.
+      </message>
+      <message name="IDS_FEEDBACK_LAUNCHER_DESCRIPTION_LABEL" desc="Label for the description field when asking for app launcher feedback">
+        Tell us what you think of the App Launcher.
+      </message>
 
       <!-- Clear Browsing Data -->
       <message name="IDS_CLEAR_BROWSING_DATA_TITLE" desc="Dialog title">

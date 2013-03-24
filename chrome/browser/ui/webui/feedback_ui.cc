@@ -203,28 +203,29 @@ void ShowFeedbackPage(Browser* browser,
     return;
   }
 
-  std::vector<unsigned char>* last_screenshot_png =
-      FeedbackUtil::GetScreenshotPng();
-  last_screenshot_png->clear();
+  if (category_tag != kAppLauncherCategoryTag) {
+    std::vector<unsigned char>* last_screenshot_png =
+        FeedbackUtil::GetScreenshotPng();
+    last_screenshot_png->clear();
 
-  gfx::NativeWindow native_window;
-  gfx::Rect snapshot_bounds;
+    gfx::NativeWindow native_window;
+    gfx::Rect snapshot_bounds;
 
 #if defined(OS_CHROMEOS)
-  // For ChromeOS, don't use the browser window but the root window
-  // instead to grab the screenshot. We want everything on the screen, not
-  // just the current browser.
-  native_window = ash::Shell::GetPrimaryRootWindow();
-  snapshot_bounds = gfx::Rect(native_window->bounds());
+    // For ChromeOS, don't use the browser window but the root window
+    // instead to grab the screenshot. We want everything on the screen, not
+    // just the current browser.
+    native_window = ash::Shell::GetPrimaryRootWindow();
+    snapshot_bounds = gfx::Rect(native_window->bounds());
 #else
-  native_window = browser->window()->GetNativeWindow();
-  snapshot_bounds = gfx::Rect(browser->window()->GetBounds().size());
+    native_window = browser->window()->GetNativeWindow();
+    snapshot_bounds = gfx::Rect(browser->window()->GetBounds().size());
 #endif
-  bool success = chrome::GrabWindowSnapshotForUser(native_window,
-                                                   last_screenshot_png,
-                                                   snapshot_bounds);
-  FeedbackUtil::SetScreenshotSize(success ? snapshot_bounds : gfx::Rect());
-
+    bool success = chrome::GrabWindowSnapshotForUser(native_window,
+                                                     last_screenshot_png,
+                                                     snapshot_bounds);
+    FeedbackUtil::SetScreenshotSize(success ? snapshot_bounds : gfx::Rect());
+  }
   std::string feedback_url = std::string(chrome::kChromeUIFeedbackURL) + "?" +
       kSessionIDParameter + base::IntToString(browser->session_id().id()) +
       "&" + kTabIndexParameter +
@@ -282,6 +283,7 @@ class FeedbackHandler : public WebUIMessageHandler,
 
   scoped_refptr<FeedbackData> feedback_data_;
   std::string target_tab_url_;
+  std::string category_tag_;
 #if defined(OS_CHROMEOS)
   // Timestamp of when the feedback request was initiated.
   std::string timestamp_;
@@ -337,6 +339,9 @@ content::WebUIDataSource* CreateFeedbackUIHTMLSource(bool successful_init) {
   source->AddLocalizedString("no-saved-screenshots",
                              IDS_FEEDBACK_NO_SAVED_SCREENSHOTS_HELP);
   source->AddLocalizedString("privacy-note", IDS_FEEDBACK_PRIVACY_NOTE);
+  source->AddLocalizedString("launcher-title", IDS_FEEDBACK_LAUNCHER_TITLE);
+  source->AddLocalizedString("launcher-description",
+                             IDS_FEEDBACK_LAUNCHER_DESCRIPTION_LABEL);
 
   source->SetJsonPath("strings.js");
   source->AddResourcePath("feedback.js", IDR_FEEDBACK_JS);
@@ -407,29 +412,28 @@ bool FeedbackHandler::Init() {
             &query_str, 0, kSessionIDParameter, "");
         if (!base::StringToInt(query_str, &session_id))
           return false;
-        continue;
-      }
-      if (StartsWithASCII(*it, std::string(kTabIndexParameter), true)) {
+      } else if (StartsWithASCII(*it, std::string(kTabIndexParameter), true)) {
         ReplaceFirstSubstringAfterOffset(
             &query_str, 0, kTabIndexParameter, "");
         if (!base::StringToInt(query_str, &index))
           return false;
-        continue;
-      }
-      if (StartsWithASCII(*it, std::string(kCustomPageUrlParameter), true)) {
+      } else if (StartsWithASCII(*it, std::string(kCustomPageUrlParameter),
+                                 true)) {
         ReplaceFirstSubstringAfterOffset(
             &query_str, 0, kCustomPageUrlParameter, "");
         custom_page_url = query_str;
-        continue;
-      }
+      } else if (StartsWithASCII(*it, std::string(kCategoryTagParameter),
+                                 true)) {
+        ReplaceFirstSubstringAfterOffset(
+            &query_str, 0, kCategoryTagParameter, "");
+        category_tag_ = query_str;
 #if defined(OS_CHROMEOS)
-      if (StartsWithASCII(*it, std::string(kTimestampParameter), true)) {
+      } else if (StartsWithASCII(*it, std::string(kTimestampParameter), true)) {
         ReplaceFirstSubstringAfterOffset(
             &query_str, 0, kTimestampParameter, "");
         timestamp_ = query_str;
-        continue;
-      }
 #endif
+      }
     }
   }
 
@@ -489,6 +493,9 @@ void FeedbackHandler::HandleGetDialogDefaults(const ListValue*) {
 
   // Send back values which the dialog js needs initially.
   DictionaryValue dialog_defaults;
+
+  if (category_tag_ == chrome::kAppLauncherCategoryTag)
+    dialog_defaults.SetBoolean("launcherFeedback", true);
 
   // Current url.
   dialog_defaults.SetString("currentUrl", target_tab_url_);

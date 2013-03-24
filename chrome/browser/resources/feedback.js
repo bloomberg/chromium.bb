@@ -95,7 +95,7 @@ function addScreenshot(divId, screenshot) {
 }
 
 /**
- * Disables screenshots completely.
+ * Enables screenshots.
  */
 function enableScreenshots() {
   if (forceDisableScreenshots)
@@ -398,7 +398,9 @@ function setupDialogDefaults(defaults) {
   $('user-email-text').value = defaults.userEmail;
   $('user-email-checkbox').checked = defaults.emailCheckboxDefault;
 
-  // Are screenshots disabled?
+  document.documentElement.classList.toggle('launcher-layout',
+                                            defaults.launcherFeedback);
+
   if (!defaults.disableScreenshots)
     enableScreenshots();
 

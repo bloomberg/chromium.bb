@@ -31,6 +31,10 @@ namespace content {
 class WebContents;
 }
 
+namespace chrome {
+extern const char kAppLauncherCategoryTag[];
+}  // namespace chrome
+
 class FeedbackUtil {
  public:
 

@@ -14,9 +14,11 @@
 </head>
 <body id="feedback-page"
     i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
-  <h1 i18n-content="title"></h1>
+  <h1 id="title" i18n-content="title"></h1>
+  <h1 id="launcher-title" i18n-content="launcher-title"></h1>
   <div id="content">
-    <span id="description" colspan="2" i18n-content="description"></span>
+    <span id="description" i18n-content="description"></span>
+    <span id="launcher-description" i18n-content="launcher-description"></span>
     <textarea id="description-text" rows="10"></textarea>
     <div id="page-url" class="input-text-container checkbox">
       <label>

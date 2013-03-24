@@ -40,6 +40,10 @@
 
 using content::WebContents;
 
+namespace chrome {
+const char kAppLauncherCategoryTag[] = "AppLauncher";
+}  // namespace chrome
+
 const int kFeedbackVersion = 1;
 
 const char kReportPhishingUrl[] =
@@ -367,7 +371,7 @@ void FeedbackUtil::SendReport(scoped_refptr<FeedbackData> data) {
 #if defined(FULL_SAFE_BROWSING)
 // static
 void FeedbackUtil::ReportPhishing(WebContents* current_tab,
-                                   const std::string& phishing_url) {
+                                  const std::string& phishing_url) {
   current_tab->GetController().LoadURL(
       safe_browsing_util::GeneratePhishingReportUrl(
           kReportPhishingUrl, phishing_url,

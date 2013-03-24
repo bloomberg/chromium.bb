@@ -105,3 +105,12 @@
   font-weight: bold;
   padding-left: 20px;
 }
+
+.launcher-layout #page-url,
+.launcher-layout #screenshot-row,
+.launcher-layout #title,
+.launcher-layout #description,
+html:not(.launcher-layout) #launcher-title,
+html:not(.launcher-layout) #launcher-description {
+  display: none;
+}
