@@ -1781,6 +1781,7 @@
                 ['exclude', '^browser/autocomplete/builtin_provider_unittest\\.cc$'],
                 ['exclude', '^browser/autocomplete/history_quick_provider_unittest\\.cc$'],
                 ['exclude', '^browser/autocomplete/shortcuts_provider_unittest\\.cc$'],
+                ['exclude', '^browser/bookmarks/bookmark_codec_unittest\\.cc$'],
               ],
             }],
           ],
