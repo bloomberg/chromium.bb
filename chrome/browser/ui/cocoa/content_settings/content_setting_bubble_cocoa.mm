@@ -132,7 +132,15 @@ CGFloat BuildPopUpMenuFromModel(NSPopUpButton* button,
     menuWidth = std::max(menuWidth, width);
   }
 
-  SetTitleForPopUpButton(button, base::SysUTF8ToNSString(title));
+  if (!model->GetItemCount()) {
+    // Show a "None available" title and grey out the menu when there is no
+    // available device.
+    SetTitleForPopUpButton(
+        button, l10n_util::GetNSString(IDS_MEDIA_MENU_NO_DEVICE_TITLE));
+    [button setEnabled:NO];
+  } else {
+    SetTitleForPopUpButton(button, base::SysUTF8ToNSString(title));
+  }
 
   return menuWidth;
 }

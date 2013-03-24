@@ -15,7 +15,10 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/common/media_stream_request.h"
 #include "content/public/test/test_browser_thread.h"
+#include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/gtest_mac.h"
+#include "ui/base/l10n/l10n_util.h"
 
 using content::BrowserThread;
 
@@ -121,12 +124,16 @@ TEST_F(ContentSettingBubbleControllerTest, MediaStreamBubble) {
   content_setting_bubble::MediaMenuPartsMap* mediaMenus =
       [controller mediaMenus];
   EXPECT_EQ(2u, mediaMenus->size());
+  NSString* title = l10n_util::GetNSString(IDS_MEDIA_MENU_NO_DEVICE_TITLE);
   for (content_setting_bubble::MediaMenuPartsMap::const_iterator i =
        mediaMenus->begin(); i != mediaMenus->end(); ++i) {
     EXPECT_TRUE((content::MEDIA_DEVICE_AUDIO_CAPTURE == i->second->type) ||
                 (content::MEDIA_DEVICE_VIDEO_CAPTURE == i->second->type));
     EXPECT_EQ(0, [i->first numberOfItems]);
+    EXPECT_NSEQ(title, [i->first title]);
+    EXPECT_FALSE([i->first isEnabled]);
   }
+
  [parent_ close];
 }
 
