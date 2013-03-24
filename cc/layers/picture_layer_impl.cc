@@ -529,7 +529,7 @@ bool PictureLayerImpl::AreVisibleResourcesReady() const {
     for (PictureLayerTiling::Iterator iter(tiling, contents_scale_x(), rect);
          iter;
          ++iter) {
-      if (should_force_uploads && iter)
+      if (should_force_uploads && *iter)
         layer_tree_impl()->tile_manager()->ForceTileUploadToComplete(*iter);
       // A null tile (i.e. no recording) is considered "ready".
       if (!*iter || iter->drawing_info().IsReadyToDraw())

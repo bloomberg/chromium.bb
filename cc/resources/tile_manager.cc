@@ -428,6 +428,7 @@ void TileManager::AbortPendingTileUploads() {
 }
 
 void TileManager::ForceTileUploadToComplete(Tile* tile) {
+  DCHECK(tile);
   ManagedTileState& managed_tile_state = tile->managed_state();
   if (managed_tile_state.raster_state == UPLOAD_STATE) {
     Resource* resource = tile->drawing_info().resource_.get();
