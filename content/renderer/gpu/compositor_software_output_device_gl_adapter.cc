@@ -63,6 +63,7 @@ void CompositorSoftwareOutputDeviceGLAdapter::EndPaint(
   context3d_->makeContextCurrent();
   context3d_->ensureBackbufferCHROMIUM();
   context3d_->clear(GL_COLOR_BUFFER_BIT);
+  context3d_->bindTexture(GL_TEXTURE_2D, texture_id_);
   context3d_->texImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
       viewport_size_.width(), viewport_size_.height(),
       0, GL_RGBA, GL_UNSIGNED_BYTE, bitmap.pixelRef()->pixels());

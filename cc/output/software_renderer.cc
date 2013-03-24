@@ -78,7 +78,7 @@ SoftwareRenderer::SoftwareRenderer(RendererClient* client,
   // The updater can access bitmaps while the SoftwareRenderer is using them.
   capabilities_.allow_partial_texture_updates = true;
   capabilities_.using_partial_swap = true;
-  if (client_->HasImplThread())
+  if (Settings().compositor_frame_message && client_->HasImplThread())
     capabilities_.using_swap_complete_callback = true;
   compositor_frame_.software_frame_data.reset(new SoftwareFrameData());
 
@@ -122,7 +122,7 @@ bool SoftwareRenderer::SwapBuffers() {
 
 void SoftwareRenderer::ReceiveCompositorFrameAck(
     const CompositorFrameAck& ack) {
-  if (client_->HasImplThread())
+  if (capabilities_.using_swap_complete_callback)
     client_->OnSwapBuffersComplete();
   output_device_->ReclaimDIB(ack.last_content_dib);
 }
@@ -394,7 +394,11 @@ void SoftwareRenderer::DrawRenderPassQuad(const DrawingFrame& frame,
 
 void SoftwareRenderer::DrawUnsupportedQuad(const DrawingFrame& frame,
                                            const DrawQuad* quad) {
+#ifndef NDEBUG
+  current_paint_.setColor(SK_ColorWHITE);
+#else
   current_paint_.setColor(SK_ColorMAGENTA);
+#endif
   current_paint_.setAlpha(quad->opacity() * 255);
   current_canvas_->drawRect(gfx::RectFToSkRect(QuadVertexRect()),
                             current_paint_);
