@@ -16,7 +16,7 @@
 #include "remoting/host/client_session.h"
 #include "remoting/host/desktop_session_connector.h"
 #include "remoting/host/ipc_audio_capturer.h"
-#include "remoting/host/ipc_event_executor.h"
+#include "remoting/host/ipc_input_injector.h"
 #include "remoting/host/ipc_session_controller.h"
 #include "remoting/host/ipc_video_frame_capturer.h"
 #include "remoting/host/session_controller.h"
@@ -55,12 +55,12 @@ scoped_ptr<AudioCapturer> DesktopSessionProxy::CreateAudioCapturer(
   return scoped_ptr<AudioCapturer>(new IpcAudioCapturer(this));
 }
 
-scoped_ptr<EventExecutor> DesktopSessionProxy::CreateEventExecutor(
+scoped_ptr<InputInjector> DesktopSessionProxy::CreateInputInjector(
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
-  return scoped_ptr<EventExecutor>(new IpcEventExecutor(this));
+  return scoped_ptr<InputInjector>(new IpcInputInjector(this));
 }
 
 scoped_ptr<SessionController> DesktopSessionProxy::CreateSessionController() {
@@ -274,7 +274,7 @@ void DesktopSessionProxy::InjectMouseEvent(const protocol::MouseEvent& event) {
       new ChromotingNetworkDesktopMsg_InjectMouseEvent(serialized_event));
 }
 
-void DesktopSessionProxy::StartEventExecutor(
+void DesktopSessionProxy::StartInputInjector(
     scoped_ptr<protocol::ClipboardStub> client_clipboard) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 

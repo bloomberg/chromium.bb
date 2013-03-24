@@ -11,8 +11,8 @@
 #include "remoting/host/continue_window.h"
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/disconnect_window.h"
-#include "remoting/host/event_executor.h"
 #include "remoting/host/host_status_observer.h"
+#include "remoting/host/input_injector.h"
 #include "remoting/host/local_input_monitor.h"
 #include "remoting/host/screen_resolution.h"
 #include "remoting/host/session_controller.h"
@@ -32,8 +32,8 @@ class MockDesktopEnvironment : public DesktopEnvironment {
 
   MOCK_METHOD1(CreateAudioCapturerPtr,
                AudioCapturer*(scoped_refptr<base::SingleThreadTaskRunner>));
-  MOCK_METHOD2(CreateEventExecutorPtr,
-               EventExecutor*(scoped_refptr<base::SingleThreadTaskRunner>,
+  MOCK_METHOD2(CreateInputInjectorPtr,
+               InputInjector*(scoped_refptr<base::SingleThreadTaskRunner>,
                               scoped_refptr<base::SingleThreadTaskRunner>));
   MOCK_METHOD0(CreateSessionControllerPtr, SessionController*());
   MOCK_METHOD2(
@@ -44,7 +44,7 @@ class MockDesktopEnvironment : public DesktopEnvironment {
   // DesktopEnvironment implementation.
   virtual scoped_ptr<AudioCapturer> CreateAudioCapturer(
       scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner) OVERRIDE;
-  virtual scoped_ptr<EventExecutor> CreateEventExecutor(
+  virtual scoped_ptr<InputInjector> CreateInputInjector(
       scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) OVERRIDE;
   virtual scoped_ptr<SessionController> CreateSessionController() OVERRIDE;
@@ -119,10 +119,10 @@ class MockDesktopEnvironmentFactory : public DesktopEnvironmentFactory {
   DISALLOW_COPY_AND_ASSIGN(MockDesktopEnvironmentFactory);
 };
 
-class MockEventExecutor : public EventExecutor {
+class MockInputInjector : public InputInjector {
  public:
-  MockEventExecutor();
-  virtual ~MockEventExecutor();
+  MockInputInjector();
+  virtual ~MockInputInjector();
 
   MOCK_METHOD1(InjectClipboardEvent,
                void(const protocol::ClipboardEvent& event));
@@ -134,7 +134,7 @@ class MockEventExecutor : public EventExecutor {
   void Start(scoped_ptr<protocol::ClipboardStub> client_clipboard);
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MockEventExecutor);
+  DISALLOW_COPY_AND_ASSIGN(MockInputInjector);
 };
 
 class MockHostStatusObserver : public HostStatusObserver {

@@ -38,9 +38,9 @@ class ChromotingHostContext {
   // configuration and by NatConfig to read policy configs.
   scoped_refptr<AutoThreadTaskRunner> file_task_runner();
 
-  // Task runner for the thread that is used by the EventExecutor.
+  // Task runner for the thread that is used by the InputInjector.
   //
-  // TODO(sergeyu): Do we need a separate thread for EventExecutor?
+  // TODO(sergeyu): Do we need a separate thread for InputInjector?
   // Can we use some other thread instead?
   scoped_refptr<AutoThreadTaskRunner> input_task_runner();
 

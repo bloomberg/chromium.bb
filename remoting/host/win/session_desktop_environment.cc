@@ -8,8 +8,8 @@
 #include "base/single_thread_task_runner.h"
 #include "media/video/capture/screen/screen_capturer.h"
 #include "remoting/host/audio_capturer.h"
-#include "remoting/host/event_executor.h"
-#include "remoting/host/win/session_event_executor.h"
+#include "remoting/host/input_injector.h"
+#include "remoting/host/win/session_input_injector.h"
 
 namespace remoting {
 
@@ -21,16 +21,16 @@ SessionDesktopEnvironment::SessionDesktopEnvironment(
 SessionDesktopEnvironment::~SessionDesktopEnvironment() {
 }
 
-scoped_ptr<EventExecutor> SessionDesktopEnvironment::CreateEventExecutor(
+scoped_ptr<InputInjector> SessionDesktopEnvironment::CreateInputInjector(
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
   DCHECK(CalledOnValidThread());
 
-  scoped_ptr<EventExecutor> event_executor = EventExecutor::Create(
+  scoped_ptr<InputInjector> input_injector = InputInjector::Create(
       input_task_runner, ui_task_runner);
-  event_executor.reset(new SessionEventExecutorWin(
-      input_task_runner, event_executor.Pass(), ui_task_runner, inject_sas_));
-  return event_executor.Pass();
+  input_injector.reset(new SessionInputInjectorWin(
+      input_task_runner, input_injector.Pass(), ui_task_runner, inject_sas_));
+  return input_injector.Pass();
 }
 
 SessionDesktopEnvironmentFactory::SessionDesktopEnvironmentFactory(

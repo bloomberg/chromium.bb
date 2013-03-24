@@ -6,9 +6,7 @@
 
 #include "base/logging.h"
 #include "media/video/capture/screen/screen_capturer.h"
-#include "remoting/host/audio_capturer.h"
 #include "remoting/host/desktop_resizer.h"
-#include "remoting/host/event_executor.h"
 #include "remoting/host/resizing_host_observer.h"
 #include "remoting/host/session_controller.h"
 

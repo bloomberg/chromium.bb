@@ -23,7 +23,7 @@ class ScreenCapturer;
 namespace remoting {
 
 class AudioCapturer;
-class EventExecutor;
+class InputInjector;
 class SessionController;
 
 // Provides factory methods for creation of audio/video capturers and event
@@ -36,7 +36,7 @@ class DesktopEnvironment {
   // session controller for a particular desktop environment.
   virtual scoped_ptr<AudioCapturer> CreateAudioCapturer(
       scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner) = 0;
-  virtual scoped_ptr<EventExecutor> CreateEventExecutor(
+  virtual scoped_ptr<InputInjector> CreateInputInjector(
       scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) = 0;
   virtual scoped_ptr<SessionController> CreateSessionController() = 0;

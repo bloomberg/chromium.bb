@@ -73,7 +73,7 @@ class DesktopSessionProxy
   // Mirrors DesktopEnvironment.
   scoped_ptr<AudioCapturer> CreateAudioCapturer(
       scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner);
-  scoped_ptr<EventExecutor> CreateEventExecutor(
+  scoped_ptr<InputInjector> CreateInputInjector(
       scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
   scoped_ptr<SessionController> CreateSessionController();
@@ -116,11 +116,11 @@ class DesktopSessionProxy
   void SetVideoCapturer(
       const base::WeakPtr<IpcVideoFrameCapturer> video_capturer);
 
-  // APIs used to implement the EventExecutor interface.
+  // APIs used to implement the InputInjector interface.
   void InjectClipboardEvent(const protocol::ClipboardEvent& event);
   void InjectKeyEvent(const protocol::KeyEvent& event);
   void InjectMouseEvent(const protocol::MouseEvent& event);
-  void StartEventExecutor(scoped_ptr<protocol::ClipboardStub> client_clipboard);
+  void StartInputInjector(scoped_ptr<protocol::ClipboardStub> client_clipboard);
 
   // API used to implement the SessionController interface.
   void SetScreenResolution(const ScreenResolution& resolution);
@@ -180,7 +180,7 @@ class DesktopSessionProxy
   // Points to the audio capturer receiving captured audio packets.
   base::WeakPtr<IpcAudioCapturer> audio_capturer_;
 
-  // Points to the client stub passed to StartEventExecutor().
+  // Points to the client stub passed to StartInputInjector().
   scoped_ptr<protocol::ClipboardStub> client_clipboard_;
 
   // Used to bind to a desktop session and receive notifications every time

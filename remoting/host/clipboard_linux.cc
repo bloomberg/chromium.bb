@@ -63,7 +63,7 @@ ClipboardLinux::~ClipboardLinux() {
 
 void ClipboardLinux::Start(
     scoped_ptr<protocol::ClipboardStub> client_clipboard) {
-  // TODO(lambroslambrou): Share the X connection with EventExecutor.
+  // TODO(lambroslambrou): Share the X connection with InputInjector.
   display_ = XOpenDisplay(NULL);
   if (!display_) {
     LOG(ERROR) << "Couldn't open X display";

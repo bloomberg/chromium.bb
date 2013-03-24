@@ -44,7 +44,6 @@
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/desktop_session_connector.h"
 #include "remoting/host/dns_blackhole_checker.h"
-#include "remoting/host/event_executor.h"
 #include "remoting/host/heartbeat_sender.h"
 #include "remoting/host/host_change_notification_listener.h"
 #include "remoting/host/host_config.h"

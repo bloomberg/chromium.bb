@@ -293,9 +293,9 @@ class ChromotingHostTest : public testing::Test {
     MockDesktopEnvironment* desktop_environment = new MockDesktopEnvironment();
     EXPECT_CALL(*desktop_environment, CreateAudioCapturerPtr(_))
         .Times(0);
-    EXPECT_CALL(*desktop_environment, CreateEventExecutorPtr(_, _))
+    EXPECT_CALL(*desktop_environment, CreateInputInjectorPtr(_, _))
         .Times(AnyNumber())
-        .WillRepeatedly(Invoke(this, &ChromotingHostTest::CreateEventExecutor));
+        .WillRepeatedly(Invoke(this, &ChromotingHostTest::CreateInputInjector));
     EXPECT_CALL(*desktop_environment, CreateSessionControllerPtr())
         .Times(AnyNumber())
         .WillRepeatedly(Invoke(this,
@@ -307,14 +307,14 @@ class ChromotingHostTest : public testing::Test {
     return desktop_environment;
   }
 
-  // Creates a dummy EventExecutor, to mock
-  // DesktopEnvironment::CreateEventExecutor().
-  EventExecutor* CreateEventExecutor(
+  // Creates a dummy InputInjector, to mock
+  // DesktopEnvironment::CreateInputInjector().
+  InputInjector* CreateInputInjector(
       scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
-    MockEventExecutor* event_executor = new MockEventExecutor();
-    EXPECT_CALL(*event_executor, StartPtr(_));
-    return event_executor;
+    MockInputInjector* input_injector = new MockInputInjector();
+    EXPECT_CALL(*input_injector, StartPtr(_));
+    return input_injector;
   }
 
   // Creates a dummy SessionController, to mock

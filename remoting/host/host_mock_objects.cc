@@ -12,7 +12,7 @@
 #include "remoting/codec/audio_encoder.h"
 #include "remoting/codec/video_encoder.h"
 #include "remoting/host/audio_capturer.h"
-#include "remoting/host/event_executor.h"
+#include "remoting/host/input_injector.h"
 #include "remoting/proto/event.pb.h"
 #include "remoting/protocol/transport.h"
 
@@ -27,10 +27,10 @@ scoped_ptr<AudioCapturer> MockDesktopEnvironment::CreateAudioCapturer(
   return scoped_ptr<AudioCapturer>(CreateAudioCapturerPtr(audio_task_runner));
 }
 
-scoped_ptr<EventExecutor> MockDesktopEnvironment::CreateEventExecutor(
+scoped_ptr<InputInjector> MockDesktopEnvironment::CreateInputInjector(
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
-  return scoped_ptr<EventExecutor>(CreateEventExecutorPtr(input_task_runner,
+  return scoped_ptr<InputInjector>(CreateInputInjectorPtr(input_task_runner,
                                                           ui_task_runner));
 }
 
@@ -56,11 +56,11 @@ scoped_ptr<DesktopEnvironment> MockDesktopEnvironmentFactory::Create(
   return scoped_ptr<DesktopEnvironment>(CreatePtr());
 }
 
-MockEventExecutor::MockEventExecutor() {}
+MockInputInjector::MockInputInjector() {}
 
-MockEventExecutor::~MockEventExecutor() {}
+MockInputInjector::~MockInputInjector() {}
 
-void MockEventExecutor::Start(
+void MockInputInjector::Start(
     scoped_ptr<protocol::ClipboardStub> client_clipboard) {
   StartPtr(client_clipboard.get());
 }

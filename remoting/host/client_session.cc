@@ -18,7 +18,7 @@
 #include "remoting/host/audio_capturer.h"
 #include "remoting/host/audio_scheduler.h"
 #include "remoting/host/desktop_environment.h"
-#include "remoting/host/event_executor.h"
+#include "remoting/host/input_injector.h"
 #include "remoting/host/screen_resolution.h"
 #include "remoting/host/session_controller.h"
 #include "remoting/host/video_scheduler.h"
@@ -86,7 +86,7 @@ ClientSession::ClientSession(
 ClientSession::~ClientSession() {
   DCHECK(CalledOnValidThread());
   DCHECK(!audio_scheduler_);
-  DCHECK(!event_executor_);
+  DCHECK(!input_injector_);
   DCHECK(!session_controller_);
   DCHECK(!video_scheduler_);
 
@@ -158,7 +158,7 @@ void ClientSession::OnConnectionChannelsConnected(
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(connection_.get(), connection);
   DCHECK(!audio_scheduler_);
-  DCHECK(!event_executor_);
+  DCHECK(!input_injector_);
   DCHECK(!session_controller_);
   DCHECK(!video_scheduler_);
 
@@ -172,13 +172,13 @@ void ClientSession::OnConnectionChannelsConnected(
   session_controller_ = desktop_environment->CreateSessionController();
 
   // Create and start the event executor.
-  event_executor_ = desktop_environment->CreateEventExecutor(
+  input_injector_ = desktop_environment->CreateInputInjector(
       input_task_runner_, ui_task_runner_);
-  event_executor_->Start(CreateClipboardProxy());
+  input_injector_->Start(CreateClipboardProxy());
 
   // Connect the host clipboard and input stubs.
-  host_input_filter_.set_input_stub(event_executor_.get());
-  clipboard_echo_filter_.set_host_stub(event_executor_.get());
+  host_input_filter_.set_input_stub(input_injector_.get());
+  clipboard_echo_filter_.set_host_stub(input_injector_.get());
 
   SetDisableInputs(false);
 
@@ -247,7 +247,7 @@ void ClientSession::OnConnectionClosed(
   }
 
   client_clipboard_factory_.InvalidateWeakPtrs();
-  event_executor_.reset();
+  input_injector_.reset();
   session_controller_.reset();
 
   // Notify the ChromotingHost that this client is disconnected.

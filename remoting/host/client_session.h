@@ -36,7 +36,7 @@ class AudioEncoder;
 class AudioScheduler;
 class DesktopEnvironment;
 class DesktopEnvironmentFactory;
-class EventExecutor;
+class InputInjector;
 class SessionController;
 class VideoEncoder;
 class VideoScheduler;
@@ -213,7 +213,8 @@ class ClientSession
   scoped_refptr<AudioScheduler> audio_scheduler_;
   scoped_refptr<VideoScheduler> video_scheduler_;
 
-  scoped_ptr<EventExecutor> event_executor_;
+  // Used to inject mouse and keyboard input and handle clipboard events.
+  scoped_ptr<InputInjector> input_injector_;
 
   // Used to apply client-requested changes in screen resolution.
   scoped_ptr<SessionController> session_controller_;

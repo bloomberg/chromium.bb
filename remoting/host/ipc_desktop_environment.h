@@ -49,7 +49,7 @@ class IpcDesktopEnvironment : public DesktopEnvironment {
   // DesktopEnvironment implementation.
   virtual scoped_ptr<AudioCapturer> CreateAudioCapturer(
       scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner) OVERRIDE;
-  virtual scoped_ptr<EventExecutor> CreateEventExecutor(
+  virtual scoped_ptr<InputInjector> CreateInputInjector(
       scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) OVERRIDE;
   virtual scoped_ptr<SessionController> CreateSessionController() OVERRIDE;

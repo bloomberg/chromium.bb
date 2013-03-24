@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_HOST_EVENT_EXECUTOR_H_
-#define REMOTING_HOST_EVENT_EXECUTOR_H_
+#ifndef REMOTING_HOST_INPUT_INJECTOR_H_
+#define REMOTING_HOST_INPUT_INJECTOR_H_
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -16,14 +16,14 @@ class SingleThreadTaskRunner;
 
 namespace remoting {
 
-class EventExecutor : public protocol::ClipboardStub,
+class InputInjector : public protocol::ClipboardStub,
                       public protocol::InputStub {
  public:
-  // Creates a default event executor for the current platform. This
+  // Creates a default input injector for the current platform. This
   // object should do as much work as possible on |main_task_runner|,
   // using |ui_task_runner| only for tasks actually requiring a UI
   // thread.
-  static scoped_ptr<EventExecutor> Create(
+  static scoped_ptr<InputInjector> Create(
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
 
@@ -34,4 +34,4 @@ class EventExecutor : public protocol::ClipboardStub,
 
 }  // namespace remoting
 
-#endif  // REMOTING_HOST_EVENT_EXECUTOR_H_
+#endif  // REMOTING_HOST_INPUT_INJECTOR_H_

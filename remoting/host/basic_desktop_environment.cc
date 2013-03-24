@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "media/video/capture/screen/screen_capturer.h"
 #include "remoting/host/audio_capturer.h"
-#include "remoting/host/event_executor.h"
+#include "remoting/host/input_injector.h"
 #include "remoting/host/session_controller.h"
 
 namespace remoting {
@@ -23,12 +23,12 @@ scoped_ptr<AudioCapturer> BasicDesktopEnvironment::CreateAudioCapturer(
   return AudioCapturer::Create();
 }
 
-scoped_ptr<EventExecutor> BasicDesktopEnvironment::CreateEventExecutor(
+scoped_ptr<InputInjector> BasicDesktopEnvironment::CreateInputInjector(
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
   DCHECK(CalledOnValidThread());
 
-  return EventExecutor::Create(input_task_runner, ui_task_runner);
+  return InputInjector::Create(input_task_runner, ui_task_runner);
 }
 
 scoped_ptr<SessionController>

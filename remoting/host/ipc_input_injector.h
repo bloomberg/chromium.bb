@@ -2,24 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_HOST_IPC_EVENT_EXECUTOR_H_
-#define REMOTING_HOST_IPC_EVENT_EXECUTOR_H_
+#ifndef REMOTING_HOST_IPC_INPUT_INJECTOR_H_
+#define REMOTING_HOST_IPC_INPUT_INJECTOR_H_
 
 #include "base/memory/ref_counted.h"
-#include "remoting/host/event_executor.h"
+#include "remoting/host/input_injector.h"
 #include "remoting/proto/event.pb.h"
 
 namespace remoting {
 
 class DesktopSessionProxy;
 
-// Routes EventExecutor calls though the IPC channel to the desktop session
+// Routes InputInjector calls though the IPC channel to the desktop session
 // agent running in the desktop integration process.
-class IpcEventExecutor : public EventExecutor {
+class IpcInputInjector : public InputInjector {
  public:
-  explicit IpcEventExecutor(
+  explicit IpcInputInjector(
       scoped_refptr<DesktopSessionProxy> desktop_session_proxy);
-  virtual ~IpcEventExecutor();
+  virtual ~IpcInputInjector();
 
   // ClipboardStub interface.
   virtual void InjectClipboardEvent(
@@ -29,7 +29,7 @@ class IpcEventExecutor : public EventExecutor {
   virtual void InjectKeyEvent(const protocol::KeyEvent& event) OVERRIDE;
   virtual void InjectMouseEvent(const protocol::MouseEvent& event) OVERRIDE;
 
-  // EventExecutor interface.
+  // InputInjector interface.
   virtual void Start(
       scoped_ptr<protocol::ClipboardStub> client_clipboard) OVERRIDE;
 
@@ -37,9 +37,9 @@ class IpcEventExecutor : public EventExecutor {
   // Wraps the IPC channel to the desktop process.
   scoped_refptr<DesktopSessionProxy> desktop_session_proxy_;
 
-  DISALLOW_COPY_AND_ASSIGN(IpcEventExecutor);
+  DISALLOW_COPY_AND_ASSIGN(IpcInputInjector);
 };
 
 }  // namespace remoting
 
-#endif  // REMOTING_HOST_IPC_EVENT_EXECUTOR_H_
+#endif  // REMOTING_HOST_IPC_INPUT_INJECTOR_H_

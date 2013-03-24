@@ -20,7 +20,7 @@ class SessionDesktopEnvironment : public Me2MeDesktopEnvironment {
   virtual ~SessionDesktopEnvironment();
 
   // DesktopEnvironment implementation.
-  virtual scoped_ptr<EventExecutor> CreateEventExecutor(
+  virtual scoped_ptr<InputInjector> CreateInputInjector(
       scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) OVERRIDE;
 

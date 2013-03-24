@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/win/session_event_executor.h"
+#include "remoting/host/win/session_input_injector.h"
 
 #include <set>
 #include <string>
@@ -43,17 +43,17 @@ using protocol::ClipboardEvent;
 using protocol::MouseEvent;
 using protocol::KeyEvent;
 
-class SessionEventExecutorWin::Core
-    : public base::RefCountedThreadSafe<SessionEventExecutorWin::Core>,
-      public EventExecutor {
+class SessionInputInjectorWin::Core
+    : public base::RefCountedThreadSafe<SessionInputInjectorWin::Core>,
+      public InputInjector {
  public:
   Core(
       scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
-      scoped_ptr<EventExecutor> nested_executor,
+      scoped_ptr<InputInjector> nested_executor,
       scoped_refptr<base::SingleThreadTaskRunner> inject_sas_task_runner,
       const base::Closure& inject_sas);
 
-  // EventExecutor implementation.
+  // InputInjector implementation.
   virtual void Start(
       scoped_ptr<protocol::ClipboardStub> client_clipboard) OVERRIDE;
 
@@ -76,7 +76,7 @@ class SessionEventExecutorWin::Core
   scoped_refptr<base::SingleThreadTaskRunner> input_task_runner_;
 
   // Pointer to the next event executor.
-  scoped_ptr<EventExecutor> nested_executor_;
+  scoped_ptr<InputInjector> nested_executor_;
 
   scoped_refptr<base::SingleThreadTaskRunner> inject_sas_task_runner_;
 
@@ -94,9 +94,9 @@ class SessionEventExecutorWin::Core
   DISALLOW_COPY_AND_ASSIGN(Core);
 };
 
-SessionEventExecutorWin::Core::Core(
+SessionInputInjectorWin::Core::Core(
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
-    scoped_ptr<EventExecutor> nested_executor,
+    scoped_ptr<InputInjector> nested_executor,
     scoped_refptr<base::SingleThreadTaskRunner> inject_sas_task_runner,
     const base::Closure& inject_sas)
     : input_task_runner_(input_task_runner),
@@ -105,7 +105,7 @@ SessionEventExecutorWin::Core::Core(
       inject_sas_(inject_sas) {
 }
 
-void SessionEventExecutorWin::Core::Start(
+void SessionInputInjectorWin::Core::Start(
     scoped_ptr<protocol::ClipboardStub> client_clipboard) {
   if (!input_task_runner_->BelongsToCurrentThread()) {
     input_task_runner_->PostTask(
@@ -117,7 +117,7 @@ void SessionEventExecutorWin::Core::Start(
   nested_executor_->Start(client_clipboard.Pass());
 }
 
-void SessionEventExecutorWin::Core::InjectClipboardEvent(
+void SessionInputInjectorWin::Core::InjectClipboardEvent(
     const ClipboardEvent& event) {
   if (!input_task_runner_->BelongsToCurrentThread()) {
     input_task_runner_->PostTask(
@@ -128,7 +128,7 @@ void SessionEventExecutorWin::Core::InjectClipboardEvent(
   nested_executor_->InjectClipboardEvent(event);
 }
 
-void SessionEventExecutorWin::Core::InjectKeyEvent(const KeyEvent& event) {
+void SessionInputInjectorWin::Core::InjectKeyEvent(const KeyEvent& event) {
   if (!input_task_runner_->BelongsToCurrentThread()) {
     input_task_runner_->PostTask(
         FROM_HERE, base::Bind(&Core::InjectKeyEvent, this, event));
@@ -165,7 +165,7 @@ void SessionEventExecutorWin::Core::InjectKeyEvent(const KeyEvent& event) {
   nested_executor_->InjectKeyEvent(event);
 }
 
-void SessionEventExecutorWin::Core::InjectMouseEvent(const MouseEvent& event) {
+void SessionInputInjectorWin::Core::InjectMouseEvent(const MouseEvent& event) {
   if (!input_task_runner_->BelongsToCurrentThread()) {
     input_task_runner_->PostTask(
         FROM_HERE, base::Bind(&Core::InjectMouseEvent, this, event));
@@ -176,10 +176,10 @@ void SessionEventExecutorWin::Core::InjectMouseEvent(const MouseEvent& event) {
   nested_executor_->InjectMouseEvent(event);
 }
 
-SessionEventExecutorWin::Core::~Core() {
+SessionInputInjectorWin::Core::~Core() {
 }
 
-void SessionEventExecutorWin::Core::SwitchToInputDesktop() {
+void SessionInputInjectorWin::Core::SwitchToInputDesktop() {
   // Switch to the desktop receiving user input if different from the current
   // one.
   scoped_ptr<media::Desktop> input_desktop = media::Desktop::GetInputDesktop();
@@ -190,33 +190,33 @@ void SessionEventExecutorWin::Core::SwitchToInputDesktop() {
   }
 }
 
-SessionEventExecutorWin::SessionEventExecutorWin(
+SessionInputInjectorWin::SessionInputInjectorWin(
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
-    scoped_ptr<EventExecutor> nested_executor,
+    scoped_ptr<InputInjector> nested_executor,
     scoped_refptr<base::SingleThreadTaskRunner> inject_sas_task_runner,
     const base::Closure& inject_sas) {
   core_ = new Core(input_task_runner, nested_executor.Pass(),
                    inject_sas_task_runner, inject_sas);
 }
 
-SessionEventExecutorWin::~SessionEventExecutorWin() {
+SessionInputInjectorWin::~SessionInputInjectorWin() {
 }
 
-void SessionEventExecutorWin::Start(
+void SessionInputInjectorWin::Start(
     scoped_ptr<protocol::ClipboardStub> client_clipboard) {
   core_->Start(client_clipboard.Pass());
 }
 
-void SessionEventExecutorWin::InjectClipboardEvent(
+void SessionInputInjectorWin::InjectClipboardEvent(
     const protocol::ClipboardEvent& event) {
   core_->InjectClipboardEvent(event);
 }
 
-void SessionEventExecutorWin::InjectKeyEvent(const protocol::KeyEvent& event) {
+void SessionInputInjectorWin::InjectKeyEvent(const protocol::KeyEvent& event) {
   core_->InjectKeyEvent(event);
 }
 
-void SessionEventExecutorWin::InjectMouseEvent(
+void SessionInputInjectorWin::InjectMouseEvent(
     const protocol::MouseEvent& event) {
   core_->InjectMouseEvent(event);
 }

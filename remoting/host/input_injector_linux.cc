@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/event_executor.h"
+#include "remoting/host/input_injector.h"
 
 #include <X11/Xlib.h>
 #include <X11/extensions/XTest.h>
@@ -38,11 +38,11 @@ using protocol::MouseEvent;
 const float kWheelTicksPerPixel = 3.0f / 160.0f;
 
 // A class to generate events on Linux.
-class EventExecutorLinux : public EventExecutor {
+class InputInjectorLinux : public InputInjector {
  public:
-  explicit EventExecutorLinux(
+  explicit InputInjectorLinux(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
-  virtual ~EventExecutorLinux();
+  virtual ~InputInjectorLinux();
 
   bool Init();
 
@@ -53,12 +53,12 @@ class EventExecutorLinux : public EventExecutor {
   virtual void InjectKeyEvent(const KeyEvent& event) OVERRIDE;
   virtual void InjectMouseEvent(const MouseEvent& event) OVERRIDE;
 
-  // EventExecutor interface.
+  // InputInjector interface.
   virtual void Start(
       scoped_ptr<protocol::ClipboardStub> client_clipboard) OVERRIDE;
 
  private:
-  // The actual implementation resides in EventExecutorLinux::Core class.
+  // The actual implementation resides in InputInjectorLinux::Core class.
   class Core : public base::RefCountedThreadSafe<Core> {
    public:
     explicit Core(scoped_refptr<base::SingleThreadTaskRunner> task_runner);
@@ -72,7 +72,7 @@ class EventExecutorLinux : public EventExecutor {
     void InjectKeyEvent(const KeyEvent& event);
     void InjectMouseEvent(const MouseEvent& event);
 
-    // Mirrors the EventExecutor interface.
+    // Mirrors the InputInjector interface.
     void Start(scoped_ptr<protocol::ClipboardStub> client_clipboard);
 
     void Stop();
@@ -129,39 +129,39 @@ class EventExecutorLinux : public EventExecutor {
 
   scoped_refptr<Core> core_;
 
-  DISALLOW_COPY_AND_ASSIGN(EventExecutorLinux);
+  DISALLOW_COPY_AND_ASSIGN(InputInjectorLinux);
 };
 
-EventExecutorLinux::EventExecutorLinux(
+InputInjectorLinux::InputInjectorLinux(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   core_ = new Core(task_runner);
 }
-EventExecutorLinux::~EventExecutorLinux() {
+InputInjectorLinux::~InputInjectorLinux() {
   core_->Stop();
 }
 
-bool EventExecutorLinux::Init() {
+bool InputInjectorLinux::Init() {
   return core_->Init();
 }
 
-void EventExecutorLinux::InjectClipboardEvent(const ClipboardEvent& event) {
+void InputInjectorLinux::InjectClipboardEvent(const ClipboardEvent& event) {
   core_->InjectClipboardEvent(event);
 }
 
-void EventExecutorLinux::InjectKeyEvent(const KeyEvent& event) {
+void InputInjectorLinux::InjectKeyEvent(const KeyEvent& event) {
   core_->InjectKeyEvent(event);
 }
 
-void EventExecutorLinux::InjectMouseEvent(const MouseEvent& event) {
+void InputInjectorLinux::InjectMouseEvent(const MouseEvent& event) {
   core_->InjectMouseEvent(event);
 }
 
-void EventExecutorLinux::Start(
+void InputInjectorLinux::Start(
     scoped_ptr<protocol::ClipboardStub> client_clipboard) {
   core_->Start(client_clipboard.Pass());
 }
 
-EventExecutorLinux::Core::Core(
+InputInjectorLinux::Core::Core(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : task_runner_(task_runner),
       latest_mouse_position_(SkIPoint::Make(-1, -1)),
@@ -172,7 +172,7 @@ EventExecutorLinux::Core::Core(
       saved_auto_repeat_enabled_(false) {
 }
 
-bool EventExecutorLinux::Core::Init() {
+bool InputInjectorLinux::Core::Init() {
   CHECK(display_);
 
   if (!task_runner_->BelongsToCurrentThread())
@@ -196,7 +196,7 @@ bool EventExecutorLinux::Core::Init() {
   return true;
 }
 
-void EventExecutorLinux::Core::InjectClipboardEvent(
+void InputInjectorLinux::Core::InjectClipboardEvent(
     const ClipboardEvent& event) {
   if (!task_runner_->BelongsToCurrentThread()) {
     task_runner_->PostTask(
@@ -208,7 +208,7 @@ void EventExecutorLinux::Core::InjectClipboardEvent(
   clipboard_->InjectClipboardEvent(event);
 }
 
-void EventExecutorLinux::Core::InjectKeyEvent(const KeyEvent& event) {
+void InputInjectorLinux::Core::InjectKeyEvent(const KeyEvent& event) {
   // HostEventDispatcher should filter events missing the pressed field.
   if (!event.has_pressed() || !event.has_usb_keycode())
     return;
@@ -256,16 +256,16 @@ void EventExecutorLinux::Core::InjectKeyEvent(const KeyEvent& event) {
   XFlush(display_);
 }
 
-EventExecutorLinux::Core::~Core() {
+InputInjectorLinux::Core::~Core() {
   CHECK(pressed_keys_.empty());
 }
 
-void EventExecutorLinux::Core::InitClipboard() {
+void InputInjectorLinux::Core::InitClipboard() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   clipboard_ = Clipboard::Create();
 }
 
-bool EventExecutorLinux::Core::IsAutoRepeatEnabled() {
+bool InputInjectorLinux::Core::IsAutoRepeatEnabled() {
   XKeyboardState state;
   if (!XGetKeyboardControl(display_, &state)) {
     LOG(ERROR) << "Failed to get keyboard auto-repeat status, assuming ON.";
@@ -274,13 +274,13 @@ bool EventExecutorLinux::Core::IsAutoRepeatEnabled() {
   return state.global_auto_repeat == AutoRepeatModeOn;
 }
 
-void EventExecutorLinux::Core::SetAutoRepeatEnabled(bool mode) {
+void InputInjectorLinux::Core::SetAutoRepeatEnabled(bool mode) {
   XKeyboardControl control;
   control.auto_repeat_mode = mode ? AutoRepeatModeOn : AutoRepeatModeOff;
   XChangeKeyboardControl(display_, KBAutoRepeatMode, &control);
 }
 
-void EventExecutorLinux::Core::InjectScrollWheelClicks(int button, int count) {
+void InputInjectorLinux::Core::InjectScrollWheelClicks(int button, int count) {
   if (button < 0) {
     LOG(WARNING) << "Ignoring unmapped scroll wheel button";
     return;
@@ -292,7 +292,7 @@ void EventExecutorLinux::Core::InjectScrollWheelClicks(int button, int count) {
   }
 }
 
-void EventExecutorLinux::Core::InjectMouseEvent(const MouseEvent& event) {
+void InputInjectorLinux::Core::InjectMouseEvent(const MouseEvent& event) {
   if (!task_runner_->BelongsToCurrentThread()) {
     task_runner_->PostTask(FROM_HERE,
                            base::Bind(&Core::InjectMouseEvent, this, event));
@@ -365,7 +365,7 @@ void EventExecutorLinux::Core::InjectMouseEvent(const MouseEvent& event) {
   XFlush(display_);
 }
 
-void EventExecutorLinux::Core::InitMouseButtonMap() {
+void InputInjectorLinux::Core::InitMouseButtonMap() {
   // TODO(rmsousa): Run this on global/device mapping change events.
 
   // Do not touch global pointer mapping, since this may affect the local user.
@@ -441,7 +441,7 @@ void EventExecutorLinux::Core::InitMouseButtonMap() {
   XCloseDevice(display_, device);
 }
 
-int EventExecutorLinux::Core::MouseButtonToX11ButtonNumber(
+int InputInjectorLinux::Core::MouseButtonToX11ButtonNumber(
     MouseEvent::MouseButton button) {
   switch (button) {
     case MouseEvent::BUTTON_LEFT:
@@ -459,17 +459,17 @@ int EventExecutorLinux::Core::MouseButtonToX11ButtonNumber(
   }
 }
 
-int EventExecutorLinux::Core::HorizontalScrollWheelToX11ButtonNumber(int dx) {
+int InputInjectorLinux::Core::HorizontalScrollWheelToX11ButtonNumber(int dx) {
   return (dx > 0 ? pointer_button_map_[5] : pointer_button_map_[6]);
 }
 
-int EventExecutorLinux::Core::VerticalScrollWheelToX11ButtonNumber(int dy) {
+int InputInjectorLinux::Core::VerticalScrollWheelToX11ButtonNumber(int dy) {
   // Positive y-values are wheel scroll-up events (button 4), negative y-values
   // are wheel scroll-down events (button 5).
   return (dy > 0 ? pointer_button_map_[3] : pointer_button_map_[4]);
 }
 
-void EventExecutorLinux::Core::Start(
+void InputInjectorLinux::Core::Start(
     scoped_ptr<protocol::ClipboardStub> client_clipboard) {
   if (!task_runner_->BelongsToCurrentThread()) {
     task_runner_->PostTask(
@@ -483,7 +483,7 @@ void EventExecutorLinux::Core::Start(
   clipboard_->Start(client_clipboard.Pass());
 }
 
-void EventExecutorLinux::Core::Stop() {
+void InputInjectorLinux::Core::Stop() {
   if (!task_runner_->BelongsToCurrentThread()) {
     task_runner_->PostTask(FROM_HERE, base::Bind(&Core::Stop, this));
     return;
@@ -494,14 +494,14 @@ void EventExecutorLinux::Core::Stop() {
 
 }  // namespace
 
-scoped_ptr<EventExecutor> EventExecutor::Create(
+scoped_ptr<InputInjector> InputInjector::Create(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
-  scoped_ptr<EventExecutorLinux> executor(
-      new EventExecutorLinux(main_task_runner));
-  if (!executor->Init())
-    return scoped_ptr<EventExecutor>(NULL);
-  return executor.PassAs<EventExecutor>();
+  scoped_ptr<InputInjectorLinux> injector(
+      new InputInjectorLinux(main_task_runner));
+  if (!injector->Init())
+    return scoped_ptr<InputInjector>(NULL);
+  return injector.PassAs<InputInjector>();
 }
 
 }  // namespace remoting

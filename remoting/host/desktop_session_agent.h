@@ -35,7 +35,7 @@ class AudioPacket;
 class AutoThreadTaskRunner;
 class DesktopEnvironmentFactory;
 class DisconnectWindow;
-class EventExecutor;
+class InputInjector;
 class LocalInputMonitor;
 class RemoteInputFilter;
 class ScreenResolution;
@@ -217,7 +217,7 @@ class DesktopSessionAgent
   scoped_ptr<DisconnectWindow> disconnect_window_;
 
   // Executes keyboard, mouse and clipboard events.
-  scoped_ptr<EventExecutor> event_executor_;
+  scoped_ptr<InputInjector> input_injector_;
 
   // Monitor local inputs to allow remote inputs to be blocked while the local
   // user is trying to do something.

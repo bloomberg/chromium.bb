@@ -125,9 +125,9 @@ class IpcDesktopEnvironmentTest : public testing::Test {
   // DesktopEnvironmentFactory::Create().
   DesktopEnvironment* CreateDesktopEnvironment();
 
-  // Creates a dummy EventExecutor, to mock
-  // DesktopEnvironment::CreateEventExecutor().
-  EventExecutor* CreateEventExecutor();
+  // Creates a dummy InputInjector, to mock
+  // DesktopEnvironment::CreateInputInjector().
+  InputInjector* CreateInputInjector();
 
   // Creates a dummy SessionController, to mock
   // DesktopEnvironment::CreateSessionController().
@@ -184,8 +184,8 @@ class IpcDesktopEnvironmentTest : public testing::Test {
   scoped_ptr<IpcDesktopEnvironmentFactory> desktop_environment_factory_;
   scoped_ptr<DesktopEnvironment> desktop_environment_;
 
-  // The IPC event executor.
-  scoped_ptr<EventExecutor> event_executor_;
+  // The IPC input injector.
+  scoped_ptr<InputInjector> input_injector_;
 
   // The IPC screen capturer.
   scoped_ptr<media::ScreenCapturer> video_capturer_;
@@ -193,8 +193,8 @@ class IpcDesktopEnvironmentTest : public testing::Test {
   // Represents the desktop process running in a user session.
   scoped_ptr<DesktopProcess> desktop_process_;
 
-  // Event executor owned by |desktop_process_|.
-  MockEventExecutor* remote_event_executor_;
+  // Input injector owned by |desktop_process_|.
+  MockInputInjector* remote_input_injector_;
 
   // The last |terminal_id| passed to ConnectTermina();
   int terminal_id_;
@@ -205,7 +205,7 @@ class IpcDesktopEnvironmentTest : public testing::Test {
 IpcDesktopEnvironmentTest::IpcDesktopEnvironmentTest()
     : message_loop_(MessageLoop::TYPE_UI),
       clipboard_stub_(NULL),
-      remote_event_executor_(NULL),
+      remote_input_injector_(NULL),
       terminal_id_(-1) {
 }
 
@@ -253,9 +253,9 @@ void IpcDesktopEnvironmentTest::SetUp() {
       base::Bind(&IpcDesktopEnvironmentTest::OnDisconnectCallback,
                  base::Unretained(this)));
 
-  // Create the event executor.
-  event_executor_ =
-      desktop_environment_->CreateEventExecutor(task_runner_, task_runner_);
+  // Create the input injector.
+  input_injector_ =
+      desktop_environment_->CreateInputInjector(task_runner_, task_runner_);
 
   // Create the screen capturer.
   video_capturer_ =
@@ -284,11 +284,11 @@ DesktopEnvironment* IpcDesktopEnvironmentTest::CreateDesktopEnvironment() {
   MockDesktopEnvironment* desktop_environment = new MockDesktopEnvironment();
   EXPECT_CALL(*desktop_environment, CreateAudioCapturerPtr(_))
       .Times(0);
-  EXPECT_CALL(*desktop_environment, CreateEventExecutorPtr(_, _))
+  EXPECT_CALL(*desktop_environment, CreateInputInjectorPtr(_, _))
       .Times(AnyNumber())
       .WillRepeatedly(
           InvokeWithoutArgs(this,
-                            &IpcDesktopEnvironmentTest::CreateEventExecutor));
+                            &IpcDesktopEnvironmentTest::CreateInputInjector));
   EXPECT_CALL(*desktop_environment, CreateSessionControllerPtr())
       .Times(AnyNumber())
       .WillRepeatedly(InvokeWithoutArgs(
@@ -305,12 +305,12 @@ DesktopEnvironment* IpcDesktopEnvironmentTest::CreateDesktopEnvironment() {
   return desktop_environment;
 }
 
-EventExecutor* IpcDesktopEnvironmentTest::CreateEventExecutor() {
-  EXPECT_TRUE(remote_event_executor_ == NULL);
-  remote_event_executor_ = new MockEventExecutor();
+InputInjector* IpcDesktopEnvironmentTest::CreateInputInjector() {
+  EXPECT_TRUE(remote_input_injector_ == NULL);
+  remote_input_injector_ = new MockInputInjector();
 
-  EXPECT_CALL(*remote_event_executor_, StartPtr(_));
-  return remote_event_executor_;
+  EXPECT_CALL(*remote_input_injector_, StartPtr(_));
+  return remote_input_injector_;
 }
 
 SessionController* IpcDesktopEnvironmentTest::CreateSessionController() {
@@ -322,7 +322,7 @@ media::ScreenCapturer* IpcDesktopEnvironmentTest::CreateVideoCapturer() {
 }
 
 void IpcDesktopEnvironmentTest::DeleteDesktopEnvironment() {
-  event_executor_.reset();
+  input_injector_.reset();
   video_capturer_.reset();
 
   // Trigger DisconnectTerminal().
@@ -375,7 +375,7 @@ void IpcDesktopEnvironmentTest::DestoyDesktopProcess() {
     desktop_process_->OnChannelError();
     desktop_process_.reset();
   }
-  remote_event_executor_ = NULL;
+  remote_input_injector_ = NULL;
 }
 
 void IpcDesktopEnvironmentTest::OnDisconnectCallback() {
@@ -397,18 +397,18 @@ TEST_F(IpcDesktopEnvironmentTest, Basic) {
   EXPECT_CALL(*clipboard_stub, InjectClipboardEvent(_))
       .Times(0);
 
-  // Start the event executor and screen capturer.
-  event_executor_->Start(clipboard_stub.PassAs<protocol::ClipboardStub>());
+  // Start the input injector and screen capturer.
+  input_injector_->Start(clipboard_stub.PassAs<protocol::ClipboardStub>());
 
   // Run the message loop until the desktop is attached.
   setup_run_loop_->Run();
 
-  // Event executor should receive no events.
-  EXPECT_CALL(*remote_event_executor_, InjectClipboardEvent(_))
+  // Input injector should receive no events.
+  EXPECT_CALL(*remote_input_injector_, InjectClipboardEvent(_))
       .Times(0);
-  EXPECT_CALL(*remote_event_executor_, InjectKeyEvent(_))
+  EXPECT_CALL(*remote_input_injector_, InjectKeyEvent(_))
       .Times(0);
-  EXPECT_CALL(*remote_event_executor_, InjectMouseEvent(_))
+  EXPECT_CALL(*remote_input_injector_, InjectMouseEvent(_))
       .Times(0);
 
   // Stop the test.
@@ -426,19 +426,19 @@ TEST_F(IpcDesktopEnvironmentTest, CaptureFrame) {
   EXPECT_CALL(*clipboard_stub, InjectClipboardEvent(_))
       .Times(0);
 
-  // Start the event executor and screen capturer.
-  event_executor_->Start(clipboard_stub.PassAs<protocol::ClipboardStub>());
+  // Start the input injector and screen capturer.
+  input_injector_->Start(clipboard_stub.PassAs<protocol::ClipboardStub>());
   video_capturer_->Start(&screen_capturer_delegate_);
 
   // Run the message loop until the desktop is attached.
   setup_run_loop_->Run();
 
-  // Event executor should receive no events.
-  EXPECT_CALL(*remote_event_executor_, InjectClipboardEvent(_))
+  // Input injector should receive no events.
+  EXPECT_CALL(*remote_input_injector_, InjectClipboardEvent(_))
       .Times(0);
-  EXPECT_CALL(*remote_event_executor_, InjectKeyEvent(_))
+  EXPECT_CALL(*remote_input_injector_, InjectKeyEvent(_))
       .Times(0);
-  EXPECT_CALL(*remote_event_executor_, InjectMouseEvent(_))
+  EXPECT_CALL(*remote_input_injector_, InjectMouseEvent(_))
       .Times(0);
 
   // Stop the test when the first frame is captured.
@@ -461,8 +461,8 @@ TEST_F(IpcDesktopEnvironmentTest, Reattach) {
   EXPECT_CALL(*clipboard_stub, InjectClipboardEvent(_))
       .Times(0);
 
-  // Start the event executor and screen capturer.
-  event_executor_->Start(clipboard_stub.PassAs<protocol::ClipboardStub>());
+  // Start the input injector and screen capturer.
+  input_injector_->Start(clipboard_stub.PassAs<protocol::ClipboardStub>());
   video_capturer_->Start(&screen_capturer_delegate_);
 
   // Run the message loop until the desktop is attached.
@@ -474,12 +474,12 @@ TEST_F(IpcDesktopEnvironmentTest, Reattach) {
   CreateDesktopProcess();
   setup_run_loop_->Run();
 
-  // Event executor should receive no events.
-  EXPECT_CALL(*remote_event_executor_, InjectClipboardEvent(_))
+  // Input injector should receive no events.
+  EXPECT_CALL(*remote_input_injector_, InjectClipboardEvent(_))
       .Times(0);
-  EXPECT_CALL(*remote_event_executor_, InjectKeyEvent(_))
+  EXPECT_CALL(*remote_input_injector_, InjectKeyEvent(_))
       .Times(0);
-  EXPECT_CALL(*remote_event_executor_, InjectMouseEvent(_))
+  EXPECT_CALL(*remote_input_injector_, InjectMouseEvent(_))
       .Times(0);
 
   // Stop the test.
@@ -497,19 +497,19 @@ TEST_F(IpcDesktopEnvironmentTest, InvalidateRegion) {
   EXPECT_CALL(*clipboard_stub, InjectClipboardEvent(_))
       .Times(0);
 
-  // Start the event executor and screen capturer.
-  event_executor_->Start(clipboard_stub.PassAs<protocol::ClipboardStub>());
+  // Start the input injector and screen capturer.
+  input_injector_->Start(clipboard_stub.PassAs<protocol::ClipboardStub>());
   video_capturer_->Start(&screen_capturer_delegate_);
 
   // Run the message loop until the desktop is attached.
   setup_run_loop_->Run();
 
-  // Event executor should receive no events.
-  EXPECT_CALL(*remote_event_executor_, InjectClipboardEvent(_))
+  // Input injector should receive no events.
+  EXPECT_CALL(*remote_input_injector_, InjectClipboardEvent(_))
       .Times(0);
-  EXPECT_CALL(*remote_event_executor_, InjectKeyEvent(_))
+  EXPECT_CALL(*remote_input_injector_, InjectKeyEvent(_))
       .Times(0);
-  EXPECT_CALL(*remote_event_executor_, InjectMouseEvent(_))
+  EXPECT_CALL(*remote_input_injector_, InjectMouseEvent(_))
       .Times(0);
 
   // Stop the test when the first frame is captured.
@@ -554,28 +554,28 @@ TEST_F(IpcDesktopEnvironmentTest, InjectClipboardEvent) {
       .WillOnce(InvokeWithoutArgs(
           this, &IpcDesktopEnvironmentTest::DeleteDesktopEnvironment));
 
-  // Start the event executor and screen capturer.
-  event_executor_->Start(clipboard_stub.PassAs<protocol::ClipboardStub>());
+  // Start the input injector and screen capturer.
+  input_injector_->Start(clipboard_stub.PassAs<protocol::ClipboardStub>());
   video_capturer_->Start(&screen_capturer_delegate_);
 
   // Run the message loop until the desktop is attached.
   setup_run_loop_->Run();
 
   // Expect a single clipboard event.
-  EXPECT_CALL(*remote_event_executor_, InjectClipboardEvent(_))
+  EXPECT_CALL(*remote_input_injector_, InjectClipboardEvent(_))
       .Times(1)
       .WillOnce(Invoke(this,
                        &IpcDesktopEnvironmentTest::ReflectClipboardEvent));
-  EXPECT_CALL(*remote_event_executor_, InjectKeyEvent(_))
+  EXPECT_CALL(*remote_input_injector_, InjectKeyEvent(_))
       .Times(0);
-  EXPECT_CALL(*remote_event_executor_, InjectMouseEvent(_))
+  EXPECT_CALL(*remote_input_injector_, InjectMouseEvent(_))
       .Times(0);
 
   // Send a clipboard event.
   protocol::ClipboardEvent event;
   event.set_mime_type(kMimeTypeTextUtf8);
   event.set_data("a");
-  event_executor_->InjectClipboardEvent(event);
+  input_injector_->InjectClipboardEvent(event);
 
   task_runner_ = NULL;
   io_task_runner_ = NULL;
@@ -589,28 +589,28 @@ TEST_F(IpcDesktopEnvironmentTest, InjectKeyEvent) {
   EXPECT_CALL(*clipboard_stub, InjectClipboardEvent(_))
       .Times(0);
 
-  // Start the event executor and screen capturer.
-  event_executor_->Start(clipboard_stub.PassAs<protocol::ClipboardStub>());
+  // Start the input injector and screen capturer.
+  input_injector_->Start(clipboard_stub.PassAs<protocol::ClipboardStub>());
   video_capturer_->Start(&screen_capturer_delegate_);
 
   // Run the message loop until the desktop is attached.
   setup_run_loop_->Run();
 
   // Expect a single key event.
-  EXPECT_CALL(*remote_event_executor_, InjectClipboardEvent(_))
+  EXPECT_CALL(*remote_input_injector_, InjectClipboardEvent(_))
       .Times(0);
-  EXPECT_CALL(*remote_event_executor_, InjectKeyEvent(_))
+  EXPECT_CALL(*remote_input_injector_, InjectKeyEvent(_))
       .Times(AtLeast(1))
       .WillRepeatedly(InvokeWithoutArgs(
           this, &IpcDesktopEnvironmentTest::DeleteDesktopEnvironment));
-  EXPECT_CALL(*remote_event_executor_, InjectMouseEvent(_))
+  EXPECT_CALL(*remote_input_injector_, InjectMouseEvent(_))
       .Times(0);
 
   // Send a key event.
   protocol::KeyEvent event;
   event.set_usb_keycode(0x070004);
   event.set_pressed(true);
-  event_executor_->InjectKeyEvent(event);
+  input_injector_->InjectKeyEvent(event);
 
   task_runner_ = NULL;
   io_task_runner_ = NULL;
@@ -624,19 +624,19 @@ TEST_F(IpcDesktopEnvironmentTest, InjectMouseEvent) {
   EXPECT_CALL(*clipboard_stub, InjectClipboardEvent(_))
       .Times(0);
 
-  // Start the event executor and screen capturer.
-  event_executor_->Start(clipboard_stub.PassAs<protocol::ClipboardStub>());
+  // Start the input injector and screen capturer.
+  input_injector_->Start(clipboard_stub.PassAs<protocol::ClipboardStub>());
   video_capturer_->Start(&screen_capturer_delegate_);
 
   // Run the message loop until the desktop is attached.
   setup_run_loop_->Run();
 
   // Expect a single mouse event.
-  EXPECT_CALL(*remote_event_executor_, InjectClipboardEvent(_))
+  EXPECT_CALL(*remote_input_injector_, InjectClipboardEvent(_))
       .Times(0);
-  EXPECT_CALL(*remote_event_executor_, InjectKeyEvent(_))
+  EXPECT_CALL(*remote_input_injector_, InjectKeyEvent(_))
       .Times(0);
-  EXPECT_CALL(*remote_event_executor_, InjectMouseEvent(_))
+  EXPECT_CALL(*remote_input_injector_, InjectMouseEvent(_))
       .Times(1)
       .WillOnce(InvokeWithoutArgs(
           this, &IpcDesktopEnvironmentTest::DeleteDesktopEnvironment));
@@ -645,7 +645,7 @@ TEST_F(IpcDesktopEnvironmentTest, InjectMouseEvent) {
   protocol::MouseEvent event;
   event.set_x(0);
   event.set_y(0);
-  event_executor_->InjectMouseEvent(event);
+  input_injector_->InjectMouseEvent(event);
 
   task_runner_ = NULL;
   io_task_runner_ = NULL;

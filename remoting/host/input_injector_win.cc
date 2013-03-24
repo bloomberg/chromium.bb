@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/event_executor.h"
+#include "remoting/host/input_injector.h"
 
 #include <windows.h>
 
@@ -32,11 +32,11 @@ using protocol::MouseEvent;
 #undef USB_KEYMAP
 
 // A class to generate events on Windows.
-class EventExecutorWin : public EventExecutor {
+class InputInjectorWin : public InputInjector {
  public:
-  EventExecutorWin(scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
+  InputInjectorWin(scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
                    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
-  virtual ~EventExecutorWin();
+  virtual ~InputInjectorWin();
 
   // ClipboardStub interface.
   virtual void InjectClipboardEvent(const ClipboardEvent& event) OVERRIDE;
@@ -45,12 +45,12 @@ class EventExecutorWin : public EventExecutor {
   virtual void InjectKeyEvent(const KeyEvent& event) OVERRIDE;
   virtual void InjectMouseEvent(const MouseEvent& event) OVERRIDE;
 
-  // EventExecutor interface.
+  // InputInjector interface.
   virtual void Start(
       scoped_ptr<protocol::ClipboardStub> client_clipboard) OVERRIDE;
 
  private:
-  // The actual implementation resides in EventExecutorWin::Core class.
+  // The actual implementation resides in InputInjectorWin::Core class.
   class Core : public base::RefCountedThreadSafe<Core> {
    public:
     Core(scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
@@ -63,7 +63,7 @@ class EventExecutorWin : public EventExecutor {
     void InjectKeyEvent(const KeyEvent& event);
     void InjectMouseEvent(const MouseEvent& event);
 
-    // Mirrors the EventExecutor interface.
+    // Mirrors the InputInjector interface.
     void Start(scoped_ptr<protocol::ClipboardStub> client_clipboard);
 
     void Stop();
@@ -84,37 +84,37 @@ class EventExecutorWin : public EventExecutor {
 
   scoped_refptr<Core> core_;
 
-  DISALLOW_COPY_AND_ASSIGN(EventExecutorWin);
+  DISALLOW_COPY_AND_ASSIGN(InputInjectorWin);
 };
 
-EventExecutorWin::EventExecutorWin(
+InputInjectorWin::InputInjectorWin(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
   core_ = new Core(main_task_runner, ui_task_runner);
 }
 
-EventExecutorWin::~EventExecutorWin() {
+InputInjectorWin::~InputInjectorWin() {
   core_->Stop();
 }
 
-void EventExecutorWin::InjectClipboardEvent(const ClipboardEvent& event) {
+void InputInjectorWin::InjectClipboardEvent(const ClipboardEvent& event) {
   core_->InjectClipboardEvent(event);
 }
 
-void EventExecutorWin::InjectKeyEvent(const KeyEvent& event) {
+void InputInjectorWin::InjectKeyEvent(const KeyEvent& event) {
   core_->InjectKeyEvent(event);
 }
 
-void EventExecutorWin::InjectMouseEvent(const MouseEvent& event) {
+void InputInjectorWin::InjectMouseEvent(const MouseEvent& event) {
   core_->InjectMouseEvent(event);
 }
 
-void EventExecutorWin::Start(
+void InputInjectorWin::Start(
     scoped_ptr<protocol::ClipboardStub> client_clipboard) {
   core_->Start(client_clipboard.Pass());
 }
 
-EventExecutorWin::Core::Core(
+InputInjectorWin::Core::Core(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
     : main_task_runner_(main_task_runner),
@@ -122,7 +122,7 @@ EventExecutorWin::Core::Core(
       clipboard_(Clipboard::Create()) {
 }
 
-void EventExecutorWin::Core::InjectClipboardEvent(const ClipboardEvent& event) {
+void InputInjectorWin::Core::InjectClipboardEvent(const ClipboardEvent& event) {
   if (!ui_task_runner_->BelongsToCurrentThread()) {
     ui_task_runner_->PostTask(
         FROM_HERE, base::Bind(&Core::InjectClipboardEvent, this, event));
@@ -133,7 +133,7 @@ void EventExecutorWin::Core::InjectClipboardEvent(const ClipboardEvent& event) {
   clipboard_->InjectClipboardEvent(event);
 }
 
-void EventExecutorWin::Core::InjectKeyEvent(const KeyEvent& event) {
+void InputInjectorWin::Core::InjectKeyEvent(const KeyEvent& event) {
   if (!main_task_runner_->BelongsToCurrentThread()) {
     main_task_runner_->PostTask(FROM_HERE,
                                 base::Bind(&Core::InjectKeyEvent, this, event));
@@ -143,7 +143,7 @@ void EventExecutorWin::Core::InjectKeyEvent(const KeyEvent& event) {
   HandleKey(event);
 }
 
-void EventExecutorWin::Core::InjectMouseEvent(const MouseEvent& event) {
+void InputInjectorWin::Core::InjectMouseEvent(const MouseEvent& event) {
   if (!main_task_runner_->BelongsToCurrentThread()) {
     main_task_runner_->PostTask(
         FROM_HERE, base::Bind(&Core::InjectMouseEvent, this, event));
@@ -153,7 +153,7 @@ void EventExecutorWin::Core::InjectMouseEvent(const MouseEvent& event) {
   HandleMouse(event);
 }
 
-void EventExecutorWin::Core::Start(
+void InputInjectorWin::Core::Start(
     scoped_ptr<protocol::ClipboardStub> client_clipboard) {
   if (!ui_task_runner_->BelongsToCurrentThread()) {
     ui_task_runner_->PostTask(
@@ -165,7 +165,7 @@ void EventExecutorWin::Core::Start(
   clipboard_->Start(client_clipboard.Pass());
 }
 
-void EventExecutorWin::Core::Stop() {
+void InputInjectorWin::Core::Stop() {
   if (!ui_task_runner_->BelongsToCurrentThread()) {
     ui_task_runner_->PostTask(FROM_HERE, base::Bind(&Core::Stop, this));
     return;
@@ -174,10 +174,10 @@ void EventExecutorWin::Core::Stop() {
   clipboard_->Stop();
 }
 
-EventExecutorWin::Core::~Core() {
+InputInjectorWin::Core::~Core() {
 }
 
-void EventExecutorWin::Core::HandleKey(const KeyEvent& event) {
+void InputInjectorWin::Core::HandleKey(const KeyEvent& event) {
   // HostEventDispatcher should filter events missing the pressed field.
   if (!event.has_pressed() || !event.has_usb_keycode())
     return;
@@ -215,7 +215,7 @@ void EventExecutorWin::Core::HandleKey(const KeyEvent& event) {
     LOG_GETLASTERROR(ERROR) << "Failed to inject a key event";
 }
 
-void EventExecutorWin::Core::HandleMouse(const MouseEvent& event) {
+void InputInjectorWin::Core::HandleMouse(const MouseEvent& event) {
   // Reset the system idle suspend timeout.
   SetThreadExecutionState(ES_SYSTEM_REQUIRED);
 
@@ -309,11 +309,11 @@ void EventExecutorWin::Core::HandleMouse(const MouseEvent& event) {
 
 }  // namespace
 
-scoped_ptr<EventExecutor> EventExecutor::Create(
+scoped_ptr<InputInjector> InputInjector::Create(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
-  return scoped_ptr<EventExecutor>(
-      new EventExecutorWin(main_task_runner, ui_task_runner));
+  return scoped_ptr<InputInjector>(
+      new InputInjectorWin(main_task_runner, ui_task_runner));
 }
 
 }  // namespace remoting

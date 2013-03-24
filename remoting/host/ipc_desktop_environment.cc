@@ -17,7 +17,7 @@
 #include "remoting/host/chromoting_messages.h"
 #include "remoting/host/desktop_session.h"
 #include "remoting/host/desktop_session_proxy.h"
-#include "remoting/host/event_executor.h"
+#include "remoting/host/input_injector.h"
 #include "remoting/host/session_controller.h"
 
 namespace remoting {
@@ -51,12 +51,12 @@ scoped_ptr<AudioCapturer> IpcDesktopEnvironment::CreateAudioCapturer(
   return desktop_session_proxy_->CreateAudioCapturer(audio_task_runner);
 }
 
-scoped_ptr<EventExecutor> IpcDesktopEnvironment::CreateEventExecutor(
+scoped_ptr<InputInjector> IpcDesktopEnvironment::CreateInputInjector(
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
-  return desktop_session_proxy_->CreateEventExecutor(input_task_runner,
+  return desktop_session_proxy_->CreateInputInjector(input_task_runner,
                                                      ui_task_runner);
 }
 

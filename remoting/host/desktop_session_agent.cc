@@ -16,7 +16,7 @@
 #include "remoting/host/chromoting_messages.h"
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/disconnect_window.h"
-#include "remoting/host/event_executor.h"
+#include "remoting/host/input_injector.h"
 #include "remoting/host/local_input_monitor.h"
 #include "remoting/host/remote_input_filter.h"
 #include "remoting/host/screen_resolution.h"
@@ -178,7 +178,7 @@ void DesktopSessionAgent::OnStartSessionAgent(
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
   DCHECK(!started_);
   DCHECK(!audio_capturer_);
-  DCHECK(!event_executor_);
+  DCHECK(!input_injector_);
   DCHECK(!video_capturer_);
 
   started_ = true;
@@ -194,13 +194,13 @@ void DesktopSessionAgent::OnStartSessionAgent(
   session_controller_ = desktop_environment->CreateSessionController();
   SetScreenResolution(resolution);
 
-  // Create the event executor.
-  event_executor_ =
-      desktop_environment->CreateEventExecutor(input_task_runner(),
+  // Create the input injector.
+  input_injector_ =
+      desktop_environment->CreateInputInjector(input_task_runner(),
                                                caller_task_runner());
 
-  // Hook up the input filter
-  input_tracker_.reset(new protocol::InputEventTracker(event_executor_.get()));
+  // Hook up the input filter.
+  input_tracker_.reset(new protocol::InputEventTracker(input_injector_.get()));
   remote_input_filter_.reset(new RemoteInputFilter(input_tracker_.get()));
 
 #if defined(OS_WIN)
@@ -209,10 +209,10 @@ void DesktopSessionAgent::OnStartSessionAgent(
   remote_input_filter_->SetExpectLocalEcho(false);
 #endif  // defined(OS_WIN)
 
-  // Start the event executor.
+  // Start the input injector.
   scoped_ptr<protocol::ClipboardStub> clipboard_stub(
       new DesktopSesssionClipboardStub(this));
-  event_executor_->Start(clipboard_stub.Pass());
+  input_injector_->Start(clipboard_stub.Pass());
 
   // Create the disconnect window.
   disconnect_window_ = DisconnectWindow::Create(&ui_strings_);
@@ -336,7 +336,7 @@ void DesktopSessionAgent::Stop() {
     input_tracker_->ReleaseAll();
     input_tracker_.reset();
 
-    event_executor_.reset();
+    input_injector_.reset();
     session_controller_.reset();
 
     // Stop the audio capturer.
@@ -421,7 +421,7 @@ void DesktopSessionAgent::OnInjectClipboardEvent(
 
   // InputStub implementations must verify events themselves, so we don't need
   // verification here. This matches HostEventDispatcher.
-  event_executor_->InjectClipboardEvent(event);
+  input_injector_->InjectClipboardEvent(event);
 }
 
 void DesktopSessionAgent::OnInjectKeyEvent(

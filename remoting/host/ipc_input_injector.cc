@@ -2,36 +2,36 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/ipc_event_executor.h"
+#include "remoting/host/ipc_input_injector.h"
 
 #include "remoting/host/desktop_session_proxy.h"
 
 namespace remoting {
 
-IpcEventExecutor::IpcEventExecutor(
+IpcInputInjector::IpcInputInjector(
     scoped_refptr<DesktopSessionProxy> desktop_session_proxy)
     : desktop_session_proxy_(desktop_session_proxy) {
 }
 
-IpcEventExecutor::~IpcEventExecutor() {
+IpcInputInjector::~IpcInputInjector() {
 }
 
-void IpcEventExecutor::InjectClipboardEvent(
+void IpcInputInjector::InjectClipboardEvent(
     const protocol::ClipboardEvent& event) {
   desktop_session_proxy_->InjectClipboardEvent(event);
 }
 
-void IpcEventExecutor::InjectKeyEvent(const protocol::KeyEvent& event) {
+void IpcInputInjector::InjectKeyEvent(const protocol::KeyEvent& event) {
   desktop_session_proxy_->InjectKeyEvent(event);
 }
 
-void IpcEventExecutor::InjectMouseEvent(const protocol::MouseEvent& event) {
+void IpcInputInjector::InjectMouseEvent(const protocol::MouseEvent& event) {
   desktop_session_proxy_->InjectMouseEvent(event);
 }
 
-void IpcEventExecutor::Start(
+void IpcInputInjector::Start(
     scoped_ptr<protocol::ClipboardStub> client_clipboard) {
-  desktop_session_proxy_->StartEventExecutor(client_clipboard.Pass());
+  desktop_session_proxy_->StartInputInjector(client_clipboard.Pass());
 }
 
 }  // namespace remoting
