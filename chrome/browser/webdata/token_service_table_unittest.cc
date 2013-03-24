@@ -9,7 +9,6 @@
 #include "base/time.h"
 #include "chrome/browser/webdata/token_service_table.h"
 #include "chrome/browser/webdata/web_database.h"
-#include "chrome/common/chrome_paths.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::Time;

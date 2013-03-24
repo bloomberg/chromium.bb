@@ -2114,6 +2114,8 @@
         'browser/webdata/logins_table_win.cc',
         'browser/webdata/token_service_table.cc',
         'browser/webdata/token_service_table.h',
+        'browser/webdata/webdata_constants.cc',
+        'browser/webdata/webdata_constants.h',
         'browser/webdata/web_apps_table.cc',
         'browser/webdata/web_apps_table.h',
         'browser/webdata/web_database_service.cc',

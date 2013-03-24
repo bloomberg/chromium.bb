@@ -14,21 +14,21 @@ include_rules = [
   "!chrome/browser/history/history_database.h",
   "!chrome/browser/password_manager/encryptor.h",
   "!chrome/browser/password_manager/ie7_password.h",
-  "!chrome/browser/profiles/profile.h",
-  "!chrome/browser/profiles/profile_dependency_manager.h",
-  "!chrome/browser/profiles/profile_keyed_service.h",
-  "!chrome/browser/profiles/profile_keyed_service_factory.h",
-  "!chrome/browser/profiles/profile_manager.h",
-  "!chrome/browser/profiles/refcounted_profile_keyed_service.h",
-  "!chrome/browser/profiles/refcounted_profile_keyed_service_factory.h",
   "!chrome/browser/search_engines/search_terms_data.h",
   "!chrome/browser/search_engines/template_url.h",
   "!chrome/browser/search_engines/template_url_id.h",
   "!chrome/browser/search_engines/template_url_service.h",
   "!chrome/browser/ui/profile_error_dialog.h",
-  "!chrome/common/chrome_constants.h",
   "!chrome/common/chrome_notification_types.h",
-  "!chrome/common/chrome_paths.h",
   # Do not add to the list of temporarily-allowed dependencies above,
   # and please do not introduce more #includes of these files.
 ]
+
+specific_include_rules = {
+  'web_data_service_factory\.(h|cc)': [
+    "!chrome/browser/profiles/profile.h",
+    "!chrome/browser/profiles/profile_dependency_manager.h",
+    "!chrome/browser/profiles/profile_keyed_service.h",
+    "!chrome/browser/profiles/profile_keyed_service_factory.h",
+  ]
+}

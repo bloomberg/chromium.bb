@@ -11,7 +11,7 @@
 #include "chrome/browser/webdata/autocomplete_syncable_service.h"
 #include "chrome/browser/webdata/autofill_profile_syncable_service.h"
 #include "chrome/browser/webdata/autofill_web_data_service_impl.h"
-#include "chrome/common/chrome_constants.h"
+#include "chrome/browser/webdata/webdata_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -42,7 +42,7 @@ WebDataServiceWrapper::WebDataServiceWrapper() {}
 
 WebDataServiceWrapper::WebDataServiceWrapper(Profile* profile) {
   base::FilePath path = profile->GetPath();
-  path = path.Append(chrome::kWebDataFilename);
+  path = path.Append(kWebDataFilename);
   web_data_service_ = new WebDataService(base::Bind(&ProfileErrorCallback));
   web_data_service_->Init(path);
 

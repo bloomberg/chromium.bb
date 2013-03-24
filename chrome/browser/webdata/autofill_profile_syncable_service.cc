@@ -8,7 +8,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/webdata/autofill_table.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/browser/webdata/web_database.h"
@@ -573,5 +572,4 @@ AutofillTable* AutofillProfileSyncableService::GetAutofillTable() const {
 
 AutofillProfileSyncableService::DataBundle::DataBundle() {}
 
-AutofillProfileSyncableService::DataBundle::~DataBundle() {
-}
+AutofillProfileSyncableService::DataBundle::~DataBundle() {}

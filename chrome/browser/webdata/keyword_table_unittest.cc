@@ -15,7 +15,6 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/webdata/keyword_table.h"
 #include "chrome/browser/webdata/web_database.h"
-#include "chrome/common/chrome_paths.h"
 #include "sql/statement.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

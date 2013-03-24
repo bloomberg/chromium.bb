@@ -196,7 +196,6 @@ const base::FilePath::CharType kThemePackFilename[] = FPL("Cached Theme.pak");
 const base::FilePath::CharType kThumbnailsFilename[] = FPL("Thumbnails");
 const base::FilePath::CharType kTopSitesFilename[] = FPL("Top Sites");
 const base::FilePath::CharType kWebAppDirname[] = FPL("Web Applications");
-const base::FilePath::CharType kWebDataFilename[] = FPL("Web Data");
 
 // File name of the Pepper Flash plugin on different platforms.
 const base::FilePath::CharType kPepperFlashPluginFilename[] =

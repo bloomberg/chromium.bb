@@ -11,6 +11,7 @@
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/webdata/webdata_constants.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/public/common/content_constants.h"
@@ -91,7 +92,7 @@ class SqliteIntegrityTest : public DiagnosticTest {
 
 DiagnosticTest* MakeSqliteWebDbTest() {
   return new SqliteIntegrityTest(true, ASCIIToUTF16("Web DB"),
-                                 base::FilePath(chrome::kWebDataFilename));
+                                 base::FilePath(kWebDataFilename));
 }
 
 DiagnosticTest* MakeSqliteCookiesDbTest() {

@@ -8,9 +8,7 @@
 #include "base/message_loop.h"
 #include "base/stl_util.h"
 #include "base/threading/thread.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/webdata/web_database_service.h"
-#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
 #ifdef DEBUG
 #include "content/public/browser/browser_thread.h"

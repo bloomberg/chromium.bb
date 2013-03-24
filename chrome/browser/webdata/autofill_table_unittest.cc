@@ -16,7 +16,6 @@
 #include "chrome/browser/webdata/autofill_entry.h"
 #include "chrome/browser/webdata/autofill_table.h"
 #include "chrome/browser/webdata/web_database.h"
-#include "chrome/common/chrome_paths.h"
 #include "components/autofill/browser/autofill_profile.h"
 #include "components/autofill/browser/autofill_type.h"
 #include "components/autofill/browser/credit_card.h"

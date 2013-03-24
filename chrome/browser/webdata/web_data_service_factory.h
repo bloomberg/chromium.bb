@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
 #include "chrome/browser/webdata/web_data_service.h"
 

@@ -23,7 +23,6 @@
 #include "chrome/browser/webdata/web_apps_table.h"
 #include "chrome/browser/webdata/web_database.h"
 #include "chrome/browser/webdata/web_intents_table.h"
-#include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/autofill/browser/autofill_profile.h"
 #include "components/autofill/browser/autofill_type.h"
