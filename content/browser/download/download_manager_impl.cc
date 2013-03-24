@@ -552,7 +552,7 @@ int DownloadManagerImpl::RemoveDownloadsBetween(base::Time remove_begin,
 
     if (download->GetStartTime() >= remove_begin &&
         (remove_end.is_null() || download->GetStartTime() < remove_end) &&
-        (download->IsComplete() || download->IsCancelled())) {
+        !download->IsInProgress()) {
       // Erases the download from downloads_.
       download->Remove();
       count++;

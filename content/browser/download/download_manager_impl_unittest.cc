@@ -167,6 +167,7 @@ class MockDownloadItemImpl : public DownloadItemImpl {
   MOCK_CONST_METHOD0(GetFileNameToReportUser, base::FilePath());
   MOCK_METHOD1(SetDisplayName, void(const base::FilePath&));
   MOCK_CONST_METHOD0(GetUserVerifiedFilePath, base::FilePath());
+  MOCK_METHOD0(NotifyRemoved, void());
   // May be called when vlog is on.
   virtual std::string DebugString(bool verbose) const OVERRIDE { return ""; }
 };
@@ -637,6 +638,51 @@ TEST_F(DownloadManagerTest, DetermineDownloadTarget_False) {
   EXPECT_EQ(DownloadItem::TARGET_DISPOSITION_OVERWRITE, target_disposition_);
   EXPECT_EQ(DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, danger_type_);
   EXPECT_EQ(path, intermediate_path_);
+}
+
+// Confirm the DownloadManagerImpl::RemoveAllDownloads() functionality
+TEST_F(DownloadManagerTest, RemoveAllDownloads) {
+  base::Time now(base::Time::Now());
+  for (int i = 0; i < 4; ++i) {
+    MockDownloadItemImpl& item(AddItemToManager());
+    EXPECT_EQ(i, item.GetId());
+    EXPECT_CALL(item, GetStartTime())
+        .WillRepeatedly(Return(now));
+
+    // Default returns; overridden for each item below.
+    EXPECT_CALL(GetMockDownloadItem(i), IsComplete())
+        .WillRepeatedly(Return(false));
+    EXPECT_CALL(GetMockDownloadItem(i), IsCancelled())
+        .WillRepeatedly(Return(false));
+    EXPECT_CALL(GetMockDownloadItem(i), IsInterrupted())
+        .WillRepeatedly(Return(false));
+    EXPECT_CALL(GetMockDownloadItem(i), IsInProgress())
+        .WillRepeatedly(Return(false));
+  }
+
+  // Specify states for each.
+  EXPECT_CALL(GetMockDownloadItem(0), IsComplete())
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(GetMockDownloadItem(1), IsCancelled())
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(GetMockDownloadItem(2), IsInterrupted())
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(GetMockDownloadItem(3), IsInProgress())
+      .WillRepeatedly(Return(true));
+
+  // Expectations for whether or not they'll actually be removed.
+  EXPECT_CALL(GetMockDownloadItem(0), Remove())
+      .WillOnce(Return());
+  EXPECT_CALL(GetMockDownloadItem(1), Remove())
+      .WillOnce(Return());
+  EXPECT_CALL(GetMockDownloadItem(2), Remove())
+      .WillOnce(Return());
+  EXPECT_CALL(GetMockDownloadItem(3), Remove())
+      .Times(0);
+
+  download_manager_->RemoveAllDownloads();
+  // Because we're mocking the download item, the Remove call doesn't
+  // result in them being removed from the DownloadManager list.
 }
 
 }  // namespace content
