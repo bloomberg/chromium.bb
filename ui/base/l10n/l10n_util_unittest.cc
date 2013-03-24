@@ -116,7 +116,7 @@ TEST_F(L10nUtilTest, GetAppLocale) {
   }
 
   // Keep a copy of ICU's default locale before we overwrite it.
-  icu::Locale locale = icu::Locale::getDefault();
+  const std::string original_locale = base::i18n::GetConfiguredLocale();
 
 #if defined(OS_POSIX) && !defined(OS_CHROMEOS)
   env.reset(base::Environment::Create());
@@ -280,8 +280,7 @@ TEST_F(L10nUtilTest, GetAppLocale) {
 #endif  // defined(OS_WIN)
 
   // Clean up.
-  UErrorCode error_code = U_ZERO_ERROR;
-  icu::Locale::setDefault(locale, error_code);
+  base::i18n::SetICUDefaultLocale(original_locale);
 }
 #endif  // !defined(OS_MACOSX)
 
@@ -307,8 +306,7 @@ TEST_F(L10nUtilTest, SortStringsUsingFunction) {
  */
 void CheckUiDisplayNameForLocale(const std::string& locale,
                                  const std::string& display_locale,
-                                 bool is_rtl)
-{
+                                 bool is_rtl) {
   EXPECT_EQ(true, base::i18n::IsRTL());
   string16 result = l10n_util::GetDisplayNameForLocale(locale,
                                                        display_locale,
@@ -359,15 +357,14 @@ TEST_F(L10nUtilTest, GetDisplayNameForLocale) {
   // direction neutral characters such as parentheses are properly formatted.
 
   // Keep a copy of ICU's default locale before we overwrite it.
-  icu::Locale locale = icu::Locale::getDefault();
+  const std::string original_locale = base::i18n::GetConfiguredLocale();
 
   base::i18n::SetICUDefaultLocale("he");
   CheckUiDisplayNameForLocale("en-US", "en", false);
   CheckUiDisplayNameForLocale("en-US", "he", true);
 
   // Clean up.
-  UErrorCode error_code = U_ZERO_ERROR;
-  icu::Locale::setDefault(locale, error_code);
+  base::i18n::SetICUDefaultLocale(original_locale);
 #endif
 
   // ToUpper and ToLower should work with embedded NULLs.

@@ -291,8 +291,8 @@ TEST_F(RenderTextTest, ObscuredText) {
   // Cursoring is independent of underlying characters when text is obscured.
   const wchar_t* const texts[] = {
     kWeak, kLtr, kLtrRtl, kLtrRtlLtr, kRtl, kRtlLtr, kRtlLtrRtl,
-    L"hop on pop",                             // Check LTR word boundaries.
-    L"\x05d0\x05d1 \x05d0\x05d2 \x05d1\x05d2", // Check RTL word boundaries.
+    L"hop on pop",                              // Check LTR word boundaries.
+    L"\x05d0\x05d1 \x05d0\x05d2 \x05d1\x05d2",  // Check RTL word boundaries.
   };
   for (size_t i = 0; i < arraysize(texts); ++i) {
     string16 text = WideToUTF16(texts[i]);
@@ -1112,6 +1112,9 @@ TEST_F(RenderTextTest, CaretWidth) {
 //                  does not implement this yet. http://crbug.com/131618
 #if !defined(OS_MACOSX)
 TEST_F(RenderTextTest, DisplayRectShowsCursorLTR) {
+  ASSERT_FALSE(base::i18n::IsRTL());
+  ASSERT_FALSE(base::i18n::ICUIsRTL());
+
   scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
   render_text->SetText(WideToUTF16(L"abcdefghijklmnopqrstuvwxzyabcdefg"));
   render_text->MoveCursorTo(SelectionModel(render_text->text().length(),
