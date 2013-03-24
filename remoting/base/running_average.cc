@@ -2,22 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/logging.h"
 #include "remoting/base/running_average.h"
+
+#include "base/logging.h"
 
 namespace remoting {
 
 RunningAverage::RunningAverage(int window_size)
     : window_size_(window_size),
       sum_(0) {
-  CHECK(window_size_);
+  DCHECK_GT(window_size, 0);
 }
 
 RunningAverage::~RunningAverage() {
 }
 
 void RunningAverage::Record(int64 value) {
-  base::AutoLock auto_lock(lock_);
+  DCHECK(CalledOnValidThread());
 
   data_points_.push_back(value);
   sum_ += value;
@@ -28,8 +29,8 @@ void RunningAverage::Record(int64 value) {
   }
 }
 
-double RunningAverage::Average() {
-  base::AutoLock auto_lock(lock_);
+double RunningAverage::Average() const {
+  DCHECK(CalledOnValidThread());
 
   if (data_points_.empty())
     return 0;

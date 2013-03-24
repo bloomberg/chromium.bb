@@ -19,12 +19,16 @@ class CaptureScheduler {
   CaptureScheduler();
   ~CaptureScheduler();
 
-  // Determine the time delay from current time to perform next capture.
+  // Returns the time to wait after initiating a capture before triggering
+  // the next.
   base::TimeDelta NextCaptureDelay();
 
-  // Record time spent on capturing and encoding.
+  // Records time spent on capturing and encoding.
   void RecordCaptureTime(base::TimeDelta capture_time);
   void RecordEncodeTime(base::TimeDelta encode_time);
+
+  // Overrides the number of processors for testing.
+  void SetNumOfProcessorsForTest(int num_of_processors);
 
  private:
   int num_of_processors_;
