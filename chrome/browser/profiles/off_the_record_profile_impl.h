@@ -113,9 +113,9 @@ class OffTheRecordProfileImpl : public Profile {
   FRIEND_TEST_ALL_PREFIXES(OffTheRecordProfileImplTest, GetHostZoomMap);
   void InitHostZoomMap();
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_IOS)
   void UseSystemProxy();
-#endif
+#endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
   void OnZoomLevelChanged(const content::HostZoomMap::ZoomLevelChange& change);
 

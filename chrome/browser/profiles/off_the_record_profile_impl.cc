@@ -52,9 +52,9 @@
 #include "net/http/transport_security_state.h"
 #include "webkit/database/database_tracker.h"
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_IOS)
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
-#endif
+#endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/preferences.h"
@@ -100,9 +100,9 @@ void OffTheRecordProfileImpl::Init() {
   DCHECK_NE(IncognitoModePrefs::DISABLED,
             IncognitoModePrefs::GetAvailability(profile_->GetPrefs()));
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_IOS)
   UseSystemProxy();
-#endif  // defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
   // TODO(oshima): Remove the need to eagerly initialize the request context
   // getter. chromeos::OnlineAttempt is illegally trying to access this
@@ -166,7 +166,7 @@ void OffTheRecordProfileImpl::InitHostZoomMap() {
   parent_host_zoom_map->AddZoomLevelChangedCallback(zoom_callback_);
 }
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_IOS)
 void OffTheRecordProfileImpl::UseSystemProxy() {
   // Force the use of the system-assigned proxy when off the record.
   const char kProxyMode[] = "mode";
@@ -180,7 +180,7 @@ void OffTheRecordProfileImpl::UseSystemProxy() {
   dict->SetString(kProxyServer, "");
   dict->SetString(kProxyBypassList, "");
 }
-#endif  // defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
 std::string OffTheRecordProfileImpl::GetProfileName() {
   // Incognito profile should not return the profile name.
