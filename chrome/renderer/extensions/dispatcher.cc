@@ -977,8 +977,13 @@ void Dispatcher::DidCreateScriptContext(
 
   if (extension && !extension->is_platform_app())
     module_system->Require("miscellaneous_bindings");
-  // See paranoid comment in json.js. http://crbug.com/223170
-  module_system->Require("json");
+
+  // See paranoid comment in json.js. Don't require in web contexts due to the
+  // v8 performance hit of requiring things. Luckily, we don't need it yet.
+  // See http://crbug.com/223170
+  if (context_type != Feature::WEB_PAGE_CONTEXT)
+    module_system->Require("json");
+
   RegisterSchemaGeneratedBindings(module_system.get(),
                                   context,
                                   v8_context);
