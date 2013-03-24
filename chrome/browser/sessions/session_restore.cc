@@ -925,10 +925,14 @@ class SessionRestoreImpl : public content::NotificationObserver {
     DCHECK(selected_index >= 0 &&
            selected_index < static_cast<int>(tab.navigations.size()));
     GURL url = tab.navigations[selected_index].virtual_url();
-    if (browser->profile()->GetExtensionService() &&
-        browser->profile()->GetExtensionService()->IsInstalledApp(url)) {
-      AppLauncherHandler::RecordAppLaunchType(
-          extension_misc::APP_LAUNCH_SESSION_RESTORE);
+    if (browser->profile()->GetExtensionService()) {
+      const extensions::Extension* extension =
+          browser->profile()->GetExtensionService()->GetInstalledApp(url);
+      if (extension) {
+        AppLauncherHandler::RecordAppLaunchType(
+            extension_misc::APP_LAUNCH_SESSION_RESTORE,
+            extension->GetType());
+      }
     }
   }
 

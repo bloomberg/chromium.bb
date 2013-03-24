@@ -335,7 +335,8 @@ void RecordAppLaunch(Profile* profile, GURL url) {
     return;
 
   AppLauncherHandler::RecordAppLaunchType(
-      extension_misc::APP_LAUNCH_BOOKMARK_BAR);
+      extension_misc::APP_LAUNCH_BOOKMARK_BAR,
+      extensions::Manifest::TYPE_PLATFORM_APP);
 }
 
 int GetNewtabHorizontalPadding() {

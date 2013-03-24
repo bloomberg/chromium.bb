@@ -140,6 +140,7 @@ const char kCloudPrintAppId[] = "mfehgcgbbipciphmccgaenjidiccnmng";
 const char kChromeAppId[] = "mgndgikekgjfcpckkfioiadnlibdjbkf";
 const char kSettingsAppId[] = "ennkphjdgehloodpbhlhldgbnhmacadg";
 const char kAppLaunchHistogram[] = "Extensions.AppLaunch";
+const char kPlatformAppLaunchHistogram[] = "Apps.AppLaunch";
 #if defined(OS_CHROMEOS)
 const char kChromeVoxExtensionPath[] =
     "/usr/share/chromeos-assets/accessibility/extensions/access_chromevox";

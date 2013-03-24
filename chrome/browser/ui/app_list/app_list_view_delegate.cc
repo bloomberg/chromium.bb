@@ -10,7 +10,6 @@
 #include "chrome/browser/ui/app_list/chrome_app_list_item.h"
 #include "chrome/browser/ui/app_list/chrome_signin_delegate.h"
 #include "chrome/browser/ui/app_list/search_builder.h"
-#include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
 #include "content/public/browser/user_metrics.h"
 
 #if defined(USE_ASH)
@@ -58,8 +57,6 @@ app_list::SigninDelegate* AppListViewDelegate::GetSigninDelegate() {
 void AppListViewDelegate::ActivateAppListItem(
     app_list::AppListItemModel* item,
     int event_flags) {
-  AppLauncherHandler::RecordAppLaunchType(
-    extension_misc::APP_LAUNCH_APP_LIST_MAIN);
   content::RecordAction(content::UserMetricsAction("AppList_ClickOnApp"));
   static_cast<ChromeAppListItem*>(item)->Activate(event_flags);
 }

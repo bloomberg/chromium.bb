@@ -445,7 +445,8 @@ void AppLauncherHandler::HandleLaunchApp(const ListValue* args) {
   WindowOpenDisposition disposition = args->GetSize() > 3 ?
         webui::GetDispositionFromClick(args, 3) : CURRENT_TAB;
   if (extension_id != extension_misc::kWebStoreAppId) {
-    RecordAppLaunchByID(launch_bucket);
+    CHECK_NE(launch_bucket, extension_misc::APP_LAUNCH_BUCKET_INVALID);
+    RecordAppLaunchType(launch_bucket, extension->GetType());
   } else {
     RecordWebStoreLaunch();
   }
@@ -713,22 +714,21 @@ void AppLauncherHandler::CleanupAfterUninstall() {
 
 // static
 void AppLauncherHandler::RecordAppLaunchType(
-    extension_misc::AppLaunchBucket bucket) {
-  UMA_HISTOGRAM_ENUMERATION(extension_misc::kAppLaunchHistogram, bucket,
-                            extension_misc::APP_LAUNCH_BUCKET_BOUNDARY);
+    extension_misc::AppLaunchBucket bucket,
+    extensions::Manifest::Type app_type) {
+  if (app_type == extensions::Manifest::TYPE_PLATFORM_APP) {
+    UMA_HISTOGRAM_ENUMERATION(extension_misc::kPlatformAppLaunchHistogram,
+        bucket, extension_misc::APP_LAUNCH_BUCKET_BOUNDARY);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION(extension_misc::kAppLaunchHistogram,
+        bucket, extension_misc::APP_LAUNCH_BUCKET_BOUNDARY);
+  }
 }
 
 // static
 void AppLauncherHandler::RecordWebStoreLaunch() {
-  RecordAppLaunchType(extension_misc::APP_LAUNCH_NTP_WEBSTORE);
-}
-
-// static
-void AppLauncherHandler::RecordAppLaunchByID(
-    extension_misc::AppLaunchBucket bucket) {
-  CHECK(bucket != extension_misc::APP_LAUNCH_BUCKET_INVALID);
-
-  RecordAppLaunchType(bucket);
+  RecordAppLaunchType(extension_misc::APP_LAUNCH_NTP_WEBSTORE,
+      extensions::Manifest::TYPE_HOSTED_APP);
 }
 
 // static
@@ -743,7 +743,7 @@ void AppLauncherHandler::RecordAppLaunchByUrl(
   if (!profile->GetExtensionService()->IsInstalledApp(url))
     return;
 
-  RecordAppLaunchType(bucket);
+  RecordAppLaunchType(bucket, extensions::Manifest::TYPE_HOSTED_APP);
 }
 
 void AppLauncherHandler::PromptToEnableApp(const std::string& extension_id) {

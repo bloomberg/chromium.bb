@@ -158,6 +158,9 @@ namespace extension_misc {
   // The name of the app launch histogram.
   extern const char kAppLaunchHistogram[];
 
+  // The name of the app launch histogram for platform apps.
+  extern const char kPlatformAppLaunchHistogram[];
+
   // The buckets used for app launches.
   enum AppLaunchBucket {
     // Launch from NTP apps section while maximized.

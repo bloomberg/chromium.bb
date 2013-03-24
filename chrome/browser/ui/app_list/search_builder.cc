@@ -366,7 +366,8 @@ void SearchBuilder::OpenResult(const app_list::SearchResult& result,
         GetExtensionByURL(profile_, match.destination_url);
     if (extension) {
       AppLauncherHandler::RecordAppLaunchType(
-        extension_misc::APP_LAUNCH_APP_LIST_SEARCH);
+          extension_misc::APP_LAUNCH_APP_LIST_SEARCH,
+          extension->GetType());
       content::RecordAction(
           content::UserMetricsAction("AppList_ClickOnAppFromSearch"));
       list_controller_->ActivateApp(profile_, extension, event_flags);

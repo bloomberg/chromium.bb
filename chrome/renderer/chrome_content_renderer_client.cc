@@ -931,6 +931,8 @@ bool ChromeContentRendererClient::ShouldFork(WebFrame* frame,
             ExtensionURLInfo(url));
     if (extension && extension->is_app()) {
       UMA_HISTOGRAM_ENUMERATION(
+          extension->is_platform_app() ?
+          extension_misc::kPlatformAppLaunchHistogram :
           extension_misc::kAppLaunchHistogram,
           extension_misc::APP_LAUNCH_CONTENT_NAVIGATION,
           extension_misc::APP_LAUNCH_BUCKET_BOUNDARY);
