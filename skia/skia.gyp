@@ -343,14 +343,6 @@
         [ 'OS != "win"', {
           'sources/': [ ['exclude', '_win\\.(cc|cpp)$'] ],
         }],
-        [ 'chromeos == 1', {
-          'defines': [
-            # Temporarily use SkPaint to keep a scale factor needed for correct
-            # font rendering in high DPI mode.
-            # See https://codereview.appspot.com/6495089/
-            'SK_SUPPORT_HINTING_SCALE_FACTOR',
-          ],
-        }],
         [ 'armv7 == 1', {
           'defines': [
             '__ARM_ARCH__=7',
@@ -580,11 +572,6 @@
           'SK_ENABLE_INST_COUNT=0',
         ],
         'conditions': [
-          [ 'chromeos == 1', {
-            'defines': [
-            'SK_SUPPORT_HINTING_SCALE_FACTOR',
-          ],
-          }],
           ['OS=="android"', {
             'dependencies!': [
               'skia_opts',
