@@ -497,12 +497,13 @@ RenderWidgetFullscreenPepper::GetBitmapForOptimizedPluginPaint(
 
 void RenderWidgetFullscreenPepper::OnResize(const gfx::Size& size,
     const gfx::Size& physical_backing_size,
+    float overdraw_bottom_height,
     const gfx::Rect& resizer_rect,
     bool is_fullscreen) {
   if (layer_)
     layer_->setBounds(WebKit::WebSize(size));
-  RenderWidget::OnResize(size, physical_backing_size, resizer_rect,
-                         is_fullscreen);
+  RenderWidget::OnResize(size, physical_backing_size, overdraw_bottom_height,
+                         resizer_rect, is_fullscreen);
 }
 
 WebWidget* RenderWidgetFullscreenPepper::CreateWebWidget() {

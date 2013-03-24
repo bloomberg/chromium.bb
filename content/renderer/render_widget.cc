@@ -142,6 +142,7 @@ RenderWidget::RenderWidget(WebKit::WebPopupType popup_type,
       opener_id_(MSG_ROUTING_NONE),
       init_complete_(false),
       current_paint_buf_(NULL),
+      overdraw_bottom_height_(0.f),
       next_paint_flags_(0),
       filtered_time_per_frame_(0.0f),
       update_reply_pending_(false),
@@ -346,6 +347,7 @@ bool RenderWidget::Send(IPC::Message* message) {
 
 void RenderWidget::Resize(const gfx::Size& new_size,
                           const gfx::Size& physical_backing_size,
+                          float overdraw_bottom_height,
                           const gfx::Rect& resizer_rect,
                           bool is_fullscreen,
                           ResizeAck resize_ack) {
@@ -357,10 +359,13 @@ void RenderWidget::Resize(const gfx::Size& new_size,
   if (!webwidget_)
     return;
 
-  if (compositor_)
+  if (compositor_) {
     compositor_->setViewportSize(new_size, physical_backing_size);
+    compositor_->SetOverdrawBottomHeight(overdraw_bottom_height);
+  }
 
   physical_backing_size_ = physical_backing_size;
+  overdraw_bottom_height_ = overdraw_bottom_height;
   resizer_rect_ = resizer_rect;
 
   // NOTE: We may have entered fullscreen mode without changing our size.
@@ -435,10 +440,11 @@ void RenderWidget::OnCreatingNewAck() {
 
 void RenderWidget::OnResize(const gfx::Size& new_size,
                             const gfx::Size& physical_backing_size,
+                            float overdraw_bottom_height,
                             const gfx::Rect& resizer_rect,
                             bool is_fullscreen) {
-  Resize(new_size, physical_backing_size, resizer_rect, is_fullscreen,
-         SEND_RESIZE_ACK);
+  Resize(new_size, physical_backing_size, overdraw_bottom_height, resizer_rect,
+         is_fullscreen, SEND_RESIZE_ACK);
 }
 
 void RenderWidget::OnChangeResizeRect(const gfx::Rect& resizer_rect) {
@@ -1624,7 +1630,8 @@ void RenderWidget::setWindowRect(const WebRect& pos) {
       SetPendingWindowRect(pos);
     } else {
       WebSize new_size(pos.width, pos.height);
-      Resize(new_size, new_size, WebRect(), is_fullscreen_, NO_RESIZE_ACK);
+      Resize(new_size, new_size, overdraw_bottom_height_,
+             WebRect(), is_fullscreen_, NO_RESIZE_ACK);
       view_screen_rect_ = pos;
       window_screen_rect_ = pos;
     }

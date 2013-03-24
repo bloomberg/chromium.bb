@@ -176,9 +176,11 @@ class CC_EXPORT LayerTreeHost : public RateLimiterClient {
 
   void SetViewportSize(gfx::Size layout_viewport_size,
                        gfx::Size device_viewport_size);
+  void SetOverdrawBottomHeight(float overdraw_bottom_height);
 
   gfx::Size layout_viewport_size() const { return layout_viewport_size_; }
   gfx::Size device_viewport_size() const { return device_viewport_size_; }
+  float overdraw_bottom_height() const { return overdraw_bottom_height_; }
 
   void SetPageScaleFactorAndLimits(float page_scale_factor,
                                    float min_page_scale_factor,
@@ -302,6 +304,7 @@ class CC_EXPORT LayerTreeHost : public RateLimiterClient {
 
   gfx::Size layout_viewport_size_;
   gfx::Size device_viewport_size_;
+  float overdraw_bottom_height_;
   float device_scale_factor_;
 
   bool visible_;

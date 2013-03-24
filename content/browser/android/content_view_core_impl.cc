@@ -624,6 +624,15 @@ gfx::Size ContentViewCoreImpl::GetViewportSizeDip() const {
       gfx::ScaleSize(GetViewportSizePix(), 1.0f / GetDpiScale()));
 }
 
+float ContentViewCoreImpl::GetOverdrawBottomHeightDip() const {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
+  if (j_obj.is_null())
+    return 0.f;
+  return Java_ContentViewCore_getOverdrawBottomHeightPix(env, j_obj.obj())
+      / GetDpiScale();
+}
+
 InputEventAckState ContentViewCoreImpl::FilterInputEvent(
     const WebKit::WebInputEvent& input_event) {
   if (!input_event_filter_)

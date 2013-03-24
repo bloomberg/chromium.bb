@@ -79,6 +79,7 @@ class RenderWidgetHostViewAndroid : public RenderWidgetHostViewBase {
   virtual bool IsShowing() OVERRIDE;
   virtual gfx::Rect GetViewBounds() const OVERRIDE;
   virtual gfx::Size GetPhysicalBackingSize() const OVERRIDE;
+  virtual float GetOverdrawBottomHeight() const OVERRIDE;
   virtual void UpdateCursor(const WebCursor& cursor) OVERRIDE;
   virtual void SetIsLoading(bool is_loading) OVERRIDE;
   virtual void TextInputStateChanged(

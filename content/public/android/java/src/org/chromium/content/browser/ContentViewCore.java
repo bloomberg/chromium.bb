@@ -204,6 +204,7 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
     private int mViewportHeightPix;
     private int mPhysicalBackingWidthPix;
     private int mPhysicalBackingHeightPix;
+    private int mOverdrawBottomHeightPix;
 
     // Cached copy of all positions and scales as reported by the renderer.
     private final RenderCoordinates mRenderCoordinates;
@@ -800,6 +801,11 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
     @CalledByNative
     public int getPhysicalBackingHeightPix() { return mPhysicalBackingHeightPix; }
 
+    /**
+     * @return Amount the output surface extends past the bottom of the window viewport.
+     */
+    @CalledByNative
+    public int getOverdrawBottomHeightPix() { return mOverdrawBottomHeightPix; }
 
     /**
      * @see android.webkit.WebView#getContentHeight()
@@ -1288,6 +1294,20 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
 
         mPhysicalBackingWidthPix = wPix;
         mPhysicalBackingHeightPix = hPix;
+
+        if (mNativeContentViewCore != 0) {
+            nativeWasResized(mNativeContentViewCore);
+        }
+    }
+
+    /**
+     * Called when the amount the surface is overdrawing off the bottom has changed.
+     * @param overdrawHeightPix The overdraw height.
+     */
+    public void onOverdrawBottomHeightChanged(int overdrawHeightPix) {
+        if (mOverdrawBottomHeightPix == overdrawHeightPix) return;
+
+        mOverdrawBottomHeightPix = overdrawHeightPix;
 
         if (mNativeContentViewCore != 0) {
             nativeWasResized(mNativeContentViewCore);

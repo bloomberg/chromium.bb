@@ -89,6 +89,7 @@ LayerTreeHost::LayerTreeHost(LayerTreeHostClient* client,
       page_scale_factor_(1.f),
       min_page_scale_factor_(1.f),
       max_page_scale_factor_(1.f),
+      overdraw_bottom_height_(0.f),
       trigger_idle_updates_(true),
       background_color_(SK_ColorWHITE),
       has_transparent_background_(false),
@@ -325,6 +326,7 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
   sync_tree->SetPageScaleDelta(page_scale_delta / sent_page_scale_delta);
 
   host_impl->SetViewportSize(layout_viewport_size_, device_viewport_size_);
+  host_impl->SetOverdrawBottomHeight(overdraw_bottom_height_);
   host_impl->SetDeviceScaleFactor(device_scale_factor_);
   host_impl->SetDebugState(debug_state_);
 
@@ -584,6 +586,14 @@ void LayerTreeHost::SetViewportSize(gfx::Size layout_viewport_size,
   device_viewport_size_ = device_viewport_size;
 
   SetPinchZoomScrollbarsBoundsAndPosition();
+  SetNeedsCommit();
+}
+
+void LayerTreeHost::SetOverdrawBottomHeight(float overdraw_bottom_height) {
+  if (overdraw_bottom_height_ == overdraw_bottom_height)
+    return;
+
+  overdraw_bottom_height_ = overdraw_bottom_height;
   SetNeedsCommit();
 }
 

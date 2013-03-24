@@ -161,6 +161,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       should_bubble_scrolls_(false),
       wheel_scrolling_(false),
       settings_(settings),
+      overdraw_bottom_height_(0.f),
       device_scale_factor_(1.f),
       visible_(true),
       managed_memory_policy_(
@@ -1042,7 +1043,8 @@ gfx::SizeF LayerTreeHostImpl::VisibleViewportSize() const {
 
   float topOffset =
       top_controls_manager_ ? top_controls_manager_->content_top_offset() : 0.f;
-  return gfx::SizeF(dip_size.width(), dip_size.height() - topOffset);
+  return gfx::SizeF(dip_size.width(),
+                    dip_size.height() - topOffset - overdraw_bottom_height_);
 }
 
 const LayerTreeSettings& LayerTreeHostImpl::Settings() const {
@@ -1320,6 +1322,14 @@ static void AdjustScrollsForPageScaleChange(LayerImpl* layer_impl,
   for (size_t i = 0; i < layer_impl->children().size(); ++i)
     AdjustScrollsForPageScaleChange(layer_impl->children()[i],
                                     page_scale_change);
+}
+
+void LayerTreeHostImpl::SetOverdrawBottomHeight(float overdraw_bottom_height) {
+  if (overdraw_bottom_height == overdraw_bottom_height_)
+    return;
+  overdraw_bottom_height_ = overdraw_bottom_height;
+
+  UpdateMaxScrollOffset();
 }
 
 void LayerTreeHostImpl::SetDeviceScaleFactor(float device_scale_factor) {

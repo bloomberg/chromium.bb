@@ -230,6 +230,9 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandlerClient,
   gfx::Size layout_viewport_size() const { return layout_viewport_size_; }
   gfx::Size device_viewport_size() const { return device_viewport_size_; }
 
+  void SetOverdrawBottomHeight(float overdraw_bottom_height);
+  float overdraw_bottom_height() const { return overdraw_bottom_height_; }
+
   void SetDeviceScaleFactor(float device_scale_factor);
   float device_scale_factor() const { return device_scale_factor_; }
 
@@ -416,6 +419,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandlerClient,
   LayerTreeDebugState debug_state_;
   gfx::Size layout_viewport_size_;
   gfx::Size device_viewport_size_;
+  float overdraw_bottom_height_;
   float device_scale_factor_;
   bool visible_;
   ManagedMemoryPolicy managed_memory_policy_;

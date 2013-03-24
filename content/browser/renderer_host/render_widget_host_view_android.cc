@@ -324,6 +324,13 @@ gfx::Size RenderWidgetHostViewAndroid::GetPhysicalBackingSize() const {
   return content_view_core_->GetPhysicalBackingSize();
 }
 
+float RenderWidgetHostViewAndroid::GetOverdrawBottomHeight() const {
+  if (!content_view_core_)
+    return 0.f;
+
+  return content_view_core_->GetOverdrawBottomHeightDip();
+}
+
 void RenderWidgetHostViewAndroid::UpdateCursor(const WebCursor& cursor) {
   // There are no cursors on Android.
 }

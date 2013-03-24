@@ -293,6 +293,11 @@ void RenderWidgetCompositor::EnableHidingTopControls(bool enable) {
   layer_tree_host_->EnableHidingTopControls(enable);
 }
 
+void RenderWidgetCompositor::SetOverdrawBottomHeight(
+    float overdraw_bottom_height) {
+  layer_tree_host_->SetOverdrawBottomHeight(overdraw_bottom_height);
+}
+
 bool RenderWidgetCompositor::initialize(cc::LayerTreeSettings settings) {
   scoped_ptr<cc::Thread> impl_thread;
   scoped_refptr<base::MessageLoopProxy> compositor_message_loop_proxy =

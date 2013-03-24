@@ -271,6 +271,7 @@ class CONTENT_EXPORT RenderWidget
   // Resizes the render widget.
   void Resize(const gfx::Size& new_size,
               const gfx::Size& physical_backing_size,
+              float overdraw_bottom_height,
               const gfx::Rect& resizer_rect,
               bool is_fullscreen,
               ResizeAck resize_ack);
@@ -280,6 +281,7 @@ class CONTENT_EXPORT RenderWidget
   void OnCreatingNewAck();
   virtual void OnResize(const gfx::Size& new_size,
                         const gfx::Size& physical_backing_size,
+                        float overdraw_bottom_height,
                         const gfx::Rect& resizer_rect,
                         bool is_fullscreen);
   void OnChangeResizeRect(const gfx::Rect& resizer_rect);
@@ -521,6 +523,10 @@ class CONTENT_EXPORT RenderWidget
 
   // The size of the view's backing surface in non-DPI-adjusted pixels.
   gfx::Size physical_backing_size_;
+
+  // The height of the physical backing surface that is overdrawn opaquely in
+  // the browser, for example by an on-screen-keyboard (in DPI-adjusted pixels).
+  float overdraw_bottom_height_;
 
   // The area that must be reserved for drawing the resize corner.
   gfx::Rect resizer_rect_;

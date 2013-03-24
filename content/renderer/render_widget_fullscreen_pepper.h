@@ -82,6 +82,7 @@ class RenderWidgetFullscreenPepper :
       float* scale_factor) OVERRIDE;
   virtual void OnResize(const gfx::Size& new_size,
                         const gfx::Size& physical_backing_size,
+                        float overdraw_bottom_height,
                         const gfx::Rect& resizer_rect,
                         bool is_fullscreen) OVERRIDE;
 
