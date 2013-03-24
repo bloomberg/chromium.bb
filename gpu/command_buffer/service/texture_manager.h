@@ -184,7 +184,7 @@ class GPU_EXPORT Texture : public base::RefCounted<Texture> {
   }
 
   // Whether a particular level/face is cleared.
-  bool IsLevelCleared(GLenum target, GLint level);
+  bool IsLevelCleared(GLenum target, GLint level) const;
 
   // Whether the texture has been defined
   bool IsDefined() {

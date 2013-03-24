@@ -16,7 +16,6 @@
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gpu_scheduler.h"
-#include "gpu/command_buffer/service/texture_definition.h"
 
 using gpu::gles2::ContextGroup;
 using gpu::gles2::MailboxManager;
@@ -26,18 +25,12 @@ using gpu::gles2::TextureManager;
 
 namespace content {
 
-TextureImageTransportSurface::Texture::Texture()
-    : service_id(0) {
-}
-
-TextureImageTransportSurface::Texture::~Texture() {
-}
-
 TextureImageTransportSurface::TextureImageTransportSurface(
     GpuChannelManager* manager,
     GpuCommandBufferStub* stub,
     const gfx::GLSurfaceHandle& handle)
       : fbo_id_(0),
+        backbuffer_(CreateTextureDefinition(gfx::Size(), 0)),
         stub_destroyed_(false),
         backbuffer_suggested_allocation_(true),
         frontbuffer_suggested_allocation_(true),
@@ -125,7 +118,7 @@ bool TextureImageTransportSurface::OnMakeCurrent(gfx::GLContext* context) {
 
   // We could be receiving non-deferred GL commands, that is anything that does
   // not need a framebuffer.
-  if (!backbuffer_.service_id && !is_swap_buffers_pending_ &&
+  if (!backbuffer_->service_id() && !is_swap_buffers_pending_ &&
       backbuffer_suggested_allocation_) {
     CreateBackTexture();
   }
@@ -143,7 +136,7 @@ bool TextureImageTransportSurface::SetBackbufferAllocation(bool allocation) {
   backbuffer_suggested_allocation_ = allocation;
 
   if (backbuffer_suggested_allocation_) {
-    DCHECK(!backbuffer_.service_id);
+    DCHECK(!backbuffer_->service_id());
     CreateBackTexture();
   } else {
     ReleaseBackTexture();
@@ -206,20 +199,19 @@ bool TextureImageTransportSurface::SwapBuffers() {
   if (!frontbuffer_suggested_allocation_)
     return true;
 
-  if (!backbuffer_.service_id) {
+  if (!backbuffer_->service_id()) {
     LOG(ERROR) << "Swap without valid backing.";
     return true;
   }
 
-  DCHECK(backbuffer_.size == current_size_);
+  DCHECK(backbuffer_size() == current_size_);
   GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params;
-  params.size = backbuffer_.size;
-  const MailboxName& name = backbuffer_.mailbox_name;
+  params.size = backbuffer_size();
   params.mailbox_name.assign(
-      reinterpret_cast<const char*>(&name), sizeof(name));
+      reinterpret_cast<const char*>(&mailbox_name_), sizeof(mailbox_name_));
 
   glFlush();
-  ProduceTexture(&backbuffer_);
+  ProduceTexture();
 
   // Do not allow destruction while we are still waiting for a swap ACK,
   // so we do not leak a texture in the mailbox.
@@ -244,24 +236,23 @@ bool TextureImageTransportSurface::PostSubBuffer(
   if (new_damage_rect.IsEmpty())
     return true;
 
-  if (!backbuffer_.service_id) {
+  if (!backbuffer_->service_id()) {
     LOG(ERROR) << "Swap without valid backing.";
     return true;
   }
 
-  DCHECK(current_size_ == backbuffer_.size);
+  DCHECK(current_size_ == backbuffer_size());
   GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params params;
-  params.surface_size = backbuffer_.size;
+  params.surface_size = backbuffer_size();
   params.x = x;
   params.y = y;
   params.width = width;
   params.height = height;
-  const MailboxName& name = backbuffer_.mailbox_name;
   params.mailbox_name.assign(
-      reinterpret_cast<const char*>(&name), sizeof(name));
+      reinterpret_cast<const char*>(&mailbox_name_), sizeof(mailbox_name_));
 
   glFlush();
-  ProduceTexture(&backbuffer_);
+  ProduceTexture();
 
   // Do not allow destruction while we are still waiting for a swap ACK,
   // so we do not leak a texture in the mailbox.
@@ -317,20 +308,21 @@ void TextureImageTransportSurface::OnBufferPresented(
 
 void TextureImageTransportSurface::BufferPresentedImpl(
     const std::string& mailbox_name) {
-  DCHECK(!backbuffer_.service_id);
+  DCHECK(!backbuffer_->service_id());
   if (!mailbox_name.empty()) {
     DCHECK(mailbox_name.length() == GL_MAILBOX_SIZE_CHROMIUM);
-    mailbox_name.copy(reinterpret_cast<char *>(&backbuffer_.mailbox_name),
+    mailbox_name.copy(reinterpret_cast<char *>(&mailbox_name_),
                       sizeof(MailboxName));
-    ConsumeTexture(&backbuffer_);
+    ConsumeTexture();
   }
 
-  if (stub_destroyed_ && backbuffer_.service_id) {
+  if (stub_destroyed_ && backbuffer_->service_id()) {
     // TODO(sievers): Remove this after changes to the mailbox to take ownership
     // of the service ids.
     DCHECK(context_.get() && surface_.get());
+    uint32 service_id = backbuffer_->ReleaseServiceId();
     if (context_->MakeCurrent(surface_.get()))
-      glDeleteTextures(1, &backbuffer_.service_id);
+      glDeleteTextures(1, &service_id);
 
     return;
   }
@@ -346,7 +338,7 @@ void TextureImageTransportSurface::BufferPresentedImpl(
   // finished with it's context when it inserts the sync point that
   // triggers this callback.
   if (helper_->MakeCurrent()) {
-    if (backbuffer_.size != current_size_ || !backbuffer_.service_id)
+    if (backbuffer_size() != current_size_ || !backbuffer_->service_id())
       CreateBackTexture();
     else
       AttachBackTextureToFBO();
@@ -365,12 +357,13 @@ void TextureImageTransportSurface::OnResizeViewACK() {
 }
 
 void TextureImageTransportSurface::ReleaseBackTexture() {
-  if (!backbuffer_.service_id)
+  if (!backbuffer_->service_id())
     return;
 
-  glDeleteTextures(1, &backbuffer_.service_id);
-  backbuffer_.service_id = 0;
-  backbuffer_.mailbox_name = MailboxName();
+  uint32 service_id = backbuffer_->ReleaseServiceId();
+  glDeleteTextures(1, &service_id);
+  backbuffer_.reset(CreateTextureDefinition(gfx::Size(), 0));
+  mailbox_name_ = MailboxName();
   glFlush();
   CHECK_GL_ERROR();
 }
@@ -380,8 +373,10 @@ void TextureImageTransportSurface::CreateBackTexture() {
   // in the mailbox, so we shouldn't be reallocating it now.
   DCHECK(!is_swap_buffers_pending_);
 
-  if (backbuffer_.service_id && backbuffer_.size == current_size_)
+  if (backbuffer_->service_id() && backbuffer_size() == current_size_)
     return;
+
+  uint32 service_id = backbuffer_->ReleaseServiceId();
 
   VLOG(1) << "Allocating new backbuffer texture";
 
@@ -389,31 +384,33 @@ void TextureImageTransportSurface::CreateBackTexture() {
   // size, after we allocated it as 1x1. So here we simply delete
   // the previous texture on resize, to insure we don't 'run out of
   // memory'.
-  if (backbuffer_.service_id &&
+  if (service_id &&
       helper_->stub()
              ->decoder()
              ->GetContextGroup()
              ->feature_info()
              ->workarounds()
              .delete_instead_of_resize_fbo) {
-    glDeleteTextures(1, &backbuffer_.service_id);
-    backbuffer_ = Texture();
+    glDeleteTextures(1, &service_id);
+    service_id = 0;
+    mailbox_name_ = MailboxName();
   }
 
-  if (!backbuffer_.service_id) {
+  if (!service_id) {
     MailboxName new_mailbox_name;
-    MailboxName& name = backbuffer_.mailbox_name;
+    MailboxName& name = mailbox_name_;
     // This slot should be uninitialized.
     DCHECK(!memcmp(&name, &new_mailbox_name, sizeof(MailboxName)));
     mailbox_manager_->GenerateMailboxName(&new_mailbox_name);
     name = new_mailbox_name;
-    glGenTextures(1, &backbuffer_.service_id);
+    glGenTextures(1, &service_id);
   }
 
-  backbuffer_.size = current_size_;
+  backbuffer_.reset(
+      CreateTextureDefinition(current_size_, service_id));
 
   {
-    ScopedTextureBinder texture_binder(backbuffer_.service_id);
+    ScopedTextureBinder texture_binder(service_id);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -428,12 +425,12 @@ void TextureImageTransportSurface::CreateBackTexture() {
 }
 
 void TextureImageTransportSurface::AttachBackTextureToFBO() {
-  DCHECK(backbuffer_.service_id);
+  DCHECK(backbuffer_->service_id());
   ScopedFrameBufferBinder fbo_binder(fbo_id_);
   glFramebufferTexture2DEXT(GL_FRAMEBUFFER,
       GL_COLOR_ATTACHMENT0,
       GL_TEXTURE_2D,
-      backbuffer_.service_id,
+      backbuffer_->service_id(),
       0);
   CHECK_GL_ERROR();
 
@@ -445,56 +442,55 @@ void TextureImageTransportSurface::AttachBackTextureToFBO() {
 #endif
 }
 
-void TextureImageTransportSurface::ConsumeTexture(Texture* texture) {
-  DCHECK(!texture->service_id);
-
-  scoped_ptr<TextureDefinition> definition(mailbox_manager_->ConsumeTexture(
-      GL_TEXTURE_2D, texture->mailbox_name));
-  if (definition.get()) {
-    texture->service_id = definition->ReleaseServiceId();
-    texture->size = gfx::Size(definition->level_infos()[0][0].width,
-                             definition->level_infos()[0][0].height);
-  } else {
-    texture->mailbox_name = MailboxName();
-  }
-}
-
-void TextureImageTransportSurface::ProduceTexture(Texture* texture) {
-  DCHECK(texture->service_id);
-
-  TextureManager* texture_manager =
-      helper_->stub()->decoder()->GetContextGroup()->texture_manager();
-  DCHECK(texture->size.width() > 0 && texture->size.height() > 0);
+TextureDefinition* TextureImageTransportSurface::CreateTextureDefinition(
+    gfx::Size size, int service_id) {
   TextureDefinition::LevelInfo info(
-      GL_TEXTURE_2D, GL_RGBA, texture->size.width(), texture->size.height(), 1,
+      GL_TEXTURE_2D, GL_RGBA, size.width(), size.height(), 1,
       0, GL_RGBA, GL_UNSIGNED_BYTE, true);
 
   TextureDefinition::LevelInfos level_infos;
   level_infos.resize(1);
-  level_infos[0].resize(texture_manager->MaxLevelsForTarget(GL_TEXTURE_2D));
+  level_infos[0].resize(1);
   level_infos[0][0] = info;
-  scoped_ptr<TextureDefinition> definition(new TextureDefinition(
+  return new TextureDefinition(
       GL_TEXTURE_2D,
-      texture->service_id,
+      service_id,
       GL_LINEAR,
       GL_LINEAR,
       GL_CLAMP_TO_EDGE,
       GL_CLAMP_TO_EDGE,
       GL_NONE,
       true,
-      level_infos));
+      level_infos);
+}
+
+void TextureImageTransportSurface::ConsumeTexture() {
+  DCHECK(!backbuffer_->service_id());
+
+  backbuffer_.reset(mailbox_manager_->ConsumeTexture(
+      GL_TEXTURE_2D, mailbox_name_));
+  if (!backbuffer_) {
+    mailbox_name_ = MailboxName();
+    backbuffer_.reset(CreateTextureDefinition(gfx::Size(), 0));
+  }
+}
+
+void TextureImageTransportSurface::ProduceTexture() {
+  DCHECK(backbuffer_->service_id());
+  DCHECK(!backbuffer_size().IsEmpty());
+
   // Pass NULL as |owner| here to avoid errors from glConsumeTextureCHROMIUM()
   // when the renderer context group goes away before the RWHV handles a pending
   // ACK. We avoid leaking a texture in the mailbox by waiting for the final ACK
   // at which point we consume the correct texture back.
   bool success = mailbox_manager_->ProduceTexture(
       GL_TEXTURE_2D,
-      texture->mailbox_name,
-      definition.release(),
+      mailbox_name_,
+      backbuffer_.release(),
       NULL);
   DCHECK(success);
-  texture->service_id = 0;
-  texture->mailbox_name = MailboxName();
+  mailbox_name_ = MailboxName();
+  backbuffer_.reset(CreateTextureDefinition(gfx::Size(), 0));
 }
 
 }  // namespace content

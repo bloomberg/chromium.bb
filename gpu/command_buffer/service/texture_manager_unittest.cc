@@ -10,11 +10,14 @@
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/mocks.h"
 #include "gpu/command_buffer/service/test_helper.h"
+#include "gpu/command_buffer/service/texture_definition.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_mock.h"
 
+using ::testing::AtLeast;
 using ::testing::Pointee;
 using ::testing::Return;
+using ::testing::SetArgumentPointee;
 using ::testing::StrictMock;
 using ::testing::_;
 
@@ -1240,6 +1243,229 @@ TEST_F(TextureTest, AddToSignature) {
 
   // Check the set was acutally getting different signatures.
   EXPECT_EQ(11u, string_set.size());
+}
+
+class SaveRestoreTextureTest : public TextureTest {
+ public:
+  virtual void SetUp() {
+    TextureTest::SetUp();
+    manager_->CreateTexture(kClient2Id, kService2Id);
+    texture2_ = manager_->GetTexture(kClient2Id);
+  }
+
+  virtual void TearDown() {
+    if (texture2_.get()) {
+      GLuint client_id = 0;
+      // If it's not in the manager then setting texture2_ to NULL will
+      // delete the texture.
+      if (!manager_->GetClientId(texture2_->service_id(), &client_id)) {
+        // Check that it gets deleted when the last reference is released.
+        EXPECT_CALL(
+            *gl_,
+            DeleteTextures(1, ::testing::Pointee(texture2_->service_id())))
+            .Times(1).RetiresOnSaturation();
+      }
+      texture2_ = NULL;
+    }
+    TextureTest::TearDown();
+  }
+
+ protected:
+  struct LevelInfo {
+    LevelInfo(GLenum target,
+              GLenum format,
+              GLsizei width,
+              GLsizei height,
+              GLsizei depth,
+              GLint border,
+              GLenum type,
+              bool cleared)
+        : target(target),
+          format(format),
+          width(width),
+          height(height),
+          depth(depth),
+          border(border),
+          type(type),
+          cleared(cleared) {}
+
+    LevelInfo()
+        : target(0),
+          format(0),
+          width(-1),
+          height(-1),
+          depth(1),
+          border(0),
+          type(0),
+          cleared(false) {}
+
+    bool operator==(const LevelInfo& other) const {
+      return target == other.target && format == other.format &&
+             width == other.width && height == other.height &&
+             depth == other.depth && border == other.border &&
+             type == other.type && cleared == other.cleared;
+    }
+
+    GLenum target;
+    GLenum format;
+    GLsizei width;
+    GLsizei height;
+    GLsizei depth;
+    GLint border;
+    GLenum type;
+    bool cleared;
+  };
+
+  void SetLevelInfo(Texture* texture, GLint level, const LevelInfo& info) {
+    manager_->SetLevelInfo(texture,
+                           info.target,
+                           level,
+                           info.format,
+                           info.width,
+                           info.height,
+                           info.depth,
+                           info.border,
+                           info.format,
+                           info.type,
+                           info.cleared);
+  }
+
+  static LevelInfo GetLevelInfo(const Texture* texture,
+                                GLint target,
+                                GLint level) {
+    LevelInfo info;
+    info.target = target;
+    EXPECT_TRUE(texture->GetLevelSize(target, level, &info.width,
+                                      &info.height));
+    EXPECT_TRUE(texture->GetLevelType(target, level, &info.type,
+                                      &info.format));
+    info.cleared = texture->IsLevelCleared(target, level);
+    return info;
+  }
+
+  TextureDefinition* Save(Texture* texture) {
+    EXPECT_CALL(*gl_, GenTextures(_, _))
+        .WillOnce(SetArgumentPointee<1>(kService2Id));
+    TextureDefinition* definition = manager_->Save(texture);
+    EXPECT_TRUE(definition != NULL);
+    return definition;
+  }
+
+  void Restore(Texture* texture, TextureDefinition* definition) {
+    EXPECT_CALL(*gl_, DeleteTextures(1, Pointee(texture->service_id())))
+        .Times(1).RetiresOnSaturation();
+    EXPECT_CALL(*gl_,
+                BindTexture(definition->target(), definition->service_id()))
+        .Times(1).RetiresOnSaturation();
+    EXPECT_CALL(*gl_, TexParameteri(_, _, _)).Times(AtLeast(1));
+
+    EXPECT_TRUE(
+        manager_->Restore("TextureTest", decoder_.get(), texture, definition));
+  }
+
+  scoped_refptr<Texture> texture2_;
+
+ private:
+  static const GLuint kEmptyTextureServiceId;
+  static const GLuint kClient2Id;
+  static const GLuint kService2Id;
+};
+
+const GLuint SaveRestoreTextureTest::kClient2Id = 2;
+const GLuint SaveRestoreTextureTest::kService2Id = 12;
+const GLuint SaveRestoreTextureTest::kEmptyTextureServiceId = 13;
+
+TEST_F(SaveRestoreTextureTest, SaveRestore2D) {
+  manager_->SetTarget(texture_, GL_TEXTURE_2D);
+  EXPECT_EQ(static_cast<GLenum>(GL_TEXTURE_2D), texture_->target());
+  LevelInfo level0(
+      GL_TEXTURE_2D, GL_RGBA, 4, 4, 1, 0, GL_UNSIGNED_BYTE, true);
+  SetLevelInfo(texture_, 0, level0);
+  EXPECT_TRUE(manager_->MarkMipmapsGenerated(texture_));
+  EXPECT_TRUE(texture_->texture_complete());
+  LevelInfo level1 = GetLevelInfo(texture_.get(), GL_TEXTURE_2D, 1);
+  LevelInfo level2 = GetLevelInfo(texture_.get(), GL_TEXTURE_2D, 2);
+  scoped_ptr<TextureDefinition> definition(Save(texture_));
+  const TextureDefinition::LevelInfos& infos = definition->level_infos();
+  EXPECT_EQ(1U, infos.size());
+  EXPECT_EQ(3U, infos[0].size());
+
+  // Make this texture bigger with more levels, and make sure they get
+  // clobbered correctly during Restore().
+  manager_->SetTarget(texture2_, GL_TEXTURE_2D);
+  SetLevelInfo(
+      texture2_,
+      0,
+      LevelInfo(GL_TEXTURE_2D, GL_RGBA, 16, 16, 1, 0, GL_UNSIGNED_BYTE, false));
+  EXPECT_TRUE(manager_->MarkMipmapsGenerated(texture2_));
+  EXPECT_TRUE(texture2_->texture_complete());
+  EXPECT_EQ(1024U + 256U + 64U + 16U + 4U, texture2_->estimated_size());
+  Restore(texture2_, definition.release());
+  EXPECT_EQ(level0, GetLevelInfo(texture2_.get(), GL_TEXTURE_2D, 0));
+  EXPECT_EQ(level1, GetLevelInfo(texture2_.get(), GL_TEXTURE_2D, 1));
+  EXPECT_EQ(level2, GetLevelInfo(texture2_.get(), GL_TEXTURE_2D, 2));
+  EXPECT_EQ(64U + 16U + 4U, texture2_->estimated_size());
+  GLint w, h;
+  EXPECT_TRUE(texture2_->GetLevelSize(GL_TEXTURE_2D, 3, &w, &h));
+  EXPECT_EQ(0, w);
+  EXPECT_EQ(0, h);
+}
+
+TEST_F(SaveRestoreTextureTest, SaveRestoreClearRectangle) {
+  manager_->SetTarget(texture_, GL_TEXTURE_RECTANGLE_ARB);
+  EXPECT_EQ(static_cast<GLenum>(GL_TEXTURE_RECTANGLE_ARB), texture_->target());
+  LevelInfo level0(
+      GL_TEXTURE_RECTANGLE_ARB, GL_RGBA, 1, 1, 1, 0, GL_UNSIGNED_BYTE, false);
+  SetLevelInfo(texture_, 0, level0);
+  EXPECT_TRUE(texture_->texture_complete());
+  scoped_ptr<TextureDefinition> definition(Save(texture_));
+  const TextureDefinition::LevelInfos& infos = definition->level_infos();
+  EXPECT_EQ(1U, infos.size());
+  EXPECT_EQ(1U, infos[0].size());
+  EXPECT_EQ(static_cast<GLenum>(GL_TEXTURE_RECTANGLE_ARB), infos[0][0].target);
+  manager_->SetTarget(texture2_, GL_TEXTURE_RECTANGLE_ARB);
+  Restore(texture2_, definition.release());
+
+  // See if we can clear the previously uncleared level now.
+  EXPECT_EQ(level0, GetLevelInfo(texture2_.get(), GL_TEXTURE_RECTANGLE_ARB, 0));
+  EXPECT_CALL(*decoder_, ClearLevel(_, _, _, _, _, _, _, _, _))
+      .WillRepeatedly(Return(true));
+  EXPECT_TRUE(manager_->ClearTextureLevel(
+      decoder_.get(), texture2_, GL_TEXTURE_RECTANGLE_ARB, 0));
+}
+
+TEST_F(SaveRestoreTextureTest, SaveRestoreCube) {
+  manager_->SetTarget(texture_, GL_TEXTURE_CUBE_MAP);
+  EXPECT_EQ(static_cast<GLenum>(GL_TEXTURE_CUBE_MAP), texture_->target());
+  LevelInfo face0(GL_TEXTURE_CUBE_MAP_POSITIVE_X,
+                  GL_RGBA,
+                  1,
+                  1,
+                  1,
+                  0,
+                  GL_UNSIGNED_BYTE,
+                  true);
+  LevelInfo face5(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
+                  GL_RGBA,
+                  3,
+                  3,
+                  1,
+                  0,
+                  GL_UNSIGNED_BYTE,
+                  true);
+  SetLevelInfo(texture_, 0, face0);
+  SetLevelInfo(texture_, 0, face5);
+  EXPECT_TRUE(texture_->texture_complete());
+  scoped_ptr<TextureDefinition> definition(Save(texture_));
+  const TextureDefinition::LevelInfos& infos = definition->level_infos();
+  EXPECT_EQ(6U, infos.size());
+  EXPECT_EQ(1U, infos[0].size());
+  manager_->SetTarget(texture2_, GL_TEXTURE_CUBE_MAP);
+  Restore(texture2_, definition.release());
+  EXPECT_EQ(face0,
+            GetLevelInfo(texture2_.get(), GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0));
+  EXPECT_EQ(face5,
+            GetLevelInfo(texture2_.get(), GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0));
 }
 
 }  // namespace gles2

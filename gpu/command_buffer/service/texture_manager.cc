@@ -616,14 +616,14 @@ bool Texture::ClearRenderableLevels(GLES2Decoder* decoder) {
   return true;
 }
 
-bool Texture::IsLevelCleared(GLenum target, GLint level) {
+bool Texture::IsLevelCleared(GLenum target, GLint level) const {
   size_t face_index = GLTargetToFaceIndex(target);
   if (face_index >= level_infos_.size() ||
       level >= static_cast<GLint>(level_infos_[face_index].size())) {
     return true;
   }
 
-  Texture::LevelInfo& info = level_infos_[face_index][level];
+  const Texture::LevelInfo& info = level_infos_[face_index][level];
 
   return info.cleared;
 }
@@ -938,12 +938,13 @@ TextureDefinition* TextureManager::Save(Texture* texture) {
 
   TextureDefinition::LevelInfos level_infos(texture->level_infos_.size());
   for (size_t face = 0; face < level_infos.size(); ++face) {
-    GLenum target = texture->target() == GL_TEXTURE_2D ?
-        GL_TEXTURE_2D : FaceIndexToGLTarget(face);
-    for (size_t level = 0; level < texture->level_infos_[face].size();
-         ++level) {
+    GLenum target =
+        texture->target() == GL_TEXTURE_CUBE_MAP ? FaceIndexToGLTarget(face)
+                                                 : texture->target();
+    for (GLint level = 0; level <= texture->max_level_set_; ++level) {
       const Texture::LevelInfo& level_info =
           texture->level_infos_[face][level];
+
       level_infos[face].push_back(
           TextureDefinition::LevelInfo(target,
                                        level_info.internal_format,
@@ -1003,19 +1004,23 @@ bool TextureManager::Restore(
   if (texture->target() != definition->target())
     return false;
 
-  if (texture->level_infos_.size() != definition->level_infos().size())
+  if (texture->level_infos_.size() < definition->level_infos().size())
     return false;
 
-  if (texture->level_infos_[0].size() != definition->level_infos()[0].size())
+  if (texture->level_infos_[0].size() < definition->level_infos()[0].size())
     return false;
 
-  for (size_t face = 0; face < texture->level_infos_.size(); ++face) {
-    GLenum target = texture->target() == GL_TEXTURE_2D ?
-        GL_TEXTURE_2D : FaceIndexToGLTarget(face);
-    for (size_t level = 0; level < texture->level_infos_[face].size();
+  for (size_t face = 0; face < definition->level_infos().size(); ++face) {
+    GLenum target =
+        texture->target() == GL_TEXTURE_CUBE_MAP ? FaceIndexToGLTarget(face)
+                                                 : texture->target();
+    GLint new_max_level = definition->level_infos()[face].size() - 1;
+    for (GLint level = 0;
+         level <= std::max(texture->max_level_set_, new_max_level);
          ++level) {
       const TextureDefinition::LevelInfo& level_info =
-          definition->level_infos()[face][level];
+          level <= new_max_level ? definition->level_infos()[face][level]
+                                 : TextureDefinition::LevelInfo();
       SetLevelInfo(texture,
                    target,
                    level,

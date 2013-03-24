@@ -62,6 +62,7 @@ class GPU_EXPORT TextureDefinition {
   }
 
   GLuint ReleaseServiceId();
+  GLuint service_id() const { return service_id_; }
   GLenum min_filter() const { return min_filter_; }
   GLenum mag_filter() const { return mag_filter_; }
   GLenum wrap_s() const { return wrap_s_; }
