@@ -13,10 +13,8 @@
 #include "third_party/skia/include/core/SkTypes.h"
 
 #if defined(ARCH_CPU_X86_FAMILY)
-#if defined(__x86_64__) || defined(_M_X64) || defined(__SSE2__) || _M_IX86_FP==2
 // This is where we had compiler support for SSE2 instructions.
 #define SIMD_SSE2 1
-#endif
 #endif
 
 // avoid confusion with Mac OS X's math library (Carbon)
