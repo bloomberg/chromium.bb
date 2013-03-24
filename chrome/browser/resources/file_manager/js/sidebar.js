@@ -134,7 +134,6 @@ DirectoryItem.prototype.decorate = function(
   this.parent_ = parentDirItem;
   this.label = label;
   this.fullPath = path;
-  this.draggable = true;
   this.dirEntry_ = dirEntry;
 
   // Sets hasChildren=true tentatively. This will be overridden after
