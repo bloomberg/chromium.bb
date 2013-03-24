@@ -45,6 +45,7 @@ struct OutputSnapshot {
   bool is_internal;
   bool is_aspect_preserving_scaling;
   int touch_device_id;
+  int output_index;
 };
 
 struct CoordinateTransformation {
@@ -396,43 +397,6 @@ OutputState InferCurrentState(Display* display,
   return state;
 }
 
-OutputState GetNextState(Display* display,
-                         XRRScreenResources* screen,
-                         OutputState current_state,
-                         const std::vector<OutputSnapshot>& outputs) {
-  TRACE_EVENT0("chromeos", "OutputConfigurator::GetNextState");
-  OutputState state = STATE_INVALID;
-
-  switch (outputs.size()) {
-    case 0:
-      state = STATE_HEADLESS;
-      break;
-    case 1:
-      state = STATE_SINGLE;
-      break;
-    case 2: {
-      bool mirror_supported = (0 != outputs[0].mirror_mode) &&
-          (0 != outputs[1].mirror_mode);
-      switch (current_state) {
-        case STATE_DUAL_EXTENDED:
-          state =
-              mirror_supported ? STATE_DUAL_MIRROR : STATE_DUAL_EXTENDED;
-          break;
-        case STATE_DUAL_MIRROR:
-          state = STATE_DUAL_EXTENDED;
-          break;
-        default:
-          // Default to extended mode.
-          state = STATE_DUAL_EXTENDED;
-      }
-      break;
-    }
-    default:
-      CHECK(false);
-  }
-  return state;
-}
-
 RRCrtc GetNextCrtcAfter(Display* display,
                         XRRScreenResources* screen,
                         RROutput output,
@@ -533,7 +497,8 @@ bool IsOutputAspectPreservingScaling(Display* display,
 OutputConfigurator::OutputConfigurator()
     // If we aren't running on ChromeOS (like linux desktop),
     // don't try to configure display.
-    : configure_display_(base::chromeos::IsRunningOnChromeOS()),
+    : delegate_(NULL),
+      configure_display_(base::chromeos::IsRunningOnChromeOS()),
       is_panel_fitting_enabled_(false),
       connected_output_count_(0),
       xrandr_event_base_(0),
@@ -558,14 +523,10 @@ void OutputConfigurator::Init(bool is_panel_fitting_enabled,
   // Cache the initial output state.
   Display* display = base::MessagePumpAuraX11::GetDefaultXDisplay();
   CHECK(display != NULL);
-  XGrabServer(display);
   Window window = DefaultRootWindow(display);
   XRRScreenResources* screen = GetScreenResourcesAndRecordUMA(display, window);
   CHECK(screen != NULL);
-
-  // Detect our initial state.
   std::vector<OutputSnapshot> outputs = GetDualOutputs(display, screen);
-  connected_output_count_ = outputs.size();
   if (outputs.size() > 1 && background_color_argb) {
     // Configuring CRTCs/Framebuffer clears the boot screen image.
     // Set the same background color while configuring the
@@ -586,6 +547,19 @@ void OutputConfigurator::Init(bool is_panel_fitting_enabled,
     XChangeWindowAttributes(display, window, CWBackPixel, &swa);
     XFreeColors(display, colormap, &color.pixel, 1, 0);
   }
+  XRRFreeScreenResources(screen);
+}
+
+void OutputConfigurator::Start() {
+  Display* display = base::MessagePumpAuraX11::GetDefaultXDisplay();
+  Window window = DefaultRootWindow(display);
+
+  XGrabServer(display);
+  XRRScreenResources* screen = GetScreenResourcesAndRecordUMA(display, window);
+  CHECK(screen != NULL);
+  // Detect our initial state.
+  std::vector<OutputSnapshot> outputs = GetDualOutputs(display, screen);
+  connected_output_count_ = outputs.size();
 
   output_state_ = InferCurrentState(display, screen, outputs);
   // Ensure that we are in a supported state with all connected displays powered
@@ -819,6 +793,7 @@ std::vector<OutputSnapshot> OutputConfigurator::GetDualOutputs(
 
     if (is_connected) {
       OutputSnapshot to_populate;
+      to_populate.output_index = i;
 
       if (outputs.size() == 0) {
         one_info = output_info;
@@ -1300,6 +1275,53 @@ void OutputConfigurator::RecordPreviousStateUMA() {
 
   mirror_mode_preserved_aspect_ = mirror_mode_will_preserve_aspect_;
   last_enter_state_time_ = base::TimeTicks::Now();
+}
+
+OutputState OutputConfigurator::GetNextState(
+    Display* display,
+    XRRScreenResources* screen,
+    OutputState current_state,
+    const std::vector<OutputSnapshot>& output_snapshots) const {
+  TRACE_EVENT0("chromeos", "OutputConfigurator::GetNextState");
+  OutputState state = STATE_INVALID;
+
+  switch (output_snapshots.size()) {
+    case 0:
+      state = STATE_HEADLESS;
+      break;
+    case 1:
+      state = STATE_SINGLE;
+      break;
+    case 2: {
+      bool mirror_supported = (0 != output_snapshots[0].mirror_mode) &&
+          (0 != output_snapshots[1].mirror_mode);
+      switch (current_state) {
+        case STATE_DUAL_EXTENDED:
+          state =
+              mirror_supported ? STATE_DUAL_MIRROR : STATE_DUAL_EXTENDED;
+          break;
+        case STATE_DUAL_MIRROR:
+          state = STATE_DUAL_EXTENDED;
+          break;
+        case STATE_INVALID: {
+          std::vector<OutputInfo> outputs;
+          for (size_t i = 0; i < output_snapshots.size(); ++i) {
+            outputs.push_back(OutputInfo());
+            outputs[i].output = output_snapshots[i].output;
+            outputs[i].output_index = output_snapshots[i].output_index;
+          }
+          state = delegate_->GetStateForOutputs(outputs);
+          break;
+        }
+        default:
+          state = STATE_DUAL_EXTENDED;
+      }
+      break;
+    }
+    default:
+      CHECK(false);
+  }
+  return state;
 }
 
 // static

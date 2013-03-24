@@ -36,6 +36,9 @@ bool ChromeShellDelegate::IsScreenLocked() const {
   return false;
 }
 
+void ChromeShellDelegate::PreInit() {
+}
+
 void ChromeShellDelegate::Shutdown() {
 }
 

@@ -78,6 +78,9 @@ bool ShellDelegateImpl::IsScreenLocked() const {
   return locked_;
 }
 
+void ShellDelegateImpl::PreInit() {
+}
+
 void ShellDelegateImpl::Shutdown() {
 }
 

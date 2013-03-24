@@ -18,10 +18,15 @@ namespace internal {
 
 // An object that observes changes in display configuration and
 // update DisplayManagers.
-class DisplayChangeObserverX11 : public chromeos::OutputConfigurator::Observer {
+class DisplayChangeObserverX11 : public chromeos::OutputConfigurator::Delegate,
+                                 public chromeos::OutputConfigurator::Observer {
  public:
   DisplayChangeObserverX11();
   virtual ~DisplayChangeObserverX11();
+
+  // chromeos::OutputConfigurator::Delegate overrides:
+  virtual chromeos::OutputState GetStateForOutputs(
+      const std::vector<chromeos::OutputInfo>& outputs) const OVERRIDE;
 
   // Overriden from chromeos::OutputConfigurator::Observer:
   virtual void OnDisplayModeChanged() OVERRIDE;

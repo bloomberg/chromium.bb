@@ -11,6 +11,7 @@
 
 #include <X11/extensions/Xrandr.h>
 
+#include "ash/display/display_controller.h"
 #include "ash/display/display_info.h"
 #include "ash/display/display_manager.h"
 #include "ash/shell.h"
@@ -126,6 +127,18 @@ DisplayChangeObserverX11::DisplayChangeObserverX11()
 }
 
 DisplayChangeObserverX11::~DisplayChangeObserverX11() {
+}
+
+chromeos::OutputState DisplayChangeObserverX11::GetStateForOutputs(
+    const std::vector<chromeos::OutputInfo>& outputs) const {
+  CHECK(outputs.size() == 2);
+  DisplayIdPair pair = std::make_pair(
+      GetDisplayId(outputs[0].output, outputs[0].output_index),
+      GetDisplayId(outputs[1].output, outputs[1].output_index));
+  DisplayLayout layout = Shell::GetInstance()->display_controller()->
+      GetRegisteredDisplayLayout(pair);
+  return layout.mirrored ?
+      chromeos::STATE_DUAL_MIRROR : chromeos::STATE_DUAL_EXTENDED;
 }
 
 void DisplayChangeObserverX11::OnDisplayModeChanged() {

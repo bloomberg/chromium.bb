@@ -44,8 +44,8 @@ struct ASH_EXPORT DisplayLayout {
     BOTTOM,
     LEFT
   };
-  // Factory method to create DisplayLayout from int values.
-  // Used for persistence and webui.
+  // Factory method to create DisplayLayout from ints. The |mirrored| is
+  // set to false. Used for persistence and webui.
   static DisplayLayout FromInts(int position, int offsets);
 
   DisplayLayout();
@@ -68,6 +68,9 @@ struct ASH_EXPORT DisplayLayout {
   // The offset of the position of the secondary display.  The offset is
   // based on the top/left edge of the primary display.
   int offset;
+
+  // True if displays are mirrored.
+  bool mirrored;
 
   // Returns string representation of the layout for debugging/testing.
   std::string ToString() const;

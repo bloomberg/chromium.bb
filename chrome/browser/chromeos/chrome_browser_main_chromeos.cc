@@ -33,7 +33,6 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/dbus/cros_dbus_service.h"
 #include "chrome/browser/chromeos/display/display_configuration_observer.h"
-#include "chrome/browser/chromeos/display/display_preferences.h"
 #include "chrome/browser/chromeos/extensions/default_app_order.h"
 #include "chrome/browser/chromeos/external_metrics.h"
 #include "chrome/browser/chromeos/imageburner/burn_manager.h"
@@ -635,8 +634,6 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
       NetworkPortalDetector::GetInstance()) {
     NetworkPortalDetector::GetInstance()->Init();
   }
-
-  LoadDisplayPreferences();
 
   display_configuration_observer_.reset(
       new DisplayConfigurationObserver());

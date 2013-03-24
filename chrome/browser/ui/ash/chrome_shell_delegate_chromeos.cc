@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/background/ash_user_wallpaper_delegate.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
+#include "chrome/browser/chromeos/display/display_preferences.h"
 #include "chrome/browser/chromeos/extensions/file_manager_util.h"
 #include "chrome/browser/chromeos/extensions/media_player_api.h"
 #include "chrome/browser/chromeos/extensions/media_player_event_router.h"
@@ -90,6 +91,10 @@ bool ChromeShellDelegate::IsScreenLocked() const {
   if (!chromeos::ScreenLocker::default_screen_locker())
     return false;
   return chromeos::ScreenLocker::default_screen_locker()->locked();
+}
+
+void ChromeShellDelegate::PreInit() {
+  chromeos::LoadDisplayPreferences();
 }
 
 void ChromeShellDelegate::Shutdown() {

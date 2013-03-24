@@ -45,6 +45,15 @@ enum OutputState {
   STATE_DUAL_UNKNOWN,
 };
 
+// Information that is necessary to construct display id
+// in |OutputConfigurator::Delegate|.
+// TODO(oshima): Move xrandr related functions to here
+// from ui/base/x and replace this with display id list.
+struct OutputInfo {
+  RROutput output;
+  int output_index;
+};
+
 // This class interacts directly with the underlying Xrandr API to manipulate
 // CTRCs and Outputs.  It will likely grow more state, over time, or expose
 // Output info in other ways as more of the Chrome display code grows up around
@@ -62,6 +71,13 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
     virtual void OnDisplayModeChangeFailed(OutputState failed_new_state) {}
   };
 
+  class Delegate {
+   public:
+    // Called when displays are detected.
+    virtual OutputState GetStateForOutputs(
+        const std::vector<OutputInfo>& outputs) const = 0;
+  };
+
   OutputConfigurator();
   virtual ~OutputConfigurator();
 
@@ -69,12 +85,17 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
 
   OutputState output_state() const { return output_state_; }
 
+  void set_delegate(Delegate* delegate) { delegate_ = delegate; }
+
   // Initialization, must be called right after constructor.
   // |is_panel_fitting_enabled| indicates hardware panel fitting support.
   // If |background_color_argb| is non zero and there are multiple displays,
   // OutputConfigurator sets the background color of X's RootWindow to this
   // color.
   void Init(bool is_panel_fitting_enabled, uint32 background_color_argb);
+
+  // Detects displays first time from unknown state.
+  void Start();
 
   // Stop handling display configuration events/requests.
   void Stop();
@@ -172,11 +193,20 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
   // Updates |mirror_mode_preserved_aspect_| and |last_enter_state_time_|.
   void RecordPreviousStateUMA();
 
+  // Returns next state.
+  OutputState GetNextState(Display* display,
+                           XRRScreenResources* screen,
+                           OutputState current_state,
+                           const std::vector<OutputSnapshot>& outputs) const;
+
+
   // Tells if the output specified by |output_info| is for internal display.
   static bool IsInternalOutput(const XRROutputInfo* output_info);
 
   // Returns output's native mode, None if not found.
   static RRMode GetOutputNativeMode(const XRROutputInfo* output_info);
+
+  Delegate* delegate_;
 
   // This is detected by the constructor to determine whether or not we should
   // be enabled.  If we aren't running on ChromeOS, we can't assume that the

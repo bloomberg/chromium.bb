@@ -69,6 +69,9 @@ bool TestShellDelegate::IsScreenLocked() const {
   return locked_;
 }
 
+void TestShellDelegate::PreInit() {
+}
+
 void TestShellDelegate::Shutdown() {
 }
 

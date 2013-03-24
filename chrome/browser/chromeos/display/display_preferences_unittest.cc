@@ -28,6 +28,8 @@ class DisplayPreferencesTest : public ash::test::AshTestBase {
   virtual ~DisplayPreferencesTest() {}
 
   virtual void SetUp() OVERRIDE {
+    EXPECT_CALL(*mock_user_manager_.user_manager(), IsUserLoggedIn())
+        .WillRepeatedly(testing::Return(false));
     ash::test::AshTestBase::SetUp();
     RegisterDisplayLocalStatePrefs(local_state_.registry());
     TestingBrowserProcess::GetGlobal()->SetLocalState(&local_state_);
@@ -155,6 +157,8 @@ TEST_F(DisplayPreferencesTest, OldInitialization) {
   StoreDisplayOverscan(id2, gfx::Insets(20, 20, 20, 20));
 
   LoadDisplayPreferences();
+  ash::Shell::GetInstance()->display_manager()->UpdateDisplays();
+
   // Check if the layout settings are notified to the system properly.
   ash::DisplayController* display_controller =
       ash::Shell::GetInstance()->display_controller();
@@ -185,6 +189,7 @@ TEST_F(DisplayPreferencesTest, PairedLayoutOverrides) {
   StoreDefaultLayoutPref(ash::DisplayLayout::LEFT, 50);
 
   LoadDisplayPreferences();
+  ash::Shell::GetInstance()->display_manager()->UpdateDisplays();
   // Check if the layout settings are notified to the system properly.
   // The paired layout overrides old layout.
   ash::DisplayController* display_controller =
@@ -235,6 +240,10 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
   EXPECT_TRUE(displays->GetDictionary(key, &display_layout));
   EXPECT_TRUE(serialized_value->Equals(display_layout));
 
+  bool mirrored = true;
+  EXPECT_TRUE(display_layout->GetBoolean("mirrored", &mirrored));
+  EXPECT_FALSE(mirrored);
+
   // The default value is set for the last call of
   // SetCurrentAndDefaultDisplayLayout
   EXPECT_EQ(ash::DisplayLayout::TOP,
@@ -278,6 +287,10 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
   // The layout remains the same.
   EXPECT_TRUE(displays->GetDictionary(key, &display_layout));
   EXPECT_TRUE(serialized_value->Equals(display_layout));
+  mirrored = true;
+  EXPECT_TRUE(display_layout->GetBoolean("mirrored", &mirrored));
+  EXPECT_FALSE(mirrored);
+
   // Default value should changte.
   EXPECT_EQ(ash::DisplayLayout::TOP,
             local_state()->GetInteger(prefs::kSecondaryDisplayLayout));
@@ -289,6 +302,32 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
   EXPECT_EQ(ash::DisplayLayout::TOP,
             local_state()->GetInteger(prefs::kSecondaryDisplayLayout));
   EXPECT_EQ(-20, local_state()->GetInteger(prefs::kSecondaryDisplayOffset));
+
+  UpdateDisplay("200x200*2,1+0-200x200");
+  // Mirrored.
+  int offset = 0;
+  std::string position;
+  EXPECT_TRUE(displays->GetDictionary(key, &display_layout));
+  EXPECT_TRUE(display_layout->GetString("position", &position));
+  EXPECT_EQ("top", position);
+  EXPECT_TRUE(display_layout->GetInteger("offset", &offset));
+  EXPECT_EQ(-20, offset);
+  mirrored = false;
+  EXPECT_TRUE(display_layout->GetBoolean("mirrored", &mirrored));
+  EXPECT_TRUE(mirrored);
+
+  UpdateDisplay("200x200*2,200x200");
+  // Update key as the 2nd display gets new id.
+  id2 = ash::ScreenAsh::GetSecondaryDisplay().id();
+  key = base::Int64ToString(id1) + "," + base::Int64ToString(id2);
+  EXPECT_TRUE(displays->GetDictionary(key, &display_layout));
+  EXPECT_TRUE(display_layout->GetString("position", &position));
+  EXPECT_EQ("right", position);
+  EXPECT_TRUE(display_layout->GetInteger("offset", &offset));
+  EXPECT_EQ(0, offset);
+  mirrored = true;
+  EXPECT_TRUE(display_layout->GetBoolean("mirrored", &mirrored));
+  EXPECT_FALSE(mirrored);
 }
 
 TEST_F(DisplayPreferencesTest, StoreForSwappedDisplay) {

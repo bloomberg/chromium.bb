@@ -116,6 +116,10 @@ class ASH_EXPORT ShellDelegate {
   // Returns true if the screen is currently locked.
   virtual bool IsScreenLocked() const = 0;
 
+  // Called before processing |Shell::Init()| so that the delegate
+  // can perform tasks necessary before the shell is initialized.
+  virtual void PreInit() = 0;
+
   // Shuts down the environment.
   virtual void Shutdown() = 0;
 

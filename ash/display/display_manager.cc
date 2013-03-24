@@ -242,8 +242,12 @@ void DisplayManager::RegisterDisplayProperty(
     gfx::Display::Rotation rotation,
     float ui_scale,
     const gfx::Insets* overscan_insets) {
-  display_info_[display_id].set_rotation(rotation);
+  if (display_info_.find(display_id) == display_info_.end()) {
+    display_info_[display_id] =
+        DisplayInfo(display_id, std::string(""), false);
+  }
 
+  display_info_[display_id].set_rotation(rotation);
   if (IsValidUIScale(ui_scale))
     display_info_[display_id].set_ui_scale(ui_scale);
   if (overscan_insets)
@@ -601,6 +605,7 @@ void DisplayManager::CycleDisplayImpl() {
         base::StringPrintf(
             "%d+%d-500x400", host_bounds.x(), host_bounds.bottom())));
   }
+  num_connected_displays_ = new_display_info_list.size();
   UpdateDisplays(new_display_info_list);
 }
 

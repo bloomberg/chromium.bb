@@ -171,7 +171,7 @@ void StoreDisplayLayoutPref(const ash::DisplayIdPair& pair,
 }
 
 void StoreCurrentDisplayLayoutPrefs() {
-  if (!IsValidUser() || gfx::Screen::GetNativeScreen()->GetNumDisplays() < 2)
+  if (!IsValidUser() || GetDisplayManager()->num_connected_displays() < 2)
     return;
 
   ash::DisplayController* display_controller = GetDisplayController();
@@ -236,11 +236,8 @@ void RegisterDisplayLocalStatePrefs(PrefRegistrySimple* registry) {
 void StoreDisplayPrefs() {
   if (!IsValidUser())
     return;
-  if (gfx::Screen::GetNativeScreen()->GetNumDisplays() == 2) {
-    StorePrimaryDisplayIDPref(
-        ash::Shell::GetScreen()->GetPrimaryDisplay().id());
-    StoreCurrentDisplayLayoutPrefs();
-  }
+  StorePrimaryDisplayIDPref(ash::Shell::GetScreen()->GetPrimaryDisplay().id());
+  StoreCurrentDisplayLayoutPrefs();
   StoreCurrentDisplayProperties();
 }
 
@@ -264,11 +261,10 @@ void SetCurrentAndDefaultDisplayLayout(const ash::DisplayLayout& layout) {
 
 void LoadDisplayPreferences() {
   PrefService* local_state = g_browser_process->local_state();
-  ash::Shell::GetInstance()->display_controller()->SetPrimaryDisplayId(
-      local_state->GetInt64(prefs::kPrimaryDisplayID));
   LoadDisplayLayouts();
   LoadDisplayProperties();
-  GetDisplayManager()->UpdateDisplays();
+  ash::Shell::GetInstance()->display_controller()->SetPrimaryDisplayId(
+      local_state->GetInt64(prefs::kPrimaryDisplayID));
 }
 
 // Stores the display layout for given display pairs.

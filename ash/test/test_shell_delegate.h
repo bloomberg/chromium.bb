@@ -31,6 +31,7 @@ class TestShellDelegate : public ShellDelegate {
   virtual void LockScreen() OVERRIDE;
   virtual void UnlockScreen() OVERRIDE;
   virtual bool IsScreenLocked() const OVERRIDE;
+  virtual void PreInit() OVERRIDE;
   virtual void Shutdown() OVERRIDE;
   virtual void Exit() OVERRIDE;
   virtual void NewTab() OVERRIDE;
