@@ -105,7 +105,7 @@ class WEBKIT_STORAGE_EXPORT ExternalMountPoints
   //
   // Returned virtual_path will have normalized path separators.
   bool GetVirtualPath(const base::FilePath& absolute_path,
-                      base::FilePath* virtual_path);
+                      base::FilePath* virtual_path) const;
 
   // Returns the virtual root path that looks like /<mount_name>.
   base::FilePath CreateVirtualRootPath(const std::string& mount_name) const;
@@ -124,6 +124,10 @@ class WEBKIT_STORAGE_EXPORT ExternalMountPoints
   // Use |GetSystemInstance| of |CreateRefCounted| to get an instance.
   ExternalMountPoints();
   virtual ~ExternalMountPoints();
+
+  // MountPoint overrides.
+  virtual FileSystemURL CrackFileSystemURL(
+      const FileSystemURL& url) const OVERRIDE;
 
   // Performs sanity checks on the new mount point.
   // Checks the following:

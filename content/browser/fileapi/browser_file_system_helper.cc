@@ -108,7 +108,7 @@ bool CheckFileSystemPermissionsForProcess(
     }
     case fileapi::FILE_PERMISSION_USE_FILESYSTEM_PERMISSION: {
       const bool success = policy->HasPermissionsForFileSystem(
-          process_id, url.filesystem_id(), permissions);
+          process_id, url.mount_filesystem_id(), permissions);
       if (!success)
         *error = base::PLATFORM_FILE_ERROR_SECURITY;
       return success;

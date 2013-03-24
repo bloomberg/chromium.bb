@@ -301,26 +301,14 @@ FileSystemURL IsolatedContext::CrackURL(const GURL& url) const {
   FileSystemURL filesystem_url = FileSystemURL(url);
   if (!filesystem_url.is_valid())
     return FileSystemURL();
-  return CreateCrackedFileSystemURL(filesystem_url.origin(),
-                                    filesystem_url.mount_type(),
-                                    filesystem_url.path());
+  return CrackFileSystemURL(filesystem_url);
 }
 
 FileSystemURL IsolatedContext::CreateCrackedFileSystemURL(
     const GURL& origin,
     FileSystemType type,
     const base::FilePath& path) const {
-  if (!HandlesFileSystemMountType(type))
-    return FileSystemURL();
-
-  std::string mount_name;
-  FileSystemType cracked_type;
-  base::FilePath cracked_path;
-  if (!CrackVirtualPath(path, &mount_name, &cracked_type, &cracked_path))
-    return FileSystemURL();
-
-  return FileSystemURL(origin, type, path,
-                       mount_name, cracked_type, cracked_path);
+  return CrackFileSystemURL(FileSystemURL(origin, type, path));
 }
 
 void IsolatedContext::RevokeFileSystemByPath(const base::FilePath& path_in) {
@@ -388,6 +376,23 @@ IsolatedContext::IsolatedContext() {
 IsolatedContext::~IsolatedContext() {
   STLDeleteContainerPairSecondPointers(instance_map_.begin(),
                                        instance_map_.end());
+}
+
+FileSystemURL IsolatedContext::CrackFileSystemURL(
+    const FileSystemURL& url) const {
+  if (!HandlesFileSystemMountType(url.type()))
+    return FileSystemURL();
+
+  std::string mount_name;
+  FileSystemType cracked_type;
+  base::FilePath cracked_path;
+  if (!CrackVirtualPath(url.path(), &mount_name, &cracked_type, &cracked_path))
+    return FileSystemURL();
+
+  return FileSystemURL(
+      url.origin(), url.mount_type(), url.virtual_path(),
+      !url.filesystem_id().empty() ? url.filesystem_id() : mount_name,
+      cracked_type, cracked_path, mount_name);
 }
 
 bool IsolatedContext::UnregisterFileSystem(const std::string& filesystem_id) {

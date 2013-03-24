@@ -22,8 +22,8 @@ namespace {
 
 FileSystemURL::FileSystemURL()
     : is_valid_(false),
-      type_(kFileSystemTypeUnknown),
-      mount_type_(kFileSystemTypeUnknown) {
+      mount_type_(kFileSystemTypeUnknown),
+      type_(kFileSystemTypeUnknown) {
 }
 
 // static
@@ -99,8 +99,8 @@ bool FileSystemURL::ParseFileSystemSchemeURL(
 }
 
 FileSystemURL::FileSystemURL(const GURL& url)
-    : type_(kFileSystemTypeUnknown),
-      mount_type_(kFileSystemTypeUnknown) {
+    : mount_type_(kFileSystemTypeUnknown),
+      type_(kFileSystemTypeUnknown) {
   is_valid_ = ParseFileSystemSchemeURL(url, &origin_, &type_, &path_);
   virtual_path_ = path_;
   mount_type_ = type_;
@@ -111,25 +111,27 @@ FileSystemURL::FileSystemURL(const GURL& origin,
                              const base::FilePath& path)
     : is_valid_(true),
       origin_(origin),
-      type_(type),
       mount_type_(type),
-      path_(path.NormalizePathSeparators()),
-      virtual_path_(path.NormalizePathSeparators()) {
+      virtual_path_(path.NormalizePathSeparators()),
+      type_(type),
+      path_(path.NormalizePathSeparators()) {
 }
 
 FileSystemURL::FileSystemURL(const GURL& origin,
                              FileSystemType mount_type,
                              const base::FilePath& virtual_path,
-                             const std::string& filesystem_id,
+                             const std::string& mount_filesystem_id,
                              FileSystemType cracked_type,
-                             const base::FilePath& cracked_path)
+                             const base::FilePath& cracked_path,
+                             const std::string& filesystem_id)
     : is_valid_(true),
       origin_(origin),
-      type_(cracked_type),
       mount_type_(mount_type),
+      virtual_path_(virtual_path.NormalizePathSeparators()),
+      mount_filesystem_id_(mount_filesystem_id),
+      type_(cracked_type),
       path_(cracked_path.NormalizePathSeparators()),
-      filesystem_id_(filesystem_id),
-      virtual_path_(virtual_path.NormalizePathSeparators()) {
+      filesystem_id_(filesystem_id) {
 }
 
 FileSystemURL::~FileSystemURL() {}

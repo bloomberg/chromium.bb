@@ -88,6 +88,14 @@ class WEBKIT_STORAGE_EXPORT MountPoints {
                                 FileSystemType* type,
                                 base::FilePath* path) const = 0;
 
+ protected:
+  friend class FileSystemContext;
+
+  // Same as CrackURL and CreateCrackedFileSystemURL, but cracks the url already
+  // instantiated as the FileSystemURL class. This is internally used for nested
+  // URL cracking in FileSystemContext.
+  virtual FileSystemURL CrackFileSystemURL(const FileSystemURL& url) const = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(MountPoints);
 };

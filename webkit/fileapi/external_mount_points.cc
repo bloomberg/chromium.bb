@@ -129,7 +129,8 @@ bool ExternalMountPoints::RegisterRemoteFileSystem(
 
 bool ExternalMountPoints::HandlesFileSystemMountType(
     FileSystemType type) const {
-  return type == kFileSystemTypeExternal;
+  return type == kFileSystemTypeExternal ||
+         type == kFileSystemTypeNativeForPlatformApp;
 }
 
 bool ExternalMountPoints::RevokeFileSystem(const std::string& mount_name) {
@@ -203,26 +204,14 @@ FileSystemURL ExternalMountPoints::CrackURL(const GURL& url) const {
   FileSystemURL filesystem_url = FileSystemURL(url);
   if (!filesystem_url.is_valid())
     return FileSystemURL();
-  return CreateCrackedFileSystemURL(filesystem_url.origin(),
-                                    filesystem_url.mount_type(),
-                                    filesystem_url.path());
+  return CrackFileSystemURL(filesystem_url);
 }
 
 FileSystemURL ExternalMountPoints::CreateCrackedFileSystemURL(
     const GURL& origin,
     FileSystemType type,
     const base::FilePath& path) const {
-  if (!HandlesFileSystemMountType(type))
-    return FileSystemURL();
-
-  std::string mount_name;
-  FileSystemType cracked_type;
-  base::FilePath cracked_path;
-  if (!CrackVirtualPath(path, &mount_name, &cracked_type, &cracked_path))
-    return FileSystemURL();
-
-  return FileSystemURL(origin, type, path,
-                       mount_name, cracked_type, cracked_path);
+  return CrackFileSystemURL(FileSystemURL(origin, type, path));
 }
 
 RemoteFileSystemProxyInterface* ExternalMountPoints::GetRemoteFileSystemProxy(
@@ -245,13 +234,13 @@ void ExternalMountPoints::AddMountPointInfosTo(
 }
 
 bool ExternalMountPoints::GetVirtualPath(const base::FilePath& path_in,
-                                         base::FilePath* virtual_path) {
+                                         base::FilePath* virtual_path) const {
   DCHECK(virtual_path);
 
   base::AutoLock locker(lock_);
 
   base::FilePath path = NormalizeFilePath(path_in);
-  std::map<base::FilePath, std::string>::reverse_iterator iter(
+  std::map<base::FilePath, std::string>::const_reverse_iterator iter(
       path_to_name_map_.upper_bound(path));
   if (iter == path_to_name_map_.rend())
     return false;
@@ -272,6 +261,41 @@ ExternalMountPoints::ExternalMountPoints() {}
 ExternalMountPoints::~ExternalMountPoints() {
   STLDeleteContainerPairSecondPointers(instance_map_.begin(),
                                        instance_map_.end());
+}
+
+FileSystemURL ExternalMountPoints::CrackFileSystemURL(
+    const FileSystemURL& url) const {
+  if (!HandlesFileSystemMountType(url.type()))
+    return FileSystemURL();
+
+  base::FilePath virtual_path = url.path();
+  if (url.type() == kFileSystemTypeNativeForPlatformApp) {
+#if defined(OS_CHROMEOS)
+    // On Chrome OS, find a mount point and virtual path for the external fs.
+    if (!GetVirtualPath(url.path(), &virtual_path))
+      return FileSystemURL();
+#else
+    // On other OS, it is simply a native local path.
+    return FileSystemURL(
+        url.origin(), url.mount_type(), url.virtual_path(),
+        url.mount_filesystem_id(), kFileSystemTypeNativeLocal,
+        url.path(), url.filesystem_id());
+#endif
+  }
+
+  std::string mount_name;
+  FileSystemType cracked_type;
+  base::FilePath cracked_path;
+
+  if (!CrackVirtualPath(virtual_path, &mount_name, &cracked_type,
+                        &cracked_path)) {
+    return FileSystemURL();
+  }
+
+  return FileSystemURL(
+      url.origin(), url.mount_type(), url.virtual_path(),
+      !url.filesystem_id().empty() ? url.filesystem_id() : mount_name,
+      cracked_type, cracked_path, mount_name);
 }
 
 bool ExternalMountPoints::ValidateNewMountPoint(const std::string& mount_name,

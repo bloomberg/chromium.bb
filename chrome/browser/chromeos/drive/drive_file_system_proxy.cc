@@ -693,11 +693,17 @@ DriveFileSystemProxy::~DriveFileSystemProxy() {
 bool DriveFileSystemProxy::ValidateUrl(
     const FileSystemURL& url, base::FilePath* file_path) {
   // what platform you're on.
-  if (!url.is_valid() || url.type() != fileapi::kFileSystemTypeDrive) {
+  if (!url.is_valid() || url.type() != fileapi::kFileSystemTypeDrive)
     return false;
-  }
-  *file_path = url.virtual_path();
-  return true;
+
+  // |url.virtual_path()| cannot be used directly because in the case the url is
+  // isolated file system url, the virtual path will be formatted as
+  // <isolated_file_system_id>/<file_name> and thus unusable by drive file
+  // system.
+  // TODO(kinaba): fix other uses of virtual_path() as in
+  // https://codereview.chromium.org/12483010/
+  *file_path = util::ExtractDrivePath(url.path());
+  return !file_path->empty();
 }
 
 void DriveFileSystemProxy::CallDriveFileSystemMethodOnUIThread(

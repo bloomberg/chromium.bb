@@ -32,6 +32,13 @@
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/isolated_context.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/drive/drive_file_error.h"
+#include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
+#include "chrome/browser/chromeos/drive/drive_file_system_util.h"
+#include "chrome/browser/chromeos/drive/drive_system_service.h"
+#endif
+
 using content::BrowserThread;
 using extensions::app_file_handler_util::FileHandlerForId;
 using extensions::app_file_handler_util::FileHandlerCanHandleFileWithMimeType;
@@ -108,6 +115,14 @@ class PlatformAppPathLauncher
     }
 
     DCHECK(file_path_.IsAbsolute());
+
+#if defined(OS_CHROMEOS)
+    if (drive::util::IsUnderDriveMountPoint(file_path_)) {
+      GetMimeTypeAndLaunchForDriveFile();
+      return;
+    }
+#endif
+
     BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, base::Bind(
             &PlatformAppPathLauncher::GetMimeTypeAndLaunch, this));
   }
@@ -147,6 +162,38 @@ class PlatformAppPathLauncher
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
             &PlatformAppPathLauncher::LaunchWithMimeType, this, mime_type));
   }
+
+#if defined(OS_CHROMEOS)
+  void GetMimeTypeAndLaunchForDriveFile() {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+    drive::DriveSystemService* service =
+        drive::DriveSystemServiceFactory::FindForProfile(profile_);
+    if (!service) {
+      LaunchWithNoLaunchData();
+      return;
+    }
+
+    service->file_system()->GetFileByPath(
+        drive::util::ExtractDrivePath(file_path_),
+        base::Bind(&PlatformAppPathLauncher::OnGotDriveFile, this));
+  }
+
+  void OnGotDriveFile(drive::DriveFileError error,
+                      const base::FilePath& file_path,
+                      const std::string& mime_type,
+                      drive::DriveFileType file_type) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+    if (error != drive::DRIVE_FILE_OK || mime_type.empty() ||
+        file_type != drive::REGULAR_FILE) {
+      LaunchWithNoLaunchData();
+      return;
+    }
+
+    LaunchWithMimeType(mime_type);
+  }
+#endif  // defined(OS_CHROMEOS)
 
   void LaunchWithNoLaunchData() {
     // This method is required as an entry point on the UI thread.
@@ -223,7 +270,8 @@ class PlatformAppPathLauncher
         fileapi::IsolatedContext::GetInstance();
     DCHECK(isolated_context);
     std::string filesystem_id = isolated_context->RegisterFileSystemForPath(
-        fileapi::kFileSystemTypeNativeLocal, file_path_, &registered_name);
+        fileapi::kFileSystemTypeNativeForPlatformApp, file_path_,
+        &registered_name);
     // Granting read file system permission as well to allow file-system
     // read operations.
     policy->GrantReadFileSystem(renderer_id, filesystem_id);

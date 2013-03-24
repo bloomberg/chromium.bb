@@ -239,6 +239,8 @@ std::string GetFileSystemTypeString(FileSystemType type) {
       return "Drive";
     case kFileSystemTypeSyncable:
       return "Syncable";
+    case kFileSystemTypeNativeForPlatformApp:
+      return "NativeForPlatformApp";
     case kFileSystemTypeUnknown:
       return "Unknown";
   }

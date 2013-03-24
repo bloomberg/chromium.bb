@@ -76,6 +76,12 @@ enum FileSystemType {
   // Indicates a Syncable sandboxed filesystem which can be backed by a
   // cloud storage service.
   kFileSystemTypeSyncable,
+
+  // Indicates an external filesystem accessible by file paths from platform
+  // Apps. As of writing, on non Chrome OS platform, this is merely a
+  // kFileSystemTypeNativeLocal. On Chrome OS, the path is parsed by
+  // the handlers of kFileSystemTypeExternal.
+  kFileSystemTypeNativeForPlatformApp,
 };
 
 }  // namespace fileapi

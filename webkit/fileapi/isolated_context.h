@@ -162,6 +162,10 @@ class WEBKIT_STORAGE_EXPORT IsolatedContext : public MountPoints {
   IsolatedContext();
   virtual ~IsolatedContext();
 
+  // MountPoints overrides.
+  virtual FileSystemURL CrackFileSystemURL(
+      const FileSystemURL& url) const OVERRIDE;
+
   // Unregisters a file system of given |filesystem_id|. Must be called with
   // lock_ held.  Returns true if the file system is unregistered.
   bool UnregisterFileSystem(const std::string& filesystem_id);

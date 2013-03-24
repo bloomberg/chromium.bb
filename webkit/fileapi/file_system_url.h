@@ -61,7 +61,7 @@ namespace fileapi {
 // Additionally, following accessors would return valid values:
 //   filesystem_id() returns 'mount_name'.
 //
-// It is imposible to directly create a valid FileSystemURL instance (except by
+// It is impossible to directly create a valid FileSystemURL instance (except by
 // using CreatedForTest methods, which should not be used in production code).
 // To get a valid FileSystemURL, one of the following methods can be used:
 // <Friend>::CrackURL, <Friend>::CreateCrackedFileSystemURL, where <Friend> is
@@ -112,6 +112,9 @@ class WEBKIT_STORAGE_EXPORT FileSystemURL {
   // Returns the filesystem ID/mount name for isolated/external filesystem URLs.
   // See the class comment for details.
   const std::string& filesystem_id() const { return filesystem_id_; }
+  const std::string& mount_filesystem_id() const {
+    return mount_filesystem_id_;
+  }
 
   FileSystemType mount_type() const { return mount_type_; }
 
@@ -139,21 +142,27 @@ class WEBKIT_STORAGE_EXPORT FileSystemURL {
   FileSystemURL(const GURL& origin,
                 FileSystemType mount_type,
                 const base::FilePath& virtual_path,
-                const std::string& filesystem_id,
+                const std::string& mount_filesystem_id,
                 FileSystemType cracked_type,
-                const base::FilePath& cracked_path);
+                const base::FilePath& cracked_path,
+                const std::string& filesystem_id);
 
   bool is_valid_;
 
+  // Values parsed from the original URL.
   GURL origin_;
-  FileSystemType type_;
   FileSystemType mount_type_;
-  base::FilePath path_;
-
-  // Values specific to cracked URLs.
-  std::string filesystem_id_;
   base::FilePath virtual_path_;
 
+  // Values obtained by cracking URLs.
+  // |mount_filesystem_id_| is retrieved from the first round of cracking,
+  // and the rest of the fields are from recursive cracking. Permission
+  // checking on the top-level mount information should be done with the former,
+  // and the low-level file operation should be implemented with the latter.
+  std::string mount_filesystem_id_;
+  FileSystemType type_;
+  base::FilePath path_;
+  std::string filesystem_id_;
 };
 
 typedef std::set<FileSystemURL, FileSystemURL::Comparator> FileSystemURLSet;

@@ -290,7 +290,7 @@
          } ],
          "content": {
             "src": "https://xxx/content/file:1_file_resource_id",
-            "type": "test/ro"
+            "type": "application/vnd.mozilla.xul+xml"
          },
          "docs$filename": {
             "$t": "test_file.xul"
@@ -386,7 +386,7 @@
          } ],
          "content": {
             "src": "https://xxx/content/file:2_file_resource_id/",
-            "type": "test/rw"
+            "type": "image/tiff"
          },
          "docs$filename": {
             "$t": "test_file.tiff"
