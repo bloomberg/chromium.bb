@@ -9,6 +9,11 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 
+// TODO(kbr): remove: http://crbug.com/222296
+#if defined(OS_MACOSX)
+#import "base/mac/mac_util.h"
+#endif
+
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, NotificationsNoPermission) {
 #if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
   // Notifications not supported on linux/views yet.
@@ -33,6 +38,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, NotificationsHasPermission) {
 #if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
   // Notifications not supported on linux/views yet.
 #else
+
+#if defined(OS_MACOSX)
+  // TODO(kbr): re-enable: http://crbug.com/222296
+  if (base::mac::IsOSMountainLionOrLater())
+    return;
+#endif
+
   DesktopNotificationServiceFactory::GetForProfile(browser()->profile())
       ->GrantPermission(GURL(
           "chrome-extension://peoadpeiejnhkmpaakpnompolbglelel"));

@@ -299,6 +299,10 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, ZOrderNormalInstant) {
 // non-Instant presentation mode.
 IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
                        ZOrderInstantPresentationMode) {
+  // TODO(kbr): re-enable: http://crbug.com/222296
+  if (base::mac::IsOSMountainLionOrLater())
+    return;
+
   chrome::ToggleFullscreenMode(browser());
   ShowInstantResults();
   browser()->GetFindBarController();  // add find bar
@@ -318,6 +322,10 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
 // then calling |updateSubviewZOrder:| will correctly move back above.
 IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
                        FloatingBarBelowContentView) {
+  // TODO(kbr): re-enable: http://crbug.com/222296
+  if (base::mac::IsOSMountainLionOrLater())
+    return;
+
   chrome::ToggleFullscreenMode(browser());
 
   NSView* fullscreen_floating_bar =
@@ -367,6 +375,10 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, ContentOffset) {
 // the info bar.
 IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
                        ContentOffsetPresentationMode) {
+  // TODO(kbr): re-enable: http://crbug.com/222296
+  if (base::mac::IsOSMountainLionOrLater())
+    return;
+
   chrome::ToggleFullscreenMode(browser());
   OverlayableContentsController* overlay =
       [controller() overlayableContentsController];

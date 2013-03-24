@@ -7,6 +7,7 @@
 #import <SecurityInterface/SFChooseIdentityPanel.h>
 
 #include "base/bind.h"
+#import "base/mac/mac_util.h"
 #include "chrome/browser/ssl/ssl_client_certificate_selector_test.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -33,6 +34,10 @@ typedef SSLClientCertificateSelectorTestBase
     SSLClientCertificateSelectorCocoaTest;
 
 IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorCocoaTest, Basic) {
+  // TODO(kbr): re-enable: http://crbug.com/222296
+  if (base::mac::IsOSMountainLionOrLater())
+    return;
+
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   WebContentsModalDialogManager* web_contents_modal_dialog_manager =

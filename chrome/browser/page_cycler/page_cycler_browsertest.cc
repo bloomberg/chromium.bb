@@ -27,6 +27,11 @@
 #include "content/public/common/url_constants.h"
 #include "googleurl/src/gurl.h"
 
+// TODO(kbr): remove: http://crbug.com/222296
+#if defined(OS_MACOSX)
+#import "base/mac/mac_util.h"
+#endif
+
 // Basic PageCyclerBrowserTest structure; used in testing most of PageCycler's
 // functionality.
 class PageCyclerBrowserTest : public content::NotificationObserver,
@@ -327,6 +332,12 @@ IN_PROC_BROWSER_TEST_F(PageCyclerBrowserTest, ChromeErrorURL) {
 #define MAYBE_PlaybackMode PlaybackMode
 #endif
 IN_PROC_BROWSER_TEST_F(PageCyclerCachedBrowserTest, MAYBE_PlaybackMode) {
+#if defined(OS_MACOSX)
+  // TODO(kbr): re-enable: http://crbug.com/222296
+  if (base::mac::IsOSMountainLionOrLater())
+    return;
+#endif
+
   base::ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
