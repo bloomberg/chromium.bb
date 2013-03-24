@@ -232,6 +232,7 @@ ImageLoader.Client.Cache.MEMORY_LIMIT = 20 * 1024 * 1024;  // 20 MB.
 ImageLoader.Client.Cache.createKey = function(url, opt_options) {
   opt_options = opt_options || {};
   return JSON.stringify({url: url,
+                         orientation: opt_options.orientation,
                          scale: opt_options.scale,
                          width: opt_options.width,
                          height: opt_options.height,
@@ -342,8 +343,8 @@ ImageLoader.Client.Cache.prototype.removeImage = function(key) {
  *
  * @param {string} url Url of the requested image.
  * @param {Image} image Image node to load the requested picture into.
- * @param {Object} options Loader options, such as: scale, maxHeight, width,
- *     height and/or cache.
+ * @param {Object} options Loader options, such as: orientation, scale,
+ *     maxHeight, width, height and/or cache.
  * @param {function=} onSuccess Callback for success.
  * @param {function=} onError Callback for failure.
  * @param {function=} opt_isValid Function returning false in case

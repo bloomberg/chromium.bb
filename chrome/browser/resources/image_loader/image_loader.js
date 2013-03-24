@@ -96,6 +96,12 @@ ImageLoader.resizeDimensions = function(width, height, options) {
   var sourceWidth = width;
   var sourceHeight = height;
 
+  // Flip dimensions for odd orientation values: 1 (90deg) and 3 (270deg).
+  if (options.orientation && options.orientation % 2) {
+    sourceWidth = height;
+    sourceHeight = width;
+  }
+
   var targetWidth = sourceWidth;
   var targetHeight = sourceHeight;
 
@@ -144,10 +150,29 @@ ImageLoader.resize = function(source, target, options) {
   target.width = targetDimensions.width;
   target.height = targetDimensions.height;
 
+  // Default orientation is 0deg.
+  var orientation = options.orientation || 0;
+
+  // For odd orientation values: 1 (90deg) and 3 (270deg) flip dimensions.
+  if (orientation % 2) {
+    drawImageWidth = target.height;
+    drawImageHeight = target.width;
+  } else {
+    drawImageWidth = target.width;
+    drawImageHeight = target.height;
+  }
+
   var targetContext = target.getContext('2d');
-  targetContext.drawImage(source,
-                          0, 0, source.width, source.height,
-                          0, 0, target.width, target.height);
+  targetContext.save();
+  targetContext.translate(target.width / 2, target.height / 2);
+  targetContext.rotate(orientation * Math.PI / 2);
+  targetContext.drawImage(
+      source,
+      0, 0,
+      source.width, source.height,
+      -drawImageWidth / 2, -drawImageHeight / 2,
+      drawImageWidth, drawImageHeight);
+  targetContext.restore();
 };
 
 /**
