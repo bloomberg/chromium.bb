@@ -609,6 +609,9 @@ DialogType.isModal = function(type) {
     CommandUtil.registerCommand(doc, 'newwindow',
         Commands.newWindowCommand, this);
 
+    CommandUtil.registerCommand(doc, 'change-default-app',
+        Commands.changeDefaultAppCommand, this);
+
     CommandUtil.registerCommand(this.directoryTree_, 'unmount',
         Commands.unmountCommand, this.directoryTree_, this);
 
@@ -3173,6 +3176,19 @@ DialogType.isModal = function(type) {
           });
       });
     });
+  };
+
+  /**
+   * Opens the default app change dialog.
+   */
+  FileManager.prototype.showChangeDefaultAppPicker = function() {
+    // TODO(mtomasz): Implement this. crbug.com/179584
+    this.defaultTaskPicker.show(
+        str('CHANGE_DEFAULT_APP_BUTTON_LABEL'),
+        '',
+        [],
+        0,
+        function(result) { });
   };
 
   FileManager.prototype.decorateSplitter = function(splitterElement) {

@@ -12370,6 +12370,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_NEW_WINDOW_BUTTON_LABEL" desc="Label on the 'New window' button.">
         New window
       </message>
+      <message name="IDS_FILE_BROWSER_CHANGE_DEFAULT_APP_BUTTON_LABEL" desc="Label on the 'Change default app...' in the Gear menu to change the default application which handles inserted sd/usb with pictures/videos.">
+        Change default app...
+      </message>
       <message name="IDS_FILE_BROWSER_FILENAME_LABEL" desc="Filename text area label.">
         File name
       </message>

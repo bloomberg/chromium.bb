@@ -244,6 +244,18 @@ Commands.newWindowCommand = {
 };
 
 /**
+ * Changed the default app handling inserted media.
+ */
+Commands.changeDefaultAppCommand = {
+  execute: function(event, fileManager) {
+    fileManager.showChangeDefaultAppPicker();
+  },
+  canExecute: function(event, fileManager) {
+    event.canExecute = true;
+  }
+};
+
+/**
  * Deletes selected files.
  */
 Commands.deleteFileCommand = {
