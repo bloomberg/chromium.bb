@@ -19,6 +19,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/webdata/autofill_change.h"
 #include "chrome/browser/webdata/autofill_entry.h"
+#include "chrome/browser/webdata/autofill_table.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/browser/webdata/web_data_service_test_util.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -75,9 +76,11 @@ class WebDataServiceTest : public testing::Test {
     db_thread_.Start();
 
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    wds_ = new WebDataService(WebDataServiceBase::ProfileErrorCallback());
     base::FilePath path = temp_dir_.path().AppendASCII("TestWebDB");
-    wds_->Init(path);
+    wds_ = new WebDataService(path, WebDataServiceBase::ProfileErrorCallback());
+    // Need to add at least one table so the database gets created.
+    wds_->AddTable(scoped_ptr<WebDatabaseTable>(new AutofillTable).Pass());
+    wds_->Init();
   }
 
   virtual void TearDown() {

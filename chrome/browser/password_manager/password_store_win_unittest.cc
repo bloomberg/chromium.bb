@@ -20,6 +20,7 @@
 #include "chrome/browser/password_manager/password_form_data.h"
 #include "chrome/browser/password_manager/password_store_consumer.h"
 #include "chrome/browser/password_manager/password_store_win.h"
+#include "chrome/browser/webdata/logins_table.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
@@ -114,9 +115,12 @@ class PasswordStoreWinTest : public testing::Test {
     login_db_.reset(new LoginDatabase());
     ASSERT_TRUE(login_db_->Init(temp_dir_.path().Append(
         FILE_PATH_LITERAL("login_test"))));
-    wds_ = new WebDataService(WebDataServiceBase::ProfileErrorCallback());
     base::FilePath path = temp_dir_.path().AppendASCII("web_data_test");
-    wds_->Init(path);
+    wds_ = new WebDataService(path,
+                              WebDataServiceBase::ProfileErrorCallback());
+    // Need to add at least one table so the database gets created.
+    wds_->AddTable(scoped_ptr<WebDatabaseTable>(new LoginsTable()));
+    wds_->Init();
   }
 
   virtual void TearDown() {

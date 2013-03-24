@@ -6,16 +6,11 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/memory/scoped_vector.h"
 #include "chrome/browser/api/webdata/web_data_results.h"
 #include "chrome/browser/api/webdata/web_data_service_consumer.h"
-#include "chrome/browser/webdata/autofill_table.h"
-#include "chrome/browser/webdata/keyword_table.h"
-#include "chrome/browser/webdata/logins_table.h"
-#include "chrome/browser/webdata/token_service_table.h"
-#include "chrome/browser/webdata/web_apps_table.h"
 #include "chrome/browser/webdata/web_data_request_manager.h"
 #include "chrome/browser/webdata/web_data_service.h"
-#include "chrome/browser/webdata/web_intents_table.h"
 // TODO(caitkp): Remove this autofill dependency.
 #include "components/autofill/browser/autofill_country.h"
 
@@ -36,6 +31,9 @@ class WebDataServiceBackend
                                         BrowserThread::DeleteOnDBThread> {
  public:
   explicit WebDataServiceBackend(const FilePath& path);
+
+  // Must call only before InitDatabaseWithCallback.
+  void AddTable(scoped_ptr<WebDatabaseTable> table);
 
   // Initializes the database and notifies caller via callback when complete.
   // Callback is called synchronously.
@@ -78,12 +76,15 @@ class WebDataServiceBackend
   // Path to database file.
   FilePath db_path_;
 
-  scoped_ptr<AutofillTable> autofill_table_;
-  scoped_ptr<KeywordTable> keyword_table_;
-  scoped_ptr<LoginsTable> logins_table_;
-  scoped_ptr<TokenServiceTable> token_service_table_;
-  scoped_ptr<WebAppsTable> web_apps_table_;
-  scoped_ptr<WebIntentsTable> web_intents_table_;
+  // The tables that participate in managing the database. These are
+  // owned here but other than that this class does nothing with
+  // them. Their initialization is in whatever factory creates
+  // WebDatabaseService, and lookup by type is provided by the
+  // WebDatabase class. The tables need to be owned by this refcounted
+  // object, or they themselves would need to be refcounted. Owning
+  // them here rather than having WebDatabase own them makes for
+  // easier unit testing of WebDatabase.
+  ScopedVector<WebDatabaseTable> tables_;
 
   scoped_ptr<WebDatabase> db_;
 
@@ -114,6 +115,11 @@ WebDataServiceBackend::WebDataServiceBackend(const FilePath& path)
       app_locale_(AutofillCountry::ApplicationLocale()) {
 }
 
+void WebDataServiceBackend::AddTable(scoped_ptr<WebDatabaseTable> table) {
+  DCHECK(!db_.get());
+  tables_.push_back(table.release());
+}
+
 void WebDataServiceBackend::InitDatabaseWithCallback(
     const WebDatabaseService::InitCallback& callback) {
   if (!callback.is_null()) {
@@ -128,30 +134,11 @@ sql::InitStatus WebDataServiceBackend::LoadDatabaseIfNecessary() {
   init_complete_ = true;
   db_.reset(new WebDatabase());
 
-  // All tables objects that participate in managing the database must
-  // be added here.
-  autofill_table_.reset(new AutofillTable());
-  db_->AddTable(autofill_table_.get());
-
-  keyword_table_.reset(new KeywordTable());
-  db_->AddTable(keyword_table_.get());
-
-  // TODO(mdm): We only really need the LoginsTable on Windows for IE7 password
-  // access, but for now, we still create it on all platforms since it deletes
-  // the old logins table. We can remove this after a while, e.g. in M22 or so.
-  logins_table_.reset(new LoginsTable());
-  db_->AddTable(logins_table_.get());
-
-  token_service_table_.reset(new TokenServiceTable());
-  db_->AddTable(token_service_table_.get());
-
-  web_apps_table_.reset(new WebAppsTable());
-  db_->AddTable(web_apps_table_.get());
-
-  // TODO(thakis): Add a migration to delete the SQL table used by
-  // WebIntentsTable, then remove this.
-  web_intents_table_.reset(new WebIntentsTable());
-  db_->AddTable(web_intents_table_.get());
+  for (ScopedVector<WebDatabaseTable>::iterator it = tables_.begin();
+       it != tables_.end();
+       ++it) {
+    db_->AddTable(*it);
+  }
 
   init_status_ = db_->Init(db_path_, app_locale_);
   if (init_status_ != sql::INIT_OK) {
@@ -221,9 +208,15 @@ WebDatabaseService::WebDatabaseService(const base::FilePath& path)
 WebDatabaseService::~WebDatabaseService() {
 }
 
-void WebDatabaseService::LoadDatabase(const InitCallback& callback) {
-  if (!wds_backend_)
+void WebDatabaseService::AddTable(scoped_ptr<WebDatabaseTable> table) {
+  if (!wds_backend_) {
     wds_backend_ = new WebDataServiceBackend(path_);
+  }
+  wds_backend_->AddTable(table.Pass());
+}
+
+void WebDatabaseService::LoadDatabase(const InitCallback& callback) {
+  DCHECK(wds_backend_);
 
   BrowserThread::PostTask(
       BrowserThread::DB,
