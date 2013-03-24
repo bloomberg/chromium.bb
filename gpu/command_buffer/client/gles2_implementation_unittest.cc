@@ -582,6 +582,67 @@ TEST_F(GLES2ImplementationTest, GetBucketContents) {
   EXPECT_EQ(0, memcmp(expected_data, &data[0], data.size()));
 }
 
+TEST_F(GLES2ImplementationTest, GetShaderPrecisionFormat) {
+  struct Cmds {
+    cmds::GetShaderPrecisionFormat cmd;
+  };
+  typedef cmds::GetShaderPrecisionFormat::Result Result;
+
+  // The first call for mediump should trigger a command buffer request.
+  GLint range1[2] = {0, 0};
+  GLint precision1 = 0;
+  Cmds expected1;
+  ExpectedMemoryInfo client_result1 = GetExpectedResultMemory(4);
+  expected1.cmd.Init(GL_FRAGMENT_SHADER, GL_MEDIUM_FLOAT,
+                     client_result1.id, client_result1.offset);
+  Result server_result1 = {true, 14, 14, 10};
+  EXPECT_CALL(*command_buffer(), OnFlush())
+      .WillOnce(SetMemory(client_result1.ptr, server_result1))
+      .RetiresOnSaturation();
+  gl_->GetShaderPrecisionFormat(GL_FRAGMENT_SHADER, GL_MEDIUM_FLOAT,
+                                range1, &precision1);
+  const void* commands2 = GetPut();
+  EXPECT_NE(commands_, commands2);
+  EXPECT_EQ(0, memcmp(&expected1, commands_, sizeof(expected1)));
+  EXPECT_EQ(range1[0], 14);
+  EXPECT_EQ(range1[1], 14);
+  EXPECT_EQ(precision1, 10);
+
+  // The second call for mediump should use the cached value and avoid
+  // triggering a command buffer request, so we do not expect a call to
+  // OnFlush() here. We do expect the results to be correct though.
+  GLint range2[2] = {0, 0};
+  GLint precision2 = 0;
+  gl_->GetShaderPrecisionFormat(GL_FRAGMENT_SHADER, GL_MEDIUM_FLOAT,
+                                range2, &precision2);
+  const void* commands3 = GetPut();
+  EXPECT_EQ(commands2, commands3);
+  EXPECT_EQ(range2[0], 14);
+  EXPECT_EQ(range2[1], 14);
+  EXPECT_EQ(precision2, 10);
+
+  // If we then make a request for highp, we should get another command
+  // buffer request since it hasn't been cached yet.
+  GLint range3[2] = {0, 0};
+  GLint precision3 = 0;
+  Cmds expected3;
+  ExpectedMemoryInfo result3 = GetExpectedResultMemory(4);
+  expected3.cmd.Init(GL_FRAGMENT_SHADER, GL_HIGH_FLOAT,
+                     result3.id, result3.offset);
+  Result result3_source = {true, 62, 62, 16};
+  EXPECT_CALL(*command_buffer(), OnFlush())
+      .WillOnce(SetMemory(result3.ptr, result3_source))
+      .RetiresOnSaturation();
+  gl_->GetShaderPrecisionFormat(GL_FRAGMENT_SHADER, GL_HIGH_FLOAT,
+                                range3, &precision3);
+  const void* commands4 = GetPut();
+  EXPECT_NE(commands3, commands4);
+  EXPECT_EQ(0, memcmp(&expected3, commands3, sizeof(expected3)));
+  EXPECT_EQ(range3[0], 62);
+  EXPECT_EQ(range3[1], 62);
+  EXPECT_EQ(precision3, 16);
+}
+
 TEST_F(GLES2ImplementationTest, ShaderSource) {
   const uint32 kBucketId = GLES2Implementation::kResultBucketId;
   const GLuint kShaderId = 456;

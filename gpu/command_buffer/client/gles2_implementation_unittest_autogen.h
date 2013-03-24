@@ -662,8 +662,8 @@ TEST_F(GLES2ImplementationTest, GetShaderiv) {
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
   EXPECT_EQ(static_cast<Result::Type>(1), result);
 }
+
 // TODO: Implement unit test for GetShaderInfoLog
-// TODO: Implement unit test for GetShaderPrecisionFormat
 
 TEST_F(GLES2ImplementationTest, GetTexParameterfv) {
   struct Cmds {

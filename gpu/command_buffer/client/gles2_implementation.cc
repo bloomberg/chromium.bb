@@ -1941,10 +1941,20 @@ void GLES2Implementation::GetShaderPrecisionFormat(
   if (!result) {
     return;
   }
-  result->success = false;
-  helper_->GetShaderPrecisionFormat(
-    shadertype, precisiontype, GetResultShmId(), GetResultShmOffset());
-  WaitForCmd();
+
+  ShaderPrecisionCacheKey key(shadertype, precisiontype);
+  ShaderPrecisionCacheMap::iterator i = shader_precision_cache_.find(key);
+  if (i != shader_precision_cache_.end()) {
+    *result = i->second;
+  } else {
+    result->success = false;
+    helper_->GetShaderPrecisionFormat(
+      shadertype, precisiontype, GetResultShmId(), GetResultShmOffset());
+    WaitForCmd();
+    if (result->success)
+      shader_precision_cache_[key] = *result;
+  }
+
   if (result->success) {
     if (range) {
       range[0] = result->min_range;
