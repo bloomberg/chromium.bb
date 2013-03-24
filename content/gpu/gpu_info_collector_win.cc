@@ -210,11 +210,17 @@ bool D3D11ShouldWork(const content::GPUInfo& gpu_info) {
 
   // Intel?
   if (gpu_info.gpu.vendor_id == 0x8086) {
-    // 2nd Generation Core Processor Family Integrated Graphics Controller?
+    // 2nd Generation Core Processor Family Integrated Graphics Controller
+    // or Intel Ivy Bridge?
     if (gpu_info.gpu.device_id == 0x0102 ||
         gpu_info.gpu.device_id == 0x0106 ||
         gpu_info.gpu.device_id == 0x0116 ||
-        gpu_info.gpu.device_id == 0x0126) {
+        gpu_info.gpu.device_id == 0x0126 ||
+        gpu_info.gpu.device_id == 0x0152 ||
+        gpu_info.gpu.device_id == 0x0156 ||
+        gpu_info.gpu.device_id == 0x015a ||
+        gpu_info.gpu.device_id == 0x0162 ||
+        gpu_info.gpu.device_id == 0x0166) {
       // http://crbug.com/196373.
       if (base::win::GetVersion() == base::win::VERSION_VISTA)
         return false;
