@@ -9936,6 +9936,12 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       </message>
 
       <!-- Screen Capture strings -->
+      <message name="IDS_MEDIA_SCREEN_CAPTURE_CONFIRMATION_TITLE" desc="Title for the prompt shown when screen capturing is requrested by an app.">
+        <ph name="APP_NAME">$1<ex>html5rocks.com</ex></ph> Screen Sharing Request
+      </message>
+      <message name="IDS_MEDIA_SCREEN_CAPTURE_CONFIRMATION_TEXT" desc="Text for the prompt shown when screen capturing is requrested by an app.">
+        Do you want <ph name="APP_NAME">$1<ex>html5rocks.com</ex></ph> to share your screen?
+      </message>
       <message name="IDS_MEDIA_SCREEN_CAPTURE_NOTIFICATION_TITLE" desc="Text shown on the button that stops screen capture.">
         Screen capture - <ph name="APP_NAME">$1<ex>Sharing App</ex></ph>
       </message>
@@ -14921,9 +14927,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
     </message>
     <message name="IDS_MEDIA_CAPTURE_VIDEO_ONLY" desc="Question asked on the info bar whenever a web page requests access to the computer's camera.">
       <ph name="HOST">$1<ex>html5rocks.com</ex></ph> wants to use your camera.
-    </message>
-    <message name="IDS_MEDIA_CAPTURE_SCREEN" desc="Text on the info bar that's shown when screen capturing is requrested by the tab.">
-      <ph name="HOST">$1<ex>html5rocks.com</ex></ph> wants to capture the content of your screen.
     </message>
     <message name="IDS_MEDIA_CAPTURE_ALLOW" desc="Label for a button that grants access to a web page, so they can use a camera and/or a microphone.">
       Allow

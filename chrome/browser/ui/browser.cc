@@ -60,6 +60,7 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/infobars/simple_alert_infobar_delegate.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/pepper_broker_infobar_delegate.h"
@@ -114,9 +115,7 @@
 #include "chrome/browser/ui/global_error/global_error.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
-#include "chrome/browser/ui/media_stream_infobar_delegate.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
-#include "chrome/browser/ui/screen_capture_infobar_delegate.h"
 #include "chrome/browser/ui/search/search_delegate.h"
 #include "chrome/browser/ui/search/search_model.h"
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper.h"
@@ -1613,17 +1612,8 @@ void Browser::RequestMediaAccessPermission(
     content::WebContents* web_contents,
     const content::MediaStreamRequest& request,
     const content::MediaResponseCallback& callback) {
-  // The case when microphone access is requested together with screen capturing
-  // is not supported yet. Just check requested video type to decide which
-  // infobar to show.
-  //
-  // TODO(sergeyu): Add support for video stream with microphone, e.g. refactor
-  // MediaStreamDevicesController to use a single infobar for both permissions,
-  // or maybe show two infobars.
-  if (request.video_type == content::MEDIA_SCREEN_VIDEO_CAPTURE)
-    ScreenCaptureInfoBarDelegate::Create(web_contents, request, callback);
-  else
-    MediaStreamInfoBarDelegate::Create(web_contents, request, callback);
+  MediaCaptureDevicesDispatcher::GetInstance()->RequestAccess(
+      web_contents, request, callback);
 }
 
 bool Browser::RequestPpapiBrokerPermission(

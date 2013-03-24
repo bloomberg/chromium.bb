@@ -4,16 +4,24 @@
 
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 
+#include "base/command_line.h"
+#include "base/logging.h"
 #include "base/prefs/pref_service.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/media/audio_stream_indicator.h"
 #include "chrome/browser/media/media_stream_capture_indicator.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/media_stream_infobar_delegate.h"
+#include "chrome/browser/ui/simple_message_box.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/media_devices_monitor.h"
 #include "content/public/common/media_stream_request.h"
+#include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 using content::BrowserThread;
 using content::MediaStreamDevices;
@@ -36,8 +44,19 @@ const content::MediaStreamDevice* FindDefaultDeviceWithId(
   return &(*devices.begin());
 };
 
-}  // namespace
+// This is a short-term solution to allow testing of the the Screen Capture API
+// with Google Hangouts in M27.
+// TODO(sergeyu): Remove this whitelist as soon as possible.
+bool IsOriginWhitelistedForScreenCapture(const GURL& origin) {
+#if defined(OFFICIAL_BUILD)
+  return origin.spec() == "https://staging.talkgadget.google.com/" ||
+      origin.spec() == "https://plus.google.com/";
+#else
+  return false;
+#endif
+}
 
+}  // namespace
 
 MediaCaptureDevicesDispatcher* MediaCaptureDevicesDispatcher::GetInstance() {
   return Singleton<MediaCaptureDevicesDispatcher>::get();
@@ -93,6 +112,48 @@ MediaCaptureDevicesDispatcher::GetVideoCaptureDevices() {
     devices_enumerated_ = true;
   }
   return video_devices_;
+}
+
+void MediaCaptureDevicesDispatcher::RequestAccess(
+    content::WebContents* web_contents,
+    const content::MediaStreamRequest& request,
+    const content::MediaResponseCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // Handle regular media requests first.
+  if (request.video_type != content::MEDIA_SCREEN_VIDEO_CAPTURE) {
+    MediaStreamInfoBarDelegate::Create(web_contents, request, callback);
+    return;
+  }
+
+  content::MediaStreamDevices devices;
+
+  bool screen_capture_enabled =
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableUserMediaScreenCapturing) ||
+      IsOriginWhitelistedForScreenCapture(request.security_origin);
+  // Deny request automatically in the following cases:
+  //  1. Screen capturing is not enabled via command line switch.
+  //  2. Audio capture was requested (it's not supported yet).
+  //  3. Request from a page that was not loaded from a secure origin.
+  if (screen_capture_enabled &&
+      request.audio_type == content::MEDIA_NO_SERVICE &&
+      request.security_origin.SchemeIsSecure()) {
+    string16 application_name = UTF8ToUTF16(request.security_origin.spec());
+    chrome::MessageBoxResult result = chrome::ShowMessageBox(
+        NULL,
+        l10n_util::GetStringFUTF16(IDS_MEDIA_SCREEN_CAPTURE_CONFIRMATION_TITLE,
+                                   application_name),
+        l10n_util::GetStringFUTF16(IDS_MEDIA_SCREEN_CAPTURE_CONFIRMATION_TEXT,
+                                   application_name),
+        chrome::MESSAGE_BOX_TYPE_QUESTION);
+    if (result == chrome::MESSAGE_BOX_RESULT_YES) {
+      devices.push_back(content::MediaStreamDevice(
+          content::MEDIA_SCREEN_VIDEO_CAPTURE, std::string(), "Screen"));
+    }
+  }
+
+  callback.Run(devices);
 }
 
 void MediaCaptureDevicesDispatcher::GetDefaultDevicesForProfile(
