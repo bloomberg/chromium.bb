@@ -377,6 +377,18 @@ class LauncherViewTest : public AshTestBase {
   DISALLOW_COPY_AND_ASSIGN(LauncherViewTest);
 };
 
+// Checks that the icon positions do not shift with a state change.
+TEST_F(LauncherViewTest, NoStateChangeIconMovement) {
+  LauncherID last_added = AddAppShortcut();
+  internal::LauncherButton* button = GetButtonByID(last_added);
+  EXPECT_EQ(button->state(), ash::internal::LauncherButton::STATE_NORMAL);
+  gfx::Rect old_bounds = button->GetIconBounds();
+
+  button->AddState(ash::internal::LauncherButton::STATE_HOVERED);
+  gfx::Rect hovered_bounds = button->GetIconBounds();
+  EXPECT_EQ(old_bounds.ToString(), hovered_bounds.ToString());
+}
+
 // Adds browser button until overflow and verifies that the last added browser
 // button is hidden.
 TEST_F(LauncherViewTest, AddBrowserUntilOverflow) {

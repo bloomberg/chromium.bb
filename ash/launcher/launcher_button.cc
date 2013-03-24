@@ -482,30 +482,31 @@ bool LauncherButton::IsShelfHorizontal() const {
 }
 
 void LauncherButton::UpdateState() {
-  if (state_ == STATE_NORMAL) {
-    bar_->SetVisible(false);
+  // Even if not shown, the activation state image has an influence on the
+  // layout. To avoid any odd movement we assign a bitmap here.
+  int bar_id;
+  if (state_ & (STATE_ACTIVE | STATE_ATTENTION))
+    bar_id = IDR_AURA_LAUNCHER_UNDERLINE_ACTIVE;
+  else if (state_ & (STATE_HOVERED | STATE_FOCUSED))
+    bar_id = IDR_AURA_LAUNCHER_UNDERLINE_HOVER;
+  else
+    bar_id = IDR_AURA_LAUNCHER_UNDERLINE_RUNNING;
+
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  const gfx::ImageSkia* image = rb.GetImageNamed(bar_id).ToImageSkia();
+  if (SHELF_ALIGNMENT_BOTTOM == shelf_layout_manager_->GetAlignment()) {
+    bar_->SetImage(*image);
   } else {
-    int bar_id;
-    if (state_ & (STATE_ACTIVE | STATE_ATTENTION)) {
-      bar_id = IDR_AURA_LAUNCHER_UNDERLINE_ACTIVE;
-    } else if (state_ & (STATE_HOVERED | STATE_FOCUSED)) {
-      bar_id = IDR_AURA_LAUNCHER_UNDERLINE_HOVER;
-    } else {
-      bar_id = IDR_AURA_LAUNCHER_UNDERLINE_RUNNING;
-    }
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    const gfx::ImageSkia* image = rb.GetImageNamed(bar_id).ToImageSkia();
-    if(SHELF_ALIGNMENT_BOTTOM == shelf_layout_manager_->GetAlignment())
-      bar_->SetImage(*image);
-    else
-      bar_->SetImage(gfx::ImageSkiaOperations::CreateRotatedImage(*image,
-          shelf_layout_manager_->SelectValueForShelfAlignment(
-              SkBitmapOperations::ROTATION_90_CW,
-              SkBitmapOperations::ROTATION_90_CW,
-              SkBitmapOperations::ROTATION_270_CW,
-              SkBitmapOperations::ROTATION_180_CW)));
-    bar_->SetVisible(true);
+    bar_->SetImage(gfx::ImageSkiaOperations::CreateRotatedImage(*image,
+        shelf_layout_manager_->SelectValueForShelfAlignment(
+            SkBitmapOperations::ROTATION_90_CW,
+            SkBitmapOperations::ROTATION_90_CW,
+            SkBitmapOperations::ROTATION_270_CW,
+            SkBitmapOperations::ROTATION_180_CW)));
   }
+
+  bar_->SetVisible(state_ != STATE_NORMAL);
+
   icon_view_->SetHorizontalAlignment(
       shelf_layout_manager_->PrimaryAxisValue(views::ImageView::CENTER,
                                               views::ImageView::LEADING));
