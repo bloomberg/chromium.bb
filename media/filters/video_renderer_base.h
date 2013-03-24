@@ -18,6 +18,7 @@
 #include "media/base/video_decoder.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_renderer.h"
+#include "media/filters/video_frame_stream.h"
 
 namespace base {
 class MessageLoopProxy;
@@ -83,15 +84,8 @@ class MEDIA_EXPORT VideoRendererBase
   virtual void ThreadMain() OVERRIDE;
 
  private:
-  // Called when |decoder_selector_| selected the |selected_decoder|.
-  // |decrypting_demuxer_stream| was also populated if a DecryptingDemuxerStream
-  // created to help decrypt the encrypted stream.
-  // Note: |decoder_selector| is passed here to keep the VideoDecoderSelector
-  // alive until OnDecoderSelected() finishes.
-  void OnDecoderSelected(
-      scoped_ptr<VideoDecoderSelector> decoder_selector,
-      const scoped_refptr<VideoDecoder>& selected_decoder,
-      const scoped_refptr<DecryptingDemuxerStream>& decrypting_demuxer_stream);
+  // Callback for |video_frame_stream_| initialization.
+  void OnVideoFrameStreamInitialized(bool success, bool has_alpha);
 
   // Callback from the video decoder delivering decoded video frames and
   // reporting video decoder status.
@@ -106,8 +100,8 @@ class MEDIA_EXPORT VideoRendererBase
   void AttemptRead();
   void AttemptRead_Locked();
 
-  // Called when VideoDecoder::Reset() completes.
-  void OnDecoderResetDone();
+  // Called when VideoFrameStream::Reset() completes.
+  void OnVideoFrameStreamResetDone();
 
   // Attempts to complete flushing and transition into the flushed state.
   void AttemptFlush_Locked();
@@ -135,21 +129,6 @@ class MEDIA_EXPORT VideoRendererBase
   // A read is scheduled to replace the frame.
   void DropNextReadyFrame_Locked();
 
-  void ResetDecoder();
-  void StopDecoder(const base::Closure& callback);
-
-  // Pops the front of |decoders|, assigns it to |decoder_| and then
-  // calls initialize on the new decoder.
-  void InitializeNextDecoder(const scoped_refptr<DemuxerStream>& demuxer_stream,
-                             scoped_ptr<VideoDecoderList> decoders);
-
-  // Called when |decoder_| initialization completes.
-  // |demuxer_stream| & |decoders| are used if initialization failed and
-  // InitializeNextDecoder() needs to be called again.
-  void OnDecoderInitDone(const scoped_refptr<DemuxerStream>& demuxer_stream,
-                         scoped_ptr<VideoDecoderList> decoders,
-                         PipelineStatus status);
-
   void TransitionToPrerolled_Locked();
 
   scoped_refptr<base::MessageLoopProxy> message_loop_;
@@ -159,11 +138,8 @@ class MEDIA_EXPORT VideoRendererBase
   // Used for accessing data members.
   base::Lock lock_;
 
-  SetDecryptorReadyCB set_decryptor_ready_cb_;
-
-  // These two will be set by VideoDecoderSelector::SelectVideoDecoder().
-  scoped_refptr<VideoDecoder> decoder_;
-  scoped_refptr<DecryptingDemuxerStream> decrypting_demuxer_stream_;
+  // Provides video frames to VideoRendererBase.
+  VideoFrameStream video_frame_stream_;
 
   // Queue of incoming frames yet to be painted.
   typedef std::deque<scoped_refptr<VideoFrame> > VideoFrameQueue;

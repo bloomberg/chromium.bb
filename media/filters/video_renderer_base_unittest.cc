@@ -59,7 +59,7 @@ class VideoRendererBaseTest : public ::testing::Test {
 
     // We expect these to be called but we don't care how/when.
     EXPECT_CALL(*decoder_, Stop(_))
-        .WillRepeatedly(RunClosure<0>());
+        .WillRepeatedly(Invoke(this, &VideoRendererBaseTest::StopRequested));
     EXPECT_CALL(statistics_cb_object_, OnStatistics(_))
         .Times(AnyNumber());
     EXPECT_CALL(*this, OnTimeUpdate(_))
@@ -340,6 +340,17 @@ class VideoRendererBaseTest : public ::testing::Test {
     message_loop_.PostTask(FROM_HERE, callback);
   }
 
+  void StopRequested(const base::Closure& callback) {
+    DCHECK_EQ(&message_loop_, MessageLoop::current());
+    decode_results_.clear();
+    if (!read_cb_.is_null()) {
+      QueueAbortedRead();
+      SatisfyPendingRead();
+    }
+
+    message_loop_.PostTask(FROM_HERE, callback);
+  }
+
   MessageLoop message_loop_;
 
   VideoDecoderConfig video_config_;
@@ -590,9 +601,6 @@ TEST_F(VideoRendererBaseTest, StopDuringOutstandingRead) {
 
   WaitableMessageLoopEvent event;
   renderer_->Stop(event.GetClosure());
-
-  QueueEndOfStream();
-  SatisfyPendingRead();
 
   event.RunAndWait();
 }
