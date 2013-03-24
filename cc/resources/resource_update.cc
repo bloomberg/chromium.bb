@@ -13,14 +13,14 @@ ResourceUpdate ResourceUpdate::Create(PrioritizedResource* texture,
                                       gfx::Rect content_rect,
                                       gfx::Rect source_rect,
                                       gfx::Vector2d dest_offset) {
-    CHECK(content_rect.Contains(source_rect));
-    ResourceUpdate update;
-    update.texture = texture;
-    update.bitmap = bitmap;
-    update.content_rect = content_rect;
-    update.source_rect = source_rect;
-    update.dest_offset = dest_offset;
-    return update;
+  CHECK(content_rect.Contains(source_rect));
+  ResourceUpdate update;
+  update.texture = texture;
+  update.bitmap = bitmap;
+  update.content_rect = content_rect;
+  update.source_rect = source_rect;
+  update.dest_offset = dest_offset;
+  return update;
 }
 
 ResourceUpdate ResourceUpdate::CreateFromPicture(PrioritizedResource* texture,
@@ -28,23 +28,21 @@ ResourceUpdate ResourceUpdate::CreateFromPicture(PrioritizedResource* texture,
                                                  gfx::Rect content_rect,
                                                  gfx::Rect source_rect,
                                                  gfx::Vector2d dest_offset) {
-    CHECK(content_rect.Contains(source_rect));
-    ResourceUpdate update;
-    update.texture = texture;
-    update.picture = picture;
-    update.content_rect = content_rect;
-    update.source_rect = source_rect;
-    update.dest_offset = dest_offset;
-    return update;
+  CHECK(content_rect.Contains(source_rect));
+  ResourceUpdate update;
+  update.texture = texture;
+  update.picture = picture;
+  update.content_rect = content_rect;
+  update.source_rect = source_rect;
+  update.dest_offset = dest_offset;
+  return update;
 }
 
 ResourceUpdate::ResourceUpdate()
     : texture(NULL),
       bitmap(NULL),
-      picture(NULL) {
-}
+      picture(NULL) {}
 
-ResourceUpdate::~ResourceUpdate() {
-}
+ResourceUpdate::~ResourceUpdate() {}
 
 }  // namespace cc

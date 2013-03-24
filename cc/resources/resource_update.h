@@ -17,26 +17,26 @@ namespace cc {
 class PrioritizedResource;
 
 struct CC_EXPORT ResourceUpdate {
-    static ResourceUpdate Create(PrioritizedResource*,
-                                 const SkBitmap*,
-                                 gfx::Rect content_rect,
-                                 gfx::Rect source_rect,
-                                 gfx::Vector2d dest_offset);
-    static ResourceUpdate CreateFromPicture(PrioritizedResource*,
-                                            SkPicture*,
-                                            gfx::Rect content_rect,
-                                            gfx::Rect source_rect,
-                                            gfx::Vector2d dest_offset);
+  static ResourceUpdate Create(PrioritizedResource* resource,
+                               const SkBitmap* bitmap,
+                               gfx::Rect content_rect,
+                               gfx::Rect source_rect,
+                               gfx::Vector2d dest_offset);
+  static ResourceUpdate CreateFromPicture(PrioritizedResource* resource,
+                                          SkPicture* bitmap,
+                                          gfx::Rect content_rect,
+                                          gfx::Rect source_rect,
+                                          gfx::Vector2d dest_offset);
 
-    ResourceUpdate();
-    virtual ~ResourceUpdate();
+  ResourceUpdate();
+  virtual ~ResourceUpdate();
 
-    PrioritizedResource* texture;
-    const SkBitmap* bitmap;
-    SkPicture* picture;
-    gfx::Rect content_rect;
-    gfx::Rect source_rect;
-    gfx::Vector2d dest_offset;
+  PrioritizedResource* texture;
+  const SkBitmap* bitmap;
+  SkPicture* picture;
+  gfx::Rect content_rect;
+  gfx::Rect source_rect;
+  gfx::Vector2d dest_offset;
 };
 
 }
