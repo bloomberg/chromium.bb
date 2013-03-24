@@ -315,15 +315,12 @@ namespace message_center {
 MessageView* NotificationView::Create(const Notification& notification,
                                       NotificationChangeObserver* observer,
                                       bool expanded) {
-  // For the time being, use MessageSimpleView for simple notifications unless
-  // one of the use-the-new-style flags are set. This preserves the appearance
-  // of notifications created by existing code that uses webkitNotifications.
-  if (notification.type() == NOTIFICATION_TYPE_SIMPLE &&
-      !IsRichNotificationEnabled() &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
-          message_center::switches::kEnableNewSimpleNotifications)) {
+  // Use MessageSimpleView for simple notifications unless rich style
+  // notifications are enabled. This preserves the appearance of notifications
+  // created by existing code that uses webkitNotifications.
+  if (!IsRichNotificationEnabled() &&
+      notification.type() == NOTIFICATION_TYPE_SIMPLE)
     return new MessageSimpleView(notification, observer);
-  }
 
   switch (notification.type()) {
     case NOTIFICATION_TYPE_BASE_FORMAT:

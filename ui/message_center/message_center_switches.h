@@ -21,14 +21,6 @@ namespace switches {
 //  - WebNotificationButtonViewBase: merge into WebNotificationButtonView.
 MESSAGE_CENTER_EXPORT extern const char kEnableRichNotifications[];
 
-// Enables simple notifications with the new templates defined as part of rich
-// notifications. When kEnableRichNotifications is set those templates will be
-// used regardless of whether this flag is set, but this flag allows us to get
-// the new templates even when kEnableRichNotifications is not set. This is
-// useful for now because the kEnableRichNotifications functionality isn't
-// complete. TODO(dharcourt): Remove when kEnableRichNotifications is ready.
-MESSAGE_CENTER_EXPORT extern const char kEnableNewSimpleNotifications[];
-
 }  // namespace switches
 }  // namespace message_center
 
