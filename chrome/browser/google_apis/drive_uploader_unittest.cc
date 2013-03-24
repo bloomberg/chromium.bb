@@ -15,6 +15,7 @@
 #include "base/message_loop.h"
 #include "base/values.h"
 #include "chrome/browser/google_apis/dummy_drive_service.h"
+#include "chrome/browser/google_apis/test_util.h"
 #include "content/public/test/test_browser_thread.h"
 #include "net/base/io_buffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -277,29 +278,6 @@ class DriveUploaderTest : public testing::Test {
   base::ScopedTempDir temp_dir_;
 };
 
-// Struct for holding the results copied from UploadCompletionCallback.
-struct UploadCompletionCallbackResult {
-  UploadCompletionCallbackResult() : error(DRIVE_UPLOAD_ERROR_ABORT) {}
-  DriveUploadError error;
-  base::FilePath drive_path;
-  base::FilePath file_path;
-  scoped_ptr<ResourceEntry> resource_entry;
-};
-
-// Copies the result from UploadCompletionCallback and quit the message loop.
-void CopyResultsFromUploadCompletionCallbackAndQuit(
-    UploadCompletionCallbackResult* out,
-    DriveUploadError error,
-    const base::FilePath& drive_path,
-    const base::FilePath& file_path,
-    scoped_ptr<ResourceEntry> resource_entry) {
-  out->error = error;
-  out->drive_path = drive_path;
-  out->file_path = file_path;
-  out->resource_entry = resource_entry.Pass();
-  MessageLoop::current()->Quit();
-}
-
 }  // namespace
 
 TEST_F(DriveUploaderTest, UploadExisting0KB) {
@@ -308,7 +286,10 @@ TEST_F(DriveUploaderTest, UploadExisting0KB) {
   ASSERT_TRUE(CreateFileOfSpecifiedSize(temp_dir_.path(), 0,
                                         &local_path, &data));
 
-  UploadCompletionCallbackResult out;
+  DriveUploadError error = DRIVE_UPLOAD_ERROR_ABORT;
+  base::FilePath drive_path;
+  base::FilePath file_path;
+  scoped_ptr<ResourceEntry> resource_entry;
 
   MockDriveServiceWithUploadExpectation mock_service(data);
   DriveUploader uploader(&mock_service);
@@ -318,16 +299,17 @@ TEST_F(DriveUploaderTest, UploadExisting0KB) {
       local_path,
       kTestMimeType,
       "",  // etag
-      base::Bind(&CopyResultsFromUploadCompletionCallbackAndQuit, &out));
-  message_loop_.Run();
+      test_util::CreateCopyResultCallback(
+          &error, &drive_path, &file_path, &resource_entry));
+  test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(1, mock_service.resume_upload_call_count());
   EXPECT_EQ(0, mock_service.received_bytes());
-  EXPECT_EQ(DRIVE_UPLOAD_OK, out.error);
-  EXPECT_EQ(base::FilePath::FromUTF8Unsafe(kTestDrivePath), out.drive_path);
-  EXPECT_EQ(local_path, out.file_path);
-  ASSERT_TRUE(out.resource_entry);
-  EXPECT_EQ(kTestDummyId, out.resource_entry->id());
+  EXPECT_EQ(DRIVE_UPLOAD_OK, error);
+  EXPECT_EQ(base::FilePath::FromUTF8Unsafe(kTestDrivePath), drive_path);
+  EXPECT_EQ(local_path, file_path);
+  ASSERT_TRUE(resource_entry);
+  EXPECT_EQ(kTestDummyId, resource_entry->id());
 }
 
 TEST_F(DriveUploaderTest, UploadExisting512KB) {
@@ -336,7 +318,10 @@ TEST_F(DriveUploaderTest, UploadExisting512KB) {
   ASSERT_TRUE(CreateFileOfSpecifiedSize(temp_dir_.path(), 512 * 1024,
                                         &local_path, &data));
 
-  UploadCompletionCallbackResult out;
+  DriveUploadError error = DRIVE_UPLOAD_ERROR_ABORT;
+  base::FilePath drive_path;
+  base::FilePath file_path;
+  scoped_ptr<ResourceEntry> resource_entry;
 
   MockDriveServiceWithUploadExpectation mock_service(data);
   DriveUploader uploader(&mock_service);
@@ -346,17 +331,18 @@ TEST_F(DriveUploaderTest, UploadExisting512KB) {
       local_path,
       kTestMimeType,
       "",  // etag
-      base::Bind(&CopyResultsFromUploadCompletionCallbackAndQuit, &out));
-  message_loop_.Run();
+      test_util::CreateCopyResultCallback(
+          &error, &drive_path, &file_path, &resource_entry));
+  test_util::RunBlockingPoolTask();
 
   // 512KB upload should not be split into multiple chunks.
   EXPECT_EQ(1, mock_service.resume_upload_call_count());
   EXPECT_EQ(512 * 1024, mock_service.received_bytes());
-  EXPECT_EQ(DRIVE_UPLOAD_OK, out.error);
-  EXPECT_EQ(base::FilePath::FromUTF8Unsafe(kTestDrivePath), out.drive_path);
-  EXPECT_EQ(local_path, out.file_path);
-  ASSERT_TRUE(out.resource_entry);
-  EXPECT_EQ(kTestDummyId, out.resource_entry->id());
+  EXPECT_EQ(DRIVE_UPLOAD_OK, error);
+  EXPECT_EQ(base::FilePath::FromUTF8Unsafe(kTestDrivePath), drive_path);
+  EXPECT_EQ(local_path, file_path);
+  ASSERT_TRUE(resource_entry);
+  EXPECT_EQ(kTestDummyId, resource_entry->id());
 }
 
 TEST_F(DriveUploaderTest, UploadExisting1234KB) {
@@ -365,7 +351,10 @@ TEST_F(DriveUploaderTest, UploadExisting1234KB) {
   ASSERT_TRUE(CreateFileOfSpecifiedSize(temp_dir_.path(), 1234 * 1024,
                                         &local_path, &data));
 
-  UploadCompletionCallbackResult out;
+  DriveUploadError error = DRIVE_UPLOAD_ERROR_ABORT;
+  base::FilePath drive_path;
+  base::FilePath file_path;
+  scoped_ptr<ResourceEntry> resource_entry;
 
   MockDriveServiceWithUploadExpectation mock_service(data);
   DriveUploader uploader(&mock_service);
@@ -375,17 +364,18 @@ TEST_F(DriveUploaderTest, UploadExisting1234KB) {
       local_path,
       kTestMimeType,
       "",  // etag
-      base::Bind(&CopyResultsFromUploadCompletionCallbackAndQuit, &out));
-  message_loop_.Run();
+      test_util::CreateCopyResultCallback(
+          &error, &drive_path, &file_path, &resource_entry));
+  test_util::RunBlockingPoolTask();
 
   // The file should be split into 3 chunks (1234 = 512 + 512 + 210).
   EXPECT_EQ(3, mock_service.resume_upload_call_count());
   EXPECT_EQ(1234 * 1024, mock_service.received_bytes());
-  EXPECT_EQ(DRIVE_UPLOAD_OK, out.error);
-  EXPECT_EQ(base::FilePath::FromUTF8Unsafe(kTestDrivePath), out.drive_path);
-  EXPECT_EQ(local_path, out.file_path);
-  ASSERT_TRUE(out.resource_entry);
-  EXPECT_EQ(kTestDummyId, out.resource_entry->id());
+  EXPECT_EQ(DRIVE_UPLOAD_OK, error);
+  EXPECT_EQ(base::FilePath::FromUTF8Unsafe(kTestDrivePath), drive_path);
+  EXPECT_EQ(local_path, file_path);
+  ASSERT_TRUE(resource_entry);
+  EXPECT_EQ(kTestDummyId, resource_entry->id());
 }
 
 TEST_F(DriveUploaderTest, UploadNew1234KB) {
@@ -394,7 +384,10 @@ TEST_F(DriveUploaderTest, UploadNew1234KB) {
   ASSERT_TRUE(CreateFileOfSpecifiedSize(temp_dir_.path(), 1234 * 1024,
                                         &local_path, &data));
 
-  UploadCompletionCallbackResult out;
+  DriveUploadError error = DRIVE_UPLOAD_ERROR_ABORT;
+  base::FilePath drive_path;
+  base::FilePath file_path;
+  scoped_ptr<ResourceEntry> resource_entry;
 
   MockDriveServiceWithUploadExpectation mock_service(data);
   DriveUploader uploader(&mock_service);
@@ -404,17 +397,18 @@ TEST_F(DriveUploaderTest, UploadNew1234KB) {
       local_path,
       kTestDocumentTitle,
       kTestMimeType,
-      base::Bind(&CopyResultsFromUploadCompletionCallbackAndQuit, &out));
-  message_loop_.Run();
+      test_util::CreateCopyResultCallback(
+          &error, &drive_path, &file_path, &resource_entry));
+  test_util::RunBlockingPoolTask();
 
   // The file should be split into 3 chunks (1234 = 512 + 512 + 210).
   EXPECT_EQ(3, mock_service.resume_upload_call_count());
   EXPECT_EQ(1234 * 1024, mock_service.received_bytes());
-  EXPECT_EQ(DRIVE_UPLOAD_OK, out.error);
-  EXPECT_EQ(base::FilePath::FromUTF8Unsafe(kTestDrivePath), out.drive_path);
-  EXPECT_EQ(local_path, out.file_path);
-  ASSERT_TRUE(out.resource_entry);
-  EXPECT_EQ(kTestDummyId, out.resource_entry->id());
+  EXPECT_EQ(DRIVE_UPLOAD_OK, error);
+  EXPECT_EQ(base::FilePath::FromUTF8Unsafe(kTestDrivePath), drive_path);
+  EXPECT_EQ(local_path, file_path);
+  ASSERT_TRUE(resource_entry);
+  EXPECT_EQ(kTestDummyId, resource_entry->id());
 }
 
 TEST_F(DriveUploaderTest, InitiateUploadFail) {
@@ -423,7 +417,10 @@ TEST_F(DriveUploaderTest, InitiateUploadFail) {
   ASSERT_TRUE(CreateFileOfSpecifiedSize(temp_dir_.path(), 512 * 1024,
                                         &local_path, &data));
 
-  UploadCompletionCallbackResult out;
+  DriveUploadError error = DRIVE_UPLOAD_OK;
+  base::FilePath drive_path;
+  base::FilePath file_path;
+  scoped_ptr<ResourceEntry> resource_entry;
 
   MockDriveServiceNoConnectionAtInitiate mock_service;
   DriveUploader uploader(&mock_service);
@@ -433,10 +430,11 @@ TEST_F(DriveUploaderTest, InitiateUploadFail) {
       local_path,
       kTestMimeType,
       "",  // etag
-      base::Bind(&CopyResultsFromUploadCompletionCallbackAndQuit, &out));
-  message_loop_.Run();
+      test_util::CreateCopyResultCallback(
+          &error, &drive_path, &file_path, &resource_entry));
+  test_util::RunBlockingPoolTask();
 
-  EXPECT_EQ(DRIVE_UPLOAD_ERROR_ABORT, out.error);
+  EXPECT_EQ(DRIVE_UPLOAD_ERROR_ABORT, error);
 }
 
 TEST_F(DriveUploaderTest, InitiateUploadNoConflict) {
@@ -444,7 +442,12 @@ TEST_F(DriveUploaderTest, InitiateUploadNoConflict) {
   std::string data;
   ASSERT_TRUE(CreateFileOfSpecifiedSize(temp_dir_.path(), 512 * 1024,
                                         &local_path, &data));
-  UploadCompletionCallbackResult out;
+
+  DriveUploadError error = DRIVE_UPLOAD_ERROR_ABORT;
+  base::FilePath drive_path;
+  base::FilePath file_path;
+  scoped_ptr<ResourceEntry> resource_entry;
+
   MockDriveServiceWithUploadExpectation mock_service(data);
   DriveUploader uploader(&mock_service);
   uploader.UploadExistingFile(
@@ -453,10 +456,11 @@ TEST_F(DriveUploaderTest, InitiateUploadNoConflict) {
       local_path,
       kTestMimeType,
       kTestETag,
-      base::Bind(&CopyResultsFromUploadCompletionCallbackAndQuit, &out));
-  message_loop_.Run();
+      test_util::CreateCopyResultCallback(
+          &error, &drive_path, &file_path, &resource_entry));
+  test_util::RunBlockingPoolTask();
 
-  EXPECT_EQ(DRIVE_UPLOAD_OK, out.error);
+  EXPECT_EQ(DRIVE_UPLOAD_OK, error);
 }
 
 TEST_F(DriveUploaderTest, InitiateUploadConflict) {
@@ -466,7 +470,11 @@ TEST_F(DriveUploaderTest, InitiateUploadConflict) {
                                         &local_path, &data));
   const std::string kDestinationETag("destination_etag");
 
-  UploadCompletionCallbackResult out;
+  DriveUploadError error = DRIVE_UPLOAD_ERROR_ABORT;
+  base::FilePath drive_path;
+  base::FilePath file_path;
+  scoped_ptr<ResourceEntry> resource_entry;
+
   MockDriveServiceWithUploadExpectation mock_service(data);
   DriveUploader uploader(&mock_service);
   uploader.UploadExistingFile(
@@ -475,10 +483,11 @@ TEST_F(DriveUploaderTest, InitiateUploadConflict) {
       local_path,
       kTestMimeType,
       kDestinationETag,
-      base::Bind(&CopyResultsFromUploadCompletionCallbackAndQuit, &out));
-  message_loop_.Run();
+      test_util::CreateCopyResultCallback(
+          &error, &drive_path, &file_path, &resource_entry));
+  test_util::RunBlockingPoolTask();
 
-  EXPECT_EQ(DRIVE_UPLOAD_ERROR_CONFLICT, out.error);
+  EXPECT_EQ(DRIVE_UPLOAD_ERROR_CONFLICT, error);
 }
 
 TEST_F(DriveUploaderTest, ResumeUploadFail) {
@@ -487,7 +496,10 @@ TEST_F(DriveUploaderTest, ResumeUploadFail) {
   ASSERT_TRUE(CreateFileOfSpecifiedSize(temp_dir_.path(), 512 * 1024,
                                         &local_path, &data));
 
-  UploadCompletionCallbackResult out;
+  DriveUploadError error = DRIVE_UPLOAD_OK;
+  base::FilePath drive_path;
+  base::FilePath file_path;
+  scoped_ptr<ResourceEntry> resource_entry;
 
   MockDriveServiceNoConnectionAtResume mock_service;
   DriveUploader uploader(&mock_service);
@@ -497,14 +509,18 @@ TEST_F(DriveUploaderTest, ResumeUploadFail) {
       local_path,
       kTestMimeType,
       "",  // etag
-      base::Bind(&CopyResultsFromUploadCompletionCallbackAndQuit, &out));
-  message_loop_.Run();
+      test_util::CreateCopyResultCallback(
+          &error, &drive_path, &file_path, &resource_entry));
+  test_util::RunBlockingPoolTask();
 
-  EXPECT_EQ(DRIVE_UPLOAD_ERROR_ABORT, out.error);
+  EXPECT_EQ(DRIVE_UPLOAD_ERROR_ABORT, error);
 }
 
 TEST_F(DriveUploaderTest, NonExistingSourceFile) {
-  UploadCompletionCallbackResult out;
+  DriveUploadError error = DRIVE_UPLOAD_ERROR_ABORT;
+  base::FilePath drive_path;
+  base::FilePath file_path;
+  scoped_ptr<ResourceEntry> resource_entry;
 
   DriveUploader uploader(NULL);  // NULL, the service won't be used.
   uploader.UploadExistingFile(
@@ -513,11 +529,12 @@ TEST_F(DriveUploaderTest, NonExistingSourceFile) {
       temp_dir_.path().AppendASCII("_this_path_should_not_exist_"),
       kTestMimeType,
       "",  // etag
-      base::Bind(&CopyResultsFromUploadCompletionCallbackAndQuit, &out));
-  message_loop_.Run();
+      test_util::CreateCopyResultCallback(
+          &error, &drive_path, &file_path, &resource_entry));
+  test_util::RunBlockingPoolTask();
 
   // Should return failure without doing any attempt to connect to the server.
-  EXPECT_EQ(DRIVE_UPLOAD_ERROR_NOT_FOUND, out.error);
+  EXPECT_EQ(DRIVE_UPLOAD_ERROR_NOT_FOUND, error);
 }
 
 }  // namespace google_apis
