@@ -475,6 +475,12 @@
             '../testing/android/native_test.gyp:native_test_native_code',
           ],
         }],
+        ['chromeos==1', {
+          'dependencies': [
+            # This dependency gets picked up via chromeos dependencies.
+            '../media/media.gyp:media',
+          ],
+        }],
       ],
     },
   ],

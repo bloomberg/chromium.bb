@@ -128,6 +128,19 @@
             'sync_notifier.gypi',
             'sync_proto.gypi',
           ],
+          'conditions': [
+            # When building for chromeos, we pick up a dependency on
+            # libpeerconnection, which we must add here since we're building
+            # a shared lib.
+            # TODO(tommi): The chromeos dependency seems pretty broad.
+            # (see sync_core.gypi).  See if we can't narrow that down to
+            # avoid this dependency.
+            ['chromeos==1 and enable_webrtc==1', {
+              'dependencies': [
+                '../third_party/libjingle/libjingle.gyp:libpeerconnection',
+              ],
+            }],
+          ],
         },
       ],
     }],
