@@ -373,6 +373,19 @@ void ShillPropertyHandler::GetPropertiesCallback(
     return;
   }
   listener_->UpdateManagedStateProperties(type, path, properties);
+
+  if (properties.HasKey(shill::kIPConfigProperty)) {
+  // Since this is the first time we received properties for this network,
+  // also request its IPConfig parameters.
+    std::string ip_config_path;
+    if (properties.GetString(shill::kIPConfigProperty, &ip_config_path)) {
+      DBusThreadManager::Get()->GetShillIPConfigClient()->GetProperties(
+          dbus::ObjectPath(ip_config_path),
+          base::Bind(&ShillPropertyHandler::GetIPConfigCallback,
+                     weak_ptr_factory_.GetWeakPtr(), path));
+    }
+  }
+
   // Notify the listener only when all updates for that type have completed.
   if (pending_updates_[type].size() == 0)
     listener_->ManagedStateListChanged(type);
