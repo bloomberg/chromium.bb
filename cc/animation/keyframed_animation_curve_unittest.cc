@@ -11,14 +11,12 @@
 namespace cc {
 namespace {
 
-void expectTranslateX(double translateX, const gfx::Transform& transform)
-{
-  EXPECT_FLOAT_EQ(translateX, transform.matrix().getDouble(0, 3));
+void ExpectTranslateX(double translate_x, const gfx::Transform& transform) {
+  EXPECT_FLOAT_EQ(translate_x, transform.matrix().getDouble(0, 3));
 }
 
 // Tests that a float animation with one keyframe works as expected.
-TEST(KeyframedAnimationCurveTest, OneFloatKeyframe)
-{
+TEST(KeyframedAnimationCurveTest, OneFloatKeyframe) {
   scoped_ptr<KeyframedFloatAnimationCurve> curve(
       KeyframedFloatAnimationCurve::Create());
   curve->AddKeyframe(
@@ -31,8 +29,7 @@ TEST(KeyframedAnimationCurveTest, OneFloatKeyframe)
 }
 
 // Tests that a float animation with two keyframes works as expected.
-TEST(KeyframedAnimationCurveTest, TwoFloatKeyframe)
-{
+TEST(KeyframedAnimationCurveTest, TwoFloatKeyframe) {
   scoped_ptr<KeyframedFloatAnimationCurve> curve(
       KeyframedFloatAnimationCurve::Create());
   curve->AddKeyframe(
@@ -47,8 +44,7 @@ TEST(KeyframedAnimationCurveTest, TwoFloatKeyframe)
 }
 
 // Tests that a float animation with three keyframes works as expected.
-TEST(KeyframedAnimationCurveTest, ThreeFloatKeyframe)
-{
+TEST(KeyframedAnimationCurveTest, ThreeFloatKeyframe) {
   scoped_ptr<KeyframedFloatAnimationCurve> curve(
       KeyframedFloatAnimationCurve::Create());
   curve->AddKeyframe(
@@ -67,8 +63,7 @@ TEST(KeyframedAnimationCurveTest, ThreeFloatKeyframe)
 }
 
 // Tests that a float animation with multiple keys at a given time works sanely.
-TEST(KeyframedAnimationCurveTest, RepeatedFloatKeyTimes)
-{
+TEST(KeyframedAnimationCurveTest, RepeatedFloatKeyTimes) {
   scoped_ptr<KeyframedFloatAnimationCurve> curve(
       KeyframedFloatAnimationCurve::Create());
   curve->AddKeyframe(
@@ -93,10 +88,8 @@ TEST(KeyframedAnimationCurveTest, RepeatedFloatKeyTimes)
   EXPECT_FLOAT_EQ(6.f, curve->GetValue(3.f));
 }
 
-
 // Tests that a transform animation with one keyframe works as expected.
-TEST(KeyframedAnimationCurveTest, OneTransformKeyframe)
-{
+TEST(KeyframedAnimationCurveTest, OneTransformKeyframe) {
   scoped_ptr<KeyframedTransformAnimationCurve> curve(
       KeyframedTransformAnimationCurve::Create());
   TransformOperations operations;
@@ -104,16 +97,15 @@ TEST(KeyframedAnimationCurveTest, OneTransformKeyframe)
   curve->AddKeyframe(
       TransformKeyframe::Create(0.f, operations, scoped_ptr<TimingFunction>()));
 
-  expectTranslateX(2.f, curve->GetValue(-1.f));
-  expectTranslateX(2.f, curve->GetValue(0.f));
-  expectTranslateX(2.f, curve->GetValue(0.5f));
-  expectTranslateX(2.f, curve->GetValue(1.f));
-  expectTranslateX(2.f, curve->GetValue(2.f));
+  ExpectTranslateX(2.f, curve->GetValue(-1.f));
+  ExpectTranslateX(2.f, curve->GetValue(0.f));
+  ExpectTranslateX(2.f, curve->GetValue(0.5f));
+  ExpectTranslateX(2.f, curve->GetValue(1.f));
+  ExpectTranslateX(2.f, curve->GetValue(2.f));
 }
 
 // Tests that a transform animation with two keyframes works as expected.
-TEST(KeyframedAnimationCurveTest, TwoTransformKeyframe)
-{
+TEST(KeyframedAnimationCurveTest, TwoTransformKeyframe) {
   scoped_ptr<KeyframedTransformAnimationCurve> curve(
       KeyframedTransformAnimationCurve::Create());
   TransformOperations operations1;
@@ -125,16 +117,15 @@ TEST(KeyframedAnimationCurveTest, TwoTransformKeyframe)
       0.f, operations1, scoped_ptr<TimingFunction>()));
   curve->AddKeyframe(TransformKeyframe::Create(
       1.f, operations2, scoped_ptr<TimingFunction>()));
-  expectTranslateX(2.f, curve->GetValue(-1.f));
-  expectTranslateX(2.f, curve->GetValue(0.f));
-  expectTranslateX(3.f, curve->GetValue(0.5f));
-  expectTranslateX(4.f, curve->GetValue(1.f));
-  expectTranslateX(4.f, curve->GetValue(2.f));
+  ExpectTranslateX(2.f, curve->GetValue(-1.f));
+  ExpectTranslateX(2.f, curve->GetValue(0.f));
+  ExpectTranslateX(3.f, curve->GetValue(0.5f));
+  ExpectTranslateX(4.f, curve->GetValue(1.f));
+  ExpectTranslateX(4.f, curve->GetValue(2.f));
 }
 
 // Tests that a transform animation with three keyframes works as expected.
-TEST(KeyframedAnimationCurveTest, ThreeTransformKeyframe)
-{
+TEST(KeyframedAnimationCurveTest, ThreeTransformKeyframe) {
   scoped_ptr<KeyframedTransformAnimationCurve> curve(
       KeyframedTransformAnimationCurve::Create());
   TransformOperations operations1;
@@ -149,19 +140,18 @@ TEST(KeyframedAnimationCurveTest, ThreeTransformKeyframe)
       1.f, operations2, scoped_ptr<TimingFunction>()));
   curve->AddKeyframe(TransformKeyframe::Create(
       2.f, operations3, scoped_ptr<TimingFunction>()));
-  expectTranslateX(2.f, curve->GetValue(-1.f));
-  expectTranslateX(2.f, curve->GetValue(0.f));
-  expectTranslateX(3.f, curve->GetValue(0.5f));
-  expectTranslateX(4.f, curve->GetValue(1.f));
-  expectTranslateX(6.f, curve->GetValue(1.5f));
-  expectTranslateX(8.f, curve->GetValue(2.f));
-  expectTranslateX(8.f, curve->GetValue(3.f));
+  ExpectTranslateX(2.f, curve->GetValue(-1.f));
+  ExpectTranslateX(2.f, curve->GetValue(0.f));
+  ExpectTranslateX(3.f, curve->GetValue(0.5f));
+  ExpectTranslateX(4.f, curve->GetValue(1.f));
+  ExpectTranslateX(6.f, curve->GetValue(1.5f));
+  ExpectTranslateX(8.f, curve->GetValue(2.f));
+  ExpectTranslateX(8.f, curve->GetValue(3.f));
 }
 
 // Tests that a transform animation with multiple keys at a given time works
 // sanely.
-TEST(KeyframedAnimationCurveTest, RepeatedTransformKeyTimes)
-{
+TEST(KeyframedAnimationCurveTest, RepeatedTransformKeyTimes) {
   scoped_ptr<KeyframedTransformAnimationCurve> curve(
       KeyframedTransformAnimationCurve::Create());
   // A step function.
@@ -182,23 +172,22 @@ TEST(KeyframedAnimationCurveTest, RepeatedTransformKeyTimes)
   curve->AddKeyframe(TransformKeyframe::Create(
       2.f, operations4, scoped_ptr<TimingFunction>()));
 
-  expectTranslateX(4.f, curve->GetValue(-1.f));
-  expectTranslateX(4.f, curve->GetValue(0.f));
-  expectTranslateX(4.f, curve->GetValue(0.5f));
+  ExpectTranslateX(4.f, curve->GetValue(-1.f));
+  ExpectTranslateX(4.f, curve->GetValue(0.f));
+  ExpectTranslateX(4.f, curve->GetValue(0.5f));
 
   // There is a discontinuity at 1. Any value between 4 and 6 is valid.
   gfx::Transform value = curve->GetValue(1.f);
   EXPECT_TRUE(value.matrix().getDouble(0.f, 3.f) >= 4);
   EXPECT_TRUE(value.matrix().getDouble(0.f, 3.f) <= 6);
 
-  expectTranslateX(6.f, curve->GetValue(1.5f));
-  expectTranslateX(6.f, curve->GetValue(2.f));
-  expectTranslateX(6.f, curve->GetValue(3.f));
+  ExpectTranslateX(6.f, curve->GetValue(1.5f));
+  ExpectTranslateX(6.f, curve->GetValue(2.f));
+  ExpectTranslateX(6.f, curve->GetValue(3.f));
 }
 
 // Tests that the keyframes may be added out of order.
-TEST(KeyframedAnimationCurveTest, UnsortedKeyframes)
-{
+TEST(KeyframedAnimationCurveTest, UnsortedKeyframes) {
   scoped_ptr<KeyframedFloatAnimationCurve> curve(
       KeyframedFloatAnimationCurve::Create());
   curve->AddKeyframe(
@@ -217,16 +206,14 @@ TEST(KeyframedAnimationCurveTest, UnsortedKeyframes)
 }
 
 // Tests that a cubic bezier timing function works as expected.
-TEST(KeyframedAnimationCurveTest, CubicBezierTimingFunction)
-{
+TEST(KeyframedAnimationCurveTest, CubicBezierTimingFunction) {
   scoped_ptr<KeyframedFloatAnimationCurve> curve(
       KeyframedFloatAnimationCurve::Create());
-  curve->AddKeyframe(
-      FloatKeyframe::Create(
-          0.f,
-          0,
-          CubicBezierTimingFunction::Create(
-              0.25f, 0.f, 0.75f, 1.f).PassAs<TimingFunction>()));
+  curve->AddKeyframe(FloatKeyframe::Create(
+      0.0,
+      0.f,
+      CubicBezierTimingFunction::Create(0.25f, 0.f, 0.75f, 1.f)
+          .PassAs<TimingFunction>()));
   curve->AddKeyframe(
       FloatKeyframe::Create(1.0, 1.f, scoped_ptr<TimingFunction>()));
 
