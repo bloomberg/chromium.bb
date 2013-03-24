@@ -5,6 +5,7 @@
 #include "chrome/common/pref_names.h"
 
 #include "base/basictypes.h"
+#include "chrome/common/pref_font_webkit_names.h"
 
 namespace prefs {
 
@@ -178,23 +179,10 @@ const char kWebKitOldFantasyFontFamily[] =
 // If these change, the corresponding enums in the extension API
 // experimental.fontSettings.json must also change.
 const char* const kWebKitScriptsForFontFamilyMaps[] = {
-  "Afak", "Arab", "Armi", "Armn", "Avst", "Bali", "Bamu", "Bass", "Batk",
-  "Beng", "Blis", "Bopo", "Brah", "Brai", "Bugi", "Buhd", "Cakm", "Cans",
-  "Cari", "Cham", "Cher", "Cirt", "Copt", "Cprt", "Cyrl", "Cyrs", "Deva",
-  "Dsrt", "Dupl", "Egyd", "Egyh", "Egyp", "Elba", "Ethi", "Geor", "Geok",
-  "Glag", "Goth", "Gran", "Grek", "Gujr", "Guru", "Hang", "Hani", "Hano",
-  "Hans", "Hant", "Hebr", "Hluw", "Hmng", "Hung", "Inds", "Ital", "Java",
-  "Jpan", "Jurc", "Kali", "Khar", "Khmr", "Khoj", "Knda", "Kpel", "Kthi",
-  "Lana", "Laoo", "Latf", "Latg", "Latn", "Lepc", "Limb", "Lina", "Linb",
-  "Lisu", "Loma", "Lyci", "Lydi", "Mand", "Mani", "Maya", "Mend", "Merc",
-  "Mero", "Mlym", "Moon", "Mong", "Mroo", "Mtei", "Mymr", "Narb", "Nbat",
-  "Nkgb", "Nkoo", "Nshu", "Ogam", "Olck", "Orkh", "Orya", "Osma", "Palm",
-  "Perm", "Phag", "Phli", "Phlp", "Phlv", "Phnx", "Plrd", "Prti", "Rjng",
-  "Roro", "Runr", "Samr", "Sara", "Sarb", "Saur", "Sgnw", "Shaw", "Shrd",
-  "Sind", "Sinh", "Sora", "Sund", "Sylo", "Syrc", "Syre", "Syrj", "Syrn",
-  "Tagb", "Takr", "Tale", "Talu", "Taml", "Tang", "Tavt", "Telu", "Teng",
-  "Tfng", "Tglg", "Thaa", "Thai", "Tibt", "Tirh", "Ugar", "Vaii", "Visp",
-  "Wara", "Wole", "Xpeo", "Xsux", "Yiii", "Zmth", "Zsym", "Zyyy"
+#define EXPAND_SCRIPT_FONT(x, script_name) script_name ,
+#include "chrome/common/pref_font_script_names-inl.h"
+ALL_FONT_SCRIPTS("unused param")
+#undef EXPAND_SCRIPT_FONT
 };
 
 const size_t kWebKitScriptsForFontFamilyMapsLength =
@@ -204,19 +192,19 @@ const size_t kWebKitScriptsForFontFamilyMapsLength =
 // in pref_names_util.cc and the pref format in font_settings_api.cc must also
 // change.
 const char kWebKitStandardFontFamilyMap[] =
-    "webkit.webprefs.fonts.standard";
+    WEBKIT_WEBPREFS_FONTS_STANDARD;
 const char kWebKitFixedFontFamilyMap[] =
-    "webkit.webprefs.fonts.fixed";
+    WEBKIT_WEBPREFS_FONTS_FIXED;
 const char kWebKitSerifFontFamilyMap[] =
-    "webkit.webprefs.fonts.serif";
+    WEBKIT_WEBPREFS_FONTS_SERIF;
 const char kWebKitSansSerifFontFamilyMap[] =
-    "webkit.webprefs.fonts.sansserif";
+    WEBKIT_WEBPREFS_FONTS_SANSERIF;
 const char kWebKitCursiveFontFamilyMap[] =
-    "webkit.webprefs.fonts.cursive";
+    WEBKIT_WEBPREFS_FONTS_CURSIVE;
 const char kWebKitFantasyFontFamilyMap[] =
-    "webkit.webprefs.fonts.fantasy";
+    WEBKIT_WEBPREFS_FONTS_FANTASY;
 const char kWebKitPictographFontFamilyMap[] =
-    "webkit.webprefs.fonts.pictograph";
+    WEBKIT_WEBPREFS_FONTS_PICTOGRAPH;
 const char kWebKitStandardFontFamilyArabic[] =
     "webkit.webprefs.fonts.standard.Arab";
 const char kWebKitFixedFontFamilyArabic[] =
