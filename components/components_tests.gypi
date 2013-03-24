@@ -11,6 +11,8 @@
           'type': '<(gtest_target_type)',
           'sources': [
             'auto_login_parser/auto_login_parser_unittest.cc',
+            'webdata/encryptor/encryptor_password_mac_unittest.cc',
+            'webdata/encryptor/encryptor_unittest.cc',
             'navigation_interception/intercept_navigation_resource_throttle_unittest.cc',
             'test/run_all_unittests.cc',
             'visitedlink/test/visitedlink_unittest.cc',
@@ -24,7 +26,10 @@
             '../testing/gtest.gyp:gtest',
 
             # Dependencies of auto_login_parser
-            'components.gyp:auto_login_parser',
+            'auto_login_parser',
+
+            # Dependencies of encryptor
+            'encryptor',
 
             # Dependencies of intercept_navigation_resource_throttle_unittest.cc
             '../content/content.gyp:test_support_content',
@@ -32,8 +37,8 @@
             'navigation_interception',
 
             # Dependencies of visitedlink
-            'components.gyp:visitedlink_browser',
-            'components.gyp:visitedlink_renderer',
+            'visitedlink_browser',
+            'visitedlink_renderer',
             '../content/content_resources.gyp:content_resources',
           ],
           'conditions': [

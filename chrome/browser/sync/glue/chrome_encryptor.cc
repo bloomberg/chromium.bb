@@ -4,7 +4,7 @@
 
 #include "chrome/browser/sync/glue/chrome_encryptor.h"
 
-#include "chrome/browser/password_manager/encryptor.h"
+#include "components/webdata/encryptor/encryptor.h"
 
 namespace browser_sync {
 

@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/string_util.h"
-#include "chrome/browser/password_manager/encryptor.h"
 #include "chrome/browser/password_manager/login_database.h"
+#include "components/webdata/encryptor/encryptor.h"
 
 std::string LoginDatabase::EncryptedString(const string16& plain_text)
     const {

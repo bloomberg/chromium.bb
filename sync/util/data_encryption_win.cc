@@ -14,7 +14,7 @@
 #pragma comment(lib, "crypt32.lib")
 
 // TODO(akalin): Merge this with similar code in
-// chrome/browser/password_manager/encryptor_win.cc.  Preferably, all
+// components/webdata/encryptor/encryptor_win.cc.  Preferably, all
 // this stuff would live in crypto/.
 
 namespace syncer {

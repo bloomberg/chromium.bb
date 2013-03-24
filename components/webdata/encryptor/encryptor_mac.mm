@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/password_manager/encryptor.h"
+#include "components/webdata/encryptor/encryptor.h"
 
 #include <CommonCrypto/CommonCryptor.h>  // for kCCBlockSizeAES128
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/password_manager/encryptor_password_mac.h"
+#include "components/webdata/encryptor/encryptor_password_mac.h"
 #include "crypto/apple_keychain.h"
 #include "crypto/encryptor.h"
 #include "crypto/symmetric_key.h"

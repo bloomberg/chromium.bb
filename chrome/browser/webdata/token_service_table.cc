@@ -8,8 +8,8 @@
 #include <string>
 
 #include "base/logging.h"
-#include "chrome/browser/password_manager/encryptor.h"
 #include "chrome/browser/webdata/web_database.h"
+#include "components/webdata/encryptor/encryptor.h"
 #include "sql/statement.h"
 
 namespace {

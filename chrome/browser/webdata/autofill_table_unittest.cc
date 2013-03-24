@@ -11,7 +11,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/password_manager/encryptor.h"
 #include "chrome/browser/webdata/autofill_change.h"
 #include "chrome/browser/webdata/autofill_entry.h"
 #include "chrome/browser/webdata/autofill_table.h"
@@ -20,6 +19,7 @@
 #include "components/autofill/browser/autofill_type.h"
 #include "components/autofill/browser/credit_card.h"
 #include "components/autofill/common/form_field_data.h"
+#include "components/webdata/encryptor/encryptor.h"
 #include "sql/statement.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

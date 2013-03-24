@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/password_manager/encryptor_password_mac.h"
+#include "components/webdata/encryptor/encryptor_password_mac.h"
 #include "crypto/mock_apple_keychain.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

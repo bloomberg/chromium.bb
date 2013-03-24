@@ -7,13 +7,13 @@
 #include "base/guid.h"
 #include "base/prefs/pref_service.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/password_manager/encryptor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/autofill/browser/autofill_profile.h"
 #include "components/autofill/browser/credit_card.h"
 #include "components/autofill/common/autofill_pref_names.h"
 #include "components/autofill/common/form_field_data.h"
 #include "components/user_prefs/user_prefs.h"
+#include "components/webdata/encryptor/encryptor.h"
 
 namespace autofill_test {
 

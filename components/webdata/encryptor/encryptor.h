@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PASSWORD_MANAGER_ENCRYPTOR_H__
-#define CHROME_BROWSER_PASSWORD_MANAGER_ENCRYPTOR_H__
+#ifndef COMPONENTS_WEBDATA_ENCRYPTOR_ENCRYPTOR_H_
+#define COMPONENTS_WEBDATA_ENCRYPTOR_ENCRYPTOR_H_
 
 #include <string>
 
@@ -48,4 +48,4 @@ class Encryptor {
   DISALLOW_IMPLICIT_CONSTRUCTORS(Encryptor);
 };
 
-#endif  // CHROME_BROWSER_PASSWORD_MANAGER_ENCRYPTOR_H__
+#endif  // COMPONENTS_WEBDATA_ENCRYPTOR_ENCRYPTOR_H_

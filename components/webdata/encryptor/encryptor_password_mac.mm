@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/password_manager/encryptor_password_mac.h"
+#include "components/webdata/encryptor/encryptor_password_mac.h"
 
 #import <Security/Security.h>
 
@@ -10,7 +10,6 @@
 #include "base/mac/mac_logging.h"
 #include "base/rand_util.h"
 #include "crypto/apple_keychain.h"
-#include "ui/base/l10n/l10n_util.h"
 
 using crypto::AppleKeychain;
 

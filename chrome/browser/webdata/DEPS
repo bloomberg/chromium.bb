@@ -7,12 +7,12 @@ include_rules = [
   "-chrome/common",
   "+chrome/browser/api/webdata",
   "+chrome/browser/webdata",
+  "+components/encryptor",
 
   # TODO(caitkp, kaiwang): Bring this list to zero.
   # Do not add to the list of temporarily-allowed dependencies below,
   # and please do not introduce more #includes of these files.
   "!chrome/browser/history/history_database.h",
-  "!chrome/browser/password_manager/encryptor.h",
   "!chrome/browser/password_manager/ie7_password.h",
   "!chrome/browser/search_engines/search_terms_data.h",
   "!chrome/browser/search_engines/template_url.h",

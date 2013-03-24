@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PASSWORD_MANAGER_ENCRYPTOR_PASSWORD_H__
-#define CHROME_BROWSER_PASSWORD_MANAGER_ENCRYPTOR_PASSWORD_H__
+#ifndef COMPONENTS_WEBDATA_ENCRYPTOR_ENCRYPTOR_PASSWORD_MAC_H_
+#define COMPONENTS_WEBDATA_ENCRYPTOR_ENCRYPTOR_PASSWORD_MAC_H_
 
 #include <string>
 
@@ -32,4 +32,4 @@ class EncryptorPassword {
   const crypto::AppleKeychain& keychain_;
 };
 
-#endif  // CHROME_BROWSER_PASSWORD_MANAGER_ENCRYPTOR_PASSWORD_H__
+#endif  // COMPONENTS_WEBDATA_ENCRYPTOR_ENCRYPTOR_PASSWORD_MAC_H_
