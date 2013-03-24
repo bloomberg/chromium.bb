@@ -59,6 +59,8 @@ X11DesktopHandler::~X11DesktopHandler() {
 }
 
 void X11DesktopHandler::ActivateWindow(::Window window) {
+  DCHECK_EQ(base::MessagePumpAuraX11::GetDefaultXDisplay(), xdisplay_);
+
   XEvent xclient;
   memset(&xclient, 0, sizeof(xclient));
   xclient.type = ClientMessage;

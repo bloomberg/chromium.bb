@@ -20,6 +20,10 @@
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/gfx/screen.h"
 
+#if defined(USE_X11)
+#include "ui/base/x/x11_util.h"
+#endif
+
 namespace aura {
 namespace test {
 
@@ -74,6 +78,11 @@ void AuraTestHelper::TearDown() {
   root_window_.reset();
   test_screen_.reset();
   gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, NULL);
+
+#if defined(USE_X11)
+  ui::ResetXCursorCache();
+#endif
+
   Env::DeleteInstance();
 }
 

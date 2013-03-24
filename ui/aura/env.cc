@@ -35,6 +35,8 @@ Env::~Env() {
       &device_list_updater_aurax11_);
 #endif
 
+  FOR_EACH_OBSERVER(EnvObserver, observers_, OnWillDestroyEnv());
+
   ui::Compositor::Terminate();
 }
 
