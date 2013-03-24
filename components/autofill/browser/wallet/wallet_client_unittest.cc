@@ -29,6 +29,9 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace autofill {
+namespace wallet {
+
 namespace {
 
 const char kGoogleTransactionId[] = "google-transaction-id";
@@ -514,59 +517,6 @@ const char kUpdateInstrumentValidRequest[] =
         "\"upgraded_instrument_id\":\"instrument_id\""
     "}";
 
-}  // namespace
-
-namespace autofill {
-namespace wallet {
-
-class WalletClientTest : public testing::Test {
- public:
-  WalletClientTest() : io_thread_(content::BrowserThread::IO) {}
-
-  virtual void SetUp() {
-    io_thread_.StartIOThread();
-    profile_.CreateRequestContext();
-  }
-
-  virtual void TearDown() {
-    profile_.ResetRequestContext();
-    io_thread_.Stop();
-  }
-
-  std::string GetData(net::TestURLFetcher* fetcher) {
-    std::string data = fetcher->upload_data();
-    scoped_ptr<Value> root(base::JSONReader::Read(data));
-
-    // If this is not a JSON dictionary, return plain text.
-    if (root.get() == NULL || !root->IsType(Value::TYPE_DICTIONARY))
-      return data;
-
-    // Remove api_key entry (to prevent accidental leak), return JSON as text.
-    DictionaryValue* dict = static_cast<DictionaryValue*>(root.get());
-    dict->Remove("api_key", NULL);
-    base::JSONWriter::Write(dict, &data);
-    return data;
-  }
-
-  void VerifyAndFinishRequest(const net::TestURLFetcherFactory& fetcher_factory,
-                              net::HttpStatusCode response_code,
-                              const std::string& request_body,
-                              const std::string& response_body) {
-    net::TestURLFetcher* fetcher = fetcher_factory.GetFetcherByID(0);
-    ASSERT_TRUE(fetcher);
-    EXPECT_EQ(request_body, GetData(fetcher));
-    fetcher->set_response_code(response_code);
-    fetcher->SetResponseString(response_body);
-    fetcher->delegate()->OnURLFetchComplete(fetcher);
-  }
- protected:
-  TestingProfile profile_;
-
- private:
-  // The profile's request context must be released on the IO thread.
-  content::TestBrowserThread io_thread_;
-};
-
 class MockWalletClientDelegate : public WalletClientDelegate {
  public:
   MockWalletClientDelegate()
@@ -627,95 +577,125 @@ class MockWalletClientDelegate : public WalletClientDelegate {
   AutofillMetrics metric_logger_;
 };
 
+}  // namespace
+
+class WalletClientTest : public testing::Test {
+ public:
+  WalletClientTest() : io_thread_(content::BrowserThread::IO) {}
+
+  virtual void SetUp() OVERRIDE {
+    io_thread_.StartIOThread();
+    profile_.CreateRequestContext();
+    wallet_client_.reset(
+        new WalletClient(profile_.GetRequestContext(), &delegate_));
+  }
+
+  virtual void TearDown() OVERRIDE {
+    wallet_client_.reset();
+    profile_.ResetRequestContext();
+    io_thread_.Stop();
+  }
+
+  std::string GetData(net::TestURLFetcher* fetcher) {
+    std::string data = fetcher->upload_data();
+    scoped_ptr<Value> root(base::JSONReader::Read(data));
+
+    // If this is not a JSON dictionary, return plain text.
+    if (root.get() == NULL || !root->IsType(Value::TYPE_DICTIONARY))
+      return data;
+
+    // Remove api_key entry (to prevent accidental leak), return JSON as text.
+    DictionaryValue* dict = static_cast<DictionaryValue*>(root.get());
+    dict->Remove("api_key", NULL);
+    base::JSONWriter::Write(dict, &data);
+    return data;
+  }
+
+  void VerifyAndFinishRequest(net::HttpStatusCode response_code,
+                              const std::string& request_body,
+                              const std::string& response_body) {
+    net::TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
+    ASSERT_TRUE(fetcher);
+    EXPECT_EQ(request_body, GetData(fetcher));
+    fetcher->set_response_code(response_code);
+    fetcher->SetResponseString(response_body);
+    fetcher->delegate()->OnURLFetchComplete(fetcher);
+  }
+
+ protected:
+  scoped_ptr<WalletClient> wallet_client_;
+  MockWalletClientDelegate delegate_;
+  net::TestURLFetcherFactory factory_;
+
+ private:
+  // The profile's request context must be released on the IO thread.
+  content::TestBrowserThread io_thread_;
+  TestingProfile profile_;
+};
+
 // TODO(ahutter): Implement API compatibility tests. See
 // http://crbug.com/164465.
 
 TEST_F(WalletClientTest, WalletError) {
-  MockWalletClientDelegate delegate;
-  EXPECT_CALL(delegate, OnWalletError(
+  EXPECT_CALL(delegate_, OnWalletError(
       WalletClient::SERVICE_UNAVAILABLE)).Times(1);
 
-  net::TestURLFetcherFactory factory;
-
-  WalletClient wallet_client(profile_.GetRequestContext(), &delegate);
-  wallet_client.SendAutocheckoutStatus(autofill::SUCCESS,
-                                       GURL(kMerchantUrl),
-                                       "google_transaction_id");
-  VerifyAndFinishRequest(factory,
-                         net::HTTP_INTERNAL_SERVER_ERROR,
+  wallet_client_->SendAutocheckoutStatus(autofill::SUCCESS,
+                                         GURL(kMerchantUrl),
+                                         "google_transaction_id");
+  VerifyAndFinishRequest(net::HTTP_INTERNAL_SERVER_ERROR,
                          kSendAutocheckoutStatusOfSuccessValidRequest,
                          kErrorResponse);
 }
 
 TEST_F(WalletClientTest, WalletErrorResponseMissing) {
-  MockWalletClientDelegate delegate;
-  EXPECT_CALL(delegate, OnWalletError(
+  EXPECT_CALL(delegate_, OnWalletError(
       WalletClient::UNKNOWN_ERROR)).Times(1);
 
-  net::TestURLFetcherFactory factory;
-
-  WalletClient wallet_client(profile_.GetRequestContext(), &delegate);
-  wallet_client.SendAutocheckoutStatus(autofill::SUCCESS,
-                                       GURL(kMerchantUrl),
-                                       "google_transaction_id");
-  VerifyAndFinishRequest(factory,
-                         net::HTTP_INTERNAL_SERVER_ERROR,
+  wallet_client_->SendAutocheckoutStatus(autofill::SUCCESS,
+                                         GURL(kMerchantUrl),
+                                         "google_transaction_id");
+  VerifyAndFinishRequest(net::HTTP_INTERNAL_SERVER_ERROR,
                          kSendAutocheckoutStatusOfSuccessValidRequest,
                          kErrorTypeMissingInResponse);
 }
 
 TEST_F(WalletClientTest, NetworkFailureOnExpectedVoidResponse) {
-  MockWalletClientDelegate delegate;
-  EXPECT_CALL(delegate, OnNetworkError(net::HTTP_UNAUTHORIZED)).Times(1);
+  EXPECT_CALL(delegate_, OnNetworkError(net::HTTP_UNAUTHORIZED)).Times(1);
 
-  net::TestURLFetcherFactory factory;
-
-  WalletClient wallet_client(profile_.GetRequestContext(), &delegate);
-  wallet_client.SendAutocheckoutStatus(autofill::SUCCESS,
-                                       GURL(kMerchantUrl),
-                                       "");
-  net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
+  wallet_client_->SendAutocheckoutStatus(autofill::SUCCESS,
+                                         GURL(kMerchantUrl),
+                                         "");
+  net::TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
   fetcher->set_response_code(net::HTTP_UNAUTHORIZED);
   fetcher->delegate()->OnURLFetchComplete(fetcher);
 }
 
 TEST_F(WalletClientTest, NetworkFailureOnExpectedResponse) {
-  MockWalletClientDelegate delegate;
-  EXPECT_CALL(delegate, OnNetworkError(net::HTTP_UNAUTHORIZED)).Times(1);
+  EXPECT_CALL(delegate_, OnNetworkError(net::HTTP_UNAUTHORIZED)).Times(1);
 
-  net::TestURLFetcherFactory factory;
-
-  WalletClient wallet_client(profile_.GetRequestContext(), &delegate);
-  wallet_client.GetWalletItems(GURL(kMerchantUrl),
-                               std::vector<WalletClient::RiskCapability>());
-  net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
+  wallet_client_->GetWalletItems(GURL(kMerchantUrl),
+                                 std::vector<WalletClient::RiskCapability>());
+  net::TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
   fetcher->set_response_code(net::HTTP_UNAUTHORIZED);
   fetcher->delegate()->OnURLFetchComplete(fetcher);
 }
 
 TEST_F(WalletClientTest, RequestError) {
-  MockWalletClientDelegate delegate;
-  EXPECT_CALL(delegate, OnWalletError(WalletClient::BAD_REQUEST)).Times(1);
+  EXPECT_CALL(delegate_, OnWalletError(WalletClient::BAD_REQUEST)).Times(1);
 
-  net::TestURLFetcherFactory factory;
-
-  WalletClient wallet_client(profile_.GetRequestContext(), &delegate);
-  wallet_client.SendAutocheckoutStatus(autofill::SUCCESS,
-                                       GURL(kMerchantUrl),
-                                       "");
-  net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
+  wallet_client_->SendAutocheckoutStatus(autofill::SUCCESS,
+                                         GURL(kMerchantUrl),
+                                         "");
+  net::TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
   fetcher->set_response_code(net::HTTP_BAD_REQUEST);
   fetcher->delegate()->OnURLFetchComplete(fetcher);
 }
 
 TEST_F(WalletClientTest, GetFullWalletSuccess) {
-  MockWalletClientDelegate delegate;
-  net::TestURLFetcherFactory factory;
-
-  WalletClient wallet_client(profile_.GetRequestContext(), &delegate);
   Cart cart("total_price", "currency_code");
   WalletClient::FullWalletRequest full_wallet_request(
       "instrument_id",
@@ -724,27 +704,22 @@ TEST_F(WalletClientTest, GetFullWalletSuccess) {
       cart,
       "google_transaction_id",
       std::vector<WalletClient::RiskCapability>());
-  wallet_client.GetFullWallet(full_wallet_request);
+  wallet_client_->GetFullWallet(full_wallet_request);
 
-  net::TestURLFetcher* encryption_fetcher = factory.GetFetcherByID(1);
+  net::TestURLFetcher* encryption_fetcher = factory_.GetFetcherByID(1);
   ASSERT_TRUE(encryption_fetcher);
   encryption_fetcher->set_response_code(net::HTTP_OK);
   encryption_fetcher->SetResponseString(
       "session_material|encrypted_one_time_pad");
   encryption_fetcher->delegate()->OnURLFetchComplete(encryption_fetcher);
 
-  VerifyAndFinishRequest(factory,
-                         net::HTTP_OK,
+  VerifyAndFinishRequest(net::HTTP_OK,
                          kGetFullWalletValidRequest,
                          kGetFullWalletValidResponse);
-  EXPECT_EQ(1U, delegate.full_wallets_received());
+  EXPECT_EQ(1U, delegate_.full_wallets_received());
 }
 
 TEST_F(WalletClientTest, GetFullWalletWithRiskCapabilitesSuccess) {
-  MockWalletClientDelegate delegate;
-  net::TestURLFetcherFactory factory;
-
-  WalletClient wallet_client(profile_.GetRequestContext(), &delegate);
   std::vector<WalletClient::RiskCapability> risk_capabilities;
   risk_capabilities.push_back(WalletClient::VERIFY_CVC);
   Cart cart("total_price", "currency_code");
@@ -755,30 +730,25 @@ TEST_F(WalletClientTest, GetFullWalletWithRiskCapabilitesSuccess) {
       cart,
       "google_transaction_id",
       risk_capabilities);
-  wallet_client.GetFullWallet(full_wallet_request);
+  wallet_client_->GetFullWallet(full_wallet_request);
 
-  net::TestURLFetcher* encryption_fetcher = factory.GetFetcherByID(1);
+  net::TestURLFetcher* encryption_fetcher = factory_.GetFetcherByID(1);
   ASSERT_TRUE(encryption_fetcher);
   encryption_fetcher->set_response_code(net::HTTP_OK);
   encryption_fetcher->SetResponseString(
       "session_material|encrypted_one_time_pad");
   encryption_fetcher->delegate()->OnURLFetchComplete(encryption_fetcher);
 
-  VerifyAndFinishRequest(factory,
-                         net::HTTP_OK,
+  VerifyAndFinishRequest(net::HTTP_OK,
                          kGetFullWalletWithRiskCapabilitesValidRequest,
                          kGetFullWalletValidResponse);
-  EXPECT_EQ(1U, delegate.full_wallets_received());
+  EXPECT_EQ(1U, delegate_.full_wallets_received());
 }
 
 TEST_F(WalletClientTest, GetFullWalletEncryptionDown) {
-  MockWalletClientDelegate delegate;
-  EXPECT_CALL(delegate,
+  EXPECT_CALL(delegate_,
               OnNetworkError(net::HTTP_INTERNAL_SERVER_ERROR)).Times(1);
 
-  net::TestURLFetcherFactory factory;
-
-  WalletClient wallet_client(profile_.GetRequestContext(), &delegate);
   Cart cart("total_price", "currency_code");
   WalletClient::FullWalletRequest full_wallet_request(
       "instrument_id",
@@ -787,24 +757,20 @@ TEST_F(WalletClientTest, GetFullWalletEncryptionDown) {
       cart,
       "google_transaction_id",
       std::vector<WalletClient::RiskCapability>());
-  wallet_client.GetFullWallet(full_wallet_request);
+  wallet_client_->GetFullWallet(full_wallet_request);
 
-  net::TestURLFetcher* encryption_fetcher = factory.GetFetcherByID(1);
+  net::TestURLFetcher* encryption_fetcher = factory_.GetFetcherByID(1);
   ASSERT_TRUE(encryption_fetcher);
   encryption_fetcher->set_response_code(net::HTTP_INTERNAL_SERVER_ERROR);
   encryption_fetcher->SetResponseString(std::string());
   encryption_fetcher->delegate()->OnURLFetchComplete(encryption_fetcher);
 
-  EXPECT_EQ(0U, delegate.full_wallets_received());
+  EXPECT_EQ(0U, delegate_.full_wallets_received());
 }
 
 TEST_F(WalletClientTest, GetFullWalletEncryptionMalformed) {
-  MockWalletClientDelegate delegate;
-  EXPECT_CALL(delegate, OnMalformedResponse()).Times(1);
+  EXPECT_CALL(delegate_, OnMalformedResponse()).Times(1);
 
-  net::TestURLFetcherFactory factory;
-
-  WalletClient wallet_client(profile_.GetRequestContext(), &delegate);
   Cart cart("total_price", "currency_code");
   WalletClient::FullWalletRequest full_wallet_request(
       "instrument_id",
@@ -813,25 +779,21 @@ TEST_F(WalletClientTest, GetFullWalletEncryptionMalformed) {
       cart,
       "google_transaction_id",
       std::vector<WalletClient::RiskCapability>());
-  wallet_client.GetFullWallet(full_wallet_request);
+  wallet_client_->GetFullWallet(full_wallet_request);
 
-  net::TestURLFetcher* encryption_fetcher = factory.GetFetcherByID(1);
+  net::TestURLFetcher* encryption_fetcher = factory_.GetFetcherByID(1);
   ASSERT_TRUE(encryption_fetcher);
   encryption_fetcher->set_response_code(net::HTTP_OK);
   encryption_fetcher->SetResponseString(
       "session_material:encrypted_one_time_pad");
   encryption_fetcher->delegate()->OnURLFetchComplete(encryption_fetcher);
 
-  EXPECT_EQ(0U, delegate.full_wallets_received());
+  EXPECT_EQ(0U, delegate_.full_wallets_received());
 }
 
 TEST_F(WalletClientTest, GetFullWalletMalformedResponse) {
-  MockWalletClientDelegate delegate;
-  EXPECT_CALL(delegate, OnMalformedResponse()).Times(1);
+  EXPECT_CALL(delegate_, OnMalformedResponse()).Times(1);
 
-  net::TestURLFetcherFactory factory;
-
-  WalletClient wallet_client(profile_.GetRequestContext(), &delegate);
   Cart cart("total_price", "currency_code");
   WalletClient::FullWalletRequest full_wallet_request(
       "instrument_id",
@@ -840,36 +802,31 @@ TEST_F(WalletClientTest, GetFullWalletMalformedResponse) {
       cart,
       "google_transaction_id",
       std::vector<WalletClient::RiskCapability>());
-  wallet_client.GetFullWallet(full_wallet_request);
+  wallet_client_->GetFullWallet(full_wallet_request);
 
-  net::TestURLFetcher* encryption_fetcher = factory.GetFetcherByID(1);
+  net::TestURLFetcher* encryption_fetcher = factory_.GetFetcherByID(1);
   ASSERT_TRUE(encryption_fetcher);
   encryption_fetcher->set_response_code(net::HTTP_OK);
   encryption_fetcher->SetResponseString(
       "session_material|encrypted_one_time_pad");
   encryption_fetcher->delegate()->OnURLFetchComplete(encryption_fetcher);
 
-  VerifyAndFinishRequest(factory,
-                         net::HTTP_OK,
+  VerifyAndFinishRequest(net::HTTP_OK,
                          kGetFullWalletValidRequest,
                          kGetFullWalletInvalidResponse);
-  EXPECT_EQ(0U, delegate.full_wallets_received());
+  EXPECT_EQ(0U, delegate_.full_wallets_received());
 }
 
 TEST_F(WalletClientTest, AcceptLegalDocuments) {
-  MockWalletClientDelegate delegate;
-  EXPECT_CALL(delegate, OnDidAcceptLegalDocuments()).Times(1);
+  EXPECT_CALL(delegate_, OnDidAcceptLegalDocuments()).Times(1);
 
-  net::TestURLFetcherFactory factory;
-
-  WalletClient wallet_client(profile_.GetRequestContext(), &delegate);
   std::vector<std::string> doc_ids;
   doc_ids.push_back("doc_1");
   doc_ids.push_back("doc_2");
-  wallet_client.AcceptLegalDocuments(doc_ids,
-                                     kGoogleTransactionId,
-                                     GURL(kMerchantUrl));
-  net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
+  wallet_client_->AcceptLegalDocuments(doc_ids,
+                                       kGoogleTransactionId,
+                                       GURL(kMerchantUrl));
+  net::TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
   EXPECT_EQ(kAcceptLegalDocumentsValidRequest, GetData(fetcher));
   fetcher->SetResponseString(")]}'");  // Invalid JSON. Should be ignored.
@@ -878,105 +835,82 @@ TEST_F(WalletClientTest, AcceptLegalDocuments) {
 }
 
 TEST_F(WalletClientTest, AuthenticateInstrumentSucceeded) {
-  MockWalletClientDelegate delegate;
-  EXPECT_CALL(delegate, OnDidAuthenticateInstrument(true)).Times(1);
+  EXPECT_CALL(delegate_, OnDidAuthenticateInstrument(true)).Times(1);
 
-  net::TestURLFetcherFactory factory;
+  wallet_client_->AuthenticateInstrument("instrument_id",
+                                         "cvv",
+                                         "obfuscated_gaia_id");
 
-  WalletClient wallet_client(profile_.GetRequestContext(), &delegate);
-  wallet_client.AuthenticateInstrument("instrument_id",
-                                       "cvv",
-                                       "obfuscated_gaia_id");
-
-  net::TestURLFetcher* encryption_fetcher = factory.GetFetcherByID(1);
+  net::TestURLFetcher* encryption_fetcher = factory_.GetFetcherByID(1);
   ASSERT_TRUE(encryption_fetcher);
   encryption_fetcher->set_response_code(net::HTTP_OK);
   encryption_fetcher->SetResponseString("escrow_handle");
   encryption_fetcher->delegate()->OnURLFetchComplete(encryption_fetcher);
 
-  VerifyAndFinishRequest(factory,
-                         net::HTTP_OK,
+  VerifyAndFinishRequest(net::HTTP_OK,
                          kAuthenticateInstrumentValidRequest,
                          kAuthenticateInstrumentSuccessResponse);
 }
 
 TEST_F(WalletClientTest, AuthenticateInstrumentFailed) {
-  MockWalletClientDelegate delegate;
-  EXPECT_CALL(delegate, OnDidAuthenticateInstrument(false)).Times(1);
+  EXPECT_CALL(delegate_, OnDidAuthenticateInstrument(false)).Times(1);
 
-  net::TestURLFetcherFactory factory;
+  wallet_client_->AuthenticateInstrument("instrument_id",
+                                         "cvv",
+                                         "obfuscated_gaia_id");
 
-  WalletClient wallet_client(profile_.GetRequestContext(), &delegate);
-  wallet_client.AuthenticateInstrument("instrument_id",
-                                       "cvv",
-                                       "obfuscated_gaia_id");
-
-  net::TestURLFetcher* encryption_fetcher = factory.GetFetcherByID(1);
+  net::TestURLFetcher* encryption_fetcher = factory_.GetFetcherByID(1);
   ASSERT_TRUE(encryption_fetcher);
   encryption_fetcher->set_response_code(net::HTTP_OK);
   encryption_fetcher->SetResponseString("escrow_handle");
   encryption_fetcher->delegate()->OnURLFetchComplete(encryption_fetcher);
 
-  VerifyAndFinishRequest(factory,
-                         net::HTTP_OK,
+  VerifyAndFinishRequest(net::HTTP_OK,
                          kAuthenticateInstrumentValidRequest,
                          kAuthenticateInstrumentFailureResponse);
 }
 
 TEST_F(WalletClientTest, AuthenticateInstrumentEscrowDown) {
-  MockWalletClientDelegate delegate;
-  EXPECT_CALL(delegate,
+  EXPECT_CALL(delegate_,
               OnNetworkError(net::HTTP_INTERNAL_SERVER_ERROR)).Times(1);
 
-  net::TestURLFetcherFactory factory;
+  wallet_client_->AuthenticateInstrument("instrument_id",
+                                         "cvv",
+                                         "obfuscated_gaia_id");
 
-  WalletClient wallet_client(profile_.GetRequestContext(), &delegate);
-  wallet_client.AuthenticateInstrument("instrument_id",
-                                       "cvv",
-                                       "obfuscated_gaia_id");
-
-  net::TestURLFetcher* encryption_fetcher = factory.GetFetcherByID(1);
+  net::TestURLFetcher* encryption_fetcher = factory_.GetFetcherByID(1);
   ASSERT_TRUE(encryption_fetcher);
   encryption_fetcher->set_response_code(net::HTTP_INTERNAL_SERVER_ERROR);
   encryption_fetcher->delegate()->OnURLFetchComplete(encryption_fetcher);
 }
 
 TEST_F(WalletClientTest, AuthenticateInstrumentEscrowMalformed) {
-  MockWalletClientDelegate delegate;
-  EXPECT_CALL(delegate, OnMalformedResponse()).Times(1);
+  EXPECT_CALL(delegate_, OnMalformedResponse()).Times(1);
 
-  net::TestURLFetcherFactory factory;
+  wallet_client_->AuthenticateInstrument("instrument_id",
+                                         "cvv",
+                                         "obfuscated_gaia_id");
 
-  WalletClient wallet_client(profile_.GetRequestContext(), &delegate);
-  wallet_client.AuthenticateInstrument("instrument_id",
-                                       "cvv",
-                                       "obfuscated_gaia_id");
-
-  net::TestURLFetcher* encryption_fetcher = factory.GetFetcherByID(1);
+  net::TestURLFetcher* encryption_fetcher = factory_.GetFetcherByID(1);
   ASSERT_TRUE(encryption_fetcher);
   encryption_fetcher->set_response_code(net::HTTP_OK);
   encryption_fetcher->delegate()->OnURLFetchComplete(encryption_fetcher);
 }
 
 TEST_F(WalletClientTest, AuthenticateInstrumentFailedMalformedResponse) {
-  MockWalletClientDelegate delegate;
-  EXPECT_CALL(delegate, OnMalformedResponse()).Times(1);
+  EXPECT_CALL(delegate_, OnMalformedResponse()).Times(1);
 
-  net::TestURLFetcherFactory factory;
+  wallet_client_->AuthenticateInstrument("instrument_id",
+                                         "cvv",
+                                         "obfuscated_gaia_id");
 
-  WalletClient wallet_client(profile_.GetRequestContext(), &delegate);
-  wallet_client.AuthenticateInstrument("instrument_id",
-                                       "cvv",
-                                       "obfuscated_gaia_id");
-
-  net::TestURLFetcher* encryption_fetcher = factory.GetFetcherByID(1);
+  net::TestURLFetcher* encryption_fetcher = factory_.GetFetcherByID(1);
   ASSERT_TRUE(encryption_fetcher);
   encryption_fetcher->set_response_code(net::HTTP_OK);
   encryption_fetcher->SetResponseString("escrow_handle");
   encryption_fetcher->delegate()->OnURLFetchComplete(encryption_fetcher);
 
-  VerifyAndFinishRequest(factory,
-                         net::HTTP_OK,
+  VerifyAndFinishRequest(net::HTTP_OK,
                          kAuthenticateInstrumentValidRequest,
                          kSaveInvalidResponse);
 }
@@ -984,211 +918,154 @@ TEST_F(WalletClientTest, AuthenticateInstrumentFailedMalformedResponse) {
 // TODO(ahutter): Add failure tests for GetWalletItems.
 
 TEST_F(WalletClientTest, GetWalletItems) {
-  MockWalletClientDelegate delegate;
-  net::TestURLFetcherFactory factory;
+  wallet_client_->GetWalletItems(GURL(kMerchantUrl),
+                                 std::vector<WalletClient::RiskCapability>());
 
-  WalletClient wallet_client(profile_.GetRequestContext(), &delegate);
-  wallet_client.GetWalletItems(GURL(kMerchantUrl),
-                               std::vector<WalletClient::RiskCapability>());
-
-  VerifyAndFinishRequest(factory,
-                         net::HTTP_OK,
+  VerifyAndFinishRequest(net::HTTP_OK,
                          kGetWalletItemsValidRequest,
                          kGetWalletItemsValidResponse);
-  EXPECT_EQ(1U, delegate.wallet_items_received());
+  EXPECT_EQ(1U, delegate_.wallet_items_received());
 }
 
 TEST_F(WalletClientTest, GetWalletItemsWithRiskCapabilites) {
-  MockWalletClientDelegate delegate;
-  net::TestURLFetcherFactory factory;
-
   std::vector<WalletClient::RiskCapability> risk_capabilities;
   risk_capabilities.push_back(WalletClient::RELOGIN);
 
-  WalletClient wallet_client(profile_.GetRequestContext(), &delegate);
-  wallet_client.GetWalletItems(GURL(kMerchantUrl),
-                               risk_capabilities);
+  wallet_client_->GetWalletItems(GURL(kMerchantUrl),
+                                 risk_capabilities);
 
-  VerifyAndFinishRequest(factory,
-                         net::HTTP_OK,
+  VerifyAndFinishRequest(net::HTTP_OK,
                          kGetWalletItemsWithRiskCapabilitiesValidRequest,
                          kGetWalletItemsValidResponse);
-  EXPECT_EQ(1U, delegate.wallet_items_received());
+  EXPECT_EQ(1U, delegate_.wallet_items_received());
 }
 
 TEST_F(WalletClientTest, SaveAddressSucceeded) {
-  MockWalletClientDelegate delegate;
-  EXPECT_CALL(delegate,
+  EXPECT_CALL(delegate_,
               OnDidSaveAddress("saved_address_id",
                                std::vector<RequiredAction>())).Times(1);
 
-  net::TestURLFetcherFactory factory;
-
   scoped_ptr<Address> address = GetTestSaveableAddress();
-
-  WalletClient wallet_client(profile_.GetRequestContext(), &delegate);
-  wallet_client.SaveAddress(*address, GURL(kMerchantUrl));
-  VerifyAndFinishRequest(factory,
-                         net::HTTP_OK,
+  wallet_client_->SaveAddress(*address, GURL(kMerchantUrl));
+  VerifyAndFinishRequest(net::HTTP_OK,
                          kSaveAddressValidRequest,
                          kSaveAddressValidResponse);
 }
 
 TEST_F(WalletClientTest, SaveAddressWithRequiredActionsSucceeded) {
-  MockWalletClientDelegate delegate;
 
   std::vector<RequiredAction> required_actions;
   required_actions.push_back(REQUIRE_PHONE_NUMBER);
   required_actions.push_back(INVALID_FORM_FIELD);
 
-  EXPECT_CALL(delegate,
+  EXPECT_CALL(delegate_,
               OnDidSaveAddress(std::string(),
                                required_actions)).Times(1);
 
-  net::TestURLFetcherFactory factory;
-
   scoped_ptr<Address> address = GetTestSaveableAddress();
-
-  WalletClient wallet_client(profile_.GetRequestContext(), &delegate);
-  wallet_client.SaveAddress(*address, GURL(kMerchantUrl));
-  VerifyAndFinishRequest(factory,
-                         net::HTTP_OK,
+  wallet_client_->SaveAddress(*address, GURL(kMerchantUrl));
+  VerifyAndFinishRequest(net::HTTP_OK,
                          kSaveAddressValidRequest,
                          kSaveAddressWithRequiredActionsValidResponse);
 }
 
 TEST_F(WalletClientTest, SaveAddressFailedInvalidRequiredAction) {
-  MockWalletClientDelegate delegate;
-  EXPECT_CALL(delegate, OnMalformedResponse()).Times(1);
-
-  net::TestURLFetcherFactory factory;
+  EXPECT_CALL(delegate_, OnMalformedResponse()).Times(1);
 
   scoped_ptr<Address> address = GetTestSaveableAddress();
-
-  WalletClient wallet_client(profile_.GetRequestContext(), &delegate);
-  wallet_client.SaveAddress(*address, GURL(kMerchantUrl));
-  VerifyAndFinishRequest(factory,
-                         net::HTTP_OK,
+  wallet_client_->SaveAddress(*address, GURL(kMerchantUrl));
+  VerifyAndFinishRequest(net::HTTP_OK,
                          kSaveAddressValidRequest,
                          kSaveWithInvalidRequiredActionsResponse);
 }
 
 TEST_F(WalletClientTest, SaveAddressFailedMalformedResponse) {
-  MockWalletClientDelegate delegate;
-  EXPECT_CALL(delegate, OnMalformedResponse()).Times(1);
-
-  net::TestURLFetcherFactory factory;
+  EXPECT_CALL(delegate_, OnMalformedResponse()).Times(1);
 
   scoped_ptr<Address> address = GetTestSaveableAddress();
-
-  WalletClient wallet_client(profile_.GetRequestContext(), &delegate);
-  wallet_client.SaveAddress(*address, GURL(kMerchantUrl));
-  VerifyAndFinishRequest(factory,
-                         net::HTTP_OK,
+  wallet_client_->SaveAddress(*address, GURL(kMerchantUrl));
+  VerifyAndFinishRequest(net::HTTP_OK,
                          kSaveAddressValidRequest,
                          kSaveInvalidResponse);
 }
 
 TEST_F(WalletClientTest, SaveInstrumentSucceeded) {
-  MockWalletClientDelegate delegate;
-  EXPECT_CALL(delegate,
+  EXPECT_CALL(delegate_,
               OnDidSaveInstrument("instrument_id",
                                   std::vector<RequiredAction>())).Times(1);
 
-  net::TestURLFetcherFactory factory;
-
   scoped_ptr<Instrument> instrument = GetTestInstrument();
+  wallet_client_->SaveInstrument(*instrument,
+                                 "obfuscated_gaia_id",
+                                 GURL(kMerchantUrl));
 
-  WalletClient wallet_client(profile_.GetRequestContext(), &delegate);
-  wallet_client.SaveInstrument(*instrument,
-                               "obfuscated_gaia_id",
-                               GURL(kMerchantUrl));
-
-  net::TestURLFetcher* encryption_fetcher = factory.GetFetcherByID(1);
+  net::TestURLFetcher* encryption_fetcher = factory_.GetFetcherByID(1);
   ASSERT_TRUE(encryption_fetcher);
   encryption_fetcher->set_response_code(net::HTTP_OK);
   encryption_fetcher->SetResponseString("escrow_handle");
   encryption_fetcher->delegate()->OnURLFetchComplete(encryption_fetcher);
 
-  VerifyAndFinishRequest(factory,
-                         net::HTTP_OK,
+  VerifyAndFinishRequest(net::HTTP_OK,
                          kSaveInstrumentValidRequest,
                          kSaveInstrumentValidResponse);
 }
 
 TEST_F(WalletClientTest, SaveInstrumentWithRequiredActionsSucceeded) {
-  MockWalletClientDelegate delegate;
 
   std::vector<RequiredAction> required_actions;
   required_actions.push_back(REQUIRE_PHONE_NUMBER);
   required_actions.push_back(INVALID_FORM_FIELD);
 
-  EXPECT_CALL(delegate,
+  EXPECT_CALL(delegate_,
               OnDidSaveInstrument(std::string(),
                                   required_actions)).Times(1);
 
-  net::TestURLFetcherFactory factory;
-
   scoped_ptr<Instrument> instrument = GetTestInstrument();
+  wallet_client_->SaveInstrument(*instrument,
+                                 "obfuscated_gaia_id",
+                                 GURL(kMerchantUrl));
 
-  WalletClient wallet_client(profile_.GetRequestContext(), &delegate);
-  wallet_client.SaveInstrument(*instrument,
-                               "obfuscated_gaia_id",
-                               GURL(kMerchantUrl));
-
-  net::TestURLFetcher* encryption_fetcher = factory.GetFetcherByID(1);
+  net::TestURLFetcher* encryption_fetcher = factory_.GetFetcherByID(1);
   ASSERT_TRUE(encryption_fetcher);
   encryption_fetcher->set_response_code(net::HTTP_OK);
   encryption_fetcher->SetResponseString("escrow_handle");
   encryption_fetcher->delegate()->OnURLFetchComplete(encryption_fetcher);
 
-  VerifyAndFinishRequest(factory,
-                         net::HTTP_OK,
+  VerifyAndFinishRequest(net::HTTP_OK,
                          kSaveInstrumentValidRequest,
                          kSaveInstrumentWithRequiredActionsValidResponse);
 }
 
 TEST_F(WalletClientTest, SaveInstrumentFailedInvalidRequiredActions) {
-  MockWalletClientDelegate delegate;
 
-  EXPECT_CALL(delegate, OnMalformedResponse());
-
-  net::TestURLFetcherFactory factory;
+  EXPECT_CALL(delegate_, OnMalformedResponse());
 
   scoped_ptr<Instrument> instrument = GetTestInstrument();
+  wallet_client_->SaveInstrument(*instrument,
+                                 "obfuscated_gaia_id",
+                                 GURL(kMerchantUrl));
 
-  WalletClient wallet_client(profile_.GetRequestContext(), &delegate);
-  wallet_client.SaveInstrument(*instrument,
-                               "obfuscated_gaia_id",
-                               GURL(kMerchantUrl));
-
-  net::TestURLFetcher* encryption_fetcher = factory.GetFetcherByID(1);
+  net::TestURLFetcher* encryption_fetcher = factory_.GetFetcherByID(1);
   ASSERT_TRUE(encryption_fetcher);
   encryption_fetcher->set_response_code(net::HTTP_OK);
   encryption_fetcher->SetResponseString("escrow_handle");
   encryption_fetcher->delegate()->OnURLFetchComplete(encryption_fetcher);
 
-  VerifyAndFinishRequest(factory,
-                         net::HTTP_OK,
+  VerifyAndFinishRequest(net::HTTP_OK,
                          kSaveInstrumentValidRequest,
                          kSaveWithInvalidRequiredActionsResponse);
 }
 
 TEST_F(WalletClientTest, SaveInstrumentEscrowDown) {
-  MockWalletClientDelegate delegate;
-  EXPECT_CALL(delegate,
+  EXPECT_CALL(delegate_,
               OnNetworkError(net::HTTP_INTERNAL_SERVER_ERROR)).Times(1);
 
-  net::TestURLFetcherFactory factory;
-
   scoped_ptr<Instrument> instrument = GetTestInstrument();
+  wallet_client_->SaveInstrument(*instrument,
+                                 "obfuscated_gaia_id",
+                                 GURL(kMerchantUrl));
 
-  WalletClient wallet_client(profile_.GetRequestContext(), &delegate);
-  wallet_client.SaveInstrument(*instrument,
-                               "obfuscated_gaia_id",
-                               GURL(kMerchantUrl));
-
-  net::TestURLFetcher* encryption_fetcher = factory.GetFetcherByID(1);
+  net::TestURLFetcher* encryption_fetcher = factory_.GetFetcherByID(1);
   ASSERT_TRUE(encryption_fetcher);
   encryption_fetcher->set_response_code(net::HTTP_INTERNAL_SERVER_ERROR);
   encryption_fetcher->SetResponseString(std::string());
@@ -1196,19 +1073,14 @@ TEST_F(WalletClientTest, SaveInstrumentEscrowDown) {
 }
 
 TEST_F(WalletClientTest, SaveInstrumentEscrowMalformed) {
-  MockWalletClientDelegate delegate;
-  EXPECT_CALL(delegate, OnMalformedResponse()).Times(1);
-
-  net::TestURLFetcherFactory factory;
+  EXPECT_CALL(delegate_, OnMalformedResponse()).Times(1);
 
   scoped_ptr<Instrument> instrument = GetTestInstrument();
+  wallet_client_->SaveInstrument(*instrument,
+                                 "obfuscated_gaia_id",
+                                 GURL(kMerchantUrl));
 
-  WalletClient wallet_client(profile_.GetRequestContext(), &delegate);
-  wallet_client.SaveInstrument(*instrument,
-                               "obfuscated_gaia_id",
-                               GURL(kMerchantUrl));
-
-  net::TestURLFetcher* encryption_fetcher = factory.GetFetcherByID(1);
+  net::TestURLFetcher* encryption_fetcher = factory_.GetFetcherByID(1);
   ASSERT_TRUE(encryption_fetcher);
   encryption_fetcher->set_response_code(net::HTTP_OK);
   encryption_fetcher->SetResponseString(std::string());
@@ -1216,144 +1088,111 @@ TEST_F(WalletClientTest, SaveInstrumentEscrowMalformed) {
 }
 
 TEST_F(WalletClientTest, SaveInstrumentFailedMalformedResponse) {
-  MockWalletClientDelegate delegate;
-  EXPECT_CALL(delegate, OnMalformedResponse()).Times(1);
-
-  net::TestURLFetcherFactory factory;
+  EXPECT_CALL(delegate_, OnMalformedResponse()).Times(1);
 
   scoped_ptr<Instrument> instrument = GetTestInstrument();
+  wallet_client_->SaveInstrument(*instrument,
+                                 "obfuscated_gaia_id",
+                                 GURL(kMerchantUrl));
 
-  WalletClient wallet_client(profile_.GetRequestContext(), &delegate);
-  wallet_client.SaveInstrument(*instrument,
-                               "obfuscated_gaia_id",
-                               GURL(kMerchantUrl));
-
-  net::TestURLFetcher* encryption_fetcher = factory.GetFetcherByID(1);
+  net::TestURLFetcher* encryption_fetcher = factory_.GetFetcherByID(1);
   ASSERT_TRUE(encryption_fetcher);
   encryption_fetcher->set_response_code(net::HTTP_OK);
   encryption_fetcher->SetResponseString("escrow_handle");
   encryption_fetcher->delegate()->OnURLFetchComplete(encryption_fetcher);
 
-  VerifyAndFinishRequest(factory,
-                         net::HTTP_OK,
+  VerifyAndFinishRequest(net::HTTP_OK,
                          kSaveInstrumentValidRequest,
                          kSaveInvalidResponse);
 }
 
 TEST_F(WalletClientTest, SaveInstrumentAndAddressSucceeded) {
-  MockWalletClientDelegate delegate;
-  EXPECT_CALL(delegate,
+  EXPECT_CALL(delegate_,
               OnDidSaveInstrumentAndAddress(
                   "saved_instrument_id",
                   "saved_address_id",
                   std::vector<RequiredAction>())).Times(1);
 
-  net::TestURLFetcherFactory factory;
-
   scoped_ptr<Instrument> instrument = GetTestInstrument();
-
   scoped_ptr<Address> address = GetTestSaveableAddress();
+  wallet_client_->SaveInstrumentAndAddress(*instrument,
+                                           *address,
+                                           "obfuscated_gaia_id",
+                                           GURL(kMerchantUrl));
 
-  WalletClient wallet_client(profile_.GetRequestContext(), &delegate);
-  wallet_client.SaveInstrumentAndAddress(*instrument,
-                                         *address,
-                                         "obfuscated_gaia_id",
-                                         GURL(kMerchantUrl));
-
-  net::TestURLFetcher* encryption_fetcher = factory.GetFetcherByID(1);
+  net::TestURLFetcher* encryption_fetcher = factory_.GetFetcherByID(1);
   ASSERT_TRUE(encryption_fetcher);
   encryption_fetcher->set_response_code(net::HTTP_OK);
   encryption_fetcher->SetResponseString("escrow_handle");
   encryption_fetcher->delegate()->OnURLFetchComplete(encryption_fetcher);
-  VerifyAndFinishRequest(factory,
-                         net::HTTP_OK,
+  VerifyAndFinishRequest(net::HTTP_OK,
                          kSaveInstrumentAndAddressValidRequest,
                          kSaveInstrumentAndAddressValidResponse);
 }
 
 TEST_F(WalletClientTest, SaveInstrumentAndAddressWithRequiredActionsSucceeded) {
-  MockWalletClientDelegate delegate;
 
   std::vector<RequiredAction> required_actions;
   required_actions.push_back(REQUIRE_PHONE_NUMBER);
   required_actions.push_back(INVALID_FORM_FIELD);
 
-  EXPECT_CALL(delegate,
+  EXPECT_CALL(delegate_,
               OnDidSaveInstrumentAndAddress(
                   std::string(),
                   std::string(),
                   required_actions)).Times(1);
 
-  net::TestURLFetcherFactory factory;
-
   scoped_ptr<Instrument> instrument = GetTestInstrument();
-
   scoped_ptr<Address> address = GetTestSaveableAddress();
+  wallet_client_->SaveInstrumentAndAddress(*instrument,
+                                           *address,
+                                           "obfuscated_gaia_id",
+                                           GURL(kMerchantUrl));
 
-  WalletClient wallet_client(profile_.GetRequestContext(), &delegate);
-  wallet_client.SaveInstrumentAndAddress(*instrument,
-                                         *address,
-                                         "obfuscated_gaia_id",
-                                         GURL(kMerchantUrl));
-
-  net::TestURLFetcher* encryption_fetcher = factory.GetFetcherByID(1);
+  net::TestURLFetcher* encryption_fetcher = factory_.GetFetcherByID(1);
   ASSERT_TRUE(encryption_fetcher);
   encryption_fetcher->set_response_code(net::HTTP_OK);
   encryption_fetcher->SetResponseString("escrow_handle");
   encryption_fetcher->delegate()->OnURLFetchComplete(encryption_fetcher);
   VerifyAndFinishRequest(
-      factory,
       net::HTTP_OK,
       kSaveInstrumentAndAddressValidRequest,
       kSaveInstrumentAndAddressWithRequiredActionsValidResponse);
 }
 
 TEST_F(WalletClientTest, SaveInstrumentAndAddressFailedInvalidRequiredAction) {
-  MockWalletClientDelegate delegate;
-  EXPECT_CALL(delegate, OnMalformedResponse()).Times(1);
-
-  net::TestURLFetcherFactory factory;
+  EXPECT_CALL(delegate_, OnMalformedResponse()).Times(1);
 
   scoped_ptr<Instrument> instrument = GetTestInstrument();
-
   scoped_ptr<Address> address = GetTestSaveableAddress();
-
-  WalletClient wallet_client(profile_.GetRequestContext(), &delegate);
-  wallet_client.SaveInstrumentAndAddress(*instrument,
-                                         *address,
-                                         "obfuscated_gaia_id",
+  wallet_client_->SaveInstrumentAndAddress(*instrument,
+                                           *address,
+                                           "obfuscated_gaia_id",
                                          GURL(kMerchantUrl));
 
-  net::TestURLFetcher* encryption_fetcher = factory.GetFetcherByID(1);
+  net::TestURLFetcher* encryption_fetcher = factory_.GetFetcherByID(1);
   ASSERT_TRUE(encryption_fetcher);
   encryption_fetcher->set_response_code(net::HTTP_OK);
   encryption_fetcher->SetResponseString("escrow_handle");
   encryption_fetcher->delegate()->OnURLFetchComplete(encryption_fetcher);
 
-  VerifyAndFinishRequest(factory,
-                         net::HTTP_OK,
+  VerifyAndFinishRequest(net::HTTP_OK,
                          kSaveInstrumentAndAddressValidRequest,
                          kSaveWithInvalidRequiredActionsResponse);
 }
 
 TEST_F(WalletClientTest, SaveInstrumentAndAddressEscrowDown) {
-  MockWalletClientDelegate delegate;
-  EXPECT_CALL(delegate,
+  EXPECT_CALL(delegate_,
               OnNetworkError(net::HTTP_INTERNAL_SERVER_ERROR)).Times(1);
 
-  net::TestURLFetcherFactory factory;
-
   scoped_ptr<Instrument> instrument = GetTestInstrument();
-
   scoped_ptr<Address> address = GetTestSaveableAddress();
+  wallet_client_->SaveInstrumentAndAddress(*instrument,
+                                           *address,
+                                           "obfuscated_gaia_id",
+                                           GURL(kMerchantUrl));
 
-  WalletClient wallet_client(profile_.GetRequestContext(), &delegate);
-  wallet_client.SaveInstrumentAndAddress(*instrument,
-                                         *address,
-                                         "obfuscated_gaia_id",
-                                         GURL(kMerchantUrl));
-
-  net::TestURLFetcher* encryption_fetcher = factory.GetFetcherByID(1);
+  net::TestURLFetcher* encryption_fetcher = factory_.GetFetcherByID(1);
   ASSERT_TRUE(encryption_fetcher);
   encryption_fetcher->set_response_code(net::HTTP_INTERNAL_SERVER_ERROR);
   encryption_fetcher->SetResponseString(std::string());
@@ -1361,22 +1200,16 @@ TEST_F(WalletClientTest, SaveInstrumentAndAddressEscrowDown) {
 }
 
 TEST_F(WalletClientTest, SaveInstrumentAndAddressEscrowMalformed) {
-  MockWalletClientDelegate delegate;
-  EXPECT_CALL(delegate, OnMalformedResponse()).Times(1);
-
-  net::TestURLFetcherFactory factory;
+  EXPECT_CALL(delegate_, OnMalformedResponse()).Times(1);
 
   scoped_ptr<Instrument> instrument = GetTestInstrument();
-
   scoped_ptr<Address> address = GetTestSaveableAddress();
+  wallet_client_->SaveInstrumentAndAddress(*instrument,
+                                           *address,
+                                           "obfuscated_gaia_id",
+                                           GURL(kMerchantUrl));
 
-  WalletClient wallet_client(profile_.GetRequestContext(), &delegate);
-  wallet_client.SaveInstrumentAndAddress(*instrument,
-                                         *address,
-                                         "obfuscated_gaia_id",
-                                         GURL(kMerchantUrl));
-
-  net::TestURLFetcher* encryption_fetcher = factory.GetFetcherByID(1);
+  net::TestURLFetcher* encryption_fetcher = factory_.GetFetcherByID(1);
   ASSERT_TRUE(encryption_fetcher);
   encryption_fetcher->set_response_code(net::HTTP_OK);
   encryption_fetcher->SetResponseString(std::string());
@@ -1384,229 +1217,167 @@ TEST_F(WalletClientTest, SaveInstrumentAndAddressEscrowMalformed) {
 }
 
 TEST_F(WalletClientTest, SaveInstrumentAndAddressFailedAddressMissing) {
-  MockWalletClientDelegate delegate;
-  EXPECT_CALL(delegate, OnMalformedResponse()).Times(1);
-
-  net::TestURLFetcherFactory factory;
+  EXPECT_CALL(delegate_, OnMalformedResponse()).Times(1);
 
   scoped_ptr<Instrument> instrument = GetTestInstrument();
-
   scoped_ptr<Address> address = GetTestSaveableAddress();
+  wallet_client_->SaveInstrumentAndAddress(*instrument,
+                                           *address,
+                                           "obfuscated_gaia_id",
+                                           GURL(kMerchantUrl));
 
-  WalletClient wallet_client(profile_.GetRequestContext(), &delegate);
-  wallet_client.SaveInstrumentAndAddress(*instrument,
-                                         *address,
-                                         "obfuscated_gaia_id",
-                                         GURL(kMerchantUrl));
-
-  net::TestURLFetcher* encryption_fetcher = factory.GetFetcherByID(1);
+  net::TestURLFetcher* encryption_fetcher = factory_.GetFetcherByID(1);
   ASSERT_TRUE(encryption_fetcher);
   encryption_fetcher->set_response_code(net::HTTP_OK);
   encryption_fetcher->SetResponseString("escrow_handle");
   encryption_fetcher->delegate()->OnURLFetchComplete(encryption_fetcher);
 
-  VerifyAndFinishRequest(factory,
-                         net::HTTP_OK,
+  VerifyAndFinishRequest(net::HTTP_OK,
                          kSaveInstrumentAndAddressValidRequest,
                          kSaveInstrumentAndAddressMissingAddressResponse);
 }
 
 TEST_F(WalletClientTest, SaveInstrumentAndAddressFailedInstrumentMissing) {
-  MockWalletClientDelegate delegate;
-  EXPECT_CALL(delegate, OnMalformedResponse()).Times(1);
-
-  net::TestURLFetcherFactory factory;
+  EXPECT_CALL(delegate_, OnMalformedResponse()).Times(1);
 
   scoped_ptr<Instrument> instrument = GetTestInstrument();
-
   scoped_ptr<Address> address = GetTestSaveableAddress();
+  wallet_client_->SaveInstrumentAndAddress(*instrument,
+                                           *address,
+                                           "obfuscated_gaia_id",
+                                           GURL(kMerchantUrl));
 
-  WalletClient wallet_client(profile_.GetRequestContext(), &delegate);
-  wallet_client.SaveInstrumentAndAddress(*instrument,
-                                         *address,
-                                         "obfuscated_gaia_id",
-                                         GURL(kMerchantUrl));
-
-  net::TestURLFetcher* encryption_fetcher = factory.GetFetcherByID(1);
+  net::TestURLFetcher* encryption_fetcher = factory_.GetFetcherByID(1);
   ASSERT_TRUE(encryption_fetcher);
   encryption_fetcher->set_response_code(net::HTTP_OK);
   encryption_fetcher->SetResponseString("escrow_handle");
   encryption_fetcher->delegate()->OnURLFetchComplete(encryption_fetcher);
 
-  VerifyAndFinishRequest(factory,
-                         net::HTTP_OK,
+  VerifyAndFinishRequest(net::HTTP_OK,
                          kSaveInstrumentAndAddressValidRequest,
                          kSaveInstrumentAndAddressMissingInstrumentResponse);
 }
 
 TEST_F(WalletClientTest, UpdateAddressSucceeded) {
-  MockWalletClientDelegate delegate;
-  EXPECT_CALL(delegate,
+  EXPECT_CALL(delegate_,
               OnDidUpdateAddress("shipping_address_id",
                                  std::vector<RequiredAction>())).Times(1);
-
-  net::TestURLFetcherFactory factory;
 
   scoped_ptr<Address> address = GetTestShippingAddress();
   address->set_object_id("shipping_address_id");
 
-  WalletClient wallet_client(profile_.GetRequestContext(), &delegate);
-  wallet_client.UpdateAddress(*address, GURL(kMerchantUrl));
-  VerifyAndFinishRequest(factory,
-                         net::HTTP_OK,
+  wallet_client_->UpdateAddress(*address, GURL(kMerchantUrl));
+  VerifyAndFinishRequest(net::HTTP_OK,
                          kUpdateAddressValidRequest,
                          kUpdateAddressValidResponse);
 }
 
 TEST_F(WalletClientTest, UpdateAddressWithRequiredActionsSucceeded) {
-  MockWalletClientDelegate delegate;
 
   std::vector<RequiredAction> required_actions;
   required_actions.push_back(REQUIRE_PHONE_NUMBER);
   required_actions.push_back(INVALID_FORM_FIELD);
 
-  EXPECT_CALL(delegate,
+  EXPECT_CALL(delegate_,
               OnDidUpdateAddress(std::string(), required_actions)).Times(1);
-
-  net::TestURLFetcherFactory factory;
 
   scoped_ptr<Address> address = GetTestShippingAddress();
   address->set_object_id("shipping_address_id");
 
-  WalletClient wallet_client(profile_.GetRequestContext(), &delegate);
-  wallet_client.UpdateAddress(*address, GURL(kMerchantUrl));
-  VerifyAndFinishRequest(factory,
-                         net::HTTP_OK,
+  wallet_client_->UpdateAddress(*address, GURL(kMerchantUrl));
+  VerifyAndFinishRequest(net::HTTP_OK,
                          kUpdateAddressValidRequest,
                          kUpdateWithRequiredActionsValidResponse);
 }
 
 TEST_F(WalletClientTest, UpdateAddressFailedInvalidRequiredAction) {
-  MockWalletClientDelegate delegate;
-  EXPECT_CALL(delegate, OnMalformedResponse()).Times(1);
-
-  net::TestURLFetcherFactory factory;
+  EXPECT_CALL(delegate_, OnMalformedResponse()).Times(1);
 
   scoped_ptr<Address> address = GetTestShippingAddress();
   address->set_object_id("shipping_address_id");
 
-  WalletClient wallet_client(profile_.GetRequestContext(), &delegate);
-  wallet_client.UpdateAddress(*address, GURL(kMerchantUrl));
-  VerifyAndFinishRequest(factory,
-                         net::HTTP_OK,
+  wallet_client_->UpdateAddress(*address, GURL(kMerchantUrl));
+  VerifyAndFinishRequest(net::HTTP_OK,
                          kUpdateAddressValidRequest,
                          kSaveWithInvalidRequiredActionsResponse);
 }
 
 TEST_F(WalletClientTest, UpdateAddressMalformedResponse) {
-  MockWalletClientDelegate delegate;
-  EXPECT_CALL(delegate, OnMalformedResponse()).Times(1);
-
-  net::TestURLFetcherFactory factory;
+  EXPECT_CALL(delegate_, OnMalformedResponse()).Times(1);
 
   scoped_ptr<Address> address = GetTestShippingAddress();
   address->set_object_id("shipping_address_id");
 
-  WalletClient wallet_client(profile_.GetRequestContext(), &delegate);
-  wallet_client.UpdateAddress(*address, GURL(kMerchantUrl));
-  VerifyAndFinishRequest(factory,
-                         net::HTTP_OK,
+  wallet_client_->UpdateAddress(*address, GURL(kMerchantUrl));
+  VerifyAndFinishRequest(net::HTTP_OK,
                          kUpdateAddressValidRequest,
                          kUpdateMalformedResponse);
 }
 
 TEST_F(WalletClientTest, UpdateInstrumentSucceeded) {
-  MockWalletClientDelegate delegate;
-  EXPECT_CALL(delegate,
+  EXPECT_CALL(delegate_,
               OnDidUpdateInstrument("instrument_id",
                                     std::vector<RequiredAction>())).Times(1);
 
-  net::TestURLFetcherFactory factory;
-
   scoped_ptr<Address> address = GetTestAddress();
-
-  WalletClient wallet_client(profile_.GetRequestContext(), &delegate);
-  wallet_client.UpdateInstrument("instrument_id",
-                                 *address,
-                                 GURL(kMerchantUrl));
-  VerifyAndFinishRequest(factory,
-                         net::HTTP_OK,
+  wallet_client_->UpdateInstrument("instrument_id",
+                                   *address,
+                                   GURL(kMerchantUrl));
+  VerifyAndFinishRequest(net::HTTP_OK,
                          kUpdateInstrumentValidRequest,
                          kUpdateInstrumentValidResponse);
 }
 
 TEST_F(WalletClientTest, UpdateInstrumentWithRequiredActionsSucceeded) {
-  MockWalletClientDelegate delegate;
 
   std::vector<RequiredAction> required_actions;
   required_actions.push_back(REQUIRE_PHONE_NUMBER);
   required_actions.push_back(INVALID_FORM_FIELD);
 
-  EXPECT_CALL(delegate,
+  EXPECT_CALL(delegate_,
               OnDidUpdateInstrument(std::string(),
                                     required_actions)).Times(1);
 
-  net::TestURLFetcherFactory factory;
-
   scoped_ptr<Address> address = GetTestAddress();
-
-  WalletClient wallet_client(profile_.GetRequestContext(), &delegate);
-  wallet_client.UpdateInstrument("instrument_id",
-                                 *address,
-                                 GURL(kMerchantUrl));
-  VerifyAndFinishRequest(factory,
-                         net::HTTP_OK,
+  wallet_client_->UpdateInstrument("instrument_id",
+                                   *address,
+                                   GURL(kMerchantUrl));
+  VerifyAndFinishRequest(net::HTTP_OK,
                          kUpdateInstrumentValidRequest,
                          kUpdateWithRequiredActionsValidResponse);
 }
 
 TEST_F(WalletClientTest, UpdateInstrumentFailedInvalidRequiredAction) {
-  MockWalletClientDelegate delegate;
-  EXPECT_CALL(delegate, OnMalformedResponse()).Times(1);
-
-  net::TestURLFetcherFactory factory;
+  EXPECT_CALL(delegate_, OnMalformedResponse()).Times(1);
 
   scoped_ptr<Address> address = GetTestAddress();
-
-  WalletClient wallet_client(profile_.GetRequestContext(), &delegate);
-  wallet_client.UpdateInstrument("instrument_id",
-                                 *address,
-                                 GURL(kMerchantUrl));
-  VerifyAndFinishRequest(factory,
-                         net::HTTP_OK,
+  wallet_client_->UpdateInstrument("instrument_id",
+                                   *address,
+                                   GURL(kMerchantUrl));
+  VerifyAndFinishRequest(net::HTTP_OK,
                          kUpdateInstrumentValidRequest,
                          kSaveWithInvalidRequiredActionsResponse);
 }
 
 TEST_F(WalletClientTest, UpdateInstrumentMalformedResponse) {
-  MockWalletClientDelegate delegate;
-  EXPECT_CALL(delegate, OnMalformedResponse()).Times(1);
-
-  net::TestURLFetcherFactory factory;
+  EXPECT_CALL(delegate_, OnMalformedResponse()).Times(1);
 
   scoped_ptr<Address> address = GetTestAddress();
-
-  WalletClient wallet_client(profile_.GetRequestContext(), &delegate);
-  wallet_client.UpdateInstrument("instrument_id",
-                                 *address,
-                                 GURL(kMerchantUrl));
-  VerifyAndFinishRequest(factory,
-                         net::HTTP_OK,
+  wallet_client_->UpdateInstrument("instrument_id",
+                                   *address,
+                                   GURL(kMerchantUrl));
+  VerifyAndFinishRequest(net::HTTP_OK,
                          kUpdateInstrumentValidRequest,
                          kUpdateMalformedResponse);
 }
 
 TEST_F(WalletClientTest, SendAutocheckoutOfStatusSuccess) {
-  MockWalletClientDelegate delegate;
-  EXPECT_CALL(delegate, OnDidSendAutocheckoutStatus()).Times(1);
+  EXPECT_CALL(delegate_, OnDidSendAutocheckoutStatus()).Times(1);
 
-  net::TestURLFetcherFactory factory;
-
-  WalletClient wallet_client(profile_.GetRequestContext(), &delegate);
-  wallet_client.SendAutocheckoutStatus(autofill::SUCCESS,
-                                       GURL(kMerchantUrl),
-                                       "google_transaction_id");
-  net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
+  wallet_client_->SendAutocheckoutStatus(autofill::SUCCESS,
+                                         GURL(kMerchantUrl),
+                                         "google_transaction_id");
+  net::TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
   EXPECT_EQ(kSendAutocheckoutStatusOfSuccessValidRequest, GetData(fetcher));
   fetcher->SetResponseString(")]}'");  // Invalid JSON. Should be ignored.
@@ -1615,16 +1386,12 @@ TEST_F(WalletClientTest, SendAutocheckoutOfStatusSuccess) {
 }
 
 TEST_F(WalletClientTest, SendAutocheckoutStatusOfFailure) {
-  MockWalletClientDelegate delegate;
-  EXPECT_CALL(delegate, OnDidSendAutocheckoutStatus()).Times(1);
+  EXPECT_CALL(delegate_, OnDidSendAutocheckoutStatus()).Times(1);
 
-  net::TestURLFetcherFactory factory;
-
-  WalletClient wallet_client(profile_.GetRequestContext(), &delegate);
-  wallet_client.SendAutocheckoutStatus(autofill::CANNOT_PROCEED,
-                                       GURL(kMerchantUrl),
-                                       "google_transaction_id");
-  net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
+  wallet_client_->SendAutocheckoutStatus(autofill::CANNOT_PROCEED,
+                                         GURL(kMerchantUrl),
+                                         "google_transaction_id");
+  net::TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
   EXPECT_EQ(kSendAutocheckoutStatusOfFailureValidRequest, GetData(fetcher));
   fetcher->set_response_code(net::HTTP_OK);
@@ -1633,69 +1400,54 @@ TEST_F(WalletClientTest, SendAutocheckoutStatusOfFailure) {
 }
 
 TEST_F(WalletClientTest, HasRequestInProgress) {
-  MockWalletClientDelegate delegate;
-  net::TestURLFetcherFactory factory;
+  EXPECT_FALSE(wallet_client_->HasRequestInProgress());
 
-  WalletClient wallet_client(profile_.GetRequestContext(), &delegate);
-  EXPECT_FALSE(wallet_client.HasRequestInProgress());
+  wallet_client_->GetWalletItems(GURL(kMerchantUrl),
+                                 std::vector<WalletClient::RiskCapability>());
+  EXPECT_TRUE(wallet_client_->HasRequestInProgress());
 
-  wallet_client.GetWalletItems(GURL(kMerchantUrl),
-                               std::vector<WalletClient::RiskCapability>());
-  EXPECT_TRUE(wallet_client.HasRequestInProgress());
-
-  VerifyAndFinishRequest(factory,
-                         net::HTTP_OK,
+  VerifyAndFinishRequest(net::HTTP_OK,
                          kGetWalletItemsValidRequest,
                          kGetWalletItemsValidResponse);
-  EXPECT_FALSE(wallet_client.HasRequestInProgress());
+  EXPECT_FALSE(wallet_client_->HasRequestInProgress());
 }
 
 TEST_F(WalletClientTest, PendingRequest) {
-  MockWalletClientDelegate delegate;
-  net::TestURLFetcherFactory factory;
-
-  WalletClient wallet_client(profile_.GetRequestContext(), &delegate);
-  ASSERT_EQ(0U, wallet_client.pending_requests_.size());
+  ASSERT_EQ(0U, wallet_client_->pending_requests_.size());
 
   std::vector<WalletClient::RiskCapability> risk_capabilities;
 
   // Shouldn't queue the first request.
-  wallet_client.GetWalletItems(GURL(kMerchantUrl), risk_capabilities);
-  EXPECT_EQ(0U, wallet_client.pending_requests_.size());
+  wallet_client_->GetWalletItems(GURL(kMerchantUrl), risk_capabilities);
+  EXPECT_EQ(0U, wallet_client_->pending_requests_.size());
 
-  wallet_client.GetWalletItems(GURL(kMerchantUrl), risk_capabilities);
-  EXPECT_EQ(1U, wallet_client.pending_requests_.size());
+  wallet_client_->GetWalletItems(GURL(kMerchantUrl), risk_capabilities);
+  EXPECT_EQ(1U, wallet_client_->pending_requests_.size());
 
-  VerifyAndFinishRequest(factory,
-                         net::HTTP_OK,
+  VerifyAndFinishRequest(net::HTTP_OK,
                          kGetWalletItemsValidRequest,
                          kGetWalletItemsValidResponse);
-  EXPECT_EQ(0U, wallet_client.pending_requests_.size());
+  EXPECT_EQ(0U, wallet_client_->pending_requests_.size());
 
-  EXPECT_CALL(delegate, OnWalletError(
+  EXPECT_CALL(delegate_, OnWalletError(
       WalletClient::SERVICE_UNAVAILABLE)).Times(1);
-  VerifyAndFinishRequest(factory,
-                         net::HTTP_INTERNAL_SERVER_ERROR,
+  VerifyAndFinishRequest(net::HTTP_INTERNAL_SERVER_ERROR,
                          kGetWalletItemsValidRequest,
                          kErrorResponse);
 }
 
 TEST_F(WalletClientTest, CancelPendingRequests) {
-  MockWalletClientDelegate delegate;
-  net::TestURLFetcherFactory factory;
-
-  WalletClient wallet_client(profile_.GetRequestContext(), &delegate);
-  ASSERT_EQ(0U, wallet_client.pending_requests_.size());
+  ASSERT_EQ(0U, wallet_client_->pending_requests_.size());
 
   std::vector<WalletClient::RiskCapability> risk_capabilities;
 
-  wallet_client.GetWalletItems(GURL(kMerchantUrl), risk_capabilities);
-  wallet_client.GetWalletItems(GURL(kMerchantUrl), risk_capabilities);
-  wallet_client.GetWalletItems(GURL(kMerchantUrl), risk_capabilities);
-  EXPECT_EQ(2U, wallet_client.pending_requests_.size());
+  wallet_client_->GetWalletItems(GURL(kMerchantUrl), risk_capabilities);
+  wallet_client_->GetWalletItems(GURL(kMerchantUrl), risk_capabilities);
+  wallet_client_->GetWalletItems(GURL(kMerchantUrl), risk_capabilities);
+  EXPECT_EQ(2U, wallet_client_->pending_requests_.size());
 
-  wallet_client.CancelPendingRequests();
-  EXPECT_EQ(0U, wallet_client.pending_requests_.size());
+  wallet_client_->CancelPendingRequests();
+  EXPECT_EQ(0U, wallet_client_->pending_requests_.size());
 }
 
 }  // namespace wallet
