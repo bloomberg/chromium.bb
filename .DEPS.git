@@ -46,7 +46,7 @@ deps = {
     'src/third_party/bidichecker':
         Var('git_url') + '/external/bidichecker/lib.git@97f2aa645b74c28c57eca56992235c79850fa9e0',
     'src/third_party/cacheinvalidation/src':
-        Var('git_url') + '/external/google-cache-invalidation-api/src.git@f2ed4ba0d0faf8f0d61e17fc91a55e6c789beff9',
+        Var('git_url') + '/external/google-cache-invalidation-api/src.git@708704be0504025f66cbd98fcd1e752f11c6253b',
     'src/third_party/ffmpeg':
         Var('git_url') + '/chromium/third_party/ffmpeg.git' + Var('ffmpeg_hash'),
     'src/third_party/flac':
