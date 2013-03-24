@@ -21,15 +21,6 @@ using ::testing::Return;
 
 namespace media {
 
-// Verify that the OS is at least Snow Leopard (10.6).
-// Chromoting doesn't support 10.5 or earlier.
-bool CheckSnowLeopard() {
-  long minorVersion, majorVersion;
-  Gestalt(gestaltSystemVersionMajor, &majorVersion);
-  Gestalt(gestaltSystemVersionMinor, &minorVersion);
-  return majorVersion == 10 && minorVersion > 5;
-}
-
 class ScreenCapturerMacTest : public testing::Test {
  public:
   // Verifies that the whole screen is initially dirty.
@@ -80,10 +71,6 @@ void ScreenCapturerMacTest::CaptureDoneCallback2(
 }
 
 TEST_F(ScreenCapturerMacTest, Capture) {
-  if (!CheckSnowLeopard()) {
-    return;
-  }
-
   EXPECT_CALL(delegate_, OnCaptureCompleted(_))
       .Times(2)
       .WillOnce(Invoke(this, &ScreenCapturerMacTest::CaptureDoneCallback1))
