@@ -243,6 +243,20 @@ bool IsKnownRoot(CERTCertificate* root) {
                      "NSS Builtin Objects");
 }
 
+// Returns true if the given certificate is one of the additional trust anchors.
+bool IsAdditionalTrustAnchor(CERTCertList* additional_trust_anchors,
+                             CERTCertificate* root) {
+  if (!additional_trust_anchors || !root)
+    return false;
+  for (CERTCertListNode* node = CERT_LIST_HEAD(additional_trust_anchors);
+       !CERT_LIST_END(node, additional_trust_anchors);
+       node = CERT_LIST_NEXT(node)) {
+    if (CERT_CompareCerts(node->cert, root))
+      return true;
+  }
+  return false;
+}
+
 enum CRLSetResult {
   kCRLSetRevoked,
   kCRLSetOk,
@@ -813,6 +827,10 @@ int CertVerifyProcNSS::VerifyInternal(
 
     verify_result->is_issued_by_known_root =
         IsKnownRoot(cvout[cvout_trust_anchor_index].value.pointer.cert);
+    verify_result->is_issued_by_additional_trust_anchor =
+        IsAdditionalTrustAnchor(
+            trust_anchors.get(),
+            cvout[cvout_trust_anchor_index].value.pointer.cert);
 
     GetCertChainInfo(cvout[cvout_cert_list_index].value.pointer.chain,
                      cvout[cvout_trust_anchor_index].value.pointer.cert,

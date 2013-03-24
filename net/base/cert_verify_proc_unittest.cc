@@ -698,6 +698,7 @@ TEST_F(CertVerifyProcTest, AdditionalTrustAnchors) {
                      empty_cert_list_, &verify_result);
   EXPECT_EQ(ERR_CERT_AUTHORITY_INVALID, error);
   EXPECT_EQ(CERT_STATUS_AUTHORITY_INVALID, verify_result.cert_status);
+  EXPECT_FALSE(verify_result.is_issued_by_additional_trust_anchor);
 
   // Now add the |ca_cert| to the |trust_anchors|, and verification should pass.
   CertificateList trust_anchors;
@@ -705,6 +706,7 @@ TEST_F(CertVerifyProcTest, AdditionalTrustAnchors) {
   error = Verify(cert, "127.0.0.1", flags, NULL, trust_anchors, &verify_result);
   EXPECT_EQ(OK, error);
   EXPECT_EQ(0U, verify_result.cert_status);
+  EXPECT_TRUE(verify_result.is_issued_by_additional_trust_anchor);
 
   // Clearing the |trust_anchors| makes verification fail again (the cache
   // should be skipped).
@@ -712,6 +714,7 @@ TEST_F(CertVerifyProcTest, AdditionalTrustAnchors) {
                  empty_cert_list_, &verify_result);
   EXPECT_EQ(ERR_CERT_AUTHORITY_INVALID, error);
   EXPECT_EQ(CERT_STATUS_AUTHORITY_INVALID, verify_result.cert_status);
+  EXPECT_FALSE(verify_result.is_issued_by_additional_trust_anchor);
 }
 
 #if defined(USE_NSS) || defined(OS_IOS) || defined(OS_WIN) || defined(OS_MACOSX)
@@ -884,6 +887,7 @@ TEST_P(CertVerifyProcWeakDigestTest, Verify) {
   EXPECT_EQ(data.expected_has_md2, verify_result.has_md2);
   EXPECT_EQ(data.expected_has_md5_ca, verify_result.has_md5_ca);
   EXPECT_EQ(data.expected_has_md2_ca, verify_result.has_md2_ca);
+  EXPECT_FALSE(verify_result.is_issued_by_additional_trust_anchor);
 
   // Ensure that MD4 and MD2 are tagged as invalid.
   if (data.expected_has_md4 || data.expected_has_md2) {
