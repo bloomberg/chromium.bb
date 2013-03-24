@@ -80,9 +80,9 @@ void ResourceTracker::ReleaseResource(PP_Resource res) {
 void ResourceTracker::ReleaseResourceSoon(PP_Resource res) {
   MessageLoop::current()->PostNonNestableTask(
       FROM_HERE,
-      base::Bind(&ResourceTracker::ReleaseResource,
-             weak_ptr_factory_.GetWeakPtr(),
-             res));
+      RunWhileLocked(base::Bind(&ResourceTracker::ReleaseResource,
+                                weak_ptr_factory_.GetWeakPtr(),
+                                res)));
 }
 
 void ResourceTracker::DidCreateInstance(PP_Instance instance) {
