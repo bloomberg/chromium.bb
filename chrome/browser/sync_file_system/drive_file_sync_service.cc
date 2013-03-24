@@ -159,7 +159,6 @@ void DriveFileSyncService::OnInvalidatorStateChange(
 
 void DriveFileSyncService::OnIncomingInvalidation(
     const syncer::ObjectIdInvalidationMap& invalidation_map) {
-  DCHECK(push_notification_enabled_);
   DCHECK_EQ(1U, invalidation_map.size());
   const invalidation::ObjectId object_id(
       ipc::invalidation::ObjectSource::COSMO_CHANGELOG,
