@@ -37,9 +37,6 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   void SetAlignment(ShelfAlignment alignmnet);
   ShelfAlignment GetAlignment() const;
 
-  ShelfAutoHideBehavior GetAutoHideBehavior() const;
-  void SetAutoHideBehavior(ShelfAutoHideBehavior behavior);
-
   // Sets whether the shelf paints a background. Default is false, but is set
   // to true if a window overlaps the shelf.
   void SetPaintsBackground(
