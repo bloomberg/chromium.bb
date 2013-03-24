@@ -84,6 +84,7 @@ cr.define('gpu', function() {
         'gpu_switching': 'GPU Switching',
         'panel_fitting': 'Panel Fitting',
         'force_compositing_mode': 'Force Compositing Mode',
+        'raster': 'Rasterization',
       };
       var statusLabelMap = {
         'disabled_software': 'Software only. Hardware acceleration disabled.',
@@ -105,6 +106,7 @@ cr.define('gpu', function() {
         'gpu_switching_automatic': 'Automatic switching',
         'gpu_switching_force_discrete': 'Always on discrete GPU',
         'gpu_switching_force_integrated': 'Always on integrated GPU',
+        'disabled_software_multithreaded': 'Software only, multi-threaded',
       };
 
       var statusClassMap = {
@@ -125,6 +127,7 @@ cr.define('gpu', function() {
         'gpu_switching_automatic': 'feature-green',
         'gpu_switching_force_discrete': 'feature-red',
         'gpu_switching_force_integrated': 'feature-red',
+        'disabled_software_multithreaded': 'feature-yellow',
       };
 
       // GPU info, basic
