@@ -46,7 +46,9 @@
 #include "ui/base/window_open_disposition.h"
 
 #if defined(ENABLE_MESSAGE_CENTER)
+#include "base/command_line.h"
 #include "ui/message_center/message_center.h"
+#include "ui/message_center/message_center_switches.h"
 #endif
 
 // Mac implementation of message_center is incomplete. The code builds, but
@@ -197,7 +199,9 @@ class NotificationsTest : public InProcessBrowserTest {
 
   void CloseBrowserWindow(Browser* browser);
   void CrashTab(Browser* browser, int index);
-#if !ENABLE_MESSAGE_CENTER_TESTING
+#if ENABLE_MESSAGE_CENTER_TESTING
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
+#else
   const std::deque<Balloon*>& GetActiveBalloons();
   void CrashNotification(Balloon* balloon);
   bool CloseNotificationAndWait(const Notification& notification);
@@ -266,7 +270,14 @@ void NotificationsTest::CrashTab(Browser* browser, int index) {
   content::CrashTab(browser->tab_strip_model()->GetWebContentsAt(index));
 }
 
-#if !ENABLE_MESSAGE_CENTER_TESTING
+#if ENABLE_MESSAGE_CENTER_TESTING
+// Overriden from InProcessBrowserTest:
+void NotificationsTest::SetUpCommandLine(CommandLine* command_line) {
+  InProcessBrowserTest::SetUpCommandLine(command_line);
+  command_line->AppendSwitch(
+      message_center::switches::kEnableRichNotifications);
+}
+#else
 
 const std::deque<Balloon*>& NotificationsTest::GetActiveBalloons() {
   return BalloonNotificationUIManager::GetInstanceForTesting()->

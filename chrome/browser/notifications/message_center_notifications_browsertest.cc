@@ -28,6 +28,8 @@ class MessageCenterNotificationsTest : public InProcessBrowserTest {
   virtual void SetUpCommandLine(CommandLine* command_line) {
     // This switch enables the new piping of Notifications through Message
     // Center.
+    command_line->AppendSwitch(
+      message_center::switches::kEnableRichNotifications);
   }
 
   MessageCenterNotificationManager* manager() {
