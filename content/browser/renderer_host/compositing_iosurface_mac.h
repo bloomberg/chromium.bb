@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_COMPOSITING_IOSURFACE_MAC_H_
 #define CONTENT_BROWSER_RENDERER_HOST_COMPOSITING_IOSURFACE_MAC_H_
 
+#include <deque>
+
 #import <Cocoa/Cocoa.h>
 #import <QuartzCore/CVDisplayLink.h>
 #include <QuartzCore/QuartzCore.h>
@@ -186,20 +188,8 @@ class CompositingIOSurfaceMac {
   struct CopyContext {
     CopyContext();
     ~CopyContext();
+    void CleanUp();
 
-    void Reset() {
-      started = false;
-      num_outputs = 0;
-      memset(output_textures, 0u, sizeof(output_textures));
-      memset(frame_buffers, 0u, sizeof(frame_buffers));
-      memset(pixel_buffers, 0u, sizeof(pixel_buffers));
-      fence = 0;
-      cycles_elapsed = 0;
-      map_buffer_callback.Reset();
-      done_callback.Reset();
-    }
-
-    bool started;
     int num_outputs;
     GLuint output_textures[3];
     // Note: For YUV, the |output_texture_sizes| widths are in terms of 4-byte
@@ -246,9 +236,12 @@ class CompositingIOSurfaceMac {
   // Copy current frame to |target| video frame. This method must be called
   // within a CGL context. Returns a callback that should be called outside
   // of the CGL context.
+  // If |called_within_draw| is true this method is called within a drawing
+  // operations. This allow certain optimizations.
   base::Closure CopyToVideoFrameWithinContext(
       const gfx::Rect& src_subrect,
       float src_scale_factor,
+      bool called_within_draw,
       const scoped_refptr<media::VideoFrame>& target,
       const base::Callback<void(bool)>& callback);
 
@@ -259,19 +252,32 @@ class CompositingIOSurfaceMac {
       const gfx::Rect& src_pixel_subrect,
       float src_scale_factor,
       const gfx::Rect& dst_pixel_rect,
+      bool called_within_draw,
       const SkBitmap* bitmap_output,
       const scoped_refptr<media::VideoFrame>& video_frame_output,
       const base::Callback<void(bool)>& done_callback);
+
+  // TODO(hclam): These two methods should be static.
   void AsynchronousReadbackForCopy(
       const gfx::Rect& dst_pixel_rect,
+      bool called_within_draw,
+      CopyContext* copy_context,
       const SkBitmap* bitmap_output,
       const scoped_refptr<media::VideoFrame>& video_frame_output);
   bool SynchronousReadbackForCopy(
       const gfx::Rect& dst_pixel_rect,
+      CopyContext* copy_context,
       const SkBitmap* bitmap_output,
       const scoped_refptr<media::VideoFrame>& video_frame_output);
-  void FinishCopy();
-  void CleanupResourcesForCopy();
+
+  // Scan the list of started asynchronous copies and test if each one has
+  // completed.
+  void FinishAllCopies();
+  void FinishAllCopiesWithinContext(
+      std::vector<base::Closure>* done_callbacks);
+
+  void CleanupAllCopiesWithinContext();
+  void FailAllCopies();
 
   gfx::Rect IntersectWithIOSurface(const gfx::Rect& rect,
                                    float scale_factor) const;
@@ -298,10 +304,10 @@ class CompositingIOSurfaceMac {
   // with it.
   GLuint texture_;
 
-  CopyContext copy_context_;
+  std::deque<CopyContext> copy_requests_;
 
   // Timer for finishing a copy operation.
-  base::RepeatingTimer<CompositingIOSurfaceMac> copy_timer_;
+  base::Timer finish_copy_timer_;
 
   scoped_ptr<CompositingIOSurfaceShaderPrograms> shader_program_cache_;
   scoped_ptr<CompositingIOSurfaceTransformer> transformer_;
