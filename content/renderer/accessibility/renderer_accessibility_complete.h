@@ -89,11 +89,6 @@ class CONTENT_EXPORT RendererAccessibilityComplete
   void OnSetTextSelection(int acc_obj_id, int start_offset, int end_offset);
   void OnFatalError();
 
-  // Whether or not this notification typically needs to send
-  // updates to its children, too.
-  bool ShouldIncludeChildren(
-      const AccessibilityHostMsg_NotificationParams& notification);
-
   // Checks if a WebKit accessibility object is an editable text node.
   bool IsEditableText(const WebKit::WebAccessibilityObject& node);
 

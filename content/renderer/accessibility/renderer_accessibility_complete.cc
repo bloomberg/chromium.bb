@@ -270,6 +270,17 @@ void RendererAccessibilityComplete::SendPendingAccessibilityNotifications() {
     if (!obj.updateBackingStoreAndCheckValidity())
       continue;
 
+    // When we get a "selected children changed" notification, WebKit
+    // doesn't also send us notifications for each child that changed
+    // selection state, so make sure we re-send that whole subtree.
+    if (notification.notification_type ==
+        AccessibilityNotificationSelectedChildrenChanged) {
+      base::hash_map<int32, BrowserTreeNode*>::iterator iter =
+          browser_id_map_.find(obj.axID());
+      if (iter != browser_id_map_.end())
+        ClearBrowserTreeNode(iter->second);
+    }
+
     // The browser may not have this object yet, for example if we get a
     // notification on an object that was recently added, or if we get a
     // notification on a node before the page has loaded. Work our way
@@ -615,18 +626,6 @@ void RendererAccessibilityComplete::OnSetFocus(int acc_obj_id) {
 
 void RendererAccessibilityComplete::OnFatalError() {
   CHECK(false);
-}
-
-bool RendererAccessibilityComplete::ShouldIncludeChildren(
-    const AccessibilityHostMsg_NotificationParams& notification) {
-  AccessibilityNotification type = notification.notification_type;
-  if (type == AccessibilityNotificationChildrenChanged ||
-      type == AccessibilityNotificationLoadComplete ||
-      type == AccessibilityNotificationLiveRegionChanged ||
-      type == AccessibilityNotificationSelectedChildrenChanged) {
-    return true;
-  }
-  return false;
 }
 
 }  // namespace content
