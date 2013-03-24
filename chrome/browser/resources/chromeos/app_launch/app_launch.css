@@ -6,29 +6,10 @@
 html,
 body {
   height: 100%;
-  width: 100%;
-}
-
-body {
   margin: 0;
   overflow: hidden;
   padding: 0;
-}
-
-#header {
-  -webkit-padding-start: 45px;
-  background: url('chrome://theme/IDR_PRODUCT_LOGO_32') left center no-repeat;
-  background-size: 32px;
-  color: #666;
-  display: -webkit-box;
-  font-size: 23px;
-  height: 47px;
-  line-height: 45px;
-  padding-top: 1px;
-}
-
-#header span {
-  text-transform: lowercase;
+  width: 100%;
 }
 
 #page {
@@ -44,16 +25,42 @@ body {
   width: 100%;
 }
 
-#logo-container {
-  text-align: center;
+#content {
+  -webkit-box-align: center;
+  -webkit-box-orient: vertical;
+  -webkit-box-pack: center;
+  display: -webkit-box;
+  position: relative;
+}
+
+#header {
+  -webkit-padding-start: 108px;
+  background: url('chrome://theme/IDR_PRODUCT_LOGO_128') left center no-repeat;
+  background-size: 96px;
+  color: #666;
+  display: -webkit-box;
+  font-size: 48px;
+  height: 96px;
+  line-height: 96px;
 }
 
 #launch-text {
-  font-size: 14px;
+  color: #666;
+  font-size: 18px;
   padding-bottom: 50px;
   padding-top: 50px;
 }
 
-#lower-container {
-  height: 40px;
+#spinner {
+  height: 32px;
+  width: 32px;
+}
+
+#shortcut-info {
+  bottom: 50px;
+  color: gray;
+  left: 0;
+  position: absolute;
+  right: 0;
+  text-align: center;
 }

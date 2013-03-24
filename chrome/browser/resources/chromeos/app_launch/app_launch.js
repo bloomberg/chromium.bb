@@ -10,13 +10,26 @@
  * Initializes the click handler.
  */
 initialize = function() {
+  var query = window.location.search;
+
+  var appId = '';
+  if (query.substr(1, 4) == 'app=')
+    appId = query.substr(5);
+
+  chrome.send('initialize', [appId]);
+
+  $('shortcut-info').hidden = !loadTimeData.getBoolean('shortcutEnabled');
   $('page').style.opacity = 1;
-  // Report back sign in UI being painted.
   window.webkitRequestAnimationFrame(function() {});
 };
 
+updateApp = function(app) {
+  $('header').textContent = app.name;
+  $('header').style.backgroundImage = 'url(' + app.iconURL + ')';
+};
+
 updateMessage = function(message) {
-  $('launch-text').innerText = message;
+  $('launch-text').textContent = message;
 };
 
 disableTextSelectAndDrag();

@@ -58,7 +58,7 @@ void StartupAppLauncher::Start() {
   launch_splash_start_time_ = base::TimeTicks::Now().ToInternalValue();
   DVLOG(1) << "Starting... connection = "
            <<  net::NetworkChangeNotifier::GetConnectionType();
-  chromeos::ShowAppLaunchSplashScreen();
+  chromeos::ShowAppLaunchSplashScreen(app_id_);
 
   // Set a maximum allowed wait time for network.
   const int kMaxNetworkWaitSeconds = 5 * 60;
@@ -199,10 +199,9 @@ void StartupAppLauncher::OnKeyEvent(ui::KeyEvent* event) {
   if (event->type() != ui::ET_KEY_PRESSED)
     return;
 
-  if (event->key_code() != ui::VKEY_X ||
+  if (event->key_code() != ui::VKEY_S ||
       !(event->flags() & ui::EF_CONTROL_DOWN) ||
-      !(event->flags() & ui::EF_ALT_DOWN) ||
-      !(event->flags() & ui::EF_SHIFT_DOWN)) {
+      !(event->flags() & ui::EF_ALT_DOWN)) {
     return;
   }
 

@@ -11,16 +11,12 @@
 </head>
 <body i18n-values=".style.fontFamily:fontfamily;">
   <div id="page">
-    <div id="logo-container">
-      <div id="header">
-        <span i18n-content="productName"></span>
-        <div id="header-sections-old"></div>
-      </div>
-      <div id="lower-container">
-        <div id="launch-text" i18n-content="appStartMessage"></div>
-        <div id="login-spinner" class="inline-spinner"></div>
+    <div id="content">
+      <div id="header" i18n-content="productName"></div>
+      <div id="launch-text" i18n-content="appStartMessage"></div>
+      <div id="spinner" class="spinner"></div>
     </div>
-    </div>
+    <p id="shortcut-info" i18n-content="shortcutInfo"></p>
   </div>
   <script src="chrome://resources/js/i18n_template2.js"></script>
 </body>

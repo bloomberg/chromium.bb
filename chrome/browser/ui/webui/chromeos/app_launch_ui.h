@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_APP_LAUNCH_UI_H_
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_APP_LAUNCH_UI_H_
 
+#include <string>
+
 #include "content/public/browser/web_ui_controller.h"
 
 namespace chromeos {
@@ -15,7 +17,12 @@ class AppLaunchUI : public content::WebUIController {
  public:
   explicit AppLaunchUI(content::WebUI* web_ui);
 
+  void SetLaunchText(const std::string& text);
+
  private:
+  class AppLaunchUIHandler;
+
+  AppLaunchUIHandler* handler_;  // Owned by WebUI.
 
   DISALLOW_COPY_AND_ASSIGN(AppLaunchUI);
 };

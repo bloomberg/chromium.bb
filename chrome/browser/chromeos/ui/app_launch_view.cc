@@ -4,14 +4,13 @@
 
 #include "chrome/browser/chromeos/ui/app_launch_view.h"
 
-#include <string>
-
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/values.h"
+#include "chrome/browser/ui/webui/chromeos/app_launch_ui.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -34,12 +33,12 @@ namespace chromeos {
 
 internal::AppLaunchView* g_instance = NULL;
 
-void ShowAppLaunchSplashScreen() {
+void ShowAppLaunchSplashScreen(const std::string& app_id) {
   // Disables the default white rendering from RenderWidgetHostViewAura.
   aura::Env::GetInstance()->set_render_white_bg(false);
 
   // TODO(zelidrag): Come up with a better UI for this purpose.
-  internal::AppLaunchView::ShowAppLaunchSplashScreen();
+  internal::AppLaunchView::ShowAppLaunchSplashScreen(app_id);
 }
 
 void UpdateAppLaunchSplashScreenState(AppLaunchState state) {
@@ -66,9 +65,9 @@ int GetProgressMessageFromState(AppLaunchState state) {
 }
 
 // static
-void AppLaunchView::ShowAppLaunchSplashScreen() {
+void AppLaunchView::ShowAppLaunchSplashScreen(const std::string& app_id) {
   if (!g_instance) {
-    g_instance = new AppLaunchView();
+    g_instance = new AppLaunchView(app_id);
     g_instance->Show();
   }
 }
@@ -103,10 +102,12 @@ void AppLaunchView::RenderViewGone(
 
 ////////////////////////////////////////////////////////////////////////////////
 // AppLaunchView private methods.
-AppLaunchView::AppLaunchView()
+AppLaunchView::AppLaunchView(const std::string& app_id)
     : app_launch_webview_(NULL),
       container_window_(NULL),
-      state_(APP_LAUNCH_STATE_PREPARING_NETWORK) {
+      app_id_(app_id),
+      state_(APP_LAUNCH_STATE_PREPARING_NETWORK),
+      app_launch_ui_(NULL) {
 }
 
 AppLaunchView::~AppLaunchView() {
@@ -144,25 +145,25 @@ void AppLaunchView::UpdateState(AppLaunchState state) {
     return;
 
   state_ = state;
-  if (!app_launch_webview_ || !app_launch_webview_->GetWebContents())
+  if (!app_launch_ui_)
     return;
 
-  content::WebUI* web_ui = app_launch_webview_->GetWebContents()->GetWebUI();
-  if (!web_ui)
-    return;
-
-  web_ui->CallJavascriptFunction(
-      "updateMessage",
-      base::StringValue(
-          l10n_util::GetStringUTF16(GetProgressMessageFromState(state_))));
+  app_launch_ui_->SetLaunchText(
+      l10n_util::GetStringUTF8(GetProgressMessageFromState(state_)));
 }
 
 void AppLaunchView::LoadSplashScreen() {
+  std::string url = chrome::kChromeUIAppLaunchURL;
+  url += "?app=" + app_id_;
+
   app_launch_webview_->GetWebContents()->GetController().LoadURL(
-      GURL(chrome::kChromeUIAppLaunchURL),
+      GURL(url),
       content::Referrer(),
       content::PAGE_TRANSITION_AUTO_TOPLEVEL,
       std::string());
+
+  app_launch_ui_ = static_cast<AppLaunchUI*>(
+      app_launch_webview_->GetWebContents()->GetWebUI()->GetController());
 
   // Use a background with transparency to trigger transparency in Webkit.
   SkBitmap background;

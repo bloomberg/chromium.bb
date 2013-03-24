@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_UI_APP_LAUNCH_VIEW_H_
 #define CHROME_BROWSER_CHROMEOS_UI_APP_LAUNCH_VIEW_H_
 
+#include <string>
+
 #include "ash/ash_export.h"
 #include "base/callback.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -21,12 +23,14 @@ class WebView;
 
 namespace chromeos {
 
+class AppLaunchUI;
+
 enum AppLaunchState {
   APP_LAUNCH_STATE_PREPARING_NETWORK,
   APP_LAUNCH_STATE_INSTALLING_APPLICATION,
 };
 
-void ShowAppLaunchSplashScreen();
+void ShowAppLaunchSplashScreen(const std::string& app_id);
 void CloseAppLaunchSplashScreen();
 void UpdateAppLaunchSplashScreenState(AppLaunchState state);
 
@@ -36,12 +40,12 @@ namespace internal {
 class AppLaunchView : public views::WidgetDelegateView,
                       public content::WebContentsObserver {
  public:
-  static void ShowAppLaunchSplashScreen();
+  static void ShowAppLaunchSplashScreen(const std::string& app_id);
   static void CloseAppLaunchSplashScreen();
   static void UpdateAppLaunchState(AppLaunchState state);
 
  private:
-  explicit AppLaunchView();
+  explicit AppLaunchView(const std::string& app_id);
   virtual ~AppLaunchView();
 
   // views::WidgetDelegate overrides.
@@ -75,8 +79,12 @@ class AppLaunchView : public views::WidgetDelegateView,
   // Window that holds the webview.
   views::Widget* container_window_;
 
+  const std::string app_id_;
+
   // Launch state.
   AppLaunchState state_;
+
+  AppLaunchUI* app_launch_ui_;  // Not owned.
 
   DISALLOW_COPY_AND_ASSIGN(AppLaunchView);
 };
