@@ -35,7 +35,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
       net::URLRequest* request);
 
   // And, a const version for cases where you only need read access.
-  static const ResourceRequestInfoImpl* ForRequest(
+  CONTENT_EXPORT static const ResourceRequestInfoImpl* ForRequest(
       const net::URLRequest* request);
 
   CONTENT_EXPORT ResourceRequestInfoImpl(
@@ -79,9 +79,9 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   virtual bool IsAsync() const OVERRIDE;
 
 
-  void AssociateWithRequest(net::URLRequest* request);
+  CONTENT_EXPORT void AssociateWithRequest(net::URLRequest* request);
 
-  GlobalRequestID GetGlobalRequestID() const;
+  CONTENT_EXPORT GlobalRequestID GetGlobalRequestID() const;
 
   // CrossSiteResourceHandler for this request.  May be null.
   CrossSiteResourceHandler* cross_site_handler() {
