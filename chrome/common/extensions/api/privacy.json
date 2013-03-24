@@ -5,6 +5,7 @@
 [
   {
     "namespace": "privacy",
+    "dependencies": [ "types" ],
     "properties": {
       "network": {
         "type": "object",

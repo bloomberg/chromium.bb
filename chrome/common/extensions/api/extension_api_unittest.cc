@@ -163,6 +163,7 @@ TEST(ExtensionAPI, IsPrivilegedFeatures) {
       api.RegisterDependencyProvider("test2", &test2_provider);
     }
 
+    api.LoadAllSchemas();
     EXPECT_EQ(test_data[i].expect_is_privilged,
               api.IsPrivileged(test_data[i].api_full_name)) << i;
   }
@@ -234,65 +235,43 @@ TEST(ExtensionAPI, ExtensionWithUnprivilegedAPIs) {
   scoped_ptr<ExtensionAPI> extension_api(
       ExtensionAPI::CreateWithDefaultConfiguration());
 
+  std::set<std::string> privileged_apis = extension_api->GetAPIsForContext(
+      Feature::BLESSED_EXTENSION_CONTEXT, extension.get(), GURL());
+
+  std::set<std::string> unprivileged_apis = extension_api->GetAPIsForContext(
+      Feature::UNBLESSED_EXTENSION_CONTEXT, extension.get(), GURL());
+
+  std::set<std::string> content_script_apis = extension_api->GetAPIsForContext(
+      Feature::CONTENT_SCRIPT_CONTEXT, extension.get(), GURL());
+
   // "storage" is completely unprivileged.
-  EXPECT_TRUE(extension_api->IsAvailable("storage",
-                                         extension.get(),
-                                         Feature::BLESSED_EXTENSION_CONTEXT,
-                                         GURL()).is_available());
-  EXPECT_TRUE(extension_api->IsAvailable("storage",
-                                         extension.get(),
-                                         Feature::UNBLESSED_EXTENSION_CONTEXT,
-                                         GURL()).is_available());
-  EXPECT_TRUE(extension_api->IsAvailable("storage",
-                                         extension.get(),
-                                         Feature::CONTENT_SCRIPT_CONTEXT,
-                                         GURL()).is_available());
+  EXPECT_EQ(1u, privileged_apis.count("storage"));
+  EXPECT_EQ(1u, unprivileged_apis.count("storage"));
+  EXPECT_EQ(1u, content_script_apis.count("storage"));
 
   // "extension" is partially unprivileged.
-  EXPECT_TRUE(extension_api->IsAvailable("extension",
-                                         extension.get(),
-                                         Feature::BLESSED_EXTENSION_CONTEXT,
-                                         GURL()).is_available());
-  EXPECT_TRUE(extension_api->IsAvailable("extension",
-                                         extension.get(),
-                                         Feature::UNBLESSED_EXTENSION_CONTEXT,
-                                         GURL()).is_available());
-  EXPECT_TRUE(extension_api->IsAvailable("extension",
-                                         extension.get(),
-                                         Feature::CONTENT_SCRIPT_CONTEXT,
-                                         GURL()).is_available());
+  EXPECT_EQ(1u, privileged_apis.count("extension"));
+  EXPECT_EQ(1u, unprivileged_apis.count("extension"));
+  EXPECT_EQ(1u, content_script_apis.count("extension"));
 
   // "history" is entirely privileged.
-  EXPECT_TRUE(extension_api->IsAvailable("history",
-                                         extension.get(),
-                                         Feature::BLESSED_EXTENSION_CONTEXT,
-                                         GURL()).is_available());
-  EXPECT_FALSE(extension_api->IsAvailable("history",
-                                          extension.get(),
-                                          Feature::UNBLESSED_EXTENSION_CONTEXT,
-                                          GURL()).is_available());
-  EXPECT_FALSE(extension_api->IsAvailable("history",
-                                          extension.get(),
-                                          Feature::CONTENT_SCRIPT_CONTEXT,
-                                          GURL()).is_available());
+  EXPECT_EQ(1u, privileged_apis.count("history"));
+  EXPECT_EQ(0u, unprivileged_apis.count("history"));
+  EXPECT_EQ(0u, content_script_apis.count("history"));
 }
 
 TEST(ExtensionAPI, ExtensionWithDependencies) {
   // Extension with the "ttsEngine" permission but not the "tts" permission; it
-  // should not automatically get "tts" permission.
+  // must load TTS.
   {
     scoped_refptr<Extension> extension =
         CreateExtensionWithPermission("ttsEngine");
     scoped_ptr<ExtensionAPI> api(
         ExtensionAPI::CreateWithDefaultConfiguration());
-    EXPECT_TRUE(api->IsAvailable("ttsEngine",
-                                 extension.get(),
-                                 Feature::BLESSED_EXTENSION_CONTEXT,
-                                 GURL()).is_available());
-    EXPECT_FALSE(api->IsAvailable("tts",
-                                  extension.get(),
-                                  Feature::BLESSED_EXTENSION_CONTEXT,
-                                  GURL()).is_available());
+    std::set<std::string> apis = api->GetAPIsForContext(
+        Feature::BLESSED_EXTENSION_CONTEXT, extension.get(), GURL());
+    EXPECT_EQ(1u, apis.count("ttsEngine"));
+    EXPECT_EQ(1u, apis.count("tts"));
   }
 
   // Conversely, extension with the "tts" permission but not the "ttsEngine"
@@ -302,21 +281,18 @@ TEST(ExtensionAPI, ExtensionWithDependencies) {
         CreateExtensionWithPermission("tts");
     scoped_ptr<ExtensionAPI> api(
         ExtensionAPI::CreateWithDefaultConfiguration());
-    EXPECT_FALSE(api->IsAvailable("ttsEngine",
-                                  extension.get(),
-                                  Feature::BLESSED_EXTENSION_CONTEXT,
-                                  GURL()).is_available());
-    EXPECT_TRUE(api->IsAvailable("tts",
-                                 extension.get(),
-                                 Feature::BLESSED_EXTENSION_CONTEXT,
-                                 GURL()).is_available());
+    std::set<std::string> apis = api->GetAPIsForContext(
+        Feature::BLESSED_EXTENSION_CONTEXT, extension.get(), GURL());
+    EXPECT_EQ(0u, apis.count("ttsEngine"));
+    EXPECT_EQ(1u, apis.count("tts"));
   }
 }
 
 bool MatchesURL(
     ExtensionAPI* api, const std::string& api_name, const std::string& url) {
-  return api->IsAvailable(
-      api_name, NULL, Feature::WEB_PAGE_CONTEXT, GURL(url)).is_available();
+  std::set<std::string> apis =
+      api->GetAPIsForContext(Feature::WEB_PAGE_CONTEXT, NULL, GURL(url));
+  return apis.count(api_name);
 }
 
 TEST(ExtensionAPI, URLMatching) {
@@ -434,6 +410,7 @@ TEST(ExtensionAPI, FeaturesRequireContexts) {
 
     ExtensionAPI api;
     api.RegisterSchema("test", base::StringPiece(schema_source));
+    api.LoadAllSchemas();
 
     Feature* feature = api.GetFeature("test");
     EXPECT_EQ(test_data[i].expect_success, feature != NULL) << i;
@@ -462,6 +439,7 @@ TEST(ExtensionAPI, TypesHaveNamespace) {
 
   ExtensionAPI api;
   api.RegisterSchema("test.foo", manifest_str);
+  api.LoadAllSchemas();
 
   const base::DictionaryValue* schema = api.GetSchema("test.foo");
 

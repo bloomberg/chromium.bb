@@ -5,6 +5,7 @@
 [
   {
     "namespace": "contextMenus",
+    "dependencies": [ "tabs" ],
     "types": [
       {
         "id": "OnClickData",

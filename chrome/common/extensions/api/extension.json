@@ -8,6 +8,7 @@
     "compiler_options": {
       "implemented_in": "chrome/browser/extensions/api/module/module.h"
     },
+    "dependencies": [ "events", "tabs" ],
     "types": [
       {
         "id": "MessageSender",

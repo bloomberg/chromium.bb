@@ -5,6 +5,7 @@
 [
   {
     "namespace": "devtools.panels",
+    "dependencies": [ "windows" ],
     "nocompile": true,
     "types": [
       {

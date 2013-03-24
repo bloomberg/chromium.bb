@@ -5,6 +5,7 @@
 [
   {
     "namespace": "browserAction",
+    "dependencies": [ "tabs" ],
     "types": [
       {
         "id": "ColorArray",
