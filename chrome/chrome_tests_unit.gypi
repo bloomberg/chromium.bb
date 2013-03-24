@@ -1863,7 +1863,6 @@
           ],
           'sources/': [
             ['exclude', '^browser/ui/views/extensions/browser_action_drag_data_unittest.cc'],
-            ['exclude', '^browser/ui/views/bookmarks/bookmark_editor_view_unittest.cc'],
             ['exclude', '^browser/ui/panels/display_settings_provider_win_unittest.cc'],
             ['exclude', '^browser/bookmarks/bookmark_node_data_unittest.cc'],
           ],

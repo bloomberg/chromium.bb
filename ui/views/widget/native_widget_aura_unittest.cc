@@ -396,5 +396,17 @@ TEST_F(NativeWidgetAuraTest, FlashFrame) {
   EXPECT_FALSE(window->GetProperty(aura::client::kDrawAttentionKey));
 }
 
+TEST_F(NativeWidgetAuraTest, NoCrashOnThemeAfterClose) {
+  scoped_ptr<aura::Window> parent(new aura::Window(NULL));
+  parent->Init(ui::LAYER_NOT_DRAWN);
+  parent->SetBounds(gfx::Rect(0, 0, 480, 320));
+  scoped_ptr<Widget> widget(new Widget());
+  NativeWidgetAura* window = Init(parent.get(), widget.get());
+  window->Show();
+  window->Close();
+  MessageLoop::current()->RunUntilIdle();
+  widget->GetNativeTheme();  // Shouldn't crash.
+}
+
 }  // namespace
 }  // namespace views

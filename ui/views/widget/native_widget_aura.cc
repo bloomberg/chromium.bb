@@ -609,7 +609,8 @@ void NativeWidgetAura::SetVisibilityChangedAnimationsEnabled(bool value) {
 
 ui::NativeTheme* NativeWidgetAura::GetNativeTheme() const {
 #if !defined(OS_CHROMEOS)
-  return DesktopRootWindowHost::GetNativeTheme(window_);
+  if (window_)
+    return DesktopRootWindowHost::GetNativeTheme(window_);
 #endif
   return ui::NativeThemeAura::instance();
 }
