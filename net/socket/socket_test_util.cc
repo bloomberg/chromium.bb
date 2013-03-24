@@ -12,6 +12,7 @@
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
+#include "base/run_loop.h"
 #include "base/time.h"
 #include "net/base/address_family.h"
 #include "net/base/address_list.h"
@@ -471,7 +472,7 @@ void DeterministicSocketData::Run() {
   // since they can change in either.
   while ((!at_write_eof() || !at_read_eof()) && !stopped()) {
     if (counter % 2 == 0)
-      MessageLoop::current()->RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
     if (counter % 2 == 1) {
       InvokeCallbacks();
     }
@@ -482,7 +483,7 @@ void DeterministicSocketData::Run() {
   while (socket_ && (socket_->write_pending() || socket_->read_pending()) &&
          !stopped()) {
     InvokeCallbacks();
-    MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
   SetStopped(false);
   is_running_ = false;
@@ -1496,7 +1497,7 @@ bool ClientSocketPoolTest::ReleaseOneConnection(KeepAlive keep_alive) {
       if (keep_alive == NO_KEEP_ALIVE)
         (*i)->handle()->socket()->Disconnect();
       (*i)->handle()->Reset();
-      MessageLoop::current()->RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
       return true;
     }
   }

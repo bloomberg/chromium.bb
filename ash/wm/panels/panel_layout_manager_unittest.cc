@@ -23,6 +23,7 @@
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/run_loop.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/event_generator.h"
@@ -155,7 +156,7 @@ class PanelLayoutManagerTest : public test::AshTestBase {
 
   void IsCalloutAboveLauncherIcon(aura::Window* panel) {
     // Flush the message loop, since callout updates use a delayed task.
-    MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     views::Widget* widget = GetCalloutWidgetForPanel(panel);
 
     Launcher* launcher = Launcher::ForPrimaryDisplay();

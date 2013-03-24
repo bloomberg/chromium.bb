@@ -11,6 +11,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_util.h"
 #include "base/compiler_specific.h"
+#include "base/run_loop.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/window.h"
@@ -280,7 +281,7 @@ TEST_F(SystemModalContainerLayoutManagerTest,
   transient->Hide();
   TestWindow::CloseTestWindow(transient.release());
 
-  MessageLoopForUI::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // parent should now be active again.
   EXPECT_TRUE(wm::IsActiveWindow(parent.get()));

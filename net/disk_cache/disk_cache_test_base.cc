@@ -6,6 +6,7 @@
 
 #include "base/file_util.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
@@ -41,7 +42,7 @@ bool DiskCacheTest::CleanupCacheDir() {
 }
 
 void DiskCacheTest::TearDown() {
-  MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 DiskCacheTestWithCache::DiskCacheTestWithCache()
@@ -222,7 +223,7 @@ void DiskCacheTestWithCache::AddDelay() {
 }
 
 void DiskCacheTestWithCache::TearDown() {
-  MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   delete cache_;
   if (cache_thread_.IsRunning())
     cache_thread_.Stop();

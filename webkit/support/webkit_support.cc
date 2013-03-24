@@ -21,6 +21,7 @@
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
+#include "base/run_loop.h"
 #include "base/string_piece.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
@@ -361,7 +362,7 @@ void SetUpTestEnvironmentForUnitTests(
 void TearDownTestEnvironment() {
   // Flush any remaining messages before we kill ourselves.
   // http://code.google.com/p/chromium/issues/detail?id=9500
-  MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   BeforeShutdown();
   if (RunningOnValgrind())
@@ -545,7 +546,7 @@ void QuitMessageLoopNow() {
 }
 
 void RunAllPendingMessages() {
-  MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 bool MessageLoopNestableTasksAllowed() {
@@ -559,7 +560,7 @@ void MessageLoopSetNestableTasksAllowed(bool allowed) {
 void DispatchMessageLoop() {
   MessageLoop* current = MessageLoop::current();
   MessageLoop::ScopedNestableTaskAllower allow(current);
-  current->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 WebDevToolsAgentClient::WebKitClientMessageLoop* CreateDevToolsMessageLoop() {

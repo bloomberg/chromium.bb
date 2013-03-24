@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
+#include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
 #include "content/browser/renderer_host/media/audio_input_renderer_host.h"
@@ -166,7 +167,7 @@ void WebRTCAudioDeviceTest::TearDown() {
   SetAudioHardwareConfig(NULL);
 
   // Run any pending cleanup tasks that may have been posted to the main thread.
-  ChildProcess::current()->main_thread()->message_loop()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Kick of the cleanup process by closing the channel. This queues up
   // OnStreamClosed calls to be executed on the audio thread.

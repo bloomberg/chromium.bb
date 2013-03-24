@@ -4,6 +4,7 @@
 
 #include "content/public/test/render_view_test.h"
 
+#include "base/run_loop.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/common/renderer_preferences.h"
@@ -194,7 +195,7 @@ void RenderViewTest::TearDown() {
   // After telling the view to close and resetting mock_process_ we may get
   // some new tasks which need to be processed before shutting down WebKit
   // (http://crbug.com/21508).
-  msg_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   WebKit::shutdown();
 
