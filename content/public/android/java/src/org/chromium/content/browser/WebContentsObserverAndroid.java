@@ -50,9 +50,11 @@ public abstract class WebContentsObserverAndroid {
      * Called when the main frame of the page has committed.
      * @param url The validated url for the page.
      * @param baseUrl The validated base url for the page.
+     * @param isNavigationToDifferentPage Whether the main frame navigated to a different page.
      */
     @CalledByNative
-    public void didNavigateMainFrame(String url, String baseUrl) {
+    public void didNavigateMainFrame(String url, String baseUrl,
+            boolean isNavigationToDifferentPage) {
     }
 
     /**

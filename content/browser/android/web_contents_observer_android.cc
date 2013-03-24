@@ -10,10 +10,11 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
+#include "base/android/scoped_java_ref.h"
 #include "content/browser/android/content_view_core_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "base/android/scoped_java_ref.h"
+#include "content/public/browser/navigation_details.h"
 #include "jni/WebContentsObserverAndroid_jni.h"
 
 using base::android::AttachCurrentThread;
@@ -117,7 +118,8 @@ void WebContentsObserverAndroid::DidNavigateMainFrame(
   ScopedJavaLocalRef<jstring> jstring_base_url(
       ConvertUTF8ToJavaString(env, params.base_url.spec()));
   Java_WebContentsObserverAndroid_didNavigateMainFrame(
-      env, obj.obj(), jstring_url.obj(), jstring_base_url.obj());
+      env, obj.obj(), jstring_url.obj(), jstring_base_url.obj(),
+      details.is_navigation_to_different_page());
 }
 
 void WebContentsObserverAndroid::DidNavigateAnyFrame(
