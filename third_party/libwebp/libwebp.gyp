@@ -28,6 +28,14 @@
           ],
         },
         {
+          'target_name': 'libwebp_demux',
+          'type': 'static_library',
+          'include_dirs': ['.'],
+          'sources': [
+            'demux/demux.c',
+          ],
+        },
+        {
           'target_name': 'libwebp_dsp',
           'type': 'static_library',
           'include_dirs': ['.'],
@@ -63,8 +71,10 @@
               'include_dirs': ['.'],
               'sources': [
                 'dsp/dec_neon.c',
+                'dsp/enc_neon.c',
+                'dsp/upsampling_neon.c',
               ],
-              # behavior similar dsp_neon.c.neon in an Android.mk
+              # behavior similar to *.c.neon in an Android.mk
               'cflags!': [ '-mfpu=vfpv3-d16' ],
               'cflags': [ '-mfpu=neon' ],
             },{  # "armv7 != 1"
@@ -97,6 +107,7 @@
             'enc/picture.c',
             'enc/quant.c',
             'enc/syntax.c',
+            'enc/token.c',
             'enc/tree.c',
             'enc/vp8l.c',
             'enc/webpenc.c',
@@ -114,6 +125,7 @@
             'utils/huffman.c',
             'utils/huffman_encode.c',
             'utils/quant_levels.c',
+            'utils/quant_levels_dec.c',
             'utils/rescaler.c',
             'utils/thread.c',
             'utils/utils.c',
@@ -124,6 +136,7 @@
           'type': 'none',
           'dependencies' : [
             'libwebp_dec',
+            'libwebp_demux',
             'libwebp_dsp',
             'libwebp_dsp_neon',
             'libwebp_enc',

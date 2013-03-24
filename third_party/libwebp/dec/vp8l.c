@@ -149,29 +149,20 @@ static WEBP_INLINE int PlaneCodeToDistance(int xsize, int plane_code) {
 //------------------------------------------------------------------------------
 // Decodes the next Huffman code from bit-stream.
 // FillBitWindow(br) needs to be called at minimum every second call
-// to ReadSymbolUnsafe.
-static int ReadSymbolUnsafe(const HuffmanTree* tree, VP8LBitReader* const br) {
-  const HuffmanTreeNode* node = tree->root_;
-  assert(node != NULL);
-  while (!HuffmanTreeNodeIsLeaf(node)) {
-    node = HuffmanTreeNextNode(node, VP8LReadOneBitUnsafe(br));
-  }
-  return node->symbol_;
-}
-
+// to ReadSymbol, in order to pre-fetch enough bits.
 static WEBP_INLINE int ReadSymbol(const HuffmanTree* tree,
                                   VP8LBitReader* const br) {
-  const int read_safe = (br->pos_ + 8 > br->len_);
-  if (!read_safe) {
-    return ReadSymbolUnsafe(tree, br);
-  } else {
-    const HuffmanTreeNode* node = tree->root_;
-    assert(node != NULL);
-    while (!HuffmanTreeNodeIsLeaf(node)) {
-      node = HuffmanTreeNextNode(node, VP8LReadOneBit(br));
-    }
-    return node->symbol_;
+  const HuffmanTreeNode* node = tree->root_;
+  int num_bits = 0;
+  uint32_t bits = VP8LPrefetchBits(br);
+  assert(node != NULL);
+  while (!HuffmanTreeNodeIsLeaf(node)) {
+    node = HuffmanTreeNextNode(node, bits & 1);
+    bits >>= 1;
+    ++num_bits;
   }
+  VP8LDiscardBits(br, num_bits);
+  return node->symbol_;
 }
 
 static int ReadHuffmanCodeLengths(
@@ -327,10 +318,10 @@ static int ReadHuffmanCodes(VP8LDecoder* const dec, int xsize, int ysize,
     hdr->huffman_subsample_bits_ = huffman_precision;
     for (i = 0; i < huffman_pixs; ++i) {
       // The huffman data is stored in red and green bytes.
-      const int index = (huffman_image[i] >> 8) & 0xffff;
-      huffman_image[i] = index;
-      if (index >= num_htree_groups) {
-        num_htree_groups = index + 1;
+      const int group = (huffman_image[i] >> 8) & 0xffff;
+      huffman_image[i] = group;
+      if (group >= num_htree_groups) {
+        num_htree_groups = group + 1;
       }
     }
   }
@@ -615,20 +606,22 @@ static WEBP_INLINE HTreeGroup* GetHtreeGroupForPos(VP8LMetadata* const hdr,
 
 typedef void (*ProcessRowsFunc)(VP8LDecoder* const dec, int row);
 
-static void ApplyTransforms(VP8LDecoder* const dec, int num_rows,
-                            const uint32_t* const rows) {
+static void ApplyInverseTransforms(VP8LDecoder* const dec, int num_rows,
+                                   const uint32_t* const rows) {
   int n = dec->next_transform_;
   const int cache_pixs = dec->width_ * num_rows;
-  uint32_t* rows_data = dec->argb_cache_;
   const int start_row = dec->last_row_;
   const int end_row = start_row + num_rows;
+  const uint32_t* rows_in = rows;
+  uint32_t* const rows_out = dec->argb_cache_;
 
   // Inverse transforms.
   // TODO: most transforms only need to operate on the cropped region only.
-  memcpy(rows_data, rows, cache_pixs * sizeof(*rows_data));
+  memcpy(rows_out, rows_in, cache_pixs * sizeof(*rows_out));
   while (n-- > 0) {
     VP8LTransform* const transform = &dec->transforms_[n];
-    VP8LInverseTransform(transform, start_row, end_row, rows, rows_data);
+    VP8LInverseTransform(transform, start_row, end_row, rows_in, rows_out);
+    rows_in = rows_out;
   }
 }
 
@@ -639,7 +632,7 @@ static void ProcessRows(VP8LDecoder* const dec, int row) {
   const int num_rows = row - dec->last_row_;
 
   if (num_rows <= 0) return;  // Nothing to be done.
-  ApplyTransforms(dec, num_rows, rows);
+  ApplyInverseTransforms(dec, num_rows, rows);
 
   // Emit output.
   {
@@ -797,19 +790,6 @@ static void ClearTransform(VP8LTransform* const transform) {
   transform->data_ = NULL;
 }
 
-static void ApplyInverseTransforms(VP8LDecoder* const dec, int start_idx,
-                                   uint32_t* const decoded_data) {
-  int n = dec->next_transform_;
-  assert(start_idx >= 0);
-  while (n-- > start_idx) {
-    VP8LTransform* const transform = &dec->transforms_[n];
-    VP8LInverseTransform(transform, 0, transform->ysize_,
-                         decoded_data, decoded_data);
-    ClearTransform(transform);
-  }
-  dec->next_transform_ = start_idx;
-}
-
 // For security reason, we need to remap the color map to span
 // the total possible bundled values, and not just the num_colors.
 static int ExpandColorMap(int num_colors, VP8LTransform* const transform) {
@@ -964,7 +944,6 @@ static int DecodeImageStream(int xsize, int ysize,
   VP8LBitReader* const br = &dec->br_;
   VP8LMetadata* const hdr = &dec->hdr_;
   uint32_t* data = NULL;
-  const int transform_start_idx = dec->next_transform_;
   int color_cache_bits = 0;
 
   // Read the transforms (may recurse).
@@ -1024,9 +1003,6 @@ static int DecodeImageStream(int xsize, int ysize,
   ok = DecodeImageData(dec, data, transform_xsize, transform_ysize, NULL);
   ok = ok && !br->error_;
 
-  // Apply transforms on the decoded data.
-  if (ok) ApplyInverseTransforms(dec, transform_start_idx, data);
-
  End:
 
   if (!ok) {
@@ -1083,7 +1059,7 @@ static void ExtractAlphaRows(VP8LDecoder* const dec, int row) {
   const uint32_t* const in = dec->argb_ + dec->width_ * dec->last_row_;
 
   if (num_rows <= 0) return;  // Nothing to be done.
-  ApplyTransforms(dec, num_rows, in);
+  ApplyInverseTransforms(dec, num_rows, in);
 
   // Extract alpha (which is stored in the green plane).
   {
