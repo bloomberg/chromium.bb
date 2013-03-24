@@ -51,7 +51,7 @@ namespace content {
 class GpuChannelManager;
 struct GpuRenderingStats;
 class GpuWatchdog;
-class SyncPointMessageFilter;
+class GpuChannelMessageFilter;
 
 // Encapsulates an IPC channel between the GPU process and one renderer
 // process. On the renderer side there's a corresponding GpuChannelHost.
@@ -158,7 +158,7 @@ class GpuChannel : public IPC::Listener,
 
  private:
   friend class base::RefCountedThreadSafe<GpuChannel>;
-  friend class SyncPointMessageFilter;
+  friend class GpuChannelMessageFilter;
 
   void OnDestroy();
 
@@ -246,7 +246,7 @@ class GpuChannel : public IPC::Listener,
 
   base::WeakPtrFactory<GpuChannel> weak_factory_;
 
-  scoped_refptr<SyncPointMessageFilter> filter_;
+  scoped_refptr<GpuChannelMessageFilter> filter_;
   scoped_refptr<base::MessageLoopProxy> io_message_loop_;
 
   size_t num_stubs_descheduled_;
