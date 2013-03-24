@@ -13,6 +13,7 @@
 #include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/features/feature.h"
+#include "chrome/common/extensions/incognito_handler.h"
 #include "chrome/common/extensions/manifest_handler.h"
 #include "chrome/common/extensions/manifest_handlers/content_scripts_handler.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
@@ -20,8 +21,6 @@
 #include "chrome/common/extensions/permissions/socket_permission.h"
 #include "extensions/common/error_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using extensions::Extension;
 
 namespace extensions {
 
@@ -85,6 +84,7 @@ class PermissionsTest : public testing::Test {
     (new BackgroundManifestHandler)->Register();
     (new ContentScriptsHandler)->Register();
     (new PluginsHandler)->Register();
+    (new IncognitoHandler)->Register();
   }
 
   virtual void TearDown() OVERRIDE {
@@ -920,8 +920,7 @@ TEST_F(PermissionsTest, GetWarningMessages_Serial) {
 }
 
 TEST_F(PermissionsTest, GetWarningMessages_Socket_AnyHost) {
-  extensions::Feature::ScopedCurrentChannel channel(
-      chrome::VersionInfo::CHANNEL_DEV);
+  Feature::ScopedCurrentChannel channel(chrome::VersionInfo::CHANNEL_DEV);
 
   scoped_refptr<Extension> extension =
       LoadManifest("permissions", "socket_any_host.json");
@@ -934,8 +933,7 @@ TEST_F(PermissionsTest, GetWarningMessages_Socket_AnyHost) {
 }
 
 TEST_F(PermissionsTest, GetWarningMessages_Socket_OneDomainTwoHostnames) {
-  extensions::Feature::ScopedCurrentChannel channel(
-      chrome::VersionInfo::CHANNEL_DEV);
+  Feature::ScopedCurrentChannel channel(chrome::VersionInfo::CHANNEL_DEV);
 
   scoped_refptr<Extension> extension =
       LoadManifest("permissions", "socket_one_domain_two_hostnames.json");
@@ -960,8 +958,7 @@ TEST_F(PermissionsTest, GetWarningMessages_Socket_OneDomainTwoHostnames) {
 }
 
 TEST_F(PermissionsTest, GetWarningMessages_Socket_TwoDomainsOneHostname) {
-  extensions::Feature::ScopedCurrentChannel channel(
-      chrome::VersionInfo::CHANNEL_DEV);
+  Feature::ScopedCurrentChannel channel(chrome::VersionInfo::CHANNEL_DEV);
 
   scoped_refptr<Extension> extension =
       LoadManifest("permissions", "socket_two_domains_one_hostname.json");

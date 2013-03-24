@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/extensions/incognito_handler.h"
 
 namespace extensions {
 namespace preference_helpers {
@@ -98,7 +99,7 @@ void DispatchEventToExtensions(
     // TODO(bauerb): Only iterate over registered event listeners.
     if (router->ExtensionHasEventListener(extension_id, event_name) &&
         (*it)->HasAPIPermission(permission) &&
-        (!incognito || (*it)->incognito_split_mode() ||
+        (!incognito || IncognitoInfo::IsSplitMode(*it) ||
          extension_service->CanCrossIncognito(*it))) {
       // Inject level of control key-value.
       DictionaryValue* dict;
@@ -114,7 +115,7 @@ void DispatchEventToExtensions(
       //    incognito pref has not alredy been set
       Profile* restrict_to_profile = NULL;
       bool from_incognito = false;
-      if ((*it)->incognito_split_mode()) {
+      if (IncognitoInfo::IsSplitMode(*it)) {
         if (incognito && extension_service->IsIncognitoEnabled(extension_id)) {
           restrict_to_profile = profile->GetOffTheRecordProfile();
         } else if (!incognito &&

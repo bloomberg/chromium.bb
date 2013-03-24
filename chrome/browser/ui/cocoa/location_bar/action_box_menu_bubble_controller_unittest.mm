@@ -14,6 +14,7 @@
 #include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_builder.h"
+#include "chrome/common/extensions/incognito_handler.h"
 #include "chrome/common/extensions/manifest_handler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -60,6 +61,7 @@ class ActionBoxMenuBubbleControllerTest : public CocoaProfileTest {
     EXPECT_TRUE(service_->extensions_enabled());
     service_->Init();
     (new extensions::BackgroundManifestHandler)->Register();
+    (new extensions::IncognitoHandler)->Register();
   }
 
   virtual void TearDown() OVERRIDE {

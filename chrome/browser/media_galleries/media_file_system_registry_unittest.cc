@@ -33,6 +33,7 @@
 #include "chrome/browser/storage_monitor/test_storage_monitor.h"
 #include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/incognito_handler.h"
 #include "chrome/common/extensions/manifest_handler.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -756,6 +757,7 @@ void MediaFileSystemRegistryTest::SetUp() {
   test_file_system_context_ = new TestMediaFileSystemContext(
       g_browser_process->media_file_system_registry());
   (new extensions::BackgroundManifestHandler)->Register();
+  (new extensions::IncognitoHandler)->Register();
 
   ASSERT_TRUE(galleries_dir_.CreateUniqueTempDir());
   empty_dir_ = galleries_dir_.path().AppendASCII("empty");

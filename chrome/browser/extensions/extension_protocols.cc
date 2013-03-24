@@ -24,6 +24,7 @@
 #include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_file_util.h"
+#include "chrome/common/extensions/incognito_handler.h"
 #include "chrome/common/extensions/web_accessible_resources_handler.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/resource_request_info.h"
@@ -257,7 +258,7 @@ bool ExtensionCanLoadInIncognito(const ResourceRequestInfo* info,
   if (info->GetResourceType() == ResourceType::MAIN_FRAME) {
     const Extension* extension =
         extension_info_map->extensions().GetByID(extension_id);
-    return extension && extension->incognito_split_mode();
+    return extension && extensions::IncognitoInfo::IsSplitMode(extension);
   }
 
   return true;

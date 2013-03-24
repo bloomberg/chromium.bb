@@ -26,6 +26,7 @@
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_process_policy.h"
 #include "chrome/common/extensions/extension_set.h"
+#include "chrome/common/extensions/incognito_handler.h"
 #include "chrome/common/extensions/manifest_handler.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/extensions/web_accessible_resources_handler.h"
@@ -144,6 +145,7 @@ void RegisterExtensionManifestHandlers() {
   (new extensions::PageActionHandler)->Register();
   (new extensions::CSPHandler(false))->Register();  // not platform app.
   (new extensions::CSPHandler(true))->Register();  // platform app.
+  (new extensions::IncognitoHandler)->Register();
 }
 
 static void AppendParams(const std::vector<string16>& additional_names,

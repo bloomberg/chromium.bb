@@ -58,6 +58,7 @@
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_messages.h"
+#include "chrome/common/extensions/incognito_handler.h"
 #include "chrome/common/extensions/message_bundle.h"
 #include "chrome/common/extensions/user_script.h"
 #include "chrome/common/pref_names.h"
@@ -1097,7 +1098,7 @@ bool TabsCreateFunction::RunImpl() {
   // We can't load extension URLs into incognito windows unless the extension
   // uses split mode. Special case to fall back to a tabbed window.
   if (url.SchemeIs(extensions::kExtensionScheme) &&
-      !GetExtension()->incognito_split_mode() &&
+      !extensions::IncognitoInfo::IsSplitMode(GetExtension()) &&
       browser->profile()->IsOffTheRecord()) {
     Profile* profile = browser->profile()->GetOriginalProfile();
     chrome::HostDesktopType desktop_type = browser->host_desktop_type();

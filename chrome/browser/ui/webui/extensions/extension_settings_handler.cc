@@ -50,6 +50,7 @@
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/extensions/feature_switch.h"
+#include "chrome/common/extensions/incognito_handler.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -990,7 +991,7 @@ ExtensionSettingsHandler::GetInspectablePagesForExtension(
   // Repeat for the incognito process, if applicable. Don't try to get
   // shell windows for incognito processes.
   if (extension_service_->profile()->HasOffTheRecordProfile() &&
-      extension->incognito_split_mode()) {
+      extensions::IncognitoInfo::IsSplitMode(extension)) {
     ExtensionProcessManager* process_manager =
         extensions::ExtensionSystem::Get(extension_service_->profile()->
             GetOffTheRecordProfile())->process_manager();

@@ -22,6 +22,7 @@
 #include "chrome/browser/storage_monitor/test_storage_monitor.h"
 #include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/incognito_handler.h"
 #include "chrome/common/extensions/manifest_handler.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
@@ -78,12 +79,15 @@ class MediaGalleriesPreferencesTest : public testing::Test {
   }
 
   virtual void SetUp() OVERRIDE {
+    testing::Test::SetUp();
+
     extensions::TestExtensionSystem* extension_system(
         static_cast<extensions::TestExtensionSystem*>(
             extensions::ExtensionSystem::Get(profile_.get())));
     extension_system->CreateExtensionService(
         CommandLine::ForCurrentProcess(), base::FilePath(), false);
     (new extensions::BackgroundManifestHandler)->Register();
+    (new extensions::IncognitoHandler)->Register();
 
     gallery_prefs_.reset(new MediaGalleriesPreferences(profile_.get()));
 
@@ -118,6 +122,7 @@ class MediaGalleriesPreferencesTest : public testing::Test {
   virtual void TearDown() OVERRIDE {
     Verify();
     extensions::ManifestHandler::ClearRegistryForTesting();
+    testing::Test::TearDown();
   }
 
   void Verify() {

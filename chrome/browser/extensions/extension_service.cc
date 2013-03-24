@@ -85,6 +85,7 @@
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/feature_switch.h"
 #include "chrome/common/extensions/features/feature.h"
+#include "chrome/common/extensions/incognito_handler.h"
 #include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/pref_names.h"
@@ -1638,7 +1639,7 @@ bool ExtensionService::CanCrossIncognito(const Extension* extension) const {
   // extensions only see events for a matching profile.
   CHECK(extension);
   return IsIncognitoEnabled(extension->id()) &&
-      !extension->incognito_split_mode();
+         !extensions::IncognitoInfo::IsSplitMode(extension);
 }
 
 bool ExtensionService::CanLoadInIncognito(const Extension* extension) const {
@@ -1646,7 +1647,7 @@ bool ExtensionService::CanLoadInIncognito(const Extension* extension) const {
     return true;
   // Packaged apps and regular extensions need to be enabled specifically for
   // incognito (and split mode should be set).
-  return extension->incognito_split_mode() &&
+  return extensions::IncognitoInfo::IsSplitMode(extension) &&
          IsIncognitoEnabled(extension->id());
 }
 

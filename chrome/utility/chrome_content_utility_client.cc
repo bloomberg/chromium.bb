@@ -26,6 +26,7 @@
 #include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
+#include "chrome/common/extensions/incognito_handler.h"
 #include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/unpacker.h"
 #include "chrome/common/extensions/update_manifest.h"
@@ -62,6 +63,7 @@ void RegisterExtensionManifestHandlers() {
   (new extensions::PageActionHandler)->Register();
   (new extensions::ThemeHandler)->Register();
   (new extensions::PluginsHandler)->Register();
+  (new extensions::IncognitoHandler)->Register();
 }
 
 }  // namespace

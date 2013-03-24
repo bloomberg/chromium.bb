@@ -9,6 +9,7 @@
 #include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/csp_handler.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
+#include "chrome/common/extensions/incognito_handler.h"
 #include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -20,6 +21,7 @@ class PlatformAppsManifestTest : public ExtensionManifestTest {
   virtual void SetUp() OVERRIDE {
     (new BackgroundManifestHandler)->Register();
     (new CSPHandler(true))->Register();  // platform app.
+    (new IncognitoHandler())->Register();
   }
 };
 
@@ -27,22 +29,20 @@ TEST_F(PlatformAppsManifestTest, PlatformApps) {
   scoped_refptr<extensions::Extension> extension =
       LoadAndExpectSuccess("init_valid_platform_app.json");
   EXPECT_TRUE(extension->is_storage_isolated());
-  EXPECT_TRUE(extension->incognito_split_mode());
+  EXPECT_TRUE(IncognitoInfo::IsSplitMode(extension));
 
   extension =
       LoadAndExpectSuccess("init_valid_platform_app_no_manifest_version.json");
   EXPECT_EQ(2, extension->manifest_version());
 
   extension = LoadAndExpectSuccess("incognito_valid_platform_app.json");
-  EXPECT_TRUE(extension->incognito_split_mode());
+  EXPECT_TRUE(IncognitoInfo::IsSplitMode(extension));
 
   Testcase error_testcases[] = {
     Testcase("init_invalid_platform_app_2.json",
         errors::kBackgroundRequiredForPlatformApps),
     Testcase("init_invalid_platform_app_3.json",
         errors::kPlatformAppNeedsManifestVersion2),
-    Testcase("incognito_invalid_platform_app.json",
-        errors::kInvalidIncognitoModeForPlatformApp),
   };
   RunTestcases(error_testcases, arraysize(error_testcases), EXPECT_TYPE_ERROR);
 
@@ -58,7 +58,10 @@ TEST_F(PlatformAppsManifestTest, PlatformApps) {
     Testcase(
         "init_invalid_platform_app_5.json",
         "'background' is only allowed for extensions, hosted apps and legacy "
-            "packaged apps, and this is a packaged app.")
+            "packaged apps, and this is a packaged app."),
+    Testcase("incognito_invalid_platform_app.json",
+        "'incognito' is only allowed for extensions and legacy packaged apps, "
+            "and this is a packaged app."),
   };
   RunTestcases(
       warning_testcases, arraysize(warning_testcases), EXPECT_TYPE_WARNING);
@@ -84,7 +87,7 @@ TEST_F(PlatformAppsManifestTest, PlatformAppContentSecurityPolicy) {
   std::string test_id = "ahplfneplbnjcflhdgkkjeiglkkfeelb";
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kWhitelistedExtensionID, test_id);
-  scoped_refptr<extensions::Extension> extension =
+  scoped_refptr<Extension> extension =
       LoadAndExpectSuccess("init_platform_app_csp.json");
   EXPECT_EQ(0U, extension->install_warnings().size())
       << "Unexpected warning " << extension->install_warnings()[0].message;

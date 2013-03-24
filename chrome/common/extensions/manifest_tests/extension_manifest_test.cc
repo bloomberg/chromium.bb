@@ -11,6 +11,8 @@
 #include "base/values.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
+#include "chrome/common/extensions/extension_manifest_constants.h"
+#include "chrome/common/extensions/incognito_handler.h"
 #include "chrome/common/extensions/manifest_handler.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -55,6 +57,14 @@ ExtensionManifestTest::ExtensionManifestTest()
     : enable_apps_(true),
       // UNKNOWN == trunk.
       current_channel_(chrome::VersionInfo::CHANNEL_UNKNOWN) {}
+
+void ExtensionManifestTest::SetUp() {
+  testing::Test::SetUp();
+  // We need the IncognitoHandler registered for all tests, since
+  // Extension uses it in Extension::CheckPlatformAppFeatures() as part of the
+  // creation process.
+  (new extensions::IncognitoHandler)->Register();
+}
 
 void ExtensionManifestTest::TearDown() {
   extensions::ManifestHandler::ClearRegistryForTesting();

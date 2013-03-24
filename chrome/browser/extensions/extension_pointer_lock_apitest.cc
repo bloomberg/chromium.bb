@@ -5,7 +5,6 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/test/base/ui_test_utils.h"
 
-
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
                        ExtensionPointerLockAccessFail) {
   // Test that pointer lock cannot be accessed from an extension without

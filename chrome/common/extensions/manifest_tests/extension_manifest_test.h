@@ -19,6 +19,7 @@ class ExtensionManifestTest : public testing::Test {
   ExtensionManifestTest();
 
  protected:
+  virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
 
   // Helper class that simplifies creating methods that take either a filename

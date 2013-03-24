@@ -30,6 +30,7 @@
 #include "chrome/common/extensions/api/icons/icons_handler.h"
 #include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension_icon_set.h"
+#include "chrome/common/extensions/incognito_handler.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
@@ -321,7 +322,7 @@ ItemInspectViewList DeveloperPrivateGetItemsInfoFunction::
   // Repeat for the incognito process, if applicable. Don't try to get
   // shell windows for incognito process.
   if (service->profile()->HasOffTheRecordProfile() &&
-      extension->incognito_split_mode()) {
+      IncognitoInfo::IsSplitMode(extension)) {
     process_manager = ExtensionSystem::Get(
         service->profile()->GetOffTheRecordProfile())->process_manager();
     GetInspectablePagesForExtensionProcess(

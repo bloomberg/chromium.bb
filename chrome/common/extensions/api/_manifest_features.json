@@ -161,7 +161,7 @@
   },
   "incognito": {
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app", "platform_app"]
+    "extension_types": ["extension", "packaged_app"]
   },
   "input_components": {
     "channel": "stable",

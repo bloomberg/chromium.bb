@@ -28,6 +28,7 @@
 #include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
+#include "chrome/common/extensions/incognito_handler.h"
 #include "chrome/common/extensions/manifest_handler.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/url_constants.h"
@@ -181,6 +182,7 @@ ExtensionProcessManager::ExtensionProcessManager(Profile* profile)
   }
 
   (new BackgroundManifestHandler())->Register();
+  (new extensions::IncognitoHandler())->Register();
 }
 
 ExtensionProcessManager::~ExtensionProcessManager() {
@@ -837,7 +839,7 @@ ExtensionHost* IncognitoExtensionProcessManager::CreateViewHost(
     const GURL& url,
     Browser* browser,
     chrome::ViewType view_type) {
-  if (extension->incognito_split_mode()) {
+  if (extensions::IncognitoInfo::IsSplitMode(extension)) {
     if (IsIncognitoEnabled(extension)) {
       return ExtensionProcessManager::CreateViewHost(extension, url,
                                                      browser, view_type);
@@ -855,7 +857,7 @@ ExtensionHost* IncognitoExtensionProcessManager::CreateViewHost(
 
 void IncognitoExtensionProcessManager::CreateBackgroundHost(
     const Extension* extension, const GURL& url) {
-  if (extension->incognito_split_mode()) {
+  if (extensions::IncognitoInfo::IsSplitMode(extension)) {
     if (IsIncognitoEnabled(extension))
       ExtensionProcessManager::CreateBackgroundHost(extension, url);
   } else {
@@ -870,8 +872,10 @@ SiteInstance* IncognitoExtensionProcessManager::GetSiteInstanceForURL(
   if (service) {
     const Extension* extension = service->extensions()->GetExtensionOrAppByURL(
         ExtensionURLInfo(url));
-    if (extension && !extension->incognito_split_mode())
+    if (extension &&
+        !extensions::IncognitoInfo::IsSplitMode(extension)) {
       return original_manager_->GetSiteInstanceForURL(url);
+    }
   }
   return ExtensionProcessManager::GetSiteInstanceForURL(url);
 }

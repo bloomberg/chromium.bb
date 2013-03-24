@@ -25,6 +25,7 @@
 #include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
+#include "chrome/common/extensions/incognito_handler.h"
 #include "chrome/common/view_type.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -486,7 +487,7 @@ bool MessageService::MaybeAddPendingOpenChannelTask(
     // If the extension uses spanning incognito mode, make sure we're always
     // using the original profile since that is what the extension process
     // will use.
-    if (!extension->incognito_split_mode())
+    if (!IncognitoInfo::IsSplitMode(extension))
       profile = profile->GetOriginalProfile();
 
     if (lazy_background_task_queue_->ShouldEnqueueTask(profile, extension)) {

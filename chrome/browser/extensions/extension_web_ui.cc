@@ -23,6 +23,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
+#include "chrome/common/extensions/incognito_handler.h"
 #include "chrome/common/url_constants.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/navigation_controller.h"
@@ -241,7 +242,7 @@ bool ExtensionWebUI::HandleChromeURLOverride(
     // We can't handle chrome-extension URLs in incognito mode unless the
     // extension uses split mode.
     bool incognito_override_allowed =
-        extension->incognito_split_mode() &&
+        extensions::IncognitoInfo::IsSplitMode(extension) &&
         service->IsIncognitoEnabled(extension->id());
     if (profile->IsOffTheRecord() && !incognito_override_allowed) {
       ++i;

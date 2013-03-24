@@ -38,6 +38,7 @@
 #include "chrome/common/extensions/feature_switch.h"
 #include "chrome/common/extensions/features/base_feature_provider.h"
 #include "chrome/common/extensions/features/feature.h"
+#include "chrome/common/extensions/incognito_handler.h"
 #include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/manifest_handler.h"
 #include "chrome/common/extensions/manifest_handler_helpers.h"
@@ -1208,7 +1209,6 @@ bool Extension::IsTrustedId(const std::string& id) {
 Extension::Extension(const base::FilePath& path,
                      scoped_ptr<extensions::Manifest> manifest)
     : manifest_version_(0),
-      incognito_split_mode_(false),
       kiosk_enabled_(false),
       offline_enabled_(false),
       converted_from_user_script_(false),
@@ -1918,11 +1918,7 @@ bool Extension::LoadExtensionFeatures(string16* error) {
     manifest_->GetBoolean(keys::kConvertedFromUserScript,
                           &converted_from_user_script_);
 
-  if (!LoadSystemIndicator(error) ||
-      !LoadIncognitoMode(error))
-    return false;
-
-  return true;
+  return LoadSystemIndicator(error);
 }
 
 bool Extension::LoadSystemIndicator(string16* error) {
@@ -1949,27 +1945,6 @@ bool Extension::LoadSystemIndicator(string16* error) {
   // TODO(dewittj) Add this for all extension action APIs.
   initial_api_permissions()->insert(APIPermission::kSystemIndicator);
 
-  return true;
-}
-
-bool Extension::LoadIncognitoMode(string16* error) {
-  // Apps default to split mode, extensions default to spanning.
-  incognito_split_mode_ = is_app();
-  if (!manifest_->HasKey(keys::kIncognito))
-    return true;
-  std::string value;
-  if (!manifest_->GetString(keys::kIncognito, &value)) {
-    *error = ASCIIToUTF16(errors::kInvalidIncognitoBehavior);
-    return false;
-  }
-  if (value == values::kIncognitoSpanning) {
-    incognito_split_mode_ = false;
-  } else if (value == values::kIncognitoSplit) {
-    incognito_split_mode_ = true;
-  } else {
-    *error = ASCIIToUTF16(errors::kInvalidIncognitoBehavior);
-    return false;
-  }
   return true;
 }
 
@@ -2108,7 +2083,7 @@ bool Extension::CheckPlatformAppFeatures(string16* error) const {
     return false;
   }
 
-  if (!incognito_split_mode_) {
+  if (!IncognitoInfo::IsSplitMode(this)) {
     *error = ASCIIToUTF16(errors::kInvalidIncognitoModeForPlatformApp);
     return false;
   }

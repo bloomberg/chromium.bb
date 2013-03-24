@@ -22,6 +22,7 @@
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/features/feature.h"
+#include "chrome/common/extensions/incognito_handler.h"
 #include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/manifest_handler.h"
 #include "chrome/common/extensions/manifest_handlers/content_scripts_handler.h"
@@ -112,6 +113,7 @@ class ExtensionTest : public testing::Test {
     (new CommandsHandler)->Register();
     (new ContentScriptsHandler)->Register();
     (new PluginsHandler)->Register();
+    (new IncognitoHandler)->Register();
   }
 
   virtual void TearDown() OVERRIDE {
