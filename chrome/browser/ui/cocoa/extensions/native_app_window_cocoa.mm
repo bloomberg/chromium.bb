@@ -32,6 +32,10 @@
 - (void)toggleFullScreen:(id)sender;
 @end
 
+enum {
+  NSWindowCollectionBehaviorFullScreenPrimary = 1 << 7
+};
+
 #endif  // MAC_OS_X_VERSION_10_7
 
 @implementation NativeAppWindowController
@@ -243,6 +247,13 @@ NativeAppWindowCocoa::NativeAppWindowCocoa(
   if (base::mac::IsOSSnowLeopard() &&
       [window respondsToSelector:@selector(setBottomCornerRounded:)])
     [window setBottomCornerRounded:NO];
+
+  // Set the window to participate in Lion Fullscreen mode. Setting this flag
+  // has no effect on Snow Leopard or earlier. Packaged apps don't show the
+  // fullscreen button on their window decorations.
+  NSWindowCollectionBehavior behavior = [window collectionBehavior];
+  behavior |= NSWindowCollectionBehaviorFullScreenPrimary;
+  [window setCollectionBehavior:behavior];
 
   window_controller_.reset(
       [[NativeAppWindowController alloc] initWithWindow:window.release()]);
