@@ -900,7 +900,7 @@ bool OmniboxViewMac::CanPasteAndGo() {
 int OmniboxViewMac::GetPasteActionStringId() {
   string16 text(GetClipboardText());
   DCHECK(model()->CanPasteAndGo(text));
-  return model()->IsPasteAndSearch(GetClipboardText()) ?
+  return model()->IsPasteAndSearch(text) ?
       IDS_PASTE_AND_SEARCH : IDS_PASTE_AND_GO;
 }
 
