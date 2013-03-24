@@ -109,17 +109,10 @@ class MoveOperation {
                              const FileMoveCallback& callback,
                              google_apis::GDataErrorCode status);
 
-  // Removes a resource |resource_id| from |dir_path|.
+  // Removes a resource |resource_id| from |directory_resource_id|.
   void RemoveFromDirectory(const std::string& resource_id,
-                           const base::FilePath& dir_path,
+                           const std::string& directory_resource_id,
                            const FileOperationCallback& callback);
-
-  // Called in RemoveFromDirectory().
-  void RemoveFromDirectoryAfterGetEntryInfo(
-      const std::string& resource_id,
-      const FileOperationCallback& callback,
-      DriveFileError error,
-      scoped_ptr<DriveEntryProto> entry_proto);
 
   // Called in RemoveFromDirectory().
   void RemoveFromDirectoryCompleted(const FileOperationCallback& callback,

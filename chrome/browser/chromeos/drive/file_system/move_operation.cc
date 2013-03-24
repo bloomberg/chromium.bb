@@ -125,21 +125,11 @@ void MoveOperation::MoveAfterAddToDirectory(
   }
 
   const base::FilePath& src_path = src_dest_info->first.path;
-  const std::string& src_id = src_dest_info->first.proto->resource_id();
-
   observer_->OnDirectoryChangedByOperation(src_path.DirName());
   observer_->OnDirectoryChangedByOperation(new_path.DirName());
 
-  // We just want the resource id of the old directory, but unfortunately
-  // we cannot use src_dest_info->first.proto->parent_resource_id(), because
-  // (1) it may be empty if it points to a root directory, and (2) it stores
-  // server feed entry for the resource 'as is', i.e., local metadata
-  // operations are not reflected until we fetch delta feed. So it might be
-  // inconsistent with the real state. Hence, use src_path.DirName() here.
-  //
-  // TODO(kinaba,hidehiko): clean it up once everything became right.
-  RemoveFromDirectory(src_id,
-                      src_path.DirName(),
+  RemoveFromDirectory(src_dest_info->first.proto->resource_id(),
+                      src_dest_info->first.proto->parent_resource_id(),
                       callback);
 }
 
@@ -217,33 +207,14 @@ void MoveOperation::AddToDirectoryLocally(const base::FilePath& src_path,
   metadata_->MoveEntryToDirectory(src_path, dest_dir_path, callback);
 }
 
-void MoveOperation::RemoveFromDirectory(const std::string& resource_id,
-                                        const base::FilePath& dir_path,
-                                        const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  metadata_->GetEntryInfoByPath(
-      dir_path,
-      base::Bind(&MoveOperation::RemoveFromDirectoryAfterGetEntryInfo,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 resource_id,
-                 callback));
-}
-
-void MoveOperation::RemoveFromDirectoryAfterGetEntryInfo(
+void MoveOperation::RemoveFromDirectory(
     const std::string& resource_id,
-    const FileOperationCallback& callback,
-    DriveFileError error,
-    scoped_ptr<DriveEntryProto> entry_proto) {
+    const std::string& directory_resource_id,
+    const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (error != DRIVE_FILE_OK) {
-    callback.Run(error);
-    return;
-  }
 
   drive_scheduler_->RemoveResourceFromDirectory(
-      entry_proto->resource_id(),
+      directory_resource_id,
       resource_id,
       base::Bind(&MoveOperation::RemoveFromDirectoryCompleted,
                  weak_ptr_factory_.GetWeakPtr(),
