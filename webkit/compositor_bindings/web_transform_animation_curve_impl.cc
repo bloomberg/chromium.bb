@@ -48,7 +48,7 @@ void WebTransformAnimationCurveImpl::add(const WebTransformKeyframe& keyframe,
   curve_->AddKeyframe(cc::TransformKeyframe::Create(
       keyframe.time(),
       transform_operations,
-      cc::CubicBezierTimingFunction::create(x1, y1, x2, y2)
+      cc::CubicBezierTimingFunction::Create(x1, y1, x2, y2)
           .PassAs<cc::TimingFunction>()));
 }
 

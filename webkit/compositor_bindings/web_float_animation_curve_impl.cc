@@ -41,7 +41,7 @@ void WebFloatAnimationCurveImpl::add(const WebFloatKeyframe& keyframe,
   curve_->AddKeyframe(cc::FloatKeyframe::Create(
       keyframe.time,
       keyframe.value,
-      cc::CubicBezierTimingFunction::create(x1, y1, x2, y2)
+      cc::CubicBezierTimingFunction::Create(x1, y1, x2, y2)
           .PassAs<cc::TimingFunction>()));
 }
 

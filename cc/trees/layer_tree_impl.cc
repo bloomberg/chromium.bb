@@ -603,10 +603,10 @@ static scoped_ptr<Animation> MakePinchZoomFadeAnimation(
   scoped_ptr<KeyframedFloatAnimationCurve> curve =
     KeyframedFloatAnimationCurve::Create();
   curve->AddKeyframe(FloatKeyframe::Create(
-    0, start_opacity, EaseInTimingFunction::create()));
+    0, start_opacity, EaseInTimingFunction::Create()));
   curve->AddKeyframe(FloatKeyframe::Create(
     PinchZoomScrollbar::kFadeDurationInSeconds, end_opacity,
-    EaseInTimingFunction::create()));
+    EaseInTimingFunction::Create()));
 
   scoped_ptr<Animation> animation = Animation::Create(
       curve.PassAs<AnimationCurve>(), AnimationIdProvider::NextAnimationId(),

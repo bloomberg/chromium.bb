@@ -11,7 +11,7 @@ namespace {
 
 TEST(TimingFunctionTest, CubicBezierTimingFunction) {
   scoped_ptr<CubicBezierTimingFunction> function =
-      CubicBezierTimingFunction::create(0.25, 0, 0.75, 1);
+      CubicBezierTimingFunction::Create(0.25, 0.0, 0.75, 1.0);
 
   double epsilon = 0.00015;
 

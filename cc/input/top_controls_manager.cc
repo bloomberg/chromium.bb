@@ -148,7 +148,7 @@ void TopControlsManager::SetupAnimation(AnimationDirection direction) {
   top_controls_animation_->AddKeyframe(
       FloatKeyframe::Create(start_time + kShowHideMaxDurationMs,
                             controls_top_offset_ + max_ending_offset,
-                            EaseTimingFunction::create()));
+                            EaseTimingFunction::Create()));
   animation_direction_ = direction;
 }
 

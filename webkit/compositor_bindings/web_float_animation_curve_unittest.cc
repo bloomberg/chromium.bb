@@ -126,7 +126,7 @@ TEST(WebFloatAnimationCurveTest, EaseTimingFunction) {
              WebAnimationCurve::TimingFunctionTypeLinear);
 
   scoped_ptr<cc::TimingFunction> timing_function(
-      cc::EaseTimingFunction::create());
+      cc::EaseTimingFunction::Create());
   for (int i = 0; i <= 4; ++i) {
     const double time = i * 0.25;
     EXPECT_FLOAT_EQ(timing_function->GetValue(time), curve->getValue(time));
@@ -156,7 +156,7 @@ TEST(WebFloatAnimationCurveTest, EaseInTimingFunction) {
              WebAnimationCurve::TimingFunctionTypeLinear);
 
   scoped_ptr<cc::TimingFunction> timing_function(
-      cc::EaseInTimingFunction::create());
+      cc::EaseInTimingFunction::Create());
   for (int i = 0; i <= 4; ++i) {
     const double time = i * 0.25;
     EXPECT_FLOAT_EQ(timing_function->GetValue(time), curve->getValue(time));
@@ -172,7 +172,7 @@ TEST(WebFloatAnimationCurveTest, EaseOutTimingFunction) {
              WebAnimationCurve::TimingFunctionTypeLinear);
 
   scoped_ptr<cc::TimingFunction> timing_function(
-      cc::EaseOutTimingFunction::create());
+      cc::EaseOutTimingFunction::Create());
   for (int i = 0; i <= 4; ++i) {
     const double time = i * 0.25;
     EXPECT_FLOAT_EQ(timing_function->GetValue(time), curve->getValue(time));
@@ -188,7 +188,7 @@ TEST(WebFloatAnimationCurveTest, EaseInOutTimingFunction) {
              WebAnimationCurve::TimingFunctionTypeLinear);
 
   scoped_ptr<cc::TimingFunction> timing_function(
-      cc::EaseInOutTimingFunction::create());
+      cc::EaseInOutTimingFunction::Create());
   for (int i = 0; i <= 4; ++i) {
     const double time = i * 0.25;
     EXPECT_FLOAT_EQ(timing_function->GetValue(time), curve->getValue(time));
@@ -207,7 +207,7 @@ TEST(WebFloatAnimationCurveTest, CustomBezierTimingFunction) {
              WebAnimationCurve::TimingFunctionTypeLinear);
 
   scoped_ptr<cc::TimingFunction> timing_function(
-      cc::CubicBezierTimingFunction::create(x1, y1, x2, y2));
+      cc::CubicBezierTimingFunction::Create(x1, y1, x2, y2));
   for (int i = 0; i <= 4; ++i) {
     const double time = i * 0.25;
     EXPECT_FLOAT_EQ(timing_function->GetValue(time), curve->getValue(time));
@@ -222,7 +222,7 @@ TEST(WebFloatAnimationCurveTest, DefaultTimingFunction) {
              WebAnimationCurve::TimingFunctionTypeLinear);
 
   scoped_ptr<cc::TimingFunction> timing_function(
-      cc::EaseTimingFunction::create());
+      cc::EaseTimingFunction::Create());
   for (int i = 0; i <= 4; ++i) {
     const double time = i * 0.25;
     EXPECT_FLOAT_EQ(timing_function->GetValue(time), curve->getValue(time));

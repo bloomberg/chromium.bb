@@ -225,7 +225,7 @@ TEST(KeyframedAnimationCurveTest, CubicBezierTimingFunction)
       FloatKeyframe::Create(
           0.f,
           0,
-          CubicBezierTimingFunction::create(
+          CubicBezierTimingFunction::Create(
               0.25f, 0.f, 0.75f, 1.f).PassAs<TimingFunction>()));
   curve->AddKeyframe(
       FloatKeyframe::Create(1.0, 1.f, scoped_ptr<TimingFunction>()));

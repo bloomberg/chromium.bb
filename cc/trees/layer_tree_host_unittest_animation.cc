@@ -424,7 +424,7 @@ class LayerTreeHostAnimationTestLayerAddedWithAnimation :
       layer->set_layer_animation_delegate(this);
 
       // Any valid AnimationCurve will do here.
-      scoped_ptr<AnimationCurve> curve(EaseTimingFunction::create());
+      scoped_ptr<AnimationCurve> curve(EaseTimingFunction::Create());
       scoped_ptr<Animation> animation(
           Animation::Create(curve.Pass(), 1, 1,
                                   Animation::Opacity));

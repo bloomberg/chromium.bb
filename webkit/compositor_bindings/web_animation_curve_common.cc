@@ -12,13 +12,13 @@ scoped_ptr<cc::TimingFunction> CreateTimingFunction(
     WebKit::WebAnimationCurve::TimingFunctionType type) {
   switch (type) {
     case WebKit::WebAnimationCurve::TimingFunctionTypeEase:
-      return cc::EaseTimingFunction::create();
+      return cc::EaseTimingFunction::Create();
     case WebKit::WebAnimationCurve::TimingFunctionTypeEaseIn:
-      return cc::EaseInTimingFunction::create();
+      return cc::EaseInTimingFunction::Create();
     case WebKit::WebAnimationCurve::TimingFunctionTypeEaseOut:
-      return cc::EaseOutTimingFunction::create();
+      return cc::EaseOutTimingFunction::Create();
     case WebKit::WebAnimationCurve::TimingFunctionTypeEaseInOut:
-      return cc::EaseInOutTimingFunction::create();
+      return cc::EaseInOutTimingFunction::Create();
     case WebKit::WebAnimationCurve::TimingFunctionTypeLinear:
       return scoped_ptr<cc::TimingFunction>();
   }

@@ -34,7 +34,7 @@ int AddOpacityTransition(Target* target,
 
   scoped_ptr<TimingFunction> func;
   if (!useTimingFunction)
-    func = EaseTimingFunction::create();
+    func = EaseTimingFunction::Create();
   if (duration > 0.0)
     curve->AddKeyframe(FloatKeyframe::Create(0.0, startOpacity, func.Pass()));
   curve->AddKeyframe(FloatKeyframe::Create(duration,

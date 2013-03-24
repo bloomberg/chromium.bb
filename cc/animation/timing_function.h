@@ -25,7 +25,7 @@ class CC_EXPORT TimingFunction : public FloatAnimationCurve {
 
 class CC_EXPORT CubicBezierTimingFunction : public TimingFunction {
  public:
-  static scoped_ptr<CubicBezierTimingFunction> create(double x1, double y1,
+  static scoped_ptr<CubicBezierTimingFunction> Create(double x1, double y1,
                                                       double x2, double y2);
   virtual ~CubicBezierTimingFunction();
 
@@ -44,22 +44,22 @@ class CC_EXPORT CubicBezierTimingFunction : public TimingFunction {
 
 class CC_EXPORT EaseTimingFunction {
  public:
-  static scoped_ptr<TimingFunction> create();
+  static scoped_ptr<TimingFunction> Create();
 };
 
 class CC_EXPORT EaseInTimingFunction {
  public:
-  static scoped_ptr<TimingFunction> create();
+  static scoped_ptr<TimingFunction> Create();
 };
 
 class CC_EXPORT EaseOutTimingFunction {
  public:
-  static scoped_ptr<TimingFunction> create();
+  static scoped_ptr<TimingFunction> Create();
 };
 
 class CC_EXPORT EaseInOutTimingFunction {
  public:
-  static scoped_ptr<TimingFunction> create();
+  static scoped_ptr<TimingFunction> Create();
 };
 
 }  // namespace cc
