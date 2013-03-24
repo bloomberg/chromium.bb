@@ -57,9 +57,10 @@ class WalletItems {
       VISA,
     };
     enum Status {
+      AMEX_NOT_SUPPORTED,
       BILLING_INCOMPLETE,
       DECLINED,
-      DISABLED_FOR_THIS_MERCHANT,
+      DISABLED_FOR_THIS_MERCHANT,  // Deprecated.
       EXPIRED,
       INAPPLICABLE,  // Catch all status.
       PENDING,

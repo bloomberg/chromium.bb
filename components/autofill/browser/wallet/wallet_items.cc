@@ -42,6 +42,8 @@ WalletItems::MaskedInstrument::Type
 
 WalletItems::MaskedInstrument::Status
     StatusFromString(const std::string& status_string) {
+  if (status_string == "AMEX_NOT_SUPPORTED")
+    return WalletItems::MaskedInstrument::AMEX_NOT_SUPPORTED;
   if (status_string == "PENDING")
     return WalletItems::MaskedInstrument::PENDING;
   if (status_string == "VALID")
