@@ -888,7 +888,7 @@ void RenderWidgetHostViewWin::ProcessAckedTouchEvent(
   DCHECK(touch_events_enabled_);
 
   ScopedVector<ui::TouchEvent> events;
-  if (!MakeUITouchEventsFromWebTouchEvents(touch, &events))
+  if (!MakeUITouchEventsFromWebTouchEvents(touch, &events, LOCAL_COORDINATES))
     return;
 
   ui::EventResult result = (ack_result ==

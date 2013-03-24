@@ -9,6 +9,9 @@
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_guest.h"
+#if defined(OS_WIN) || defined(USE_AURA)
+#include "content/browser/renderer_host/ui_events_helper.h"
+#endif
 #include "content/common/browser_plugin/browser_plugin_messages.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/view_messages.h"
@@ -19,6 +22,24 @@
 
 namespace content {
 
+namespace {
+
+bool ShouldSendPinchGesture() {
+  static bool pinch_allowed =
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnablePinch);
+  return pinch_allowed;
+}
+
+WebKit::WebGestureEvent CreateFlingCancelEvent(double time_stamp) {
+  WebKit::WebGestureEvent gesture_event;
+  gesture_event.timeStampSeconds = time_stamp;
+  gesture_event.type = WebKit::WebGestureEvent::GestureFlingCancel;
+  gesture_event.sourceDevice = WebKit::WebGestureEvent::Touchscreen;
+  return gesture_event;
+}
+
+}  // namespace
+
 RenderWidgetHostViewGuest::RenderWidgetHostViewGuest(
     RenderWidgetHost* widget_host,
     BrowserPluginGuest* guest,
@@ -27,6 +48,9 @@ RenderWidgetHostViewGuest::RenderWidgetHostViewGuest(
       guest_(guest),
       is_hidden_(false),
       platform_view_(static_cast<RenderWidgetHostViewPort*>(platform_view)) {
+#if defined(OS_WIN) || defined(USE_AURA)
+  gesture_recognizer_.reset(ui::GestureRecognizer::Create(this));
+#endif  // defined(OS_WIN) || defined(USE_AURA)
   host_->SetView(this);
 }
 
@@ -62,6 +86,30 @@ gfx::Rect RenderWidgetHostViewGuest::GetBoundsInRootWindow() {
 gfx::GLSurfaceHandle RenderWidgetHostViewGuest::GetCompositingSurface() {
   return gfx::GLSurfaceHandle(gfx::kNullPluginWindow, gfx::TEXTURE_TRANSPORT);
 }
+
+#if defined(OS_WIN) || defined(USE_AURA)
+void RenderWidgetHostViewGuest::ProcessAckedTouchEvent(
+    const WebKit::WebTouchEvent& touch, InputEventAckState ack_result) {
+  // TODO(fsamuel): Currently we will only take this codepath if the guest has
+  // requested touch events. A better solution is to always forward touchpresses
+  // to the embedder process to target a BrowserPlugin, and then route all
+  // subsequent touch points of that touchdown to the appropriate guest until
+  // that touch point is released.
+  ScopedVector<ui::TouchEvent> events;
+  if (!MakeUITouchEventsFromWebTouchEvents(touch, &events, LOCAL_COORDINATES))
+    return;
+
+  ui::EventResult result = (ack_result ==
+      INPUT_EVENT_ACK_STATE_CONSUMED) ? ui::ER_HANDLED : ui::ER_UNHANDLED;
+  for (ScopedVector<ui::TouchEvent>::iterator iter = events.begin(),
+      end = events.end(); iter != end; ++iter)  {
+    scoped_ptr<ui::GestureRecognizer::Gestures> gestures;
+    gestures.reset(gesture_recognizer_->ProcessTouchEventForGesture(
+        *(*iter), result, this));
+    ProcessGestures(gestures.get());
+  }
+}
+#endif
 
 void RenderWidgetHostViewGuest::Show() {
   WasShown();
@@ -382,5 +430,72 @@ void RenderWidgetHostViewGuest::DestroyGuestView() {
   host_ = NULL;
   MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
+
+bool RenderWidgetHostViewGuest::DispatchLongPressGestureEvent(
+    ui::GestureEvent* event) {
+  return ForwardGestureEventToRenderer(event);
+}
+
+bool RenderWidgetHostViewGuest::DispatchCancelTouchEvent(
+    ui::TouchEvent* event) {
+  if (!host_)
+    return false;
+
+  WebKit::WebTouchEvent cancel_event;
+  cancel_event.type = WebKit::WebInputEvent::TouchCancel;
+  cancel_event.timeStampSeconds = event->time_stamp().InSecondsF();
+  host_->ForwardTouchEvent(cancel_event);
+  return true;
+}
+
+bool RenderWidgetHostViewGuest::ForwardGestureEventToRenderer(
+    ui::GestureEvent* gesture) {
+#if defined(OS_WIN) || defined(USE_AURA)
+  if (!host_)
+    return false;
+
+  // Pinch gestures are disabled by default on windows desktop. See
+  // crbug.com/128477 and crbug.com/148816
+  if ((gesture->type() == ui::ET_GESTURE_PINCH_BEGIN ||
+      gesture->type() == ui::ET_GESTURE_PINCH_UPDATE ||
+      gesture->type() == ui::ET_GESTURE_PINCH_END) &&
+      !ShouldSendPinchGesture()) {
+    return true;
+  }
+
+  WebKit::WebGestureEvent web_gesture =
+      MakeWebGestureEventFromUIEvent(*gesture);
+  const gfx::Point& client_point = gesture->location();
+  const gfx::Point& screen_point = gesture->location();
+
+  web_gesture.x = client_point.x();
+  web_gesture.y = client_point.y();
+  web_gesture.globalX = screen_point.x();
+  web_gesture.globalY = screen_point.y();
+
+  if (web_gesture.type == WebKit::WebGestureEvent::Undefined)
+    return false;
+  if (web_gesture.type == WebKit::WebGestureEvent::GestureTapDown) {
+    host_->ForwardGestureEvent(
+        CreateFlingCancelEvent(gesture->time_stamp().InSecondsF()));
+  }
+  host_->ForwardGestureEvent(web_gesture);
+  return true;
+#else
+  return false;
+#endif
+}
+
+void RenderWidgetHostViewGuest::ProcessGestures(
+    ui::GestureRecognizer::Gestures* gestures) {
+  if ((gestures == NULL) || gestures->empty())
+    return;
+  for (ui::GestureRecognizer::Gestures::iterator g_it = gestures->begin();
+      g_it != gestures->end();
+      ++g_it) {
+    ForwardGestureEventToRenderer(*g_it);
+  }
+}
+
 
 }  // namespace content

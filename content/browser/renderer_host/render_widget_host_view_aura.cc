@@ -1597,7 +1597,8 @@ gfx::Rect RenderWidgetHostViewAura::GetBoundsInRootWindow() {
 void RenderWidgetHostViewAura::ProcessAckedTouchEvent(
     const WebKit::WebTouchEvent& touch_event, InputEventAckState ack_result) {
   ScopedVector<ui::TouchEvent> events;
-  if (!MakeUITouchEventsFromWebTouchEvents(touch_event, &events))
+  if (!MakeUITouchEventsFromWebTouchEvents(touch_event, &events,
+                                           SCREEN_COORDINATES))
     return;
 
   aura::RootWindow* root = window_->GetRootWindow();

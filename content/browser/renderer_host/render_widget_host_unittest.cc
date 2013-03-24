@@ -2941,13 +2941,18 @@ TEST_F(RenderWidgetHostTest, AckedTouchEventState) {
                                  WebInputEvent::TouchStart,
                                  WebInputEvent::TouchMove };
 
+  TouchEventCoordinateSystem coordinate_system =  LOCAL_COORDINATES;
+#if !defined(OS_WIN)
+  coordinate_system = SCREEN_COORDINATES;
+#endif
   for (size_t i = 0; i < arraysize(acks); ++i) {
     SendInputEventACK(acks[i],
                       INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
     EXPECT_EQ(acks[i], view_->acked_event().type);
     ScopedVector<ui::TouchEvent> acked;
 
-    MakeUITouchEventsFromWebTouchEvents(view_->acked_event(), &acked);
+    MakeUITouchEventsFromWebTouchEvents(
+        view_->acked_event(), &acked, coordinate_system);
     bool success = EventListIsSubset(acked, expected_events);
     EXPECT_TRUE(success) << "Failed on step: " << i;
     if (!success)

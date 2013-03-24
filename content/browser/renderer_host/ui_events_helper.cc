@@ -89,8 +89,10 @@ WebKit::WebInputEvent::Type TouchEventTypeFromEvent(
 
 namespace content {
 
-bool MakeUITouchEventsFromWebTouchEvents(const WebKit::WebTouchEvent& touch,
-                                         ScopedVector<ui::TouchEvent>* list) {
+bool MakeUITouchEventsFromWebTouchEvents(
+    const WebKit::WebTouchEvent& touch,
+    ScopedVector<ui::TouchEvent>* list,
+    TouchEventCoordinateSystem coordinate_system) {
   ui::EventType type = ui::ET_UNKNOWN;
   switch (touch.type) {
     case WebKit::WebInputEvent::TouchStart:
@@ -122,7 +124,11 @@ bool MakeUITouchEventsFromWebTouchEvents(const WebKit::WebTouchEvent& touch,
     // the touch-event is dispatched directly to the gesture-recognizer, so the
     // location needs to be in the local coordinate space.
 #if defined(USE_AURA)
-    gfx::Point location(point.screenPosition.x, point.screenPosition.y);
+    gfx::Point location;
+    if (coordinate_system == LOCAL_COORDINATES)
+      location = gfx::Point(point.position.x, point.position.y);
+    else
+      location = gfx::Point(point.screenPosition.x, point.screenPosition.y);
 #else
     gfx::Point location(point.position.x, point.position.y);
 #endif

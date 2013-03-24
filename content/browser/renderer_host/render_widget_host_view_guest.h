@@ -10,6 +10,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/common/content_export.h"
+#include "ui/base/events/event.h"
+#include "ui/base/gestures/gesture_recognizer.h"
+#include "ui/base/gestures/gesture_types.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/vector2d_f.h"
@@ -34,7 +37,9 @@ struct NativeWebKeyboardEvent;
 // the relevant calls to the platform view.
 // -----------------------------------------------------------------------------
 class CONTENT_EXPORT RenderWidgetHostViewGuest
-    : public RenderWidgetHostViewBase {
+    : public RenderWidgetHostViewBase,
+      public ui::GestureConsumer,
+      public ui::GestureEventHelper {
  public:
   RenderWidgetHostViewGuest(RenderWidgetHost* widget,
                             BrowserPluginGuest* guest,
@@ -123,6 +128,10 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
       bool is_pinned_to_left, bool is_pinned_to_right) OVERRIDE;
   virtual gfx::Rect GetBoundsInRootWindow() OVERRIDE;
   virtual gfx::GLSurfaceHandle GetCompositingSurface() OVERRIDE;
+#if defined(OS_WIN) || defined(USE_AURA)
+  virtual void ProcessAckedTouchEvent(const WebKit::WebTouchEvent& touch,
+                                      InputEventAckState ack_result) OVERRIDE;
+#endif  // defined(OS_WIN) || defined(USE_AURA)
   virtual bool LockMouse() OVERRIDE;
   virtual void UnlockMouse() OVERRIDE;
   virtual void GetScreenInfo(WebKit::WebScreenInfo* results) OVERRIDE;
@@ -171,12 +180,22 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   virtual void WillWmDestroy() OVERRIDE;
 #endif  // defined(OS_WIN) && !defined(USE_AURA)
 
+  // Overridden from ui::GestureEventHelper.
+  virtual bool DispatchLongPressGestureEvent(ui::GestureEvent* event) OVERRIDE;
+  virtual bool DispatchCancelTouchEvent(ui::TouchEvent* event) OVERRIDE;
+
  protected:
   friend class RenderWidgetHostView;
 
  private:
   // Destroys this view without calling |Destroy| on |platform_view_|.
   void DestroyGuestView();
+
+  // Builds and forwards a WebKitGestureEvent to the renderer.
+  bool ForwardGestureEventToRenderer(ui::GestureEvent* gesture);
+
+  // Process all of the given gestures (passes them on to renderer)
+  void ProcessGestures(ui::GestureRecognizer::Gestures* gestures);
 
   // The model object.
   RenderWidgetHostImpl* host_;
@@ -187,7 +206,9 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   // RenderWidgetHostViewGuest mostly only cares about stuff related to
   // compositing, the rest are directly forwared to this |platform_view_|.
   RenderWidgetHostViewPort* platform_view_;
-
+#if defined(OS_WIN) || defined(USE_AURA)
+  scoped_ptr<ui::GestureRecognizer> gesture_recognizer_;
+#endif  // defined(OS_WIN) || defined(USE_AURA)
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewGuest);
 };
 

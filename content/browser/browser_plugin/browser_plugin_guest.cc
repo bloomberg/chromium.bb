@@ -209,7 +209,6 @@ void BrowserPluginGuest::Initialize(
   // focus.
   *renderer_prefs = *embedder_web_contents_->GetMutableRendererPrefs();
 
-  renderer_prefs->throttle_input_events = false;
   // We would like the guest to report changes to frame names so that we can
   // update the BrowserPlugin's corresponding 'name' attribute.
   // TODO(fsamuel): Remove this once http://crbug.com/169110 is addressed.
@@ -580,6 +579,9 @@ void BrowserPluginGuest::RenderViewReady() {
     rvh->DisableAutoResize(damage_view_size_);
 
   Send(new ViewMsg_SetName(routing_id(), name_));
+
+  RenderWidgetHostImpl::From(rvh)->
+      set_hung_renderer_delay_ms(guest_hang_timeout_);
 }
 
 void BrowserPluginGuest::RenderViewGone(base::TerminationStatus status) {
@@ -647,7 +649,6 @@ bool BrowserPluginGuest::ShouldForwardToBrowserPluginGuest(
 bool BrowserPluginGuest::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(BrowserPluginGuest, message)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_HandleInputEvent_ACK, OnHandleInputEventAck)
     IPC_MESSAGE_HANDLER(ViewHostMsg_HasTouchEventHandlers,
                         OnHasTouchEventHandlers)
     IPC_MESSAGE_HANDLER(ViewHostMsg_LockMouse, OnLockMouse)
@@ -759,21 +760,40 @@ void BrowserPluginGuest::OnHandleInputEvent(
   RenderViewHostImpl* guest_rvh = static_cast<RenderViewHostImpl*>(
       GetWebContents()->GetRenderViewHost());
 
-  IPC::Message* message = NULL;
-
-  // TODO(fsamuel): What should we do for keyboard_shortcut field?
-  if (event->type == WebKit::WebInputEvent::KeyDown) {
-    CHECK_EQ(sizeof(WebKit::WebKeyboardEvent), event->size);
-    WebKit::WebKeyboardEvent key_event;
-    memcpy(&key_event, event, event->size);
-    key_event.type = WebKit::WebInputEvent::RawKeyDown;
-    message = new ViewMsg_HandleInputEvent(routing_id(), &key_event, false);
-  } else {
-    message = new ViewMsg_HandleInputEvent(routing_id(), event, false);
+  if (WebKit::WebInputEvent::isMouseEventType(event->type)) {
+    guest_rvh->ForwardMouseEvent(
+        *static_cast<const WebKit::WebMouseEvent*>(event));
+    return;
   }
 
-  Send(message);
-  guest_rvh->StartHangMonitorTimeout(guest_hang_timeout_);
+  if (event->type == WebKit::WebInputEvent::MouseWheel) {
+    guest_rvh->ForwardWheelEvent(
+        *static_cast<const WebKit::WebMouseWheelEvent*>(event));
+    return;
+  }
+
+  if (WebKit::WebInputEvent::isKeyboardEventType(event->type)) {
+    NativeWebKeyboardEvent keyboard_event;
+    const WebKit::WebKeyboardEvent* original_event =
+        static_cast<const WebKit::WebKeyboardEvent*>(event);
+    memcpy(&keyboard_event, original_event, sizeof(WebKit::WebKeyboardEvent));
+    if (keyboard_event.type == WebKit::WebInputEvent::KeyDown)
+      keyboard_event.type = WebKit::WebInputEvent::RawKeyDown;
+    guest_rvh->ForwardKeyboardEvent(keyboard_event);
+    return;
+  }
+
+  if (WebKit::WebInputEvent::isTouchEventType(event->type)) {
+    guest_rvh->ForwardTouchEvent(
+        *static_cast<const WebKit::WebTouchEvent*>(event));
+    return;
+  }
+
+  if (WebKit::WebInputEvent::isGestureEventType(event->type)) {
+    guest_rvh->ForwardGestureEvent(
+        *static_cast<const WebKit::WebGestureEvent*>(event));
+    return;
+  }
 }
 
 void BrowserPluginGuest::OnLockMouse(bool user_gesture,
@@ -983,14 +1003,6 @@ void BrowserPluginGuest::OnUpdateRectACK(
     const BrowserPluginHostMsg_ResizeGuest_Params& resize_guest_params) {
   Send(new ViewMsg_UpdateRect_ACK(routing_id()));
   OnSetSize(instance_id_, auto_size_params, resize_guest_params);
-}
-
-void BrowserPluginGuest::OnHandleInputEventAck(
-      WebKit::WebInputEvent::Type event_type,
-      InputEventAckState ack_result) {
-  RenderViewHostImpl* guest_rvh =
-      static_cast<RenderViewHostImpl*>(GetWebContents()->GetRenderViewHost());
-  guest_rvh->StopHangMonitorTimeout();
 }
 
 void BrowserPluginGuest::OnHasTouchEventHandlers(bool accept) {

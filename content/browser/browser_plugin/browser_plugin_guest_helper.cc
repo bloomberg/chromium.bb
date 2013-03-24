@@ -33,7 +33,6 @@ bool BrowserPluginGuestHelper::ShouldForwardToBrowserPluginGuest(
     const IPC::Message& message) {
   switch (message.type()) {
     case DragHostMsg_UpdateDragCursor::ID:
-    case ViewHostMsg_HandleInputEvent_ACK::ID:
     case ViewHostMsg_HasTouchEventHandlers::ID:
     case ViewHostMsg_SetCursor::ID:
  #if defined(OS_MACOSX)

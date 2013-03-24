@@ -773,7 +773,7 @@ void RenderWidgetHostImpl::ScheduleComposite() {
 }
 
 void RenderWidgetHostImpl::StartHangMonitorTimeout(TimeDelta delay) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (!GetProcess()->IsGuest() && CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableHangMonitor)) {
     return;
   }

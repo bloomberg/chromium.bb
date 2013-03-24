@@ -21,6 +21,11 @@ class TouchEvent;
 
 namespace content {
 
+enum TouchEventCoordinateSystem {
+  SCREEN_COORDINATES,
+  LOCAL_COORDINATES
+};
+
 // Creates a list of ui::TouchEvents out of a single WebTouchEvent.
 // A WebTouchEvent can contain information about a number of WebTouchPoints,
 // whereas a ui::TouchEvent contains information about a single touch-point. So
@@ -28,7 +33,8 @@ namespace content {
 // WebTouchEvent.
 CONTENT_EXPORT bool MakeUITouchEventsFromWebTouchEvents(
     const WebKit::WebTouchEvent& touch,
-    ScopedVector<ui::TouchEvent>* list);
+    ScopedVector<ui::TouchEvent>* list,
+    TouchEventCoordinateSystem coordinate_system);
 
 // Creates a WebGestureEvent from a ui::GestureEvent. Note that it does not
 // populate the event coordinates (i.e. |x|, |y|, |globalX|, and |globalY|). So

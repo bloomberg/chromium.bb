@@ -93,6 +93,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // uses RenderWidgetHost::AsRenderWidgetHostImpl().
   static RenderWidgetHostImpl* From(RenderWidgetHost* rwh);
 
+  void set_hung_renderer_delay_ms(const base::TimeDelta& timeout) {
+    hung_renderer_delay_ms_ = timeout.InMilliseconds();
+  }
+
   // RenderWidgetHost implementation.
   virtual void Undo() OVERRIDE;
   virtual void Redo() OVERRIDE;

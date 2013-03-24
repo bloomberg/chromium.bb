@@ -1402,6 +1402,7 @@ bool BrowserPlugin::handleInputEvent(const WebKit::WebInputEvent& event,
   if (guest_crashed_ || !HasGuest() ||
       event.type == WebKit::WebInputEvent::ContextMenu)
     return false;
+
   if (WebKit::WebInputEvent::isKeyboardEventType(event.type)) {
     // TODO(mthiesse): This is a temporary solution for BrowserPlugin capturing
     // keys like the search key on chromeOS. The guest should be allowed to
@@ -1411,11 +1412,30 @@ bool BrowserPlugin::handleInputEvent(const WebKit::WebInputEvent& event,
         static_cast<const WebKit::WebKeyboardEvent*>(&event)))
       return false;
   }
+
+  const WebKit::WebInputEvent* modified_event = &event;
+  scoped_ptr<WebKit::WebTouchEvent> touch_event;
+  // WebKit gives BrowserPlugin a list of touches that are down, but the browser
+  // process expects a list of all touches. We modify the TouchEnd event here to
+  // match these expectations.
+  if (event.type == WebKit::WebInputEvent::TouchEnd) {
+    const WebKit::WebTouchEvent* orig_touch_event =
+        static_cast<const WebKit::WebTouchEvent*>(&event);
+    touch_event.reset(new WebKit::WebTouchEvent());
+    memcpy(touch_event.get(), orig_touch_event, sizeof(WebKit::WebTouchEvent));
+    if (touch_event->changedTouchesLength > 0) {
+      memcpy(&touch_event->touches[touch_event->touchesLength],
+             &touch_event->changedTouches,
+            touch_event->changedTouchesLength * sizeof(WebKit::WebTouchPoint));
+    }
+    touch_event->touchesLength += touch_event->changedTouchesLength;
+    modified_event = touch_event.get();
+  }
   browser_plugin_manager()->Send(
       new BrowserPluginHostMsg_HandleInputEvent(render_view_routing_id_,
                                                 instance_id_,
                                                 plugin_rect_,
-                                                &event));
+                                                modified_event));
   cursor_.GetCursorInfo(&cursor_info);
   return true;
 }
