@@ -91,11 +91,10 @@ chrome.test.getConfig(function(config) {
       var url = "http://a.com:PORT/files/extensions/api_test" +
           "/wallpaper_manager/test.jpg";
       url = url.replace(/PORT/, config.testServer.port);
-      chrome.wallpaperPrivate.setWallpaperIfExists(url, 'CENTER_CROPPED',
-                                                   'ONLINE',
-                                                   pass(function(exists) {
-        chrome.test.assertTrue(exists);
-        chrome.wallpaperPrivate.setWallpaperIfExists(
+      chrome.wallpaperPrivate.setWallpaperIfExist(url, 'CENTER_CROPPED',
+                                                  'ONLINE', pass(function() {
+        chrome.test.assertNoLastError();
+        chrome.wallpaperPrivate.setWallpaperIfExist(
             'http://dummyurl/test1.jpg', 'CENTER_CROPPED', 'ONLINE',
             fail('Failed to set wallpaper test1.jpg from file system.'));
       }));

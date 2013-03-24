@@ -177,7 +177,6 @@ body {
   width: 108px;
 }
 
-.image-picker[disabled],
 .image-picker-offline img:not([offline]) {
   -webkit-filter: grayscale(1);
 }
@@ -308,19 +307,4 @@ body {
 
 #wallpaper-selection-container .remember-icon {
   content: url('../images/ui/remember.png');
-}
-
-#surprise-me #checkbox {
-  background-image: url('../images/ui/checkbox_unchecked.png');
-  display: inline-block;
-  height: 17px;
-  margin-right: 4px;
-  opacity: 0.7;
-  position: relative;
-  top: 4px;
-  width: 17px;
-}
-
-#surprise-me #checkbox.checked {
-  background-image: url('../images/ui/checkbox_checked.png');
 }
