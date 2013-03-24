@@ -334,7 +334,7 @@ void GLRenderer::DrawCheckerboardQuad(const DrawingFrame& frame,
 
   SkColor color = quad->color;
   GLC(Context(),
-      Context()->uniform4f(program->fragment_shader().colorLocation(),
+      Context()->uniform4f(program->fragment_shader().color_location(),
                            SkColorGetR(color) * (1.0f / 255.0f),
                            SkColorGetG(color) * (1.0f / 255.0f),
                            SkColorGetB(color) * (1.0f / 255.0f),
@@ -349,21 +349,22 @@ void GLRenderer::DrawCheckerboardQuad(const DrawingFrame& frame,
   float tex_scale_x = tile_rect.width();
   float tex_scale_y = tile_rect.height();
   GLC(Context(),
-      Context()->uniform4f(program->fragment_shader().texTransformLocation(),
+      Context()->uniform4f(program->fragment_shader().tex_transform_location(),
                            tex_offset_x,
                            tex_offset_y,
                            tex_scale_x,
                            tex_scale_y));
 
   GLC(Context(),
-      Context()->uniform1f(program->fragment_shader().frequencyLocation(),
+      Context()->uniform1f(program->fragment_shader().frequency_location(),
                            frequency));
 
-  SetShaderOpacity(quad->opacity(), program->fragment_shader().alphaLocation());
+  SetShaderOpacity(quad->opacity(),
+                   program->fragment_shader().alpha_location());
   DrawQuadGeometry(frame,
                    quad->quadTransform(),
                    quad->rect,
-                   program->vertex_shader().matrixLocation());
+                   program->vertex_shader().matrix_location());
 }
 
 void GLRenderer::DrawDebugBorderQuad(const DrawingFrame& frame,
@@ -386,13 +387,13 @@ void GLRenderer::DrawDebugBorderQuad(const DrawingFrame& frame,
                          frame.projection_matrix * render_matrix);
   GLC(Context(),
       Context()->uniformMatrix4fv(
-          program->vertex_shader().matrixLocation(), 1, false, &gl_matrix[0]));
+          program->vertex_shader().matrix_location(), 1, false, &gl_matrix[0]));
 
   SkColor color = quad->color;
   float alpha = SkColorGetA(color) * (1.0f / 255.0f);
 
   GLC(Context(),
-      Context()->uniform4f(program->fragment_shader().colorLocation(),
+      Context()->uniform4f(program->fragment_shader().color_location(),
                            (SkColorGetR(color) * (1.0f / 255.0f)) * alpha,
                            (SkColorGetG(color) * (1.0f / 255.0f)) * alpha,
                            (SkColorGetB(color) * (1.0f / 255.0f)) * alpha,
@@ -730,56 +731,56 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame& frame,
     const RenderPassMaskProgramAA* program = GetRenderPassMaskProgramAA();
     SetUseProgram(program->program());
     GLC(Context(),
-        Context()->uniform1i(program->fragment_shader().samplerLocation(), 0));
+        Context()->uniform1i(program->fragment_shader().sampler_location(), 0));
 
-    shader_quad_location = program->vertex_shader().pointLocation();
-    shader_edge_location = program->fragment_shader().edgeLocation();
+    shader_quad_location = program->vertex_shader().point_location();
+    shader_edge_location = program->fragment_shader().edge_location();
     shader_mask_sampler_location =
-        program->fragment_shader().maskSamplerLocation();
+        program->fragment_shader().mask_sampler_location();
     shader_mask_tex_coord_scale_location =
-        program->fragment_shader().maskTexCoordScaleLocation();
+        program->fragment_shader().mask_tex_coord_scale_location();
     shader_mask_tex_coord_offset_location =
-        program->fragment_shader().maskTexCoordOffsetLocation();
-    shader_matrix_location = program->vertex_shader().matrixLocation();
-    shader_alpha_location = program->fragment_shader().alphaLocation();
-    shader_tex_scale_location = program->vertex_shader().texScaleLocation();
+        program->fragment_shader().mask_tex_coord_offset_location();
+    shader_matrix_location = program->vertex_shader().matrix_location();
+    shader_alpha_location = program->fragment_shader().alpha_location();
+    shader_tex_scale_location = program->vertex_shader().tex_scale_location();
   } else if (!use_aa && mask_texture_id) {
     const RenderPassMaskProgram* program = GetRenderPassMaskProgram();
     SetUseProgram(program->program());
     GLC(Context(),
-        Context()->uniform1i(program->fragment_shader().samplerLocation(), 0));
+        Context()->uniform1i(program->fragment_shader().sampler_location(), 0));
 
     shader_mask_sampler_location =
-        program->fragment_shader().maskSamplerLocation();
+        program->fragment_shader().mask_sampler_location();
     shader_mask_tex_coord_scale_location =
-        program->fragment_shader().maskTexCoordScaleLocation();
+        program->fragment_shader().mask_tex_coord_scale_location();
     shader_mask_tex_coord_offset_location =
-        program->fragment_shader().maskTexCoordOffsetLocation();
-    shader_matrix_location = program->vertex_shader().matrixLocation();
-    shader_alpha_location = program->fragment_shader().alphaLocation();
+        program->fragment_shader().mask_tex_coord_offset_location();
+    shader_matrix_location = program->vertex_shader().matrix_location();
+    shader_alpha_location = program->fragment_shader().alpha_location();
     shader_tex_transform_location =
-        program->vertex_shader().texTransformLocation();
+        program->vertex_shader().tex_transform_location();
   } else if (use_aa && !mask_texture_id) {
     const RenderPassProgramAA* program = GetRenderPassProgramAA();
     SetUseProgram(program->program());
     GLC(Context(),
-        Context()->uniform1i(program->fragment_shader().samplerLocation(), 0));
+        Context()->uniform1i(program->fragment_shader().sampler_location(), 0));
 
-    shader_quad_location = program->vertex_shader().pointLocation();
-    shader_edge_location = program->fragment_shader().edgeLocation();
-    shader_matrix_location = program->vertex_shader().matrixLocation();
-    shader_alpha_location = program->fragment_shader().alphaLocation();
-    shader_tex_scale_location = program->vertex_shader().texScaleLocation();
+    shader_quad_location = program->vertex_shader().point_location();
+    shader_edge_location = program->fragment_shader().edge_location();
+    shader_matrix_location = program->vertex_shader().matrix_location();
+    shader_alpha_location = program->fragment_shader().alpha_location();
+    shader_tex_scale_location = program->vertex_shader().tex_scale_location();
   } else {
     const RenderPassProgram* program = GetRenderPassProgram();
     SetUseProgram(program->program());
     GLC(Context(),
-        Context()->uniform1i(program->fragment_shader().samplerLocation(), 0));
+        Context()->uniform1i(program->fragment_shader().sampler_location(), 0));
 
-    shader_matrix_location = program->vertex_shader().matrixLocation();
-    shader_alpha_location = program->fragment_shader().alphaLocation();
+    shader_matrix_location = program->vertex_shader().matrix_location();
+    shader_alpha_location = program->fragment_shader().alpha_location();
     shader_tex_transform_location =
-        program->vertex_shader().texTransformLocation();
+        program->vertex_shader().tex_transform_location();
   }
 
   float tex_scale_x =
@@ -860,11 +861,11 @@ template<class T>
 static void SolidColorUniformLocation(T program,
                                       SolidColorProgramUniforms* uniforms) {
   uniforms->program = program->program();
-  uniforms->matrix_location = program->vertex_shader().matrixLocation();
-  uniforms->color_location = program->fragment_shader().colorLocation();
-  uniforms->point_location = program->vertex_shader().pointLocation();
-  uniforms->tex_scale_location = program->vertex_shader().texScaleLocation();
-  uniforms->edge_location = program->fragment_shader().edgeLocation();
+  uniforms->matrix_location = program->vertex_shader().matrix_location();
+  uniforms->color_location = program->fragment_shader().color_location();
+  uniforms->point_location = program->vertex_shader().point_location();
+  uniforms->tex_scale_location = program->vertex_shader().tex_scale_location();
+  uniforms->edge_location = program->fragment_shader().edge_location();
 }
 
 bool GLRenderer::SetupQuadForAntialiasing(
@@ -1024,15 +1025,15 @@ template <class T>
 static void TileUniformLocation(T program, TileProgramUniforms* uniforms) {
   uniforms->program = program->program();
   uniforms->vertex_tex_transform_location =
-      program->vertex_shader().vertexTexTransformLocation();
-  uniforms->matrix_location = program->vertex_shader().matrixLocation();
-  uniforms->point_location = program->vertex_shader().pointLocation();
+      program->vertex_shader().vertex_tex_transform_location();
+  uniforms->matrix_location = program->vertex_shader().matrix_location();
+  uniforms->point_location = program->vertex_shader().point_location();
 
-  uniforms->sampler_location = program->fragment_shader().samplerLocation();
-  uniforms->alpha_location = program->fragment_shader().alphaLocation();
+  uniforms->sampler_location = program->fragment_shader().sampler_location();
+  uniforms->alpha_location = program->fragment_shader().alpha_location();
   uniforms->fragment_tex_transform_location =
-      program->fragment_shader().fragmentTexTransformLocation();
-  uniforms->edge_location = program->fragment_shader().edgeLocation();
+      program->fragment_shader().fragment_tex_transform_location();
+  uniforms->edge_location = program->fragment_shader().edge_location();
 }
 
 void GLRenderer::DrawTileQuad(const DrawingFrame& frame,
@@ -1207,15 +1208,15 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame& frame,
   SetUseProgram(program->program());
 
   GLC(Context(),
-      Context()->uniform2f(program->vertex_shader().texScaleLocation(),
+      Context()->uniform2f(program->vertex_shader().tex_scale_location(),
                            quad->tex_scale.width(),
                            quad->tex_scale.height()));
   GLC(Context(),
-      Context()->uniform1i(program->fragment_shader().yTextureLocation(), 1));
+      Context()->uniform1i(program->fragment_shader().y_texture_location(), 1));
   GLC(Context(),
-      Context()->uniform1i(program->fragment_shader().uTextureLocation(), 2));
+      Context()->uniform1i(program->fragment_shader().u_texture_location(), 2));
   GLC(Context(),
-      Context()->uniform1i(program->fragment_shader().vTextureLocation(), 3));
+      Context()->uniform1i(program->fragment_shader().v_texture_location(), 3));
 
   // These values are magic numbers that are used in the transformation from YUV
   // to RGB color values.  They are taken from the following webpage:
@@ -1227,7 +1228,7 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame& frame,
   };
   GLC(Context(),
       Context()->uniformMatrix3fv(
-          program->fragment_shader().yuvMatrixLocation(), 1, 0, yuv_to_rgb));
+          program->fragment_shader().yuv_matrix_location(), 1, 0, yuv_to_rgb));
 
   // These values map to 16, 128, and 128 respectively, and are computed
   // as a fraction over 256 (e.g. 16 / 256 = 0.0625).
@@ -1238,13 +1239,14 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame& frame,
   float yuv_adjust[3] = { -0.0625f, -0.5f, -0.5f, };
   GLC(Context(),
       Context()->uniform3fv(
-          program->fragment_shader().yuvAdjLocation(), 1, yuv_adjust));
+          program->fragment_shader().yuv_adj_location(), 1, yuv_adjust));
 
-  SetShaderOpacity(quad->opacity(), program->fragment_shader().alphaLocation());
+  SetShaderOpacity(quad->opacity(),
+                   program->fragment_shader().alpha_location());
   DrawQuadGeometry(frame,
                    quad->quadTransform(),
                    quad->rect,
-                   program->vertex_shader().matrixLocation());
+                   program->vertex_shader().matrix_location());
 
   // Reset active texture back to texture 0.
   GLC(Context(), Context()->activeTexture(GL_TEXTURE0));
@@ -1264,19 +1266,20 @@ void GLRenderer::DrawStreamVideoQuad(const DrawingFrame& frame,
   ToGLMatrix(&gl_matrix[0], quad->matrix);
   GLC(Context(),
       Context()->uniformMatrix4fv(
-          program->vertex_shader().texMatrixLocation(), 1, false, gl_matrix));
+          program->vertex_shader().tex_matrix_location(), 1, false, gl_matrix));
 
   GLC(Context(),
       Context()->bindTexture(GL_TEXTURE_EXTERNAL_OES, quad->texture_id));
 
   GLC(Context(),
-      Context()->uniform1i(program->fragment_shader().samplerLocation(), 0));
+      Context()->uniform1i(program->fragment_shader().sampler_location(), 0));
 
-  SetShaderOpacity(quad->opacity(), program->fragment_shader().alphaLocation());
+  SetShaderOpacity(quad->opacity(),
+                   program->fragment_shader().alpha_location());
   DrawQuadGeometry(frame,
                    quad->quadTransform(),
                    quad->rect,
-                   program->vertex_shader().matrixLocation());
+                   program->vertex_shader().matrix_location());
 }
 
 struct TextureProgramBinding {
@@ -1284,9 +1287,9 @@ struct TextureProgramBinding {
   void Set(Program* program, WebKit::WebGraphicsContext3D* context) {
     DCHECK(program && (program->initialized() || context->isContextLost()));
     program_id = program->program();
-    sampler_location = program->fragment_shader().samplerLocation();
-    matrix_location = program->vertex_shader().matrixLocation();
-    alpha_location = program->fragment_shader().alphaLocation();
+    sampler_location = program->fragment_shader().sampler_location();
+    matrix_location = program->vertex_shader().matrix_location();
+    alpha_location = program->fragment_shader().alpha_location();
   }
   int program_id;
   int sampler_location;
@@ -1298,8 +1301,9 @@ struct TexTransformTextureProgramBinding : TextureProgramBinding {
   template <class Program>
   void Set(Program* program, WebKit::WebGraphicsContext3D* context) {
     TextureProgramBinding::Set(program, context);
-    tex_transform_location = program->vertex_shader().texTransformLocation();
-    vertex_opacity_location = program->vertex_shader().vertexOpacityLocation();
+    tex_transform_location = program->vertex_shader().tex_transform_location();
+    vertex_opacity_location =
+        program->vertex_shader().vertex_opacity_location();
   }
   int tex_transform_location;
   int vertex_opacity_location;
@@ -1625,16 +1629,16 @@ void GLRenderer::CopyTextureToFramebuffer(const DrawingFrame& frame,
 
   SetUseProgram(program->program());
   GLC(Context(),
-      Context()->uniform1i(program->fragment_shader().samplerLocation(), 0));
+      Context()->uniform1i(program->fragment_shader().sampler_location(), 0));
   GLC(Context(),
-      Context()->uniform4f(program->vertex_shader().texTransformLocation(),
+      Context()->uniform4f(program->vertex_shader().tex_transform_location(),
                            0.0f,
                            0.0f,
                            1.0f,
                            1.0f));
-  SetShaderOpacity(1, program->fragment_shader().alphaLocation());
+  SetShaderOpacity(1, program->fragment_shader().alpha_location());
   DrawQuadGeometry(
-      frame, draw_matrix, rect, program->vertex_shader().matrixLocation());
+      frame, draw_matrix, rect, program->vertex_shader().matrix_location());
 }
 
 void GLRenderer::Finish() {

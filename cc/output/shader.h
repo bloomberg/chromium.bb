@@ -15,350 +15,421 @@ class WebGraphicsContext3D;
 namespace cc {
 
 class VertexShaderPosTex {
-public:
-    VertexShaderPosTex();
+ public:
+  VertexShaderPosTex();
 
-    void init(WebKit::WebGraphicsContext3D*, unsigned program, bool usingBindUniform, int* baseUniformIndex);
-    std::string getShaderString() const;
+  void Init(WebKit::WebGraphicsContext3D*,
+            unsigned program,
+            bool using_bind_uniform,
+            int* base_uniform_index);
+  std::string GetShaderString() const;
 
-    int matrixLocation() const { return m_matrixLocation; }
+  int matrix_location() const { return matrix_location_; }
 
-private:
-    int m_matrixLocation;
+ private:
+  int matrix_location_;
 };
 
 class VertexShaderPosTexYUVStretch {
-public:
-    VertexShaderPosTexYUVStretch();
+ public:
+  VertexShaderPosTexYUVStretch();
 
-    void init(WebKit::WebGraphicsContext3D*, unsigned program, bool usingBindUniform, int* baseUniformIndex);
-    std::string getShaderString() const;
+  void Init(WebKit::WebGraphicsContext3D*,
+            unsigned program,
+            bool using_bind_uniform,
+            int* base_uniform_index);
+  std::string GetShaderString() const;
 
-    int matrixLocation() const { return m_matrixLocation; }
-    int texScaleLocation() const { return m_texScaleLocation; }
+  int matrix_location() const { return matrix_location_; }
+  int tex_scale_location() const { return tex_scale_location_; }
 
-private:
-    int m_matrixLocation;
-    int m_texScaleLocation;
+ private:
+  int matrix_location_;
+  int tex_scale_location_;
 };
 
 class VertexShaderPos {
-public:
-    VertexShaderPos();
+ public:
+  VertexShaderPos();
 
-    void init(WebKit::WebGraphicsContext3D*, unsigned program, bool usingBindUniform, int* baseUniformIndex);
-    std::string getShaderString() const;
+  void Init(WebKit::WebGraphicsContext3D*,
+            unsigned program,
+            bool using_bind_uniform,
+            int* base_uniform_index);
+  std::string GetShaderString() const;
 
-    int matrixLocation() const { return m_matrixLocation; }
+  int matrix_location() const { return matrix_location_; }
 
-private:
-    int m_matrixLocation;
+ private:
+  int matrix_location_;
 };
 
 class VertexShaderPosTexIdentity {
-public:
-    void init(WebKit::WebGraphicsContext3D*, unsigned program, bool usingBindUniform, int* baseUniformIndex) { }
-    std::string getShaderString() const;
+ public:
+  void Init(WebKit::WebGraphicsContext3D*,
+            unsigned program,
+            bool using_bind_uniform,
+            int* base_uniform_index) { }
+  std::string GetShaderString() const;
 };
 
 class VertexShaderPosTexTransform {
-public:
-    VertexShaderPosTexTransform();
+ public:
+  VertexShaderPosTexTransform();
 
-    void init(WebKit::WebGraphicsContext3D*, unsigned program, bool usingBindUniform, int* baseUniformIndex);
-    std::string getShaderString() const;
+  void Init(WebKit::WebGraphicsContext3D*,
+            unsigned program,
+            bool using_bind_uniform,
+            int* base_uniform_index);
+  std::string GetShaderString() const;
 
-    int matrixLocation() const { return m_matrixLocation; }
-    int texTransformLocation() const { return m_texTransformLocation; }
-    int vertexOpacityLocation() const { return m_vertexOpacityLocation; }
+  int matrix_location() const { return matrix_location_; }
+  int tex_transform_location() const { return tex_transform_location_; }
+  int vertex_opacity_location() const { return vertex_opacity_location_; }
 
-private:
-    int m_matrixLocation;
-    int m_texTransformLocation;
-    int m_vertexOpacityLocation;
+ private:
+  int matrix_location_;
+  int tex_transform_location_;
+  int vertex_opacity_location_;
 };
 
 class VertexShaderPosTexTransformFlip : public VertexShaderPosTexTransform {
-public:
-    std::string getShaderString() const;
+ public:
+  std::string GetShaderString() const;
 };
 
 class VertexShaderQuad {
-public:
-    VertexShaderQuad();
+ public:
+  VertexShaderQuad();
 
-    void init(WebKit::WebGraphicsContext3D*, unsigned program, bool usingBindUniform, int* baseUniformIndex);
-    std::string getShaderString() const;
+  void Init(WebKit::WebGraphicsContext3D*,
+           unsigned program, 
+           bool using_bind_uniform,
+           int* base_uniform_index);
+  std::string GetShaderString() const;
 
-    int matrixLocation() const { return m_matrixLocation; }
-    int pointLocation() const { return m_pointLocation; }
-    int texScaleLocation() const { return m_texScaleLocation; }
+  int matrix_location() const { return matrix_location_; }
+  int point_location() const { return point_location_; }
+  int tex_scale_location() const { return tex_scale_location_; }
 
-private:
-    int m_matrixLocation;
-    int m_pointLocation;
-    int m_texScaleLocation;
+ private:
+  int matrix_location_;
+  int point_location_;
+  int tex_scale_location_;
 };
 
 class VertexShaderTile {
-public:
-    VertexShaderTile();
+ public:
+  VertexShaderTile();
 
-    void init(WebKit::WebGraphicsContext3D*, unsigned program, bool usingBindUniform, int* baseUniformIndex);
-    std::string getShaderString() const;
+  void Init(WebKit::WebGraphicsContext3D*,
+            unsigned program,
+            bool using_bind_uniform,
+            int* base_uniform_index);
+  std::string GetShaderString() const;
 
-    int matrixLocation() const { return m_matrixLocation; }
-    int pointLocation() const { return m_pointLocation; }
-    int vertexTexTransformLocation() const { return m_vertexTexTransformLocation; }
+  int matrix_location() const { return matrix_location_; }
+  int point_location() const { return point_location_; }
+  int vertex_tex_transform_location() const {
+    return vertex_tex_transform_location_;
+  }
 
-private:
-    int m_matrixLocation;
-    int m_pointLocation;
-    int m_vertexTexTransformLocation;
+ private:
+  int matrix_location_;
+  int point_location_;
+  int vertex_tex_transform_location_;
 };
 
 class VertexShaderVideoTransform {
-public:
-    VertexShaderVideoTransform();
+ public:
+  VertexShaderVideoTransform();
 
-    bool init(WebKit::WebGraphicsContext3D*, unsigned program, bool usingBindUniform, int* baseUniformIndex);
-    std::string getShaderString() const;
+  bool Init(WebKit::WebGraphicsContext3D*,
+            unsigned program,
+            bool using_bind_uniform,
+            int* base_uniform_index);
+  std::string GetShaderString() const;
 
-    int matrixLocation() const { return m_matrixLocation; }
-    int texMatrixLocation() const { return m_texMatrixLocation; }
+  int matrix_location() const { return matrix_location_; }
+  int tex_matrix_location() const { return tex_matrix_location_; }
 
-private:
-    int m_matrixLocation;
-    int m_texMatrixLocation;
+ private:
+  int matrix_location_;
+  int tex_matrix_location_;
 };
 
 class FragmentTexAlphaBinding {
-public:
-    FragmentTexAlphaBinding();
+ public:
+  FragmentTexAlphaBinding();
 
-    void init(WebKit::WebGraphicsContext3D*, unsigned program, bool usingBindUniform, int* baseUniformIndex);
-    int alphaLocation() const { return m_alphaLocation; }
-    int edgeLocation() const { return -1; }
-    int fragmentTexTransformLocation() const { return -1; }
-    int samplerLocation() const { return m_samplerLocation; }
+  void Init(WebKit::WebGraphicsContext3D*,
+            unsigned program,
+            bool using_bind_uniform,
+            int* base_uniform_index);
+  int alpha_location() const { return alpha_location_; }
+  int edge_location() const { return -1; }
+  int fragment_tex_transform_location() const { return -1; }
+  int sampler_location() const { return sampler_location_; }
 
-private:
-    int m_samplerLocation;
-    int m_alphaLocation;
+ private:
+  int sampler_location_;
+  int alpha_location_;
 };
 
 class FragmentTexOpaqueBinding {
-public:
-    FragmentTexOpaqueBinding();
+ public:
+  FragmentTexOpaqueBinding();
 
-    void init(WebKit::WebGraphicsContext3D*, unsigned program, bool usingBindUniform, int* baseUniformIndex);
-    int alphaLocation() const { return -1; }
-    int edgeLocation() const { return -1; }
-    int fragmentTexTransformLocation() const { return -1; }
-    int samplerLocation() const { return m_samplerLocation; }
+  void Init(WebKit::WebGraphicsContext3D*,
+            unsigned program,
+            bool using_bind_uniform,
+            int* base_uniform_index);
+  int alpha_location() const { return -1; }
+  int edge_location() const { return -1; }
+  int fragment_tex_transform_location() const { return -1; }
+  int sampler_location() const { return sampler_location_; }
 
-private:
-    int m_samplerLocation;
+ private:
+  int sampler_location_;
 };
 
 class FragmentShaderRGBATexVaryingAlpha : public FragmentTexOpaqueBinding {
-public:
-    std::string getShaderString() const;
+ public:
+  std::string GetShaderString() const;
 };
 
 class FragmentShaderRGBATexAlpha : public FragmentTexAlphaBinding {
 public:
-    std::string getShaderString() const;
+  std::string GetShaderString() const;
 };
 
 class FragmentShaderRGBATexRectVaryingAlpha : public FragmentTexAlphaBinding {
-public:
-    std::string getShaderString() const;
+ public:
+  std::string GetShaderString() const;
 };
 
 class FragmentShaderRGBATexOpaque : public FragmentTexOpaqueBinding {
-public:
-    std::string getShaderString() const;
+ public:
+  std::string GetShaderString() const;
 };
 
 class FragmentShaderRGBATex : public FragmentTexOpaqueBinding {
-public:
-    std::string getShaderString() const;
+ public:
+  std::string GetShaderString() const;
 };
 
 // Swizzles the red and blue component of sampled texel with alpha.
 class FragmentShaderRGBATexSwizzleAlpha : public FragmentTexAlphaBinding {
-public:
-    std::string getShaderString() const;
+ public:
+  std::string GetShaderString() const;
 };
 
 // Swizzles the red and blue component of sampled texel without alpha.
 class FragmentShaderRGBATexSwizzleOpaque : public FragmentTexOpaqueBinding {
-public:
-    std::string getShaderString() const;
+ public:
+  std::string GetShaderString() const;
 };
 
 // Fragment shader for external textures.
 class FragmentShaderOESImageExternal : public FragmentTexAlphaBinding {
-public:
-    std::string getShaderString() const;
-    bool init(WebKit::WebGraphicsContext3D*, unsigned program, bool usingBindUniform, int* baseUniformIndex);
-private:
-    int m_samplerLocation;
+ public:
+  std::string GetShaderString() const;
+  bool Init(WebKit::WebGraphicsContext3D*,
+            unsigned program,
+            bool using_bind_uniform,
+            int* base_uniform_index);
+ private:
+  int sampler_location_;
 };
 
 class FragmentShaderRGBATexAlphaAA {
-public:
-    FragmentShaderRGBATexAlphaAA();
+ public:
+  FragmentShaderRGBATexAlphaAA();
 
-    void init(WebKit::WebGraphicsContext3D*, unsigned program, bool usingBindUniform, int* baseUniformIndex);
-    std::string getShaderString() const;
+  void Init(WebKit::WebGraphicsContext3D*,
+            unsigned program,
+            bool using_bind_uniform,
+            int* base_uniform_index);
+  std::string GetShaderString() const;
 
-    int alphaLocation() const { return m_alphaLocation; }
-    int samplerLocation() const { return m_samplerLocation; }
-    int edgeLocation() const { return m_edgeLocation; }
+  int alpha_location() const { return alpha_location_; }
+  int sampler_location() const { return sampler_location_; }
+  int edge_location() const { return edge_location_; }
 
-private:
-    int m_samplerLocation;
-    int m_alphaLocation;
-    int m_edgeLocation;
+ private:
+  int sampler_location_;
+  int alpha_location_;
+  int edge_location_;
 };
 
 class FragmentTexClampAlphaAABinding {
-public:
-    FragmentTexClampAlphaAABinding();
+ public:
+  FragmentTexClampAlphaAABinding();
 
-    void init(WebKit::WebGraphicsContext3D*, unsigned program, bool usingBindUniform, int* baseUniformIndex);
-    int alphaLocation() const { return m_alphaLocation; }
-    int samplerLocation() const { return m_samplerLocation; }
-    int fragmentTexTransformLocation() const { return m_fragmentTexTransformLocation; }
-    int edgeLocation() const { return m_edgeLocation; }
+  void Init(WebKit::WebGraphicsContext3D*,
+            unsigned program,
+            bool using_bind_uniform,
+            int* base_uniform_index);
+  int alpha_location() const { return alpha_location_; }
+  int sampler_location() const { return sampler_location_; }
+  int fragment_tex_transform_location() const {
+    return fragment_tex_transform_location_;
+  }
+  int edge_location() const { return edge_location_; }
 
-private:
-    int m_samplerLocation;
-    int m_alphaLocation;
-    int m_fragmentTexTransformLocation;
-    int m_edgeLocation;
+ private:
+  int sampler_location_;
+  int alpha_location_;
+  int fragment_tex_transform_location_;
+  int edge_location_;
 };
 
-class FragmentShaderRGBATexClampAlphaAA : public FragmentTexClampAlphaAABinding {
-public:
-    std::string getShaderString() const;
+class FragmentShaderRGBATexClampAlphaAA :
+  public FragmentTexClampAlphaAABinding {
+ public:
+  std::string GetShaderString() const;
 };
 
 // Swizzles the red and blue component of sampled texel.
-class FragmentShaderRGBATexClampSwizzleAlphaAA : public FragmentTexClampAlphaAABinding {
-public:
-    std::string getShaderString() const;
+class FragmentShaderRGBATexClampSwizzleAlphaAA :
+  public FragmentTexClampAlphaAABinding {
+ public:
+  std::string GetShaderString() const;
 };
 
 class FragmentShaderRGBATexAlphaMask {
-public:
-    FragmentShaderRGBATexAlphaMask();
-    std::string getShaderString() const;
+ public:
+  FragmentShaderRGBATexAlphaMask();
+  std::string GetShaderString() const;
 
-    void init(WebKit::WebGraphicsContext3D*, unsigned program, bool usingBindUniform, int* baseUniformIndex);
-    int alphaLocation() const { return m_alphaLocation; }
-    int samplerLocation() const { return m_samplerLocation; }
-    int maskSamplerLocation() const { return m_maskSamplerLocation; }
-    int maskTexCoordScaleLocation() const { return m_maskTexCoordScaleLocation; }
-    int maskTexCoordOffsetLocation() const { return m_maskTexCoordOffsetLocation; }
+  void Init(WebKit::WebGraphicsContext3D*,
+            unsigned program,
+            bool using_bind_uniform,
+            int* base_uniform_index);
+  int alpha_location() const { return alpha_location_; }
+  int sampler_location() const { return sampler_location_; }
+  int mask_sampler_location() const { return mask_sampler_location_; }
+  int mask_tex_coord_scale_location() const {
+    return mask_tex_coord_scale_location_;
+  }
+  int mask_tex_coord_offset_location() const {
+    return mask_tex_coord_offset_location_;
+  }
 
-private:
-    int m_samplerLocation;
-    int m_maskSamplerLocation;
-    int m_alphaLocation;
-    int m_maskTexCoordScaleLocation;
-    int m_maskTexCoordOffsetLocation;
+ private:
+  int sampler_location_;
+  int mask_sampler_location_;
+  int alpha_location_;
+  int mask_tex_coord_scale_location_;
+  int mask_tex_coord_offset_location_;
 };
 
 class FragmentShaderRGBATexAlphaMaskAA {
-public:
-    FragmentShaderRGBATexAlphaMaskAA();
-    std::string getShaderString() const;
+ public:
+  FragmentShaderRGBATexAlphaMaskAA();
+  std::string GetShaderString() const;
 
-    void init(WebKit::WebGraphicsContext3D*, unsigned program, bool usingBindUniform, int* baseUniformIndex);
-    int alphaLocation() const { return m_alphaLocation; }
-    int samplerLocation() const { return m_samplerLocation; }
-    int maskSamplerLocation() const { return m_maskSamplerLocation; }
-    int edgeLocation() const { return m_edgeLocation; }
-    int maskTexCoordScaleLocation() const { return m_maskTexCoordScaleLocation; }
-    int maskTexCoordOffsetLocation() const { return m_maskTexCoordOffsetLocation; }
+  void Init(WebKit::WebGraphicsContext3D*,
+            unsigned program,
+            bool using_bind_uniform,
+            int* base_uniform_index);
+  int alpha_location() const { return alpha_location_; }
+  int sampler_location() const { return sampler_location_; }
+  int mask_sampler_location() const { return mask_sampler_location_; }
+  int edge_location() const { return edge_location_; }
+  int mask_tex_coord_scale_location() const {
+    return mask_tex_coord_scale_location_;
+  }
+  int mask_tex_coord_offset_location() const {
+    return mask_tex_coord_offset_location_;
+  }
 
-private:
-    int m_samplerLocation;
-    int m_maskSamplerLocation;
-    int m_alphaLocation;
-    int m_edgeLocation;
-    int m_maskTexCoordScaleLocation;
-    int m_maskTexCoordOffsetLocation;
+ private:
+  int sampler_location_;
+  int mask_sampler_location_;
+  int alpha_location_;
+  int edge_location_;
+  int mask_tex_coord_scale_location_;
+  int mask_tex_coord_offset_location_;
 };
 
 class FragmentShaderYUVVideo {
-public:
-    FragmentShaderYUVVideo();
-    std::string getShaderString() const;
+ public:
+  FragmentShaderYUVVideo();
+  std::string GetShaderString() const;
 
-    void init(WebKit::WebGraphicsContext3D*, unsigned program, bool usingBindUniform, int* baseUniformIndex);
+  void Init(WebKit::WebGraphicsContext3D*,
+            unsigned program,
+            bool using_bind_uniform,
+            int* base_uniform_index);
+  int y_texture_location() const { return y_texture_location_; }
+  int u_texture_location() const { return u_texture_location_; }
+  int v_texture_location() const { return v_texture_location_; }
+  int alpha_location() const { return alpha_location_; }
+  int yuv_matrix_location() const { return yuv_matrix_location_; }
+  int yuv_adj_location() const { return yuv_adj_location_; }
 
-    int yTextureLocation() const { return m_yTextureLocation; }
-    int uTextureLocation() const { return m_uTextureLocation; }
-    int vTextureLocation() const { return m_vTextureLocation; }
-    int alphaLocation() const { return m_alphaLocation; }
-    int yuvMatrixLocation() const { return m_yuvMatrixLocation; }
-    int yuvAdjLocation() const { return m_yuvAdjLocation; }
-
-private:
-    int m_yTextureLocation;
-    int m_uTextureLocation;
-    int m_vTextureLocation;
-    int m_alphaLocation;
-    int m_yuvMatrixLocation;
-    int m_yuvAdjLocation;
+ private:
+  int y_texture_location_;
+  int u_texture_location_;
+  int v_texture_location_;
+  int alpha_location_;
+  int yuv_matrix_location_;
+  int yuv_adj_location_;
 };
 
 class FragmentShaderColor {
-public:
-    FragmentShaderColor();
-    std::string getShaderString() const;
+ public:
+  FragmentShaderColor();
+  std::string GetShaderString() const;
 
-    void init(WebKit::WebGraphicsContext3D*, unsigned program, bool usingBindUniform, int* baseUniformIndex);
-    int edgeLocation() const { return -1; }
-    int colorLocation() const { return m_colorLocation; }
+  void Init(WebKit::WebGraphicsContext3D*,
+            unsigned program,
+            bool using_bind_uniform,
+            int* base_uniform_index);
+  int edge_location() const { return -1; }
+  int color_location() const { return color_location_; }
 
-private:
-    int m_colorLocation;
+ private:
+  int color_location_;
 };
 
 class FragmentShaderColorAA {
-public:
-    FragmentShaderColorAA();
-    std::string getShaderString() const;
+ public:
+  FragmentShaderColorAA();
+  std::string GetShaderString() const;
 
-    void init(WebKit::WebGraphicsContext3D*, unsigned program, bool usingBindUniform, int* baseUniformIndex);
-    int edgeLocation() const { return m_edgeLocation; }
-    int colorLocation() const { return m_colorLocation; }
+  void Init(WebKit::WebGraphicsContext3D*,
+            unsigned program,
+            bool using_bind_uniform,
+            int* base_uniform_index);
+  int edge_location() const { return edge_location_; }
+  int color_location() const { return color_location_; }
 
-private:
-    int m_edgeLocation;
-    int m_colorLocation;
+ private:
+  int edge_location_;
+  int color_location_;
 };
 
 class FragmentShaderCheckerboard {
-public:
-    FragmentShaderCheckerboard();
-    std::string getShaderString() const;
+ public:
+  FragmentShaderCheckerboard();
+  std::string GetShaderString() const;
 
-    void init(WebKit::WebGraphicsContext3D*, unsigned program, bool usingBindUniform, int* baseUniformIndex);
-    int alphaLocation() const { return m_alphaLocation; }
-    int texTransformLocation() const { return m_texTransformLocation; }
-    int frequencyLocation() const { return m_frequencyLocation; }
-    int colorLocation() const { return m_colorLocation; }
-private:
-    int m_alphaLocation;
-    int m_texTransformLocation;
-    int m_frequencyLocation;
-    int m_colorLocation;
+  void Init(WebKit::WebGraphicsContext3D*,
+            unsigned program,
+            bool using_bind_uniform,
+            int* base_uniform_index);
+  int alpha_location() const { return alpha_location_; }
+  int tex_transform_location() const { return tex_transform_location_; }
+  int frequency_location() const { return frequency_location_; }
+  int color_location() const { return color_location_; }
+
+ private:
+  int alpha_location_;
+  int tex_transform_location_;
+  int frequency_location_;
+  int color_location_;
 };
 
 } // namespace cc

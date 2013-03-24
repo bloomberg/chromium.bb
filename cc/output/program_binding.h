@@ -48,8 +48,8 @@ class ProgramBinding : public ProgramBindingBase {
  public:
   explicit ProgramBinding(WebKit::WebGraphicsContext3D* context) {
     ProgramBindingBase::Init(context,
-                             vertex_shader_.getShaderString(),
-                             fragment_shader_.getShaderString());
+                             vertex_shader_.GetShaderString(),
+                             fragment_shader_.GetShaderString());
   }
 
   void Initialize(WebKit::WebGraphicsContext3D* context,
@@ -65,9 +65,9 @@ class ProgramBinding : public ProgramBindingBase {
       Link(context);
 
     int base_uniform_index = 0;
-    vertex_shader_.init(
+    vertex_shader_.Init(
         context, program_, using_bind_uniform, &base_uniform_index);
-    fragment_shader_.init(
+    fragment_shader_.Init(
         context, program_, using_bind_uniform, &base_uniform_index);
 
     // Link after binding uniforms
