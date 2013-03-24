@@ -1191,7 +1191,7 @@ void LayerTreeHostImpl::ActivatePendingTree() {
     RenderingStats stats =
         rendering_stats_instrumentation_->GetRenderingStats();
     paint_time_counter_->SaveRasterizeTime(
-        stats.totalRasterizeTimeForNowBinsOnPendingTree,
+        stats.total_rasterize_time_for_now_bins_on_pending_tree,
         active_tree_->source_frame_number());
   }
 }

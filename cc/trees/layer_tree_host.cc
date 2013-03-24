@@ -351,7 +351,7 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
 
   if (debug_state_.continuous_painting) {
     host_impl->SavePaintTime(
-      rendering_stats_instrumentation_->GetRenderingStats().totalPaintTime,
+      rendering_stats_instrumentation_->GetRenderingStats().total_paint_time,
       commit_number()
     );
   }
