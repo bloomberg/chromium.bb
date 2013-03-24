@@ -119,34 +119,20 @@ if (!chrome.embeddedSearch) {
             GetAutocompleteResults());
         var userInput = GetQuery();
         for (var i = 0, result; result = autocompleteResults[i]; ++i) {
-          var title = escapeHTML(result.contents);
-          var url = escapeHTML(CleanUrl(result.destination_url, userInput));
-          var combinedHtml = '<span class=chrome_url>' + url + '</span>';
-          // TODO(dcblack): Rename these titleElement, urlElement, and
-          // combinedElement for optimal correctness.
-          if (title) {
-            result.titleNode = SafeWrapSuggestion(title);
-            combinedHtml += '<span class=chrome_separator> &ndash; </span>' +
-                '<span class=chrome_title>' + title + '</span>';
+          var className = result.is_search ? 'chrome_search' : 'chrome_url';
+          var combinedElement = '<span class=' + className + '>' +
+              escapeHTML(result.contents) + '</span>';
+          if (result.description) {
+            combinedElement += '<span class=chrome_separator> &ndash; </span>' +
+                '<span class=chrome_title>' +
+                escapeHTML(result.description) + '</span>';
           }
-          result.urlNode = SafeWrapSuggestion(url);
-          result.combinedNode = SafeWrapSuggestion(combinedHtml);
+          result.combinedNode = SafeWrapSuggestion(combinedElement);
           delete result.contents;
+          delete result.description;
           delete result.destination_url;
         }
         return autocompleteResults;
-      }
-
-      // TODO(dcblack): Do this in C++ instead of JS.
-      function CleanUrl(url, userInput) {
-        if (url.indexOf(userInput) == 0) {
-          return url;
-        }
-        url = url.replace(HTTP_REGEX, '');
-        if (url.indexOf(userInput) == 0) {
-          return url;
-        }
-        return url.replace(WWW_REGEX, '');
       }
 
       // TODO(dcblack): Do this in C++ instead of JS.

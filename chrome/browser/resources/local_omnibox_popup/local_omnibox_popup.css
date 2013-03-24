@@ -25,8 +25,14 @@ body {
   white-space: nowrap;
 }
 
+.search {
+  background: -webkit-image-set(
+      url('images/search_icon.png') 1x,
+      url('images/2x/search_icon.png') 2x) no-repeat;
+}
+
 .suggestion:hover {
-  background-color: rgba(181, 213, 255, 0.2);
+  background-color: #eee;
 }
 
 .selected,

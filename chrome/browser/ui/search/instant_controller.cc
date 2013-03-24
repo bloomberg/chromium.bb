@@ -565,8 +565,12 @@ void InstantController::HandleAutocompleteResults(
   std::vector<InstantAutocompleteResult> results;
   for (ACProviders::const_iterator provider = providers.begin();
        provider != providers.end(); ++provider) {
-    // Skip SearchProvider, since it only echoes suggestions.
-    if ((*provider)->type() == AutocompleteProvider::TYPE_SEARCH)
+    const bool from_search_provider =
+        (*provider)->type() == AutocompleteProvider::TYPE_SEARCH;
+    // Unless we are talking to the local overlay, skip SearchProvider, since
+    // it only echoes suggestions.
+    if (from_search_provider &&
+        (instant_tab_ || !overlay_->IsUsingLocalOverlay()))
       continue;
     // Only send autocomplete results when all the providers are done.
     if (!(*provider)->done()) {
@@ -580,11 +584,14 @@ void InstantController::HandleAutocompleteResults(
       result.type = UTF8ToUTF16(AutocompleteMatch::TypeToString(match->type));
       result.description = match->description;
       result.destination_url = UTF8ToUTF16(match->destination_url.spec());
+      if (from_search_provider)
+        result.search_query = match->contents;
       result.transition = match->transition;
       result.relevance = match->relevance;
       DVLOG(1) << "    " << result.relevance << " " << result.type << " "
                << result.provider << " " << result.destination_url << " '"
-               << result.description << "' " <<  result.transition;
+               << result.description << "' '" << result.search_query << "' "
+               << result.transition;
       results.push_back(result);
     }
   }

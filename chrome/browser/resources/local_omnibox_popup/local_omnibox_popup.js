@@ -54,6 +54,13 @@ var INLINE_SUGGESTION_THRESHOLD = 1200;
 var VERBATIM_URL_TYPE = 'url-what-you-typed';
 
 /**
+ * Suggestion provider type corresponding to a verbatim search suggestion.
+ * @type {string}
+ * @const
+ */
+var VERBATIM_SEARCH_TYPE = 'search-what-you-typed';
+
+/**
  * The omnibox input value during the last onnativesuggestions event.
  * @type {string}
  */
@@ -93,8 +100,8 @@ function $(id) {
 function addSuggestionToBox(suggestion, box, select) {
   var suggestionDiv = document.createElement('div');
   suggestionDiv.classList.add('suggestion');
-  if (select)
-    suggestionDiv.classList.add('selected');
+  suggestionDiv.classList.toggle('selected', select);
+  suggestionDiv.classList.toggle('search', suggestion.is_search);
 
   var contentsContainer = document.createElement('div');
   contentsContainer.className = 'contents';
@@ -148,8 +155,8 @@ function getDropdownHeight() {
  */
 function shouldSelectSuggestion(suggestion, inVerbatimMode) {
   var isVerbatimUrl = suggestion.type == VERBATIM_URL_TYPE;
-  var inlinableSuggestion = suggestion.rankingData.relevance >
-      INLINE_SUGGESTION_THRESHOLD;
+  var inlinableSuggestion = suggestion.type != VERBATIM_SEARCH_TYPE &&
+      suggestion.rankingData.relevance > INLINE_SUGGESTION_THRESHOLD;
   // Verbatim URLs should always be selected. Otherwise, select suggestions
   // with a high enough score unless we are in verbatim mode (e.g. backspacing
   // away).
@@ -219,11 +226,8 @@ function updateSuggestions() {
     nativeSuggestions.sort(function(a, b) {
       return b.rankingData.relevance - a.rankingData.relevance;
     });
-    if (shouldSelectSuggestion(nativeSuggestions[0], apiHandle.verbatim)) {
+    if (shouldSelectSuggestion(nativeSuggestions[0], apiHandle.verbatim))
       selectedIndex = 0;
-      apiHandle.setRestrictedAutocompleteText(
-          nativeSuggestions[selectedIndex].rid);
-    }
     renderSuggestions(nativeSuggestions);
   }
 
@@ -242,7 +246,8 @@ function appendSuggestionStyles() {
   style.type = 'text/css';
   style.id = 'suggestionStyle';
   style.textContent =
-      '.suggestion {' +
+      '.suggestion, ' +
+      '.suggestion.search {' +
       '  background-position: ' +
           (isRtl ? '-webkit-calc(100% - 5px)' : '5px') + ' 4px;' +
       '  -webkit-margin-start: ' + startMargin + 'px;' +

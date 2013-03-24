@@ -5,10 +5,12 @@
 #include "chrome/renderer/searchbox/searchbox_extension.h"
 
 #include "base/i18n/rtl.h"
+#include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/renderer/searchbox/searchbox.h"
 #include "content/public/renderer/render_view.h"
 #include "grit/renderer_resources.h"
@@ -77,6 +79,42 @@ v8::Handle<v8::String> GenerateFaviconURL(uint64 most_visited_item_id) {
   return UTF8ToV8String(
       base::StringPrintf("chrome-search://favicon/%s",
                          base::Uint64ToString(most_visited_item_id).c_str()));
+}
+
+// If |url| starts with |prefix|, removes |prefix|.
+void StripPrefix(string16* url, const string16& prefix) {
+  if (StartsWith(*url, prefix, true))
+    url->erase(0, prefix.length());
+}
+
+// Removes leading "http://" or "http://www." from |url| unless |userInput|
+// starts with those prefixes.
+void StripURLPrefixes(string16* url, const string16& userInput) {
+  string16 trimmedUserInput;
+  TrimWhitespace(userInput, TRIM_TRAILING, &trimmedUserInput);
+  if (StartsWith(*url, trimmedUserInput, true))
+    return;
+
+  StripPrefix(url, ASCIIToUTF16(chrome::kHttpScheme) + ASCIIToUTF16("://"));
+
+  if (StartsWith(*url, trimmedUserInput, true))
+    return;
+
+  StripPrefix(url, ASCIIToUTF16("www."));
+}
+
+// Cleans up and formats a URL suggestion for display to the user the dropdown.
+void FormatURLForDisplay(string16* url, const string16& userInput) {
+  StripURLPrefixes(url, userInput);
+
+  string16 trimmedUserInput;
+  TrimWhitespace(userInput, TRIM_LEADING, &trimmedUserInput);
+  if (EndsWith(*url, trimmedUserInput, true))
+    return;
+
+  // Strip a lone trailing slash.
+  if (EndsWith(*url, ASCIIToUTF16("/"), true))
+    url->erase(url->length() - 1, 1);
 }
 
 }  // namespace
@@ -573,10 +611,19 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetAutocompleteResults(
                 UTF16ToV8String(results[i].second.provider));
     result->Set(v8::String::New("type"),
                 UTF16ToV8String(results[i].second.type));
-    result->Set(v8::String::New("contents"),
+    result->Set(v8::String::New("description"),
                 UTF16ToV8String(results[i].second.description));
     result->Set(v8::String::New("destination_url"),
                 UTF16ToV8String(results[i].second.destination_url));
+    if (results[i].second.search_query.empty()) {
+      string16 url = results[i].second.destination_url;
+      FormatURLForDisplay(&url, SearchBox::Get(render_view)->query());
+      result->Set(v8::String::New("contents"), UTF16ToV8String(url));
+    } else {
+      result->Set(v8::String::New("contents"),
+                  UTF16ToV8String(results[i].second.search_query));
+      result->Set(v8::String::New("is_search"), v8::Boolean::New(true));
+    }
     result->Set(v8::String::New("rid"), v8::Uint32::New(results[i].first));
 
     v8::Handle<v8::Object> ranking_data = v8::Object::New();
@@ -950,17 +997,24 @@ v8::Handle<v8::Value>
     return v8::Undefined();
   }
 
-  // We only support selecting autocomplete results that are URLs.
-  string16 text = result.destination_url;
-  InstantCompleteBehavior behavior = INSTANT_COMPLETE_REPLACE;
-  // TODO(jered): Distinguish between history URLs and search provider
-  // navsuggest URLs so that we can do proper accounting on history URLs.
-  InstantSuggestionType type = INSTANT_SUGGESTION_URL;
-
   SearchBox* search_box = SearchBox::Get(render_view);
   std::vector<InstantSuggestion> suggestions;
-  suggestions.push_back(
-      InstantSuggestion(text, behavior, type, search_box->query()));
+  if (result.search_query.empty()) {
+    // TODO(jered): Distinguish between history URLs and search provider
+    // navsuggest URLs so that we can do proper accounting on history URLs.
+    suggestions.push_back(
+        InstantSuggestion(result.destination_url,
+                          INSTANT_COMPLETE_REPLACE,
+                          INSTANT_SUGGESTION_URL,
+                          search_box->query()));
+  } else {
+    suggestions.push_back(
+        InstantSuggestion(result.search_query,
+                          INSTANT_COMPLETE_REPLACE,
+                          INSTANT_SUGGESTION_SEARCH,
+                          string16()));
+  }
+
   search_box->SetSuggestions(suggestions);
   // Clear the SearchBox's query text explicitly since this is a restricted
   // value.

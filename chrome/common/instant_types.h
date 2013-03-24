@@ -81,6 +81,10 @@ struct InstantAutocompleteResult {
   // The URL of the match, same as AutocompleteMatch::destination_url.
   string16 destination_url;
 
+  // The search query for this match. Only set for matches coming from
+  // SearchProvider. Populated using AutocompleteMatch::contents.
+  string16 search_query;
+
   // The transition type to use when the user opens this match. Same as
   // AutocompleteMatch::transition.
   content::PageTransition transition;
