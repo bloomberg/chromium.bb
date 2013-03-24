@@ -276,32 +276,22 @@ class FileBrowserFunction : public AsyncExtensionFunction {
 
   // Runs |callback| with SelectedFileInfoList created from |file_urls|.
   void GetSelectedFileInfo(const UrlList& file_urls,
+                           bool for_opening,
                            GetSelectedFileInfoCallback callback);
 
  private:
+  struct GetSelectedFileInfoParams;
+
   // Used to implement GetSelectedFileInfo().
   void GetSelectedFileInfoInternal(
-      scoped_ptr<std::vector<base::FilePath> > file_paths,
-      scoped_ptr<SelectedFileInfoList> selected_files,
-      GetSelectedFileInfoCallback callback);
+      scoped_ptr<GetSelectedFileInfoParams> params);
 
   // Used to implement GetSelectedFileInfo().
-  void ContinueGetSelectedFileInfo(
-      scoped_ptr<std::vector<base::FilePath> > file_paths,
-      scoped_ptr<SelectedFileInfoList> selected_files,
-      GetSelectedFileInfoCallback callback,
-      drive::DriveFileError error,
-      const base::FilePath& cache_file_path);
-
-  // Returns the cache file path of a Drive file specified by |path|.
-  void GetCacheFileByPath(const base::FilePath& path,
-                          const drive::GetFileFromCacheCallback& callback);
-
-  // Used to implement GetCacheFileByPath().
-  void GetCacheFileByPathInternal(
-      const drive::GetFileFromCacheCallback& callback,
-      drive::DriveFileError error,
-      scoped_ptr<drive::DriveEntryProto> entry_proto);
+  void ContinueGetSelectedFileInfo(scoped_ptr<GetSelectedFileInfoParams> params,
+                                   drive::DriveFileError error,
+                                   const base::FilePath& local_file_path,
+                                   const std::string& mime_type,
+                                   drive::DriveFileType file_type);
 };
 
 // Select a single file.  Closes the dialog window.
