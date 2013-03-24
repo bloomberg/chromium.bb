@@ -88,6 +88,15 @@ class NetworkPortalDetectorTest
     network_portal_detector()->DisableLazyDetection();
   }
 
+  void cancel_portal_detection() {
+    network_portal_detector()->CancelPortalDetection();
+  }
+
+  bool detection_timeout_is_cancelled() {
+    return
+        network_portal_detector()->DetectionTimeoutIsCancelledForTesting();
+  }
+
   bool is_state_idle() {
     return (NetworkPortalDetector::STATE_IDLE == state());
   }
@@ -498,7 +507,7 @@ TEST_F(NetworkPortalDetectorTest, LazyDetectionForOnlineNetwork) {
   enable_lazy_detection();
   CompleteURLFetch(net::OK, 204, NULL);
 
-  ASSERT_EQ(3, attempt_count());
+  ASSERT_EQ(1, attempt_count());
   ASSERT_TRUE(is_state_portal_detection_pending());
   CheckPortalState(
       NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE, 204,
@@ -509,7 +518,7 @@ TEST_F(NetworkPortalDetectorTest, LazyDetectionForOnlineNetwork) {
 
   CompleteURLFetch(net::OK, 204, NULL);
 
-  ASSERT_EQ(3, attempt_count());
+  ASSERT_EQ(2, attempt_count());
   ASSERT_TRUE(is_state_portal_detection_pending());
   CheckPortalState(
       NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE, 204,
@@ -519,7 +528,15 @@ TEST_F(NetworkPortalDetectorTest, LazyDetectionForOnlineNetwork) {
   MessageLoop::current()->RunUntilIdle();
 
   disable_lazy_detection();
+
+  // One more detection result, because DizableLazyDetection() doesn't
+  // cancel last detection request.
+  CompleteURLFetch(net::OK, 204, NULL);
+  ASSERT_EQ(3, attempt_count());
   ASSERT_TRUE(is_state_idle());
+  CheckPortalState(
+      NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE, 204,
+      wifi1_network());
 }
 
 TEST_F(NetworkPortalDetectorTest, LazyDetectionForPortalNetwork) {
@@ -560,14 +577,33 @@ TEST_F(NetworkPortalDetectorTest, LazyDetectionForPortalNetwork) {
 
   // To run CaptivePortalDetector::DetectCaptivePortal().
   MessageLoop::current()->RunUntilIdle();
-  CompleteURLFetch(net::OK, 200, NULL);
-  ASSERT_EQ(3, attempt_count());
-  ASSERT_TRUE(is_state_portal_detection_pending());
-  CheckPortalState(NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL, 200,
-                   wifi1_network());
 
   disable_lazy_detection();
+
+  // One more detection result, because DizableLazyDetection() doesn't
+  // cancel last detection request.
+  CompleteURLFetch(net::OK, 200, NULL);
+  ASSERT_EQ(3, attempt_count());
   ASSERT_TRUE(is_state_idle());
+  CheckPortalState(NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL, 200,
+                   wifi1_network());
+}
+
+TEST_F(NetworkPortalDetectorTest, DetectionTimeoutIsCancelled) {
+  ASSERT_TRUE(is_state_idle());
+  set_min_time_between_attempts(base::TimeDelta());
+
+  SetConnected(wifi1_network());
+  ASSERT_TRUE(is_state_checking_for_portal());
+  CheckPortalState(NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN, -1,
+                   wifi1_network());
+
+  cancel_portal_detection();
+
+  ASSERT_TRUE(is_state_idle());
+  ASSERT_TRUE(detection_timeout_is_cancelled());
+  CheckPortalState(NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN, -1,
+                   wifi1_network());
 }
 
 }  // namespace chromeos

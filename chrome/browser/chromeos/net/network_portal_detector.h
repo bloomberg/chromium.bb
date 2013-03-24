@@ -201,6 +201,10 @@ class NetworkPortalDetector
     time_ticks_for_testing_ += delta;
   }
 
+  // Returns true if detection timeout callback isn't fired or
+  // cancelled.
+  bool DetectionTimeoutIsCancelledForTesting() const;
+
   // Unique identifier of the active network.
   std::string active_network_id_;
 

@@ -181,9 +181,11 @@ NetworkStateInformer::State NetworkStateInformer::GetNetworkState(
         network->connecting()) {
       return CONNECTING;
     }
+    // For proxy-less networks rely on shill's online state if
+    // NetworkPortalDetector's state of current network is unknown.
     if (status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE ||
         (status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN &&
-         network->online())) {
+         !IsProxyConfigured(network) && network->online())) {
       return ONLINE;
     }
     if (status ==

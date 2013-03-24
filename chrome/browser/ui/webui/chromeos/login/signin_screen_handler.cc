@@ -540,6 +540,15 @@ void SigninScreenHandler::UpdateStateInternal(
     ConnectionType connection_type,
     const std::string reason,
     bool force_update) {
+  // Skip "update" notification about OFFLINE state from
+  // NetworkStateInformer if previous notification already was
+  // delayed.
+  if (state == NetworkStateInformer::OFFLINE &&
+      reason == ErrorScreenActor::kErrorReasonUpdate &&
+      !update_state_closure_.IsCancelled()) {
+    return;
+  }
+
   std::string network_id = GetNetworkUniqueId(service_path);
   // TODO (ygorshenin@): switch log level to INFO once signin screen
   // will be tested well.
@@ -654,7 +663,8 @@ void SigninScreenHandler::SetupAndShowOfflineMessage(
     bool is_under_captive_portal,
     bool is_gaia_loading_timeout) {
   std::string network_id = GetNetworkUniqueId(service_path);
-  LOG(WARNING) << "Show offline message: state=" << state << ", "
+  LOG(WARNING) << "Show offline message: "
+               << "state=" << NetworkStateStatusString(state) << ", "
                << "network_id=" << network_id << ", "
                << "reason=" << reason << ", "
                << "is_under_captive_portal=" << is_under_captive_portal;

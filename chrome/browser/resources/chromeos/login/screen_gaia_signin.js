@@ -7,8 +7,9 @@
  */
 
 cr.define('login', function() {
-  // Gaia loading time after which portal check should be fired.
-  /** @const */ var GAIA_LOADING_PORTAL_SUSSPECT_TIME_SEC = 5;
+  // Gaia loading time after which error message must be displayed and
+  // lazy portal check should be fired.
+  /** @const */ var GAIA_LOADING_PORTAL_SUSSPECT_TIME_SEC = 7;
 
   // Maximum Gaia loading time in seconds.
   /** @const */ var MAX_GAIA_LOADING_TIME_SEC = 60;
