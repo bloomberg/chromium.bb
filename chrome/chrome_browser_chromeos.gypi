@@ -341,8 +341,6 @@
         'browser/chromeos/input_method/input_method_delegate.h',
         'browser/chromeos/input_method/input_method_delegate_impl.cc',
         'browser/chromeos/input_method/input_method_delegate_impl.h',
-        'browser/chromeos/input_method/input_method_descriptor.cc',
-        'browser/chromeos/input_method/input_method_descriptor.h',
         'browser/chromeos/input_method/input_method_engine.cc',
         'browser/chromeos/input_method/input_method_engine.h',
         'browser/chromeos/input_method/input_method_manager.h',

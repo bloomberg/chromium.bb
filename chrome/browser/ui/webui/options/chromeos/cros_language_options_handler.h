@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS_CHROMEOS_CROS_LANGUAGE_OPTIONS_HANDLER_H_
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/chromeos/input_method/input_method_descriptor.h"
 #include "chrome/browser/ui/webui/options/language_options_handler.h"
+#include "chromeos/ime/input_method_descriptor.h"
 
 namespace chromeos {
 namespace options {

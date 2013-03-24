@@ -6,8 +6,8 @@
 
 #include <vector>
 
-#include "chrome/browser/chromeos/input_method/input_method_descriptor.h"
 #include "chrome/browser/chromeos/input_method/input_methods.h"
+#include "chromeos/ime/input_method_descriptor.h"
 
 namespace chromeos {
 namespace input_method {

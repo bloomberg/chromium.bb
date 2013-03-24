@@ -1,14 +1,15 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_INPUT_METHOD_INPUT_METHOD_DESCRIPTOR_H_
-#define CHROME_BROWSER_CHROMEOS_INPUT_METHOD_INPUT_METHOD_DESCRIPTOR_H_
+#ifndef CHROMEOS_IME_INPUT_METHOD_DESCRIPTOR_H_
+#define CHROMEOS_IME_INPUT_METHOD_DESCRIPTOR_H_
 
 #include <string>
 #include <vector>
 
 #include "base/basictypes.h"
+#include "chromeos/chromeos_export.h"
 
 namespace chromeos {
 namespace input_method {
@@ -16,7 +17,7 @@ namespace input_method {
 class InputMethodWhitelist;
 
 // A structure which represents an input method.
-class InputMethodDescriptor {
+class CHROMEOS_EXPORT InputMethodDescriptor {
  public:
   InputMethodDescriptor();
   InputMethodDescriptor(const std::string& id,
@@ -64,4 +65,4 @@ typedef std::vector<InputMethodDescriptor> InputMethodDescriptors;
 }  // namespace input_method
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_INPUT_METHOD_INPUT_METHOD_DESCRIPTOR_H_
+#endif  // CHROMEOS_IME_INPUT_METHOD_DESCRIPTOR_H_

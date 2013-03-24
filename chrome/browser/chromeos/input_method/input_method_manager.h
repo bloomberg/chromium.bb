@@ -11,8 +11,8 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/input_method/input_method_config.h"
-#include "chrome/browser/chromeos/input_method/input_method_descriptor.h"
 #include "chrome/browser/chromeos/input_method/input_method_property.h"
+#include "chromeos/ime/input_method_descriptor.h"
 
 namespace ui {
 class Accelerator;
