@@ -76,9 +76,6 @@ const char kDisableDatabases[]              = "disable-databases";
 // Disables data transfer items.
 const char kDisableDataTransferItems[]      = "disable-data-transfer-items";
 
-// Disable deferred 2d canvas rendering.
-const char kDisableDeferred2dCanvas[]        = "disable-deferred-2d-canvas";
-
 // Disables desktop notifications (default enabled on windows).
 const char kDisableDesktopNotifications[]   = "disable-desktop-notifications";
 

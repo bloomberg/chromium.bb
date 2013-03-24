@@ -94,7 +94,6 @@ WebPreferences::WebPreferences()
       accelerated_compositing_for_video_enabled(false),
       accelerated_2d_canvas_enabled(false),
       minimum_accelerated_2d_canvas_size(257 * 256),
-      deferred_2d_canvas_enabled(false),
       antialiased_2d_canvas_disabled(false),
       accelerated_filters_enabled(false),
       gesture_tap_highlight_enabled(false),
@@ -380,9 +379,6 @@ void WebPreferences::Apply(WebView* web_view) const {
 
   settings->setMinimumAccelerated2dCanvasSize(
       minimum_accelerated_2d_canvas_size);
-
-  // Enable deferred 2d canvas if requested on the command line.
-  settings->setDeferred2dCanvasEnabled(deferred_2d_canvas_enabled);
 
   // Disable antialiasing for 2d canvas if requested on the command line.
   settings->setAntialiased2dCanvasEnabled(!antialiased_2d_canvas_disabled);

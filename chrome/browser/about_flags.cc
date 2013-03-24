@@ -334,13 +334,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kDisableAccelerated2dCanvas)
   },
   {
-    "disable-deferred-2d-canvas",
-    IDS_FLAGS_DISABLE_DEFERRED_2D_CANVAS_NAME,
-    IDS_FLAGS_DISABLE_DEFERRED_2D_CANVAS_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(switches::kDisableDeferred2dCanvas)
-  },
-  {
     "disable-threaded-animation",
     IDS_FLAGS_DISABLE_THREADED_ANIMATION_NAME,
     IDS_FLAGS_DISABLE_THREADED_ANIMATION_DESCRIPTION,

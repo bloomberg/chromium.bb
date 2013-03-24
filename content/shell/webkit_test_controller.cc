@@ -295,7 +295,6 @@ void WebKitTestController::OverrideWebkitPrefs(
       if (command_line.HasSwitch(switches::kEnableSoftwareCompositing))
         prefs->accelerated_2d_canvas_enabled = true;
       prefs->accelerated_compositing_for_video_enabled = true;
-      prefs->deferred_2d_canvas_enabled = true;
       prefs->mock_scrollbars_enabled = true;
     }
   }
