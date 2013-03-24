@@ -471,6 +471,11 @@ bool DesktopNotificationService::ShowDesktopNotification(
     int process_id, int route_id, DesktopNotificationSource source) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   const GURL& origin = params.origin;
+  if (origin.scheme() == extensions::kExtensionScheme &&
+      !IsExtensionEnabled(origin.host())) {
+    // The webkit notification from an extension which is disabled. Should fail.
+    return false;
+  }
   NotificationObjectProxy* proxy =
       new NotificationObjectProxy(process_id, route_id,
                                   params.notification_id,
