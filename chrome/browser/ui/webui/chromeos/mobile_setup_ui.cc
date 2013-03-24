@@ -268,12 +268,18 @@ void MobileSetupUIHTMLSource::StartDataRequest(
   // The webui differs based on whether the network is activated or not. If the
   // network is activated, the webui goes straight to portal. Otherwise the
   // webui is used for activation flow.
-  int html_page = network->activated() ? IDR_MOBILE_SETUP_PORTAL_PAGE_HTML :
-                                         IDR_MOBILE_SETUP_PAGE_HTML;
-  static const base::StringPiece html(
-      ResourceBundle::GetSharedInstance().GetRawDataResource(html_page));
-
-  std::string full_html = webui::GetI18nTemplateHtml(html, &strings);
+  std::string full_html;
+  if (network->activated()) {
+    static const base::StringPiece html_for_activated(
+        ResourceBundle::GetSharedInstance().GetRawDataResource(
+            IDR_MOBILE_SETUP_PORTAL_PAGE_HTML));
+    full_html = webui::GetI18nTemplateHtml(html_for_activated, &strings);
+  } else {
+    static const base::StringPiece html_for_non_activated(
+        ResourceBundle::GetSharedInstance().GetRawDataResource(
+            IDR_MOBILE_SETUP_PAGE_HTML));
+    full_html = webui::GetI18nTemplateHtml(html_for_non_activated, &strings);
+  }
 
   callback.Run(base::RefCountedString::TakeString(&full_html));
 }
