@@ -772,6 +772,10 @@ For Chromium, processes used to display diagnostics information (such as this "a
       </message>
 
       <!-- Main Chrome menu -->
+      <message name="IDS_APPMENU_TOOLTIP" desc="The tooltip to show for the browser menu">
+        Customize and control Chromium
+      </message>
+
       <if expr="pp_ifdef('use_titlecase') and not pp_ifdef('chromeos')">
         <message name="IDS_ABOUT" desc="In Title Case: The text label of the About Chrome menu item">
           About &amp;Chromium

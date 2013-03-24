@@ -569,7 +569,7 @@
 						<object class="IBToolTipAttribute" key="NS.object.0">
 							<string key="name">ToolTip</string>
 							<reference key="object" ref="602421009"/>
-							<string key="toolTip">^IDS_APPMENU_TOOLTIP$IDS_PRODUCT_NAME</string>
+							<string key="toolTip">^IDS_APPMENU_TOOLTIP</string>
 						</object>
 					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
