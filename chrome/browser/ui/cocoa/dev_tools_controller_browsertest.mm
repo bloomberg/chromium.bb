@@ -70,21 +70,22 @@ IN_PROC_BROWSER_TEST_F(DevToolsControllerTest, ViewSize) {
   NSView* dev_tools_view = [[container_view subviews] lastObject];
   CGFloat width = NSWidth([[controller() splitView] bounds]);
   CGFloat height = NSHeight([[controller() splitView] bounds]);
-
-  SetDockSide(DEVTOOLS_DOCK_SIDE_BOTTOM);
-  EXPECT_EQ(width, NSWidth([dev_tools_view bounds]));
-
-  SetDockSide(DEVTOOLS_DOCK_SIDE_RIGHT);
-  EXPECT_EQ(height, NSHeight([dev_tools_view bounds]));
-
-  CGFloat offset = 50;
-  [controller() setTopContentOffset:offset];
+  CGFloat offset = [controller() topContentOffset];
 
   SetDockSide(DEVTOOLS_DOCK_SIDE_BOTTOM);
   EXPECT_EQ(width, NSWidth([dev_tools_view bounds]));
 
   SetDockSide(DEVTOOLS_DOCK_SIDE_RIGHT);
   EXPECT_EQ(height - offset, NSHeight([dev_tools_view bounds]));
+
+  CGFloat new_offset = 50;
+  [controller() setTopContentOffset:new_offset];
+
+  SetDockSide(DEVTOOLS_DOCK_SIDE_BOTTOM);
+  EXPECT_EQ(width, NSWidth([dev_tools_view bounds]));
+
+  SetDockSide(DEVTOOLS_DOCK_SIDE_RIGHT);
+  EXPECT_EQ(height - new_offset, NSHeight([dev_tools_view bounds]));
 }
 
 // Verify that the dev tool's web view is layed out correctly when docked to the
