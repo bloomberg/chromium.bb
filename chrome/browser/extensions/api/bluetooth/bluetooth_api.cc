@@ -93,11 +93,13 @@ void BluetoothAPI::Shutdown() {
 }
 
 void BluetoothAPI::OnListenerAdded(const EventListenerInfo& details) {
-  bluetooth_event_router()->OnListenerAdded();
+  if (bluetooth_event_router()->IsBluetoothSupported())
+    bluetooth_event_router()->OnListenerAdded();
 }
 
 void BluetoothAPI::OnListenerRemoved(const EventListenerInfo& details) {
-  bluetooth_event_router()->OnListenerRemoved();
+  if (bluetooth_event_router()->IsBluetoothSupported())
+    bluetooth_event_router()->OnListenerRemoved();
 }
 
 namespace api {
