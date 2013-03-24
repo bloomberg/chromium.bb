@@ -496,6 +496,8 @@
         'browser/extensions/crx_installer.cc',
         'browser/extensions/crx_installer.h',
         'browser/extensions/crx_installer_error.h',
+        'browser/extensions/content_scripts_parser.cc',
+        'browser/extensions/content_scripts_parser.h',
         'browser/extensions/csp_parser.cc',
         'browser/extensions/csp_parser.h',
         'browser/extensions/data_deleter.cc',

@@ -1,13 +1,24 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
 
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/manifest_handlers/content_scripts_handler.h"
+#include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-TEST_F(ExtensionManifestTest, ExcludeMatchPatterns) {
+namespace extensions {
+
+class ExcludeMatchesManifestTest : public ExtensionManifestTest {
+ protected:
+  virtual void SetUp() OVERRIDE {
+    ExtensionManifestTest::SetUp();
+    (new ContentScriptsHandler)->Register();
+  }
+};
+
+TEST_F(ExcludeMatchesManifestTest, ExcludeMatchPatterns) {
   Testcase testcases[] = {
     Testcase("exclude_matches.json"),
     Testcase("exclude_matches_empty.json")
@@ -25,3 +36,5 @@ TEST_F(ExtensionManifestTest, ExcludeMatchPatterns) {
   RunTestcases(testcases2, arraysize(testcases2),
                EXPECT_TYPE_ERROR);
 }
+
+}  // namespace extensions

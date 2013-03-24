@@ -12,6 +12,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/manifest_handler.h"
+#include "chrome/common/extensions/manifest_handlers/content_scripts_handler.h"
 #include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -34,6 +35,7 @@ class InitValueManifestTest : public ExtensionManifestTest {
     (new extensions::IconsHandler)->Register();
     (new extensions::OptionsPageHandler)->Register();
     (new extensions::PageActionHandler)->Register();
+    (new extensions::ContentScriptsHandler)->Register();
   }
 };
 

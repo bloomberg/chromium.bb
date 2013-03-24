@@ -20,6 +20,7 @@
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/manifest_handler.h"
+#include "chrome/common/extensions/manifest_handlers/content_scripts_handler.h"
 #include "extensions/common/constants.h"
 #include "grit/generated_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -40,6 +41,7 @@ class ExtensionFileUtilTest : public testing::Test {
     (new extensions::DefaultLocaleHandler)->Register();
     (new extensions::IconsHandler)->Register();
     (new extensions::PageActionHandler)->Register();
+    (new extensions::ContentScriptsHandler)->Register();
   }
 
   virtual void TearDown() OVERRIDE {

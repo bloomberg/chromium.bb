@@ -10,6 +10,7 @@
 
 #include "chrome/common/extensions/api/plugins/plugins_handler.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/manifest_handlers/content_scripts_handler.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/extensions/permissions/permissions_info.h"
 #include "content/public/common/url_constants.h"
@@ -535,8 +536,9 @@ void PermissionSet::InitImplicitExtensionPermissions(
 
   // Add the scriptable hosts.
   for (extensions::UserScriptList::const_iterator content_script =
-           extension->content_scripts().begin();
-       content_script != extension->content_scripts().end(); ++content_script) {
+           ContentScriptsInfo::GetContentScripts(extension).begin();
+       content_script != ContentScriptsInfo::GetContentScripts(extension).end();
+       ++content_script) {
     URLPatternSet::const_iterator pattern =
         content_script->url_patterns().begin();
     for (; pattern != content_script->url_patterns().end(); ++pattern)

@@ -69,6 +69,7 @@
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/manifest_handler.h"
+#include "chrome/common/extensions/manifest_handlers/content_scripts_handler.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/common/pref_names.h"
@@ -549,6 +550,7 @@ void ExtensionServiceTestBase::SetUp() {
   testing::Test::SetUp();
   ExtensionErrorReporter::GetInstance()->ClearErrors();
   (new extensions::BackgroundManifestHandler)->Register();
+  (new extensions::ContentScriptsHandler)->Register();
   (new extensions::DefaultLocaleHandler)->Register();
   (new extensions::PluginsHandler)->Register();
 }
@@ -1156,7 +1158,8 @@ TEST_F(ExtensionServiceTest, LoadAllExtensionsFromDirectorySuccess) {
   AddPattern(&expected_patterns, "http://*.google.com/*");
   AddPattern(&expected_patterns, "https://*.google.com/*");
   const Extension* extension = loaded_[0];
-  const extensions::UserScriptList& scripts = extension->content_scripts();
+  const extensions::UserScriptList& scripts =
+      extensions::ContentScriptsInfo::GetContentScripts(extension);
   ASSERT_EQ(2u, scripts.size());
   EXPECT_EQ(expected_patterns, scripts[0].url_patterns());
   EXPECT_EQ(2u, scripts[0].js_scripts().size());
@@ -1195,7 +1198,8 @@ TEST_F(ExtensionServiceTest, LoadAllExtensionsFromDirectorySuccess) {
   EXPECT_EQ(std::string(""), loaded_[1]->description());
   EXPECT_EQ(loaded_[1]->GetResourceURL("background.html"),
             extensions::BackgroundInfo::GetBackgroundURL(loaded_[1]));
-  EXPECT_EQ(0u, loaded_[1]->content_scripts().size());
+  EXPECT_EQ(
+      0u, extensions::ContentScriptsInfo::GetContentScripts(loaded_[1]).size());
 
   // We don't parse the plugins section on Chrome OS.
 #if defined(OS_CHROMEOS)
@@ -1220,7 +1224,9 @@ TEST_F(ExtensionServiceTest, LoadAllExtensionsFromDirectorySuccess) {
   EXPECT_EQ(std::string(good2), loaded_[index]->id());
   EXPECT_EQ(std::string("My extension 3"), loaded_[index]->name());
   EXPECT_EQ(std::string(""), loaded_[index]->description());
-  EXPECT_EQ(0u, loaded_[index]->content_scripts().size());
+  EXPECT_EQ(
+      0u,
+      extensions::ContentScriptsInfo::GetContentScripts(loaded_[index]).size());
   EXPECT_EQ(Manifest::INTERNAL, loaded_[index]->location());
 };
 
@@ -2107,7 +2113,9 @@ TEST_F(ExtensionServiceTest, InstallTheme) {
     ValidatePrefKeyCount(++pref_count);
     ASSERT_TRUE(extension);
     EXPECT_TRUE(extension->is_theme());
-    EXPECT_EQ(0u, extension->content_scripts().size());
+    EXPECT_EQ(
+        0u,
+        extensions::ContentScriptsInfo::GetContentScripts(extension).size());
   }
 
   // A theme with image resources missing (misspelt path).

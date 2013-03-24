@@ -386,9 +386,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // settings page (i.e. chrome://extensions).
   bool ShouldDisplayInExtensionSettings() const;
 
-  // Returns true if the extension has a content script declared at |url|.
-  bool HasContentScriptAtURL(const GURL& url) const;
-
   // Gets the tab-specific host permissions of |tab_id|, or NULL if there
   // aren't any.
   scoped_refptr<const PermissionSet> GetTabSpecificPermissions(int tab_id)
@@ -432,7 +429,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool converted_from_user_script() const {
     return converted_from_user_script_;
   }
-  const UserScriptList& content_scripts() const { return content_scripts_; }
   const ActionInfo* system_indicator_info() const {
     return system_indicator_info_.get();
   }
@@ -466,6 +462,12 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool kiosk_enabled() const { return kiosk_enabled_; }
   bool offline_enabled() const { return offline_enabled_; }
   bool wants_file_access() const { return wants_file_access_; }
+  // TODO(rdevlin.cronin): This is needed for ContentScriptsHandler, and should
+  // be moved out as part of crbug.com/159265. This should not be used anywhere
+  // else.
+  void set_wants_file_access(bool wants_file_access) {
+    wants_file_access_ = wants_file_access;
+  }
   int creation_flags() const { return creation_flags_; }
   bool from_webstore() const { return (creation_flags_ & FROM_WEBSTORE) != 0; }
   bool from_bookmark() const { return (creation_flags_ & FROM_BOOKMARK) != 0; }
@@ -578,7 +580,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool LoadKioskEnabled(string16* error);
   bool LoadOfflineEnabled(string16* error);
   bool LoadExtensionFeatures(string16* error);
-  bool LoadContentScripts(string16* error);
   bool LoadBrowserAction(string16* error);
   bool LoadSystemIndicator(string16* error);
   bool LoadTextToSpeechVoices(string16* error);
@@ -590,22 +591,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool LoadManagedModeConfigurations(
       const base::DictionaryValue* content_pack_value,
       string16* error);
-
-  // Helper method that loads a UserScript object from a
-  // dictionary in the content_script list of the manifest.
-  bool LoadUserScriptHelper(const base::DictionaryValue* content_script,
-                            int definition_index,
-                            string16* error,
-                            UserScript* result);
-
-  // Helper method that loads either the include_globs or exclude_globs list
-  // from an entry in the content_script lists of the manifest.
-  bool LoadGlobsHelper(const base::DictionaryValue* content_script,
-                       int content_script_index,
-                       const char* globs_property_name,
-                       string16* error,
-                       void(UserScript::*add_method)(const std::string& glob),
-                       UserScript* instance);
 
   // Returns true if the extension has more than one "UI surface". For example,
   // an extension that has a browser action and a page action.
@@ -698,9 +683,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // True if the extension was generated from a user script. (We show slightly
   // different UI if so).
   bool converted_from_user_script_;
-
-  // Paths to the content scripts the extension contains.
-  UserScriptList content_scripts_;
 
   // The extension's system indicator, if any.
   scoped_ptr<ActionInfo> system_indicator_info_;

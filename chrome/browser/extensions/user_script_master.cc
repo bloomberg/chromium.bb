@@ -24,6 +24,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_set.h"
+#include "chrome/common/extensions/manifest_handlers/content_scripts_handler.h"
 #include "chrome/common/extensions/message_bundle.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
@@ -363,7 +364,8 @@ void UserScriptMaster::Observe(int type,
               extension->path(), LocaleInfo::GetDefaultLocale(extension));
       bool incognito_enabled = extensions::ExtensionSystem::Get(profile_)->
           extension_service()->IsIncognitoEnabled(extension->id());
-      const UserScriptList& scripts = extension->content_scripts();
+      const UserScriptList& scripts =
+          ContentScriptsInfo::GetContentScripts(extension);
       for (UserScriptList::const_iterator iter = scripts.begin();
            iter != scripts.end(); ++iter) {
         user_scripts_.push_back(*iter);

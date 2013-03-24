@@ -14,6 +14,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/features/feature.h"
 #include "chrome/common/extensions/manifest_handler.h"
+#include "chrome/common/extensions/manifest_handlers/content_scripts_handler.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/common/extensions/permissions/permissions_info.h"
 #include "chrome/common/extensions/permissions/socket_permission.h"
@@ -77,11 +78,12 @@ bool Contains(const std::vector<string16>& warnings,
 
 }  // namespace
 
-
 class PermissionsTest : public testing::Test {
+ protected:
   virtual void SetUp() OVERRIDE {
     testing::Test::SetUp();
     (new BackgroundManifestHandler)->Register();
+    (new ContentScriptsHandler)->Register();
     (new PluginsHandler)->Register();
   }
 

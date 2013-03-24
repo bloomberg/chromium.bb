@@ -28,6 +28,7 @@
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
+#include "chrome/common/extensions/manifest_handlers/content_scripts_handler.h"
 #include "chrome/common/extensions/user_script.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -197,8 +198,10 @@ void EnableSpokenFeedback(bool enabled,
           extension->id(), render_view_host->GetProcess()->GetID(),
           render_view_host->GetRoutingID());
 
-      for (size_t i = 0; i < extension->content_scripts().size(); i++) {
-        const extensions::UserScript& script = extension->content_scripts()[i];
+      const extensions::UserScriptList& content_scripts =
+          extensions::ContentScriptsInfo::GetContentScripts(extension);
+      for (size_t i = 0; i < content_scripts.size(); i++) {
+        const extensions::UserScript& script = content_scripts[i];
         for (size_t j = 0; j < script.js_scripts().size(); ++j) {
           const extensions::UserScript::File &file = script.js_scripts()[j];
           extensions::ExtensionResource resource = extension->GetResource(
