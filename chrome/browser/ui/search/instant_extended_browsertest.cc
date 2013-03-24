@@ -510,6 +510,31 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, PreloadedNTPIsUsedInSameTab) {
   EXPECT_TRUE(chrome::search::IsInstantNTP(active_tab));
 }
 
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest, PreloadedNTPForWrongProvider) {
+  // Setup Instant.
+  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  FocusOmniboxAndWaitForInstantExtendedSupport();
+
+  // NTP contents should be preloaded.
+  ASSERT_NE(static_cast<InstantNTP*>(NULL), instant()->ntp());
+  content::WebContents* ntp_contents = instant()->ntp_->contents();
+  EXPECT_TRUE(ntp_contents);
+  GURL ntp_url = ntp_contents->GetURL();
+
+  // Change providers.
+  SetInstantURL("chrome://blank");
+
+  // Open new tab. Preloaded NTP contents should have not been used.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(),
+      GURL(chrome::kChromeUINewTabURL),
+      NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
+  content::WebContents* active_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_NE(ntp_url, active_tab->GetURL());
+}
+
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest, OmniboxHasFocusOnNewTab) {
   // Setup Instant.
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));

@@ -215,6 +215,15 @@ bool GetURLForMostVisitedItemID(Profile* profile,
   return true;
 }
 
+bool MatchesOriginAndPath(const GURL& my_url, const GURL& other_url) {
+  return my_url.host() == other_url.host() &&
+         my_url.port() == other_url.port() &&
+         my_url.path() == other_url.path() &&
+         (my_url.scheme() == other_url.scheme() ||
+          (my_url.SchemeIs(chrome::kHttpsScheme) &&
+           other_url.SchemeIs(chrome::kHttpScheme)));
+}
+
 }  // namespace
 
 InstantController::InstantController(chrome::BrowserInstantController* browser,
@@ -484,14 +493,25 @@ bool InstantController::Update(const AutocompleteMatch& match,
 }
 
 scoped_ptr<content::WebContents> InstantController::ReleaseNTPContents() {
-  if (!extended_enabled_ || !ntp_)
+  if (!extended_enabled_)
     return scoped_ptr<content::WebContents>(NULL);
 
   LOG_INSTANT_DEBUG_EVENT(this, "ReleaseNTPContents");
 
-  scoped_ptr<content::WebContents> ntp_contents = ntp_->ReleaseContents();
-  ntp_.reset();
-  ResetNTP();
+  // Don't use the Instant NTP if it doesn't match the current Instant URL.
+  std::string instant_url;
+  if (!GetInstantURL(browser_->profile(), false, &instant_url) ||
+      (ntp_ &&
+       !MatchesOriginAndPath(GURL(ntp_->instant_url()), GURL(instant_url)))) {
+    ntp_.reset();
+  }
+
+  scoped_ptr<content::WebContents> ntp_contents;
+  if (ntp_)
+    ntp_contents = ntp_->ReleaseContents();
+
+  // Override the blacklist on an explicit user action.
+  ResetNTP(true);
   return ntp_contents.Pass();
 }
 
@@ -865,7 +885,7 @@ void InstantController::SetInstantEnabled(bool instant_enabled,
   if (extended_enabled_ || instant_enabled_)
     EnsureOverlayIsCurrent(false);
   if (extended_enabled_)
-    ResetNTP();
+    ResetNTP(false);
   if (instant_tab_)
     instant_tab_->SetDisplayInstantResults(instant_enabled_);
 }
@@ -1251,16 +1271,17 @@ void InstantController::OmniboxLostFocus(gfx::NativeView view_gaining_focus) {
 #endif
 }
 
-void InstantController::ResetNTP() {
+void InstantController::ResetNTP(bool ignore_blacklist) {
   ntp_.reset();
   std::string instant_url;
-  if (!GetInstantURL(browser_->profile(), false, &instant_url))
+  if (!GetInstantURL(browser_->profile(), ignore_blacklist, &instant_url)) {
+    // TODO(sreeram|samarth): use local ntp here once available.
     return;
-
+  }
   ntp_.reset(new InstantNTP(this, instant_url));
   ntp_->InitContents(browser_->profile(), browser_->GetActiveWebContents(),
                      base::Bind(&InstantController::ResetNTP,
-                                base::Unretained(this)));
+                                base::Unretained(this), false));
 }
 
 bool InstantController::EnsureOverlayIsCurrent(bool ignore_blacklist) {
@@ -1464,7 +1485,7 @@ void InstantController::BlacklistAndResetNTP() {
   RecordEventHistogram(INSTANT_CONTROLLER_EVENT_URL_ADDED_TO_BLACKLIST);
   delete ntp_->ReleaseContents().release();
   MessageLoop::current()->DeleteSoon(FROM_HERE, ntp_.release());
-  ResetNTP();
+  ResetNTP(false);
 }
 
 void InstantController::BlacklistAndResetOverlay() {

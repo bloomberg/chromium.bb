@@ -63,6 +63,8 @@ class InstantTestBase {
   void SetupInstant(Browser* browser);
   void Init(const GURL& instant_url);
 
+  void SetInstantURL(const std::string& url);
+
   void set_browser(Browser* browser) {
     browser_ = browser;
   }

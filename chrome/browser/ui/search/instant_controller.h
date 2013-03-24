@@ -211,6 +211,7 @@ class InstantController : public InstantPage::Delegate,
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, NTPIsPreloaded);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, PreloadedNTPIsUsedInNewTab);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, PreloadedNTPIsUsedInSameTab);
+  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, PreloadedNTPForWrongProvider);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, ProcessIsolation);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, UnrelatedSiteInstance);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, ValidatesSuggestions);
@@ -273,7 +274,7 @@ class InstantController : public InstantPage::Delegate,
 
   // Creates a new NTP, using the instant_url property of the default
   // TemplateURL.
-  void ResetNTP();
+  void ResetNTP(bool ignore_blacklist);
 
   // Ensures that |overlay_| uses the Instant URL returned by GetInstantURL(),
   // creating a new overlay if necessary. In extended mode, will fallback to

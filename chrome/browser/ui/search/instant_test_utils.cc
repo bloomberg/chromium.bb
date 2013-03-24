@@ -80,6 +80,20 @@ void InstantTestBase::SetupInstant(Browser* browser) {
   instant()->SetInstantEnabled(true, false);
 }
 
+void InstantTestBase::SetInstantURL(const std::string& url) {
+  TemplateURLService* service =
+      TemplateURLServiceFactory::GetForProfile(browser_->profile());
+  ui_test_utils::WaitForTemplateURLServiceToLoad(service);
+
+  TemplateURLData data;
+  data.SetURL(url);
+  data.instant_url = url;
+
+  TemplateURL* template_url = new TemplateURL(browser_->profile(), data);
+  service->Add(template_url);  // Takes ownership of |template_url|.
+  service->SetDefaultSearchProvider(template_url);
+}
+
 void InstantTestBase::Init(const GURL& instant_url) {
   instant_url_ = instant_url;
 }
