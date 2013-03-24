@@ -166,7 +166,7 @@ bool BrowserPluginGuestManager::CanEmbedderAccessGuest(
     BrowserPluginGuest* guest) {
   // An embedder can access |guest| if the guest has not been attached and its
   // opener's embedder lives in the same process as the given embedder.
-  if (!guest->embedder_web_contents()) {
+  if (!guest->attached()) {
     if (!guest->opener())
       return false;
 
