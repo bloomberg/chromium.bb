@@ -171,13 +171,16 @@ bool SingleSplitView::OnMouseDragged(const ui::MouseEvent& event) {
       drag_info_.initial_mouse_offset;
   if (is_horizontal_ && base::i18n::IsRTL())
     delta_offset *= -1;
-  // Honor the minimum size when resizing.
+  // Honor the first child's minimum size when resizing.
   gfx::Size min = child_at(0)->GetMinimumSize();
   int new_size = std::max(GetPrimaryAxisSize(min.width(), min.height()),
                           drag_info_.initial_divider_offset + delta_offset);
 
-  // And don't let the view get bigger than our width.
-  new_size = std::min(GetPrimaryAxisSize() - kDividerSize, new_size);
+  // Honor the second child's minimum size, and don't let the view
+  // get bigger than our width.
+  min = child_at(1)->GetMinimumSize();
+  new_size = std::min(GetPrimaryAxisSize() - kDividerSize -
+      GetPrimaryAxisSize(min.width(), min.height()), new_size);
 
   if (new_size != divider_offset_) {
     set_divider_offset(new_size);

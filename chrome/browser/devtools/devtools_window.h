@@ -102,6 +102,12 @@ class DevToolsWindow : private content::NotificationObserver,
   // Called only for the case when devtools window is docked to bottom.
   int GetHeight(int container_height);
 
+  // Returns the minimum width devtools window needs.
+  int GetMinimumWidth();
+
+  // Returns the minimum height devtools window needs.
+  int GetMinimumHeight();
+
   // Stores preferred devtools window width for this instance.
   void SetWidth(int width);
 

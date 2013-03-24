@@ -2235,6 +2235,11 @@ void BrowserView::ShowDevToolsContainer() {
         new views::ExternalFocusTracker(devtools_container_,
                                         GetFocusManager()));
   }
+
+  gfx::Size min_devtools_size(devtools_window_->GetMinimumWidth(),
+      devtools_window_->GetMinimumHeight());
+  devtools_container_->SetPreferredSize(min_devtools_size);
+
   devtools_container_->SetVisible(true);
   devtools_dock_side_ = devtools_window_->dock_side();
   bool dock_to_right = devtools_dock_side_ == DEVTOOLS_DOCK_SIDE_RIGHT;

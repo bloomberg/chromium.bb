@@ -229,6 +229,18 @@ using content::WebContents;
   return proposedPosition;
 }
 
+- (CGFloat)splitView:(NSSplitView*)splitView
+    constrainMaxCoordinate:(CGFloat)proposedMax
+               ofSubviewAt:(NSInteger)dividerIndex {
+  if ([splitView_ isVertical]) {
+    return NSWidth([splitView_ frame]) - [splitView_ dividerThickness] -
+        devToolsWindow_->GetMinimumWidth();
+  } else {
+    return NSHeight([splitView_ frame]) - [splitView_ dividerThickness] -
+        devToolsWindow_->GetMinimumHeight();
+  }
+}
+
 -(void)splitViewWillResizeSubviews:(NSNotification *)notification {
   [[splitView_ window] disableScreenUpdatesUntilFlush];
 }

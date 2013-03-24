@@ -49,6 +49,19 @@ class MockObserver : public views::SingleSplitViewListener {
   MOCK_METHOD1(SplitHandleMoved, bool(views::SingleSplitView*));
 };
 
+class MinimumSizedView: public views::View {
+ public:
+  MinimumSizedView(gfx::Size min_size) : min_size_(min_size) {}
+
+ private:
+  gfx::Size min_size_;
+  virtual gfx::Size GetMinimumSize() OVERRIDE;
+};
+
+gfx::Size MinimumSizedView::GetMinimumSize() {
+  return min_size_;
+}
+
 }  // namespace
 
 namespace views {
@@ -129,29 +142,35 @@ TEST(SingleSplitViewTest, Resize) {
 
 TEST(SingleSplitViewTest, MouseDrag) {
   MockObserver observer;
+  const int kMinimumChildSize = 25;
+  MinimumSizedView *child0 =
+      new MinimumSizedView(gfx::Size(5, kMinimumChildSize));
+  MinimumSizedView *child1 =
+      new MinimumSizedView(gfx::Size(5, kMinimumChildSize));
   SingleSplitView split(
-      new View(), new View(), SingleSplitView::VERTICAL_SPLIT, &observer);
+      child0, child1, SingleSplitView::VERTICAL_SPLIT, &observer);
 
   ON_CALL(observer, SplitHandleMoved(_))
       .WillByDefault(Return(true));
   // SplitHandleMoved is called for two mouse moves and one mouse capture loss.
   EXPECT_CALL(observer, SplitHandleMoved(_))
-      .Times(3);
+      .Times(5);
 
-  split.SetBounds(0, 0, 10, 100);
+  const int kTotalSplitSize = 100;
+  split.SetBounds(0, 0, 10, kTotalSplitSize);
   const int kInitialDividerOffset = 33;
   const int kMouseOffset = 2;  // Mouse offset in the divider.
   const int kMouseMoveDelta = 7;
   split.set_divider_offset(kInitialDividerOffset);
   split.Layout();
 
-  // Drag divider to the right, in 2 steps.
   gfx::Point press_point(7, kInitialDividerOffset + kMouseOffset);
   ui::MouseEvent mouse_pressed(
       ui::ET_MOUSE_PRESSED, press_point, press_point, 0);
   ASSERT_TRUE(split.OnMousePressed(mouse_pressed));
   EXPECT_EQ(kInitialDividerOffset, split.divider_offset());
 
+  // Drag divider to the bottom.
   gfx::Point drag_1_point(
       5, kInitialDividerOffset + kMouseOffset + kMouseMoveDelta);
   ui::MouseEvent mouse_dragged_1(
@@ -159,11 +178,30 @@ TEST(SingleSplitViewTest, MouseDrag) {
   ASSERT_TRUE(split.OnMouseDragged(mouse_dragged_1));
   EXPECT_EQ(kInitialDividerOffset + kMouseMoveDelta, split.divider_offset());
 
+  // Drag divider to the top, beyond first child minimum size.
   gfx::Point drag_2_point(
-      6, kInitialDividerOffset + kMouseOffset + kMouseMoveDelta * 2);
+      7, kMinimumChildSize - 5);
   ui::MouseEvent mouse_dragged_2(
       ui::ET_MOUSE_DRAGGED, drag_2_point, drag_2_point, 0);
   ASSERT_TRUE(split.OnMouseDragged(mouse_dragged_2));
+  EXPECT_EQ(kMinimumChildSize,
+            split.divider_offset());
+
+  // Drag divider to the bottom, beyond second child minimum size.
+  gfx::Point drag_3_point(
+      7, kTotalSplitSize - kMinimumChildSize + 5);
+  ui::MouseEvent mouse_dragged_3(
+      ui::ET_MOUSE_DRAGGED, drag_3_point, drag_3_point, 0);
+  ASSERT_TRUE(split.OnMouseDragged(mouse_dragged_3));
+  EXPECT_EQ(kTotalSplitSize - kMinimumChildSize - split.GetDividerSize(),
+            split.divider_offset());
+
+  // Drag divider between childs' minimum sizes.
+  gfx::Point drag_4_point(
+      6, kInitialDividerOffset + kMouseOffset + kMouseMoveDelta * 2);
+  ui::MouseEvent mouse_dragged_4(
+      ui::ET_MOUSE_DRAGGED, drag_4_point, drag_4_point, 0);
+  ASSERT_TRUE(split.OnMouseDragged(mouse_dragged_4));
   EXPECT_EQ(kInitialDividerOffset + kMouseMoveDelta * 2,
             split.divider_offset());
 

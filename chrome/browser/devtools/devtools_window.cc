@@ -396,6 +396,14 @@ int DevToolsWindow::GetHeight(int container_height) {
   return height_;
 }
 
+int DevToolsWindow::GetMinimumWidth() {
+  return kMinDevToolsWidth;
+}
+
+int DevToolsWindow::GetMinimumHeight() {
+  return kMinDevToolsHeight;
+}
+
 void DevToolsWindow::SetWidth(int width) {
   width_ = width;
   profile_->GetPrefs()->SetInteger(prefs::kDevToolsVSplitLocation, width);
