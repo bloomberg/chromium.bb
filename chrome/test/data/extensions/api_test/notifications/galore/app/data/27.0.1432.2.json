@@ -32,14 +32,14 @@
         "message": "Dolor sit amet"
       },
       {
-        "iconUrl": "/images/woman2-40x40.jpg",
-        "title": "Jamie Haynig",
-        "message": "Consectetur adipisicing elit"
+        "iconUrl": "https://www.google.com/images/icons/product/googlemail-64.png",
+        "title": "New mail from Brant Hodestrine: Easy Hike in S.F. next Saturday!",
+        "message": "Hey, The trail starts from 'Merrie Way' Outer Richmond side. We can do brunch before in the Inner Richmond, maybe at that Russian place we used to go to after fencing."
       },
       {
-        "iconUrl": "/images/woman3-40x40.jpg",
-        "title": "Maricia Rilari",
-        "message": "Sed do eiusmod tempor incididunt"
+        "iconUrl": "https://calendar.google.com/googlecalendar/images/about-alerts.gif",
+        "title": "Google Calendar reminder",
+        "message": "Team Meeting (Brant Hodestrine) is starting at 10:25pm in SFO-CEN-3-Triptych (12), NYC-WES-2-Wegman (8), PAR-OPR-4-Cézanne http://www.example.com/talk/meet/example"
       },
       {                                                                                                                                                           
         "iconUrl": "/images/fruit1-40x40.jpg",                                                                                                                    
@@ -57,14 +57,14 @@
         "message": "Fragaria ananassa"                                                                                                                           
       },                                                                                                                                                          
       {                                                                                                                                                           
-        "iconUrl": "/images/fruit4-40x40.jpg",                                                                                                                    
+        "iconUrl": "/images/fruit4-80x80.jpg",                                                                                                                    
         "title": "Notification #$#: Raspberries!",                                                                                   
         "message": "Rubus idaeus"                                                                     
       },                                                                                                                                                          
       {                                                                                                                                                           
         "iconUrl": "/images/fruit5-360x360.jpg",                                                                                                                    
-        "title": "Notification #$#: Blueberries!",
-        "message": "Vaccinium cyanococcus"
+        "title": "Notification #$#: Blueberries - Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum!",
+        "message": "Vaccinium cyanococcus - Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
       }                                                                                                                                                           
     ]
   },
@@ -83,14 +83,14 @@
         "message": "Dolor sit amet"
       },
       {
-        "iconUrl": "/images/woman2-40x40.jpg",
-        "title": "Jamie Haynig",
-        "message": "Consectetur adipisicing elit"
+        "iconUrl": "https://www.google.com/images/icons/product/googlemail-64.png",
+        "title": "New mail from Brant Hodestrine: Easy Hike in S.F. next Saturday!",
+        "message": "Hey, The trail starts from 'Merrie Way' Outer Richmond side. We can do brunch before in the Inner Richmond, maybe at that Russian place we used to go to after fencing."
       },
       {
-        "iconUrl": "/images/woman3-40x40.jpg",
-        "title": "Maricia Rilari",
-        "message": "Sed do eiusmod tempor incididunt"
+        "iconUrl": "https://calendar.google.com/googlecalendar/images/about-alerts.gif",
+        "title": "Google Calendar reminder",
+        "message": "Team Meeting (Brant Hodestrine) is starting at 10:25pm in SFO-CEN-3-Triptych (12), NYC-WES-2-Wegman (8), PAR-OPR-4-Cézanne http://www.example.com/talk/meet/example"
       },
       {                                                                                                                                                           
         "iconUrl": "/images/fruit1-40x40.jpg",                                                                                                                    
@@ -108,14 +108,14 @@
         "message": "Fragaria ananassa"                                                                                                                           
       },                                                                                                                                                          
       {                                                                                                                                                           
-        "iconUrl": "/images/fruit4-40x40.jpg",                                                                                                                    
+        "iconUrl": "/images/fruit4-80x80.jpg",                                                                                                                    
         "title": "Notification #$#: Raspberries!",                                                                                   
         "message": "Rubus idaeus"                                                                     
       },                                                                                                                                                          
       {                                                                                                                                                           
         "iconUrl": "/images/fruit5-360x360.jpg",                                                                                                                    
-        "title": "Notification #$#: Blueberries!",
-        "message": "Vaccinium cyanococcus"
+        "title": "Notification #$#: Blueberries - Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum!",
+        "message": "Vaccinium cyanococcus - Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
       }                                                                                                                                                           
     ]
   },
@@ -168,9 +168,9 @@
         "message": "Rubus idaeus"
       },
       {
-        "iconUrl": "/images/fruit5-80x80.jpg",
-        "title": "Notification #$#: Blueberries!",
-        "message": "Vaccinium cyanococcus"
+        "iconUrl": "/images/fruit5-360x360.jpg",
+        "title": "Notification #$#: Blueberries - Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum!",
+        "message": "Vaccinium cyanococcus - Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
       }
     ]
   },
@@ -208,8 +208,8 @@
       },
       {
         "iconUrl": "/images/flower4-80x80.jpg",
-        "title": "Notification #$#: Heather!",
-        "message": "Calluna vulgaris",
+        "title": "Notification #$#: Heather - Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum!",
+        "message": "Calluna vulgaris - Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
         "imageUrl": "/images/image4-200x300.jpg"
       }
     ]
@@ -220,7 +220,7 @@
     "notificationOptions": [
       {
         "iconUrl": "/images/inbox-00-80x80.png",
-        "title": "15 new messages",
+        "title": "5 new messages",
         "message": "ramon.widdel@example.com",
         "items": [
           {"title": "Althe Frazon", "message": "Lorem ipsum dolor sit amet"},
@@ -319,12 +319,21 @@
       },
       {
         "iconUrl": "/images/plant2-80x80.jpg",
-        "title": "Notification #$#: Basil!",
-        "message": "Ocimum basilicum",
+        "title": "Notification #$#: Basil - Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum!",
+        "message": "Ocimum basilicum - Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
         "items": [
-          {"title": "One", "message": "Unus"},
-          {"title": "Two", "message": "Duo"},
-          {"title": "Three", "message": "Tres"}
+          {
+            "title": "One - Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum",
+            "message": "Unus - Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum"
+          },
+          {
+            "title": "Two - Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum",
+            "message": "Duo - Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum"
+          },
+          {
+            "title": "Three - Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum",
+            "message": "Tres - Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum"
+          }
         ]
       }
     ]

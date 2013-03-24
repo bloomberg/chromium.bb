@@ -1,7 +1,7 @@
 {
   "name": "Notifications Galore!",
   "description": "A testbed for Chrome notifications",
-  "version": "0.9.3",
+  "version": "0.9.5",
   "manifest_version": 2,
   "minimum_chrome_version": "27",
   "app": {
@@ -14,5 +14,11 @@
     "48": "images/icon-48x48.png",
     "128": "images/icon-128x128.png"
   },
-  "permissions": ["experimental", "notifications", "storage"]
+  "permissions": [
+    "experimental",
+    "notifications",
+    "storage",
+    "https://calendar.google.com/googlecalendar/images/about-alerts.gif",
+    "https://www.google.com/images/icons/product/googlemail-64.png"
+  ]
 }

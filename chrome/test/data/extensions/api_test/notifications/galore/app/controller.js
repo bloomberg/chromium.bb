@@ -74,7 +74,7 @@ Galore.controller = {
     var count = 0;
     var replacements = {};
     this.mapStrings_(options, function(string) {
-      if (string.indexOf("/images/") == 0 || string.indexOf("http:/") == 0) {
+      if (string.indexOf("/images/") == 0 || string.search(/https?:\//) == 0) {
         ++count;
         this.fetchImage_(string, function(url) {
           replacements[string] = url;
