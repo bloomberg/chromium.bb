@@ -60,7 +60,9 @@ static FaviconURL::IconType ToFaviconType(WebIconURL::Type type) {
 }
 
 FaviconHelper::FaviconHelper(RenderView* render_view)
-    : RenderViewObserver(render_view) {
+    : RenderViewObserver(render_view),
+      icon_types_changed_(WebIconURL::TypeInvalid),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
 }
 
 void FaviconHelper::DidChangeIcon(WebKit::WebFrame* frame,
@@ -71,16 +73,38 @@ void FaviconHelper::DidChangeIcon(WebKit::WebFrame* frame,
   if (!TouchEnabled() && icon_type != WebIconURL::TypeFavicon)
     return;
 
-  WebVector<WebIconURL> icon_urls = frame->iconURLs(icon_type);
+  DCHECK(!render_view()->GetWebView() ||
+         frame == render_view()->GetWebView()->mainFrame());
+
+  weak_ptr_factory_.InvalidateWeakPtrs();
+  icon_types_changed_ =
+      static_cast<WebKit::WebIconURL::Type>(icon_types_changed_ | icon_type);
+  MessageLoop::current()->PostTask(FROM_HERE,
+      base::Bind(&FaviconHelper::ProcessDidChangeIcon,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+FaviconHelper::~FaviconHelper() {
+}
+
+void FaviconHelper::ProcessDidChangeIcon() {
+  WebKit::WebIconURL::Type icon_types = icon_types_changed_;
+  icon_types_changed_ = WebIconURL::TypeInvalid;
+  WebKit::WebView* web_view = render_view()->GetWebView();
+  if (!web_view) {
+    return;
+  }
+  WebFrame* frame = web_view->mainFrame();
+  if (!frame) {
+    return;
+  }
+  WebVector<WebIconURL> icon_urls = frame->iconURLs(icon_types);
   std::vector<FaviconURL> urls;
   for (size_t i = 0; i < icon_urls.size(); i++) {
     urls.push_back(FaviconURL(icon_urls[i].iconURL(),
                               ToFaviconType(icon_urls[i].iconType())));
   }
   SendUpdateFaviconURL(routing_id(), render_view()->GetPageId(), urls);
-}
-
-FaviconHelper::~FaviconHelper() {
 }
 
 void FaviconHelper::OnDownloadFavicon(int id,
