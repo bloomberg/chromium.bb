@@ -19,6 +19,10 @@
 #include "media/base/audio_bus.h"
 #include "media/base/limits.h"
 
+// TODO(miu): Re-enable after M27 branch cut.  This feature is scheduled for
+// release in M28.
+#define DISABLED_AUDIO_INDICATOR_TRIGGERS_FOR_M27_ONLY
+
 using media::AudioBus;
 
 namespace content {
@@ -362,12 +366,14 @@ void AudioRendererHost::OnPlayStream(int stream_id) {
   if (media_internals_)
     media_internals_->OnSetAudioStreamPlaying(this, stream_id, true);
 
+#ifndef DISABLED_AUDIO_INDICATOR_TRIGGERS_FOR_M27_ONLY
   MediaObserver* media_observer =
       GetContentClient()->browser()->GetMediaObserver();
   if (media_observer) {
     media_observer->OnAudioStreamPlayingChanged(
         render_process_id_, entry->render_view_id, stream_id, true);
   }
+#endif
 }
 
 void AudioRendererHost::OnPauseStream(int stream_id) {
@@ -383,12 +389,14 @@ void AudioRendererHost::OnPauseStream(int stream_id) {
   if (media_internals_)
     media_internals_->OnSetAudioStreamPlaying(this, stream_id, false);
 
+#ifndef DISABLED_AUDIO_INDICATOR_TRIGGERS_FOR_M27_ONLY
   MediaObserver* media_observer =
       GetContentClient()->browser()->GetMediaObserver();
   if (media_observer) {
     media_observer->OnAudioStreamPlayingChanged(
         render_process_id_, entry->render_view_id, stream_id, false);
   }
+#endif
 }
 
 void AudioRendererHost::OnFlushStream(int stream_id) {
@@ -435,6 +443,7 @@ void AudioRendererHost::OnSetVolume(int stream_id, double volume) {
   if (media_internals_)
     media_internals_->OnSetAudioStreamVolume(this, stream_id, volume);
 
+#ifndef DISABLED_AUDIO_INDICATOR_TRIGGERS_FOR_M27_ONLY
   MediaObserver* media_observer =
       GetContentClient()->browser()->GetMediaObserver();
   if (media_observer) {
@@ -442,6 +451,7 @@ void AudioRendererHost::OnSetVolume(int stream_id, double volume) {
     media_observer->OnAudioStreamPlayingChanged(
         render_process_id_, entry->render_view_id, stream_id, playing);
   }
+#endif
 }
 
 void AudioRendererHost::SendErrorMessage(int32 stream_id) {
@@ -461,12 +471,14 @@ void AudioRendererHost::DeleteEntries() {
 void AudioRendererHost::CloseAndDeleteStream(AudioEntry* entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
+#ifndef DISABLED_AUDIO_INDICATOR_TRIGGERS_FOR_M27_ONLY
   MediaObserver* media_observer =
       GetContentClient()->browser()->GetMediaObserver();
   if (media_observer) {
     media_observer->OnAudioStreamPlayingChanged(
         render_process_id_, entry->render_view_id, entry->stream_id, false);
   }
+#endif
   if (!entry->pending_close) {
     if (mirroring_manager_) {
       mirroring_manager_->RemoveDiverter(
