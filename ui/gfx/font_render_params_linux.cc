@@ -88,6 +88,8 @@ void LoadDefaults(FontRenderParams* params, bool renderer) {
 
   // Fetch default subpixel rendering settings from FontConfig.
   FcPattern* pattern = FcPatternCreate();
+  FcConfigSubstitute(NULL, pattern, FcMatchPattern);
+  FcDefaultSubstitute(pattern);
   FcResult result;
   FcPattern* match = FcFontMatch(0, pattern, &result);
   DCHECK(match);
