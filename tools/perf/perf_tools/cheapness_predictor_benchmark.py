@@ -22,7 +22,7 @@ class CheapnessPredictorBenchmark(page_benchmark.PageBenchmark):
     options.AppendExtraBrowserArg('--enable-threaded-compositing')
     options.AppendExtraBrowserArg('--enable-impl-side-painting')
 
-  def WillNavigateToPage(self, page, tab):
+  def DidNavigateToPage(self, page, tab):
     self._measurement = \
       cheapness_predictor_measurement.CheapnessPredictorMeasurement(tab)
     self._measurement.GatherInitialStats()
