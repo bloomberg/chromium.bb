@@ -713,6 +713,7 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
     TargetBounds* target_bounds) const {
   CHECK_EQ(GESTURE_DRAG_IN_PROGRESS, gesture_drag_status_);
   bool horizontal = IsHorizontalAlignment();
+  const gfx::Rect& available_bounds(root_window_->bounds());
   int resistance_free_region = 0;
 
   if (gesture_drag_auto_hide_state_ == SHELF_AUTO_HIDE_HIDDEN &&
@@ -722,10 +723,7 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
     // changed since then, e.g. because the tray-menu was shown because of the
     // drag), then allow the drag some resistance-free region at first to make
     // sure the shelf sticks with the finger until the shelf is visible.
-    resistance_free_region += horizontal ?
-        target_bounds->shelf_bounds_in_root.height() :
-        target_bounds->shelf_bounds_in_root.width();
-    resistance_free_region -= kAutoHideSize;
+    resistance_free_region = kLauncherPreferredSize - kAutoHideSize;
   }
 
   bool resist = SelectValueForShelfAlignment(
@@ -747,51 +745,39 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
   }
 
   if (horizontal) {
-    // Move the launcher with the gesture.
-    target_bounds->shelf_bounds_in_root.Offset(0, translate);
-
-    if (translate < 0) {
-      // When dragging up, the launcher height should increase.
-      float move = std::max(translate,
-                            -static_cast<float>(resistance_free_region));
+    // Move and size the launcher with the gesture.
+    if (alignment_ == SHELF_ALIGNMENT_BOTTOM) {
+      target_bounds->shelf_bounds_in_root.Offset(0, translate);
       target_bounds->shelf_bounds_in_root.set_height(
-          target_bounds->shelf_bounds_in_root.height() + move - translate);
-
-      // The statusbar should be in the center.
-      gfx::Rect status_y = target_bounds->shelf_bounds_in_root;
-      status_y.ClampToCenteredSize(
-          target_bounds->status_bounds_in_shelf.size());
-      target_bounds->status_bounds_in_shelf.set_y(status_y.y());
-    }
-  } else {
-    // Move the launcher with the gesture.
-    if (alignment_ == SHELF_ALIGNMENT_RIGHT)
-      target_bounds->shelf_bounds_in_root.Offset(translate, 0);
-
-    if ((translate > 0 && alignment_ == SHELF_ALIGNMENT_RIGHT) ||
-        (translate < 0 && alignment_ == SHELF_ALIGNMENT_LEFT)) {
-      // When dragging towards the edge, the statusbar should move.
-      target_bounds->status_bounds_in_shelf.Offset(translate, 0);
+          available_bounds.bottom() - target_bounds->shelf_bounds_in_root.y());
     } else {
-      // When dragging away from the edge, the launcher width should increase.
-      float move = alignment_ == SHELF_ALIGNMENT_RIGHT ?
-          std::max(translate, -static_cast<float>(resistance_free_region)) :
-          std::min(translate, static_cast<float>(resistance_free_region));
-
-      if (alignment_ == SHELF_ALIGNMENT_RIGHT) {
-        target_bounds->shelf_bounds_in_root.set_width(
-            target_bounds->shelf_bounds_in_root.width() + move - translate);
-      } else {
-        target_bounds->shelf_bounds_in_root.set_width(
-            target_bounds->shelf_bounds_in_root.width() - move + translate);
-      }
-
-      // The statusbar should be in the center.
-      gfx::Rect status_x = target_bounds->shelf_bounds_in_root;
-      status_x.ClampToCenteredSize(
-          target_bounds->status_bounds_in_shelf.size());
-      target_bounds->status_bounds_in_shelf.set_x(status_x.x());
+      target_bounds->shelf_bounds_in_root.set_height(
+          target_bounds->shelf_bounds_in_root.height() + translate);
     }
+
+    // The statusbar should be in the center of the shelf.
+    gfx::Rect status_y = target_bounds->shelf_bounds_in_root;
+    status_y.set_y(0);
+    status_y.ClampToCenteredSize(
+        target_bounds->status_bounds_in_shelf.size());
+    target_bounds->status_bounds_in_shelf.set_y(status_y.y());
+  } else {
+    // Move and size the launcher with the gesture.
+    if (alignment_ == SHELF_ALIGNMENT_RIGHT) {
+      target_bounds->shelf_bounds_in_root.Offset(translate, 0);
+      target_bounds->shelf_bounds_in_root.set_width(
+          available_bounds.right() - target_bounds->shelf_bounds_in_root.x());
+    } else {
+      target_bounds->shelf_bounds_in_root.set_width(
+          target_bounds->shelf_bounds_in_root.width() + translate);
+    }
+
+    // The statusbar should be in the center of the shelf.
+    gfx::Rect status_x = target_bounds->shelf_bounds_in_root;
+    status_x.set_x(0);
+    status_x.ClampToCenteredSize(
+        target_bounds->status_bounds_in_shelf.size());
+    target_bounds->status_bounds_in_shelf.set_x(status_x.x());
   }
 }
 
