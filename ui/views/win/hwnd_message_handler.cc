@@ -296,6 +296,12 @@ const int kAutoHideTaskbarThicknessPx = 2;
 // Desktop.
 const int kDesktopChromeAuraTouchId = 9;
 
+// For windows with the standard frame removed, the client area needs to be
+// different from the window area to avoid a "feature" in Windows's handling of
+// WM_NCCALCSIZE data. See the comment near the bottom of GetClientAreaInsets
+// for more details.
+const int kClientAreaBottomInsetHack = -1;
+
 }  // namespace
 
 // A scoping class that prevents a window from being able to redraw in response
@@ -980,8 +986,14 @@ void HWNDMessageHandler::ClientAreaSizeChanged() {
   if (delegate_->WidgetSizeIsClientSize()) {
     // TODO(beng): investigate whether this could be done
     // from other branch of if-else.
-    if (!IsMinimized())
+    if (!IsMinimized()) {
       GetClientRect(hwnd(), &r);
+      // This is needed due to a hack that works around a "feature" in
+      // Windows's handling of WM_NCCALCSIZE. See the comment near the end of
+      // GetClientAreaInsets for more details.
+      if (remove_standard_frame_)
+        r.bottom += kClientAreaBottomInsetHack;
+    }
   } else {
     GetWindowRect(hwnd(), &r);
   }
@@ -1015,10 +1027,22 @@ gfx::Insets HWNDMessageHandler::GetClientAreaInsets() const {
                        border_thickness);
   }
 
-  // The hack below doesn't seem to be necessary when the standard frame is
-  // removed.
+  // Returning empty insets for a window with the standard frame removed seems
+  // to cause Windows to treat the window specially, treating black as
+  // transparent and changing around some of the painting logic. I suspect it's
+  // some sort of horrible backwards-compatability hack, but the upshot of it
+  // is that if the insets are empty then in certain conditions (it seems to
+  // be subtly related to timing), the contents of windows with the standard
+  // frame removed will flicker to transparent during resize.
+  //
+  // To work around this, we increase the size of the client area by 1px
+  // *beyond* the bottom of the window. This prevents Windows from having a
+  // hissy fit and flashing the window incessantly during resizes, but it also
+  // means that the client area is reported 1px larger than it really is, so
+  // user code has to compensate by making its content shorter if it wants
+  // everything to appear inside the window.
   if (remove_standard_frame_)
-    return insets;
+    return gfx::Insets(0, 0, kClientAreaBottomInsetHack, 0);
   // This is weird, but highly essential. If we don't offset the bottom edge
   // of the client rect, the window client area and window area will match,
   // and when returning to glass rendering mode from non-glass, the client
