@@ -35,13 +35,15 @@ class ComplexFeature : public Feature {
 
   virtual Availability IsAvailableToContext(const Extension* extension,
                                             Context context,
+                                            const GURL& url,
                                             Platform platform) const OVERRIDE;
 
  protected:
   // extensions::Feature:
   virtual std::string GetAvailabilityMessage(
       AvailabilityResult result,
-      Manifest::Type type) const OVERRIDE;
+      Manifest::Type type,
+      const GURL& url) const OVERRIDE;
 
   virtual std::set<Context>* GetContexts() OVERRIDE;
 

@@ -8,7 +8,6 @@
     "compiler_options": {
       "implemented_in": "chrome/browser/extensions/api/tabs/tabs_api.h"
     },
-    "dependencies": [ "tabs" ],
     "types": [
       {
         "id": "Window",

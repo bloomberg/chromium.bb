@@ -135,6 +135,19 @@ void ParseEnumSet(const DictionaryValue* value,
   }
 }
 
+void ParseURLPatterns(const DictionaryValue* value,
+                      const std::string& key,
+                      URLPatternSet* set) {
+  const ListValue* matches = NULL;
+  if (value->GetList(key, &matches)) {
+    for (size_t i = 0; i < matches->GetSize(); ++i) {
+      std::string pattern;
+      CHECK(matches->GetString(i, &pattern));
+      set->AddPattern(URLPattern(URLPattern::SCHEME_ALL, pattern));
+    }
+  }
+}
+
 // Gets a human-readable name for the given extension type.
 std::string GetDisplayTypeName(Manifest::Type type) {
   switch (type) {
@@ -172,6 +185,7 @@ SimpleFeature::SimpleFeature(const SimpleFeature& other)
     : whitelist_(other.whitelist_),
       extension_types_(other.extension_types_),
       contexts_(other.contexts_),
+      matches_(other.matches_),
       location_(other.location_),
       platform_(other.platform_),
       min_manifest_version_(other.min_manifest_version_),
@@ -186,6 +200,7 @@ bool SimpleFeature::Equals(const SimpleFeature& other) const {
   return whitelist_ == other.whitelist_ &&
       extension_types_ == other.extension_types_ &&
       contexts_ == other.contexts_ &&
+      matches_ == other.matches_ &&
       location_ == other.location_ &&
       platform_ == other.platform_ &&
       min_manifest_version_ == other.min_manifest_version_ &&
@@ -194,6 +209,7 @@ bool SimpleFeature::Equals(const SimpleFeature& other) const {
 }
 
 void SimpleFeature::Parse(const DictionaryValue* value) {
+  ParseURLPatterns(value, "matches", &matches_);
   ParseSet(value, "whitelist", &whitelist_);
   ParseEnumSet<Manifest::Type>(value, "extension_types", &extension_types_,
                                 g_mappings.Get().extension_types);
@@ -262,26 +278,33 @@ Feature::Availability SimpleFeature::IsAvailableToManifest(
 Feature::Availability SimpleFeature::IsAvailableToContext(
     const Extension* extension,
     SimpleFeature::Context context,
+    const GURL& url,
     SimpleFeature::Platform platform) const {
-  Availability result = IsAvailableToManifest(
-      extension->id(),
-      extension->GetType(),
-      ConvertLocation(extension->location()),
-      extension->manifest_version(),
-      platform);
-  if (!result.is_available())
-    return result;
-
-  if (!contexts_.empty() &&
-      contexts_.find(context) == contexts_.end()) {
-    return CreateAvailability(INVALID_CONTEXT, extension->GetType());
+  if (extension) {
+    Availability result = IsAvailableToManifest(
+        extension->id(),
+        extension->GetType(),
+        ConvertLocation(extension->location()),
+        extension->manifest_version(),
+        platform);
+    if (!result.is_available())
+      return result;
   }
+
+  if (!contexts_.empty() && contexts_.find(context) == contexts_.end()) {
+    return extension ?
+        CreateAvailability(INVALID_CONTEXT, extension->GetType()) :
+        CreateAvailability(INVALID_CONTEXT);
+  }
+
+  if (!matches_.is_empty() && !matches_.MatchesURL(url))
+    return CreateAvailability(INVALID_URL, url);
 
   return CreateAvailability(IS_AVAILABLE);
 }
 
 std::string SimpleFeature::GetAvailabilityMessage(
-    AvailabilityResult result, Manifest::Type type) const {
+    AvailabilityResult result, Manifest::Type type, const GURL& url) const {
   switch (result) {
     case IS_AVAILABLE:
       return "";
@@ -289,6 +312,10 @@ std::string SimpleFeature::GetAvailabilityMessage(
       return base::StringPrintf(
           "'%s' is not allowed for specified extension ID.",
           name().c_str());
+    case INVALID_URL:
+      CHECK(url.is_valid());
+      return base::StringPrintf("'%s' is not allowed on %s.",
+                                name().c_str(), url.spec().c_str());
     case INVALID_TYPE: {
       std::string allowed_type_names;
       // Turn the set of allowed types into a vector so that it's easier to
@@ -354,12 +381,19 @@ std::string SimpleFeature::GetAvailabilityMessage(
 Feature::Availability SimpleFeature::CreateAvailability(
     AvailabilityResult result) const {
   return Availability(
-      result, GetAvailabilityMessage(result, Manifest::TYPE_UNKNOWN));
+      result, GetAvailabilityMessage(result, Manifest::TYPE_UNKNOWN, GURL()));
 }
 
 Feature::Availability SimpleFeature::CreateAvailability(
     AvailabilityResult result, Manifest::Type type) const {
-  return Availability(result, GetAvailabilityMessage(result, type));
+  return Availability(result, GetAvailabilityMessage(result, type, GURL()));
+}
+
+Feature::Availability SimpleFeature::CreateAvailability(
+    AvailabilityResult result,
+    const GURL& url) const {
+  return Availability(
+      result, GetAvailabilityMessage(result, Manifest::TYPE_UNKNOWN, url));
 }
 
 std::set<Feature::Context>* SimpleFeature::GetContexts() {

@@ -5,7 +5,6 @@
 [
   {
     "namespace": "tabs",
-    "dependencies": [ "extension", "windows" ],
     "types": [
       {
         "id": "Tab",

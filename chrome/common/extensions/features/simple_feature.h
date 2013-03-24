@@ -54,7 +54,17 @@ class SimpleFeature : public Feature {
 
   Availability IsAvailableToContext(const Extension* extension,
                                     Context context) const {
-    return IsAvailableToContext(extension, context, GetCurrentPlatform());
+    return IsAvailableToContext(extension, context, GURL());
+  }
+  Availability IsAvailableToContext(const Extension* extension,
+                                    Context context,
+                                    Platform platform) const {
+    return IsAvailableToContext(extension, context, GURL(), platform);
+  }
+  Availability IsAvailableToContext(const Extension* extension,
+                                    Context context,
+                                    const GURL& url) const {
+    return IsAvailableToContext(extension, context, url, GetCurrentPlatform());
   }
 
   // extension::Feature:
@@ -66,10 +76,12 @@ class SimpleFeature : public Feature {
 
   virtual Availability IsAvailableToContext(const Extension* extension,
                                             Context context,
+                                            const GURL& url,
                                             Platform platform) const OVERRIDE;
 
-  virtual std::string GetAvailabilityMessage(
-      AvailabilityResult result, Manifest::Type type) const OVERRIDE;
+  virtual std::string GetAvailabilityMessage(AvailabilityResult result,
+                                             Manifest::Type type,
+                                             const GURL& url) const OVERRIDE;
 
   virtual std::set<Context>* GetContexts() OVERRIDE;
 
@@ -77,6 +89,8 @@ class SimpleFeature : public Feature {
   Availability CreateAvailability(AvailabilityResult result) const;
   Availability CreateAvailability(AvailabilityResult result,
                                   Manifest::Type type) const;
+  Availability CreateAvailability(AvailabilityResult result,
+                                  const GURL& url) const;
   bool IsIdInWhitelist(const std::string& extension_id) const;
 
  private:
@@ -87,6 +101,7 @@ class SimpleFeature : public Feature {
   std::set<std::string> whitelist_;
   std::set<Manifest::Type> extension_types_;
   std::set<Context> contexts_;
+  URLPatternSet matches_;
   Location location_;  // we only care about component/not-component now
   Platform platform_;  // we only care about chromeos/not-chromeos now
   int min_manifest_version_;

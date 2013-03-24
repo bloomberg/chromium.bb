@@ -5,7 +5,6 @@
 [
   {
     "namespace": "proxy",
-    "dependencies": [ "types" ],
     "types": [
       {
         "id": "ProxyServer",

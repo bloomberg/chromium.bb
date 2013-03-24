@@ -5,7 +5,6 @@
 [
   {
     "namespace": "scriptBadge",
-    "dependencies": [ "tabs" ],
     "functions": [
       {
         "name": "setPopup",

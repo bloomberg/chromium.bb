@@ -17,6 +17,7 @@ class ManifestFeature : public SimpleFeature {
   virtual Feature::Availability IsAvailableToContext(
       const Extension* extension,
       Feature::Context context,
+      const GURL& url,
       Feature::Platform platform) const OVERRIDE;
 };
 
