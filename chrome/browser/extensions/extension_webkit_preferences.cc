@@ -28,11 +28,11 @@ void SetPreferences(const extensions::Extension* extension,
     // be subject to that.
     webkit_prefs->allow_scripts_to_close_windows = true;
 
-    // Disable all gpu features for extension background pages, to reduce
-    // memory impact of extensions. See crbug.com/123935. This also "works
-    // around" crbug.com/123935
+    // Disable gpu acceleration for extension background pages to avoid
+    // unecessarily creating a compositor context for them.
     if (render_view_type == chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
       webkit_prefs->accelerated_compositing_enabled = false;
+      webkit_prefs->force_compositing_mode = false;
     }
   }
 

@@ -1935,10 +1935,24 @@ WebView* RenderViewImpl::createView(
 
   WebUserGestureIndicator::consumeUserGesture();
 
+  webkit_glue::WebPreferences transferred_preferences = webkit_preferences_;
+
+  // Unless accelerated compositing has been explicitly disabled from the
+  // command line (e.g. via the blacklist or about:flags) re-enable it for
+  // new views that get spawned by this view. This gets around the issue that
+  // background extension pages disable accelerated compositing via web prefs
+  // but can themselves spawn a visible render view which should be allowed
+  // use gpu acceleration.
+  if (!webkit_preferences_.accelerated_compositing_enabled) {
+    const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+    if (!command_line.HasSwitch(switches::kDisableAcceleratedCompositing))
+      transferred_preferences.accelerated_compositing_enabled = true;
+  }
+
   RenderViewImpl* view = RenderViewImpl::Create(
       routing_id_,
       renderer_preferences_,
-      webkit_preferences_,
+      transferred_preferences,
       shared_popup_counter_,
       routing_id,
       surface_id,
