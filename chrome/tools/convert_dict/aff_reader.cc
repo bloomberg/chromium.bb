@@ -45,6 +45,17 @@ void CollapseDuplicateSpaces(std::string* str) {
   }
 }
 
+// Print an error message and terminate execution
+void Panic(const char* fmt, ...) {
+  va_list ap;
+  printf("ERROR: ");
+  va_start(ap, fmt);
+  vprintf(fmt, ap);
+  va_end(ap);
+  printf("\n");
+  exit(1);
+}
+
 }  // namespace
 
 AffReader::AffReader(const base::FilePath& path)
@@ -117,13 +128,11 @@ bool AffReader::Read() {
                StringBeginsWith(line, "MAP ")) {
       HandleEncodedCommand(line);
     } else if (StringBeginsWith(line, "IGNORE ")) {
-      printf("We don't support the IGNORE command yet. This would change how "
-        "we would insert things in our lookup table.\n");
-      exit(1);
+      Panic("We don't support the IGNORE command yet. This would change how "
+        "we would insert things in our lookup table.");
     } else if (StringBeginsWith(line, "COMPLEXPREFIXES ")) {
-      printf("We don't support the COMPLEXPREFIXES command yet. This would "
-        "mean we have to insert words backwards as well (I think)\n");
-      exit(1);
+      Panic("We don't support the COMPLEXPREFIXES command yet. This would "
+        "mean we have to insert words backwards as well (I think)");
     } else {
       // All other commands get stored in the other commands list.
       HandleRawCommand(line);
@@ -251,10 +260,9 @@ void AffReader::AddAffix(std::string* rule) {
           std::vector<std::string> after_slash;
           base::SplitString(part.substr(slash_index + 1), ' ', &after_slash);
           if (after_slash.size() == 0) {
-            printf("ERROR: Found 0 terms after slash in affix rule '%s', "
-                      "but need at least 2.\n",
+            Panic("Found 0 terms after slash in affix rule '%s', "
+                      "but need at least 2.",
                    part.c_str());
-            exit(1);
           }
           if (after_slash.size() == 1) {
             printf("WARNING: Found 1 term after slash in affix rule '%s', "
@@ -274,11 +282,8 @@ void AffReader::AddAffix(std::string* rule) {
 
         // Reencode from here
         std::string reencoded;
-        if (!EncodingToUTF8(part, &reencoded)) {
-          printf("ERROR: Cannot encode affix rule part '%s' to utf8.\n",
-                 part.c_str());
-          exit(1);
-        }
+        if (!EncodingToUTF8(part, &reencoded))
+          Panic("Cannot encode affix rule part '%s' to utf8.", part.c_str());
 
         *rule = rule->substr(0, part_start) + reencoded;
         break;
@@ -297,18 +302,14 @@ void AffReader::AddReplacement(std::string* rule) {
   CollapseDuplicateSpaces(rule);
 
   std::string utf8rule;
-  if (!EncodingToUTF8(*rule, &utf8rule)) {
-    printf("ERROR: Cannot encode replacement rule '%s' to utf8.\n",
-           rule->c_str());
-    exit(1);
-  }
+  if (!EncodingToUTF8(*rule, &utf8rule))
+    Panic("Cannot encode replacement rule '%s' to utf8.", rule->c_str());
 
   // The first space separates key and value.
   size_t space_index = utf8rule.find(' ');
-  if (space_index == std::string::npos) {
-    printf("ERROR: Did not find a space in '%s'.\n", utf8rule.c_str());
-    exit(1);
-  }
+  if (space_index == std::string::npos)
+    Panic("Did not find a space in '%s'.", utf8rule.c_str());
+
   std::vector<std::string> split;
   split.push_back(utf8rule.substr(0, space_index));
   split.push_back(utf8rule.substr(space_index + 1));
@@ -327,10 +328,8 @@ void AffReader::HandleRawCommand(const std::string& line) {
 
 void AffReader::HandleEncodedCommand(const std::string& line) {
   std::string utf8;
-  if (!EncodingToUTF8(line, &utf8)) {
-    printf("ERROR: Cannot encode command '%s' to utf8.\n", line.c_str());
-    exit(1);
-  }
+  if (!EncodingToUTF8(line, &utf8))
+    Panic("Cannot encode command '%s' to utf8.", line.c_str());
   other_commands_.push_back(utf8);
 }
 
