@@ -342,9 +342,6 @@ IPC_MESSAGE_ROUTED2(ChromeViewMsg_SearchBoxFontInformation,
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxKeyCaptureChanged,
                     bool /* is_key_capture_enabled */)
 
-IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxGrantChromeSearchAccessFromOrigin,
-                    GURL /* origin_url */)
-
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxMostVisitedItemsChanged,
                     std::vector<InstantMostVisitedItemIDPair> /* items */)
 

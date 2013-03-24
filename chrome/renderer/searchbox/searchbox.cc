@@ -9,7 +9,6 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/searchbox/searchbox_extension.h"
 #include "content/public/renderer/render_view.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityPolicy.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 
 namespace {
@@ -163,9 +162,6 @@ bool SearchBox::OnMessageReceived(const IPC::Message& message) {
                         OnThemeChanged)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxFontInformation,
                         OnFontInformationReceived)
-    IPC_MESSAGE_HANDLER(
-        ChromeViewMsg_SearchBoxGrantChromeSearchAccessFromOrigin,
-        OnGrantChromeSearchAccessFromOrigin)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxMostVisitedItemsChanged,
                         OnMostVisitedChanged)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -310,25 +306,6 @@ void SearchBox::OnFontInformationReceived(const string16& omnibox_font,
                                           size_t omnibox_font_size) {
   omnibox_font_ = omnibox_font;
   omnibox_font_size_ = omnibox_font_size;
-}
-
-void SearchBox::OnGrantChromeSearchAccessFromOrigin(const GURL& origin_url) {
-  string16 chrome_search_scheme(ASCIIToUTF16(chrome::kChromeSearchScheme));
-  WebKit::WebSecurityPolicy::addOriginAccessWhitelistEntry(
-      origin_url,
-      chrome_search_scheme,
-      ASCIIToUTF16(chrome::kChromeUIFaviconHost),
-      false);
-  WebKit::WebSecurityPolicy::addOriginAccessWhitelistEntry(
-      origin_url,
-      chrome_search_scheme,
-      ASCIIToUTF16(chrome::kChromeUIThemeHost),
-      false);
-  WebKit::WebSecurityPolicy::addOriginAccessWhitelistEntry(
-      origin_url,
-      chrome_search_scheme,
-      ASCIIToUTF16(chrome::kChromeUIThumbnailHost),
-      false);
 }
 
 double SearchBox::GetZoom() const {

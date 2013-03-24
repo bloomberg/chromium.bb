@@ -134,7 +134,6 @@ class SearchBox : public content::RenderViewObserver,
   void OnThemeAreaHeightChanged(int height);
   void OnFontInformationReceived(const string16& omnibox_font,
                                  size_t omnibox_font_size);
-  void OnGrantChromeSearchAccessFromOrigin(const GURL& origin_url);
   void OnMostVisitedChanged(
       const std::vector<InstantMostVisitedItemIDPair>& items);
 

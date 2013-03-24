@@ -273,7 +273,10 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   WebSecurityPolicy::registerURLSchemeAsDisplayIsolated(chrome_ui_scheme);
 
   WebString chrome_search_scheme(ASCIIToUTF16(chrome::kChromeSearchScheme));
-  WebSecurityPolicy::registerURLSchemeAsDisplayIsolated(chrome_search_scheme);
+  // The Instant process can only display the content but not read it.  Other
+  // processes can't display it or read it.
+  if (!command_line->HasSwitch(switches::kInstantProcess))
+    WebSecurityPolicy::registerURLSchemeAsDisplayIsolated(chrome_search_scheme);
 
   WebString dev_tools_scheme(ASCIIToUTF16(chrome::kChromeDevToolsScheme));
   WebSecurityPolicy::registerURLSchemeAsDisplayIsolated(dev_tools_scheme);

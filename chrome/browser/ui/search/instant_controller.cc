@@ -1015,12 +1015,10 @@ void InstantController::InstantPageRenderViewCreated(
         omnibox_focus_state_ == OMNIBOX_FOCUS_INVISIBLE);
     overlay_->SetOmniboxBounds(omnibox_bounds_);
     overlay_->InitializeFonts();
-    overlay_->GrantChromeSearchAccessFromOrigin(GURL(overlay_->instant_url()));
   } else if (IsContentsFrom(ntp(), contents)) {
     ntp_->SetDisplayInstantResults(instant_enabled_);
     ntp_->SetOmniboxBounds(omnibox_bounds_);
     ntp_->InitializeFonts();
-    ntp_->GrantChromeSearchAccessFromOrigin(GURL(ntp_->instant_url()));
   } else {
     NOTREACHED();
   }
@@ -1338,7 +1336,6 @@ void InstantController::ResetInstantTab() {
       instant_tab_->SetDisplayInstantResults(instant_enabled_);
       instant_tab_->SetOmniboxBounds(omnibox_bounds_);
       instant_tab_->InitializeFonts();
-      instant_tab_->GrantChromeSearchAccessFromOrigin(active_tab->GetURL());
       StartListeningToMostVisitedChanges();
       instant_tab_->KeyCaptureChanged(
           omnibox_focus_state_ == OMNIBOX_FOCUS_INVISIBLE);

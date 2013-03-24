@@ -411,7 +411,18 @@ extern const char kExtensionResourceScheme[];
 // only specific URLDataSources are enabled to serve requests via the
 // chrome-search: scheme.  See |InstantIOContext::ShouldServiceRequest| and its
 // callers for details.  Note that WebUIBindings should never be granted to
-// chrome-search: pages.
+// chrome-search: pages.  chrome-search: pages are displayable but not readable
+// by external search providers (that are rendered by Instant renderer
+// processes), and neither displayable nor readable by normal (non-Instant) web
+// pages.  To summarize, a non-Instant process, when trying to access
+// 'chrome-search://something', will bump up against the following:
+//
+//  1. Renderer: The display-isolated check in WebKit will deny the request,
+//  2. Browser: Assuming they got by #1, the scheme checks in
+//     URLDataSource::ShouldServiceRequest will deny the request,
+//  3. Browser: for specific sub-classes of URLDataSource, like ThemeSource
+//     there are additional Instant-PID checks that make sure the request is
+//     coming from a blessed Instant process, and deny the request.
 extern const char kChromeSearchScheme[];
 
 // The local omnibox host and pages under chrome-search.

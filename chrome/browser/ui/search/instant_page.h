@@ -142,9 +142,6 @@ class InstantPage : public content::WebContentsObserver {
   // Tells the page about the font information.
   void InitializeFonts();
 
-  // Grant renderer-side chrome-search: access rights for select origins.
-  void GrantChromeSearchAccessFromOrigin(const GURL& origin_url);
-
   // Tells the renderer to determine if the page supports the Instant API, which
   // results in a call to InstantSupportDetermined() when the reply is received.
   void DetermineIfPageSupportsInstant();
