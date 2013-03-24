@@ -1665,6 +1665,8 @@ void BookmarkBarView::UpdateColors() {
   for (int i = 0; i < GetBookmarkButtonCount(); ++i)
     GetBookmarkButton(i)->SetEnabledColor(text_color);
   other_bookmarked_button()->SetEnabledColor(text_color);
+  if (apps_page_shortcut_->visible())
+    apps_page_shortcut_->SetEnabledColor(text_color);
 }
 
 void BookmarkBarView::UpdateOtherBookmarksVisibility() {
