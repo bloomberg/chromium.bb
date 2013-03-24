@@ -88,6 +88,11 @@ class TraceController {
   // Safe to call even if caller is not the current subscriber.
   virtual void CancelSubscriber(TraceSubscriber* subscriber) = 0;
 
+  // Get set of known categories. This can change as new code paths are reached.
+  // If true is returned, subscriber->OnKnownCategoriesCollected will be called
+  // once the categories are retrieved from child processes.
+  virtual bool GetKnownCategoriesAsync(TraceSubscriber* subscriber) = 0;
+
  protected:
   virtual ~TraceController() {}
 };

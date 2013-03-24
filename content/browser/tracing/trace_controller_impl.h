@@ -26,11 +26,6 @@ class TraceControllerImpl : public TraceController {
   // startup tracing.
   void InitStartupTracing(const CommandLine& command_line);
 
-  // Get set of known categories. This can change as new code paths are reached.
-  // If true is returned, subscriber->OnKnownCategoriesCollected will be called
-  // once the categories are retrieved from child processes.
-  bool GetKnownCategoriesAsync(TraceSubscriber* subscriber);
-
   // Same as above, but specifies which categories to trace.
   // If both included_categories and excluded_categories are empty,
   //   all categories are traced.
@@ -53,6 +48,7 @@ class TraceControllerImpl : public TraceController {
                              const std::string& event_name) OVERRIDE;
   virtual bool CancelWatchEvent(TraceSubscriber* subscriber) OVERRIDE;
   virtual void CancelSubscriber(TraceSubscriber* subscriber) OVERRIDE;
+  virtual bool GetKnownCategoriesAsync(TraceSubscriber* subscriber) OVERRIDE;
 
  private:
   typedef std::set<scoped_refptr<TraceMessageFilter> > FilterMap;

@@ -75,6 +75,8 @@ class TracingMessageHandler
   virtual void OnTraceDataCollected(
       const scoped_refptr<base::RefCountedString>& trace_fragment) OVERRIDE;
   virtual void OnTraceBufferPercentFullReply(float percent_full) OVERRIDE;
+  virtual void OnKnownCategoriesCollected(
+      const std::set<std::string>& known_categories) OVERRIDE;
 
   // Messages.
   void OnTracingControllerInitialized(const base::ListValue* list);
@@ -83,6 +85,7 @@ class TracingMessageHandler
   void OnBeginRequestBufferPercentFull(const base::ListValue* list);
   void OnLoadTraceFile(const base::ListValue* list);
   void OnSaveTraceFile(const base::ListValue* list);
+  void OnGetKnownCategories(const base::ListValue* list);
 
   // Callbacks.
   void LoadTraceFileComplete(string16* file_contents);
@@ -187,6 +190,9 @@ void TracingMessageHandler::RegisterMessages() {
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("saveTraceFile",
       base::Bind(&TracingMessageHandler::OnSaveTraceFile,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("getKnownCategories",
+      base::Bind(&TracingMessageHandler::OnGetKnownCategories,
                  base::Unretained(this)));
 }
 
@@ -481,6 +487,29 @@ void TracingMessageHandler::OnTraceBufferPercentFullReply(float percent_full) {
   web_ui()->CallJavascriptFunction(
       "tracingController.onRequestBufferPercentFullComplete",
       *scoped_ptr<base::Value>(new base::FundamentalValue(percent_full)));
+}
+
+void TracingMessageHandler::OnGetKnownCategories(const base::ListValue* list) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (!TraceController::GetInstance()->GetKnownCategoriesAsync(this)) {
+    std::set<std::string> ret;
+    OnKnownCategoriesCollected(ret);
+  }
+}
+
+void TracingMessageHandler::OnKnownCategoriesCollected(
+    const std::set<std::string>& known_categories) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  scoped_ptr<base::ListValue> categories(new base::ListValue());
+  for (std::set<std::string>::iterator iter = known_categories.begin();
+       iter != known_categories.end();
+       ++iter) {
+    categories->AppendString(*iter);
+  }
+
+  web_ui()->CallJavascriptFunction(
+      "tracingController.onKnownCategoriesCollected", *categories);
 }
 
 }  // namespace
