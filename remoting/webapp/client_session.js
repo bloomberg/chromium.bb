@@ -27,8 +27,9 @@ var remoting = remoting || {};
  * @param {string} clientJid The jid of the WCS client.
  * @param {string} hostPublicKey The base64 encoded version of the host's
  *     public key.
- * @param {string} sharedSecret The access code for IT2Me or the PIN
- *     for Me2Me.
+ * @param {string} accessCode The IT2Me access code. Blank for Me2Me.
+ * @param {function(function(string): void): void} fetchPin Called by Me2Me
+ *     connections when a PIN needs to be obtained interactively.
  * @param {string} authenticationMethods Comma-separated list of
  *     authentication methods the client should attempt to use.
  * @param {string} hostId The host identifier for Me2Me, or empty for IT2Me.
@@ -37,16 +38,18 @@ var remoting = remoting || {};
  * @param {string} hostDisplayName The name of the host for display purposes.
  * @constructor
  */
-remoting.ClientSession = function(hostJid, clientJid,
-                                  hostPublicKey, sharedSecret,
-                                  authenticationMethods, hostId, mode,
-                                  hostDisplayName) {
+remoting.ClientSession = function(hostJid, clientJid, hostPublicKey, accessCode,
+                                  fetchPin, authenticationMethods, hostId,
+                                  mode, hostDisplayName) {
   this.state = remoting.ClientSession.State.CREATED;
 
   this.hostJid = hostJid;
   this.clientJid = clientJid;
   this.hostPublicKey = hostPublicKey;
-  this.sharedSecret = sharedSecret;
+  /** @private */
+  this.accessCode_ = accessCode;
+  /** @private */
+  this.fetchPin_ = fetchPin;
   this.authenticationMethods = authenticationMethods;
   this.hostId = hostId;
   /** @type {string} */
@@ -294,14 +297,20 @@ remoting.ClientSession.prototype.onHostSettingsLoaded_ = function(options) {
         options[remoting.ClientSession.KEY_SHRINK_TO_FIT];
   }
 
-  this.plugin.element().focus();
-
   /** @param {boolean} result */
   this.plugin.initialize(this.onPluginInitialized_.bind(this));
+};
+
+/**
+ * Constrains the focus to the plugin element.
+ * @private
+ */
+remoting.ClientSession.prototype.setFocusHandlers_ = function() {
   this.plugin.element().addEventListener(
       'focus', this.callPluginGotFocus_, false);
   this.plugin.element().addEventListener(
       'blur', this.callPluginLostFocus_, false);
+  this.plugin.element().focus();
 };
 
 /**
@@ -592,6 +601,7 @@ remoting.ClientSession.prototype.sendIq_ = function(msg) {
  */
 remoting.ClientSession.prototype.connectPluginToWcs_ = function() {
   remoting.formatIq.setJids(this.clientJid, this.hostJid);
+  /** @type {remoting.ClientPlugin} */
   var plugin = this.plugin;
   var forwardIq = plugin.onIncomingIq.bind(plugin);
   /** @param {string} stanza The IQ stanza received. */
@@ -613,10 +623,41 @@ remoting.ClientSession.prototype.connectPluginToWcs_ = function() {
     console.log(remoting.timestamp(),
                 remoting.formatIq.prettifyReceiveIq(stanza));
     forwardIq(stanza);
-  }
+  };
   remoting.wcsSandbox.setOnIq(onIncomingIq);
+
+  if (this.accessCode_) {
+    // Shared secret was already supplied before connecting (It2Me case).
+    this.connectToHost_(this.accessCode_);
+
+  } else if (plugin.hasFeature(
+      remoting.ClientPlugin.Feature.ASYNC_PIN)) {
+    // Plugin supports asynchronously asking for the PIN.
+    plugin.useAsyncPinDialog();
+    /** @type remoting.ClientSession */
+    var that = this;
+    var fetchPin = function() {
+      that.fetchPin_(plugin.onPinFetched.bind(plugin));
+    };
+    plugin.fetchPinHandler = fetchPin;
+    this.connectToHost_('');
+
+  } else {
+    // Plugin doesn't support asynchronously asking for the PIN, ask now.
+    this.fetchPin_(this.connectToHost_.bind(this));
+  }
+};
+
+/**
+ * Connects to the host.
+ *
+ * @param {string} sharedSecret Shared secret for SPAKE negotiation.
+ * @return {void} Nothing.
+ * @private
+ */
+remoting.ClientSession.prototype.connectToHost_ = function(sharedSecret) {
   this.plugin.connect(this.hostJid, this.hostPublicKey, this.clientJid,
-                      this.sharedSecret, this.authenticationMethods,
+                      sharedSecret, this.authenticationMethods,
                       this.hostId);
 };
 
@@ -631,6 +672,7 @@ remoting.ClientSession.prototype.connectPluginToWcs_ = function() {
 remoting.ClientSession.prototype.onConnectionStatusUpdate_ =
     function(status, error) {
   if (status == remoting.ClientSession.State.CONNECTED) {
+    this.setFocusHandlers_();
     this.onDesktopSizeChanged_();
     if (this.resizeToClient_) {
       this.plugin.notifyClientResolution(window.innerWidth,

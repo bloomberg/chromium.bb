@@ -106,6 +106,13 @@ remoting.SessionConnector = function(pluginParent, onOk, onError) {
   this.wcsAccessTokenRefreshTimer_ = 0;
 
   /**
+   * Function to interactively obtain the PIN from the user.
+   * @param {function(string):void} onPinFetched Called when the PIN is fetched.
+   * @private
+   */
+  this.fetchPin_ = function(onPinFetched) {};
+
+  /**
    * Host 'name', as displayed in the client tool-bar. For a Me2Me connection,
    * this is the name of the host; for an IT2Me connection, it is the email
    * address of the person sharing their computer.
@@ -123,13 +130,14 @@ remoting.SessionConnector = function(pluginParent, onOk, onError) {
  * Initiate a Me2Me connection.
  *
  * @param {remoting.Host} host The Me2Me host to which to connect.
- * @param {string} pin The PIN as entered by the user.
+ * @param {function(function(string):void):void} fetchPin Function to
+ *     interactively obtain the PIN from the user.
  * @return {void} Nothing.
  */
-remoting.SessionConnector.prototype.connectMe2Me = function(host, pin) {
+remoting.SessionConnector.prototype.connectMe2Me = function(host, fetchPin) {
   this.hostId_ = host.hostId;
   this.hostJid_ = host.jabberId;
-  this.passPhrase_ = pin;
+  this.fetchPin_ = fetchPin;
   this.hostDisplayName_ = host.hostName;
   this.createSessionIfReady_();
 };
@@ -268,9 +276,9 @@ remoting.SessionConnector.prototype.createSessionIfReady_ = function() {
 
   var securityTypes = 'spake2_hmac,spake2_plain';
   this.clientSession_ = new remoting.ClientSession(
-      this.hostJid_, this.clientJid_, this.hostPublicKey_,
-      this.passPhrase_, securityTypes, this.hostId_,
-      this.connectionMode_, this.hostDisplayName_);
+      this.hostJid_, this.clientJid_, this.hostPublicKey_, this.passPhrase_,
+      this.fetchPin_, securityTypes, this.hostId_, this.connectionMode_,
+      this.hostDisplayName_);
   this.clientSession_.logHostOfflineErrors(!this.refreshHostJidIfOffline_);
   this.clientSession_.setOnStateChange(this.onStateChange_.bind(this));
   this.clientSession_.createPluginAndConnect(this.pluginParent_);
@@ -360,7 +368,7 @@ remoting.SessionConnector.prototype.onHostListRefresh_ = function(success) {
   if (success) {
     var host = remoting.hostList.getHostForId(this.hostId_);
     if (host) {
-      this.connectMe2Me(host, this.passPhrase_);
+      this.connectMe2Me(host, this.fetchPin_);
       return;
     }
   }

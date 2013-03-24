@@ -41,6 +41,7 @@ remoting.ClientPluginAsync = function(plugin) {
   /** @param {boolean} ready Connection ready state. */
   this.onConnectionReadyHandler = function(ready) {};
   this.onDesktopSizeUpdateHandler = function () {};
+  this.fetchPinHandler = function () {};
 
   /** @type {number} */
   this.pluginApiVersion_ = -1;
@@ -205,8 +206,10 @@ remoting.ClientPluginAsync.prototype.handleMessage_ = function(messageStr) {
     }
     var ready = /** @type {boolean} */ message.data['ready'];
     this.onConnectionReadyHandler(ready);
+  } else if (message.method == 'fetchPin') {
+    this.fetchPinHandler();
   }
-}
+};
 
 /**
  * Deletes the plugin.
@@ -432,6 +435,32 @@ remoting.ClientPluginAsync.prototype.pauseAudio =
     return;
   this.plugin.postMessage(JSON.stringify(
       { method: 'pauseAudio', data: { pause: pause }}));
+};
+
+/**
+ * Called when a PIN is obtained from the user.
+ *
+ * @param {string} pin The PIN.
+ */
+remoting.ClientPluginAsync.prototype.onPinFetched =
+    function(pin) {
+  if (!this.hasFeature(remoting.ClientPlugin.Feature.ASYNC_PIN)) {
+    return;
+  }
+  this.plugin.postMessage(JSON.stringify(
+      { method: 'onPinFetched', data: { pin: pin }}));
+};
+
+/**
+ * Tells the plugin to ask for the PIN asynchronously.
+ */
+remoting.ClientPluginAsync.prototype.useAsyncPinDialog =
+    function() {
+  if (!this.hasFeature(remoting.ClientPlugin.Feature.ASYNC_PIN)) {
+    return;
+  }
+  this.plugin.postMessage(JSON.stringify(
+      { method: 'useAsyncPinDialog', data: {} }));
 };
 
 /**

@@ -245,21 +245,27 @@ remoting.connectMe2MeHostVersionAcknowledged_ = function(host) {
       document.getElementById('session-mode'),
       remoting.onConnected,
       showConnectError_);
-  /** @type {Element} */
-  var pinForm = document.getElementById('pin-form');
-  /** @param {Event} event */
-  var onSubmit = function(event) {
-    pinForm.removeEventListener('submit', onSubmit, false);
-    var pin = document.getElementById('pin-entry').value;
-    remoting.connector.connectMe2Me(host, pin);
-    remoting.setMode(remoting.AppMode.CLIENT_CONNECTING);
-    event.preventDefault();
-  };
-  pinForm.addEventListener('submit', onSubmit, false);
+  remoting.setMode(remoting.AppMode.CLIENT_CONNECTING);
 
-  var message = document.getElementById('pin-message');
-  l10n.localizeElement(message, host.hostName);
-  remoting.setMode(remoting.AppMode.CLIENT_PIN_PROMPT);
+  /** @param {function(string):void} onPinFetched */
+  var requestPin = function(onPinFetched) {
+    /** @type {Element} */
+    var pinForm = document.getElementById('pin-form');
+    /** @param {Event} event */
+    var onSubmit = function(event) {
+      event.preventDefault();
+      pinForm.removeEventListener('submit', onSubmit, false);
+      var pin = document.getElementById('pin-entry').value;
+      remoting.setMode(remoting.AppMode.CLIENT_CONNECTING);
+      onPinFetched(pin);
+    };
+    pinForm.addEventListener('submit', onSubmit, false);
+
+    var message = document.getElementById('pin-message');
+    l10n.localizeElement(message, host.hostName);
+    remoting.setMode(remoting.AppMode.CLIENT_PIN_PROMPT);
+  };
+  remoting.connector.connectMe2Me(host, requestPin);
 };
 
 /** @param {remoting.ClientSession} clientSession */

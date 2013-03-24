@@ -31,6 +31,8 @@ remoting.ClientPlugin.prototype.onConnectionStatusUpdateHandler;
 remoting.ClientPlugin.prototype.onConnectionReadyHandler;
 /** @type {function(): void} Desktop size change callback. */
 remoting.ClientPlugin.prototype.onDesktopSizeUpdateHandler;
+/** @type {function(): void} Request a PIN from the user. */
+remoting.ClientPlugin.prototype.fetchPinHandler;
 
 /**
  * Initializes the plugin asynchronously and calls specified function
@@ -56,6 +58,7 @@ remoting.ClientPlugin.Feature = {
   INJECT_KEY_EVENT: 'injectKeyEvent',
   NOTIFY_CLIENT_DIMENSIONS: 'notifyClientDimensions',
   NOTIFY_CLIENT_RESOLUTION: 'notifyClientResolution',
+  ASYNC_PIN: 'asyncPin',
   PAUSE_VIDEO: 'pauseVideo',
   PAUSE_AUDIO: 'pauseAudio',
   REMAP_KEY: 'remapKey',
@@ -130,7 +133,7 @@ remoting.ClientPlugin.prototype.remapKey =
  * @param {number} keycode The USB-style code of the key.
  * @param {Boolean} trap True to enable trapping, False to disable.
  */
-remoting.ClientPlugin.prototype.trapKey = function(keycode, trap) {}
+remoting.ClientPlugin.prototype.trapKey = function(keycode, trap) {};
 
 /**
  * Returns an associative array with a set of stats for this connection.
@@ -172,3 +175,15 @@ remoting.ClientPlugin.prototype.pauseVideo =
  */
 remoting.ClientPlugin.prototype.pauseAudio =
     function(pause) {};
+
+/**
+ * Gives the client authenticator the PIN.
+ *
+ * @param {string} pin The PIN.
+ */
+remoting.ClientPlugin.prototype.onPinFetched = function(pin) {};
+
+/**
+ * Tells the plugin to ask for the PIN asynchronously.
+ */
+remoting.ClientPlugin.prototype.useAsyncPinDialog = function() {};
