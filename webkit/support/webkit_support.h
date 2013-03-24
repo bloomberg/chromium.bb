@@ -101,11 +101,6 @@ WebKit::WebMediaPlayer* CreateMediaPlayer(
     const WebKit::WebURL& url,
     WebKit::WebMediaPlayerClient* client);
 
-// DEPRECATED: Use ResetTestEnvironment() instead.
-#if defined(OS_ANDROID)
-void ReleaseMediaResources();
-#endif
-
 // This is used by WebFrameClient::createApplicationCacheHost().
 WebKit::WebApplicationCacheHost* CreateApplicationCacheHost(
     WebKit::WebFrame* frame, WebKit::WebApplicationCacheHostClient* client);

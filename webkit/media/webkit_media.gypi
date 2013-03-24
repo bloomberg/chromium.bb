@@ -51,8 +51,6 @@
         'android/webmediaplayer_android.h',
         'android/webmediaplayer_impl_android.cc',
         'android/webmediaplayer_impl_android.h',
-        'android/webmediaplayer_in_process_android.cc',
-        'android/webmediaplayer_in_process_android.h',
         'android/webmediaplayer_manager_android.cc',
         'android/webmediaplayer_manager_android.h',
         'android/webmediaplayer_proxy_android.cc',

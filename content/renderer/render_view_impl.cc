@@ -224,7 +224,6 @@
 #include "webkit/media/android/media_player_bridge_manager_impl.h"
 #include "webkit/media/android/webmediaplayer_android.h"
 #include "webkit/media/android/webmediaplayer_impl_android.h"
-#include "webkit/media/android/webmediaplayer_in_process_android.h"
 #include "webkit/media/android/webmediaplayer_manager_android.h"
 #elif defined(OS_WIN)
 // TODO(port): these files are currently Windows only because they concern:

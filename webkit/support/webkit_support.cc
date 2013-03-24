@@ -62,11 +62,6 @@
 #include "webkit/gpu/test_context_provider_factory.h"
 #include "webkit/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
 #include "webkit/gpu/webgraphicscontext3d_in_process_impl.h"
-#if defined(OS_ANDROID)
-#include "webkit/media/android/media_player_bridge_manager_impl.h"
-#include "webkit/media/android/webmediaplayer_in_process_android.h"
-#include "webkit/media/android/webmediaplayer_manager_android.h"
-#endif
 #include "webkit/media/media_stream_client.h"
 #include "webkit/media/webmediaplayer_impl.h"
 #include "webkit/media/webmediaplayer_ms.h"
@@ -183,15 +178,6 @@ class TestEnvironment {
 
     idb_factory_.reset(new TestWebIDBFactory());
     WebKit::setIDBFactory(idb_factory_.get());
-
-#if defined(OS_ANDROID)
-    // Make sure we have enough decoding resources for layout tests.
-    // The current maximum number of media elements in a layout test is 8.
-    media_bridge_manager_.reset(
-        new webkit_media::MediaPlayerBridgeManagerImpl(8));
-    media_player_manager_.reset(
-        new webkit_media::WebMediaPlayerManagerAndroid());
-#endif
   }
 
   ~TestEnvironment() {
@@ -225,14 +211,6 @@ class TestEnvironment {
   base::FilePath mock_current_directory() const {
     return mock_current_directory_;
   }
-
-  webkit_media::WebMediaPlayerManagerAndroid* media_player_manager() {
-    return media_player_manager_.get();
-  }
-
-  webkit_media::MediaPlayerBridgeManagerImpl* media_bridge_manager() {
-    return media_bridge_manager_.get();
-  }
 #endif
 
  private:
@@ -245,8 +223,6 @@ class TestEnvironment {
 
 #if defined(OS_ANDROID)
   base::FilePath mock_current_directory_;
-  scoped_ptr<webkit_media::WebMediaPlayerManagerAndroid> media_player_manager_;
-  scoped_ptr<webkit_media::MediaPlayerBridgeManagerImpl> media_bridge_manager_;
 #endif
 };
 
@@ -434,14 +410,7 @@ WebKit::WebMediaPlayer* CreateMediaPlayer(
   }
 
 #if defined(OS_ANDROID)
-  return new webkit_media::WebMediaPlayerInProcessAndroid(
-      frame,
-      client,
-      GetWebKitPlatformSupport()->cookieJar(),
-      test_environment->media_player_manager(),
-      test_environment->media_bridge_manager(),
-      new webkit_support::TestStreamTextureFactory(),
-      true);
+  return NULL;
 #else
   webkit_media::WebMediaPlayerParams params(
       NULL, NULL, new media::MediaLog());
@@ -459,12 +428,6 @@ WebKit::WebMediaPlayer* CreateMediaPlayer(
     WebMediaPlayerClient* client) {
   return CreateMediaPlayer(frame, url, client, NULL);
 }
-
-#if defined(OS_ANDROID)
-void ReleaseMediaResources() {
-  test_environment->media_player_manager()->ReleaseMediaResources();
-}
-#endif
 
 WebKit::WebApplicationCacheHost* CreateApplicationCacheHost(
     WebFrame*, WebKit::WebApplicationCacheHostClient* client) {
