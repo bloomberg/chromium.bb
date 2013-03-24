@@ -16,6 +16,10 @@
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/widget/widget_observer.h"
 
+#if defined(OS_WIN)
+#include "chrome/browser/shell_integration.h"
+#endif
+
 class ExtensionKeybindingRegistryViews;
 class Profile;
 
@@ -48,6 +52,12 @@ class NativeAppWindowViews : public NativeAppWindow,
   void InitializeDefaultWindow(const ShellWindow::CreateParams& create_params);
   void InitializePanelWindow(const ShellWindow::CreateParams& create_params);
   void OnViewWasResized();
+
+#if defined(OS_WIN)
+  void OnShortcutInfoLoaded(
+      const ShellIntegration::ShortcutInfo& shortcut_info);
+  HWND GetNativeAppWindowHWND() const;
+#endif
 
   // BaseWindow implementation.
   virtual bool IsActive() const OVERRIDE;
@@ -151,6 +161,8 @@ class NativeAppWindowViews : public NativeAppWindow,
   scoped_ptr<ExtensionKeybindingRegistryViews> extension_keybinding_registry_;
 
   UnhandledKeyboardEventHandler unhandled_keyboard_event_handler_;
+
+  base::WeakPtrFactory<NativeAppWindowViews> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeAppWindowViews);
 };

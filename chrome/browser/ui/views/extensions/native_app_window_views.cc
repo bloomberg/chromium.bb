@@ -4,13 +4,19 @@
 
 #include "chrome/browser/ui/views/extensions/native_app_window_views.h"
 
+#include "base/command_line.h"
+#include "base/file_util.h"
+#include "base/path_service.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/views/extensions/extension_keybinding_registry_views.h"
 #include "chrome/browser/ui/views/extensions/shell_window_frame_view.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
@@ -20,9 +26,9 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
 
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN)
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/shell_integration.h"
+#include "chrome/browser/ui/web_applications/web_app_ui.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "ui/base/win/shell.h"
 #endif
@@ -68,7 +74,20 @@ const std::map<ui::Accelerator, int>& GetAcceleratorTable() {
   return accelerators;
 }
 
+#if defined(OS_WIN)
+void CreateIconForApp(const base::FilePath web_app_path,
+                      const base::FilePath icon_file,
+                      const SkBitmap& image) {
+  DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
+  if (!file_util::PathExists(web_app_path) &&
+      !file_util::CreateDirectory(web_app_path)) {
+    return;
+  }
+  web_app::internals::CheckAndSaveIcon(icon_file, image);
 }
+#endif
+
+}  // namespace
 
 NativeAppWindowViews::NativeAppWindowViews(
     ShellWindow* shell_window,
@@ -81,7 +100,8 @@ NativeAppWindowViews::NativeAppWindowViews(
       transparent_background_(create_params.transparent_background),
       minimum_size_(create_params.minimum_size),
       maximum_size_(create_params.maximum_size),
-      resizable_(create_params.resizable) {
+      resizable_(create_params.resizable),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   Observe(web_contents());
 
   window_ = new views::Widget;
@@ -138,15 +158,70 @@ void NativeAppWindowViews::InitializeDefaultWindow(
         iter->first, ui::AcceleratorManager::kNormalPriority, this);
   }
 
-#if defined(OS_WIN) && !defined(USE_AURA)
-  std::string app_name = web_app::GenerateApplicationNameFromExtensionId(
-      extension()->id());
-  ui::win::SetAppIdForWindow(
-      ShellIntegration::GetAppModelIdForProfile(
-          UTF8ToWide(app_name), shell_window_->profile()->GetPath()),
-      GetWidget()->GetTopLevelWidget()->GetNativeWindow());
+#if defined(OS_WIN)
+  string16 app_name = UTF8ToWide(
+      web_app::GenerateApplicationNameFromExtensionId(extension()->id()));
+  HWND hwnd = GetNativeAppWindowHWND();
+  ui::win::SetAppIdForWindow(ShellIntegration::GetAppModelIdForProfile(
+      app_name, profile()->GetPath()), hwnd);
+
+  web_app::UpdateShortcutInfoAndIconForApp(
+      *extension(), profile(),
+      base::Bind(&NativeAppWindowViews::OnShortcutInfoLoaded,
+                 weak_ptr_factory_.GetWeakPtr()));
 #endif
 }
+
+#if defined(OS_WIN)
+void NativeAppWindowViews::OnShortcutInfoLoaded(
+    const ShellIntegration::ShortcutInfo& shortcut_info) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  HWND hwnd = GetNativeAppWindowHWND();
+
+  // Set window's icon to the one we're about to create/update in the web app
+  // path. The icon cache will refresh on icon creation.
+  base::FilePath web_app_path = web_app::GetWebAppDataDirectory(
+      shortcut_info.profile_path, shortcut_info.extension_id,
+      shortcut_info.url);
+  base::FilePath icon_file = web_app_path
+      .Append(web_app::internals::GetSanitizedFileName(shortcut_info.title))
+      .ReplaceExtension(FILE_PATH_LITERAL(".ico"));
+  ui::win::SetAppIconForWindow(icon_file.value(), hwnd);
+
+  // Set the relaunch data so "Pin this program to taskbar" has the app's
+  // information.
+  CommandLine command_line = ShellIntegration::CommandLineArgsForLauncher(
+      shortcut_info.url,
+      shortcut_info.extension_id,
+      shortcut_info.profile_path);
+
+  // TODO(benwells): Change this to use app_host.exe.
+  base::FilePath chrome_exe;
+  if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
+     NOTREACHED();
+     return;
+  }
+  command_line.SetProgram(CommandLine::ForCurrentProcess()->GetProgram());
+  ui::win::SetRelaunchDetailsForWindow(command_line.GetCommandLineString(),
+      shortcut_info.title, hwnd);
+
+  content::BrowserThread::PostBlockingPoolTask(
+      FROM_HERE,
+      base::Bind(&CreateIconForApp, web_app_path, icon_file,
+                 *shortcut_info.favicon.ToSkBitmap()));
+}
+
+HWND NativeAppWindowViews::GetNativeAppWindowHWND() const {
+#if defined(USE_AURA)
+  gfx::NativeWindow window =
+      GetWidget()->GetTopLevelWidget()->GetNativeWindow();
+  return window->GetRootWindow()->GetAcceleratedWidget();
+#else
+  return GetWidget()->GetTopLevelWidget()->GetNativeWindow();
+#endif
+}
+#endif
 
 void NativeAppWindowViews::InitializePanelWindow(
     const ShellWindow::CreateParams& create_params) {

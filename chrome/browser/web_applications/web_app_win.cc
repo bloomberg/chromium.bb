@@ -213,18 +213,17 @@ bool CreatePlatformShortcuts(
   bool pin_to_taskbar = creation_locations.in_quick_launch_bar &&
                         (base::win::GetVersion() >= base::win::VERSION_WIN7);
 
-  // For Win7's pinning support, any shortcut could be used. So we only create
-  // the shortcut file when there is no shortcut file will be created. That is,
-  // user only selects "Pin to taskbar".
-  if (pin_to_taskbar && shortcut_paths.empty()) {
-    // Creates the shortcut in web_app_path in this case.
+  // Create/update the shortcut in the web app path for the "Pin To Taskbar"
+  // option in Win7. We use the web app path shortcut because we will overwrite
+  // it rather than appending unique numbers if the shortcut already exists.
+  // This prevents pinned apps from having unique numbers in their names.
+  if (pin_to_taskbar)
     shortcut_paths.push_back(web_app_path);
-  }
 
   if (shortcut_paths.empty())
     return false;
 
-  // Ensure web_app_path exists
+  // Ensure web_app_path exists.
   if (!file_util::PathExists(web_app_path) &&
       !file_util::CreateDirectory(web_app_path)) {
     return false;
@@ -268,22 +267,21 @@ bool CreatePlatformShortcuts(
   string16 app_id(ShellIntegration::GetAppModelIdForProfile(
       UTF8ToUTF16(app_name), shortcut_info.profile_path));
 
-  base::FilePath shortcut_to_pin;
   bool success = true;
   for (size_t i = 0; i < shortcut_paths.size(); ++i) {
     base::FilePath shortcut_file = shortcut_paths[i].Append(file_name).
         ReplaceExtension(FILE_PATH_LITERAL(".lnk"));
-
-    int unique_number =
-        file_util::GetUniquePathNumber(shortcut_file, FILE_PATH_LITERAL(""));
-    if (unique_number == -1) {
-      success = false;
-      continue;
-    } else if (unique_number > 0) {
-      shortcut_file = shortcut_file.InsertBeforeExtensionASCII(
-          base::StringPrintf(" (%d)", unique_number));
+    if (shortcut_paths[i] != web_app_path) {
+      int unique_number =
+          file_util::GetUniquePathNumber(shortcut_file, FILE_PATH_LITERAL(""));
+      if (unique_number == -1) {
+        success = false;
+        continue;
+      } else if (unique_number > 0) {
+        shortcut_file = shortcut_file.InsertBeforeExtensionASCII(
+            base::StringPrintf(" (%d)", unique_number));
+      }
     }
-
     base::win::ShortcutProperties shortcut_properties;
     shortcut_properties.set_target(target_exe);
     shortcut_properties.set_working_dir(working_dir);
@@ -295,19 +293,15 @@ bool CreatePlatformShortcuts(
     success = base::win::CreateOrUpdateShortcutLink(
         shortcut_file, shortcut_properties,
         base::win::SHORTCUT_CREATE_ALWAYS) && success;
-
-    // Any shortcut would work for the pinning. We use the first one.
-    if (success && pin_to_taskbar && shortcut_to_pin.empty())
-      shortcut_to_pin = shortcut_file;
   }
 
   if (success && pin_to_taskbar) {
-    if (!shortcut_to_pin.empty()) {
-      success &= base::win::TaskbarPinShortcutLink(
-          shortcut_to_pin.value().c_str());
-    } else {
-      success = false;
-    }
+    // Use the web app path shortcut for pinning to avoid having unique numbers
+    // in the application name.
+    base::FilePath shortcut_to_pin = web_app_path.Append(file_name).
+        ReplaceExtension(FILE_PATH_LITERAL(".lnk"));
+    success = base::win::TaskbarPinShortcutLink(
+        shortcut_to_pin.value().c_str()) && success;
   }
 
   return success;
