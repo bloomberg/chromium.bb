@@ -34,7 +34,7 @@ std::string GetHeaderDBKey() {
 
 // Returns a string to be used as keys for child map.
 std::string GetChildMapKey(const std::string& parent_resource_id,
-                           const base::FilePath::StringType& child_name) {
+                           const std::string& child_name) {
   std::string key = parent_resource_id;
   key.push_back(kDBKeyDelimeter);
   key.append(child_name);
@@ -103,7 +103,7 @@ void DriveResourceMetadataStorageMemory::RemoveEntry(
 
 void DriveResourceMetadataStorageMemory::PutChild(
     const std::string& parent_resource_id,
-    const base::FilePath::StringType& child_name,
+    const std::string& child_name,
     const std::string& child_resource_id) {
   base::ThreadRestrictions::AssertIOAllowed();
   child_maps_[parent_resource_id][child_name] = child_resource_id;
@@ -111,7 +111,7 @@ void DriveResourceMetadataStorageMemory::PutChild(
 
 std::string DriveResourceMetadataStorageMemory::GetChild(
     const std::string& parent_resource_id,
-    const base::FilePath::StringType& child_name) {
+    const std::string& child_name) {
   base::ThreadRestrictions::AssertIOAllowed();
 
   ChildMaps::const_iterator iter = child_maps_.find(parent_resource_id);
@@ -141,7 +141,7 @@ void DriveResourceMetadataStorageMemory::GetChildren(
 
 void DriveResourceMetadataStorageMemory::RemoveChild(
     const std::string& parent_resource_id,
-    const base::FilePath::StringType& child_name) {
+    const std::string& child_name) {
   base::ThreadRestrictions::AssertIOAllowed();
 
   ChildMaps::iterator iter = child_maps_.find(parent_resource_id);
@@ -307,7 +307,7 @@ void DriveResourceMetadataStorageDB::RemoveEntry(
 
 void DriveResourceMetadataStorageDB::PutChild(
     const std::string& parent_resource_id,
-    const base::FilePath::StringType& child_name,
+    const std::string& child_name,
     const std::string& child_resource_id) {
   base::ThreadRestrictions::AssertIOAllowed();
 
@@ -320,7 +320,7 @@ void DriveResourceMetadataStorageDB::PutChild(
 
 std::string DriveResourceMetadataStorageDB::GetChild(
     const std::string& parent_resource_id,
-    const base::FilePath::StringType& child_name) {
+    const std::string& child_name) {
   base::ThreadRestrictions::AssertIOAllowed();
 
   std::string child_resource_id;
@@ -352,7 +352,7 @@ void DriveResourceMetadataStorageDB::GetChildren(
 
 void DriveResourceMetadataStorageDB::RemoveChild(
     const std::string& parent_resource_id,
-    const base::FilePath::StringType& child_name) {
+    const std::string& child_name) {
   base::ThreadRestrictions::AssertIOAllowed();
 
   const leveldb::Status status = child_map_->Delete(

@@ -169,7 +169,7 @@ class DriveResourceMetadata {
   // Renames entry specified by |file_path| with the new name |new_name| and
   // calls |callback| asynchronously. |callback| must not be null.
   void RenameEntry(const base::FilePath& file_path,
-                   const base::FilePath::StringType& new_name,
+                   const std::string& new_name,
                    const FileMoveCallback& callback);
 
   // Removes entry with |resource_id| from its parent. Calls |callback| with the
@@ -270,9 +270,8 @@ class DriveResourceMetadata {
       const base::FilePath& directory_path);
 
   // Used to implement RenameEntry().
-  FileMoveResult RenameEntryOnBlockingPool(
-      const base::FilePath& file_path,
-      const base::FilePath::StringType& new_name);
+  FileMoveResult RenameEntryOnBlockingPool(const base::FilePath& file_path,
+                                           const std::string& new_name);
 
   // Used to implement RemoveEntry().
   FileMoveResult RemoveEntryOnBlockingPool(const std::string& resource_id);

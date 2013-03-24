@@ -369,10 +369,9 @@ void DriveResourceMetadata::MoveEntryToDirectory(
                  callback));
 }
 
-void DriveResourceMetadata::RenameEntry(
-    const base::FilePath& file_path,
-    const base::FilePath::StringType& new_name,
-    const FileMoveCallback& callback) {
+void DriveResourceMetadata::RenameEntry(const base::FilePath& file_path,
+                                        const std::string& new_name,
+                                        const FileMoveCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
   base::PostTaskAndReplyWithResult(
@@ -570,7 +569,7 @@ DriveResourceMetadata::MoveEntryToDirectoryOnBlockingPool(
 DriveResourceMetadata::FileMoveResult
 DriveResourceMetadata::RenameEntryOnBlockingPool(
     const base::FilePath& file_path,
-    const base::FilePath::StringType& new_name) {
+    const std::string& new_name) {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(!file_path.empty());
   DCHECK(!new_name.empty());
@@ -629,8 +628,9 @@ scoped_ptr<DriveEntryProto> DriveResourceMetadata::FindEntryByPathSync(
   file_path.GetComponents(&components);
 
   for (size_t i = 1; i < components.size() && current_dir; ++i) {
+    const std::string component = base::FilePath(components[i]).AsUTF8Unsafe();
     std::string resource_id =
-        storage_->GetChild(current_dir->resource_id(), components[i]);
+        storage_->GetChild(current_dir->resource_id(), component);
     if (resource_id.empty())
       break;
 
@@ -853,7 +853,7 @@ base::FilePath DriveResourceMetadata::GetFilePath(
   base::FilePath path;
   if (!entry->parent_resource_id().empty())
     path = GetFilePath(entry->parent_resource_id());
-  path = path.Append(entry->base_name());
+  path = path.Append(base::FilePath::FromUTF8Unsafe(entry->base_name()));
   return path;
 }
 
@@ -977,23 +977,16 @@ void DriveResourceMetadata::AddEntryToDirectory(const DriveEntryProto& entry) {
   // Do file name de-duplication - find files with the same name and
   // append a name modifier to the name.
   int modifier = 1;
-  base::FilePath full_file_name(updated_entry.base_name());
-  const std::string extension = full_file_name.Extension();
-  const std::string file_name = full_file_name.RemoveExtension().value();
+  std::string new_base_name = updated_entry.base_name();
   while (!storage_->GetChild(entry.parent_resource_id(),
-                             full_file_name.value()).empty()) {
-    if (!extension.empty()) {
-      full_file_name = base::FilePath(base::StringPrintf("%s (%d)%s",
-                                                         file_name.c_str(),
-                                                         ++modifier,
-                                                         extension.c_str()));
-    } else {
-      full_file_name = base::FilePath(base::StringPrintf("%s (%d)",
-                                                         file_name.c_str(),
-                                                         ++modifier));
-    }
+                             new_base_name).empty()) {
+    base::FilePath new_path =
+        base::FilePath::FromUTF8Unsafe(updated_entry.base_name());
+    new_path =
+        new_path.InsertBeforeExtension(base::StringPrintf(" (%d)", ++modifier));
+    new_base_name = new_path.AsUTF8Unsafe();
   }
-  updated_entry.set_base_name(full_file_name.value());
+  updated_entry.set_base_name(new_base_name);
 
   // Setup child and parent links.
   storage_->PutChild(entry.parent_resource_id(),

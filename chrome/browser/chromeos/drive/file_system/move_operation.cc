@@ -173,7 +173,7 @@ void MoveOperation::RenameLocally(const base::FilePath& src_path,
     callback.Run(error, base::FilePath());
     return;
   }
-  metadata_->RenameEntry(src_path, new_name.value(), callback);
+  metadata_->RenameEntry(src_path, new_name.AsUTF8Unsafe(), callback);
 }
 
 

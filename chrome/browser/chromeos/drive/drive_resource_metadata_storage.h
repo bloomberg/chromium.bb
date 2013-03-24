@@ -52,13 +52,12 @@ class DriveResourceMetadataStorage {
 
   // Puts child under the parent.
   virtual void PutChild(const std::string& parent_resource_id,
-                        const base::FilePath::StringType& child_name,
+                        const std::string& child_name,
                         const std::string& child_resource_id) = 0;
 
   // Returns resource ID of the parent's child.
-  virtual std::string GetChild(
-      const std::string& parent_resource_id,
-      const base::FilePath::StringType& child_name) = 0;
+  virtual std::string GetChild(const std::string& parent_resource_id,
+                               const std::string& child_name) = 0;
 
   // Returns resource IDs of the parent's children.
   virtual void GetChildren(const std::string& parent_resource_id,
@@ -66,7 +65,7 @@ class DriveResourceMetadataStorage {
 
   // Removes child from the parent.
   virtual void RemoveChild(const std::string& parent_resource_id,
-                           const base::FilePath::StringType& child_name) = 0;
+                           const std::string& child_name) = 0;
 };
 
 // Implementation of DriveResourceMetadataStorage on memory.
@@ -86,23 +85,21 @@ class DriveResourceMetadataStorageMemory
       const std::string& resource_id) OVERRIDE;
   virtual void RemoveEntry(const std::string& resource_id) OVERRIDE;
   virtual void PutChild(const std::string& parent_resource_id,
-                        const base::FilePath::StringType& child_name,
+                        const std::string& child_name,
                         const std::string& child_resource_id) OVERRIDE;
-  virtual std::string GetChild(
-      const std::string& parent_resource_id,
-      const base::FilePath::StringType& child_name) OVERRIDE;
+  virtual std::string GetChild(const std::string& parent_resource_id,
+                               const std::string& child_name) OVERRIDE;
   virtual void GetChildren(const std::string& parent_resource_id,
                            std::vector<std::string>* children) OVERRIDE;
-  virtual void RemoveChild(
-      const std::string& parent_resource_id,
-      const base::FilePath::StringType& child_name) OVERRIDE;
+  virtual void RemoveChild(const std::string& parent_resource_id,
+                           const std::string& child_name) OVERRIDE;
 
  private:
   // Map of resource id strings to DriveEntryProto.
   typedef std::map<std::string, DriveEntryProto> ResourceMap;
 
   // Map from base_name to resource id of child.
-  typedef std::map<base::FilePath::StringType, std::string> ChildMap;
+  typedef std::map<std::string, std::string> ChildMap;
 
   // Map from resource id to ChildMap.
   typedef std::map<std::string, ChildMap> ChildMaps;
@@ -139,16 +136,14 @@ class DriveResourceMetadataStorageDB
       const std::string& resource_id) OVERRIDE;
   virtual void RemoveEntry(const std::string& resource_id) OVERRIDE;
   virtual void PutChild(const std::string& parent_resource_id,
-                        const base::FilePath::StringType& child_name,
+                        const std::string& child_name,
                         const std::string& child_resource_id) OVERRIDE;
-  virtual std::string GetChild(
-      const std::string& parent_resource_id,
-      const base::FilePath::StringType& child_name) OVERRIDE;
+  virtual std::string GetChild(const std::string& parent_resource_id,
+                               const std::string& child_name) OVERRIDE;
   virtual void GetChildren(const std::string& parent_resource_id,
                            std::vector<std::string>* children) OVERRIDE;
-  virtual void RemoveChild(
-      const std::string& parent_resource_id,
-      const base::FilePath::StringType& child_name) OVERRIDE;
+  virtual void RemoveChild(const std::string& parent_resource_id,
+                           const std::string& child_name) OVERRIDE;
 
  private:
   friend class DriveResourceMetadataStorageTest;
