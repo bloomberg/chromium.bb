@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/toolbar/action_box_button_controller.h"
+#include "chrome/browser/ui/views/location_bar/touchable_location_bar_view.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
 
@@ -16,18 +17,18 @@ class Browser;
 // ActionBoxButtonView displays a plus button with associated menu.
 class ActionBoxButtonView : public views::MenuButton,
                             public views::MenuButtonListener,
-                            public ActionBoxButtonController::Delegate {
+                            public ActionBoxButtonController::Delegate,
+                            public TouchableLocationBarView {
  public:
-  // Thickness of the top transparent area on a button image that overlaps
-  // location bar border.
-  static const int kBorderOverlap;
-
   ActionBoxButtonView(Browser* browser, const gfx::Point& menu_offset);
   virtual ~ActionBoxButtonView();
 
   ActionBoxButtonController* action_box_button_controller() {
    return &controller_;
   }
+
+  // TouchableLocationBarView:
+  virtual int GetBuiltInHorizontalPadding() const OVERRIDE;
 
  private:
   // Overridden from views::CustomButton:
@@ -36,10 +37,6 @@ class ActionBoxButtonView : public views::MenuButton,
   // Overridden from views::MenuButtonListener:
   virtual void OnMenuButtonClicked(View* source,
                                    const gfx::Point& point) OVERRIDE;
-
-  // Overridden from views::View:
-  virtual bool HasHitTestMask() const  OVERRIDE;
-  virtual void GetHitTestMask(gfx::Path* mask) const OVERRIDE;
 
   // Overridden from ActionBoxButtonController::Delegate:
   virtual void ShowMenu(scoped_ptr<ActionBoxMenuModel> menu_model) OVERRIDE;

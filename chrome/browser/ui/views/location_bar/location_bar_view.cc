@@ -729,8 +729,8 @@ void LocationBarView::Layout() {
 
   if (action_box_button_view_ && action_box_button_view_->visible()) {
     right_decorations.AddDecoration(
-        kVerticalEdgeThickness - ActionBoxButtonView::kBorderOverlap, 0, false,
-        0, 0, 0, 0, action_box_button_view_);
+        location_height, action_box_button_view_->GetBuiltInHorizontalPadding(),
+        action_box_button_view_);
   }
   if (star_view_ && star_view_->visible()) {
     right_decorations.AddDecoration(
