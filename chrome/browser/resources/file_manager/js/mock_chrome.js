@@ -298,6 +298,10 @@ chrome.fileBrowserPrivate = {
 
   archiveCount_: 0,
 
+  /**
+   * Get the list of mount points.
+   * @param {function(Array.<MountPointInfo>)} callback Callback
+   */
   getMountPoints: function(callback) {
     callback([].concat(chrome.fileBrowserPrivate.mountPoints_));
   },
@@ -892,14 +896,6 @@ chrome.fileBrowserPrivate = {
    * Reload the filesystem metadata from the server immediately.
    */
   reloadDrive: function() {},
-
-  /**
-   * Get the list of mount points.
-   * @param {function(Array.<MountPointInfo>)} callback Callback
-   */
-  getMountPoints: function(callback) {
-    callback([]);
-  },
 
   /**
    * Requests a refresh of a directory.
