@@ -231,7 +231,16 @@ ScoredHistoryMatches URLIndexPrivateData::HistoryItemsForTerms(
   // escaped whitespace. When the user types "colspec=ID%20Mstone Release" we
   // get two 'terms': "colspec=id%20mstone" and "release".
   history::String16Vector lower_raw_terms;
-  Tokenize(lower_raw_string, kWhitespaceUTF16, &lower_raw_terms);
+  if (Tokenize(lower_raw_string, kWhitespaceUTF16, &lower_raw_terms) == 0) {
+    // Don't score matches when there are no terms to score against.  (It's
+    // possible that the word break iterater that extracts words to search
+    // for in the database allows some whitespace "words" whereas Tokenize
+    // excludes a long list of whitespace.)  One could write a scoring
+    // function that gives a reasonable order to matches when there
+    // are no terms (i.e., all the words are some form of whitespace),
+    // but this is such a rare edge case that it's not worth the time.
+    return scored_items;
+  }
   scored_items = std::for_each(history_id_set.begin(), history_id_set.end(),
       AddHistoryMatch(*this, languages, bookmark_service, lower_raw_string,
                       lower_raw_terms, base::Time::Now())).ScoredMatches();
