@@ -85,7 +85,6 @@ void InputMethodManagerImpl::SetState(State new_state) {
       OnScreenLocked();
       break;
     case STATE_TERMINATING: {
-      IBusDaemonController::GetInstance()->Stop();
       if (candidate_window_controller_.get()) {
         candidate_window_controller_->Shutdown(ibus_controller_.get());
         candidate_window_controller_.reset();

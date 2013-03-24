@@ -375,12 +375,12 @@ TEST_F(InputMethodManagerImplTest, TestEnableLayoutAndIme) {
   EXPECT_EQ(ids[0], manager_->GetCurrentInputMethod().id());
   EXPECT_EQ("us(dvorak)", xkeyboard_->last_layout_);
   // Currently, to work around  a crash issue at crosbug.com/27051,
-  // controller_->Stop(); is NOT called when all IMEs are disabled.
+  // controller_->Stop(); is NOT called when all IMEs are disabled
+  // or on shutdown.
   EXPECT_EQ(0, mock_ibus_daemon_controller_->stop_count());
 
-  // However, IME should always be stopped on shutdown.
   manager_->SetState(InputMethodManager::STATE_TERMINATING);
-  EXPECT_EQ(1, mock_ibus_daemon_controller_->stop_count());
+  EXPECT_EQ(0, mock_ibus_daemon_controller_->stop_count());
   manager_->RemoveObserver(&observer);
 }
 
