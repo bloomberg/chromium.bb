@@ -1106,8 +1106,10 @@ void OneClickSigninHelper::DidStopLoading(
       url.ReplaceComponents(replacements) ==
         continue_url_.ReplaceComponents(replacements));
 
-  // If there is no valid email or password yet, there is nothing to do.
-  if (email_.empty() || password_.empty()) {
+  // If there is no valid email yet, there is nothing to do.  As of M26, the
+  // password is allowed to be empty, since its no longer required to setup
+  // sync.
+  if (email_.empty()) {
     VLOG(1) << "OneClickSigninHelper::DidStopLoading: nothing to do";
     if (continue_url_match && auto_accept_ == AUTO_ACCEPT_EXPLICIT)
       RedirectToSignin();
