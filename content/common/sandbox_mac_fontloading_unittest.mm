@@ -64,7 +64,7 @@ bool FontLoadingTestCase::BeforeSandboxInit() {
 
 bool FontLoadingTestCase::SandboxedTest() {
   base::SharedMemoryHandle shmem_handle;
-  if (!font_shmem_->ShareToProcess(NULL, &shmem_handle)) {
+  if (!font_shmem_->ShareToProcess(base::kNullProcessHandle, &shmem_handle)) {
     LOG(ERROR) << "SharedMemory::ShareToProcess failed";
     return false;
   }
