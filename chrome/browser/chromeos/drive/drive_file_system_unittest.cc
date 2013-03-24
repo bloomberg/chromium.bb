@@ -1135,7 +1135,7 @@ TEST_F(DriveFileSystemTest, TransferFileFromLocalToRemote_HostedDocument) {
 TEST_F(DriveFileSystemTest, TransferFileFromRemoteToLocal_RegularFile) {
   ASSERT_TRUE(LoadRootFeedDocument());
 
-  // The transfered file is cached and the change of "offline avaialble"
+  // The transfered file is cached and the change of "offline available"
   // attribute is notified.
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
       Eq(base::FilePath(FILE_PATH_LITERAL("drive"))))).Times(1);
@@ -1661,7 +1661,7 @@ TEST_F(DriveFileSystemTest, CreateDirectoryWithService) {
 TEST_F(DriveFileSystemTest, GetFileByPath_FromGData_EnoughSpace) {
   ASSERT_TRUE(LoadRootFeedDocument());
 
-  // The transfered file is cached and the change of "offline avaialble"
+  // The transfered file is cached and the change of "offline available"
   // attribute is notified.
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
       Eq(base::FilePath(FILE_PATH_LITERAL("drive"))))).Times(1);
@@ -1711,7 +1711,7 @@ TEST_F(DriveFileSystemTest, GetFileByPath_FromGData_NoSpaceAtAll) {
 TEST_F(DriveFileSystemTest, GetFileByPath_FromGData_NoEnoughSpaceButCanFreeUp) {
   ASSERT_TRUE(LoadRootFeedDocument());
 
-  // The transfered file is cached and the change of "offline avaialble"
+  // The transfered file is cached and the change of "offline available"
   // attribute is notified.
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
       Eq(base::FilePath(FILE_PATH_LITERAL("drive"))))).Times(1);
@@ -1849,7 +1849,7 @@ TEST_F(DriveFileSystemTest, GetFileByPath_HostedDocument) {
 TEST_F(DriveFileSystemTest, GetFileByResourceId) {
   fake_free_disk_space_getter_->set_fake_free_disk_space(kLotsOfSpace);
 
-  // The transfered file is cached and the change of "offline avaialble"
+  // The transfered file is cached and the change of "offline available"
   // attribute is notified.
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
       Eq(base::FilePath(FILE_PATH_LITERAL("drive"))))).Times(1);
@@ -2106,7 +2106,7 @@ TEST_F(DriveFileSystemTest, RefreshDirectory) {
 TEST_F(DriveFileSystemTest, OpenAndCloseFile) {
   ASSERT_TRUE(LoadRootFeedDocument());
 
-  // The transfered file is cached and the change of "offline avaialble"
+  // The transfered file is cached and the change of "offline available"
   // attribute is notified.
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
       Eq(base::FilePath(FILE_PATH_LITERAL("drive"))))).Times(1);

@@ -15,11 +15,8 @@
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/drive/drive_resource_metadata.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
-#include "googleurl/src/gurl.h"
 
-namespace base {
-class Value;
-}
+class GURL;
 
 namespace google_apis {
 class AboutResource;
@@ -40,7 +37,7 @@ typedef base::Callback<
          DriveFileError error)> LoadFeedListCallback;
 
 // ChangeListLoader is used to load feeds from WAPI (codename for
-// Documents List API) and load the cached proto file.
+// Documents List API) or Google Drive API and load the cached metadata.
 class ChangeListLoader {
  public:
   ChangeListLoader(DriveResourceMetadata* resource_metadata,
@@ -79,9 +76,8 @@ class ChangeListLoader {
   // directory changestamp against the server changestamp. The primary
   // purpose of this function is to update parts of entries in the directory
   // which can stale over time, such as thumbnail URLs.
-  void LoadDirectoryFromServer(
-      const std::string& directory_resource_id,
-      const FileOperationCallback& callback);
+  void LoadDirectoryFromServer(const std::string& directory_resource_id,
+                               const FileOperationCallback& callback);
 
   // Starts retrieving search results for |search_query| from the server.
   // If |next_feed| is set, this is the feed url that will be fetched.

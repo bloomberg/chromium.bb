@@ -820,7 +820,7 @@ void DriveFileSystem::GetEntryInfoByPath(const base::FilePath& file_path,
   // DriveResourceMetadata may know about the entry even if the resource
   // metadata is not yet fully loaded. For instance, DriveResourceMetadata()
   // always knows about the root directory. For "fast fetch"
-  // (crbug.com/178348) to work, it's needd to delay the resource metadata
+  // (crbug.com/178348) to work, it's needed to delay the resource metadata
   // loading until the first call to ReadDirectoryByPath().
   resource_metadata_->GetEntryInfoByPath(
       file_path,
@@ -895,7 +895,7 @@ void DriveFileSystem::ReadDirectoryByPath(
   DCHECK(!callback.is_null());
 
   // As described in GetEntryInfoByPath(), DriveResourceMetadata may know
-  // about the entry even if the file system is not yet fully loaded, hece we
+  // about the entry even if the file system is not yet fully loaded, hence we
   // should just ask DriveResourceMetadata first.
   resource_metadata_->GetEntryInfoByPath(
       directory_path,

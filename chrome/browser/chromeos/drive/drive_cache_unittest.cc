@@ -1095,7 +1095,7 @@ TEST_F(DriveCacheTest, DirtyCacheRepetitive) {
                   test_util::TEST_CACHE_STATE_PERSISTENT,
                   DriveCache::CACHE_TYPE_PERSISTENT);
 
-  // Mark the file dirty agian after it's being committed.  Outgoing symlink
+  // Mark the file dirty again after it's being committed.  Outgoing symlink
   // should be deleted.
   TestMarkDirty(resource_id, md5, DRIVE_FILE_OK,
                 test_util::TEST_CACHE_STATE_PRESENT |

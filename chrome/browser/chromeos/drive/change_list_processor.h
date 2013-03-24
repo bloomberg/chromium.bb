@@ -28,7 +28,7 @@ class DriveEntryProto;
 class DriveResourceMetadata;
 
 // ChangeListProcessor is used to process feeds from WAPI (codename for
-// Documents List API).
+// Documents List API) or Google Drive API.
 class ChangeListProcessor {
  public:
   typedef std::map<std::string /* resource_id */, DriveEntryProto>

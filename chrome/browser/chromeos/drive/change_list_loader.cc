@@ -7,13 +7,7 @@
 #include <set>
 
 #include "base/callback.h"
-#include "base/command_line.h"
-#include "base/file_util.h"
-#include "base/format_macros.h"
 #include "base/metrics/histogram.h"
-#include "base/stringprintf.h"
-#include "base/threading/sequenced_worker_pool.h"
-#include "base/values.h"
 #include "chrome/browser/chromeos/drive/change_list_loader_observer.h"
 #include "chrome/browser/chromeos/drive/change_list_processor.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
@@ -21,8 +15,8 @@
 #include "chrome/browser/chromeos/drive/drive_webapps_registry.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/drive_api_util.h"
-#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
+#include "googleurl/src/gurl.h"
 
 using content::BrowserThread;
 
@@ -32,12 +26,6 @@ namespace {
 
 // Update the fetch progress UI per every this number of feeds.
 const int kFetchUiUpdateStep = 10;
-
-// Parses a google_apis::ResourceList from |data|.
-scoped_ptr<google_apis::ResourceList> ParseFeedOnBlockingPool(
-    scoped_ptr<base::Value> data) {
-  return google_apis::ResourceList::ExtractAndParse(*data);
-}
 
 }  // namespace
 
