@@ -335,12 +335,14 @@ bool RenameResourceOperation::GetContentData(std::string* upload_content_type,
 AuthorizeAppOperation::AuthorizeAppOperation(
     OperationRegistry* registry,
     net::URLRequestContextGetter* url_request_context_getter,
+    const GDataWapiUrlGenerator& url_generator,
     const GetDataCallback& callback,
-    const GURL& edit_url,
+    const std::string& resource_id,
     const std::string& app_id)
     : GetDataOperation(registry, url_request_context_getter, callback),
-      app_id_(app_id),
-      edit_url_(edit_url) {
+      url_generator_(url_generator),
+      resource_id_(resource_id),
+      app_id_(app_id) {
   DCHECK(!callback.is_null());
 }
 
@@ -358,7 +360,7 @@ AuthorizeAppOperation::GetExtraRequestHeaders() const {
 }
 
 bool AuthorizeAppOperation::GetContentData(std::string* upload_content_type,
-                                            std::string* upload_content) {
+                                           std::string* upload_content) {
   upload_content_type->assign("application/atom+xml");
   XmlWriter xml_writer;
   xml_writer.StartWriting();
@@ -376,7 +378,7 @@ bool AuthorizeAppOperation::GetContentData(std::string* upload_content_type,
 }
 
 GURL AuthorizeAppOperation::GetURL() const {
-  return GDataWapiUrlGenerator::AddStandardUrlParams(edit_url_);
+  return url_generator_.GenerateEditUrl(resource_id_);
 }
 
 //======================= AddResourceToDirectoryOperation ======================

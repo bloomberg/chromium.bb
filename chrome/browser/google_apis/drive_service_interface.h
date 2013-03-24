@@ -303,7 +303,7 @@ class DriveServiceInterface {
   // Authorizes a Drive app with the id |app_id| to open the given file.
   // Upon completion, invokes |callback| with the link to open the file with
   // the provided app. |callback| must not be null.
-  virtual void AuthorizeApp(const GURL& edit_url,
+  virtual void AuthorizeApp(const std::string& resource_id,
                             const std::string& app_id,
                             const AuthorizeAppCallback& callback) = 0;
 };

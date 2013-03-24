@@ -270,8 +270,9 @@ class AuthorizeAppOperation : public GetDataOperation {
   AuthorizeAppOperation(
       OperationRegistry* registry,
       net::URLRequestContextGetter* url_request_context_getter,
+      const GDataWapiUrlGenerator& url_generator,
       const GetDataCallback& callback,
-      const GURL& edit_url,
+      const std::string& resource_id,
       const std::string& app_id);
   virtual ~AuthorizeAppOperation();
 
@@ -284,8 +285,9 @@ class AuthorizeAppOperation : public GetDataOperation {
   virtual GURL GetURL() const OVERRIDE;
 
  private:
+  const GDataWapiUrlGenerator url_generator_;
+  const std::string resource_id_;
   const std::string app_id_;
-  const GURL edit_url_;
 
   DISALLOW_COPY_AND_ASSIGN(AuthorizeAppOperation);
 };

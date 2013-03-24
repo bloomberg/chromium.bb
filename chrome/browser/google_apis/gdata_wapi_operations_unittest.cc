@@ -141,6 +141,14 @@ class GDataWapiOperationsTest : public testing::Test {
         // matter.
         return test_util::CreateHttpResponseFromFile(
             test_util::GetTestFilePath("chromeos/gdata/testfile.txt"));
+      } else if (resource_id == "invalid_resource_id") {
+        // Check if this is an authorization request for an app.
+        // This emulates to return invalid formatted result from the server.
+        if (request.method == test_server::METHOD_PUT &&
+            request.content.find("<docs:authorizedApp>") != std::string::npos) {
+          return test_util::CreateHttpResponseFromFile(
+              test_util::GetTestFilePath("chromeos/gdata/testfile.txt"));
+        }
       }
     }
 
@@ -700,11 +708,11 @@ TEST_F(GDataWapiOperationsTest, AuthorizeAppOperation_ValidFeed) {
   AuthorizeAppOperation* operation = new AuthorizeAppOperation(
       &operation_registry_,
       request_context_getter_.get(),
+      *url_generator_,
       CreateComposedCallback(
           base::Bind(&test_util::RunAndQuit),
           test_util::CreateCopyResultCallback(&result_code, &result_data)),
-      test_server_.GetURL(
-          "/feeds/default/private/full/file:2_file_resource_id"),
+      "file:2_file_resource_id",
       "APP_ID");
 
   operation->Start(kTestGDataAuthToken, kTestUserAgent,
@@ -713,8 +721,8 @@ TEST_F(GDataWapiOperationsTest, AuthorizeAppOperation_ValidFeed) {
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
   EXPECT_EQ(test_server::METHOD_PUT, http_request_.method);
-  EXPECT_EQ("/feeds/default/private/full/file:2_file_resource_id?v=3&alt=json"
-            "&showroot=true",
+  EXPECT_EQ("/feeds/default/private/full/file%3A2_file_resource_id"
+            "?v=3&alt=json&showroot=true",
             http_request_.relative_url);
   EXPECT_EQ("application/atom+xml", http_request_.headers["Content-Type"]);
   EXPECT_EQ("*", http_request_.headers["If-Match"]);
@@ -736,10 +744,11 @@ TEST_F(GDataWapiOperationsTest, AuthorizeAppOperation_InvalidFeed) {
   AuthorizeAppOperation* operation = new AuthorizeAppOperation(
       &operation_registry_,
       request_context_getter_.get(),
+      *url_generator_,
       CreateComposedCallback(
           base::Bind(&test_util::RunAndQuit),
           test_util::CreateCopyResultCallback(&result_code, &result_data)),
-      test_server_.GetURL("/files/chromeos/gdata/testfile.txt"),
+      "invalid_resource_id",
       "APP_ID");
 
   operation->Start(kTestGDataAuthToken, kTestUserAgent,
@@ -748,7 +757,8 @@ TEST_F(GDataWapiOperationsTest, AuthorizeAppOperation_InvalidFeed) {
 
   EXPECT_EQ(GDATA_PARSE_ERROR, result_code);
   EXPECT_EQ(test_server::METHOD_PUT, http_request_.method);
-  EXPECT_EQ("/files/chromeos/gdata/testfile.txt?v=3&alt=json&showroot=true",
+  EXPECT_EQ("/feeds/default/private/full/invalid_resource_id"
+            "?v=3&alt=json&showroot=true",
             http_request_.relative_url);
   EXPECT_EQ("application/atom+xml", http_request_.headers["Content-Type"]);
   EXPECT_EQ("*", http_request_.headers["If-Match"]);

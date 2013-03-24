@@ -164,7 +164,7 @@ class FakeDriveService : public DriveServiceInterface {
       const GURL& upload_url,
       int64 content_length,
       const UploadRangeCallback& callback) OVERRIDE;
-  virtual void AuthorizeApp(const GURL& edit_url,
+  virtual void AuthorizeApp(const std::string& resource_id,
                             const std::string& app_id,
                             const AuthorizeAppCallback& callback) OVERRIDE;
 

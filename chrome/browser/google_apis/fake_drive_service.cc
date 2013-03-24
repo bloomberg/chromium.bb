@@ -1025,7 +1025,7 @@ void FakeDriveService::ResumeUpload(
                  base::Passed(&result_entry)));
 }
 
-void FakeDriveService::AuthorizeApp(const GURL& edit_url,
+void FakeDriveService::AuthorizeApp(const std::string& resource_id,
                                     const std::string& app_id,
                                     const AuthorizeAppCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

@@ -530,7 +530,7 @@ void GDataWapiService::GetUploadStatus(
                                    content_length));
 }
 
-void GDataWapiService::AuthorizeApp(const GURL& edit_url,
+void GDataWapiService::AuthorizeApp(const std::string& resource_id,
                                     const std::string& app_id,
                                     const AuthorizeAppCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -540,10 +540,11 @@ void GDataWapiService::AuthorizeApp(const GURL& edit_url,
       new AuthorizeAppOperation(
           operation_registry(),
           url_request_context_getter_,
+          url_generator_,
           base::Bind(&ParseResourceEntryAndRun,
                      base::Bind(&ExtractOpenLinkAndRun, app_id, callback)),
-                     edit_url,
-                     app_id));
+          resource_id,
+          app_id));
 }
 
 bool GDataWapiService::HasAccessToken() const {

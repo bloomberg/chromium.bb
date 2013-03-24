@@ -106,7 +106,7 @@ void DriveTaskExecutor::OnFileEntryFetched(
   // current document entry for this document so we can get the
   // open-with-<app_id> urls from the document entry.
   drive_service->AuthorizeApp(
-      GURL(entry_proto->edit_url()),
+      entry_proto->resource_id(),
       extension_id(),  // really app_id
       base::Bind(&DriveTaskExecutor::OnAppAuthorized,
                  this,

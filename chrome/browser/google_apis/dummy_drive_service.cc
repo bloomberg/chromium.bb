@@ -129,7 +129,7 @@ void DummyDriveService::GetUploadStatus(
     int64 content_length,
     const UploadRangeCallback& callback) {}
 
-void DummyDriveService::AuthorizeApp(const GURL& edit_url,
+void DummyDriveService::AuthorizeApp(const std::string& resource_id,
                                      const std::string& app_id,
                                      const AuthorizeAppCallback& callback) {}
 

@@ -574,13 +574,15 @@ void DriveAPIService::GetUploadStatus(
 }
 
 void DriveAPIService::AuthorizeApp(
-    const GURL& edit_url,
+    const std::string& resource_id,
     const std::string& app_ids,
     const AuthorizeAppCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  // TODO(kochi): Implement this.
+  // TODO(hidehiko): Unfortunately, there is no support of authorizing
+  // third party application on Drive API v2.
+  // As a temporary work around, we'll use the GData WAPI's api here.
   NOTREACHED();
 }
 

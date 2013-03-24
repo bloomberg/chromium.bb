@@ -137,7 +137,7 @@ class DriveAPIService : public DriveServiceInterface,
       int64 content_length,
       const UploadRangeCallback& callback) OVERRIDE;
   virtual void AuthorizeApp(
-      const GURL& edit_url,
+      const std::string& resource_id,
       const std::string& app_id,
       const AuthorizeAppCallback& callback) OVERRIDE;
 
