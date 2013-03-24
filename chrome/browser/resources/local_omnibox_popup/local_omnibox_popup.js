@@ -237,6 +237,7 @@ function updateSuggestions() {
 function appendSuggestionStyles() {
   var apiHandle = getApiObjectHandle();
   var isRtl = apiHandle.rtl;
+  var startMargin = apiHandle.startMargin;
   var style = document.createElement('style');
   style.type = 'text/css';
   style.id = 'suggestionStyle';
@@ -244,11 +245,13 @@ function appendSuggestionStyles() {
       '.suggestion {' +
       '  background-position: ' +
           (isRtl ? '-webkit-calc(100% - 5px)' : '5px') + ' 4px;' +
-      '  -webkit-margin-start: ' + apiHandle.startMargin + 'px;' +
-      '  width: ' + apiHandle.width + 'px;' +
+      '  -webkit-margin-start: ' + startMargin + 'px;' +
+      '  -webkit-margin-end: ' +
+          (window.innerWidth - apiHandle.width - startMargin) + 'px;' +
       '  font: ' + apiHandle.fontSize + 'px "' + apiHandle.font + '";' +
       '}';
   document.querySelector('head').appendChild(style);
+  window.removeEventListener('resize', appendSuggestionStyles);
 }
 
 /**
@@ -305,9 +308,9 @@ function setUpApi() {
   apiHandle.onchange = updateSuggestions;
   apiHandle.onkeypress = handleKeyPress;
   apiHandle.onsubmit = onSubmit;
-  appendSuggestionStyles();
   $('suggestions-box-container').dir = apiHandle.rtl ? 'rtl' : 'ltr';
-
+  // Delay adding these styles until the window width is available.
+  window.addEventListener('resize', appendSuggestionStyles);
   if (apiHandle.nativeSuggestions.length)
     handleNativeSuggestions();
 }

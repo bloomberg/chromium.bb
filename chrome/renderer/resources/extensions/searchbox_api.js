@@ -31,14 +31,14 @@ if (!chrome.embeddedSearch) {
     var safeObjects = {};
 
     // Returns the |restrictedText| wrapped in a ShadowDOM.
-    function SafeWrap(restrictedText, width, height, opt_fontSize,
+    function SafeWrap(restrictedText, height, opt_width, opt_fontSize,
         opt_direction) {
       var node = document.createElement('div');
       var nodeShadow = safeObjects.createShadowRoot.apply(node);
       nodeShadow.applyAuthorStyles = true;
       nodeShadow.innerHTML =
           '<div style="' +
-              'width: ' + width + 'px !important;' +
+              (opt_width ? 'width: ' + opt_width + 'px !important;' : '') +
               'height: ' + height + 'px !important;' +
               'font-family: \'' + GetFont() + '\', \'Arial\' !important;' +
               (opt_fontSize ?
@@ -109,7 +109,7 @@ if (!chrome.embeddedSearch) {
       native function HideBars();
 
       function SafeWrapSuggestion(restrictedText) {
-        return SafeWrap(restrictedText, window.innerWidth - 155, 22);
+        return SafeWrap(restrictedText, 22);
       }
 
       // Wraps the AutocompleteResult query and URL into ShadowDOM nodes so that
@@ -313,7 +313,7 @@ if (!chrome.embeddedSearch) {
       native function NavigateNewTabPage();
 
       function SafeWrapMostVisited(restrictedText, width, opt_direction) {
-        return SafeWrap(restrictedText, width, 18, 11, opt_direction);
+        return SafeWrap(restrictedText, 18, width, 11, opt_direction);
       }
 
       function GetMostVisitedItemsWrapper() {
