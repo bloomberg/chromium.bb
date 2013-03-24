@@ -89,7 +89,11 @@ void SyncInvalidationListener::Start(
   DCHECK(delegate);
   delegate_ = delegate;
 
+#if defined(OS_IOS)
+  int client_type = ipc::invalidation::ClientType::CHROME_SYNC_IOS;
+#else
   int client_type = ipc::invalidation::ClientType::CHROME_SYNC;
+#endif
   invalidation_client_.reset(
       create_invalidation_client_callback.Run(
           &sync_system_resources_, client_type, client_id,
