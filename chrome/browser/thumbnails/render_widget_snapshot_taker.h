@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/linked_ptr.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -52,6 +53,11 @@ class RenderWidgetSnapshotTaker : public content::NotificationObserver {
   void CancelSnapshot(content::RenderWidgetHost* renderer);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetSnapshotTakerTest,
+                           WidgetDidReceivePaintAtSizeAck);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetSnapshotTakerTest,
+                           WidgetDidReceivePaintAtSizeAckFail);
+
   // content::NotificationObserver overrides.
   virtual void Observe(int type,
                        const content::NotificationSource& source,

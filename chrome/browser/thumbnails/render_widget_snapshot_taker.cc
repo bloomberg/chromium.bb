@@ -133,6 +133,8 @@ void RenderWidgetSnapshotTaker::WidgetDidReceivePaintAtSizeAck(
     // image.
     non_owned_bitmap.setConfig(SkBitmap::kARGB_8888_Config,
                                size.width(), size.height());
+    if (dib->size() < non_owned_bitmap.getSafeSize())
+      return;
     non_owned_bitmap.setPixels(dib->memory());
 
     // Now alloc/copy the memory so we own it and can pass it around,
