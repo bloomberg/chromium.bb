@@ -178,14 +178,8 @@ DirectoryModel.prototype.getCurrentRootUrl = function() {
  * @return {boolean} on True if offline.
  */
 DirectoryModel.prototype.isDriveOffline = function() {
-  return this.drive_offline_;
-};
-
-/**
- * @param {boolean} offline True if offline.
- */
-DirectoryModel.prototype.setDriveOffline = function(offline) {
-  this.drive_offline_ = offline;
+  var connection = this.volumeManager_.getDriveConnectionState();
+  return connection.type == VolumeManager.DriveConnectionType.OFFLINE;
 };
 
 /**

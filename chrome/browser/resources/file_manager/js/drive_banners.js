@@ -5,7 +5,9 @@
 'use strict';
 
 /**
- * Responsible for showing banners in the file list.
+ * Responsible for showing following banners in the file list.
+ *  - WelcomeBanner
+ *  - AuthFailBanner
  * @param {DirectoryModel} directoryModel The model.
  * @param {VolumeManager} volumeManager The manager.
  * @param {DOMDocument} document HTML document.
@@ -20,11 +22,11 @@ function FileListBannerController(
   this.showOffers_ = showOffers;
   this.driveEnabled_ = false;
 
-  this.initializeBanner_();
+  this.initializeWelcomeBanner_();
   this.privateOnDirectoryChangedBound_ =
       this.privateOnDirectoryChanged_.bind(this);
 
-  var handler = this.checkSpaceAndMaybeShowBanner_.bind(this);
+  var handler = this.checkSpaceAndMaybeShowWelcomeBanner_.bind(this);
   this.directoryModel_.addEventListener('scan-completed', handler);
   this.directoryModel_.addEventListener('rescan-completed', handler);
   this.directoryModel_.addEventListener('directory-changed',
@@ -33,6 +35,8 @@ function FileListBannerController(
   this.unmountedPanel_ = this.document_.querySelector('#unmounted-panel');
   this.volumeManager_.addEventListener('drive-status-changed',
         this.updateDriveUnmountedPanel_.bind(this));
+  this.volumeManager_.addEventListener('drive-connection-changed',
+        this.onDriveConnectionChanged_.bind(this));
 
   util.storage.onChanged.addListener(this.onStorageChange_.bind(this));
   this.welcomeHeaderCounter_ = WELCOME_HEADER_COUNTER_LIMIT;
@@ -44,6 +48,16 @@ function FileListBannerController(
     this.warningDismissedCounter_ =
         parseInt(values[WARNING_DISMISSED_KEY]) || 0;
   }.bind(this));
+
+  this.authFailedBanner_ =
+      this.document_.querySelector('#drive-auth-failed-warning');
+  var authFailedText = this.authFailedBanner_.querySelector('.drive-text');
+  authFailedText.innerHTML = util.htmlUnescape(str('DRIVE_NOT_REACHED'));
+  authFailedText.querySelector('a').addEventListener('click', function(e) {
+    chrome.fileBrowserPrivate.logoutUser();
+    e.preventDefault();
+  });
+  this.maybeShowAuthFailBanner_();
 }
 
 /**
@@ -100,7 +114,7 @@ var GOOGLE_DRIVE_ERROR_HELP_URL =
  * also before registering them as callbacks.
  * @private
  */
-FileListBannerController.prototype.initializeBanner_ = function() {
+FileListBannerController.prototype.initializeWelcomeBanner_ = function() {
   this.useNewWelcomeBanner_ = (!util.boardIs('x86-mario') &&
                                !util.boardIs('x86-zgb') &&
                                !util.boardIs('x86-alex'));
@@ -145,12 +159,21 @@ FileListBannerController.prototype.onStorageChange_ = function(changes,
 };
 
 /**
+ * Invoked when the drive connection status is change in the volume manager.
+ * @private
+ */
+FileListBannerController.prototype.onDriveConnectionChanged_ = function() {
+  this.maybeShowAuthFailBanner_();
+};
+
+/**
  * @param {string} type 'none'|'page'|'header'.
  * @param {string} messageId Reource ID of the message.
  * @private
  */
-FileListBannerController.prototype.showBanner_ = function(type, messageId) {
-  this.showDriveWelcome_(type);
+FileListBannerController.prototype.prepareAndShowWelcomeBanner_ =
+    function(type, messageId) {
+  this.showWelcomeBanner_(type);
 
   var container = this.document_.querySelector('.drive-welcome.' + type);
   if (container.firstElementChild)
@@ -168,7 +191,7 @@ FileListBannerController.prototype.showBanner_ = function(type, messageId) {
   util.createChild(wrapper, 'drive-welcome-icon');
 
   var close = util.createChild(wrapper, 'cr-dialog-close');
-  close.addEventListener('click', this.closeBanner_.bind(this));
+  close.addEventListener('click', this.closeWelcomeBanner_.bind(this));
 
   var message = util.createChild(wrapper, 'drive-welcome-message');
 
@@ -224,7 +247,7 @@ FileListBannerController.prototype.showLowDriveSpaceWarning_ =
   // Avoid showing two banners.
   // TODO(kaznacheev): Unify the low space warning and the promo header.
   if (show)
-    this.cleanupDriveWelcome_();
+    this.cleanupWelcomeBanner_();
 
   if (box.hidden == !show)
     return;
@@ -280,8 +303,8 @@ FileListBannerController.prototype.showLowDriveSpaceWarning_ =
  * Closes the Drive Welcome banner.
  * @private
  */
-FileListBannerController.prototype.closeBanner_ = function() {
-  this.cleanupDriveWelcome_();
+FileListBannerController.prototype.closeWelcomeBanner_ = function() {
+  this.cleanupWelcomeBanner_();
   // Stop showing the welcome banner.
   this.setWelcomeHeaderCounter_(WELCOME_HEADER_COUNTER_LIMIT);
 };
@@ -290,11 +313,12 @@ FileListBannerController.prototype.closeBanner_ = function() {
  * Shows or hides the welcome banner for drive.
  * @private
  */
-FileListBannerController.prototype.checkSpaceAndMaybeShowBanner_ = function() {
+FileListBannerController.prototype.checkSpaceAndMaybeShowWelcomeBanner_ =
+    function() {
   if (!this.isOnDrive()) {
     // We are not on the drive file system. Do not show (close) the welcome
     // banner.
-    this.cleanupDriveWelcome_();
+    this.cleanupWelcomeBanner_();
     this.previousDirWasOnDrive_ = false;
     return;
   }
@@ -330,40 +354,37 @@ FileListBannerController.prototype.checkSpaceAndMaybeShowBanner_ = function() {
           if (result && result.totalSizeKB >= offerSpaceKb) {
             self.useNewWelcomeBanner_ = false;
           }
-          self.maybeShowBanner_();
+          self.maybeShowWelcomeBanner_();
         });
   } else {
-    self.maybeShowBanner_();
+    self.maybeShowWelcomeBanner_();
   }
 };
 
 /**
  * Decides which banner should be shown, and show it. This method is designed
- * to be called only from checkSpaceAndMaybeShowBanner_.
+ * to be called only from checkSpaceAndMaybeShowWelcomeBanner_.
  * @private
  */
-FileListBannerController.prototype.maybeShowBanner_ = function() {
+FileListBannerController.prototype.maybeShowWelcomeBanner_ = function() {
   if (this.directoryModel_.getFileList().length == 0 &&
       this.welcomeHeaderCounter_ == 0) {
     // Only show the full page banner if the header banner was never shown.
     // Do not increment the counter.
     // The timeout below is required because sometimes another
     // 'rescan-completed' event arrives shortly with non-empty file list.
-    var self = this;
-    setTimeout(
-        function() {
-          if (self.isOnDrive() && self.welcomeHeaderCounter_ == 0) {
-            self.showBanner_('page', 'DRIVE_WELCOME_TEXT_LONG');
-          }
-        },
-        2000);
+    setTimeout(function() {
+      if (this.isOnDrive() && this.welcomeHeaderCounter_ == 0) {
+        this.prepareAndShowWelcomeBanner_('page', 'DRIVE_WELCOME_TEXT_LONG');
+      }
+    }.bind(this), 2000);
   } else {
     // We do not want to increment the counter when the user navigates
     // between different directories on Drive, but we increment the counter
     // once anyway to prevent the full page banner from showing.
     if (!this.previousDirWasOnDrive_ || this.welcomeHeaderCounter_ == 0) {
       this.setWelcomeHeaderCounter_(this.welcomeHeaderCounter_ + 1);
-      this.showBanner_('header', 'DRIVE_WELCOME_TEXT_SHORT');
+      this.prepareAndShowWelcomeBanner_('header', 'DRIVE_WELCOME_TEXT_SHORT');
     }
   }
   this.previousDirWasOnDrive_ = true;
@@ -381,7 +402,7 @@ FileListBannerController.prototype.isOnDrive = function() {
  * @param {string} type 'page'|'head'|'none'.
  * @private
  */
-FileListBannerController.prototype.showDriveWelcome_ = function(type) {
+FileListBannerController.prototype.showWelcomeBanner_ = function(type) {
   var container = this.document_.querySelector('.dialog-container');
   if (container.getAttribute('drive-welcome') != type) {
     container.setAttribute('drive-welcome', type);
@@ -413,12 +434,16 @@ FileListBannerController.prototype.onDirectoryChanged_ = function(event) {
     }
   }
 
-  if (!this.isOnDrive())
-    this.cleanupDriveWelcome_();
+  if (!this.isOnDrive()) {
+    this.cleanupWelcomeBanner_();
+    this.authFailedBanner_.hidden = true;
+  }
 
   this.updateDriveUnmountedPanel_();
-  if (this.isOnDrive())
+  if (this.isOnDrive()) {
     this.unmountedPanel_.classList.remove('retry-enabled');
+    this.maybeShowAuthFailBanner_();
+  }
 };
 
 /**
@@ -499,8 +524,8 @@ FileListBannerController.prototype.maybeShowLowSpaceWarning_ = function(root) {
  * removes the Drive Welcome banner.
  * @private
  */
-FileListBannerController.prototype.cleanupDriveWelcome_ = function() {
-  this.showDriveWelcome_('none');
+FileListBannerController.prototype.cleanupWelcomeBanner_ = function() {
+  this.showWelcomeBanner_('none');
 };
 
 /**
@@ -600,7 +625,7 @@ FileListBannerController.prototype.updateDriveUnmountedPanel_ = function() {
         this.welcomeHeaderCounter_ == 0) {
       // Do not increment banner counter in order to not prevent the full
       // page banner of being shown (otherwise it would never be shown).
-      this.showBanner_('header', 'DRIVE_WELCOME_TEXT_SHORT');
+      this.showWelcomeBanner_('header', 'DRIVE_WELCOME_TEXT_SHORT');
     }
     if (status == VolumeManager.DriveStatus.ERROR)
       this.unmountedPanel_.classList.add('retry-enabled');
@@ -610,4 +635,17 @@ FileListBannerController.prototype.updateDriveUnmountedPanel_ = function() {
   } else {
     node.removeAttribute('drive');
   }
+};
+
+/**
+ * Updates the visibility of Drive Connection Warning banner, retrieving the
+ * current connection information.
+ * @private
+ */
+FileListBannerController.prototype.maybeShowAuthFailBanner_ = function() {
+  var connection = this.volumeManager_.getDriveConnectionState();
+  var showDriveNotReachedMessage =
+      connection.type == VolumeManager.DriveConnectionType.OFFLINE &&
+      connection.reasons.indexOf('not_ready') !== -1;
+  this.authFailedBanner_.hidden = !showDriveNotReachedMessage;
 };

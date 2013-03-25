@@ -111,7 +111,7 @@ const char kVolumeDevicePathNotFound[] = "Device path not found";
 /**
  * List of connection types of drive.
  *
- * Keep this in sync with the DriveConnectionType in file_manager.js.
+ * Keep this in sync with the DriveConnectionType in volume_manager.js.
  */
 const char kDriveConnectionTypeOffline[] = "offline";
 const char kDriveConnectionTypeMetered[] = "metered";
@@ -120,7 +120,7 @@ const char kDriveConnectionTypeOnline[] = "online";
 /**
  * List of reasons of kDriveConnectionType*.
  *
- * Keep this in sync with the DriveConnectionReason in file_manager.js.
+ * Keep this in sync with the DriveConnectionReason in volume_manager.js.
  */
 const char kDriveConnectionReasonNotReady[] = "not_ready";
 const char kDriveConnectionReasonNoNetwork[] = "no_network";

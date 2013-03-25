@@ -34,7 +34,36 @@ function VolumeManager() {
 
   this.initMountPoints_();
   this.driveStatus_ = VolumeManager.DriveStatus.UNMOUNTED;
+
+  this.driveConnectionState_ = {
+      type: VolumeManager.DriveConnectionType.OFFLINE,
+      reasons: VolumeManager.DriveConnectionType.NO_SERVICE
+  };
+
+  chrome.fileBrowserPrivate.onDriveConnectionStatusChanged.addListener(
+      this.onDriveConnectionStatusChanged_.bind(this));
+  this.onDriveConnectionStatusChanged_();
+
 }
+
+/**
+ * Invoked when the drive connection status is changed.
+ * @private_
+ */
+VolumeManager.prototype.onDriveConnectionStatusChanged_ = function() {
+  chrome.fileBrowserPrivate.getDriveConnectionState(function(state) {
+    this.driveConnectionState_ = state;
+    cr.dispatchSimpleEvent(this, 'drive-connection-changed');
+  }.bind(this));
+};
+
+/**
+ * Returns the drive connection state.
+ * @return {VolumeManager.DriveConnectionType} Connection type.
+ */
+VolumeManager.prototype.getDriveConnectionState = function() {
+  return this.driveConnectionState_;
+};
 
 /**
  * VolumeManager extends cr.EventTarget.
@@ -67,6 +96,34 @@ VolumeManager.DriveStatus = {
   MOUNTING: 'mounting',
   ERROR: 'error',
   MOUNTED: 'mounted'
+};
+
+/**
+ * List of connection types of drive.
+ *
+ * Keep this in sync with the kDriveConnectionType* constants in
+ * file_browser_private_api.cc.
+ *
+ * @enum {string}
+ */
+VolumeManager.DriveConnectionType = {
+  OFFLINE: 'offline',  // Connection is offline or drive is unavailable.
+  METERED: 'metered',  // Connection is metered. Should limit traffic.
+  ONLINE: 'online'     // Connection is online.
+};
+
+/**
+ * List of reasons of DriveConnectionType.
+ *
+ * Keep this in sync with the kDriveConnectionReason constants in
+ * file_browser_private_api.cc.
+ *
+ * @enum {string}
+ */
+VolumeManager.DriveConnectionReason = {
+  NOT_READY: 'not_ready',    // Drive is not ready or authentication is failed.
+  NO_NETWORK: 'no_network',  // Network connection is unavailable.
+  NO_SERVICE: 'no_service'   // Drive service is unavailable.
 };
 
 /**

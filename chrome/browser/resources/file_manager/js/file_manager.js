@@ -65,8 +65,8 @@ function FileManager(dialogDom) {
   this.selectionHandler_ = null;
 
   this.metadataCache_ = MetadataCache.createFull();
-  this.initFileSystem_();
   this.volumeManager_ = VolumeManager.getInstance();
+  this.initFileSystem_();
   this.initDom_();
   this.initDialogType_();
 }
@@ -106,34 +106,6 @@ var DialogType = {
   SELECT_OPEN_FILE: 'open-file',
   SELECT_OPEN_MULTI_FILE: 'open-multi-file',
   FULL_PAGE: 'full-page'
-};
-
-/**
- * List of connection types of drive.
- *
- * Keep this in sync with the kDriveConnectionType* constants in
- * file_browser_private_api.cc.
- *
- * @enum {string}
- */
-var DriveConnectionType = {
-  OFFLINE: 'offline',  // Connection is offline or drive is unavailable.
-  METERED: 'metered',  // Connection is metered. Should limit traffic.
-  ONLINE: 'online'     // Connection is online.
-};
-
-/**
- * List of reasons of DriveConnectionType.
- *
- * Keep this in sync with the kDriveConnectionReason constants in
- * file_browser_private_api.cc.
- *
- * @enum {string}
- */
-var DriveConnectionReason = {
-  NOT_READY: 'not_ready',    // Drive is not ready or authentication is failed.
-  NO_NETWORK: 'no_network',  // Network connection is unavailable.
-  NO_SERVICE: 'no_service'   // Drive service is unavailable.
 };
 
 /**
@@ -384,7 +356,7 @@ DialogType.isModal = function(type) {
 
     // DRIVE preferences should be initialized before creating DirectoryModel
     // to tot rebuild the roots list.
-    this.updateNetworkStateAndPreferences_(done);
+    this.getPreferences_(done);
 
     util.platform.getPreference(this.startupPrefName_, function(value) {
       // Load the global default options.
@@ -473,10 +445,8 @@ DialogType.isModal = function(type) {
         prefs.sortDirection || 'desc');
 
     var stateChangeHandler =
-        this.onNetworkStateOrPreferencesChanged_.bind(this);
+        this.onPreferencesChanged_.bind(this);
     chrome.fileBrowserPrivate.onPreferencesChanged.addListener(
-        stateChangeHandler);
-    chrome.fileBrowserPrivate.onDriveConnectionStatusChanged.addListener(
         stateChangeHandler);
     stateChangeHandler();
 
@@ -857,14 +827,6 @@ DialogType.isModal = function(type) {
     searchBox.addEventListener('blur', function(event) {
       this.autocompleteList_.detach();
     }.bind(this));
-
-    this.authFailedWarning_ = dom.querySelector('#drive-auth-failed-warning');
-    var authFailedText = this.authFailedWarning_.querySelector('.drive-text');
-    authFailedText.innerHTML = util.htmlUnescape(str('DRIVE_NOT_REACHED'));
-    authFailedText.querySelector('a').addEventListener('click', function(e) {
-        chrome.fileBrowserPrivate.logoutUser();
-        e.preventDefault();
-    });
 
     this.defaultActionMenuItem_ =
         this.dialogDom_.querySelector('#default-action');
@@ -1743,77 +1705,37 @@ DialogType.isModal = function(type) {
   };
 
   /**
-   * @param {function()} callback Completion callback.
    * @private
    */
-  FileManager.prototype.updateNetworkStateAndPreferences_ = function(
-      callback) {
+  FileManager.prototype.onPreferencesChanged_ = function() {
     var self = this;
-    var downcount = 2;
-    var done = function() {
-      if (--downcount == 0)
-        callback();
-    };
-
     this.getPreferences_(function(prefs) {
-      done();
-    }, true);
-
-    chrome.fileBrowserPrivate.getDriveConnectionState(function(state) {
-      self.driveConnectionState_ = state;
-      done();
-    });
-  };
-
-  /**
-   * @private
-   */
-  FileManager.prototype.onNetworkStateOrPreferencesChanged_ = function() {
-    var self = this;
-    this.updateNetworkStateAndPreferences_(function() {
-      var drive = self.preferences_;
-      var connection = self.driveConnectionState_;
-
       self.initDateTimeFormatters_();
       self.refreshCurrentDirectoryMetadata_();
 
       self.directoryModel_.setDriveEnabled(self.isDriveEnabled());
-      self.directoryModel_.setDriveOffline(connection.type == 'offline');
 
-      if (drive.cellularDisabled)
+      if (prefs.cellularDisabled)
         self.syncButton.setAttribute('checked', '');
       else
         self.syncButton.removeAttribute('checked');
 
       if (self.hostedButton.hasAttribute('checked') !=
-          drive.hostedFilesDisabled && self.isOnDrive()) {
+          prefs.hostedFilesDisabled && self.isOnDrive()) {
         self.directoryModel_.rescan();
       }
 
-      if (!drive.hostedFilesDisabled)
+      if (!prefs.hostedFilesDisabled)
         self.hostedButton.setAttribute('checked', '');
       else
         self.hostedButton.removeAttribute('checked');
+    },
+    true /* refresh */);
+  };
 
-      var hideDriveNotReachedMessage = true;
-      switch (connection.type) {
-        case DriveConnectionType.ONLINE:
-          self.dialogContainer_.removeAttribute('connection');
-          break;
-        case DriveConnectionType.METERED:
-          self.dialogContainer_.setAttribute('connection', 'metered');
-          break;
-        case DriveConnectionType.OFFLINE:
-          if (connection.reasons.indexOf('not_ready') !== -1)
-            hideDriveNotReachedMessage = false;
-
-          self.dialogContainer_.setAttribute('connection', 'offline');
-          break;
-        default:
-          console.assert(true, 'unknown connection type.');
-      }
-      self.authFailedWarning_.hidden = hideDriveNotReachedMessage;
-    });
+  FileManager.prototype.onDriveConnectionChanged_ = function() {
+    var connection = this.volumeManager_.getDriveConnectionState();
+    this.dialogContainer_.setAttribute('connection', connection.type);
   };
 
   /**
@@ -1824,7 +1746,8 @@ DialogType.isModal = function(type) {
    * enabled. Otherwise, returns false.
    */
   FileManager.prototype.isDriveOnMeteredConnection = function() {
-    return this.driveConnectionState_.type == DriveConnectionType.METERED;
+    var connection = this.volumeManager_.getDriveConnectionState();
+    return connection.type == VolumeManager.DriveConnectionType.METERED;
   };
 
   /**
@@ -1834,7 +1757,8 @@ DialogType.isModal = function(type) {
    * returns false.
    */
   FileManager.prototype.isDriveOffline = function() {
-    return this.driveConnectionState_.type == DriveConnectionType.OFFLINE;
+    var connection = this.volumeManager_.getDriveConnectionState();
+    return connection.type == VolumeManager.DriveConnectionType.OFFLINE;
   };
 
   FileManager.prototype.isDriveEnabled = function() {
