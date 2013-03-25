@@ -1169,8 +1169,8 @@ def calc_cluster_default(num_test_cases, jobs):
   else:
     # Use chunks that are spread across threads.
     value = (num_test_cases + chunks - 1) / chunks
-  # Limit to 100 test cases per cluster.
-  return min(100, max(1, value))
+  # Limit to 10 test cases per cluster.
+  return min(10, max(1, value))
 
 
 def run_test_cases(
