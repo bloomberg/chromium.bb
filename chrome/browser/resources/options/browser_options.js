@@ -429,16 +429,6 @@ cr.define('options', function() {
           chrome.send('highContrastChange',
                       [$('accessibility-high-contrast-check').checked]);
         };
-
-        // Disable the magnifier-type dropdown list when the magnifier is
-        // disabled.
-        Preferences.getInstance().addEventListener(
-            'settings.a11y.screen_magnifier',
-            function(event) {
-              $('accessibility-screen-magnifier-type-select').setDisabled(
-                  'magnifier-is-disabled', !event.value.value);
-            });
-
       }
 
       // Display management section (CrOS only).

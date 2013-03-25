@@ -116,36 +116,6 @@ TEST_F(MagnificationManagerTest, MagnificationObserver) {
   EXPECT_FALSE(observer.observed());
   EXPECT_EQ(GetMagnifierType(), ash::MAGNIFIER_FULL);
   observer.reset();
-
-  // Set partial screen magnifier, and confirm the observer is called.
-  SetMagnifierType(ash::MAGNIFIER_PARTIAL);
-  EXPECT_TRUE(observer.observed());
-  EXPECT_TRUE(observer.observed_enabled());
-  EXPECT_EQ(observer.observed_type(), ash::MAGNIFIER_PARTIAL);
-  EXPECT_EQ(GetMagnifierType(), ash::MAGNIFIER_PARTIAL);
-  observer.reset();
-
-  // Set partial screen magnifier again, and confirm the observer is not called.
-  SetMagnifierType(ash::MAGNIFIER_PARTIAL);
-  EXPECT_FALSE(observer.observed());
-  EXPECT_EQ(GetMagnifierType(), ash::MAGNIFIER_PARTIAL);
-  observer.reset();
-
-  // Disables magnifier, and confirm the observer is called.
-  DisableMagnifier();
-  EXPECT_TRUE(observer.observed());
-  EXPECT_FALSE(observer.observed_enabled());
-  EXPECT_EQ(observer.observed_type(), ash::MAGNIFIER_PARTIAL);
-  EXPECT_FALSE(IsMagnifierEnabled());
-  EXPECT_EQ(GetMagnifierType(), ash::MAGNIFIER_PARTIAL);
-  observer.reset();
-
-  // Disables magnifier again, and confirm the observer is NOT called.
-  DisableMagnifier();
-  EXPECT_FALSE(observer.observed());
-  EXPECT_FALSE(IsMagnifierEnabled());
-  EXPECT_EQ(GetMagnifierType(), ash::MAGNIFIER_PARTIAL);
-  observer.reset();
 }
 
 TEST_F(MagnificationManagerTest, ChangeType) {
@@ -156,12 +126,12 @@ TEST_F(MagnificationManagerTest, ChangeType) {
 
   // Set partial screen magnifier, and confirm the status is set successfully.
   SetMagnifierType(ash::MAGNIFIER_PARTIAL);
-  EXPECT_EQ(GetMagnifierType(), ash::MAGNIFIER_PARTIAL);
+  EXPECT_EQ(GetMagnifierType(), ash::MAGNIFIER_FULL);
 
   // Disables magnifier, and confirm the status is set successfully.
   DisableMagnifier();
   EXPECT_FALSE(IsMagnifierEnabled());
-  EXPECT_EQ(GetMagnifierType(), ash::MAGNIFIER_PARTIAL);
+  EXPECT_EQ(GetMagnifierType(), ash::MAGNIFIER_FULL);
 }
 
 }  // namespace chromeos
