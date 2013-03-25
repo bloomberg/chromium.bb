@@ -305,7 +305,7 @@ void WebMediaPlayerAndroid::OnMediaPrepared(base::TimeDelta duration) {
   }
 
 #ifdef REMOVE_WEBVIDEOFRAME
-  if (hasVideo() && !video_weblayer_ && client->needsWebLayerForVideo()) {
+  if (hasVideo() && !video_weblayer_ && client_->needsWebLayerForVideo()) {
     video_weblayer_.reset(
         new webkit::WebLayerImpl(cc::VideoLayer::Create(this)));
     client_->setWebLayer(video_weblayer_.get());
