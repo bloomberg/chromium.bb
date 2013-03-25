@@ -154,8 +154,6 @@ chrome.test.runTests([
         {path: '/drive/test_dir/test_file.tiff', type: 'file'},
         // (2012-01-01T11:00:00.000Z, 2012-01-01T10:00:30.00Z)
         {path: '/drive/test_dir/test_file.xul.foo', type: 'file'},
-        // (2011-11-02T04:00:00.000Z, 2011-11-02T04:00:00.000Z)
-        {path: '/drive/test_dir/empty_test_dir', type: 'dir'},
     ];
 
     chrome.fileBrowserPrivate.searchDriveMetadata(
