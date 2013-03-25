@@ -2705,6 +2705,8 @@ weston_seat_init(struct weston_seat *seat, struct weston_compositor *ec)
 		      &seat->new_drag_icon_listener);
 
 	clipboard_create(seat);
+
+	wl_signal_init(&seat->destroy_signal);
 	wl_signal_emit(&ec->seat_created_signal, seat);
 }
 
@@ -2722,6 +2724,7 @@ weston_seat_release(struct weston_seat *seat)
 	xkb_info_destroy(&seat->xkb_info);
 
 	wl_seat_release(&seat->seat);
+	wl_signal_emit(&seat->destroy_signal, seat);
 }
 
 static void

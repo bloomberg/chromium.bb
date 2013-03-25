@@ -227,6 +227,7 @@ struct weston_seat {
 	int has_keyboard;
 	struct wl_touch touch;
 	int has_touch;
+	struct wl_signal destroy_signal;
 
 	struct weston_compositor *compositor;
 	struct weston_surface *sprite;

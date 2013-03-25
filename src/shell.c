@@ -188,10 +188,9 @@ struct shell_surface {
 	} rotation;
 
 	struct {
-		struct wl_pointer_grab grab;
+		struct wl_list grab_link;
 		int32_t x, y;
-		int32_t initial_up;
-		struct wl_seat *seat;
+		struct shell_seat *shseat;
 		uint32_t serial;
 	} popup;
 
@@ -237,6 +236,18 @@ struct rotate_grab {
 		float x;
 		float y;
 	} center;
+};
+
+struct shell_seat {
+	struct weston_seat *seat;
+	struct wl_listener seat_destroy_listener;
+
+	struct {
+		struct wl_pointer_grab grab;
+		struct wl_list surfaces_list;
+		struct wl_client *client;
+		int32_t initial_up;
+	} popup_grab;
 };
 
 static void
@@ -1836,6 +1847,68 @@ shell_surface_set_fullscreen(struct wl_client *client,
 	set_fullscreen(shsurf, method, framerate, output);
 }
 
+static const struct wl_pointer_grab_interface popup_grab_interface;
+
+static void
+destroy_shell_seat(struct wl_listener *listener, void *data)
+{
+	struct shell_seat *shseat =
+		container_of(listener,
+			     struct shell_seat, seat_destroy_listener);
+	struct shell_surface *shsurf, *prev = NULL;
+
+	if (shseat->popup_grab.grab.interface == &popup_grab_interface) {
+		wl_pointer_end_grab(shseat->popup_grab.grab.pointer);
+		shseat->popup_grab.client = NULL;
+
+		wl_list_for_each(shsurf, &shseat->popup_grab.surfaces_list, popup.grab_link) {
+			shsurf->popup.shseat = NULL;
+			if (prev) {
+				wl_list_init(&prev->popup.grab_link);
+			}
+			prev = shsurf;
+		}
+		wl_list_init(&prev->popup.grab_link);
+	}
+
+	wl_list_remove(&shseat->seat_destroy_listener.link);
+	free(shseat);
+}
+
+static struct shell_seat *
+create_shell_seat(struct weston_seat *seat)
+{
+	struct shell_seat *shseat;
+
+	shseat = calloc(1, sizeof *shseat);
+	if (!shseat) {
+		weston_log("no memory to allocate shell seat\n");
+		return NULL;
+	}
+
+	shseat->seat = seat;
+	wl_list_init(&shseat->popup_grab.surfaces_list);
+
+	shseat->seat_destroy_listener.notify = destroy_shell_seat;
+	wl_signal_add(&seat->destroy_signal,
+	              &shseat->seat_destroy_listener);
+
+	return shseat;
+}
+
+static struct shell_seat *
+get_shell_seat(struct weston_seat *seat)
+{
+	struct wl_listener *listener;
+
+	listener = wl_signal_get(&seat->destroy_signal, destroy_shell_seat);
+	if (listener == NULL)
+		return create_shell_seat(seat);
+
+	return container_of(listener,
+			    struct shell_seat, seat_destroy_listener);
+}
+
 static void
 popup_grab_focus(struct wl_pointer_grab *grab,
 		 struct wl_surface *surface,
@@ -1843,9 +1916,9 @@ popup_grab_focus(struct wl_pointer_grab *grab,
 		 wl_fixed_t y)
 {
 	struct wl_pointer *pointer = grab->pointer;
-	struct shell_surface *priv =
-		container_of(grab, struct shell_surface, popup.grab);
-	struct wl_client *client = priv->surface->surface.resource.client;
+	struct shell_seat *shseat =
+	    container_of(grab, struct shell_seat, popup_grab.grab);
+	struct wl_client *client = shseat->popup_grab.client;
 
 	if (surface && surface->resource.client == client) {
 		wl_pointer_set_focus(pointer, surface, x, y);
@@ -1874,8 +1947,8 @@ popup_grab_button(struct wl_pointer_grab *grab,
 		  uint32_t time, uint32_t button, uint32_t state_w)
 {
 	struct wl_resource *resource;
-	struct shell_surface *shsurf =
-		container_of(grab, struct shell_surface, popup.grab);
+	struct shell_seat *shseat =
+	    container_of(grab, struct shell_seat, popup_grab.grab);
 	struct wl_display *display;
 	enum wl_pointer_button_state state = state_w;
 	uint32_t serial;
@@ -1886,13 +1959,13 @@ popup_grab_button(struct wl_pointer_grab *grab,
 		serial = wl_display_get_serial(display);
 		wl_pointer_send_button(resource, serial, time, button, state);
 	} else if (state == WL_POINTER_BUTTON_STATE_RELEASED &&
-		   (shsurf->popup.initial_up ||
-		    time - shsurf->popup.seat->pointer->grab_time > 500)) {
+		   (shseat->popup_grab.initial_up ||
+		    time - shseat->seat->pointer.grab_time > 500)) {
 		popup_grab_end(grab->pointer);
 	}
 
 	if (state == WL_POINTER_BUTTON_STATE_RELEASED)
-		shsurf->popup.initial_up = 1;
+		shseat->popup_grab.initial_up = 1;
 }
 
 static const struct wl_pointer_grab_interface popup_grab_interface = {
@@ -1905,37 +1978,73 @@ static void
 popup_grab_end(struct wl_pointer *pointer)
 {
 	struct wl_pointer_grab *grab = pointer->grab;
-	struct shell_surface *shsurf =
-		container_of(grab, struct shell_surface, popup.grab);
+	struct shell_seat *shseat =
+	    container_of(grab, struct shell_seat, popup_grab.grab);
+	struct shell_surface *shsurf;
+	struct shell_surface *prev = NULL;
 
 	if (pointer->grab->interface == &popup_grab_interface) {
-		wl_shell_surface_send_popup_done(&shsurf->resource);
 		wl_pointer_end_grab(grab->pointer);
-		shsurf->popup.grab.pointer = NULL;
+		shseat->popup_grab.client = NULL;
+		/* Send the popup_done event to all the popups open */
+		wl_list_for_each(shsurf, &shseat->popup_grab.surfaces_list, popup.grab_link) {
+			wl_shell_surface_send_popup_done(&shsurf->resource);
+			shsurf->popup.shseat = NULL;
+			if (prev) {
+				wl_list_init(&prev->popup.grab_link);
+			}
+			prev = shsurf;
+		}
+		wl_list_init(&prev->popup.grab_link);
+		wl_list_init(&shseat->popup_grab.surfaces_list);
+	}
+}
+
+static void
+add_popup_grab(struct shell_surface *shsurf, struct shell_seat *shseat)
+{
+	struct wl_seat *seat = &shseat->seat->seat;
+
+	if (wl_list_empty(&shseat->popup_grab.surfaces_list)) {
+		shseat->popup_grab.client = shsurf->surface->surface.resource.client;
+		shseat->popup_grab.grab.interface = &popup_grab_interface;
+		shseat->popup_grab.initial_up = 0;
+
+		wl_pointer_start_grab(seat->pointer, &shseat->popup_grab.grab);
+	}
+	wl_list_insert(&shseat->popup_grab.surfaces_list, &shsurf->popup.grab_link);
+}
+
+static void
+remove_popup_grab(struct shell_surface *shsurf)
+{
+	struct shell_seat *shseat = shsurf->popup.shseat;
+
+	wl_list_remove(&shsurf->popup.grab_link);
+	wl_list_init(&shsurf->popup.grab_link);
+	if (wl_list_empty(&shseat->popup_grab.surfaces_list)) {
+		wl_pointer_end_grab(shseat->popup_grab.grab.pointer);
 	}
 }
 
 static void
 shell_map_popup(struct shell_surface *shsurf)
 {
-	struct wl_seat *seat = shsurf->popup.seat;
+	struct shell_seat *shseat = shsurf->popup.shseat;
 	struct weston_surface *es = shsurf->surface;
 	struct weston_surface *parent = shsurf->parent;
 
 	es->output = parent->output;
-	shsurf->popup.grab.interface = &popup_grab_interface;
 
-	shsurf->popup.initial_up = 0;
 	weston_surface_set_transform_parent(es, parent);
 	weston_surface_set_position(es, shsurf->popup.x, shsurf->popup.y);
 	weston_surface_update_transform(es);
 
-	/* We don't require the grab to still be active, but if another
-	 * grab has started in the meantime, we end the popup now. */
-	if (seat->pointer->grab_serial == shsurf->popup.serial) {
-		wl_pointer_start_grab(seat->pointer, &shsurf->popup.grab);
+	if (shseat->seat->pointer.grab_serial == shsurf->popup.serial) {
+		add_popup_grab(shsurf, shseat);
 	} else {
 		wl_shell_surface_send_popup_done(&shsurf->resource);
+		shseat->popup_grab.client = NULL;
 	}
 }
 
@@ -1951,7 +2060,7 @@ shell_surface_set_popup(struct wl_client *client,
 
 	shsurf->type = SHELL_SURFACE_POPUP;
 	shsurf->parent = parent_resource->data;
-	shsurf->popup.seat = seat_resource->data;
+	shsurf->popup.shseat = get_shell_seat(seat_resource->data);
 	shsurf->popup.serial = serial;
 	shsurf->popup.x = x;
 	shsurf->popup.y = y;
@@ -1973,8 +2082,9 @@ static const struct wl_shell_surface_interface shell_surface_implementation = {
 static void
 destroy_shell_surface(struct shell_surface *shsurf)
 {
-	if (shsurf->popup.grab.pointer)
-		wl_pointer_end_grab(shsurf->popup.grab.pointer);
+	if (!wl_list_empty(&shsurf->popup.grab_link)) {
+		remove_popup_grab(shsurf);
+	}
 
 	if (shsurf->fullscreen.type == WL_SHELL_SURFACE_FULLSCREEN_METHOD_DRIVER &&
 	    shell_surface_is_top_fullscreen(shsurf)) {
@@ -2071,6 +2181,7 @@ create_shell_surface(void *shell, struct weston_surface *surface,
 
 	/* init link so its safe to always remove it in destroy_shell_surface */
 	wl_list_init(&shsurf->link);
+	wl_list_init(&shsurf->popup.grab_link);
 
 	/* empty when not in use */
 	wl_list_init(&shsurf->rotation.transform.link);
@@ -3176,6 +3287,10 @@ shell_surface_configure(struct weston_surface *es, int32_t sx, int32_t sy, int32
 	struct desktop_shell *shell = shsurf->shell;
 
 	int type_changed = 0;
+
+	if (!weston_surface_is_mapped(es) && !wl_list_empty(&shsurf->popup.grab_link)) {
+		remove_popup_grab(shsurf);
+	}
 
 	if (width == 0)
 		return;
