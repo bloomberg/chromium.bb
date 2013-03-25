@@ -257,7 +257,10 @@
       'filepath': 'chrome/installer/',
     },
     'instant': {
-      'filepath': 'instant|searchbox|/ui/search/',
+      'filepath': 'instant|searchbox|'\
+                  'chrome/browser/search/|'\
+                  'chrome/browser/ui/search|'\
+                  'chrome/common/search_types.*',
     },
     'ipc': {
       'filepath': 'ipc/ipc',
@@ -604,7 +607,7 @@
                 'dcblack@chromium.org', 'jered@chromium.org',
                 'dominich@chromium.org', 'samarth+watch@chromium.org',
                 'melevin@chromium.org', 'dougw+watch@chromium.org',
-                'kmadhusu+watch@chromium.org'],
+                'kmadhusu+watch@chromium.org', 'dhollowa+watch@chromium.org'],
     'ipc': ['jam@chromium.org', 'darin-cc@chromium.org'],
     'linux_fonts': ['derat+watch@chromium.org'],
     'linux_sandboxing': ['agl@chromium.org', 'jln+watch@chromium.org'],
@@ -656,7 +659,6 @@
                  'wez+watch@chromium.org',
                  'amit@chromium.org',
                  'sanjeevr@chromium.org'],
-    'search': ['dhollowa+watch@chromium.org'],
     'sessions': ['marja+watch@chromium.org'],
     'shell_window': ['jeremya+watch@chromium.org'],
     'site_instance': ['creis+watch@chromium.org', 'ajwong+watch@chromium.org'],
