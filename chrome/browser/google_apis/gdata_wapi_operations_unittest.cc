@@ -116,13 +116,6 @@ class GDataWapiOperationsTest : public testing::Test {
       const std::string resource_id = net::UnescapeURLComponent(
           remaining_path.substr(1), net::UnescapeRule::URL_SPECIAL_CHARS);
       if (resource_id == "file:2_file_resource_id") {
-        // Check if this is an authorization request for an app.
-        if (request.method == test_server::METHOD_PUT &&
-            request.content.find("<docs:authorizedApp>") != std::string::npos) {
-          return test_util::CreateHttpResponseFromFile(
-              test_util::GetTestFilePath("chromeos/gdata/basic_feed.json"));
-        }
-
         return test_util::CreateHttpResponseFromFile(
             test_util::GetTestFilePath("chromeos/gdata/file_entry.json"));
       } else if (resource_id == "folder:root/contents" &&
@@ -702,7 +695,7 @@ TEST_F(GDataWapiOperationsTest, RenameResourceOperation) {
 
 TEST_F(GDataWapiOperationsTest, AuthorizeAppOperation_ValidFeed) {
   GDataErrorCode result_code = GDATA_OTHER_ERROR;
-  scoped_ptr<base::Value> result_data;
+  GURL result_data;
 
   // Authorize an app with APP_ID to access to a document.
   AuthorizeAppOperation* operation = new AuthorizeAppOperation(
@@ -738,7 +731,7 @@ TEST_F(GDataWapiOperationsTest, AuthorizeAppOperation_ValidFeed) {
 
 TEST_F(GDataWapiOperationsTest, AuthorizeAppOperation_InvalidFeed) {
   GDataErrorCode result_code = GDATA_OTHER_ERROR;
-  scoped_ptr<base::Value> result_data;
+  GURL result_data;
 
   // Authorize an app with APP_ID to access to a document but an invalid feed.
   AuthorizeAppOperation* operation = new AuthorizeAppOperation(

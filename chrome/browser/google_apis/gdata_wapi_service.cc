@@ -105,32 +105,6 @@ void ParseResourceEntryAndRun(const GetResourceEntryCallback& callback,
   callback.Run(error, entry.Pass());
 }
 
-// Extracts the open link url from the JSON Feed. Used by AuthorizeApp().
-void ExtractOpenLinkAndRun(const std::string app_id,
-                           const AuthorizeAppCallback& callback,
-                           GDataErrorCode error,
-                           scoped_ptr<ResourceEntry> entry) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // Entry not found in the feed.
-  if (!entry) {
-    callback.Run(error, GURL());
-    return;
-  }
-
-  const ScopedVector<google_apis::Link>& resource_links = entry->links();
-  GURL open_link;
-  for (size_t i = 0; i < resource_links.size(); ++i) {
-    if (resource_links[i]->type() == google_apis::Link::LINK_OPEN_WITH &&
-        resource_links[i]->app_id() == app_id) {
-        open_link = resource_links[i]->href();
-        break;
-    }
-  }
-
-  callback.Run(error, open_link);
-}
-
 void ParseAboutResourceAndRun(
     const GetAboutResourceCallback& callback,
     GDataErrorCode error,
@@ -541,8 +515,7 @@ void GDataWapiService::AuthorizeApp(const std::string& resource_id,
           operation_registry(),
           url_request_context_getter_,
           url_generator_,
-          base::Bind(&ParseResourceEntryAndRun,
-                     base::Bind(&ExtractOpenLinkAndRun, app_id, callback)),
+          callback,
           resource_id,
           app_id));
 }

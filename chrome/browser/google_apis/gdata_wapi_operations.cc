@@ -72,6 +72,41 @@ scoped_ptr<ResourceEntry> ParseResourceEntry(scoped_ptr<base::Value> value) {
   return entry.Pass();
 }
 
+// Extracts the open link url from the JSON Feed. Used by AuthorizeApp().
+void ParseOpenLinkAndRun(const std::string& app_id,
+                         const AuthorizeAppCallback& callback,
+                         GDataErrorCode error,
+                         scoped_ptr<base::Value> value) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  if (!value) {
+    callback.Run(error, GURL());
+    return;
+  }
+
+  // Parsing ResourceEntry is cheap enough to do on UI thread.
+  scoped_ptr<ResourceEntry> resource_entry = ParseResourceEntry(value.Pass());
+  if (!resource_entry) {
+    callback.Run(GDATA_PARSE_ERROR, GURL());
+    return;
+  }
+
+  // Look for the link to open the file with the app with |app_id|.
+  const ScopedVector<Link>& resource_links = resource_entry->links();
+  GURL open_link;
+  for (size_t i = 0; i < resource_links.size(); ++i) {
+    const Link& link = *resource_links[i];
+    if (link.type() == google_apis::Link::LINK_OPEN_WITH &&
+        link.app_id() == app_id) {
+      open_link = link.href();
+      break;
+    }
+  }
+
+  callback.Run(error, open_link);
+}
+
 }  // namespace
 
 
@@ -336,10 +371,11 @@ AuthorizeAppOperation::AuthorizeAppOperation(
     OperationRegistry* registry,
     net::URLRequestContextGetter* url_request_context_getter,
     const GDataWapiUrlGenerator& url_generator,
-    const GetDataCallback& callback,
+    const AuthorizeAppCallback& callback,
     const std::string& resource_id,
     const std::string& app_id)
-    : GetDataOperation(registry, url_request_context_getter, callback),
+    : GetDataOperation(registry, url_request_context_getter,
+                       base::Bind(&ParseOpenLinkAndRun, app_id, callback)),
       url_generator_(url_generator),
       resource_id_(resource_id),
       app_id_(app_id) {

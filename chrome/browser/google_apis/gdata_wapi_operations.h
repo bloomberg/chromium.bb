@@ -263,7 +263,7 @@ class RenameResourceOperation : public EntryActionOperation {
 //=========================== AuthorizeAppOperation ==========================
 
 // This class performs the operation for authorizing an application specified
-// by |app_id| to access a document specified by |edit_url| for .
+// by |app_id| to access a document specified by |resource_id|.
 class AuthorizeAppOperation : public GetDataOperation {
  public:
   // |callback| must not be null.
@@ -271,7 +271,7 @@ class AuthorizeAppOperation : public GetDataOperation {
       OperationRegistry* registry,
       net::URLRequestContextGetter* url_request_context_getter,
       const GDataWapiUrlGenerator& url_generator,
-      const GetDataCallback& callback,
+      const AuthorizeAppCallback& callback,
       const std::string& resource_id,
       const std::string& app_id);
   virtual ~AuthorizeAppOperation();
