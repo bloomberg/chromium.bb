@@ -207,6 +207,9 @@ class DriveFileSyncService
 
   typedef base::Callback<void(const base::Time& time,
                               SyncStatusCode status)> UpdatedTimeCallback;
+  typedef base::Callback<
+      void(SyncStatusCode status,
+           const std::string& resource_id)> ResourceIdCallback;
 
   DriveFileSyncService(Profile* profile,
                        const base::FilePath& base_dir,
@@ -233,6 +236,11 @@ class DriveFileSyncService
   // Resolves LocalSync operation type. If non-null |param| is given
   // the method also populates param->has_drive_metadata and
   // param->drive_metadata fields.
+  void ApplyLocalChangeInternal(
+      scoped_ptr<ApplyLocalChangeParam> param,
+      LocalSyncOperationType operation,
+      SyncStatusCode status,
+      const std::string& resource_id);
   LocalSyncOperationType ResolveLocalSyncOperationType(
       const FileChange& local_file_change,
       const fileapi::FileSystemURL& url,
@@ -272,28 +280,32 @@ class DriveFileSyncService
       SyncStatusCode status);
   void ResolveConflictToRemoteForLocalSync(
       scoped_ptr<ApplyLocalChangeParam> param);
+  void DidEnsureOriginRootForUploadNewFile(
+      scoped_ptr<ApplyLocalChangeParam> param,
+      SyncStatusCode status,
+      const std::string& parent_resource_id);
 
   void DidInitializeMetadataStore(scoped_ptr<TaskToken> token,
                                   SyncStatusCode status,
                                   bool created);
   void UpdateRegisteredOrigins();
 
-  void GetSyncRootDirectory(scoped_ptr<TaskToken> token,
-                            const SyncStatusCallback& callback);
-  void DidGetSyncRootDirectory(scoped_ptr<TaskToken> token,
-                               const SyncStatusCallback& callback,
-                               google_apis::GDataErrorCode error,
-                               const std::string& sync_root_resource_id);
   void DidGetSyncRootForRegisterOrigin(
+      scoped_ptr<TaskToken> token,
       const GURL& origin,
       const SyncStatusCallback& callback,
-      SyncStatusCode status);
+      google_apis::GDataErrorCode error,
+      const std::string& sync_root_resource_id);
   void StartBatchSyncForOrigin(const GURL& origin,
                                const std::string& resource_id);
+  void GetDriveDirectoryForOrigin(scoped_ptr<TaskToken> token,
+                                  const GURL& origin,
+                                  const SyncStatusCallback& callback,
+                                  const std::string& sync_root_resource_id);
   void DidGetDriveDirectoryForOrigin(scoped_ptr<TaskToken> token,
                                      const GURL& origin,
                                      const SyncStatusCallback& callback,
-                                     google_apis::GDataErrorCode error,
+                                     SyncStatusCode status,
                                      const std::string& resource_id);
   void DidUninstallOrigin(scoped_ptr<TaskToken> token,
                           const GURL& origin,
@@ -431,6 +443,27 @@ class DriveFileSyncService
 
   void HandleSyncRootDirectoryChange(const google_apis::ResourceEntry& entry);
   void HandleOriginRootDirectoryChange(const google_apis::ResourceEntry& entry);
+
+  void EnsureSyncRootDirectory(const ResourceIdCallback& callback);
+  void DidEnsureSyncRoot(const ResourceIdCallback& callback,
+                         google_apis::GDataErrorCode error,
+                         const std::string& sync_root_resource_id);
+  void EnsureOriginRootDirectory(const GURL& origin,
+                                 const ResourceIdCallback& callback);
+  void DidEnsureSyncRootForOriginRoot(const GURL& origin,
+                                      const ResourceIdCallback& callback,
+                                      SyncStatusCode status,
+                                      const std::string& sync_root_resource_id);
+  void DidEnsureOriginRoot(const GURL& origin,
+                           const ResourceIdCallback& callback,
+                           google_apis::GDataErrorCode error,
+                           const std::string& resource_id);
+
+  // This function returns Resouce ID for the sync root directory if available.
+  // Returns an empty string 1) when the resource ID has not been initialized
+  // yet, and 2) after the service has detected the remote sync root folder was
+  // removed.
+  std::string sync_root_resource_id();
 
   scoped_ptr<DriveMetadataStore> metadata_store_;
   scoped_ptr<DriveFileSyncClientInterface> sync_client_;

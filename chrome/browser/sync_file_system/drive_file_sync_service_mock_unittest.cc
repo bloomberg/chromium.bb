@@ -38,6 +38,7 @@
 
 using ::testing::AnyNumber;
 using ::testing::AtLeast;
+using ::testing::AtMost;
 using ::testing::InSequence;
 using ::testing::Return;
 using ::testing::Sequence;
@@ -74,6 +75,13 @@ void DidInitialize(bool* done, SyncStatusCode status, bool created) {
 
 void DidUpdateEntry(SyncStatusCode status) {
   EXPECT_EQ(SYNC_STATUS_OK, status);
+}
+
+void DidGetSyncRoot(bool* done,
+                    SyncStatusCode status,
+                    const std::string& resource_id) {
+  EXPECT_FALSE(*done);
+  *done = true;
 }
 
 void ExpectEqStatus(bool* done,
@@ -470,7 +478,7 @@ class DriveFileSyncServiceMockTest : public testing::Test {
       const std::string& query,
       const std::string& search_directory) {
     scoped_ptr<Value> result_value(LoadJSONFile(
-            result_mock_json_name));
+        result_mock_json_name));
     scoped_ptr<google_apis::ResourceList> result(
         google_apis::ResourceList::ExtractAndParse(*result_value));
     EXPECT_CALL(*mock_drive_service(),
@@ -482,10 +490,18 @@ class DriveFileSyncServiceMockTest : public testing::Test {
   }
 
   void SetUpDriveServiceExpectCallsForGetSyncRoot() {
-    SetUpDriveServiceExpectCallsForGetResourceList(
-        "chromeos/sync_file_system/sync_root_found.json",
-        FormatTitleQuery(kSyncRootDirectoryName),
-        std::string());
+    scoped_ptr<Value> result_value(LoadJSONFile(
+        "chromeos/sync_file_system/sync_root_found.json"));
+    scoped_ptr<google_apis::ResourceList> result(
+        google_apis::ResourceList::ExtractAndParse(*result_value));
+    EXPECT_CALL(*mock_drive_service(), GetResourceList(
+        GURL(), 0, FormatTitleQuery(kSyncRootDirectoryName),
+        false, std::string(), _))
+        .Times(AtMost(1))
+        .WillOnce(InvokeGetResourceListCallback5(
+            google_apis::HTTP_SUCCESS,
+            base::Passed(&result)))
+        .RetiresOnSaturation();
   }
 
   void SetUpDriveServiceExpectCallsForGetAboutResource() {
@@ -564,26 +580,6 @@ class DriveFileSyncServiceMockTest : public testing::Test {
 
 #if !defined(OS_ANDROID)
 
-TEST_F(DriveFileSyncServiceMockTest, GetSyncRoot) {
-  SetUpDriveServiceExpectCallsForGetSyncRoot();
-
-  EXPECT_CALL(*mock_remote_observer(),
-              OnRemoteServiceStateUpdated(REMOTE_SERVICE_OK, _))
-      .Times(1);
-  EXPECT_CALL(*mock_remote_observer(), OnRemoteChangeQueueUpdated(0))
-      .Times(AnyNumber());
-
-  SetUpDriveSyncService(true);
-  message_loop()->RunUntilIdle();
-
-  EXPECT_EQ("folder:sync_root_resource_id",
-            metadata_store()->sync_root_directory());
-
-  EXPECT_EQ(0u, metadata_store()->batch_sync_origins().size());
-  EXPECT_EQ(0u, metadata_store()->incremental_sync_origins().size());
-  EXPECT_EQ(0u, pending_changes().size());
-}
-
 TEST_F(DriveFileSyncServiceMockTest, BatchSyncOnInitialization) {
   const GURL kOrigin1 = ExtensionNameToGURL(FPL("example1"));
   const GURL kOrigin2 = ExtensionNameToGURL(FPL("example2"));
@@ -604,7 +600,9 @@ TEST_F(DriveFileSyncServiceMockTest, BatchSyncOnInitialization) {
   EXPECT_CALL(*mock_remote_observer(), OnRemoteChangeQueueUpdated(3))
       .InSequence(change_queue_seq);
 
-  InSequence sequence;
+  EXPECT_CALL(*mock_remote_observer(),
+              OnRemoteServiceStateUpdated(REMOTE_SERVICE_OK, _))
+      .Times(AnyNumber());
 
   SetUpDriveServiceExpectCallsForGetAboutResource();
   SetUpDriveServiceExpectCallsForGetResourceList(
@@ -614,7 +612,7 @@ TEST_F(DriveFileSyncServiceMockTest, BatchSyncOnInitialization) {
 
   EXPECT_CALL(*mock_remote_observer(),
               OnRemoteServiceStateUpdated(REMOTE_SERVICE_OK, _))
-      .Times(1);
+      .Times(AnyNumber());
 
   SetUpDriveSyncService(true);
   message_loop()->RunUntilIdle();
@@ -641,6 +639,10 @@ TEST_F(DriveFileSyncServiceMockTest, RegisterNewOrigin) {
       .Times(AtLeast(1));
   EXPECT_CALL(*mock_remote_observer(), OnRemoteChangeQueueUpdated(0))
       .Times(AnyNumber());
+
+  // Expect to call GetResourceList for the sync root from
+  // RegisterOriginForTrackingChanges.
+  SetUpDriveServiceExpectCallsForGetSyncRoot();
 
   SetUpDriveServiceExpectCallsForGetResourceList(
       "chromeos/sync_file_system/origin_directory_found.json",
@@ -692,6 +694,10 @@ TEST_F(DriveFileSyncServiceMockTest, RegisterExistingOrigin) {
       .Times(AnyNumber());
 
   InSequence sequence;
+
+  // Expect to call GetResourceList for the sync root from
+  // RegisterOriginForTrackingChanges.
+  SetUpDriveServiceExpectCallsForGetSyncRoot();
 
   // We already have a directory for the origin.
   SetUpDriveServiceExpectCallsForGetResourceList(
@@ -781,7 +787,7 @@ TEST_F(DriveFileSyncServiceMockTest, ResolveLocalSyncOperationType) {
 
   EXPECT_CALL(*mock_remote_observer(),
               OnRemoteServiceStateUpdated(REMOTE_SERVICE_OK, _))
-      .Times(1);
+      .Times(AnyNumber());
   EXPECT_CALL(*mock_remote_observer(), OnRemoteChangeQueueUpdated(_))
       .Times(AnyNumber());
 
@@ -1008,6 +1014,10 @@ TEST_F(DriveFileSyncServiceMockTest, RegisterOriginWithSyncDisabled) {
       .Times(AnyNumber());
 
   InSequence sequence;
+
+  // Expect to call GetResourceList for the sync root from
+  // RegisterOriginForTrackingChanges.
+  SetUpDriveServiceExpectCallsForGetSyncRoot();
 
   SetUpDriveServiceExpectCallsForGetResourceList(
       "chromeos/sync_file_system/origin_directory_found.json",

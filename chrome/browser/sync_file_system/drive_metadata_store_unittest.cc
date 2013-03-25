@@ -603,6 +603,7 @@ TEST_F(DriveMetadataStoreTest, GetResourceIdForOrigin) {
 
   InitializeDatabase();
   EXPECT_EQ(SYNC_STATUS_OK, SetLargestChangeStamp(1));
+  metadata_store()->SetSyncRootDirectory("root");
 
   metadata_store()->AddBatchSyncOrigin(kOrigin1, kResourceId1);
   metadata_store()->AddBatchSyncOrigin(kOrigin2, kResourceId2);
@@ -620,6 +621,19 @@ TEST_F(DriveMetadataStoreTest, GetResourceIdForOrigin) {
   EXPECT_EQ(kResourceId1, metadata_store()->GetResourceIdForOrigin(kOrigin1));
   EXPECT_EQ(kResourceId2, metadata_store()->GetResourceIdForOrigin(kOrigin2));
   EXPECT_EQ(kResourceId3, metadata_store()->GetResourceIdForOrigin(kOrigin3));
+
+  // Resetting the root directory resource ID to empty makes any
+  // GetResourceIdForOrigin return an empty resource ID too, regardless of
+  // whether they are known origin or not.
+  metadata_store()->SetSyncRootDirectory(std::string());
+  EXPECT_TRUE(metadata_store()->GetResourceIdForOrigin(kOrigin1).empty());
+  EXPECT_TRUE(metadata_store()->GetResourceIdForOrigin(kOrigin2).empty());
+  EXPECT_TRUE(metadata_store()->GetResourceIdForOrigin(kOrigin3).empty());
+
+  // Make sure they're still known origins.
+  EXPECT_TRUE(metadata_store()->IsKnownOrigin(kOrigin1));
+  EXPECT_TRUE(metadata_store()->IsKnownOrigin(kOrigin2));
+  EXPECT_TRUE(metadata_store()->IsKnownOrigin(kOrigin3));
 
   VerifyReverseMap();
 }

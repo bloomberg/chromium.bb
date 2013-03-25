@@ -73,6 +73,10 @@ class DriveMetadataStore
   SyncStatusCode ReadEntry(const fileapi::FileSystemURL& url,
                            DriveMetadata* metadata) const;
 
+  // Returns true if |origin| is a batch sync origin, a incremental sync origin
+  // or a disabled origin.
+  bool IsKnownOrigin(const GURL& origin) const;
+
   // Returns true if |origin| is a batch sync origin, i.e. the origin's entire
   // file list hasn't been fully fetched and processed yet.
   bool IsBatchSyncOrigin(const GURL& origin) const;
@@ -105,8 +109,9 @@ class DriveMetadataStore
 
   // Sets the directory identified by |resource_id| as the sync data directory.
   // All data for the Sync FileSystem should be store into the directory.
-  // It is invalid to overwrite the directory.
   void SetSyncRootDirectory(const std::string& resource_id);
+  void SetOriginRootDirectory(const GURL& origin,
+                              const std::string& resource_id);
 
   // Returns a set of URLs for files in conflict.
   SyncStatusCode GetConflictURLs(
@@ -115,8 +120,9 @@ class DriveMetadataStore
   // Returns a set of URLs and Resource IDs for files to be fetched.
   SyncStatusCode GetToBeFetchedFiles(URLAndResourceIdList* list) const;
 
-  // Returns resource id for |origin|. |origin| must be a batch sync origin or
-  // an incremental sync origin.
+  // Returns resource id for |origin|.
+  // This may return an empty string if |origin| is not a batch, incremental
+  // or disabled origin.
   std::string GetResourceIdForOrigin(const GURL& origin) const;
 
   const std::string& sync_root_directory() const {
