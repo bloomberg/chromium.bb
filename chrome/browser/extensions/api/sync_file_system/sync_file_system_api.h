@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/sync_file_system/conflict_resolution_policy.h"
 #include "chrome/common/extensions/api/sync_file_system.h"
+#include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/syncable/sync_file_status.h"
 #include "webkit/fileapi/syncable/sync_status_code.h"
 #include "webkit/quota/quota_types.h"
@@ -66,14 +67,19 @@ class SyncFileSystemGetFileStatusesFunction
   virtual bool RunImpl() OVERRIDE;
 
  private:
-  unsigned int num_expected_results_;
-  unsigned int num_results_received_;
-  std::map<std::string, sync_file_system::SyncStatusCode> sync_status_codes_;
-  std::map<std::string, api::sync_file_system::FileStatus> file_sync_statuses_;
+  typedef std::pair<sync_file_system::SyncStatusCode,
+                    sync_file_system::SyncFileStatus> FileStatusPair;
+  typedef std::map<fileapi::FileSystemURL, FileStatusPair,
+                   fileapi::FileSystemURL::Comparator> URLToStatusMap;
+
   void DidGetFileStatus(
-      const std::string& file_path,
+      const fileapi::FileSystemURL& file_system_url,
       sync_file_system::SyncStatusCode sync_status_code,
       sync_file_system::SyncFileStatus sync_file_statuses);
+
+  unsigned int num_expected_results_;
+  unsigned int num_results_received_;
+  URLToStatusMap file_sync_statuses_;
 };
 
 class SyncFileSystemGetUsageAndQuotaFunction

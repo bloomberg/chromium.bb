@@ -79,8 +79,8 @@ namespace syncFileSystem {
   };
 
   dictionary FileStatusInfo {
-    // File path of one of the FileEntry's originally given to getFileStatuses.
-    DOMString file_path;
+    // One of the FileEntry's originally given to getFileStatuses.
+    [instanceOf=FileEntry] object fileEntry;
 
     // The status value can be <code>'synced'</code>,
     // <code>'pending'</code> or <code>'conflicting'</code>.

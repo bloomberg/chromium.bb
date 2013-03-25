@@ -111,7 +111,7 @@ class MockRemoteFileSyncService : public RemoteFileSyncService {
   FileMetadataMap conflict_file_metadata_;
 
   // For default implementation.
-  MockLocalChangeProcessor mock_local_change_processor_;
+  ::testing::NiceMock<MockLocalChangeProcessor> mock_local_change_processor_;
 
   ObserverList<Observer> service_observers_;
   ObserverList<FileStatusObserver> file_status_observers_;

@@ -59,6 +59,30 @@ binding.registerCustomHook(function(bindingsAPI) {
       request.callback(result);
     request.callback = null;
   });
+
+  // Functions which return an array of FileStatusInfo object
+  // which has [instanceOf=FileEntry].
+  apiFunctions.setCustomCallback('getFileStatuses',
+                                 function(name, request, response) {
+    var results = [];
+    if (response) {
+      for (var i = 0; i < response.length; i++) {
+        var result = {};
+        result.fileEntry = fileSystemNatives.GetFileEntry(
+            response[i].fileSystemType,
+            response[i].fileSystemName,
+            response[i].rootUrl,
+            response[i].filePath,
+            false /* isDirectory */);
+        result.status = response[i].status;
+        result.error = response[i].error;
+        results.push(result);
+      }
+    }
+    if (request.callback)
+      request.callback(results);
+    request.callback = null;
+  });
 });
 
 chromeHidden.Event.registerArgumentMassager(
