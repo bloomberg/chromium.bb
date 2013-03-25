@@ -34,7 +34,7 @@ void OAuthLoginManager::CompleteAuthentication() {
 OAuthLoginManager::OAuthLoginManager(Delegate* delegate)
     : delegate_(delegate),
       user_profile_(NULL),
-      restore_from_auth_cookies_(false),
+      restore_strategy_(RESTORE_FROM_COOKIE_JAR),
       state_(SESSION_RESTORE_NOT_STARTED) {
 }
 

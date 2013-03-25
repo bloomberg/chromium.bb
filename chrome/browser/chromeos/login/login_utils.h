@@ -20,6 +20,7 @@ namespace chromeos {
 class Authenticator;
 class LoginDisplayHost;
 class LoginStatusConsumer;
+struct UserCredentials;
 
 class LoginUtils {
  public:
@@ -64,9 +65,8 @@ class LoginUtils {
   // this value, shown in UI.
   // Also see DelegateDeleted method.
   virtual void PrepareProfile(
-      const std::string& username,
+      const UserCredentials& credentials,
       const std::string& display_email,
-      const std::string& password,
       bool using_oauth,
       bool has_cookies,
       Delegate* delegate) = 0;

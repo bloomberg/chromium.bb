@@ -12,6 +12,7 @@
 #include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/login_status_consumer.h"
 #include "chrome/browser/chromeos/login/online_attempt_host.h"
+#include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -84,18 +85,16 @@ class LoginPerformer : public LoginStatusConsumer,
   virtual void OnLoginFailure(const LoginFailure& error) OVERRIDE;
   virtual void OnRetailModeLoginSuccess() OVERRIDE;
   virtual void OnLoginSuccess(
-      const std::string& username,
-      const std::string& password,
+      const UserCredentials& credentials,
       bool pending_requests,
       bool using_oauth) OVERRIDE;
   virtual void OnOffTheRecordLoginSuccess() OVERRIDE;
   virtual void OnPasswordChangeDetected() OVERRIDE;
 
-  // Performs a login for |username| and |password|. If auth_mode is
-  // AUTH_MODE_EXTENSION, there are no further auth checks, AUTH_MODE_INTERNAL
-  // will perform auth checks.
-  void PerformLogin(const std::string& username,
-                    const std::string& password,
+  // Performs a login for |credentials|.
+  // If auth_mode is AUTH_MODE_EXTENSION, there are no further auth checks,
+  // AUTH_MODE_INTERNAL will perform auth checks.
+  void PerformLogin(const UserCredentials& credentials,
                     AuthorizationMode auth_mode);
 
   // Performs locally managed user creation and login.
@@ -104,8 +103,7 @@ class LoginPerformer : public LoginStatusConsumer,
 
   // Performs locally managed user login with a given |username| and |password|.
   // Managed user creation should be done with CreateLocallyManagedUser().
-  void LoginAsLocallyManagedUser(const std::string& username,
-                                 const std::string& password);
+  void LoginAsLocallyManagedUser(const UserCredentials& credentials);
 
   // Performs retail mode login.
   void LoginRetailMode();
@@ -198,9 +196,8 @@ class LoginPerformer : public LoginStatusConsumer,
   // sign-in server. LoginFailure.LoginFailureNone() by default.
   LoginFailure last_login_failure_;
 
-  // Username and password for the current login attempt.
-  std::string username_;
-  std::string password_;
+  // User credentials for the current login attempt.
+  UserCredentials credentials_;
 
   // Notifications receiver.
   Delegate* delegate_;

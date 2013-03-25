@@ -772,6 +772,9 @@ void SigninScreenHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("completeLogin",
       base::Bind(&SigninScreenHandler::HandleCompleteLogin,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("completeAuthentication",
+      base::Bind(&SigninScreenHandler::HandleCompleteAuthentication,
+                 base::Unretained(this)));
   web_ui()->RegisterMessageCallback("getUsers",
       base::Bind(&SigninScreenHandler::HandleGetUsers,
                  base::Unretained(this)));
@@ -1163,7 +1166,31 @@ void SigninScreenHandler::HandleCompleteLogin(const base::ListValue* args) {
 
   typed_email = gaia::SanitizeEmail(typed_email);
   delegate_->SetDisplayEmail(typed_email);
-  delegate_->CompleteLogin(typed_email, password);
+  delegate_->CompleteLogin(UserCredentials(typed_email,
+                                           password,
+                                           std::string()));  // auth_code
+}
+
+void SigninScreenHandler::HandleCompleteAuthentication(
+    const base::ListValue* args) {
+  if (!delegate_)
+    return;
+
+  std::string email;
+  std::string password;
+  std::string auth_code;
+  if (!args->GetString(0, &email) ||
+      !args->GetString(1, &password) ||
+      !args->GetString(2, &auth_code)) {
+    NOTREACHED();
+    return;
+  }
+
+  email = gaia::SanitizeEmail(email);
+  delegate_->SetDisplayEmail(email);
+  delegate_->CompleteLogin(UserCredentials(email,
+                                           password,
+                                           auth_code));
 }
 
 void SigninScreenHandler::HandleAuthenticateUser(const base::ListValue* args) {
@@ -1179,7 +1206,9 @@ void SigninScreenHandler::HandleAuthenticateUser(const base::ListValue* args) {
   }
 
   username = gaia::SanitizeEmail(username);
-  delegate_->Login(username, password);
+  delegate_->Login(UserCredentials(username,
+                                   password,
+                                   std::string()));  // auth_code
 }
 
 void SigninScreenHandler::HandleLaunchDemoUser(const base::ListValue* args) {

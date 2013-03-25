@@ -39,6 +39,7 @@ class ErrorScreenActor;
 class LocallyManagedUserCreationScreenHandler;
 class NativeWindowDelegate;
 class User;
+struct UserCredentials;
 
 // An interface for WebUILoginDisplay to call SigninScreenHandler.
 class LoginDisplayWebUIHandler {
@@ -76,13 +77,11 @@ class SigninScreenHandlerDelegate {
 
   // Confirms sign up by provided |username| and |password| specified.
   // Used for new user login via GAIA extension.
-  virtual void CompleteLogin(const std::string& username,
-                             const std::string& password) = 0;
+  virtual void CompleteLogin(const UserCredentials& credentials) = 0;
 
   // Sign in using |username| and |password| specified.
   // Used for both known and new users.
-  virtual void Login(const std::string& username,
-                     const std::string& password) = 0;
+  virtual void Login(const UserCredentials& credentials) = 0;
 
   // Sign in into a retail mode session.
   virtual void LoginAsRetailModeUser() = 0;
@@ -282,6 +281,7 @@ class SigninScreenHandler
   void UpdateAddButtonStatus();
 
   // WebUI message handlers.
+  void HandleCompleteAuthentication(const base::ListValue* args);
   void HandleCompleteLogin(const base::ListValue* args);
   void HandleGetUsers(const base::ListValue* args);
   void HandleAuthenticateUser(const base::ListValue* args);

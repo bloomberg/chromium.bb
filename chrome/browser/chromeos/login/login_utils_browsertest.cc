@@ -386,8 +386,7 @@ class LoginUtilsTest : public testing::Test,
     FAIL() << "OnLoginFailure not expected";
   }
 
-  virtual void OnLoginSuccess(const std::string& username,
-                              const std::string& password,
+  virtual void OnLoginSuccess(const UserCredentials& credentials,
                               bool pending_requests,
                               bool using_oauth) OVERRIDE {
     FAIL() << "OnLoginSuccess not expected";
@@ -416,15 +415,17 @@ class LoginUtilsTest : public testing::Test,
     scoped_refptr<Authenticator> authenticator =
         LoginUtils::Get()->CreateAuthenticator(this);
     authenticator->CompleteLogin(ProfileManager::GetDefaultProfile(),
-                                 username,
-                                 "password");
+                                 UserCredentials(username,
+                                                 "password",
+                                                 ""));
 
     const bool kUsingOAuth = true;
     // Setting |kHasCookies| to false prevents ProfileAuthData::Transfer from
     // waiting for an IO task before proceeding.
     const bool kHasCookies = false;
-    LoginUtils::Get()->PrepareProfile(username, std::string(), "password",
-                                      kUsingOAuth, kHasCookies, this);
+    LoginUtils::Get()->PrepareProfile(
+        UserCredentials(username, "password", std::string()),
+        std::string(), kUsingOAuth, kHasCookies, this);
     device_settings_test_helper.Flush();
     RunUntilIdle();
   }

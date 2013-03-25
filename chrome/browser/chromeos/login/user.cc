@@ -111,6 +111,23 @@ class PublicAccountUser : public User {
   DISALLOW_COPY_AND_ASSIGN(PublicAccountUser);
 };
 
+UserCredentials::UserCredentials() {
+}
+
+UserCredentials::UserCredentials(const std::string& username,
+                                 const std::string& password,
+                                 const std::string& auth_code)
+    : username(username),
+      password(password),
+      auth_code(auth_code) {
+}
+
+bool UserCredentials::operator==(const UserCredentials& cred) const {
+  return cred.username == username &&
+         cred.password == password &&
+         cred.auth_code == auth_code;
+}
+
 string16 User::GetDisplayName() const {
   // Fallback to the email account name in case display name haven't been set.
   return display_name_.empty() ?

@@ -14,15 +14,13 @@ using content::BrowserThread;
 
 namespace chromeos {
 
-AuthAttemptState::AuthAttemptState(const std::string& username,
-                                   const std::string& password,
+AuthAttemptState::AuthAttemptState(const UserCredentials& credentials,
                                    const std::string& ascii_hash,
                                    const std::string& login_token,
                                    const std::string& login_captcha,
                                    const User::UserType user_type,
                                    const bool user_is_new)
-    : username(username),
-      password(password),
+    : credentials(credentials),
       ascii_hash(ascii_hash),
       login_token(login_token),
       login_captcha(login_captcha),
@@ -39,7 +37,7 @@ AuthAttemptState::AuthAttemptState(const std::string& username,
 
 AuthAttemptState::AuthAttemptState(const std::string& username,
                                    const std::string& ascii_hash)
-    : username(username),
+    : credentials(username, "", ""),
       ascii_hash(ascii_hash),
       user_type(User::USER_TYPE_REGULAR),
       unlock(true),
@@ -52,12 +50,10 @@ AuthAttemptState::AuthAttemptState(const std::string& username,
       cryptohome_code_(cryptohome::MOUNT_ERROR_NONE) {
 }
 
-AuthAttemptState::AuthAttemptState(const std::string& username,
-                                   const std::string& password,
+AuthAttemptState::AuthAttemptState(const UserCredentials& credentials,
                                    const std::string& ascii_hash,
                                    const bool user_is_new)
-    : username(username),
-      password(password),
+    : credentials(credentials),
       ascii_hash(ascii_hash),
       user_type(User::USER_TYPE_REGULAR),
       unlock(true),

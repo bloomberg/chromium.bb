@@ -675,6 +675,22 @@ void GaiaAuthFetcher::StartCookieForOAuthLoginTokenExchange(
   fetcher_->Start();
 }
 
+void GaiaAuthFetcher::StartAuthCodeForOAuth2TokenExchange(
+    const std::string& auth_code) {
+  DCHECK(!fetch_pending_) << "Tried to fetch two things at once!";
+
+  DVLOG(1) << "Starting OAuth token pair fetch";
+  request_body_ = MakeGetTokenPairBody(auth_code);
+  fetcher_.reset(CreateGaiaFetcher(getter_,
+                                   request_body_,
+                                   "",
+                                   oauth2_token_gurl_,
+                                   kLoadFlagsIgnoreCookies,
+                                   this));
+  fetch_pending_ = true;
+  fetcher_->Start();
+}
+
 void GaiaAuthFetcher::StartGetUserInfo(const std::string& lsid) {
   DCHECK(!fetch_pending_) << "Tried to fetch two things at once!";
 
@@ -942,25 +958,10 @@ void GaiaAuthFetcher::OnClientLoginToOAuth2Fetched(
   if (status.is_success() && response_code == net::HTTP_OK) {
     std::string auth_code;
     ParseClientLoginToOAuth2Response(cookies, &auth_code);
-    StartOAuth2TokenPairFetch(auth_code);
+    StartAuthCodeForOAuth2TokenExchange(auth_code);
   } else {
     consumer_->OnClientOAuthFailure(GenerateAuthError(data, status));
   }
-}
-
-void GaiaAuthFetcher::StartOAuth2TokenPairFetch(const std::string& auth_code) {
-  DCHECK(!fetch_pending_) << "Tried to fetch two things at once!";
-
-  DVLOG(1) << "Starting OAuth token pair fetch";
-  request_body_ = MakeGetTokenPairBody(auth_code);
-  fetcher_.reset(CreateGaiaFetcher(getter_,
-                                   request_body_,
-                                   "",
-                                   oauth2_token_gurl_,
-                                   kLoadFlagsIgnoreCookies,
-                                   this));
-  fetch_pending_ = true;
-  fetcher_->Start();
 }
 
 void GaiaAuthFetcher::OnOAuth2TokenPairFetched(

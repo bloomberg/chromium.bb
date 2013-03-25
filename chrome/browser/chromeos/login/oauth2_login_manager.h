@@ -40,7 +40,9 @@ class OAuth2LoginManager : public OAuthLoginManager,
   virtual void RestoreSession(
       Profile* user_profile,
       net::URLRequestContextGetter* auth_request_context,
-      bool restore_from_auth_cookies) OVERRIDE;
+      SessionRestoreStrategy restore_strategy,
+      const std::string& oauth2_refresh_token,
+      const std::string& auth_code) OVERRIDE;
   virtual void ContinueSessionRestore() OVERRIDE;
   virtual void Stop() OVERRIDE;
 
@@ -118,6 +120,8 @@ class OAuth2LoginManager : public OAuthLoginManager,
   scoped_ptr<OAuth2PolicyFetcher> oauth2_policy_fetcher_;
   // OAuth2 refresh token.
   std::string refresh_token_;
+  // Authorization code for fetching OAuth2 tokens.
+  std::string auth_code_;
 
   DISALLOW_COPY_AND_ASSIGN(OAuth2LoginManager);
 };

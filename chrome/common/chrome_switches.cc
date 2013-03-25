@@ -93,6 +93,9 @@ const char kAppsGalleryURL[]                = "apps-gallery-url";
 // The update url used by gallery/webstore extensions.
 const char kAppsGalleryUpdateURL[]          = "apps-gallery-update-url";
 
+// Value of GAIA auth code for --force-app-mode.
+const char kAppModeAuthCode[]               = "app-mode-auth-code";
+
 // Value of OAuth2 refresh token for --force-app-mode.
 const char kAppModeOAuth2Token[]            = "app-mode-oauth-token";
 

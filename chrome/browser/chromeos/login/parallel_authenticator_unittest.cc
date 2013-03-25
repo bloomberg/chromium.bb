@@ -89,8 +89,9 @@ class ParallelAuthenticatorTest : public testing::Test {
 
     auth_ = new ParallelAuthenticator(&consumer_);
     auth_->set_using_oauth(false);
-    state_.reset(new TestAttemptState(username_,
-                                      password_,
+    state_.reset(new TestAttemptState(UserCredentials(username_,
+                                                      password_,
+                                                      std::string()),
                                       hash_ascii_,
                                       "",
                                       "",
@@ -135,7 +136,7 @@ class ParallelAuthenticatorTest : public testing::Test {
   // Allow test to fail and exit gracefully, even if OnLoginSuccess()
   // wasn't supposed to happen.
   void FailOnLoginSuccess() {
-    ON_CALL(consumer_, OnLoginSuccess(_, _, _, _))
+    ON_CALL(consumer_, OnLoginSuccess(_, _, _))
         .WillByDefault(Invoke(MockConsumer::OnSuccessQuitAndFail));
   }
 
@@ -161,7 +162,10 @@ class ParallelAuthenticatorTest : public testing::Test {
   void ExpectLoginSuccess(const std::string& username,
                           const std::string& password,
                           bool pending) {
-    EXPECT_CALL(consumer_, OnLoginSuccess(username, password, pending,
+    EXPECT_CALL(consumer_, OnLoginSuccess(UserCredentials(username,
+                                                          password,
+                                                          std::string()),
+                                          pending,
                                           false))
         .WillOnce(Invoke(MockConsumer::OnSuccessQuit))
         .RetiresOnSaturation();
@@ -229,7 +233,10 @@ class ParallelAuthenticatorTest : public testing::Test {
 };
 
 TEST_F(ParallelAuthenticatorTest, OnLoginSuccess) {
-  EXPECT_CALL(consumer_, OnLoginSuccess(username_, password_, false, false))
+  EXPECT_CALL(consumer_, OnLoginSuccess(UserCredentials(username_,
+                                                        password_,
+                                                        std::string()),
+                                        false, false))
       .Times(1)
       .RetiresOnSaturation();
 
@@ -304,8 +311,9 @@ TEST_F(ParallelAuthenticatorTest, ResolveOwnerNeededMount) {
   state_->PresetCryptohomeStatus(true, cryptohome::MOUNT_ERROR_NONE);
   SetOwnerState(false, false);
   // and test that the mount has succeeded.
-  state_.reset(new TestAttemptState(username_,
-                                    password_,
+  state_.reset(new TestAttemptState(UserCredentials(username_,
+                                                    password_,
+                                                    std::string()),
                                     hash_ascii_,
                                     "",
                                     "",
@@ -349,8 +357,9 @@ TEST_F(ParallelAuthenticatorTest, ResolveOwnerNeededFailedMount) {
   // Let the owner verification run.
   device_settings_test_helper_.Flush();
   // and test that the mount has succeeded.
-  state_.reset(new TestAttemptState(username_,
-                                    password_,
+  state_.reset(new TestAttemptState(UserCredentials(username_,
+                                                    password_,
+                                                    std::string()),
                                     hash_ascii_,
                                     "",
                                     "",
@@ -667,8 +676,9 @@ TEST_F(ParallelAuthenticatorTest, DriveOfflineLoginGetNewPassword) {
   TestingProfile profile;
 
   auth_->RetryAuth(&profile,
-                   username_,
-                   std::string(),
+                   UserCredentials(username_,
+                                   std::string(),
+                                   std::string()),
                    std::string(),
                    std::string());
   message_loop_.Run();
@@ -710,8 +720,9 @@ TEST_F(ParallelAuthenticatorTest, DriveOfflineLoginGetCaptchad) {
   TestingProfile profile;
 
   auth_->RetryAuth(&profile,
-                   username_,
-                   std::string(),
+                   UserCredentials(username_,
+                                   std::string(),
+                                   std::string()),
                    std::string(),
                    std::string());
   message_loop_.Run();
@@ -764,7 +775,9 @@ TEST_F(ParallelAuthenticatorTest, DriveUnlock) {
       .WillOnce(Return(std::string()))
       .RetiresOnSaturation();
 
-  auth_->AuthenticateToUnlock(username_, "");
+  auth_->AuthenticateToUnlock(UserCredentials(username_,
+                                              std::string(),
+                                              std::string()));
   message_loop_.Run();
 }
 

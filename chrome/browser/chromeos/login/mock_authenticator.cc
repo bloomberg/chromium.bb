@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/mock_authenticator.h"
 
 #include "base/bind.h"
+#include "chrome/browser/chromeos/login/user.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -12,11 +13,11 @@ using content::BrowserThread;
 namespace chromeos {
 
 void MockAuthenticator::AuthenticateToLogin(Profile* profile,
-                                            const std::string& username,
-                                            const std::string& password,
+                                            const UserCredentials& credentials,
                                             const std::string& login_token,
                                             const std::string& login_captcha) {
-  if (expected_username_ == username && expected_password_ == password) {
+  if (expected_username_ == credentials.username &&
+      expected_password_ == credentials.password) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
         base::Bind(&MockAuthenticator::OnLoginSuccess, this, false));
     return;
@@ -29,22 +30,23 @@ void MockAuthenticator::AuthenticateToLogin(Profile* profile,
 }
 
 void MockAuthenticator::CompleteLogin(Profile* profile,
-                                      const std::string& username,
-                                      const std::string& password) {
-  CHECK_EQ(expected_username_, username);
-  CHECK_EQ(expected_password_, password);
+                                      const UserCredentials& credentials) {
+  CHECK_EQ(expected_username_, credentials.username);
+  CHECK_EQ(expected_password_, credentials.password);
   OnLoginSuccess(false);
 }
 
-void MockAuthenticator::AuthenticateToUnlock(const std::string& username,
-                                             const std::string& password) {
-  AuthenticateToLogin(NULL /* not used */, username, password,
+void MockAuthenticator::AuthenticateToUnlock(
+    const UserCredentials& credentials) {
+  AuthenticateToLogin(NULL /* not used */, credentials,
                       std::string(), std::string());
 }
 
-void MockAuthenticator::LoginAsLocallyManagedUser(const std::string& username,
-                                                  const std::string& password) {
-  consumer_->OnLoginSuccess(expected_username_, "", false, false);
+void MockAuthenticator::LoginAsLocallyManagedUser(
+    const UserCredentials& credentials) {
+  consumer_->OnLoginSuccess(UserCredentials(expected_username_, "", ""),
+                            false,
+                            false);
 }
 
 void MockAuthenticator::LoginRetailMode() {
@@ -52,7 +54,9 @@ void MockAuthenticator::LoginRetailMode() {
 }
 
 void MockAuthenticator::LoginAsPublicAccount(const std::string& username) {
-  consumer_->OnLoginSuccess(expected_username_, "", false, false);
+  consumer_->OnLoginSuccess(UserCredentials(expected_username_, "", ""),
+                            false,
+                            false);
 }
 
 void MockAuthenticator::LoginOffTheRecord() {
@@ -66,8 +70,9 @@ void MockAuthenticator::OnRetailModeLoginSuccess() {
 void MockAuthenticator::OnLoginSuccess(bool request_pending) {
   // If we want to be more like the real thing, we could save username
   // in AuthenticateToLogin, but there's not much of a point.
-  consumer_->OnLoginSuccess(expected_username_,
-                            expected_password_,
+  consumer_->OnLoginSuccess(UserCredentials(expected_username_,
+                                            expected_password_,
+                                            ""),
                             request_pending,
                             false);
 }

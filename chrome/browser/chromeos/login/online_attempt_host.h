@@ -17,6 +17,7 @@ namespace chromeos {
 
 class AuthAttemptState;
 class OnlineAttempt;
+struct UserCredentials;
 
 // Helper class which hosts OnlineAttempt for online credentials checking.
 class OnlineAttemptHost : public AuthAttemptStateResolver {
@@ -35,8 +36,7 @@ class OnlineAttemptHost : public AuthAttemptStateResolver {
   // a time (the newest call stops the old one, if called with another username
   // and password combination).
   void Check(Profile* profile,
-             const std::string &username,
-             const std::string &password);
+             const UserCredentials& credentials);
 
   // Resets the checking process.
   void Reset();

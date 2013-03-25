@@ -225,18 +225,16 @@ void WebUILoginDisplay::CreateAccount() {
     delegate_->CreateAccount();
 }
 
-void WebUILoginDisplay::CompleteLogin(const std::string& username,
-                                      const std::string& password) {
+void WebUILoginDisplay::CompleteLogin(const UserCredentials& credentials) {
   DCHECK(delegate_);
   if (delegate_)
-    delegate_->CompleteLogin(username, password);
+    delegate_->CompleteLogin(credentials);
 }
 
-void WebUILoginDisplay::Login(const std::string& username,
-                              const std::string& password) {
+void WebUILoginDisplay::Login(const UserCredentials& credentials) {
   DCHECK(delegate_);
   if (delegate_)
-    delegate_->Login(username, password);
+    delegate_->Login(credentials);
 }
 
 void WebUILoginDisplay::LoginAsRetailModeUser() {

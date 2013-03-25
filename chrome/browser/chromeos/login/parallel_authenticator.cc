@@ -72,7 +72,7 @@ void Mount(AuthAttemptState* attempt,
   chromeos::BootTimesLoader::Get()->AddLoginTimeMarker(
       "CryptohomeMount-Start", false);
   cryptohome::AsyncMethodCaller::GetInstance()->AsyncMount(
-      attempt->username,
+      attempt->credentials.username,
       attempt->ascii_hash,
       flags,
       base::Bind(&TriggerResolveWithLoginTimeMarker,
@@ -104,7 +104,7 @@ void Migrate(AuthAttemptState* attempt,
       cryptohome::AsyncMethodCaller::GetInstance();
   if (passing_old_hash) {
     caller->AsyncMigrateKey(
-        attempt->username,
+        attempt->credentials.username,
         hash,
         attempt->ascii_hash,
         base::Bind(&TriggerResolveWithLoginTimeMarker,
@@ -113,7 +113,7 @@ void Migrate(AuthAttemptState* attempt,
                    resolver));
   } else {
     caller->AsyncMigrateKey(
-        attempt->username,
+        attempt->credentials.username,
         attempt->ascii_hash,
         hash,
         base::Bind(&TriggerResolveWithLoginTimeMarker,
@@ -130,7 +130,7 @@ void Remove(AuthAttemptState* attempt,
   chromeos::BootTimesLoader::Get()->AddLoginTimeMarker(
       "CryptohomeRemove-Start", false);
   cryptohome::AsyncMethodCaller::GetInstance()->AsyncRemove(
-      attempt->username,
+      attempt->credentials.username,
       base::Bind(&TriggerResolveWithLoginTimeMarker,
                  "CryptohomeRemove-End",
                  attempt,
@@ -142,7 +142,7 @@ void CheckKey(AuthAttemptState* attempt,
               scoped_refptr<ParallelAuthenticator> resolver) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   cryptohome::AsyncMethodCaller::GetInstance()->AsyncCheckKey(
-      attempt->username,
+      attempt->credentials.username,
       attempt->ascii_hash,
       base::Bind(&TriggerResolve, attempt, resolver));
 }
@@ -192,17 +192,17 @@ ParallelAuthenticator::ParallelAuthenticator(LoginStatusConsumer* consumer)
 
 void ParallelAuthenticator::AuthenticateToLogin(
     Profile* profile,
-    const std::string& username,
-    const std::string& password,
+    const UserCredentials& credentials,
     const std::string& login_token,
     const std::string& login_captcha) {
-  std::string canonicalized = gaia::CanonicalizeEmail(username);
+  std::string canonicalized = gaia::CanonicalizeEmail(credentials.username);
   authentication_profile_ = profile;
   current_state_.reset(
       new AuthAttemptState(
-          canonicalized,
-          password,
-          HashPassword(password),
+          UserCredentials(canonicalized,
+                          credentials.password,
+                          credentials.auth_code),
+          HashPassword(credentials.password),
           login_token,
           login_captcha,
           User::USER_TYPE_REGULAR,
@@ -227,15 +227,15 @@ void ParallelAuthenticator::AuthenticateToLogin(
 }
 
 void ParallelAuthenticator::CompleteLogin(Profile* profile,
-                                          const std::string& username,
-                                          const std::string& password) {
-  std::string canonicalized = gaia::CanonicalizeEmail(username);
+                                          const UserCredentials& credentials) {
+  std::string canonicalized = gaia::CanonicalizeEmail(credentials.username);
   authentication_profile_ = profile;
   current_state_.reset(
       new AuthAttemptState(
-          canonicalized,
-          password,
-          HashPassword(password),
+          UserCredentials(canonicalized,
+                          credentials.password,
+                          credentials.auth_code),
+          HashPassword(credentials.password),
           !UserManager::Get()->IsKnownUser(canonicalized)));
 
   // Reset the verified flag.
@@ -266,12 +266,12 @@ void ParallelAuthenticator::CompleteLogin(Profile* profile,
   }
 }
 
-void ParallelAuthenticator::AuthenticateToUnlock(const std::string& username,
-                                                 const std::string& password) {
+void ParallelAuthenticator::AuthenticateToUnlock(
+    const UserCredentials& credentials) {
   current_state_.reset(
       new AuthAttemptState(
-          gaia::CanonicalizeEmail(username),
-          HashPassword(password)));
+          gaia::CanonicalizeEmail(credentials.username),
+          HashPassword(credentials.password)));
   check_key_attempted_ = true;
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
@@ -281,14 +281,14 @@ void ParallelAuthenticator::AuthenticateToUnlock(const std::string& username,
 }
 
 void ParallelAuthenticator::LoginAsLocallyManagedUser(
-    const std::string& username,
-    const std::string& password) {
+    const UserCredentials& credentials) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // TODO(nkostylev): Pass proper value for |user_is_new| or remove (not used).
   current_state_.reset(
-      new AuthAttemptState(username, password,
-                           HashPassword(password),
-                           "", "",
+      new AuthAttemptState(credentials,
+                           HashPassword(credentials.password),
+                           "",   // login_token
+                           "",   // login_captcha
                            User::USER_TYPE_LOCALLY_MANAGED,
                            false));
   Mount(current_state_.get(),
@@ -300,10 +300,15 @@ void ParallelAuthenticator::LoginRetailMode() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // Note: |kRetailModeUserEMail| is used in other places to identify a retail
   // mode session.
-  current_state_.reset(new AuthAttemptState(kRetailModeUserEMail,
-                                            "", "", "", "",
-                                            User::USER_TYPE_RETAIL_MODE,
-                                            false));
+  current_state_.reset(new AuthAttemptState(
+        UserCredentials(kRetailModeUserEMail,
+                        "",   // password
+                        ""),  // auth_code
+        "",  // ascii_hash
+        "",  // login_token
+        "",  // login_captcha
+        User::USER_TYPE_RETAIL_MODE,
+        false));
   ephemeral_mount_attempted_ = true;
   MountGuest(current_state_.get(),
              scoped_refptr<ParallelAuthenticator>(this));
@@ -311,9 +316,15 @@ void ParallelAuthenticator::LoginRetailMode() {
 
 void ParallelAuthenticator::LoginOffTheRecord() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  current_state_.reset(new AuthAttemptState("", "", "", "", "",
-                                            User::USER_TYPE_GUEST,
-                                            false));
+  current_state_.reset(new AuthAttemptState(
+      UserCredentials("",  // username
+                      "",  // password
+                      ""),  // auth_code
+      "",  // ascii_hash
+      "",  // login_token
+      "",  // login_captcha
+      User::USER_TYPE_GUEST,
+      false));
   ephemeral_mount_attempted_ = true;
   MountGuest(current_state_.get(),
              scoped_refptr<ParallelAuthenticator>(this));
@@ -321,9 +332,15 @@ void ParallelAuthenticator::LoginOffTheRecord() {
 
 void ParallelAuthenticator::LoginAsPublicAccount(const std::string& username) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  current_state_.reset(new AuthAttemptState(username, "", "", "", "",
-                                            User::USER_TYPE_PUBLIC_ACCOUNT,
-                                            false));
+  current_state_.reset(new AuthAttemptState(
+      UserCredentials(username,
+                      "",  // password
+                      ""),  // auth_code
+      "",  // ascii_hash
+      "",  // login_token
+      "",  // login_captcha
+      User::USER_TYPE_PUBLIC_ACCOUNT,
+      false));
   ephemeral_mount_attempted_ = true;
   Mount(current_state_.get(),
         scoped_refptr<ParallelAuthenticator>(this),
@@ -357,8 +374,7 @@ void ParallelAuthenticator::OnLoginSuccess(bool request_pending) {
     already_reported_success_ = true;
   }
   if (consumer_)
-    consumer_->OnLoginSuccess(current_state_->username,
-                              current_state_->password,
+    consumer_->OnLoginSuccess(current_state_->credentials,
                               request_pending,
                               using_oauth_);
 }
@@ -443,7 +459,8 @@ bool ParallelAuthenticator::VerifyOwner() {
   // First we have to make sure the current user's cert store is available.
   CrosLibrary::Get()->GetCertLibrary()->LoadKeyStore();
   // Now we can continue reading the private key.
-  DeviceSettingsService::Get()->SetUsername(current_state_->username);
+  DeviceSettingsService::Get()->SetUsername(
+      current_state_->credentials.username);
   DeviceSettingsService::Get()->GetOwnershipStatusAsync(
       base::Bind(&ParallelAuthenticator::OnOwnershipChecked, this));
   return false;
@@ -459,15 +476,15 @@ void ParallelAuthenticator::OnOwnershipChecked(
 }
 
 void ParallelAuthenticator::RetryAuth(Profile* profile,
-                                      const std::string& username,
-                                      const std::string& password,
+                                      const UserCredentials& credentials,
                                       const std::string& login_token,
                                       const std::string& login_captcha) {
   reauth_state_.reset(
       new AuthAttemptState(
-          gaia::CanonicalizeEmail(username),
-          password,
-          HashPassword(password),
+          UserCredentials(gaia::CanonicalizeEmail(credentials.username),
+                          credentials.password,
+                          credentials.auth_code),
+          HashPassword(credentials.password),
           login_token,
           login_captcha,
           User::USER_TYPE_REGULAR,
@@ -579,8 +596,9 @@ void ParallelAuthenticator::Resolve() {
           BrowserThread::PostTask(
               BrowserThread::UI, FROM_HERE,
               base::Bind(&ParallelAuthenticator::RecordOAuthCheckFailure, this,
-                         (reauth_state_.get() ? reauth_state_->username :
-                             current_state_->username)));
+                         (reauth_state_.get() ?
+                             reauth_state_->credentials.username :
+                             current_state_->credentials.username)));
         }
         break;
     }

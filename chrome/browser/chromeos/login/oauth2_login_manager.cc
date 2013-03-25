@@ -52,11 +52,15 @@ void OAuth2LoginManager::RegisterUserPrefs(PrefRegistrySyncable* registry) {
 void OAuth2LoginManager::RestoreSession(
     Profile* user_profile,
     net::URLRequestContextGetter* auth_request_context,
-    bool restore_from_auth_cookies) {
+    SessionRestoreStrategy restore_strategy,
+    const std::string& oauth2_refresh_token,
+    const std::string& auth_code) {
   user_profile_ = user_profile;
   auth_request_context_ = auth_request_context;
   state_ = OAuthLoginManager::SESSION_RESTORE_IN_PROGRESS;
-  restore_from_auth_cookies_ = restore_from_auth_cookies;
+  restore_strategy_ = restore_strategy;
+  refresh_token_ = oauth2_refresh_token;
+  auth_code_ = auth_code;
 
   // TODO(zelidrag): Remove eventually the next line in some future milestone.
   RemoveLegacyTokens();
@@ -67,7 +71,9 @@ void OAuth2LoginManager::RestoreSession(
       oauth2_policy_fetcher_->has_oauth2_tokens()) {
     VLOG(1) << "Resuming profile creation after fetching policy token";
     // We already have tokens, no need to get them from the cookie jar again.
-    restore_from_auth_cookies_ = false;
+    if (restore_strategy_ == RESTORE_FROM_COOKIE_JAR)
+      restore_strategy_ = RESTORE_FROM_SAVED_OAUTH2_REFRESH_TOKEN;
+
     StoreOAuth2Tokens(oauth2_policy_fetcher_->oauth2_tokens());
   }
 
@@ -75,26 +81,23 @@ void OAuth2LoginManager::RestoreSession(
 }
 
 void OAuth2LoginManager::ContinueSessionRestore() {
-  if (restore_from_auth_cookies_) {
+  if (restore_strategy_ == RESTORE_FROM_COOKIE_JAR ||
+      restore_strategy_ == RESTORE_FROM_AUTH_CODE) {
     FetchOAuth2Tokens();
     return;
   }
 
-  // Save OAuth2 refresh token from the command line in forced
-  // app mode.
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kForceAppMode) &&
-      command_line->HasSwitch(switches::kAppId) &&
-      command_line->HasSwitch(switches::kAppModeOAuth2Token) &&
-      !command_line->GetSwitchValueASCII(
-          switches::kAppModeOAuth2Token).empty()) {
+  // Save passed OAuth2 refresh token.
+  if (restore_strategy_ == RESTORE_FROM_PASSED_OAUTH2_REFRESH_TOKEN) {
+    DCHECK(!refresh_token_.empty());
+    restore_strategy_ = RESTORE_FROM_SAVED_OAUTH2_REFRESH_TOKEN;
     GaiaAuthConsumer::ClientOAuthResult oauth2_tokens;
-    oauth2_tokens.refresh_token =
-        command_line->GetSwitchValueASCII(switches::kAppModeOAuth2Token);
+    oauth2_tokens.refresh_token = refresh_token_;
     StoreOAuth2Tokens(oauth2_tokens);
     return;
   }
 
+  DCHECK(restore_strategy_ == RESTORE_FROM_SAVED_OAUTH2_REFRESH_TOKEN);
   LoadAndVerifyOAuth2Tokens();
 }
 
@@ -148,9 +151,19 @@ void OAuth2LoginManager::FetchOAuth2Tokens() {
   DCHECK(auth_request_context_.get());
   // If we have authenticated cookie jar, get OAuth1 token first, then fetch
   // SID/LSID cookies through OAuthLogin call.
-  oauth2_token_fetcher_.reset(
-      new OAuth2TokenFetcher(this, auth_request_context_));
-  oauth2_token_fetcher_->Start();
+  if (restore_strategy_ == RESTORE_FROM_COOKIE_JAR) {
+    oauth2_token_fetcher_.reset(
+        new OAuth2TokenFetcher(this, auth_request_context_));
+    oauth2_token_fetcher_->StartExchangeFromCookies();
+  } else if (restore_strategy_ == RESTORE_FROM_AUTH_CODE) {
+    DCHECK(!auth_code_.empty());
+    oauth2_token_fetcher_.reset(
+        new OAuth2TokenFetcher(this,
+                               g_browser_process->system_request_context()));
+    oauth2_token_fetcher_->StartExchangeFromAuthCode(auth_code_);
+  } else {
+    NOTREACHED();
+  }
 }
 
 void OAuth2LoginManager::OnOAuth2TokensAvailable(
@@ -183,9 +196,9 @@ void OAuth2LoginManager::Observe(
       break;
     }
     case chrome::NOTIFICATION_TOKEN_AVAILABLE: {
-      // This path should kick on only when we mint a new OAuth2 refresh
-      // token for user cookies. Otherwise, wait for all tokens to load above.
-      if (!restore_from_auth_cookies_)
+      // This path should not kick in if are loading OAuth2 refresh token
+      // from the TokenService.
+      if (restore_strategy_ == RESTORE_FROM_SAVED_OAUTH2_REFRESH_TOKEN)
         return;
 
       TokenService::TokenAvailableDetails* token_details =

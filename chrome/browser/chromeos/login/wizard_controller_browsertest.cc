@@ -293,8 +293,8 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest,
       &mock_consumer);
   // This calls StartWizard, destroying the current controller() and its mocks;
   // don't set expectations on those objects.
-  ExistingUserController::current_controller()->CompleteLogin(kUsername,
-                                                              kPassword);
+  ExistingUserController::current_controller()->CompleteLogin(
+      UserCredentials(kUsername, kPassword, ""));
   // Run the tasks posted to complete the login:
   MessageLoop::current()->RunUntilIdle();
 
@@ -302,7 +302,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest,
       WizardController::default_controller()->GetEnterpriseEnrollmentScreen();
   EXPECT_EQ(screen, WizardController::default_controller()->current_screen());
   // This is the main expectation: after auto-enrollment, login is resumed.
-  EXPECT_CALL(mock_consumer, OnLoginSuccess(_, _, _, _)).Times(1);
+  EXPECT_CALL(mock_consumer, OnLoginSuccess(_, _, _)).Times(1);
   OnExit(ScreenObserver::ENTERPRISE_AUTO_MAGIC_ENROLLMENT_COMPLETED);
   // Prevent browser launch when the profile is prepared:
   browser_shutdown::SetTryingToQuit(true);

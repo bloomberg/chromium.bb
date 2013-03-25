@@ -21,8 +21,7 @@ namespace chromeos {
 class AuthAttemptState {
  public:
   // Used to initialize for a login attempt.
-  AuthAttemptState(const std::string& username,
-                   const std::string& password,
+  AuthAttemptState(const UserCredentials& credentials,
                    const std::string& ascii_hash,
                    const std::string& login_token,
                    const std::string& login_captcha,
@@ -30,8 +29,7 @@ class AuthAttemptState {
                    const bool user_is_new);
 
   // Used to initialize for a externally authenticated login.
-  AuthAttemptState(const std::string& username,
-                   const std::string& password,
+  AuthAttemptState(const UserCredentials& credentials,
                    const std::string& ascii_hash,
                    const bool user_is_new);
 
@@ -70,10 +68,9 @@ class AuthAttemptState {
 
   // Saved so we can retry client login, and also so we know for whom login
   // has succeeded, in the event of successful completion.
-  const std::string username;
+  const UserCredentials credentials;
 
   // These fields are saved so we can retry client login.
-  const std::string password;
   const std::string ascii_hash;
   const std::string login_token;
   const std::string login_captcha;

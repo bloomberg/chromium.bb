@@ -315,6 +315,15 @@ cr.define('login', function() {
         Oobe.getInstance().headerHidden = true;
         // Clear any error messages that were shown before login.
         Oobe.clearErrors();
+      } else if (msg.method == 'completeAuthentication') {
+        chrome.send('completeAuthentication', [msg.email,
+                                               msg.password,
+                                               msg.authCode]);
+        this.loading = true;
+        // Now that we're in logged in state header should be hidden.
+        Oobe.getInstance().headerHidden = true;
+        // Clear any error messages that were shown before login.
+        Oobe.clearErrors();
       } else if (msg.method == 'loginUILoaded') {
         this.loading = false;
         chrome.send('loginScreenUpdate');

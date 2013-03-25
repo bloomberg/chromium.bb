@@ -693,8 +693,7 @@ class LoginObserver : public chromeos::LoginStatusConsumer {
   virtual void OnLoginFailure(const chromeos::LoginFailure& error);
 
   virtual void OnLoginSuccess(
-      const std::string& username,
-      const std::string& password,
+      const chromeos::UserCredentials& credentials,
       bool pending_requests,
       bool using_oauth);
 
@@ -783,8 +782,7 @@ class ScreenUnlockObserver : public ScreenLockUnlockObserver,
   virtual void OnLoginFailure(const chromeos::LoginFailure& error);
 
   virtual void OnLoginSuccess(
-      const std::string& username,
-      const std::string& password,
+      const chromeos::UserCredentials& credentials,
       bool pending_requests,
       bool using_oauth) {}
 

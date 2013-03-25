@@ -196,8 +196,7 @@ void WebUIScreenLocker::CreateLocallyManagedUser(const string16& display_name,
   NOTREACHED();
 }
 
-void WebUIScreenLocker::CompleteLogin(const std::string& username,
-                                      const std::string& password) {
+void WebUIScreenLocker::CompleteLogin(const UserCredentials& credentials) {
   NOTREACHED();
 }
 
@@ -205,10 +204,9 @@ string16 WebUIScreenLocker::GetConnectedNetworkName() {
   return GetCurrentNetworkName();
 }
 
-void WebUIScreenLocker::Login(const std::string& username,
-                              const std::string& password) {
+void WebUIScreenLocker::Login(const UserCredentials& credentials) {
   chromeos::ScreenLocker::default_screen_locker()->Authenticate(
-      ASCIIToUTF16(password));
+      ASCIIToUTF16(credentials.password));
 }
 
 void WebUIScreenLocker::LoginAsRetailModeUser() {

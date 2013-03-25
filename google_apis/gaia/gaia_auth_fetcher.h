@@ -109,6 +109,13 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
   // called on the consumer on the original thread.
   void StartCookieForOAuthLoginTokenExchange(const std::string& session_index);
 
+  // Start a request to exchange the authorization code for an OAuthLogin-scoped
+  // oauth2 token.
+  //
+  // Either OnClientOAuthSuccess or OnClientOAuthFailure will be
+  // called on the consumer on the original thread.
+  void StartAuthCodeForOAuth2TokenExchange(const std::string& auth_code);
+
   // Start a request to get user info for the account identified by |lsid|.
   //
   // Either OnGetUserInfoSuccess or OnGetUserInfoFailure will be
@@ -356,8 +363,6 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
 
   static std::string MakeOAuthLoginBody(const std::string& service,
                                         const std::string& source);
-
-  void StartOAuth2TokenPairFetch(const std::string& auth_code);
 
   // Create a fetcher usable for making any Gaia request.  |body| is used
   // as the body of the POST request sent to GAIA.  Any strings listed in

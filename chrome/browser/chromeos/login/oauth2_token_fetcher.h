@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_OAUTH2_TOKEN_FETCHER_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_OAUTH2_TOKEN_FETCHER_H_
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
@@ -36,7 +38,8 @@ class OAuth2TokenFetcher : public base::SupportsWeakPtr<OAuth2TokenFetcher>,
                      net::URLRequestContextGetter* context_getter);
   virtual ~OAuth2TokenFetcher();
 
-  void Start();
+  void StartExchangeFromCookies();
+  void StartExchangeFromAuthCode(const std::string& auth_code);
 
  private:
   // Decides how to proceed on GAIA |error|. If the error looks temporary,
@@ -59,6 +62,7 @@ class OAuth2TokenFetcher : public base::SupportsWeakPtr<OAuth2TokenFetcher>,
 
   // The retry counter. Increment this only when failure happened.
   int retry_count_;
+  std::string auth_code_;
 
   DISALLOW_COPY_AND_ASSIGN(OAuth2TokenFetcher);
 };

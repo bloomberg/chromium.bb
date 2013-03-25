@@ -116,9 +116,10 @@ class KioskAppLauncher::ProfileLoader : public LoginUtils::Delegate {
 
   void Start() {
     LoginUtils::Get()->PrepareProfile(
-        GetAppUserNameFromAppId(launcher_->app_id_),
+        UserCredentials(GetAppUserNameFromAppId(launcher_->app_id_),
+                        std::string(),   // password
+                        std::string()),  // auth_code
         std::string(),  // display email
-        std::string(),  // password
         false,  // using_oauth
         false,  // has_cookies
         this);

@@ -127,8 +127,7 @@ void LoginPerformer::OnRetailModeLoginSuccess() {
 }
 
 void LoginPerformer::OnLoginSuccess(
-    const std::string& username,
-    const std::string& password,
+    const UserCredentials& credentials,
     bool pending_requests,
     bool using_oauth) {
   content::RecordAction(UserMetricsAction("Login_Success"));
@@ -154,8 +153,7 @@ void LoginPerformer::OnLoginSuccess(
   else
     initial_online_auth_pending_ = true;
 
-  delegate_->OnLoginSuccess(username,
-                            password,
+  delegate_->OnLoginSuccess(credentials,
                             pending_requests,
                             using_oauth);
 }
@@ -219,12 +217,10 @@ void LoginPerformer::Observe(int type,
 ////////////////////////////////////////////////////////////////////////////////
 // LoginPerformer, public:
 
-void LoginPerformer::PerformLogin(const std::string& username,
-                                  const std::string& password,
+void LoginPerformer::PerformLogin(const UserCredentials& credentials,
                                   AuthorizationMode auth_mode) {
   auth_mode_ = auth_mode;
-  username_ = username;
-  password_ = password;
+  credentials_ = credentials;
 
   CrosSettings* cros_settings = CrosSettings::Get();
 
@@ -235,7 +231,7 @@ void LoginPerformer::PerformLogin(const std::string& username,
         cros_settings->PrepareTrustedValues(
             base::Bind(&LoginPerformer::PerformLogin,
                        weak_factory_.GetWeakPtr(),
-                       username, password, auth_mode));
+                       credentials_, auth_mode));
     // Must not proceed without signature verification.
     if (status == CrosSettingsProvider::PERMANENTLY_UNTRUSTED) {
       if (delegate_)
@@ -251,7 +247,7 @@ void LoginPerformer::PerformLogin(const std::string& username,
   }
 
   bool is_whitelisted = LoginUtils::IsWhitelisted(
-      gaia::CanonicalizeEmail(username));
+      gaia::CanonicalizeEmail(credentials.username));
   if (ScreenLocker::default_screen_locker() || is_whitelisted) {
     switch (auth_mode_) {
       case AUTH_MODE_EXTENSION:
@@ -263,7 +259,7 @@ void LoginPerformer::PerformLogin(const std::string& username,
     }
   } else {
     if (delegate_)
-      delegate_->WhiteListCheckFailed(username);
+      delegate_->WhiteListCheckFailed(credentials.username);
     else
       NOTREACHED();
   }
@@ -274,21 +270,22 @@ void LoginPerformer::CreateLocallyManagedUser(const string16& display_name,
   std::string id = UserManager::Get()->GenerateUniqueLocallyManagedUserId();
   const User* user = UserManager::Get()->
       CreateLocallyManagedUserRecord(id, display_name);
-  LoginAsLocallyManagedUser(user->email(), password);
+  LoginAsLocallyManagedUser(UserCredentials(user->email(),
+                                            password,
+                                            std::string()));  // auth_code
 }
 
-void LoginPerformer::LoginAsLocallyManagedUser(const std::string& username,
-                                               const std::string& password) {
+void LoginPerformer::LoginAsLocallyManagedUser(
+    const UserCredentials& credentials) {
   DCHECK_EQ(UserManager::kLocallyManagedUserDomain,
-            gaia::ExtractDomainName(username));
+            gaia::ExtractDomainName(credentials.username));
   // TODO(nkostylev): Check that policy allows locally managed user login.
   authenticator_ = LoginUtils::Get()->CreateAuthenticator(this);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&Authenticator::LoginAsLocallyManagedUser,
                  authenticator_.get(),
-                 username,
-                 password));
+                 credentials));
 }
 
 void LoginPerformer::LoginRetailMode() {
@@ -494,10 +491,10 @@ void LoginPerformer::StartLoginCompletion() {
       BrowserThread::UI, FROM_HERE,
       base::Bind(&Authenticator::CompleteLogin, authenticator_.get(),
                  profile,
-                 username_,
-                 password_));
+                 credentials_));
 
-  password_.clear();
+  credentials_.password.clear();
+  credentials_.auth_code.clear();
 }
 
 void LoginPerformer::StartAuthentication() {
@@ -517,13 +514,12 @@ void LoginPerformer::StartAuthentication() {
         BrowserThread::UI, FROM_HERE,
         base::Bind(&Authenticator::AuthenticateToLogin, authenticator_.get(),
                    profile,
-                   username_,
-                   password_,
+                   credentials_,
                    std::string(),
                    std::string()));
     // Make unobtrusive online check. It helps to determine password change
     // state in the case when offline login fails.
-    online_attempt_host_.Check(profile, username_, password_);
+    online_attempt_host_.Check(profile, credentials_);
   } else {
     DCHECK(authenticator_.get())
         << "Authenticator instance doesn't exist for login attempt retry.";
@@ -533,12 +529,12 @@ void LoginPerformer::StartAuthentication() {
         BrowserThread::UI, FROM_HERE,
         base::Bind(&Authenticator::RetryAuth, authenticator_.get(),
                    profile,
-                   username_,
-                   password_,
+                   credentials_,
                    std::string(),
                    std::string()));
   }
-  password_.clear();
+  credentials_.password.clear();
+  credentials_.auth_code.clear();
 }
 
 }  // namespace chromeos

@@ -345,7 +345,8 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest, ExistingUserLogin) {
       .Times(1)
       .WillOnce(WithArg<0>(Invoke(CreateAuthenticator)));
   EXPECT_CALL(*mock_login_utils_,
-              PrepareProfile(kUsername, _, kPassword, _, _, _))
+              PrepareProfile(UserCredentials(kUsername, kPassword, ""),
+                             _, _, _, _))
       .Times(1)
       .WillOnce(InvokeWithoutArgs(&profile_prepared_cb_,
                                   &base::Callback<void(void)>::Run));
@@ -365,7 +366,7 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest, ExistingUserLogin) {
   EXPECT_CALL(*mock_user_manager_->user_manager(), IsCurrentUserNew())
       .Times(AnyNumber())
       .WillRepeatedly(Return(false));
-  existing_user_controller()->Login(kUsername, kPassword);
+  existing_user_controller()->Login(UserCredentials(kUsername, kPassword, ""));
   content::RunAllPendingInMessageLoop();
 }
 
@@ -390,7 +391,8 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest, AutoEnrollAfterSignIn) {
       .Times(1)
       .InSequence(uiEnabledSequence);
   existing_user_controller()->DoAutoEnrollment();
-  existing_user_controller()->CompleteLogin(kUsername, kPassword);
+  existing_user_controller()->CompleteLogin(
+      UserCredentials(kUsername, kPassword, ""));
   content::RunAllPendingInMessageLoop();
 }
 
@@ -412,7 +414,8 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest,
       .Times(1)
       .WillOnce(WithArg<0>(Invoke(CreateAuthenticatorNewUser)));
   EXPECT_CALL(*mock_login_utils_,
-              PrepareProfile(kNewUsername, _, kPassword, _, _, _))
+              PrepareProfile(UserCredentials(kNewUsername, kPassword, ""),
+                             _, _, _, _))
       .Times(1)
       .WillOnce(InvokeWithoutArgs(&profile_prepared_cb_,
                                   &base::Callback<void(void)>::Run));
@@ -438,7 +441,8 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest,
       .Times(1)
       .InSequence(uiEnabledSequence);
 
-  existing_user_controller()->CompleteLogin(kNewUsername, kPassword);
+  existing_user_controller()->CompleteLogin(
+      UserCredentials(kNewUsername, kPassword, ""));
   content::RunAllPendingInMessageLoop();
 }
 
@@ -542,7 +546,8 @@ class ExistingUserControllerPublicSessionTest
         .Times(1)
         .WillOnce(WithArg<0>(Invoke(create_authenticator)));
     EXPECT_CALL(*mock_login_utils_,
-                PrepareProfile(username, _, password, _, _, _))
+                PrepareProfile(UserCredentials(username, password, ""),
+                               _, _, _, _))
         .Times(1)
         .WillOnce(InvokeWithoutArgs(&profile_prepared_cb_,
                                     &base::Callback<void(void)>::Run));
@@ -725,7 +730,7 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
   ASSERT_TRUE(auto_login_timer());
 
   // Login and check that it stopped the timer.
-  existing_user_controller()->Login(kUsername, kPassword);
+  existing_user_controller()->Login(UserCredentials(kUsername, kPassword, ""));
   EXPECT_TRUE(is_login_in_progress());
   ASSERT_TRUE(auto_login_timer());
   EXPECT_FALSE(auto_login_timer()->IsRunning());
@@ -778,7 +783,8 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
   ASSERT_TRUE(auto_login_timer());
 
   // Check that login completes and stops the timer.
-  existing_user_controller()->CompleteLogin(kUsername, kPassword);
+  existing_user_controller()->CompleteLogin(
+      UserCredentials(kUsername, kPassword, ""));
   ASSERT_TRUE(auto_login_timer());
   EXPECT_FALSE(auto_login_timer()->IsRunning());
 

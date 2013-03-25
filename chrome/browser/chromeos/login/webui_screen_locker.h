@@ -30,6 +30,7 @@ namespace chromeos {
 
 class ScreenLocker;
 class WebUILoginDisplay;
+struct UserCredentials;
 
 namespace test {
 class WebUIScreenLockerTester;
@@ -66,11 +67,9 @@ class WebUIScreenLocker : public WebUILoginView,
   virtual void CreateLocallyManagedUser(const string16& display_name,
                                         const std::string& password) OVERRIDE;
 
-  virtual void CompleteLogin(const std::string& username,
-                             const std::string& password) OVERRIDE;
+  virtual void CompleteLogin(const UserCredentials& credentials) OVERRIDE;
   virtual string16 GetConnectedNetworkName() OVERRIDE;
-  virtual void Login(const std::string& username,
-                     const std::string& password) OVERRIDE;
+  virtual void Login(const UserCredentials& credentials) OVERRIDE;
   virtual void LoginAsRetailModeUser() OVERRIDE;
   virtual void LoginAsGuest() OVERRIDE;
   virtual void MigrateUserData(const std::string& old_password) OVERRIDE;

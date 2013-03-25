@@ -76,11 +76,9 @@ class ExistingUserController : public LoginDisplay::Delegate,
   virtual void CreateAccount() OVERRIDE;
   virtual void CreateLocallyManagedUser(const string16& display_name,
                                         const std::string& password) OVERRIDE;
-  virtual void CompleteLogin(const std::string& username,
-                             const std::string& password) OVERRIDE;
+  virtual void CompleteLogin(const UserCredentials& credentials) OVERRIDE;
   virtual string16 GetConnectedNetworkName() OVERRIDE;
-  virtual void Login(const std::string& username,
-                     const std::string& password) OVERRIDE;
+  virtual void Login(const UserCredentials& credentials) OVERRIDE;
   virtual void MigrateUserData(const std::string& old_password) OVERRIDE;
   virtual void LoginAsRetailModeUser() OVERRIDE;
   virtual void LoginAsGuest() OVERRIDE;
@@ -132,8 +130,7 @@ class ExistingUserController : public LoginDisplay::Delegate,
   // LoginPerformer::Delegate implementation:
   virtual void OnLoginFailure(const LoginFailure& error) OVERRIDE;
   virtual void OnLoginSuccess(
-      const std::string& username,
-      const std::string& password,
+      const UserCredentials& credentials,
       bool pending_requests,
       bool using_oauth) OVERRIDE;
   virtual void OnOffTheRecordLoginSuccess() OVERRIDE;
@@ -190,16 +187,14 @@ class ExistingUserController : public LoginDisplay::Delegate,
   // Invoked to complete login. Login might be suspended if auto-enrollment
   // has to be performed, and will resume once auto-enrollment completes.
   void CompleteLoginInternal(
-      const std::string& username,
-      const std::string& password,
+      const UserCredentials& credentials,
       DeviceSettingsService::OwnershipStatus ownership_status,
       bool is_owner);
 
   // Creates |login_performer_| if necessary and calls login() on it.
   // The string arguments aren't passed by const reference because this is
   // posted as |resume_login_callback_| and resets it.
-  void PerformLogin(std::string username,
-                    std::string password,
+  void PerformLogin(const UserCredentials& credentials,
                     LoginPerformer::AuthorizationMode auth_mode);
 
   void set_login_performer_delegate(LoginPerformer::Delegate* d) {

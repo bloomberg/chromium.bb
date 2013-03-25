@@ -88,7 +88,9 @@ void LocallyManagedUserCreationScreen::RunFlow(
   controller_->SetUpCreation(display_name, managed_user_password);
 
   ExistingUserController::current_controller()->
-      Login(manager_id, manager_password);
+      Login(UserCredentials(manager_id,
+                            manager_password,
+                            std::string()  /* auth_code */));
 }
 
 void LocallyManagedUserCreationScreen::OnManagerLoginFailure() {

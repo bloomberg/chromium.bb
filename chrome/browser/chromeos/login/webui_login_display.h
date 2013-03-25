@@ -56,10 +56,8 @@ class WebUILoginDisplay : public LoginDisplay,
   virtual void CreateAccount() OVERRIDE;
   virtual void CreateLocallyManagedUser(const string16& display_name,
                                         const std::string password) OVERRIDE;
-  virtual void CompleteLogin(const std::string& username,
-                             const std::string& password) OVERRIDE;
-  virtual void Login(const std::string& username,
-                     const std::string& password) OVERRIDE;
+  virtual void CompleteLogin(const UserCredentials& credentials) OVERRIDE;
+  virtual void Login(const UserCredentials& credentials) OVERRIDE;
   virtual void LoginAsRetailModeUser() OVERRIDE;
   virtual void LoginAsGuest() OVERRIDE;
   virtual void MigrateUserData(const std::string& old_password) OVERRIDE;

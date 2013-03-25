@@ -24,6 +24,19 @@ extern const char kRetailModeUserEMail[];
 
 extern const int kDefaultImagesCount;
 
+// User credentials data that is being exchanged between part of ChromeOS
+// authentication mechanism.
+struct UserCredentials {
+  UserCredentials();
+  UserCredentials(const std::string& username,
+                  const std::string& password,
+                  const std::string& auth_code);
+  bool operator==(const UserCredentials& cred) const;
+  std::string username;
+  std::string password;
+  std::string auth_code;
+};
+
 // A class representing information about a previously logged in user.
 // Each user has a canonical email (username), returned by |email()| and
 // may have a different displayed email (in the raw form as entered by user),

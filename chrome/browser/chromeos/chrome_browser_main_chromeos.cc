@@ -145,10 +145,11 @@ class StubLogin : public LoginStatusConsumer,
     authenticator_ = LoginUtils::Get()->CreateAuthenticator(this);
     authenticator_.get()->AuthenticateToLogin(
         g_browser_process->profile_manager()->GetDefaultProfile(),
-        username,
-        password,
-        std::string(),
-        std::string());
+        UserCredentials(username,
+                        password,
+                        std::string()),  // auth_code
+        std::string(),   // login_token
+        std::string());  // login_captcha
   }
 
   virtual ~StubLogin() {
@@ -160,18 +161,16 @@ class StubLogin : public LoginStatusConsumer,
     delete this;
   }
 
-  virtual void OnLoginSuccess(const std::string& username,
-                              const std::string& password,
+  virtual void OnLoginSuccess(const UserCredentials& credentials,
                               bool pending_requests,
                               bool using_oauth) OVERRIDE {
     pending_requests_ = pending_requests;
     if (!profile_prepared_) {
       // Will call OnProfilePrepared in the end.
-      LoginUtils::Get()->PrepareProfile(username,
-                                        std::string(),
-                                        password,
+      LoginUtils::Get()->PrepareProfile(credentials,
+                                        std::string(),  // display_email
                                         using_oauth,
-                                        false,
+                                        false,          // has_cookies
                                         this);
     } else if (!pending_requests) {
       delete this;

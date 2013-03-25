@@ -38,8 +38,7 @@ void MockConsumer::OnGuestSuccessQuitAndFail() {
 
 // static
 void MockConsumer::OnSuccessQuit(
-    const std::string& username,
-    const std::string& password,
+    const UserCredentials& credentials,
     bool pending_requests,
     bool using_oauth) {
   MessageLoop::current()->Quit();
@@ -47,8 +46,7 @@ void MockConsumer::OnSuccessQuit(
 
 // static
 void MockConsumer::OnSuccessQuitAndFail(
-    const std::string& username,
-    const std::string& password,
+    const UserCredentials& credentials,
     bool pending_requests,
     bool using_oauth) {
   ADD_FAILURE() << "Login should NOT have succeeded!";

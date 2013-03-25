@@ -26,10 +26,10 @@ void LoginEventObserver::OnLoginFailure(const chromeos::LoginFailure& error) {
   _NotifyLoginEvent(error.GetErrorString());
 }
 
-void LoginEventObserver::OnLoginSuccess(const std::string& username,
-                                        const std::string& password,
-                                        bool pending_requests,
-                                        bool using_oauth) {
+void LoginEventObserver::OnLoginSuccess(
+    const chromeos::UserCredentials& credentials,
+    bool pending_requests,
+    bool using_oauth) {
   // Profile changes after login. Ensure AutomationProvider refers to
   // the correct one.
   if (automation_) {

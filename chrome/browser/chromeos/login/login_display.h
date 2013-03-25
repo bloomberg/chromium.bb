@@ -41,18 +41,16 @@ class LoginDisplay : public RemoveUserDelegate {
     virtual void CreateLocallyManagedUser(const string16& display_name,
                                           const std::string& password) = 0;
 
-    // Complete sign process with specified |username| and |password|.
+    // Complete sign process with specified |credentials|.
     // Used for new users authenticated through an extension.
-    virtual void CompleteLogin(const std::string& username,
-                               const std::string& password) = 0;
+    virtual void CompleteLogin(const UserCredentials& credentials) = 0;
 
     // Returns name of the currently connected network.
     virtual string16 GetConnectedNetworkName() = 0;
 
     // Sign in using |username| and |password| specified.
     // Used for known users only.
-    virtual void Login(const std::string& username,
-                       const std::string& password) = 0;
+    virtual void Login(const UserCredentials& credentials) = 0;
 
     // Sign in as a retail mode user.
     virtual void LoginAsRetailModeUser() = 0;
