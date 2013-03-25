@@ -205,8 +205,19 @@
   fun:_free_dbg
   fun:_aligned_free_dbg
   fun:_aligned_free
-  fun:media::ReleaseData
-  fun:base::internal::RunnableAdapter::Run
+}
+
+{
+  bug_157076_c
+  ThreadSanitizer:Race
+  fun:memset
+  fun:_heap_alloc_dbg_impl
+  fun:_nh_malloc_dbg_impl
+  fun:_nh_malloc_dbg
+  fun:_malloc_dbg
+  fun:_aligned_offset_malloc_dbg
+  fun:_aligned_malloc
+  fun:base::AlignedAlloc
 }
 
 {
