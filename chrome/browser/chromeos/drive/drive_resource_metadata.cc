@@ -585,7 +585,7 @@ DriveResourceMetadata::RenameEntryOnBlockingPool(
   if (!entry)
     return FileMoveResult(DRIVE_FILE_ERROR_NOT_FOUND);
 
-  if (new_name == file_path.BaseName().value())
+  if (base::FilePath::FromUTF8Unsafe(new_name) == file_path.BaseName())
     return FileMoveResult(DRIVE_FILE_ERROR_EXISTS);
 
   entry->set_title(new_name);
