@@ -17,7 +17,7 @@ import toolchain_main
 
 GIT_REVISIONS = {
     'binutils': '8c79023cd333c8be4276eefca7aa129b3db67d3e',# tag binutils-2_23_2
-    'gcc': '644d38f52faf287fbdb94bb76f91b725ab192a73',
+    'gcc': 'b90e7646d2f7d6c89a1143283b3c4e68ca17b9f6',
     'newlib': '5feee65e182c08a7e89fbffc3223c57e4335420f',
     }
 
@@ -80,6 +80,8 @@ elif sys.platform.startswith('win'):
 
 CONFIGURE_HOST_COMMON = CONFIGURE_HOST_ARCH + [
       '--prefix=',
+      '--disable-silent-rules',
+      '--without-gcc-arch',
       ]
 
 CONFIGURE_HOST_LIB = CONFIGURE_HOST_COMMON + [
@@ -236,7 +238,7 @@ HOST_GCC_LIBS = {
             MAKE_PARALLEL_CMD,
             MAKE_CHECK_CMD,
             MAKE_DESTDIR_CMD + ['install-strip'],
-            ])
+            ]),
         },
     'mpc': {
         'dependencies': ['gmp', 'mpfr'],
@@ -251,11 +253,56 @@ HOST_GCC_LIBS = {
             MAKE_PARALLEL_CMD,
             MAKE_CHECK_CMD,
             MAKE_DESTDIR_CMD + ['install-strip'],
-            ])
+            ]),
+        },
+    'isl': {
+        'dependencies': ['gmp'],
+        'tar_src': 'third_party/cloog/isl-0.11.1.tar.bz2',
+        'unpack_commands': UnpackSrc(False) + PopulateDeps(['%(gmp)s']),
+        'hashed_inputs': {'src': 'src', 'all_deps': 'all_deps'},
+        'commands': CommandsInBuild([
+            CONFIGURE_CMD + CONFIGURE_HOST_LIB + WithDepsOptions([
+                'sysroot',
+                'gmp-prefix',
+                ]),
+            MAKE_PARALLEL_CMD,
+            MAKE_CHECK_CMD,
+            MAKE_DESTDIR_CMD + ['install-strip'],
+            ]) + [
+                # The .pc files wind up containing some absolute paths
+                # that make the output depend on the build directory name.
+                # The dependents' configure scripts don't need them anyway.
+                command.RemoveDirectory(os.path.join('%(output)s',
+                                                     'lib', 'pkgconfig')),
+                ],
+        },
+    'cloog': {
+        'dependencies': ['gmp', 'isl'],
+        'tar_src': 'third_party/cloog/cloog-0.18.0.tar.gz',
+        'unpack_commands': UnpackSrc(True) + PopulateDeps(['%(gmp)s',
+                                                           '%(isl)s']),
+        'hashed_inputs': {'src': 'src', 'all_deps': 'all_deps'},
+        'commands': CommandsInBuild([
+            CONFIGURE_CMD + CONFIGURE_HOST_LIB + [
+                '--with-bits=gmp',
+                '--with-isl=system',
+                ] + WithDepsOptions(['sysroot',
+                                     'gmp-prefix',
+                                     'isl-prefix']),
+            MAKE_PARALLEL_CMD,
+            MAKE_CHECK_CMD,
+            MAKE_DESTDIR_CMD + ['install-strip'],
+            ]) + [
+                # The .pc files wind up containing some absolute paths
+                # that make the output depend on the build directory name.
+                # The dependents' configure scripts don't need them anyway.
+                command.RemoveDirectory(os.path.join('%(output)s',
+                                                     'lib', 'pkgconfig')),
+                ],
         },
     }
 
-HOST_GCC_LIBS_DEPS = ['gmp', 'mpfr', 'mpc']
+HOST_GCC_LIBS_DEPS = ['gmp', 'mpfr', 'mpc', 'isl', 'cloog']
 
 GCC_GIT_URL = GIT_BASE_URL + '/nacl-gcc.git'
 
@@ -275,6 +322,9 @@ def ConfigureGccCommand(target, extra_args=[]):
           '--with-gmp=%(abs_gmp)s',
           '--with-mpfr=%(abs_mpfr)s',
           '--with-mpc=%(abs_mpc)s',
+          '--with-isl=%(abs_isl)s',
+          '--with-cloog=%(abs_cloog)s',
+          '--enable-cloog-backend=isl',
           '--disable-dlopen',
           '--disable-shared',
           '--with-newlib',
