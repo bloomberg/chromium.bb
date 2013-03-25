@@ -26,9 +26,27 @@ from continuous_archive import CHROME_26_REVISION
 _THIS_DIR = os.path.abspath(os.path.dirname(__file__))
 
 
-_FAILED_JAVA_TESTS_IN_CHROME_26 = [
-    'UploadTest#testFileUploading',
-    'AlertsTest']
+_DESKTOP_OS_NEGATIVE_FILTER = []
+if util.IsLinux():
+  _DESKTOP_OS_NEGATIVE_FILTER = [
+      'TypingTest#testArrowKeysAndPageUpAndDown',
+      'TypingTest#testHomeAndEndAndPageUpAndPageDownKeys',
+      'TypingTest#testNumberpadKeys',
+  ]
+
+_DESKTOP_NEGATIVE_FILTER = {}
+_DESKTOP_NEGATIVE_FILTER['HEAD'] = (
+    _DESKTOP_OS_NEGATIVE_FILTER + [
+        'ExecutingAsyncJavascriptTest#'
+        'shouldNotTimeoutIfScriptCallsbackInsideAZeroTimeout',
+    ]
+)
+_DESKTOP_NEGATIVE_FILTER[CHROME_26_REVISION] = (
+    _DESKTOP_NEGATIVE_FILTER['HEAD'] + [
+        'UploadTest#testFileUploading',
+        'AlertsTest',
+    ]
+)
 
 
 class TestResult(object):
@@ -244,15 +262,14 @@ def main():
   test_filter = options.filter
   if test_filter is None:
     passed_java_tests = []
+    failed_tests = _DESKTOP_NEGATIVE_FILTER[options.chrome_revision]
     with open(os.path.join(_THIS_DIR, 'passed_java_tests.txt'), 'r') as f:
       for line in f:
         java_test = line.strip('\n')
-        # Filter out failed tests for chrome 26.
-        if options.chrome_revision == CHROME_26_REVISION:
-          suite_name = java_test.split('#')[0]
-          if (java_test in _FAILED_JAVA_TESTS_IN_CHROME_26 or
-              suite_name in _FAILED_JAVA_TESTS_IN_CHROME_26):
-            continue
+        # Filter out failed tests.
+        suite_name = java_test.split('#')[0]
+        if java_test in failed_tests or suite_name in failed_tests:
+          continue
         passed_java_tests.append(java_test)
     test_filter = ','.join(passed_java_tests)
 
