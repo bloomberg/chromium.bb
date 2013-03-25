@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/callback_forward.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
 #include "chrome/browser/chromeos/drive/drive_file_error.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
@@ -98,6 +97,15 @@ void ModifyDriveFileResourceUrl(Profile* profile,
 
 // Returns true if the given path is under the Drive mount point.
 bool IsUnderDriveMountPoint(const base::FilePath& path);
+
+// Returns true if the given path is under the Drive mount point and needs to be
+// migrated to the new namespace. http://crbug.com/174233.
+bool NeedsNamespaceMigration(const base::FilePath& path);
+
+// Returns new FilePath with a namespace "root" inserted at the 3rd component.
+// e.g. "/special/drive/root/dir" for "/special/drive/dir".
+// NeedsNamespaceMigration(path) should be true (after the TODOs are resolved).
+base::FilePath ConvertToMyDriveNamespace(const base::FilePath& path);
 
 // Extracts the Drive path from the given path located under the Drive mount
 // point. Returns an empty path if |path| is not under the Drive mount point.

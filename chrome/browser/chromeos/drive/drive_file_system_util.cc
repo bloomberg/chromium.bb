@@ -45,6 +45,8 @@ const char kDriveSpecialRootPath[] = "/special";
 
 const char kDriveMountPointPath[] = "/special/drive";
 
+const char kDriveMyDriveMountPointPath[] = "/special/drive/root";
+
 const base::FilePath::CharType* kDriveMountPointPathComponents[] = {
   "/", "special", "drive"
 };
@@ -166,6 +168,12 @@ const base::FilePath& GetSpecialRemoteRootPath() {
   return drive_mount_path;
 }
 
+const base::FilePath& GetDriveMyDriveMountPointPath() {
+  CR_DEFINE_STATIC_LOCAL(base::FilePath, drive_mydrive_mount_path,
+      (base::FilePath::FromUTF8Unsafe(kDriveMyDriveMountPointPath)));
+  return drive_mydrive_mount_path;
+}
+
 GURL GetFileResourceUrl(const std::string& resource_id,
                         const std::string& file_name) {
   std::string url(base::StringPrintf(
@@ -216,6 +224,31 @@ void ModifyDriveFileResourceUrl(Profile* profile,
 bool IsUnderDriveMountPoint(const base::FilePath& path) {
   return GetDriveMountPointPath() == path ||
          GetDriveMountPointPath().IsParent(path);
+}
+
+bool NeedsNamespaceMigration(const base::FilePath& path) {
+  return false;
+  // TODO(haruki): Update this along with http://crbug.com/174233.
+  //  return IsUnderDriveMountPoint(path) &&
+  //      !(GetDriveMyDriveMountPointPath() == path ||
+  //          GetDriveMyDriveMountPointPath().IsParent(path));
+}
+
+base::FilePath ConvertToMyDriveNamespace(const base::FilePath& path) {
+  // Double check the path.
+  // TODO(haruki): Update this with DCHECK(NeedsNamespaceMigration(path)).
+  DCHECK(IsUnderDriveMountPoint(path) &&
+         !(GetDriveMyDriveMountPointPath() == path ||
+           GetDriveMyDriveMountPointPath().IsParent(path)));
+
+  // Need to migrate "/special/drive(.*)" to "/special/drive/root(.*)".
+  // Append the relative path from "/special/drive".
+  base::FilePath new_path(GetDriveMyDriveMountPointPath());
+  GetDriveMountPointPath().AppendRelativePath(path, &new_path);
+  DVLOG(1) << "Migrate download.default_directory setting from "
+      << path.AsUTF8Unsafe() << " to " << new_path.AsUTF8Unsafe();
+  DCHECK(!NeedsNamespaceMigration(new_path));
+  return new_path;
 }
 
 base::FilePath ExtractDrivePath(const base::FilePath& path) {

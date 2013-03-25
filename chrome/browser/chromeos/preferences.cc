@@ -579,6 +579,12 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
     }
   }
   if (!pref_name || *pref_name == prefs::kDownloadDefaultDirectory) {
+    const base::FilePath pref_path = download_default_directory_.GetValue();
+    if (drive::util::NeedsNamespaceMigration(pref_path)) {
+      prefs_->SetFilePath(prefs::kDownloadDefaultDirectory,
+                          drive::util::ConvertToMyDriveNamespace(pref_path));
+    }
+
     const bool default_download_to_drive = drive::util::IsUnderDriveMountPoint(
         download_default_directory_.GetValue());
     if (pref_name)

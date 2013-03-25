@@ -110,5 +110,51 @@ TEST(DriveFileSystemUtilTest, ParseCacheFilePath) {
   EXPECT_EQ(extra_extension, "");
 }
 
+TEST(DriveFileSystemUtilTest, NeedsNamespaceMigration) {
+  // Not Drive cases.
+  EXPECT_FALSE(NeedsNamespaceMigration(
+      base::FilePath::FromUTF8Unsafe("/Downloads")));
+  EXPECT_FALSE(NeedsNamespaceMigration(
+      base::FilePath::FromUTF8Unsafe("/Downloads/x")));
+  EXPECT_FALSE(NeedsNamespaceMigration(
+      base::FilePath::FromUTF8Unsafe("/wherever/foo.txt")));
+  EXPECT_FALSE(NeedsNamespaceMigration(
+      base::FilePath::FromUTF8Unsafe("/special/foo.txt")));
+  EXPECT_FALSE(NeedsNamespaceMigration(
+      base::FilePath::FromUTF8Unsafe("/special/drivex/foo.txt")));
+  EXPECT_FALSE(NeedsNamespaceMigration(
+      base::FilePath::FromUTF8Unsafe("special/drivex/foo.txt")));
+
+  // Before migration. TODO(haruki): These cases should be EXPECT_TRUE.
+  // Update this along with http://crbug.com/174233.
+  EXPECT_FALSE(NeedsNamespaceMigration(
+      base::FilePath::FromUTF8Unsafe("/special/drive")));
+  EXPECT_FALSE(NeedsNamespaceMigration(
+      base::FilePath::FromUTF8Unsafe("/special/drive/foo.txt")));
+  EXPECT_FALSE(NeedsNamespaceMigration(
+      base::FilePath::FromUTF8Unsafe("/special/drive/subdir/foo.txt")));
+
+  // Already migrated.
+  EXPECT_FALSE(NeedsNamespaceMigration(
+      base::FilePath::FromUTF8Unsafe("/special/drive/root")));
+  EXPECT_FALSE(NeedsNamespaceMigration(
+      base::FilePath::FromUTF8Unsafe("/special/drive/root/dir1")));
+  EXPECT_FALSE(NeedsNamespaceMigration(
+      base::FilePath::FromUTF8Unsafe("/special/drive/root/root")));
+  EXPECT_FALSE(NeedsNamespaceMigration(
+      base::FilePath::FromUTF8Unsafe("/special/drive/root/root/dir1")));
+}
+
+TEST(DriveFileSystemUtilTest, ConvertToMyDriveNamespace) {
+  // Migration cases.
+  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("/special/drive/root"),
+            drive::util::ConvertToMyDriveNamespace(
+                base::FilePath::FromUTF8Unsafe("/special/drive")));
+
+  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("/special/drive/root/dir1"),
+            drive::util::ConvertToMyDriveNamespace(
+                base::FilePath::FromUTF8Unsafe("/special/drive/dir1")));
+}
+
 }  // namespace util
 }  // namespace drive
