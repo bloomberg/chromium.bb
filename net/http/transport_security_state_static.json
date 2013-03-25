@@ -581,7 +581,10 @@
     { "name": "kiwiirc.com", "mode": "force-https" },
     { "name": "pay.gigahost.dk", "include_subdomains": true, "mode": "force-https" },
     { "name": "controlcenter.gigahost.dk", "include_subdomains": true, "mode": "force-https" },
-    { "name": "simple.com", "include_subdomains": true, "mode": "force-https" },
+    { "name": "simple.com", "mode": "force-https" },
+    { "name": "www.simple.com", "mode": "force-https" },
+    { "name": "fj.simple.com", "mode": "force-https" },
+    { "name": "api.simple.com", "mode": "force-https" },
 
     // Entries that are only valid if the client supports SNI.
     { "name": "gmail.com", "mode": "force-https", "pins": "google", "snionly": true },
