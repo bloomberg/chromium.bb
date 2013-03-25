@@ -32,3 +32,11 @@ race:thread_manager
 
 # http://crbug.com/223352
 race:uprv_malloc_46
+
+# http://crbug.com/84094
+race:sqlite3StatusSet
+race:pcache1EnforceMaxPage
+race:pcache1AllocPage
+
+# http://crbug.com/115540
+race:base::Thread::ThreadMain
