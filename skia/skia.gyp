@@ -101,7 +101,6 @@
         #'../third_party/skia/src/ports/SkFontHost_linux.cpp',
         '../third_party/skia/src/ports/SkFontHost_mac.cpp',
         #'../third_party/skia/src/ports/SkFontHost_none.cpp',
-        '../third_party/skia/src/ports/SkFontHost_sandbox_none.cpp',
         '../third_party/skia/src/ports/SkFontHost_win.cpp',
         '../third_party/skia/src/ports/SkGlobalInitialization_chromium.cpp',
         #'../third_party/skia/src/ports/SkImageDecoder_CG.cpp',
@@ -184,8 +183,6 @@
         'ext/platform_device_win.cc',
         'ext/refptr.h',
         'ext/SkMemory_new_handler.cpp',
-        'ext/skia_sandbox_support_win.h',
-        'ext/skia_sandbox_support_win.cc',
         'ext/skia_trace_shim.h',
         'ext/skia_utils_base.cc',
         'ext/skia_utils_base.h',
@@ -496,7 +493,6 @@
         [ 'OS == "win"', {
           'sources!': [
             '../third_party/skia/src/core/SkMMapStream.cpp',
-            '../third_party/skia/src/ports/SkFontHost_sandbox_none.cpp',
             '../third_party/skia/src/ports/SkThread_pthread.cpp',
             '../third_party/skia/src/ports/SkTime_Unix.cpp',
             'ext/SkThread_chrome.cc',
