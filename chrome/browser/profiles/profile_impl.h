@@ -208,9 +208,11 @@ class ProfileImpl : public Profile {
   // should become proper ProfileKeyedServices as well.
 #if !defined(OS_CHROMEOS)
   scoped_ptr<policy::UserCloudPolicyManager> cloud_policy_manager_;
-#endif
+#endif  // !defined(OS_CHROMEOS)
+#if defined(ENABLE_MANAGED_USERS)
   scoped_ptr<policy::ManagedModePolicyProvider> managed_mode_policy_provider_;
-#endif
+#endif  // defined(ENABLE_MANAGED_USERS)
+#endif  // defined(ENABLE_CONFIGURATION_POLICY)
   scoped_ptr<policy::PolicyService> policy_service_;
 
   // Keep |prefs_| on top for destruction order because |extension_prefs_|,

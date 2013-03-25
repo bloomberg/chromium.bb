@@ -96,10 +96,12 @@
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
 #include "chrome/browser/policy/browser_policy_connector.h"
-#include "chrome/browser/policy/managed_mode_policy_provider.h"
 #if !defined(OS_CHROMEOS)
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager.h"
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
+#endif
+#if defined(ENABLE_MANAGED_USERS)
+#include "chrome/browser/policy/managed_mode_policy_provider.h"
 #endif
 #else
 #include "chrome/browser/policy/policy_service_stub.h"
@@ -377,11 +379,13 @@ ProfileImpl::ProfileImpl(
     cloud_policy_manager_->Init();
   }
 #endif
+#if defined(ENABLE_MANAGED_USERS)
   managed_mode_policy_provider_ =
       policy::ManagedModePolicyProvider::Create(this,
                                                 sequenced_task_runner,
                                                 force_immediate_policy_load);
   managed_mode_policy_provider_->Init();
+#endif
   policy_service_ =
       g_browser_process->browser_policy_connector()->CreatePolicyService(this);
 #else
@@ -640,7 +644,7 @@ ProfileImpl::~ProfileImpl() {
   if (host_content_settings_map_)
     host_content_settings_map_->ShutdownOnUIThread();
 
-#if defined(ENABLE_CONFIGURATION_POLICY)
+#if defined(ENABLE_MANAGED_USERS)
   if (managed_mode_policy_provider_)
     managed_mode_policy_provider_->Shutdown();
 #endif
@@ -784,7 +788,7 @@ Profile::ExitType ProfileImpl::GetLastSessionExitType() {
 }
 
 policy::ManagedModePolicyProvider* ProfileImpl::GetManagedModePolicyProvider() {
-#if defined(ENABLE_CONFIGURATION_POLICY)
+#if defined(ENABLE_MANAGED_USERS)
   return managed_mode_policy_provider_.get();
 #else
   return NULL;
