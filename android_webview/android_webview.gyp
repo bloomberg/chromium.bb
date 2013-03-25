@@ -193,29 +193,5 @@
       },
       'includes': [ '../build/java.gypi' ],
     },
-    {
-      'target_name': 'android_webview_apk',
-      'type': 'none',
-      'dependencies': [
-        '../base/base.gyp:base_java',
-        '../components/components.gyp:navigation_interception_java',
-        '../components/components.gyp:web_contents_delegate_android_java',
-        '../content/content.gyp:content_java',
-        '../media/media.gyp:media_java',
-        '../net/net.gyp:net_java',
-        '../ui/ui.gyp:ui_java',
-        'libwebviewchromium',
-      ],
-      'variables': {
-        'apk_name': 'AndroidWebView',
-        'manifest_package_name': 'org.chromium.android_webview',
-        'java_in_dir': '../android_webview/java',
-        'native_libs_paths': ['<(SHARED_LIB_DIR)/libwebviewchromium.so'],
-        'additional_input_paths': [
-          '<(PRODUCT_DIR)/android_webview_apk/assets/webviewchromium.pak',
-        ],
-      },
-      'includes': [ '../build/java_apk.gypi' ],
-    },
   ],
 }

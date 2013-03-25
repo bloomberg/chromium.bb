@@ -29,7 +29,8 @@ public class AwContentsClientFullScreenVideoTest extends AndroidWebViewTestBase 
         AwTestContainerView testContainerView =
                 createAwTestContainerViewOnMainSync(contentsClient);
         enableJavaScriptOnUiThread(testContainerView.getAwContents());
-        VideoTestWebServer webServer = new VideoTestWebServer(getInstrumentation().getContext());
+        VideoTestWebServer webServer = new VideoTestWebServer(
+                getInstrumentation().getTargetContext());
         try {
             loadUrlSync(testContainerView.getAwContents(),
                     contentsClient.getOnPageFinishedHelper(),

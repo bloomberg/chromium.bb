@@ -92,20 +92,15 @@ public class ClientOnReceivedErrorTest extends AndroidWebViewTestBase {
     public void testNonExistentAssetUrl() throws Throwable {
         TestCallbackHelperContainer.OnReceivedErrorHelper onReceivedErrorHelper =
                 mContentsClient.getOnReceivedErrorHelper();
-        try {
-            final String url = "file:///android_asset/does_not_exist.html";
-            int onReceivedErrorCallCount = onReceivedErrorHelper.getCallCount();
-            useTestResourceContext();
-            loadUrlAsync(mAwContents, url);
+        final String url = "file:///android_asset/does_not_exist.html";
+        int onReceivedErrorCallCount = onReceivedErrorHelper.getCallCount();
+        loadUrlAsync(mAwContents, url);
 
-            onReceivedErrorHelper.waitForCallback(onReceivedErrorCallCount);
-            assertEquals(ErrorCodeConversionHelper.ERROR_UNKNOWN,
-                         onReceivedErrorHelper.getErrorCode());
-            assertEquals(url, onReceivedErrorHelper.getFailingUrl());
-            assertNotNull(onReceivedErrorHelper.getDescription());
-        } finally {
-            resetResourceContext();
-        }
+        onReceivedErrorHelper.waitForCallback(onReceivedErrorCallCount);
+        assertEquals(ErrorCodeConversionHelper.ERROR_UNKNOWN,
+                     onReceivedErrorHelper.getErrorCode());
+        assertEquals(url, onReceivedErrorHelper.getFailingUrl());
+        assertNotNull(onReceivedErrorHelper.getDescription());
     }
 
     @MediumTest
@@ -113,34 +108,14 @@ public class ClientOnReceivedErrorTest extends AndroidWebViewTestBase {
     public void testNonExistentResourceUrl() throws Throwable {
         TestCallbackHelperContainer.OnReceivedErrorHelper onReceivedErrorHelper =
                 mContentsClient.getOnReceivedErrorHelper();
-        try {
-            final String url = "file:///android_res/raw/does_not_exist.html";
-            int onReceivedErrorCallCount = onReceivedErrorHelper.getCallCount();
-            useTestResourceContext();
-            loadUrlAsync(mAwContents, url);
+        final String url = "file:///android_res/raw/does_not_exist.html";
+        int onReceivedErrorCallCount = onReceivedErrorHelper.getCallCount();
+        loadUrlAsync(mAwContents, url);
 
-            onReceivedErrorHelper.waitForCallback(onReceivedErrorCallCount);
-            assertEquals(ErrorCodeConversionHelper.ERROR_UNKNOWN,
-                         onReceivedErrorHelper.getErrorCode());
-            assertEquals(url, onReceivedErrorHelper.getFailingUrl());
-            assertNotNull(onReceivedErrorHelper.getDescription());
-        } finally {
-            resetResourceContext();
-        }
-    }
-
-    /**
-     * Configure the browser to load resources from the test harness instead of the browser
-     * application.
-     */
-    private void useTestResourceContext() {
-        AndroidProtocolHandler.setResourceContextForTesting(getInstrumentation().getContext());
-    }
-
-    /**
-     * Configure the browser to load resources from the browser application.
-     */
-    private void resetResourceContext() {
-        AndroidProtocolHandler.setResourceContextForTesting(null);
+        onReceivedErrorHelper.waitForCallback(onReceivedErrorCallCount);
+        assertEquals(ErrorCodeConversionHelper.ERROR_UNKNOWN,
+                     onReceivedErrorHelper.getErrorCode());
+        assertEquals(url, onReceivedErrorHelper.getFailingUrl());
+        assertNotNull(onReceivedErrorHelper.getDescription());
     }
 }

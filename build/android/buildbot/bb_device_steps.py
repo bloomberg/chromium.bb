@@ -53,7 +53,7 @@ INSTRUMENTATION_TESTS = dict((suite.name, suite) for suite in [
            constants.CHROMIUM_TEST_SHELL_HOST_DRIVEN_DIR),
     I_TEST('AndroidWebView',
            'AndroidWebView.apk',
-           'org.chromium.android_webview',
+           'org.chromium.android_webview.shell',
            'AndroidWebViewTest',
            'webview:android_webview/test/data/device_files',
            None),

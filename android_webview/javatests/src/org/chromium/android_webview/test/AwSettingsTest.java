@@ -1946,15 +1946,10 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
         final AwTestContainerView testContainerView =
                 createAwTestContainerViewOnMainSync(contentClient);
         final AwContents awContents = testContainerView.getAwContents();
-        try {
-            useTestResourceContext();
-            loadUrlSync(awContents,
-                        contentClient.getOnPageFinishedHelper(),
-                        "file:///android_asset/asset_file.html");
-            assertEquals(expectedTitle, getTitleOnUiThread(awContents));
-        } finally {
-            resetResourceContext();
-        }
+        loadUrlSync(awContents,
+                    contentClient.getOnPageFinishedHelper(),
+                    "file:///android_asset/asset_file.html");
+        assertEquals(expectedTitle, getTitleOnUiThread(awContents));
     }
 
     // Test a resource URL (file:///android_res/).
@@ -1968,15 +1963,10 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
         final AwTestContainerView testContainerView =
                 createAwTestContainerViewOnMainSync(contentClient);
         final AwContents awContents = testContainerView.getAwContents();
-        try {
-            useTestResourceContext();
-            loadUrlSync(awContents,
-                        contentClient.getOnPageFinishedHelper(),
-                        "file:///android_res/raw/resource_file.html");
-            assertEquals(expectedTitle, getTitleOnUiThread(awContents));
-        } finally {
-            resetResourceContext();
-        }
+        loadUrlSync(awContents,
+                    contentClient.getOnPageFinishedHelper(),
+                    "file:///android_res/raw/resource_file.html");
+        assertEquals(expectedTitle, getTitleOnUiThread(awContents));
     }
 
     // Test that the file URL access toggle does not affect asset URLs.
@@ -1991,16 +1981,11 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
                 createAwTestContainerViewOnMainSync(contentClient);
         final AwContents awContents = testContainerView.getAwContents();
         final AwSettings settings = getAwSettingsOnUiThread(awContents);
-        try {
-            useTestResourceContext();
-            settings.setAllowFileAccess(false);
-            loadUrlSync(awContents,
-                        contentClient.getOnPageFinishedHelper(),
-                        "file:///android_asset/asset_file.html");
-            assertEquals(expectedTitle, getTitleOnUiThread(awContents));
-        } finally {
-            resetResourceContext();
-        }
+        settings.setAllowFileAccess(false);
+        loadUrlSync(awContents,
+                    contentClient.getOnPageFinishedHelper(),
+                    "file:///android_asset/asset_file.html");
+        assertEquals(expectedTitle, getTitleOnUiThread(awContents));
     }
 
     // Test that the file URL access toggle does not affect resource URLs.
@@ -2015,16 +2000,11 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
                 createAwTestContainerViewOnMainSync(contentClient);
         final AwContents awContents = testContainerView.getAwContents();
         final AwSettings settings = getAwSettingsOnUiThread(awContents);
-        try {
-            useTestResourceContext();
-            settings.setAllowFileAccess(false);
-            loadUrlSync(awContents,
-                        contentClient.getOnPageFinishedHelper(),
-                        "file:///android_res/raw/resource_file.html");
-            assertEquals(expectedTitle, getTitleOnUiThread(awContents));
-        } finally {
-            resetResourceContext();
-        }
+        settings.setAllowFileAccess(false);
+        loadUrlSync(awContents,
+                    contentClient.getOnPageFinishedHelper(),
+                    "file:///android_res/raw/resource_file.html");
+        assertEquals(expectedTitle, getTitleOnUiThread(awContents));
     }
 
     @SmallTest
@@ -2557,7 +2537,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
                 observer.register(awContents.getContentViewCore(), "javaObserver");
             }
         });
-        VideoTestWebServer webServer = new VideoTestWebServer(getInstrumentation().getContext());
+        VideoTestWebServer webServer = new VideoTestWebServer(getActivity());
         try {
             String data = "<html><head><script>" +
                 "addEventListener('DOMContentLoaded', function() { " +
@@ -2618,7 +2598,8 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
                 contentSettings.setDefaultVideoPosterURL(DEFAULT_VIDEO_POSTER_URL);
             }
         });
-        VideoTestWebServer webServer = new VideoTestWebServer(getInstrumentation().getContext());
+        VideoTestWebServer webServer = new VideoTestWebServer(
+                getInstrumentation().getTargetContext());
         try {
             String data = "<html><head><body>" +
                 "<video id='video' control src='" +
@@ -2739,21 +2720,6 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
 
     private String createContentUrl(final String target) {
         return TestContentProvider.createContentUrl(target);
-    }
-
-    /**
-     * Configure the browser to load resources from the test harness instead of the browser
-     * application.
-     */
-    private void useTestResourceContext() {
-        AndroidProtocolHandler.setResourceContextForTesting(getInstrumentation().getContext());
-    }
-
-    /**
-     * Configure the browser to load resources from the browser application.
-     */
-    private void resetResourceContext() {
-        AndroidProtocolHandler.setResourceContextForTesting(null);
     }
 
     /**

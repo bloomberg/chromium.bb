@@ -56,7 +56,7 @@ public class AwContentsClientGetVideoLoadingProgressViewTest extends AndroidWebV
                 new FullScreenVideoTestAwContentsClient(getActivity()) {
             @Override
             protected View getVideoLoadingProgressView() {
-                View view = new View(getInstrumentation().getContext());
+                View view = new View(getInstrumentation().getTargetContext());
                 view.addOnAttachStateChangeListener(
                         AwContentsClientGetVideoLoadingProgressViewTest.this);
                 return view;
@@ -66,7 +66,8 @@ public class AwContentsClientGetVideoLoadingProgressViewTest extends AndroidWebV
                 createAwTestContainerViewOnMainSync(contentsClient);
         final AwContents awContents = testContainerView.getAwContents();
         enableJavaScriptOnUiThread(awContents);
-        VideoTestWebServer webServer = new VideoTestWebServer(getInstrumentation().getContext());
+        VideoTestWebServer webServer = new VideoTestWebServer(
+                getInstrumentation().getTargetContext());
         try {
             loadUrlSync(awContents, contentsClient.getOnPageFinishedHelper(),
                     webServer.getFullScreenVideoTestURL());

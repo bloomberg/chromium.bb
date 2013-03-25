@@ -4,42 +4,28 @@
 {
   'targets': [
     {
-      'target_name': 'android_webview_test_java',
+      'target_name': 'android_webview_apk',
       'type': 'none',
       'dependencies': [
-        '../base/base.gyp:base_java_test_support',
-        '../content/content.gyp:content_java_test_support',
-        '../net/net.gyp:net_java_test_support',
-        'android_webview_java',
         'libwebviewchromium',
+        'android_webview_java',
+        'android_webview_pak',
       ],
       'variables': {
-        'java_in_dir': '../android_webview/javatests',
-        'has_java_resources': 1,
-        'R_package': 'org.chromium.android_webview.test',
-        'R_package_relpath': 'org/chromium/android_webview/test',
-      },
-      'includes': [ '../build/java.gypi' ],
-    },
-    {
-      'target_name': 'android_webview_test_apk',
-      'type': 'none',
-      'dependencies': [
-        'android_webview_test_java',
-      ],
-      'variables': {
-        'apk_name': 'AndroidWebViewTest',
-        'java_in_dir': '../android_webview/test_apk',
-        'is_test_apk': 0, # We want resources from android_webview_test_java.
+        'apk_name': 'AndroidWebView',
+        'java_in_dir': '../android_webview/test/shell',
+        'native_libs_paths': ['<(SHARED_LIB_DIR)/libwebviewchromium.so'],
+        'resource_dir': 'res',
         'additional_input_paths': [
-          '<(PRODUCT_DIR)/android_webview_test_apk/assets/asset_file.html',
-          '<(PRODUCT_DIR)/android_webview_test_apk/assets/asset_icon.png',
-          '<(PRODUCT_DIR)/android_webview_test_apk/assets/full_screen_video_test.html',
+          '<(PRODUCT_DIR)/android_webview_apk/assets/webviewchromium.pak',
+          '<(PRODUCT_DIR)/android_webview_apk/assets/asset_file.html',
+          '<(PRODUCT_DIR)/android_webview_apk/assets/asset_icon.png',
+          '<(PRODUCT_DIR)/android_webview_apk/assets/full_screen_video_test.html',
         ],
       },
       'copies': [
         {
-          'destination': '<(PRODUCT_DIR)/android_webview_test_apk/assets',
+          'destination': '<(PRODUCT_DIR)/android_webview_apk/assets',
           'files': [
             '<(java_in_dir)/assets/asset_file.html',
             '<(java_in_dir)/assets/asset_icon.png',
@@ -50,21 +36,41 @@
       'includes': [ '../build/java_apk.gypi' ],
     },
     {
-      'target_name': 'android_webview_shell_apk',
+      # android_webview_apk creates a .jar as a side effect. Any java
+      # targets that need that .jar in their classpath should depend on this
+      # target. For more details see the chromium_testshell_java target.
+      'target_name': 'android_webview_apk_java',
       'type': 'none',
       'dependencies': [
-        'android_webview_test_java',
-        'android_webview_pak',
+        'android_webview_apk',
+      ],
+      'all_dependent_settings': {
+        'variables': {
+          'input_jars_paths': ['>(apk_output_jar_path)'],
+        },
+      },
+      'actions': [
+        {
+          'action_name': 'fake_generate_jar',
+          'inputs': [],
+          'outputs': ['>(apk_output_jar_path)'],
+          'action': [],
+        },
+      ],
+    },
+    {
+      'target_name': 'android_webview_test_apk',
+      'type': 'none',
+      'dependencies': [
+        '../base/base.gyp:base_java_test_support',
+        '../content/content.gyp:content_java_test_support',
+        '../net/net.gyp:net_java_test_support',
+        'android_webview_apk_java',
       ],
       'variables': {
-        'apk_name': 'AndroidWebViewShell',
-        'java_in_dir': '../android_webview/shell_apk',
-        'native_libs_paths': ['<(SHARED_LIB_DIR)/libwebviewchromium.so'],
-        'resource_dir': 'res',
-        'asset_location': '<(ant_build_out)/android_webview_apk/assets',
-        'additional_input_paths': [
-          '<(PRODUCT_DIR)/android_webview_apk/assets/webviewchromium.pak',
-        ],
+        'apk_name': 'AndroidWebViewTest',
+        'java_in_dir': '../android_webview/javatests',
+        'is_test_apk': 1,
       },
       'includes': [ '../build/java_apk.gypi' ],
     },

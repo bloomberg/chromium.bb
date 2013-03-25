@@ -8,11 +8,10 @@ import android.app.Application;
 import android.content.Context;
 
 import org.chromium.android_webview.AwBrowserProcess;
-import org.chromium.android_webview.test.AwTestResourceProvider;
 import org.chromium.content.browser.ResourceExtractor;
 import org.chromium.content.common.CommandLine;
 
-public class AndroidWebViewTestShellApplication extends Application {
+public class AwShellApplication extends Application {
 
     /** The minimum set of .pak files the test runner needs. */
     private static final String[] MANDATORY_PAKS = {
@@ -23,7 +22,7 @@ public class AndroidWebViewTestShellApplication extends Application {
     public void onCreate() {
         super.onCreate();
 
-        AwTestResourceProvider.registerResources(this);
+        AwShellResourceProvider.registerResources(this);
 
         CommandLine.initFromFile("/data/local/chrome-command-line");
 

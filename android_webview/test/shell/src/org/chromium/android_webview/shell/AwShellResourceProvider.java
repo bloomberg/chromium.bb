@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.android_webview.test;
+package org.chromium.android_webview.shell;
 
 import android.content.Context;
 
 import org.chromium.android_webview.AwResource;
 
-public class AwTestResourceProvider {
+public class AwShellResourceProvider {
     private static boolean sInitialized;
 
     public static void registerResources(Context context) {

@@ -15,7 +15,7 @@
     <!-- TODO(joth): Change minSdkVersion to 16 when crbug/161864 lands. -->
     <uses-sdk android:minSdkVersion="14" android:targetSdkVersion="17" />
     <instrumentation android:name="android.test.InstrumentationTestRunner"
-        android:targetPackage="org.chromium.android_webview"
+        android:targetPackage="org.chromium.android_webview.shell"
         android:label="Tests for org.chromium.android_webview"/>
     <uses-permission android:name="android.permission.RUN_INSTRUMENTATION" />
     <uses-permission android:name="android.permission.INJECT_EVENTS" />

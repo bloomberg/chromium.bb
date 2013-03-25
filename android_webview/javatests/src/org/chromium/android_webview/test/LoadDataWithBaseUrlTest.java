@@ -302,7 +302,6 @@ public class LoadDataWithBaseUrlTest extends AndroidWebViewTestBase {
             final String DATA_BASE_URL = "data:";
             final String NON_DATA_BASE_URL = "http://example.com";
 
-            AndroidProtocolHandler.setResourceContextForTesting(getInstrumentation().getContext());
             mAwContents.getSettings().setAllowFileAccess(false);
             String token = "" + System.currentTimeMillis();
             // All access to file://, including android_asset and android_res is blocked
@@ -342,7 +341,6 @@ public class LoadDataWithBaseUrlTest extends AndroidWebViewTestBase {
                   "file://" + imagePath + "?" + token));
         } finally {
           if (!tempImage.delete()) throw new AssertionError();
-          AndroidProtocolHandler.setResourceContextForTesting(null);
         }
     }
 }

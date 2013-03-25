@@ -417,63 +417,28 @@ public class AwContentsClientShouldInterceptRequestTest extends AndroidWebViewTe
                 mContentsClient.getOnPageFinishedHelper().getCallCount());
     }
 
-    /**
-     * Configure the browser to load resources from the test harness instead of the browser
-     * application.
-     */
-    private void useTestResourceContext() {
-        AndroidProtocolHandler.setResourceContextForTesting(getInstrumentation().getContext());
-    }
-
-    /**
-     * Configure the browser to load resources from the browser application.
-     */
-    private void resetResourceContext() {
-        AndroidProtocolHandler.setResourceContextForTesting(null);
-    }
-
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testNotCalledForExistingResource() throws Throwable {
-        try {
-            useTestResourceContext();
-            notCalledForUrlTemplate("file:///android_res/raw/resource_file.html");
-        } finally {
-            resetResourceContext();
-        }
+        notCalledForUrlTemplate("file:///android_res/raw/resource_file.html");
     }
 
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testCalledForNonexistentResource() throws Throwable {
-        try {
-            useTestResourceContext();
-            calledForUrlTemplate("file:///android_res/raw/no_file.html");
-        } finally {
-            resetResourceContext();
-        }
+        calledForUrlTemplate("file:///android_res/raw/no_file.html");
     }
 
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testNotCalledForExistingAsset() throws Throwable {
-        try {
-            useTestResourceContext();
-            notCalledForUrlTemplate("file:///android_asset/asset_file.html");
-        } finally {
-            resetResourceContext();
-        }
+        notCalledForUrlTemplate("file:///android_asset/asset_file.html");
     }
 
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testCalledForNonexistentAsset() throws Throwable {
-        try {
-            useTestResourceContext();
-            calledForUrlTemplate("file:///android_res/raw/no_file.html");
-        } finally {
-            resetResourceContext();
-        }
+        calledForUrlTemplate("file:///android_res/raw/no_file.html");
     }
 
     @SmallTest

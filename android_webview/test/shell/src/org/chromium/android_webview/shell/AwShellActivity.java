@@ -36,8 +36,8 @@ import org.chromium.content.browser.LoadUrlParams;
 /*
  * This is a lightweight activity for tests that only require WebView functionality.
  */
-public class AndroidWebViewTestShellActivity extends Activity {
-    private final static String PREFERENCES_NAME = "AndroidWebViewTestShellPrefs";
+public class AwShellActivity extends Activity {
+    private final static String PREFERENCES_NAME = "AwShellPrefs";
     private final static String INITIAL_URL = "about:blank";
     private AwTestContainerView mAwTestContainerView;
     private EditText mUrlTextView;
