@@ -62,16 +62,26 @@ postpunc ''' 356-3-356
 
 always ' 3
 endword 'd 3-145
+endword ’d 3-145
 word 'em = 
 endword 'll 3-123-123
+endword ’ll 3-123-123
 endword 'm 3-134
+endword ’m 3-134
 endword 're 3-1235-15
+endword ’re 3-1235-15
+endword 'ry 3-1235-13456
+endword ’ry 3-1235-13456
+endword 'r 3-1235
+endword ’r 3-1235
 endword 's 3-234
-endword \x2019\x0073 3-234
+endword ’s 3-234
 endword 't 3-2345
+endword ’t 3-2345
 word 'tis =
 word 'twas =
 endword 've 3-1236-15
+endword ’ve 3-1236-15
 midnum , 3
 always , 2
 midnum . 2
