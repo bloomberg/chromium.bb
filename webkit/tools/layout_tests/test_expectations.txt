@@ -31,5 +31,3 @@
 # Right?)
 #
 # EVERYTHING BELOW THIS LINE WILL BE DELETED AT EVERY WEBKIT DEPS ROLL
-webkit.org/b/93310 fast/canvas/canvas-toDataURL-webp.html [ ImageOnlyFailure Pass ]
-webkit.org/b/93310 platform/chromium/virtual/gpu/fast/canvas/canvas-toDataURL-webp.html [ ImageOnlyFailure Pass ]
