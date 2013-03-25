@@ -28,6 +28,8 @@
 #include "net/base/mime_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
+#include "ui/shell_dialogs/selected_file_info.h"
+#include "webkit/fileapi/external_mount_points.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/isolated_context.h"
@@ -389,10 +391,13 @@ class FileSystemChooseEntryFunction::FilePicker
 
     if (g_skip_picker_for_test) {
       if (g_path_to_be_picked_for_test) {
+        ui::SelectedFileInfo selected_path(*g_path_to_be_picked_for_test,
+                                           base::FilePath());
         content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
             base::Bind(
-                &FileSystemChooseEntryFunction::FilePicker::FileSelected,
-                base::Unretained(this), *g_path_to_be_picked_for_test, 1,
+                &FileSystemChooseEntryFunction::FilePicker::
+                    FileSelectedWithExtraInfo,
+                base::Unretained(this), selected_path, 1,
                 static_cast<void*>(NULL)));
       } else {
         content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
@@ -418,7 +423,22 @@ class FileSystemChooseEntryFunction::FilePicker
   virtual void FileSelected(const base::FilePath& path,
                             int index,
                             void* params) OVERRIDE {
-    function_->FileSelected(path, entry_type_);
+    // The version taking ui::SelectedFileInfo should be used.
+    NOTREACHED();
+  }
+
+  virtual void FileSelectedWithExtraInfo(const ui::SelectedFileInfo& file,
+                                         int index,
+                                         void* params) OVERRIDE {
+    // Normally, file.local_path is used because it is a native path to the
+    // local read-only cached file in the case of remote file system like
+    // Chrome OS's Google Drive integration. Here, however, |file.file_path| is
+    // necessary because we need to create a FileEntry denoting the remote file,
+    // not its cache. On other platforms than Chrome OS, they are the same.
+    //
+    // TODO(kinaba): remove this, once after the file picker implements proper
+    // switch of the path treatment depending on the |support_drive| flag.
+    function_->FileSelected(file.file_path, entry_type_);
     delete this;
   }
 
@@ -476,6 +496,16 @@ void FileSystemChooseEntryFunction::SkipPickerAndAlwaysCancelForTest() {
 // static
 void FileSystemChooseEntryFunction::StopSkippingPickerForTest() {
   g_skip_picker_for_test = false;
+}
+
+// static
+void FileSystemChooseEntryFunction::RegisterTempExternalFileSystemForTest(
+    const std::string& name, const base::FilePath& path) {
+  // For testing on Chrome OS, where to deal with remote and local paths
+  // smoothly, all accessed paths need to be registered in the list of
+  // external mount points.
+  fileapi::ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
+      name, fileapi::kFileSystemTypeNativeLocal, path);
 }
 
 void FileSystemChooseEntryFunction::FileSelected(const base::FilePath& path,
@@ -592,6 +622,9 @@ bool FileSystemChooseEntryFunction::RunImpl() {
     error_ = kRequiresFileSystemWriteError;
     return false;
   }
+
+  if (entry_type != WRITABLE)
+    file_type_info.support_drive = true;
 
   return ShowPicker(suggested_name, file_type_info, picker_type, entry_type);
 }

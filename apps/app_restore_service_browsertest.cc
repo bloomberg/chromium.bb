@@ -70,6 +70,8 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, FileAccessIsSavedToPrefs) {
 
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &temp_file);
+  FileSystemChooseEntryFunction::RegisterTempExternalFileSystemForTest(
+      "temp", temp_directory.path());
 
   ExtensionTestMessageListener file_written_listener("fileWritten", false);
   ExtensionTestMessageListener access_ok_listener(
@@ -111,6 +113,8 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, FileAccessIsRestored) {
 
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &temp_file);
+  FileSystemChooseEntryFunction::RegisterTempExternalFileSystemForTest(
+      "temp", temp_directory.path());
 
   ExtensionTestMessageListener file_written_listener("fileWritten", false);
   ExtensionTestMessageListener access_ok_listener(

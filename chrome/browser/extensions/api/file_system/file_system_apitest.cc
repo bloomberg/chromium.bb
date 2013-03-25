@@ -16,6 +16,8 @@ class FileSystemApiTest : public extensions::PlatformAppBrowserTest {
     extensions::PlatformAppBrowserTest::SetUpCommandLine(command_line);
     test_root_folder_ = test_data_dir_.AppendASCII("api_test")
         .AppendASCII("file_system");
+    FileSystemChooseEntryFunction::RegisterTempExternalFileSystemForTest(
+        "test_root", test_root_folder_);
   }
 
   virtual void TearDown() OVERRIDE {
@@ -30,6 +32,9 @@ class FileSystemApiTest : public extensions::PlatformAppBrowserTest {
       ADD_FAILURE() << "CreateUniqueTempDir failed";
       return base::FilePath();
     }
+    FileSystemChooseEntryFunction::RegisterTempExternalFileSystemForTest(
+        "test_temp", temp_dir_.path());
+
     base::FilePath destination = temp_dir_.path().AppendASCII(destination_name);
     if (copy_gold) {
       base::FilePath source = test_root_folder_.AppendASCII("gold.txt");

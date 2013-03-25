@@ -100,7 +100,8 @@ GrantedFileEntry CreateFileEntry(
   DCHECK(isolated_context);
 
   result.filesystem_id = isolated_context->RegisterFileSystemForPath(
-      fileapi::kFileSystemTypeNativeLocal, path, &result.registered_name);
+      fileapi::kFileSystemTypeNativeForPlatformApp, path,
+      &result.registered_name);
 
   content::ChildProcessSecurityPolicy* policy =
       content::ChildProcessSecurityPolicy::GetInstance();
