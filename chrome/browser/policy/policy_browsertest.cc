@@ -240,14 +240,11 @@ void CheckURLIsBlocked(Browser* browser, const char* spec) {
   EXPECT_EQ(title, contents->GetTitle());
 
   // Verify that the expected error page is being displayed.
-  // (error 138 == NETWORK_ACCESS_DENIED)
   bool result = false;
   EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
       contents,
-      "var hasError = false;"
-      "var error = document.getElementById('errorDetails');"
-      "if (error)"
-      "  hasError = error.textContent.indexOf('Error 22') == 0;"
+      "var textContent = document.body.textContent;"
+      "var hasError = textContent.indexOf('ERR_BLOCKED_BY_ADMINISTRATOR') >= 0;"
       "domAutomationController.send(hasError);",
       &result));
   EXPECT_TRUE(result);
