@@ -259,7 +259,7 @@
     'instant': {
       'filepath': 'instant|searchbox|'\
                   'chrome/browser/search/|'\
-                  'chrome/browser/ui/search|'\
+                  'chrome/browser/ui/search/|'\
                   'chrome/common/search_types.*',
     },
     'ipc': {
