@@ -44,9 +44,8 @@ int64 SysInfo::AmountOfFreeDiskSpace(const FilePath& path) {
   base::ThreadRestrictions::AssertIOAllowed();
 
   struct statvfs stats;
-  if (statvfs(path.value().c_str(), &stats) != 0) {
+  if (HANDLE_EINTR(statvfs(path.value().c_str(), &stats)) != 0)
     return -1;
-  }
   return static_cast<int64>(stats.f_bavail) * stats.f_frsize;
 }
 

@@ -292,7 +292,7 @@ void GetSizeStatsOnBlockingPool(const std::string& mount_path,
   uint64_t remaining_size_in_bytes = 0;
 
   struct statvfs stat = {};  // Zero-clear
-  if (statvfs(mount_path.c_str(), &stat) == 0) {
+  if (HANDLE_EINTR(statvfs(mount_path.c_str(), &stat)) == 0) {
     total_size_in_bytes =
         static_cast<uint64_t>(stat.f_blocks) * stat.f_frsize;
     remaining_size_in_bytes =
