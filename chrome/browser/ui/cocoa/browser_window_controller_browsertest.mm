@@ -298,7 +298,7 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, ZOrderNormalInstant) {
 // Presentation mode with Instant results showing. Should be exact same as
 // non-Instant presentation mode.
 IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
-                       ZOrderInstantPresentationMode) {
+                       DISABLED_ZOrderInstantPresentationMode) {
   // TODO(kbr): re-enable: http://crbug.com/222296
   if (base::mac::IsOSMountainLionOrLater())
     return;
@@ -321,7 +321,7 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
 // Verify that if the fullscreen floating bar view is below the tab content area
 // then calling |updateSubviewZOrder:| will correctly move back above.
 IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
-                       FloatingBarBelowContentView) {
+                       DISABLED_FloatingBarBelowContentView) {
   // TODO(kbr): re-enable: http://crbug.com/222296
   if (base::mac::IsOSMountainLionOrLater())
     return;
@@ -374,7 +374,7 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, ContentOffset) {
 // Verify that in non-Instant presentation mode the content area is beneath
 // the info bar.
 IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
-                       ContentOffsetPresentationMode) {
+                       DISABLED_ContentOffsetPresentationMode) {
   // TODO(kbr): re-enable: http://crbug.com/222296
   if (base::mac::IsOSMountainLionOrLater())
     return;
