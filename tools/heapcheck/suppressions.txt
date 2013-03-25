@@ -1808,11 +1808,3 @@
    ...
    fun:ProfileSigninConfirmationDialogTest_*_Test::TestBody
 }
-{
-   bug_222509
-   Heapcheck:Leak
-   ...
-   fun:OmniboxViewGtk::AdjustVerticalAlignmentOfInstantView
-   fun:OmniboxViewGtk::Init
-   fun:OmniboxViewGtkTest::SetUp
-}
