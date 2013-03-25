@@ -123,7 +123,9 @@ void AshTestBase::SetUp() {
   ShellTestApi(shell).DisableOutputConfiguratorAnimation();
 
 #if defined(OS_WIN)
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8 &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          ash::switches::kForceAshToDesktop)) {
     metro_viewer_host_.reset(new TestMetroViewerProcessHost("viewer"));
     ASSERT_TRUE(
         metro_viewer_host_->LaunchViewerAndWaitForConnection(
@@ -140,7 +142,9 @@ void AshTestBase::TearDown() {
   RunAllPendingInMessageLoop();
 
 #if defined(OS_WIN)
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8 &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          ash::switches::kForceAshToDesktop)) {
     // Check that our viewer connection is still established.
     ASSERT_FALSE(metro_viewer_host_->closed_unexpectedly());
   }

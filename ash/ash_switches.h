@@ -47,6 +47,9 @@ ASH_EXPORT extern const char kAshInternalDisplayUIScale[];
 ASH_EXPORT extern const char kAshSecondaryDisplayLayout[];
 ASH_EXPORT extern const char kAshTouchHud[];
 ASH_EXPORT extern const char kAuraLegacyPowerButton[];
+#if defined(OS_WIN)
+ASH_EXPORT extern const char kForceAshToDesktop[];
+#endif
 
 }  // namespace switches
 }  // namespace ash

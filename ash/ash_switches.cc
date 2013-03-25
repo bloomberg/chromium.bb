@@ -117,5 +117,12 @@ const char kAshTouchHud[] = "ash-touch-hud";
 // instead of displaying an interactive animation.
 const char kAuraLegacyPowerButton[] = "aura-legacy-power-button";
 
+#if defined(OS_WIN)
+// Force Ash to open its root window on the desktop, even on Windows 8 where
+// it would normally end up in metro.
+const char kForceAshToDesktop[] = "ash-force-desktop";
+;
+#endif
+
 }  // namespace switches
 }  // namespace ash
