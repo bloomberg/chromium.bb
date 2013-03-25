@@ -142,7 +142,7 @@ void ShellWindowLauncherItemController::Clicked(const ui::Event& event) {
       shell_windows_.size() == 1) {
     ShellWindow* window_to_show = last_active_shell_window_ ?
         last_active_shell_window_ : shell_windows_.front();
-    RestoreOrShow(window_to_show);
+    ShowAndActivate(window_to_show);
   } else {
     // TODO(stevenjb): Deprecate
     if (!last_active_shell_window_ ||
@@ -156,7 +156,7 @@ void ShellWindowLauncherItemController::Clicked(const ui::Event& event) {
       }
     }
     if (last_active_shell_window_)
-      RestoreOrShow(last_active_shell_window_);
+      ShowAndActivate(last_active_shell_window_);
   }
 }
 
@@ -165,7 +165,7 @@ void ShellWindowLauncherItemController::ActivateIndexedApp(size_t index) {
     return;
   ShellWindowList::iterator it = shell_windows_.begin();
   std::advance(it, index);
-  RestoreOrShow(*it);
+  ShowAndActivate(*it);
 }
 
 ChromeLauncherAppMenuItems
@@ -206,12 +206,9 @@ void ShellWindowLauncherItemController::OnWindowPropertyChanged(
   }
 }
 
-void ShellWindowLauncherItemController::RestoreOrShow(
+void ShellWindowLauncherItemController::ShowAndActivate(
     ShellWindow* shell_window) {
-  if (shell_window->GetBaseWindow()->IsMinimized())
-    shell_window->GetBaseWindow()->Restore();
-  else
-    shell_window->GetBaseWindow()->Show();
   // Always activate windows when shown from the launcher.
+  shell_window->GetBaseWindow()->Show();
   shell_window->GetBaseWindow()->Activate();
 }

@@ -28,6 +28,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
+#include "chrome/browser/ui/extensions/native_app_window.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -40,11 +41,24 @@
 #include "content/public/browser/web_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/window.h"
+#include "ui/base/events/event.h"
 
 using extensions::Extension;
 using content::WebContents;
 
 namespace {
+
+class TestEvent : public ui::Event {
+ public:
+  explicit TestEvent(ui::EventType type)
+      : ui::Event(type, base::TimeDelta(), 0) {
+  }
+  virtual ~TestEvent() {
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestEvent);
+};
 
 class TestShellWindowRegistryObserver
     : public extensions::ShellWindowRegistry::Observer {
@@ -119,7 +133,7 @@ class LauncherPlatformPerAppAppBrowserTest
     return launcher_model()->items()[launcher_model()->item_count() - 1];
   }
 
-  const LauncherItemController* GetItemController(ash::LauncherID id) {
+  LauncherItemController* GetItemController(ash::LauncherID id) {
     return controller_->id_to_item_controller_map_[id];
   }
 
@@ -535,6 +549,38 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformPerAppAppBrowserTest, WindowActivation) {
   CloseShellWindow(window1);
   --item_count;
   EXPECT_EQ(item_count, launcher_model()->item_count());
+}
+
+// Confirm that Click behavior for app windows is correnct.
+IN_PROC_BROWSER_TEST_F(LauncherPlatformPerAppAppBrowserTest, AppClickBehavior) {
+  // Launch a platform app and create a window for it.
+  const Extension* extension1 = LoadAndLaunchPlatformApp("launch");
+  ShellWindow* window1 = CreateShellWindow(extension1);
+  EXPECT_TRUE(window1->GetNativeWindow()->IsVisible());
+  EXPECT_TRUE(window1->GetBaseWindow()->IsActive());
+  // Confirm that a controller item was created and is the correct state.
+  const ash::LauncherItem& item1 = GetLastLauncherItem();
+  LauncherItemController* item1_controller = GetItemController(item1.id);
+  EXPECT_EQ(ash::TYPE_PLATFORM_APP, item1.type);
+  EXPECT_EQ(ash::STATUS_ACTIVE, item1.status);
+  // Minimize the window and confirm that the controller item is updated.
+  window1->GetBaseWindow()->Minimize();
+  EXPECT_FALSE(window1->GetNativeWindow()->IsVisible());
+  EXPECT_FALSE(window1->GetBaseWindow()->IsActive());
+  EXPECT_EQ(ash::STATUS_RUNNING, item1.status);
+  // Clicking on the controller should activate the window.
+  TestEvent default_event(ui::ET_MOUSE_PRESSED);
+  item1_controller->Clicked(default_event);
+  EXPECT_TRUE(window1->GetNativeWindow()->IsVisible());
+  EXPECT_TRUE(window1->GetBaseWindow()->IsActive());
+  EXPECT_EQ(ash::STATUS_ACTIVE, item1.status);
+  // Maximizing a window should preserve state after minimize + click.
+  window1->GetBaseWindow()->Maximize();
+  window1->GetBaseWindow()->Minimize();
+  item1_controller->Clicked(default_event);
+  EXPECT_TRUE(window1->GetNativeWindow()->IsVisible());
+  EXPECT_TRUE(window1->GetBaseWindow()->IsActive());
+  EXPECT_TRUE(window1->GetBaseWindow()->IsMaximized());
 }
 
 IN_PROC_BROWSER_TEST_F(LauncherPlatformPerAppAppBrowserTest,
