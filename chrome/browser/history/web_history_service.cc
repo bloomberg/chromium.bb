@@ -8,6 +8,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/signin/oauth2_token_service.h"
 #include "chrome/browser/signin/oauth2_token_service_factory.h"
@@ -177,7 +178,8 @@ std::string ServerTimeString(base::Time time) {
 
 // Returns a URL for querying the history server for a query specified by
 // |options|.
-std::string GetQueryUrl(const QueryOptions& options) {
+std::string GetQueryUrl(const string16& text_query,
+                        const QueryOptions& options) {
   GURL url = GURL(kHistoryQueryHistoryUrl);
   url = net::AppendQueryParameter(url, "titles", "1");
 
@@ -198,6 +200,9 @@ std::string GetQueryUrl(const QueryOptions& options) {
     url = net::AppendQueryParameter(
         url, "num", base::IntToString(options.max_count));
   }
+
+  if (!text_query.empty())
+    url = net::AppendQueryParameter(url, "q", UTF16ToUTF8(text_query));
 
   return url.spec();
 }
@@ -241,8 +246,9 @@ scoped_ptr<WebHistoryService::Request> WebHistoryService::QueryHistory(
   RequestImpl::CompletionCallback completion_callback = base::Bind(
       &QueryHistoryCompletionCallback, callback);
 
+  std::string url = GetQueryUrl(text_query, options);
   scoped_ptr<RequestImpl> request(
-      new RequestImpl(profile_, GetQueryUrl(options), completion_callback));
+      new RequestImpl(profile_, url, completion_callback));
   request->Start();
   return request.PassAs<Request>();
 }

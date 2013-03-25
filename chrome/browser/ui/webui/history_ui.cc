@@ -825,14 +825,17 @@ void BrowsingHistoryHandler::ReturnResultsToFrontEnd() {
 
   // Combine the local and remote results into |query_results_|, and remove
   // any duplicates.
-  if (query_results_.size() && web_history_query_results_.size()) {
-    // Each result set covers a particular time range. Determine the
-    // intersection of the two time ranges, discard any entries from either
-    // set the are older than that, and then combine the results.
-    base::Time cutoff_time = std::max(query_results_.back().time,
-                                      web_history_query_results_.back().time);
-    RemoveOlderEntries(&query_results_, cutoff_time);
-    RemoveOlderEntries(&web_history_query_results_, cutoff_time);
+  if (!web_history_query_results_.empty()) {
+    if (!query_results_.empty()) {
+      // Each result set covers a particular time range. Determine the
+      // intersection of the two time ranges, discard any entries from either
+      // set that are older than that, and then combine the results.
+      base::Time cutoff_time = std::max(
+          query_results_.back().time,
+          web_history_query_results_.back().time);
+      RemoveOlderEntries(&query_results_, cutoff_time);
+      RemoveOlderEntries(&web_history_query_results_, cutoff_time);
+    }
 
     int local_result_count = query_results_.size();
     query_results_.insert(query_results_.end(),
@@ -840,9 +843,9 @@ void BrowsingHistoryHandler::ReturnResultsToFrontEnd() {
                           web_history_query_results_.end());
     RemoveDuplicateResults(&query_results_);
 
-    // In the best case, we expect that all local results are duplicated on the
-    // server. Keep track of how many are missing.
     if (local_result_count) {
+      // In the best case, we expect that all local results are duplicated on
+      // the server. Keep track of how many are missing.
       int missing_count = std::count_if(
           query_results_.begin(), query_results_.end(), IsLocalOnlyResult);
       UMA_HISTOGRAM_PERCENTAGE("WebHistory.LocalResultMissingOnServer",
