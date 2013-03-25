@@ -1473,7 +1473,7 @@ class Upgrader(object):
           if local_cpv and not local_cpv.startswith('virtual/'):
             local_cpv = None
 
-        if not upstream_cpv:
+        if not upstream_cpv and verrev:
           # See if --unstable-ok is required for this upstream version.
           if not self._unstable_ok and self._FindUpstreamCPV(arg, True):
             raise RuntimeError('Upstream "%s" is unstable on %s.  Re-run with '
