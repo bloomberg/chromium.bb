@@ -1155,7 +1155,7 @@ def RietveldUpload(options, args, cl):
   else:
     if options.title:
       upload_args.extend(['--title', options.title])
-    message = options.message or CreateDescriptionFromLog(args)
+    message = options.title or options.message or CreateDescriptionFromLog(args)
     change_desc = ChangeDescription(message, options.reviewers)
     if not options.force:
       change_desc.Prompt()
