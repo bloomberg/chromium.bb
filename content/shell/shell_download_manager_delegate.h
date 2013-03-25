@@ -25,6 +25,9 @@ class ShellDownloadManagerDelegate
   virtual bool DetermineDownloadTarget(
       DownloadItem* download,
       const DownloadTargetCallback& callback) OVERRIDE;
+  virtual bool ShouldOpenDownload(
+      DownloadItem* item,
+      const DownloadOpenDelayedCallback& callback) OVERRIDE;
 
   // Inhibits prompting and sets the default download path.
   void SetDownloadBehaviorForTesting(

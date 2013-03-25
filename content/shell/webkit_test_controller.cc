@@ -300,6 +300,14 @@ void WebKitTestController::OverrideWebkitPrefs(
   }
 }
 
+void WebKitTestController::OpenURL(const GURL& url) {
+  Shell::CreateNewWindow(main_window_->web_contents()->GetBrowserContext(),
+                         url,
+                         main_window_->web_contents()->GetSiteInstance(),
+                         MSG_ROUTING_NONE,
+                         gfx::Size());
+}
+
 bool WebKitTestController::OnMessageReceived(const IPC::Message& message) {
   DCHECK(CalledOnValidThread());
   bool handled = true;

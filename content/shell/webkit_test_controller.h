@@ -91,9 +91,9 @@ class WebKitTestController : public base::NonThreadSafe,
   bool ResetAfterLayoutTest();
 
   void SetTempPath(const base::FilePath& temp_path);
-
   void RendererUnresponsive();
   void OverrideWebkitPrefs(webkit_glue::WebPreferences* prefs);
+  void OpenURL(const GURL& url);
 
   WebKitTestResultPrinter* printer() { return printer_.get(); }
   void set_printer(WebKitTestResultPrinter* printer) {

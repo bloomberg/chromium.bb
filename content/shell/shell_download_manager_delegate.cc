@@ -14,8 +14,10 @@
 #endif
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "content/public/browser/browser_context.h"
@@ -23,6 +25,8 @@
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
+#include "content/shell/shell_switches.h"
+#include "content/shell/webkit_test_controller.h"
 #include "net/base/net_util.h"
 
 namespace content {
@@ -81,6 +85,17 @@ bool ShellDownloadManagerDelegate::DetermineDownloadTarget(
           &ShellDownloadManagerDelegate::GenerateFilename,
           this, download->GetId(), callback, generated_name,
           default_download_path_));
+  return true;
+}
+
+bool ShellDownloadManagerDelegate::ShouldOpenDownload(
+      DownloadItem* item,
+      const DownloadOpenDelayedCallback& callback) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
+    return false;
+  WebKitTestController::Get()->OpenURL(
+      net::FilePathToFileURL(item->GetFullPath()));
+  MessageLoop::current()->PostTask(FROM_HERE, base::Bind(callback, true));
   return true;
 }
 
