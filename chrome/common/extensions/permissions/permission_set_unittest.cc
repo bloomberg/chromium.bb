@@ -741,10 +741,6 @@ TEST_F(PermissionsTest, PermissionMessages) {
   skip.insert(APIPermission::kWebSocketProxyPrivate);
   skip.insert(APIPermission::kWebstorePrivate);
 
-  // Available only on trunk.
-  // TODO(kinuko) add a string for this permission.
-  skip.insert(APIPermission::kSyncFileSystem);
-
   // Warned as part of host permissions.
   skip.insert(APIPermission::kDevtools);
 
@@ -1375,6 +1371,22 @@ TEST_F(PermissionsTest, ImpliedPermissions) {
   scoped_refptr<PermissionSet> perm_set;
   perm_set = new PermissionSet(apis, empty_extent, empty_extent);
   EXPECT_EQ(4U, perm_set->apis().size());
+}
+
+TEST_F(PermissionsTest, SyncFileSystemPermission) {
+  // TODO(kinuko): Remove this in the same patch that enables this on Stable.
+  extensions::Feature::ScopedCurrentChannel channel(
+      chrome::VersionInfo::CHANNEL_DEV);
+
+  scoped_refptr<Extension> extension = LoadManifest(
+      "permissions", "sync_file_system.json");
+  APIPermissionSet apis;
+  apis.insert(APIPermission::kSyncFileSystem);
+  EXPECT_TRUE(extension->is_platform_app());
+  EXPECT_TRUE(extension->HasAPIPermission(APIPermission::kSyncFileSystem));
+  std::vector<string16> warnings = extension->GetPermissionMessageStrings();
+  EXPECT_TRUE(Contains(warnings, "Store data in your Google Drive account"));
+  ASSERT_EQ(1u, warnings.size());
 }
 
 }  // namespace extensions

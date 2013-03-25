@@ -59,7 +59,8 @@ class PermissionMessage {
     kMediaGalleriesAllGalleriesWrite,
     kSystemInfoDisplay,
     kNativeMessaging,
-    kEnumBoundary
+    kSyncFileSystem,
+    kEnumBoundary,
   };
 
   // Creates the corresponding permission message for a list of hosts. This is

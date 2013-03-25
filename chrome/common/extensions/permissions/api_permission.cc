@@ -223,9 +223,9 @@ void APIPermissionInfo::RegisterAllPermissions(
       PermissionMessage::kPrivacy },
     { APIPermission::kSessionRestore, "sessionRestore" },
     { APIPermission::kStorage, "storage" },
-    // TODO(kinuko): syncFileSystem permission should take the service name
-    // parameter.
-    { APIPermission::kSyncFileSystem, "syncFileSystem" },
+    { APIPermission::kSyncFileSystem, "syncFileSystem", kFlagNone,
+      IDS_EXTENSION_PROMPT_WARNING_SYNCFILESYSTEM,
+      PermissionMessage::kSyncFileSystem },
     { APIPermission::kTab, "tabs", kFlagNone,
       IDS_EXTENSION_PROMPT_WARNING_TABS,
       PermissionMessage::kTabs },
