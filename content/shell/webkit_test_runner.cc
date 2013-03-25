@@ -638,12 +638,12 @@ void WebKitTestRunner::OnSessionHistory(
 }
 
 void WebKitTestRunner::OnReset() {
+  ShellRenderProcessObserver::GetInstance()->test_interfaces()->resetAll();
+  Reset();
   // Navigating to about:blank will make sure that no new loads are initiated
   // by the renderer.
   render_view()->GetWebView()->mainFrame()
       ->loadRequest(WebURLRequest(GURL("about:blank")));
-  ShellRenderProcessObserver::GetInstance()->test_interfaces()->resetAll();
-  Reset();
   Send(new ShellViewHostMsg_ResetDone(routing_id()));
 }
 
