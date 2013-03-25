@@ -29,6 +29,8 @@
         'client/activation_client.h',
         'client/activation_delegate.cc',
         'client/activation_delegate.h',
+        'client/animation_host.cc',
+        'client/animation_host.h',
         'client/aura_constants.cc',
         'client/aura_constants.h',
         'client/capture_client.cc',

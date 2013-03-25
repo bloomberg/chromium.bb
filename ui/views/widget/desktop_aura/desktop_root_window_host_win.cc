@@ -23,6 +23,7 @@
 #include "ui/views/corewm/cursor_manager.h"
 #include "ui/views/corewm/focus_controller.h"
 #include "ui/views/corewm/input_method_event_filter.h"
+#include "ui/views/corewm/window_animations.h"
 #include "ui/views/ime/input_method_bridge.h"
 #include "ui/views/widget/desktop_aura/desktop_activation_client.h"
 #include "ui/views/widget/desktop_aura/desktop_capture_client.h"
@@ -55,7 +56,9 @@ DesktopRootWindowHostWin::DesktopRootWindowHostWin(
       native_widget_delegate_(native_widget_delegate),
       desktop_native_widget_aura_(desktop_native_widget_aura),
       root_window_host_delegate_(NULL),
-      content_window_(NULL) {
+      content_window_(NULL),
+      should_animate_window_close_(false),
+      pending_close_(false) {
 }
 
 DesktopRootWindowHostWin::~DesktopRootWindowHostWin() {
@@ -164,11 +167,27 @@ aura::RootWindow* DesktopRootWindowHostWin::Init(
   focus_client_->FocusWindow(content_window_);
   root_window_->SetProperty(kContentWindowForRootWindow, content_window_);
 
+  aura::client::SetAnimationHost(content_window_, this);
+
+  should_animate_window_close_ =
+      content_window_->type() != aura::client::WINDOW_TYPE_NORMAL &&
+      !views::corewm::WindowAnimationsDisabled(content_window_);
+
   return root_window_;
 }
 
+void DesktopRootWindowHostWin::InitFocus(aura::Window* window) {
+  focus_client_->FocusWindow(window);
+}
+
 void DesktopRootWindowHostWin::Close() {
-  message_handler_->Close();
+  if (should_animate_window_close_) {
+    pending_close_ = true;
+    // OnWindowHidingAnimationCompleted does the actual Close.
+    content_window_->Hide();
+  } else {
+    message_handler_->Close();
+  }
 }
 
 void DesktopRootWindowHostWin::CloseNow() {
@@ -366,7 +385,8 @@ void DesktopRootWindowHostWin::Show() {
 }
 
 void DesktopRootWindowHostWin::Hide() {
-  message_handler_->Hide();
+  if (!pending_close_)
+    message_handler_->Hide();
 }
 
 void DesktopRootWindowHostWin::ToggleFullScreen() {
@@ -374,12 +394,21 @@ void DesktopRootWindowHostWin::ToggleFullScreen() {
 
 gfx::Rect DesktopRootWindowHostWin::GetBounds() const {
   // Match the logic in HWNDMessageHandler::ClientAreaSizeChanged().
-  return WidgetSizeIsClientSize() ?
-      GetClientAreaBoundsInScreen() : GetWindowBoundsInScreen();
+  gfx::Rect bounds(WidgetSizeIsClientSize() ? GetClientAreaBoundsInScreen()
+                                            : GetWindowBoundsInScreen());
+  gfx::Rect without_expansion(bounds.x() - window_expansion_.x(),
+                              bounds.y() - window_expansion_.y(),
+                              bounds.width() - window_expansion_.width(),
+                              bounds.height() - window_expansion_.height());
+  return without_expansion;
 }
 
 void DesktopRootWindowHostWin::SetBounds(const gfx::Rect& bounds) {
-  message_handler_->SetBounds(bounds);
+  gfx::Rect expanded(bounds.x() + window_expansion_.x(),
+                     bounds.y() + window_expansion_.y(),
+                     bounds.width() + window_expansion_.width(),
+                     bounds.height() + window_expansion_.height());
+  message_handler_->SetBounds(expanded);
 }
 
 gfx::Insets DesktopRootWindowHostWin::GetInsets() const {
@@ -452,6 +481,21 @@ void DesktopRootWindowHostWin::OnDeviceScaleFactorChanged(
 }
 
 void DesktopRootWindowHostWin::PrepareForShutdown() {
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// DesktopRootWindowHostWin, aura::WindowAnimationHost implementation:
+
+void DesktopRootWindowHostWin::SetHostTransitionBounds(
+    const gfx::Rect& bounds) {
+  gfx::Rect bounds_without_expansion = GetBounds();
+  window_expansion_ = bounds;
+  SetBounds(bounds_without_expansion);
+}
+
+void DesktopRootWindowHostWin::OnWindowHidingAnimationCompleted() {
+  if (pending_close_)
+    message_handler_->Close();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -656,10 +700,12 @@ void DesktopRootWindowHostWin::HandleVisibilityChanged(bool visible) {
 
 void DesktopRootWindowHostWin::HandleClientSizeChanged(
     const gfx::Size& new_size) {
+  gfx::Size without_expansion(new_size.width() - window_expansion_.width(),
+                              new_size.height() - window_expansion_.height());
   if (root_window_host_delegate_)
     root_window_host_delegate_->OnHostResized(new_size);
   // TODO(beng): replace with a layout manager??
-  content_window_->SetBounds(gfx::Rect(new_size));
+  content_window_->SetBounds(gfx::Rect(without_expansion));
 }
 
 void DesktopRootWindowHostWin::HandleFrameChanged() {

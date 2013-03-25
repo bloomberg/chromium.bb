@@ -24,6 +24,7 @@
 #include "ui/views/corewm/shadow_controller.h"
 #include "ui/views/corewm/shadow_types.h"
 #include "ui/views/corewm/tooltip_controller.h"
+#include "ui/views/corewm/visibility_controller.h"
 #include "ui/views/drag_utils.h"
 #include "ui/views/ime/input_method.h"
 #include "ui/views/ime/input_method_bridge.h"
@@ -219,7 +220,9 @@ void DesktopNativeWidgetAura::InitNativeWidget(
   window_->SetTransparent(true);
   window_->Init(params.layer_type);
   corewm::SetShadowType(window_, corewm::SHADOW_TYPE_NONE);
+#if defined(OS_LINUX)  // TODO(scottmg): http://crbug.com/180071
   window_->Show();
+#endif
 
   desktop_root_window_host_ = params.desktop_root_window_host ?
       params.desktop_root_window_host :
@@ -239,6 +242,16 @@ void DesktopNativeWidgetAura::InitNativeWidget(
   aura::client::SetTooltipClient(root_window_.get(),
                                  tooltip_controller_.get());
   root_window_->AddPreTargetHandler(tooltip_controller_.get());
+
+  if (params.type != Widget::InitParams::TYPE_WINDOW) {
+    visibility_controller_.reset(new views::corewm::VisibilityController);
+    aura::client::SetVisibilityClient(GetNativeView()->GetRootWindow(),
+                                      visibility_controller_.get());
+    views::corewm::SetChildWindowVisibilityChangesAnimated(
+        GetNativeView()->GetRootWindow());
+  }
+  window_->Show();
+  desktop_root_window_host_->InitFocus(window_);
 
   aura::client::SetActivationDelegate(window_, this);
 

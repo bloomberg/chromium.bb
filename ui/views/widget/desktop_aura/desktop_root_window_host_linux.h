@@ -92,6 +92,7 @@ class VIEWS_EXPORT DesktopRootWindowHostLinux
   // Overridden from DesktopRootWindowHost:
   virtual aura::RootWindow* Init(aura::Window* content_window,
                                  const Widget::InitParams& params) OVERRIDE;
+  virtual void InitFocus(aura::Window* window) OVERRIDE;
   virtual void Close() OVERRIDE;
   virtual void CloseNow() OVERRIDE;
   virtual aura::RootWindowHost* AsRootWindowHost() OVERRIDE;

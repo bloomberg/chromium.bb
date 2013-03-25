@@ -15,8 +15,10 @@
 #include "base/message_loop.h"
 #include "base/stl_util.h"
 #include "base/time.h"
+#include "ui/aura/client/animation_host.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_delegate.h"
 #include "ui/aura/window_observer.h"
 #include "ui/aura/window_property.h"
 #include "ui/compositor/compositor_observer.h"
@@ -26,6 +28,7 @@
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/interpolated_transform.h"
+#include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/vector3d_f.h"
 #include "ui/views/corewm/corewm_switches.h"
@@ -130,8 +133,13 @@ class HidingWindowAnimationObserver : public ui::ImplicitAnimationObserver,
   // Overridden from ui::ImplicitAnimationObserver:
   virtual void OnImplicitAnimationsCompleted() OVERRIDE {
     // Window may have been destroyed by this point.
-    if (window_)
+    if (window_) {
+      aura::client::AnimationHost* animation_host =
+          aura::client::GetAnimationHost(window_);
+      if (animation_host)
+        animation_host->OnWindowHidingAnimationCompleted();
       window_->RemoveObserver(this);
+    }
     delete this;
   }
 
@@ -179,6 +187,48 @@ class HidingWindowAnimationObserver : public ui::ImplicitAnimationObserver,
   DISALLOW_COPY_AND_ASSIGN(HidingWindowAnimationObserver);
 };
 
+void GetTransformRelativeToRoot(ui::Layer* layer, gfx::Transform* transform) {
+  const Layer* root = layer;
+  while (root->parent())
+    root = root->parent();
+  layer->GetTargetTransformRelativeTo(root, transform);
+}
+
+gfx::Rect GetLayerWorldBoundsAfterTransform(ui::Layer* layer,
+                                            const gfx::Transform& transform) {
+  gfx::Transform in_world = transform;
+  GetTransformRelativeToRoot(layer, &in_world);
+
+  gfx::RectF transformed = layer->bounds();
+  in_world.TransformRect(&transformed);
+
+  return gfx::ToEnclosingRect(transformed);
+}
+
+// Augment the host window so that the enclosing bounds of the full
+// animation will fit inside of it.
+void AugmentWindowSize(aura::Window* window,
+                       const gfx::Transform& start_transform,
+                       const gfx::Transform& end_transform) {
+  aura::client::AnimationHost* animation_host =
+      aura::client::GetAnimationHost(window);
+  if (!animation_host)
+    return;
+
+  gfx::Rect world_at_start =
+      GetLayerWorldBoundsAfterTransform(window->layer(), start_transform);
+  gfx::Rect world_at_end =
+      GetLayerWorldBoundsAfterTransform(window->layer(), end_transform);
+  gfx::Rect union_in_window_space =
+      gfx::UnionRects(world_at_start, world_at_end);
+  gfx::Rect current_bounds = window->bounds();
+  gfx::Rect result(union_in_window_space.x() - current_bounds.x(),
+                   union_in_window_space.y() - current_bounds.y(),
+                   union_in_window_space.width() - current_bounds.width(),
+                   union_in_window_space.height() - current_bounds.height());
+  animation_host->SetHostTransitionBounds(result);
+}
+
 // Shows a window using an animation, animating its opacity from 0.f to 1.f,
 // its visibility to true, and its transform from |start_transform| to
 // |end_transform|.
@@ -186,6 +236,9 @@ void AnimateShowWindowCommon(aura::Window* window,
                              const gfx::Transform& start_transform,
                              const gfx::Transform& end_transform) {
   window->layer()->set_delegate(window);
+
+  AugmentWindowSize(window, start_transform, end_transform);
+
   window->layer()->SetOpacity(kWindowAnimation_HideOpacity);
   window->layer()->SetTransform(start_transform);
   window->layer()->SetVisible(true);
@@ -206,6 +259,7 @@ void AnimateShowWindowCommon(aura::Window* window,
 // its visibility to false, and its transform to |end_transform|.
 void AnimateHideWindowCommon(aura::Window* window,
                              const gfx::Transform& end_transform) {
+  AugmentWindowSize(window, gfx::Transform(), end_transform);
   window->layer()->set_delegate(NULL);
 
   // Property sets within this scope will be implicitly animated.

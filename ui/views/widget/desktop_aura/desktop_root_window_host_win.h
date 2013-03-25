@@ -5,6 +5,7 @@
 #ifndef UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_ROOT_WINDOW_HOST_WIN_H_
 #define UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_ROOT_WINDOW_HOST_WIN_H_
 
+#include "ui/aura/client/animation_host.h"
 #include "ui/aura/root_window_host.h"
 #include "ui/views/views_export.h"
 #include "ui/views/widget/desktop_aura/desktop_root_window_host.h"
@@ -31,6 +32,7 @@ class CursorManager;
 
 class VIEWS_EXPORT DesktopRootWindowHostWin
     : public DesktopRootWindowHost,
+      public aura::client::AnimationHost,
       public aura::RootWindowHost,
       public HWNDMessageHandlerDelegate {
  public:
@@ -47,6 +49,7 @@ class VIEWS_EXPORT DesktopRootWindowHostWin
   // Overridden from DesktopRootWindowHost:
   virtual aura::RootWindow* Init(aura::Window* content_window,
                                  const Widget::InitParams& params) OVERRIDE;
+  virtual void InitFocus(aura::Window* window) OVERRIDE;
   virtual void Close() OVERRIDE;
   virtual void CloseNow() OVERRIDE;
   virtual aura::RootWindowHost* AsRootWindowHost() OVERRIDE;
@@ -124,6 +127,10 @@ class VIEWS_EXPORT DesktopRootWindowHostWin
   virtual void PostNativeEvent(const base::NativeEvent& native_event) OVERRIDE;
   virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE;
   virtual void PrepareForShutdown() OVERRIDE;
+
+  // Overridden from aura::client::AnimationHost
+  virtual void SetHostTransitionBounds(const gfx::Rect& bounds) OVERRIDE;
+  virtual void OnWindowHidingAnimationCompleted() OVERRIDE;
 
   // Overridden from HWNDMessageHandlerDelegate:
   virtual bool IsWidgetWindow() const OVERRIDE;
@@ -233,6 +240,23 @@ class VIEWS_EXPORT DesktopRootWindowHostWin
   scoped_ptr<views::corewm::CursorManager> cursor_client_;
 
   scoped_ptr<DesktopDragDropClientWin> drag_drop_client_;
+
+  // Extra size added to the host window. Typically, the window size matches
+  // the contained content, however, when performing a translating or scaling
+  // animation the window has to be enlarged so that the content is not
+  // clipped.
+  gfx::Rect window_expansion_;
+
+  // Whether the window close should be converted to a hide, and then actually
+  // closed on the completion of the hide animation. This is cached because
+  // the property is set on the contained window which has a shorter lifetime.
+  bool should_animate_window_close_;
+
+  // When Close()d and animations are being applied to this window, the close
+  // of the window needs to be deferred to when the close animation is
+  // completed. This variable indicates that a Close was converted to a Hide,
+  // so that when the Hide is completed the host window should be closed.
+  bool pending_close_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopRootWindowHostWin);
 };

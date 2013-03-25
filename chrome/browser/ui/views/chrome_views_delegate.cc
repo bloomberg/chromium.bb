@@ -214,8 +214,20 @@ void ChromeViewsDelegate::OnBeforeWidgetInit(
       default:
         NOTREACHED();
     }
+#if defined(OS_WIN) && defined(USE_AURA)
+  } else if (chrome::GetActiveDesktop() != chrome::HOST_DESKTOP_TYPE_ASH &&
+             params->parent &&
+             (params->type == views::Widget::InitParams::TYPE_CONTROL ||
+              params->type == views::Widget::InitParams::TYPE_WINDOW)) {
+    // On Aura Desktop, we want most windows (popups, bubbles, regular top
+    // level windows) not to be handled in this function. They'll get a
+    // DesktopNativeWidgetAura created. For controls, and child windows (e.g.
+    // modal dialogs) we want to create a NativeWidgetAura, which will be
+    // inside the parent.
+#else
   } else if (params->parent &&
              params->type != views::Widget::InitParams::TYPE_MENU) {
+#endif
     params->native_widget = new views::NativeWidgetAura(delegate);
   } else if (params->type != views::Widget::InitParams::TYPE_TOOLTIP) {
     // TODO(erg): Once we've threaded context to everywhere that needs it, we

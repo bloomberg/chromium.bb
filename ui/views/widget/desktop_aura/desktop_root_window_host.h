@@ -45,6 +45,7 @@ class VIEWS_EXPORT DesktopRootWindowHost {
   // Caller takes ownership of returned RootWindow.
   virtual aura::RootWindow* Init(aura::Window* content_window,
                                  const Widget::InitParams& params) = 0;
+  virtual void InitFocus(aura::Window* window) = 0;
 
   virtual void Close() = 0;
   virtual void CloseNow() = 0;

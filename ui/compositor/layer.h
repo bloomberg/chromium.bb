@@ -224,6 +224,12 @@ class COMPOSITOR_EXPORT Layer
                                   const Layer* target,
                                   gfx::Point* point);
 
+  // Converts a transform to be relative to the given |ancestor|. Returns
+  // whether success (that is, whether the given ancestor was really an
+  // ancestor of this layer).
+  bool GetTargetTransformRelativeTo(const Layer* ancestor,
+                                    gfx::Transform* transform) const;
+
   // Converts a ui::Layer's transform to the transform on the corresponding
   // cc::Layer.
   static gfx::Transform ConvertTransformToCCTransform(
@@ -327,9 +333,6 @@ class COMPOSITOR_EXPORT Layer
 
   bool ConvertPointForAncestor(const Layer* ancestor, gfx::Point* point) const;
   bool ConvertPointFromAncestor(const Layer* ancestor, gfx::Point* point) const;
-
-  bool GetTargetTransformRelativeTo(const Layer* ancestor,
-                                    gfx::Transform* transform) const;
 
   // Following are invoked from the animation or if no animation exists to
   // update the values immediately.

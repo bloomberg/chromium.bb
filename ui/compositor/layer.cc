@@ -406,6 +406,22 @@ void Layer::ConvertPointToLayer(const Layer* source,
     target->ConvertPointFromAncestor(root_layer, point);
 }
 
+bool Layer::GetTargetTransformRelativeTo(const Layer* ancestor,
+                                         gfx::Transform* transform) const {
+  const Layer* p = this;
+  for (; p && p != ancestor; p = p->parent()) {
+    gfx::Transform translation;
+    translation.Translate(static_cast<float>(p->bounds().x()),
+                          static_cast<float>(p->bounds().y()));
+    // Use target transform so that result will be correct once animation is
+    // finished.
+    if (!p->GetTargetTransform().IsIdentity())
+      transform->ConcatTransform(p->GetTargetTransform());
+    transform->ConcatTransform(translation);
+  }
+  return p == ancestor;
+}
+
 // static
 gfx::Transform Layer::ConvertTransformToCCTransform(
     const gfx::Transform& transform,
@@ -678,22 +694,6 @@ bool Layer::ConvertPointFromAncestor(const Layer* ancestor,
   transform.TransformPointReverse(p);
   *point = gfx::ToFlooredPoint(p.AsPointF());
   return result;
-}
-
-bool Layer::GetTargetTransformRelativeTo(const Layer* ancestor,
-                                   gfx::Transform* transform) const {
-  const Layer* p = this;
-  for (; p && p != ancestor; p = p->parent()) {
-    gfx::Transform translation;
-    translation.Translate(static_cast<float>(p->bounds().x()),
-                          static_cast<float>(p->bounds().y()));
-    // Use target transform so that result will be correct once animation is
-    // finished.
-    if (!p->GetTargetTransform().IsIdentity())
-      transform->ConcatTransform(p->GetTargetTransform());
-    transform->ConcatTransform(translation);
-  }
-  return p == ancestor;
 }
 
 void Layer::SetBoundsImmediately(const gfx::Rect& bounds) {

@@ -346,6 +346,10 @@ void Widget::Init(const InitParams& in_params) {
        params.type != InitParams::TYPE_CONTROL &&
        params.type != InitParams::TYPE_TOOLTIP);
   params.top_level = is_top_level_;
+#if defined(OS_WIN) && defined(USE_AURA)
+  // It'll need to be faded in if it's top level and not the main window.
+  params.transparent = is_top_level_ && params.type != InitParams::TYPE_WINDOW;
+#endif
 
   if (ViewsDelegate::views_delegate)
     ViewsDelegate::views_delegate->OnBeforeWidgetInit(&params, this);

@@ -329,6 +329,9 @@ aura::RootWindow* DesktopRootWindowHostLinux::Init(
   return InitRootWindow(sanitized_params);
 }
 
+void DesktopRootWindowHostLinux::InitFocus(aura::Window* window) {
+}
+
 void DesktopRootWindowHostLinux::Close() {
   // TODO(erg): Might need to do additional hiding tasks here.
 
