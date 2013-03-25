@@ -20,7 +20,8 @@ namespace test {
 
 TestWindowDelegate::TestWindowDelegate()
     : window_component_(HTCLIENT),
-      delete_on_destroyed_(false) {
+      delete_on_destroyed_(false),
+      can_focus_(true) {
 }
 
 TestWindowDelegate::~TestWindowDelegate() {
@@ -60,7 +61,7 @@ bool TestWindowDelegate::ShouldDescendIntoChildForEventHandling(
 }
 
 bool TestWindowDelegate::CanFocus() {
-  return true;
+  return can_focus_;
 }
 
 void TestWindowDelegate::OnCaptureLost() {

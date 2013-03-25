@@ -38,6 +38,9 @@ class TestWindowDelegate : public WindowDelegate {
     maximum_size_ = maximum_size;
   }
 
+  // Sets the return value for CanFocus(). Default is true.
+  void set_can_focus(bool can_focus) { can_focus_ = can_focus; }
+
   // Overridden from WindowDelegate:
   virtual gfx::Size GetMinimumSize() const OVERRIDE;
   virtual gfx::Size GetMaximumSize() const OVERRIDE;
@@ -64,6 +67,7 @@ class TestWindowDelegate : public WindowDelegate {
   bool delete_on_destroyed_;
   gfx::Size minimum_size_;
   gfx::Size maximum_size_;
+  bool can_focus_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWindowDelegate);
 };

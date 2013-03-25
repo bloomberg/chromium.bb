@@ -31,6 +31,24 @@ void StackTransientParentsBelowModalWindow(aura::Window* window) {
   }
 }
 
+// Stack's |window|'s layer above |relative_to|'s layer.
+void StackWindowLayerAbove(aura::Window* window, aura::Window* relative_to) {
+  // Stack |window| above the last transient child of |relative_to| that shares
+  // the same parent.
+  const aura::Window::Windows& window_transients(
+      relative_to->transient_children());
+  for (aura::Window::Windows::const_iterator i = window_transients.begin();
+       i != window_transients.end(); ++i) {
+    aura::Window* transient = *i;
+    if (transient->parent() == relative_to->parent())
+      relative_to = transient;
+  }
+  if (window != relative_to) {
+    window->layer()->parent()->StackAbove(window->layer(),
+                                          relative_to->layer());
+  }
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -200,10 +218,8 @@ void FocusController::OnWindowVisibilityChanged(aura::Window* window,
     // Despite the focus change, we need to keep the window being hidden
     // stacked above the new window so it stays open on top as it animates away.
     aura::Window* next_window = GetActiveWindow();
-    if (next_window && next_window->parent() == window->parent()) {
-      window->layer()->parent()->StackAbove(window->layer(),
-                                            next_window->layer());
-    }
+    if (next_window && next_window->parent() == window->parent())
+      StackWindowLayerAbove(window, next_window);
   }
 }
 

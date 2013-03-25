@@ -4,6 +4,8 @@
 
 #include "ash/wm/workspace/workspace_manager.h"
 
+#include <map>
+
 #include "ash/ash_switches.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_ash.h"
@@ -39,6 +41,44 @@ using aura::Window;
 
 namespace ash {
 namespace internal {
+
+// Returns a string containing the names of all the children of |window| (in
+// order). Each entry is separated by a space.
+std::string GetWindowNames(const aura::Window* window) {
+  std::string result;
+  for (size_t i = 0; i < window->children().size(); ++i) {
+    if (i != 0)
+      result += " ";
+    result += window->children()[i]->name();
+  }
+  return result;
+}
+
+// Returns a string containing the names of windows corresponding to each of the
+// child layers of |window|'s layer. Any layers that don't correspond to a child
+// Window of |window| are ignored. The result is ordered based on the layer
+// ordering.
+std::string GetLayerNames(const aura::Window* window) {
+  typedef std::map<const ui::Layer*, std::string> LayerToWindowNameMap;
+  LayerToWindowNameMap window_names;
+  for (size_t i = 0; i < window->children().size(); ++i) {
+    window_names[window->children()[i]->layer()] =
+        window->children()[i]->name();
+  }
+
+  std::string result;
+  const std::vector<ui::Layer*>& layers(window->layer()->children());
+  for (size_t i = 0; i < layers.size(); ++i) {
+    LayerToWindowNameMap::iterator layer_i =
+        window_names.find(layers[i]);
+    if (layer_i != window_names.end()) {
+      if (!result.empty())
+        result += " ";
+      result += layer_i->second;
+    }
+  }
+  return result;
+}
 
 class WorkspaceManagerTest : public test::AshTestBase {
  public:
@@ -1460,6 +1500,85 @@ TEST_F(WorkspaceManagerTest, AnimatedNormToMaxToNormRepositionsRemaining) {
                 desktop_area.width() - window1->bounds().width()) +
             ",32 640x320", window1->bounds().ToString());
   EXPECT_EQ("0,48 256x512", window2->bounds().ToString());
+}
+
+// This tests simulates a browser and an app and verifies the ordering of the
+// windows and layers doesn't get out of sync as various operations occur. Its
+// really testing code in FocusController, but easier to simulate here. Just as
+// with a real browser the browser here has a transient child window
+// (corresponds to the status bubble).
+TEST_F(WorkspaceManagerTest, VerifyLayerOrdering) {
+  scoped_ptr<Window> browser(
+      aura::test::CreateTestWindowWithDelegate(
+          NULL,
+          aura::client::WINDOW_TYPE_NORMAL,
+          gfx::Rect(5, 6, 7, 8),
+          NULL));
+  browser->SetName("browser");
+  SetDefaultParentByPrimaryRootWindow(browser.get());
+  browser->Show();
+  wm::ActivateWindow(browser.get());
+
+  // |status_bubble| is made a transient child of |browser| and as a result
+  // owned by |browser|.
+  aura::test::TestWindowDelegate* status_bubble_delegate =
+      aura::test::TestWindowDelegate::CreateSelfDestroyingDelegate();
+  status_bubble_delegate->set_can_focus(false);
+  Window* status_bubble =
+      aura::test::CreateTestWindowWithDelegate(
+          status_bubble_delegate,
+          aura::client::WINDOW_TYPE_POPUP,
+          gfx::Rect(5, 6, 7, 8),
+          NULL);
+  browser->AddTransientChild(status_bubble);
+  SetDefaultParentByPrimaryRootWindow(status_bubble);
+  status_bubble->SetName("status_bubble");
+
+  scoped_ptr<Window> app(
+      aura::test::CreateTestWindowWithDelegate(
+          NULL,
+          aura::client::WINDOW_TYPE_NORMAL,
+          gfx::Rect(5, 6, 7, 8),
+          NULL));
+  app->SetName("app");
+  SetDefaultParentByPrimaryRootWindow(app.get());
+
+  aura::Window* parent = browser->parent();
+
+  app->Show();
+  wm::ActivateWindow(app.get());
+  EXPECT_EQ(GetWindowNames(parent), GetLayerNames(parent));
+
+  // Minimize the app, focus should go the browser.
+  app->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MINIMIZED);
+  EXPECT_TRUE(wm::IsActiveWindow(browser.get()));
+  EXPECT_EQ(GetWindowNames(parent), GetLayerNames(parent));
+
+  // Minimize the browser (neither windows are focused).
+  browser->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MINIMIZED);
+  EXPECT_FALSE(wm::IsActiveWindow(browser.get()));
+  EXPECT_FALSE(wm::IsActiveWindow(app.get()));
+  EXPECT_EQ(GetWindowNames(parent), GetLayerNames(parent));
+
+  // Show the browser (which should restore it).
+  browser->Show();
+  EXPECT_EQ(GetWindowNames(parent), GetLayerNames(parent));
+
+  // Activate the browser.
+  ash::wm::ActivateWindow(browser.get());
+  EXPECT_TRUE(wm::IsActiveWindow(browser.get()));
+  EXPECT_EQ(GetWindowNames(parent), GetLayerNames(parent));
+
+  // Restore the app. This differs from above code for |browser| as internally
+  // the app code does this. Restoring this way or using Show() should not make
+  // a difference.
+  app->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
+  EXPECT_EQ(GetWindowNames(parent), GetLayerNames(parent));
+
+  // Activate the app.
+  ash::wm::ActivateWindow(app.get());
+  EXPECT_TRUE(wm::IsActiveWindow(app.get()));
+  EXPECT_EQ(GetWindowNames(parent), GetLayerNames(parent));
 }
 
 namespace {
