@@ -11,7 +11,7 @@
     'libjingle_additional_deps%': [],
     'libjingle_peerconnection_additional_deps%': [],
     'libjingle_source%': "source",
-    'libpeer_target_type%': '<(component)',
+    'libpeer_target_type%': 'static_library',
   },
   'target_defaults': {
     'defines': [
