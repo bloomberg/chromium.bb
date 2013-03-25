@@ -505,7 +505,8 @@ MediaMenuParts::~MediaMenuParts() {}
     NSTextField* label =
         LabelWithFrame(base::SysUTF8ToNSString(it->second.label), labelFrame);
     SetControlSize(label, NSSmallControlSize);
-    [[label cell] setAlignment:NSRightTextAlignment];
+    NSCell* cell = [label cell];
+    [cell setAlignment:NSRightTextAlignment];
     [GTMUILocalizerAndLayoutTweaker sizeToFitView:label];
     maxLabelWidth = std::max(maxLabelWidth, [label frame].size.width);
     [[self bubble]  addSubview:label];
