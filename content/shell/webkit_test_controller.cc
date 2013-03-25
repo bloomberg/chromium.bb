@@ -34,6 +34,8 @@
 namespace content {
 
 const int kTestTimeoutMilliseconds = 30 * 1000;
+// 0x20000000ms is big enough for the purpose to avoid timeout in debugging.
+const int kCloseEnoughToInfinity = 0x20000000;
 
 const int kTestWindowWidthDip = 800;
 const int kTestWindowHeightDip = 600;
@@ -438,7 +440,10 @@ void WebKitTestController::SendTestConfiguration() {
   params.temp_path = temp_path_;
   params.test_url = test_url_;
   params.enable_pixel_dumping = enable_pixel_dumping_;
-  params.layout_test_timeout = kTestTimeoutMilliseconds;
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoTimeout))
+    params.layout_test_timeout = kCloseEnoughToInfinity;
+  else
+    params.layout_test_timeout = kTestTimeoutMilliseconds;
   params.allow_external_pages = CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kAllowExternalPages);
   params.expected_pixel_hash = expected_pixel_hash_;
