@@ -82,7 +82,7 @@ base::PlatformFileError AsyncFileTestHelper::Copy(
     const FileSystemURL& dest) {
   DCHECK(context);
   FileSystemOperation* operation =
-      context->CreateFileSystemOperation(src, NULL);
+      context->CreateFileSystemOperation(dest, NULL);
   EXPECT_TRUE(operation != NULL);
   base::PlatformFileError result = base::PLATFORM_FILE_ERROR_FAILED;
   base::RunLoop run_loop;
@@ -96,7 +96,7 @@ base::PlatformFileError AsyncFileTestHelper::Move(
     const FileSystemURL& src,
     const FileSystemURL& dest) {
   FileSystemOperation* operation =
-      context->CreateFileSystemOperation(src, NULL);
+      context->CreateFileSystemOperation(dest, NULL);
   EXPECT_TRUE(operation != NULL);
   base::PlatformFileError result = base::PLATFORM_FILE_ERROR_FAILED;
   base::RunLoop run_loop;

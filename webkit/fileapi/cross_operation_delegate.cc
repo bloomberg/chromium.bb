@@ -15,18 +15,18 @@ namespace fileapi {
 
 CrossOperationDelegate::CrossOperationDelegate(
     FileSystemContext* file_system_context,
-    LocalFileSystemOperation* src_root_operation,
-    scoped_ptr<LocalFileSystemOperation> dest_root_operation,
+    scoped_ptr<LocalFileSystemOperation> src_root_operation,
+    LocalFileSystemOperation* dest_root_operation,
     const FileSystemURL& src_root,
     const FileSystemURL& dest_root,
     OperationType operation_type,
     const StatusCallback& callback)
-    : RecursiveOperationDelegate(file_system_context, src_root_operation),
+    : RecursiveOperationDelegate(file_system_context, dest_root_operation),
       src_root_(src_root),
       dest_root_(dest_root),
       operation_type_(operation_type),
       callback_(callback),
-      dest_root_operation_(dest_root_operation.Pass()) {
+      src_root_operation_(src_root_operation.Pass()) {
   same_file_system_ = AreSameFileSystem(src_root_, dest_root_);
 }
 
@@ -198,14 +198,14 @@ FileSystemURL CrossOperationDelegate::CreateDestURL(
       relative);
 }
 
-LocalFileSystemOperation* CrossOperationDelegate::NewSourceOperation() {
+LocalFileSystemOperation* CrossOperationDelegate::NewDestOperation() {
   return NewNestedOperation();
 }
 
-LocalFileSystemOperation* CrossOperationDelegate::NewDestOperation() {
+LocalFileSystemOperation* CrossOperationDelegate::NewSourceOperation() {
   if (same_file_system_)
-    return NewSourceOperation();
-  return dest_root_operation_->CreateNestedOperation();
+    return NewDestOperation();
+  return src_root_operation_->CreateNestedOperation();
 }
 
 }  // namespace fileapi

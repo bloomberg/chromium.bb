@@ -29,8 +29,8 @@ class CrossOperationDelegate
 
   CrossOperationDelegate(
       FileSystemContext* file_system_context,
-      LocalFileSystemOperation* src_root_operation,
-      scoped_ptr<LocalFileSystemOperation> dest_root_operation,
+      scoped_ptr<LocalFileSystemOperation> src_root_operation,
+      LocalFileSystemOperation* dest_root_operation,
       const FileSystemURL& src_root,
       const FileSystemURL& dest_root,
       OperationType operation_type,
@@ -75,17 +75,17 @@ class CrossOperationDelegate
   // When the creation fails it fires callback_ with the
   // error code and returns NULL.
   //
-  // - NewSourceOperation is basically a thin wrapper of
+  // - NewDestOperation is basically a thin wrapper of
   //   RecursiveOperationDelegate::NewOperation().
-  // - NewDestOperation also redirects the request to
+  // - NewSourceOperation also redirects the request to
   //   RecursiveOperationDelegate::NewOperation() **iff** same_file_system_
   //   is true.
   //   Otherwise it's for cross-filesystem operation and it needs a
   //   separate FileSystemOperationContext, so it creates a new operation
-  //   which inherits context from dest_root_operation_.
+  //   which inherits context from src_root_operation_.
   //
-  LocalFileSystemOperation* NewSourceOperation();
   LocalFileSystemOperation* NewDestOperation();
+  LocalFileSystemOperation* NewSourceOperation();
 
   FileSystemURL src_root_;
   FileSystemURL dest_root_;
@@ -93,7 +93,7 @@ class CrossOperationDelegate
   OperationType operation_type_;
   StatusCallback callback_;
 
-  scoped_ptr<LocalFileSystemOperation> dest_root_operation_;
+  scoped_ptr<LocalFileSystemOperation> src_root_operation_;
 
   scoped_refptr<webkit_blob::ShareableFileReference> current_file_ref_;
 
