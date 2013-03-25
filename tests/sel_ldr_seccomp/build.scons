@@ -16,3 +16,13 @@ open_errno_test_exe = env.ComponentProgram('seccomp_open_errno_test',
 node = env.CommandTest('seccomp_open_errno_test.out',
                        command=[open_errno_test_exe])
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_seccomp_open_errno_test')
+
+check_arch_test_exe = env.ComponentProgram('seccomp_check_arch_test',
+                                           ['check_arch_test.c'],
+                                           EXTRA_LIBS=['seccomp_bpf',
+                                                       'platform'])
+
+node = env.CommandTest('seccomp_check_arch_test.out',
+                       command=[check_arch_test_exe],
+                       exit_status='-31') # SIGSYS
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_seccomp_check_arch_test')

@@ -18,6 +18,7 @@
 
 #if defined(SUPPORTED_OS)
 
+#include <linux/audit.h>
 #include <linux/errno.h>
 #include <linux/filter.h>
 #include <linux/seccomp.h>
@@ -33,7 +34,9 @@
 #include <unistd.h>
 
 #define SyscallArg(n) (offsetof(struct seccomp_data, args[n]))
+#define SyscallArch (offsetof(struct seccomp_data, arch))
 #define SyscallNr (offsetof(struct seccomp_data, nr))
+
 
 #define REG_RESULT  REG_RAX
 #define REG_SYSCALL  REG_RAX
@@ -87,6 +90,16 @@ static void NaClSeccompBpfSigsysHandler(int nr, siginfo_t *info,
 }
 
 static struct sock_filter filter[] = {
+  /*
+   * Check that an x86-64 syscall is called.
+   * This will save us from the case when x86-64 process
+   * calls an x86-32 system call using int $0x80.
+   * See http://scary.beasts.org/security/CESA-2009-001.html
+   */
+  BPF_STMT(BPF_LD + BPF_W + BPF_ABS, SyscallArch),
+  BPF_JUMP(BPF_JMP + BPF_JEQ + BPF_K, AUDIT_ARCH_X86_64, 1, 0),
+  BPF_STMT(BPF_RET + BPF_K, SECCOMP_RET_KILL),
+
   /* Grab the system call number */
   BPF_STMT(BPF_LD + BPF_W + BPF_ABS, SyscallNr),
   /* Jump table for the allowed syscalls */
