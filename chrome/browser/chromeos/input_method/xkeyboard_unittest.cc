@@ -13,7 +13,7 @@
 #include "base/message_loop.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/input_method/input_method_whitelist.h"
-#include "chrome/browser/chromeos/input_method/mock_input_method_delegate.h"
+#include "chromeos/ime/mock_input_method_delegate.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/x/x11_util.h"

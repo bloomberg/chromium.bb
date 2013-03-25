@@ -1,18 +1,19 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_INPUT_METHOD_MOCK_INPUT_METHOD_DELEGATE_H_
-#define CHROME_BROWSER_CHROMEOS_INPUT_METHOD_MOCK_INPUT_METHOD_DELEGATE_H_
+#ifndef CHROMEOS_IME_MOCK_INPUT_METHOD_DELEGATE_H_
+#define CHROMEOS_IME_MOCK_INPUT_METHOD_DELEGATE_H_
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "chrome/browser/chromeos/input_method/input_method_delegate.h"
+#include "chromeos/chromeos_export.h"
+#include "chromeos/ime/input_method_delegate.h"
 
 namespace chromeos {
 namespace input_method {
 
-class MockInputMethodDelegate : public InputMethodDelegate {
+class CHROMEOS_EXPORT MockInputMethodDelegate : public InputMethodDelegate {
  public:
   MockInputMethodDelegate();
   virtual ~MockInputMethodDelegate();
@@ -38,4 +39,4 @@ class MockInputMethodDelegate : public InputMethodDelegate {
 }  // namespace input_method
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_INPUT_METHOD_MOCK_INPUT_METHOD_DELEGATE_H_
+#endif  // CHROMEOS_IME_MOCK_INPUT_METHOD_DELEGATE_H_

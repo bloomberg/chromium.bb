@@ -74,8 +74,6 @@
         'browser/chromeos/cros/mock_network_library.h',
         'browser/chromeos/input_method/mock_candidate_window_controller.cc',
         'browser/chromeos/input_method/mock_candidate_window_controller.h',
-        'browser/chromeos/input_method/mock_input_method_delegate.cc',
-        'browser/chromeos/input_method/mock_input_method_delegate.h',
         'browser/chromeos/input_method/mock_input_method_manager.cc',
         'browser/chromeos/input_method/mock_input_method_manager.h',
         'browser/chromeos/input_method/mock_xkeyboard.cc',
