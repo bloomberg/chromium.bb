@@ -36,6 +36,7 @@ const char kExcludeMatches[] = "exclude_matches";
 const char kFileAccessList[] = "file_access";
 const char kFileFilters[] = "file_filters";
 const char kFileBrowserHandlers[] = "file_browser_handlers";
+const char kMediaGalleriesHandlers[] = "media_galleries_handlers";
 const char kFileHandlers[] = "file_handlers";
 const char kFileHandlerTitle[] = "title";
 const char kFileHandlerTypes[] = "types";
@@ -258,6 +259,8 @@ const char kInvalidFileAccessValue[] =
     "Invalid value for 'file_access[*]'.";
 const char kInvalidFileBrowserHandler[] =
     "Invalid value for 'file_browser_handlers'.";
+const char kInvalidMediaGalleriesHandler[] =
+    "Invalid value for 'media_galleries_handlers'.";
 const char kInvalidFileFiltersList[] =
     "Invalid value for 'file_filters'.";
 const char kInvalidFileFilterValue[] =

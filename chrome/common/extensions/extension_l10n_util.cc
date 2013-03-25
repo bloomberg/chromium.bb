@@ -126,6 +126,22 @@ bool LocalizeManifest(const extensions::MessageBundle& messages,
     }
   }
 
+  ListValue* media_galleries_handlers = NULL;
+  if (manifest->GetList(keys::kMediaGalleriesHandlers,
+      &media_galleries_handlers)) {
+    key.assign(keys::kMediaGalleriesHandlers);
+    for (size_t i = 0; i < media_galleries_handlers->GetSize(); i++) {
+      DictionaryValue* handler = NULL;
+      if (!media_galleries_handlers->GetDictionary(i, &handler)) {
+        *error = errors::kInvalidMediaGalleriesHandler;
+        return false;
+      }
+      if (!LocalizeManifestValue(keys::kPageActionDefaultTitle, messages,
+                                 handler, error))
+        return false;
+    }
+  }
+
   // Initialize all intents.
   DictionaryValue* intents = NULL;
   if (manifest->GetDictionary(keys::kIntents, &intents)) {

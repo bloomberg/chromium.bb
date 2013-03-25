@@ -643,6 +643,8 @@
         'browser/extensions/management_policy.h',
         'browser/extensions/manifest_url_parser.cc',
         'browser/extensions/manifest_url_parser.h',
+        'browser/extensions/media_galleries_handler.h',
+        'browser/extensions/media_galleries_handler.cc',
         'browser/extensions/menu_manager.cc',
         'browser/extensions/menu_manager.h',
         'browser/extensions/message_handler.cc',

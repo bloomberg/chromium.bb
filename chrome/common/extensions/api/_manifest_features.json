@@ -147,6 +147,10 @@
     "channel": "stable",
     "extension_types": ["extension", "packaged_app"]
   },
+  "media_galleries_handlers": {
+    "channel": "stable",
+    "extension_types": ["packaged_app", "platform_app"]
+  },
   "file_handlers": {
     "channel": "stable",
     "extension_types": ["platform_app"]
