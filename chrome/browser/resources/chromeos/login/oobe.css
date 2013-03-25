@@ -789,16 +789,13 @@ html[dir=rtl] #update #update-checking-ellipsis {
 
 .eula-frame {
   border: none;
-  height: 200px;
   padding: 0 0 0 5px;
-  width: 313px;
 }
 
 #cros-eula,
 #oem-eula,
 #tos-container {
   border: 1px solid #d9d9d9;
-  height: 200px;
 }
 
 .eula-frame,
@@ -808,14 +805,29 @@ html[dir=rtl] #update #update-checking-ellipsis {
   height: 222px;
 }
 
-#oem-eula {
-  border-left: none;
+#cros-eula {
+  width: 314px;
 }
 
-#eulas.one-column #cros-eula,
-#eulas.one-column #cros-eula-frame,
-#tos-container {
-  width: 100%;
+#cros-eula-frame {
+  width: 309px;
+}
+
+#oem-eula {
+  border-left: none;
+  width: 313px;
+}
+
+#oem-eula-frame {
+  width: 308px;
+}
+
+#eulas.one-column #cros-eula {
+  width: 628px;
+}
+
+#eulas.one-column #cros-eula-frame {
+  width: 623px;
 }
 
 #eulas.one-column #oem-eula {
