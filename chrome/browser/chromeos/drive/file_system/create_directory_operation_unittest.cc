@@ -96,16 +96,6 @@ class CreateDirectoryOperationTest
     blocking_task_runner_ = NULL;
   }
 
-  // Copy the result from FindFirstMissingParentDirectory().
-  static void CopyResultFromFindFirstMissingParentDirectory(
-      CreateDirectoryOperation
-          ::FindFirstMissingParentDirectoryResult* out_result,
-      const CreateDirectoryOperation
-          ::FindFirstMissingParentDirectoryResult& result) {
-    DCHECK(out_result);
-    *out_result = result;
-  }
-
   virtual void OnDirectoryChangedByOperation(
       const base::FilePath& directory_path) OVERRIDE {
     // Do nothing.
@@ -153,8 +143,7 @@ TEST_F(CreateDirectoryOperationTest, FindFirstMissingParentDirectory) {
   base::FilePath dir_path(FILE_PATH_LITERAL("drive/New Folder 1"));
   operation()->FindFirstMissingParentDirectory(
       dir_path,
-      base::Bind(&CopyResultFromFindFirstMissingParentDirectory,
-                 &result));
+      google_apis::test_util::CreateCopyResultCallback(&result));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(CreateDirectoryOperation::FIND_FIRST_FOUND_MISSING, result.error);
   EXPECT_EQ(base::FilePath(FILE_PATH_LITERAL("drive/New Folder 1")),
@@ -165,8 +154,7 @@ TEST_F(CreateDirectoryOperationTest, FindFirstMissingParentDirectory) {
   base::FilePath dir_path2(FILE_PATH_LITERAL("drive/Directory 1/New Folder 2"));
   operation()->FindFirstMissingParentDirectory(
       dir_path2,
-      base::Bind(&CopyResultFromFindFirstMissingParentDirectory,
-                 &result));
+      google_apis::test_util::CreateCopyResultCallback(&result));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(CreateDirectoryOperation::FIND_FIRST_FOUND_MISSING, result.error);
   EXPECT_EQ(base::FilePath(FILE_PATH_LITERAL("drive/Directory 1/New Folder 2")),
@@ -178,8 +166,7 @@ TEST_F(CreateDirectoryOperationTest, FindFirstMissingParentDirectory) {
       dir_path2.Append(FILE_PATH_LITERAL("Another Folder"));
   operation()->FindFirstMissingParentDirectory(
       dir_path3,
-      base::Bind(&CopyResultFromFindFirstMissingParentDirectory,
-                 &result));
+      google_apis::test_util::CreateCopyResultCallback(&result));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(CreateDirectoryOperation::FIND_FIRST_FOUND_MISSING, result.error);
   EXPECT_EQ(base::FilePath(FILE_PATH_LITERAL("drive/Directory 1/New Folder 2")),
@@ -189,16 +176,14 @@ TEST_F(CreateDirectoryOperationTest, FindFirstMissingParentDirectory) {
   // Folders on top of an existing file.
   operation()->FindFirstMissingParentDirectory(
       base::FilePath(FILE_PATH_LITERAL("drive/File 1.txt/BadDir")),
-      base::Bind(&CopyResultFromFindFirstMissingParentDirectory,
-                 &result));
+      google_apis::test_util::CreateCopyResultCallback(&result));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(CreateDirectoryOperation::FIND_FIRST_FOUND_INVALID, result.error);
 
   // Existing folder.
   operation()->FindFirstMissingParentDirectory(
       base::FilePath(FILE_PATH_LITERAL("drive/Directory 1")),
-      base::Bind(&CopyResultFromFindFirstMissingParentDirectory,
-                 &result));
+      google_apis::test_util::CreateCopyResultCallback(&result));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(CreateDirectoryOperation::FIND_FIRST_DIRECTORY_ALREADY_PRESENT,
             result.error);
