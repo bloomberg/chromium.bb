@@ -1928,12 +1928,8 @@ void DriveFileSyncService::StartOverRemoteSync(
     SyncStatusCode status) {
   DCHECK(param);
   SyncFileMetadata& local_metadata = param->local_metadata;
-  pending_tasks_.push_front(base::Bind(
-      &DriveFileSyncService::DidPrepareForProcessRemoteChange,
-      AsWeakPtr(), base::Passed(&param), status,
-      local_metadata, FileChangeList()));
-  param->token->ResetTask(FROM_HERE);
-  NotifyTaskDone(status, param->token.Pass());
+  DidPrepareForProcessRemoteChange(
+      param.Pass(), status, local_metadata, FileChangeList());
 }
 
 bool DriveFileSyncService::AppendRemoteChange(
