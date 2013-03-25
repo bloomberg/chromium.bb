@@ -39,6 +39,10 @@
 #include "base/mac/foundation_util.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/drive/drive_file_system_util.h"
+#endif
+
 using fileapi::IsolatedContext;
 
 const char kInvalidParameters[] = "Invalid parameters";
@@ -192,6 +196,24 @@ bool DoCheckWritableFile(const base::FilePath& path) {
          error == base::PLATFORM_FILE_ERROR_EXISTS;
 }
 
+void CheckLocalWritableFile(const base::FilePath& path,
+                            const base::Closure& on_success,
+                            const base::Closure& on_failure) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+      DoCheckWritableFile(path) ? on_success : on_failure);
+}
+
+#if defined(OS_CHROMEOS)
+void CheckRemoteWritableFile(const base::Closure& on_success,
+                             const base::Closure& on_failure,
+                             drive::DriveFileError error,
+                             const base::FilePath& path) {
+  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+      error == drive::DRIVE_FILE_OK ? on_success : on_failure);
+}
+#endif
+
 // Expand the mime-types and extensions provided in an AcceptOption, returning
 // them within the passed extension vector. Returns false if no valid types
 // were found.
@@ -284,16 +306,22 @@ bool FileSystemEntryFunction::HasFileSystemWritePermission() {
 }
 
 void FileSystemEntryFunction::CheckWritableFile(const base::FilePath& path) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
-  if (DoCheckWritableFile(path)) {
-    content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-        base::Bind(&FileSystemEntryFunction::RegisterFileSystemAndSendResponse,
-            this, path, WRITABLE));
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  base::Closure on_success =
+      base::Bind(&FileSystemEntryFunction::RegisterFileSystemAndSendResponse,
+                 this, path, WRITABLE);
+  base::Closure on_failure =
+      base::Bind(&FileSystemEntryFunction::HandleWritableFileError, this);
+
+#if defined(OS_CHROMEOS)
+  if (drive::util::IsUnderDriveMountPoint(path)) {
+    drive::util::PrepareWritableFileAndRun(profile_, path,
+        base::Bind(&CheckRemoteWritableFile, on_success, on_failure));
     return;
   }
-
-  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&FileSystemEntryFunction::HandleWritableFileError, this));
+#endif
+  content::BrowserThread::PostTask(content::BrowserThread::FILE, FROM_HERE,
+      base::Bind(&CheckLocalWritableFile, path, on_success, on_failure));
 }
 
 void FileSystemEntryFunction::RegisterFileSystemAndSendResponse(
@@ -341,9 +369,7 @@ bool FileSystemGetWritableEntryFunction::RunImpl() {
                               render_view_host_, &path, &error_))
     return false;
 
-  content::BrowserThread::PostTask(content::BrowserThread::FILE, FROM_HERE,
-      base::Bind(&FileSystemGetWritableEntryFunction::CheckWritableFile,
-          this, path));
+  CheckWritableFile(path);
   return true;
 }
 
@@ -511,9 +537,7 @@ void FileSystemChooseEntryFunction::RegisterTempExternalFileSystemForTest(
 void FileSystemChooseEntryFunction::FileSelected(const base::FilePath& path,
                                                 EntryType entry_type) {
   if (entry_type == WRITABLE) {
-    content::BrowserThread::PostTask(content::BrowserThread::FILE, FROM_HERE,
-        base::Bind(&FileSystemChooseEntryFunction::CheckWritableFile,
-            this, path));
+    CheckWritableFile(path);
     return;
   }
 
@@ -623,9 +647,7 @@ bool FileSystemChooseEntryFunction::RunImpl() {
     return false;
   }
 
-  if (entry_type != WRITABLE)
-    file_type_info.support_drive = true;
-
+  file_type_info.support_drive = true;
   return ShowPicker(suggested_name, file_type_info, picker_type, entry_type);
 }
 

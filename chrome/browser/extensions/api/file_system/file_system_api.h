@@ -32,9 +32,10 @@ class FileSystemEntryFunction : public AsyncExtensionFunction {
 
   bool HasFileSystemWritePermission();
 
-  // Called on the FILE thread. This is called when a writable file entry is
-  // being returned. The function will ensure the file exists, creating it if
-  // necessary, and also check that the file is not a link.
+  // This is called when a writable file entry is being returned. The function
+  // will ensure the file exists, creating it if necessary, and also check that
+  // the file is not a link. If it succeeds it proceeds to
+  // RegisterFileSystemAndSendResponse, otherwise to HandleWritableFileError.
   void CheckWritableFile(const base::FilePath& path);
 
   // This will finish the choose file process. This is either called directly
