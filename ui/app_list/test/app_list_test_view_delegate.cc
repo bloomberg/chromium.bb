@@ -35,5 +35,13 @@ gfx::ImageSkia AppListTestViewDelegate::GetWindowIcon() {
   return gfx::ImageSkia();
 }
 
+string16 AppListTestViewDelegate::GetCurrentUserName() {
+  return string16();
+}
+
+string16 AppListTestViewDelegate::GetCurrentUserEmail() {
+  return string16();
+}
+
 }  // namespace test
 }  // namespace app_list

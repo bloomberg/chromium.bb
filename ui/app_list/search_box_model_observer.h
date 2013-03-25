@@ -23,15 +23,6 @@ class APP_LIST_EXPORT SearchBoxModelObserver {
   // Invoked when text is changed.
   virtual void TextChanged() = 0;
 
-  // Invoked when user icon is changed.
-  virtual void UserIconChanged() = 0;
-
-  // Invoked when text is changed.
-  virtual void UserIconTooltipChanged() = 0;
-
-  // Invoked when text is changed.
-  virtual void UserIconEnabledChanged() = 0;
-
  protected:
   virtual ~SearchBoxModelObserver() {}
 };

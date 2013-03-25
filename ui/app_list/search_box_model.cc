@@ -8,8 +8,7 @@
 
 namespace app_list {
 
-SearchBoxModel::SearchBoxModel()
-    : user_icon_enabled_(false) {
+SearchBoxModel::SearchBoxModel() {
 }
 
 SearchBoxModel::~SearchBoxModel() {
@@ -18,23 +17,6 @@ SearchBoxModel::~SearchBoxModel() {
 void SearchBoxModel::SetIcon(const gfx::ImageSkia& icon) {
   icon_ = icon;
   FOR_EACH_OBSERVER(SearchBoxModelObserver, observers_, IconChanged());
-}
-
-void SearchBoxModel::SetUserIcon(const gfx::ImageSkia& icon) {
-  user_icon_ = icon;
-  FOR_EACH_OBSERVER(SearchBoxModelObserver, observers_, UserIconChanged());
-}
-
-void SearchBoxModel::SetUserIconTooltip(const string16& tooltip_text) {
-  user_icon_tooltip_ = tooltip_text;
-  FOR_EACH_OBSERVER(SearchBoxModelObserver, observers_,
-                    UserIconTooltipChanged());
-}
-
-void SearchBoxModel::SetUserIconEnabled(bool user_icon_enabled) {
-  user_icon_enabled_ = user_icon_enabled;
-  FOR_EACH_OBSERVER(SearchBoxModelObserver, observers_,
-                    UserIconEnabledChanged());
 }
 
 void SearchBoxModel::SetHintText(const string16& hint_text) {

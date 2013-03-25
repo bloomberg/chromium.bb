@@ -293,6 +293,22 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
     return gfx::ImageSkia();
   }
 
+  virtual string16 GetCurrentUserName() {
+    return string16();
+  }
+
+  virtual string16 GetCurrentUserEmail() {
+    return string16();
+  }
+
+  virtual void OpenSettings() {
+    // Nothing needs to be done.
+  }
+
+  virtual void OpenFeedback() {
+    // Nothing needs to be done.
+  }
+
   app_list::AppListModel* model_;
 
   DISALLOW_COPY_AND_ASSIGN(ExampleAppListViewDelegate);

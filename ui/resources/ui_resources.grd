@@ -26,6 +26,9 @@
         <structure type="chrome_scaled_image" name="IDR_APP_LIST_ITEM_PROGRESS_CENTER" file="common/app_list_progress_bar_center.png" />
         <structure type="chrome_scaled_image" name="IDR_APP_LIST_ITEM_PROGRESS_RIGHT" file="common/app_list_progress_bar_right.png" />
         <structure type="chrome_scaled_image" name="IDR_APP_LIST_USER_INDICATOR" file="common/app_list_user_indicator.png" />
+        <structure type="chrome_scaled_image" name="IDR_APP_LIST_TOOLS_HOVER" file="common/app_list_tools_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_APP_LIST_TOOLS_NORMAL" file="common/app_list_tools_normal.png" />
+        <structure type="chrome_scaled_image" name="IDR_APP_LIST_TOOLS_PRESSED" file="common/app_list_tools_pressed.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_APP_TOP_CENTER" file="app_top_center.png" />
       <if expr="pp_ifdef('toolkit_views')">

@@ -8,16 +8,20 @@
 #include <string>
 
 #include "ui/app_list/search_box_model_observer.h"
+#include "ui/app_list/views/app_list_menu_views.h"
+#include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/view.h"
 
 namespace views {
 class ImageView;
+class MenuButton;
 class Textfield;
 }  // namespace views
 
 namespace app_list {
 
+class AppListViewDelegate;
 class SearchBoxModel;
 class SearchBoxViewDelegate;
 
@@ -27,9 +31,11 @@ class SearchBoxViewDelegate;
 // contents and selection model of the Textfield.
 class SearchBoxView : public views::View,
                       public views::TextfieldController,
+                      public views::MenuButtonListener,
                       public SearchBoxModelObserver {
  public:
-  explicit SearchBoxView(SearchBoxViewDelegate* delegate);
+  SearchBoxView(SearchBoxViewDelegate* delegate,
+                AppListViewDelegate* view_delegate);
   virtual ~SearchBoxView();
 
   void SetModel(SearchBoxModel* model);
@@ -58,20 +64,23 @@ class SearchBoxView : public views::View,
   virtual bool HandleKeyEvent(views::Textfield* sender,
                               const ui::KeyEvent& key_event) OVERRIDE;
 
+  // Overridden from views::MenuButtonListener:
+  virtual void OnMenuButtonClicked(View* source,
+                                   const gfx::Point& point) OVERRIDE;
+
   // Overridden from SearchBoxModelObserver:
   virtual void IconChanged() OVERRIDE;
   virtual void HintTextChanged() OVERRIDE;
   virtual void SelectionModelChanged() OVERRIDE;
   virtual void TextChanged() OVERRIDE;
-  virtual void UserIconChanged() OVERRIDE;
-  virtual void UserIconTooltipChanged() OVERRIDE;
-  virtual void UserIconEnabledChanged() OVERRIDE;
 
   SearchBoxViewDelegate* delegate_;  // Not owned.
   SearchBoxModel* model_;  // Owned by AppListModel.
 
+  AppListMenuViews menu_;
+
   views::ImageView* icon_view_;  // Owned by views hierarchy.
-  views::ImageView* user_icon_view_;  // Owned by views hierarchy.
+  views::MenuButton* menu_button_;  // Owned by views hierarchy.
   views::Textfield* search_box_;  // Owned by views hierarchy.
   views::View* contents_view_;  // Owned by views hierarchy.
 

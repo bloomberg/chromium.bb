@@ -467,6 +467,14 @@ need to be translated for each locale.-->
       <message name="IDS_MESSAGE_CENTER_TOOLTIP_UNREAD" desc="Tooltip for notification tray icon with unread notifications">
         <ph name="product">$1<ex>Chrome</ex></ph> - Notifications (<ph name="QUANTITY">$2<ex>3</ex></ph> unread)
       </message>
+
+      <!-- App list -->
+      <message name="IDS_APP_LIST_OPEN_SETTINGS" desc="The menu entry to show the settings UI.">
+        Settings
+      </message>
+      <message name="IDS_APP_LIST_OPEN_FEEDBACK" desc="The menu entry to show the feedback UI.">
+        Send feedback
+      </message>
     </messages>
   </release>
 </grit>

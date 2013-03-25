@@ -50,6 +50,13 @@ MenuItemView* MenuModelAdapter::CreateMenu() {
   return item;
 }
 
+MenuItemView* MenuModelAdapter::AppendMenuItem(MenuItemView* menu,
+                                               ui::MenuModel* model,
+                                               int index) {
+  return menu->AppendMenuItemFromModel(model, index,
+                                       model->GetCommandIdAt(index));
+}
+
 // MenuModelAdapter, MenuDelegate implementation:
 
 void MenuModelAdapter::ExecuteCommand(int id) {
@@ -183,8 +190,7 @@ void MenuModelAdapter::BuildMenuImpl(MenuItemView* menu, ui::MenuModel* model) {
   bool has_icons = model->HasIcons();
   const int item_count = model->GetItemCount();
   for (int i = 0; i < item_count; ++i) {
-    MenuItemView* item = menu->AppendMenuItemFromModel(
-        model, i, model->GetCommandIdAt(i));
+    MenuItemView* item = AppendMenuItem(menu, model, i);
 
     if (item)
       item->SetVisible(model->IsVisibleAt(i));

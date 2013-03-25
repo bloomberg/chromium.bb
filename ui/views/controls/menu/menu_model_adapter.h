@@ -39,6 +39,13 @@ class VIEWS_EXPORT MenuModelAdapter : public MenuDelegate {
   int triggerable_event_flags() const { return triggerable_event_flags_; }
 
  protected:
+  // Create and add a menu item to |menu| for the item at index |index| in
+  // |model|. Subclasses override this to allow custom items to be added to the
+  // menu.
+  virtual MenuItemView* AppendMenuItem(MenuItemView* menu,
+                                       ui::MenuModel* model,
+                                       int index);
+
   // views::MenuDelegate implementation.
   virtual void ExecuteCommand(int id) OVERRIDE;
   virtual void ExecuteCommand(int id, int mouse_event_flags) OVERRIDE;

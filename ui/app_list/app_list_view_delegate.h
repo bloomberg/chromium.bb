@@ -5,6 +5,7 @@
 #ifndef UI_APP_LIST_APP_LIST_VIEW_DELEGATE_H_
 #define UI_APP_LIST_APP_LIST_VIEW_DELEGATE_H_
 
+#include "base/string16.h"
 #include "ui/app_list/app_list_export.h"
 
 namespace gfx {
@@ -64,6 +65,18 @@ class APP_LIST_EXPORT AppListViewDelegate {
 
   // Returns the icon to be displayed in the window and taskbar.
   virtual gfx::ImageSkia GetWindowIcon() = 0;
+
+  // Returns the name of the current user.
+  virtual string16 GetCurrentUserName() = 0;
+
+  // Returns the email of the current user.
+  virtual string16 GetCurrentUserEmail() = 0;
+
+  // Open the settings UI.
+  virtual void OpenSettings() = 0;
+
+  // Open the feedback UI.
+  virtual void OpenFeedback() = 0;
 };
 
 }  // namespace app_list

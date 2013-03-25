@@ -48,6 +48,10 @@ class AppListViewDelegate : public app_list::AppListViewDelegate {
   virtual void ViewClosing() OVERRIDE;
   virtual void ViewActivationChanged(bool active) OVERRIDE;
   virtual gfx::ImageSkia GetWindowIcon() OVERRIDE;
+  virtual string16 GetCurrentUserName() OVERRIDE;
+  virtual string16 GetCurrentUserEmail() OVERRIDE;
+  virtual void OpenSettings() OVERRIDE;
+  virtual void OpenFeedback() OVERRIDE;
 
   scoped_ptr<app_list::SigninDelegate> signin_delegate_;
   scoped_ptr<AppsModelBuilder> apps_builder_;

@@ -88,7 +88,7 @@ AppListMainView::AppListMainView(AppListViewDelegate* delegate,
                                         kInnerPadding,
                                         kInnerPadding));
 
-  search_box_view_ = new SearchBoxView(this);
+  search_box_view_ = new SearchBoxView(this, delegate);
   AddChildView(search_box_view_);
 
   contents_view_ = new ContentsView(this, pagination_model);

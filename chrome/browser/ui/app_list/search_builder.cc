@@ -313,10 +313,6 @@ SearchBuilder::SearchBuilder(
       l10n_util::GetStringUTF16(IDS_SEARCH_BOX_HINT));
   search_box_->SetIcon(*ui::ResourceBundle::GetSharedInstance().
       GetImageSkiaNamed(IDR_OMNIBOX_SEARCH));
-  search_box_->SetUserIconEnabled(list_controller->ShouldShowUserIcon());
-  search_box_->SetUserIcon(*ui::ResourceBundle::GetSharedInstance().
-      GetImageSkiaNamed(IDR_APP_LIST_USER_INDICATOR));
-  search_box_->SetUserIconTooltip(UTF8ToUTF16(profile_->GetProfileName()));
 
   int providers = AutocompleteProvider::TYPE_EXTENSION_APP;
   bool apps_only = true;
