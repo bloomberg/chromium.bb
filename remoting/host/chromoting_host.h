@@ -17,7 +17,6 @@
 #include "remoting/host/client_session.h"
 #include "remoting/host/host_status_monitor.h"
 #include "remoting/host/host_status_observer.h"
-#include "remoting/host/mouse_move_observer.h"
 #include "remoting/protocol/authenticator.h"
 #include "remoting/protocol/session_manager.h"
 #include "remoting/protocol/connection_to_client.h"
@@ -63,8 +62,7 @@ class DesktopEnvironmentFactory;
 class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
                        public ClientSession::EventHandler,
                        public protocol::SessionManager::Listener,
-                       public HostStatusMonitor,
-                       public MouseMoveObserver {
+                       public HostStatusMonitor {
  public:
   // The caller must ensure that |signal_strategy| and
   // |desktop_environment_factory| remain valid at least until the
@@ -132,9 +130,6 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   virtual void OnIncomingSession(
       protocol::Session* session,
       protocol::SessionManager::IncomingSessionResponse* response) OVERRIDE;
-
-  // MouseMoveObserver interface.
-  virtual void OnLocalMouseMoved(const SkIPoint& new_pos) OVERRIDE;
 
   // Sets desired configuration for the protocol. Must be called before Start().
   void set_protocol_config(scoped_ptr<protocol::CandidateSessionConfig> config);

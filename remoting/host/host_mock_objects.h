@@ -14,7 +14,6 @@
 #include "remoting/host/disconnect_window.h"
 #include "remoting/host/host_status_observer.h"
 #include "remoting/host/input_injector.h"
-#include "remoting/host/local_input_monitor.h"
 #include "remoting/host/screen_controls.h"
 #include "remoting/host/screen_resolution.h"
 #include "remoting/proto/control.pb.h"
@@ -53,16 +52,6 @@ class MockDisconnectWindow : public DisconnectWindow {
   MOCK_METHOD0(Hide, void());
 };
 
-class MockLocalInputMonitor : public LocalInputMonitor {
- public:
-  MockLocalInputMonitor();
-  virtual ~MockLocalInputMonitor();
-
-  MOCK_METHOD2(Start, void(MouseMoveObserver* mouse_move_observer,
-                           const base::Closure& disconnect_callback));
-  MOCK_METHOD0(Stop, void());
-};
-
 class MockContinueWindow : public ContinueWindow {
  public:
   MockContinueWindow();
@@ -71,6 +60,20 @@ class MockContinueWindow : public ContinueWindow {
   MOCK_METHOD1(Show, void(
       const remoting::ContinueWindow::ContinueSessionCallback& callback));
   MOCK_METHOD0(Hide, void());
+};
+
+class MockClientSessionControl : public ClientSessionControl {
+ public:
+  MockClientSessionControl();
+  virtual ~MockClientSessionControl();
+
+  MOCK_CONST_METHOD0(client_jid, const std::string&());
+  MOCK_METHOD0(DisconnectSession, void());
+  MOCK_METHOD1(OnLocalMouseMoved, void(const SkIPoint&));
+  MOCK_METHOD1(SetDisableInputs, void(bool));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockClientSessionControl);
 };
 
 class MockClientSessionEventHandler : public ClientSession::EventHandler {

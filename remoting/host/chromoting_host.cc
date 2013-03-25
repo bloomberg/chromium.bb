@@ -329,20 +329,6 @@ void ChromotingHost::set_protocol_config(
   protocol_config_ = config.Pass();
 }
 
-void ChromotingHost::OnLocalMouseMoved(const SkIPoint& new_pos) {
-  if (!network_task_runner_->BelongsToCurrentThread()) {
-    network_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&ChromotingHost::OnLocalMouseMoved,
-                              this, new_pos));
-    return;
-  }
-
-  ClientList::iterator client;
-  for (client = clients_.begin(); client != clients_.end(); ++client) {
-    (*client)->OnLocalMouseMoved(new_pos);
-  }
-}
-
 void ChromotingHost::PauseSession(bool pause) {
   if (!network_task_runner_->BelongsToCurrentThread()) {
     network_task_runner_->PostTask(

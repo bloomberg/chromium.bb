@@ -37,7 +37,6 @@ class DesktopEnvironment;
 class DesktopEnvironmentFactory;
 class DisconnectWindow;
 class InputInjector;
-class LocalInputMonitor;
 class RemoteInputFilter;
 class ScreenControls;
 class ScreenResolution;
@@ -227,10 +226,6 @@ class DesktopSessionAgent
 
   // Executes keyboard, mouse and clipboard events.
   scoped_ptr<InputInjector> input_injector_;
-
-  // Monitor local inputs to allow remote inputs to be blocked while the local
-  // user is trying to do something.
-  scoped_ptr<LocalInputMonitor> local_input_monitor_;
 
   // Tracker used to release pressed keys and buttons when disconnecting.
   scoped_ptr<protocol::InputEventTracker> input_tracker_;

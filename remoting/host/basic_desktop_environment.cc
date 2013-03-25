@@ -10,6 +10,7 @@
 #include "remoting/host/audio_capturer.h"
 #include "remoting/host/client_session_control.h"
 #include "remoting/host/input_injector.h"
+#include "remoting/host/local_input_monitor.h"
 #include "remoting/host/screen_controls.h"
 
 namespace remoting {
@@ -54,6 +55,12 @@ BasicDesktopEnvironment::BasicDesktopEnvironment(
       input_task_runner_(input_task_runner),
       ui_task_runner_(ui_task_runner) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
+
+  // Create the local input monitor.
+  local_input_monitor_ = LocalInputMonitor::Create(caller_task_runner_,
+                                                   input_task_runner_,
+                                                   ui_task_runner_,
+                                                   client_session_control);
 }
 
 BasicDesktopEnvironmentFactory::BasicDesktopEnvironmentFactory(

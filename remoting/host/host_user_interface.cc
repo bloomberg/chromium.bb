@@ -18,7 +18,6 @@ HostUserInterface::HostUserInterface(
     : host_(NULL),
       network_task_runner_(network_task_runner),
       ui_task_runner_(ui_task_runner),
-      is_monitoring_local_inputs_(false),
       ui_strings_(ui_strings),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       weak_ptr_(weak_factory_.GetWeakPtr()) {
@@ -28,7 +27,6 @@ HostUserInterface::HostUserInterface(
 HostUserInterface::~HostUserInterface() {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
 
-  MonitorLocalInputs(false);
   disconnect_window_->Hide();
 }
 
@@ -36,9 +34,6 @@ void HostUserInterface::Init() {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
 
   disconnect_window_ = DisconnectWindow::Create(&ui_strings());
-  local_input_monitor_ = LocalInputMonitor::Create(ui_task_runner_,
-                                                   network_task_runner_,
-                                                   ui_task_runner_);
 }
 
 void HostUserInterface::Start(ChromotingHost* host,
@@ -87,7 +82,6 @@ void HostUserInterface::OnShutdown() {
 void HostUserInterface::OnDisconnectCallback() {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
 
-  MonitorLocalInputs(false);
   disconnect_window_->Hide();
   DisconnectSession();
 }
@@ -117,28 +111,12 @@ void HostUserInterface::ProcessOnClientAuthenticated(
     DisconnectSession();
     return;
   }
-
-  MonitorLocalInputs(true);
 }
 
 void HostUserInterface::ProcessOnClientDisconnected() {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
 
-  MonitorLocalInputs(false);
   disconnect_window_->Hide();
-}
-
-void HostUserInterface::MonitorLocalInputs(bool enable) {
-  DCHECK(ui_task_runner_->BelongsToCurrentThread());
-
-  if (enable != is_monitoring_local_inputs_) {
-    if (enable) {
-      local_input_monitor_->Start(host_, disconnect_callback_);
-    } else {
-      local_input_monitor_->Stop();
-    }
-    is_monitoring_local_inputs_ = enable;
-  }
 }
 
 }  // namespace remoting

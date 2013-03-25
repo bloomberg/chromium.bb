@@ -12,6 +12,8 @@
 
 namespace remoting {
 
+class LocalInputMonitor;
+
 // Used to create audio/video capturers and event executor that work with
 // the local console.
 class BasicDesktopEnvironment : public DesktopEnvironment {
@@ -54,6 +56,9 @@ class BasicDesktopEnvironment : public DesktopEnvironment {
 
   // Used to run UI code.
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
+
+  // Notifies the client session about the local mouse movements.
+  scoped_ptr<LocalInputMonitor> local_input_monitor_;
 
   DISALLOW_COPY_AND_ASSIGN(BasicDesktopEnvironment);
 };

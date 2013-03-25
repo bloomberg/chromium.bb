@@ -5,9 +5,9 @@
 #ifndef REMOTING_HOST_LOCAL_INPUT_MONITOR_H_
 #define REMOTING_HOST_LOCAL_INPUT_MONITOR_H_
 
-#include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -15,26 +15,28 @@ class SingleThreadTaskRunner;
 
 namespace remoting {
 
-class MouseMoveObserver;
+class ClientSessionControl;
 
+// Monitors the local input to notify about mouse movements. On Mac and Linux
+// catches the disconnection keyboard shortcut (Ctlr-Alt-Esc) and invokes
+// SessionController::Delegate::DisconnectSession() when this key combination is
+// pressed.
+//
+// TODO(sergeyu): Refactor shortcut code to a separate class.
 class LocalInputMonitor {
  public:
   virtual ~LocalInputMonitor() {}
 
-  // Starts local input monitoring. This class is also responsible for
-  // of catching the disconnection keyboard shortcut on Mac and Linux
-  // (Ctlr-Alt-Esc). The |disconnect_callback| is called when this key
-  // combination is pressed.
-  //
-  // TODO(sergeyu): Refactor shortcut code to a separate class.
-  virtual void Start(MouseMoveObserver* mouse_move_observer,
-                     const base::Closure& disconnect_callback) = 0;
-  virtual void Stop() = 0;
-
+  // Creates a platform-specific instance of LocalInputMonitor.
+  // |client_session_control| is called on the |caller_task_runner| thread.
   static scoped_ptr<LocalInputMonitor> Create(
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+      base::WeakPtr<ClientSessionControl> client_session_control);
+
+ protected:
+  LocalInputMonitor() {}
 };
 
 }  // namespace remoting

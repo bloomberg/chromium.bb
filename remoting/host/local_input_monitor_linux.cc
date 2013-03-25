@@ -19,7 +19,8 @@
 #include "base/message_pump_libevent.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/single_thread_task_runner.h"
-#include "remoting/host/mouse_move_observer.h"
+#include "base/threading/non_thread_safe.h"
+#include "remoting/host/client_session_control.h"
 #include "third_party/skia/include/core/SkPoint.h"
 
 // These includes need to be later than dictated by the style guide due to
@@ -32,16 +33,14 @@ namespace remoting {
 
 namespace {
 
-class LocalInputMonitorLinux : public LocalInputMonitor {
+class LocalInputMonitorLinux : public base::NonThreadSafe,
+                               public LocalInputMonitor {
  public:
   LocalInputMonitorLinux(
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> input_task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
+      base::WeakPtr<ClientSessionControl> client_session_control);
   virtual ~LocalInputMonitorLinux();
-
-  virtual void Start(MouseMoveObserver* mouse_move_observer,
-                     const base::Closure& disconnect_callback) OVERRIDE;
-  virtual void Stop() OVERRIDE;
 
  private:
   // The actual implementation resides in LocalInputMonitorLinux::Core class.
@@ -50,10 +49,10 @@ class LocalInputMonitorLinux : public LocalInputMonitor {
         public base::MessagePumpLibevent::Watcher {
    public:
     Core(scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
-         scoped_refptr<base::SingleThreadTaskRunner> input_task_runner);
+         scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
+         base::WeakPtr<ClientSessionControl> client_session_control);
 
-    void Start(MouseMoveObserver* mouse_move_observer,
-               const base::Closure& disconnect_callback);
+    void Start();
     void Stop();
 
    private:
@@ -67,13 +66,6 @@ class LocalInputMonitorLinux : public LocalInputMonitor {
     virtual void OnFileCanReadWithoutBlocking(int fd) OVERRIDE;
     virtual void OnFileCanWriteWithoutBlocking(int fd) OVERRIDE;
 
-    // Posts OnLocalMouseMoved() notification to |mouse_move_observer_| on
-    // the |caller_task_runner_| thread.
-    void OnLocalMouseMoved(const SkIPoint& position);
-
-    // Posts |disconnect_callback_| on the |caller_task_runner_| thread.
-    void OnDisconnectShortcut();
-
     // Processes key and mouse events.
     void ProcessXEvent(xEvent* event);
 
@@ -85,12 +77,9 @@ class LocalInputMonitorLinux : public LocalInputMonitor {
     // Task runner on which X Window events are received.
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner_;
 
-    // Invoked in the |caller_task_runner_| thread to report local mouse events.
-    MouseMoveObserver* mouse_move_observer_;
-
-    // Posted to the |caller_task_runner_| thread every time the disconnect key
-    // combination is pressed.
-    base::Closure disconnect_callback_;
+    // Points to the object receiving mouse event notifications and session
+    // disconnect requests.
+    base::WeakPtr<ClientSessionControl> client_session_control_;
 
     // Used to receive base::MessagePumpLibevent::Watcher events.
     base::MessagePumpLibevent::FileDescriptorWatcher controller_;
@@ -116,51 +105,40 @@ class LocalInputMonitorLinux : public LocalInputMonitor {
 
 LocalInputMonitorLinux::LocalInputMonitorLinux(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> input_task_runner)
-    : core_(new Core(caller_task_runner, input_task_runner)) {
+    scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
+    base::WeakPtr<ClientSessionControl> client_session_control)
+    : core_(new Core(caller_task_runner,
+                     input_task_runner,
+                     client_session_control)) {
+  core_->Start();
 }
 
 LocalInputMonitorLinux::~LocalInputMonitorLinux() {
-}
-
-void LocalInputMonitorLinux::Start(
-    MouseMoveObserver* mouse_move_observer,
-    const base::Closure& disconnect_callback) {
-  core_->Start(mouse_move_observer, disconnect_callback);
-}
-
-void LocalInputMonitorLinux::Stop() {
   core_->Stop();
 }
 
 LocalInputMonitorLinux::Core::Core(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> input_task_runner)
+    scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
+    base::WeakPtr<ClientSessionControl> client_session_control)
     : caller_task_runner_(caller_task_runner),
       input_task_runner_(input_task_runner),
-      mouse_move_observer_(NULL),
+      client_session_control_(client_session_control),
       alt_pressed_(false),
       ctrl_pressed_(false),
       display_(NULL),
       x_record_display_(NULL),
       x_record_context_(0) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
+  DCHECK(client_session_control_);
 
   x_record_range_[0] = NULL;
   x_record_range_[1] = NULL;
 }
 
-void LocalInputMonitorLinux::Core::Start(
-    MouseMoveObserver* mouse_move_observer,
-    const base::Closure& disconnect_callback) {
+void LocalInputMonitorLinux::Core::Start() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
-  DCHECK(disconnect_callback_.is_null());
-  DCHECK(!disconnect_callback.is_null());
-  DCHECK(!mouse_move_observer_);
-  DCHECK(mouse_move_observer);
 
-  disconnect_callback_ = disconnect_callback;
-  mouse_move_observer_ = mouse_move_observer;
   input_task_runner_->PostTask(FROM_HERE,
                                base::Bind(&Core::StartOnInputThread, this));
 }
@@ -168,15 +146,11 @@ void LocalInputMonitorLinux::Core::Start(
 void LocalInputMonitorLinux::Core::Stop() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
-  disconnect_callback_.Reset();
-  mouse_move_observer_ = NULL;
   input_task_runner_->PostTask(FROM_HERE,
                                base::Bind(&Core::StopOnInputThread, this));
 }
 
 LocalInputMonitorLinux::Core::~Core() {
-  DCHECK(disconnect_callback_.is_null());
-  DCHECK(!mouse_move_observer_);
   DCHECK(!display_);
   DCHECK(!x_record_display_);
   DCHECK(!x_record_range_[0]);
@@ -303,35 +277,16 @@ void LocalInputMonitorLinux::Core::OnFileCanWriteWithoutBlocking(int fd) {
   NOTREACHED();
 }
 
-void LocalInputMonitorLinux::Core::OnLocalMouseMoved(const SkIPoint& position) {
-  if (!caller_task_runner_->BelongsToCurrentThread()) {
-    caller_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&Core::OnLocalMouseMoved, this, position));
-    return;
-  }
-
-  if (mouse_move_observer_)
-    mouse_move_observer_->OnLocalMouseMoved(position);
-}
-
-void LocalInputMonitorLinux::Core::OnDisconnectShortcut() {
-  if (!caller_task_runner_->BelongsToCurrentThread()) {
-    caller_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&Core::OnDisconnectShortcut, this));
-    return;
-  }
-
-  if (!disconnect_callback_.is_null())
-    disconnect_callback_.Run();
-}
-
 void LocalInputMonitorLinux::Core::ProcessXEvent(xEvent* event) {
   DCHECK(input_task_runner_->BelongsToCurrentThread());
 
   if (event->u.u.type == MotionNotify) {
     SkIPoint position(SkIPoint::Make(event->u.keyButtonPointer.rootX,
                                      event->u.keyButtonPointer.rootY));
-    OnLocalMouseMoved(position);
+    caller_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&ClientSessionControl::OnLocalMouseMoved,
+                              client_session_control_,
+                              position));
   } else {
     int key_code = event->u.u.detail;
     bool down = event->u.u.type == KeyPress;
@@ -341,7 +296,9 @@ void LocalInputMonitorLinux::Core::ProcessXEvent(xEvent* event) {
     } else if (key_sym == XK_Alt_L || key_sym == XK_Alt_R) {
       alt_pressed_ = down;
     } else if (key_sym == XK_Escape && down && alt_pressed_ && ctrl_pressed_) {
-      OnDisconnectShortcut();
+      caller_task_runner_->PostTask(
+          FROM_HERE, base::Bind(&ClientSessionControl::DisconnectSession,
+                                client_session_control_));
     }
   }
 }
@@ -361,9 +318,12 @@ void LocalInputMonitorLinux::Core::ProcessReply(XPointer self,
 scoped_ptr<LocalInputMonitor> LocalInputMonitor::Create(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+    base::WeakPtr<ClientSessionControl> client_session_control) {
   return scoped_ptr<LocalInputMonitor>(
-      new LocalInputMonitorLinux(caller_task_runner, input_task_runner));
+      new LocalInputMonitorLinux(caller_task_runner,
+                                 input_task_runner,
+                                 client_session_control));
 }
 
 }  // namespace remoting

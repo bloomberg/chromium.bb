@@ -70,8 +70,7 @@ class MockIt2MeHostUserInterface : public It2MeHostUserInterface {
 
   void InitFrom(
       scoped_ptr<DisconnectWindow> disconnect_window,
-      scoped_ptr<ContinueWindow> continue_window,
-      scoped_ptr<LocalInputMonitor> local_input_monitor);
+      scoped_ptr<ContinueWindow> continue_window);
 
   // A test-only version of Start that does not register a HostStatusObserver.
   // TODO(rmsousa): Make the unit tests work with the regular Start().
@@ -87,13 +86,11 @@ MockIt2MeHostUserInterface::MockIt2MeHostUserInterface(
 
 void MockIt2MeHostUserInterface::InitFrom(
     scoped_ptr<DisconnectWindow> disconnect_window,
-    scoped_ptr<ContinueWindow> continue_window,
-    scoped_ptr<LocalInputMonitor> local_input_monitor) {
+    scoped_ptr<ContinueWindow> continue_window) {
   DCHECK(ui_task_runner()->BelongsToCurrentThread());
 
   disconnect_window_ = disconnect_window.Pass();
   continue_window_ = continue_window.Pass();
-  local_input_monitor_ = local_input_monitor.Pass();
 }
 
 void MockIt2MeHostUserInterface::Start(
@@ -141,13 +138,11 @@ class ChromotingHostTest : public testing::Test {
 
     disconnect_window_ = new MockDisconnectWindow();
     continue_window_ = new MockContinueWindow();
-    local_input_monitor_ = new MockLocalInputMonitor();
     it2me_host_user_interface_.reset(
         new MockIt2MeHostUserInterface(ui_task_runner_, ui_task_runner_));
     it2me_host_user_interface_->InitFrom(
         scoped_ptr<DisconnectWindow>(disconnect_window_),
-        scoped_ptr<ContinueWindow>(continue_window_),
-        scoped_ptr<LocalInputMonitor>(local_input_monitor_));
+        scoped_ptr<ContinueWindow>(continue_window_));
 
     it2me_host_user_interface_->Start(
         host_, base::Bind(&ChromotingHost::Shutdown, host_, base::Closure()));
@@ -499,7 +494,6 @@ class ChromotingHostTest : public testing::Test {
   // Owned by |host_|.
   MockDisconnectWindow* disconnect_window_;
   MockContinueWindow* continue_window_;
-  MockLocalInputMonitor* local_input_monitor_;
 
   MockConnectionToClient*& get_connection(int connection_index) {
     return (connection_index == 0) ? connection1_ : connection2_;

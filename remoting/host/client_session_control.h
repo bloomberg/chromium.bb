@@ -6,7 +6,6 @@
 #define REMOTING_HOST_CLIENT_SESSION_CONTROL_H_
 
 #include "base/basictypes.h"
-#include "remoting/host/mouse_move_observer.h"
 #include "third_party/skia/include/core/SkPoint.h"
 
 namespace remoting {
@@ -14,10 +13,7 @@ namespace remoting {
 // Allows the desktop environment to disconnect the client session and
 // to control the remote input handling (i.e. disable, enable, and pause
 // temporarily if the local mouse movements are detected).
-//
-// TODO(alexeypa): remove the MouseMoveObserver interface entirely.
-// See http://crbug.com/104544.
-class ClientSessionControl : public MouseMoveObserver {
+class ClientSessionControl {
  public:
   virtual ~ClientSessionControl() {}
 

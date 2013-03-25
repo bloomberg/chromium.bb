@@ -17,7 +17,6 @@
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/disconnect_window.h"
 #include "remoting/host/input_injector.h"
-#include "remoting/host/local_input_monitor.h"
 #include "remoting/host/remote_input_filter.h"
 #include "remoting/host/screen_controls.h"
 #include "remoting/host/screen_resolution.h"
@@ -71,7 +70,6 @@ DesktopSessionAgent::~DesktopSessionAgent() {
   DCHECK(!audio_capturer_);
   DCHECK(!desktop_environment_);
   DCHECK(!disconnect_window_);
-  DCHECK(!local_input_monitor_);
   DCHECK(!network_channel_);
   DCHECK(!screen_controls_);
   DCHECK(!video_capturer_);
@@ -198,7 +196,6 @@ void DesktopSessionAgent::OnStartSessionAgent(
   DCHECK(!desktop_environment_);
   DCHECK(!disconnect_window_);
   DCHECK(!input_injector_);
-  DCHECK(!local_input_monitor_);
   DCHECK(!screen_controls_);
   DCHECK(!video_capturer_);
 
@@ -232,18 +229,10 @@ void DesktopSessionAgent::OnStartSessionAgent(
   input_injector_->Start(clipboard_stub.Pass());
 
   // Create the disconnect window.
-  base::Closure disconnect_session =
-      base::Bind(&DesktopSessionAgent::DisconnectSession, this);
   disconnect_window_ = DisconnectWindow::Create(&ui_strings_);
   disconnect_window_->Show(
-      disconnect_session,
+      base::Bind(&DesktopSessionAgent::DisconnectSession, this),
       authenticated_jid.substr(0, authenticated_jid.find('/')));
-
-  // Start monitoring local input.
-  local_input_monitor_ = LocalInputMonitor::Create(caller_task_runner_,
-                                                   input_task_runner_,
-                                                   caller_task_runner_);
-  local_input_monitor_->Start(this, disconnect_session);
 
   // Start the audio capturer.
   if (delegate_->desktop_environment_factory().SupportsAudioCapture()) {
@@ -347,19 +336,15 @@ void DesktopSessionAgent::Stop() {
     control_factory_.InvalidateWeakPtrs();
     client_jid_.clear();
 
-    // Stop monitoring to local input.
-    local_input_monitor_->Stop();
-    local_input_monitor_.reset();
-
     remote_input_filter_.reset();
 
     // Ensure that any pressed keys or buttons are released.
     input_tracker_->ReleaseAll();
     input_tracker_.reset();
 
+    desktop_environment_.reset();
     input_injector_.reset();
     screen_controls_.reset();
-    desktop_environment_.reset();
 
     // Stop the audio capturer.
     audio_capture_task_runner()->PostTask(

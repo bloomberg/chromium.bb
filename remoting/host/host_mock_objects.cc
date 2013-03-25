@@ -74,9 +74,9 @@ scoped_ptr<ContinueWindow> ContinueWindow::Create(const UiStrings* ui_strings) {
   return scoped_ptr<ContinueWindow>(new MockContinueWindow());
 }
 
-MockLocalInputMonitor::MockLocalInputMonitor() {}
+MockClientSessionControl::MockClientSessionControl() {}
 
-MockLocalInputMonitor::~MockLocalInputMonitor() {}
+MockClientSessionControl::~MockClientSessionControl() {}
 
 MockClientSessionEventHandler::MockClientSessionEventHandler() {}
 

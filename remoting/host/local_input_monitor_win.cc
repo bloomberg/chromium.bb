@@ -12,7 +12,7 @@
 #include "base/stringprintf.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/win/wrapped_window_proc.h"
-#include "remoting/host/mouse_move_observer.h"
+#include "remoting/host/client_session_control.h"
 #include "third_party/skia/include/core/SkPoint.h"
 
 namespace remoting {
@@ -30,21 +30,19 @@ class LocalInputMonitorWin : public base::NonThreadSafe,
  public:
   LocalInputMonitorWin(
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+      base::WeakPtr<ClientSessionControl> client_session_control);
   ~LocalInputMonitorWin();
-
-  virtual void Start(MouseMoveObserver* mouse_move_observer,
-                     const base::Closure& disconnect_callback) OVERRIDE;
-  virtual void Stop() OVERRIDE;
 
  private:
   // The actual implementation resides in LocalInputMonitorWin::Core class.
   class Core : public base::RefCountedThreadSafe<Core> {
    public:
     Core(scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
-         scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
+         scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+         base::WeakPtr<ClientSessionControl> client_session_control);
 
-    void Start(MouseMoveObserver* mouse_move_observer);
+    void Start();
     void Stop();
 
    private:
@@ -53,10 +51,6 @@ class LocalInputMonitorWin : public base::NonThreadSafe,
 
     void StartOnUiThread();
     void StopOnUiThread();
-
-    // Posts OnLocalMouseMoved() notification to |mouse_move_observer_| on
-    // the |caller_task_runner_| thread.
-    void OnLocalMouseMoved(const SkIPoint& position);
 
     // Handles WM_CREATE messages.
     LRESULT OnCreate(HWND hwnd);
@@ -83,8 +77,8 @@ class LocalInputMonitorWin : public base::NonThreadSafe,
     // Handle of the input window.
     HWND window_;
 
-    // Observer to dispatch mouse event notifications to.
-    MouseMoveObserver* mouse_move_observer_;
+    // Points to the object receiving mouse event notifications.
+    base::WeakPtr<ClientSessionControl> client_session_control_;
 
     DISALLOW_COPY_AND_ASSIGN(Core);
   };
@@ -96,39 +90,34 @@ class LocalInputMonitorWin : public base::NonThreadSafe,
 
 LocalInputMonitorWin::LocalInputMonitorWin(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
-    : core_(new Core(caller_task_runner, ui_task_runner)) {
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+    base::WeakPtr<ClientSessionControl> client_session_control)
+    : core_(new Core(caller_task_runner,
+                     ui_task_runner,
+                     client_session_control)) {
+  core_->Start();
 }
 
 LocalInputMonitorWin::~LocalInputMonitorWin() {
-}
-
-void LocalInputMonitorWin::Start(MouseMoveObserver* mouse_move_observer,
-                                 const base::Closure& disconnect_callback) {
-  core_->Start(mouse_move_observer);
-}
-
-void LocalInputMonitorWin::Stop() {
   core_->Stop();
 }
 
 LocalInputMonitorWin::Core::Core(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+    base::WeakPtr<ClientSessionControl> client_session_control)
     : caller_task_runner_(caller_task_runner),
       ui_task_runner_(ui_task_runner),
       atom_(0),
       instance_(NULL),
       window_(NULL),
-      mouse_move_observer_(NULL) {
+      client_session_control_(client_session_control) {
+  DCHECK(client_session_control_);
 }
 
-void LocalInputMonitorWin::Core::Start(MouseMoveObserver* mouse_move_observer) {
+void LocalInputMonitorWin::Core::Start() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
-  DCHECK(!mouse_move_observer_);
-  DCHECK(mouse_move_observer);
 
-  mouse_move_observer_ = mouse_move_observer;
   ui_task_runner_->PostTask(FROM_HERE,
                             base::Bind(&Core::StartOnUiThread, this));
 }
@@ -136,7 +125,6 @@ void LocalInputMonitorWin::Core::Start(MouseMoveObserver* mouse_move_observer) {
 void LocalInputMonitorWin::Core::Stop() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
-  mouse_move_observer_ = NULL;
   ui_task_runner_->PostTask(FROM_HERE, base::Bind(&Core::StopOnUiThread, this));
 }
 
@@ -144,7 +132,6 @@ LocalInputMonitorWin::Core::~Core() {
   DCHECK(!atom_);
   DCHECK(!instance_);
   DCHECK(!window_);
-  DCHECK(!mouse_move_observer_);
 }
 
 void LocalInputMonitorWin::Core::StartOnUiThread() {
@@ -187,17 +174,6 @@ void LocalInputMonitorWin::Core::StopOnUiThread() {
     atom_ = 0;
     instance_ = NULL;
   }
-}
-
-void LocalInputMonitorWin::Core::OnLocalMouseMoved(const SkIPoint& position) {
-  if (!caller_task_runner_->BelongsToCurrentThread()) {
-    caller_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&Core::OnLocalMouseMoved, this, position));
-    return;
-  }
-
-  if (mouse_move_observer_)
-    mouse_move_observer_->OnLocalMouseMoved(position);
 }
 
 LRESULT LocalInputMonitorWin::Core::OnCreate(HWND hwnd) {
@@ -255,7 +231,10 @@ LRESULT LocalInputMonitorWin::Core::OnInput(HRAWINPUT input_handle) {
       position.y = 0;
     }
 
-    OnLocalMouseMoved(SkIPoint::Make(position.x, position.y));
+    caller_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&ClientSessionControl::OnLocalMouseMoved,
+                              client_session_control_,
+                              SkIPoint::Make(position.x, position.y)));
   }
 
   return DefRawInputProc(&input, 1, sizeof(RAWINPUTHEADER));
@@ -291,9 +270,12 @@ LRESULT CALLBACK LocalInputMonitorWin::Core::WindowProc(
 scoped_ptr<LocalInputMonitor> LocalInputMonitor::Create(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+    base::WeakPtr<ClientSessionControl> client_session_control) {
   return scoped_ptr<LocalInputMonitor>(
-      new LocalInputMonitorWin(caller_task_runner, ui_task_runner));
+      new LocalInputMonitorWin(caller_task_runner,
+                               ui_task_runner,
+                               client_session_control));
 }
 
 }  // namespace remoting

@@ -77,20 +77,6 @@ class MockDaemonListener : public IPC::Listener {
   DISALLOW_COPY_AND_ASSIGN(MockDaemonListener);
 };
 
-class MockClientSessionControl : public ClientSessionControl {
- public:
-  MockClientSessionControl() {}
-  virtual ~MockClientSessionControl() {}
-
-  MOCK_CONST_METHOD0(client_jid, const std::string&());
-  MOCK_METHOD0(DisconnectSession, void());
-  MOCK_METHOD1(OnLocalMouseMoved, void(const SkIPoint&));
-  MOCK_METHOD1(SetDisableInputs, void(bool));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockClientSessionControl);
-};
-
 bool FakeDaemonSender::Send(IPC::Message* message) {
   OnMessageReceived(*message);
   delete message;

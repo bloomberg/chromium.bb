@@ -407,7 +407,6 @@
             'host/me2me_desktop_environment.h',
             'host/mouse_clamping_filter.cc',
             'host/mouse_clamping_filter.h',
-            'host/mouse_move_observer.h',
             'host/network_settings.h',
             'host/pam_authorization_factory_posix.cc',
             'host/pam_authorization_factory_posix.h',
