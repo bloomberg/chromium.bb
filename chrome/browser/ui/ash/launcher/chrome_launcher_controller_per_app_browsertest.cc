@@ -123,6 +123,19 @@ class LauncherPlatformPerAppAppBrowserTest
     return controller_->id_to_item_controller_map_[id];
   }
 
+  // Returns the number of menu items, ignoring separators.
+  int GetNumApplicationMenuItems(const ash::LauncherItem& item) {
+    const int event_flags = 0;
+    scoped_ptr<ash::LauncherMenuModel> menu(
+        controller_->CreateApplicationMenu(item, event_flags));
+    int num_items = 0;
+    for (int i = 0; i < menu->GetItemCount(); ++i) {
+      if (menu->GetTypeAt(i) != ui::MenuModel::TYPE_SEPARATOR)
+        ++num_items;
+    }
+    return num_items;
+  }
+
   ash::Launcher* launcher_;
   ChromeLauncherControllerPerApp* controller_;
 
@@ -372,6 +385,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformPerAppAppBrowserTest, MultipleWindows) {
   ash::LauncherID item_id = item.id;
   EXPECT_EQ(ash::TYPE_PLATFORM_APP, item.type);
   EXPECT_EQ(ash::STATUS_ACTIVE, item.status);
+  EXPECT_EQ(2, GetNumApplicationMenuItems(item));  // Title + 1 window
 
   // Add second window.
   ShellWindow* window2 = CreateShellWindow(extension);
@@ -379,6 +393,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformPerAppAppBrowserTest, MultipleWindows) {
   ASSERT_EQ(item_count, launcher_model()->item_count());
   const ash::LauncherItem& item2 = *launcher_model()->ItemByID(item_id);
   EXPECT_EQ(ash::STATUS_ACTIVE, item2.status);
+  EXPECT_EQ(3, GetNumApplicationMenuItems(item2));  // Title + 2 windows
 
   // Close second window.
   CloseShellWindow(window2);
@@ -386,6 +401,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformPerAppAppBrowserTest, MultipleWindows) {
   ASSERT_EQ(item_count, launcher_model()->item_count());
   const ash::LauncherItem& item3 = *launcher_model()->ItemByID(item_id);
   EXPECT_EQ(ash::STATUS_ACTIVE, item3.status);
+  EXPECT_EQ(2, GetNumApplicationMenuItems(item3));  // Title + 1 window
 
   // Close first window.
   CloseShellWindow(window1);
@@ -488,13 +504,12 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformPerAppAppBrowserTest, WindowActivation) {
   EXPECT_FALSE(ash::wm::IsActiveWindow(window2->GetNativeWindow()));
   EXPECT_TRUE(ash::wm::IsActiveWindow(window1b->GetNativeWindow()));
 
-  // Activate launcher item for app1, this will cycle the active window.
+  // Activate launcher item for app1, this will activate the first app window.
   launcher_->ActivateLauncherItem(launcher_model()->ItemIndexByID(item_id1));
-  EXPECT_FALSE(ash::wm::IsActiveWindow(window1b->GetNativeWindow()));
   EXPECT_TRUE(ash::wm::IsActiveWindow(window1->GetNativeWindow()));
+  EXPECT_FALSE(ash::wm::IsActiveWindow(window1b->GetNativeWindow()));
   launcher_->ActivateLauncherItem(launcher_model()->ItemIndexByID(item_id1));
-  EXPECT_TRUE(ash::wm::IsActiveWindow(window1b->GetNativeWindow()));
-  EXPECT_FALSE(ash::wm::IsActiveWindow(window1->GetNativeWindow()));
+  EXPECT_TRUE(ash::wm::IsActiveWindow(window1->GetNativeWindow()));
 
   // Activate the second app again
   launcher_->ActivateLauncherItem(launcher_model()->ItemIndexByID(item_id2));
@@ -504,9 +519,9 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformPerAppAppBrowserTest, WindowActivation) {
 
   // Activate the first app again
   launcher_->ActivateLauncherItem(launcher_model()->ItemIndexByID(item_id1));
-  EXPECT_FALSE(ash::wm::IsActiveWindow(window1->GetNativeWindow()));
+  EXPECT_TRUE(ash::wm::IsActiveWindow(window1->GetNativeWindow()));
   EXPECT_FALSE(ash::wm::IsActiveWindow(window2->GetNativeWindow()));
-  EXPECT_TRUE(ash::wm::IsActiveWindow(window1b->GetNativeWindow()));
+  EXPECT_FALSE(ash::wm::IsActiveWindow(window1b->GetNativeWindow()));
 
   // Close second app.
   CloseShellWindow(window2);

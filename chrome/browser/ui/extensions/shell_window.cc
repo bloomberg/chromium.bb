@@ -309,19 +309,20 @@ void ShellWindow::OnNativeWindowChanged() {
     shell_window_contents_->NativeWindowChanged(native_app_window_.get());
 }
 
-gfx::Image* ShellWindow::GetAppListIcon() {
+scoped_ptr<gfx::Image> ShellWindow::GetAppListIcon() {
   // TODO(skuhne): We might want to use LoadImages in UpdateExtensionAppIcon
   // instead to let the extension give us pre-defined icons in the launcher
   // and the launcher list sizes. Since there is no mock yet, doing this now
   // seems a bit premature and we scale for the time being.
   if (app_icon_.IsEmpty())
-    return new gfx::Image();
+    return make_scoped_ptr(new gfx::Image());
 
   SkBitmap bmp = skia::ImageOperations::Resize(
         *app_icon_.ToSkBitmap(), skia::ImageOperations::RESIZE_BEST,
         extension_misc::EXTENSION_ICON_SMALLISH,
         extension_misc::EXTENSION_ICON_SMALLISH);
-  return new gfx::Image(gfx::ImageSkia::CreateFrom1xBitmap(bmp));
+  return make_scoped_ptr(
+      new gfx::Image(gfx::ImageSkia::CreateFrom1xBitmap(bmp)));
 }
 
 content::WebContents* ShellWindow::web_contents() const {

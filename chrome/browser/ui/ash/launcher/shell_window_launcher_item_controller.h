@@ -8,6 +8,7 @@
 #include <list>
 #include <string>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/ui/ash/launcher/launcher_item_controller.h"
 #include "ui/aura/window_observer.h"
@@ -79,17 +80,13 @@ class ShellWindowLauncherItemController : public LauncherItemController,
  private:
   typedef std::list<ShellWindow*> ShellWindowList;
 
-  // Get the title of the running application with this |index|.
-  string16 GetTitleOfIndexedApp(size_t index);
-
-  // Get the title of the running application with this |index|.
-  // Note that the returned image needs to be released by the caller.
-  gfx::Image* GetIconOfIndexedApp(size_t index);
-
   void RestoreOrShow(ShellWindow* shell_window);
 
-  // List of associated shell windows in activation order.
+  // List of associated shell windows
   ShellWindowList shell_windows_;
+
+  // Pointer to the most recently active shell window
+  ShellWindow* last_active_shell_window_;
 
   // The launcher id associated with this set of windows. There is one
   // AppLauncherItemController for each |app_launcher_id_|.

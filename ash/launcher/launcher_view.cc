@@ -1348,18 +1348,18 @@ void LauncherView::ButtonPressed(views::Button* sender,
       delegate_->ItemClicked(model_->items()[view_index], event);
       break;
 
-      case TYPE_APP_LIST:
-        Shell::GetInstance()->delegate()->RecordUserMetricsAction(
-            UMA_LAUNCHER_CLICK_ON_APPLIST_BUTTON);
-        Shell::GetInstance()->ToggleAppList(GetWidget()->GetNativeView());
-        break;
+    case TYPE_APP_LIST:
+      Shell::GetInstance()->delegate()->RecordUserMetricsAction(
+          UMA_LAUNCHER_CLICK_ON_APPLIST_BUTTON);
+      Shell::GetInstance()->ToggleAppList(GetWidget()->GetNativeView());
+      break;
 
-      case TYPE_BROWSER_SHORTCUT:
-        // Click on browser icon is counted in app clicks.
-        Shell::GetInstance()->delegate()->RecordUserMetricsAction(
-            UMA_LAUNCHER_CLICK_ON_APP);
-        delegate_->OnBrowserShortcutClicked(event.flags());
-        break;
+    case TYPE_BROWSER_SHORTCUT:
+      // Click on browser icon is counted in app clicks.
+      Shell::GetInstance()->delegate()->RecordUserMetricsAction(
+          UMA_LAUNCHER_CLICK_ON_APP);
+      delegate_->OnBrowserShortcutClicked(event.flags());
+      break;
     }
   }
 
