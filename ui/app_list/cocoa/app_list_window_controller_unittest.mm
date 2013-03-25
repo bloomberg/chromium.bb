@@ -5,7 +5,7 @@
 #import "base/memory/scoped_nsobject.h"
 #import "testing/gtest_mac.h"
 #include "ui/app_list/app_list_view_delegate.h"
-#import "ui/app_list/cocoa/apps_grid_controller.h"
+#import "ui/app_list/cocoa/app_list_view_controller.h"
 #import "ui/app_list/cocoa/app_list_window_controller.h"
 #include "ui/app_list/test/app_list_test_view_delegate.h"
 #import "ui/base/test/ui_cocoa_test_helper.h"
@@ -23,7 +23,7 @@ class AppListWindowControllerTest : public ui::CocoaTest {
 
   app_list::test::AppListTestViewDelegate* delegate() {
     return static_cast<app_list::test::AppListTestViewDelegate*>(
-        [[controller_ appsGridController] delegate]);
+        [[controller_ appListViewController] delegate]);
   }
 
  private:
@@ -34,10 +34,8 @@ AppListWindowControllerTest::AppListWindowControllerTest() {
   Init();
   scoped_ptr<app_list::AppListViewDelegate> delegate(
       new app_list::test::AppListTestViewDelegate);
-  scoped_nsobject<AppsGridController> content(
-      [[AppsGridController alloc] initWithViewDelegate:delegate.Pass()]);
-  controller_.reset(
-      [[AppListWindowController alloc] initWithGridController:content]);
+  controller_.reset([[AppListWindowController alloc] init]);
+  [[controller_ appListViewController] setDelegate:delegate.Pass()];
 }
 
 void AppListWindowControllerTest::TearDown() {

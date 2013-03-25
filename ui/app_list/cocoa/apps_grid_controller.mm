@@ -9,6 +9,7 @@
 #include "ui/app_list/app_list_model_observer.h"
 #include "ui/app_list/app_list_view_delegate.h"
 #include "ui/app_list/cocoa/apps_grid_view_item.h"
+#import "ui/app_list/cocoa/apps_pagination_model_observer.h"
 #include "ui/base/models/list_model_observer.h"
 
 namespace {
@@ -19,8 +20,8 @@ const int kFixedColumns = 4;
 const int kItemsPerPage = kFixedRows * kFixedColumns;
 
 // Padding space in pixels for fixed layout.
-const CGFloat kLeftRightPadding = 20;
-const CGFloat kTopPadding = 16;
+const CGFloat kLeftRightPadding = 16;
+const CGFloat kTopPadding = 30;
 
 // Preferred tile size when showing in fixed layout.
 const CGFloat kPreferredTileWidth = 88;
@@ -29,6 +30,8 @@ const CGFloat kPreferredTileHeight = 98;
 const CGFloat kViewWidth =
     kFixedColumns * kPreferredTileWidth + 2 * kLeftRightPadding;
 const CGFloat kViewHeight = kFixedRows * kPreferredTileHeight;
+
+NSTimeInterval g_scroll_duration = 0.18;
 
 }  // namespace
 
@@ -45,6 +48,8 @@ const CGFloat kViewHeight = kFixedRows * kPreferredTileHeight;
 
 // Bootstrap the views this class controls.
 - (void)loadAndSetView;
+
+- (void)boundsDidChange:(NSNotification*)notification;
 
 // Action for buttons in the grid.
 - (void)onItemClicked:(id)sender;
@@ -98,23 +103,25 @@ class AppsGridDelegateBridge : public ui::ListModelObserver {
 
 @implementation AppsGridController
 
-- (id)initWithViewDelegate:
-    (scoped_ptr<app_list::AppListViewDelegate>)appListViewDelegate {
++ (void)setScrollAnimationDuration:(NSTimeInterval)duration {
+  g_scroll_duration = duration;
+}
+
+@synthesize paginationObserver = paginationObserver_;
+
+- (id)init {
   if ((self = [super init])) {
-    scoped_ptr<app_list::AppListModel> model(new app_list::AppListModel);
-    delegate_.reset(appListViewDelegate.release());
     bridge_.reset(new app_list::AppsGridDelegateBridge(self));
     pages_.reset([[NSMutableArray alloc] init]);
     items_.reset([[NSMutableArray alloc] init]);
-    if (delegate_)
-      delegate_->SetModel(model.get());
     [self loadAndSetView];
-    [self setModel:model.Pass()];
+    [self updatePages:0];
   }
   return self;
 }
 
 - (void)dealloc {
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
   [self setModel:scoped_ptr<app_list::AppListModel>()];
   [super dealloc];
 }
@@ -127,11 +134,7 @@ class AppsGridDelegateBridge : public ui::ListModelObserver {
   return model_.get();
 }
 
-- (app_list::AppListViewDelegate*)delegate {
-  return delegate_.get();
-}
-
-- (void)setModel:(scoped_ptr<app_list::AppListModel>)model {
+- (void)setModel:(scoped_ptr<app_list::AppListModel>)newModel {
   if (model_) {
     model_->apps()->RemoveObserver(bridge_.get());
 
@@ -142,11 +145,23 @@ class AppsGridDelegateBridge : public ui::ListModelObserver {
       [[self itemAtIndex:i] setModel:NULL];
   }
 
-  model_.reset(model.release());
+  model_.reset(newModel.release());
   if (model_)
     model_->apps()->AddObserver(bridge_.get());
 
   [self modelUpdated];
+}
+
+- (void)setDelegate:(app_list::AppListViewDelegate*)newDelegate {
+  scoped_ptr<app_list::AppListModel> newModel(new app_list::AppListModel);
+  delegate_ = newDelegate;
+  if (delegate_)
+    delegate_->SetModel(newModel.get());  // Populates items.
+  [self setModel:newModel.Pass()];
+}
+
+- (size_t)visiblePage {
+  return visiblePage_;
 }
 
 - (void)activateSelection {
@@ -171,6 +186,7 @@ class AppsGridDelegateBridge : public ui::ListModelObserver {
 
   newOrigin.x = pageIndex * kViewWidth;
   [NSAnimationContext beginGrouping];
+  [[NSAnimationContext currentContext] setDuration:g_scroll_duration];
   [[clipView animator] setBoundsOrigin:newOrigin];
   [NSAnimationContext endGrouping];
   animatingScroll_ = YES;
@@ -211,6 +227,8 @@ class AppsGridDelegateBridge : public ui::ListModelObserver {
   [itemCollectionView setMaxItemSize:itemSize];
   [itemCollectionView setSelectable:YES];
   [itemCollectionView setFocusRingType:NSFocusRingTypeNone];
+  [itemCollectionView setBackgroundColors:
+      [NSArray arrayWithObject:[NSColor clearColor]]];
 
   scoped_nsobject<AppsGridViewItem> itemPrototype(
       [[AppsGridViewItem alloc] initWithSize:itemSize]);
@@ -233,8 +251,28 @@ class AppsGridDelegateBridge : public ui::ListModelObserver {
   [scrollView setPageScroll:kViewWidth];
   [scrollView setDelegate:self];
   [scrollView setDocumentView:pagesContainer];
+  [scrollView setDrawsBackground:NO];
+
+  [[NSNotificationCenter defaultCenter]
+      addObserver:self
+         selector:@selector(boundsDidChange:)
+             name:NSViewBoundsDidChangeNotification
+           object:[scrollView contentView]];
 
   [self setView:scrollView];
+}
+
+- (void)boundsDidChange:(NSNotification*)notification {
+  if ([self nearestPageIndex] == visiblePage_)
+    return;
+
+  // Clear any selection on the previous page (unless it has been removed).
+  if (visiblePage_ < [pages_ count]) {
+    [[self collectionViewAtPageIndex:visiblePage_]
+        setSelectionIndexes:[NSIndexSet indexSet]];
+  }
+  visiblePage_ = [self nearestPageIndex];
+  [paginationObserver_ selectedPageChanged:visiblePage_];
 }
 
 - (void)onItemClicked:(id)sender {
@@ -313,6 +351,7 @@ class AppsGridDelegateBridge : public ui::ListModelObserver {
     [[self pagesContainerView] setSubviews:pages_];
     NSSize pagesSize = NSMakeSize(kViewWidth * targetPages, kViewHeight);
     [[self pagesContainerView] setFrameSize:pagesSize];
+    [paginationObserver_ totalPagesChanged];
   }
 
   const size_t startPage = startItemIndex / kItemsPerPage;

@@ -9,16 +9,15 @@
 
 #include "base/memory/scoped_nsobject.h"
 
-@class AppsGridController;
+@class AppListViewController;
 
 // Controller for the app list NSWindow.
 @interface AppListWindowController : NSWindowController<NSWindowDelegate> {
-  scoped_nsobject<AppsGridController> appsGridController_;
+ @private
+  scoped_nsobject<AppListViewController> appListViewController_;
 }
 
-- (id)initWithGridController:(AppsGridController*)gridController;
-
-- (AppsGridController*)appsGridController;
+- (AppListViewController*)appListViewController;
 
 @end
 

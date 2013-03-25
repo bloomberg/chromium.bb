@@ -2,38 +2,60 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/mac/foundation_util.h"
 #include "base/memory/scoped_nsobject.h"
-#include "base/message_loop.h"
 #import "testing/gtest_mac.h"
 #include "ui/app_list/app_list_item_model.h"
 #import "ui/app_list/cocoa/apps_grid_controller.h"
 #import "ui/app_list/cocoa/apps_grid_view_item.h"
+#import "ui/app_list/cocoa/apps_pagination_model_observer.h"
+#import "ui/app_list/cocoa/test/apps_grid_controller_test_helper.h"
 #include "ui/app_list/test/app_list_test_model.h"
 #include "ui/app_list/test/app_list_test_view_delegate.h"
-#import "ui/base/test/cocoa_test_event_utils.h"
-#import "ui/base/test/ui_cocoa_test_helper.h"
+
+@interface TestPaginationObserver : NSObject<AppsPaginationModelObserver> {
+ @private
+  int totalPagesChangedCount_;
+  int selectedPageChangedCount_;
+  int lastNewSelectedPage_;
+}
+
+@property(assign, nonatomic) int totalPagesChangedCount;
+@property(assign, nonatomic) int selectedPageChangedCount;
+@property(assign, nonatomic) int lastNewSelectedPage;
+
+@end
+
+@implementation TestPaginationObserver
+
+@synthesize totalPagesChangedCount = totalPagesChangedCount_;
+@synthesize selectedPageChangedCount = selectedPageChangedCount_;
+@synthesize lastNewSelectedPage = lastNewSelectedPage_;
+
+- (void)totalPagesChanged {
+  ++totalPagesChangedCount_;
+}
+
+- (void)selectedPageChanged:(int)newSelected {
+  ++selectedPageChangedCount_;
+  lastNewSelectedPage_ = newSelected;
+}
+
+@end
+
+namespace app_list {
+namespace test {
 
 namespace {
 
-const size_t kItemsPerPage = 16;
-
-class AppsGridControllerTest : public ui::CocoaTest {
+class AppsGridControllerTest : public AppsGridControllerTestHelper {
  public:
-  AppsGridControllerTest() {
-    Init();
-  }
+  AppsGridControllerTest() {}
 
   virtual void SetUp() OVERRIDE {
-    ui::CocoaTest::SetUp();
-    scoped_ptr<app_list::AppListViewDelegate> delegate(
-        new app_list::test::AppListTestViewDelegate);
-    apps_grid_controller_.reset([[AppsGridController alloc]
-        initWithViewDelegate:delegate.Pass()]);
-
-    scoped_ptr<app_list::AppListModel> model(
-        new app_list::test::AppListTestModel);
-    [apps_grid_controller_ setModel:model.Pass()];
+    owned_apps_grid_controller_.reset([[AppsGridController alloc] init]);
+    [owned_apps_grid_controller_ setDelegate:delegate_.get()];
+    AppsGridControllerTestHelper::SetUpWithGridController(
+        owned_apps_grid_controller_.get());
 
     [[test_window() contentView] addSubview:[apps_grid_controller_ view]];
     [test_window() makePretendKeyWindowAndSetFirstResponder:
@@ -41,88 +63,12 @@ class AppsGridControllerTest : public ui::CocoaTest {
   }
 
   virtual void TearDown() OVERRIDE {
-    apps_grid_controller_.reset();
-    ui::CocoaTest::TearDown();
+    owned_apps_grid_controller_.reset();
+    AppsGridControllerTestHelper::TearDown();
   }
-
- protected:
-  // Send a click to the test window in the centre of |view|.
-  void SimulateClick(NSView* view) {
-    std::pair<NSEvent*, NSEvent*> events(
-        cocoa_test_event_utils::MouseClickInView(view, 1));
-    [NSApp postEvent:events.first atStart:NO];
-    [NSApp postEvent:events.second atStart:NO];
-  }
-
-  // Send a key press to the first responder.
-  void SimulateKeyPress(unichar c) {
-    [test_window() keyDown:cocoa_test_event_utils::KeyEventWithCharacter(c)];
-  }
-
-  void SimulateMouseEnterItemAt(size_t index) {
-    [[apps_grid_controller_ itemAtIndex:index] mouseEntered:
-        cocoa_test_event_utils::EnterExitEventWithType(NSMouseEntered)];
-  }
-
-  void SimulateMouseExitItemAt(size_t index) {
-    [[apps_grid_controller_ itemAtIndex:index] mouseExited:
-        cocoa_test_event_utils::EnterExitEventWithType(NSMouseExited)];
-  }
-
-  // Do a bulk replacement of the items in the grid.
-  void ReplaceTestModel(int item_count) {
-    scoped_ptr<app_list::test::AppListTestModel> new_model(
-        new app_list::test::AppListTestModel);
-    new_model->PopulateApps(item_count);
-    [apps_grid_controller_ setModel:new_model.PassAs<app_list::AppListModel>()];
-  }
-
-  void DelayForCollectionView() {
-    message_loop_.PostDelayedTask(FROM_HERE, MessageLoop::QuitClosure(),
-                                  base::TimeDelta::FromMilliseconds(100));
-    message_loop_.Run();
-  }
-
-  void SinkEvents() {
-    message_loop_.PostTask(FROM_HERE, MessageLoop::QuitClosure());
-    message_loop_.Run();
-  }
-
-  NSButton* GetItemViewAt(size_t index) {
-    return [[apps_grid_controller_ itemAtIndex:index] button];
-  }
-
-  NSCollectionView* GetPageAt(size_t index) {
-    return [apps_grid_controller_ collectionViewAtPageIndex:index];
-  }
-
-  // TODO(tapted): Update this to work for selections on other than the first
-  // page.
-  NSView* GetSelectedView() {
-    NSIndexSet* selection = [GetPageAt(0) selectionIndexes];
-    if ([selection count]) {
-      AppsGridViewItem* item = base::mac::ObjCCastStrict<AppsGridViewItem>(
-          [GetPageAt(0) itemAtIndex:[selection firstIndex]]);
-      return [item button];
-    }
-
-    return nil;
-  }
-
-  app_list::test::AppListTestViewDelegate* delegate() {
-    return static_cast<app_list::test::AppListTestViewDelegate*>(
-        [apps_grid_controller_ delegate]);
-  }
-
-  app_list::test::AppListTestModel* model() {
-    return static_cast<app_list::test::AppListTestModel*>(
-        [apps_grid_controller_ model]);
-  }
-
-  scoped_nsobject<AppsGridController> apps_grid_controller_;
 
  private:
-  MessageLoopForUI message_loop_;
+  scoped_nsobject<AppsGridController> owned_apps_grid_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(AppsGridControllerTest);
 };
@@ -271,7 +217,7 @@ TEST_F(AppsGridControllerTest, ModelUpdates) {
   // Add an item (PopulateApps will create a duplicate "Item 0").
   model()->PopulateApps(1);
   EXPECT_EQ(3u, [[GetPageAt(0) content] count]);
-  NSButton* button = base::mac::ObjCCastStrict<NSButton>(GetItemViewAt(2));
+  NSButton* button = GetItemViewAt(2);
   EXPECT_NSEQ(@"Item 0", [button title]);
 
   // Update the title via the ItemModelObserver.
@@ -314,3 +260,62 @@ TEST_F(AppsGridControllerTest, MouseoverSelects) {
   SimulateMouseExitItemAt(1);
   EXPECT_EQ(nil, GetSelectedView());
 }
+
+// Test AppsGridPaginationObserver totalPagesChanged().
+TEST_F(AppsGridControllerTest, PaginationObserverPagesChanged) {
+  scoped_nsobject<TestPaginationObserver> observer(
+      [[TestPaginationObserver alloc] init]);
+  [apps_grid_controller_ setPaginationObserver:observer];
+
+  // Test totalPagesChanged.
+  model()->PopulateApps(kItemsPerPage);
+  EXPECT_EQ(0, [observer totalPagesChangedCount]);
+  EXPECT_EQ(1u, [apps_grid_controller_ pageCount]);
+  model()->PopulateApps(1);
+  EXPECT_EQ(1, [observer totalPagesChangedCount]);
+  EXPECT_EQ(2u, [apps_grid_controller_ pageCount]);
+  ReplaceTestModel(0);
+  EXPECT_EQ(2, [observer totalPagesChangedCount]);
+  EXPECT_EQ(1u, [apps_grid_controller_ pageCount]);
+  ReplaceTestModel(kItemsPerPage * 3 + 1);
+  EXPECT_EQ(3, [observer totalPagesChangedCount]);
+  EXPECT_EQ(4u, [apps_grid_controller_ pageCount]);
+
+  EXPECT_EQ(0, [observer selectedPageChangedCount]);
+
+  [apps_grid_controller_ setPaginationObserver:nil];
+}
+
+// Test AppsGridPaginationObserver selectedPageChanged().
+TEST_F(AppsGridControllerTest, PaginationObserverSelectedPageChanged) {
+  scoped_nsobject<TestPaginationObserver> observer(
+      [[TestPaginationObserver alloc] init]);
+  [apps_grid_controller_ setPaginationObserver:observer];
+  EXPECT_EQ(0, [[NSAnimationContext currentContext] duration]);
+
+  ReplaceTestModel(kItemsPerPage * 3 + 1);
+  EXPECT_EQ(1, [observer totalPagesChangedCount]);
+  EXPECT_EQ(4u, [apps_grid_controller_ pageCount]);
+
+  EXPECT_EQ(0, [observer selectedPageChangedCount]);
+
+  [apps_grid_controller_ scrollToPage:1];
+  EXPECT_EQ(1, [observer selectedPageChangedCount]);
+  EXPECT_EQ(1, [observer lastNewSelectedPage]);
+
+  [apps_grid_controller_ scrollToPage:0];
+  EXPECT_EQ(2, [observer selectedPageChangedCount]);
+  EXPECT_EQ(0, [observer lastNewSelectedPage]);
+
+  [apps_grid_controller_ scrollToPage:3];
+  // Note: with no animations, there is only a single page change. However, with
+  // animations we expect multiple updates depending on the rate that the scroll
+  // view updates and sends out NSViewBoundsDidChangeNotification.
+  EXPECT_EQ(3, [observer selectedPageChangedCount]);
+  EXPECT_EQ(3, [observer lastNewSelectedPage]);
+
+  [apps_grid_controller_ setPaginationObserver:nil];
+}
+
+}  // namespace test
+}  // namespace app_list

@@ -9,7 +9,7 @@
 
 #include "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/app_list/cocoa/scroll_view_with_no_scrollbars.h"
+#import "ui/app_list/cocoa/scroll_view_with_no_scrollbars.h"
 
 namespace app_list {
 class AppListModel;
@@ -18,23 +18,30 @@ class AppsGridDelegateBridge;
 }
 
 @class AppsGridViewItem;
+@protocol AppsPaginationModelObserver;
 
 // Controls a grid of views, representing AppListModel::Apps sub models.
 @interface AppsGridController : NSViewController<GestureScrollDelegate> {
  @private
   scoped_ptr<app_list::AppListModel> model_;
-  scoped_ptr<app_list::AppListViewDelegate> delegate_;
+  app_list::AppListViewDelegate* delegate_;  // Weak. Owned by view controller.
   scoped_ptr<app_list::AppsGridDelegateBridge> bridge_;
 
   scoped_nsobject<NSMutableArray> pages_;
   scoped_nsobject<NSMutableArray> items_;
 
+  id<AppsPaginationModelObserver> paginationObserver_;
+
+  // Index of the currently visible page.
+  size_t visiblePage_;
+
   // Whether we are currently animating a scroll to the nearest page.
   BOOL animatingScroll_;
 }
 
-- (id)initWithViewDelegate:
-    (scoped_ptr<app_list::AppListViewDelegate>)appListViewDelegate;
+@property(assign, nonatomic) id<AppsPaginationModelObserver> paginationObserver;
+
++ (void)setScrollAnimationDuration:(NSTimeInterval)duration;
 
 - (NSCollectionView*)collectionViewAtPageIndex:(size_t)pageIndex;
 
@@ -42,9 +49,11 @@ class AppsGridDelegateBridge;
 
 - (app_list::AppListModel*)model;
 
-- (app_list::AppListViewDelegate*)delegate;
+- (void)setModel:(scoped_ptr<app_list::AppListModel>)newModel;
 
-- (void)setModel:(scoped_ptr<app_list::AppListModel>)model;
+- (void)setDelegate:(app_list::AppListViewDelegate*)newDelegate;
+
+- (size_t)visiblePage;
 
 // Calls delegate_->ActivateAppListItem for the currently selected item by
 // simulating a click.

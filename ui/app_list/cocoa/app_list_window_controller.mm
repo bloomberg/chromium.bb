@@ -5,7 +5,9 @@
 #import "ui/app_list/cocoa/app_list_window_controller.h"
 
 #include "ui/app_list/app_list_view_delegate.h"
+#import "ui/app_list/cocoa/app_list_view_controller.h"
 #import "ui/app_list/cocoa/apps_grid_controller.h"
+#include "ui/base/cocoa/window_size_constants.h"
 
 @interface AppListWindow : NSWindow;
 @end
@@ -22,38 +24,41 @@
 
 @implementation AppListWindowController;
 
-- (id)initWithGridController:(AppsGridController*)gridController {
+- (id)init {
   scoped_nsobject<NSWindow> controlledWindow(
-      [[AppListWindow alloc] initWithContentRect:[[gridController view] bounds]
+      [[AppListWindow alloc] initWithContentRect:ui::kWindowSizeDeterminedLater
                                        styleMask:NSBorderlessWindowMask
                                          backing:NSBackingStoreBuffered
                                            defer:NO]);
-  [controlledWindow setContentView:[gridController view]];
   [controlledWindow setReleasedWhenClosed:NO];
   [controlledWindow setBackgroundColor:[NSColor clearColor]];
   [controlledWindow setOpaque:NO];
   [controlledWindow setHasShadow:NO];
 
   if ((self = [super initWithWindow:controlledWindow])) {
-    appsGridController_.reset([gridController retain]);
+    appListViewController_.reset([[AppListViewController alloc] init]);
+    [[self window] setFrame:[[appListViewController_ view] bounds]
+                    display:NO];
+    [[self window] setContentView:[appListViewController_ view]];
     [[self window] setDelegate:self];
-    [[self window] makeFirstResponder:[appsGridController_
-        collectionViewAtPageIndex:0]];
+    [[self window] makeFirstResponder:
+        [[appListViewController_ appsGridController]
+            collectionViewAtPageIndex:0]];
   }
   return self;
 }
 
-- (AppsGridController*)appsGridController {
-  return appsGridController_;
+- (AppListViewController*)appListViewController {
+  return appListViewController_;
 }
 
 - (void)doCommandBySelector:(SEL)command {
   if (command == @selector(cancel:)) {
-    if ([appsGridController_ delegate])
-      [appsGridController_ delegate]->Dismiss();
+    if ([appListViewController_ delegate])
+      [appListViewController_ delegate]->Dismiss();
   } else if (command == @selector(insertNewline:) ||
              command == @selector(insertLineBreak:)) {
-    [appsGridController_ activateSelection];
+    [[appListViewController_ appsGridController] activateSelection];
   }
 }
 

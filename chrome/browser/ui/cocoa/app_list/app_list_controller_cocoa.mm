@@ -12,7 +12,7 @@
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_view_delegate.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
-#import "ui/app_list/cocoa/apps_grid_controller.h"
+#import "ui/app_list/cocoa/app_list_view_controller.h"
 #import "ui/app_list/cocoa/app_list_window_controller.h"
 
 namespace gfx {
@@ -108,10 +108,8 @@ void AppListControllerDelegateCocoa::LaunchApp(
 void AppListControllerCocoa::CreateAppList(Profile* profile) {
   scoped_ptr<app_list::AppListViewDelegate> delegate(
       new AppListViewDelegate(new AppListControllerDelegateCocoa(), profile));
-  scoped_nsobject<AppsGridController> content(
-      [[AppsGridController alloc] initWithViewDelegate:delegate.Pass()]);
-  window_controller_.reset(
-      [[AppListWindowController alloc] initWithGridController:content]);
+  window_controller_.reset([[AppListWindowController alloc] init]);
+  [[window_controller_ appListViewController] setDelegate:delegate.Pass()];
 }
 
 void AppListControllerCocoa::ShowAppList(Profile* profile) {
