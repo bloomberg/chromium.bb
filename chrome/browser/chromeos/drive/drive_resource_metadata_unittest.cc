@@ -36,19 +36,6 @@ const char kTestRootResourceId[] = "test_root";
 // DriveResourceMetadataTest.
 const int64 kTestChangestamp = 100;
 
-// Copies result from GetChildDirectoriesCallback.
-void CopyResultFromGetChildDirectoriesCallback(
-    std::set<base::FilePath>* out_child_directories,
-    const std::set<base::FilePath>& in_child_directories) {
-  *out_child_directories = in_child_directories;
-}
-
-// Copies result from GetChangestampCallback.
-void CopyResultFromGetChangestampCallback(
-    int64* out_changestamp, int64 in_changestamp) {
-  *out_changestamp = in_changestamp;
-}
-
 // Returns the sorted base names from |entries|.
 std::vector<std::string> GetSortedBaseNames(
     const DriveEntryProtoVector& entries) {
@@ -334,8 +321,7 @@ TEST_F(DriveResourceMetadataTest, LargestChangestamp) {
 
   int64 out_changestamp = 0;
   resource_metadata->GetLargestChangestamp(
-      base::Bind(&CopyResultFromGetChangestampCallback,
-                 &out_changestamp));
+      google_apis::test_util::CreateCopyResultCallback(&out_changestamp));
   google_apis::test_util::RunBlockingPoolTask();
   DCHECK_EQ(in_changestamp, out_changestamp);
 }
@@ -1147,23 +1133,23 @@ TEST_F(DriveResourceMetadataTest, GetChildDirectories) {
   std::set<base::FilePath> child_directories;
 
   // file9: not a directory, so no children.
-  resource_metadata_->GetChildDirectories("resource_id:file9",
-      base::Bind(&CopyResultFromGetChildDirectoriesCallback,
-                 &child_directories));
+  resource_metadata_->GetChildDirectories(
+      "resource_id:file9",
+      google_apis::test_util::CreateCopyResultCallback(&child_directories));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_TRUE(child_directories.empty());
 
   // dir2: no child directories.
-  resource_metadata_->GetChildDirectories("resource_id:dir2",
-      base::Bind(&CopyResultFromGetChildDirectoriesCallback,
-                 &child_directories));
+  resource_metadata_->GetChildDirectories(
+      "resource_id:dir2",
+      google_apis::test_util::CreateCopyResultCallback(&child_directories));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_TRUE(child_directories.empty());
 
   // dir1: dir3 is the only child
-  resource_metadata_->GetChildDirectories("resource_id:dir1",
-      base::Bind(&CopyResultFromGetChildDirectoriesCallback,
-                 &child_directories));
+  resource_metadata_->GetChildDirectories(
+      "resource_id:dir1",
+      google_apis::test_util::CreateCopyResultCallback(&child_directories));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(1u, child_directories.size());
   EXPECT_EQ(1u, child_directories.count(
@@ -1196,9 +1182,9 @@ TEST_F(DriveResourceMetadataTest, GetChildDirectories) {
   ASSERT_TRUE(AddDriveEntryProto(
       resource_metadata_.get(), sequence_id++, true, "resource_id:dir106"));
 
-  resource_metadata_->GetChildDirectories("resource_id:dir2",
-      base::Bind(&CopyResultFromGetChildDirectoriesCallback,
-                 &child_directories));
+  resource_metadata_->GetChildDirectories(
+      "resource_id:dir2",
+      google_apis::test_util::CreateCopyResultCallback(&child_directories));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(8u, child_directories.size());
   EXPECT_EQ(1u, child_directories.count(base::FilePath::FromUTF8Unsafe(
