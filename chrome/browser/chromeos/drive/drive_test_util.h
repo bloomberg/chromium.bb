@@ -45,16 +45,6 @@ DriveCacheEntry ToCacheEntry(int cache_state);
 bool CacheStatesEqual(const DriveCacheEntry& a, const DriveCacheEntry& b);
 
 // Copies results from DriveFileSystem methods. Used to run asynchronous
-// functions that take GetFileCallback from tests.
-void CopyResultsFromGetFileCallback(DriveFileError* out_error,
-                                    base::FilePath* out_file_path,
-                                    DriveFileType* out_file_type,
-                                    DriveFileError error,
-                                    const base::FilePath& file_path,
-                                    const std::string& mime_type,
-                                    DriveFileType file_type);
-
-// Copies results from DriveFileSystem methods. Used to run asynchronous
 // functions that take GetAvailableSpaceCallback from tests.
 void CopyResultsFromGetAvailableSpaceCallback(DriveFileError* out_error,
                                               int64* out_bytes_total,

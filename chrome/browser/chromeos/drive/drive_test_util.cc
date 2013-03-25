@@ -37,21 +37,6 @@ bool CacheStatesEqual(const DriveCacheEntry& a, const DriveCacheEntry& b) {
           a.is_persistent() == b.is_persistent());
 }
 
-void CopyResultsFromGetFileCallback(DriveFileError* out_error,
-                                    base::FilePath* out_file_path,
-                                    DriveFileType* out_file_type,
-                                    DriveFileError error,
-                                    const base::FilePath& file_path,
-                                    const std::string& /*mime_type*/,
-                                    DriveFileType file_type) {
-  DCHECK(out_error);
-  DCHECK(out_file_path);
-  DCHECK(out_file_type);
-  *out_error = error;
-  *out_file_path = file_path;
-  *out_file_type = file_type;
-}
-
 void CopyResultsFromGetAvailableSpaceCallback(DriveFileError* out_error,
                                               int64* out_bytes_total,
                                               int64* out_bytes_used,
