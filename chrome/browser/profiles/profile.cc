@@ -104,10 +104,12 @@ void Profile::RegisterUserPrefs(PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(prefs::kDevToolsRemoteEnabled,
                                 false,
                                 PrefRegistrySyncable::UNSYNCABLE_PREF);
+#endif
+#if defined(OS_ANDROID) || defined(OS_IOS)
   registry->RegisterBooleanPref(prefs::kSpdyProxyAuthEnabled,
                                 false,
                                 PrefRegistrySyncable::UNSYNCABLE_PREF);
-#endif
+#endif  // defined(OS_ANDROID) || defined(OS_IOS)
 }
 
 
