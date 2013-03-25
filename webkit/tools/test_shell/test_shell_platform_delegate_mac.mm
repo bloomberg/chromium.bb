@@ -26,6 +26,9 @@ static void SetDefaultsToLayoutTestValues(void) {
   // (We want to do this as early as possible in application startup so
   // the settings are in before any higher layers could cache values.)
 
+  // This is inspired by resetDefaultsToConsistentValues() in
+  // WebKit/Tools/DumpRenderTree/mac/DumpRenderTree.mm .
+
   NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
 
   const NSInteger kMinFontSizeCGSmoothes = 4;
@@ -58,9 +61,13 @@ static void SetDefaultsToLayoutTestValues(void) {
                         kCFPreferencesAnyApplication,
                         kCFPreferencesCurrentUser,
                         kCFPreferencesAnyHost);
-  // Make HIToolbox read from CFPreferences
+#ifndef __LP64__
+  // Make HIToolbox read from CFPreferences.
+  // HIToolbox is not available in 64-bit. DumpRenderTree comments out this
+  // call with a note to rdar://6347388 . No clue, sorry.
   ThemeScrollBarArrowStyle style;
   GetThemeScrollBarArrowStyle(&style);
+#endif  // __LP64__
   if (initialValue) {
     // Reset the preference to what it was
     CFPreferencesSetValue(CFSTR("AppleScrollBarVariant"),
