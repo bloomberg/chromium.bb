@@ -66,7 +66,7 @@ TabScrubber::TabScrubber()
   ash::Shell::GetInstance()->AddPreTargetHandler(this);
   registrar_.Add(
       this,
-      chrome::NOTIFICATION_BROWSER_CLOSING,
+      chrome::NOTIFICATION_BROWSER_CLOSED,
       content::NotificationService::AllSources());
 }
 
@@ -200,9 +200,14 @@ void TabScrubber::OnScrollEvent(ui::ScrollEvent* event) {
 void TabScrubber::Observe(int type,
                           const content::NotificationSource& source,
                           const content::NotificationDetails& details) {
-  if (content::Source<Browser>(source).ptr() == browser_)
-    FinishScrub(false);
-  browser_ = NULL;
+  if (content::Source<Browser>(source).ptr() == browser_) {
+    activate_timer_.Stop();
+    swipe_x_ = -1;
+    swipe_y_ = -1;
+    scrubbing_ = false;
+    highlighted_tab_ = -1;
+    browser_ = NULL;
+  }
 }
 
 void TabScrubber::TabStripAddedTabAt(TabStrip* tab_strip, int index) {
