@@ -1133,6 +1133,14 @@ TEST_F(DriveResourceMetadataTest, AddEntry) {
           &error, &drive_file_path));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_ERROR_NOT_FOUND, error);
+
+  // Add an existing file.
+  resource_metadata_->AddEntry(
+      file_entry_proto,
+      google_apis::test_util::CreateCopyResultCallback(
+          &error, &drive_file_path));
+  google_apis::test_util::RunBlockingPoolTask();
+  EXPECT_EQ(DRIVE_FILE_ERROR_EXISTS, error);
 }
 
 TEST_F(DriveResourceMetadataTest, GetChildDirectories) {

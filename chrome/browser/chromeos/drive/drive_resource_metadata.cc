@@ -831,6 +831,11 @@ DriveResourceMetadata::AddEntryOnBlockingPool(
     const DriveEntryProto& entry_proto) {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 
+  scoped_ptr<DriveEntryProto> existing_entry =
+      storage_->GetEntry(entry_proto.resource_id());
+  if (existing_entry)
+    return FileMoveResult(DRIVE_FILE_ERROR_EXISTS);
+
   scoped_ptr<DriveEntryProto> parent =
       GetDirectory(entry_proto.parent_resource_id());
   if (!parent)
