@@ -385,8 +385,8 @@ class DriveFileSyncService
       const SyncStatusCallback& callback);
   void DidGetRemoteFileMetadataForRemoteUpdatedTime(
       const UpdatedTimeCallback& callback,
-      SyncStatusCode status,
-      const SyncFileMetadata& metadata);
+      google_apis::GDataErrorCode error,
+      scoped_ptr<google_apis::ResourceEntry> entry);
 
   // This returns false if no change is found for the |url|.
   bool GetPendingChangeForFileSystemURL(const fileapi::FileSystemURL& url,
