@@ -379,10 +379,12 @@ PhotoImport.prototype.onSelectAllNone_ = function() {
  * @private
  */
 PhotoImport.prototype.onError_ = function(message) {
-  this.alert_.show(message,
-                   function() {
-                     window.close();
-                   });
+  this.importingDialog_.hide(function() {
+    this.alert_.show(message,
+                     function() {
+                       window.close();
+                     });
+  }.bind(this));
 };
 
 /**
@@ -433,15 +435,16 @@ PhotoImport.prototype.onSelectionChanged_ = function() {
  * @private
  */
 PhotoImport.prototype.onImportClick_ = function(event) {
-  this.createDestination_(function() {
-    var entries = this.getSelectedItems_();
-    var move = this.dom_.querySelector('#delete-after-checkbox').checked;
+  var entries = this.getSelectedItems_();
+  var move = this.dom_.querySelector('#delete-after-checkbox').checked;
+  this.importingDialog_.show(entries, move);
 
+  this.createDestination_(function() {
     var percentage = Math.round(entries.length / this.fileList_.length * 100);
     metrics.recordMediumCount('PhotoImport.ImportCount', entries.length);
     metrics.recordSmallCount('PhotoImport.ImportPercentage', percentage);
 
-    this.importingDialog_.show(entries, this.destination_, move);
+    this.importingDialog_.start(this.destination_);
   }.bind(this));
 };
 

@@ -68,33 +68,39 @@ ImportingDialog.prototype.initDom_ = function() {
 /**
  * Shows dialog.
  * @param {Array.<FileEntry>} entries Entries to import.
- * @param {DirectoryEntry} destination Directory to import to.
  * @param {boolean} move Whether to move files instead of copying them.
  */
-ImportingDialog.prototype.show = function(entries, destination, move) {
+ImportingDialog.prototype.show = function(entries, move) {
   var message = loadTimeData.getString('PHOTO_IMPORT_IMPORTING');
   cr.ui.dialogs.BaseDialog.prototype.show.call(this, message, null, null, null);
 
   this.error_ = false;
   this.entries_ = entries;
-  this.destination_ = destination;
+  this.move_ = move;
 
   this.progress_.querySelector('.progress-track').style.width = '0';
   this.copyManager_.addEventListener('copy-progress',
       this.onCopyProgressBound_);
 
   this.previewEntry_(0);
+};
 
-  var files = entries.map(function(e) { return e.fullPath }).join('\n');
+/**
+ * Starts copying.
+ * @param {DirectoryEntry} destination Directory to import to.
+ */
+ImportingDialog.prototype.start = function(destination) {
+  this.destination_ = destination;
+  var files = this.entries_.map(function(e) { return e.fullPath }).join('\n');
   var operationInfo = {
-    isCut: move ? 'true' : 'false',
-    isOnDrive: PathUtil.getRootType(entries[0].fullPath) == RootType.DRIVE,
+    isCut: this.move_ ? 'true' : 'false',
+    isOnDrive:
+        PathUtil.getRootType(this.entries_[0].fullPath) == RootType.DRIVE,
     sourceDir: null,
     directories: '',
     files: files
   };
-  this.copyManager_.paste(operationInfo, destination.fullPath, true);
-
+  this.copyManager_.paste(operationInfo, this.destination_.fullPath, true);
 };
 
 /**
@@ -116,11 +122,12 @@ ImportingDialog.prototype.previewEntry_ = function(index) {
 
 /**
  * Closes dialog.
+ * @param {function()=} opt_onHide Completion callback.
  */
-ImportingDialog.prototype.hide = function() {
+ImportingDialog.prototype.hide = function(opt_onHide) {
   this.copyManager_.removeEventListener('copy-progress',
       this.onCopyProgressBound_);
-  cr.ui.dialogs.BaseDialog.prototype.hide.call(this);
+  cr.ui.dialogs.BaseDialog.prototype.hide.call(this, opt_onHide);
 };
 
 /**
