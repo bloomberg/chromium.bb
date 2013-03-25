@@ -10,6 +10,7 @@
 #include "dbus/bus.h"
 #include "dbus/exported_object.h"
 #include "dbus/message.h"
+#include "dbus/object_manager.h"
 #include "dbus/object_path.h"
 #include "dbus/property.h"
 
@@ -22,8 +23,9 @@ void EmptyCallback(bool /* success */) {
 
 namespace dbus {
 
-// Echo, SlowEcho, AsyncEcho, BrokenMethod, GetAll, Get, Set.
-const int TestService::kNumMethodsToExport = 7;
+// Echo, SlowEcho, AsyncEcho, BrokenMethod, GetAll, Get, Set, PerformAction,
+// GetManagedObjects.
+const int TestService::kNumMethodsToExport = 9;
 
 TestService::Options::Options() {
 }
@@ -204,6 +206,15 @@ void TestService::Run(MessageLoop* message_loop) {
   ++num_methods;
 
   exported_object_->ExportMethod(
+      "org.chromium.TestInterface",
+      "PerformAction",
+      base::Bind(&TestService::PerformAction,
+                 base::Unretained(this)),
+      base::Bind(&TestService::OnExported,
+                 base::Unretained(this)));
+  ++num_methods;
+
+  exported_object_->ExportMethod(
        kPropertiesInterface,
        kPropertiesGetAll,
        base::Bind(&TestService::GetAllProperties,
@@ -225,6 +236,18 @@ void TestService::Run(MessageLoop* message_loop) {
        kPropertiesInterface,
        kPropertiesSet,
        base::Bind(&TestService::SetProperty,
+                  base::Unretained(this)),
+       base::Bind(&TestService::OnExported,
+                  base::Unretained(this)));
+  ++num_methods;
+
+  exported_object_manager_ = bus_->GetExportedObject(
+    dbus::ObjectPath("/org/chromium/TestService"));
+
+  exported_object_manager_->ExportMethod(
+       kObjectManagerInterface,
+       kObjectManagerGetManagedObjects,
+       base::Bind(&TestService::GetManagedObjects,
                   base::Unretained(this)),
        base::Bind(&TestService::OnExported,
                   base::Unretained(this)));
@@ -289,59 +312,10 @@ void TestService::GetAllProperties(
     return;
   }
 
-  // The properties response is a dictionary of strings identifying the
-  // property and a variant containing the property value. We return all
-  // of the properties, thus the response is:
-  //
-  // {
-  //   "Name": Variant<"TestService">,
-  //   "Version": Variant<10>,
-  //   "Methods": Variant<["Echo", "SlowEcho", "AsyncEcho", "BrokenMethod"]>,
-  //   "Objects": Variant<[objectpath:"/TestObjectPath"]>
-  // ]
-
   scoped_ptr<Response> response = Response::FromMethodCall(method_call);
   MessageWriter writer(response.get());
 
-  MessageWriter array_writer(NULL);
-  MessageWriter dict_entry_writer(NULL);
-  MessageWriter variant_writer(NULL);
-  MessageWriter variant_array_writer(NULL);
-
-  writer.OpenArray("{sv}", &array_writer);
-
-  array_writer.OpenDictEntry(&dict_entry_writer);
-  dict_entry_writer.AppendString("Name");
-  dict_entry_writer.AppendVariantOfString("TestService");
-  array_writer.CloseContainer(&dict_entry_writer);
-
-  array_writer.OpenDictEntry(&dict_entry_writer);
-  dict_entry_writer.AppendString("Version");
-  dict_entry_writer.AppendVariantOfInt16(10);
-  array_writer.CloseContainer(&dict_entry_writer);
-
-  array_writer.OpenDictEntry(&dict_entry_writer);
-  dict_entry_writer.AppendString("Methods");
-  dict_entry_writer.OpenVariant("as", &variant_writer);
-  variant_writer.OpenArray("s", &variant_array_writer);
-  variant_array_writer.AppendString("Echo");
-  variant_array_writer.AppendString("SlowEcho");
-  variant_array_writer.AppendString("AsyncEcho");
-  variant_array_writer.AppendString("BrokenMethod");
-  variant_writer.CloseContainer(&variant_array_writer);
-  dict_entry_writer.CloseContainer(&variant_writer);
-  array_writer.CloseContainer(&dict_entry_writer);
-
-  array_writer.OpenDictEntry(&dict_entry_writer);
-  dict_entry_writer.AppendString("Objects");
-  dict_entry_writer.OpenVariant("ao", &variant_writer);
-  variant_writer.OpenArray("o", &variant_array_writer);
-  variant_array_writer.AppendObjectPath(dbus::ObjectPath("/TestObjectPath"));
-  variant_writer.CloseContainer(&variant_array_writer);
-  dict_entry_writer.CloseContainer(&variant_writer);
-  array_writer.CloseContainer(&dict_entry_writer);
-
-  writer.CloseContainer(&array_writer);
+  AddPropertiesToWriter(&writer);
 
   response_sender.Run(response.Pass());
 }
@@ -452,6 +426,171 @@ void TestService::SetProperty(
   response_sender.Run(Response::FromMethodCall(method_call));
 }
 
+void TestService::PerformAction(
+      MethodCall* method_call,
+      dbus::ExportedObject::ResponseSender response_sender) {
+  MessageReader reader(method_call);
+  std::string action;
+  dbus::ObjectPath object_path;
+  if (!reader.PopString(&action) || !reader.PopObjectPath(&object_path)) {
+    response_sender.Run(scoped_ptr<dbus::Response>());
+    return;
+  }
+
+  if (action == "AddObject")
+    AddObject(object_path);
+  else if (action == "RemoveObject")
+    RemoveObject(object_path);
+
+  scoped_ptr<Response> response = Response::FromMethodCall(method_call);
+  response_sender.Run(response.Pass());
+}
+
+void TestService::GetManagedObjects(
+    MethodCall* method_call,
+    dbus::ExportedObject::ResponseSender response_sender) {
+  scoped_ptr<Response> response = Response::FromMethodCall(method_call);
+  MessageWriter writer(response.get());
+
+  // The managed objects response is a dictionary of object paths identifying
+  // the object(s) with a dictionary of strings identifying the interface(s)
+  // they implement and then a dictionary of property values.
+  //
+  // Thus this looks something like:
+  //
+  // {
+  //   "/org/chromium/TestObject": {
+  //     "org.chromium.TestInterface": { /* Properties */ }
+  //   }
+  // }
+
+
+  MessageWriter array_writer(NULL);
+  MessageWriter dict_entry_writer(NULL);
+  MessageWriter object_array_writer(NULL);
+  MessageWriter object_dict_entry_writer(NULL);
+
+  writer.OpenArray("{oa{sa{sv}}}", &array_writer);
+
+  array_writer.OpenDictEntry(&dict_entry_writer);
+  dict_entry_writer.AppendObjectPath(
+      dbus::ObjectPath("/org/chromium/TestObject"));
+  dict_entry_writer.OpenArray("{sa{sv}}", &object_array_writer);
+
+  object_array_writer.OpenDictEntry(&object_dict_entry_writer);
+  object_dict_entry_writer.AppendString("org.chromium.TestInterface");
+  AddPropertiesToWriter(&object_dict_entry_writer);
+  object_array_writer.CloseContainer(&object_dict_entry_writer);
+
+  dict_entry_writer.CloseContainer(&object_array_writer);
+
+  array_writer.CloseContainer(&dict_entry_writer);
+  writer.CloseContainer(&array_writer);
+
+  response_sender.Run(response.Pass());
+}
+
+void TestService::AddPropertiesToWriter(MessageWriter* writer)
+{
+  // The properties response is a dictionary of strings identifying the
+  // property and a variant containing the property value. We return all
+  // of the properties, thus the response is:
+  //
+  // {
+  //   "Name": Variant<"TestService">,
+  //   "Version": Variant<10>,
+  //   "Methods": Variant<["Echo", "SlowEcho", "AsyncEcho", "BrokenMethod"]>,
+  //   "Objects": Variant<[objectpath:"/TestObjectPath"]>
+  // ]
+
+  MessageWriter array_writer(NULL);
+  MessageWriter dict_entry_writer(NULL);
+  MessageWriter variant_writer(NULL);
+  MessageWriter variant_array_writer(NULL);
+
+  writer->OpenArray("{sv}", &array_writer);
+
+  array_writer.OpenDictEntry(&dict_entry_writer);
+  dict_entry_writer.AppendString("Name");
+  dict_entry_writer.AppendVariantOfString("TestService");
+  array_writer.CloseContainer(&dict_entry_writer);
+
+  array_writer.OpenDictEntry(&dict_entry_writer);
+  dict_entry_writer.AppendString("Version");
+  dict_entry_writer.AppendVariantOfInt16(10);
+  array_writer.CloseContainer(&dict_entry_writer);
+
+  array_writer.OpenDictEntry(&dict_entry_writer);
+  dict_entry_writer.AppendString("Methods");
+  dict_entry_writer.OpenVariant("as", &variant_writer);
+  variant_writer.OpenArray("s", &variant_array_writer);
+  variant_array_writer.AppendString("Echo");
+  variant_array_writer.AppendString("SlowEcho");
+  variant_array_writer.AppendString("AsyncEcho");
+  variant_array_writer.AppendString("BrokenMethod");
+  variant_writer.CloseContainer(&variant_array_writer);
+  dict_entry_writer.CloseContainer(&variant_writer);
+  array_writer.CloseContainer(&dict_entry_writer);
+
+  array_writer.OpenDictEntry(&dict_entry_writer);
+  dict_entry_writer.AppendString("Objects");
+  dict_entry_writer.OpenVariant("ao", &variant_writer);
+  variant_writer.OpenArray("o", &variant_array_writer);
+  variant_array_writer.AppendObjectPath(dbus::ObjectPath("/TestObjectPath"));
+  variant_writer.CloseContainer(&variant_array_writer);
+  dict_entry_writer.CloseContainer(&variant_writer);
+  array_writer.CloseContainer(&dict_entry_writer);
+
+  writer->CloseContainer(&array_writer);
+}
+
+void TestService::AddObject(const dbus::ObjectPath& object_path) {
+  message_loop()->PostTask(
+      FROM_HERE,
+      base::Bind(&TestService::AddObjectInternal,
+                 base::Unretained(this),
+                 object_path));
+}
+
+void TestService::AddObjectInternal(const dbus::ObjectPath& object_path) {
+  dbus::Signal signal(kObjectManagerInterface, kObjectManagerInterfacesAdded);
+  dbus::MessageWriter writer(&signal);
+  writer.AppendObjectPath(object_path);
+
+  MessageWriter array_writer(NULL);
+  MessageWriter dict_entry_writer(NULL);
+
+  writer.OpenArray("{sa{sv}}", &array_writer);
+  array_writer.OpenDictEntry(&dict_entry_writer);
+  dict_entry_writer.AppendString("org.chromium.TestInterface");
+  AddPropertiesToWriter(&dict_entry_writer);
+  array_writer.CloseContainer(&dict_entry_writer);
+  writer.CloseContainer(&array_writer);
+
+  exported_object_manager_->SendSignal(&signal);
+}
+
+void TestService::RemoveObject(const dbus::ObjectPath& object_path) {
+    message_loop()->PostTask(
+      FROM_HERE,
+      base::Bind(&TestService::RemoveObjectInternal,
+                 base::Unretained(this),
+                 object_path));
+}
+
+void TestService::RemoveObjectInternal(const dbus::ObjectPath& object_path) {
+  dbus::Signal signal(kObjectManagerInterface, kObjectManagerInterfacesRemoved);
+  dbus::MessageWriter writer(&signal);
+
+  writer.AppendObjectPath(object_path);
+
+  std::vector<std::string> interfaces;
+  interfaces.push_back("org.chromium.TestInterface");
+  writer.AppendArrayOfStrings(interfaces);
+
+  exported_object_manager_->SendSignal(&signal);
+}
+
 void TestService::SendPropertyChangedSignal(const std::string& name) {
   message_loop()->PostTask(
       FROM_HERE,
@@ -463,7 +602,7 @@ void TestService::SendPropertyChangedSignal(const std::string& name) {
 void TestService::SendPropertyChangedSignalInternal(const std::string& name) {
   dbus::Signal signal(kPropertiesInterface, kPropertiesChanged);
   dbus::MessageWriter writer(&signal);
-  writer.AppendString("org.chromium.TestService");
+  writer.AppendString("org.chromium.TestInterface");
 
   MessageWriter array_writer(NULL);
   MessageWriter dict_entry_writer(NULL);

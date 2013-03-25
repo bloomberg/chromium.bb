@@ -35,7 +35,7 @@ class PropertyTest : public testing::Test {
     Properties(dbus::ObjectProxy* object_proxy,
                PropertyChangedCallback property_changed_callback)
         : dbus::PropertySet(object_proxy,
-                            "org.chromium.TestService",
+                            "org.chromium.TestInterface",
                             property_changed_callback) {
       RegisterProperty("Name", &name);
       RegisterProperty("Version", &version);

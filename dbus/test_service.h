@@ -19,6 +19,7 @@ namespace dbus {
 
 class Bus;
 class MethodCall;
+class MessageWriter;
 class Response;
 
 // The test service is used for end-to-end tests.  The service runs in a
@@ -134,6 +135,25 @@ class TestService : public base::Thread {
   void SetProperty(MethodCall* method_call,
                    dbus::ExportedObject::ResponseSender response_sender);
 
+  // Performs an action for testing.
+  void PerformAction(MethodCall* method_call,
+                     dbus::ExportedObject::ResponseSender response_sender);
+
+  // Object Manager: returns the set of objects and properties.
+  void GetManagedObjects(MethodCall* method_call,
+                         dbus::ExportedObject::ResponseSender response_sender);
+
+  // Add a properties dictionary to a message writer.
+  void AddPropertiesToWriter(MessageWriter* writer);
+
+  // Add a new object to the manager.
+  void AddObject(const dbus::ObjectPath& object_path);
+  void AddObjectInternal(const dbus::ObjectPath& object_path);
+
+  // Remove an object from the manager.
+  void RemoveObject(const dbus::ObjectPath& object_path);
+  void RemoveObjectInternal(const dbus::ObjectPath& object_path);
+
   // Sends a property changed signal for the name property.
   void SendPropertyChangedSignal(const std::string& name);
 
@@ -153,6 +173,7 @@ class TestService : public base::Thread {
 
   scoped_refptr<Bus> bus_;
   ExportedObject* exported_object_;
+  ExportedObject* exported_object_manager_;
 };
 
 }  // namespace dbus

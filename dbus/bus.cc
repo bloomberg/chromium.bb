@@ -13,6 +13,8 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/time.h"
 #include "dbus/exported_object.h"
+#include "dbus/object_manager.h"
+#include "dbus/object_path.h"
 #include "dbus/object_proxy.h"
 #include "dbus/scoped_dbus_error.h"
 
@@ -320,6 +322,44 @@ void Bus::UnregisterExportedObjectInternal(
   AssertOnDBusThread();
 
   exported_object->Unregister();
+}
+
+ObjectManager* Bus::GetObjectManager(const std::string& service_name,
+                                     const ObjectPath& object_path) {
+  AssertOnOriginThread();
+
+  // Check if we already have the requested object manager.
+  const ObjectManagerTable::key_type key(service_name + object_path.value());
+  ObjectManagerTable::iterator iter = object_manager_table_.find(key);
+  if (iter != object_manager_table_.end()) {
+    return iter->second;
+  }
+
+  scoped_refptr<ObjectManager> object_manager =
+      new ObjectManager(this, service_name, object_path);
+  object_manager_table_[key] = object_manager;
+
+  return object_manager.get();
+}
+
+void Bus::RemoveObjectManager(const std::string& service_name,
+                              const ObjectPath& object_path) {
+  AssertOnOriginThread();
+
+  const ObjectManagerTable::key_type key(service_name + object_path.value());
+  ObjectManagerTable::iterator iter = object_manager_table_.find(key);
+  if (iter == object_manager_table_.end())
+    return;
+
+  scoped_refptr<ObjectManager> object_manager = iter->second;
+  object_manager_table_.erase(iter);
+}
+
+void Bus::GetManagedObjects() {
+  for (ObjectManagerTable::iterator iter = object_manager_table_.begin();
+       iter != object_manager_table_.end(); ++iter) {
+    iter->second->GetManagedObjects();
+  }
 }
 
 bool Bus::Connect() {

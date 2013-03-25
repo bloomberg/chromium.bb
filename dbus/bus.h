@@ -32,6 +32,7 @@ class Location;
 namespace dbus {
 
 class ExportedObject;
+class ObjectManager;
 class ObjectProxy;
 
 // Bus is used to establish a connection with D-Bus, create object
@@ -301,6 +302,37 @@ class CHROME_DBUS_EXPORT Bus : public base::RefCountedThreadSafe<Bus> {
   //
   // Must be called in the origin thread.
   virtual void UnregisterExportedObject(const ObjectPath& object_path);
+
+
+  // Gets an object manager for the given remote object path |object_path|
+  // exported by the service |service_name|.
+  //
+  // Returns an existing object manager if the bus object already owns a
+  // matching object manager, never returns NULL.
+  //
+  // The caller must not delete the returned object, the bus retains ownership
+  // of all object managers.
+  //
+  // Must be called in the origin thread.
+  virtual ObjectManager* GetObjectManager(const std::string& service_name,
+                                          const ObjectPath& object_path);
+
+  // Unregisters the object manager for the given remote object path
+  // |object_path| exported by the srevice |service_name|.
+  //
+  // Getting an object manager for the same remote object after this call
+  // will return a new object, method calls on any remaining copies of the
+  // previous object are not permitted.
+  //
+  // Must be called in the origin thread.
+  virtual void RemoveObjectManager(const std::string& service_name,
+                                   const ObjectPath& object_path);
+
+  // Instructs all registered object managers to retrieve their set of managed
+  // objects from their respective remote objects. There is no need to call this
+  // manually, this is called automatically by the D-Bus thread manager once
+  // implementation classes are registered.
+  virtual void GetManagedObjects();
 
   // Shuts down the bus and blocks until it's done. More specifically, this
   // function does the following:
@@ -607,6 +639,13 @@ class CHROME_DBUS_EXPORT Bus : public base::RefCountedThreadSafe<Bus> {
   typedef std::map<const dbus::ObjectPath,
                    scoped_refptr<dbus::ExportedObject> > ExportedObjectTable;
   ExportedObjectTable exported_object_table_;
+
+  // ObjectManagerTable is used to hold the object managers created by the
+  // bus object. Key is a concatenated string of service name + object path,
+  // like "org.chromium.TestService/org/chromium/TestObject".
+  typedef std::map<std::string,
+                   scoped_refptr<dbus::ObjectManager> > ObjectManagerTable;
+  ObjectManagerTable object_manager_table_;
 
   bool async_operations_set_up_;
   bool shutdown_completed_;

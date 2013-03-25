@@ -138,6 +138,10 @@ class DBusThreadManagerImpl : public DBusThreadManager {
     // initialize it after the main list of clients.
     power_policy_controller_.reset(
         new PowerPolicyController(this, power_manager_client_.get()));
+
+    // This must be called after the list of clients so they've each had a
+    // chance to register with their object managers.
+    system_bus_->GetManagedObjects();
   }
 
   virtual ~DBusThreadManagerImpl() {

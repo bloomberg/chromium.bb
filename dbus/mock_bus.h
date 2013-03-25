@@ -26,6 +26,8 @@ class MockBus : public Bus {
                             int options));
   MOCK_METHOD1(GetExportedObject, ExportedObject*(
       const ObjectPath& object_path));
+  MOCK_METHOD2(GetObjectManager, ObjectManager*(const std::string&,
+                                                const ObjectPath&));
   MOCK_METHOD0(ShutdownAndBlock, void());
   MOCK_METHOD0(ShutdownOnDBusThreadAndBlock, void());
   MOCK_METHOD0(Connect, bool());
