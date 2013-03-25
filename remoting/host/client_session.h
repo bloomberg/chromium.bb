@@ -10,9 +10,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner_helpers.h"
+#include "base/threading/non_thread_safe.h"
 #include "base/time.h"
 #include "base/timer.h"
-#include "base/threading/non_thread_safe.h"
+#include "remoting/host/client_session_control.h"
 #include "remoting/host/mouse_clamping_filter.h"
 #include "remoting/host/remote_input_filter.h"
 #include "remoting/protocol/clipboard_echo_filter.h"
@@ -37,16 +38,17 @@ class AudioScheduler;
 class DesktopEnvironment;
 class DesktopEnvironmentFactory;
 class InputInjector;
-class SessionController;
+class ScreenControls;
 class VideoEncoder;
 class VideoScheduler;
 
 // A ClientSession keeps a reference to a connection to a client, and maintains
 // per-client state.
 class ClientSession
-    : public protocol::HostStub,
+    : public base::NonThreadSafe,
+      public protocol::HostStub,
       public protocol::ConnectionToClient::EventHandler,
-      public base::NonThreadSafe {
+      public ClientSessionControl {
  public:
   // Callback interface for passing events to the ChromotingHost.
   class EventHandler {
@@ -117,27 +119,17 @@ class ClientSession
       const std::string& channel_name,
       const protocol::TransportRoute& route) OVERRIDE;
 
-  // Disconnects the session, tears down transport resources and stops scheduler
-  // components. |event_handler_| is guaranteed not to be called after this
-  // method returns.
-  void Disconnect();
+  // ClientSessionControl interface.
+  virtual const std::string& client_jid() const OVERRIDE;
+  virtual void DisconnectSession() OVERRIDE;
+  virtual void OnLocalMouseMoved(const SkIPoint& position) OVERRIDE;
+  virtual void SetDisableInputs(bool disable_inputs) OVERRIDE;
 
   protocol::ConnectionToClient* connection() const {
     return connection_.get();
   }
 
-  const std::string& client_jid() { return client_jid_; }
-
   bool is_authenticated() { return auth_input_filter_.enabled();  }
-
-  // Indicate that local mouse activity has been detected. This causes remote
-  // inputs to be ignored for a short time so that the local user will always
-  // have the upper hand in 'pointer wars'.
-  void LocalMouseMoved(const SkIPoint& new_pos);
-
-  // Disable handling of input events from this client. If the client has any
-  // keys or mouse buttons pressed then these will be released.
-  void SetDisableInputs(bool disable_inputs);
 
  private:
   // Creates a proxy for sending clipboard events to the client.
@@ -156,13 +148,17 @@ class ClientSession
   // The connection to the client.
   scoped_ptr<protocol::ConnectionToClient> connection_;
 
-  // Used to disable callbacks to |connection_| once it is disconnected.
-  base::WeakPtrFactory<protocol::ConnectionToClient> connection_factory_;
-
   std::string client_jid_;
+
+  // Used to disable callbacks to |this| once DisconnectSession() has been
+  // called.
+  base::WeakPtrFactory<ClientSessionControl> control_factory_;
 
   // Used to create a DesktopEnvironment instance for this session.
   DesktopEnvironmentFactory* desktop_environment_factory_;
+
+  // The DesktopEnvironment instance for this session.
+  scoped_ptr<DesktopEnvironment> desktop_environment_;
 
   // Filter used as the final element in the input pipeline.
   protocol::InputFilter host_input_filter_;
@@ -217,7 +213,7 @@ class ClientSession
   scoped_ptr<InputInjector> input_injector_;
 
   // Used to apply client-requested changes in screen resolution.
-  scoped_ptr<SessionController> session_controller_;
+  scoped_ptr<ScreenControls> screen_controls_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientSession);
 };

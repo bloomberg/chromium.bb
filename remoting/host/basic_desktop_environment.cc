@@ -5,65 +5,83 @@
 #include "remoting/host/basic_desktop_environment.h"
 
 #include "base/logging.h"
+#include "base/single_thread_task_runner.h"
 #include "media/video/capture/screen/screen_capturer.h"
 #include "remoting/host/audio_capturer.h"
+#include "remoting/host/client_session_control.h"
 #include "remoting/host/input_injector.h"
-#include "remoting/host/session_controller.h"
+#include "remoting/host/screen_controls.h"
 
 namespace remoting {
 
 BasicDesktopEnvironment::~BasicDesktopEnvironment() {
-  DCHECK(CalledOnValidThread());
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
 }
 
-scoped_ptr<AudioCapturer> BasicDesktopEnvironment::CreateAudioCapturer(
-    scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner) {
-  DCHECK(CalledOnValidThread());
+scoped_ptr<AudioCapturer> BasicDesktopEnvironment::CreateAudioCapturer() {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   return AudioCapturer::Create();
 }
 
-scoped_ptr<InputInjector> BasicDesktopEnvironment::CreateInputInjector(
-    scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
-  DCHECK(CalledOnValidThread());
+scoped_ptr<InputInjector> BasicDesktopEnvironment::CreateInputInjector() {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
-  return InputInjector::Create(input_task_runner, ui_task_runner);
+  return InputInjector::Create(input_task_runner(), ui_task_runner());
 }
 
-scoped_ptr<SessionController>
-BasicDesktopEnvironment::CreateSessionController() {
-  DCHECK(CalledOnValidThread());
+scoped_ptr<ScreenControls> BasicDesktopEnvironment::CreateScreenControls() {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
-  return scoped_ptr<SessionController>();
+  return scoped_ptr<ScreenControls>();
 }
 
-scoped_ptr<media::ScreenCapturer> BasicDesktopEnvironment::CreateVideoCapturer(
-    scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner) {
-  DCHECK(CalledOnValidThread());
+scoped_ptr<media::ScreenCapturer>
+BasicDesktopEnvironment::CreateVideoCapturer() {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   // The basic desktop environment does not use X DAMAGE, since it is
   // broken on many systems - see http://crbug.com/73423.
   return media::ScreenCapturer::Create();
 }
 
-BasicDesktopEnvironment::BasicDesktopEnvironment() {
+BasicDesktopEnvironment::BasicDesktopEnvironment(
+    scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+    base::WeakPtr<ClientSessionControl> client_session_control)
+    : caller_task_runner_(caller_task_runner),
+      input_task_runner_(input_task_runner),
+      ui_task_runner_(ui_task_runner) {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
 }
 
-BasicDesktopEnvironmentFactory::BasicDesktopEnvironmentFactory() {
+BasicDesktopEnvironmentFactory::BasicDesktopEnvironmentFactory(
+    scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
+    : caller_task_runner_(caller_task_runner),
+      input_task_runner_(input_task_runner),
+      ui_task_runner_(ui_task_runner) {
 }
 
 BasicDesktopEnvironmentFactory::~BasicDesktopEnvironmentFactory() {
 }
 
 scoped_ptr<DesktopEnvironment> BasicDesktopEnvironmentFactory::Create(
-    const std::string& client_jid,
-    const base::Closure& disconnect_callback) {
-  return scoped_ptr<DesktopEnvironment>(new BasicDesktopEnvironment());
+    base::WeakPtr<ClientSessionControl> client_session_control) {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+
+  return scoped_ptr<DesktopEnvironment>(
+      new BasicDesktopEnvironment(caller_task_runner(),
+                                  input_task_runner(),
+                                  ui_task_runner(),
+                                  client_session_control));
 }
 
 bool BasicDesktopEnvironmentFactory::SupportsAudioCapture() const {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+
   return AudioCapturer::IsSupported();
 }
 

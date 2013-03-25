@@ -11,6 +11,7 @@
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -23,8 +24,9 @@ class ScreenCapturer;
 namespace remoting {
 
 class AudioCapturer;
+class ClientSessionControl;
 class InputInjector;
-class SessionController;
+class ScreenControls;
 
 // Provides factory methods for creation of audio/video capturers and event
 // executor for a given desktop environment.
@@ -33,16 +35,11 @@ class DesktopEnvironment {
   virtual ~DesktopEnvironment() {}
 
   // Factory methods used to create audio/video capturers, event executor, and
-  // session controller for a particular desktop environment.
-  virtual scoped_ptr<AudioCapturer> CreateAudioCapturer(
-      scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner) = 0;
-  virtual scoped_ptr<InputInjector> CreateInputInjector(
-      scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) = 0;
-  virtual scoped_ptr<SessionController> CreateSessionController() = 0;
-  virtual scoped_ptr<media::ScreenCapturer> CreateVideoCapturer(
-      scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner) = 0;
+  // screen controls object for a particular desktop environment.
+  virtual scoped_ptr<AudioCapturer> CreateAudioCapturer() = 0;
+  virtual scoped_ptr<InputInjector> CreateInputInjector() = 0;
+  virtual scoped_ptr<ScreenControls> CreateScreenControls() = 0;
+  virtual scoped_ptr<media::ScreenCapturer> CreateVideoCapturer() = 0;
 };
 
 // Used to create |DesktopEnvironment| instances.
@@ -50,11 +47,10 @@ class DesktopEnvironmentFactory {
  public:
   virtual ~DesktopEnvironmentFactory() {}
 
-  // Creates an instance of |DesktopEnvironment|. |disconnect_callback| may be
-  // used by the DesktopEnvironment to disconnect the client session.
+  // Creates an instance of |DesktopEnvironment|. |client_session_control| must
+  // outlive |this|.
   virtual scoped_ptr<DesktopEnvironment> Create(
-      const std::string& client_jid,
-      const base::Closure& disconnect_callback) = 0;
+      base::WeakPtr<ClientSessionControl> client_session_control) = 0;
 
   // Returns |true| if created |DesktopEnvironment| instances support audio
   // capture.

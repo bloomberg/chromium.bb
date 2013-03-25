@@ -37,6 +37,7 @@ using testing::_;
 using testing::AnyNumber;
 using testing::AtLeast;
 using testing::Return;
+using testing::ReturnRef;
 
 namespace remoting {
 
@@ -74,6 +75,20 @@ class MockDaemonListener : public IPC::Listener {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockDaemonListener);
+};
+
+class MockClientSessionControl : public ClientSessionControl {
+ public:
+  MockClientSessionControl() {}
+  virtual ~MockClientSessionControl() {}
+
+  MOCK_CONST_METHOD0(client_jid, const std::string&());
+  MOCK_METHOD0(DisconnectSession, void());
+  MOCK_METHOD1(OnLocalMouseMoved, void(const SkIPoint&));
+  MOCK_METHOD1(SetDisableInputs, void(bool));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockClientSessionControl);
 };
 
 bool FakeDaemonSender::Send(IPC::Message* message) {
@@ -129,10 +144,6 @@ class IpcDesktopEnvironmentTest : public testing::Test {
   // DesktopEnvironment::CreateInputInjector().
   InputInjector* CreateInputInjector();
 
-  // Creates a dummy SessionController, to mock
-  // DesktopEnvironment::CreateSessionController().
-  SessionController* CreateSessionController();
-
   // Creates a fake media::ScreenCapturer, to mock
   // DesktopEnvironment::CreateVideoCapturer().
   media::ScreenCapturer* CreateVideoCapturer();
@@ -167,6 +178,8 @@ class IpcDesktopEnvironmentTest : public testing::Test {
   scoped_refptr<AutoThreadTaskRunner> task_runner_;
   scoped_refptr<AutoThreadTaskRunner> io_task_runner_;
 
+  std::string client_jid_;
+
   // Clipboard stub that receives clipboard events from the desktop process.
   protocol::ClipboardStub* clipboard_stub_;
 
@@ -200,13 +213,18 @@ class IpcDesktopEnvironmentTest : public testing::Test {
   int terminal_id_;
 
   media::MockScreenCapturerDelegate screen_capturer_delegate_;
+
+  MockClientSessionControl client_session_control_;
+  base::WeakPtrFactory<ClientSessionControl> client_session_control_factory_;
 };
 
 IpcDesktopEnvironmentTest::IpcDesktopEnvironmentTest()
     : message_loop_(MessageLoop::TYPE_UI),
+      client_jid_("user@domain/rest-of-jid"),
       clipboard_stub_(NULL),
       remote_input_injector_(NULL),
-      terminal_id_(-1) {
+      terminal_id_(-1),
+      client_session_control_factory_(&client_session_control_) {
 }
 
 IpcDesktopEnvironmentTest::~IpcDesktopEnvironmentTest() {
@@ -245,21 +263,34 @@ void IpcDesktopEnvironmentTest::SetUp() {
       .WillRepeatedly(Invoke(this,
                              &IpcDesktopEnvironmentTest::DisconnectTerminal));
 
+  EXPECT_CALL(client_session_control_, client_jid())
+      .Times(AnyNumber())
+      .WillRepeatedly(ReturnRef(client_jid_));
+  EXPECT_CALL(client_session_control_, DisconnectSession())
+      .Times(AnyNumber())
+      .WillRepeatedly(Invoke(
+          this, &IpcDesktopEnvironmentTest::DeleteDesktopEnvironment));
+  EXPECT_CALL(client_session_control_, OnLocalMouseMoved(_))
+      .Times(0);
+  EXPECT_CALL(client_session_control_, SetDisableInputs(_))
+      .Times(0);
+
   // Create a desktop environment instance.
   desktop_environment_factory_.reset(new IpcDesktopEnvironmentFactory(
-      task_runner_, io_task_runner_, &daemon_channel_));
+      task_runner_,
+      task_runner_,
+      task_runner_,
+      io_task_runner_,
+      &daemon_channel_));
   desktop_environment_ = desktop_environment_factory_->Create(
-      "user@domain/rest-of-jid",
-      base::Bind(&IpcDesktopEnvironmentTest::OnDisconnectCallback,
-                 base::Unretained(this)));
+      client_session_control_factory_.GetWeakPtr());
 
   // Create the input injector.
-  input_injector_ =
-      desktop_environment_->CreateInputInjector(task_runner_, task_runner_);
+  input_injector_ = desktop_environment_->CreateInputInjector();
 
   // Create the screen capturer.
   video_capturer_ =
-      desktop_environment_->CreateVideoCapturer(task_runner_, task_runner_);
+      desktop_environment_->CreateVideoCapturer();
 }
 
 void IpcDesktopEnvironmentTest::ConnectTerminal(
@@ -282,22 +313,18 @@ void IpcDesktopEnvironmentTest::DisconnectTerminal(int terminal_id) {
 
 DesktopEnvironment* IpcDesktopEnvironmentTest::CreateDesktopEnvironment() {
   MockDesktopEnvironment* desktop_environment = new MockDesktopEnvironment();
-  EXPECT_CALL(*desktop_environment, CreateAudioCapturerPtr(_))
+  EXPECT_CALL(*desktop_environment, CreateAudioCapturerPtr())
       .Times(0);
-  EXPECT_CALL(*desktop_environment, CreateInputInjectorPtr(_, _))
+  EXPECT_CALL(*desktop_environment, CreateInputInjectorPtr())
       .Times(AnyNumber())
-      .WillRepeatedly(
-          InvokeWithoutArgs(this,
-                            &IpcDesktopEnvironmentTest::CreateInputInjector));
-  EXPECT_CALL(*desktop_environment, CreateSessionControllerPtr())
+      .WillRepeatedly(Invoke(
+          this, &IpcDesktopEnvironmentTest::CreateInputInjector));
+  EXPECT_CALL(*desktop_environment, CreateScreenControlsPtr())
+      .Times(AnyNumber());
+  EXPECT_CALL(*desktop_environment, CreateVideoCapturerPtr())
       .Times(AnyNumber())
-      .WillRepeatedly(InvokeWithoutArgs(
-          this, &IpcDesktopEnvironmentTest::CreateSessionController));
-  EXPECT_CALL(*desktop_environment, CreateVideoCapturerPtr(_, _))
-      .Times(AnyNumber())
-      .WillRepeatedly(
-          InvokeWithoutArgs(this,
-                            &IpcDesktopEnvironmentTest::CreateVideoCapturer));
+      .WillRepeatedly(Invoke(
+          this, &IpcDesktopEnvironmentTest::CreateVideoCapturer));
 
   // Let tests know that the remote desktop environment is created.
   message_loop_.PostTask(FROM_HERE, setup_run_loop_->QuitClosure());
@@ -311,10 +338,6 @@ InputInjector* IpcDesktopEnvironmentTest::CreateInputInjector() {
 
   EXPECT_CALL(*remote_input_injector_, StartPtr(_));
   return remote_input_injector_;
-}
-
-SessionController* IpcDesktopEnvironmentTest::CreateSessionController() {
-  return new MockSessionController();
 }
 
 media::ScreenCapturer* IpcDesktopEnvironmentTest::CreateVideoCapturer() {
@@ -348,6 +371,7 @@ void IpcDesktopEnvironmentTest::CreateDesktopProcess() {
 
   // Create and start the desktop process.
   desktop_process_.reset(new DesktopProcess(task_runner_,
+                                            io_task_runner_,
                                             desktop_channel_name_));
 
   scoped_ptr<MockDesktopEnvironmentFactory> desktop_environment_factory(

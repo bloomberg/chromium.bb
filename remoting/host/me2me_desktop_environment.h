@@ -16,14 +16,16 @@ class Me2MeDesktopEnvironment : public BasicDesktopEnvironment {
   virtual ~Me2MeDesktopEnvironment();
 
   // DesktopEnvironment interface.
-  virtual scoped_ptr<SessionController> CreateSessionController() OVERRIDE;
-  virtual scoped_ptr<media::ScreenCapturer> CreateVideoCapturer(
-      scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner) OVERRIDE;
+  virtual scoped_ptr<ScreenControls> CreateScreenControls() OVERRIDE;
+  virtual scoped_ptr<media::ScreenCapturer> CreateVideoCapturer() OVERRIDE;
 
  protected:
   friend class Me2MeDesktopEnvironmentFactory;
-  Me2MeDesktopEnvironment();
+  Me2MeDesktopEnvironment(
+      scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+      base::WeakPtr<ClientSessionControl> client_session_control);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Me2MeDesktopEnvironment);
@@ -32,13 +34,15 @@ class Me2MeDesktopEnvironment : public BasicDesktopEnvironment {
 // Used to create |Me2MeDesktopEnvironment| instances.
 class Me2MeDesktopEnvironmentFactory : public BasicDesktopEnvironmentFactory {
  public:
-  Me2MeDesktopEnvironmentFactory();
+  Me2MeDesktopEnvironmentFactory(
+      scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
   virtual ~Me2MeDesktopEnvironmentFactory();
 
   // DesktopEnvironmentFactory interface.
   virtual scoped_ptr<DesktopEnvironment> Create(
-      const std::string& client_jid,
-      const base::Closure& disconnect_callback) OVERRIDE;
+      base::WeakPtr<ClientSessionControl> client_session_control) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Me2MeDesktopEnvironmentFactory);

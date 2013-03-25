@@ -227,7 +227,10 @@ void HostNPScriptObject::It2MeImpl::Connect(
     return;
   }
 
-  desktop_environment_factory_.reset(new BasicDesktopEnvironmentFactory());
+  desktop_environment_factory_.reset(new BasicDesktopEnvironmentFactory(
+      host_context_->network_task_runner(),
+      host_context_->input_task_runner(),
+      host_context_->ui_task_runner()));
 
   // Start monitoring configured policies.
   policy_watcher_.reset(

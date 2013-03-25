@@ -48,7 +48,7 @@ ACTION_P2(InjectMouseEvent, connection, event) {
 }
 
 ACTION_P2(LocalMouseMoved, client_session, event) {
-  client_session->LocalMouseMoved(SkIPoint::Make(event.x(), event.y()));
+  client_session->OnLocalMouseMoved(SkIPoint::Make(event.x(), event.y()));
 }
 
 }  // namespace
@@ -73,19 +73,11 @@ class ClientSessionTest : public testing::Test {
 
   // Returns |input_injector_| created and initialized by SetUp(), to mock
   // DesktopEnvironment::CreateInputInjector().
-  InputInjector* CreateInputInjector(
-      scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
-
-  // Creates a dummy SessionController, to mock
-  // DesktopEnvironment::CreateSessionController().
-  SessionController* CreateSessionController();
+  InputInjector* CreateInputInjector();
 
   // Creates a fake media::ScreenCapturer, to mock
   // DesktopEnvironment::CreateVideoCapturer().
-  media::ScreenCapturer* CreateVideoCapturer(
-      scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner);
+  media::ScreenCapturer* CreateVideoCapturer();
 
   // Notifies the client session that the client connection has been
   // authenticated and channels have been connected. This effectively enables
@@ -179,7 +171,7 @@ void ClientSessionTest::TearDown() {
 }
 
 void ClientSessionTest::DisconnectClientSession() {
-  client_session_->Disconnect();
+  client_session_->DisconnectSession();
   // MockSession won't trigger OnConnectionClosed, so fake it.
   client_session_->OnConnectionClosed(client_session_->connection(),
                                       protocol::OK);
@@ -193,32 +185,24 @@ void ClientSessionTest::StopClientSession() {
 
 DesktopEnvironment* ClientSessionTest::CreateDesktopEnvironment() {
   MockDesktopEnvironment* desktop_environment = new MockDesktopEnvironment();
-  EXPECT_CALL(*desktop_environment, CreateAudioCapturerPtr(_))
+  EXPECT_CALL(*desktop_environment, CreateAudioCapturerPtr())
       .Times(0);
-  EXPECT_CALL(*desktop_environment, CreateInputInjectorPtr(_, _))
+  EXPECT_CALL(*desktop_environment, CreateInputInjectorPtr())
       .WillOnce(Invoke(this, &ClientSessionTest::CreateInputInjector));
-  EXPECT_CALL(*desktop_environment, CreateSessionControllerPtr())
-      .WillOnce(Invoke(this, &ClientSessionTest::CreateSessionController));
-  EXPECT_CALL(*desktop_environment, CreateVideoCapturerPtr(_, _))
+  EXPECT_CALL(*desktop_environment, CreateScreenControlsPtr())
+      .Times(1);
+  EXPECT_CALL(*desktop_environment, CreateVideoCapturerPtr())
       .WillOnce(Invoke(this, &ClientSessionTest::CreateVideoCapturer));
 
   return desktop_environment;
 }
 
-InputInjector* ClientSessionTest::CreateInputInjector(
-    scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
+InputInjector* ClientSessionTest::CreateInputInjector() {
   EXPECT_TRUE(input_injector_);
   return input_injector_.release();
 }
 
-SessionController* ClientSessionTest::CreateSessionController() {
-  return new MockSessionController();
-}
-
-media::ScreenCapturer* ClientSessionTest::CreateVideoCapturer(
-    scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner) {
+media::ScreenCapturer* ClientSessionTest::CreateVideoCapturer() {
   return new media::ScreenCapturerFake();
 }
 

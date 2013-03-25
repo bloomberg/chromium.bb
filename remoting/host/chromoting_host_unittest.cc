@@ -291,16 +291,14 @@ class ChromotingHostTest : public testing::Test {
   // DesktopEnvironmentFactory::Create().
   DesktopEnvironment* CreateDesktopEnvironment() {
     MockDesktopEnvironment* desktop_environment = new MockDesktopEnvironment();
-    EXPECT_CALL(*desktop_environment, CreateAudioCapturerPtr(_))
+    EXPECT_CALL(*desktop_environment, CreateAudioCapturerPtr())
         .Times(0);
-    EXPECT_CALL(*desktop_environment, CreateInputInjectorPtr(_, _))
+    EXPECT_CALL(*desktop_environment, CreateInputInjectorPtr())
         .Times(AnyNumber())
         .WillRepeatedly(Invoke(this, &ChromotingHostTest::CreateInputInjector));
-    EXPECT_CALL(*desktop_environment, CreateSessionControllerPtr())
-        .Times(AnyNumber())
-        .WillRepeatedly(Invoke(this,
-                               &ChromotingHostTest::CreateSessionController));
-    EXPECT_CALL(*desktop_environment, CreateVideoCapturerPtr(_, _))
+    EXPECT_CALL(*desktop_environment, CreateScreenControlsPtr())
+        .Times(AnyNumber());
+    EXPECT_CALL(*desktop_environment, CreateVideoCapturerPtr())
         .Times(AnyNumber())
         .WillRepeatedly(Invoke(this, &ChromotingHostTest::CreateVideoCapturer));
 
@@ -309,25 +307,15 @@ class ChromotingHostTest : public testing::Test {
 
   // Creates a dummy InputInjector, to mock
   // DesktopEnvironment::CreateInputInjector().
-  InputInjector* CreateInputInjector(
-      scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
+  InputInjector* CreateInputInjector() {
     MockInputInjector* input_injector = new MockInputInjector();
     EXPECT_CALL(*input_injector, StartPtr(_));
     return input_injector;
   }
 
-  // Creates a dummy SessionController, to mock
-  // DesktopEnvironment::CreateSessionController().
-  SessionController* CreateSessionController() {
-    return new MockSessionController();
-  }
-
   // Creates a fake media::ScreenCapturer, to mock
   // DesktopEnvironment::CreateVideoCapturer().
-  media::ScreenCapturer* CreateVideoCapturer(
-      scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner) {
+  media::ScreenCapturer* CreateVideoCapturer() {
     return new media::ScreenCapturerFake();
   }
 

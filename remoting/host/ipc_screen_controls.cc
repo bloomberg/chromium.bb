@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/ipc_session_controller.h"
+#include "remoting/host/ipc_screen_controls.h"
 
 #include "base/logging.h"
 #include "remoting/host/desktop_session_proxy.h"
 
 namespace remoting {
 
-IpcSessionController::IpcSessionController(
+IpcScreenControls::IpcScreenControls(
     scoped_refptr<DesktopSessionProxy> desktop_session_proxy)
     : desktop_session_proxy_(desktop_session_proxy) {
 }
 
-IpcSessionController::~IpcSessionController() {
+IpcScreenControls::~IpcScreenControls() {
 }
 
-void IpcSessionController::SetScreenResolution(
+void IpcScreenControls::SetScreenResolution(
     const ScreenResolution& resolution) {
   desktop_session_proxy_->SetScreenResolution(resolution);
 }

@@ -19,8 +19,8 @@
 #include "remoting/host/input_injector.h"
 #include "remoting/host/local_input_monitor.h"
 #include "remoting/host/remote_input_filter.h"
+#include "remoting/host/screen_controls.h"
 #include "remoting/host/screen_resolution.h"
-#include "remoting/host/session_controller.h"
 #include "remoting/proto/audio.pb.h"
 #include "remoting/proto/control.pb.h"
 #include "remoting/proto/event.pb.h"
@@ -69,9 +69,11 @@ DesktopSessionAgent::Delegate::~Delegate() {
 
 DesktopSessionAgent::~DesktopSessionAgent() {
   DCHECK(!audio_capturer_);
+  DCHECK(!desktop_environment_);
   DCHECK(!disconnect_window_);
   DCHECK(!local_input_monitor_);
   DCHECK(!network_channel_);
+  DCHECK(!screen_controls_);
   DCHECK(!video_capturer_);
 
   CloseDesktopPipeHandle();
@@ -131,12 +133,6 @@ void DesktopSessionAgent::OnChannelError() {
     delegate_->OnNetworkProcessDisconnected();
 }
 
-void DesktopSessionAgent::OnLocalMouseMoved(const SkIPoint& new_pos) {
-  DCHECK(caller_task_runner()->BelongsToCurrentThread());
-
-  remote_input_filter_->LocalMouseMoved(new_pos);
-}
-
 scoped_refptr<media::SharedBuffer> DesktopSessionAgent::CreateSharedBuffer(
     uint32 size) {
   DCHECK(video_capture_task_runner()->BelongsToCurrentThread());
@@ -172,32 +168,53 @@ void DesktopSessionAgent::ReleaseSharedBuffer(
       new ChromotingDesktopNetworkMsg_ReleaseSharedBuffer(buffer->id()));
 }
 
+const std::string& DesktopSessionAgent::client_jid() const {
+  return client_jid_;
+}
+
+void DesktopSessionAgent::DisconnectSession() {
+  SendToNetwork(new ChromotingDesktopNetworkMsg_DisconnectSession());
+}
+
+void DesktopSessionAgent::OnLocalMouseMoved(const SkIPoint& new_pos) {
+  DCHECK(caller_task_runner()->BelongsToCurrentThread());
+
+  remote_input_filter_->LocalMouseMoved(new_pos);
+}
+
+void DesktopSessionAgent::SetDisableInputs(bool disable_inputs) {
+  DCHECK(caller_task_runner()->BelongsToCurrentThread());
+
+  // Do not expect this method to be called because it is only used by It2Me.
+  NOTREACHED();
+}
+
 void DesktopSessionAgent::OnStartSessionAgent(
     const std::string& authenticated_jid,
     const ScreenResolution& resolution) {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
   DCHECK(!started_);
   DCHECK(!audio_capturer_);
+  DCHECK(!desktop_environment_);
+  DCHECK(!disconnect_window_);
   DCHECK(!input_injector_);
+  DCHECK(!local_input_monitor_);
+  DCHECK(!screen_controls_);
   DCHECK(!video_capturer_);
 
   started_ = true;
+  client_jid_ = authenticated_jid;
 
   // Create a desktop environment for the new session.
-  base::Closure disconnect_session =
-      base::Bind(&DesktopSessionAgent::DisconnectSession, this);
-  scoped_ptr<DesktopEnvironment> desktop_environment =
-      delegate_->desktop_environment_factory().Create(authenticated_jid,
-                                                      disconnect_session);
+  desktop_environment_ = delegate_->desktop_environment_factory().Create(
+      control_factory_.GetWeakPtr());
 
   // Create the session controller and set the initial screen resolution.
-  session_controller_ = desktop_environment->CreateSessionController();
+  screen_controls_ = desktop_environment_->CreateScreenControls();
   SetScreenResolution(resolution);
 
   // Create the input injector.
-  input_injector_ =
-      desktop_environment->CreateInputInjector(input_task_runner(),
-                                               caller_task_runner());
+  input_injector_ = desktop_environment_->CreateInputInjector();
 
   // Hook up the input filter.
   input_tracker_.reset(new protocol::InputEventTracker(input_injector_.get()));
@@ -215,6 +232,8 @@ void DesktopSessionAgent::OnStartSessionAgent(
   input_injector_->Start(clipboard_stub.Pass());
 
   // Create the disconnect window.
+  base::Closure disconnect_session =
+      base::Bind(&DesktopSessionAgent::DisconnectSession, this);
   disconnect_window_ = DisconnectWindow::Create(&ui_strings_);
   disconnect_window_->Show(
       disconnect_session,
@@ -228,15 +247,13 @@ void DesktopSessionAgent::OnStartSessionAgent(
 
   // Start the audio capturer.
   if (delegate_->desktop_environment_factory().SupportsAudioCapture()) {
-    audio_capturer_ = desktop_environment->CreateAudioCapturer(
-        audio_capture_task_runner());
+    audio_capturer_ = desktop_environment_->CreateAudioCapturer();
     audio_capture_task_runner()->PostTask(
         FROM_HERE, base::Bind(&DesktopSessionAgent::StartAudioCapturer, this));
   }
 
   // Start the video capturer.
-  video_capturer_ = desktop_environment->CreateVideoCapturer(
-      video_capture_task_runner(), caller_task_runner());
+  video_capturer_ = desktop_environment_->CreateVideoCapturer();
   video_capture_task_runner()->PostTask(
       FROM_HERE, base::Bind(&DesktopSessionAgent::StartVideoCapturer, this));
 }
@@ -326,6 +343,10 @@ void DesktopSessionAgent::Stop() {
     disconnect_window_->Hide();
     disconnect_window_.reset();
 
+    // Ignore any further callbacks.
+    control_factory_.InvalidateWeakPtrs();
+    client_jid_.clear();
+
     // Stop monitoring to local input.
     local_input_monitor_->Stop();
     local_input_monitor_.reset();
@@ -337,7 +358,8 @@ void DesktopSessionAgent::Stop() {
     input_tracker_.reset();
 
     input_injector_.reset();
-    session_controller_.reset();
+    screen_controls_.reset();
+    desktop_environment_.reset();
 
     // Stop the audio capturer.
     audio_capture_task_runner()->PostTask(
@@ -463,12 +485,8 @@ void DesktopSessionAgent::SetScreenResolution(
     const ScreenResolution& resolution) {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
 
-  if (session_controller_ && resolution.IsValid())
-    session_controller_->SetScreenResolution(resolution);
-}
-
-void DesktopSessionAgent::DisconnectSession() {
-  SendToNetwork(new ChromotingDesktopNetworkMsg_DisconnectSession());
+  if (screen_controls_ && resolution.IsValid())
+    screen_controls_->SetScreenResolution(resolution);
 }
 
 void DesktopSessionAgent::SendToNetwork(IPC::Message* message) {
@@ -531,6 +549,7 @@ DesktopSessionAgent::DesktopSessionAgent(
       input_task_runner_(input_task_runner),
       io_task_runner_(io_task_runner),
       video_capture_task_runner_(video_capture_task_runner),
+      control_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       desktop_pipe_(IPC::InvalidPlatformFileForTransit()),
       current_size_(SkISize::Make(0, 0)),
       next_shared_buffer_id_(1),

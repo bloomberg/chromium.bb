@@ -25,8 +25,10 @@ namespace remoting {
 
 DesktopProcess::DesktopProcess(
     scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
+    scoped_refptr<AutoThreadTaskRunner> input_task_runner,
     const std::string& daemon_channel_name)
     : caller_task_runner_(caller_task_runner),
+      input_task_runner_(input_task_runner),
       daemon_channel_name_(daemon_channel_name) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(MessageLoop::current()->type(), MessageLoop::TYPE_UI);
@@ -83,6 +85,8 @@ void DesktopProcess::OnChannelError() {
   }
 
   caller_task_runner_ = NULL;
+  input_task_runner_ = NULL;
+  desktop_environment_factory_.reset();
 }
 
 bool DesktopProcess::Start(
@@ -106,11 +110,6 @@ bool DesktopProcess::Start(
       "ChromotingAudioThread", caller_task_runner_, MessageLoop::TYPE_IO);
 #endif // !defined(OS_WIN)
 
-  // Launch the input thread.
-  scoped_refptr<AutoThreadTaskRunner> input_task_runner =
-      AutoThread::CreateWithType("Input thread", caller_task_runner_,
-                                 MessageLoop::TYPE_IO);
-
   // Launch the I/O thread.
   scoped_refptr<AutoThreadTaskRunner> io_task_runner =
       AutoThread::CreateWithType("I/O thread", caller_task_runner_,
@@ -123,7 +122,7 @@ bool DesktopProcess::Start(
   // Create a desktop agent.
   desktop_agent_ = DesktopSessionAgent::Create(audio_task_runner,
                                                caller_task_runner_,
-                                               input_task_runner,
+                                               input_task_runner_,
                                                io_task_runner,
                                                video_capture_task_runner);
 
@@ -132,6 +131,8 @@ bool DesktopProcess::Start(
   if (!desktop_agent_->Start(AsWeakPtr(), &desktop_pipe)) {
     desktop_agent_ = NULL;
     caller_task_runner_ = NULL;
+    input_task_runner_ = NULL;
+    desktop_environment_factory_.reset();
     return false;
   }
 

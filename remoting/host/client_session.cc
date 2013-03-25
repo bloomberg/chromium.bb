@@ -19,8 +19,8 @@
 #include "remoting/host/audio_scheduler.h"
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/input_injector.h"
+#include "remoting/host/screen_controls.h"
 #include "remoting/host/screen_resolution.h"
-#include "remoting/host/session_controller.h"
 #include "remoting/host/video_scheduler.h"
 #include "remoting/proto/control.pb.h"
 #include "remoting/proto/event.pb.h"
@@ -45,8 +45,8 @@ ClientSession::ClientSession(
     const base::TimeDelta& max_duration)
     : event_handler_(event_handler),
       connection_(connection.Pass()),
-      connection_factory_(connection_.get()),
       client_jid_(connection_->session()->jid()),
+      control_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       desktop_environment_factory_(desktop_environment_factory),
       input_tracker_(&host_input_filter_),
       remote_input_filter_(&input_tracker_),
@@ -86,8 +86,9 @@ ClientSession::ClientSession(
 ClientSession::~ClientSession() {
   DCHECK(CalledOnValidThread());
   DCHECK(!audio_scheduler_);
+  DCHECK(!desktop_environment_);
   DCHECK(!input_injector_);
-  DCHECK(!session_controller_);
+  DCHECK(!screen_controls_);
   DCHECK(!video_scheduler_);
 
   connection_.reset();
@@ -102,7 +103,7 @@ void ClientSession::NotifyClientResolution(
           << resolution.dips_width() << ", dips_height="
           << resolution.dips_height() << ")";
 
-  if (!session_controller_)
+  if (!screen_controls_)
     return;
 
   ScreenResolution client_resolution(
@@ -111,7 +112,7 @@ void ClientSession::NotifyClientResolution(
 
   // Try to match the client's resolution.
   if (client_resolution.IsValid())
-    session_controller_->SetScreenResolution(client_resolution);
+    screen_controls_->SetScreenResolution(client_resolution);
 }
 
 void ClientSession::ControlVideo(const protocol::VideoControl& video_control) {
@@ -147,7 +148,7 @@ void ClientSession::OnConnectionAuthenticated(
     // TODO(simonmorris): Let Disconnect() tell the client that the
     // disconnection was caused by the session exceeding its maximum duration.
     max_duration_timer_.Start(FROM_HERE, max_duration_,
-                              this, &ClientSession::Disconnect);
+                              this, &ClientSession::DisconnectSession);
   }
 
   event_handler_->OnSessionAuthenticated(this);
@@ -158,22 +159,19 @@ void ClientSession::OnConnectionChannelsConnected(
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(connection_.get(), connection);
   DCHECK(!audio_scheduler_);
+  DCHECK(!desktop_environment_);
   DCHECK(!input_injector_);
-  DCHECK(!session_controller_);
+  DCHECK(!screen_controls_);
   DCHECK(!video_scheduler_);
 
-  scoped_ptr<DesktopEnvironment> desktop_environment =
-      desktop_environment_factory_->Create(
-          client_jid_,
-          base::Bind(&protocol::ConnectionToClient::Disconnect,
-                     connection_factory_.GetWeakPtr()));
+  desktop_environment_ =
+      desktop_environment_factory_->Create(control_factory_.GetWeakPtr());
 
-  // Create the session controller.
-  session_controller_ = desktop_environment->CreateSessionController();
+  // Create the object that controls the screen resolution.
+  screen_controls_ = desktop_environment_->CreateScreenControls();
 
   // Create and start the event executor.
-  input_injector_ = desktop_environment->CreateInputInjector(
-      input_task_runner_, ui_task_runner_);
+  input_injector_ = desktop_environment_->CreateInputInjector();
   input_injector_->Start(CreateClipboardProxy());
 
   // Connect the host clipboard and input stubs.
@@ -191,8 +189,7 @@ void ClientSession::OnConnectionChannelsConnected(
       video_capture_task_runner_,
       video_encode_task_runner_,
       network_task_runner_,
-      desktop_environment->CreateVideoCapturer(video_capture_task_runner_,
-                                               video_encode_task_runner_),
+      desktop_environment_->CreateVideoCapturer(),
       video_encoder.Pass(),
       connection_->client_stub(),
       &mouse_clamping_filter_);
@@ -204,7 +201,7 @@ void ClientSession::OnConnectionChannelsConnected(
     audio_scheduler_ = AudioScheduler::Create(
         audio_task_runner_,
         network_task_runner_,
-        desktop_environment->CreateAudioCapturer(audio_task_runner_),
+        desktop_environment_->CreateAudioCapturer(),
         audio_encoder.Pass(),
         connection_->audio_stub());
   }
@@ -219,8 +216,8 @@ void ClientSession::OnConnectionClosed(
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(connection_.get(), connection);
 
-  // Ignore any further callbacks from the DesktopEnvironment.
-  connection_factory_.InvalidateWeakPtrs();
+  // Ignore any further callbacks.
+  control_factory_.InvalidateWeakPtrs();
 
   // If the client never authenticated then the session failed.
   if (!auth_input_filter_.enabled())
@@ -248,7 +245,8 @@ void ClientSession::OnConnectionClosed(
 
   client_clipboard_factory_.InvalidateWeakPtrs();
   input_injector_.reset();
-  session_controller_.reset();
+  screen_controls_.reset();
+  desktop_environment_.reset();
 
   // Notify the ChromotingHost that this client is disconnected.
   // TODO(sergeyu): Log failure reason?
@@ -275,7 +273,11 @@ void ClientSession::OnRouteChange(
   event_handler_->OnSessionRouteChange(this, channel_name, route);
 }
 
-void ClientSession::Disconnect() {
+const std::string& ClientSession::client_jid() const {
+  return client_jid_;
+}
+
+void ClientSession::DisconnectSession() {
   DCHECK(CalledOnValidThread());
   DCHECK(connection_.get());
 
@@ -286,9 +288,9 @@ void ClientSession::Disconnect() {
   connection_->Disconnect();
 }
 
-void ClientSession::LocalMouseMoved(const SkIPoint& mouse_pos) {
+void ClientSession::OnLocalMouseMoved(const SkIPoint& position) {
   DCHECK(CalledOnValidThread());
-  remote_input_filter_.LocalMouseMoved(mouse_pos);
+  remote_input_filter_.LocalMouseMoved(position);
 }
 
 void ClientSession::SetDisableInputs(bool disable_inputs) {

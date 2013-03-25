@@ -20,13 +20,16 @@ class SessionDesktopEnvironment : public Me2MeDesktopEnvironment {
   virtual ~SessionDesktopEnvironment();
 
   // DesktopEnvironment implementation.
-  virtual scoped_ptr<InputInjector> CreateInputInjector(
-      scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) OVERRIDE;
+  virtual scoped_ptr<InputInjector> CreateInputInjector() OVERRIDE;
 
  private:
   friend class SessionDesktopEnvironmentFactory;
-  explicit SessionDesktopEnvironment(const base::Closure& inject_sas);
+  SessionDesktopEnvironment(
+      scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+      base::WeakPtr<ClientSessionControl> client_session_control,
+      const base::Closure& inject_sas);
 
   // Used to ask the daemon to inject Secure Attention Sequence.
   base::Closure inject_sas_;
@@ -37,13 +40,16 @@ class SessionDesktopEnvironment : public Me2MeDesktopEnvironment {
 // Used to create |SessionDesktopEnvironment| instances.
 class SessionDesktopEnvironmentFactory : public Me2MeDesktopEnvironmentFactory {
  public:
-  explicit SessionDesktopEnvironmentFactory(const base::Closure& inject_sas);
+  SessionDesktopEnvironmentFactory(
+      scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+      const base::Closure& inject_sas);
   virtual ~SessionDesktopEnvironmentFactory();
 
   // DesktopEnvironmentFactory implementation.
   virtual scoped_ptr<DesktopEnvironment> Create(
-      const std::string& client_jid,
-      const base::Closure& disconnect_callback) OVERRIDE;
+      base::WeakPtr<ClientSessionControl> client_session_control) OVERRIDE;
 
  private:
   // Used to ask the daemon to inject Secure Attention Sequence.

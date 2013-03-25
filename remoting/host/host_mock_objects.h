@@ -8,14 +8,15 @@
 #include "net/base/ip_endpoint.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/client_session.h"
+#include "remoting/host/client_session_control.h"
 #include "remoting/host/continue_window.h"
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/disconnect_window.h"
 #include "remoting/host/host_status_observer.h"
 #include "remoting/host/input_injector.h"
 #include "remoting/host/local_input_monitor.h"
+#include "remoting/host/screen_controls.h"
 #include "remoting/host/screen_resolution.h"
-#include "remoting/host/session_controller.h"
 #include "remoting/proto/control.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -30,27 +31,16 @@ class MockDesktopEnvironment : public DesktopEnvironment {
   MockDesktopEnvironment();
   virtual ~MockDesktopEnvironment();
 
-  MOCK_METHOD1(CreateAudioCapturerPtr,
-               AudioCapturer*(scoped_refptr<base::SingleThreadTaskRunner>));
-  MOCK_METHOD2(CreateInputInjectorPtr,
-               InputInjector*(scoped_refptr<base::SingleThreadTaskRunner>,
-                              scoped_refptr<base::SingleThreadTaskRunner>));
-  MOCK_METHOD0(CreateSessionControllerPtr, SessionController*());
-  MOCK_METHOD2(
-      CreateVideoCapturerPtr,
-      media::ScreenCapturer*(scoped_refptr<base::SingleThreadTaskRunner>,
-                          scoped_refptr<base::SingleThreadTaskRunner>));
+  MOCK_METHOD0(CreateAudioCapturerPtr, AudioCapturer*());
+  MOCK_METHOD0(CreateInputInjectorPtr, InputInjector*());
+  MOCK_METHOD0(CreateScreenControlsPtr, ScreenControls*());
+  MOCK_METHOD0(CreateVideoCapturerPtr, media::ScreenCapturer*());
 
   // DesktopEnvironment implementation.
-  virtual scoped_ptr<AudioCapturer> CreateAudioCapturer(
-      scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner) OVERRIDE;
-  virtual scoped_ptr<InputInjector> CreateInputInjector(
-      scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) OVERRIDE;
-  virtual scoped_ptr<SessionController> CreateSessionController() OVERRIDE;
-  virtual scoped_ptr<media::ScreenCapturer> CreateVideoCapturer(
-      scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner) OVERRIDE;
+  virtual scoped_ptr<AudioCapturer> CreateAudioCapturer() OVERRIDE;
+  virtual scoped_ptr<InputInjector> CreateInputInjector() OVERRIDE;
+  virtual scoped_ptr<ScreenControls> CreateScreenControls() OVERRIDE;
+  virtual scoped_ptr<media::ScreenCapturer> CreateVideoCapturer() OVERRIDE;
 };
 
 class MockDisconnectWindow : public DisconnectWindow {
@@ -112,8 +102,7 @@ class MockDesktopEnvironmentFactory : public DesktopEnvironmentFactory {
   MOCK_CONST_METHOD0(SupportsAudioCapture, bool());
 
   virtual scoped_ptr<DesktopEnvironment> Create(
-      const std::string& client_jid,
-      const base::Closure& disconnect_callback) OVERRIDE;
+      base::WeakPtr<ClientSessionControl> client_session_control) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockDesktopEnvironmentFactory);
@@ -152,17 +141,6 @@ class MockHostStatusObserver : public HostStatusObserver {
                     const protocol::TransportRoute& route));
   MOCK_METHOD1(OnStart, void(const std::string& xmpp_login));
   MOCK_METHOD0(OnShutdown, void());
-};
-
-class MockSessionController : public SessionController {
- public:
-  MockSessionController();
-  virtual ~MockSessionController();
-
-  MOCK_METHOD1(SetScreenResolution, void(const ScreenResolution&));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockSessionController);
 };
 
 }  // namespace remoting

@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "remoting/host/session_controller.h"
+#include "remoting/host/screen_controls.h"
 #include "third_party/skia/include/core/SkSize.h"
 
 namespace remoting {
@@ -19,15 +19,15 @@ class ScreenResolution;
 // TODO(alexeypa): Rename this class to reflect that it is not
 // HostStatusObserver any more.
 
-// Use the specified DesktopResizer to match host desktop size to the client
-// view size as closely as is possible. When the connection closes, restore
+// Uses the specified DesktopResizer to match host desktop size to the client
+// view size as closely as is possible. When the connection closes, restores
 // the original desktop size.
-class ResizingHostObserver : public SessionController {
+class ResizingHostObserver : public ScreenControls {
  public:
   explicit ResizingHostObserver(scoped_ptr<DesktopResizer> desktop_resizer);
   virtual ~ResizingHostObserver();
 
-  // SessionController interface.
+  // ScreenControls interface.
   virtual void SetScreenResolution(const ScreenResolution& resolution) OVERRIDE;
 
  private:

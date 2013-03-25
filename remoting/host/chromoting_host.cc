@@ -142,7 +142,7 @@ void ChromotingHost::Shutdown(const base::Closure& shutdown_task) {
 
       // Disconnect all of the clients.
       while (!clients_.empty()) {
-        clients_.front()->Disconnect();
+        clients_.front()->DisconnectSession();
       }
 
       // Run the remaining shutdown tasks.
@@ -193,7 +193,7 @@ void ChromotingHost::OnSessionAuthenticated(ClientSession* client) {
   while (it != clients_.end()) {
     ClientSession* other_client = *it++;
     if (other_client != client)
-      other_client->Disconnect();
+      other_client->DisconnectSession();
   }
 
   // Disconnects above must have destroyed all other clients.
@@ -210,7 +210,7 @@ void ChromotingHost::OnSessionAuthenticated(ClientSession* client) {
   authenticating_client_ = false;
 
   if (reject_authenticating_client_) {
-    client->Disconnect();
+    client->DisconnectSession();
   }
 }
 
@@ -339,7 +339,7 @@ void ChromotingHost::OnLocalMouseMoved(const SkIPoint& new_pos) {
 
   ClientList::iterator client;
   for (client = clients_.begin(); client != clients_.end(); ++client) {
-    (*client)->LocalMouseMoved(new_pos);
+    (*client)->OnLocalMouseMoved(new_pos);
   }
 }
 
@@ -365,7 +365,7 @@ void ChromotingHost::DisconnectAllClients() {
 
   while (!clients_.empty()) {
     size_t size = clients_.size();
-    clients_.front()->Disconnect();
+    clients_.front()->DisconnectSession();
     CHECK_EQ(clients_.size(), size - 1);
   }
 }

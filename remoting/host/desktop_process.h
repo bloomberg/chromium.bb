@@ -33,6 +33,7 @@ class DesktopProcess : public DesktopSessionAgent::Delegate,
  public:
   DesktopProcess(
       scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
+      scoped_refptr<AutoThreadTaskRunner> input_task_runner,
       const std::string& daemon_channel_name);
   virtual ~DesktopProcess();
 
@@ -62,6 +63,9 @@ class DesktopProcess : public DesktopSessionAgent::Delegate,
 
   // Task runner on which public methods of this class should be called.
   scoped_refptr<AutoThreadTaskRunner> caller_task_runner_;
+
+  // Used to run input-related tasks.
+  scoped_refptr<AutoThreadTaskRunner> input_task_runner_;
 
   // Factory used to create integration components for use by |desktop_agent_|.
   scoped_ptr<DesktopEnvironmentFactory> desktop_environment_factory_;

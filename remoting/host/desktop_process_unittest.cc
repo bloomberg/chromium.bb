@@ -112,10 +112,6 @@ class DesktopProcessTest : public testing::Test {
   // DesktopEnvironment::CreateInputInjector().
   InputInjector* CreateInputInjector();
 
-  // Creates a dummy SessionController, to mock
-  // DesktopEnvironment::CreateSessionController().
-  SessionController* CreateSessionController();
-
   // Creates a fake media::ScreenCapturer, to mock
   // DesktopEnvironment::CreateVideoCapturer().
   media::ScreenCapturer* CreateVideoCapturer();
@@ -199,21 +195,16 @@ void DesktopProcessTest::OnDesktopAttached(
 
 DesktopEnvironment* DesktopProcessTest::CreateDesktopEnvironment() {
   MockDesktopEnvironment* desktop_environment = new MockDesktopEnvironment();
-  EXPECT_CALL(*desktop_environment, CreateAudioCapturerPtr(_))
+  EXPECT_CALL(*desktop_environment, CreateAudioCapturerPtr())
       .Times(0);
-  EXPECT_CALL(*desktop_environment, CreateInputInjectorPtr(_, _))
+  EXPECT_CALL(*desktop_environment, CreateInputInjectorPtr())
       .Times(AnyNumber())
-      .WillRepeatedly(
-          InvokeWithoutArgs(this, &DesktopProcessTest::CreateInputInjector));
-  EXPECT_CALL(*desktop_environment, CreateSessionControllerPtr())
+      .WillRepeatedly(Invoke(this, &DesktopProcessTest::CreateInputInjector));
+  EXPECT_CALL(*desktop_environment, CreateScreenControlsPtr())
+      .Times(AnyNumber());
+  EXPECT_CALL(*desktop_environment, CreateVideoCapturerPtr())
       .Times(AnyNumber())
-      .WillRepeatedly(
-          InvokeWithoutArgs(this,
-                            &DesktopProcessTest::CreateSessionController));
-  EXPECT_CALL(*desktop_environment, CreateVideoCapturerPtr(_, _))
-      .Times(AnyNumber())
-      .WillRepeatedly(
-          InvokeWithoutArgs(this, &DesktopProcessTest::CreateVideoCapturer));
+      .WillRepeatedly(Invoke(this, &DesktopProcessTest::CreateVideoCapturer));
 
   // Notify the test that the desktop environment has been created.
   network_listener_.OnDesktopEnvironmentCreated();
@@ -224,10 +215,6 @@ InputInjector* DesktopProcessTest::CreateInputInjector() {
   MockInputInjector* input_injector = new MockInputInjector();
   EXPECT_CALL(*input_injector, StartPtr(_));
   return input_injector;
-}
-
-SessionController* DesktopProcessTest::CreateSessionController() {
-  return new MockSessionController();
 }
 
 media::ScreenCapturer* DesktopProcessTest::CreateVideoCapturer() {
@@ -274,7 +261,7 @@ void DesktopProcessTest::RunDesktopProcess() {
       .Times(AnyNumber())
       .WillRepeatedly(Return(false));
 
-  DesktopProcess desktop_process(ui_task_runner, channel_name);
+  DesktopProcess desktop_process(ui_task_runner, io_task_runner_, channel_name);
   EXPECT_TRUE(desktop_process.Start(
       desktop_environment_factory.PassAs<DesktopEnvironmentFactory>()));
 

@@ -39,11 +39,12 @@ namespace remoting {
 
 class AudioPacket;
 class ClientSession;
+class ClientSessionControl;
 class DesktopSessionConnector;
 struct DesktopSessionProxyTraits;
 class IpcAudioCapturer;
 class IpcVideoFrameCapturer;
-class SessionController;
+class ScreenControls;
 
 // DesktopSessionProxy is created by an owning DesktopEnvironment to route
 // requests from stubs to the DesktopSessionAgent instance through
@@ -65,21 +66,17 @@ class DesktopSessionProxy
       public IPC::Listener {
  public:
   DesktopSessionProxy(
+      scoped_refptr<base::SingleThreadTaskRunner> audio_capture_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-      const std::string& client_jid,
-      const base::Closure& disconnect_callback);
+      scoped_refptr<base::SingleThreadTaskRunner> video_capture_task_runner,
+      base::WeakPtr<ClientSessionControl> client_session_control);
 
   // Mirrors DesktopEnvironment.
-  scoped_ptr<AudioCapturer> CreateAudioCapturer(
-      scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner);
-  scoped_ptr<InputInjector> CreateInputInjector(
-      scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
-  scoped_ptr<SessionController> CreateSessionController();
-  scoped_ptr<media::ScreenCapturer> CreateVideoCapturer(
-      scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner);
+  scoped_ptr<AudioCapturer> CreateAudioCapturer();
+  scoped_ptr<InputInjector> CreateInputInjector();
+  scoped_ptr<ScreenControls> CreateScreenControls();
+  scoped_ptr<media::ScreenCapturer> CreateVideoCapturer();
 
   // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
@@ -183,18 +180,15 @@ class DesktopSessionProxy
   // Points to the client stub passed to StartInputInjector().
   scoped_ptr<protocol::ClipboardStub> client_clipboard_;
 
+  // Used to disconnect the client session.
+  base::WeakPtr<ClientSessionControl> client_session_control_;
+
   // Used to bind to a desktop session and receive notifications every time
   // the desktop process is replaced.
   base::WeakPtr<DesktopSessionConnector> desktop_session_connector_;
 
-  // Disconnects the client session when invoked.
-  base::Closure disconnect_callback_;
-
   // Points to the video capturer receiving captured video frames.
   base::WeakPtr<IpcVideoFrameCapturer> video_capturer_;
-
-  // JID of the client session.
-  std::string client_jid_;
 
   // IPC channel to the desktop session agent.
   scoped_ptr<IPC::ChannelProxy> desktop_channel_;

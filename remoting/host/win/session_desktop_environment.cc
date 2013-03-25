@@ -9,43 +9,64 @@
 #include "media/video/capture/screen/screen_capturer.h"
 #include "remoting/host/audio_capturer.h"
 #include "remoting/host/input_injector.h"
+#include "remoting/host/screen_controls.h"
 #include "remoting/host/win/session_input_injector.h"
 
 namespace remoting {
 
 SessionDesktopEnvironment::SessionDesktopEnvironment(
+    scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+    base::WeakPtr<ClientSessionControl> client_session_control,
     const base::Closure& inject_sas)
-    : inject_sas_(inject_sas){
+    : Me2MeDesktopEnvironment(caller_task_runner,
+                              input_task_runner,
+                              ui_task_runner,
+                              client_session_control),
+      inject_sas_(inject_sas) {
 }
 
 SessionDesktopEnvironment::~SessionDesktopEnvironment() {
 }
 
-scoped_ptr<InputInjector> SessionDesktopEnvironment::CreateInputInjector(
-    scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
-  DCHECK(CalledOnValidThread());
+scoped_ptr<InputInjector> SessionDesktopEnvironment::CreateInputInjector() {
+  DCHECK(caller_task_runner()->BelongsToCurrentThread());
 
   scoped_ptr<InputInjector> input_injector = InputInjector::Create(
-      input_task_runner, ui_task_runner);
-  input_injector.reset(new SessionInputInjectorWin(
-      input_task_runner, input_injector.Pass(), ui_task_runner, inject_sas_));
+      input_task_runner(), ui_task_runner());
+  input_injector.reset(new SessionInputInjectorWin(input_task_runner(),
+                                                   input_injector.Pass(),
+                                                   ui_task_runner(),
+                                                   inject_sas_));
   return input_injector.Pass();
 }
 
 SessionDesktopEnvironmentFactory::SessionDesktopEnvironmentFactory(
+    scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     const base::Closure& inject_sas)
-    : inject_sas_(inject_sas) {
+    : Me2MeDesktopEnvironmentFactory(caller_task_runner,
+                                     input_task_runner,
+                                     ui_task_runner),
+      inject_sas_(inject_sas) {
+  DCHECK(caller_task_runner->BelongsToCurrentThread());
 }
 
 SessionDesktopEnvironmentFactory::~SessionDesktopEnvironmentFactory() {
 }
 
 scoped_ptr<DesktopEnvironment> SessionDesktopEnvironmentFactory::Create(
-    const std::string& client_jid,
-    const base::Closure& disconnect_callback) {
+    base::WeakPtr<ClientSessionControl> client_session_control) {
+  DCHECK(caller_task_runner()->BelongsToCurrentThread());
+
   return scoped_ptr<DesktopEnvironment>(
-      new SessionDesktopEnvironment(inject_sas_));
+      new SessionDesktopEnvironment(caller_task_runner(),
+                                    input_task_runner(),
+                                    ui_task_runner(),
+                                    client_session_control,
+                                    inject_sas_));
 }
 
 }  // namespace remoting

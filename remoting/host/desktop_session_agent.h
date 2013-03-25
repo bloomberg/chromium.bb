@@ -17,7 +17,7 @@
 #include "ipc/ipc_platform_file.h"
 #include "media/video/capture/screen/screen_capturer.h"
 #include "media/video/capture/screen/shared_buffer.h"
-#include "remoting/host/mouse_move_observer.h"
+#include "remoting/host/client_session_control.h"
 #include "remoting/host/ui_strings.h"
 #include "remoting/protocol/clipboard_stub.h"
 #include "third_party/skia/include/core/SkRect.h"
@@ -33,13 +33,14 @@ namespace remoting {
 class AudioCapturer;
 class AudioPacket;
 class AutoThreadTaskRunner;
+class DesktopEnvironment;
 class DesktopEnvironmentFactory;
 class DisconnectWindow;
 class InputInjector;
 class LocalInputMonitor;
 class RemoteInputFilter;
+class ScreenControls;
 class ScreenResolution;
-class SessionController;
 
 namespace protocol {
 class InputEventTracker;
@@ -50,8 +51,8 @@ class InputEventTracker;
 class DesktopSessionAgent
     : public base::RefCountedThreadSafe<DesktopSessionAgent>,
       public IPC::Listener,
-      public MouseMoveObserver,
-      public media::ScreenCapturer::Delegate {
+      public media::ScreenCapturer::Delegate,
+      public ClientSessionControl {
  public:
   class Delegate {
    public:
@@ -76,9 +77,6 @@ class DesktopSessionAgent
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
   virtual void OnChannelError() OVERRIDE;
-
-  // MouseMoveObserver implementation.
-  virtual void OnLocalMouseMoved(const SkIPoint& new_pos) OVERRIDE;
 
   // media::ScreenCapturer::Delegate implementation.
   virtual scoped_refptr<media::SharedBuffer> CreateSharedBuffer(
@@ -117,6 +115,12 @@ class DesktopSessionAgent
   friend class base::RefCountedThreadSafe<DesktopSessionAgent>;
   virtual ~DesktopSessionAgent();
 
+  // ClientSessionControl interface.
+  virtual const std::string& client_jid() const OVERRIDE;
+  virtual void DisconnectSession() OVERRIDE;
+  virtual void OnLocalMouseMoved(const SkIPoint& position) OVERRIDE;
+  virtual void SetDisableInputs(bool disable_inputs) OVERRIDE;
+
   // Creates a connected IPC channel to be used to access the screen/audio
   // recorders and input stubs.
   virtual bool CreateChannelForNetworkProcess(
@@ -144,9 +148,6 @@ class DesktopSessionAgent
   // Handles ChromotingNetworkDesktopMsg_SetScreenResolution request from
   // the client.
   void SetScreenResolution(const ScreenResolution& resolution);
-
-  // Sends DisconnectSession request to the host.
-  void DisconnectSession();
 
   // Sends a message to the network process.
   void SendToNetwork(IPC::Message* message);
@@ -211,7 +212,15 @@ class DesktopSessionAgent
   // Captures audio output.
   scoped_ptr<AudioCapturer> audio_capturer_;
 
+  std::string client_jid_;
+
+  // Used to disable callbacks to |this|.
+  base::WeakPtrFactory<ClientSessionControl> control_factory_;
+
   base::WeakPtr<Delegate> delegate_;
+
+  // The DesktopEnvironment instance used by this agent.
+  scoped_ptr<DesktopEnvironment> desktop_environment_;
 
   // Provides a user interface allowing the local user to close the connection.
   scoped_ptr<DisconnectWindow> disconnect_window_;
@@ -230,7 +239,7 @@ class DesktopSessionAgent
   scoped_ptr<RemoteInputFilter> remote_input_filter_;
 
   // Used to apply client-requested changes in screen resolution.
-  scoped_ptr<SessionController> session_controller_;
+  scoped_ptr<ScreenControls> screen_controls_;
 
   // IPC channel connecting the desktop process with the network process.
   scoped_ptr<IPC::ChannelProxy> network_channel_;

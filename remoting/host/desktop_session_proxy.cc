@@ -14,12 +14,12 @@
 #include "media/video/capture/screen/screen_capture_data.h"
 #include "remoting/host/chromoting_messages.h"
 #include "remoting/host/client_session.h"
+#include "remoting/host/client_session_control.h"
 #include "remoting/host/desktop_session_connector.h"
 #include "remoting/host/ipc_audio_capturer.h"
 #include "remoting/host/ipc_input_injector.h"
-#include "remoting/host/ipc_session_controller.h"
+#include "remoting/host/ipc_screen_controls.h"
 #include "remoting/host/ipc_video_frame_capturer.h"
-#include "remoting/host/session_controller.h"
 #include "remoting/proto/audio.pb.h"
 #include "remoting/proto/control.pb.h"
 #include "remoting/proto/event.pb.h"
@@ -31,49 +31,42 @@
 namespace remoting {
 
 DesktopSessionProxy::DesktopSessionProxy(
+    scoped_refptr<base::SingleThreadTaskRunner> audio_capture_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-    const std::string& client_jid,
-    const base::Closure& disconnect_callback)
-    : caller_task_runner_(caller_task_runner),
+    scoped_refptr<base::SingleThreadTaskRunner> video_capture_task_runner,
+    base::WeakPtr<ClientSessionControl> client_session_control)
+    : audio_capture_task_runner_(audio_capture_task_runner),
+      caller_task_runner_(caller_task_runner),
       io_task_runner_(io_task_runner),
-      disconnect_callback_(disconnect_callback),
-      client_jid_(client_jid),
+      video_capture_task_runner_(video_capture_task_runner),
+      client_session_control_(client_session_control),
       desktop_process_(base::kNullProcessHandle),
       pending_capture_frame_requests_(0) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
-  DCHECK(!client_jid_.empty());
-  DCHECK(!disconnect_callback_.is_null());
 }
 
-scoped_ptr<AudioCapturer> DesktopSessionProxy::CreateAudioCapturer(
-    scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner) {
+scoped_ptr<AudioCapturer> DesktopSessionProxy::CreateAudioCapturer() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
-  DCHECK(!audio_capture_task_runner_);
 
-  audio_capture_task_runner_ = audio_task_runner;
   return scoped_ptr<AudioCapturer>(new IpcAudioCapturer(this));
 }
 
-scoped_ptr<InputInjector> DesktopSessionProxy::CreateInputInjector(
-    scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
+scoped_ptr<InputInjector> DesktopSessionProxy::CreateInputInjector() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   return scoped_ptr<InputInjector>(new IpcInputInjector(this));
 }
 
-scoped_ptr<SessionController> DesktopSessionProxy::CreateSessionController() {
-  return scoped_ptr<SessionController>(new IpcSessionController(this));
+scoped_ptr<ScreenControls> DesktopSessionProxy::CreateScreenControls() {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+
+  return scoped_ptr<ScreenControls>(new IpcScreenControls(this));
 }
 
-scoped_ptr<media::ScreenCapturer> DesktopSessionProxy::CreateVideoCapturer(
-    scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner) {
+scoped_ptr<media::ScreenCapturer> DesktopSessionProxy::CreateVideoCapturer() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
-  DCHECK(!video_capture_task_runner_.get());
 
-  video_capture_task_runner_ = capture_task_runner;
   return scoped_ptr<media::ScreenCapturer>(new IpcVideoFrameCapturer(this));
 }
 
@@ -118,9 +111,15 @@ bool DesktopSessionProxy::AttachToDesktop(
     base::ProcessHandle desktop_process,
     IPC::PlatformFileForTransit desktop_pipe) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
-  DCHECK(!client_jid_.empty());
   DCHECK(!desktop_channel_);
   DCHECK_EQ(desktop_process_, base::kNullProcessHandle);
+
+  // Ignore the attach notification if the client session has been disconnected
+  // already.
+  if (!client_session_control_) {
+    base::CloseProcessHandle(desktop_process);
+    return false;
+  }
 
   desktop_process_ = desktop_process;
 
@@ -132,6 +131,9 @@ bool DesktopSessionProxy::AttachToDesktop(
                        pipe.Receive(), 0, FALSE, DUPLICATE_SAME_ACCESS)) {
     LOG_GETLASTERROR(ERROR) << "Failed to duplicate the desktop-to-network"
                                " pipe handle";
+
+    desktop_process_ = base::kNullProcessHandle;
+    base::CloseProcessHandle(desktop_process);
     return false;
   }
 
@@ -156,7 +158,7 @@ bool DesktopSessionProxy::AttachToDesktop(
   // Pass ID of the client (which is authenticated at this point) to the desktop
   // session agent and start the agent.
   SendToDesktop(new ChromotingNetworkDesktopMsg_StartSessionAgent(
-      client_jid_, screen_resolution_));
+      client_session_control_->client_jid(), screen_resolution_));
 
   return true;
 }
@@ -231,7 +233,8 @@ void DesktopSessionProxy::DisconnectSession() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   // Disconnect the client session if it hasn't been disconnected yet.
-  disconnect_callback_.Run();
+  if (client_session_control_)
+    client_session_control_->DisconnectSession();
 }
 
 void DesktopSessionProxy::InjectClipboardEvent(

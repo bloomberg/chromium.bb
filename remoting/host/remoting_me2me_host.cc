@@ -590,19 +590,27 @@ void HostProcess::StartOnUiThread() {
 #if defined(REMOTING_MULTI_PROCESS)
   IpcDesktopEnvironmentFactory* desktop_environment_factory =
       new IpcDesktopEnvironmentFactory(
+          context_->audio_task_runner(),
           context_->network_task_runner(),
+          context_->video_capture_task_runner(),
           context_->network_task_runner(),
           daemon_channel_.get());
   desktop_session_connector_ = desktop_environment_factory;
 #else // !defined(REMOTING_MULTI_PROCESS)
   DesktopEnvironmentFactory* desktop_environment_factory =
       new SessionDesktopEnvironmentFactory(
+          context_->network_task_runner(),
+          context_->input_task_runner(),
+          context_->ui_task_runner(),
           base::Bind(&HostProcess::SendSasToConsole, this));
 #endif  // !defined(REMOTING_MULTI_PROCESS)
 
 #else  // !defined(OS_WIN)
   DesktopEnvironmentFactory* desktop_environment_factory =
-      new Me2MeDesktopEnvironmentFactory();
+      new Me2MeDesktopEnvironmentFactory(
+          context_->network_task_runner(),
+          context_->input_task_runner(),
+          context_->ui_task_runner());
 #endif  // !defined(OS_WIN)
 
   desktop_environment_factory_.reset(desktop_environment_factory);

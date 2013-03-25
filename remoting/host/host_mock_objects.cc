@@ -22,28 +22,21 @@ MockDesktopEnvironment::MockDesktopEnvironment() {}
 
 MockDesktopEnvironment::~MockDesktopEnvironment() {}
 
-scoped_ptr<AudioCapturer> MockDesktopEnvironment::CreateAudioCapturer(
-    scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner) {
-  return scoped_ptr<AudioCapturer>(CreateAudioCapturerPtr(audio_task_runner));
+scoped_ptr<AudioCapturer> MockDesktopEnvironment::CreateAudioCapturer() {
+  return scoped_ptr<AudioCapturer>(CreateAudioCapturerPtr());
 }
 
-scoped_ptr<InputInjector> MockDesktopEnvironment::CreateInputInjector(
-    scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
-  return scoped_ptr<InputInjector>(CreateInputInjectorPtr(input_task_runner,
-                                                          ui_task_runner));
+scoped_ptr<InputInjector> MockDesktopEnvironment::CreateInputInjector() {
+  return scoped_ptr<InputInjector>(CreateInputInjectorPtr());
 }
 
-scoped_ptr<SessionController>
-MockDesktopEnvironment::CreateSessionController() {
-  return scoped_ptr<SessionController>(CreateSessionControllerPtr());
+scoped_ptr<ScreenControls> MockDesktopEnvironment::CreateScreenControls() {
+  return scoped_ptr<ScreenControls>(CreateScreenControlsPtr());
 }
 
-scoped_ptr<media::ScreenCapturer> MockDesktopEnvironment::CreateVideoCapturer(
-    scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner) {
-  return scoped_ptr<media::ScreenCapturer>(CreateVideoCapturerPtr(
-      capture_task_runner, encode_task_runner));
+scoped_ptr<media::ScreenCapturer>
+MockDesktopEnvironment::CreateVideoCapturer() {
+  return scoped_ptr<media::ScreenCapturer>(CreateVideoCapturerPtr());
 }
 
 MockDesktopEnvironmentFactory::MockDesktopEnvironmentFactory() {}
@@ -51,8 +44,7 @@ MockDesktopEnvironmentFactory::MockDesktopEnvironmentFactory() {}
 MockDesktopEnvironmentFactory::~MockDesktopEnvironmentFactory() {}
 
 scoped_ptr<DesktopEnvironment> MockDesktopEnvironmentFactory::Create(
-    const std::string& client_jid,
-    const base::Closure& disconnect_callback) {
+    base::WeakPtr<ClientSessionControl> client_session_control) {
   return scoped_ptr<DesktopEnvironment>(CreatePtr());
 }
 
@@ -93,9 +85,5 @@ MockClientSessionEventHandler::~MockClientSessionEventHandler() {}
 MockHostStatusObserver::MockHostStatusObserver() {}
 
 MockHostStatusObserver::~MockHostStatusObserver() {}
-
-MockSessionController::MockSessionController() {}
-
-MockSessionController::~MockSessionController() {}
 
 }  // namespace remoting

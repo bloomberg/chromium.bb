@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/run_loop.h"
+#include "remoting/base/auto_thread.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/host/desktop_process.h"
 #include "remoting/host/host_exit_codes.h"
@@ -35,17 +36,30 @@ int DesktopProcessMain() {
       new AutoThreadTaskRunner(message_loop.message_loop_proxy(),
                                run_loop.QuitClosure());
 
-  DesktopProcess desktop_process(ui_task_runner, channel_name);
+  // Launch the input thread.
+  scoped_refptr<AutoThreadTaskRunner> input_task_runner =
+      AutoThread::CreateWithType("Input thread", ui_task_runner,
+                                 MessageLoop::TYPE_IO);
+
+  DesktopProcess desktop_process(ui_task_runner,
+                                 input_task_runner,
+                                 channel_name);
 
   // Create a platform-dependent environment factory.
   scoped_ptr<DesktopEnvironmentFactory> desktop_environment_factory;
 #if defined(OS_WIN)
   desktop_environment_factory.reset(
       new SessionDesktopEnvironmentFactory(
+          ui_task_runner,
+          input_task_runner,
+          ui_task_runner,
           base::Bind(&DesktopProcess::InjectSas,
                      desktop_process.AsWeakPtr())));
 #else  // !defined(OS_WIN)
-  desktop_environment_factory.reset(new Me2MeDesktopEnvironmentFactory());
+  desktop_environment_factory.reset(new Me2MeDesktopEnvironmentFactory(
+      ui_task_runner,
+      input_task_runner,
+      ui_task_runner));
 #endif  // !defined(OS_WIN)
 
   if (!desktop_process.Start(desktop_environment_factory.Pass()))
