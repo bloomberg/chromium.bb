@@ -160,16 +160,16 @@ NSString* const kFadeOutValueKeyPath = @"fadeOutValue";
 }
 
 - (NSImage*)imageForHoverState:(HoverState)hoverState {
-  int imageID = IDR_CLOSE_1;
+  int imageID = IDR_TAB_CLOSE;
   switch (hoverState) {
     case kHoverStateNone:
-      imageID = IDR_CLOSE_1;
+      imageID = IDR_TAB_CLOSE;
       break;
     case kHoverStateMouseOver:
-      imageID = IDR_CLOSE_1_H;
+      imageID = IDR_TAB_CLOSE_H;
       break;
     case kHoverStateMouseDown:
-      imageID = IDR_CLOSE_1_P;
+      imageID = IDR_TAB_CLOSE_P;
       break;
   }
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();

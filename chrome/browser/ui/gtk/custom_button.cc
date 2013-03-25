@@ -355,20 +355,10 @@ gboolean CustomDrawButton::OnCustomExpose(GtkWidget* sender,
 }
 
 // static
-CustomDrawButton* CustomDrawButton::CloseButtonBar(
+CustomDrawButton* CustomDrawButton::CloseButton(
     GtkThemeService* theme_provider) {
-  CustomDrawButton* button = new CustomDrawButton(theme_provider,
-      IDR_CLOSE_1, IDR_CLOSE_1_P, IDR_CLOSE_1_H, 0,
-      GTK_STOCK_CLOSE, GTK_ICON_SIZE_MENU);
-  return button;
-}
-
-// static
-CustomDrawButton* CustomDrawButton::CloseButtonBubble(
-    GtkThemeService* theme_provider) {
-  CustomDrawButton* button = new CustomDrawButton(theme_provider,
-      IDR_CLOSE_2, IDR_CLOSE_2_P, IDR_CLOSE_2_H, 0,
-      GTK_STOCK_CLOSE, GTK_ICON_SIZE_MENU);
+  CustomDrawButton* button = new CustomDrawButton(theme_provider, IDR_CLOSE_BAR,
+      IDR_CLOSE_BAR_P, IDR_CLOSE_BAR_H, 0, GTK_STOCK_CLOSE, GTK_ICON_SIZE_MENU);
   return button;
 }
 

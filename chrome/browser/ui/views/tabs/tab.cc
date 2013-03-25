@@ -461,11 +461,11 @@ Tab::Tab(TabController* controller)
   close_button_ = new TabCloseButton(this);
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   close_button_->SetImage(views::CustomButton::STATE_NORMAL,
-                          rb.GetImageSkiaNamed(IDR_CLOSE_1));
+                          rb.GetImageSkiaNamed(IDR_TAB_CLOSE));
   close_button_->SetImage(views::CustomButton::STATE_HOVERED,
-                          rb.GetImageSkiaNamed(IDR_CLOSE_1_H));
+                          rb.GetImageSkiaNamed(IDR_TAB_CLOSE_H));
   close_button_->SetImage(views::CustomButton::STATE_PRESSED,
-                          rb.GetImageSkiaNamed(IDR_CLOSE_1_P));
+                          rb.GetImageSkiaNamed(IDR_TAB_CLOSE_P));
   close_button_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
   // Disable animation so that the red danger sign shows up immediately
@@ -1090,8 +1090,8 @@ void Tab::PaintTab(gfx::Canvas* canvas) {
     close_button_color_ = title_color;
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     close_button_->SetBackground(close_button_color_,
-        rb.GetImageSkiaNamed(IDR_CLOSE_1),
-        rb.GetImageSkiaNamed(IDR_CLOSE_1_MASK));
+        rb.GetImageSkiaNamed(IDR_TAB_CLOSE),
+        rb.GetImageSkiaNamed(IDR_TAB_CLOSE_MASK));
   }
 }
 

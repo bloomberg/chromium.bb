@@ -197,14 +197,9 @@ class CustomDrawButton : public content::NotificationObserver {
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // Returns a standard close button used for infobars and shelves (smaller
-  // with red hover).
-  // Pass a |theme_provider| to use Gtk icons in Gtk rendering mode.
-  static CustomDrawButton* CloseButtonBar(GtkThemeService* theme_provider);
-
-  // Returns a standard close button used for bubbles (larger).
-  // Pass a |theme_provider| to use Gtk icons in Gtk rendering mode.
-  static CustomDrawButton* CloseButtonBubble(GtkThemeService* theme_provider);
+  // Returns a standard close button. Pass a |theme_provider| to use Gtk icons
+  // in Gtk rendering mode.
+  static CustomDrawButton* CloseButton(GtkThemeService* theme_provider);
 
  private:
   // Sets the button to themed or not.

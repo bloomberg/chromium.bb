@@ -110,11 +110,11 @@ void OneClickSigninDialogView::InitContent(views::GridLayout* layout) {
 
     close_button_ = new views::ImageButton(this);
     close_button_->SetImage(views::ImageButton::STATE_NORMAL,
-                            rb.GetImageNamed(IDR_CLOSE_2).ToImageSkia());
+                            rb.GetImageNamed(IDR_CLOSE_BAR).ToImageSkia());
     close_button_->SetImage(views::ImageButton::STATE_HOVERED,
-                            rb.GetImageNamed(IDR_CLOSE_2_H).ToImageSkia());
+                            rb.GetImageNamed(IDR_CLOSE_BAR_H).ToImageSkia());
     close_button_->SetImage(views::ImageButton::STATE_PRESSED,
-                            rb.GetImageNamed(IDR_CLOSE_2_P).ToImageSkia());
+                            rb.GetImageNamed(IDR_CLOSE_BAR_P).ToImageSkia());
     layout->AddView(close_button_);
   }
 

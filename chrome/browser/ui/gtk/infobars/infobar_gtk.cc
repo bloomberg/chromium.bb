@@ -83,7 +83,7 @@ InfoBarGtk::InfoBarGtk(InfoBarService* owner, InfoBarDelegate* delegate)
     gtk_box_pack_start(GTK_BOX(hbox_), image, FALSE, FALSE, 0);
   }
 
-  close_button_.reset(CustomDrawButton::CloseButtonBar(theme_service_));
+  close_button_.reset(CustomDrawButton::CloseButton(theme_service_));
   gtk_util::CenterWidgetInHBox(hbox_, close_button_->widget(), true, 0);
   signals_->Connect(close_button_->widget(), "clicked",
                     G_CALLBACK(OnCloseButtonThunk), this);

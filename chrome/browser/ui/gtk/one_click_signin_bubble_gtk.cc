@@ -153,7 +153,7 @@ void OneClickSigninBubbleGtk::InitializeWidgets(
                          pango_attr_weight_new(PANGO_WEIGHT_BOLD));
   gtk_label_set_attributes(GTK_LABEL(header_label_), attributes);
   pango_attr_list_unref(attributes);
-  close_button_.reset(CustomDrawButton::CloseButtonBubble(theme_provider));
+  close_button_.reset(CustomDrawButton::CloseButton(theme_provider));
   g_signal_connect(close_button_->widget(), "clicked",
                    G_CALLBACK(OnClickCloseButtonThunk), this);
 }

@@ -820,8 +820,8 @@ void TabRendererGtk::Layout() {
         close_button_color_ = tab_text_color;
         ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
         close_button_->SetBackground(close_button_color_,
-            rb.GetImageNamed(IDR_CLOSE_1).AsBitmap(),
-            rb.GetImageNamed(IDR_CLOSE_1_MASK).AsBitmap());
+            rb.GetImageNamed(IDR_TAB_CLOSE).AsBitmap(),
+            rb.GetImageNamed(IDR_TAB_CLOSE_MASK).AsBitmap());
       }
     }
   } else {
@@ -1140,7 +1140,8 @@ bool TabRendererGtk::ShouldShowCloseBox() const {
 }
 
 CustomDrawButton* TabRendererGtk::MakeCloseButton() {
-  CustomDrawButton* button = CustomDrawButton::CloseButtonBar(theme_service_);
+  CustomDrawButton* button = new CustomDrawButton(IDR_TAB_CLOSE,
+      IDR_TAB_CLOSE_P, IDR_TAB_CLOSE_H, IDR_TAB_CLOSE);
   button->ForceChromeTheme();
 
   g_signal_connect(button->widget(), "clicked",
@@ -1245,7 +1246,7 @@ void TabRendererGtk::InitResources() {
       IDR_TAB_INACTIVE_LEFT).ToGdkPixbuf();
   tab_inactive_l_height_ = gdk_pixbuf_get_height(tab_inactive_l);
 
-  GdkPixbuf* tab_close = rb.GetNativeImageNamed(IDR_CLOSE_1).ToGdkPixbuf();
+  GdkPixbuf* tab_close = rb.GetNativeImageNamed(IDR_TAB_CLOSE).ToGdkPixbuf();
   close_button_width_ = gdk_pixbuf_get_width(tab_close);
   close_button_height_ = gdk_pixbuf_get_height(tab_close);
 

@@ -80,8 +80,8 @@ html[dir='rtl'] #notification-container {
   background-color: transparent;
   /* TODO(estade): this should animate between states. */
   background-image: -webkit-image-set(
-      url('../../../../ui/resources/default_100_percent/close_2.png') 1x,
-      url('../../../../ui/resources/default_200_percent/close_2.png') 2x);
+      url('../../../../ui/resources/default_100_percent/close_bar.png') 1x,
+      url('../../../../ui/resources/default_200_percent/close_bar.png') 2x);
   border: 0;
   cursor: default;
   display: inline-block;
@@ -93,15 +93,17 @@ html[dir='rtl'] #notification-container {
 .close-button:hover,
 .close-button:focus {
   background-image: -webkit-image-set(
-      url('../../../../ui/resources/default_100_percent/close_2_hover.png') 1x,
-      url('../../../../ui/resources/default_200_percent/close_2_hover.png') 2x);
+      url('../../../../ui/resources/default_100_percent/close_bar_hover.png')
+          1x,
+      url('../../../../ui/resources/default_200_percent/close_bar_hover.png')
+          2x);
 }
 
 .close-button:active {
   background-image: -webkit-image-set(
-      url('../../../../ui/resources/default_100_percent/close_2_pressed.png')
+      url('../../../../ui/resources/default_100_percent/close_bar_pressed.png')
           1x,
-      url('../../../../ui/resources/default_200_percent/close_2_pressed.png')
+      url('../../../../ui/resources/default_200_percent/close_bar_pressed.png')
           2x);
 }
 

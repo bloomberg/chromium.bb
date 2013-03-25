@@ -236,11 +236,11 @@ class InstalledBubbleContent : public views::View,
     // Add the Close button (for all flavors).
     close_button_ = new views::ImageButton(this);
     close_button_->SetImage(views::CustomButton::STATE_NORMAL,
-        rb.GetImageSkiaNamed(IDR_CLOSE_2));
+        rb.GetImageSkiaNamed(IDR_CLOSE_BAR));
     close_button_->SetImage(views::CustomButton::STATE_HOVERED,
-        rb.GetImageSkiaNamed(IDR_CLOSE_2_H));
+        rb.GetImageSkiaNamed(IDR_CLOSE_BAR_H));
     close_button_->SetImage(views::CustomButton::STATE_PRESSED,
-        rb.GetImageSkiaNamed(IDR_CLOSE_2_P));
+        rb.GetImageSkiaNamed(IDR_CLOSE_BAR_P));
     AddChildView(close_button_);
   }
 

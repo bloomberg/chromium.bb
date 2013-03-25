@@ -123,11 +123,11 @@ class BundleInstalledBubble : public views::BubbleDelegateView,
 
     views::ImageButton* button = new views::ImageButton(listener);
     button->SetImage(views::CustomButton::STATE_NORMAL,
-                     rb.GetImageSkiaNamed(IDR_CLOSE_2));
+                     rb.GetImageSkiaNamed(IDR_CLOSE_BAR));
     button->SetImage(views::CustomButton::STATE_HOVERED,
-                     rb.GetImageSkiaNamed(IDR_CLOSE_2_H));
+                     rb.GetImageSkiaNamed(IDR_CLOSE_BAR_H));
     button->SetImage(views::CustomButton::STATE_PRESSED,
-                     rb.GetImageSkiaNamed(IDR_CLOSE_2_P));
+                     rb.GetImageSkiaNamed(IDR_CLOSE_BAR_P));
     layout->AddView(button);
   }
 
