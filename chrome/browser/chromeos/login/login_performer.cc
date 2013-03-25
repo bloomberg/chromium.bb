@@ -16,6 +16,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
+#include "chrome/browser/chromeos/login/managed/locally_managed_user_login_flow.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
@@ -280,6 +281,10 @@ void LoginPerformer::LoginAsLocallyManagedUser(
   DCHECK_EQ(UserManager::kLocallyManagedUserDomain,
             gaia::ExtractDomainName(credentials.username));
   // TODO(nkostylev): Check that policy allows locally managed user login.
+
+  UserManager::Get()->SetUserFlow(credentials.username,
+                                  new LocallyManagedUserLoginFlow(
+                                      credentials.username));
   authenticator_ = LoginUtils::Get()->CreateAuthenticator(this);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,

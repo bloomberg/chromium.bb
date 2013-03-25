@@ -55,6 +55,7 @@ bool LocallyManagedUserCreationFlow::HandlePasswordChangeDetected(
 }
 
 void LocallyManagedUserCreationFlow::LaunchExtraSteps(
+    Profile* profile,
     LoginDisplayHost* host) {
   GetScreen(host)->OnManagerSignIn();
 }

@@ -425,6 +425,8 @@
         'browser/chromeos/login/managed/locally_managed_user_creation_flow.h',
         'browser/chromeos/login/managed/locally_managed_user_creation_screen.cc',
         'browser/chromeos/login/managed/locally_managed_user_creation_screen.h',
+        'browser/chromeos/login/managed/locally_managed_user_login_flow.cc',
+        'browser/chromeos/login/managed/locally_managed_user_login_flow.h',
         'browser/chromeos/login/managed/managed_user_authenticator.cc',
         'browser/chromeos/login/managed/managed_user_authenticator.h',
         'browser/chromeos/login/merge_session_load_page.cc',
