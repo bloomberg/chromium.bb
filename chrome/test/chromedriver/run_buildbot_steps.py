@@ -114,10 +114,10 @@ def MaybeRelease(revision):
     sys.executable,
     os.path.join(_THIS_DIR, 'third_party', 'googlecode',
                  'googlecode_upload.py'),
-    '--summary', 'alpha version of ChromeDriver2 r%s' % revision,
+    '--summary', 'version of ChromeDriver2 r%s' % revision,
     '--project', 'chromedriver',
     '--user', 'chromedriver.bot@gmail.com',
-    '--label', 'Release-Alpha',
+    '--label', 'Release',
     zip_path
   ]
   with open(os.devnull, 'wb') as no_output:
