@@ -2294,8 +2294,8 @@ public:
 
         // The expecations are based on the assumption that the default
         // LCD settings are:
-        EXPECT_EQ(true, layer_tree_host()->settings().can_use_lcd_text);
-        EXPECT_EQ(false, root_layer->can_use_lcd_text());
+        EXPECT_TRUE(layer_tree_host()->settings().can_use_lcd_text);
+        EXPECT_FALSE(root_layer->can_use_lcd_text());
 
         LayerTreeHostTest::SetupTree();
     }
@@ -2314,7 +2314,7 @@ public:
             EXPECT_EQ(1, client_.lcd_notification_count());
             EXPECT_EQ(1, client_.paint_count());
             // LCD text must have been enabled on the layer.
-            EXPECT_EQ(true, layer_tree_host()->root_layer()->can_use_lcd_text());
+            EXPECT_TRUE(layer_tree_host()->root_layer()->can_use_lcd_text());
             PostSetNeedsCommitToMainThread();
             break;
         case 2:
@@ -2323,7 +2323,7 @@ public:
             EXPECT_EQ(1, client_.lcd_notification_count());
             EXPECT_EQ(1, client_.paint_count());
             // LCD text must not have changed.
-            EXPECT_EQ(true, layer_tree_host()->root_layer()->can_use_lcd_text());
+            EXPECT_TRUE(layer_tree_host()->root_layer()->can_use_lcd_text());
             // Change layer opacity that should trigger lcd notification.
             layer_tree_host()->root_layer()->SetOpacity(0.5);
             // No need to request a commit - setting opacity will do it.
@@ -2337,7 +2337,7 @@ public:
             // Paint count should be incremented due to invalidation.
             EXPECT_EQ(2, client_.paint_count());
             // LCD text must have been disabled on the layer due to opacity.
-            EXPECT_EQ(false, layer_tree_host()->root_layer()->can_use_lcd_text());
+            EXPECT_FALSE(layer_tree_host()->root_layer()->can_use_lcd_text());
             EndTest();
             break;
         }
