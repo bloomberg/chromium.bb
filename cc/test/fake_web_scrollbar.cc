@@ -6,10 +6,6 @@
 
 namespace cc {
 
-void FakeWebScrollbar::setOverlay(bool is_overlay) {
-  is_overlay_ = is_overlay;
-}
-
 bool FakeWebScrollbar::isOverlay() const {
   return is_overlay_;
 }

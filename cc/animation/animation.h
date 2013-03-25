@@ -80,7 +80,7 @@ class CC_EXPORT Animation {
   void Suspend(double monotonic_time);
   void Resume(double monotonic_time);
 
-  // If alternatesDirection is true, on odd numbered iterations we reverse the
+  // If alternates_direction is true, on odd numbered iterations we reverse the
   // curve.
   bool alternates_direction() const { return alternates_direction_; }
   void set_alternates_direction(bool alternates) {
@@ -164,7 +164,7 @@ class CC_EXPORT Animation {
   // purposes.
   bool suspended_;
 
-  // These are used in trimTimeToCurrentIteration to account for time
+  // These are used in TrimTimeToCurrentIteration to account for time
   // spent while paused. This is not included in AnimationState since it
   // there is absolutely no need for clients of this controller to know
   // about these values.

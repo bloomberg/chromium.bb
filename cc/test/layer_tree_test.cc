@@ -320,7 +320,7 @@ LayerTreeTest::~LayerTreeTest() {}
 
 void LayerTreeTest::EndTest() {
   // For the case where we EndTest during BeginTest(), set a flag to indicate
-  // that the test should end the second beginTest regains control.
+  // that the test should end the second BeginTest regains control.
   if (beginning_) {
     end_when_begin_returns_ = true;
   } else if (proxy()) {

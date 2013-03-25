@@ -63,12 +63,12 @@ void NinePatchLayer::Update(ResourceUpdateQueue* queue,
 
   if (resource_ &&
       (bitmap_dirty_ || resource_->texture()->resource_id() == 0)) {
-    gfx::Rect contentRect(gfx::Point(),
-                          gfx::Size(bitmap_.width(), bitmap_.height()));
+    gfx::Rect content_rect(gfx::Point(),
+                           gfx::Size(bitmap_.width(), bitmap_.height()));
     ResourceUpdate upload = ResourceUpdate::Create(resource_->texture(),
                                                    &bitmap_,
-                                                   contentRect,
-                                                   contentRect,
+                                                   content_rect,
+                                                   content_rect,
                                                    gfx::Vector2d());
     queue->AppendFullUpload(upload);
     bitmap_dirty_ = false;

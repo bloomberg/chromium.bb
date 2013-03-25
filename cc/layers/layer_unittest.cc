@@ -26,15 +26,15 @@ using ::testing::Mock;
 using ::testing::StrictMock;
 using ::testing::_;
 
-#define EXPECT_SET_NEEDS_COMMIT(expect, codeToTest) do {                \
+#define EXPECT_SET_NEEDS_COMMIT(expect, code_to_test) do {                \
     EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times((expect));   \
-    codeToTest;                                                         \
+    code_to_test;                                                         \
     Mock::VerifyAndClearExpectations(layer_tree_host_.get());           \
   } while (false)
 
-#define EXPECT_SET_NEEDS_FULL_TREE_SYNC(expect, codeToTest) do {        \
+#define EXPECT_SET_NEEDS_FULL_TREE_SYNC(expect, code_to_test) do {        \
     EXPECT_CALL(*layer_tree_host_, SetNeedsFullTreeSync()).Times((expect)); \
-    codeToTest;                                                         \
+    code_to_test;                                                         \
     Mock::VerifyAndClearExpectations(layer_tree_host_.get());           \
   } while (false)
 
@@ -392,9 +392,9 @@ TEST_F(LayerTest, SetChildren) {
   scoped_refptr<Layer> child1 = Layer::Create();
   scoped_refptr<Layer> child2 = Layer::Create();
 
-  std::vector<scoped_refptr<Layer> > newChildren;
-  newChildren.push_back(child1);
-  newChildren.push_back(child2);
+  std::vector<scoped_refptr<Layer> > new_children;
+  new_children.push_back(child1);
+  new_children.push_back(child2);
 
   // Set up and verify initial test conditions: child1 has a parent, child2 has
   // no parent.
@@ -406,7 +406,7 @@ TEST_F(LayerTest, SetChildren) {
   new_parent->SetLayerTreeHost(layer_tree_host_.get());
 
   EXPECT_SET_NEEDS_FULL_TREE_SYNC(
-      AtLeast(1), new_parent->SetChildren(newChildren));
+      AtLeast(1), new_parent->SetChildren(new_children));
 
   ASSERT_EQ(2U, new_parent->children().size());
   EXPECT_EQ(new_parent.get(), child1->parent());
@@ -471,7 +471,7 @@ TEST_F(LayerTest, GetRootLayerAfterTreeManipulations) {
 }
 
 TEST_F(LayerTest, CheckSetNeedsDisplayCausesCorrectBehavior) {
-  // The semantics for setNeedsDisplay which are tested here:
+  // The semantics for SetNeedsDisplay which are tested here:
   //   1. sets NeedsDisplay flag appropriately.
   //   2. indirectly calls SetNeedsCommit, exactly once for each call to
   //      SetNeedsDisplay.
@@ -566,7 +566,7 @@ TEST_F(LayerTest, CheckPropertyChangeCausesCorrectBehavior) {
   EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, test_layer->SetReplicaLayer(
       dummy_layer2.get()));
 
-  // The above tests should not have caused a change to the needsDisplay flag.
+  // The above tests should not have caused a change to the needs_display flag.
   EXPECT_FALSE(test_layer->NeedsDisplayForTesting());
 
   // As layers are removed from the tree, they will cause a tree sync.
@@ -587,7 +587,7 @@ TEST_F(LayerTest, SetBoundsTriggersSetNeedsRedrawAfterGettingNonEmptyBounds) {
   test_layer->ResetNeedsDisplayForTesting();
   EXPECT_FALSE(test_layer->NeedsDisplayForTesting());
 
-  // Calling setBounds only invalidates on the first time.
+  // Calling SetBounds only invalidates on the first time.
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetBounds(gfx::Size(7, 10)));
   EXPECT_FALSE(test_layer->NeedsDisplayForTesting());
 }

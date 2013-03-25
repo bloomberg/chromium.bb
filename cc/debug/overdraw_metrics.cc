@@ -46,13 +46,13 @@ static inline float PolygonArea(gfx::PointF points[8], int num_points) {
 // of the resulting polygon.
 static inline float AreaOfMappedQuad(const gfx::Transform& transform,
                                      const gfx::QuadF& quad) {
-  gfx::PointF clippedQuad[8];
+  gfx::PointF clipped_quad[8];
   int num_vertices_in_clipped_quad = 0;
   MathUtil::MapClippedQuad(transform,
                            quad,
-                           clippedQuad,
+                           clipped_quad,
                            num_vertices_in_clipped_quad);
-  return PolygonArea(clippedQuad, num_vertices_in_clipped_quad);
+  return PolygonArea(clipped_quad, num_vertices_in_clipped_quad);
 }
 
 void OverdrawMetrics::DidPaint(gfx::Rect painted_rect) {

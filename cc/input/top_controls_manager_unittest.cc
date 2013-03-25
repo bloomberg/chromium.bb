@@ -73,7 +73,7 @@ class MockTopControlsManagerClient : public TopControlsManagerClient {
   float top_controls_hide_threshold_;
 };
 
-TEST(TopControlsManagerTest, ensureScrollThresholdApplied) {
+TEST(TopControlsManagerTest, EnsureScrollThresholdApplied) {
   MockTopControlsManagerClient client(0.5f, 0.5f);
   TopControlsManager* manager = client.manager();
 
@@ -117,7 +117,7 @@ TEST(TopControlsManagerTest, ensureScrollThresholdApplied) {
   manager->ScrollEnd();
 }
 
-TEST(TopControlsManagerTest, partialShownHideAnimation) {
+TEST(TopControlsManagerTest, PartialShownHideAnimation) {
   MockTopControlsManagerClient client(0.5f, 0.5f);
   TopControlsManager* manager = client.manager();
   manager->ScrollBegin();
@@ -147,7 +147,7 @@ TEST(TopControlsManagerTest, partialShownHideAnimation) {
   EXPECT_EQ(0.f, manager->content_top_offset());
 }
 
-TEST(TopControlsManagerTest, partialShownShowAnimation) {
+TEST(TopControlsManagerTest, PartialShownShowAnimation) {
   MockTopControlsManagerClient client(0.5f, 0.5f);
   TopControlsManager* manager = client.manager();
   manager->ScrollBegin();
@@ -177,7 +177,7 @@ TEST(TopControlsManagerTest, partialShownShowAnimation) {
   EXPECT_EQ(100.f, manager->content_top_offset());
 }
 
-TEST(TopControlsManagerTest, partialHiddenWithAmbiguousThresholdShows) {
+TEST(TopControlsManagerTest, PartialHiddenWithAmbiguousThresholdShows) {
   MockTopControlsManagerClient client(0.25f, 0.25f);
   TopControlsManager* manager = client.manager();
 
@@ -203,7 +203,7 @@ TEST(TopControlsManagerTest, partialHiddenWithAmbiguousThresholdShows) {
   EXPECT_EQ(100.f, manager->content_top_offset());
 }
 
-TEST(TopControlsManagerTest, partialHiddenWithAmbiguousThresholdHides) {
+TEST(TopControlsManagerTest, PartialHiddenWithAmbiguousThresholdHides) {
   MockTopControlsManagerClient client(0.25f, 0.25f);
   TopControlsManager* manager = client.manager();
 
@@ -229,7 +229,7 @@ TEST(TopControlsManagerTest, partialHiddenWithAmbiguousThresholdHides) {
   EXPECT_EQ(0.f, manager->content_top_offset());
 }
 
-TEST(TopControlsManagerTest, partialShownWithAmbiguousThresholdHides) {
+TEST(TopControlsManagerTest, PartialShownWithAmbiguousThresholdHides) {
   MockTopControlsManagerClient client(0.25f, 0.25f);
   TopControlsManager* manager = client.manager();
 
@@ -259,7 +259,7 @@ TEST(TopControlsManagerTest, partialShownWithAmbiguousThresholdHides) {
   EXPECT_EQ(0.f, manager->content_top_offset());
 }
 
-TEST(TopControlsManagerTest, partialShownWithAmbiguousThresholdShows) {
+TEST(TopControlsManagerTest, PartialShownWithAmbiguousThresholdShows) {
   MockTopControlsManagerClient client(0.25f, 0.25f);
   TopControlsManager* manager = client.manager();
 

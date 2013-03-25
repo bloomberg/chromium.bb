@@ -218,8 +218,8 @@ TEST_F(SoftwareRendererTest, ShouldClearRootRenderPass) {
   // Draw a fullscreen green quad in a first frame.
   RenderPass::Id root_clear_pass_id(1, 0);
   TestRenderPass* root_clear_pass =
-      addRenderPass(list, root_clear_pass_id, viewport_rect, gfx::Transform());
-  addQuad(root_clear_pass, viewport_rect, SK_ColorGREEN);
+      AddRenderPass(list, root_clear_pass_id, viewport_rect, gfx::Transform());
+  AddQuad(root_clear_pass, viewport_rect, SK_ColorGREEN);
 
   renderer()->DecideRenderPassAllocationsForFrame(list);
   renderer()->DrawFrame(list);
@@ -235,9 +235,9 @@ TEST_F(SoftwareRendererTest, ShouldClearRootRenderPass) {
   gfx::Rect smaller_rect(20, 20, 60, 60);
 
   RenderPass::Id root_smaller_pass_id(2, 0);
-  TestRenderPass* root_smaller_pass = addRenderPass(
+  TestRenderPass* root_smaller_pass = AddRenderPass(
       list, root_smaller_pass_id, viewport_rect, gfx::Transform());
-  addQuad(root_smaller_pass, smaller_rect, SK_ColorMAGENTA);
+  AddQuad(root_smaller_pass, smaller_rect, SK_ColorMAGENTA);
 
   renderer()->DecideRenderPassAllocationsForFrame(list);
   renderer()->DrawFrame(list);

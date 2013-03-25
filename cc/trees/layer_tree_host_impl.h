@@ -139,7 +139,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandlerClient,
   void SetAnticipatedDrawTime(base::TimeTicks time);
 
   // Returns false if problems occured preparing the frame, and we should try
-  // to avoid displaying the frame. If prepareToDraw is called, DidDrawAllLayers
+  // to avoid displaying the frame. If PrepareToDraw is called, DidDrawAllLayers
   // must also be called, regardless of whether DrawLayers is called between the
   // two.
   virtual bool PrepareToDraw(FrameData* frame);
@@ -250,7 +250,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandlerClient,
   void SendManagedMemoryStats(
       size_t memory_visible_bytes,
       size_t memory_visible_and_nearby_bytes,
-      size_t memoryUseBytes);
+      size_t memory_use_bytes);
 
   FrameRateCounter* fps_counter() {
     return fps_counter_.get();
@@ -365,17 +365,17 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandlerClient,
   void AnimateTopControls(base::TimeTicks monotonic_time);
 
   gfx::Vector2dF ScrollLayerWithViewportSpaceDelta(
-      LayerImpl* layerImpl,
-      float scaleFromViewportToScreenSpace,
-      gfx::PointF viewportPoint,
-      gfx::Vector2dF viewportDelta);
+      LayerImpl* layer_impl,
+      float scale_from_viewport_to_screen_space,
+      gfx::PointF viewport_point,
+      gfx::Vector2dF viewport_delta);
 
   void UpdateMaxScrollOffset();
   void TrackDamageForAllSurfaces(LayerImpl* root_draw_layer,
                                  const LayerList& render_surface_layer_list);
 
   // Returns false if the frame should not be displayed. This function should
-  // only be called from prepareToDraw, as didDrawAllLayers must be called
+  // only be called from PrepareToDraw, as DidDrawAllLayers must be called
   // if this helper function is called.
   bool CalculateRenderPasses(FrameData* frame);
   void SetBackgroundTickingEnabled(bool enabled);

@@ -97,7 +97,7 @@ void LayerAnimationController::SuspendAnimations(double monotonic_time) {
 }
 
 // Looking at GraphicsLayerCA, this appears to be the analog to
-// suspendAnimations, which is for testing.
+// SuspendAnimations, which is for testing.
 void LayerAnimationController::ResumeAnimations(double monotonic_time) {
   for (size_t i = 0; i < active_animations_.size(); ++i) {
     if (active_animations_[i]->run_state() == Animation::Paused)

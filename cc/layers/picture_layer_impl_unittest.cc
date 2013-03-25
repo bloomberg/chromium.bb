@@ -138,7 +138,7 @@ class MockCanvas : public SkCanvas {
   explicit MockCanvas(SkDevice* device) : SkCanvas(device) {}
 
   virtual void drawRect(const SkRect& rect, const SkPaint& paint) OVERRIDE {
-    // Capture calls before SkCanvas quickReject kicks in
+    // Capture calls before SkCanvas quickReject() kicks in.
     rects_.push_back(rect);
   }
 
@@ -254,13 +254,13 @@ class PictureLayerImplTest : public testing::Test {
     SkBitmap store;
     store.setConfig(SkBitmap::kNo_Config, 1000, 1000);
     SkDevice device(store);
-    int64 pixelsRasterized;
+    int64 pixels_rasterized;
 
     std::vector<SkRect>::const_iterator rect_iter = rects.begin();
     for (tile_iter = tiles.begin(); tile_iter < tiles.end(); tile_iter++) {
       MockCanvas mock_canvas(&device);
       active_pile->Raster(&mock_canvas, (*tile_iter)->content_rect(),
-          1.0f, &pixelsRasterized);
+          1.0f, &pixels_rasterized);
 
       // This test verifies that when drawing the contents of a specific tile
       // at content scale 1.0, the playback canvas never receives content from
@@ -283,17 +283,17 @@ class PictureLayerImplTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(PictureLayerImplTest);
 };
 
-TEST_F(PictureLayerImplTest, tileGridAlignment) {
+TEST_F(PictureLayerImplTest, TileGridAlignment) {
   host_impl_.SetDeviceScaleFactor(1.f);
   TestTileGridAlignmentCommon();
 }
 
-TEST_F(PictureLayerImplTest, tileGridAlignmentHiDPI) {
+TEST_F(PictureLayerImplTest, TileGridAlignmentHiDPI) {
   host_impl_.SetDeviceScaleFactor(2.f);
   TestTileGridAlignmentCommon();
 }
 
-TEST_F(PictureLayerImplTest, cloneNoInvalidation) {
+TEST_F(PictureLayerImplTest, CloneNoInvalidation) {
   gfx::Size tile_size(100, 100);
   gfx::Size layer_bounds(400, 400);
 
@@ -316,7 +316,7 @@ TEST_F(PictureLayerImplTest, cloneNoInvalidation) {
     VerifyAllTilesExistAndHavePile(tilings.tiling_at(i), active_pile.get());
 }
 
-TEST_F(PictureLayerImplTest, clonePartialInvalidation) {
+TEST_F(PictureLayerImplTest, ClonePartialInvalidation) {
   gfx::Size tile_size(100, 100);
   gfx::Size layer_bounds(400, 400);
   gfx::Rect layer_invalidation(150, 200, 30, 180);
@@ -354,7 +354,7 @@ TEST_F(PictureLayerImplTest, clonePartialInvalidation) {
   }
 }
 
-TEST_F(PictureLayerImplTest, cloneFullInvalidation) {
+TEST_F(PictureLayerImplTest, CloneFullInvalidation) {
   gfx::Size tile_size(90, 80);
   gfx::Size layer_bounds(300, 500);
 
@@ -377,7 +377,7 @@ TEST_F(PictureLayerImplTest, cloneFullInvalidation) {
     VerifyAllTilesExistAndHavePile(tilings.tiling_at(i), pending_pile.get());
 }
 
-TEST_F(PictureLayerImplTest, noInvalidationBoundsChange) {
+TEST_F(PictureLayerImplTest, NoInvalidationBoundsChange) {
   gfx::Size tile_size(90, 80);
   gfx::Size active_layer_bounds(300, 500);
   gfx::Size pending_layer_bounds(400, 800);
@@ -418,7 +418,7 @@ TEST_F(PictureLayerImplTest, noInvalidationBoundsChange) {
   }
 }
 
-TEST_F(PictureLayerImplTest, addTilesFromNewRecording) {
+TEST_F(PictureLayerImplTest, AddTilesFromNewRecording) {
   gfx::Size tile_size(400, 400);
   gfx::Size layer_bounds(1300, 1900);
 

@@ -155,7 +155,7 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
   EXPECT_TRUE(child->LayerPropertyChanged());
   EXPECT_TRUE(grand_child->LayerPropertyChanged());
 
-  // Special case: check that setBounds changes behavior depending on
+  // Special case: check that SetBounds changes behavior depending on
   // masksToBounds.
   root->SetMasksToBounds(false);
   EXECUTE_AND_VERIFY_ONLY_LAYER_CHANGED(root->SetBounds(gfx::Size(135, 246)));

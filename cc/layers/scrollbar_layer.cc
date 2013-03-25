@@ -30,22 +30,22 @@ scoped_refptr<ScrollbarLayer> ScrollbarLayer::Create(
     scoped_ptr<WebKit::WebScrollbar> scrollbar,
     scoped_ptr<ScrollbarThemePainter> painter,
     scoped_ptr<WebKit::WebScrollbarThemeGeometry> geometry,
-    int scrollLayerId) {
+    int scroll_layer_id) {
   return make_scoped_refptr(new ScrollbarLayer(scrollbar.Pass(),
                                                painter.Pass(),
                                                geometry.Pass(),
-                                               scrollLayerId));
+                                               scroll_layer_id));
 }
 
 ScrollbarLayer::ScrollbarLayer(
     scoped_ptr<WebKit::WebScrollbar> scrollbar,
     scoped_ptr<ScrollbarThemePainter> painter,
     scoped_ptr<WebKit::WebScrollbarThemeGeometry> geometry,
-    int scrollLayerId)
+    int scroll_layer_id)
     : scrollbar_(scrollbar.Pass()),
       painter_(painter.Pass()),
       geometry_(geometry.Pass()),
-      scroll_layer_id_(scrollLayerId),
+      scroll_layer_id_(scroll_layer_id),
       texture_format_(GL_INVALID_ENUM) {
   if (!scrollbar_->isOverlay())
     SetShouldScrollOnMainThread(true);
@@ -96,15 +96,15 @@ void ScrollbarLayer::CalculateContentsScale(float ideal_contents_scale,
                                             bool animating_transform_to_screen,
                                             float* contents_scale_x,
                                             float* contents_scale_y,
-                                            gfx::Size* contentBounds) {
+                                            gfx::Size* content_bounds) {
   ContentsScalingLayer::CalculateContentsScale(
       ClampScaleToMaxTextureSize(ideal_contents_scale),
       animating_transform_to_screen,
       contents_scale_x,
       contents_scale_y,
-      contentBounds);
-  DCHECK_LE(contentBounds->width(), MaxTextureSize());
-  DCHECK_LE(contentBounds->height(), MaxTextureSize());
+      content_bounds);
+  DCHECK_LE(content_bounds->width(), MaxTextureSize());
+  DCHECK_LE(content_bounds->height(), MaxTextureSize());
 }
 
 void ScrollbarLayer::PushPropertiesTo(LayerImpl* layer) {
@@ -134,7 +134,7 @@ void ScrollbarLayer::PushPropertiesTo(LayerImpl* layer) {
   else
     scrollbar_layer->set_thumb_resource_id(0);
 
-  // Pinch zoom scrollbarLayerImpl does not get its scroll_layer_id_
+  // Pinch zoom ScrollbarLayerImpl does not get its scroll_layer_id_
   // set in LayerImpl, so we need to push it here.
   if (scroll_layer_id_ == Layer::PINCH_ZOOM_ROOT_SCROLL_LAYER_ID)
     scrollbar_layer->set_scroll_layer_id(scroll_layer_id_);
@@ -338,7 +338,7 @@ void ScrollbarLayer::UpdatePart(CachingBitmapContentLayerUpdater* painter,
   if (!painter->pixels_did_change() &&
       resource->texture()->have_backing_texture()) {
     TRACE_EVENT_INSTANT0("cc",
-                         "ScrollbarLayer::updatePart no texture upload needed");
+                         "ScrollbarLayer::UpdatePart no texture upload needed");
     return;
   }
 

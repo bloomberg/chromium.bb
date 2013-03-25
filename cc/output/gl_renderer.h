@@ -156,7 +156,7 @@ class CC_EXPORT GLRenderer :
                                 const gfx::Transform& draw_matrix);
 
   // Check if quad needs antialiasing and if so, inflate the quad and
-  // fill edge array for fragment shader.  localQuad is set to
+  // fill edge array for fragment shader.  local_quad is set to
   // inflated quad if antialiasing is required, otherwise it is left
   // unchanged.  edge array is filled with inflated quad's edge data
   // if antialiasing is required, otherwise it is left unchanged.

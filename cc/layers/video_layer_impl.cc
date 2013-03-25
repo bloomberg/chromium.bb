@@ -86,11 +86,11 @@ void VideoLayerImpl::WillDraw(ResourceProvider* resource_provider) {
 
 
   // Explicitly acquire and release the provider mutex so it can be held from
-  // willDraw to didDraw. Since the compositor thread is in the middle of
-  // drawing, the layer will not be destroyed before didDraw is called.
+  // WillDraw to DidDraw. Since the compositor thread is in the middle of
+  // drawing, the layer will not be destroyed before DidDraw is called.
   // Therefore, the only thing that will prevent this lock from being released
   // is the GPU process locking it. As the GPU process can't cause the
-  // destruction of the provider (calling stopUsingProvider), holding this
+  // destruction of the provider (calling StopUsingProvider), holding this
   // lock should not cause a deadlock.
   frame_ = provider_client_impl_->AcquireLockAndCurrentFrame();
 

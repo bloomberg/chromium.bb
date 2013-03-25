@@ -10,9 +10,9 @@
 
 namespace cc {
 
-// This class records the contentRect into an SkPicture, then software
+// This class records the content_rect into an SkPicture, then software
 // rasterizes the SkPicture into bitmaps for each tile. This implements
-// Settings::perTilePainting.
+// LayerTreeSettingSettings::per_tile_painting_enabled.
 class BitmapSkPictureContentLayerUpdater : public SkPictureContentLayerUpdater {
  public:
   class Resource : public ContentLayerUpdater::Resource {

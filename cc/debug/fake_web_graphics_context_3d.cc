@@ -41,7 +41,7 @@ bool FakeWebGraphicsContext3D::isGLES2Compliant() {
 
 bool FakeWebGraphicsContext3D::readBackFramebuffer(
     unsigned char* pixels,
-    size_t bufferSize,
+    size_t buffer_size,
     WebGLId framebuffer,
     int width,
     int height) {

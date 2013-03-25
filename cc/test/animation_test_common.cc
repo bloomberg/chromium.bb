@@ -21,27 +21,27 @@ using cc::TransformKeyframe;
 
 namespace cc {
 
-static int nextAnimationId = 0;
+static int s_next_animation_id = 0;
 
 template <class Target>
 int AddOpacityTransition(Target* target,
                          double duration,
-                         float startOpacity,
-                         float endOpacity,
-                         bool useTimingFunction) {
+                         float start_opacity,
+                         float end_opacity,
+                         bool use_timing_function) {
   scoped_ptr<KeyframedFloatAnimationCurve>
       curve(KeyframedFloatAnimationCurve::Create());
 
   scoped_ptr<TimingFunction> func;
-  if (!useTimingFunction)
+  if (!use_timing_function)
     func = EaseTimingFunction::Create();
   if (duration > 0.0)
-    curve->AddKeyframe(FloatKeyframe::Create(0.0, startOpacity, func.Pass()));
+    curve->AddKeyframe(FloatKeyframe::Create(0.0, start_opacity, func.Pass()));
   curve->AddKeyframe(FloatKeyframe::Create(duration,
-                                           endOpacity,
+                                           end_opacity,
                                            scoped_ptr<cc::TimingFunction>()));
 
-  int id = nextAnimationId++;
+  int id = s_next_animation_id++;
 
   scoped_ptr<Animation> animation(Animation::Create(
       curve.PassAs<AnimationCurve>(),
@@ -57,28 +57,28 @@ int AddOpacityTransition(Target* target,
 template <class Target>
 int AddAnimatedTransform(Target* target,
                          double duration,
-                         int deltaX,
-                         int deltaY) {
+                         int delta_x,
+                         int delta_y) {
   scoped_ptr<KeyframedTransformAnimationCurve>
       curve(KeyframedTransformAnimationCurve::Create());
 
   if (duration > 0.0) {
-    TransformOperations startOperations;
-    startOperations.AppendTranslate(deltaX, deltaY, 0.0);
+    TransformOperations start_operations;
+    start_operations.AppendTranslate(delta_x, delta_y, 0.0);
     curve->AddKeyframe(TransformKeyframe::Create(
         0.0,
-        startOperations,
+        start_operations,
         scoped_ptr<cc::TimingFunction>()));
   }
 
   TransformOperations operations;
-  operations.AppendTranslate(deltaX, deltaY, 0.0);
+  operations.AppendTranslate(delta_x, delta_y, 0.0);
   curve->AddKeyframe(TransformKeyframe::Create(
       duration,
       operations,
       scoped_ptr<cc::TimingFunction>()));
 
-  int id = nextAnimationId++;
+  int id = s_next_animation_id++;
 
   scoped_ptr<Animation> animation(Animation::Create(
       curve.PassAs<AnimationCurve>(),

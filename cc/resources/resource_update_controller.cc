@@ -34,13 +34,13 @@ const double kUploaderBusyTickRate = 0.001;
 const size_t kMaxBlockingUpdateIntervals = 4;
 
 skia::RefPtr<SkCanvas> CreateAcceleratedCanvas(
-    GrContext* gr_context, gfx::Size canvasSize, unsigned textureId) {
+    GrContext* gr_context, gfx::Size canvas_size, unsigned texture_id) {
   GrBackendTextureDesc texture_desc;
   texture_desc.fFlags = kRenderTarget_GrBackendTextureFlag;
-  texture_desc.fWidth = canvasSize.width();
-  texture_desc.fHeight = canvasSize.height();
+  texture_desc.fWidth = canvas_size.width();
+  texture_desc.fHeight = canvas_size.height();
   texture_desc.fConfig = kSkia8888_GrPixelConfig;
-  texture_desc.fTextureHandle = textureId;
+  texture_desc.fTextureHandle = texture_id;
   skia::RefPtr<GrTexture> target =
       skia::AdoptRef(gr_context->wrapBackendTexture(texture_desc));
   skia::RefPtr<SkDevice> device =
@@ -81,8 +81,8 @@ ResourceUpdateController::ResourceUpdateController(
 ResourceUpdateController::~ResourceUpdateController() {}
 
 void ResourceUpdateController::PerformMoreUpdates(
-    base::TimeTicks timeLimit) {
-  time_limit_ = timeLimit;
+    base::TimeTicks time_limit) {
+  time_limit_ = time_limit;
 
   // Update already in progress.
   if (task_posted_)

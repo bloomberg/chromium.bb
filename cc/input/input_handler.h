@@ -41,7 +41,7 @@ class CC_EXPORT InputHandlerClient {
                                    ScrollInputType type) = 0;
 
   // Scroll the selected layer starting at the given position. If the scroll
-  // type given to scrollBegin was a gesture, then the scroll point and delta
+  // type given to ScrollBegin was a gesture, then the scroll point and delta
   // should be in viewport (logical pixel) coordinates. Otherwise they are in
   // scrolling layer's (logical pixel) space. If there is no room to move the
   // layer in the requested direction, its first ancestor layer that can be

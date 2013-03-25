@@ -42,14 +42,14 @@ class ScopedPtrHashMap {
     iterator it = find(key);
     if (it != end())
       erase(it);
-    Value* rawPtr = data.release();
-    return data_.insert(std::pair<Key, Value*>(key, rawPtr));
+    Value* raw_ptr = data.release();
+    return data_.insert(std::pair<Key, Value*>(key, raw_ptr));
   }
 
   // Does nothing if key is already present
   std::pair<iterator, bool> add(Key key, scoped_ptr<Value> data) {
-    Value* rawPtr = data.release();
-    return data_.insert(std::pair<Key, Value*>(key, rawPtr));
+    Value* raw_ptr = data.release();
+    return data_.insert(std::pair<Key, Value*>(key, raw_ptr));
   }
 
   void erase(iterator it) {

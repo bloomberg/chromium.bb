@@ -238,25 +238,25 @@ TEST(RegionTest, ContainsRegion) {
   TEST_NO_CONTAINS(gfx::Rect(10, 10, 1, 1), gfx::Rect(10, 10, 2, 2));
   TEST_NO_CONTAINS(gfx::Rect(10, 10, 1, 1), gfx::Rect(9, 9, 3, 3));
 
-  Region hLines;
+  Region h_lines;
   for (int i = 10; i < 20; i += 2)
-    hLines.Union(gfx::Rect(i, 10, 1, 10));
+    h_lines.Union(gfx::Rect(i, 10, 1, 10));
 
-  TEST_CONTAINS(gfx::Rect(10, 10, 9, 10), hLines);
-  TEST_NO_CONTAINS(gfx::Rect(10, 10, 9, 9), hLines);
-  TEST_NO_CONTAINS(gfx::Rect(10, 11, 9, 9), hLines);
-  TEST_NO_CONTAINS(gfx::Rect(10, 10, 8, 10), hLines);
-  TEST_NO_CONTAINS(gfx::Rect(11, 10, 8, 10), hLines);
+  TEST_CONTAINS(gfx::Rect(10, 10, 9, 10), h_lines);
+  TEST_NO_CONTAINS(gfx::Rect(10, 10, 9, 9), h_lines);
+  TEST_NO_CONTAINS(gfx::Rect(10, 11, 9, 9), h_lines);
+  TEST_NO_CONTAINS(gfx::Rect(10, 10, 8, 10), h_lines);
+  TEST_NO_CONTAINS(gfx::Rect(11, 10, 8, 10), h_lines);
 
-  Region vLines;
+  Region v_lines;
   for (int i = 10; i < 20; i += 2)
-    vLines.Union(gfx::Rect(10, i, 10, 1));
+    v_lines.Union(gfx::Rect(10, i, 10, 1));
 
-  TEST_CONTAINS(gfx::Rect(10, 10, 10, 9), vLines);
-  TEST_NO_CONTAINS(gfx::Rect(10, 10, 9, 9), vLines);
-  TEST_NO_CONTAINS(gfx::Rect(11, 10, 9, 9), vLines);
-  TEST_NO_CONTAINS(gfx::Rect(10, 10, 10, 8), vLines);
-  TEST_NO_CONTAINS(gfx::Rect(10, 11, 10, 8), vLines);
+  TEST_CONTAINS(gfx::Rect(10, 10, 10, 9), v_lines);
+  TEST_NO_CONTAINS(gfx::Rect(10, 10, 9, 9), v_lines);
+  TEST_NO_CONTAINS(gfx::Rect(11, 10, 9, 9), v_lines);
+  TEST_NO_CONTAINS(gfx::Rect(10, 10, 10, 8), v_lines);
+  TEST_NO_CONTAINS(gfx::Rect(10, 11, 10, 8), v_lines);
 
   Region grid;
   for (int i = 10; i < 20; i += 2)
@@ -269,21 +269,21 @@ TEST(RegionTest, ContainsRegion) {
   TEST_NO_CONTAINS(gfx::Rect(10, 10, 8, 9), grid);
   TEST_NO_CONTAINS(gfx::Rect(11, 10, 8, 9), grid);
 
-  TEST_CONTAINS(hLines, hLines);
-  TEST_CONTAINS(vLines, vLines);
-  TEST_NO_CONTAINS(vLines, hLines);
-  TEST_NO_CONTAINS(hLines, vLines);
+  TEST_CONTAINS(h_lines, h_lines);
+  TEST_CONTAINS(v_lines, v_lines);
+  TEST_NO_CONTAINS(v_lines, h_lines);
+  TEST_NO_CONTAINS(h_lines, v_lines);
   TEST_CONTAINS(grid, grid);
-  TEST_CONTAINS(hLines, grid);
-  TEST_CONTAINS(vLines, grid);
-  TEST_NO_CONTAINS(grid, hLines);
-  TEST_NO_CONTAINS(grid, vLines);
+  TEST_CONTAINS(h_lines, grid);
+  TEST_CONTAINS(v_lines, grid);
+  TEST_NO_CONTAINS(grid, h_lines);
+  TEST_NO_CONTAINS(grid, v_lines);
 
   for (int i = 10; i < 20; i += 2)
-    TEST_CONTAINS(hLines, gfx::Rect(i, 10, 1, 10));
+    TEST_CONTAINS(h_lines, gfx::Rect(i, 10, 1, 10));
 
   for (int i = 10; i < 20; i += 2)
-    TEST_CONTAINS(vLines, gfx::Rect(10, i, 10, 1));
+    TEST_CONTAINS(v_lines, gfx::Rect(10, i, 10, 1));
 
   for (int i = 10; i < 20; i += 2)
     for (int j = 10; j < 20; j += 2)

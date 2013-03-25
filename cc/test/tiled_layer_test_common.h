@@ -119,7 +119,7 @@ class FakeTiledLayer : public TiledLayer {
   FakeLayerUpdater* fake_layer_updater() { return fake_updater_.get(); }
   gfx::RectF update_rect() { return update_rect_; }
 
-  // Simulate calcDrawProperties.
+  // Simulate CalcDrawProperties.
   void UpdateContentsScale(float ideal_contents_scale);
 
  protected:

@@ -24,10 +24,10 @@ class CC_EXPORT ScrollbarLayer : public ContentsScalingLayer {
       OVERRIDE;
 
   static scoped_refptr<ScrollbarLayer> Create(
-      scoped_ptr<WebKit::WebScrollbar>,
-      scoped_ptr<ScrollbarThemePainter>,
-      scoped_ptr<WebKit::WebScrollbarThemeGeometry>,
-      int scrollLayerId);
+      scoped_ptr<WebKit::WebScrollbar> scrollbar,
+      scoped_ptr<ScrollbarThemePainter> painter,
+      scoped_ptr<WebKit::WebScrollbarThemeGeometry> geometry,
+      int scroll_layer_id);
 
   int scroll_layer_id() const { return scroll_layer_id_; }
   void SetScrollLayerId(int id);
@@ -48,16 +48,16 @@ class CC_EXPORT ScrollbarLayer : public ContentsScalingLayer {
                                       bool animating_transform_to_screen,
                                       float* contents_scale_x,
                                       float* contents_scale_y,
-                                      gfx::Size* contentBounds) OVERRIDE;
+                                      gfx::Size* content_bounds) OVERRIDE;
 
   virtual ScrollbarLayer* ToScrollbarLayer() OVERRIDE;
 
  protected:
   ScrollbarLayer(
-      scoped_ptr<WebKit::WebScrollbar>,
-      scoped_ptr<ScrollbarThemePainter>,
-      scoped_ptr<WebKit::WebScrollbarThemeGeometry>,
-      int scrollLayerId);
+      scoped_ptr<WebKit::WebScrollbar> scrollbar,
+      scoped_ptr<ScrollbarThemePainter> painter,
+      scoped_ptr<WebKit::WebScrollbarThemeGeometry> geometry,
+      int scroll_layer_id);
   virtual ~ScrollbarLayer();
 
  private:

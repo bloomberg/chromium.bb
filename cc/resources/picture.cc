@@ -17,7 +17,7 @@
 
 namespace {
 // URI label for a lazily decoded SkPixelRef.
-const char labelLazyDecoded[] = "lazy";
+const char kLabelLazyDecoded[] = "lazy";
 
 class DisableLCDTextFilter : public SkDrawFilter {
  public:
@@ -81,15 +81,15 @@ void Picture::CloneForDrawing(int num_threads) {
 
 void Picture::Record(ContentLayerClient* painter,
                      RenderingStats* stats,
-                     const SkTileGridPicture::TileGridInfo& tileGridInfo) {
+                     const SkTileGridPicture::TileGridInfo& tile_grid_info) {
   TRACE_EVENT2("cc", "Picture::Record",
                "width", layer_rect_.width(), "height", layer_rect_.height());
 
   // Record() should only be called once.
   DCHECK(!picture_);
-  DCHECK(!tileGridInfo.fTileInterval.isEmpty());
+  DCHECK(!tile_grid_info.fTileInterval.isEmpty());
   picture_ = skia::AdoptRef(new SkTileGridPicture(
-      layer_rect_.width(), layer_rect_.height(), tileGridInfo));
+      layer_rect_.width(), layer_rect_.height(), tile_grid_info));
 
   SkCanvas* canvas = picture_->beginRecording(
       layer_rect_.width(),
@@ -171,7 +171,7 @@ void Picture::GatherPixelRefs(const gfx::Rect& layer_rect,
   SkPixelRef** refs = reinterpret_cast<SkPixelRef**>(data);
   for (unsigned int i = 0; i < pixel_refs->size() / sizeof(SkPixelRef*); ++i) {
     if (*refs && (*refs)->getURI() && !strncmp(
-        (*refs)->getURI(), labelLazyDecoded, 4)) {
+        (*refs)->getURI(), kLabelLazyDecoded, 4)) {
       pixel_ref_list.push_back(static_cast<skia::LazyPixelRef*>(*refs));
     }
     refs++;

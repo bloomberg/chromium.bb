@@ -79,9 +79,9 @@ scoped_refptr<Layer> ParseTreeFromValue(base::Value* val,
   for (int i = 0; i < 16; ++i)
     success &= list->GetDouble(i, &transform[i]);
 
-  gfx::Transform gfxTransform;
-  gfxTransform.matrix().setColMajord(transform);
-  new_layer->SetTransform(gfxTransform);
+  gfx::Transform layer_transform;
+  layer_transform.matrix().setColMajord(transform);
+  new_layer->SetTransform(layer_transform);
 
   success &= dict->GetList("Children", &list);
   for (ListValue::const_iterator it = list->begin();

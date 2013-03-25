@@ -91,7 +91,7 @@ TEST(ScrollbarLayerTest, ShouldScrollNonOverlayOnMainThread) {
 
   // Create and attach a non-overlay scrollbar.
   scoped_ptr<WebKit::WebScrollbar> scrollbar(FakeWebScrollbar::Create());
-  static_cast<FakeWebScrollbar*>(scrollbar.get())->setOverlay(false);
+  static_cast<FakeWebScrollbar*>(scrollbar.get())->set_overlay(false);
   scoped_ptr<LayerImpl> layer_impl_tree_root =
       LayerImplForScrollAreaAndScrollbar(&host_impl, scrollbar.Pass(), false);
   ScrollbarLayerImpl* scrollbar_layer_impl =
@@ -106,7 +106,7 @@ TEST(ScrollbarLayerTest, ShouldScrollNonOverlayOnMainThread) {
 
   // Create and attach an overlay scrollbar.
   scrollbar = FakeWebScrollbar::Create();
-  static_cast<FakeWebScrollbar*>(scrollbar.get())->setOverlay(true);
+  static_cast<FakeWebScrollbar*>(scrollbar.get())->set_overlay(true);
 
   layer_impl_tree_root =
       LayerImplForScrollAreaAndScrollbar(&host_impl, scrollbar.Pass(), false);
@@ -190,7 +190,7 @@ TEST(ScrollbarLayerTest, SolidColorDrawQuads) {
   FakeLayerTreeHostImpl host_impl(layer_tree_settings, &proxy);
 
   scoped_ptr<WebKit::WebScrollbar> scrollbar(FakeWebScrollbar::Create());
-  static_cast<FakeWebScrollbar*>(scrollbar.get())->setOverlay(true);
+  static_cast<FakeWebScrollbar*>(scrollbar.get())->set_overlay(true);
   scoped_ptr<LayerImpl> layer_impl_tree_root =
       LayerImplForScrollAreaAndScrollbar(&host_impl, scrollbar.Pass(), false);
   ScrollbarLayerImpl* scrollbar_layer_impl =

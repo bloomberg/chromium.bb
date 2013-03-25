@@ -105,7 +105,7 @@ void RenderSurfaceImpl::DumpSurface(std::string* str, int indent) const {
 
   str->append(indent_str);
   base::StringAppendF(str,
-                      "damageRect is pos(%f, %f), size(%f, %f)\n",
+                      "current_damage_rect is pos(%f, %f), size(%f, %f)\n",
                       damage_tracker_->current_damage_rect().x(),
                       damage_tracker_->current_damage_rect().y(),
                       damage_tracker_->current_damage_rect().width(),

@@ -763,7 +763,7 @@ TEST_F(TiledLayerTest, VerifyUpdateRectWhenContentBoundsAreScaled) {
   layer->SetContentBounds(content_bounds.size());
   layer->draw_properties().visible_content_rect = content_bounds;
 
-  // On first update, the updateRect includes all tiles, even beyond the
+  // On first update, the update_rect includes all tiles, even beyond the
   // boundaries of the layer.
   // However, it should still be in layer space, not content space.
   layer->InvalidateContentRect(content_bounds);

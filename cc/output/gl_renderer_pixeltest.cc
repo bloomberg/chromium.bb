@@ -69,7 +69,7 @@ scoped_ptr<DrawQuad> CreateTestRenderPassDrawQuad(
 
 
 #if !defined(OS_ANDROID)
-TEST_F(GLRendererPixelTest, simpleGreenRect) {
+TEST_F(GLRendererPixelTest, SimpleGreenRect) {
   gfx::Rect rect(device_viewport_size_);
 
   RenderPass::Id id(1, 1);

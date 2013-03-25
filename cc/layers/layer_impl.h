@@ -94,10 +94,10 @@ class CC_EXPORT LayerImpl : LayerAnimationValueObserver {
   LayerTreeImpl* layer_tree_impl() const { return layer_tree_impl_; }
 
   scoped_ptr<SharedQuadState> CreateSharedQuadState() const;
-  // willDraw must be called before appendQuads. If willDraw is called,
-  // didDraw is guaranteed to be called before another willDraw or before
+  // WillDraw must be called before AppendQuads. If WillDraw is called,
+  // DidDraw is guaranteed to be called before another WillDraw or before
   // the layer is destroyed. To enforce this, any class that overrides
-  // willDraw/didDraw must call the base class version.
+  // WillDraw/DqidDraw must call the base class version.
   virtual void WillDraw(ResourceProvider* resource_provider);
   virtual void AppendQuads(QuadSink* quad_sink,
                            AppendQuadsData* append_quads_data) {}
@@ -189,7 +189,7 @@ class CC_EXPORT LayerImpl : LayerAnimationValueObserver {
   bool ShowDebugBorders() const;
 
   // These invalidate the host's render surface layer list.  The caller
-  // is responsible for calling setNeedsUpdateDrawProperties on the host
+  // is responsible for calling set_needs_update_draw_properties on the tree
   // so that its list can be recreated.
   void CreateRenderSurface();
   void ClearRenderSurface() { draw_properties_.render_surface.reset(); }
@@ -245,8 +245,8 @@ class CC_EXPORT LayerImpl : LayerAnimationValueObserver {
  return draw_properties_.render_surface.get();
   }
 
-  // The client should be responsible for setting bounds, contentBounds and
-  // contentsScale to appropriate values. LayerImpl doesn't calculate any of
+  // The client should be responsible for setting bounds, content bounds and
+  // contents scale to appropriate values. LayerImpl doesn't calculate any of
   // them from the other values.
 
   void SetBounds(gfx::Size bounds);
@@ -263,7 +263,7 @@ class CC_EXPORT LayerImpl : LayerAnimationValueObserver {
                                       bool animating_transform_to_screen,
                                       float* contents_scale_x,
                                       float* contents_scale_y,
-                                      gfx::Size* contentBounds);
+                                      gfx::Size* content_bounds);
 
   void SetScrollOffset(gfx::Vector2d scroll_offset);
   gfx::Vector2d scroll_offset() const { return scroll_offset_; }
@@ -455,7 +455,7 @@ class CC_EXPORT LayerImpl : LayerAnimationValueObserver {
 
   // Indicates that a property has changed on this layer that would not
   // affect the pixels on its target surface, but would require redrawing
-  // the targetSurface onto its ancestor targetSurface.
+  // the target_surface onto its ancestor target_surface.
   // For layers that do not own a surface this flag acts as
   // layer_property_changed_.
   bool layer_surface_property_changed_;

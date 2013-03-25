@@ -102,16 +102,16 @@ void NinePatchLayerImpl::AppendQuads(QuadSink* quad_sink,
 
   // Patch positions in layer space
   gfx::Rect top_left(0, 0, left_width, top_height);
-  gfx::Rect topRight(
+  gfx::Rect top_right(
       bounds().width() - right_width, 0, right_width, top_height);
-  gfx::Rect bottomLeft(
+  gfx::Rect bottom_left(
       0, bounds().height() - bottom_height, left_width, bottom_height);
-  gfx::Rect bottomRight(
-      topRight.x(), bottomLeft.y(), right_width, bottom_height);
+  gfx::Rect bottom_right(
+      top_right.x(), bottom_left.y(), right_width, bottom_height);
   gfx::Rect top(top_left.right(), 0, middle_width, top_height);
   gfx::Rect left(0, top_left.bottom(), left_width, middle_height);
-  gfx::Rect right(topRight.x(), topRight.bottom(), right_width, left.height());
-  gfx::Rect bottom(top.x(), bottomLeft.y(), top.width(), bottom_height);
+  gfx::Rect right(top_right.x(), top_right.bottom(), right_width, left.height());
+  gfx::Rect bottom(top.x(), bottom_left.y(), top.width(), bottom_height);
 
   float img_width = image_bounds_.width();
   float img_height = image_bounds_.height();
@@ -141,21 +141,21 @@ void NinePatchLayerImpl::AppendQuads(QuadSink* quad_sink,
                                               bottom_height,
                                               img_width,
                                               img_height);
-  gfx::RectF uvTop(uv_top_left.right(),
+  gfx::RectF uv_top(uv_top_left.right(),
                    0,
                    (img_width - left_width - right_width) / img_width,
                    (top_height) / img_height);
-  gfx::RectF uvLeft(0,
+  gfx::RectF uv_left(0,
                     uv_top_left.bottom(),
                     left_width / img_width,
                     (img_height - top_height - bottom_height) / img_height);
-  gfx::RectF uvRight(uv_top_right.x(),
+  gfx::RectF uv_right(uv_top_right.x(),
                      uv_top_right.bottom(),
                      right_width / img_width,
-                     uvLeft.height());
-  gfx::RectF uvBottom(uvTop.x(),
+                     uv_left.height());
+  gfx::RectF uv_bottom(uv_top.x(),
                       uv_bottom_left.y(),
-                      uvTop.width(),
+                      uv_top.width(),
                       bottom_height / img_height);
 
   // Nothing is opaque here.
@@ -177,7 +177,7 @@ void NinePatchLayerImpl::AppendQuads(QuadSink* quad_sink,
 
   quad = TextureDrawQuad::Create();
   quad->SetNew(shared_quad_state,
-               topRight,
+               top_right,
                opaque_rect,
                resource_id_,
                premultiplied_alpha,
@@ -188,7 +188,7 @@ void NinePatchLayerImpl::AppendQuads(QuadSink* quad_sink,
 
   quad = TextureDrawQuad::Create();
   quad->SetNew(shared_quad_state,
-               bottomLeft,
+               bottom_left,
                opaque_rect,
                resource_id_,
                premultiplied_alpha,
@@ -200,7 +200,7 @@ void NinePatchLayerImpl::AppendQuads(QuadSink* quad_sink,
 
   quad = TextureDrawQuad::Create();
   quad->SetNew(shared_quad_state,
-               bottomRight,
+               bottom_right,
                opaque_rect,
                resource_id_,
                premultiplied_alpha,
@@ -216,8 +216,8 @@ void NinePatchLayerImpl::AppendQuads(QuadSink* quad_sink,
                opaque_rect,
                resource_id_,
                premultiplied_alpha,
-               uvTop.origin(),
-               uvTop.bottom_right(),
+               uv_top.origin(),
+               uv_top.bottom_right(),
                vertex_opacity,
                flipped);
   quad_sink->Append(quad.PassAs<DrawQuad>(), append_quads_data);
@@ -228,8 +228,8 @@ void NinePatchLayerImpl::AppendQuads(QuadSink* quad_sink,
                opaque_rect,
                resource_id_,
                premultiplied_alpha,
-               uvLeft.origin(),
-               uvLeft.bottom_right(),
+               uv_left.origin(),
+               uv_left.bottom_right(),
                vertex_opacity,
                flipped);
   quad_sink->Append(quad.PassAs<DrawQuad>(), append_quads_data);
@@ -240,8 +240,8 @@ void NinePatchLayerImpl::AppendQuads(QuadSink* quad_sink,
                opaque_rect,
                resource_id_,
                premultiplied_alpha,
-               uvRight.origin(),
-               uvRight.bottom_right(),
+               uv_right.origin(),
+               uv_right.bottom_right(),
                vertex_opacity,
                flipped);
   quad_sink->Append(quad.PassAs<DrawQuad>(), append_quads_data);
@@ -252,8 +252,8 @@ void NinePatchLayerImpl::AppendQuads(QuadSink* quad_sink,
                opaque_rect,
                resource_id_,
                premultiplied_alpha,
-               uvBottom.origin(),
-               uvBottom.bottom_right(),
+               uv_bottom.origin(),
+               uv_bottom.bottom_right(),
                vertex_opacity,
                flipped);
   quad_sink->Append(quad.PassAs<DrawQuad>(), append_quads_data);

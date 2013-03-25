@@ -80,10 +80,14 @@ class CC_EXPORT FakeWebGraphicsContext3D :
   virtual void requestExtensionCHROMIUM(const char*) {}
 
   virtual void blitFramebufferCHROMIUM(
-      WebKit::WGC3Dint srcX0, WebKit::WGC3Dint srcY0,
-      WebKit::WGC3Dint srcX1, WebKit::WGC3Dint srcY1,
-      WebKit::WGC3Dint dstX0, WebKit::WGC3Dint dstY0,
-      WebKit::WGC3Dint dstX1, WebKit::WGC3Dint dstY1,
+      WebKit::WGC3Dint src_x0,
+      WebKit::WGC3Dint src_y0,
+      WebKit::WGC3Dint src_x1,
+      WebKit::WGC3Dint src_y1,
+      WebKit::WGC3Dint dst_x0,
+      WebKit::WGC3Dint dst_y0,
+      WebKit::WGC3Dint dst_x1,
+      WebKit::WGC3Dint dst_y1,
       WebKit::WGC3Dbitfield mask,
       WebKit::WGC3Denum filter) {}
   virtual void renderbufferStorageMultisampleCHROMIUM(
@@ -160,7 +164,7 @@ class CC_EXPORT FakeWebGraphicsContext3D :
       WebKit::WGC3Dsizei width,
       WebKit::WGC3Dsizei height,
       WebKit::WGC3Dint border,
-      WebKit::WGC3Dsizei imageSize,
+      WebKit::WGC3Dsizei image_size,
       const void* data) {}
   virtual void compressedTexSubImage2D(
       WebKit::WGC3Denum target,
@@ -170,7 +174,7 @@ class CC_EXPORT FakeWebGraphicsContext3D :
       WebKit::WGC3Dsizei width,
       WebKit::WGC3Dsizei height,
       WebKit::WGC3Denum format,
-      WebKit::WGC3Dsizei imageSize,
+      WebKit::WGC3Dsizei image_size,
       const void* data) {}
   virtual void copyTexImage2D(
       WebKit::WGC3Denum target,
@@ -194,8 +198,8 @@ class CC_EXPORT FakeWebGraphicsContext3D :
   virtual void depthFunc(WebKit::WGC3Denum func) {}
   virtual void depthMask(WebKit::WGC3Dboolean flag) {}
   virtual void depthRange(
-      WebKit::WGC3Dclampf zNear,
-      WebKit::WGC3Dclampf zFar) {}
+      WebKit::WGC3Dclampf z_near,
+      WebKit::WGC3Dclampf z_far) {}
   virtual void detachShader(WebKit::WebGLId program, WebKit::WebGLId shader) {}
   virtual void disable(WebKit::WGC3Denum cap) {}
   virtual void disableVertexAttribArray(WebKit::WGC3Duint index) {}
@@ -236,7 +240,7 @@ class CC_EXPORT FakeWebGraphicsContext3D :
       ActiveInfo&);
   virtual void getAttachedShaders(
       WebKit::WebGLId program,
-      WebKit::WGC3Dsizei maxCount,
+      WebKit::WGC3Dsizei max_count,
       WebKit::WGC3Dsizei* count,
       WebKit::WebGLId* shaders) {}
   virtual WebKit::WGC3Dint getAttribLocation(

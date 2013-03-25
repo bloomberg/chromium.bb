@@ -41,7 +41,7 @@ class CC_EXPORT TextureUploader {
   // Let content_rect be a rectangle, and let content_rect be a sub-rectangle of
   // content_rect, expressed in the same coordinate system as content_rect. Let
   // image be a buffer for content_rect. This function will copy the region
-  // corresponding to sourceRect to destOffset in this sub-image.
+  // corresponding to source_rect to dest_offset in this sub-image.
   void Upload(const uint8* image,
               gfx::Rect content_rect,
               gfx::Rect source_rect,

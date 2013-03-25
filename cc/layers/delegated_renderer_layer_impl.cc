@@ -159,8 +159,8 @@ void DelegatedRendererLayerImpl::ClearRenderPasses() {
 }
 
 scoped_ptr<LayerImpl> DelegatedRendererLayerImpl::CreateLayerImpl(
-    LayerTreeImpl* treeImpl) {
-  return DelegatedRendererLayerImpl::Create(treeImpl, id()).PassAs<LayerImpl>();
+    LayerTreeImpl* tree_impl) {
+  return DelegatedRendererLayerImpl::Create(tree_impl, id()).PassAs<LayerImpl>();
 }
 
 void DelegatedRendererLayerImpl::DidLoseOutputSurface() {
@@ -197,8 +197,8 @@ RenderPass::Id DelegatedRendererLayerImpl::ConvertDelegatedRenderPassId(
   base::hash_map<RenderPass::Id, int>::const_iterator found =
       render_passes_index_by_id_.find(delegated_render_pass_id);
   DCHECK(found != render_passes_index_by_id_.end());
-  unsigned delegatedRenderPassIndex = found->second;
-  return RenderPass::Id(id(), IndexToId(delegatedRenderPassIndex));
+  unsigned delegated_render_pass_index = found->second;
+  return RenderPass::Id(id(), IndexToId(delegated_render_pass_index));
 }
 
 void DelegatedRendererLayerImpl::AppendContributingRenderPasses(
@@ -233,20 +233,20 @@ void DelegatedRendererLayerImpl::AppendQuads(
   DCHECK(root_delegated_render_pass->output_rect.origin().IsOrigin());
   gfx::Size frame_size = root_delegated_render_pass->output_rect.size();
 
-  // If the index of the renderPassId is 0, then it is a renderPass generated
+  // If the index of the EenderPassId is 0, then it is a RenderPass generated
   // for a layer in this compositor, not the delegated renderer. Then we want to
-  // merge our root renderPass with the target renderPass. Otherwise, it is some
-  // renderPass which we added from the delegated renderer.
+  // merge our root RenderPass with the target RenderPass. Otherwise, it is some
+  // RenderPass which we added from the delegated renderer.
   bool should_merge_root_render_pass_with_target = !target_render_pass_id.index;
   if (should_merge_root_render_pass_with_target) {
-    // Verify that the renderPass we are appending to is created our
-    // renderTarget.
+    // Verify that the RenderPass we are appending to is created our
+    // render_target.
     DCHECK(target_render_pass_id.layer_id == render_target()->id());
 
     AppendRenderPassQuads(
         quad_sink, append_quads_data, root_delegated_render_pass, frame_size);
   } else {
-    // Verify that the renderPass we are appending to was created by us.
+    // Verify that the RenderPass we are appending to was created by us.
     DCHECK(target_render_pass_id.layer_id == id());
 
     int render_pass_index = IdToIndex(target_render_pass_id.index);

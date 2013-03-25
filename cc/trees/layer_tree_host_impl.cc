@@ -710,9 +710,9 @@ static void RemoveRenderPassesRecursive(RenderPass::Id remove_render_pass_id,
   // Now follow up for all RenderPass quads and remove their RenderPasses
   // recursively.
   const QuadList& quad_list = removed_pass->quad_list;
-  QuadList::constBackToFrontIterator quad_list_iterator =
-      quad_list.backToFrontBegin();
-  for (; quad_list_iterator != quad_list.backToFrontEnd();
+  QuadList::ConstBackToFrontIterator quad_list_iterator =
+      quad_list.BackToFrontBegin();
+  for (; quad_list_iterator != quad_list.BackToFrontEnd();
        ++quad_list_iterator) {
     DrawQuad* current_quad = (*quad_list_iterator);
     if (current_quad->material != DrawQuad::RENDER_PASS)
@@ -750,9 +750,9 @@ bool LayerTreeHostImpl::CullRenderPassesWithNoQuads::ShouldRemoveRenderPass(
 
   // If any quad or RenderPass draws into this RenderPass, then keep it.
   const QuadList& quad_list = render_pass->quad_list;
-  for (QuadList::constBackToFrontIterator quad_list_iterator =
-           quad_list.backToFrontBegin();
-       quad_list_iterator != quad_list.backToFrontEnd();
+  for (QuadList::ConstBackToFrontIterator quad_list_iterator =
+           quad_list.BackToFrontBegin();
+       quad_list_iterator != quad_list.BackToFrontEnd();
        ++quad_list_iterator) {
     DrawQuad* current_quad = *quad_list_iterator;
 
@@ -784,10 +784,10 @@ void LayerTreeHostImpl::RemoveRenderPasses(RenderPassCuller culler,
        it = culler.RenderPassListNext(it)) {
     const RenderPass* current_pass = frame->render_passes[it];
     const QuadList& quad_list = current_pass->quad_list;
-    QuadList::constBackToFrontIterator quad_list_iterator =
-        quad_list.backToFrontBegin();
+    QuadList::ConstBackToFrontIterator quad_list_iterator =
+        quad_list.BackToFrontBegin();
 
-    for (; quad_list_iterator != quad_list.backToFrontEnd();
+    for (; quad_list_iterator != quad_list.BackToFrontEnd();
          ++quad_list_iterator) {
       DrawQuad* current_quad = *quad_list_iterator;
 
@@ -1041,10 +1041,10 @@ gfx::SizeF LayerTreeHostImpl::VisibleViewportSize() const {
       clip_layer->masks_to_bounds())
     dip_size = clip_layer->bounds();
 
-  float topOffset =
+  float top_offset =
       top_controls_manager_ ? top_controls_manager_->content_top_offset() : 0.f;
   return gfx::SizeF(dip_size.width(),
-                    dip_size.height() - topOffset - overdraw_bottom_height_);
+                    dip_size.height() - top_offset - overdraw_bottom_height_);
 }
 
 const LayerTreeSettings& LayerTreeHostImpl::Settings() const {
@@ -1359,7 +1359,7 @@ bool LayerTreeHostImpl::EnsureRenderSurfaceLayerList() {
 
 InputHandlerClient::ScrollStatus LayerTreeHostImpl::ScrollBegin(
     gfx::Point viewport_point, InputHandlerClient::ScrollInputType type) {
-  TRACE_EVENT0("cc", "LayerTreeHostImpl::scrollBegin");
+  TRACE_EVENT0("cc", "LayerTreeHostImpl::ScrollBegin");
 
   if (top_controls_manager_)
     top_controls_manager_->ScrollBegin();

@@ -192,22 +192,22 @@ void CompareDrawQuad(DrawQuad* quad,
     } \
     SETUP_AND_COPY_QUAD_ALL(Type, quad_all);
 
-#define CREATE_QUAD_5_NEW_1(Type, a, b, c, d, e, copyA) \
+#define CREATE_QUAD_5_NEW_1(Type, a, b, c, d, e, copy_a) \
     scoped_ptr<Type> quad_new(Type::Create()); \
     { \
       QUAD_DATA \
       quad_new->SetNew(shared_state.get(), quad_rect, a, b, c, d, e); \
     } \
-    SETUP_AND_COPY_QUAD_NEW_1(Type, quad_new, copyA);
+    SETUP_AND_COPY_QUAD_NEW_1(Type, quad_new, copy_a);
 
-#define CREATE_QUAD_5_ALL_1(Type, a, b, c, d, e, copyA) \
+#define CREATE_QUAD_5_ALL_1(Type, a, b, c, d, e, copy_a) \
     scoped_ptr<Type> quad_all(Type::Create()); \
     { \
       QUAD_DATA \
       quad_all->SetAll(shared_state.get(), quad_rect, quad_opaque_rect, \
                        quad_visible_rect, needs_blending, a, b, c, d, e); \
     } \
-    SETUP_AND_COPY_QUAD_ALL_1(Type, quad_all, copyA);
+    SETUP_AND_COPY_QUAD_ALL_1(Type, quad_all, copy_a);
 
 #define CREATE_QUAD_6_NEW(Type, a, b, c, d, e, f) \
     scoped_ptr<Type> quad_new(Type::Create()); \
@@ -262,15 +262,15 @@ void CompareDrawQuad(DrawQuad* quad,
     } \
     SETUP_AND_COPY_QUAD_ALL(Type, quad_all);
 
-#define CREATE_QUAD_8_NEW_1(Type, a, b, c, d, e, f, g, h, copyA) \
+#define CREATE_QUAD_8_NEW_1(Type, a, b, c, d, e, f, g, h, copy_a) \
     scoped_ptr<Type> quad_new(Type::Create()); \
     { \
       QUAD_DATA \
       quad_new->SetNew(shared_state.get(), quad_rect, a, b, c, d, e, f, g, h); \
     } \
-    SETUP_AND_COPY_QUAD_NEW_1(Type, quad_new, copyA);
+    SETUP_AND_COPY_QUAD_NEW_1(Type, quad_new, copy_a);
 
-#define CREATE_QUAD_8_ALL_1(Type, a, b, c, d, e, f, g, h, copyA) \
+#define CREATE_QUAD_8_ALL_1(Type, a, b, c, d, e, f, g, h, copy_a) \
     scoped_ptr<Type> quad_all(Type::Create()); \
     { \
       QUAD_DATA \
@@ -278,7 +278,7 @@ void CompareDrawQuad(DrawQuad* quad,
                        quad_visible_rect, needs_blending, \
                        a, b, c, d, e, f, g, h); \
     } \
-    SETUP_AND_COPY_QUAD_ALL_1(Type, quad_all, copyA);
+    SETUP_AND_COPY_QUAD_ALL_1(Type, quad_all, copy_a);
 
 #define CREATE_QUAD_9_NEW(Type, a, b, c, d, e, f, g, h, i) \
     scoped_ptr<Type> quad_new(Type::Create()); \

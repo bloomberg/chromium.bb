@@ -311,10 +311,10 @@ void Layer::CalculateContentsScale(
     bool animating_transform_to_screen,
     float* contents_scale_x,
     float* contents_scale_y,
-    gfx::Size* contentBounds) {
+    gfx::Size* content_bounds) {
   *contents_scale_x = 1;
   *contents_scale_y = 1;
-  *contentBounds = bounds();
+  *content_bounds = bounds();
 }
 
 void Layer::SetMasksToBounds(bool masks_to_bounds) {
@@ -601,7 +601,7 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
 
   // If the main thread commits multiple times before the impl thread actually
   // draws, then damage tracking will become incorrect if we simply clobber the
-  // updateRect here. The LayerImpl's updateRect needs to accumulate (i.e.
+  // update_rect here. The LayerImpl's update_rect needs to accumulate (i.e.
   // union) any update changes that have occurred on the main thread.
   update_rect_.Union(layer->update_rect());
   layer->set_update_rect(update_rect_);
@@ -612,7 +612,7 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
         layer->layer_tree_impl()->FindActiveTreeLayerById(id());
     // Update the scroll delta from the active layer, which may have
     // adjusted its scroll delta prior to this pending layer being created.
-    // This code is identical to that in LayerImpl::setScrollDelta.
+    // This code is identical to that in LayerImpl::SetScrollDelta.
     if (active_twin) {
       DCHECK(layer->sent_scroll_delta().IsZero());
       layer->SetScrollDelta(active_twin->scroll_delta() -
@@ -702,7 +702,7 @@ void Layer::OnOpacityAnimated(float opacity) {
   // This is called due to an ongoing accelerated animation. Since this
   // animation is also being run on the impl thread, there is no need to request
   // a commit to push this value over, so set the value directly rather than
-  // calling setOpacity.
+  // calling SetOpacity.
   opacity_ = opacity;
 }
 
@@ -710,7 +710,7 @@ void Layer::OnTransformAnimated(const gfx::Transform& transform) {
   // This is called due to an ongoing accelerated animation. Since this
   // animation is also being run on the impl thread, there is no need to request
   // a commit to push this value over, so set this value directly rather than
-  // calling setTransform.
+  // calling SetTransform.
   transform_ = transform;
 }
 

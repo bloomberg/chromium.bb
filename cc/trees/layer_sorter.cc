@@ -188,11 +188,11 @@ LayerShape::LayerShape(float width,
 
   // Compute the projection of the layer quad onto the z = 0 plane.
 
-  gfx::PointF clippedQuad[8];
+  gfx::PointF clipped_quad[8];
   int num_vertices_in_clipped_quad;
   MathUtil::MapClippedQuad(draw_transform,
                            layer_quad,
-                           clippedQuad,
+                           clipped_quad,
                            num_vertices_in_clipped_quad);
 
   if (num_vertices_in_clipped_quad < 3) {
@@ -201,7 +201,7 @@ LayerShape::LayerShape(float width,
   }
 
   projected_bounds =
-      MathUtil::ComputeEnclosingRectOfVertices(clippedQuad,
+      MathUtil::ComputeEnclosingRectOfVertices(clipped_quad,
                                                num_vertices_in_clipped_quad);
 
   // NOTE: it will require very significant refactoring and overhead to deal
@@ -209,14 +209,14 @@ LayerShape::LayerShape(float width,
   // layer sorting it is equally correct to take a subsection of the polygon
   // that can be made into a quad. This will only be incorrect in the case of
   // intersecting layers, which are not supported yet anyway.
-  projected_quad.set_p1(clippedQuad[0]);
-  projected_quad.set_p2(clippedQuad[1]);
-  projected_quad.set_p3(clippedQuad[2]);
+  projected_quad.set_p1(clipped_quad[0]);
+  projected_quad.set_p2(clipped_quad[1]);
+  projected_quad.set_p3(clipped_quad[2]);
   if (num_vertices_in_clipped_quad >= 4) {
-    projected_quad.set_p4(clippedQuad[3]);
+    projected_quad.set_p4(clipped_quad[3]);
   } else {
     // This will be a degenerate quad that is actually a triangle.
-    projected_quad.set_p4(clippedQuad[2]);
+    projected_quad.set_p4(clipped_quad[2]);
   }
 
   // Compute the normal of the layer's plane.
@@ -298,7 +298,7 @@ void LayerSorter::CreateGraphNodes(LayerList::iterator first,
 
 void LayerSorter::CreateGraphEdges() {
   DVLOG(2) << "Edges:";
-  // Fraction of the total zRange below which z differences
+  // Fraction of the total z_range below which z differences
   // are not considered reliable.
   const float z_threshold_factor = 0.01f;
   float z_threshold = z_range_ * z_threshold_factor;

@@ -68,12 +68,12 @@ gfx::RectF DirectRenderer::QuadVertexRect() {
 
 // static
 void DirectRenderer::QuadRectTransform(gfx::Transform* quad_rect_transform,
-                                       const gfx::Transform& quadTransform,
-                                       const gfx::RectF& quadRect) {
-  *quad_rect_transform = quadTransform;
-  quad_rect_transform->Translate(0.5 * quadRect.width() + quadRect.x(),
-                                 0.5 * quadRect.height() + quadRect.y());
-  quad_rect_transform->Scale(quadRect.width(), quadRect.height());
+                                       const gfx::Transform& quad_transform,
+                                       const gfx::RectF& quad_rect) {
+  *quad_rect_transform = quad_transform;
+  quad_rect_transform->Translate(0.5 * quad_rect.width() + quad_rect.x(),
+                                 0.5 * quad_rect.height() + quad_rect.y());
+  quad_rect_transform->Scale(quad_rect.width(), quad_rect.height());
 }
 
 // static
@@ -131,27 +131,27 @@ void DirectRenderer::SetEnlargePassTextureAmountForTesting(
 
 void DirectRenderer::DecideRenderPassAllocationsForFrame(
     const RenderPassList& render_passes_in_draw_order) {
-  base::hash_map<RenderPass::Id, const RenderPass*> renderPassesInFrame;
+  base::hash_map<RenderPass::Id, const RenderPass*> render_passes_in_frame;
   for (size_t i = 0; i < render_passes_in_draw_order.size(); ++i)
-    renderPassesInFrame.insert(std::pair<RenderPass::Id, const RenderPass*>(
+    render_passes_in_frame.insert(std::pair<RenderPass::Id, const RenderPass*>(
         render_passes_in_draw_order[i]->id, render_passes_in_draw_order[i]));
 
   std::vector<RenderPass::Id> passes_to_delete;
-  ScopedPtrHashMap<RenderPass::Id, CachedResource>::const_iterator passIterator;
-  for (passIterator = render_pass_textures_.begin();
-       passIterator != render_pass_textures_.end();
-       ++passIterator) {
+  ScopedPtrHashMap<RenderPass::Id, CachedResource>::const_iterator pass_iter;
+  for (pass_iter = render_pass_textures_.begin();
+       pass_iter != render_pass_textures_.end();
+       ++pass_iter) {
     base::hash_map<RenderPass::Id, const RenderPass*>::const_iterator it =
-        renderPassesInFrame.find(passIterator->first);
-    if (it == renderPassesInFrame.end()) {
-      passes_to_delete.push_back(passIterator->first);
+        render_passes_in_frame.find(pass_iter->first);
+    if (it == render_passes_in_frame.end()) {
+      passes_to_delete.push_back(pass_iter->first);
       continue;
     }
 
     const RenderPass* render_pass_in_frame = it->second;
     gfx::Size required_size = RenderPassTextureSize(render_pass_in_frame);
     GLenum required_format = RenderPassTextureFormat(render_pass_in_frame);
-    CachedResource* texture = passIterator->second;
+    CachedResource* texture = pass_iter->second;
     DCHECK(texture);
 
     bool size_appropriate = texture->size().width() >= required_size.width() &&
@@ -177,7 +177,7 @@ void DirectRenderer::DecideRenderPassAllocationsForFrame(
 }
 
 void DirectRenderer::DrawFrame(RenderPassList& render_passes_in_draw_order) {
-  TRACE_EVENT0("cc", "DirectRenderer::drawFrame");
+  TRACE_EVENT0("cc", "DirectRenderer::DrawFrame");
   UMA_HISTOGRAM_COUNTS("Renderer4.renderPassCount",
                        render_passes_in_draw_order.size());
 
@@ -206,12 +206,12 @@ gfx::RectF DirectRenderer::ComputeScissorRectForRenderPass(
   if (frame.root_damage_rect == frame.root_render_pass->output_rect)
     return render_pass_scissor;
 
-  gfx::Transform inverseTransform(gfx::Transform::kSkipInitialization);
+  gfx::Transform inverse_transform(gfx::Transform::kSkipInitialization);
   if (frame.current_render_pass->transform_to_root_target.GetInverse(
-          &inverseTransform)) {
+          &inverse_transform)) {
     // Only intersect inverse-projected damage if the transform is invertible.
     gfx::RectF damage_rect_in_render_pass_space =
-        MathUtil::ProjectClippedRect(inverseTransform, frame.root_damage_rect);
+        MathUtil::ProjectClippedRect(inverse_transform, frame.root_damage_rect);
     render_pass_scissor.Intersect(damage_rect_in_render_pass_space);
   }
 
@@ -251,7 +251,7 @@ void DirectRenderer::FinishDrawingQuadList() {}
 
 void DirectRenderer::DrawRenderPass(DrawingFrame& frame,
                                     const RenderPass* render_pass) {
-  TRACE_EVENT0("cc", "DirectRenderer::drawRenderPass");
+  TRACE_EVENT0("cc", "DirectRenderer::DrawRenderPass");
   if (!UseRenderPass(frame, render_pass))
     return;
 
@@ -271,8 +271,8 @@ void DirectRenderer::DrawRenderPass(DrawingFrame& frame,
   }
 
   const QuadList& quad_list = render_pass->quad_list;
-  for (QuadList::constBackToFrontIterator it = quad_list.backToFrontBegin();
-       it != quad_list.backToFrontEnd();
+  for (QuadList::ConstBackToFrontIterator it = quad_list.BackToFrontBegin();
+       it != quad_list.BackToFrontEnd();
        ++it) {
     const DrawQuad& quad = *(*it);
     bool should_skip_quad = false;

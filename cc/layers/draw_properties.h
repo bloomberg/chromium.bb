@@ -37,7 +37,7 @@ struct CC_EXPORT DrawProperties {
   gfx::Transform screen_space_transform;
 
   // DrawProperties::opacity may be different than LayerType::opacity,
-  // particularly in the case when a renderSurface re-parents the layer's
+  // particularly in the case when a RenderSurface re-parents the layer's
   // opacity, or when opacity is compounded by the hierarchy.
   float opacity;
 
@@ -53,7 +53,7 @@ struct CC_EXPORT DrawProperties {
   // True if the layer can use LCD text.
   bool can_use_lcd_text;
 
-  // True if the layer needs to be clipped by clipRect.
+  // True if the layer needs to be clipped by clip_rect.
   bool is_clipped;
 
   // The layer whose coordinate space this layer draws into. This can be

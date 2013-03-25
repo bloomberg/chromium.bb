@@ -87,7 +87,7 @@ class ContextSharedData {
 
     // If the latest sync point the context has waited on is before the sync
     // point for when the mailbox was set, pretend we never saw that
-    // produceTexture.
+    // ProduceTexture.
     if (sync_point_for_mailbox_[mailbox] > sync_point) {
       NOTREACHED();
       return scoped_ptr<Texture>();
@@ -233,7 +233,7 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
     ASSERT_EQ(target, GL_TEXTURE_2D);
 
     // Delay moving the texture into the mailbox until the next
-    // insertSyncPoint, so that it is not visible to other contexts that
+    // InsertSyncPoint, so that it is not visible to other contexts that
     // haven't waited on that sync point.
     scoped_ptr<PendingProduceTexture> pending(new PendingProduceTexture);
     memcpy(pending->mailbox, mailbox, sizeof(pending->mailbox));
@@ -840,13 +840,13 @@ TEST_P(ResourceProviderTest, ScopedSampler) {
   if (GetParam() != ResourceProvider::GLTexture)
     return;
 
-  scoped_ptr<OutputSurface> outputSurface(
+  scoped_ptr<OutputSurface> output_surface(
       FakeOutputSurface::Create3d(scoped_ptr<WebKit::WebGraphicsContext3D>(
           new TextureStateTrackingContext)));
   TextureStateTrackingContext* context =
-      static_cast<TextureStateTrackingContext*>(outputSurface->context3d());
+      static_cast<TextureStateTrackingContext*>(output_surface->context3d());
   scoped_ptr<ResourceProvider> resource_provider(
-      ResourceProvider::Create(outputSurface.get()));
+      ResourceProvider::Create(output_surface.get()));
 
   gfx::Size size(1, 1);
   WGC3Denum format = GL_RGBA;
@@ -913,13 +913,13 @@ TEST_P(ResourceProviderTest, ManagedResource) {
   if (GetParam() != ResourceProvider::GLTexture)
     return;
 
-  scoped_ptr<OutputSurface> outputSurface(
+  scoped_ptr<OutputSurface> output_surface(
       FakeOutputSurface::Create3d(scoped_ptr<WebKit::WebGraphicsContext3D>(
           new TextureStateTrackingContext)));
   TextureStateTrackingContext* context =
-      static_cast<TextureStateTrackingContext*>(outputSurface->context3d());
+      static_cast<TextureStateTrackingContext*>(output_surface->context3d());
   scoped_ptr<ResourceProvider> resource_provider(
-      ResourceProvider::Create(outputSurface.get()));
+      ResourceProvider::Create(output_surface.get()));
 
   gfx::Size size(1, 1);
   WGC3Denum format = GL_RGBA;
@@ -1002,7 +1002,7 @@ TEST_P(ResourceProviderTest, TextureAllocation) {
   scoped_ptr<WebKit::WebGraphicsContext3D> mock_context(
       static_cast<WebKit::WebGraphicsContext3D*>(
           new NiceMock<AllocationTrackingContext3D>));
-  scoped_ptr<OutputSurface> outputSurface(
+  scoped_ptr<OutputSurface> output_surface(
       FakeOutputSurface::Create3d(mock_context.Pass()));
 
   gfx::Size size(2, 2);
@@ -1014,9 +1014,9 @@ TEST_P(ResourceProviderTest, TextureAllocation) {
   int texture_id = 123;
 
   AllocationTrackingContext3D* context =
-      static_cast<AllocationTrackingContext3D*>(outputSurface->context3d());
+      static_cast<AllocationTrackingContext3D*>(output_surface->context3d());
   scoped_ptr<ResourceProvider> resource_provider(
-      ResourceProvider::Create(outputSurface.get()));
+      ResourceProvider::Create(output_surface.get()));
 
   // Lazy allocation. Don't allocate when creating the resource.
   EXPECT_CALL(*context, createTexture()).WillOnce(Return(texture_id));
@@ -1042,7 +1042,7 @@ TEST_P(ResourceProviderTest, TextureAllocation) {
   resource_provider->DeleteResource(id);
   Mock::VerifyAndClearExpectations(context);
 
-  // Same for setPixelsFromBuffer
+  // Same for SetPixelsFromBuffer
   EXPECT_CALL(*context, createTexture()).WillOnce(Return(texture_id));
   EXPECT_CALL(*context, deleteTexture(texture_id)).Times(1);
   EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, texture_id)).Times(3);
@@ -1078,7 +1078,7 @@ TEST_P(ResourceProviderTest, ForcingAsyncUploadToComplete) {
   scoped_ptr<WebKit::WebGraphicsContext3D> mock_context(
       static_cast<WebKit::WebGraphicsContext3D*>(
           new NiceMock<AllocationTrackingContext3D>));
-  scoped_ptr<OutputSurface> outputSurface(
+  scoped_ptr<OutputSurface> output_surface(
       FakeOutputSurface::Create3d(mock_context.Pass()));
 
   gfx::Size size(2, 2);
@@ -1087,9 +1087,9 @@ TEST_P(ResourceProviderTest, ForcingAsyncUploadToComplete) {
   int texture_id = 123;
 
   AllocationTrackingContext3D* context =
-      static_cast<AllocationTrackingContext3D*>(outputSurface->context3d());
+      static_cast<AllocationTrackingContext3D*>(output_surface->context3d());
   scoped_ptr<ResourceProvider> resource_provider(
-      ResourceProvider::Create(outputSurface.get()));
+      ResourceProvider::Create(output_surface.get()));
 
   EXPECT_CALL(*context, createTexture()).WillOnce(Return(texture_id));
   EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, texture_id)).Times(3);
@@ -1113,7 +1113,7 @@ TEST_P(ResourceProviderTest, AbortForcedAsyncUpload) {
   scoped_ptr<WebKit::WebGraphicsContext3D> mock_context(
       static_cast<WebKit::WebGraphicsContext3D*>(
           new NiceMock<AllocationTrackingContext3D>));
-  scoped_ptr<OutputSurface> outputSurface(
+  scoped_ptr<OutputSurface> output_surface(
       FakeOutputSurface::Create3d(mock_context.Pass()));
 
   gfx::Size size(2, 2);
@@ -1122,9 +1122,9 @@ TEST_P(ResourceProviderTest, AbortForcedAsyncUpload) {
   int texture_id = 123;
 
   AllocationTrackingContext3D* context =
-      static_cast<AllocationTrackingContext3D*>(outputSurface->context3d());
+      static_cast<AllocationTrackingContext3D*>(output_surface->context3d());
   scoped_ptr<ResourceProvider> resource_provider(
-      ResourceProvider::Create(outputSurface.get()));
+      ResourceProvider::Create(output_surface.get()));
 
   EXPECT_CALL(*context, createTexture()).WillRepeatedly(Return(texture_id));
   EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, texture_id)).Times(4);

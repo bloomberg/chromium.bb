@@ -83,7 +83,7 @@ void IOSurfaceLayerImpl::WillDraw(ResourceProvider* resource_provider) {
                                            io_surface_size_.height(),
                                            io_surface_id_,
                                            0);
-    // Do not check for error conditions. texImageIOSurface2DCHROMIUM is
+    // Do not check for error conditions. texImageIOSurface2DCHROMIUM() is
     // supposed to hold on to the last good IOSurface if the new one is already
     // closed. This is only a possibility during live resizing of plugins.
     // However, it seems that this is not sufficient to completely guard against

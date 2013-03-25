@@ -157,7 +157,7 @@ static gfx::Rect CalculateVisibleContentRect(
 
   if (!layer->render_target()->render_surface()->clip_rect().IsEmpty()) {
     // In this case the target surface does clip layers that contribute to
-    // it. So, we have to convert the current surface's clipRect from its
+    // it. So, we have to convert the current surface's clip rect from its
     // ancestor surface space to the current (descendant) surface
     // space. This conversion is done outside this function so that it can
     // be cached instead of computing it redundantly for every layer.
@@ -198,8 +198,8 @@ static bool LayerShouldBeSkipped(LayerType* layer) {
   //
   // Some additional conditions need to be computed at a later point after the
   // recursion is finished.
-  //   - the intersection of render surface content and layer clipRect is empty
-  //   - the visibleContentRect is empty
+  //   - the intersection of render_surface content and layer clip_rect is empty
+  //   - the visible_content_rect is empty
   //
   // Note, if the layer should not have been drawn due to being fully
   // transparent, we would have skipped the entire subtree and never made it
@@ -244,7 +244,7 @@ static inline bool SubtreeShouldBeSkipped(Layer* layer) {
 }
 
 // Called on each layer that could be drawn after all information from
-// calcDrawProperties has been updated on that layer.  May have some false
+// CalcDrawProperties has been updated on that layer.  May have some false
 // positives (e.g. layers get this called on them but don't actually get drawn).
 static inline void UpdateTilePrioritiesForLayer(LayerImpl* layer) {
   layer->UpdateTilePriorities();
@@ -352,10 +352,10 @@ gfx::Transform ComputeScrollCompensationForThisLayer(
   //           -- this transform is the "partial_layer_origin_transform" =
   //           (parent_matrix * scale(layer->pageScaleDelta()));
   //
-  // These steps create a matrix that both start and end in targetSurfaceSpace.
-  // So this matrix can pre-multiply any fixed-position layer's draw_transform
-  // to undo the scroll_deltas -- as long as that fixed position layer is fixed
-  // onto the same render_target as this scrolling_layer.
+  // These steps create a matrix that both start and end in target surface
+  // space. So this matrix can pre-multiply any fixed-position layer's
+  // draw_transform to undo the scroll_deltas -- as long as that fixed position
+  // layer is fixed onto the same render_target as this scrolling_layer.
   //
 
   gfx::Transform partial_layer_origin_transform = parent_matrix;
@@ -430,7 +430,7 @@ gfx::Transform ComputeScrollCompensationMatrixForChildren(
     next_scroll_compensation_matrix = current_scroll_compensation_matrix;
 
   // If the current layer has a non-zero scroll_delta, then we should compute
-  // its local scrollCompensation and accumulate it to the
+  // its local scroll compensation and accumulate it to the
   // next_scroll_compensation_matrix.
   if (!layer->scroll_delta().IsZero()) {
     gfx::Transform scroll_compensation_for_this_layer =
@@ -441,7 +441,7 @@ gfx::Transform ComputeScrollCompensationMatrixForChildren(
 
   // If the layer created its own render_surface, we have to adjust
   // next_scroll_compensation_matrix.  The adjustment allows us to continue
-  // using the scrollCompensation on the next surface.
+  // using the scroll compensation on the next surface.
   //  Step 1 (right-most in the math): transform from the new surface to the
   //  original ancestor surface
   //  Step 2: apply the scroll compensation
@@ -621,7 +621,7 @@ static void RoundTranslationComponents(gfx::Transform* transform) {
 }
 
 // Recursively walks the layer tree starting at the given node and computes all
-// the necessary transformations, clipRects, render surfaces, etc.
+// the necessary transformations, clip rects, render surfaces, etc.
 template <typename LayerType, typename LayerList, typename RenderSurfaceType>
 static void CalculateDrawPropertiesInternal(
     LayerType* layer,
@@ -681,15 +681,15 @@ static void CalculateDrawPropertiesInternal(
   //        M[sublayer] is the layer's sublayer transform (also applied at the
   //        layer's anchor point)
   //
-  //        S[layer2content] is the ratio of a layer's ContentBounds() to its
+  //        S[layer2content] is the ratio of a layer's content_bounds() to its
   //        Bounds().
   //
   //    Some composite transforms can help in understanding the sequence of
   //    transforms:
-  //        compositeLayerTransform = Tr[origin2anchor] * M[layer] *
+  //        composite_layer_transform = Tr[origin2anchor] * M[layer] *
   //        Tr[origin2anchor].inverse()
   //
-  //        compositeSublayerTransform = Tr[origin2anchor] * M[sublayer] *
+  //        composite_sublayer_transform = Tr[origin2anchor] * M[sublayer] *
   //        Tr[origin2anchor].inverse()
   //
   // 4. When a layer (or render surface) is drawn, it is drawn into a "target
@@ -704,17 +704,17 @@ static void CalculateDrawPropertiesInternal(
   // Using these definitions, then:
   //
   // The draw transform for the layer is:
-  //        M[draw] = M[parent] * Tr[origin] * compositeLayerTransform *
-  //            S[layer2content] = M[parent] * Tr[layer->Position() + anchor] *
+  //        M[draw] = M[parent] * Tr[origin] * composite_layer_transform *
+  //            S[layer2content] = M[parent] * Tr[layer->position() + anchor] *
   //            M[layer] * Tr[anchor2origin] * S[layer2content]
   //
   //        Interpreting the math left-to-right, this transforms from the
   //        layer's render surface to the origin of the layer in content space.
   //
   // The screen space transform is:
-  //        M[screenspace] = M[root] * Tr[origin] * compositeLayerTransform *
+  //        M[screenspace] = M[root] * Tr[origin] * composite_layer_transform *
   //            S[layer2content]
-  //                       = M[root] * Tr[layer->Position() + anchor] * M[layer]
+  //                       = M[root] * Tr[layer->position() + anchor] * M[layer]
   //                           * Tr[anchor2origin] * S[layer2content]
   //
   //        Interpreting the math left-to-right, this transforms from the root
@@ -724,10 +724,10 @@ static void CalculateDrawPropertiesInternal(
   // The transform hierarchy that is passed on to children (i.e. the child's
   // parent_matrix) is:
   //        M[parent]_for_child = M[parent] * Tr[origin] *
-  //            compositeLayerTransform * compositeSublayerTransform
-  //                            = M[parent] * Tr[layer->Position() + anchor] *
-  //                                M[layer] * Tr[anchor2origin] *
-  //                                compositeSublayerTransform
+  //            composite_layer_transform * composite_sublayer_transform
+  //                            = M[parent] * Tr[layer->position() + anchor] *
+  //                              M[layer] * Tr[anchor2origin] *
+  //                              composite_sublayer_transform
   //
   //        and a similar matrix for the full hierarchy with respect to the
   //        root.
@@ -755,19 +755,19 @@ static void CalculateDrawPropertiesInternal(
   //
   // The replica draw transform to its target surface origin is:
   //        M[replicaDraw] = S[deviceScale] * M[surfaceDraw] *
-  //            Tr[replica->Position() + replica->anchor()] * Tr[replica] *
+  //            Tr[replica->position() + replica->anchor()] * Tr[replica] *
   //            Tr[origin2anchor].inverse() * S[contents_scale].inverse()
   //
   // The replica draw transform to the root (screen space) origin is:
-  //        M[replica2root] = M[surface2root] * Tr[replica->Position()] *
+  //        M[replica2root] = M[surface2root] * Tr[replica->position()] *
   //            Tr[replica] * Tr[origin2anchor].inverse()
   //
 
-  // If we early-exit anywhere in this function, the drawableContentRect of this
+  // If we early-exit anywhere in this function, the drawable_content_rect of this
   // subtree should be considered empty.
   *drawable_content_rect_of_subtree = gfx::Rect();
 
-  // The root layer cannot skip calcDrawProperties.
+  // The root layer cannot skip CalcDrawProperties.
   if (!IsRootLayer(layer) && SubtreeShouldBeSkipped(layer))
     return;
 
@@ -782,8 +782,8 @@ static void CalculateDrawPropertiesInternal(
   bool subtree_should_be_clipped = false;
 
   // This value is cached on the stack so that we don't have to inverse-project
-  // the surface's clipRect redundantly for every layer. This value is the
-  // same as the surface's clipRect, except that instead of being described
+  // the surface's clip rect redundantly for every layer. This value is the
+  // same as the surface's clip rect, except that instead of being described
   // in the target surface space (i.e. the ancestor surface space), it is
   // described in the current surface space.
   gfx::Rect clip_rect_for_subtree_in_descendant_space;
@@ -828,7 +828,7 @@ static void CalculateDrawPropertiesInternal(
     combined_transform.Translate(position.x(), position.y());
   }
 
-  // The layer's contentsSize is determined from the combined_transform, which
+  // The layer's contents_scale is determined from the combined_transform, which
   // then informs the layer's draw_transform.
   UpdateLayerContentsScale(layer,
                            combined_transform,
@@ -839,7 +839,7 @@ static void CalculateDrawPropertiesInternal(
   // If there is a transformation from the impl thread then it should be at
   // the start of the combined_transform, but we don't want it to affect the
   // computation of contents_scale above.
-  // Note carefully: this is Concat, not Preconcat (implTransform *
+  // Note carefully: this is Concat, not Preconcat (impl_transform *
   // combined_transform).
   combined_transform.ConcatTransform(layer->impl_transform());
 
@@ -868,8 +868,8 @@ static void CalculateDrawPropertiesInternal(
   layer_draw_properties.target_space_transform.Scale
       (1.f / layer->contents_scale_x(), 1.f / layer->contents_scale_y());
 
-  // layerScreenSpaceTransform represents the transform between root layer's
-  // "screen space" and local content space.
+  // The layer's screen_space_transform represents the transform between root
+  // layer's "screen space" and local content space.
   layer_draw_properties.screen_space_transform = full_hierarchy_matrix;
   if (!layer->preserves_3d())
     layer_draw_properties.screen_space_transform.FlattenTo2d();
@@ -963,7 +963,7 @@ static void CalculateDrawPropertiesInternal(
 
     // The new render_surface here will correctly clip the entire subtree. So,
     // we do not need to continue propagating the clipping state further down
-    // the tree. This way, we can avoid transforming clipRects from ancestor
+    // the tree. This way, we can avoid transforming clip rects from ancestor
     // target surface space to current target surface space that could cause
     // more w < 0 headaches.
     subtree_should_be_clipped = false;
@@ -990,7 +990,7 @@ static void CalculateDrawPropertiesInternal(
     if (layer->filters().hasFilterThatMovesPixels() || layer->filter())
       nearest_ancestor_that_moves_pixels = render_surface;
 
-    // The render surface clipRect is expressed in the space where this surface
+    // The render surface clip rect is expressed in the space where this surface
     // draws, i.e. the same space as clip_rect_from_ancestor.
     render_surface->SetIsClipped(ancestor_clips_subtree);
     if (ancestor_clips_subtree) {
@@ -1044,7 +1044,7 @@ static void CalculateDrawPropertiesInternal(
     if (ancestor_clips_subtree)
       clip_rect_for_subtree = clip_rect_from_ancestor;
 
-    // The surface's cached clipRect value propagates regardless of what
+    // The surface's cached clip rect value propagates regardless of what
     // clipping goes on between layers here.
     clip_rect_for_subtree_in_descendant_space =
         clip_rect_from_ancestor_in_descendant_space;
@@ -1135,8 +1135,8 @@ static void CalculateDrawPropertiesInternal(
     return;
   }
 
-  // Compute the total drawableContentRect for this subtree (the rect is in
-  // targetSurface space).
+  // Compute the total drawable_content_rect for this subtree (the rect is in
+  // target surface space).
   gfx::Rect local_drawable_content_rect_of_subtree =
       accumulated_drawable_content_rect_of_children;
   if (layer->DrawsContent())
@@ -1144,7 +1144,7 @@ static void CalculateDrawPropertiesInternal(
   if (subtree_should_be_clipped)
     local_drawable_content_rect_of_subtree.Intersect(clip_rect_for_subtree);
 
-  // Compute the layer's drawable content rect (the rect is in targetSurface
+  // Compute the layer's drawable content rect (the rect is in target surface
   // space).
   layer_draw_properties.drawable_content_rect = rect_in_target_space;
   if (subtree_should_be_clipped) {
@@ -1153,14 +1153,14 @@ static void CalculateDrawPropertiesInternal(
   }
 
   // Tell the layer the rect that is clipped by. In theory we could use a
-  // tighter clipRect here (drawableContentRect), but that actually does not
+  // tighter clip rect here (drawable_content_rect), but that actually does not
   // reduce how much would be drawn, and instead it would create unnecessary
   // changes to scissor state affecting GPU performance.
   layer_draw_properties.is_clipped = subtree_should_be_clipped;
   if (subtree_should_be_clipped) {
     layer_draw_properties.clip_rect = clip_rect_for_subtree;
   } else {
-    // Initialize the clipRect to a safe value that will not clip the
+    // Initialize the clip rect to a safe value that will not clip the
     // layer, just in case clipping is still accidentally used.
     layer_draw_properties.clip_rect = rect_in_target_space;
   }
@@ -1299,8 +1299,8 @@ void LayerTreeHostCommon::CalculateDrawProperties(
   device_scale_transform.Scale(device_scale_factor, device_scale_factor);
   std::vector<scoped_refptr<Layer> > dummy_layer_list;
 
-  // The root layer's render_surface should receive the deviceViewport as the
-  // initial clipRect.
+  // The root layer's render_surface should receive the device viewport as the
+  // initial clip rect.
   bool subtree_should_be_clipped = true;
   gfx::Rect device_viewport_rect(gfx::Point(), device_viewport_size);
   bool update_tile_priorities = false;
@@ -1332,7 +1332,7 @@ void LayerTreeHostCommon::CalculateDrawProperties(
   // The dummy layer list should not have been used.
   DCHECK_EQ(dummy_layer_list.size(), 0);
   // A root layer render_surface should always exist after
-  // calculateDrawProperties.
+  // CalculateDrawProperties.
   DCHECK(root_layer->render_surface());
 }
 
@@ -1352,8 +1352,8 @@ void LayerTreeHostCommon::CalculateDrawProperties(
   std::vector<LayerImpl*> dummy_layer_list;
   LayerSorter layer_sorter;
 
-  // The root layer's render_surface should receive the deviceViewport as the
-  // initial clipRect.
+  // The root layer's render_surface should receive the device viewport as the
+  // initial clip rect.
   bool subtree_should_be_clipped = true;
   gfx::Rect device_viewport_rect(gfx::Point(), device_viewport_size);
 
@@ -1385,7 +1385,7 @@ void LayerTreeHostCommon::CalculateDrawProperties(
   // The dummy layer list should not have been used.
   DCHECK_EQ(dummy_layer_list.size(), 0);
   // A root layer render_surface should always exist after
-  // calculateDrawProperties.
+  // CalculateDrawProperties.
   DCHECK(root_layer->render_surface());
 }
 

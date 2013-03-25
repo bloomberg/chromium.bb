@@ -52,7 +52,7 @@ SingleThreadProxy::~SingleThreadProxy() {
 }
 
 bool SingleThreadProxy::CompositeAndReadback(void* pixels, gfx::Rect rect) {
-  TRACE_EVENT0("cc", "SingleThreadProxy::compositeAndReadback");
+  TRACE_EVENT0("cc", "SingleThreadProxy::CompositeAndReadback");
   DCHECK(Proxy::IsMainThread());
 
   if (!CommitAndComposite(base::TimeTicks::Now()))
@@ -95,11 +95,11 @@ bool SingleThreadProxy::IsStarted() const {
 
 bool SingleThreadProxy::InitializeOutputSurface() {
   DCHECK(Proxy::IsMainThread());
-  scoped_ptr<OutputSurface> outputSurface =
+  scoped_ptr<OutputSurface> output_surface =
       layer_tree_host_->CreateOutputSurface();
-  if (!outputSurface.get())
+  if (!output_surface.get())
     return false;
-  output_surface_before_initialization_ = outputSurface.Pass();
+  output_surface_before_initialization_ = output_surface.Pass();
   return true;
 }
 
@@ -131,13 +131,13 @@ bool SingleThreadProxy::InitializeRenderer() {
 }
 
 bool SingleThreadProxy::RecreateOutputSurface() {
-  TRACE_EVENT0("cc", "SingleThreadProxy::recreateContext");
+  TRACE_EVENT0("cc", "SingleThreadProxy::RecreateContext");
   DCHECK(Proxy::IsMainThread());
   DCHECK(output_surface_lost_);
 
-  scoped_ptr<OutputSurface> outputSurface =
+  scoped_ptr<OutputSurface> output_surface =
       layer_tree_host_->CreateOutputSurface();
-  if (!outputSurface.get())
+  if (!output_surface.get())
     return false;
   scoped_refptr<cc::ContextProvider> offscreen_context_provider;
   if (created_offscreen_context_provider_) {
@@ -154,7 +154,7 @@ bool SingleThreadProxy::RecreateOutputSurface() {
     layer_tree_host_->DeleteContentsTexturesOnImplThread(
         layer_tree_host_impl_->resource_provider());
     initialized =
-        layer_tree_host_impl_->InitializeRenderer(outputSurface.Pass());
+        layer_tree_host_impl_->InitializeRenderer(output_surface.Pass());
     if (initialized) {
       renderer_capabilities_for_main_thread_ =
           layer_tree_host_impl_->GetRendererCapabilities();
@@ -191,7 +191,7 @@ void SingleThreadProxy::DoCommit(scoped_ptr<ResourceUpdateQueue> queue) {
 
     RenderingStatsInstrumentation* stats_instrumentation =
         layer_tree_host_->rendering_stats_instrumentation();
-    base::TimeTicks startTime = stats_instrumentation->StartRecording();
+    base::TimeTicks start_time = stats_instrumentation->StartRecording();
 
     layer_tree_host_impl_->BeginCommit();
 
@@ -199,13 +199,13 @@ void SingleThreadProxy::DoCommit(scoped_ptr<ResourceUpdateQueue> queue) {
         PushTexturePrioritiesToBackings();
     layer_tree_host_->BeginCommitOnImplThread(layer_tree_host_impl_.get());
 
-    scoped_ptr<ResourceUpdateController> updateController =
+    scoped_ptr<ResourceUpdateController> update_controller =
         ResourceUpdateController::Create(
             NULL,
             Proxy::MainThread(),
             queue.Pass(),
             layer_tree_host_impl_->resource_provider());
-    updateController->Finalize();
+    update_controller->Finalize();
 
     layer_tree_host_->FinishCommitOnImplThread(layer_tree_host_impl_.get());
 
@@ -214,12 +214,12 @@ void SingleThreadProxy::DoCommit(scoped_ptr<ResourceUpdateQueue> queue) {
 #ifndef NDEBUG
     // In the single-threaded case, the scroll deltas should never be
     // touched on the impl layer tree.
-    scoped_ptr<ScrollAndScaleSet> scrollInfo =
+    scoped_ptr<ScrollAndScaleSet> scroll_info =
         layer_tree_host_impl_->ProcessScrollDeltas();
-    DCHECK(!scrollInfo->scrolls.size());
+    DCHECK(!scroll_info->scrolls.size());
 #endif
 
-    base::TimeDelta duration = stats_instrumentation->EndRecording(startTime);
+    base::TimeDelta duration = stats_instrumentation->EndRecording(start_time);
     stats_instrumentation->AddCommit(duration);
   }
   layer_tree_host_->CommitComplete();
@@ -233,7 +233,7 @@ void SingleThreadProxy::SetNeedsCommit() {
 
 void SingleThreadProxy::SetNeedsRedraw() {
   // FIXME: Once we move render_widget scheduling into this class, we can
-  // treat redraw requests more efficiently than commitAndRedraw requests.
+  // treat redraw requests more efficiently than CommitAndRedraw requests.
   layer_tree_host_impl_->SetFullRootLayerDamage();
   SetNeedsCommit();
 }

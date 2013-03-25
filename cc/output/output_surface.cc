@@ -58,10 +58,10 @@ bool OutputSurface::BindToClient(
   if (!context3d_->makeContextCurrent())
     return false;
 
-  string extensionsString = UTF16ToASCII(context3d_->getString(GL_EXTENSIONS));
-  vector<string> extensionsList;
-  base::SplitString(extensionsString, ' ', &extensionsList);
-  set<string> extensions(extensionsList.begin(), extensionsList.end());
+  string extensions_string = UTF16ToASCII(context3d_->getString(GL_EXTENSIONS));
+  vector<string> extensions_list;
+  base::SplitString(extensions_string, ' ', &extensions_list);
+  set<string> extensions(extensions_list.begin(), extensions_list.end());
 
   has_gl_discard_backbuffer_ =
       extensions.count("GL_CHROMIUM_discard_backbuffer");
@@ -97,7 +97,7 @@ void OutputSurface::BindFramebuffer() {
 
 void OutputSurface::SwapBuffers() {
   DCHECK(context3d_);
-  // Note that currently this has the same effect as swapBuffers; we should
+  // Note that currently this has the same effect as SwapBuffers; we should
   // consider exposing a different entry point on WebGraphicsContext3D.
   context3d_->prepareTexture();
 }

@@ -123,7 +123,7 @@ scoped_ptr<SharedQuadState> LayerImpl::CreateSharedQuadState() const {
 
 void LayerImpl::WillDraw(ResourceProvider* resource_provider) {
 #ifndef NDEBUG
-  // willDraw/didDraw must be matched.
+  // WillDraw/DidDraw must be matched.
   DCHECK(!between_will_draw_and_did_draw_);
   between_will_draw_and_did_draw_ = true;
 #endif
@@ -169,10 +169,10 @@ void LayerImpl::AppendDebugBorderQuad(
   GetDebugBorderProperties(&color, &width);
 
   gfx::Rect content_rect(content_bounds());
-  scoped_ptr<DebugBorderDrawQuad> debugBorderQuad =
+  scoped_ptr<DebugBorderDrawQuad> debug_border_quad =
       DebugBorderDrawQuad::Create();
-  debugBorderQuad->SetNew(shared_quad_state, content_rect, color, width);
-  quad_sink->Append(debugBorderQuad.PassAs<DrawQuad>(), append_quads_data);
+  debug_border_quad->SetNew(shared_quad_state, content_rect, color, width);
+  quad_sink->Append(debug_border_quad.PassAs<DrawQuad>(), append_quads_data);
 }
 
 bool LayerImpl::HasDelegatedContent() const {
@@ -224,12 +224,12 @@ InputHandlerClient::ScrollStatus LayerImpl::TryScroll(
     gfx::PointF screen_space_point,
     InputHandlerClient::ScrollInputType type) const {
   if (should_scroll_on_main_thread()) {
-    TRACE_EVENT0("cc", "LayerImpl::tryScroll: Failed shouldScrollOnMainThread");
+    TRACE_EVENT0("cc", "LayerImpl::TryScroll: Failed ShouldScrollOnMainThread");
     return InputHandlerClient::ScrollOnMainThread;
   }
 
   if (!screen_space_transform().IsInvertible()) {
-    TRACE_EVENT0("cc", "LayerImpl::tryScroll: Ignored nonInvertibleTransform");
+    TRACE_EVENT0("cc", "LayerImpl::TryScroll: Ignored NonInvertibleTransform");
     return InputHandlerClient::ScrollIgnored;
   }
 
@@ -255,13 +255,13 @@ InputHandlerClient::ScrollStatus LayerImpl::TryScroll(
         non_fast_scrollable_region().Contains(
             gfx::ToRoundedPoint(hit_test_point_in_layer_space))) {
       TRACE_EVENT0("cc",
-                   "LayerImpl::tryScroll: Failed nonFastScrollableRegion");
+                   "LayerImpl::tryScroll: Failed NonFastScrollableRegion");
       return InputHandlerClient::ScrollOnMainThread;
     }
   }
 
   if (type == InputHandlerClient::Wheel && have_wheel_event_handlers()) {
-    TRACE_EVENT0("cc", "LayerImpl::tryScroll: Failed wheelEventHandlers");
+    TRACE_EVENT0("cc", "LayerImpl::tryScroll: Failed WheelEventHandlers");
     return InputHandlerClient::ScrollOnMainThread;
   }
 
@@ -349,7 +349,7 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
 
   // If the main thread commits multiple times before the impl thread actually
   // draws, then damage tracking will become incorrect if we simply clobber the
-  // updateRect here. The LayerImpl's updateRect needs to accumulate (i.e.
+  // update_rect here. The LayerImpl's update_rect needs to accumulate (i.e.
   // union) any update changes that have occurred on the main thread.
   update_rect_.Union(layer->update_rect());
   layer->set_update_rect(update_rect_);

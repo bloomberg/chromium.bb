@@ -566,7 +566,7 @@ class ImplSidePaintingScrollTestSimple : public ImplSidePaintingScrollTest {
           EXPECT_VECTOR_EQ(root->sent_scroll_delta(), gfx::Vector2d());
           PostSetNeedsCommitToMainThread();
 
-          // commitCompleteOnThread will trigger this function again
+          // CommitCompleteOnThread will trigger this function again
           // and cause us to take the else clause.
         } else {
           can_activate_ = true;
@@ -659,7 +659,6 @@ class LayerTreeHostScrollTestScrollZeroMaxScrollOffset
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostScrollTestScrollZeroMaxScrollOffset)
-
 
 }  // namespace
 }  // namespace cc

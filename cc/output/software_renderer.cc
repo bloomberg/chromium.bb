@@ -270,8 +270,10 @@ void SoftwareRenderer::DrawDebugBorderQuad(const DrawingFrame& frame,
   // We need to apply the matrix manually to have pixel-sized stroke width.
   SkPoint vertices[4];
   gfx::RectFToSkRect(QuadVertexRect()).toQuad(vertices);
-  SkPoint transformedVertices[4];
-  current_canvas_->getTotalMatrix().mapPoints(transformedVertices, vertices, 4);
+  SkPoint transformed_vertices[4];
+  current_canvas_->getTotalMatrix().mapPoints(transformed_vertices,
+                                              vertices,
+                                              4);
   current_canvas_->resetMatrix();
 
   current_paint_.setColor(quad->color);
@@ -279,7 +281,7 @@ void SoftwareRenderer::DrawDebugBorderQuad(const DrawingFrame& frame,
   current_paint_.setStyle(SkPaint::kStroke_Style);
   current_paint_.setStrokeWidth(quad->width);
   current_canvas_->drawPoints(SkCanvas::kPolygon_PointMode,
-                              4, transformedVertices, current_paint_);
+                              4, transformed_vertices, current_paint_);
 }
 
 void SoftwareRenderer::DrawSolidColorQuad(const DrawingFrame& frame,

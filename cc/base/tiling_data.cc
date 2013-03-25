@@ -11,11 +11,15 @@
 
 namespace cc {
 
-static int ComputeNumTiles(int max_texture_size, int total_size, int border_texels) {
+static int ComputeNumTiles(int max_texture_size,
+                           int total_size,
+                           int border_texels) {
   if (max_texture_size - 2 * border_texels <= 0)
     return total_size > 0 && max_texture_size >= total_size ? 1 : 0;
 
-  int num_tiles = std::max(1, 1 + (total_size - 1 - 2 * border_texels) / (max_texture_size - 2 * border_texels));
+  int num_tiles = std::max(1,
+                           1 + (total_size - 1 - 2 * border_texels) /
+                           (max_texture_size - 2 * border_texels));
   return total_size > 0 ? num_tiles : 0;
 }
 
@@ -27,10 +31,10 @@ TilingData::TilingData()
 TilingData::TilingData(
     gfx::Size max_texture_size,
     gfx::Size total_size,
-    bool hasBorderTexels)
+    bool has_border_texels)
     : max_texture_size_(max_texture_size),
       total_size_(total_size),
-      border_texels_(hasBorderTexels ? 1 : 0) {
+      border_texels_(has_border_texels ? 1 : 0) {
   RecomputeNumTiles();
 }
 

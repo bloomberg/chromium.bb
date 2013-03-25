@@ -56,8 +56,8 @@ void HeadsUpDisplayLayer::Update(ResourceUpdateQueue*,
 bool HeadsUpDisplayLayer::DrawsContent() const { return true; }
 
 scoped_ptr<LayerImpl> HeadsUpDisplayLayer::CreateLayerImpl(
-    LayerTreeImpl* treeImpl) {
-  return HeadsUpDisplayLayerImpl::Create(treeImpl, layer_id_).
+    LayerTreeImpl* tree_impl) {
+  return HeadsUpDisplayLayerImpl::Create(tree_impl, layer_id_).
       PassAs<LayerImpl>();
 }
 

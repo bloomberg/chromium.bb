@@ -232,7 +232,7 @@ class GLRendererTest : public testing::Test {
   FakeRendererGL renderer_;
 };
 
-// Test GLRenderer discardBackbuffer functionality:
+// Test GLRenderer DiscardBackbuffer functionality:
 // Suggest recreating framebuffer when one already exists.
 // Expected: it does nothing.
 TEST_F(GLRendererTest, SuggestBackbufferYesWhenItAlreadyExistsShouldDoNothing) {
@@ -244,7 +244,7 @@ TEST_F(GLRendererTest, SuggestBackbufferYesWhenItAlreadyExistsShouldDoNothing) {
   EXPECT_EQ(1, context()->frame_count());
 }
 
-// Test GLRenderer discardBackbuffer functionality:
+// Test GLRenderer DiscardBackbuffer functionality:
 // Suggest discarding framebuffer when one exists and the renderer is not
 // visible.
 // Expected: it is discarded and damage tracker is reset.
@@ -256,7 +256,7 @@ TEST_F(GLRendererTest,
   EXPECT_TRUE(renderer_.IsBackbufferDiscarded());
 }
 
-// Test GLRenderer discardBackbuffer functionality:
+// Test GLRenderer DiscardBackbuffer functionality:
 // Suggest discarding framebuffer when one exists and the renderer is visible.
 // Expected: the allocation is ignored.
 TEST_F(GLRendererTest, SuggestBackbufferNoDoNothingWhenVisible) {
@@ -266,7 +266,7 @@ TEST_F(GLRendererTest, SuggestBackbufferNoDoNothingWhenVisible) {
   EXPECT_FALSE(renderer_.IsBackbufferDiscarded());
 }
 
-// Test GLRenderer discardBackbuffer functionality:
+// Test GLRenderer DiscardBackbuffer functionality:
 // Suggest discarding framebuffer when one does not exist.
 // Expected: it does nothing.
 TEST_F(GLRendererTest, SuggestBackbufferNoWhenItDoesntExistShouldDoNothing) {
@@ -280,7 +280,7 @@ TEST_F(GLRendererTest, SuggestBackbufferNoWhenItDoesntExistShouldDoNothing) {
   EXPECT_TRUE(renderer_.IsBackbufferDiscarded());
 }
 
-// Test GLRenderer discardBackbuffer functionality:
+// Test GLRenderer DiscardBackbuffer functionality:
 // Begin drawing a frame while a framebuffer is discarded.
 // Expected: will recreate framebuffer.
 TEST_F(GLRendererTest, DiscardedBackbufferIsRecreatedForScopeDuration) {
@@ -668,7 +668,7 @@ TEST(GLRendererTest2, VisibilityChangeIsLastCall) {
   bool last_call_was_set_visiblity = false;
   // Ensure that the call to setVisibilityCHROMIUM is the last call issue to the
   // GPU process, after glFlush is called, and after the RendererClient's
-  // enforceManagedMemoryPolicy is called. Plumb this tracking between both the
+  // EnforceManagedMemoryPolicy is called. Plumb this tracking between both the
   // RenderClient and the Context by giving them both a pointer to a variable on
   // the stack.
   context->set_last_call_was_set_visibility_pointer(&last_call_was_set_visiblity);
@@ -766,9 +766,9 @@ TEST(GLRendererTest2, ActiveTextureState) {
   renderer.BeginDrawingFrame(drawing_frame);
   EXPECT_EQ(context->active_texture(), GL_TEXTURE0);
 
-  for (cc::QuadList::backToFrontIterator
-           it = pass->quad_list.backToFrontBegin();
-       it != pass->quad_list.backToFrontEnd();
+  for (cc::QuadList::BackToFrontIterator
+           it = pass->quad_list.BackToFrontBegin();
+       it != pass->quad_list.BackToFrontEnd();
        ++it) {
     renderer.DoDrawQuad(drawing_frame, *it);
   }
@@ -812,16 +812,16 @@ TEST(GLRendererTest2, ShouldClearRootRenderPass) {
   render_passes.clear();
 
   RenderPass::Id root_pass_id(1, 0);
-  TestRenderPass* root_pass = addRenderPass(
+  TestRenderPass* root_pass = AddRenderPass(
       render_passes, root_pass_id, viewport_rect, gfx::Transform());
-  addQuad(root_pass, viewport_rect, SK_ColorGREEN);
+  AddQuad(root_pass, viewport_rect, SK_ColorGREEN);
 
   RenderPass::Id child_pass_id(2, 0);
-  TestRenderPass* child_pass = addRenderPass(
+  TestRenderPass* child_pass = AddRenderPass(
       render_passes, child_pass_id, viewport_rect, gfx::Transform());
-  addQuad(child_pass, viewport_rect, SK_ColorBLUE);
+  AddQuad(child_pass, viewport_rect, SK_ColorBLUE);
 
-  addRenderPassQuad(root_pass, child_pass);
+  AddRenderPassQuad(root_pass, child_pass);
 
   // First render pass is not the root one, clearing should happen.
   EXPECT_CALL(*mock_context, clear(GL_COLOR_BUFFER_BIT)).Times(AtLeast(1));
@@ -884,23 +884,23 @@ TEST(GLRendererTest2, ScissorTestWhenClearing) {
 
   gfx::Rect grand_child_rect(25, 25);
   RenderPass::Id grand_child_pass_id(3, 0);
-  TestRenderPass* grand_child_pass = addRenderPass(
+  TestRenderPass* grand_child_pass = AddRenderPass(
       render_passes, grand_child_pass_id, grand_child_rect, gfx::Transform());
-  addClippedQuad(grand_child_pass, grand_child_rect, SK_ColorYELLOW);
+  AddClippedQuad(grand_child_pass, grand_child_rect, SK_ColorYELLOW);
 
   gfx::Rect child_rect(50, 50);
   RenderPass::Id child_pass_id(2, 0);
   TestRenderPass* child_pass =
-      addRenderPass(render_passes, child_pass_id, child_rect, gfx::Transform());
-  addQuad(child_pass, child_rect, SK_ColorBLUE);
+      AddRenderPass(render_passes, child_pass_id, child_rect, gfx::Transform());
+  AddQuad(child_pass, child_rect, SK_ColorBLUE);
 
   RenderPass::Id root_pass_id(1, 0);
-  TestRenderPass* root_pass = addRenderPass(
+  TestRenderPass* root_pass = AddRenderPass(
       render_passes, root_pass_id, viewport_rect, gfx::Transform());
-  addQuad(root_pass, viewport_rect, SK_ColorGREEN);
+  AddQuad(root_pass, viewport_rect, SK_ColorGREEN);
 
-  addRenderPassQuad(root_pass, child_pass);
-  addRenderPassQuad(child_pass, grand_child_pass);
+  AddRenderPassQuad(root_pass, child_pass);
+  AddRenderPassQuad(child_pass, grand_child_pass);
 
   renderer.DecideRenderPassAllocationsForFrame(
       *mock_client.render_passes_in_draw_order());
@@ -964,9 +964,9 @@ class MockOutputSurfaceTest : public testing::Test, public FakeRendererClient {
     render_passes->clear();
 
     RenderPass::Id render_pass_id(1, 0);
-    TestRenderPass* render_pass = addRenderPass(
+    TestRenderPass* render_pass = AddRenderPass(
         *render_passes, render_pass_id, viewport_rect, gfx::Transform());
-    addQuad(render_pass, viewport_rect, SK_ColorGREEN);
+    AddQuad(render_pass, viewport_rect, SK_ColorGREEN);
 
     EXPECT_CALL(output_surface_, EnsureBackbuffer()).WillRepeatedly(Return());
 

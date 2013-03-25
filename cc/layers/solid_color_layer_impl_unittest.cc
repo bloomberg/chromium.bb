@@ -109,9 +109,9 @@ TEST(SolidColorLayerImplTest, VerifyOpaqueRect) {
   scoped_refptr<Layer> root = Layer::Create();
   root->AddChild(layer);
 
-  std::vector<scoped_refptr<Layer> > renderSurfaceLayerList;
+  std::vector<scoped_refptr<Layer> > render_surface_layer_list;
   LayerTreeHostCommon::CalculateDrawProperties(
-      root, gfx::Size(500, 500), 1, 1, 1024, false, &renderSurfaceLayerList);
+      root, gfx::Size(500, 500), 1, 1, 1024, false, &render_surface_layer_list);
 
   EXPECT_FALSE(layer->contents_opaque());
   layer->SetBackgroundColor(SkColorSetARGBInline(255, 10, 20, 30));
@@ -124,7 +124,7 @@ TEST(SolidColorLayerImplTest, VerifyOpaqueRect) {
     // The impl layer should call itself opaque as well.
     EXPECT_TRUE(layer_impl->contents_opaque());
 
-    // Impl layer has 1 opacity, and the color is opaque, so the opaqueRect
+    // Impl layer has 1 opacity, and the color is opaque, so the opaque_rect
     // should be the full tile.
     layer_impl->draw_properties().opacity = 1;
 

@@ -151,8 +151,8 @@ void ScrollbarLayerImpl::AppendQuads(QuadSink* quad_sink,
   bool flipped = false;
   gfx::PointF uv_top_left(0.f, 0.f);
   gfx::PointF uv_bottom_right(1.f, 1.f);
-  gfx::Rect boundsRect(bounds());
-  gfx::Rect contentBoundsRect(content_bounds());
+  gfx::Rect bounds_rect(bounds());
+  gfx::Rect content_bounds_rect(content_bounds());
 
   SharedQuadState* shared_quad_state =
       quad_sink->UseSharedQuadState(CreateSharedQuadState());
@@ -191,12 +191,12 @@ void ScrollbarLayerImpl::AppendQuads(QuadSink* quad_sink,
     return;
   }
 
-  WebRect thumb_rect, back_track_rect, foreTrackRect;
+  WebRect thumb_rect, back_track_rect, fore_track_rect;
   geometry_->splitTrack(&scrollbar_,
                         geometry_->trackRect(&scrollbar_),
                         back_track_rect,
                         thumb_rect,
-                        foreTrackRect);
+                        fore_track_rect);
   if (!geometry_->hasThumb(&scrollbar_))
     thumb_rect = WebRect();
 
@@ -222,11 +222,11 @@ void ScrollbarLayerImpl::AppendQuads(QuadSink* quad_sink,
 
   // We only paint the track in two parts if we were given a texture for the
   // forward track part.
-  if (fore_track_resource_id_ && !foreTrackRect.isEmpty()) {
+  if (fore_track_resource_id_ && !fore_track_rect.isEmpty()) {
     gfx::Rect quad_rect(ScrollbarLayerRectToContentRect(
-        gfx::Rect(foreTrackRect)));
+        gfx::Rect(fore_track_rect)));
     gfx::Rect opaque_rect(contents_opaque() ? quad_rect : gfx::Rect());
-    gfx::RectF uv_rect(ToUVRect(foreTrackRect, boundsRect));
+    gfx::RectF uv_rect(ToUVRect(fore_track_rect, bounds_rect));
     const float opacity[] = {1.0f, 1.0f, 1.0f, 1.0f};
     scoped_ptr<TextureDrawQuad> quad = TextureDrawQuad::Create();
     quad->SetNew(shared_quad_state,
@@ -244,8 +244,8 @@ void ScrollbarLayerImpl::AppendQuads(QuadSink* quad_sink,
   // Order matters here: since the back track texture is being drawn to the
   // entire contents rect, we must append it after the thumb and fore track
   // quads. The back track texture contains (and displays) the buttons.
-  if (!contentBoundsRect.IsEmpty()) {
-    gfx::Rect quad_rect(contentBoundsRect);
+  if (!content_bounds_rect.IsEmpty()) {
+    gfx::Rect quad_rect(content_bounds_rect);
     gfx::Rect opaque_rect(contents_opaque() ? quad_rect : gfx::Rect());
     const float opacity[] = {1.0f, 1.0f, 1.0f, 1.0f};
     scoped_ptr<TextureDrawQuad> quad = TextureDrawQuad::Create();

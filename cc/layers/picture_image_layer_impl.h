@@ -11,18 +11,18 @@ namespace cc {
 
 class CC_EXPORT PictureImageLayerImpl : public PictureLayerImpl {
  public:
-  static scoped_ptr<PictureImageLayerImpl> Create(LayerTreeImpl* treeImpl,
+  static scoped_ptr<PictureImageLayerImpl> Create(LayerTreeImpl* tree_impl,
                                                   int id) {
-    return make_scoped_ptr(new PictureImageLayerImpl(treeImpl, id));
+    return make_scoped_ptr(new PictureImageLayerImpl(tree_impl, id));
   }
   virtual ~PictureImageLayerImpl();
 
   virtual const char* LayerTypeAsString() const OVERRIDE;
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(
-      LayerTreeImpl* treeImpl) OVERRIDE;
+      LayerTreeImpl* tree_impl) OVERRIDE;
 
  protected:
-  PictureImageLayerImpl(LayerTreeImpl* treeImpl, int id);
+  PictureImageLayerImpl(LayerTreeImpl* tree_impl, int id);
 
   virtual void CalculateRasterContentsScale(
       bool animating_transform_to_screen,

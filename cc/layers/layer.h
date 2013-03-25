@@ -279,9 +279,9 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   void ClearRenderSurface() { draw_properties_.render_surface.reset(); }
   void CreateRenderSurface();
 
-  // The contentsScale converts from logical, non-page-scaled pixels to target
-  // pixels. The contentsScale is 1 for the root layer as it is already in
-  // physical pixels. By default contentsScale is forced to be 1 except for
+  // The contents scale converts from logical, non-page-scaled pixels to target
+  // pixels. The contents scale is 1 for the root layer as it is already in
+  // physical pixels. By default contents scale is forced to be 1 except for
   // subclasses of ContentsScalingLayer.
   float contents_scale_x() const { return draw_properties_.contents_scale_x; }
   float contents_scale_y() const { return draw_properties_.contents_scale_y; }

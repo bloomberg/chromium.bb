@@ -80,7 +80,7 @@ class CC_EXPORT MathUtil {
   }
 
   // Background: Existing transform code does not do the right thing in
-  // mapRect / mapQuad / projectQuad when there is a perspective projection that
+  // MapRect / MapQuad / ProjectQuad when there is a perspective projection that
   // causes one of the transformed vertices to go to w < 0. In those cases, it
   // is necessary to perform clipping in homogeneous coordinates, after applying
   // the transform, before dividing-by-w to convert to cartesian coordinates.
@@ -95,14 +95,14 @@ class CC_EXPORT MathUtil {
                                        const gfx::RectF& rect);
 
   // Returns an array of vertices that represent the clipped polygon. After
-  // returning, indexes from 0 to numVerticesInClippedQuad are valid in the
-  // clippedQuad array. Note that numVerticesInClippedQuad may be zero, which
-  // means the entire quad was clipped, and none of the vertices in the array
-  // are valid.
+  // returning, indexes from 0 to num_vertices_in_clipped_quad are valid in the
+  // clipped_quad array. Note that num_vertices_in_clipped_quad may be zero,
+  // which means the entire quad was clipped, and none of the vertices in the
+  // array are valid.
   static void MapClippedQuad(const gfx::Transform& transform,
                              const gfx::QuadF& src_quad,
-                             gfx::PointF clippedQuad[8],
-                             int& numVerticesInClippedQuad);
+                             gfx::PointF clipped_quad[8],
+                             int& num_vertices_in_clipped_quad);
 
   static gfx::RectF ComputeEnclosingRectOfVertices(gfx::PointF vertices[],
                                                    int num_vertices);

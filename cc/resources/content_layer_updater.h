@@ -17,7 +17,7 @@ class LayerPainter;
 
 // Base class for BitmapContentLayerUpdater and
 // SkPictureContentLayerUpdater that reduces code duplication between
-// their respective paintContents implementations.
+// their respective PaintContents implementations.
 class CC_EXPORT ContentLayerUpdater : public LayerUpdater {
  protected:
   explicit ContentLayerUpdater(scoped_ptr<LayerPainter> painter);

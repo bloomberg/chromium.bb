@@ -91,13 +91,13 @@ bool TextureDrawQuad::PerformClipping() {
       static_cast<float>(quadTransform().matrix().getDouble(1, 3)));
 
   // Transform the rect by the scale and offset.
-  gfx::RectF rectF = rect;
-  rectF.Scale(x_scale, y_scale);
-  rectF += offset;
+  gfx::RectF rect_f = rect;
+  rect_f.Scale(x_scale, y_scale);
+  rect_f += offset;
 
   // Perform clipping and check to see if the result is empty.
-  gfx::RectF clippedRect = IntersectRects(rectF, clipRect());
-  if (clippedRect.IsEmpty()) {
+  gfx::RectF clipped_rect = IntersectRects(rect_f, clipRect());
+  if (clipped_rect.IsEmpty()) {
     rect = gfx::Rect();
     uv_top_left = gfx::PointF();
     uv_bottom_right = gfx::PointF();
@@ -106,15 +106,15 @@ bool TextureDrawQuad::PerformClipping() {
 
   // Create a new uv-rect by clipping the old one to the new bounds.
   gfx::Vector2dF uv_scale(uv_bottom_right - uv_top_left);
-  uv_scale.Scale(1.f / rectF.width(), 1.f / rectF.height());
+  uv_scale.Scale(1.f / rect_f.width(), 1.f / rect_f.height());
   uv_bottom_right = uv_top_left +
       gfx::ScaleVector2d(
-          clippedRect.bottom_right() - rectF.origin(),
+          clipped_rect.bottom_right() - rect_f.origin(),
           uv_scale.x(),
           uv_scale.y());
   uv_top_left = uv_top_left +
       gfx::ScaleVector2d(
-          clippedRect.origin() - rectF.origin(),
+          clipped_rect.origin() - rect_f.origin(),
           uv_scale.x(),
           uv_scale.y());
 
@@ -125,10 +125,10 @@ bool TextureDrawQuad::PerformClipping() {
   if (vertex_opacity[0] != vertex_opacity[1]
       || vertex_opacity[0] != vertex_opacity[2]
       || vertex_opacity[0] != vertex_opacity[3]) {
-    const float x1 = (clippedRect.x() - rectF.x()) / rectF.width();
-    const float y1 = (clippedRect.y() - rectF.y()) / rectF.height();
-    const float x3 = (clippedRect.right() - rectF.x()) / rectF.width();
-    const float y3 = (clippedRect.bottom() - rectF.y()) / rectF.height();
+    const float x1 = (clipped_rect.x() - rect_f.x()) / rect_f.width();
+    const float y1 = (clipped_rect.y() - rect_f.y()) / rect_f.height();
+    const float x3 = (clipped_rect.right() - rect_f.x()) / rect_f.width();
+    const float y3 = (clipped_rect.bottom() - rect_f.y()) / rect_f.height();
     const float x1y1 = x1 * vertex_opacity[2] + (1.0f - x1) * vertex_opacity[1];
     const float x1y3 = x1 * vertex_opacity[3] + (1.0f - x1) * vertex_opacity[0];
     const float x3y1 = x3 * vertex_opacity[2] + (1.0f - x3) * vertex_opacity[1];
@@ -140,12 +140,12 @@ bool TextureDrawQuad::PerformClipping() {
   }
 
   // Move the clipped rectangle back into its space.
-  clippedRect -= offset;
-  clippedRect.Scale(1.0f / x_scale, 1.0f / y_scale);
-  rect = gfx::Rect(static_cast<int>(clippedRect.x() + 0.5f),
-                   static_cast<int>(clippedRect.y() + 0.5f),
-                   static_cast<int>(clippedRect.width() + 0.5f),
-                   static_cast<int>(clippedRect.height() + 0.5f));
+  clipped_rect -= offset;
+  clipped_rect.Scale(1.0f / x_scale, 1.0f / y_scale);
+  rect = gfx::Rect(static_cast<int>(clipped_rect.x() + 0.5f),
+                   static_cast<int>(clipped_rect.y() + 0.5f),
+                   static_cast<int>(clipped_rect.width() + 0.5f),
+                   static_cast<int>(clipped_rect.height() + 0.5f));
   return true;
 }
 

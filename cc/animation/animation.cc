@@ -82,9 +82,9 @@ void Animation::SetRunState(RunState run_state, double monotonic_time) {
   if (suspended_)
     return;
 
-  char nameBuffer[256];
-  base::snprintf(nameBuffer,
-                 sizeof(nameBuffer),
+  char name_buffer[256];
+  base::snprintf(name_buffer,
+                 sizeof(name_buffer),
                  "%s-%d%s",
                  s_targetPropertyNames[target_property_],
                  group_,
@@ -97,7 +97,7 @@ void Animation::SetRunState(RunState run_state, double monotonic_time) {
 
   if (is_waiting_to_start && run_state == Running) {
     TRACE_EVENT_ASYNC_BEGIN1(
-        "cc", "Animation", this, "Name", TRACE_STR_COPY(nameBuffer));
+        "cc", "Animation", this, "Name", TRACE_STR_COPY(name_buffer));
   }
 
   bool was_finished = is_finished();
@@ -115,19 +115,19 @@ void Animation::SetRunState(RunState run_state, double monotonic_time) {
   if (!was_finished && is_finished())
     TRACE_EVENT_ASYNC_END0("cc", "Animation", this);
 
-  char stateBuffer[256];
-  base::snprintf(stateBuffer,
-                 sizeof(stateBuffer),
+  char state_buffer[256];
+  base::snprintf(state_buffer,
+                 sizeof(state_buffer),
                  "%s->%s",
                  old_run_state_name,
                  new_run_state_name);
 
   TRACE_EVENT_INSTANT2("cc",
-                       "LayerAnimationController::setRunState",
+                       "LayerAnimationController::SetRunState",
                        "Name",
-                       TRACE_STR_COPY(nameBuffer),
+                       TRACE_STR_COPY(name_buffer),
                        "State",
-                       TRACE_STR_COPY(stateBuffer));
+                       TRACE_STR_COPY(state_buffer));
 }
 
 void Animation::Suspend(double monotonic_time) {

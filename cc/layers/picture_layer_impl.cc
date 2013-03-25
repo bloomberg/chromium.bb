@@ -84,14 +84,14 @@ void PictureLayerImpl::PushPropertiesTo(LayerImpl* base_layer) {
 }
 
 
-void PictureLayerImpl::AppendQuads(QuadSink* quadSink,
-                                   AppendQuadsData* appendQuadsData) {
+void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
+                                   AppendQuadsData* append_quads_data) {
   const gfx::Rect& rect = visible_content_rect();
   gfx::Rect content_rect(content_bounds());
 
-  SharedQuadState* sharedQuadState =
-      quadSink->UseSharedQuadState(CreateSharedQuadState());
-  AppendDebugBorderQuad(quadSink, sharedQuadState, appendQuadsData);
+  SharedQuadState* shared_quad_state =
+      quad_sink->UseSharedQuadState(CreateSharedQuadState());
+  AppendDebugBorderQuad(quad_sink, shared_quad_state, append_quads_data);
 
   bool clipped = false;
   gfx::QuadF target_quad = MathUtil::MapQuad(
@@ -131,11 +131,12 @@ void PictureLayerImpl::AppendQuads(QuadSink* quadSink,
         width = DebugColors::MissingTileBorderWidth(layer_tree_impl());
       }
 
-      scoped_ptr<DebugBorderDrawQuad> debugBorderQuad =
+      scoped_ptr<DebugBorderDrawQuad> debug_border_quad =
           DebugBorderDrawQuad::Create();
       gfx::Rect geometry_rect = iter.geometry_rect();
-      debugBorderQuad->SetNew(sharedQuadState, geometry_rect, color, width);
-      quadSink->Append(debugBorderQuad.PassAs<DrawQuad>(), appendQuadsData);
+      debug_border_quad->SetNew(shared_quad_state, geometry_rect, color, width);
+      quad_sink->Append(debug_border_quad.PassAs<DrawQuad>(),
+                        append_quads_data);
     }
   }
 
@@ -156,17 +157,17 @@ void PictureLayerImpl::AppendQuads(QuadSink* quadSink,
         // TODO(enne): Figure out how to show debug "invalidated checker" color
         scoped_ptr<CheckerboardDrawQuad> quad = CheckerboardDrawQuad::Create();
         SkColor color = DebugColors::DefaultCheckerboardColor();
-        quad->SetNew(sharedQuadState, geometry_rect, color);
-        if (quadSink->Append(quad.PassAs<DrawQuad>(), appendQuadsData))
-          appendQuadsData->numMissingTiles++;
+        quad->SetNew(shared_quad_state, geometry_rect, color);
+        if (quad_sink->Append(quad.PassAs<DrawQuad>(), append_quads_data))
+          append_quads_data->numMissingTiles++;
       } else {
         scoped_ptr<SolidColorDrawQuad> quad = SolidColorDrawQuad::Create();
-        quad->SetNew(sharedQuadState, geometry_rect, background_color());
-        if (quadSink->Append(quad.PassAs<DrawQuad>(), appendQuadsData))
-          appendQuadsData->numMissingTiles++;
+        quad->SetNew(shared_quad_state, geometry_rect, background_color());
+        if (quad_sink->Append(quad.PassAs<DrawQuad>(), append_quads_data))
+          append_quads_data->numMissingTiles++;
       }
 
-      appendQuadsData->hadIncompleteTile = true;
+      append_quads_data->hadIncompleteTile = true;
       continue;
     }
 
@@ -174,29 +175,29 @@ void PictureLayerImpl::AppendQuads(QuadSink* quadSink,
     switch (drawing_info.mode()) {
       case ManagedTileState::DrawingInfo::TEXTURE_MODE: {
         if (iter->contents_scale() != ideal_contents_scale_)
-          appendQuadsData->hadIncompleteTile = true;
+          append_quads_data->hadIncompleteTile = true;
 
         gfx::RectF texture_rect = iter.texture_rect();
         gfx::Rect opaque_rect = iter->opaque_rect();
         opaque_rect.Intersect(content_rect);
 
         scoped_ptr<TileDrawQuad> quad = TileDrawQuad::Create();
-        quad->SetNew(sharedQuadState,
+        quad->SetNew(shared_quad_state,
                      geometry_rect,
                      opaque_rect,
                      drawing_info.get_resource_id(),
                      texture_rect,
                      iter.texture_size(),
                      drawing_info.contents_swizzled());
-        quadSink->Append(quad.PassAs<DrawQuad>(), appendQuadsData);
+        quad_sink->Append(quad.PassAs<DrawQuad>(), append_quads_data);
         break;
       }
       case ManagedTileState::DrawingInfo::SOLID_COLOR_MODE: {
         scoped_ptr<SolidColorDrawQuad> quad = SolidColorDrawQuad::Create();
-        quad->SetNew(sharedQuadState,
+        quad->SetNew(shared_quad_state,
                      geometry_rect,
                      drawing_info.get_solid_color());
-        quadSink->Append(quad.PassAs<DrawQuad>(), appendQuadsData);
+        quad_sink->Append(quad.PassAs<DrawQuad>(), append_quads_data);
         break;
       }
       case ManagedTileState::DrawingInfo::TRANSPARENT_MODE:
@@ -213,7 +214,7 @@ void PictureLayerImpl::AppendQuads(QuadSink* quadSink,
 
   // Aggressively remove any tilings that are not seen to save memory. Note
   // that this is at the expense of doing cause more frequent re-painting. A
-  // better scheme would be to maintain a tighter visibleContentRect for the
+  // better scheme would be to maintain a tighter visible_content_rect for the
   // finer tilings.
   CleanUpTilingsOnActiveLayer(seen_tilings);
 }
@@ -379,7 +380,7 @@ gfx::Size PictureLayerImpl::CalculateTileSize(
     // of different textures sizes to help recycling, and also keeps all
     // textures multiple-of-eight, which is preferred on some drivers (IMG).
     bool avoid_pow2 =
-        layer_tree_impl()->rendererCapabilities().avoid_pow2_textures;
+        layer_tree_impl()->GetRendererCapabilities().avoid_pow2_textures;
     int round_up_to = avoid_pow2 ? 56 : 64;
     width = RoundUp(width, round_up_to);
     height = RoundUp(height, round_up_to);

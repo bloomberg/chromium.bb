@@ -28,7 +28,7 @@ void ContentLayerUpdater::PaintContents(SkCanvas* canvas,
                                         float contents_height_scale,
                                         gfx::Rect* resulting_opaque_rect,
                                         RenderingStats* stats) {
-  TRACE_EVENT0("cc", "ContentLayerUpdater::paintContents");
+  TRACE_EVENT0("cc", "ContentLayerUpdater::PaintContents");
   canvas->save();
   canvas->translate(SkFloatToScalar(-content_rect.x()),
                     SkFloatToScalar(-content_rect.y()));

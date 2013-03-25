@@ -28,13 +28,13 @@ class SharedQuadState;
 // A list of DrawQuad objects, sorted internally in front-to-back order.
 class QuadList : public ScopedPtrVector<DrawQuad> {
  public:
-  typedef reverse_iterator backToFrontIterator;
-  typedef const_reverse_iterator constBackToFrontIterator;
+  typedef reverse_iterator BackToFrontIterator;
+  typedef const_reverse_iterator ConstBackToFrontIterator;
 
-  inline backToFrontIterator backToFrontBegin() { return rbegin(); }
-  inline backToFrontIterator backToFrontEnd() { return rend(); }
-  inline constBackToFrontIterator backToFrontBegin() const { return rbegin(); }
-  inline constBackToFrontIterator backToFrontEnd() const { return rend(); }
+  inline BackToFrontIterator BackToFrontBegin() { return rbegin(); }
+  inline BackToFrontIterator BackToFrontEnd() { return rend(); }
+  inline ConstBackToFrontIterator BackToFrontBegin() const { return rbegin(); }
+  inline ConstBackToFrontIterator BackToFrontEnd() const { return rend(); }
 };
 
 typedef ScopedPtrVector<SharedQuadState> SharedQuadStateList;
@@ -64,7 +64,7 @@ class CC_EXPORT RenderPass {
   static scoped_ptr<RenderPass> Create();
 
   // A shallow copy of the render pass, which does not include its quads.
-  scoped_ptr<RenderPass> Copy(Id newId) const;
+  scoped_ptr<RenderPass> Copy(Id new_id) const;
 
   void SetNew(Id id,
               gfx::Rect output_rect,

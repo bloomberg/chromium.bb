@@ -134,7 +134,7 @@ TEST(FrameRateControllerTest, TestFrameThrottling_Unthrottled) {
   controller.SetClient(&client);
   controller.SetMaxFramesPending(2);
 
-  // setActive triggers 1st frame, make sure the vsync callback is called
+  // SetActive triggers 1st frame, make sure the vsync callback is called
   controller.SetActive(true);
   thread.RunPendingTask();
   EXPECT_TRUE(client.VSyncTicked());
@@ -157,7 +157,7 @@ TEST(FrameRateControllerTest, TestFrameThrottling_Unthrottled) {
   EXPECT_TRUE(client.VSyncTicked());
   client.Reset();
 
-  // DidBeginFrame triggers 3rd frame (> maxFramesPending),
+  // DidBeginFrame triggers 3rd frame (> max_frames_pending),
   // make sure the vsync callback is NOT called
   controller.DidBeginFrame();
   thread.RunPendingTask();

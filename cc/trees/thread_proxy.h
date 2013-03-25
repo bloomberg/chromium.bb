@@ -224,7 +224,7 @@ class ThreadProxy : public Proxy,
   scoped_ptr<OutputSurface>
       output_surface_before_initialization_on_impl_thread_;
 
-  // Set when the main thread is waiting on a scheduledActionBeginFrame to be
+  // Set when the main thread is waiting on a ScheduledActionBeginFrame to be
   // issued.
   CompletionEvent* begin_frame_completion_event_on_impl_thread_;
 
@@ -243,7 +243,7 @@ class ThreadProxy : public Proxy,
   scoped_ptr<ResourceUpdateController>
       current_resource_update_controller_on_impl_thread_;
 
-  // Set when the next draw should post didCommitAndDrawFrame to the main
+  // Set when the next draw should post DidCommitAndDrawFrame to the main
   // thread.
   bool next_frame_is_newly_committed_frame_on_impl_thread_;
 

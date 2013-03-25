@@ -85,7 +85,7 @@ void HeadsUpDisplayLayerImpl::WillDraw(ResourceProvider* resource_provider) {
   if (!hud_texture_)
     hud_texture_ = ScopedResource::create(resource_provider);
 
-  // TODO(danakj): Scale the HUD by deviceScale to make it more friendly under
+  // TODO(danakj): Scale the HUD by device scale to make it more friendly under
   // high DPI.
 
   // TODO(danakj): The HUD could swap between two textures instead of creating a

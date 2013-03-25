@@ -44,7 +44,7 @@ void LayerIteratorActions::BackToFront::Next(
   // If the current layer has a RS, move to its layer list. Otherwise,
   // visit the next layer in the current RS layer list.
   if (it->current_layer_represents_contributing_render_surface()) {
-    // Save our position in the childLayer list for the RenderSurface,
+    // Save our position in the child_layers list for the RenderSurface,
     // then jump to the next RenderSurface. Save where we
     // came from in the next RenderSurface so we can get back to it.
     it->target_render_surface()->current_layer_index_history_ =

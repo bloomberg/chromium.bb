@@ -98,8 +98,8 @@ bool LayerTreeHostCommon::RenderSurfaceContributesToTarget(
   // A layer will either contribute its own content, or its render surface's
   // content, to the target surface. The layer contributes its surface's content
   // when both the following are true:
-  //  (1) The layer actually has a renderSurface, and
-  //  (2) The layer's renderSurface is not the same as the targetSurface.
+  //  (1) The layer actually has a render surface, and
+  //  (2) The layer's render surface is not the same as the target surface.
   //
   // Otherwise, the layer just contributes itself to the target surface.
 
@@ -131,12 +131,12 @@ template <class Function, typename LayerType>
 void LayerTreeHostCommon::CallFunctionForSubtree(LayerType* root_layer) {
   Function()(root_layer);
 
-  if (LayerType* maskLayer = root_layer->mask_layer())
-    Function()(maskLayer);
-  if (LayerType* replicaLayer = root_layer->replica_layer()) {
-    Function()(replicaLayer);
-    if (LayerType* maskLayer = replicaLayer->mask_layer())
-      Function()(maskLayer);
+  if (LayerType* mask_layer = root_layer->mask_layer())
+    Function()(mask_layer);
+  if (LayerType* replica_layer = root_layer->replica_layer()) {
+    Function()(replica_layer);
+    if (LayerType* mask_layer = replica_layer->mask_layer())
+      Function()(mask_layer);
   }
 
   for (size_t i = 0; i < root_layer->children().size(); ++i) {

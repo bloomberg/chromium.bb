@@ -59,7 +59,7 @@ TEST(SchedulerStateMachineTest, TestNextActionBeginsFrameIfNeeded) {
     EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.NextAction());
   }
 
-  // If commit requested but canBeginFrame is still false, do nothing.
+  // If commit requested but can_begin_frame is still false, do nothing.
   {
     StateMachine state(default_scheduler_settings);
     state.SetCommitState(SchedulerStateMachine::COMMIT_STATE_IDLE);
@@ -85,7 +85,7 @@ TEST(SchedulerStateMachineTest, TestNextActionBeginsFrameIfNeeded) {
     EXPECT_FALSE(state.VSyncCallbackNeeded());
   }
 
-  // Begin the frame, make sure needsCommit and commitState update correctly.
+  // Begin the frame, make sure needs_commit and commit_state update correctly.
   {
     StateMachine state(default_scheduler_settings);
     state.SetCanBeginFrame(true);
@@ -371,18 +371,18 @@ TEST(SchedulerStateMachineTest, TestNextActionDrawsOnVSync) {
         state.SetVisible(true);
       }
 
-      // Case 1: needsCommit=false
+      // Case 1: needs_commit=false
       EXPECT_NE(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE,
                 state.NextAction());
 
-      // Case 2: needsCommit=true
+      // Case 2: needs_commit=true
       state.SetNeedsCommit();
       EXPECT_NE(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE,
                 state.NextAction());
     }
   }
 
-  // When on vsync, or not on vsync but needsForcedRedraw set, should always
+  // When on vsync, or not on vsync but needs_forced_dedraw set, should always
   // draw except if you're ready to commit, in which case commit.
   for (size_t i = 0; i < num_commit_states; ++i) {
     for (size_t j = 0; j < 2; ++j) {
@@ -408,11 +408,11 @@ TEST(SchedulerStateMachineTest, TestNextActionDrawsOnVSync) {
         expected_action = SchedulerStateMachine::ACTION_COMMIT;
       }
 
-      // Case 1: needsCommit=false.
+      // Case 1: needs_commit=false.
       EXPECT_TRUE(state.VSyncCallbackNeeded());
       EXPECT_EQ(expected_action, state.NextAction());
 
-      // Case 2: needsCommit=true.
+      // Case 2: needs_commit=true.
       state.SetNeedsCommit();
       EXPECT_TRUE(state.VSyncCallbackNeeded());
       EXPECT_EQ(expected_action, state.NextAction());
@@ -436,11 +436,11 @@ TEST(SchedulerStateMachineTest, TestNoCommitStatesRedrawWhenInvisible) {
       if (j == 1)
         state.DidEnterVSync();
 
-      // Case 1: needsCommit=false.
+      // Case 1: needs_commit=false.
       EXPECT_NE(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE,
                 state.NextAction());
 
-      // Case 2: needsCommit=true.
+      // Case 2: needs_commit=true.
       state.SetNeedsCommit();
       EXPECT_NE(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE,
                 state.NextAction());
@@ -648,7 +648,7 @@ TEST(SchedulerStateMachineTest, TestGoesInvisibleBeforeBeginFrameCompletes) {
   EXPECT_FALSE(state.NeedsCommit());
   EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.NextAction());
 
-  // Become invisible and abort the beginFrame.
+  // Become invisible and abort the BeginFrame.
   state.SetVisible(false);
   state.BeginFrameAborted();
 
@@ -725,7 +725,7 @@ TEST(SchedulerStateMachineTest,
   state.UpdateState(state.NextAction());
 
   // Once the context is recreated, whether we draw should be based on
-  // setCanDraw.
+  // SetCanDraw.
   state.SetNeedsRedraw(true);
   state.DidEnterVSync();
   EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.NextAction());

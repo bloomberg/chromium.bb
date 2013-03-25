@@ -253,7 +253,7 @@ static void ReduceOcclusionBelowSurface(LayerType* contributing_layer,
   contributing_layer->background_filters().getOutsets(
       outset_top, outset_right, outset_bottom, outset_left);
 
-  // The filter can move pixels from outside of the clip, so allow affectedArea
+  // The filter can move pixels from outside of the clip, so allow affected_area
   // to expand outside the clip.
   affected_area_in_target.Inset(
       -outset_left, -outset_top, -outset_right, -outset_bottom);
@@ -426,12 +426,12 @@ void OcclusionTrackerBase<LayerType, RenderSurfaceType>::
       ScreenSpaceClipRectInTargetSurface(
           layer->render_target()->render_surface(), screen_space_clip_rect_));
 
-  for (Region::Iterator opaqueContentRects(opaque_contents);
-       opaqueContentRects.has_rect();
-       opaqueContentRects.next()) {
+  for (Region::Iterator opaque_content_rects(opaque_contents);
+       opaque_content_rects.has_rect();
+       opaque_content_rects.next()) {
     gfx::QuadF transformed_quad = MathUtil::MapQuad(
         layer->draw_transform(),
-        gfx::QuadF(opaqueContentRects.rect()),
+        gfx::QuadF(opaque_content_rects.rect()),
         &clipped);
     gfx::Rect transformed_rect =
         gfx::ToEnclosedRect(transformed_quad.BoundingBox());
@@ -461,14 +461,14 @@ void OcclusionTrackerBase<LayerType, RenderSurfaceType>::
 
   Region non_opaque_contents =
       SubtractRegions(gfx::Rect(layer->content_bounds()), opaque_contents);
-  for (Region::Iterator nonOpaqueContentRects(non_opaque_contents);
-       nonOpaqueContentRects.has_rect();
-       nonOpaqueContentRects.next()) {
-    // We've already checked for clipping in the mapQuad call above, these calls
+  for (Region::Iterator non_opaque_content_rects(non_opaque_contents);
+       non_opaque_content_rects.has_rect();
+       non_opaque_content_rects.next()) {
+    // We've already checked for clipping in the MapQuad call above, these calls
     // should not clip anything further.
     gfx::Rect transformed_rect = gfx::ToEnclosedRect(
         MathUtil::MapClippedRect(layer->draw_transform(),
-                                 gfx::RectF(nonOpaqueContentRects.rect())));
+                                 gfx::RectF(non_opaque_content_rects.rect())));
     transformed_rect.Intersect(clip_rect_in_target);
     if (transformed_rect.IsEmpty())
       continue;

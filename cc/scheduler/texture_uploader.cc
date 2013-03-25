@@ -77,12 +77,12 @@ unsigned TextureUploader::Query::Value() {
 
 TextureUploader::TextureUploader(WebKit::WebGraphicsContext3D* context,
                                  bool use_map_tex_sub_image,
-                                 bool useShallowFlush)
+                                 bool use_shallow_flush)
     : context_(context),
       num_blocking_texture_uploads_(0),
       use_map_tex_sub_image_(use_map_tex_sub_image),
       sub_image_size_(0),
-      use_shallow_flush_(useShallowFlush),
+      use_shallow_flush_(use_shallow_flush),
       num_texture_uploads_since_last_flush_(0) {
   for (size_t i = kUploadHistorySizeInitial; i > 0; i--)
     textures_per_second_history_.insert(kDefaultEstimatedTexturesPerSecond);
@@ -202,7 +202,7 @@ void TextureUploader::UploadWithTexSubImage(const uint8* image,
   base::debug::Alias(&image_rect_height);
   base::debug::Alias(&dest_offset_x);
   base::debug::Alias(&dest_offset_y);
-  TRACE_EVENT0("cc", "TextureUploader::uploadWithTexSubImage");
+  TRACE_EVENT0("cc", "TextureUploader::UploadWithTexSubImage");
 
   // Offset from image-rect to source-rect.
   gfx::Vector2d offset(source_rect.origin() - image_rect.origin());
@@ -273,7 +273,7 @@ void TextureUploader::UploadWithMapTexSubImage(const uint8* image,
   base::debug::Alias(&dest_offset_x);
   base::debug::Alias(&dest_offset_y);
 
-  TRACE_EVENT0("cc", "TextureUploader::uploadWithMapTexSubImage");
+  TRACE_EVENT0("cc", "TextureUploader::UploadWithMapTexSubImage");
 
   // Offset from image-rect to source-rect.
   gfx::Vector2d offset(source_rect.origin() - image_rect.origin());
@@ -308,7 +308,7 @@ void TextureUploader::UploadWithMapTexSubImage(const uint8* image,
            source_rect.height() * image_rect.width() * bytes_per_pixel);
   } else {
     // Strides not equal, so do a row-by-row memcpy from the
-    // paint results into the pixelDest
+    // paint results into the pixel_dest.
     for (int row = 0; row < source_rect.height(); ++row) {
       memcpy(&pixel_dest[upload_image_stride * row],
              &image[bytes_per_pixel *

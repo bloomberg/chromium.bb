@@ -42,7 +42,7 @@ class TestLayer : public Layer {
   TestLayer() : Layer() {
     SetIsDrawable(true);
   }
-  virtual ~TestLayer() { }
+  virtual ~TestLayer() {}
 
   Region occlusion_;
   Region expected_occlusion_;
@@ -111,8 +111,8 @@ class LayerTreeHostOcclusionTestOcclusionSurfaceClipping :
     public LayerTreeHostOcclusionTest {
  public:
   virtual void SetupTree() OVERRIDE {
-    // The child layer is a surface and the grandChild is opaque, but clipped to
-    // the child and root
+    // The child layer is a surface and the grand_child is opaque, but clipped
+    // to the child and root
     SetLayerPropertiesForTesting(
         root_.get(), NULL, identity_matrix_,
         gfx::PointF(0.f, 0.f), gfx::Size(200, 200), true);
@@ -342,10 +342,10 @@ class LayerTreeHostOcclusionTestOcclusionOpacityFilter :
     public LayerTreeHostOcclusionTest {
  public:
   virtual void SetupTree() OVERRIDE {
-    gfx::Transform childTransform;
-    childTransform.Translate(250.0, 250.0);
-    childTransform.Rotate(90.0);
-    childTransform.Translate(-250.0, -250.0);
+    gfx::Transform child_transform;
+    child_transform.Translate(250.0, 250.0);
+    child_transform.Rotate(90.0);
+    child_transform.Translate(-250.0, -250.0);
 
     WebKit::WebFilterOperations filters;
     filters.append(WebKit::WebFilterOperation::createOpacityFilter(0.5));
@@ -357,7 +357,7 @@ class LayerTreeHostOcclusionTestOcclusionOpacityFilter :
         root_.get(), NULL, identity_matrix_,
         gfx::PointF(0.f, 0.f), gfx::Size(200, 200), true);
     SetLayerPropertiesForTesting(
-        child_.get(), root_.get(), childTransform,
+        child_.get(), root_.get(), child_transform,
         gfx::PointF(30.f, 30.f), gfx::Size(500, 500), true);
     SetLayerPropertiesForTesting(
         grand_child_.get(), child_.get(), identity_matrix_,
@@ -386,10 +386,10 @@ class LayerTreeHostOcclusionTestOcclusionBlurFilter :
     public LayerTreeHostOcclusionTest {
  public:
   virtual void SetupTree() OVERRIDE {
-    gfx::Transform childTransform;
-    childTransform.Translate(250.0, 250.0);
-    childTransform.Rotate(90.0);
-    childTransform.Translate(-250.0, -250.0);
+    gfx::Transform child_transform;
+    child_transform.Translate(250.0, 250.0);
+    child_transform.Rotate(90.0);
+    child_transform.Translate(-250.0, -250.0);
 
     WebKit::WebFilterOperations filters;
     filters.append(WebKit::WebFilterOperation::createBlurFilter(10));
@@ -401,7 +401,7 @@ class LayerTreeHostOcclusionTestOcclusionBlurFilter :
         root_.get(), NULL, identity_matrix_,
         gfx::PointF(0.f, 0.f), gfx::Size(200, 200), true);
     SetLayerPropertiesForTesting(
-        child_.get(), root_.get(), childTransform,
+        child_.get(), root_.get(), child_transform,
         gfx::PointF(30.f, 30.f), gfx::Size(500, 500), true);
     SetLayerPropertiesForTesting(
         grand_child_.get(), child_.get(), identity_matrix_,

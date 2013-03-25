@@ -278,7 +278,7 @@ void LayerTreeImpl::UpdateDrawProperties(UpdateDrawPropertiesReason reason) {
   needs_update_draw_properties_ = false;
   render_surface_layer_list_.clear();
 
-  // For maxTextureSize.
+  // For max_texture_size.
   if (!layer_tree_host_impl_->renderer())
       return;
 
@@ -371,10 +371,10 @@ void LayerTreeImpl::UnregisterLayer(LayerImpl* layer) {
   layer_id_map_.erase(layer->id());
 }
 
-void LayerTreeImpl::PushPersistedState(LayerTreeImpl* pendingTree) {
+void LayerTreeImpl::PushPersistedState(LayerTreeImpl* pending_tree) {
   int id = currently_scrolling_layer_ ? currently_scrolling_layer_->id() : 0;
-  pendingTree->SetCurrentlyScrollingLayer(
-      LayerTreeHostCommon::FindLayerInSubtree(pendingTree->root_layer(), id));
+  pending_tree->SetCurrentlyScrollingLayer(
+      LayerTreeHostCommon::FindLayerInSubtree(pending_tree->root_layer(), id));
 }
 
 static void DidBecomeActiveRecursive(LayerImpl* layer) {
@@ -430,7 +430,7 @@ const LayerTreeSettings& LayerTreeImpl::settings() const {
   return layer_tree_host_impl_->settings();
 }
 
-const RendererCapabilities& LayerTreeImpl::rendererCapabilities() const {
+const RendererCapabilities& LayerTreeImpl::GetRendererCapabilities() const {
   return layer_tree_host_impl_->GetRendererCapabilities();
 }
 

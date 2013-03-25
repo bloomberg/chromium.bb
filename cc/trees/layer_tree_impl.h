@@ -42,8 +42,8 @@ class CC_EXPORT LayerTreeImpl {
  public:
   typedef std::vector<LayerImpl*> LayerList;
 
-  static scoped_ptr<LayerTreeImpl> create(LayerTreeHostImpl* layer_tree_host_impl)
-  {
+  static scoped_ptr<LayerTreeImpl> create(
+      LayerTreeHostImpl* layer_tree_host_impl) {
     return make_scoped_ptr(new LayerTreeImpl(layer_tree_host_impl));
   }
   virtual ~LayerTreeImpl();
@@ -51,7 +51,7 @@ class CC_EXPORT LayerTreeImpl {
   // Methods called by the layer tree that pass-through or access LTHI.
   // ---------------------------------------------------------------------------
   const LayerTreeSettings& settings() const;
-  const RendererCapabilities& rendererCapabilities() const;
+  const RendererCapabilities& GetRendererCapabilities() const;
   OutputSurface* output_surface() const;
   ResourceProvider* resource_provider() const;
   TileManager* tile_manager() const;
@@ -173,7 +173,7 @@ class CC_EXPORT LayerTreeImpl {
 
   AnimationRegistrar* animationRegistrar() const;
 
-  void PushPersistedState(LayerTreeImpl* pendingTree);
+  void PushPersistedState(LayerTreeImpl* pending_tree);
 
   void DidBecomeActive();
 

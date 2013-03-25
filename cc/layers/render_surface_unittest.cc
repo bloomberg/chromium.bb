@@ -20,14 +20,14 @@
 namespace cc {
 namespace {
 
-#define EXECUTE_AND_VERIFY_SURFACE_CHANGED(codeToTest)                         \
+#define EXECUTE_AND_VERIFY_SURFACE_CHANGED(code_to_test)                       \
   render_surface->ResetPropertyChangedFlag();                                  \
-  codeToTest;                                                                  \
+  code_to_test;                                                                \
   EXPECT_TRUE(render_surface->SurfacePropertyChanged())
 
-#define EXECUTE_AND_VERIFY_SURFACE_DID_NOT_CHANGE(codeToTest)                  \
+#define EXECUTE_AND_VERIFY_SURFACE_DID_NOT_CHANGE(code_to_test)                \
   render_surface->ResetPropertyChangedFlag();                                  \
-  codeToTest;                                                                  \
+  code_to_test;                                                                \
   EXPECT_FALSE(render_surface->SurfacePropertyChanged())
 
 TEST(RenderSurfaceTest, VerifySurfaceChangesAreTrackedProperly) {

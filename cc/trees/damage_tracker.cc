@@ -186,9 +186,9 @@ gfx::RectF DamageTracker::TrackDamageFromActiveLayers(
     int target_surface_layer_id) {
   gfx::RectF damage_rect = gfx::RectF();
 
-  for (unsigned layerIndex = 0; layerIndex < layer_list.size(); ++layerIndex) {
+  for (size_t layer_index = 0; layer_index < layer_list.size(); ++layer_index) {
     // Visit layers in back-to-front order.
-    LayerImpl* layer = layer_list[layerIndex];
+    LayerImpl* layer = layer_list[layer_index];
 
     if (LayerTreeHostCommon::RenderSurfaceContributesToTarget<LayerImpl>(
             layer, target_surface_layer_id))
@@ -263,9 +263,9 @@ void DamageTracker::ExtendDamageForLayer(LayerImpl* layer,
   // Property changes take priority over update rects.
   //
   // This method is called when we want to consider how a layer contributes to
-  // its targetRenderSurface, even if that layer owns the targetRenderSurface
-  // itself. To consider how a layer's targetSurface contributes to the
-  // ancestorSurface, ExtendDamageForRenderSurface() must be called instead.
+  // its target RenderSurface, even if that layer owns the target RenderSurface
+  // itself. To consider how a layer's target surface contributes to the
+  // ancestor surface, ExtendDamageForRenderSurface() must be called instead.
 
   bool layer_is_new = false;
   gfx::RectF old_rect_in_target_space =

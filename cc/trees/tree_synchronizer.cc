@@ -148,7 +148,7 @@ void UpdateScrollbarLayerPointersRecursiveInternal(
   }
 
   ScrollbarLayerType* scrollbar_layer = layer->ToScrollbarLayer();
-  // Pinch-zoom scrollbars will have an invalid scrollLayerId, but they are
+  // Pinch-zoom scrollbars will have an invalid scroll_layer_id, but they are
   // managed by LayerTreeImpl and not LayerImpl, so should not be
   // processed here.
   if (!scrollbar_layer || (scrollbar_layer->scroll_layer_id() ==

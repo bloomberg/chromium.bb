@@ -93,25 +93,25 @@ class DelegatedRendererLayerImplTestSimple
     delegated_renderer_layer->SetTransform(transform);
 
     ScopedPtrVector<RenderPass> delegated_render_passes;
-    TestRenderPass* pass1 = addRenderPass(
+    TestRenderPass* pass1 = AddRenderPass(
         delegated_render_passes,
         RenderPass::Id(9, 6),
         gfx::Rect(6, 6, 6, 6),
         gfx::Transform());
-    addQuad(pass1, gfx::Rect(0, 0, 6, 6), 33u);
-    TestRenderPass* pass2 = addRenderPass(
+    AddQuad(pass1, gfx::Rect(0, 0, 6, 6), 33u);
+    TestRenderPass* pass2 = AddRenderPass(
         delegated_render_passes,
         RenderPass::Id(9, 7),
         gfx::Rect(7, 7, 7, 7),
         gfx::Transform());
-    addQuad(pass2, gfx::Rect(0, 0, 7, 7), 22u);
-    addRenderPassQuad(pass2, pass1);
-    TestRenderPass* pass3 = addRenderPass(
+    AddQuad(pass2, gfx::Rect(0, 0, 7, 7), 22u);
+    AddRenderPassQuad(pass2, pass1);
+    TestRenderPass* pass3 = AddRenderPass(
         delegated_render_passes,
         RenderPass::Id(9, 8),
         gfx::Rect(0, 0, 8, 8),
         gfx::Transform());
-    addRenderPassQuad(pass3, pass2);
+    AddRenderPassQuad(pass3, pass2);
     delegated_renderer_layer->SetFrameDataForRenderPasses(
         &delegated_render_passes);
 
@@ -276,7 +276,7 @@ TEST_F(DelegatedRendererLayerImplTestSimple, DoesNotOwnARenderSurface) {
   EXPECT_TRUE(host_impl_->PrepareToDraw(&frame));
 
   // If the DelegatedRendererLayer is axis aligned and has opacity 1, then it
-  // has no need to be a renderSurface for the quads it carries.
+  // has no need to be a RenderSurface for the quads it carries.
   EXPECT_FALSE(delegated_renderer_layer_->render_surface());
 
   host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
@@ -489,7 +489,7 @@ class DelegatedRendererLayerImplTestTransform
     bool child_pass_clipped = false;
 
     {
-      TestRenderPass* pass = addRenderPass(
+      TestRenderPass* pass = AddRenderPass(
           delegated_render_passes,
           RenderPass::Id(10, 7),
           child_pass_rect,
@@ -524,7 +524,7 @@ class DelegatedRendererLayerImplTestTransform
     gfx::Rect root_pass_clip_rect(10, 10, 35, 35);
     bool root_pass_clipped = root_delegated_render_pass_is_clipped_;
 
-    TestRenderPass* pass = addRenderPass(
+    TestRenderPass* pass = AddRenderPass(
         delegated_render_passes,
         RenderPass::Id(9, 6),
         root_pass_rect,
@@ -650,7 +650,7 @@ TEST_F(DelegatedRendererLayerImplTestTransform, QuadsUnclipped_NoSurface) {
       &contrib_delegated_shared_quad_state);
 
   // When the quads don't have a clip of their own, the clip rect is set to
-  // the drawableContentRect of the delegated renderer layer.
+  // the drawable_content_rect of the delegated renderer layer.
   EXPECT_EQ(gfx::Rect(21, 21, 60, 60).ToString(),
             root_delegated_shared_quad_state->clip_rect.ToString());
 
@@ -704,7 +704,7 @@ TEST_F(DelegatedRendererLayerImplTestTransform, QuadsClipped_NoSurface) {
       &contrib_delegated_shared_quad_state);
 
   // Since the quads have a clip_rect it should be modified by delegated
-  // renderer layer's drawTransform.
+  // renderer layer's draw_transform.
   // The position of the resulting clip_rect is:
   // (clip rect position (10) * scale to layer (30/50) + translate (8)) *
   //     layer scale (2) + layer position (20) = 48
@@ -886,7 +886,7 @@ class DelegatedRendererLayerImplTestClip
     bool child_pass_clipped = false;
 
     {
-      TestRenderPass* pass = addRenderPass(
+      TestRenderPass* pass = AddRenderPass(
           delegated_render_passes,
           RenderPass::Id(10, 7),
           child_pass_rect,
@@ -919,7 +919,7 @@ class DelegatedRendererLayerImplTestClip
     gfx::Rect root_pass_clip_rect(5, 5, 40, 40);
     bool root_pass_clipped = root_delegated_render_pass_is_clipped_;
 
-    TestRenderPass* pass = addRenderPass(
+    TestRenderPass* pass = AddRenderPass(
         delegated_render_passes,
         RenderPass::Id(9, 6),
         root_pass_rect,
@@ -1025,7 +1025,7 @@ TEST_F(DelegatedRendererLayerImplTestClip,
       contrib_delegated_quad_list[0]->shared_quad_state;
 
   // When the quads don't have a clip of their own, the clip rect is set to
-  // the drawableContentRect of the delegated renderer layer.
+  // the drawable_content_rect of the delegated renderer layer.
   EXPECT_EQ(gfx::Rect(20, 20, 50, 50).ToString(),
             root_delegated_shared_quad_state->clip_rect.ToString());
   // Quads are clipped to the delegated renderer layer.
@@ -1087,7 +1087,7 @@ TEST_F(DelegatedRendererLayerImplTestClip,
       contrib_delegated_quad_list[0]->shared_quad_state;
 
   // When the quads don't have a clip of their own, the clip rect is set to
-  // the drawableContentRect of the delegated renderer layer. When the layer
+  // the drawable_content_rect of the delegated renderer layer. When the layer
   // is clipped, that should be seen in the quads' clip_rect.
   EXPECT_EQ(gfx::Rect(21, 27, 23, 21).ToString(),
             root_delegated_shared_quad_state->clip_rect.ToString());

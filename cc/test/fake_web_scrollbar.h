@@ -16,7 +16,7 @@ class FakeWebScrollbar : public WebKit::WebScrollbar {
     return make_scoped_ptr(new FakeWebScrollbar());
   }
 
-  void setOverlay(bool isOverlay);
+  void set_overlay(bool is_overlay) { is_overlay_ = is_overlay; }
 
   // WebScrollbar implementation
   virtual bool isOverlay() const OVERRIDE;

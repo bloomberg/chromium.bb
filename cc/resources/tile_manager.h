@@ -95,9 +95,9 @@ class CC_EXPORT TileManager : public WorkerPoolClient {
 
   scoped_ptr<base::Value> BasicStateAsValue() const;
   scoped_ptr<base::Value> AllTilesAsValue() const;
-  void GetMemoryStats(size_t* memoryRequiredBytes,
-                      size_t* memoryNiceToHaveBytes,
-                      size_t* memoryUsedBytes) const;
+  void GetMemoryStats(size_t* memory_required_bytes,
+                      size_t* memory_nice_to_have_bytes,
+                      size_t* memory_used_bytes) const;
   bool HasPendingWorkScheduled(WhichTree tree) const;
 
   const MemoryHistory::Entry& memory_stats_from_last_assign() const {

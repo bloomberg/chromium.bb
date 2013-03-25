@@ -29,7 +29,7 @@ class CC_EXPORT PicturePileImpl : public PicturePileBase {
 
   // Raster a subrect of this PicturePileImpl into the given canvas.
   // It's only safe to call paint on a cloned version.
-  // It is assumed that contentsScale has already been applied to this canvas.
+  // It is assumed that contents_scale has already been applied to this canvas.
   void Raster(
       SkCanvas* canvas,
       gfx::Rect canvas_rect,

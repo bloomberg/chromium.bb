@@ -701,7 +701,7 @@ void LayerTreeHost::UpdateLayers(Layer* root_layer,
 
     UpdateHudLayer();
 
-    TRACE_EVENT0("cc", "LayerTreeHost::UpdateLayers::calcDrawProps");
+    TRACE_EVENT0("cc", "LayerTreeHost::UpdateLayers::CalcDrawProps");
     LayerTreeHostCommon::CalculateDrawProperties(
         root_layer,
         device_viewport_size(),

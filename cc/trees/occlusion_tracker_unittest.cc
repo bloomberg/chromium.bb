@@ -106,7 +106,7 @@ class TestOcclusionTrackerWithClip :
                           has_occlusion_from_outside_target_surface);
   }
   // Gives an unoccluded sub-rect of |content_rect| in the content space of the
-  // layer. Simple wrapper around unoccludedContentRect.
+  // layer. Simple wrapper around UnoccludedContentRect.
   gfx::Rect UnoccludedLayerContentRect(const LayerType* layer,
                                        gfx::Rect content_rect) const {
     bool temp;
@@ -3570,7 +3570,7 @@ class OcclusionTrackerTestDontOccludePixelsNeededForBackgroundFilter :
 
     // These layers occlude pixels directly beside the filtered_surface. Because
     // filtered surface blends pixels in a radius, it will need to see some of
-    // the pixels (up to radius far) underneath the occludingLayers.
+    // the pixels (up to radius far) underneath the occluding layers.
     this->VisitLayer(occluding_layer5, occlusion);
     this->VisitLayer(occluding_layer4, occlusion);
     this->VisitLayer(occluding_layer3, occlusion);
@@ -3859,7 +3859,7 @@ class OcclusionTrackerTestDontOccludePixelsNeededForBackgroundFilterWithClip :
 
     // These layers occlude pixels directly beside the filtered_surface. Because
     // filtered surface blends pixels in a radius, it will need to see some of
-    // the pixels (up to radius far) underneath the occludingLayers.
+    // the pixels (up to radius far) underneath the occluding layers.
     this->VisitLayer(occluding_layer5, occlusion);
     this->VisitLayer(occluding_layer4, occlusion);
     this->VisitLayer(occluding_layer3, occlusion);
@@ -4262,7 +4262,7 @@ class
 
     // The filter in the surface and replica are partially unoccluded. Only the
     // unoccluded parts should reduce occlusion.  This means it will push back
-    // the occlusion that touches the unoccluded part (occlusionAbove___), but
+    // the occlusion that touches the unoccluded part (occlusion_above___), but
     // it will not touch occlusion_beside____ since that is not beside the
     // unoccluded part of the surface, even though it is beside the occluded
     // part of the surface.

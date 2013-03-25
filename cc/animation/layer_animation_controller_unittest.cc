@@ -205,7 +205,7 @@ TEST(LayerAnimationControllerTest, TrivialTransition) {
   controller->UpdateState(events.get());
   EXPECT_TRUE(controller->HasActiveAnimation());
   EXPECT_EQ(0.f, dummy.opacity());
-  // A non-implOnly animation should not generate property updates.
+  // A non-impl-only animation should not generate property updates.
   const AnimationEvent* event = GetMostRecentPropertyUpdateEvent(events.get());
   EXPECT_FALSE(event);
   controller->Animate(1.0);
@@ -852,7 +852,7 @@ TEST(LayerAnimationControllerTest, ForceSyncWhenSynchronizedStartTimeNeeded) {
             active_animation->run_state());
 }
 
-// Tests that skipping a call to updateState works as expected.
+// Tests that skipping a call to UpdateState works as expected.
 TEST(LayerAnimationControllerTest, SkipUpdateState) {
   scoped_ptr<AnimationEventsVector> events(
       make_scoped_ptr(new AnimationEventsVector));
@@ -874,7 +874,7 @@ TEST(LayerAnimationControllerTest, SkipUpdateState) {
       2,
       Animation::Opacity));
 
-  // Animate but don't updateState.
+  // Animate but don't UpdateState.
   controller->Animate(1.0);
 
   controller->Animate(2.0);

@@ -40,7 +40,7 @@ namespace BASE_HASH_NAMESPACE {
 // Theorem 4.3.3 of the thesis "Über die Komplexität der Multiplikation in
 // eingeschränkten Branchingprogrammmodellen" by Woelfel, is:
 //
-//   h32(x32, y32) = (h64(x32, y32) * randOdd64 + rand16 * 2^16) % 2^64 / 2^32
+//   h32(x32, y32) = (h64(x32, y32) * rand_odd64 + rand16 * 2^16) % 2^64 / 2^32
 
 #define DEFINE_32BIT_PAIR_HASH(type1, type2) \
     DEFINE_PAIR_HASH_FUNCTION_START(type1, type2) { \
@@ -51,13 +51,13 @@ namespace BASE_HASH_NAMESPACE {
       if (sizeof(std::size_t) >= sizeof(uint64)) \
         return static_cast<std::size_t>(hash64); \
       \
-      uint64 oddRandom = 481046412LL << 32 | 1025306954LL; \
-      uint32 shiftRandom = 10121U << 16; \
+      uint64 odd_random = 481046412LL << 32 | 1025306954LL; \
+      uint32 shift_random = 10121U << 16; \
       \
-      hash64 = hash64 * oddRandom + shiftRandom; \
-      std::size_t highBits = static_cast<std::size_t>( \
+      hash64 = hash64 * odd_random + shift_random; \
+      std::size_t high_bits = static_cast<std::size_t>( \
           hash64 >> (sizeof(uint64) - sizeof(std::size_t))); \
-      return highBits; \
+      return high_bits; \
     } \
   DEFINE_PAIR_HASH_FUNCTION_END();
 
@@ -88,10 +88,10 @@ DEFINE_32BIT_PAIR_HASH(unsigned, unsigned);
 
 #define DEFINE_64BIT_PAIR_HASH(type1, type2) \
     DEFINE_PAIR_HASH_FUNCTION_START(type1, type2) { \
-      uint32 shortRandom1 = 842304669U; \
-      uint32 shortRandom2 = 619063811U; \
-      uint32 shortRandom3 = 937041849U; \
-      uint32 shortRandom4 = 3309708029U; \
+      uint32 short_random1 = 842304669U; \
+      uint32 short_random2 = 619063811U; \
+      uint32 short_random3 = 937041849U; \
+      uint32 short_random4 = 3309708029U; \
       \
       uint64 value1 = value.first; \
       uint64 value2 = value.second; \
@@ -100,23 +100,23 @@ DEFINE_32BIT_PAIR_HASH(unsigned, unsigned);
       uint32 value2a = static_cast<uint32>(value2 & 0xffffffff); \
       uint32 value2b = static_cast<uint32>((value2 >> 32) & 0xffffffff); \
       \
-      uint64 product1 = static_cast<uint64>(value1a) * shortRandom1; \
-      uint64 product2 = static_cast<uint64>(value1b) * shortRandom2; \
-      uint64 product3 = static_cast<uint64>(value2a) * shortRandom3; \
-      uint64 product4 = static_cast<uint64>(value2b) * shortRandom4; \
+      uint64 product1 = static_cast<uint64>(value1a) * short_random1; \
+      uint64 product2 = static_cast<uint64>(value1b) * short_random2; \
+      uint64 product3 = static_cast<uint64>(value2a) * short_random3; \
+      uint64 product4 = static_cast<uint64>(value2b) * short_random4; \
       \
       uint64 hash64 = product1 + product2 + product3 + product4; \
       \
       if (sizeof(std::size_t) >= sizeof(uint64)) \
         return static_cast<std::size_t>(hash64); \
       \
-      uint64 oddRandom = 1578233944LL << 32 | 194370989LL; \
-      uint32 shiftRandom = 20591U << 16; \
+      uint64 odd_random = 1578233944LL << 32 | 194370989LL; \
+      uint32 shift_random = 20591U << 16; \
       \
-      hash64 = hash64 * oddRandom + shiftRandom; \
-      std::size_t highBits = static_cast<std::size_t>( \
+      hash64 = hash64 * odd_random + shift_random; \
+      std::size_t high_bits = static_cast<std::size_t>( \
           hash64 >> (sizeof(uint64) - sizeof(std::size_t))); \
-      return highBits; \
+      return high_bits; \
     } \
   DEFINE_PAIR_HASH_FUNCTION_END();
 

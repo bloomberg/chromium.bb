@@ -110,8 +110,8 @@ TEST_F(TiledLayerImplTest, EmptyQuadList) {
     scoped_ptr<TiledLayerImpl> layer =
         CreateLayer(tile_size, layer_size, LayerTilingData::NO_BORDER_TEXELS);
 
-    gfx::Rect outsideBounds(gfx::Point(-100, -100), gfx::Size(50, 50));
-    layer->draw_properties().visible_content_rect = outsideBounds;
+    gfx::Rect outside_bounds(gfx::Point(-100, -100), gfx::Size(50, 50));
+    layer->draw_properties().visible_content_rect = outside_bounds;
 
     MockQuadCuller quad_culler;
     AppendQuadsData data;

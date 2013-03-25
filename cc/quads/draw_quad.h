@@ -53,7 +53,7 @@ class CC_EXPORT DrawQuad {
   gfx::Rect opaque_rect;
 
   // Allows changing the rect that gets drawn to make it smaller. This value
-  // should be clipped to quadRect.
+  // should be clipped to |rect|.
   gfx::Rect visible_rect;
 
   // By default blending is used when some part of the quad is not opaque.

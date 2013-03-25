@@ -111,7 +111,7 @@ double FrameRateCounter::GetAverageFPS() const {
   // the first few swapbuffers happen instantly which skews the statistics
   // too much for short lived animations.
   //
-  // isBadFrameInterval encapsulates the frame too slow/frame too fast logic.
+  // IsBadFrameInterval encapsulates the frame too slow/frame too fast logic.
 
   for (RingBufferType::Iterator it = --ring_buffer_.End();
        it && frame_times_total < 1.0;

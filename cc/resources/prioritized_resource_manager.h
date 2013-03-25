@@ -82,7 +82,7 @@ class CC_EXPORT PrioritizedResourceManager {
   void ClearPriorities();
 
   // Delete contents textures' backing resources until they use only
-  // bytesLimit bytes. This may be called on the impl thread while the main
+  // limit_bytes bytes. This may be called on the impl thread while the main
   // thread is running. Returns true if resources are indeed evicted as a
   // result of this call.
   bool ReduceMemoryOnImplThread(size_t limit_bytes,
@@ -189,7 +189,7 @@ class CC_EXPORT PrioritizedResourceManager {
 
   size_t max_memory_limit_bytes_;
   // The priority cutoff based on memory pressure. This is not a strict
-  // cutoff -- requestLate allows textures with priority equal to this
+  // cutoff -- RequestLate allows textures with priority equal to this
   // cutoff to be allowed.
   int priority_cutoff_;
   // The priority cutoff based on external memory policy. This is a strict
@@ -220,11 +220,11 @@ class CC_EXPORT PrioritizedResourceManager {
   TextureVector temp_texture_vector_;
 
   // Statistics about memory usage at priority cutoffs, computed at
-  // prioritizeTextures.
+  // PrioritizeTextures.
   size_t memory_visible_bytes_;
   size_t memory_visible_and_nearby_bytes_;
 
-  // Statistics copied at the time of pushTexturePrioritiesToBackings.
+  // Statistics copied at the time of PushTexturePrioritiesToBackings.
   size_t memory_visible_last_pushed_bytes_;
   size_t memory_visible_and_nearby_last_pushed_bytes_;
 

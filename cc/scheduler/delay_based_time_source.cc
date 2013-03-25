@@ -51,7 +51,7 @@ DelayBasedTimeSource::DelayBasedTimeSource(base::TimeDelta interval,
 DelayBasedTimeSource::~DelayBasedTimeSource() {}
 
 void DelayBasedTimeSource::SetActive(bool active) {
-  TRACE_EVENT1("cc", "DelayBasedTimeSource::setActive", "active", active);
+  TRACE_EVENT1("cc", "DelayBasedTimeSource::SetActive", "active", active);
   if (!active) {
     state_ = STATE_INACTIVE;
     weak_factory_.InvalidateWeakPtrs();
@@ -152,7 +152,7 @@ base::TimeTicks DelayBasedTimeSource::Now() const {
 
 // This code tries to achieve an average tick rate as close to interval_ as
 // possible.  To do this, it has to deal with a few basic issues:
-//   1. postDelayedTask can delay only at a millisecond granularity. So, 16.666
+//   1. PostDelayedTask can delay only at a millisecond granularity. So, 16.666
 //   has to posted as 16 or 17.
 //   2. A delayed task may come back a bit late (a few ms), or really late
 //   (frames later)
@@ -162,7 +162,7 @@ base::TimeTicks DelayBasedTimeSource::Now() const {
 //
 // Then, when we post our task, we take the floor of (tick_target_ and Now()).
 // If we started at now=0, and 60FPs (all times in milliseconds):
-//      now=0    target=16.667   postDelayedTask(16)
+//      now=0    target=16.667   PostDelayedTask(16)
 //
 // When our callback runs, we figure out how far off we were from that goal.
 // Because of the flooring operation, and assuming our timer runs exactly when
@@ -172,18 +172,18 @@ base::TimeTicks DelayBasedTimeSource::Now() const {
 // Since we can't post a 0.667 ms task to get to now=16, we just treat this as a
 // tick. Then, we update target to be 33.333. We now post another task based on
 // the difference between our target and now:
-//      now=16   tick_target=16.667  newTarget=33.333   -->
-//          postDelayedTask(floor(33.333 - 16)) --> postDelayedTask(17)
+//      now=16   tick_target=16.667  new_target=33.333   -->
+//          PostDelayedTask(floor(33.333 - 16)) --> PostDelayedTask(17)
 //
 // Over time, with no late tasks, this leads to us posting tasks like this:
-//      now=0    tick_target=0       newTarget=16.667   -->
-//          tick(), postDelayedTask(16)
-//      now=16   tick_target=16.667  newTarget=33.333   -->
-//          tick(), postDelayedTask(17)
-//      now=33   tick_target=33.333  newTarget=50.000   -->
-//          tick(), postDelayedTask(17)
-//      now=50   tick_target=50.000  newTarget=66.667   -->
-//          tick(), postDelayedTask(16)
+//      now=0    tick_target=0       new_target=16.667   -->
+//          tick(), PostDelayedTask(16)
+//      now=16   tick_target=16.667  new_target=33.333   -->
+//          tick(), PostDelayedTask(17)
+//      now=33   tick_target=33.333  new_target=50.000   -->
+//          tick(), PostDelayedTask(17)
+//      now=50   tick_target=50.000  new_target=66.667   -->
+//          tick(), PostDelayedTask(16)
 //
 // We treat delays in tasks differently depending on the amount of delay we
 // encounter. Suppose we posted a task with a target=16.667:
@@ -194,16 +194,16 @@ base::TimeTicks DelayBasedTimeSource::Now() const {
 //      now=25.0 tick_target=16.667
 //
 // We treat the first case as a tick anyway, and assume the delay was unusual.
-// Thus, we compute the newTarget based on the old timebase:
-//      now=18   tick_target=16.667  newTarget=33.333   -->
-//          tick(), postDelayedTask(floor(33.333-18)) --> postDelayedTask(15)
+// Thus, we compute the new_target based on the old timebase:
+//      now=18   tick_target=16.667  new_target=33.333   -->
+//          tick(), PostDelayedTask(floor(33.333-18)) --> PostDelayedTask(15)
 // This brings us back to 18+15 = 33, which was where we would have been if the
 // task hadn't been late.
 //
 // For the really late delay, we we move to the next logical tick. The timebase
 // is not reset.
-//      now=37   tick_target=16.667  newTarget=50.000  -->
-//          tick(), postDelayedTask(floor(50.000-37)) --> postDelayedTask(13)
+//      now=37   tick_target=16.667  new_target=50.000  -->
+//          tick(), PostDelayedTask(floor(50.000-37)) --> PostDelayedTask(13)
 base::TimeTicks DelayBasedTimeSource::NextTickTarget(base::TimeTicks now) {
   base::TimeDelta new_interval = next_parameters_.interval;
   int intervals_elapsed =

@@ -13,8 +13,8 @@ namespace cc {
 
 class FakeProxy : public Proxy {
  public:
-  explicit FakeProxy(scoped_ptr<Thread> implThread)
-      : Proxy(implThread.Pass()) {}
+  explicit FakeProxy(scoped_ptr<Thread> impl_thread)
+      : Proxy(impl_thread.Pass()) {}
 
   virtual bool CompositeAndReadback(void* pixels, gfx::Rect rect) OVERRIDE;
   virtual void StartPageScaleAnimation(gfx::Vector2d target_position,

@@ -323,7 +323,7 @@ class TextureLayerImplWithMailboxThreadedCallback : public LayerTreeTest {
         break;
       case 2:
         // Old mailbox was released, task was posted, but won't execute
-        // until this didCommit returns.
+        // until this DidCommit returns.
         // TODO(piman): fix this.
         EXPECT_EQ(1, callback_count_);
         layer_tree_host()->SetNeedsCommit();
@@ -337,7 +337,7 @@ class TextureLayerImplWithMailboxThreadedCallback : public LayerTreeTest {
         break;
       case 4:
         // Old mailbox was released, task was posted, but won't execute
-        // until this didCommit returns.
+        // until this DidCommit returns.
         // TODO(piman): fix this.
         EXPECT_EQ(2, callback_count_);
         layer_tree_host()->SetNeedsCommit();
@@ -350,7 +350,7 @@ class TextureLayerImplWithMailboxThreadedCallback : public LayerTreeTest {
         break;
       case 6:
         // Old mailbox was released, task was posted, but won't execute
-        // until this didCommit returns.
+        // until this DidCommit returns.
         // TODO(piman): fix this.
         EXPECT_EQ(3, callback_count_);
         layer_tree_host()->SetNeedsCommit();
@@ -398,9 +398,9 @@ TEST_F(TextureLayerImplWithMailboxTest, TestImplLayerCallbacks) {
   pending_layer = TextureLayerImpl::Create(host_impl_.pending_tree(), 1, true);
   ASSERT_TRUE(pending_layer);
 
-  scoped_ptr<LayerImpl> activeLayer(
+  scoped_ptr<LayerImpl> active_layer(
       pending_layer->CreateLayerImpl(host_impl_.active_tree()));
-  ASSERT_TRUE(activeLayer);
+  ASSERT_TRUE(active_layer);
 
   pending_layer->SetTextureMailbox(test_data_.mailbox1_);
 
@@ -412,8 +412,8 @@ TEST_F(TextureLayerImplWithMailboxTest, TestImplLayerCallbacks) {
   Mock::VerifyAndClearExpectations(&test_data_.mock_callback_);
 
   // Test callback after activation.
-  pending_layer->PushPropertiesTo(activeLayer.get());
-  activeLayer->DidBecomeActive();
+  pending_layer->PushPropertiesTo(active_layer.get());
+  active_layer->DidBecomeActive();
 
   EXPECT_CALL(test_data_.mock_callback_, Release(_, _)).Times(0);
   pending_layer->SetTextureMailbox(test_data_.mailbox1_);
@@ -421,16 +421,16 @@ TEST_F(TextureLayerImplWithMailboxTest, TestImplLayerCallbacks) {
 
   EXPECT_CALL(test_data_.mock_callback_, Release(test_data_.mailbox_name2_, _))
       .Times(1);
-  pending_layer->PushPropertiesTo(activeLayer.get());
-  activeLayer->DidBecomeActive();
+  pending_layer->PushPropertiesTo(active_layer.get());
+  active_layer->DidBecomeActive();
   Mock::VerifyAndClearExpectations(&test_data_.mock_callback_);
 
   // Test resetting the mailbox.
   EXPECT_CALL(test_data_.mock_callback_, Release(test_data_.mailbox_name1_, _))
       .Times(1);
   pending_layer->SetTextureMailbox(TextureMailbox());
-  pending_layer->PushPropertiesTo(activeLayer.get());
-  activeLayer->DidBecomeActive();
+  pending_layer->PushPropertiesTo(active_layer.get());
+  active_layer->DidBecomeActive();
   Mock::VerifyAndClearExpectations(&test_data_.mock_callback_);
 
   // Test destructor.

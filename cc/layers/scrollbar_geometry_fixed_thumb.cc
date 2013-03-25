@@ -54,14 +54,14 @@ void ScrollbarGeometryFixedThumb::splitTrack(
     WebRect& before_thumb_rect,
     WebRect& thumb_rect,
     WebRect& after_thumb_rect) {
-    // This is a reimplementation of ScrollbarThemeComposite::splitTrack.
+    // This is a reimplementation of ScrollbarThemeComposite::splitTrack().
     // Because the WebScrollbarThemeGeometry functions call down to native
     // ScrollbarThemeComposite code which uses ScrollbarThemeComposite virtual
-    // helpers, there's no way to override a helper like thumbLength from
+    // helpers, there's no way to override a helper like thumbLength() from
     // the WebScrollbarThemeGeometry level. So, these three functions
-    // (splitTrack, thumb_position, thumbLength) are copied here so that the
-    // WebScrollbarThemeGeometry helper functions are used instead and
-    // a fixed size thumbLength can be used.
+    // (splitTrack(), thumbPosition(), thumbLength()) are copied here so that
+    // the WebScrollbarThemeGeometry helper functions are used instead and
+    // a fixed size thumbLength() can be used.
 
     WebRect track_rect =
         constrainTrackRectToTrackPieces(scrollbar, unconstrained_track_rect);

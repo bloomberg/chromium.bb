@@ -91,7 +91,7 @@ class TimeoutTask;
 // LayerTreeTest methods of similar names. To track the commit process, override
 // these functions.
 //
-// The test continues until someone calls endTest. endTest can be called on any
+// The test continues until someone calls EndTest. EndTest can be called on any
 // thread, but be aware that ending the test is an asynchronous process.
 class LayerTreeTest : public testing::Test, public TestHooks {
  public:

@@ -233,10 +233,10 @@ void PicturePileImpl::AnalyzeInRect(const gfx::Rect& content_rect,
   gfx::Rect layer_rect = gfx::ToEnclosingRect(
       gfx::ScaleRect(content_rect, 1.f / contents_scale));
 
-  SkBitmap emptyBitmap;
-  emptyBitmap.setConfig(SkBitmap::kNo_Config, content_rect.width(),
+  SkBitmap empty_bitmap;
+  empty_bitmap.setConfig(SkBitmap::kNo_Config, content_rect.width(),
                         content_rect.height());
-  skia::AnalysisDevice device(emptyBitmap);
+  skia::AnalysisDevice device(empty_bitmap);
   skia::AnalysisCanvas canvas(&device);
 
   int64 total_pixels_rasterized = 0;

@@ -307,17 +307,17 @@ void PrioritizedResourceManager::ReduceWastedMemory(
   // we really need very little memory. This should probably be solved by
   // reducing the limit externally, but until then this just does some "clean
   // up" of unused backing textures (any more than 10%).
-  size_t wastedMemory = 0;
+  size_t wasted_memory = 0;
   for (BackingList::iterator it = backings_.begin(); it != backings_.end();
        ++it) {
     if ((*it)->owner())
       break;
-    wastedMemory += (*it)->bytes();
+    wasted_memory += (*it)->bytes();
   }
-  size_t tenPercentOfMemory = memory_available_bytes_ / 10;
-  if (wastedMemory > tenPercentOfMemory)
+  size_t ten_percent_of_memory = memory_available_bytes_ / 10;
+  if (wasted_memory > ten_percent_of_memory)
     EvictBackingsToReduceMemory(MemoryUseBytes() -
-                                (wastedMemory - tenPercentOfMemory),
+                                (wasted_memory - ten_percent_of_memory),
                                 PriorityCalculator::AllowEverythingCutoff(),
                                 EVICT_ONLY_RECYCLABLE,
                                 DO_NOT_UNLINK_BACKINGS,
@@ -515,7 +515,7 @@ void PrioritizedResourceManager::AssertInvariants() {
 
   // At all times, backings that can be evicted must always come before
   // backings that can't be evicted in the backing texture list (otherwise
-  // reduceMemory will not find all textures available for eviction/recycling).
+  // ReduceMemory will not find all textures available for eviction/recycling).
   bool reached_unrecyclable = false;
   PrioritizedResource::Backing* previous_backing = NULL;
   for (BackingList::iterator it = backings_.begin(); it != backings_.end();

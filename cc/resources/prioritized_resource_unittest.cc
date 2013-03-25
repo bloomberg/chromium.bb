@@ -623,7 +623,7 @@ TEST_F(PrioritizedResourceTest, RequestLateBackingsSorting) {
         EXPECT_TRUE(ValidateTexture(textures[i], false));
 
     // Drop the memory limit and prioritize (none will be above the threshold,
-    // but they still have backings because reduceMemory hasn't been called).
+    // but they still have backings because ReduceMemory hasn't been called).
     resource_manager->SetMaxMemoryLimitBytes(
         TexturesMemorySize(max_textures / 2));
     PrioritizeTexturesAndBackings(resource_manager.get());

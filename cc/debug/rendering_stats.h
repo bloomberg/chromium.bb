@@ -36,7 +36,7 @@ struct CC_EXPORT RenderingStats {
 
   RenderingStats();
 
-  // In conjunction with enumerateFields, this allows the embedder to
+  // In conjunction with EnumerateFields, this allows the embedder to
   // enumerate the values in this structure without
   // having to embed references to its specific member variables. This
   // simplifies the addition of new fields to this type.

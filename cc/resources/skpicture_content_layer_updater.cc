@@ -48,23 +48,23 @@ scoped_ptr<LayerUpdater::Resource> SkPictureContentLayerUpdater::CreateResource(
 void SkPictureContentLayerUpdater::PrepareToUpdate(
     gfx::Rect content_rect,
     gfx::Size,
-    float contentsWidthScale,
+    float contents_width_scale,
     float contents_height_scale,
-    gfx::Rect* resultingOpaqueRect,
+    gfx::Rect* resulting_opaque_rect,
     RenderingStats* stats) {
   SkCanvas* canvas =
       picture_.beginRecording(content_rect.width(), content_rect.height());
   PaintContents(canvas,
                 content_rect,
-                contentsWidthScale,
+                contents_width_scale,
                 contents_height_scale,
-                resultingOpaqueRect,
+                resulting_opaque_rect,
                 stats);
   picture_.endRecording();
 }
 
 void SkPictureContentLayerUpdater::DrawPicture(SkCanvas* canvas) {
-  TRACE_EVENT0("cc", "SkPictureContentLayerUpdater::drawPicture");
+  TRACE_EVENT0("cc", "SkPictureContentLayerUpdater::DrawPicture");
   canvas->drawPicture(picture_);
 }
 

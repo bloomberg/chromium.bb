@@ -102,18 +102,18 @@ class CC_EXPORT SchedulerStateMachine {
   // thread to main.
   void SetNeedsCommit();
 
-  // As SetNeedsCommit(), but ensures the beginFrame will definitely happen even
+  // As SetNeedsCommit(), but ensures the BeginFrame will definitely happen even
   // if we are not visible.  After this call we expect to go through the forced
-  // commit flow and then return to waiting for a non-forced beginFrame to
+  // commit flow and then return to waiting for a non-forced BeginFrame to
   // finish.
   void SetNeedsForcedCommit();
 
   // Call this only in response to receiving an ACTION_BEGIN_FRAME
-  // from nextState. Indicates that all painting is complete.
+  // from NextAction. Indicates that all painting is complete.
   void BeginFrameComplete();
 
   // Call this only in response to receiving an ACTION_BEGIN_FRAME
-  // from nextState if the client rejects the beginFrame message.
+  // from NextAction if the client rejects the BeginFrame message.
   void BeginFrameAborted();
 
   // Request exclusive access to the textures that back single buffered
@@ -126,7 +126,7 @@ class CC_EXPORT SchedulerStateMachine {
   void SetCanBeginFrame(bool can) { can_begin_frame_ = can; }
 
   // Indicates whether drawing would, at this time, make sense.
-  // canDraw can be used to supress flashes or checkerboarding
+  // CanDraw can be used to supress flashes or checkerboarding
   // when such behavior would be undesirable.
   void SetCanDraw(bool can);
 

@@ -45,7 +45,7 @@ void GetContrastMatrix(float amount, SkScalar matrix[20]) {
 }
 
 void GetSaturateMatrix(float amount, SkScalar matrix[20]) {
-  // Note, these values are computed to ensure matrixNeedsClamping is false
+  // Note, these values are computed to ensure MatrixNeedsClamping is false
   // for amount in [0..1]
   matrix[0] = 0.213f + 0.787f * amount;
   matrix[1] = 0.715f - 0.715f * amount;
@@ -99,7 +99,7 @@ void GetOpacityMatrix(float amount, SkScalar matrix[20]) {
 }
 
 void GetGrayscaleMatrix(float amount, SkScalar matrix[20]) {
-  // Note, these values are computed to ensure matrixNeedsClamping is false
+  // Note, these values are computed to ensure MatrixNeedsClamping is false
   // for amount in [0..1]
   matrix[0] = 0.2126f + 0.7874f * amount;
   matrix[1] = 0.7152f - 0.7152f * amount;
@@ -323,10 +323,10 @@ WebKit::WebFilterOperations RenderSurfaceFilters::Optimize(
     SkScalar matrix[20];
     if (GetColorMatrix(op, matrix)) {
       if (have_accumulated_color_matrix) {
-        SkScalar newMatrix[20];
-        MultColorMatrix(matrix, accumulated_color_matrix, newMatrix);
+        SkScalar new_matrix[20];
+        MultColorMatrix(matrix, accumulated_color_matrix, new_matrix);
         memcpy(accumulated_color_matrix,
-               newMatrix,
+               new_matrix,
                sizeof(accumulated_color_matrix));
       } else {
         memcpy(accumulated_color_matrix,

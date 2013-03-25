@@ -77,13 +77,13 @@ void Scheduler::SetMainThreadNeedsLayerTextures() {
 }
 
 void Scheduler::BeginFrameComplete() {
-  TRACE_EVENT0("cc", "Scheduler::beginFrameComplete");
+  TRACE_EVENT0("cc", "Scheduler::BeginFrameComplete");
   state_machine_.BeginFrameComplete();
   ProcessScheduledActions();
 }
 
 void Scheduler::BeginFrameAborted() {
-  TRACE_EVENT0("cc", "Scheduler::beginFrameAborted");
+  TRACE_EVENT0("cc", "Scheduler::BeginFrameAborted");
   state_machine_.BeginFrameAborted();
   ProcessScheduledActions();
 }
@@ -101,18 +101,18 @@ void Scheduler::SetSwapBuffersCompleteSupported(bool supported) {
 }
 
 void Scheduler::DidSwapBuffersComplete() {
-  TRACE_EVENT0("cc", "Scheduler::didSwapBuffersComplete");
+  TRACE_EVENT0("cc", "Scheduler::DidSwapBuffersComplete");
   frame_rate_controller_->DidFinishFrame();
 }
 
 void Scheduler::DidLoseOutputSurface() {
-  TRACE_EVENT0("cc", "Scheduler::didLoseOutputSurface");
+  TRACE_EVENT0("cc", "Scheduler::DidLoseOutputSurface");
   state_machine_.DidLoseOutputSurface();
   ProcessScheduledActions();
 }
 
 void Scheduler::DidRecreateOutputSurface() {
-  TRACE_EVENT0("cc", "Scheduler::didRecreateOutputSurface");
+  TRACE_EVENT0("cc", "Scheduler::DidRecreateOutputSurface");
   frame_rate_controller_->DidAbortAllPendingFrames();
   state_machine_.DidRecreateOutputSurface();
   ProcessScheduledActions();

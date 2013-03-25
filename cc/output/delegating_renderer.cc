@@ -73,50 +73,50 @@ bool DelegatingRenderer::Initialize() {
   context3d->setContextLostCallback(this);
   context3d->pushGroupMarkerEXT("CompositorContext");
 
-  std::string extensionsString =
+  std::string extensions_string =
       UTF16ToASCII(context3d->getString(GL_EXTENSIONS));
 
   std::vector<std::string> extensions;
-  base::SplitString(extensionsString, ' ', &extensions);
+  base::SplitString(extensions_string, ' ', &extensions);
 
   // TODO(danakj): We need non-GPU-specific paths for these things. This
   // renderer shouldn't need to use context3d extensions directly.
-  bool hasReadBGRA = true;
-  bool hasSetVisibility = true;
-  bool hasIOSurface = true;
-  bool hasARBTextureRect = true;
-  bool hasGpuMemoryManager = true;
-  bool hasEGLImage = true;
+  bool has_read_bgra = true;
+  bool has_set_visibility = true;
+  bool has_io_surface = true;
+  bool has_arb_texture_rect = true;
+  bool has_gpu_memory_manager = true;
+  bool has_egl_image = true;
   for (size_t i = 0; i < extensions.size(); ++i) {
     if (extensions[i] == "GL_EXT_read_format_bgra")
-      hasReadBGRA = true;
+      has_read_bgra = true;
     else if (extensions[i] == "GL_CHROMIUM_set_visibility")
-      hasSetVisibility = true;
+      has_set_visibility = true;
     else if (extensions[i] == "GL_CHROMIUM_iosurface")
-      hasIOSurface = true;
+      has_io_surface = true;
     else if (extensions[i] == "GL_ARB_texture_rectangle")
-      hasARBTextureRect = true;
+      has_arb_texture_rect = true;
     else if (extensions[i] == "GL_CHROMIUM_gpu_memory_manager")
-      hasGpuMemoryManager = true;
+      has_gpu_memory_manager = true;
     else if (extensions[i] == "GL_OES_EGL_image_external")
-      hasEGLImage = true;
+      has_egl_image = true;
   }
 
-  if (hasIOSurface)
-    DCHECK(hasARBTextureRect);
+  if (has_io_surface)
+    DCHECK(has_arb_texture_rect);
 
   capabilities_.using_accelerated_painting =
       Settings().accelerate_painting &&
       capabilities_.best_texture_format == GL_BGRA_EXT &&
-      hasReadBGRA;
+      has_read_bgra;
 
   // TODO(piman): loop visibility to GPU process?
-  capabilities_.using_set_visibility = hasSetVisibility;
+  capabilities_.using_set_visibility = has_set_visibility;
 
   // TODO(danakj): Support GpuMemoryManager.
   capabilities_.using_gpu_memory_manager = false;
 
-  capabilities_.using_egl_image = hasEGLImage;
+  capabilities_.using_egl_image = has_egl_image;
 
   return true;
 }
@@ -140,7 +140,7 @@ static ResourceProvider::ResourceId AppendToArray(
 
 void DelegatingRenderer::DrawFrame(
     RenderPassList& render_passes_in_draw_order) {
-  TRACE_EVENT0("cc", "DelegatingRenderer::drawFrame");
+  TRACE_EVENT0("cc", "DelegatingRenderer::DrawFrame");
 
   CompositorFrame out_frame;
   out_frame.metadata = client_->MakeCompositorFrameMetadata();

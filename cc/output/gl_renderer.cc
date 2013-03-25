@@ -213,8 +213,8 @@ void GLRenderer::SetVisible(bool visible) {
 
   EnforceMemoryPolicy();
 
-  // TODO: Replace setVisibilityCHROMIUM with an extension to explicitly manage
-  // front/backbuffers
+  // TODO: Replace setVisibilityCHROMIUM() with an extension to explicitly
+  // manage front/backbuffers
   // crbug.com/116049
   if (capabilities_.using_set_visibility)
     context_->setVisibilityCHROMIUM(visible);
@@ -256,7 +256,7 @@ void GLRenderer::BeginDrawingFrame(DrawingFrame& frame) {
   if (ViewportSize().IsEmpty())
     return;
 
-  TRACE_EVENT0("cc", "GLRenderer::drawLayers");
+  TRACE_EVENT0("cc", "GLRenderer::DrawLayers");
   if (is_viewport_changed_) {
     // Only reshape when we know we are going to draw. Otherwise, the reshape
     // can leave the window at the wrong size if we never draw and the proper
@@ -1339,7 +1339,7 @@ void GLRenderer::FlushTextureQuadCache() {
     // causing platform differences in some layout tests (see
     // https://bugs.webkit.org/show_bug.cgi?id=82412), so in this situation, use
     // a separate blend function for the alpha channel to avoid modifying it.
-    // Don't use colorMask for this as it has performance implications on some
+    // Don't use colorMask() for this as it has performance implications on some
     // platforms.
     GLC(Context(),
         Context()->blendFuncSeparate(
@@ -1471,7 +1471,7 @@ void GLRenderer::DrawTextureQuad(const DrawingFrame& frame,
     // causing platform differences in some layout tests (see
     // https://bugs.webkit.org/show_bug.cgi?id=82412), so in this situation, use
     // a separate blend function for the alpha channel to avoid modifying it.
-    // Don't use colorMask for this as it has performance implications on some
+    // Don't use colorMask() for this as it has performance implications on some
     // platforms.
     GLC(Context(),
         Context()->blendFuncSeparate(
@@ -1650,7 +1650,7 @@ bool GLRenderer::SwapBuffers() {
   DCHECK(visible_);
   DCHECK(!is_backbuffer_discarded_);
 
-  TRACE_EVENT0("cc", "GLRenderer::swapBuffers");
+  TRACE_EVENT0("cc", "GLRenderer::SwapBuffers");
   // We're done! Time to swapbuffers!
 
   if (capabilities_.using_partial_swap) {
@@ -1734,7 +1734,7 @@ ManagedMemoryPolicy::PriorityCutoff GLRenderer::PriorityCutoff(
 
 void GLRenderer::EnforceMemoryPolicy() {
   if (!visible_) {
-    TRACE_EVENT0("cc", "GLRenderer::enforceMemoryPolicy dropping resources");
+    TRACE_EVENT0("cc", "GLRenderer::EnforceMemoryPolicy dropping resources");
     ReleaseRenderPassTextures();
     if (discard_backbuffer_when_not_visible_)
       DiscardBackbuffer();
@@ -1780,8 +1780,8 @@ void GLRenderer::GetFramebufferPixels(void* pixels, gfx::Rect rect) {
   GLuint temporary_fbo = 0;
 
   if (do_workaround) {
-    // On Mac OS X, calling glReadPixels against an FBO whose color attachment
-    // is an IOSurface-backed texture causes corruption of future glReadPixels
+    // On Mac OS X, calling glReadPixels() against an FBO whose color attachment
+    // is an IOSurface-backed texture causes corruption of future glReadPixels()
     // calls, even those on different OpenGL contexts. It is believed that this
     // is the root cause of top crasher
     // http://crbug.com/99393. <rdar://problem/10949687>
@@ -1951,7 +1951,7 @@ void GLRenderer::SetDrawViewportSize(gfx::Size viewport_size) {
 bool GLRenderer::MakeContextCurrent() { return context_->makeContextCurrent(); }
 
 bool GLRenderer::InitializeSharedObjects() {
-  TRACE_EVENT0("cc", "GLRenderer::initializeSharedObjects");
+  TRACE_EVENT0("cc", "GLRenderer::InitializeSharedObjects");
   MakeContextCurrent();
 
   // Create an FBO for doing offscreen rendering.

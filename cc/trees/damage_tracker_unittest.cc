@@ -56,7 +56,7 @@ void EmulateDrawingOneFrame(LayerImpl* root) {
   // This emulates only steps that are relevant to testing the damage tracker:
   //   1. computing the render passes and layerlists
   //   2. updating all damage trackers in the correct order
-  //   3. resetting all update_rects and propertyChanged flags for all layers
+  //   3. resetting all update_rects and property_changed flags for all layers
   //      and surfaces.
 
   std::vector<LayerImpl*> render_surface_layer_list;
@@ -138,10 +138,10 @@ class DamageTrackerTest : public testing::Test {
     child1->SetAnchorPoint(gfx::PointF());
     child1->SetBounds(gfx::Size(30, 30));
     child1->SetContentBounds(gfx::Size(30, 30));
-    // With a child that drawsContent, opacity will cause the layer to create
-    // its own renderSurface. This layer does not draw, but is intended to
-    // create its own renderSurface. TODO: setting opacity and
-    // forceRenderSurface may be redundant here.
+    // With a child that draws_content, opacity will cause the layer to create
+    // its own RenderSurface. This layer does not draw, but is intended to
+    // create its own RenderSurface. TODO: setting opacity and
+    // ForceRenderSurface may be redundant here.
     child1->SetOpacity(0.5f);
     child1->SetDrawsContent(false);
     child1->SetForceRenderSurface(true);
@@ -231,7 +231,7 @@ TEST_F(DamageTrackerTest, SanityCheckTestTreeWithTwoSurfaces) {
   EXPECT_EQ(3u, root->render_surface()->layer_list().size());
   EXPECT_EQ(2u, child1->render_surface()->layer_list().size());
 
-  // The render surface for child1 only has a contentRect that encloses
+  // The render surface for child1 only has a content_rect that encloses
   // grand_child1 and grand_child2, because child1 does not draw content.
   EXPECT_FLOAT_RECT_EQ(gfx::RectF(190.f, 190.f, 16.f, 18.f), child_damage_rect);
   EXPECT_FLOAT_RECT_EQ(gfx::RectF(0.f, 0.f, 500.f, 500.f), root_damage_rect);
@@ -545,7 +545,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForBackgroundBlurredChild) {
                              0);
   EXPECT_FLOAT_RECT_EQ(expected_damage_rect, root_damage_rect);
 
-  // CASE 3: Setting this update rect outside the blurred contentBounds of the
+  // CASE 3: Setting this update rect outside the blurred content_bounds of the
   //         blurred child1 will not cause it to be expanded.
   ClearDamageForAllSurfaces(root.get());
   root->set_update_rect(gfx::RectF(30.f, 30.f, 2.f, 2.f));
@@ -560,8 +560,8 @@ TEST_F(DamageTrackerTest, VerifyDamageForBackgroundBlurredChild) {
 
   EXPECT_FLOAT_RECT_EQ(expected_damage_rect, root_damage_rect);
 
-  // CASE 4: Setting this update rect inside the blurred contentBounds but
-  //         outside the original contentBounds of the blurred child1 will
+  // CASE 4: Setting this update rect inside the blurred content_bounds but
+  //         outside the original content_bounds of the blurred child1 will
   //         cause it to be expanded.
   ClearDamageForAllSurfaces(root.get());
   root->set_update_rect(gfx::RectF(99.f, 99.f, 1.f, 1.f));
@@ -805,13 +805,13 @@ TEST_F(DamageTrackerTest, VerifyDamageForSurfaceChangeFromDescendantLayer) {
 
 TEST_F(DamageTrackerTest, VerifyDamageForSurfaceChangeFromAncestorLayer) {
   // An ancestor/owning layer changes that affects the position/transform of
-  // the render surface. Note that in this case, the layerPropertyChanged flag
+  // the render surface. Note that in this case, the layer_property_changed flag
   // already propagates to the subtree (tested in LayerImpltest), which damages
   // the entire child1 surface, but the damage tracker still needs the correct
   // logic to compute the exposed region on the root surface.
 
   // FIXME: the expectations of this test case should change when we add
-  //        support for a unique scissorRect per renderSurface. In that case,
+  //        support for a unique scissor_rect per RenderSurface. In that case,
   //        the child1 surface should be completely unchanged, since we are
   //        only transforming it, while the root surface would be damaged
   //        appropriately.
@@ -950,7 +950,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForReplica) {
 
   // For this test case, we modify grand_child2, and add grand_child3 to extend
   // the bounds of child1's surface. This way, we can test reflection changes
-  // without changing contentBounds of the surface.
+  // without changing content_bounds of the surface.
   grand_child2->SetPosition(gfx::PointF(180.f, 180.f));
   {
     scoped_ptr<LayerImpl> grand_child3 =
@@ -1211,7 +1211,8 @@ TEST_F(DamageTrackerTest, VerifyDamageForReplicaMaskWithAnchor) {
   LayerImpl* child1 = root->children()[0];
   LayerImpl* grand_child1 = child1->children()[0];
 
-  // Verify that the correct replicaOriginTransform is used for the replicaMask
+  // Verify that the correct replica_origin_transform is used for the
+  // replica_mask.
   ClearDamageForAllSurfaces(root.get());
 
   // This is not actually the anchor point being tested, but by convention its
@@ -1250,7 +1251,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForReplicaMaskWithAnchor) {
   // Sanity check that the appropriate render surfaces were created
   ASSERT_TRUE(grand_child1->render_surface());
 
-  // A property change on the replicaMask should damage the reflected region on
+  // A property change on the replica_mask should damage the reflected region on
   // the target surface.
   ClearDamageForAllSurfaces(root.get());
   replica_mask_layer->SetStackingOrderChanged(true);
@@ -1290,7 +1291,7 @@ TEST_F(DamageTrackerTest, VerifyDamageWhenForcedFullDamage) {
 
 TEST_F(DamageTrackerTest, VerifyDamageForEmptyLayerList) {
   // Though it should never happen, its a good idea to verify that the damage
-  // tracker does not crash when it receives an empty layerList.
+  // tracker does not crash when it receives an empty layer_list.
 
   scoped_ptr<LayerImpl> root = LayerImpl::Create(host_impl_.active_tree(), 1);
   root->CreateRenderSurface();

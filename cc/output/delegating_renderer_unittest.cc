@@ -95,7 +95,7 @@ class DelegatingRendererTestResources : public DelegatingRendererTest {
     frame->render_passes.clear();
     frame->render_passes_by_id.clear();
 
-    TestRenderPass* child_pass = addRenderPass(
+    TestRenderPass* child_pass = AddRenderPass(
         frame->render_passes,
         RenderPass::Id(2, 1),
         gfx::Rect(3, 3, 10, 10),
@@ -103,7 +103,7 @@ class DelegatingRendererTestResources : public DelegatingRendererTest {
     child_pass->AppendOneOfEveryQuadType(
         host_impl->resource_provider(), RenderPass::Id(0, 0));
 
-    TestRenderPass* pass = addRenderPass(
+    TestRenderPass* pass = AddRenderPass(
         frame->render_passes,
         RenderPass::Id(1, 1),
         gfx::Rect(3, 3, 10, 10),
