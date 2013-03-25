@@ -203,6 +203,11 @@ div.sidebar-splitter {
   padding: 0 3px;
 }
 
+/* For rows of subitems (non-top items) */
+#directory-tree .tree-children .tree-row {
+  line-height: 31px;
+}
+
 #directory-tree .tree-row > .expand-icon {
   height: 37px;
   left: 3px;
@@ -249,11 +254,11 @@ div.sidebar-splitter {
   background-color: rgb(193, 209, 232);
 }
 
-#directory-tree  .tree-item.accepts > .tree-row:hover,
-#directory-tree  .tree-row[lead]:hover,
-#directory-tree  .tree-row[lead][selected]:hover,
-#directory-tree  .tree-row[selected]:hover,
-#directory-tree  .tree-row[anchor]:hover {
+#directory-tree .tree-item.accepts > .tree-row:hover,
+#directory-tree .tree-row[lead]:hover,
+#directory-tree .tree-row[lead][selected]:hover,
+#directory-tree .tree-row[selected]:hover,
+#directory-tree .tree-row[anchor]:hover {
   background-color: rgb(192, 192, 192);
 }
 
