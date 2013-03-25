@@ -376,10 +376,9 @@ class DriveFileSystemTest : public testing::Test {
                                      const std::string& md5,
                                      DriveCacheEntry* cache_entry) {
     bool result = false;
-    cache_->GetCacheEntry(
-        resource_id, md5,
-        base::Bind(&test_util::CopyResultsFromGetCacheEntryCallback,
-                   &result, cache_entry));
+    cache_->GetCacheEntry(resource_id, md5,
+                          google_apis::test_util::CreateCopyResultCallback(
+                              &result, cache_entry));
     google_apis::test_util::RunBlockingPoolTask();
     return result;
   }
@@ -1166,12 +1165,10 @@ TEST_F(DriveFileSystemTest, TransferFileFromRemoteToLocal_RegularFile) {
 
   // The content is "x"s of the file size.
   base::FilePath cache_file_path;
-  cache_->GetFile(
-      file->resource_id(),
-      file->file_specific_info().file_md5(),
-      base::Bind(&test_util::CopyResultsFromGetFileFromCacheCallback,
-                 &error,
-                 &cache_file_path));
+  cache_->GetFile(file->resource_id(),
+                  file->file_specific_info().file_md5(),
+                  google_apis::test_util::CreateCopyResultCallback(
+                      &error, &cache_file_path));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_OK, error);
 
@@ -2165,11 +2162,9 @@ TEST_F(DriveFileSystemTest, OpenAndCloseFile) {
   EXPECT_TRUE(cache_entry.is_persistent());
 
   base::FilePath cache_file_path;
-  cache_->GetFile(
-      file_resource_id, file_md5,
-      base::Bind(&test_util::CopyResultsFromGetFileFromCacheCallback,
-                 &error,
-                 &cache_file_path));
+  cache_->GetFile(file_resource_id, file_md5,
+                  google_apis::test_util::CreateCopyResultCallback(
+                      &error, &cache_file_path));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_OK, error);
   EXPECT_EQ(cache_file_path, opened_file_path);

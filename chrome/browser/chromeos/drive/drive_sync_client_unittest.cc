@@ -85,12 +85,11 @@ class DriveSyncClientTest : public testing::Test {
         temp_dir_.path(),
         pool->GetSequencedTaskRunner(pool->GetSequenceToken()),
         NULL /* free_disk_space_getter */));
-    bool cache_initialization_success = false;
+    bool success = false;
     cache_->RequestInitialize(
-        base::Bind(&test_util::CopyResultFromInitializeCacheCallback,
-                   &cache_initialization_success));
+        google_apis::test_util::CreateCopyResultCallback(&success));
     google_apis::test_util::RunBlockingPoolTask();
-    ASSERT_TRUE(cache_initialization_success);
+    ASSERT_TRUE(success);
     SetUpCache();
 
     // Initialize the sync client.

@@ -37,33 +37,6 @@ bool CacheStatesEqual(const DriveCacheEntry& a, const DriveCacheEntry& b) {
           a.is_persistent() == b.is_persistent());
 }
 
-void CopyResultFromInitializeCacheCallback(bool* out_success,
-                                           bool success) {
-  DCHECK(out_success);
-  *out_success = success;
-}
-
-void CopyResultsFromGetFileFromCacheCallback(
-    DriveFileError* out_error,
-    base::FilePath* out_cache_file_path,
-    DriveFileError error,
-    const base::FilePath& cache_file_path) {
-  DCHECK(out_error);
-  DCHECK(out_cache_file_path);
-  *out_error = error;
-  *out_cache_file_path = cache_file_path;
-}
-
-void CopyResultsFromGetCacheEntryCallback(bool* out_success,
-                                          DriveCacheEntry* out_cache_entry,
-                                          bool success,
-                                          const DriveCacheEntry& cache_entry) {
-  DCHECK(out_success);
-  DCHECK(out_cache_entry);
-  *out_success = success;
-  *out_cache_entry = cache_entry;
-}
-
 void CopyResultsFromGetFileCallback(DriveFileError* out_error,
                                     base::FilePath* out_file_path,
                                     DriveFileType* out_file_type,

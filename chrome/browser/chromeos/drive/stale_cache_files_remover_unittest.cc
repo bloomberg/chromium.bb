@@ -163,11 +163,9 @@ TEST_F(StaleCacheFilesRemoverTest, RemoveStaleCacheFiles) {
   // Verify that the cache entry exists.
   bool success = false;
   DriveCacheEntry cache_entry;
-  cache_->GetCacheEntry(
-      resource_id, md5,
-      base::Bind(&test_util::CopyResultsFromGetCacheEntryCallback,
-                 &success,
-                 &cache_entry));
+  cache_->GetCacheEntry(resource_id, md5,
+                        google_apis::test_util::CreateCopyResultCallback(
+                            &success, &cache_entry));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_TRUE(success);
 
@@ -188,11 +186,9 @@ TEST_F(StaleCacheFilesRemoverTest, RemoveStaleCacheFiles) {
   google_apis::test_util::RunBlockingPoolTask();
 
   // Verify that the cache entry is deleted.
-  cache_->GetCacheEntry(
-      resource_id, md5,
-      base::Bind(&test_util::CopyResultsFromGetCacheEntryCallback,
-                 &success,
-                 &cache_entry));
+  cache_->GetCacheEntry(resource_id, md5,
+                        google_apis::test_util::CreateCopyResultCallback(
+                            &success, &cache_entry));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_FALSE(success);
 }
