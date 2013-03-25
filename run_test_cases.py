@@ -113,58 +113,59 @@ if subprocess.mswindows:
       raise OSError(wintypes.GetLastError())
     return c_avail.value
 
-  def recv_impl(conn, maxsize, timeout):
-    """Reads from a pipe without blocking."""
-    return recv_multi_impl([conn], maxsize, timeout)[1]
-
   def recv_multi_impl(conns, maxsize, timeout):
+    """Reads from the first available pipe.
+
+    If timeout is None, it's blocking. If timeout is 0, it is not blocking.
+    """
+    maxsize = max(maxsize or 16384, 1)
     if timeout:
       start = time.time()
     handles = [msvcrt.get_osfhandle(conn.fileno()) for conn in conns]
     try:
       while True:
         for i, handle in enumerate(handles):
+          # TODO(maruel): Use WaitForMultipleObjects().
           avail = min(PeekNamedPipe(handle), maxsize)
           if avail:
             return i, ReadFile(handle, avail)[1]
-        if not timeout or (time.time() - start) >= timeout:
+        if (timeout and (time.time() - start) >= timeout) or timeout == 0:
           return None, None
         # Polling rocks.
         time.sleep(0.001)
     except OSError:
-      # Not classy but fits our needs.
+      # Not classy but fits our needs, this is usually caused by the process
+      # shutting down.
       return None, None
 
 else:
   import fcntl  # pylint: disable=F0401
   import select
 
-  def recv_impl(conn, maxsize, timeout):
-    """Reads from a pipe without blocking."""
-    if not select.select([conn], [], [], timeout)[0]:
-      return None
+  def recv_multi_impl(conns, maxsize, timeout):
+    """Reads from the first available pipe.
 
+    If timeout is None, it's blocking. If timeout is 0, it is not blocking.
+    """
+    try:
+      r, _, _ = select.select(conns, [], [], timeout)
+    except select.error:
+      return None, None
+    if not r:
+      return None, None
+
+    conn = r[0]
     # Temporarily make it non-blocking.
     flags = fcntl.fcntl(conn, fcntl.F_GETFL)
     if not conn.closed:
       # pylint: disable=E1101
       fcntl.fcntl(conn, fcntl.F_SETFL, flags | os.O_NONBLOCK)
     try:
-      return conn.read(maxsize)
+      data = conn.read(max(maxsize or 16384, 1))
+      return conns.index(conn), data
     finally:
       if not conn.closed:
         fcntl.fcntl(conn, fcntl.F_SETFL, flags)
-
-  def recv_multi_impl(conns, maxsize, timeout):
-    """Reads from the first available pipe without blocking."""
-    if timeout:
-      start = time.time()
-    r, _, _ = select.select(conns, [], [], timeout)
-    if not r:
-      return None, None
-    if timeout:
-      timeout = min(0, timeout - (time.time() - start))
-    return conns.index(r[0]), recv_impl(r[0], maxsize, timeout)
 
 
 class Failure(Exception):
@@ -208,6 +209,9 @@ class Popen(subprocess.Popen):
     """Yields output until the process terminates or is killed by a timeout.
 
     Yielded values are in the form (pipename, data).
+
+    If timeout is None, it is blocking. If timeout is 0, it doesn't block. This
+    is not generally useful to use timeout=0.
     """
     remaining = 0
     while self.poll() is None:
@@ -217,8 +221,10 @@ class Popen(subprocess.Popen):
         # resulting value could be different, depending if a .reset() call
         # occurred.
         remaining = max(float(timeout) - self.duration(), 0.001)
+      else:
+        remaining = timeout
       t, data = self.recv_any(timeout=remaining)
-      if data:
+      if data or timeout == 0:
         yield (t, data)
       if timeout and self.duration() >= float(timeout):
         break
@@ -234,7 +240,10 @@ class Popen(subprocess.Popen):
       yield (t, data)
 
   def recv_any(self, maxsize=None, timeout=None):
-    """Reads from stderr and if empty, from stdout."""
+    """Reads from stderr and if empty, from stdout.
+
+    If timeout is None, it is blocking. If timeout is 0, it doesn't block.
+    """
     pipes = [
       x for x in ((self.stderr, 'stderr'), (self.stdout, 'stdout')) if x[0]
     ]
@@ -243,7 +252,7 @@ class Popen(subprocess.Popen):
     if not pipes:
       return None, None
     conns, names = zip(*pipes)
-    index, data = recv_multi_impl(conns, max(maxsize or 1024, 1), timeout or 0)
+    index, data = recv_multi_impl(conns, maxsize, timeout)
     if index is None:
       return index, data
     if not data:
@@ -269,7 +278,7 @@ class Popen(subprocess.Popen):
     conn = getattr(self, which)
     if conn is None:
       return None
-    data = recv_impl(conn, max(maxsize or 1024, 1), timeout or 0)
+    data = recv_multi_impl([conn], maxsize, timeout)
     if not data:
       return self._close(which)
     if self.universal_newlines:
@@ -278,7 +287,10 @@ class Popen(subprocess.Popen):
 
 
 def call_with_timeout(cmd, timeout, **kwargs):
-  """Runs an executable with an optional timeout."""
+  """Runs an executable with an optional timeout.
+
+  timeout 0 or None disables the timeout.
+  """
   proc = Popen(
       cmd,
       stdin=subprocess.PIPE,
@@ -320,7 +332,6 @@ class QueueWithProgress(Queue.PriorityQueue):
         raise ValueError('task_done() called too many times')
       self.unfinished_tasks = unfinished
       # This is less efficient, because we want the Progress to be updated.
-      logging.debug('all_tasks_done.notify_all() at %s', time.time())
       logging.debug('%s unfinished tasks', unfinished)
       self.all_tasks_done.notify_all()
     except Exception as e:
@@ -334,10 +345,7 @@ class QueueWithProgress(Queue.PriorityQueue):
     self.all_tasks_done.acquire()
     try:
       while self.unfinished_tasks:
-        logging.debug('Looping in join() with %s unfinished tasks',
-                      self.unfinished_tasks)
         self.progress.print_update()
-        logging.debug('Calling all_tasks_done.wait() at %s', time.time())
         self.all_tasks_done.wait(60.)
       self.progress.print_update()
     finally:

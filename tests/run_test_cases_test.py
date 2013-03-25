@@ -211,6 +211,141 @@ class RunTestCases(unittest.TestCase):
       self.assertEqual((None, None), p.recv_any())
       self.assertEquals(0, p.returncode)
 
+  @staticmethod
+  def _get_output_sleep_proc(flush, env, duration):
+    command = [
+      'import sys,time',
+      'print(\'A\')',
+    ]
+    if flush:
+      # Sadly, this doesn't work otherwise in some combination.
+      command.append('sys.stdout.flush()')
+    command.extend((
+      'time.sleep(%s)' % duration,
+      'print(\'B\')',
+    ))
+    return run_test_cases.Popen(
+        [
+          sys.executable,
+          '-c',
+          ';'.join(command),
+        ],
+        stdout=subprocess.PIPE,
+        universal_newlines=True,
+        env=env)
+
+  def test_yield_any_None(self):
+    for duration in (0.05, 0.1, 0.5, 2):
+      try:
+        proc = self._get_output_sleep_proc(True, {}, duration)
+        expected = [
+          'A\n',
+          'B\n',
+        ]
+        for p, data in proc.yield_any(timeout=None):
+          self.assertEqual('stdout', p)
+          self.assertEqual(expected.pop(0), data)
+        self.assertEqual(0, proc.returncode)
+        self.assertEqual([], expected)
+        break
+      except AssertionError:
+        if duration != 2:
+          print('Sleeping rocks. trying more slowly.')
+          continue
+        raise
+
+  def test_yield_any_0(self):
+    for duration in (0.05, 0.1, 0.5, 2):
+      try:
+        proc = self._get_output_sleep_proc(True, {}, duration)
+        expected = [
+          'A\n',
+          'B\n',
+        ]
+        got_none = False
+        for p, data in proc.yield_any(timeout=0):
+          if not p:
+            got_none = True
+            continue
+          self.assertEqual('stdout', p)
+          self.assertEqual(expected.pop(0), data)
+        self.assertEqual(0, proc.returncode)
+        self.assertEqual([], expected)
+        self.assertEqual(True, got_none)
+        break
+      except AssertionError:
+        if duration != 2:
+          print('Sleeping rocks. trying more slowly.')
+          continue
+        raise
+
+  def test_recv_any_None(self):
+    values = (
+        (True, ['A\n', 'B\n'], {}),
+        (False, ['A\nB\n'], {}),
+        (False, ['A\n', 'B\n'], {'PYTHONUNBUFFERED': 'x'}),
+    )
+    for flush, exp, env in values:
+      for duration in (0.05, 0.1, 0.5, 2):
+        expected = exp[:]
+        try:
+          proc = self._get_output_sleep_proc(flush, env, duration)
+          while True:
+            p, data = proc.recv_any(timeout=None)
+            if not p:
+              break
+            self.assertEqual('stdout', p)
+            if not expected:
+              self.fail(data)
+            self.assertEqual(expected.pop(0), data)
+          # Contrary to yield_any() or recv_any(0), wait() needs to be used
+          # here.
+          proc.wait()
+          self.assertEqual([], expected)
+          self.assertEqual(0, proc.returncode)
+        except AssertionError:
+          if duration != 2:
+            print('Sleeping rocks. trying more slowly.')
+            continue
+          raise
+
+  def test_recv_any_0(self):
+    values = (
+        (True, ['A\n', 'B\n'], {}),
+        (False, ['A\nB\n'], {}),
+        (False, ['A\n', 'B\n'], {'PYTHONUNBUFFERED': 'x'}),
+    )
+    for flush, exp, env in values:
+      for duration in (0.1, 0.5, 2):
+        expected = exp[:]
+        try:
+          proc = self._get_output_sleep_proc(flush, env, duration)
+          got_none = False
+          while proc.poll() is None:
+            p, data = proc.recv_any(timeout=0)
+            if not p:
+              got_none = True
+              continue
+            self.assertEqual('stdout', p)
+            if not expected:
+              self.fail(data)
+            e = expected.pop(0)
+            if sys.platform == 'win32':
+              # Buffering is truly a character-level on Windows and could get
+              # items individually.
+              if len(data) < len(e):
+                expected.insert(0, e[len(data):])
+                e = e[:len(data)]
+            self.assertEqual(e, data)
+          self.assertEqual(0, proc.returncode)
+          self.assertEqual([], expected)
+          self.assertEqual(True, got_none)
+        except Exception as e:
+          if duration != 2:
+            print('Sleeping rocks. trying more slowly.')
+            continue
+          raise
+
   def test_gtest_filter(self):
     old = run_test_cases.run_test_cases
     exe = os.path.join(ROOT_DIR, 'tests', 'gtest_fake', 'gtest_fake_pass.py')
