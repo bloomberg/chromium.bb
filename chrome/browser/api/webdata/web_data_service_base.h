@@ -39,7 +39,13 @@ class WebDataServiceBase
 
   // |callback| will only be invoked on error, and only if
   // |callback.is_null()| evaluates to false.
-  WebDataServiceBase(const base::FilePath& path,
+  //
+  // The ownership of |wdbs| is shared, with the primary owner being the
+  // WebDataServiceWrapper, and secondary owners being subclasses of
+  // WebDataServiceBase, which receive |wdbs| upon construction. The
+  // WebDataServiceWrapper handles the initializing and shutting down and of
+  // the |wdbs| object.
+  WebDataServiceBase(scoped_refptr<WebDatabaseService> wdbs,
                      const ProfileErrorCallback& callback);
 
   // Cancel any pending request. You need to call this method if your
@@ -93,7 +99,7 @@ class WebDataServiceBase
   virtual void ShutdownOnDBThread();
 
   // Our database service.
-  scoped_ptr<WebDatabaseService> wdbs_;
+  scoped_refptr<WebDatabaseService> wdbs_;
 
   // True if we've received a notification that the WebDatabase has loaded.
   bool db_loaded_;
@@ -102,11 +108,6 @@ class WebDataServiceBase
   friend struct content::BrowserThread::DeleteOnThread<
       content::BrowserThread::UI>;
   friend class base::DeleteHelper<WebDataServiceBase>;
-
-  // TODO(caitkp): Get rid of this once we fully split
-  // AutofillWebDataService and WebDatabaseService away from
-  // WebDataService.
-  base::FilePath path_;
 
   ProfileErrorCallback profile_error_callback_;
 

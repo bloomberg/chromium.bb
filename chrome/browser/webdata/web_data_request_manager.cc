@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/stl_util.h"
-#include "chrome/browser/webdata/web_data_service.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -35,7 +34,7 @@ WebDataRequest::~WebDataRequest() {
   }
 }
 
-WebDataService::Handle WebDataRequest::GetHandle() const {
+WebDataServiceBase::Handle WebDataRequest::GetHandle() const {
   return handle_;
 }
 

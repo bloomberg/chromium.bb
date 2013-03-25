@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sync/test/integration/autofill_helper.h"
 
+#include "chrome/browser/api/webdata/autofill_web_data_service.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -12,7 +13,6 @@
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/webdata/autofill_entry.h"
 #include "chrome/browser/webdata/autofill_table.h"
-#include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/browser/webdata/web_database.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/thread_observer_helper.h"
@@ -61,7 +61,7 @@ void RemoveKeyDontBlockForSync(int profile, const AutofillKey& key) {
 
   EXPECT_CALL(*observer_helper->observer(), Observe(_, _, _)).
       WillOnce(SignalEvent(&done_event));
-  scoped_refptr<WebDataService> wds =
+  scoped_refptr<AutofillWebDataService> wds =
       autofill_helper::GetWebDataService(profile);
   wds->RemoveFormValueForElementName(key.name(), key.value());
   done_event.Wait();
@@ -83,14 +83,14 @@ void RunOnDBThreadAndBlock(base::Closure task) {
   done_event.Wait();
 }
 
-void GetAllAutofillEntriesOnDBThread(WebDataService* wds,
+void GetAllAutofillEntriesOnDBThread(AutofillWebDataService* wds,
                                      std::vector<AutofillEntry>* entries) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   AutofillTable::FromWebDatabase(
       wds->GetDatabase())->GetAllAutofillEntries(entries);
 }
 
-std::vector<AutofillEntry> GetAllAutofillEntries(WebDataService* wds) {
+std::vector<AutofillEntry> GetAllAutofillEntries(AutofillWebDataService* wds) {
   std::vector<AutofillEntry> entries;
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   RunOnDBThreadAndBlock(Bind(&GetAllAutofillEntriesOnDBThread,
@@ -149,8 +149,8 @@ AutofillProfile CreateAutofillProfile(ProfileType type) {
   return profile;
 }
 
-scoped_refptr<WebDataService> GetWebDataService(int index) {
-  return WebDataService::FromBrowserContext(test()->GetProfile(index));
+scoped_refptr<AutofillWebDataService> GetWebDataService(int index) {
+  return AutofillWebDataService::FromBrowserContext(test()->GetProfile(index));
 }
 
 PersonalDataManager* GetPersonalDataManager(int index) {
@@ -175,7 +175,7 @@ void AddKeys(int profile, const std::set<AutofillKey>& keys) {
 
   EXPECT_CALL(*observer_helper->observer(), Observe(_, _, _)).
       WillOnce(SignalEvent(&done_event));
-  scoped_refptr<WebDataService> wds = GetWebDataService(profile);
+  scoped_refptr<AutofillWebDataService> wds = GetWebDataService(profile);
   wds->AddFormFields(form_fields);
   done_event.Wait();
   BlockForPendingDBThreadTasks();
@@ -196,7 +196,7 @@ void RemoveKeys(int profile) {
 }
 
 std::set<AutofillEntry> GetAllKeys(int profile) {
-  scoped_refptr<WebDataService> wds = GetWebDataService(profile);
+  scoped_refptr<AutofillWebDataService> wds = GetWebDataService(profile);
   std::vector<AutofillEntry> all_entries = GetAllAutofillEntries(wds);
   std::set<AutofillEntry> all_keys;
   for (std::vector<AutofillEntry>::const_iterator it = all_entries.begin();

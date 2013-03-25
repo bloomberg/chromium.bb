@@ -9,7 +9,6 @@
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/webdata/autofill_web_data_service_impl.h"
-#include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/browser/webdata/web_data_service_test_util.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -31,9 +30,11 @@ using testing::_;
 
 namespace {
 
-class MockWebDataService : public WebDataService {
+class MockWebDataService : public AutofillWebDataServiceImpl {
  public:
-  MockWebDataService() {
+  MockWebDataService()
+      : AutofillWebDataServiceImpl(
+            NULL, WebDataServiceBase::ProfileErrorCallback()) {
     current_mock_web_data_service_ = this;
   }
 
@@ -65,7 +66,7 @@ class MockWebDataServiceWrapperCurrent : public MockWebDataServiceWrapperBase {
 
   MockWebDataServiceWrapperCurrent() {}
 
-  scoped_refptr<WebDataService> GetWebData() OVERRIDE {
+  scoped_refptr<AutofillWebDataService> GetAutofillWebData() OVERRIDE {
     return MockWebDataService::GetCurrent();
   }
 

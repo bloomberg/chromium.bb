@@ -14,7 +14,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
-class WebDataService;
+class AutofillWebDataService;
 
 namespace browser_sync {
 
@@ -59,7 +59,7 @@ class AutofillDataTypeController : public NonUIDataTypeController,
   // an updated value of autofill culling settings.
   void UpdateAutofillCullingSettings(bool cull_expired_entries);
 
-  scoped_refptr<WebDataService> web_data_service_;
+  scoped_refptr<AutofillWebDataService> web_data_service_;
   content::NotificationRegistrar notification_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillDataTypeController);

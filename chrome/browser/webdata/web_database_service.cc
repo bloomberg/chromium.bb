@@ -10,7 +10,6 @@
 #include "chrome/browser/api/webdata/web_data_results.h"
 #include "chrome/browser/api/webdata/web_data_service_consumer.h"
 #include "chrome/browser/webdata/web_data_request_manager.h"
-#include "chrome/browser/webdata/web_data_service.h"
 // TODO(caitkp): Remove this autofill dependency.
 #include "components/autofill/browser/autofill_country.h"
 
@@ -264,12 +263,12 @@ void WebDatabaseService::ScheduleDBTask(
            task, base::Passed(&request)));
 }
 
-WebDataService::Handle WebDatabaseService::ScheduleDBTaskWithResult(
+WebDataServiceBase::Handle WebDatabaseService::ScheduleDBTaskWithResult(
     const tracked_objects::Location& from_here,
     const ReadTask& task,
     WebDataServiceConsumer* consumer) {
   DCHECK(consumer);
-  WebDataService::Handle handle = 0;
+  WebDataServiceBase::Handle handle = 0;
 
   if (!wds_backend_) {
     NOTREACHED() << "Task scheduled after Shutdown()";

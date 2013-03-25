@@ -4,6 +4,7 @@
 
 #include "base/command_line.h"
 #include "build/build_config.h"
+#include "chrome/browser/api/webdata/autofill_web_data_service.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/extensions/api/storage/settings_frontend.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -57,7 +58,6 @@
 #include "chrome/browser/themes/theme_syncable_service.h"
 #include "chrome/browser/webdata/autocomplete_syncable_service.h"
 #include "chrome/browser/webdata/autofill_profile_syncable_service.h"
-#include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
@@ -100,7 +100,7 @@ ProfileSyncComponentsFactoryImpl::ProfileSyncComponentsFactoryImpl(
       command_line_(command_line),
       extension_system_(
           extensions::ExtensionSystemFactory::GetForProfile(profile)),
-      web_data_service_(WebDataService::FromBrowserContext(profile_)) {
+      web_data_service_(AutofillWebDataService::FromBrowserContext(profile_)) {
 }
 
 ProfileSyncComponentsFactoryImpl::~ProfileSyncComponentsFactoryImpl() {

@@ -18,9 +18,9 @@ class AutofillEntry;
 class AutofillKey;
 class AutofillProfile;
 class AutofillType;
+class AutofillWebDataService;
 class CreditCard;
 class PersonalDataManager;
-class WebDataService;
 
 namespace autofill_helper {
 
@@ -32,7 +32,8 @@ enum ProfileType {
 };
 
 // Used to access the web data service within a particular sync profile.
-scoped_refptr<WebDataService> GetWebDataService(int index) WARN_UNUSED_RESULT;
+scoped_refptr<AutofillWebDataService> GetWebDataService(
+    int index) WARN_UNUSED_RESULT;
 
 // Used to access the personal data manager within a particular sync profile.
 PersonalDataManager* GetPersonalDataManager(int index) WARN_UNUSED_RESULT;

@@ -7,8 +7,8 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/api/webdata/autofill_web_data_service.h"
 #include "chrome/browser/webdata/autofill_table.h"
-#include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/browser/webdata/web_database.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/browser_thread.h"
@@ -88,14 +88,14 @@ void* UserDataKey() {
 }  // namespace
 
 AutocompleteSyncableService::AutocompleteSyncableService(
-    WebDataService* web_data_service)
+    AutofillWebDataService* web_data_service)
     : web_data_service_(web_data_service),
       cull_expired_entries_(false) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   DCHECK(web_data_service_);
   notification_registrar_.Add(
       this, chrome::NOTIFICATION_AUTOFILL_ENTRIES_CHANGED,
-      content::Source<WebDataService>(web_data_service));
+      content::Source<AutofillWebDataService>(web_data_service));
 }
 
 AutocompleteSyncableService::~AutocompleteSyncableService() {
@@ -104,16 +104,16 @@ AutocompleteSyncableService::~AutocompleteSyncableService() {
 
 // static
 void AutocompleteSyncableService::CreateForWebDataService(
-    WebDataService* web_data) {
-  web_data->GetDBUserData()->SetUserData(
-      UserDataKey(), new AutocompleteSyncableService(web_data));
+    AutofillWebDataService* web_data_service) {
+  web_data_service->GetDBUserData()->SetUserData(
+      UserDataKey(), new AutocompleteSyncableService(web_data_service));
 }
 
 // static
 AutocompleteSyncableService* AutocompleteSyncableService::FromWebDataService(
-    WebDataService* web_data) {
+    AutofillWebDataService* web_data_service) {
   return static_cast<AutocompleteSyncableService*>(
-      web_data->GetDBUserData()->GetUserData(UserDataKey()));
+      web_data_service->GetDBUserData()->GetUserData(UserDataKey()));
 }
 
 AutocompleteSyncableService::AutocompleteSyncableService()
@@ -169,7 +169,7 @@ syncer::SyncMergeResult AutocompleteSyncableService::MergeDataAndStartSyncing(
     return merge_result;
   }
 
-  WebDataService::NotifyOfMultipleAutofillChanges(web_data_service_);
+  AutofillWebDataService::NotifyOfMultipleAutofillChanges(web_data_service_);
 
   syncer::SyncChangeList new_changes;
   for (AutocompleteEntryMap::iterator i = new_db_entries.begin();
@@ -286,7 +286,7 @@ syncer::SyncError AutocompleteSyncableService::ProcessSyncChanges(
         "Failed to update webdata.");
   }
 
-  WebDataService::NotifyOfMultipleAutofillChanges(web_data_service_);
+  AutofillWebDataService::NotifyOfMultipleAutofillChanges(web_data_service_);
 
   if (cull_expired_entries_) {
     // This will schedule a deletion operation on the DB thread, which will
@@ -308,9 +308,10 @@ void AutocompleteSyncableService::Observe(int type,
   // starts.
   if (!sync_processor_.get())
     return;
-  WebDataService* wds = content::Source<WebDataService>(source).ptr();
+  AutofillWebDataService* web_data_service =
+      content::Source<AutofillWebDataService>(source).ptr();
 
-  DCHECK_EQ(web_data_service_, wds);
+  DCHECK_EQ(web_data_service_, web_data_service);
 
   AutofillChangeList* changes =
       content::Details<AutofillChangeList>(details).ptr();

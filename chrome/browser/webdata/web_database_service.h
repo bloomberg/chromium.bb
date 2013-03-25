@@ -41,7 +41,10 @@ class WebDataServiceConsumer;
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-class WebDatabaseService {
+class WebDatabaseService
+    : public base::RefCountedThreadSafe<
+          WebDatabaseService,
+          content::BrowserThread::DeleteOnUIThread> {
  public:
   typedef base::Callback<scoped_ptr<WDTypedResult>(WebDatabase*)> ReadTask;
   typedef base::Callback<WebDatabase::State(WebDatabase*)> WriteTask;
@@ -49,8 +52,6 @@ class WebDatabaseService {
 
   // Takes the path to the WebDatabase file.
   explicit WebDatabaseService(const base::FilePath& path);
-
-  virtual ~WebDatabaseService();
 
   // Adds |table| as a WebDatabaseTable that will participate in
   // managing the database, transferring ownership. All calls to this
@@ -89,6 +90,12 @@ class WebDatabaseService {
   virtual void CancelRequest(WebDataServiceBase::Handle h);
 
  private:
+  friend struct content::BrowserThread::DeleteOnThread<
+      content::BrowserThread::UI>;
+  friend class base::DeleteHelper<WebDatabaseService>;
+
+  virtual ~WebDatabaseService();
+
   base::FilePath path_;
 
   // The primary owner is |WebDatabaseService| but is refcounted because

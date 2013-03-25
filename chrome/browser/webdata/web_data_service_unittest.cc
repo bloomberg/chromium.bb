@@ -22,6 +22,7 @@
 #include "chrome/browser/webdata/autofill_table.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/browser/webdata/web_data_service_test_util.h"
+#include "chrome/browser/webdata/web_database_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/thread_observer_helper.h"
 #include "components/autofill/browser/autofill_profile.h"
@@ -77,15 +78,21 @@ class WebDataServiceTest : public testing::Test {
 
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     base::FilePath path = temp_dir_.path().AppendASCII("TestWebDB");
-    wds_ = new WebDataService(path, WebDataServiceBase::ProfileErrorCallback());
-    // Need to add at least one table so the database gets created.
-    wds_->AddTable(scoped_ptr<WebDatabaseTable>(new AutofillTable).Pass());
+
+    wdbs_ = new WebDatabaseService(path);
+    wdbs_->AddTable(scoped_ptr<WebDatabaseTable>(new AutofillTable()));
+    wdbs_->LoadDatabase(WebDatabaseService::InitCallback());
+
+    wds_ = new WebDataService(wdbs_,
+        WebDataServiceBase::ProfileErrorCallback());
     wds_->Init();
   }
 
   virtual void TearDown() {
     wds_->ShutdownOnUIThread();
+    wdbs_->ShutdownDatabase();
     wds_ = NULL;
+    wdbs_ = NULL;
     WaitForDatabaseThread();
 
     MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
@@ -107,6 +114,7 @@ class WebDataServiceTest : public testing::Test {
   content::TestBrowserThread db_thread_;
   base::FilePath profile_dir_;
   scoped_refptr<WebDataService> wds_;
+  scoped_refptr<WebDatabaseService> wdbs_;
   base::ScopedTempDir temp_dir_;
 };
 

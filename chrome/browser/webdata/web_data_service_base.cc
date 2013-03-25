@@ -27,10 +27,10 @@ using base::Bind;
 using base::Time;
 using content::BrowserThread;
 
-WebDataServiceBase::WebDataServiceBase(const base::FilePath& path,
+WebDataServiceBase::WebDataServiceBase(scoped_refptr<WebDatabaseService> wdbs,
                                        const ProfileErrorCallback& callback)
-    : db_loaded_(false),
-      path_(path),
+    : wdbs_(wdbs),
+      db_loaded_(false),
       profile_error_callback_(callback) {
   // WebDataService requires DB thread if instantiated.
   // Set WebDataServiceFactory::GetInstance()->SetTestingFactory(&profile, NULL)
@@ -43,12 +43,10 @@ void WebDataServiceBase::ShutdownOnUIThread() {
   BrowserThread::PostTask(
       BrowserThread::DB, FROM_HERE,
       base::Bind(&WebDataServiceBase::ShutdownOnDBThread, this));
-  ShutdownDatabase();
 }
 
 void WebDataServiceBase::AddTable(scoped_ptr<WebDatabaseTable> table) {
-  if (!wdbs_.get())
-    wdbs_.reset(new WebDatabaseService(path_));
+  DCHECK(wdbs_.get());
   wdbs_->AddTable(table.Pass());
 }
 
@@ -98,7 +96,6 @@ base::SupportsUserData* WebDataServiceBase::GetDBUserData() {
 
 WebDataServiceBase::~WebDataServiceBase() {
   DCHECK(!db_thread_user_data_.get()) << "Forgot to call ShutdownOnUIThread?";
-  wdbs_.reset();
 }
 
 void WebDataServiceBase::ShutdownOnDBThread() {

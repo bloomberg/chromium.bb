@@ -6,12 +6,12 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram.h"
+#include "chrome/browser/api/webdata/autofill_web_data_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_components_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/webdata/autocomplete_syncable_service.h"
-#include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_source.h"
@@ -65,13 +65,13 @@ bool AutofillDataTypeController::StartModels() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_EQ(MODEL_STARTING, state());
 
-  web_data_service_ = WebDataService::FromBrowserContext(profile());
+  web_data_service_ = AutofillWebDataService::FromBrowserContext(profile());
   if (web_data_service_->IsDatabaseLoaded()) {
     return true;
   } else {
     notification_registrar_.Add(
         this, chrome::NOTIFICATION_WEB_DATABASE_LOADED,
-        content::Source<WebDataService>(web_data_service_.get()));
+        content::Source<AutofillWebDataService>(web_data_service_.get()));
     return false;
   }
 }

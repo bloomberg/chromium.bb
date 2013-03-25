@@ -8,8 +8,8 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/api/webdata/autofill_web_data_service.h"
 #include "chrome/browser/webdata/autofill_table.h"
-#include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/browser/webdata/web_database.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "components/autofill/browser/autofill_profile.h"
@@ -44,14 +44,14 @@ void* UserDataKey() {
 const char kAutofillProfileTag[] = "google_chrome_autofill_profiles";
 
 AutofillProfileSyncableService::AutofillProfileSyncableService(
-    WebDataService* web_data_service)
+    AutofillWebDataService* web_data_service)
     : web_data_service_(web_data_service) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   DCHECK(web_data_service_);
   notification_registrar_.Add(
       this,
       chrome::NOTIFICATION_AUTOFILL_PROFILE_CHANGED,
-      content::Source<WebDataService>(web_data_service_));
+      content::Source<AutofillWebDataService>(web_data_service_));
 }
 
 AutofillProfileSyncableService::~AutofillProfileSyncableService() {
@@ -60,17 +60,17 @@ AutofillProfileSyncableService::~AutofillProfileSyncableService() {
 
 // static
 void AutofillProfileSyncableService::CreateForWebDataService(
-    WebDataService* web_data) {
-  web_data->GetDBUserData()->SetUserData(
-      UserDataKey(), new AutofillProfileSyncableService(web_data));
+    AutofillWebDataService* web_data_service) {
+  web_data_service->GetDBUserData()->SetUserData(
+      UserDataKey(), new AutofillProfileSyncableService(web_data_service));
 }
 
 // static
 AutofillProfileSyncableService*
 AutofillProfileSyncableService::FromWebDataService(
-    WebDataService* service) {
+    AutofillWebDataService* web_data_service) {
   return static_cast<AutofillProfileSyncableService*>(
-      service->GetDBUserData()->GetUserData(UserDataKey()));
+      web_data_service->GetDBUserData()->GetUserData(UserDataKey()));
 }
 
 AutofillProfileSyncableService::AutofillProfileSyncableService()
@@ -183,7 +183,7 @@ AutofillProfileSyncableService::MergeDataAndStartSyncing(
         sync_processor_->ProcessSyncChanges(FROM_HERE, new_changes));
   }
 
-  WebDataService::NotifyOfMultipleAutofillChanges(web_data_service_);
+  AutofillWebDataService::NotifyOfMultipleAutofillChanges(web_data_service_);
 
   return merge_result;
 }
@@ -254,7 +254,7 @@ syncer::SyncError AutofillProfileSyncableService::ProcessSyncChanges(
         "Failed to update webdata.");
   }
 
-  WebDataService::NotifyOfMultipleAutofillChanges(web_data_service_);
+  AutofillWebDataService::NotifyOfMultipleAutofillChanges(web_data_service_);
 
   return syncer::SyncError();
 }
@@ -263,7 +263,8 @@ void AutofillProfileSyncableService::Observe(int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   DCHECK_EQ(type, chrome::NOTIFICATION_AUTOFILL_PROFILE_CHANGED);
-  DCHECK_EQ(web_data_service_, content::Source<WebDataService>(source).ptr());
+  DCHECK_EQ(web_data_service_,
+            content::Source<AutofillWebDataService>(source).ptr());
   // Check if sync is on. If we receive notification prior to the sync being set
   // up we are going to process all when MergeData..() is called. If we receive
   // notification after the sync exited, it will be sinced next time Chrome

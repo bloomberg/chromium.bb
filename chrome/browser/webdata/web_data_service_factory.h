@@ -11,7 +11,10 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
-#include "chrome/browser/webdata/web_data_service.h"
+#include "chrome/browser/webdata/web_database_service.h"
+
+class AutofillWebDataService;
+class WebDataService;
 
 // A wrapper of WebDataService so that we can use it as a profile keyed service.
 class WebDataServiceWrapper : public ProfileKeyedService {
@@ -26,10 +29,15 @@ class WebDataServiceWrapper : public ProfileKeyedService {
   // ProfileKeyedService:
   virtual void Shutdown() OVERRIDE;
 
+  virtual scoped_refptr<AutofillWebDataService> GetAutofillWebData();
+
   virtual scoped_refptr<WebDataService> GetWebData();
 
  private:
-  scoped_refptr<WebDataService> web_data_service_;
+  scoped_refptr<WebDatabaseService> web_database_;
+
+  scoped_refptr<AutofillWebDataService> autofill_web_data_;
+  scoped_refptr<WebDataService> web_data_;
 
   DISALLOW_COPY_AND_ASSIGN(WebDataServiceWrapper);
 };
@@ -38,13 +46,13 @@ class WebDataServiceWrapper : public ProfileKeyedService {
 // Profiles.
 class WebDataServiceFactory : public ProfileKeyedServiceFactory {
  public:
-  // Returns the |WebDataService| associated with the |profile|.
+  // Returns the |WebDataServiceWrapper| associated with the |profile|.
   // |access_type| is either EXPLICIT_ACCESS or IMPLICIT_ACCESS
   // (see its definition).
-  static scoped_refptr<WebDataService> GetForProfile(
+  static WebDataServiceWrapper* GetForProfile(
       Profile* profile, Profile::ServiceAccessType access_type);
 
-  static scoped_refptr<WebDataService> GetForProfileIfExists(
+  static WebDataServiceWrapper* GetForProfileIfExists(
       Profile* profile, Profile::ServiceAccessType access_type);
 
   static WebDataServiceFactory* GetInstance();

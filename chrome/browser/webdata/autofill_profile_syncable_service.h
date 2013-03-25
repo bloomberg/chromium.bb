@@ -27,9 +27,9 @@
 
 class AutofillProfile;
 class AutofillTable;
+class AutofillWebDataService;
 class FormGroup;
 class ProfileSyncServiceAutofillTest;
-class WebDataService;
 class WebDataServiceBase;
 
 extern const char kAutofillProfileTag[];
@@ -46,15 +46,12 @@ class AutofillProfileSyncableService
  public:
   virtual ~AutofillProfileSyncableService();
 
-  // TODO(joi): Change this to key off AutofillWebDataService instead
-  // of WebDataService, once it is truly separate.
-
   // Creates a new AutofillProfileSyncableService and hangs it off of
-  // |web_data|, which takes ownership.
-  static void CreateForWebDataService(WebDataService* web_data);
-  // Retrieves the AutofillProfileSyncableService stored on |web_data|.
+  // |web_data_service|, which takes ownership.
+  static void CreateForWebDataService(AutofillWebDataService* web_data_service);
+  // Retrieves the AutofillProfileSyncableService stored on |web_data_service|.
   static AutofillProfileSyncableService* FromWebDataService(
-      WebDataService* web_data);
+      AutofillWebDataService* web_data_service);
 
   static syncer::ModelType model_type() { return syncer::AUTOFILL_PROFILE; }
 
@@ -77,7 +74,8 @@ class AutofillProfileSyncableService
                        const content::NotificationDetails& details) OVERRIDE;
 
  protected:
-  explicit AutofillProfileSyncableService(WebDataService* web_data_service);
+  explicit AutofillProfileSyncableService(
+      AutofillWebDataService* web_data_service);
 
   // A convenience wrapper of a bunch of state we pass around while
   // associating models, and send to the WebDatabase for persistence.
@@ -171,7 +169,7 @@ class AutofillProfileSyncableService
     sync_processor_.reset(sync_processor);
   }
 
-  WebDataService* web_data_service_;  // WEAK
+  AutofillWebDataService* web_data_service_;  // WEAK
   content::NotificationRegistrar notification_registrar_;
 
   // Cached Autofill profiles. *Warning* deleted profiles are still in the

@@ -40,7 +40,7 @@
 #include "chrome/browser/webdata/autofill_entry.h"
 #include "chrome/browser/webdata/autofill_profile_syncable_service.h"
 #include "chrome/browser/webdata/autofill_table.h"
-#include "chrome/browser/webdata/web_data_service.h"
+#include "chrome/browser/webdata/autofill_web_data_service_impl.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/browser/webdata/web_data_service_test_util.h"
 #include "chrome/browser/webdata/web_database.h"
@@ -144,10 +144,40 @@ syncer::ModelType GetModelType<AutofillProfile>() {
   return syncer::AUTOFILL_PROFILE;
 }
 
-class WebDataServiceFake : public WebDataService {
+class TokenWebDataServiceFake : public WebDataService {
+ public:
+  TokenWebDataServiceFake()
+      : WebDataService() {
+  }
+
+  virtual bool IsDatabaseLoaded() OVERRIDE {
+    return true;
+  }
+
+  virtual WebDataService::Handle GetAllTokens(
+      WebDataServiceConsumer* consumer) OVERRIDE {
+    // TODO(tim): It would be nice if WebDataService was injected on
+    // construction of TokenService rather than fetched by Initialize so that
+    // this isn't necessary (we could pass a NULL service). We currently do
+    // return it via EXPECT_CALLs, but without depending on order-of-
+    // initialization (which seems way more fragile) we can't tell which
+    // component is asking at what time, and some components in these Autofill
+    // tests require a WebDataService.
+    return 0;
+  }
+
+ private:
+  virtual ~TokenWebDataServiceFake() {}
+
+  DISALLOW_COPY_AND_ASSIGN(TokenWebDataServiceFake);
+};
+
+class WebDataServiceFake : public AutofillWebDataServiceImpl {
  public:
   WebDataServiceFake()
-      : web_database_(NULL),
+      : AutofillWebDataServiceImpl(
+            NULL, WebDataServiceBase::ProfileErrorCallback()),
+        web_database_(NULL),
         syncable_service_created_or_destroyed_(false, false) {
   }
 
@@ -181,18 +211,6 @@ class WebDataServiceFake : public WebDataService {
     return web_database_;
   }
 
-  virtual WebDataService::Handle GetAllTokens(
-      WebDataServiceConsumer* consumer) OVERRIDE {
-    // TODO(tim): It would be nice if WebDataService was injected on
-    // construction of TokenService rather than fetched by Initialize so that
-    // this isn't necessary (we could pass a NULL service). We currently do
-    // return it via EXPECT_CALLs, but without depending on order-of-
-    // initialization (which seems way more fragile) we can't tell which
-    // component is asking at what time, and some components in these Autofill
-    // tests require a WebDataService.
-    return 0;
-  }
-
   virtual void ShutdownOnUIThread() OVERRIDE {}
 
  private:
@@ -215,10 +233,14 @@ class WebDataServiceFake : public WebDataService {
   WebDatabase* web_database_;
 
   WaitableEvent syncable_service_created_or_destroyed_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebDataServiceFake);
 };
 
 ProfileKeyedService* BuildMockWebDataServiceWrapper(Profile* profile) {
-  return new MockWebDataServiceWrapper(new WebDataServiceFake());
+  return new MockWebDataServiceWrapper(
+      new TokenWebDataServiceFake(),
+      new WebDataServiceFake());
 }
 
 ACTION_P(MakeAutocompleteSyncComponents, wds) {
@@ -265,7 +287,7 @@ class AbstractAutofillFactory {
       ProfileSyncService* service) = 0;
   virtual void SetExpectation(ProfileSyncComponentsFactoryMock* factory,
                               ProfileSyncService* service,
-                              WebDataService* wds,
+                              AutofillWebDataService* wds,
                               DataTypeController* dtc) = 0;
   virtual ~AbstractAutofillFactory() {}
 };
@@ -281,7 +303,7 @@ class AutofillEntryFactory : public AbstractAutofillFactory {
 
   virtual void SetExpectation(ProfileSyncComponentsFactoryMock* factory,
                               ProfileSyncService* service,
-                              WebDataService* wds,
+                              AutofillWebDataService* wds,
                               DataTypeController* dtc) OVERRIDE {
     EXPECT_CALL(*factory, CreateGenericChangeProcessor(_,_,_,_)).
         WillOnce(MakeGenericChangeProcessor());
@@ -303,7 +325,7 @@ class AutofillProfileFactory : public AbstractAutofillFactory {
 
   virtual void SetExpectation(ProfileSyncComponentsFactoryMock* factory,
                               ProfileSyncService* service,
-                              WebDataService* wds,
+                              AutofillWebDataService* wds,
                               DataTypeController* dtc) OVERRIDE {
     EXPECT_CALL(*factory, CreateGenericChangeProcessor(_,_,_,_)).
         WillOnce(MakeGenericChangeProcessor());
@@ -387,7 +409,7 @@ class ProfileSyncServiceAutofillTest
             WebDataServiceFactory::GetInstance()->SetTestingFactoryAndUse(
                 profile_.get(), BuildMockWebDataServiceWrapper));
     web_data_service_ =
-        static_cast<WebDataServiceFake*>(wrapper->GetWebData().get());
+        static_cast<WebDataServiceFake*>(wrapper->GetAutofillWebData().get());
     web_data_service_->SetDatabase(web_database_.get());
 
     MockPersonalDataManagerService* personal_data_manager_service =
@@ -1110,7 +1132,8 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeAddEntry) {
   scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(
       db_thread_.DeprecatedGetThreadObject()));
   notifier->Notify(chrome::NOTIFICATION_AUTOFILL_ENTRIES_CHANGED,
-                   content::Source<WebDataService>(web_data_service_.get()),
+                   content::Source<AutofillWebDataService>(
+                        web_data_service_.get()),
                    content::Details<AutofillChangeList>(&changes));
 
   std::vector<AutofillEntry> new_sync_entries;
@@ -1140,7 +1163,8 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeAddProfile) {
   scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(
       db_thread_.DeprecatedGetThreadObject()));
   notifier->Notify(chrome::NOTIFICATION_AUTOFILL_PROFILE_CHANGED,
-                   content::Source<WebDataService>(web_data_service_.get()),
+                   content::Source<AutofillWebDataService>(
+                        web_data_service_.get()),
                    content::Details<AutofillProfileChange>(&change));
 
   std::vector<AutofillProfile> new_sync_profiles;
@@ -1174,7 +1198,8 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeUpdateEntry) {
   scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(
       db_thread_.DeprecatedGetThreadObject()));
   notifier->Notify(chrome::NOTIFICATION_AUTOFILL_ENTRIES_CHANGED,
-                   content::Source<WebDataService>(web_data_service_.get()),
+                   content::Source<AutofillWebDataService>(
+                        web_data_service_.get()),
                    content::Details<AutofillChangeList>(&changes));
 
   std::vector<AutofillEntry> new_sync_entries;
@@ -1204,7 +1229,8 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeRemoveEntry) {
   scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(
       db_thread_.DeprecatedGetThreadObject()));
   notifier->Notify(chrome::NOTIFICATION_AUTOFILL_ENTRIES_CHANGED,
-                   content::Source<WebDataService>(web_data_service_.get()),
+                   content::Source<AutofillWebDataService>(
+                        web_data_service_.get()),
                    content::Details<AutofillChangeList>(&changes));
 
   std::vector<AutofillEntry> new_sync_entries;
@@ -1243,7 +1269,8 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeRemoveProfile) {
   scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(
       db_thread_.DeprecatedGetThreadObject()));
   notifier->Notify(chrome::NOTIFICATION_AUTOFILL_PROFILE_CHANGED,
-                   content::Source<WebDataService>(web_data_service_.get()),
+                   content::Source<AutofillWebDataService>(
+                        web_data_service_.get()),
                    content::Details<AutofillProfileChange>(&change));
 
   std::vector<AutofillProfile> new_sync_profiles;

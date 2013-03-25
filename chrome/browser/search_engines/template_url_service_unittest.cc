@@ -1309,8 +1309,7 @@ TEST_F(TemplateURLServiceTest, FailedInit) {
 
   test_util_.ClearModel();
   scoped_refptr<WebDataService> web_service =
-      WebDataServiceFactory::GetForProfile(test_util_.profile(),
-                                           Profile::EXPLICIT_ACCESS);
+      WebDataService::FromBrowserContext(test_util_.profile());
   web_service->ShutdownDatabase();
 
   test_util_.ResetModel(false);

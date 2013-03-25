@@ -16,6 +16,7 @@
 #include "chrome/browser/webdata/logins_table.h"
 #include "chrome/browser/webdata/token_service_table.h"
 #include "chrome/browser/webdata/web_apps_table.h"
+#include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/browser/webdata/web_intents_table.h"
 #include "chrome/browser/webdata/webdata_constants.h"
 #include "content/public/browser/browser_thread.h"
@@ -33,13 +34,14 @@ void ProfileErrorCallback(sql::InitStatus status) {
       IDS_COULDNT_OPEN_PROFILE_ERROR : IDS_PROFILE_TOO_NEW_ERROR);
 }
 
-void InitSyncableServicesOnDBThread(scoped_refptr<WebDataService> web_data) {
+void InitSyncableServicesOnDBThread(
+    scoped_refptr<AutofillWebDataService> autofill_web_data) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
 
   // Currently only Autocomplete and Autofill profiles use the new Sync API, but
   // all the database data should migrate to this API over time.
-  AutocompleteSyncableService::CreateForWebDataService(web_data);
-  AutofillProfileSyncableService::CreateForWebDataService(web_data);
+  AutocompleteSyncableService::CreateForWebDataService(autofill_web_data);
+  AutofillProfileSyncableService::CreateForWebDataService(autofill_web_data);
 }
 
 }  // namespace
@@ -49,46 +51,62 @@ WebDataServiceWrapper::WebDataServiceWrapper() {}
 WebDataServiceWrapper::WebDataServiceWrapper(Profile* profile) {
   base::FilePath path = profile->GetPath();
   path = path.Append(kWebDataFilename);
-  web_data_service_ =
-      new WebDataService(path, base::Bind(&ProfileErrorCallback));
 
-  // All table objects that participate in managing the database must be added
-  // here.
-  web_data_service_->AddTable(
+  web_database_ = new WebDatabaseService(path);
+
+  // All tables objects that participate in managing the database must
+  // be added here.
+  web_database_->AddTable(
       scoped_ptr<WebDatabaseTable>(new AutofillTable()));
-  web_data_service_->AddTable(
+  web_database_->AddTable(
       scoped_ptr<WebDatabaseTable>(new KeywordTable()));
   // TODO(mdm): We only really need the LoginsTable on Windows for IE7 password
   // access, but for now, we still create it on all platforms since it deletes
   // the old logins table. We can remove this after a while, e.g. in M22 or so.
-  web_data_service_->AddTable(
+  web_database_->AddTable(
       scoped_ptr<WebDatabaseTable>(new LoginsTable()));
-  web_data_service_->AddTable(
+  web_database_->AddTable(
       scoped_ptr<WebDatabaseTable>(new TokenServiceTable()));
-  web_data_service_->AddTable(
+  web_database_->AddTable(
       scoped_ptr<WebDatabaseTable>(new WebAppsTable()));
   // TODO(thakis): Add a migration to delete the SQL table used by
   // WebIntentsTable, then remove this.
-  web_data_service_->AddTable(
+  web_database_->AddTable(
       scoped_ptr<WebDatabaseTable>(new WebIntentsTable()));
 
-  web_data_service_->Init();
+  // TODO (caitkp): Rework the callbacks here. They're ugly.
+
+  web_database_->LoadDatabase(WebDatabaseService::InitCallback());
+
+  autofill_web_data_ = new AutofillWebDataServiceImpl(
+      web_database_, base::Bind(&ProfileErrorCallback));
+  autofill_web_data_->Init();
+
+  web_data_ = new WebDataService(
+      web_database_, base::Bind(&ProfileErrorCallback));
+  web_data_->Init();
 
   BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
                           base::Bind(&InitSyncableServicesOnDBThread,
-                                     web_data_service_));
+                                     autofill_web_data_));
 }
 
 WebDataServiceWrapper::~WebDataServiceWrapper() {
 }
 
 void WebDataServiceWrapper::Shutdown() {
-  web_data_service_->ShutdownOnUIThread();
-  web_data_service_ = NULL;
+  autofill_web_data_->ShutdownOnUIThread();
+  web_data_->ShutdownOnUIThread();
+  web_database_->ShutdownDatabase();
+}
+
+scoped_refptr<AutofillWebDataService>
+WebDataServiceWrapper::GetAutofillWebData() {
+  return autofill_web_data_.get();
 }
 
 scoped_refptr<WebDataService> WebDataServiceWrapper::GetWebData() {
-  return web_data_service_.get();
+  return web_data_.get();
 }
 
 // static
@@ -97,15 +115,13 @@ AutofillWebDataService::FromBrowserContext(content::BrowserContext* context) {
   // For this service, the implicit/explicit distinction doesn't
   // really matter; it's just used for a DCHECK.  So we currently
   // cheat and always say EXPLICIT_ACCESS.
-  scoped_refptr<WebDataService> service = WebDataServiceFactory::GetForProfile(
-      static_cast<Profile*>(context), Profile::EXPLICIT_ACCESS);
-
-  if (service.get()) {
-    return scoped_refptr<AutofillWebDataService>(
-        new AutofillWebDataServiceImpl(service));
-  } else {
-    return scoped_refptr<AutofillWebDataService>(NULL);
-  }
+  WebDataServiceWrapper* wrapper =
+      WebDataServiceFactory::GetForProfile(
+          static_cast<Profile*>(context), Profile::EXPLICIT_ACCESS);
+  if (wrapper)
+    return wrapper->GetAutofillWebData();
+  // |wrapper| can be NULL in Incognito mode.
+  return scoped_refptr<AutofillWebDataService>(NULL);
 }
 
 // static
@@ -114,8 +130,13 @@ scoped_refptr<WebDataService> WebDataService::FromBrowserContext(
   // For this service, the implicit/explicit distinction doesn't
   // really matter; it's just used for a DCHECK.  So we currently
   // cheat and always say EXPLICIT_ACCESS.
-  return WebDataServiceFactory::GetForProfile(
-      static_cast<Profile*>(context), Profile::EXPLICIT_ACCESS);
+  WebDataServiceWrapper* wrapper =
+      WebDataServiceFactory::GetForProfile(
+          static_cast<Profile*>(context), Profile::EXPLICIT_ACCESS);
+  if (wrapper)
+    return wrapper->GetWebData();
+  // |wrapper| can be NULL in Incognito mode.
+  return scoped_refptr<WebDataService>(NULL);
 }
 
 WebDataServiceFactory::WebDataServiceFactory()
@@ -128,35 +149,25 @@ WebDataServiceFactory::WebDataServiceFactory()
 WebDataServiceFactory::~WebDataServiceFactory() {}
 
 // static
-scoped_refptr<WebDataService> WebDataServiceFactory::GetForProfile(
+WebDataServiceWrapper* WebDataServiceFactory::GetForProfile(
     Profile* profile, Profile::ServiceAccessType access_type) {
   // If |access_type| starts being used for anything other than this
   // DCHECK, we need to start taking it as a parameter to
   // AutofillWebDataServiceImpl::FromBrowserContext (see above).
   DCHECK(access_type != Profile::IMPLICIT_ACCESS || !profile->IsOffTheRecord());
-  WebDataServiceWrapper* wrapper =
-      static_cast<WebDataServiceWrapper*>(
+  return static_cast<WebDataServiceWrapper*>(
           GetInstance()->GetServiceForProfile(profile, true));
-  if (wrapper)
-    return wrapper->GetWebData();
-  // |wrapper| can be NULL in Incognito mode.
-  return NULL;
 }
 
 // static
-scoped_refptr<WebDataService> WebDataServiceFactory::GetForProfileIfExists(
+WebDataServiceWrapper* WebDataServiceFactory::GetForProfileIfExists(
     Profile* profile, Profile::ServiceAccessType access_type) {
   // If |access_type| starts being used for anything other than this
   // DCHECK, we need to start taking it as a parameter to
   // AutofillWebDataServiceImpl::FromBrowserContext (see above).
   DCHECK(access_type != Profile::IMPLICIT_ACCESS || !profile->IsOffTheRecord());
-  WebDataServiceWrapper* wrapper =
-      static_cast<WebDataServiceWrapper*>(
-          GetInstance()->GetServiceForProfile(profile, true));
-  if (wrapper)
-    return wrapper->GetWebData();
-  // |wrapper| can be NULL in Incognito mode.
-  return NULL;
+  return static_cast<WebDataServiceWrapper*>(
+          GetInstance()->GetServiceForProfile(profile, false));
 }
 
 // static

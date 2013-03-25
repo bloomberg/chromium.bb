@@ -16,7 +16,7 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/browser/webdata/autocomplete_syncable_service.h"
-#include "chrome/browser/webdata/web_data_service.h"
+#include "chrome/browser/webdata/autofill_web_data_service_impl.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/browser/webdata/web_data_service_test_util.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -40,9 +40,12 @@ using testing::Return;
 
 // Fake WebDataService implementation that stubs out the database
 // loading.
-class FakeWebDataService : public WebDataService {
+class FakeWebDataService : public AutofillWebDataServiceImpl {
  public:
-  FakeWebDataService() : is_database_loaded_(false) {}
+  FakeWebDataService()
+      : AutofillWebDataServiceImpl(
+            NULL, WebDataServiceBase::ProfileErrorCallback()),
+        is_database_loaded_(false) {}
 
   // Mark the database as loaded and send out the appropriate
   // notification.
@@ -53,7 +56,7 @@ class FakeWebDataService : public WebDataService {
     // use that instead of sending this notification manually.
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_WEB_DATABASE_LOADED,
-        content::Source<WebDataService>(this),
+        content::Source<AutofillWebDataService>(this),
         content::NotificationService::NoDetails());
   }
 
@@ -119,12 +122,12 @@ class MockWebDataServiceWrapperSyncable : public MockWebDataServiceWrapper {
   }
 
   MockWebDataServiceWrapperSyncable()
-      : MockWebDataServiceWrapper(new FakeWebDataService()) {
+      : MockWebDataServiceWrapper(NULL, new FakeWebDataService()) {
   }
 
   void Shutdown() OVERRIDE {
     static_cast<FakeWebDataService*>(
-        fake_web_data_service_.get())->ShutdownOnUIThread();
+        fake_autofill_web_data_.get())->ShutdownOnUIThread();
   }
 
  private:
@@ -207,7 +210,7 @@ class SyncAutofillDataTypeControllerTest : public testing::Test {
 TEST_F(SyncAutofillDataTypeControllerTest, StartWDSReady) {
   FakeWebDataService* web_db =
       static_cast<FakeWebDataService*>(
-          WebDataService::FromBrowserContext(&profile_).get());
+          AutofillWebDataService::FromBrowserContext(&profile_).get());
   web_db->LoadDatabase();
   autofill_dtc_->LoadModels(
     base::Bind(&SyncAutofillDataTypeControllerTest::OnLoadFinished,
@@ -240,7 +243,7 @@ TEST_F(SyncAutofillDataTypeControllerTest, StartWDSNotReady) {
 
   FakeWebDataService* web_db =
       static_cast<FakeWebDataService*>(
-        WebDataService::FromBrowserContext(&profile_).get());
+        AutofillWebDataService::FromBrowserContext(&profile_).get());
   web_db->LoadDatabase();
 
   EXPECT_CALL(*change_processor_, Connect(_,_,_,_,_))
@@ -259,7 +262,7 @@ TEST_F(SyncAutofillDataTypeControllerTest, StartWDSNotReady) {
 TEST_F(SyncAutofillDataTypeControllerTest, UpdateAutofillCullingSettings) {
   FakeWebDataService* web_db =
       static_cast<FakeWebDataService*>(
-          WebDataService::FromBrowserContext(&profile_).get());
+          AutofillWebDataService::FromBrowserContext(&profile_).get());
 
   // Set up the experiments state.
   ProfileSyncService* sync = ProfileSyncServiceFactory::GetForProfile(

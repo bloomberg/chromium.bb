@@ -11,7 +11,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_components_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/browser/webdata/web_data_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "sync/api/sync_error.h"
 

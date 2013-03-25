@@ -18,7 +18,6 @@
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner_helpers.h"
-#include "base/synchronization/lock.h"
 #include "chrome/browser/api/webdata/autofill_web_data_service.h"
 #include "chrome/browser/api/webdata/web_data_results.h"
 #include "chrome/browser/api/webdata/web_data_service_base.h"
@@ -107,7 +106,7 @@ class WebDataService
   static scoped_refptr<WebDataService> FromBrowserContext(
       content::BrowserContext* context);
 
-  WebDataService(const base::FilePath& path,
+  WebDataService(scoped_refptr<WebDatabaseService> wdbs,
                  const ProfileErrorCallback& callback);
 
   // Notifies listeners on the UI thread that multiple changes have been made to
@@ -116,8 +115,6 @@ class WebDataService
   // it asynchronously notifies listeners on the UI thread.
   // |web_data_service| may be NULL for testing purposes.
   static void NotifyOfMultipleAutofillChanges(WebDataService* web_data_service);
-
-
 
   //////////////////////////////////////////////////////////////////////////////
   //
@@ -301,7 +298,7 @@ class WebDataService
  private:
   //////////////////////////////////////////////////////////////////////////////
   //
-  // The following methods are only invoked in the web data service thread.
+  // The following methods are only invoked on the DB thread.
   //
   //////////////////////////////////////////////////////////////////////////////
 

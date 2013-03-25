@@ -62,9 +62,9 @@ WDKeywordsResult::WDKeywordsResult()
 
 WDKeywordsResult::~WDKeywordsResult() {}
 
-WebDataService::WebDataService(const base::FilePath& path,
+WebDataService::WebDataService(scoped_refptr<WebDatabaseService> wdbs,
                                const ProfileErrorCallback& callback)
-    : WebDataServiceBase(path, callback) {
+    : WebDataServiceBase(wdbs, callback) {
 }
 
 // static
@@ -102,7 +102,7 @@ void WebDataService::UpdateKeyword(const TemplateURLData& data) {
       FROM_HERE, Bind(&WebDataService::UpdateKeywordImpl, this, data));
 }
 
-WebDataService::Handle WebDataService::GetKeywords(
+WebDataServiceBase::Handle WebDataService::GetKeywords(
     WebDataServiceConsumer* consumer) {
   return wdbs_->ScheduleDBTaskWithResult(FROM_HERE,
       Bind(&WebDataService::GetKeywordsImpl, this), consumer);
@@ -143,7 +143,7 @@ void WebDataService::RemoveWebApp(const GURL& app_url) {
       Bind(&WebDataService::RemoveWebAppImpl, this, app_url));
 }
 
-WebDataService::Handle WebDataService::GetWebAppImages(
+WebDataServiceBase::Handle WebDataService::GetWebAppImages(
     const GURL& app_url, WebDataServiceConsumer* consumer) {
   return wdbs_->ScheduleDBTaskWithResult(FROM_HERE,
       Bind(&WebDataService::GetWebAppImagesImpl, this, app_url), consumer);
@@ -167,7 +167,7 @@ void WebDataService::RemoveAllTokens() {
 }
 
 // Null on failure. Success is WDResult<std::string>
-WebDataService::Handle WebDataService::GetAllTokens(
+WebDataServiceBase::Handle WebDataService::GetAllTokens(
     WebDataServiceConsumer* consumer) {
   return wdbs_->ScheduleDBTaskWithResult(FROM_HERE,
       Bind(&WebDataService::GetAllTokensImpl, this), consumer);
@@ -185,7 +185,7 @@ void WebDataService::AddFormFields(
       Bind(&WebDataService::AddFormElementsImpl, this, fields));
 }
 
-WebDataService::Handle WebDataService::GetFormValuesForElementName(
+WebDataServiceBase::Handle WebDataService::GetFormValuesForElementName(
     const string16& name, const string16& prefix, int limit,
     WebDataServiceConsumer* consumer) {
   return wdbs_->ScheduleDBTaskWithResult(FROM_HERE,
@@ -227,7 +227,7 @@ void WebDataService::RemoveAutofillProfile(const std::string& guid) {
       Bind(&WebDataService::RemoveAutofillProfileImpl, this, guid));
 }
 
-WebDataService::Handle WebDataService::GetAutofillProfiles(
+WebDataServiceBase::Handle WebDataService::GetAutofillProfiles(
     WebDataServiceConsumer* consumer) {
   return wdbs_->ScheduleDBTaskWithResult(FROM_HERE,
       Bind(&WebDataService::GetAutofillProfilesImpl, this), consumer);
@@ -248,7 +248,7 @@ void WebDataService::RemoveCreditCard(const std::string& guid) {
       Bind(&WebDataService::RemoveCreditCardImpl, this, guid));
 }
 
-WebDataService::Handle WebDataService::GetCreditCards(
+WebDataServiceBase::Handle WebDataService::GetCreditCards(
     WebDataServiceConsumer* consumer) {
   return wdbs_->ScheduleDBTaskWithResult(FROM_HERE,
       Bind(&WebDataService::GetCreditCardsImpl, this), consumer);
@@ -263,7 +263,7 @@ void WebDataService::RemoveAutofillProfilesAndCreditCardsModifiedBetween(
 }
 
 WebDataService::WebDataService()
-    : WebDataServiceBase(base::FilePath(), ProfileErrorCallback()) {
+    : WebDataServiceBase(NULL, ProfileErrorCallback()) {
 }
 
 WebDataService::~WebDataService() {

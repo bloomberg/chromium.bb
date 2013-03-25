@@ -7,14 +7,23 @@
 
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/api/webdata/autofill_web_data_service.h"
+#include "chrome/browser/api/webdata/web_data_results.h"
+#include "chrome/browser/api/webdata/web_data_service_base.h"
+#include "chrome/browser/api/webdata/web_data_service_consumer.h"
+#include "chrome/browser/webdata/web_database.h"
 
-class WebDataService;
+class AutofillChange;
+class WebDatabaseService;
 
 // This aggregates a WebDataService and delegates all method calls to
 // it.
 class AutofillWebDataServiceImpl : public AutofillWebDataService {
  public:
-  explicit AutofillWebDataServiceImpl(scoped_refptr<WebDataService> service);
+  AutofillWebDataServiceImpl(scoped_refptr<WebDatabaseService> wdbs,
+                             const ProfileErrorCallback& callback);
+
+  // WebDataServiceBase overrides:
+  virtual content::NotificationSource GetNotificationSource() OVERRIDE;
 
   // AutofillWebData implementation.
   virtual void AddFormFields(
@@ -38,22 +47,41 @@ class AutofillWebDataServiceImpl : public AutofillWebDataService {
   virtual WebDataServiceBase::Handle
       GetCreditCards(WebDataServiceConsumer* consumer) OVERRIDE;
 
-  // WebDataServiceBase overrides.
-  // TODO(caitkp): remove these when we decouple
-  // WebDatabaseService life cycle from WebData).
-  virtual void CancelRequest(Handle h) OVERRIDE;
-  virtual content::NotificationSource GetNotificationSource() OVERRIDE;
-  virtual bool IsDatabaseLoaded() OVERRIDE;
-  virtual WebDatabase* GetDatabase() OVERRIDE;
-
-
  protected:
   virtual ~AutofillWebDataServiceImpl();
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(AutofillWebDataServiceImpl);
+  WebDatabase::State AddFormElementsImpl(
+      const std::vector<FormFieldData>& fields, WebDatabase* db);
+  scoped_ptr<WDTypedResult> GetFormValuesForElementNameImpl(
+      const string16& name, const string16& prefix, int limit, WebDatabase* db);
+  WebDatabase::State RemoveFormElementsAddedBetweenImpl(
+      const base::Time& delete_begin, const base::Time& delete_end,
+      WebDatabase* db);
+  WebDatabase::State RemoveExpiredFormElementsImpl(WebDatabase* db);
+  WebDatabase::State RemoveFormValueForElementNameImpl(
+      const string16& name, const string16& value, WebDatabase* db);
+  WebDatabase::State AddAutofillProfileImpl(
+      const AutofillProfile& profile, WebDatabase* db);
+  WebDatabase::State UpdateAutofillProfileImpl(
+      const AutofillProfile& profile, WebDatabase* db);
+  WebDatabase::State RemoveAutofillProfileImpl(
+      const std::string& guid, WebDatabase* db);
+  scoped_ptr<WDTypedResult> GetAutofillProfilesImpl(WebDatabase* db);
+  WebDatabase::State AddCreditCardImpl(
+      const CreditCard& credit_card, WebDatabase* db);
+  WebDatabase::State UpdateCreditCardImpl(
+      const CreditCard& credit_card, WebDatabase* db);
+  WebDatabase::State RemoveCreditCardImpl(
+      const std::string& guid, WebDatabase* db);
+  scoped_ptr<WDTypedResult> GetCreditCardsImpl(WebDatabase* db);
 
-  const scoped_refptr<WebDataService> service_;
+  // Callbacks to ensure that sensitive info is destroyed if request is
+  // cancelled.
+  void DestroyAutofillProfileResult(const WDTypedResult* result);
+  void DestroyAutofillCreditCardResult(const WDTypedResult* result);
+
+  DISALLOW_COPY_AND_ASSIGN(AutofillWebDataServiceImpl);
 };
 
 #endif  // CHROME_BROWSER_WEBDATA_AUTOFILL_WEB_DATA_SERVICE_IMPL_H_

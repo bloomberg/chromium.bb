@@ -14,9 +14,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/supports_user_data.h"
 #include "base/threading/non_thread_safe.h"
+#include "chrome/browser/api/webdata/autofill_web_data_service.h"
 #include "chrome/browser/webdata/autofill_change.h"
 #include "chrome/browser/webdata/autofill_entry.h"
-#include "chrome/browser/webdata/web_data_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "sync/api/sync_change.h"
@@ -48,15 +48,12 @@ class AutocompleteSyncableService
  public:
   virtual ~AutocompleteSyncableService();
 
-  // TODO(joi): Change this to key off AutofillWebDataService instead
-  // of WebDataService, once it is truly separate.
-
   // Creates a new AutocompleteSyncableService and hangs it off of
-  // |web_data|, which takes ownership.
-  static void CreateForWebDataService(WebDataService* web_data);
+  // |web_data_service|, which takes ownership.
+  static void CreateForWebDataService(AutofillWebDataService* web_data_service);
   // Retrieves the AutocompleteSyncableService stored on |web_data|.
   static AutocompleteSyncableService* FromWebDataService(
-      WebDataService* web_data);
+      AutofillWebDataService* web_data_service);
 
   static syncer::ModelType model_type() { return syncer::AUTOFILL; }
 
@@ -84,7 +81,8 @@ class AutocompleteSyncableService
   bool cull_expired_entries() const { return cull_expired_entries_; }
 
  protected:
-  explicit AutocompleteSyncableService(WebDataService* web_data_service);
+  explicit AutocompleteSyncableService(
+      AutofillWebDataService* web_data_service);
 
   // Helper to query WebDatabase for the current autocomplete state.
   // Made virtual for ease of mocking in the unit-test.
@@ -149,7 +147,7 @@ class AutocompleteSyncableService
 
   // Lifetime of AutocompleteSyncableService object is shorter than
   // |web_data_service_| passed to it.
-  WebDataService* web_data_service_;
+  AutofillWebDataService* web_data_service_;
 
   content::NotificationRegistrar notification_registrar_;
 

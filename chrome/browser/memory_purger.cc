@@ -117,11 +117,11 @@ void MemoryPurger::PurgeBrowser() {
       history_service->UnloadBackend();
 
     // Unload all web databases (freeing memory used to cache sqlite).
-    scoped_refptr<WebDataService> web_data_service =
+    WebDataServiceWrapper* wds_wrapper =
         WebDataServiceFactory::GetForProfileIfExists(
             profiles[i], Profile::EXPLICIT_ACCESS);
-    if (web_data_service.get())
-      web_data_service->UnloadDatabase();
+    if (wds_wrapper && wds_wrapper->GetWebData())
+      wds_wrapper->GetWebData()->UnloadDatabase();
 
     BrowserContext::PurgeMemory(profiles[i]);
   }
