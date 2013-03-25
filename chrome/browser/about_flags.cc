@@ -1003,14 +1003,14 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(ash::switches::kAshDisableLauncherPerDisplay),
   },
   {
-    "enable-app-mode",
+    "disable-app-mode",
     IDS_FLAGS_DISABLE_KIOSK_APPS_NAME,
     IDS_FLAGS_DISABLE_KIOSK_APPS_DESCRIPTION,
     kOsCrOS,
     SINGLE_VALUE_TYPE(switches::kDisableAppMode),
   },
   {
-    "force-fullscreen-app",
+    "disable-force-fullscreen-app",
     IDS_FLAGS_DISABLE_FULLSCREEN_APP_NAME,
     IDS_FLAGS_DISABLE_FULLSCREEN_APP_DESCRIPTION,
     kOsCrOS,
