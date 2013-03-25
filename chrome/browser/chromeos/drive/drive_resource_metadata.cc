@@ -287,6 +287,12 @@ DriveFileError DriveResourceMetadata::InitializeOnBlockingPool() {
   if (!storage_->Initialize())
     return DRIVE_FILE_ERROR_FAILED;
 
+  // Remove unneeded proto file.
+  if (storage_->IsPersistentStorage()) {
+    file_util::Delete(data_directory_path_.Append(kProtoFileName),
+                      true /* recursive */);
+  }
+
   // Initialize the root entry.
   if (!storage_->GetEntry(root_resource_id_)) {
     DriveEntryProto root;
