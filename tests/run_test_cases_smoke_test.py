@@ -116,7 +116,7 @@ class RunTestCases(unittest.TestCase):
 
     for index in range(len(expected_out_re)):
       if not lines:
-        self.fail((expected_out_re[index:], err))
+        self.fail('%s\nerr:\n%s' % ('\n'.join(expected_out_re[index:]), err))
       line = lines.pop(0)
       if not re.match('^%s$' % expected_out_re[index], line):
         self.fail(
@@ -128,7 +128,7 @@ class RunTestCases(unittest.TestCase):
     self.assertEqual([], lines)
     self.assertEqual('', err)
 
-  def _check_results_file(self, fail, flaky, success, test_cases):
+  def _check_results_file(self, fail, flaky, success, test_cases, duration):
     self.assertTrue(os.path.exists(self.filename))
 
     with open(self.filename) as f:
@@ -141,7 +141,10 @@ class RunTestCases(unittest.TestCase):
         ],
         sorted(actual))
 
-    self.assertTrue(actual['duration'] > 0.0000001)
+    if duration:
+      self.assertTrue(actual['duration'] > 0.0000001)
+    else:
+      self.assertEqual(actual['duration'], 0)
     self.assertEqual(fail, actual['fail'])
     self.assertEqual(flaky, actual['flaky'])
     self.assertEqual(success, actual['success'])
@@ -185,7 +188,8 @@ class RunTestCases(unittest.TestCase):
         fail=[],
         flaky=[],
         success=sorted([u'Foo.Bar1', u'Foo.Bar2', u'Foo.Bar/3']),
-        test_cases=test_cases)
+        test_cases=test_cases,
+        duration=True)
 
   def test_simple_pass_cluster(self):
     out, err, return_code = RunTest(
@@ -219,7 +223,8 @@ class RunTestCases(unittest.TestCase):
         fail=[],
         flaky=[],
         success=sorted([u'Foo.Bar1', u'Foo.Bar2', u'Foo.Bar/3']),
-        test_cases=test_cases)
+        test_cases=test_cases,
+        duration=True)
 
   def test_simple_pass_verbose(self):
     # We take verbosity seriously so test it.
@@ -336,7 +341,8 @@ class RunTestCases(unittest.TestCase):
         fail=['Baz.Fail'],
         flaky=[],
         success=[u'Foo.Bar1', u'Foo.Bar2', u'Foo.Bar3'],
-        test_cases=test_cases)
+        test_cases=test_cases,
+        duration=True)
 
   def test_simple_fail_verbose(self):
     # We take verbosity seriously so test it.
@@ -404,7 +410,8 @@ class RunTestCases(unittest.TestCase):
         fail=['Baz.Fail'],
         flaky=[],
         success=[u'Foo.Bar1', u'Foo.Bar2', u'Foo.Bar3'],
-        test_cases=test_cases)
+        test_cases=test_cases,
+        duration=True)
 
   def test_simple_gtest_list_error(self):
     out, err, return_code = RunTest(
@@ -472,7 +479,8 @@ class RunTestCases(unittest.TestCase):
         fail=[u'Foo.Bar1', u'Foo.Bar4', u'Foo.Bar5'],
         flaky=[],
         success=[],
-        test_cases=test_cases)
+        test_cases=test_cases,
+        duration=True)
 
   def test_flaky_stop_early_xml(self):
     # Create an unique filename and delete the file.
@@ -506,6 +514,56 @@ class RunTestCases(unittest.TestCase):
     expected_xml = load_xml_as_string_and_filter(
         os.path.join(ROOT_DIR, 'tests', 'gtest_fake', 'expected.xml'))
     self.assertEqual(expected_xml, actual_xml)
+
+  def test_gtest_filter(self):
+    out, err, return_code = RunTest(
+        [
+          '--gtest_filter=Foo.Bar1:Foo.Bar/*',
+          '--result', self.filename,
+          os.path.join(ROOT_DIR, 'tests', 'gtest_fake', 'gtest_fake_pass.py'),
+        ])
+
+    self.assertEqual(0, return_code, (out, err))
+
+    expected_out_re = [
+      r'\[\d/\d\]   \d\.\d\ds .+',
+      r'\[\d/\d\]   \d\.\d\ds .+',
+      re.escape('Summary:'),
+      re.escape('  Success:    2 100.00% ') + r' +\d+\.\d\ds',
+      re.escape('    Flaky:    0   0.00% ') + r' +\d+\.\d\ds',
+      re.escape('     Fail:    0   0.00% ') + r' +\d+\.\d\ds',
+      r'  \d+\.\d\ds Done running 2 tests with 2 executions. \d+\.\d\d test/s',
+    ]
+    self._check_results(expected_out_re, out, err)
+
+    test_cases = [
+        ('Foo.Bar1', 1),
+        ('Foo.Bar/3', 1)
+    ]
+    self._check_results_file(
+        fail=[],
+        flaky=[],
+        success=sorted([u'Foo.Bar1', u'Foo.Bar/3']),
+        test_cases=test_cases,
+        duration=True)
+
+  def test_gtest_filter_missing(self):
+    out, err, return_code = RunTest(
+        [
+          '--gtest_filter=Not.Present',
+          '--result', self.filename,
+          os.path.join(ROOT_DIR, 'tests', 'gtest_fake', 'gtest_fake_pass.py'),
+        ])
+
+    self.assertEqual(1, return_code, (out, err))
+    expected_out_re = ['Found no test to run']
+    self._check_results(expected_out_re, out, err)
+    self._check_results_file(
+        fail=[],
+        flaky=[],
+        success=[],
+        test_cases=[],
+        duration=False)
 
 
 if __name__ == '__main__':

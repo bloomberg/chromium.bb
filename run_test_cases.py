@@ -1605,10 +1605,6 @@ def main(argv):
 
   cwd = os.getcwd()
   test_cases = parser.process_gtest_options(cmd, cwd, options)
-  if not test_cases:
-    # If test_cases is None then there was a problem generating the tests to
-    # run, so this should be considered a failure.
-    return int(test_cases is None)
 
   if options.no_dump:
     result_file = None
@@ -1619,6 +1615,24 @@ def main(argv):
         result_file = '%s.run_test_cases' % cmd[1]
       else:
         result_file = '%s.run_test_cases' % cmd[0]
+
+  if not test_cases:
+    # The fact of not running any test is considered a failure. This is to
+    # prevent silent failure with an invalid --gtest_filter argument or because
+    # of a misconfigured unit test.
+    if test_cases is not None:
+      print('Found no test to run')
+    if result_file:
+      dump_results_as_json(result_file, {
+        'test_cases': [],
+        'expected': 0,
+        'success': [],
+        'flaky': [],
+        'fail': [],
+        'missing': [],
+        'duration': 0,
+      })
+    return 1
 
   if options.disabled:
     cmd.append('--gtest_also_run_disabled_tests')
