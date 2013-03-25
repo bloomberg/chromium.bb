@@ -2311,7 +2311,6 @@ bool FileDialogStringsFunction::RunImpl() {
   SET_STRING("FILE_ERROR_QUOTA_EXCEEDED",
              IDS_FILE_BROWSER_FILE_ERROR_QUOTA_EXCEEDED);
 
-  SET_STRING("SEARCH_DRIVE_HTML", IDS_FILE_BROWSER_SEARCH_DRIVE_HTML);
   SET_STRING("SEARCH_NO_MATCHING_FILES_HTML",
              IDS_FILE_BROWSER_SEARCH_NO_MATCHING_FILES_HTML);
   SET_STRING("SEARCH_EXPAND", IDS_FILE_BROWSER_SEARCH_EXPAND);
@@ -3075,7 +3074,7 @@ void SearchDriveMetadataFunction::OnFileSystemOpened(
     return;
   }
 
-  const int kAtMostNumMatches = 4;
+  const int kAtMostNumMatches = 5;
   drive::SearchMetadata(
       system_service->file_system(),
       query_,

@@ -789,7 +789,6 @@ chrome.fileBrowserPrivate = {
       EXCEL_FILE_TYPE: 'Excel spreadsheet',
 
       SEARCH_TEXT_LABEL: 'Search',
-      SEARCH_DRIVE_HTML: '<b>\'$1\'</b> - search Drive',
       SEARCH_NO_MATCHING_FILES_HTML: 'No files match <b>"$1"</b>',
       SEARCH_SPINNER: 'Searching...',
 
