@@ -1689,6 +1689,14 @@ list.autocomplete-suggestions > li > div.detail-text {
   text-overflow: ellipsis;
 }
 
+list.autocomplete-suggestions > li > div[search-icon] {
+  background: -webkit-image-set(
+    url('../images/files/ui/icon_search.png') 1x,
+    url('../images/files/ui/2x/icon_search.png') 2x);
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
 list.autocomplete-suggestions[hasElementFocus] > [selected],
 list.autocomplete-suggestions[hasElementFocus] > [lead],
 list.autocomplete-suggestions:not([hasElementFocus]) > [selected],

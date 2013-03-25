@@ -807,8 +807,9 @@ DialogType.isModal = function(type) {
 
     this.filePopup_ = null;
 
-    var searchBox = this.dialogDom_.querySelector('#search-box');
-    searchBox.addEventListener('input', this.onSearchBoxUpdate_.bind(this));
+    this.searchBox_ = this.dialogDom_.querySelector('#search-box');
+    this.searchBox_.addEventListener(
+        'input', this.onSearchBoxUpdate_.bind(this));
 
     var autocompleteList = new cr.ui.AutocompleteList();
     autocompleteList.id = 'autocomplete-list';
@@ -851,10 +852,10 @@ DialogType.isModal = function(type) {
     container.appendChild(autocompleteList);
     this.autocompleteList_ = autocompleteList;
 
-    searchBox.addEventListener('focus', function(event) {
-      this.autocompleteList_.attachToInput(searchBox);
+    this.searchBox_.addEventListener('focus', function(event) {
+      this.autocompleteList_.attachToInput(this.searchBox_);
     }.bind(this));
-    searchBox.addEventListener('blur', function(event) {
+    this.searchBox_.addEventListener('blur', function(event) {
       this.autocompleteList_.detach();
     }.bind(this));
 
@@ -2093,9 +2094,8 @@ DialogType.isModal = function(type) {
    * @private
    */
   FileManager.prototype.updateSearchBoxOnDirChange_ = function() {
-    var searchBox = this.dialogDom_.querySelector('#search-box');
-    if (!searchBox.disabled)
-      searchBox.value = '';
+    if (!this.searchBox_.disabled)
+      this.searchBox_.value = '';
   };
 
   /**
@@ -3048,8 +3048,27 @@ DialogType.isModal = function(type) {
     chrome.fileBrowserPrivate.setPreferences(changeInfo);
   };
 
+  /**
+   * Invoked when the sarch box is changed.
+   *
+   * @param {Event} event The 'changed' event.
+   * @private
+   */
   FileManager.prototype.onSearchBoxUpdate_ = function(event) {
-    var searchString = this.document_.getElementById('search-box').value;
+    if (this.isOnDrive())
+      return;
+
+    var searchString = this.searchBox_.value;
+    this.search_(searchString);
+  };
+
+  /**
+   * Search files and update the list with the search result.
+   *
+   * @param {string} searchString String to be searched with.
+   * @private
+   */
+  FileManager.prototype.search_ = function(searchString) {
     var noResultsDiv = this.document_.getElementById('no-search-results');
 
     var reportEmptySearchResults = function() {
@@ -3084,11 +3103,25 @@ DialogType.isModal = function(type) {
   FileManager.prototype.requestAutocompleteSuggestions_ = function(query) {
     if (!this.isOnDrive())
       return;
+
     this.lastQuery_ = query;
 
     // The autocomplete list should be resized and repositioned here as the
     // search box is resized when it's focused.
     this.autocompleteList_.syncWidthAndPositionToInput();
+
+    if (!query) {
+      this.autocompleteList_.suggestions = [];
+      return;
+    }
+
+    var headerItem = {isHeaderItem: true, searchQuery: query};
+    if (!this.autocompleteList_.dataModel ||
+        this.autocompleteList_.dataModel.length == 0)
+      this.autocompleteList_.suggestions = [headerItem];
+    else
+      // Updates only the head item to prevent a flickering on typing.
+      this.autocompleteList_.dataModel.splice(0, 1, headerItem);
 
     chrome.fileBrowserPrivate.searchDriveMetadata(
       query,
@@ -3097,7 +3130,9 @@ DialogType.isModal = function(type) {
         // query could be delivered at a later time.
         if (query != this.lastQuery_)
           return;
-        this.autocompleteList_.suggestions = suggestions;
+
+        // Keeps the items in the initial list.
+        this.autocompleteList_.suggestions = [headerItem].concat(suggestions);
       }.bind(this));
   };
 
@@ -3111,15 +3146,24 @@ DialogType.isModal = function(type) {
   FileManager.prototype.createAutocompleteListItem_ = function(item) {
     var li = new cr.ui.ListItem();
     li.itemInfo = item;
-    var iconType = FileType.getIcon(item.entry);
+
     var icon = this.document_.createElement('div');
     icon.className = 'detail-icon';
-    icon.setAttribute('file-type-icon', iconType);
+
     var text = this.document_.createElement('div');
     text.className = 'detail-text';
-    // highlightedBaseName is a piece of HTML with meta characters properly
-    // escaped. See the comment at fileBrowserPrivate.searchDriveMetadata().
-    text.innerHTML = item.highlightedBaseName;
+
+    if (item.isHeaderItem) {
+      icon.setAttribute('search-icon');
+      text.innerHTML =
+          strf('SEARCH_DRIVE_HTML', util.htmlEscape(item.searchQuery));
+    } else {
+      var iconType = FileType.getIcon(item.entry);
+      icon.setAttribute('file-type-icon', iconType);
+      // highlightedBaseName is a piece of HTML with meta characters properly
+      // escaped. See the comment at fileBrowserPrivate.searchDriveMetadata().
+      text.innerHTML = item.highlightedBaseName;
+    }
     li.appendChild(icon);
     li.appendChild(text);
     return li;
@@ -3130,7 +3174,18 @@ DialogType.isModal = function(type) {
    * @private
    */
   FileManager.prototype.openAutocompleteSuggestion_ = function() {
-    var entry = this.autocompleteList_.selectedItem.entry;
+    var selectedItem = this.autocompleteList_.selectedItem;
+
+    // If the entry is the search item or no entry is selected, just change to
+    // the search result.
+    if (!selectedItem || selectedItem.isHeaderItem) {
+      var query = selectedItem ?
+          selectedItem.searchQuery : this.searchBox_.value;
+      this.search_(query);
+      return;
+    }
+
+    var entry = selectedItem.entry;
     // If the entry is a directory, just change the directory.
     if (entry.isDirectory) {
       this.onDirectoryAction(entry);
