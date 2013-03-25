@@ -49,6 +49,7 @@ def load_isolates(items):
 
 
 def main(args=None):
+  run_test_cases.run_isolated.disable_buffering()
   parser = run_test_cases.OptionParserWithLogging(
       usage='%prog <options> [file1] [file2] ...')
   parser.add_option(

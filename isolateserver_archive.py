@@ -314,6 +314,7 @@ def upload_sha1_tree(base_url, indir, infiles, namespace):
 
 
 def main(args):
+  run_isolated.disable_buffering()
   parser = optparse.OptionParser(
       usage='%prog [options] <file1..fileN> or - to read from stdin',
       description=sys.modules[__name__].__doc__)

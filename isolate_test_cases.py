@@ -121,6 +121,7 @@ def safely_load_isolated(parser, options):
 
 def main():
   """CLI frontend to validate arguments."""
+  run_test_cases.run_isolated.disable_buffering()
   parser = run_test_cases.OptionParserTestCases(
       usage='%prog <options> --isolated <.isolated>')
   parser.format_description = lambda *_: parser.description

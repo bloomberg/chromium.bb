@@ -198,6 +198,7 @@ def ProcessManifest(file_sha1, test_name, shards, test_filter, options):
 
 
 def main():
+  run_isolated.disable_buffering()
   parser = optparse.OptionParser(
       usage='%prog [options]', description=sys.modules[__name__].__doc__)
   parser.add_option('-w', '--working_dir', default='swarm_tests',

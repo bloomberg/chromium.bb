@@ -1605,6 +1605,7 @@ def process_args(argv):
 
 def main(argv):
   """CLI frontend to validate arguments."""
+  run_isolated.disable_buffering()
   parser, options, cmd = process_args(argv)
 
   if options.gtest_list_tests:

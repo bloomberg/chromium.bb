@@ -13,6 +13,8 @@ import os
 import subprocess
 import sys
 
+import run_isolated
+
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -74,6 +76,7 @@ def doall(isolated, verbose):
 
 
 def main():
+  run_isolated.disable_buffering()
   parser = optparse.OptionParser(
       usage='%prog <options> [.isolated]',
       description=sys.modules[__name__].__doc__)

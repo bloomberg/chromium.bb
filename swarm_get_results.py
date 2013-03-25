@@ -64,6 +64,7 @@ def print_results(outputs):
 
 
 def main():
+  run_isolated.disable_buffering()
   parser = optparse.OptionParser(
       usage='%prog [options] test_name',
       description=sys.modules[__name__].__doc__)

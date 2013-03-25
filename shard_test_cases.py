@@ -14,6 +14,8 @@ import os
 import subprocess
 import sys
 
+import run_isolated
+
 
 def fix_python_path(cmd):
   """Returns the fixed command line to call the right python executable."""
@@ -26,6 +28,7 @@ def fix_python_path(cmd):
 
 
 def main():
+  run_isolated.disable_buffering()
   parser = optparse.OptionParser(usage='%prog <options> [gtest]')
   parser.disable_interspersed_args()
   parser.add_option(

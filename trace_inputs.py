@@ -45,6 +45,8 @@ elif sys.platform == 'darwin':
   import Carbon.File  #  pylint: disable=F0401
   import MacOS  # pylint: disable=F0401
 
+import run_isolated
+
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = os.path.dirname(os.path.dirname(BASE_DIR))
@@ -3534,6 +3536,7 @@ def main_impl(argv):
   return command(argv[1:])
 
 def main(argv):
+  run_isolated.disable_buffering()
   try:
     main_impl(argv)
   except TracingFailure, e:

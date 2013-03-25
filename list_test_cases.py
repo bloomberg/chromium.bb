@@ -16,6 +16,7 @@ import run_test_cases
 
 def main():
   """CLI frontend to validate arguments."""
+  run_test_cases.run_isolated.disable_buffering()
   parser = run_test_cases.OptionParserWithTestShardingAndFiltering(
       usage='%prog <options> [gtest]')
   options, args = parser.parse_args()

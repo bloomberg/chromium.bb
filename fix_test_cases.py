@@ -210,6 +210,7 @@ def fix_all(isolated, all_test_cases, verbosity):
 
 
 def main():
+  run_test_cases.run_isolated.disable_buffering()
   parser = run_test_cases.OptionParserTestCases(
       usage='%prog <options> -s <something.isolated>')
   parser.add_option(

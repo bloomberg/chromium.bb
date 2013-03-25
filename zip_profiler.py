@@ -69,6 +69,7 @@ def tree_files(root_dir):
 
 
 def main():
+  run_isolated.disable_buffering()
   parser = optparse.OptionParser()
   parser.add_option('-s', '--isolated', help='.isolated file to profile with.')
   parser.add_option('--largest_files', type='int',
