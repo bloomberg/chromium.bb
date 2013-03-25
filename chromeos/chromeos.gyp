@@ -142,6 +142,8 @@
         'ime/ibus_bridge.h',
         'ime/ibus_daemon_controller.cc',
         'ime/ibus_daemon_controller.h',
+        'ime/component_extension_ime_manager.cc',
+        'ime/component_extension_ime_manager.h',
         'ime/input_method_descriptor.cc',
         'ime/input_method_descriptor.h',
         'network/cros_network_functions.cc',
