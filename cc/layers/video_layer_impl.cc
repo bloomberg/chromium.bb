@@ -107,12 +107,12 @@ void VideoLayerImpl::WillDrawInternal(ResourceProvider* resource_provider) {
   if (!frame_)
     return;
 
+  format_ = frame_->format();
+
 #if defined(GOOGLE_TV)
-  if (frame_->format() == media::VideoFrame::HOLE)
+  if (format_ == media::VideoFrame::HOLE)
     return;
 #endif
-
-  format_ = frame_->format();
 
   // If these fail, we'll have to add draw logic that handles offset bitmap/
   // texture UVs.  For now, just expect (0, 0) offset, since all our decoders
