@@ -109,11 +109,14 @@ class Register {
     return *this;
   }
 
+  const char* ToString() const;
+
   // TODO(jfb) Need different numbers for aarch64.
   static const Number kTp = 9;   // Thread local pointer.
   static const Number kSp = 13;  // Stack pointer.
   static const Number kLr = 14;  // Link register.
   static const Number kPc = 15;  // Program counter.
+  static const Number kNumberGPRs = 16;  // Number of General purpose registers.
   static const Number kConditions = 16;
   static const Number kNone = 32;  // Out of GPR and FPR range.
 

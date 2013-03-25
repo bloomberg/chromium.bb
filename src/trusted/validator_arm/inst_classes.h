@@ -157,8 +157,7 @@ static const ViolationSet kNoViolations = 0x0;
 
 // Returns true if a safety violation.
 inline bool IsSafetyViolation(Violation v) {
-  return (static_cast<int>(v) >= UNINITIALIZED) &&
-      (static_cast<int>(v) <= MAY_BE_SAFE);
+  return (static_cast<int>(v) >= 0) && (static_cast<int>(v) < MAY_BE_SAFE);
 }
 
 // Converts a safety level to the corresponding bit in the violation set.
@@ -181,6 +180,12 @@ inline ViolationSet ViolationBit(
 static const ViolationSet kSafetyViolations =
   SafetyViolationBit(MAY_BE_SAFE) - 1;
 
+// Defines the set of violations that cross bundle boundaries.
+static const ViolationSet kCrossesBundleViolations =
+  ViolationBit(LOADSTORE_CROSSES_BUNDLE_VIOLATION) |
+  ViolationBit(BRANCH_MASK_CROSSES_BUNDLE_VIOLATION) |
+  ViolationBit(DATA_REGISTER_UPDATE_CROSSES_BUNDLE_VIOLATION);
+
 // Returns the union of the two validation violation sets.
 inline ViolationSet ViolationUnion(ViolationSet vset1, ViolationSet vset2) {
   return vset1 | vset2;
@@ -201,6 +206,18 @@ inline bool ContainsViolation(ViolationSet vset, Violation violation) {
 // Returns true if the violation set contains a safety violation.
 inline bool ContainsSafetyViolations(ViolationSet vset) {
   return ViolationIntersect(vset, kSafetyViolations) != kNoViolations;
+}
+
+// Returns true if the violation set contains a violation that crosses
+// bundle boundaries.
+inline bool ContainsCrossesBundleViolation(ViolationSet vset) {
+  return ViolationIntersect(vset, kCrossesBundleViolations) != kNoViolations;
+}
+
+// Returns true if the violation is a violation that crosses
+// bundle boundaries.
+inline bool IsCrossesBundleViolation(Violation violation) {
+  return ContainsCrossesBundleViolation(ViolationBit(violation));
 }
 
 // A class decoder is designed to decode a set of instructions that

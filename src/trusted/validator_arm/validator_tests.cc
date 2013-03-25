@@ -108,36 +108,34 @@ void ValidatorTests::validation_should_pass2(const arm_inst *pattern,
 
   // Make sure it fails over bundle boundaries.
   ProblemSpy spy;
-  bool overlap_result = validate(pattern, inst_count, last_addr, &spy);
+  ViolationSet violations = find_violations(
+      pattern, inst_count, last_addr, &spy);
 
-  EXPECT_FALSE(overlap_result)
+  EXPECT_NE(violations, kNoViolations)
       << msg << " should fail at overlapping address " << last_addr;
+  EXPECT_TRUE(nacl_arm_dec::ContainsCrossesBundleViolation(violations))
+      << msg << " should contain crosses bundle violation";
+
   vector<ProblemRecord> &problems = spy.get_problems();
   ASSERT_EQ(1U, problems.size())
       << msg << " should have 1 problem at overlapping address " << last_addr;
 
-  // TODO(karl) add test location and other tests to next CL, once the rest of
-  // the diagnostic plumbing gets fixed.
-  /*
   ProblemRecord first = problems[0];
-  if (!spy.IsPairProblemAtFirst(first)) {
+
+  if (first.violation() !=
+      nacl_arm_dec::DATA_REGISTER_UPDATE_CROSSES_BUNDLE_VIOLATION) {
     last_addr += 4;
   }
   EXPECT_EQ(last_addr, first.vaddr())
       << "Problem in valid but mis-aligned pseudo-instruction ("
       << msg
       << ") must be reported at end of bundle";
-  EXPECT_NE(nacl_arm_val::kReportProblemSafety, first.method())
+  EXPECT_FALSE(nacl_arm_dec::IsSafetyViolation(first.violation()))
       << "Just crossing a bundle should not make a safe instruction unsafe: "
       << msg;
-  EXPECT_EQ(nacl_arm_dec::MAY_BE_SAFE, spy.GetSafetyLevel(first))
-      << "Just crossing a bundle should not make a safe instruction unsafe: "
-      << msg;
+
   // Be sure that we get one of the crosses bundle error messages.
-  if (nacl_arm_val::kProblemPatternCrossesBundle != first.problem()) {
-    EXPECT_EQ(nacl_arm_val::kPairCrossesBundle, spy.GetPairProblem(first));
-  }
-  */
+  EXPECT_TRUE(nacl_arm_dec::IsCrossesBundleViolation(first.violation()));
 }
 
 ViolationSet ValidatorTests::validation_should_fail(
@@ -160,10 +158,6 @@ ViolationSet ValidatorTests::validation_should_fail(
 
     // Violations found in problems should match violations returned by
     // find_violations.
-    // TODO(kschimpf) Turn this test back on once
-    // ProblemReporter::ReportProblemInternal has been modified to specify
-    // the specific violation (i.e. some value other than OTHER_VIOLATION).
-    /*
     ViolationSet problem_violations = kNoViolations;
     for (vector<ProblemRecord>::iterator iter = problems.begin();
          iter != problems.end();
@@ -174,7 +168,6 @@ ViolationSet ValidatorTests::validation_should_fail(
     }
     EXPECT_EQ(violations, problem_violations)
         << "Violation differences: " << msg;
-    */
   }
 
   // The rest of the checking is done in the caller.

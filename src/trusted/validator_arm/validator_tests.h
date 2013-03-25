@@ -61,10 +61,6 @@ using nacl_arm_val::SfiValidator;
 using nacl_arm_val::CodeSegment;
 using nacl_arm_val::ProblemReporter;
 using nacl_arm_val::ProblemSink;
-using nacl_arm_val::ValidatorInstructionPairProblem;
-using nacl_arm_val::ValidatorProblem;
-using nacl_arm_val::ValidatorProblemMethod;
-using nacl_arm_val::ValidatorProblemUserData;
 
 namespace nacl_val_arm_test {
 

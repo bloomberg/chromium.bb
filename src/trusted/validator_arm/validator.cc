@@ -23,27 +23,6 @@ using std::vector;
 
 namespace nacl_arm_val {
 
-// Looks at the conditions associated with a pair of instructions
-// associated with a validator pattern, and determines what problems
-// the conditions may have played in not allowing the instruction
-// pair to be atomic.
-// Parameters:
-//    first: The first instruction in the pair wrt the direction being
-//        tested (not the order the instructions appear).
-//    second: The second instruction in the pair wrt to the direction
-//        being tested. Hence, we check if the conditions of the first
-//        instruction implies the conditions of the second.
-ValidatorInstructionPairProblem GetPairConditionProblem(
-    const DecodedInstruction& first,
-    const DecodedInstruction& second) {
-  UNREFERENCED_PARAMETER(second);
-  if (first.defines(Register::Conditions())) {
-    return kFirstSetsConditionFlags;
-  } else {
-    return kConditionsOnPairNotSafe;
-  }
-}
-
 /*********************************************************
  *
  * Implementation of SfiValidator itself.
@@ -226,7 +205,10 @@ bool SfiValidator::ValidateSegmentPair(const CodeSegment& old_code,
     // Report problem if the sentinels differ, and reject the replacement.
     if (!new_sentinel.Equals(old_sentinel)) {
       if (out == NULL) return false;
-      out->ReportProblem(va, kProblemUnsafe);
+      out->ReportProblemDiagnostic(nacl_arm_dec::OTHER_VIOLATION,
+                                   va,
+                                   "Sentinels at %08"NACL_PRIx32" differ.",
+                                   va);
       complete_success = false;
     }
   }
@@ -265,7 +247,9 @@ bool SfiValidator::CopyCode(const CodeSegment& source_code,
 bool SfiValidator::ConstructionFailed(ProblemSink* out) {
   if (construction_failed_ && (out != NULL)) {
     uint32_t invalid_addr = ~(uint32_t)0;
-    out->ReportProblem(invalid_addr, kProblemConstructionFailed);
+    out->ReportProblemDiagnostic(nacl_arm_dec::OTHER_VIOLATION,
+                                 invalid_addr,
+                                 "Construction of validator failed!");
   }
   return construction_failed_;
 }
@@ -367,7 +351,12 @@ nacl_arm_dec::ViolationSet SfiValidator::validate_branches(
                 nacl_arm_dec::ViolationBit(
                     nacl_arm_dec::BRANCH_SPLITS_PATTERN_VIOLATION));
         if (out == NULL) return found_violations;
-        out->ReportProblemAddress(va, kProblemBranchSplitsPattern, target_va);
+        out->ReportProblemDiagnostic(
+            nacl_arm_dec::BRANCH_SPLITS_PATTERN_VIOLATION,
+            va,
+            "Instruction branches into middle of 2-instruction "
+            "pattern at %08"NACL_PRIx32".",
+            target_va);
       }
     } else if ((target_va & code_address_mask()) == 0) {
       // Allow bundle-aligned, in-range direct jump.
@@ -378,7 +367,11 @@ nacl_arm_dec::ViolationSet SfiValidator::validate_branches(
               nacl_arm_dec::ViolationBit(
                   nacl_arm_dec::BRANCH_OUT_OF_RANGE_VIOLATION));
       if (out == NULL) return found_violations;
-      out->ReportProblemAddress(va, kProblemBranchInvalidDest, target_va);
+      out->ReportProblemDiagnostic(
+          nacl_arm_dec::BRANCH_OUT_OF_RANGE_VIOLATION,
+          va,
+          "Instruction branches to invalid address %08"NACL_PRIx32".",
+          target_va);
     }
   }
 

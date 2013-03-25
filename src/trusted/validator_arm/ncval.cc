@@ -25,8 +25,6 @@
 using nacl_arm_val::SfiValidator;
 using nacl_arm_val::CodeSegment;
 using nacl_arm_val::ProblemReporter;
-using nacl_arm_val::ValidatorProblem;
-using nacl_arm_val::kValidatorProblemSize;
 using nacl_arm_dec::MAY_BE_SAFE;
 
 using std::string;

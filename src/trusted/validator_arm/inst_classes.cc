@@ -87,45 +87,82 @@ static inline void generate_loadstore_diagnostics(
     const nacl_arm_val::SfiValidator& sfi,
     nacl_arm_val::ProblemSink* out) {
   if (ContainsViolation(violations, LOADSTORE_CROSSES_BUNDLE_VIOLATION)) {
-    out->ReportProblemInstructionPair(
+    out->ReportProblemDiagnostic(
+        LOADSTORE_CROSSES_BUNDLE_VIOLATION,
         second.addr(),
-        nacl_arm_val::kProblemUnsafeLoadStore,
-        nacl_arm_val::kPairCrossesBundle,
-        first,
-        second);
+        "Load/store base %s is not properly masked, "
+        "because instruction pair [%08"NACL_PRIx32", %08"NACL_PRIx32
+        "] crosses bundle boundary.",
+        second.base_address_register().ToString(), first.addr(), second.addr());
   }
   if (ContainsViolation(violations, LOADSTORE_VIOLATION)) {
     Register base = second.base_address_register();
 
     if (first.defines(base)) {
       if (first.clears_bits(sfi.data_address_mask())) {
-        out->ReportProblemRegisterInstructionPair(
-            second.addr(),
-            nacl_arm_val::kProblemUnsafeLoadStore,
-            GetPairConditionProblem(first, second),
-            base, first, second);
+        if (first.defines(Register::Conditions())) {
+          out->ReportProblemDiagnostic(
+              LOADSTORE_VIOLATION,
+              second.addr(),
+              "Load/store base %s is not properly masked, "
+              "because instruction %08"NACL_PRIx32" sets APSR condition flags.",
+              base.ToString(),
+              first.addr());
+        } else {
+          out->ReportProblemDiagnostic(
+              LOADSTORE_VIOLATION,
+              second.addr(),
+              "Load/store base %s is not properly masked, "
+              "because the conditions (%s, %s) on "
+              "[%08"NACL_PRIx32", %08"NACL_PRIx32"] don't guarantee atomicity",
+              base.ToString(),
+              Instruction::ToString(first.inst().GetCondition()),
+              Instruction::ToString(second.inst().GetCondition()),
+              first.addr(),
+              second.addr());
+        }
       } else {
-        out->ReportProblemRegister(
+        out->ReportProblemDiagnostic(
+            LOADSTORE_VIOLATION,
             second.addr(),
-            nacl_arm_val::kProblemUnsafeLoadStore,
-            base);
+            "Load/store base %s is not properly masked.",
+            base.ToString());
       }
     } else if (first.sets_Z_if_bits_clear(base, sfi.data_address_mask())) {
-      out->ReportProblemRegisterInstructionPair(
-          second.addr(),
-          nacl_arm_val::kProblemUnsafeLoadStore,
-          sfi.conditional_memory_access_allowed_for_sfi() ?
-          nacl_arm_val::kEqConditionalOn : nacl_arm_val::kTstMemDisallowed,
-          base, first, second);
+      if (sfi.conditional_memory_access_allowed_for_sfi()) {
+        out->ReportProblemDiagnostic(
+            LOADSTORE_VIOLATION,
+            second.addr(),
+            "Load/store base %s is not properly masked, because "
+            "%08"NACL_PRIx32" is not conditional on EQ",
+            base.ToString(),
+            second.addr());
+      } else {
+        out->ReportProblemDiagnostic(
+            LOADSTORE_VIOLATION,
+            second.addr(),
+            "Load/store base %s is not properly masked, "
+            "because [%08"NACL_PRIx32", %08"NACL_PRIx32"] instruction "
+            "pair is disallowed on this CPU",
+            base.ToString(),
+            first.addr(),
+            second.addr());
+      }
     } else if (base.Equals(Register::Pc())) {
-      out->ReportProblem(
+      const char* pc = Register::Pc().ToString();
+      out->ReportProblemDiagnostic(
+          LOADSTORE_VIOLATION,
           second.addr(),
-          nacl_arm_val::kProblemIllegalPcLoadStore);
+          "Native Client only allows updates on %s of "
+          "the form '%s + immediate'.",
+          pc,
+          pc);
     } else {
-      out->ReportProblemRegister(
+      out->ReportProblemDiagnostic(
+          LOADSTORE_VIOLATION,
           second.addr(),
-          nacl_arm_val::kProblemUnsafeLoadStore,
-          base);
+          "Load/store base %s is not properly masked.",
+          base.ToString());
     }
   }
 }
@@ -164,30 +201,49 @@ static inline void generate_branch_mask_diagnostics(
     const nacl_arm_val::SfiValidator& sfi,
     nacl_arm_val::ProblemSink* out) {
   if (ContainsViolation(violations, BRANCH_MASK_CROSSES_BUNDLE_VIOLATION)) {
-    out->ReportProblemInstructionPair(
+    out->ReportProblemDiagnostic(
+        BRANCH_MASK_CROSSES_BUNDLE_VIOLATION,
         second.addr(),
-        nacl_arm_val::kProblemUnsafeBranch,
-        nacl_arm_val::kPairCrossesBundle,
-        first,
-        second);
+        "Destination branch on %s is not properly masked, "
+        "because instruction pair [%08"NACL_PRIx32", %08"NACL_PRIx32"] "
+        "crosses bundle boundary",
+        second.branch_target_register().ToString(),
+        first.addr(),
+        second.addr());
   }
   if (ContainsViolation(violations, BRANCH_MASK_VIOLATION)) {
     Register target(second.branch_target_register());
     if (first.defines(target)) {
       if (first.clears_bits(sfi.code_address_mask())) {
-        out->ReportProblemRegisterInstructionPair(
-            second.addr(),
-            nacl_arm_val::kProblemUnsafeBranch,
-            GetPairConditionProblem(first, second),
-            target, first, second);
-      } else {
-        out->ReportProblemRegister(
-            second.addr(), nacl_arm_val::kProblemUnsafeBranch, target);
+        if (first.defines(Register::Conditions())) {
+          out->ReportProblemDiagnostic(
+              BRANCH_MASK_VIOLATION,
+              second.addr(),
+              "Destination branch on %s is not properly masked, "
+              "because instruction %08"NACL_PRIx32" sets APSR condition flags",
+              target.ToString(),
+              first.addr());
+        } else {
+          out->ReportProblemDiagnostic(
+              BRANCH_MASK_VIOLATION,
+              second.addr(),
+              "Destination branch on %s is not properly masked, "
+              "because the conditions (%s, %s) on "
+              "[%08"NACL_PRIx32", %08"NACL_PRIx32"] don't guarantee atomicity",
+              target.ToString(),
+              Instruction::ToString(first.inst().GetCondition()),
+              Instruction::ToString(second.inst().GetCondition()),
+              first.addr(),
+              second.addr());
+        }
+        return;
       }
-    } else {
-      out->ReportProblemRegister(
-          second.addr(), nacl_arm_val::kProblemUnsafeBranch, target);
     }
+    out->ReportProblemDiagnostic(
+        BRANCH_MASK_VIOLATION,
+        second.addr(),
+        "Destination branch on %s is not properly masked.",
+        target.ToString());
   }
 }
 
@@ -240,26 +296,67 @@ static inline void generate_data_register_update_diagnostics(
     nacl_arm_val::ProblemSink* out) {
   if (ContainsViolation(violations,
                         DATA_REGISTER_UPDATE_CROSSES_BUNDLE_VIOLATION)) {
-    out->ReportProblemInstructionPair(
-        first.addr(),
-        nacl_arm_val::kProblemUnsafeDataWrite,
-        nacl_arm_val::kPairCrossesBundle,
-        first,
-        second);
+    RegisterList data_registers(sfi.data_address_registers());
+    RegisterList data_addr_defs(first.defs().Intersect(data_registers));
+    for (Register::Number r = 0; r < Register::kNumberGPRs; ++r) {
+      Register reg(r);
+      if (data_addr_defs.Contains(reg)) {
+        out->ReportProblemDiagnostic(
+            DATA_REGISTER_UPDATE_CROSSES_BUNDLE_VIOLATION,
+            first.addr(),
+            "Updating %s without masking in following instruction, "
+            "because instruction pair [%08"NACL_PRIx32", %08"NACL_PRIx32
+            "] crosses bundle boundary.",
+            reg.ToString(),
+            first.addr(),
+            second.addr());
+      }
+    }
   }
   if (ContainsViolation(violations, DATA_REGISTER_UPDATE_VIOLATION)) {
     RegisterList data_registers(sfi.data_address_registers());
     RegisterList data_addr_defs(first.defs().Intersect(data_registers));
     if (second.defines_all(data_addr_defs) &&
         second.clears_bits(sfi.data_address_mask())) {
-      out->ReportProblemRegisterListInstructionPair(
-          first.addr(),
-          nacl_arm_val::kProblemUnsafeDataWrite,
-          GetPairConditionProblem(first, second),
-          data_addr_defs, first, second);
+      for (Register::Number r = 0; r < Register::kNumberGPRs; ++r) {
+        Register reg(r);
+        if (data_addr_defs.Contains(reg)) {
+          if (first.defines(Register::Conditions())) {
+            out->ReportProblemDiagnostic(
+                DATA_REGISTER_UPDATE_VIOLATION,
+                first.addr(),
+                "Updating %s without masking in following instruction, "
+                "because instruction %08"NACL_PRIx32" sets APSR "
+                "condition flags.",
+                reg.ToString(),
+                first.addr());
+          } else {
+            out->ReportProblemDiagnostic(
+                DATA_REGISTER_UPDATE_VIOLATION,
+                first.addr(),
+                "Updating %s without masking in following instruction, "
+                "because the conditions (%s, %s) on "
+                "[%08"NACL_PRIx32", %08"NACL_PRIx32"] don't "
+                "guarantee atomicity",
+                reg.ToString(),
+                Instruction::ToString(first.inst().GetCondition()),
+                Instruction::ToString(second.inst().GetCondition()),
+                first.addr(),
+                second.addr());
+          }
+        }
+      }
     } else {
-      out->ReportProblemRegisterList(
-          first.addr(), nacl_arm_val::kProblemUnsafeDataWrite, data_addr_defs);
+      for (Register::Number r = 0; r < Register::kNumberGPRs; ++r) {
+        Register reg(r);
+        if (data_addr_defs.Contains(reg)) {
+          out->ReportProblemDiagnostic(
+              DATA_REGISTER_UPDATE_VIOLATION,
+              first.addr(),
+              "Updating %s without masking in following instruction.",
+              reg.ToString());
+        }
+      }
     }
   }
 }
@@ -291,7 +388,10 @@ static inline void generate_call_position_diagnostics(
       nacl_arm_val::ProblemSink* out) {
   UNREFERENCED_PARAMETER(sfi);
   if (ContainsViolation(violations, CALL_POSITION_VIOLATION)) {
-    out->ReportProblem(inst.addr(), nacl_arm_val::kProblemMisalignedCall);
+    out->ReportProblemDiagnostic(
+        CALL_POSITION_VIOLATION,
+        inst.addr(),
+        "Call not last instruction in instruction bundle.");
   }
 }
 
@@ -313,9 +413,17 @@ static inline void generate_read_only_diagnostics(
     nacl_arm_val::ProblemSink* out) {
   UNREFERENCED_PARAMETER(sfi);
   if (ContainsViolation(violations, READ_ONLY_VIOLATION)) {
-    out->ReportProblemRegisterList(
-        inst.addr(), nacl_arm_val::kProblemReadOnlyRegister,
-        inst.defs().Intersect(sfi.read_only_registers()));
+    RegisterList& read_only = inst.defs().Intersect(sfi.read_only_registers());
+    for (Register::Number r = 0; r < Register::kNumberGPRs; ++r) {
+      Register reg(r);
+      if (read_only.Contains(reg)) {
+        out->ReportProblemDiagnostic(
+            READ_ONLY_VIOLATION,
+            inst.addr(),
+            "Updates read-only register: %s.",
+            reg.ToString());
+      }
+    }
   }
 }
 
@@ -336,9 +444,12 @@ static inline void generate_read_thread_local_pointer_diagnostics(
     nacl_arm_val::ProblemSink* out) {
   UNREFERENCED_PARAMETER(sfi);
   if (ContainsViolation(violations, READ_THREAD_LOCAL_POINTER_VIOLATION)) {
-    out->ReportProblemRegister(inst.addr(),
-                               nacl_arm_val::kProblemIllegalUseOfThreadPointer,
-                               Register::Tp());
+    out->ReportProblemDiagnostic(
+        READ_THREAD_LOCAL_POINTER_VIOLATION,
+        inst.addr(),
+        "Use of thread pointer %s not legal outside of load thread pointer "
+        "instruction(s)",
+        Register::Tp().ToString());
   }
 }
 
@@ -376,8 +487,11 @@ static inline void generate_pc_writes_diagnostics(
     nacl_arm_val::ProblemSink* out) {
   UNREFERENCED_PARAMETER(sfi);
   if (ContainsViolation(violations, PC_WRITES_VIOLATION)) {
-    out->ReportProblemRegister(inst.addr(), nacl_arm_val::kProblemUnsafeBranch,
-                               Register::Pc());
+    out->ReportProblemDiagnostic(
+        PC_WRITES_VIOLATION,
+        inst.addr(),
+        "Destination branch on %s is not properly masked.",
+        Register::Pc().ToString());
   }
 }
 
@@ -515,10 +629,61 @@ void ClassDecoder::generate_diagnostics(
   if (ContainsSafetyViolations(violations)) {
     // Note: We assume that safety levels end with MAY_BE_SAFE, as stated
     // for enum type SafetyLevel.
+    uint32_t addr = second.addr();
     for (uint32_t safety = 0; safety != MAY_BE_SAFE; ++safety) {
       Violation violation = static_cast<Violation>(safety);
       if (ContainsViolation(violations, violation)) {
-        out->ReportProblemSafety(violation, second);
+        switch (static_cast<int>(violation)) {
+          case nacl_arm_dec::UNINITIALIZED_VIOLATION:
+          default:
+            out->ReportProblemDiagnostic(
+                violation, addr,
+                "Unknown error occurred decoding this instruction.");
+            break;
+          case nacl_arm_dec::UNKNOWN_VIOLATION:
+            out->ReportProblemDiagnostic(
+                violation, addr,
+                "The value assigned to registers by this instruction "
+                "is unknown.");
+            break;
+          case nacl_arm_dec::UNDEFINED_VIOLATION:
+            out->ReportProblemDiagnostic(
+                violation, addr,
+                "Instruction is undefined according to the ARMv7"
+                " ISA specifications.");
+            break;
+          case nacl_arm_dec::NOT_IMPLEMENTED_VIOLATION:
+            // This instruction is not recognized by the decoder functions.
+            out->ReportProblemDiagnostic(
+                violation, addr,
+                "Instruction not understood by Native Client.");
+            break;
+          case nacl_arm_dec::UNPREDICTABLE_VIOLATION:
+            out->ReportProblemDiagnostic(
+                violation, addr,
+                "Instruction has unpredictable effects at runtime.");
+            break;
+          case nacl_arm_dec::DEPRECATED_VIOLATION:
+            out->ReportProblemDiagnostic(
+                violation, addr,
+                "Instruction is deprecated in ARMv7.");
+            break;
+          case nacl_arm_dec::FORBIDDEN_VIOLATION:
+            out->ReportProblemDiagnostic(
+                violation, addr,
+                "Instruction not allowed by Native Client.");
+            break;
+          case nacl_arm_dec::FORBIDDEN_OPERANDS_VIOLATION:
+            out->ReportProblemDiagnostic(
+                violation, addr,
+                "Instruction has operand(s) forbidden by Native Client.");
+            break;
+          case nacl_arm_dec::DECODER_ERROR_VIOLATION:
+            out->ReportProblemDiagnostic(
+                violation, addr,
+                "Instruction decoded incorrectly by NativeClient.");
+            break;
+        };
       }
     }
   }

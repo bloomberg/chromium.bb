@@ -33,7 +33,6 @@ using nacl_arm_dec::kLiteralPoolHead;
 using nacl_arm_dec::kFailValidation;
 using nacl_arm_dec::Instruction;
 using nacl_arm_dec::ClassDecoder;
-using nacl_arm_val::RegisterName;
 
 namespace {
 
@@ -478,12 +477,8 @@ TEST_F(ValidatorTests, InvalidMasksOnSafeStores) {
         EXPECT_FALSE(nacl_arm_dec::IsSafetyViolation(first.violation()))
             << "Store should not be unsafe even though the mask is bogys:"
             << message.str();
-        // TODO(kschimpf) Fix to test if unsafe load store. To be added in
-        // next CL.
-        /*
-        EXPECT_EQ(nacl_arm_val::kProblemUnsafeLoadStore, first.problem())
+        EXPECT_EQ(nacl_arm_dec::LOADSTORE_VIOLATION, first.violation())
             << message.str();
-        */
       }
     }
   }
@@ -535,12 +530,8 @@ TEST_F(ValidatorTests, InvalidGuardsOnSafeStores) {
       EXPECT_FALSE(nacl_arm_dec::IsSafetyViolation(first.violation()))
           << "Store should not be unsafe even though guard is bogus:"
           << message;
-      // TODO(kschimpf) Add code to test load store safety. To be added
-      // in next CL.
-      /*
-      EXPECT_EQ(nacl_arm_val::kProblemUnsafeLoadStore, first.problem())
+      EXPECT_EQ(nacl_arm_dec::LOADSTORE_VIOLATION, first.violation())
           << message;
-      */
     }
   }
 }
@@ -690,11 +681,7 @@ TEST_F(ValidatorTests, ConditionalBicsLdrTest) {
   EXPECT_EQ(kDefaultBaseAddr + 4, problem.vaddr())
       << "Problem report should point to the ldr instruction.";
   EXPECT_FALSE(nacl_arm_dec::IsSafetyViolation(problem.violation()));
-  // TODO(kschimpf) Add back unsafe load store violation. To be added
-  // in next CL.
-  /*
-  EXPECT_EQ(nacl_arm_val::kProblemUnsafeLoadStore, problem.problem());
-  */
+  EXPECT_EQ(nacl_arm_dec::LOADSTORE_VIOLATION, problem.violation());
 }
 
 TEST_F(ValidatorTests, DifferentConditionsBicLdrTest) {
@@ -720,11 +707,7 @@ TEST_F(ValidatorTests, DifferentConditionsBicLdrTest) {
   EXPECT_EQ(kDefaultBaseAddr + 4, problem.vaddr())
       << "Problem report should point to the ldr instruction.";
   EXPECT_FALSE(nacl_arm_dec::IsSafetyViolation(problem.violation()));
-  // TODO(karl) Add back unsafe load store violation test. To be added
-  // in next CL.
-  /*
-  EXPECT_EQ(nacl_arm_val::kProblemUnsafeLoadStore, problem.problem());
-  */
+  EXPECT_EQ(nacl_arm_dec::LOADSTORE_VIOLATION, problem.violation());
 }
 
 TEST_F(ValidatorTests, BfcLdrInst) {
@@ -1557,7 +1540,7 @@ TEST_F(ValidatorTests, LoadThreadLocalPtr) {
         ostringstream message;
         string msg(loadr9_insts[i].about);
         const char* r0 = "r0";
-        msg.replace(msg.find(r0), strlen(r0), RegisterName(reg));
+        msg.replace(msg.find(r0), strlen(r0), reg.ToString());
         const char* cc = "<c>";
         msg.replace(msg.find(cc), strlen(cc), Instruction::ToString(cond));
         message << "Test '" << msg << "'";
