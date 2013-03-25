@@ -229,21 +229,42 @@ void DriveSystemService::ClearCacheAndRemountFileSystem(
 
   RemoveDriveMountPoint();
   drive_service()->CancelAll();
-  cache_->ClearAll(base::Bind(&DriveSystemService::AddBackDriveMountPoint,
-                              weak_ptr_factory_.GetWeakPtr(),
-                              callback));
+  cache_->ClearAll(base::Bind(
+      &DriveSystemService::ReinitializeResourceMetadataAfterClearCache,
+      weak_ptr_factory_.GetWeakPtr(),
+      callback));
 }
 
-void DriveSystemService::AddBackDriveMountPoint(
+void DriveSystemService::ReinitializeResourceMetadataAfterClearCache(
     const base::Callback<void(bool)>& callback,
     bool success) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
+  if (!success) {
+    callback.Run(false);
+    return;
+  }
+  resource_metadata_->Initialize(
+      base::Bind(&DriveSystemService::AddBackDriveMountPoint,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 callback));
+}
+
+void DriveSystemService::AddBackDriveMountPoint(
+    const base::Callback<void(bool)>& callback,
+    DriveFileError error) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  if (error != DRIVE_FILE_OK) {
+    callback.Run(false);
+    return;
+  }
   file_system_->Initialize();
   AddDriveMountPoint();
 
-  callback.Run(success);
+  callback.Run(true);
 }
 
 void DriveSystemService::ReloadAndRemountFileSystem() {

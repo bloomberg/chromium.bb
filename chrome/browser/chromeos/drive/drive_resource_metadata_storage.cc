@@ -53,7 +53,9 @@ DriveResourceMetadataStorageMemory::~DriveResourceMetadataStorageMemory() {
 
 bool DriveResourceMetadataStorageMemory::Initialize() {
   base::ThreadRestrictions::AssertIOAllowed();
-  // Do nothing.
+  largest_changestamp_ = 0;
+  resource_map_.clear();
+  child_maps_.clear();
   return true;
 }
 
@@ -167,6 +169,9 @@ DriveResourceMetadataStorageDB::~DriveResourceMetadataStorageDB() {
 
 bool DriveResourceMetadataStorageDB::Initialize() {
   base::ThreadRestrictions::AssertIOAllowed();
+
+  resource_map_.reset();
+  child_map_.reset();
 
   const base::FilePath resource_map_path =
       directory_path_.Append(kResourceMapDBName);

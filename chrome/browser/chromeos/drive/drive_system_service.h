@@ -104,9 +104,16 @@ class DriveSystemService : public ProfileKeyedService,
   // Unregisters drive mount point from File API.
   void RemoveDriveMountPoint();
 
-  // Adds back the drive mount point. Used to implement ClearCache().
+  // Reinitializes |resource_metadata_|.
+  // Used to implement ClearCacheAndRemountFileSystem().
+  void ReinitializeResourceMetadataAfterClearCache(
+      const base::Callback<void(bool)>& callback,
+      bool success);
+
+  // Adds back the drive mount point.
+  // Used to implement ClearCacheAndRemountFileSystem().
   void AddBackDriveMountPoint(const base::Callback<void(bool)>& callback,
-                              bool success);
+                              DriveFileError error);
 
   // Called when cache initialization is done. Continues initialization if
   // the cache initialization is successful.
