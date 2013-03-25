@@ -31,16 +31,14 @@ CONTENT_EXPORT int MatchFontWithFallback(const std::string& face, bool bold,
 
 // GetFontTable loads a specified font table from an open SFNT file.
 //   fd: a file descriptor to the SFNT file. The position doesn't matter.
-//   table_tag: the table tag in *big-endian* format, or 0 for the entire font.
-//   offset: offset into the table or entire font where loading should start.
-//     The offset must be between 0 and 1 GB - 1.
+//   table: the table in *big-endian* format, or 0 for the whole font file.
 //   output: a buffer of size output_length that gets the data.  can be 0, in
 //     which case output_length will be set to the required size in bytes.
 //   output_length: size of output, if it's not 0.
 //
 //   returns: true on success.
-CONTENT_EXPORT bool GetFontTable(int fd, uint32_t table_tag, off_t offset,
-                                 uint8_t* output, size_t* output_length);
+CONTENT_EXPORT bool GetFontTable(int fd, uint32_t table, uint8_t* output,
+                                 size_t* output_length);
 
 };  // namespace content
 
