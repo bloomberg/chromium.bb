@@ -1035,6 +1035,8 @@ DirectoryModel.prototype.resolveRoots_ = function(callback) {
                      append.bind(this, 'removables'));
 
   if (this.driveEnabled_) {
+    // TODO(haruki): Add fake special search entries.
+    // http://crbug.com/168742 http://crbug.com/168741 http://crbug.com/168739.
     groups.driveFakeRoots = [];
     var fake = [DirectoryModel.fakeDriveEntry_];
     if (this.isDriveMounted()) {
