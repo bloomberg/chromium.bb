@@ -339,12 +339,10 @@ def main(argv):
     # ABI simplification passes.  These passes assume the whole
     # program is available and should not be used if we are linking .o
     # files, otherwise:
-    #  * -expand-varargs will mix calling conventions;
     #  * -nacl-expand-ctors will drop constructors;
     #  * -nacl-expand-tls leave TLS variables unconverted.
     if env.getbool('STATIC') and len(native_objects) == 0:
-      passes = ['-expand-varargs',
-                '-nacl-expand-ctors',
+      passes = ['-nacl-expand-ctors',
                 '-nacl-expand-tls']
       chain.add(DoLLVMPasses(passes), 'expand_features.' + bitcode_type)
 
