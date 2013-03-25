@@ -62,8 +62,9 @@ const char kTraceAllRenderedFrames[] = "trace-all-rendered-frames";
 // complete, such as --slow-down-raster-scale-factor=25.
 const char kSlowDownRasterScaleFactor[] = "slow-down-raster-scale-factor";
 
-// Schedule rasterization jobs according to their estimated processing cost.
-const char kUseCheapnessEstimator[] = "use-cheapness-estimator";
+// Disable scheduling of rasterization jobs according to their estimated
+// processing cost.
+const char kDisableCheapnessEstimator[] = "disable-cheapness-estimator";
 
 // The scale factor for low resolution tile contents.
 const char kLowResolutionContentsScaleFactor[] =

@@ -19,6 +19,7 @@ namespace switches {
 CC_EXPORT extern const char kBackgroundColorInsteadOfCheckerboard[];
 CC_EXPORT extern const char kDisableThreadedAnimation[];
 CC_EXPORT extern const char kEnableCompositorFrameMessage[];
+CC_EXPORT extern const char kDisableCheapnessEstimator[];
 CC_EXPORT extern const char kDisableColorEstimator[];
 CC_EXPORT extern const char kDisableImplSidePainting[];
 CC_EXPORT extern const char kEnableImplSidePainting[];
@@ -33,7 +34,6 @@ CC_EXPORT extern const char kTopControlsHideThreshold[];
 CC_EXPORT extern const char kTopControlsShowThreshold[];
 CC_EXPORT extern const char kTraceAllRenderedFrames[];
 CC_EXPORT extern const char kSlowDownRasterScaleFactor[];
-CC_EXPORT extern const char kUseCheapnessEstimator[];
 CC_EXPORT extern const char kLowResolutionContentsScaleFactor[];
 CC_EXPORT extern const char kCompositeToMailbox[];
 
