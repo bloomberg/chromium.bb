@@ -357,15 +357,15 @@ void BalloonViewImpl::Show(Balloon* balloon) {
   frame_container_->SetAlwaysOnTop(true);
 
   close_button_->SetImage(views::CustomButton::STATE_NORMAL,
-                          rb.GetImageSkiaNamed(IDR_TAB_CLOSE));
+                          rb.GetImageSkiaNamed(IDR_CLOSE_1));
   close_button_->SetImage(views::CustomButton::STATE_HOVERED,
-                          rb.GetImageSkiaNamed(IDR_TAB_CLOSE_H));
+                          rb.GetImageSkiaNamed(IDR_CLOSE_1_H));
   close_button_->SetImage(views::CustomButton::STATE_PRESSED,
-                          rb.GetImageSkiaNamed(IDR_TAB_CLOSE_P));
+                          rb.GetImageSkiaNamed(IDR_CLOSE_1_P));
   close_button_->SetBoundsRect(GetCloseButtonBounds());
   close_button_->SetBackground(SK_ColorBLACK,
-                               rb.GetImageSkiaNamed(IDR_TAB_CLOSE),
-                               rb.GetImageSkiaNamed(IDR_TAB_CLOSE_MASK));
+                               rb.GetImageSkiaNamed(IDR_CLOSE_1),
+                               rb.GetImageSkiaNamed(IDR_CLOSE_1_MASK));
 
   options_menu_button_->SetIcon(*rb.GetImageSkiaNamed(IDR_BALLOON_WRENCH));
   options_menu_button_->SetHoverIcon(

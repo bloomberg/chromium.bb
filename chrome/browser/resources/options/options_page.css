@@ -277,8 +277,8 @@ list .row-delete-button {
   background-color: transparent;
   /* TODO(stuartmorgan): Replace with real images once they are available. */
   background-image: -webkit-image-set(
-      url('../../../../ui/resources/default_100_percent/close_bar.png') 1x,
-      url('../../../../ui/resources/default_200_percent/close_bar.png') 2x);
+      url('../../../../ui/resources/default_100_percent/close_2.png') 1x,
+      url('../../../../ui/resources/default_200_percent/close_2.png') 2x);
   border: none;
   display: block;
   height: 16px;
@@ -303,17 +303,15 @@ list div[role='listitem'][managedby='HostedApp'] .row-delete-button {
 
 list .row-delete-button:hover {
   background-image: -webkit-image-set(
-      url('../../../../ui/resources/default_100_percent/close_bar_hover.png')
-          1x,
-      url('../../../../ui/resources/default_200_percent/close_bar_hover.png')
-          2x);
+      url('../../../../ui/resources/default_100_percent/close_2_hover.png') 1x,
+      url('../../../../ui/resources/default_200_percent/close_2_hover.png') 2x);
 }
 
 list .row-delete-button:active {
   background-image: -webkit-image-set(
-      url('../../../../ui/resources/default_100_percent/close_bar_pressed.png')
+      url('../../../../ui/resources/default_100_percent/close_2_pressed.png')
           1x,
-      url('../../../../ui/resources/default_200_percent/close_bar_pressed.png')
+      url('../../../../ui/resources/default_200_percent/close_2_pressed.png')
           2x);
 }
 

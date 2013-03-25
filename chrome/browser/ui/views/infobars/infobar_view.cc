@@ -227,11 +227,11 @@ void InfoBarView::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
     close_button_ = new views::ImageButton(this);
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     close_button_->SetImage(views::CustomButton::STATE_NORMAL,
-                            rb.GetImageNamed(IDR_CLOSE_BAR).ToImageSkia());
+                            rb.GetImageNamed(IDR_CLOSE_1).ToImageSkia());
     close_button_->SetImage(views::CustomButton::STATE_HOVERED,
-                            rb.GetImageNamed(IDR_CLOSE_BAR_H).ToImageSkia());
+                            rb.GetImageNamed(IDR_CLOSE_1_H).ToImageSkia());
     close_button_->SetImage(views::CustomButton::STATE_PRESSED,
-                            rb.GetImageNamed(IDR_CLOSE_BAR_P).ToImageSkia());
+                            rb.GetImageNamed(IDR_CLOSE_1_P).ToImageSkia());
     close_button_->SetAccessibleName(
         l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
     close_button_->set_focusable(true);
