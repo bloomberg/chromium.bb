@@ -103,8 +103,6 @@ void ScrollbarLayer::CalculateContentsScale(float ideal_contents_scale,
       contents_scale_x,
       contents_scale_y,
       content_bounds);
-  DCHECK_LE(content_bounds->width(), MaxTextureSize());
-  DCHECK_LE(content_bounds->height(), MaxTextureSize());
 }
 
 void ScrollbarLayer::PushPropertiesTo(LayerImpl* layer) {
