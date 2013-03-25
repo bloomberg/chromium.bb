@@ -1374,10 +1374,6 @@ TEST_F(PermissionsTest, ImpliedPermissions) {
 }
 
 TEST_F(PermissionsTest, SyncFileSystemPermission) {
-  // TODO(kinuko): Remove this in the same patch that enables this on Stable.
-  extensions::Feature::ScopedCurrentChannel channel(
-      chrome::VersionInfo::CHANNEL_DEV);
-
   scoped_refptr<Extension> extension = LoadManifest(
       "permissions", "sync_file_system.json");
   APIPermissionSet apis;

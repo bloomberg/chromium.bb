@@ -381,7 +381,7 @@
     "extension_types": ["platform_app"]
   },
   "syncFileSystem": {
-    "channel": "dev",
+    "channel": "stable",
     "extension_types": ["platform_app"]
   },
   "systemIndicator": {
