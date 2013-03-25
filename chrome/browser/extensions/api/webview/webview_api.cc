@@ -8,6 +8,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "ui/gfx/image/image_skia.h"
 
+using extensions::api::tabs::InjectDetails;
 using namespace extensions::api::webview;
 
 WebviewExecuteScriptFunction::WebviewExecuteScriptFunction() {

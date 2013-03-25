@@ -6,27 +6,6 @@
   {
     "namespace": "webview",
     "nodoc": true,
-    "types": [
-      // TODO(fsamuel): We should be usng tabs.InjectDetails. However, due to a
-      // bug in the JSON compiler, we are currently copying-and-pasting this
-      // type: https://crbug.com/171726.
-      {
-        "id": "InjectDetails",
-        "type": "object",
-        "description": "Details of the script or CSS to inject. Either the code or the file property must be set, but both may not be set at the same time.",
-        "properties": {
-          "code": {"type": "string", "optional": true, "description": "JavaScript or CSS code to inject."},
-          "file": {"type": "string", "optional": true, "description": "JavaScript or CSS file to inject."},
-          "allFrames": {"type": "boolean", "optional": true, "description": "If allFrames is <code>true</code>, implies that the JavaScript or CSS should be injected into all frames of current page. By default, it's <code>false</code> and will only be injected into the top frame."},
-          "runAt": {
-            "type": "string",
-            "optional": true,
-            "enum": ["document_start", "document_end", "document_idle"],
-            "description": "The soonest that the JavaScript or CSS will be injected into the tab. Defaults to \"document_idle\"."
-          }
-        }
-      }
-    ],
     "functions": [
       {
         "name": "executeScript",
@@ -44,7 +23,7 @@
             "description": "The route ID of the guest <webview> renderer."
           },
           {
-            "$ref": "webview.InjectDetails",
+            "$ref": "tabs.InjectDetails",
             "name": "details",
             "description": "Details of the script to run."
           },
