@@ -425,7 +425,8 @@ void ContentSettings::SyncToNativeImpl() {
   str.Reset(
       env, static_cast<jstring>(
           env->GetObjectField(obj, field_ids_->default_video_poster_url)));
-  prefs.default_video_poster_url = GURL(ConvertJavaStringToUTF8(str));
+  prefs.default_video_poster_url = str.obj() ?
+      GURL(ConvertJavaStringToUTF8(str)) : GURL();
 
   render_view_host->UpdateWebkitPreferences(prefs);
 }

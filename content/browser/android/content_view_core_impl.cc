@@ -746,10 +746,13 @@ void ContentViewCoreImpl::SetAllUserAgentOverridesInHistory(
     JNIEnv* env,
     jobject,
     jstring user_agent_override) {
-  std::string override =
-      base::android::ConvertJavaStringToUTF8(env, user_agent_override);
-  web_contents_->SetUserAgentOverride(override);
-  bool override_used = !override.empty();
+  bool override_used = user_agent_override != NULL;
+  if (override_used) {
+    std::string override =
+        base::android::ConvertJavaStringToUTF8(env, user_agent_override);
+    web_contents_->SetUserAgentOverride(override);
+  }
+
   const NavigationController& controller = web_contents_->GetController();
   for (int i = 0; i < controller.GetEntryCount(); ++i)
     controller.GetEntryAtIndex(i)->SetIsOverridingUserAgent(override_used);
