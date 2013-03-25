@@ -803,7 +803,7 @@ def ExpandVariables(input, phase, variables, build_file):
         contents_list = contents.split(' ')
       replacement = contents_list[0]
       path = replacement
-      if not os.path.isabs(path):
+      if build_file_dir and not os.path.isabs(path):
         path = os.path.join(build_file_dir, path)
       f = gyp.common.WriteOnDiff(path)
       for i in contents_list[1:]:
@@ -843,7 +843,8 @@ def ExpandVariables(input, phase, variables, build_file):
           # that don't load quickly, this can be faster than
           # <!(python modulename param eters). Do this in |build_file_dir|.
           oldwd = os.getcwd()  # Python doesn't like os.open('.'): no fchdir.
-          os.chdir(build_file_dir)
+          if build_file_dir:  # build_file_dir may be None (see above).
+            os.chdir(build_file_dir)
           try:
 
             parsed_contents = shlex.split(contents)
