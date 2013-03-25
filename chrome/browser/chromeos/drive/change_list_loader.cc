@@ -167,11 +167,9 @@ void ChangeListLoader::LoadFromServerIfNeededAfterGetAbout(
   DCHECK_EQ(util::GDataToDriveFileError(status) == DRIVE_FILE_OK,
             about_resource.get() != NULL);
 
-  int64 remote_changestamp = 0;
   if (util::GDataToDriveFileError(status) == DRIVE_FILE_OK) {
     DCHECK(about_resource);
-    remote_changestamp = about_resource->largest_change_id();
-    last_known_remote_changestamp_ = remote_changestamp;
+    last_known_remote_changestamp_ = about_resource->largest_change_id();
   }
 
   resource_metadata_->GetLargestChangestamp(
