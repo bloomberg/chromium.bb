@@ -1308,6 +1308,7 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
                                  0, -[[self class] defaultTabHeight])];
 
   [self setTabTitle:newController withContents:contents];
+  [newController setProjecting:chrome::ShouldShowProjectingIndicator(contents)];
 
   // If a tab is being inserted, we can again use the entire tab strip width
   // for layout.
@@ -1708,10 +1709,10 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
   }
 
   TabController* tabController = [tabArray_ objectAtIndex:index];
-  [tabController setProjecting:chrome::ShouldShowProjectingIndicator(contents)];
 
   if (change != TabStripModelObserver::LOADING_ONLY)
     [self setTabTitle:tabController withContents:contents];
+  [tabController setProjecting:chrome::ShouldShowProjectingIndicator(contents)];
 
   [self updateFaviconForContents:contents atIndex:modelIndex];
 
