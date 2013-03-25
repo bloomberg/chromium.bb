@@ -13,6 +13,7 @@
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search/search.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
@@ -246,8 +247,10 @@ void ExtensionInstallUI::OpenAppInstalledUI(Profile* profile,
       content::Details<const std::string>(&app_id));
 #else
   Browser* browser = FindOrCreateVisibleBrowser(profile);
-  chrome::NavigateParams params(chrome::GetSingletonTabNavigateParams(
-      browser, GURL(chrome::kChromeUINewTabURL)));
+  GURL url(chrome::search::IsInstantExtendedAPIEnabled() ?
+           chrome::kChromeUIAppsURL : chrome::kChromeUINewTabURL);
+  chrome::NavigateParams params(
+      chrome::GetSingletonTabNavigateParams(browser, url));
   chrome::Navigate(&params);
 
   content::NotificationService::current()->Notify(
