@@ -720,8 +720,8 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg,
       motion_tap_prevent_timeout_(prop_reg, "Motion Tap Prevent Timeout",
                                   0.05),
       tapping_finger_min_separation_(prop_reg, "Tap Min Separation", 10.0),
-      no_pinch_guess_ratio_(prop_reg, "No-Pinch Guess Ratio", 50.0),
-      no_pinch_certain_ratio_(prop_reg, "No-Pinch Certain Ratio", 100.0),
+      no_pinch_guess_ratio_(prop_reg, "No-Pinch Guess Ratio", 0.9),
+      no_pinch_certain_ratio_(prop_reg, "No-Pinch Certain Ratio", 2.0),
       pinch_noise_level_(prop_reg, "Pinch Noise Level", 1.0),
       pinch_guess_min_movement_(prop_reg, "Pinch Guess Minimal Movement", 4.0),
       pinch_certain_min_movement_(prop_reg,
@@ -1137,25 +1137,23 @@ bool ImmediateInterpreter::UpdatePinchState(
   // * Strong movement of both fingers in opposite directions indicates
   //   that a pinch IS performed.
 
-  Point delta1 = FingerTraveledVector(*finger1, false);
-  Point delta2 = FingerTraveledVector(*finger2, false);
+  Point delta1 = FingerTraveledVector(*finger1, true);
+  Point delta2 = FingerTraveledVector(*finger2, true);
 
   // dot product. dot < 0 if fingers move away from each other.
   float dot  = delta1.x_ * delta2.x_ + delta1.y_ * delta2.y_;
   // squared distances both finger have been traveled.
   float d1sq = delta1.x_ * delta1.x_ + delta1.y_ * delta1.y_;
   float d2sq = delta2.x_ * delta2.x_ + delta2.y_ * delta2.y_;
-  // ratio between distances. High value when fingers move
-  float ratio = d1sq > d2sq ? d2sq / d1sq : d1sq / d2sq;
 
   // true if movement is not strong enough to be distinguished from noise.
   bool movement_below_noise = (d1sq + d2sq < 2.0*pinch_noise_level_.val_);
 
   // guesses if a pinch is being performed or not.
-  double guess_ratio = no_pinch_guess_ratio_.val_;
   double guess_min_mov = pinch_guess_min_movement_.val_;
   guess_min_mov *= guess_min_mov;
-  bool no_pinch_guess = (ratio > guess_ratio);
+  bool no_pinch_guess = (d1sq  > guess_min_mov) ^ (d2sq > guess_min_mov) ||
+                        dot > 0;
   bool pinch_guess = d1sq > guess_min_mov && d2sq > guess_min_mov && dot < 0;
 
   // Thumb is in dampened zone: Only allow inward pinch
@@ -1179,7 +1177,8 @@ bool ImmediateInterpreter::UpdatePinchState(
         pinch_guess_start_ = hwstate.timestamp;
       }
     }
-  } else {
+  }
+  if (pinch_guess_start_ >= 0) {
     // "Guessed"-state
 
     // suppress cursor movement when we guess a pinch gesture
@@ -1200,16 +1199,15 @@ bool ImmediateInterpreter::UpdatePinchState(
     }
 
     // certain decisions if pinch is being performed or not
-    double cert_ratio = no_pinch_certain_ratio_.val_;
     double cert_min_mov = pinch_certain_min_movement_.val_;
     cert_min_mov *= cert_min_mov;
-    bool no_pinch_certain = d1sq + d2sq > cert_min_mov && (ratio > cert_ratio);
+    bool no_pinch_certain = false;
     bool pinch_certain = d1sq > cert_min_mov && d2sq > cert_min_mov && dot < 0;
 
     // guessed for long enough or certain decision was made: lock
-    if (hwstate.timestamp - pinch_guess_start_ > 0.05 ||
-        pinch_guess_ == pinch_certain ||
-        pinch_guess_ != no_pinch_certain) {
+    if (hwstate.timestamp - pinch_guess_start_ > 0.1 ||
+        (pinch_certain && pinch_guess_) ||
+        (no_pinch_certain && !pinch_guess_)) {
       pinch_locked_ = true;
       return pinch_guess_;
     }

@@ -2739,7 +2739,7 @@ struct PinchTestInput {
   PinchTestExpectedResult expected_result;
 };
 
-TEST(ImmediateInterpreterTest, PinchTests) {
+TEST(ImmediateInterpreterTest, DISABLED_PinchTests) {
   ImmediateInterpreter ii(NULL, NULL, NULL);
   ii.pinch_enable_.val_ = 1;
   HardwareProperties hwprops = {
