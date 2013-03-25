@@ -903,7 +903,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     cc::switches::kBackgroundColorInsteadOfCheckerboard,
     cc::switches::kCompositeToMailbox,
     cc::switches::kDisableCheapnessEstimator,
-    cc::switches::kDisableColorEstimator,
     cc::switches::kDisableImplSidePainting,
     cc::switches::kDisableThreadedAnimation,
     cc::switches::kEnableCompositorFrameMessage,
@@ -929,7 +928,8 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     cc::switches::kTopControlsHideThreshold,
     cc::switches::kTopControlsShowThreshold,
     cc::switches::kTraceAllRenderedFrames,
-    cc::switches::kTraceOverdraw
+    cc::switches::kTraceOverdraw,
+    cc::switches::kUseColorEstimator,
   };
   renderer_cmd->CopySwitchesFrom(browser_cmd, kSwitchNames,
                                  arraysize(kSwitchNames));

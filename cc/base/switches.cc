@@ -19,9 +19,6 @@ const char kDisableThreadedAnimation[] = "disable-threaded-animation";
 // Send a message for every frame from the impl thread to the parent compositor.
 const char kEnableCompositorFrameMessage[] = "enable-compositor-frame-message";
 
-// Do not predict whether the tile will be either solid color or transparent.
-const char kDisableColorEstimator[] = "disable-color-estimator";
-
 // Paint content on the main thread instead of the compositor thread.
 // Overrides the kEnableImplSidePainting flag.
 const char kDisableImplSidePainting[] = "disable-impl-side-painting";
@@ -65,6 +62,9 @@ const char kSlowDownRasterScaleFactor[] = "slow-down-raster-scale-factor";
 // Disable scheduling of rasterization jobs according to their estimated
 // processing cost.
 const char kDisableCheapnessEstimator[] = "disable-cheapness-estimator";
+
+// Predict whether the tile will be either solid color or transparent.
+const char kUseColorEstimator[] = "use-color-estimator";
 
 // The scale factor for low resolution tile contents.
 const char kLowResolutionContentsScaleFactor[] =
