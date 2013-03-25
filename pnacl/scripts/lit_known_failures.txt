@@ -12,9 +12,9 @@ Clang::CodeGenObjC/arc-captured-32bit-block-var-layout-2.m mac
 Clang::Coverage/ast-printing.m win
 Clang::Coverage/ast-printing.c win
 Clang::PCH/objc_stmts.m win
-Clang::Analysis/Profiling/load-branch-weights-switches.ll win
-Clang::Analysis/Profiling/load-branch-weights-loops.ll win
-Clang::Analysis/Profiling/load-branch-weights-ifs.ll win
+LLVM::Analysis/Profiling/load-branch-weights-switches.ll win
+LLVM::Analysis/Profiling/load-branch-weights-loops.ll win
+LLVM::Analysis/Profiling/load-branch-weights-ifs.ll win
 LLVM::CodeGen/X86/handle-move.ll win
 LLVM::Object/readobj-shared-object.test win
 
