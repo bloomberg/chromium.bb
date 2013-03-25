@@ -16,10 +16,14 @@ namespace extensions {
 namespace {
 
 const char kNativeMessagingDirectory[] =
-#if defined(OS_MACOSX)
-    "/Library/Chrome/NativeMessagingHosts";
-#else
+#if defined(OFFICIAL_BUILD) && defined(OS_MACOSX)
+    "/Library/Google/Chrome/NativeMessagingHosts";
+#elif defined(OFFICIAL_BUILD) && !defined(OS_MACOSX)
     "/etc/opt/chrome/native-messaging-hosts";
+#elif !defined(OFFICIAL_BUILD) && defined(OS_MACOSX)
+    "/Library/Application Support/Chromium/NativeMessagingHosts";
+#else
+    "/etc/chromium/native-messaging-hosts";
 #endif
 
 }  // namespace
