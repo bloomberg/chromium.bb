@@ -990,7 +990,7 @@ void BrowsingHistoryHandler::WebHistoryQueryComplete(
   } else if (results_value) {
     NOTREACHED() << "Failed to parse JSON response.";
   }
-  results_info_value_.SetBoolean("hasSyncedResults", true);
+  results_info_value_.SetBoolean("hasSyncedResults", results_value != NULL);
   if (!history_request_consumer_.HasPendingRequests())
     ReturnResultsToFrontEnd();
 }
