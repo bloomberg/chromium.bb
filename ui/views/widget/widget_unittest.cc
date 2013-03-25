@@ -140,40 +140,6 @@ class EventCountView : public View {
   }
 
  protected:
-  // Overridden from View:
-  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE {
-    RecordEvent(event);
-    return false;
-  }
-  virtual bool OnMouseDragged(const ui::MouseEvent& event) OVERRIDE {
-    RecordEvent(event);
-    return false;
-  }
-  virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE {
-    RecordEvent(event);
-  }
-  virtual void OnMouseMoved(const ui::MouseEvent& event) OVERRIDE {
-    RecordEvent(event);
-  }
-  virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE {
-    RecordEvent(event);
-  }
-  virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE {
-    RecordEvent(event);
-  }
-  virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE {
-    RecordEvent(event);
-    return false;
-  }
-  virtual bool OnKeyReleased(const ui::KeyEvent& event) OVERRIDE {
-    RecordEvent(event);
-    return false;
-  }
-  virtual bool OnMouseWheel(const ui::MouseWheelEvent& event) OVERRIDE {
-    RecordEvent(event);
-    return false;
-  }
-
   // Overridden from ui::EventHandler:
   virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE {
     RecordEvent(*event);
@@ -243,6 +209,38 @@ class GestureCaptureView : public View {
   }
 
   DISALLOW_COPY_AND_ASSIGN(GestureCaptureView);
+};
+
+// An event handler that simply keeps a count of the different types of events
+// it receives.
+class EventCountHandler : public ui::EventHandler {
+ public:
+  EventCountHandler() {}
+  virtual ~EventCountHandler() {}
+
+  int GetEventCount(ui::EventType type) {
+    return event_count_[type];
+  }
+
+  void ResetCounts() {
+    event_count_.clear();
+  }
+
+ protected:
+  // Overridden from ui::EventHandler:
+  virtual void OnEvent(ui::Event* event) OVERRIDE {
+    RecordEvent(*event);
+    ui::EventHandler::OnEvent(event);
+  }
+
+ private:
+  void RecordEvent(const ui::Event& event) {
+    ++event_count_[event.type()];
+  }
+
+  std::map<ui::EventType, int> event_count_;
+
+  DISALLOW_COPY_AND_ASSIGN(EventCountHandler);
 };
 
 class WidgetTest : public ViewsTestBase {
@@ -1526,6 +1524,75 @@ TEST_F(WidgetTest, GestureScrollEventDispatching) {
     EXPECT_EQ(1, scroll_view->GetEventCount(ui::ET_GESTURE_SCROLL_UPDATE));
     EXPECT_EQ(1, scroll_view->GetEventCount(ui::ET_GESTURE_SCROLL_END));
   }
+
+  widget->CloseNow();
+}
+
+// Tests that event-handlers installed on the RootView get triggered correctly.
+TEST_F(WidgetTest, EventHandlersOnRootView) {
+  Widget* widget = CreateTopLevelNativeWidget();
+  View* root_view = widget->GetRootView();
+
+  EventCountView* view = new EventCountView;
+  view->SetBounds(0, 0, 20, 20);
+  root_view->AddChildView(view);
+
+  EventCountHandler h1;
+  root_view->AddPreTargetHandler(&h1);
+
+  EventCountHandler h2;
+  root_view->AddPostTargetHandler(&h2);
+
+  widget->SetBounds(gfx::Rect(0, 0, 100, 100));
+  widget->Show();
+
+  ui::TouchEvent pressed(ui::ET_TOUCH_PRESSED,
+                         gfx::Point(10, 10),
+                         0, 0,
+                         ui::EventTimeForNow(),
+                         1.0, 0.0, 1.0, 0.0);
+  widget->OnTouchEvent(&pressed);
+  EXPECT_EQ(1, h1.GetEventCount(ui::ET_TOUCH_PRESSED));
+  EXPECT_EQ(1, view->GetEventCount(ui::ET_TOUCH_PRESSED));
+  EXPECT_EQ(1, h2.GetEventCount(ui::ET_TOUCH_PRESSED));
+
+  ui::GestureEvent begin(ui::ET_GESTURE_BEGIN,
+      5, 5, 0, ui::EventTimeForNow(),
+      ui::GestureEventDetails(ui::ET_GESTURE_BEGIN, 0, 0), 1);
+  ui::GestureEvent end(ui::ET_GESTURE_END,
+      5, 5, 0, ui::EventTimeForNow(),
+      ui::GestureEventDetails(ui::ET_GESTURE_END, 0, 0), 1);
+  widget->OnGestureEvent(&begin);
+  EXPECT_EQ(1, h1.GetEventCount(ui::ET_GESTURE_BEGIN));
+  EXPECT_EQ(1, view->GetEventCount(ui::ET_GESTURE_BEGIN));
+  EXPECT_EQ(1, h2.GetEventCount(ui::ET_GESTURE_BEGIN));
+
+  ui::TouchEvent released(ui::ET_TOUCH_RELEASED,
+                          gfx::Point(10, 10),
+                          0, 0,
+                          ui::EventTimeForNow(),
+                          1.0, 0.0, 1.0, 0.0);
+  widget->OnTouchEvent(&released);
+  EXPECT_EQ(1, h1.GetEventCount(ui::ET_TOUCH_RELEASED));
+  EXPECT_EQ(1, view->GetEventCount(ui::ET_TOUCH_RELEASED));
+  EXPECT_EQ(1, h2.GetEventCount(ui::ET_TOUCH_RELEASED));
+
+  widget->OnGestureEvent(&end);
+  EXPECT_EQ(1, h1.GetEventCount(ui::ET_GESTURE_END));
+  EXPECT_EQ(1, view->GetEventCount(ui::ET_GESTURE_END));
+  EXPECT_EQ(1, h2.GetEventCount(ui::ET_GESTURE_END));
+
+  ui::ScrollEvent scroll(ui::ET_SCROLL,
+                         gfx::Point(5, 5),
+                         ui::EventTimeForNow(),
+                         0,
+                         0, 20,
+                         0, 20,
+                         2);
+  widget->OnScrollEvent(&scroll);
+  EXPECT_EQ(1, h1.GetEventCount(ui::ET_SCROLL));
+  EXPECT_EQ(1, view->GetEventCount(ui::ET_SCROLL));
+  EXPECT_EQ(1, h2.GetEventCount(ui::ET_SCROLL));
 
   widget->CloseNow();
 }
