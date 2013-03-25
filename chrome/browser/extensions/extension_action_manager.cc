@@ -155,7 +155,7 @@ ExtensionAction* ExtensionActionManager::GetSystemIndicator(
 
   return GetOrCreateOrNull(&system_indicators_, extension.id(),
                            ActionInfo::TYPE_SYSTEM_INDICATOR,
-                           extension.system_indicator_info());
+                           ActionInfo::GetSystemIndicatorInfo(&extension));
 }
 
 ExtensionAction* ExtensionActionManager::GetScriptBadge(

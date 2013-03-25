@@ -13,7 +13,6 @@
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/feature_switch.h"
 #include "chrome/common/extensions/manifest.h"
-#include "chrome/common/extensions/manifest_handler_helpers.h"
 #include "extensions/common/install_warning.h"
 
 namespace errors = extension_manifest_errors;
@@ -56,8 +55,7 @@ bool ScriptBadgeHandler::Parse(Extension* extension, string16* error) {
     return false;
   }
 
-  action_info =
-      manifest_handler_helpers::LoadActionInfo(extension, dict, error);
+  action_info = ActionInfo::Load(extension, dict, error);
 
   if (!action_info.get())
     return false;  // Failed to parse script badge definition.

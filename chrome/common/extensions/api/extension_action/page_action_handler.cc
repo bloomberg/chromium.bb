@@ -10,7 +10,6 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
-#include "chrome/common/extensions/manifest_handler_helpers.h"
 #include "grit/generated_resources.h"
 
 namespace keys = extension_manifest_keys;
@@ -59,8 +58,7 @@ bool PageActionHandler::Parse(Extension* extension, string16* error) {
 
   // If page_action_value is not NULL, then there was a valid page action.
   if (page_action_value) {
-    page_action_info = manifest_handler_helpers::LoadActionInfo(
-        extension, page_action_value, error);
+    page_action_info = ActionInfo::Load(extension, page_action_value, error);
     if (!page_action_info)
       return false;  // Failed to parse page action definition.
   }

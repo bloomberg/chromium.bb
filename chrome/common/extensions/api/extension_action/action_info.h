@@ -7,9 +7,14 @@
 
 #include <string>
 
+#include "base/string16.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "googleurl/src/gurl.h"
+
+namespace base {
+class DictionaryValue;
+}
 
 namespace extensions {
 
@@ -27,6 +32,11 @@ struct ActionInfo {
     TYPE_SYSTEM_INDICATOR,
   };
 
+  // Loads an ActionInfo from the given DictionaryValue.
+  static scoped_ptr<ActionInfo> Load(const Extension* extension,
+                                     const base::DictionaryValue* dict,
+                                     string16* error);
+
   // Returns the extension's browser action, if any.
   static const ActionInfo* GetBrowserActionInfo(const Extension* extension);
 
@@ -39,6 +49,9 @@ struct ActionInfo {
   // Returns the extension's page launcher.
   static const ActionInfo* GetPageLauncherInfo(const Extension* extension);
 
+  // Returns the extension's system indicator, if any.
+  static const ActionInfo* GetSystemIndicatorInfo(const Extension* extension);
+
   // Sets the extension's browser action. |extension| takes ownership of |info|.
   static void SetBrowserActionInfo(Extension* extension, ActionInfo* info);
 
@@ -50,6 +63,10 @@ struct ActionInfo {
 
   // Sets the extension's page launcher. |extension| takes ownership of |info|.
   static void SetPageLauncherInfo(Extension* extension, ActionInfo* info);
+
+  // Sets the extension's system indicator. |extension| takes ownership of
+  // |info|.
+  static void SetSystemIndicatorInfo(Extension* extension, ActionInfo* info);
 
   // Returns true if the extension needs a verbose install message because
   // of its page action.

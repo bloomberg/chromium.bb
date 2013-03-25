@@ -34,6 +34,7 @@
 #include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/csp_handler.h"
 #include "chrome/common/extensions/csp_validator.h"
+#include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/feature_switch.h"
 #include "chrome/common/extensions/features/base_feature_provider.h"
@@ -165,18 +166,6 @@ bool ContainsManifestForbiddenPermission(const APIPermissionSet& apis,
     }
   }
   return false;
-}
-
-// Helper method to load an ExtensionAction from the page_action, script_badge,
-// browser_action, or system_indicator entries in the manifest.
-// TODO(rdevlin.cronin): Remove this once PageAction, BrowserAction, and
-// SystemIndicator have been moved out of Extension.
-scoped_ptr<ActionInfo> LoadExtensionActionInfoHelper(
-    const Extension* extension,
-    const DictionaryValue* extension_action,
-    string16* error) {
-  return manifest_handler_helpers::LoadActionInfo(
-      extension, extension_action, error);
 }
 
 }  // namespace
@@ -1313,8 +1302,9 @@ bool Extension::InitFromValue(int flags, string16* error) {
   if (!LoadSharedFeatures(error))
     return false;
 
-  if (!LoadExtensionFeatures(error))
-    return false;
+  if (manifest_->HasKey(keys::kConvertedFromUserScript))
+    manifest_->GetBoolean(keys::kConvertedFromUserScript,
+                          &converted_from_user_script_);
 
   if (!LoadManagedModeFeatures(error))
     return false;
@@ -1910,41 +1900,6 @@ bool Extension::LoadOfflineEnabled(string16* error) {
     *error = ASCIIToUTF16(errors::kInvalidOfflineEnabled);
     return false;
   }
-  return true;
-}
-
-bool Extension::LoadExtensionFeatures(string16* error) {
-  if (manifest_->HasKey(keys::kConvertedFromUserScript))
-    manifest_->GetBoolean(keys::kConvertedFromUserScript,
-                          &converted_from_user_script_);
-
-  return LoadSystemIndicator(error);
-}
-
-bool Extension::LoadSystemIndicator(string16* error) {
-  if (!manifest_->HasKey(keys::kSystemIndicator)) {
-    // There was no manifest entry for the system indicator.
-    return true;
-  }
-
-  const DictionaryValue* system_indicator_value = NULL;
-  if (!manifest_->GetDictionary(keys::kSystemIndicator,
-                                &system_indicator_value)) {
-    *error = ASCIIToUTF16(errors::kInvalidSystemIndicator);
-    return false;
-  }
-
-  system_indicator_info_ = LoadExtensionActionInfoHelper(
-      this, system_indicator_value, error);
-
-  if (!system_indicator_info_.get()) {
-    return false;
-  }
-
-  // Because the manifest was successfully parsed, auto-grant the permission.
-  // TODO(dewittj) Add this for all extension action APIs.
-  initial_api_permissions()->insert(APIPermission::kSystemIndicator);
-
   return true;
 }
 

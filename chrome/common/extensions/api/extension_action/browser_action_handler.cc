@@ -13,7 +13,6 @@
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/feature_switch.h"
 #include "chrome/common/extensions/manifest.h"
-#include "chrome/common/extensions/manifest_handler_helpers.h"
 #include "grit/generated_resources.h"
 
 namespace extensions {
@@ -33,8 +32,7 @@ bool BrowserActionHandler::Parse(Extension* extension,
     return false;
   }
 
-  scoped_ptr<ActionInfo> action_info =
-      manifest_handler_helpers::LoadActionInfo(extension, dict, error);
+  scoped_ptr<ActionInfo> action_info = ActionInfo::Load(extension, dict, error);
   if (!action_info.get())
     return false;  // Failed to parse browser action definition.
 
@@ -47,8 +45,7 @@ bool BrowserActionHandler::Validate(
     const Extension* extension,
     std::string* error,
     std::vector<InstallWarning>* warnings) const {
-  const ActionInfo* action =
-      extensions::ActionInfo::GetBrowserActionInfo(extension);
+  const ActionInfo* action = ActionInfo::GetBrowserActionInfo(extension);
   if (action && !action->default_icon.empty() &&
       !extension_file_util::ValidateExtensionIconSet(
           action->default_icon,

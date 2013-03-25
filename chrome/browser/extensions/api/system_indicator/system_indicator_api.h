@@ -6,9 +6,32 @@
 #define CHROME_BROWSER_EXTENSIONS_API_SYSTEM_INDICATOR_SYSTEM_INDICATOR_API_H_
 
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
+#include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/browser/extensions/extension_function.h"
 
+class Profile;
+
 namespace extensions {
+
+class SystemIndicatorAPI : public ProfileKeyedAPI {
+ public:
+  explicit SystemIndicatorAPI(Profile* profile);
+  virtual ~SystemIndicatorAPI();
+
+  // ProfileKeyedAPI implementation.
+  static ProfileKeyedAPIFactory<SystemIndicatorAPI>* GetFactoryInstance();
+
+ private:
+  friend class ProfileKeyedAPIFactory<SystemIndicatorAPI>;
+
+  // ProfileKeyedAPI implementation.
+  static const char* service_name() {
+    return "SystemIndicatorAPI";
+  }
+  static const bool kServiceIsNULLWhileTesting = true;
+
+  DISALLOW_COPY_AND_ASSIGN(SystemIndicatorAPI);
+};
 
 class SystemIndicatorSetIconFunction : public ExtensionActionSetIconFunction {
  public:

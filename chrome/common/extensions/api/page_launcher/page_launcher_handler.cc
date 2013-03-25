@@ -11,7 +11,6 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/manifest.h"
-#include "chrome/common/extensions/manifest_handler_helpers.h"
 
 namespace keys = extension_manifest_keys;
 
@@ -32,8 +31,7 @@ bool PageLauncherHandler::Parse(Extension* extension, string16* error) {
     return false;
   }
 
-  scoped_ptr<ActionInfo> action_info =
-      manifest_handler_helpers::LoadActionInfo(extension, dict, error);
+  scoped_ptr<ActionInfo> action_info = ActionInfo::Load(extension, dict, error);
   if (!action_info)
     return false;
 

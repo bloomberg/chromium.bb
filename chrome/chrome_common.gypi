@@ -189,6 +189,8 @@
         'common/extensions/api/plugins/plugins_handler.h',
         'common/extensions/api/speech/tts_engine_manifest_handler.cc',
         'common/extensions/api/speech/tts_engine_manifest_handler.h',
+        'common/extensions/api/system_indicator/system_indicator_handler.cc',
+        'common/extensions/api/system_indicator/system_indicator_handler.h',
         'common/extensions/api/themes/theme_handler.cc',
         'common/extensions/api/themes/theme_handler.h',
         'common/extensions/background_info.cc',

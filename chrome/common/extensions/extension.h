@@ -21,7 +21,6 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/permissions/api_permission.h"
 #include "chrome/common/extensions/permissions/permission_message.h"
@@ -48,7 +47,6 @@ class ImageSkia;
 }
 
 namespace extensions {
-struct ActionInfo;
 class APIPermissionSet;
 class PermissionSet;
 
@@ -429,9 +427,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool converted_from_user_script() const {
     return converted_from_user_script_;
   }
-  const ActionInfo* system_indicator_info() const {
-    return system_indicator_info_.get();
-  }
   const std::vector<NaClModuleInfo>& nacl_modules() const {
     return nacl_modules_;
   }
@@ -578,11 +573,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool LoadRequirements(string16* error);
   bool LoadKioskEnabled(string16* error);
   bool LoadOfflineEnabled(string16* error);
-  bool LoadExtensionFeatures(string16* error);
-  bool LoadBrowserAction(string16* error);
-  bool LoadSystemIndicator(string16* error);
   bool LoadTextToSpeechVoices(string16* error);
-  bool LoadIncognitoMode(string16* error);
   bool LoadManagedModeFeatures(string16* error);
   bool LoadManagedModeSites(
       const base::DictionaryValue* content_pack_value,
@@ -678,9 +669,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // True if the extension was generated from a user script. (We show slightly
   // different UI if so).
   bool converted_from_user_script_;
-
-  // The extension's system indicator, if any.
-  scoped_ptr<ActionInfo> system_indicator_info_;
 
   // Optional list of NaCl modules and associated properties.
   std::vector<NaClModuleInfo> nacl_modules_;

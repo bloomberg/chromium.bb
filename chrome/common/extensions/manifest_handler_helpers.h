@@ -10,17 +10,13 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 
+class ExtensionIconSet;
+
 namespace base {
 class DictionaryValue;
 }
 
-class ExtensionIconSet;
-
 namespace extensions {
-
-struct ActionInfo;
-class Extension;
-
 namespace manifest_handler_helpers {
 
 // Strips leading slashes from the file path. Returns true iff the final path is
@@ -36,14 +32,6 @@ bool LoadIconsFromDictionary(const base::DictionaryValue* icons_value,
                              size_t num_icon_sizes,
                              ExtensionIconSet* icons,
                              string16* error);
-
-// TODO(rdevlin.cronin): Move this to a helper file in
-// chrome/common/extensions/api/extension_action/ when the Extension class stops
-// using it.
-scoped_ptr<ActionInfo> LoadActionInfo(
-    const Extension* extension,
-    const base::DictionaryValue* manifest_section,
-    string16* error);
 
 }  // namespace manifest_handler_helpers
 }  // namespace extensions
