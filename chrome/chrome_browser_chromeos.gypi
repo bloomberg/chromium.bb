@@ -345,6 +345,8 @@
         'browser/chromeos/input_method/input_method_persistence.h',
         'browser/chromeos/input_method/input_method_util.cc',
         'browser/chromeos/input_method/input_method_util.h',
+        'browser/chromeos/input_method/component_extension_ime_manager_impl.cc',
+        'browser/chromeos/input_method/component_extension_ime_manager_impl.h',
         'browser/chromeos/input_method/input_method_whitelist.cc',
         'browser/chromeos/input_method/input_method_whitelist.h',
         'browser/chromeos/input_method/mock_ibus_controller.cc',

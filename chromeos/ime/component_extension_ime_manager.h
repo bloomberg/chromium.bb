@@ -7,12 +7,13 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
+#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/ibus/ibus_component.h"
 
 namespace chromeos {
 
 // Represents a component extension IME.
-struct ComponentExtensionIME {
+struct CHROMEOS_EXPORT ComponentExtensionIME {
   ComponentExtensionIME();
   ~ComponentExtensionIME();
   std::string id;  // extension id.
@@ -22,7 +23,7 @@ struct ComponentExtensionIME {
 };
 
 // Provides an interface to list/load/unload for component extension IME.
-class ComponentExtentionIMEManagerDelegate {
+class CHROMEOS_EXPORT ComponentExtentionIMEManagerDelegate {
  public:
   ComponentExtentionIMEManagerDelegate();
   virtual ~ComponentExtentionIMEManagerDelegate();
@@ -42,7 +43,7 @@ class ComponentExtentionIMEManagerDelegate {
 };
 
 // This class manages component extension input method.
-class ComponentExtentionIMEManager {
+class CHROMEOS_EXPORT ComponentExtentionIMEManager {
  public:
   // This class takes the ownership of |delegate|.
   explicit ComponentExtentionIMEManager(
