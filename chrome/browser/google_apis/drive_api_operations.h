@@ -76,7 +76,7 @@ class GetChangelistOperation : public GetDataOperation {
  public:
   // |start_changestamp| specifies the starting point of change list or 0 if
   // all changes are necessary.
-  // |url| specifies URL for document feed fetching operation. If empty URL is
+  // |url| specifies URL for change list fetching operation. If empty URL is
   // passed, the default URL is used and returns the first page of the result.
   // When non-first page result is requested, |url| should be specified.
   GetChangelistOperation(

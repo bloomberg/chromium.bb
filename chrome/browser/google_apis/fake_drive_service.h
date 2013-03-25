@@ -90,7 +90,7 @@ class FakeDriveService : public DriveServiceInterface {
   // See the comment for EntryMatchWidthQuery() in .cc file for details about
   // the supported search query types.
   virtual void GetResourceList(
-      const GURL& feed_url,
+      const GURL& url,
       int64 start_changestamp,
       const std::string& search_query,
       bool shared_with_me,

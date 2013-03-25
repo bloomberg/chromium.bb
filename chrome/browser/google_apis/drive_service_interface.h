@@ -131,11 +131,12 @@ class DriveServiceInterface {
   // Returns the resource id for the root directory.
   virtual std::string GetRootResourceId() const = 0;
 
-  // Fetches a feed from |feed_url|. If this URL is empty, the call will fetch
-  // from the default URL. When |start_changestamp| is 0, the default behavior
-  // is to fetch the resource list feed containing the list of all entries. If
-  // |start_changestamp| > 0, the default is to fetch the change list feed
-  // containing the updates from the specified changestamp.
+  // Fetches a resource list or a change list from |url|. If this URL is
+  // empty, the call will fetch from the default URL. When
+  // |start_changestamp| is 0, the default behavior is to fetch the resource
+  // list containing the list of all entries. If |start_changestamp| > 0, the
+  // default is to fetch the change list containing the updates from the
+  // specified changestamp.
   //
   // |search_query| specifies search query to be sent to the server. It will be
   // used only if |start_changestamp| is 0. If empty string is passed,
@@ -148,7 +149,7 @@ class DriveServiceInterface {
   // Upon completion, invokes |callback| with results on the calling thread.
   // TODO(haruki): Refactor this function: crbug.com/160932
   // |callback| must not be null.
-  virtual void GetResourceList(const GURL& feed_url,
+  virtual void GetResourceList(const GURL& url,
                                int64 start_changestamp,
                                const std::string& search_query,
                                bool shared_with_me,

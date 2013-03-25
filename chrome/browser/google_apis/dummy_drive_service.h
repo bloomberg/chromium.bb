@@ -30,7 +30,7 @@ class DummyDriveService : public DriveServiceInterface {
   virtual void ClearRefreshToken() OVERRIDE;
   virtual std::string GetRootResourceId() const OVERRIDE;
   virtual void GetResourceList(
-      const GURL& feed_url,
+      const GURL& url,
       int64 start_changestamp,
       const std::string& search_query,
       bool shared_with_me,

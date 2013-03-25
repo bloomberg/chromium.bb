@@ -197,7 +197,7 @@ std::string FakeDriveService::GetRootResourceId() const {
 }
 
 void FakeDriveService::GetResourceList(
-    const GURL& feed_url,
+    const GURL& url,
     int64 start_changestamp,
     const std::string& search_query,
     bool shared_with_me,
@@ -222,7 +222,7 @@ void FakeDriveService::GetResourceList(
   int max_results = default_max_results_;
   std::vector<std::pair<std::string, std::string> > parameters;
   if (base::SplitStringIntoKeyValuePairs(
-          feed_url.query(), '=', '&', &parameters)) {
+          url.query(), '=', '&', &parameters)) {
     for (size_t i = 0; i < parameters.size(); ++i) {
       if (parameters[i].first == "start-offset")
         base::StringToInt(parameters[i].second, &start_offset);

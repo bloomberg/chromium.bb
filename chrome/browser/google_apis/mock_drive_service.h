@@ -38,7 +38,7 @@ class MockDriveService : public DriveServiceInterface {
       OperationProgressStatusList());
   MOCK_CONST_METHOD0(GetRootResourceId, std::string());
   MOCK_METHOD6(GetResourceList,
-      void(const GURL& feed_url,
+      void(const GURL& url,
           int64 start_changestamp,
           const std::string& search_string,
           bool shared_with_me,
@@ -126,15 +126,15 @@ class MockDriveService : public DriveServiceInterface {
     file_data_.reset(file_data);
   }
 
-  void set_search_result(const std::string& search_result_feed);
+  void set_search_result(const std::string& search_result_file);
 
  private:
   // Helper stub methods for functions which take callbacks, so that
   // the callbacks get called with testable results.
 
   // Will call |callback| with HTTP_SUCCESS and a StringValue with the current
-  // value of |feed_data_|.
-  void GetResourceListStub(const GURL& feed_url,
+  // value of |resource_list_data_|.
+  void GetResourceListStub(const GURL& url,
       int64 start_changestamp,
       const std::string& search_string,
       bool shared_with_me,
@@ -192,17 +192,17 @@ class MockDriveService : public DriveServiceInterface {
   // Account meta data to be returned from GetAccountMetadata.
   scoped_ptr<base::Value> account_metadata_data_;
 
-  // Feed data to be returned from GetResourceList.
-  scoped_ptr<base::Value> feed_data_;
+  // JSON data to be returned from GetResourceList.
+  scoped_ptr<base::Value> resource_list_data_;
 
-  // Feed data to be returned from CreateDirectory.
+  // JSON data to be returned from CreateDirectory.
   scoped_ptr<base::Value> directory_data_;
 
-  // Feed data to be returned from CopyHostedDocument.
+  // JSON data to be returned from CopyHostedDocument.
   scoped_ptr<base::Value> document_data_;
 
-  // Feed data to be returned from GetResourceList if the search path is
-  // specified. The feed contains subset of the root_feed.
+  // JSON data to be returned from GetResourceList if the search path is
+  // specified. The value contains subset of the resource_list_data_.
   scoped_ptr<base::Value> search_result_;
 
   // File data to be written to the local temporary file when

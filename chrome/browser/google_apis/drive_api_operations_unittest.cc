@@ -298,13 +298,13 @@ class DriveApiOperationsTest : public testing::Test {
   int64 content_length_;
 };
 
-TEST_F(DriveApiOperationsTest, GetAboutOperation_ValidFeed) {
+TEST_F(DriveApiOperationsTest, GetAboutOperation_ValidJson) {
   // Set an expected data file containing valid result.
   expected_data_file_path_ = test_util::GetTestFilePath(
       "chromeos/drive/about.json");
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
-  scoped_ptr<AboutResource> feed_data;
+  scoped_ptr<AboutResource> about_resource;
 
   GetAboutOperation* operation = new GetAboutOperation(
       &operation_registry_,
@@ -312,7 +312,7 @@ TEST_F(DriveApiOperationsTest, GetAboutOperation_ValidFeed) {
       *url_generator_,
       CreateComposedCallback(
           base::Bind(&test_util::RunAndQuit),
-          test_util::CreateCopyResultCallback(&error, &feed_data)));
+          test_util::CreateCopyResultCallback(&error, &about_resource)));
   operation->Start(kTestDriveApiAuthToken, kTestUserAgent,
                    base::Bind(&test_util::DoNothingForReAuthenticateCallback));
   MessageLoop::current()->Run();
@@ -324,20 +324,20 @@ TEST_F(DriveApiOperationsTest, GetAboutOperation_ValidFeed) {
   scoped_ptr<AboutResource> expected(
       AboutResource::CreateFrom(
           *test_util::LoadJSONFile("chromeos/drive/about.json")));
-  ASSERT_TRUE(feed_data.get());
-  EXPECT_EQ(expected->largest_change_id(), feed_data->largest_change_id());
-  EXPECT_EQ(expected->quota_bytes_total(), feed_data->quota_bytes_total());
-  EXPECT_EQ(expected->quota_bytes_used(), feed_data->quota_bytes_used());
-  EXPECT_EQ(expected->root_folder_id(), feed_data->root_folder_id());
+  ASSERT_TRUE(about_resource.get());
+  EXPECT_EQ(expected->largest_change_id(), about_resource->largest_change_id());
+  EXPECT_EQ(expected->quota_bytes_total(), about_resource->quota_bytes_total());
+  EXPECT_EQ(expected->quota_bytes_used(), about_resource->quota_bytes_used());
+  EXPECT_EQ(expected->root_folder_id(), about_resource->root_folder_id());
 }
 
-TEST_F(DriveApiOperationsTest, GetAboutOperation_InvalidFeed) {
+TEST_F(DriveApiOperationsTest, GetAboutOperation_InvalidJson) {
   // Set an expected data file containing invalid result.
   expected_data_file_path_ = test_util::GetTestFilePath(
       "chromeos/gdata/testfile.txt");
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
-  scoped_ptr<AboutResource> feed_data;
+  scoped_ptr<AboutResource> about_resource;
 
   GetAboutOperation* operation = new GetAboutOperation(
       &operation_registry_,
@@ -345,16 +345,16 @@ TEST_F(DriveApiOperationsTest, GetAboutOperation_InvalidFeed) {
       *url_generator_,
       CreateComposedCallback(
           base::Bind(&test_util::RunAndQuit),
-          test_util::CreateCopyResultCallback(&error, &feed_data)));
+          test_util::CreateCopyResultCallback(&error, &about_resource)));
   operation->Start(kTestDriveApiAuthToken, kTestUserAgent,
                    base::Bind(&test_util::DoNothingForReAuthenticateCallback));
   MessageLoop::current()->Run();
 
-  // "parse error" should be returned, and the feed should be NULL.
+  // "parse error" should be returned, and the about resource should be NULL.
   EXPECT_EQ(GDATA_PARSE_ERROR, error);
   EXPECT_EQ(test_server::METHOD_GET, http_request_.method);
   EXPECT_EQ("/drive/v2/about", http_request_.relative_url);
-  EXPECT_FALSE(feed_data.get());
+  EXPECT_FALSE(about_resource.get());
 }
 
 TEST_F(DriveApiOperationsTest, CreateDirectoryOperation) {
@@ -363,7 +363,7 @@ TEST_F(DriveApiOperationsTest, CreateDirectoryOperation) {
       test_util::GetTestFilePath("chromeos/drive/directory_entry.json");
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
-  scoped_ptr<FileResource> feed_data;
+  scoped_ptr<FileResource> file_resource;
 
   // Create "new directory" in the root directory.
   drive::CreateDirectoryOperation* operation =
@@ -375,7 +375,7 @@ TEST_F(DriveApiOperationsTest, CreateDirectoryOperation) {
           "new directory",
           CreateComposedCallback(
               base::Bind(&test_util::RunAndQuit),
-              test_util::CreateCopyResultCallback(&error, &feed_data)));
+              test_util::CreateCopyResultCallback(&error, &file_resource)));
   operation->Start(kTestDriveApiAuthToken, kTestUserAgent,
                    base::Bind(&test_util::DoNothingForReAuthenticateCallback));
   MessageLoop::current()->Run();
@@ -392,12 +392,12 @@ TEST_F(DriveApiOperationsTest, CreateDirectoryOperation) {
           *test_util::LoadJSONFile("chromeos/drive/directory_entry.json")));
 
   // Sanity check.
-  ASSERT_TRUE(feed_data.get());
+  ASSERT_TRUE(file_resource.get());
 
-  EXPECT_EQ(expected->file_id(), feed_data->file_id());
-  EXPECT_EQ(expected->title(), feed_data->title());
-  EXPECT_EQ(expected->mime_type(), feed_data->mime_type());
-  EXPECT_EQ(expected->parents().size(), feed_data->parents().size());
+  EXPECT_EQ(expected->file_id(), file_resource->file_id());
+  EXPECT_EQ(expected->title(), file_resource->title());
+  EXPECT_EQ(expected->mime_type(), file_resource->mime_type());
+  EXPECT_EQ(expected->parents().size(), file_resource->parents().size());
 }
 
 TEST_F(DriveApiOperationsTest, RenameResourceOperation) {

@@ -41,7 +41,7 @@ std::string DummyDriveService::GetRootResourceId() const {
 }
 
 void DummyDriveService::GetResourceList(
-    const GURL& feed_url,
+    const GURL& url,
     int64 start_changestamp,
     const std::string& search_query,
     bool shared_with_me,
