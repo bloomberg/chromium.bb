@@ -5,7 +5,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/input_method/ibus_controller_base.h"
-#include "chrome/browser/chromeos/input_method/input_method_config.h"
+#include "chromeos/ime/input_method_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {

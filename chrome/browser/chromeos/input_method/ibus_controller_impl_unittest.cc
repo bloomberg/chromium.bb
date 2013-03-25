@@ -4,7 +4,7 @@
 
 #include "base/logging.h"
 #include "chrome/browser/chromeos/input_method/ibus_controller_impl.h"
-#include "chrome/browser/chromeos/input_method/input_method_property.h"
+#include "chromeos/ime/input_method_property.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {

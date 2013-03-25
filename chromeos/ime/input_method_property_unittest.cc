@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/logging.h"
-#include "chrome/browser/chromeos/input_method/input_method_property.h"
+#include "chromeos/ime/input_method_property.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {

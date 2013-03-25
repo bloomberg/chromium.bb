@@ -13,7 +13,6 @@
 #include "base/string_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/chromeos/input_method/ibus_keymap.h"
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
@@ -25,6 +24,7 @@
 #include "chromeos/dbus/ibus/ibus_lookup_table.h"
 #include "chromeos/dbus/ibus/ibus_property.h"
 #include "chromeos/dbus/ibus/ibus_text.h"
+#include "chromeos/ime/ibus_keymap.h"
 #include "dbus/object_path.h"
 
 namespace chromeos {

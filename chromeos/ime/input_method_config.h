@@ -1,19 +1,20 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_INPUT_METHOD_INPUT_METHOD_CONFIG_H_
-#define CHROME_BROWSER_CHROMEOS_INPUT_METHOD_INPUT_METHOD_CONFIG_H_
+#ifndef CHROMEOS_IME_INPUT_METHOD_CONFIG_H_
+#define CHROMEOS_IME_INPUT_METHOD_CONFIG_H_
 
 #include <string>
 #include <vector>
+#include "chromeos/chromeos_export.h"
 
 namespace chromeos {
 namespace input_method {
 
 // A structure which represents a value of an input method configuration item.
 // This struct is used by SetInputMethodConfig().
-struct InputMethodConfigValue {
+struct CHROMEOS_EXPORT InputMethodConfigValue {
   InputMethodConfigValue();
   ~InputMethodConfigValue();
 
@@ -40,4 +41,4 @@ struct InputMethodConfigValue {
 }  // namespace input_method
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_INPUT_METHOD_INPUT_METHOD_CONFIG_H_
+#endif  // CHROMEOS_IME_INPUT_METHOD_CONFIG_H_

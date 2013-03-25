@@ -4,8 +4,8 @@
 
 #include "chrome/browser/chromeos/input_method/mock_ibus_controller.h"
 
-#include "chrome/browser/chromeos/input_method/input_method_config.h"
-#include "chrome/browser/chromeos/input_method/input_method_property.h"
+#include "chromeos/ime/input_method_config.h"
+#include "chromeos/ime/input_method_property.h"
 
 namespace chromeos {
 namespace input_method {

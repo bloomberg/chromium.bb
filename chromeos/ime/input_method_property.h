@@ -1,18 +1,19 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_INPUT_METHOD_INPUT_METHOD_PROPERTY_H_
-#define CHROME_BROWSER_CHROMEOS_INPUT_METHOD_INPUT_METHOD_PROPERTY_H_
+#ifndef CHROMEOS_IME_INPUT_METHOD_PROPERTY_H_
+#define CHROMEOS_IME_INPUT_METHOD_PROPERTY_H_
 
 #include <string>
 #include <vector>
+#include "chromeos/chromeos_export.h"
 
 namespace chromeos {
 namespace input_method {
 
 // A structure which represents a property for an input method engine.
-struct InputMethodProperty {
+struct CHROMEOS_EXPORT InputMethodProperty {
   InputMethodProperty(const std::string& in_key,
                       const std::string& in_label,
                       bool in_is_selection_item,
@@ -40,4 +41,4 @@ typedef std::vector<InputMethodProperty> InputMethodPropertyList;
 }  // namespace input_method
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_INPUT_METHOD_INPUT_METHOD_PROPERTY_H_
+#endif  // CHROMEOS_IME_INPUT_METHOD_PROPERTY_H_
