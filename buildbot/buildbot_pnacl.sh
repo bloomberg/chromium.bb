@@ -547,13 +547,13 @@ tc-tests-all() {
   llvm-regression
 
   # newlib
-  scons-stage-noirt "x86-32" "${scons_flags}" "${SCONS_TC_TESTS}"
-  # Large tests cannot be run in parallel
-  scons-stage-noirt "x86-32" "${scons_flags} -j1" "large_tests"
-  scons-stage-noirt "x86-64" "${scons_flags}" "${SCONS_TC_TESTS}"
-  scons-stage-noirt "x86-64" "${scons_flags} -j1" "large_tests"
-  scons-stage-noirt "arm"    "${scons_flags}" "${SCONS_TC_TESTS}"
-  scons-stage-noirt "arm"    "${scons_flags} -j1" "large_tests"
+  for arch in x86-32 x86-64 arm; do
+    scons-stage-noirt "$arch" "${scons_flags}" "${SCONS_TC_TESTS}"
+    # Large tests cannot be run in parallel
+    scons-stage-noirt "$arch" "${scons_flags} -j1" "large_tests"
+    scons-stage-noirt "$arch" "${scons_flags} pnacl_generate_pexe=0" \
+        "nonpexe_tests"
+  done
 
   # small set of sbtc tests
   scons-stage-noirt "x86-32" "${scons_flags} use_sandboxed_translator=1" \
@@ -578,6 +578,7 @@ tc-tests-fast() {
   scons-stage-noirt "$1" "-j8 -k" "${SCONS_TC_TESTS}"
   # Large tests cannot be run in parallel
   scons-stage-noirt "$1" "-j1 -k" "large_tests"
+  scons-stage-noirt "$1" "-j8 -k pnacl_generate_pexe=0" "nonpexe_tests"
 }
 
 mode-buildbot-tc-x8664-linux() {

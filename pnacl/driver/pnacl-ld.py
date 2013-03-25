@@ -336,14 +336,16 @@ def main(argv):
     chain = DriverChain(inputs, output, tng)
     chain.add(LinkBC, 'pre_opt.' + bitcode_type)
 
-    if env.getbool('STATIC'):
-      # ABI simplification passes.
-      passes = ['-expand-varargs']
-      # These two passes assume the whole program is available and
-      # should not be used if we are linking .o files, otherwise they
-      # will drop constructors and leave TLS variables unconverted.
-      if len(native_objects) == 0:
-        passes.extend(['-nacl-expand-ctors', '-nacl-expand-tls'])
+    # ABI simplification passes.  These passes assume the whole
+    # program is available and should not be used if we are linking .o
+    # files, otherwise:
+    #  * -expand-varargs will mix calling conventions;
+    #  * -nacl-expand-ctors will drop constructors;
+    #  * -nacl-expand-tls leave TLS variables unconverted.
+    if env.getbool('STATIC') and len(native_objects) == 0:
+      passes = ['-expand-varargs',
+                '-nacl-expand-ctors',
+                '-nacl-expand-tls']
       chain.add(DoLLVMPasses(passes), 'expand_features.' + bitcode_type)
 
     if env.getone('OPT_LEVEL') != '' and env.getone('OPT_LEVEL') != '0':

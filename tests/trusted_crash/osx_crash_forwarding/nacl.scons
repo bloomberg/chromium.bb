@@ -27,6 +27,9 @@ def GetNexeByName(name):
   return env.File('${STAGING_DIR}/%s${PROGSUFFIX}' %
                   env.ProgramNameForNmf(name))
 
+# exception_test only gets built if inline assembly is allowed.
+if not env.AllowInlineAssembly():
+  Return()
 untrusted_caught_nexe = GetNexeByName('exception_test')
 untrusted_crash_nexe = GetNexeByName('crash_test')
 trusted_crash_nexe = GetNexeByName('crash_in_syscall')
