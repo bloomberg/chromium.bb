@@ -185,18 +185,18 @@ const int QuotaManager::kEvictionIntervalInMilliSeconds =
 // and by multiple apps.
 int64 QuotaManager::kSyncableStorageDefaultHostQuota = 500 * kMBytes;
 
-int64 CalculateQuotaForUnlimitedInstalledApp(
-    int64 available_disk_space, int64 usage) {
+int64 CalculateQuotaForInstalledApp(
+    int64 available_disk_space, int64 usage, int64 quota) {
   if (available_disk_space < QuotaManager::kMinimumPreserveForSystem) {
     // No more space; cap the quota to the current usage.
     return usage;
   }
 
   available_disk_space -= QuotaManager::kMinimumPreserveForSystem;
-  if (available_disk_space < kint64max - usage)
+  if (available_disk_space < quota - usage)
     return available_disk_space + usage;
 
-  return kint64max;
+  return quota;
 }
 
 // Callback translators.
@@ -208,6 +208,15 @@ void CallGetUsageAndQuotaCallback(
     const QuotaAndUsage& quota_and_usage) {
   // Regular limited case.
   if (!unlimited) {
+    if (is_installed_app) {
+      // Cap the quota by the available disk space.
+      callback.Run(status, quota_and_usage.usage,
+                   CalculateQuotaForInstalledApp(
+                       quota_and_usage.available_disk_space,
+                       quota_and_usage.usage,
+                       quota_and_usage.quota));
+      return;
+    }
     callback.Run(status, quota_and_usage.usage, quota_and_usage.quota);
     return;
   }
@@ -225,8 +234,9 @@ void CallGetUsageAndQuotaCallback(
 
   // For installed unlimited apps.
   callback.Run(status, usage,
-               CalculateQuotaForUnlimitedInstalledApp(
-                   quota_and_usage.available_disk_space, usage));
+               CalculateQuotaForInstalledApp(
+                   quota_and_usage.available_disk_space,
+                   usage, QuotaManager::kNoLimit));
 }
 
 void CallQuotaCallback(
