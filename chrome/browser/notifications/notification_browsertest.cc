@@ -654,6 +654,11 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestClosePermissionInfobar) {
 }
 
 IN_PROC_BROWSER_TEST_F(NotificationsTest, TestAllowNotificationsFromAllSites) {
+#if defined(OS_MACOSX)
+  // TODO(kbr): re-enable: http://crbug.com/222296
+  if (base::mac::IsOSMountainLionOrLater())
+    return;
+#endif
   // Verify that all domains can be allowed to show notifications.
   SetDefaultPermissionSetting(CONTENT_SETTING_ALLOW);
   ui_test_utils::NavigateToURL(browser(), test_page_url_);
@@ -692,6 +697,11 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestDenyDomainAndAllowAll) {
 }
 
 IN_PROC_BROWSER_TEST_F(NotificationsTest, TestAllowDomainAndDenyAll) {
+#if defined(OS_MACOSX)
+  // TODO(kbr): re-enable: http://crbug.com/222296
+  if (base::mac::IsOSMountainLionOrLater())
+    return;
+#endif
   // Verify that allowing a domain and denying all others should show
   // notifications from the allowed domain.
   AllowOrigin(test_page_url_.GetOrigin());
@@ -706,6 +716,11 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestAllowDomainAndDenyAll) {
 }
 
 IN_PROC_BROWSER_TEST_F(NotificationsTest, TestDenyAndThenAllowDomain) {
+#if defined(OS_MACOSX)
+  // TODO(kbr): re-enable: http://crbug.com/222296
+  if (base::mac::IsOSMountainLionOrLater())
+    return;
+#endif
   // Verify that denying and again allowing should show notifications.
   DenyOrigin(test_page_url_.GetOrigin());
 
@@ -726,6 +741,11 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestDenyAndThenAllowDomain) {
 }
 
 IN_PROC_BROWSER_TEST_F(NotificationsTest, TestCreateDenyCloseNotifications) {
+#if defined(OS_MACOSX)
+  // TODO(kbr): re-enable: http://crbug.com/222296
+  if (base::mac::IsOSMountainLionOrLater())
+    return;
+#endif
   // Verify able to create, deny, and close the notification.
   AllowAllOrigins();
   ui_test_utils::NavigateToURL(browser(), test_page_url_);
@@ -814,6 +834,11 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest,
 // Notifications don't have their own process with the message center.
 #if !ENABLE_MESSAGE_CENTER_TESTING
 IN_PROC_BROWSER_TEST_F(NotificationsTest, TestKillNotificationProcess) {
+#if defined(OS_MACOSX)
+  // TODO(kbr): re-enable: http://crbug.com/222296
+  if (base::mac::IsOSMountainLionOrLater())
+    return;
+#endif
   // Test killing a notification doesn't crash Chrome.
   AllowAllOrigins();
   ui_test_utils::NavigateToURL(browser(), test_page_url_);
@@ -828,6 +853,11 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestKillNotificationProcess) {
 #endif
 
 IN_PROC_BROWSER_TEST_F(NotificationsTest, TestIncognitoNotification) {
+#if defined(OS_MACOSX)
+  // TODO(kbr): re-enable: http://crbug.com/222296
+  if (base::mac::IsOSMountainLionOrLater())
+    return;
+#endif
   // Test notifications in incognito window.
   Browser* browser = CreateIncognitoBrowser();
   ui_test_utils::NavigateToURL(browser, test_page_url_);
