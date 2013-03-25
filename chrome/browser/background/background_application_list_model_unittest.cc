@@ -120,7 +120,7 @@ void RemoveBackgroundPermission(ExtensionService* service,
 
 // Crashes on Mac tryslaves.
 // http://crbug.com/165458
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(OS_LINUX)
 #define MAYBE_ExplicitTest DISABLED_ExplicitTest
 #else
 #define MAYBE_ExplicitTest ExplicitTest
