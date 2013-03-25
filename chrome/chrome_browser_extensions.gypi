@@ -371,8 +371,6 @@
         'browser/extensions/api/storage/weak_unlimited_settings_storage.h',
         'browser/extensions/api/streams_private/streams_private_api.cc',
         'browser/extensions/api/streams_private/streams_private_api.h',
-        'browser/extensions/api/streams_private/streams_resource_throttle.cc',
-        'browser/extensions/api/streams_private/streams_resource_throttle.h',
         'browser/extensions/api/sync_file_system/extension_sync_event_observer_factory.cc',
         'browser/extensions/api/sync_file_system/extension_sync_event_observer_factory.h',
         'browser/extensions/api/sync_file_system/extension_sync_event_observer.cc',
