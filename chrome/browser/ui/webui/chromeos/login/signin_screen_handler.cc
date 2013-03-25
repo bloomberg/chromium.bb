@@ -79,7 +79,6 @@ const char kKeyUsername[] = "username";
 const char kKeyDisplayName[] = "displayName";
 const char kKeyEmailAddress[] = "emailAddress";
 const char kKeyEnterpriseDomain[] = "enterpriseDomain";
-const char kKeyNameTooltip[] = "nameTooltip";
 const char kKeyPublicAccount[] = "publicAccount";
 const char kKeyLocallyManagedUser[] = "locallyManagedUser";
 const char kKeySignedIn[] = "signedIn";
@@ -1353,7 +1352,6 @@ void SigninScreenHandler::FillUserDictionary(User* user,
   user_dict->SetString(kKeyUsername, email);
   user_dict->SetString(kKeyEmailAddress, user->display_email());
   user_dict->SetString(kKeyDisplayName, user->GetDisplayName());
-  user_dict->SetString(kKeyNameTooltip, user->display_email());
   user_dict->SetBoolean(kKeyPublicAccount, is_public_account);
   user_dict->SetBoolean(kKeyLocallyManagedUser, is_locally_managed_user);
   user_dict->SetInteger(kKeyOauthTokenStatus, user->oauth_token_status());

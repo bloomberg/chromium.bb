@@ -302,7 +302,8 @@ cr.define('login', function() {
           '?id=' + UserPod.userImageSalt_[this.user.username];
 
       this.nameElement.textContent = this.user_.displayName;
-      this.actionBoxMenuRemoveElement.hidden = !this.user_.canRemove;
+      this.actionBoxMenuRemoveElement.hidden = !this.user_.canRemove &&
+                                               !this.user_.publicAccount;
       this.signedInIndicatorElement.hidden = !this.user_.signedIn;
 
       var needSignin = this.needGaiaSignin;
@@ -313,7 +314,7 @@ cr.define('login', function() {
       this.actionBoxMenuRemoveElement.setAttribute(
           'aria-label', loadTimeData.getString(
                'podMenuRemoveItemAccessibleName'));
-      this.actionBoxMenuTitleNameElement.textContent = !this.user_.canRemove ?
+      this.actionBoxMenuTitleNameElement.textContent = this.user_.isOwner ?
           loadTimeData.getStringF('ownerUserPattern', this.user_.displayName) :
           this.user_.displayName;
       this.actionBoxMenuTitleEmailElement.textContent = this.user_.emailAddress;
@@ -367,8 +368,8 @@ cr.define('login', function() {
     get activeActionBoxMenu() {
       return this.actionBoxAreaElement.classList.contains('active');
     },
-    set activeActionBoxMenu(active) {
-      if (active == this.activeActionBoxMenu)
+    set isActionBoxMenuActive(active) {
+      if (active == this.isActionBoxMenuActive)
         return;
 
       if (active) {
@@ -380,6 +381,24 @@ cr.define('login', function() {
         this.actionBoxAreaElement.classList.add('active');
       } else {
         this.actionBoxAreaElement.classList.remove('active');
+      }
+    },
+
+    /**
+     * Whether action box button is in hovered state.
+     * @type {boolean}
+     */
+    get isActionBoxMenuHovered() {
+      return this.actionBoxAreaElement.classList.contains('hovered');
+    },
+    set isActionBoxMenuHovered(hovered) {
+      if (hovered == this.isActionBoxMenuHovered)
+        return;
+
+      if (hovered) {
+        this.actionBoxAreaElement.classList.add('hovered');
+      } else {
+        this.actionBoxAreaElement.classList.remove('hovered');
       }
     },
 
@@ -450,7 +469,7 @@ cr.define('login', function() {
     handleActionAreaButtonClick_: function(e) {
       if (this.parentNode.disabled)
         return;
-      this.activeActionBoxMenu = !this.activeActionBoxMenu;
+      this.isActionBoxMenuActive = !this.isActionBoxMenuActive;
     },
 
     /**
@@ -463,13 +482,13 @@ cr.define('login', function() {
       switch (e.keyIdentifier) {
         case 'Enter':
         case 'U+0020':  // Space
-          if (this.parentNode.focusedPod_ && !this.activeActionBoxMenu)
-            this.activeActionBoxMenu = true;
+          if (this.parentNode.focusedPod_ && !this.isActionBoxMenuActive)
+            this.isActionBoxMenuActive = true;
           e.stopPropagation();
           break;
         case 'Up':
         case 'Down':
-          if (this.activeActionBoxMenu) {
+          if (this.isActionBoxMenuActive) {
             this.actionBoxMenuRemoveElement.tabIndex =
                 UserPodTabOrder.PAD_MENU_ITEM;
             this.actionBoxMenuRemoveElement.focus();
@@ -477,11 +496,13 @@ cr.define('login', function() {
           e.stopPropagation();
           break;
         case 'U+001B':  // Esc
-          this.activeActionBoxMenu = false;
+          this.isActionBoxMenuActive = false;
           e.stopPropagation();
           break;
+        case 'U+0009':  // Tab
+          this.parentNode.focusPod();
         default:
-          this.activeActionBoxMenu = false;
+          this.isActionBoxMenuActive = false;
           break;
       }
     },
@@ -491,7 +512,7 @@ cr.define('login', function() {
      * @param {Event} e Click event.
      */
     handleRemoveCommandClick_: function(e) {
-      if (this.activeActionBoxMenu)
+      if (this.isActionBoxMenuActive)
         chrome.send('removeUser', [this.user.username]);
     },
 
@@ -513,12 +534,12 @@ cr.define('login', function() {
           break;
         case 'U+001B':  // Esc
           this.actionBoxAreaElement.focus();
-          this.activeActionBoxMenu = false;
+          this.isActionBoxMenuActive = false;
           e.stopPropagation();
           break;
         default:
           this.actionBoxAreaElement.focus();
-          this.activeActionBoxMenu = false;
+          this.isActionBoxMenuActive = false;
           break;
       }
     },
@@ -776,6 +797,7 @@ cr.define('login', function() {
       this.listeners_ = {
         focus: [this.handleFocus_.bind(this), true],
         click: [this.handleClick_.bind(this), false],
+        mousemove: [this.handleMouseMove_.bind(this), false],
         keydown: [this.handleKeyDown.bind(this), false]
       };
     },
@@ -794,17 +816,6 @@ cr.define('login', function() {
      */
     get isSinglePod() {
       return this.children.length == 1;
-    },
-
-    hideTitles: function() {
-      for (var i = 0, pod; pod = this.pods[i]; ++i)
-        pod.imageElement.title = '';
-    },
-
-    updateTitles: function() {
-      for (var i = 0, pod; pod = this.pods[i]; ++i) {
-        pod.imageElement.title = pod.user.nameTooltip || '';
-      }
     },
 
     /**
@@ -934,10 +945,6 @@ cr.define('login', function() {
         $('pod-row').classList.remove('images-loading');
       }, POD_ROW_IMAGES_LOAD_TIMEOUT_MS);
 
-      // loadPods is called after user list update (for ex. after deleting user)
-      // so make sure that tooltips are updated.
-      $('pod-row').updateTitles();
-
       var columns = users.length < COLUMNS.length ?
           COLUMNS[users.length] : COLUMNS[COLUMNS.length - 1];
       var rows = Math.floor((users.length - 1) / columns) + 1;
@@ -1028,7 +1035,7 @@ cr.define('login', function() {
       clearTimeout(this.loadWallpaperTimeout_);
       for (var i = 0, pod; pod = this.pods[i]; ++i) {
         if (!this.isSinglePod)
-          pod.activeActionBoxMenu = false;
+          pod.isActionBoxMenuActive = false;
         if (pod != podToFocus) {
           pod.classList.remove('focused');
           pod.classList.remove('faded');
@@ -1182,7 +1189,7 @@ cr.define('login', function() {
       if (!findAncestorByClass(e.target, 'action-box-menu') &&
           !findAncestorByClass(e.target, 'action-box-area')) {
         for (var i = 0, pod; pod = this.pods[i]; ++i)
-          pod.activeActionBoxMenu = false;
+          pod.isActionBoxMenuActive = false;
       }
 
       // Clears focus if not clicked on a pod and if there's more than one pod.
@@ -1194,6 +1201,38 @@ cr.define('login', function() {
       // Return focus back to single pod.
       if (this.isSinglePod) {
         this.focusPod(this.focusedPod_, true /* force */);
+      }
+    },
+
+    /**
+     * Handler of mouse move event.
+     * @param {Event} e Click Event object.
+     * @private
+     */
+    handleMouseMove_: function(e) {
+      if (this.disabled)
+        return;
+      if (e.webkitMovementX == 0 && e.webkitMovementY == 0)
+        return;
+
+      // Defocus (thus hide) action box, if it is focused on a user pod
+      // and the pointer is not hovering over it.
+      var pod = findAncestorByClass(e.target, 'pod');
+      if (document.activeElement &&
+          document.activeElement.parentNode != pod &&
+          document.activeElement.classList.contains('action-box-area')) {
+        document.activeElement.parentNode.focus();
+      }
+
+      if (pod)
+        pod.isActionBoxMenuHovered = true;
+
+      // Hide action boxes on other user pods.
+      for (var i = 0, p; p = this.pods[i]; ++i) {
+        if (p != pod) {
+          p.isActionBoxMenuHovered = false;
+          p.isActionBoxMenuActive = false;
+        }
       }
     },
 
@@ -1241,6 +1280,8 @@ cr.define('login', function() {
     handleKeyDown: function(e) {
       if (this.disabled)
         return;
+      for (var i = 0, pod; pod = this.pods[i]; ++i)
+        pod.isActionBoxMenuHovered = false;
       var editing = e.target.tagName == 'INPUT' && e.target.value;
       switch (e.keyIdentifier) {
         case 'Left':
@@ -1314,7 +1355,6 @@ cr.define('login', function() {
             event, this.listeners_[event][0], this.listeners_[event][1]);
       }
       $('login-header-bar').buttonsTabIndex = UserPodTabOrder.HEADER_BAR;
-      this.updateTitles();
     },
 
     /**
@@ -1326,7 +1366,6 @@ cr.define('login', function() {
             event, this.listeners_[event][0], this.listeners_[event][1]);
       }
       $('login-header-bar').buttonsTabIndex = 0;
-      this.hideTitles();
     },
 
     /**

@@ -178,13 +178,12 @@ html[dir=rtl] .pod .capslock-hint {
   right: 0;
   top: 0;
   width: 23px;
+  z-index: 1;
 }
 
-.pod .action-box-area:focus,
-.pod .action-box-area:hover,
-.main-pane:hover ~ .action-box-area,
-.action-box-area.active,
-.pod:hover .main-pane ~ .action-box-area {
+.action-box-area:focus,
+.action-box-area.hovered,
+.action-box-area.active {
   opacity: 1;
 }
 
@@ -228,6 +227,7 @@ html[dir=rtl] .action-box-area {
   /* TODO(glotov): the menu should fade out with transition  */
   visibility: hidden;
   width: 220px;
+  z-index: 1;
 }
 
 .action-box-area.active ~ .action-box-menu {
