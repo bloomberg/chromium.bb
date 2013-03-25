@@ -14,7 +14,6 @@
 
 namespace content {
 
-class CaptureMachine;  // Defined in web_contents_video_capture_device.cc.
 class RenderWidgetHost;
 
 // A virtualized VideoCaptureDevice that mirrors the displayed contents of a
@@ -60,15 +59,46 @@ class CONTENT_EXPORT WebContentsVideoCaptureDevice
   virtual const Name& device_name() OVERRIDE;
 
  private:
+  class Impl;
   WebContentsVideoCaptureDevice(const Name& name,
                                 int render_process_id,
                                 int render_view_id,
                                 const base::Closure& destroy_cb);
 
   Name device_name_;
-  scoped_refptr<CaptureMachine> capturer_;
+  scoped_refptr<Impl> capturer_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsVideoCaptureDevice);
+};
+
+// Filters a sequence of events to achieve a target frequency.
+class CONTENT_EXPORT SmoothEventSampler {
+ public:
+  explicit SmoothEventSampler(base::TimeDelta capture_period,
+                              bool events_are_reliable);
+
+  // Add a new event to the event history, and return whether it ought to be
+  // sampled per to the sampling frequency limit. Even if this method returns
+  // true, the event is not recorded as a sample until RecordSample() is called.
+  bool AddEventAndConsiderSampling(base::Time now);
+
+  // Operates on the last event added by AddEventAndConsiderSampling(), marking
+  // it as sampled. After this point we are current in the stream of events, as
+  // we have sampled the most recent event.
+  void RecordSample();
+
+  // Returns true if, at time |now|, sampling should occur because too much time
+  // will have passed relative to the last event and/or sample.
+  bool IsOverdueForSamplingAt(base::Time now) const;
+
+  base::Time GetLastSampledEvent();
+
+ private:
+  const bool events_are_reliable_;
+  const base::TimeDelta capture_period_;
+  base::Time current_event_;
+  base::Time last_sample_;
+  DISALLOW_COPY_AND_ASSIGN(SmoothEventSampler);
 };
 
 }  // namespace content
