@@ -25,6 +25,7 @@
 #include "base/values.h"
 #include "chrome/browser/autocomplete/autocomplete_controller.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -424,6 +425,10 @@ void WaitForBookmarkModelToLoad(BookmarkModel* model) {
   content::RunThisRunLoop(&run_loop);
   model->RemoveObserver(&observer);
   ASSERT_TRUE(model->IsLoaded());
+}
+
+void WaitForBookmarkModelToLoad(Profile* profile) {
+  WaitForBookmarkModelToLoad(BookmarkModelFactory::GetForProfile(profile));
 }
 
 void WaitForTemplateURLServiceToLoad(TemplateURLService* service) {

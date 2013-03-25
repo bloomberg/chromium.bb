@@ -32,10 +32,10 @@
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_utils.h"
-
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -109,7 +109,8 @@ static scoped_refptr<extensions::Extension> CreateExtension(
 class ProfileSigninConfirmationDialogTest : public testing::Test {
  public:
   ProfileSigninConfirmationDialogTest()
-      : ui_thread_(BrowserThread::UI, &message_loop_) {
+      : ui_thread_(BrowserThread::UI, &message_loop_),
+        model_(NULL) {
   }
   virtual ~ProfileSigninConfirmationDialogTest() {}
 
@@ -129,7 +130,8 @@ class ProfileSigninConfirmationDialogTest : public testing::Test {
 
     // Initialize the services we check.
     profile_->CreateBookmarkModel(true);
-    profile_->BlockUntilBookmarkModelLoaded();
+    model_ = BookmarkModelFactory::GetForProfile(profile_.get());
+    ui_test_utils::WaitForBookmarkModelToLoad(model_);
     profile_->CreateHistoryService(true, false);
     extensions::TestExtensionSystem* system =
         static_cast<extensions::TestExtensionSystem*>(
@@ -157,6 +159,7 @@ class ProfileSigninConfirmationDialogTest : public testing::Test {
   scoped_ptr<TestingProfile> profile_;
   TestingPrefStoreWithCustomReadError* user_prefs_;
   ProfileSigninConfirmationDialog* dialog_;
+  BookmarkModel* model_;
 };
 
 TEST_F(ProfileSigninConfirmationDialogTest, DoNotPromptForNewProfile) {
@@ -169,13 +172,11 @@ TEST_F(ProfileSigninConfirmationDialogTest, DoNotPromptForNewProfile) {
 }
 
 TEST_F(ProfileSigninConfirmationDialogTest, PromptForNewProfile_Bookmarks) {
-  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile_.get());
-  ASSERT_TRUE(model);
+  ASSERT_TRUE(model_);
 
   // Profile is new but has bookmarks.
-  model->AddURL(model->bookmark_bar_node(), 0,
-                string16(ASCIIToUTF16("foo")),
-                GURL("http://foo.com"));
+  model_->AddURL(model_->bookmark_bar_node(), 0, string16(ASCIIToUTF16("foo")),
+                 GURL("http://foo.com"));
   EXPECT_TRUE(
       GetCallbackResult(
           base::Bind(

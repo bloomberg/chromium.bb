@@ -12,6 +12,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "ui/views/controls/button/text_button.h"
 
 typedef BrowserWithTestWindowTest BookmarkBarViewTest;
@@ -19,7 +20,7 @@ typedef BrowserWithTestWindowTest BookmarkBarViewTest;
 // Verify that the apps shortcut is never visible without instant extended.
 TEST_F(BookmarkBarViewTest, NoAppsShortcutWithoutInstantExtended) {
   profile()->CreateBookmarkModel(true);
-  profile()->BlockUntilBookmarkModelLoaded();
+  ui_test_utils::WaitForBookmarkModelToLoad(profile());
   BookmarkBarView bookmark_bar_view(browser(), NULL);
   bookmark_bar_view.set_owned_by_client();
   EXPECT_FALSE(bookmark_bar_view.apps_page_shortcut_->visible());
@@ -56,7 +57,7 @@ class BookmarkBarViewInstantExtendedTest : public BrowserWithTestWindowTest {
 // button properly follows the pref value.
 TEST_F(BookmarkBarViewInstantExtendedTest, AppsShortcutVisibility) {
   profile()->CreateBookmarkModel(true);
-  profile()->BlockUntilBookmarkModelLoaded();
+  ui_test_utils::WaitForBookmarkModelToLoad(profile());
   BookmarkBarView bookmark_bar_view(browser(), NULL);
   bookmark_bar_view.set_owned_by_client();
   browser()->profile()->GetPrefs()->SetBoolean(

@@ -28,6 +28,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -149,7 +150,7 @@ void HistoryQuickProviderTest::SetUp() {
   profile_.reset(new TestingProfile());
   profile_->CreateHistoryService(true, false);
   profile_->CreateBookmarkModel(true);
-  profile_->BlockUntilBookmarkModelLoaded();
+  ui_test_utils::WaitForBookmarkModelToLoad(profile_.get());
   profile_->BlockUntilHistoryIndexIsRefreshed();
   history_service_ =
       HistoryServiceFactory::GetForProfile(profile_.get(),

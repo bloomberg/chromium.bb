@@ -12,6 +12,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
@@ -139,7 +140,9 @@ TEST_F(BrowserCommandsTest, ViewSource) {
 TEST_F(BrowserCommandsTest, BookmarkCurrentPage) {
   // We use profile() here, since it's a TestingProfile.
   profile()->CreateBookmarkModel(true);
-  profile()->BlockUntilBookmarkModelLoaded();
+
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
+  ui_test_utils::WaitForBookmarkModelToLoad(model);
 
   // Navigate to a url.
   GURL url1("http://foo/1");
@@ -151,8 +154,7 @@ TEST_F(BrowserCommandsTest, BookmarkCurrentPage) {
 
   // It should now be bookmarked in the bookmark model.
   EXPECT_EQ(profile(), browser()->profile());
-  EXPECT_TRUE(BookmarkModelFactory::GetForProfile(
-      browser()->profile())->IsBookmarked(url1));
+  EXPECT_TRUE(model->IsBookmarked(url1));
 }
 
 // Tests back/forward in new tab (Control + Back/Forward button in the UI).

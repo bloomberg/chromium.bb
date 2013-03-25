@@ -9,6 +9,7 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -22,12 +23,13 @@ class RecentlyUsedFoldersComboModelTest : public testing::Test {
   virtual void TearDown() OVERRIDE;
 
  protected:
-  scoped_ptr<TestingProfile> profile_;
+  BookmarkModel* GetModel();
 
  private:
   MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
+  scoped_ptr<TestingProfile> profile_;
 
   DISALLOW_COPY_AND_ASSIGN(RecentlyUsedFoldersComboModelTest);
 };
@@ -40,7 +42,7 @@ RecentlyUsedFoldersComboModelTest::RecentlyUsedFoldersComboModelTest()
 void RecentlyUsedFoldersComboModelTest::SetUp() {
   profile_.reset(new TestingProfile());
   profile_->CreateBookmarkModel(true);
-  profile_->BlockUntilBookmarkModelLoaded();
+  ui_test_utils::WaitForBookmarkModelToLoad(GetModel());
 }
 
 void RecentlyUsedFoldersComboModelTest::TearDown() {
@@ -48,14 +50,16 @@ void RecentlyUsedFoldersComboModelTest::TearDown() {
   message_loop_.RunUntilIdle();
 }
 
+BookmarkModel* RecentlyUsedFoldersComboModelTest::GetModel() {
+  return BookmarkModelFactory::GetForProfile(profile_.get());
+}
+
 // Verifies there are no duplicate nodes in the model.
 TEST_F(RecentlyUsedFoldersComboModelTest, NoDups) {
-  BookmarkModel* bookmark_model =
-      BookmarkModelFactory::GetForProfile(profile_.get());
-  const BookmarkNode* new_node = bookmark_model->AddURL(
-      bookmark_model->bookmark_bar_node(), 0, ASCIIToUTF16("a"),
+  const BookmarkNode* new_node = GetModel()->AddURL(
+      GetModel()->bookmark_bar_node(), 0, ASCIIToUTF16("a"),
       GURL("http://a"));
-  RecentlyUsedFoldersComboModel model(bookmark_model, new_node);
+  RecentlyUsedFoldersComboModel model(GetModel(), new_node);
   std::set<const BookmarkNode*> nodes;
   for (int i = 0; i < model.GetItemCount(); ++i) {
     const BookmarkNode* node = model.GetNodeAt(i);

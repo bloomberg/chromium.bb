@@ -145,6 +145,7 @@ void RegisterAndWait(content::NotificationObserver* observer,
 
 // Blocks until |model| finishes loading.
 void WaitForBookmarkModelToLoad(BookmarkModel* model);
+void WaitForBookmarkModelToLoad(Profile* profile);
 
 // Blocks until |service| finishes loading.
 void WaitForTemplateURLServiceToLoad(TemplateURLService* service);

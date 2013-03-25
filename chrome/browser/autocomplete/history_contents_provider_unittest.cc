@@ -20,6 +20,7 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -232,14 +233,13 @@ TEST_F(HistoryContentsProviderTest, DeleteMatch) {
 // Tests deleting starred results from history, not affecting bookmarks/matches.
 TEST_F(HistoryContentsProviderTest, DeleteStarredMatch) {
   profile()->CreateBookmarkModel(false);
-  profile()->BlockUntilBookmarkModelLoaded();
+
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
+  ui_test_utils::WaitForBookmarkModelToLoad(model);
 
   // Bookmark a history item.
   GURL bookmark_url(test_entries[2].url);
-  bookmark_utils::AddIfNotBookmarked(
-      BookmarkModelFactory::GetForProfile(profile()),
-      bookmark_url,
-      ASCIIToUTF16("bar"));
+  bookmark_utils::AddIfNotBookmarked(model, bookmark_url, ASCIIToUTF16("bar"));
 
   // Get the match to delete its history
   AutocompleteInput input(ASCIIToUTF16("bar"), string16::npos, string16(),

@@ -8,6 +8,7 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -40,7 +41,7 @@ BookmarkExpandedStateTrackerTest::BookmarkExpandedStateTrackerTest()
 void BookmarkExpandedStateTrackerTest::SetUp() {
   profile_.reset(new TestingProfile);
   profile_->CreateBookmarkModel(true);
-  profile_->BlockUntilBookmarkModelLoaded();
+  ui_test_utils::WaitForBookmarkModelToLoad(GetModel());
 }
 
 BookmarkModel* BookmarkExpandedStateTrackerTest::GetModel() {

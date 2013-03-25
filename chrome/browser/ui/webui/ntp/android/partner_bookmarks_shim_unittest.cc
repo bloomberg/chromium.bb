@@ -10,6 +10,7 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"
 #include "googleurl/src/gurl.h"
@@ -19,7 +20,8 @@ class PartnerBookmarksShimTest : public testing::Test {
  public:
   PartnerBookmarksShimTest()
       : ui_thread_(content::BrowserThread::UI, &message_loop_),
-        file_thread_(content::BrowserThread::FILE, &message_loop_) {
+        file_thread_(content::BrowserThread::FILE, &message_loop_),
+        model_(NULL) {
   }
 
   TestingProfile* profile() const { return profile_.get(); }
@@ -27,18 +29,16 @@ class PartnerBookmarksShimTest : public testing::Test {
   const BookmarkNode*  AddBookmark(const BookmarkNode* parent,
                                    const GURL& url,
                                    const string16& title) {
-    BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
     if (!parent)
-      parent = model->bookmark_bar_node();
-    return model->AddURL(parent, parent->child_count(), title, url);
+      parent = model_->bookmark_bar_node();
+    return model_->AddURL(parent, parent->child_count(), title, url);
   }
 
   const BookmarkNode*  AddFolder(const BookmarkNode* parent,
                                  const string16& title) {
-    BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
     if (!parent)
-      parent = model->bookmark_bar_node();
-    return model->AddFolder(parent, parent->child_count(), title);
+      parent = model_->bookmark_bar_node();
+    return model_->AddFolder(parent, parent->child_count(), title);
   }
 
  protected:
@@ -46,7 +46,9 @@ class PartnerBookmarksShimTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     profile_.reset(new TestingProfile());
     profile_->CreateBookmarkModel(true);
-    profile_->BlockUntilBookmarkModelLoaded();
+
+    model_ = BookmarkModelFactory::GetForProfile(profile_.get());
+    ui_test_utils::WaitForBookmarkModelToLoad(model_);
   }
 
   virtual void TearDown() OVERRIDE {
@@ -59,6 +61,8 @@ class PartnerBookmarksShimTest : public testing::Test {
   MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
+
+  BookmarkModel* model_;
 
   DISALLOW_COPY_AND_ASSIGN(PartnerBookmarksShimTest);
 };
@@ -121,8 +125,7 @@ TEST_F(PartnerBookmarksShimTest, GetNodeByID) {
 
   PartnerBookmarksShim* shim = PartnerBookmarksShim::GetInstance();
   ASSERT_FALSE(shim->IsLoaded());
-  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
-  shim->AttachTo(model, model->mobile_node());
+  shim->AttachTo(model_, model_->mobile_node());
   shim->SetPartnerBookmarksRoot(root_partner_node);
   ASSERT_TRUE(shim->IsLoaded());
 
@@ -154,8 +157,7 @@ TEST_F(PartnerBookmarksShimTest, ObserverNotifiedOfLoadWithPartnerBookmarks) {
   TestObserver* observer = new TestObserver();
   PartnerBookmarksShim* shim = PartnerBookmarksShim::GetInstance();
   shim->AddObserver(observer);
-  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
-  shim->AttachTo(model, model->bookmark_bar_node());
+  shim->AttachTo(model_, model_->bookmark_bar_node());
   ASSERT_FALSE(observer->IsNotifiedOfLoad());
   shim->SetPartnerBookmarksRoot(root_partner_node);
   ASSERT_TRUE(observer->IsNotifiedOfLoad());

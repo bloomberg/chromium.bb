@@ -20,6 +20,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_utils.h"
@@ -59,8 +60,9 @@ class SQLiteCursorTest : public testing::Test,
         chrome::kInitialProfile);
 
     testing_profile_->CreateBookmarkModel(true);
+    ui_test_utils::WaitForBookmarkModelToLoad(testing_profile_);
+
     testing_profile_->CreateFaviconService();
-    testing_profile_->BlockUntilBookmarkModelLoaded();
     testing_profile_->CreateHistoryService(true, false);
     service_.reset(new AndroidHistoryProviderService(testing_profile_));
     hs_ = HistoryServiceFactory::GetForProfile(testing_profile_,

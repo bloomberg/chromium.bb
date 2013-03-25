@@ -28,6 +28,7 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/test/base/model_test_utils.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/test_browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -842,7 +843,7 @@ class BookmarkModelTestWithProfile : public testing::Test {
 
   void BlockTillBookmarkModelLoaded() {
     bb_model_ = BookmarkModelFactory::GetForProfile(profile_.get());
-    profile_->BlockUntilBookmarkModelLoaded();
+    ui_test_utils::WaitForBookmarkModelToLoad(bb_model_);
   }
 
   // Destroys the current profile, creates a new one and creates the history

@@ -21,6 +21,7 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/importer/firefox2_importer.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/test_browser_thread.h"
 #include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -151,8 +152,9 @@ TEST_F(BookmarkHTMLWriterTest, Test) {
   profile.BlockUntilHistoryProcessesPendingRequests();
   profile.CreateFaviconService();
   profile.CreateBookmarkModel(true);
-  profile.BlockUntilBookmarkModelLoaded();
+
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(&profile);
+  ui_test_utils::WaitForBookmarkModelToLoad(model);
 
   // Create test PNG representing favicon for url1.
   SkBitmap bitmap;

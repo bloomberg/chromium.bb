@@ -430,15 +430,6 @@ void TestingProfile::CreateWebDataService() {
       this, BuildWebDataService);
 }
 
-void TestingProfile::BlockUntilBookmarkModelLoaded() {
-  // Only get the bookmark model if it actually exists since the caller of the
-  // test should explicitly call CreateBookmarkModel to build it.
-  BookmarkModel* bookmark_model =
-      BookmarkModelFactory::GetForProfileIfExists(this);
-  DCHECK(bookmark_model);
-  ui_test_utils::WaitForBookmarkModelToLoad(bookmark_model);
-}
-
 void TestingProfile::BlockUntilHistoryIndexIsRefreshed() {
   // Only get the history service if it actually exists since the caller of the
   // test should explicitly call CreateHistoryService to build it.

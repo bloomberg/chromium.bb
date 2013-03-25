@@ -10,6 +10,7 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/test_browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -76,10 +77,10 @@ TEST_F(BookmarkNodeDataTest, JustURL) {
 TEST_F(BookmarkNodeDataTest, URL) {
   // Write a single node representing a URL to the clipboard.
   TestingProfile profile;
-  profile.CreateBookmarkModel(false);
-  profile.BlockUntilBookmarkModelLoaded();
   profile.SetID(L"id");
+  profile.CreateBookmarkModel(false);
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(&profile);
+  ui_test_utils::WaitForBookmarkModelToLoad(model);
   const BookmarkNode* root = model->bookmark_bar_node();
   GURL url(GURL("http://foo.com"));
   const string16 title(ASCIIToUTF16("foo.com"));
@@ -119,10 +120,12 @@ TEST_F(BookmarkNodeDataTest, URL) {
 // Tests writing a folder to the clipboard.
 TEST_F(BookmarkNodeDataTest, Folder) {
   TestingProfile profile;
-  profile.CreateBookmarkModel(false);
-  profile.BlockUntilBookmarkModelLoaded();
   profile.SetID(L"id");
+  profile.CreateBookmarkModel(false);
+
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(&profile);
+  ui_test_utils::WaitForBookmarkModelToLoad(model);
+
   const BookmarkNode* root = model->bookmark_bar_node();
   const BookmarkNode* g1 = model->AddFolder(root, 0, ASCIIToUTF16("g1"));
   const BookmarkNode* g11 = model->AddFolder(g1, 0, ASCIIToUTF16("g11"));
@@ -160,8 +163,10 @@ TEST_F(BookmarkNodeDataTest, FolderWithChild) {
   TestingProfile profile;
   profile.SetID(L"id");
   profile.CreateBookmarkModel(false);
-  profile.BlockUntilBookmarkModelLoaded();
+
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(&profile);
+  ui_test_utils::WaitForBookmarkModelToLoad(model);
+
   const BookmarkNode* root = model->bookmark_bar_node();
   const BookmarkNode* folder = model->AddFolder(root, 0, ASCIIToUTF16("g1"));
 
@@ -199,8 +204,10 @@ TEST_F(BookmarkNodeDataTest, MultipleNodes) {
   TestingProfile profile;
   profile.SetID(L"id");
   profile.CreateBookmarkModel(false);
-  profile.BlockUntilBookmarkModelLoaded();
+
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(&profile);
+  ui_test_utils::WaitForBookmarkModelToLoad(model);
+
   const BookmarkNode* root = model->bookmark_bar_node();
   const BookmarkNode* folder = model->AddFolder(root, 0, ASCIIToUTF16("g1"));
 

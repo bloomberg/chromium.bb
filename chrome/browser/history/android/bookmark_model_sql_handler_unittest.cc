@@ -46,13 +46,13 @@ class BookmarkModelSQLHandlerTest : public testing::Test {
         chrome::kInitialProfile);
     // Create the BookmarkModel that doesn't need to invoke load().
     testing_profile->CreateBookmarkModel(true);
-    testing_profile->BlockUntilBookmarkModelLoaded();
+    bookmark_model_ = BookmarkModelFactory::GetForProfile(testing_profile);
+    ui_test_utils::WaitForBookmarkModelToLoad(bookmark_model_);
+    ASSERT_TRUE(bookmark_model_);
     // Get the BookmarkModel from LastUsedProfile, this is the same way that
     // how the BookmarkModelSQLHandler gets the BookmarkModel.
     Profile* profile = ProfileManager::GetLastUsedProfile();
     ASSERT_TRUE(profile);
-    bookmark_model_ = BookmarkModelFactory::GetForProfile(profile);
-    ASSERT_TRUE(bookmark_model_);
 
     // Create the directory for history database.
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
