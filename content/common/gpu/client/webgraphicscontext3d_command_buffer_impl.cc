@@ -577,7 +577,6 @@ void WebGraphicsContext3DCommandBufferImpl::reshape(int width, int height) {
   gl_->ResizeCHROMIUM(width, height);
 }
 
-#ifdef FLIP_FRAMEBUFFER_VERTICALLY
 void WebGraphicsContext3DCommandBufferImpl::FlipVertically(
     uint8* framebuffer,
     unsigned int width,
@@ -600,7 +599,6 @@ void WebGraphicsContext3DCommandBufferImpl::FlipVertically(
     memcpy(row_a, scanline, row_bytes);
   }
 }
-#endif
 
 bool WebGraphicsContext3DCommandBufferImpl::readBackFramebuffer(
     unsigned char* pixels,
@@ -637,11 +635,9 @@ bool WebGraphicsContext3DCommandBufferImpl::readBackFramebuffer(
     gl_->BindFramebuffer(GL_FRAMEBUFFER, bound_fbo_);
   }
 
-#ifdef FLIP_FRAMEBUFFER_VERTICALLY
   if (pixels) {
     FlipVertically(pixels, width, height);
   }
-#endif
 
   return true;
 }

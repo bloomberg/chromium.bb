@@ -68,9 +68,7 @@ WebGraphicsContext3DInProcessImpl::WebGraphicsContext3DInProcessImpl(
       multisample_color_buffer_(0),
       bound_fbo_(0),
       bound_texture_(0),
-#ifdef FLIP_FRAMEBUFFER_VERTICALLY
       scanline_(0),
-#endif
       gl_context_(context),
       gl_surface_(surface),
       fragment_compiler_(0),
@@ -103,10 +101,8 @@ WebGraphicsContext3DInProcessImpl::~WebGraphicsContext3DInProcessImpl() {
       glDeleteRenderbuffersEXT(1, &depth_stencil_buffer_);
   }
   glDeleteTextures(1, &texture_);
-#ifdef FLIP_FRAMEBUFFER_VERTICALLY
   if (scanline_)
     delete[] scanline_;
-#endif
   glDeleteFramebuffersEXT(1, &fbo_);
 
   gl_context_->ReleaseCurrent(gl_surface_.get());
@@ -390,13 +386,11 @@ void WebGraphicsContext3DInProcessImpl::reshape(int width, int height) {
   if (must_restore_fbo)
     glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, bound_fbo_);
 
-#ifdef FLIP_FRAMEBUFFER_VERTICALLY
   if (scanline_) {
     delete[] scanline_;
     scanline_ = 0;
   }
   scanline_ = new unsigned char[width * 4];
-#endif  // FLIP_FRAMEBUFFER_VERTICALLY
 }
 
 bool WebGraphicsContext3DInProcessImpl::AllocateOffscreenFrameBuffer(
@@ -623,7 +617,6 @@ void WebGraphicsContext3DInProcessImpl::ClearRenderTarget() {
     glDisable(GL_DITHER);
 }
 
-#ifdef FLIP_FRAMEBUFFER_VERTICALLY
 void WebGraphicsContext3DInProcessImpl::FlipVertically(
     unsigned char* framebuffer, unsigned int width, unsigned int height) {
   unsigned char* scanline = scanline_;
@@ -643,7 +636,6 @@ void WebGraphicsContext3DInProcessImpl::FlipVertically(
     memcpy(row_a, scanline, row_bytes);
   }
 }
-#endif
 
 bool WebGraphicsContext3DInProcessImpl::readBackFramebuffer(
     unsigned char* pixels, size_t bufferSize, WebGLId framebuffer,
@@ -696,10 +688,8 @@ bool WebGraphicsContext3DInProcessImpl::readBackFramebuffer(
 
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, bound_fbo_);
 
-#ifdef FLIP_FRAMEBUFFER_VERTICALLY
   if (pixels)
     FlipVertically(pixels, width, height);
-#endif
 
   return true;
 }

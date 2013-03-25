@@ -16,10 +16,6 @@
 #include "ui/gfx/native_widget_types.h"
 #include "webkit/gpu/webkit_gpu_export.h"
 
-#if defined(USE_SKIA)
-#define FLIP_FRAMEBUFFER_VERTICALLY
-#endif
-
 namespace gpu {
 namespace gles2 {
 class GLES2Implementation;
@@ -557,12 +553,10 @@ class WEBKIT_GPU_EXPORT WebGraphicsContext3DInProcessCommandBufferImpl
   // Errors raised by synthesizeGLError().
   std::vector<WGC3Denum> synthetic_errors_;
 
-#ifdef FLIP_FRAMEBUFFER_VERTICALLY
   std::vector<uint8> scanline_;
   void FlipVertically(uint8* framebuffer,
                       unsigned int width,
                       unsigned int height);
-#endif
 };
 
 }  // namespace gpu

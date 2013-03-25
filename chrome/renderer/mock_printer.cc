@@ -15,6 +15,10 @@
 #include "printing/units.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_MACOSX)
+#include "printing/pdf_metafile_cg_mac.h"
+#endif
+
 namespace {
 
 void UpdateMargins(int margins_type, int dpi, PrintMsg_Print_Params* params) {

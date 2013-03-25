@@ -182,15 +182,11 @@ base::DictionaryValue* GpuInfoAsDictionaryValue() {
 }
 
 // Determine if accelerated-2d-canvas is supported, which depends on whether
-// lose_context could happen and whether skia is the backend.
+// lose_context could happen.
 bool SupportsAccelerated2dCanvas() {
   if (GpuDataManagerImpl::GetInstance()->GetGPUInfo().can_lose_context)
     return false;
-#if defined(USE_SKIA)
   return true;
-#else
-  return false;
-#endif
 }
 
 base::Value* GetFeatureStatus() {
@@ -595,11 +591,7 @@ base::Value* GpuMessageHandler::OnRequestClientInfo(
                   base::SysInfo::OperatingSystemName() + " " +
                   base::SysInfo::OperatingSystemVersion());
   dict->SetString("angle_revision", base::UintToString(BUILD_REVISION));
-#if defined(USE_SKIA)
   dict->SetString("graphics_backend", "Skia");
-#else
-  dict->SetString("graphics_backend", "Core Graphics");
-#endif
   dict->SetString("blacklist_version",
       GpuDataManagerImpl::GetInstance()->GetBlacklistVersion());
 

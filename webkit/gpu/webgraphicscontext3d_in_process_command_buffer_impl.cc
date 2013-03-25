@@ -722,7 +722,6 @@ void WebGraphicsContext3DInProcessCommandBufferImpl::deleteCompositorTexture(
   context_->DeleteParentTexture(parent_texture);
 }
 
-#ifdef FLIP_FRAMEBUFFER_VERTICALLY
 void WebGraphicsContext3DInProcessCommandBufferImpl::FlipVertically(
     uint8* framebuffer,
     unsigned int width,
@@ -745,7 +744,6 @@ void WebGraphicsContext3DInProcessCommandBufferImpl::FlipVertically(
     memcpy(row_a, scanline, row_bytes);
   }
 }
-#endif
 
 bool WebGraphicsContext3DInProcessCommandBufferImpl::readBackFramebuffer(
     unsigned char* pixels,
@@ -782,11 +780,9 @@ bool WebGraphicsContext3DInProcessCommandBufferImpl::readBackFramebuffer(
     gl_->BindFramebuffer(GL_FRAMEBUFFER, bound_fbo_);
   }
 
-#ifdef FLIP_FRAMEBUFFER_VERTICALLY
   if (pixels) {
     FlipVertically(pixels, width, height);
   }
-#endif
 
   return true;
 }

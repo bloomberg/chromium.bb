@@ -20,10 +20,6 @@
 #include "ui/gl/gpu_preference.h"
 #include "ui/gfx/native_widget_types.h"
 
-#if defined(USE_SKIA)
-#define FLIP_FRAMEBUFFER_VERTICALLY
-#endif
-
 namespace gpu {
 
 class TransferBuffer;
@@ -752,12 +748,10 @@ class WebGraphicsContext3DCommandBufferImpl
 
   base::WeakPtrFactory<WebGraphicsContext3DCommandBufferImpl> weak_ptr_factory_;
 
-#ifdef FLIP_FRAMEBUFFER_VERTICALLY
   std::vector<uint8> scanline_;
   void FlipVertically(uint8* framebuffer,
                       unsigned int width,
                       unsigned int height);
-#endif
 
   bool initialized_;
   WebGraphicsContext3DCommandBufferImpl* parent_;
