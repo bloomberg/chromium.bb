@@ -889,6 +889,11 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestCloseTabWithPermissionInfobar) {
 IN_PROC_BROWSER_TEST_F(
     NotificationsTest,
     TestNavigateAwayWithPermissionInfobar) {
+#if defined(OS_MACOSX)
+  // TODO(kbr): re-enable: http://crbug.com/222296
+  if (base::mac::IsOSMountainLionOrLater())
+    return;
+#endif
   // Test navigating away when an infobar is present,
   // then trying to create a notification from the same page.
   ui_test_utils::NavigateToURLWithDisposition(
@@ -907,6 +912,11 @@ IN_PROC_BROWSER_TEST_F(
 }
 
 IN_PROC_BROWSER_TEST_F(NotificationsTest, TestCrashRendererNotificationRemain) {
+#if defined(OS_MACOSX)
+  // TODO(kbr): re-enable: http://crbug.com/222296
+  if (base::mac::IsOSMountainLionOrLater())
+    return;
+#endif
   // Test crashing renderer does not close or crash notification.
   AllowAllOrigins();
   ui_test_utils::NavigateToURLWithDisposition(
@@ -923,6 +933,11 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestCrashRendererNotificationRemain) {
 }
 
 IN_PROC_BROWSER_TEST_F(NotificationsTest, TestNotificationReplacement) {
+#if defined(OS_MACOSX)
+  // TODO(kbr): re-enable: http://crbug.com/222296
+  if (base::mac::IsOSMountainLionOrLater())
+    return;
+#endif
   // Test that we can replace a notification using the replaceId.
   AllowAllOrigins();
 
