@@ -40,6 +40,12 @@ class ManagedModeNavigationObserver
   // observer state after adding the URLs.
   void AddSavedURLsToWhitelistAndClearState();
 
+  // Returns the elevation state for the corresponding WebContents.
+  bool is_elevated() const;
+
+  // Set the elevation state for the corresponding WebContents.
+  void set_elevated(bool is_elevated);
+
  private:
   // An observer can be in one of the following states:
   // - RECORDING_URLS_BEFORE_PREVIEW: This is the initial state when the user
@@ -87,14 +93,6 @@ class ManagedModeNavigationObserver
   virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) OVERRIDE;
-  virtual void DidStartProvisionalLoadForFrame(
-      int64 frame_id,
-      int64 parent_frame_id,
-      bool is_main_frame,
-      const GURL& validated_url,
-      bool is_error_page,
-      bool is_iframe_srcdoc,
-      content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void ProvisionalChangeToMainFrameUrl(
       const GURL& url,
       content::RenderViewHost* render_view_host) OVERRIDE;
@@ -105,6 +103,10 @@ class ManagedModeNavigationObserver
       content::PageTransition transition_type,
       content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void DidGetUserGesture() OVERRIDE;
+
+  // Returns whether the user would stay in elevated state if he visits this
+  // URL.
+  bool ShouldStayElevatedForURL(const GURL& url);
 
   // Owned by the profile, so outlives us.
   ManagedUserService* managed_user_service_;
@@ -125,6 +127,10 @@ class ManagedModeNavigationObserver
   ObserverState state_;
   std::set<GURL> navigated_urls_;
   GURL last_url_;
+
+  // The elevation state corresponding to the current WebContents.
+  // Will be set to true for non-managed users.
+  bool is_elevated_;
 
   int last_allowed_page_;
 

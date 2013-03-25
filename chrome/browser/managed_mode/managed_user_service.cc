@@ -9,6 +9,7 @@
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/managed_mode/managed_mode_navigation_observer.h"
 #include "chrome/browser/managed_mode/managed_mode_site_list.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
@@ -103,18 +104,35 @@ bool ManagedUserService::IsElevated() const {
   return is_elevated_;
 }
 
+bool ManagedUserService::IsElevatedForWebContents(
+    const content::WebContents* web_contents) const {
+  const ManagedModeNavigationObserver* observer =
+      ManagedModeNavigationObserver::FromWebContents(web_contents);
+  return observer->is_elevated();
+}
+
+bool ManagedUserService::IsPassphraseEmpty() const {
+  PrefService* pref_service = profile_->GetPrefs();
+  return pref_service->GetString(prefs::kManagedModeLocalPassphrase).empty();
+}
+
 bool ManagedUserService::CanSkipPassphraseDialog() {
   // If the profile is already elevated or there is no passphrase set, no
   // authentication is needed.
-  PrefService* pref_service = profile_->GetPrefs();
+  return IsElevated() || IsPassphraseEmpty();
+}
+
+bool ManagedUserService::CanSkipPassphraseDialog(
+    const content::WebContents* web_contents) const {
   return IsElevated() ||
-      pref_service->GetString(prefs::kManagedModeLocalPassphrase).empty();
+      IsElevatedForWebContents(web_contents) ||
+      IsPassphraseEmpty();
 }
 
 void ManagedUserService::RequestAuthorization(
     content::WebContents* web_contents,
     const PassphraseCheckedCallback& callback) {
-  if (CanSkipPassphraseDialog()) {
+  if (CanSkipPassphraseDialog(web_contents)) {
     callback.Run(true);
     return;
   }
@@ -374,6 +392,8 @@ void ManagedUserService::SetManualBehaviorForURLs(const std::vector<GURL>& urls,
   UpdateManualURLs();
 }
 
+// TODO(akuegel): Rename to SetElevatedForTesting when all callers are changed
+// to set elevation on the ManagedModeNavigationObserver.
 void ManagedUserService::SetElevated(bool is_elevated) {
   is_elevated_ = is_elevated;
 }

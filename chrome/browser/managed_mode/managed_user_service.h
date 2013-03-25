@@ -43,7 +43,12 @@ class ManagedUserService : public ProfileKeyedService,
   virtual ~ManagedUserService();
 
   bool ProfileIsManaged() const;
+
+  // Deprecated. Use IsElevatedForWebContents() instead.
   bool IsElevated() const;
+
+  // Returns the elevation state for specific WebContents.
+  bool IsElevatedForWebContents(const content::WebContents* web_contents) const;
 
   static void RegisterUserPrefs(PrefRegistrySyncable* registry);
 
@@ -81,9 +86,13 @@ class ManagedUserService : public ProfileKeyedService,
   void SetManualBehaviorForURLs(const std::vector<GURL>& url,
                                 ManualBehavior behavior);
 
-  // Checks if the passphrase dialog can be skipped (the profile is already in
-  // elevated state or the passphrase is empty).
+  // Deprecated. Use the CanSkipPassphraseDialog() method which requires a
+  // WebContents parameter instead.
   bool CanSkipPassphraseDialog();
+
+  // Checks if the passphrase dialog can be skipped (the profile is already in
+  // elevated state for the given WebContents or the passphrase is empty).
+  bool CanSkipPassphraseDialog(const content::WebContents* web_contents) const;
 
   // Handles the request to authorize as the custodian of the managed user.
   void RequestAuthorization(content::WebContents* web_contents,
@@ -96,6 +105,7 @@ class ManagedUserService : public ProfileKeyedService,
       Browser* browser,
       const PassphraseCheckedCallback& callback);
 
+  // Set the elevation state for the profile.
   void SetElevated(bool is_elevated);
 
   // Add an elevation for a specific extension which allows the managed user to
@@ -175,6 +185,9 @@ class ManagedUserService : public ProfileKeyedService,
   // Updates the manual overrides for URLs in the URL filters when the
   // corresponding preference is changed.
   void UpdateManualURLs();
+
+  // Returns if the passphrase to authorize as the custodian is empty.
+  bool IsPassphraseEmpty() const;
 
   // Owns us via the ProfileKeyedService mechanism.
   Profile* profile_;

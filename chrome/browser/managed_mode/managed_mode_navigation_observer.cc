@@ -8,6 +8,7 @@
 #include "base/i18n/rtl.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
+#include "base/string_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -25,6 +26,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
@@ -263,10 +265,13 @@ ManagedModeNavigationObserver::ManagedModeNavigationObserver(
       preview_infobar_delegate_(NULL),
       got_user_gesture_(false),
       state_(RECORDING_URLS_BEFORE_PREVIEW),
+      is_elevated_(false),
       last_allowed_page_(-1) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   managed_user_service_ = ManagedUserServiceFactory::GetForProfile(profile);
+  if (!managed_user_service_->ProfileIsManaged())
+    is_elevated_ = true;
   url_filter_ = managed_user_service_->GetURLFilterForUIThread();
 }
 
@@ -341,6 +346,14 @@ void ManagedModeNavigationObserver::AddSavedURLsToWhitelistAndClearState() {
   ClearObserverState();
 }
 
+bool ManagedModeNavigationObserver::is_elevated() const {
+  return is_elevated_;
+}
+
+void ManagedModeNavigationObserver::set_elevated(bool is_elevated) {
+  is_elevated_ = is_elevated;
+}
+
 void ManagedModeNavigationObserver::AddURLToPatternList(const GURL& url) {
   navigated_urls_.insert(url);
   last_url_ = url;
@@ -353,6 +366,23 @@ void ManagedModeNavigationObserver::SetStateToRecordingAfterPreview() {
 bool ManagedModeNavigationObserver::CanTemporarilyNavigateHost(
     const GURL& url) {
   return last_url_.host() == url.host();
+}
+
+bool ManagedModeNavigationObserver::ShouldStayElevatedForURL(
+    const GURL& navigation_url) {
+  std::string url = navigation_url.spec();
+  // Handle chrome:// URLs specially.
+  if (navigation_url.host() == "chrome") {
+    // The path contains the actual host name, but starts with a "/". Remove
+    // the "/".
+    url = navigation_url.path().substr(1);
+  }
+
+  // Check if any of the special URLs is a prefix of |url|.
+  return StartsWithASCII(url, chrome::kChromeUIHistoryHost, false) ||
+         StartsWithASCII(url, chrome::kChromeUIExtensionsHost, false) ||
+         StartsWithASCII(url, chrome::kChromeUISettingsHost, false) ||
+         StartsWithASCII(url, extension_urls::kGalleryBrowsePrefix, false);
 }
 
 void ManagedModeNavigationObserver::ClearObserverState() {
@@ -387,6 +417,8 @@ void ManagedModeNavigationObserver::NavigateToPendingEntry(
 void ManagedModeNavigationObserver::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
+  if (!ShouldStayElevatedForURL(params.url))
+    is_elevated_ = false;
 
   content::RecordAction(UserMetricsAction("ManagedMode_MainFrameNavigation"));
 
@@ -430,21 +462,12 @@ void ManagedModeNavigationObserver::DidNavigateMainFrame(
   got_user_gesture_ = false;
 }
 
-void ManagedModeNavigationObserver::DidStartProvisionalLoadForFrame(
-    int64 frame_id,
-    int64 parent_frame_id,
-    bool is_main_frame,
-    const GURL& validated_url,
-    bool is_error_page,
-    bool is_iframe_srcdoc,
-    content::RenderViewHost* render_view_host) {
-  if (!is_main_frame)
-    return;
-}
-
 void ManagedModeNavigationObserver::ProvisionalChangeToMainFrameUrl(
     const GURL& url,
     content::RenderViewHost* render_view_host) {
+  if (!ShouldStayElevatedForURL(url))
+    is_elevated_ = false;
+
   // This function is the last one to be called before the resource throttle
   // shows the interstitial if the URL must be blocked.
   DVLOG(1) << "ProvisionalChangeToMainFrameURL " << url.spec();
