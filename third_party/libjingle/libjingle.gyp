@@ -11,7 +11,7 @@
     'libjingle_additional_deps%': [],
     'libjingle_peerconnection_additional_deps%': [],
     'libjingle_source%': "source",
-    'libpeer_target_type%': 'static_library',
+    'libpeer_target_type%': '<(component)',
   },
   'target_defaults': {
     'defines': [
@@ -609,8 +609,8 @@
     ['enable_webrtc==1', {
       'targets': [
         {
-          'target_name': 'libpeerconnection',
-          'type': '<(libpeer_target_type)',
+          'target_name': 'libjingle_webrtc',
+          'type': 'static_library',
           'all_dependent_settings': {
             'conditions': [
               ['"<(libpeer_target_type)"=="static_library"', {
@@ -703,14 +703,10 @@
             '<(libjingle_source)/talk/media/webrtc/webrtcpassthroughrender.cc',
             '<(libjingle_source)/talk/media/webrtc/webrtcvideocapturer.cc',
             '<(libjingle_source)/talk/media/webrtc/webrtcvideocapturer.h',
-            '<(libjingle_source)/talk/media/webrtc/webrtcvideoengine.cc',
-            '<(libjingle_source)/talk/media/webrtc/webrtcvideoengine.h',
             '<(libjingle_source)/talk/media/webrtc/webrtcvideoframe.cc',
             '<(libjingle_source)/talk/media/webrtc/webrtcvideoframe.h',
             '<(libjingle_source)/talk/media/webrtc/webrtcvie.h',
             '<(libjingle_source)/talk/media/webrtc/webrtcvoe.h',
-            '<(libjingle_source)/talk/media/webrtc/webrtcvoiceengine.cc',
-            '<(libjingle_source)/talk/media/webrtc/webrtcvoiceengine.h',
             '<(libjingle_source)/talk/session/media/audiomonitor.cc',
             '<(libjingle_source)/talk/session/media/audiomonitor.h',
             '<(libjingle_source)/talk/session/media/call.cc',
@@ -747,19 +743,6 @@
             '<(libjingle_source)/talk/session/tunnel/tunnelsessionclient.h',
           ],
           'conditions': [
-            ['"<(libpeer_target_type)"=="shared_library"', {
-              # Used to control symbol export/import.
-              'defines': [ 'LIBPEERCONNECTION_IMPLEMENTATION=1' ],
-            }],
-            ['OS=="win" and "<(libpeer_target_type)"=="shared_library"', {
-              'link_settings': {
-                'libraries': [
-                  '-lsecur32.lib',
-                  '-lcrypt32.lib',
-                  '-liphlpapi.lib',
-                ],
-              },
-            }],
             ['enabled_libjingle_device_manager==1', {
               'sources!': [
                 '<(libjingle_source)/talk/media/devices/dummydevicemanager.cc',
@@ -836,15 +819,47 @@
           ],
           'dependencies': [
             '<(DEPTH)/third_party/libsrtp/libsrtp.gyp:libsrtp',
+            '<(DEPTH)/third_party/webrtc/modules/modules.gyp:media_file',
             '<(DEPTH)/third_party/webrtc/modules/modules.gyp:video_capture_module',
             '<(DEPTH)/third_party/webrtc/modules/modules.gyp:video_render_module',
+            'libjingle',
+          ],
+        },  # target libpeerconnection
+        {
+          'target_name': 'libpeerconnection',
+          'type': '<(libpeer_target_type)',
+          'sources': [
+            '<(libjingle_source)/talk/media/webrtc/webrtcvideoengine.cc',
+            '<(libjingle_source)/talk/media/webrtc/webrtcvideoengine.h',
+            '<(libjingle_source)/talk/media/webrtc/webrtcvoiceengine.cc',
+            '<(libjingle_source)/talk/media/webrtc/webrtcvoiceengine.h',
+          ],
+          'dependencies': [
             '<(DEPTH)/third_party/webrtc/system_wrappers/source/system_wrappers.gyp:system_wrappers',
             '<(DEPTH)/third_party/webrtc/video_engine/video_engine.gyp:video_engine_core',
             '<(DEPTH)/third_party/webrtc/voice_engine/voice_engine.gyp:voice_engine_core',
             '<@(libjingle_peerconnection_additional_deps)',
-            'libjingle',
+            'libjingle_webrtc',
           ],
-        },  # target libpeerconnection
+          'export_dependent_settings': [
+            '<(DEPTH)/third_party/libjingle/libjingle.gyp:libjingle_webrtc',
+          ],
+          'conditions': [
+            ['"<(libpeer_target_type)"=="shared_library"', {
+              # Used to control symbol export/import.
+              'defines': [ 'LIBPEERCONNECTION_IMPLEMENTATION=1' ],
+            }],
+            ['OS=="win" and "<(libpeer_target_type)"=="shared_library"', {
+              'link_settings': {
+                'libraries': [
+                  '-lsecur32.lib',
+                  '-lcrypt32.lib',
+                  '-liphlpapi.lib',
+                ],
+              },
+            }],
+          ],
+        },  # target peerconnection
       ],
     }],
   ],

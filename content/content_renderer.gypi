@@ -341,6 +341,7 @@
     }],
     ['enable_webrtc==1', {
       'dependencies': [
+        '../third_party/libjingle/libjingle.gyp:libjingle_webrtc',
         '../third_party/libjingle/libjingle.gyp:libpeerconnection',
         '../third_party/webrtc/modules/modules.gyp:audio_device',
         '<(DEPTH)/crypto/crypto.gyp:crypto',

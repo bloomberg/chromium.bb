@@ -2949,6 +2949,7 @@
         }],
         ['enable_webrtc==1', {
           'dependencies': [
+            '../third_party/libjingle/libjingle.gyp:libjingle_webrtc',
             '../third_party/libjingle/libjingle.gyp:libpeerconnection',
           ],
         }],
