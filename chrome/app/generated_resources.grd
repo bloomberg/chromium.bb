@@ -482,6 +482,9 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
       <message name="IDS_HISTORY_NO_RESPONSE_FROM_SERVER" desc="The notification at the top of the history page indicating that there was no response received from the history server.">
         Showing history from this device. <ph name="BEGIN_LINK">&lt;a href="http://support.google.com/chrome/bin/answer.py?answer=95589"&amp;hl=[GRITLANGCODE]"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
       </message>
+      <message name="IDS_HISTORY_UNKNOWN_DEVICE" desc="On the dropdown menu for a history entry, the text that is shown instead of a device name, when the device name is not known.">
+        Unknown device
+      </message>
 
       <!-- Generic terms -->
       <message name="IDS_OK" desc="Used for OK on buttons">
