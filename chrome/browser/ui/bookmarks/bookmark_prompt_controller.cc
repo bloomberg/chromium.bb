@@ -90,10 +90,10 @@ const ExperimentDateRange* GetExperimentDateRange() {
       return &kCanaryRange;
     }
     case chrome::VersionInfo::CHANNEL_STABLE: {
-      // Experiment date range for M25 Stable.
+      // Experiment date range for M26 Stable.
       static const ExperimentDateRange kStableRange = {
-        { 2013, 2, 0, 25, 0, 0, 0, 0 },  // Feb 25, 2013
-        { 2013, 3, 0, 28, 0, 0, 0, 0 },  // Mar 28, 2013
+        { 2013, 4, 0, 5, 0, 0, 0, 0 },  // Apr 5, 2013
+        { 2013, 5, 0, 5, 0, 0, 0, 0 },  // May 5, 2013
       };
       return &kStableRange;
     }
