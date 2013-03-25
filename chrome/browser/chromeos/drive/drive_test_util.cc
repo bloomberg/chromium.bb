@@ -37,31 +37,6 @@ bool CacheStatesEqual(const DriveCacheEntry& a, const DriveCacheEntry& b) {
           a.is_persistent() == b.is_persistent());
 }
 
-void CopyResultsFromReadDirectoryCallback(
-    DriveFileError* out_error,
-    scoped_ptr<DriveEntryProtoVector>* out_entries,
-    DriveFileError error,
-    scoped_ptr<DriveEntryProtoVector> entries) {
-  DCHECK(out_error);
-  DCHECK(out_entries);
-
-  *out_error = error;
-  *out_entries = entries.Pass();
-}
-
-void CopyResultsFromReadDirectoryByPathCallback(
-    DriveFileError* out_error,
-    scoped_ptr<DriveEntryProtoVector>* out_entries,
-    DriveFileError error,
-    bool /* hide_hosted_documents */,
-    scoped_ptr<DriveEntryProtoVector> entries) {
-  DCHECK(out_error);
-  DCHECK(out_entries);
-
-  *out_error = error;
-  *out_entries = entries.Pass();
-}
-
 void CopyResultFromInitializeCacheCallback(bool* out_success,
                                            bool success) {
   DCHECK(out_success);

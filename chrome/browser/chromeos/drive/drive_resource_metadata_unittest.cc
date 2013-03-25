@@ -133,8 +133,7 @@ class DriveResourceMetadataTest : public testing::Test {
     scoped_ptr<DriveEntryProtoVector> entries;
     resource_metadata_->ReadDirectoryByPath(
         directory_path,
-        base::Bind(&test_util::CopyResultsFromReadDirectoryCallback,
-                   &error, &entries));
+        google_apis::test_util::CreateCopyResultCallback(&error, &entries));
     google_apis::test_util::RunBlockingPoolTask();
     EXPECT_TRUE(error == DRIVE_FILE_OK || !entries);
     return entries.Pass();
@@ -424,8 +423,7 @@ TEST_F(DriveResourceMetadataTest, ReadDirectoryByPath) {
   scoped_ptr<DriveEntryProtoVector> entries;
   resource_metadata_->ReadDirectoryByPath(
       base::FilePath::FromUTF8Unsafe("drive/dir1"),
-      base::Bind(&test_util::CopyResultsFromReadDirectoryCallback,
-                 &error, &entries));
+      google_apis::test_util::CreateCopyResultCallback(&error, &entries));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_OK, error);
   ASSERT_TRUE(entries.get());
@@ -441,8 +439,7 @@ TEST_F(DriveResourceMetadataTest, ReadDirectoryByPath) {
   entries.reset();
   resource_metadata_->ReadDirectoryByPath(
       base::FilePath::FromUTF8Unsafe("drive/non_existing"),
-      base::Bind(&test_util::CopyResultsFromReadDirectoryCallback,
-                 &error, &entries));
+      google_apis::test_util::CreateCopyResultCallback(&error, &entries));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_ERROR_NOT_FOUND, error);
   EXPECT_FALSE(entries.get());
@@ -452,8 +449,7 @@ TEST_F(DriveResourceMetadataTest, ReadDirectoryByPath) {
   entries.reset();
   resource_metadata_->ReadDirectoryByPath(
       base::FilePath::FromUTF8Unsafe("drive/dir1/file4"),
-      base::Bind(&test_util::CopyResultsFromReadDirectoryCallback,
-                 &error, &entries));
+      google_apis::test_util::CreateCopyResultCallback(&error, &entries));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_ERROR_NOT_A_DIRECTORY, error);
   EXPECT_FALSE(entries.get());
@@ -869,8 +865,7 @@ TEST_F(DriveResourceMetadataTest, RefreshDirectory_EmtpyMap) {
   // Read the directory.
   DriveFileError error = DRIVE_FILE_ERROR_FAILED;
   scoped_ptr<DriveEntryProtoVector> entries;
-  entries = ReadDirectoryByPathSync(
-      base::FilePath(kDirectoryPath));
+  entries = ReadDirectoryByPathSync(base::FilePath(kDirectoryPath));
   ASSERT_TRUE(entries.get());
   // "file4", "file5", "dir3" should exist in drive/dir1.
   ASSERT_EQ(3U, entries->size());
@@ -906,8 +901,7 @@ TEST_F(DriveResourceMetadataTest, RefreshDirectory_EmtpyMap) {
             dir1_proto->directory_specific_info().changestamp());
 
   // Read the directory again.
-  entries = ReadDirectoryByPathSync(
-      base::FilePath(kDirectoryPath));
+  entries = ReadDirectoryByPathSync(base::FilePath(kDirectoryPath));
   ASSERT_TRUE(entries.get());
   // All entries ("file4", "file5", "dir3") should be gone now, as
   // RefreshDirectory() was called with an empty map.

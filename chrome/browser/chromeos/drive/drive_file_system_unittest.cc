@@ -344,11 +344,12 @@ class DriveFileSystemTest : public testing::Test {
   scoped_ptr<DriveEntryProtoVector> ReadDirectoryByPathSync(
       const base::FilePath& file_path) {
     DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+    bool unused_hide_hosted_documents;
     scoped_ptr<DriveEntryProtoVector> entries;
     file_system_->ReadDirectoryByPath(
         file_path,
-        base::Bind(&test_util::CopyResultsFromReadDirectoryByPathCallback,
-                   &error, &entries));
+        google_apis::test_util::CreateCopyResultCallback(
+            &error, &unused_hide_hosted_documents, &entries));
     google_apis::test_util::RunBlockingPoolTask();
 
     return entries.Pass();
