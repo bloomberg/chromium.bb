@@ -118,6 +118,13 @@ name=http://crbug.com/107567 intentional mismatch in _DebugHeapDelete, no frame
 *!std::numpunct<*>::_Tidy
 *!std::numpunct<*>::~numpunct<*>
 
+# TODO(rbultje): Investigate if code fix is required instead. 
+WARNING
+name=http://crbug.com/223255 - prefetches in vp8
+instruction=prefetch*
+ffmpegsumo.dll!ff_prefetch_mmxext
+ffmpegsumo.dll!vp8_decode_mb_row_no_filter
+
 ############################
 # Intentional errors in Chromium tests (ToolsSanityTests)
 LEAK
