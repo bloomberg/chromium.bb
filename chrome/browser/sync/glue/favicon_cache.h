@@ -100,6 +100,7 @@ class FaviconCache : public syncer::SyncableService,
 
   // Consume Session sync favicon data. Will not overwrite existing favicons.
   // If |icon_bytes| is empty, only updates the page->favicon url mapping.
+  // Safe to call within a transaction.
   void OnReceivedSyncFavicon(const GURL& page_url,
                              const GURL& icon_url,
                              const std::string& icon_bytes,

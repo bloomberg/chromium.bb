@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sync/glue/favicon_cache.h"
 
+#include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
@@ -484,7 +485,15 @@ void FaviconCache::OnReceivedSyncFavicon(const GURL& page_url,
   favicon_info->bitmap_data[SIZE_16].pixel_size.set_width(16);
   favicon_info->bitmap_data[SIZE_16].pixel_size.set_height(16);
   UpdateFaviconVisitTime(icon_url, syncer::ProtoTimeToTime(visit_time_ms));
-  UpdateSyncState(icon_url, SYNC_BOTH, syncer::SyncChange::ACTION_ADD);
+
+  // Post a task, as this can be called while still in a transaction.
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&FaviconCache::UpdateSyncState,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 icon_url,
+                 SYNC_BOTH,
+                 syncer::SyncChange::ACTION_ADD));
 }
 
 void FaviconCache::SetLegacyDelegate(FaviconCacheObserver* observer) {

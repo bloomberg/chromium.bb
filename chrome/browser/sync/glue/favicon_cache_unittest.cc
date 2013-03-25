@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sync/glue/favicon_cache.h"
 
+#include "base/message_loop.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -287,6 +288,7 @@ class SyncFaviconCacheTest : public testing::Test {
   void OnCustomFaviconDataAvailable(const TestFaviconData& test_data);
 
  private:
+  MessageLoopForUI message_loop_;
   FaviconCache cache_;
 
   // Our dummy ChangeProcessor used to inspect changes pushed to Sync.
