@@ -15,6 +15,7 @@
 #include "chrome/browser/google_apis/auth_service.h"
 #include "chrome/browser/google_apis/drive_api_operations.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
+#include "chrome/browser/google_apis/gdata_wapi_operations.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/google_apis/operation_runner.h"
 #include "chrome/browser/google_apis/time_util.h"
@@ -194,11 +195,13 @@ const char kDriveApiRootDirectoryResourceId[] = "root";
 DriveAPIService::DriveAPIService(
     net::URLRequestContextGetter* url_request_context_getter,
     const GURL& base_url,
+    const GURL& wapi_base_url,
     const std::string& custom_user_agent)
     : url_request_context_getter_(url_request_context_getter),
       profile_(NULL),
       runner_(NULL),
       url_generator_(base_url),
+      wapi_url_generator_(wapi_base_url),
       custom_user_agent_(custom_user_agent) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
@@ -575,15 +578,24 @@ void DriveAPIService::GetUploadStatus(
 
 void DriveAPIService::AuthorizeApp(
     const std::string& resource_id,
-    const std::string& app_ids,
+    const std::string& app_id,
     const AuthorizeAppCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  // TODO(hidehiko): Unfortunately, there is no support of authorizing
+  // Unfortunately, there is no support of authorizing
   // third party application on Drive API v2.
   // As a temporary work around, we'll use the GData WAPI's api here.
-  NOTREACHED();
+  // TODO(hidehiko): Get rid of this hack, and use the Drive API when it is
+  // supported.
+  runner_->StartOperationWithRetry(
+      new AuthorizeAppOperation(
+          operation_registry(),
+          url_request_context_getter_,
+          wapi_url_generator_,
+          callback,
+          resource_id,
+          app_id));
 }
 
 bool DriveAPIService::HasAccessToken() const {

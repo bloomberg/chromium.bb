@@ -118,6 +118,7 @@ DriveSystemService::DriveSystemService(
     drive_service_.reset(new google_apis::DriveAPIService(
         g_browser_process->system_request_context(),
         GURL(google_apis::DriveApiUrlGenerator::kBaseUrlForProduction),
+        GURL(google_apis::GDataWapiUrlGenerator::kBaseUrlForProduction),
         GetDriveUserAgent()));
   } else {
     drive_service_.reset(new google_apis::GDataWapiService(
