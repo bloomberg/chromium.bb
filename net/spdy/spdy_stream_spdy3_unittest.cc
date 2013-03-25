@@ -8,6 +8,7 @@
 #include "base/string_piece.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_log_unittest.h"
+#include "net/base/request_priority.h"
 #include "net/spdy/buffered_spdy_framer.h"
 #include "net/spdy/spdy_stream.h"
 #include "net/spdy/spdy_http_utils.h"
@@ -230,9 +231,14 @@ TEST_F(SpdyStreamSpdy3Test, PushedStream) {
   BoundNetLog net_log;
 
   // Conjure up a stream.
-  scoped_refptr<SpdyStream> stream = new SpdyStream(spdy_session,
-                                                    true,
-                                                    net_log);
+  scoped_refptr<SpdyStream> stream =
+      new SpdyStream(spdy_session,
+                     std::string(),
+                     DEFAULT_PRIORITY,
+                     kSpdyStreamInitialWindowSize,
+                     kSpdyStreamInitialWindowSize,
+                     true,
+                     net_log);
   stream->set_stream_id(2);
   EXPECT_FALSE(stream->response_received());
   EXPECT_FALSE(stream->HasUrl());

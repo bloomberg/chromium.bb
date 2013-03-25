@@ -10,6 +10,7 @@
 #include "net/base/request_priority.h"
 #include "net/spdy/spdy_framer.h"
 #include "net/spdy/spdy_header_block.h"
+#include "net/spdy/spdy_protocol.h"
 
 namespace net {
 
@@ -47,6 +48,10 @@ NET_EXPORT_PRIVATE bool ShouldShowHttpHeaderValue(
 
 NET_EXPORT_PRIVATE SpdyPriority ConvertRequestPriorityToSpdyPriority(
     RequestPriority priority,
+    int protocol_version);
+
+NET_EXPORT_PRIVATE RequestPriority ConvertSpdyPriorityToRequestPriority(
+    SpdyPriority priority,
     int protocol_version);
 
 }  // namespace net

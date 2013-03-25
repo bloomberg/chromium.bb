@@ -556,13 +556,10 @@ int SpdySession::CreateStream(const SpdyStreamRequest& request,
   }
 
   const std::string& path = request.url().PathForRequest();
-
-  *stream = new SpdyStream(this, false, request.net_log());
-
-  (*stream)->set_priority(request.priority());
-  (*stream)->set_path(path);
-  (*stream)->set_send_window_size(stream_initial_send_window_size_);
-  (*stream)->set_recv_window_size(stream_initial_recv_window_size_);
+  *stream = new SpdyStream(this, path, request.priority(),
+                           stream_initial_send_window_size_,
+                           stream_initial_recv_window_size_,
+                           false, request.net_log());
   created_streams_.insert(*stream);
 
   UMA_HISTOGRAM_CUSTOM_COUNTS(
@@ -933,7 +930,7 @@ int SpdySession::DoRead() {
   return connection_->socket()->Read(
       read_buffer_.get(),
       kReadBufferSize,
-      base::Bind(&SpdySession::OnReadComplete, base::Unretained(this)));
+      base::Bind(&SpdySession::OnReadComplete, weak_factory_.GetWeakPtr()));
 }
 
 int SpdySession::DoReadComplete(int result) {
@@ -1079,7 +1076,7 @@ void SpdySession::WriteSocket() {
     int rv = connection_->socket()->Write(
         in_flight_write_.buffer(),
         in_flight_write_.buffer()->BytesRemaining(),
-        base::Bind(&SpdySession::OnWriteComplete, base::Unretained(this)));
+        base::Bind(&SpdySession::OnWriteComplete, weak_factory_.GetWeakPtr()));
     if (rv == net::ERR_IO_PENDING)
       break;
 
@@ -1554,12 +1551,14 @@ void SpdySession::OnSynStream(SpdyStreamId stream_id,
     return;
   }
 
-  scoped_refptr<SpdyStream> stream(new SpdyStream(this, true, net_log_));
+  RequestPriority request_priority =
+      ConvertSpdyPriorityToRequestPriority(priority, GetProtocolVersion());
+  scoped_refptr<SpdyStream> stream(
+      new SpdyStream(this, gurl.PathForRequest(), request_priority,
+                     stream_initial_send_window_size_,
+                     stream_initial_recv_window_size_,
+                     true, net_log_));
   stream->set_stream_id(stream_id);
-
-  stream->set_path(gurl.PathForRequest());
-  stream->set_send_window_size(stream_initial_send_window_size_);
-  stream->set_recv_window_size(stream_initial_recv_window_size_);
 
   DeleteExpiredPushedStreams();
   unclaimed_pushed_streams_[url] =

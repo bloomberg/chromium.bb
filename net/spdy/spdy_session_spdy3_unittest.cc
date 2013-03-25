@@ -15,6 +15,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_log_unittest.h"
+#include "net/base/request_priority.h"
 #include "net/base/test_data_directory.h"
 #include "net/base/test_data_stream.h"
 #include "net/spdy/spdy_http_utils.h"
@@ -317,7 +318,10 @@ TEST_F(SpdySessionSpdy3Test, DeleteExpiredPushStreams) {
   (*request_headers)[":path"] = "/";
 
   scoped_refptr<SpdyStream> stream(
-      new SpdyStream(session, false, session->net_log_));
+      new SpdyStream(session, std::string(), DEFAULT_PRIORITY,
+                     kSpdyStreamInitialWindowSize,
+                     kSpdyStreamInitialWindowSize,
+                     false, session->net_log_));
   stream->set_spdy_headers(request_headers.Pass());
   session->ActivateStream(stream);
 

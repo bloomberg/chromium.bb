@@ -198,9 +198,6 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
     static SpdyIOBuffer* CreateIOBuffer(SpdyFrame* frame,
                                         RequestPriority priority,
                                         SpdyStream* spdy_stream);
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(SpdyIOBufferProducer);
   };
 
   // Create a new SpdySession.

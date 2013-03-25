@@ -147,6 +147,16 @@ SpdyPriority ConvertRequestPriorityToSpdyPriority(
   }
 }
 
+NET_EXPORT_PRIVATE RequestPriority ConvertSpdyPriorityToRequestPriority(
+    SpdyPriority priority,
+    int protocol_version) {
+  // Handle invalid values gracefully, and pick LOW to map 2 back
+  // to for SPDY/2.
+  SpdyPriority idle_cutoff = (protocol_version == 2) ? 3 : 5;
+  return (priority >= idle_cutoff) ?
+      IDLE : static_cast<RequestPriority>(HIGHEST - priority);
+}
+
 GURL GetUrlFromHeaderBlock(const SpdyHeaderBlock& headers,
                            int protocol_version,
                            bool pushed) {

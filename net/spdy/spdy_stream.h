@@ -12,6 +12,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/bandwidth_metrics.h"
 #include "net/base/io_buffer.h"
@@ -112,6 +113,10 @@ class NET_EXPORT_PRIVATE SpdyStream
 
   // SpdyStream constructor
   SpdyStream(SpdySession* session,
+             const std::string& path,
+             RequestPriority priority,
+             int32 initial_send_window_size,
+             int32 initial_recv_window_size,
              bool pushed,
              const BoundNetLog& net_log);
 
@@ -136,20 +141,12 @@ class NET_EXPORT_PRIVATE SpdyStream
 
   // For pushed streams, we track a path to identify them.
   const std::string& path() const { return path_; }
-  void set_path(const std::string& path) { path_ = path; }
 
   RequestPriority priority() const { return priority_; }
-  void set_priority(RequestPriority priority) { priority_ = priority; }
 
   int32 send_window_size() const { return send_window_size_; }
-  void set_send_window_size(int32 window_size) {
-    send_window_size_ = window_size;
-  }
 
   int32 recv_window_size() const { return recv_window_size_; }
-  void set_recv_window_size(int32 window_size) {
-    recv_window_size_ = window_size;
-  }
 
   bool send_stalled_by_flow_control() { return send_stalled_by_flow_control_; }
 
@@ -364,14 +361,16 @@ class NET_EXPORT_PRIVATE SpdyStream
   // this stream's receive window size to go negative.
   void DecreaseRecvWindowSize(int32 delta_window_size);
 
+  base::WeakPtrFactory<SpdyStream> weak_ptr_factory_;
+
   // There is a small period of time between when a server pushed stream is
   // first created, and the pushed data is replayed. Any data received during
   // this time should continue to be buffered.
   bool continue_buffering_data_;
 
   SpdyStreamId stream_id_;
-  std::string path_;
-  RequestPriority priority_;
+  const std::string path_;
+  const RequestPriority priority_;
   size_t slot_;
 
   // Flow control variables.

@@ -5,6 +5,7 @@
 #include "net/spdy/spdy_stream.h"
 
 #include "base/bind.h"
+#include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/stringprintf.h"
@@ -50,15 +51,21 @@ bool ContainsUpperAscii(const std::string& str) {
 }  // namespace
 
 SpdyStream::SpdyStream(SpdySession* session,
+                       const std::string& path,
+                       RequestPriority priority,
+                       int32 initial_send_window_size,
+                       int32 initial_recv_window_size,
                        bool pushed,
                        const BoundNetLog& net_log)
-    : continue_buffering_data_(true),
+    : weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      continue_buffering_data_(true),
       stream_id_(0),
-      priority_(HIGHEST),
+      path_(path),
+      priority_(priority),
       slot_(0),
       send_stalled_by_flow_control_(false),
-      send_window_size_(kSpdyStreamInitialWindowSize),
-      recv_window_size_(kSpdyStreamInitialWindowSize),
+      send_window_size_(initial_send_window_size),
+      recv_window_size_(initial_recv_window_size),
       unacked_recv_window_bytes_(0),
       pushed_(pushed),
       response_received_(false),
@@ -739,7 +746,7 @@ int SpdyStream::DoGetDomainBoundCert() {
       GetUrl().GetOrigin().spec(), requested_cert_types,
       &domain_bound_cert_type_, &domain_bound_private_key_, &domain_bound_cert_,
       base::Bind(&SpdyStream::OnGetDomainBoundCertComplete,
-                 base::Unretained(this)),
+                 weak_ptr_factory_.GetWeakPtr()),
       &domain_bound_cert_request_handle_);
   return rv;
 }
