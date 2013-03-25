@@ -19,14 +19,6 @@ FrameTracker::FrameTracker(DevToolsClient* client) : client_(client) {
 
 FrameTracker::~FrameTracker() {}
 
-Status FrameTracker::GetFrameForContextId(
-    int context_id, std::string* frame_id) {
-  if (context_to_frame_map_.count(context_id) == 0)
-    return Status(kUnknownError, "execution context does not have a frame");
-  *frame_id = context_to_frame_map_[context_id];
-  return Status(kOk);
-}
-
 Status FrameTracker::GetContextIdForFrame(
     const std::string& frame_id, int* context_id) {
   if (frame_to_context_map_.count(frame_id) == 0)
@@ -37,13 +29,12 @@ Status FrameTracker::GetContextIdForFrame(
 
 Status FrameTracker::OnConnected() {
   frame_to_context_map_.clear();
-  context_to_frame_map_.clear();
   // Enable runtime events to allow tracking execution context creation.
   base::DictionaryValue params;
   Status status = client_->SendCommand("Runtime.enable", params);
   if (status.IsError())
     return status;
-  return client_->SendCommand("DOM.getDocument", params);
+  return client_->SendCommand("Page.enable", params);
 }
 
 void FrameTracker::OnEvent(const std::string& method,
@@ -65,9 +56,9 @@ void FrameTracker::OnEvent(const std::string& method,
       return;
     }
     frame_to_context_map_.insert(std::make_pair(frame_id, context_id));
-    context_to_frame_map_.insert(std::make_pair(context_id, frame_id));
-  } else if (method == "DOM.documentUpdated") {
-    frame_to_context_map_.clear();
-    context_to_frame_map_.clear();
+  } else if (method == "Page.frameNavigated") {
+    const base::Value* unused_value;
+    if (!params.Get("frame.parentId", &unused_value))
+      frame_to_context_map_.clear();
   }
 }

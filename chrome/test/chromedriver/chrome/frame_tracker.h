@@ -37,7 +37,6 @@ class FrameTracker : public DevToolsEventListener {
  private:
   DevToolsClient* client_;
   std::map<std::string, int> frame_to_context_map_;
-  std::map<int, std::string> context_to_frame_map_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameTracker);
 };

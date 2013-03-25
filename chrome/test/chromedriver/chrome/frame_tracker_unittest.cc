@@ -27,26 +27,11 @@ TEST(FrameTracker, GetContextIdForFrame) {
   ASSERT_TRUE(tracker.GetContextIdForFrame("f", &context_id).IsOk());
   ASSERT_EQ(100, context_id);
 
-  tracker.OnEvent("DOM.documentUpdated", params);
+  base::DictionaryValue nav_params;
+  nav_params.SetString("frame.parentId", "1");
+  tracker.OnEvent("Page.frameNavigated", nav_params);
+  ASSERT_TRUE(tracker.GetContextIdForFrame("f", &context_id).IsOk());
+  nav_params.Clear();
+  tracker.OnEvent("Page.frameNavigated", nav_params);
   ASSERT_TRUE(tracker.GetContextIdForFrame("f", &context_id).IsError());
-}
-
-TEST(FrameTracker, GetFrameForContextId) {
-  StubDevToolsClient client;
-  FrameTracker tracker(&client);
-  std::string frame_id = "NONE";
-  ASSERT_TRUE(tracker.GetFrameForContextId(0, &frame_id).IsError());
-  ASSERT_EQ("NONE", frame_id);
-
-  const char context[] = "{\"id\":100,\"frameId\":\"f\"}";
-  base::DictionaryValue params;
-  params.Set("context", base::JSONReader::Read(context));
-  tracker.OnEvent("Runtime.executionContextCreated", params);
-  ASSERT_TRUE(tracker.GetFrameForContextId(0, &frame_id).IsError());
-  ASSERT_EQ("NONE", frame_id);
-  ASSERT_TRUE(tracker.GetFrameForContextId(100, &frame_id).IsOk());
-  ASSERT_EQ("f", frame_id);
-
-  tracker.OnEvent("DOM.documentUpdated", params);
-  ASSERT_TRUE(tracker.GetFrameForContextId(100, &frame_id).IsError());
 }
