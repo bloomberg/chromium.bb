@@ -15,7 +15,9 @@ import org.chromium.base.ChromiumActivity;
 import org.chromium.chrome.browser.DevToolsServer;
 import org.chromium.chrome.browser.TabBase;
 import org.chromium.content.app.LibraryLoader;
+import org.chromium.content.browser.ActivityContentVideoViewDelegate;
 import org.chromium.content.browser.AndroidBrowserProcess;
+import org.chromium.content.browser.ContentVideoView;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.DeviceUtils;
 import org.chromium.content.common.CommandLine;
@@ -58,6 +60,9 @@ public class ChromiumTestShellActivity extends ChromiumActivity {
         mWindow = new ActivityNativeWindow(this);
         mWindow.restoreInstanceState(savedInstanceState);
         mTabManager.setWindow(mWindow);
+
+        ContentVideoView.registerContentVideoViewContextDelegate(
+                new ActivityContentVideoViewDelegate(this));
 
         mDevToolsServer = new DevToolsServer(true, "chromium_testshell_devtools_remote");
         mDevToolsServer.setRemoteDebuggingEnabled(true);
