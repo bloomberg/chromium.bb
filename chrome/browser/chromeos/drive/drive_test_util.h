@@ -44,36 +44,6 @@ DriveCacheEntry ToCacheEntry(int cache_state);
 // Returns true if the cache state of the given two cache entries are equal.
 bool CacheStatesEqual(const DriveCacheEntry& a, const DriveCacheEntry& b);
 
-// Copies results from DriveFileSystem methods. Used to run asynchronous
-// functions that take GetAvailableSpaceCallback from tests.
-void CopyResultsFromGetAvailableSpaceCallback(DriveFileError* out_error,
-                                              int64* out_bytes_total,
-                                              int64* out_bytes_used,
-                                              DriveFileError error,
-                                              int64 bytes_total,
-                                              int64 bytes_used);
-
-// Copies results from SearchMetadataCallback.
-void CopyResultsFromSearchMetadataCallback(
-    DriveFileError* out_error,
-    scoped_ptr<MetadataSearchResultVector>* out_result,
-    DriveFileError error,
-    scoped_ptr<MetadataSearchResultVector> result);
-
-// Copies the results from DriveFileSystem methods and stops the message loop
-// of the current thread. Used to run asynchronous function that take
-// OpenFileCallback.
-void CopyResultsFromOpenFileCallbackAndQuit(DriveFileError* out_error,
-                                            base::FilePath* out_file_path,
-                                            DriveFileError error,
-                                            const base::FilePath& file_path);
-
-// Copies the results from DriveFileSystem methods and stops the message loop
-// of the current thread. Used to run asynchronous function that take
-// CloseFileCallback.
-void CopyResultsFromCloseFileCallbackAndQuit(DriveFileError* out_error,
-                                             DriveFileError error);
-
 // Loads a test json file as root ("/drive") element from a test file stored
 // under chrome/test/data/chromeos. Returns true on success.
 bool LoadChangeFeed(const std::string& relative_path,

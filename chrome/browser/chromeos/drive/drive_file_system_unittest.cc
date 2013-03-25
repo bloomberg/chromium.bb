@@ -2081,8 +2081,8 @@ TEST_F(DriveFileSystemTest, GetAvailableSpace) {
   int64 bytes_total;
   int64 bytes_used;
   file_system_->GetAvailableSpace(
-      base::Bind(&test_util::CopyResultsFromGetAvailableSpaceCallback,
-                 &error, &bytes_total, &bytes_used));
+      google_apis::test_util::CreateCopyResultCallback(
+          &error, &bytes_total, &bytes_used));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(GG_LONGLONG(6789012345), bytes_used);
   EXPECT_EQ(GG_LONGLONG(9876543210), bytes_total);
@@ -2131,9 +2131,8 @@ TEST_F(DriveFileSystemTest, OpenAndCloseFile) {
   base::FilePath file_path;
   file_system_->OpenFile(
       kFileInRoot,
-      base::Bind(&test_util::CopyResultsFromOpenFileCallbackAndQuit,
-                 &error, &file_path));
-  message_loop_.Run();
+      google_apis::test_util::CreateCopyResultCallback(&error, &file_path));
+  google_apis::test_util::RunBlockingPoolTask();
   const base::FilePath opened_file_path = file_path;
 
   // Verify that the file was properly opened.
@@ -2142,9 +2141,8 @@ TEST_F(DriveFileSystemTest, OpenAndCloseFile) {
   // Try to open the already opened file.
   file_system_->OpenFile(
       kFileInRoot,
-      base::Bind(&test_util::CopyResultsFromOpenFileCallbackAndQuit,
-                 &error, &file_path));
-  message_loop_.Run();
+      google_apis::test_util::CreateCopyResultCallback(&error, &file_path));
+  google_apis::test_util::RunBlockingPoolTask();
 
   // It must fail.
   EXPECT_EQ(DRIVE_FILE_ERROR_IN_USE, error);
@@ -2174,9 +2172,8 @@ TEST_F(DriveFileSystemTest, OpenAndCloseFile) {
   // Close kFileInRoot ("drive/File 1.txt").
   file_system_->CloseFile(
       kFileInRoot,
-      base::Bind(&test_util::CopyResultsFromCloseFileCallbackAndQuit,
-                 &error));
-  message_loop_.Run();
+      google_apis::test_util::CreateCopyResultCallback(&error));
+  google_apis::test_util::RunBlockingPoolTask();
 
   // Verify that the file was properly closed.
   EXPECT_EQ(DRIVE_FILE_OK, error);
@@ -2191,9 +2188,8 @@ TEST_F(DriveFileSystemTest, OpenAndCloseFile) {
   // Try to close the same file twice.
   file_system_->CloseFile(
       kFileInRoot,
-      base::Bind(&test_util::CopyResultsFromCloseFileCallbackAndQuit,
-                 &error));
-  message_loop_.Run();
+      google_apis::test_util::CreateCopyResultCallback(&error));
+  google_apis::test_util::RunBlockingPoolTask();
 
   // It must fail.
   EXPECT_EQ(DRIVE_FILE_ERROR_NOT_FOUND, error);

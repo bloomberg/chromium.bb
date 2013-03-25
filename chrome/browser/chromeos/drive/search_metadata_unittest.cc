@@ -107,10 +107,8 @@ TEST_F(SearchMetadataTest, SearchMetadata_ZeroMatches) {
   SearchMetadata(file_system_.get(),
                  "NonExistent",
                  kDefaultAtMostNumMatches,
-                 base::Bind(&test_util::CopyResultsFromSearchMetadataCallback,
-                            &error,
-                            &result));
-
+                 google_apis::test_util::CreateCopyResultCallback(
+                     &error, &result));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_OK, error);
   ASSERT_EQ(0U, result->size());
@@ -123,10 +121,8 @@ TEST_F(SearchMetadataTest, SearchMetadata_RegularFile) {
   SearchMetadata(file_system_.get(),
                  "SubDirectory File 1.txt",
                  kDefaultAtMostNumMatches,
-                 base::Bind(&test_util::CopyResultsFromSearchMetadataCallback,
-                            &error,
-                            &result));
-
+                 google_apis::test_util::CreateCopyResultCallback(
+                     &error, &result));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_OK, error);
   ASSERT_EQ(1U, result->size());
@@ -144,10 +140,8 @@ TEST_F(SearchMetadataTest, SearchMetadata_CaseInsensitiveSearch) {
   SearchMetadata(file_system_.get(),
                  "subdirectory file 1.txt",
                  kDefaultAtMostNumMatches,
-                 base::Bind(&test_util::CopyResultsFromSearchMetadataCallback,
-                            &error,
-                            &result));
-
+                 google_apis::test_util::CreateCopyResultCallback(
+                     &error, &result));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_OK, error);
   ASSERT_EQ(1U, result->size());
@@ -162,10 +156,8 @@ TEST_F(SearchMetadataTest, SearchMetadata_RegularFiles) {
   SearchMetadata(file_system_.get(),
                  "SubDir",
                  kDefaultAtMostNumMatches,
-                 base::Bind(&test_util::CopyResultsFromSearchMetadataCallback,
-                            &error,
-                            &result));
-
+                 google_apis::test_util::CreateCopyResultCallback(
+                     &error, &result));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_OK, error);
   ASSERT_EQ(2U, result->size());
@@ -194,10 +186,8 @@ TEST_F(SearchMetadataTest, SearchMetadata_AtMostOneFile) {
   SearchMetadata(file_system_.get(),
                  "SubDir",
                  1,  // at_most_num_matches
-                 base::Bind(&test_util::CopyResultsFromSearchMetadataCallback,
-                            &error,
-                            &result));
-
+                 google_apis::test_util::CreateCopyResultCallback(
+                     &error, &result));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_OK, error);
   ASSERT_EQ(1U, result->size());
@@ -214,10 +204,8 @@ TEST_F(SearchMetadataTest, SearchMetadata_Directory) {
   SearchMetadata(file_system_.get(),
                  "Directory 1",
                  kDefaultAtMostNumMatches,
-                 base::Bind(&test_util::CopyResultsFromSearchMetadataCallback,
-                            &error,
-                            &result));
-
+                 google_apis::test_util::CreateCopyResultCallback(
+                     &error, &result));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_OK, error);
   ASSERT_EQ(1U, result->size());
@@ -233,10 +221,8 @@ TEST_F(SearchMetadataTest, SearchMetadata_HostedDocument) {
   SearchMetadata(file_system_.get(),
                  "Document",
                  kDefaultAtMostNumMatches,
-                 base::Bind(&test_util::CopyResultsFromSearchMetadataCallback,
-                            &error,
-                            &result));
-
+                 google_apis::test_util::CreateCopyResultCallback(
+                     &error, &result));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_OK, error);
   ASSERT_EQ(1U, result->size());
@@ -257,10 +243,8 @@ TEST_F(SearchMetadataTest, SearchMetadata_HideHostedDocument) {
   SearchMetadata(file_system_.get(),
                  "Document",
                  kDefaultAtMostNumMatches,
-                 base::Bind(&test_util::CopyResultsFromSearchMetadataCallback,
-                            &error,
-                            &result));
-
+                 google_apis::test_util::CreateCopyResultCallback(
+                     &error, &result));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_OK, error);
   ASSERT_EQ(0U, result->size());

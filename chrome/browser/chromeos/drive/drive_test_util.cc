@@ -37,47 +37,6 @@ bool CacheStatesEqual(const DriveCacheEntry& a, const DriveCacheEntry& b) {
           a.is_persistent() == b.is_persistent());
 }
 
-void CopyResultsFromGetAvailableSpaceCallback(DriveFileError* out_error,
-                                              int64* out_bytes_total,
-                                              int64* out_bytes_used,
-                                              DriveFileError error,
-                                              int64 bytes_total,
-                                              int64 bytes_used) {
-  DCHECK(out_error);
-  DCHECK(out_bytes_total);
-  DCHECK(out_bytes_used);
-  *out_error = error;
-  *out_bytes_total = bytes_total;
-  *out_bytes_used = bytes_used;
-}
-
-void CopyResultsFromSearchMetadataCallback(
-    DriveFileError* out_error,
-    scoped_ptr<MetadataSearchResultVector>* out_result,
-    DriveFileError error,
-    scoped_ptr<MetadataSearchResultVector> result) {
-  DCHECK(out_error);
-  DCHECK(out_result);
-
-  *out_error = error;
-  *out_result = result.Pass();
-}
-
-void CopyResultsFromOpenFileCallbackAndQuit(DriveFileError* out_error,
-                                            base::FilePath* out_file_path,
-                                            DriveFileError error,
-                                            const base::FilePath& file_path) {
-  *out_error = error;
-  *out_file_path = file_path;
-  MessageLoop::current()->Quit();
-}
-
-void CopyResultsFromCloseFileCallbackAndQuit(DriveFileError* out_error,
-                                             DriveFileError error) {
-  *out_error = error;
-  MessageLoop::current()->Quit();
-}
-
 bool LoadChangeFeed(const std::string& relative_path,
                     ChangeListLoader* change_list_loader,
                     bool is_delta_feed,
