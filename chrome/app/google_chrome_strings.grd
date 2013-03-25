@@ -161,9 +161,13 @@ Chrome supports. -->
         <message name="IDS_PRODUCT_APP_LAUNCHER_NAME" desc="The Chrome App Launcher application name">
           Google Chrome App Launcher
         </message>
-        <message name="IDS_WIN8_INFOBAR_DESKTOP_RESTART_TO_LAUNCH_APPS"
-                 desc="Infobar message to restart chrome in desktop mode to launch Chrome Apps. Aplies to Windows 8 only">
+        <message name="IDS_WIN8_INFOBAR_DESKTOP_RESTART_FOR_APP_LIST"
+                 desc="Infobar message to restart chrome in desktop mode to display the App Launcher. Aplies to Windows 8 only">
           You need to switch Chrome to desktop mode to use the App Launcher.
+        </message>
+        <message name="IDS_WIN8_INFOBAR_DESKTOP_RESTART_FOR_PACKAGED_APP"
+                 desc="Infobar message to restart chrome in desktop mode to launch a Chrome Packaged App. Aplies to Windows 8 only">
+          You need to switch Chrome to desktop mode to use Apps.
         </message>
         <message name="IDS_PRODUCT_BINARIES_NAME" desc="The Chrome Binaries application name">
           Google Chrome Binaries

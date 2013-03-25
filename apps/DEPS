@@ -2,6 +2,7 @@ include_rules = [
   "+base",
   "+content",
   "+ui",
+  "+win8",
   # Temporary allowed includes.
   # TODO(benwells): remove these (http://crbug.com/159366)
   "+chrome/browser/browser_process.h",

@@ -4,10 +4,12 @@
 
 #include "chrome/browser/ui/extensions/app_metro_infobar_delegate_win.h"
 
+#include "apps/app_launch_for_metro_restart_win.h"
 #include "base/bind_helpers.h"
 #include "base/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -25,10 +27,14 @@
 
 namespace chrome {
 
-void AppMetroInfoBarDelegateWin::CreateAndActivateMetro(Profile* profile) {
+// static
+void AppMetroInfoBarDelegateWin::Create(
+    Profile* profile, Mode mode, const std::string& extension_id) {
+  DCHECK(win8::IsSingleWindowMetroMode());
+  DCHECK_EQ(mode == SHOW_APP_LIST, extension_id.empty());
+
   // Chrome should never get here via the Ash desktop, so only look for browsers
   // on the native desktop.
-  CHECK(win8::IsSingleWindowMetroMode());
   Browser* browser = FindOrCreateTabbedBrowser(
       profile, chrome::HOST_DESKTOP_TYPE_NATIVE);
 
@@ -42,7 +48,7 @@ void AppMetroInfoBarDelegateWin::CreateAndActivateMetro(Profile* profile) {
   InfoBarService* info_bar_service =
       InfoBarService::FromWebContents(web_contents);
   info_bar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(
-      new AppMetroInfoBarDelegateWin(info_bar_service)));
+      new AppMetroInfoBarDelegateWin(info_bar_service, mode, extension_id)));
 
   // Use PostTask because we can get here in a COM SendMessage, and
   // ActivateApplication can not be sent nested (returns error
@@ -53,8 +59,13 @@ void AppMetroInfoBarDelegateWin::CreateAndActivateMetro(Profile* profile) {
 }
 
 AppMetroInfoBarDelegateWin::AppMetroInfoBarDelegateWin(
-    InfoBarService* info_bar_service)
-    : ConfirmInfoBarDelegate(info_bar_service) {
+    InfoBarService* info_bar_service,
+    Mode mode,
+    const std::string& extension_id)
+    : ConfirmInfoBarDelegate(info_bar_service),
+      mode_(mode),
+      extension_id_(extension_id) {
+  DCHECK_EQ(mode_ == SHOW_APP_LIST, extension_id_.empty());
 }
 
 AppMetroInfoBarDelegateWin::~AppMetroInfoBarDelegateWin() {}
@@ -64,8 +75,9 @@ gfx::Image* AppMetroInfoBarDelegateWin::GetIcon() const {
 }
 
 string16 AppMetroInfoBarDelegateWin::GetMessageText() const {
-  return l10n_util::GetStringUTF16(
-      IDS_WIN8_INFOBAR_DESKTOP_RESTART_TO_LAUNCH_APPS);
+  return l10n_util::GetStringUTF16(mode_ == SHOW_APP_LIST ?
+      IDS_WIN8_INFOBAR_DESKTOP_RESTART_FOR_APP_LIST :
+      IDS_WIN8_INFOBAR_DESKTOP_RESTART_FOR_PACKAGED_APP);
 }
 
 int AppMetroInfoBarDelegateWin::GetButtons() const {
@@ -74,19 +86,23 @@ int AppMetroInfoBarDelegateWin::GetButtons() const {
 
 string16 AppMetroInfoBarDelegateWin::GetButtonLabel(
     InfoBarButton button) const {
-  if (button == BUTTON_CANCEL) {
-    return l10n_util::GetStringUTF16(
-        IDS_WIN8_INFOBAR_DESKTOP_RESTART_TO_LAUNCH_APPS_NO_BUTTON);
-  }
-
-  return l10n_util::GetStringUTF16(
+  return l10n_util::GetStringUTF16(button == BUTTON_CANCEL ?
+      IDS_WIN8_INFOBAR_DESKTOP_RESTART_TO_LAUNCH_APPS_NO_BUTTON :
       IDS_WIN8_INFOBAR_DESKTOP_RESTART_TO_LAUNCH_APPS_YES_BUTTON);
 }
 
 bool AppMetroInfoBarDelegateWin::Accept() {
-  owner()->GetWebContents()->Close();
   PrefService* prefs = g_browser_process->local_state();
-  prefs->SetBoolean(prefs::kRestartWithAppList, true);
+  content::WebContents* web_contents = owner()->GetWebContents();
+  if (mode_ == SHOW_APP_LIST) {
+    prefs->SetBoolean(prefs::kRestartWithAppList, true);
+  } else {
+    apps::SetAppLaunchForMetroRestart(
+        Profile::FromBrowserContext(web_contents->GetBrowserContext()),
+        extension_id_);
+  }
+
+  web_contents->Close();  // Note: deletes |this|.
   chrome::AttemptRestartWithModeSwitch();
   return false;
 }

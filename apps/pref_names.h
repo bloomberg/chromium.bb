@@ -11,6 +11,8 @@ namespace prefs {
 // Alphabetical list of preference names specific to Apps component.
 // Keep alphabetized and document each one in the source file.
 extern const char kAppLauncherIsEnabled[];
+extern const char kAppLaunchForMetroRestart[];
+extern const char kAppLaunchForMetroRestartProfile[];
 
 }  // namespace prefs
 }  // namespace apps

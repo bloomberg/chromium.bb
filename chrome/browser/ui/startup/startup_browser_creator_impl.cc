@@ -101,6 +101,7 @@
 #endif
 
 #if defined(OS_WIN)
+#include "apps/app_launch_for_metro_restart_win.h"
 #include "base/win/windows_version.h"
 #endif
 
@@ -566,6 +567,15 @@ void StartupBrowserCreatorImpl::ProcessLaunchURLs(
       !command_line_.HasSwitch(switches::kAutoLaunchAtStartup)) {
     return;
   }
+
+// TODO(tapted): Move this to startup_browser_creator_win.cc after refactor.
+#if defined(OS_WIN)
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
+    // See if there are apps for this profile that should be launched on startup
+    // due to a switch from Metro mode.
+    apps::HandleAppLaunchForMetroRestart(profile_);
+  }
+#endif
 
   if (process_startup && ProcessStartupURLs(urls_to_open)) {
     // ProcessStartupURLs processed the urls, nothing else to do.

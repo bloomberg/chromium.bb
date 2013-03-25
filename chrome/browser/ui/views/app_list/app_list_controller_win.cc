@@ -501,7 +501,10 @@ void AppListController::ShowAppList(Profile* profile) {
   if (win8::IsSingleWindowMetroMode()) {
     // This request came from Windows 8 in desktop mode, but chrome is currently
     // running in Metro mode.
-    chrome::AppMetroInfoBarDelegateWin::CreateAndActivateMetro(profile);
+    chrome::AppMetroInfoBarDelegateWin::Create(
+        profile,
+        chrome::AppMetroInfoBarDelegateWin::SHOW_APP_LIST,
+        std::string());
     return;
   }
 

@@ -20,6 +20,11 @@ void RegisterPrefs(PrefRegistrySimple* registry) {
   // GetIsAppLauncherEnabled().
   registry->RegisterBooleanPref(prefs::kAppLauncherIsEnabled,
                                 MaybeIsAppLauncherEnabled());
+
+#if defined(OS_WIN)
+  registry->RegisterStringPref(prefs::kAppLaunchForMetroRestart, "");
+  registry->RegisterStringPref(prefs::kAppLaunchForMetroRestartProfile, "");
+#endif
 }
 
 }  // namespace apps

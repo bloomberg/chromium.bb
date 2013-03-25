@@ -1,4 +1,4 @@
-# Copyright (c) 2013 The Chromium Authors. All rights reserved.
+# Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -22,16 +22,18 @@
         '<(INTERMEDIATE_DIR)',
       ],
       'sources': [
-        'app_shim/app_shim_host_mac.cc',
-        'app_shim/app_shim_host_mac.h',
-        'app_shim/app_shim_host_manager_mac.h',
-        'app_shim/app_shim_host_manager_mac.mm',
+        'app_launch_for_metro_restart_win.cc',
+        'app_launch_for_metro_restart_win.h',
         'app_launcher.cc',
         'app_launcher.h',
         'app_restore_service.cc',
         'app_restore_service.h',
         'app_restore_service_factory.cc',
         'app_restore_service_factory.h',
+        'app_shim/app_shim_host_mac.cc',
+        'app_shim/app_shim_host_mac.h',
+        'app_shim/app_shim_host_manager_mac.h',
+        'app_shim/app_shim_host_manager_mac.mm',
         'pref_names.cc',
         'pref_names.h',
         'prefs.cc',

@@ -23,13 +23,21 @@ namespace chrome {
 // in Desktop mode if confirmed.
 class AppMetroInfoBarDelegateWin : public ConfirmInfoBarDelegate {
  public:
-  // Creates an instance of the app metro infobar delegate, adds it to
-  // |infobar_service|, and then activates metro mode. This CHECK()s to ensure
-  // that it is only called while running in desktop mode.
-  static void CreateAndActivateMetro(Profile* profile);
+  enum Mode {
+    SHOW_APP_LIST,
+    LAUNCH_PACKAGED_APP
+  };
+
+  // Creates an instance of the app metro infobar delegate, adds it to a new
+  // browser tab, then activates Metro mode.
+  static void Create(Profile* profile,
+                     Mode mode,
+                     const std::string& extension_id);
 
  private:
-  explicit AppMetroInfoBarDelegateWin(InfoBarService* infobar_service);
+  explicit AppMetroInfoBarDelegateWin(InfoBarService* infobar_service,
+                                      Mode mode,
+                                      const std::string& extension_id);
   virtual ~AppMetroInfoBarDelegateWin();
 
   // ConfirmInfoBarDelegate overrides:
@@ -42,9 +50,12 @@ class AppMetroInfoBarDelegateWin : public ConfirmInfoBarDelegate {
   virtual string16 GetLinkText() const OVERRIDE;
   virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
 
+  Mode mode_;
+  std::string extension_id_;
+
   DISALLOW_COPY_AND_ASSIGN(AppMetroInfoBarDelegateWin);
 };
 
-#endif  // CHROME_BROWSER_UI_EXTENSIONS_APP_METRO_INFOBAR_DELEGATE_WIN_H_
-
 }  // namespace chrome
+
+#endif  // CHROME_BROWSER_UI_EXTENSIONS_APP_METRO_INFOBAR_DELEGATE_WIN_H_
