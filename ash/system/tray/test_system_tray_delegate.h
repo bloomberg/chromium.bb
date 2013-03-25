@@ -29,6 +29,7 @@ class TestSystemTrayDelegate : public SystemTrayDelegate {
   virtual const std::string GetUserEmail() const OVERRIDE;
   virtual const gfx::ImageSkia& GetUserImage() const OVERRIDE;
   virtual user::LoginStatus GetUserLoginStatus() const OVERRIDE;
+  virtual bool IsOobeCompleted() const OVERRIDE;
   virtual void ChangeProfilePicture() OVERRIDE;
   virtual const std::string GetEnterpriseDomain() const OVERRIDE;
   virtual const string16 GetEnterpriseMessage() const OVERRIDE;

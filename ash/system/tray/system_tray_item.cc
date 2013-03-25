@@ -4,7 +4,9 @@
 
 #include "ash/system/tray/system_tray_item.h"
 
+#include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
+#include "ash/system/tray/system_tray_delegate.h"
 #include "ui/views/view.h"
 
 namespace ash {
@@ -55,6 +57,9 @@ void SystemTrayItem::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
 }
 
 void SystemTrayItem::PopupDetailedView(int for_seconds, bool activate) {
+  // Never show a detailed view during OOBE, e.g. from a notification.
+  if (!Shell::GetInstance()->system_tray_delegate()->IsOobeCompleted())
+    return;
   system_tray()->ShowDetailedView(
       this, for_seconds, activate, BUBBLE_CREATE_NEW);
 }

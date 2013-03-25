@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/user_manager_impl.h"
+#include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -38,10 +39,17 @@ class TrayAccessibilityTest : public CrosInProcessBrowserTest {
  protected:
   TrayAccessibilityTest() {}
   virtual ~TrayAccessibilityTest() {}
+
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     command_line->AppendSwitch(switches::kLoginManager);
     command_line->AppendSwitchASCII(switches::kLoginProfile,
                                     TestingProfile::kTestUserProfileDir);
+  }
+
+  virtual void RunTestOnMainThreadLoop() OVERRIDE {
+    // Need to mark oobe completed to show detailed views.
+    WizardController::MarkOobeCompleted();
+    CrosInProcessBrowserTest::RunTestOnMainThreadLoop();
   }
 
   ash::internal::TrayAccessibility* tray() {

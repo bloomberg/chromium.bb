@@ -506,6 +506,8 @@ void TrayNetwork::SetNetworkMessage(NetworkTrayDelegate* delegate,
                                     const std::vector<string16>& links) {
   messages_->messages()[message_type] = tray::NetworkMessages::Message(
       delegate, network_type, title, message, links);
+  if (!Shell::GetInstance()->system_tray_delegate()->IsOobeCompleted())
+    return;
   if (notification_)
     notification_->Update();
   else

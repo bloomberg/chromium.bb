@@ -10,6 +10,7 @@
 #include "ash/system/tray/system_tray_notifier.h"
 #include "base/command_line.h"
 #include "base/string16.h"
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_state.h"
@@ -95,9 +96,12 @@ string16 GetErrorString(const std::string& error) {
     return l10n_util::GetStringUTF16(
         IDS_CHROMEOS_NETWORK_ERROR_PPP_AUTH_FAILED);
   }
-  if (error == flimflam::kUnknownString)
+  if (StringToLowerASCII(error) ==
+      StringToLowerASCII(std::string(flimflam::kUnknownString))) {
     return l10n_util::GetStringUTF16(IDS_CHROMEOS_NETWORK_ERROR_UNKNOWN);
-  return l10n_util::GetStringUTF16(IDS_CHROMEOS_NETWORK_STATE_UNRECOGNIZED);
+  }
+  return l10n_util::GetStringFUTF16(IDS_NETWORK_UNRECOGNIZED_ERROR,
+                                    UTF8ToUTF16(error));
 }
 
 }  // namespace

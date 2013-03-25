@@ -126,6 +126,9 @@
   <message name="IDS_NETWORK_OUT_OF_CREDITS_LINK" desc="Link text for network out of data error notification">
     Visit the <ph name="name">$1<ex>GoogleGuest</ex></ph> activation portal to buy more data.
   </message>
+  <message name="IDS_NETWORK_UNRECOGNIZED_ERROR" desc="Unrecognized Network error text">
+    Unrecognized error: <ph name="desc">$1<ex>ShillErrorString</ex></ph>
+  </message>
 
   <!-- Network state strings -->
   <message name="IDS_CHROMEOS_NETWORK_STATE_UNKNOWN" desc="Network state in about:network: UNKNOWN">
