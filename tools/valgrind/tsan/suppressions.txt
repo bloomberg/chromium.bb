@@ -1110,22 +1110,3 @@
    fun:WebCore::SecurityOrigin::createFromString
    fun:WebKit::WebSecurityOrigin::createFromString
 }
-{
-  bug_223262a
-  ThreadSanitizer:Race
-  fun:XextFindDisplay
-  fun:_xgeFindDisplay
-  fun:xgeExtRegister
-  fun:XextAddDisplay
-  fun:XRecordCreateContext
-  fun:remoting::::LocalInputMonitorLinux::Core::StartOnInputThread
-}
-{
-  bug_223262b
-  ThreadSanitizer:Race
-  ...
-  fun:XextAddDisplay
-  fun:XRecordCreateContext
-  fun:remoting::::LocalInputMonitorLinux::Core::StartOnInputThread
-}
-
