@@ -48,6 +48,7 @@ class ShellContentBrowserClient : public ContentBrowserClient {
                                      const GURL& url) OVERRIDE;
   virtual WebContentsViewDelegate* GetWebContentsViewDelegate(
       WebContents* web_contents) OVERRIDE;
+  virtual QuotaPermissionContext* CreateQuotaPermissionContext() OVERRIDE;
 
 #if defined(OS_ANDROID)
   virtual void GetAdditionalMappedFilesForChildProcess(

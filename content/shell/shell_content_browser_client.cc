@@ -18,6 +18,7 @@
 #include "content/shell/shell_devtools_delegate.h"
 #include "content/shell/shell_message_filter.h"
 #include "content/shell/shell_messages.h"
+#include "content/shell/shell_quota_permission_context.h"
 #include "content/shell/shell_resource_dispatcher_host_delegate.h"
 #include "content/shell/shell_switches.h"
 #include "content/shell/shell_web_contents_view_delegate_creator.h"
@@ -174,6 +175,11 @@ WebContentsViewDelegate* ShellContentBrowserClient::GetWebContentsViewDelegate(
 #else
   return NULL;
 #endif
+}
+
+QuotaPermissionContext*
+ShellContentBrowserClient::CreateQuotaPermissionContext() {
+  return new ShellQuotaPermissionContext();
 }
 
 #if defined(OS_ANDROID)

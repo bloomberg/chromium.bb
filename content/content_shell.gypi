@@ -116,6 +116,8 @@
         'shell/shell_messages.h',
         'shell/shell_network_delegate.cc',
         'shell/shell_network_delegate.h',
+        'shell/shell_quota_permission_context.cc',
+        'shell/shell_quota_permission_context.h',
         'shell/shell_render_process_observer.cc',
         'shell/shell_render_process_observer.h',
         'shell/shell_resource_dispatcher_host_delegate.cc',
