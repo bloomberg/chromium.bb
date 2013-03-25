@@ -57,7 +57,9 @@
 #if defined(OS_ANDROID)
 #include "chrome/browser/ui/android/tab_model/tab_model.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
-#else
+#endif
+
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
 #include "chrome/browser/ui/webui/ntp/foreign_session_handler.h"
 #include "chrome/browser/ui/webui/ntp/ntp_login_handler.h"
 #endif
@@ -158,7 +160,9 @@ content::WebUIDataSource* CreateHistoryUIHTMLSource(Profile* profile) {
   source->SetUseJsonJSFormatV2();
   source->DisableDenyXFrameOptions();
 
-#if !defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_IOS)
+  source->AddBoolean("isManagedProfile", false);
+#else
   source->AddBoolean("isManagedProfile",
       ManagedUserServiceFactory::GetForProfile(profile)->ProfileIsManaged());
 #endif
@@ -378,7 +382,7 @@ void BrowsingHistoryHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("removeBookmark",
       base::Bind(&BrowsingHistoryHandler::HandleRemoveBookmark,
                  base::Unretained(this)));
-#if !defined(OS_ANDROID)
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
   web_ui()->RegisterMessageCallback("processManagedUrls",
       base::Bind(&BrowsingHistoryHandler::HandleProcessManagedUrls,
                  base::Unretained(this)));
@@ -589,7 +593,7 @@ void BrowsingHistoryHandler::HandleRemoveVisits(const ListValue* args) {
   }
 }
 
-#if !defined(OS_ANDROID)
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
 void BrowsingHistoryHandler::HandleProcessManagedUrls(const ListValue* args) {
   bool allow = false;
   if (!args->GetBoolean(0, &allow)) {
@@ -703,7 +707,7 @@ void BrowsingHistoryHandler::HandleProcessManagedUrls(const ListValue* args) {
   // should update the page.
   web_ui()->CallJavascriptFunction("updateEntries", results);
 }
-#endif  // defined(OS_ANDROID)
+#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 
 void BrowsingHistoryHandler::HandleClearBrowsingData(const ListValue* args) {
 #if defined(OS_ANDROID)
@@ -1091,13 +1095,13 @@ void BrowsingHistoryHandler::Observe(
 HistoryUI::HistoryUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   web_ui->AddMessageHandler(new BrowsingHistoryHandler());
 
-// Android deals with foreign sessions differently.
-#if !defined(OS_ANDROID)
+// On mobile we deal with foreign sessions differently.
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
   if (chrome::search::IsInstantExtendedAPIEnabled()) {
     web_ui->AddMessageHandler(new browser_sync::ForeignSessionHandler());
     web_ui->AddMessageHandler(new NTPLoginHandler());
   }
-#endif  // !defined(OS_ANDROID)
+#endif
 
   // Set up the chrome://history-frame/ source.
   Profile* profile = Profile::FromWebUI(web_ui);
