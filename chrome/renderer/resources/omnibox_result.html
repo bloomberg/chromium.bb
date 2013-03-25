@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<!-- printf() style params:
+    embedder_origin: Origin of the page embedding this HTML as an iframe.
+    omnibox_font: Omnibox font - used to display suggestions.
+    omnibox_font_size: Omnibox font size - used as suggestion font size.
+    url_color: Color used to display URL component of suggestion.
+    title_color: Color used to display title component of suggestion.
+    url_text: URL component of the suggestion.
+    title_text: Title component of the suggestion.
+-->
+<html>
+<head>
+<script>
+function handleClick(event) {
+  var details = {
+    'eventType': 'click',
+    'button' : event.button
+  };
+  top.postMessage(details, '%s');
+}
+function handleLoad() {
+  if (document.getElementById('title').innerHTML == "")
+    document.getElementById('optional').classList.add('hide');
+}
+</script>
+<style>
+body {
+  -webkit-user-select: none;
+  cursor: default;
+  font: %s;
+  font-size: %lupx;
+  margin: 0;
+  overflow: hidden;
+  position: fixed;
+  white-space: nowrap;
+}
+.url { color: #%06X; }
+.title { color: #%06X; }
+.hide { display: none; }
+</style>
+</head>
+<body onclick="handleClick(event);" onload="handleLoad();">
+  <span class="url">%s</span>
+  <span class="title" id="optional"> &ndash; <span id="title">%s</span></span>
+</body>
+</html>

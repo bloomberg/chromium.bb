@@ -64,6 +64,19 @@ v8::Handle<v8::String> UTF8ToV8String(const std::string& s) {
   return v8::String::New(s.data(), s.size());
 }
 
+// Converts a V8 value to a std::string.
+std::string V8ValueToUTF8(v8::Handle<v8::Value> v) {
+  std::string result;
+
+  if (v->IsStringObject()) {
+    v8::Handle<v8::String> s(v->ToString());
+    int len = s->Length();
+    if (len > 0)
+      s->WriteUtf8(WriteInto(&result, len + 1));
+  }
+  return result;
+}
+
 void Dispatch(WebKit::WebFrame* frame, const WebKit::WebString& script) {
   if (!frame) return;
   frame->executeScript(WebKit::WebScriptSource(script));
@@ -79,42 +92,6 @@ v8::Handle<v8::String> GenerateFaviconURL(uint64 most_visited_item_id) {
   return UTF8ToV8String(
       base::StringPrintf("chrome-search://favicon/%s",
                          base::Uint64ToString(most_visited_item_id).c_str()));
-}
-
-// If |url| starts with |prefix|, removes |prefix|.
-void StripPrefix(string16* url, const string16& prefix) {
-  if (StartsWith(*url, prefix, true))
-    url->erase(0, prefix.length());
-}
-
-// Removes leading "http://" or "http://www." from |url| unless |userInput|
-// starts with those prefixes.
-void StripURLPrefixes(string16* url, const string16& userInput) {
-  string16 trimmedUserInput;
-  TrimWhitespace(userInput, TRIM_TRAILING, &trimmedUserInput);
-  if (StartsWith(*url, trimmedUserInput, true))
-    return;
-
-  StripPrefix(url, ASCIIToUTF16(chrome::kHttpScheme) + ASCIIToUTF16("://"));
-
-  if (StartsWith(*url, trimmedUserInput, true))
-    return;
-
-  StripPrefix(url, ASCIIToUTF16("www."));
-}
-
-// Cleans up and formats a URL suggestion for display to the user the dropdown.
-void FormatURLForDisplay(string16* url, const string16& userInput) {
-  StripURLPrefixes(url, userInput);
-
-  string16 trimmedUserInput;
-  TrimWhitespace(userInput, TRIM_LEADING, &trimmedUserInput);
-  if (EndsWith(*url, trimmedUserInput, true))
-    return;
-
-  // Strip a lone trailing slash.
-  if (EndsWith(*url, ASCIIToUTF16("/"), true))
-    url->erase(url->length() - 1, 1);
 }
 
 }  // namespace
@@ -356,6 +333,10 @@ class SearchBoxExtensionWrapper : public v8::Extension {
   // Gets the font size of the text in the omnibox.
   static v8::Handle<v8::Value> GetFontSize(const v8::Arguments& args);
 
+  // Gets the URL prefix for the iframe used to display suggestions.
+  static v8::Handle<v8::Value> GetSuggestionIframeURLPrefix(
+      const v8::Arguments& args);
+
   // Navigates the window to a URL represented by either a URL string or a
   // restricted ID. The two variants handle restricted IDs in their
   // respective namespaces.
@@ -396,6 +377,9 @@ class SearchBoxExtensionWrapper : public v8::Extension {
   // Stop capturing user key strokes.
   static v8::Handle<v8::Value> StopCapturingKeyStrokes(
       const v8::Arguments& args);
+
+  // Set the CSS values for the dropdown.
+  static v8::Handle<v8::Value> SetSuggestionStyle(const v8::Arguments& args);
 
   // Undoes the deletion of all Most Visited itens.
   static v8::Handle<v8::Value> UndoAllMostVisitedDeletions(
@@ -459,6 +443,8 @@ v8::Handle<v8::FunctionTemplate> SearchBoxExtensionWrapper::GetNativeFunction(
     return v8::FunctionTemplate::New(GetFont);
   if (name->Equals(v8::String::New("GetFontSize")))
     return v8::FunctionTemplate::New(GetFontSize);
+  if (name->Equals(v8::String::New("GetSuggestionIframeURLPrefix")))
+    return v8::FunctionTemplate::New(GetSuggestionIframeURLPrefix);
   if (name->Equals(v8::String::New("NavigateSearchBox")))
     return v8::FunctionTemplate::New(NavigateSearchBox);
   if (name->Equals(v8::String::New("NavigateNewTabPage")))
@@ -483,6 +469,8 @@ v8::Handle<v8::FunctionTemplate> SearchBoxExtensionWrapper::GetNativeFunction(
     return v8::FunctionTemplate::New(StartCapturingKeyStrokes);
   if (name->Equals(v8::String::New("StopCapturingKeyStrokes")))
     return v8::FunctionTemplate::New(StopCapturingKeyStrokes);
+  if (name->Equals(v8::String::New("SetSuggestionStyle")))
+    return v8::FunctionTemplate::New(SetSuggestionStyle);
   if (name->Equals(v8::String::New("UndoAllMostVisitedDeletions")))
     return v8::FunctionTemplate::New(UndoAllMostVisitedDeletions);
   if (name->Equals(v8::String::New("UndoMostVisitedDeletion")))
@@ -617,7 +605,7 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetAutocompleteResults(
                 UTF16ToV8String(results[i].second.destination_url));
     if (results[i].second.search_query.empty()) {
       string16 url = results[i].second.destination_url;
-      FormatURLForDisplay(&url, SearchBox::Get(render_view)->query());
+      SearchBox::Get(render_view)->FormatURLForDisplay(&url);
       result->Set(v8::String::New("contents"), UTF16ToV8String(url));
     } else {
       result->Set(v8::String::New("contents"),
@@ -776,6 +764,18 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetFontSize(
   if (!render_view) return v8::Undefined();
 
   return v8::Uint32::New(SearchBox::Get(render_view)->omnibox_font_size());
+}
+
+// static
+v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetSuggestionIframeURLPrefix(
+    const v8::Arguments& args) {
+  content::RenderView* render_view = GetRenderView();
+  if (!render_view) return v8::Undefined();
+
+  return UTF8ToV8String(base::StringPrintf(
+      "%s://%s/",
+      chrome::kChromeSearchScheme,
+      chrome::kChromeSearchSuggestionHost));
 }
 
 // static
@@ -1165,6 +1165,25 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::StopCapturingKeyStrokes(
 v8::Extension* SearchBoxExtension::Get() {
   return new SearchBoxExtensionWrapper(ResourceBundle::GetSharedInstance().
       GetRawDataResource(IDR_SEARCHBOX_API));
+}
+
+// static
+v8::Handle<v8::Value> SearchBoxExtensionWrapper::SetSuggestionStyle(
+    const v8::Arguments& args) {
+  content::RenderView* render_view = GetRenderView();
+  if (!render_view || args.Length() < 2 || !args[0]->IsNumber() ||
+      !args[1]->IsNumber()) {
+    return v8::Undefined();
+  }
+
+  DVLOG(1) << render_view << " SetSuggestionStyle";
+
+  InstantAutocompleteResultStyle style;
+  style.url_color = args[0]->IntegerValue();
+  style.title_color = args[1]->IntegerValue();
+  SearchBox::Get(render_view)->SetInstantAutocompleteResultStyle(style);
+
+  return v8::Undefined();
 }
 
 // static

@@ -215,6 +215,15 @@ bool ShouldUseJavaScriptSettingForPlugin(const WebPluginInfo& plugin) {
   return false;
 }
 
+content::RenderView* GetRenderViewFromWebFrame(WebKit::WebFrame* webframe) {
+  if (!webframe)
+    return NULL;
+  WebKit::WebView* webview = webframe->view();
+  if (!webview)
+    return NULL;
+  return content::RenderView::FromWebView(webview);
+}
+
 }  // namespace
 
 namespace chrome {
@@ -981,6 +990,15 @@ bool ChromeContentRendererClient::WillSendRequest(
           frame)) {
     *new_url = GURL(chrome::kExtensionResourceInvalidRequestURL);
     return true;
+  }
+
+  const content::RenderView* render_view = GetRenderViewFromWebFrame(frame);
+  if (SearchBox* search_box = SearchBox::Get(render_view)) {
+    if (url.SchemeIs(chrome::kChromeSearchScheme) &&
+        url.host() == chrome::kChromeSearchSuggestionHost) {
+      if (search_box->GenerateDataURLForSuggestionRequest(url, new_url))
+        return true;
+    }
   }
 
   return false;

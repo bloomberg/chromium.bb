@@ -43,15 +43,8 @@ body {
 .contents {
   -webkit-padding-start: 26px;
   -webkit-user-select: none;
-  line-height: 22px;
+  border: 0;
+  height: 22px;
   overflow: hidden;
-}
-
-/* Styling for native suggestions, hidden by the shadow DOM. */
-.chrome_url {
-  color: rgb(0, 153, 51);
-}
-
-.chrome_title {
-  color: #666
+  width: 100%;
 }

@@ -94,6 +94,7 @@ if (!chrome.embeddedSearch) {
       native function GetAutocompleteResults();
       native function GetDisplayInstantResults();
       native function GetFontSize();
+      native function GetSuggestionIframeURLPrefix();
       native function IsKeyCaptureEnabled();
       native function SetQuery();
       native function SetQueryFromAutocompleteResult();
@@ -104,6 +105,7 @@ if (!chrome.embeddedSearch) {
       native function FocusOmnibox();
       native function StartCapturingKeyStrokes();
       native function StopCapturingKeyStrokes();
+      native function SetSuggestionStyle();
       native function NavigateSearchBox();
       native function ShowBars();
       native function HideBars();
@@ -113,7 +115,11 @@ if (!chrome.embeddedSearch) {
       }
 
       // Wraps the AutocompleteResult query and URL into ShadowDOM nodes so that
-      // the JS cannot access them and deletes the raw values.
+      // the JS cannot access them and deletes the raw values. Also replaces the
+      // destination_url with the chrome search URL that should be used as the
+      // iframe.
+      // TODO(shishir): Remove code to support ShadowDOM once server side
+      // changes are live.
       function GetAutocompleteResultsWrapper() {
         var autocompleteResults = DedupeAutocompleteResults(
             GetAutocompleteResults());
@@ -130,7 +136,7 @@ if (!chrome.embeddedSearch) {
           result.combinedNode = SafeWrapSuggestion(combinedElement);
           delete result.contents;
           delete result.description;
-          delete result.destination_url;
+          result.destination_url = GetSuggestionIframeURLPrefix() + result.rid;
         }
         return autocompleteResults;
       }
@@ -254,6 +260,9 @@ if (!chrome.embeddedSearch) {
       };
       this.stopCapturingKeyStrokes = function() {
         StopCapturingKeyStrokes();
+      };
+      this.setSuggestionStyle = function(url_color, title_color) {
+        SetSuggestionStyle(url_color, title_color);
       };
       this.navigateContentWindow = function(destination, disposition) {
         NavigateSearchBox(destination, disposition);

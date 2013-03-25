@@ -103,17 +103,13 @@ function addSuggestionToBox(suggestion, box, select) {
   suggestionDiv.classList.toggle('selected', select);
   suggestionDiv.classList.toggle('search', suggestion.is_search);
 
-  var contentsContainer = document.createElement('div');
-  contentsContainer.className = 'contents';
-  var contents = suggestion.combinedNode;
-  contentsContainer.appendChild(contents);
-  suggestionDiv.appendChild(contentsContainer);
-  var restrictedId = suggestion.rid;
-  suggestionDiv.onclick = function(event) {
-    handleSuggestionClick(restrictedId, event);
-  };
+  var suggestionIframe = document.createElement('iframe');
+  suggestionIframe.className = 'contents';
+  suggestionIframe.src = suggestion.destination_url;
+  suggestionIframe.id = suggestion.rid;
+  suggestionDiv.appendChild(suggestionIframe);
 
-  restrictedIds.push(restrictedId);
+  restrictedIds.push(suggestion.rid);
   box.appendChild(suggestionDiv);
 }
 
@@ -142,7 +138,7 @@ function clearSuggestions() {
 }
 
 /**
- * @return {integer} The height of the dropdown.
+ * @return {number} The height of the dropdown.
  */
 function getDropdownHeight() {
   return $('suggestions-box-container').offsetHeight;
@@ -260,27 +256,28 @@ function appendSuggestionStyles() {
 }
 
 /**
- * Extract the desired navigation behavior from a click event.
- * @param {Event} event The click event.
+ * Extract the desired navigation behavior from a click button.
+ * @param {number} button The Event#button property of a click event.
  * @return {WindowOpenDisposition} The desired behavior for
  *     navigateContentWindow.
  */
-function getDispositionFromClick(event) {
-  if (event.button == MIDDLE_MOUSE_BUTTON)
+function getDispositionFromClickButton(button) {
+  if (button == MIDDLE_MOUSE_BUTTON)
     return WindowOpenDisposition.NEW_BACKGROUND_TAB;
   return WindowOpenDisposition.CURRENT_TAB;
 }
 
 /**
  * Handles suggestion clicks.
- * @param {integer} restrictedId The restricted id of the suggestion being
+ * @param {number} restrictedId The restricted id of the suggestion being
  *     clicked.
- * @param {Event} event The click event.
+ * @param {number} button The Event#button property of a click event.
+ *
  */
-function handleSuggestionClick(restrictedId, event) {
+function handleSuggestionClick(restrictedId, button) {
   clearSuggestions();
-  getApiObjectHandle().navigateContentWindow(restrictedId,
-                                             getDispositionFromClick(event));
+  getApiObjectHandle().navigateContentWindow(
+      restrictedId, getDispositionFromClickButton(button));
 }
 
 /**
@@ -295,6 +292,26 @@ function handleKeyPress(e) {
     case 40:  // Down arrow
       updateSelectedSuggestion(true);
       break;
+  }
+}
+
+/**
+ * Handles the postMessage calls from the result iframes.
+ * @param {Object} message The message containing details of clicks the iframes.
+ */
+function handleMessage(message) {
+  if (message.origin != 'null' || !message.data ||
+      message.data.eventType != 'click') {
+    return;
+  }
+
+  var iframes = document.getElementsByClassName('contents');
+  for (var i = 0; i < iframes.length; ++i) {
+    if (iframes[i].contentWindow == message.source) {
+      handleSuggestionClick(parseInt(iframes[i].id, 10),
+                            message.data.button);
+      break;
+    }
   }
 }
 
@@ -321,3 +338,4 @@ function setUpApi() {
 }
 
 document.addEventListener('DOMContentLoaded', setUpApi);
+window.addEventListener('message', handleMessage, false);

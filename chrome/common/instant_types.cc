@@ -44,3 +44,11 @@ ThemeBackgroundInfo::ThemeBackgroundInfo()
 
 ThemeBackgroundInfo::~ThemeBackgroundInfo() {
 }
+
+InstantAutocompleteResultStyle::InstantAutocompleteResultStyle()
+    : url_color(0x009933),
+      title_color(0x666666) {
+}
+
+InstantAutocompleteResultStyle::~InstantAutocompleteResultStyle() {
+}

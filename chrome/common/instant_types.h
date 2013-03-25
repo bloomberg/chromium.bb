@@ -171,4 +171,14 @@ struct InstantMostVisitedItem {
 typedef std::pair<InstantRestrictedID, InstantMostVisitedItem>
     InstantMostVisitedItemIDPair;
 
+// The style of dropdown results that can be set by the Instant page.
+struct InstantAutocompleteResultStyle {
+  InstantAutocompleteResultStyle();
+  ~InstantAutocompleteResultStyle();
+
+  // The displayed result has the URL and an optional title.
+  int url_color;
+  int title_color;
+};
+
 #endif  // CHROME_COMMON_INSTANT_TYPES_H_

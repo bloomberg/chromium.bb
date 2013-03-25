@@ -32,6 +32,7 @@ without changes to the corresponding grd file. fb9 -->
       <include name="IDR_JSON_SCHEMA_JS" file="extensions\json_schema.js" type="BINDATA" />
       <include name="IDR_MISCELLANEOUS_BINDINGS_JS" file="extensions\miscellaneous_bindings.js" type="BINDATA" />
       <include name="IDR_NET_ERROR_HTML" file="neterror.html" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_OMNIBOX_RESULT" file="omnibox_result.html" flattenhtml="true" type="BINDATA"/>
 
       <!-- Libraries. -->
       <include name="IDR_TAG_WATCHER_JS" file="extensions\tag_watcher.js" type="BINDATA" />

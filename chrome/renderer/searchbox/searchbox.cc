@@ -4,17 +4,56 @@
 
 #include "chrome/renderer/searchbox/searchbox.h"
 
+#include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/searchbox/searchbox_extension.h"
 #include "content/public/renderer/render_view.h"
+#include "grit/renderer_resources.h"
+#include "net/base/escape.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace {
+
 // Size of the results cache.
 const size_t kMaxInstantAutocompleteResultItemCacheSize = 100;
+
+// The HTML returned when an invalid or unknown restricted ID is requested.
+const char kInvalidSuggestionHtml[] =
+    "<div style=\"background:red\">invalid rid %s</div>";
+
+// Checks if the input color is in valid range.
+bool IsColorValid(int color) {
+  return color >= 0 && color <= 0xffffff;
 }
+
+// If |url| starts with |prefix|, removes |prefix|.
+void StripPrefix(string16* url, const string16& prefix) {
+  if (StartsWith(*url, prefix, true))
+    url->erase(0, prefix.length());
+}
+
+// Removes leading "http://" or "http://www." from |url| unless |userInput|
+// starts with those prefixes.
+void StripURLPrefixes(string16* url, const string16& userInput) {
+  string16 trimmedUserInput;
+  TrimWhitespace(userInput, TRIM_TRAILING, &trimmedUserInput);
+  if (StartsWith(*url, trimmedUserInput, true))
+    return;
+
+  StripPrefix(url, ASCIIToUTF16(chrome::kHttpScheme) + ASCIIToUTF16("://"));
+
+  if (StartsWith(*url, trimmedUserInput, true))
+    return;
+
+  StripPrefix(url, ASCIIToUTF16("www."));
+}
+
+}  // namespace
 
 SearchBox::SearchBox(content::RenderView* render_view)
     : content::RenderViewObserver(render_view),
@@ -354,4 +393,81 @@ bool SearchBox::GetMostVisitedItemWithID(
     InstantMostVisitedItem* item) const {
   return most_visited_items_cache_.GetItemWithRestrictedID(most_visited_item_id,
                                                            item);
+}
+
+bool SearchBox::GenerateDataURLForSuggestionRequest(const GURL& request_url,
+                                                    GURL* data_url) const {
+  DCHECK(data_url);
+
+  // The origin URL is required so that the iframe knows what origin to post
+  // messages to.
+  WebKit::WebView* webview = render_view()->GetWebView();
+  if (!webview)
+    return false;
+  GURL embedder_url(webview->mainFrame()->document().url());
+  GURL embedder_origin = embedder_url.GetOrigin();
+  if (!embedder_origin.is_valid())
+    return false;
+
+  DCHECK(StartsWithASCII(request_url.path(), "/", true));
+  std::string restricted_id_str = request_url.path().substr(1);
+
+  InstantRestrictedID restricted_id = 0;
+  DCHECK_EQ(sizeof(InstantRestrictedID), sizeof(int));
+  if (!base::StringToInt(restricted_id_str, &restricted_id))
+    return false;
+
+  std::string response_html;
+  InstantAutocompleteResult result;
+  if (autocomplete_results_cache_.GetItemWithRestrictedID(
+          restricted_id, &result)) {
+    std::string template_html =
+        ResourceBundle::GetSharedInstance().GetRawDataResource(
+            IDR_OMNIBOX_RESULT).as_string();
+
+    DCHECK(IsColorValid(autocomplete_results_style_.url_color));
+    DCHECK(IsColorValid(autocomplete_results_style_.title_color));
+
+    string16 contents;
+    if (result.search_query.empty()) {
+      contents = result.destination_url;
+      FormatURLForDisplay(&contents);
+    } else {
+      contents = result.search_query;
+    }
+
+    response_html = base::StringPrintf(
+        template_html.c_str(),
+        embedder_origin.spec().c_str(),
+        UTF16ToUTF8(omnibox_font_).c_str(),
+        omnibox_font_size_,
+        autocomplete_results_style_.url_color,
+        autocomplete_results_style_.title_color,
+        net::EscapeForHTML(UTF16ToUTF8(contents)).c_str(),
+        net::EscapeForHTML(UTF16ToUTF8(result.description)).c_str());
+  } else {
+    response_html = kInvalidSuggestionHtml;
+  }
+
+  *data_url = GURL("data:text/html," + response_html);
+  return true;
+}
+
+void SearchBox::SetInstantAutocompleteResultStyle(
+    const InstantAutocompleteResultStyle& style) {
+  if (IsColorValid(style.url_color) && IsColorValid(style.title_color))
+    autocomplete_results_style_ = style;
+}
+
+void SearchBox::FormatURLForDisplay(string16* url) const {
+  StripURLPrefixes(url, query());
+
+  string16 trimmedUserInput;
+  TrimWhitespace(query(), TRIM_LEADING, &trimmedUserInput);
+  if (EndsWith(*url, trimmedUserInput, true))
+    return;
+
+  // Strip a lone trailing slash.
+  if (EndsWith(*url, ASCIIToUTF16("/"), true))
+    url->erase(url->length() - 1, 1);
 }
