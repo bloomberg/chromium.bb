@@ -17,7 +17,7 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class ArchiveTest extends AndroidWebViewTestBase {
+public class ArchiveTest extends AwTestBase {
 
     private static final long TEST_TIMEOUT = 20000L;
 

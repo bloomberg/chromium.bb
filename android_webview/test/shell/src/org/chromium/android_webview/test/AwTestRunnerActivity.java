@@ -15,7 +15,7 @@ import android.widget.LinearLayout;
 /*
  * This is a lightweight activity for tests that only require WebView functionality.
  */
-public class AndroidWebViewTestRunnerActivity extends Activity {
+public class AwTestRunnerActivity extends Activity {
 
     private LinearLayout mLinearLayout;
 
@@ -26,7 +26,7 @@ public class AndroidWebViewTestRunnerActivity extends Activity {
         // TODO(joth): When SW-renderer is available, we'll want to enable this on a per-test
         // basis.
         boolean hardwareAccelerated = true;
-        Log.i("AndroidWebViewTestRunnerActivity", "Is " + (hardwareAccelerated ? "" : "NOT ")
+        Log.i("AwTestRunnerActivity", "Is " + (hardwareAccelerated ? "" : "NOT ")
                 + "hardware accelerated");
 
         if (hardwareAccelerated) {

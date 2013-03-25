@@ -31,7 +31,7 @@ import java.util.concurrent.Callable;
 /**
  *  Tests for ContentView methods that don't fall into any other category.
  */
-public class ContentViewMiscTest extends AndroidWebViewTestBase {
+public class ContentViewMiscTest extends AwTestBase {
 
     private TestAwContentsClient mContentsClient;
     private AwContents mAwContents;

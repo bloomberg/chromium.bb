@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.concurrent.Callable;
 import java.util.List;
 
-public class AwQuotaManagerBridgeTest extends AndroidWebViewTestBase {
+public class AwQuotaManagerBridgeTest extends AwTestBase {
     private TestAwContentsClient mContentsClient;
     private AwTestContainerView mTestView;
     private AwContents mAwContents;

@@ -17,7 +17,7 @@ import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPage
 /**
  * Tests for a wanted clearHistory method.
  */
-public class ClearHistoryTest extends AndroidWebViewTestBase {
+public class ClearHistoryTest extends AwTestBase {
 
     private static final String[] URLS = new String[3];
     {

@@ -29,13 +29,13 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  * A base class for android_webview tests.
  */
-public class AndroidWebViewTestBase
-        extends ActivityInstrumentationTestCase2<AndroidWebViewTestRunnerActivity> {
+public class AwTestBase
+        extends ActivityInstrumentationTestCase2<AwTestRunnerActivity> {
     protected final static int WAIT_TIMEOUT_SECONDS = 15;
     private static final int CHECK_INTERVAL = 100;
 
-    public AndroidWebViewTestBase() {
-        super(AndroidWebViewTestRunnerActivity.class);
+    public AwTestBase() {
+        super(AwTestRunnerActivity.class);
     }
 
     @Override

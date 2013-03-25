@@ -15,7 +15,7 @@ import org.chromium.net.test.util.TestWebServer;
 /**
  * A test suite for ContentView.getTitle().
  */
-public class GetTitleTest extends AndroidWebViewTestBase {
+public class GetTitleTest extends AwTestBase {
     private static final String TITLE = "TITLE";
 
     private static final String GET_TITLE_TEST_PATH = "/get_title_test.html";

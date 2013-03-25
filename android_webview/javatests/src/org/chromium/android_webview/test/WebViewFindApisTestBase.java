@@ -14,7 +14,7 @@ import org.chromium.android_webview.AwContents;
 /**
  * Base class for WebView find-in-page API tests.
  */
-public class WebViewFindApisTestBase extends AndroidWebViewTestBase {
+public class WebViewFindApisTestBase extends AwTestBase {
 
     private static final String WOODCHUCK =
             "How much WOOD would a woodchuck chuck if a woodchuck could chuck wOoD?";

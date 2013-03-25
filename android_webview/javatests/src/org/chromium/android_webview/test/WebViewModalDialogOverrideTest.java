@@ -19,7 +19,7 @@ import org.chromium.content.browser.test.util.CallbackHelper;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class WebViewModalDialogOverrideTest extends AndroidWebViewTestBase {
+public class WebViewModalDialogOverrideTest extends AwTestBase {
     private final static String EMPTY_PAGE =
             "<!doctype html>" +
             "<title>Modal Dialog Test</title><p>Testcase.</p>";

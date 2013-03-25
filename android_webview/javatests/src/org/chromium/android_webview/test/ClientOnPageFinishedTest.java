@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Tests for the ContentViewClient.onPageFinished() method.
  */
-public class ClientOnPageFinishedTest extends AndroidWebViewTestBase {
+public class ClientOnPageFinishedTest extends AwTestBase {
 
     private TestAwContentsClient mContentsClient;
     private AwContents mAwContents;

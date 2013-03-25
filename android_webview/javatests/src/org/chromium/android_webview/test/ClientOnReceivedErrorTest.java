@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Tests for the ContentViewClient.onReceivedError() method.
  */
-public class ClientOnReceivedErrorTest extends AndroidWebViewTestBase {
+public class ClientOnReceivedErrorTest extends AwTestBase {
 
     private TestAwContentsClient mContentsClient;
     private AwContents mAwContents;

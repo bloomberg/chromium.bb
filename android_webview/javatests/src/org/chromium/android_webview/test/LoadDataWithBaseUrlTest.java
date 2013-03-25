@@ -25,7 +25,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.util.concurrent.TimeUnit;
 
-public class LoadDataWithBaseUrlTest extends AndroidWebViewTestBase {
+public class LoadDataWithBaseUrlTest extends AwTestBase {
 
     private TestAwContentsClient mContentsClient;
     private AwContents mAwContents;

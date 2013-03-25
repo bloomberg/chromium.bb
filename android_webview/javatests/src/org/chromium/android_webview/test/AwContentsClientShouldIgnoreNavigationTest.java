@@ -32,7 +32,7 @@ import java.util.concurrent.Callable;
 /**
  * Tests for the WebViewClient.shouldOverrideUrlLoading() method.
  */
-public class AwContentsClientShouldIgnoreNavigationTest extends AndroidWebViewTestBase {
+public class AwContentsClientShouldIgnoreNavigationTest extends AwTestBase {
     private final static String ABOUT_BLANK_URL = "about:blank";
     private final static String DATA_URL = "data:text/html,<div/>";
     private final static String REDIRECT_TARGET_PATH = "/redirect_target.html";

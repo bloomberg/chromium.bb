@@ -18,7 +18,7 @@ import java.util.List;
 /**
  * Tests for the AwContentsClient.onReceivedLoginRequest callback.
  */
-public class AwContentsClientAutoLoginTest extends AndroidWebViewTestBase {
+public class AwContentsClientAutoLoginTest extends AwTestBase {
     public static class OnReceivedLoginRequestHelper extends CallbackHelper {
         String mRealm;
         String mAccount;

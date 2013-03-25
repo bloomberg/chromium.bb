@@ -34,7 +34,7 @@ import java.util.List;
 /**
  * AwContents tests.
  */
-public class AwContentsTest extends AndroidWebViewTestBase {
+public class AwContentsTest extends AwTestBase {
     public static class OnDownloadStartHelper extends CallbackHelper {
         String mUrl;
         String mUserAgent;

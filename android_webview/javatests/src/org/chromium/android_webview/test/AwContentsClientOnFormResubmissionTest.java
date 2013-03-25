@@ -22,7 +22,7 @@ import java.util.concurrent.TimeoutException;
 /**
  * Tests if resubmission of post data is handled properly.
  */
-public class AwContentsClientOnFormResubmissionTest extends AndroidWebViewTestBase {
+public class AwContentsClientOnFormResubmissionTest extends AwTestBase {
 
     private static class TestAwContentsClient
             extends org.chromium.android_webview.test.TestAwContentsClient {

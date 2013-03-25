@@ -15,7 +15,7 @@ import org.chromium.net.test.util.TestWebServer;
 /**
  * Tests for AwContentsClient.getVisitedHistory and AwContents.doUpdateVisitedHistory callbacks.
  */
-public class AwContentsClientVisitedHistoryTest extends AndroidWebViewTestBase {
+public class AwContentsClientVisitedHistoryTest extends AwTestBase {
     public static class GetVisitedHistoryHelper extends CallbackHelper {
         private ValueCallback<String[]> mCallback;
         private boolean mSaveCallback = false;

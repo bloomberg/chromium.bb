@@ -20,7 +20,7 @@ import java.util.HashMap;
 /**
  * Tests for the Favicon and TouchIcon related APIs.
  */
-public class AwContentsClientFaviconTest extends AndroidWebViewTestBase {
+public class AwContentsClientFaviconTest extends AwTestBase {
 
     private static final String FAVICON1_URL = "/favicon1.png";
     private static final String FAVICON1_PAGE_URL = "/favicon1.html";

@@ -17,7 +17,7 @@ import org.chromium.net.test.util.TestWebServer;
 
 import java.util.concurrent.Callable;
 
-public class SaveRestoreStateTest extends AndroidWebViewTestBase {
+public class SaveRestoreStateTest extends AwTestBase {
     private static class TestVars {
         public final TestAwContentsClient contentsClient;
         public final AwTestContainerView testView;

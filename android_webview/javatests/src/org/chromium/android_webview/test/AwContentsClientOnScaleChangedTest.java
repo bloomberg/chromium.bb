@@ -17,7 +17,7 @@ import android.util.Log;
 /**
  * Tests for the WebViewClient.onScaleChanged.
  */
-public class AwContentsClientOnScaleChangedTest extends AndroidWebViewTestBase {
+public class AwContentsClientOnScaleChangedTest extends AwTestBase {
     private TestAwContentsClient mContentsClient;
     private AwContents mAwContents;
 

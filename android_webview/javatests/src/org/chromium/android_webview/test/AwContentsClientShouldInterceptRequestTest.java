@@ -31,7 +31,7 @@ import java.util.Random;
 /**
  * Tests for the WebViewClient.shouldInterceptRequest() method.
  */
-public class AwContentsClientShouldInterceptRequestTest extends AndroidWebViewTestBase {
+public class AwContentsClientShouldInterceptRequestTest extends AwTestBase {
 
     private static class TestAwContentsClient
             extends org.chromium.android_webview.test.TestAwContentsClient {

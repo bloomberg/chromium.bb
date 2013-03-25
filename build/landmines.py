@@ -140,9 +140,7 @@ def get_landmines(target):
       builder() == 'ninja'):
     add('Need to clobber winja goma due to backend cwd cache fix.')
   if platform() == 'android':
-    add('Fix findbugs errors on android trybots.')
-    add('Clobber: jar location moved in crrev.com/183639')
-    add('Clobber: resources moved around in crrev.com/12609013')
+    add('Clobber: java files renamed in crrev.com/12880022')
   if platform() == 'win' and builder() == 'ninja':
     add('Compile on cc_unittests fails due to symbols removed in r185063.')
   if platform() == 'linux' and builder() == 'ninja':

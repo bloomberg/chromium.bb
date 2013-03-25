@@ -14,7 +14,7 @@ import org.chromium.base.test.util.Feature;
 /**
  * Tests for the ContentViewClient.addMessageToConsole() method.
  */
-public class ClientAddMessageToConsoleTest extends AndroidWebViewTestBase {
+public class ClientAddMessageToConsoleTest extends AwTestBase {
 
     // Line number at which the console message is logged in the page returned by the
     // getLogMessageJavaScriptData method.

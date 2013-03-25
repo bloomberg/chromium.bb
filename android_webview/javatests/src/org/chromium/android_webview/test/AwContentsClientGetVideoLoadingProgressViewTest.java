@@ -27,7 +27,7 @@ import java.util.concurrent.TimeoutException;
  * used to trigger switch occupies almost the whole WebView so the simulated click event
  * can't miss it.
  */
-public class AwContentsClientGetVideoLoadingProgressViewTest extends AndroidWebViewTestBase
+public class AwContentsClientGetVideoLoadingProgressViewTest extends AwTestBase
         implements View.OnAttachStateChangeListener {
     private CallbackHelper mViewAttachedCallbackHelper = new CallbackHelper();
 

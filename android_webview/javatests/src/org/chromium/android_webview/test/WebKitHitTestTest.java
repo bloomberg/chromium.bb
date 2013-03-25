@@ -20,7 +20,7 @@ import org.chromium.net.test.util.TestWebServer;
 
 import java.util.concurrent.Callable;
 
-public class WebKitHitTestTest extends AndroidWebViewTestBase {
+public class WebKitHitTestTest extends AwTestBase {
     private TestAwContentsClient mContentsClient;
     private AwTestContainerView mTestView;
     private AwContents mAwContents;

@@ -22,7 +22,7 @@ import java.util.Map;
 /**
  * Test suite for loadUrl().
  */
-public class AndroidWebViewLoadUrlTest extends AndroidWebViewTestBase {
+public class LoadUrlTest extends AwTestBase {
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testDataUrl() throws Throwable {

@@ -15,7 +15,7 @@ import org.chromium.base.test.util.Feature;
 /**
  * Test WebChromeClient::onShow/HideCustomView.
  */
-public class AwContentsClientFullScreenVideoTest extends AndroidWebViewTestBase {
+public class AwContentsClientFullScreenVideoTest extends AwTestBase {
 
     /*
      * @Feature({"AndroidWebView"})

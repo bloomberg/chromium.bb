@@ -50,7 +50,7 @@ import java.util.List;
  * settings applies either to each individual view or to all views of the
  * application
  */
-public class AwSettingsTest extends AndroidWebViewTestBase {
+public class AwSettingsTest extends AwTestBase {
     private static final long TEST_TIMEOUT = 20000L;
     private static final int CHECK_INTERVAL = 100;
 

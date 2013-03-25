@@ -25,7 +25,7 @@ import java.util.concurrent.Callable;
 /**
  * A test suite for zooming-related methods and settings.
  */
-public class ContentViewZoomTest extends AndroidWebViewTestBase {
+public class ContentViewZoomTest extends AwTestBase {
     private static final long TEST_TIMEOUT_MS = 20000L;
     private static final int CHECK_INTERVAL_MS = 100;
 

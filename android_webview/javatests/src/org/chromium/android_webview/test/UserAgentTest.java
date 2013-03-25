@@ -12,7 +12,7 @@ import java.util.regex.Pattern;
 import org.chromium.android_webview.AwContents;
 import org.chromium.base.test.util.Feature;
 
-public class UserAgentTest extends AndroidWebViewTestBase {
+public class UserAgentTest extends AwTestBase {
 
     private TestAwContentsClient mContentsClient;
     private AwContents mAwContents;
