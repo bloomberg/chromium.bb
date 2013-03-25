@@ -53,6 +53,7 @@ public class ChildProcessConnection implements ServiceConnection {
 
     private final Context mContext;
     private final int mServiceNumber;
+    private final boolean mInSandbox;
     private final ChildProcessConnection.DeathCallback mDeathCallback;
     private final Class<? extends ChildProcessService> mServiceClass;
 
@@ -91,17 +92,22 @@ public class ChildProcessConnection implements ServiceConnection {
     private ConnectionParams mConnectionParams;
     private boolean mIsBound;
 
-    ChildProcessConnection(Context context, int number,
+    ChildProcessConnection(Context context, int number, boolean inSandbox,
             ChildProcessConnection.DeathCallback deathCallback,
             Class<? extends ChildProcessService> serviceClass) {
         mContext = context;
         mServiceNumber = number;
+        mInSandbox = inSandbox;
         mDeathCallback = deathCallback;
         mServiceClass = serviceClass;
     }
 
     int getServiceNumber() {
         return mServiceNumber;
+    }
+
+    boolean isInSandbox() {
+        return mInSandbox;
     }
 
     IChildProcessService getService() {
@@ -112,8 +118,7 @@ public class ChildProcessConnection implements ServiceConnection {
 
     private Intent createServiceBindIntent() {
         Intent intent = new Intent();
-        String serviceClassNameBase = mServiceClass.getName().replaceAll("[0-9]*$", "");
-        intent.setClassName(mContext, serviceClassNameBase + mServiceNumber);
+        intent.setClassName(mContext, mServiceClass.getName() + mServiceNumber);
         intent.setPackage(mContext.getPackageName());
         return intent;
     }

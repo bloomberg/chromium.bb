@@ -50,12 +50,12 @@ public class AndroidBrowserProcess {
 
     // Cap on the maximum number of renderer processes that can be requested.
     // This is currently set to account for:
-    //   6: The maximum number of child processes we have available
+    //   6: The maximum number of sandboxed processes we have available
     // - 1: The regular New Tab Page
     // - 1: The incognito New Tab Page
     // - 1: A regular incognito tab
     public static final int MAX_RENDERERS_LIMIT =
-        ChildProcessLauncher.MAX_REGISTERED_SERVICES - 3;
+        ChildProcessLauncher.MAX_REGISTERED_SANDBOXED_SERVICES - 3;
 
     /**
      * Initialize the process as a ContentView host. This must be called from the main UI thread.

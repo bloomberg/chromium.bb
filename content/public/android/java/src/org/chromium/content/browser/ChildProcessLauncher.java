@@ -8,9 +8,7 @@ import android.content.Context;
 import android.util.Log;
 import android.view.Surface;
 
-import java.util.Arrays;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -18,6 +16,8 @@ import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.ThreadUtils;
 import org.chromium.content.app.ChildProcessService;
+import org.chromium.content.app.PrivilegedProcessService;
+import org.chromium.content.app.SandboxedProcessService;
 import org.chromium.content.app.LibraryLoader;
 import org.chromium.content.common.IChildProcessCallback;
 import org.chromium.content.common.IChildProcessService;
@@ -34,43 +34,112 @@ public class ChildProcessLauncher {
     private static final int CALLBACK_FOR_GPU_PROCESS = 1;
     private static final int CALLBACK_FOR_RENDERER_PROCESS = 2;
 
-    // The upper limit on the number of simultaneous service process instances supported.
-    // This must not exceed total number of SandboxedProcessServiceX classes declared in
-    // this package, and defined as services in the embedding application's manifest file.
+    private static final String SWITCH_PROCESS_TYPE = "type";
+    private static final String SWITCH_PPAPI_BROKER_PROCESS = "ppapi-broker";
+    private static final String SWITCH_RENDERER_PROCESS = "renderer";
+    private static final String SWITCH_GPU_PROCESS = "gpu-process";
+
+    // The upper limit on the number of simultaneous sandboxed and privileged child service process
+    // instances supported. Each limit must not exceed total number of SandboxedProcessServiceX
+    // classes and PrivilegedProcessClassX declared in this package, and defined as services in the
+    // embedding application's manifest file.
     // (See {@link ChildProcessService} for more details on defining the services.)
-    /* package */ static final int MAX_REGISTERED_SERVICES = 6;
-    private static final ChildProcessConnection[] mConnections =
-        new ChildProcessConnection[MAX_REGISTERED_SERVICES];
-    // The list of free slots in mConnections.  When looking for a free connection,
-    // the first index in that list should be used. When a connection is freed, its index
-    // is added to the end of the list. This is so that we avoid immediately reusing a freed
-    // connection (see bug crbug.com/164069): the framework might keep a service process alive
-    // when it's been unbound for a short time.  If a connection to that same service is bound
-    // at that point, the process is reused and bad things happen (mostly static variables are
-    // set when we don't expect them to).
-    // SHOULD BE ACCESSED WITH THE mConnections LOCK.
-    private static final ArrayList<Integer> mFreeConnectionIndices =
-        new ArrayList<Integer>(MAX_REGISTERED_SERVICES);
-    static {
-        for (int i = 0; i < MAX_REGISTERED_SERVICES; i++) {
-            mFreeConnectionIndices.add(i);
+    /* package */ static final int MAX_REGISTERED_SANDBOXED_SERVICES = 6;
+    /* package */ static final int MAX_REGISTERED_PRIVILEGED_SERVICES = 3;
+
+    private static class ChildConnectionAllocator {
+        private ChildProcessConnection[] mChildProcessConnections;
+
+        // The list of free slots in corresponing Connections.  When looking for a free connection,
+        // the first index in that list should be used. When a connection is freed, its index
+        // is added to the end of the list. This is so that we avoid immediately reusing a freed
+        // connection (see bug crbug.com/164069): the framework might keep a service process alive
+        // when it's been unbound for a short time.  If a connection to that same service is bound
+        // at that point, the process is reused and bad things happen (mostly static variables are
+        // set when we don't expect them to).
+        // SHOULD BE ACCESSED WITH THE mConnectionLock.
+        private ArrayList<Integer> mFreeConnectionIndices;
+        private final Object mConnectionLock = new Object();
+
+        private Class<? extends ChildProcessService> mChildClass;
+        private final boolean mInSandbox;
+
+        public ChildConnectionAllocator(boolean inSandbox) {
+            int numChildServices = inSandbox ?
+                    MAX_REGISTERED_SANDBOXED_SERVICES : MAX_REGISTERED_PRIVILEGED_SERVICES;
+            mChildProcessConnections = new ChildProcessConnection[numChildServices];
+            mFreeConnectionIndices = new ArrayList<Integer>(numChildServices);
+            for (int i = 0; i < numChildServices; i++) {
+                mFreeConnectionIndices.add(i);
+            }
+            setServiceClass(inSandbox ?
+                    SandboxedProcessService.class : PrivilegedProcessService.class);
+            mInSandbox = inSandbox;
+        }
+
+        public void setServiceClass(Class<? extends ChildProcessService> childClass) {
+            mChildClass = childClass;
+        }
+
+        public ChildProcessConnection allocate(
+                Context context, ChildProcessConnection.DeathCallback deathCallback) {
+            synchronized(mConnectionLock) {
+                if (mFreeConnectionIndices.isEmpty()) {
+                    Log.w(TAG, "Ran out of service." );
+                    return null;
+                }
+                int slot = mFreeConnectionIndices.remove(0);
+                assert mChildProcessConnections[slot] == null;
+                mChildProcessConnections[slot] = new ChildProcessConnection(context, slot,
+                        mInSandbox, deathCallback, mChildClass);
+                return mChildProcessConnections[slot];
+            }
+        }
+
+        public void free(ChildProcessConnection connection) {
+            synchronized(mConnectionLock) {
+                int slot = connection.getServiceNumber();
+                if (mChildProcessConnections[slot] != connection) {
+                    int occupier = mChildProcessConnections[slot] == null ?
+                            -1 : mChildProcessConnections[slot].getServiceNumber();
+                    Log.e(TAG, "Unable to find connection to free in slot: " + slot +
+                            " already occupied by service: " + occupier);
+                    assert false;
+                } else {
+                    mChildProcessConnections[slot] = null;
+                    assert !mFreeConnectionIndices.contains(slot);
+                    mFreeConnectionIndices.add(slot);
+                }
+            }
         }
     }
 
     // Service class for child process. As the default value it uses
-    // SandboxedProcessService0.
-    private static Class<? extends ChildProcessService> mServiceClass =
-            org.chromium.content.app.SandboxedProcessService0.class;
+    // SandboxedProcessService0 and PrivilegedProcessService0
+    private static final ChildConnectionAllocator mSandboxedChildConnectionAllocator =
+            new ChildConnectionAllocator(true);
+    private static final ChildConnectionAllocator mPrivilegedChildConnectionAllocator =
+            new ChildConnectionAllocator(false);
+
     private static boolean mConnectionAllocated = false;
 
-    // Sets service class for sandboxed service.
-    public static void setServiceClass(Class<? extends ChildProcessService> serviceClass) {
+   // Sets service class for sandboxed service and privileged service
+    public static void setChildProcessClass(
+            Class<? extends SandboxedProcessService> sandboxedServiceClass,
+            Class<? extends PrivilegedProcessService> privilegedServiceClass) {
         // We should guarantee this is called before allocating connection.
         assert !mConnectionAllocated;
-        mServiceClass = serviceClass;
+        mSandboxedChildConnectionAllocator.setServiceClass(sandboxedServiceClass);
+        mPrivilegedChildConnectionAllocator.setServiceClass(privilegedServiceClass);
     }
 
-    private static ChildProcessConnection allocateConnection(Context context) {
+    private static ChildConnectionAllocator getConnectionAllocator(boolean inSandbox) {
+        return inSandbox ?
+                mSandboxedChildConnectionAllocator : mPrivilegedChildConnectionAllocator;
+    }
+
+    private static ChildProcessConnection allocateConnection(Context context,
+            boolean inSandbox) {
         ChildProcessConnection.DeathCallback deathCallback =
             new ChildProcessConnection.DeathCallback() {
                 @Override
@@ -78,23 +147,13 @@ public class ChildProcessLauncher {
                     stop(pid);
                 }
             };
-        synchronized (mConnections) {
-            if (mFreeConnectionIndices.isEmpty()) {
-                Log.w(TAG, "Ran out of child services.");
-                return null;
-            }
-            int slot = mFreeConnectionIndices.remove(0);
-            assert mConnections[slot] == null;
-            mConnections[slot] = new ChildProcessConnection(context, slot, deathCallback,
-                    mServiceClass);
-            mConnectionAllocated = true;
-            return mConnections[slot];
-        }
+        mConnectionAllocated = true;
+        return getConnectionAllocator(inSandbox).allocate(context, deathCallback);
     }
 
     private static ChildProcessConnection allocateBoundConnection(Context context,
-            String[] commandLine) {
-        ChildProcessConnection connection = allocateConnection(context);
+            String[] commandLine, boolean inSandbox) {
+        ChildProcessConnection connection = allocateConnection(context, inSandbox);
         if (connection != null) {
             String libraryName = LibraryLoader.getLibraryToLoad();
             assert libraryName != null : "Attempting to launch a child process without first "
@@ -108,26 +167,8 @@ public class ChildProcessLauncher {
         if (connection == null) {
             return;
         }
-        int slot = connection.getServiceNumber();
-        synchronized (mConnections) {
-            if (mConnections[slot] != connection) {
-                int occupier = mConnections[slot] == null ?
-                        -1 : mConnections[slot].getServiceNumber();
-                Log.e(TAG, "Unable to find connection to free in slot: " + slot +
-                        " already occupied by service: " + occupier);
-                assert false;
-            } else {
-                mConnections[slot] = null;
-                assert !mFreeConnectionIndices.contains(slot);
-                mFreeConnectionIndices.add(slot);
-            }
-        }
-    }
-
-    public static int getNumberOfConnections() {
-        synchronized (mConnections) {
-            return mFreeConnectionIndices.size();
-        }
+        getConnectionAllocator(connection.isInSandbox()).free(connection);
+        return;
     }
 
     // Represents an invalid process handle; same as base/process.h kNullProcessHandle.
@@ -138,7 +179,7 @@ public class ChildProcessLauncher {
             new ConcurrentHashMap<Integer, ChildProcessConnection>();
 
     // A pre-allocated and pre-bound connection ready for connection setup, or null.
-    static ChildProcessConnection mSpareConnection = null;
+    static ChildProcessConnection mSpareSandboxedConnection = null;
 
     /**
      * Returns the child process service interface for the given pid. This may be called on
@@ -159,15 +200,30 @@ public class ChildProcessLauncher {
     /**
      * Should be called early in startup so the work needed to spawn the child process can
      * be done in parallel to other startup work. Must not be called on the UI thread.
+     * Spare connection is created in sandboxed child process.
      * @param context the application context used for the connection.
      */
     public static void warmUp(Context context) {
         synchronized (ChildProcessLauncher.class) {
             assert !ThreadUtils.runningOnUiThread();
-            if (mSpareConnection == null) {
-                mSpareConnection = allocateBoundConnection(context, null);
+            if (mSpareSandboxedConnection == null) {
+                mSpareSandboxedConnection = allocateBoundConnection(context, null, true);
             }
         }
+    }
+
+    private static String getSwitchValue(final String[] commandLine, String switchKey) {
+        if (commandLine == null || switchKey == null) {
+            return null;
+        }
+        // This format should be matched with the one defined in command_line.h.
+        final String switchKeyPrefix = "--" + switchKey + "=";
+        for (String command : commandLine) {
+            if (command != null && command.startsWith(switchKeyPrefix)) {
+                return command.substring(switchKeyPrefix.length());
+            }
+        }
+        return null;
     }
 
     /**
@@ -199,13 +255,27 @@ public class ChildProcessLauncher {
                     new FileDescriptorInfo(fileIds[i], fileFds[i], fileAutoClose[i]);
         }
         assert clientContext != 0;
-        ChildProcessConnection allocatedConnection;
+
+        int callbackType = CALLBACK_FOR_UNKNOWN_PROCESS;
+        boolean inSandbox = true;
+        String processType = getSwitchValue(commandLine, SWITCH_PROCESS_TYPE);
+        if (SWITCH_RENDERER_PROCESS.equals(processType)) {
+            callbackType = CALLBACK_FOR_RENDERER_PROCESS;
+        } else if (SWITCH_GPU_PROCESS.equals(processType)) {
+            callbackType = CALLBACK_FOR_GPU_PROCESS;
+        } else if (SWITCH_PPAPI_BROKER_PROCESS.equals(processType)) {
+            inSandbox = false;
+        }
+
+        ChildProcessConnection allocatedConnection = null;
         synchronized (ChildProcessLauncher.class) {
-            allocatedConnection = mSpareConnection;
-            mSpareConnection = null;
+            if (inSandbox) {
+                allocatedConnection = mSpareSandboxedConnection;
+                mSpareSandboxedConnection = null;
+            }
         }
         if (allocatedConnection == null) {
-            allocatedConnection = allocateBoundConnection(context, commandLine);
+            allocatedConnection = allocateBoundConnection(context, commandLine, inSandbox);
             if (allocatedConnection == null) {
                 // Notify the native code so it can free the heap allocated callback.
                 nativeOnChildProcessStarted(clientContext, 0);
@@ -228,13 +298,6 @@ public class ChildProcessLauncher {
                 nativeOnChildProcessStarted(clientContext, pid);
             }
         };
-        int callbackType = CALLBACK_FOR_UNKNOWN_PROCESS;
-        List<String> commandLineList = Arrays.asList(commandLine);
-        if (commandLineList.contains("--type=renderer")) {
-            callbackType = CALLBACK_FOR_RENDERER_PROCESS;
-        } else if (commandLineList.contains("--type=gpu-process")) {
-            callbackType = CALLBACK_FOR_GPU_PROCESS;
-        }
         // TODO(sievers): Revisit this as it doesn't correctly handle the utility process
         // assert callbackType != CALLBACK_FOR_UNKNOWN_PROCESS;
 

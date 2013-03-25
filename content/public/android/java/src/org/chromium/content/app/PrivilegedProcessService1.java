@@ -5,8 +5,8 @@
 package org.chromium.content.app;
 
 // This is needed to register multiple SandboxedProcess services so that we can have
-// more than one sandboxed process.
+// more than one privileged process.
 
-public class SandboxedProcessService0 extends SandboxedProcessService {
+public class PrivilegedProcessService1 extends PrivilegedProcessService {
 
 }
