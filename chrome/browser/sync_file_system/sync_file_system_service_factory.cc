@@ -11,6 +11,7 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync_file_system/drive_file_sync_service.h"
 #include "chrome/browser/sync_file_system/sync_file_system_service.h"
+#include "webkit/fileapi/syncable/syncable_file_system_util.h"
 
 namespace sync_file_system {
 
@@ -51,10 +52,16 @@ ProfileKeyedService* SyncFileSystemServiceFactory::BuildServiceInstanceFor(
       new LocalFileSyncService(profile));
 
   scoped_ptr<RemoteFileSyncService> remote_file_service;
-  if (mock_remote_file_service_)
+  if (mock_remote_file_service_) {
     remote_file_service = mock_remote_file_service_.Pass();
-  else
+  } else {
+    // FileSystem needs to be registered before DriveFileSyncService runs
+    // its initialization code.
+    // TODO(kinuko): Clean up RegisterSyncableFileSystem in
+    // local_file_sync_context.cc, which is still there for testing.
+    RegisterSyncableFileSystem(DriveFileSyncService::kServiceName);
     remote_file_service.reset(new DriveFileSyncService(profile));
+  }
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(kDisableLastWriteWin)) {
     remote_file_service->SetConflictResolutionPolicy(
