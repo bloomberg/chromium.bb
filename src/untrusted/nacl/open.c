@@ -5,6 +5,7 @@
  */
 
 #include <errno.h>
+#include <fcntl.h>
 #include <stdarg.h>
 #include <unistd.h>
 
@@ -13,12 +14,14 @@
 int open(char const *pathname, int flags, ...) {
   int error;
   int fd;
-  mode_t mode;
-  va_list ap;
+  mode_t mode = 0;
 
-  va_start(ap, flags);
-  mode = va_arg(ap, mode_t);
-  va_end(ap);
+  if (flags & O_CREAT) {
+    va_list ap;
+    va_start(ap, flags);
+    mode = va_arg(ap, mode_t);
+    va_end(ap);
+  }
 
   error = __libnacl_irt_filename.open(pathname, flags, mode, &fd);
   if (error) {
