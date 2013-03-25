@@ -100,6 +100,24 @@ class DevToolsProtocol {
     DISALLOW_COPY_AND_ASSIGN(Notification);
   };
 
+  class Event {
+   public:
+    ~Event();
+
+    std::string Serialize();
+
+   private:
+    friend class DevToolsProtocol;
+
+    // Takes ownership over |params|.
+    Event(const std::string& method, base::DictionaryValue* params);
+
+    std::string method_;
+    scoped_ptr<base::DictionaryValue> params_;
+
+    DISALLOW_COPY_AND_ASSIGN(Event);
+  };
+
   class Handler {
    public:
     typedef base::Callback<scoped_ptr<DevToolsProtocol::Response>(
@@ -133,6 +151,9 @@ class DevToolsProtocol {
 
   static Command* ParseCommand(const std::string& json,
                                std::string* error_response);
+
+  static Event* CreateEvent(const std::string& method,
+                            base::DictionaryValue* params);
 
  private:
   DevToolsProtocol() {}

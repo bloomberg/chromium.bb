@@ -278,24 +278,6 @@ static std::string GetMimeType(const std::string& filename) {
   return "text/plain";
 }
 
-void DevToolsHttpHandlerImpl::Observe(int type,
-                                      const NotificationSource& source,
-                                      const NotificationDetails& details) {
-  RenderProcessHost* process = Source<RenderProcessHost>(source).ptr();
-  DevToolsManager* manager = DevToolsManager::GetInstance();
-  for (ConnectionToClientHostMap::iterator it =
-       connection_to_client_host_ui_.begin();
-       it != connection_to_client_host_ui_.end(); ++it) {
-    DevToolsAgentHost* agent = manager->GetDevToolsAgentHostFor(it->second);
-    if (!agent)
-      continue;
-    RenderViewHost* rvh = agent->GetRenderViewHost();
-    // TODO(kaznacheev) Handle process termination for shared workers.
-    if (rvh && rvh->GetProcess() == process)
-      it->second->InspectedContentsClosing();
-  }
-}
-
 void DevToolsHttpHandlerImpl::OnHttpRequest(
     int connection_id,
     const net::HttpServerRequestInfo& info) {
@@ -692,11 +674,6 @@ DevToolsHttpHandlerImpl::DevToolsHttpHandlerImpl(
 
   default_binding_.reset(new DevToolsDefaultBindingHandler);
   binding_ = default_binding_.get();
-
-  registrar_.Add(this, NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-                 NotificationService::AllBrowserContextsAndSources());
-  registrar_.Add(this, NOTIFICATION_RENDERER_PROCESS_CLOSED,
-                 NotificationService::AllBrowserContextsAndSources());
 
   // Balanced in ResetHandlerThreadAndRelease().
   AddRef();

@@ -13,6 +13,7 @@
 #include "base/stringprintf.h"
 #include "base/values.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/devtools/devtools_protocol_constants.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/javascript_dialog_manager.h"
@@ -27,32 +28,20 @@
 
 namespace content {
 
-namespace {
-
-const char kDOMFileInputCommand[] = "DOM.setFileInputFiles";
-const char kDOMFileInputFilesParam[] = "files";
-const char kPageHandleDialogCommand[] = "Page.handleJavaScriptDialog";
-const char kPageHandleDialogAcceptParam[] = "accept";
-const char kPageHandleDialogPromptTextParam[] = "promptText";
-const char kPageNavigateCommand[] = "Page.navigate";
-const char kPageNavigateUrlParam[] = "url";
-
-}  // namespace
-
 RendererOverridesHandler::RendererOverridesHandler(DevToolsAgentHost* agent)
     : agent_(agent) {
   RegisterCommandHandler(
-      kDOMFileInputCommand,
+      devtools::DOM::setFileInputFiles::kName,
       base::Bind(
           &RendererOverridesHandler::GrantPermissionsForSetFileInputFiles,
           base::Unretained(this)));
   RegisterCommandHandler(
-      kPageHandleDialogCommand,
+      devtools::Page::handleJavaScriptDialog::kName,
       base::Bind(
           &RendererOverridesHandler::PageHandleJavaScriptDialog,
           base::Unretained(this)));
   RegisterCommandHandler(
-      kPageNavigateCommand,
+      devtools::Page::navigate::kName,
       base::Bind(
           &RendererOverridesHandler::PageNavigate,
           base::Unretained(this)));
@@ -65,11 +54,12 @@ RendererOverridesHandler::GrantPermissionsForSetFileInputFiles(
     DevToolsProtocol::Command* command) {
   base::DictionaryValue* params = command->params();
   base::ListValue* file_list = NULL;
-  if (!params || !params->GetList(kDOMFileInputFilesParam, &file_list)) {
+  const char* param =
+      devtools::DOM::setFileInputFiles::kParamFiles;
+  if (!params || !params->GetList(param, &file_list)) {
     return command->ErrorResponse(
         DevToolsProtocol::kErrorInvalidParams,
-        base::StringPrintf("Missing or invalid '%s' parameter",
-                           kDOMFileInputFilesParam));
+        base::StringPrintf("Missing or invalid '%s' parameter", param));
   }
   RenderViewHost* host = agent_->GetRenderViewHost();
   if (!host)
@@ -80,8 +70,7 @@ RendererOverridesHandler::GrantPermissionsForSetFileInputFiles(
     if (!file_list->GetString(i, &file)) {
       return command->ErrorResponse(
           DevToolsProtocol::kErrorInvalidParams,
-          base::StringPrintf("'%s' must be a list of strings",
-                             kDOMFileInputFilesParam));
+          base::StringPrintf("'%s' must be a list of strings", param));
     }
     ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadFile(
         host->GetProcess()->GetID(), base::FilePath(file));
@@ -93,17 +82,19 @@ scoped_ptr<DevToolsProtocol::Response>
 RendererOverridesHandler::PageHandleJavaScriptDialog(
     DevToolsProtocol::Command* command) {
   base::DictionaryValue* params = command->params();
+  const char* paramAccept =
+      devtools::Page::handleJavaScriptDialog::kParamAccept;
   bool accept;
-  if (!params || !params->GetBoolean(kPageHandleDialogAcceptParam, &accept)) {
+  if (!params || !params->GetBoolean(paramAccept, &accept)) {
     return command->ErrorResponse(
         DevToolsProtocol::kErrorInvalidParams,
-        base::StringPrintf("Missing or invalid '%s' parameter",
-                           kPageHandleDialogAcceptParam));
+        base::StringPrintf("Missing or invalid '%s' parameter", paramAccept));
   }
   string16 prompt_override;
   string16* prompt_override_ptr = &prompt_override;
-  if (!params || !params->GetString(kPageHandleDialogPromptTextParam,
-                                    prompt_override_ptr)) {
+  if (!params || !params->GetString(
+      devtools::Page::handleJavaScriptDialog::kParamPromptText,
+      prompt_override_ptr)) {
     prompt_override_ptr = NULL;
   }
 
@@ -129,11 +120,12 @@ RendererOverridesHandler::PageNavigate(
     DevToolsProtocol::Command* command) {
   base::DictionaryValue* params = command->params();
   std::string url;
-  if (!params || !params->GetString(kPageNavigateUrlParam, &url)) {
+  const char* param = devtools::Page::navigate::kParamUrl;
+  if (!params || !params->GetString(param, &url)) {
     return command->ErrorResponse(
         DevToolsProtocol::kErrorInvalidParams,
         base::StringPrintf("Missing or invalid '%s' parameter",
-                           kPageNavigateUrlParam));
+                           param));
   }
   GURL gurl(url);
   if (!gurl.is_valid()) {

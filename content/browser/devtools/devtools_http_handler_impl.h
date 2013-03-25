@@ -15,8 +15,6 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/devtools_http_handler.h"
 #include "content/public/browser/devtools_http_handler_delegate.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/worker_service.h"
 #include "net/server/http_server.h"
 
@@ -39,7 +37,6 @@ class DevToolsClientHost;
 
 class DevToolsHttpHandlerImpl
     : public DevToolsHttpHandler,
-      public NotificationObserver,
       public base::RefCountedThreadSafe<DevToolsHttpHandlerImpl>,
       public net::HttpServer::Delegate {
  private:
@@ -58,11 +55,6 @@ class DevToolsHttpHandlerImpl
   virtual void SetDevToolsAgentHostBinding(
       DevToolsAgentHostBinding* binding) OVERRIDE;
   virtual GURL GetFrontendURL(DevToolsAgentHost* agent_host) OVERRIDE;
-
-  // NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
 
   // net::HttpServer::Delegate implementation.
   virtual void OnHttpRequest(int connection_id,
@@ -135,7 +127,6 @@ class DevToolsHttpHandlerImpl
   scoped_ptr<DevToolsHttpHandlerDelegate> delegate_;
   DevToolsAgentHostBinding* binding_;
   scoped_ptr<DevToolsAgentHostBinding> default_binding_;
-  NotificationRegistrar registrar_;
   scoped_ptr<DevToolsBrowserTarget> browser_target_;
   DISALLOW_COPY_AND_ASSIGN(DevToolsHttpHandlerImpl);
 };

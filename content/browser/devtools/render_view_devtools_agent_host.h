@@ -17,7 +17,6 @@
 
 namespace content {
 
-class DevToolsAgentHostRvhObserver;
 class RendererOverridesHandler;
 class RenderViewHost;
 
@@ -34,7 +33,7 @@ class CONTENT_EXPORT RenderViewDevToolsAgentHost
 
  private:
   friend class DevToolsAgentHost;
-  friend class DevToolsAgentHostRvhObserver;
+  class DevToolsAgentHostRvhObserver;
 
   virtual ~RenderViewDevToolsAgentHost();
 
@@ -49,11 +48,13 @@ class CONTENT_EXPORT RenderViewDevToolsAgentHost
 
   // WebContentsObserver overrides.
   virtual void AboutToNavigateRenderView(RenderViewHost* dest_rvh) OVERRIDE;
+  virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;
 
   void ConnectRenderViewHost(RenderViewHost* rvh, bool reattach);
   void DisconnectRenderViewHost();
 
   void RenderViewHostDestroyed(RenderViewHost* rvh);
+  void RenderViewCrashed();
   bool OnRvhMessageReceived(const IPC::Message& message);
 
   void OnDispatchOnInspectorFrontend(const std::string& message);

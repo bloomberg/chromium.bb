@@ -10,6 +10,7 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/devtools/devtools_manager_impl.h"
 #include "content/browser/devtools/devtools_protocol.h"
+#include "content/browser/devtools/devtools_protocol_constants.h"
 #include "content/browser/devtools/renderer_overrides_handler.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -48,7 +49,8 @@ static RenderViewDevToolsAgentHost* FindAgentHost(RenderViewHost* rvh) {
 
 using WebKit::WebDevToolsAgent;
 
-class DevToolsAgentHostRvhObserver : public RenderViewHostObserver {
+class RenderViewDevToolsAgentHost::DevToolsAgentHostRvhObserver
+    : public RenderViewHostObserver {
  public:
   DevToolsAgentHostRvhObserver(RenderViewHost* rvh,
                                RenderViewDevToolsAgentHost* agent_host)
@@ -277,6 +279,19 @@ void RenderViewDevToolsAgentHost::AboutToNavigateRenderView(
   ConnectRenderViewHost(dest_rvh, true);
 }
 
+void RenderViewDevToolsAgentHost::RenderViewGone(
+    base::TerminationStatus status) {
+  switch(status) {
+    case base::TERMINATION_STATUS_ABNORMAL_TERMINATION:
+    case base::TERMINATION_STATUS_PROCESS_WAS_KILLED:
+    case base::TERMINATION_STATUS_PROCESS_CRASHED:
+      RenderViewCrashed();
+      break;
+    default:
+      break;
+  }
+}
+
 void RenderViewDevToolsAgentHost::ConnectRenderViewHost(RenderViewHost* rvh,
                                                         bool reattach) {
   render_view_host_ = rvh;
@@ -298,6 +313,14 @@ void RenderViewDevToolsAgentHost::RenderViewHostDestroyed(
   NotifyCloseListener();
   render_view_host_ = NULL;
   Release();
+}
+
+void RenderViewDevToolsAgentHost::RenderViewCrashed() {
+  scoped_ptr<DevToolsProtocol::Event> event(
+      DevToolsProtocol::CreateEvent(
+          devtools::Inspector::targetCrashed::kName, NULL));
+  DevToolsManagerImpl::GetInstance()->
+      DispatchOnInspectorFrontend(this, event->Serialize());
 }
 
 bool RenderViewDevToolsAgentHost::OnRvhMessageReceived(
