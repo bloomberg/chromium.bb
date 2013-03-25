@@ -21,8 +21,9 @@ class Response;
 
 namespace chromeos {
 
-// This class exports a "SetDisplayPower" D-Bus method that the power
-// manager calls to instruct Chrome to turn various displays on or off.
+// This class exports "SetDisplayPower" and "SetDisplaySoftwareDimming"
+// D-Bus methods that the power manager calls to instruct Chrome to turn
+// various displays on or off or dim them.
 class DisplayPowerServiceProvider
     : public CrosDBusService::ServiceProviderInterface {
  public:
@@ -34,15 +35,18 @@ class DisplayPowerServiceProvider
       scoped_refptr<dbus::ExportedObject> exported_object) OVERRIDE;
 
  private:
-  // Called from ExportedObject when SetDisplayPower() is exported as a D-Bus
+  // Called from ExportedObject when a handler is exported as a D-Bus
   // method or failed to be exported.
   void OnExported(const std::string& interface_name,
                   const std::string& method_name,
                   bool success);
 
-  // Called on UI thread in response to a D-Bus request.
+  // Called on UI thread in response to D-Bus requests.
   void SetDisplayPower(dbus::MethodCall* method_call,
                        dbus::ExportedObject::ResponseSender response_sender);
+  void SetDisplaySoftwareDimming(
+      dbus::MethodCall* method_call,
+      dbus::ExportedObject::ResponseSender response_sender);
 
   // Keep this last so that all weak pointers will be invalidated at the
   // beginning of destruction.

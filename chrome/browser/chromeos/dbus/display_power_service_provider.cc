@@ -29,6 +29,13 @@ void DisplayPowerServiceProvider::Start(
                  weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&DisplayPowerServiceProvider::OnExported,
                  weak_ptr_factory_.GetWeakPtr()));
+  exported_object->ExportMethod(
+      kLibCrosServiceInterface,
+      kSetDisplaySoftwareDimming,
+      base::Bind(&DisplayPowerServiceProvider::SetDisplaySoftwareDimming,
+                 weak_ptr_factory_.GetWeakPtr()),
+      base::Bind(&DisplayPowerServiceProvider::OnExported,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void DisplayPowerServiceProvider::OnExported(const std::string& interface_name,
@@ -60,6 +67,20 @@ void DisplayPowerServiceProvider::SetDisplayPower(
     LOG(ERROR) << "Unable to parse " << kSetDisplayPower << " request";
   }
 
+  response_sender.Run(dbus::Response::FromMethodCall(method_call));
+}
+
+void DisplayPowerServiceProvider::SetDisplaySoftwareDimming(
+    dbus::MethodCall* method_call,
+    dbus::ExportedObject::ResponseSender response_sender) {
+  dbus::MessageReader reader(method_call);
+  bool dimmed = false;
+  if (reader.PopBool(&dimmed)) {
+    ash::Shell::GetInstance()->SetDimming(dimmed);
+  } else {
+    LOG(ERROR) << "Unable to parse " << kSetDisplaySoftwareDimming
+               << " request";
+  }
   response_sender.Run(dbus::Response::FromMethodCall(method_call));
 }
 
