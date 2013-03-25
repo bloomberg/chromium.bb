@@ -33,6 +33,35 @@ function ActionChoice(dom, filesystem, params) {
     this.rememberedChoice_ = result['action-choice'];
     this.initializeVolumes_();
   }.bind(this));
+
+  this.viewFilesItem_ = {
+    title: loadTimeData.getString('ACTION_CHOICE_VIEW_FILES'),
+    name: 'Files.app',
+    class: 'view-files'
+  };
+
+  this.importPhotosToDriveItem_ = {
+    title: loadTimeData.getString('ACTION_CHOICE_DRIVE_NOT_REACHED'),
+    name: 'Files.app',
+    class: 'import-photos-to-drive',
+    disabled: true
+  };
+
+  this.watchSingleVideoItem_ = {
+    title: '',
+    name: 'Files.app',
+    class: 'play-video',
+    hidden: true
+  };
+
+  this.staticItems_ = [
+    this.viewFilesItem_,
+    this.importPhotosToDriveItem_,
+    this.watchSingleVideoItem_
+  ];
+
+  // Try to render, what is already available.
+  this.renderList_();
 }
 
 ActionChoice.prototype = { __proto__: cr.EventTarget.prototype };
@@ -51,8 +80,8 @@ ActionChoice.PREVIEW_COUNT = 3;
  */
 ActionChoice.Action = {
   VIEW_FILES: 'view-files',
-  IMPORT_TO_DRIVE: 'import-todrive',
-  PLAY_VIDEO: 'play-video',
+  IMPORT_PHOTOS_TO_DRIVE: 'import-photos-to-drive',
+  WATCH_SINGLE_VIDEO: 'watch-single-video',
   OPEN_IN_GPLUS_PHOTOS: 'open-in-gplus-photos'
 };
 
@@ -126,29 +155,90 @@ ActionChoice.prototype.initializeVolumes_ = function() {
  * @private
  */
 ActionChoice.prototype.initDom_ = function() {
+  this.list_ = new cr.ui.List();
+  this.list_.id = 'actions-list';
+  this.document_.querySelector('.choices').appendChild(this.list_);
+
+  var self = this;  // .bind(this) doesn't work on constructors.
+  this.list_.itemConstructor = function(item) {
+    return self.renderItem(item);
+  };
+
+  this.list_.selectionModel = new cr.ui.ListSingleSelectionModel();
+  this.list_.dataModel = new cr.ui.ArrayDataModel([]);
+  this.list_.autoExpands = true;
+  this.list_.activateItemAtIndex = function(index) {
+    this.acceptAction_();
+  }.bind(this);
+
   this.previews_ = this.document_.querySelector('.previews');
   this.counter_ = this.document_.querySelector('.counter');
 
-  this.document_.querySelector('button.always').addEventListener('click',
-      this.acceptChoice_.bind(this, true));  // Remember the choice.
-  this.document_.querySelector('button.once').addEventListener('click',
-      this.acceptChoice_.bind(this, false));  // Do not remember the choice.
-
-  var choices = this.document_.querySelectorAll('.choices div');
-  for (var index = 0; index < choices.length; index++) {
-    choices[index].addEventListener(
-        'dblclick',
-        this.acceptChoice_.bind(this, false));  // Do not remember the choice.
-  }
+  this.document_.querySelector('button.ok').addEventListener('click',
+      function(event) {
+        this.acceptAction_();
+      }.bind(this));
 
   this.document_.addEventListener('keydown', this.onKeyDown_.bind(this));
 
   metrics.startInterval('PhotoImport.Load');
   this.dom_.setAttribute('loading', '');
 
-  this.document_.querySelectorAll('.choices input')[0].focus();
-
   util.disableBrowserShortcutKeys(this.document_);
+};
+
+/**
+ * Renders the list.
+ * @private
+ */
+ActionChoice.prototype.renderList_ = function() {
+  var currentItem = this.list_.dataModel.item(
+      this.list_.selectionModel.selectedIndex);
+
+  this.list_.startBatchUpdates();
+  this.list_.dataModel.splice(0, this.list_.dataModel.length);
+
+  // Add predefined items.
+  for (var i = 0; i < this.staticItems_.length; i++) {
+    if (!this.staticItems_[i].hidden)
+      this.list_.dataModel.push(this.staticItems_[i]);
+  }
+
+  // Add dynamic Media Galleries handlers.
+  // TODO(mtomasz): Implement this.
+
+  for (var i = 0; i < this.list_.dataModel.length; i++) {
+    if (this.list_.dataModel.item(i) == currentItem) {
+      this.list_.selectionModel.selectedIndex = i;
+      break;
+    }
+  }
+
+  this.list_.endBatchUpdates();
+};
+
+/**
+ * Renders an item in the list.
+ * @param {Object} item Item to render.
+ * @return {Element} DOM element with representing the item.
+ */
+ActionChoice.prototype.renderItem = function(item) {
+  var result = this.document_.createElement('li');
+
+  var div = this.document_.createElement('div');
+  div.textContent = item.title;
+  if (item.class)
+    div.classList.add(item.class);
+  if (item.icon)
+    div.style.backgroundImage = 'url(' + item.icon + ')';
+  if (item.disabled)
+    div.classList.add('disabled');
+
+  cr.defineProperty(result, 'lead', cr.PropertyKind.BOOL_ATTR);
+  cr.defineProperty(result, 'selected', cr.PropertyKind.BOOL_ATTR);
+  result.appendChild(div);
+
+  return result;
 };
 
 /**
@@ -158,18 +248,12 @@ ActionChoice.prototype.initDom_ = function() {
  * @private
  */
 ActionChoice.prototype.checkDrive_ = function(callback) {
-  var driveLabel = this.dom_.querySelector('label[for=import-photos-to-drive]');
-  var driveChoice = this.dom_.querySelector('#import-photos-to-drive');
-  var driveDiv = driveChoice.parentNode;
-  driveChoice.disabled = true;
-  driveDiv.setAttribute('disabled', '');
-
   var onMounted = function() {
-    driveChoice.disabled = false;
-    this.enabledOptions_.push(ActionChoice.Action.IMPORT_TO_DRIVE);
-    driveDiv.removeAttribute('disabled');
-    driveLabel.textContent =
+    this.importPhotosToDriveItem_.disabled = false;
+    this.importPhotosToDriveItem_.title =
         loadTimeData.getString('ACTION_CHOICE_PHOTOS_DRIVE');
+    this.renderList_();
+    this.enabledOptions_.push(ActionChoice.Action.IMPORT_PHOTOS_TO_DRIVE);
     callback();
   }.bind(this);
 
@@ -191,21 +275,17 @@ ActionChoice.prototype.loadSource_ = function(source, callback) {
   var onTraversed = function(results) {
     metrics.recordInterval('PhotoImport.Scan');
     var videos = results.filter(FileType.isVideo);
-    var videoLabel = this.dom_.querySelector('label[for=watch-single-video]');
     if (videos.length == 1) {
-      videoLabel.textContent = loadTimeData.getStringF(
-          'ACTION_CHOICE_WATCH_SINGLE_VIDEO', videos[0].name);
       this.singleVideo_ = videos[0];
       this.enabledOptions_.push(ActionChoice.Action.PLAY_VIDEO);
-    } else {
-      videoLabel.parentNode.style.display = 'none';
+      this.watchSingleVideoItem_.title = loadTimeData.getStringF(
+          'ACTION_CHOICE_WATCH_SINGLE_VIDEO', videos[0].name);
+      this.watchSingleVideoItem_.hidden = false;
+      this.renderList_();
     }
 
     var mediaFiles = results.filter(FileType.isImageOrVideo);
     if (mediaFiles.length == 0) {
-      this.dom_.querySelector('#import-photos-to-drive').parentNode.
-          style.display = 'none';
-
       // If we have no media files, the only choice is view files. So, don't
       // confuse user with a single choice, and just open file manager.
       this.viewFiles_();
@@ -321,9 +401,6 @@ ActionChoice.prototype.close_ = function() {
  */
 ActionChoice.prototype.onKeyDown_ = function(e) {
   switch (util.getKeyModifiers(e) + e.keyCode) {
-    case '13':
-      this.acceptChoice_(false);  // Do not remember the choice.
-      return;
     case '27':
       this.recordAction_('close');
       this.close_();
@@ -338,7 +415,7 @@ ActionChoice.prototype.onKeyDown_ = function(e) {
  */
 ActionChoice.prototype.runAction_ = function(action) {
   switch (action) {
-    case ActionChoice.Action.IMPORT_TO_DRIVE:
+    case ActionChoice.Action.IMPORT_PHOTOS_TO_DRIVE:
       var url = util.platform.getURL('photo_import.html') +
           '#' + this.sourceEntry_.fullPath;
       var width = 728;
@@ -349,7 +426,7 @@ ActionChoice.prototype.runAction_ = function(action) {
           {height: height, width: width, left: left, top: top});
       this.recordAction_('import-photos-to-drive');
       break;
-    case ActionChoice.Action.PLAY_VIDEO:
+    case ActionChoice.Action.WATCH_SINGLE_VIDEO:
       chrome.fileBrowserPrivate.viewFiles([this.singleVideo_.toURL()], 'watch',
           function(success) {});
       this.recordAction_('watch-single-video');
@@ -367,32 +444,32 @@ ActionChoice.prototype.runAction_ = function(action) {
 };
 
 /**
- * Runs importing on Files.app depending on choice.
- * @param {boolean} remember Whether remember the choice or not.
+ * Runs importing on Files.app depending on choice and remembers the choice.
  * @private
  */
-ActionChoice.prototype.acceptChoice_ = function(remember) {
-  if (this.document_.querySelector('#import-photos-to-drive').checked &&
-      this.enabledOptions_.indexOf(ActionChoice.Action.IMPORT_TO_DRIVE) != -1) {
-    this.runAction_(ActionChoice.Action.IMPORT_TO_DRIVE);
-    util.storage.local.set({'action-choice': remember ?
-        ActionChoice.Action.IMPORT_TO_DRIVE : undefined});
+ActionChoice.prototype.acceptAction_ = function() {
+  var item = this.list_.dataModel.item(this.list_.selectionModel.selectedIndex);
+  if (!item || item.disabled)
+    return;
+
+  if (item == this.importPhotosToDriveItem_) {
+    this.runAction_(ActionChoice.Action.IMPORT_PHOTOS_TO_DRIVE);
+    util.storage.local.set(
+        {'action-choice': ActionChoice.Action.IMPORT_PHOTOS_TO_DRIVE});
     return;
   }
 
-  if (this.document_.querySelector('#view-files').checked &&
-      this.enabledOptions_.indexOf(ActionChoice.Action.VIEW_FILES) != -1) {
+  if (item == this.viewFilesItem_) {
     this.runAction_(ActionChoice.Action.VIEW_FILES);
-    util.storage.local.set({'action-choice': remember ?
-        ActionChoice.Action.VIEW_FILES : undefined});
+    util.storage.local.set(
+        {'action-choice': ActionChoice.Action.VIEW_FILES});
     return;
   }
 
-  if (this.document_.querySelector('#watch-single-video').checked &&
-      this.enabledOptions_.indexOf(ActionChoice.Action.PLAY_VIDEO) != -1) {
-    this.runAction_(ActionChoice.Action.PLAY_VIDEO);
-    util.storage.local.set({'action-choice': remember ?
-        ActionChoice.Action.PLAY_VIDEO : undefined});
+  if (item == this.playVideoItem_) {
+    this.runAction_(ActionChoice.Action.WATCH_SINGLE_VIDEO);
+    util.storage.local.set(
+        {'action-choice': ActionChoice.Action.WATCH_SINGLE_VIDEO});
   }
 };
 

@@ -121,47 +121,6 @@ button:focus {
   width: 100%;
 }
 
-.choices > div {
-  -webkit-box-align: center;
-  -webkit-box-orient: horizontal;
-  display: -webkit-box;
-}
-
-.choices > div > * {
-  display: block;
-  margin: 0 3px;
-}
-
-.choices label {
-  background-position: 0 6px;
-  background-repeat: no-repeat;
-  height: 26px;
-  padding-left: 38px;
-  padding-top: 14px;
-}
-
-.choices label[for=import-photos-to-drive] {
-  background-image: -webkit-image-set(
-    url('../images/media/drive.png') 1x,
-    url('../images/media/2x/drive.png') 2x);
-}
-
-.choices label[for=view-files] {
-  background-image: -webkit-image-set(
-    url('../images/icon32.png') 1x,
-    url('../images/icon64.png') 2x);
-}
-
-.choices label[for=watch-single-video] {
-  background-image: -webkit-image-set(
-    url('../images/media/watch.png') 1x,
-    url('../images/media/2x/watch.png') 2x);
-}
-
-.choices div[disabled] label {
-  opacity: 0.5;
-}
-
 .footer {
   -webkit-box-orient: horizontal;
   -webkit-box-pack: end;
@@ -176,4 +135,72 @@ button:focus {
   height: 27px;
   margin-left: 10px;
   min-width: 80px;
+}
+
+.choices {
+  width: 100%;
+}
+
+/* Padding counterweights negative margins of items, thus eliminating scroll
+   bar when it's not needed. Max height is set to fit 8 items before showing
+   scroll bar. */
+#actions-list {
+  display: block;
+  max-height: 328px;
+  outline: none;
+  overflow: auto;
+  padding: 1px 0;
+  position: relative;
+}
+
+#actions-list > li {
+  cursor: default;
+  list-style-type: none;
+}
+
+#actions-list > li > div {
+  background-position: 5px center;
+  background-repeat: no-repeat;
+  line-height: 39px;
+  padding-left: 43px;
+}
+
+#actions-list > [selected] {
+  background-color: #dedede;
+}
+
+#actions-list:focus > [selected] {
+  background-color: rgb(203, 219, 241);
+}
+
+#actions-list > [selected]:hover {
+  background-color: rgb(193, 211, 236);
+  border-color: hsl(214, 91%, 85%);
+}
+
+#actions-list > :hover {
+  background-color: #f1f1f1;
+  border-color: hsl(214, 91%, 85%);
+}
+
+#actions-list > li > div.disabled {
+  opacity: 0.5;
+}
+
+#actions-list > li > div.import-photos-to-drive {
+  background-image: -webkit-image-set(
+    url('../images/media/drive.png') 1x,
+    url('../images/media/2x/drive.png') 2x);
+}
+
+#actions-list > li > div.view-files {
+  background-image: -webkit-image-set(
+    url('../images/icon32.png') 1x,
+    url('../images/icon64.png') 2x);
+}
+
+#actions-list > li > div.watch-single-video {
+  background-image: -webkit-image-set(
+    url('../images/media/watch.png') 1x,
+    url('../images/media/2x/watch.png') 2x);
 }

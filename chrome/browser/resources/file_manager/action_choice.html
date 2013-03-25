@@ -25,7 +25,12 @@
     <script src="../../../../ui/webui/resources/js/event_tracker.js"></script>
     <script src="../../../../ui/webui/resources/js/cr/ui.js"></script>
     <script src="../../../../ui/webui/resources/js/cr/event_target.js"></script>
+    <script src="../../../../ui/webui/resources/js/cr/ui/array_data_model.js"></script>
     <script src="../../../../ui/webui/resources/js/cr/ui/touch_handler.js"></script>
+    <script src="../../../../ui/webui/resources/js/cr/ui/list_item.js"></script>
+    <script src="../../../../ui/webui/resources/js/cr/ui/list_selection_model.js"></script>
+    <script src="../../../../ui/webui/resources/js/cr/ui/list_single_selection_model.js"></script>
+    <script src="../../../../ui/webui/resources/js/cr/ui/list_selection_controller.js"></script>
 
     <script src="js/util.js"></script>
     <script src="js/file_type.js"></script>
@@ -48,28 +53,10 @@
       <div class="counter"></div>
       <h1 i18n-content="ACTION_CHOICE_OPENING_METHOD"></h1>
 
-      <div class="choices">
-        <div>
-          <input id="import-photos-to-drive" type="radio" name="action">
-          <label for="import-photos-to-drive"
-                 i18n-content="ACTION_CHOICE_DRIVE_NOT_REACHED"></label>
-        </div>
-
-        <div>
-          <input id="view-files" type="radio" name="action" checked>
-          <label for="view-files"
-                 i18n-content="ACTION_CHOICE_VIEW_FILES"></label>
-        </div>
-
-        <div>
-          <input id="watch-single-video" type="radio" name="action">
-          <label for="watch-single-video"></label>
-        </div>
-      </div>
+      <div class="choices"></div>
 
       <div class="footer">
-        <button class="always" i18n-content="ACTION_CHOICE_ALWAYS"></button>
-        <button class="once" i18n-content="ACTION_CHOICE_ONCE"></button>
+        <button class="ok" i18n-content="OK_LABEL"></button>
       </div>
     </div>
 
