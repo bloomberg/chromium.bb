@@ -508,7 +508,7 @@ class ThreadedTransformTransition : public ThreadedLayerAnimationElement {
 
  protected:
   virtual void OnStart(LayerAnimationDelegate* delegate) OVERRIDE {
-    gfx::Transform start_ = delegate->GetTransformForAnimation();
+    start_ = delegate->GetTransformForAnimation();
     gfx::Rect bounds = delegate->GetBoundsForAnimation();
     float device_scale_factor = delegate->GetDeviceScaleFactor();
     cc_start_ = Layer::ConvertTransformToCCTransform(start_,
