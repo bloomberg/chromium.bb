@@ -69,7 +69,7 @@ class VertexShaderPosTexIdentity {
   void Init(WebKit::WebGraphicsContext3D*,
             unsigned program,
             bool using_bind_uniform,
-            int* base_uniform_index) { }
+            int* base_uniform_index) {}
   std::string GetShaderString() const;
 };
 
@@ -199,7 +199,7 @@ class FragmentShaderRGBATexVaryingAlpha : public FragmentTexOpaqueBinding {
 };
 
 class FragmentShaderRGBATexAlpha : public FragmentTexAlphaBinding {
-public:
+ public:
   std::string GetShaderString() const;
 };
 

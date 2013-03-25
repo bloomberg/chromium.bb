@@ -43,7 +43,7 @@ static void GetProgramUniformLocations(WebGraphicsContext3D* context,
 }
 
 VertexShaderPosTex::VertexShaderPosTex()
-      : matrix_location_(-1) { }
+      : matrix_location_(-1) {}
 
 void VertexShaderPosTex::Init(WebGraphicsContext3D* context,
                               unsigned program,
@@ -82,7 +82,7 @@ std::string VertexShaderPosTex::GetShaderString() const {
 
 VertexShaderPosTexYUVStretch::VertexShaderPosTexYUVStretch()
     : matrix_location_(-1),
-      tex_scale_location_(-1) { }
+      tex_scale_location_(-1) {}
 
 void VertexShaderPosTexYUVStretch::Init(WebGraphicsContext3D* context,
                                         unsigned program,
@@ -124,7 +124,7 @@ std::string VertexShaderPosTexYUVStretch::GetShaderString() const {
 }
 
 VertexShaderPos::VertexShaderPos()
-    : matrix_location_(-1) { }
+    : matrix_location_(-1) {}
 
 void VertexShaderPos::Init(WebGraphicsContext3D* context,
                            unsigned program,
@@ -161,7 +161,7 @@ std::string VertexShaderPos::GetShaderString() const {
 VertexShaderPosTexTransform::VertexShaderPosTexTransform()
     : matrix_location_(-1),
       tex_transform_location_(-1),
-      vertex_opacity_location_(-1) { }
+      vertex_opacity_location_(-1) {}
 
 void VertexShaderPosTexTransform::Init(WebGraphicsContext3D* context,
                                        unsigned program,
@@ -243,7 +243,7 @@ std::string VertexShaderPosTexIdentity::GetShaderString() const {
 VertexShaderQuad::VertexShaderQuad()
     : matrix_location_(-1),
       point_location_(-1),
-      tex_scale_location_(-1) { }
+      tex_scale_location_(-1) {}
 
 void VertexShaderQuad::Init(WebGraphicsContext3D* context,
                             unsigned program,
@@ -299,7 +299,7 @@ std::string VertexShaderQuad::GetShaderString() const {
 VertexShaderTile::VertexShaderTile()
     : matrix_location_(-1),
       point_location_(-1),
-      vertex_tex_transform_location_(-1) { }
+      vertex_tex_transform_location_(-1) {}
 
 void VertexShaderTile::Init(WebGraphicsContext3D* context,
                             unsigned program,
@@ -351,7 +351,7 @@ std::string VertexShaderTile::GetShaderString() const {
 
 VertexShaderVideoTransform::VertexShaderVideoTransform()
     : matrix_location_(-1),
-      tex_matrix_location_(-1) { }
+      tex_matrix_location_(-1) {}
 
 bool VertexShaderVideoTransform::Init(WebGraphicsContext3D* context,
                                       unsigned program,
@@ -394,7 +394,7 @@ std::string VertexShaderVideoTransform::GetShaderString() const {
 
 FragmentTexAlphaBinding::FragmentTexAlphaBinding()
     : sampler_location_(-1),
-      alpha_location_(-1) { }
+      alpha_location_(-1) {}
 
 void FragmentTexAlphaBinding::Init(WebGraphicsContext3D* context,
                                    unsigned program,
@@ -421,7 +421,7 @@ void FragmentTexAlphaBinding::Init(WebGraphicsContext3D* context,
 }
 
 FragmentTexOpaqueBinding::FragmentTexOpaqueBinding()
-    : sampler_location_(-1) { }
+    : sampler_location_(-1) {}
 
 void FragmentTexOpaqueBinding::Init(WebGraphicsContext3D* context,
                                     unsigned program,
@@ -573,7 +573,7 @@ std::string FragmentShaderRGBATexSwizzleOpaque::GetShaderString() const {
 FragmentShaderRGBATexAlphaAA::FragmentShaderRGBATexAlphaAA()
     : sampler_location_(-1),
       alpha_location_(-1),
-      edge_location_(-1) { }
+      edge_location_(-1) {}
 
 void FragmentShaderRGBATexAlphaAA::Init(WebGraphicsContext3D* context,
                                         unsigned program,
@@ -630,7 +630,7 @@ FragmentTexClampAlphaAABinding::FragmentTexClampAlphaAABinding()
     : sampler_location_(-1),
       alpha_location_(-1),
       fragment_tex_transform_location_(-1),
-      edge_location_(-1) { }
+      edge_location_(-1) {}
 
 void FragmentTexClampAlphaAABinding::Init(WebGraphicsContext3D* context,
                                           unsigned program,
@@ -719,7 +719,7 @@ FragmentShaderRGBATexAlphaMask::FragmentShaderRGBATexAlphaMask()
     : sampler_location_(-1),
       mask_sampler_location_(-1),
       alpha_location_(-1),
-      mask_tex_coord_scale_location_(-1) { }
+      mask_tex_coord_scale_location_(-1) {}
 
 void FragmentShaderRGBATexAlphaMask::Init(WebGraphicsContext3D* context,
                                           unsigned program,
@@ -779,7 +779,7 @@ FragmentShaderRGBATexAlphaMaskAA::FragmentShaderRGBATexAlphaMaskAA()
       mask_sampler_location_(-1),
       alpha_location_(-1),
       edge_location_(-1),
-      mask_tex_coord_scale_location_(-1) { }
+      mask_tex_coord_scale_location_(-1) {}
 
 void FragmentShaderRGBATexAlphaMaskAA::Init(WebGraphicsContext3D* context,
                                             unsigned program,
@@ -853,7 +853,7 @@ FragmentShaderYUVVideo::FragmentShaderYUVVideo()
       v_texture_location_(-1),
       alpha_location_(-1),
       yuv_matrix_location_(-1),
-      yuv_adj_location_(-1) { }
+      yuv_adj_location_(-1) {}
 
 void FragmentShaderYUVVideo::Init(WebGraphicsContext3D* context,
                                   unsigned program,
@@ -913,7 +913,7 @@ std::string FragmentShaderYUVVideo::GetShaderString() const {
 }
 
 FragmentShaderColor::FragmentShaderColor()
-    : color_location_(-1) { }
+    : color_location_(-1) {}
 
 void FragmentShaderColor::Init(WebGraphicsContext3D* context,
                                unsigned program,
@@ -949,7 +949,7 @@ std::string FragmentShaderColor::GetShaderString() const {
 
 FragmentShaderColorAA::FragmentShaderColorAA()
     : edge_location_(-1),
-      color_location_(-1) { }
+      color_location_(-1) {}
 
 void FragmentShaderColorAA::Init(WebGraphicsContext3D* context,
                                  unsigned program,
@@ -999,7 +999,7 @@ std::string FragmentShaderColorAA::GetShaderString() const {
 FragmentShaderCheckerboard::FragmentShaderCheckerboard()
     : alpha_location_(-1),
       tex_transform_location_(-1),
-      frequency_location_(-1) { }
+      frequency_location_(-1) {}
 
 void FragmentShaderCheckerboard::Init(WebGraphicsContext3D* context,
                                       unsigned program,
