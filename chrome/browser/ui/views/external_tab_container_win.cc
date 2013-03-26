@@ -221,6 +221,7 @@ bool ExternalTabContainerWin::Init(Profile* profile,
   params.bounds = bounds;
 #if defined(USE_AURA)
   params.native_widget = new views::DesktopNativeWidgetAura(widget_);
+  params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
 #endif
   widget_->Init(params);
   HWND window = views::HWNDForWidget(widget_);
@@ -439,6 +440,9 @@ void ExternalTabContainerWin::FocusThroughTabTraversal(
     bool reverse,
     bool restore_focus_to_view) {
   DCHECK(web_contents_.get());
+#if defined(USE_AURA)
+  SetFocus(views::HWNDForWidget(widget_));
+#endif  // USE_AURA
   if (web_contents_.get())
     web_contents_->GetView()->Focus();
 
