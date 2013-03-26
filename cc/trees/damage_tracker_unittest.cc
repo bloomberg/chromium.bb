@@ -190,7 +190,7 @@ class DamageTrackerTest : public testing::Test {
     return root.Pass();
   }
 
-protected:
+ protected:
   FakeImplProxy proxy_;
   FakeLayerTreeHostImpl host_impl_;
 };

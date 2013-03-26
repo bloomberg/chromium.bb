@@ -395,8 +395,7 @@ void PictureLayerTiling::UpdateTilePriorities(
 
   // Fast path tile priority calculation when both transforms are translations.
   if (last_screen_transform.IsIdentityOrTranslation() &&
-      current_screen_transform.IsIdentityOrTranslation())
-  {
+      current_screen_transform.IsIdentityOrTranslation()) {
     gfx::Vector2dF current_offset(
         current_screen_transform.matrix().get(0, 3),
         current_screen_transform.matrix().get(1, 3));

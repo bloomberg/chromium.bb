@@ -22,8 +22,7 @@ class TestablePictureLayerImpl : public PictureLayerImpl {
   static scoped_ptr<TestablePictureLayerImpl> Create(
       LayerTreeImpl* tree_impl,
       int id,
-      scoped_refptr<PicturePileImpl> pile)
-  {
+      scoped_refptr<PicturePileImpl> pile) {
     return make_scoped_ptr(new TestablePictureLayerImpl(tree_impl, id, pile));
   }
 

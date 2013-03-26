@@ -414,7 +414,7 @@ TEST_F(DelegatedRendererLayerImplTestOwnSurface, AddsQuadsToTargetRenderPass) {
 
   // The DelegatedRendererLayer should have added copies of quads in its root
   // RenderPass to its target RenderPass.
-  // The m_layer_after also adds one quad.
+  // The layer_after also adds one quad.
   ASSERT_EQ(1u, frame.render_passes[3]->quad_list.size());
 
   // Verify it added the right quads.

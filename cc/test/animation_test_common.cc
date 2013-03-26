@@ -90,17 +90,12 @@ int AddAnimatedTransform(Target* target,
 }
 
 FakeFloatAnimationCurve::FakeFloatAnimationCurve()
-    : duration_(1.0)
-{
-}
+    : duration_(1.0) {}
 
 FakeFloatAnimationCurve::FakeFloatAnimationCurve(double duration)
-    : duration_(duration)
-{
-}
+    : duration_(duration) {}
 
-FakeFloatAnimationCurve::~FakeFloatAnimationCurve() {
-}
+FakeFloatAnimationCurve::~FakeFloatAnimationCurve() {}
 
 double FakeFloatAnimationCurve::Duration() const {
   return duration_;
@@ -116,12 +111,9 @@ scoped_ptr<cc::AnimationCurve> FakeFloatAnimationCurve::Clone() const {
 }
 
 FakeTransformTransition::FakeTransformTransition(double duration)
-    : duration_(duration)
-{
-}
+    : duration_(duration) {}
 
-FakeTransformTransition::~FakeTransformTransition() {
-}
+FakeTransformTransition::~FakeTransformTransition() {}
 
 double FakeTransformTransition::Duration() const {
   return duration_;
@@ -140,12 +132,9 @@ scoped_ptr<cc::AnimationCurve> FakeTransformTransition::Clone() const {
 FakeFloatTransition::FakeFloatTransition(double duration, float from, float to)
     : duration_(duration)
     , from_(from)
-    , to_(to)
-{
-}
+    , to_(to) {}
 
-FakeFloatTransition::~FakeFloatTransition() {
-}
+FakeFloatTransition::~FakeFloatTransition() {}
 
 double FakeFloatTransition::Duration() const {
   return duration_;
@@ -159,12 +148,9 @@ float FakeFloatTransition::GetValue(double time) const {
 }
 
 FakeLayerAnimationValueObserver::FakeLayerAnimationValueObserver()
-    : opacity_(0.0f)
-{
-}
+    : opacity_(0.0f) {}
 
-FakeLayerAnimationValueObserver::~FakeLayerAnimationValueObserver() {
-}
+FakeLayerAnimationValueObserver::~FakeLayerAnimationValueObserver() {}
 
 void FakeLayerAnimationValueObserver::OnOpacityAnimated(float opacity) {
   opacity_ = opacity;
