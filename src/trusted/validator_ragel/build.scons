@@ -302,7 +302,7 @@ if ragel_involved:
           ['${PYTHON}',
            env.File('verify_validators_dfa.py'),
            xml,
-           '-o', '${TARGETS[0]}'])
+           '-o', '${TARGET}'])
 
       superinstruction_verified = env.AutoDepsCommand(
         'superinstructions_verified_x86_%s.out' % bitness,
@@ -314,6 +314,11 @@ if ragel_involved:
          '--validator_dll', validator_dll,
          superinstruction])
 
+      env32 = env.Clone(BUILD_TARGET_NAME='x86-32')
+      env64 = env.Clone(BUILD_TARGET_NAME='x86-64')
+      old_ncval32 = env32.File('$STAGING_DIR/ncval$PROGSUFFIX')
+      old_ncval64 = env64.File('$STAGING_DIR/ncval$PROGSUFFIX')
+
       regular_instructions_test = env.AutoDepsCommand(
         'regular_instructions_test_x86_%s.out' % bitness,
         ['${PYTHON}',
@@ -322,7 +327,10 @@ if ragel_involved:
          '--bitness', bitness,
          '--gas', gas,
          '--objdump', objdump,
-         '--validator_dll', validator_dll])
+         '--validator_dll', validator_dll,
+         '--ncval32', old_ncval32,
+         '--ncval64', old_ncval64,
+         '--errors', '${TARGET}'])
 
       # Never run decoder tests in parallel because they can take all CPU.
       SideEffect('check_validator', regular_instructions_test)

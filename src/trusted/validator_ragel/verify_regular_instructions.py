@@ -12,13 +12,17 @@ import itertools
 import multiprocessing
 import optparse
 import os
+import re
 import subprocess
+import sys
 import tempfile
 
 import dfa_parser
 import dfa_traversal
 import validator
 
+
+BUNDLE_SIZE = 32
 
 FWAIT = 0x9b
 NOP = 0x90
@@ -28,11 +32,94 @@ def IsRexPrefix(byte):
   return 0x40 <= byte < 0x50
 
 
+class OldValidator(object):
+  def __init__(self):
+    self._bundles = []
+    self._errors = []
+    pass
+
+  def Validate(self, bundle, comment):
+    self._bundles.append((bundle, comment))
+
+    if len(self._bundles) == 40:
+      self._Process()
+
+  def _Process(self):
+    bytes = sum((instr for instr, _ in self._bundles), [])
+    hex_content = ' '.join('%02x' % byte for byte in bytes).replace('0x', '')
+
+    assert len(hex_content) < 4096
+
+    ncval = {32: options.ncval32, 64: options.ncval64}[options.bitness]
+    proc = subprocess.Popen(
+        [ncval, '--hex_text=-', '--max_errors=-1'],
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE)
+
+    stdout, stderr = proc.communicate(hex_content)
+    return_code = proc.wait()
+    assert return_code == 0, (stdout, stderr)
+
+    if '*** <input> is safe ***' in stdout:
+      self._bundles = []
+      return
+
+    assert '*** <input> IS UNSAFE ***' in stdout
+
+    rejected_bundles = set()
+    for line in stdout.split('\n'):
+      line = line.strip()
+      if line == '':
+        continue
+      if line == '*** <input> IS UNSAFE ***':
+        continue
+      if line == 'Some instructions were replaced with HLTs.':
+        continue
+      if line.startswith(
+          'VALIDATOR: Checking block alignment and jump targets'):
+        continue
+      m = re.match(r'VALIDATOR: ([0-9a-f]+): (.*)$', line, re.IGNORECASE)
+      assert m is not None, (line, hex_content)
+      error_offset = int(m.group(1), 16)
+      rejected_bundles.add(error_offset // BUNDLE_SIZE)
+
+    assert len(rejected_bundles) != 0
+    for b in sorted(rejected_bundles):
+      _, comment = self._bundles[b]
+      self._errors.append(comment)
+
+    self._bundles = []
+
+  def GetErrors(self):
+    if len(self._bundles) > 0:
+      self._Process()
+    return self._errors
+
+
+def ValidateInstruction(instruction, disassembly, old_validator):
+  assert len(instruction) <= BUNDLE_SIZE
+  bundle = instruction + [NOP] * (BUNDLE_SIZE - len(instruction))
+
+  if options.bitness == 32:
+    result = validator.ValidateChunk(
+        ''.join(map(chr, bundle)),
+        bitness=options.bitness)
+
+    if result:
+      old_validator.Validate(bundle, (disassembly, instruction))
+    return result
+  else:
+    # TODO(shcherbina): implement.
+    return False
+
+
 class WorkerState(object):
   def __init__(self, prefix):
     self.total_instructions = 0
+    self.num_valid = 0
     self._file_prefix = 'check_validator_%s_' % '_'.join(map(hex, prefix))
     self._instructions = []
+    self.errors = []
 
   def ReceiveInstruction(self, bytes):
     self._instructions.append(bytes)
@@ -78,10 +165,11 @@ class WorkerState(object):
       for i in range(objdump_header_size):
         next(objdump_iter)
 
+      old_validator = OldValidator()
       for instr in self._instructions:
         # Objdump prints fwait with REX prefix in this ridiculous way:
         #   0: 41    fwait
-        #   0: 9b    fwait
+        #   1: 9b    fwait
         # So in such cases we expect two lines from objdump.
         if len(instr) == 2 and IsRexPrefix(instr[0]) and instr[1] == FWAIT:
           expected_lines = 2
@@ -100,6 +188,8 @@ class WorkerState(object):
         assert bytes == instr, (map(hex, bytes), map(hex, instr))
         self.total_instructions += 1
 
+        self.num_valid += ValidateInstruction(instr, disassembly, old_validator)
+
       # Make sure we read objdump output to the end.
       end = next(objdump_iter, None)
       assert end is None, end
@@ -109,6 +199,11 @@ class WorkerState(object):
 
     finally:
       os.remove(raw_file.name)
+
+    errors = old_validator.GetErrors()
+    for error in errors:
+      print error
+    self.errors += errors
 
 
 def Worker((prefix, state_index)):
@@ -122,21 +217,31 @@ def Worker((prefix, state_index)):
   finally:
     worker_state.Finish()
 
-  return prefix, worker_state.total_instructions
+  return (
+      prefix,
+      worker_state.total_instructions,
+      worker_state.num_valid,
+      worker_state.errors)
 
 
 def ParseOptions():
   parser = optparse.OptionParser(usage='%prog [options] xmlfile')
 
-  parser.add_option('-b', '--bitness',
+  parser.add_option('--bitness',
                     type=int,
                     help='The subarchitecture: 32 or 64')
-  parser.add_option('-a', '--gas',
+  parser.add_option('--gas',
                     help='Path to GNU AS executable')
-  parser.add_option('-d', '--objdump',
+  parser.add_option('--objdump',
                     help='Path to objdump executable')
-  parser.add_option('-v', '--validator_dll',
+  parser.add_option('--validator_dll',
                     help='Path to librdfa_validator_dll')
+  parser.add_option('--ncval32',
+                    help='Path to old 32-bit ncval')
+  parser.add_option('--ncval64',
+                    help='Path to old 64-bit ncval')
+  parser.add_option('--errors',
+                    help='Where to save errors')
 
   options, args = parser.parse_args()
 
@@ -145,6 +250,19 @@ def ParseOptions():
 
   if not (options.gas and options.objdump and options.validator_dll):
     parser.error('specify path to gas, objdump, and validator_dll')
+
+  if not (options.ncval32 and options.ncval64):
+    parser.error('specify path to old validator (32-bit and 64-bit versions)')
+
+  if not options.errors:
+    parser.errors('specify file to save errors to')
+
+  if not os.path.exists(options.ncval32):
+    print options.ncval32, 'not found (try ./scons ncval platform=x86-32)'
+    sys.exit(1)
+  if not os.path.exists(options.ncval64):
+    print options.ncval64, 'not found (try ./scons ncval platform=x86-64)'
+    sys.exit(1)
 
   if len(args) != 1:
     parser.error('specify one xml file')
@@ -184,11 +302,26 @@ def main():
   results = pool.imap(Worker, tasks)
 
   total = 0
-  for prefix, count in results:
+  num_valid = 0
+  errors = []
+  for prefix, count, valid_count, more_errors in results:
     print ', '.join(map(hex, prefix))
     total += count
+    num_valid += valid_count
+    errors += more_errors
 
   print total, 'instructions were processed'
+  print num_valid, 'valid instructions'
+
+  print len(errors), 'errors'
+
+  errors.sort()
+  with open(options.errors, 'w') as errors_file:
+    errors_file.write(
+        'Instructions accepted by new validator but rejected by old one:\n')
+    for disassembly, bytes in errors:
+      hex_bytes = ' '.join('%02x' % byte for byte in bytes).replace('0x', '')
+      errors_file.write('%-50s %s\n' % (disassembly, hex_bytes))
 
 
 if __name__ == '__main__':
