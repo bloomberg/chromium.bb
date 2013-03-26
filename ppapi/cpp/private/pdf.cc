@@ -4,6 +4,7 @@
 
 #include "ppapi/cpp/private/pdf.h"
 
+#include "ppapi/c/trusted/ppb_browser_font_trusted.h"
 #include "ppapi/cpp/image_data.h"
 #include "ppapi/cpp/instance_handle.h"
 #include "ppapi/cpp/module_impl.h"
@@ -50,6 +51,29 @@ ImageData PDF::GetResourceImage(const InstanceHandle& instance,
 PP_Resource PDF::GetFontFileWithFallback(
     const InstanceHandle& instance,
     const PP_FontDescription_Dev* description,
+    PP_PrivateFontCharset charset) {
+  if (has_interface<PPB_PDF>()) {
+    PP_BrowserFont_Trusted_Description converted_desc;
+    converted_desc.face = description->face;
+    converted_desc.family = static_cast<PP_BrowserFont_Trusted_Family>(
+        description->family);
+    converted_desc.size = description->size;
+    converted_desc.weight = static_cast<PP_BrowserFont_Trusted_Weight>(
+        description->weight);
+    converted_desc.italic = description->italic;
+    converted_desc.small_caps = description->small_caps;
+    converted_desc.letter_spacing = description->letter_spacing;
+    converted_desc.word_spacing = description->word_spacing;
+    return get_interface<PPB_PDF>()->GetFontFileWithFallback(
+        instance.pp_instance(), &converted_desc, charset);
+  }
+  return 0;
+}
+
+// static
+PP_Resource PDF::GetFontFileWithFallback(
+    const InstanceHandle& instance,
+    const PP_BrowserFont_Trusted_Description* description,
     PP_PrivateFontCharset charset) {
   if (has_interface<PPB_PDF>()) {
     return get_interface<PPB_PDF>()->GetFontFileWithFallback(

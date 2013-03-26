@@ -158,7 +158,7 @@ PP_Var GetLocalizedString(PP_Instance instance_id,
 
 PP_Resource GetFontFileWithFallback(
     PP_Instance instance_id,
-    const PP_FontDescription_Dev* description,
+    const PP_BrowserFont_Trusted_Description* description,
     PP_PrivateFontCharset charset) {
 #if defined(OS_LINUX) || defined(OS_OPENBSD)
   // Validate the instance before using it below.
@@ -172,7 +172,7 @@ PP_Resource GetFontFileWithFallback(
 
   int fd = content::MatchFontWithFallback(
       face_name->value().c_str(),
-      description->weight >= PP_FONTWEIGHT_BOLD,
+      description->weight >= PP_BROWSERFONT_TRUSTED_WEIGHT_BOLD,
       description->italic,
       charset);
   if (fd == -1)

@@ -102,7 +102,7 @@ struct PPB_PDF {
   // Currently Linux-only.
   PP_Resource (*GetFontFileWithFallback)(
       PP_Instance instance,
-      const struct PP_FontDescription_Dev* description,
+      const struct PP_BrowserFont_Trusted_Description* description,
       PP_PrivateFontCharset charset);
 
   // Given a resource previously returned by GetFontFileWithFallback, returns

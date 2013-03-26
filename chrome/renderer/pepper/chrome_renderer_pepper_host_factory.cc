@@ -47,16 +47,6 @@ ChromeRendererPepperHostFactory::CreateResourceHost(
         return scoped_ptr<ResourceHost>(new PepperFlashRendererHost(
             host_, instance, params.pp_resource()));
       }
-      case PpapiHostMsg_FlashFontFile_Create::ID: {
-        ppapi::proxy::SerializedFontDescription description;
-        PP_PrivateFontCharset charset;
-        if (ppapi::UnpackMessage<PpapiHostMsg_FlashFontFile_Create>(
-            message, &description, &charset)) {
-          return scoped_ptr<ResourceHost>(new PepperFlashFontFileHost(
-              host_, instance, params.pp_resource(), description, charset));
-        }
-        break;
-      }
       case PpapiHostMsg_FlashFullscreen_Create::ID: {
         return scoped_ptr<ResourceHost>(new PepperFlashFullscreenHost(
             host_, instance, params.pp_resource()));
@@ -67,6 +57,27 @@ ChromeRendererPepperHostFactory::CreateResourceHost(
             message, &serialized_menu)) {
           return scoped_ptr<ResourceHost>(new PepperFlashMenuHost(
               host_, instance, params.pp_resource(), serialized_menu));
+        }
+        break;
+      }
+    }
+  }
+
+  // TODO(raymes): PDF also needs access to the FlashFontFileHost currently.
+  // We should either rename PPB_FlashFont_File to PPB_FontFile_Private or get
+  // rid of its use in PDF if possible.
+  if (host_->GetPpapiHost()->permissions().HasPermission(
+          ppapi::PERMISSION_FLASH) ||
+      host_->GetPpapiHost()->permissions().HasPermission(
+          ppapi::PERMISSION_PRIVATE)) {
+    switch (message.type()) {
+      case PpapiHostMsg_FlashFontFile_Create::ID: {
+        ppapi::proxy::SerializedFontDescription description;
+        PP_PrivateFontCharset charset;
+        if (ppapi::UnpackMessage<PpapiHostMsg_FlashFontFile_Create>(
+            message, &description, &charset)) {
+          return scoped_ptr<ResourceHost>(new PepperFlashFontFileHost(
+              host_, instance, params.pp_resource(), description, charset));
         }
         break;
       }

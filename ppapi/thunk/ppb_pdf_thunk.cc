@@ -6,7 +6,9 @@
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_pdf.h"
 #include "ppapi/thunk/enter.h"
+#include "ppapi/thunk/ppb_flash_font_file_api.h"
 #include "ppapi/thunk/ppb_pdf_api.h"
+#include "ppapi/thunk/resource_creation_api.h"
 #include "ppapi/thunk/thunk.h"
 
 namespace ppapi {
@@ -31,20 +33,28 @@ PP_Resource GetResourceImage(PP_Instance instance,
 
 PP_Resource GetFontFileWithFallback(
     PP_Instance instance,
-    const PP_FontDescription_Dev* description,
+    const PP_BrowserFont_Trusted_Description* description,
     PP_PrivateFontCharset charset) {
-  // Not implemented out-of-process.
-  NOTIMPLEMENTED();
-  return 0;
+  // TODO(raymes): Eventually we should replace the use of this function with
+  // either PPB_Flash_Font_File or PPB_TrueType_Font directly in the PDF code.
+  // For now just call into PPB_Flash_Font_File which has the exact same API.
+  EnterResourceCreation enter(instance);
+  if (enter.failed())
+    return 0;
+  return enter.functions()->CreateFlashFontFile(instance, description, charset);
 }
 
 bool GetFontTableForPrivateFontFile(PP_Resource font_file,
                                     uint32_t table,
                                     void* output,
                                     uint32_t* output_length) {
-  // Not implemented out-of-process.
-  NOTIMPLEMENTED();
-  return false;
+  // TODO(raymes): Eventually we should replace the use of this function with
+  // either PPB_Flash_Font_File or PPB_TrueType_Font directly in the PDF code.
+  // For now just call into PPB_Flash_Font_File which has the exact same API.
+  EnterResource<PPB_Flash_FontFile_API> enter(font_file, true);
+  if (enter.failed())
+    return PP_FALSE;
+  return PP_ToBool(enter.object()->GetFontTable(table, output, output_length));
 }
 
 void SearchString(PP_Instance instance,
