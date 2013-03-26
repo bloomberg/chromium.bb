@@ -12,7 +12,7 @@
 #   'variables': {
 #     'apk_name': 'MyPackage',
 #     'java_in_dir': 'path/to/package/root',
-#     'resource_dir': 'res',
+#     'resource_dir': 'path/to/package/root/res',
 #   },
 #   'includes': ['path/to/this/gypi/file'],
 # }
@@ -29,8 +29,7 @@
 #    each directory in additional_res_dirs.
 #  additional_src_dirs - Additional directories with .java files to be compiled
 #    and included in the output of this target.
-#  asset_location - The directory where assets are located (default:
-#    <(ant_build_out)/<(_target_name)/assets).
+#  asset_location - The directory where assets are located.
 #  generated_src_dirs - Same as additional_src_dirs except used for .java files
 #    that are generated at build time. This should be set automatically by a
 #    target's dependencies. The .java files in these directories are not
@@ -52,7 +51,6 @@
 
 {
   'variables': {
-    'asset_location%': '',
     'additional_input_paths': [],
     'input_jars_paths': [],
     'additional_src_dirs': [],
@@ -60,17 +58,23 @@
     'app_manifest_version_name%': '<(android_app_version_name)',
     'app_manifest_version_code%': '<(android_app_version_code)',
     'proguard_enabled%': 'false',
-    'proguard_flags%': '',
+    'proguard_flags_path%': '<(DEPTH)/build/android/empty_proguard.flags',
     'native_libs_paths': [],
     'jar_name%': 'chromium_apk_<(_target_name).jar',
-    'resource_dir%':'',
+    'resource_dir%':'<(DEPTH)/build/android/ant/empty/res',
     'R_package%':'',
     'additional_res_dirs': [],
     'additional_res_packages': [],
     'is_test_apk%': 0,
     'java_strings_grd%': '',
-    'res_grit_files': [],
-    'library_manifest_paths%' : [],
+    'library_manifest_paths' : [],
+    'resource_input_paths': [],
+    'intermediate_dir': '<(PRODUCT_DIR)/<(_target_name)',
+    'asset_location%': '<(intermediate_dir)/assets',
+    'codegen_stamp': '<(intermediate_dir)/codegen.stamp',
+    'compile_stamp': '<(intermediate_dir)/compile.stamp',
+    'android_manifest': '<(java_in_dir)/AndroidManifest.xml',
+    'codegen_input_paths': [],
   },
   'sources': [
       '<@(native_libs_paths)'
@@ -88,7 +92,7 @@
       'rule_name': 'copy_and_strip_native_libraries',
       'extension': 'so',
       'variables': {
-        'apk_libraries_dir': '<(PRODUCT_DIR)/<(_target_name)/libs/<(android_app_abi)',
+        'apk_libraries_dir': '<(intermediate_dir)/libs/<(android_app_abi)',
         'stripped_library_path': '<(apk_libraries_dir)/<(RULE_INPUT_ROOT).so',
       },
       'inputs': [
@@ -107,6 +111,11 @@
     },
   ],
   'conditions': [
+    ['resource_dir!=""', {
+      'variables': {
+        'resource_input_paths': [ '<!@(find <(resource_dir) -name "*")' ]
+      },
+    }],
     ['R_package != ""', {
       'variables': {
         # We generate R.java in package R_package (in addition to the package
@@ -122,7 +131,9 @@
         'additional_res_dirs': ['<(res_grit_dir)'],
         # grit_grd_file is used by grit_action.gypi, included below.
         'grit_grd_file': '<(java_in_dir)/strings/<(java_strings_grd)',
-        'res_grit_files': ['<!@pymod_do_main(grit_info <@(grit_defines) --outputs "<(res_grit_dir)" <(grit_grd_file))'],
+        'resource_input_paths': [
+          '<!@pymod_do_main(grit_info <@(grit_defines) --outputs "<(res_grit_dir)" <(grit_grd_file))'
+        ],
       },
       'actions': [
         {
@@ -140,34 +151,111 @@
   ],
   'actions': [
     {
-      'action_name': 'ant_<(_target_name)',
-      'message': 'Building <(_target_name).',
-      'inputs': [
-        '<(java_in_dir)/AndroidManifest.xml',
-        '<(DEPTH)/build/android/ant/chromium-apk.xml',
-        '<(DEPTH)/build/android/ant/common.xml',
-        '<(DEPTH)/build/android/ant/apk-build.xml',
-        # If there is a separate find for additional_src_dirs, it will find the
-        # wrong .java files when additional_src_dirs is empty.
-        '>!@(find >(java_in_dir) >(additional_src_dirs) -name "*.java")',
-        '>@(input_jars_paths)',
-        '>@(native_libs_paths)',
-        '>@(additional_input_paths)',
-        '>@(library_manifest_paths)',
-        '<@(res_grit_files)',
-      ],
+      'action_name': 'ant_codegen_<(_target_name)',
+      'message': 'Generating R.java for <(_target_name)',
       'conditions': [
-        ['resource_dir!=""', {
-          'inputs': ['<!@(find <(java_in_dir)/<(resource_dir) -name "*")']
-        }],
         ['is_test_apk == 1', {
           'variables': {
             'additional_res_dirs=': [],
             'additional_res_packages=': [],
           }
         }],
-        ['proguard_enabled == "true" and proguard_flags != ""', {
-          'inputs': ['<(java_in_dir)/<(proguard_flags)']
+      ],
+      'inputs': [
+        '<(DEPTH)/build/android/ant/apk-codegen.xml',
+        '<(android_manifest)',
+        '>@(library_manifest_paths)'
+        '>@(codegen_input_paths)',
+        '>@(additional_input_paths)',
+      ],
+      'outputs': [
+        '<(codegen_stamp)',
+      ],
+      'action': [
+        'ant', '-quiet',
+        '-DADDITIONAL_RES_DIRS=>(additional_res_dirs)',
+        '-DADDITIONAL_RES_PACKAGES=>(additional_res_packages)',
+        '-DADDITIONAL_R_TEXT_FILES=>(additional_R_text_files)',
+        '-DANDROID_MANIFEST=<(android_manifest)',
+        '-DANDROID_SDK_JAR=<(android_sdk_jar)',
+        '-DANDROID_SDK_ROOT=<(android_sdk_root)',
+        '-DANDROID_SDK_VERSION=<(android_sdk_version)',
+        '-DLIBRARY_MANIFEST_PATHS=>(library_manifest_paths)',
+        '-DOUT_DIR=<(intermediate_dir)',
+        '-DRESOURCE_DIR=<(resource_dir)',
+
+        '-DSTAMP=<(codegen_stamp)',
+        '-Dbasedir=.',
+        '-buildfile',
+        '<(DEPTH)/build/android/ant/apk-codegen.xml',
+
+        # Add list of inputs to the command line, so if inputs change
+        # (e.g. if a Java file is removed), the command will be re-run.
+        # TODO(newt): remove this once crbug.com/177552 is fixed in ninja.
+        '-DTHIS_IS_IGNORED=>!(echo \'>(_inputs)\' | md5sum)',
+      ],
+    },
+    {
+      'action_name': 'ant_compile_<(_target_name)',
+      'message': 'Compiling java for <(_target_name)',
+      'inputs': [
+        '<(DEPTH)/build/android/ant/apk-compile.xml',
+        '<(DEPTH)/build/android/ant/create-test-jar.js',
+        # If there is a separate find for additional_src_dirs, it will find the
+        # wrong .java files when additional_src_dirs is empty.
+        '>!@(find >(java_in_dir) >(additional_src_dirs) -name "*.java")',
+        '>@(input_jars_paths)',
+        '<(codegen_stamp)',
+        '<(proguard_flags_path)',
+      ],
+      'outputs': [
+        '<(compile_stamp)',
+      ],
+      'action': [
+        'ant', '-quiet',
+        '-DADDITIONAL_SRC_DIRS=>(additional_src_dirs)',
+        '-DANDROID_SDK_JAR=<(android_sdk_jar)',
+        '-DANDROID_SDK_ROOT=<(android_sdk_root)',
+        '-DANDROID_SDK_VERSION=<(android_sdk_version)',
+        '-DAPK_NAME=<(apk_name)',
+        '-DCREATE_TEST_JAR_PATH=<(DEPTH)/build/android/ant/create-test-jar.js',
+        '-DGENERATED_SRC_DIRS=>(generated_src_dirs)',
+        '-DINPUT_JARS_PATHS=>(input_jars_paths)',
+        '-DIS_TEST_APK=<(is_test_apk)',
+        '-DJAR_PATH=<(PRODUCT_DIR)/lib.java/<(jar_name)',
+        '-DOUT_DIR=<(intermediate_dir)',
+        '-DPROGUARD_ENABLED=<(proguard_enabled)',
+        '-DPROGUARD_FLAGS=<(proguard_flags_path)',
+        '-DSOURCE_DIR=<(java_in_dir)/src',
+        '-DTEST_JAR_PATH=<(PRODUCT_DIR)/test.lib.java/<(apk_name).jar',
+
+        '-DSTAMP=<(compile_stamp)',
+        '-Dbasedir=.',
+        '-buildfile',
+        '<(DEPTH)/build/android/ant/apk-compile.xml',
+
+        # Add list of inputs to the command line, so if inputs change
+        # (e.g. if a Java file is removed), the command will be re-run.
+        # TODO(newt): remove this once crbug.com/177552 is fixed in ninja.
+        '-DTHIS_IS_IGNORED=>!(echo \'>(_inputs)\' | md5sum)',
+      ],
+    },
+    {
+      'action_name': 'ant_package_<(_target_name)',
+      'message': 'Packaging <(_target_name).',
+      'inputs': [
+        '<(DEPTH)/build/android/ant/apk-package.xml',
+        #TODO(cjhopman): this should be the stripped library paths.
+        '>@(native_libs_paths)',
+        '<(codegen_stamp)',
+        '<(compile_stamp)',
+      ],
+      'conditions': [
+        ['is_test_apk == 1', {
+          'variables': {
+            'additional_res_dirs=': [],
+            'additional_res_packages=': [],
+          }
         }],
       ],
       'outputs': [
@@ -175,46 +263,32 @@
       ],
       'action': [
         'ant', '-quiet',
-        '-DAPP_ABI=<(android_app_abi)',
-        '-DANDROID_GDBSERVER=<(android_gdbserver)',
-        '-DANDROID_SDK=<(android_sdk)',
-        '-DANDROID_SDK_ROOT=<(android_sdk_root)',
-        '-DANDROID_SDK_TOOLS=<(android_sdk_tools)',
-        '-DANDROID_SDK_VERSION=<(android_sdk_version)',
-        '-DANDROID_TOOLCHAIN=<(android_toolchain)',
-        '-DCHROMIUM_SRC=<(ant_build_out)/../..',
-        '-DCONFIGURATION_NAME=<(CONFIGURATION_NAME)',
-        '-DPRODUCT_DIR=<(ant_build_out)',
-
-        '-DAPK_NAME=<(apk_name)',
-        '-DASSET_DIR=<(asset_location)',
-        '-DADDITIONAL_SRC_DIRS=>(additional_src_dirs)',
-        '-DGENERATED_SRC_DIRS=>(generated_src_dirs)',
-        '-DINPUT_JARS_PATHS=>(input_jars_paths)',
-        '-DJAR_NAME=<(jar_name)',
-        '-DOUT_DIR=<(ant_build_out)/<(_target_name)',
-        '-DRESOURCE_DIR=<(resource_dir)',
-        '-DADDITIONAL_R_TEXT_FILES=>(additional_R_text_files)',
         '-DADDITIONAL_RES_DIRS=>(additional_res_dirs)',
         '-DADDITIONAL_RES_PACKAGES=>(additional_res_packages)',
-        '-DAPP_MANIFEST_VERSION_NAME=<(app_manifest_version_name)',
+        '-DADDITIONAL_R_TEXT_FILES=>(additional_R_text_files)',
+        '-DANDROID_SDK_JAR=<(android_sdk_jar)',
+        '-DANDROID_SDK_ROOT=<(android_sdk_root)',
+        '-DANDROID_SDK_VERSION=<(android_sdk_version)',
+        '-DAPKS_DIR=<(PRODUCT_DIR)/apks',
+        '-DAPK_NAME=<(apk_name)',
         '-DAPP_MANIFEST_VERSION_CODE=<(app_manifest_version_code)',
-        '-DPROGUARD_FLAGS=>(proguard_flags)',
-        '-DPROGUARD_ENABLED=>(proguard_enabled)',
-        '-DLIBRARY_MANIFEST_PATHS=>(library_manifest_paths)',
+        '-DAPP_MANIFEST_VERSION_NAME=<(app_manifest_version_name)',
+        '-DASSET_DIR=<(asset_location)',
+        '-DCONFIGURATION_NAME=<(CONFIGURATION_NAME)',
+        '-DKEYSTORE_PATH=<(DEPTH)/build/android/ant/chromium-debug.keystore',
+        '-DOUT_DIR=<(intermediate_dir)',
+        '-DRESOURCE_DIR=<(resource_dir)',
+        '-DSOURCE_DIR=<(java_in_dir)/src',
+
+        '-Dbasedir=.',
+        '-buildfile',
+        '<(DEPTH)/build/android/ant/apk-package.xml',
 
         # Add list of inputs to the command line, so if inputs change
         # (e.g. if a Java file is removed), the command will be re-run.
         # TODO(newt): remove this once crbug.com/177552 is fixed in ninja.
-        '-DTHIS_IS_IGNORED=>(_inputs)',
+        '-DTHIS_IS_IGNORED=>!(echo \'>(_inputs)\' | md5sum)',
 
-        '-Dbasedir=<(java_in_dir)',
-        '-buildfile',
-        '<(DEPTH)/build/android/ant/chromium-apk.xml',
-
-        # Specify CONFIGURATION_NAME as the target for ant to build. The
-        # buildfile will then build the appropriate SDK tools target.
-        '<(CONFIGURATION_NAME)',
       ]
     },
   ],

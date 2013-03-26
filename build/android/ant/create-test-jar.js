@@ -25,8 +25,7 @@ var duplicate = Zip.Duplicate();
 duplicate.setValue("preserve");
 jarTask.setDuplicate(duplicate);
 
-var destFile = project.getProperty("ant.project.name") + ".jar";
-var destPath = File(project.getProperty("test.lib.java.dir") + "/" + destFile);
+var destPath = File(project.getProperty("TEST_JAR_PATH"));
 jarTask.setDestFile(destPath);
 
 // Include all the jars in the classpath.

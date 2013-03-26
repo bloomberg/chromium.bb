@@ -3159,8 +3159,8 @@
           ],
           'variables': {
             'apk_name': 'ChromiumTestShellTest',
-            'java_in_dir': './android/testshell/javatests',
-            'resource_dir': '../res',
+            'java_in_dir': 'android/testshell/javatests',
+            'resource_dir': 'android/testshell/res',
             'additional_src_dirs': ['android/javatests/src'],
             'is_test_apk': 1,
           },

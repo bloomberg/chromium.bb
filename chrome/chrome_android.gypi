@@ -58,7 +58,7 @@
         'apk_name': 'ChromiumTestShell',
         'manifest_package_name': 'org.chromium.chrome.testshell',
         'java_in_dir': 'android/testshell/java',
-        'resource_dir': '../res',
+        'resource_dir': 'android/testshell/res',
         'asset_location': '<(ant_build_out)/../assets/<(package_name)',
         'native_libs_paths': [ '<(SHARED_LIB_DIR)/libchromiumtestshell.so', ],
         'additional_input_paths': [

@@ -1017,7 +1017,7 @@
           'variables': {
             'apk_name': 'content_browsertests',
             'java_in_dir': 'shell/android/browsertests_apk',
-            'resource_dir': 'res',
+            'resource_dir': 'shell/android/browsertests_apk/res',
             'native_libs_paths': ['<(SHARED_LIB_DIR)/<(SHARED_LIB_PREFIX)content_browsertests<(SHARED_LIB_SUFFIX)'],
             'additional_input_paths': ['<(PRODUCT_DIR)/content_shell/assets/content_shell.pak'],
             'asset_location': '<(ant_build_out)/content_shell/assets',
@@ -1060,9 +1060,9 @@
           ],
           'variables': {
             'apk_name': 'ContentShellTest',
-            'java_in_dir': '../content/shell/android/javatests',
-            'additional_src_dirs': ['../content/public/android/javatests/',],
-            'resource_dir': '../shell_apk/res',
+            'java_in_dir': 'shell/android/javatests',
+            'resource_dir': 'shell/android/shell_apk/res',
+            'additional_src_dirs': ['public/android/javatests/',],
             'is_test_apk': 1,
           },
           'includes': [ '../build/java_apk.gypi' ],

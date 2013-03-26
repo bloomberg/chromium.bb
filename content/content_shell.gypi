@@ -677,7 +677,7 @@
             'apk_name': 'ContentShell',
             'manifest_package_name': 'org.chromium.content_shell_apk',
             'java_in_dir': 'shell/android/shell_apk',
-            'resource_dir': 'res',
+            'resource_dir': 'shell/android/shell_apk/res',
             'native_libs_paths': ['<(SHARED_LIB_DIR)/libcontent_shell_content_view.so'],
             'additional_input_paths': ['<(PRODUCT_DIR)/content_shell/assets/content_shell.pak'],
             'asset_location': '<(ant_build_out)/content_shell/assets',
