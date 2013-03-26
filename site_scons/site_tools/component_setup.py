@@ -143,7 +143,6 @@ def generate(env):
       'DESTINATION_ROOT',
       'OBJ_ROOT',
       'SOURCE_ROOT',
-      'TARGET_ROOT',
       'TOOL_ROOT',
   ])
 
