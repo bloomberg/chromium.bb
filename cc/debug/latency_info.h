@@ -10,19 +10,18 @@
 namespace cc {
 
 struct LatencyInfo {
-    int64 renderer_main_frame_number;
-    int64 renderer_impl_frame_number;
-    int64 browser_main_frame_number;
-    int64 browser_impl_frame_number;
+  int64 renderer_main_frame_number;
+  int64 renderer_impl_frame_number;
+  int64 browser_main_frame_number;
+  int64 browser_impl_frame_number;
 
-    base::TimeTicks swap_timestamp;
+  base::TimeTicks swap_timestamp;
 
-    LatencyInfo() :
+  LatencyInfo() :
       renderer_main_frame_number(0),
       renderer_impl_frame_number(0),
       browser_main_frame_number(0),
-      browser_impl_frame_number(0) {
-    }
+      browser_impl_frame_number(0) {}
 };
 
 }  // namespace cc
