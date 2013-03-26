@@ -39,6 +39,20 @@
       ],
     },
     {
+      'target_name': 'run_ui_unittests',
+      'type': 'static_library',
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../base/base.gyp:test_support_base',
+        'ui',
+      ],
+      'sources': [
+        'test/test_suite.cc',
+        'test/test_suite.h',
+        'test/run_all_unittests.cc',
+      ],
+    },
+    {
       'target_name': 'ui_unittests',
       'type': '<(gtest_target_type)',
       'dependencies': [
@@ -51,6 +65,7 @@
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
         '../third_party/libpng/libpng.gyp:libpng',
+        'run_ui_unittests',
         'shell_dialogs',
         'ui',
         'ui_resources',
@@ -99,9 +114,6 @@
         'gfx/text_utils_unittest.cc',
         'gfx/vector2d_unittest.cc',
         'gfx/vector3d_unittest.cc',
-        'test/run_all_unittests.cc',
-        'test/test_suite.cc',
-        'test/test_suite.h',
       ],
       'all_sources': [
         '<@(_common_sources)',
