@@ -13,6 +13,7 @@ import hashlib
 import httplib
 import inspect
 import json
+import locale
 import logging
 import logging.handlers
 import math
@@ -89,6 +90,46 @@ def get_flavor():
     'freebsd8': 'freebsd',
   }
   return flavors.get(sys.platform, 'linux')
+
+
+def fix_default_encoding():
+  """Forces utf8 solidly on all platforms.
+
+  By default python execution environment is lazy and defaults to ascii
+  encoding.
+
+  http://uucode.com/blog/2007/03/23/shut-up-you-dummy-7-bit-python/
+  """
+  if sys.getdefaultencoding() == 'utf-8':
+    return False
+
+  # Regenerate setdefaultencoding.
+  reload(sys)
+  # Module 'sys' has no 'setdefaultencoding' member
+  # pylint: disable=E1101
+  sys.setdefaultencoding('utf-8')
+  for attr in dir(locale):
+    if attr[0:3] != 'LC_':
+      continue
+    aref = getattr(locale, attr)
+    try:
+      locale.setlocale(aref, '')
+    except locale.Error:
+      continue
+    try:
+      lang = locale.getlocale(aref)[0]
+    except (TypeError, ValueError):
+      continue
+    if lang:
+      try:
+        locale.setlocale(aref, (lang, 'UTF-8'))
+      except locale.Error:
+        os.environ[attr] = lang + '.UTF-8'
+  try:
+    locale.setlocale(locale.LC_ALL, '')
+  except locale.Error:
+    pass
+  return True
 
 
 class Unbuffered(object):
@@ -1480,4 +1521,6 @@ def main():
 
 
 if __name__ == '__main__':
+  # Ensure that we are always running with the correct encoding.
+  fix_default_encoding()
   sys.exit(main())
