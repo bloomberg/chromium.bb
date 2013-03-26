@@ -5,6 +5,32 @@
 'use strict';
 
 /**
+ * Utility methods. They are intended for use only in this file.
+ */
+var DirectoryTreeUtil = {};
+
+/**
+ * Updates sub-elements of {@code parentElement} reading {@code DirectoryEntry}
+ * with calling {@code iterator}.
+ *
+ * @param {string} changedDirectryPath The path of the changed directory.
+ * @param {DirectoryItem|DirectoryTree} currentDirectoryItem An item to be
+ *     started traversal from.
+ */
+DirectoryTreeUtil.updateChangedDirectoryItem = function(
+    changedDirectryPath, currentDirectoryItem) {
+  for (var i = 0; i < currentDirectoryItem.items.length; i++) {
+    var item = currentDirectoryItem.items[i];
+    if (changedDirectryPath === item.entry.fullPath) {
+      item.updateSubDirectories();
+      break;
+    } else if (changedDirectryPath.indexOf(item.entry.fullPath) == 0) {
+      DirectoryTreeUtil.updateChangedDirectoryItem(changedDirectryPath, item);
+    }
+  }
+};
+
+/**
  * Updates sub-elements of {@code parentElement} reading {@code DirectoryEntry}
  * with calling {@code iterator}.
  *
@@ -14,7 +40,8 @@
  *     the n-th Entry in the directory.
  * @param {DirectoryModel} directoryModel Current DirectoryModel.
  */
-function updateSubElementsFromList(parentElement, iterator, directoryModel) {
+DirectoryTreeUtil.updateSubElementsFromList = function(
+    parentElement, iterator, directoryModel) {
   var index = 0;
   while (iterator(index)) {
     var currentEntry = iterator(index);
@@ -46,7 +73,7 @@ function updateSubElementsFromList(parentElement, iterator, directoryModel) {
   } else {
     parentElement.hasChildren = true;
   }
-}
+};
 
 /**
  * Returns true if the given directory entry is dummy.
@@ -137,7 +164,7 @@ DirectoryItem.prototype.decorate = function(
   this.dirEntry_ = dirEntry;
 
   // Sets hasChildren=true tentatively. This will be overridden after
-  // scanning sub-directories in updateSubElementsFromList.
+  // scanning sub-directories in DirectoryTreeUtil.updateSubElementsFromList.
   // Special search does not have children.
   this.hasChildren = !PathUtil.isSpecialSearchRoot(path);
 
@@ -165,7 +192,7 @@ DirectoryItem.prototype.decorate = function(
       }.bind(this));
 
   if (parentDirItem.expanded)
-    this.updateSubDirectories_();
+    this.updateSubDirectories();
 };
 
 /**
@@ -174,7 +201,7 @@ DirectoryItem.prototype.decorate = function(
  * @private
  **/
 DirectoryItem.prototype.onExpand_ = function(e) {
-  this.updateSubDirectories_(function() {
+  this.updateSubDirectories(function() {
     this.expanded = false;
   }.bind(this));
 
@@ -184,9 +211,8 @@ DirectoryItem.prototype.onExpand_ = function(e) {
 /**
  * Retrieves the latest subdirectories and update them on the tree.
  * @param {function()=} opt_errorCallback Callback called on error.
- * @private
  */
-DirectoryItem.prototype.updateSubDirectories_ = function(opt_errorCallback) {
+DirectoryItem.prototype.updateSubDirectories = function(opt_errorCallback) {
   // Tries to retrieve new entry if the cached entry is dummy.
   if (isDummyEntry(this.dirEntry_)) {
     // Fake Drive root.
@@ -202,7 +228,7 @@ DirectoryItem.prototype.updateSubDirectories_ = function(opt_errorCallback) {
             return;
           }
 
-          this.updateSubDirectories_(opt_errorCallback);
+          this.updateSubDirectories(opt_errorCallback);
         }.bind(this),
         opt_errorCallback);
     return;
@@ -231,13 +257,17 @@ DirectoryItem.prototype.updateSubDirectories_ = function(opt_errorCallback) {
 };
 
 /**
+ * Redraw subitems with the latest information.
  * @private
  */
 DirectoryItem.prototype.redrawSubDirectoryList_ = function() {
-  var entries = this.entries_;
-  updateSubElementsFromList(this,
-                            function(i) { return entries[i]; },
-                            this.directoryModel_);
+  var entries = this.entries_.sort(function(a, b) {
+    return a.name.toLowerCase() > b.name.toLowerCase();
+  });
+  DirectoryTreeUtil.updateSubElementsFromList(
+      this,
+      function(i) { return entries[i]; },
+      this.directoryModel_);
 };
 
 /**
@@ -304,6 +334,10 @@ DirectoryTree.prototype.decorate = function(directoryModel) {
     this.directoryModel_.changeDirectory(
         this.directoryModel_.getDefaultDirectory());
   }.bind(this));
+
+  this.privateOnDirectoryChangedBound_ = this.onDirectoryChanged_.bind(this);
+  chrome.fileBrowserPrivate.onDirectoryChanged.addListener(
+      this.privateOnDirectoryChangedBound_);
 };
 
 /**
@@ -332,10 +366,22 @@ DirectoryTree.prototype.setContextMenu = function(menu) {
  */
 DirectoryTree.prototype.onRootsListChanged_ = function() {
   var rootsList = this.rootsList_;
-  updateSubElementsFromList(this,
-                            rootsList.item.bind(rootsList),
-                            this.directoryModel_);
+  DirectoryTreeUtil.updateSubElementsFromList(this,
+                                              rootsList.item.bind(rootsList),
+                                              this.directoryModel_);
   this.setContextMenu(this.contextMenu_);
+};
+
+/**
+ * Invoked when a directory is changed.
+ * @param {!UIEvent} event Event.
+ * @private
+ */
+DirectoryTree.prototype.onDirectoryChanged_ = function(event) {
+  if (event.eventType == 'changed') {
+    var path = util.extractFilePath(event.directoryUrl);
+    DirectoryTreeUtil.updateChangedDirectoryItem(path, this);
+  }
 };
 
 /**
