@@ -2179,6 +2179,7 @@
             'browser/page_cycler/page_cycler_unittest.cc',
             'browser/profiles/off_the_record_profile_impl_unittest.cc',
             'browser/search/search_unittest.cc',
+            'browser/signin/oauth2_token_service_unittest.cc',
             'browser/sync/profile_sync_service_session_unittest.cc',
             'browser/sync/sync_global_error_unittest.cc',
             'browser/tab_contents/render_view_context_menu_unittest.cc',

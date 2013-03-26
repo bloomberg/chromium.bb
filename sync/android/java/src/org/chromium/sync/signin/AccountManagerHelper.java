@@ -306,4 +306,11 @@ public class AccountManagerHelper {
         getAuthTokenAsynchronously(
             null, account, authTokenType, callback, numTries, errorEncountered, null);
     }
+
+    /**
+     * Removes an auth token from the AccountManager's cache.
+     */
+    public void invalidateAuthToken(String accountType, String authToken) {
+        mAccountManager.invalidateAuthToken(accountType, authToken);
+    }
 }
