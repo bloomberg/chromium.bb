@@ -10,8 +10,17 @@ This module accepts the following environment variable inputs:
   PERF_STATS_INTERVAL: The number of seconds to wait in-between each sampling
       of performance/memory statistics.
 
+The following variables are related to the Deep Memory Profiler.
   DEEP_MEMORY_PROFILE: Enable the Deep Memory Profiler if it's set to 'True'.
   DEEP_MEMORY_PROFILE_SAVE: Don't clean up dump files if it's set to 'True'.
+  DEEP_MEMORY_PROFILE_UPLOAD: Upload dumped files if the variable has a Google
+      Storage bucket like gs://chromium-endure/.  The 'gsutil' script in $PATH
+      is used by default, or set a variable 'GSUTIL' to specify a path to the
+      'gsutil' script.  A variable 'REVISION' is used as a subdirectory in
+      the destination if it is set.
+  GSUTIL: A path to the 'gsutil' script.  Not mandatory.
+  REVISION: A string that represents the revision or some build configuration.
+      Not mandatory.
 
   ENDURE_NO_WPR: Run tests without Web Page Replay if it's set.
   WPR_RECORD: Run tests in record mode. If you want to make a fresh
@@ -49,10 +58,14 @@ class DeepMemoryProfiler(object):
   """Controls Deep Memory Profiler (dmprof) for endurance tests."""
   DEEP_MEMORY_PROFILE = False
   DEEP_MEMORY_PROFILE_SAVE = False
+  DEEP_MEMORY_PROFILE_UPLOAD = ''
 
-  _DMPROF_DIR_PATH = os.path.join(
+  _WORKDIR_PATTERN = re.compile('endure\.[0-9]+\.[0-9]+\.[A-Za-z0-9]+')
+  _SAVED_WORKDIRS = 8
+
+  _DMPROF_DIR_PATH = os.path.abspath(os.path.join(
       os.path.dirname(__file__), os.pardir, os.pardir, os.pardir,
-      'tools', 'deep_memory_profiler')
+      'tools', 'deep_memory_profiler'))
   _DMPROF_SCRIPT_PATH = os.path.join(_DMPROF_DIR_PATH, 'dmprof')
   _POLICIES = ['l0', 'l1', 'l2', 't0']
 
@@ -61,6 +74,13 @@ class DeepMemoryProfiler(object):
         'DEEP_MEMORY_PROFILE', bool, self.DEEP_MEMORY_PROFILE)
     self._save = self.GetEnvironmentVariable(
         'DEEP_MEMORY_PROFILE_SAVE', bool, self.DEEP_MEMORY_PROFILE_SAVE)
+    self._upload = self.GetEnvironmentVariable(
+        'DEEP_MEMORY_PROFILE_UPLOAD', str, self.DEEP_MEMORY_PROFILE_UPLOAD)
+    if self._upload and not self._upload.endswith('/'):
+      self._upload += '/'
+
+    self._revision = ''
+    self._gsutil = ''
     self._json_file = None
     self._last_json_filename = ''
     self._proc = None
@@ -85,7 +105,7 @@ class DeepMemoryProfiler(object):
     """
     return converter(os.environ.get(env_name, default))
 
-  def SetUp(self, is_linux):
+  def SetUp(self, is_linux, revision, gsutil):
     """Sets up Deep Memory Profiler settings for a Chrome process.
 
     It sets environment variables and makes a working directory.
@@ -96,9 +116,27 @@ class DeepMemoryProfiler(object):
     if not is_linux:
       raise NotSupportedEnvironmentError(
           'Deep Memory Profiler is not supported in this environment (OS).')
+
+    self._revision = revision
+    self._gsutil = gsutil
+
+    # Remove old dumped files with keeping latest _SAVED_WORKDIRS workdirs.
+    # It keeps the latest workdirs not to miss data by failure in uploading
+    # and other operations.  Dumped files are no longer available if they are
+    # removed.  Re-execution doesn't generate the same files.
+    tempdir = tempfile.gettempdir()
+    saved_workdirs = 0
+    for filename in sorted(os.listdir(tempdir), reverse=True):
+      if self._WORKDIR_PATTERN.match(filename):
+        saved_workdirs += 1
+        if saved_workdirs > self._SAVED_WORKDIRS:
+          fullpath = os.path.abspath(os.path.join(tempdir, filename))
+          logging.info('Removing an old workdir: %s' % fullpath)
+          pyauto_utils.RemovePath(fullpath)
+
     dir_prefix = 'endure.%s.' % datetime.today().strftime('%Y%m%d.%H%M%S')
-    self._tempdir = tempfile.mkdtemp(prefix=dir_prefix)
-    os.environ['HEAPPROFILE'] = os.path.join(self._tempdir, 'endure')
+    self._workdir = tempfile.mkdtemp(prefix=dir_prefix, dir=tempdir)
+    os.environ['HEAPPROFILE'] = os.path.join(self._workdir, 'endure')
     os.environ['HEAP_PROFILE_MMAP'] = '1'
     os.environ['DEEP_HEAP_PROFILE'] = '1'
 
@@ -114,8 +152,8 @@ class DeepMemoryProfiler(object):
     del os.environ['DEEP_HEAP_PROFILE']
     del os.environ['HEAP_PROFILE_MMAP']
     del os.environ['HEAPPROFILE']
-    if not self._save and self._tempdir:
-      pyauto_utils.RemovePath(self._tempdir)
+    if not self._save and self._workdir:
+      pyauto_utils.RemovePath(self._workdir)
 
   def LogFirstMessage(self):
     """Logs first messages."""
@@ -128,7 +166,7 @@ class DeepMemoryProfiler(object):
     else:
       logging.info('  Dumped files will be cleaned up after every test.')
 
-  def StartProfiler(self, proc_info, is_last):
+  def StartProfiler(self, proc_info, is_last, webapp_name, test_description):
     """Starts Deep Memory Profiler in background."""
     if not self._enabled:
       return
@@ -150,7 +188,7 @@ class DeepMemoryProfiler(object):
         self._json_file = None
       first_dump = ''
       last_dump = ''
-      for filename in sorted(os.listdir(self._tempdir)):
+      for filename in sorted(os.listdir(self._workdir)):
         if re.match('^endure.%05d.\d+.heap$' % proc_info['tab_pid'],
                     filename):
           logging.info('    Profiled dump file: %s' % filename)
@@ -162,16 +200,40 @@ class DeepMemoryProfiler(object):
         matched = re.match('^endure.\d+.(\d+).heap$', last_dump)
         last_sequence_id = matched.group(1)
         self._json_file = open(
-            os.path.join(self._tempdir,
+            os.path.join(self._workdir,
                          'endure.%05d.%s.json' % (proc_info['tab_pid'],
                                                   last_sequence_id)), 'w+')
         self._proc = subprocess.Popen(
             '%s json %s' % (self._DMPROF_SCRIPT_PATH,
-                            os.path.join(self._tempdir, first_dump)),
+                            os.path.join(self._workdir, first_dump)),
             shell=True, stdout=self._json_file)
-        # Wait only when it is the last profiling.  dmprof may take long time.
         if is_last:
+          # Wait only when it is the last profiling.  dmprof may take long time.
           self._WaitForDeepMemoryProfiler()
+
+          # Upload the dumped files.
+          if first_dump and self._upload and self._gsutil:
+            if self._revision:
+              destination_path = '%s%s/' % (self._upload, self._revision)
+            else:
+              destination_path = self._upload
+            destination_path += '%s-%s-%s.zip' % (
+                webapp_name,
+                test_description,
+                os.path.basename(self._workdir))
+            gsutil_command = '%s upload --gsutil %s %s %s' % (
+                self._DMPROF_SCRIPT_PATH,
+                self._gsutil,
+                os.path.join(self._workdir, first_dump),
+                destination_path)
+            logging.info('Uploading: %s' % gsutil_command)
+            try:
+              returncode = subprocess.call(gsutil_command, shell=True)
+              logging.info('  Return code: %d' % returncode)
+            except OSError, e:
+              logging.error('  Error while uploading: %s', e)
+          else:
+            logging.info('Note that the dumped files are not uploaded.')
       else:
         logging.info('    No dump files.')
 
@@ -234,6 +296,8 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
   _GET_PERF_STATS_INTERVAL = 60 * 5  # Measure perf stats every 5 minutes.
   # TODO(dennisjeffrey): Do we still need to tolerate errors?
   _ERROR_COUNT_THRESHOLD = 50  # Number of errors to tolerate.
+  _REVISION = ''
+  _GSUTIL = 'gsutil'
 
   def setUp(self):
     # The Web Page Replay environment variables must be parsed before
@@ -242,8 +306,10 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
     # The environment variables for the Deep Memory Profiler must be set
     # before perf.BasePerfTest.setUp() to inherit them to Chrome.
     self._dmprof = DeepMemoryProfiler()
+    self._revision = str(os.environ.get('REVISION', self._REVISION))
+    self._gsutil = str(os.environ.get('GSUTIL', self._GSUTIL))
     if self._dmprof:
-      self._dmprof.SetUp(self.IsLinux())
+      self._dmprof.SetUp(self.IsLinux(), self._revision, self._gsutil)
 
     perf.BasePerfTest.setUp(self)
 
@@ -526,7 +592,8 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
     proc_info = self._GetProcessInfo(tab_title_substring)
 
     if self._dmprof:
-      self._dmprof.StartProfiler(proc_info, is_last)
+      self._dmprof.StartProfiler(
+          proc_info, is_last, webapp_name, test_description)
 
     # DOM node count.
     dom_node_count = memory_counts['DOMNodeCount']
