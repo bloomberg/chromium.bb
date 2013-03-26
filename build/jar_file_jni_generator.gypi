@@ -15,6 +15,9 @@
 #   },
 #   'includes': [ '../build/jar_file_jni_generator.gypi' ],
 # },
+#
+# Optional variables:
+#  input_jar_file - The input jar file, if omitted, android_sdk_jar will be used.
 
 {
   'variables': {
@@ -25,10 +28,12 @@
       'action_name': 'generate_jni_headers_from_jar_file',
       'inputs': [
         '<(jni_generator)',
+        '<(input_jar_file)',
         '<(android_sdk_jar)',
       ],
       'variables': {
-        'java_class_name': '<!(basename <(input_java_class)|sed "s/\.class//")'
+        'java_class_name': '<!(basename <(input_java_class)|sed "s/\.class//")',
+        'input_jar_file%': '<(android_sdk_jar)'
       },
       'outputs': [
         '<(SHARED_INTERMEDIATE_DIR)/<(jni_gen_package)/jni/<(java_class_name)_jni.h',
@@ -36,7 +41,7 @@
       'action': [
         '<(jni_generator)',
         '-j',
-        '<(android_sdk_jar)',
+        '<(input_jar_file)',
         '--input_file',
         '<(input_java_class)',
         '--output_dir',
@@ -44,7 +49,7 @@
         '--optimize_generation',
         '<(optimize_jni_generation)',
       ],
-      'message': 'Generating JNI bindings from  <(android_sdk_jar)/<(input_java_class)',
+      'message': 'Generating JNI bindings from  <(input_jar_file)/<(input_java_class)',
       'process_outputs_as_sources': 1,
     },
   ],
