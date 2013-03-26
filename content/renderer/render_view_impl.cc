@@ -542,8 +542,8 @@ static bool ShouldUseFixedPositionCompositing(float device_scale_factor) {
           switches::kEnableHighDpiCompositingForFixedPosition))
     return true;
 
-  // Default, when no switches are specified, is also dependent on high-DPI.
-  return device_scale_factor > 1.0f;
+  // Default, when no switches are specified, is disabled.
+  return false;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
