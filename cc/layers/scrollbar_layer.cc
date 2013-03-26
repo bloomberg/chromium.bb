@@ -193,6 +193,7 @@ class ScrollbarBackgroundPainter : public LayerPainter {
 
     painter_->PaintTickmarks(canvas, track_paint_rect);
   }
+
  private:
   ScrollbarBackgroundPainter(WebKit::WebScrollbar* scrollbar,
                              ScrollbarThemePainter *painter,

@@ -4,6 +4,8 @@
 
 #include "cc/layers/contents_scaling_layer.h"
 
+#include <vector>
+
 #include "cc/test/geometry_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

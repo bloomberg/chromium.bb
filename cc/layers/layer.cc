@@ -4,6 +4,8 @@
 
 #include "cc/layers/layer.h"
 
+#include <algorithm>
+
 #include "base/metrics/histogram.h"
 #include "cc/animation/animation.h"
 #include "cc/animation/animation_events.h"
@@ -106,7 +108,6 @@ void Layer::SetLayerTreeHost(LayerTreeHost* host) {
   if (host &&
       (!filters_.isEmpty() || !background_filters_.isEmpty() || filter_))
     layer_tree_host_->set_needs_filter_context();
-
 }
 
 void Layer::SetNeedsCommit() {

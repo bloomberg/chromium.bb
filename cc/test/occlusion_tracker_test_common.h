@@ -13,8 +13,8 @@ namespace cc {
 
 // A subclass to expose the total current occlusion.
 template <typename LayerType, typename RenderSurfaceType>
-class TestOcclusionTrackerBase :
-    public OcclusionTrackerBase<LayerType, RenderSurfaceType> {
+class TestOcclusionTrackerBase
+    : public OcclusionTrackerBase<LayerType, RenderSurfaceType> {
  public:
   TestOcclusionTrackerBase(gfx::Rect screen_scissor_rect,
                            bool record_metrics_for_frame)

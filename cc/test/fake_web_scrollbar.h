@@ -6,7 +6,7 @@
 #define CC_TEST_FAKE_WEB_SCROLLBAR_H_
 
 #include "base/memory/scoped_ptr.h"
-#include <public/WebScrollbar.h>
+#include "third_party/WebKit/Source/Platform/chromium/public/WebScrollbar.h"
 
 namespace cc {
 

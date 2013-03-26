@@ -117,14 +117,14 @@ class CC_EXPORT Proxy {
   friend class DebugScopedSetMainThreadBlocked;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(Proxy);
-
   scoped_ptr<Thread> main_thread_;
   scoped_ptr<Thread> impl_thread_;
 #ifndef NDEBUG
   bool impl_thread_is_overridden_;
   bool is_main_thread_blocked_;
 #endif
+
+  DISALLOW_COPY_AND_ASSIGN(Proxy);
 };
 
 #ifndef NDEBUG
@@ -149,6 +149,6 @@ class DebugScopedSetMainThreadBlocked {
 };
 #endif
 
-}
+}  // namespace cc
 
 #endif  // CC_TREES_PROXY_H_

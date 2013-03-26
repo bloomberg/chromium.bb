@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "cc/animation/transform_operations.h"
+
+#include <algorithm>
+
 #include "ui/gfx/transform_util.h"
 #include "ui/gfx/vector3d_f.h"
 

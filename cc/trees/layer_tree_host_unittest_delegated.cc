@@ -114,14 +114,17 @@ class LayerTreeHostDelegatedTestCreateChildId
     FakeDelegatedRendererLayerImpl* delegated_impl =
         static_cast<FakeDelegatedRendererLayerImpl*>(root_impl->children()[0]);
 
+    WebKit::WebGraphicsContext3D* context =
+        host_impl->resource_provider()->GraphicsContext3D();
+
     ++num_activates_;
-    switch(num_activates_) {
+    switch (num_activates_) {
       case 2:
         EXPECT_TRUE(delegated_impl->ChildId());
         EXPECT_FALSE(did_reset_child_id_);
 
-        host_impl->resource_provider()->GraphicsContext3D()->loseContextCHROMIUM(
-            GL_GUILTY_CONTEXT_RESET_ARB, GL_INNOCENT_CONTEXT_RESET_ARB);
+        context->loseContextCHROMIUM(GL_GUILTY_CONTEXT_RESET_ARB,
+                                     GL_INNOCENT_CONTEXT_RESET_ARB);
         break;
       case 3:
         EXPECT_TRUE(delegated_impl->ChildId());

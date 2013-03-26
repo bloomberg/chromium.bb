@@ -68,5 +68,5 @@ class CC_EXPORT ContentLayer : public TiledLayer {
   DISALLOW_COPY_AND_ASSIGN(ContentLayer);
 };
 
-}
+}  // namespace cc
 #endif  // CC_LAYERS_CONTENT_LAYER_H_

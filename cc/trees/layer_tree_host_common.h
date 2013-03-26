@@ -5,6 +5,8 @@
 #ifndef CC_TREES_LAYER_TREE_HOST_COMMON_H_
 #define CC_TREES_LAYER_TREE_HOST_COMMON_H_
 
+#include <vector>
+
 #include "base/memory/ref_counted.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/scoped_ptr_vector.h"

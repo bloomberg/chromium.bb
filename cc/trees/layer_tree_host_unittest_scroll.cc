@@ -38,9 +38,9 @@ class LayerTreeHostScrollTestScrollSimple : public LayerTreeHostScrollTest {
 
   virtual void Layout() OVERRIDE {
     Layer* root = layer_tree_host()->root_layer();
-    if (!layer_tree_host()->commit_number())
+    if (!layer_tree_host()->commit_number()) {
       EXPECT_VECTOR_EQ(initial_scroll_, root->scroll_offset());
-    else {
+    } else {
       EXPECT_VECTOR_EQ(initial_scroll_ + scroll_amount_, root->scroll_offset());
 
       // Pretend like Javascript updated the scroll position itself.
@@ -90,8 +90,8 @@ class LayerTreeHostScrollTestScrollSimple : public LayerTreeHostScrollTest {
 
 MULTI_THREAD_TEST_F(LayerTreeHostScrollTestScrollSimple)
 
-class LayerTreeHostScrollTestScrollMultipleRedraw :
-    public LayerTreeHostScrollTest {
+class LayerTreeHostScrollTestScrollMultipleRedraw
+    : public LayerTreeHostScrollTest {
  public:
   LayerTreeHostScrollTestScrollMultipleRedraw()
       : initial_scroll_(40, 10),
@@ -234,9 +234,9 @@ class LayerTreeHostScrollTestFractionalScroll : public LayerTreeHostScrollTest {
 
 MULTI_THREAD_TEST_F(LayerTreeHostScrollTestFractionalScroll)
 
-class LayerTreeHostScrollTestCaseWithChild :
-    public LayerTreeHostScrollTest,
-    public WebKit::WebLayerScrollClient {
+class LayerTreeHostScrollTestCaseWithChild
+    : public LayerTreeHostScrollTest,
+      public WebKit::WebLayerScrollClient {
  public:
   LayerTreeHostScrollTestCaseWithChild()
       : initial_offset_(10, 20),
@@ -519,9 +519,9 @@ class ImplSidePaintingScrollTestSimple : public ImplSidePaintingScrollTest {
 
   virtual void Layout() OVERRIDE {
     Layer* root = layer_tree_host()->root_layer();
-    if (!layer_tree_host()->commit_number())
+    if (!layer_tree_host()->commit_number()) {
       EXPECT_VECTOR_EQ(root->scroll_offset(), initial_scroll_);
-    else {
+    } else {
       EXPECT_VECTOR_EQ(root->scroll_offset(),
                        initial_scroll_ + impl_thread_scroll1_);
 

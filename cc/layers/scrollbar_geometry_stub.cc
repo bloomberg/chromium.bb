@@ -4,7 +4,7 @@
 
 #include "cc/layers/scrollbar_geometry_stub.h"
 
-#include <cmath>
+#include <algorithm>
 
 namespace cc {
 

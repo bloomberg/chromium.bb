@@ -30,6 +30,6 @@ class CC_EXPORT ContentLayerClient {
   virtual ~ContentLayerClient() {}
 };
 
-}
+}  // namespace cc
 
 #endif  // CC_LAYERS_CONTENT_LAYER_CLIENT_H_

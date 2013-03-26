@@ -15,7 +15,8 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFilterOperations.h"
 #include "third_party/skia/include/effects/SkBlurImageFilter.h"
 
-using namespace WebKit;
+using WebKit::WebFilterOperation;
+using WebKit::WebFilterOperations;
 
 namespace cc {
 namespace {

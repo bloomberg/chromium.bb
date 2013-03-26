@@ -62,7 +62,7 @@ class CC_EXPORT TopControlsManager
                      float top_controls_hide_threshold);
 
  private:
-  void SetControlsTopOffset(float);
+  void SetControlsTopOffset(float offset);
   void ResetAnimations();
   void SetupAnimation(AnimationDirection direction);
   void StartAnimationIfNecessary();

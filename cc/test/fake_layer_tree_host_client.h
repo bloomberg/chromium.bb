@@ -21,7 +21,7 @@ class FakeLayerTreeHostClient : public LayerTreeHostClient {
     DELEGATED_3D,
     DELEGATED_SOFTWARE
   };
-  FakeLayerTreeHostClient(RendererOptions options);
+  explicit FakeLayerTreeHostClient(RendererOptions options);
   virtual ~FakeLayerTreeHostClient();
 
   virtual void WillBeginFrame() OVERRIDE {}

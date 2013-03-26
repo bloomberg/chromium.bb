@@ -43,7 +43,7 @@ void LayerAnimationController::PauseAnimation(int animation_id,
 }
 
 struct HasAnimationId {
-  HasAnimationId(int id) : id_(id) {}
+  explicit HasAnimationId(int id) : id_(id) {}
   bool operator()(Animation* animation) const {
     return animation->id() == id_;
   }
@@ -160,8 +160,7 @@ void LayerAnimationController::AccumulatePropertyUpdates(
           monotonic_time);
 
       events->push_back(event);
-    }
-    else if (animation->target_property() == Animation::Transform) {
+    } else if (animation->target_property() == Animation::Transform) {
       AnimationEvent event(AnimationEvent::PropertyUpdate,
                            id_,
                            animation->group(),
@@ -305,7 +304,7 @@ void LayerAnimationController::PushNewAnimationsToImplThread(
 }
 
 struct IsCompleted {
-  IsCompleted(const LayerAnimationController& main_thread_controller)
+  explicit IsCompleted(const LayerAnimationController& main_thread_controller)
       : main_thread_controller_(main_thread_controller) {}
   bool operator()(Animation* animation) const {
     if (animation->is_impl_only())
@@ -564,7 +563,6 @@ void LayerAnimationController::TickAnimations(double monotonic_time) {
         trimmed = 0;
 
       switch (active_animations_[i]->target_property()) {
-
         case Animation::Transform: {
           const TransformAnimationCurve* transform_animation_curve =
               active_animations_[i]->curve()->ToTransformAnimationCurve();

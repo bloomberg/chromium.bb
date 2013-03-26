@@ -4,6 +4,8 @@
 
 #include "cc/layers/solid_color_layer_impl.h"
 
+#include <algorithm>
+
 #include "cc/layers/quad_sink.h"
 #include "cc/quads/solid_color_draw_quad.h"
 

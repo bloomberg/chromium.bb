@@ -17,7 +17,8 @@
 #include "third_party/skia/include/effects/SkBlurImageFilter.h"
 #include "ui/gfx/quad_f.h"
 
-using namespace WebKit;
+using WebKit::WebFilterOperation;
+using WebKit::WebFilterOperations;
 
 namespace cc {
 namespace {

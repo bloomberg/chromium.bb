@@ -4,6 +4,8 @@
 
 #include "cc/layers/picture_layer_impl.h"
 
+#include <algorithm>
+
 #include "base/time.h"
 #include "cc/base/math_util.h"
 #include "cc/base/util.h"
@@ -154,7 +156,6 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
                                             ideal_contents_scale_);
        iter;
        ++iter) {
-
     gfx::Rect geometry_rect = iter.geometry_rect();
     if (!*iter || !iter->drawing_info().IsReadyToDraw()) {
       if (DrawCheckerboardForMissingTiles()) {
@@ -207,7 +208,7 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
       case ManagedTileState::DrawingInfo::TRANSPARENT_MODE:
         break;
       case ManagedTileState::DrawingInfo::PICTURE_PILE_MODE:
-        // TODO: crbug.com/173011 would fill this part in.
+        // TODO(leandrogarcia): crbug.com/173011 would fill this part in.
       default:
         NOTREACHED();
     }
@@ -576,8 +577,8 @@ void PictureLayerImpl::RemoveTiling(float contents_scale) {
 namespace {
 
 inline float PositiveRatio(float float1, float float2) {
-  DCHECK(float1 > 0);
-  DCHECK(float2 > 0);
+  DCHECK_GT(float1, 0);
+  DCHECK_GT(float2, 0);
   return float1 > float2 ? float1 / float2 : float2 / float1;
 }
 

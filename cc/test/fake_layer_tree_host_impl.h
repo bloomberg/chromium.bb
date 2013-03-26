@@ -14,7 +14,7 @@ namespace cc {
 
 class FakeLayerTreeHostImpl : public LayerTreeHostImpl {
  public:
-  FakeLayerTreeHostImpl(Proxy* proxy);
+  explicit FakeLayerTreeHostImpl(Proxy* proxy);
   FakeLayerTreeHostImpl(const LayerTreeSettings& settings, Proxy* proxy);
   virtual ~FakeLayerTreeHostImpl();
 

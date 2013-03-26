@@ -5,6 +5,8 @@
 #ifndef CC_LAYERS_HEADS_UP_DISPLAY_LAYER_IMPL_H_
 #define CC_LAYERS_HEADS_UP_DISPLAY_LAYER_IMPL_H_
 
+#include <string>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "cc/base/cc_export.h"

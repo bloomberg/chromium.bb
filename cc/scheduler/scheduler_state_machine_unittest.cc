@@ -21,7 +21,7 @@ const SchedulerStateMachine::CommitState all_commit_states[] = {
 // Exposes the protected state fields of the SchedulerStateMachine for testing
 class StateMachine : public SchedulerStateMachine {
  public:
-  StateMachine(const SchedulerSettings& scheduler_settings)
+  explicit StateMachine(const SchedulerSettings& scheduler_settings)
       : SchedulerStateMachine(scheduler_settings) {}
   void SetCommitState(CommitState cs) { commit_state_ = cs; }
   CommitState CommitState() const { return commit_state_; }

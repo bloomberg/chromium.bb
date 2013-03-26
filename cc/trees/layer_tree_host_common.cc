@@ -178,7 +178,6 @@ static gfx::Rect CalculateVisibleContentRect(
 static inline bool TransformToParentIsKnown(LayerImpl* layer) { return true; }
 
 static inline bool TransformToParentIsKnown(Layer* layer) {
-
   return !layer->TransformIsAnimating();
 }
 
@@ -766,8 +765,8 @@ static void CalculateDrawPropertiesInternal(
   //            Tr[replica] * Tr[origin2anchor].inverse()
   //
 
-  // If we early-exit anywhere in this function, the drawable_content_rect of this
-  // subtree should be considered empty.
+  // If we early-exit anywhere in this function, the drawable_content_rect of
+  // this subtree should be considered empty.
   *drawable_content_rect_of_subtree = gfx::Rect();
 
   // The root layer cannot skip CalcDrawProperties.

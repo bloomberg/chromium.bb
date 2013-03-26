@@ -5,6 +5,8 @@
 #ifndef CC_TREES_LAYER_SORTER_H_
 #define CC_TREES_LAYER_SORTER_H_
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/hash_tables.h"
 #include "cc/base/cc_export.h"
@@ -109,5 +111,5 @@ class CC_EXPORT LayerSorter {
   DISALLOW_COPY_AND_ASSIGN(LayerSorter);
 };
 
-}
+}  // namespace cc
 #endif  // CC_TREES_LAYER_SORTER_H_

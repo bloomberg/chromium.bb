@@ -254,7 +254,7 @@ void TestWebGraphicsContext3D::bindRenderbuffer(
       WGC3Denum target, WebGLId renderbuffer) {
   if (!renderbuffer)
     return;
- EXPECT_EQ(kRenderbufferId | context_id_ << 16, renderbuffer);
+  EXPECT_EQ(kRenderbufferId | context_id_ << 16, renderbuffer);
 }
 
 void TestWebGraphicsContext3D::bindTexture(

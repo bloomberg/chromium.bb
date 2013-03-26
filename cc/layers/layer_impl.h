@@ -242,7 +242,7 @@ class CC_EXPORT LayerImpl : LayerAnimationValueObserver {
     return draw_properties_.render_target;
   }
   RenderSurfaceImpl* render_surface() const {
- return draw_properties_.render_surface.get();
+    return draw_properties_.render_surface.get();
   }
 
   // The client should be responsible for setting bounds, content bounds and
@@ -523,6 +523,6 @@ class CC_EXPORT LayerImpl : LayerAnimationValueObserver {
   DISALLOW_COPY_AND_ASSIGN(LayerImpl);
 };
 
-}
+}  // namespace cc
 
 #endif  // CC_LAYERS_LAYER_IMPL_H_

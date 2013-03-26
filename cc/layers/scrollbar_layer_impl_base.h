@@ -25,6 +25,6 @@ class CC_EXPORT ScrollbarLayerImplBase : public LayerImpl {
       : LayerImpl(tree_impl, id) {}
 };
 
-} // namespace cc
+}  // namespace cc
 
-#endif // CC_LAYERS_SCROLLBAR_LAYER_IMPL_BASE_H_
+#endif  // CC_LAYERS_SCROLLBAR_LAYER_IMPL_BASE_H_

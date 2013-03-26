@@ -52,6 +52,6 @@ class LayerTreeHostClient {
   virtual ~LayerTreeHostClient() {}
 };
 
-}
+}  // namespace cc
 
 #endif  // CC_TREES_LAYER_TREE_HOST_CLIENT_H_

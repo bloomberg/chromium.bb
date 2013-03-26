@@ -20,7 +20,7 @@ namespace cc {
 
 class PixelTest::PixelTestRendererClient : public RendererClient {
  public:
-  PixelTestRendererClient(gfx::Size device_viewport_size)
+  explicit PixelTestRendererClient(gfx::Size device_viewport_size)
       : device_viewport_size_(device_viewport_size) {}
 
   // RendererClient implementation.
@@ -91,7 +91,7 @@ bool PixelTest::PixelsMatchReference(const base::FilePath& ref_file) {
     return false;
 
   // To rebaseline:
-  //return WritePNGFile(bitmap, test_data_dir.Append(ref_file));
+  // return WritePNGFile(bitmap, test_data_dir.Append(ref_file));
 
   return IsSameAsPNGFile(bitmap, test_data_dir.Append(ref_file));
 }

@@ -43,8 +43,7 @@ class PinchZoomScrollbarGeometry : public WebScrollbarThemeGeometry {
   virtual void splitTrack(
     WebScrollbar* scrollbar, const WebRect& track, WebRect& start_track,
     WebRect& thumb, WebRect& end_track);
-
 };
 
-} // namespace WebKit
+}  // namespace WebKit
 #endif  // CC_INPUT_PINCH_ZOOM_SCROLLBAR_GEOMETRY_H_

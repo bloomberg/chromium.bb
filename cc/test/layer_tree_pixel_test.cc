@@ -64,7 +64,7 @@ void LayerTreePixelTest::SwapBuffersOnThread(LayerTreeHostImpl* host_impl,
   EXPECT_TRUE(PathService::Get(cc::DIR_TEST_DATA, &test_data_dir));
 
   // To rebaseline:
-  //EXPECT_TRUE(WritePNGFile(bitmap, test_data_dir.Append(ref_file_)));
+  // EXPECT_TRUE(WritePNGFile(bitmap, test_data_dir.Append(ref_file_)));
 
   EXPECT_TRUE(IsSameAsPNGFile(bitmap, test_data_dir.Append(ref_file_)));
 

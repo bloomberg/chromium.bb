@@ -68,7 +68,7 @@ class CC_EXPORT RenderSurface {
 
   void SetTargetSurfaceTransformsAreAnimating(bool animating) {
     target_surface_transforms_are_animating_ = animating;
- }
+  }
   bool target_surface_transforms_are_animating() const {
     return target_surface_transforms_are_animating_;
   }
@@ -135,5 +135,5 @@ class CC_EXPORT RenderSurface {
   DISALLOW_COPY_AND_ASSIGN(RenderSurface);
 };
 
-}
+}  // namespace cc
 #endif  // CC_LAYERS_RENDER_SURFACE_H_

@@ -254,7 +254,7 @@ float LayerShape::LayerZFromProjectedPoint(gfx::PointF p) const {
     return 0.f;
 
   // The intersection point would be given by:
-  // p + (n / d) * u  but since we are only interested in the 
+  // p + (n / d) * u  but since we are only interested in the
   // z coordinate and p's z coord is zero, all we need is the value of n/d.
   return n / d;
 }
@@ -391,7 +391,6 @@ void LayerSorter::Sort(LayerList::iterator first, LayerList::iterator last) {
   DVLOG(2) << "Sorted list: ";
   while (active_edges_.size() || no_incoming_edge_node_list.size()) {
     while (no_incoming_edge_node_list.size()) {
-
       // It is necessary to preserve the existing ordering of layers, when there
       // are no explicit dependencies (because this existing ordering has
       // correct z-index/layout ordering). To preserve this ordering, we process

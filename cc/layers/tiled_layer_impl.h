@@ -5,6 +5,8 @@
 #ifndef CC_LAYERS_TILED_LAYER_IMPL_H_
 #define CC_LAYERS_TILED_LAYER_IMPL_H_
 
+#include <string>
+
 #include "cc/base/cc_export.h"
 #include "cc/layers/layer_impl.h"
 

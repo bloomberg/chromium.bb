@@ -5,6 +5,9 @@
 #ifndef CC_TREES_LAYER_TREE_IMPL_H_
 #define CC_TREES_LAYER_TREE_IMPL_H_
 
+#include <string>
+#include <vector>
+
 #include "base/hash_tables.h"
 #include "base/values.h"
 #include "cc/layers/layer_impl.h"
@@ -17,8 +20,8 @@ struct hash<cc::LayerImpl*> {
     return hash<size_t>()(reinterpret_cast<size_t>(ptr));
   }
 };
-} // namespace BASE_HASH_NAMESPACE
-#endif // COMPILER
+}  // namespace BASE_HASH_NAMESPACE
+#endif  // COMPILER
 
 namespace cc {
 
@@ -88,7 +91,7 @@ class CC_EXPORT LayerTreeImpl {
   void SetRootLayer(scoped_ptr<LayerImpl>);
   scoped_ptr<LayerImpl> DetachLayerTree();
 
-  void PushPropertiesTo(LayerTreeImpl*);
+  void PushPropertiesTo(LayerTreeImpl* tree_impl);
 
   int source_frame_number() const { return source_frame_number_; }
   void set_source_frame_number(int frame_number) {
@@ -198,7 +201,7 @@ class CC_EXPORT LayerTreeImpl {
   void DidEndScroll();
 
  protected:
-  LayerTreeImpl(LayerTreeHostImpl* layer_tree_host_impl);
+  explicit LayerTreeImpl(LayerTreeHostImpl* layer_tree_host_impl);
 
   void UpdateSolidColorScrollbars();
 
@@ -249,6 +252,6 @@ class CC_EXPORT LayerTreeImpl {
   DISALLOW_COPY_AND_ASSIGN(LayerTreeImpl);
 };
 
-}
+}  // namespace cc
 
 #endif  // CC_TREES_LAYER_TREE_IMPL_H_

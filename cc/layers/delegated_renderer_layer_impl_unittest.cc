@@ -94,20 +94,20 @@ class DelegatedRendererLayerImplTestSimple
 
     ScopedPtrVector<RenderPass> delegated_render_passes;
     TestRenderPass* pass1 = AddRenderPass(
-        delegated_render_passes,
+        &delegated_render_passes,
         RenderPass::Id(9, 6),
         gfx::Rect(6, 6, 6, 6),
         gfx::Transform());
     AddQuad(pass1, gfx::Rect(0, 0, 6, 6), 33u);
     TestRenderPass* pass2 = AddRenderPass(
-        delegated_render_passes,
+        &delegated_render_passes,
         RenderPass::Id(9, 7),
         gfx::Rect(7, 7, 7, 7),
         gfx::Transform());
     AddQuad(pass2, gfx::Rect(0, 0, 7, 7), 22u);
     AddRenderPassQuad(pass2, pass1);
     TestRenderPass* pass3 = AddRenderPass(
-        delegated_render_passes,
+        &delegated_render_passes,
         RenderPass::Id(9, 8),
         gfx::Rect(0, 0, 8, 8),
         gfx::Transform());
@@ -470,7 +470,7 @@ class DelegatedRendererLayerImplTestTransform
     root_layer->SetBounds(gfx::Size(100, 100));
 
     delegated_renderer_layer->SetPosition(gfx::Point(20, 20));
-    delegated_renderer_layer->SetBounds(gfx::Size(30, 30)); 
+    delegated_renderer_layer->SetBounds(gfx::Size(30, 30));
     delegated_renderer_layer->SetContentBounds(gfx::Size(30, 30));
     delegated_renderer_layer->SetDrawsContent(true);
     gfx::Transform transform;
@@ -490,7 +490,7 @@ class DelegatedRendererLayerImplTestTransform
 
     {
       TestRenderPass* pass = AddRenderPass(
-          delegated_render_passes,
+          &delegated_render_passes,
           RenderPass::Id(10, 7),
           child_pass_rect,
           gfx::Transform());
@@ -525,7 +525,7 @@ class DelegatedRendererLayerImplTestTransform
     bool root_pass_clipped = root_delegated_render_pass_is_clipped_;
 
     TestRenderPass* pass = AddRenderPass(
-        delegated_render_passes,
+        &delegated_render_passes,
         RenderPass::Id(9, 6),
         root_pass_rect,
         gfx::Transform());
@@ -887,7 +887,7 @@ class DelegatedRendererLayerImplTestClip
 
     {
       TestRenderPass* pass = AddRenderPass(
-          delegated_render_passes,
+          &delegated_render_passes,
           RenderPass::Id(10, 7),
           child_pass_rect,
           gfx::Transform());
@@ -920,7 +920,7 @@ class DelegatedRendererLayerImplTestClip
     bool root_pass_clipped = root_delegated_render_pass_is_clipped_;
 
     TestRenderPass* pass = AddRenderPass(
-        delegated_render_passes,
+        &delegated_render_passes,
         RenderPass::Id(9, 6),
         root_pass_rect,
         gfx::Transform());

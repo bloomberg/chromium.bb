@@ -371,7 +371,7 @@ void LayerTreeHostImpl::TrackDamageForAllSurfaces(
   // surface.
 
   for (int surface_index = render_surface_layer_list.size() - 1;
-       surface_index >= 0 ;
+       surface_index >= 0;
        --surface_index) {
     LayerImpl* render_surface_layer = render_surface_layer_list[surface_index];
     RenderSurfaceImpl* render_surface = render_surface_layer->render_surface();
@@ -506,12 +506,11 @@ bool LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
   TRACE_EVENT1("cc",
                "LayerTreeHostImpl::CalculateRenderPasses",
                "render_surface_layer_list.size()",
-               static_cast<long long unsigned>(
-                   frame->render_surface_layer_list->size()));
+               static_cast<uint64>(frame->render_surface_layer_list->size()));
 
   // Create the render passes in dependency order.
   for (int surface_index = frame->render_surface_layer_list->size() - 1;
-       surface_index >= 0 ;
+       surface_index >= 0;
        --surface_index) {
     LayerImpl* render_surface_layer =
         (*frame->render_surface_layer_list)[surface_index];
@@ -668,7 +667,8 @@ bool LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
 
   RemoveRenderPasses(CullRenderPassesWithNoQuads(), frame);
   renderer_->DecideRenderPassAllocationsForFrame(frame->render_passes);
-  RemoveRenderPasses(CullRenderPassesWithCachedTextures(*renderer_), frame);
+  RemoveRenderPasses(CullRenderPassesWithCachedTextures(renderer_.get()),
+                     frame);
 
   return draw_frame;
 }
@@ -735,7 +735,7 @@ bool LayerTreeHostImpl::CullRenderPassesWithCachedTextures::
                            const FrameData& frame) const {
   bool quad_has_damage = !quad.contents_changed_since_last_frame.IsEmpty();
   bool quad_has_cached_resource =
-      renderer_.HaveCachedResourcesForRenderPassId(quad.render_pass_id);
+      renderer_->HaveCachedResourcesForRenderPassId(quad.render_pass_id);
   if (quad_has_damage) {
     TRACE_EVENT0("cc", "CullRenderPassesWithCachedTextures have damage");
     return false;

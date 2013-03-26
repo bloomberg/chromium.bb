@@ -4,6 +4,9 @@
 
 #include "cc/layers/tiled_layer.h"
 
+#include <limits>
+#include <vector>
+
 #include "cc/debug/overdraw_metrics.h"
 #include "cc/resources/bitmap_content_layer_updater.h"
 #include "cc/resources/layer_painter.h"
@@ -1186,7 +1189,6 @@ TEST_F(TiledLayerTest, TilesPaintedWithOcclusionAndVisiblityConstraints) {
               210000 + 180000 + 180000,
               1);
   EXPECT_EQ(3 + 6 + 6, occluded.overdraw_metrics()->tiles_culled_for_upload());
-
 }
 
 TEST_F(TiledLayerTest, TilesNotPaintedWithoutInvalidation) {

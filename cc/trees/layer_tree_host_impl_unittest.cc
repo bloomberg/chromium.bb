@@ -994,11 +994,11 @@ class DidDrawCheckLayer : public TiledLayerImpl {
     return scoped_ptr<LayerImpl>(new DidDrawCheckLayer(tree_impl, id));
   }
 
-  virtual void DidDraw(ResourceProvider*) OVERRIDE {
+  virtual void DidDraw(ResourceProvider* provider) OVERRIDE {
     did_draw_called_ = true;
   }
 
-  virtual void WillDraw(ResourceProvider*) OVERRIDE {
+  virtual void WillDraw(ResourceProvider* provider) OVERRIDE {
     will_draw_called_ = true;
   }
 
@@ -2318,7 +2318,6 @@ TEST_F(LayerTreeHostImplTest, BlendingOffWhenDrawingOpaqueLayers) {
   host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
   EXPECT_TRUE(layer1->quads_appended());
   host_impl_->DidDrawAllLayers(frame);
-
 }
 
 TEST_F(LayerTreeHostImplTest, ViewportCovered) {
@@ -2413,7 +2412,6 @@ TEST_F(LayerTreeHostImplTest, ViewportCovered) {
         frame.render_passes[0]->quad_list, gfx::Rect(viewport_size));
     host_impl_->DidDrawAllLayers(frame);
   }
-
 }
 
 
@@ -2654,8 +2652,9 @@ class MockContext : public TestWebGraphicsContext3D {
 class MockContextHarness {
  private:
   MockContext* context_;
+
  public:
-  MockContextHarness(MockContext* context)
+  explicit MockContextHarness(MockContext* context)
       : context_(context) {
     // Catch "uninteresting" calls
     EXPECT_CALL(*context_, useProgram(_))
@@ -2701,7 +2700,6 @@ class MockContextHarness {
     EXPECT_CALL(*context_, useProgram(_))
         .WillOnce(Return())
         .RetiresOnSaturation();
-
   }
 
   void MustSetScissor(int x, int y, int width, int height) {
@@ -3282,7 +3280,6 @@ TEST_F(LayerTreeHostImplTest, TextureCachingWithOcclusion) {
     my_host_impl->DrawLayers(&frame, base::TimeTicks::Now());
     my_host_impl->DidDrawAllLayers(frame);
   }
-
 }
 
 TEST_F(LayerTreeHostImplTest, TextureCachingWithOcclusionEarlyOut) {
@@ -4584,8 +4581,9 @@ TestCase remove_render_passes_cases[] = {
   }
 };
 
-static void VerifyRenderPassTestData(TestCase& test_case,
-                                     RenderPassRemovalTestData& test_data) {
+static void VerifyRenderPassTestData(
+    const TestCase& test_case,
+    const RenderPassRemovalTestData& test_data) {
   char actual_result[1024];
   DumpRenderPassTestData(test_data, actual_result);
   EXPECT_STREQ(test_case.expected_result, actual_result) << "In test case: " <<
@@ -4611,7 +4609,7 @@ TEST_F(LayerTreeHostImplTest, TestRemoveRenderPasses) {
         test_data,
         renderer.get());
     LayerTreeHostImpl::RemoveRenderPasses(
-        LayerTreeHostImpl::CullRenderPassesWithCachedTextures(*renderer),
+        LayerTreeHostImpl::CullRenderPassesWithCachedTextures(renderer.get()),
         &test_data);
     VerifyRenderPassTestData(remove_render_passes_cases[test_case_index],
                              test_data);

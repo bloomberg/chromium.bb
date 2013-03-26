@@ -35,7 +35,7 @@ gfx::Vector2dF InterpolateBetween(gfx::Vector2dF start,
   return start + gfx::ScaleVector2d(end - start, interp);
 }
 
-}
+}  // namespace
 
 namespace cc {
 

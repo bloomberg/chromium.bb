@@ -4,6 +4,9 @@
 
 #include "cc/layers/delegated_renderer_layer_impl.h"
 
+#include <algorithm>
+#include <utility>
+
 #include "base/bind.h"
 #include "cc/base/math_util.h"
 #include "cc/layers/append_quads_data.h"
@@ -51,7 +54,7 @@ static ResourceProvider::ResourceId ResourceRemapHelper(
     return 0;
   }
 
-  DCHECK(it->first == id);
+  DCHECK_EQ(it->first, id);
   ResourceProvider::ResourceId remapped_id = it->second;
   remapped_resources->insert(remapped_id);
   return remapped_id;
@@ -160,7 +163,8 @@ void DelegatedRendererLayerImpl::ClearRenderPasses() {
 
 scoped_ptr<LayerImpl> DelegatedRendererLayerImpl::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
-  return DelegatedRendererLayerImpl::Create(tree_impl, id()).PassAs<LayerImpl>();
+  return DelegatedRendererLayerImpl::Create(
+      tree_impl, id()).PassAs<LayerImpl>();
 }
 
 void DelegatedRendererLayerImpl::DidLoseOutputSurface() {
@@ -210,7 +214,7 @@ void DelegatedRendererLayerImpl::AppendContributingRenderPasses(
         ConvertDelegatedRenderPassId(render_passes_in_draw_order_[i]->id);
 
     // Don't clash with the RenderPass we generate if we own a RenderSurface.
-    DCHECK(output_render_pass_id.index > 0);
+    DCHECK_GT(output_render_pass_id.index, 0);
 
     render_pass_sink->AppendRenderPass(
         render_passes_in_draw_order_[i]->Copy(output_render_pass_id));

@@ -36,6 +36,6 @@ class CC_EXPORT PictureImageLayerImpl : public PictureLayerImpl {
   DISALLOW_COPY_AND_ASSIGN(PictureImageLayerImpl);
 };
 
-}
+}  // namespace cc
 
 #endif  // CC_LAYERS_PICTURE_IMAGE_LAYER_IMPL_H_

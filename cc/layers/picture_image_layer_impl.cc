@@ -4,6 +4,8 @@
 
 #include "cc/layers/picture_image_layer_impl.h"
 
+#include <algorithm>
+
 #include "cc/debug/debug_colors.h"
 #include "cc/trees/layer_tree_impl.h"
 

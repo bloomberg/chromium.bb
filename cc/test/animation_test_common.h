@@ -33,7 +33,7 @@ class FakeFloatAnimationCurve : public FloatAnimationCurve {
 
 class FakeTransformTransition : public TransformAnimationCurve {
  public:
-  FakeTransformTransition(double duration);
+  explicit FakeTransformTransition(double duration);
   virtual ~FakeTransformTransition();
 
   virtual double Duration() const OVERRIDE;

@@ -813,12 +813,12 @@ TEST(GLRendererTest2, ShouldClearRootRenderPass) {
 
   RenderPass::Id root_pass_id(1, 0);
   TestRenderPass* root_pass = AddRenderPass(
-      render_passes, root_pass_id, viewport_rect, gfx::Transform());
+      &render_passes, root_pass_id, viewport_rect, gfx::Transform());
   AddQuad(root_pass, viewport_rect, SK_ColorGREEN);
 
   RenderPass::Id child_pass_id(2, 0);
   TestRenderPass* child_pass = AddRenderPass(
-      render_passes, child_pass_id, viewport_rect, gfx::Transform());
+      &render_passes, child_pass_id, viewport_rect, gfx::Transform());
   AddQuad(child_pass, viewport_rect, SK_ColorBLUE);
 
   AddRenderPassQuad(root_pass, child_pass);
@@ -885,18 +885,18 @@ TEST(GLRendererTest2, ScissorTestWhenClearing) {
   gfx::Rect grand_child_rect(25, 25);
   RenderPass::Id grand_child_pass_id(3, 0);
   TestRenderPass* grand_child_pass = AddRenderPass(
-      render_passes, grand_child_pass_id, grand_child_rect, gfx::Transform());
+     & render_passes, grand_child_pass_id, grand_child_rect, gfx::Transform());
   AddClippedQuad(grand_child_pass, grand_child_rect, SK_ColorYELLOW);
 
   gfx::Rect child_rect(50, 50);
   RenderPass::Id child_pass_id(2, 0);
   TestRenderPass* child_pass =
-      AddRenderPass(render_passes, child_pass_id, child_rect, gfx::Transform());
+      AddRenderPass(&render_passes, child_pass_id, child_rect, gfx::Transform());
   AddQuad(child_pass, child_rect, SK_ColorBLUE);
 
   RenderPass::Id root_pass_id(1, 0);
   TestRenderPass* root_pass = AddRenderPass(
-      render_passes, root_pass_id, viewport_rect, gfx::Transform());
+     & render_passes, root_pass_id, viewport_rect, gfx::Transform());
   AddQuad(root_pass, viewport_rect, SK_ColorGREEN);
 
   AddRenderPassQuad(root_pass, child_pass);
@@ -965,7 +965,7 @@ class MockOutputSurfaceTest : public testing::Test, public FakeRendererClient {
 
     RenderPass::Id render_pass_id(1, 0);
     TestRenderPass* render_pass = AddRenderPass(
-        *render_passes, render_pass_id, viewport_rect, gfx::Transform());
+        render_passes, render_pass_id, viewport_rect, gfx::Transform());
     AddQuad(render_pass, viewport_rect, SK_ColorGREEN);
 
     EXPECT_CALL(output_surface_, EnsureBackbuffer()).WillRepeatedly(Return());

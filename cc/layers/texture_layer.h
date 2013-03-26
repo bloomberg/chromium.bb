@@ -102,5 +102,5 @@ class CC_EXPORT TextureLayer : public Layer {
   DISALLOW_COPY_AND_ASSIGN(TextureLayer);
 };
 
-}
+}  // namespace cc
 #endif  // CC_LAYERS_TEXTURE_LAYER_H_

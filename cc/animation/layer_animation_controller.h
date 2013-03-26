@@ -93,7 +93,7 @@ class CC_EXPORT LayerAnimationController
  protected:
   friend class base::RefCounted<LayerAnimationController>;
 
-  LayerAnimationController(int id);
+  explicit LayerAnimationController(int id);
   virtual ~LayerAnimationController();
 
  private:

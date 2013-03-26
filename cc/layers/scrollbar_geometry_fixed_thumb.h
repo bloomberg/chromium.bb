@@ -40,6 +40,6 @@ class CC_EXPORT ScrollbarGeometryFixedThumb : public ScrollbarGeometryStub {
   gfx::Size thumb_size_;
 };
 
-}
+}  // namespace cc
 
 #endif  // CC_LAYERS_SCROLLBAR_GEOMETRY_FIXED_THUMB_H_

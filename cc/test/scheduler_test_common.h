@@ -5,6 +5,7 @@
 #ifndef CC_TEST_SCHEDULER_TEST_COMMON_H_
 #define CC_TEST_SCHEDULER_TEST_COMMON_H_
 
+#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "cc/base/thread.h"
@@ -45,7 +46,7 @@ class FakeThread : public cc::Thread {
   bool HasPendingTask() const { return pending_task_; }
   void RunPendingTask();
 
-  long long PendingDelayMs() const {
+  int64 PendingDelayMs() const {
     EXPECT_TRUE(HasPendingTask());
     return pending_task_delay_;
   }
@@ -57,7 +58,7 @@ class FakeThread : public cc::Thread {
 
  protected:
   scoped_ptr<base::Closure> pending_task_;
-  long long pending_task_delay_;
+  int64 pending_task_delay_;
   bool run_pending_task_on_overwrite_;
 };
 
@@ -111,7 +112,7 @@ class FakeDelayBasedTimeSource : public cc::DelayBasedTimeSource {
 
 class FakeFrameRateController : public cc::FrameRateController {
  public:
-  FakeFrameRateController(scoped_refptr<cc::TimeSource> timer)
+  explicit FakeFrameRateController(scoped_refptr<cc::TimeSource> timer)
       : cc::FrameRateController(timer) {}
 
   int NumFramesPending() const { return num_frames_pending_; }

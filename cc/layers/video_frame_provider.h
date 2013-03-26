@@ -35,6 +35,9 @@ class VideoFrameProvider {
 
     // Notifies the provider's client of a new UV transform matrix to be used.
     virtual void DidUpdateMatrix(const float* matrix) = 0;
+
+   protected:
+    virtual ~Client() {}
   };
 
   // May be called from any thread, but there must be some external guarantee

@@ -16,6 +16,9 @@ class Thread;
 class RateLimiterClient {
  public:
   virtual void RateLimit() = 0;
+
+ protected:
+  virtual ~RateLimiterClient() {}
 };
 
 // A RateLimiter can be used to make sure that a single context does not
@@ -53,5 +56,6 @@ class RateLimiter : public base::RefCounted<RateLimiter> {
   DISALLOW_COPY_AND_ASSIGN(RateLimiter);
 };
 
-}
+}  // namespace cc
+
 #endif  // CC_SCHEDULER_RATE_LIMITER_H_

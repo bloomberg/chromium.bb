@@ -31,5 +31,5 @@ class CC_EXPORT IOSurfaceLayer : public Layer {
   gfx::Size io_surface_size_;
 };
 
-}
+}  // namespace cc
 #endif  // CC_LAYERS_IO_SURFACE_LAYER_H_

@@ -4,6 +4,9 @@
 
 #include "cc/layers/heads_up_display_layer_impl.h"
 
+#include <algorithm>
+#include <vector>
+
 #include "base/stringprintf.h"
 #include "base/strings/string_split.h"
 #include "cc/debug/debug_colors.h"
@@ -16,7 +19,6 @@
 #include "cc/resources/memory_history.h"
 #include "cc/resources/tile_manager.h"
 #include "cc/trees/layer_tree_impl.h"
-#include "skia/ext/platform_canvas.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"

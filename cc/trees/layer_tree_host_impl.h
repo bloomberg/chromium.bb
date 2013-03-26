@@ -5,6 +5,9 @@
 #ifndef CC_TREES_LAYER_TREE_HOST_IMPL_H_
 #define CC_TREES_LAYER_TREE_HOST_IMPL_H_
 
+#include <string>
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
@@ -66,6 +69,9 @@ class LayerTreeHostImplClient {
   virtual bool IsInsideDraw() = 0;
   virtual void RenewTreePriority() = 0;
   virtual void RequestScrollbarAnimationOnImplThread(base::TimeDelta delay) = 0;
+
+ protected:
+  virtual ~LayerTreeHostImplClient() {}
 };
 
 // LayerTreeHostImpl owns the LayerImpl trees as well as associated rendering
@@ -294,10 +300,10 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandlerClient,
     size_t RenderPassListEnd(const RenderPassList& list) const { return 0 - 1; }
     size_t RenderPassListNext(size_t it) const { return it - 1; }
 
-    CullRenderPassesWithCachedTextures(Renderer& renderer)
+    explicit CullRenderPassesWithCachedTextures(Renderer* renderer)
         : renderer_(renderer) {}
  private:
-    Renderer& renderer_;
+    Renderer* renderer_;
   };
 
   class CC_EXPORT CullRenderPassesWithNoQuads {

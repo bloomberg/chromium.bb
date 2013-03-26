@@ -34,6 +34,6 @@ class CC_EXPORT SolidColorLayerImpl : public LayerImpl {
   const int tile_size_;
 };
 
-}
+}  // namespace cc
 
 #endif  // CC_LAYERS_SOLID_COLOR_LAYER_IMPL_H_

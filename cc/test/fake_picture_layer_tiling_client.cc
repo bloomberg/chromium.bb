@@ -4,6 +4,8 @@
 
 #include "cc/test/fake_picture_layer_tiling_client.h"
 
+#include <limits>
+
 namespace cc {
 
 class FakeInfinitePicturePileImpl : public PicturePileImpl {

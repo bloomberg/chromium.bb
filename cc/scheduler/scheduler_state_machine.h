@@ -27,7 +27,7 @@ namespace cc {
 class CC_EXPORT SchedulerStateMachine {
  public:
   // settings must be valid for the lifetime of this class.
-  SchedulerStateMachine(const SchedulerSettings& settings);
+  explicit SchedulerStateMachine(const SchedulerSettings& settings);
 
   enum CommitState {
     COMMIT_STATE_IDLE,

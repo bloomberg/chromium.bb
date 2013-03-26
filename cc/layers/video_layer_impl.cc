@@ -452,7 +452,8 @@ void VideoLayerImpl::FreeFramePlanes(ResourceProvider* resource_provider) {
     frame_planes_[i].FreeData(resource_provider);
 }
 
-void VideoLayerImpl::FreeUnusedFramePlanes(ResourceProvider* resource_provider) {
+void VideoLayerImpl::FreeUnusedFramePlanes(
+    ResourceProvider* resource_provider) {
   size_t first_unused_plane = (frame_ ? media::VideoFrame::NumPlanes(format_)
                                       : 0);
   for (size_t i = first_unused_plane; i < media::VideoFrame::kMaxPlanes; ++i)

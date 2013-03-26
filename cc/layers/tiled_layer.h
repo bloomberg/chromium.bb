@@ -139,5 +139,6 @@ class CC_EXPORT TiledLayer : public ContentsScalingLayer {
   DISALLOW_COPY_AND_ASSIGN(TiledLayer);
 };
 
-}
+}  // namespace cc
+
 #endif  // CC_LAYERS_TILED_LAYER_H_

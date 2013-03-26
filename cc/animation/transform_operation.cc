@@ -115,10 +115,10 @@ bool TransformOperation::BlendTransformOperations(
     double axis_z = 1;
     double from_angle = 0;
     double to_angle = IsOperationIdentity(to) ? 0 : to->rotate.angle;
-    if (ShareSameAxis(from, to, axis_x, axis_y, axis_z, from_angle))
+    if (ShareSameAxis(from, to, axis_x, axis_y, axis_z, from_angle)) {
       result.RotateAbout(gfx::Vector3dF(axis_x, axis_y, axis_z),
                          BlendDoubles(from_angle, to_angle, progress));
-    else {
+    } else {
       gfx::Transform to_matrix;
       if (!IsOperationIdentity(to))
         to_matrix = to->matrix;

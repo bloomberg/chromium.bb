@@ -5,6 +5,9 @@
 #ifndef CC_LAYERS_PICTURE_LAYER_IMPL_H_
 #define CC_LAYERS_PICTURE_LAYER_IMPL_H_
 
+#include <string>
+#include <vector>
+
 #include "cc/base/cc_export.h"
 #include "cc/base/scoped_ptr_vector.h"
 #include "cc/layers/layer_impl.h"
@@ -120,6 +123,6 @@ class CC_EXPORT PictureLayerImpl
   DISALLOW_COPY_AND_ASSIGN(PictureLayerImpl);
 };
 
-}
+}  // namespace cc
 
 #endif  // CC_LAYERS_PICTURE_LAYER_IMPL_H_

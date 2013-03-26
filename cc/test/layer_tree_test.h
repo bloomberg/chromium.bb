@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_TEST_LAYER_TREE_TEST_COMMON_H_
-#define CC_TEST_LAYER_TREE_TEST_COMMON_H_
+#ifndef CC_TEST_LAYER_TREE_TEST_H_
+#define CC_TEST_LAYER_TREE_TEST_H_
 
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread.h"
@@ -181,4 +181,4 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   SINGLE_THREAD_TEST_F(TEST_FIXTURE_NAME)                 \
   MULTI_THREAD_TEST_F(TEST_FIXTURE_NAME)
 
-#endif  // CC_TEST_LAYER_TREE_TEST_COMMON_H_
+#endif  // CC_TEST_LAYER_TREE_TEST_H_

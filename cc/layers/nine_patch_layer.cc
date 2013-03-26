@@ -113,4 +113,4 @@ void NinePatchLayer::PushPropertiesTo(LayerImpl* layer) {
   }
 }
 
-}
+}  // namespace cc

@@ -5,6 +5,7 @@
 #include "cc/trees/tree_synchronizer.h"
 
 #include <algorithm>
+#include <vector>
 
 #include "cc/animation/layer_animation_controller.h"
 #include "cc/layers/layer.h"
@@ -62,7 +63,7 @@ class MockLayer : public Layer {
   }
 
  private:
-  MockLayer(std::vector<int>* layer_impl_destruction_list)
+  explicit MockLayer(std::vector<int>* layer_impl_destruction_list)
       : Layer(), layer_impl_destruction_list_(layer_impl_destruction_list) {}
   virtual ~MockLayer() {}
 

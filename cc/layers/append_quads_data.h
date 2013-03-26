@@ -33,5 +33,5 @@ struct AppendQuadsData {
   const RenderPass::Id render_pass_id;
 };
 
-}
+}  // namespace cc
 #endif  // CC_LAYERS_APPEND_QUADS_DATA_H_

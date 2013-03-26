@@ -52,7 +52,7 @@ void PinchZoomScrollbarPainter::PaintForwardButtonEnd(
 }
 
 void PinchZoomScrollbarPainter::PaintTickmarks(
-    SkCanvas* canvas, 
+    SkCanvas* canvas,
     gfx::Rect rect) {
 }
 

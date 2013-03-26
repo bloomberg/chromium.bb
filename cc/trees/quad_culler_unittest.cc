@@ -4,6 +4,8 @@
 
 #include "cc/trees/quad_culler.h"
 
+#include <vector>
+
 #include "cc/base/math_util.h"
 #include "cc/debug/overdraw_metrics.h"
 #include "cc/layers/append_quads_data.h"
@@ -104,14 +106,14 @@ class QuadCullerTest : public testing::Test {
     return layer.Pass();
   }
 
-  void AppendQuads(QuadList& quad_list,
+  void AppendQuads(QuadList* quad_list,
                    SharedQuadStateList& shared_state_list,
                    TiledLayerImpl* layer,
                    LayerIteratorType& it,
                    OcclusionTrackerImpl& occlusion_tracker) {
     occlusion_tracker.EnterLayer(it);
     QuadCuller quad_culler(
-        &quad_list, &shared_state_list, layer, occlusion_tracker, false, false);
+        quad_list, &shared_state_list, layer, occlusion_tracker, false, false);
     AppendQuadsData data;
     layer->AppendQuads(&quad_culler, &data);
     occlusion_tracker.LeaveLayer(it);
@@ -158,9 +160,9 @@ TEST_F(QuadCullerTest, VerifyNoCulling) {
   LayerIteratorType it = LayerIteratorType::Begin(&render_surface_layer_list);
 
   AppendQuads(
-      quad_list, shared_state_list, child_layer.get(), it, occlusion_tracker);
+      &quad_list, shared_state_list, child_layer.get(), it, occlusion_tracker);
   AppendQuads(
-      quad_list, shared_state_list, root_layer.get(), it, occlusion_tracker);
+      &quad_list, shared_state_list, root_layer.get(), it, occlusion_tracker);
   EXPECT_EQ(quad_list.size(), 13u);
   EXPECT_NEAR(
       occlusion_tracker.overdraw_metrics()->pixels_drawn_opaque(), 90000, 1);
@@ -193,9 +195,9 @@ TEST_F(QuadCullerTest, VerifyCullChildLinesUpTopLeft) {
   LayerIteratorType it = LayerIteratorType::Begin(&render_surface_layer_list);
 
   AppendQuads(
-      quad_list, shared_state_list, child_layer.get(), it, occlusion_tracker);
+      &quad_list, shared_state_list, child_layer.get(), it, occlusion_tracker);
   AppendQuads(
-      quad_list, shared_state_list, root_layer.get(), it, occlusion_tracker);
+      &quad_list, shared_state_list, root_layer.get(), it, occlusion_tracker);
   EXPECT_EQ(quad_list.size(), 9u);
   EXPECT_NEAR(
       occlusion_tracker.overdraw_metrics()->pixels_drawn_opaque(), 90000, 1);
@@ -228,9 +230,9 @@ TEST_F(QuadCullerTest, VerifyCullWhenChildOpacityNotOne) {
   LayerIteratorType it = LayerIteratorType::Begin(&render_surface_layer_list);
 
   AppendQuads(
-      quad_list, shared_state_list, child_layer.get(), it, occlusion_tracker);
+      &quad_list, shared_state_list, child_layer.get(), it, occlusion_tracker);
   AppendQuads(
-      quad_list, shared_state_list, root_layer.get(), it, occlusion_tracker);
+      &quad_list, shared_state_list, root_layer.get(), it, occlusion_tracker);
   EXPECT_EQ(quad_list.size(), 13u);
   EXPECT_NEAR(
       occlusion_tracker.overdraw_metrics()->pixels_drawn_opaque(), 90000, 1);
@@ -263,9 +265,9 @@ TEST_F(QuadCullerTest, VerifyCullWhenChildOpaqueFlagFalse) {
   LayerIteratorType it = LayerIteratorType::Begin(&render_surface_layer_list);
 
   AppendQuads(
-      quad_list, shared_state_list, child_layer.get(), it, occlusion_tracker);
+      &quad_list, shared_state_list, child_layer.get(), it, occlusion_tracker);
   AppendQuads(
-      quad_list, shared_state_list, root_layer.get(), it, occlusion_tracker);
+      &quad_list, shared_state_list, root_layer.get(), it, occlusion_tracker);
   EXPECT_EQ(quad_list.size(), 13u);
   EXPECT_NEAR(
       occlusion_tracker.overdraw_metrics()->pixels_drawn_opaque(), 90000, 1);
@@ -298,9 +300,9 @@ TEST_F(QuadCullerTest, VerifyCullCenterTileOnly) {
   LayerIteratorType it = LayerIteratorType::Begin(&render_surface_layer_list);
 
   AppendQuads(
-      quad_list, shared_state_list, child_layer.get(), it, occlusion_tracker);
+      &quad_list, shared_state_list, child_layer.get(), it, occlusion_tracker);
   AppendQuads(
-      quad_list, shared_state_list, root_layer.get(), it, occlusion_tracker);
+      &quad_list, shared_state_list, root_layer.get(), it, occlusion_tracker);
   ASSERT_EQ(quad_list.size(), 12u);
 
   gfx::Rect quad_visible_rect1 = quad_list[5]->visible_rect;
@@ -358,9 +360,9 @@ TEST_F(QuadCullerTest, VerifyCullCenterTileNonIntegralSize1) {
   LayerIteratorType it = LayerIteratorType::Begin(&render_surface_layer_list);
 
   AppendQuads(
-      quad_list, shared_state_list, child_layer.get(), it, occlusion_tracker);
+      &quad_list, shared_state_list, child_layer.get(), it, occlusion_tracker);
   AppendQuads(
-      quad_list, shared_state_list, root_layer.get(), it, occlusion_tracker);
+      &quad_list, shared_state_list, root_layer.get(), it, occlusion_tracker);
   EXPECT_EQ(quad_list.size(), 2u);
 
   EXPECT_NEAR(
@@ -403,9 +405,9 @@ TEST_F(QuadCullerTest, VerifyCullCenterTileNonIntegralSize2) {
   LayerIteratorType it = LayerIteratorType::Begin(&render_surface_layer_list);
 
   AppendQuads(
-      quad_list, shared_state_list, child_layer.get(), it, occlusion_tracker);
+      &quad_list, shared_state_list, child_layer.get(), it, occlusion_tracker);
   AppendQuads(
-      quad_list, shared_state_list, root_layer.get(), it, occlusion_tracker);
+      &quad_list, shared_state_list, root_layer.get(), it, occlusion_tracker);
   EXPECT_EQ(quad_list.size(), 2u);
 
   EXPECT_NEAR(
@@ -438,9 +440,9 @@ TEST_F(QuadCullerTest, VerifyCullChildLinesUpBottomRight) {
   LayerIteratorType it = LayerIteratorType::Begin(&render_surface_layer_list);
 
   AppendQuads(
-      quad_list, shared_state_list, child_layer.get(), it, occlusion_tracker);
+      &quad_list, shared_state_list, child_layer.get(), it, occlusion_tracker);
   AppendQuads(
-      quad_list, shared_state_list, root_layer.get(), it, occlusion_tracker);
+      &quad_list, shared_state_list, root_layer.get(), it, occlusion_tracker);
   EXPECT_EQ(quad_list.size(), 9u);
   EXPECT_NEAR(
       occlusion_tracker.overdraw_metrics()->pixels_drawn_opaque(), 90000, 1);
@@ -477,9 +479,9 @@ TEST_F(QuadCullerTest, VerifyCullSubRegion) {
   LayerIteratorType it = LayerIteratorType::Begin(&render_surface_layer_list);
 
   AppendQuads(
-      quad_list, shared_state_list, child_layer.get(), it, occlusion_tracker);
+      &quad_list, shared_state_list, child_layer.get(), it, occlusion_tracker);
   AppendQuads(
-      quad_list, shared_state_list, root_layer.get(), it, occlusion_tracker);
+      &quad_list, shared_state_list, root_layer.get(), it, occlusion_tracker);
   EXPECT_EQ(quad_list.size(), 12u);
   EXPECT_NEAR(
       occlusion_tracker.overdraw_metrics()->pixels_drawn_opaque(), 90000, 1);
@@ -517,9 +519,9 @@ TEST_F(QuadCullerTest, VerifyCullSubRegion2) {
   LayerIteratorType it = LayerIteratorType::Begin(&render_surface_layer_list);
 
   AppendQuads(
-      quad_list, shared_state_list, child_layer.get(), it, occlusion_tracker);
+      &quad_list, shared_state_list, child_layer.get(), it, occlusion_tracker);
   AppendQuads(
-      quad_list, shared_state_list, root_layer.get(), it, occlusion_tracker);
+      &quad_list, shared_state_list, root_layer.get(), it, occlusion_tracker);
   EXPECT_EQ(quad_list.size(), 12u);
   EXPECT_NEAR(
       occlusion_tracker.overdraw_metrics()->pixels_drawn_opaque(), 90000, 1);
@@ -557,9 +559,9 @@ TEST_F(QuadCullerTest, VerifyCullSubRegionCheckOvercull) {
   LayerIteratorType it = LayerIteratorType::Begin(&render_surface_layer_list);
 
   AppendQuads(
-      quad_list, shared_state_list, child_layer.get(), it, occlusion_tracker);
+      &quad_list, shared_state_list, child_layer.get(), it, occlusion_tracker);
   AppendQuads(
-      quad_list, shared_state_list, root_layer.get(), it, occlusion_tracker);
+      &quad_list, shared_state_list, root_layer.get(), it, occlusion_tracker);
   EXPECT_EQ(quad_list.size(), 13u);
   EXPECT_NEAR(
       occlusion_tracker.overdraw_metrics()->pixels_drawn_opaque(), 90000, 1);
@@ -595,9 +597,9 @@ TEST_F(QuadCullerTest, VerifyNonAxisAlignedQuadsDontOcclude) {
   LayerIteratorType it = LayerIteratorType::Begin(&render_surface_layer_list);
 
   AppendQuads(
-      quad_list, shared_state_list, child_layer.get(), it, occlusion_tracker);
+      &quad_list, shared_state_list, child_layer.get(), it, occlusion_tracker);
   AppendQuads(
-      quad_list, shared_state_list, root_layer.get(), it, occlusion_tracker);
+      &quad_list, shared_state_list, root_layer.get(), it, occlusion_tracker);
   EXPECT_EQ(quad_list.size(), 13u);
   EXPECT_NEAR(
       occlusion_tracker.overdraw_metrics()->pixels_drawn_opaque(), 130000, 1);
@@ -638,9 +640,9 @@ TEST_F(QuadCullerTest, VerifyNonAxisAlignedQuadsSafelyCulled) {
   LayerIteratorType it = LayerIteratorType::Begin(&render_surface_layer_list);
 
   AppendQuads(
-      quad_list, shared_state_list, child_layer.get(), it, occlusion_tracker);
+      &quad_list, shared_state_list, child_layer.get(), it, occlusion_tracker);
   AppendQuads(
-      quad_list, shared_state_list, root_layer.get(), it, occlusion_tracker);
+      &quad_list, shared_state_list, root_layer.get(), it, occlusion_tracker);
   EXPECT_EQ(quad_list.size(), 12u);
   EXPECT_NEAR(
       occlusion_tracker.overdraw_metrics()->pixels_drawn_opaque(), 100600, 1);
@@ -672,9 +674,9 @@ TEST_F(QuadCullerTest, VerifyCullOutsideScissorOverTile) {
   LayerIteratorType it = LayerIteratorType::Begin(&render_surface_layer_list);
 
   AppendQuads(
-      quad_list, shared_state_list, child_layer.get(), it, occlusion_tracker);
+      &quad_list, shared_state_list, child_layer.get(), it, occlusion_tracker);
   AppendQuads(
-      quad_list, shared_state_list, root_layer.get(), it, occlusion_tracker);
+      &quad_list, shared_state_list, root_layer.get(), it, occlusion_tracker);
   EXPECT_EQ(quad_list.size(), 1u);
   EXPECT_NEAR(
       occlusion_tracker.overdraw_metrics()->pixels_drawn_opaque(), 10000, 1);
@@ -706,9 +708,9 @@ TEST_F(QuadCullerTest, VerifyCullOutsideScissorOverCulledTile) {
   LayerIteratorType it = LayerIteratorType::Begin(&render_surface_layer_list);
 
   AppendQuads(
-      quad_list, shared_state_list, child_layer.get(), it, occlusion_tracker);
+      &quad_list, shared_state_list, child_layer.get(), it, occlusion_tracker);
   AppendQuads(
-      quad_list, shared_state_list, root_layer.get(), it, occlusion_tracker);
+      &quad_list, shared_state_list, root_layer.get(), it, occlusion_tracker);
   EXPECT_EQ(quad_list.size(), 1u);
   EXPECT_NEAR(
       occlusion_tracker.overdraw_metrics()->pixels_drawn_opaque(), 10000, 1);
@@ -740,9 +742,9 @@ TEST_F(QuadCullerTest, VerifyCullOutsideScissorOverPartialTiles) {
   LayerIteratorType it = LayerIteratorType::Begin(&render_surface_layer_list);
 
   AppendQuads(
-      quad_list, shared_state_list, child_layer.get(), it, occlusion_tracker);
+      &quad_list, shared_state_list, child_layer.get(), it, occlusion_tracker);
   AppendQuads(
-      quad_list, shared_state_list, root_layer.get(), it, occlusion_tracker);
+      &quad_list, shared_state_list, root_layer.get(), it, occlusion_tracker);
   EXPECT_EQ(quad_list.size(), 9u);
   EXPECT_NEAR(
       occlusion_tracker.overdraw_metrics()->pixels_drawn_opaque(), 40000, 1);
@@ -774,9 +776,9 @@ TEST_F(QuadCullerTest, VerifyCullOutsideScissorOverNoTiles) {
   LayerIteratorType it = LayerIteratorType::Begin(&render_surface_layer_list);
 
   AppendQuads(
-      quad_list, shared_state_list, child_layer.get(), it, occlusion_tracker);
+      &quad_list, shared_state_list, child_layer.get(), it, occlusion_tracker);
   AppendQuads(
-      quad_list, shared_state_list, root_layer.get(), it, occlusion_tracker);
+      &quad_list, shared_state_list, root_layer.get(), it, occlusion_tracker);
   EXPECT_EQ(quad_list.size(), 0u);
   EXPECT_NEAR(
       occlusion_tracker.overdraw_metrics()->pixels_drawn_opaque(), 0, 1);
@@ -809,9 +811,9 @@ TEST_F(QuadCullerTest, VerifyWithoutMetrics) {
   LayerIteratorType it = LayerIteratorType::Begin(&render_surface_layer_list);
 
   AppendQuads(
-      quad_list, shared_state_list, child_layer.get(), it, occlusion_tracker);
+      &quad_list, shared_state_list, child_layer.get(), it, occlusion_tracker);
   AppendQuads(
-      quad_list, shared_state_list, root_layer.get(), it, occlusion_tracker);
+      &quad_list, shared_state_list, root_layer.get(), it, occlusion_tracker);
   EXPECT_EQ(quad_list.size(), 9u);
   EXPECT_NEAR(
       occlusion_tracker.overdraw_metrics()->pixels_drawn_opaque(), 0, 1);

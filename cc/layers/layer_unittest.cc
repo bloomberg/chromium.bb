@@ -44,7 +44,7 @@ namespace {
 
 class MockLayerTreeHost : public LayerTreeHost {
  public:
-  MockLayerTreeHost(LayerTreeHostClient* client)
+  explicit MockLayerTreeHost(LayerTreeHostClient* client)
       : LayerTreeHost(client, LayerTreeSettings()) {
     Initialize(scoped_ptr<Thread>(NULL));
   }

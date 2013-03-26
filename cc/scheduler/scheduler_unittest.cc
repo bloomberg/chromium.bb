@@ -4,6 +4,8 @@
 
 #include "cc/scheduler/scheduler.h"
 
+#include <vector>
+
 #include "base/logging.h"
 #include "cc/test/scheduler_test_common.h"
 #include "testing/gmock/include/gmock/gmock.h"

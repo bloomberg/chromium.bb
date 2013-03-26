@@ -6,6 +6,7 @@
 #define CC_TREES_LAYER_TREE_HOST_H_
 
 #include <limits>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/cancelable_callback.h"
@@ -77,7 +78,7 @@ struct CC_EXPORT RendererCapabilities {
   bool avoid_pow2_textures;
 };
 
-class CC_EXPORT LayerTreeHost : public RateLimiterClient {
+class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
  public:
   static scoped_ptr<LayerTreeHost> Create(LayerTreeHostClient* client,
                                           const LayerTreeSettings& settings,
@@ -262,7 +263,7 @@ class CC_EXPORT LayerTreeHost : public RateLimiterClient {
   void TriggerPrepaint();
 
   void PrioritizeTextures(const LayerList& render_surface_layer_list,
-                          OverdrawMetrics* metrics); 
+                          OverdrawMetrics* metrics);
   void SetPrioritiesForSurfaces(size_t surface_memory_bytes);
   void SetPrioritiesForLayers(const LayerList& update_list);
   size_t CalculateMemoryForRenderSurfaces(const LayerList& update_list);

@@ -12,8 +12,8 @@
 namespace cc {
 class LayerImpl;
 
-class CC_EXPORT ScrollbarAnimationControllerLinearFade :
-    public ScrollbarAnimationController {
+class CC_EXPORT ScrollbarAnimationControllerLinearFade
+    : public ScrollbarAnimationController {
  public:
   static scoped_ptr<ScrollbarAnimationControllerLinearFade> Create(
       LayerImpl* scroll_layer,

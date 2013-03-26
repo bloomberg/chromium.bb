@@ -45,5 +45,5 @@ class CC_EXPORT DelegatedRendererLayer : public Layer {
   TransferableResourceArray unused_resources_for_child_compositor_;
 };
 
-}
+}  // namespace cc
 #endif  // CC_LAYERS_DELEGATED_RENDERER_LAYER_H_

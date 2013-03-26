@@ -48,4 +48,4 @@ class FakeScrollbarThemePainter : public ScrollbarThemePainter {
 
 }  // namespace cc
 
-#endif  // CC_TEST_FAKE_SCROLLBAR_BACKGROUND_PAINTER_H_
+#endif  // CC_TEST_FAKE_SCROLLBAR_THEME_PAINTER_H_

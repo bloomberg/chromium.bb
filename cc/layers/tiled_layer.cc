@@ -4,6 +4,9 @@
 
 #include "cc/layers/tiled_layer.h"
 
+#include <algorithm>
+#include <vector>
+
 #include "base/auto_reset.h"
 #include "base/basictypes.h"
 #include "build/build_config.h"
@@ -554,7 +557,6 @@ void TiledLayer::UpdateTileTextures(gfx::Rect paint_rect,
         occlusion->overdraw_metrics()->
             DidUpload(gfx::Transform(), source_rect, tile->opaque_rect());
       }
-
     }
   }
 }

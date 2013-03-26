@@ -29,5 +29,5 @@ class CC_EXPORT SolidColorLayer : public Layer {
   virtual ~SolidColorLayer();
 };
 
-}
+}  // namespace cc
 #endif  // CC_LAYERS_SOLID_COLOR_LAYER_H_

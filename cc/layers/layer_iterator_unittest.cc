@@ -4,6 +4,8 @@
 
 #include "cc/layers/layer_iterator.h"
 
+#include <vector>
+
 #include "cc/layers/layer.h"
 #include "cc/trees/layer_tree_host_common.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -158,7 +160,6 @@ TEST(LayerIteratorTest, SimpleTree) {
   EXPECT_COUNT(second, -1, -1, 2);
   EXPECT_COUNT(third, -1, -1, 1);
   EXPECT_COUNT(fourth, -1, -1, 0);
-
 }
 
 TEST(LayerIteratorTest, ComplexTree) {
@@ -213,7 +214,6 @@ TEST(LayerIteratorTest, ComplexTree) {
   EXPECT_COUNT(root23, -1, -1, 2);
   EXPECT_COUNT(root231, -1, -1, 1);
   EXPECT_COUNT(root3, -1, -1, 0);
-
 }
 
 TEST(LayerIteratorTest, ComplexTreeMultiSurface) {

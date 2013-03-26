@@ -98,7 +98,8 @@ class CC_EXPORT KeyframedFloatAnimationCurve : public FloatAnimationCurve {
   DISALLOW_COPY_AND_ASSIGN(KeyframedFloatAnimationCurve);
 };
 
-class CC_EXPORT KeyframedTransformAnimationCurve : public TransformAnimationCurve {
+class CC_EXPORT KeyframedTransformAnimationCurve
+    : public TransformAnimationCurve {
  public:
   // It is required that the keyframes be sorted by time.
   static scoped_ptr<KeyframedTransformAnimationCurve> Create();

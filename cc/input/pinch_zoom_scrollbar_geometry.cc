@@ -4,6 +4,8 @@
 
 #include "cc/input/pinch_zoom_scrollbar_geometry.h"
 
+#include <algorithm>
+
 #include "third_party/WebKit/Source/Platform/chromium/public/WebScrollbar.h"
 
 namespace cc {
@@ -42,7 +44,7 @@ int PinchZoomScrollbarGeometry::thumbLength(WebScrollbar* scrollbar) {
   return length;
 }
 
-int PinchZoomScrollbarGeometry::trackPosition(WebScrollbar*) {
+int PinchZoomScrollbarGeometry::trackPosition(WebScrollbar* scrollbar) {
   return 0;
 }
 
@@ -54,11 +56,11 @@ int PinchZoomScrollbarGeometry::trackLength(WebScrollbar* scrollbar) {
     return track.height;
 }
 
-bool PinchZoomScrollbarGeometry::hasButtons(WebScrollbar*) {
+bool PinchZoomScrollbarGeometry::hasButtons(WebScrollbar* scrollbar) {
   return false;
 }
 
-bool PinchZoomScrollbarGeometry::hasThumb(WebScrollbar*) {
+bool PinchZoomScrollbarGeometry::hasThumb(WebScrollbar* scrollbar) {
   return true;
 }
 
@@ -90,28 +92,31 @@ int PinchZoomScrollbarGeometry::minimumThumbLength(WebScrollbar* scrollbar) {
   return scrollbarThickness(scrollbar);
 }
 
-int PinchZoomScrollbarGeometry::scrollbarThickness(WebScrollbar*) {
+int PinchZoomScrollbarGeometry::scrollbarThickness(WebScrollbar* scrollbar) {
   return kTrackWidth;
 }
 
-WebRect PinchZoomScrollbarGeometry::backButtonStartRect(WebScrollbar*) {
+WebRect PinchZoomScrollbarGeometry::backButtonStartRect(
+    WebScrollbar* scrollbar) {
   return WebRect();
 }
 
-WebRect PinchZoomScrollbarGeometry::backButtonEndRect(WebScrollbar*) {
+WebRect PinchZoomScrollbarGeometry::backButtonEndRect(WebScrollbar* scrollbar) {
   return WebRect();
 }
 
-WebRect PinchZoomScrollbarGeometry::forwardButtonStartRect(WebScrollbar*) {
+WebRect PinchZoomScrollbarGeometry::forwardButtonStartRect(
+    WebScrollbar* scrollbar) {
   return WebRect();
 }
 
-WebRect PinchZoomScrollbarGeometry::forwardButtonEndRect(WebScrollbar*) {
+WebRect PinchZoomScrollbarGeometry::forwardButtonEndRect(
+    WebScrollbar* scrollbar) {
   return WebRect();
 }
 
 WebRect PinchZoomScrollbarGeometry::constrainTrackRectToTrackPieces(
-    WebScrollbar*, const WebRect& rect) {
+    WebScrollbar* scrollbar, const WebRect& rect) {
   return rect;
 }
 
@@ -123,4 +128,4 @@ void PinchZoomScrollbarGeometry::splitTrack(
   end_track = WebRect();
 }
 
-} // namespace cc
+}  // namespace cc

@@ -57,7 +57,7 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
 #endif
       horizontal_scrollbar_layer_(NULL),
       vertical_scrollbar_layer_(NULL) {
-  DCHECK(layer_id_ > 0);
+  DCHECK_GT(layer_id_, 0);
   DCHECK(layer_tree_impl_);
   layer_tree_impl_->RegisterLayer(this);
   AnimationRegistrar* registrar = layer_tree_impl_->animationRegistrar();
@@ -935,7 +935,6 @@ void LayerImpl::DidBecomeActive() {
   } else {
     scrollbar_animation_controller_.reset();
   }
-
 }
 void LayerImpl::SetHorizontalScrollbarLayer(
     ScrollbarLayerImpl* scrollbar_layer) {
@@ -961,7 +960,6 @@ void LayerImpl::AsValueInto(base::DictionaryValue* dict) const {
       gfx::QuadF(gfx::Rect(content_bounds())),
       &clipped);
   dict->Set("layer_quad", MathUtil::AsValue(layer_quad).release());
-
 }
 
 scoped_ptr<base::Value> LayerImpl::AsValue() const {

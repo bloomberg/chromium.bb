@@ -16,6 +16,6 @@ class CC_EXPORT AnimationIdProvider {
   static int NextGroupId();
 };
 
-}
+}  // namespace cc
 
 #endif  // CC_ANIMATION_ANIMATION_ID_PROVIDER_H_

@@ -5,6 +5,9 @@
 #ifndef CC_LAYERS_RENDER_SURFACE_IMPL_H_
 #define CC_LAYERS_RENDER_SURFACE_IMPL_H_
 
+#include <string>
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
@@ -167,5 +170,5 @@ class CC_EXPORT RenderSurfaceImpl {
   DISALLOW_COPY_AND_ASSIGN(RenderSurfaceImpl);
 };
 
-}
+}  // namespace cc
 #endif  // CC_LAYERS_RENDER_SURFACE_IMPL_H_

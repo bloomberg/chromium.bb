@@ -5,14 +5,19 @@
 #ifndef CC_ANIMATION_LAYER_ANIMATION_EVENT_OBSERVER_H_
 #define CC_ANIMATION_LAYER_ANIMATION_EVENT_OBSERVER_H_
 
+#include "cc/base/cc_export.h"
+
 namespace cc {
 
 class CC_EXPORT LayerAnimationEventObserver {
  public:
   virtual void OnAnimationStarted(const AnimationEvent& event) = 0;
+
+ protected:
+  virtual ~LayerAnimationEventObserver() {}
 };
 
-} // namespace cc
+}  // namespace cc
 
 #endif  // CC_ANIMATION_LAYER_ANIMATION_EVENT_OBSERVER_H_
 

@@ -15,11 +15,11 @@ scoped_refptr<PictureLayer> PictureLayer::Create(ContentLayerClient* client) {
   return make_scoped_refptr(new PictureLayer(client));
 }
 
-PictureLayer::PictureLayer(ContentLayerClient* client) :
-  client_(client),
-  pile_(make_scoped_refptr(new PicturePile())),
-  instrumentation_object_tracker_(id()),
-  is_mask_(false) {
+PictureLayer::PictureLayer(ContentLayerClient* client)
+  : client_(client),
+    pile_(make_scoped_refptr(new PicturePile())),
+    instrumentation_object_tracker_(id()),
+    is_mask_(false) {
 }
 
 PictureLayer::~PictureLayer() {

@@ -22,11 +22,7 @@
 #include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebFilterOperation.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebFilterOperations.h"
 #include "ui/gfx/size_conversions.h"
-
-using namespace WebKit;
 
 namespace cc {
 
@@ -448,7 +444,7 @@ void LayerTreeTest::RealEndTest() {
         base::Bind(&LayerTreeTest::RealEndTest, main_thread_weak_ptr_));
     return;
   }
-        
+
   MessageLoop::current()->Quit();
 }
 

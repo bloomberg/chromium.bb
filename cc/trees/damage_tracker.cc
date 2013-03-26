@@ -4,6 +4,8 @@
 
 #include "cc/trees/damage_tracker.h"
 
+#include <algorithm>
+
 #include "cc/base/math_util.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/render_surface_impl.h"
@@ -239,7 +241,7 @@ gfx::RectF DamageTracker::TrackDamageFromLeftoverRects() {
 static bool LayerNeedsToRedrawOntoItsTargetSurface(LayerImpl* layer) {
   // If the layer does NOT own a surface but has SurfacePropertyChanged,
   // this means that its target surface is affected and needs to be redrawn.
-  // However, if the layer DOES own a surface, then the SurfacePropertyChanged 
+  // However, if the layer DOES own a surface, then the SurfacePropertyChanged
   // flag should not be used here, because that flag represents whether the
   // layer's surface has changed.
   if (layer->render_surface())

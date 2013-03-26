@@ -14,8 +14,8 @@ namespace cc {
 // This subclass wraps an existing scrollbar geometry class so that
 // another class can derive from it and override specific functions, while
 // passing through the remaining ones.
-class CC_EXPORT ScrollbarGeometryStub :
-    public NON_EXPORTED_BASE(WebKit::WebScrollbarThemeGeometry) {
+class CC_EXPORT ScrollbarGeometryStub
+    : public NON_EXPORTED_BASE(WebKit::WebScrollbarThemeGeometry) {
  public:
   virtual ~ScrollbarGeometryStub();
 
@@ -61,6 +61,6 @@ class CC_EXPORT ScrollbarGeometryStub :
   DISALLOW_COPY_AND_ASSIGN(ScrollbarGeometryStub);
 };
 
-}
+}  // namespace cc
 
 #endif  // CC_LAYERS_SCROLLBAR_GEOMETRY_STUB_H_

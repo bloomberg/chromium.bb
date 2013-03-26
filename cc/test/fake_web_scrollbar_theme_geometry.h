@@ -47,7 +47,8 @@ class FakeWebScrollbarThemeGeometry : public WebKit::WebScrollbarThemeGeometry {
                           WebKit::WebRect& end_track) OVERRIDE;
 
  protected:
-  FakeWebScrollbarThemeGeometry(bool has_thumb) : has_thumb_(has_thumb) {}
+  explicit FakeWebScrollbarThemeGeometry(bool has_thumb)
+      : has_thumb_(has_thumb) {}
   bool has_thumb_;
 };
 

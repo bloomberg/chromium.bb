@@ -11,8 +11,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/rect_conversions.h"
 
-using namespace WebKit;
-
 namespace cc {
 namespace {
 

@@ -178,8 +178,8 @@ TEST(KeyframedAnimationCurveTest, RepeatedTransformKeyTimes) {
 
   // There is a discontinuity at 1. Any value between 4 and 6 is valid.
   gfx::Transform value = curve->GetValue(1.f);
-  EXPECT_TRUE(value.matrix().getDouble(0.f, 3.f) >= 4);
-  EXPECT_TRUE(value.matrix().getDouble(0.f, 3.f) <= 6);
+  EXPECT_GE(value.matrix().getDouble(0.f, 3.f), 4);
+  EXPECT_LE(value.matrix().getDouble(0.f, 3.f), 6);
 
   ExpectTranslateX(6.f, curve->GetValue(1.5f));
   ExpectTranslateX(6.f, curve->GetValue(2.f));

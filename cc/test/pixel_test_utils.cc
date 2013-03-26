@@ -4,6 +4,9 @@
 
 #include "cc/test/pixel_test_utils.h"
 
+#include <string>
+#include <vector>
+
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "third_party/skia/include/core/SkBitmap.h"
