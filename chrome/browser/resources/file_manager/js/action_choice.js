@@ -29,8 +29,11 @@ function ActionChoice(dom, filesystem, params) {
 
   this.rememberedChoice_ = null;
   this.enabledOptions_ = [ActionChoice.Action.VIEW_FILES];
+
   util.storage.local.get(['action-choice'], function(result) {
-    this.rememberedChoice_ = result['action-choice'];
+    // In the advanced mode, skip auto-choice.
+    if (!params.advancedMode)
+      this.rememberedChoice_ = result['action-choice'];
     this.initializeVolumes_();
   }.bind(this));
 
@@ -94,8 +97,10 @@ ActionChoice.load = function(opt_filesystem, opt_params) {
   ImageUtil.metrics = metrics;
 
   var hash = location.hash ? decodeURI(location.hash.substr(1)) : '';
+  var query = location.search ? decodeURI(location.search.substr(1)) : '';
   var params = opt_params || {};
   if (!params.source) params.source = hash;
+  if (!params.advancedMode) params.advancedMode = (query == 'advanced-mode');
   if (!params.metadataCache) params.metadataCache = MetadataCache.createFull();
 
   var onFilesystem = function(filesystem) {

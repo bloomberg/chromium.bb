@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/drive/drive_file_system_observer.h"
 #include "chrome/browser/chromeos/drive/drive_resource_metadata.h"
 #include "chrome/browser/chromeos/net/connectivity_state_helper_observer.h"
+#include "chrome/browser/chromeos/system_key_event_listener.h"
 #include "chrome/browser/google_apis/drive_service_interface.h"
 #include "chrome/browser/google_apis/operation_registry.h"
 #include "chromeos/disks/disk_mount_manager.h"
@@ -36,6 +37,7 @@ class FileBrowserEventRouter
     : public base::RefCountedThreadSafe<FileBrowserEventRouter>,
       public chromeos::disks::DiskMountManager::Observer,
       public chromeos::ConnectivityStateHelperObserver,
+      public chromeos::SystemKeyEventListener::ModifiersObserver,
       public drive::DriveFileSystemObserver,
       public google_apis::DriveServiceObserver {
  public:
@@ -102,6 +104,9 @@ class FileBrowserEventRouter
   virtual void OnResourceListFetched(int num_accumulated_entries) OVERRIDE;
   virtual void OnFileSystemMounted() OVERRIDE;
   virtual void OnFileSystemBeingUnmounted() OVERRIDE;
+
+  // chromeos::SystemKeyEventListener::ModifiersObserver overrides.
+  virtual void OnModifiersChange(int pressed_modifiers) OVERRIDE;
 
  private:
   friend class FileBrowserPrivateAPI;
@@ -202,6 +207,10 @@ class FileBrowserEventRouter
 
   // Number of active update requests on the remote file system.
   int num_remote_update_requests_;
+
+  // Event router behavior depends on shift modifier status. This is designed
+  // for power users.
+  bool shift_pressed_;
 
   DISALLOW_COPY_AND_ASSIGN(FileBrowserEventRouter);
 };

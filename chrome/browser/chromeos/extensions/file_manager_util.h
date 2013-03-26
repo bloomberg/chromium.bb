@@ -72,8 +72,9 @@ void ViewRemovableDrive(const base::FilePath& path);
 void OpenNewWindow(Profile* profile, const GURL& url);
 
 // Opens an action choice dialog for an external drive.
-// One of the actions is opening the File Manager.
-void OpenActionChoiceDialog(const base::FilePath& path);
+// One of the actions is opening the File Manager. Passes |advanced_mode|
+// flag to the dialog. If it is enabled, then auto-choice gets disabled.
+void OpenActionChoiceDialog(const base::FilePath& path, bool advanced_mode);
 
 // Opens item with the default File Browser handler.
 void ViewItem(const base::FilePath& path);

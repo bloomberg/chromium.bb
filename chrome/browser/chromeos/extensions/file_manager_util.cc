@@ -798,7 +798,7 @@ void OpenNewWindow(Profile* profile, const GURL& url) {
   chrome::OpenApplication(params);
 }
 
-void OpenActionChoiceDialog(const base::FilePath& path) {
+void OpenActionChoiceDialog(const base::FilePath& path, bool advanced_mode) {
   const int kDialogWidth = 394;
   // TODO(dgozman): remove 50, which is a title height once popup window
   // will have no title.
@@ -811,6 +811,8 @@ void OpenActionChoiceDialog(const base::FilePath& path) {
                                            &virtual_path))
     return;
   std::string url = kActionChoiceUrl;
+  if (advanced_mode)
+    url += "?advanced-mode";
   url += "#/" + net::EscapeUrlEncodedData(virtual_path.value(),
                                           false);  // Space to %20 instead of +.
   GURL dialog_url(url);

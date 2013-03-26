@@ -236,7 +236,8 @@ FileBrowserEventRouter::FileBrowserEventRouter(
       notifications_(new FileBrowserNotifications(profile)),
       pref_change_registrar_(new PrefChangeRegistrar),
       profile_(profile),
-      num_remote_update_requests_(0) {
+      num_remote_update_requests_(0),
+      shift_pressed_(false) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Bind a weak reference back to |this| to avoid memory errors in case we
@@ -245,6 +246,12 @@ FileBrowserEventRouter::FileBrowserEventRouter(
       base::Bind(&RelayFileWatcherCallbackToUIThread,
           base::Bind(&FileBrowserEventRouter::HandleFileWatchNotification,
                      weak_factory_.GetWeakPtr()));
+
+  // Listen for the Shift modifier's state changes.
+  chromeos::SystemKeyEventListener* key_event_listener =
+      chromeos::SystemKeyEventListener::GetInstance();
+  if (key_event_listener)
+    key_event_listener->AddModifiersObserver(this);
 }
 
 FileBrowserEventRouter::~FileBrowserEventRouter() {
@@ -260,6 +267,11 @@ void FileBrowserEventRouter::Shutdown() {
     NOTREACHED();
     return;
   }
+
+  chromeos::SystemKeyEventListener* key_event_listener =
+      chromeos::SystemKeyEventListener::GetInstance();
+  if (key_event_listener)
+    key_event_listener->RemoveModifiersObserver(this);
 
   DiskMountManager* disk_mount_manager = DiskMountManager::GetInstance();
   if (disk_mount_manager)
@@ -610,6 +622,10 @@ void FileBrowserEventRouter::OnFileSystemMounted() {
   MountDrive(base::Bind(&base::DoNothing));  // Callback does nothing.
 }
 
+void FileBrowserEventRouter::OnModifiersChange(int pressed_modifiers) {
+  shift_pressed_ = (pressed_modifiers & SHIFT_PRESSED);
+}
+
 void FileBrowserEventRouter::OnFileSystemBeingUnmounted() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -760,7 +776,8 @@ void FileBrowserEventRouter::ShowRemovableDeviceInFileManager(
       dcim_path,
       external_photo_importer_available ?
         base::Bind(&base::DoNothing) :
-        base::Bind(&file_manager_util::OpenActionChoiceDialog, mount_path),
+        base::Bind(&file_manager_util::OpenActionChoiceDialog, mount_path,
+                   shift_pressed_),
       base::Bind(&file_manager_util::ViewRemovableDrive, mount_path));
 }
 
