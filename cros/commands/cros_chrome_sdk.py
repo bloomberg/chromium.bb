@@ -429,7 +429,11 @@ class ChromeSDKCommand(cros.CrosCommand):
     # Having a wrapper rc file will also allow us to inject bash functions into
     # the environment, not just variables.
     with osutils.TempDir() as tempdir:
-      contents = []
+      # Only source the user's ~/.bashrc if running in interactive mode.
+      contents = [
+          '[[ -e ~/.bashrc && $- == *i* ]] && . ~/.bashrc\n',
+      ]
+
       for key, value in env.iteritems():
         contents.append("export %s='%s'\n" % (key, value))
       contents.append('. "%s"\n' % user_rc)
@@ -461,15 +465,20 @@ class ChromeSDKCommand(cros.CrosCommand):
     with self.sdk.Prepare(components, version=prepare_version) as ctx:
       env = self._SetupEnvironment(self.options.board, ctx, self.options)
       with self._GetRCFile(env, self.options.bashrc) as rcfile:
-        bash_header = ['/bin/bash', '--noprofile', '--rcfile', rcfile]
+        bash_cmd = ['/bin/bash']
 
+        extra_env = None
         if not self.options.cmd:
-          cmd = ['-i']
+          bash_cmd.extend(['--rcfile', rcfile, '-i'])
         else:
           # The '"$@"' expands out to the properly quoted positional args
           # coming after the '--'.
-          cmd = ['-c', '"$@"', '--'] + self.options.cmd
+          bash_cmd.extend(['-c', '"$@"', '--'])
+          bash_cmd.extend(self.options.cmd)
+          # When run in noninteractive mode, bash sources the rc file set in
+          # BASH_ENV, and ignores the --rcfile flag.
+          extra_env = {'BASH_ENV': rcfile}
 
         cros_build_lib.RunCommand(
-            bash_header + cmd, print_cmd=False, debug_level=logging.CRITICAL,
-            error_code_ok=True)
+            bash_cmd, print_cmd=False, debug_level=logging.CRITICAL,
+            error_code_ok=True, extra_env=extra_env)
