@@ -103,7 +103,7 @@ const int kMaxSnapshotsInFlight = 1;
 
 // TODO(nick): Remove this once frame subscription is supported on Aura and
 // Linux.
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if (defined(OS_WIN) || defined(OS_MACOSX)) && !defined(USE_AURA)
 const bool kAcceleratedSubscriberIsSupported = true;
 #else
 const bool kAcceleratedSubscriberIsSupported = false;
