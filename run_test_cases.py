@@ -768,6 +768,9 @@ def process_output(lines, test_cases):
         match = re.search(r' \((\d+) ms\)', line)
         if match:
           test_case_data['duration'] = float(match.group(1)) / 1000.
+        else:
+          # Make sure duration is at least not None since the test case ran.
+          test_case_data['duration'] = 0
         test_case_data['returncode'] = int(line.startswith(FAILED_PREFIX))
         if not test_cases:
           # Its the last test case. Eat all the remaining lines.

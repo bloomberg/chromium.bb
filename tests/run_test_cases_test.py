@@ -563,6 +563,21 @@ class RunTestCases(unittest.TestCase):
     actual = process_output(data, ['Test.1', 'Test.2'])
     self.assertEquals(expected, actual)
 
+  def test_process_output_no_time(self):
+    data = (
+      '[ RUN      ] Test.1\n'
+      '[       OK ] Test.1\n')
+    expected = [
+      {
+        'duration': 0.,
+        'output': '[ RUN      ] Test.1\n[       OK ] Test.1\n',
+        'returncode': 0,
+        'test_case': 'Test.1',
+      },
+    ]
+    actual = process_output(data, ['Test.1'])
+    self.assertEquals(expected, actual)
+
   def test_process_output_fail_1(self):
     data = (
       '[ RUN      ] Test.1\n'
