@@ -8,26 +8,28 @@ http://code.google.com/p/googletest/
 """
 
 
-def get_test_output_inner(test_name, failed):
+def get_test_output_inner(test_name, failed, duration='100'):
   fixture, case = test_name.split('.', 1)
   return (
     '[ RUN      ] %(fixture)s.%(case)s\n'
-    '%(result)s %(fixture)s.%(case)s (100 ms)\n') % {
-      'fixture': fixture,
+    '%(result)s %(fixture)s.%(case)s (%(duration)s ms)\n') % {
       'case': case,
+      'duration': duration,
+      'fixture': fixture,
       'result': '[  FAILED  ]' if failed else '[       OK ]',
   }
 
-def get_test_output(test_name, failed):
+def get_test_output(test_name, failed, duration='100'):
   fixture, _ = test_name.split('.', 1)
   return (
     '[==========] Running 1 test from 1 test case.\n'
     '[----------] Global test environment set-up.\n'
     '%(content)s'
     '[----------] 1 test from %(fixture)s\n'
-    '[----------] 1 test from %(fixture)s (100 ms total)\n'
+    '[----------] 1 test from %(fixture)s (%(duration)s ms total)\n'
     '\n') % {
-      'content': get_test_output_inner(test_name, failed),
+      'content': get_test_output_inner(test_name, failed, duration),
+      'duration': duration,
       'fixture': fixture,
     }
 

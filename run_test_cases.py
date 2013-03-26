@@ -332,10 +332,23 @@ class QueueWithProgress(Queue.PriorityQueue):
         raise ValueError('task_done() called too many times')
       self.unfinished_tasks = unfinished
       # This is less efficient, because we want the Progress to be updated.
-      logging.debug('%s unfinished tasks', unfinished)
       self.all_tasks_done.notify_all()
     except Exception as e:
       logging.exception('task_done threw an exception.\n%s', e)
+    finally:
+      self.all_tasks_done.release()
+
+  def wake_up(self):
+    """Wakes up all_tasks_done.
+
+    Unlike task_done(), do not substract one from self.unfinished_tasks.
+    """
+    # TODO(maruel): This is highly inefficient, since the listener is awaken
+    # twice; once per output, once per task. There should be no relationship
+    # between the number of output and the number of input task.
+    self.all_tasks_done.acquire()
+    try:
+      self.all_tasks_done.notify_all()
     finally:
       self.all_tasks_done.release()
 
@@ -358,6 +371,11 @@ class ThreadPool(run_isolated.ThreadPool):
   def __init__(self, progress, *args, **kwargs):
     super(ThreadPool, self).__init__(*args, **kwargs)
     self.tasks.set_progress(progress)
+
+  def _output_append(self, out):
+    """Also wakes up the listener on new completed test_case."""
+    super(ThreadPool, self)._output_append(out)
+    self.tasks.wake_up()
 
 
 class Progress(object):
@@ -783,37 +801,6 @@ def process_output(lines, test_cases):
     }
 
 
-def normalize_testing_time(data, duration, returncode):
-  """Normalizes the test case duration by spreading the total runtime.
-
-  If a test crashed, he takes the whole startup cost.
-  """
-  # Alias the list 'data' into 'data_ran' for the results of test cases that
-  # ran.
-  data = [i.copy() for i in data]
-  data_ran = [i for i in data if i['duration'] is not None]
-  startup_duration = duration
-  if data_ran:
-    startup_duration -= sum(i['duration'] for i in data_ran)
-
-  for i in reversed(data):
-    if i['output'] is not None:
-      if i.get('crashed'):
-        i['duration'] = startup_duration
-        assert i['returncode'] != 0
-        i['returncode'] = returncode or i['returncode']
-      else:
-        assert i['returncode'] != None
-        # Distribute the one-time process startup cost across the test cases
-        # that ran if the startup cost was above 10ms.
-        if startup_duration > 0.01 and data_ran:
-          distributed_duration = startup_duration / len(data_ran)
-          for i in data_ran:
-            i['duration'] += distributed_duration
-      break
-  return data
-
-
 def convert_to_lines(generator):
   """Turn input coming from a generator into lines.
 
@@ -855,6 +842,7 @@ class ResetableTimeout(object):
     now = time.time()
     self.timeout += max(0., now - self.last_reset)
     self.last_reset = now
+    return now
 
   @staticmethod
   def __bool__():
@@ -891,17 +879,10 @@ class Runner(object):
     try_count is 0 based, the original try is 0.
     """
     if self.decider.should_stop():
-      return []
-
+      raise StopIteration()
     cmd = self.cmd + ['--gtest_filter=%s' % ':'.join(test_cases)]
     if '--gtest_print_time' not in cmd:
       cmd.append('--gtest_print_time')
-
-
-    if self.verbose > 1:
-      self.progress.update_item('Starting command %s with a timeout of %ss' %
-                                (cmd, self.timeout), False, False)
-
     proc = Popen(
         cmd,
         cwd=self.cwd_dir,
@@ -925,13 +906,15 @@ class Runner(object):
     gen_test_cases = process_output(gen_lines_utf8, test_cases)
     gen_test_cases_filtered = chromium_filter_tests(gen_test_cases)
 
-    data = []
+    last_timestamp = proc.start
     for i in gen_test_cases_filtered:
-      timeout.reset()
+      now = timeout.reset()
       if i['duration'] is None:
         continue
+      i['duration'] = max(i['duration'], now - last_timestamp)
+      last_timestamp = now
+
       # A new test_case completed.
-      data.append(i)
       self.decider.got_result(i['returncode'] == 0)
       need_to_retry = i['returncode'] != 0 and try_count < self.retries
       if i['duration'] is not None:
@@ -944,10 +927,10 @@ class Runner(object):
         line = '%s %s' % (i['test_case'], duration)
       if self.verbose or i['returncode'] != 0 or try_count > 0:
         # Print output in one of three cases:
-        #   --verbose was specified.
-        #   The test failed.
-        #   The wasn't the first attempt (this is needed so the test parser can
-        #       detect that a test has been successfully retried).
+        # - --verbose was specified.
+        # - The test failed.
+        # - The wasn't the first attempt (this is needed so the test parser can
+        #   detect that a test has been successfully retried).
         if i['output']:
           line += '\n' + i['output']
       self.progress.update_item(line, True, need_to_retry)
@@ -965,12 +948,7 @@ class Runner(object):
           self.add_serial_task(
               priority, self.map, priority, [i['test_case']], try_count + 1)
 
-    if self.verbose > 1:
-      self.progress.update_item(
-          'Command %s finished after %ss' % (cmd, proc.duration()),
-          False, False)
-
-    return normalize_testing_time(data, proc.duration(), proc.returncode)
+      yield i
 
 
 def get_test_cases(
@@ -1262,7 +1240,8 @@ def run_test_cases(
 
       while not serial_tasks.empty():
         _priority, func, args, kwargs = serial_tasks.get()
-        results.append(func(*args, **kwargs))
+        for out in func(*args, **kwargs):
+          results.append(out)
         serial_tasks.task_done()
         progress.print_update()
 
@@ -1272,10 +1251,8 @@ def run_test_cases(
     duration = time.time() - pool.tasks.progress.start
 
   cleaned = {}
-  for map_run in results:
-    for test_case_result in map_run:
-      cleaned.setdefault(test_case_result['test_case'], []).append(
-          test_case_result)
+  for i in results:
+    cleaned.setdefault(i['test_case'], []).append(i)
   results = cleaned
 
   # Total time taken to run each test case.

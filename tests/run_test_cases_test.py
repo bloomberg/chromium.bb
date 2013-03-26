@@ -53,9 +53,9 @@ class ListTestCasesTest(unittest.TestCase):
           expected, result, (result, expected, range_length, index, shards))
 
 
-def process_output(content, test_cases, duration, returncode):
-  data = run_test_cases.process_output(content.splitlines(True), test_cases)
-  return run_test_cases.normalize_testing_time(data, duration, returncode)
+def process_output(content, test_cases):
+  return list(
+      run_test_cases.process_output(content.splitlines(True), test_cases))
 
 
 class RunTestCases(unittest.TestCase):
@@ -198,15 +198,16 @@ class RunTestCases(unittest.TestCase):
           cmd, stdout=data['stdout'], stderr=data['stderr'])
       actual = {}
       while p.poll() is None:
-        got = p.recv_any()
-        if got[0] is not None:
-          actual.setdefault(got[0], '')
-          actual[got[0]] += got[1]
+        pipe, d = p.recv_any()
+        if pipe is not None:
+          actual.setdefault(pipe, '')
+          actual[pipe] += d
       while True:
-        got = p.recv_any()
-        if got[0] is None:
+        pipe, d = p.recv_any()
+        if pipe is None:
           break
-        actual.append(got)
+        actual.setdefault(pipe, '')
+        actual[pipe] += d
       self.assertEqual(data['expected'], actual)
       self.assertEqual((None, None), p.recv_any())
       self.assertEquals(0, p.returncode)
@@ -297,7 +298,15 @@ class RunTestCases(unittest.TestCase):
             self.assertEqual('stdout', p)
             if not expected:
               self.fail(data)
-            self.assertEqual(expected.pop(0), data)
+            e = expected.pop(0)
+            if env:
+              # Buffering is truly a character-level and could get items
+              # individually. This is usually seen only during high load, try
+              # compiling at the same time to reproduce it.
+              if len(data) < len(e):
+                expected.insert(0, e[len(data):])
+                e = e[:len(data)]
+            self.assertEqual(e, data)
           # Contrary to yield_any() or recv_any(0), wait() needs to be used
           # here.
           proc.wait()
@@ -485,7 +494,7 @@ class RunTestCases(unittest.TestCase):
         'test_case': 'Test.2',
       },
     ]
-    actual = process_output(data, ['Test.1', 'Test.2'], 1.0, 0)
+    actual = process_output(data, ['Test.1', 'Test.2'])
     self.assertEquals(expected, actual)
 
   def test_process_output_crash_cr(self):
@@ -501,13 +510,13 @@ class RunTestCases(unittest.TestCase):
       },
       {
         'crashed': True,
-        'duration': 1.,
+        'duration': 0.,
         'output': '[ RUN      ] Test.2\r',
         'returncode': 1,
         'test_case': 'Test.2',
       },
     ]
-    actual = process_output(data, ['Test.1', 'Test.2'], 1.0, 0)
+    actual = process_output(data, ['Test.1', 'Test.2'])
     self.assertEquals(expected, actual)
 
   def test_process_output_crashes(self):
@@ -522,13 +531,13 @@ class RunTestCases(unittest.TestCase):
       },
       {
         'crashed': True,
-        'duration': 1.,
+        'duration': 0.,
         'output': '[ RUN      ] Test.2\n',
         'returncode': 1,
         'test_case': 'Test.2',
       },
     ]
-    actual = process_output(data, ['Test.1', 'Test.2'], 1.0, 0)
+    actual = process_output(data, ['Test.1', 'Test.2'])
     self.assertEquals(expected, actual)
 
   def test_process_output_ok(self):
@@ -539,19 +548,19 @@ class RunTestCases(unittest.TestCase):
       '[       OK ] Test.2 (2000 ms)\n')
     expected = [
       {
-        'duration': 11.,
+        'duration': 1.,
         'output': '[ RUN      ] Test.1\n[       OK ] Test.1 (1000 ms)\n',
         'returncode': 0,
         'test_case': 'Test.1',
       },
       {
-        'duration': 12.,
+        'duration': 2.,
         'output': '[ RUN      ] Test.2\n[       OK ] Test.2 (2000 ms)\n',
         'returncode': 0,
         'test_case': 'Test.2',
       },
     ]
-    actual = process_output(data, ['Test.1', 'Test.2'], 23.0, 0)
+    actual = process_output(data, ['Test.1', 'Test.2'])
     self.assertEquals(expected, actual)
 
   def test_process_output_fail_1(self):
@@ -562,19 +571,19 @@ class RunTestCases(unittest.TestCase):
       '[       OK ] Test.2 (2000 ms)\n')
     expected = [
       {
-        'duration': 11.,
+        'duration': 1.,
         'output': '[ RUN      ] Test.1\n[  FAILED  ] Test.1 (1000 ms)\n',
         'returncode': 1,
         'test_case': 'Test.1',
       },
       {
-        'duration': 12.,
+        'duration': 2.,
         'output': '[ RUN      ] Test.2\n[       OK ] Test.2 (2000 ms)\n',
         'returncode': 0,
         'test_case': 'Test.2',
       },
     ]
-    actual = process_output(data, ['Test.1', 'Test.2'], 23.0, 0)
+    actual = process_output(data, ['Test.1', 'Test.2'])
     self.assertEquals(expected, actual)
 
   def test_process_output_crash_ok(self):
@@ -586,19 +595,19 @@ class RunTestCases(unittest.TestCase):
     expected = [
       {
         'crashed': True,
-        'duration': 4.,
+        'duration': 0.,
         'output': '[ RUN      ] Test.1\nblah blah crash.\n',
         'returncode': 1,
         'test_case': 'Test.1',
       },
       {
-        'duration': 6.,
+        'duration': 2.,
         'output': '[ RUN      ] Test.2\n[       OK ] Test.2 (2000 ms)\n',
         'returncode': 0,
         'test_case': 'Test.2',
       },
     ]
-    actual = process_output(data, ['Test.1', 'Test.2'], 10.0, 0)
+    actual = process_output(data, ['Test.1', 'Test.2'])
     self.assertEquals(expected, actual)
 
   def test_process_output_crash_garbage_ok(self):
@@ -609,19 +618,19 @@ class RunTestCases(unittest.TestCase):
     expected = [
       {
         'crashed': True,
-        'duration': 4.,
+        'duration': 0.,
         'output': '[ RUN      ] Test.1\nblah blah crash',
         'returncode': 1,
         'test_case': 'Test.1',
       },
       {
-        'duration': 6.,
+        'duration': 2.,
         'output': '[ RUN      ] Test.2\n[       OK ] Test.2 (2000 ms)\n',
         'returncode': 0,
         'test_case': 'Test.2',
       },
     ]
-    actual = process_output(data, ['Test.1', 'Test.2'], 10.0, 0)
+    actual = process_output(data, ['Test.1', 'Test.2'])
     self.assertEquals(expected, actual)
 
   def test_process_output_missing(self):
@@ -630,7 +639,7 @@ class RunTestCases(unittest.TestCase):
       '[       OK ] Test.2 (2000 ms)\n')
     expected = [
       {
-        'duration': 23.,
+        'duration': 2.,
         'output': '[ RUN      ] Test.2\n[       OK ] Test.2 (2000 ms)\n',
         'returncode': 0,
         'test_case': 'Test.2',
@@ -642,7 +651,7 @@ class RunTestCases(unittest.TestCase):
         'test_case': 'Test.1',
       },
     ]
-    actual = process_output(data, ['Test.1', 'Test.2'], 23.0, 0)
+    actual = process_output(data, ['Test.1', 'Test.2'])
     self.assertEquals(expected, actual)
 
   def test_process_output_no_lr(self):
@@ -658,7 +667,7 @@ class RunTestCases(unittest.TestCase):
         'test_case': 'Test.1',
       },
     ]
-    actual = process_output(data, ['Test.1'], 2., 0)
+    actual = process_output(data, ['Test.1'])
     self.assertEquals(expected, actual)
 
   def test_calc_cluster_default(self):

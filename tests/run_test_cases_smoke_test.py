@@ -120,11 +120,12 @@ class RunTestCases(unittest.TestCase):
       line = lines.pop(0)
       if not re.match('^%s$' % expected_out_re[index], line):
         self.fail(
-          '\nIndex: %d\nExpected: %r\nLine: %r\nNext lines: %s' % (
+           '\nIndex: %d\nExpected: %r\nLine: %r\nNext lines:\n%s\nErr:\n%s' % (
            index,
            expected_out_re[index],
            line,
-           '\n'.join(lines[index:index+5])))
+           '\n'.join(lines[index:index+5]),
+           err))
     self.assertEqual([], lines)
     self.assertEqual('', err)
 
@@ -192,39 +193,59 @@ class RunTestCases(unittest.TestCase):
         duration=True)
 
   def test_simple_pass_cluster(self):
-    out, err, return_code = RunTest(
-        [
-          '--clusters', '10',
-          '--jobs', '1',
-          '--result', self.filename,
-          os.path.join(ROOT_DIR, 'tests', 'gtest_fake', 'gtest_fake_pass.py'),
-        ])
+    # In milliseconds.
+    for duration in (10, 100, 1000):
+      try:
+        out, err, return_code = RunTest(
+            [
+              '--clusters', '10',
+              '--jobs', '1',
+              '--result', self.filename,
+              os.path.join(
+                ROOT_DIR, 'tests', 'gtest_fake', 'gtest_fake_slow.py'),
+              str(duration),
+            ])
 
-    self.assertEqual(0, return_code)
+        self.assertEqual(0, return_code)
 
-    expected_out_re = [
-      r'\[\d/\d\]   \d\.\d\ds .+',
-      r'\[\d/\d\]   \d\.\d\ds .+',
-      r'\[\d/\d\]   \d\.\d\ds .+',
-      re.escape('Summary:'),
-      re.escape('  Success:    3 100.00% ') + r' +\d+\.\d\ds',
-      re.escape('    Flaky:    0   0.00% ') + r' +\d+\.\d\ds',
-      re.escape('     Fail:    0   0.00% ') + r' +\d+\.\d\ds',
-      r'  \d+\.\d\ds Done running 3 tests with 3 executions. \d+\.\d\d test/s',
-    ]
-    self._check_results(expected_out_re, out, err)
+        expected_out_re = [
+          r'\[\d/\d\]   (\d\.\d\d)s .+',
+          r'\[\d/\d\]   (\d\.\d\d)s .+',
+          r'\[\d/\d\]   (\d\.\d\d)s .+',
+          re.escape('Summary:'),
+          re.escape('  Success:    3 100.00% ') + r' +\d+\.\d\ds',
+          re.escape('    Flaky:    0   0.00% ') + r' +\d+\.\d\ds',
+          re.escape('     Fail:    0   0.00% ') + r' +\d+\.\d\ds',
+          r'  \d+\.\d\ds Done running 3 tests with 3 executions. '
+            '\d+\.\d\d test/s',
+        ]
+        self._check_results(expected_out_re, out, err)
+        # Now specifically assert that the 3 first lines has monotonically
+        # increasing values, which doesn't happen if the results were not
+        # streamed.
+        lines = out.splitlines()
+        values = [re.match(expected_out_re[i], lines[i]) for i in range(3)]
+        self.assertTrue(all(values))
+        values = [float(m.group(1)) for m in values]
+        self.assertTrue(values[0] < values[1])
+        self.assertTrue(values[1] < values[2])
 
-    test_cases = [
-        ('Foo.Bar1', 1),
-        ('Foo.Bar2', 1),
-        ('Foo.Bar/3', 1)
-    ]
-    self._check_results_file(
-        fail=[],
-        flaky=[],
-        success=sorted([u'Foo.Bar1', u'Foo.Bar2', u'Foo.Bar/3']),
-        test_cases=test_cases,
-        duration=True)
+        test_cases = [
+            ('Foo.Bar1', 1),
+            ('Foo.Bar2', 1),
+            ('Foo.Bar/3', 1)
+        ]
+        self._check_results_file(
+            fail=[],
+            flaky=[],
+            success=sorted([u'Foo.Bar1', u'Foo.Bar2', u'Foo.Bar/3']),
+            test_cases=test_cases,
+            duration=True)
+      except AssertionError:
+        if duration != 1000:
+          print('Trying more slowly')
+          continue
+        raise
 
   def test_simple_pass_verbose(self):
     # We take verbosity seriously so test it.

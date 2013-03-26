@@ -11,6 +11,7 @@ Keeps a local cache.
 import ctypes
 import hashlib
 import httplib
+import inspect
 import json
 import logging
 import logging.handlers
@@ -489,6 +490,9 @@ class ThreadPool(object):
     |priority| can adjust the priority of the task versus others. Lower priority
     takes precedence.
 
+    |func| can either return a return value to be added to the output list or
+    be a generator which can emit multiple values.
+
     Returns the index of the item added, e.g. the total number of enqueued items
     up to now.
     """
@@ -519,14 +523,12 @@ class ThreadPool(object):
           # We're done.
           return
         _priority, _index, func, args, kwargs = task
-        out = func(*args, **kwargs)
-        if out is not None:
-          self._outputs_exceptions_cond.acquire()
-          try:
-            self._outputs.append(out)
-            self._outputs_exceptions_cond.notifyAll()
-          finally:
-            self._outputs_exceptions_cond.release()
+        if inspect.isgeneratorfunction(func):
+          for out in func(*args, **kwargs):
+            self._output_append(out)
+        else:
+          out = func(*args, **kwargs)
+          self._output_append(out)
       except Exception as e:
         logging.warning('Caught exception: %s', e)
         exc_info = sys.exc_info()
@@ -545,6 +547,15 @@ class ThreadPool(object):
           # function for the thread, nothing higher will catch the error.
           logging.exception('Caught exception while marking task as done: %s',
                             e)
+
+  def _output_append(self, out):
+    if out is not None:
+      self._outputs_exceptions_cond.acquire()
+      try:
+        self._outputs.append(out)
+        self._outputs_exceptions_cond.notifyAll()
+      finally:
+        self._outputs_exceptions_cond.release()
 
   def join(self):
     """Extracts all the results from each threads unordered.
