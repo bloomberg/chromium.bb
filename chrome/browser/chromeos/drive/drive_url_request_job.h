@@ -95,10 +95,10 @@ class DriveURLRequestJob : public net::URLRequestJob {
   // stream in a streaming fashion.
   bool ContinueReadFromFile(int* bytes_read);
   void ReadFromFile();
-  void ReadFileStream(int bytes_to_read);
+  void ReadFileStream();
 
   // Helper callback for handling async responses from FileStream::Open().
-  void OnFileOpen(int bytes_to_read, int open_result);
+  void OnFileOpen(int open_result);
 
     // Helper callback for handling async responses from FileStream::Read().
   void OnReadFileStream(int bytes_read);
@@ -127,10 +127,10 @@ class DriveURLRequestJob : public net::URLRequestJob {
   int64 initial_file_size_;
   int64 remaining_bytes_;
   scoped_ptr<net::FileStream> stream_;
-  scoped_refptr<net::IOBuffer> read_buf_;
-  base::StringPiece read_buf_remaining_;
   scoped_ptr<net::HttpResponseInfo> response_info_;
   bool streaming_download_;
+  scoped_refptr<net::IOBuffer> read_buf_;
+  base::StringPiece read_buf_remaining_;
   std::string download_buf_;
   base::StringPiece download_buf_remaining_;
 

@@ -416,6 +416,7 @@ bool DriveURLRequestJob::ReadRawData(net::IOBuffer* dest,
     rc = ContinueReadFromDownloadData(bytes_read);
   else
     rc = ContinueReadFromFile(bytes_read);
+
   DVLOG(1) << "ReadRawData: out with "
            << (rc ? "has" : "no")
            << "_data, bytes_read=" << *bytes_read
@@ -618,12 +619,9 @@ bool DriveURLRequestJob::ContinueReadFromFile(int* bytes_read) {
 }
 
 void DriveURLRequestJob::ReadFromFile() {
-  int bytes_to_read = std::min(read_buf_remaining_.size(),
-                               static_cast<size_t>(remaining_bytes_));
-
   // If the stream already exists, keep reading from it.
   if (stream_.get()) {
-    ReadFileStream(bytes_to_read);
+    ReadFileStream();
     return;
   }
 
@@ -634,8 +632,7 @@ void DriveURLRequestJob::ReadFromFile() {
       base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ |
       base::PLATFORM_FILE_ASYNC,
       base::Bind(&DriveURLRequestJob::OnFileOpen,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 bytes_to_read));
+                 weak_ptr_factory_.GetWeakPtr()));
 
   if (result == net::ERR_IO_PENDING) {
     DVLOG(1) << "IO is pending for opening "
@@ -648,7 +645,7 @@ void DriveURLRequestJob::ReadFromFile() {
   }
 }
 
-void DriveURLRequestJob::OnFileOpen(int bytes_to_read, int open_result) {
+void DriveURLRequestJob::OnFileOpen(int open_result) {
   if (open_result != net::OK) {
     LOG(WARNING) << "Failed to open " << local_file_path_.value();
     NotifyFailure(net::ERR_FILE_NOT_FOUND);
@@ -659,14 +656,15 @@ void DriveURLRequestJob::OnFileOpen(int bytes_to_read, int open_result) {
 
   // Read from opened file stream.
   DCHECK(stream_.get());
-  ReadFileStream(bytes_to_read);
+  ReadFileStream();
 }
 
-void DriveURLRequestJob::ReadFileStream(int bytes_to_read) {
+void DriveURLRequestJob::ReadFileStream() {
   DCHECK(stream_.get());
   DCHECK(stream_->IsOpen());
-  DCHECK_GE(static_cast<int>(read_buf_remaining_.size()), bytes_to_read);
 
+  int bytes_to_read = std::min(
+      read_buf_remaining_.size(), static_cast<size_t>(remaining_bytes_));
   int result = stream_->Read(read_buf_, bytes_to_read,
                              base::Bind(&DriveURLRequestJob::OnReadFileStream,
                                         weak_ptr_factory_.GetWeakPtr()));
@@ -694,29 +692,17 @@ void DriveURLRequestJob::OnReadFileStream(int bytes_read) {
   }
 
   SetStatus(net::URLRequestStatus());  // Clear the IO_PENDING status.
-
   RecordBytesRead(bytes_read);
-
   DVLOG(1) << "Cleared IO pending: bytes_read=" << bytes_read
            << ", buf_remaining=" << read_buf_remaining_.size()
            << ", file_remaining=" << remaining_bytes_;
 
-  // If the read buffer is completely filled, we're done.
-  if (read_buf_remaining_.empty()) {
-    int bytes_read = BytesReadCompleted();
-    DVLOG(1) << "Completed read: bytes_read=" << bytes_read
-             << ", file_remaining=" << remaining_bytes_;
-    NotifyReadComplete(bytes_read);
-    return;
-  }
-
-  // Otherwise, continue the reading.
-  int new_bytes_read = 0;
-  if (ContinueReadFromFile(&new_bytes_read)) {
-    DVLOG(1) << "Completed read: bytes_read=" << bytes_read
-             << ", file_remaining=" << remaining_bytes_;
-    NotifyReadComplete(new_bytes_read);
-  }
+  // Regardless of whether the buffer is still remaining or not,
+  // notify the client that some data is available in the buffer.
+  BytesReadCompleted();  // Release |read_buf_|.
+  DVLOG(1) << "Completed read: bytes_read=" << bytes_read
+           << ", file_remaining=" << remaining_bytes_;
+  NotifyReadComplete(bytes_read);
 }
 
 int DriveURLRequestJob::BytesReadCompleted() {
