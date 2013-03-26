@@ -351,9 +351,9 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
 IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, ContentOffset) {
   OverlayableContentsController* overlay =
       [controller() overlayableContentsController];
-
   // Just toolbar.
-  EXPECT_EQ(0, [overlay activeContainerOffset]);
+  EXPECT_EQ(bookmarks::kBookmarkBarOverlap - 1,
+            [overlay activeContainerOffset]);
 
   // Plus bookmark bar.
   browser()->window()->ToggleBookmarkBar();
@@ -363,12 +363,13 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, ContentOffset) {
   // Plus info bar.
   ShowInfoBar();
   EXPECT_EQ(GetViewHeight(VIEW_ID_BOOKMARK_BAR) +
-                GetViewHeight(VIEW_ID_INFO_BAR),
+            GetViewHeight(VIEW_ID_INFO_BAR),
             [overlay activeContainerOffset]);
 
   // Minus bookmark bar.
   browser()->window()->ToggleBookmarkBar();
-  EXPECT_EQ(GetViewHeight(VIEW_ID_INFO_BAR), [overlay activeContainerOffset]);
+  EXPECT_EQ(GetViewHeight(VIEW_ID_INFO_BAR) + bookmarks::kBookmarkBarOverlap,
+            [overlay activeContainerOffset]);
 }
 
 // Verify that in non-Instant presentation mode the content area is beneath
@@ -402,9 +403,9 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
 // Verify that when showing Instant results the content area overlaps the
 // bookmark bar and info bar.
 IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, ContentOffsetInstant) {
-  ShowInstantResults();
   OverlayableContentsController* overlay =
       [controller() overlayableContentsController];
+  ShowInstantResults();
 
   // Just toolbar.
   EXPECT_EQ(0, [overlay activeContainerOffset]);
@@ -424,13 +425,14 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, ContentOffsetInstant) {
 
 // The Instant NTP case is same as normal case except that the overlay is
 // also shifted down.
-IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, ContentOffsetInstantNPT) {
+IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, ContentOffsetInstantNTP) {
   ShowInstantNTP();
   OverlayableContentsController* overlay =
       [controller() overlayableContentsController];
 
   // Just toolbar.
-  EXPECT_EQ(0, [overlay activeContainerOffset]);
+  EXPECT_EQ(bookmarks::kBookmarkBarOverlap - 1,
+            [overlay activeContainerOffset]);
 
   // Plus bookmark bar.
   browser()->window()->ToggleBookmarkBar();
@@ -440,12 +442,13 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, ContentOffsetInstantNPT) {
   // Plus info bar.
   ShowInfoBar();
   EXPECT_EQ(GetViewHeight(VIEW_ID_BOOKMARK_BAR) +
-                GetViewHeight(VIEW_ID_INFO_BAR),
+            GetViewHeight(VIEW_ID_INFO_BAR),
             [overlay activeContainerOffset]);
 
   // Minus bookmark bar.
   browser()->window()->ToggleBookmarkBar();
-  EXPECT_EQ(GetViewHeight(VIEW_ID_INFO_BAR), [overlay activeContainerOffset]);
+  EXPECT_EQ(GetViewHeight(VIEW_ID_INFO_BAR) + bookmarks::kBookmarkBarOverlap,
+            [overlay activeContainerOffset]);
 }
 
 // Verify that if bookmark bar is underneath Instant search results then

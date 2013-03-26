@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #include "chrome/browser/ui/cocoa/find_bar/find_bar_bridge.h"
 #include "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
+#import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
@@ -254,7 +255,10 @@ void CheckViewPositions(BrowserWindowController* controller) {
 
   EXPECT_EQ(NSMinY(contentView), NSMinY(download));
   EXPECT_EQ(NSMaxY(download), NSMinY(contentArea));
-  EXPECT_EQ(NSMaxY(contentArea), NSMinY(toolbar));
+
+  CGFloat min_toolbar_height = [[controller toolbarController]
+      desiredHeightForCompression:bookmarks::kBookmarkBarOverlap];
+  EXPECT_EQ(NSMaxY(contentArea), NSMaxY(toolbar) - min_toolbar_height);
 
   // Bookmark bar frame is random memory when hidden.
   if ([controller bookmarkBarVisible]) {
