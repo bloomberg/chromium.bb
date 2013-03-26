@@ -89,6 +89,11 @@ chrome::ImageCaptureDeviceManager* g_image_capture_device_manager = NULL;
   if (!(addedDevice.type & ICDeviceTypeCamera))
     return;
 
+  // Ignore mass storage attaches -- those will be handled
+  // by Mac's removable storage watcher.
+  if ([addedDevice.transportType isEqualToString:ICTransportTypeMassStorage])
+    return;
+
   ICCameraDevice* cameraDevice =
       base::mac::ObjCCastStrict<ICCameraDevice>(addedDevice);
 
