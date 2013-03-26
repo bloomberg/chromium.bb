@@ -105,7 +105,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest, ImmersiveMode) {
   EXPECT_EQ(0, frame_view->NonClientTopBorderHeight(false));
 
   // An immersive reveal shows the buttons and the top of the frame.
-  browser_view->immersive_mode_controller()->StartRevealForTest();
+  browser_view->immersive_mode_controller()->StartRevealForTest(false);
   EXPECT_TRUE(frame_view->size_button_->visible());
   EXPECT_TRUE(frame_view->close_button_->visible());
   EXPECT_TRUE(frame_view->ShouldPaint());

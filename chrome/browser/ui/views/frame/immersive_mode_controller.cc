@@ -23,6 +23,7 @@
 #endif
 
 #if defined(USE_AURA)
+#include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
@@ -41,6 +42,28 @@ const int kTopEdgeRevealDelayMs = 200;
 // happened.
 const int kRevealSlowAnimationDurationMs = 400;
 const int kRevealFastAnimationDurationMs = 200;
+
+// Returns true if the currently active window is a transient child of
+// |toplevel|.
+bool IsActiveWindowTransientChildOf(gfx::NativeWindow toplevel) {
+#if defined(USE_AURA)
+  // TODO(pkotwicz): Porting to non-aura will require a way of getting
+  // the currently active native window and its relationship to |toplevel|
+  // which is not yet provided by views::Widget.
+  aura::Window* active_window = aura::client::GetActivationClient(
+      toplevel->GetRootWindow())->GetActiveWindow();
+
+  if (!toplevel || !active_window)
+    return false;
+
+  for (aura::Window* window = active_window; window;
+       window = window->transient_parent()) {
+    if (window == toplevel)
+      return true;
+  }
+#endif  // defined(USE_AURA)
+  return false;
+}
 
 }  // namespace
 
@@ -192,11 +215,10 @@ void ImmersiveModeController::SetEnabled(bool enabled) {
 
   TopContainerView* top_container = browser_view_->top_container();
   if (enabled_) {
-    // Reset the hovered state and the focused view so that they do not affect
-    // whether the top-of-window views are hidden.
+    // Reset the hovered state and the focus revealed lock so that they do not
+    // affect whether the top-of-window views are hidden.
     reveal_hovered_ = false;
-    if (TopContainerChildHasFocus())
-      browser_view_->GetFocusManager()->ClearFocus();
+    focus_revealed_lock_.reset();
     // If no other code has a reveal lock, slide out the top-of-window views by
     // triggering an end-reveal animation.
     reveal_state_ = REVEALED;
@@ -244,6 +266,10 @@ void ImmersiveModeController::MaybeStartReveal() {
 }
 
 void ImmersiveModeController::CancelReveal() {
+  // Reset the hovered state so that it does not affect whether the
+  // top-of-window views are hidden.
+  reveal_hovered_ = false;
+
   MaybeEndReveal(ANIMATE_NO);
 }
 
@@ -252,16 +278,21 @@ ImmersiveModeController::RevealedLock*
   return new RevealedLock(weak_ptr_factory_.GetWeakPtr());
 }
 
-void ImmersiveModeController::OnRevealViewLostFocus() {
-  MaybeEndReveal(ANIMATE_FAST);
-}
-
 ////////////////////////////////////////////////////////////////////////////////
+// Observers:
 
-// ui::EventHandler overrides:
 void ImmersiveModeController::OnMouseEvent(ui::MouseEvent* event) {
-  if (!enabled_ || event->type() != ui::ET_MOUSE_MOVED)
+  if (!enabled_)
     return;
+
+  // Handle ET_MOUSE_PRESSED and ET_MOUSE_RELEASED so that we get the updated
+  // mouse position ASAP once a nested message loop finishes running.
+  if (event->type() != ui::ET_MOUSE_MOVED &&
+      event->type() != ui::ET_MOUSE_PRESSED &&
+      event->type() != ui::ET_MOUSE_RELEASED) {
+    return;
+  }
+
   if (event->location().y() == 0) {
     // Start a reveal if the mouse touches the top of the screen and then stops
     // moving for a little while. This mirrors the Ash launcher behavior.
@@ -291,6 +322,29 @@ void ImmersiveModeController::OnMouseEvent(ui::MouseEvent* event) {
   // Pass along event for further handling.
 }
 
+void ImmersiveModeController::OnWillChangeFocus(views::View* focused_before,
+                                                views::View* focused_now) {
+}
+
+void ImmersiveModeController::OnDidChangeFocus(views::View* focused_before,
+                                               views::View* focused_now) {
+  UpdateFocusRevealedLock();
+}
+
+void ImmersiveModeController::OnWidgetDestroying(views::Widget* widget) {
+  EnableWindowObservers(false);
+  native_window_ = NULL;
+
+  // Set |enabled_| to false such that any calls to MaybeStartReveal() and
+  // MaybeEndReveal() have no effect.
+  enabled_ = false;
+}
+
+void ImmersiveModeController::OnWidgetActivationChanged(views::Widget* widget,
+                                                        bool active) {
+  UpdateFocusRevealedLock();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Testing interface:
 
@@ -298,11 +352,13 @@ void ImmersiveModeController::SetHideTabIndicatorsForTest(bool hide) {
   hide_tab_indicators_ = hide;
 }
 
-void ImmersiveModeController::StartRevealForTest() {
+void ImmersiveModeController::StartRevealForTest(bool hovered) {
+  reveal_hovered_ = hovered;
   StartReveal(ANIMATE_NO);
 }
 
 void ImmersiveModeController::OnRevealViewLostMouseForTest() {
+  reveal_hovered_ = false;
   OnRevealViewLostMouse();
 }
 
@@ -311,9 +367,21 @@ void ImmersiveModeController::OnRevealViewLostMouseForTest() {
 
 void ImmersiveModeController::EnableWindowObservers(bool enable) {
   if (!native_window_) {
-    NOTREACHED() << "ImmersiveModeController not initialized";
+    DCHECK(!enable) << "ImmersiveModeController not initialized";
     return;
   }
+
+  views::Widget* widget =
+      views::Widget::GetWidgetForNativeWindow(native_window_);
+  views::FocusManager* focus_manager = widget->GetFocusManager();
+  if (enable) {
+    widget->AddObserver(this);
+    focus_manager->AddFocusChangeListener(this);
+  } else {
+    widget->RemoveObserver(this);
+    focus_manager->RemoveFocusChangeListener(this);
+  }
+
 #if defined(USE_AURA)
   // TODO(jamescook): Porting immersive mode to non-Aura views will require
   // a method to monitor incoming mouse move events without handling them.
@@ -332,6 +400,38 @@ void ImmersiveModeController::EnableWindowObservers(bool enable) {
 #endif  // defined(USE_AURA)
 }
 
+void ImmersiveModeController::UpdateFocusRevealedLock() {
+  if (!enabled_)
+    return;
+
+  bool hold_lock = false;
+  views::Widget* widget =
+      views::Widget::GetWidgetForNativeWindow(native_window_);
+  if (widget->IsActive()) {
+    views::View* focused_view = widget->GetFocusManager()->GetFocusedView();
+    if (browser_view_->top_container()->Contains(focused_view))
+      hold_lock = true;
+  } else {
+    // If the currently active window is not |native_window_|, the top-of-window
+    // views should be revealed if:
+    // 1) The newly active window is a transient child of |native_window_|.
+    // 2) The top-of-window views are already revealed. This restriction
+    //    prevents a transient window opened by the web contents while the
+    //    top-of-window views are hidden from from initiating a reveal.
+    // The top-of-window views will stay revealed till |native_window_| is
+    // reactivated.
+    if (IsRevealed() && IsActiveWindowTransientChildOf(native_window_))
+      hold_lock = true;
+  }
+
+  if (hold_lock) {
+    if (!focus_revealed_lock_.get())
+      focus_revealed_lock_.reset(GetRevealedLock());
+  } else {
+    focus_revealed_lock_.reset();
+  }
+}
+
 void ImmersiveModeController::LockRevealedState() {
   ++revealed_lock_count_;
   if (revealed_lock_count_ == 1)
@@ -343,11 +443,6 @@ void ImmersiveModeController::UnlockRevealedState() {
   DCHECK_GE(revealed_lock_count_, 0);
   if (revealed_lock_count_ == 0)
     MaybeEndReveal(ANIMATE_FAST);
-}
-
-bool ImmersiveModeController::TopContainerChildHasFocus() const {
-  views::View* focused = browser_view_->GetFocusManager()->GetFocusedView();
-  return browser_view_->top_container()->Contains(focused);
 }
 
 void ImmersiveModeController::StartReveal(Animate animate) {
@@ -364,8 +459,14 @@ void ImmersiveModeController::StartReveal(Animate animate) {
     LayoutBrowserView(false);
 
     // Slide in the reveal view.
-    if (animate != ANIMATE_NO)
+    if (animate != ANIMATE_NO) {
+      ui::Layer* layer = top_container->layer();
+      gfx::Transform transform;
+      transform.Translate(0, -layer->bounds().height());
+      layer->SetTransform(transform);
+
       AnimateSlideOpen();  // Show is always fast.
+    }
   } else if (reveal_state_ == SLIDING_CLOSED) {
     reveal_state_ = SLIDING_OPEN;
     // Reverse the animation.
@@ -385,10 +486,6 @@ void ImmersiveModeController::AnimateSlideOpen() {
   ui::Layer* layer = browser_view_->top_container()->layer();
   // Stop any slide closed animation in progress.
   layer->GetAnimator()->AbortAllAnimations();
-
-  gfx::Transform transform;
-  transform.Translate(0, -layer->bounds().height());
-  layer->SetTransform(transform);
 
   ui::ScopedLayerAnimationSettings settings(layer->GetAnimator());
   settings.AddObserver(slide_open_observer_.get());
@@ -411,8 +508,7 @@ void ImmersiveModeController::MaybeEndReveal(Animate animate) {
   if (enabled_ &&
       reveal_state_ != CLOSED &&
       revealed_lock_count_ == 0 &&
-      !reveal_hovered_ &&
-      !TopContainerChildHasFocus()) {
+      !reveal_hovered_) {
     EndReveal(animate);
   }
 }

@@ -10,11 +10,12 @@
 #include "base/timer.h"
 #include "ui/base/events/event_handler.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/views/focus/focus_manager.h"
+#include "ui/views/widget/widget_observer.h"
 
 class BrowserView;
 
 namespace views {
-class MouseWatcher;
 class View;
 }
 
@@ -22,7 +23,9 @@ class View;
 // the top-of-window views are hidden until the mouse hits the top of the
 // screen. The tab strip is optionally painted with miniature "tab indicator"
 // rectangles.
-class ImmersiveModeController : public ui::EventHandler {
+class ImmersiveModeController : public ui::EventHandler,
+                                public views::FocusChangeListener,
+                                public views::WidgetObserver {
  public:
   // Lock which keeps the top-of-window views revealed for the duration of its
   // lifetime. See GetRevealedLock() for more details.
@@ -84,15 +87,23 @@ class ImmersiveModeController : public ui::EventHandler {
   // The caller takes ownership of the returned lock.
   RevealedLock* GetRevealedLock() WARN_UNUSED_RESULT;
 
-  // Called when the reveal view's children lose focus, may end the reveal.
-  void OnRevealViewLostFocus();
-
   // ui::EventHandler overrides:
   virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
 
+  // views::FocusChangeObserver overrides:
+  virtual void OnWillChangeFocus(views::View* focused_before,
+                                 views::View* focused_now) OVERRIDE;
+  virtual void OnDidChangeFocus(views::View* focused_before,
+                                views::View* focused_now) OVERRIDE;
+
+  // views::WidgetObserver overrides:
+  virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE;
+  virtual void OnWidgetActivationChanged(views::Widget* widget,
+                                         bool active) OVERRIDE;
+
   // Testing interface.
   void SetHideTabIndicatorsForTest(bool hide);
-  void StartRevealForTest();
+  void StartRevealForTest(bool hovered);
   void OnRevealViewLostMouseForTest();
 
  private:
@@ -108,8 +119,12 @@ class ImmersiveModeController : public ui::EventHandler {
     SLIDING_CLOSED,  // All views showing, y animating from 0 to -height.
   };
 
-  // Enables or disables observers for mouse move and window restore.
+  // Enables or disables observers for mouse move, focus, and window restore.
   void EnableWindowObservers(bool enable);
+
+  // Update |focus_revealed_lock_| based on the currently active view and the
+  // currently active widget.
+  void UpdateFocusRevealedLock();
 
   // These methods are used to increment and decrement |revealed_lock_count_|.
   // If immersive mode is enabled, a transition from 1 to 0 in
@@ -117,9 +132,6 @@ class ImmersiveModeController : public ui::EventHandler {
   // from 0 to 1 in |revealed_lock_count_| reveals the top-of-window views.
   void LockRevealedState();
   void UnlockRevealedState();
-
-  // Returns true if a child of |browser_view_|->top_container() has focus.
-  bool TopContainerChildHasFocus() const;
 
   // Temporarily reveals the top-of-window views while in immersive mode,
   // hiding them when the cursor exits the area of the top views. If |animate|
@@ -171,6 +183,10 @@ class ImmersiveModeController : public ui::EventHandler {
 
   // Native window for the browser, needed to clean up observers.
   gfx::NativeWindow native_window_;
+
+  // Lock which keeps the top-of-window views revealed based on the focused view
+  // and the active widget.
+  scoped_ptr<RevealedLock> focus_revealed_lock_;
 
 #if defined(USE_AURA)
   // Observer to disable immersive mode when window leaves the maximized state.

@@ -9,13 +9,10 @@
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 
 TopContainerView::TopContainerView(BrowserView* browser_view)
-    : browser_view_(browser_view),
-      focus_manager_(browser_view->GetFocusManager()) {
-  focus_manager_->AddFocusChangeListener(this);
+    : browser_view_(browser_view) {
 }
 
 TopContainerView::~TopContainerView() {
-  focus_manager_->RemoveFocusChangeListener(this);
 }
 
 std::string TopContainerView::GetClassName() const {
@@ -32,18 +29,4 @@ void TopContainerView::PaintChildren(gfx::Canvas* canvas) {
   }
 
   views::View::PaintChildren(canvas);
-}
-
-void TopContainerView::OnWillChangeFocus(View* focused_before,
-                                        View* focused_now) {
-}
-
-void TopContainerView::OnDidChangeFocus(View* focused_before,
-                                        View* focused_now) {
-  // If one of this view's children had focus before, but doesn't have focus
-  // now, we may want to slide out the top views in immersive fullscreen.
-  if (browser_view_->immersive_mode_controller()->enabled() &&
-      Contains(focused_before) &&
-      !Contains(focused_now))
-    browser_view_->immersive_mode_controller()->OnRevealViewLostFocus();
 }
