@@ -16,7 +16,6 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRect.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebURL.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebVideoFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayerClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
@@ -26,7 +25,6 @@
 #include "webkit/media/video_frame_provider.h"
 #include "webkit/media/webmediaplayer_delegate.h"
 #include "webkit/media/webmediaplayer_util.h"
-#include "webkit/media/webvideoframe_impl.h"
 
 using WebKit::WebCanvas;
 using WebKit::WebMediaPlayer;
@@ -67,10 +65,8 @@ WebMediaPlayerMS::~WebMediaPlayerMS() {
   DVLOG(1) << "WebMediaPlayerMS::dtor";
   DCHECK(thread_checker_.CalledOnValidThread());
 
-#ifdef REMOVE_WEBVIDEOFRAME
   SetVideoFrameProviderClient(NULL);
   GetClient()->setWebLayer(NULL);
-#endif
 
   if (video_frame_provider_) {
     video_frame_provider_->Stop();
@@ -367,30 +363,6 @@ unsigned WebMediaPlayerMS::videoDecodedByteCount() const {
   return 0;
 }
 
-#ifndef REMOVE_WEBVIDEOFRAME
-WebKit::WebVideoFrame* WebMediaPlayerMS::getCurrentFrame() {
-  DVLOG(3) << "WebMediaPlayerMS::getCurrentFrame";
-  base::AutoLock auto_lock(current_frame_lock_);
-  DCHECK(!pending_repaint_);
-  if (current_frame_.get()) {
-    pending_repaint_ = true;
-    current_frame_used_ = true;
-    return new webkit_media::WebVideoFrameImpl(current_frame_);
-  }
-  return NULL;
-}
-
-void WebMediaPlayerMS::putCurrentFrame(
-    WebKit::WebVideoFrame* web_video_frame) {
-  DVLOG(3) << "WebMediaPlayerMS::putCurrentFrame";
-  base::AutoLock auto_lock(current_frame_lock_);
-  DCHECK(pending_repaint_);
-  pending_repaint_ = false;
-  if (web_video_frame) {
-    delete web_video_frame;
-  }
-}
-#else
 void WebMediaPlayerMS::SetVideoFrameProviderClient(
     cc::VideoFrameProvider::Client* client) {
   // This is called from both the main renderer thread and the compositor
@@ -417,7 +389,6 @@ void WebMediaPlayerMS::PutCurrentFrame(
   DCHECK(pending_repaint_);
   pending_repaint_ = false;
 }
-#endif
 
 void WebMediaPlayerMS::OnFrameAvailable(
     const scoped_refptr<media::VideoFrame>& frame) {
@@ -436,13 +407,11 @@ void WebMediaPlayerMS::OnFrameAvailable(
     SetReadyState(WebMediaPlayer::ReadyStateHaveEnoughData);
     GetClient()->sizeChanged();
 
-#ifdef REMOVE_WEBVIDEOFRAME
     if (video_frame_provider_ && GetClient()->needsWebLayerForVideo()) {
       video_weblayer_.reset(
           new webkit::WebLayerImpl(cc::VideoLayer::Create(this)));
       GetClient()->setWebLayer(video_weblayer_.get());
     }
-#endif
   }
 
   // Do not update |current_frame_| when paused.

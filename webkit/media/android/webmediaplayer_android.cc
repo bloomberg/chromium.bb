@@ -17,7 +17,6 @@
 #include "webkit/media/android/webmediaplayer_manager_android.h"
 #include "webkit/media/media_switches.h"
 #include "webkit/media/webmediaplayer_util.h"
-#include "webkit/media/webvideoframe_impl.h"
 
 static const uint32 kGLTextureExternalOES = 0x8D65;
 
@@ -26,7 +25,6 @@ using WebKit::WebMediaSource;
 using WebKit::WebSize;
 using WebKit::WebTimeRanges;
 using WebKit::WebURL;
-using WebKit::WebVideoFrame;
 using media::MediaPlayerBridge;
 using media::VideoFrame;
 
@@ -68,10 +66,8 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
 }
 
 WebMediaPlayerAndroid::~WebMediaPlayerAndroid() {
-#ifdef REMOVE_WEBVIDEOFRAME
   SetVideoFrameProviderClient(NULL);
   client_->setWebLayer(NULL);
-#endif
 
   if (stream_id_)
     stream_texture_factory_->DestroyStreamTexture(texture_id_);
@@ -296,21 +292,13 @@ void WebMediaPlayerAndroid::OnMediaPrepared(base::TimeDelta duration) {
   if (ready_state_ != WebMediaPlayer::ReadyStateHaveEnoughData) {
     UpdateReadyState(WebMediaPlayer::ReadyStateHaveMetadata);
     UpdateReadyState(WebMediaPlayer::ReadyStateHaveEnoughData);
-#ifndef REMOVE_WEBVIDEOFRAME
-  } else {
-    // If the status is already set to ReadyStateHaveEnoughData, set it again
-    // to make sure that Videolayerchromium will get created.
-    UpdateReadyState(WebMediaPlayer::ReadyStateHaveEnoughData);
-#endif
   }
 
-#ifdef REMOVE_WEBVIDEOFRAME
   if (hasVideo() && !video_weblayer_ && client_->needsWebLayerForVideo()) {
     video_weblayer_.reset(
         new webkit::WebLayerImpl(cc::VideoLayer::Create(this)));
     client_->setWebLayer(video_weblayer_.get());
   }
-#endif
 
   // In we have skipped loading, we have to update webkit about the new
   // duration.
@@ -448,29 +436,6 @@ void WebMediaPlayerAndroid::ReallocateVideoFrame() {
   }
 }
 
-#ifndef REMOVE_WEBVIDEOFRAME
-WebVideoFrame* WebMediaPlayerAndroid::getCurrentFrame() {
-  if (stream_texture_proxy_ && !stream_texture_proxy_->IsInitialized() &&
-      stream_id_ && !needs_external_surface_) {
-    gfx::Size natural_size = current_frame_->natural_size();
-    stream_texture_proxy_->Initialize(
-        stream_id_, natural_size.width(), natural_size.height());
-  }
-
-  return new WebVideoFrameImpl(current_frame_);
-}
-
-void WebMediaPlayerAndroid::putCurrentFrame(
-    WebVideoFrame* web_video_frame) {
-  delete web_video_frame;
-}
-
-void WebMediaPlayerAndroid::setStreamTextureClient(
-    WebKit::WebStreamTextureClient* client) {
-  if (stream_texture_proxy_.get())
-    stream_texture_proxy_->SetClient(client);
-}
-#else
 void WebMediaPlayerAndroid::SetVideoFrameProviderClient(
     cc::VideoFrameProvider::Client* client) {
   // This is called from both the main renderer thread and the compositor
@@ -497,7 +462,6 @@ scoped_refptr<media::VideoFrame> WebMediaPlayerAndroid::GetCurrentFrame() {
 void WebMediaPlayerAndroid::PutCurrentFrame(
     const scoped_refptr<media::VideoFrame>& frame) {
 }
-#endif
 
 void WebMediaPlayerAndroid::EstablishSurfaceTexturePeer() {
   if (stream_texture_factory_.get() && stream_id_)

@@ -17,10 +17,6 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayer.h"
 
-namespace WebKit {
-class WebVideoFrame;
-}
-
 namespace webkit {
 class WebLayerImpl;
 }
@@ -30,15 +26,12 @@ namespace webkit_media {
 class StreamTextureFactory;
 class StreamTextureProxy;
 class WebMediaPlayerManagerAndroid;
-class WebVideoFrameImpl;
 
 // An abstract class that serves as the common base class for implementing
 // WebKit::WebMediaPlayer on Android.
 class WebMediaPlayerAndroid
     : public WebKit::WebMediaPlayer,
-#ifdef REMOVE_WEBVIDEOFRAME
       public cc::VideoFrameProvider,
-#endif
       public MessageLoop::DestructionObserver {
  public:
   // Resource loading.
@@ -103,16 +96,6 @@ class WebMediaPlayerAndroid
   virtual unsigned audioDecodedByteCount() const;
   virtual unsigned videoDecodedByteCount() const;
 
-#ifndef REMOVE_WEBVIDEOFRAME
-  // Methods called from VideoLayerChromium. These methods are running on the
-  // compositor thread.
-  virtual WebKit::WebVideoFrame* getCurrentFrame();
-  virtual void putCurrentFrame(WebKit::WebVideoFrame*);
-
-  // This gets called both on compositor and main thread to set the callback
-  // target when a frame is produced.
-  virtual void setStreamTextureClient(WebKit::WebStreamTextureClient* client);
-#else
   // cc::VideoFrameProvider implementation. These methods are running on the
   // compositor thread.
   virtual void SetVideoFrameProviderClient(
@@ -120,7 +103,6 @@ class WebMediaPlayerAndroid
   virtual scoped_refptr<media::VideoFrame> GetCurrentFrame() OVERRIDE;
   virtual void PutCurrentFrame(const scoped_refptr<media::VideoFrame>& frame)
       OVERRIDE;
-#endif
 
   // Media player callback handlers.
   virtual void OnMediaPrepared(base::TimeDelta duration);

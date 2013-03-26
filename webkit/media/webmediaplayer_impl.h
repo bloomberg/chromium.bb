@@ -69,9 +69,7 @@ class WebMediaPlayerParams;
 
 class WebMediaPlayerImpl
     : public WebKit::WebMediaPlayer,
-#ifdef REMOVE_WEBVIDEOFRAME
       public cc::VideoFrameProvider,
-#endif
       public MessageLoop::DestructionObserver,
       public base::SupportsWeakPtr<WebMediaPlayerImpl> {
  public:
@@ -149,17 +147,12 @@ class WebMediaPlayerImpl
   virtual unsigned audioDecodedByteCount() const;
   virtual unsigned videoDecodedByteCount() const;
 
-#ifndef REMOVE_WEBVIDEOFRAME
-  virtual WebKit::WebVideoFrame* getCurrentFrame();
-  virtual void putCurrentFrame(WebKit::WebVideoFrame* web_video_frame);
-#else
   // cc::VideoFrameProvider implementation.
   virtual void SetVideoFrameProviderClient(
       cc::VideoFrameProvider::Client* client) OVERRIDE;
   virtual scoped_refptr<media::VideoFrame> GetCurrentFrame() OVERRIDE;
   virtual void PutCurrentFrame(const scoped_refptr<media::VideoFrame>& frame)
       OVERRIDE;
-#endif
 
   virtual bool copyVideoTextureToPlatformTexture(
       WebKit::WebGraphicsContext3D* web_graphics_context,

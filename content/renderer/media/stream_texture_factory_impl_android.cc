@@ -13,7 +13,6 @@
 #include "content/common/gpu/gpu_messages.h"
 #include "content/renderer/render_thread_impl.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebStreamTextureClient.h"
 #include "ui/gfx/size.h"
 
 namespace {
@@ -34,11 +33,7 @@ class StreamTextureProxyImpl : public webkit_media::StreamTextureProxy,
   // webkit_media::StreamTextureProxy implementation:
   virtual bool Initialize(int stream_id, int width, int height) OVERRIDE;
   virtual bool IsInitialized() OVERRIDE { return initialized_; }
-#ifndef REMOVE_WEBVIDEOFRAME
-  virtual void SetClient(WebKit::WebStreamTextureClient* client) OVERRIDE;
-#else
   virtual void SetClient(cc::VideoFrameProvider::Client* client) OVERRIDE;
-#endif
 
   // StreamTextureHost::Listener implementation:
   virtual void OnFrameAvailable() OVERRIDE;
@@ -49,11 +44,7 @@ class StreamTextureProxyImpl : public webkit_media::StreamTextureProxy,
   scoped_refptr<base::MessageLoopProxy> loop_;
 
   base::Lock client_lock_;
-#ifndef REMOVE_WEBVIDEOFRAME
-  WebKit::WebStreamTextureClient* client_;
-#else
   cc::VideoFrameProvider::Client* client_;
-#endif
   bool initialized_;
 
   DISALLOW_COPY_AND_ASSIGN(StreamTextureProxyImpl);
@@ -78,11 +69,7 @@ StreamTextureProxyImpl::~StreamTextureProxyImpl() {
   }
 }
 
-#ifndef REMOVE_WEBVIDEOFRAME
-void StreamTextureProxyImpl::SetClient(WebKit::WebStreamTextureClient* client) {
-#else
 void StreamTextureProxyImpl::SetClient(cc::VideoFrameProvider::Client* client) {
-#endif
   base::AutoLock lock(client_lock_);
   client_ = client;
 }
@@ -95,24 +82,14 @@ bool StreamTextureProxyImpl::Initialize(int stream_id, int width, int height) {
 
 void StreamTextureProxyImpl::OnFrameAvailable() {
   base::AutoLock lock(client_lock_);
-#ifndef REMOVE_WEBVIDEOFRAME
-  if (client_)
-    client_->didReceiveFrame();
-#else
   if (client_)
     client_->DidReceiveFrame();
-#endif
 }
 
 void StreamTextureProxyImpl::OnMatrixChanged(const float matrix[16]) {
   base::AutoLock lock(client_lock_);
-#ifndef REMOVE_WEBVIDEOFRAME
-  if (client_)
-    client_->didUpdateMatrix(matrix);
-#else
   if (client_)
     client_->DidUpdateMatrix(matrix);
-#endif
 }
 
 }  // anonymous namespace

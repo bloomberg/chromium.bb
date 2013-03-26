@@ -29,8 +29,6 @@ class WebCompositorSupportImpl : public WebKit::WebCompositorSupport {
       WebKit::WebExternalTextureLayerClient* client);
   virtual WebKit::WebImageLayer* createImageLayer();
   virtual WebKit::WebSolidColorLayer* createSolidColorLayer();
-  virtual WebKit::WebVideoLayer* createVideoLayer(
-      WebKit::WebVideoFrameProvider*);
   virtual WebKit::WebScrollbarLayer* createScrollbarLayer(
       WebKit::WebScrollbar* scrollbar,
       WebKit::WebScrollbarThemePainter painter,

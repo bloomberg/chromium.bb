@@ -34,7 +34,6 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // Surface formats roughly based on FOURCC labels, see:
   // http://www.fourcc.org/rgb.php
   // http://www.fourcc.org/yuv.php
-  // Keep in sync with WebKit::WebVideoFrame!
   enum Format {
     INVALID = 0,  // Invalid format value.  Used for error reporting.
     RGB32 = 4,  // 32bpp RGB packed with extra byte 8:8:8

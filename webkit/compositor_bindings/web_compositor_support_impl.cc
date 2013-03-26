@@ -20,7 +20,6 @@
 #include "webkit/compositor_bindings/web_solid_color_layer_impl.h"
 #include "webkit/compositor_bindings/web_transform_animation_curve_impl.h"
 #include "webkit/compositor_bindings/web_transform_operations_impl.h"
-#include "webkit/compositor_bindings/web_video_layer_impl.h"
 #include "webkit/glue/webthread_impl.h"
 #include "webkit/support/webkit_support.h"
 
@@ -40,8 +39,6 @@ using WebKit::WebScrollbarThemePainter;
 using WebKit::WebSolidColorLayer;
 using WebKit::WebTransformAnimationCurve;
 using WebKit::WebTransformOperations;
-using WebKit::WebVideoFrameProvider;
-using WebKit::WebVideoLayer;
 
 namespace webkit {
 
@@ -69,11 +66,6 @@ WebKit::WebImageLayer* WebCompositorSupportImpl::createImageLayer() {
 
 WebSolidColorLayer* WebCompositorSupportImpl::createSolidColorLayer() {
   return new WebSolidColorLayerImpl();
-}
-
-WebVideoLayer* WebCompositorSupportImpl::createVideoLayer(
-    WebKit::WebVideoFrameProvider* provider) {
-  return new WebVideoLayerImpl(provider);
 }
 
 WebScrollbarLayer* WebCompositorSupportImpl::createScrollbarLayer(

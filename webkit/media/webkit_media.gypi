@@ -97,8 +97,6 @@
         'webmediaplayer_util.h',
         'webmediasourceclient_impl.cc',
         'webmediasourceclient_impl.h',
-        'webvideoframe_impl.cc',
-        'webvideoframe_impl.h',
       ],
       'conditions': [
         ['inside_chromium_build == 0', {

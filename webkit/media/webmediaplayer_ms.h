@@ -18,7 +18,6 @@
 namespace WebKit {
 class WebFrame;
 class WebMediaPlayerClient;
-class WebVideoFrame;
 }
 
 namespace media {
@@ -52,9 +51,7 @@ class WebMediaPlayerDelegate;
 //   WebKit client of this media player object.
 class WebMediaPlayerMS
     : public WebKit::WebMediaPlayer,
-#ifdef REMOVE_WEBVIDEOFRAME
       public cc::VideoFrameProvider,
-#endif
       public base::SupportsWeakPtr<WebMediaPlayerMS> {
  public:
   // Construct a WebMediaPlayerMS with reference to the client, and
@@ -128,17 +125,12 @@ class WebMediaPlayerMS
   virtual unsigned audioDecodedByteCount() const OVERRIDE;
   virtual unsigned videoDecodedByteCount() const OVERRIDE;
 
-#ifndef REMOVE_WEBVIDEOFRAME
-  virtual WebKit::WebVideoFrame* getCurrentFrame() OVERRIDE;
-  virtual void putCurrentFrame(WebKit::WebVideoFrame* web_video_frame) OVERRIDE;
-#else
   // VideoFrameProvider implementation.
   virtual void SetVideoFrameProviderClient(
       cc::VideoFrameProvider::Client* client) OVERRIDE;
   virtual scoped_refptr<media::VideoFrame> GetCurrentFrame() OVERRIDE;
   virtual void PutCurrentFrame(const scoped_refptr<media::VideoFrame>& frame)
       OVERRIDE;
-#endif
 
  private:
   // The callback for VideoFrameProvider to signal a new frame is available.
