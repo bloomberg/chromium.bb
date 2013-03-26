@@ -39,6 +39,10 @@ class ChromiteUpgradeNeeded(Exception):
         "and then retry your submission.%s" % (version_str,))
 
 
+class ValidationError(Exception):
+  """Thrown when tryjob validation fails."""
+
+
 class RemoteTryJob(object):
   """Remote Tryjob that is submitted through a Git repo."""
   EXT_SSH_URL = os.path.join(constants.GERRIT_SSH_URL,
@@ -52,6 +56,9 @@ class RemoteTryJob(object):
   TRYJOB_FORMAT_VERSION = 4
   TRYSERVER_URL = 'https://uberchromegw.corp.google.com/i/chromiumos.tryserver'
   TRYJOB_FORMAT_FILE = '.tryjob_minimal_format_version'
+
+  NAME_LENGTH_LIMIT = 256
+  PROPERTY_LENGTH_LIMIT = 1024
 
   def __init__(self, options, bots, local_patches):
     """Construct the object.
@@ -105,20 +112,30 @@ class RemoteTryJob(object):
         'version' : self.TRYJOB_FORMAT_VERSION,
         }
 
+  def _VerifyForBuildbot(self):
+    """Early validation, to ensure the job can be processed by buildbot."""
+    val = self.values
+    # Validate the name of the buildset that buildbot will try to queue.
+    full_name = '%s:%s' % (val['user'], val['name'])
+    if len(full_name) > self.NAME_LENGTH_LIMIT:
+      raise ValidationError(
+          'The tryjob description is longer than %s characters.  '
+          'Use --remote-description to specify a custom description.'
+          % self.NAME_LENGTH_LIMIT)
+
+    # Buildbot will set extra_args as a buildset 'property'.  It will store
+    # the property in its database in JSON form.  The limit of the database
+    # field is 1023 characters.
+    if len(json.dumps(val['extra_args'])) > self.PROPERTY_LENGTH_LIMIT:
+      raise ValidationError(
+          'The number of extra arguments passed to cbuildbot has exceeded the '
+          'limit.  If you have a lot of local patches, upload them and use the '
+          '-g flag instead.')
+
   def _Submit(self, testjob, dryrun):
     """Internal submission function.  See Submit() for arg description."""
     # TODO(rcui): convert to shallow clone when that's available.
     current_time = str(int(time.time()))
-    repository.CloneGitRepo(self.tryjob_repo, self.ssh_url)
-    version_path = os.path.join(self.tryjob_repo,
-                                self.TRYJOB_FORMAT_FILE)
-    with open(version_path, 'r') as f:
-      try:
-        val = int(f.read().strip())
-      except ValueError:
-        raise ChromiteUpgradeNeeded()
-      if val > self.TRYJOB_FORMAT_VERSION:
-        raise ChromiteUpgradeNeeded(val)
 
     ref_base = os.path.join('refs/tryjobs', self.user, current_time)
     for patch in self.local_patches:
@@ -129,6 +146,7 @@ class RemoteTryJob(object):
 
       self.manifest.AssertProjectIsPushable(patch.project)
       data = self.manifest.projects[patch.project]
+      print 'Uploading patch %s' % patch
       patch.Upload(data['push_url'], ref_final, dryrun=dryrun)
 
       # TODO(rcui): Pass in the remote instead of tag. http://crosbug.com/33937.
@@ -140,7 +158,19 @@ class RemoteTryJob(object):
                              % (patch.project, local_branch, ref_final,
                                 patch.tracking_branch, tag))
 
+    self._VerifyForBuildbot()
+    repository.CloneGitRepo(self.tryjob_repo, self.ssh_url)
+    version_path = os.path.join(self.tryjob_repo,
+                                self.TRYJOB_FORMAT_FILE)
+    with open(version_path, 'r') as f:
+      try:
+        val = int(f.read().strip())
+      except ValueError:
+        raise ChromiteUpgradeNeeded()
+      if val > self.TRYJOB_FORMAT_VERSION:
+        raise ChromiteUpgradeNeeded(val)
     push_branch = manifest_version.PUSH_BRANCH
+
     remote_branch = ('origin', 'refs/remotes/origin/test') if testjob else None
     git.CreatePushBranch(push_branch, self.tryjob_repo, sync=False,
                          remote_push_branch=remote_branch)
