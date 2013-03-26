@@ -456,6 +456,7 @@ bool CaptureOracle::ObserveEventAndDecideCapture(
   // Step 3: Consider the various reasons not to initiate a capture.
   if (should_sample && !output_buffer) {
     TRACE_EVENT_INSTANT1("mirroring", "EncodeLimited",
+                         TRACE_EVENT_SCOPE_THREAD,
                          "trigger", event_name);
     return false;
   } else if (!should_sample && output_buffer) {
@@ -464,6 +465,7 @@ bool CaptureOracle::ObserveEventAndDecideCapture(
       // capture rate limit: for example, the content is animating at 60fps but
       // we're capturing at 30fps.
       TRACE_EVENT_INSTANT1("mirroring", "FpsRateLimited",
+                           TRACE_EVENT_SCOPE_THREAD,
                            "trigger", event_name);
     }
     return false;
@@ -471,6 +473,7 @@ bool CaptureOracle::ObserveEventAndDecideCapture(
     // We decided not to capture, but we wouldn't have been able to if we wanted
     // to because no output buffer was available.
     TRACE_EVENT_INSTANT1("mirroring", "NearlyEncodeLimited",
+                         TRACE_EVENT_SCOPE_THREAD,
                          "trigger", event_name);
     return false;
   }
@@ -505,7 +508,8 @@ void CaptureOracle::ReportError() {
 void CaptureOracle::InvalidateConsumer() {
   base::AutoLock guard(lock_);
 
-  TRACE_EVENT_INSTANT0("mirroring", "InvalidateConsumer");
+  TRACE_EVENT_INSTANT0("mirroring", "InvalidateConsumer",
+                       TRACE_EVENT_SCOPE_THREAD);
 
   is_started_ = false;
   consumer_ = NULL;

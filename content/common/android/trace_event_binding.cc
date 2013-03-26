@@ -89,9 +89,11 @@ static void Instant(JNIEnv* env, jclass clazz,
   TraceEventDataConverter converter(env, jname, jarg);
   if (converter.arg()) {
     TRACE_EVENT_COPY_INSTANT1(kJavaCategory, converter.name(),
+                              TRACE_EVENT_SCOPE_THREAD,
                               converter.arg_name(), converter.arg());
   } else {
-    TRACE_EVENT_COPY_INSTANT0(kJavaCategory, converter.name());
+    TRACE_EVENT_COPY_INSTANT0(kJavaCategory, converter.name(),
+                              TRACE_EVENT_SCOPE_THREAD);
   }
 }
 

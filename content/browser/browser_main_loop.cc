@@ -749,7 +749,8 @@ void BrowserMainLoop::BrowserThreadsStarted() {
       !parsed_command_line_.HasSwitch(switches::kDisableGpuProcessPrelaunch) &&
       !parsed_command_line_.HasSwitch(switches::kSingleProcess) &&
       !parsed_command_line_.HasSwitch(switches::kInProcessGPU)) {
-    TRACE_EVENT_INSTANT0("gpu", "Post task to launch GPU process");
+    TRACE_EVENT_INSTANT0("gpu", "Post task to launch GPU process",
+                         TRACE_EVENT_SCOPE_THREAD);
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE, base::Bind(
             base::IgnoreResult(&GpuProcessHost::Get),

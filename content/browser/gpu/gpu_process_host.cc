@@ -632,7 +632,7 @@ GpuProcessHost::~GpuProcessHost() {
 bool GpuProcessHost::Init() {
   init_start_time_ = base::TimeTicks::Now();
 
-  TRACE_EVENT_INSTANT0("gpu", "LaunchGpuProcess");
+  TRACE_EVENT_INSTANT0("gpu", "LaunchGpuProcess", TRACE_EVENT_SCOPE_THREAD);
 
   std::string channel_id = process_->GetHost()->CreateChannel();
   if (channel_id.empty())

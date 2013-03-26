@@ -326,9 +326,12 @@ void TraceWithAllMacroVariants(WaitableEvent* task_complete_event) {
                  "name1", "\"value1\"",
                  "name2", "value\\2");
 
-    TRACE_EVENT_INSTANT0("all", "TRACE_EVENT_INSTANT0 call");
-    TRACE_EVENT_INSTANT1("all", "TRACE_EVENT_INSTANT1 call", "name1", "value1");
+    TRACE_EVENT_INSTANT0("all", "TRACE_EVENT_INSTANT0 call",
+                         TRACE_EVENT_SCOPE_GLOBAL);
+    TRACE_EVENT_INSTANT1("all", "TRACE_EVENT_INSTANT1 call",
+                         TRACE_EVENT_SCOPE_PROCESS, "name1", "value1");
     TRACE_EVENT_INSTANT2("all", "TRACE_EVENT_INSTANT2 call",
+                         TRACE_EVENT_SCOPE_THREAD,
                          "name1", "value1",
                          "name2", "value2");
 
@@ -447,10 +450,25 @@ void ValidateAllTraceMacrosCreatedData(const ListValue& trace_parsed) {
   EXPECT_SUB_FIND_("value\\2");
 
   EXPECT_FIND_("TRACE_EVENT_INSTANT0 call");
+  {
+    std::string scope;
+    EXPECT_TRUE((item && item->GetString("s", &scope)));
+    EXPECT_EQ("g", scope);
+  }
   EXPECT_FIND_("TRACE_EVENT_INSTANT1 call");
+  {
+    std::string scope;
+    EXPECT_TRUE((item && item->GetString("s", &scope)));
+    EXPECT_EQ("p", scope);
+  }
   EXPECT_SUB_FIND_("name1");
   EXPECT_SUB_FIND_("value1");
   EXPECT_FIND_("TRACE_EVENT_INSTANT2 call");
+  {
+    std::string scope;
+    EXPECT_TRUE((item && item->GetString("s", &scope)));
+    EXPECT_EQ("t", scope);
+  }
   EXPECT_SUB_FIND_("name1");
   EXPECT_SUB_FIND_("value1");
   EXPECT_SUB_FIND_("name2");
@@ -695,6 +713,7 @@ void TraceManyInstantEvents(int thread_id, int num_events,
                             WaitableEvent* task_complete_event) {
   for (int i = 0; i < num_events; i++) {
     TRACE_EVENT_INSTANT2("all", "multi thread event",
+                         TRACE_EVENT_SCOPE_THREAD,
                          "thread", thread_id,
                          "event", i);
   }
@@ -737,7 +756,7 @@ void ValidateInstantEventPresentOnEveryThread(const ListValue& trace_parsed,
 
 void TraceCallsWithCachedCategoryPointersPointers(const char* name_str) {
   TRACE_EVENT0("category name1", name_str);
-  TRACE_EVENT_INSTANT0("category name2", name_str);
+  TRACE_EVENT_INSTANT0("category name2", name_str, TRACE_EVENT_SCOPE_THREAD);
   TRACE_EVENT_BEGIN0("category name3", name_str);
   TRACE_EVENT_END0("category name4", name_str);
 }
@@ -851,11 +870,11 @@ TEST_F(TraceEventTestFixture, Categories) {
 
   // Test that categories that are used can be retrieved whether trace was
   // enabled or disabled when the trace event was encountered.
-  TRACE_EVENT_INSTANT0("c1", "name");
-  TRACE_EVENT_INSTANT0("c2", "name");
+  TRACE_EVENT_INSTANT0("c1", "name", TRACE_EVENT_SCOPE_THREAD);
+  TRACE_EVENT_INSTANT0("c2", "name", TRACE_EVENT_SCOPE_THREAD);
   BeginTrace();
-  TRACE_EVENT_INSTANT0("c3", "name");
-  TRACE_EVENT_INSTANT0("c4", "name");
+  TRACE_EVENT_INSTANT0("c3", "name", TRACE_EVENT_SCOPE_THREAD);
+  TRACE_EVENT_INSTANT0("c4", "name", TRACE_EVENT_SCOPE_THREAD);
   EndTraceAndFlush();
   std::vector<std::string> cats;
   TraceLog::GetInstance()->GetKnownCategories(&cats);
@@ -876,8 +895,8 @@ TEST_F(TraceEventTestFixture, Categories) {
   included_categories.push_back("not_found823564786");
   TraceLog::GetInstance()->SetEnabled(included_categories, empty_categories,
                                       TraceLog::RECORD_UNTIL_FULL);
-  TRACE_EVENT_INSTANT0("cat1", "name");
-  TRACE_EVENT_INSTANT0("cat2", "name");
+  TRACE_EVENT_INSTANT0("cat1", "name", TRACE_EVENT_SCOPE_THREAD);
+  TRACE_EVENT_INSTANT0("cat2", "name", TRACE_EVENT_SCOPE_THREAD);
   EndTraceAndFlush();
   EXPECT_TRUE(trace_parsed_.empty());
 
@@ -887,8 +906,8 @@ TEST_F(TraceEventTestFixture, Categories) {
   included_categories.push_back("inc");
   TraceLog::GetInstance()->SetEnabled(included_categories, empty_categories,
                                       TraceLog::RECORD_UNTIL_FULL);
-  TRACE_EVENT_INSTANT0("inc", "name");
-  TRACE_EVENT_INSTANT0("inc2", "name");
+  TRACE_EVENT_INSTANT0("inc", "name", TRACE_EVENT_SCOPE_THREAD);
+  TRACE_EVENT_INSTANT0("inc2", "name", TRACE_EVENT_SCOPE_THREAD);
   EndTraceAndFlush();
   EXPECT_TRUE(FindMatchingValue("cat", "inc"));
   EXPECT_FALSE(FindNonMatchingValue("cat", "inc"));
@@ -900,12 +919,15 @@ TEST_F(TraceEventTestFixture, Categories) {
   included_categories.push_back("inc_wildchar_?_end");
   TraceLog::GetInstance()->SetEnabled(included_categories, empty_categories,
                                       TraceLog::RECORD_UNTIL_FULL);
-  TRACE_EVENT_INSTANT0("inc_wildcard_abc", "included");
-  TRACE_EVENT_INSTANT0("inc_wildcard_", "included");
-  TRACE_EVENT_INSTANT0("inc_wildchar_x_end", "included");
-  TRACE_EVENT_INSTANT0("inc_wildchar_bla_end", "not_inc");
-  TRACE_EVENT_INSTANT0("cat1", "not_inc");
-  TRACE_EVENT_INSTANT0("cat2", "not_inc");
+  TRACE_EVENT_INSTANT0("inc_wildcard_abc", "included",
+                       TRACE_EVENT_SCOPE_THREAD);
+  TRACE_EVENT_INSTANT0("inc_wildcard_", "included", TRACE_EVENT_SCOPE_THREAD);
+  TRACE_EVENT_INSTANT0("inc_wildchar_x_end", "included",
+                       TRACE_EVENT_SCOPE_THREAD);
+  TRACE_EVENT_INSTANT0("inc_wildchar_bla_end", "not_inc",
+                       TRACE_EVENT_SCOPE_THREAD);
+  TRACE_EVENT_INSTANT0("cat1", "not_inc", TRACE_EVENT_SCOPE_THREAD);
+  TRACE_EVENT_INSTANT0("cat2", "not_inc", TRACE_EVENT_SCOPE_THREAD);
   EndTraceAndFlush();
   EXPECT_TRUE(FindMatchingValue("cat", "inc_wildcard_abc"));
   EXPECT_TRUE(FindMatchingValue("cat", "inc_wildcard_"));
@@ -920,8 +942,8 @@ TEST_F(TraceEventTestFixture, Categories) {
   excluded_categories.push_back("not_found823564786");
   TraceLog::GetInstance()->SetEnabled(empty_categories, excluded_categories,
                                       TraceLog::RECORD_UNTIL_FULL);
-  TRACE_EVENT_INSTANT0("cat1", "name");
-  TRACE_EVENT_INSTANT0("cat2", "name");
+  TRACE_EVENT_INSTANT0("cat1", "name", TRACE_EVENT_SCOPE_THREAD);
+  TRACE_EVENT_INSTANT0("cat2", "name", TRACE_EVENT_SCOPE_THREAD);
   EndTraceAndFlush();
   EXPECT_TRUE(FindMatchingValue("cat", "cat1"));
   EXPECT_TRUE(FindMatchingValue("cat", "cat2"));
@@ -932,8 +954,8 @@ TEST_F(TraceEventTestFixture, Categories) {
   excluded_categories.push_back("inc");
   TraceLog::GetInstance()->SetEnabled(empty_categories, excluded_categories,
                                       TraceLog::RECORD_UNTIL_FULL);
-  TRACE_EVENT_INSTANT0("inc", "name");
-  TRACE_EVENT_INSTANT0("inc2", "name");
+  TRACE_EVENT_INSTANT0("inc", "name", TRACE_EVENT_SCOPE_THREAD);
+  TRACE_EVENT_INSTANT0("inc2", "name", TRACE_EVENT_SCOPE_THREAD);
   EndTraceAndFlush();
   EXPECT_TRUE(FindMatchingValue("cat", "inc2"));
   EXPECT_FALSE(FindMatchingValue("cat", "inc"));
@@ -945,12 +967,14 @@ TEST_F(TraceEventTestFixture, Categories) {
   excluded_categories.push_back("inc_wildchar_?_end");
   TraceLog::GetInstance()->SetEnabled(empty_categories, excluded_categories,
                                       TraceLog::RECORD_UNTIL_FULL);
-  TRACE_EVENT_INSTANT0("inc_wildcard_abc", "not_inc");
-  TRACE_EVENT_INSTANT0("inc_wildcard_", "not_inc");
-  TRACE_EVENT_INSTANT0("inc_wildchar_x_end", "not_inc");
-  TRACE_EVENT_INSTANT0("inc_wildchar_bla_end", "included");
-  TRACE_EVENT_INSTANT0("cat1", "included");
-  TRACE_EVENT_INSTANT0("cat2", "included");
+  TRACE_EVENT_INSTANT0("inc_wildcard_abc", "not_inc", TRACE_EVENT_SCOPE_THREAD);
+  TRACE_EVENT_INSTANT0("inc_wildcard_", "not_inc", TRACE_EVENT_SCOPE_THREAD);
+  TRACE_EVENT_INSTANT0("inc_wildchar_x_end", "not_inc",
+                       TRACE_EVENT_SCOPE_THREAD);
+  TRACE_EVENT_INSTANT0("inc_wildchar_bla_end", "included",
+                       TRACE_EVENT_SCOPE_THREAD);
+  TRACE_EVENT_INSTANT0("cat1", "included", TRACE_EVENT_SCOPE_THREAD);
+  TRACE_EVENT_INSTANT0("cat2", "included", TRACE_EVENT_SCOPE_THREAD);
   EndTraceAndFlush();
   EXPECT_TRUE(FindMatchingValue("cat", "inc_wildchar_bla_end"));
   EXPECT_TRUE(FindMatchingValue("cat", "cat1"));
@@ -966,13 +990,13 @@ TEST_F(TraceEventTestFixture, EventWatchNotification) {
   // Basic one occurrence.
   BeginTrace();
   TraceLog::GetInstance()->SetWatchEvent("cat", "event");
-  TRACE_EVENT_INSTANT0("cat", "event");
+  TRACE_EVENT_INSTANT0("cat", "event", TRACE_EVENT_SCOPE_THREAD);
   EndTraceAndFlush();
   EXPECT_EQ(event_watch_notification_, 1);
 
   // Basic one occurrence before Set.
   BeginTrace();
-  TRACE_EVENT_INSTANT0("cat", "event");
+  TRACE_EVENT_INSTANT0("cat", "event", TRACE_EVENT_SCOPE_THREAD);
   TraceLog::GetInstance()->SetWatchEvent("cat", "event");
   EndTraceAndFlush();
   EXPECT_EQ(event_watch_notification_, 1);
@@ -982,7 +1006,7 @@ TEST_F(TraceEventTestFixture, EventWatchNotification) {
   TraceLog::GetInstance()->SetWatchEvent("cat", "event");
   EndTraceAndFlush();
   BeginTrace();
-  TRACE_EVENT_INSTANT0("cat", "event");
+  TRACE_EVENT_INSTANT0("cat", "event", TRACE_EVENT_SCOPE_THREAD);
   EndTraceAndFlush();
   EXPECT_EQ(event_watch_notification_, 0);
 
@@ -991,21 +1015,21 @@ TEST_F(TraceEventTestFixture, EventWatchNotification) {
   int num_occurrences = 5;
   TraceLog::GetInstance()->SetWatchEvent("cat", "event");
   for (int i = 0; i < num_occurrences; ++i)
-    TRACE_EVENT_INSTANT0("cat", "event");
+    TRACE_EVENT_INSTANT0("cat", "event", TRACE_EVENT_SCOPE_THREAD);
   EndTraceAndFlush();
   EXPECT_EQ(event_watch_notification_, num_occurrences);
 
   // Wrong category.
   BeginTrace();
   TraceLog::GetInstance()->SetWatchEvent("cat", "event");
-  TRACE_EVENT_INSTANT0("wrong_cat", "event");
+  TRACE_EVENT_INSTANT0("wrong_cat", "event", TRACE_EVENT_SCOPE_THREAD);
   EndTraceAndFlush();
   EXPECT_EQ(event_watch_notification_, 0);
 
   // Wrong name.
   BeginTrace();
   TraceLog::GetInstance()->SetWatchEvent("cat", "event");
-  TRACE_EVENT_INSTANT0("cat", "wrong_event");
+  TRACE_EVENT_INSTANT0("cat", "wrong_event", TRACE_EVENT_SCOPE_THREAD);
   EndTraceAndFlush();
   EXPECT_EQ(event_watch_notification_, 0);
 
@@ -1013,7 +1037,7 @@ TEST_F(TraceEventTestFixture, EventWatchNotification) {
   BeginTrace();
   TraceLog::GetInstance()->SetWatchEvent("cat", "event");
   TraceLog::GetInstance()->CancelWatchEvent();
-  TRACE_EVENT_INSTANT0("cat", "event");
+  TRACE_EVENT_INSTANT0("cat", "event", TRACE_EVENT_SCOPE_THREAD);
   EndTraceAndFlush();
   EXPECT_EQ(event_watch_notification_, 0);
 }
@@ -1268,20 +1292,20 @@ TEST_F(TraceEventTestFixture, ThreadNameChanges) {
   BeginTrace();
 
   PlatformThread::SetName("");
-  TRACE_EVENT_INSTANT0("drink", "water");
+  TRACE_EVENT_INSTANT0("drink", "water", TRACE_EVENT_SCOPE_THREAD);
 
   PlatformThread::SetName("cafe");
-  TRACE_EVENT_INSTANT0("drink", "coffee");
+  TRACE_EVENT_INSTANT0("drink", "coffee", TRACE_EVENT_SCOPE_THREAD);
 
   PlatformThread::SetName("shop");
   // No event here, so won't appear in combined name.
 
   PlatformThread::SetName("pub");
-  TRACE_EVENT_INSTANT0("drink", "beer");
-  TRACE_EVENT_INSTANT0("drink", "wine");
+  TRACE_EVENT_INSTANT0("drink", "beer", TRACE_EVENT_SCOPE_THREAD);
+  TRACE_EVENT_INSTANT0("drink", "wine", TRACE_EVENT_SCOPE_THREAD);
 
   PlatformThread::SetName(" bar");
-  TRACE_EVENT_INSTANT0("drink", "whisky");
+  TRACE_EVENT_INSTANT0("drink", "whisky", TRACE_EVENT_SCOPE_THREAD);
 
   EndTraceAndFlush();
 
@@ -1320,11 +1344,13 @@ TEST_F(TraceEventTestFixture, AtExit) {
       // so that it will be destroyed when this scope closes.
       ManualTestSetUp();
 
-      TRACE_EVENT_INSTANT0("all", "not recorded; system not enabled");
+      TRACE_EVENT_INSTANT0("all", "not recorded; system not enabled",
+                           TRACE_EVENT_SCOPE_THREAD);
 
       BeginTrace();
 
-      TRACE_EVENT_INSTANT0("all", "is recorded 1; system has been enabled");
+      TRACE_EVENT_INSTANT0("all", "is recorded 1; system has been enabled",
+                           TRACE_EVENT_SCOPE_THREAD);
       // Trace calls that will cache pointers to categories; they're valid here
       TraceCallsWithCachedCategoryPointersPointers(
           "is recorded 2; system has been enabled");
@@ -1347,12 +1373,14 @@ TEST_F(TraceEventTestFixture, AtExit) {
     TRACE_EVENT_END_ETW("not recorded; system shutdown", 0, NULL);
     TRACE_EVENT_INSTANT_ETW("not recorded; system shutdown", 0, NULL);
     TRACE_EVENT0("all", "not recorded; system shutdown");
-    TRACE_EVENT_INSTANT0("all", "not recorded; system shutdown");
+    TRACE_EVENT_INSTANT0("all", "not recorded; system shutdown",
+                         TRACE_EVENT_SCOPE_THREAD);
     TRACE_EVENT_BEGIN0("all", "not recorded; system shutdown");
     TRACE_EVENT_END0("all", "not recorded; system shutdown");
 
     TRACE_EVENT0("new category 0!", "not recorded; system shutdown");
-    TRACE_EVENT_INSTANT0("new category 1!", "not recorded; system shutdown");
+    TRACE_EVENT_INSTANT0("new category 1!", "not recorded; system shutdown",
+                         TRACE_EVENT_SCOPE_THREAD);
     TRACE_EVENT_BEGIN0("new category 2!", "not recorded; system shutdown");
     TRACE_EVENT_END0("new category 3!", "not recorded; system shutdown");
 
@@ -1371,7 +1399,8 @@ TEST_F(TraceEventTestFixture, NormallyNoDeepCopy) {
   std::string name_string("event name");
 
   BeginTrace();
-  TRACE_EVENT_INSTANT0("category", name_string.c_str());
+  TRACE_EVENT_INSTANT0("category", name_string.c_str(),
+                       TRACE_EVENT_SCOPE_THREAD);
 
   // Modify the string in place (a wholesale reassignment may leave the old
   // string intact on the heap).
@@ -1398,7 +1427,8 @@ TEST_F(TraceEventTestFixture, DeepCopy) {
   std::string val2("val2");
 
   BeginTrace();
-  TRACE_EVENT_COPY_INSTANT0("category", name1.c_str());
+  TRACE_EVENT_COPY_INSTANT0("category", name1.c_str(),
+                            TRACE_EVENT_SCOPE_THREAD);
   TRACE_EVENT_COPY_BEGIN1("category", name2.c_str(),
                           arg1.c_str(), 5);
   TRACE_EVENT_COPY_END2("category", name3.c_str(),
@@ -1462,12 +1492,12 @@ TEST_F(TraceEventTestFixture, TracingIsLazy) {
   BeginTrace();
 
   int a = 0;
-  TRACE_EVENT_INSTANT1("category", "test", "a", a++);
+  TRACE_EVENT_INSTANT1("category", "test", TRACE_EVENT_SCOPE_THREAD, "a", a++);
   EXPECT_EQ(1, a);
 
   TraceLog::GetInstance()->SetDisabled();
 
-  TRACE_EVENT_INSTANT1("category", "test", "a", a++);
+  TRACE_EVENT_INSTANT1("category", "test", TRACE_EVENT_SCOPE_THREAD, "a", a++);
   EXPECT_EQ(1, a);
 
   EndTraceAndFlush();
@@ -1595,14 +1625,15 @@ class TraceEventCallbackTest : public TraceEventTestFixture {
 TraceEventCallbackTest* TraceEventCallbackTest::s_instance;
 
 TEST_F(TraceEventCallbackTest, TraceEventCallback) {
-  TRACE_EVENT_INSTANT0("all", "before enable");
+  TRACE_EVENT_INSTANT0("all", "before enable", TRACE_EVENT_SCOPE_GLOBAL);
   TraceLog::GetInstance()->SetEnabled(true, TraceLog::RECORD_UNTIL_FULL);
-  TRACE_EVENT_INSTANT0("all", "before callback set");
+  TRACE_EVENT_INSTANT0("all", "before callback set", TRACE_EVENT_SCOPE_GLOBAL);
   TraceLog::GetInstance()->SetEventCallback(Callback);
-  TRACE_EVENT_INSTANT0("all", "event1");
-  TRACE_EVENT_INSTANT0("all", "event2");
+  TRACE_EVENT_INSTANT0("all", "event1", TRACE_EVENT_SCOPE_GLOBAL);
+  TRACE_EVENT_INSTANT0("all", "event2", TRACE_EVENT_SCOPE_GLOBAL);
   TraceLog::GetInstance()->SetEventCallback(NULL);
-  TRACE_EVENT_INSTANT0("all", "after callback removed");
+  TRACE_EVENT_INSTANT0("all", "after callback removed",
+                       TRACE_EVENT_SCOPE_GLOBAL);
   EXPECT_EQ(2u, collected_events_.size());
   EXPECT_EQ("event1", collected_events_[0]);
   EXPECT_EQ("event2", collected_events_[1]);

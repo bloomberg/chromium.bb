@@ -124,6 +124,7 @@ void Animation::SetRunState(RunState run_state, double monotonic_time) {
 
   TRACE_EVENT_INSTANT2("cc",
                        "LayerAnimationController::SetRunState",
+                       TRACE_EVENT_SCOPE_THREAD,
                        "Name",
                        TRACE_STR_COPY(name_buffer),
                        "State",

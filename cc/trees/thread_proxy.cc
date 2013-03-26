@@ -824,7 +824,7 @@ void ThreadProxy::ScheduledActionCommit() {
       layer_tree_host_->BlocksPendingCommit()) {
     // For some layer types in impl-side painting, the commit is held until
     // the pending tree is activated.
-    TRACE_EVENT_INSTANT0("cc", "HoldCommit");
+    TRACE_EVENT_INSTANT0("cc", "HoldCommit", TRACE_EVENT_SCOPE_THREAD);
     completion_event_for_commit_held_on_tree_activation_ =
         commit_completion_event_on_impl_thread_;
     commit_completion_event_on_impl_thread_ = NULL;
@@ -910,7 +910,8 @@ ThreadProxy::ScheduledActionDrawAndSwapInternal(bool forced_draw) {
   // Check for tree activation.
   if (completion_event_for_commit_held_on_tree_activation_ &&
       !layer_tree_host_impl_->pending_tree()) {
-    TRACE_EVENT_INSTANT0("cc", "ReleaseCommitbyActivation");
+    TRACE_EVENT_INSTANT0("cc", "ReleaseCommitbyActivation",
+                         TRACE_EVENT_SCOPE_THREAD);
     DCHECK(layer_tree_host_impl_->settings().impl_side_painting);
     completion_event_for_commit_held_on_tree_activation_->Signal();
     completion_event_for_commit_held_on_tree_activation_ = NULL;

@@ -82,7 +82,8 @@ void Compositor::Initialize() {
 void Compositor::InitializeWithFlags(uint32 flags) {
   g_use_direct_gl = flags & DIRECT_CONTEXT_ON_DRAW_THREAD;
   if (flags & ENABLE_COMPOSITOR_THREAD) {
-    TRACE_EVENT_INSTANT0("test_gpu", "ThreadedCompositingInitialization");
+    TRACE_EVENT_INSTANT0("test_gpu", "ThreadedCompositingInitialization",
+                         TRACE_EVENT_SCOPE_THREAD);
     g_impl_thread = new webkit_glue::WebThreadImpl("Browser Compositor");
   }
   Compositor::Initialize();

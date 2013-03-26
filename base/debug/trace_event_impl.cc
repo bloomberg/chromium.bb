@@ -408,6 +408,26 @@ void TraceEvent::AppendAsJSON(std::string* out) const {
   // bits (it might be a 64-bit pointer).
   if (flags_ & TRACE_EVENT_FLAG_HAS_ID)
     StringAppendF(out, ",\"id\":\"%" PRIx64 "\"", static_cast<uint64>(id_));
+
+  // Instant events also output their scope.
+  if (phase_ == TRACE_EVENT_PHASE_INSTANT) {
+    char scope = '?';
+    switch (flags_ & TRACE_EVENT_FLAG_SCOPE_MASK) {
+      case TRACE_EVENT_SCOPE_GLOBAL:
+        scope = TRACE_EVENT_SCOPE_NAME_GLOBAL;
+        break;
+
+      case TRACE_EVENT_SCOPE_PROCESS:
+        scope = TRACE_EVENT_SCOPE_NAME_PROCESS;
+        break;
+
+      case TRACE_EVENT_SCOPE_THREAD:
+        scope = TRACE_EVENT_SCOPE_NAME_THREAD;
+        break;
+    }
+    StringAppendF(out, ",\"s\":\"%c\"", scope);
+  }
+
   *out += "}";
 }
 

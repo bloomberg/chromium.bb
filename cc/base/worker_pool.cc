@@ -549,7 +549,8 @@ void WorkerPool::RunCheapTasks() {
 
     base::TimeTicks now = base::TimeTicks::Now();
     if (now >= run_cheap_tasks_time_limit_) {
-      TRACE_EVENT_INSTANT0("cc", "WorkerPool::RunCheapTasks out of time");
+      TRACE_EVENT_INSTANT0("cc", "WorkerPool::RunCheapTasks out of time",
+                           TRACE_EVENT_SCOPE_THREAD);
       break;
     }
 
@@ -558,7 +559,8 @@ void WorkerPool::RunCheapTasks() {
         now < check_for_completed_tasks_time_)
       break;
 
-    TRACE_EVENT_INSTANT0("cc", "WorkerPool::RunCheapTasks check time");
+    TRACE_EVENT_INSTANT0("cc", "WorkerPool::RunCheapTasks check time",
+                         TRACE_EVENT_SCOPE_THREAD);
     CancelCheckForCompletedTasks();
     DispatchCompletionCallbacks();
     // Schedule another check for completed tasks if not idle.

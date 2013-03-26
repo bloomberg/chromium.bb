@@ -4771,6 +4771,7 @@ error::Error GLES2DecoderImpl::DoClear(GLbitfield mask) {
   if (CheckBoundFramebuffersValid("glClear")) {
     UNSHIPPED_TRACE_EVENT_INSTANT2(
         "test_gpu", "DoClear",
+        TRACE_EVENT_SCOPE_THREAD,
         "red", state_.color_clear_red,
         "green", state_.color_clear_green);
     ApplyDirtyState();
@@ -5054,7 +5055,8 @@ void GLES2DecoderImpl::DoBlitFramebufferEXT(
         srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
   }
   EnableDisable(GL_SCISSOR_TEST, state_.enable_flags.scissor_test);
-  UNSHIPPED_TRACE_EVENT_INSTANT1("test_gpu", "DoBlit", "width", srcX1 - srcX0);
+  UNSHIPPED_TRACE_EVENT_INSTANT1("test_gpu", "DoBlit", TRACE_EVENT_SCOPE_THREAD,
+                                 "width", srcX1 - srcX0);
 }
 
 void GLES2DecoderImpl::DoRenderbufferStorageMultisample(
@@ -8880,6 +8882,7 @@ error::Error GLES2DecoderImpl::HandleSwapBuffers(
   int this_frame_number = frame_number_++;
   // TRACE_EVENT for gpu tests:
   TRACE_EVENT_INSTANT2("test_gpu", "SwapBuffersLatency",
+                       TRACE_EVENT_SCOPE_THREAD,
                        "GLImpl", static_cast<int>(gfx::GetGLImplementation()),
                        "width", (is_offscreen ? offscreen_size_.width() :
                                  surface_->GetSize().width()));

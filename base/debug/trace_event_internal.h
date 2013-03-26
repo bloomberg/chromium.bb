@@ -182,10 +182,11 @@
 #define UNSHIPPED_TRACE_EVENT1(category, name, arg1_name, arg1_val) (void)0
 #define UNSHIPPED_TRACE_EVENT2(category, name, arg1_name, arg1_val, \
                                arg2_name, arg2_val) (void)0
-#define UNSHIPPED_TRACE_EVENT_INSTANT0(category, name) (void)0
-#define UNSHIPPED_TRACE_EVENT_INSTANT1(category, name, arg1_name, arg1_val) \
-    (void)0
-#define UNSHIPPED_TRACE_EVENT_INSTANT2(category, name, arg1_name, arg1_val, \
+#define UNSHIPPED_TRACE_EVENT_INSTANT0(category, name, scope) (void)0
+#define UNSHIPPED_TRACE_EVENT_INSTANT1(category, name, scope, \
+                                       arg1_name, arg1_val) (void)0
+#define UNSHIPPED_TRACE_EVENT_INSTANT2(category, name, scope, \
+                                       arg1_name, arg1_val, \
                                        arg2_name, arg2_val) (void)0
 #else
 #define UNSHIPPED_TRACE_EVENT0(category, name) \
@@ -195,13 +196,15 @@
 #define UNSHIPPED_TRACE_EVENT2(category, name, arg1_name, arg1_val, \
                                arg2_name, arg2_val) \
     TRACE_EVENT2(category, name, arg1_name, arg1_val, arg2_name, arg2_val)
-#define UNSHIPPED_TRACE_EVENT_INSTANT0(category, name) \
-    TRACE_EVENT_INSTANT0(category, name)
-#define UNSHIPPED_TRACE_EVENT_INSTANT1(category, name, arg1_name, arg1_val) \
-    TRACE_EVENT_INSTANT1(category, name, arg1_name, arg1_val)
-#define UNSHIPPED_TRACE_EVENT_INSTANT2(category, name, arg1_name, arg1_val, \
+#define UNSHIPPED_TRACE_EVENT_INSTANT0(category, name, scope) \
+    TRACE_EVENT_INSTANT0(category, name, scope)
+#define UNSHIPPED_TRACE_EVENT_INSTANT1(category, name, scope, \
+                                       arg1_name, arg1_val) \
+    TRACE_EVENT_INSTANT1(category, name, scope, arg1_name, arg1_val)
+#define UNSHIPPED_TRACE_EVENT_INSTANT2(category, name, scope, \
+                                       arg1_name, arg1_val, \
                                        arg2_name, arg2_val) \
-    TRACE_EVENT_INSTANT2(category, name, arg1_name, arg1_val, \
+    TRACE_EVENT_INSTANT2(category, name, scope, arg1_name, arg1_val, \
                          arg2_name, arg2_val)
 #endif
 
@@ -210,28 +213,31 @@
 // does nothing.
 // - category and name strings must have application lifetime (statics or
 //   literals). They may not include " chars.
-#define TRACE_EVENT_INSTANT0(category, name) \
+#define TRACE_EVENT_INSTANT0(category, name, scope) \
     INTERNAL_TRACE_EVENT_ADD(TRACE_EVENT_PHASE_INSTANT, \
-        category, name, TRACE_EVENT_FLAG_NONE)
-#define TRACE_EVENT_INSTANT1(category, name, arg1_name, arg1_val) \
+        category, name, TRACE_EVENT_FLAG_NONE | scope)
+#define TRACE_EVENT_INSTANT1(category, name, scope, arg1_name, arg1_val) \
     INTERNAL_TRACE_EVENT_ADD(TRACE_EVENT_PHASE_INSTANT, \
-        category, name, TRACE_EVENT_FLAG_NONE, arg1_name, arg1_val)
-#define TRACE_EVENT_INSTANT2(category, name, arg1_name, arg1_val, \
-        arg2_name, arg2_val) \
+        category, name, TRACE_EVENT_FLAG_NONE | scope, \
+        arg1_name, arg1_val)
+#define TRACE_EVENT_INSTANT2(category, name, scope, arg1_name, arg1_val, \
+                             arg2_name, arg2_val) \
     INTERNAL_TRACE_EVENT_ADD(TRACE_EVENT_PHASE_INSTANT, \
-        category, name, TRACE_EVENT_FLAG_NONE, arg1_name, arg1_val, \
-        arg2_name, arg2_val)
-#define TRACE_EVENT_COPY_INSTANT0(category, name) \
+        category, name, TRACE_EVENT_FLAG_NONE | scope, \
+        arg1_name, arg1_val, arg2_name, arg2_val)
+#define TRACE_EVENT_COPY_INSTANT0(category, name, scope) \
     INTERNAL_TRACE_EVENT_ADD(TRACE_EVENT_PHASE_INSTANT, \
-        category, name, TRACE_EVENT_FLAG_COPY)
-#define TRACE_EVENT_COPY_INSTANT1(category, name, arg1_name, arg1_val) \
+        category, name, TRACE_EVENT_FLAG_COPY | scope)
+#define TRACE_EVENT_COPY_INSTANT1(category, name, scope, \
+                                  arg1_name, arg1_val) \
     INTERNAL_TRACE_EVENT_ADD(TRACE_EVENT_PHASE_INSTANT, \
-        category, name, TRACE_EVENT_FLAG_COPY, arg1_name, arg1_val)
-#define TRACE_EVENT_COPY_INSTANT2(category, name, arg1_name, arg1_val, \
-        arg2_name, arg2_val) \
+        category, name, TRACE_EVENT_FLAG_COPY | scope, arg1_name, arg1_val)
+#define TRACE_EVENT_COPY_INSTANT2(category, name, scope, \
+                                  arg1_name, arg1_val, \
+                                  arg2_name, arg2_val) \
     INTERNAL_TRACE_EVENT_ADD(TRACE_EVENT_PHASE_INSTANT, \
-        category, name, TRACE_EVENT_FLAG_COPY, arg1_name, arg1_val, \
-        arg2_name, arg2_val)
+        category, name, TRACE_EVENT_FLAG_COPY | scope, \
+        arg1_name, arg1_val, arg2_name, arg2_val)
 
 // Sets the current sample state to the given category and name (both must be
 // constant strings). These states are intended for a sampling profiler.
@@ -694,7 +700,7 @@
 // Phase indicates the nature of an event entry. E.g. part of a begin/end pair.
 #define TRACE_EVENT_PHASE_BEGIN    ('B')
 #define TRACE_EVENT_PHASE_END      ('E')
-#define TRACE_EVENT_PHASE_INSTANT  ('I')
+#define TRACE_EVENT_PHASE_INSTANT  ('i')
 #define TRACE_EVENT_PHASE_ASYNC_BEGIN ('S')
 #define TRACE_EVENT_PHASE_ASYNC_STEP  ('T')
 #define TRACE_EVENT_PHASE_ASYNC_END   ('F')
@@ -708,10 +714,14 @@
 #define TRACE_EVENT_PHASE_DELETE_OBJECT ('D')
 
 // Flags for changing the behavior of TRACE_EVENT_API_ADD_TRACE_EVENT.
-#define TRACE_EVENT_FLAG_NONE        (static_cast<unsigned char>(0))
-#define TRACE_EVENT_FLAG_COPY        (static_cast<unsigned char>(1 << 0))
-#define TRACE_EVENT_FLAG_HAS_ID      (static_cast<unsigned char>(1 << 1))
-#define TRACE_EVENT_FLAG_MANGLE_ID   (static_cast<unsigned char>(1 << 2))
+#define TRACE_EVENT_FLAG_NONE         (static_cast<unsigned char>(0))
+#define TRACE_EVENT_FLAG_COPY         (static_cast<unsigned char>(1 << 0))
+#define TRACE_EVENT_FLAG_HAS_ID       (static_cast<unsigned char>(1 << 1))
+#define TRACE_EVENT_FLAG_MANGLE_ID    (static_cast<unsigned char>(1 << 2))
+#define TRACE_EVENT_FLAG_SCOPE_OFFSET (static_cast<unsigned char>(1 << 3))
+
+#define TRACE_EVENT_FLAG_SCOPE_MASK   (static_cast<unsigned char>( \
+    TRACE_EVENT_FLAG_SCOPE_OFFSET | (TRACE_EVENT_FLAG_SCOPE_OFFSET << 1)))
 
 // Type values for identifying types in the TraceValue union.
 #define TRACE_VALUE_TYPE_BOOL         (static_cast<unsigned char>(1))
@@ -721,6 +731,16 @@
 #define TRACE_VALUE_TYPE_POINTER      (static_cast<unsigned char>(5))
 #define TRACE_VALUE_TYPE_STRING       (static_cast<unsigned char>(6))
 #define TRACE_VALUE_TYPE_COPY_STRING  (static_cast<unsigned char>(7))
+
+// Enum reflecting the scope of an INSTANT event. Must fit within
+// TRACE_EVENT_FLAG_SCOPE_MASK.
+#define TRACE_EVENT_SCOPE_GLOBAL  (static_cast<unsigned char>(0 << 3))
+#define TRACE_EVENT_SCOPE_PROCESS (static_cast<unsigned char>(1 << 3))
+#define TRACE_EVENT_SCOPE_THREAD  (static_cast<unsigned char>(2 << 3))
+
+#define TRACE_EVENT_SCOPE_NAME_GLOBAL  ('g')
+#define TRACE_EVENT_SCOPE_NAME_PROCESS ('p')
+#define TRACE_EVENT_SCOPE_NAME_THREAD  ('t')
 
 namespace trace_event_internal {
 

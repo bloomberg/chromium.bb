@@ -197,7 +197,7 @@ class SGIVideoSyncProviderThreadShim
       if (glXWaitVideoSyncSGI(1, 0, &retrace_count) != 0)
         return;
 
-      TRACE_EVENT_INSTANT0("gpu", "vblank");
+      TRACE_EVENT_INSTANT0("gpu", "vblank", TRACE_EVENT_SCOPE_THREAD);
       now = base::TimeTicks::HighResNow();
 
       glXMakeCurrent(display_, 0, 0);
@@ -429,7 +429,8 @@ bool NativeViewGLSurfaceGLX::IsOffscreen() {
 bool NativeViewGLSurfaceGLX::SwapBuffers() {
   glXSwapBuffers(g_display, window_);
   // For latency_tests.cc:
-  UNSHIPPED_TRACE_EVENT_INSTANT0("test_gpu", "CompositorSwapBuffersComplete");
+  UNSHIPPED_TRACE_EVENT_INSTANT0("test_gpu", "CompositorSwapBuffersComplete",
+                                 TRACE_EVENT_SCOPE_THREAD);
   return true;
 }
 

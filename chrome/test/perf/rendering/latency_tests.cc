@@ -659,7 +659,8 @@ void LatencyTest::SendInput() {
   // so that it is between the top and bottom of the canvas.
   mouse_event.y = mouse_event.windowY = 5;
   mouse_event.type = WebKit::WebInputEvent::MouseMove;
-  TRACE_EVENT_INSTANT1("test_latency", "MouseEventBegin", "x", mouse_x_);
+  TRACE_EVENT_INSTANT1("test_latency", "MouseEventBegin",
+                       TRACE_EVENT_SCOPE_THREAD, "x", mouse_x_);
   rvh->ForwardMouseEvent(mouse_event);
 }
 

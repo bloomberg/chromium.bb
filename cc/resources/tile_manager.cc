@@ -370,8 +370,8 @@ void TileManager::ManageTiles() {
   // Assign gpu memory and determine what tiles need to be rasterized.
   AssignGpuMemoryToTiles();
 
-  TRACE_EVENT_INSTANT1("cc", "DidManage", "state",
-                       ValueToString(BasicStateAsValue()));
+  TRACE_EVENT_INSTANT1("cc", "DidManage", TRACE_EVENT_SCOPE_THREAD,
+                       "state", ValueToString(BasicStateAsValue()));
 
   // Finally, kick the rasterizer.
   DispatchMoreTasks();

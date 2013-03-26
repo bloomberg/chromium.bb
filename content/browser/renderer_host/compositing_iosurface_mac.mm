@@ -476,7 +476,8 @@ void CompositingIOSurfaceMac::DrawIOSurface(
   CGLFlushDrawable(cglContext_);
 
   // For latency_tests.cc:
-  UNSHIPPED_TRACE_EVENT_INSTANT0("test_gpu", "CompositorSwapBuffersComplete");
+  UNSHIPPED_TRACE_EVENT_INSTANT0("test_gpu", "CompositorSwapBuffersComplete",
+                                 TRACE_EVENT_SCOPE_THREAD);
 
   // Try to finish previous copy requests after flush to get better pipelining.
   std::vector<base::Closure> copy_done_callbacks;

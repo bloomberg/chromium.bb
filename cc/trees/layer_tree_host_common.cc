@@ -298,7 +298,8 @@ static bool SubtreeShouldRenderToSeparateSurface(
       num_descendants_that_draw_content > 0) {
     TRACE_EVENT_INSTANT0(
         "cc",
-        "LayerTreeHostCommon::SubtreeShouldRenderToSeparateSurface flattening");
+        "LayerTreeHostCommon::SubtreeShouldRenderToSeparateSurface flattening",
+        TRACE_EVENT_SCOPE_THREAD);
     return true;
   }
 
@@ -310,7 +311,8 @@ static bool SubtreeShouldRenderToSeparateSurface(
       !layer->draw_properties().descendants_can_clip_selves) {
     TRACE_EVENT_INSTANT0(
         "cc",
-        "LayerTreeHostCommon::SubtreeShouldRenderToSeparateSurface clipping");
+        "LayerTreeHostCommon::SubtreeShouldRenderToSeparateSurface clipping",
+        TRACE_EVENT_SCOPE_THREAD);
     return true;
   }
 
@@ -327,7 +329,8 @@ static bool SubtreeShouldRenderToSeparateSurface(
       at_least_two_layers_in_subtree_draw_content) {
     TRACE_EVENT_INSTANT0(
         "cc",
-        "LayerTreeHostCommon::SubtreeShouldRenderToSeparateSurface opacity");
+        "LayerTreeHostCommon::SubtreeShouldRenderToSeparateSurface opacity",
+        TRACE_EVENT_SCOPE_THREAD);
     return true;
   }
 

@@ -1673,9 +1673,11 @@ void RenderWidgetHostImpl::OnUpdateRect(
       GetProcess()->ReceivedBadMessage();
     } else {
       UNSHIPPED_TRACE_EVENT_INSTANT2("test_latency", "UpdateRect",
+          TRACE_EVENT_SCOPE_THREAD,
           "x+y", params.bitmap_rect.x() + params.bitmap_rect.y(),
           "color", 0xffffff & *static_cast<uint32*>(dib->memory()));
       UNSHIPPED_TRACE_EVENT_INSTANT1("test_latency", "UpdateRectWidth",
+          TRACE_EVENT_SCOPE_THREAD,
           "width", params.bitmap_rect.width());
 
       // Scroll the backing store.
@@ -1788,6 +1790,7 @@ void RenderWidgetHostImpl::DidUpdateBackingStore(
   delta = now - paint_start;
   UMA_HISTOGRAM_TIMES("MPArch.RWH_TotalPaintTime", delta);
   UNSHIPPED_TRACE_EVENT_INSTANT1("test_latency", "UpdateRectComplete",
+      TRACE_EVENT_SCOPE_THREAD,
       "x+y", params.bitmap_rect.x() + params.bitmap_rect.y());
 }
 
@@ -1874,7 +1877,8 @@ void RenderWidgetHostImpl::TickActiveSmoothScrollGesture() {
   TRACE_EVENT0("input", "RenderWidgetHostImpl::TickActiveSmoothScrollGesture");
   tick_active_smooth_scroll_gestures_task_posted_ = false;
   if (active_smooth_scroll_gestures_.empty()) {
-    TRACE_EVENT_INSTANT0("input", "EarlyOut_NoActiveScrollGesture");
+    TRACE_EVENT_INSTANT0("input", "EarlyOut_NoActiveScrollGesture",
+                         TRACE_EVENT_SCOPE_THREAD);
     return;
   }
 
@@ -1886,7 +1890,7 @@ void RenderWidgetHostImpl::TickActiveSmoothScrollGesture() {
       now;
   if (time_until_next_ideal_interval.InMilliseconds() > 0) {
     TRACE_EVENT_INSTANT1(
-        "input", "EarlyOut_TickedTooRecently",
+        "input", "EarlyOut_TickedTooRecently", TRACE_EVENT_SCOPE_THREAD,
         "delay", time_until_next_ideal_interval.InMilliseconds());
     // Post a task.
     tick_active_smooth_scroll_gestures_task_posted_ = true;
@@ -1927,7 +1931,7 @@ void RenderWidgetHostImpl::TickActiveSmoothScrollGesture() {
   if (!in_process_event_types_.empty())
     return;
 
-  TRACE_EVENT_INSTANT1("input", "PostTickTask",
+  TRACE_EVENT_INSTANT1("input", "PostTickTask", TRACE_EVENT_SCOPE_THREAD,
                        "delay", preferred_interval.InMilliseconds());
   tick_active_smooth_scroll_gestures_task_posted_ = true;
   MessageLoop::current()->PostDelayedTask(

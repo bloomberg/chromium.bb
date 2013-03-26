@@ -39,7 +39,7 @@ class TracingBrowserTest : public InProcessBrowserTest {
 
 void AddEvents(int num) {
   for (int i = 0; i < num; ++i)
-    TRACE_EVENT_INSTANT0(g_category, g_event);
+    TRACE_EVENT_INSTANT0(g_category, g_event, TRACE_EVENT_SCOPE_THREAD);
 }
 
 IN_PROC_BROWSER_TEST_F(TracingBrowserTest, BeginTracingWithWatch) {

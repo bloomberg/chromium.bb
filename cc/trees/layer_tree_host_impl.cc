@@ -238,25 +238,30 @@ bool LayerTreeHostImpl::CanDraw() {
   // NotifyIfCanDrawChanged test.
 
   if (!active_tree_->root_layer()) {
-    TRACE_EVENT_INSTANT0("cc", "LayerTreeHostImpl::CanDraw no root layer");
+    TRACE_EVENT_INSTANT0("cc", "LayerTreeHostImpl::CanDraw no root layer",
+                         TRACE_EVENT_SCOPE_THREAD);
     return false;
   }
   if (device_viewport_size_.IsEmpty()) {
-    TRACE_EVENT_INSTANT0("cc", "LayerTreeHostImpl::CanDraw empty viewport");
+    TRACE_EVENT_INSTANT0("cc", "LayerTreeHostImpl::CanDraw empty viewport",
+                         TRACE_EVENT_SCOPE_THREAD);
     return false;
   }
   if (active_tree_->ViewportSizeInvalid()) {
     TRACE_EVENT_INSTANT0(
-        "cc", "LayerTreeHostImpl::CanDraw viewport size recently changed");
+        "cc", "LayerTreeHostImpl::CanDraw viewport size recently changed",
+        TRACE_EVENT_SCOPE_THREAD);
     return false;
   }
   if (!renderer_) {
-    TRACE_EVENT_INSTANT0("cc", "LayerTreeHostImpl::CanDraw no renderer");
+    TRACE_EVENT_INSTANT0("cc", "LayerTreeHostImpl::CanDraw no renderer",
+                         TRACE_EVENT_SCOPE_THREAD);
     return false;
   }
   if (active_tree_->ContentsTexturesPurged()) {
     TRACE_EVENT_INSTANT0(
-        "cc", "LayerTreeHostImpl::CanDraw contents textures purged");
+        "cc", "LayerTreeHostImpl::CanDraw contents textures purged",
+        TRACE_EVENT_SCOPE_THREAD);
     return false;
   }
   return true;
@@ -974,7 +979,7 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame,
   }
 
   if (debug_state_.trace_all_rendered_frames) {
-    TRACE_EVENT_INSTANT1("cc.debug", "Frame",
+    TRACE_EVENT_INSTANT1("cc.debug", "Frame", TRACE_EVENT_SCOPE_THREAD,
                          "frame", ValueToString(FrameStateAsValue()));
   }
 
@@ -1908,7 +1913,8 @@ void LayerTreeHostImpl::AnimateScrollbarsRecursive(LayerImpl* layer,
       layer->scrollbar_animation_controller();
   if (scrollbar_controller && scrollbar_controller->Animate(time)) {
     TRACE_EVENT_INSTANT0(
-        "cc", "LayerTreeHostImpl::SetNeedsRedraw due to AnimateScrollbars");
+        "cc", "LayerTreeHostImpl::SetNeedsRedraw due to AnimateScrollbars",
+        TRACE_EVENT_SCOPE_THREAD);
     client_->SetNeedsRedrawOnImplThread();
   }
 
