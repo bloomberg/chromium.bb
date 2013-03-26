@@ -68,7 +68,10 @@ function buildTaskManager(areConflicting) {
                          {delayInMinutes: MAXIMUM_LOADED_TIME_MINUTES});
 
     // Start the oldest queued task, but don't remove it from the queue.
-    verify(stepName == null, 'tasks.startFirst: stepName is not null');
+    verify(
+        stepName == null,
+        'tasks.startFirst: stepName is not null: ' + stepName +
+        ', queue = ' + JSON.stringify(queue));
     var entry = queue[0];
     stepName = entry.name + '-initial';
     entry.task(finish);
@@ -111,7 +114,8 @@ function buildTaskManager(areConflicting) {
    * Completes the current task and starts the next queued task if available.
    */
   function finish() {
-    verify(queue.length >= 1, 'tasks.finish: The task queue is empty.');
+    verify(queue.length >= 1,
+           'tasks.finish: The task queue is empty; step = ' + stepName);
     queue.shift();
     stepName = null;
 

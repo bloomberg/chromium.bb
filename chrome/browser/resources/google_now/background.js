@@ -9,10 +9,12 @@
  * The Google Now event page gets Google Now cards from the server and shows
  * them as Chrome notifications.
  * The service performs periodic updating of Google Now cards.
- * Each updating of the cards includes 3 steps:
- * 1. Obtaining the location of the machine;
- * 2. Making a server request based on that location;
- * 3. Showing the received cards as notifications.
+ * Each updating of the cards includes 4 steps:
+ * 1. Processing requests for cards dismissals that are not yet sent to the
+ *    server;
+ * 2. Obtaining the location of the machine;
+ * 3. Making a server request based on that location;
+ * 4. Showing the received cards as notifications.
  */
 
 // TODO(vadimt): Use background permission to show notifications even when all
@@ -44,15 +46,27 @@ var HTTP_OK = 200;
  * Initial period for polling for Google Now Notifications cards to use when the
  * period from the server is not available.
  */
-var INITIAL_POLLING_PERIOD_SECONDS = 300;  // 5 minutes
+var INITIAL_POLLING_PERIOD_SECONDS = 5 * 60;  // 5 minutes
 
 /**
  * Maximal period for polling for Google Now Notifications cards to use when the
  * period from the server is not available.
  */
-var MAXIMUM_POLLING_PERIOD_SECONDS = 3600;  // 1 hour
+var MAXIMUM_POLLING_PERIOD_SECONDS = 60 * 60;  // 1 hour
 
 var UPDATE_NOTIFICATIONS_ALARM_NAME = 'UPDATE';
+
+/**
+ * Period for retrying the server request for dismissing cards.
+ */
+var RETRY_DISMISS_PERIOD_SECONDS = 60;  // 1 minute
+
+var RETRY_DISMISS_ALARM_NAME = 'RETRY_DISMISS';
+
+/**
+ * Time we keep dismissals after successful server dismiss requests.
+ */
+var DISMISS_RETENTION_TIME_MS = 20 * 60 * 1000;  // 20 minutes
 
 var storage = chrome.storage.local;
 
@@ -62,19 +76,29 @@ var storage = chrome.storage.local;
 var UPDATE_CARDS_TASK_NAME = 'update-cards';
 var DISMISS_CARD_TASK_NAME = 'dismiss-card';
 var CARD_CLICKED_TASK_NAME = 'card-clicked';
+var RETRY_DISMISS_TASK_NAME = 'retry-dismiss';
 
 /**
  * Checks if a new task can't be scheduled when another task is already
  * scheduled.
  * @param {string} newTaskName Name of the new task.
- * @param {string} queuedTaskName Name of the task in the queue.
+ * @param {string} scheduledTaskName Name of the scheduled task.
  * @return {boolean} Whether the new task conflicts with the existing task.
  */
-function areTasksConflicting(newTaskName, queuedTaskName) {
+function areTasksConflicting(newTaskName, scheduledTaskName) {
   if (newTaskName == UPDATE_CARDS_TASK_NAME &&
-      queuedTaskName == UPDATE_CARDS_TASK_NAME) {
+      scheduledTaskName == UPDATE_CARDS_TASK_NAME) {
     // If a card update is requested while an old update is still scheduled, we
     // don't need the new update.
+    return true;
+  }
+
+  if (newTaskName == RETRY_DISMISS_TASK_NAME &&
+      (scheduledTaskName == UPDATE_CARDS_TASK_NAME ||
+       scheduledTaskName == DISMISS_CARD_TASK_NAME ||
+       scheduledTaskName == RETRY_DISMISS_TASK_NAME)) {
+    // No need to schedule retry-dismiss action if another action that tries to
+    // send dismissals is scheduled.
     return true;
   }
 
@@ -127,15 +151,29 @@ function parseAndShowNotificationCards(response, callback) {
     return;
   }
 
-  tasks.debugSetStepName(
-      'parseAndShowNotificationCards-get-active-notifications');
-  storage.get('activeNotifications', function(items) {
+  tasks.debugSetStepName('parseAndShowNotificationCards-storage-get');
+  storage.get(['activeNotifications', 'recentDismissals'], function(items) {
+    // Build a set of non-expired recent dismissals. It will be used for
+    // client-side filtering of cards.
+    var updatedRecentDismissals = {};
+    var currentTimeMs = Date.now();
+
+    for (var notificationId in items.recentDismissals) {
+      if (currentTimeMs - items.recentDismissals[notificationId] <
+          DISMISS_RETENTION_TIME_MS) {
+        updatedRecentDismissals[notificationId] =
+            items.recentDismissals[notificationId];
+      }
+    }
+
     // Mark existing notifications that received an update in this server
     // response.
     for (var i = 0; i < cards.length; ++i) {
       var notificationId = cards[i].notificationId;
-      if (notificationId in items.activeNotifications)
+      if (!(notificationId in updatedRecentDismissals) &&
+          notificationId in items.activeNotifications) {
         items.activeNotifications[notificationId].hasUpdate = true;
+      }
     }
 
     // Delete notifications that didn't receive an update.
@@ -151,20 +189,26 @@ function parseAndShowNotificationCards(response, callback) {
     var notificationsUrlInfo = {};
 
     for (var i = 0; i < cards.length; ++i) {
-      try {
-        createNotification(cards[i], notificationsUrlInfo);
-      } catch (error) {
-        // TODO(vadimt): Report errors to the user.
+      var card = cards[i];
+      if (!(card.notificationId in updatedRecentDismissals)) {
+        try {
+          createNotification(card, notificationsUrlInfo);
+        } catch (error) {
+          // TODO(vadimt): Report errors to the user.
+        }
       }
     }
-    storage.set({activeNotifications: notificationsUrlInfo});
 
     scheduleNextUpdate(parsedResponse.expiration_timestamp_seconds);
 
     // Now that we got a valid response from the server, reset the retry period
     // to the initial value. This retry period will be used the next time we
     // fail to get the server-provided period.
-    storage.set({retryDelaySeconds: INITIAL_POLLING_PERIOD_SECONDS});
+    storage.set({
+      retryDelaySeconds: INITIAL_POLLING_PERIOD_SECONDS,
+      activeNotifications: notificationsUrlInfo,
+      recentDismissals: updatedRecentDismissals
+    });
     callback();
   });
 }
@@ -230,15 +274,100 @@ function updateNotificationsCards() {
                    MAXIMUM_POLLING_PERIOD_SECONDS);
       storage.set({retryDelaySeconds: newRetryDelaySeconds});
 
-      tasks.debugSetStepName('updateNotificationsCards-get-location');
-      navigator.geolocation.getCurrentPosition(
-          function(position) {
-            requestNotificationCardsWithLocation(position, callback);
-          },
-          function() {
-            requestNotificationCards('', callback);
-          });
+      processPendingDismissals(function(success) {
+        if (success) {
+          // The cards are requested only if there are no unsent dismissals.
+          tasks.debugSetStepName('updateNotificationsCards-get-location');
+          navigator.geolocation.getCurrentPosition(
+            function(position) {
+              requestNotificationCardsWithLocation(position, callback);
+            },
+            function() {
+              requestNotificationCards('', callback);
+            });
+        } else {
+          callback();
+        }
+      });
     });
+  });
+}
+
+/**
+ * Sends a server request to dismiss a card.
+ * @param {string} notificationId Unique identifier of the card.
+ * @param {function(boolean)} callbackBoolean Completion callback with 'success'
+ *     parameter.
+ */
+function requestCardDismissal(notificationId, callbackBoolean) {
+  // Send a dismiss request to the server.
+  var requestParameters = '?id=' + notificationId;
+  var request = new XMLHttpRequest();
+  request.responseType = 'text';
+  request.onloadend = function(event) {
+    callbackBoolean(request.status == HTTP_OK);
+  };
+
+  request.open(
+      'GET',
+      NOTIFICATION_CARDS_URL + '/dismiss' + requestParameters,
+      true);
+  tasks.debugSetStepName('requestCardDismissal-send-request');
+  request.send();
+}
+
+/**
+ * Tries to send dismiss requests for all pending dismissals.
+ * @param {function(boolean)} callbackBoolean Completion callback with 'success'
+ *     parameter. Success means that no pending dismissals are left.
+ */
+function processPendingDismissals(callbackBoolean) {
+  tasks.debugSetStepName('processPendingDismissals-storage-get');
+  storage.get(['pendingDismissals', 'recentDismissals'], function(items) {
+    var dismissalsChanged = false;
+
+    function onFinish(success) {
+      if (dismissalsChanged) {
+        storage.set({
+          pendingDismissals: items.pendingDismissals,
+          recentDismissals: items.recentDismissals
+        });
+      }
+      callbackBoolean(success);
+    }
+
+    function doProcessDismissals() {
+      if (items.pendingDismissals.length == 0) {
+        chrome.alarms.clear(RETRY_DISMISS_ALARM_NAME);
+        onFinish(true);
+        return;
+      }
+
+      // Send dismissal for the first card, and if successful, repeat
+      // recursively with the rest.
+      var notificationId = items.pendingDismissals[0];
+      requestCardDismissal(notificationId, function(success) {
+        if (success) {
+          dismissalsChanged = true;
+          items.pendingDismissals.splice(0, 1);
+          items.recentDismissals[notificationId] = Date.now();
+          doProcessDismissals();
+        } else {
+          onFinish(false);
+        }
+      });
+    }
+
+    doProcessDismissals();
+  });
+}
+
+/**
+ * Submits a task to send pending dismissals.
+ */
+function retryPendingDismissals() {
+  tasks.add(RETRY_DISMISS_TASK_NAME, function(callback) {
+    processPendingDismissals(function(success) { callback(); });
   });
 }
 
@@ -283,27 +412,28 @@ function onNotificationClosed(notificationId, byUser) {
     return;
 
   tasks.add(DISMISS_CARD_TASK_NAME, function(callback) {
+    // Schedule retrying dismissing until all dismissals go through.
+    // TODO(vadimt): Implement exponential backoff and unify it with getting
+    // cards.
+    var alarmInfo = {
+      delayInMinutes: RETRY_DISMISS_PERIOD_SECONDS / 60,
+      periodInMinutes: RETRY_DISMISS_PERIOD_SECONDS / 60
+    };
+
+    chrome.alarms.create(RETRY_DISMISS_ALARM_NAME, alarmInfo);
+
     // Deleting the notification in case it was re-added while this task was
-    // waiting in the queue.
+    // scheduled, waiting for execution.
     chrome.notifications.clear(
         notificationId,
         function() {});
 
-    // Send a dismiss request to the server.
-    var requestParameters = '?id=' + notificationId;
-    var request = new XMLHttpRequest();
-    request.responseType = 'text';
-    request.onloadend = function(event) {
-      callback();
-    };
-    // TODO(vadimt): If the request fails, for example, because there is no
-    // internet connection, do retry with exponential backoff.
-    request.open(
-      'GET',
-      NOTIFICATION_CARDS_URL + '/dismiss' + requestParameters,
-      true);
-    tasks.debugSetStepName('onNotificationClosed-send-request');
-    request.send();
+    tasks.debugSetStepName('onNotificationClosed-get-pendingDismissals');
+    storage.get('pendingDismissals', function(items) {
+      items.pendingDismissals.push(notificationId);
+      storage.set({pendingDismissals: items.pendingDismissals});
+      processPendingDismissals(function(success) { callback(); });
+    });
   });
 }
 
@@ -329,6 +459,7 @@ function scheduleNextUpdate(delaySeconds) {
 function initialize() {
   var initialStorage = {
     activeNotifications: {},
+    recentDismissals: {},
     retryDelaySeconds: INITIAL_POLLING_PERIOD_SECONDS
   };
   storage.set(initialStorage);
@@ -336,8 +467,10 @@ function initialize() {
 }
 
 chrome.runtime.onInstalled.addListener(function(details) {
-  if (details.reason != 'chrome_update')
+  if (details.reason != 'chrome_update') {
+    storage.set({pendingDismissals: []});
     initialize();
+  }
 });
 
 chrome.runtime.onStartup.addListener(function() {
@@ -347,6 +480,8 @@ chrome.runtime.onStartup.addListener(function() {
 chrome.alarms.onAlarm.addListener(function(alarm) {
   if (alarm.name == UPDATE_NOTIFICATIONS_ALARM_NAME)
     updateNotificationsCards();
+  else if (alarm.name == RETRY_DISMISS_ALARM_NAME)
+    retryPendingDismissals();
 });
 
 chrome.notifications.onClicked.addListener(
