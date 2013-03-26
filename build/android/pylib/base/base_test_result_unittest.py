@@ -53,8 +53,7 @@ class TestTestRunResults(unittest.TestCase):
     log_print = ('[FAIL] f1:\n'
                  'failure1\n'
                  '[CRASH] c1:\n'
-                 'crash1\n'
-                 '[UNKNOWN] u1:\n')
+                 'crash1')
     self.assertEqual(self.tr.GetLogs(), log_print)
 
   def testGetShortForm(self):

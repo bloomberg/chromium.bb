@@ -73,8 +73,10 @@ class TestRunResults(object):
     for test_type in ResultType.GetTypes():
       if test_type != ResultType.PASS:
         for t in sorted(self._GetType(test_type)):
-          s.append('[%s] %s:' % (test_type, t))
-          s.append(t.GetLog())
+          log = t.GetLog()
+          if log:
+            s.append('[%s] %s:' % (test_type, t))
+            s.append(log)
     return '\n'.join(s)
 
   def GetLongForm(self):
