@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/chromeos/keyboard_overlay_ui.h"
 
+#include "ash/display/display_manager.h"
+#include "ash/shell.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -191,7 +193,9 @@ struct I18nContentToMessage {
   { "keyboardOverlayReopenLastClosedTab",
     IDS_KEYBOARD_OVERLAY_REOPEN_LAST_CLOSED_TAB },
   { "keyboardOverlayReportIssue", IDS_KEYBOARD_OVERLAY_REPORT_ISSUE },
+  { "keyboardOverlayResetScreenZoom", IDS_KEYBOARD_OVERLAY_RESET_SCREEN_ZOOM },
   { "keyboardOverlayResetZoom", IDS_KEYBOARD_OVERLAY_RESET_ZOOM },
+  { "keyboardOverlayRotateScreen", IDS_KEYBOARD_OVERLAY_ROTATE_SCREEN },
   { "keyboardOverlaySave", IDS_KEYBOARD_OVERLAY_SAVE },
   { "keyboardOverlayScreenshotRegion",
     IDS_KEYBOARD_OVERLAY_SCREENSHOT_REGION },
@@ -225,6 +229,8 @@ struct I18nContentToMessage {
   { "keyboardOverlayWordMove", IDS_KEYBOARD_OVERLAY_WORD_MOVE },
   { "keyboardOverlayZoomIn", IDS_KEYBOARD_OVERLAY_ZOOM_IN },
   { "keyboardOverlayZoomOut", IDS_KEYBOARD_OVERLAY_ZOOM_OUT },
+  { "keyboardOverlayZoomScreenIn", IDS_KEYBOARD_OVERLAY_ZOOM_SCREEN_IN },
+  { "keyboardOverlayZoomScreenOut", IDS_KEYBOARD_OVERLAY_ZOOM_SCREEN_OUT },
 };
 
 std::string ModifierKeyToLabel(ModifierKey modifier) {
@@ -246,11 +252,15 @@ content::WebUIDataSource* CreateKeyboardOverlayUIHTMLSource() {
   }
 
   source->AddString("keyboardOverlayLearnMoreURL", UTF8ToUTF16(kLearnMoreURL));
-  const char* has_diamond_key_value =
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kHasChromeOSDiamondKey) ? "true" : "false";
-  source->AddString("keyboardOverlayHasChromeOSDiamondKey",
-                    has_diamond_key_value);
+  source->AddBoolean("keyboardOverlayHasChromeOSDiamondKey",
+                     CommandLine::ForCurrentProcess()->HasSwitch(
+                         switches::kHasChromeOSDiamondKey));
+  ash::Shell* shell = ash::Shell::GetInstance();
+  ash::internal::DisplayManager* display_manager = shell->display_manager();
+  source->AddBoolean("keyboardOverlayIsDisplayRotationEnabled",
+                     display_manager->IsDisplayRotationEnabled());
+  source->AddBoolean("keyboardOverlayIsDisplayUIScalingEnabled",
+                     display_manager->IsDisplayUIScalingEnabled());
   source->SetJsonPath("strings.js");
   source->SetUseJsonJSFormatV2();
   source->AddResourcePath("keyboard_overlay.js", IDR_KEYBOARD_OVERLAY_JS);

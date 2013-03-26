@@ -2990,8 +2990,14 @@ Battery full
   <message name="IDS_KEYBOARD_OVERLAY_REPORT_ISSUE" desc="The text in the keyboard overlay to explain the shortcut (report an issue).">
     Report issue
   </message>
+  <message name="IDS_KEYBOARD_OVERLAY_RESET_SCREEN_ZOOM" desc="The text in the keyboard overlay to explain the shortcut (reset the screen zoom).">
+    Reset screen zoom
+  </message>
   <message name="IDS_KEYBOARD_OVERLAY_RESET_ZOOM" desc="The text in the keyboard overlay to explain the shortcut.">
     Reset zoom
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_ROTATE_SCREEN" desc="The text in the keyboard overlay to explain the shortcut (rotate the screen).">
+    Rotate screen
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_SAVE" desc="The text in the keyboard overlay to explain the shortcut (save page as a file).">
     Save
@@ -3058,6 +3064,12 @@ Battery full
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_ZOOM_OUT" desc="The text in the keyboard overlay to explain the shortcut.">
     Zoom out
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_ZOOM_SCREEN_IN" desc="The text in the keyboard overlay to explain the shortcut (zoom in the screen).">
+    Zoom screen in
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_ZOOM_SCREEN_OUT" desc="The text in the keyboard overlay to explain the shortcut (zoom out the screen).">
+    Zoom screen out
   </message>
   <!-- END GENERATED KEYBOARD OVERLAY STRINGS -->
   <if expr="lang == 'ja'">
