@@ -104,9 +104,12 @@ class PresubmitOutput(object):
 
 
 class OutputApi(object):
-  """This class (more like a module) gets passed to presubmit scripts so that
-  they can specify various types of results.
+  """An instance of OutputApi gets passed to presubmit scripts so that they
+  can output various types of results.
   """
+  def __init__(self, is_committing):
+    self.is_committing = is_committing
+
   class PresubmitResult(object):
     """Base class for result objects."""
     fatal = False
@@ -162,6 +165,12 @@ class OutputApi(object):
   class PresubmitNotifyResult(PresubmitResult):
     """Just print something to the screen -- but it's not even a warning."""
     pass
+
+  def PresubmitPromptOrNotify(self, *args, **kwargs):
+    """Warn the user when uploading, but only notify if committing."""
+    if self.is_committing:
+      return self.PresubmitNotifyResult(*args, **kwargs)
+    return self.PresubmitPromptWarning(*args, **kwargs)
 
   class MailTextResult(PresubmitResult):
     """A warning that should be included in the review request email."""
@@ -1020,7 +1029,7 @@ class PresubmitExecuter(object):
     else:
       function_name = 'CheckChangeOnUpload'
     if function_name in context:
-      context['__args'] = (input_api, OutputApi())
+      context['__args'] = (input_api, OutputApi(self.committing))
       logging.debug('Running %s in %s' % (function_name, presubmit_path))
       result = eval(function_name + '(*__args)', context)
       logging.debug('Running %s done.' % function_name)

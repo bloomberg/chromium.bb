@@ -1275,16 +1275,18 @@ class InputApiUnittest(PresubmitTestsBase):
     input_api.ReadFile(fileobj, 'x')
 
 
-class OuputApiUnittest(PresubmitTestsBase):
+class OutputApiUnittest(PresubmitTestsBase):
   """Tests presubmit.OutputApi."""
+
   def testMembersChanged(self):
     self.mox.ReplayAll()
     members = [
       'MailTextResult', 'PresubmitAddReviewers', 'PresubmitError',
-      'PresubmitNotifyResult', 'PresubmitPromptWarning', 'PresubmitResult',
+      'PresubmitNotifyResult', 'PresubmitPromptWarning',
+      'PresubmitPromptOrNotify', 'PresubmitResult', 'is_committing',
     ]
     # If this test fails, you should add the relevant test.
-    self.compareMembers(presubmit.OutputApi(), members)
+    self.compareMembers(presubmit.OutputApi(False), members)
 
   def testOutputApiBasics(self):
     self.mox.ReplayAll()
@@ -1330,18 +1332,31 @@ class OuputApiUnittest(PresubmitTestsBase):
     self.failUnless(output.should_continue())
     self.failUnless(output.getvalue().count('???'))
 
-    output = presubmit.PresubmitOutput(input_stream=StringIO.StringIO('y'))
-    presubmit.OutputApi.PresubmitPromptWarning('???').handle(output)
-    output.prompt_yes_no('prompt: ')
-    self.failUnless(output.should_continue())
-    self.failUnless(output.getvalue().count('???'))
-
     output = presubmit.PresubmitOutput(input_stream=StringIO.StringIO('\n'))
     presubmit.OutputApi.PresubmitPromptWarning('???').handle(output)
     output.prompt_yes_no('prompt: ')
     self.failIf(output.should_continue())
     self.failUnless(output.getvalue().count('???'))
 
+    output_api = presubmit.OutputApi(True)
+    output = presubmit.PresubmitOutput(input_stream=StringIO.StringIO('y'))
+    output_api.PresubmitPromptOrNotify('???').handle(output)
+    output.prompt_yes_no('prompt: ')
+    self.failUnless(output.should_continue())
+    self.failUnless(output.getvalue().count('???'))
+
+    output_api = presubmit.OutputApi(False)
+    output = presubmit.PresubmitOutput(input_stream=StringIO.StringIO('y'))
+    output_api.PresubmitPromptOrNotify('???').handle(output)
+    self.failUnless(output.should_continue())
+    self.failUnless(output.getvalue().count('???'))
+
+    output_api = presubmit.OutputApi(True)
+    output = presubmit.PresubmitOutput(input_stream=StringIO.StringIO('\n'))
+    output_api.PresubmitPromptOrNotify('???').handle(output)
+    output.prompt_yes_no('prompt: ')
+    self.failIf(output.should_continue())
+    self.failUnless(output.getvalue().count('???'))
 
 class AffectedFileUnittest(PresubmitTestsBase):
   def testMembersChanged(self):
@@ -2003,7 +2018,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
   def testCheckSvnForCommonMimeTypes(self):
     self.mox.StubOutWithMock(presubmit_canned_checks, 'CheckSvnProperty')
     input_api = self.MockInputApi(None, False)
-    output_api = presubmit.OutputApi()
+    output_api = presubmit.OutputApi(False)
     A = lambda x: presubmit.AffectedFile(x, 'M', self.fake_root_dir)
     files = [
       A('a.pdf'), A('b.bmp'), A('c.gif'), A('d.png'), A('e.jpg'), A('f.jpe'),
