@@ -38,7 +38,9 @@ html.starting-up #dot-list {
 }
 
 .dot:only-of-type {
+  cursor: default;
   opacity: 0;
+  pointer-events: none;
 }
 
 .dot.small {
