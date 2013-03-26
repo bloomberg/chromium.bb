@@ -2265,6 +2265,7 @@ llvm-sb-configure() {
         --prefix=${installdir} \
         --host=nacl \
         --enable-targets=${targets} \
+        --disable-assertions \
         --enable-pic=no \
         --enable-static \
         --enable-shared=no \
