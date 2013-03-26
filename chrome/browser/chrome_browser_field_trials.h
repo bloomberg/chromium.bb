@@ -10,16 +10,16 @@
 #include "base/gtest_prod_util.h"
 #include "base/time.h"
 
+class PrefService;
+
 class ChromeBrowserFieldTrials {
  public:
   explicit ChromeBrowserFieldTrials(const CommandLine& command_line);
   ~ChromeBrowserFieldTrials();
 
   // Called by the browser main sequence to set up Field Trials for this client.
-  // |install_time| is the time this browser was installed (or the last time
-  // prefs was reset). |install_time| is used by trials that are only created
-  // for new installs of the browser.
-  void SetupFieldTrials(const base::Time& install_time);
+  // |local_state| is used to extract properties like install time.
+  void SetupFieldTrials(PrefService* local_state);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(BrowserMainTest,
@@ -30,7 +30,13 @@ class ChromeBrowserFieldTrials {
   // Sets up common desktop-only field trials.
   // Add an invocation of your field trial init function to this method, or to
   // SetupFieldTrials if it is for all platforms.
-  void SetupDesktopFieldTrials();
+  // |local_state| is needed by some other methods called from within this one.
+  void SetupDesktopFieldTrials(PrefService* local_state);
+
+  // This is not quite a field trial initialization, but it's an initialization
+  // that depends on a field trial, so why not? :-)
+  // |local_state| is needed to reset a local pref based on the chosen group.
+  void SetupAppLauncherFieldTrial(PrefService* local_state);
 
   // A/B test for spdy when --use-spdy not set.
   void SpdyFieldTrial();

@@ -218,7 +218,7 @@ cr.define('ntp', function() {
      *
      * @param {TilePage} page The page element.
      * @param {string} title The title of the tile page.
-     * @param {bool} titleIsEditable If true, the title can be changed.
+     * @param {boolean} titleIsEditable If true, the title can be changed.
      * @param {TilePage} opt_refNode Optional reference node to insert in front
      *     of.
      * When opt_refNode is falsey, |page| will just be appended to the end of
@@ -412,6 +412,7 @@ cr.define('ntp', function() {
         this.appsLoaded_ = true;
         cr.dispatchSimpleEvent(document, 'sectionready', true, true);
       }
+      this.updateAppLauncherPromoHiddenState_();
     },
 
     /**
@@ -475,6 +476,25 @@ cr.define('ntp', function() {
     },
 
     /**
+     * Callback invoked by chrome whenever the app launcher promo pref changes.
+     * @param {boolean} show Identifies if we should show or hide the promo.
+     */
+    appLauncherPromoPrefChangeCallback: function(show) {
+      loadTimeData.overrideValues({showAppLauncherPromo: show});
+      this.updateAppLauncherPromoHiddenState_();
+    },
+
+    /**
+     * Updates the hidden state of the app launcher promo based on the page
+     * shown and load data content.
+     */
+    updateAppLauncherPromoHiddenState_: function() {
+      $('app-launcher-promo').hidden =
+          !loadTimeData.getBoolean('showAppLauncherPromo') ||
+          this.shownPage != loadTimeData.getInteger('apps_page_id');
+    },
+
+    /**
      * Invoked whenever the pages in apps-page-list have changed so that
      * the Slider knows about the new elements.
      */
@@ -483,20 +503,33 @@ cr.define('ntp', function() {
                                         this.tilePages.length - 1));
       this.cardSlider.setCards(Array.prototype.slice.call(this.tilePages),
                                pageNo);
-      switch (this.shownPage) {
-        case loadTimeData.getInteger('apps_page_id'):
-          this.cardSlider.selectCardByValue(
-              this.appsPages[Math.min(this.shownPageIndex,
-                                      this.appsPages.length - 1)]);
-          break;
-        case loadTimeData.getInteger('most_visited_page_id'):
-          if (this.mostVisitedPage)
-            this.cardSlider.selectCardByValue(this.mostVisitedPage);
-          break;
-        case loadTimeData.getInteger('suggestions_page_id'):
-          if (this.suggestionsPage)
-            this.cardSlider.selectCardByValue(this.suggestionsPage);
-          break;
+      // The shownPage property was potentially saved from a previous webui that
+      // didn't have the same set of pages as the current one. So we cascade
+      // from suggestions, to most visited and then to apps because we can have
+      // an page with apps only (e.g., chrome://apps) or one with only the most
+      // visited, but not one with only suggestions. And we alwayd default to
+      // most visited first when previously shown page is not availabel anymore.
+      // If most visited isn't there either, we go to apps.
+      if (this.shownPage == loadTimeData.getInteger('suggestions_page_id')) {
+        if (this.suggestionsPage)
+          this.cardSlider.selectCardByValue(this.suggestionsPage);
+        else
+          this.shownPage = loadTimeData.getInteger('most_visited_page_id');
+      }
+      if (this.shownPage == loadTimeData.getInteger('most_visited_page_id')) {
+        if (this.mostVisitedPage)
+          this.cardSlider.selectCardByValue(this.mostVisitedPage);
+        else
+          this.shownPage = loadTimeData.getInteger('apps_page_id');
+      }
+      if (this.shownPage == loadTimeData.getInteger('apps_page_id') &&
+          loadTimeData.getBoolean('showApps')) {
+        this.cardSlider.selectCardByValue(
+            this.appsPages[Math.min(this.shownPageIndex,
+                                    this.appsPages.length - 1)]);
+      } else if (this.mostVisitedPage) {
+        this.shownPage = loadTimeData.getInteger('most_visited_page_id');
+        this.cardSlider.selectCardByValue(this.mostVisitedPage);
       }
     },
 
@@ -651,6 +684,7 @@ cr.define('ntp', function() {
       this.shownPage = shownPage;
       this.shownPageIndex = shownPageIndex;
       chrome.send('pageSelected', [this.shownPage, this.shownPageIndex]);
+      this.updateAppLauncherPromoHiddenState_();
     },
 
     /**

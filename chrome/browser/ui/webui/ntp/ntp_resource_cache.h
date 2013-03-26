@@ -75,7 +75,8 @@ class NTPResourceCache : public content::NotificationObserver,
   scoped_refptr<base::RefCountedMemory> new_tab_incognito_css_;
   scoped_refptr<base::RefCountedMemory> new_tab_css_;
   content::NotificationRegistrar registrar_;
-  PrefChangeRegistrar pref_change_registrar_;
+  PrefChangeRegistrar profile_pref_change_registrar_;
+  PrefChangeRegistrar local_state_pref_change_registrar_;
 #endif
 
   // Set based on platform_util::IsSwipeTrackingFromScrollEventsEnabled.

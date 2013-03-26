@@ -21,6 +21,9 @@ const char kAppLaunchForMetroRestart[] = "apps.app_launch_for_metro_restart";
 const char kAppLaunchForMetroRestartProfile[] =
     "apps.app_launch_for_metro_restart_profile";
 
+// A boolean identifying if we should show the app launcher promo or not.
+const char kShowAppLauncherPromo[] = "app_launcher.show_promo";
+
 }  // namespace prefs
 
 }  // namespace apps

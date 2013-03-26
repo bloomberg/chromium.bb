@@ -93,6 +93,9 @@ class AppLauncherHandler : public content::WebUIMessageHandler,
   // action for UMA.
   void HandleRecordAppLaunchByUrl(const base::ListValue* args);
 
+  // Callback for "stopShowingAppLauncherPromo" message.
+  void StopShowingAppLauncherPromo(const base::ListValue* args);
+
   // Callback for "closeNotification" message.
   void HandleNotificationClose(const base::ListValue* args);
 
@@ -151,7 +154,9 @@ class AppLauncherHandler : public content::WebUIMessageHandler,
   // Sends |highlight_app_id_| to the js.
   void SetAppToBeHighlighted();
 
-  void OnPreferenceChanged();
+  void OnExtensionPreferenceChanged();
+
+  void OnLocalStatePreferenceChanged();
 
   // The apps are represented in the extensions model, which
   // outlives us since it's owned by our containing profile.
@@ -162,7 +167,10 @@ class AppLauncherHandler : public content::WebUIMessageHandler,
   content::NotificationRegistrar registrar_;
 
   // Monitor extension preference changes so that the Web UI can be notified.
-  PrefChangeRegistrar pref_change_registrar_;
+  PrefChangeRegistrar extension_pref_change_registrar_;
+
+  // Monitor the local state pref to control the app launcher promo.
+  PrefChangeRegistrar local_state_pref_change_registrar_;
 
   // Used to show confirmation UI for uninstalling extensions in incognito mode.
   scoped_ptr<ExtensionUninstallDialog> extension_uninstall_dialog_;

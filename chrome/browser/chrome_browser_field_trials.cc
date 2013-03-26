@@ -6,8 +6,11 @@
 
 #include <string>
 
+#include "apps/field_trial_names.h"
+#include "apps/pref_names.h"
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
+#include "base/prefs/pref_service.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/strings/string_number_conversions.h"
@@ -26,6 +29,7 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/metrics/variations/uniformity_field_trials.h"
 #include "chrome/common/metrics/variations/variations_util.h"
+#include "chrome/common/pref_names.h"
 #include "net/socket/client_socket_pool_base.h"
 #include "net/spdy/spdy_session.h"
 #include "ui/base/layout.h"
@@ -56,16 +60,19 @@ ChromeBrowserFieldTrials::ChromeBrowserFieldTrials(
 ChromeBrowserFieldTrials::~ChromeBrowserFieldTrials() {
 }
 
-void ChromeBrowserFieldTrials::SetupFieldTrials(
-    const base::Time& install_time) {
+void ChromeBrowserFieldTrials::SetupFieldTrials(PrefService* local_state) {
+  const base::Time install_time = base::Time::FromTimeT(
+      local_state->GetInt64(prefs::kInstallDate));
+  DCHECK(!install_time.is_null());
   chrome_variations::SetupUniformityFieldTrials(install_time);
   SetUpSimpleCacheFieldTrial();
 #if !defined(OS_ANDROID)
-  SetupDesktopFieldTrials();
+  SetupDesktopFieldTrials(local_state);
 #endif  // defined(OS_ANDROID)
 }
 
-void ChromeBrowserFieldTrials::SetupDesktopFieldTrials() {
+void ChromeBrowserFieldTrials::SetupDesktopFieldTrials(
+    PrefService* local_state) {
   prerender::ConfigurePrefetchAndPrerender(parsed_command_line_);
   SpdyFieldTrial();
   WarmConnectionFieldTrial();
@@ -80,6 +87,15 @@ void ChromeBrowserFieldTrials::SetupDesktopFieldTrials() {
   OneClickSigninHelper::InitializeFieldTrial();
 #endif
   InstantiateDynamicTrials();
+  SetupAppLauncherFieldTrial(local_state);
+}
+
+void ChromeBrowserFieldTrials::SetupAppLauncherFieldTrial(
+    PrefService* local_state) {
+  if (base::FieldTrialList::FindFullName(apps::kLauncherPromoTrialName) ==
+      apps::kResetShowLauncherPromoPrefGroupName) {
+    local_state->SetBoolean(apps::prefs::kShowAppLauncherPromo, true);
+  }
 }
 
 // When --use-spdy not set, users will be in A/B test for spdy.

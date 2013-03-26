@@ -13,6 +13,7 @@ namespace prefs {
 extern const char kAppLauncherIsEnabled[];
 extern const char kAppLaunchForMetroRestart[];
 extern const char kAppLaunchForMetroRestartProfile[];
+extern const char kShowAppLauncherPromo[];
 
 }  // namespace prefs
 }  // namespace apps

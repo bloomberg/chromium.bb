@@ -11520,6 +11520,10 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
          desc="Title for accessibility of the 'page-switcher-start' or 'page-switcher-end' button when switching between pages which have the same title">
         More <ph name="PAGE_TITLE">$1<ex>Apps</ex></ph>
       </message>
+      <message name="IDS_NEW_TAB_PAGE_APPS_PROMO_TITLE"
+         desc="Title for the app launcher promo box shown on apps pages.">
+        Discover the Chrome App Launcher
+      </message>
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_NEW_TAB_APP_OPTIONS"
                  desc="Text for the context menu item that takes the user to the options of an app. (In sentence case.)">

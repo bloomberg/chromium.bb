@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "apps/pref_names.h"
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -15,6 +16,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -164,6 +166,14 @@ void AppLauncherHandler::RegisterMessages() {
   registrar_.Add(this, chrome::NOTIFICATION_APP_INSTALLED_TO_NTP,
       content::Source<WebContents>(web_ui()->GetWebContents()));
 
+  // Some tests don't have a local state.
+  if (g_browser_process->local_state()) {
+    local_state_pref_change_registrar_.Init(g_browser_process->local_state());
+    local_state_pref_change_registrar_.Add(
+        apps::prefs::kShowAppLauncherPromo,
+        base::Bind(&AppLauncherHandler::OnLocalStatePreferenceChanged,
+                   base::Unretained(this)));
+  }
   web_ui()->RegisterMessageCallback("getApps",
       base::Bind(&AppLauncherHandler::HandleGetApps,
                  base::Unretained(this)));
@@ -193,6 +203,9 @@ void AppLauncherHandler::RegisterMessages() {
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("recordAppLaunchByURL",
       base::Bind(&AppLauncherHandler::HandleRecordAppLaunchByUrl,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("stopShowingAppLauncherPromo",
+      base::Bind(&AppLauncherHandler::StopShowingAppLauncherPromo,
                  base::Unretained(this)));
 }
 
@@ -391,12 +404,13 @@ void AppLauncherHandler::HandleGetApps(const ListValue* args) {
   // the apps as they change.
   if (!has_loaded_apps_) {
     base::Closure callback = base::Bind(
-        &AppLauncherHandler::OnPreferenceChanged,
+        &AppLauncherHandler::OnExtensionPreferenceChanged,
         base::Unretained(this));
-    pref_change_registrar_.Init(
+    extension_pref_change_registrar_.Init(
         extension_service_->extension_prefs()->pref_service());
-    pref_change_registrar_.Add(ExtensionPrefs::kExtensionsPref, callback);
-    pref_change_registrar_.Add(prefs::kNtpAppPageNames, callback);
+    extension_pref_change_registrar_.Add(ExtensionPrefs::kExtensionsPref,
+                                         callback);
+    extension_pref_change_registrar_.Add(prefs::kNtpAppPageNames, callback);
 
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
         content::Source<Profile>(profile));
@@ -662,6 +676,12 @@ void AppLauncherHandler::HandleRecordAppLaunchByUrl(
   RecordAppLaunchByUrl(Profile::FromWebUI(web_ui()), url, bucket);
 }
 
+void AppLauncherHandler::StopShowingAppLauncherPromo(
+    const base::ListValue* args) {
+  g_browser_process->local_state()->SetBoolean(
+      apps::prefs::kShowAppLauncherPromo, false);
+}
+
 void AppLauncherHandler::OnFaviconForApp(
     scoped_ptr<AppInstallInfo> install_info,
     const history::FaviconImageResult& image_result) {
@@ -696,10 +716,17 @@ void AppLauncherHandler::SetAppToBeHighlighted() {
   highlight_app_id_.clear();
 }
 
-void AppLauncherHandler::OnPreferenceChanged() {
+void AppLauncherHandler::OnExtensionPreferenceChanged() {
   DictionaryValue dictionary;
   FillAppDictionary(&dictionary);
   web_ui()->CallJavascriptFunction("ntp.appsPrefChangeCallback", dictionary);
+}
+
+void AppLauncherHandler::OnLocalStatePreferenceChanged() {
+  web_ui()->CallJavascriptFunction(
+      "ntp.appLauncherPromoPrefChangeCallback",
+      base::FundamentalValue(g_browser_process->local_state()->GetBoolean(
+          apps::prefs::kShowAppLauncherPromo)));
 }
 
 // static

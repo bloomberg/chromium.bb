@@ -8,9 +8,12 @@
 #include <vector>
 
 #include "apps/app_launcher.h"
+#include "apps/field_trial_names.h"
+#include "apps/pref_names.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/metrics/field_trial.h"
 #include "base/prefs/pref_service.h"
 #include "base/string16.h"
 #include "base/stringprintf.h"
@@ -180,12 +183,20 @@ NTPResourceCache::NTPResourceCache(Profile* profile)
                                       base::Unretained(this));
 
   // Watch for pref changes that cause us to need to invalidate the HTML cache.
-  pref_change_registrar_.Init(profile_->GetPrefs());
-  pref_change_registrar_.Add(prefs::kSyncAcknowledgedSyncTypes, callback);
-  pref_change_registrar_.Add(prefs::kShowBookmarkBar, callback);
-  pref_change_registrar_.Add(prefs::kNtpShownPage, callback);
-  pref_change_registrar_.Add(prefs::kSyncPromoShowNTPBubble, callback);
-  pref_change_registrar_.Add(prefs::kHideWebStoreIcon, callback);
+  profile_pref_change_registrar_.Init(profile_->GetPrefs());
+  profile_pref_change_registrar_.Add(prefs::kSyncAcknowledgedSyncTypes,
+                                     callback);
+  profile_pref_change_registrar_.Add(prefs::kShowBookmarkBar, callback);
+  profile_pref_change_registrar_.Add(prefs::kNtpShownPage, callback);
+  profile_pref_change_registrar_.Add(prefs::kSyncPromoShowNTPBubble, callback);
+  profile_pref_change_registrar_.Add(prefs::kHideWebStoreIcon, callback);
+
+  // Some tests don't have a local state.
+  if (g_browser_process->local_state()) {
+    local_state_pref_change_registrar_.Init(g_browser_process->local_state());
+    local_state_pref_change_registrar_.Add(apps::prefs::kShowAppLauncherPromo,
+                                           callback);
+  }
 }
 
 NTPResourceCache::~NTPResourceCache() {}
@@ -321,6 +332,7 @@ void NTPResourceCache::CreateNewTabHTML() {
   // Show the profile name in the title and most visited labels if the current
   // profile is not the default.
   PrefService* prefs = profile_->GetPrefs();
+  PrefService* local_state = g_browser_process->local_state();
   DictionaryValue load_time_data;
   load_time_data.SetBoolean("bookmarkbarattached",
       prefs->GetBoolean(prefs::kShowBookmarkBar));
@@ -328,6 +340,14 @@ void NTPResourceCache::CreateNewTabHTML() {
       ThemeServiceFactory::GetForProfile(profile_)->HasCustomImage(
           IDR_THEME_NTP_ATTRIBUTION));
   load_time_data.SetBoolean("showMostvisited", should_show_most_visited_page_);
+  std::string app_launcher_promo_group_name =
+      base::FieldTrialList::FindFullName(apps::kLauncherPromoTrialName);
+  bool show_app_launcher_promo =
+      local_state->GetBoolean(apps::prefs::kShowAppLauncherPromo) &&
+      (app_launcher_promo_group_name == apps::kShowLauncherPromoOnceGroupName ||
+       app_launcher_promo_group_name ==
+          apps::kResetShowLauncherPromoPrefGroupName);
+  load_time_data.SetBoolean("showAppLauncherPromo", show_app_launcher_promo);
   load_time_data.SetBoolean("showRecentlyClosed",
       should_show_recently_closed_menu_);
   load_time_data.SetString("title",
@@ -406,6 +426,8 @@ void NTPResourceCache::CreateNewTabHTML() {
       l10n_util::GetStringUTF16(IDS_NEW_TAB_PAGE_SWITCHER_CHANGE_TITLE));
   load_time_data.SetString("page_switcher_same_title",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_PAGE_SWITCHER_SAME_TITLE));
+  load_time_data.SetString("appsPromoTitle",
+      l10n_util::GetStringUTF16(IDS_NEW_TAB_PAGE_APPS_PROMO_TITLE));
   // On Mac OS X 10.7+, horizontal scrolling can be treated as a back or
   // forward gesture. Pass through a flag that indicates whether or not that
   // feature is enabled.

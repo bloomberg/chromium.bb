@@ -127,8 +127,13 @@ cr.define('ntp', function() {
     sectionsToWaitFor = 0;
     if (loadTimeData.getBoolean('showMostvisited'))
       sectionsToWaitFor++;
-    if (loadTimeData.getBoolean('showApps'))
+    if (loadTimeData.getBoolean('showApps')) {
       sectionsToWaitFor++;
+      if (loadTimeData.getBoolean('showAppLauncherPromo')) {
+        $('app-launcher-promo-close-button').addEventListener('click',
+            function() { chrome.send('stopShowingAppLauncherPromo'); });
+      }
+    }
     if (loadTimeData.getBoolean('isDiscoveryInNTPEnabled'))
       sectionsToWaitFor++;
     measureNavDots();
@@ -627,6 +632,11 @@ cr.define('ntp', function() {
     return newTabView.appsPrefChangedCallback.apply(newTabView, arguments);
   }
 
+  function appLauncherPromoPrefChangeCallback() {
+    return newTabView.appLauncherPromoPrefChangeCallback.apply(newTabView,
+                                                               arguments);
+  }
+
   function appsReordered() {
     return newTabView.appsReordered.apply(newTabView, arguments);
   }
@@ -670,6 +680,7 @@ cr.define('ntp', function() {
     appMoved: appMoved,
     appRemoved: appRemoved,
     appsPrefChangeCallback: appsPrefChangeCallback,
+    appLauncherPromoPrefChangeCallback: appLauncherPromoPrefChangeCallback,
     enterRearrangeMode: enterRearrangeMode,
     getAppsCallback: getAppsCallback,
     getAppsPageIndex: getAppsPageIndex,

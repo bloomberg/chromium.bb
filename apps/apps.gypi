@@ -34,6 +34,8 @@
         'app_shim/app_shim_host_mac.h',
         'app_shim/app_shim_host_manager_mac.h',
         'app_shim/app_shim_host_manager_mac.mm',
+        'field_trial_names.cc',
+        'field_trial_names.h',
         'pref_names.cc',
         'pref_names.h',
         'prefs.cc',

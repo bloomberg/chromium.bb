@@ -20,11 +20,15 @@ void RegisterPrefs(PrefRegistrySimple* registry) {
   // GetIsAppLauncherEnabled().
   registry->RegisterBooleanPref(prefs::kAppLauncherIsEnabled,
                                 MaybeIsAppLauncherEnabled());
-
 #if defined(OS_WIN)
   registry->RegisterStringPref(prefs::kAppLaunchForMetroRestart, "");
   registry->RegisterStringPref(prefs::kAppLaunchForMetroRestartProfile, "");
 #endif
+
+  // Identifies whether we should show the app launcher promo or not.
+  // Now that a field trial also controls the showing, so the promo won't show
+  // unless the pref is set AND the field trial is set to a proper group.
+  registry->RegisterBooleanPref(prefs::kShowAppLauncherPromo, true);
 }
 
 }  // namespace apps
