@@ -55,7 +55,6 @@
 #include "chromeos/dbus/mock_update_engine_client.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/test/mock_notification_observer.h"
-#include "content/public/test/test_utils.h"
 #include "crypto/rsa_private_key.h"
 #include "google_apis/gaia/mock_url_fetcher_factory.h"
 #include "grit/generated_resources.h"
@@ -474,14 +473,13 @@ class ExistingUserControllerPublicSessionTest
         GetBrokerForAccount(kAutoLoginUsername)->core()->store();
     if (!store->has_policy()) {
       policy::MockCloudPolicyStoreObserver observer;
-      scoped_refptr<content::MessageLoopRunner> runner =
-          new content::MessageLoopRunner;
+
+      base::RunLoop loop;
       store->AddObserver(&observer);
       EXPECT_CALL(observer, OnStoreLoaded(store))
           .Times(1)
-          .WillOnce(InvokeWithoutArgs(runner.get(),
-                                      &content::MessageLoopRunner::Quit));
-      runner->Run();
+          .WillOnce(InvokeWithoutArgs(&loop, &base::RunLoop::Quit));
+      loop.Run();
       store->RemoveObserver(&observer);
     }
   }
@@ -566,17 +564,15 @@ class ExistingUserControllerPublicSessionTest
         .Times(0);
   }
 
-  scoped_refptr<content::MessageLoopRunner> CreateSettingsObserverRunLoop(
+  scoped_ptr<base::RunLoop> CreateSettingsObserverRunLoop(
       content::MockNotificationObserver& observer, const char* setting) {
-    scoped_refptr<content::MessageLoopRunner> runner =
-      new content::MessageLoopRunner;
+    base::RunLoop* loop = new base::RunLoop;
     EXPECT_CALL(observer, Observe(chrome::NOTIFICATION_SYSTEM_SETTING_CHANGED,
                                   _, HasDetails(setting)))
         .Times(1)
-        .WillOnce(InvokeWithoutArgs(runner.get(),
-                                    &content::MessageLoopRunner::Quit));
+        .WillOnce(InvokeWithoutArgs(loop, &base::RunLoop::Quit));
     CrosSettings::Get()->AddSettingsObserver(setting, &observer);
-    return runner;
+    return make_scoped_ptr(loop);
   }
 
   void RefreshDevicePolicy() {
@@ -605,14 +601,14 @@ class ExistingUserControllerPublicSessionTest
 
     // If both settings have changed we need to wait for both to
     // propagate, so check the new values against the old ones.
-    scoped_refptr<content::MessageLoopRunner> runner1 = NULL;
+    scoped_ptr<base::RunLoop> runner1;
     if (!proto.has_device_local_accounts() ||
         !proto.device_local_accounts().has_auto_login_id() ||
         proto.device_local_accounts().auto_login_id() != username) {
       runner1 = CreateSettingsObserverRunLoop(
           observer, kAccountsPrefDeviceLocalAccountAutoLoginId);
     }
-    scoped_refptr<content::MessageLoopRunner> runner2 = NULL;
+    scoped_ptr<base::RunLoop> runner2;
     if (!proto.has_device_local_accounts() ||
         !proto.device_local_accounts().has_auto_login_delay() ||
         proto.device_local_accounts().auto_login_delay() != delay) {
@@ -708,13 +704,12 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
   // the timer starts when it should.
 
   // Wait for the timer to fire.
-  scoped_refptr<content::MessageLoopRunner> runner
-    = new content::MessageLoopRunner;
-  base::OneShotTimer<content::MessageLoopRunner> timer;
+  base::RunLoop runner;
+  base::OneShotTimer<base::RunLoop> timer;
   timer.Start(FROM_HERE,
               base::TimeDelta::FromMilliseconds(kAutoLoginShortDelay + 1),
-              base::Bind(&content::MessageLoopRunner::Quit, runner));
-  runner->Run();
+              runner.QuitClosure());
+  runner.Run();
 
   // Wait for login tasks to complete.
   content::RunAllPendingInMessageLoop();
