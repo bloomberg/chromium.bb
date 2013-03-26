@@ -68,9 +68,9 @@ TEST_F(OmniboxViewTest, GetClipboardText) {
   }
   EXPECT_EQ(kSpace1, OmniboxView::GetClipboardText());
 
-  // TODO(shess): Aura hits a DCHECK() at CommitToClipboard() if
+  // TODO(shess): ChromeOS hits a DCHECK() at CommitToClipboard() if
   // ObjectMap is empty.  http://crbug.com/133848
-#if !defined(USE_AURA)
+#if !defined(OS_CHROMEOS)
   // Does an empty clipboard get empty text?
   clipboard->WriteObjects(ui::Clipboard::BUFFER_STANDARD,
                           ui::Clipboard::ObjectMap(),
