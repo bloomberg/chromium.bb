@@ -312,6 +312,9 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'third_party/npapi/npspy/extern/java': [
         'GPL (unversioned/unknown version)',
     ],
+    'third_party/openmax_dl/dl' : [
+        'Khronos Group',
+    ],
     'third_party/openssl': [  # http://crbug.com/98451
         'UNKNOWN',
     ],

@@ -577,6 +577,10 @@ sub parselicense($) {
         $license = $license . "with libtool exception";
     }
 
+    if ($licensetext =~ /These materials are protected by copyright laws and contain material proprietary to the Khronos Group, Inc\. You may use these materials for implementing Khronos specifications, without altering or removing any trademark, copyright or other notice from the specification/) {
+        $license = $license . "Khronos Group";
+    }
+
     $license = "UNKNOWN" if (!length($license));
 
     # Remove trailing spaces.
