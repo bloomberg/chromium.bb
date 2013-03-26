@@ -512,7 +512,7 @@ void FrameMaximizeButton::Snap(const SnapSizer& snap_sizer) {
                                     ash::UMA_MAXIMIZE_BUTTON_MAXIMIZE_RIGHT);
       // Get the bounds in screen coordinates for restore purposes.
       gfx::Rect restore = widget->GetWindowBoundsInScreen();
-      if (widget->IsMaximized()) {
+      if (widget->IsMaximized() || widget->IsFullscreen()) {
         // In case of maximized we have a restore boundary.
         DCHECK(ash::GetRestoreBoundsInScreen(widget->GetNativeWindow()));
         // If it was maximized we need to recover the old restore set.
