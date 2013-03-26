@@ -441,7 +441,7 @@ need to be translated for each locale.-->
         Settings
       </message>
       <message name="IDS_MESSAGE_CENTER_SETTINGS_DIALOG_DESCRIPTION" desc="The label to describe the settings dialog.">
-        Set notification permissions for apps and extensions
+        Manage notification permissions for apps, extensions and websites.
       </message>
       <message name="IDS_MESSAGE_CENTER_SETTINGS" desc="The menu entry or button for visiting the appropriate settings page.">
         Settings...
