@@ -14,6 +14,7 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "chrome/test/chromedriver/basic_types.h"
+#include "chrome/test/chromedriver/chrome/geoposition.h"
 
 namespace base {
 class DictionaryValue;
@@ -58,6 +59,7 @@ struct Session {
   int page_load_timeout;
   int script_timeout;
   std::string prompt_text;
+  scoped_ptr<Geoposition> overridden_geoposition;
   const scoped_ptr<base::DictionaryValue> capabilities;
 
  private:

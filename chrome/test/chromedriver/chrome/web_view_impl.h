@@ -22,6 +22,7 @@ class Value;
 class DevToolsClient;
 class DomTracker;
 class FrameTracker;
+class GeolocationOverrideManager;
 struct KeyEvent;
 struct MouseEvent;
 class NavigationTracker;
@@ -67,6 +68,7 @@ class WebViewImpl : public WebView {
       const std::string& frame_id, bool* is_pending) OVERRIDE;
   virtual Status GetMainFrame(std::string* out_frame) OVERRIDE;
   virtual JavaScriptDialogManager* GetJavaScriptDialogManager() OVERRIDE;
+  virtual Status OverrideGeolocation(const Geoposition& geoposition) OVERRIDE;
   virtual Status CaptureScreenshot(std::string* screenshot) OVERRIDE;
 
  private:
@@ -75,6 +77,7 @@ class WebViewImpl : public WebView {
   scoped_ptr<FrameTracker> frame_tracker_;
   scoped_ptr<NavigationTracker> navigation_tracker_;
   scoped_ptr<JavaScriptDialogManager> dialog_manager_;
+  scoped_ptr<GeolocationOverrideManager> geolocation_override_manager_;
   scoped_ptr<DevToolsClient> client_;
   WebViewDelegate* delegate_;
   CloserFunc closer_func_;

@@ -85,6 +85,10 @@ JavaScriptDialogManager* StubWebView::GetJavaScriptDialogManager() {
   return NULL;
 }
 
+Status StubWebView::OverrideGeolocation(const Geoposition& geoposition) {
+  return Status(kOk);
+}
+
 Status StubWebView::CaptureScreenshot(std::string* screenshot) {
   return Status(kOk);
 }

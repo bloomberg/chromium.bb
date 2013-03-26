@@ -16,6 +16,7 @@
 #include "base/values.h"
 #include "chrome/test/chromedriver/basic_types.h"
 #include "chrome/test/chromedriver/chrome/chrome.h"
+#include "chrome/test/chromedriver/chrome/geoposition.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/chrome/web_view.h"
 #include "chrome/test/chromedriver/session.h"
@@ -215,6 +216,20 @@ Status ExecuteSwitchToWindow(
 
   if (!found)
     return Status(kNoSuchWindow);
+
+  if (session->overridden_geoposition) {
+    WebView* web_view;
+    status = session->chrome->GetWebViewById(web_view_id, &web_view);
+    if (status.IsError())
+      return status;
+    status = web_view->ConnectIfNecessary();
+    if (status.IsError())
+      return status;
+    status = web_view->OverrideGeolocation(*session->overridden_geoposition);
+    if (status.IsError())
+      return status;
+  }
+
   session->window = web_view_id;
   session->SwitchToTopFrame();
   session->mouse_position = WebPoint(0, 0);
@@ -346,5 +361,24 @@ Status ExecuteIsLoading(
   if (status.IsError())
     return status;
   value->reset(new base::FundamentalValue(is_pending));
+  return Status(kOk);
+}
+
+Status ExecuteGetLocation(
+    Session* session,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  if (!session->overridden_geoposition) {
+    return Status(kUnknownError,
+                  "Location must be set before it can be retrieved");
+  }
+  base::DictionaryValue location;
+  location.SetDouble("latitude", session->overridden_geoposition->latitude);
+  location.SetDouble("longitude", session->overridden_geoposition->longitude);
+  location.SetDouble("accuracy", session->overridden_geoposition->accuracy);
+  // Set a dummy altitude to make WebDriver clients happy.
+  // https://code.google.com/p/chromedriver/issues/detail?id=281
+  location.SetDouble("altitude", 0);
+  value->reset(location.DeepCopy());
   return Status(kOk);
 }

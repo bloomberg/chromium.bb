@@ -15,6 +15,7 @@ class ListValue;
 class Value;
 }
 
+struct Geoposition;
 class JavaScriptDialogManager;
 struct KeyEvent;
 struct MouseEvent;
@@ -91,6 +92,9 @@ class WebView {
 
   // Returns the JavaScriptDialogManager. Never null.
   virtual JavaScriptDialogManager* GetJavaScriptDialogManager() = 0;
+
+  // Overrides normal geolocation with a given geoposition.
+  virtual Status OverrideGeolocation(const Geoposition& geoposition) = 0;
 
   // Captures the visible portions of the web view as a base64-encoded PNG.
   virtual Status CaptureScreenshot(std::string* screenshot) = 0;

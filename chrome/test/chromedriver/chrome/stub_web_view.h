@@ -55,6 +55,7 @@ class StubWebView : public WebView {
       const std::string& frame_id, bool* is_pending) OVERRIDE;
   virtual Status GetMainFrame(std::string* frame_id) OVERRIDE;
   virtual JavaScriptDialogManager* GetJavaScriptDialogManager() OVERRIDE;
+  virtual Status OverrideGeolocation(const Geoposition& geoposition) OVERRIDE;
   virtual Status CaptureScreenshot(std::string* screenshot) OVERRIDE;
 
  private:

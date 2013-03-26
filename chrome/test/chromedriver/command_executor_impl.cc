@@ -172,6 +172,8 @@ void CommandExecutorImpl::Init() {
       base::Bind(&ExecuteDeleteCookie);
   window_command_map[CommandNames::kDeleteAllCookies] =
       base::Bind(&ExecuteDeleteAllCookies);
+  window_command_map[CommandNames::kSetLocation] =
+      base::Bind(&ExecuteSetLocation);
 
   // Commands which require a session.
   typedef std::map<std::string, SessionCommand> SessionCommandMap;
@@ -212,6 +214,8 @@ void CommandExecutorImpl::Init() {
       base::Bind(&ExecuteDismissAlert);
   session_command_map[CommandNames::kIsLoading] =
       base::Bind(&ExecuteIsLoading);
+  session_command_map[CommandNames::kGetLocation] =
+      base::Bind(&ExecuteGetLocation);
 
   // Wrap SessionCommand into non-session Command.
   base::Callback<Status(

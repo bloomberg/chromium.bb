@@ -336,7 +336,9 @@ bool HttpHandler::HandleWebDriverCommand(
   body_params.Set("value", value.release());
   body_params.SetString("sessionId", out_session_id);
   std::string body;
-  base::JSONWriter::Write(&body_params, &body);
+  base::JSONWriter::WriteWithOptions(
+      &body_params, base::JSONWriter::OPTIONS_OMIT_DOUBLE_TYPE_PRESERVATION,
+      &body);
   *response = HttpResponse(HttpResponse::kOk);
   response->SetMimeType("application/json; charset=utf-8");
   response->set_body(body);

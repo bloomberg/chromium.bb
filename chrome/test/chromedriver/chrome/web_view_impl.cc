@@ -12,6 +12,7 @@
 #include "chrome/test/chromedriver/chrome/devtools_client_impl.h"
 #include "chrome/test/chromedriver/chrome/dom_tracker.h"
 #include "chrome/test/chromedriver/chrome/frame_tracker.h"
+#include "chrome/test/chromedriver/chrome/geolocation_override_manager.h"
 #include "chrome/test/chromedriver/chrome/javascript_dialog_manager.h"
 #include "chrome/test/chromedriver/chrome/js.h"
 #include "chrome/test/chromedriver/chrome/navigation_tracker.h"
@@ -99,6 +100,7 @@ WebViewImpl::WebViewImpl(const std::string& id,
       frame_tracker_(new FrameTracker(client)),
       navigation_tracker_(new NavigationTracker(client)),
       dialog_manager_(new JavaScriptDialogManager(client)),
+      geolocation_override_manager_(new GeolocationOverrideManager(client)),
       client_(client),
       delegate_(delegate),
       closer_func_(closer_func) {}
@@ -278,6 +280,10 @@ Status WebViewImpl::GetMainFrame(std::string* out_frame) {
 
 JavaScriptDialogManager* WebViewImpl::GetJavaScriptDialogManager() {
   return dialog_manager_.get();
+}
+
+Status WebViewImpl::OverrideGeolocation(const Geoposition& geoposition) {
+  return geolocation_override_manager_->OverrideGeolocation(geoposition);
 }
 
 Status WebViewImpl::CaptureScreenshot(std::string* screenshot) {

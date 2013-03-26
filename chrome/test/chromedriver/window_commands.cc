@@ -14,6 +14,7 @@
 #include "base/values.h"
 #include "chrome/test/chromedriver/basic_types.h"
 #include "chrome/test/chromedriver/chrome/chrome.h"
+#include "chrome/test/chromedriver/chrome/geoposition.h"
 #include "chrome/test/chromedriver/chrome/js.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/chrome/ui_events.h"
@@ -769,4 +770,30 @@ Status ExecuteDeleteAllCookies(
   }
 
   return Status(kOk);
+}
+
+Status ExecuteSetLocation(
+    Session* session,
+    WebView* web_view,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  const base::DictionaryValue* location = NULL;
+  Geoposition geoposition;
+  if (!params.GetDictionary("location", &location) ||
+      !location->GetDouble("latitude", &geoposition.latitude) ||
+      !location->GetDouble("longitude", &geoposition.longitude))
+    return Status(kUnknownError, "missing or invalid 'location'");
+  if (location->HasKey("accuracy") &&
+      !location->GetDouble("accuracy", &geoposition.accuracy)) {
+    return Status(kUnknownError, "invalid 'accuracy'");
+  } else {
+    // |accuracy| is not part of the WebDriver spec yet, so if it is not given
+    // default to 100 meters accuracy.
+    geoposition.accuracy = 100;
+  }
+
+  Status status = web_view->OverrideGeolocation(geoposition);
+  if (status.IsOk())
+    session->overridden_geoposition.reset(new Geoposition(geoposition));
+  return status;
 }
