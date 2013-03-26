@@ -1,5 +1,5 @@
 {
-  "x-version": 3,
+  "x-version": 4,
   "google-talk": {
     "mime_types": [
     ],
@@ -54,18 +54,18 @@
     ],
     "versions": [
       {
-        "version": "6.0.410",
+        "version": "6.0.430",
         "status": "requires_authorization",
-        "comment": "Java SE 6 Update 41. '410' is not a typo."
+        "comment": "Java SE 6 Update 43. '430' is not a typo."
       },
       {
         "version": "7",
         "status": "out_of_date"
       },
       {
-        "version": "10.15",
+        "version": "10.17",
         "status": "requires_authorization",
-        "comment": "Java SE 7u15"
+        "comment": "Java SE 7u17"
       }
     ],
     "lang": "en-US",
