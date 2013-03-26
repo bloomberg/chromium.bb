@@ -1722,11 +1722,16 @@ void PluginInstance::UpdateLayer() {
     DCHECK(bound_graphics_3d_.get());
     texture_layer_ = cc::TextureLayer::Create(this);
     web_layer_.reset(new webkit::WebLayerImpl(texture_layer_));
-    if (fullscreen_container_)
+    if (fullscreen_container_) {
       fullscreen_container_->SetLayer(web_layer_.get());
-    else
+      // Ignore transparency in fullscreen, since that's what Flash always
+      // wants to do, and that lets it not recreate a context if
+      // wmode=transparent was specified.
+      texture_layer_->SetContentsOpaque(true);
+    } else {
       container_->setWebLayer(web_layer_.get());
-    texture_layer_->SetContentsOpaque(bound_graphics_3d_->IsOpaque());
+      texture_layer_->SetContentsOpaque(bound_graphics_3d_->IsOpaque());
+    }
   }
   layer_bound_to_fullscreen_ = !!fullscreen_container_;
 }
