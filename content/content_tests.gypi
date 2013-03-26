@@ -743,6 +743,7 @@
             'browser/renderer_host/clipboard_browsertest.cc',
             'browser/renderer_host/render_view_host_browsertest.cc',
             'browser/renderer_host/render_view_host_manager_browsertest.cc',
+            'browser/renderer_host/render_widget_host_browsertest.cc',
             'browser/renderer_host/render_widget_host_view_browsertest.cc',
             'browser/renderer_host/render_widget_host_view_win_browsertest.cc',
             'browser/security_exploit_browsertest.cc',
