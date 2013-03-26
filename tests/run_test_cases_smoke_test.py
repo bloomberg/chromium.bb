@@ -129,7 +129,8 @@ class RunTestCases(unittest.TestCase):
     self.assertEqual([], lines)
     self.assertEqual('', err)
 
-  def _check_results_file(self, fail, flaky, success, test_cases, duration):
+  def _check_results_file(
+      self, fail, flaky, success, missing, test_cases, duration):
     self.assertTrue(os.path.exists(self.filename))
 
     with open(self.filename) as f:
@@ -148,6 +149,7 @@ class RunTestCases(unittest.TestCase):
       self.assertEqual(actual['duration'], 0)
     self.assertEqual(fail, actual['fail'])
     self.assertEqual(flaky, actual['flaky'])
+    self.assertEqual(missing, actual['missing'])
     self.assertEqual(success, actual['success'])
     self.assertEqual(len(test_cases), len(actual['test_cases']))
     for (entry_name, entry_count) in test_cases:
@@ -188,6 +190,7 @@ class RunTestCases(unittest.TestCase):
     self._check_results_file(
         fail=[],
         flaky=[],
+        missing=[],
         success=sorted([u'Foo.Bar1', u'Foo.Bar2', u'Foo.Bar/3']),
         test_cases=test_cases,
         duration=True)
@@ -238,6 +241,7 @@ class RunTestCases(unittest.TestCase):
         self._check_results_file(
             fail=[],
             flaky=[],
+            missing=[],
             success=sorted([u'Foo.Bar1', u'Foo.Bar2', u'Foo.Bar/3']),
             test_cases=test_cases,
             duration=True)
@@ -361,6 +365,7 @@ class RunTestCases(unittest.TestCase):
     self._check_results_file(
         fail=['Baz.Fail'],
         flaky=[],
+        missing=[],
         success=[u'Foo.Bar1', u'Foo.Bar2', u'Foo.Bar3'],
         test_cases=test_cases,
         duration=True)
@@ -430,6 +435,7 @@ class RunTestCases(unittest.TestCase):
     self._check_results_file(
         fail=['Baz.Fail'],
         flaky=[],
+        missing=[],
         success=[u'Foo.Bar1', u'Foo.Bar2', u'Foo.Bar3'],
         test_cases=test_cases,
         duration=True)
@@ -499,6 +505,10 @@ class RunTestCases(unittest.TestCase):
     self._check_results_file(
         fail=[u'Foo.Bar1', u'Foo.Bar4', u'Foo.Bar5'],
         flaky=[],
+        missing=[
+          u'Foo.Bar2', u'Foo.Bar3', u'Foo.Bar6', u'Foo.Bar7', u'Foo.Bar8',
+          u'Foo.Bar9',
+        ],
         success=[],
         test_cases=test_cases,
         duration=True)
@@ -536,6 +546,54 @@ class RunTestCases(unittest.TestCase):
         os.path.join(ROOT_DIR, 'tests', 'gtest_fake', 'expected.xml'))
     self.assertEqual(expected_xml, actual_xml)
 
+  def test_missing(self):
+    out, err, return_code = RunTest(
+        [
+          '--clusters', '10',
+          '--jobs', '1',
+          '--result', self.filename,
+          os.path.join(
+            ROOT_DIR, 'tests', 'gtest_fake', 'gtest_fake_missing.py'),
+          self.tempdirpath,
+        ])
+
+    self.assertEqual(1, return_code)
+
+    expected_out_re = [
+      r'\[1\/4\]   \d\.\d\ds Foo\.Bar1 \(\d+\.\d+s\)',
+      re.escape('[ RUN      ] Foo.Bar1'),
+      re.escape('[  FAILED  ] Foo.Bar1 (100 ms)'),
+      '',
+      r'\[2/4\]   \d\.\d\ds Foo\.Bar3 \(\d+\.\d+s\) *',
+      r'\[3/4\]   \d\.\d\ds Foo\.Bar1 \(\d+\.\d+s\) \- retry \#1',
+      re.escape('[ RUN      ] Foo.Bar1'),
+      re.escape('[       OK ] Foo.Bar1 (100 ms)'),
+      '',
+      re.escape('Flaky tests:'),
+      re.escape('  Foo.Bar1 (tried 2 times)'),
+      re.escape('Missing tests:'),
+      re.escape('  Foo.Bar2'),
+      re.escape('Summary:'),
+      re.escape('  Success:    1  33.33% ') + r' +\d+\.\d\ds',
+      re.escape('    Flaky:    1  33.33% ') + r' +\d+\.\d\ds',
+      re.escape('     Fail:    0   0.00%    0.00s'),
+      re.escape('  Missing:    1  33.33%    0.00s'),
+      r'  \d+\.\d\ds Done running 2 tests with 3 executions. '
+        '\d+\.\d\d test/s',
+    ]
+    self._check_results(expected_out_re, out, err)
+    test_cases = [
+        ('Foo.Bar1', 2),
+        ('Foo.Bar3', 1)
+    ]
+    self._check_results_file(
+        fail=[],
+        flaky=[u'Foo.Bar1'],
+        missing=[u'Foo.Bar2'],
+        success=[u'Foo.Bar3'],
+        test_cases=test_cases,
+        duration=True)
+
   def test_gtest_filter(self):
     out, err, return_code = RunTest(
         [
@@ -564,6 +622,7 @@ class RunTestCases(unittest.TestCase):
     self._check_results_file(
         fail=[],
         flaky=[],
+        missing=[],
         success=sorted([u'Foo.Bar1', u'Foo.Bar/3']),
         test_cases=test_cases,
         duration=True)
@@ -582,6 +641,7 @@ class RunTestCases(unittest.TestCase):
     self._check_results_file(
         fail=[],
         flaky=[],
+        missing=[],
         success=[],
         test_cases=[],
         duration=False)

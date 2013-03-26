@@ -1277,7 +1277,7 @@ def run_test_cases(
     else:
       # The test never ran.
       assert False, items
-  missing = list(set(test_cases) - set(success) - set(flaky) - set(fail))
+  missing = sorted(set(test_cases) - set(success) - set(flaky) - set(fail))
 
   saved = {
     'test_cases': results,
@@ -1307,6 +1307,11 @@ def run_test_cases(
     for test_case in sorted(fail):
       print('  %s' % test_case)
 
+  if not decider.should_stop() and missing:
+    print('Missing tests:')
+    for test_case in sorted(missing):
+      print('  %s' % test_case)
+
   print('Summary:')
   if decider.should_stop():
     print('  ** STOPPED EARLY due to high failure rate **')
@@ -1331,7 +1336,7 @@ def run_test_cases(
       len(results),
       nb_runs,
       nb_runs / duration if duration else 0))
-  return int(bool(fail)) or decider.stopped
+  return int(bool(fail) or decider.stopped or bool(missing))
 
 
 class OptionParserWithLogging(optparse.OptionParser):
