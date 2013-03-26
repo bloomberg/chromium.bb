@@ -1057,6 +1057,20 @@ void ImmediateInterpreter::UpdateCurrentGestureType(
             current_gesture_type_ = GetThreeFingerGestureType(fingers);
             if (current_gesture_type_ == kGestureTypeSwipe)
               last_swipe_timestamp_ = hwstate.timestamp;
+
+            if (current_gesture_type_ == kGestureTypeNull) {
+              // Not a 3F gesture, try to interpret as 2F gesture if the
+              // bottommost contact is inside the dampened zone.
+              GetGesturingFingersCompare compare;
+              std::sort(fingers, fingers + 3, compare);
+              bool potential_two_finger_gesture =
+                  FingerInDampenedZone(*fingers[2]) &&
+                  TwoFingersGesturing(*fingers[0], *fingers[1]);
+              if (potential_two_finger_gesture) {
+                current_gesture_type_ =
+                    GetTwoFingerGestureType(*fingers[0], *fingers[1]);
+              }
+            }
           } else {
             Log("TODO(adlr): support > 3 finger gestures.");
           }
