@@ -14,8 +14,6 @@ Apk = lambda name : Suite(False, name)
 
 # Add new suites here before upgrading them to the stable list below.
 EXPERIMENTAL_TEST_SUITES = [
-    Exe('sandbox_linux_unittests'),
-    Exe('breakpad_unittests'),
 ]
 
 # Do not modify this list without approval of an android owner.
@@ -38,4 +36,6 @@ STABLE_TEST_SUITES = [
     Apk('unit_tests'),
     Apk('webkit_compositor_bindings_unittests'),
     Apk('webkit_unit_tests'),
+    Exe('breakpad_unittests'),
+    Exe('sandbox_linux_unittests'),
 ]
