@@ -4,6 +4,7 @@
 
 #include "cc/test/layer_tree_test.h"
 
+#include "base/command_line.h"
 #include "cc/animation/animation.h"
 #include "cc/animation/animation_registrar.h"
 #include "cc/animation/layer_animation_controller.h"
@@ -311,9 +312,16 @@ LayerTreeTest::LayerTreeTest()
       schedule_when_set_visible_true_(false),
       started_(false),
       ended_(false),
+      timeout_seconds_(0),
       impl_thread_(NULL),
       weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   main_thread_weak_ptr_ = weak_factory_.GetWeakPtr();
+
+  // Tests should timeout quickly unless --cc-layer-tree-test-no-timeout was
+  // specified (for running in a debugger).
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (!command_line->HasSwitch("cc-layer-tree-test-no-timeout"))
+    timeout_seconds_ = 5;
 }
 
 LayerTreeTest::~LayerTreeTest() {}
@@ -527,9 +535,14 @@ void LayerTreeTest::RunTest(bool threaded) {
 
   main_ccthread_->PostTask(
       base::Bind(&LayerTreeTest::DoBeginTest, base::Unretained(this)));
-  timeout_.Reset(base::Bind(&LayerTreeTest::Timeout, base::Unretained(this)));
-  main_ccthread_->PostDelayedTask(timeout_.callback(),
-                                  base::TimeDelta::FromSeconds(5));
+
+  if (timeout_seconds_) {
+    timeout_.Reset(base::Bind(&LayerTreeTest::Timeout, base::Unretained(this)));
+    main_ccthread_->PostDelayedTask(
+        timeout_.callback(),
+        base::TimeDelta::FromSeconds(timeout_seconds_));
+  }
+
   MessageLoop::current()->Run();
   if (layer_tree_host_ && layer_tree_host_->root_layer())
     layer_tree_host_->root_layer()->SetLayerTreeHost(NULL);

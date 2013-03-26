@@ -156,6 +156,8 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   bool started_;
   bool ended_;
 
+  int timeout_seconds_;
+
   scoped_ptr<Thread> main_ccthread_;
   scoped_ptr<base::Thread> impl_thread_;
   base::CancelableClosure timeout_;
