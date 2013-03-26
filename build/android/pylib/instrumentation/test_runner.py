@@ -206,6 +206,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
       if self.adb.SetJavaAssertsEnabled(enable=not self.disable_assertions):
         self.adb.Reboot(full_reboot=False)
 
+    self.CopyTestFilesOnce()
     # We give different default value to launch HTTP server based on shard index
     # because it may have race condition when multiple processes are trying to
     # launch lighttpd with same port at same time.
@@ -218,7 +219,6 @@ class TestRunner(base_test_runner.BaseTestRunner):
       port_pairs.append(http_server_ports)
       self.forwarder = forwarder.Forwarder(self.adb, self.build_type)
       self.forwarder.Run(port_pairs, self.tool, '127.0.0.1')
-    self.CopyTestFilesOnce()
     self.flags.AddFlags(['--enable-test-intents'])
 
   def TearDown(self):
