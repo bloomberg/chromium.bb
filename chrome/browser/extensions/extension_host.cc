@@ -163,6 +163,15 @@ ExtensionHost::~ExtensionHost() {
     UMA_HISTOGRAM_LONG_TIMES("Extensions.EventPageActiveTime",
                              since_created_.Elapsed());
   }
+  // Clear the extension's renderer process out from any WebContents
+  // that might have it in their back history.
+  // TODO(jyasskin): Remove this hack by making extension reloading
+  // wait for renderer shutdown.
+  content::NotificationService::current()->Notify(
+      content::NOTIFICATION_RENDERER_PROCESS_CLOSING,
+      content::Source<content::RenderProcessHost>(render_process_host()),
+      content::NotificationService::NoDetails());
+
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
       content::Source<Profile>(profile_),
