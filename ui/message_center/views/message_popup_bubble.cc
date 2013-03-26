@@ -79,7 +79,7 @@ class MessagePopupBubble::AutocloseTimer {
   AutocloseTimer(Notification* notification, MessagePopupBubble* bubble);
 
   void Start();
-
+  void Restart();
   void Suspend();
 
  private:
@@ -111,10 +111,16 @@ void MessagePopupBubble::AutocloseTimer::Start() {
                           base::Unretained(bubble_), id_));
 }
 
+void MessagePopupBubble::AutocloseTimer::Restart() {
+  delay_ -= base::Time::Now() - start_time_;
+  if (delay_ < base::TimeDelta())
+    bubble_->OnAutoClose(id_);
+  else
+    Start();
+}
+
 void MessagePopupBubble::AutocloseTimer::Suspend() {
-  base::TimeDelta passed = base::Time::Now() - start_time_;
-  delay_ = std::max(base::TimeDelta(), delay_ - passed);
-  timer_.Reset();
+  timer_.Stop();
 }
 
 // MessagePopupBubble
@@ -142,6 +148,7 @@ void MessagePopupBubble::InitializeContents(
   set_bubble_view(new_bubble_view);
   contents_view_ = new PopupBubbleContentsView(message_center());
   bubble_view()->AddChildView(contents_view_);
+  bubble_view()->set_notify_enter_exit_on_child(true);
   UpdateBubbleView();
 }
 
@@ -199,7 +206,7 @@ void MessagePopupBubble::OnMouseEnteredView() {
 void MessagePopupBubble::OnMouseExitedView() {
   for (std::map<std::string, AutocloseTimer*>::iterator iter =
            autoclose_timers_.begin(); iter != autoclose_timers_.end(); ++iter) {
-    iter->second->Start();
+    iter->second->Restart();
   }
 }
 

@@ -72,17 +72,15 @@ class ToastContentsView : public views::WidgetDelegateView {
   }
 
   void SuspendTimer() {
-    timer_.Reset();
+    timer_.Stop();
   }
 
   void RestartTimer() {
-    base::TimeDelta passed = base::Time::Now() - start_time_;
-    if (passed > delay_) {
+    delay_ -= base::Time::Now() - start_time_;
+    if (delay_ < base::TimeDelta())
       GetWidget()->Close();
-    } else {
-      delay_ -= passed;
+    else
       StartTimer();
-    }
   }
 
   void StartTimer() {
