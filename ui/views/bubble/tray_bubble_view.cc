@@ -364,17 +364,26 @@ void TrayBubbleView::GetWidgetHitTestMask(gfx::Path* mask) const {
 }
 
 gfx::Size TrayBubbleView::GetPreferredSize() {
-  gfx::Size size = BubbleDelegateView::GetPreferredSize();
-  int height = size.height();
-  if (params_.max_height != 0 && height > params_.max_height)
-    height = params_.max_height;
-  return gfx::Size(preferred_width_, height);
+  return gfx::Size(preferred_width_, GetHeightForWidth(preferred_width_));
 }
 
 gfx::Size TrayBubbleView::GetMaximumSize() {
   gfx::Size size = GetPreferredSize();
   size.set_width(params_.max_width);
   return size;
+}
+
+int TrayBubbleView::GetHeightForWidth(int width) {
+  int height = GetInsets().height();
+  width = std::max(width - GetInsets().width(), 0);
+  for (int i = 0; i < child_count(); ++i) {
+    View* child = child_at(i);
+    if (child->visible())
+      height += child->GetHeightForWidth(width);
+  }
+
+  return (params_.max_height != 0) ?
+      std::min(height, params_.max_height) : height;
 }
 
 void TrayBubbleView::OnMouseEntered(const ui::MouseEvent& event) {
