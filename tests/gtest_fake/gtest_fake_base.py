@@ -7,6 +7,9 @@
 http://code.google.com/p/googletest/
 """
 
+import optparse
+import sys
+
 
 def get_test_output_inner(test_name, failed, duration='100'):
   fixture, case = test_name.split('.', 1)
@@ -46,3 +49,33 @@ def get_footer(number, total):
       'number': number,
       'total': total,
     }
+
+
+def parse_args(all_tests, need_arg):
+  """Creates a generic google-test like python script."""
+  parser = optparse.OptionParser()
+  parser.add_option('--gtest_list_tests', action='store_true')
+  parser.add_option('--gtest_print_time', action='store_true')
+  parser.add_option('--gtest_filter')
+  options, args = parser.parse_args()
+  if need_arg != len(args):
+    parser.error(
+        'Expected %d arguments, got %d; %s' % (
+          need_arg, len(args), ' '.join(args)))
+
+  if options.gtest_list_tests:
+    for fixture, cases in all_tests.iteritems():
+      print '%s.' % fixture
+      for case in cases:
+        print '  ' + case
+    print '  YOU HAVE 2 tests with ignored failures (FAILS prefix)'
+    print ''
+    sys.exit(0)
+
+  if options.gtest_filter:
+    print 'Note: Google Test filter = %s\n' % options.gtest_filter
+    test_cases = options.gtest_filter.split(':')
+  else:
+    test_cases = sum((
+        ['%s.%s' % (f, c) for c in all_tests[f]] for f in all_tests), [])
+  return sorted(test_cases), args

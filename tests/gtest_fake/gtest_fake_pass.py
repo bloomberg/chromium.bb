@@ -8,53 +8,22 @@
 http://code.google.com/p/googletest/
 """
 
-import optparse
 import sys
 
 import gtest_fake_base
 
 
 TESTS = {
-  'Foo': sorted(
-    [
-      'Bar1',
-      'Bar2',
-      'Bar/3',
-    ]),
+  'Foo': ['Bar1', 'Bar2', 'Bar/3'],
 }
-TOTAL = sum(len(v) for v in TESTS.itervalues())
 
 
 def main():
-  parser = optparse.OptionParser()
-  parser.add_option('--gtest_list_tests', action='store_true')
-  parser.add_option('--gtest_print_time', action='store_true')
-  parser.add_option('--gtest_filter')
-  options, args = parser.parse_args()
-  if args:
-    parser.error('Failed to process args %s' % args)
+  test_cases, _ = gtest_fake_base.parse_args(TESTS, 0)
 
-  if options.gtest_list_tests:
-    for fixture, cases in TESTS.iteritems():
-      print '%s.' % fixture
-      for case in cases:
-        print '  ' + case
-    print '  YOU HAVE 2 tests with ignored failures (FAILS prefix)'
-    print ''
-    return 0
-
-  if options.gtest_filter:
-    # Simulate running one test.
-    print 'Note: Google Test filter = %s\n' % options.gtest_filter
-    for i in options.gtest_filter.split(':'):
-      print gtest_fake_base.get_test_output(i, False)
-    print gtest_fake_base.get_footer(1, 1)
-    return 0
-
-  for fixture, cases in TESTS.iteritems():
-    for case in cases:
-      print gtest_fake_base.get_test_output('%s.%s' % (fixture, case), False)
-  print gtest_fake_base.get_footer(TOTAL, TOTAL)
+  for test_case in test_cases:
+    print gtest_fake_base.get_test_output(test_case, False)
+  print gtest_fake_base.get_footer(len(test_cases), len(test_cases))
   return 0
 
 
