@@ -22,14 +22,92 @@ import dfa_traversal
 import validator
 
 
-BUNDLE_SIZE = 32
-
 FWAIT = 0x9b
 NOP = 0x90
 
 
+REGISTER_NAMES = {
+    validator.REG_RAX: '%rax',
+    validator.REG_RCX: '%rcx',
+    validator.REG_RDX: '%rdx',
+    validator.REG_RBX: '%rbx',
+    validator.REG_RSP: '%rsp',
+    validator.REG_RBP: '%rbp',
+    validator.REG_RSI: '%rsi',
+    validator.REG_RDI: '%rdi',
+    validator.REG_R8: '%r8',
+    validator.REG_R9: '%r9',
+    validator.REG_R10: '%r10',
+    validator.REG_R11: '%r11',
+    validator.REG_R12: '%r12',
+    validator.REG_R13: '%r13',
+    validator.REG_R14: '%r14',
+    validator.REG_R15: '%r15'}
+
+
 def IsRexPrefix(byte):
   return 0x40 <= byte < 0x50
+
+
+def Cached(f):
+  cache = {}
+  def CachedF(*args):
+    args = tuple(args)
+    if args not in cache:
+      cache[args] = f(*args)
+    return cache[args]
+  return CachedF
+
+
+class AssemblerError(Exception):
+  pass
+
+
+@Cached
+def Assemble(bitness, asm):
+  # Instead of parsing object files properly, I put two distinct sequences,
+  # begin_mark and end_mark, around code of interest.
+  # I neglect possibility that they occur somewhere else in the file.
+  begin_mark = 'begin mark>>>'
+  end_mark = '<<<end mark'
+
+  try:
+    obj_file = tempfile.NamedTemporaryFile(
+        mode='w+b',
+        suffix='.o',
+        delete=False)
+
+    proc = subprocess.Popen(
+        [options.gas,
+         '--%s' % bitness,
+         '-o', obj_file.name],
+        stdin=subprocess.PIPE)
+
+    asm_content = ''
+    for c in begin_mark:
+      asm_content += '.byte %d\n' % ord(c)
+    asm_content += '%s\n' % asm
+    for c in end_mark:
+      asm_content += '.byte %d\n' % ord(c)
+
+    proc.communicate(asm_content)
+    return_code = proc.wait()
+    if return_code != 0:
+      raise AssemblerError("Can't assemble '%s'" % asm)
+
+    data = obj_file.read()
+    obj_file.close()
+
+    # Extract the data between begin_mark and end_mark.
+    begin = data.find(begin_mark)
+    assert begin != -1, 'begin_mark is missing'
+    begin += len(begin_mark)
+    end = data.find(end_mark, begin)
+    assert end != -1, 'end_mark is missing'
+    return map(ord, data[begin:end])
+
+  finally:
+    os.remove(obj_file.name)
 
 
 class OldValidator(object):
@@ -81,7 +159,7 @@ class OldValidator(object):
       m = re.match(r'VALIDATOR: ([0-9a-f]+): (.*)$', line, re.IGNORECASE)
       assert m is not None, (line, hex_content)
       error_offset = int(m.group(1), 16)
-      rejected_bundles.add(error_offset // BUNDLE_SIZE)
+      rejected_bundles.add(error_offset // validator.BUNDLE_SIZE)
 
     assert len(rejected_bundles) != 0
     for b in sorted(rejected_bundles):
@@ -97,8 +175,8 @@ class OldValidator(object):
 
 
 def ValidateInstruction(instruction, disassembly, old_validator):
-  assert len(instruction) <= BUNDLE_SIZE
-  bundle = instruction + [NOP] * (BUNDLE_SIZE - len(instruction))
+  assert len(instruction) <= validator.BUNDLE_SIZE
+  bundle = instruction + [NOP] * (validator.BUNDLE_SIZE - len(instruction))
 
   if options.bitness == 32:
     result = validator.ValidateChunk(
@@ -109,8 +187,49 @@ def ValidateInstruction(instruction, disassembly, old_validator):
       old_validator.Validate(bundle, (disassembly, instruction))
     return result
   else:
-    # TODO(shcherbina): implement.
-    return False
+    # TODO(shcherbina): memory access (check that it requires proper sandboxing)
+    result = validator.ValidateChunk(
+        ''.join(map(chr, bundle)),
+        bitness=options.bitness)
+    if result:
+      old_validator.Validate(bundle, (disassembly, instruction))
+
+      final_restricted_register = [None]
+
+      def Callback(begin, end, info):
+        if begin == 0:
+          final_restricted_register[0] = (
+              (info & validator.RESTRICTED_REGISTER_MASK) >>
+              validator.RESTRICTED_REGISTER_SHIFT)
+        else:
+          assert bundle[begin:end] == [NOP]
+
+      validator.ValidateChunk(
+          ''.join(map(chr, bundle)),
+          bitness=options.bitness,
+          callback=Callback,
+          on_each_instruction=True)
+
+      (final_restricted_register,) = final_restricted_register
+      if final_restricted_register == validator.NO_REG:
+        final_restricted_register = None
+
+      if final_restricted_register is not None:
+        register_name = REGISTER_NAMES[final_restricted_register]
+        memory_reference = 'mov (%%r15, %s), %%al' % register_name
+        bundle = instruction + Assemble(64, memory_reference)
+        assert len(bundle) <= validator.BUNDLE_SIZE
+        bundle += [NOP] * (validator.BUNDLE_SIZE - len(bundle))
+
+        assert validator.ValidateChunk(
+            ''.join(map(chr, bundle)),
+            bitness=options.bitness), (bundle, disassembly, memory_reference)
+
+        old_validator.Validate(
+            bundle,
+            (disassembly + '; ' + memory_reference, instruction))
+
+    return result
 
 
 class WorkerState(object):
