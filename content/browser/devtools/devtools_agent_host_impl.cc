@@ -9,7 +9,6 @@
 #include "base/basictypes.h"
 #include "base/guid.h"
 #include "base/lazy_instance.h"
-#include "content/common/devtools_messages.h"
 
 namespace content {
 
@@ -38,32 +37,7 @@ scoped_refptr<DevToolsAgentHost> DevToolsAgentHost::GetForId(
   return it->second;
 }
 
-void DevToolsAgentHostImpl::Attach() {
-  SendMessageToAgent(new DevToolsAgentMsg_Attach(MSG_ROUTING_NONE));
-  NotifyClientAttaching();
-}
-
-void DevToolsAgentHostImpl::Reattach(const std::string& saved_agent_state) {
-  SendMessageToAgent(new DevToolsAgentMsg_Reattach(
-      MSG_ROUTING_NONE,
-      saved_agent_state));
-  NotifyClientAttaching();
-}
-
-void DevToolsAgentHostImpl::Detach() {
-  SendMessageToAgent(new DevToolsAgentMsg_Detach(MSG_ROUTING_NONE));
-  NotifyClientDetaching();
-}
-
-void DevToolsAgentHostImpl::DispatchOnInspectorBackend(
-    const std::string& message) {
-  SendMessageToAgent(new DevToolsAgentMsg_DispatchOnInspectorBackend(
-      MSG_ROUTING_NONE, message));
-}
-
 void DevToolsAgentHostImpl::InspectElement(int x, int y) {
-  SendMessageToAgent(new DevToolsAgentMsg_InspectElement(MSG_ROUTING_NONE,
-                                                         x, y));
 }
 
 std::string DevToolsAgentHostImpl::GetId() {

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "content/browser/devtools/devtools_manager_impl.h"
 #include "content/browser/devtools/render_view_devtools_agent_host.h"
@@ -11,6 +12,8 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_client_host.h"
+#include "content/public/browser/devtools_external_agent_proxy.h"
+#include "content/public/browser/devtools_external_agent_proxy_delegate.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/test/test_content_browser_client.h"
 #include "content/test/test_web_contents.h"
@@ -235,6 +238,62 @@ TEST_F(DevToolsManagerTest, ReattachOnCancelPendingNavigation) {
   EXPECT_EQ(&client_host, devtools_manager->GetDevToolsClientHostFor(
       DevToolsAgentHost::GetOrCreateFor(rvh())));
   client_host.Close(DevToolsManager::GetInstance());
+}
+
+class TestExternalAgentDelegate: public DevToolsExternalAgentProxyDelegate {
+  std::map<std::string,int> event_counter_;
+
+  void recordEvent(const std::string& name) {
+    if (event_counter_.find(name) == event_counter_.end())
+      event_counter_[name] = 0;
+    event_counter_[name] = event_counter_[name] + 1;
+  }
+
+  void expectEvent(int count, const std::string& name) {
+    EXPECT_EQ(count, event_counter_[name]);
+  }
+
+  virtual void Attach() OVERRIDE {
+    recordEvent("Attach");
+  };
+
+  virtual void Detach() OVERRIDE {
+    recordEvent("Detach");
+  };
+
+  virtual void SendMessageToBackend(const std::string& message) OVERRIDE {
+    recordEvent(std::string("SendMessageToBackend.") + message);
+  };
+
+ public :
+  ~TestExternalAgentDelegate() {
+    expectEvent(1, "Attach");
+    expectEvent(1, "Detach");
+    expectEvent(0, "SendMessageToBackend.message0");
+    expectEvent(1, "SendMessageToBackend.message1");
+    expectEvent(2, "SendMessageToBackend.message2");
+  }
+};
+
+TEST_F(DevToolsManagerTest, TestExternalProxy) {
+  TestExternalAgentDelegate delegate;
+
+  scoped_ptr<DevToolsExternalAgentProxy> proxy(
+      DevToolsExternalAgentProxy::Create(&delegate));
+
+  scoped_refptr<DevToolsAgentHost> agent_host = proxy->GetAgentHost();
+  EXPECT_EQ(agent_host, DevToolsAgentHost::GetForId(agent_host->GetId()));
+
+  DevToolsManager* manager = DevToolsManager::GetInstance();
+
+  TestDevToolsClientHost client_host;
+  manager->RegisterDevToolsClientHostFor(agent_host, &client_host);
+
+  manager->DispatchOnInspectorBackend(&client_host, "message1");
+  manager->DispatchOnInspectorBackend(&client_host, "message2");
+  manager->DispatchOnInspectorBackend(&client_host, "message2");
+
+  client_host.Close(manager);
 }
 
 }  // namespace content

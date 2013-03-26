@@ -9,8 +9,8 @@
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
-#include "content/browser/devtools/devtools_agent_host_impl.h"
 #include "content/browser/devtools/devtools_manager_impl.h"
+#include "content/browser/devtools/ipc_devtools_agent_host.h"
 #include "content/browser/devtools/worker_devtools_message_filter.h"
 #include "content/browser/worker_host/worker_service_impl.h"
 #include "content/common/devtools_messages.h"
@@ -56,7 +56,7 @@ struct WorkerDevToolsManager::TerminatedInspectedWorker {
 
 
 class WorkerDevToolsManager::WorkerDevToolsAgentHost
-    : public DevToolsAgentHostImpl {
+    : public IPCDevToolsAgentHost {
  public:
   explicit WorkerDevToolsAgentHost(WorkerId worker_id)
       : has_worker_id_(false) {
@@ -117,7 +117,7 @@ class WorkerDevToolsManager::WorkerDevToolsAgentHost
         worker_process_id, worker_route_id, *message);
   }
 
-  // DevToolsAgentHostImpl implementation.
+  // IPCDevToolsAgentHost implementation.
   virtual void SendMessageToAgent(IPC::Message* message) OVERRIDE {
     if (!has_worker_id_) {
       delete message;

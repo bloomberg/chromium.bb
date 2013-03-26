@@ -203,7 +203,7 @@ void RenderViewDevToolsAgentHost::DispatchOnInspectorBackend(
   if (overridden_response)
     OnDispatchOnInspectorFrontend(overridden_response->Serialize());
   else
-    DevToolsAgentHostImpl::DispatchOnInspectorBackend(message);
+    IPCDevToolsAgentHost::DispatchOnInspectorBackend(message);
 }
 
 void RenderViewDevToolsAgentHost::SendMessageToAgent(IPC::Message* msg) {
