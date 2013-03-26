@@ -96,8 +96,7 @@ class DamageTrackerTest : public testing::Test {
     root->SetContentBounds(gfx::Size(500, 500));
     root->SetDrawsContent(true);
     root->CreateRenderSurface();
-    root->render_surface()->SetContentRect(
-        gfx::Rect(gfx::Point(), gfx::Size(500, 500)));
+    root->render_surface()->SetContentRect(gfx::Rect(0, 0, 500, 500));
 
     child->SetPosition(gfx::PointF(100.f, 100.f));
     child->SetAnchorPoint(gfx::PointF());
@@ -131,8 +130,7 @@ class DamageTrackerTest : public testing::Test {
     root->SetContentBounds(gfx::Size(500, 500));
     root->SetDrawsContent(true);
     root->CreateRenderSurface();
-    root->render_surface()->SetContentRect(
-        gfx::Rect(gfx::Point(), gfx::Size(500, 500)));
+    root->render_surface()->SetContentRect(gfx::Rect(0, 0, 500, 500));
 
     child1->SetPosition(gfx::PointF(100.f, 100.f));
     child1->SetAnchorPoint(gfx::PointF());

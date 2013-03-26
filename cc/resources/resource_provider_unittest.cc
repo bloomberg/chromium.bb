@@ -398,7 +398,7 @@ TEST_P(ResourceProviderTest, Basic) {
   ExpectNumResources(1);
 
   uint8_t data[4] = { 1, 2, 3, 4 };
-  gfx::Rect rect(gfx::Point(), size);
+  gfx::Rect rect(size);
   resource_provider_->SetPixels(id, data, rect, rect, gfx::Vector2d());
 
   uint8_t result[4] = { 0 };
@@ -419,7 +419,7 @@ TEST_P(ResourceProviderTest, Upload) {
       size, format, ResourceProvider::TextureUsageAny);
 
   uint8_t image[16] = { 0 };
-  gfx::Rect image_rect(gfx::Point(), size);
+  gfx::Rect image_rect(size);
   resource_provider_->SetPixels(
       id, image, image_rect, image_rect, gfx::Vector2d());
 
@@ -491,7 +491,7 @@ TEST_P(ResourceProviderTest, TransferResources) {
   ResourceProvider::ResourceId id1 = child_resource_provider->CreateResource(
       size, format, ResourceProvider::TextureUsageAny);
   uint8_t data1[4] = { 1, 2, 3, 4 };
-  gfx::Rect rect(gfx::Point(), size);
+  gfx::Rect rect(size);
   child_resource_provider->SetPixels(id1, data1, rect, rect, gfx::Vector2d());
 
   ResourceProvider::ResourceId id2 = child_resource_provider->CreateResource(
@@ -614,7 +614,7 @@ TEST_P(ResourceProviderTest, DeleteTransferredResources) {
   ResourceProvider::ResourceId id = child_resource_provider->CreateResource(
       size, format, ResourceProvider::TextureUsageAny);
   uint8_t data[4] = { 1, 2, 3, 4 };
-  gfx::Rect rect(gfx::Point(), size);
+  gfx::Rect rect(size);
   child_resource_provider->SetPixels(id, data, rect, rect, gfx::Vector2d());
 
   int child_id = resource_provider_->CreateChild();
@@ -671,7 +671,7 @@ TEST_P(ResourceProviderTest, TextureFilters) {
   ResourceProvider::ResourceId id = child_resource_provider->CreateResource(
       size, format, ResourceProvider::TextureUsageAny);
   uint8_t data[4] = { 1, 2, 3, 4 };
-  gfx::Rect rect(gfx::Point(), size);
+  gfx::Rect rect(size);
   child_resource_provider->SetPixels(id, data, rect, rect, gfx::Vector2d());
   EXPECT_EQ(GL_LINEAR, GetResourceFilter(child_resource_provider.get(), id));
   SetResourceFilter(child_resource_provider.get(), id, GL_NEAREST);

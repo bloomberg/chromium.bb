@@ -100,7 +100,7 @@ void IOSurfaceLayerImpl::AppendQuads(QuadSink* quad_sink,
       quad_sink->UseSharedQuadState(CreateSharedQuadState());
   AppendDebugBorderQuad(quad_sink, shared_quad_state, append_quads_data);
 
-  gfx::Rect quad_rect(gfx::Point(), content_bounds());
+  gfx::Rect quad_rect(content_bounds());
   gfx::Rect opaque_rect(contents_opaque() ? quad_rect : gfx::Rect());
   scoped_ptr<IOSurfaceDrawQuad> quad = IOSurfaceDrawQuad::Create();
   quad->SetNew(shared_quad_state,

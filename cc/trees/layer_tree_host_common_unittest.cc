@@ -2832,11 +2832,11 @@ TEST(LayerTreeHostCommonTest, drawable_content_rectForLayers) {
                                                false,
                                                &render_surface_layer_list);
 
-  EXPECT_RECT_EQ(gfx::Rect(gfx::Point(5, 5), gfx::Size(10, 10)),
+  EXPECT_RECT_EQ(gfx::Rect(5, 5, 10, 10),
                  grand_child1->drawable_content_rect());
-  EXPECT_RECT_EQ(gfx::Rect(gfx::Point(15, 15), gfx::Size(5, 5)),
+  EXPECT_RECT_EQ(gfx::Rect(15, 15, 5, 5),
                  grand_child3->drawable_content_rect());
-  EXPECT_RECT_EQ(gfx::Rect(gfx::Point(15, 15), gfx::Size(5, 5)),
+  EXPECT_RECT_EQ(gfx::Rect(15, 15, 5, 5),
                  grand_child3->drawable_content_rect());
   EXPECT_TRUE(grand_child4->drawable_content_rect().IsEmpty());
 }
@@ -2984,11 +2984,11 @@ TEST(LayerTreeHostCommonTest, ClipRectIsPropagatedCorrectlyToSurfaces) {
 
   // Surfaces are clipped by their parent, but un-affected by the owning layer's
   // masksToBounds.
-  EXPECT_RECT_EQ(gfx::Rect(gfx::Point(), gfx::Size(20, 20)),
+  EXPECT_RECT_EQ(gfx::Rect(0, 0, 20, 20),
                  grand_child1->render_surface()->clip_rect());
-  EXPECT_RECT_EQ(gfx::Rect(gfx::Point(), gfx::Size(20, 20)),
+  EXPECT_RECT_EQ(gfx::Rect(0, 0, 20, 20),
                  grand_child2->render_surface()->clip_rect());
-  EXPECT_RECT_EQ(gfx::Rect(gfx::Point(), gfx::Size(20, 20)),
+  EXPECT_RECT_EQ(gfx::Rect(0, 0, 20, 20),
                  grand_child3->render_surface()->clip_rect());
 }
 
@@ -3209,26 +3209,26 @@ TEST(LayerTreeHostCommonTest, VisibleRectForIdentityTransform) {
   // Test the calculateVisibleRect() function works correctly for identity
   // transforms.
 
-  gfx::Rect target_surface_rect = gfx::Rect(gfx::Point(), gfx::Size(100, 100));
+  gfx::Rect target_surface_rect = gfx::Rect(0, 0, 100, 100);
   gfx::Transform layer_to_surface_transform;
 
   // Case 1: Layer is contained within the surface.
   gfx::Rect layer_content_rect =
-      gfx::Rect(gfx::Point(10, 10), gfx::Size(30, 30));
-  gfx::Rect expected = gfx::Rect(gfx::Point(10, 10), gfx::Size(30, 30));
+      gfx::Rect(10, 10, 30, 30);
+  gfx::Rect expected = gfx::Rect(10, 10, 30, 30);
   gfx::Rect actual = LayerTreeHostCommon::CalculateVisibleRect(
       target_surface_rect, layer_content_rect, layer_to_surface_transform);
   EXPECT_RECT_EQ(expected, actual);
 
   // Case 2: Layer is outside the surface rect.
-  layer_content_rect = gfx::Rect(gfx::Point(120, 120), gfx::Size(30, 30));
+  layer_content_rect = gfx::Rect(120, 120, 30, 30);
   actual = LayerTreeHostCommon::CalculateVisibleRect(
       target_surface_rect, layer_content_rect, layer_to_surface_transform);
   EXPECT_TRUE(actual.IsEmpty());
 
   // Case 3: Layer is partially overlapping the surface rect.
-  layer_content_rect = gfx::Rect(gfx::Point(80, 80), gfx::Size(30, 30));
-  expected = gfx::Rect(gfx::Point(80, 80), gfx::Size(20, 20));
+  layer_content_rect = gfx::Rect(80, 80, 30, 30);
+  expected = gfx::Rect(80, 80, 20, 20);
   actual = LayerTreeHostCommon::CalculateVisibleRect(
       target_surface_rect, layer_content_rect, layer_to_surface_transform);
   EXPECT_RECT_EQ(expected, actual);
@@ -3238,14 +3238,14 @@ TEST(LayerTreeHostCommonTest, VisibleRectForTranslations) {
   // Test the calculateVisibleRect() function works correctly for scaling
   // transforms.
 
-  gfx::Rect target_surface_rect = gfx::Rect(gfx::Point(), gfx::Size(100, 100));
-  gfx::Rect layer_content_rect = gfx::Rect(gfx::Point(), gfx::Size(30, 30));
+  gfx::Rect target_surface_rect = gfx::Rect(0, 0, 100, 100);
+  gfx::Rect layer_content_rect = gfx::Rect(0, 0, 30, 30);
   gfx::Transform layer_to_surface_transform;
 
   // Case 1: Layer is contained within the surface.
   layer_to_surface_transform.MakeIdentity();
   layer_to_surface_transform.Translate(10.0, 10.0);
-  gfx::Rect expected = gfx::Rect(gfx::Point(), gfx::Size(30, 30));
+  gfx::Rect expected = gfx::Rect(0, 0, 30, 30);
   gfx::Rect actual = LayerTreeHostCommon::CalculateVisibleRect(
       target_surface_rect, layer_content_rect, layer_to_surface_transform);
   EXPECT_RECT_EQ(expected, actual);
@@ -3260,7 +3260,7 @@ TEST(LayerTreeHostCommonTest, VisibleRectForTranslations) {
   // Case 3: Layer is partially overlapping the surface rect.
   layer_to_surface_transform.MakeIdentity();
   layer_to_surface_transform.Translate(80.0, 80.0);
-  expected = gfx::Rect(gfx::Point(), gfx::Size(20, 20));
+  expected = gfx::Rect(0, 0, 20, 20);
   actual = LayerTreeHostCommon::CalculateVisibleRect(
       target_surface_rect, layer_content_rect, layer_to_surface_transform);
   EXPECT_RECT_EQ(expected, actual);
@@ -3271,15 +3271,15 @@ TEST(LayerTreeHostCommonTest, VisibleRectFor2DRotations) {
   // about z-axis (i.e. 2D rotations).  Remember that calculateVisibleRect()
   // should return the g in the layer's space.
 
-  gfx::Rect target_surface_rect = gfx::Rect(gfx::Point(), gfx::Size(100, 100));
-  gfx::Rect layer_content_rect = gfx::Rect(gfx::Point(), gfx::Size(30, 30));
+  gfx::Rect target_surface_rect = gfx::Rect(0, 0, 100, 100);
+  gfx::Rect layer_content_rect = gfx::Rect(0, 0, 30, 30);
   gfx::Transform layer_to_surface_transform;
 
   // Case 1: Layer is contained within the surface.
   layer_to_surface_transform.MakeIdentity();
   layer_to_surface_transform.Translate(50.0, 50.0);
   layer_to_surface_transform.Rotate(45.0);
-  gfx::Rect expected = gfx::Rect(gfx::Point(), gfx::Size(30, 30));
+  gfx::Rect expected = gfx::Rect(0, 0, 30, 30);
   gfx::Rect actual = LayerTreeHostCommon::CalculateVisibleRect(
       target_surface_rect, layer_content_rect, layer_to_surface_transform);
   EXPECT_RECT_EQ(expected, actual);
@@ -3299,7 +3299,7 @@ TEST(LayerTreeHostCommonTest, VisibleRectFor2DRotations) {
   // and bottom-right corners of the layer are still visible.
   layer_to_surface_transform.MakeIdentity();
   layer_to_surface_transform.Rotate(45.0);
-  expected = gfx::Rect(gfx::Point(), gfx::Size(30, 30));
+  expected = gfx::Rect(0, 0, 30, 30);
   actual = LayerTreeHostCommon::CalculateVisibleRect(
       target_surface_rect, layer_content_rect, layer_to_surface_transform);
   EXPECT_RECT_EQ(expected, actual);
@@ -3312,8 +3312,7 @@ TEST(LayerTreeHostCommonTest, VisibleRectFor2DRotations) {
   layer_to_surface_transform.MakeIdentity();
   layer_to_surface_transform.Translate(0.0, -sqrt(2.0) * 15.0);
   layer_to_surface_transform.Rotate(45.0);
-  expected = gfx::Rect(gfx::Point(15, 0),
-                       gfx::Size(15, 30));  // right half of layer bounds.
+  expected = gfx::Rect(15, 0, 15, 30);  // Right half of layer bounds.
   actual = LayerTreeHostCommon::CalculateVisibleRect(
       target_surface_rect, layer_content_rect, layer_to_surface_transform);
   EXPECT_RECT_EQ(expected, actual);
@@ -3323,15 +3322,15 @@ TEST(LayerTreeHostCommonTest, VisibleRectFor3dOrthographicTransform) {
   // Test that the calculateVisibleRect() function works correctly for 3d
   // transforms.
 
-  gfx::Rect target_surface_rect = gfx::Rect(gfx::Point(), gfx::Size(100, 100));
-  gfx::Rect layer_content_rect = gfx::Rect(gfx::Point(), gfx::Size(100, 100));
+  gfx::Rect target_surface_rect = gfx::Rect(0, 0, 100, 100);
+  gfx::Rect layer_content_rect = gfx::Rect(0, 0, 100, 100);
   gfx::Transform layer_to_surface_transform;
 
   // Case 1: Orthographic projection of a layer rotated about y-axis by 45
   // degrees, should be fully contained in the render surface.
   layer_to_surface_transform.MakeIdentity();
   layer_to_surface_transform.RotateAboutYAxis(45.0);
-  gfx::Rect expected = gfx::Rect(gfx::Point(), gfx::Size(100, 100));
+  gfx::Rect expected = gfx::Rect(0, 0, 100, 100);
   gfx::Rect actual = LayerTreeHostCommon::CalculateVisibleRect(
       target_surface_rect, layer_content_rect, layer_to_surface_transform);
   EXPECT_RECT_EQ(expected, actual);
@@ -3344,9 +3343,8 @@ TEST(LayerTreeHostCommonTest, VisibleRectFor3dOrthographicTransform) {
   layer_to_surface_transform.MakeIdentity();
   layer_to_surface_transform.Translate(-half_width_of_rotated_layer, 0.0);
   layer_to_surface_transform.RotateAboutYAxis(
-      45.0);  // rotates about the left edge of the layer
-  expected = gfx::Rect(gfx::Point(50, 0),
-                       gfx::Size(50, 100));  // right half of the layer.
+      45.0);  // Rotates about the left edge of the layer.
+  expected = gfx::Rect(50, 0, 50, 100);  // Tight half of the layer.
   actual = LayerTreeHostCommon::CalculateVisibleRect(
       target_surface_rect, layer_content_rect, layer_to_surface_transform);
   EXPECT_RECT_EQ(expected, actual);
@@ -3356,9 +3354,8 @@ TEST(LayerTreeHostCommonTest, VisibleRectFor3dPerspectiveTransform) {
   // Test the calculateVisibleRect() function works correctly when the layer has
   // a perspective projection onto the target surface.
 
-  gfx::Rect target_surface_rect = gfx::Rect(gfx::Point(), gfx::Size(100, 100));
-  gfx::Rect layer_content_rect =
-      gfx::Rect(gfx::Point(-50, -50), gfx::Size(200, 200));
+  gfx::Rect target_surface_rect = gfx::Rect(0, 0, 100, 100);
+  gfx::Rect layer_content_rect = gfx::Rect(-50, -50, 200, 200);
   gfx::Transform layer_to_surface_transform;
 
   // Case 1: Even though the layer is twice as large as the surface, due to
@@ -3375,7 +3372,7 @@ TEST(LayerTreeHostCommonTest, VisibleRectFor3dPerspectiveTransform) {
   // This translate places the layer in front of the surface's projection plane.
   layer_to_surface_transform.Translate3d(0.0, 0.0, -27.0);
 
-  gfx::Rect expected = gfx::Rect(gfx::Point(-50, -50), gfx::Size(200, 200));
+  gfx::Rect expected = gfx::Rect(-50, -50, 200, 200);
   gfx::Rect actual = LayerTreeHostCommon::CalculateVisibleRect(
       target_surface_rect, layer_content_rect, layer_to_surface_transform);
   EXPECT_RECT_EQ(expected, actual);
@@ -3405,8 +3402,8 @@ TEST(LayerTreeHostCommonTest,
   // are technically behind the surface in an orthographic world should not be
   // clipped when they are flattened to the surface.
 
-  gfx::Rect target_surface_rect = gfx::Rect(gfx::Point(), gfx::Size(100, 100));
-  gfx::Rect layer_content_rect = gfx::Rect(gfx::Point(), gfx::Size(100, 100));
+  gfx::Rect target_surface_rect = gfx::Rect(0, 0, 100, 100);
+  gfx::Rect layer_content_rect = gfx::Rect(0, 0, 100, 100);
   gfx::Transform layer_to_surface_transform;
 
   // This sequence of transforms effectively rotates the layer about the y-axis
@@ -3416,7 +3413,7 @@ TEST(LayerTreeHostCommonTest,
   layer_to_surface_transform.RotateAboutYAxis(45.0);
   layer_to_surface_transform.Translate(-50.0, 0.0);
 
-  gfx::Rect expected = gfx::Rect(gfx::Point(), gfx::Size(100, 100));
+  gfx::Rect expected = gfx::Rect(0, 0, 100, 100);
   gfx::Rect actual = LayerTreeHostCommon::CalculateVisibleRect(
       target_surface_rect, layer_content_rect, layer_to_surface_transform);
   EXPECT_RECT_EQ(expected, actual);
@@ -3430,10 +3427,9 @@ TEST(LayerTreeHostCommonTest, VisibleRectFor3dPerspectiveWhenClippedByW) {
   // be properly clipped by the w = 0 plane in homogeneous coordinates before
   // converting to cartesian coordinates.
 
-  gfx::Rect target_surface_rect =
-      gfx::Rect(gfx::Point(-50, -50), gfx::Size(100, 100));
+  gfx::Rect target_surface_rect = gfx::Rect(-50, -50, 100, 100);
   gfx::Rect layer_content_rect =
-      gfx::Rect(gfx::Point(-10, -1), gfx::Size(20, 2));
+      gfx::Rect(-10, -1, 20, 2);
   gfx::Transform layer_to_surface_transform;
 
   // The layer is positioned so that the right half of the layer should be in
@@ -3471,9 +3467,9 @@ TEST(LayerTreeHostCommonTest, VisibleRectForPerspectiveUnprojection) {
   // This sequence of transforms causes one corner of the layer to protrude
   // across the w = 0 plane, and should be clipped.
   gfx::Rect target_surface_rect =
-      gfx::Rect(gfx::Point(-50, -50), gfx::Size(100, 100));
+      gfx::Rect(-50, -50, 100, 100);
   gfx::Rect layer_content_rect =
-      gfx::Rect(gfx::Point(-10, -10), gfx::Size(20, 20));
+      gfx::Rect(-10, -10, 20, 20);
   gfx::Transform layer_to_surface_transform;
   layer_to_surface_transform.MakeIdentity();
   layer_to_surface_transform.ApplyPerspectiveDepth(1.0);
@@ -3493,7 +3489,7 @@ TEST(LayerTreeHostCommonTest, VisibleRectForPerspectiveUnprojection) {
   // Only the corner of the layer is not visible on the surface because of being
   // clipped. But, the net result of rounding visible region to an axis-aligned
   // rect is that the entire layer should still be considered visible.
-  gfx::Rect expected = gfx::Rect(gfx::Point(-10, -10), gfx::Size(20, 20));
+  gfx::Rect expected = gfx::Rect(-10, -10, 20, 20);
   gfx::Rect actual = LayerTreeHostCommon::CalculateVisibleRect(
       target_surface_rect, layer_content_rect, layer_to_surface_transform);
   EXPECT_RECT_EQ(expected, actual);
@@ -4646,14 +4642,14 @@ TEST(LayerTreeHostCommonTest, BackFaceCullingWithAnimatingTransforms) {
   // The animating layers should have a visible content rect that represents the
   // area of the front face that is within the viewport.
   EXPECT_EQ(animating_child->visible_content_rect(),
-            gfx::Rect(gfx::Point(), animating_child->content_bounds()));
+            gfx::Rect(animating_child->content_bounds()));
   EXPECT_EQ(animating_surface->visible_content_rect(),
-            gfx::Rect(gfx::Point(), animating_surface->content_bounds()));
+            gfx::Rect(animating_surface->content_bounds()));
   // And layers in the subtree of the animating layer should have valid visible
   // content rects also.
   EXPECT_EQ(
       child_of_animating_surface->visible_content_rect(),
-      gfx::Rect(gfx::Point(), child_of_animating_surface->content_bounds()));
+      gfx::Rect(child_of_animating_surface->content_bounds()));
 }
 
 TEST(LayerTreeHostCommonTest,
@@ -5263,7 +5259,7 @@ TEST(LayerTreeHostCommonTest, HitTestingForSingleLayerWithScaledContents) {
   // The visible content rect for test_layer is actually 100x100, even though
   // its layout size is 50x50, positioned at 25x25.
   LayerImpl* test_layer = root->children()[0];
-  EXPECT_RECT_EQ(gfx::Rect(gfx::Point(), gfx::Size(100, 100)),
+  EXPECT_RECT_EQ(gfx::Rect(0, 0, 100, 100),
                  test_layer->visible_content_rect());
   ASSERT_EQ(1u, render_surface_layer_list.size());
   ASSERT_EQ(1u, root->render_surface()->layer_list().size());
@@ -6298,8 +6294,7 @@ TEST(LayerTreeHostCommonTest,
   // The visible content rect for test_layer is actually 100x100, even though
   // its layout size is 50x50, positioned at 25x25.
   LayerImpl* test_layer = root->children()[0];
-  EXPECT_RECT_EQ(gfx::Rect(gfx::Point(), gfx::Size(100, 100)),
-                 test_layer->visible_content_rect());
+  EXPECT_RECT_EQ(gfx::Rect(0, 0, 100, 100), test_layer->visible_content_rect());
   ASSERT_EQ(1u, render_surface_layer_list.size());
   ASSERT_EQ(1u, root->render_surface()->layer_list().size());
 
@@ -6705,15 +6700,14 @@ TEST(LayerTreeHostCommonTest, LayerTransformsInHighDPI) {
                                   parent->draw_transform());
 
   // Verify results of transformed parent rects
-  gfx::RectF parent_content_bounds(gfx::PointF(),
-                                   gfx::SizeF(parent->content_bounds()));
+  gfx::RectF parent_content_bounds(parent->content_bounds());
 
   gfx::RectF parent_draw_rect =
       MathUtil::MapClippedRect(parent->draw_transform(), parent_content_bounds);
   gfx::RectF parent_screen_space_rect = MathUtil::MapClippedRect(
       parent->screen_space_transform(), parent_content_bounds);
 
-  gfx::RectF expected_parent_draw_rect(gfx::PointF(), parent->bounds());
+  gfx::RectF expected_parent_draw_rect(parent->bounds());
   expected_parent_draw_rect.Scale(device_scale_factor);
   EXPECT_FLOAT_RECT_EQ(expected_parent_draw_rect, parent_draw_rect);
   EXPECT_FLOAT_RECT_EQ(expected_parent_draw_rect, parent_screen_space_rect);
@@ -6734,8 +6728,7 @@ TEST(LayerTreeHostCommonTest, LayerTransformsInHighDPI) {
 
   // Verify results of transformed child and child_empty rects. They should
   // match.
-  gfx::RectF child_content_bounds(gfx::PointF(),
-                                  gfx::SizeF(child->content_bounds()));
+  gfx::RectF child_content_bounds(child->content_bounds());
 
   gfx::RectF child_draw_rect =
       MathUtil::MapClippedRect(child->draw_transform(), child_content_bounds);
@@ -6943,15 +6936,14 @@ TEST(LayerTreeHostCommonTest,
                                   parent->draw_transform());
 
   // Verify results of transformed parent rects
-  gfx::RectF parent_content_bounds(gfx::PointF(),
-                                   gfx::SizeF(parent->content_bounds()));
+  gfx::RectF parent_content_bounds(parent->content_bounds());
 
   gfx::RectF parent_draw_rect =
       MathUtil::MapClippedRect(parent->draw_transform(), parent_content_bounds);
   gfx::RectF parent_screen_space_rect = MathUtil::MapClippedRect(
       parent->screen_space_transform(), parent_content_bounds);
 
-  gfx::RectF expected_parent_draw_rect(gfx::PointF(), parent->bounds());
+  gfx::RectF expected_parent_draw_rect(parent->bounds());
   expected_parent_draw_rect.Scale(device_scale_factor);
   expected_parent_draw_rect.set_width(ceil(expected_parent_draw_rect.width()));
   expected_parent_draw_rect.set_height(
@@ -6967,15 +6959,14 @@ TEST(LayerTreeHostCommonTest,
                                   child->screen_space_transform());
 
   // Verify results of transformed child rects
-  gfx::RectF child_content_bounds(gfx::PointF(),
-                                  gfx::SizeF(child->content_bounds()));
+  gfx::RectF child_content_bounds(child->content_bounds());
 
   gfx::RectF child_draw_rect =
       MathUtil::MapClippedRect(child->draw_transform(), child_content_bounds);
   gfx::RectF child_screen_space_rect = MathUtil::MapClippedRect(
       child->screen_space_transform(), child_content_bounds);
 
-  gfx::RectF expected_child_draw_rect(gfx::PointF(), child->bounds());
+  gfx::RectF expected_child_draw_rect(child->bounds());
   expected_child_draw_rect.Scale(device_scale_factor);
   expected_child_draw_rect.set_width(ceil(expected_child_draw_rect.width()));
   expected_child_draw_rect.set_height(ceil(expected_child_draw_rect.height()));

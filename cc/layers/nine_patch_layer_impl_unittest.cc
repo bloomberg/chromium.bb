@@ -36,7 +36,7 @@ TEST(NinePatchLayerImplTest, VerifyDrawQuads) {
   MockQuadCuller quad_culler;
   gfx::Size bitmap_size(100, 100);
   gfx::Size layer_size(400, 400);
-  gfx::Rect visible_content_rect(gfx::Point(), layer_size);
+  gfx::Rect visible_content_rect(layer_size);
   gfx::Rect aperture_rect(20, 30, 40, 50);
   gfx::Rect scaled_aperture_non_uniform(20, 30, 340, 350);
 
@@ -79,7 +79,7 @@ TEST(NinePatchLayerImplTest, VerifyDrawQuads) {
   EXPECT_EQ(scaled_aperture_region, remaining);
 
   // Verify UV rects
-  gfx::Rect bitmap_rect(gfx::Point(), bitmap_size);
+  gfx::Rect bitmap_rect(bitmap_size);
   Region tex_remaining(bitmap_rect);
   for (size_t i = 0; i < quads.size(); ++i) {
     DrawQuad* quad = quads[i];
@@ -99,7 +99,7 @@ TEST(NinePatchLayerImplTest, VerifyDrawQuadsForSqueezedLayer) {
   MockQuadCuller quad_culler;
   gfx::Size bitmap_size(101, 101);
   gfx::Size layer_size(51, 51);
-  gfx::Rect visible_content_rect(gfx::Point(), layer_size);
+  gfx::Rect visible_content_rect(layer_size);
   gfx::Rect aperture_rect(20, 30, 40, 45);  // rightWidth: 40, botHeight: 25
 
   FakeImplProxy proxy;
@@ -133,7 +133,7 @@ TEST(NinePatchLayerImplTest, VerifyDrawQuadsForSqueezedLayer) {
 
   // Verify UV rects cover the corners of the bitmap and the crop is weighted
   // proportionately to the relative corner sizes (for uneven apertures).
-  gfx::Rect bitmap_rect(gfx::Point(), bitmap_size);
+  gfx::Rect bitmap_rect(bitmap_size);
   Region tex_remaining(bitmap_rect);
   for (size_t i = 0; i < quads.size(); ++i) {
     DrawQuad* quad = quads[i];

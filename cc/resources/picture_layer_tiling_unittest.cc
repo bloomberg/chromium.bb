@@ -157,9 +157,9 @@ TEST_F(PictureLayerTilingIteratorTest, NonIntersectingRect) {
 TEST_F(PictureLayerTilingIteratorTest, LayerEdgeTextureCoordinates) {
   Initialize(gfx::Size(300, 300), 1.0f, gfx::Size(256, 256));
   // All of these sizes are 256x256, scaled and ceiled.
-  VerifyTilesExactlyCoverRect(1.0f, gfx::Rect(gfx::Size(256, 256)));
-  VerifyTilesExactlyCoverRect(0.8f, gfx::Rect(gfx::Size(205, 205)));
-  VerifyTilesExactlyCoverRect(1.2f, gfx::Rect(gfx::Size(308, 308)));
+  VerifyTilesExactlyCoverRect(1.0f, gfx::Rect(0, 0, 256, 256));
+  VerifyTilesExactlyCoverRect(0.8f, gfx::Rect(0, 0, 205, 205));
+  VerifyTilesExactlyCoverRect(1.2f, gfx::Rect(0, 0, 308, 308));
 }
 
 TEST_F(PictureLayerTilingIteratorTest, NonContainedDestRect) {

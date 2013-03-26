@@ -126,7 +126,7 @@ gfx::Rect Layer::LayerRectToContentRect(const gfx::RectF& layer_rect) const {
       gfx::ScaleRect(layer_rect, contents_scale_x(), contents_scale_y());
   // Intersect with content rect to avoid the extra pixel because for some
   // values x and y, ceil((x / y) * y) may be x + 1.
-  content_rect.Intersect(gfx::Rect(gfx::Point(), content_bounds()));
+  content_rect.Intersect(gfx::Rect(content_bounds()));
   return gfx::ToEnclosingRect(content_rect);
 }
 

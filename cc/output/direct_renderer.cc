@@ -189,7 +189,7 @@ void DirectRenderer::DrawFrame(RenderPassList& render_passes_in_draw_order) {
   frame.root_damage_rect =
       Capabilities().using_partial_swap ?
       root_render_pass->damage_rect : root_render_pass->output_rect;
-  frame.root_damage_rect.Intersect(gfx::Rect(gfx::Point(), ViewportSize()));
+  frame.root_damage_rect.Intersect(gfx::Rect(ViewportSize()));
 
   BeginDrawingFrame(frame);
   for (size_t i = 0; i < render_passes_in_draw_order.size(); ++i)

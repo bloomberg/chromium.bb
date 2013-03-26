@@ -151,8 +151,8 @@ void UploadTexture(TextureUploader* uploader,
                    gfx::Size size,
                    const uint8* data) {
   uploader->Upload(data,
-                   gfx::Rect(gfx::Point(), size),
-                   gfx::Rect(gfx::Point(), size),
+                   gfx::Rect(size),
+                   gfx::Rect(size),
                    gfx::Vector2d(),
                    format,
                    size);

@@ -146,8 +146,8 @@ void TiledLayer::UpdateBounds() {
   tiler_->SetBounds(new_bounds);
 
   // Invalidate any areas that the new bounds exposes.
-  Region old_region = gfx::Rect(gfx::Point(), old_bounds);
-  Region new_region = gfx::Rect(gfx::Point(), new_bounds);
+  Region old_region = gfx::Rect(old_bounds);
+  Region new_region = gfx::Rect(new_bounds);
   new_region.Subtract(old_region);
   for (Region::Iterator new_rects(new_region);
        new_rects.has_rect();
@@ -569,7 +569,7 @@ bool TiledLayer::IsSmallAnimatedLayer() const {
   gfx::Size viewport_size =
       layer_tree_host() ? layer_tree_host()->device_viewport_size()
                         : gfx::Size();
-  gfx::Rect content_rect(gfx::Point(), content_bounds());
+  gfx::Rect content_rect(content_bounds());
   return content_rect.width() <=
          viewport_size.width() + tiler_->tile_size().width() &&
          content_rect.height() <=
@@ -615,7 +615,7 @@ void TiledLayer::SetTexturePriorities(const PriorityCalculator& priority_calc) {
   // Minimally create the tiles in the desired pre-paint rect.
   gfx::Rect create_tiles_rect = IdlePaintRect();
   if (small_animated_layer)
-    create_tiles_rect = gfx::Rect(gfx::Point(), content_bounds());
+    create_tiles_rect = gfx::Rect(content_bounds());
   if (!create_tiles_rect.IsEmpty()) {
     int left, top, right, bottom;
     tiler_->ContentRectToTileIndices(
@@ -709,7 +709,7 @@ void TiledLayer::UpdateScrollPrediction() {
     gfx::Rect bound = visible_content_rect();
     bound.Inset(-tiler_->tile_size().width() * kMaxPredictiveTilesCount,
                 -tiler_->tile_size().height() * kMaxPredictiveTilesCount);
-    bound.Intersect(gfx::Rect(gfx::Point(), content_bounds()));
+    bound.Intersect(gfx::Rect(content_bounds()));
     predicted_visible_rect_.Intersect(bound);
   }
   previous_content_bounds_ = content_bounds();
@@ -738,7 +738,7 @@ void TiledLayer::Update(ResourceUpdateQueue* queue,
   // hiccups while it is animating.
   if (IsSmallAnimatedLayer()) {
     int left, top, right, bottom;
-    tiler_->ContentRectToTileIndices(gfx::Rect(gfx::Point(), content_bounds()),
+    tiler_->ContentRectToTileIndices(gfx::Rect(content_bounds()),
                                      &left,
                                      &top,
                                      &right,

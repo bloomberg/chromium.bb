@@ -206,7 +206,7 @@ TEST_F(SoftwareRendererTest, TileQuad) {
 }
 
 TEST_F(SoftwareRendererTest, ShouldClearRootRenderPass) {
-  gfx::Rect viewport_rect(gfx::Size(100, 100));
+  gfx::Rect viewport_rect(0, 0, 100, 100);
   size_t viewport_pixels = viewport_rect.width() * viewport_rect.height();
   set_viewport_size(viewport_rect.size());
   set_should_clear_root_render_pass(false);

@@ -1656,7 +1656,7 @@ bool GLRenderer::SwapBuffers() {
   if (capabilities_.using_partial_swap) {
     // If supported, we can save significant bandwidth by only swapping the
     // damaged/scissored region (clamped to the viewport)
-    swap_buffer_rect_.Intersect(gfx::Rect(gfx::Point(), ViewportSize()));
+    swap_buffer_rect_.Intersect(gfx::Rect(ViewportSize()));
     int flipped_y_pos_of_rect_bottom =
         ViewportHeight() - swap_buffer_rect_.y() - swap_buffer_rect_.height();
     output_surface_->PostSubBuffer(gfx::Rect(swap_buffer_rect_.x(),

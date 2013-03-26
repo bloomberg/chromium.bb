@@ -170,7 +170,7 @@ static gfx::Rect CalculateVisibleContentRect(
 
   return CalculateVisibleRectWithCachedLayerRect(
       visible_rect_in_target_surface_space,
-      gfx::Rect(gfx::Point(), layer->content_bounds()),
+      gfx::Rect(layer->content_bounds()),
       layer_rect_in_target_space,
       layer->draw_transform());
 }
@@ -887,7 +887,7 @@ static void CalculateDrawPropertiesInternal(
       layer_draw_properties.target_space_transform.
           IsIdentityOrIntegerTranslation();
 
-  gfx::RectF content_rect(gfx::PointF(), layer->content_bounds());
+  gfx::RectF content_rect(layer->content_bounds());
 
   // full_hierarchy_matrix is the matrix that transforms objects between screen
   // space (except projection matrix) and the most recent RenderSurfaceImpl's
@@ -973,7 +973,7 @@ static void CalculateDrawPropertiesInternal(
           layer->mask_layer()->draw_properties();
       mask_layer_draw_properties.render_target = layer;
       mask_layer_draw_properties.visible_content_rect =
-          gfx::Rect(gfx::Point(), layer->content_bounds());
+          gfx::Rect(layer->content_bounds());
     }
 
     if (layer->replica_layer() && layer->replica_layer()->mask_layer()) {
@@ -982,7 +982,7 @@ static void CalculateDrawPropertiesInternal(
           layer->replica_layer()->mask_layer()->draw_properties();
       replica_mask_draw_properties.render_target = layer;
       replica_mask_draw_properties.visible_content_rect =
-          gfx::Rect(gfx::Point(), layer->content_bounds());
+          gfx::Rect(layer->content_bounds());
     }
 
     // TODO(senorblanco): make this smarter for the SkImageFilter case (check
@@ -1302,7 +1302,7 @@ void LayerTreeHostCommon::CalculateDrawProperties(
   // The root layer's render_surface should receive the device viewport as the
   // initial clip rect.
   bool subtree_should_be_clipped = true;
-  gfx::Rect device_viewport_rect(gfx::Point(), device_viewport_size);
+  gfx::Rect device_viewport_rect(device_viewport_size);
   bool update_tile_priorities = false;
 
   // This function should have received a root layer.
@@ -1355,7 +1355,7 @@ void LayerTreeHostCommon::CalculateDrawProperties(
   // The root layer's render_surface should receive the device viewport as the
   // initial clip rect.
   bool subtree_should_be_clipped = true;
-  gfx::Rect device_viewport_rect(gfx::Point(), device_viewport_size);
+  gfx::Rect device_viewport_rect(device_viewport_size);
 
   // This function should have received a root layer.
   DCHECK(IsRootLayer(root_layer));
@@ -1500,7 +1500,7 @@ LayerImpl* LayerTreeHostCommon::FindLayerThatIsHitByPoint(
 
     LayerImpl* current_layer = (*it);
 
-    gfx::RectF content_rect(gfx::PointF(), current_layer->content_bounds());
+    gfx::RectF content_rect(current_layer->content_bounds());
     if (!PointHitsRect(screen_space_point,
                        current_layer->screen_space_transform(),
                        content_rect))

@@ -120,7 +120,7 @@ void LayerTilingData::SetBounds(gfx::Size size) {
   // dropped.
   int left, top, right, bottom;
   ContentRectToTileIndices(
-      gfx::Rect(gfx::Point(), size), &left, &top, &right, &bottom);
+      gfx::Rect(size), &left, &top, &right, &bottom);
   std::vector<TileMapKey> invalid_tile_keys;
   for (TileMap::const_iterator it = tiles_.begin(); it != tiles_.end(); ++it) {
     if (it->first.first > right || it->first.second > bottom)

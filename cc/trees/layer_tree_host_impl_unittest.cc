@@ -2614,7 +2614,7 @@ class FakeLayerWithQuads : public LayerImpl {
         quad_sink->UseSharedQuadState(CreateSharedQuadState());
 
     SkColor gray = SkColorSetRGB(100, 100, 100);
-    gfx::Rect quad_rect(gfx::Point(), content_bounds());
+    gfx::Rect quad_rect(content_bounds());
     scoped_ptr<SolidColorDrawQuad> my_quad = SolidColorDrawQuad::Create();
     my_quad->SetNew(shared_quad_state, quad_rect, gray);
     quad_sink->Append(my_quad.PassAs<DrawQuad>(), append_quads_data);

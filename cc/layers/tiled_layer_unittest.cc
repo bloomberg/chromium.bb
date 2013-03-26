@@ -590,8 +590,7 @@ TEST_F(TiledLayerTest, PaintSmallAnimatedLayersImmediately) {
 
     // Full size layer with half being visible.
     layer->SetBounds(gfx::Size(layer_width, layer_height));
-    gfx::Rect visible_rect(gfx::Point(),
-                           gfx::Size(layer_width / 2, layer_height));
+    gfx::Rect visible_rect(0, 0, layer_width / 2, layer_height);
     CalcDrawProps(layer);
 
     // Pretend the layer is animating.
@@ -856,7 +855,7 @@ TEST_F(TiledLayerTest, VerifyInvalidationWhenContentsScaleChanges) {
 TEST_F(TiledLayerTest, SkipsDrawGetsReset) {
   // Create two 300 x 300 tiled layers.
   gfx::Size content_bounds(300, 300);
-  gfx::Rect content_rect(gfx::Point(), content_bounds);
+  gfx::Rect content_rect(content_bounds);
 
   // We have enough memory for only one of the two layers.
   int memory_limit = 4 * 300 * 300;  // 4 bytes per pixel.
@@ -937,7 +936,7 @@ class TiledLayerPartialUpdateTest : public TiledLayerTest {
 TEST_F(TiledLayerPartialUpdateTest, PartialUpdates) {
   // Create one 300 x 200 tiled layer with 3 x 2 tiles.
   gfx::Size content_bounds(300, 200);
-  gfx::Rect content_rect(gfx::Point(), content_bounds);
+  gfx::Rect content_rect(content_bounds);
 
   scoped_refptr<FakeTiledLayer> layer = make_scoped_refptr(
       new FakeTiledLayer(layer_tree_host_->contents_texture_manager()));
@@ -1075,9 +1074,9 @@ TEST_F(TiledLayerTest, TilesPaintedWithOcclusion) {
 
   occluded.SetOcclusion(gfx::Rect(200, 200, 300, 100));
   layer->draw_properties().drawable_content_rect =
-      gfx::Rect(gfx::Point(), layer->content_bounds());
+      gfx::Rect(layer->content_bounds());
   layer->draw_properties().visible_content_rect =
-      gfx::Rect(gfx::Point(), layer->content_bounds());
+      gfx::Rect(layer->content_bounds());
   layer->InvalidateContentRect(gfx::Rect(0, 0, 600, 600));
 
   layer->SetTexturePriorities(priority_calculator_);
@@ -1252,9 +1251,9 @@ TEST_F(TiledLayerTest, TilesPaintedWithOcclusionAndTransforms) {
 
   occluded.SetOcclusion(gfx::Rect(100, 100, 150, 50));
   layer->draw_properties().drawable_content_rect =
-      gfx::Rect(gfx::Point(), layer->content_bounds());
+      gfx::Rect(layer->content_bounds());
   layer->draw_properties().visible_content_rect =
-      gfx::Rect(gfx::Point(), layer->content_bounds());
+      gfx::Rect(layer->content_bounds());
   layer->InvalidateContentRect(gfx::Rect(0, 0, 600, 600));
   layer->SetTexturePriorities(priority_calculator_);
   resource_manager_->PrioritizeTextures();
@@ -1291,9 +1290,9 @@ TEST_F(TiledLayerTest, TilesPaintedWithOcclusionAndScaling) {
 
   occluded.SetOcclusion(gfx::Rect(200, 200, 300, 100));
   layer->draw_properties().drawable_content_rect =
-      gfx::Rect(gfx::Point(), layer->bounds());
+      gfx::Rect(layer->bounds());
   layer->draw_properties().visible_content_rect =
-      gfx::Rect(gfx::Point(), layer->content_bounds());
+      gfx::Rect(layer->content_bounds());
   layer->InvalidateContentRect(gfx::Rect(0, 0, 600, 600));
   layer->SetTexturePriorities(priority_calculator_);
   resource_manager_->PrioritizeTextures();
@@ -1315,9 +1314,9 @@ TEST_F(TiledLayerTest, TilesPaintedWithOcclusionAndScaling) {
   // blown up tiles.
   occluded.SetOcclusion(gfx::Rect(200, 200, 300, 200));
   layer->draw_properties().drawable_content_rect =
-      gfx::Rect(gfx::Point(), layer->bounds());
+      gfx::Rect(layer->bounds());
   layer->draw_properties().visible_content_rect =
-      gfx::Rect(gfx::Point(), layer->content_bounds());
+      gfx::Rect(layer->content_bounds());
   layer->InvalidateContentRect(gfx::Rect(0, 0, 600, 600));
   layer->SetTexturePriorities(priority_calculator_);
   resource_manager_->PrioritizeTextures();
@@ -1340,11 +1339,11 @@ TEST_F(TiledLayerTest, TilesPaintedWithOcclusionAndScaling) {
 
   occluded.SetOcclusion(gfx::Rect(100, 100, 150, 100));
 
-  gfx::Rect layer_bounds_rect(gfx::Point(), layer->bounds());
+  gfx::Rect layer_bounds_rect(layer->bounds());
   layer->draw_properties().drawable_content_rect =
       gfx::ToEnclosingRect(gfx::ScaleRect(layer_bounds_rect, 0.5));
   layer->draw_properties().visible_content_rect =
-      gfx::Rect(gfx::Point(), layer->content_bounds());
+      gfx::Rect(layer->content_bounds());
   layer->InvalidateContentRect(gfx::Rect(0, 0, 600, 600));
   layer->SetTexturePriorities(priority_calculator_);
   resource_manager_->PrioritizeTextures();
@@ -1777,7 +1776,7 @@ TEST_F(TiledLayerTest,
   layer->SetBounds(layer_rect.size());
   layer->UpdateContentsScale(1.3f);
 
-  gfx::Rect content_rect(gfx::Point(), layer->content_bounds());
+  gfx::Rect content_rect(layer->content_bounds());
   layer->draw_properties().visible_content_rect = content_rect;
   layer->draw_properties().drawable_content_rect = content_rect;
 

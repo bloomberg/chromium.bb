@@ -229,7 +229,7 @@ TEST(LayerIteratorTest, ComplexTreeMultiSurface) {
 
   root_layer->CreateRenderSurface();
   root_layer->render_surface()->
-      SetContentRect(gfx::Rect(gfx::Point(), root_layer->bounds()));
+      SetContentRect(gfx::Rect(root_layer->bounds()));
 
   root_layer->AddChild(root1);
   root_layer->AddChild(root2);

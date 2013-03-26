@@ -36,7 +36,7 @@ class TiledLayerImplTest : public testing::Test {
     layer->SetTilingData(*tiler);
     layer->set_skips_draw(false);
     layer->draw_properties().visible_content_rect =
-        gfx::Rect(gfx::Point(), layer_size);
+        gfx::Rect(layer_size);
     layer->draw_properties().opacity = 1;
     layer->SetBounds(layer_size);
     layer->SetContentBounds(layer_size);
@@ -110,7 +110,7 @@ TEST_F(TiledLayerImplTest, EmptyQuadList) {
     scoped_ptr<TiledLayerImpl> layer =
         CreateLayer(tile_size, layer_size, LayerTilingData::NO_BORDER_TEXELS);
 
-    gfx::Rect outside_bounds(gfx::Point(-100, -100), gfx::Size(50, 50));
+    gfx::Rect outside_bounds(-100, -100, 50, 50);
     layer->draw_properties().visible_content_rect = outside_bounds;
 
     MockQuadCuller quad_culler;
@@ -191,9 +191,8 @@ class TiledLayerImplBorderTest : public TiledLayerImplTest {
              gfx::Size(100, 100),
              layer_size,
              borders,
-             gfx::Rect(gfx::Point(), layer_size));
-    LayerTestCommon::VerifyQuadsExactlyCoverRect(
-        quads, gfx::Rect(gfx::Point(), layer_size));
+             gfx::Rect(layer_size));
+    LayerTestCommon::VerifyQuadsExactlyCoverRect(quads, gfx::Rect(layer_size));
   }
 
   void CoverageVisibleRectIntersectsTiles(
@@ -246,7 +245,7 @@ TEST_F(TiledLayerImplTest, TextureInfoForLayerNoBorders) {
            tile_size,
            layer_size,
            LayerTilingData::NO_BORDER_TEXELS,
-           gfx::Rect(gfx::Point(), layer_size));
+           gfx::Rect(layer_size));
 
   for (size_t i = 0; i < quads.size(); ++i) {
     const TileDrawQuad* quad = TileDrawQuad::MaterialCast(quads[i]);

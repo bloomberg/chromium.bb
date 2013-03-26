@@ -30,7 +30,7 @@ TEST(PictureLayerTilingSetTest, NoResources) {
   float contents_scale = 2.0;
   gfx::Size content_bounds(
       gfx::ToCeiledSize(gfx::ScaleSize(layer_bounds, contents_scale)));
-  gfx::Rect content_rect(gfx::Point(), content_bounds);
+  gfx::Rect content_rect(content_bounds);
 
   Region remaining(content_rect);
   PictureLayerTilingSet::Iterator iter(
@@ -88,7 +88,7 @@ class PictureLayerTilingSetTestWithResources : public testing::Test {
     float max_contents_scale = scale;
     gfx::Size content_bounds(
         gfx::ToCeiledSize(gfx::ScaleSize(layer_bounds, max_contents_scale)));
-    gfx::Rect content_rect(gfx::Point(), content_bounds);
+    gfx::Rect content_rect(content_bounds);
 
     Region remaining(content_rect);
     PictureLayerTilingSet::Iterator iter(

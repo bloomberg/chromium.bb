@@ -262,7 +262,7 @@ template <typename Types> class OcclusionTrackerTest : public testing::Test {
     } else {
       layer_ptr->SetContentsOpaque(false);
       if (opaque)
-        layer_ptr->SetOpaqueContentsRect(gfx::Rect(gfx::Point(), bounds));
+        layer_ptr->SetOpaqueContentsRect(gfx::Rect(bounds));
       else
         layer_ptr->SetOpaqueContentsRect(gfx::Rect());
     }
@@ -4338,7 +4338,7 @@ class OcclusionTrackerTestMinimumTrackingSize :
 
     EXPECT_EQ(gfx::Rect().ToString(),
               occlusion.occlusion_from_outside_target().ToString());
-    EXPECT_EQ(gfx::Rect(gfx::Point(), tracking_size).ToString(),
+    EXPECT_EQ(gfx::Rect(tracking_size).ToString(),
               occlusion.occlusion_from_inside_target().ToString());
   }
 };

@@ -42,7 +42,7 @@ TEST(RenderSurfaceTest, VerifySurfaceChangesAreTrackedProperly) {
   owning_layer->CreateRenderSurface();
   ASSERT_TRUE(owning_layer->render_surface());
   RenderSurfaceImpl* render_surface = owning_layer->render_surface();
-  gfx::Rect test_rect = gfx::Rect(gfx::Point(3, 4), gfx::Size(5, 6));
+  gfx::Rect test_rect(3, 4, 5, 6);
   owning_layer->ResetAllChangeTrackingForSubtree();
 
   // Currently, the content_rect, clip_rect, and
@@ -93,8 +93,8 @@ TEST(RenderSurfaceTest, SanityCheckSurfaceCreatesCorrectSharedQuadState) {
 
   root_layer->AddChild(owning_layer.Pass());
 
-  gfx::Rect content_rect = gfx::Rect(gfx::Point(), gfx::Size(50, 50));
-  gfx::Rect clip_rect = gfx::Rect(gfx::Point(5, 5), gfx::Size(40, 40));
+  gfx::Rect content_rect(0, 0, 50, 50);
+  gfx::Rect clip_rect(5, 5, 40, 40);
   gfx::Transform origin;
 
   origin.Translate(30, 40);
@@ -156,7 +156,7 @@ TEST(RenderSurfaceTest, SanityCheckSurfaceCreatesCorrectRenderPass) {
 
   root_layer->AddChild(owning_layer.Pass());
 
-  gfx::Rect content_rect = gfx::Rect(gfx::Point(), gfx::Size(50, 50));
+  gfx::Rect content_rect(0, 0, 50, 50);
   gfx::Transform origin;
   origin.Translate(30.0, 40.0);
 

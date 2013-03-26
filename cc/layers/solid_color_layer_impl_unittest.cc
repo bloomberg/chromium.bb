@@ -23,7 +23,7 @@ namespace {
 TEST(SolidColorLayerImplTest, VerifyTilingCompleteAndNoOverlap) {
   MockQuadCuller quad_culler;
   gfx::Size layer_size = gfx::Size(800, 600);
-  gfx::Rect visible_content_rect = gfx::Rect(gfx::Point(), layer_size);
+  gfx::Rect visible_content_rect = gfx::Rect(layer_size);
 
   FakeImplProxy proxy;
   FakeLayerTreeHostImpl host_impl(&proxy);
@@ -47,7 +47,7 @@ TEST(SolidColorLayerImplTest, VerifyCorrectBackgroundColorInQuad) {
 
   MockQuadCuller quad_culler;
   gfx::Size layer_size = gfx::Size(100, 100);
-  gfx::Rect visible_content_rect = gfx::Rect(gfx::Point(), layer_size);
+  gfx::Rect visible_content_rect = gfx::Rect(layer_size);
 
   FakeImplProxy proxy;
   FakeLayerTreeHostImpl host_impl(&proxy);
@@ -73,7 +73,7 @@ TEST(SolidColorLayerImplTest, VerifyCorrectOpacityInQuad) {
 
   MockQuadCuller quad_culler;
   gfx::Size layer_size = gfx::Size(100, 100);
-  gfx::Rect visible_content_rect = gfx::Rect(gfx::Point(), layer_size);
+  gfx::Rect visible_content_rect = gfx::Rect(layer_size);
 
   FakeImplProxy proxy;
   FakeLayerTreeHostImpl host_impl(&proxy);
@@ -100,7 +100,7 @@ TEST(SolidColorLayerImplTest, VerifyOpaqueRect) {
   FakeLayerTreeHostImpl host_impl(&proxy);
 
   gfx::Size layer_size = gfx::Size(100, 100);
-  gfx::Rect visible_content_rect = gfx::Rect(gfx::Point(), layer_size);
+  gfx::Rect visible_content_rect = gfx::Rect(layer_size);
 
   scoped_refptr<SolidColorLayer> layer = SolidColorLayer::Create();
   layer->SetBounds(layer_size);
