@@ -22,6 +22,7 @@ class CC_EXPORT LayerTreeSettings {
   bool compositor_frame_message;
   bool impl_side_painting;
   bool render_vsync_enabled;
+  bool render_vsync_notification_enabled;
   bool per_tile_painting_enabled;
   bool partial_swap_enabled;
   bool cache_render_pass_contents;

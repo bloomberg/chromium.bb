@@ -89,6 +89,8 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
   settings.accelerate_painting =
       cmd->HasSwitch(switches::kEnableAcceleratedPainting);
   settings.render_vsync_enabled = !cmd->HasSwitch(switches::kDisableGpuVsync);
+  settings.render_vsync_notification_enabled =
+      cmd->HasSwitch(switches::kEnableVsyncNotification);
   settings.per_tile_painting_enabled =
       cmd->HasSwitch(cc::switches::kEnablePerTilePainting);
   settings.accelerated_animation_enabled =

@@ -827,6 +827,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableGpuBenchmarking,
     switches::kEnableMemoryBenchmarking,
     switches::kEnableLogging,
+    switches::kEnableVsyncNotification,
     switches::kDisableMediaSource,
     switches::kDisableRendererSideMixing,
     switches::kEnableStrictSiteIsolation,
