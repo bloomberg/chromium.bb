@@ -22,6 +22,10 @@
 #include "chromeos/dbus/dbus_client_implementation_type.h"
 #include "chromeos/dbus/dbus_thread_manager_observer.h"
 #include "chromeos/dbus/debug_daemon_client.h"
+#include "chromeos/dbus/experimental_bluetooth_adapter_client.h"
+#include "chromeos/dbus/experimental_bluetooth_agent_manager_client.h"
+#include "chromeos/dbus/experimental_bluetooth_device_client.h"
+#include "chromeos/dbus/experimental_bluetooth_profile_manager_client.h"
 #include "chromeos/dbus/gsm_sms_client.h"
 #include "chromeos/dbus/shill_device_client.h"
 #include "chromeos/dbus/shill_ipconfig_client.h"
@@ -101,6 +105,19 @@ class DBusThreadManagerImpl : public DBusThreadManager {
         CryptohomeClient::Create(client_type_, system_bus_.get()));
     debug_daemon_client_.reset(
         DebugDaemonClient::Create(client_type_, system_bus_.get()));
+
+    experimental_bluetooth_adapter_client_.reset(
+        ExperimentalBluetoothAdapterClient::Create(
+            client_type_, system_bus_.get()));
+    experimental_bluetooth_agent_manager_client_.reset(
+        ExperimentalBluetoothAgentManagerClient::Create(
+            client_type_, system_bus_.get()));
+    experimental_bluetooth_device_client_.reset(
+        ExperimentalBluetoothDeviceClient::Create(
+            client_type_, system_bus_.get()));
+    experimental_bluetooth_profile_manager_client_.reset(
+        ExperimentalBluetoothProfileManagerClient::Create(
+            client_type_, system_bus_.get()));
 
     shill_manager_client_.reset(
         ShillManagerClient::Create(client_type_override_, system_bus_.get()));
@@ -257,6 +274,26 @@ class DBusThreadManagerImpl : public DBusThreadManager {
     return debug_daemon_client_.get();
   }
 
+  virtual ExperimentalBluetoothAdapterClient*
+        GetExperimentalBluetoothAdapterClient() OVERRIDE {
+    return experimental_bluetooth_adapter_client_.get();
+  }
+
+  virtual ExperimentalBluetoothAgentManagerClient*
+        GetExperimentalBluetoothAgentManagerClient() OVERRIDE {
+    return experimental_bluetooth_agent_manager_client_.get();
+  }
+
+  virtual ExperimentalBluetoothDeviceClient*
+        GetExperimentalBluetoothDeviceClient() OVERRIDE {
+    return experimental_bluetooth_device_client_.get();
+  }
+
+  virtual ExperimentalBluetoothProfileManagerClient*
+        GetExperimentalBluetoothProfileManagerClient() OVERRIDE {
+    return experimental_bluetooth_profile_manager_client_.get();
+  }
+
   virtual ShillDeviceClient* GetShillDeviceClient() OVERRIDE {
     return shill_device_client_.get();
   }
@@ -385,6 +422,14 @@ class DBusThreadManagerImpl : public DBusThreadManager {
   scoped_ptr<CrosDisksClient> cros_disks_client_;
   scoped_ptr<CryptohomeClient> cryptohome_client_;
   scoped_ptr<DebugDaemonClient> debug_daemon_client_;
+  scoped_ptr<ExperimentalBluetoothAdapterClient>
+      experimental_bluetooth_adapter_client_;
+  scoped_ptr<ExperimentalBluetoothAgentManagerClient>
+      experimental_bluetooth_agent_manager_client_;
+  scoped_ptr<ExperimentalBluetoothDeviceClient>
+      experimental_bluetooth_device_client_;
+  scoped_ptr<ExperimentalBluetoothProfileManagerClient>
+      experimental_bluetooth_profile_manager_client_;
   scoped_ptr<ShillDeviceClient> shill_device_client_;
   scoped_ptr<ShillIPConfigClient> shill_ipconfig_client_;
   scoped_ptr<ShillManagerClient> shill_manager_client_;

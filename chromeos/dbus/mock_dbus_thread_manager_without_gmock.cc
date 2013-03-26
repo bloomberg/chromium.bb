@@ -97,6 +97,32 @@ DebugDaemonClient* MockDBusThreadManagerWithoutGMock::GetDebugDaemonClient() {
   return NULL;
 }
 
+ExperimentalBluetoothAdapterClient*
+    MockDBusThreadManagerWithoutGMock::GetExperimentalBluetoothAdapterClient() {
+  NOTIMPLEMENTED();
+  return NULL;
+}
+
+ExperimentalBluetoothAgentManagerClient*
+    MockDBusThreadManagerWithoutGMock::
+        GetExperimentalBluetoothAgentManagerClient() {
+  NOTIMPLEMENTED();
+  return NULL;
+}
+
+ExperimentalBluetoothDeviceClient*
+    MockDBusThreadManagerWithoutGMock::GetExperimentalBluetoothDeviceClient() {
+  NOTIMPLEMENTED();
+  return NULL;
+}
+
+ExperimentalBluetoothProfileManagerClient*
+    MockDBusThreadManagerWithoutGMock::
+        GetExperimentalBluetoothProfileManagerClient() {
+  NOTIMPLEMENTED();
+  return NULL;
+}
+
 ShillDeviceClient*
     MockDBusThreadManagerWithoutGMock::GetShillDeviceClient() {
   NOTIMPLEMENTED();
