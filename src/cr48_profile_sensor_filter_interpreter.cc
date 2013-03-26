@@ -332,7 +332,9 @@ void Cr48ProfileSensorFilterInterpreter::LowPressureFilter(
   // The pressure value will be the same for both fingers for semi_mt device.
   // Therefore, we either keep or remove all fingers based on finger 0's
   // pressure.
-  if (hwstate->finger_cnt == 0)
+  // Don't do this when buttons are pressed, as the pressing finger might be
+  // reported as 0 pressure
+  if (hwstate->finger_cnt == 0 || hwstate->buttons_down)
     return;
   float pressure = hwstate->fingers[0].pressure;
   if (((prev_hwstate_.finger_cnt == 0) &&

@@ -57,6 +57,11 @@ Gesture* ScalingFilterInterpreter::HandleTimerImpl(stime_t now,
 // Ignore the finger events with low pressure values especially for the SEMI_MT
 // devices such as Synaptics touchpad on Cr-48.
 void ScalingFilterInterpreter::FilterLowPressure(HardwareState* hwstate) {
+  // don't do this when the button is down as the pressing fingers might
+  // be reported with low pressure.
+  if (hwstate->buttons_down)
+    return;
+
   unsigned short finger_cnt = hwstate->finger_cnt;
   unsigned short touch_cnt = hwstate->touch_cnt;
   float threshold = 0.0;

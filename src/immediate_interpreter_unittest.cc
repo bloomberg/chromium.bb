@@ -2412,7 +2412,7 @@ TEST(ImmediateInterpreterTest, ClickTest) {
     2,   // orientation maximum
     2,  // max fingers
     5,  // max touch
-    1,  // t5r2
+    0,  // t5r2
     0,  // semi-mt
     1  // is button pad
   };

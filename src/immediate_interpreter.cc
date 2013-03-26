@@ -1837,8 +1837,9 @@ int ImmediateInterpreter::EvaluateButtonType(
   const float kMaxDistSq = button_max_dist_from_expected_.val_ *
                            button_max_dist_from_expected_.val_;
 
-  // Handle T5R2 touchpads
-  if (hw_props_.supports_t5r2 && hwstate.touch_cnt > 2) {
+  // Handle T5R2/SemiMT touchpads
+  if ((hw_props_.supports_t5r2 || hw_props_.support_semi_mt) &&
+      hwstate.touch_cnt >= 2) {
     if (hwstate.touch_cnt - thumb_.size() == 3 &&
         three_finger_click_enable_.val_ && t5r2_three_finger_click_enable_.val_)
       return GESTURES_BUTTON_MIDDLE;
