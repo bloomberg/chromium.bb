@@ -589,17 +589,9 @@ DriveResourceMetadata::RenameEntryOnBlockingPool(
     return FileMoveResult(DRIVE_FILE_ERROR_EXISTS);
 
   entry->set_title(new_name);
-  storage_->PutEntry(*entry);
-
-  // After changing the title of the entry, call MoveEntryToDirectory to
-  // remove the entry from its parent directory and then add it back in order to
-  // go through the file name de-duplication.
-  // TODO(achuith/satorux/zel): This code is fragile. The title has been
-  // changed, but not the file_name. MoveEntryToDirectory calls RemoveChild to
-  // remove the child based on the old file_name, and then re-adds the child by
-  // first assigning the new title to file_name. http://crbug.com/30157
-  return MoveEntryToDirectoryOnBlockingPool(
-      file_path, GetFilePath(entry->parent_resource_id()));
+  scoped_ptr<GetEntryInfoWithFilePathResult> result =
+      RefreshEntryOnBlockingPool(*entry);
+  return FileMoveResult(result->error, result->path);
 }
 
 DriveResourceMetadata::FileMoveResult
