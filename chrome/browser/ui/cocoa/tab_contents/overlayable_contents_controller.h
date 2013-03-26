@@ -52,10 +52,6 @@ class WebContents;
   // View responsible for drawing a drop shadow.
   scoped_nsobject<NSView> dropShadowView_;
 
-  // View responsible for drawing a separator at the top. The separator is
-  // only visible when the overlay is positioned right next to the omnibox.
-  scoped_nsobject<NSView> topSeparatorView_;
-
   BrowserWindowController* windowController_;
 
   // The vertical offset between the top of the view and the active container.

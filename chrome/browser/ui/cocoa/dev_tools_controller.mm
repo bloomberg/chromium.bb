@@ -129,10 +129,6 @@ using content::WebContents;
   }
 }
 
-- (CGFloat)topContentOffset {
-  return [splitView_ topContentOffset];
-}
-
 - (void)setTopContentOffset:(CGFloat)offset {
   [splitView_ setTopContentOffset:offset];
   if ([[splitView_ subviews] count] > 1)
