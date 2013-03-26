@@ -13,6 +13,7 @@ from pylib import constants
 from pylib import ports
 from pylib.base import shard
 from pylib.utils import emulator
+from pylib.utils import report_results
 from pylib.utils import xvfb
 
 import gtest_config
@@ -165,17 +166,18 @@ def _RunATestSuite(options, suite_name):
   test_results = shard.ShardAndRunTests(RunnerFactory, attached_devices, tests,
                                         options.build_type)
 
-  test_results.LogFull(
+  report_results.LogFull(
+      results=test_results,
       test_type='Unit test',
       test_package=suite_name,
       build_type=options.build_type,
       flakiness_server=options.flakiness_dashboard_server)
-  test_results.PrintAnnotation()
+  report_results.PrintAnnotation(test_results)
 
   for buildbot_emulator in buildbot_emulators:
     buildbot_emulator.Shutdown()
 
-  return len(test_results.GetAllBroken())
+  return len(test_results.GetNotPass())
 
 
 def _ListTestSuites():

@@ -8,8 +8,35 @@
 import logging
 import sys
 import time
+import traceback
 
-from pylib.base.test_result import TestResults
+from pylib.base import base_test_result
+from pylib.instrumentation import test_result
+
+
+class PythonExceptionTestResult(test_result.InstrumentationTestResult):
+  """Helper class for creating a test result from python exception."""
+
+  def __init__(self, test_name, start_date_ms, exc_info):
+    """Constructs an PythonExceptionTestResult object.
+
+    Args:
+      test_name: name of the test which raised an exception.
+      start_date_ms: the starting time for the test.
+      exc_info: exception info, ostensibly from sys.exc_info().
+    """
+    exc_type, exc_value, exc_traceback = exc_info
+    trace_info = ''.join(traceback.format_exception(exc_type, exc_value,
+                                                    exc_traceback))
+    log_msg = 'Exception:\n' + trace_info
+    duration_ms = (int(time.time()) * 1000) - start_date_ms
+
+    super(PythonExceptionTestResult, self).__init__(
+        'PythonWrapper#' + test_name,
+        base_test_result.ResultType.FAIL,
+        start_date_ms,
+        duration_ms,
+        log=str(exc_type) + ' ' + log_msg)
 
 
 def CallPythonTest(test, options):
@@ -35,8 +62,8 @@ def CallPythonTest(test, options):
     options: Options to use for setting up tests.
 
   Returns:
-    A TestResults object which contains any results produced by the test or, in
-    the case of a Python exception, the Python exception info.
+    A TestRunResults object which contains any results produced by the test or,
+    in the case of a Python exception, the Python exception info.
   """
 
   start_date_ms = int(time.time()) * 1000
@@ -52,11 +79,13 @@ def CallPythonTest(test, options):
     # Tests whose SetUp() method has failed are likely to fail, or at least
     # yield invalid results.
     exc_info = sys.exc_info()
-    return TestResults.FromPythonException(test.qualified_name, start_date_ms,
-                                           exc_info)
+    results = base_test_result.TestRunResults()
+    results.AddResult(PythonExceptionTestResult(
+        test.qualified_name, start_date_ms, exc_info))
+    return results
 
   try:
-    result = test.Run()
+    results = test.Run()
   except Exception:
     # Setting this lets TearDown() avoid stomping on our stack trace from Run()
     # should TearDown() also raise an exception.
@@ -64,8 +93,9 @@ def CallPythonTest(test, options):
     logging.exception('Caught exception while trying to run test: ' +
                       test.qualified_name)
     exc_info = sys.exc_info()
-    result = TestResults.FromPythonException(test.qualified_name, start_date_ms,
-                                             exc_info)
+    results = base_test_result.TestRunResults()
+    results.AddResult(PythonExceptionTestResult(
+        test.qualified_name, start_date_ms, exc_info))
 
   try:
     test.TearDown()
@@ -78,7 +108,8 @@ def CallPythonTest(test, options):
       # trade-off: if the test fails, this will mask any problem with TearDown
       # until the test is fixed.
       exc_info = sys.exc_info()
-      result = TestResults.FromPythonException(test.qualified_name,
-                                               start_date_ms, exc_info)
+      results = base_test_result.TestRunResults()
+      results.AddResult(PythonExceptionTestResult(
+          test.qualified_name, start_date_ms, exc_info))
 
-  return result
+  return results

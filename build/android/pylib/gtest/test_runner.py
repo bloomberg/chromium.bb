@@ -10,8 +10,8 @@ from pylib import android_commands
 from pylib import constants
 from pylib import perf_tests_helper
 from pylib.android_commands import errors
+from pylib.base import base_test_result
 from pylib.base import base_test_runner
-from pylib.base import test_result
 from pylib.utils import run_tests_helper
 
 import test_package_apk
@@ -242,15 +242,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
 
   #override
   def RunTest(self, test):
-    """Runs a test on a single device.
-
-    Args:
-      test: a gtest filter string to run.
-
-    Returns:
-      Tuple: (TestResults, test to retry or None)
-    """
-    test_results = test_result.TestResults()
+    test_results = base_test_result.TestRunResults()
     if not test:
       return test_results, None
 
@@ -266,13 +258,13 @@ class TestRunner(base_test_runner.BaseTestRunner):
     finally:
       self.CleanupSpawningServerState()
     # Calculate unknown test results.
-    # TODO(frankf): Do not break TestResults encapsulation.
     all_tests = set(test.split(':'))
-    all_tests_ran = set([t.name for t in test_results.GetAll()])
+    all_tests_ran = set([t.GetName() for t in test_results.GetAll()])
     unknown_tests = all_tests - all_tests_ran
-    test_results.unknown = [test_result.BaseTestResult(t, '') for t in
-                            unknown_tests]
-    retry = ':'.join([t.name for t in test_results.GetAllBroken()])
+    test_results.AddResults(
+        [base_test_result.BaseTestResult(t, base_test_result.ResultType.UNKNOWN)
+         for t in unknown_tests])
+    retry = ':'.join([t.GetName() for t in test_results.GetNotPass()])
     return test_results, retry
 
   #override

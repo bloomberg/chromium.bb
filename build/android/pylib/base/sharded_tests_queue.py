@@ -18,7 +18,7 @@ class ShardedTestsQueue(object):
     tests: a list of tests to be run.
     tests_queue: if sharding, a JoinableQueue object that holds tests from
         |tests|. Otherwise, a list holding tests.
-    results_queue: a Queue object to hold TestResults objects.
+    results_queue: a Queue object to hold TestRunResults objects.
   """
   _STOP_SENTINEL = 'STOP'  # sentinel value for iter()
 

@@ -15,8 +15,8 @@ sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)),
 from pylib import android_commands
 android_commands.GetAttachedDevices = lambda: ['0', '1']
 
+import base_test_result
 import shard
-import test_result
 
 
 class TestException(Exception):
@@ -32,9 +32,10 @@ class MockRunner(object):
     self.teardowns = 0
 
   def RunTest(self, test):
-    return (test_result.TestResults.FromRun(
-                ok=[test_result.BaseTestResult(test, '')]),
-            None)
+    results = base_test_result.TestRunResults()
+    results.AddResult(
+        base_test_result.BaseTestResult(test, base_test_result.ResultType.PASS))
+    return (results, None)
 
   def SetUp(self):
     self.setups += 1
@@ -45,9 +46,10 @@ class MockRunner(object):
 
 class MockRunnerFail(MockRunner):
   def RunTest(self, test):
-    return (test_result.TestResults.FromRun(
-                failed=[test_result.BaseTestResult(test, '')]),
-            test)
+    results = base_test_result.TestRunResults()
+    results.AddResult(
+        base_test_result.BaseTestResult(test, base_test_result.ResultType.FAIL))
+    return (results, test)
 
 
 class MockRunnerFailTwice(MockRunner):
@@ -57,14 +59,15 @@ class MockRunnerFailTwice(MockRunner):
 
   def RunTest(self, test):
     self._fails += 1
+    results = base_test_result.TestRunResults()
     if self._fails <= 2:
-      return (test_result.TestResults.FromRun(
-                  failed=[test_result.BaseTestResult(test, '')]),
-              test)
+      results.AddResult(base_test_result.BaseTestResult(
+          test, base_test_result.ResultType.FAIL))
+      return (results, test)
     else:
-      return (test_result.TestResults.FromRun(
-                  ok=[test_result.BaseTestResult(test, '')]),
-            None)
+      results.AddResult(base_test_result.BaseTestResult(
+          test, base_test_result.ResultType.PASS))
+      return (results, None)
 
 
 class MockRunnerException(MockRunner):
@@ -79,22 +82,25 @@ class TestFunctions(unittest.TestCase):
     results = []
     tests = shard._TestCollection([shard._Test(t) for t in tests])
     shard._RunTestsFromQueue(mock_runner, tests, results)
-    return test_result.TestResults.FromTestResults(results)
+    run_results = base_test_result.TestRunResults()
+    for r in results:
+      run_results.AddTestRunResults(r)
+    return run_results
 
   def testRunTestsFromQueue(self):
     results = TestFunctions._RunTests(MockRunner(), ['a', 'b'])
-    self.assertEqual(len(results.ok), 2)
-    self.assertEqual(len(results.GetAllBroken()), 0)
+    self.assertEqual(len(results.GetPass()), 2)
+    self.assertEqual(len(results.GetNotPass()), 0)
 
   def testRunTestsFromQueueRetry(self):
     results = TestFunctions._RunTests(MockRunnerFail(), ['a', 'b'])
-    self.assertEqual(len(results.ok), 0)
-    self.assertEqual(len(results.failed), 2)
+    self.assertEqual(len(results.GetPass()), 0)
+    self.assertEqual(len(results.GetFail()), 2)
 
   def testRunTestsFromQueueFailTwice(self):
     results = TestFunctions._RunTests(MockRunnerFailTwice(), ['a', 'b'])
-    self.assertEqual(len(results.ok), 2)
-    self.assertEqual(len(results.GetAllBroken()), 0)
+    self.assertEqual(len(results.GetPass()), 2)
+    self.assertEqual(len(results.GetNotPass()), 0)
 
   def testSetUp(self):
     runners = []
@@ -126,7 +132,7 @@ class TestThreadGroupFunctions(unittest.TestCase):
   def testRun(self):
     runners = [MockRunner('0'), MockRunner('1')]
     results = shard._RunAllTests(runners, self.tests)
-    self.assertEqual(len(results.ok), len(self.tests))
+    self.assertEqual(len(results.GetPass()), len(self.tests))
 
   def testTearDown(self):
     runners = [MockRunner('0'), MockRunner('1')]
@@ -137,7 +143,7 @@ class TestThreadGroupFunctions(unittest.TestCase):
   def testRetry(self):
     runners = shard._CreateRunners(MockRunnerFail, ['0', '1'])
     results = shard._RunAllTests(runners, self.tests)
-    self.assertEqual(len(results.failed), len(self.tests))
+    self.assertEqual(len(results.GetFail()), len(self.tests))
 
   def testReraise(self):
     runners = shard._CreateRunners(MockRunnerException, ['0', '1'])
@@ -153,12 +159,12 @@ class TestShard(unittest.TestCase):
 
   def testShard(self):
     results = TestShard._RunShard(MockRunner)
-    self.assertEqual(len(results.ok), 3)
+    self.assertEqual(len(results.GetPass()), 3)
 
   def testFailing(self):
     results = TestShard._RunShard(MockRunnerFail)
-    self.assertEqual(len(results.ok), 0)
-    self.assertEqual(len(results.failed), 3)
+    self.assertEqual(len(results.GetPass()), 0)
+    self.assertEqual(len(results.GetFail()), 3)
 
 
 if __name__ == '__main__':

@@ -7,16 +7,14 @@
 """Runs both the Python and Java instrumentation tests."""
 
 import optparse
-import os
 import sys
-import time
 
 from pylib import buildbot_report
-from pylib import constants
 from pylib import ports
-from pylib.base import test_result
+from pylib.base import base_test_result
 from pylib.host_driven import run_python_tests
 from pylib.instrumentation import dispatch
+from pylib.utils import report_results
 from pylib.utils import run_tests_helper
 from pylib.utils import test_options_parser
 
@@ -41,26 +39,22 @@ def DispatchInstrumentationTests(options):
     if not ports.ResetTestServerPortAllocation():
       raise Exception('Failed to reset test server port.')
 
-  java_results = test_result.TestResults()
-  python_results = test_result.TestResults()
+  all_results = base_test_result.TestRunResults()
 
   if options.run_java_tests:
-    java_results = dispatch.Dispatch(options)
-
+    all_results.AddTestRunResults(dispatch.Dispatch(options))
   if options.run_python_tests:
-    python_results = run_python_tests.DispatchPythonTests(options)
+    all_results.AddTestRunResults(run_python_tests.DispatchPythonTests(options))
 
-  all_results = test_result.TestResults.FromTestResults([java_results,
-                                                         python_results])
-
-  all_results.LogFull(
+  report_results.LogFull(
+      results=all_results,
       test_type='Instrumentation',
       test_package=options.test_apk,
       annotation=options.annotation,
       build_type=options.build_type,
       flakiness_server=options.flakiness_dashboard_server)
 
-  return len(all_results.GetAllBroken())
+  return len(all_results.GetNotPass())
 
 
 def main(argv):

@@ -11,7 +11,7 @@ import types
 
 from pylib import android_commands
 from pylib import constants
-from pylib.base.test_result import TestResults
+from pylib.base import base_test_result
 from pylib.instrumentation import test_package
 from pylib.instrumentation import test_runner
 
@@ -75,7 +75,7 @@ def DispatchPythonTests(options):
 
   if not available_tests:
     logging.warning('No Python tests to run with current args.')
-    return TestResults()
+    return base_test_result.TestRunResults()
 
   available_tests *= options.number_of_runs
   test_names = [t.qualified_name for t in available_tests]

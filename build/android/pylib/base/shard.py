@@ -11,7 +11,7 @@ from pylib import android_commands
 from pylib import forwarder
 from pylib.utils import reraiser_thread
 
-import test_result
+import base_test_result
 
 
 class _ThreadSafeCounter(object):
@@ -112,13 +112,13 @@ class _TestCollection(object):
 def _RunTestsFromQueue(runner, test_collection, out_results):
   """Runs tests from the test_collection until empty using the given runner.
 
-  Adds TestResults objects to the out_results list and may add tests to the
+  Adds TestRunResults objects to the out_results list and may add tests to the
   out_retry list.
 
   Args:
     runner: A TestRunner object used to run the tests.
     test_collection: A _TestCollection from which to get _Test objects to run.
-    out_results: A list to add TestResults to.
+    out_results: A list to add TestRunResults to.
   """
   for test in test_collection:
     try:
@@ -131,7 +131,9 @@ def _RunTestsFromQueue(runner, test_collection, out_results):
       test.tries += 1
       if retry and test.tries <= 3:
         # Retry non-passing results, only record passing results.
-        out_results.append(test_result.TestResults.FromRun(ok=result.ok))
+        pass_results = base_test_result.TestRunResults()
+        pass_results.AddResults(result.GetPass())
+        out_results.append(pass_results)
         logging.warning('****Will retry test, try #%s.' % test.tries)
         test_collection.add(_Test(test=retry, tries=test.tries))
       else:
@@ -184,7 +186,7 @@ def _RunAllTests(runners, tests):
     tests: a list of Tests to run using the given TestRunners.
 
   Returns:
-    A TestResults object.
+    A TestRunResults object.
   """
   logging.warning('****Running %s tests with %s test runners.' %
                   (len(tests), len(runners)))
@@ -194,7 +196,10 @@ def _RunAllTests(runners, tests):
       _RunTestsFromQueue, [r, tests_collection, results]) for r in runners])
   workers.StartAll()
   workers.JoinAll()
-  return test_result.TestResults.FromTestResults(results)
+  run_results = base_test_result.TestRunResults()
+  for r in results:
+    run_results.AddTestRunResults(r)
+  return run_results
 
 
 def _CreateRunners(runner_factory, devices):
@@ -246,7 +251,7 @@ def ShardAndRunTests(runner_factory, devices, tests, build_type='Debug'):
     build_type: either 'Debug' or 'Release'.
 
   Returns:
-    A test_result.TestResults object.
+    A base_test_result.TestRunResults object.
   """
   forwarder.Forwarder.KillHost(build_type)
   runners = _CreateRunners(runner_factory, devices)

@@ -153,30 +153,30 @@ class ResultsUploader(object):
   def AddResults(self, test_results):
     # TODO(frankf): Differentiate between fail/crash/timeouts.
     conversion_map = [
-        (test_results.ok, False,
+        (test_results.GetPass(), False,
             json_results_generator.JSONResultsGeneratorBase.PASS_RESULT),
-        (test_results.failed, True,
+        (test_results.GetFail(), True,
             json_results_generator.JSONResultsGeneratorBase.FAIL_RESULT),
-        (test_results.crashed, True,
+        (test_results.GetCrash(), True,
             json_results_generator.JSONResultsGeneratorBase.FAIL_RESULT),
-        (test_results.timed_out, True,
+        (test_results.GetTimeout(), True,
             json_results_generator.JSONResultsGeneratorBase.FAIL_RESULT),
-        (test_results.unknown, True,
+        (test_results.GetUnknown(), True,
             json_results_generator.JSONResultsGeneratorBase.NO_DATA_RESULT),
         ]
 
     for results_list, failed, modifier in conversion_map:
       for single_test_result in results_list:
         test_result = json_results_generator.TestResult(
-            test=single_test_result.name,
+            test=single_test_result.GetName(),
             failed=failed,
-            elapsed_time=single_test_result.dur / 1000)
+            elapsed_time=single_test_result.GetDur() / 1000)
         # The WebKit TestResult object sets the modifier it based on test name.
         # Since we don't use the same test naming convention as WebKit the
         # modifier will be wrong, so we need to overwrite it.
         test_result.modifier = modifier
 
-        self._test_results_map[single_test_result.name] = test_result
+        self._test_results_map[single_test_result.GetName()] = test_result
 
   def Upload(self, test_results_server):
     if not self._test_results_map:
@@ -206,13 +206,13 @@ class ResultsUploader(object):
       shutil.rmtree(tmp_folder)
 
 
-def Upload(flakiness_dashboard_server, test_type, results):
+def Upload(results, flakiness_dashboard_server, test_type):
   """Reports test results to the flakiness dashboard for Chrome for Android.
 
   Args:
+    results: test results.
     flakiness_dashboard_server: the server to upload the results to.
     test_type: the type of the tests (as displayed by the flakiness dashboard).
-    results: test results.
   """
   uploader = ResultsUploader(test_type)
   uploader.AddResults(results)

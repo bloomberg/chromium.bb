@@ -4,13 +4,13 @@
 
 
 import logging
-import re
 import os
+import re
 
 from pylib import constants
 from pylib import pexpect
 from pylib.android_commands import errors
-from pylib.base.test_result import BaseTestResult, TestResults
+from pylib.base import base_test_result
 from pylib.perf_tests_helper import PrintPerfResult
 
 
@@ -123,13 +123,14 @@ class TestPackage(object):
 
   def _WatchTestOutput(self, p):
     """Watches the test output.
+
     Args:
       p: the process generating output as created by pexpect.spawn.
+
+    Returns:
+      A TestRunResults object.
     """
-    ok_tests = []
-    failed_tests = []
-    crashed_tests = []
-    timed_out_tests = []
+    results = base_test_result.TestRunResults()
 
     # Test case statuses.
     re_run = re.compile('\[ RUN      \] ?(.*)\r\n')
@@ -146,7 +147,6 @@ class TestPackage(object):
     try:
       while True:
         full_test_name = None
-
         found = p.expect([re_run, re_passed, re_runner_fail],
                          timeout=self.timeout)
         if found == 1:  # re_passed
@@ -158,12 +158,17 @@ class TestPackage(object):
           found = p.expect([re_ok, re_fail, re_crash], timeout=self.timeout)
           if found == 0:  # re_ok
             if full_test_name == p.match.group(1).replace('\r', ''):
-              ok_tests += [BaseTestResult(full_test_name, p.before)]
+              results.AddResult(base_test_result.BaseTestResult(
+                  full_test_name, base_test_result.ResultType.PASS,
+                  log=p.before))
           elif found == 2:  # re_crash
-            crashed_tests += [BaseTestResult(full_test_name, p.before)]
+            results.AddResult(base_test_result.BaseTestResult(
+                full_test_name, base_test_result.ResultType.CRASH,
+                log=p.before))
             break
           else:  # re_fail
-            failed_tests += [BaseTestResult(full_test_name, p.before)]
+            results.AddResult(base_test_result.BaseTestResult(
+                full_test_name, base_test_result.ResultType.FAIL, log=p.before))
     except pexpect.EOF:
       logging.error('Test terminated - EOF')
       # We're here because either the device went offline, or the test harness
@@ -171,13 +176,15 @@ class TestPackage(object):
       if not self.adb.IsOnline():
         raise errors.DeviceUnresponsiveError('Device %s went offline.' %
                                              self.device)
-      elif full_test_name:
-        crashed_tests += [BaseTestResult(full_test_name, p.before)]
+      if full_test_name:
+        results.AddResult(base_test_result.BaseTestResult(
+            full_test_name, base_test_result.ResultType.CRASH, log=p.before))
     except pexpect.TIMEOUT:
       logging.error('Test terminated after %d second timeout.',
                     self.timeout)
       if full_test_name:
-        timed_out_tests += [BaseTestResult(full_test_name, p.before)]
+        results.AddResult(base_test_result.BaseTestResult(
+            full_test_name, base_test_result.ResultType.TIMEOUT, log=p.before))
     finally:
       p.close()
 
@@ -187,6 +194,4 @@ class TestPackage(object):
           'gtest exit code: %d\npexpect.before: %s\npexpect.after: %s',
           ret_code, p.before, p.after)
 
-    # Create TestResults and return
-    return TestResults.FromRun(ok=ok_tests, failed=failed_tests,
-                               crashed=crashed_tests, timed_out=timed_out_tests)
+    return results

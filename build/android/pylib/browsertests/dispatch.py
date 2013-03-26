@@ -12,6 +12,8 @@ from pylib import ports
 from pylib.base import shard
 from pylib.gtest import dispatch as gtest_dispatch
 from pylib.gtest import test_runner
+from pylib.utils import report_results
+
 
 
 def Dispatch(options):
@@ -62,12 +64,13 @@ def Dispatch(options):
   # Run tests.
   test_results = shard.ShardAndRunTests(RunnerFactory, attached_devices,
                                         all_tests, options.build_type)
-  test_results.LogFull(
+  report_results.LogFull(
+      results=test_results,
       test_type='Unit test',
       test_package=constants.BROWSERTEST_SUITE_NAME,
       build_type=options.build_type,
       flakiness_server=options.flakiness_dashboard_server)
-  test_results.PrintAnnotation()
+  report_results.PrintAnnotation(test_results)
 
 def _FilterTests(all_enabled_tests):
   """Filters out tests and fixtures starting with PRE_ and MANUAL_."""

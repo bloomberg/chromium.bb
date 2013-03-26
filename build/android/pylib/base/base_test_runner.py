@@ -72,7 +72,8 @@ class BaseTestRunner(object):
       test: A test to run.
 
     Returns:
-      Tuple containing: (test_result.TestResults, tests to rerun or None)
+      Tuple containing:
+        (base_test_result.TestRunResults, tests to rerun or None)
     """
     raise NotImplementedError
 

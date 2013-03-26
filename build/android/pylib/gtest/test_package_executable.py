@@ -123,7 +123,7 @@ class TestPackageExecutable(TestPackage):
     """Runs all the tests and checks for failures.
 
     Returns:
-      A TestResults object.
+      A TestRunResults object.
     """
     args = ['adb', '-s', self.device, 'shell', 'sh',
             constants.TEST_EXECUTABLE_DIR + '/chrome_test_runner.sh']

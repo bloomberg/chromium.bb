@@ -8,19 +8,17 @@ import logging
 import optparse
 import random
 import sys
-import time
 
 from pylib import android_commands
-from pylib.base import test_result
+from pylib.base import base_test_result
 from pylib.host_driven import python_test_base
 from pylib.host_driven import python_test_sharder
+from pylib.utils import report_results
 from pylib.utils import test_options_parser
 
 
 class MonkeyTest(python_test_base.PythonTestBase):
   def testMonkey(self):
-    start_ms = int(time.time()) * 1000
-
     # Launch and wait for Chrome to launch.
     self.adb.StartActivity(self.options.package_name,
                            self.options.activity_name,
@@ -34,23 +32,21 @@ class MonkeyTest(python_test_base.PythonTestBase):
 
     # Run the test.
     output = ''
-    duration_ms = 0
     if before_pids:
       output = '\n'.join(self._LaunchMonkeyTest())
-      duration_ms = int(time.time()) * 1000 - start_ms
       after_pids = self.adb.ExtractPid(self.options.package_name)
 
     crashed = (not before_pids or not after_pids
                or after_pids[0] != before_pids[0])
-    result = test_result.SingleTestResult(self.qualified_name, start_ms,
-                                          duration_ms, log=output)
-    results = test_result.TestResults()
 
+    results = base_test_result.TestRunResults()
     if 'Monkey finished' in output and not crashed:
-      results.ok = [result]
+      result = base_test_result.BaseTestResult(
+          self.qualified_name, base_test_result.ResultType.PASS, log=output)
     else:
-      results.crashed = [result]
-
+      result = base_test_result.BaseTestResult(
+          self.qualified_name, base_test_result.ResultType.FAIL, log=output)
+    results.AddResult(result)
     return results
 
   def _LaunchMonkeyTest(self):
@@ -107,12 +103,13 @@ def DispatchPythonTests(options):
   options.ensure_value('shard_retries', 1)
   sharder = python_test_sharder.PythonTestSharder(
       attached_devices, available_tests, options)
-  result = sharder.RunShardedTests()
-  result.LogFull(
+  results = sharder.RunShardedTests()
+  report_results.LogFull(
+      results=results,
       test_type='Monkey',
       test_package='Monkey',
       build_type=options.build_type)
-  result.PrintAnnotation()
+  report_results.PrintAnnotation(results)
 
 
 def main():

@@ -8,8 +8,8 @@ import logging
 import os
 
 from pylib import android_commands
+from pylib.base import base_test_result
 from pylib.base import shard
-from pylib.base import test_result
 from pylib.uiautomator import test_package as uiautomator_package
 
 import test_package
@@ -26,7 +26,7 @@ def Dispatch(options):
     options: Command line options.
 
   Returns:
-    A TestResults object holding the results of the Java tests.
+    A TestRunResults object holding the results of the Java tests.
 
   Raises:
     Exception: when there are no attached devices.
@@ -80,7 +80,7 @@ def Dispatch(options):
 
   if not tests:
     logging.warning('No instrumentation tests to run with current args.')
-    return test_result.TestResults()
+    return base_test_result.TestRunResults()
 
   tests *= options.number_of_runs
 

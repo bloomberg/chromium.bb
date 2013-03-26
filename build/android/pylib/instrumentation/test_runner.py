@@ -18,8 +18,10 @@ from pylib import forwarder
 from pylib import json_perf_parser
 from pylib import perf_tests_helper
 from pylib import valgrind_tools
+from pylib.base import base_test_result
 from pylib.base import base_test_runner
-from pylib.base import test_result
+
+import test_result
 
 
 _PERF_TEST_ANNOTATION = 'PerfTest'
@@ -371,15 +373,11 @@ class TestRunner(base_test_runner.BaseTestRunner):
       return 3 * 60
     return 1 * 60
 
+  #override.
   def RunTest(self, test):
-    """Runs the test, generating the coverage if needed.
-
-    Returns:
-      A test_result.TestResults object.
-    """
     raw_result = None
     start_date_ms = None
-    test_results = test_result.TestResults()
+    results = base_test_result.TestRunResults()
     timeout=(self._GetIndividualTestTimeoutSecs(test) *
              self._GetIndividualTestTimeoutScale(test) *
              self.tool.GetTimeoutScale())
@@ -409,11 +407,13 @@ class TestRunner(base_test_runner.BaseTestRunner):
           log = 'No information.'
         if self.screenshot_failures or log.find('INJECT_EVENTS perm') >= 0:
           self._TakeScreenshot(test)
-        test_results.failed = [test_result.SingleTestResult(
-            test, start_date_ms, duration_ms, log)]
+        result = test_result.InstrumentationTestResult(
+            test, base_test_result.ResultType.FAIL, start_date_ms, duration_ms,
+            log=log)
       else:
-        test_results.ok = [test_result.SingleTestResult(test, start_date_ms,
-                                                        duration_ms)]
+        result = test_result.InstrumentationTestResult(
+            test, base_test_result.ResultType.PASS, start_date_ms, duration_ms)
+      results.AddResult(result)
     # Catch exceptions thrown by StartInstrumentation().
     # See ../../third_party/android/testrunner/adb_interface.py
     except (android_commands.errors.WaitForResponseTimedOutError,
@@ -427,8 +427,9 @@ class TestRunner(base_test_runner.BaseTestRunner):
       message = str(e)
       if not message:
         message = 'No information.'
-      test_results.crashed = [test_result.SingleTestResult(
-          test, start_date_ms, duration_ms, message)]
+      results.AddResult(test_result.InstrumentationTestResult(
+          test, base_test_result.ResultType.CRASH, start_date_ms, duration_ms,
+          log=message))
       raw_result = None
     self.TestTeardown(test, raw_result)
-    return (test_results, None if test_results.ok else test)
+    return (results, None if results.DidRunPass() else test)

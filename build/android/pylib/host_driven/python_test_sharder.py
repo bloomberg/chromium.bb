@@ -8,8 +8,8 @@ import copy
 import logging
 import multiprocessing
 
+from pylib.base import base_test_result
 from pylib.base import sharded_tests_queue
-from pylib.base.test_result import TestResults
 
 from python_test_caller import CallPythonTest
 
@@ -67,12 +67,10 @@ class PythonTestRunner(object):
     """
     tests = PythonTestSharder.tests_container
 
-    results = []
+    results = base_test_result.TestRunResults()
     for t in tests:
-      res = CallPythonTest(t, self.options)
-      results.append(res)
-
-    return TestResults.FromTestResults(results)
+      results.AddTestRunResults(CallPythonTest(t, self.options))
+    return results
 
 
 class PythonTestSharder(object):
@@ -120,8 +118,7 @@ class PythonTestSharder(object):
     logging.warning('Note that the output is not synchronized.')
     logging.warning('Look for the "Final result" banner in the end.')
     logging.warning('*' * 80)
-    all_passed = []
-    test_results = TestResults()
+    final_results = base_test_result.TestRunResults()
     tests_to_run = self.tests
     for retry in xrange(self.retries):
       logging.warning('Try %d of %d', retry + 1, self.retries)
@@ -132,7 +129,7 @@ class PythonTestSharder(object):
                                   SetTestsContainer,
                                   [PythonTestSharder.tests_container])
 
-      # List of TestResults objects from each test execution.
+      # List of TestRunResults objects from each test execution.
       try:
         results_lists = pool.map(_DefaultRunnable, test_runners)
       except Exception:
@@ -140,25 +137,25 @@ class PythonTestSharder(object):
                           'PythonTestRunners has gone wrong.')
         raise Exception('PythonTestRunners were unable to run tests.')
 
-      test_results = TestResults.FromTestResults(results_lists)
+      test_results = base_test_result.TestRunResults()
+      for t in results_lists:
+        test_results.AddTestRunResults(t)
       # Accumulate passing results.
-      all_passed += test_results.ok
+      final_results.AddResults(test_results.GetPass())
       # If we have failed tests, map them to tests to retry.
-      failed_tests = test_results.GetAllBroken()
-      tests_to_run = self._GetTestsToRetry(self.tests,
-                                           failed_tests)
+      failed_tests = [t.GetName() for t in test_results.GetNotPass()]
+      tests_to_run = self._GetTestsToRetry(self.tests, failed_tests)
 
       # Bail out early if we have no more tests. This can happen if all tests
       # pass before we're out of retries, for example.
       if not tests_to_run:
         break
 
-    final_results = TestResults()
     # all_passed has accumulated all passing test results.
     # test_results will have the results from the most recent run, which could
     # include a variety of failure modes (unknown, crashed, failed, etc).
+    test_results.AddResults(final_results.GetPass())
     final_results = test_results
-    final_results.ok = all_passed
 
     return final_results
 
@@ -186,18 +183,17 @@ class PythonTestSharder(object):
 
     return test_runners
 
-  def _GetTestsToRetry(self, available_tests, failed_tests):
+  def _GetTestsToRetry(self, available_tests, failed_test_names):
     """Infers a list of tests to retry from failed tests and available tests.
 
     Args:
       available_tests: a list of tests which subclass PythonTestBase.
-      failed_tests: a list of SingleTestResults representing failed tests.
+      failed_test_names: a list of failed test names.
 
     Returns:
       A list of test objects which correspond to test names found in
-      failed_tests, or an empty list if there is no correspondence.
+      failed_test_names, or an empty list if there is no correspondence.
     """
-    failed_test_names = map(lambda t: t.test_name, failed_tests)
     tests_to_retry = [t for t in available_tests
                       if t.qualified_name in failed_test_names]
     return tests_to_retry

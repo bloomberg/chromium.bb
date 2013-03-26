@@ -18,13 +18,14 @@ class TestPackage(test_jar.TestJar):
     if not os.path.exists(apk_path):
       raise Exception('%s not found, please build it' % apk_path)
     self._apk_path = apk_path
+    self._package_name = apk_helper.GetPackageName(self._apk_path)
 
   def GetApkPath(self):
     return self._apk_path
 
   def GetPackageName(self):
     """Returns the package name of this APK."""
-    return apk_helper.GetPackageName(self._apk_path)
+    return self._package_name
 
   # Override.
   def Install(self, adb):
