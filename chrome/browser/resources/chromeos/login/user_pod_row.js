@@ -365,7 +365,7 @@ cr.define('login', function() {
      * Whether action box button is in active state.
      * @type {boolean}
      */
-    get activeActionBoxMenu() {
+    get isActionBoxMenuActive() {
       return this.actionBoxAreaElement.classList.contains('active');
     },
     set isActionBoxMenuActive(active) {
@@ -561,7 +561,7 @@ cr.define('login', function() {
     handleMouseDown_: function(e) {
       if (this.parentNode.disabled)
         return;
-      if (!this.signinButtonElement.hidden) {
+      if (!this.signinButtonElement.hidden && !this.isActionBoxMenuActive) {
         this.showSigninUI();
         // Prevent default so that we don't trigger 'focus' event.
         e.preventDefault();
