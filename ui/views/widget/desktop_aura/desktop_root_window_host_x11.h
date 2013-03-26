@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_ROOT_WINDOW_HOST_LINUX_H_
-#define UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_ROOT_WINDOW_HOST_LINUX_H_
+#ifndef UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_ROOT_WINDOW_HOST_X11_H_
+#define UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_ROOT_WINDOW_HOST_X11_H_
 
 #include <X11/Xlib.h>
 
@@ -14,9 +14,9 @@
 #include "base/memory/weak_ptr.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/root_window_host.h"
-#include "ui/gfx/rect.h"
 #include "ui/base/cursor/cursor_loader_x11.h"
 #include "ui/base/x/x11_atom_cache.h"
+#include "ui/gfx/rect.h"
 #include "ui/views/views_export.h"
 #include "ui/views/widget/desktop_aura/desktop_root_window_host.h"
 
@@ -38,22 +38,22 @@ namespace corewm {
 class CursorManager;
 }
 
-class VIEWS_EXPORT DesktopRootWindowHostLinux
+class VIEWS_EXPORT DesktopRootWindowHostX11
     : public DesktopRootWindowHost,
       public aura::RootWindowHost,
       public MessageLoop::Dispatcher {
  public:
-  DesktopRootWindowHostLinux(
+  DesktopRootWindowHostX11(
       internal::NativeWidgetDelegate* native_widget_delegate,
       DesktopNativeWidgetAura* desktop_native_widget_aura,
       const gfx::Rect& initial_bounds);
-  virtual ~DesktopRootWindowHostLinux();
+  virtual ~DesktopRootWindowHostX11();
 
   // A way of converting an X11 |xid| host window into a |content_window_|.
   static aura::Window* GetContentWindowForXID(XID xid);
 
   // A way of converting an X11 |xid| host window into this object.
-  static DesktopRootWindowHostLinux* GetHostForXID(XID xid);
+  static DesktopRootWindowHostX11* GetHostForXID(XID xid);
 
   // Called by X11DesktopHandler to notify us that the native windowing system
   // has changed our activation.
@@ -174,7 +174,7 @@ class VIEWS_EXPORT DesktopRootWindowHostLinux
   // Overridden from Dispatcher:
   virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE;
 
-  base::WeakPtrFactory<DesktopRootWindowHostLinux> close_widget_factory_;
+  base::WeakPtrFactory<DesktopRootWindowHostX11> close_widget_factory_;
 
   // X11 things
   // The display and the native X window hosting the root window.
@@ -229,11 +229,11 @@ class VIEWS_EXPORT DesktopRootWindowHostLinux
   // there are no notifications when this changes. We need to track this so we
   // can notify widgets when they have lost capture, which controls a bunch of
   // things in views like hiding menus.
-  static DesktopRootWindowHostLinux* g_current_capture;
+  static DesktopRootWindowHostX11* g_current_capture;
 
-  DISALLOW_COPY_AND_ASSIGN(DesktopRootWindowHostLinux);
+  DISALLOW_COPY_AND_ASSIGN(DesktopRootWindowHostX11);
 };
 
 }  // namespace views
 
-#endif  // UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_ROOT_WINDOW_HOST_LINUX_H_
+#endif  // UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_ROOT_WINDOW_HOST_X11_H_

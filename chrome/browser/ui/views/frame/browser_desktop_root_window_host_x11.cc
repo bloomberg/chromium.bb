@@ -2,37 +2,37 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/frame/browser_desktop_root_window_host_linux.h"
+#include "chrome/browser/ui/views/frame/browser_desktop_root_window_host_x11.h"
 
 ////////////////////////////////////////////////////////////////////////////////
-// BrowserDesktopRootWindowHostLinux, public:
+// BrowserDesktopRootWindowHostX11, public:
 
-BrowserDesktopRootWindowHostLinux::BrowserDesktopRootWindowHostLinux(
+BrowserDesktopRootWindowHostX11::BrowserDesktopRootWindowHostX11(
     views::internal::NativeWidgetDelegate* native_widget_delegate,
     views::DesktopNativeWidgetAura* desktop_native_widget_aura,
     const gfx::Rect& initial_bounds)
-    : DesktopRootWindowHostLinux(native_widget_delegate,
+    : DesktopRootWindowHostX11(native_widget_delegate,
                                  desktop_native_widget_aura,
                                  initial_bounds) {
 }
 
-BrowserDesktopRootWindowHostLinux::~BrowserDesktopRootWindowHostLinux() {
+BrowserDesktopRootWindowHostX11::~BrowserDesktopRootWindowHostX11() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// BrowserDesktopRootWindowHostLinux,
+// BrowserDesktopRootWindowHostX11,
 //     BrowserDesktopRootWindowHost implementation:
 
 views::DesktopRootWindowHost*
-    BrowserDesktopRootWindowHostLinux::AsDesktopRootWindowHost() {
+    BrowserDesktopRootWindowHostX11::AsDesktopRootWindowHost() {
   return this;
 }
 
-int BrowserDesktopRootWindowHostLinux::GetMinimizeButtonOffset() const {
+int BrowserDesktopRootWindowHostX11::GetMinimizeButtonOffset() const {
   return 0;
 }
 
-bool BrowserDesktopRootWindowHostLinux::UsesNativeSystemMenu() const {
+bool BrowserDesktopRootWindowHostX11::UsesNativeSystemMenu() const {
   return false;
 }
 
@@ -47,7 +47,7 @@ BrowserDesktopRootWindowHost*
         const gfx::Rect& initial_bounds,
         BrowserView* browser_view,
         BrowserFrame* browser_frame) {
-  return new BrowserDesktopRootWindowHostLinux(native_widget_delegate,
+  return new BrowserDesktopRootWindowHostX11(native_widget_delegate,
                                                desktop_native_widget_aura,
                                                initial_bounds);
 }

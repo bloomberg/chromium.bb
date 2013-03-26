@@ -7,8 +7,8 @@
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 
-#if defined(OS_LINUX)
-#include "ui/views/widget/desktop_aura/desktop_root_window_host_linux.h"
+#if defined(USE_X11)
+#include "ui/views/widget/desktop_aura/desktop_root_window_host_x11.h"
 #elif defined(OS_WIN)
 #include "ui/views/widget/desktop_aura/desktop_root_window_host_win.h"
 #endif
@@ -45,7 +45,7 @@ bool ActiveDesktopMonitor::IsDesktopWindow(aura::RootWindow* root_window) {
   return views::DesktopRootWindowHostWin::GetContentWindowForHWND(
       root_window->GetAcceleratedWidget()) != NULL;
 #elif defined(OS_LINUX)
-  return views::DesktopRootWindowHostLinux::GetContentWindowForXID(
+  return views::DesktopRootWindowHostX11::GetContentWindowForXID(
       root_window->GetAcceleratedWidget()) != NULL;
 #else
   NOTREACHED();

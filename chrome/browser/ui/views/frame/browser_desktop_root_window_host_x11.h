@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_DESKTOP_ROOT_WINDOW_HOST_LINUX_H_
-#define CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_DESKTOP_ROOT_WINDOW_HOST_LINUX_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_DESKTOP_ROOT_WINDOW_HOST_X11_H_
+#define CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_DESKTOP_ROOT_WINDOW_HOST_X11_H_
 
-#include "ui/views/widget/desktop_aura/desktop_root_window_host_linux.h"
+#include "ui/views/widget/desktop_aura/desktop_root_window_host_x11.h"
 #include "chrome/browser/ui/views/frame/browser_desktop_root_window_host.h"
 
 class BrowserFrame;
@@ -15,15 +15,15 @@ namespace views {
 class DesktopNativeWidgetAura;
 }
 
-class BrowserDesktopRootWindowHostLinux
+class BrowserDesktopRootWindowHostX11
     : public BrowserDesktopRootWindowHost,
-      public views::DesktopRootWindowHostLinux {
+      public views::DesktopRootWindowHostX11 {
  public:
-  BrowserDesktopRootWindowHostLinux(
+  BrowserDesktopRootWindowHostX11(
       views::internal::NativeWidgetDelegate* native_widget_delegate,
       views::DesktopNativeWidgetAura* desktop_native_widget_aura,
       const gfx::Rect& initial_bounds);
-  virtual ~BrowserDesktopRootWindowHostLinux();
+  virtual ~BrowserDesktopRootWindowHostX11();
 
  private:
   // Overridden from BrowserDesktopRootWindowHost:
@@ -31,8 +31,8 @@ class BrowserDesktopRootWindowHostLinux
   virtual int GetMinimizeButtonOffset() const OVERRIDE;
   virtual bool UsesNativeSystemMenu() const OVERRIDE;
 
-  DISALLOW_COPY_AND_ASSIGN(BrowserDesktopRootWindowHostLinux);
+  DISALLOW_COPY_AND_ASSIGN(BrowserDesktopRootWindowHostX11);
 };
 
 
-#endif  // CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_DESKTOP_ROOT_WINDOW_HOST_LINUX_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_DESKTOP_ROOT_WINDOW_HOST_X11_H_

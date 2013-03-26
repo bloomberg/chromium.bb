@@ -10,7 +10,7 @@
 #include "ui/base/x/x11_util.h"
 
 #if !defined(OS_CHROMEOS)
-#include "ui/views/widget/desktop_aura/desktop_root_window_host_linux.h"
+#include "ui/views/widget/desktop_aura/desktop_root_window_host_x11.h"
 #endif
 
 #if !defined(OS_CHROMEOS)
@@ -193,7 +193,7 @@ gfx::NativeView DockInfo::GetLocalProcessWindowAtPoint(
   // is.
   XID xid =
       LocalProcessWindowFinder::GetProcessWindowAtPoint(screen_point, ignore);
-  return views::DesktopRootWindowHostLinux::GetContentWindowForXID(xid);
+  return views::DesktopRootWindowHostX11::GetContentWindowForXID(xid);
 }
 
 bool DockInfo::GetWindowBounds(gfx::Rect* bounds) const {

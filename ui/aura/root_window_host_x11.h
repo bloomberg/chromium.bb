@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_ROOT_WINDOW_HOST_LINUX_H_
-#define UI_AURA_ROOT_WINDOW_HOST_LINUX_H_
+#ifndef UI_AURA_ROOT_WINDOW_HOST_X11_H_
+#define UI_AURA_ROOT_WINDOW_HOST_X11_H_
 
 #include <X11/Xlib.h>
 
@@ -31,12 +31,12 @@ namespace internal {
 class TouchEventCalibrate;
 }
 
-class RootWindowHostLinux : public RootWindowHost,
+class RootWindowHostX11 : public RootWindowHost,
                             public MessageLoop::Dispatcher,
                             public EnvObserver {
  public:
-  explicit RootWindowHostLinux(const gfx::Rect& bounds);
-  virtual ~RootWindowHostLinux();
+  explicit RootWindowHostX11(const gfx::Rect& bounds);
+  virtual ~RootWindowHostX11();
 
   // Overridden from Dispatcher overrides:
   virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE;
@@ -143,9 +143,9 @@ class RootWindowHostLinux : public RootWindowHost,
 
   ui::X11AtomCache atom_cache_;
 
-  DISALLOW_COPY_AND_ASSIGN(RootWindowHostLinux);
+  DISALLOW_COPY_AND_ASSIGN(RootWindowHostX11);
 };
 
 }  // namespace aura
 
-#endif  // UI_AURA_ROOT_WINDOW_HOST_LINUX_H_
+#endif  // UI_AURA_ROOT_WINDOW_HOST_X11_H_
