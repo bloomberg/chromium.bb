@@ -1679,9 +1679,6 @@
         }],
       ],
     },
-    # TODO(teravest): Remove this define once uses of USE_SKIA are cleaned up
-    # throughout the codebase.
-    'defines' : ['USE_SKIA'],
     'conditions': [
       ['(OS=="mac" or OS=="ios") and asan==1', {
         'dependencies': [
