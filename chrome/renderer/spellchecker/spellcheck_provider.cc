@@ -331,7 +331,7 @@ bool SpellCheckProvider::SatisfyRequestFromCache(
     U16_PREV(text.data(), 0, length, code);
     UErrorCode error = U_ZERO_ERROR;
     if (uscript_getScript(code, &error) != USCRIPT_COMMON) {
-      completion->didFinishCheckingText(last_results_);
+      completion->didCancelCheckingText();
       return true;
     }
   }

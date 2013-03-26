@@ -141,4 +141,24 @@ TEST_F(SpellCheckProviderTest, CompleteNecessaryRequests) {
                                                 << text << "\"";
 }
 
+// Tests that the SpellCheckProvider cancels spelling requests in the middle of
+// a word.
+TEST_F(SpellCheckProviderTest, CancelMidWordRequests) {
+  FakeTextCheckingCompletion completion;
+  provider_.RequestTextChecking(WebKit::WebString("hello "), &completion);
+  EXPECT_EQ(completion.completion_count_, 1U);
+  EXPECT_EQ(completion.cancellation_count_, 0U);
+  EXPECT_EQ(provider_.spelling_service_call_count_, 1U);
+
+  provider_.RequestTextChecking(WebKit::WebString("hello world"), &completion);
+  EXPECT_EQ(completion.completion_count_, 2U);
+  EXPECT_EQ(completion.cancellation_count_, 1U);
+  EXPECT_EQ(provider_.spelling_service_call_count_, 1U);
+
+  provider_.RequestTextChecking(WebKit::WebString("hello world."), &completion);
+  EXPECT_EQ(completion.completion_count_, 3U);
+  EXPECT_EQ(completion.cancellation_count_, 1U);
+  EXPECT_EQ(provider_.spelling_service_call_count_, 2U);
+}
+
 }  // namespace
