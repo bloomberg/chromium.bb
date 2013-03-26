@@ -135,7 +135,7 @@
    fun:malloc
    fun:FcConfigValues
    fun:FcConfigSubstituteWithPat
-   fun:_ZN16FontConfigDirect5MatchEPSsPjbjRKSsPKvmPbS6_
+   fun:*SkFontConfigInterfaceDirect*match*
 }
 {
    bug_46177_a (Third Party)
