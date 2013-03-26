@@ -6,6 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/network_change_notifier_chromeos.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -55,6 +56,7 @@ NetworkChangeNotifierChromeos::~NetworkChangeNotifierChromeos() {
 }
 
 void NetworkChangeNotifierChromeos::Initialize() {
+  DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
   NetworkStateHandler::Get()->AddObserver(this);
 
   dns_config_service_.reset(new DnsConfigService());
@@ -69,12 +71,20 @@ void NetworkChangeNotifierChromeos::Shutdown() {
   dns_config_service_.reset();
   if (NetworkStateHandler::Get())
     NetworkStateHandler::Get()->RemoveObserver(this);
+  DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
 }
 
 net::NetworkChangeNotifier::ConnectionType
 NetworkChangeNotifierChromeos::GetCurrentConnectionType() const {
   return connection_type_;
 }
+
+void NetworkChangeNotifierChromeos::SystemResumed(
+    const base::TimeDelta& sleep_duration) {
+  // Force invalidation of network resources on resume.
+  NetworkChangeNotifier::NotifyObserversOfIPAddressChange();
+}
+
 
 void NetworkChangeNotifierChromeos::DefaultNetworkChanged(
     const chromeos::NetworkState* default_network) {
@@ -86,9 +96,9 @@ void NetworkChangeNotifierChromeos::DefaultNetworkChanged(
               &ip_address_changed, &dns_changed);
 
   if (connection_type_changed)
-    NetworkChangeNotifierChromeos:: NotifyObserversOfConnectionTypeChange();
+    NetworkChangeNotifier::NotifyObserversOfConnectionTypeChange();
   if (ip_address_changed)
-    NetworkChangeNotifierChromeos::NotifyObserversOfIPAddressChange();
+    NetworkChangeNotifier::NotifyObserversOfIPAddressChange();
   if (dns_changed)
     dns_config_service_->OnNetworkChange();
 }

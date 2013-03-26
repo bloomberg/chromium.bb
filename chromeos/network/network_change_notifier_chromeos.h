@@ -11,6 +11,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "chromeos/chromeos_export.h"
+#include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/network/network_state_handler_observer.h"
 #include "net/base/network_change_notifier.h"
 
@@ -18,6 +19,7 @@ namespace chromeos {
 
 class CHROMEOS_EXPORT NetworkChangeNotifierChromeos
     : public net::NetworkChangeNotifier,
+      public chromeos::PowerManagerClient::Observer,
       public chromeos::NetworkStateHandlerObserver {
  public:
   NetworkChangeNotifierChromeos();
@@ -32,6 +34,9 @@ class CHROMEOS_EXPORT NetworkChangeNotifierChromeos
   // NetworkChangeNotifier overrides.
   virtual net::NetworkChangeNotifier::ConnectionType
       GetCurrentConnectionType() const OVERRIDE;
+
+  // PowerManagerClient::Observer overrides.
+  virtual void SystemResumed(const base::TimeDelta& sleep_duration) OVERRIDE;
 
   // NetworkStateHandlerObserver overrides.
   virtual void DefaultNetworkChanged(
