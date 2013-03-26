@@ -110,59 +110,50 @@
                      .style.fontSize:WEB_FONT_SIZE">
     <commands>
       <!-- We have to use U+XXXX notation here according to event.keyIdentifier
-      property -->
+           property -->
       <command id="cut" i18n-values="label:CUT_BUTTON_LABEL"
-              shortcut="U+0058-Ctrl"></command>
+               shortcut="U+0058-Ctrl">
       <command id="copy" i18n-values="label:COPY_BUTTON_LABEL"
-              shortcut="U+0043-Ctrl"></command>
+               shortcut="U+0043-Ctrl">
       <command id="paste" i18n-values="label:PASTE_BUTTON_LABEL"
-              shortcut="U+0056-Ctrl"></command>
+               shortcut="U+0056-Ctrl">
       <command id="rename" i18n-values="label:RENAME_BUTTON_LABEL"
-              shortcut="Enter-Ctrl"></command>
+               shortcut="Enter-Ctrl">
       <command id="delete" i18n-values="label:DELETE_BUTTON_LABEL"
-               shortcut="U+007F"></command>
+               shortcut="U+007F">
       <command id="newfolder" i18n-values="label:NEW_FOLDER_BUTTON_LABEL"
-               shortcut="U+0045-Ctrl"></command>
-      <command id="newwindow" i18n-values="label:NEW_WINDOW_BUTTON_LABEL"
-          ></command>
+               shortcut="U+0045-Ctrl">
+      <command id="newwindow" i18n-values="label:NEW_WINDOW_BUTTON_LABEL">
       <command id="change-default-app"
-          i18n-values="label:CHANGE_DEFAULT_APP_BUTTON_LABEL"></command>
+               i18n-values="label:CHANGE_DEFAULT_APP_BUTTON_LABEL">
 
-      <command id="search" shortcut="U+0046-Ctrl"></command>
+      <command id="search" shortcut="U+0046-Ctrl">
 
-      <command id="unmount" i18n-values="label:UNMOUNT_DEVICE_BUTTON_LABEL"
-          ></command>
-      <command id="format" i18n-values="label:FORMAT_DEVICE_BUTTON_LABEL"
-          ></command>
-      <command id="import-photos" i18n-values="label:PHOTO_IMPORT_TITLE"
-          ></command>
+      <command id="unmount" i18n-values="label:UNMOUNT_DEVICE_BUTTON_LABEL">
+      <command id="format" i18n-values="label:FORMAT_DEVICE_BUTTON_LABEL">
+      <command id="import-photos" i18n-values="label:PHOTO_IMPORT_TITLE">
 
-      <command id="volume-help" i18n-values="label:DRIVE_MENU_HELP"
-          ></command>
+      <command id="volume-help" i18n-values="label:DRIVE_MENU_HELP">
       <command id="drive-buy-more-space"
-          i18n-values="label:DRIVE_BUY_MORE_SPACE"
-          ></command>
+               i18n-values="label:DRIVE_BUY_MORE_SPACE">
       <command id="drive-clear-local-cache"
-          i18n-values="label:DRIVE_CLEAR_LOCAL_CACHE"></command>
-      <command id="drive-reload"
-          i18n-values="label:DRIVE_RELOAD"></command>
+               i18n-values="label:DRIVE_CLEAR_LOCAL_CACHE">
+      <command id="drive-reload" i18n-values="label:DRIVE_RELOAD">
       <command id="drive-go-to-drive"
-          i18n-values="label:DRIVE_VISIT_DRIVE_GOOGLE_COM"></command>
+               i18n-values="label:DRIVE_VISIT_DRIVE_GOOGLE_COM">
 
-      <command id="toggle-pinned"
-          i18n-values="label:OFFLINE_COLUMN_LABEL"></command>
+      <command id="toggle-pinned" i18n-values="label:OFFLINE_COLUMN_LABEL">
 
-      <command id="open-with"
-          i18n-values="label:OPEN_WITH_BUTTON_LABEL"></command>
+      <command id="open-with" i18n-values="label:OPEN_WITH_BUTTON_LABEL">
       <command id="zip-selection"
-          i18n-values="label:ZIP_SELECTION_BUTTON_LABEL"></command>
+               i18n-values="label:ZIP_SELECTION_BUTTON_LABEL">
     </commands>
 
     <menu id="file-context-menu" class="chrome-menu" showShortcuts>
       <menuitem id="default-action"
-          visibleif="full-page" hidden></menuitem>
+                visibleif="full-page" hidden></menuitem>
       <menuitem command="#open-with"
-          visibleif="full-page" hidden></menuitem>
+                visibleif="full-page" hidden></menuitem>
       <hr id="default-action-separator" visibleif="full-page" hidden>
       <menuitem command="#toggle-pinned" checkable></menuitem>
       <hr command="#toggle-pinned">
@@ -175,7 +166,7 @@
       <menuitem command="#zip-selection"></menuitem>
       <hr visibleif="saveas-file full-page">
       <menuitem command="#newfolder"
-          visibleif="saveas-file full-page"></menuitem>
+                visibleif="saveas-file full-page"></menuitem>
     </menu>
     <menu id="roots-context-menu" class="chrome-menu" >
       <menuitem command="#import-photos"></menuitem>
@@ -189,14 +180,14 @@
       <menuitem command="#change-default-app"></menuitem>
       <hr>
       <menuitem id="drive-sync-settings"
-          i18n-content=DRIVE_MOBILE_CONNECTION_OPTION></menuitem>
+                i18n-content=DRIVE_MOBILE_CONNECTION_OPTION></menuitem>
       <menuitem id="drive-hosted-settings"
-          i18n-content=DRIVE_SHOW_HOSTED_FILES_OPTION></menuitem>
+                i18n-content=DRIVE_SHOW_HOSTED_FILES_OPTION></menuitem>
       <hr required_attr="ctrl-pressing" required_drive>
       <menuitem required_attr="ctrl-pressing" required_drive
-          command="#drive-clear-local-cache"></menuitem>
+                command="#drive-clear-local-cache"></menuitem>
       <menuitem required_attr="ctrl-pressing" required_drive
-          command="#drive-reload"></menuitem>
+                command="#drive-reload"></menuitem>
       <hr required_drive>
       <div id="volume-space-info" disabled>
         <span id="volume-space-info-label"></span>
@@ -217,7 +208,7 @@
         <menuitem command="#delete"></menuitem>
     </menu>
 
-    <div class=dialog-title invisibleif="full-page">[TITLE]</div>
+    <div class=dialog-title invisibleif="full-page"></div>
     <div class=dialog-container>
       <div class=dialog-sidebar>
         <tree id="directory-tree" tabindex="8"></tree>
@@ -227,21 +218,19 @@
         <div class=dialog-header>
           <div id="dir-breadcrumbs" class="breadcrumbs"></div>
           <input id="search-box" type="search" tabindex="9"
-              i18n-values="aria-label:SEARCH_TEXT_LABEL">
+                 i18n-values="aria-label:SEARCH_TEXT_LABEL">
           <div class="right buttonbar">
             <div>
               <button class="left small" id="detail-view" tabindex="10"
                       i18n-values="aria-label:DETAIL_VIEW_TOOLTIP">
               </button>
-              <div class="tooltip" i18n-content=DETAIL_VIEW_TOOLTIP
-                   >[DETAIL VIEW]</div>
+              <div class="tooltip" i18n-content=DETAIL_VIEW_TOOLTIP></div>
             </div>
             <div>
               <button class="right small" id="thumbnail-view" tabindex="11"
                       i18n-values="aria-label:THUMBNAIL_VIEW_TOOLTIP">
               </button>
-              <div class="tooltip" i18n-content=THUMBNAIL_VIEW_TOOLTIP
-                   >[THUMBNAIL VIEW]</div>
+              <div class="tooltip" i18n-content=THUMBNAIL_VIEW_TOOLTIP></div>
             </div>
             <button class="menubutton" id="gear-button" tabindex="12"
                     menu="#gear-menu" visibleif="full-page">
@@ -281,7 +270,8 @@
               <div id="search-breadcrumbs" class="breadcrumbs"></div>
             </div>
             <div class="right buttonbar" visibleif="full-page">
-              <button id="tasks" class="combobutton" menu="#tasks-menu" tabindex="2">
+              <button id="tasks" class="combobutton" menu="#tasks-menu"
+                      tabindex="2">
               </button>
               <button id="delete-button" command="#delete" tabindex="3"></button>
             </div>
@@ -296,19 +286,20 @@
     </div>
     <div class=dialog-footer invisibleif="full-page">
       <button id="new-folder" i18n-content=NEW_FOLDER_BUTTON_LABEL
-              visibleif="saveas-file folder" command="#newfolder" tabindex="4">[NEW FOLDER]</button>
+              visibleif="saveas-file folder" command="#newfolder" tabindex="4">
+      </button>
       <div id="filename-input-box">
-        <div class=filename-label i18n-content=FILENAME_LABEL>[FILENAME]</div>
+        <div class=filename-label i18n-content=FILENAME_LABEL></div>
         <input type=text spellcheck=false tabindex="5">
       </div>
       <div class=horizontal-spacer></div>
       <select id="file-type"></select>
-      <button class=ok disabled tabindex="6">[OK]</button>
-      <div class=preparing-label i18n-content=PREPARING_LABEL>[PREPARING]</div>
+      <button class=ok disabled tabindex="6"></button>
+      <div class=preparing-label i18n-content=PREPARING_LABEL></div>
       <div class=progress-bar>
         <div class=progress-track></div>
       </div>
-      <button class=cancel i18n-content=CANCEL_LABEL tabindex="7">[CANCEL]</button>
+      <button class=cancel i18n-content=CANCEL_LABEL tabindex="7"></button>
     </div>
     <div id="butter-bar-container">
       <div id="butter-bar">
