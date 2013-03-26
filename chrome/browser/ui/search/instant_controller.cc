@@ -1279,7 +1279,8 @@ void InstantController::OmniboxLostFocus(gfx::NativeView view_gaining_focus) {
 void InstantController::ResetNTP(bool ignore_blacklist) {
   ntp_.reset();
   std::string instant_url;
-  if (!GetInstantURL(browser_->profile(), ignore_blacklist, &instant_url)) {
+  if (browser_->profile()->IsOffTheRecord() ||
+      !GetInstantURL(browser_->profile(), ignore_blacklist, &instant_url)) {
     // TODO(sreeram|samarth): use local ntp here once available.
     return;
   }
