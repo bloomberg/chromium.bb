@@ -1887,6 +1887,10 @@
                   'http/http_network_layer_unittest.cc',
                   'http/http_network_transaction_spdy2_unittest.cc',
                   'http/http_network_transaction_spdy3_unittest.cc',
+                  'spdy/spdy_http_stream_spdy2_unittest.cc',
+                  'spdy/spdy_http_stream_spdy3_unittest.cc',
+                  'spdy/spdy_proxy_client_socket_spdy3_unittest.cc',
+                  'spdy/spdy_session_spdy3_unittest.cc',
 
                   # These tests crash when run with coverage turned on:
                   # http://crbug.com/177203
