@@ -74,7 +74,8 @@ unsigned char g_category_enabled[TRACE_EVENT_MAX_CATEGORIES] = { 0 };
 const int g_category_already_shutdown = 0;
 const int g_category_categories_exhausted = 1;
 const int g_category_metadata = 2;
-int g_category_index = 3; // skip initial 3 categories
+const int g_num_builtin_categories = 3;
+int g_category_index = g_num_builtin_categories; // Skip default categories.
 
 // The name of the current thread. This is used to decide if the current
 // thread name has changed. We combine all the seen thread names into the
@@ -802,7 +803,7 @@ const unsigned char* TraceLog::GetCategoryEnabledInternal(const char* name) {
 
 void TraceLog::GetKnownCategories(std::vector<std::string>* categories) {
   AutoLock lock(lock_);
-  for (int i = 0; i < g_category_index; i++)
+  for (int i = g_num_builtin_categories; i < g_category_index; i++)
     categories->push_back(g_categories[i]);
 }
 

@@ -882,7 +882,8 @@ TEST_F(TraceEventTestFixture, Categories) {
   EXPECT_TRUE(std::find(cats.begin(), cats.end(), "c2") != cats.end());
   EXPECT_TRUE(std::find(cats.begin(), cats.end(), "c3") != cats.end());
   EXPECT_TRUE(std::find(cats.begin(), cats.end(), "c4") != cats.end());
-
+  // Make sure metadata isn't returned.
+  EXPECT_TRUE(std::find(cats.begin(), cats.end(), "__metadata") == cats.end());
   const std::vector<std::string> empty_categories;
   std::vector<std::string> included_categories;
   std::vector<std::string> excluded_categories;
