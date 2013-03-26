@@ -242,6 +242,7 @@ void SystemTray::HideNotificationView(SystemTrayItem* item) {
 
 void SystemTray::UpdateAfterLoginStatusChange(user::LoginStatus login_status) {
   DestroySystemBubble();
+  UpdateNotificationBubble();
 
   for (std::vector<SystemTrayItem*>::iterator it = items_.begin();
       it != items_.end();
