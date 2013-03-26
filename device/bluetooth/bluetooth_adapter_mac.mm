@@ -4,26 +4,33 @@
 
 #include "device/bluetooth/bluetooth_adapter_mac.h"
 
-#include <IOBluetooth/objc/IOBluetoothHostController.h>
+#import <IOBluetooth/objc/IOBluetoothDevice.h>
+#import <IOBluetooth/objc/IOBluetoothHostController.h>
 
 #include <string>
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/hash_tables.h"
 #include "base/location.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time.h"
 #include "base/strings/sys_string_conversions.h"
+#include "device/bluetooth/bluetooth_device_mac.h"
 
 // Replicate specific 10.7 SDK declarations for building with prior SDKs.
 #if !defined(MAC_OS_X_VERSION_10_7) || \
 MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
 
 @interface IOBluetoothHostController (LionSDKDeclarations)
-- (NSString *)nameAsString;
+- (NSString*)nameAsString;
 - (BluetoothHCIPowerState)powerState;
+@end
+
+@interface IOBluetoothDevice (LionSDKDeclarations)
+- (NSString*)addressString;
 @end
 
 #endif  // MAC_OS_X_VERSION_10_7
@@ -133,11 +140,64 @@ void BluetoothAdapterMac::PollAdapter() {
                       AdapterPoweredChanged(this, powered_));
   }
 
+  NSArray* paired_devices = [IOBluetoothDevice pairedDevices];
+  AddDevices(paired_devices);
+  RemoveUnpairedDevices(paired_devices);
+
   ui_task_runner_->PostDelayedTask(
       FROM_HERE,
       base::Bind(&BluetoothAdapterMac::PollAdapter,
                  weak_ptr_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(kPollIntervalMs));
+}
+
+void BluetoothAdapterMac::AddDevices(NSArray* devices) {
+  for (IOBluetoothDevice* device in devices) {
+    std::string device_address =
+        base::SysNSStringToUTF8([device addressString]);
+    DevicesMap::iterator found_device_iter = devices_.find(device_address);
+
+    if (found_device_iter == devices_.end()) {
+      devices_[device_address] = new BluetoothDeviceMac(device);
+      FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
+                        DeviceAdded(this, devices_[device_address]));
+      continue;
+    }
+    BluetoothDeviceMac* device_mac =
+        static_cast<BluetoothDeviceMac*>(found_device_iter->second);
+    if (device_mac->device_fingerprint() !=
+        BluetoothDeviceMac::ComputeDeviceFingerprint(device)) {
+      devices_[device_address] = new BluetoothDeviceMac(device);
+      FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
+                        DeviceChanged(this, devices_[device_address]));
+      delete device_mac;
+    }
+  }
+}
+
+void BluetoothAdapterMac::RemoveUnpairedDevices(NSArray* paired_devices) {
+  base::hash_set<std::string> paired_device_address_list;
+  for (IOBluetoothDevice* device in paired_devices) {
+    paired_device_address_list.insert(
+        base::SysNSStringToUTF8([device addressString]));
+  }
+
+  DevicesMap::iterator iter = devices_.begin();
+  while (iter != devices_.end()) {
+    DevicesMap::iterator device_iter = iter;
+    ++iter;
+
+    if (paired_device_address_list.find(device_iter->first) !=
+        paired_device_address_list.end())
+      continue;
+
+    if (device_iter->second->IsPaired()) {
+      FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
+                        DeviceRemoved(this, device_iter->second));
+      delete device_iter->second;
+      devices_.erase(device_iter);
+    }
+  }
 }
 
 }  // namespace device

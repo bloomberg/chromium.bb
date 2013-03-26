@@ -46,8 +46,6 @@ BluetoothAdapterChromeOS::~BluetoothAdapterChromeOS() {
       RemoveObserver(this);
   DBusThreadManager::Get()->GetBluetoothManagerClient()->
       RemoveObserver(this);
-
-  STLDeleteValues(&devices_);
 }
 
 void BluetoothAdapterChromeOS::AddObserver(

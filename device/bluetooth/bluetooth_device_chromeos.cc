@@ -48,13 +48,13 @@ namespace chromeos {
 
 BluetoothDeviceChromeOS::BluetoothDeviceChromeOS(
     BluetoothAdapterChromeOS* adapter)
-  : BluetoothDevice(),
-    adapter_(adapter),
-    pairing_delegate_(NULL),
-    connecting_applications_counter_(0),
-    connecting_calls_(0),
-    service_records_loaded_(false),
-    weak_ptr_factory_(this) {
+    : BluetoothDevice(),
+      adapter_(adapter),
+      pairing_delegate_(NULL),
+      connecting_applications_counter_(0),
+      connecting_calls_(0),
+      service_records_loaded_(false),
+      weak_ptr_factory_(this) {
 }
 
 BluetoothDeviceChromeOS::~BluetoothDeviceChromeOS() {

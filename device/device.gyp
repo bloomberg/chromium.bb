@@ -178,6 +178,13 @@
             '../dbus/dbus.gyp:dbus',
           ]
         }],
+        ['OS=="mac"', {
+          'link_settings': {
+            'libraries': [
+              '$(SDKROOT)/System/Library/Frameworks/IOBluetooth.framework',
+            ],
+          },
+        }],
         ['os_posix == 1 and OS != "mac" and OS != "android" and OS != "ios"', {
           'conditions': [
             ['linux_use_tcmalloc == 1', {

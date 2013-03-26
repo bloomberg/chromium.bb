@@ -4,6 +4,7 @@
 
 #include "device/bluetooth/bluetooth_adapter.h"
 
+#include "base/stl_util.h"
 #include "device/bluetooth/bluetooth_device.h"
 
 namespace device {
@@ -12,6 +13,7 @@ BluetoothAdapter::BluetoothAdapter() {
 }
 
 BluetoothAdapter::~BluetoothAdapter() {
+  STLDeleteValues(&devices_);
 }
 
 const std::string& BluetoothAdapter::address() const {

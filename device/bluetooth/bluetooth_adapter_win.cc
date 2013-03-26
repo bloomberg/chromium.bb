@@ -34,7 +34,6 @@ BluetoothAdapterWin::~BluetoothAdapterWin() {
     task_manager_->RemoveObserver(this);
     task_manager_->Shutdown();
   }
-  STLDeleteValues(&devices_);
 }
 
 void BluetoothAdapterWin::AddObserver(BluetoothAdapter::Observer* observer) {

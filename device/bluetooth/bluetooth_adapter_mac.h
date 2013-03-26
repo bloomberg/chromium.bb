@@ -12,6 +12,12 @@
 #include "base/observer_list.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 
+#ifdef __OBJC__
+@class NSArray;
+#else
+class NSArray;
+#endif
+
 namespace base {
 
 class SequencedTaskRunner;
@@ -58,6 +64,16 @@ class BluetoothAdapterMac : public BluetoothAdapter {
   void TrackTestAdapter(
       scoped_refptr<base::SequencedTaskRunner> ui_task_runner);
   void PollAdapter();
+
+  // Adds |devices| into |devices_| and notifies observers of the changes.
+  // |devices| is an array of pointers to discovered or paired
+  // |IOBluetoothDevice| objects.
+  void AddDevices(NSArray* devices);
+
+  // Removes devices that used to be paired but are unpaired by the system from
+  // |devices_|.
+  // |devices| is an array of pointers to paired |IOBluetoothDevice| objects.
+  void RemoveUnpairedDevices(NSArray* paired_devices);
 
   bool powered_;
 

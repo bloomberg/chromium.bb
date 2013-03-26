@@ -10,11 +10,17 @@
 #include "base/basictypes.h"
 #include "device/bluetooth/bluetooth_device.h"
 
+#ifdef __OBJC__
+@class IOBluetoothDevice;
+#else
+class IOBluetoothDevice;
+#endif
+
 namespace device {
 
 class BluetoothDeviceMac : public BluetoothDevice {
  public:
-  BluetoothDeviceMac();
+  explicit BluetoothDeviceMac(const IOBluetoothDevice* device);
   virtual ~BluetoothDeviceMac();
 
   // BluetoothDevice override
@@ -54,6 +60,18 @@ class BluetoothDeviceMac : public BluetoothDevice {
       const ErrorCallback& error_callback) OVERRIDE;
 
  private:
+  friend class BluetoothAdapterMac;
+
+  // Computes the fingerprint that can be used to compare the devices.
+  static uint32 ComputeDeviceFingerprint(const IOBluetoothDevice* device);
+
+  uint32 device_fingerprint() const {
+    return device_fingerprint_;
+  }
+
+  // Used to compare the devices.
+  const uint32 device_fingerprint_;
+
   DISALLOW_COPY_AND_ASSIGN(BluetoothDeviceMac);
 };
 
