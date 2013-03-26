@@ -94,6 +94,8 @@ const int kRSAKeySize = 1024;
 const char kDefaultSandboxedPageContentSecurityPolicy[] =
     "sandbox allow-scripts allow-forms allow-popups";
 
+const char kThumbsWhiteListedExtension[] = "khopmbdjffemhegeeobelklnbglcdgfh";
+
 // A singleton object containing global data needed by the extension objects.
 class ExtensionConfig {
  public:
@@ -1884,9 +1886,15 @@ bool Extension::CanSpecifyHostPermission(const URLPattern& pattern,
       return true;
 
     // Experimental extensions are also allowed chrome://thumb.
+    //
+    // TODO: A public API should be created for retrieving thumbnails.
+    // See http://crbug.com/222856. A temporary hack is implemented here to
+    // make chrome://thumbs available to NTP Russia extension as
+    // non-experimental.
     if (pattern.host() == chrome::kChromeUIThumbnailHost) {
-      return permissions.find(APIPermission::kExperimental) !=
-          permissions.end();
+      return
+          permissions.find(APIPermission::kExperimental) != permissions.end() ||
+          (id() == kThumbsWhiteListedExtension && from_webstore());
     }
 
     // Component extensions can have access to all of chrome://*.
