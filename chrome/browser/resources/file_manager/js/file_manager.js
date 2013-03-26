@@ -1311,7 +1311,7 @@ DialogType.isModal = function(type) {
    */
   FileManager.prototype.setupCurrentDirectory_ = function(pageLoading) {
     var path = location.hash ?  // Location hash has the highest priority.
-        decodeURI(location.hash.substr(1)) :
+        decodeURIComponent(location.hash.substr(1)) :
         this.defaultPath;
 
     if (!pageLoading && path == this.directoryModel_.getCurrentDirPath())

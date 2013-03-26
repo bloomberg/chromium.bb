@@ -96,8 +96,9 @@ ActionChoice.Action = {
 ActionChoice.load = function(opt_filesystem, opt_params) {
   ImageUtil.metrics = metrics;
 
-  var hash = location.hash ? decodeURI(location.hash.substr(1)) : '';
-  var query = location.search ? decodeURI(location.search.substr(1)) : '';
+  var hash = location.hash ? decodeURIComponent(location.hash.substr(1)) : '';
+  var query =
+      location.search ? decodeURIComponent(location.search.substr(1)) : '';
   var params = opt_params || {};
   if (!params.source) params.source = hash;
   if (!params.advancedMode) params.advancedMode = (query == 'advanced-mode');
