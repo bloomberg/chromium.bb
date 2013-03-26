@@ -313,6 +313,7 @@ def GccCommand(target, cmd):
 
 
 def ConfigureGccCommand(target, extra_args=[]):
+  target_cflagstr = ' '.join(CommonTargetCflags(target))
   return GccCommand(
       target,
       CONFIGURE_CMD +
@@ -330,6 +331,8 @@ def ConfigureGccCommand(target, extra_args=[]):
           '--with-newlib',
           '--with-linker-hash-style=gnu',
           '--enable-languages=c,c++,lto',
+          'CFLAGS_FOR_TARGET=' + target_cflagstr,
+          'CXXFLAGS_FOR_TARGET=' + target_cflagstr,
           ] + extra_args)
 
 
@@ -409,17 +412,22 @@ def HostTools(target):
   return tools
 
 
-def NewlibTargetCflags(target):
+# configure defaults to -g -O2 but passing an explicit option overrides that.
+# So we have to list -g -O2 explicitly since we need to add -mtp=soft.
+def CommonTargetCflags(target):
   if target == 'arm':
     tls_option = '-mtp=soft'
   else:
     tls_option = '-mtls-use-call'
-  return ' '.join([
-      '-O2',
+  return ['-g', '-O2', tls_option]
+
+
+def NewlibTargetCflags(target):
+  options = CommonTargetCflags(target) + [
       '-D_I386MACH_ALLOW_HW_INTERRUPTS',
       '-DSIGNAL_PROVIDED',
-      tls_option,
-      ])
+      ]
+  return ' '.join(options)
 
 
 def TargetCommands(target, command_list):
