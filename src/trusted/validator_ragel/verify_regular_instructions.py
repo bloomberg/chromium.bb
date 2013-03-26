@@ -332,7 +332,8 @@ def Worker((prefix, state_index)):
     dfa_traversal.TraverseTree(
         states[state_index],
         final_callback=worker_state.ReceiveInstruction,
-        prefix=prefix)
+        prefix=prefix,
+        anyfield=0)
   finally:
     worker_state.Finish()
 

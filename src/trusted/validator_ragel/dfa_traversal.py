@@ -61,7 +61,7 @@ def TraverseTree(state, final_callback, prefix, anyfield=0x01):
         state.forward_transitions[0].to_state,
         final_callback,
         prefix + [anyfield],
-        anyfield=anyfield + 0x11)
+        anyfield=0 if anyfield == 0 else anyfield + 0x11)
     # We add 0x11 each time to get sequence 01 12 23 etc.
 
     # TODO(shcherbina): change it to much nicer 0x22 once
@@ -73,7 +73,8 @@ def TraverseTree(state, final_callback, prefix, anyfield=0x01):
       TraverseTree(
           t.to_state,
           final_callback,
-          prefix + [byte])
+          prefix + [byte],
+          anyfield)
 
 
 def CreateTraversalTasks(states, initial_state):
