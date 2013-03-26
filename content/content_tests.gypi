@@ -290,6 +290,7 @@
         'browser/geolocation/win7_location_provider_unittest_win.cc',
         'browser/gpu/gpu_blacklist_unittest.cc',
         'browser/gpu/gpu_control_list_unittest.cc',
+        'browser/gpu/gpu_control_list_version_info_unittest.cc',
         'browser/gpu/gpu_data_manager_impl_unittest.cc',
         'browser/gpu/gpu_driver_bug_list_unittest.cc',
         'browser/gpu/gpu_switching_list_unittest.cc',

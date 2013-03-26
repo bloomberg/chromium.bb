@@ -94,6 +94,8 @@ class CONTENT_EXPORT GpuControlList {
   void AddFeature(const std::string& feature_name, int feature_id);
 
  private:
+  friend class VersionInfoTest;
+
   enum BrowserVersionSupport {
     kSupported,
     kUnsupported,
@@ -145,10 +147,9 @@ class CONTENT_EXPORT GpuControlList {
     // Return 1 if version > version_ref,
     //        0 if version = version_ref,
     //       -1 if version < version_ref.
-    // Note that we only compare as many as segments as version_ref contains.
-    // If version_ref is xxx.yyy, it's considered as xxx.yyy.*
+    // Note that we only compare as many segments as both versions contain.
     // For example: Compare("10.3.1", "10.3") returns 0,
-    //              Compare("10.3", "10.3.1") returns -1.
+    //              Compare("10.3", "10.3.1") returns 0.
     // If "version_style" is Lexical, the first segment is compared
     // numerically, all other segments are compared lexically.
     // Lexical is used for AMD Linux driver versions only.
