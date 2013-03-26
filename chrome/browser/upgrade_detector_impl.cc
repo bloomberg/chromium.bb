@@ -20,6 +20,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/metrics/variations/variations_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
@@ -317,9 +318,16 @@ bool UpgradeDetectorImpl::DetectOutdatedInstall() {
   // unless we are simulating an outdated isntall.
   static bool simulate_outdated = CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kSimulateOutdated);
-  if (base::FieldTrialList::FindFullName(kOutdatedInstallCheckTrialName) !=
-          kOutdatedInstallCheck12WeeksGroupName && !simulate_outdated) {
-    return false;
+  if (!simulate_outdated) {
+    if (base::FieldTrialList::FindFullName(kOutdatedInstallCheckTrialName) !=
+            kOutdatedInstallCheck12WeeksGroupName) {
+      return false;
+    }
+
+    // Also don't show the bubble if we have a brand code that is NOT organic.
+    std::string brand;
+    if (google_util::GetBrand(&brand) && !google_util::IsOrganic(brand))
+      return false;
   }
 
   base::Time network_time;
