@@ -841,7 +841,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, GeolocationAPIEmbedderHasNoAccess) {
 
 // Embedder has geolocation permission for this test.
 // Note that the test name prefix must be "GeolocationAPI".
-IN_PROC_BROWSER_TEST_F(WebViewTest, GeolocationAPIEmbedderHasAccess) {
+IN_PROC_BROWSER_TEST_F(WebViewTest, FLAKY_GeolocationAPIEmbedderHasAccess) {
   ASSERT_TRUE(StartTestServer());  // For serving guest pages.
   ASSERT_TRUE(RunPlatformAppTest(
       "platform_apps/web_view/geolocation/embedder_has_permission"))
