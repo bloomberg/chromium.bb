@@ -140,6 +140,7 @@ TEST_F(SearchTest, ShouldAssignURLToInstantRendererExtendedEnabled) {
 
   const SearchTestCase kTestCases[] = {
     {chrome::kChromeSearchLocalOmniboxPopupURL, true,  ""},
+    {chrome::kChromeSearchLocalNtpUrl, true,  ""},
     {"https://foo.com/instant?strk",   true,  ""},
     {"https://foo.com/instant#strk",   true,  ""},
     {"https://foo.com/instant?strk=0", true,  ""},
@@ -187,6 +188,7 @@ const SearchTestCase kInstantNTPTestCases[] = {
   {"chrome://blank/",                  false, "Chrome scheme"},
   {"chrome-search//foo",               false, "Chrome-search scheme"},
   {chrome::kChromeSearchLocalOmniboxPopupURL, false, "Local omnibox popup"},
+  {chrome::kChromeSearchLocalNtpUrl,   true,  "Local new tab page"},
   {"https://bar.com/instant?strk=1",   false, "Random non-search page"},
 };
 

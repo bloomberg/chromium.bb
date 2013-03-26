@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<!-- Copyright 2013 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+<head>
+  <!-- Placeholder title until http://crbug/196415 is resolved. -->
+  <title>New Tab Page</title>
+  <script src="chrome-search://local-ntp/local-ntp.js"></script>
+  <link rel="stylesheet" href="chrome-search://local-ntp/local-ntp.css"></link>
+</head>
+<body>
+  <div id="mv-top-margin"></div>
+  <div id="most-visited">
+    <div id="mv-tiles"></div>
+    <!-- Notification shown when a tile is blacklisted. -->
+    <div id="mv-notice" class="mv-notice-hide">
+      <span id="mv-msg"></span>
+      <!-- Links in the notification. -->
+      <span id="mv-notice-links">
+        <span id="mv-undo"></span>
+        <span id="mv-restore"></span>
+        <button id="mv-notice-x" class="mv-x"></button>
+      </span>
+    </div>
+  </div>
+</body>
+</html>

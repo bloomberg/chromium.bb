@@ -428,6 +428,8 @@ extern const char kChromeSearchScheme[];
 // The local omnibox host and pages under chrome-search.
 extern const char kChromeSearchLocalOmniboxPopupHost[];
 extern const char kChromeSearchLocalOmniboxPopupURL[];
+extern const char kChromeSearchLocalNtpHost[];
+extern const char kChromeSearchLocalNtpUrl[];
 
 // Host for search suggestions iframes.
 extern const char kChromeSearchSuggestionHost[];

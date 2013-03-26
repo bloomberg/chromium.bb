@@ -146,6 +146,9 @@
         <include name="IDR_NOTIFICATION_ICON_HTML" file="resources\notification_icon.html" type="BINDATA" />
       </if>
 
+      <include name="IDR_LOCAL_NTP_HTML" file="resources\local_ntp\local_ntp.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+      <include name="IDR_LOCAL_NTP_CSS" file="resources\local_ntp\local_ntp.css" type="BINDATA" />
+      <include name="IDR_LOCAL_NTP_JS" file="resources\local_ntp\local_ntp.js" type="BINDATA" />
       <include name="IDR_LOCAL_OMNIBOX_POPUP_HTML" file="resources\local_omnibox_popup\local_omnibox_popup.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_LOCAL_OMNIBOX_POPUP_CSS" file="resources\local_omnibox_popup\local_omnibox_popup.css" type="BINDATA" />
       <include name="IDR_LOCAL_OMNIBOX_POPUP_JS" file="resources\local_omnibox_popup\local_omnibox_popup.js" type="BINDATA" />

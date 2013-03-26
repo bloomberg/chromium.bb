@@ -1,0 +1,194 @@
+/* Copyright 2013 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+body {
+  background-attachment: fixed !important
+}
+
+#most-visited {
+  -webkit-user-select: none;
+  margin-top: 60px;
+  text-align: -webkit-center;
+}
+
+.custom-theme .mv-title,
+.custom-theme #mv-msg {
+  color: #fff;
+  text-shadow: black 0 1px 3px;
+}
+
+.custom-theme #mv-notice-links span {
+  color: #fff;
+  text-shadow: rgb(17, 85, 204) 0 1px 3px;
+}
+
+#mv-tiles {
+  /* Use GPU compositing if available. */
+  -webkit-transform: translate3d(0, 0, 0);
+  -webkit-transition: width 200ms;
+  height: 120px;
+  overflow: hidden;
+  white-space: nowrap;
+  width: 304px;
+}
+
+@media only screen and (min-width:666px) {
+  #mv-tiles {
+    width: 466px;
+  }
+}
+
+@media only screen and (min-width:829px) {
+  #mv-tiles {
+    width: 629px;
+  }
+}
+
+.mv-tile:first-child {
+  -webkit-margin-start: 0;
+}
+
+.mv-tile {
+  -webkit-margin-start: 20px;
+  -webkit-transform: translate3d(0, 0, 0);
+  -webkit-transition-duration: 200ms;
+  -webkit-transition-property: -webkit-transform, margin, opacity, width;
+  display: inline-block;
+  height: 85px;
+  width: 140px;
+}
+
+.mv-tile.mv-tile-hide {
+  -webkit-margin-end: -10px;
+  opacity: 0;
+  width: 10px;
+}
+
+/* Class applied to tiles to trigger the blacklist animation. */
+.mv-tile.mv-blacklist {
+  -webkit-margin-start: 0;
+  -webkit-transform: scale(0.5);
+  opacity: 0;
+  width: 0;
+}
+
+.mv-filler {
+  background: -webkit-linear-gradient(#f2f2f2, #e8e8e8);
+  border: 1px solid #e0e0e0;
+  border-radius: 3px;
+  box-shadow: inset 0 2px 3px rgba(0, 0, 0, .09);
+}
+
+.mv-page {
+  background: #fff;
+  border: 1px solid #c0c0c0;
+  border-radius: 2px;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, .7);
+  cursor: pointer;
+}
+
+.mv-page:hover {
+  border-color: #7f7f7f
+}
+
+.mv-thumb {
+  background-size: 140px 85px;
+  height: 100%;
+  width: 100%;
+}
+
+.mv-title {
+  bottom: -28px;
+  color: #777;
+  position: absolute;
+  width: 100%;
+}
+
+.mv-x-hide .mv-x {
+  display: none;
+}
+
+/* An X button to blacklist a tile or hide the notification. */
+.mv-x {
+  background: transparent url(images/close_bar.png);
+  border: none;
+  cursor: default;
+  height: 16px;
+  width: 16px;
+}
+
+.mv-x:hover {
+  background: transparent url(images/close_bar_hover.png);
+}
+
+.mv-x:active {
+  background: transparent url(images/close_bar_active.png);
+}
+
+.mv-page .mv-x {
+  -webkit-transition: opacity 500ms ease-in-out;
+  opacity: 0;
+  position: absolute;
+  right: 2px;
+  top: 2px;
+}
+
+.mv-page:hover .mv-x {
+  -webkit-transition-delay: 500ms;
+  opacity: 1;
+}
+
+.mv-domain {
+  bottom: 24px;
+  color: #777;
+  margin: 0 7px;
+  position: absolute;
+}
+
+.mv-favicon {
+  bottom: -8px;
+  height: 16px;
+  left: 61px;
+  position: absolute;
+  width: 16px;
+}
+
+/* The notification shown when a tile is blacklisted. */
+#mv-notice {
+  font-family: Arial;
+  font-size: 75%;
+  font-weight: bold;
+  opacity: 1;
+  padding: 10px 0;
+}
+
+#mv-notice span {
+  cursor: default;
+}
+
+/* Links in the notification. */
+#mv-notice-links span {
+  -webkit-margin-start: 6px;
+  color: rgb(17, 85, 204);
+  cursor: pointer;
+  padding: 0 4px;
+}
+
+#mv-notice-links span:hover {
+  text-decoration: underline;
+}
+
+#mv-notice-links .mv-x {
+  -webkit-margin-start: 8px;
+  vertical-align: top;
+}
+
+#mv-notice.mv-notice-delayed-hide {
+  -webkit-transition-delay: 10s;
+  -webkit-transition-property: opacity;
+  opacity: 0;
+}
+
+#mv-notice.mv-notice-hide {
+  visibility: hidden;
+}

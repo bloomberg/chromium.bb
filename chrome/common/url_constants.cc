@@ -510,6 +510,9 @@ const int kNumberOfChromeDebugURLs =
 const char kExtensionResourceScheme[] = "chrome-extension-resource";
 
 const char kChromeSearchScheme[] = "chrome-search";
+const char kChromeSearchLocalNtpHost[] = "local-ntp";
+const char kChromeSearchLocalNtpUrl[] =
+    "chrome-search://local-ntp/local-ntp.html";
 
 const char kChromeSearchLocalOmniboxPopupHost[] = "local-omnibox-popup";
 const char kChromeSearchLocalOmniboxPopupURL[]

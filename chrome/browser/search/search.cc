@@ -310,7 +310,8 @@ bool NavEntryIsInstantNTP(const content::WebContents* contents,
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
   return IsInstantExtendedAPIEnabled() &&
          IsRenderedInInstantProcess(contents, profile) &&
-         IsInstantURL(entry->GetVirtualURL(), profile) &&
+         (IsInstantURL(entry->GetVirtualURL(), profile) ||
+          entry->GetVirtualURL() == GURL(chrome::kChromeSearchLocalNtpUrl)) &&
          GetSearchTermsImpl(contents, entry).empty();
 }
 
@@ -318,9 +319,7 @@ bool ShouldAssignURLToInstantRenderer(const GURL& url, Profile* profile) {
   return url.is_valid() &&
          profile &&
          (url.SchemeIs(chrome::kChromeSearchScheme) ||
-          IsInstantURL(url, profile) ||
-          (IsInstantExtendedAPIEnabled() &&
-           url == GURL(chrome::kChromeSearchLocalOmniboxPopupURL)));
+          IsInstantURL(url, profile));
 }
 
 void RegisterUserPrefs(PrefRegistrySyncable* registry) {

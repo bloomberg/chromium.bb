@@ -16,9 +16,9 @@
 
 namespace {
 
-const char kHTMLFilename[] = "local-omnibox-popup.html";
-const char kJsFilename[] = "local-omnibox-popup.js";
-const char kCSSFilename[] = "local-omnibox-popup.css";
+const char kHtmlFilename[] = "local-omnibox-popup.html";
+const char kJSFilename[] = "local-omnibox-popup.js";
+const char kCssFilename[] = "local-omnibox-popup.css";
 const char kPageIconFilename[] = "images/page_icon.png";
 const char kPageIcon2xFilename[] = "images/2x/page_icon.png";
 const char kSearchIconFilename[] = "images/search_icon.png";
@@ -41,11 +41,11 @@ void LocalOmniboxPopupSource::StartDataRequest(
     bool is_incognito,
     const content::URLDataSource::GotDataCallback& callback) {
   int identifier = -1;
-  if (path == kHTMLFilename) {
+  if (path == kHtmlFilename) {
     identifier = IDR_LOCAL_OMNIBOX_POPUP_HTML;
-  } else if (path == kJsFilename) {
+  } else if (path == kJSFilename) {
     identifier = IDR_LOCAL_OMNIBOX_POPUP_JS;
-  } else if (path == kCSSFilename) {
+  } else if (path == kCssFilename) {
     identifier = IDR_LOCAL_OMNIBOX_POPUP_CSS;
   } else if (path == kPageIconFilename) {
     identifier = IDR_LOCAL_OMNIBOX_POPUP_IMAGES_PAGE_ICON_PNG;
@@ -67,11 +67,11 @@ void LocalOmniboxPopupSource::StartDataRequest(
 
 std::string LocalOmniboxPopupSource::GetMimeType(
     const std::string& path) const {
-  if (path == kHTMLFilename)
+  if (path == kHtmlFilename)
     return "text/html";
-  if (path == kJsFilename)
+  if (path == kJSFilename)
     return "application/javascript";
-  if (path == kCSSFilename)
+  if (path == kCssFilename)
     return "text/css";
   if (path == kPageIconFilename || path == kPageIcon2xFilename ||
       path == kSearchIconFilename || path == kSearchIcon2xFilename)
@@ -86,10 +86,10 @@ bool LocalOmniboxPopupSource::ShouldServiceRequest(
   if (request->url().SchemeIs(chrome::kChromeSearchScheme)) {
     DCHECK(StartsWithASCII(request->url().path(), "/", true));
     std::string filename = request->url().path().substr(1);
-    return filename == kHTMLFilename || filename == kJsFilename ||
-        filename == kCSSFilename || filename == kPageIconFilename ||
-        filename == kPageIcon2xFilename || filename == kSearchIconFilename ||
-        filename == kSearchIcon2xFilename;
+    return filename == kHtmlFilename || filename == kJSFilename ||
+           filename == kCssFilename || filename == kPageIconFilename ||
+           filename == kPageIcon2xFilename || filename == kSearchIconFilename ||
+           filename == kSearchIcon2xFilename;
   }
   return false;
 }
