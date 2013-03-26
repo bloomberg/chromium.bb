@@ -91,6 +91,20 @@ table.
   </td>
 </tr>
 {{/is_apps}}
+<tr id="alarms">
+  <td> "alarms" </td>
+  <td> Required if the extension or app uses the
+       <a href="alarms.html">chrome.alarms</a> module.
+  </td>
+{{?is_apps}}
+<tr id="audioCapture">
+  <td> "audioCapture" </td>
+  <td> Requests that the app be granted permissions to capture audio
+       directly from the user's Microphone via the
+       <a href="http://dev.w3.org/2011/webrtc/editor/getusermedia.html">getUserMedia</a> API.
+  </td>
+</tr>
+{{/is_apps}}
 <tr id="bg">
   <td> "background" </td>
   <td> <p>
@@ -123,6 +137,14 @@ table.
        </p>
        </td>
 </tr>
+{{?is_apps}}
+<tr id="bluetooth">
+  <td> "bluetooth" </td>
+  <td> Required if the app uses the
+       <a href="bluetooth.html">chrome.bluetooth</a> module.
+  </td>
+</tr>
+{{/is_apps}}
 {{^is_apps}}
 <tr>
   <td> "bookmarks" </td>
@@ -187,9 +209,9 @@ table.
 {{/is_apps}}
 {{?is_apps}}
 <tr>
-  <td id="fileSystem"> "fileSystem": ["write"] </td>
+  <td id="fileSystem"> "fileSystem", "fileSystem.write" </td>
   <td> Required if the app uses the
-       <a href="fileSystem.html">fileSystem API</a> to write files.</td>
+       <a href="fileSystem.html">chrome.fileSystem</a> module.</td>
 </tr>
 {{/is_apps}}
 {{?is_apps}}
@@ -225,15 +247,37 @@ table.
        <a href="management.html">chrome.management</a> module. </td>
 </tr>
 {{/is_apps}}
+{{?is_apps}}
+<tr>
+  <td id="mediaGalleries"> "mediaGalleries": ["read"], "mediaGalleries": ["read", "allAutoDetected"] </td>
+  <td> Required if the app uses the
+       <a href="mediaGalleries.html">chrome.mediaGalleries</a> module. </td>
+</tr>
+{{/is_apps}}
+{{^is_apps}}
 <tr>
   <td> "notifications" </td>
-  <td> Allows the extension or app to use the proposed HTML5
+  <td> Allows the extension to use the proposed HTML5
        <a href="http://www.chromium.org/developers/design-documents/desktop-notifications/api-specification">notification API</a>
        without calling permission methods
        (such as <code>checkPermission()</code>).
        For more information see
-       <a href="notifications.html">Desktop Notifications</a>.</td>
+       <a href="desktop_notifications.html">Desktop Notifications</a>.</td>
 </tr>
+{{/is_apps}}
+{{?is_apps}}
+<tr>
+  <td> "notifications" </td>
+  <td> Required if the app uses the
+       <a href="notifications.html">chrome.notifications</a> module.
+       Also allows the app to use the proposed HTML5
+       <a href="http://www.chromium.org/developers/design-documents/desktop-notifications/api-specification">notification API</a>
+       without calling permission methods
+       (such as <code>checkPermission()</code>).
+       For more information see
+       <a href="desktop_notifications.html">Desktop Notifications</a>.</td>
+</tr>
+{{/is_apps}}
 {{?is_apps}}
 <tr>
   <td> "pointerLock" </td>
@@ -258,6 +302,23 @@ table.
 </tr>
 {{/is_apps}}
 <tr>
+  <td> "pushMessaging" </td>
+  <td> Required if the extension or app uses the
+       <a href="pushMessaging.html">chrome.pushMessaging</a> module. </td>
+</tr>
+{{?is_apps}}
+<tr>
+  <td id="serial"> "serial" </td>
+  <td> Required if the app uses the
+       <a href="serial.html">chrome.serial</a> module.</td>
+</tr>
+<tr>
+  <td id="socket"> "socket": ["rule1", "rule2"]  </td>
+  <td> Required if the app uses the
+       <a href="socket.html">chrome.socket</a> module.</td>
+</tr>
+{{/is_apps}}
+<tr>
   <td> "storage" </td>
   <td> Required if the extension or app uses the
        <a href="storage.html">chrome.storage</a> module. </td>
@@ -266,7 +327,7 @@ table.
 <tr>
   <td id="syncFileSystem"> "syncFileSystem" </td>
   <td> Required if the app uses the
-       <a href="syncFileSystem.html">syncFileSystem API</a>
+       <a href="syncFileSystem.html">chrome.syncFileSystem</a> module
        to save and synchronize data on Google Drive.</td>
 </tr>
 {{/is_apps}}
@@ -311,6 +372,22 @@ table.
       </p>
   </td>
 <tr>
+{{?is_apps}}
+<tr>
+  <td id="usb"> "usb" </td>
+  <td> Required if the app uses the
+       <a href="usb.html">chrome.usb</a> module.</td>
+</tr>
+{{/is_apps}}
+{{?is_apps}}
+<tr id="videoCapture">
+  <td> "videoCapture" </td>
+  <td> Requests that the app be granted permissions to capture video
+       directly from the user's Web Cam via the
+       <a href="http://dev.w3.org/2011/webrtc/editor/getusermedia.html">getUserMedia</a> API.
+  </td>
+</tr>
+{{/is_apps}}
 {{^is_apps}}
 <tr>
   <td> "webNavigation" </td>
