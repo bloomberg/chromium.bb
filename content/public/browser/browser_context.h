@@ -107,7 +107,6 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   virtual base::FilePath GetPath() = 0;
 
   // Return whether this context is incognito. Default is false.
-  // This doesn't belong here; http://crbug.com/89628
   virtual bool IsOffTheRecord() const = 0;
 
   // Returns the request context information associated with this context.  Call
