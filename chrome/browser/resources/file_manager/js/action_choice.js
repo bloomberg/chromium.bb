@@ -167,18 +167,15 @@ ActionChoice.prototype.initDom_ = function() {
   this.list_.selectionModel = new cr.ui.ListSingleSelectionModel();
   this.list_.dataModel = new cr.ui.ArrayDataModel([]);
   this.list_.autoExpands = true;
-  this.list_.activateItemAtIndex = function(index) {
+
+  var acceptActionBound = function() {
     this.acceptAction_();
   }.bind(this);
+  this.list_.activateItemAtIndex = acceptActionBound;
+  this.list_.addEventListener('click', acceptActionBound);
 
   this.previews_ = this.document_.querySelector('.previews');
   this.counter_ = this.document_.querySelector('.counter');
-
-  this.document_.querySelector('button.ok').addEventListener('click',
-      function(event) {
-        this.acceptAction_();
-      }.bind(this));
-
   this.document_.addEventListener('keydown', this.onKeyDown_.bind(this));
 
   metrics.startInterval('PhotoImport.Load');
@@ -277,7 +274,7 @@ ActionChoice.prototype.loadSource_ = function(source, callback) {
     var videos = results.filter(FileType.isVideo);
     if (videos.length == 1) {
       this.singleVideo_ = videos[0];
-      this.enabledOptions_.push(ActionChoice.Action.PLAY_VIDEO);
+      this.enabledOptions_.push(ActionChoice.Action.WATCH_SINGLE_VIDEO);
       this.watchSingleVideoItem_.title = loadTimeData.getStringF(
           'ACTION_CHOICE_WATCH_SINGLE_VIDEO', videos[0].name);
       this.watchSingleVideoItem_.hidden = false;
@@ -401,10 +398,13 @@ ActionChoice.prototype.close_ = function() {
  */
 ActionChoice.prototype.onKeyDown_ = function(e) {
   switch (util.getKeyModifiers(e) + e.keyCode) {
+    case '13':
+      this.acceptAction_();
+      break;
     case '27':
       this.recordAction_('close');
       this.close_();
-      return;
+      break;
   }
 };
 

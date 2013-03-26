@@ -121,22 +121,6 @@ button:focus {
   width: 100%;
 }
 
-.footer {
-  -webkit-box-orient: horizontal;
-  -webkit-box-pack: end;
-  bottom: 0;
-  display: -webkit-box;
-  left: 0;
-  position: absolute;
-  right: 0;
-}
-
-.footer button {
-  height: 27px;
-  margin-left: 10px;
-  min-width: 80px;
-}
-
 .choices {
   width: 100%;
 }
