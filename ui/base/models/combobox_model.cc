@@ -6,6 +6,10 @@
 
 namespace ui {
 
+bool ComboboxModel::IsItemSeparatorAt(int index) {
+  return false;
+}
+
 int ComboboxModel::GetDefaultIndex() const {
   return 0;
 }

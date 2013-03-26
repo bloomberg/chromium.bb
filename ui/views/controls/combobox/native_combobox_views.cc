@@ -198,6 +198,11 @@ void NativeComboboxViews::UpdateFromModel() {
 
   int num_items = combobox_->model()->GetItemCount();
   for (int i = 0; i < num_items; ++i) {
+    if (combobox_->model()->IsItemSeparatorAt(i)) {
+      menu->AppendSeparator();
+      continue;
+    }
+
     string16 text = combobox_->model()->GetItemAt(i);
 
     // Inserting the Unicode formatting characters if necessary so that the

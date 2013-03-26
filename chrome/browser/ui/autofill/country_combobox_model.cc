@@ -47,8 +47,13 @@ string16 CountryComboboxModel::GetItemAt(int index) {
   if (country)
     return countries_[index]->name();
 
-  // The separator item.
+  // The separator item. Implemented for platforms that don't yet support
+  // IsItemSeparatorAt().
   return ASCIIToUTF16("---");
+}
+
+bool CountryComboboxModel::IsItemSeparatorAt(int index) {
+  return !countries_[index];
 }
 
 }  // namespace autofill

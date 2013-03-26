@@ -25,6 +25,7 @@ class CountryComboboxModel : public ui::ComboboxModel {
   // ui::Combobox implementation:
   virtual int GetItemCount() const OVERRIDE;
   virtual string16 GetItemAt(int index) OVERRIDE;
+  virtual bool IsItemSeparatorAt(int index) OVERRIDE;
 
   const std::vector<AutofillCountry*>& countries() const {
     return countries_.get();
