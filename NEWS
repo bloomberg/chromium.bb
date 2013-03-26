@@ -31,6 +31,7 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
      Perry for reporting the bug and John J. Boyer for fixing it.
    - Further reorganization of the tables to remove
      duplication. Move litdigit opcode common parts and include where needed.
+   - Removed obsolete en-us-g1.utb, which has been replaced by en-us-g1.ctb.
 
 ** Bug Fixes
    - Cursor position calculation is now based on the same code that

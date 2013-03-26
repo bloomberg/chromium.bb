@@ -72,7 +72,6 @@ table_files = \
 	en-us-comp8.ctb \
 	en-us-compbrl.ctb \
 	en-us-g1.ctb \
-	en-us-g1.utb \
 	en-us-g2.ctb \
 	en-us-interline.ctb \
 	en-us-mathtext.ctb \
