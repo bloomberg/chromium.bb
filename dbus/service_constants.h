@@ -1327,9 +1327,9 @@ const char kSystemClockUpdated[] = "TimeUpdated";
 }  // namespace system_clock
 
 namespace cras {
-const char kCrasInterface[] = "org.chromium.cras";
-const char kCrasPath[] = "/org/chromium/cras";
+const char kCrasServicePath[] = "/org/chromium/cras";
 const char kCrasServiceName[] = "org.chromium.cras";
+const char kCrasControlInterface[] = "org.chromium.cras.Control";
 
 // Methods.
 const char kSetOutputVolume[] = "SetOutputVolume";
