@@ -7,6 +7,10 @@
     'chromium_code': 1,
     # Override to dynamically link the cras (ChromeOS audio) library.
     'use_cras%': 0,
+    # Option e.g. for Linux distributions to link pulseaudio directly
+    # (DT_NEEDED) instead of using dlopen. This helps with automated
+    # detection of ABI mismatches and prevents silent errors.
+    'linux_link_pulseaudio%': 0,
     'conditions': [
       ['OS == "android" or OS == "ios"', {
         # Android and iOS don't use ffmpeg.
@@ -654,57 +658,73 @@
           ],
         }],
         ['use_pulseaudio==1', {
+          'cflags': [
+            '<!@(pkg-config --cflags libpulse)',
+          ],
           'defines': [
             'USE_PULSEAUDIO',
           ],
-          'variables': {
-            'generate_stubs_script': '../tools/generate_stubs/generate_stubs.py',
-            'extra_header': 'audio/pulse/pulse_stub_header.fragment',
-            'sig_files': ['audio/pulse/pulse.sigs'],
-            'outfile_type': 'posix_stubs',
-            'stubs_filename_root': 'pulse_stubs',
-            'project_path': 'media/audio/pulse',
-            'intermediate_dir': '<(INTERMEDIATE_DIR)',
-            'output_root': '<(SHARED_INTERMEDIATE_DIR)/pulse',
-          },
-          'sources': [
-            '<(extra_header)',
-          ],
-          'include_dirs': [
-            '<(output_root)',
-          ],
-          'actions': [
-            {
-              'action_name': 'generate_stubs',
-              'inputs': [
-                '<(generate_stubs_script)',
-                '<(extra_header)',
-                '<@(sig_files)',
-              ],
-              'outputs': [
-                '<(intermediate_dir)/<(stubs_filename_root).cc',
-                '<(output_root)/<(project_path)/<(stubs_filename_root).h',
-              ],
-              'action': ['python',
-                         '<(generate_stubs_script)',
-                         '-i', '<(intermediate_dir)',
-                         '-o', '<(output_root)/<(project_path)',
-                         '-t', '<(outfile_type)',
-                         '-e', '<(extra_header)',
-                         '-s', '<(stubs_filename_root)',
-                         '-p', '<(project_path)',
-                         '<@(_inputs)',
-              ],
-              'process_outputs_as_sources': 1,
-              'message': 'Generating Pulse stubs for dynamic loading.',
-            },
-          ],
           'conditions': [
-            # Linux/Solaris need libdl for dlopen() and friends.
-            ['OS == "linux" or OS == "solaris"', {
+            ['linux_link_pulseaudio==0', {
+              'defines': [
+                'DLOPEN_PULSEAUDIO',
+              ],
+              'variables': {
+                'generate_stubs_script': '../tools/generate_stubs/generate_stubs.py',
+                'extra_header': 'audio/pulse/pulse_stub_header.fragment',
+                'sig_files': ['audio/pulse/pulse.sigs'],
+                'outfile_type': 'posix_stubs',
+                'stubs_filename_root': 'pulse_stubs',
+                'project_path': 'media/audio/pulse',
+                'intermediate_dir': '<(INTERMEDIATE_DIR)',
+                'output_root': '<(SHARED_INTERMEDIATE_DIR)/pulse',
+              },
+              'include_dirs': [
+                '<(output_root)',
+              ],
+              'actions': [
+                {
+                  'action_name': 'generate_stubs',
+                  'inputs': [
+                    '<(generate_stubs_script)',
+                    '<(extra_header)',
+                    '<@(sig_files)',
+                  ],
+                  'outputs': [
+                    '<(intermediate_dir)/<(stubs_filename_root).cc',
+                    '<(output_root)/<(project_path)/<(stubs_filename_root).h',
+                  ],
+                  'action': ['python',
+                             '<(generate_stubs_script)',
+                             '-i', '<(intermediate_dir)',
+                             '-o', '<(output_root)/<(project_path)',
+                             '-t', '<(outfile_type)',
+                             '-e', '<(extra_header)',
+                             '-s', '<(stubs_filename_root)',
+                             '-p', '<(project_path)',
+                             '<@(_inputs)',
+                  ],
+                  'process_outputs_as_sources': 1,
+                  'message': 'Generating Pulse stubs for dynamic loading.',
+                },
+              ],
+              'conditions': [
+                # Linux/Solaris need libdl for dlopen() and friends.
+                ['OS == "linux" or OS == "solaris"', {
+                  'link_settings': {
+                    'libraries': [
+                      '-ldl',
+                    ],
+                  },
+                }],
+              ],
+            }, {  # else: linux_link_pulseaudio==0
               'link_settings': {
+                'ldflags': [
+                  '<!@(pkg-config --libs-only-L --libs-only-other libpulse)',
+                ],
                 'libraries': [
-                  '-ldl',
+                  '<!@(pkg-config --libs-only-l libpulse)',
                 ],
               },
             }],

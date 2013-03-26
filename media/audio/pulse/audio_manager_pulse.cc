@@ -16,13 +16,16 @@
 #include "media/audio/linux/audio_manager_linux.h"
 #include "media/audio/pulse/pulse_input.h"
 #include "media/audio/pulse/pulse_output.h"
-#include "media/audio/pulse/pulse_stubs.h"
 #include "media/audio/pulse/pulse_util.h"
 #include "media/base/channel_layout.h"
+
+#if defined(DLOPEN_PULSEAUDIO)
+#include "media/audio/pulse/pulse_stubs.h"
 
 using media_audio_pulse::kModulePulse;
 using media_audio_pulse::InitializeStubs;
 using media_audio_pulse::StubPathMap;
+#endif  // defined(DLOPEN_PULSEAUDIO)
 
 namespace media {
 
@@ -178,6 +181,7 @@ int AudioManagerPulse::GetNativeSampleRate() {
 bool AudioManagerPulse::Init() {
   DCHECK(!input_mainloop_);
 
+#if defined(DLOPEN_PULSEAUDIO)
   StubPathMap paths;
 
   // Check if the pulse library is avialbale.
@@ -186,6 +190,7 @@ bool AudioManagerPulse::Init() {
     DLOG(WARNING) << "Failed on loading the Pulse library and symbols";
     return false;
   }
+#endif  // defined(DLOPEN_PULSEAUDIO)
 
   // Create a mainloop API and connect to the default server.
   // The mainloop is the internal asynchronous API event loop.
