@@ -117,15 +117,7 @@ class OAuth2TokenServiceTest : public TokenServiceTestHarness {
   TestingOAuth2TokenServiceConsumer consumer_;
 };
 
-#if defined(OS_ANDROID)
-#define MAYBE_NoOAuth2RefreshToken DISABLED_NoOAuth2RefreshToken
-#define MAYBE_FailureShouldNotRetry DISABLED_FailureShouldNotRetry
-#else
-#define MAYBE_NoOAuth2RefreshToken NoOAuth2RefreshToken
-#define MAYBE_FailureShouldNotRetry FailureShouldNotRetry
-#endif  // defined(OS_ANDROID)
-
-TEST_F(OAuth2TokenServiceTest, MAYBE_NoOAuth2RefreshToken) {
+TEST_F(OAuth2TokenServiceTest, NoOAuth2RefreshToken) {
   scoped_ptr<OAuth2TokenService::Request> request(
       oauth2_service_->StartRequest(std::set<std::string>(), &consumer_));
   message_loop_.RunUntilIdle();
@@ -134,7 +126,7 @@ TEST_F(OAuth2TokenServiceTest, MAYBE_NoOAuth2RefreshToken) {
   EXPECT_EQ(1, consumer_.number_of_errors_);
 }
 
-TEST_F(OAuth2TokenServiceTest, MAYBE_FailureShouldNotRetry) {
+TEST_F(OAuth2TokenServiceTest, FailureShouldNotRetry) {
   service_->IssueAuthTokenForTest(GaiaConstants::kGaiaOAuth2LoginRefreshToken,
                                   "refreshToken");
   scoped_ptr<OAuth2TokenService::Request> request(oauth2_service_->StartRequest(

@@ -15,7 +15,6 @@
 #include "base/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/signin/oauth2_token_service.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/token_service.h"
@@ -168,55 +167,6 @@ void ProfileSyncServiceAndroid::TokenAvailable(
   std::string token = ConvertJavaStringToUTF8(env, auth_token);
   TokenServiceFactory::GetForProfile(profile_)->OnIssueAuthTokenSuccess(
       GaiaConstants::kSyncService, token);
-}
-
-void ProfileSyncServiceAndroid::InvalidateOAuth2Token(
-    const std::string& scope, const std::string& invalid_token) {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jstring> j_scope =
-      ConvertUTF8ToJavaString(env, scope);
-  ScopedJavaLocalRef<jstring> j_invalid_token =
-      ConvertUTF8ToJavaString(env, invalid_token);
-  Java_ProfileSyncService_invalidateOAuth2AuthToken(
-      env, weak_java_profile_sync_service_.get(env).obj(),
-      j_scope.obj(),
-      j_invalid_token.obj());
-}
-
-void ProfileSyncServiceAndroid::FetchOAuth2Token(
-    const std::string& scope, const FetchOAuth2TokenCallback& callback) {
-  const std::string& sync_username =
-      SigninManagerFactory::GetForProfile(profile_)->GetAuthenticatedUsername();
-
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jstring> j_sync_username =
-      ConvertUTF8ToJavaString(env, sync_username);
-  ScopedJavaLocalRef<jstring> j_scope =
-      ConvertUTF8ToJavaString(env, scope);
-
-  // Allocate a copy of the callback on the heap, because the callback
-  // needs to be passed through JNI as an int.
-  // It will be passed back to OAuth2TokenFetched(), where it will be freed.
-  scoped_ptr<FetchOAuth2TokenCallback> heap_callback(
-      new FetchOAuth2TokenCallback(callback));
-
-  // Call into Java to get a new token.
-  Java_ProfileSyncService_getOAuth2AuthToken(
-      env, weak_java_profile_sync_service_.get(env).obj(),
-      j_sync_username.obj(),
-      j_scope.obj(),
-      reinterpret_cast<int>(heap_callback.release()));
-}
-
-void ProfileSyncServiceAndroid::OAuth2TokenFetched(
-    JNIEnv* env, jobject, int callback, jstring auth_token, jboolean result) {
-  std::string token = ConvertJavaStringToUTF8(env, auth_token);
-  scoped_ptr<FetchOAuth2TokenCallback> heap_callback(
-      reinterpret_cast<FetchOAuth2TokenCallback*>(callback));
-  GoogleServiceAuthError err(result ?
-                             GoogleServiceAuthError::NONE :
-                             GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
-  heap_callback->Run(err, token, base::Time());
 }
 
 void ProfileSyncServiceAndroid::EnableSync(JNIEnv* env, jobject) {
@@ -582,14 +532,6 @@ void ProfileSyncServiceAndroid::NudgeSyncer(JNIEnv* env,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   SendNudgeNotification(ConvertJavaStringToUTF8(env, objectId), version,
                         ConvertJavaStringToUTF8(env, state));
-}
-
-// static
-ProfileSyncServiceAndroid*
-    ProfileSyncServiceAndroid::GetProfileSyncServiceAndroid() {
-  return reinterpret_cast<ProfileSyncServiceAndroid*>(
-          Java_ProfileSyncService_getProfileSyncServiceAndroid(
-      AttachCurrentThread(), base::android::GetApplicationContext()));
 }
 
 static int Init(JNIEnv* env, jobject obj) {

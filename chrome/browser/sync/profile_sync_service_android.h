@@ -9,11 +9,8 @@
 #include <map>
 
 #include "base/android/jni_helper.h"
-#include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "base/time.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
-#include "google_apis/gaia/google_service_auth_error.h"
 #include "sync/internal_api/public/base/model_type.h"
 
 class Profile;
@@ -26,16 +23,6 @@ class ProfileSyncService;
 // This class should only be accessed from the UI thread.
 class ProfileSyncServiceAndroid : public ProfileSyncServiceObserver {
  public:
-  // Callback from FetchOAuth2Token.
-  // Arguments:
-  // - the error, or NONE if the token fetch was successful.
-  // - the OAuth2 access token.
-  // - the expiry time of the token (may be null, indicating that the expiry
-  //   time is unknown.
-  typedef base::Callback<void(
-      const GoogleServiceAuthError&,const std::string&,const base::Time&)>
-          FetchOAuth2TokenCallback;
-
   ProfileSyncServiceAndroid(JNIEnv* env, jobject obj);
 
   // This method should be called once right after contructing the object.
@@ -200,29 +187,8 @@ class ProfileSyncServiceAndroid : public ProfileSyncServiceObserver {
   // (GoogleServiceAuthError.State).
   jint GetAuthError(JNIEnv* env, jobject obj);
 
-  // Called by native to invalidate an OAuth2 token, e.g. after a 401 response
-  // from the server. This should be done before fetching a new token.
-  void InvalidateOAuth2Token(const std::string& scope,
-                             const std::string& invalid_auth_token);
-
-  // Called by native when an OAuth2 token is required. |invalid_auth_token|
-  // is an old auth token to be invalidated (may be empty). |callback| will be
-  // invoked asynchronously after a new token has been fetched.
-  void FetchOAuth2Token(const std::string& scope,
-                        const FetchOAuth2TokenCallback& callback);
-
-  // Called from Java when fetching of an OAuth2 token is finished. The
-  // |authToken| param is only valid when |result| is true.
-  void OAuth2TokenFetched(JNIEnv* env,
-                          jobject obj,
-                          int callback,
-                          jstring auth_token,
-                          jboolean result);
-
   // ProfileSyncServiceObserver:
   virtual void OnStateChanged() OVERRIDE;
-
-  static ProfileSyncServiceAndroid* GetProfileSyncServiceAndroid();
 
   // Registers the ProfileSyncServiceAndroid's native methods through JNI.
   static bool Register(JNIEnv* env);

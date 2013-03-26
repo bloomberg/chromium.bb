@@ -29,10 +29,6 @@
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher.h"
 
-#if defined(OS_ANDROID)
-#include "chrome/browser/sync/profile_sync_service_android.h"
-#endif
-
 namespace {
 
 // Maximum number of retries in fetching an OAuth2 access token.
@@ -366,9 +362,9 @@ void OAuth2TokenService::Shutdown() {
 // static
 void OAuth2TokenService::InformConsumer(
     base::WeakPtr<OAuth2TokenService::RequestImpl> request,
-    const GoogleServiceAuthError& error,
-    const std::string& access_token,
-    const base::Time& expiration_date) {
+    GoogleServiceAuthError error,
+    std::string access_token,
+    base::Time expiration_date) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   if (request)
@@ -382,7 +378,6 @@ scoped_ptr<OAuth2TokenService::Request> OAuth2TokenService::StartRequest(
 
   scoped_ptr<RequestImpl> request(new RequestImpl(consumer));
 
-#if !defined(OS_ANDROID)
   TokenService* token_service = TokenServiceFactory::GetForProfile(profile_);
   if (!token_service || !token_service->HasOAuthLoginToken()) {
     MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
@@ -393,7 +388,6 @@ scoped_ptr<OAuth2TokenService::Request> OAuth2TokenService::StartRequest(
         base::Time()));
     return request.PassAs<Request>();
   }
-#endif
 
   const CacheEntry* cache_entry = GetCacheEntry(scopes);
   if (cache_entry && cache_entry->access_token.length()) {
@@ -406,17 +400,6 @@ scoped_ptr<OAuth2TokenService::Request> OAuth2TokenService::StartRequest(
     return request.PassAs<Request>();
   }
 
-#if defined(OS_ANDROID)
-  DCHECK_EQ(scopes.size(), 1U);
-  std::vector<std::string> scope_list(scopes.begin(), scopes.end());
-  ProfileSyncServiceAndroid* sync_service =
-      ProfileSyncServiceAndroid::GetProfileSyncServiceAndroid();
-  sync_service->FetchOAuth2Token(
-      scope_list.front(),
-      base::Bind(&OAuth2TokenService::InformConsumer,
-                 request->AsWeakPtr()));
-  return request.PassAs<Request>();
-#else
   std::string refresh_token = token_service->GetOAuth2LoginRefreshToken();
   if (!refresh_token.length()) {
     MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
@@ -442,22 +425,6 @@ scoped_ptr<OAuth2TokenService::Request> OAuth2TokenService::StartRequest(
   pending_fetchers_[fetch_parameters] = Fetcher::CreateAndStart(
       profile_, getter_, refresh_token, scopes, request->AsWeakPtr());
   return request.PassAs<Request>();
-#endif  // defined(OS_ANDROID)
-}
-
-void OAuth2TokenService::InvalidateToken(const ScopeSet& scopes,
-                                         const std::string& invalid_token) {
-  RemoveCacheEntry(scopes, invalid_token);
-
-#if defined(OS_ANDROID)
-  DCHECK_EQ(scopes.size(), 1U);
-  std::vector<std::string> scope_list(scopes.begin(), scopes.end());
-  ProfileSyncServiceAndroid* sync_service =
-      ProfileSyncServiceAndroid::GetProfileSyncServiceAndroid();
-  sync_service->InvalidateOAuth2Token(
-      scope_list.front(),
-      invalid_token);
-#endif
 }
 
 void OAuth2TokenService::OnFetchComplete(Fetcher* fetcher) {
@@ -515,19 +482,6 @@ const OAuth2TokenService::CacheEntry* OAuth2TokenService::GetCacheEntry(
   return &token_iterator->second;
 }
 
-bool OAuth2TokenService::RemoveCacheEntry(
-    const OAuth2TokenService::ScopeSet& scopes,
-    const std::string& token_to_remove) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  TokenCache::iterator token_iterator = token_cache_.find(scopes);
-  if (token_iterator == token_cache_.end() &&
-      token_iterator->second.access_token == token_to_remove) {
-    token_cache_.erase(token_iterator);
-    return true;
-  }
-  return false;
-}
-
 void OAuth2TokenService::RegisterCacheEntry(
     const std::string& refresh_token,
     const OAuth2TokenService::ScopeSet& scopes,
@@ -535,7 +489,6 @@ void OAuth2TokenService::RegisterCacheEntry(
     const base::Time& expiration_date) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-#if !defined(OS_ANDROID)
   // Only register OAuth2 access tokens for the refresh token held by
   // TokenService.
   TokenService* token_service = TokenServiceFactory::GetForProfile(profile_);
@@ -546,7 +499,6 @@ void OAuth2TokenService::RegisterCacheEntry(
         "Received a token with a refresh token not maintained by TokenService.";
     return;
   }
-#endif
 
   CacheEntry& token = token_cache_[scopes];
   token.access_token = access_token;

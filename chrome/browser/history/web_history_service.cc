@@ -64,7 +64,6 @@ class RequestImpl : public WebHistoryService::Request,
       : profile_(profile),
         url_(GURL(url)),
         response_code_(0),
-        auth_retry_count_(0),
         callback_(callback) {
   }
 
@@ -82,19 +81,6 @@ class RequestImpl : public WebHistoryService::Request,
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE {
     DCHECK_EQ(source, url_fetcher_.get());
     response_code_ = url_fetcher_->GetResponseCode();
-
-    // If the response code indicates that the token might not be valid,
-    // invalidate the token and try again.
-    if (response_code_ == net::HTTP_UNAUTHORIZED && ++auth_retry_count_ <= 1) {
-      OAuth2TokenService::ScopeSet oauth_scopes;
-      oauth_scopes.insert(kHistoryOAuthScope);
-      OAuth2TokenServiceFactory::GetForProfile(profile_)->InvalidateToken(
-          oauth_scopes, access_token_);
-
-      access_token_ = std::string();
-      Start();
-      return;
-    }
     url_fetcher_->GetResponseAsString(&response_body_);
     url_fetcher_.reset();
     callback_.Run(this, true);
@@ -107,7 +93,6 @@ class RequestImpl : public WebHistoryService::Request,
       const base::Time& expiration_time) OVERRIDE {
     token_request_.reset();
     DCHECK(!access_token.empty());
-    access_token_ = access_token;
 
     // Got an access token -- start the actual API request.
     url_fetcher_.reset(CreateUrlFetcher(access_token));
@@ -155,9 +140,6 @@ class RequestImpl : public WebHistoryService::Request,
   // The OAuth2 access token request.
   scoped_ptr<OAuth2TokenService::Request> token_request_;
 
-  // The current OAuth2 access token.
-  std::string access_token_;
-
   // Handles the actual API requests after the OAuth token is acquired.
   scoped_ptr<net::URLFetcher> url_fetcher_;
 
@@ -166,10 +148,6 @@ class RequestImpl : public WebHistoryService::Request,
 
   // Holds the response body received from the server.
   std::string response_body_;
-
-  // The number of times this request has already been retried due to
-  // authorization problems.
-  int auth_retry_count_;
 
   // The callback to execute when the query is complete.
   CompletionCallback callback_;
