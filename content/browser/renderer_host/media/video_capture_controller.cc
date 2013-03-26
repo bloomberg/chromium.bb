@@ -190,7 +190,9 @@ void VideoCaptureController::StopCapture(
   controller_clients_.remove(client);
 
   // No more clients. Stop device.
-  if (controller_clients_.empty() && state_ == VIDEO_CAPTURE_STATE_STARTED) {
+  if (controller_clients_.empty() &&
+      (state_ == VIDEO_CAPTURE_STATE_STARTED ||
+       state_ == VIDEO_CAPTURE_STATE_ERROR)) {
     video_capture_manager_->Stop(session_id,
         base::Bind(&VideoCaptureController::OnDeviceStopped, this));
     frame_info_available_ = false;

@@ -70,6 +70,7 @@ class VideoCaptureDeviceLinux : public VideoCaptureDevice {
   base::Thread v4l2_thread_;  // Thread used for reading data from the device.
   Buffer* buffer_pool_;
   int buffer_pool_size_;  // Number of allocated buffers.
+  int timeout_count_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(VideoCaptureDeviceLinux);
 };

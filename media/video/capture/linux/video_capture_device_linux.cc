@@ -41,6 +41,8 @@ namespace media {
 enum { kMaxVideoBuffers = 2 };
 // Timeout in microseconds v4l2_thread_ blocks waiting for a frame from the hw.
 enum { kCaptureTimeoutUs = 200000 };
+// The number of continuous timeouts tolerated before treated as error.
+enum { kContinuousTimeoutLimit = 10 };
 // Time to wait in milliseconds before v4l2_thread_ reschedules OnCaptureTask
 // if an event is triggered (select) but no video frame is read.
 enum { kCaptureSelectWaitMs = 10 };
@@ -161,7 +163,8 @@ VideoCaptureDeviceLinux::VideoCaptureDeviceLinux(const Name& device_name)
       device_fd_(-1),
       v4l2_thread_("V4L2Thread"),
       buffer_pool_(NULL),
-      buffer_pool_size_(0) {
+      buffer_pool_size_(0),
+      timeout_count_(0) {
 }
 
 VideoCaptureDeviceLinux::~VideoCaptureDeviceLinux() {
@@ -404,6 +407,19 @@ void VideoCaptureDeviceLinux::OnCaptureTask() {
         base::TimeDelta::FromMilliseconds(kCaptureSelectWaitMs));
   }
 
+  // Check if select timeout.
+  if (result == 0) {
+    timeout_count_++;
+    if (timeout_count_ >= kContinuousTimeoutLimit) {
+      SetErrorState(base::StringPrintf(
+          "Continuous timeout %d times", timeout_count_));
+      timeout_count_ = 0;
+      return;
+    }
+  } else {
+    timeout_count_ = 0;
+  }
+
   // Check if the driver have filled a buffer.
   if (FD_ISSET(device_fd_, &r_set)) {
     v4l2_buffer buffer;
@@ -421,7 +437,11 @@ void VideoCaptureDeviceLinux::OnCaptureTask() {
         SetErrorState(base::StringPrintf(
             "Failed to enqueue capture buffer errno %d", errno));
       }
-    }  // Else wait for next event.
+    } else {
+      SetErrorState(base::StringPrintf(
+          "Failed to dequeue capture buffer errno %d", errno));
+      return;
+    }
   }
 
   v4l2_thread_.message_loop()->PostTask(
