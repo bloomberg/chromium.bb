@@ -97,10 +97,6 @@ class LoginPerformer : public LoginStatusConsumer,
   void PerformLogin(const UserCredentials& credentials,
                     AuthorizationMode auth_mode);
 
-  // Performs locally managed user creation and login.
-  void CreateLocallyManagedUser(const string16& display_name,
-                                const std::string& password);
-
   // Performs locally managed user login with a given |username| and |password|.
   // Managed user creation should be done with CreateLocallyManagedUser().
   void LoginAsLocallyManagedUser(const UserCredentials& credentials);

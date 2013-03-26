@@ -1222,6 +1222,9 @@ void SigninScreenHandler::HandleLaunchIncognito(const base::ListValue* args) {
 
 void SigninScreenHandler::HandleShowLocallyManagedUserCreationScreen(
     const base::ListValue* args) {
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (!command_line->HasSwitch(::switches::kEnableManagedUsers))
+    return;
   BaseLoginDisplayHost::default_host()->
       StartWizard(WizardController::kLocallyManagedUserCreationScreenName,
       NULL);

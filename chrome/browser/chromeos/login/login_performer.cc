@@ -266,16 +266,6 @@ void LoginPerformer::PerformLogin(const UserCredentials& credentials,
   }
 }
 
-void LoginPerformer::CreateLocallyManagedUser(const string16& display_name,
-                                              const std::string& password) {
-  std::string id = UserManager::Get()->GenerateUniqueLocallyManagedUserId();
-  const User* user = UserManager::Get()->
-      CreateLocallyManagedUserRecord(id, display_name);
-  LoginAsLocallyManagedUser(UserCredentials(user->email(),
-                                            password,
-                                            std::string()));  // auth_code
-}
-
 void LoginPerformer::LoginAsLocallyManagedUser(
     const UserCredentials& credentials) {
   DCHECK_EQ(UserManager::kLocallyManagedUserDomain,

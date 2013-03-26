@@ -192,11 +192,6 @@ void WebUIScreenLocker::CreateAccount() {
   NOTREACHED();
 }
 
-void WebUIScreenLocker::CreateLocallyManagedUser(const string16& display_name,
-                                                 const std::string& password) {
-  NOTREACHED();
-}
-
 void WebUIScreenLocker::CompleteLogin(const UserCredentials& credentials) {
   NOTREACHED();
 }

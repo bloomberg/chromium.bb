@@ -210,7 +210,6 @@ cr.define('login', function() {
     lastVerifiedName_: null,
     lastIncorrectUserName_: null,
     managerList_: null,
-    useManagerBasedCreationFlow_: false,
 
     /** @override */
     decorate: function() {
@@ -252,15 +251,10 @@ cr.define('login', function() {
       password2Field.addEventListener('keydown', function(e) {
         creationScreen.passwordErrorVisible = false;
         if (e.keyIdentifier == 'Enter') {
-          if (creationScreen.useManagerBasedCreationFlow_) {
-            if (passwordField.value.length > 0) {
-              if (creationScreen.managerList_.selectedPod_)
-                creationScreen.managerList_.selectedPod_.focusInput();
-              creationScreen.updateContinueButton_();
-            }
-          } else {
-            if (creationScreen.updateContinueButton_())
-              creationScreen.validateInputAndStartFlow_();
+          if (passwordField.value.length > 0) {
+            if (creationScreen.managerList_.selectedPod_)
+              creationScreen.managerList_.selectedPod_.focusInput();
+            creationScreen.updateContinueButton_();
           }
           e.stopPropagation();
         }
@@ -350,22 +344,17 @@ cr.define('login', function() {
             loadTimeData.getString('createManagedUserPasswordMismatchError'));
         return;
       }
-      if (!this.useManagerBasedCreationFlow_) {
-        this.disabled = true;
-        chrome.send('tryCreateLocallyManagedUser', [userName, firstPassword]);
-      } else {
-        var selectedPod = this.managerList_.selectedPod_;
-        if (null == selectedPod)
-          return;
+      var selectedPod = this.managerList_.selectedPod_;
+      if (null == selectedPod)
+        return;
 
-        var managerId = selectedPod.user.emailAddress;
-        var managerPassword = selectedPod.passwordElement.value;
-        this.disabled = true;
-        // TODO(antrim) : we might use some minimal password validation
-        // (e.g. non-empty etc.) here.
-        chrome.send('runLocallyManagedUserCreationFlow',
-            [userName, firstPassword, managerId, managerPassword]);
-      }
+      var managerId = selectedPod.user.emailAddress;
+      var managerPassword = selectedPod.passwordElement.value;
+      this.disabled = true;
+      // TODO(antrim) : we might use some minimal password validation
+      // (e.g. non-empty etc.) here.
+      chrome.send('runLocallyManagedUserCreationFlow',
+          [userName, firstPassword, managerId, managerPassword]);
     },
 
     /**
@@ -486,12 +475,10 @@ cr.define('login', function() {
            this.lastVerifiedName_ &&
            (userName == this.lastVerifiedName_);
 
-      if (this.useManagerBasedCreationFlow_) {
-        var selectedPod = this.managerList_.selectedPod_;
-        canProceed = canProceed &&
-            null != selectedPod &&
-            selectedPod.passwordElement.value.length > 0;
-      }
+      var selectedPod = this.managerList_.selectedPod_;
+      canProceed = canProceed &&
+          null != selectedPod &&
+          selectedPod.passwordElement.value.length > 0;
 
       this.setButtonDisabledStatus('proceed', !canProceed);
       return canProceed;
@@ -627,7 +614,6 @@ cr.define('login', function() {
      */
     loadManagers: function(userList) {
       $('managed-user-creation-flow-managers-block').hidden = false;
-      this.useManagerBasedCreationFlow_ = true;
       this.managerList_.clearPods();
       for (var i = 0; i < userList.length; ++i)
         this.managerList_.addPod(userList[i]);

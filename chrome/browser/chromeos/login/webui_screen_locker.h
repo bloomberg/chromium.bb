@@ -64,9 +64,6 @@ class WebUIScreenLocker : public WebUILoginView,
   // LoginDisplay::Delegate: implementation
   virtual void CancelPasswordChangedFlow() OVERRIDE;
   virtual void CreateAccount() OVERRIDE;
-  virtual void CreateLocallyManagedUser(const string16& display_name,
-                                        const std::string& password) OVERRIDE;
-
   virtual void CompleteLogin(const UserCredentials& credentials) OVERRIDE;
   virtual string16 GetConnectedNetworkName() OVERRIDE;
   virtual void Login(const UserCredentials& credentials) OVERRIDE;

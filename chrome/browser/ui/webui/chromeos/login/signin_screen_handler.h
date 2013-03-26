@@ -96,10 +96,6 @@ class SigninScreenHandlerDelegate {
   // and migrate to new password.
   virtual void MigrateUserData(const std::string& old_password) = 0;
 
-  // Create a new locally managed user.
-  virtual void CreateLocallyManagedUser(const string16& display_name,
-                                        const std::string password) = 0;
-
   // Load wallpaper for given |username|.
   virtual void LoadWallpaper(const std::string& username) = 0;
 

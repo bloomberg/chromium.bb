@@ -19,10 +19,6 @@ const char kDisableStubEthernet[] = "disable-stub-ethernet";
 // Enable experimental Bluetooth features.
 const char kEnableExperimentalBluetooth[] = "enable-experimental-bluetooth";
 
-// Enables experiments in locally managed user creation ui.
-const char kEnableLocallyManagedUserUIExperiments[] =
-    "enable-locally-managed-users-ui-experiments";
-
 // Enables the new NetworkChangeNotifier using the NetworkStateHandler class.
 const char kEnableNewNetworkChangeNotifier[] =
     "enable-new-network-change-notifier";

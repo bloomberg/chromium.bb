@@ -73,7 +73,6 @@ class LocallyManagedUserCreationScreenHandler : public BaseScreenHandler {
   void HandleRetryLocalManagedUserCreation(const base::ListValue* args);
 
   void HandleCheckLocallyManagedUserName(const base::ListValue* args);
-  void HandleTryCreateLocallyManagedUser(const base::ListValue* args);
   void HandleRunLocallyManagedUserCreationFlow(const base::ListValue* args);
 
   Delegate* delegate_;

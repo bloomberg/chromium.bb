@@ -335,29 +335,6 @@ void ExistingUserController::CreateAccount() {
   LoginAsGuest();
 }
 
-void ExistingUserController::CreateLocallyManagedUser(
-    const string16& display_name,
-    const std::string& password) {
-  // TODO(nkostylev): Check that policy allows creation of such account type.
-  if (display_name.empty())
-    return;
-
-  // Disable clicking on other windows.
-  StopPublicSessionAutoLoginTimer();
-  login_display_->SetUIEnabled(false);
-
-  LoginPerformer::Delegate* delegate = this;
-  if (login_performer_delegate_.get())
-    delegate = login_performer_delegate_.get();
-  // Only one instance of LoginPerformer should exist at a time.
-  login_performer_.reset(NULL);
-  login_performer_.reset(new LoginPerformer(delegate));
-  is_login_in_progress_ = true;
-  login_performer_->
-      CreateLocallyManagedUser(display_name, password);
-  // TODO(nkostylev): A11y message.
-}
-
 void ExistingUserController::CompleteLogin(const UserCredentials& credentials) {
   if (!host_) {
     // Complete login event was generated already from UI. Ignore notification.

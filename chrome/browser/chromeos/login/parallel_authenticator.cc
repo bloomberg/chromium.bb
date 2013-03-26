@@ -293,7 +293,7 @@ void ParallelAuthenticator::LoginAsLocallyManagedUser(
                            false));
   Mount(current_state_.get(),
         scoped_refptr<ParallelAuthenticator>(this),
-        cryptohome::CREATE_IF_MISSING);
+        cryptohome::MOUNT_FLAGS_NONE);
 }
 
 void ParallelAuthenticator::LoginRetailMode() {

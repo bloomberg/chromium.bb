@@ -6,14 +6,12 @@
 
 #include <string>
 
-#include "base/command_line.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/managed/locally_managed_user_creation_flow.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
-#include "chromeos/chromeos_switches.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -117,10 +115,6 @@ void LocallyManagedUserCreationScreenHandler::RegisterMessages() {
       base::Bind(&LocallyManagedUserCreationScreenHandler::
                      HandleCheckLocallyManagedUserName,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("tryCreateLocallyManagedUser",
-      base::Bind(&LocallyManagedUserCreationScreenHandler::
-                     HandleTryCreateLocallyManagedUser,
-                 base::Unretained(this)));
   web_ui()->RegisterMessageCallback("runLocallyManagedUserCreationFlow",
       base::Bind(&LocallyManagedUserCreationScreenHandler::
                      HandleRunLocallyManagedUserCreationFlow,
@@ -130,28 +124,22 @@ void LocallyManagedUserCreationScreenHandler::RegisterMessages() {
 void LocallyManagedUserCreationScreenHandler::PrepareToShow() {}
 
 void LocallyManagedUserCreationScreenHandler::Show() {
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(
-          chromeos::switches::kEnableLocallyManagedUserUIExperiments)) {
-    scoped_ptr<DictionaryValue> data(new base::DictionaryValue());
-    scoped_ptr<ListValue> users_list(new base::ListValue());
-    const UserList& users = UserManager::Get()->GetUsers();
-    std::string owner;
-    chromeos::CrosSettings::Get()->GetString(chromeos::kDeviceOwner, &owner);
+  scoped_ptr<DictionaryValue> data(new base::DictionaryValue());
+  scoped_ptr<ListValue> users_list(new base::ListValue());
+  const UserList& users = UserManager::Get()->GetUsers();
+  std::string owner;
+  chromeos::CrosSettings::Get()->GetString(chromeos::kDeviceOwner, &owner);
 
-    for (UserList::const_iterator it = users.begin(); it != users.end(); ++it) {
-      if ((*it)->GetType() != User::USER_TYPE_REGULAR)
-        continue;
-      bool is_owner = ((*it)->email() == owner);
-      DictionaryValue* user_dict = new DictionaryValue();
-      SigninScreenHandler::FillUserDictionary(*it, is_owner, user_dict);
-      users_list->Append(user_dict);
-    }
-    data->Set("managers", users_list.release());
-    ShowScreen(OobeUI::kScreenManagedUserCreationFlow, data.get());
-  } else {
-    ShowScreen(OobeUI::kScreenManagedUserCreationFlow, NULL);
+  for (UserList::const_iterator it = users.begin(); it != users.end(); ++it) {
+    if ((*it)->GetType() != User::USER_TYPE_REGULAR)
+      continue;
+    bool is_owner = ((*it)->email() == owner);
+    DictionaryValue* user_dict = new DictionaryValue();
+    SigninScreenHandler::FillUserDictionary(*it, is_owner, user_dict);
+    users_list->Append(user_dict);
   }
+  data->Set("managers", users_list.release());
+  ShowScreen(OobeUI::kScreenManagedUserCreationFlow, data.get());
 }
 
 void LocallyManagedUserCreationScreenHandler::Hide() {}
@@ -234,37 +222,6 @@ void LocallyManagedUserCreationScreenHandler::HandleCheckLocallyManagedUserName(
     web_ui()->CallJavascriptFunction(
         "login.LocallyManagedUserCreationScreen.managedUserNameOk",
         base::StringValue(name));
-  }
-}
-
-// TODO(antrim): Remove method once new managed-based flow is implemented.
-void LocallyManagedUserCreationScreenHandler::HandleTryCreateLocallyManagedUser(
-    const base::ListValue* args) {
-  DCHECK(args && args->GetSize() == 2);
-
-  string16 name;
-  std::string password;
-  if (!args->GetString(0, &name) || !args->GetString(1, &password)) {
-    NOTREACHED();
-    return;
-  }
-  name = CollapseWhitespace(name, true);
-  if (NULL != UserManager::Get()->FindLocallyManagedUser(name)) {
-    web_ui()->CallJavascriptFunction(
-        "login.LocallyManagedUserCreationScreen.managedUserNameError",
-        base::StringValue(name),
-        base::StringValue(l10n_util::GetStringFUTF16(
-            IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_USERNAME_ALREADY_EXISTS,
-            name)));
-    return;
-  }
-  // TODO(antrim): Any other password checks here?
-  if (password.length() == 0) {
-    web_ui()->CallJavascriptFunction(
-        "login.LocallyManagedUserCreationScreen.showPasswordError",
-        base::StringValue(l10n_util::GetStringUTF16(
-            IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_PASSWORD_TOO_SHORT)));
-    return;
   }
 }
 
