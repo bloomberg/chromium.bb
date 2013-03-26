@@ -1,0 +1,14 @@
+NaCl Ports
+==========
+
+This folder contains headers and pre-built libraries for several
+of the more commonly used open source third-party libraries.
+
+These libraries were built from the naclports project.  For access
+to the full sources, or to rebuild or modify these libraries please
+follow the instructions on naclports:
+
+  https://code.google.com/p/naclports/
+
+Please note that each of libraries libraries is licensed under its
+own specific license.   See NOTICE for full list of license terms.

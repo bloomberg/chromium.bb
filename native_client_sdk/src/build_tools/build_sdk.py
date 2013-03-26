@@ -780,20 +780,24 @@ def BuildStepBuildLibraries(pepperdir, platform, directory, clean=True):
       clean=clean, config='Release')
 
 
-def BuildStepGenerateNotice(pepperdir):
+def GenerateNotice(fileroot, output_filename='NOTICE', extra_files=None):
   # Look for LICENSE files
-  license_filenames_re = re.compile('LICENSE|COPYING')
+  license_filenames_re = re.compile('LICENSE|COPYING|COPYRIGHT')
 
   license_files = []
-  for root, _, files in os.walk(pepperdir):
+  for root, _, files in os.walk(fileroot):
     for filename in files:
       if license_filenames_re.match(filename):
         path = os.path.join(root, filename)
         license_files.append(path)
+
+  if extra_files:
+    license_files += [os.path.join(fileroot, f) for f in extra_files]
   print '\n'.join(license_files)
 
-  notice_filename = os.path.join(pepperdir, 'NOTICE')
-  generate_notice.Generate(notice_filename, pepperdir, license_files)
+  if not os.path.isabs(output_filename):
+    output_filename = os.path.join(fileroot, output_filename)
+  generate_notice.Generate(output_filename, fileroot, license_files)
 
 
 def BuildStepTarBundle(pepper_ver, tarfile):
@@ -905,6 +909,18 @@ def BuildStepBuildNaClPorts(pepper_ver, pepperdir):
   buildbot_common.Run([build_script], env=env, cwd=NACLPORTS_DIR)
 
   out_dir = os.path.join(bundle_dir, 'pepper_XX')
+
+  # Some naclports do not include a standalone LICENSE/COPYING file
+  # so we explicitly list those here for inclusion.
+  extra_licenses = ('tinyxml/readme.txt',
+                    'jpeg-8d/README',
+                    'zlib-1.2.3/README')
+  src_root = os.path.join(NACLPORTS_DIR, 'out', 'repository-i686')
+  output_license = os.path.join(out_dir, 'LICENSE')
+  GenerateNotice(src_root , output_license, extra_licenses)
+  readme = os.path.join(out_dir, 'README')
+  oshelpers.Copy(['-v', 'README.naclports', readme])
+
   out_dir_final = os.path.join(bundle_dir, 'pepper_%s' % pepper_ver)
   buildbot_common.Move(out_dir, out_dir_final)
 
@@ -1009,7 +1025,7 @@ def main(args):
 
   # Ship with libraries prebuilt, so run that first.
   BuildStepBuildLibraries(pepperdir, platform, 'src')
-  BuildStepGenerateNotice(pepperdir)
+  GenerateNotice(pepperdir)
 
   if not options.skip_tar:
     BuildStepTarBundle(pepper_ver, tarfile)

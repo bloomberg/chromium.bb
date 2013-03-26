@@ -34,6 +34,7 @@ def CreateLicenseDict(files):
   license_dict = {}
   for filename in files:
     license_text = open(filename).read()
+    license_text = license_text.replace('\r\n', '\n')
     license_dict.setdefault(license_text, []).append(filename)
 
   # Flip the dictionary (map tuple of filenames -> license text).
@@ -53,15 +54,16 @@ def WriteLicense(output_file, root, license_text, license_filenames):
     output_file.write('  (Cf. %s):\n' % (filename,))
   output_file.write('=' * 70 + '\n')
   output_file.write(license_text)
-  output_file.write('\n\n\n')
 
 
 def Generate(output_filename, root, files):
   found_files = FindFiles(files)
   license_dict = CreateLicenseDict(found_files)
   with open(output_filename, 'w') as output_file:
-    for license_filenames in sorted(license_dict.iterkeys()):
+    for i, license_filenames in enumerate(sorted(license_dict.iterkeys())):
       license_text = license_dict[license_filenames]
+      if i:
+        output_file.write('\n\n\n')
       WriteLicense(output_file, root, license_text, license_filenames)
 
 
