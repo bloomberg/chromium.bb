@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -114,7 +114,8 @@ HRESULT ServiceController::StopService() {
 HRESULT ServiceController::InstallService(const string16& user,
                                           const string16& password,
                                           const std::string& run_switch,
-                                          const base::FilePath& user_data_dir) {
+                                          const base::FilePath& user_data_dir,
+                                          bool auto_start) {
   // TODO(vitalybuka): consider "lite" version if we don't want unregister
   // printers here.
   HRESULT hr = UninstallService();
@@ -152,9 +153,10 @@ HRESULT ServiceController::InstallService(const string16& user,
   ServiceHandle service(
       ::CreateService(
           scm, name_.c_str(), name_.c_str(), SERVICE_ALL_ACCESS,
-          SERVICE_WIN32_OWN_PROCESS, SERVICE_AUTO_START, SERVICE_ERROR_NORMAL,
-          command_line.GetCommandLineString().c_str(), NULL, NULL, NULL,
-          user.empty() ? NULL : user.c_str(),
+          SERVICE_WIN32_OWN_PROCESS,
+          auto_start ? SERVICE_AUTO_START : SERVICE_DEMAND_START,
+          SERVICE_ERROR_NORMAL, command_line.GetCommandLineString().c_str(),
+          NULL, NULL, NULL, user.empty() ? NULL : user.c_str(),
           password.empty() ? NULL : password.c_str()));
 
   if (!service.IsValid()) {

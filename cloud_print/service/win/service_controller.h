@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,7 +26,8 @@ class ServiceController {
   HRESULT InstallService(const string16& user,
                          const string16& password,
                          const std::string& run_switch,
-                         const base::FilePath& user_data_dir);
+                         const base::FilePath& user_data_dir,
+                         bool auto_start);
 
   HRESULT UninstallService();
 

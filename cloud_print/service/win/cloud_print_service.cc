@@ -16,19 +16,17 @@
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/installer/launcher_support/chrome_launcher_support.h"
+#include "base/win/scoped_handle.h"
 #include "cloud_print/service/service_state.h"
 #include "cloud_print/service/service_switches.h"
 #include "cloud_print/service/win/chrome_launcher.h"
 #include "cloud_print/service/win/service_controller.h"
+#include "cloud_print/service/win/service_listener.h"
 #include "cloud_print/service/win/service_utils.h"
-#include "printing/backend/print_backend.h"
+#include "cloud_print/service/win/setup_listener.h"
 
 namespace {
 
-const char kChromeIsNotAvalible[] = "\nChrome is not available\n";
-const char kChromeIsAvalible[] = "\nChrome is available\n";
-const wchar_t kRequirementsFileName[] = L"cloud_print_service_requirements.txt";
 const wchar_t kServiceStateFileName[] = L"Service State";
 
 void InvalidUsage() {
@@ -113,6 +111,7 @@ bool AskUser(const std::string& request) {
 
 }  // namespace
 
+
 class CloudPrintServiceModule
     : public ATL::CAtlServiceModuleT<CloudPrintServiceModule, IDS_SERVICENAME> {
  public:
@@ -153,13 +152,9 @@ class CloudPrintServiceModule
       return hr;
 
     if (check_requirements_) {
-      hr = CheckRequirements();
-      if (FAILED(hr))
-        return hr;
-      // Don't run message loop and stop service.
-      return S_FALSE;
+      CheckRequirements();
     } else {
-      hr = StartConnector();
+      HRESULT hr = StartConnector();
       if (FAILED(hr))
         return hr;
     }
@@ -172,6 +167,7 @@ class CloudPrintServiceModule
 
   HRESULT PostMessageLoop() {
     StopConnector();
+    setup_listener_.reset();
     return Base::PostMessageLoop();
   }
 
@@ -203,7 +199,7 @@ class CloudPrintServiceModule
         return hr;
 
       hr = controller_->InstallService(run_as_user, run_as_password,
-                                       kServiceSwitch, user_data_dir_);
+                                       kServiceSwitch, user_data_dir_, true);
       if (SUCCEEDED(hr) && command_line.HasSwitch(kStartSwitch))
         return controller_->StartService();
 
@@ -213,6 +209,14 @@ class CloudPrintServiceModule
     if (command_line.HasSwitch(kStartSwitch))
       return controller_->StartService();
 
+    if (command_line.HasSwitch(kConsoleSwitch)) {
+      check_requirements_ = command_line.HasSwitch(kRequirementsSwitch);
+      ::SetConsoleCtrlHandler(&ConsoleCtrlHandler, TRUE);
+      HRESULT hr = Run();
+      ::SetConsoleCtrlHandler(NULL, FALSE);
+      return hr;
+    }
+
     if (command_line.HasSwitch(kServiceSwitch) ||
         command_line.HasSwitch(kRequirementsSwitch)) {
       *is_service = true;
@@ -220,12 +224,6 @@ class CloudPrintServiceModule
       return S_OK;
     }
 
-    if (command_line.HasSwitch(kConsoleSwitch)) {
-      ::SetConsoleCtrlHandler(&ConsoleCtrlHandler, TRUE);
-      HRESULT hr = Run();
-      ::SetConsoleCtrlHandler(NULL, FALSE);
-      return hr;
-    }
 
     InvalidUsage();
     return S_FALSE;
@@ -239,42 +237,47 @@ class CloudPrintServiceModule
                                             WideToASCII(*run_as_user), false));
       *run_as_password = ASCIIToWide(GetOption("Password", "", true));
 
-      base::FilePath requirements_filename(user_data_dir_);
-      requirements_filename =
-          requirements_filename.Append(kRequirementsFileName);
-
-      file_util::Delete(requirements_filename, false);
-      if (file_util::PathExists(requirements_filename)) {
-        LOG(ERROR) << "Unable to delete " <<
-            requirements_filename.value() << ".";
-        continue;
-      }
+      SetupListener setup(*run_as_user);
       if (FAILED(controller_->InstallService(*run_as_user, *run_as_password,
                                              kRequirementsSwitch,
-                                             user_data_dir_))) {
+                                             user_data_dir_, false))) {
+        LOG(ERROR) << "Failed to install service as " << *run_as_user << ".";
         continue;
       }
+
       bool service_started = SUCCEEDED(controller_->StartService());
+
+      if (service_started &&
+          !setup.WaitResponce(base::TimeDelta::FromSeconds(30))) {
+        LOG(ERROR) << "Failed to check environment for user " << *run_as_user
+                   << ".";
+      }
+
       controller_->UninstallService();
       if (!service_started) {
         LOG(ERROR) << "Failed to start service as " << *run_as_user << ".";
         continue;
       }
-      std::string printers;
-      if (!file_util::PathExists(requirements_filename) ||
-          !file_util::ReadFileToString(requirements_filename, &printers)) {
-        LOG(ERROR) << "Service can't create " << requirements_filename.value();
+      if (setup.user_data_dir().empty()) {
+        LOG(ERROR) << "Service can't access " << user_data_dir_.value() << ".";
         continue;
       }
-
-      if (EndsWith(printers, kChromeIsNotAvalible, true)) {
-        LOG(ERROR) << kChromeIsNotAvalible << " for " << *run_as_user << ".";
+      if (setup.chrome_path().empty()) {
+        LOG(ERROR) << "Chrome is not available  for " << *run_as_user << ".";
+        continue;
+      }
+      if (!setup.is_xps_availible()) {
+        LOG(ERROR) << "XPS pack is not installed.";
         continue;
       }
 
       std::cout << "\nService requirements check result: \n";
-      std::cout << printers << "\n";
-      file_util::Delete(requirements_filename, false);
+      std::cout << "Username: " << setup.user_name()<< "\n";
+      std::cout << "Chrome: " << setup.chrome_path().value()<< "\n";
+      std::cout << "Printers:\n  ";
+      std::ostream_iterator<std::string> cout_it(std::cout, "\n  ");
+      std::copy(setup.printers().begin(), setup.printers().end(), cout_it);
+      std::cout << "\n";
 
       if (AskUser("Do you want to use " + WideToASCII(*run_as_user) + "?"))
         return;
@@ -332,25 +335,8 @@ class CloudPrintServiceModule
     return S_OK;
   }
 
-  HRESULT CheckRequirements() {
-    base::FilePath requirements_filename(user_data_dir_);
-    requirements_filename = requirements_filename.Append(kRequirementsFileName);
-    std::string output;
-    output.append("Printers available for " +
-                  WideToASCII(GetCurrentUserName()) + ":\n");
-    scoped_refptr<printing::PrintBackend> backend(
-        printing::PrintBackend::CreateInstance(NULL));
-    printing::PrinterList printer_list;
-    backend->EnumeratePrinters(&printer_list);
-    for (size_t i = 0; i < printer_list.size(); ++i) {
-      output += " ";
-      output += printer_list[i].printer_name;
-      output += "\n";
-    }
-    base::FilePath chrome = chrome_launcher_support::GetAnyChromePath();
-    output.append(chrome.empty() ? kChromeIsNotAvalible : kChromeIsAvalible);
-    file_util::WriteFile(requirements_filename, output.c_str(), output.size());
-    return S_OK;
+  void CheckRequirements() {
+    setup_listener_.reset(new ServiceListener(user_data_dir_));
   }
 
   HRESULT StartConnector() {
@@ -371,6 +357,7 @@ class CloudPrintServiceModule
   base::FilePath user_data_dir_;
   scoped_ptr<ChromeLauncher> chrome_;
   scoped_ptr<ServiceController> controller_;
+  scoped_ptr<ServiceListener> setup_listener_;
 };
 
 CloudPrintServiceModule _AtlModule;

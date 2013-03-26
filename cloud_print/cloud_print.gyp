@@ -88,6 +88,7 @@
       'conditions': [
         ['OS=="win"', {
           'sources': [
+            'service/win/service_ipc_unittest.cc',
             'virtual_driver/win/port_monitor/port_monitor_unittest.cc',
           ],
           'dependencies': [
@@ -95,6 +96,13 @@
           ],
         }],
       ],
+      'msvs_settings': {
+        'VCLinkerTool': {
+          'AdditionalDependencies': [
+              'secur32.lib',
+          ],
+        },
+      },
     },
   ],
 }

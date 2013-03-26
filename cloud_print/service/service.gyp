@@ -35,6 +35,7 @@
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
+        '<(DEPTH)/ipc/ipc.gyp:ipc',
         '<(DEPTH)/net/net.gyp:net',
         '<(DEPTH)/printing/printing.gyp:printing',
       ],
@@ -57,8 +58,12 @@
         'win/local_security_policy.h',
         'win/service_controller.cc',
         'win/service_controller.h',
+        'win/service_listener.cc',
+        'win/service_listener.h',
         'win/service_utils.cc',
         'win/service_utils.h',
+        'win/setup_listener.cc',
+        'win/setup_listener.h',
       ],
     },
     {
