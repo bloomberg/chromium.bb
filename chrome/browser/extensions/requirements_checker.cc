@@ -10,6 +10,7 @@
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/manifest.h"
+#include "chrome/common/extensions/manifest_handlers/requirements_handler.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/gpu_feature_type.h"
 #include "grit/generated_resources.h"
@@ -33,7 +34,8 @@ void RequirementsChecker::Check(scoped_refptr<const Extension> extension,
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   callback_ = callback;
-  const Extension::Requirements& requirements = extension->requirements();
+  const RequirementsInfo& requirements =
+      RequirementsInfo::GetRequirements(extension);
 
   if (requirements.npapi) {
 #if defined(OS_CHROMEOS)

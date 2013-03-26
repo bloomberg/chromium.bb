@@ -11,6 +11,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/extensions/manifest_handler.h"
+#include "chrome/common/extensions/manifest_handlers/requirements_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_utils.h"
@@ -101,6 +103,12 @@ class ManagedUserServiceExtensionTest : public ExtensionServiceTestBase {
   virtual void SetUp() OVERRIDE {
     ExtensionServiceTestBase::SetUp();
     InitializeEmptyExtensionService();
+    (new extensions::RequirementsHandler)->Register();
+  }
+
+  virtual void TearDown() OVERRIDE {
+    extensions::ManifestHandler::ClearRegistryForTesting();
+    ExtensionServiceTestBase::TearDown();
   }
 
  protected:

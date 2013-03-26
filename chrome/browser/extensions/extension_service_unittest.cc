@@ -70,6 +70,7 @@
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/manifest_handler.h"
 #include "chrome/common/extensions/manifest_handlers/content_scripts_handler.h"
+#include "chrome/common/extensions/manifest_handlers/requirements_handler.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/common/pref_names.h"
@@ -553,6 +554,7 @@ void ExtensionServiceTestBase::SetUp() {
   (new extensions::ContentScriptsHandler)->Register();
   (new extensions::DefaultLocaleHandler)->Register();
   (new extensions::PluginsHandler)->Register();
+  (new extensions::RequirementsHandler)->Register();
 }
 
 void ExtensionServiceTestBase::TearDown() {

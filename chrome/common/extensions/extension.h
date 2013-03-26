@@ -104,16 +104,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     SYNC_TYPE_APP
   };
 
-  // Declared requirements for the extension.
-  struct Requirements {
-    Requirements();
-    ~Requirements();
-
-    bool webgl;
-    bool css3d;
-    bool npapi;
-  };
-
   // An NaCl module included in the extension.
   struct NaClModuleInfo {
     GURL url;
@@ -409,7 +399,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // Accessors:
 
-  const Requirements& requirements() const { return requirements_; }
   const base::FilePath& path() const { return path_; }
   const GURL& url() const { return extension_url_; }
   Manifest::Location location() const;
@@ -569,8 +558,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool LoadManifestVersion(string16* error);
   bool LoadNaClModules(string16* error);
   bool LoadSandboxedPages(string16* error);
-  // Must be called after the "plugins" key has been parsed.
-  bool LoadRequirements(string16* error);
   bool LoadKioskEnabled(string16* error);
   bool LoadOfflineEnabled(string16* error);
   bool LoadTextToSpeechVoices(string16* error);
@@ -624,9 +611,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // this member variable to 0 to distinguish the "uninitialized" case from
   // the case when we know the manifest version actually is 1.
   int manifest_version_;
-
-  // The requirements declared in the manifest.
-  Requirements requirements_;
 
   // The absolute path to the directory the extension is stored in.
   base::FilePath path_;

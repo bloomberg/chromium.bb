@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_MANIFEST_URL_PARSER_H_
-#define CHROME_BROWSER_EXTENSIONS_MANIFEST_URL_PARSER_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_CHROME_MANIFEST_PARSER_H_
+#define CHROME_BROWSER_EXTENSIONS_CHROME_MANIFEST_PARSER_H_
 
 #include "base/basictypes.h"
 #include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
@@ -14,14 +14,14 @@ class Profile;
 
 namespace extensions {
 
-class ManifestURLParser : public ProfileKeyedAPI,
-                          public content::NotificationObserver {
+class ChromeManifestParser : public ProfileKeyedAPI,
+                             public content::NotificationObserver {
  public:
-  explicit ManifestURLParser(Profile* profile);
-  virtual ~ManifestURLParser();
+  explicit ChromeManifestParser(Profile* profile);
+  virtual ~ChromeManifestParser();
 
   // ProfileKeyedAPI implementation.
-  static ProfileKeyedAPIFactory<ManifestURLParser>* GetFactoryInstance();
+  static ProfileKeyedAPIFactory<ChromeManifestParser>* GetFactoryInstance();
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
@@ -29,20 +29,20 @@ class ManifestURLParser : public ProfileKeyedAPI,
                        const content::NotificationDetails& details) OVERRIDE;
 
  private:
-  friend class ProfileKeyedAPIFactory<ManifestURLParser>;
+  friend class ProfileKeyedAPIFactory<ChromeManifestParser>;
 
   // ProfileKeyedAPI implementation.
   static const char* service_name() {
-    return "ManifestURLParser";
+    return "ChromeManifestParser";
   }
   static const bool kServiceIsNULLWhileTesting = true;
 
   Profile* const profile_;
   content::NotificationRegistrar registrar_;
 
-  DISALLOW_COPY_AND_ASSIGN(ManifestURLParser);
+  DISALLOW_COPY_AND_ASSIGN(ChromeManifestParser);
 };
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_MANIFEST_URL_PARSER_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_CHROME_MANIFEST_PARSER_H_

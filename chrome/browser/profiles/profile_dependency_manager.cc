@@ -49,11 +49,11 @@
 #include "chrome/browser/extensions/api/tab_capture/tab_capture_registry_factory.h"
 #include "chrome/browser/extensions/api/tabs/tabs_windows_api.h"
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api.h"
+#include "chrome/browser/extensions/chrome_manifest_parser.h"
 #include "chrome/browser/extensions/content_scripts_parser.h"
 #include "chrome/browser/extensions/csp_parser.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/install_tracker_factory.h"
-#include "chrome/browser/extensions/manifest_url_parser.h"
 #include "chrome/browser/extensions/token_cache/token_cache_service_factory.h"
 #include "chrome/browser/extensions/web_accessible_resources_parser.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
@@ -274,6 +274,7 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   extensions::ActivityLogFactory::GetInstance();
   extensions::BookmarksAPI::GetFactoryInstance();
   extensions::BluetoothAPIFactory::GetInstance();
+  extensions::ChromeManifestParser::GetFactoryInstance();
   extensions::CommandService::GetFactoryInstance();
   extensions::ContentScriptsParser::GetFactoryInstance();
   extensions::CookiesAPI::GetFactoryInstance();
@@ -298,7 +299,6 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
 #endif
   extensions::ManagedModeAPI::GetFactoryInstance();
   extensions::ManagementAPI::GetFactoryInstance();
-  extensions::ManifestURLParser::GetFactoryInstance();
   extensions::MediaGalleriesPrivateAPI::GetFactoryInstance();
 #if defined(OS_CHROMEOS)
   extensions::MediaPlayerAPI::GetFactoryInstance();
@@ -322,7 +322,7 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   extensions::TtsAPI::GetFactoryInstance();
   extensions::WebAccessibleResourcesParser::GetFactoryInstance();
   extensions::WebNavigationAPI::GetFactoryInstance();
-#endif
+#endif  // defined(ENABLE_EXTENSIONS)
   FaviconServiceFactory::GetInstance();
 #if defined(OS_CHROMEOS) && defined(FILE_MANAGER_EXTENSION)
   FileBrowserPrivateAPIFactory::GetInstance();

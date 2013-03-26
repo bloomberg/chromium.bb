@@ -286,6 +286,7 @@ class DownloadExtensionTest : public ExtensionApiTest {
 
   // InProcessBrowserTest
   virtual void SetUpOnMainThread() OVERRIDE {
+    ExtensionApiTest::SetUpOnMainThread();
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&chrome_browser_net::SetUrlRequestMocksEnabled, true));
