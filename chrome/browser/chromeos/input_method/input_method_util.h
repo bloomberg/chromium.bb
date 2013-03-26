@@ -128,9 +128,6 @@ class InputMethodUtil {
   // Returns true if the given input method id is for a keyboard layout.
   static bool IsKeyboardLayout(const std::string& input_method_id);
 
-  // Returns true if the given input method id is for an extension input method.
-  static bool IsExtensionInputMethod(const std::string& input_method_id);
-
   // Converts a language code to a language display name, using the
   // current application locale. MaybeRewriteLanguageName() is called
   // internally.

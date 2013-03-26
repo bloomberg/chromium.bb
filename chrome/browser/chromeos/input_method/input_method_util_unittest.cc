@@ -307,13 +307,6 @@ TEST_F(InputMethodUtilTest, TestIsKeyboardLayout) {
   EXPECT_FALSE(InputMethodUtil::IsKeyboardLayout("mozc"));
 }
 
-TEST_F(InputMethodUtilTest, TestExtensionInputMethod) {
-  EXPECT_TRUE(InputMethodUtil::IsExtensionInputMethod(
-      kExtensionImePrefix + std::string("123abc")));
-  EXPECT_FALSE(InputMethodUtil::IsExtensionInputMethod(""));
-  EXPECT_FALSE(InputMethodUtil::IsExtensionInputMethod("mozc"));
-}
-
 TEST_F(InputMethodUtilTest, TestGetKeyboardLayoutName) {
   // Unsupported case.
   EXPECT_EQ("", util_.GetKeyboardLayoutName("UNSUPPORTED_ID"));

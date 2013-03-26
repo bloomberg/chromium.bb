@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/ibus/ibus_input_context_client.h"
+#include "chromeos/ime/extension_ime_util.h"
 #include "chromeos/ime/input_method_delegate.h"
 #include "third_party/icu/public/common/unicode/uloc.h"
 #include "ui/base/accelerators/accelerator.h"
@@ -196,7 +197,7 @@ bool InputMethodManagerImpl::EnableInputMethods(
   // keep relative order of the extension input method IDs.
   for (size_t i = 0; i < active_input_method_ids_.size(); ++i) {
     const std::string& input_method_id = active_input_method_ids_[i];
-    if (InputMethodUtil::IsExtensionInputMethod(input_method_id))
+    if (extension_ime_util::IsExtensionIME(input_method_id))
       new_active_input_method_ids_filtered.push_back(input_method_id);
   }
   active_input_method_ids_.swap(new_active_input_method_ids_filtered);
@@ -283,7 +284,7 @@ void InputMethodManagerImpl::ChangeInputMethodInternal(
 
   if (current_input_method_.id() != input_method_id_to_switch) {
     const InputMethodDescriptor* descriptor = NULL;
-    if (!InputMethodUtil::IsExtensionInputMethod(input_method_id_to_switch)) {
+    if (!extension_ime_util::IsExtensionIME(input_method_id_to_switch)) {
       descriptor =
           util_.GetInputMethodDescriptorFromId(input_method_id_to_switch);
     } else {
@@ -326,7 +327,7 @@ void InputMethodManagerImpl::AddInputMethodExtension(
   if (state_ == STATE_TERMINATING)
     return;
 
-  if (!InputMethodUtil::IsExtensionInputMethod(id)) {
+  if (!extension_ime_util::IsExtensionIME(id)) {
     DVLOG(1) << id << " is not a valid extension input method ID.";
     return;
   }
@@ -353,7 +354,7 @@ void InputMethodManagerImpl::AddInputMethodExtension(
 }
 
 void InputMethodManagerImpl::RemoveInputMethodExtension(const std::string& id) {
-  if (!InputMethodUtil::IsExtensionInputMethod(id))
+  if (!extension_ime_util::IsExtensionIME(id))
     DVLOG(1) << id << " is not a valid extension input method ID.";
 
   std::vector<std::string>::iterator i = std::find(

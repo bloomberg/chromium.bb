@@ -24,11 +24,11 @@
 #include "chromeos/dbus/ibus/ibus_lookup_table.h"
 #include "chromeos/dbus/ibus/ibus_property.h"
 #include "chromeos/dbus/ibus/ibus_text.h"
+#include "chromeos/ime/extension_ime_util.h"
 #include "chromeos/ime/ibus_keymap.h"
 #include "dbus/object_path.h"
 
 namespace chromeos {
-const char* kExtensionImePrefix = "_ext_ime_";
 const char* kErrorNotActive = "IME is not active";
 const char* kErrorWrongContext = "Context is not active";
 const char* kCandidateNotFound = "Candidate not found";
@@ -78,9 +78,7 @@ void InputMethodEngineIBus::Initialize(
 
   observer_ = observer;
   engine_id_ = engine_id;
-  ibus_id_ = kExtensionImePrefix;
-  ibus_id_ += extension_id;
-  ibus_id_ += engine_id;
+  ibus_id_ = extension_ime_util::GetInputMethodID(extension_id, engine_id);
 
   input_method::InputMethodManager* manager =
       input_method::GetInputMethodManager();

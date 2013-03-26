@@ -14,8 +14,6 @@ namespace input_method {
 struct KeyEventHandle;
 }  // namespace input_method
 
-extern const char* kExtensionImePrefix;
-
 // InputMethodEngine is used to translate from the Chrome IME API to the native
 // API.
 class InputMethodEngine {

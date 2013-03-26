@@ -17,6 +17,7 @@
 #include "chromeos/dbus/ibus/mock_ibus_client.h"
 #include "chromeos/dbus/ibus/mock_ibus_input_context_client.h"
 #include "chromeos/dbus/mock_dbus_thread_manager_without_gmock.h"
+#include "chromeos/ime/extension_ime_util.h"
 #include "chromeos/ime/mock_ibus_daemon_controller.h"
 #include "chromeos/ime/mock_input_method_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -25,8 +26,6 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 
 namespace chromeos {
-
-extern const char* kExtensionImePrefix;
 
 namespace input_method {
 namespace {
@@ -892,7 +891,7 @@ TEST_F(InputMethodManagerImplTest, TestAddRemoveExtensionInputMethods) {
   std::vector<std::string> layouts;
   layouts.push_back("us");
   manager_->AddInputMethodExtension(
-      std::string(kExtensionImePrefix) + "deadbeef",
+      extension_ime_util::GetInputMethodID("deadbeef", "engine_id"),
       "deadbeef input method",
       layouts,
       "en-US",
@@ -905,12 +904,12 @@ TEST_F(InputMethodManagerImplTest, TestAddRemoveExtensionInputMethods) {
     scoped_ptr<InputMethodDescriptors> methods(
         manager_->GetActiveInputMethods());
     ASSERT_EQ(2U, methods->size());
-    EXPECT_EQ(std::string(kExtensionImePrefix) + "deadbeef",
+    EXPECT_EQ(extension_ime_util::GetInputMethodID("deadbeef", "engine_id"),
               // Ext IMEs should be at the end of the list.
               methods->at(1).id());
   }
   manager_->AddInputMethodExtension(
-      std::string(kExtensionImePrefix) + "cafebabe",
+      extension_ime_util::GetInputMethodID("cafebabe", "engine_id"),
       "cafebabe input method",
       layouts,
       "en-US",
@@ -920,17 +919,17 @@ TEST_F(InputMethodManagerImplTest, TestAddRemoveExtensionInputMethods) {
     scoped_ptr<InputMethodDescriptors> methods(
         manager_->GetActiveInputMethods());
     ASSERT_EQ(3U, methods->size());
-    EXPECT_EQ(std::string(kExtensionImePrefix) + "deadbeef",
+    EXPECT_EQ(extension_ime_util::GetInputMethodID("deadbeef", "engine_id"),
               // Ext IMEs should be at the end of the list.
               methods->at(1).id());
   }
 
   // Remove them.
   manager_->RemoveInputMethodExtension(
-      std::string(kExtensionImePrefix) + "deadbeef");
+      extension_ime_util::GetInputMethodID("deadbeef", "engine_id"));
   EXPECT_EQ(2U, manager_->GetNumActiveInputMethods());
   manager_->RemoveInputMethodExtension(
-      std::string(kExtensionImePrefix) + "cafebabe");
+      extension_ime_util::GetInputMethodID("cafebabe", "engine_id"));
   EXPECT_EQ(1U, manager_->GetNumActiveInputMethods());
   // Currently, to work around  a crash issue at crosbug.com/27051,
   // controller_->Stop(); is NOT called when all (extension) IMEs are disabled.
@@ -955,7 +954,7 @@ TEST_F(InputMethodManagerImplTest, TestAddExtensionInputThenLockScreen) {
   std::vector<std::string> layouts;
   layouts.push_back("us(dvorak)");
   manager_->AddInputMethodExtension(
-      std::string(kExtensionImePrefix) + "deadbeef",
+      extension_ime_util::GetInputMethodID("deadbeef", "engine_id"),
       "deadbeef input method",
       layouts,
       "en-US",
@@ -966,7 +965,7 @@ TEST_F(InputMethodManagerImplTest, TestAddExtensionInputThenLockScreen) {
   // Switch to the IME.
   manager_->SwitchToNextInputMethod();
   EXPECT_EQ(2, observer.input_method_changed_count_);
-  EXPECT_EQ(std::string(kExtensionImePrefix) + "deadbeef",
+  EXPECT_EQ(extension_ime_util::GetInputMethodID("deadbeef", "engine_id"),
             manager_->GetCurrentInputMethod().id());
   EXPECT_EQ("us(dvorak)", xkeyboard_->last_layout_);
 
@@ -981,7 +980,7 @@ TEST_F(InputMethodManagerImplTest, TestAddExtensionInputThenLockScreen) {
   // Unlock the screen.
   manager_->SetState(InputMethodManager::STATE_BROWSER_SCREEN);
   EXPECT_EQ(2U, manager_->GetNumActiveInputMethods());
-  EXPECT_EQ(std::string(kExtensionImePrefix) + "deadbeef",
+  EXPECT_EQ(extension_ime_util::GetInputMethodID("deadbeef", "engine_id"),
             manager_->GetCurrentInputMethod().id());
   EXPECT_EQ("us(dvorak)", xkeyboard_->last_layout_);
   {
@@ -989,7 +988,7 @@ TEST_F(InputMethodManagerImplTest, TestAddExtensionInputThenLockScreen) {
     scoped_ptr<InputMethodDescriptors> methods(
         manager_->GetActiveInputMethods());
     ASSERT_EQ(2U, methods->size());
-    EXPECT_EQ(std::string(kExtensionImePrefix) + "deadbeef",
+    EXPECT_EQ(extension_ime_util::GetInputMethodID("deadbeef", "engine_id"),
               // Ext. IMEs should be at the end of the list.
               methods->at(1).id());
   }
