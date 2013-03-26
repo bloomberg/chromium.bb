@@ -507,7 +507,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // True if push notification is enabled.
   bool push_notification_enabled_;
 
-  // Note: These should remain the last member so they'll be destroyed and
+  // Note: This should remain the last member so it'll be destroyed and
   // invalidate the weak pointers before any other members are destroyed.
   base::WeakPtrFactory<DriveFileSystem> weak_ptr_factory_;
 

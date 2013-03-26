@@ -4,7 +4,15 @@
 
 #include "chrome/browser/chromeos/drive/fake_drive_file_system.h"
 
+#include "base/bind.h"
+#include "base/callback.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
+#include "chrome/browser/chromeos/drive/drive.pb.h"
+#include "chrome/browser/chromeos/drive/drive_file_error.h"
+#include "chrome/browser/chromeos/drive/drive_file_system_util.h"
+#include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
+#include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -13,7 +21,10 @@ namespace test_util {
 
 using content::BrowserThread;
 
-FakeDriveFileSystem::FakeDriveFileSystem() {
+FakeDriveFileSystem::FakeDriveFileSystem(
+    google_apis::DriveServiceInterface* drive_service)
+    : drive_service_(drive_service),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
 }
 
 FakeDriveFileSystem::~FakeDriveFileSystem() {
@@ -62,6 +73,12 @@ void FakeDriveFileSystem::GetEntryInfoByResourceId(
     const std::string& resource_id,
     const GetEntryInfoWithFilePathCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  drive_service_->GetResourceEntry(
+      resource_id,
+      base::Bind(
+          &FakeDriveFileSystem::GetEntryInfoByResourceIdAfterGetResourceEntry,
+          weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
 void FakeDriveFileSystem::TransferFileFromRemoteToLocal(
@@ -187,6 +204,112 @@ void FakeDriveFileSystem::GetMetadata(
 }
 
 void FakeDriveFileSystem::Reload() {
+}
+
+// Implementation of GetFilePath.
+void FakeDriveFileSystem::GetFilePath(const std::string& resource_id,
+                                      const GetFilePathCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  drive_service_->GetAboutResource(
+      base::Bind(
+          &FakeDriveFileSystem::GetFilePathAfterGetAboutResource,
+          weak_ptr_factory_.GetWeakPtr(), resource_id, callback));
+}
+
+void FakeDriveFileSystem::GetFilePathAfterGetAboutResource(
+    const std::string& resource_id,
+    const GetFilePathCallback& callback,
+    google_apis::GDataErrorCode error,
+    scoped_ptr<google_apis::AboutResource> about_resource) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // We assume the call always success for test.
+  DCHECK_EQ(util::GDataToDriveFileError(error), DRIVE_FILE_OK);
+  DCHECK(about_resource);
+
+  GetFilePathInternal(about_resource->root_folder_id(), resource_id,
+                      base::FilePath(), callback);
+}
+
+void FakeDriveFileSystem::GetFilePathInternal(
+    const std::string& root_resource_id,
+    const std::string& resource_id,
+    const base::FilePath& file_path,
+    const GetFilePathCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (resource_id == root_resource_id) {
+    // Reached to the root. Append the drive root path, and run |callback|.
+    callback.Run(util::GetDriveMyDriveRootPath().Append(file_path));
+    return;
+  }
+
+  drive_service_->GetResourceEntry(
+      resource_id,
+      base::Bind(
+          &FakeDriveFileSystem::GetFilePathAfterGetResourceEntry,
+          weak_ptr_factory_.GetWeakPtr(),
+          root_resource_id, file_path, callback));
+}
+
+void FakeDriveFileSystem::GetFilePathAfterGetResourceEntry(
+    const std::string& root_resource_id,
+    const base::FilePath& remaining_file_path,
+    const GetFilePathCallback& callback,
+    google_apis::GDataErrorCode error_in,
+    scoped_ptr<google_apis::ResourceEntry> resource_entry) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // We assume the call always success for test.
+  DCHECK_EQ(util::GDataToDriveFileError(error_in), DRIVE_FILE_OK);
+  DCHECK(resource_entry);
+
+  DriveEntryProto entry_proto =
+      ConvertResourceEntryToDriveEntryProto(*resource_entry);
+  base::FilePath file_path =
+      base::FilePath::FromUTF8Unsafe(entry_proto.base_name()).Append(
+          remaining_file_path);
+
+  GetFilePathInternal(root_resource_id, entry_proto.parent_resource_id(),
+                      file_path, callback);
+}
+
+// Implementation of GetEntryInfoByResourceId.
+void FakeDriveFileSystem::GetEntryInfoByResourceIdAfterGetResourceEntry(
+    const GetEntryInfoWithFilePathCallback& callback,
+    google_apis::GDataErrorCode error_in,
+    scoped_ptr<google_apis::ResourceEntry> resource_entry) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  DriveFileError error = util::GDataToDriveFileError(error_in);
+  if (error != DRIVE_FILE_OK) {
+    callback.Run(error, base::FilePath(), scoped_ptr<DriveEntryProto>());
+    return;
+  }
+
+  DCHECK(resource_entry);
+  scoped_ptr<DriveEntryProto> entry_proto(new DriveEntryProto(
+      ConvertResourceEntryToDriveEntryProto(*resource_entry)));
+
+  const std::string parent_resource_id = entry_proto->parent_resource_id();
+  GetFilePath(
+      parent_resource_id,
+      base::Bind(
+          &FakeDriveFileSystem::GetEntryInfoByResourceIdAfterGetFilePath,
+          weak_ptr_factory_.GetWeakPtr(),
+          callback, error, base::Passed(&entry_proto)));
+}
+
+void FakeDriveFileSystem::GetEntryInfoByResourceIdAfterGetFilePath(
+    const GetEntryInfoWithFilePathCallback& callback,
+    DriveFileError error,
+    scoped_ptr<DriveEntryProto> entry_proto,
+    const base::FilePath& parent_file_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  base::FilePath file_path = parent_file_path.Append(
+      base::FilePath::FromUTF8Unsafe(entry_proto->base_name()));
+  callback.Run(error, file_path, entry_proto.Pass());
 }
 
 }  // namespace test_util

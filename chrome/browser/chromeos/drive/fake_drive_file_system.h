@@ -8,17 +8,23 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/chromeos/drive/drive_file_error.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
+#include "chrome/browser/google_apis/gdata_errorcode.h"
 
 namespace google_apis {
 
+class AboutResource;
+class DriveServiceInterface;
 class ResourceEntry;
 
 }  // namespace google_apis
 
 namespace drive {
 
+class DriveEntryProto;
 class DriveFileSystemObserver;
 
 namespace test_util {
@@ -31,7 +37,9 @@ namespace test_util {
 // Currently most methods are empty (not implemented).
 class FakeDriveFileSystem : public DriveFileSystemInterface {
  public:
-  FakeDriveFileSystem();
+
+  explicit FakeDriveFileSystem(
+      google_apis::DriveServiceInterface* drive_service);
   virtual ~FakeDriveFileSystem();
 
   // DriveFileSystemInterface Overrides.
@@ -111,6 +119,57 @@ class FakeDriveFileSystem : public DriveFileSystemInterface {
   virtual void Reload() OVERRIDE;
 
  private:
+
+  // Callback to return the result of GetFilePath.
+  typedef base::Callback<void(const base::FilePath& file_path)>
+      GetFilePathCallback;
+
+  // Returns the path for the |resource_id| via |callback|.
+  // How the method works:
+  // 1) Gets AboutResource from the drive service to obtain root resource id.
+  // 2) Gets ResourceEntry from the drive service to get the base name,
+  //    prepends it to the |file_path|. Unless it is root, also tries for
+  //    the parent recursively.
+  void GetFilePath(const std::string& resource_id,
+                   const GetFilePathCallback& callback);
+  void GetFilePathAfterGetAboutResource(
+      const std::string& resource_id,
+      const GetFilePathCallback& callback,
+      google_apis::GDataErrorCode error,
+      scoped_ptr<google_apis::AboutResource> about_resource);
+  void GetFilePathInternal(
+      const std::string& root_resource_id,
+      const std::string& resource_id,
+      const base::FilePath& file_path,
+      const GetFilePathCallback& callback);
+  void GetFilePathAfterGetResourceEntry(
+      const std::string& root_resource_id,
+      const base::FilePath& remaining_file_path,
+      const GetFilePathCallback& callback,
+      google_apis::GDataErrorCode error_in,
+      scoped_ptr<google_apis::ResourceEntry> resource_entry);
+
+  // Helpers of GetEntryInfoByResourceId.
+  // How the method works:
+  // 1) Gets ResourceEntry from the drive service.
+  // 2) Gets the file path of the resource.
+  // 3) Runs the |callback|.
+  void GetEntryInfoByResourceIdAfterGetResourceEntry(
+      const GetEntryInfoWithFilePathCallback& callback,
+      google_apis::GDataErrorCode error_in,
+      scoped_ptr<google_apis::ResourceEntry> resource_entry);
+  void GetEntryInfoByResourceIdAfterGetFilePath(
+      const GetEntryInfoWithFilePathCallback& callback,
+      DriveFileError error,
+      scoped_ptr<DriveEntryProto> entry_proto,
+      const base::FilePath& parent_file_path);
+
+  google_apis::DriveServiceInterface* drive_service_;  // Not owned.
+
+  // Note: This should remain the last member so it'll be destroyed and
+  // invalidate the weak pointers before any other members are destroyed.
+  base::WeakPtrFactory<FakeDriveFileSystem> weak_ptr_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(FakeDriveFileSystem);
 };
 
