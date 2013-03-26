@@ -673,8 +673,6 @@
             ['exclude', '^metrics/stats_table_unittest\\.cc$'],
             # iOS does not use message_pump_libevent.
             ['exclude', '^message_pump_libevent_unittest\\.cc$'],
-            ['exclude', '^prefs/json_pref_store_unittest.\\cc$'],
-
           ],
           'conditions': [
             ['coverage != 0', {
@@ -703,6 +701,7 @@
                 'test_data_files': [
                   'data/json/bom_feff.json',
                   'data/file_util_unittest',
+                  'prefs/test/data/pref_service',
                 ],
                 'test_data_prefix': 'base',
               },
