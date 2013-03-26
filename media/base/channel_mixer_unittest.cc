@@ -8,6 +8,7 @@
 #include <cmath>
 
 #include "base/stringprintf.h"
+#include "media/audio/audio_parameters.h"
 #include "media/base/audio_bus.h"
 #include "media/base/channel_mixer.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -54,6 +55,20 @@ struct ChannelMixerTestData {
         channel_values(channel_values),
         num_channel_values(num_channel_values),
         scale(scale) {
+    input_channels = ChannelLayoutToChannelCount(input_layout);
+    output_channels = ChannelLayoutToChannelCount(output_layout);
+  }
+
+  ChannelMixerTestData(ChannelLayout input_layout, int input_channels,
+                       ChannelLayout output_layout, int output_channels,
+                       float* channel_values, int num_channel_values)
+      : input_layout(input_layout),
+        input_channels(input_channels),
+        output_layout(output_layout),
+        output_channels(output_channels),
+        channel_values(channel_values),
+        num_channel_values(num_channel_values),
+        scale(1.0f) {
   }
 
   std::string DebugString() const {
@@ -63,7 +78,9 @@ struct ChannelMixerTestData {
   }
 
   ChannelLayout input_layout;
+  int input_channels;
   ChannelLayout output_layout;
+  int output_channels;
   float* channel_values;
   int num_channel_values;
   float scale;
@@ -79,13 +96,24 @@ class ChannelMixerTest : public testing::TestWithParam<ChannelMixerTestData> {};
 // output channels have the same value.
 TEST_P(ChannelMixerTest, Mixing) {
   ChannelLayout input_layout = GetParam().input_layout;
-  ChannelLayout output_layout = GetParam().output_layout;
+  int input_channels = GetParam().input_channels;
+  scoped_ptr<AudioBus> input_bus = AudioBus::Create(input_channels, kFrames);
+  AudioParameters input_audio(AudioParameters::AUDIO_PCM_LINEAR,
+                              input_layout,
+                              AudioParameters::kAudioCDSampleRate, 16,
+                              kFrames);
+  if (input_layout == CHANNEL_LAYOUT_DISCRETE)
+    input_audio.SetDiscreteChannels(input_channels);
 
-  ChannelMixer mixer(input_layout, output_layout);
-  scoped_ptr<AudioBus> input_bus = AudioBus::Create(
-      ChannelLayoutToChannelCount(input_layout), kFrames);
-  scoped_ptr<AudioBus> output_bus = AudioBus::Create(
-      ChannelLayoutToChannelCount(output_layout), kFrames);
+  ChannelLayout output_layout = GetParam().output_layout;
+  int output_channels = GetParam().output_channels;
+  scoped_ptr<AudioBus> output_bus = AudioBus::Create(output_channels, kFrames);
+  AudioParameters output_audio(AudioParameters::AUDIO_PCM_LINEAR,
+                               output_layout,
+                               AudioParameters::kAudioCDSampleRate, 16,
+                               kFrames);
+  if (output_layout == CHANNEL_LAYOUT_DISCRETE)
+    output_audio.SetDiscreteChannels(output_channels);
 
   const float* channel_values = GetParam().channel_values;
   ASSERT_EQ(input_bus->channels(), GetParam().num_channel_values);
@@ -98,11 +126,25 @@ TEST_P(ChannelMixerTest, Mixing) {
     expected_value += channel_values[ch] * scale;
   }
 
+  ChannelMixer mixer(input_audio, output_audio);
   mixer.Transform(input_bus.get(), output_bus.get());
 
-  for (int ch = 0; ch < output_bus->channels(); ++ch) {
-    for (int frame = 0; frame < output_bus->frames(); ++frame) {
-      ASSERT_FLOAT_EQ(output_bus->channel(ch)[frame], expected_value);
+  // Validate the output channel
+  if (input_layout != CHANNEL_LAYOUT_DISCRETE) {
+    for (int ch = 0; ch < output_bus->channels(); ++ch) {
+      for (int frame = 0; frame < output_bus->frames(); ++frame) {
+        ASSERT_FLOAT_EQ(output_bus->channel(ch)[frame], expected_value);
+      }
+    }
+  } else {
+    // Processing discrete mixing. If there is a matching input channel,
+    // then the output channel should be set. If no input channel,
+    // output channel should be 0
+    for (int ch = 0; ch < output_bus->channels(); ++ch) {
+      expected_value = (ch < input_channels) ? channel_values[ch] : 0;
+      for (int frame = 0; frame < output_bus->frames(); ++frame) {
+        ASSERT_FLOAT_EQ(output_bus->channel(ch)[frame], expected_value);
+      }
     }
   }
 }
@@ -111,6 +153,7 @@ static float kStereoToMonoValues[] = { 0.5f, 0.75f };
 static float kMonoToStereoValues[] = { 0.5f };
 // Zero the center channel since it will be mixed at scale 1 vs M_SQRT1_2.
 static float kFiveOneToMonoValues[] = { 0.1f, 0.2f, 0.0f, 0.4f, 0.5f, 0.6f };
+static float kFiveDiscreteValues[] = { 0.1f, 0.2f, 0.3f, 0.4f, 0.5f };
 
 // Run through basic sanity tests for some common conversions.
 INSTANTIATE_TEST_CASE_P(ChannelMixerTest, ChannelMixerTest, testing::Values(
@@ -122,7 +165,16 @@ INSTANTIATE_TEST_CASE_P(ChannelMixerTest, ChannelMixerTest, testing::Values(
                          1.0f),
     ChannelMixerTestData(CHANNEL_LAYOUT_5_1, CHANNEL_LAYOUT_MONO,
                          kFiveOneToMonoValues, arraysize(kFiveOneToMonoValues),
-                         static_cast<float>(M_SQRT1_2))
+                         static_cast<float>(M_SQRT1_2)),
+    ChannelMixerTestData(CHANNEL_LAYOUT_DISCRETE, 2,
+                         CHANNEL_LAYOUT_DISCRETE, 2,
+                         kStereoToMonoValues, arraysize(kStereoToMonoValues)),
+    ChannelMixerTestData(CHANNEL_LAYOUT_DISCRETE, 2,
+                         CHANNEL_LAYOUT_DISCRETE, 5,
+                         kStereoToMonoValues, arraysize(kStereoToMonoValues)),
+    ChannelMixerTestData(CHANNEL_LAYOUT_DISCRETE, 5,
+                         CHANNEL_LAYOUT_DISCRETE, 2,
+                         kFiveDiscreteValues, arraysize(kFiveDiscreteValues))
 ));
 
 }  // namespace media

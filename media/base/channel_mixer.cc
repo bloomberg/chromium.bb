@@ -53,6 +53,65 @@ static void ValidateLayout(ChannelLayout layout) {
   return;
 }
 
+class MatrixBuilder {
+ public:
+  MatrixBuilder(ChannelLayout input_layout, int input_channels,
+                ChannelLayout output_layout, int output_channels)
+      : input_layout_(input_layout),
+        input_channels_(input_channels),
+        output_layout_(output_layout),
+        output_channels_(output_channels) {
+    // Special case for 5.0, 5.1 with back channels when upmixed to 7.0, 7.1,
+    // which should map the back LR to side LR.
+    if (input_layout_ == CHANNEL_LAYOUT_5_0_BACK &&
+        output_layout_ == CHANNEL_LAYOUT_7_0) {
+      input_layout_ = CHANNEL_LAYOUT_5_0;
+    } else if (input_layout_ == CHANNEL_LAYOUT_5_1_BACK &&
+               output_layout_ == CHANNEL_LAYOUT_7_1) {
+      input_layout_ = CHANNEL_LAYOUT_5_1;
+    }
+  }
+
+  ~MatrixBuilder() { }
+
+  // Create the transformation matrix of input channels to output channels.
+  // Updates the empty matrix with the transformation, and returns true
+  // if the transformation is just a remapping of channels (no mixing).
+  bool CreateTransformationMatrix(std::vector< std::vector<float> >* matrix);
+
+ private:
+  // Result transformation of input channels to output channels
+  std::vector< std::vector<float> >* matrix_;
+
+  // Input and output channel layout provided during construction.
+  ChannelLayout input_layout_;
+  int input_channels_;
+  ChannelLayout output_layout_;
+  int output_channels_;
+
+  // Helper variable for tracking which inputs are currently unaccounted,
+  // should be empty after construction completes.
+  std::vector<Channels> unaccounted_inputs_;
+
+  // Helper methods for managing unaccounted input channels.
+  void AccountFor(Channels ch);
+  bool IsUnaccounted(Channels ch);
+
+  // Helper methods for checking if |ch| exists in either |input_layout_| or
+  // |output_layout_| respectively.
+  bool HasInputChannel(Channels ch);
+  bool HasOutputChannel(Channels ch);
+
+  // Helper methods for updating |matrix_| with the proper value for
+  // mixing |input_ch| into |output_ch|.  MixWithoutAccounting() does not
+  // remove the channel from |unaccounted_inputs_|.
+  void Mix(Channels input_ch, Channels output_ch, float scale);
+  void MixWithoutAccounting(Channels input_ch, Channels output_ch,
+                                          float scale);
+
+  DISALLOW_COPY_AND_ASSIGN(MatrixBuilder);
+};
+
 ChannelMixer::ChannelMixer(ChannelLayout input_layout,
                            ChannelLayout output_layout) {
   Initialize(input_layout,
@@ -72,22 +131,29 @@ ChannelMixer::ChannelMixer(
 void ChannelMixer::Initialize(
     ChannelLayout input_layout, int input_channels,
     ChannelLayout output_layout, int output_channels) {
-  input_layout_ = input_layout;
-  output_layout_ = output_layout;
-  remapping_ = false;
-
   // Stereo down mix should never be the output layout.
-  CHECK_NE(output_layout_, CHANNEL_LAYOUT_STEREO_DOWNMIX);
+  CHECK_NE(output_layout, CHANNEL_LAYOUT_STEREO_DOWNMIX);
 
-  if (input_layout_ != CHANNEL_LAYOUT_DISCRETE)
-    ValidateLayout(input_layout_);
-  if (output_layout_ != CHANNEL_LAYOUT_DISCRETE)
-    ValidateLayout(output_layout_);
+  // Verify that the layouts are supported
+  if (input_layout != CHANNEL_LAYOUT_DISCRETE)
+    ValidateLayout(input_layout);
+  if (output_layout != CHANNEL_LAYOUT_DISCRETE)
+    ValidateLayout(output_layout);
+
+  // Create the transformation matrix
+  MatrixBuilder matrix_builder(input_layout, input_channels,
+                               output_layout, output_channels);
+  remapping_ = matrix_builder.CreateTransformationMatrix(&matrix_);
+}
+
+bool MatrixBuilder::CreateTransformationMatrix(
+    std::vector< std::vector<float> >* matrix) {
+  matrix_ = matrix;
 
   // Size out the initial matrix.
-  matrix_.reserve(output_channels);
-  for (int output_ch = 0; output_ch < output_channels; ++output_ch)
-    matrix_.push_back(std::vector<float>(input_channels, 0));
+  matrix_->reserve(output_channels_);
+  for (int output_ch = 0; output_ch < output_channels_; ++output_ch)
+    matrix_->push_back(std::vector<float>(input_channels_, 0));
 
   // First check for discrete case.
   if (input_layout_ == CHANNEL_LAYOUT_DISCRETE ||
@@ -96,49 +162,36 @@ void ChannelMixer::Initialize(
     // copy as many as we can then drop the remaining input channels.
     // If the number of input channels is less than output channels, then
     // copy them all, then zero out the remaining output channels.
-    int passthrough_channels = std::min(input_channels, output_channels);
+    int passthrough_channels = std::min(input_channels_, output_channels_);
     for (int i = 0; i < passthrough_channels; ++i)
-      matrix_[i][i] = 1;
+      (*matrix_)[i][i] = 1;
 
-    remapping_ = true;
-    return;
-  }
-
-  // Special case for 5.0, 5.1 with back channels when upmixed to 7.0, 7.1,
-  // which should map the back LR to side LR.
-  if (input_layout_ == CHANNEL_LAYOUT_5_0_BACK &&
-      output_layout_ == CHANNEL_LAYOUT_7_0) {
-    input_layout_ = CHANNEL_LAYOUT_5_0;
-  } else if (input_layout_ == CHANNEL_LAYOUT_5_1_BACK &&
-             output_layout_ == CHANNEL_LAYOUT_7_1) {
-    input_layout_ = CHANNEL_LAYOUT_5_1;
+    return true;
   }
 
   // Route matching channels and figure out which ones aren't accounted for.
   for (Channels ch = LEFT; ch < CHANNELS_MAX;
        ch = static_cast<Channels>(ch + 1)) {
     int input_ch_index = ChannelOrder(input_layout_, ch);
-    int output_ch_index = ChannelOrder(output_layout_, ch);
-
     if (input_ch_index < 0)
       continue;
 
+    int output_ch_index = ChannelOrder(output_layout_, ch);
     if (output_ch_index < 0) {
       unaccounted_inputs_.push_back(ch);
       continue;
     }
 
-    DCHECK_LT(static_cast<size_t>(output_ch_index), matrix_.size());
+    DCHECK_LT(static_cast<size_t>(output_ch_index), matrix_->size());
     DCHECK_LT(static_cast<size_t>(input_ch_index),
-              matrix_[output_ch_index].size());
-    matrix_[output_ch_index][input_ch_index] = 1;
+              (*matrix_)[output_ch_index].size());
+    (*matrix_)[output_ch_index][input_ch_index] = 1;
   }
 
   // If all input channels are accounted for, there's nothing left to do.
   if (unaccounted_inputs_.empty()) {
     // Since all output channels map directly to inputs we can optimize.
-    remapping_ = true;
-    return;
+    return true;
   }
 
   // Mix front LR into center.
@@ -147,7 +200,7 @@ void ChannelMixer::Initialize(
     // stereo mixes.  Scaling by 1 / sqrt(2) here will likely lead to clipping
     // so we use 1 / 2 instead.
     float scale =
-        (output_layout_ == CHANNEL_LAYOUT_MONO && input_channels == 2) ?
+        (output_layout_ == CHANNEL_LAYOUT_MONO && input_channels_ == 2) ?
         0.5 : kEqualPowerScale;
     Mix(LEFT, CENTER, scale);
     Mix(RIGHT, CENTER, scale);
@@ -261,18 +314,18 @@ void ChannelMixer::Initialize(
   // See if the output |matrix_| is simply a remapping matrix.  If each input
   // channel maps to a single output channel we can simply remap.  Doing this
   // programmatically is less fragile than logic checks on channel mappings.
-  for (int output_ch = 0; output_ch < output_channels; ++output_ch) {
+  for (int output_ch = 0; output_ch < output_channels_; ++output_ch) {
     int input_mappings = 0;
-    for (int input_ch = 0; input_ch < input_channels; ++input_ch) {
+    for (int input_ch = 0; input_ch < input_channels_; ++input_ch) {
       // We can only remap if each row contains a single scale of 1.  I.e., each
       // output channel is mapped from a single unscaled input channel.
-      if (matrix_[output_ch][input_ch] != 1 || ++input_mappings > 1)
-        return;
+      if ((*matrix_)[output_ch][input_ch] != 1 || ++input_mappings > 1)
+        return false;
     }
   }
 
   // If we've gotten here, |matrix_| is simply a remapping.
-  remapping_ = true;
+  return true;
 }
 
 ChannelMixer::~ChannelMixer() {}
@@ -314,31 +367,31 @@ void ChannelMixer::Transform(const AudioBus* input, AudioBus* output) {
   }
 }
 
-void ChannelMixer::AccountFor(Channels ch) {
+void MatrixBuilder::AccountFor(Channels ch) {
   unaccounted_inputs_.erase(std::find(
       unaccounted_inputs_.begin(), unaccounted_inputs_.end(), ch));
 }
 
-bool ChannelMixer::IsUnaccounted(Channels ch) {
+bool MatrixBuilder::IsUnaccounted(Channels ch) {
   return std::find(unaccounted_inputs_.begin(), unaccounted_inputs_.end(),
                    ch) != unaccounted_inputs_.end();
 }
 
-bool ChannelMixer::HasInputChannel(Channels ch) {
+bool MatrixBuilder::HasInputChannel(Channels ch) {
   return ChannelOrder(input_layout_, ch) >= 0;
 }
 
-bool ChannelMixer::HasOutputChannel(Channels ch) {
+bool MatrixBuilder::HasOutputChannel(Channels ch) {
   return ChannelOrder(output_layout_, ch) >= 0;
 }
 
-void ChannelMixer::Mix(Channels input_ch, Channels output_ch, float scale) {
+void MatrixBuilder::Mix(Channels input_ch, Channels output_ch, float scale) {
   MixWithoutAccounting(input_ch, output_ch, scale);
   AccountFor(input_ch);
 }
 
-void ChannelMixer::MixWithoutAccounting(Channels input_ch, Channels output_ch,
-                                        float scale) {
+void MatrixBuilder::MixWithoutAccounting(Channels input_ch, Channels output_ch,
+                                         float scale) {
   int input_ch_index = ChannelOrder(input_layout_, input_ch);
   int output_ch_index = ChannelOrder(output_layout_, output_ch);
 
@@ -346,8 +399,8 @@ void ChannelMixer::MixWithoutAccounting(Channels input_ch, Channels output_ch,
   DCHECK_GE(input_ch_index, 0);
   DCHECK_GE(output_ch_index, 0);
 
-  DCHECK_EQ(matrix_[output_ch_index][input_ch_index], 0);
-  matrix_[output_ch_index][input_ch_index] = scale;
+  DCHECK_EQ((*matrix_)[output_ch_index][input_ch_index], 0);
+  (*matrix_)[output_ch_index][input_ch_index] = scale;
 }
 
 }  // namespace media
