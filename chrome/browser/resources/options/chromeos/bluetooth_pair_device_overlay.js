@@ -98,7 +98,8 @@ cr.define('options', function() {
         else if (!$('bluetooth-pairing-pincode-entry').hidden)
           args.push($('bluetooth-pincode').value);
         chrome.send('updateBluetoothDevice', args);
-        OptionsPage.closeOverlay();
+        // Prevent sending a 'connect' command twice.
+        $('bluetooth-pair-device-connect-button').disabled = true;
       };
       $('bluetooth-pair-device-accept-button').onclick = function() {
         chrome.send('updateBluetoothDevice',
