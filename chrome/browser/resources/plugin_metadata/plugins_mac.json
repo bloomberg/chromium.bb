@@ -1,5 +1,5 @@
 {
-  "x-version": 1,
+  "x-version": 2,
   "google-talk": {
     "mime_types": [
     ],
@@ -250,9 +250,9 @@
     ],
     "versions": [
       {
-        "version": "4.1.10111.0",
+        "version": "5.1.20125.0",
         "status": "up_to_date",
-        "reference": "http://support.microsoft.com/kb/2668562"
+        "reference": "https://support.microsoft.com/kb/2814124"
       }
     ],
     "lang": "en-US",
