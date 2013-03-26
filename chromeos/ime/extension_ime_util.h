@@ -21,6 +21,11 @@ std::string CHROMEOS_EXPORT GetInputMethodID(const std::string& extension_id,
 // Returns true if the |input_method_id| is extension ime.
 bool CHROMEOS_EXPORT IsExtensionIME(const std::string& input_method_id);
 
+// Returns true if the |input_method| is member of |extension_id|, otherwise
+// return false.
+bool CHROMEOS_EXPORT IsMemberOfExtension(const std::string& input_method_id,
+                                         const std::string& extension_id);
+
 }  // extension_ime_util
 
 }  // namespace chromeos

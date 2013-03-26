@@ -25,5 +25,12 @@ bool IsExtensionIME(const std::string& input_method_id) {
                          true);  // Case sensitive.
 }
 
+bool IsMemberOfExtension(const std::string& input_method_id,
+                         const std::string& extension_id) {
+  return StartsWithASCII(input_method_id,
+                         kExtensionIMEPrefix + extension_id,
+                         true);  // Case sensitive.
+}
+
 }  // namespace extension_ime_util
 }  // namespace chromeos
