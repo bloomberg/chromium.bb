@@ -49,8 +49,16 @@ const content::MediaStreamDevice* FindDefaultDeviceWithId(
 // TODO(sergeyu): Remove this whitelist as soon as possible.
 bool IsOriginWhitelistedForScreenCapture(const GURL& origin) {
 #if defined(OFFICIAL_BUILD)
-  return origin.spec() == "https://staging.talkgadget.google.com/" ||
-      origin.spec() == "https://plus.google.com/";
+  return
+      // Google Hangouts.
+      origin.spec() == "https://staging.talkgadget.google.com/" ||
+      origin.spec() == "https://plus.google.com/" ||
+      // CV.
+      origin.spec() == "chrome-extension://pkedcjkdefgpdelpbcmbmeomcjbeemfm/" ||
+      // CV Staging.
+      origin.spec() == "chrome-extension://fmfcbgogabcbclcofgocippekhfcmgfj/" ||
+      // CV Canary.
+      origin.spec() == "chrome-extension://hfaagokkkhdbgiakmmlclaapfelnkoah/";
 #else
   return false;
 #endif
