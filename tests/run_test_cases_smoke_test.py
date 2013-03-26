@@ -565,31 +565,37 @@ class RunTestCases(unittest.TestCase):
       re.escape('[  FAILED  ] Foo.Bar1 (100 ms)'),
       '',
       r'\[2/4\]   \d\.\d\ds Foo\.Bar3 \(\d+\.\d+s\) *',
-      r'\[3/4\]   \d\.\d\ds Foo\.Bar1 \(\d+\.\d+s\) \- retry \#1',
+      r'\[3/5\]   \d\.\d\ds Foo\.Bar2 \<unknown\> *',
+      r'\[4/5\]   \d\.\d\ds Foo\.Bar1 \(\d+\.\d+s\) \- retry \#1',
       re.escape('[ RUN      ] Foo.Bar1'),
       re.escape('[       OK ] Foo.Bar1 (100 ms)'),
       '',
+      r'\[5/6\]   \d\.\d\ds Foo\.Bar2 \<unknown\> \- retry \#1 *',
+    ] + [
+        re.escape(l) for l in run_test_cases.running_serial_warning()
+    ] + [
+      r'\[6/6\]   \d\.\d\ds Foo\.Bar2 \<unknown\> \- retry \#2 *',
       re.escape('Flaky tests:'),
       re.escape('  Foo.Bar1 (tried 2 times)'),
-      re.escape('Missing tests:'),
+      re.escape('Failed tests:'),
       re.escape('  Foo.Bar2'),
       re.escape('Summary:'),
       re.escape('  Success:    1  33.33% ') + r' +\d+\.\d\ds',
       re.escape('    Flaky:    1  33.33% ') + r' +\d+\.\d\ds',
-      re.escape('     Fail:    0   0.00%    0.00s'),
-      re.escape('  Missing:    1  33.33%    0.00s'),
-      r'  \d+\.\d\ds Done running 2 tests with 3 executions. '
+      re.escape('     Fail:    1  33.33% ') + r' +\d+\.\d\ds',
+      r'  \d+\.\d\ds Done running 3 tests with 6 executions. '
         '\d+\.\d\d test/s',
     ]
     self._check_results(expected_out_re, out, err)
     test_cases = [
         ('Foo.Bar1', 2),
+        ('Foo.Bar2', 3),
         ('Foo.Bar3', 1)
     ]
     self._check_results_file(
-        fail=[],
+        fail=[u'Foo.Bar2'],
         flaky=[u'Foo.Bar1'],
-        missing=[u'Foo.Bar2'],
+        missing=[],
         success=[u'Foo.Bar3'],
         test_cases=test_cases,
         duration=True)

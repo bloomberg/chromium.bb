@@ -909,14 +909,17 @@ class Runner(object):
     last_timestamp = proc.start
     for i in gen_test_cases_filtered:
       now = timeout.reset()
+      test_case_has_passed = (i['returncode'] == 0)
       if i['duration'] is None:
-        continue
-      i['duration'] = max(i['duration'], now - last_timestamp)
+        assert not test_case_has_passed
+      else:
+        i['duration'] = max(i['duration'], now - last_timestamp)
+        # A new test_case completed.
+        self.decider.got_result(test_case_has_passed)
+
+      need_to_retry = not test_case_has_passed and try_count < self.retries
       last_timestamp = now
 
-      # A new test_case completed.
-      self.decider.got_result(i['returncode'] == 0)
-      need_to_retry = i['returncode'] != 0 and try_count < self.retries
       if i['duration'] is not None:
         duration = '(%.2fs)' % i['duration']
       else:
@@ -925,7 +928,7 @@ class Runner(object):
         line = '%s %s - retry #%d' % (i['test_case'], duration, try_count)
       else:
         line = '%s %s' % (i['test_case'], duration)
-      if self.verbose or i['returncode'] != 0 or try_count > 0:
+      if self.verbose or not test_case_has_passed or try_count > 0:
         # Print output in one of three cases:
         # - --verbose was specified.
         # - The test failed.
