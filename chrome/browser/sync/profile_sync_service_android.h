@@ -139,6 +139,10 @@ class ProfileSyncServiceAndroid : public ProfileSyncServiceObserver {
           JNIEnv* env, jobject);
 
   base::android::ScopedJavaLocalRef<jstring>
+      GetCurrentSignedInAccountText(
+          JNIEnv* env, jobject);
+
+  base::android::ScopedJavaLocalRef<jstring>
       GetSyncEnterCustomPassphraseBodyText(
           JNIEnv* env, jobject);
 

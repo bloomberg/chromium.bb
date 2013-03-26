@@ -314,6 +314,11 @@ public class ProfileSyncService {
         return nativeGetSyncEnterCustomPassphraseBodyWithDateText(mNativeProfileSyncServiceAndroid);
     }
 
+    public String getCurrentSignedInAccountText() {
+        assert isSyncInitialized();
+        return nativeGetCurrentSignedInAccountText(mNativeProfileSyncServiceAndroid);
+    }
+
     public String getSyncEnterCustomPassphraseBodyText() {
         return nativeGetSyncEnterCustomPassphraseBodyText(mNativeProfileSyncServiceAndroid);
     }
@@ -568,6 +573,7 @@ public class ProfileSyncService {
             int nativeProfileSyncServiceAndroid);
     private native String nativeGetSyncEnterCustomPassphraseBodyWithDateText(
             int nativeProfileSyncServiceAndroid);
+    private native String nativeGetCurrentSignedInAccountText(int nativeProfileSyncServiceAndroid);
     private native String nativeGetSyncEnterCustomPassphraseBodyText(
             int nativeProfileSyncServiceAndroid);
     private native boolean nativeIsSyncKeystoreMigrationDone(int nativeProfileSyncServiceAndroid);

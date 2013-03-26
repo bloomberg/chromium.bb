@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_service.h"
 #include "base/time.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/oauth2_token_service.h"
@@ -430,6 +431,18 @@ ScopedJavaLocalRef<jstring>
   return base::android::ConvertUTF16ToJavaString(env,
       l10n_util::GetStringFUTF16(IDS_SYNC_ENTER_PASSPHRASE_BODY_WITH_DATE,
         passphrase_time_str));
+}
+
+ScopedJavaLocalRef<jstring>
+    ProfileSyncServiceAndroid::GetCurrentSignedInAccountText(
+        JNIEnv* env, jobject) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  const std::string& sync_username =
+      SigninManagerFactory::GetForProfile(profile_)->GetAuthenticatedUsername();
+  return base::android::ConvertUTF16ToJavaString(env,
+      l10n_util::GetStringFUTF16(
+          IDS_SYNC_ACCOUNT_SYNCING_TO_USER,
+          ASCIIToUTF16(sync_username)));
 }
 
 ScopedJavaLocalRef<jstring>
