@@ -232,13 +232,15 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerTest, PRE_NonJPEGImageFromFile) {
   // Old info preserved.
   ExpectOldUserImageInfo(kTestUser1, User::kExternalImageIndex,
                          GetUserImagePath(kTestUser1, "png"));
+  const User* user = UserManager::Get()->FindUser(kTestUser1);
+  EXPECT_TRUE(user->image_is_stub());
   LogIn(kTestUser1);
   // Wait for migration.
   content::RunMessageLoop();
   // Image info is migrated and the image is converted to JPG.
   ExpectNewUserImageInfo(kTestUser1, User::kExternalImageIndex,
                          GetUserImagePath(kTestUser1, "jpg"));
-  const User* user = UserManager::Get()->GetLoggedInUser();
+  user = UserManager::Get()->GetLoggedInUser();
   ASSERT_TRUE(user);
   EXPECT_FALSE(user->image_is_safe_format());
   // Check image dimensions.

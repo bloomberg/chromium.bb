@@ -238,10 +238,19 @@ void UserImageManagerImpl::LoadUserImages(const UserList& users) {
         user->SetStubImage(image_index, true);
         user->SetImageURL(image_gurl);
         if (!image_path.empty()) {
-          // Load user image asynchronously.
-          UserImageLoader* loader =
-              safe_source ? image_loader_.get() : unsafe_image_loader_.get();
-          loader->Start(
+          if (needs_migration) {
+            // Non-JPG image will be migrated once user logs in.
+            // Stub image will be used for now.
+            return;
+          }
+          DCHECK(safe_source);
+          if (!safe_source)
+            return;
+
+          // Load user image asynchronously - at this point we are able to use
+          // JPEG image loaded since image comes from safe pref source
+          // i.e. converted to JPEG.
+          image_loader_->Start(
               image_path, 0  /* no resize */,
               base::Bind(&UserImageManagerImpl::SetUserImage,
                          base::Unretained(this),
@@ -260,11 +269,12 @@ void UserImageManagerImpl::UserLoggedIn(const std::string& email,
   if (user_is_new) {
     SetInitialUserImage(email);
   } else {
-    int image_index = UserManager::Get()->GetLoggedInUser()->image_index();
+    User* user = UserManager::Get()->GetLoggedInUser();
 
     if (!user_is_local) {
       // If current user image is profile image, it needs to be refreshed.
-      bool download_profile_image = image_index == User::kProfileImageIndex;
+      bool download_profile_image =
+          user->image_index() == User::kProfileImageIndex;
       if (download_profile_image)
         InitDownloadedProfileImage();
 
@@ -281,17 +291,39 @@ void UserImageManagerImpl::UserLoggedIn(const std::string& email,
     }
 
     UMA_HISTOGRAM_ENUMERATION("UserImage.LoggedIn",
-                              ImageIndexToHistogramIndex(image_index),
+                              ImageIndexToHistogramIndex(user->image_index()),
                               kHistogramImagesCount);
 
     if (users_to_migrate_.count(email)) {
-      // User needs image format migration.
-      BrowserThread::PostDelayedTask(
-          BrowserThread::UI,
-          FROM_HERE,
-          base::Bind(&UserImageManagerImpl::MigrateUserImage,
-                     base::Unretained(this)),
-          base::TimeDelta::FromSeconds(user_image_migration_delay_sec));
+      const DictionaryValue* prefs_images_unsafe =
+          g_browser_process->local_state()->GetDictionary(kUserImages);
+      const base::DictionaryValue* image_properties = NULL;
+      if (prefs_images_unsafe->GetDictionaryWithoutPathExpansion(
+              user->email(), &image_properties)) {
+        std::string image_path;
+        image_properties->GetString(kImagePathNodeName, &image_path);
+        if (!image_path.empty()) {
+          // User needs image format migration but
+          // first we need to load and decode that image.
+          LOG(INFO) << "Waiting for user image to load before migration";
+          migrate_current_user_on_load_ = true;
+              unsafe_image_loader_->Start(
+                  image_path, 0  /* no resize */,
+                  base::Bind(&UserImageManagerImpl::SetUserImage,
+                             base::Unretained(this),
+                             user->email(),
+                             user->image_index(),
+                             user->image_url()));
+        } else {
+          // Otherwise migrate user image properties right away.
+          BrowserThread::PostDelayedTask(
+              BrowserThread::UI,
+              FROM_HERE,
+              base::Bind(&UserImageManagerImpl::MigrateUserImage,
+                         base::Unretained(this)),
+              base::TimeDelta::FromSeconds(user_image_migration_delay_sec));
+        }
+      }
     }
   }
 
