@@ -78,11 +78,10 @@ class CalloutWidgetBackground : public views::Background {
         path.lineTo(SkIntToScalar(0), SkIntToScalar(kArrowWidth));
         break;
     }
-    // Use the same opacity and colors as the header for now.
+    // Hard code the arrow color for now.
     SkPaint paint;
     paint.setStyle(SkPaint::kFill_Style);
-    paint.setColor(
-        SkColorSetARGB(FramePainter::kActiveWindowOpacity, 189, 189, 189));
+    paint.setColor(SkColorSetARGB(0xff, 0xe5, 0xe5, 0xe5));
     canvas->DrawPath(path, paint);
   }
 
