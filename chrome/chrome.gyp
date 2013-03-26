@@ -1085,6 +1085,7 @@
           'target_name': 'chrome_java',
           'type': 'none',
           'dependencies': [
+            'chrome_resources.gyp:chrome_strings',
             'profile_sync_service_model_type_selection_java',
             'toolbar_model_security_levels_java',
             '../base/base.gyp:base',
@@ -1101,6 +1102,9 @@
             'R_package': 'org.chromium.chrome',
             'R_package_relpath': 'org/chromium/chrome',
             'java_strings_grd': 'android_chrome_strings.grd',
+            # Include xml string files generated from generated_resources.grd
+            'res_extra_dirs': ['<(SHARED_INTERMEDIATE_DIR)/chrome/java/res'],
+            'res_extra_files': ['<!@pymod_do_main(grit_info <@(grit_defines) --outputs "<(SHARED_INTERMEDIATE_DIR)/chrome" app/generated_resources.grd)'],
           },
           'includes': [
             '../build/java.gypi',

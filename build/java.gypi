@@ -41,6 +41,9 @@
 #  R_package_relpath - Same as R_package, but replace each '.' with '/'.
 #  java_strings_grd - The name of the grd file from which to generate localized
 #    strings.xml files, if any.
+#  res_extra_dirs - A list of extra directories containing Android resources.
+#    These directories may be generated at build time.
+#  res_extra_files - A list of the files in res_extra_dirs.
 
 {
   'dependencies': [
@@ -59,6 +62,9 @@
     'generated_R_dirs': [],
     'has_java_resources%': 0,
     'java_strings_grd%': '',
+    'res_extra_dirs': [],
+    'res_extra_files': [],
+    'resource_input_paths': ['>@(res_extra_files)'],
     'intermediate_dir': '<(SHARED_INTERMEDIATE_DIR)/<(_target_name)',
     'classes_dir': '<(intermediate_dir)/classes',
     'compile_stamp': '<(intermediate_dir)/compile.stamp',
@@ -74,15 +80,14 @@
     ['has_java_resources == 1', {
       'variables': {
         'res_dir': '<(java_in_dir)/res',
-        'out_res_dir': '<(intermediate_dir)/res',
+        'res_crunched_dir': '<(intermediate_dir)/res_crunched',
+        'res_input_dirs': ['<(res_dir)', '<@(res_extra_dirs)'],
+        'resource_input_paths': ['<!@(find <(res_dir) -type f)'],
         'R_dir': '<(intermediate_dir)/java_R',
         'R_text_file': '<(R_dir)/R.txt',
         'R_stamp': '<(intermediate_dir)/resources.stamp',
         'generated_src_dirs': ['<(R_dir)'],
         'additional_input_paths': ['<(R_stamp)'],
-        # grit_grd_file is used by grit_action.gypi, included below.
-        'grit_grd_file': '<(java_in_dir)/strings/<(java_strings_grd)',
-        'resource_input_paths': [],
       },
       'all_dependent_settings': {
         'variables': {
@@ -90,29 +95,29 @@
           # generated_R_dirs and additional_R_files.
           'generated_R_dirs': ['<(R_dir)'],
           'additional_input_paths': ['<(R_stamp)'],
-          'additional_R_text_files': ['<(R_text_file)'],
 
           # Dependent APKs include this target's resources via
-          # additional_res_dirs and additional_res_packages.
-          'additional_res_dirs': ['<(out_res_dir)', '<(res_dir)'],
+          # additional_res_dirs, additional_res_packages, and
+          # additional_R_text_files.
+          'additional_res_dirs': ['<(res_crunched_dir)', '<@(res_input_dirs)'],
           'additional_res_packages': ['<(R_package)'],
+          'additional_R_text_files': ['<(R_text_file)'],
         },
       },
       'conditions': [
         ['java_strings_grd != ""', {
           'variables': {
-            'resource_input_paths': [
-              # TODO(newt): replace this with .../values/strings.xml once
-              # the English strings.xml is generated as well? That would be
-              # simpler and faster and should be equivalent.
-              '<!@pymod_do_main(grit_info <@(grit_defines) --outputs "<(out_res_dir)" <(grit_grd_file))',
-            ],
+            'res_grit_dir': '<(intermediate_dir)/res_grit',
+            'res_input_dirs': ['<(res_grit_dir)'],
+            'grit_grd_file': '<(java_in_dir)/strings/<(java_strings_grd)',
+            'resource_input_paths': ['<!@pymod_do_main(grit_info <@(grit_defines) --outputs "<(res_grit_dir)" <(grit_grd_file))'],
           },
           'actions': [
             {
               'action_name': 'generate_localized_strings_xml',
               'variables': {
-                'grit_out_dir': '<(out_res_dir)',
+                'grit_additional_defines': ['-E', 'ANDROID_JAVA_TAGGED_ONLY=false'],
+                'grit_out_dir': '<(res_grit_dir)',
                 # resource_ids is unneeded since we don't generate .h headers.
                 'grit_resource_ids': '',
               },
@@ -132,8 +137,7 @@
           'inputs': [
             '<(DEPTH)/build/android/pylib/build_utils.py',
             '<(DEPTH)/build/android/process_resources.py',
-            '<!@(find <(res_dir) -type f)',
-            '<@(resource_input_paths)',
+            '>@(resource_input_paths)',
           ],
           'outputs': [
             '<(R_stamp)',
@@ -143,14 +147,15 @@
             '--android-sdk', '<(android_sdk)',
             '--android-sdk-tools', '<(android_sdk_tools)',
             '--R-dir', '<(R_dir)',
-            '--res-dir', '<(res_dir)',
-            '--out-res-dir', '<(out_res_dir)',
+            '--res-dirs', '<(res_input_dirs)',
+            '--crunch-input-dir', '>(res_dir)',
+            '--crunch-output-dir', '<(res_crunched_dir)',
             '--android-manifest', '<(android_manifest)',
             '--non-constant-id',
             '--custom-package', '<(R_package)',
             '--stamp', '<(R_stamp)',
 
-            # Add list of inputs to the command line, so if inputs change
+            # Add hash of inputs to the command line, so if inputs change
             # (e.g. if a resource if removed), the command will be re-run.
             # TODO(newt): remove this once crbug.com/177552 is fixed in ninja.
             '--ignore=>!(echo \'>(_inputs)\' | md5sum)',

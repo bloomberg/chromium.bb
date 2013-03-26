@@ -110,6 +110,53 @@ are declared in build/common.gypi.
     <output filename="generated_resources_vi.pak" type="data_package" lang="vi" />
     <output filename="generated_resources_zh-CN.pak" type="data_package" lang="zh-CN" />
     <output filename="generated_resources_zh-TW.pak" type="data_package" lang="zh-TW" />
+
+    <!-- On Android, output some strings into Android's xml string format.
+         These strings are tagged with formatter_data="android_java" -->
+    <if expr="pp_ifdef('android')">
+      <output filename="java/res/values-ar/generated_resources.xml" lang="ar" type="android" context="android_java" />
+      <output filename="java/res/values-bg/generated_resources.xml" lang="bg" type="android" context="android_java" />
+      <output filename="java/res/values-ca/generated_resources.xml" lang="ca" type="android" context="android_java" />
+      <output filename="java/res/values-cs/generated_resources.xml" lang="cs" type="android" context="android_java" />
+      <output filename="java/res/values-da/generated_resources.xml" lang="da" type="android" context="android_java" />
+      <output filename="java/res/values-de/generated_resources.xml" lang="de" type="android" context="android_java" />
+      <output filename="java/res/values-el/generated_resources.xml" lang="el" type="android" context="android_java" />
+      <output filename="java/res/values/generated_resources.xml" lang="en" type="android" context="android_java" />
+      <output filename="java/res/values-en-rGB/generated_resources.xml" lang="en-GB" type="android" context="android_java" />
+      <output filename="java/res/values-es/generated_resources.xml" lang="es" type="android" context="android_java" />
+      <output filename="java/res/values-es-rUS/generated_resources.xml" lang="es-419" type="android" context="android_java" />
+      <output filename="java/res/values-fa/generated_resources.xml" lang="fa" type="android" context="android_java" />
+      <output filename="java/res/values-fi/generated_resources.xml" lang="fi" type="android" context="android_java" />
+      <output filename="java/res/values-tl/generated_resources.xml" lang="fil" type="android" context="android_java" />
+      <output filename="java/res/values-fr/generated_resources.xml" lang="fr" type="android" context="android_java" />
+      <output filename="java/res/values-hi/generated_resources.xml" lang="hi" type="android" context="android_java" />
+      <output filename="java/res/values-hr/generated_resources.xml" lang="hr" type="android" context="android_java" />
+      <output filename="java/res/values-hu/generated_resources.xml" lang="hu" type="android" context="android_java" />
+      <output filename="java/res/values-in/generated_resources.xml" lang="id" type="android" context="android_java" />
+      <output filename="java/res/values-it/generated_resources.xml" lang="it" type="android" context="android_java" />
+      <output filename="java/res/values-iw/generated_resources.xml" lang="he" type="android" context="android_java" />
+      <output filename="java/res/values-ja/generated_resources.xml" lang="ja" type="android" context="android_java" />
+      <output filename="java/res/values-ko/generated_resources.xml" lang="ko" type="android" context="android_java" />
+      <output filename="java/res/values-lt/generated_resources.xml" lang="lt" type="android" context="android_java" />
+      <output filename="java/res/values-lv/generated_resources.xml" lang="lv" type="android" context="android_java" />
+      <output filename="java/res/values-nl/generated_resources.xml" lang="nl" type="android" context="android_java" />
+      <output filename="java/res/values-nb/generated_resources.xml" lang="no" type="android" context="android_java" />
+      <output filename="java/res/values-pl/generated_resources.xml" lang="pl" type="android" context="android_java" />
+      <output filename="java/res/values-pt-rBR/generated_resources.xml" lang="pt-BR" type="android" context="android_java" />
+      <output filename="java/res/values-pt-rPT/generated_resources.xml" lang="pt-PT" type="android" context="android_java" />
+      <output filename="java/res/values-ro/generated_resources.xml" lang="ro" type="android" context="android_java" />
+      <output filename="java/res/values-ru/generated_resources.xml" lang="ru" type="android" context="android_java" />
+      <output filename="java/res/values-sk/generated_resources.xml" lang="sk" type="android" context="android_java" />
+      <output filename="java/res/values-sl/generated_resources.xml" lang="sl" type="android" context="android_java" />
+      <output filename="java/res/values-sr/generated_resources.xml" lang="sr" type="android" context="android_java" />
+      <output filename="java/res/values-sv/generated_resources.xml" lang="sv" type="android" context="android_java" />
+      <output filename="java/res/values-th/generated_resources.xml" lang="th" type="android" context="android_java" />
+      <output filename="java/res/values-tr/generated_resources.xml" lang="tr" type="android" context="android_java" />
+      <output filename="java/res/values-uk/generated_resources.xml" lang="uk" type="android" context="android_java" />
+      <output filename="java/res/values-vi/generated_resources.xml" lang="vi" type="android" context="android_java" />
+      <output filename="java/res/values-zh-rCN/generated_resources.xml" lang="zh-CN" type="android" context="android_java" />
+      <output filename="java/res/values-zh-rTW/generated_resources.xml" lang="zh-TW" type="android" context="android_java" />
+    </if>
   </outputs>
   <translations>
     <file path="resources/generated_resources_am.xtb" lang="am" />
@@ -10189,19 +10236,19 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       </message>
 
       <!-- Sad Tab Strings -->
-      <message name="IDS_SAD_TAB_TITLE" desc="The title of the sad tab page that is shown when a tab crashes. This is intended to be a humorous exclamation of dismay.">
+      <message name="IDS_SAD_TAB_TITLE" desc="The title of the sad tab page that is shown when a tab crashes. This is intended to be a humorous exclamation of dismay." formatter_data="android_java">
         Aw, Snap!
       </message>
-      <message name="IDS_SAD_TAB_MESSAGE" desc="The message displayed on the sad tab page.">
+      <message name="IDS_SAD_TAB_MESSAGE" desc="The message displayed on the sad tab page." formatter_data="android_java">
         Something went wrong while displaying this webpage. To continue, reload or go to another page.
       </message>
-      <message name="IDS_SAD_TAB_HELP_MESSAGE" desc="The help message displayed on the sad tab page, with IDS_SAD_TAB_HELP_LINK embedded as a link to help.">
+      <message name="IDS_SAD_TAB_HELP_MESSAGE" desc="The help message displayed on the sad tab page, with IDS_SAD_TAB_HELP_LINK embedded as a link to help." formatter_data="android_java">
         If you're seeing this frequently, try these <ph name="HELP_LINK">$1<ex>suggestions</ex></ph>.
       </message>
-      <message name="IDS_SAD_TAB_HELP_LINK" desc="The link text displayed on the sad tab page pointing the users to a help article.">
+      <message name="IDS_SAD_TAB_HELP_LINK" desc="The link text displayed on the sad tab page pointing the users to a help article." formatter_data="android_java">
         suggestions
       </message>
-      <message name="IDS_SAD_TAB_RELOAD_LABEL" desc="Button label in the sad tab page for reloading a page.">
+      <message name="IDS_SAD_TAB_RELOAD_LABEL" desc="Button label in the sad tab page for reloading a page." formatter_data="android_java">
         Reload
       </message>
 

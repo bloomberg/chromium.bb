@@ -8,6 +8,7 @@
 
 import optparse
 import os
+import shlex
 import subprocess
 
 from pylib import build_utils
@@ -23,8 +24,11 @@ def ParseArgs():
   parser.add_option('--android-sdk-tools',
                     help='path to the Android SDK platform tools folder')
   parser.add_option('--R-dir', help='directory to hold generated R.java')
-  parser.add_option('--res-dir', help='directory containing resources')
-  parser.add_option('--out-res-dir',
+  parser.add_option('--res-dirs',
+                    help='directories containing resources to be packaged')
+  parser.add_option('--crunch-input-dir',
+                    help='directory containing images to be crunched')
+  parser.add_option('--crunch-output-dir',
                     help='directory to hold crunched resources')
   parser.add_option('--non-constant-id', action='store_true')
   parser.add_option('--custom-package', help='Java package for R.java')
@@ -40,10 +44,10 @@ def ParseArgs():
     parser.error('No positional arguments should be given.')
 
   # Check that required options have been provided.
-  required_options = ('android_sdk', 'android_sdk_tools',
-                      'R_dir', 'res_dir', 'out_res_dir')
+  required_options = ('android_sdk', 'android_sdk_tools', 'R_dir', 'res_dirs',
+                      'crunch_input_dir', 'crunch_output_dir')
   for option_name in required_options:
-    if getattr(options, option_name) is None:
+    if not getattr(options, option_name):
       parser.error('--%s is required' % option_name.replace('_', '-'))
 
   return options
@@ -65,14 +69,13 @@ def main():
                      'package',
                      '-m',
                      '-M', options.android_manifest,
-                     '-S', options.res_dir,
                      '--auto-add-overlay',
                      '-I', android_jar,
                      '--output-text-symbols', options.R_dir,
                      '-J', options.R_dir]
-  # If strings.xml was generated from a grd file, it will be in out_res_dir.
-  if os.path.isdir(options.out_res_dir):
-    package_command += ['-S', options.out_res_dir]
+  res_dirs = shlex.split(options.res_dirs)
+  for res_dir in res_dirs:
+    package_command += ['-S', res_dir]
   if options.non_constant_id:
     package_command.append('--non-constant-id')
   if options.custom_package:
@@ -83,8 +86,8 @@ def main():
   # images to display correctly.
   subprocess.check_call([aapt,
                          'crunch',
-                         '-S', options.res_dir,
-                         '-C', options.out_res_dir])
+                         '-S', options.crunch_input_dir,
+                         '-C', options.crunch_output_dir])
 
   build_utils.Touch(options.stamp)
 

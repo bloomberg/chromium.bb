@@ -69,7 +69,7 @@
     'additional_res_packages': [],
     'is_test_apk%': 0,
     'java_strings_grd%': '',
-    'grit_grd_file%': '',
+    'res_grit_files': [],
     'library_manifest_paths%' : [],
   },
   'sources': [
@@ -118,16 +118,18 @@
     }],
     ['java_strings_grd != ""', {
       'variables': {
-        'out_res_dir': '<(SHARED_INTERMEDIATE_DIR)/<(package_name)_apk/res',
-        'additional_res_dirs': ['<(out_res_dir)'],
+        'res_grit_dir': '<(SHARED_INTERMEDIATE_DIR)/<(package_name)_apk/res_grit',
+        'additional_res_dirs': ['<(res_grit_dir)'],
         # grit_grd_file is used by grit_action.gypi, included below.
         'grit_grd_file': '<(java_in_dir)/strings/<(java_strings_grd)',
+        'res_grit_files': ['<!@pymod_do_main(grit_info <@(grit_defines) --outputs "<(res_grit_dir)" <(grit_grd_file))'],
       },
       'actions': [
         {
           'action_name': 'generate_localized_strings_xml',
           'variables': {
-            'grit_out_dir': '<(out_res_dir)',
+            'grit_additional_defines': ['-E', 'ANDROID_JAVA_TAGGED_ONLY=false'],
+            'grit_out_dir': '<(res_grit_dir)',
             # resource_ids is unneeded since we don't generate .h headers.
             'grit_resource_ids': '',
           },
@@ -152,18 +154,11 @@
         '>@(native_libs_paths)',
         '>@(additional_input_paths)',
         '>@(library_manifest_paths)',
+        '<@(res_grit_files)',
       ],
       'conditions': [
         ['resource_dir!=""', {
           'inputs': ['<!@(find <(java_in_dir)/<(resource_dir) -name "*")']
-        }],
-        ['java_strings_grd != ""', {
-          'inputs': [
-            # TODO(newt): replace this with .../values/strings.xml once
-            # the English strings.xml is generated as well? That would be
-            # simpler and faster and should be equivalent.
-            '<!@pymod_do_main(grit_info <@(grit_defines) --outputs "<(out_res_dir)" <(grit_grd_file))',
-          ],
         }],
         ['is_test_apk == 1', {
           'variables': {
