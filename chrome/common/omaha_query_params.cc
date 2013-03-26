@@ -4,7 +4,9 @@
 
 #include "chrome/common/omaha_query_params.h"
 
+#include "base/compiler_specific.h"
 #include "base/stringprintf.h"
+#include "base/win/windows_version.h"
 #include "chrome/common/chrome_version_info.h"
 
 namespace {
@@ -92,12 +94,46 @@ namespace chrome {
 
 std::string OmahaQueryParams::Get(ProdId prod) {
   return base::StringPrintf(
-      "os=%s&arch=%s&prod=%s&prodchannel=%s&prodversion=%s",
+      "os=%s&arch=%s&nacl_arch=%s&prod=%s&prodchannel=%s&prodversion=%s",
       kOs,
       kArch,
+      getNaclArch(),
       GetProdIdString(prod),
       GetChannelString(),
       chrome::VersionInfo().Version().c_str());
+}
+
+// static
+const char* OmahaQueryParams::getOS() {
+  return kOs;
+}
+
+// static
+const char* OmahaQueryParams::getArch() {
+  return kArch;
+}
+
+// static
+const char* OmahaQueryParams::getNaclArch() {
+#if defined(ARCH_CPU_X86_FAMILY)
+#if defined(ARCH_CPU_X86_64)
+  return "x86-64";
+#elif defined(OS_WIN)
+  bool x86_64 = (base::win::OSInfo::GetInstance()->wow64_status() ==
+                 base::win::OSInfo::WOW64_ENABLED);
+  return x86_64 ? "x86-64" : "x86-32";
+#else
+  return "x86-32";
+#endif
+#elif defined(ARCH_CPU_ARMEL)
+  return "arm";
+#elif defined(ARCH_CPU_MIPSEL)
+  return "mips32";
+#else
+  // NOTE: when adding new values here, please remember to update the
+  // comment in the .h file about possible return values from this function.
+#error "You need to add support for your architecture here"
+#endif
 }
 
 }  // namespace chrome

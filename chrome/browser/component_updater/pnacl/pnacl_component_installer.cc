@@ -21,8 +21,10 @@
 #include "chrome/browser/component_updater/component_updater_service.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/omaha_query_params.h"
 #include "content/public/browser/browser_thread.h"
 
+using chrome::OmahaQueryParams;
 using content::BrowserThread;
 
 namespace {
@@ -42,29 +44,7 @@ const char kPnaclCompilerFileName[] = "llc_nexe";
 // Name of the Pnacl component specified in the manifest.
 const char kPnaclManifestNamePrefix[] = "PNaCl";
 
-// Returns the name of the Pnacl architecture supported by an install.
-// NOTE: this is independent of the Omaha "arch" query parameter.
-const char* PnaclArch() {
-#if defined(ARCH_CPU_X86_FAMILY)
-#if defined(ARCH_CPU_X86_64)
-  return "x86-64";
-#elif defined(OS_WIN)
-  bool x86_64 = (base::win::OSInfo::GetInstance()->wow64_status() ==
-                 base::win::OSInfo::WOW64_ENABLED);
-  return x86_64 ? "x86-64" : "x86-32";
-#else
-  return "x86-32";
-#endif
-#elif defined(ARCH_CPU_ARMEL)
-  return "arm";
-#elif defined(ARCH_CPU_MIPSEL)
-  return "mips32";
-#else
-#error "Add support for your architecture to Pnacl Component Installer."
-#endif
-}
-
-// Sanitize characters given by PnaclArch so that they can be used
+// Sanitize characters from Pnacl Arch value so that they can be used
 // in path names.  This should only be characters in the set: [a-z0-9_].
 // Keep in sync with chrome/browser/nacl_host/pnacl_file_host.
 std::string SanitizeForPath(const std::string& input) {
@@ -220,9 +200,9 @@ bool CheckPnaclComponentManifest(base::DictionaryValue* manifest,
 
   std::string arch;
   pnacl_manifest->GetStringASCII("pnacl-arch", &arch);
-  if (arch.compare(PnaclArch()) != 0) {
+  if (arch.compare(OmahaQueryParams::getNaclArch()) != 0) {
     LOG(WARNING) << "'pnacl-arch' field in manifest is invalid ("
-                 << arch << " vs " << PnaclArch() << ")";
+                 << arch << " vs " << OmahaQueryParams::getNaclArch() << ")";
     return false;
   }
 
@@ -259,7 +239,7 @@ namespace {
 bool PathContainsPnacl(const base::FilePath& base_path) {
   // Check that at least one of the compiler files exists, for the current ISA.
   std::string expected_filename("pnacl_public_");
-  std::string arch = PnaclArch();
+  std::string arch = OmahaQueryParams::getNaclArch();
   expected_filename = expected_filename + SanitizeForPath(arch) +
       "_" + kPnaclCompilerFileName;
   return file_util::PathExists(base_path.AppendASCII(expected_filename));
