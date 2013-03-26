@@ -111,7 +111,6 @@ class CC_EXPORT GLRenderer :
   virtual void FinishDrawingQuadList() OVERRIDE;
 
  private:
-  friend class GLRendererShaderPixelTest;
   friend class GLRendererShaderTest;
 
   static void ToGLMatrix(float* gl_matrix, const gfx::Transform& transform);
@@ -220,15 +219,6 @@ class CC_EXPORT GLRenderer :
   typedef ProgramBinding<VertexShaderPosTex, FragmentShaderCheckerboard>
       TileCheckerboardProgram;
 
-  // Texture shaders.
-  typedef ProgramBinding<VertexShaderPosTexTransform,
-                         FragmentShaderRGBATexVaryingAlpha> TextureProgram;
-  typedef ProgramBinding<VertexShaderPosTexTransformFlip,
-                         FragmentShaderRGBATexVaryingAlpha> TextureProgramFlip;
-  typedef ProgramBinding<VertexShaderPosTexTransform,
-                         FragmentShaderRGBATexRectVaryingAlpha>
-      TextureIOSurfaceProgram;
-
   // Render surface shaders.
   typedef ProgramBinding<VertexShaderPosTexTransform,
                          FragmentShaderRGBATexAlpha> RenderPassProgram;
@@ -238,18 +228,15 @@ class CC_EXPORT GLRenderer :
       RenderPassProgramAA;
   typedef ProgramBinding<VertexShaderQuad, FragmentShaderRGBATexAlphaMaskAA>
       RenderPassMaskProgramAA;
+
+  // Texture shaders.
   typedef ProgramBinding<VertexShaderPosTexTransform,
-                         FragmentShaderRGBATexColorMatrixAlpha>
-      RenderPassColorMatrixProgram;
-  typedef ProgramBinding<VertexShaderQuad,
-                         FragmentShaderRGBATexAlphaMaskColorMatrixAA>
-      RenderPassMaskColorMatrixProgramAA;
-  typedef ProgramBinding<VertexShaderQuad,
-                         FragmentShaderRGBATexAlphaColorMatrixAA>
-      RenderPassColorMatrixProgramAA;
+                         FragmentShaderRGBATexVaryingAlpha> TextureProgram;
+  typedef ProgramBinding<VertexShaderPosTexTransformFlip,
+                         FragmentShaderRGBATexVaryingAlpha> TextureProgramFlip;
   typedef ProgramBinding<VertexShaderPosTexTransform,
-                         FragmentShaderRGBATexAlphaMaskColorMatrix>
-      RenderPassMaskColorMatrixProgram;
+                         FragmentShaderRGBATexRectVaryingAlpha>
+      TextureIOSurfaceProgram;
 
   // Video shaders.
   typedef ProgramBinding<VertexShaderVideoTransform,
@@ -278,11 +265,6 @@ class CC_EXPORT GLRenderer :
   const RenderPassProgramAA* GetRenderPassProgramAA();
   const RenderPassMaskProgram* GetRenderPassMaskProgram();
   const RenderPassMaskProgramAA* GetRenderPassMaskProgramAA();
-  const RenderPassColorMatrixProgram* GetRenderPassColorMatrixProgram();
-  const RenderPassColorMatrixProgramAA* GetRenderPassColorMatrixProgramAA();
-  const RenderPassMaskColorMatrixProgram* GetRenderPassMaskColorMatrixProgram();
-  const RenderPassMaskColorMatrixProgramAA*
-      GetRenderPassMaskColorMatrixProgramAA();
 
   const TextureProgram* GetTextureProgram();
   const TextureProgramFlip* GetTextureProgramFlip();
@@ -303,21 +285,14 @@ class CC_EXPORT GLRenderer :
   scoped_ptr<TileProgramSwizzleAA> tile_program_swizzle_aa_;
   scoped_ptr<TileCheckerboardProgram> tile_checkerboard_program_;
 
-  scoped_ptr<TextureProgram> texture_program_;
-  scoped_ptr<TextureProgramFlip> texture_program_flip_;
-  scoped_ptr<TextureIOSurfaceProgram> texture_io_surface_program_;
-
   scoped_ptr<RenderPassProgram> render_pass_program_;
   scoped_ptr<RenderPassProgramAA> render_pass_program_aa_;
   scoped_ptr<RenderPassMaskProgram> render_pass_mask_program_;
   scoped_ptr<RenderPassMaskProgramAA> render_pass_mask_program_aa_;
-  scoped_ptr<RenderPassColorMatrixProgram> render_pass_color_matrix_program_;
-  scoped_ptr<RenderPassColorMatrixProgramAA>
-      render_pass_color_matrix_program_aa_;
-  scoped_ptr<RenderPassMaskColorMatrixProgram>
-      render_pass_mask_color_matrix_program_;
-  scoped_ptr<RenderPassMaskColorMatrixProgramAA>
-      render_pass_mask_color_matrix_program_aa_;
+
+  scoped_ptr<TextureProgram> texture_program_;
+  scoped_ptr<TextureProgramFlip> texture_program_flip_;
+  scoped_ptr<TextureIOSurfaceProgram> texture_io_surface_program_;
 
   scoped_ptr<VideoYUVProgram> video_yuv_program_;
   scoped_ptr<VideoStreamTextureProgram> video_stream_texture_program_;

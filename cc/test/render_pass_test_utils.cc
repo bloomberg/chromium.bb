@@ -9,7 +9,6 @@
 #include "cc/quads/render_pass_draw_quad.h"
 #include "cc/quads/shared_quad_state.h"
 #include "cc/quads/solid_color_draw_quad.h"
-#include "cc/resources/resource_provider.h"
 #include "cc/test/mock_quad_culler.h"
 #include "cc/test/render_pass_test_common.h"
 #include "ui/gfx/rect.h"
@@ -71,27 +70,6 @@ void AddRenderPassQuad(TestRenderPass* to_pass,
   quad->SetNew(shared_state, output_rect, contributing_pass->id, false, 0,
                output_rect, gfx::RectF(), WebKit::WebFilterOperations(),
                skia::RefPtr<SkImageFilter>(), WebKit::WebFilterOperations());
-  quad_sink.Append(quad.PassAs<DrawQuad>(), &data);
-}
-
-void AddRenderPassQuad(TestRenderPass* to_pass,
-                       TestRenderPass* contributing_pass,
-                       ResourceProvider::ResourceId mask_resource_id,
-                       skia::RefPtr<SkImageFilter> filter,
-                       gfx::Transform transform) {
-  MockQuadCuller quad_sink(&to_pass->quad_list,
-                           &to_pass->shared_quad_state_list);
-  AppendQuadsData data(to_pass->id);
-  gfx::Rect output_rect = contributing_pass->output_rect;
-  SharedQuadState* shared_state =
-      quad_sink.UseSharedQuadState(SharedQuadState::Create());
-  shared_state->SetAll(
-        transform, output_rect.size(), output_rect, output_rect, false, 1);
-  scoped_ptr<RenderPassDrawQuad> quad = RenderPassDrawQuad::Create();
-  quad->SetNew(shared_state, output_rect, contributing_pass->id, false,
-               mask_resource_id, output_rect, gfx::RectF(),
-               WebKit::WebFilterOperations(),
-               filter, WebKit::WebFilterOperations());
   quad_sink.Append(quad.PassAs<DrawQuad>(), &data);
 }
 

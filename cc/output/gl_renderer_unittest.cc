@@ -5,12 +5,12 @@
 #include "cc/output/gl_renderer.h"
 
 #include "cc/output/compositor_frame_metadata.h"
+#include "cc/quads/draw_quad.h"
 #include "cc/resources/prioritized_resource_manager.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/fake_output_surface.h"
-#include "cc/test/mock_quad_culler.h"
 #include "cc/test/pixel_test.h"
 #include "cc/test/render_pass_test_common.h"
 #include "cc/test/render_pass_test_utils.h"
@@ -18,10 +18,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/khronos/GLES2/gl2.h"
-#include "third_party/skia/include/core/SkImageFilter.h"
-#include "third_party/skia/include/core/SkMatrix.h"
-#include "third_party/skia/include/effects/SkColorFilterImageFilter.h"
-#include "third_party/skia/include/effects/SkColorMatrixFilter.h"
 #include "ui/gfx/transform.h"
 
 using namespace WebKit;
@@ -44,7 +40,7 @@ namespace cc {
   } while (false)
 
 // Explicitly named to be a friend in GLRenderer for shader access.
-class GLRendererShaderPixelTest : public PixelTest {
+class GLRendererShaderTest : public PixelTest {
  public:
   void TestShaders() {
     ASSERT_FALSE(renderer_->IsContextLost());
@@ -59,10 +55,6 @@ class GLRendererShaderPixelTest : public PixelTest {
     EXPECT_PROGRAM_VALID(renderer_->GetRenderPassProgramAA());
     EXPECT_PROGRAM_VALID(renderer_->GetRenderPassMaskProgram());
     EXPECT_PROGRAM_VALID(renderer_->GetRenderPassMaskProgramAA());
-    EXPECT_PROGRAM_VALID(renderer_->GetRenderPassColorMatrixProgram());
-    EXPECT_PROGRAM_VALID(renderer_->GetRenderPassMaskColorMatrixProgramAA());
-    EXPECT_PROGRAM_VALID(renderer_->GetRenderPassColorMatrixProgramAA());
-    EXPECT_PROGRAM_VALID(renderer_->GetRenderPassMaskColorMatrixProgram());
     EXPECT_PROGRAM_VALID(renderer_->GetTextureProgram());
     EXPECT_PROGRAM_VALID(renderer_->GetTextureProgramFlip());
     EXPECT_PROGRAM_VALID(renderer_->GetTextureIOSurfaceProgram());
@@ -82,7 +74,7 @@ class GLRendererShaderPixelTest : public PixelTest {
 namespace {
 
 #if !defined(OS_ANDROID)
-TEST_F(GLRendererShaderPixelTest, AllShadersCompile) { TestShaders(); }
+TEST_F(GLRendererShaderTest, AllShadersCompile) { TestShaders(); }
 #endif
 
 class FrameCountingMemoryAllocationSettingContext :
@@ -240,77 +232,7 @@ class GLRendererTest : public testing::Test {
   FakeRendererGL renderer_;
 };
 
-// Closing the namespace here so that GLRendererShaderTest can take advantage
-// of the friend relationship with GLRenderer and all of the mock classes
-// declared above it.
-} // namespace
-
-class GLRendererShaderTest : public testing::Test {
-protected:
-  GLRendererShaderTest()
-      : output_surface_(FakeOutputSurface::Create3d())
-      , resource_provider_(ResourceProvider::Create(output_surface_.get()))
-      , renderer_(GLRenderer::Create(&mock_client_, output_surface_.get(), resource_provider_.get()))
-  {
-  }
-
-  void TestRenderPassProgram() {
-    EXPECT_PROGRAM_VALID(renderer_->render_pass_program_);
-    EXPECT_TRUE(renderer_->program_shadow_ ==
-        renderer_->render_pass_program_->program());
-  }
-
-  void TestRenderPassColorMatrixProgram() {
-    EXPECT_PROGRAM_VALID(renderer_->render_pass_color_matrix_program_);
-    EXPECT_TRUE(renderer_->program_shadow_ ==
-        renderer_->render_pass_color_matrix_program_->program());
-  }
-
-  void TestRenderPassMaskProgram() {
-    EXPECT_PROGRAM_VALID(renderer_->render_pass_mask_program_);
-    EXPECT_TRUE(renderer_->program_shadow_ ==
-        renderer_->render_pass_mask_program_->program());
-  }
-
-  void TestRenderPassMaskColorMatrixProgram() {
-    EXPECT_PROGRAM_VALID(renderer_->render_pass_mask_color_matrix_program_);
-    EXPECT_TRUE(renderer_->program_shadow_ ==
-        renderer_->render_pass_mask_color_matrix_program_->program());
-  }
-
-  void TestRenderPassProgramAA() {
-    EXPECT_PROGRAM_VALID(renderer_->render_pass_program_aa_);
-    EXPECT_TRUE(renderer_->program_shadow_ ==
-        renderer_->render_pass_program_aa_->program());
-  }
-
-  void TestRenderPassColorMatrixProgramAA() {
-    EXPECT_PROGRAM_VALID(renderer_->render_pass_color_matrix_program_aa_);
-    EXPECT_TRUE(renderer_->program_shadow_ ==
-        renderer_->render_pass_color_matrix_program_aa_->program());
-  }
-
-  void TestRenderPassMaskProgramAA() {
-    EXPECT_PROGRAM_VALID(renderer_->render_pass_mask_program_);
-    EXPECT_TRUE(renderer_->program_shadow_ ==
-        renderer_->render_pass_program_aa_->program());
-  }
-
-  void TestRenderPassMaskColorMatrixProgramAA() {
-    EXPECT_PROGRAM_VALID(renderer_->render_pass_mask_color_matrix_program_aa_);
-    EXPECT_TRUE(renderer_->program_shadow_ ==
-        renderer_->render_pass_color_matrix_program_aa_->program());
-  }
-
-  scoped_ptr<OutputSurface> output_surface_;
-  FakeRendererClient mock_client_;
-  scoped_ptr<ResourceProvider> resource_provider_;
-  scoped_ptr<GLRenderer> renderer_;
-};
-
-namespace {
-
-// Test GLRenderer discardBackbuffer functionality:
+// Test GLRenderer DiscardBackbuffer functionality:
 // Suggest recreating framebuffer when one already exists.
 // Expected: it does nothing.
 TEST_F(GLRendererTest, SuggestBackbufferYesWhenItAlreadyExistsShouldDoNothing) {
@@ -983,241 +905,6 @@ TEST(GLRendererTest2, ScissorTestWhenClearing) {
   renderer.DecideRenderPassAllocationsForFrame(
       *mock_client.render_passes_in_draw_order());
   renderer.DrawFrame(*mock_client.render_passes_in_draw_order());
-}
-
-TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
-  gfx::Rect viewportRect(mock_client_.DeviceViewportSize());
-  ScopedPtrVector<RenderPass>& renderPasses =
-        *mock_client_.render_passes_in_draw_order();
-
-  gfx::Rect grandChildRect(25, 25);
-  RenderPass::Id grandChildPassId(3, 0);
-  TestRenderPass* grandChildPass;
-
-  gfx::Rect childRect(50, 50);
-  RenderPass::Id childPassId(2, 0);
-  TestRenderPass* childPass;
-
-  RenderPass::Id rootPassId(1, 0);
-  TestRenderPass* rootPass;
-
-  cc::ResourceProvider::ResourceId mask =
-  resource_provider_->CreateResource(gfx::Size(20, 12),
-                                     resource_provider_->best_texture_format(),
-                                     ResourceProvider::TextureUsageAny);
-  resource_provider_->AllocateForTesting(mask);
-
-  SkScalar matrix[20];
-  float amount = 0.5f;
-  matrix[0] = 0.213f + 0.787f * amount;
-  matrix[1] = 0.715f - 0.715f * amount;
-  matrix[2] = 1.f - (matrix[0] + matrix[1]);
-  matrix[3] = matrix[4] = 0;
-  matrix[5] = 0.213f - 0.213f * amount;
-  matrix[6] = 0.715f + 0.285f * amount;
-  matrix[7] = 1.f - (matrix[5] + matrix[6]);
-  matrix[8] = matrix[9] = 0;
-  matrix[10] = 0.213f - 0.213f * amount;
-  matrix[11] = 0.715f - 0.715f * amount;
-  matrix[12] = 1.f - (matrix[10] + matrix[11]);
-  matrix[13] = matrix[14] = 0;
-  matrix[15] = matrix[16] = matrix[17] = matrix[19] = 0;
-  matrix[18] = 1;
-  skia::RefPtr<SkColorFilter> colorFilter(skia::AdoptRef(
-      new SkColorMatrixFilter(matrix)));
-  skia::RefPtr<SkImageFilter> filter =
-      skia::AdoptRef(SkColorFilterImageFilter::Create(colorFilter.get(), NULL));
-
-  gfx::Transform transform_causing_aa;
-  transform_causing_aa.Rotate(20.0);
-
-  // RenderPassProgram
-  renderPasses.clear();
-
-  grandChildPass = AddRenderPass(renderPasses, grandChildPassId, grandChildRect,
-      gfx::Transform());
-  AddClippedQuad(grandChildPass, grandChildRect, SK_ColorYELLOW);
-
-  childPass = AddRenderPass(renderPasses, childPassId, childRect,
-      gfx::Transform());
-  AddQuad(childPass, childRect, SK_ColorBLUE);
-
-  rootPass = AddRenderPass(renderPasses, rootPassId, viewportRect,
-      gfx::Transform());
-  AddQuad(rootPass, viewportRect, SK_ColorGREEN);
-
-  AddRenderPassQuad(rootPass, childPass, 0, skia::RefPtr<SkImageFilter>(),
-      gfx::Transform());
-  AddRenderPassQuad(childPass, grandChildPass);
-
-  renderer_->DecideRenderPassAllocationsForFrame(
-      *mock_client_.render_passes_in_draw_order());
-  renderer_->DrawFrame(*mock_client_.render_passes_in_draw_order());
-  TestRenderPassProgram();
-
-  // RenderPassColorMatrixProgram
-  renderPasses.clear();
-
-  grandChildPass = AddRenderPass(renderPasses, grandChildPassId, grandChildRect,
-      transform_causing_aa);
-  AddClippedQuad(grandChildPass, grandChildRect, SK_ColorYELLOW);
-
-  childPass = AddRenderPass(renderPasses, childPassId, childRect,
-      transform_causing_aa);
-  AddQuad(childPass, childRect, SK_ColorBLUE);
-
-  rootPass = AddRenderPass(renderPasses, rootPassId, viewportRect,
-      gfx::Transform());
-  AddQuad(rootPass, viewportRect, SK_ColorGREEN);
-
-  AddRenderPassQuad(rootPass, childPass, 0, filter, gfx::Transform());
-  AddRenderPassQuad(childPass, grandChildPass);
-
-  renderer_->DecideRenderPassAllocationsForFrame(
-      *mock_client_.render_passes_in_draw_order());
-  renderer_->DrawFrame(*mock_client_.render_passes_in_draw_order());
-  TestRenderPassColorMatrixProgram();
-
-  // RenderPassMaskProgram
-  renderPasses.clear();
-
-  grandChildPass = AddRenderPass(renderPasses, grandChildPassId, grandChildRect,
-      gfx::Transform());
-  AddClippedQuad(grandChildPass, grandChildRect, SK_ColorYELLOW);
-
-  childPass = AddRenderPass(renderPasses, childPassId, childRect,
-      gfx::Transform());
-  AddQuad(childPass, childRect, SK_ColorBLUE);
-
-  rootPass = AddRenderPass(renderPasses, rootPassId, viewportRect,
-      gfx::Transform());
-  AddQuad(rootPass, viewportRect, SK_ColorGREEN);
-
-  AddRenderPassQuad(rootPass, childPass, mask, skia::RefPtr<SkImageFilter>(),
-      gfx::Transform());
-  AddRenderPassQuad(childPass, grandChildPass);
-
-  renderer_->DecideRenderPassAllocationsForFrame(
-      *mock_client_.render_passes_in_draw_order());
-  renderer_->DrawFrame(*mock_client_.render_passes_in_draw_order());
-  TestRenderPassMaskProgram();
-
-  // RenderPassMaskColorMatrixProgram
-  renderPasses.clear();
-
-  grandChildPass = AddRenderPass(renderPasses, grandChildPassId, grandChildRect,
-      gfx::Transform());
-  AddClippedQuad(grandChildPass, grandChildRect, SK_ColorYELLOW);
-
-  childPass = AddRenderPass(renderPasses, childPassId, childRect,
-      gfx::Transform());
-  AddQuad(childPass, childRect, SK_ColorBLUE);
-
-  rootPass = AddRenderPass(renderPasses, rootPassId, viewportRect,
-      gfx::Transform());
-  AddQuad(rootPass, viewportRect, SK_ColorGREEN);
-
-  AddRenderPassQuad(rootPass, childPass, mask, filter, gfx::Transform());
-  AddRenderPassQuad(childPass, grandChildPass);
-
-  renderer_->DecideRenderPassAllocationsForFrame(
-      *mock_client_.render_passes_in_draw_order());
-  renderer_->DrawFrame(*mock_client_.render_passes_in_draw_order());
-  TestRenderPassMaskColorMatrixProgram();
-
-  // RenderPassProgramAA
-  renderPasses.clear();
-
-  grandChildPass = AddRenderPass(renderPasses, grandChildPassId, grandChildRect,
-      transform_causing_aa);
-  AddClippedQuad(grandChildPass, grandChildRect, SK_ColorYELLOW);
-
-  childPass = AddRenderPass(renderPasses, childPassId, childRect,
-      transform_causing_aa);
-  AddQuad(childPass, childRect, SK_ColorBLUE);
-
-  rootPass = AddRenderPass(renderPasses, rootPassId, viewportRect,
-      gfx::Transform());
-  AddQuad(rootPass, viewportRect, SK_ColorGREEN);
-
-  AddRenderPassQuad(rootPass, childPass, 0, skia::RefPtr<SkImageFilter>(),
-      transform_causing_aa);
-  AddRenderPassQuad(childPass, grandChildPass);
-
-  renderer_->DecideRenderPassAllocationsForFrame(
-      *mock_client_.render_passes_in_draw_order());
-  renderer_->DrawFrame(*mock_client_.render_passes_in_draw_order());
-  TestRenderPassProgramAA();
-
-  // RenderPassColorMatrixProgramAA
-  renderPasses.clear();
-
-  grandChildPass = AddRenderPass(renderPasses, grandChildPassId, grandChildRect,
-      transform_causing_aa);
-  AddClippedQuad(grandChildPass, grandChildRect, SK_ColorYELLOW);
-
-  childPass = AddRenderPass(renderPasses, childPassId, childRect,
-      transform_causing_aa);
-  AddQuad(childPass, childRect, SK_ColorBLUE);
-
-  rootPass = AddRenderPass(renderPasses, rootPassId, viewportRect,
-      gfx::Transform());
-  AddQuad(rootPass, viewportRect, SK_ColorGREEN);
-
-  AddRenderPassQuad(rootPass, childPass, 0, filter, transform_causing_aa);
-  AddRenderPassQuad(childPass, grandChildPass);
-
-  renderer_->DecideRenderPassAllocationsForFrame(
-      *mock_client_.render_passes_in_draw_order());
-  renderer_->DrawFrame(*mock_client_.render_passes_in_draw_order());
-  TestRenderPassColorMatrixProgramAA();
-
-  // RenderPassMaskProgramAA
-  renderPasses.clear();
-
-  grandChildPass = AddRenderPass(renderPasses, grandChildPassId, grandChildRect,
-      transform_causing_aa);
-  AddClippedQuad(grandChildPass, grandChildRect, SK_ColorYELLOW);
-
-  childPass = AddRenderPass(renderPasses, childPassId, childRect,
-      transform_causing_aa);
-  AddQuad(childPass, childRect, SK_ColorBLUE);
-
-  rootPass = AddRenderPass(renderPasses, rootPassId, viewportRect,
-      gfx::Transform());
-  AddQuad(rootPass, viewportRect, SK_ColorGREEN);
-
-  AddRenderPassQuad(rootPass, childPass, mask, skia::RefPtr<SkImageFilter>(),
-      transform_causing_aa);
-  AddRenderPassQuad(childPass, grandChildPass);
-
-  renderer_->DecideRenderPassAllocationsForFrame(
-      *mock_client_.render_passes_in_draw_order());
-  renderer_->DrawFrame(*mock_client_.render_passes_in_draw_order());
-  TestRenderPassMaskProgramAA();
-
-  // RenderPassMaskColorMatrixProgramAA
-  renderPasses.clear();
-
-  grandChildPass = AddRenderPass(renderPasses, grandChildPassId, grandChildRect,
-      transform_causing_aa);
-  AddClippedQuad(grandChildPass, grandChildRect, SK_ColorYELLOW);
-
-  childPass = AddRenderPass(renderPasses, childPassId, childRect,
-      transform_causing_aa);
-  AddQuad(childPass, childRect, SK_ColorBLUE);
-
-  rootPass = AddRenderPass(renderPasses, rootPassId, viewportRect,
-      transform_causing_aa);
-  AddQuad(rootPass, viewportRect, SK_ColorGREEN);
-
-  AddRenderPassQuad(rootPass, childPass, mask, filter, transform_causing_aa);
-  AddRenderPassQuad(childPass, grandChildPass);
-
-  renderer_->DecideRenderPassAllocationsForFrame(
-      *mock_client_.render_passes_in_draw_order());
-  renderer_->DrawFrame(*mock_client_.render_passes_in_draw_order());
-  TestRenderPassMaskColorMatrixProgramAA();
 }
 
 class OutputSurfaceMockContext : public TestWebGraphicsContext3D {

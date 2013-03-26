@@ -14,9 +14,9 @@
 
 namespace cc {
 
-bool WritePNGFile(const SkBitmap& bitmap, const base::FilePath& file_path,
-    bool discard_transparency) {
+bool WritePNGFile(const SkBitmap& bitmap, const base::FilePath& file_path) {
   std::vector<unsigned char> png_data;
+  const bool discard_transparency = true;
   if (gfx::PNGCodec::EncodeBGRASkBitmap(bitmap,
                                         discard_transparency,
                                         &png_data) &&
@@ -37,8 +37,7 @@ bool ReadPNGFile(const base::FilePath& file_path, SkBitmap* bitmap) {
                                bitmap);
 }
 
-bool IsSameAsPNGFile(const SkBitmap& gen_bmp, base::FilePath ref_img_path,
-    bool discard_transparency) {
+bool IsSameAsPNGFile(const SkBitmap& gen_bmp, base::FilePath ref_img_path) {
   SkBitmap ref_bmp;
   if (!ReadPNGFile(ref_img_path, &ref_bmp)) {
     LOG(ERROR) << "Cannot read reference image: " << ref_img_path.value();
@@ -61,12 +60,7 @@ bool IsSameAsPNGFile(const SkBitmap& gen_bmp, base::FilePath ref_img_path,
   SkAutoLockPixels lock_ref_bmp(ref_bmp);
   // The reference images were saved with no alpha channel. Use the mask to
   // set alpha to 0.
-  uint32_t kAlphaMask;
-  if (discard_transparency)
-    kAlphaMask = 0x00FFFFFF;
-  else
-    kAlphaMask = 0xFFFFFFFF;
-
+  uint32_t kAlphaMask = 0x00FFFFFF;
   for (int x = 0; x < gen_bmp.width(); ++x) {
     for (int y = 0; y < gen_bmp.height(); ++y) {
       if ((*gen_bmp.getAddr32(x, y) & kAlphaMask) !=

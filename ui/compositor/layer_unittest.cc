@@ -919,35 +919,35 @@ TEST_F(LayerWithRealCompositorTest, MAYBE_ModifyHierarchy) {
   ASSERT_TRUE(ReadPixels(&bitmap));
   ASSERT_FALSE(bitmap.empty());
   // WritePNGFile(bitmap, ref_img1);
-  EXPECT_TRUE(IsSameAsPNGFile(bitmap, ref_img1, true));
+  EXPECT_TRUE(IsSameAsPNGFile(bitmap, ref_img1));
 
   l0->StackAtTop(l11.get());
   DrawTree(l0.get());
   ASSERT_TRUE(ReadPixels(&bitmap));
   ASSERT_FALSE(bitmap.empty());
   // WritePNGFile(bitmap, ref_img2);
-  EXPECT_TRUE(IsSameAsPNGFile(bitmap, ref_img2, true));
+  EXPECT_TRUE(IsSameAsPNGFile(bitmap, ref_img2));
 
   // l11 is already at the front, should have no effect.
   l0->StackAtTop(l11.get());
   DrawTree(l0.get());
   ASSERT_TRUE(ReadPixels(&bitmap));
   ASSERT_FALSE(bitmap.empty());
-  EXPECT_TRUE(IsSameAsPNGFile(bitmap, ref_img2, true));
+  EXPECT_TRUE(IsSameAsPNGFile(bitmap, ref_img2));
 
   // l11 is already at the front, should have no effect.
   l0->StackAbove(l11.get(), l12.get());
   DrawTree(l0.get());
   ASSERT_TRUE(ReadPixels(&bitmap));
   ASSERT_FALSE(bitmap.empty());
-  EXPECT_TRUE(IsSameAsPNGFile(bitmap, ref_img2, true));
+  EXPECT_TRUE(IsSameAsPNGFile(bitmap, ref_img2));
 
   // should restore to original configuration
   l0->StackAbove(l12.get(), l11.get());
   DrawTree(l0.get());
   ASSERT_TRUE(ReadPixels(&bitmap));
   ASSERT_FALSE(bitmap.empty());
-  EXPECT_TRUE(IsSameAsPNGFile(bitmap, ref_img1, true));
+  EXPECT_TRUE(IsSameAsPNGFile(bitmap, ref_img1));
 }
 
 // Opacity is rendered correctly.
@@ -971,7 +971,7 @@ TEST_F(LayerWithRealCompositorTest, MAYBE_Opacity) {
   ASSERT_TRUE(ReadPixels(&bitmap));
   ASSERT_FALSE(bitmap.empty());
   // WritePNGFile(bitmap, ref_img);
-  EXPECT_TRUE(IsSameAsPNGFile(bitmap, ref_img, true));
+  EXPECT_TRUE(IsSameAsPNGFile(bitmap, ref_img));
 }
 
 namespace {

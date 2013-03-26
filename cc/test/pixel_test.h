@@ -21,8 +21,7 @@ class PixelTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE;
 
-  bool PixelsMatchReference(const base::FilePath& ref_file,
-      bool discard_transparency);
+  bool PixelsMatchReference(const base::FilePath& ref_file);
 
   gfx::Size device_viewport_size_;
   scoped_ptr<OutputSurface> output_surface_;
