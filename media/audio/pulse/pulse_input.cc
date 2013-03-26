@@ -7,7 +7,6 @@
 #include <pulse/pulseaudio.h>
 
 #include "base/logging.h"
-#include "base/message_loop.h"
 #include "media/audio/pulse/audio_manager_pulse.h"
 #include "media/audio/pulse/pulse_util.h"
 #include "media/base/seekable_buffer.h"
@@ -33,7 +32,6 @@ PulseAudioInputStream::PulseAudioInputStream(AudioManagerPulse* audio_manager,
       pa_context_(context),
       handle_(NULL),
       context_state_changed_(false) {
-  DCHECK(audio_manager_->GetMessageLoop()->BelongsToCurrentThread());
   DCHECK(mainloop);
   DCHECK(context);
 }
@@ -45,7 +43,7 @@ PulseAudioInputStream::~PulseAudioInputStream() {
 }
 
 bool PulseAudioInputStream::Open() {
-  DCHECK(audio_manager_->GetMessageLoop()->BelongsToCurrentThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   AutoPulseLock auto_lock(pa_mainloop_);
 
   // Set sample specifications.
@@ -58,7 +56,7 @@ bool PulseAudioInputStream::Open() {
   // Get channel mapping and open recording stream.
   pa_channel_map source_channel_map = pulse::ChannelLayoutToPAChannelMap(
       params_.channel_layout());
-  pa_channel_map* map = (source_channel_map.channels != 0)?
+  pa_channel_map* map = (source_channel_map.channels != 0) ?
       &source_channel_map : NULL;
 
   // Create a new recording stream.
@@ -76,7 +74,7 @@ bool PulseAudioInputStream::Open() {
   // freedesktop.org/software/pulseaudio/doxygen/structpa__buffer__attr.html.
   pa_buffer_attr buffer_attributes;
   const unsigned int buffer_size = params_.GetBytesPerBuffer();
-  buffer_attributes.maxlength =  static_cast<uint32_t>(-1);
+  buffer_attributes.maxlength = static_cast<uint32_t>(-1);
   buffer_attributes.tlength = buffer_size;
   buffer_attributes.minreq = buffer_size;
   buffer_attributes.prebuf = static_cast<uint32_t>(-1);
@@ -99,7 +97,7 @@ bool PulseAudioInputStream::Open() {
   // Wait for the stream to be ready.
   while (true) {
     pa_stream_state_t stream_state = pa_stream_get_state(handle_);
-    if(!PA_STREAM_IS_GOOD(stream_state)) {
+    if (!PA_STREAM_IS_GOOD(stream_state)) {
       DLOG(ERROR) << "Invalid PulseAudio stream state";
       return false;
     }
@@ -118,7 +116,7 @@ bool PulseAudioInputStream::Open() {
 }
 
 void PulseAudioInputStream::Start(AudioInputCallback* callback) {
-  DCHECK(audio_manager_->GetMessageLoop()->BelongsToCurrentThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(callback);
   DCHECK(handle_);
   AutoPulseLock auto_lock(pa_mainloop_);
@@ -139,7 +137,7 @@ void PulseAudioInputStream::Start(AudioInputCallback* callback) {
 }
 
 void PulseAudioInputStream::Stop() {
-  DCHECK(audio_manager_->GetMessageLoop()->BelongsToCurrentThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   AutoPulseLock auto_lock(pa_mainloop_);
   if (!stream_started_)
     return;
@@ -147,8 +145,9 @@ void PulseAudioInputStream::Stop() {
   // Set the flag to false to stop filling new data to soundcard.
   stream_started_ = false;
 
-  pa_operation* operation = pa_stream_flush(
-      handle_, &pulse::StreamSuccessCallback, pa_mainloop_);
+  pa_operation* operation = pa_stream_flush(handle_,
+                                            &pulse::StreamSuccessCallback,
+                                            pa_mainloop_);
   WaitForOperationCompletion(pa_mainloop_, operation);
 
   // Stop the stream.
@@ -159,7 +158,7 @@ void PulseAudioInputStream::Stop() {
 }
 
 void PulseAudioInputStream::Close() {
-  DCHECK(audio_manager_->GetMessageLoop()->BelongsToCurrentThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   {
     AutoPulseLock auto_lock(pa_mainloop_);
     if (handle_) {
@@ -271,7 +270,7 @@ void PulseAudioInputStream::VolumeCallback(pa_context* context,
   if (stream->channels_ != info->channel_map.channels)
     stream->channels_ = info->channel_map.channels;
 
-  pa_volume_t volume = PA_VOLUME_MUTED; // Minimum possible value.
+  pa_volume_t volume = PA_VOLUME_MUTED;  // Minimum possible value.
   // Use the max volume of any channel as the volume.
   for (int i = 0; i < stream->channels_; ++i) {
     if (volume < info->volume.values[i])
@@ -326,7 +325,7 @@ void PulseAudioInputStream::ReadData() {
   int packet_size = params_.GetBytesPerBuffer();
   while (buffer_->forward_bytes() >= packet_size) {
     buffer_->Read(audio_data_buffer_.get(), packet_size);
-    callback_->OnData(this, audio_data_buffer_.get(),  packet_size,
+    callback_->OnData(this, audio_data_buffer_.get(), packet_size,
                       hardware_delay, normalized_volume);
 
     if (buffer_->forward_bytes() < packet_size)
@@ -336,8 +335,7 @@ void PulseAudioInputStream::ReadData() {
     // input side.
     DVLOG(1) << "OnData is being called consecutively, sleep 5ms to "
              << "wait until render consumes the data";
-    base::PlatformThread::Sleep(
-        base::TimeDelta::FromMilliseconds(5));
+    base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(5));
   }
 
   pa_threaded_mainloop_signal(pa_mainloop_, 0);

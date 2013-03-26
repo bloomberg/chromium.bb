@@ -18,6 +18,24 @@
 
 namespace media {
 
+double GetVolumeAfterSetVolumeOnLinux(AudioInputStream* ais,
+                                      double target_volume) {
+  // SetVolume() is asynchronous on Linux, we need to keep trying until
+  // the SetVolume() operation is done.
+  static const int kTimesToRun = 10;
+  double volume = 0.0;
+  for (int i = 0; i < kTimesToRun; ++i) {
+    volume = ais->GetVolume();
+    if (volume == target_volume)
+      break;
+
+    // Sleep 100ms to wait for the operation.
+    base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
+  }
+
+  return volume;
+}
+
 class AudioInputVolumeTest : public ::testing::Test {
  protected:
   AudioInputVolumeTest()
@@ -128,14 +146,22 @@ TEST_F(AudioInputVolumeTest, InputVolumeTest) {
     // Set the volume to the mininum level (=0).
     double new_volume = 0.0;
     ais->SetVolume(new_volume);
+#if defined(OS_LINUX)
+    current_volume = GetVolumeAfterSetVolumeOnLinux(ais, new_volume);
+#else
     current_volume = ais->GetVolume();
+#endif
     EXPECT_EQ(new_volume, current_volume);
 
     // Set the volume to the mid level (50% of max).
     // Verify that the absolute error is small enough.
     new_volume = max_volume / 2;
     ais->SetVolume(new_volume);
+#if defined(OS_LINUX)
+    current_volume = GetVolumeAfterSetVolumeOnLinux(ais, new_volume);
+#else
     current_volume = ais->GetVolume();
+#endif
     EXPECT_LT(current_volume, max_volume);
     EXPECT_GT(current_volume, 0);
     EXPECT_NEAR(current_volume, new_volume, 0.25 * max_volume);

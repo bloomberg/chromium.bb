@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/threading/thread_checker.h"
 #include "media/audio/audio_device_name.h"
 #include "media/audio/audio_input_stream_impl.h"
 #include "media/audio/audio_io.h"
@@ -73,6 +74,8 @@ class PulseAudioInputStream : public AudioInputStreamImpl {
 
   // Flag indicating the state of the context has been changed.
   bool context_state_changed_;
+
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(PulseAudioInputStream);
 };
