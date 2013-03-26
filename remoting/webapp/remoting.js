@@ -147,14 +147,22 @@ remoting.initHomeScreenUi = function() {
  */
 remoting.updateLocalHostState = function() {
   /**
-   * @param {remoting.HostController.State} state Host state.
-   * @param {string?} localHostId
+   * @param {string?} hostId Host id.
    */
-  var onHostState = function(state, localHostId) {
-    remoting.hostList.setLocalHostStateAndId(state, localHostId);
+  var onHostId = function(hostId) {
+    remoting.hostController.getLocalHostState(onHostState.bind(null, hostId));
+  };
+
+  /**
+   * @param {string?} hostId Host id.
+   * @param {remoting.HostController.State} state Host state.
+   */
+  var onHostState = function(hostId, state) {
+    remoting.hostList.setLocalHostStateAndId(state, hostId);
     remoting.hostList.display();
   };
-  remoting.hostController.getLocalHostStateAndId(onHostState);
+
+  remoting.hostController.getLocalHostId(onHostId);
 };
 
 /**

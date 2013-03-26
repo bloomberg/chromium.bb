@@ -87,12 +87,6 @@ function onLoad() {
         fn: function() { remoting.setMode(remoting.AppMode.HOME); } },
       { event: 'click', id: 'host-config-error-dismiss',
         fn: function() { remoting.setMode(remoting.AppMode.HOME); } },
-      { event: 'click', id: 'host-config-install-continue',
-        fn: function() { remoting.hostSetupDialog.onInstallDialogOk(); } },
-      { event: 'click', id: 'host-config-install-dismiss',
-        fn: function() { remoting.hostSetupDialog.hide(); } },
-      { event: 'click', id: 'host-config-install-retry', fn: function() {
-          remoting.hostSetupDialog.onInstallDialogRetry(); } },
       { event: 'click', id: 'token-refresh-error-ok',
         fn: function() { remoting.setMode(remoting.AppMode.HOME); } },
       { event: 'click', id: 'token-refresh-error-sign-in', fn: doAuthRedirect }

@@ -104,6 +104,19 @@ remoting.HostSetupDialog = function(hostController) {
   this.pinConfirm_ = document.getElementById('daemon-pin-confirm');
   this.pinErrorDiv_ = document.getElementById('daemon-pin-error-div');
   this.pinErrorMessage_ = document.getElementById('daemon-pin-error-message');
+  this.continueInstallButton_ = document.getElementById(
+      'host-config-install-continue');
+  this.cancelInstallButton_ = document.getElementById(
+      'host-config-install-dismiss');
+  this.retryInstallButton_ = document.getElementById(
+      'host-config-install-retry');
+
+  this.continueInstallButton_.addEventListener(
+      'click', this.onInstallDialogOk.bind(this), false);
+  this.cancelInstallButton_.addEventListener(
+      'click', this.hide.bind(this), false);
+  this.retryInstallButton_.addEventListener(
+      'click', this.onInstallDialogRetry.bind(this), false);
 
   /** @type {remoting.HostSetupFlow} */
   this.flow_ = new remoting.HostSetupFlow([remoting.HostSetupFlow.State.NONE]);
@@ -155,18 +168,32 @@ remoting.HostSetupDialog = function(hostController) {
  * @return {void} Nothing.
  */
 remoting.HostSetupDialog.prototype.showForStart = function() {
-  // Although we don't need an access token in order to start the host,
-  // using callWithToken here ensures consistent error handling in the
-  // case where the refresh token is invalid.
-  remoting.identity.callWithToken(this.showForStartWithToken_.bind(this),
-                                  remoting.showErrorMessage);
+  /** @type {remoting.HostSetupDialog} */
+  var that = this;
+
+  /**
+   * @param {remoting.HostController.State} state
+   */
+  var onState = function(state) {
+    // Although we don't need an access token in order to start the host,
+    // using callWithToken here ensures consistent error handling in the
+    // case where the refresh token is invalid.
+    remoting.identity.callWithToken(
+        that.showForStartWithToken_.bind(that, state),
+        remoting.showErrorMessage);
+  };
+
+  this.hostController_.getLocalHostState(onState);
 };
 
 /**
+ * @param {remoting.HostController.State} state The current state of the local
+ *     host.
  * @param {string} token The OAuth2 token.
  * @private
  */
-remoting.HostSetupDialog.prototype.showForStartWithToken_ = function(token) {
+remoting.HostSetupDialog.prototype.showForStartWithToken_ =
+    function(state, token) {
   /** @type {remoting.HostSetupDialog} */
   var that = this;
 
@@ -191,8 +218,11 @@ remoting.HostSetupDialog.prototype.showForStartWithToken_ = function(token) {
       remoting.HostSetupFlow.State.STARTING_HOST,
       remoting.HostSetupFlow.State.HOST_STARTED];
 
-  if (navigator.platform.indexOf('Mac') != -1 &&
-      !this.hostController_.isInstalled()) {
+  var installed =
+      state != remoting.HostController.State.NOT_INSTALLED &&
+      state != remoting.HostController.State.INSTALLING;
+
+  if (navigator.platform.indexOf('Mac') != -1 && !installed) {
     flow.unshift(remoting.HostSetupFlow.State.INSTALL_HOST);
   }
 
@@ -457,12 +487,28 @@ remoting.HostSetupDialog.validPin_ = function(pin) {
  * @return {void} Nothing.
  */
 remoting.HostSetupDialog.prototype.onInstallDialogOk = function() {
-  if (this.hostController_.isInstalled()) {
-    this.flow_.switchToNextStep(remoting.HostController.AsyncResult.OK);
-    this.updateState_();
-  } else {
-    remoting.setMode(remoting.AppMode.HOST_SETUP_INSTALL_PENDING);
-  }
+  this.continueInstallButton_.disabled = true;
+  this.cancelInstallButton_.disabled = true;
+
+  /** @type {remoting.HostSetupDialog} */
+  var that = this;
+
+  /** @param {remoting.HostController.State} state */
+  var onHostState = function(state) {
+    that.continueInstallButton_.disabled = false;
+    that.cancelInstallButton_.disabled = false;
+    var installed =
+        state != remoting.HostController.State.NOT_INSTALLED &&
+        state != remoting.HostController.State.INSTALLING;
+    if (installed) {
+      that.flow_.switchToNextStep(remoting.HostController.AsyncResult.OK);
+      that.updateState_();
+    } else {
+      remoting.setMode(remoting.AppMode.HOST_SETUP_INSTALL_PENDING);
+    }
+  };
+
+  this.hostController_.getLocalHostState(onHostState);
 };
 
 /**
