@@ -2273,13 +2273,16 @@ void BrowserWindowGtk::UpdateDevToolsForContents(WebContents* contents) {
   if (devtools_window_) {
     GtkAllocation contents_rect;
     gtk_widget_get_allocation(contents_vsplit_, &contents_rect);
+    int split_size;
     if (devtools_dock_side_ == DEVTOOLS_DOCK_SIDE_RIGHT) {
+      gtk_widget_style_get(contents_hsplit_, "handle-size", &split_size, NULL);
       devtools_window_->SetWidth(
-          contents_rect.width -
+          contents_rect.width - split_size -
           gtk_paned_get_position(GTK_PANED(contents_hsplit_)));
-    } else {
+    } else if (devtools_dock_side_ == DEVTOOLS_DOCK_SIDE_BOTTOM) {
+      gtk_widget_style_get(contents_vsplit_, "handle-size", &split_size, NULL);
       devtools_window_->SetHeight(
-          contents_rect.height -
+          contents_rect.height - split_size -
           gtk_paned_get_position(GTK_PANED(contents_vsplit_)));
     }
   }

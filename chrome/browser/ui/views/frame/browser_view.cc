@@ -2198,12 +2198,13 @@ void BrowserView::UpdateDevToolsForContents(WebContents* web_contents) {
 
   // Store last used position.
   if (devtools_window_) {
+    int split_size = contents_split_->GetDividerSize();
     if (devtools_dock_side_ == DEVTOOLS_DOCK_SIDE_RIGHT) {
-      devtools_window_->SetWidth(
-          contents_split_->width() - contents_split_->divider_offset());
-    } else {
-      devtools_window_->SetHeight(
-          contents_split_->height() - contents_split_->divider_offset());
+      devtools_window_->SetWidth(contents_split_->width() -
+          (split_size / 2) - contents_split_->divider_offset());
+    } else if (devtools_dock_side_ == DEVTOOLS_DOCK_SIDE_BOTTOM) {
+      devtools_window_->SetHeight(contents_split_->height() -
+          (split_size / 2) - contents_split_->divider_offset());
     }
   }
 
