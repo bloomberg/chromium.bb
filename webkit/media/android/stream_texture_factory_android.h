@@ -5,7 +5,6 @@
 #ifndef WEBKIT_MEDIA_ANDROID_STREAM_TEXTURE_FACTORY_ANDROID_H_
 #define WEBKIT_MEDIA_ANDROID_STREAM_TEXTURE_FACTORY_ANDROID_H_
 
-#include "base/memory/scoped_ptr.h"
 #include "cc/layers/video_frame_provider.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebVideoFrame.h"
 
@@ -19,11 +18,13 @@ namespace webkit_media {
 // when a new video frame is available.
 class StreamTextureProxy {
  public:
-  // Initialize and bind to the current thread, which becomes the thread that
-  // a connected client will receive callbacks on.
-  virtual void BindToCurrentThread(int stream_id, int width, int height) = 0;
+  virtual ~StreamTextureProxy() {}
 
-  virtual bool IsBoundToThread() = 0;
+  // Initialize the the stream_id, texture width and height. This should
+  // be called on the compositor thread.
+  virtual bool Initialize(int stream_id, int width, int height) = 0;
+
+  virtual bool IsInitialized() = 0;
 
   // Setting the target for callback when a frame is available. This function
   // could be called on both the main thread and the compositor thread.
@@ -32,20 +33,8 @@ class StreamTextureProxy {
 #else
   virtual void SetClient(cc::VideoFrameProvider::Client* client) = 0;
 #endif
-
-  struct Deleter {
-    inline void operator()(StreamTextureProxy* ptr) const { ptr->Release(); }
-  };
-
- protected:
-  virtual ~StreamTextureProxy() {}
-
-  // Causes this instance to be deleted on the thread it is bound to.
-  virtual void Release() = 0;
 };
 
-typedef scoped_ptr<StreamTextureProxy, StreamTextureProxy::Deleter>
-    ScopedStreamTextureProxy;
 
 // Factory class for managing the stream texture.
 class StreamTextureFactory {

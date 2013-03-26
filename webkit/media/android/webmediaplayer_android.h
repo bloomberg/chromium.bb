@@ -16,7 +16,6 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayer.h"
-#include "webkit/media/android/stream_texture_factory_android.h"
 
 namespace WebKit {
 class WebVideoFrame;
@@ -28,6 +27,8 @@ class WebLayerImpl;
 
 namespace webkit_media {
 
+class StreamTextureFactory;
+class StreamTextureProxy;
 class WebMediaPlayerManagerAndroid;
 class WebVideoFrameImpl;
 
@@ -264,7 +265,7 @@ class WebMediaPlayerAndroid
 
   // Object for calling back the compositor thread to repaint the video when a
   // frame available. It should be initialized on the compositor thread.
-  ScopedStreamTextureProxy stream_texture_proxy_;
+  scoped_ptr<StreamTextureProxy> stream_texture_proxy_;
 
   // Whether media player needs external surface.
   bool needs_external_surface_;
