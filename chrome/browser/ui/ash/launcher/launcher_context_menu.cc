@@ -142,8 +142,8 @@ void LauncherContextMenu::Init() {
     AddCheckItemWithStringId(
         MENU_AUTO_HIDE, IDS_AURA_LAUNCHER_CONTEXT_MENU_AUTO_HIDE);
   }
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kHideLauncherAlignmentMenu)) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kShowLauncherAlignmentMenu)) {
     AddSubMenuWithStringId(MENU_ALIGNMENT_MENU,
                            IDS_AURA_LAUNCHER_CONTEXT_MENU_POSITION,
                            &launcher_alignment_menu_);

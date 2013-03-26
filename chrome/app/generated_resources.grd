@@ -6844,11 +6844,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_NO_DISCARD_TABS_DESCRIPTION" desc="Description for the flag to disable the tab discarding feature.">
         Turns off tab discarding, a feature that discards infrequently used tabs under low memory conditions.
       </message>
-      <message name="IDS_FLAGS_HIDE_LAUNCHER_ALIGNMENT_MENU_NAME" desc="Name for the flag to hide the menu that lets you change the alignment of the launcher.">
-        Hide launcher alignment menu.
+      <message name="IDS_FLAGS_SHOW_LAUNCHER_ALIGNMENT_MENU_NAME" desc="Name for the flag to show a menu that lets you change the alignment of the launcher.">
+        Show launcher alignment menu.
       </message>
-      <message name="IDS_FLAGS_HIDE_LAUNCHER_ALIGNMENT_MENU_DESCRIPTION" desc="Description for the flag to hide the menu that lets you change the alignment of the launcher.">
-        Remove the menu that allows changing the side the launcher is aligned to.
+      <message name="IDS_FLAGS_SHOW_LAUNCHER_ALIGNMENT_MENU_DESCRIPTION" desc="Description for the flag to show a menu that lets you change the alignment of the launcher.">
+        Enables a menu that allows changing the side the launcher is aligned to.
       </message>
 
       <message name="IDS_FLAGS_SHOW_TOUCH_HUD_NAME" desc="Name for the flag to show a heads-up display for tracking touch-points.">

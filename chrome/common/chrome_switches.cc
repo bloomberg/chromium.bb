@@ -728,9 +728,6 @@ const char kHelpShort[]                     = "h";
 // it.
 const char kHideIcons[]                     = "hide-icons";
 
-// If false the alignment of the launcher can be changed.
-const char kHideLauncherAlignmentMenu[]     = "hide-launcher-alignment-menu";
-
 // Disables full history sync.
 const char kHistoryDisableFullHistorySync[]      = "disable-full-history-sync";
 
@@ -1238,6 +1235,9 @@ const char kShowComponentExtensionOptions[] =
 
 // See kHideIcons.
 const char kShowIcons[]                     = "show-icons";
+
+// If true the alignment of the launcher can be changed.
+const char kShowLauncherAlignmentMenu[]     = "show-launcher-alignment-menu";
 
 // Marks a renderer as the signin process.
 const char kSigninProcess[]                 = "signin-process";
