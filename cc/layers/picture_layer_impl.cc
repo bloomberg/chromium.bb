@@ -29,14 +29,16 @@ PictureLayerImpl::PictureLayerImpl(LayerTreeImpl* tree_impl, int id)
     : LayerImpl(tree_impl, id),
       pile_(PicturePileImpl::Create(true)),
       last_content_scale_(0),
-      ideal_contents_scale_(0),
       is_mask_(false),
       ideal_page_scale_(0.f),
       ideal_device_scale_(0.f),
       ideal_source_scale_(0.f),
+      ideal_contents_scale_(0.f),
       raster_page_scale_(0.f),
       raster_device_scale_(0.f),
       raster_source_scale_(0.f),
+      raster_contents_scale_(0.f),
+      low_res_raster_contents_scale_(0.f),
       raster_source_scale_was_animating_(false),
       is_using_lcd_text_(true) {
 }
@@ -80,6 +82,8 @@ void PictureLayerImpl::PushPropertiesTo(LayerImpl* base_layer) {
   layer_impl->raster_page_scale_ = raster_page_scale_;
   layer_impl->raster_device_scale_ = raster_device_scale_;
   layer_impl->raster_source_scale_ = raster_source_scale_;
+  layer_impl->raster_contents_scale_ = raster_contents_scale_;
+  layer_impl->low_res_raster_contents_scale_ = low_res_raster_contents_scale_;
   layer_impl->is_using_lcd_text_ = is_using_lcd_text_;
 }
 
@@ -397,6 +401,8 @@ void PictureLayerImpl::SyncFromActiveLayer() {
     raster_page_scale_ = 0;
     raster_device_scale_ = 0;
     raster_source_scale_ = 0;
+    raster_contents_scale_ = 0;
+    low_res_raster_contents_scale_ = 0;
     return;
   }
 
@@ -411,6 +417,8 @@ void PictureLayerImpl::SyncFromActiveLayer(const PictureLayerImpl* other) {
   raster_page_scale_ = other->raster_page_scale_;
   raster_device_scale_ = other->raster_device_scale_;
   raster_source_scale_ = other->raster_source_scale_;
+  raster_contents_scale_ = other->raster_contents_scale_;
+  low_res_raster_contents_scale_ = other->low_res_raster_contents_scale_;
   is_using_lcd_text_ = other->is_using_lcd_text_;
 
   // Add synthetic invalidations for any recordings that were dropped.  As
@@ -494,13 +502,8 @@ bool PictureLayerImpl::AreVisibleResourcesReady() const {
 
   const gfx::Rect& rect = visible_content_rect();
 
-  float raster_contents_scale =
-      raster_page_scale_ *
-      raster_device_scale_ *
-      raster_source_scale_;
-
   float min_acceptable_scale =
-      std::min(raster_contents_scale, ideal_contents_scale_);
+      std::min(raster_contents_scale_, ideal_contents_scale_);
 
   TreePriority tree_priority =
       layer_tree_impl()->tile_manager()->GlobalState().tree_priority;
@@ -510,14 +513,9 @@ bool PictureLayerImpl::AreVisibleResourcesReady() const {
           active_animation_controllers().empty();
 
   if (PictureLayerImpl* twin = ActiveTwin()) {
-    float twin_raster_contents_scale =
-        twin->raster_page_scale_ *
-        twin->raster_device_scale_ *
-        twin->raster_source_scale_;
-
     min_acceptable_scale = std::min(
         min_acceptable_scale,
-        std::min(twin->ideal_contents_scale_, twin_raster_contents_scale));
+        std::min(twin->ideal_contents_scale_, twin->raster_contents_scale_));
   }
 
   Region missing_region = rect;
@@ -604,42 +602,14 @@ void PictureLayerImpl::ManageTilings(bool animating_transform_to_screen) {
   if (pile_->recorded_region().IsEmpty())
     return;
 
-  bool is_active_layer = layer_tree_impl()->IsActiveTree();
-  bool is_pinching = layer_tree_impl()->PinchGestureActive();
+  bool change_target_tiling =
+      !raster_page_scale_ || !raster_device_scale_ || !raster_source_scale_ ||
+      ShouldAdjustRasterScale(animating_transform_to_screen);
 
-  bool change_target_tiling = false;
-
-  if (!raster_page_scale_ || !raster_device_scale_ || !raster_source_scale_)
-    change_target_tiling = true;
-
-  // TODO(danakj): Adjust raster_source_scale_ closer to ideal_source_scale_ at
-  // a throttled rate. Possibly make use of invalidation_.IsEmpty() on pending
-  // tree. This will allow CSS scale changes to get re-rastered at an
-  // appropriate rate.
-
-  if (is_active_layer) {
-    if (raster_source_scale_was_animating_ && !animating_transform_to_screen)
-      change_target_tiling = true;
+  if (layer_tree_impl()->IsActiveTree()) {
+    // Store the value for the next time ShouldAdjustRasterScale is called.
     raster_source_scale_was_animating_ = animating_transform_to_screen;
   }
-
-  if (is_active_layer && is_pinching && raster_page_scale_) {
-    // If the page scale diverges too far during pinch, change raster target to
-    // the current page scale.
-    float ratio = PositiveRatio(ideal_page_scale_, raster_page_scale_);
-    if (ratio >= kMaxScaleRatioDuringPinch)
-      change_target_tiling = true;
-  }
-
-  if (!is_pinching) {
-    // When not pinching, match the ideal page scale factor.
-    if (raster_page_scale_ != ideal_page_scale_)
-      change_target_tiling = true;
-  }
-
-  // Always match the ideal device scale factor.
-  if (raster_device_scale_ != ideal_device_scale_)
-    change_target_tiling = true;
 
   if (!change_target_tiling)
     return;
@@ -648,20 +618,18 @@ void PictureLayerImpl::ManageTilings(bool animating_transform_to_screen) {
   raster_device_scale_ = ideal_device_scale_;
   raster_source_scale_ = ideal_source_scale_;
 
-  float raster_contents_scale;
-  float low_res_raster_contents_scale;
   CalculateRasterContentsScale(animating_transform_to_screen,
-                               &raster_contents_scale,
-                               &low_res_raster_contents_scale);
+                               &raster_contents_scale_,
+                               &low_res_raster_contents_scale_);
 
   PictureLayerTiling* high_res = NULL;
   PictureLayerTiling* low_res = NULL;
 
   for (size_t i = 0; i < tilings_->num_tilings(); ++i) {
     PictureLayerTiling* tiling = tilings_->tiling_at(i);
-    if (tiling->contents_scale() == raster_contents_scale)
+    if (tiling->contents_scale() == raster_contents_scale_)
       high_res = tiling;
-    if (tiling->contents_scale() == low_res_raster_contents_scale)
+    if (tiling->contents_scale() == low_res_raster_contents_scale_)
       low_res = tiling;
 
     // Reset all tilings to non-ideal until the end of this function.
@@ -669,12 +637,12 @@ void PictureLayerImpl::ManageTilings(bool animating_transform_to_screen) {
   }
 
   if (!high_res) {
-    high_res = AddTiling(raster_contents_scale);
-    if (raster_contents_scale == low_res_raster_contents_scale)
+    high_res = AddTiling(raster_contents_scale_);
+    if (raster_contents_scale_ == low_res_raster_contents_scale_)
       low_res = high_res;
   }
   if (!low_res && low_res != high_res)
-    low_res = AddTiling(low_res_raster_contents_scale);
+    low_res = AddTiling(low_res_raster_contents_scale_);
 
   if (high_res)
     high_res->set_resolution(HIGH_RESOLUTION);
@@ -682,10 +650,44 @@ void PictureLayerImpl::ManageTilings(bool animating_transform_to_screen) {
     low_res->set_resolution(LOW_RESOLUTION);
 }
 
+bool PictureLayerImpl::ShouldAdjustRasterScale(
+    bool animating_transform_to_screen) const {
+  // TODO(danakj): Adjust raster source scale closer to ideal source scale at
+  // a throttled rate. Possibly make use of invalidation_.IsEmpty() on pending
+  // tree. This will allow CSS scale changes to get re-rastered at an
+  // appropriate rate.
+
+  bool is_active_layer = layer_tree_impl()->IsActiveTree();
+  if (is_active_layer && raster_source_scale_was_animating_ &&
+      !animating_transform_to_screen)
+    return true;
+
+  bool is_pinching = layer_tree_impl()->PinchGestureActive();
+  if (is_active_layer && is_pinching && raster_page_scale_) {
+    // If the page scale diverges too far during pinch, change raster target to
+    // the current page scale.
+    float ratio = PositiveRatio(ideal_page_scale_, raster_page_scale_);
+    if (ratio >= kMaxScaleRatioDuringPinch)
+      return true;
+  }
+
+  if (!is_pinching) {
+    // When not pinching, match the ideal page scale factor.
+    if (raster_page_scale_ != ideal_page_scale_)
+      return true;
+  }
+
+  // Always match the ideal device scale factor.
+  if (raster_device_scale_ != ideal_device_scale_)
+    return true;
+
+  return false;
+}
+
 void PictureLayerImpl::CalculateRasterContentsScale(
     bool animating_transform_to_screen,
     float* raster_contents_scale,
-    float* low_res_raster_contents_scale) {
+    float* low_res_raster_contents_scale) const {
   *raster_contents_scale = ideal_contents_scale_;
 
   // Don't allow animating CSS scales to drop below 1.
@@ -705,27 +707,19 @@ void PictureLayerImpl::CleanUpTilingsOnActiveLayer(
     std::vector<PictureLayerTiling*> used_tilings) {
   DCHECK(layer_tree_impl()->IsActiveTree());
 
-  float raster_contents_scale =
-      raster_page_scale_ * raster_device_scale_ * raster_source_scale_;
-
   float min_acceptable_high_res_scale = std::min(
-      raster_contents_scale, ideal_contents_scale_);
+      raster_contents_scale_, ideal_contents_scale_);
   float max_acceptable_high_res_scale = std::max(
-      raster_contents_scale, ideal_contents_scale_);
+      raster_contents_scale_, ideal_contents_scale_);
 
   PictureLayerImpl* twin = PendingTwin();
   if (twin) {
-    float twin_raster_contents_scale =
-        twin->raster_page_scale_ *
-        twin->raster_device_scale_ *
-        twin->raster_source_scale_;
-
     min_acceptable_high_res_scale = std::min(
         min_acceptable_high_res_scale,
-        std::min(twin_raster_contents_scale, twin->ideal_contents_scale_));
+        std::min(twin->raster_contents_scale_, twin->ideal_contents_scale_));
     max_acceptable_high_res_scale = std::max(
         max_acceptable_high_res_scale,
-        std::max(twin_raster_contents_scale, twin->ideal_contents_scale_));
+        std::max(twin->raster_contents_scale_, twin->ideal_contents_scale_));
   }
 
   float low_res_factor =

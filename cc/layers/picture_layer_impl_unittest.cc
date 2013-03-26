@@ -9,6 +9,7 @@
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/fake_output_surface.h"
+#include "cc/test/impl_side_painting_settings.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkDevice.h"
@@ -49,13 +50,6 @@ class TestablePictureLayerImpl : public PictureLayerImpl {
     pile_ = pile;
     SetBounds(pile_->size());
     CreateTilingSet();
-  }
-};
-
-class ImplSidePaintingSettings : public LayerTreeSettings {
- public:
-  ImplSidePaintingSettings() {
-    impl_side_painting = true;
   }
 };
 

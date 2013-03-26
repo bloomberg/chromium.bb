@@ -75,10 +75,12 @@ class CC_EXPORT PictureLayerImpl : public LayerImpl,
   void RemoveTiling(float contents_scale);
   void SyncFromActiveLayer(const PictureLayerImpl* other);
   void ManageTilings(bool animating_transform_to_screen);
+  virtual bool ShouldAdjustRasterScale(
+      bool animating_transform_to_screen) const;
   virtual void CalculateRasterContentsScale(
       bool animating_transform_to_screen,
       float* raster_contents_scale,
-      float* low_res_raster_contents_scale);
+      float* low_res_raster_contents_scale) const;
   void CleanUpTilingsOnActiveLayer(
       std::vector<PictureLayerTiling*> used_tilings);
   PictureLayerImpl* PendingTwin() const;
@@ -96,16 +98,19 @@ class CC_EXPORT PictureLayerImpl : public LayerImpl,
   gfx::Transform last_screen_space_transform_;
   gfx::Size last_bounds_;
   float last_content_scale_;
-  float ideal_contents_scale_;
   bool is_mask_;
 
   float ideal_page_scale_;
   float ideal_device_scale_;
   float ideal_source_scale_;
+  float ideal_contents_scale_;
 
   float raster_page_scale_;
   float raster_device_scale_;
   float raster_source_scale_;
+  float raster_contents_scale_;
+  float low_res_raster_contents_scale_;
+
   bool raster_source_scale_was_animating_;
   bool is_using_lcd_text_;
 

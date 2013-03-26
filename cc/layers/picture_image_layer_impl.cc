@@ -31,10 +31,15 @@ void PictureImageLayerImpl::GetDebugBorderProperties(
   *width = DebugColors::ImageLayerBorderWidth(layer_tree_impl());
 }
 
+bool PictureImageLayerImpl::ShouldAdjustRasterScale(
+    bool animating_transform_to_screen) const {
+  return false;
+}
+
 void PictureImageLayerImpl::CalculateRasterContentsScale(
     bool animating_transform_to_screen,
     float* raster_contents_scale,
-    float* low_res_raster_contents_scale) {
+    float* low_res_raster_contents_scale) const {
   // Don't scale images during rastering to ensure image quality, save memory
   // and avoid frequent re-rastering on change of scale.
   *raster_contents_scale = std::max(1.f, MinimumContentsScale());
