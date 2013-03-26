@@ -77,6 +77,8 @@ public class ImeTest extends ContentShellTestBase {
         assertEquals(-1, mConnection.mCompositionStart);
         assertEquals(-1, mConnection.mCompositionEnd);
         assertEquals(1, mInputMethodManagerWrapper.mShowSoftInputCounter);
+        assertEquals(0, mInputMethodManagerWrapper.mEditorInfo.initialSelStart);
+        assertEquals(0, mInputMethodManagerWrapper.mEditorInfo.initialSelEnd);
     }
 
     @MediumTest
@@ -158,6 +160,24 @@ public class ImeTest extends ContentShellTestBase {
 
         mImeAdapter.copy();
         assertClipboardContents(getActivity(), "llo");
+    }
+
+    @SmallTest
+    @Feature({"TextInput"})
+    public void testEnterTextAndRefocus() throws Exception {
+        mImeAdapter.checkCompositionQueueAndCallNative("hello", 1, true);
+        assertWaitForSetEditableCallback(2, mConnection);
+        assertEquals("hello", mConnection.mText);
+        assertEquals(5, mConnection.mSelectionStart);
+        assertEquals(5, mConnection.mSelectionEnd);
+
+        DOMUtils.clickNode(this, mContentView, mCallbackContainer, "input_radio");
+        assertWaitForKeyboardStatus(false);
+
+        DOMUtils.clickNode(this, mContentView, mCallbackContainer, "input_text");
+        assertWaitForKeyboardStatus(true);
+        assertEquals(5, mInputMethodManagerWrapper.mEditorInfo.initialSelStart);
+        assertEquals(5, mInputMethodManagerWrapper.mEditorInfo.initialSelEnd);
     }
 
     @SmallTest
@@ -437,6 +457,7 @@ public class ImeTest extends ContentShellTestBase {
         private ContentViewCore mContentViewCore;
         private InputConnection mInputConnection;
         private int mShowSoftInputCounter = 0;
+        private EditorInfo mEditorInfo;
 
         public TestInputMethodManagerWrapper(ContentViewCore contentViewCore) {
             super(null);
@@ -445,14 +466,16 @@ public class ImeTest extends ContentShellTestBase {
 
         @Override
         public void restartInput(View view) {
-            mInputConnection = mContentViewCore.onCreateInputConnection(new EditorInfo());
+            mEditorInfo = new EditorInfo();
+            mInputConnection = mContentViewCore.onCreateInputConnection(mEditorInfo);
         }
 
         @Override
         public void showSoftInput(View view, int flags, ResultReceiver resultReceiver) {
             mShowSoftInputCounter++;
             if (mInputConnection != null) return;
-            mInputConnection = mContentViewCore.onCreateInputConnection(new EditorInfo());
+            mEditorInfo = new EditorInfo();
+            mInputConnection = mContentViewCore.onCreateInputConnection(mEditorInfo);
         }
 
         @Override

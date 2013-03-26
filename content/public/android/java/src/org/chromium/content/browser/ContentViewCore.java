@@ -1259,7 +1259,8 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
 
         if (newConfig.keyboard != Configuration.KEYBOARD_NOKEYS) {
             mImeAdapter.attach(nativeGetNativeImeAdapter(mNativeContentViewCore),
-                    ImeAdapter.sTextInputTypeNone);
+                    ImeAdapter.sTextInputTypeNone, ImeAdapter.INVALID_SELECTION,
+                    ImeAdapter.INVALID_SELECTION);
             InputMethodManager manager = (InputMethodManager)
                     getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
             manager.restartInput(mContainerView);
@@ -2022,7 +2023,7 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
         if (mActionMode != null) mActionMode.invalidate();
 
         mImeAdapter.attachAndShowIfNeeded(nativeImeAdapterAndroid, textInputType,
-                text, showImeIfNeeded);
+                selectionStart, selectionEnd, showImeIfNeeded);
 
         if (mInputConnection != null) {
             // In WebKit if there's a composition then the selection will usually be the

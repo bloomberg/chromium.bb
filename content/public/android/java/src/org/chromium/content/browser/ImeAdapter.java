@@ -59,6 +59,10 @@ class ImeAdapter {
     }
 
     static final int COMPOSITION_KEY_CODE = 229;
+    /**
+     * Selection value should be -1 if not known. See EditorInfo.java for details.
+     */
+    static final int INVALID_SELECTION = -1;
 
     static int sEventTypeRawKeyDown;
     static int sEventTypeKeyUp;
@@ -116,6 +120,8 @@ class ImeAdapter {
 
     private int mNativeImeAdapterAndroid;
     private int mTextInputType;
+    private int mInitialSelectionStart;
+    private int mInitialSelectionEnd;
 
     private final Context mContext;
     private InputMethodManagerWrapper mInputMethodManagerWrapper;
@@ -134,7 +140,7 @@ class ImeAdapter {
 
         @Override
         public void run() {
-            attach(mNativeImeAdapter, sTextInputTypeNone);
+            attach(mNativeImeAdapter, sTextInputTypeNone, INVALID_SELECTION, INVALID_SELECTION);
             dismissInput(true);
         }
     }
@@ -176,7 +182,7 @@ class ImeAdapter {
     }
 
     void attachAndShowIfNeeded(int nativeImeAdapter, int textInputType,
-            String text, boolean showIfNeeded) {
+            int selectionStart, int selectionEnd, boolean showIfNeeded) {
         mHandler.removeCallbacks(mDismissInput);
 
         // If current input type is none and showIfNeeded is false, IME should not be shown
@@ -195,7 +201,7 @@ class ImeAdapter {
             }
 
             int previousType = mTextInputType;
-            attach(nativeImeAdapter, textInputType);
+            attach(nativeImeAdapter, textInputType, selectionStart, selectionEnd);
 
             mInputMethodManagerWrapper.restartInput(mViewEmbedder.getAttachedView());
             if (showIfNeeded) {
@@ -206,9 +212,11 @@ class ImeAdapter {
         }
     }
 
-    void attach(int nativeImeAdapter, int textInputType) {
+    void attach(int nativeImeAdapter, int textInputType, int selectionStart, int selectionEnd) {
         mNativeImeAdapterAndroid = nativeImeAdapter;
         mTextInputType = textInputType;
+        mInitialSelectionStart = selectionStart;
+        mInitialSelectionEnd = selectionEnd;
         nativeAttachImeAdapter(mNativeImeAdapterAndroid);
     }
 
@@ -549,9 +557,8 @@ class ImeAdapter {
                 Log.w(TAG, "updateSelection [" + selectionStart + " " + selectionEnd + "] ["
                         + compositionStart + " " + compositionEnd + "]");
             }
-            // updateSelection should
-            // be called every time the selection or composition changes if it happens not
-            // within a batch edit, or at the end of each top level batch edit.
+            // updateSelection should be called every time the selection or composition changes
+            // if it happens not within a batch edit, or at the end of each top level batch edit.
             getInputMethodManagerWrapper().updateSelection(mInternalView,
                     selectionStart, selectionEnd, compositionStart, compositionEnd);
         }
@@ -797,16 +804,8 @@ class ImeAdapter {
                         | InputType.TYPE_NUMBER_VARIATION_NORMAL;
                 outAttrs.imeOptions |= EditorInfo.IME_ACTION_NEXT;
             }
-
-            Editable editable = getEditable();
-            int selectionStart = Selection.getSelectionStart(editable);
-            int selectionEnd = Selection.getSelectionEnd(editable);
-            if (selectionStart < 0 || selectionEnd < 0) {
-                selectionStart = editable.length();
-                selectionEnd = selectionStart;
-            }
-            outAttrs.initialSelStart = selectionStart;
-            outAttrs.initialSelEnd = selectionEnd;
+            outAttrs.initialSelStart = imeAdapter.mInitialSelectionStart;
+            outAttrs.initialSelEnd = imeAdapter.mInitialSelectionStart;
         }
     }
 
