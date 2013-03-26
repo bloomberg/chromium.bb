@@ -508,7 +508,7 @@ class PartialCmdMock(PartialMock):
           contained the specified arguments.
       **kwargs: Set of expected keyword arguments.
     """
-    if expected != self.CommandContains(args, **kwargs):
+    if bool(expected) != self.CommandContains(args, **kwargs):
       if expected:
         msg = 'Expected to find %r in any of:\n%s'
       else:

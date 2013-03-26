@@ -6,12 +6,12 @@
 
 """Unittests for build stages."""
 
+import contextlib
 import copy
 import json
 import mox
 import os
 import signal
-import shutil
 import StringIO
 import sys
 
@@ -42,7 +42,8 @@ import mock
 
 
 # pylint: disable=E1111,E1120,W0212,R0904
-class AbstractStageTest(cros_test_lib.MoxTempDirTestCase):
+class AbstractStageTest(cros_test_lib.MoxTempDirTestCase,
+                        cros_test_lib.MockTestCase):
   """Base class for tests that test a particular build stage.
 
   Abstract base class that sets up the build config and options with some
@@ -100,6 +101,34 @@ class AbstractStageTest(cros_test_lib.MoxTempDirTestCase):
     stage.Run()
     self.assertTrue(results_lib.Results.BuildSucceededSoFar())
 
+  def AutoPatch(self, to_patch):
+    """Patch a list of objects with autospec=True.
+
+    Arguments:
+      to_patch: A list of tuples in the form (target, attr) to patch.  Will be
+      directly passed to mock.patch.object.
+    """
+    for item in to_patch:
+      self.PatchObject(*item, autospec=True)
+
+
+def patch(*args, **kwargs):
+  """Convenience wrapper for mock.patch.object.
+
+  Sets autospec=True by default.
+  """
+  kwargs.setdefault('autospec', True)
+  return mock.patch.object(*args, **kwargs)
+
+
+@contextlib.contextmanager
+def patches(*args):
+  """Context manager for a list of patch objects."""
+  with cros_build_lib.ContextManagerStack() as stack:
+    for arg in args:
+      stack.Add(lambda: arg)
+    yield
+
 
 class BuilderStageTest(AbstractStageTest):
 
@@ -123,8 +152,7 @@ class BuilderStageTest(AbstractStageTest):
     self.assertEqual(result, 'RESULT')
 
 
-class ManifestVersionedSyncStageTest(AbstractStageTest,
-                                     cros_test_lib.TempDirTestCase):
+class ManifestVersionedSyncStageTest(AbstractStageTest):
   """Tests the two (heavily related) stages ManifestVersionedSync, and
      ManifestVersionedSyncCompleted.
   """
@@ -215,8 +243,7 @@ class ManifestVersionedSyncStageTest(AbstractStageTest,
     self.mox.VerifyAll()
 
 
-class LKGMCandidateSyncCompletionStage(AbstractStageTest,
-                                       cros_test_lib.TempDirTestCase):
+class LKGMCandidateSyncCompletionStage(AbstractStageTest):
   """Tests the two (heavily related) stages ManifestVersionedSync, and
      ManifestVersionedSyncCompleted.
   """
@@ -484,7 +511,7 @@ class SetupBoardTest(AbstractBuildTest):
     self.runBinBuild(dir_exists=False)
 
 
-class SDKStageTest(AbstractStageTest, cros_test_lib.TempDirTestCase):
+class SDKStageTest(AbstractStageTest):
   """Tests SDK package and Manifest creation."""
   fake_packages = [('cat1/package', '1'), ('cat1/package', '2'),
                    ('cat2/package', '3'), ('cat2/package', '4')]
@@ -550,7 +577,7 @@ class SDKStageTest(AbstractStageTest, cros_test_lib.TempDirTestCase):
                      self.fake_json_data)
 
 
-class VMTestStageTest(AbstractStageTest, cros_test_lib.MockTestCase):
+class VMTestStageTest(AbstractStageTest):
 
   def setUp(self):
     self.bot_id = 'x86-generic-full'
@@ -607,7 +634,7 @@ class UnitTestStageTest(AbstractStageTest):
     self.mox.VerifyAll()
 
 
-class HWTestStageTest(AbstractStageTest, cros_test_lib.MockTestCase):
+class HWTestStageTest(AbstractStageTest):
 
   def setUp(self):
     self.bot_id = 'x86-mario-release'
@@ -718,12 +745,11 @@ class AUTestStageTest(AbstractStageTest,
     self.bot_id = 'x86-mario-release'
     self.build_config = config.config[self.bot_id].copy()
     self.archive_mock = ArchiveStageMock()
-    # pylint: disable=E1101
     self.StartPatcher(self.archive_mock)
     self.PatchObject(commands, 'ArchiveFile', autospec=True,
                      return_value='foo.txt')
     self.archive_stage = stages.ArchiveStage(self.options, self.build_config,
-                                             self._current_board, '')
+                                             self._current_board, '0.0.1')
     self.suite = 'bvt'
 
   def ConstructStage(self):
@@ -826,239 +852,118 @@ class UprevStageTest(AbstractStageTest):
     self.RunStage()
     self.mox.VerifyAll()
 
-def _DoSteps(steps):
-  for step in steps:
-    step()
 
-class BuildTargetStageTest(AbstractStageTest, cros_test_lib.MockTestCase):
+class ArchivingMock(partial_mock.PartialMock):
+  """Partial mock for ArchivingStage."""
+
+  TARGET = 'chromite.buildbot.cbuildbot_stages.ArchivingStage'
+  ATTRS = ('UploadArtifact',)
+
+  def UploadArtifact(self, *args, **kwargs):
+    with patch(commands, 'ArchiveFile', return_value='foo.txt'):
+      self.backup['UploadArtifact'](*args, **kwargs)
+
+
+class BuildTargetStageMock(ArchivingMock):
+  """Partial mock for BuildTarget Stage."""
+
+  TARGET = 'chromite.buildbot.cbuildbot_stages.BuildTargetStage'
+  ATTRS = ('_BuildAutotestTarballs', '_BuildImages',) + ArchivingMock.ATTRS
+
+  def _BuildAutotestTarballs(self, *args, **kwargs):
+    with patches(
+        patch(commands, 'BuildTarball'),
+        patch(commands, 'FindFilesWithPattern', return_value=['foo.txt'])):
+      self.backup['_BuildAutotestTarballs'](*args, **kwargs)
+
+  def _BuildImages(self, *args, **kwargs):
+    with patches(
+        patch(os, 'symlink'),
+        patch(os, 'readlink', return_value='foo.txt')):
+      self.backup['_BuildImages'](*args, **kwargs)
+
+
+class BuildTargetStageTest(AbstractStageTest):
 
   def setUp(self):
-    self.images_root = os.path.join(self.build_root,
-                                    'src/build/images/x86-generic')
-    latest_image_dir = os.path.join(self.images_root, 'latest')
-    self.mox.StubOutWithMock(os, 'readlink')
-    self.mox.StubOutWithMock(os, 'symlink')
-    os.readlink(latest_image_dir).AndReturn('myimage')
-    self.branch = '22'
-    self.version = '1423.0.0'
-    self.branch_version = 'R%s-%s' % (self.branch, self.version)
-    self.version_to_test = self.version
-    self.latest_cbuildbot = '%s-cbuildbot' % latest_image_dir
-    os.symlink('myimage', self.latest_cbuildbot)
-
-    # Disable most paths by default and selectively enable in tests
-    self.build_config['vm_tests'] = None
-    self.build_config['build_type'] = constants.PFQ_TYPE
-    self.build_config['usepkg_chroot'] = False
-    self.latest_versioned_build = os.path.join(self.images_root, self.version)
-
-    self.options.prebuilts = True
-    self.options.tests = False
-
-    self.mox.StubOutWithMock(commands, 'Build')
-    self.mox.StubOutWithMock(commands, 'BuildImage')
-    self.mox.StubOutWithMock(commands, 'BuildVMImageForTesting')
-    self.mox.StubOutWithMock(shutil, 'copyfile')
-
+    self._release_tag = None
     self.StartPatcher(ArchiveStageMock())
-    for cmd in ['ArchiveFile', 'BuildTarball', 'UploadArchivedFile']:
-      self.PatchObject(commands, cmd, autospec=True, return_value='foo.txt')
-    self.PatchObject(commands, 'FindFilesWithPattern', autospec=True,
-                     return_value=['foo.txt'])
-    self.PatchObject(stages.BuildTargetStage, 'ArchivePayloads', autospec=True)
-
-    # pylint: disable=E1101
-    self.parallel_mock = self.StartPatcher(parallel_unittest.ParallelMock())
+    self.StartPatcher(parallel_unittest.ParallelMock())
+    self.StartPatcher(BuildTargetStageMock())
 
   def ConstructStage(self):
     archive_stage = stages.ArchiveStage(self.options, self.build_config,
                                         self._current_board,
-                                        self.version_to_test)
+                                        self._release_tag)
     return stages.BuildTargetStage(
         self.options, self.build_config, self._current_board,
         archive_stage)
 
-  def testAllConditionalPaths(self):
-    """Enable all paths to get line coverage."""
-    self.build_config['vm_tests'] = constants.SIMPLE_AU_TEST_TYPE
-    self.options.tests = True
-    self.build_config['build_type'] = constants.BUILD_FROM_SOURCE_TYPE
-    self.build_config['build_tests'] = True
-    self.build_config['archive_build_debug'] = True
-    self.build_config['usepkg_chroot'] = True
-    self.build_config['usepkg_setup_board'] = True
-    self.build_config['usepkg_build_packages'] = True
-    self.build_config['images'] = ['base', 'dev', 'test', 'factory_test',
-                                   'factory_install']
-    self.build_config['useflags'] = ['ALPHA', 'BRAVO', 'CHARLIE',
-                                     constants.USE_PGO_GENERATE]
-    self.build_config['skip_toolchain_update'] = False
-    self.build_config['nowithdebug'] = False
-    self.build_config['hw_tests'] = ['bvt']
-    self.build_config['chromeos_official'] = True
-    self.build_config['disk_layout'] = '2gb-rootfs'
+  def testConfig(self, bot_id='x86-generic-paladin'):
+    """Test paladin builder"""
+    self.bot_id = bot_id
+    c = self.build_config = copy.deepcopy(config.config[self.bot_id])
+    with cros_build_lib_unittest.RunCommandMock() as rc:
+      rc.SetDefaultCmdResult()
+      with cros_test_lib.OutputCapturer():
+        with cros_test_lib.DisableLogger():
+          self.RunStage()
+      rc.assertCommandContains(['./build_packages'])
+      cmd = ['./build_image', '--version=%s' % (self._release_tag or '')]
+      rc.assertCommandContains(cmd, expected=c['images'])
+      rc.assertCommandContains(['./image_to_vm.sh'],  expected=c['vm_tests'])
+      rc.assertCommandContains(['./build_packages', '--nousepkg'],
+                               expected=not c['usepkg_build_packages'])
+      rc.assertCommandContains(['./build_packages', '--nowithdebug'],
+                               expected=c['nowithdebug'])
+      build_tests = c['build_tests'] and self.options.tests
+      rc.assertCommandContains(['./build_packages', '--nowithautotest'],
+                               expected=not build_tests)
 
-    proper_env = {'USE' : ' '.join(self.build_config['useflags'])}
+  def testAllConfigs(self):
+    """Test all major configurations"""
+    for bot_type in config.CONFIG_TYPE_DUMP_ORDER:
+      for bot_id in config.config:
+        if bot_id.endswith(bot_type):
+          try:
+            self.testConfig(bot_id)
+          except AssertionError as ex:
+            msg = '%s failed the following test:\n%s' % (bot_id, ex)
+            raise AssertionError(msg)
+          break
 
-    commands.Build(self.build_root,
-                   self._current_board,
-                   build_autotest=True,
-                   chrome_root=None,
-                   usepkg=True,
-                   skip_toolchain_update=False,
-                   nowithdebug=False,
-                   packages=(),
-                   extra_env=proper_env)
+  def testNoTests(self):
+    """Test release builder."""
+    self.options.tests = False
+    self.testConfig()
 
-    commands.BuildImage(self.build_root, self._current_board,
-                        ['test', 'base', 'dev'], version=self.version,
-                        rootfs_verification=True,
-                        disk_layout='2gb-rootfs', extra_env=proper_env)
-    commands.BuildVMImageForTesting(self.build_root, self._current_board,
-                                    disk_layout=None, extra_env=proper_env)
-
-    self.mox.ReplayAll()
-    self.RunStage()
-    self.mox.VerifyAll()
-
-  def testFalseBuildArgs(self):
-    """Make sure our logic for Build arguments can toggle to false."""
-    self.build_config['useflags'] = None
-
-    commands.Build(self.build_root,
-                   self._current_board,
-                   build_autotest=mox.IgnoreArg(),
-                   usepkg=mox.IgnoreArg(),
-                   chrome_root=None,
-                   skip_toolchain_update=mox.IgnoreArg(),
-                   nowithdebug=mox.IgnoreArg(),
-                   packages=mox.IgnoreArg(),
-                   extra_env={})
-    commands.BuildImage(self.build_root, self._current_board, ['test'],
-                        disk_layout=None, rootfs_verification=True,
-                        version=self.version, extra_env={})
-
-    self.mox.ReplayAll()
-    self.RunStage()
-    self.mox.VerifyAll()
-
-  def testFalseTestArg(self):
-    """Make sure our logic for build test arg can toggle to false."""
-    self.build_config['vm_tests'] = None
-    self.options.tests = True
-    self.options.hw_tests = True
-    self.build_config['build_type'] = constants.BUILD_FROM_SOURCE_TYPE
-    self.build_config['usepkg_chroot'] = True
-    self.build_config['usepkg_setup_board'] = True
-    self.build_config['usepkg_build_packages'] = True
-    self.build_config['useflags'] = ['ALPHA', 'BRAVO', 'CHARLIE']
-    self.build_config['nowithdebug'] = True
-    self.build_config['skip_toolchain_update'] = False
-
-    proper_env = {'USE' : ' '.join(self.build_config['useflags'])}
-
-    commands.Build(self.build_root,
-                   self._current_board,
-                   build_autotest=True,
-                   chrome_root=None,
-                   usepkg=True,
-                   skip_toolchain_update=False,
-                   nowithdebug=True,
-                   packages=(),
-                   extra_env=proper_env)
-    commands.BuildImage(self.build_root, self._current_board, ['test'],
-                        rootfs_verification=True,
-                        disk_layout=None, version=self.version,
-                        extra_env=proper_env)
-
-    self.mox.ReplayAll()
-    self.RunStage()
-    self.mox.VerifyAll()
-
-  def testUnversionedCodePath(self):
-    """Make sure our logic for build test works for unversioned code paths."""
-    self.version_to_test = None
-    self.build_config['vm_tests'] = constants.SIMPLE_AU_TEST_TYPE
-    self.options.tests = True
-    self.build_config['build_type'] = constants.BUILD_FROM_SOURCE_TYPE
-    self.build_config['build_tests'] = True
-    self.build_config['archive_build_debug'] = True
-    self.build_config['usepkg_chroot'] = True
-    self.build_config['usepkg_setup_board'] = True
-    self.build_config['usepkg_build_packages'] = True
-    self.build_config['images'] = ['base', 'dev', 'test', 'factory_test',
-                                   'factory_install']
-    self.build_config['useflags'] = ['ALPHA', 'BRAVO', 'CHARLIE']
-    self.build_config['skip_toolchain_update'] = False
-    self.build_config['nowithdebug'] = False
-    self.build_config['hw_tests'] = ['bvt']
-    self.build_config['disk_layout'] = '2gb-rootfs'
-
-    proper_env = {'USE' : ' '.join(self.build_config['useflags'])}
-
-    commands.Build(self.build_root,
-                   self._current_board,
-                   build_autotest=True,
-                   chrome_root=None,
-                   usepkg=True,
-                   skip_toolchain_update=False,
-                   nowithdebug=False,
-                   packages=(),
-                   extra_env=proper_env)
-
-    commands.BuildImage(self.build_root, self._current_board,
-                        ['test', 'base', 'dev'],
-                        rootfs_verification=True,
-                        version='0.0.0.1',
-                        disk_layout=self.build_config['disk_layout'],
-                        extra_env=proper_env)
-    commands.BuildVMImageForTesting(self.build_root, self._current_board,
-                                    disk_layout=None, extra_env=proper_env)
-    self.mox.ReplayAll()
-    self.RunStage()
-    self.mox.VerifyAll()
+  def testVersioned(self):
+    """Test release builder."""
+    self._release_tag = '0.0.1'
+    self.testAllConfigs()
 
 
 class ArchiveStageMock(partial_mock.PartialMock):
   """Partial mock for Archive Stage."""
 
   TARGET = 'chromite.buildbot.cbuildbot_stages.ArchiveStage'
-  ATTRS = ('__init__', 'GetVersion', 'WaitForBreakpadSymbols',)
-
-  RELEASE_TAG = '0.0.0.1'
-
-  def _target__init__(self, inst, *args, **kwargs):
-    self.backup['__init__'](inst, *args, **kwargs)
-    if not inst.release_tag:
-      inst.release_tag = self.RELEASE_TAG
+  ATTRS = ('GetVersion', 'WaitForBreakpadSymbols',)
 
   def GetVersion(self, inst):
-    release_tag = inst.release_tag or self.RELEASE_TAG
-    return 'R27-%s' % release_tag
+    return 'R27-%s' % inst.release_tag if inst.release_tag else ''
 
   def WaitForBreakpadSymbols(self, _inst):
     return True
 
 
-class ArchiveStageTest(AbstractStageTest, cros_test_lib.MockTestCase):
-
-  def _AutoPatch(self, to_patch):
-    """Patch a list of objects with autospec=True.
-
-    Arguments:
-      to_patch: A list of tuples in the form (target, attr) to patch.  Will be
-      directly passed to mock.patch.object.
-    """
-    for item in to_patch:
-      # pylint: disable=E1101
-      self.StartPatcher(mock.patch.object(*item, autospec=True))
+class ArchiveStageTest(AbstractStageTest):
 
   def _PatchDependencies(self):
     """Patch dependencies of ArchiveStage.PerformStage()."""
     to_patch = [
         (parallel, 'RunParallelSteps'), (commands, 'PushImages'),
         (commands, 'RemoveOldArchives'), (commands, 'UploadArchivedFile')]
-    self._AutoPatch(to_patch)
+    self.AutoPatch(to_patch)
 
   def setUp(self):
     self._build_config = self.build_config.copy()
@@ -1066,7 +971,6 @@ class ArchiveStageTest(AbstractStageTest, cros_test_lib.MockTestCase):
     self._build_config['push_image'] = True
 
     self.archive_mock = ArchiveStageMock()
-    # pylint: disable=E1101
     self.StartPatcher(self.archive_mock)
     self._PatchDependencies()
 
@@ -1573,7 +1477,7 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
     self._verifyRunResults(expectedResults)
 
 
-class ReportStageTest(AbstractStageTest, cros_test_lib.MockTestCase):
+class ReportStageTest(AbstractStageTest):
 
   def setUp(self):
     for cmd in ((osutils, 'ReadFile'), (osutils, 'WriteFile'),

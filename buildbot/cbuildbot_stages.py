@@ -1253,7 +1253,7 @@ class BuildTargetStage(ArchivingStage):
     rootfs_verification = self._build_config['rootfs_verification']
     commands.BuildImage(self._build_root,
                         self._current_board,
-                        list(images_to_build),
+                        sorted(images_to_build),
                         rootfs_verification=rootfs_verification,
                         version=self.archive_stage.release_tag,
                         disk_layout=self._build_config['disk_layout'],
