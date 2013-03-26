@@ -12,7 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
-#include "chrome/browser/chromeos/input_method/input_method_whitelist.h"
+#include "chromeos/ime/input_method_whitelist.h"
 #include "chromeos/ime/mock_input_method_delegate.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"

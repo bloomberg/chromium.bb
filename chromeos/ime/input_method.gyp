@@ -5,7 +5,7 @@
 {
   'variables': {
     'input_method_out_dir':
-      '<(SHARED_INTERMEDIATE_DIR)/chrome/browser/chromeos/input_method',
+      '<(SHARED_INTERMEDIATE_DIR)/chromeos/ime',
   },
   'targets': [
     {

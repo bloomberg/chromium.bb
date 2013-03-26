@@ -11,9 +11,9 @@
 #include "base/process_util.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/chromeos/input_method/ibus_controller_base.h"
-#include "chrome/browser/chromeos/input_method/input_method_whitelist.h"
 #include "chromeos/dbus/ibus/ibus_panel_service.h"
 #include "chromeos/ime/ibus_daemon_controller.h"
+#include "chromeos/ime/input_method_whitelist.h"
 
 namespace ui {
 class InputMethodIBus;
