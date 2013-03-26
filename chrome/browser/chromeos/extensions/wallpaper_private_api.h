@@ -137,6 +137,21 @@ class WallpaperPrivateSetWallpaperFunction : public WallpaperFunctionBase {
   base::SequencedWorkerPool::SequenceToken sequence_token_;
 };
 
+class WallpaperPrivateResetWallpaperFunction
+    : public AsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("wallpaperPrivate.resetWallpaper",
+                             WALLPAPERPRIVATE_RESETWALLPAPER)
+
+  WallpaperPrivateResetWallpaperFunction();
+
+ protected:
+  virtual ~WallpaperPrivateResetWallpaperFunction();
+
+  // AsyncExtensionFunction overrides.
+  virtual bool RunImpl() OVERRIDE;
+};
+
 class WallpaperPrivateSetCustomWallpaperFunction
     : public WallpaperFunctionBase {
  public:

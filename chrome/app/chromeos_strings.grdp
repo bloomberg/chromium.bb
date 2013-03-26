@@ -946,17 +946,8 @@ Press any key to continue exploring.
   <message name="IDS_SET_WALLPAPER_BUTTON" desc="The button to set wallpaper.">
     Set wallpaper...
   </message>
-  <message name="IDS_OPTIONS_SET_WALLPAPER_DIALOG_TITLE" desc="Title of the dialog shown when user wants to change his/her wallpaper.">
-    Set Wallpaper
-  </message>
-  <message name="IDS_OPTIONS_SET_WALLPAPER_DIALOG_TEXT" desc="Text with description of what to do on Change Wallpaper dialog.">
-    Choose a picture to display on your background.
-  </message>
   <message name="IDS_OPTIONS_SET_WALLPAPER_AUTHOR_TEXT" desc="Author label.">
     Photo by
-  </message>
-  <message name="IDS_OPTIONS_SET_WALLPAPER_DAILY" desc="Label for option to change wallpaper daily.">
-    Change wallpaper daily
   </message>
   <message name="IDS_OPTIONS_WALLPAPER_CENTER_LAYOUT" desc="Label for option to center a customized wallpaper.">
     Center
@@ -966,9 +957,6 @@ Press any key to continue exploring.
   </message>
   <message name="IDS_OPTIONS_WALLPAPER_STRETCH_LAYOUT" desc="Label for option to stretch a customized wallpaper.">
     Stretch
-  </message>
-  <message name="IDS_OPTIONS_CUSTOME_WALLPAPER" desc="Label for option to choose a customized wallpaper.">
-    Browse...
   </message>
   <message name="IDS_OPTIONS_CHANGE_PICTURE" desc="In the settings tab, the text on the button to change picture for the current user.">
     Change picture...

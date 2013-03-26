@@ -19,6 +19,7 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/worker_pool.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_image.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wallpaper_manager.h"
@@ -182,18 +183,14 @@ bool WallpaperPrivateGetStringsFunction::RunImpl() {
   dict->SetString(id, l10n_util::GetStringUTF16(idr))
   SET_STRING("webFontFamily", IDS_WEB_FONT_FAMILY);
   SET_STRING("webFontSize", IDS_WEB_FONT_SIZE);
-  SET_STRING("searchTextLabel", IDS_WALLPAPER_MANAGER_SEARCH_TEXT_LABEL);
   SET_STRING("allCategoryLabel", IDS_WALLPAPER_MANAGER_ALL_CATEGORY_LABEL);
+  SET_STRING("deleteCommandLabel", IDS_WALLPAPER_MANAGER_DELETE_COMMAND_LABEL);
   SET_STRING("customCategoryLabel",
              IDS_WALLPAPER_MANAGER_CUSTOM_CATEGORY_LABEL);
   SET_STRING("selectCustomLabel",
              IDS_WALLPAPER_MANAGER_SELECT_CUSTOM_LABEL);
   SET_STRING("positionLabel", IDS_WALLPAPER_MANAGER_POSITION_LABEL);
   SET_STRING("colorLabel", IDS_WALLPAPER_MANAGER_COLOR_LABEL);
-  SET_STRING("previewLabel", IDS_WALLPAPER_MANAGER_PREVIEW_LABEL);
-  SET_STRING("downloadingLabel", IDS_WALLPAPER_MANAGER_DOWNLOADING_LABEL);
-  SET_STRING("setWallpaperDaily", IDS_OPTIONS_SET_WALLPAPER_DAILY);
-  SET_STRING("searchTextLabel", IDS_WALLPAPER_MANAGER_SEARCH_TEXT_LABEL);
   SET_STRING("centerCroppedLayout",
              IDS_OPTIONS_WALLPAPER_CENTER_CROPPED_LAYOUT);
   SET_STRING("centerLayout", IDS_OPTIONS_WALLPAPER_CENTER_LAYOUT);
@@ -514,6 +511,33 @@ void WallpaperPrivateSetWallpaperFunction::SetDecodedWallpaper(
   };
   wallpaper_manager->SetUserWallpaperInfo(email_, info, is_persistent);
   SendResponse(true);
+}
+
+WallpaperPrivateResetWallpaperFunction::
+    WallpaperPrivateResetWallpaperFunction() {}
+
+WallpaperPrivateResetWallpaperFunction::
+    ~WallpaperPrivateResetWallpaperFunction() {}
+
+bool WallpaperPrivateResetWallpaperFunction::RunImpl() {
+  chromeos::WallpaperManager* wallpaper_manager =
+      chromeos::WallpaperManager::Get();
+  chromeos::UserManager* user_manager = chromeos::UserManager::Get();
+
+  std::string email = user_manager->GetLoggedInUser()->email();
+  wallpaper_manager->RemoveUserWallpaperInfo(email);
+
+  chromeos::WallpaperInfo info = {
+      "",
+      ash::WALLPAPER_LAYOUT_CENTER,
+      chromeos::User::DEFAULT,
+      base::Time::Now().LocalMidnight()
+  };
+  bool is_persistent =
+      !user_manager->IsCurrentUserNonCryptohomeDataEphemeral();
+  wallpaper_manager->SetUserWallpaperInfo(email, info, is_persistent);
+  wallpaper_manager->SetDefaultWallpaper();
+  return true;
 }
 
 WallpaperPrivateSetCustomWallpaperFunction::

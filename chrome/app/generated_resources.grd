@@ -12211,11 +12211,11 @@ Some features may be unavailable.  Please check that the profile exists and you 
       </message>
 
       <!-- Wallpaper Manager -->
-      <message name="IDS_WALLPAPER_MANAGER_SEARCH_TEXT_LABEL" desc="Search text field label.">
-        Search backgrounds
-      </message>
       <message name="IDS_WALLPAPER_MANAGER_ALL_CATEGORY_LABEL" desc="Wallpaper category label.">
         All
+      </message>
+      <message name="IDS_WALLPAPER_MANAGER_DELETE_COMMAND_LABEL" desc="Wallpaper delete command label.">
+        Delete
       </message>
       <message name="IDS_WALLPAPER_MANAGER_CUSTOM_CATEGORY_LABEL" desc="Wallpaper category label.">
         Custom
@@ -12228,12 +12228,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
       </message>
       <message name="IDS_WALLPAPER_MANAGER_COLOR_LABEL" desc="Custom wallpaper color label.">
         Color:
-      </message>
-      <message name="IDS_WALLPAPER_MANAGER_PREVIEW_LABEL" desc="Custom wallpaper preview label.">
-        Preview:
-      </message>
-      <message name="IDS_WALLPAPER_MANAGER_DOWNLOADING_LABEL" desc="Downloading in progress label.">
-        Downloading
       </message>
       <message name="IDS_WALLPAPER_MANAGER_SHOW_CUSTOM_WALLPAPER_ON_START_WARNING" desc="The string displayed to user when set custom wallpaper">
         Wallpapers appear on the Sign-in Screen.

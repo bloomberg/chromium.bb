@@ -17,7 +17,6 @@ body {
 
 .dialog-container {
   -webkit-box-orient: vertical;
-  border: 1px solid black;
   display: -webkit-box;
   overflow: hidden;
 }
@@ -218,7 +217,9 @@ body {
 }
 
 /* [hidden] does display:none, but its priority is too low. */
-[hidden] {
+[hidden],
+body[custom] [visibleif]:not([visibleif~='custom']),
+body:not([custom]) [visibleif~='custom'] {
   display: none !important;
 }
 

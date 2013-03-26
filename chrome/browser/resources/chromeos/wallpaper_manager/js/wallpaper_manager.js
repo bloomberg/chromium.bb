@@ -327,6 +327,72 @@ function WallpaperManager(dialogDom) {
     });
 
     this.onResize_();
+    this.initContextMenuAndCommand_();
+  };
+
+  /**
+   * One-time initialization of context menu and command.
+   */
+  WallpaperManager.prototype.initContextMenuAndCommand_ = function() {
+    this.wallpaperContextMenu_ = $('wallpaper-context-menu');
+    cr.ui.Menu.decorate(this.wallpaperContextMenu_);
+    cr.ui.contextMenuHandler.setContextMenu(this.wallpaperGrid_,
+                                            this.wallpaperContextMenu_);
+    var commands = this.dialogDom_.querySelectorAll('command');
+    for (var i = 0; i < commands.length; i++)
+      cr.ui.Command.decorate(commands[i]);
+
+    var doc = this.document_;
+    doc.addEventListener('command', this.onCommand_.bind(this));
+    doc.addEventListener('canExecute', this.onCommandCanExecute_.bind(this));
+  };
+
+  /**
+   * Handles a command being executed.
+   * @param {Event} event A command event.
+   */
+  WallpaperManager.prototype.onCommand_ = function(event) {
+    if (event.command.id == 'delete') {
+      var wallpaperGrid = this.wallpaperGrid_;
+      var selectedIndex = wallpaperGrid.selectionModel.selectedIndex;
+      var item = wallpaperGrid.dataModel.item(selectedIndex);
+      if (!item || item.source != wallpapers.WallpaperSourceEnum.Custom)
+        return;
+      this.removeCustomWallpaper(item.baseURL);
+      wallpaperGrid.dataModel.splice(selectedIndex, 1);
+      // Calculate the number of remaining custom wallpapers. The add new button
+      // in data model needs to be excluded.
+      var customWallpaperCount = wallpaperGrid.dataModel.length - 1;
+      if (customWallpaperCount == 0) {
+        // Active custom wallpaper is also copied in chronos data dir. It needs
+        // to be deleted.
+        chrome.wallpaperPrivate.resetWallpaper();
+      } else {
+        selectedIndex = Math.min(selectedIndex, customWallpaperCount - 1);
+        wallpaperGrid.selectionModel.selectedIndex = selectedIndex;
+      }
+      event.cancelBubble = true;
+    }
+  };
+
+  /**
+   * Decides if a command can be executed on current target.
+   * @param {Event} event A command event.
+   */
+  WallpaperManager.prototype.onCommandCanExecute_ = function(event) {
+    switch (event.command.id) {
+      case 'delete':
+        var wallpaperGrid = this.wallpaperGrid_;
+        var selectedIndex = wallpaperGrid.selectionModel.selectedIndex;
+        var item = wallpaperGrid.dataModel.item(selectedIndex);
+        if (selectedIndex != this.wallpaperGrid_.dataModel.length - 1 &&
+          item && item.source == wallpapers.WallpaperSourceEnum.Custom) {
+          event.canExecute = true;
+          break;
+        }
+      default:
+        event.canExecute = false;
+    }
   };
 
   /**
@@ -505,7 +571,6 @@ function WallpaperManager(dialogDom) {
     var item = this.wallpaperGrid_.dataModel.item(oldestIndex);
     if (!item || item.source != wallpapers.WallpaperSourceEnum.Custom)
       return;
-    console.error(item.baseURL);
     if (item.baseURL == this.currentWallpaper_)
       item = this.wallpaperGrid_.dataModel.item(--oldestIndex);
     if (item) {
@@ -859,7 +924,7 @@ function WallpaperManager(dialogDom) {
     var wallpapersDataModel = new cr.ui.ArrayDataModel([]);
     var selectedItem;
     if (selectedListItem.custom) {
-      $('online-wallpaper-attribute').hidden = true;
+      this.document_.body.setAttribute('custom', '');
       var errorHandler = this.onFileSystemError_.bind(this);
       var toArray = function(list) {
         return Array.prototype.slice.call(list || [], 0);
@@ -916,7 +981,7 @@ function WallpaperManager(dialogDom) {
       this.wallpaperDirs_.getDirectory(WallpaperDirNameEnum.ORIGINAL,
                                        success, errorHandler);
     } else {
-      $('online-wallpaper-attribute').hidden = false;
+      this.document_.body.removeAttribute('custom');
       for (var key in this.manifest_.wallpaper_list) {
         if (selectedIndex == AllCategoryIndex ||
             this.manifest_.wallpaper_list[key].categories.indexOf(

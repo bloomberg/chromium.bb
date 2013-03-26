@@ -89,6 +89,13 @@
         ]
       },
       {
+        "name": "resetWallpaper",
+        "type": "function",
+        "description": "Clears current user's active custom wallpaper and changes to default wallpaper.",
+        "nodoc": "true",
+        "parameters": []
+      },
+      {
         "name": "setCustomWallpaper",
         "type": "function",
         "description": "Sets wallpaper to the image from local file with specified layout and returns thumbnail if needed.",
