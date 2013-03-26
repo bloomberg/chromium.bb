@@ -154,11 +154,9 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     while time.time() < timeout:
       new_handles = self._driver.GetWindowHandles()
       if len(new_handles) > len(old_handles):
-        for old_handle in old_handles:
-          self.assertTrue(old_handle in new_handles)
-          new_handles.remove(old_handle)
-        self.assertTrue(len(new_handles))
-        return new_handles[0]
+        for index, old_handle in enumerate(old_handles):
+          self.assertEquals(old_handle, new_handles[index])
+        return new_handles[len(old_handles)]
       time.sleep(0.01)
     return None
 

@@ -31,10 +31,13 @@ class MockChrome : public StubChrome {
   MockChrome() : web_view_("1") {}
   virtual ~MockChrome() {}
 
-  virtual Status GetWebViews(std::list<WebView*>* web_views) OVERRIDE {
-    web_views->clear();
-    web_views->push_back(&web_view_);
-    return Status(kOk);
+  virtual Status GetWebViewById(const std::string& id,
+                                WebView** web_view) OVERRIDE {
+    if (id == web_view_.GetId()) {
+      *web_view = &web_view_;
+      return Status(kOk);
+    }
+    return Status(kUnknownError);
   }
 
  private:

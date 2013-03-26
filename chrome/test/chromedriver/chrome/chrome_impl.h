@@ -6,7 +6,6 @@
 #define CHROME_TEST_CHROMEDRIVER_CHROME_CHROME_IMPL_H_
 
 #include <list>
-#include <map>
 #include <string>
 
 #include "base/compiler_specific.h"
@@ -31,7 +30,9 @@ class ChromeImpl : public Chrome, public WebViewDelegate {
 
   // Overridden from Chrome:
   virtual std::string GetVersion() OVERRIDE;
-  virtual Status GetWebViews(std::list<WebView*>* web_views) OVERRIDE;
+  virtual Status GetWebViewIds(std::list<std::string>* web_view_ids) OVERRIDE;
+  virtual Status GetWebViewById(const std::string& id,
+                                WebView** web_view) OVERRIDE;
   virtual Status IsJavaScriptDialogOpen(bool* is_open) OVERRIDE;
   virtual Status GetJavaScriptDialogMessage(std::string* message) OVERRIDE;
   virtual Status HandleJavaScriptDialog(
@@ -46,7 +47,7 @@ class ChromeImpl : public Chrome, public WebViewDelegate {
   int GetPort() const;
 
  private:
-  typedef std::map<std::string, linked_ptr<WebViewImpl> > WebViewMap;
+  typedef std::list<linked_ptr<WebViewImpl> > WebViewList;
 
   Status GetDialogManagerForOpenDialog(JavaScriptDialogManager** manager);
   Status ParseAndCheckVersion(const std::string& version);
@@ -56,7 +57,8 @@ class ChromeImpl : public Chrome, public WebViewDelegate {
   SyncWebSocketFactory socket_factory_;
   std::string version_;
   int build_no_;
-  WebViewMap web_view_map_;
+  // Web views in this list are in the same order as they are opened.
+  WebViewList web_views_;
 };
 
 namespace internal {

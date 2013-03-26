@@ -45,19 +45,10 @@ Status Session::GetTargetWindow(WebView** web_view) {
   if (!chrome)
     return Status(kNoSuchWindow, "no chrome started in this session");
 
-  std::list<WebView*> web_views;
-  Status status = chrome->GetWebViews(&web_views);
+  Status status = chrome->GetWebViewById(window, web_view);
   if (status.IsError())
-    return status;
-
-  for (std::list<WebView*>::const_iterator it = web_views.begin();
-       it != web_views.end(); ++it) {
-    if ((*it)->GetId() == window) {
-      *web_view = *it;
-      return Status(kOk);
-    }
-  }
-  return Status(kNoSuchWindow, "target window already closed");
+    status = Status(kNoSuchWindow, "target window already closed", status);
+  return status;
 }
 
 void Session::SwitchToTopFrame() {

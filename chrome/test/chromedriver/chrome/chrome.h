@@ -17,8 +17,11 @@ class Chrome {
 
   virtual std::string GetVersion() = 0;
 
-  // Return a list of opened WebViews.
-  virtual Status GetWebViews(std::list<WebView*>* web_views) = 0;
+  // Return ids of opened WebViews in the same order as they are opened.
+  virtual Status GetWebViewIds(std::list<std::string>* web_view_ids) = 0;
+
+  // Return the WebView for the given id.
+  virtual Status GetWebViewById(const std::string& id, WebView** web_view) = 0;
 
   // Returns whether a JavaScript dialog is open.
   virtual Status IsJavaScriptDialogOpen(bool* is_open) = 0;

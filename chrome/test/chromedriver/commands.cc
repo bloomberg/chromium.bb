@@ -118,14 +118,13 @@ Status ExecuteNewSession(
   if (status.IsError())
     return Status(kSessionNotCreatedException, status.message());
 
-  std::list<WebView*> web_views;
-  status = chrome->GetWebViews(&web_views);
-  if (status.IsError() || web_views.empty()) {
+  std::list<std::string> web_view_ids;
+  status = chrome->GetWebViewIds(&web_view_ids);
+  if (status.IsError() || web_view_ids.empty()) {
     chrome->Quit();
     return status.IsError() ? status :
         Status(kUnknownError, "unable to discover open window in chrome");
   }
-  WebView* default_web_view = web_views.front();
 
   std::string new_id = session_id;
   if (new_id.empty())
@@ -136,7 +135,7 @@ Status ExecuteNewSession(
     return Status(kUnknownError,
                   "failed to start a thread for the new session");
   }
-  session->window = default_web_view->GetId();
+  session->window = web_view_ids.front();
   out_value->reset(session->capabilities->DeepCopy());
   *out_session_id = new_id;
 

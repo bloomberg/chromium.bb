@@ -119,12 +119,12 @@ Status ExecuteClose(
     Session* session,
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value) {
-  std::list<WebView*> web_views;
-  Status status = session->chrome->GetWebViews(&web_views);
+  std::list<std::string> web_view_ids;
+  Status status = session->chrome->GetWebViewIds(&web_view_ids);
   if (status.IsError())
     return status;
-  bool is_last_web_view = web_views.size() == 1u;
-  web_views.clear();
+  bool is_last_web_view = web_view_ids.size() == 1u;
+  web_view_ids.clear();
 
   WebView* web_view = NULL;
   status = session->GetTargetWindow(&web_view);
@@ -135,9 +135,9 @@ Status ExecuteClose(
   if (status.IsError())
     return status;
 
-  status = session->chrome->GetWebViews(&web_views);
+  status = session->chrome->GetWebViewIds(&web_view_ids);
   if ((status.code() == kChromeNotReachable && is_last_web_view) ||
-      (status.IsOk() && web_views.empty())) {
+      (status.IsOk() && web_view_ids.empty())) {
     CHECK(session_map->Remove(session->id));
     return Status(kOk);
   }
@@ -148,16 +148,16 @@ Status ExecuteGetWindowHandles(
     Session* session,
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value) {
-  std::list<WebView*> web_views;
-  Status status = session->chrome->GetWebViews(&web_views);
+  std::list<std::string> web_view_ids;
+  Status status = session->chrome->GetWebViewIds(&web_view_ids);
   if (status.IsError())
     return status;
-  base::ListValue window_ids;
-  for (std::list<WebView*>::const_iterator it = web_views.begin();
-       it != web_views.end(); ++it) {
-    window_ids.AppendString(WebViewIdToWindowHandle((*it)->GetId()));
+  scoped_ptr<base::ListValue> window_ids(new base::ListValue());
+  for (std::list<std::string>::const_iterator it = web_view_ids.begin();
+       it != web_view_ids.end(); ++it) {
+    window_ids->AppendString(WebViewIdToWindowHandle(*it));
   }
-  value->reset(window_ids.DeepCopy());
+  value->reset(window_ids.release());
   return Status(kOk);
 }
 
@@ -169,20 +169,19 @@ Status ExecuteSwitchToWindow(
   if (!params.GetString("name", &name) || name.empty())
     return Status(kUnknownError, "'name' must be a nonempty string");
 
-  std::list<WebView*> web_views;
-  Status status = session->chrome->GetWebViews(&web_views);
+  std::list<std::string> web_view_ids;
+  Status status = session->chrome->GetWebViewIds(&web_view_ids);
   if (status.IsError())
     return status;
 
-  WebView* web_view = NULL;
-
   std::string web_view_id;
+  bool found = false;
   if (WindowHandleToWebViewId(name, &web_view_id)) {
     // Check if any web_view matches |web_view_id|.
-    for (std::list<WebView*>::const_iterator it = web_views.begin();
-         it != web_views.end(); ++it) {
-      if ((*it)->GetId() == web_view_id) {
-        web_view = *it;
+    for (std::list<std::string>::const_iterator it = web_view_ids.begin();
+         it != web_view_ids.end(); ++it) {
+      if (*it == web_view_id) {
+        found = true;
         break;
       }
     }
@@ -190,25 +189,33 @@ Status ExecuteSwitchToWindow(
     // Check if any of the tab window names match |name|.
     const char* kGetWindowNameScript = "function() { return window.name; }";
     base::ListValue args;
-    for (std::list<WebView*>::const_iterator it = web_views.begin();
-         it != web_views.end(); ++it) {
+    for (std::list<std::string>::const_iterator it = web_view_ids.begin();
+         it != web_view_ids.end(); ++it) {
       scoped_ptr<base::Value> result;
-      status = (*it)->CallFunction("", kGetWindowNameScript, args, &result);
+      WebView* web_view;
+      status = session->chrome->GetWebViewById(*it, &web_view);
+      if (status.IsError())
+        return status;
+      status = web_view->ConnectIfNecessary();
+      if (status.IsError())
+        return status;
+      status = web_view->CallFunction("", kGetWindowNameScript, args, &result);
       if (status.IsError())
         return status;
       std::string window_name;
       if (!result->GetAsString(&window_name))
         return Status(kUnknownError, "failed to get window name");
       if (window_name == name) {
-        web_view = *it;
+        web_view_id = *it;
+        found = true;
         break;
       }
     }
   }
 
-  if (!web_view)
+  if (!found)
     return Status(kNoSuchWindow);
-  session->window = web_view->GetId();
+  session->window = web_view_id;
   session->SwitchToTopFrame();
   session->mouse_position = WebPoint(0, 0);
   return Status(kOk);

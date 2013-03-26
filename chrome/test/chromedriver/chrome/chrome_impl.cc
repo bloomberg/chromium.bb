@@ -204,46 +204,76 @@ ChromeImpl::ChromeImpl(URLRequestContextGetter* context_getter,
       build_no_(0) {}
 
 ChromeImpl::~ChromeImpl() {
-  web_view_map_.clear();
+  web_views_.clear();
 }
 
 std::string ChromeImpl::GetVersion() {
   return version_;
 }
 
-Status ChromeImpl::GetWebViews(std::list<WebView*>* web_views) {
+Status ChromeImpl::GetWebViewIds(std::list<std::string>* web_view_ids) {
   WebViewInfoList info_list;
   Status status = FetchWebViewsInfo(
       context_getter_, port_, &info_list);
   if (status.IsError())
     return status;
 
-  std::list<WebView*> internal_web_views;
+  // Check if some web views are closed.
+  WebViewList::iterator it = web_views_.begin();
+  while (it != web_views_.end()) {
+    if (!GetWebViewFromList((*it)->GetId(), info_list)) {
+      it = web_views_.erase(it);
+    } else {
+      ++it;
+    }
+  }
+
+  // Check for newly-opened web views.
   for (WebViewInfoList::const_iterator it = info_list.begin();
        it != info_list.end(); ++it) {
     if (it->type != internal::WebViewInfo::kPage)
       continue;
-    WebViewMap::const_iterator found = web_view_map_.find(it->id);
-    if (found != web_view_map_.end()) {
-      internal_web_views.push_back(found->second.get());
-      continue;
-    }
 
-    std::string ws_url = base::StringPrintf(
-        "ws://127.0.0.1:%d/devtools/page/%s", port_, it->id.c_str());
-    DevToolsClientImpl::FrontendCloserFunc frontend_closer_func = base::Bind(
-        &CloseDevToolsFrontend, this, socket_factory_,
-        context_getter_, port_, it->id);
-    web_view_map_[it->id] = make_linked_ptr(new WebViewImpl(
-        it->id,
-        new DevToolsClientImpl(socket_factory_, ws_url, frontend_closer_func),
-        this,
-        base::Bind(&CloseWebView, context_getter_, port_, it->id)));
-    internal_web_views.push_back(web_view_map_[it->id].get());
+    bool found = false;
+    for (WebViewList::const_iterator web_view_iter = web_views_.begin();
+         web_view_iter != web_views_.end(); ++web_view_iter) {
+      if ((*web_view_iter)->GetId() == it->id) {
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      std::string ws_url = base::StringPrintf(
+          "ws://127.0.0.1:%d/devtools/page/%s", port_, it->id.c_str());
+      DevToolsClientImpl::FrontendCloserFunc frontend_closer_func = base::Bind(
+          &CloseDevToolsFrontend, this, socket_factory_,
+          context_getter_, port_, it->id);
+      web_views_.push_back(make_linked_ptr(new WebViewImpl(
+          it->id,
+          new DevToolsClientImpl(socket_factory_, ws_url, frontend_closer_func),
+          this,
+          base::Bind(&CloseWebView, context_getter_, port_, it->id))));
+    }
   }
 
-  web_views->swap(internal_web_views);
+  std::list<std::string> web_view_ids_tmp;
+  for (WebViewList::const_iterator web_view_iter = web_views_.begin();
+       web_view_iter != web_views_.end(); ++web_view_iter) {
+    web_view_ids_tmp.push_back((*web_view_iter)->GetId());
+  }
+  web_view_ids->swap(web_view_ids_tmp);
   return Status(kOk);
+}
+
+Status ChromeImpl::GetWebViewById(const std::string& id, WebView** web_view) {
+  for (WebViewList::iterator it = web_views_.begin();
+       it != web_views_.end(); ++it) {
+    if ((*it)->GetId() == id) {
+      *web_view = (*it).get();
+      return Status(kOk);
+    }
+  }
+  return Status(kUnknownError, "web view not found");
 }
 
 Status ChromeImpl::IsJavaScriptDialogOpen(bool* is_open) {
@@ -279,7 +309,13 @@ Status ChromeImpl::HandleJavaScriptDialog(bool accept,
 }
 
 void ChromeImpl::OnWebViewClose(WebView* web_view) {
-  web_view_map_.erase(web_view->GetId());
+  for (WebViewList::iterator it = web_views_.begin();
+       it != web_views_.end(); ++it) {
+    if ((*it)->GetId() == web_view->GetId()) {
+      web_views_.erase(it);
+      return;
+    }
+  }
 }
 
 Status ChromeImpl::Init() {
@@ -317,15 +353,19 @@ int ChromeImpl::GetPort() const {
 
 Status ChromeImpl::GetDialogManagerForOpenDialog(
     JavaScriptDialogManager** manager) {
-  std::list<WebView*> web_views;
-  Status status = GetWebViews(&web_views);
+  std::list<std::string> web_view_ids;
+  Status status = GetWebViewIds(&web_view_ids);
   if (status.IsError())
     return status;
 
-  for (std::list<WebView*>::const_iterator it = web_views.begin();
-       it != web_views.end(); ++it) {
-    if ((*it)->GetJavaScriptDialogManager()->IsDialogOpen()) {
-      *manager = (*it)->GetJavaScriptDialogManager();
+  for (std::list<std::string>::const_iterator it = web_view_ids.begin();
+       it != web_view_ids.end(); ++it) {
+    WebView* web_view;
+    status = GetWebViewById(*it, &web_view);
+    if (status.IsError())
+      return status;
+    if (web_view->GetJavaScriptDialogManager()->IsDialogOpen()) {
+      *manager = web_view->GetJavaScriptDialogManager();
       return Status(kOk);
     }
   }
