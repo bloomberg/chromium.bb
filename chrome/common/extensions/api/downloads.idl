@@ -69,6 +69,8 @@ namespace downloads {
   //     binaries and is likely dangerous.</dd>
   //     <dt>safe</dt>
   //     <dd>The download presents no known danger to the user's computer.</dd>
+  //     <dt>accepted</dt>
+  //     <dd>The user has accepted the dangerous download.</dd>
   // </dl>
   // These string constants will never change, however the set of DangerTypes
   // may change.
