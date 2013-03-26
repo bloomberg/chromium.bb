@@ -196,11 +196,11 @@
           "action": "click_element",
           "text": "Events",
           "wait_seconds": 2,
-          "wait_for_element_with_text": "Circles"
+          "wait_for_element_with_text": "Communities"
         },
         {
           "action": "click_element",
-          "text": "Circles",
+          "text": "Communities",
           "wait_seconds": 2,
           "wait_for_element_with_text": "Home"
         }
