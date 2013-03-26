@@ -38,6 +38,10 @@ class ASH_EXPORT PartialScreenshotView : public views::WidgetDelegateView {
   // Returns the currently selected region.
   gfx::Rect GetScreenshotRect() const;
 
+  void OnSelectionStarted(const gfx::Point& position);
+  void OnSelectionChanged(const gfx::Point& position);
+  void OnSelectionFinished();
+
   // Overridden from views::View:
   virtual gfx::NativeCursor GetCursor(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
@@ -45,6 +49,8 @@ class ASH_EXPORT PartialScreenshotView : public views::WidgetDelegateView {
   virtual bool OnMouseDragged(const ui::MouseEvent& event) OVERRIDE;
   virtual bool OnMouseWheel(const ui::MouseWheelEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseCaptureLost() OVERRIDE;
+  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
   bool is_dragging_;
   gfx::Point start_position_;
