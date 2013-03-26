@@ -290,6 +290,7 @@ void NativeScrollBarViews::OnPaint(gfx::Canvas* canvas) {
   params_.scrollbar_track.track_y = bounds.y();
   params_.scrollbar_track.track_width = bounds.width();
   params_.scrollbar_track.track_height = bounds.height();
+  params_.scrollbar_track.classic_state = 0;
 
   GetNativeTheme()->Paint(canvas->sk_canvas(), part_, state_, bounds, params_);
 }
