@@ -17,13 +17,62 @@ import shutil
 import sys
 import xml.dom.minidom as minidom
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), os.pardir, 'pylib'))
+_THIS_DIR = os.path.abspath(os.path.dirname(__file__))
+
+sys.path.insert(0, os.path.join(_THIS_DIR, os.pardir, 'pylib'))
 
 from common import chrome_paths
 from common import util
 from continuous_archive import CHROME_26_REVISION
 
-_THIS_DIR = os.path.abspath(os.path.dirname(__file__))
+if util.IsLinux():
+  sys.path.insert(0, os.path.join(_THIS_DIR, os.pardir, os.pardir, os.pardir,
+                                  'build', 'android'))
+  from pylib import android_commands
+  from pylib import forwarder
+  from pylib import valgrind_tools
+
+ANDROID_TEST_HTTP_PORT = 2311
+ANDROID_TEST_HTTPS_PORT = 2411
+
+
+class TestEnvironment(object):
+  """Manages the environment java tests require to run."""
+
+  def GlobalSetUp(self):
+    """Sets up the global test environment state."""
+    pass
+
+  def GlobalTearDown(self):
+    """Tears down the global test environment state."""
+    pass
+
+
+class AndroidTestEnvironment(TestEnvironment):
+  """Manages the environment java tests require to run on Android."""
+
+  def __init__(self):
+    super(AndroidTestEnvironment, self).__init__()
+    self._adb = None
+    self._forwarder = None
+
+  def GlobalSetUp(self):
+    """Sets up the global test environment state."""
+    os.putenv('TEST_HTTP_PORT', str(ANDROID_TEST_HTTP_PORT))
+    os.putenv('TEST_HTTPS_PORT', str(ANDROID_TEST_HTTPS_PORT))
+    self._adb = android_commands.AndroidCommands()
+    self._forwarder = forwarder.Forwarder(self._adb, 'Debug')
+    self._forwarder.Run(
+        [(ANDROID_TEST_HTTP_PORT, ANDROID_TEST_HTTP_PORT),
+         (ANDROID_TEST_HTTPS_PORT, ANDROID_TEST_HTTPS_PORT)],
+        valgrind_tools.BaseTool(), '127.0.0.1')
+
+  def GlobalTearDown(self):
+    """Tears down the global test environment state."""
+    if self._adb is not None:
+      forwarder.Forwarder.KillDevice(self._adb, valgrind_tools.BaseTool())
+    if self._forwarder is not None:
+      self._forwarder.Close()
 
 
 _DESKTOP_OS_NEGATIVE_FILTER = []
@@ -267,35 +316,45 @@ def main():
     parser.error('chromedriver is required or the given path is invalid.' +
                  'Please run "%s --help" for help' % __file__)
 
-  # Run passed tests when filter is not provided.
-  test_filter = options.filter
-  if test_filter is None:
-    passed_java_tests = []
-    failed_tests = _DESKTOP_NEGATIVE_FILTER[options.chrome_revision]
-    with open(os.path.join(_THIS_DIR, 'passed_java_tests.txt'), 'r') as f:
-      for line in f:
-        java_test = line.strip('\n')
-        # Filter out failed tests.
-        suite_name = java_test.split('#')[0]
-        if java_test in failed_tests or suite_name in failed_tests:
-          continue
-        passed_java_tests.append(java_test)
-    test_filter = ','.join(passed_java_tests)
+  if options.android_package is not None:
+    environment = AndroidTestEnvironment()
+  else:
+    environment = TestEnvironment()
 
-  java_tests_src_dir = os.path.join(chrome_paths.GetSrc(), 'chrome', 'test',
-                                    'chromedriver', 'third_party', 'java_tests')
-  if (not os.path.exists(java_tests_src_dir) or
-      not os.listdir(java_tests_src_dir)):
-    print ('"%s" is empty or it doesn\'t exist.' % java_tests_src_dir +
-           'Should add "deps/third_party/webdriver" to source checkout config')
-    return 1
+  try:
+    environment.GlobalSetUp()
+    # Run passed tests when filter is not provided.
+    test_filter = options.filter
+    if test_filter is None:
+      passed_java_tests = []
+      failed_tests = _DESKTOP_NEGATIVE_FILTER[options.chrome_revision]
+      with open(os.path.join(_THIS_DIR, 'passed_java_tests.txt'), 'r') as f:
+        for line in f:
+          java_test = line.strip('\n')
+          # Filter out failed tests.
+          suite_name = java_test.split('#')[0]
+          if java_test in failed_tests or suite_name in failed_tests:
+            continue
+          passed_java_tests.append(java_test)
+      test_filter = ','.join(passed_java_tests)
 
-  return PrintTestResults(_Run(
-      java_tests_src_dir=java_tests_src_dir,
-      test_filter=test_filter,
-      chromedriver_path=options.chromedriver,
-      chrome_path=options.chrome,
-      android_package=options.android_package))
+    java_tests_src_dir = os.path.join(chrome_paths.GetSrc(), 'chrome', 'test',
+                                      'chromedriver', 'third_party',
+                                      'java_tests')
+    if (not os.path.exists(java_tests_src_dir) or
+        not os.listdir(java_tests_src_dir)):
+      print ('"%s" is empty or it doesn\'t exist.' % java_tests_src_dir +
+          'Should add "deps/third_party/webdriver" to source checkout config')
+      return 1
+
+    return PrintTestResults(_Run(
+        java_tests_src_dir=java_tests_src_dir,
+        test_filter=test_filter,
+        chromedriver_path=options.chromedriver,
+        chrome_path=options.chrome,
+        android_package=options.android_package))
+  finally:
+    environment.GlobalTearDown()
 
 
 if __name__ == '__main__':

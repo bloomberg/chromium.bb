@@ -35,15 +35,11 @@ def _AddToolsToSystemPathForWindows():
   os.environ['PATH'] = os.pathsep.join(paths) + os.pathsep + os.environ['PATH']
 
 
-def RunPythonTests(chromedriver, chrome=None, chrome_revision=None,
-                   android_package=None):
-  revision_info = ''
-  if chrome_revision:
-    revision_info = '(r%s)' % chrome_revision
-  print '@@@BUILD_STEP chromedriver2_python_tests%s@@@' % revision_info
+def _GenerateTestCommand(script, chromedriver, chrome=None,
+                         chrome_revision=None, android_package=None):
   cmd = [
       sys.executable,
-      os.path.join(_THIS_DIR, 'run_py_tests.py'),
+      os.path.join(_THIS_DIR, script),
       '--chromedriver=' + chromedriver,
   ]
   if chrome:
@@ -53,26 +49,35 @@ def RunPythonTests(chromedriver, chrome=None, chrome_revision=None,
 
   if android_package:
     cmd.append('--android-package=' + android_package)
+  return cmd
 
+
+def RunPythonTests(chromedriver, chrome=None, chrome_revision=None,
+                   android_package=None):
+  revision_info = ''
+  if chrome_revision:
+    revision_info = '(r%s)' % chrome_revision
+  print '@@@BUILD_STEP chromedriver2_python_tests%s@@@' % revision_info
   if util.IsMac():
     # In Mac, chromedriver2.so is a 32-bit build, so run with the 32-bit python.
     os.environ['VERSIONER_PYTHON_PREFER_32_BIT'] = 'yes'
-  code = util.RunCommand(cmd)
+  code = util.RunCommand(
+      _GenerateTestCommand('run_py_tests.py', chromedriver, chrome,
+                           chrome_revision, android_package))
   if code:
     print '\n@@@STEP_FAILURE@@@'
   return code
 
 
-def RunJavaTests(chromedriver, chrome, chrome_revision):
-  print '@@@BUILD_STEP chromedriver2_java_tests(r%s)@@@' % chrome_revision
-  cmd = [
-      sys.executable,
-      os.path.join(_THIS_DIR, 'run_java_tests.py'),
-      '--chromedriver=' + chromedriver,
-      '--chrome=' + chrome,
-      '--chrome-revision=' + chrome_revision,
-  ]
-  code = util.RunCommand(cmd)
+def RunJavaTests(chromedriver, chrome=None, chrome_revision=None,
+                 android_package=None):
+  revision_info = ''
+  if chrome_revision:
+    revision_info = '(r%s)' % chrome_revision
+  print '@@@BUILD_STEP chromedriver2_java_tests%s@@@' % revision_info
+  code = util.RunCommand(
+      _GenerateTestCommand('run_java_tests.py', chromedriver, chrome,
+                           chrome_revision, android_package))
   if code:
     print '@@@STEP_FAILURE@@@'
   return code
@@ -121,6 +126,7 @@ def main():
   print 'Using build outputs from', build_dir
 
   chromedriver = os.path.join(build_dir, chromedriver_name)
+  chromedriver_server = os.path.join(build_dir, server_name)
 
   if util.IsLinux():
     # Set LD_LIBRARY_PATH to enable successful loading of shared object files,
@@ -132,10 +138,12 @@ def main():
 
   if options.android_package:
     os.environ['PATH'] += os.pathsep + os.path.join(_THIS_DIR, 'chrome')
-    return RunPythonTests(chromedriver,
-                          android_package=options.android_package)
+    code1 = RunPythonTests(chromedriver,
+                           android_package=options.android_package)
+    code2 = RunJavaTests(chromedriver_server,
+                         android_package=options.android_package)
+    return code1 or code2
   else:
-    chromedriver_server = os.path.join(build_dir, server_name)
     chrome_tip_of_tree = os.path.join(build_dir, chrome_name)
     cpp_tests = os.path.join(build_dir, cpp_tests_name)
 
@@ -149,8 +157,8 @@ def main():
     for chrome in chrome_path_revisions:
       code1 = RunPythonTests(chromedriver, chrome=chrome['path'],
                              chrome_revision=chrome['revision'])
-      code2 = RunJavaTests(chromedriver_server, chrome['path'],
-                           chrome['revision'])
+      code2 = RunJavaTests(chromedriver_server, chrome=chrome['path'],
+                           chrome_revision=chrome['revision'])
       code = code or code1 or code2
     return RunCppTests(cpp_tests) or code
 
