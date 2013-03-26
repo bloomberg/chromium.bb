@@ -919,7 +919,7 @@ def BuildStepBuildNaClPorts(pepper_ver, pepperdir):
   output_license = os.path.join(out_dir, 'LICENSE')
   GenerateNotice(src_root , output_license, extra_licenses)
   readme = os.path.join(out_dir, 'README')
-  oshelpers.Copy(['-v', 'README.naclports', readme])
+  oshelpers.Copy(['-v', os.path.join(SDK_SRC_DIR, 'README.naclports'), readme])
 
   out_dir_final = os.path.join(bundle_dir, 'pepper_%s' % pepper_ver)
   buildbot_common.Move(out_dir, out_dir_final)
