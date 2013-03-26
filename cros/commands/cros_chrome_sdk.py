@@ -353,6 +353,12 @@ class ChromeSDKCommand(cros.CrosCommand):
 
     os.environ[self.sdk.SDK_VERSION_ENV] = sdk_ctx.version
     os.environ[self.sdk.SDK_BOARD_ENV] = board
+    # Export the board/version info in a more accessible way, so developers can
+    # reference them in their chrome_sdk.bashrc files, as well as within the
+    # chrome-sdk shell.
+    for var in [self.sdk.SDK_VERSION_ENV, self.sdk.SDK_BOARD_ENV]:
+      os.environ[var.lstrip('%')] = os.environ[var]
+
     # SYSROOT is necessary for Goma and the sysroot wrapper.
     env['SYSROOT'] = sysroot
     gyp_dict = chrome_util.ProcessGypDefines(env['GYP_DEFINES'])
