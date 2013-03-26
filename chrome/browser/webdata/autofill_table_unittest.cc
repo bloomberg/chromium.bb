@@ -1078,7 +1078,7 @@ TEST_F(AutofillTableTest, UpdateCreditCard) {
   EXPECT_FALSE(s_unchanged.Step());
 }
 
-TEST_F(AutofillTableTest, RemoveAutofillProfilesAndCreditCardsModifiedBetween) {
+TEST_F(AutofillTableTest, RemoveAutofillDataModifiedBetween) {
   // Populate the autofill_profiles and credit_cards tables.
   ASSERT_TRUE(db_->GetSQLConnection()->Execute(
       "INSERT INTO autofill_profiles (guid, date_modified) "
@@ -1109,7 +1109,7 @@ TEST_F(AutofillTableTest, RemoveAutofillProfilesAndCreditCardsModifiedBetween) {
   // Remove all entries modified in the bounded time range [17,41).
   std::vector<std::string> profile_guids;
   std::vector<std::string> credit_card_guids;
-  table_->RemoveAutofillProfilesAndCreditCardsModifiedBetween(
+  table_->RemoveAutofillDataModifiedBetween(
       Time::FromTimeT(17), Time::FromTimeT(41),
       &profile_guids, &credit_card_guids);
   ASSERT_EQ(2UL, profile_guids.size());
@@ -1145,7 +1145,7 @@ TEST_F(AutofillTableTest, RemoveAutofillProfilesAndCreditCardsModifiedBetween) {
   EXPECT_FALSE(s_credit_cards_bounded.Step());
 
   // Remove all entries modified on or after time 51 (unbounded range).
-  table_->RemoveAutofillProfilesAndCreditCardsModifiedBetween(
+  table_->RemoveAutofillDataModifiedBetween(
       Time::FromTimeT(51), Time(),
       &profile_guids, &credit_card_guids);
   ASSERT_EQ(2UL, profile_guids.size());
@@ -1172,7 +1172,7 @@ TEST_F(AutofillTableTest, RemoveAutofillProfilesAndCreditCardsModifiedBetween) {
   EXPECT_FALSE(s_credit_cards_unbounded.Step());
 
   // Remove all remaining entries.
-  table_->RemoveAutofillProfilesAndCreditCardsModifiedBetween(
+  table_->RemoveAutofillDataModifiedBetween(
       Time(), Time(),
       &profile_guids, &credit_card_guids);
   ASSERT_EQ(2UL, profile_guids.size());

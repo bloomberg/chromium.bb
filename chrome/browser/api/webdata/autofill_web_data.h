@@ -38,6 +38,10 @@ class AutofillWebData {
       int limit,
       WebDataServiceConsumer* consumer) = 0;
 
+  // Removes form elements recorded for Autocomplete from the database.
+  virtual void RemoveFormElementsAddedBetween(
+      const base::Time& delete_begin, const base::Time& delete_end) = 0;
+
   virtual void RemoveExpiredFormElements() = 0;
   virtual void RemoveFormValueForElementName(const string16& name,
                                              const string16& value) = 0;
@@ -73,8 +77,12 @@ class AutofillWebData {
   // OnWebDataServiceRequestDone of |consumer| gets called when the request is
   // finished, with the credit cards included in the argument |result|.  The
   // consumer owns the credit cards.
-  virtual WebDataServiceBase::Handle
-      GetCreditCards(WebDataServiceConsumer* consumer) = 0;
+  virtual WebDataServiceBase::Handle GetCreditCards(
+      WebDataServiceConsumer* consumer) = 0;
+
+  // Removes Autofill records from the database.
+  virtual void RemoveAutofillDataModifiedBetween(
+      const base::Time& delete_begin, const base::Time& delete_end) = 0;
 };
 
 #endif  // CHROME_BROWSER_API_WEBDATA_AUTOFILL_WEB_DATA_H_

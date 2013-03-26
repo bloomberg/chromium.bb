@@ -266,7 +266,7 @@ class AutofillTable : public WebDatabaseTable {
   // is true if all rows were successfully removed. Returns false on database
   // error. In that case, the output vector state is undefined, and may be
   // partially filled.
-  bool RemoveAutofillProfilesAndCreditCardsModifiedBetween(
+  bool RemoveAutofillDataModifiedBetween(
       const base::Time& delete_begin,
       const base::Time& delete_end,
       std::vector<std::string>* profile_guids,
@@ -318,7 +318,7 @@ class AutofillTable : public WebDatabaseTable {
   FRIEND_TEST_ALL_PREFIXES(AutofillTableTest, AutofillProfileTrash);
   FRIEND_TEST_ALL_PREFIXES(AutofillTableTest, AutofillProfileTrashInteraction);
   FRIEND_TEST_ALL_PREFIXES(AutofillTableTest,
-                           RemoveAutofillProfilesAndCreditCardsModifiedBetween);
+                           RemoveAutofillDataModifiedBetween);
   FRIEND_TEST_ALL_PREFIXES(AutofillTableTest, CreditCard);
   FRIEND_TEST_ALL_PREFIXES(AutofillTableTest, UpdateCreditCard);
   FRIEND_TEST_ALL_PREFIXES(AutofillTableTest,

@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/platform_file.h"
 #include "base/prefs/pref_service.h"
+#include "chrome/browser/api/webdata/autofill_web_data_service.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
@@ -41,7 +42,6 @@
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
-#include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -435,14 +435,14 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
 
   if (remove_mask & REMOVE_FORM_DATA) {
     content::RecordAction(UserMetricsAction("ClearBrowsingData_Autofill"));
-    scoped_refptr<WebDataService> web_data_service =
-        WebDataService::FromBrowserContext(profile_);
+    scoped_refptr<AutofillWebDataService> web_data_service =
+        AutofillWebDataService::FromBrowserContext(profile_);
 
     if (web_data_service.get()) {
       waiting_for_clear_form_ = true;
       web_data_service->RemoveFormElementsAddedBetween(delete_begin_,
           delete_end_);
-      web_data_service->RemoveAutofillProfilesAndCreditCardsModifiedBetween(
+      web_data_service->RemoveAutofillDataModifiedBetween(
           delete_begin_, delete_end_);
       // The above calls are done on the UI thread but do their work on the DB
       // thread. So wait for it.

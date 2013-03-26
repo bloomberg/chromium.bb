@@ -1197,7 +1197,7 @@ bool AutofillTable::RemoveCreditCard(const std::string& guid) {
   return s.Run();
 }
 
-bool AutofillTable::RemoveAutofillProfilesAndCreditCardsModifiedBetween(
+bool AutofillTable::RemoveAutofillDataModifiedBetween(
     const Time& delete_begin,
     const Time& delete_end,
     std::vector<std::string>* profile_guids,

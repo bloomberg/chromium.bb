@@ -33,6 +33,8 @@ class AutofillWebDataServiceImpl : public AutofillWebDataService {
       const string16& prefix,
       int limit,
       WebDataServiceConsumer* consumer) OVERRIDE;
+  virtual void RemoveFormElementsAddedBetween(
+      const base::Time& delete_begin, const base::Time& delete_end) OVERRIDE;
   virtual void RemoveExpiredFormElements() OVERRIDE;
   virtual void RemoveFormValueForElementName(const string16& name,
                                              const string16& value) OVERRIDE;
@@ -44,8 +46,11 @@ class AutofillWebDataServiceImpl : public AutofillWebDataService {
   virtual void AddCreditCard(const CreditCard& credit_card) OVERRIDE;
   virtual void UpdateCreditCard(const CreditCard& credit_card) OVERRIDE;
   virtual void RemoveCreditCard(const std::string& guid) OVERRIDE;
-  virtual WebDataServiceBase::Handle
-      GetCreditCards(WebDataServiceConsumer* consumer) OVERRIDE;
+  virtual WebDataServiceBase::Handle GetCreditCards(
+      WebDataServiceConsumer* consumer) OVERRIDE;
+  virtual void RemoveAutofillDataModifiedBetween(
+      const base::Time& delete_begin, const base::Time& delete_end) OVERRIDE;
+
 
  protected:
   virtual ~AutofillWebDataServiceImpl();
@@ -75,6 +80,9 @@ class AutofillWebDataServiceImpl : public AutofillWebDataService {
   WebDatabase::State RemoveCreditCardImpl(
       const std::string& guid, WebDatabase* db);
   scoped_ptr<WDTypedResult> GetCreditCardsImpl(WebDatabase* db);
+  WebDatabase::State RemoveAutofillDataModifiedBetweenImpl(
+      const base::Time& delete_begin, const base::Time& delete_end,
+      WebDatabase* db);
 
   // Callbacks to ensure that sensitive info is destroyed if request is
   // cancelled.
