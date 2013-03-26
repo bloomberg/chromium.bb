@@ -420,6 +420,41 @@ void FragmentTexAlphaBinding::Init(WebGraphicsContext3D* context,
   DCHECK(sampler_location_ != -1 && alpha_location_ != -1);
 }
 
+FragmentTexColorMatrixAlphaBinding::FragmentTexColorMatrixAlphaBinding()
+    : sampler_location_(-1)
+    , alpha_location_(-1)
+    , color_matrix_location_(-1)
+    , color_offset_location_(-1) {}
+
+void FragmentTexColorMatrixAlphaBinding::Init(WebGraphicsContext3D* context,
+                                              unsigned program,
+                                              bool usingBindUniform,
+                                              int* baseUniformIndex) {
+    static const char* shaderUniforms[] = {
+        "s_texture",
+        "alpha",
+        "colorMatrix",
+        "colorOffset",
+    };
+    int locations[4];
+
+    GetProgramUniformLocations(context,
+                               program,
+                               shaderUniforms,
+                               arraysize(shaderUniforms),
+                               arraysize(locations),
+                               locations,
+                               usingBindUniform,
+                               baseUniformIndex);
+
+    sampler_location_ = locations[0];
+    alpha_location_ = locations[1];
+    color_matrix_location_ = locations[2];
+    color_offset_location_ = locations[3];
+    DCHECK(sampler_location_ != -1 && alpha_location_ != -1 &&
+        color_matrix_location_ != -1 && color_offset_location_ != -1);
+}
+
 FragmentTexOpaqueBinding::FragmentTexOpaqueBinding()
     : sampler_location_(-1) {}
 
@@ -489,6 +524,26 @@ std::string FragmentShaderRGBATexAlpha::GetShaderString() const {
     uniform float alpha;
     void main() {
       vec4 texColor = texture2D(s_texture, v_texCoord);
+      gl_FragColor = texColor * alpha;
+    }
+  );
+}
+
+std::string FragmentShaderRGBATexColorMatrixAlpha::GetShaderString() const {
+  return SHADER(
+    precision mediump float;
+    varying vec2 v_texCoord;
+    uniform sampler2D s_texture;
+    uniform float alpha;
+    uniform mat4 colorMatrix;
+    uniform vec4 colorOffset;
+    void main() {
+      vec4 texColor = texture2D(s_texture, v_texCoord);
+      float nonZeroAlpha = max(texColor.a, 0.00001);
+      texColor = vec4(texColor.rgb / nonZeroAlpha, nonZeroAlpha);
+      texColor = colorMatrix * texColor + colorOffset;
+      texColor.rgb *= texColor.a;
+      texColor = clamp(texColor, 0.0, 1.0);
       gl_FragColor = texColor * alpha;
     }
   );
@@ -843,6 +898,232 @@ std::string FragmentShaderRGBATexAlphaMaskAA::GetShaderString() const {
       gl_FragColor = vec4(texColor.x, texColor.y, texColor.z, texColor.w) *
           alpha * maskColor.w * min(min(a0, a2) * min(a1, a3),
                                     min(a4, a6) * min(a5, a7));
+    }
+  );
+}
+
+FragmentShaderRGBATexAlphaMaskColorMatrixAA::FragmentShaderRGBATexAlphaMaskColorMatrixAA()
+    : sampler_location_(-1)
+    , mask_sampler_location_(-1)
+    , alpha_location_(-1)
+    , edge_location_(-1)
+    , mask_tex_coord_scale_location_(-1)
+    , color_matrix_location_(-1)
+    , color_offset_location_(-1) {}
+
+void FragmentShaderRGBATexAlphaMaskColorMatrixAA::Init(
+    WebGraphicsContext3D* context,
+    unsigned program,
+    bool usingBindUniform,
+    int* baseUniformIndex) {
+  static const char* shaderUniforms[] = {
+    "s_texture",
+    "s_mask",
+    "alpha",
+    "edge",
+    "maskTexCoordScale",
+    "maskTexCoordOffset",
+    "colorMatrix",
+    "colorOffset",
+  };
+  int locations[8];
+
+  GetProgramUniformLocations(context,
+                             program,
+                             shaderUniforms,
+                             arraysize(shaderUniforms),
+                             arraysize(locations),
+                             locations,
+                             usingBindUniform,
+                             baseUniformIndex);
+
+  sampler_location_ = locations[0];
+  mask_sampler_location_ = locations[1];
+  alpha_location_ = locations[2];
+  edge_location_ = locations[3];
+  mask_tex_coord_scale_location_ = locations[4];
+  mask_tex_coord_offset_location_ = locations[5];
+  color_matrix_location_ = locations[6];
+  color_offset_location_ = locations[7];
+  DCHECK(sampler_location_ != -1 && mask_sampler_location_ != -1 &&
+         alpha_location_ != -1 && edge_location_ != -1 &&
+         color_matrix_location_ != -1 && color_offset_location_ != -1);
+}
+
+std::string FragmentShaderRGBATexAlphaMaskColorMatrixAA::GetShaderString() const {
+  return SHADER(
+    precision mediump float;
+    varying vec2 v_texCoord;
+    uniform sampler2D s_texture;
+    uniform sampler2D s_mask;
+    uniform vec2 maskTexCoordScale;
+    uniform vec2 maskTexCoordOffset;
+    uniform mat4 colorMatrix;
+    uniform vec4 colorOffset;
+    uniform float alpha;
+    uniform vec3 edge[8];
+    void main() {
+      vec4 texColor = texture2D(s_texture, v_texCoord);
+      float nonZeroAlpha = max(texColor.a, 0.00001);
+      texColor = vec4(texColor.rgb / nonZeroAlpha, nonZeroAlpha);
+      texColor = colorMatrix * texColor + colorOffset;
+      texColor.rgb *= texColor.a;
+      texColor = clamp(texColor, 0.0, 1.0);
+      vec2 maskTexCoord =
+          vec2(maskTexCoordOffset.x + v_texCoord.x * maskTexCoordScale.x,
+               maskTexCoordOffset.y + v_texCoord.y * maskTexCoordScale.y);
+      vec4 maskColor = texture2D(s_mask, maskTexCoord);
+      vec3 pos = vec3(gl_FragCoord.xy, 1);
+      float a0 = clamp(dot(edge[0], pos), 0.0, 1.0);
+      float a1 = clamp(dot(edge[1], pos), 0.0, 1.0);
+      float a2 = clamp(dot(edge[2], pos), 0.0, 1.0);
+      float a3 = clamp(dot(edge[3], pos), 0.0, 1.0);
+      float a4 = clamp(dot(edge[4], pos), 0.0, 1.0);
+      float a5 = clamp(dot(edge[5], pos), 0.0, 1.0);
+      float a6 = clamp(dot(edge[6], pos), 0.0, 1.0);
+      float a7 = clamp(dot(edge[7], pos), 0.0, 1.0);
+      gl_FragColor =
+          vec4(texColor.x, texColor.y, texColor.z, texColor.w) *
+          alpha * maskColor.w * min(min(a0, a2) * min(a1, a3), min(a4, a6) *
+          min(a5, a7));
+    }
+  );
+}
+
+FragmentShaderRGBATexAlphaColorMatrixAA::FragmentShaderRGBATexAlphaColorMatrixAA()
+    : sampler_location_(-1)
+    , alpha_location_(-1)
+    , edge_location_(-1)
+    , color_matrix_location_(-1)
+    , color_offset_location_(-1) {}
+
+void FragmentShaderRGBATexAlphaColorMatrixAA::Init(
+      WebGraphicsContext3D* context, unsigned program, bool usingBindUniform,
+      int* baseUniformIndex) {
+  static const char* shaderUniforms[] = {
+    "s_texture",
+    "alpha",
+    "edge",
+    "colorMatrix",
+    "colorOffset",
+  };
+  int locations[5];
+
+  GetProgramUniformLocations(context,
+                             program,
+                             shaderUniforms,
+                             arraysize(shaderUniforms),
+                             arraysize(locations),
+                             locations,
+                             usingBindUniform,
+                             baseUniformIndex);
+
+  sampler_location_ = locations[0];
+  alpha_location_ = locations[1];
+  edge_location_ = locations[2];
+  color_matrix_location_ = locations[3];
+  color_offset_location_ = locations[4];
+  DCHECK(sampler_location_ != -1 && alpha_location_ != -1 &&
+         edge_location_ != -1 && color_matrix_location_ != -1 &&
+         color_offset_location_ != -1);
+}
+
+std::string FragmentShaderRGBATexAlphaColorMatrixAA::GetShaderString() const {
+  return SHADER(
+    precision mediump float;
+    varying vec2 v_texCoord;
+    uniform sampler2D s_texture;
+    uniform float alpha;
+    uniform mat4 colorMatrix;
+    uniform vec4 colorOffset;
+    uniform vec3 edge[8];
+    void main() {
+      vec4 texColor = texture2D(s_texture, v_texCoord);
+      float nonZeroAlpha = max(texColor.a, 0.00001);
+      texColor = vec4(texColor.rgb / nonZeroAlpha, nonZeroAlpha);
+      texColor = colorMatrix * texColor + colorOffset;
+      texColor.rgb *= texColor.a;
+      texColor = clamp(texColor, 0.0, 1.0);
+      vec3 pos = vec3(gl_FragCoord.xy, 1);
+      float a0 = clamp(dot(edge[0], pos), 0.0, 1.0);
+      float a1 = clamp(dot(edge[1], pos), 0.0, 1.0);
+      float a2 = clamp(dot(edge[2], pos), 0.0, 1.0);
+      float a3 = clamp(dot(edge[3], pos), 0.0, 1.0);
+      float a4 = clamp(dot(edge[4], pos), 0.0, 1.0);
+      float a5 = clamp(dot(edge[5], pos), 0.0, 1.0);
+      float a6 = clamp(dot(edge[6], pos), 0.0, 1.0);
+      float a7 = clamp(dot(edge[7], pos), 0.0, 1.0);
+      gl_FragColor = vec4(texColor.x, texColor.y, texColor.z, texColor.w) *
+          alpha * min(min(a0, a2) * min(a1, a3), min(a4, a6) * min(a5, a7));
+    }
+  );
+}
+
+FragmentShaderRGBATexAlphaMaskColorMatrix::FragmentShaderRGBATexAlphaMaskColorMatrix()
+    : sampler_location_(-1)
+    , mask_sampler_location_(-1)
+    , alpha_location_(-1)
+    , mask_tex_coord_scale_location_(-1) {}
+
+void FragmentShaderRGBATexAlphaMaskColorMatrix::Init(
+    WebGraphicsContext3D* context, unsigned program, bool usingBindUniform,
+    int* baseUniformIndex) {
+  static const char* shaderUniforms[] = {
+    "s_texture",
+    "s_mask",
+    "alpha",
+    "maskTexCoordScale",
+    "maskTexCoordOffset",
+    "colorMatrix",
+    "colorOffset",
+  };
+  int locations[7];
+
+  GetProgramUniformLocations(context,
+                             program,
+                             shaderUniforms,
+                             arraysize(shaderUniforms),
+                             arraysize(locations),
+                             locations,
+                             usingBindUniform,
+                             baseUniformIndex);
+
+  sampler_location_ = locations[0];
+  mask_sampler_location_ = locations[1];
+  alpha_location_ = locations[2];
+  mask_tex_coord_scale_location_ = locations[3];
+  mask_tex_coord_offset_location_ = locations[4];
+  color_matrix_location_ = locations[5];
+  color_offset_location_ = locations[6];
+  DCHECK(sampler_location_ != -1 && mask_sampler_location_ != -1 &&
+      alpha_location_ != -1 && color_matrix_location_ != -1 &&
+      color_offset_location_ != -1);
+}
+
+std::string FragmentShaderRGBATexAlphaMaskColorMatrix::GetShaderString() const {
+  return SHADER(
+    precision mediump float;
+    varying vec2 v_texCoord;
+    uniform sampler2D s_texture;
+    uniform sampler2D s_mask;
+    uniform vec2 maskTexCoordScale;
+    uniform vec2 maskTexCoordOffset;
+    uniform mat4 colorMatrix;
+    uniform vec4 colorOffset;
+    uniform float alpha;
+    void main() {
+      vec4 texColor = texture2D(s_texture, v_texCoord);
+      float nonZeroAlpha = max(texColor.a, 0.00001);
+      texColor = vec4(texColor.rgb / nonZeroAlpha, nonZeroAlpha);
+      texColor = colorMatrix * texColor + colorOffset;
+      texColor.rgb *= texColor.a;
+      texColor = clamp(texColor, 0.0, 1.0);
+      vec2 maskTexCoord =
+          vec2(maskTexCoordOffset.x + v_texCoord.x * maskTexCoordScale.x,
+               maskTexCoordOffset.y + v_texCoord.y * maskTexCoordScale.y);
+      vec4 maskColor = texture2D(s_mask, maskTexCoord);
+      gl_FragColor = vec4(texColor.x, texColor.y, texColor.z, texColor.w) *
+          alpha * maskColor.w;
     }
   );
 }
