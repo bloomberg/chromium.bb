@@ -48,4 +48,7 @@ void MockIBusEngineService::ForwardKeyEvent(uint32 keyval,
 void MockIBusEngineService::RequireSurroundingText() {
 }
 
+void MockIBusEngineService::CommitText(const std::string& text) {
+}
+
 }  // namespace chromeos
