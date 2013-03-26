@@ -4,6 +4,9 @@
 
 #include "cc/resources/picture_pile_base.h"
 
+#include <algorithm>
+#include <vector>
+
 #include "base/logging.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/rect_conversions.h"

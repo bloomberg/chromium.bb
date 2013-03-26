@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_RENDERING_STATS_INSTRUMENTATION_H_
-#define CC_RENDERING_STATS_INSTRUMENTATION_H_
+#ifndef CC_DEBUG_RENDERING_STATS_INSTRUMENTATION_H_
+#define CC_DEBUG_RENDERING_STATS_INSTRUMENTATION_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
@@ -71,4 +71,4 @@ class CC_EXPORT RenderingStatsInstrumentation {
 
 }  // namespace cc
 
-#endif  // CC_RENDERING_STATS_INSTRUMENTATION_H_
+#endif  // CC_DEBUG_RENDERING_STATS_INSTRUMENTATION_H_

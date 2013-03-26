@@ -74,6 +74,6 @@ class CC_EXPORT RenderPassDrawQuad : public DrawQuad {
   RenderPassDrawQuad();
 };
 
-}
+}  // namespace cc
 
 #endif  // CC_QUADS_RENDER_PASS_DRAW_QUAD_H_

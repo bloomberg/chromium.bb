@@ -31,7 +31,7 @@ class WorkerPoolTask {
   void DidComplete();
 
  protected:
-  WorkerPoolTask(const base::Closure& reply);
+  explicit WorkerPoolTask(const base::Closure& reply);
 
   const base::Closure reply_;
 };

@@ -5,6 +5,7 @@
 #ifndef CC_RESOURCES_TILE_PRIORITY_H_
 #define CC_RESOURCES_TILE_PRIORITY_H_
 
+#include <algorithm>
 #include <limits>
 
 #include "base/memory/ref_counted.h"
@@ -151,13 +152,13 @@ enum TileMemoryLimitPolicy {
   ALLOW_NOTHING,
 
   // You might be made visible, but you're not being interacted with.
-  ALLOW_ABSOLUTE_MINIMUM, // Tall.
+  ALLOW_ABSOLUTE_MINIMUM,  // Tall.
 
   // You're being interacted with, but we're low on memory.
-  ALLOW_PREPAINT_ONLY, // Grande.
+  ALLOW_PREPAINT_ONLY,  // Grande.
 
   // You're the only thing in town. Go crazy.
-  ALLOW_ANYTHING, // Venti.
+  ALLOW_ANYTHING,  // Venti.
 
   // Be sure to update TreePriorityAsValue when adding new fields.
 };

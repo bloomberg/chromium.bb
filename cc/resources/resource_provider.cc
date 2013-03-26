@@ -470,7 +470,7 @@ void ResourceProvider::UnlockForRead(ResourceId id) {
   ResourceMap::iterator it = resources_.find(id);
   CHECK(it != resources_.end());
   Resource* resource = &it->second;
-  DCHECK(resource->lock_for_read_count > 0);
+  DCHECK_GT(resource->lock_for_read_count, 0);
   DCHECK(!resource->exported);
   resource->lock_for_read_count--;
 }
@@ -1187,7 +1187,7 @@ void ResourceProvider::LazyAllocate(Resource* resource) {
                                               storage_format,
                                               size.width(),
                                               size.height()));
-  } else
+  } else {
     GLC(context3d, context3d->texImage2D(GL_TEXTURE_2D,
                                          0,
                                          format,
@@ -1197,6 +1197,7 @@ void ResourceProvider::LazyAllocate(Resource* resource) {
                                          format,
                                          GL_UNSIGNED_BYTE,
                                          NULL));
+  }
 }
 
 void ResourceProvider::EnableReadLockFences(ResourceProvider::ResourceId id,

@@ -73,16 +73,25 @@ class CC_EXPORT LayerQuad {
             const Edge& top,
             const Edge& right,
             const Edge& bottom);
-  LayerQuad(const gfx::QuadF& quad);
+  explicit LayerQuad(const gfx::QuadF& quad);
 
   Edge left() const { return left_; }
   Edge top() const { return top_; }
   Edge right() const { return right_; }
   Edge bottom() const { return bottom_; }
 
-  void InflateX(float dx) { left_.move_z(dx); right_.move_z(dx); }
-  void InflateY(float dy) { top_.move_z(dy); bottom_.move_z(dy); }
-  void Inflate(float d) { InflateX(d); InflateY(d); }
+  void InflateX(float dx) {
+    left_.move_z(dx);
+    right_.move_z(dx);
+  }
+  void InflateY(float dy) {
+    top_.move_z(dy);
+    bottom_.move_z(dy);
+  }
+  void Inflate(float d) {
+    InflateX(d);
+    InflateY(d);
+  }
   void InflateAntiAliasingDistance() {
     Inflate(kAntiAliasingInflateDistance);
   }
@@ -100,6 +109,6 @@ class CC_EXPORT LayerQuad {
   DISALLOW_COPY_AND_ASSIGN(LayerQuad);
 };
 
-}
+}  // namespace cc
 
 #endif  // CC_RESOURCES_LAYER_QUAD_H_

@@ -26,7 +26,7 @@ void IOSurfaceDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
   gfx::Rect visible_rect = rect;
   bool needs_blending = false;
   DrawQuad::SetAll(shared_quad_state, DrawQuad::IO_SURFACE_CONTENT, rect,
-                   opaque_rect, visible_rect, needs_blending); 
+                   opaque_rect, visible_rect, needs_blending);
   this->io_surface_size = io_surface_size;
   this->io_surface_texture_id = io_surface_texture_id;
   this->orientation = orientation;

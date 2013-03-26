@@ -46,10 +46,11 @@ class CC_EXPORT YUVVideoDrawQuad : public DrawQuad {
       OVERRIDE;
 
   static const YUVVideoDrawQuad* MaterialCast(const DrawQuad*);
+
  private:
   YUVVideoDrawQuad();
 };
 
-}
+}  // namespace cc
 
 #endif  // CC_QUADS_YUV_VIDEO_DRAW_QUAD_H_

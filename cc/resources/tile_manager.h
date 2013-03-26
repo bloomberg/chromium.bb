@@ -38,10 +38,10 @@ class CC_EXPORT TileManagerClient {
 // Tile manager classifying tiles into a few basic
 // bins:
 enum TileManagerBin {
-  NOW_BIN = 0, // Needed ASAP.
-  SOON_BIN = 1, // Impl-side version of prepainting.
-  EVENTUALLY_BIN = 2, // Nice to have, if we've got memory and time.
-  NEVER_BIN = 3, // Dont bother.
+  NOW_BIN = 0,  // Needed ASAP.
+  SOON_BIN = 1,  // Impl-side version of prepainting.
+  EVENTUALLY_BIN = 2,  // Nice to have, if we've got memory and time.
+  NEVER_BIN = 3,  // Dont bother.
   NUM_BINS = 4
   // Be sure to update TileManagerBinAsValue when adding new fields.
 };
@@ -120,7 +120,6 @@ class CC_EXPORT TileManager : public WorkerPoolClient {
   }
 
  private:
-
   // Data that is passed to raster tasks.
   struct RasterTaskMetadata {
       bool prediction_benchmarking;

@@ -19,7 +19,7 @@ struct CC_EXPORT ManagedMemoryPolicy {
     CUTOFF_ALLOW_EVERYTHING,
   };
 
-  ManagedMemoryPolicy(size_t bytes_limit_when_visible);
+  explicit ManagedMemoryPolicy(size_t bytes_limit_when_visible);
   ManagedMemoryPolicy(size_t bytes_limit_when_visible,
                       PriorityCutoff priority_cutoff_when_visible,
                       size_t bytes_limit_when_not_visible,

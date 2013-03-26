@@ -416,7 +416,6 @@ void PrioritizedResourceManager::RegisterTexture(PrioritizedResource* texture) {
 
   texture->set_manager_internal(this);
   textures_.insert(texture);
-
 }
 
 void PrioritizedResourceManager::UnregisterTexture(

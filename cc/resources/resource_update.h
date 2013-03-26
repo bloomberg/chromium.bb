@@ -39,6 +39,6 @@ struct CC_EXPORT ResourceUpdate {
   gfx::Vector2d dest_offset;
 };
 
-}
+}  // namespace cc
 
 #endif  // CC_RESOURCES_RESOURCE_UPDATE_H_

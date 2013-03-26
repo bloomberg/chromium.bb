@@ -45,10 +45,11 @@ class CC_EXPORT IOSurfaceDrawQuad : public DrawQuad {
       OVERRIDE;
 
   static const IOSurfaceDrawQuad* MaterialCast(const DrawQuad*);
+
  private:
   IOSurfaceDrawQuad();
 };
 
-}
+}  // namespace cc
 
 #endif  // CC_QUADS_IO_SURFACE_DRAW_QUAD_H_

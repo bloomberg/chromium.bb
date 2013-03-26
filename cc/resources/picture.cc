@@ -30,8 +30,7 @@ class DisableLCDTextFilter : public SkDrawFilter {
     return true;
   }
 };
-
-}
+}  // namespace
 
 namespace cc {
 
@@ -169,7 +168,7 @@ void Picture::GatherPixelRefs(const gfx::Rect& layer_rect,
   }
 
   SkPixelRef** refs = reinterpret_cast<SkPixelRef**>(data);
-  for (unsigned int i = 0; i < pixel_refs->size() / sizeof(SkPixelRef*); ++i) {
+  for (size_t i = 0; i < pixel_refs->size() / sizeof(*refs); ++i) {
     if (*refs && (*refs)->getURI() && !strncmp(
         (*refs)->getURI(), kLabelLazyDecoded, 4)) {
       pixel_ref_list.push_back(static_cast<skia::LazyPixelRef*>(*refs));

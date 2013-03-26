@@ -5,7 +5,9 @@
 #ifndef CC_BASE_SCOPED_PTR_DEQUE_H_
 #define CC_BASE_SCOPED_PTR_DEQUE_H_
 
+#include <algorithm>
 #include <deque>
+
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"

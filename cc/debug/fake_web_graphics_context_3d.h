@@ -13,8 +13,8 @@ namespace cc {
 
 // WebGraphicsContext3D base class for use in unit tests.
 // All operations are no-ops (returning 0 if necessary).
-class CC_EXPORT FakeWebGraphicsContext3D :
-    public NON_EXPORTED_BASE(WebKit::WebGraphicsContext3D) {
+class CC_EXPORT FakeWebGraphicsContext3D
+    : public NON_EXPORTED_BASE(WebKit::WebGraphicsContext3D) {
  public:
   FakeWebGraphicsContext3D();
   virtual ~FakeWebGraphicsContext3D();

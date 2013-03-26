@@ -5,6 +5,7 @@
 #ifndef CC_LAYERS_PICTURE_LAYER_IMPL_H_
 #define CC_LAYERS_PICTURE_LAYER_IMPL_H_
 
+#include "cc/base/cc_export.h"
 #include "cc/base/scoped_ptr_vector.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/resources/picture_layer_tiling.h"
@@ -18,8 +19,9 @@ namespace cc {
 struct AppendQuadsData;
 class QuadSink;
 
-class CC_EXPORT PictureLayerImpl : public LayerImpl,
-                                   public PictureLayerTilingClient {
+class CC_EXPORT PictureLayerImpl
+    : public LayerImpl,
+      NON_EXPORTED_BASE(public PictureLayerTilingClient) {
  public:
   static scoped_ptr<PictureLayerImpl> Create(LayerTreeImpl* tree_impl, int id) {
     return make_scoped_ptr(new PictureLayerImpl(tree_impl, id));

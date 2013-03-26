@@ -4,6 +4,8 @@
 
 #include "cc/resources/resource_provider.h"
 
+#include <algorithm>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "cc/base/scoped_ptr_deque.h"
@@ -19,13 +21,17 @@
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "ui/gfx/rect.h"
 
-using namespace WebKit;
-
 using testing::Mock;
 using testing::NiceMock;
 using testing::Return;
 using testing::StrictMock;
 using testing::_;
+using WebKit::WGC3Dbyte;
+using WebKit::WGC3Denum;
+using WebKit::WGC3Dint;
+using WebKit::WGC3Dsizei;
+using WebKit::WGC3Duint;
+using WebKit::WebGLId;
 
 namespace cc {
 namespace {
@@ -323,8 +329,8 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
   PendingProduceTextureList pending_produce_textures_;
 };
 
-class ResourceProviderTest :
-    public testing::TestWithParam<ResourceProvider::ResourceType> {
+class ResourceProviderTest
+    : public testing::TestWithParam<ResourceProvider::ResourceType> {
  public:
   ResourceProviderTest()
       : shared_data_(ContextSharedData::Create()),

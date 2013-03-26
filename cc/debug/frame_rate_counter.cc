@@ -4,6 +4,7 @@
 
 #include "cc/debug/frame_rate_counter.h"
 
+#include <algorithm>
 #include <limits>
 
 #include "base/metrics/histogram.h"

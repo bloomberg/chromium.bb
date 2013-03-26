@@ -4,6 +4,8 @@
 
 #include "cc/resources/priority_calculator.h"
 
+#include <algorithm>
+
 #include "ui/gfx/rect.h"
 
 namespace cc {

@@ -152,7 +152,6 @@ class CC_EXPORT MathUtil {
   // If the value is inf, returns max double/float representation.
   static scoped_ptr<base::Value> AsValueSafely(double value);
   static scoped_ptr<base::Value> AsValueSafely(float value);
-
 };
 
 }  // namespace cc

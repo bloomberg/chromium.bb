@@ -14,8 +14,13 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 
-using namespace WebKit;
 using testing::Test;
+using WebKit::WGC3Denum;
+using WebKit::WGC3Dint;
+using WebKit::WGC3Duint;
+using WebKit::WGC3Dsizei;
+using WebKit::WebGLId;
+using WebKit::WebString;
 
 namespace cc {
 namespace {
@@ -27,7 +32,7 @@ class ResourceUpdateControllerTest;
 
 class WebGraphicsContext3DForUploadTest : public TestWebGraphicsContext3D {
  public:
-  WebGraphicsContext3DForUploadTest(ResourceUpdateControllerTest* test)
+  explicit WebGraphicsContext3DForUploadTest(ResourceUpdateControllerTest* test)
       : test_(test),
         support_shallow_flush_(true) {}
 
@@ -320,8 +325,8 @@ TEST_F(ResourceUpdateControllerTest, ManyFullManyPartialUploads) {
       << "Last upload wasn't followed by a flush.";
 }
 
-class FakeResourceUpdateControllerClient :
-    public cc::ResourceUpdateControllerClient {
+class FakeResourceUpdateControllerClient
+    : public cc::ResourceUpdateControllerClient {
  public:
   FakeResourceUpdateControllerClient() { Reset(); }
   void Reset() { ready_to_finalize_called_ = false; }

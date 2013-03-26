@@ -39,6 +39,6 @@ class CC_EXPORT SharedQuadState {
   SharedQuadState();
 };
 
-}
+}  // namespace cc
 
 #endif  // CC_QUADS_SHARED_QUAD_STATE_H_

@@ -36,7 +36,7 @@ class CC_EXPORT ResourcePool {
 
   virtual ~ResourcePool();
 
-  ResourceProvider* resource_provider() { return resource_provider_; };
+  ResourceProvider* resource_provider() { return resource_provider_; }
 
   scoped_ptr<ResourcePool::Resource> AcquireResource(
       const gfx::Size&, GLenum format);
@@ -45,7 +45,7 @@ class CC_EXPORT ResourcePool {
   void SetMaxMemoryUsageBytes(size_t max_memory_usage_bytes);
 
  protected:
-  ResourcePool(ResourceProvider* resource_provider);
+  explicit ResourcePool(ResourceProvider* resource_provider);
 
  private:
   ResourceProvider* resource_provider_;

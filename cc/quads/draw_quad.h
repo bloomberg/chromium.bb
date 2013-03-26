@@ -114,6 +114,6 @@ class CC_EXPORT DrawQuad {
               bool needs_blending);
 };
 
-}
+}  // namespace cc
 
 #endif  // CC_QUADS_DRAW_QUAD_H_

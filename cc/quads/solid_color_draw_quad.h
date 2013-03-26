@@ -33,10 +33,11 @@ class CC_EXPORT SolidColorDrawQuad : public DrawQuad {
       OVERRIDE;
 
   static const SolidColorDrawQuad* MaterialCast(const DrawQuad*);
+
  private:
   SolidColorDrawQuad();
 };
 
-}
+}  // namespace cc
 
 #endif  // CC_QUADS_SOLID_COLOR_DRAW_QUAD_H_

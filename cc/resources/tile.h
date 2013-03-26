@@ -63,8 +63,8 @@ class CC_EXPORT Tile : public base::RefCounted<Tile> {
   int layer_id() const { return layer_id_; }
 
   void set_picture_pile(scoped_refptr<PicturePileImpl> pile) {
-   DCHECK(pile->CanRaster(contents_scale_, content_rect_));
-   picture_pile_ = pile;
+    DCHECK(pile->CanRaster(contents_scale_, content_rect_));
+    picture_pile_ = pile;
   }
 
  private:

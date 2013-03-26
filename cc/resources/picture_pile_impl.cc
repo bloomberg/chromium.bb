@@ -249,8 +249,8 @@ void PicturePileImpl::AnalyzeInRect(const gfx::Rect& content_rect,
   canvas.consumeLazyPixelRefs(&analysis->lazy_pixel_refs);
 }
 
-PicturePileImpl::Analysis::Analysis() :
-    is_solid_color(false),
+PicturePileImpl::Analysis::Analysis()
+  : is_solid_color(false),
     is_transparent(false),
     is_cheap_to_raster(false) {
 }

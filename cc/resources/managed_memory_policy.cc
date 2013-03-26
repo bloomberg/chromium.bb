@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "managed_memory_policy.h"
+#include "cc/resources/managed_memory_policy.h"
 
 #include "base/logging.h"
-#include "priority_calculator.h"
+#include "cc/resources/priority_calculator.h"
 
 namespace cc {
 

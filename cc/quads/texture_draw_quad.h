@@ -51,10 +51,11 @@ class CC_EXPORT TextureDrawQuad : public DrawQuad {
   static const TextureDrawQuad* MaterialCast(const DrawQuad*);
 
   bool PerformClipping();
+
  private:
   TextureDrawQuad();
 };
 
-}
+}  // namespace cc
 
 #endif  // CC_QUADS_TEXTURE_DRAW_QUAD_H_

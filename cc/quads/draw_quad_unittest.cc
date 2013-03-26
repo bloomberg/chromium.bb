@@ -4,6 +4,8 @@
 
 #include "cc/quads/draw_quad.h"
 
+#include <algorithm>
+
 #include "base/bind.h"
 #include "cc/base/math_util.h"
 #include "cc/quads/checkerboard_draw_quad.h"
@@ -497,13 +499,13 @@ TEST(DrawQuadTest, ClipTextureDrawQuad) {
   shared_state->clip_rect = gfx::Rect(50, 70, 30, 20);
 
   // The original quad is 'ABCD', the clipped quad is 'abcd':
-  //40 50       90
-  // B--:-------C 60
-  // |  b----c -|-70
-  // |  |    |  |
-  // |  a----d -|-90
-  // |          |
-  // A----------D 120
+  // 40 50       90
+  //  B--:-------C 60
+  //  |  b----c -|-70
+  //  |  |    |  |
+  //  |  a----d -|-90
+  //  |          |
+  //  A----------D 120
   // UV and vertex opacity are stored per vertex on the parent rectangle 'ABCD'.
 
   // This is the UV value for vertex 'B'.

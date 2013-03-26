@@ -6,6 +6,7 @@
 #define CC_RESOURCES_PICTURE_PILE_BASE_H_
 
 #include <list>
+#include <utility>
 
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
@@ -21,7 +22,7 @@ namespace cc {
 class CC_EXPORT PicturePileBase : public base::RefCounted<PicturePileBase> {
  public:
   PicturePileBase();
-  PicturePileBase(const PicturePileBase* other);
+  explicit PicturePileBase(const PicturePileBase* other);
   PicturePileBase(const PicturePileBase* other, unsigned thread_index);
 
   void Resize(gfx::Size size);

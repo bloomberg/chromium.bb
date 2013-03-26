@@ -43,6 +43,6 @@ class CC_EXPORT ResourceUpdateQueue {
   DISALLOW_COPY_AND_ASSIGN(ResourceUpdateQueue);
 };
 
-}
+}  // namespace cc
 
 #endif  // CC_RESOURCES_RESOURCE_UPDATE_QUEUE_H_

@@ -31,7 +31,7 @@ class CC_EXPORT ScopedResource : public Resource {
   void Leak();
 
  protected:
-  explicit ScopedResource(ResourceProvider*);
+  explicit ScopedResource(ResourceProvider* provider);
 
  private:
   ResourceProvider* resource_provider_;
@@ -43,6 +43,6 @@ class CC_EXPORT ScopedResource : public Resource {
   DISALLOW_COPY_AND_ASSIGN(ScopedResource);
 };
 
-}
+}  // namespace cc
 
 #endif  // CC_RESOURCES_SCOPED_RESOURCE_H_

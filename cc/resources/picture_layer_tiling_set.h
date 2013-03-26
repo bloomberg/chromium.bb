@@ -29,7 +29,7 @@ class CC_EXPORT PictureLayerTilingSet {
   void SetLayerBounds(gfx::Size layer_bounds);
   gfx::Size LayerBounds() const;
 
- void Invalidate(const Region& layer_invalidation);
+  void Invalidate(const Region& layer_invalidation);
 
   PictureLayerTiling* AddTiling(float contents_scale);
   size_t num_tilings() const { return tilings_.size(); }

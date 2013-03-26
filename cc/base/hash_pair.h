@@ -7,6 +7,9 @@
 #ifndef CC_BASE_HASH_PAIR_H_
 #define CC_BASE_HASH_PAIR_H_
 
+#include <utility>
+
+#include "base/basictypes.h"
 #include "base/hash_tables.h"
 
 #if defined(COMPILER_MSVC)
@@ -30,7 +33,7 @@
 
 #else
 #error define DEFINE_PAIR_HASH_FUNCTION_START for your compiler
-#endif // COMPILER
+#endif  // COMPILER
 
 namespace BASE_HASH_NAMESPACE {
 
@@ -61,22 +64,22 @@ namespace BASE_HASH_NAMESPACE {
     } \
   DEFINE_PAIR_HASH_FUNCTION_END();
 
-DEFINE_32BIT_PAIR_HASH(short, short);
-DEFINE_32BIT_PAIR_HASH(short, unsigned short);
-DEFINE_32BIT_PAIR_HASH(short, int);
-DEFINE_32BIT_PAIR_HASH(short, unsigned);
-DEFINE_32BIT_PAIR_HASH(unsigned short, short);
-DEFINE_32BIT_PAIR_HASH(unsigned short, unsigned short);
-DEFINE_32BIT_PAIR_HASH(unsigned short, int);
-DEFINE_32BIT_PAIR_HASH(unsigned short, unsigned);
-DEFINE_32BIT_PAIR_HASH(int, short);
-DEFINE_32BIT_PAIR_HASH(int, unsigned short);
-DEFINE_32BIT_PAIR_HASH(int, int);
-DEFINE_32BIT_PAIR_HASH(int, unsigned);
-DEFINE_32BIT_PAIR_HASH(unsigned, short);
-DEFINE_32BIT_PAIR_HASH(unsigned, unsigned short);
-DEFINE_32BIT_PAIR_HASH(unsigned, int);
-DEFINE_32BIT_PAIR_HASH(unsigned, unsigned);
+DEFINE_32BIT_PAIR_HASH(int16, int16);
+DEFINE_32BIT_PAIR_HASH(int16, uint16);
+DEFINE_32BIT_PAIR_HASH(int16, int32);
+DEFINE_32BIT_PAIR_HASH(int16, uint32);
+DEFINE_32BIT_PAIR_HASH(uint16, int16);
+DEFINE_32BIT_PAIR_HASH(uint16, uint16);
+DEFINE_32BIT_PAIR_HASH(uint16, int32);
+DEFINE_32BIT_PAIR_HASH(uint16, uint32);
+DEFINE_32BIT_PAIR_HASH(int32, int16);
+DEFINE_32BIT_PAIR_HASH(int32, uint16);
+DEFINE_32BIT_PAIR_HASH(int32, int32);
+DEFINE_32BIT_PAIR_HASH(int32, uint32);
+DEFINE_32BIT_PAIR_HASH(uint32, int16);
+DEFINE_32BIT_PAIR_HASH(uint32, uint16);
+DEFINE_32BIT_PAIR_HASH(uint32, int32);
+DEFINE_32BIT_PAIR_HASH(uint32, uint32);
 
 #undef DEFINE_32BIT_PAIR_HASH
 
@@ -120,24 +123,24 @@ DEFINE_32BIT_PAIR_HASH(unsigned, unsigned);
     } \
   DEFINE_PAIR_HASH_FUNCTION_END();
 
-DEFINE_64BIT_PAIR_HASH(short, int64);
-DEFINE_64BIT_PAIR_HASH(short, uint64);
-DEFINE_64BIT_PAIR_HASH(unsigned short, int64);
-DEFINE_64BIT_PAIR_HASH(unsigned short, uint64);
-DEFINE_64BIT_PAIR_HASH(int, int64);
-DEFINE_64BIT_PAIR_HASH(int, uint64);
-DEFINE_64BIT_PAIR_HASH(unsigned, int64);
-DEFINE_64BIT_PAIR_HASH(unsigned, uint64);
-DEFINE_64BIT_PAIR_HASH(int64, short);
-DEFINE_64BIT_PAIR_HASH(int64, unsigned short);
-DEFINE_64BIT_PAIR_HASH(int64, int);
-DEFINE_64BIT_PAIR_HASH(int64, unsigned);
+DEFINE_64BIT_PAIR_HASH(int16, int64);
+DEFINE_64BIT_PAIR_HASH(int16, uint64);
+DEFINE_64BIT_PAIR_HASH(uint16, int64);
+DEFINE_64BIT_PAIR_HASH(uint16, uint64);
+DEFINE_64BIT_PAIR_HASH(int32, int64);
+DEFINE_64BIT_PAIR_HASH(int32, uint64);
+DEFINE_64BIT_PAIR_HASH(uint32, int64);
+DEFINE_64BIT_PAIR_HASH(uint32, uint64);
+DEFINE_64BIT_PAIR_HASH(int64, int16);
+DEFINE_64BIT_PAIR_HASH(int64, uint16);
+DEFINE_64BIT_PAIR_HASH(int64, int32);
+DEFINE_64BIT_PAIR_HASH(int64, uint32);
 DEFINE_64BIT_PAIR_HASH(int64, int64);
 DEFINE_64BIT_PAIR_HASH(int64, uint64);
-DEFINE_64BIT_PAIR_HASH(uint64, short);
-DEFINE_64BIT_PAIR_HASH(uint64, unsigned short);
-DEFINE_64BIT_PAIR_HASH(uint64, int);
-DEFINE_64BIT_PAIR_HASH(uint64, unsigned);
+DEFINE_64BIT_PAIR_HASH(uint64, int16);
+DEFINE_64BIT_PAIR_HASH(uint64, uint16);
+DEFINE_64BIT_PAIR_HASH(uint64, int32);
+DEFINE_64BIT_PAIR_HASH(uint64, uint32);
 DEFINE_64BIT_PAIR_HASH(uint64, int64);
 DEFINE_64BIT_PAIR_HASH(uint64, uint64);
 

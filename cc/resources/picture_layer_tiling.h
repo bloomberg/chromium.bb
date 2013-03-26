@@ -5,6 +5,9 @@
 #ifndef CC_RESOURCES_PICTURE_LAYER_TILING_H_
 #define CC_RESOURCES_PICTURE_LAYER_TILING_H_
 
+#include <utility>
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
@@ -31,6 +34,9 @@ class PictureLayerTilingClient {
   virtual gfx::Size CalculateTileSize(
     gfx::Size current_tile_size,
     gfx::Size content_bounds) = 0;
+
+ protected:
+  virtual ~PictureLayerTilingClient() {}
 };
 
 class CC_EXPORT PictureLayerTiling {
@@ -145,7 +151,7 @@ class CC_EXPORT PictureLayerTiling {
   typedef std::pair<int, int> TileMapKey;
   typedef base::hash_map<TileMapKey, scoped_refptr<Tile> > TileMap;
 
-  PictureLayerTiling(float contents_scale);
+  explicit PictureLayerTiling(float contents_scale);
   Tile* TileAt(int, int) const;
   void CreateTilesFromContentRect(gfx::Rect layer_rect);
   void CreateTile(int i, int j);

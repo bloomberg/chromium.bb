@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "cc/resources/picture_pile.h"
+
 #include <algorithm>
+#include <vector>
 
 #include "cc/base/region.h"
-#include "cc/resources/picture_pile.h"
 #include "cc/resources/picture_pile_impl.h"
 
 namespace {
@@ -112,7 +114,7 @@ void PicturePile::Update(
 
 class FullyContainedPredicate {
  public:
-  FullyContainedPredicate(gfx::Rect rect) : layer_rect_(rect) {}
+  explicit FullyContainedPredicate(gfx::Rect rect) : layer_rect_(rect) {}
   bool operator()(const scoped_refptr<Picture>& picture) {
     return layer_rect_.Contains(picture->LayerRect());
   }

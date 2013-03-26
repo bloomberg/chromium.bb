@@ -5,6 +5,9 @@
 #ifndef CC_BASE_SCOPED_PTR_HASH_MAP_H_
 #define CC_BASE_SCOPED_PTR_HASH_MAP_H_
 
+#include <algorithm>
+#include <utility>
+
 #include "base/basictypes.h"
 #include "base/hash_tables.h"
 #include "base/logging.h"
@@ -14,11 +17,12 @@
 namespace cc {
 
 // This type acts like a hash_map<K, scoped_ptr<V> >, based on top of
-// std::hash_map. The ScopedPtrHashMap has ownership of all values in the data
+// base::hash_map. The ScopedPtrHashMap has ownership of all values in the data
 // structure.
 template <typename Key, typename Value>
 class ScopedPtrHashMap {
   typedef base::hash_map<Key, Value*> Container;
+
  public:
   typedef typename Container::iterator iterator;
   typedef typename Container::const_iterator const_iterator;

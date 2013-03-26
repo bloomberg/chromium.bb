@@ -395,6 +395,6 @@ class CC_EXPORT ResourceProvider {
   DISALLOW_COPY_AND_ASSIGN(ResourceProvider);
 };
 
-}
+}  // namespace cc
 
 #endif  // CC_RESOURCES_RESOURCE_PROVIDER_H_

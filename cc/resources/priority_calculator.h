@@ -36,6 +36,6 @@ class CC_EXPORT PriorityCalculator {
   static int AllowEverythingCutoff();
 };
 
-}
+}  // namespace cc
 
 #endif  // CC_RESOURCES_PRIORITY_CALCULATOR_H_

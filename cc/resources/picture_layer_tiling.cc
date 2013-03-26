@@ -4,6 +4,7 @@
 
 #include "cc/resources/picture_layer_tiling.h"
 
+#include <algorithm>
 #include <cmath>
 
 #include "base/debug/trace_event.h"
@@ -131,7 +132,6 @@ void PictureLayerTiling::Invalidate(const Region& layer_invalidation) {
   for (Region::Iterator region_iter(layer_invalidation);
        region_iter.has_rect();
        region_iter.next()) {
-
     gfx::Rect layer_invalidation = region_iter.rect();
     layer_invalidation.Intersect(gfx::Rect(layer_bounds_));
     gfx::Rect rect =
@@ -522,7 +522,7 @@ gfx::Rect PictureLayerTiling::ExpandRectEquallyToAreaBoundedBy(
     gfx::Rect bounding_rect) {
   DCHECK(!starting_rect.IsEmpty());
   DCHECK(!bounding_rect.IsEmpty());
-  DCHECK(target_area > 0);
+  DCHECK_GT(target_area, 0);
 
   gfx::Rect rect = IntersectRects(starting_rect, bounding_rect);
   if (rect.IsEmpty())

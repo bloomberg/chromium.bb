@@ -57,4 +57,4 @@ void ImageLayerUpdater::UpdateTexture(ResourceUpdateQueue* queue,
     queue->AppendFullUpload(upload);
 }
 
-}
+}  // namespace cc

@@ -256,8 +256,10 @@ gfx::Vector2d TilingData::TextureOffset(int x_index, int y_index) const {
 }
 
 void TilingData::RecomputeNumTiles() {
-  num_tiles_x_ = ComputeNumTiles(max_texture_size_.width(), total_size_.width(), border_texels_);
-  num_tiles_y_ = ComputeNumTiles(max_texture_size_.height(), total_size_.height(), border_texels_);
+  num_tiles_x_ = ComputeNumTiles(
+      max_texture_size_.width(), total_size_.width(), border_texels_);
+  num_tiles_y_ = ComputeNumTiles(
+      max_texture_size_.height(), total_size_.height(), border_texels_);
 }
 
 TilingData::BaseIterator::BaseIterator(const TilingData* tiling_data)

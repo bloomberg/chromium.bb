@@ -58,6 +58,6 @@ class CompletionEvent {
 #endif
 };
 
-}
+}  // namespace cc
 
 #endif  // CC_BASE_COMPLETION_EVENT_H_

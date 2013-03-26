@@ -77,7 +77,8 @@ class DebugColors {
   static SkColor ScreenSpaceLayerRectFillColor();
 
   static SkColor ScreenSpaceSurfaceReplicaRectBorderColor();
-  static int ScreenSpaceSurfaceReplicaRectBorderWidth(const LayerTreeImpl* tree_impl);
+  static int ScreenSpaceSurfaceReplicaRectBorderWidth(
+      const LayerTreeImpl* tree_impl);
   static SkColor ScreenSpaceSurfaceReplicaRectFillColor();
 
   static SkColor OccludingRectBorderColor();

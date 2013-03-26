@@ -4,6 +4,8 @@
 
 #include "cc/resources/picture_layer_tiling_set.h"
 
+#include <vector>
+
 #include "cc/resources/resource_pool.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/test/fake_output_surface.h"

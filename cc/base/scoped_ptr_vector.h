@@ -5,6 +5,9 @@
 #ifndef CC_BASE_SCOPED_PTR_VECTOR_H_
 #define CC_BASE_SCOPED_PTR_VECTOR_H_
 
+#include <algorithm>
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -142,7 +145,7 @@ class ScopedPtrVector {
 
   template<class Compare>
   inline void sort(Compare comp) {
-   std::sort(data_.begin(), data_.end(), comp);
+    std::sort(data_.begin(), data_.end(), comp);
   }
 
   iterator begin() { return static_cast<iterator>(data_.begin()); }

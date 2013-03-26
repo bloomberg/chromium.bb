@@ -37,10 +37,11 @@ class CC_EXPORT StreamVideoDrawQuad : public DrawQuad {
       OVERRIDE;
 
   static const StreamVideoDrawQuad* MaterialCast(const DrawQuad*);
+
  private:
   StreamVideoDrawQuad();
 };
 
-}
+}  // namespace cc
 
 #endif  // CC_QUADS_STREAM_VIDEO_DRAW_QUAD_H_

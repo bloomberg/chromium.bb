@@ -5,6 +5,7 @@
 #ifndef CC_QUADS_RENDER_PASS_H_
 #define CC_QUADS_RENDER_PASS_H_
 
+#include <utility>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -45,7 +46,7 @@ class CC_EXPORT RenderPass {
     int layer_id;
     int index;
 
-   Id(int layer_id, int index) : layer_id(layer_id), index(index) {}
+    Id(int layer_id, int index) : layer_id(layer_id), index(index) {}
 
     bool operator==(const Id& other) const {
       return layer_id == other.layer_id && index == other.index;
@@ -105,7 +106,7 @@ class CC_EXPORT RenderPass {
   DISALLOW_COPY_AND_ASSIGN(RenderPass);
 };
 
-} // namespace cc
+}  // namespace cc
 
 namespace BASE_HASH_NAMESPACE {
 #if defined(COMPILER_MSVC)
@@ -124,12 +125,12 @@ struct hash<cc::RenderPass::Id> {
 };
 #else
 #error define a hash function for your compiler
-#endif // COMPILER
+#endif  // COMPILER
 }
 
 namespace cc {
 typedef ScopedPtrVector<RenderPass> RenderPassList;
 typedef base::hash_map<RenderPass::Id, RenderPass*> RenderPassIdHashMap;
-} // namespace cc
+}  // namespace cc
 
 #endif  // CC_QUADS_RENDER_PASS_H_

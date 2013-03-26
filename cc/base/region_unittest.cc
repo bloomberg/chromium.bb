@@ -71,7 +71,7 @@ TEST(RegionTest, ContainsPoint) {
   TEST_BOTTOM_OF_RECT(r, 31, 40, 10, 10);
 
   r.Union(gfx::Rect(42, 40, 10, 10));
-  
+
   TEST_INSIDE_RECT(r, 42, 40, 10, 10);
   TEST_LEFT_OF_RECT(r, 42, 40, 10, 10);
   TEST_RIGHT_OF_RECT(r, 42, 40, 10, 10);

@@ -4,6 +4,8 @@
 
 #include "cc/resources/layer_tiling_data.h"
 
+#include <vector>
+
 #include "base/logging.h"
 
 namespace cc {

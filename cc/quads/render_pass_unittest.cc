@@ -19,7 +19,8 @@ namespace cc {
 namespace {
 
 struct RenderPassSize {
-  // If you add a new field to this class, make sure to add it to the copy() tests.
+  // If you add a new field to this class, make sure to add it to the
+  // Copy() tests.
   RenderPass::Id id;
   QuadList quad_list;
   SharedQuadStateList shared_quad_state_list;

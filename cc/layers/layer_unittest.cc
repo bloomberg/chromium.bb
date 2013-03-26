@@ -551,7 +551,7 @@ TEST_F(LayerTest, CheckPropertyChangeCausesCorrectBehavior) {
       gfx::Vector2d(10, 10)));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetShouldScrollOnMainThread(true));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetNonFastScrollableRegion(
-      gfx::Rect(1, 1, 2, 2)));
+      Region(gfx::Rect(1, 1, 2, 2))));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetHaveWheelEventHandlers(true));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetTransform(
       gfx::Transform(0.0, 0.0, 0.0, 0.0, 0.0, 0.0)));

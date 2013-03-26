@@ -45,10 +45,11 @@ class CC_EXPORT TileDrawQuad : public DrawQuad {
       OVERRIDE;
 
   static const TileDrawQuad* MaterialCast(const DrawQuad*);
+
  private:
   TileDrawQuad();
 };
 
-}
+}  // namespace cc
 
 #endif  // CC_QUADS_TILE_DRAW_QUAD_H_

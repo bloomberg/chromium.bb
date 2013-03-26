@@ -18,7 +18,7 @@ const char kRasterTask[] = "RasterTask";
 }
 
 struct ScopedPaintLayer {
-  ScopedPaintLayer(int layer_id) {
+  explicit ScopedPaintLayer(int layer_id) {
     TRACE_EVENT_BEGIN1(internal::kCategory, internal::kPaintLayer,
         internal::kLayerId, layer_id);
   }
@@ -30,7 +30,7 @@ struct ScopedPaintLayer {
 };
 
 struct ScopedRasterTask {
-  ScopedRasterTask(int layer_id) {
+  explicit ScopedRasterTask(int layer_id) {
     TRACE_EVENT_BEGIN1(internal::kCategory, internal::kRasterTask,
         internal::kLayerId, layer_id);
   }
@@ -43,7 +43,7 @@ struct ScopedRasterTask {
 
 struct ScopedLayerObjectTracker
     : public base::debug::TraceScopedTrackableObject<int> {
-  ScopedLayerObjectTracker(int layer_id)
+  explicit ScopedLayerObjectTracker(int layer_id)
       : base::debug::TraceScopedTrackableObject<int>(
             internal::kCategory,
             internal::kLayerId,

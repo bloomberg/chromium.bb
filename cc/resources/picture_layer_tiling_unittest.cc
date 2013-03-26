@@ -45,7 +45,6 @@ class PictureLayerTilingIteratorTest : public testing::Test {
                                            request_rect);
          iter;
          ++iter) {
-
       // Geometry cannot overlap previous geometry at all
       gfx::Rect geometry = iter.geometry_rect();
       EXPECT_TRUE(expect_rect.Contains(geometry));

@@ -47,7 +47,7 @@ class CC_EXPORT PrioritizedResourceManager {
 
   typedef std::list<PrioritizedResource::Backing*> BackingList;
 
-  // TODO (epenner): (http://crbug.com/137094) This 64MB default is a straggler
+  // TODO(epenner): (http://crbug.com/137094) This 64MB default is a straggler
   // from the old texture manager and is just to give us a default memory
   // allocation before we get a callback from the GPU memory manager. We
   // should probaby either:
@@ -171,7 +171,7 @@ class CC_EXPORT PrioritizedResourceManager {
     return a < b;
   }
 
-  PrioritizedResourceManager(const Proxy* proxy);
+  explicit PrioritizedResourceManager(const Proxy* proxy);
 
   bool EvictBackingsToReduceMemory(size_t limit_bytes,
                                    int priority_cutoff,

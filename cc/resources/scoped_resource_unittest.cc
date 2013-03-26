@@ -10,8 +10,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/khronos/GLES2/gl2.h"
 
-using namespace WebKit;
-
 namespace cc {
 namespace {
 

@@ -4,6 +4,8 @@
 
 #include "cc/resources/memory_history.h"
 
+#include <limits>
+
 namespace cc {
 
 // static

@@ -21,7 +21,7 @@ class OverdrawMetrics {
  public:
   static scoped_ptr<OverdrawMetrics> Create(bool record_metrics_for_frame) {
     return make_scoped_ptr(new OverdrawMetrics(record_metrics_for_frame));
- }
+  }
 
   // These methods are used for saving metrics during update/commit.
 
@@ -93,9 +93,9 @@ class OverdrawMetrics {
   // Count of tiles that were invalidated but not uploaded.
   int tiles_culled_for_upload_;
   // Count the number of bytes in contents textures.
-  unsigned long long contents_texture_use_bytes_;
+  uint64 contents_texture_use_bytes_;
   // Count the number of bytes in RenderSurfaceImpl textures.
-  unsigned long long render_surface_texture_use_bytes_;
+  uint64 render_surface_texture_use_bytes_;
 
   // These values are used for saving metrics during draw.
 

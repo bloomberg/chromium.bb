@@ -9,7 +9,7 @@
 
 namespace cc {
 
-template<typename T, size_t size>
+template<typename T, size_t kSize>
 class RingBuffer {
  public:
   explicit RingBuffer()
@@ -17,7 +17,7 @@ class RingBuffer {
   }
 
   size_t BufferSize() const {
-    return size;
+    return kSize;
   }
 
   size_t CurrentIndex() const {
@@ -60,7 +60,7 @@ class RingBuffer {
 
     Iterator& operator++() {
       index_++;
-      if (index_ == size)
+      if (index_ == kSize)
         out_of_range_ = true;
       return *this;
     }
@@ -77,41 +77,41 @@ class RingBuffer {
     }
 
    private:
-    Iterator(const RingBuffer<T, size>& buffer, size_t index)
+    Iterator(const RingBuffer<T, kSize>& buffer, size_t index)
       : buffer_(buffer),
         index_(index),
         out_of_range_(false) {
     }
 
-    const RingBuffer<T, size>& buffer_;
+    const RingBuffer<T, kSize>& buffer_;
     size_t index_;
     bool out_of_range_;
 
-    friend class RingBuffer<T, size>;
+    friend class RingBuffer<T, kSize>;
   };
 
   // Returns an Iterator pointing to the oldest value in the buffer.
   // Example usage (iterate from oldest to newest value):
-  //  for (RingBuffer<T, size>::Iterator it = ring_buffer.Begin(); it; ++it) ...
+  //  for (RingBuffer<T, kSize>::Iterator it = ring_buffer.Begin(); it; ++it) {}
   Iterator Begin() const {
-    if (current_index_ < size)
-      return Iterator(*this, size - current_index_);
+    if (current_index_ < kSize)
+      return Iterator(*this, kSize - current_index_);
     return Iterator(*this, 0);
   }
 
   // Returns an Iterator pointing to the newest value in the buffer.
   // Example usage (iterate backwards from newest to oldest value):
-  //  for (RingBuffer<T, size>::Iterator it = ring_buffer.End(); it; --it) ...
+  //  for (RingBuffer<T, kSize>::Iterator it = ring_buffer.End(); it; --it) {}
   Iterator End() const {
-    return Iterator(*this, size - 1);
+    return Iterator(*this, kSize - 1);
   }
 
  private:
   inline size_t BufferIndex(size_t n) const {
-    return (current_index_ + n) % size;
+    return (current_index_ + n) % kSize;
   }
 
-  T buffer_[size];
+  T buffer_[kSize];
   size_t current_index_;
 };
 

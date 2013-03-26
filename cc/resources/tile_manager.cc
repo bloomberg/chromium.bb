@@ -5,6 +5,7 @@
 #include "cc/resources/tile_manager.h"
 
 #include <algorithm>
+#include <string>
 
 #include "base/bind.h"
 #include "base/debug/trace_event.h"
@@ -646,8 +647,8 @@ void TileManager::DispatchMoreTasks() {
   // need to process those tiles first before we start to handle the tiles
   // in the need_to_be_rasterized queue. Note that solid/transparent tiles
   // will not be put into the decoding list.
-  for(TileList::iterator it = tiles_with_image_decoding_tasks_.begin();
-      it != tiles_with_image_decoding_tasks_.end(); ) {
+  for (TileList::iterator it = tiles_with_image_decoding_tasks_.begin();
+       it != tiles_with_image_decoding_tasks_.end(); ) {
     ManagedTileState& managed_tile_state = (*it)->managed_state();
     DispatchImageDecodeTasksForTile(*it);
     if (managed_tile_state.pending_pixel_refs.empty()) {
@@ -1051,7 +1052,7 @@ void TileManager::RecordSolidColorPredictorResults(
     if (SkColorGetA(current_color) != 0)
       is_transparent = false;
 
-    if(!is_actually_solid && !is_transparent)
+    if (!is_actually_solid && !is_transparent)
       break;
   }
 

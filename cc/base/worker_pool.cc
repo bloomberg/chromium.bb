@@ -4,6 +4,8 @@
 
 #include "cc/base/worker_pool.h"
 
+#include <algorithm>
+
 #include "base/bind.h"
 #include "base/debug/trace_event.h"
 #include "base/stringprintf.h"
@@ -344,10 +346,9 @@ void WorkerPool::Inner::OnIdleOnOriginThread() {
 void WorkerPool::Inner::Run() {
 #if defined(OS_ANDROID)
   // TODO(epenner): Move thread priorities to base. (crbug.com/170549)
-  int nice_value = 10; // Idle priority.
+  int nice_value = 10;  // Idle priority.
   setpriority(PRIO_PROCESS, base::PlatformThread::CurrentId(), nice_value);
 #endif
-
   {
     base::AutoLock lock(lock_);
 

@@ -16,12 +16,10 @@
 #include "cc/quads/yuv_video_draw_quad.h"
 
 namespace {
-
 template<typename T> T* TypedCopy(const cc::DrawQuad* other) {
   return new T(*T::MaterialCast(other));
 }
-
-}
+}  // namespace
 
 namespace cc {
 

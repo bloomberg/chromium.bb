@@ -7,6 +7,7 @@
 
 #include <list>
 #include <map>
+#include <vector>
 
 #include "cc/base/cc_export.h"
 #include "cc/resources/picture_pile_base.h"
@@ -62,7 +63,7 @@ class CC_EXPORT PicturePileImpl : public PicturePileBase {
  protected:
   friend class PicturePile;
 
-  PicturePileImpl(bool enable_lcd_text);
+  explicit PicturePileImpl(bool enable_lcd_text);
   PicturePileImpl(const PicturePileBase* other, bool enable_lcd_text);
   virtual ~PicturePileImpl();
 

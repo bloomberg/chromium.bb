@@ -5,6 +5,8 @@
 #ifndef CC_BASE_TILING_DATA_H_
 #define CC_BASE_TILING_DATA_H_
 
+#include <utility>
+
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "cc/base/cc_export.h"
@@ -74,7 +76,10 @@ class CC_EXPORT TilingData {
 
    protected:
     explicit BaseIterator(const TilingData* tiling_data);
-    void done() { index_x_ = -1; index_y_ = -1; }
+    void done() {
+      index_x_ = -1;
+      index_y_ = -1;
+    }
 
     const TilingData* tiling_data_;
     int index_x_;
