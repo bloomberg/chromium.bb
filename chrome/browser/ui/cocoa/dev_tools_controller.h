@@ -47,6 +47,7 @@ class WebContents;
 - (void)updateDevToolsForWebContents:(content::WebContents*)contents
                          withProfile:(Profile*)profile;
 
+- (CGFloat)topContentOffset;
 - (void)setTopContentOffset:(CGFloat)offset;
 
 @end

@@ -206,8 +206,8 @@ willPositionSheet:(NSWindow*)sheet
   DCHECK_LE(maxY, NSMaxY(contentBounds) + yOffset);
 
   // Place the toolbar at the top of the reserved area.
+  CGFloat toolbarTopY = maxY;
   maxY = [self layoutToolbarAtMinX:minX maxY:maxY width:width];
-  CGFloat toolbarBottomY = maxY;
 
   // If we're not displaying the bookmark bar below the infobar, then it goes
   // immediately below the toolbar.
@@ -251,8 +251,13 @@ willPositionSheet:(NSWindow*)sheet
     toolbarToWebContentsOffset_ = 0;
     contentAreaTop = maxY;
   } else {
-    toolbarToWebContentsOffset_ = toolbarBottomY - maxY;
-    contentAreaTop = toolbarBottomY;
+    CGFloat minToolbarHeight = 0;
+    if ([self hasToolbar]) {
+      minToolbarHeight = [toolbarController_
+          desiredHeightForCompression:bookmarks::kBookmarkBarOverlap];
+    }
+    contentAreaTop = toolbarTopY - minToolbarHeight;
+    toolbarToWebContentsOffset_ = contentAreaTop - maxY;
   }
   [self updateContentOffsets];
 
@@ -842,8 +847,6 @@ willPositionSheet:(NSWindow*)sheet
 }
 
 - (CGFloat)toolbarDividerOpacity {
-  if ([self currentInstantUIState] != browser_window_controller::kInstantUINone)
-    return 1;
   return [bookmarkBarController_ toolbarDividerOpacity];
 }
 

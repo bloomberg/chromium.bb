@@ -128,10 +128,6 @@ using content::WebContents;
 
 namespace {
 
-// Overlap (in pixels) between the toolbar and the bookmark bar (when showing in
-// normal mode).
-const CGFloat kBookmarkBarOverlap = 3.0;
-
 // Duration of the bookmark bar animations.
 const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
 
@@ -528,7 +524,8 @@ void RecordAppLaunch(Profile* profile, GURL url) {
     // If we ever need any other animation cases, code would go here.
   }
 
-  return [self isInState:BookmarkBar::SHOW] ? kBookmarkBarOverlap : 0;
+  return [self isInState:BookmarkBar::SHOW] ? bookmarks::kBookmarkBarOverlap
+                                            : 0;
 }
 
 - (CGFloat)toolbarDividerOpacity {
@@ -895,7 +892,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
     // Height takes into account the extra height we have since the toolbar
     // only compresses when we're done.
     [view animateToNewHeight:(bookmarks::kBookmarkBarHeight -
-                              kBookmarkBarOverlap)
+                              bookmarks::kBookmarkBarOverlap)
                     duration:kBookmarkBarAnimationDuration];
   } else if ([self isAnimatingFromState:BookmarkBar::SHOW
                                 toState:BookmarkBar::HIDDEN]) {
@@ -922,7 +919,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
     // Height takes into account the extra height we have since the toolbar
     // only compresses when we're done.
     [view animateToNewHeight:(bookmarks::kBookmarkBarHeight -
-                              kBookmarkBarOverlap)
+                              bookmarks::kBookmarkBarOverlap)
                     duration:kBookmarkBarAnimationDuration];
   } else {
     // Oops! An animation we don't know how to handle.
