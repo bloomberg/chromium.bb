@@ -40,7 +40,8 @@ EXTRA_ENV = {
   'OPT_LEVEL': '',  # Default opt is 0, but we need to know if it's explicitly
                     # requested or not, since we don't want to propagate
                     # the value to TRANSLATE_FLAGS if it wasn't explicitly set.
-  'OPT_FLAGS': '-O${#OPT_LEVEL ? ${OPT_LEVEL} : 0} ${OPT_STRIP_%STRIP_MODE%} ' +
+  'OPT_LTO_FLAGS': '-std-link-opts -disable-internalize',
+  'OPT_FLAGS': '${#OPT_LEVEL && !OPT_LEVEL == 0 ? ${OPT_LTO_FLAGS}} ${OPT_STRIP_%STRIP_MODE%} ' +
                '-inline-threshold=${OPT_INLINE_THRESHOLD} ' +
                '--do-not-wrap',
   'OPT_STRIP_none': '',
@@ -349,7 +350,7 @@ def main(argv):
       chain.add(DoLLVMPasses(passes), 'expand_features.' + bitcode_type)
 
     if env.getone('OPT_LEVEL') != '' and env.getone('OPT_LEVEL') != '0':
-      chain.add(DoOPT, 'opt.' + bitcode_type)
+      chain.add(DoLTO, 'opt.' + bitcode_type)
     elif env.getone('STRIP_MODE') != 'none':
       chain.add(DoStrip, 'stripped.' + bitcode_type)
 
@@ -459,10 +460,10 @@ def DoLLVMPasses(pass_list):
   def Func(infile, outfile):
     filtered_list = [pass_option for pass_option in pass_list
                      if pass_option not in env.get('LLVM_PASSES_TO_DISABLE')]
-    RunDriver('opt', filtered_list + [infile, '-o', outfile])
+    RunDriver('opt', filtered_list + [infile, '-o', outfile, '--do-not-wrap'])
   return Func
 
-def DoOPT(infile, outfile):
+def DoLTO(infile, outfile):
   opt_flags = env.get('OPT_FLAGS')
   RunDriver('opt', opt_flags + [ infile, '-o', outfile ])
 

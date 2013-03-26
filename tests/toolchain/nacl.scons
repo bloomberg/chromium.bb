@@ -288,6 +288,7 @@ env.AddNodeToTestSuite(node,
 debug_env = env.Clone()
 debug_env.Append(CFLAGS=['-g', '-O0'])
 debug_env.Append(CCFLAGS=['-g', '-O0'])
+debug_env.Append(LINKFLAGS=['-O0'])
 dwarf_local_var_nexe = debug_env.ComponentProgram('dwarf_local_var',
                                                   ['dwarf_local_var.c',
                                                    'dwarf_local_var_dummy.c'],

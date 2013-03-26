@@ -2691,9 +2691,9 @@ binutils-gold-sb-configure() {
   spopd
 }
 
-# binutils-gold-sb-make - Make binutils (unsandboxed)
+# binutils-gold-sb-make - Make binutils (sandboxed)
 binutils-gold-sb-make() {
-  local arch=${arch}
+  local arch=${1}
   local objdir="$(GetTranslatorBuildDir ${arch})/binutils-gold-sb"
   ts-touch-open "${objdir}/"
 
