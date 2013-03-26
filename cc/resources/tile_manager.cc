@@ -354,8 +354,8 @@ void TileManager::ManageTiles() {
     for (int i = 0; i < NUM_BIN_PRIORITIES; ++i)
       mts.bin[i] = bin_map[mts.bin[i]];
 
-    if (!mts.drawing_info.resource_ &&
-        !mts.drawing_info.resource_is_being_initialized_ &&
+    if (!tile->drawing_info().resource_ &&
+        !tile->drawing_info().resource_is_being_initialized_ &&
         !tile->priority(ACTIVE_TREE).is_live &&
         !tile->priority(PENDING_TREE).is_live)
       continue;
@@ -380,20 +380,19 @@ void TileManager::ManageTiles() {
 void TileManager::CheckForCompletedTileUploads() {
   while (!tiles_with_pending_upload_.empty()) {
     Tile* tile = tiles_with_pending_upload_.front();
-    ManagedTileState& managed_tile_state = tile->managed_state();
-    DCHECK(managed_tile_state.drawing_info.resource_);
+    DCHECK(tile->drawing_info().resource_);
 
     // Set pixel tasks complete in the order they are posted.
     if (!resource_pool_->resource_provider()->DidSetPixelsComplete(
-          managed_tile_state.drawing_info.resource_->id())) {
+          tile->drawing_info().resource_->id())) {
       break;
     }
 
     // It's now safe to release the pixel buffer.
     resource_pool_->resource_provider()->ReleasePixelBuffer(
-        managed_tile_state.drawing_info.resource_->id());
+        tile->drawing_info().resource_->id());
 
-    managed_tile_state.drawing_info.can_be_freed_ = true;
+    tile->drawing_info().can_be_freed_ = true;
 
     bytes_pending_upload_ -= tile->bytes_consumed_if_allocated();
     DidTileRasterStateChange(tile, IDLE_STATE);
@@ -408,17 +407,16 @@ void TileManager::CheckForCompletedTileUploads() {
 void TileManager::AbortPendingTileUploads() {
   while (!tiles_with_pending_upload_.empty()) {
     Tile* tile = tiles_with_pending_upload_.front();
-    ManagedTileState& managed_tile_state = tile->managed_state();
-    DCHECK(managed_tile_state.drawing_info.resource_);
+    DCHECK(tile->drawing_info().resource_);
 
     resource_pool_->resource_provider()->AbortSetPixels(
-        managed_tile_state.drawing_info.resource_->id());
+        tile->drawing_info().resource_->id());
     resource_pool_->resource_provider()->ReleasePixelBuffer(
-        managed_tile_state.drawing_info.resource_->id());
+        tile->drawing_info().resource_->id());
 
-    managed_tile_state.drawing_info.resource_is_being_initialized_ = false;
-    managed_tile_state.drawing_info.can_be_freed_ = true;
-    managed_tile_state.can_use_gpu_memory = false;
+    tile->drawing_info().resource_is_being_initialized_ = false;
+    tile->drawing_info().can_be_freed_ = true;
+    tile->managed_state().can_use_gpu_memory = false;
     FreeResourcesForTile(tile);
 
     bytes_pending_upload_ -= tile->bytes_consumed_if_allocated();
@@ -449,10 +447,10 @@ void TileManager::GetMemoryStats(
   *memory_used_bytes = 0;
   for (size_t i = 0; i < live_or_allocated_tiles_.size(); i++) {
     const Tile* tile = live_or_allocated_tiles_[i];
-    const ManagedTileState& mts = tile->managed_state();
     if (!tile->drawing_info().requires_resource())
       continue;
 
+    const ManagedTileState& mts = tile->managed_state();
     size_t tile_bytes = tile->bytes_consumed_if_allocated();
     if (mts.gpu_memmgr_stats_bin == NOW_BIN)
       *memory_required_bytes += tile_bytes;
@@ -561,7 +559,7 @@ void TileManager::AssignGpuMemoryToTiles() {
     if (!tile->drawing_info().requires_resource())
       continue;
 
-    if (!mts.drawing_info.can_be_freed_)
+    if (!tile->drawing_info().can_be_freed_)
       unreleasable_bytes += tile->bytes_consumed_if_allocated();
     if (mts.raster_state == WAITING_FOR_RASTER_STATE)
       DidTileRasterStateChange(tile, IDLE_STATE);
@@ -580,7 +578,7 @@ void TileManager::AssignGpuMemoryToTiles() {
       continue;
 
     size_t tile_bytes = tile->bytes_consumed_if_allocated();
-    if (!mts.drawing_info.can_be_freed_)
+    if (!tile->drawing_info().can_be_freed_)
       continue;
     if (mts.bin[HIGH_PRIORITY_BIN] == NEVER_BIN &&
         mts.bin[LOW_PRIORITY_BIN] == NEVER_BIN) {
@@ -598,8 +596,8 @@ void TileManager::AssignGpuMemoryToTiles() {
     }
     bytes_left -= tile_bytes;
     mts.can_use_gpu_memory = true;
-    if (!mts.drawing_info.resource_ &&
-        !mts.drawing_info.resource_is_being_initialized_) {
+    if (!tile->drawing_info().resource_ &&
+        !tile->drawing_info().resource_is_being_initialized_) {
       tiles_that_need_to_be_rasterized_.push_back(tile);
       DidTileRasterStateChange(tile, WAITING_FOR_RASTER_STATE);
     }
@@ -628,11 +626,10 @@ void TileManager::AssignGpuMemoryToTiles() {
 }
 
 void TileManager::FreeResourcesForTile(Tile* tile) {
-  ManagedTileState& managed_tile_state = tile->managed_state();
-  DCHECK(managed_tile_state.drawing_info.can_be_freed_);
-  if (managed_tile_state.drawing_info.resource_)
+  DCHECK(tile->drawing_info().can_be_freed_);
+  if (tile->drawing_info().resource_)
     resource_pool_->ReleaseResource(
-        managed_tile_state.drawing_info.resource_.Pass());
+        tile->drawing_info().resource_.Pass());
 }
 
 bool TileManager::CanDispatchRasterTask(Tile* tile) const {
@@ -808,8 +805,8 @@ scoped_ptr<ResourcePool::Resource> TileManager::PrepareTileForRaster(
       resource_pool_->AcquireResource(tile->tile_size_.size(), tile->format_);
   resource_pool_->resource_provider()->AcquirePixelBuffer(resource->id());
 
-  managed_tile_state.drawing_info.resource_is_being_initialized_ = true;
-  managed_tile_state.drawing_info.can_be_freed_ = false;
+  tile->drawing_info().resource_is_being_initialized_ = true;
+  tile->drawing_info().can_be_freed_ = false;
 
   DidTileRasterStateChange(tile, RASTER_STATE);
   return resource.Pass();
@@ -880,8 +877,7 @@ void TileManager::OnRasterTaskCompleted(
   // Release raster resources.
   resource_pool_->resource_provider()->UnmapPixelBuffer(resource->id());
 
-  ManagedTileState& managed_tile_state = tile->managed_state();
-  managed_tile_state.drawing_info.can_be_freed_ = true;
+  tile->drawing_info().can_be_freed_ = true;
 
   // Tile can be freed after the completion of the raster task. Call
   // AssignGpuMemoryToTiles() to re-assign gpu memory to highest priority
@@ -892,21 +888,23 @@ void TileManager::OnRasterTaskCompleted(
   if (manage_tiles_call_count_when_dispatched != manage_tiles_call_count_)
     AssignGpuMemoryToTiles();
 
+  ManagedTileState& managed_tile_state = tile->managed_state();
+
   // Finish resource initialization if |can_use_gpu_memory| is true.
   if (managed_tile_state.can_use_gpu_memory) {
     // The component order may be bgra if we're uploading bgra pixels to rgba
     // texture. Mark contents as swizzled if image component order is
     // different than texture format.
-    managed_tile_state.drawing_info.contents_swizzled_ =
+    tile->drawing_info().contents_swizzled_ =
         !PlatformColor::SameComponentOrder(tile->format_);
 
     // Tile resources can't be freed until upload has completed.
-    managed_tile_state.drawing_info.can_be_freed_ = false;
+    tile->drawing_info().can_be_freed_ = false;
 
     resource_pool_->resource_provider()->BeginSetPixels(resource->id());
     has_performed_uploads_since_last_flush_ = true;
 
-    managed_tile_state.drawing_info.resource_ = resource.Pass();
+    tile->drawing_info().resource_ = resource.Pass();
 
     bytes_pending_upload_ += tile->bytes_consumed_if_allocated();
     DidTileRasterStateChange(tile, UPLOAD_STATE);
@@ -914,14 +912,13 @@ void TileManager::OnRasterTaskCompleted(
   } else {
     resource_pool_->resource_provider()->ReleasePixelBuffer(resource->id());
     resource_pool_->ReleaseResource(resource.Pass());
-    managed_tile_state.drawing_info.resource_is_being_initialized_ = false;
+    tile->drawing_info().resource_is_being_initialized_ = false;
     DidTileRasterStateChange(tile, IDLE_STATE);
   }
 }
 
 void TileManager::DidFinishTileInitialization(Tile* tile) {
-  ManagedTileState& managed_state = tile->managed_state();
-  managed_state.drawing_info.resource_is_being_initialized_ = false;
+  tile->drawing_info().resource_is_being_initialized_ = false;
   if (tile->priority(ACTIVE_TREE).distance_to_visible_in_pixels == 0)
     client_->DidInitializeVisibleTile();
 }
