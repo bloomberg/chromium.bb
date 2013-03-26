@@ -756,6 +756,10 @@ DriveResourceMetadata::RefreshEntryOnBlockingPool(
     AddEntryToDirectory(CreateEntryWithProperBaseName(entry_proto));
   } else {
     // root has no parent.
+    if (!entry_proto.parent_resource_id().empty()) {
+      return make_scoped_ptr(new GetEntryInfoWithFilePathResult(
+          DRIVE_FILE_ERROR_INVALID_OPERATION));
+    }
     storage_->PutEntry(CreateEntryWithProperBaseName(entry_proto));
   }
 

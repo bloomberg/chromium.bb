@@ -842,6 +842,18 @@ TEST_F(DriveResourceMetadataTest, RefreshEntry_Root) {
       base::FilePath::FromUTF8Unsafe("drive/dir1/dir3/file9"));
   ASSERT_TRUE(entry_proto.get());
   EXPECT_EQ("file9", entry_proto->base_name());
+
+  // Refreshing root with a proto which has parent_resource_id should fail.
+  entry_proto = GetEntryInfoByPathSync(
+      base::FilePath::FromUTF8Unsafe("drive"));
+  ASSERT_TRUE(entry_proto.get());
+  entry_proto->set_parent_resource_id("foo");
+  resource_metadata_->RefreshEntry(
+      *entry_proto,
+      google_apis::test_util::CreateCopyResultCallback(
+          &error, &drive_file_path, &entry_proto));
+  google_apis::test_util::RunBlockingPoolTask();
+  EXPECT_EQ(DRIVE_FILE_ERROR_INVALID_OPERATION, error);
 }
 
 TEST_F(DriveResourceMetadataTest, RefreshDirectory_EmtpyMap) {
