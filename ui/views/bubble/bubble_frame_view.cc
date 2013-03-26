@@ -174,8 +174,8 @@ void BubbleFrameView::SetTitlebarExtraView(View* view) {
 gfx::Rect BubbleFrameView::GetUpdatedWindowBounds(const gfx::Rect& anchor_rect,
                                                   gfx::Size client_size,
                                                   bool adjust_if_offscreen) {
-  // Give the contents a margin.
-  client_size.Enlarge(content_margins_.width(), content_margins_.height());
+  gfx::Insets insets(GetInsets());
+  client_size.Enlarge(insets.width(), insets.height());
 
   const BubbleBorder::ArrowLocation arrow = bubble_border_->arrow_location();
   if (adjust_if_offscreen && BubbleBorder::has_arrow(arrow)) {
