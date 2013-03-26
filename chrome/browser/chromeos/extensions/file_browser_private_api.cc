@@ -242,10 +242,10 @@ void AddDriveMountPoint(
   // Grant R/W permission for tmp and pinned cache folder.
   drive::DriveSystemService* system_service =
       drive::DriveSystemServiceFactory::GetForProfile(profile);
+  drive::DriveCache* cache = system_service ? system_service->cache() : NULL;
   // |system_service| is NULL if Drive is disabled.
-  if (!system_service || !system_service->file_system())
+  if (!cache)
     return;
-  drive::DriveCache* cache = system_service->cache();
 
   // We check permissions for raw cache file paths only for read-only
   // operations (when fileEntry.file() is called), so read only permissions
