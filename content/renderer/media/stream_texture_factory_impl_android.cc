@@ -18,27 +18,26 @@
 
 namespace {
 
-static void DeleteStreamTextureHost(content::StreamTextureHost* host) {
-  delete host;
-}
-
 // Implementation of the StreamTextureProxy class. This class listens to all
 // the stream texture updates and forward them to the
 // cc::VideoFrameProvider::Client.
 class StreamTextureProxyImpl : public webkit_media::StreamTextureProxy,
                                public content::StreamTextureHost::Listener {
  public:
+  virtual ~StreamTextureProxyImpl() {}
+
   explicit StreamTextureProxyImpl(content::StreamTextureHost* host);
-  virtual ~StreamTextureProxyImpl();
 
   // webkit_media::StreamTextureProxy implementation:
-  virtual bool Initialize(int stream_id, int width, int height) OVERRIDE;
-  virtual bool IsInitialized() OVERRIDE { return initialized_; }
+  virtual void BindToCurrentThread(
+      int stream_id, int width, int height) OVERRIDE;
+  virtual bool IsBoundToThread() OVERRIDE { return !!loop_.get(); }
 #ifndef REMOVE_WEBVIDEOFRAME
   virtual void SetClient(WebKit::WebStreamTextureClient* client) OVERRIDE;
 #else
   virtual void SetClient(cc::VideoFrameProvider::Client* client) OVERRIDE;
 #endif
+  virtual void Release() OVERRIDE;
 
   // StreamTextureHost::Listener implementation:
   virtual void OnFrameAvailable() OVERRIDE;
@@ -54,7 +53,6 @@ class StreamTextureProxyImpl : public webkit_media::StreamTextureProxy,
 #else
   cc::VideoFrameProvider::Client* client_;
 #endif
-  bool initialized_;
 
   DISALLOW_COPY_AND_ASSIGN(StreamTextureProxyImpl);
 };
@@ -62,20 +60,17 @@ class StreamTextureProxyImpl : public webkit_media::StreamTextureProxy,
 StreamTextureProxyImpl::StreamTextureProxyImpl(
     content::StreamTextureHost* host)
     : host_(host),
-      client_(NULL),
-      initialized_(false) {
+      client_(NULL) {
   DCHECK(host);
   host->SetListener(this);
 }
 
-StreamTextureProxyImpl::~StreamTextureProxyImpl() {
+void StreamTextureProxyImpl::Release() {
   SetClient(NULL);
-  // The StreamTextureHost instance needs to be deleted on the thread
-  // it receives messages on (where it uses a WeakPtr).
-  if (loop_.get()) {
-    loop_->PostTask(FROM_HERE, base::Bind(&DeleteStreamTextureHost,
-                                          host_.release()));
-  }
+  if (loop_ && loop_ != base::MessageLoopProxy::current())
+    loop_->DeleteSoon(FROM_HERE, this);
+  else
+    delete this;
 }
 
 #ifndef REMOVE_WEBVIDEOFRAME
@@ -87,10 +82,10 @@ void StreamTextureProxyImpl::SetClient(cc::VideoFrameProvider::Client* client) {
   client_ = client;
 }
 
-bool StreamTextureProxyImpl::Initialize(int stream_id, int width, int height) {
+void StreamTextureProxyImpl::BindToCurrentThread(
+    int stream_id, int width, int height) {
   loop_ = base::MessageLoopProxy::current();
-  initialized_ = true;
-  return host_->Initialize(stream_id, gfx::Size(width, height));
+  host_->Initialize(stream_id, gfx::Size(width, height));
 }
 
 void StreamTextureProxyImpl::OnFrameAvailable() {

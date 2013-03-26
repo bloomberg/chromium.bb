@@ -13,7 +13,6 @@
 #include "net/base/mime_util.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayerClient.h"
 #include "webkit/compositor_bindings/web_layer_impl.h"
-#include "webkit/media/android/stream_texture_factory_android.h"
 #include "webkit/media/android/webmediaplayer_manager_android.h"
 #include "webkit/media/media_switches.h"
 #include "webkit/media/webmediaplayer_util.h"
@@ -450,10 +449,10 @@ void WebMediaPlayerAndroid::ReallocateVideoFrame() {
 
 #ifndef REMOVE_WEBVIDEOFRAME
 WebVideoFrame* WebMediaPlayerAndroid::getCurrentFrame() {
-  if (stream_texture_proxy_ && !stream_texture_proxy_->IsInitialized() &&
+  if (stream_texture_proxy_ && !stream_texture_proxy_->IsBoundToThread() &&
       stream_id_ && !needs_external_surface_) {
     gfx::Size natural_size = current_frame_->natural_size();
-    stream_texture_proxy_->Initialize(
+    stream_texture_proxy_->BindToCurrentThread(
         stream_id_, natural_size.width(), natural_size.height());
   }
 
