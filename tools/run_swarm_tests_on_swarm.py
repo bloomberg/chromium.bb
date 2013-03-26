@@ -102,9 +102,11 @@ def main():
       sys.stdout.write('\n')
 
     print('\nGetting results')
+    failed_tests = {}
     for i, test in enumerate(tests):
       print('  %s' % os.path.basename(test))
       for platform in oses:
+        print('    Retrieving results for %s' % platform)
         process = subprocess.Popen(
             [
               sys.executable,
@@ -121,12 +123,15 @@ def main():
         # Only print the output for failures, successes are unexciting.
         if process.returncode:
           print stdout
+          failed_tests.setdefault(test, []).append(platform)
         result = result or process.returncode
   finally:
     shutil.rmtree(tempdir)
 
   if result:
-    print 'Some Swarm failures were detected :('
+    print 'Detected the following failures:'
+    for test, failed_oses in failed_tests.iteritems():
+      print '  %s on %s' % (test, ','.join(failed_oses))
   else:
     print 'No Swarm errors detected :)'
 

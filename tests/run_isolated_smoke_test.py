@@ -199,6 +199,8 @@ class RunSwarmStep(unittest.TestCase):
 
       # Ensure the correct files have been placed in the temp directory.
       self.assertTrue(os.path.exists(os.path.join(out_dir, 'file1.txt')))
+      self.assertTrue(os.path.lexists(os.path.join(out_dir,
+                                                   'file1_symlink.txt')))
       self.assertTrue(os.path.exists(os.path.join(out_dir, 'new_folder',
                                                   'file1.txt')))
       self.assertTrue(os.path.exists(os.path.join(out_dir,

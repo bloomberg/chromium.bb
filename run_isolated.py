@@ -1211,7 +1211,7 @@ def create_directories(base_directory, files):
 def create_links(base_directory, files):
   """Creates any links needed by the given set of files."""
   for filepath, properties in files:
-    if 'link' not in properties:
+    if 'l' not in properties:
       continue
     outfile = os.path.join(base_directory, filepath)
     # symlink doesn't exist on Windows. So the 'link' property should
