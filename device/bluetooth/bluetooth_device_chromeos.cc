@@ -457,34 +457,8 @@ void BluetoothDeviceChromeOS::CollectServiceRecordsCallback(
         new BluetoothServiceRecordChromeOS(address(), i->second));
   }
   service_records_loaded_ = true;
-  OnServiceRecordsChanged();
 
   callback.Run(service_records_);
-}
-
-void BluetoothDeviceChromeOS::OnServiceRecordsChanged(void) {
-  // Update the BluetoothDevice::connectable_ property.
-  bool hid_normally_connectable = true;
-  bool hid_reconnect_initiate = true;
-  for (ServiceRecordList::const_iterator it = service_records_.begin();
-      it != service_records_.end(); ++it) {
-    if ((*it)->SupportsHid()) {
-      // If there are several HID profiles, we assume the device is connectable
-      // if all them are connectable.
-      hid_normally_connectable =
-          hid_normally_connectable && (*it)->hid_normally_connectable();
-      hid_reconnect_initiate =
-          hid_reconnect_initiate && (*it)->hid_reconnect_initiate();
-    }
-  }
-  // The Bluetooth HID spec states that if HIDNormallyConnectable or
-  // HIDReconnectInitiate are not present in a HID profile, the value is false.
-  // Nevertheless, a device with both properties in false can't reconnect to the
-  // adapter and can't be reconnected from the adapter. To avoid problems with
-  // devices that don't export this properties we asume they are connectable.
-  connectable_ = hid_normally_connectable || !hid_reconnect_initiate;
-  VLOG(1) << "ServiceRecordsChanged for " << address_
-          << ": connectable = " << connectable_;
 }
 
 void BluetoothDeviceChromeOS::OnSetTrusted(bool success) {

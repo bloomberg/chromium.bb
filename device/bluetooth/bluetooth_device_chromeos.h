@@ -124,11 +124,6 @@ class BluetoothDeviceChromeOS
       const BluetoothDeviceClient::ServiceMap& service_map,
       bool success);
 
-  // Called by CollectServiceRecordsCallback() every time |service_records_| is
-  // updated. |OnServiceRecordsChanged| updates the derived properties that
-  // depend on |service_records_|.
-  void OnServiceRecordsChanged(void);
-
   // Called by BluetoothProperty when the call to Set() for the Trusted
   // property completes. |success| indicates whether or not the request
   // succeeded.
