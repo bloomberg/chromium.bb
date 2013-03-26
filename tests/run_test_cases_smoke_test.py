@@ -689,6 +689,123 @@ class RunTestCases(unittest.TestCase):
         test_cases=test_cases,
         duration=True)
 
+  def test_crash_after_pass(self):
+    out, err, return_code = RunTest(
+        [
+          '--clusters', '10',
+          '--jobs', '1',
+          '--result', self.filename,
+          os.path.join(
+            ROOT_DIR, 'tests', 'gtest_fake', 'gtest_fake_crash_after_pass.py'),
+          self.tempdirpath,
+        ])
+
+    self.assertEqual(0, return_code)
+
+    expected_out_re = [
+      r'\[1\/2\]   \d\.\d\ds Foo\.Bar1 \(\d+\.\d+s\)',
+      r'\[2/2\]   \d\.\d\ds Foo\.Bar2 \(\d+\.\d+s\) *',
+      # Dumping the whole thing:
+      re.escape('Note: Google Test filter = Foo.Bar2:Foo.Bar1'),
+      '',
+      re.escape('[==========] Running 1 test from 1 test case.'),
+      re.escape('[----------] Global test environment set-up.'),
+      re.escape('[ RUN      ] Foo.Bar1'),
+      re.escape('[       OK ] Foo.Bar1 (100 ms)'),
+      re.escape('[----------] 1 test from Foo'),
+      re.escape('[----------] 1 test from Foo (100 ms total)'),
+      '',
+      '',
+      re.escape('[==========] Running 1 test from 1 test case.'),
+      re.escape('[----------] Global test environment set-up.'),
+      re.escape('[ RUN      ] Foo.Bar2'),
+      re.escape('[       OK ] Foo.Bar2 (100 ms)'),
+      re.escape('[----------] 1 test from Foo'),
+      re.escape('[----------] 1 test from Foo (100 ms total)'),
+      '',
+      '',
+      re.escape('[----------] Global test environment tear-down'),
+      re.escape('[==========] 2 test from 2 test case ran. (30 ms total)'),
+      re.escape('[  PASSED  ] 2 test.'),
+      '',
+      re.escape('  YOU HAVE 5 DISABLED TESTS'),
+      '',
+      re.escape('  YOU HAVE 2 tests with ignored failures (FAILS prefix)'),
+      '',
+      # The stack trace is included.
+      re.escape('OMG I crashed'),
+      re.escape('Here\'s a stack trace'),
+
+      # Now resume normal retries.
+      r'\[3/4\]   \d\.\d\ds Foo\.Bar1 \(\d+\.\d+s\) \- retry \#1',
+      re.escape('Note: Google Test filter = Foo.Bar1'),
+      '',
+      re.escape('[==========] Running 1 test from 1 test case.'),
+      re.escape('[----------] Global test environment set-up.'),
+      re.escape('[ RUN      ] Foo.Bar1'),
+      re.escape('[       OK ] Foo.Bar1 (100 ms)'),
+      re.escape('[----------] 1 test from Foo'),
+      re.escape('[----------] 1 test from Foo (100 ms total)'),
+      '',
+      '',
+      re.escape('[----------] Global test environment tear-down'),
+      re.escape('[==========] 1 test from 1 test case ran. (30 ms total)'),
+      re.escape('[  PASSED  ] 1 test.'),
+      '',
+      re.escape('  YOU HAVE 5 DISABLED TESTS'),
+      '',
+      re.escape('  YOU HAVE 2 tests with ignored failures (FAILS prefix)'),
+      '',
+      '',
+      # Note there is no crash here due to the flakiness implementation in
+      # gtest_fake_crash_after_pass.py.
+
+      r'\[4/4\]   \d\.\d\ds Foo\.Bar2 \(\d+\.\d+s\) \- retry \#1',
+      re.escape('Note: Google Test filter = Foo.Bar2'),
+      '',
+      re.escape('[==========] Running 1 test from 1 test case.'),
+      re.escape('[----------] Global test environment set-up.'),
+      re.escape('[ RUN      ] Foo.Bar2'),
+      re.escape('[       OK ] Foo.Bar2 (100 ms)'),
+      re.escape('[----------] 1 test from Foo'),
+      re.escape('[----------] 1 test from Foo (100 ms total)'),
+      '',
+      '',
+      re.escape('[----------] Global test environment tear-down'),
+      re.escape('[==========] 1 test from 1 test case ran. (30 ms total)'),
+      re.escape('[  PASSED  ] 1 test.'),
+      '',
+      re.escape('  YOU HAVE 5 DISABLED TESTS'),
+      '',
+      re.escape('  YOU HAVE 2 tests with ignored failures (FAILS prefix)'),
+      '',
+      '',
+      # Note there is no crash here due to the flakiness implementation in
+      # gtest_fake_crash_after_pass.py.
+
+      re.escape('Flaky tests:'),
+      re.escape('  Foo.Bar1 (tried 2 times)'),
+      re.escape('  Foo.Bar2 (tried 2 times)'),
+      re.escape('Summary:'),
+      re.escape('  Success:    0   0.00%    0.00s'),
+      re.escape('    Flaky:    2 100.00% ') + r' +\d+\.\d\ds',
+      re.escape('     Fail:    0   0.00%    0.00s'),
+      r'  \d+\.\d\ds Done running 2 tests with 4 executions. '
+        '\d+\.\d\d test/s',
+    ]
+    self._check_results(expected_out_re, out, err)
+    test_cases = [
+        ('Foo.Bar1', 2),
+        ('Foo.Bar2', 2),
+    ]
+    self._check_results_file(
+        fail=[],
+        flaky=[u'Foo.Bar1', u'Foo.Bar2'],
+        missing=[],
+        success=[],
+        test_cases=test_cases,
+        duration=True)
+
   def test_gtest_filter(self):
     out, err, return_code = RunTest(
         [

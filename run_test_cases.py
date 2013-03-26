@@ -413,21 +413,14 @@ class Progress(object):
       except Queue.Empty:
         break
 
-      # Keep track of all the running commands, so we can list which ones
-      # are unfinished.
-      if 'Starting command' in name:
-        match = re.match('^.*?(\[.*\]).*?$', name)
-        if match:
-          self.unfinished_commands.add(match.group(1))
-      if 'finished after' in name:
-        match = re.match('^.*?(\[.*\]).*?$', name)
-        if match:
-          self.unfinished_commands.remove(match.group(1))
-
       if size:
         self.size += 1
       if index:
         self.index += 1
+      if not name:
+        continue
+
+      if index:
         alignment = str(len(str(self.size)))
         next_line = ('[%' + alignment + 'd/%d] %6.2fs %s') % (
             self.index,
@@ -916,19 +909,26 @@ class Runner(object):
     gen_test_cases_filtered = chromium_filter_tests(gen_test_cases)
 
     last_timestamp = proc.start
+    got_failure_at_least_once = False
+    results = []
     for i in gen_test_cases_filtered:
+      results.append(i)
       now = timeout.reset()
       test_case_has_passed = (i['returncode'] == 0)
       if i['duration'] is None:
         assert not test_case_has_passed
+        # Do not notify self.decider, because an early crash in a large cluster
+        # could cause the test to quit early.
       else:
         i['duration'] = max(i['duration'], now - last_timestamp)
         # A new test_case completed.
         self.decider.got_result(test_case_has_passed)
 
       need_to_retry = not test_case_has_passed and try_count < self.retries
+      got_failure_at_least_once |= not test_case_has_passed
       last_timestamp = now
 
+      # Create the line to print out.
       if i['duration'] is not None:
         duration = '(%.2fs)' % i['duration']
       else:
@@ -948,19 +948,47 @@ class Runner(object):
       self.progress.update_item(line, True, need_to_retry)
 
       if need_to_retry:
-        if try_count + 1 < self.retries:
-          # The test failed and needs to be retried normally.
-          # Leave a buffer of ~40 test cases before retrying.
-          priority += 40
-          self.add_task(
-              priority, self.map, priority, [i['test_case']], try_count + 1)
-        else:
-          # This test only has one retry left, so the final retry should be
-          # done serially.
-          self.add_serial_task(
-              priority, self.map, priority, [i['test_case']], try_count + 1)
+        priority = self._retry(priority, i['test_case'], try_count)
 
+      # Delay yielding when only one test case is running, in case of a
+      # crash-after-succeed.
+      if len(test_cases) > 1:
+        yield i
+
+    if proc.returncode and not got_failure_at_least_once:
+      if len(test_cases) == 1:
+        # Crash after pass.
+        results[-1]['returncode'] = proc.returncode
+
+      if try_count + 1 < self.retries:
+        # This is tricky, one of the test case failed but each did print that
+        # they succeeded! Retry them *all* individually.
+        if not self.verbose:
+          # Print all the output as one shot when not verbose to be sure the
+          # potential stack trace is printed.
+          output = ''.join(i['output'] for i in results)
+          self.progress.update_item(output, False, False)
+        for i in results:
+          priority = self._retry(priority, i['test_case'], try_count)
+          self.progress.update_item('', False, True)
+
+    # Only yield once the process completed when there is only one test case as
+    # a safety precaution.
+    if len(test_cases) == 1:
       yield i
+
+  def _retry(self, priority, test_case, try_count):
+    if try_count + 1 < self.retries:
+      # The test failed and needs to be retried normally.
+      # Leave a buffer of ~40 test cases before retrying.
+      priority += 40
+      self.add_task(priority, self.map, priority, [test_case], try_count + 1)
+    else:
+      # This test only has one retry left, so the final retry should be
+      # done serially.
+      self.add_serial_task(
+          priority, self.map, priority, [test_case], try_count + 1)
+    return priority
 
 
 def get_test_cases(
