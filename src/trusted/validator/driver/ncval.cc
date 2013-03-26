@@ -159,13 +159,13 @@ Bool ProcessInstruction(
     errors.push_back(Error(offset, "error - %r15 is changed"));
   }
 
-  if (validation_info & BPL_MODIFIED) {
-    validation_info &= ~BPL_MODIFIED;
+  if (validation_info & BP_MODIFIED) {
+    validation_info &= ~BP_MODIFIED;
     errors.push_back(Error(offset, "error - %bpl or %bp is changed"));
   }
 
-  if (validation_info & SPL_MODIFIED) {
-    validation_info &= ~SPL_MODIFIED;
+  if (validation_info & SP_MODIFIED) {
+    validation_info &= ~SP_MODIFIED;
     errors.push_back(Error(offset, "error - %spl or %sp is changed"));
   }
 

@@ -61,6 +61,7 @@
   0: [0] improper %rsp sandboxing
   2: [0] improper %rbp sandboxing
   3: [0] error - %bpl or %bp is changed
+  3: [0] error - %spl or %sp is changed
   return code: 1
 @validators_disagree:
   errors reported by rdfa validator but not by old one:

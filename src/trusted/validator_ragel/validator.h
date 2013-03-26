@@ -76,10 +76,12 @@ enum validation_callback_info {
   UNRESTRICTED_RSP_PROCESSED    = 0x00380000,
   /* Operations with %r15 are forbidden.  */
   R15_MODIFIED                  = 0x00400000,
-  /* Operations with BPL are forbidden for compatibility with old validator.  */
-  BPL_MODIFIED                  = 0x00800000,
-  /* Operations with SPL are forbidden for compatibility with old validator.  */
-  SPL_MODIFIED                  = 0x01000000,
+  /* Operations with %xBP are forbidden. */
+  /* This includes %bpl for compatibility with old validator.  */
+  BP_MODIFIED                   = 0x00800000,
+  /* Operations with %xSP are forbidden. */
+  /* This includes %spl for compatibility with old validator.  */
+  SP_MODIFIED                   = 0x01000000,
   /* Bad call alignment: "call" must end at the end of the bundle.  */
   BAD_CALL_ALIGNMENT            = 0x02000000,
   /* Instruction is modifiable by nacl_dyncode_modify.  */
@@ -176,7 +178,8 @@ typedef Bool (*ValidationCallbackFunc) (const uint8_t *instruction_begin,
  * placed there.
  */
 DLLEXPORT
-Bool ValidateChunkAMD64(const uint8_t *data, size_t size,
+Bool ValidateChunkAMD64(const uint8_t codeblock[],
+                        size_t size,
                         uint32_t options,
                         const NaClCPUFeaturesX86 *cpu_features,
                         ValidationCallbackFunc user_callback,
@@ -186,7 +189,8 @@ Bool ValidateChunkAMD64(const uint8_t *data, size_t size,
  * See ValidateChunkAMD64
  */
 DLLEXPORT
-Bool ValidateChunkIA32(const uint8_t *data, size_t size,
+Bool ValidateChunkIA32(const uint8_t codeblock[],
+                       size_t size,
                        uint32_t options,
                        const NaClCPUFeaturesX86 *cpu_features,
                        ValidationCallbackFunc user_callback,

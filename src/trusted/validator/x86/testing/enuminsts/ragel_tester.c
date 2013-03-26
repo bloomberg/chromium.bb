@@ -78,7 +78,7 @@ Bool RagelValidateError(const uint8_t *begin, const uint8_t *end,
                CPUID_UNSUPPORTED_INSTRUCTION |
                FORBIDDEN_BASE_REGISTER |
                UNRESTRICTED_INDEX_REGISTER |
-               R15_MODIFIED | BPL_MODIFIED | SPL_MODIFIED |
+               R15_MODIFIED | BP_MODIFIED | SP_MODIFIED |
                UNRESTRICTED_RBP_PROCESSED | UNRESTRICTED_RSP_PROCESSED |
                RESTRICTED_RSP_UNPROCESSED | RESTRICTED_RBP_UNPROCESSED)) {
     return FALSE;

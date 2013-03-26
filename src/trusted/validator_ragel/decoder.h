@@ -6,7 +6,8 @@
 
 /*
  * Data structures for decoding instructions.  Includes definitions which are
- * by both decoders (full-blown standalone one and reduced one in validator).
+ * used by all decoders (full-blown standalone one and reduced one in validator,
+ * both ia32 version and x86-64 version).
  */
 
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_RAGEL_DECODER_H_
@@ -17,6 +18,10 @@
 
 EXTERN_C_BEGIN
 
+/*
+ * Instruction operand FORMAT: register size (8-bit, 32-bit, MMX, XXM, etc), or
+ * in-memory structure (far pointer, 256-bit SIMD operands, etc).
+ */
 enum OperandFormat {
   /*
    * These are for general-purpose registers, memory access and immediates.
@@ -32,7 +37,7 @@ enum OperandFormat {
   OPERAND_FORMAT_MMX,              /* MMX registers: %mmX.                    */
   OPERAND_FORMAT_XMM,              /* XMM register: %xmmX.                    */
   OPERAND_FORMAT_YMM,              /* YMM registers: %ymmX.                   */
-  OPERAND_FORMAT_SEGMENT_REGISTER, /* Operand is segment register: %es … %gs. */
+  OPERAND_FORMAT_SEGMENT_REGISTER, /* Operand is segment register: %es...%gs. */
   OPERAND_FORMAT_CONTROL_REGISTER, /* Operand is control register: %crX.      */
   OPERAND_FORMAT_DEBUG_REGISTER,   /* Operand is debug register: %drX.        */
   OPERAND_FORMAT_TEST_REGISTER,    /* Operand is test register: %trX.         */
@@ -48,6 +53,14 @@ enum OperandFormat {
   OPERAND_FORMAT_MEMORY
 };
 
+/*
+ * Instruction operand NAME: register number (REG_RAX means any of the following
+ * registers: %al/%ax/%eax/%rax/%st(0)/%mm0/%xmm0/%ymm0/%es/%cr0/%db0/%tr0), or
+ * non-register operand (REG_RM means address in memory specified via "ModR/M
+ * byte" (plus may be "SIB byte" or displacement), REG_DS_RBX is special operand
+ * of "xlat" instruction, REG_ST is to of x87 stack and so on - see below for
+ * for the full list).
+ */
 enum OperandName {
   /* First 16 registers are compatible with encoding of registers in x86 ABI. */
   REG_RAX,
@@ -67,12 +80,12 @@ enum OperandName {
   REG_R14,
   REG_R15,
   /* These are different kinds of operands used in special cases.             */
-  REG_RM,           /* Address in memory via rm field.                        */
+  REG_RM,           /* Address in memory via ModR/M (+SIB).                   */
   REG_RIP,          /* RIP - used as base in x86-64 mode.                     */
   REG_RIZ,          /* EIZ/RIZ - used as "always zero index" register.        */
   REG_IMM,          /* Fixed value in imm field.                              */
   REG_IMM2,         /* Fixed value in second imm field.                       */
-  REG_DS_RBX,       /* Fox xlat: %ds(%rbx).                                   */
+  REG_DS_RBX,       /* For xlat: %ds:(%rbx).                                  */
   REG_ES_RDI,       /* For string instructions: %es:(%rsi).                   */
   REG_DS_RSI,       /* For string instructions: %ds:(%rdi).                   */
   REG_PORT_DX,      /* 16-bit DX: for in/out instructions.                    */
@@ -96,6 +109,9 @@ enum DisplacementMode {
   DISP64
 };
 
+/*
+ * Information about decoded instruction: name, operands, prefixes, etc.
+ */
 struct Instruction {
   const char *name;
   unsigned char operands_count;
@@ -128,22 +144,26 @@ struct Instruction {
 };
 
 /*
+ * Instruction processing callback: called once for each instruction in a stream
+ *
  * "begin" points to first byte of the instruction
- * "end" points to the last byte of the instruction
- *   for single-byte instruction “begin” == “end”
- * "instruction" is detailed information about instruction
+ * "end" points to the first byte of the next instruction
+ *   for single-byte instruction "begin + 1" == "end"
+ * "instruction" contains detailed information about instruction
  */
 typedef void (*ProcessInstructionFunc) (const uint8_t *begin,
                                         const uint8_t *end,
                                         struct Instruction *instruction,
-                                        void *userdata);
+                                        void *callback_data);
 
 /*
+ * Decoding error: called when decoder's DFA does not recognize the instruction.
+ *
  * "ptr" points to the first byte rejected by DFA and can be used in more
  * advanced decoders to try to do some kind of recovery.
  */
 typedef void (*ProcessDecodingErrorFunc) (const uint8_t *ptr,
-                                          void *userdata);
+                                          void *callback_data);
 
 /*
  * kFullCPUIDFeatures is pre-defined constant of NaClCPUFeaturesX86 type with
@@ -151,13 +171,21 @@ typedef void (*ProcessDecodingErrorFunc) (const uint8_t *ptr,
  */
 extern const NaClCPUFeaturesX86 kFullCPUIDFeatures;
 
+/*
+ * Returns TRUE when piece of code is valid piece of code.
+ * Returns FALSE If ragel machine does not accept piece of code.
+ * process_instruction callback is called for each instruction accepted by
+ * ragel machine
+ */
 int DecodeChunkAMD64(const uint8_t *data, size_t size,
                      ProcessInstructionFunc process_instruction,
-                     ProcessDecodingErrorFunc process_error, void *userdata);
+                     ProcessDecodingErrorFunc process_error,
+                     void *callback_data);
 
 int DecodeChunkIA32(const uint8_t *data, size_t size,
                     ProcessInstructionFunc process_instruction,
-                    ProcessDecodingErrorFunc process_error, void *userdata);
+                    ProcessDecodingErrorFunc process_error,
+                    void *callback_data);
 
 EXTERN_C_END
 

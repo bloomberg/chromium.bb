@@ -1006,7 +1006,7 @@ class InstructionPrinter(object):
     self._out.write(address_mode.mode)
     if self._mode == VALIDATOR and self._bitness == 64:
       if Attribute('no_memory_access') not in instruction.attributes:
-        self._out.write(' @check_access')
+        self._out.write(' @check_memory_access')
     self._out.write(')\n')
 
     if instruction.HasOpcodeInsteadOfImmediate():
@@ -1448,6 +1448,10 @@ def main():
         # (https://code.google.com/p/nativeclient/issues/detail?id=3327)
         # is resolved.
         if Attribute('CPUFeature_AVX') in instruction.attributes:
+          continue
+        if Attribute('CPUFeature_FMA') in instruction.attributes:
+          continue
+        if Attribute('CPUFeature_FMA4') in instruction.attributes:
           continue
         if Attribute('CPUFeature_XOP') in instruction.attributes:
           continue

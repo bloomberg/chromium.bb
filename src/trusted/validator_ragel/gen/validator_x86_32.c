@@ -19,28 +19,33 @@
 #include <string.h>
 
 #include "native_client/src/trusted/validator_ragel/bitmap.h"
-#include "native_client/src/trusted/validator_ragel/unreviewed/validator_internal.h"
+#include "native_client/src/trusted/validator_ragel/validator_internal.h"
 
 /* Ignore this information: it's not used by security model in IA32 mode.  */
+/* TODO(khim): change gen_dfa to remove needs for these lines.  */
 #undef GET_VEX_PREFIX3
 #define GET_VEX_PREFIX3 0
 #undef SET_VEX_PREFIX3
-#define SET_VEX_PREFIX3(P)
+#define SET_VEX_PREFIX3(PREFIX_BYTE)
 
 
 
 
+/*
+ * The "write data" statement causes Ragel to emit the constant static data
+ * needed by the ragel machine.
+ */
 
-static const int x86_32_validator_start = 233;
-static const int x86_32_validator_first_final = 233;
+static const int x86_32_validator_start = 218;
+static const int x86_32_validator_first_final = 218;
 static const int x86_32_validator_error = 0;
 
-static const int x86_32_validator_en_main = 233;
+static const int x86_32_validator_en_main = 218;
 
 
 
-
-Bool ValidateChunkIA32(const uint8_t *data, size_t size,
+Bool ValidateChunkIA32(const uint8_t codeblock[],
+                       size_t size,
                        uint32_t options,
                        const NaClCPUFeaturesX86 *cpu_features,
                        ValidationCallbackFunc user_callback,
@@ -76,12 +81,12 @@ Bool ValidateChunkIA32(const uint8_t *data, size_t size,
   /*
    * This option is usually used in tests: we will process the whole chunk
    * in one pass. Usually each bundle is processed separately which means
-   * instructions (and super-instructions) can not cross borders of the bundle.
+   * instructions (and "superinstructions") can not cross borders of the bundle.
    */
   if (options & PROCESS_CHUNK_AS_A_CONTIGUOUS_STREAM)
-    end_of_bundle = data + size;
+    end_of_bundle = codeblock + size;
   else
-    end_of_bundle = data + kBundleSize;
+    end_of_bundle = codeblock + kBundleSize;
 
   /*
    * Main loop.  Here we process the data array bundle-after-bundle.
@@ -89,8 +94,8 @@ Bool ValidateChunkIA32(const uint8_t *data, size_t size,
    * It collects the two arrays: valid_targets and jump_dests which are used
    * to test direct jumps later.
    */
-  for (current_position = data;
-       current_position < data + size;
+  for (current_position = codeblock;
+       current_position < codeblock + size;
        current_position = end_of_bundle,
        end_of_bundle = current_position + kBundleSize) {
     /* Start of the instruction being processed.  */
@@ -100,11 +105,19 @@ Bool ValidateChunkIA32(const uint8_t *data, size_t size,
     uint32_t instruction_info_collected = 0;
     int current_state;
 
+    /*
+     * The "write init" statement causes Ragel to emit initialization code.
+     * This should be executed once before the ragel machine is started.
+     */
     
 	{
 	( current_state) = x86_32_validator_start;
 	}
 
+    /*
+     * The "write exec" statement causes Ragel to emit the ragel machine's
+     * execution code.
+     */
     
 	{
 	if ( ( current_position) == ( end_of_bundle) )
@@ -114,7 +127,7 @@ Bool ValidateChunkIA32(const uint8_t *data, size_t size,
 tr0:
 	{
     /* Mark start of this instruction as a valid target for jump.  */
-    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
 
     /* Call user-supplied callback.  */
     instruction_end = current_position + 1;
@@ -124,24 +137,26 @@ tr0:
                               instruction_info_collected, callback_data);
     }
 
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
     instruction_begin = instruction_end;
 
     /* Clear variables (well, one variable currently).  */
     instruction_info_collected = 0;
   }
-	goto st233;
+	goto st218;
 tr9:
 	{
-    SET_DISP_TYPE(DISP32);
-    SET_DISP_PTR(current_position - 3);
+    SET_DISPLACEMENT_FORMAT(DISP32);
+    SET_DISPLACEMENT_POINTER(current_position - 3);
   }
 	{}
 	{
     /* Mark start of this instruction as a valid target for jump.  */
-    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
 
     /* Call user-supplied callback.  */
     instruction_end = current_position + 1;
@@ -151,24 +166,26 @@ tr9:
                               instruction_info_collected, callback_data);
     }
 
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
     instruction_begin = instruction_end;
 
     /* Clear variables (well, one variable currently).  */
     instruction_info_collected = 0;
   }
-	goto st233;
+	goto st218;
 tr10:
 	{
-    SET_DISP_TYPE(DISP8);
-    SET_DISP_PTR(current_position);
+    SET_DISPLACEMENT_FORMAT(DISP8);
+    SET_DISPLACEMENT_POINTER(current_position);
   }
 	{}
 	{
     /* Mark start of this instruction as a valid target for jump.  */
-    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
 
     /* Call user-supplied callback.  */
     instruction_end = current_position + 1;
@@ -178,24 +195,26 @@ tr10:
                               instruction_info_collected, callback_data);
     }
 
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
     instruction_begin = instruction_end;
 
     /* Clear variables (well, one variable currently).  */
     instruction_info_collected = 0;
   }
-	goto st233;
+	goto st218;
 tr11:
 	{
-    SET_IMM_TYPE(IMM8);
-    SET_IMM_PTR(current_position);
+    SET_IMMEDIATE_FORMAT(IMM8);
+    SET_IMMEDIATE_POINTER(current_position);
   }
 	{}
 	{
     /* Mark start of this instruction as a valid target for jump.  */
-    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
 
     /* Call user-supplied callback.  */
     instruction_end = current_position + 1;
@@ -205,24 +224,26 @@ tr11:
                               instruction_info_collected, callback_data);
     }
 
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
     instruction_begin = instruction_end;
 
     /* Clear variables (well, one variable currently).  */
     instruction_info_collected = 0;
   }
-	goto st233;
+	goto st218;
 tr15:
 	{
-    SET_IMM_TYPE(IMM32);
-    SET_IMM_PTR(current_position - 3);
+    SET_IMMEDIATE_FORMAT(IMM32);
+    SET_IMMEDIATE_POINTER(current_position - 3);
   }
 	{}
 	{
     /* Mark start of this instruction as a valid target for jump.  */
-    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
 
     /* Call user-supplied callback.  */
     instruction_end = current_position + 1;
@@ -232,20 +253,22 @@ tr15:
                               instruction_info_collected, callback_data);
     }
 
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
     instruction_begin = instruction_end;
 
     /* Clear variables (well, one variable currently).  */
     instruction_info_collected = 0;
   }
-	goto st233;
+	goto st218;
 tr19:
 	{ SET_CPU_FEATURE(CPUFeature_3DNOW);     }
 	{
     /* Mark start of this instruction as a valid target for jump.  */
-    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
 
     /* Call user-supplied callback.  */
     instruction_end = current_position + 1;
@@ -255,20 +278,22 @@ tr19:
                               instruction_info_collected, callback_data);
     }
 
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
     instruction_begin = instruction_end;
 
     /* Clear variables (well, one variable currently).  */
     instruction_info_collected = 0;
   }
-	goto st233;
+	goto st218;
 tr26:
 	{ SET_CPU_FEATURE(CPUFeature_TSC);       }
 	{
     /* Mark start of this instruction as a valid target for jump.  */
-    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
 
     /* Call user-supplied callback.  */
     instruction_end = current_position + 1;
@@ -278,20 +303,22 @@ tr26:
                               instruction_info_collected, callback_data);
     }
 
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
     instruction_begin = instruction_end;
 
     /* Clear variables (well, one variable currently).  */
     instruction_info_collected = 0;
   }
-	goto st233;
+	goto st218;
 tr35:
 	{ SET_CPU_FEATURE(CPUFeature_MMX);       }
 	{
     /* Mark start of this instruction as a valid target for jump.  */
-    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
 
     /* Call user-supplied callback.  */
     instruction_end = current_position + 1;
@@ -301,20 +328,22 @@ tr35:
                               instruction_info_collected, callback_data);
     }
 
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
     instruction_begin = instruction_end;
 
     /* Clear variables (well, one variable currently).  */
     instruction_info_collected = 0;
   }
-	goto st233;
+	goto st218;
 tr47:
 	{ SET_CPU_FEATURE(CPUFeature_MON);       }
 	{
     /* Mark start of this instruction as a valid target for jump.  */
-    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
 
     /* Call user-supplied callback.  */
     instruction_end = current_position + 1;
@@ -324,20 +353,22 @@ tr47:
                               instruction_info_collected, callback_data);
     }
 
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
     instruction_begin = instruction_end;
 
     /* Clear variables (well, one variable currently).  */
     instruction_info_collected = 0;
   }
-	goto st233;
+	goto st218;
 tr48:
 	{ SET_CPU_FEATURE(CPUFeature_FXSR);      }
 	{
     /* Mark start of this instruction as a valid target for jump.  */
-    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
 
     /* Call user-supplied callback.  */
     instruction_end = current_position + 1;
@@ -347,20 +378,22 @@ tr48:
                               instruction_info_collected, callback_data);
     }
 
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
     instruction_begin = instruction_end;
 
     /* Clear variables (well, one variable currently).  */
     instruction_info_collected = 0;
   }
-	goto st233;
+	goto st218;
 tr49:
 	{ SET_CPU_FEATURE(CPUFeature_3DPRFTCH);  }
 	{
     /* Mark start of this instruction as a valid target for jump.  */
-    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
 
     /* Call user-supplied callback.  */
     instruction_end = current_position + 1;
@@ -370,15 +403,17 @@ tr49:
                               instruction_info_collected, callback_data);
     }
 
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
     instruction_begin = instruction_end;
 
     /* Clear variables (well, one variable currently).  */
     instruction_info_collected = 0;
   }
-	goto st233;
+	goto st218;
 tr61:
 	{
     instruction_info_collected |= LAST_BYTE_IS_NOT_IMMEDIATE;
@@ -386,7 +421,7 @@ tr61:
 	{ SET_CPU_FEATURE(CPUFeature_E3DNOW);    }
 	{
     /* Mark start of this instruction as a valid target for jump.  */
-    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
 
     /* Call user-supplied callback.  */
     instruction_end = current_position + 1;
@@ -396,15 +431,17 @@ tr61:
                               instruction_info_collected, callback_data);
     }
 
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
     instruction_begin = instruction_end;
 
     /* Clear variables (well, one variable currently).  */
     instruction_info_collected = 0;
   }
-	goto st233;
+	goto st218;
 tr62:
 	{
     instruction_info_collected |= LAST_BYTE_IS_NOT_IMMEDIATE;
@@ -412,7 +449,7 @@ tr62:
 	{ SET_CPU_FEATURE(CPUFeature_3DNOW);     }
 	{
     /* Mark start of this instruction as a valid target for jump.  */
-    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
 
     /* Call user-supplied callback.  */
     instruction_end = current_position + 1;
@@ -422,20 +459,22 @@ tr62:
                               instruction_info_collected, callback_data);
     }
 
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
     instruction_begin = instruction_end;
 
     /* Clear variables (well, one variable currently).  */
     instruction_info_collected = 0;
   }
-	goto st233;
+	goto st218;
 tr68:
 	{ SET_CPU_FEATURE(CPUFeature_SSE);       }
 	{
     /* Mark start of this instruction as a valid target for jump.  */
-    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
 
     /* Call user-supplied callback.  */
     instruction_end = current_position + 1;
@@ -445,20 +484,22 @@ tr68:
                               instruction_info_collected, callback_data);
     }
 
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
     instruction_begin = instruction_end;
 
     /* Clear variables (well, one variable currently).  */
     instruction_info_collected = 0;
   }
-	goto st233;
+	goto st218;
 tr74:
 	{ SET_CPU_FEATURE(CPUFeature_SSE2);      }
 	{
     /* Mark start of this instruction as a valid target for jump.  */
-    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
 
     /* Call user-supplied callback.  */
     instruction_end = current_position + 1;
@@ -468,20 +509,22 @@ tr74:
                               instruction_info_collected, callback_data);
     }
 
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
     instruction_begin = instruction_end;
 
     /* Clear variables (well, one variable currently).  */
     instruction_info_collected = 0;
   }
-	goto st233;
+	goto st218;
 tr82:
 	{ SET_CPU_FEATURE(CPUFeature_SSSE3);     }
 	{
     /* Mark start of this instruction as a valid target for jump.  */
-    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
 
     /* Call user-supplied callback.  */
     instruction_end = current_position + 1;
@@ -491,20 +534,22 @@ tr82:
                               instruction_info_collected, callback_data);
     }
 
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
     instruction_begin = instruction_end;
 
     /* Clear variables (well, one variable currently).  */
     instruction_info_collected = 0;
   }
-	goto st233;
+	goto st218;
 tr93:
 	{ SET_CPU_FEATURE(CPUFeature_MOVBE);     }
 	{
     /* Mark start of this instruction as a valid target for jump.  */
-    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
 
     /* Call user-supplied callback.  */
     instruction_end = current_position + 1;
@@ -514,20 +559,22 @@ tr93:
                               instruction_info_collected, callback_data);
     }
 
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
     instruction_begin = instruction_end;
 
     /* Clear variables (well, one variable currently).  */
     instruction_info_collected = 0;
   }
-	goto st233;
+	goto st218;
 tr114:
 	{ SET_CPU_FEATURE(CPUFeature_CMOV);      }
 	{
     /* Mark start of this instruction as a valid target for jump.  */
-    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
 
     /* Call user-supplied callback.  */
     instruction_end = current_position + 1;
@@ -537,24 +584,26 @@ tr114:
                               instruction_info_collected, callback_data);
     }
 
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
     instruction_begin = instruction_end;
 
     /* Clear variables (well, one variable currently).  */
     instruction_info_collected = 0;
   }
-	goto st233;
+	goto st218;
 tr130:
 	{
-    Rel32Operand(current_position + 1, data, jump_dests, size,
+    Rel32Operand(current_position + 1, codeblock, jump_dests, size,
                  &instruction_info_collected);
   }
 	{}
 	{
     /* Mark start of this instruction as a valid target for jump.  */
-    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
 
     /* Call user-supplied callback.  */
     instruction_end = current_position + 1;
@@ -564,20 +613,22 @@ tr130:
                               instruction_info_collected, callback_data);
     }
 
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
     instruction_begin = instruction_end;
 
     /* Clear variables (well, one variable currently).  */
     instruction_info_collected = 0;
   }
-	goto st233;
+	goto st218;
 tr136:
 	{ SET_CPU_FEATURE(CPUFeature_CLFLUSH);   }
 	{
     /* Mark start of this instruction as a valid target for jump.  */
-    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
 
     /* Call user-supplied callback.  */
     instruction_end = current_position + 1;
@@ -587,20 +638,22 @@ tr136:
                               instruction_info_collected, callback_data);
     }
 
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
     instruction_begin = instruction_end;
 
     /* Clear variables (well, one variable currently).  */
     instruction_info_collected = 0;
   }
-	goto st233;
+	goto st218;
 tr145:
 	{ SET_CPU_FEATURE(CPUFeature_EMMXSSE);   }
 	{
     /* Mark start of this instruction as a valid target for jump.  */
-    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
 
     /* Call user-supplied callback.  */
     instruction_end = current_position + 1;
@@ -610,20 +663,22 @@ tr145:
                               instruction_info_collected, callback_data);
     }
 
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
     instruction_begin = instruction_end;
 
     /* Clear variables (well, one variable currently).  */
     instruction_info_collected = 0;
   }
-	goto st233;
+	goto st218;
 tr152:
 	{ SET_CPU_FEATURE(CPUFeature_CX8);       }
 	{
     /* Mark start of this instruction as a valid target for jump.  */
-    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
 
     /* Call user-supplied callback.  */
     instruction_end = current_position + 1;
@@ -633,24 +688,26 @@ tr152:
                               instruction_info_collected, callback_data);
     }
 
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
     instruction_begin = instruction_end;
 
     /* Clear variables (well, one variable currently).  */
     instruction_info_collected = 0;
   }
-	goto st233;
+	goto st218;
 tr165:
 	{
-    Rel8Operand(current_position + 1, data, jump_dests, size,
+    Rel8Operand(current_position + 1, codeblock, jump_dests, size,
                 &instruction_info_collected);
   }
 	{}
 	{
     /* Mark start of this instruction as a valid target for jump.  */
-    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
 
     /* Call user-supplied callback.  */
     instruction_end = current_position + 1;
@@ -660,24 +717,26 @@ tr165:
                               instruction_info_collected, callback_data);
     }
 
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
     instruction_begin = instruction_end;
 
     /* Clear variables (well, one variable currently).  */
     instruction_info_collected = 0;
   }
-	goto st233;
+	goto st218;
 tr186:
 	{
-    SET_IMM_TYPE(IMM16);
-    SET_IMM_PTR(current_position - 1);
+    SET_IMMEDIATE_FORMAT(IMM16);
+    SET_IMMEDIATE_POINTER(current_position - 1);
   }
 	{}
 	{
     /* Mark start of this instruction as a valid target for jump.  */
-    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
 
     /* Call user-supplied callback.  */
     instruction_end = current_position + 1;
@@ -687,20 +746,22 @@ tr186:
                               instruction_info_collected, callback_data);
     }
 
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
     instruction_begin = instruction_end;
 
     /* Clear variables (well, one variable currently).  */
     instruction_info_collected = 0;
   }
-	goto st233;
+	goto st218;
 tr203:
 	{ SET_CPU_FEATURE(CPUFeature_SSE41);     }
 	{
     /* Mark start of this instruction as a valid target for jump.  */
-    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
 
     /* Call user-supplied callback.  */
     instruction_end = current_position + 1;
@@ -710,20 +771,22 @@ tr203:
                               instruction_info_collected, callback_data);
     }
 
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
     instruction_begin = instruction_end;
 
     /* Clear variables (well, one variable currently).  */
     instruction_info_collected = 0;
   }
-	goto st233;
+	goto st218;
 tr209:
 	{ SET_CPU_FEATURE(CPUFeature_SSE42);     }
 	{
     /* Mark start of this instruction as a valid target for jump.  */
-    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
 
     /* Call user-supplied callback.  */
     instruction_end = current_position + 1;
@@ -733,20 +796,22 @@ tr209:
                               instruction_info_collected, callback_data);
     }
 
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
     instruction_begin = instruction_end;
 
     /* Clear variables (well, one variable currently).  */
     instruction_info_collected = 0;
   }
-	goto st233;
+	goto st218;
 tr215:
 	{ SET_CPU_FEATURE(CPUFeature_AES);       }
 	{
     /* Mark start of this instruction as a valid target for jump.  */
-    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
 
     /* Call user-supplied callback.  */
     instruction_end = current_position + 1;
@@ -756,20 +821,22 @@ tr215:
                               instruction_info_collected, callback_data);
     }
 
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
     instruction_begin = instruction_end;
 
     /* Clear variables (well, one variable currently).  */
     instruction_info_collected = 0;
   }
-	goto st233;
+	goto st218;
 tr255:
 	{ SET_CPU_FEATURE(CPUFeature_SSE4A);     }
 	{
     /* Mark start of this instruction as a valid target for jump.  */
-    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
 
     /* Call user-supplied callback.  */
     instruction_end = current_position + 1;
@@ -779,20 +846,22 @@ tr255:
                               instruction_info_collected, callback_data);
     }
 
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
     instruction_begin = instruction_end;
 
     /* Clear variables (well, one variable currently).  */
     instruction_info_collected = 0;
   }
-	goto st233;
+	goto st218;
 tr256:
 	{ SET_CPU_FEATURE(CPUFeature_SSE3);      }
 	{
     /* Mark start of this instruction as a valid target for jump.  */
-    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
 
     /* Call user-supplied callback.  */
     instruction_end = current_position + 1;
@@ -802,20 +871,22 @@ tr256:
                               instruction_info_collected, callback_data);
     }
 
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
     instruction_begin = instruction_end;
 
     /* Clear variables (well, one variable currently).  */
     instruction_info_collected = 0;
   }
-	goto st233;
+	goto st218;
 tr310:
 	{ SET_CPU_FEATURE(CPUFeature_TBM);       }
 	{
     /* Mark start of this instruction as a valid target for jump.  */
-    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
 
     /* Call user-supplied callback.  */
     instruction_end = current_position + 1;
@@ -825,20 +896,22 @@ tr310:
                               instruction_info_collected, callback_data);
     }
 
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
     instruction_begin = instruction_end;
 
     /* Clear variables (well, one variable currently).  */
     instruction_info_collected = 0;
   }
-	goto st233;
+	goto st218;
 tr317:
 	{ SET_CPU_FEATURE(CPUFeature_LWP);       }
 	{
     /* Mark start of this instruction as a valid target for jump.  */
-    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
 
     /* Call user-supplied callback.  */
     instruction_end = current_position + 1;
@@ -848,20 +921,22 @@ tr317:
                               instruction_info_collected, callback_data);
     }
 
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
     instruction_begin = instruction_end;
 
     /* Clear variables (well, one variable currently).  */
     instruction_info_collected = 0;
   }
-	goto st233;
-tr344:
+	goto st218;
+tr342:
 	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
 	{
     /* Mark start of this instruction as a valid target for jump.  */
-    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
 
     /* Call user-supplied callback.  */
     instruction_end = current_position + 1;
@@ -871,43 +946,22 @@ tr344:
                               instruction_info_collected, callback_data);
     }
 
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
     instruction_begin = instruction_end;
 
     /* Clear variables (well, one variable currently).  */
     instruction_info_collected = 0;
   }
-	goto st233;
-tr352:
-	{ SET_CPU_FEATURE(CPUFeature_FMA);       }
-	{
-    /* Mark start of this instruction as a valid target for jump.  */
-    MarkValidJumpTarget(instruction_begin - data, valid_targets);
-
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(instruction_begin, instruction_end,
-                              instruction_info_collected, callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /* Clear variables (well, one variable currently).  */
-    instruction_info_collected = 0;
-  }
-	goto st233;
-tr358:
+	goto st218;
+tr349:
 	{ SET_CPU_FEATURE(CPUFeature_AESAVX);    }
 	{
     /* Mark start of this instruction as a valid target for jump.  */
-    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
 
     /* Call user-supplied callback.  */
     instruction_end = current_position + 1;
@@ -917,20 +971,22 @@ tr358:
                               instruction_info_collected, callback_data);
     }
 
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
     instruction_begin = instruction_end;
 
     /* Clear variables (well, one variable currently).  */
     instruction_info_collected = 0;
   }
-	goto st233;
-tr365:
+	goto st218;
+tr356:
 	{ SET_CPU_FEATURE(CPUFeature_F16C);      }
 	{
     /* Mark start of this instruction as a valid target for jump.  */
-    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
 
     /* Call user-supplied callback.  */
     instruction_end = current_position + 1;
@@ -940,45 +996,22 @@ tr365:
                               instruction_info_collected, callback_data);
     }
 
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
     instruction_begin = instruction_end;
 
     /* Clear variables (well, one variable currently).  */
     instruction_info_collected = 0;
   }
-	goto st233;
-tr391:
-	{
-    instruction_info_collected |= LAST_BYTE_IS_NOT_IMMEDIATE;
-  }
-	{
-    /* Mark start of this instruction as a valid target for jump.  */
-    MarkValidJumpTarget(instruction_begin - data, valid_targets);
-
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(instruction_begin, instruction_end,
-                              instruction_info_collected, callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /* Clear variables (well, one variable currently).  */
-    instruction_info_collected = 0;
-  }
-	goto st233;
-tr413:
+	goto st218;
+tr386:
 	{ SET_CPU_FEATURE(CPUFeature_x87);       }
 	{
     /* Mark start of this instruction as a valid target for jump.  */
-    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
 
     /* Call user-supplied callback.  */
     instruction_end = current_position + 1;
@@ -988,20 +1021,22 @@ tr413:
                               instruction_info_collected, callback_data);
     }
 
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
     instruction_begin = instruction_end;
 
     /* Clear variables (well, one variable currently).  */
     instruction_info_collected = 0;
   }
-	goto st233;
-tr419:
+	goto st218;
+tr392:
 	{ SET_CPU_FEATURE(CPUFeature_CMOVx87);   }
 	{
     /* Mark start of this instruction as a valid target for jump.  */
-    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
 
     /* Call user-supplied callback.  */
     instruction_end = current_position + 1;
@@ -1011,28 +1046,30 @@ tr419:
                               instruction_info_collected, callback_data);
     }
 
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
     instruction_begin = instruction_end;
 
     /* Clear variables (well, one variable currently).  */
     instruction_info_collected = 0;
   }
-	goto st233;
-tr423:
+	goto st218;
+tr396:
 	{
-    Rel32Operand(current_position + 1, data, jump_dests, size,
+    Rel32Operand(current_position + 1, codeblock, jump_dests, size,
                  &instruction_info_collected);
   }
 	{}
 	{
-      if (((current_position - data) & kBundleMask) != kBundleMask)
+      if (((current_position - codeblock) & kBundleMask) != kBundleMask)
         instruction_info_collected |= BAD_CALL_ALIGNMENT;
     }
 	{
     /* Mark start of this instruction as a valid target for jump.  */
-    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
 
     /* Call user-supplied callback.  */
     instruction_end = current_position + 1;
@@ -1042,24 +1079,26 @@ tr423:
                               instruction_info_collected, callback_data);
     }
 
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
     instruction_begin = instruction_end;
 
     /* Clear variables (well, one variable currently).  */
     instruction_info_collected = 0;
   }
-	goto st233;
-tr438:
+	goto st218;
+tr411:
 	{
-    SET_IMM2_TYPE(IMM8);
-    SET_IMM2_PTR(current_position);
+    SET_SECOND_IMMEDIATE_FORMAT(IMM8);
+    SET_SECOND_IMMEDIATE_POINTER(current_position);
   }
 	{}
 	{
     /* Mark start of this instruction as a valid target for jump.  */
-    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
 
     /* Call user-supplied callback.  */
     instruction_end = current_position + 1;
@@ -1069,20 +1108,22 @@ tr438:
                               instruction_info_collected, callback_data);
     }
 
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
     instruction_begin = instruction_end;
 
     /* Clear variables (well, one variable currently).  */
     instruction_info_collected = 0;
   }
-	goto st233;
-tr443:
+	goto st218;
+tr416:
 	{ SET_CPU_FEATURE(CPUFeature_POPCNT);    }
 	{
     /* Mark start of this instruction as a valid target for jump.  */
-    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
 
     /* Call user-supplied callback.  */
     instruction_end = current_position + 1;
@@ -1092,20 +1133,22 @@ tr443:
                               instruction_info_collected, callback_data);
     }
 
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
     instruction_begin = instruction_end;
 
     /* Clear variables (well, one variable currently).  */
     instruction_info_collected = 0;
   }
-	goto st233;
-tr449:
+	goto st218;
+tr422:
 	{ SET_CPU_FEATURE(CPUFeature_TZCNT);     }
 	{
     /* Mark start of this instruction as a valid target for jump.  */
-    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
 
     /* Call user-supplied callback.  */
     instruction_end = current_position + 1;
@@ -1115,20 +1158,22 @@ tr449:
                               instruction_info_collected, callback_data);
     }
 
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
     instruction_begin = instruction_end;
 
     /* Clear variables (well, one variable currently).  */
     instruction_info_collected = 0;
   }
-	goto st233;
-tr455:
+	goto st218;
+tr428:
 	{ SET_CPU_FEATURE(CPUFeature_LZCNT);     }
 	{
     /* Mark start of this instruction as a valid target for jump.  */
-    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
 
     /* Call user-supplied callback.  */
     instruction_end = current_position + 1;
@@ -1138,28 +1183,30 @@ tr455:
                               instruction_info_collected, callback_data);
     }
 
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
     instruction_begin = instruction_end;
 
     /* Clear variables (well, one variable currently).  */
     instruction_info_collected = 0;
   }
-	goto st233;
-tr461:
+	goto st218;
+tr434:
 	{
-      UnmarkValidJumpTarget((current_position - data) - 1, valid_targets);
+      UnmarkValidJumpTarget((current_position - codeblock) - 1, valid_targets);
       instruction_begin -= 3;
       instruction_info_collected |= SPECIAL_INSTRUCTION;
     }
 	{
-      if (((current_position - data) & kBundleMask) != kBundleMask)
+      if (((current_position - codeblock) & kBundleMask) != kBundleMask)
         instruction_info_collected |= BAD_CALL_ALIGNMENT;
     }
 	{
     /* Mark start of this instruction as a valid target for jump.  */
-    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
 
     /* Call user-supplied callback.  */
     instruction_end = current_position + 1;
@@ -1169,24 +1216,26 @@ tr461:
                               instruction_info_collected, callback_data);
     }
 
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
     instruction_begin = instruction_end;
 
     /* Clear variables (well, one variable currently).  */
     instruction_info_collected = 0;
   }
-	goto st233;
-tr462:
+	goto st218;
+tr435:
 	{
-      UnmarkValidJumpTarget((current_position - data) - 1, valid_targets);
+      UnmarkValidJumpTarget((current_position - codeblock) - 1, valid_targets);
       instruction_begin -= 3;
       instruction_info_collected |= SPECIAL_INSTRUCTION;
     }
 	{
     /* Mark start of this instruction as a valid target for jump.  */
-    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
 
     /* Call user-supplied callback.  */
     instruction_end = current_position + 1;
@@ -1196,19 +1245,21 @@ tr462:
                               instruction_info_collected, callback_data);
     }
 
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
     instruction_begin = instruction_end;
 
     /* Clear variables (well, one variable currently).  */
     instruction_info_collected = 0;
   }
-	goto st233;
-st233:
+	goto st218;
+st218:
 	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof233;
-case 233:
+		goto _test_eof218;
+case 218:
 	switch( (*( current_position)) ) {
 		case 4u: goto st10;
 		case 5u: goto st11;
@@ -1240,30 +1291,30 @@ case 233:
 		case 131u: goto st139;
 		case 141u: goto st115;
 		case 143u: goto st141;
-		case 155u: goto tr413;
+		case 155u: goto tr386;
 		case 168u: goto st10;
 		case 169u: goto st11;
 		case 196u: goto st153;
-		case 198u: goto st185;
-		case 199u: goto st186;
+		case 198u: goto st170;
+		case 199u: goto st171;
 		case 201u: goto tr0;
-		case 216u: goto st187;
-		case 217u: goto st188;
-		case 218u: goto st189;
-		case 219u: goto st190;
-		case 220u: goto st191;
-		case 221u: goto st192;
-		case 222u: goto st193;
-		case 223u: goto st194;
-		case 232u: goto st195;
+		case 216u: goto st172;
+		case 217u: goto st173;
+		case 218u: goto st174;
+		case 219u: goto st175;
+		case 220u: goto st176;
+		case 221u: goto st177;
+		case 222u: goto st178;
+		case 223u: goto st179;
+		case 232u: goto st180;
 		case 233u: goto st52;
 		case 235u: goto st67;
-		case 240u: goto st199;
-		case 242u: goto st202;
-		case 243u: goto st210;
-		case 246u: goto st215;
-		case 247u: goto st216;
-		case 254u: goto st217;
+		case 240u: goto st184;
+		case 242u: goto st187;
+		case 243u: goto st195;
+		case 246u: goto st200;
+		case 247u: goto st201;
+		case 254u: goto st202;
 		case 255u: goto st129;
 	}
 	if ( (*( current_position)) < 132u ) {
@@ -1424,31 +1475,28 @@ tr257:
 tr311:
 	{ SET_CPU_FEATURE(CPUFeature_TBM);       }
 	goto st2;
-tr345:
+tr343:
 	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
 	goto st2;
-tr353:
-	{ SET_CPU_FEATURE(CPUFeature_FMA);       }
-	goto st2;
-tr359:
+tr350:
 	{ SET_CPU_FEATURE(CPUFeature_AESAVX);    }
 	goto st2;
-tr366:
+tr357:
 	{ SET_CPU_FEATURE(CPUFeature_F16C);      }
 	goto st2;
-tr414:
+tr387:
 	{ SET_CPU_FEATURE(CPUFeature_x87);       }
 	goto st2;
-tr431:
+tr404:
 	{ SET_CPU_FEATURE(CPUFeature_SSE4A);     }
 	goto st2;
-tr444:
+tr417:
 	{ SET_CPU_FEATURE(CPUFeature_POPCNT);    }
 	goto st2;
-tr450:
+tr423:
 	{ SET_CPU_FEATURE(CPUFeature_TZCNT);     }
 	goto st2;
-tr456:
+tr429:
 	{ SET_CPU_FEATURE(CPUFeature_LZCNT);     }
 	goto st2;
 st2:
@@ -1538,31 +1586,28 @@ tr258:
 tr312:
 	{ SET_CPU_FEATURE(CPUFeature_TBM);       }
 	goto st3;
-tr346:
+tr344:
 	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
 	goto st3;
-tr354:
-	{ SET_CPU_FEATURE(CPUFeature_FMA);       }
-	goto st3;
-tr360:
+tr351:
 	{ SET_CPU_FEATURE(CPUFeature_AESAVX);    }
 	goto st3;
-tr367:
+tr358:
 	{ SET_CPU_FEATURE(CPUFeature_F16C);      }
 	goto st3;
-tr415:
+tr388:
 	{ SET_CPU_FEATURE(CPUFeature_x87);       }
 	goto st3;
-tr432:
+tr405:
 	{ SET_CPU_FEATURE(CPUFeature_SSE4A);     }
 	goto st3;
-tr445:
+tr418:
 	{ SET_CPU_FEATURE(CPUFeature_POPCNT);    }
 	goto st3;
-tr451:
+tr424:
 	{ SET_CPU_FEATURE(CPUFeature_TZCNT);     }
 	goto st3;
-tr457:
+tr430:
 	{ SET_CPU_FEATURE(CPUFeature_LZCNT);     }
 	goto st3;
 st3:
@@ -1642,31 +1687,28 @@ tr259:
 tr313:
 	{ SET_CPU_FEATURE(CPUFeature_TBM);       }
 	goto st7;
-tr347:
+tr345:
 	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
 	goto st7;
-tr355:
-	{ SET_CPU_FEATURE(CPUFeature_FMA);       }
-	goto st7;
-tr361:
+tr352:
 	{ SET_CPU_FEATURE(CPUFeature_AESAVX);    }
 	goto st7;
-tr368:
+tr359:
 	{ SET_CPU_FEATURE(CPUFeature_F16C);      }
 	goto st7;
-tr416:
+tr389:
 	{ SET_CPU_FEATURE(CPUFeature_x87);       }
 	goto st7;
-tr433:
+tr406:
 	{ SET_CPU_FEATURE(CPUFeature_SSE4A);     }
 	goto st7;
-tr446:
+tr419:
 	{ SET_CPU_FEATURE(CPUFeature_POPCNT);    }
 	goto st7;
-tr452:
+tr425:
 	{ SET_CPU_FEATURE(CPUFeature_TZCNT);     }
 	goto st7;
-tr458:
+tr431:
 	{ SET_CPU_FEATURE(CPUFeature_LZCNT);     }
 	goto st7;
 st7:
@@ -1722,31 +1764,28 @@ tr260:
 tr314:
 	{ SET_CPU_FEATURE(CPUFeature_TBM);       }
 	goto st8;
-tr348:
+tr346:
 	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
 	goto st8;
-tr356:
-	{ SET_CPU_FEATURE(CPUFeature_FMA);       }
-	goto st8;
-tr362:
+tr353:
 	{ SET_CPU_FEATURE(CPUFeature_AESAVX);    }
 	goto st8;
-tr369:
+tr360:
 	{ SET_CPU_FEATURE(CPUFeature_F16C);      }
 	goto st8;
-tr417:
+tr390:
 	{ SET_CPU_FEATURE(CPUFeature_x87);       }
 	goto st8;
-tr434:
+tr407:
 	{ SET_CPU_FEATURE(CPUFeature_SSE4A);     }
 	goto st8;
-tr447:
+tr420:
 	{ SET_CPU_FEATURE(CPUFeature_POPCNT);    }
 	goto st8;
-tr453:
+tr426:
 	{ SET_CPU_FEATURE(CPUFeature_TZCNT);     }
 	goto st8;
-tr459:
+tr432:
 	{ SET_CPU_FEATURE(CPUFeature_LZCNT);     }
 	goto st8;
 st8:
@@ -1802,31 +1841,28 @@ tr261:
 tr315:
 	{ SET_CPU_FEATURE(CPUFeature_TBM);       }
 	goto st9;
-tr349:
+tr347:
 	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
 	goto st9;
-tr357:
-	{ SET_CPU_FEATURE(CPUFeature_FMA);       }
-	goto st9;
-tr363:
+tr354:
 	{ SET_CPU_FEATURE(CPUFeature_AESAVX);    }
 	goto st9;
-tr370:
+tr361:
 	{ SET_CPU_FEATURE(CPUFeature_F16C);      }
 	goto st9;
-tr418:
+tr391:
 	{ SET_CPU_FEATURE(CPUFeature_x87);       }
 	goto st9;
-tr435:
+tr408:
 	{ SET_CPU_FEATURE(CPUFeature_SSE4A);     }
 	goto st9;
-tr448:
+tr421:
 	{ SET_CPU_FEATURE(CPUFeature_POPCNT);    }
 	goto st9;
-tr454:
+tr427:
 	{ SET_CPU_FEATURE(CPUFeature_TZCNT);     }
 	goto st9;
-tr460:
+tr433:
 	{ SET_CPU_FEATURE(CPUFeature_LZCNT);     }
 	goto st9;
 st9:
@@ -1836,15 +1872,15 @@ case 9:
 	goto st3;
 tr111:
 	{
-    SET_DISP_TYPE(DISP32);
-    SET_DISP_PTR(current_position - 3);
+    SET_DISPLACEMENT_FORMAT(DISP32);
+    SET_DISPLACEMENT_POINTER(current_position - 3);
   }
 	{}
 	goto st10;
 tr112:
 	{
-    SET_DISP_TYPE(DISP8);
-    SET_DISP_PTR(current_position);
+    SET_DISPLACEMENT_FORMAT(DISP8);
+    SET_DISPLACEMENT_POINTER(current_position);
   }
 	{}
 	goto st10;
@@ -1875,13 +1911,13 @@ tr243:
 tr231:
 	{ SET_CPU_FEATURE(CPUFeature_CLMUL);     }
 	goto st10;
-tr400:
+tr373:
 	{ SET_CPU_FEATURE(CPUFeature_AESAVX);    }
 	goto st10;
-tr407:
+tr380:
 	{ SET_CPU_FEATURE(CPUFeature_F16C);      }
 	goto st10;
-tr379:
+tr367:
 	{ SET_CPU_FEATURE(CPUFeature_CLMULAVX);  }
 	goto st10;
 st10:
@@ -1891,15 +1927,15 @@ case 10:
 	goto tr11;
 tr293:
 	{
-    SET_DISP_TYPE(DISP32);
-    SET_DISP_PTR(current_position - 3);
+    SET_DISPLACEMENT_FORMAT(DISP32);
+    SET_DISPLACEMENT_POINTER(current_position - 3);
   }
 	{}
 	goto st11;
 tr294:
 	{
-    SET_DISP_TYPE(DISP8);
-    SET_DISP_PTR(current_position);
+    SET_DISPLACEMENT_FORMAT(DISP8);
+    SET_DISPLACEMENT_POINTER(current_position);
   }
 	{}
 	goto st11;
@@ -2154,15 +2190,15 @@ case 18:
 	goto st19;
 tr66:
 	{
-    SET_DISP_TYPE(DISP32);
-    SET_DISP_PTR(current_position - 3);
+    SET_DISPLACEMENT_FORMAT(DISP32);
+    SET_DISPLACEMENT_POINTER(current_position - 3);
   }
 	{}
 	goto st19;
 tr67:
 	{
-    SET_DISP_TYPE(DISP8);
-    SET_DISP_PTR(current_position);
+    SET_DISPLACEMENT_FORMAT(DISP8);
+    SET_DISPLACEMENT_POINTER(current_position);
   }
 	{}
 	goto st19;
@@ -2727,13 +2763,13 @@ tr244:
 tr232:
 	{ SET_CPU_FEATURE(CPUFeature_CLMUL);     }
 	goto st39;
-tr401:
+tr374:
 	{ SET_CPU_FEATURE(CPUFeature_AESAVX);    }
 	goto st39;
-tr408:
+tr381:
 	{ SET_CPU_FEATURE(CPUFeature_F16C);      }
 	goto st39;
-tr380:
+tr368:
 	{ SET_CPU_FEATURE(CPUFeature_CLMULAVX);  }
 	goto st39;
 st39:
@@ -2799,13 +2835,13 @@ tr245:
 tr233:
 	{ SET_CPU_FEATURE(CPUFeature_CLMUL);     }
 	goto st40;
-tr402:
+tr375:
 	{ SET_CPU_FEATURE(CPUFeature_AESAVX);    }
 	goto st40;
-tr409:
+tr382:
 	{ SET_CPU_FEATURE(CPUFeature_F16C);      }
 	goto st40;
-tr381:
+tr369:
 	{ SET_CPU_FEATURE(CPUFeature_CLMULAVX);  }
 	goto st40;
 st40:
@@ -2861,13 +2897,13 @@ tr246:
 tr234:
 	{ SET_CPU_FEATURE(CPUFeature_CLMUL);     }
 	goto st44;
-tr403:
+tr376:
 	{ SET_CPU_FEATURE(CPUFeature_AESAVX);    }
 	goto st44;
-tr410:
+tr383:
 	{ SET_CPU_FEATURE(CPUFeature_F16C);      }
 	goto st44;
-tr382:
+tr370:
 	{ SET_CPU_FEATURE(CPUFeature_CLMULAVX);  }
 	goto st44;
 st44:
@@ -2899,13 +2935,13 @@ tr247:
 tr235:
 	{ SET_CPU_FEATURE(CPUFeature_CLMUL);     }
 	goto st45;
-tr404:
+tr377:
 	{ SET_CPU_FEATURE(CPUFeature_AESAVX);    }
 	goto st45;
-tr411:
+tr384:
 	{ SET_CPU_FEATURE(CPUFeature_F16C);      }
 	goto st45;
-tr383:
+tr371:
 	{ SET_CPU_FEATURE(CPUFeature_CLMULAVX);  }
 	goto st45;
 st45:
@@ -2937,13 +2973,13 @@ tr248:
 tr236:
 	{ SET_CPU_FEATURE(CPUFeature_CLMUL);     }
 	goto st46;
-tr405:
+tr378:
 	{ SET_CPU_FEATURE(CPUFeature_AESAVX);    }
 	goto st46;
-tr412:
+tr385:
 	{ SET_CPU_FEATURE(CPUFeature_F16C);      }
 	goto st46;
-tr384:
+tr372:
 	{ SET_CPU_FEATURE(CPUFeature_CLMULAVX);  }
 	goto st46;
 st46:
@@ -3612,15 +3648,15 @@ case 74:
 	goto tr16;
 tr276:
 	{
-    SET_DISP_TYPE(DISP32);
-    SET_DISP_PTR(current_position - 3);
+    SET_DISPLACEMENT_FORMAT(DISP32);
+    SET_DISPLACEMENT_POINTER(current_position - 3);
   }
 	{}
 	goto st75;
 tr277:
 	{
-    SET_DISP_TYPE(DISP8);
-    SET_DISP_PTR(current_position);
+    SET_DISPLACEMENT_FORMAT(DISP8);
+    SET_DISPLACEMENT_POINTER(current_position);
   }
 	{}
 	goto st75;
@@ -5168,13 +5204,13 @@ case 139:
 		case 180u: goto st46;
 		case 188u: goto st46;
 		case 224u: goto st140;
-		case 225u: goto st219;
-		case 226u: goto st221;
-		case 227u: goto st223;
-		case 228u: goto st225;
-		case 229u: goto st227;
-		case 230u: goto st229;
-		case 231u: goto st231;
+		case 225u: goto st204;
+		case 226u: goto st206;
+		case 227u: goto st208;
+		case 228u: goto st210;
+		case 229u: goto st212;
+		case 230u: goto st214;
+		case 231u: goto st216;
 	}
 	if ( (*( current_position)) > 127u ) {
 		if ( 128u <= (*( current_position)) && (*( current_position)) <= 191u )
@@ -5191,13 +5227,13 @@ case 140:
 	goto tr11;
 tr303:
 	{
-    SET_IMM_TYPE(IMM8);
-    SET_IMM_PTR(current_position);
+    SET_IMMEDIATE_FORMAT(IMM8);
+    SET_IMMEDIATE_POINTER(current_position);
   }
 	{}
 	{
     /* Mark start of this instruction as a valid target for jump.  */
-    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
 
     /* Call user-supplied callback.  */
     instruction_end = current_position + 1;
@@ -5207,19 +5243,21 @@ tr303:
                               instruction_info_collected, callback_data);
     }
 
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
     instruction_begin = instruction_end;
 
     /* Clear variables (well, one variable currently).  */
     instruction_info_collected = 0;
   }
-	goto st234;
-st234:
+	goto st219;
+st219:
 	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof234;
-case 234:
+		goto _test_eof219;
+case 219:
 	switch( (*( current_position)) ) {
 		case 4u: goto st10;
 		case 5u: goto st11;
@@ -5251,31 +5289,31 @@ case 234:
 		case 131u: goto st139;
 		case 141u: goto st115;
 		case 143u: goto st141;
-		case 155u: goto tr413;
+		case 155u: goto tr386;
 		case 168u: goto st10;
 		case 169u: goto st11;
 		case 196u: goto st153;
-		case 198u: goto st185;
-		case 199u: goto st186;
+		case 198u: goto st170;
+		case 199u: goto st171;
 		case 201u: goto tr0;
-		case 216u: goto st187;
-		case 217u: goto st188;
-		case 218u: goto st189;
-		case 219u: goto st190;
-		case 220u: goto st191;
-		case 221u: goto st192;
-		case 222u: goto st193;
-		case 223u: goto st194;
-		case 232u: goto st195;
+		case 216u: goto st172;
+		case 217u: goto st173;
+		case 218u: goto st174;
+		case 219u: goto st175;
+		case 220u: goto st176;
+		case 221u: goto st177;
+		case 222u: goto st178;
+		case 223u: goto st179;
+		case 232u: goto st180;
 		case 233u: goto st52;
 		case 235u: goto st67;
-		case 240u: goto st199;
-		case 242u: goto st202;
-		case 243u: goto st210;
-		case 246u: goto st215;
-		case 247u: goto st216;
-		case 254u: goto st217;
-		case 255u: goto st218;
+		case 240u: goto st184;
+		case 242u: goto st187;
+		case 243u: goto st195;
+		case 246u: goto st200;
+		case 247u: goto st201;
+		case 254u: goto st202;
+		case 255u: goto st203;
 	}
 	if ( (*( current_position)) < 132u ) {
 		if ( (*( current_position)) < 32u ) {
@@ -5625,7 +5663,7 @@ st153:
 case 153:
 	switch( (*( current_position)) ) {
 		case 226u: goto st154;
-		case 227u: goto st166;
+		case 227u: goto st163;
 	}
 	goto tr16;
 st154:
@@ -5635,44 +5673,21 @@ case 154:
 	switch( (*( current_position)) ) {
 		case 64u: goto tr336;
 		case 65u: goto tr337;
-		case 69u: goto tr338;
 		case 72u: goto tr336;
 		case 73u: goto tr337;
-		case 77u: goto tr338;
 		case 80u: goto tr336;
 		case 81u: goto tr337;
-		case 85u: goto tr338;
 		case 88u: goto tr336;
 		case 89u: goto tr337;
-		case 93u: goto tr338;
 		case 96u: goto tr336;
 		case 97u: goto tr337;
-		case 101u: goto tr338;
 		case 104u: goto tr336;
 		case 105u: goto tr337;
-		case 109u: goto tr338;
 		case 112u: goto tr336;
 		case 113u: goto tr337;
-		case 117u: goto tr338;
 		case 120u: goto tr336;
-		case 121u: goto tr339;
-		case 125u: goto tr340;
-		case 193u: goto tr341;
-		case 197u: goto tr338;
-		case 201u: goto tr341;
-		case 205u: goto tr338;
-		case 209u: goto tr341;
-		case 213u: goto tr338;
-		case 217u: goto tr341;
-		case 221u: goto tr338;
-		case 225u: goto tr341;
-		case 229u: goto tr338;
-		case 233u: goto tr341;
-		case 237u: goto tr338;
-		case 241u: goto tr341;
-		case 245u: goto tr338;
-		case 249u: goto tr341;
-		case 253u: goto tr338;
+		case 121u: goto tr338;
+		case 125u: goto tr339;
 	}
 	goto tr16;
 tr336:
@@ -5695,74 +5710,74 @@ st156:
 		goto _test_eof156;
 case 156:
 	switch( (*( current_position)) ) {
-		case 4u: goto tr345;
-		case 5u: goto tr346;
-		case 12u: goto tr345;
-		case 13u: goto tr346;
-		case 20u: goto tr345;
-		case 21u: goto tr346;
-		case 28u: goto tr345;
-		case 29u: goto tr346;
-		case 36u: goto tr345;
-		case 37u: goto tr346;
-		case 44u: goto tr345;
-		case 45u: goto tr346;
-		case 52u: goto tr345;
-		case 53u: goto tr346;
-		case 60u: goto tr345;
-		case 61u: goto tr346;
-		case 68u: goto tr348;
-		case 76u: goto tr348;
-		case 84u: goto tr348;
-		case 92u: goto tr348;
-		case 100u: goto tr348;
-		case 108u: goto tr348;
-		case 116u: goto tr348;
-		case 124u: goto tr348;
-		case 132u: goto tr349;
-		case 140u: goto tr349;
-		case 148u: goto tr349;
-		case 156u: goto tr349;
-		case 164u: goto tr349;
-		case 172u: goto tr349;
-		case 180u: goto tr349;
-		case 188u: goto tr349;
+		case 4u: goto tr343;
+		case 5u: goto tr344;
+		case 12u: goto tr343;
+		case 13u: goto tr344;
+		case 20u: goto tr343;
+		case 21u: goto tr344;
+		case 28u: goto tr343;
+		case 29u: goto tr344;
+		case 36u: goto tr343;
+		case 37u: goto tr344;
+		case 44u: goto tr343;
+		case 45u: goto tr344;
+		case 52u: goto tr343;
+		case 53u: goto tr344;
+		case 60u: goto tr343;
+		case 61u: goto tr344;
+		case 68u: goto tr346;
+		case 76u: goto tr346;
+		case 84u: goto tr346;
+		case 92u: goto tr346;
+		case 100u: goto tr346;
+		case 108u: goto tr346;
+		case 116u: goto tr346;
+		case 124u: goto tr346;
+		case 132u: goto tr347;
+		case 140u: goto tr347;
+		case 148u: goto tr347;
+		case 156u: goto tr347;
+		case 164u: goto tr347;
+		case 172u: goto tr347;
+		case 180u: goto tr347;
+		case 188u: goto tr347;
 	}
 	if ( (*( current_position)) > 127u ) {
 		if ( 128u <= (*( current_position)) && (*( current_position)) <= 191u )
-			goto tr346;
+			goto tr344;
 	} else if ( (*( current_position)) >= 64u )
-		goto tr347;
-	goto tr344;
+		goto tr345;
+	goto tr342;
 st157:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof157;
 case 157:
 	switch( (*( current_position)) ) {
-		case 12u: goto tr345;
-		case 13u: goto tr346;
-		case 20u: goto tr345;
-		case 21u: goto tr346;
-		case 28u: goto tr345;
-		case 29u: goto tr346;
-		case 76u: goto tr348;
-		case 84u: goto tr348;
-		case 92u: goto tr348;
-		case 140u: goto tr349;
-		case 148u: goto tr349;
-		case 156u: goto tr349;
+		case 12u: goto tr343;
+		case 13u: goto tr344;
+		case 20u: goto tr343;
+		case 21u: goto tr344;
+		case 28u: goto tr343;
+		case 29u: goto tr344;
+		case 76u: goto tr346;
+		case 84u: goto tr346;
+		case 92u: goto tr346;
+		case 140u: goto tr347;
+		case 148u: goto tr347;
+		case 156u: goto tr347;
 	}
 	if ( (*( current_position)) < 72u ) {
 		if ( 8u <= (*( current_position)) && (*( current_position)) <= 31u )
-			goto tr344;
+			goto tr342;
 	} else if ( (*( current_position)) > 95u ) {
 		if ( (*( current_position)) > 159u ) {
 			if ( 200u <= (*( current_position)) && (*( current_position)) <= 223u )
-				goto tr344;
+				goto tr342;
 		} else if ( (*( current_position)) >= 136u )
-			goto tr346;
+			goto tr344;
 	} else
-		goto tr347;
+		goto tr345;
 	goto tr16;
 tr337:
 	{
@@ -5773,16 +5788,7 @@ st158:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof158;
 case 158:
-	if ( (*( current_position)) < 166u ) {
-		if ( 150u <= (*( current_position)) && (*( current_position)) <= 159u )
-			goto st159;
-	} else if ( (*( current_position)) > 175u ) {
-		if ( (*( current_position)) > 191u ) {
-			if ( 219u <= (*( current_position)) && (*( current_position)) <= 223u )
-				goto st160;
-		} else if ( (*( current_position)) >= 182u )
-			goto st159;
-	} else
+	if ( 219u <= (*( current_position)) && (*( current_position)) <= 223u )
 		goto st159;
 	goto tr16;
 st159:
@@ -5790,118 +5796,103 @@ st159:
 		goto _test_eof159;
 case 159:
 	switch( (*( current_position)) ) {
-		case 4u: goto tr353;
-		case 5u: goto tr354;
-		case 12u: goto tr353;
-		case 13u: goto tr354;
-		case 20u: goto tr353;
-		case 21u: goto tr354;
-		case 28u: goto tr353;
-		case 29u: goto tr354;
-		case 36u: goto tr353;
-		case 37u: goto tr354;
-		case 44u: goto tr353;
-		case 45u: goto tr354;
-		case 52u: goto tr353;
-		case 53u: goto tr354;
-		case 60u: goto tr353;
-		case 61u: goto tr354;
-		case 68u: goto tr356;
-		case 76u: goto tr356;
-		case 84u: goto tr356;
-		case 92u: goto tr356;
-		case 100u: goto tr356;
-		case 108u: goto tr356;
-		case 116u: goto tr356;
-		case 124u: goto tr356;
-		case 132u: goto tr357;
-		case 140u: goto tr357;
-		case 148u: goto tr357;
-		case 156u: goto tr357;
-		case 164u: goto tr357;
-		case 172u: goto tr357;
-		case 180u: goto tr357;
-		case 188u: goto tr357;
+		case 4u: goto tr350;
+		case 5u: goto tr351;
+		case 12u: goto tr350;
+		case 13u: goto tr351;
+		case 20u: goto tr350;
+		case 21u: goto tr351;
+		case 28u: goto tr350;
+		case 29u: goto tr351;
+		case 36u: goto tr350;
+		case 37u: goto tr351;
+		case 44u: goto tr350;
+		case 45u: goto tr351;
+		case 52u: goto tr350;
+		case 53u: goto tr351;
+		case 60u: goto tr350;
+		case 61u: goto tr351;
+		case 68u: goto tr353;
+		case 76u: goto tr353;
+		case 84u: goto tr353;
+		case 92u: goto tr353;
+		case 100u: goto tr353;
+		case 108u: goto tr353;
+		case 116u: goto tr353;
+		case 124u: goto tr353;
+		case 132u: goto tr354;
+		case 140u: goto tr354;
+		case 148u: goto tr354;
+		case 156u: goto tr354;
+		case 164u: goto tr354;
+		case 172u: goto tr354;
+		case 180u: goto tr354;
+		case 188u: goto tr354;
 	}
 	if ( (*( current_position)) > 127u ) {
 		if ( 128u <= (*( current_position)) && (*( current_position)) <= 191u )
-			goto tr354;
+			goto tr351;
 	} else if ( (*( current_position)) >= 64u )
-		goto tr355;
-	goto tr352;
-st160:
-	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof160;
-case 160:
-	switch( (*( current_position)) ) {
-		case 4u: goto tr359;
-		case 5u: goto tr360;
-		case 12u: goto tr359;
-		case 13u: goto tr360;
-		case 20u: goto tr359;
-		case 21u: goto tr360;
-		case 28u: goto tr359;
-		case 29u: goto tr360;
-		case 36u: goto tr359;
-		case 37u: goto tr360;
-		case 44u: goto tr359;
-		case 45u: goto tr360;
-		case 52u: goto tr359;
-		case 53u: goto tr360;
-		case 60u: goto tr359;
-		case 61u: goto tr360;
-		case 68u: goto tr362;
-		case 76u: goto tr362;
-		case 84u: goto tr362;
-		case 92u: goto tr362;
-		case 100u: goto tr362;
-		case 108u: goto tr362;
-		case 116u: goto tr362;
-		case 124u: goto tr362;
-		case 132u: goto tr363;
-		case 140u: goto tr363;
-		case 148u: goto tr363;
-		case 156u: goto tr363;
-		case 164u: goto tr363;
-		case 172u: goto tr363;
-		case 180u: goto tr363;
-		case 188u: goto tr363;
-	}
-	if ( (*( current_position)) > 127u ) {
-		if ( 128u <= (*( current_position)) && (*( current_position)) <= 191u )
-			goto tr360;
-	} else if ( (*( current_position)) >= 64u )
-		goto tr361;
-	goto tr358;
+		goto tr352;
+	goto tr349;
 tr338:
 	{
     SET_VEX_PREFIX3(*current_position);
   }
-	goto st161;
+	goto st160;
+st160:
+	if ( ++( current_position) == ( end_of_bundle) )
+		goto _test_eof160;
+case 160:
+	if ( (*( current_position)) == 19u )
+		goto st161;
+	if ( 219u <= (*( current_position)) && (*( current_position)) <= 223u )
+		goto st159;
+	goto tr16;
 st161:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof161;
 case 161:
 	switch( (*( current_position)) ) {
-		case 154u: goto st159;
-		case 156u: goto st159;
-		case 158u: goto st159;
-		case 170u: goto st159;
-		case 172u: goto st159;
-		case 174u: goto st159;
-		case 186u: goto st159;
-		case 188u: goto st159;
-		case 190u: goto st159;
+		case 4u: goto tr357;
+		case 5u: goto tr358;
+		case 12u: goto tr357;
+		case 13u: goto tr358;
+		case 20u: goto tr357;
+		case 21u: goto tr358;
+		case 28u: goto tr357;
+		case 29u: goto tr358;
+		case 36u: goto tr357;
+		case 37u: goto tr358;
+		case 44u: goto tr357;
+		case 45u: goto tr358;
+		case 52u: goto tr357;
+		case 53u: goto tr358;
+		case 60u: goto tr357;
+		case 61u: goto tr358;
+		case 68u: goto tr360;
+		case 76u: goto tr360;
+		case 84u: goto tr360;
+		case 92u: goto tr360;
+		case 100u: goto tr360;
+		case 108u: goto tr360;
+		case 116u: goto tr360;
+		case 124u: goto tr360;
+		case 132u: goto tr361;
+		case 140u: goto tr361;
+		case 148u: goto tr361;
+		case 156u: goto tr361;
+		case 164u: goto tr361;
+		case 172u: goto tr361;
+		case 180u: goto tr361;
+		case 188u: goto tr361;
 	}
-	if ( (*( current_position)) < 166u ) {
-		if ( 150u <= (*( current_position)) && (*( current_position)) <= 152u )
-			goto st159;
-	} else if ( (*( current_position)) > 168u ) {
-		if ( 182u <= (*( current_position)) && (*( current_position)) <= 184u )
-			goto st159;
-	} else
-		goto st159;
-	goto tr16;
+	if ( (*( current_position)) > 127u ) {
+		if ( 128u <= (*( current_position)) && (*( current_position)) <= 191u )
+			goto tr358;
+	} else if ( (*( current_position)) >= 64u )
+		goto tr359;
+	goto tr356;
 tr339:
 	{
     SET_VEX_PREFIX3(*current_position);
@@ -5912,64 +5903,25 @@ st162:
 		goto _test_eof162;
 case 162:
 	if ( (*( current_position)) == 19u )
-		goto st163;
-	if ( (*( current_position)) < 166u ) {
-		if ( 150u <= (*( current_position)) && (*( current_position)) <= 159u )
-			goto st159;
-	} else if ( (*( current_position)) > 175u ) {
-		if ( (*( current_position)) > 191u ) {
-			if ( 219u <= (*( current_position)) && (*( current_position)) <= 223u )
-				goto st160;
-		} else if ( (*( current_position)) >= 182u )
-			goto st159;
-	} else
-		goto st159;
+		goto st161;
 	goto tr16;
 st163:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof163;
 case 163:
 	switch( (*( current_position)) ) {
-		case 4u: goto tr366;
-		case 5u: goto tr367;
-		case 12u: goto tr366;
-		case 13u: goto tr367;
-		case 20u: goto tr366;
-		case 21u: goto tr367;
-		case 28u: goto tr366;
-		case 29u: goto tr367;
-		case 36u: goto tr366;
-		case 37u: goto tr367;
-		case 44u: goto tr366;
-		case 45u: goto tr367;
-		case 52u: goto tr366;
-		case 53u: goto tr367;
-		case 60u: goto tr366;
-		case 61u: goto tr367;
-		case 68u: goto tr369;
-		case 76u: goto tr369;
-		case 84u: goto tr369;
-		case 92u: goto tr369;
-		case 100u: goto tr369;
-		case 108u: goto tr369;
-		case 116u: goto tr369;
-		case 124u: goto tr369;
-		case 132u: goto tr370;
-		case 140u: goto tr370;
-		case 148u: goto tr370;
-		case 156u: goto tr370;
-		case 164u: goto tr370;
-		case 172u: goto tr370;
-		case 180u: goto tr370;
-		case 188u: goto tr370;
+		case 65u: goto tr362;
+		case 73u: goto tr362;
+		case 81u: goto tr362;
+		case 89u: goto tr362;
+		case 97u: goto tr362;
+		case 105u: goto tr362;
+		case 113u: goto tr362;
+		case 121u: goto tr363;
+		case 125u: goto tr364;
 	}
-	if ( (*( current_position)) > 127u ) {
-		if ( 128u <= (*( current_position)) && (*( current_position)) <= 191u )
-			goto tr367;
-	} else if ( (*( current_position)) >= 64u )
-		goto tr368;
-	goto tr365;
-tr340:
+	goto tr16;
+tr362:
 	{
     SET_VEX_PREFIX3(*current_position);
   }
@@ -5979,84 +5931,99 @@ st164:
 		goto _test_eof164;
 case 164:
 	switch( (*( current_position)) ) {
-		case 19u: goto st163;
-		case 154u: goto st159;
-		case 156u: goto st159;
-		case 158u: goto st159;
-		case 170u: goto st159;
-		case 172u: goto st159;
-		case 174u: goto st159;
-		case 186u: goto st159;
-		case 188u: goto st159;
-		case 190u: goto st159;
+		case 68u: goto st165;
+		case 223u: goto st166;
 	}
-	if ( (*( current_position)) < 166u ) {
-		if ( 150u <= (*( current_position)) && (*( current_position)) <= 152u )
-			goto st159;
-	} else if ( (*( current_position)) > 168u ) {
-		if ( 182u <= (*( current_position)) && (*( current_position)) <= 184u )
-			goto st159;
-	} else
-		goto st159;
 	goto tr16;
-tr341:
-	{
-    SET_VEX_PREFIX3(*current_position);
-  }
-	goto st165;
 st165:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof165;
 case 165:
-	if ( (*( current_position)) < 166u ) {
-		if ( 150u <= (*( current_position)) && (*( current_position)) <= 159u )
-			goto st159;
-	} else if ( (*( current_position)) > 175u ) {
-		if ( 182u <= (*( current_position)) && (*( current_position)) <= 191u )
-			goto st159;
-	} else
-		goto st159;
-	goto tr16;
+	switch( (*( current_position)) ) {
+		case 4u: goto tr368;
+		case 5u: goto tr369;
+		case 12u: goto tr368;
+		case 13u: goto tr369;
+		case 20u: goto tr368;
+		case 21u: goto tr369;
+		case 28u: goto tr368;
+		case 29u: goto tr369;
+		case 36u: goto tr368;
+		case 37u: goto tr369;
+		case 44u: goto tr368;
+		case 45u: goto tr369;
+		case 52u: goto tr368;
+		case 53u: goto tr369;
+		case 60u: goto tr368;
+		case 61u: goto tr369;
+		case 68u: goto tr371;
+		case 76u: goto tr371;
+		case 84u: goto tr371;
+		case 92u: goto tr371;
+		case 100u: goto tr371;
+		case 108u: goto tr371;
+		case 116u: goto tr371;
+		case 124u: goto tr371;
+		case 132u: goto tr372;
+		case 140u: goto tr372;
+		case 148u: goto tr372;
+		case 156u: goto tr372;
+		case 164u: goto tr372;
+		case 172u: goto tr372;
+		case 180u: goto tr372;
+		case 188u: goto tr372;
+	}
+	if ( (*( current_position)) > 127u ) {
+		if ( 128u <= (*( current_position)) && (*( current_position)) <= 191u )
+			goto tr369;
+	} else if ( (*( current_position)) >= 64u )
+		goto tr370;
+	goto tr367;
 st166:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof166;
 case 166:
 	switch( (*( current_position)) ) {
-		case 65u: goto tr371;
-		case 69u: goto tr372;
-		case 73u: goto tr371;
-		case 77u: goto tr372;
-		case 81u: goto tr371;
-		case 85u: goto tr372;
-		case 89u: goto tr371;
-		case 93u: goto tr372;
-		case 97u: goto tr371;
-		case 101u: goto tr372;
-		case 105u: goto tr371;
-		case 109u: goto tr372;
-		case 113u: goto tr371;
-		case 117u: goto tr372;
-		case 121u: goto tr373;
-		case 125u: goto tr374;
-		case 193u: goto tr375;
-		case 197u: goto tr372;
-		case 201u: goto tr375;
-		case 205u: goto tr372;
-		case 209u: goto tr375;
-		case 213u: goto tr372;
-		case 217u: goto tr375;
-		case 221u: goto tr372;
-		case 225u: goto tr375;
-		case 229u: goto tr372;
-		case 233u: goto tr375;
-		case 237u: goto tr372;
-		case 241u: goto tr375;
-		case 245u: goto tr372;
-		case 249u: goto tr375;
-		case 253u: goto tr372;
+		case 4u: goto tr374;
+		case 5u: goto tr375;
+		case 12u: goto tr374;
+		case 13u: goto tr375;
+		case 20u: goto tr374;
+		case 21u: goto tr375;
+		case 28u: goto tr374;
+		case 29u: goto tr375;
+		case 36u: goto tr374;
+		case 37u: goto tr375;
+		case 44u: goto tr374;
+		case 45u: goto tr375;
+		case 52u: goto tr374;
+		case 53u: goto tr375;
+		case 60u: goto tr374;
+		case 61u: goto tr375;
+		case 68u: goto tr377;
+		case 76u: goto tr377;
+		case 84u: goto tr377;
+		case 92u: goto tr377;
+		case 100u: goto tr377;
+		case 108u: goto tr377;
+		case 116u: goto tr377;
+		case 124u: goto tr377;
+		case 132u: goto tr378;
+		case 140u: goto tr378;
+		case 148u: goto tr378;
+		case 156u: goto tr378;
+		case 164u: goto tr378;
+		case 172u: goto tr378;
+		case 180u: goto tr378;
+		case 188u: goto tr378;
 	}
-	goto tr16;
-tr371:
+	if ( (*( current_position)) > 127u ) {
+		if ( 128u <= (*( current_position)) && (*( current_position)) <= 191u )
+			goto tr375;
+	} else if ( (*( current_position)) >= 64u )
+		goto tr376;
+	goto tr373;
+tr363:
 	{
     SET_VEX_PREFIX3(*current_position);
   }
@@ -6066,419 +6033,71 @@ st167:
 		goto _test_eof167;
 case 167:
 	switch( (*( current_position)) ) {
-		case 68u: goto st168;
-		case 223u: goto st179;
+		case 29u: goto st168;
+		case 68u: goto st165;
+		case 223u: goto st166;
 	}
-	if ( (*( current_position)) < 104u ) {
-		if ( 92u <= (*( current_position)) && (*( current_position)) <= 95u )
-			goto st169;
-	} else if ( (*( current_position)) > 111u ) {
-		if ( 120u <= (*( current_position)) && (*( current_position)) <= 127u )
-			goto st169;
-	} else
-		goto st169;
 	goto tr16;
 st168:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof168;
 case 168:
 	switch( (*( current_position)) ) {
-		case 4u: goto tr380;
-		case 5u: goto tr381;
-		case 12u: goto tr380;
-		case 13u: goto tr381;
-		case 20u: goto tr380;
-		case 21u: goto tr381;
-		case 28u: goto tr380;
-		case 29u: goto tr381;
-		case 36u: goto tr380;
-		case 37u: goto tr381;
-		case 44u: goto tr380;
-		case 45u: goto tr381;
-		case 52u: goto tr380;
-		case 53u: goto tr381;
-		case 60u: goto tr380;
-		case 61u: goto tr381;
-		case 68u: goto tr383;
-		case 76u: goto tr383;
-		case 84u: goto tr383;
-		case 92u: goto tr383;
-		case 100u: goto tr383;
-		case 108u: goto tr383;
-		case 116u: goto tr383;
-		case 124u: goto tr383;
-		case 132u: goto tr384;
-		case 140u: goto tr384;
-		case 148u: goto tr384;
-		case 156u: goto tr384;
-		case 164u: goto tr384;
-		case 172u: goto tr384;
-		case 180u: goto tr384;
-		case 188u: goto tr384;
+		case 4u: goto tr381;
+		case 5u: goto tr382;
+		case 12u: goto tr381;
+		case 13u: goto tr382;
+		case 20u: goto tr381;
+		case 21u: goto tr382;
+		case 28u: goto tr381;
+		case 29u: goto tr382;
+		case 36u: goto tr381;
+		case 37u: goto tr382;
+		case 44u: goto tr381;
+		case 45u: goto tr382;
+		case 52u: goto tr381;
+		case 53u: goto tr382;
+		case 60u: goto tr381;
+		case 61u: goto tr382;
+		case 68u: goto tr384;
+		case 76u: goto tr384;
+		case 84u: goto tr384;
+		case 92u: goto tr384;
+		case 100u: goto tr384;
+		case 108u: goto tr384;
+		case 116u: goto tr384;
+		case 124u: goto tr384;
+		case 132u: goto tr385;
+		case 140u: goto tr385;
+		case 148u: goto tr385;
+		case 156u: goto tr385;
+		case 164u: goto tr385;
+		case 172u: goto tr385;
+		case 180u: goto tr385;
+		case 188u: goto tr385;
 	}
 	if ( (*( current_position)) > 127u ) {
 		if ( 128u <= (*( current_position)) && (*( current_position)) <= 191u )
-			goto tr381;
+			goto tr382;
 	} else if ( (*( current_position)) >= 64u )
-		goto tr382;
-	goto tr379;
+		goto tr383;
+	goto tr380;
+tr364:
+	{
+    SET_VEX_PREFIX3(*current_position);
+  }
+	goto st169;
 st169:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof169;
 case 169:
-	switch( (*( current_position)) ) {
-		case 4u: goto tr386;
-		case 5u: goto tr387;
-		case 12u: goto tr386;
-		case 13u: goto tr387;
-		case 20u: goto tr386;
-		case 21u: goto tr387;
-		case 28u: goto tr386;
-		case 29u: goto tr387;
-		case 36u: goto tr386;
-		case 37u: goto tr387;
-		case 44u: goto tr386;
-		case 45u: goto tr387;
-		case 52u: goto tr386;
-		case 53u: goto tr387;
-		case 60u: goto tr386;
-		case 61u: goto tr387;
-		case 68u: goto tr389;
-		case 76u: goto tr389;
-		case 84u: goto tr389;
-		case 92u: goto tr389;
-		case 100u: goto tr389;
-		case 108u: goto tr389;
-		case 116u: goto tr389;
-		case 124u: goto tr389;
-		case 132u: goto tr390;
-		case 140u: goto tr390;
-		case 148u: goto tr390;
-		case 156u: goto tr390;
-		case 164u: goto tr390;
-		case 172u: goto tr390;
-		case 180u: goto tr390;
-		case 188u: goto tr390;
-	}
-	if ( (*( current_position)) > 127u ) {
-		if ( 128u <= (*( current_position)) && (*( current_position)) <= 191u )
-			goto tr387;
-	} else if ( (*( current_position)) >= 64u )
-		goto tr388;
-	goto tr385;
-tr397:
-	{
-    SET_DISP_TYPE(DISP32);
-    SET_DISP_PTR(current_position - 3);
-  }
-	{}
-	goto st170;
-tr398:
-	{
-    SET_DISP_TYPE(DISP8);
-    SET_DISP_PTR(current_position);
-  }
-	{}
-	goto st170;
-tr385:
-	{ SET_CPU_FEATURE(CPUFeature_FMA4);      }
-	goto st170;
+	if ( (*( current_position)) == 29u )
+		goto st168;
+	goto tr16;
 st170:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof170;
 case 170:
-	switch( (*( current_position)) ) {
-		case 0u: goto tr391;
-		case 16u: goto tr391;
-		case 32u: goto tr391;
-		case 48u: goto tr391;
-		case 64u: goto tr391;
-		case 80u: goto tr391;
-		case 96u: goto tr391;
-		case 112u: goto tr391;
-	}
-	goto tr16;
-tr386:
-	{ SET_CPU_FEATURE(CPUFeature_FMA4);      }
-	goto st171;
-st171:
-	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof171;
-case 171:
-	switch( (*( current_position)) ) {
-		case 5u: goto st172;
-		case 13u: goto st172;
-		case 21u: goto st172;
-		case 29u: goto st172;
-		case 37u: goto st172;
-		case 45u: goto st172;
-		case 53u: goto st172;
-		case 61u: goto st172;
-		case 69u: goto st172;
-		case 77u: goto st172;
-		case 85u: goto st172;
-		case 93u: goto st172;
-		case 101u: goto st172;
-		case 109u: goto st172;
-		case 117u: goto st172;
-		case 125u: goto st172;
-		case 133u: goto st172;
-		case 141u: goto st172;
-		case 149u: goto st172;
-		case 157u: goto st172;
-		case 165u: goto st172;
-		case 173u: goto st172;
-		case 181u: goto st172;
-		case 189u: goto st172;
-		case 197u: goto st172;
-		case 205u: goto st172;
-		case 213u: goto st172;
-		case 221u: goto st172;
-		case 229u: goto st172;
-		case 237u: goto st172;
-		case 245u: goto st172;
-		case 253u: goto st172;
-	}
-	goto st170;
-tr387:
-	{ SET_CPU_FEATURE(CPUFeature_FMA4);      }
-	goto st172;
-st172:
-	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof172;
-case 172:
-	goto tr394;
-tr394:
-	{}
-	goto st173;
-st173:
-	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof173;
-case 173:
-	goto tr395;
-tr395:
-	{}
-	goto st174;
-st174:
-	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof174;
-case 174:
-	goto tr396;
-tr396:
-	{}
-	goto st175;
-st175:
-	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof175;
-case 175:
-	goto tr397;
-tr388:
-	{ SET_CPU_FEATURE(CPUFeature_FMA4);      }
-	goto st176;
-st176:
-	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof176;
-case 176:
-	goto tr398;
-tr389:
-	{ SET_CPU_FEATURE(CPUFeature_FMA4);      }
-	goto st177;
-st177:
-	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof177;
-case 177:
-	goto st176;
-tr390:
-	{ SET_CPU_FEATURE(CPUFeature_FMA4);      }
-	goto st178;
-st178:
-	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof178;
-case 178:
-	goto st172;
-st179:
-	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof179;
-case 179:
-	switch( (*( current_position)) ) {
-		case 4u: goto tr401;
-		case 5u: goto tr402;
-		case 12u: goto tr401;
-		case 13u: goto tr402;
-		case 20u: goto tr401;
-		case 21u: goto tr402;
-		case 28u: goto tr401;
-		case 29u: goto tr402;
-		case 36u: goto tr401;
-		case 37u: goto tr402;
-		case 44u: goto tr401;
-		case 45u: goto tr402;
-		case 52u: goto tr401;
-		case 53u: goto tr402;
-		case 60u: goto tr401;
-		case 61u: goto tr402;
-		case 68u: goto tr404;
-		case 76u: goto tr404;
-		case 84u: goto tr404;
-		case 92u: goto tr404;
-		case 100u: goto tr404;
-		case 108u: goto tr404;
-		case 116u: goto tr404;
-		case 124u: goto tr404;
-		case 132u: goto tr405;
-		case 140u: goto tr405;
-		case 148u: goto tr405;
-		case 156u: goto tr405;
-		case 164u: goto tr405;
-		case 172u: goto tr405;
-		case 180u: goto tr405;
-		case 188u: goto tr405;
-	}
-	if ( (*( current_position)) > 127u ) {
-		if ( 128u <= (*( current_position)) && (*( current_position)) <= 191u )
-			goto tr402;
-	} else if ( (*( current_position)) >= 64u )
-		goto tr403;
-	goto tr400;
-tr372:
-	{
-    SET_VEX_PREFIX3(*current_position);
-  }
-	goto st180;
-st180:
-	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof180;
-case 180:
-	if ( (*( current_position)) < 108u ) {
-		if ( (*( current_position)) > 95u ) {
-			if ( 104u <= (*( current_position)) && (*( current_position)) <= 105u )
-				goto st169;
-		} else if ( (*( current_position)) >= 92u )
-			goto st169;
-	} else if ( (*( current_position)) > 109u ) {
-		if ( (*( current_position)) > 121u ) {
-			if ( 124u <= (*( current_position)) && (*( current_position)) <= 125u )
-				goto st169;
-		} else if ( (*( current_position)) >= 120u )
-			goto st169;
-	} else
-		goto st169;
-	goto tr16;
-tr373:
-	{
-    SET_VEX_PREFIX3(*current_position);
-  }
-	goto st181;
-st181:
-	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof181;
-case 181:
-	switch( (*( current_position)) ) {
-		case 29u: goto st182;
-		case 68u: goto st168;
-		case 223u: goto st179;
-	}
-	if ( (*( current_position)) < 104u ) {
-		if ( 92u <= (*( current_position)) && (*( current_position)) <= 95u )
-			goto st169;
-	} else if ( (*( current_position)) > 111u ) {
-		if ( 120u <= (*( current_position)) && (*( current_position)) <= 127u )
-			goto st169;
-	} else
-		goto st169;
-	goto tr16;
-st182:
-	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof182;
-case 182:
-	switch( (*( current_position)) ) {
-		case 4u: goto tr408;
-		case 5u: goto tr409;
-		case 12u: goto tr408;
-		case 13u: goto tr409;
-		case 20u: goto tr408;
-		case 21u: goto tr409;
-		case 28u: goto tr408;
-		case 29u: goto tr409;
-		case 36u: goto tr408;
-		case 37u: goto tr409;
-		case 44u: goto tr408;
-		case 45u: goto tr409;
-		case 52u: goto tr408;
-		case 53u: goto tr409;
-		case 60u: goto tr408;
-		case 61u: goto tr409;
-		case 68u: goto tr411;
-		case 76u: goto tr411;
-		case 84u: goto tr411;
-		case 92u: goto tr411;
-		case 100u: goto tr411;
-		case 108u: goto tr411;
-		case 116u: goto tr411;
-		case 124u: goto tr411;
-		case 132u: goto tr412;
-		case 140u: goto tr412;
-		case 148u: goto tr412;
-		case 156u: goto tr412;
-		case 164u: goto tr412;
-		case 172u: goto tr412;
-		case 180u: goto tr412;
-		case 188u: goto tr412;
-	}
-	if ( (*( current_position)) > 127u ) {
-		if ( 128u <= (*( current_position)) && (*( current_position)) <= 191u )
-			goto tr409;
-	} else if ( (*( current_position)) >= 64u )
-		goto tr410;
-	goto tr407;
-tr374:
-	{
-    SET_VEX_PREFIX3(*current_position);
-  }
-	goto st183;
-st183:
-	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof183;
-case 183:
-	if ( (*( current_position)) == 29u )
-		goto st182;
-	if ( (*( current_position)) < 108u ) {
-		if ( (*( current_position)) > 95u ) {
-			if ( 104u <= (*( current_position)) && (*( current_position)) <= 105u )
-				goto st169;
-		} else if ( (*( current_position)) >= 92u )
-			goto st169;
-	} else if ( (*( current_position)) > 109u ) {
-		if ( (*( current_position)) > 121u ) {
-			if ( 124u <= (*( current_position)) && (*( current_position)) <= 125u )
-				goto st169;
-		} else if ( (*( current_position)) >= 120u )
-			goto st169;
-	} else
-		goto st169;
-	goto tr16;
-tr375:
-	{
-    SET_VEX_PREFIX3(*current_position);
-  }
-	goto st184;
-st184:
-	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof184;
-case 184:
-	if ( (*( current_position)) < 104u ) {
-		if ( 92u <= (*( current_position)) && (*( current_position)) <= 95u )
-			goto st169;
-	} else if ( (*( current_position)) > 111u ) {
-		if ( 120u <= (*( current_position)) && (*( current_position)) <= 127u )
-			goto st169;
-	} else
-		goto st169;
-	goto tr16;
-st185:
-	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof185;
-case 185:
 	switch( (*( current_position)) ) {
 		case 4u: goto st39;
 		case 5u: goto st40;
@@ -6497,10 +6116,10 @@ case 185:
 	} else
 		goto st44;
 	goto tr16;
-st186:
+st171:
 	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof186;
-case 186:
+		goto _test_eof171;
+case 171:
 	switch( (*( current_position)) ) {
 		case 4u: goto st131;
 		case 5u: goto st132;
@@ -6519,83 +6138,83 @@ case 186:
 	} else
 		goto st136;
 	goto tr16;
-st187:
+st172:
 	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof187;
-case 187:
+		goto _test_eof172;
+case 172:
 	switch( (*( current_position)) ) {
-		case 4u: goto tr414;
-		case 5u: goto tr415;
-		case 12u: goto tr414;
-		case 13u: goto tr415;
-		case 20u: goto tr414;
-		case 21u: goto tr415;
-		case 28u: goto tr414;
-		case 29u: goto tr415;
-		case 36u: goto tr414;
-		case 37u: goto tr415;
-		case 44u: goto tr414;
-		case 45u: goto tr415;
-		case 52u: goto tr414;
-		case 53u: goto tr415;
-		case 60u: goto tr414;
-		case 61u: goto tr415;
-		case 68u: goto tr417;
-		case 76u: goto tr417;
-		case 84u: goto tr417;
-		case 92u: goto tr417;
-		case 100u: goto tr417;
-		case 108u: goto tr417;
-		case 116u: goto tr417;
-		case 124u: goto tr417;
-		case 132u: goto tr418;
-		case 140u: goto tr418;
-		case 148u: goto tr418;
-		case 156u: goto tr418;
-		case 164u: goto tr418;
-		case 172u: goto tr418;
-		case 180u: goto tr418;
-		case 188u: goto tr418;
+		case 4u: goto tr387;
+		case 5u: goto tr388;
+		case 12u: goto tr387;
+		case 13u: goto tr388;
+		case 20u: goto tr387;
+		case 21u: goto tr388;
+		case 28u: goto tr387;
+		case 29u: goto tr388;
+		case 36u: goto tr387;
+		case 37u: goto tr388;
+		case 44u: goto tr387;
+		case 45u: goto tr388;
+		case 52u: goto tr387;
+		case 53u: goto tr388;
+		case 60u: goto tr387;
+		case 61u: goto tr388;
+		case 68u: goto tr390;
+		case 76u: goto tr390;
+		case 84u: goto tr390;
+		case 92u: goto tr390;
+		case 100u: goto tr390;
+		case 108u: goto tr390;
+		case 116u: goto tr390;
+		case 124u: goto tr390;
+		case 132u: goto tr391;
+		case 140u: goto tr391;
+		case 148u: goto tr391;
+		case 156u: goto tr391;
+		case 164u: goto tr391;
+		case 172u: goto tr391;
+		case 180u: goto tr391;
+		case 188u: goto tr391;
 	}
 	if ( (*( current_position)) > 127u ) {
 		if ( 128u <= (*( current_position)) && (*( current_position)) <= 191u )
-			goto tr415;
+			goto tr388;
 	} else if ( (*( current_position)) >= 64u )
-		goto tr416;
-	goto tr413;
-st188:
+		goto tr389;
+	goto tr386;
+st173:
 	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof188;
-case 188:
+		goto _test_eof173;
+case 173:
 	switch( (*( current_position)) ) {
-		case 4u: goto tr414;
-		case 5u: goto tr415;
-		case 20u: goto tr414;
-		case 21u: goto tr415;
-		case 28u: goto tr414;
-		case 29u: goto tr415;
-		case 36u: goto tr414;
-		case 37u: goto tr415;
-		case 44u: goto tr414;
-		case 45u: goto tr415;
-		case 52u: goto tr414;
-		case 53u: goto tr415;
-		case 60u: goto tr414;
-		case 61u: goto tr415;
-		case 68u: goto tr417;
-		case 84u: goto tr417;
-		case 92u: goto tr417;
-		case 100u: goto tr417;
-		case 108u: goto tr417;
-		case 116u: goto tr417;
-		case 124u: goto tr417;
-		case 132u: goto tr418;
-		case 148u: goto tr418;
-		case 156u: goto tr418;
-		case 164u: goto tr418;
-		case 172u: goto tr418;
-		case 180u: goto tr418;
-		case 188u: goto tr418;
+		case 4u: goto tr387;
+		case 5u: goto tr388;
+		case 20u: goto tr387;
+		case 21u: goto tr388;
+		case 28u: goto tr387;
+		case 29u: goto tr388;
+		case 36u: goto tr387;
+		case 37u: goto tr388;
+		case 44u: goto tr387;
+		case 45u: goto tr388;
+		case 52u: goto tr387;
+		case 53u: goto tr388;
+		case 60u: goto tr387;
+		case 61u: goto tr388;
+		case 68u: goto tr390;
+		case 84u: goto tr390;
+		case 92u: goto tr390;
+		case 100u: goto tr390;
+		case 108u: goto tr390;
+		case 116u: goto tr390;
+		case 124u: goto tr390;
+		case 132u: goto tr391;
+		case 148u: goto tr391;
+		case 156u: goto tr391;
+		case 164u: goto tr391;
+		case 172u: goto tr391;
+		case 180u: goto tr391;
+		case 188u: goto tr391;
 		case 239u: goto tr16;
 	}
 	if ( (*( current_position)) < 128u ) {
@@ -6605,16 +6224,16 @@ case 188:
 		} else if ( (*( current_position)) > 71u ) {
 			if ( (*( current_position)) > 79u ) {
 				if ( 80u <= (*( current_position)) && (*( current_position)) <= 127u )
-					goto tr416;
+					goto tr389;
 			} else if ( (*( current_position)) >= 72u )
 				goto tr16;
 		} else
-			goto tr416;
+			goto tr389;
 	} else if ( (*( current_position)) > 135u ) {
 		if ( (*( current_position)) < 209u ) {
 			if ( (*( current_position)) > 143u ) {
 				if ( 144u <= (*( current_position)) && (*( current_position)) <= 191u )
-					goto tr415;
+					goto tr388;
 			} else if ( (*( current_position)) >= 136u )
 				goto tr16;
 		} else if ( (*( current_position)) > 223u ) {
@@ -6626,221 +6245,221 @@ case 188:
 		} else
 			goto tr16;
 	} else
-		goto tr415;
-	goto tr413;
-st189:
+		goto tr388;
+	goto tr386;
+st174:
 	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof189;
-case 189:
+		goto _test_eof174;
+case 174:
 	switch( (*( current_position)) ) {
-		case 4u: goto tr414;
-		case 12u: goto tr414;
-		case 20u: goto tr414;
-		case 28u: goto tr414;
-		case 36u: goto tr414;
-		case 44u: goto tr414;
-		case 52u: goto tr414;
-		case 60u: goto tr414;
-		case 68u: goto tr417;
-		case 76u: goto tr417;
-		case 84u: goto tr417;
-		case 92u: goto tr417;
-		case 100u: goto tr417;
-		case 108u: goto tr417;
-		case 116u: goto tr417;
-		case 124u: goto tr417;
-		case 132u: goto tr418;
-		case 140u: goto tr418;
-		case 148u: goto tr418;
-		case 156u: goto tr418;
-		case 164u: goto tr418;
-		case 172u: goto tr418;
-		case 180u: goto tr418;
-		case 188u: goto tr418;
-		case 233u: goto tr413;
+		case 4u: goto tr387;
+		case 12u: goto tr387;
+		case 20u: goto tr387;
+		case 28u: goto tr387;
+		case 36u: goto tr387;
+		case 44u: goto tr387;
+		case 52u: goto tr387;
+		case 60u: goto tr387;
+		case 68u: goto tr390;
+		case 76u: goto tr390;
+		case 84u: goto tr390;
+		case 92u: goto tr390;
+		case 100u: goto tr390;
+		case 108u: goto tr390;
+		case 116u: goto tr390;
+		case 124u: goto tr390;
+		case 132u: goto tr391;
+		case 140u: goto tr391;
+		case 148u: goto tr391;
+		case 156u: goto tr391;
+		case 164u: goto tr391;
+		case 172u: goto tr391;
+		case 180u: goto tr391;
+		case 188u: goto tr391;
+		case 233u: goto tr386;
 	}
 	if ( (*( current_position)) < 38u ) {
 		if ( (*( current_position)) < 14u ) {
 			if ( (*( current_position)) > 3u ) {
 				if ( 6u <= (*( current_position)) && (*( current_position)) <= 11u )
-					goto tr413;
+					goto tr386;
 			} else
-				goto tr413;
+				goto tr386;
 		} else if ( (*( current_position)) > 19u ) {
 			if ( (*( current_position)) > 27u ) {
 				if ( 30u <= (*( current_position)) && (*( current_position)) <= 35u )
-					goto tr413;
+					goto tr386;
 			} else if ( (*( current_position)) >= 22u )
-				goto tr413;
+				goto tr386;
 		} else
-			goto tr413;
+			goto tr386;
 	} else if ( (*( current_position)) > 43u ) {
 		if ( (*( current_position)) < 62u ) {
 			if ( (*( current_position)) > 51u ) {
 				if ( 54u <= (*( current_position)) && (*( current_position)) <= 59u )
-					goto tr413;
+					goto tr386;
 			} else if ( (*( current_position)) >= 46u )
-				goto tr413;
+				goto tr386;
 		} else if ( (*( current_position)) > 63u ) {
 			if ( (*( current_position)) < 192u ) {
 				if ( 64u <= (*( current_position)) && (*( current_position)) <= 127u )
-					goto tr416;
+					goto tr389;
 			} else if ( (*( current_position)) > 223u ) {
 				if ( 224u <= (*( current_position)) )
 					goto tr16;
 			} else
-				goto tr419;
+				goto tr392;
 		} else
-			goto tr413;
+			goto tr386;
 	} else
-		goto tr413;
-	goto tr415;
-st190:
+		goto tr386;
+	goto tr388;
+st175:
 	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof190;
-case 190:
+		goto _test_eof175;
+case 175:
 	switch( (*( current_position)) ) {
-		case 4u: goto tr414;
-		case 5u: goto tr415;
-		case 12u: goto tr414;
-		case 13u: goto tr415;
-		case 20u: goto tr414;
-		case 21u: goto tr415;
-		case 28u: goto tr414;
-		case 29u: goto tr415;
-		case 44u: goto tr414;
-		case 45u: goto tr415;
-		case 60u: goto tr414;
-		case 61u: goto tr415;
-		case 68u: goto tr417;
-		case 76u: goto tr417;
-		case 84u: goto tr417;
-		case 92u: goto tr417;
-		case 108u: goto tr417;
-		case 124u: goto tr417;
-		case 132u: goto tr418;
-		case 140u: goto tr418;
-		case 148u: goto tr418;
-		case 156u: goto tr418;
-		case 172u: goto tr418;
-		case 188u: goto tr418;
+		case 4u: goto tr387;
+		case 5u: goto tr388;
+		case 12u: goto tr387;
+		case 13u: goto tr388;
+		case 20u: goto tr387;
+		case 21u: goto tr388;
+		case 28u: goto tr387;
+		case 29u: goto tr388;
+		case 44u: goto tr387;
+		case 45u: goto tr388;
+		case 60u: goto tr387;
+		case 61u: goto tr388;
+		case 68u: goto tr390;
+		case 76u: goto tr390;
+		case 84u: goto tr390;
+		case 92u: goto tr390;
+		case 108u: goto tr390;
+		case 124u: goto tr390;
+		case 132u: goto tr391;
+		case 140u: goto tr391;
+		case 148u: goto tr391;
+		case 156u: goto tr391;
+		case 172u: goto tr391;
+		case 188u: goto tr391;
 	}
 	if ( (*( current_position)) < 120u ) {
 		if ( (*( current_position)) < 56u ) {
 			if ( (*( current_position)) > 31u ) {
 				if ( 40u <= (*( current_position)) && (*( current_position)) <= 47u )
-					goto tr413;
+					goto tr386;
 			} else
-				goto tr413;
+				goto tr386;
 		} else if ( (*( current_position)) > 63u ) {
 			if ( (*( current_position)) > 95u ) {
 				if ( 104u <= (*( current_position)) && (*( current_position)) <= 111u )
-					goto tr416;
+					goto tr389;
 			} else if ( (*( current_position)) >= 64u )
-				goto tr416;
+				goto tr389;
 		} else
-			goto tr413;
+			goto tr386;
 	} else if ( (*( current_position)) > 127u ) {
 		if ( (*( current_position)) < 184u ) {
 			if ( (*( current_position)) > 159u ) {
 				if ( 168u <= (*( current_position)) && (*( current_position)) <= 175u )
-					goto tr415;
+					goto tr388;
 			} else if ( (*( current_position)) >= 128u )
-				goto tr415;
+				goto tr388;
 		} else if ( (*( current_position)) > 191u ) {
 			if ( (*( current_position)) < 226u ) {
 				if ( 192u <= (*( current_position)) && (*( current_position)) <= 223u )
-					goto tr419;
+					goto tr392;
 			} else if ( (*( current_position)) > 227u ) {
 				if ( 232u <= (*( current_position)) && (*( current_position)) <= 247u )
-					goto tr413;
+					goto tr386;
 			} else
-				goto tr413;
+				goto tr386;
 		} else
-			goto tr415;
+			goto tr388;
 	} else
-		goto tr416;
+		goto tr389;
 	goto tr16;
-st191:
+st176:
 	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof191;
-case 191:
+		goto _test_eof176;
+case 176:
 	switch( (*( current_position)) ) {
-		case 4u: goto tr414;
-		case 5u: goto tr415;
-		case 12u: goto tr414;
-		case 13u: goto tr415;
-		case 20u: goto tr414;
-		case 21u: goto tr415;
-		case 28u: goto tr414;
-		case 29u: goto tr415;
-		case 36u: goto tr414;
-		case 37u: goto tr415;
-		case 44u: goto tr414;
-		case 45u: goto tr415;
-		case 52u: goto tr414;
-		case 53u: goto tr415;
-		case 60u: goto tr414;
-		case 61u: goto tr415;
-		case 68u: goto tr417;
-		case 76u: goto tr417;
-		case 84u: goto tr417;
-		case 92u: goto tr417;
-		case 100u: goto tr417;
-		case 108u: goto tr417;
-		case 116u: goto tr417;
-		case 124u: goto tr417;
-		case 132u: goto tr418;
-		case 140u: goto tr418;
-		case 148u: goto tr418;
-		case 156u: goto tr418;
-		case 164u: goto tr418;
-		case 172u: goto tr418;
-		case 180u: goto tr418;
-		case 188u: goto tr418;
+		case 4u: goto tr387;
+		case 5u: goto tr388;
+		case 12u: goto tr387;
+		case 13u: goto tr388;
+		case 20u: goto tr387;
+		case 21u: goto tr388;
+		case 28u: goto tr387;
+		case 29u: goto tr388;
+		case 36u: goto tr387;
+		case 37u: goto tr388;
+		case 44u: goto tr387;
+		case 45u: goto tr388;
+		case 52u: goto tr387;
+		case 53u: goto tr388;
+		case 60u: goto tr387;
+		case 61u: goto tr388;
+		case 68u: goto tr390;
+		case 76u: goto tr390;
+		case 84u: goto tr390;
+		case 92u: goto tr390;
+		case 100u: goto tr390;
+		case 108u: goto tr390;
+		case 116u: goto tr390;
+		case 124u: goto tr390;
+		case 132u: goto tr391;
+		case 140u: goto tr391;
+		case 148u: goto tr391;
+		case 156u: goto tr391;
+		case 164u: goto tr391;
+		case 172u: goto tr391;
+		case 180u: goto tr391;
+		case 188u: goto tr391;
 	}
 	if ( (*( current_position)) < 128u ) {
 		if ( 64u <= (*( current_position)) && (*( current_position)) <= 127u )
-			goto tr416;
+			goto tr389;
 	} else if ( (*( current_position)) > 191u ) {
 		if ( 208u <= (*( current_position)) && (*( current_position)) <= 223u )
 			goto tr16;
 	} else
-		goto tr415;
-	goto tr413;
-st192:
+		goto tr388;
+	goto tr386;
+st177:
 	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof192;
-case 192:
+		goto _test_eof177;
+case 177:
 	switch( (*( current_position)) ) {
-		case 4u: goto tr414;
-		case 5u: goto tr415;
-		case 12u: goto tr414;
-		case 13u: goto tr415;
-		case 20u: goto tr414;
-		case 21u: goto tr415;
-		case 28u: goto tr414;
-		case 29u: goto tr415;
-		case 36u: goto tr414;
-		case 37u: goto tr415;
-		case 52u: goto tr414;
-		case 53u: goto tr415;
-		case 60u: goto tr414;
-		case 61u: goto tr415;
-		case 68u: goto tr417;
-		case 76u: goto tr417;
-		case 84u: goto tr417;
-		case 92u: goto tr417;
-		case 100u: goto tr417;
-		case 116u: goto tr417;
-		case 124u: goto tr417;
-		case 132u: goto tr418;
-		case 140u: goto tr418;
-		case 148u: goto tr418;
-		case 156u: goto tr418;
-		case 164u: goto tr418;
-		case 180u: goto tr418;
-		case 188u: goto tr418;
+		case 4u: goto tr387;
+		case 5u: goto tr388;
+		case 12u: goto tr387;
+		case 13u: goto tr388;
+		case 20u: goto tr387;
+		case 21u: goto tr388;
+		case 28u: goto tr387;
+		case 29u: goto tr388;
+		case 36u: goto tr387;
+		case 37u: goto tr388;
+		case 52u: goto tr387;
+		case 53u: goto tr388;
+		case 60u: goto tr387;
+		case 61u: goto tr388;
+		case 68u: goto tr390;
+		case 76u: goto tr390;
+		case 84u: goto tr390;
+		case 92u: goto tr390;
+		case 100u: goto tr390;
+		case 116u: goto tr390;
+		case 124u: goto tr390;
+		case 132u: goto tr391;
+		case 140u: goto tr391;
+		case 148u: goto tr391;
+		case 156u: goto tr391;
+		case 164u: goto tr391;
+		case 180u: goto tr391;
+		case 188u: goto tr391;
 	}
 	if ( (*( current_position)) < 128u ) {
 		if ( (*( current_position)) < 64u ) {
@@ -6849,11 +6468,11 @@ case 192:
 		} else if ( (*( current_position)) > 103u ) {
 			if ( (*( current_position)) > 111u ) {
 				if ( 112u <= (*( current_position)) && (*( current_position)) <= 127u )
-					goto tr416;
+					goto tr389;
 			} else if ( (*( current_position)) >= 104u )
 				goto tr16;
 		} else
-			goto tr416;
+			goto tr389;
 	} else if ( (*( current_position)) > 167u ) {
 		if ( (*( current_position)) < 176u ) {
 			if ( 168u <= (*( current_position)) && (*( current_position)) <= 175u )
@@ -6865,51 +6484,51 @@ case 192:
 			} else if ( (*( current_position)) >= 200u )
 				goto tr16;
 		} else
-			goto tr415;
+			goto tr388;
 	} else
-		goto tr415;
-	goto tr413;
-st193:
+		goto tr388;
+	goto tr386;
+st178:
 	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof193;
-case 193:
+		goto _test_eof178;
+case 178:
 	switch( (*( current_position)) ) {
-		case 4u: goto tr414;
-		case 5u: goto tr415;
-		case 12u: goto tr414;
-		case 13u: goto tr415;
-		case 20u: goto tr414;
-		case 21u: goto tr415;
-		case 28u: goto tr414;
-		case 29u: goto tr415;
-		case 36u: goto tr414;
-		case 37u: goto tr415;
-		case 44u: goto tr414;
-		case 45u: goto tr415;
-		case 52u: goto tr414;
-		case 53u: goto tr415;
-		case 60u: goto tr414;
-		case 61u: goto tr415;
-		case 68u: goto tr417;
-		case 76u: goto tr417;
-		case 84u: goto tr417;
-		case 92u: goto tr417;
-		case 100u: goto tr417;
-		case 108u: goto tr417;
-		case 116u: goto tr417;
-		case 124u: goto tr417;
-		case 132u: goto tr418;
-		case 140u: goto tr418;
-		case 148u: goto tr418;
-		case 156u: goto tr418;
-		case 164u: goto tr418;
-		case 172u: goto tr418;
-		case 180u: goto tr418;
-		case 188u: goto tr418;
+		case 4u: goto tr387;
+		case 5u: goto tr388;
+		case 12u: goto tr387;
+		case 13u: goto tr388;
+		case 20u: goto tr387;
+		case 21u: goto tr388;
+		case 28u: goto tr387;
+		case 29u: goto tr388;
+		case 36u: goto tr387;
+		case 37u: goto tr388;
+		case 44u: goto tr387;
+		case 45u: goto tr388;
+		case 52u: goto tr387;
+		case 53u: goto tr388;
+		case 60u: goto tr387;
+		case 61u: goto tr388;
+		case 68u: goto tr390;
+		case 76u: goto tr390;
+		case 84u: goto tr390;
+		case 92u: goto tr390;
+		case 100u: goto tr390;
+		case 108u: goto tr390;
+		case 116u: goto tr390;
+		case 124u: goto tr390;
+		case 132u: goto tr391;
+		case 140u: goto tr391;
+		case 148u: goto tr391;
+		case 156u: goto tr391;
+		case 164u: goto tr391;
+		case 172u: goto tr391;
+		case 180u: goto tr391;
+		case 188u: goto tr391;
 	}
 	if ( (*( current_position)) < 128u ) {
 		if ( 64u <= (*( current_position)) && (*( current_position)) <= 127u )
-			goto tr416;
+			goto tr389;
 	} else if ( (*( current_position)) > 191u ) {
 		if ( (*( current_position)) > 216u ) {
 			if ( 218u <= (*( current_position)) && (*( current_position)) <= 223u )
@@ -6917,52 +6536,52 @@ case 193:
 		} else if ( (*( current_position)) >= 208u )
 			goto tr16;
 	} else
-		goto tr415;
-	goto tr413;
-st194:
+		goto tr388;
+	goto tr386;
+st179:
 	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof194;
-case 194:
+		goto _test_eof179;
+case 179:
 	switch( (*( current_position)) ) {
-		case 4u: goto tr414;
-		case 5u: goto tr415;
-		case 12u: goto tr414;
-		case 13u: goto tr415;
-		case 20u: goto tr414;
-		case 21u: goto tr415;
-		case 28u: goto tr414;
-		case 29u: goto tr415;
-		case 36u: goto tr414;
-		case 37u: goto tr415;
-		case 44u: goto tr414;
-		case 45u: goto tr415;
-		case 52u: goto tr414;
-		case 53u: goto tr415;
-		case 60u: goto tr414;
-		case 61u: goto tr415;
-		case 68u: goto tr417;
-		case 76u: goto tr417;
-		case 84u: goto tr417;
-		case 92u: goto tr417;
-		case 100u: goto tr417;
-		case 108u: goto tr417;
-		case 116u: goto tr417;
-		case 124u: goto tr417;
-		case 132u: goto tr418;
-		case 140u: goto tr418;
-		case 148u: goto tr418;
-		case 156u: goto tr418;
-		case 164u: goto tr418;
-		case 172u: goto tr418;
-		case 180u: goto tr418;
-		case 188u: goto tr418;
+		case 4u: goto tr387;
+		case 5u: goto tr388;
+		case 12u: goto tr387;
+		case 13u: goto tr388;
+		case 20u: goto tr387;
+		case 21u: goto tr388;
+		case 28u: goto tr387;
+		case 29u: goto tr388;
+		case 36u: goto tr387;
+		case 37u: goto tr388;
+		case 44u: goto tr387;
+		case 45u: goto tr388;
+		case 52u: goto tr387;
+		case 53u: goto tr388;
+		case 60u: goto tr387;
+		case 61u: goto tr388;
+		case 68u: goto tr390;
+		case 76u: goto tr390;
+		case 84u: goto tr390;
+		case 92u: goto tr390;
+		case 100u: goto tr390;
+		case 108u: goto tr390;
+		case 116u: goto tr390;
+		case 124u: goto tr390;
+		case 132u: goto tr391;
+		case 140u: goto tr391;
+		case 148u: goto tr391;
+		case 156u: goto tr391;
+		case 164u: goto tr391;
+		case 172u: goto tr391;
+		case 180u: goto tr391;
+		case 188u: goto tr391;
 	}
 	if ( (*( current_position)) < 192u ) {
 		if ( (*( current_position)) > 127u ) {
 			if ( 128u <= (*( current_position)) && (*( current_position)) <= 191u )
-				goto tr415;
+				goto tr388;
 		} else if ( (*( current_position)) >= 64u )
-			goto tr416;
+			goto tr389;
 	} else if ( (*( current_position)) > 223u ) {
 		if ( (*( current_position)) > 231u ) {
 			if ( 248u <= (*( current_position)) )
@@ -6971,45 +6590,45 @@ case 194:
 			goto tr16;
 	} else
 		goto tr16;
-	goto tr413;
-st195:
+	goto tr386;
+st180:
 	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof195;
-case 195:
-	goto tr420;
-tr420:
+		goto _test_eof180;
+case 180:
+	goto tr393;
+tr393:
 	{}
-	goto st196;
-st196:
+	goto st181;
+st181:
 	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof196;
-case 196:
-	goto tr421;
-tr421:
+		goto _test_eof181;
+case 181:
+	goto tr394;
+tr394:
 	{}
-	goto st197;
-st197:
+	goto st182;
+st182:
 	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof197;
-case 197:
-	goto tr422;
-tr422:
+		goto _test_eof182;
+case 182:
+	goto tr395;
+tr395:
 	{}
-	goto st198;
-st198:
+	goto st183;
+st183:
 	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof198;
-case 198:
-	goto tr423;
-st199:
+		goto _test_eof183;
+case 183:
+	goto tr396;
+st184:
 	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof199;
-case 199:
+		goto _test_eof184;
+case 184:
 	switch( (*( current_position)) ) {
-		case 15u: goto st200;
+		case 15u: goto st185;
 		case 102u: goto st119;
 		case 128u: goto st121;
-		case 129u: goto st201;
+		case 129u: goto st186;
 		case 131u: goto st121;
 	}
 	if ( (*( current_position)) < 32u ) {
@@ -7042,10 +6661,10 @@ case 199:
 	} else
 		goto st115;
 	goto tr16;
-st200:
+st185:
 	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof200;
-case 200:
+		goto _test_eof185;
+case 185:
 	if ( (*( current_position)) == 199u )
 		goto st61;
 	if ( (*( current_position)) > 177u ) {
@@ -7054,10 +6673,10 @@ case 200:
 	} else if ( (*( current_position)) >= 176u )
 		goto st115;
 	goto tr16;
-st201:
+st186:
 	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof201;
-case 201:
+		goto _test_eof186;
+case 186:
 	switch( (*( current_position)) ) {
 		case 4u: goto st131;
 		case 5u: goto st132;
@@ -7097,12 +6716,12 @@ case 201:
 	} else
 		goto st136;
 	goto tr16;
-st202:
+st187:
 	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof202;
-case 202:
+		goto _test_eof187;
+case 187:
 	switch( (*( current_position)) ) {
-		case 15u: goto st203;
+		case 15u: goto st188;
 		case 102u: goto st124;
 	}
 	if ( (*( current_position)) > 167u ) {
@@ -7111,23 +6730,23 @@ case 202:
 	} else if ( (*( current_position)) >= 166u )
 		goto tr0;
 	goto tr16;
-st203:
+st188:
 	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof203;
-case 203:
+		goto _test_eof188;
+case 188:
 	switch( (*( current_position)) ) {
 		case 18u: goto st96;
-		case 43u: goto st204;
-		case 56u: goto st205;
+		case 43u: goto st189;
+		case 56u: goto st190;
 		case 81u: goto st32;
 		case 112u: goto st92;
-		case 120u: goto st206;
+		case 120u: goto st191;
 		case 121u: goto st95;
 		case 194u: goto st92;
 		case 208u: goto st28;
 		case 214u: goto st91;
 		case 230u: goto st32;
-		case 240u: goto st209;
+		case 240u: goto st194;
 	}
 	if ( (*( current_position)) < 88u ) {
 		if ( (*( current_position)) > 17u ) {
@@ -7144,35 +6763,35 @@ case 203:
 	} else
 		goto st32;
 	goto tr16;
-st204:
+st189:
 	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof204;
-case 204:
+		goto _test_eof189;
+case 189:
 	switch( (*( current_position)) ) {
-		case 4u: goto tr431;
-		case 12u: goto tr431;
-		case 20u: goto tr431;
-		case 28u: goto tr431;
-		case 36u: goto tr431;
-		case 44u: goto tr431;
-		case 52u: goto tr431;
-		case 60u: goto tr431;
-		case 68u: goto tr434;
-		case 76u: goto tr434;
-		case 84u: goto tr434;
-		case 92u: goto tr434;
-		case 100u: goto tr434;
-		case 108u: goto tr434;
-		case 116u: goto tr434;
-		case 124u: goto tr434;
-		case 132u: goto tr435;
-		case 140u: goto tr435;
-		case 148u: goto tr435;
-		case 156u: goto tr435;
-		case 164u: goto tr435;
-		case 172u: goto tr435;
-		case 180u: goto tr435;
-		case 188u: goto tr435;
+		case 4u: goto tr404;
+		case 12u: goto tr404;
+		case 20u: goto tr404;
+		case 28u: goto tr404;
+		case 36u: goto tr404;
+		case 44u: goto tr404;
+		case 52u: goto tr404;
+		case 60u: goto tr404;
+		case 68u: goto tr407;
+		case 76u: goto tr407;
+		case 84u: goto tr407;
+		case 92u: goto tr407;
+		case 100u: goto tr407;
+		case 108u: goto tr407;
+		case 116u: goto tr407;
+		case 124u: goto tr407;
+		case 132u: goto tr408;
+		case 140u: goto tr408;
+		case 148u: goto tr408;
+		case 156u: goto tr408;
+		case 164u: goto tr408;
+		case 172u: goto tr408;
+		case 180u: goto tr408;
+		case 188u: goto tr408;
 	}
 	if ( (*( current_position)) < 38u ) {
 		if ( (*( current_position)) < 14u ) {
@@ -7201,50 +6820,50 @@ case 204:
 				if ( 192u <= (*( current_position)) )
 					goto tr16;
 			} else if ( (*( current_position)) >= 64u )
-				goto tr433;
+				goto tr406;
 		} else
 			goto tr255;
 	} else
 		goto tr255;
-	goto tr432;
-st205:
+	goto tr405;
+st190:
 	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof205;
-case 205:
+		goto _test_eof190;
+case 190:
 	if ( 240u <= (*( current_position)) && (*( current_position)) <= 241u )
 		goto st84;
 	goto tr16;
-st206:
+st191:
 	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof206;
-case 206:
+		goto _test_eof191;
+case 191:
 	if ( 192u <= (*( current_position)) )
-		goto tr436;
+		goto tr409;
 	goto tr16;
-tr436:
+tr409:
 	{ SET_CPU_FEATURE(CPUFeature_SSE4A);     }
-	goto st207;
-st207:
+	goto st192;
+st192:
 	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof207;
-case 207:
-	goto tr437;
-tr437:
+		goto _test_eof192;
+case 192:
+	goto tr410;
+tr410:
 	{
-    SET_IMM_TYPE(IMM8);
-    SET_IMM_PTR(current_position);
+    SET_IMMEDIATE_FORMAT(IMM8);
+    SET_IMMEDIATE_POINTER(current_position);
   }
 	{}
-	goto st208;
-st208:
+	goto st193;
+st193:
 	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof208;
-case 208:
-	goto tr438;
-st209:
+		goto _test_eof193;
+case 193:
+	goto tr411;
+st194:
 	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof209;
-case 209:
+		goto _test_eof194;
+case 194:
 	switch( (*( current_position)) ) {
 		case 4u: goto tr257;
 		case 12u: goto tr257;
@@ -7304,12 +6923,12 @@ case 209:
 	} else
 		goto tr256;
 	goto tr258;
-st210:
+st195:
 	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof210;
-case 210:
+		goto _test_eof195;
+case 195:
 	switch( (*( current_position)) ) {
-		case 15u: goto st211;
+		case 15u: goto st196;
 		case 102u: goto st127;
 		case 144u: goto tr0;
 	}
@@ -7322,19 +6941,19 @@ case 210:
 	} else
 		goto tr0;
 	goto tr16;
-st211:
+st196:
 	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof211;
-case 211:
+		goto _test_eof196;
+case 196:
 	switch( (*( current_position)) ) {
 		case 18u: goto st96;
 		case 22u: goto st96;
-		case 43u: goto st204;
+		case 43u: goto st189;
 		case 111u: goto st32;
 		case 112u: goto st92;
-		case 184u: goto st212;
-		case 188u: goto st213;
-		case 189u: goto st214;
+		case 184u: goto st197;
+		case 188u: goto st198;
+		case 189u: goto st199;
 		case 194u: goto st58;
 		case 214u: goto st91;
 		case 230u: goto st32;
@@ -7360,142 +6979,142 @@ case 211:
 	} else
 		goto st28;
 	goto tr16;
-st212:
+st197:
 	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof212;
-case 212:
+		goto _test_eof197;
+case 197:
 	switch( (*( current_position)) ) {
-		case 4u: goto tr444;
-		case 5u: goto tr445;
-		case 12u: goto tr444;
-		case 13u: goto tr445;
-		case 20u: goto tr444;
-		case 21u: goto tr445;
-		case 28u: goto tr444;
-		case 29u: goto tr445;
-		case 36u: goto tr444;
-		case 37u: goto tr445;
-		case 44u: goto tr444;
-		case 45u: goto tr445;
-		case 52u: goto tr444;
-		case 53u: goto tr445;
-		case 60u: goto tr444;
-		case 61u: goto tr445;
-		case 68u: goto tr447;
-		case 76u: goto tr447;
-		case 84u: goto tr447;
-		case 92u: goto tr447;
-		case 100u: goto tr447;
-		case 108u: goto tr447;
-		case 116u: goto tr447;
-		case 124u: goto tr447;
-		case 132u: goto tr448;
-		case 140u: goto tr448;
-		case 148u: goto tr448;
-		case 156u: goto tr448;
-		case 164u: goto tr448;
-		case 172u: goto tr448;
-		case 180u: goto tr448;
-		case 188u: goto tr448;
+		case 4u: goto tr417;
+		case 5u: goto tr418;
+		case 12u: goto tr417;
+		case 13u: goto tr418;
+		case 20u: goto tr417;
+		case 21u: goto tr418;
+		case 28u: goto tr417;
+		case 29u: goto tr418;
+		case 36u: goto tr417;
+		case 37u: goto tr418;
+		case 44u: goto tr417;
+		case 45u: goto tr418;
+		case 52u: goto tr417;
+		case 53u: goto tr418;
+		case 60u: goto tr417;
+		case 61u: goto tr418;
+		case 68u: goto tr420;
+		case 76u: goto tr420;
+		case 84u: goto tr420;
+		case 92u: goto tr420;
+		case 100u: goto tr420;
+		case 108u: goto tr420;
+		case 116u: goto tr420;
+		case 124u: goto tr420;
+		case 132u: goto tr421;
+		case 140u: goto tr421;
+		case 148u: goto tr421;
+		case 156u: goto tr421;
+		case 164u: goto tr421;
+		case 172u: goto tr421;
+		case 180u: goto tr421;
+		case 188u: goto tr421;
 	}
 	if ( (*( current_position)) > 127u ) {
 		if ( 128u <= (*( current_position)) && (*( current_position)) <= 191u )
-			goto tr445;
+			goto tr418;
 	} else if ( (*( current_position)) >= 64u )
-		goto tr446;
-	goto tr443;
-st213:
+		goto tr419;
+	goto tr416;
+st198:
 	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof213;
-case 213:
+		goto _test_eof198;
+case 198:
 	switch( (*( current_position)) ) {
-		case 4u: goto tr450;
-		case 5u: goto tr451;
-		case 12u: goto tr450;
-		case 13u: goto tr451;
-		case 20u: goto tr450;
-		case 21u: goto tr451;
-		case 28u: goto tr450;
-		case 29u: goto tr451;
-		case 36u: goto tr450;
-		case 37u: goto tr451;
-		case 44u: goto tr450;
-		case 45u: goto tr451;
-		case 52u: goto tr450;
-		case 53u: goto tr451;
-		case 60u: goto tr450;
-		case 61u: goto tr451;
-		case 68u: goto tr453;
-		case 76u: goto tr453;
-		case 84u: goto tr453;
-		case 92u: goto tr453;
-		case 100u: goto tr453;
-		case 108u: goto tr453;
-		case 116u: goto tr453;
-		case 124u: goto tr453;
-		case 132u: goto tr454;
-		case 140u: goto tr454;
-		case 148u: goto tr454;
-		case 156u: goto tr454;
-		case 164u: goto tr454;
-		case 172u: goto tr454;
-		case 180u: goto tr454;
-		case 188u: goto tr454;
+		case 4u: goto tr423;
+		case 5u: goto tr424;
+		case 12u: goto tr423;
+		case 13u: goto tr424;
+		case 20u: goto tr423;
+		case 21u: goto tr424;
+		case 28u: goto tr423;
+		case 29u: goto tr424;
+		case 36u: goto tr423;
+		case 37u: goto tr424;
+		case 44u: goto tr423;
+		case 45u: goto tr424;
+		case 52u: goto tr423;
+		case 53u: goto tr424;
+		case 60u: goto tr423;
+		case 61u: goto tr424;
+		case 68u: goto tr426;
+		case 76u: goto tr426;
+		case 84u: goto tr426;
+		case 92u: goto tr426;
+		case 100u: goto tr426;
+		case 108u: goto tr426;
+		case 116u: goto tr426;
+		case 124u: goto tr426;
+		case 132u: goto tr427;
+		case 140u: goto tr427;
+		case 148u: goto tr427;
+		case 156u: goto tr427;
+		case 164u: goto tr427;
+		case 172u: goto tr427;
+		case 180u: goto tr427;
+		case 188u: goto tr427;
 	}
 	if ( (*( current_position)) > 127u ) {
 		if ( 128u <= (*( current_position)) && (*( current_position)) <= 191u )
-			goto tr451;
+			goto tr424;
 	} else if ( (*( current_position)) >= 64u )
-		goto tr452;
-	goto tr449;
-st214:
+		goto tr425;
+	goto tr422;
+st199:
 	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof214;
-case 214:
+		goto _test_eof199;
+case 199:
 	switch( (*( current_position)) ) {
-		case 4u: goto tr456;
-		case 5u: goto tr457;
-		case 12u: goto tr456;
-		case 13u: goto tr457;
-		case 20u: goto tr456;
-		case 21u: goto tr457;
-		case 28u: goto tr456;
-		case 29u: goto tr457;
-		case 36u: goto tr456;
-		case 37u: goto tr457;
-		case 44u: goto tr456;
-		case 45u: goto tr457;
-		case 52u: goto tr456;
-		case 53u: goto tr457;
-		case 60u: goto tr456;
-		case 61u: goto tr457;
-		case 68u: goto tr459;
-		case 76u: goto tr459;
-		case 84u: goto tr459;
-		case 92u: goto tr459;
-		case 100u: goto tr459;
-		case 108u: goto tr459;
-		case 116u: goto tr459;
-		case 124u: goto tr459;
-		case 132u: goto tr460;
-		case 140u: goto tr460;
-		case 148u: goto tr460;
-		case 156u: goto tr460;
-		case 164u: goto tr460;
-		case 172u: goto tr460;
-		case 180u: goto tr460;
-		case 188u: goto tr460;
+		case 4u: goto tr429;
+		case 5u: goto tr430;
+		case 12u: goto tr429;
+		case 13u: goto tr430;
+		case 20u: goto tr429;
+		case 21u: goto tr430;
+		case 28u: goto tr429;
+		case 29u: goto tr430;
+		case 36u: goto tr429;
+		case 37u: goto tr430;
+		case 44u: goto tr429;
+		case 45u: goto tr430;
+		case 52u: goto tr429;
+		case 53u: goto tr430;
+		case 60u: goto tr429;
+		case 61u: goto tr430;
+		case 68u: goto tr432;
+		case 76u: goto tr432;
+		case 84u: goto tr432;
+		case 92u: goto tr432;
+		case 100u: goto tr432;
+		case 108u: goto tr432;
+		case 116u: goto tr432;
+		case 124u: goto tr432;
+		case 132u: goto tr433;
+		case 140u: goto tr433;
+		case 148u: goto tr433;
+		case 156u: goto tr433;
+		case 164u: goto tr433;
+		case 172u: goto tr433;
+		case 180u: goto tr433;
+		case 188u: goto tr433;
 	}
 	if ( (*( current_position)) > 127u ) {
 		if ( 128u <= (*( current_position)) && (*( current_position)) <= 191u )
-			goto tr457;
+			goto tr430;
 	} else if ( (*( current_position)) >= 64u )
-		goto tr458;
-	goto tr455;
-st215:
+		goto tr431;
+	goto tr428;
+st200:
 	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof215;
-case 215:
+		goto _test_eof200;
+case 200:
 	switch( (*( current_position)) ) {
 		case 4u: goto st39;
 		case 5u: goto st40;
@@ -7556,10 +7175,10 @@ case 215:
 	} else
 		goto st7;
 	goto tr0;
-st216:
+st201:
 	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof216;
-case 216:
+		goto _test_eof201;
+case 201:
 	switch( (*( current_position)) ) {
 		case 4u: goto st131;
 		case 5u: goto st132;
@@ -7620,10 +7239,10 @@ case 216:
 	} else
 		goto st7;
 	goto tr0;
-st217:
+st202:
 	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof217;
-case 217:
+		goto _test_eof202;
+case 202:
 	switch( (*( current_position)) ) {
 		case 4u: goto st2;
 		case 5u: goto st3;
@@ -7646,10 +7265,10 @@ case 217:
 	} else
 		goto st7;
 	goto tr16;
-st218:
+st203:
 	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof218;
-case 218:
+		goto _test_eof203;
+case 203:
 	switch( (*( current_position)) ) {
 		case 4u: goto st2;
 		case 5u: goto st3;
@@ -7663,8 +7282,8 @@ case 218:
 		case 132u: goto st9;
 		case 140u: goto st9;
 		case 180u: goto st9;
-		case 208u: goto tr461;
-		case 224u: goto tr462;
+		case 208u: goto tr434;
+		case 224u: goto tr435;
 	}
 	if ( (*( current_position)) < 112u ) {
 		if ( (*( current_position)) < 48u ) {
@@ -7690,22 +7309,22 @@ case 218:
 	} else
 		goto st7;
 	goto tr16;
-st219:
+st204:
 	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof219;
-case 219:
+		goto _test_eof204;
+case 204:
 	if ( (*( current_position)) == 224u )
-		goto tr463;
+		goto tr436;
 	goto tr11;
-tr463:
+tr436:
 	{
-    SET_IMM_TYPE(IMM8);
-    SET_IMM_PTR(current_position);
+    SET_IMMEDIATE_FORMAT(IMM8);
+    SET_IMMEDIATE_POINTER(current_position);
   }
 	{}
 	{
     /* Mark start of this instruction as a valid target for jump.  */
-    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
 
     /* Call user-supplied callback.  */
     instruction_end = current_position + 1;
@@ -7715,225 +7334,22 @@ tr463:
                               instruction_info_collected, callback_data);
     }
 
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
     instruction_begin = instruction_end;
 
     /* Clear variables (well, one variable currently).  */
     instruction_info_collected = 0;
   }
-	goto st235;
-st235:
-	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof235;
-case 235:
-	switch( (*( current_position)) ) {
-		case 4u: goto st10;
-		case 5u: goto st11;
-		case 12u: goto st10;
-		case 13u: goto st11;
-		case 15u: goto st15;
-		case 20u: goto st10;
-		case 21u: goto st11;
-		case 28u: goto st10;
-		case 29u: goto st11;
-		case 36u: goto st10;
-		case 37u: goto st11;
-		case 44u: goto st10;
-		case 45u: goto st11;
-		case 46u: goto st65;
-		case 52u: goto st10;
-		case 53u: goto st11;
-		case 60u: goto st10;
-		case 61u: goto st11;
-		case 62u: goto st65;
-		case 101u: goto st68;
-		case 102u: goto st74;
-		case 104u: goto st11;
-		case 105u: goto st130;
-		case 106u: goto st10;
-		case 107u: goto st56;
-		case 128u: goto st56;
-		case 129u: goto st130;
-		case 131u: goto st139;
-		case 141u: goto st115;
-		case 143u: goto st141;
-		case 155u: goto tr413;
-		case 168u: goto st10;
-		case 169u: goto st11;
-		case 196u: goto st153;
-		case 198u: goto st185;
-		case 199u: goto st186;
-		case 201u: goto tr0;
-		case 216u: goto st187;
-		case 217u: goto st188;
-		case 218u: goto st189;
-		case 219u: goto st190;
-		case 220u: goto st191;
-		case 221u: goto st192;
-		case 222u: goto st193;
-		case 223u: goto st194;
-		case 232u: goto st195;
-		case 233u: goto st52;
-		case 235u: goto st67;
-		case 240u: goto st199;
-		case 242u: goto st202;
-		case 243u: goto st210;
-		case 246u: goto st215;
-		case 247u: goto st216;
-		case 254u: goto st217;
-		case 255u: goto st220;
-	}
-	if ( (*( current_position)) < 132u ) {
-		if ( (*( current_position)) < 32u ) {
-			if ( (*( current_position)) < 8u ) {
-				if ( (*( current_position)) <= 3u )
-					goto st1;
-			} else if ( (*( current_position)) > 11u ) {
-				if ( (*( current_position)) > 19u ) {
-					if ( 24u <= (*( current_position)) && (*( current_position)) <= 27u )
-						goto st1;
-				} else if ( (*( current_position)) >= 16u )
-					goto st1;
-			} else
-				goto st1;
-		} else if ( (*( current_position)) > 35u ) {
-			if ( (*( current_position)) < 56u ) {
-				if ( (*( current_position)) > 43u ) {
-					if ( 48u <= (*( current_position)) && (*( current_position)) <= 51u )
-						goto st1;
-				} else if ( (*( current_position)) >= 40u )
-					goto st1;
-			} else if ( (*( current_position)) > 59u ) {
-				if ( (*( current_position)) > 95u ) {
-					if ( 112u <= (*( current_position)) && (*( current_position)) <= 127u )
-						goto st67;
-				} else if ( (*( current_position)) >= 64u )
-					goto tr0;
-			} else
-				goto st1;
-		} else
-			goto st1;
-	} else if ( (*( current_position)) > 139u ) {
-		if ( (*( current_position)) < 176u ) {
-			if ( (*( current_position)) < 160u ) {
-				if ( (*( current_position)) > 153u ) {
-					if ( 158u <= (*( current_position)) && (*( current_position)) <= 159u )
-						goto tr0;
-				} else if ( (*( current_position)) >= 144u )
-					goto tr0;
-			} else if ( (*( current_position)) > 163u ) {
-				if ( (*( current_position)) > 171u ) {
-					if ( 174u <= (*( current_position)) && (*( current_position)) <= 175u )
-						goto tr0;
-				} else if ( (*( current_position)) >= 164u )
-					goto tr0;
-			} else
-				goto st3;
-		} else if ( (*( current_position)) > 183u ) {
-			if ( (*( current_position)) < 208u ) {
-				if ( (*( current_position)) > 191u ) {
-					if ( 192u <= (*( current_position)) && (*( current_position)) <= 193u )
-						goto st116;
-				} else if ( (*( current_position)) >= 184u )
-					goto st11;
-			} else if ( (*( current_position)) > 211u ) {
-				if ( (*( current_position)) > 249u ) {
-					if ( 252u <= (*( current_position)) && (*( current_position)) <= 253u )
-						goto tr0;
-				} else if ( (*( current_position)) >= 244u )
-					goto tr0;
-			} else
-				goto st118;
-		} else
-			goto st10;
-	} else
-		goto st1;
-	goto tr16;
+	goto st220;
 st220:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof220;
 case 220:
 	switch( (*( current_position)) ) {
-		case 4u: goto st2;
-		case 5u: goto st3;
-		case 12u: goto st2;
-		case 13u: goto st3;
-		case 52u: goto st2;
-		case 53u: goto st3;
-		case 68u: goto st8;
-		case 76u: goto st8;
-		case 116u: goto st8;
-		case 132u: goto st9;
-		case 140u: goto st9;
-		case 180u: goto st9;
-		case 209u: goto tr461;
-		case 225u: goto tr462;
-	}
-	if ( (*( current_position)) < 112u ) {
-		if ( (*( current_position)) < 48u ) {
-			if ( (*( current_position)) <= 15u )
-				goto tr0;
-		} else if ( (*( current_position)) > 55u ) {
-			if ( 64u <= (*( current_position)) && (*( current_position)) <= 79u )
-				goto st7;
-		} else
-			goto tr0;
-	} else if ( (*( current_position)) > 119u ) {
-		if ( (*( current_position)) < 176u ) {
-			if ( 128u <= (*( current_position)) && (*( current_position)) <= 143u )
-				goto st3;
-		} else if ( (*( current_position)) > 183u ) {
-			if ( (*( current_position)) > 207u ) {
-				if ( 240u <= (*( current_position)) && (*( current_position)) <= 247u )
-					goto tr0;
-			} else if ( (*( current_position)) >= 192u )
-				goto tr0;
-		} else
-			goto st3;
-	} else
-		goto st7;
-	goto tr16;
-st221:
-	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof221;
-case 221:
-	if ( (*( current_position)) == 224u )
-		goto tr464;
-	goto tr11;
-tr464:
-	{
-    SET_IMM_TYPE(IMM8);
-    SET_IMM_PTR(current_position);
-  }
-	{}
-	{
-    /* Mark start of this instruction as a valid target for jump.  */
-    MarkValidJumpTarget(instruction_begin - data, valid_targets);
-
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(instruction_begin, instruction_end,
-                              instruction_info_collected, callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /* Clear variables (well, one variable currently).  */
-    instruction_info_collected = 0;
-  }
-	goto st236;
-st236:
-	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof236;
-case 236:
-	switch( (*( current_position)) ) {
 		case 4u: goto st10;
 		case 5u: goto st11;
 		case 12u: goto st10;
@@ -7964,31 +7380,31 @@ case 236:
 		case 131u: goto st139;
 		case 141u: goto st115;
 		case 143u: goto st141;
-		case 155u: goto tr413;
+		case 155u: goto tr386;
 		case 168u: goto st10;
 		case 169u: goto st11;
 		case 196u: goto st153;
-		case 198u: goto st185;
-		case 199u: goto st186;
+		case 198u: goto st170;
+		case 199u: goto st171;
 		case 201u: goto tr0;
-		case 216u: goto st187;
-		case 217u: goto st188;
-		case 218u: goto st189;
-		case 219u: goto st190;
-		case 220u: goto st191;
-		case 221u: goto st192;
-		case 222u: goto st193;
-		case 223u: goto st194;
-		case 232u: goto st195;
+		case 216u: goto st172;
+		case 217u: goto st173;
+		case 218u: goto st174;
+		case 219u: goto st175;
+		case 220u: goto st176;
+		case 221u: goto st177;
+		case 222u: goto st178;
+		case 223u: goto st179;
+		case 232u: goto st180;
 		case 233u: goto st52;
 		case 235u: goto st67;
-		case 240u: goto st199;
-		case 242u: goto st202;
-		case 243u: goto st210;
-		case 246u: goto st215;
-		case 247u: goto st216;
-		case 254u: goto st217;
-		case 255u: goto st222;
+		case 240u: goto st184;
+		case 242u: goto st187;
+		case 243u: goto st195;
+		case 246u: goto st200;
+		case 247u: goto st201;
+		case 254u: goto st202;
+		case 255u: goto st205;
 	}
 	if ( (*( current_position)) < 132u ) {
 		if ( (*( current_position)) < 32u ) {
@@ -8056,89 +7472,298 @@ case 236:
 	} else
 		goto st1;
 	goto tr16;
+st205:
+	if ( ++( current_position) == ( end_of_bundle) )
+		goto _test_eof205;
+case 205:
+	switch( (*( current_position)) ) {
+		case 4u: goto st2;
+		case 5u: goto st3;
+		case 12u: goto st2;
+		case 13u: goto st3;
+		case 52u: goto st2;
+		case 53u: goto st3;
+		case 68u: goto st8;
+		case 76u: goto st8;
+		case 116u: goto st8;
+		case 132u: goto st9;
+		case 140u: goto st9;
+		case 180u: goto st9;
+		case 209u: goto tr434;
+		case 225u: goto tr435;
+	}
+	if ( (*( current_position)) < 112u ) {
+		if ( (*( current_position)) < 48u ) {
+			if ( (*( current_position)) <= 15u )
+				goto tr0;
+		} else if ( (*( current_position)) > 55u ) {
+			if ( 64u <= (*( current_position)) && (*( current_position)) <= 79u )
+				goto st7;
+		} else
+			goto tr0;
+	} else if ( (*( current_position)) > 119u ) {
+		if ( (*( current_position)) < 176u ) {
+			if ( 128u <= (*( current_position)) && (*( current_position)) <= 143u )
+				goto st3;
+		} else if ( (*( current_position)) > 183u ) {
+			if ( (*( current_position)) > 207u ) {
+				if ( 240u <= (*( current_position)) && (*( current_position)) <= 247u )
+					goto tr0;
+			} else if ( (*( current_position)) >= 192u )
+				goto tr0;
+		} else
+			goto st3;
+	} else
+		goto st7;
+	goto tr16;
+st206:
+	if ( ++( current_position) == ( end_of_bundle) )
+		goto _test_eof206;
+case 206:
+	if ( (*( current_position)) == 224u )
+		goto tr437;
+	goto tr11;
+tr437:
+	{
+    SET_IMMEDIATE_FORMAT(IMM8);
+    SET_IMMEDIATE_POINTER(current_position);
+  }
+	{}
+	{
+    /* Mark start of this instruction as a valid target for jump.  */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(instruction_begin, instruction_end,
+                              instruction_info_collected, callback_data);
+    }
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    instruction_begin = instruction_end;
+
+    /* Clear variables (well, one variable currently).  */
+    instruction_info_collected = 0;
+  }
+	goto st221;
+st221:
+	if ( ++( current_position) == ( end_of_bundle) )
+		goto _test_eof221;
+case 221:
+	switch( (*( current_position)) ) {
+		case 4u: goto st10;
+		case 5u: goto st11;
+		case 12u: goto st10;
+		case 13u: goto st11;
+		case 15u: goto st15;
+		case 20u: goto st10;
+		case 21u: goto st11;
+		case 28u: goto st10;
+		case 29u: goto st11;
+		case 36u: goto st10;
+		case 37u: goto st11;
+		case 44u: goto st10;
+		case 45u: goto st11;
+		case 46u: goto st65;
+		case 52u: goto st10;
+		case 53u: goto st11;
+		case 60u: goto st10;
+		case 61u: goto st11;
+		case 62u: goto st65;
+		case 101u: goto st68;
+		case 102u: goto st74;
+		case 104u: goto st11;
+		case 105u: goto st130;
+		case 106u: goto st10;
+		case 107u: goto st56;
+		case 128u: goto st56;
+		case 129u: goto st130;
+		case 131u: goto st139;
+		case 141u: goto st115;
+		case 143u: goto st141;
+		case 155u: goto tr386;
+		case 168u: goto st10;
+		case 169u: goto st11;
+		case 196u: goto st153;
+		case 198u: goto st170;
+		case 199u: goto st171;
+		case 201u: goto tr0;
+		case 216u: goto st172;
+		case 217u: goto st173;
+		case 218u: goto st174;
+		case 219u: goto st175;
+		case 220u: goto st176;
+		case 221u: goto st177;
+		case 222u: goto st178;
+		case 223u: goto st179;
+		case 232u: goto st180;
+		case 233u: goto st52;
+		case 235u: goto st67;
+		case 240u: goto st184;
+		case 242u: goto st187;
+		case 243u: goto st195;
+		case 246u: goto st200;
+		case 247u: goto st201;
+		case 254u: goto st202;
+		case 255u: goto st207;
+	}
+	if ( (*( current_position)) < 132u ) {
+		if ( (*( current_position)) < 32u ) {
+			if ( (*( current_position)) < 8u ) {
+				if ( (*( current_position)) <= 3u )
+					goto st1;
+			} else if ( (*( current_position)) > 11u ) {
+				if ( (*( current_position)) > 19u ) {
+					if ( 24u <= (*( current_position)) && (*( current_position)) <= 27u )
+						goto st1;
+				} else if ( (*( current_position)) >= 16u )
+					goto st1;
+			} else
+				goto st1;
+		} else if ( (*( current_position)) > 35u ) {
+			if ( (*( current_position)) < 56u ) {
+				if ( (*( current_position)) > 43u ) {
+					if ( 48u <= (*( current_position)) && (*( current_position)) <= 51u )
+						goto st1;
+				} else if ( (*( current_position)) >= 40u )
+					goto st1;
+			} else if ( (*( current_position)) > 59u ) {
+				if ( (*( current_position)) > 95u ) {
+					if ( 112u <= (*( current_position)) && (*( current_position)) <= 127u )
+						goto st67;
+				} else if ( (*( current_position)) >= 64u )
+					goto tr0;
+			} else
+				goto st1;
+		} else
+			goto st1;
+	} else if ( (*( current_position)) > 139u ) {
+		if ( (*( current_position)) < 176u ) {
+			if ( (*( current_position)) < 160u ) {
+				if ( (*( current_position)) > 153u ) {
+					if ( 158u <= (*( current_position)) && (*( current_position)) <= 159u )
+						goto tr0;
+				} else if ( (*( current_position)) >= 144u )
+					goto tr0;
+			} else if ( (*( current_position)) > 163u ) {
+				if ( (*( current_position)) > 171u ) {
+					if ( 174u <= (*( current_position)) && (*( current_position)) <= 175u )
+						goto tr0;
+				} else if ( (*( current_position)) >= 164u )
+					goto tr0;
+			} else
+				goto st3;
+		} else if ( (*( current_position)) > 183u ) {
+			if ( (*( current_position)) < 208u ) {
+				if ( (*( current_position)) > 191u ) {
+					if ( 192u <= (*( current_position)) && (*( current_position)) <= 193u )
+						goto st116;
+				} else if ( (*( current_position)) >= 184u )
+					goto st11;
+			} else if ( (*( current_position)) > 211u ) {
+				if ( (*( current_position)) > 249u ) {
+					if ( 252u <= (*( current_position)) && (*( current_position)) <= 253u )
+						goto tr0;
+				} else if ( (*( current_position)) >= 244u )
+					goto tr0;
+			} else
+				goto st118;
+		} else
+			goto st10;
+	} else
+		goto st1;
+	goto tr16;
+st207:
+	if ( ++( current_position) == ( end_of_bundle) )
+		goto _test_eof207;
+case 207:
+	switch( (*( current_position)) ) {
+		case 4u: goto st2;
+		case 5u: goto st3;
+		case 12u: goto st2;
+		case 13u: goto st3;
+		case 52u: goto st2;
+		case 53u: goto st3;
+		case 68u: goto st8;
+		case 76u: goto st8;
+		case 116u: goto st8;
+		case 132u: goto st9;
+		case 140u: goto st9;
+		case 180u: goto st9;
+		case 210u: goto tr434;
+		case 226u: goto tr435;
+	}
+	if ( (*( current_position)) < 112u ) {
+		if ( (*( current_position)) < 48u ) {
+			if ( (*( current_position)) <= 15u )
+				goto tr0;
+		} else if ( (*( current_position)) > 55u ) {
+			if ( 64u <= (*( current_position)) && (*( current_position)) <= 79u )
+				goto st7;
+		} else
+			goto tr0;
+	} else if ( (*( current_position)) > 119u ) {
+		if ( (*( current_position)) < 176u ) {
+			if ( 128u <= (*( current_position)) && (*( current_position)) <= 143u )
+				goto st3;
+		} else if ( (*( current_position)) > 183u ) {
+			if ( (*( current_position)) > 207u ) {
+				if ( 240u <= (*( current_position)) && (*( current_position)) <= 247u )
+					goto tr0;
+			} else if ( (*( current_position)) >= 192u )
+				goto tr0;
+		} else
+			goto st3;
+	} else
+		goto st7;
+	goto tr16;
+st208:
+	if ( ++( current_position) == ( end_of_bundle) )
+		goto _test_eof208;
+case 208:
+	if ( (*( current_position)) == 224u )
+		goto tr438;
+	goto tr11;
+tr438:
+	{
+    SET_IMMEDIATE_FORMAT(IMM8);
+    SET_IMMEDIATE_POINTER(current_position);
+  }
+	{}
+	{
+    /* Mark start of this instruction as a valid target for jump.  */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(instruction_begin, instruction_end,
+                              instruction_info_collected, callback_data);
+    }
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    instruction_begin = instruction_end;
+
+    /* Clear variables (well, one variable currently).  */
+    instruction_info_collected = 0;
+  }
+	goto st222;
 st222:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof222;
 case 222:
 	switch( (*( current_position)) ) {
-		case 4u: goto st2;
-		case 5u: goto st3;
-		case 12u: goto st2;
-		case 13u: goto st3;
-		case 52u: goto st2;
-		case 53u: goto st3;
-		case 68u: goto st8;
-		case 76u: goto st8;
-		case 116u: goto st8;
-		case 132u: goto st9;
-		case 140u: goto st9;
-		case 180u: goto st9;
-		case 210u: goto tr461;
-		case 226u: goto tr462;
-	}
-	if ( (*( current_position)) < 112u ) {
-		if ( (*( current_position)) < 48u ) {
-			if ( (*( current_position)) <= 15u )
-				goto tr0;
-		} else if ( (*( current_position)) > 55u ) {
-			if ( 64u <= (*( current_position)) && (*( current_position)) <= 79u )
-				goto st7;
-		} else
-			goto tr0;
-	} else if ( (*( current_position)) > 119u ) {
-		if ( (*( current_position)) < 176u ) {
-			if ( 128u <= (*( current_position)) && (*( current_position)) <= 143u )
-				goto st3;
-		} else if ( (*( current_position)) > 183u ) {
-			if ( (*( current_position)) > 207u ) {
-				if ( 240u <= (*( current_position)) && (*( current_position)) <= 247u )
-					goto tr0;
-			} else if ( (*( current_position)) >= 192u )
-				goto tr0;
-		} else
-			goto st3;
-	} else
-		goto st7;
-	goto tr16;
-st223:
-	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof223;
-case 223:
-	if ( (*( current_position)) == 224u )
-		goto tr465;
-	goto tr11;
-tr465:
-	{
-    SET_IMM_TYPE(IMM8);
-    SET_IMM_PTR(current_position);
-  }
-	{}
-	{
-    /* Mark start of this instruction as a valid target for jump.  */
-    MarkValidJumpTarget(instruction_begin - data, valid_targets);
-
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(instruction_begin, instruction_end,
-                              instruction_info_collected, callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /* Clear variables (well, one variable currently).  */
-    instruction_info_collected = 0;
-  }
-	goto st237;
-st237:
-	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof237;
-case 237:
-	switch( (*( current_position)) ) {
 		case 4u: goto st10;
 		case 5u: goto st11;
 		case 12u: goto st10;
@@ -8169,31 +7794,31 @@ case 237:
 		case 131u: goto st139;
 		case 141u: goto st115;
 		case 143u: goto st141;
-		case 155u: goto tr413;
+		case 155u: goto tr386;
 		case 168u: goto st10;
 		case 169u: goto st11;
 		case 196u: goto st153;
-		case 198u: goto st185;
-		case 199u: goto st186;
+		case 198u: goto st170;
+		case 199u: goto st171;
 		case 201u: goto tr0;
-		case 216u: goto st187;
-		case 217u: goto st188;
-		case 218u: goto st189;
-		case 219u: goto st190;
-		case 220u: goto st191;
-		case 221u: goto st192;
-		case 222u: goto st193;
-		case 223u: goto st194;
-		case 232u: goto st195;
+		case 216u: goto st172;
+		case 217u: goto st173;
+		case 218u: goto st174;
+		case 219u: goto st175;
+		case 220u: goto st176;
+		case 221u: goto st177;
+		case 222u: goto st178;
+		case 223u: goto st179;
+		case 232u: goto st180;
 		case 233u: goto st52;
 		case 235u: goto st67;
-		case 240u: goto st199;
-		case 242u: goto st202;
-		case 243u: goto st210;
-		case 246u: goto st215;
-		case 247u: goto st216;
-		case 254u: goto st217;
-		case 255u: goto st224;
+		case 240u: goto st184;
+		case 242u: goto st187;
+		case 243u: goto st195;
+		case 246u: goto st200;
+		case 247u: goto st201;
+		case 254u: goto st202;
+		case 255u: goto st209;
 	}
 	if ( (*( current_position)) < 132u ) {
 		if ( (*( current_position)) < 32u ) {
@@ -8261,89 +7886,298 @@ case 237:
 	} else
 		goto st1;
 	goto tr16;
+st209:
+	if ( ++( current_position) == ( end_of_bundle) )
+		goto _test_eof209;
+case 209:
+	switch( (*( current_position)) ) {
+		case 4u: goto st2;
+		case 5u: goto st3;
+		case 12u: goto st2;
+		case 13u: goto st3;
+		case 52u: goto st2;
+		case 53u: goto st3;
+		case 68u: goto st8;
+		case 76u: goto st8;
+		case 116u: goto st8;
+		case 132u: goto st9;
+		case 140u: goto st9;
+		case 180u: goto st9;
+		case 211u: goto tr434;
+		case 227u: goto tr435;
+	}
+	if ( (*( current_position)) < 112u ) {
+		if ( (*( current_position)) < 48u ) {
+			if ( (*( current_position)) <= 15u )
+				goto tr0;
+		} else if ( (*( current_position)) > 55u ) {
+			if ( 64u <= (*( current_position)) && (*( current_position)) <= 79u )
+				goto st7;
+		} else
+			goto tr0;
+	} else if ( (*( current_position)) > 119u ) {
+		if ( (*( current_position)) < 176u ) {
+			if ( 128u <= (*( current_position)) && (*( current_position)) <= 143u )
+				goto st3;
+		} else if ( (*( current_position)) > 183u ) {
+			if ( (*( current_position)) > 207u ) {
+				if ( 240u <= (*( current_position)) && (*( current_position)) <= 247u )
+					goto tr0;
+			} else if ( (*( current_position)) >= 192u )
+				goto tr0;
+		} else
+			goto st3;
+	} else
+		goto st7;
+	goto tr16;
+st210:
+	if ( ++( current_position) == ( end_of_bundle) )
+		goto _test_eof210;
+case 210:
+	if ( (*( current_position)) == 224u )
+		goto tr439;
+	goto tr11;
+tr439:
+	{
+    SET_IMMEDIATE_FORMAT(IMM8);
+    SET_IMMEDIATE_POINTER(current_position);
+  }
+	{}
+	{
+    /* Mark start of this instruction as a valid target for jump.  */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(instruction_begin, instruction_end,
+                              instruction_info_collected, callback_data);
+    }
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    instruction_begin = instruction_end;
+
+    /* Clear variables (well, one variable currently).  */
+    instruction_info_collected = 0;
+  }
+	goto st223;
+st223:
+	if ( ++( current_position) == ( end_of_bundle) )
+		goto _test_eof223;
+case 223:
+	switch( (*( current_position)) ) {
+		case 4u: goto st10;
+		case 5u: goto st11;
+		case 12u: goto st10;
+		case 13u: goto st11;
+		case 15u: goto st15;
+		case 20u: goto st10;
+		case 21u: goto st11;
+		case 28u: goto st10;
+		case 29u: goto st11;
+		case 36u: goto st10;
+		case 37u: goto st11;
+		case 44u: goto st10;
+		case 45u: goto st11;
+		case 46u: goto st65;
+		case 52u: goto st10;
+		case 53u: goto st11;
+		case 60u: goto st10;
+		case 61u: goto st11;
+		case 62u: goto st65;
+		case 101u: goto st68;
+		case 102u: goto st74;
+		case 104u: goto st11;
+		case 105u: goto st130;
+		case 106u: goto st10;
+		case 107u: goto st56;
+		case 128u: goto st56;
+		case 129u: goto st130;
+		case 131u: goto st139;
+		case 141u: goto st115;
+		case 143u: goto st141;
+		case 155u: goto tr386;
+		case 168u: goto st10;
+		case 169u: goto st11;
+		case 196u: goto st153;
+		case 198u: goto st170;
+		case 199u: goto st171;
+		case 201u: goto tr0;
+		case 216u: goto st172;
+		case 217u: goto st173;
+		case 218u: goto st174;
+		case 219u: goto st175;
+		case 220u: goto st176;
+		case 221u: goto st177;
+		case 222u: goto st178;
+		case 223u: goto st179;
+		case 232u: goto st180;
+		case 233u: goto st52;
+		case 235u: goto st67;
+		case 240u: goto st184;
+		case 242u: goto st187;
+		case 243u: goto st195;
+		case 246u: goto st200;
+		case 247u: goto st201;
+		case 254u: goto st202;
+		case 255u: goto st211;
+	}
+	if ( (*( current_position)) < 132u ) {
+		if ( (*( current_position)) < 32u ) {
+			if ( (*( current_position)) < 8u ) {
+				if ( (*( current_position)) <= 3u )
+					goto st1;
+			} else if ( (*( current_position)) > 11u ) {
+				if ( (*( current_position)) > 19u ) {
+					if ( 24u <= (*( current_position)) && (*( current_position)) <= 27u )
+						goto st1;
+				} else if ( (*( current_position)) >= 16u )
+					goto st1;
+			} else
+				goto st1;
+		} else if ( (*( current_position)) > 35u ) {
+			if ( (*( current_position)) < 56u ) {
+				if ( (*( current_position)) > 43u ) {
+					if ( 48u <= (*( current_position)) && (*( current_position)) <= 51u )
+						goto st1;
+				} else if ( (*( current_position)) >= 40u )
+					goto st1;
+			} else if ( (*( current_position)) > 59u ) {
+				if ( (*( current_position)) > 95u ) {
+					if ( 112u <= (*( current_position)) && (*( current_position)) <= 127u )
+						goto st67;
+				} else if ( (*( current_position)) >= 64u )
+					goto tr0;
+			} else
+				goto st1;
+		} else
+			goto st1;
+	} else if ( (*( current_position)) > 139u ) {
+		if ( (*( current_position)) < 176u ) {
+			if ( (*( current_position)) < 160u ) {
+				if ( (*( current_position)) > 153u ) {
+					if ( 158u <= (*( current_position)) && (*( current_position)) <= 159u )
+						goto tr0;
+				} else if ( (*( current_position)) >= 144u )
+					goto tr0;
+			} else if ( (*( current_position)) > 163u ) {
+				if ( (*( current_position)) > 171u ) {
+					if ( 174u <= (*( current_position)) && (*( current_position)) <= 175u )
+						goto tr0;
+				} else if ( (*( current_position)) >= 164u )
+					goto tr0;
+			} else
+				goto st3;
+		} else if ( (*( current_position)) > 183u ) {
+			if ( (*( current_position)) < 208u ) {
+				if ( (*( current_position)) > 191u ) {
+					if ( 192u <= (*( current_position)) && (*( current_position)) <= 193u )
+						goto st116;
+				} else if ( (*( current_position)) >= 184u )
+					goto st11;
+			} else if ( (*( current_position)) > 211u ) {
+				if ( (*( current_position)) > 249u ) {
+					if ( 252u <= (*( current_position)) && (*( current_position)) <= 253u )
+						goto tr0;
+				} else if ( (*( current_position)) >= 244u )
+					goto tr0;
+			} else
+				goto st118;
+		} else
+			goto st10;
+	} else
+		goto st1;
+	goto tr16;
+st211:
+	if ( ++( current_position) == ( end_of_bundle) )
+		goto _test_eof211;
+case 211:
+	switch( (*( current_position)) ) {
+		case 4u: goto st2;
+		case 5u: goto st3;
+		case 12u: goto st2;
+		case 13u: goto st3;
+		case 52u: goto st2;
+		case 53u: goto st3;
+		case 68u: goto st8;
+		case 76u: goto st8;
+		case 116u: goto st8;
+		case 132u: goto st9;
+		case 140u: goto st9;
+		case 180u: goto st9;
+		case 212u: goto tr434;
+		case 228u: goto tr435;
+	}
+	if ( (*( current_position)) < 112u ) {
+		if ( (*( current_position)) < 48u ) {
+			if ( (*( current_position)) <= 15u )
+				goto tr0;
+		} else if ( (*( current_position)) > 55u ) {
+			if ( 64u <= (*( current_position)) && (*( current_position)) <= 79u )
+				goto st7;
+		} else
+			goto tr0;
+	} else if ( (*( current_position)) > 119u ) {
+		if ( (*( current_position)) < 176u ) {
+			if ( 128u <= (*( current_position)) && (*( current_position)) <= 143u )
+				goto st3;
+		} else if ( (*( current_position)) > 183u ) {
+			if ( (*( current_position)) > 207u ) {
+				if ( 240u <= (*( current_position)) && (*( current_position)) <= 247u )
+					goto tr0;
+			} else if ( (*( current_position)) >= 192u )
+				goto tr0;
+		} else
+			goto st3;
+	} else
+		goto st7;
+	goto tr16;
+st212:
+	if ( ++( current_position) == ( end_of_bundle) )
+		goto _test_eof212;
+case 212:
+	if ( (*( current_position)) == 224u )
+		goto tr440;
+	goto tr11;
+tr440:
+	{
+    SET_IMMEDIATE_FORMAT(IMM8);
+    SET_IMMEDIATE_POINTER(current_position);
+  }
+	{}
+	{
+    /* Mark start of this instruction as a valid target for jump.  */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(instruction_begin, instruction_end,
+                              instruction_info_collected, callback_data);
+    }
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    instruction_begin = instruction_end;
+
+    /* Clear variables (well, one variable currently).  */
+    instruction_info_collected = 0;
+  }
+	goto st224;
 st224:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof224;
 case 224:
 	switch( (*( current_position)) ) {
-		case 4u: goto st2;
-		case 5u: goto st3;
-		case 12u: goto st2;
-		case 13u: goto st3;
-		case 52u: goto st2;
-		case 53u: goto st3;
-		case 68u: goto st8;
-		case 76u: goto st8;
-		case 116u: goto st8;
-		case 132u: goto st9;
-		case 140u: goto st9;
-		case 180u: goto st9;
-		case 211u: goto tr461;
-		case 227u: goto tr462;
-	}
-	if ( (*( current_position)) < 112u ) {
-		if ( (*( current_position)) < 48u ) {
-			if ( (*( current_position)) <= 15u )
-				goto tr0;
-		} else if ( (*( current_position)) > 55u ) {
-			if ( 64u <= (*( current_position)) && (*( current_position)) <= 79u )
-				goto st7;
-		} else
-			goto tr0;
-	} else if ( (*( current_position)) > 119u ) {
-		if ( (*( current_position)) < 176u ) {
-			if ( 128u <= (*( current_position)) && (*( current_position)) <= 143u )
-				goto st3;
-		} else if ( (*( current_position)) > 183u ) {
-			if ( (*( current_position)) > 207u ) {
-				if ( 240u <= (*( current_position)) && (*( current_position)) <= 247u )
-					goto tr0;
-			} else if ( (*( current_position)) >= 192u )
-				goto tr0;
-		} else
-			goto st3;
-	} else
-		goto st7;
-	goto tr16;
-st225:
-	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof225;
-case 225:
-	if ( (*( current_position)) == 224u )
-		goto tr466;
-	goto tr11;
-tr466:
-	{
-    SET_IMM_TYPE(IMM8);
-    SET_IMM_PTR(current_position);
-  }
-	{}
-	{
-    /* Mark start of this instruction as a valid target for jump.  */
-    MarkValidJumpTarget(instruction_begin - data, valid_targets);
-
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(instruction_begin, instruction_end,
-                              instruction_info_collected, callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /* Clear variables (well, one variable currently).  */
-    instruction_info_collected = 0;
-  }
-	goto st238;
-st238:
-	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof238;
-case 238:
-	switch( (*( current_position)) ) {
 		case 4u: goto st10;
 		case 5u: goto st11;
 		case 12u: goto st10;
@@ -8374,31 +8208,31 @@ case 238:
 		case 131u: goto st139;
 		case 141u: goto st115;
 		case 143u: goto st141;
-		case 155u: goto tr413;
+		case 155u: goto tr386;
 		case 168u: goto st10;
 		case 169u: goto st11;
 		case 196u: goto st153;
-		case 198u: goto st185;
-		case 199u: goto st186;
+		case 198u: goto st170;
+		case 199u: goto st171;
 		case 201u: goto tr0;
-		case 216u: goto st187;
-		case 217u: goto st188;
-		case 218u: goto st189;
-		case 219u: goto st190;
-		case 220u: goto st191;
-		case 221u: goto st192;
-		case 222u: goto st193;
-		case 223u: goto st194;
-		case 232u: goto st195;
+		case 216u: goto st172;
+		case 217u: goto st173;
+		case 218u: goto st174;
+		case 219u: goto st175;
+		case 220u: goto st176;
+		case 221u: goto st177;
+		case 222u: goto st178;
+		case 223u: goto st179;
+		case 232u: goto st180;
 		case 233u: goto st52;
 		case 235u: goto st67;
-		case 240u: goto st199;
-		case 242u: goto st202;
-		case 243u: goto st210;
-		case 246u: goto st215;
-		case 247u: goto st216;
-		case 254u: goto st217;
-		case 255u: goto st226;
+		case 240u: goto st184;
+		case 242u: goto st187;
+		case 243u: goto st195;
+		case 246u: goto st200;
+		case 247u: goto st201;
+		case 254u: goto st202;
+		case 255u: goto st213;
 	}
 	if ( (*( current_position)) < 132u ) {
 		if ( (*( current_position)) < 32u ) {
@@ -8466,89 +8300,298 @@ case 238:
 	} else
 		goto st1;
 	goto tr16;
+st213:
+	if ( ++( current_position) == ( end_of_bundle) )
+		goto _test_eof213;
+case 213:
+	switch( (*( current_position)) ) {
+		case 4u: goto st2;
+		case 5u: goto st3;
+		case 12u: goto st2;
+		case 13u: goto st3;
+		case 52u: goto st2;
+		case 53u: goto st3;
+		case 68u: goto st8;
+		case 76u: goto st8;
+		case 116u: goto st8;
+		case 132u: goto st9;
+		case 140u: goto st9;
+		case 180u: goto st9;
+		case 213u: goto tr434;
+		case 229u: goto tr435;
+	}
+	if ( (*( current_position)) < 112u ) {
+		if ( (*( current_position)) < 48u ) {
+			if ( (*( current_position)) <= 15u )
+				goto tr0;
+		} else if ( (*( current_position)) > 55u ) {
+			if ( 64u <= (*( current_position)) && (*( current_position)) <= 79u )
+				goto st7;
+		} else
+			goto tr0;
+	} else if ( (*( current_position)) > 119u ) {
+		if ( (*( current_position)) < 176u ) {
+			if ( 128u <= (*( current_position)) && (*( current_position)) <= 143u )
+				goto st3;
+		} else if ( (*( current_position)) > 183u ) {
+			if ( (*( current_position)) > 207u ) {
+				if ( 240u <= (*( current_position)) && (*( current_position)) <= 247u )
+					goto tr0;
+			} else if ( (*( current_position)) >= 192u )
+				goto tr0;
+		} else
+			goto st3;
+	} else
+		goto st7;
+	goto tr16;
+st214:
+	if ( ++( current_position) == ( end_of_bundle) )
+		goto _test_eof214;
+case 214:
+	if ( (*( current_position)) == 224u )
+		goto tr441;
+	goto tr11;
+tr441:
+	{
+    SET_IMMEDIATE_FORMAT(IMM8);
+    SET_IMMEDIATE_POINTER(current_position);
+  }
+	{}
+	{
+    /* Mark start of this instruction as a valid target for jump.  */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(instruction_begin, instruction_end,
+                              instruction_info_collected, callback_data);
+    }
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    instruction_begin = instruction_end;
+
+    /* Clear variables (well, one variable currently).  */
+    instruction_info_collected = 0;
+  }
+	goto st225;
+st225:
+	if ( ++( current_position) == ( end_of_bundle) )
+		goto _test_eof225;
+case 225:
+	switch( (*( current_position)) ) {
+		case 4u: goto st10;
+		case 5u: goto st11;
+		case 12u: goto st10;
+		case 13u: goto st11;
+		case 15u: goto st15;
+		case 20u: goto st10;
+		case 21u: goto st11;
+		case 28u: goto st10;
+		case 29u: goto st11;
+		case 36u: goto st10;
+		case 37u: goto st11;
+		case 44u: goto st10;
+		case 45u: goto st11;
+		case 46u: goto st65;
+		case 52u: goto st10;
+		case 53u: goto st11;
+		case 60u: goto st10;
+		case 61u: goto st11;
+		case 62u: goto st65;
+		case 101u: goto st68;
+		case 102u: goto st74;
+		case 104u: goto st11;
+		case 105u: goto st130;
+		case 106u: goto st10;
+		case 107u: goto st56;
+		case 128u: goto st56;
+		case 129u: goto st130;
+		case 131u: goto st139;
+		case 141u: goto st115;
+		case 143u: goto st141;
+		case 155u: goto tr386;
+		case 168u: goto st10;
+		case 169u: goto st11;
+		case 196u: goto st153;
+		case 198u: goto st170;
+		case 199u: goto st171;
+		case 201u: goto tr0;
+		case 216u: goto st172;
+		case 217u: goto st173;
+		case 218u: goto st174;
+		case 219u: goto st175;
+		case 220u: goto st176;
+		case 221u: goto st177;
+		case 222u: goto st178;
+		case 223u: goto st179;
+		case 232u: goto st180;
+		case 233u: goto st52;
+		case 235u: goto st67;
+		case 240u: goto st184;
+		case 242u: goto st187;
+		case 243u: goto st195;
+		case 246u: goto st200;
+		case 247u: goto st201;
+		case 254u: goto st202;
+		case 255u: goto st215;
+	}
+	if ( (*( current_position)) < 132u ) {
+		if ( (*( current_position)) < 32u ) {
+			if ( (*( current_position)) < 8u ) {
+				if ( (*( current_position)) <= 3u )
+					goto st1;
+			} else if ( (*( current_position)) > 11u ) {
+				if ( (*( current_position)) > 19u ) {
+					if ( 24u <= (*( current_position)) && (*( current_position)) <= 27u )
+						goto st1;
+				} else if ( (*( current_position)) >= 16u )
+					goto st1;
+			} else
+				goto st1;
+		} else if ( (*( current_position)) > 35u ) {
+			if ( (*( current_position)) < 56u ) {
+				if ( (*( current_position)) > 43u ) {
+					if ( 48u <= (*( current_position)) && (*( current_position)) <= 51u )
+						goto st1;
+				} else if ( (*( current_position)) >= 40u )
+					goto st1;
+			} else if ( (*( current_position)) > 59u ) {
+				if ( (*( current_position)) > 95u ) {
+					if ( 112u <= (*( current_position)) && (*( current_position)) <= 127u )
+						goto st67;
+				} else if ( (*( current_position)) >= 64u )
+					goto tr0;
+			} else
+				goto st1;
+		} else
+			goto st1;
+	} else if ( (*( current_position)) > 139u ) {
+		if ( (*( current_position)) < 176u ) {
+			if ( (*( current_position)) < 160u ) {
+				if ( (*( current_position)) > 153u ) {
+					if ( 158u <= (*( current_position)) && (*( current_position)) <= 159u )
+						goto tr0;
+				} else if ( (*( current_position)) >= 144u )
+					goto tr0;
+			} else if ( (*( current_position)) > 163u ) {
+				if ( (*( current_position)) > 171u ) {
+					if ( 174u <= (*( current_position)) && (*( current_position)) <= 175u )
+						goto tr0;
+				} else if ( (*( current_position)) >= 164u )
+					goto tr0;
+			} else
+				goto st3;
+		} else if ( (*( current_position)) > 183u ) {
+			if ( (*( current_position)) < 208u ) {
+				if ( (*( current_position)) > 191u ) {
+					if ( 192u <= (*( current_position)) && (*( current_position)) <= 193u )
+						goto st116;
+				} else if ( (*( current_position)) >= 184u )
+					goto st11;
+			} else if ( (*( current_position)) > 211u ) {
+				if ( (*( current_position)) > 249u ) {
+					if ( 252u <= (*( current_position)) && (*( current_position)) <= 253u )
+						goto tr0;
+				} else if ( (*( current_position)) >= 244u )
+					goto tr0;
+			} else
+				goto st118;
+		} else
+			goto st10;
+	} else
+		goto st1;
+	goto tr16;
+st215:
+	if ( ++( current_position) == ( end_of_bundle) )
+		goto _test_eof215;
+case 215:
+	switch( (*( current_position)) ) {
+		case 4u: goto st2;
+		case 5u: goto st3;
+		case 12u: goto st2;
+		case 13u: goto st3;
+		case 52u: goto st2;
+		case 53u: goto st3;
+		case 68u: goto st8;
+		case 76u: goto st8;
+		case 116u: goto st8;
+		case 132u: goto st9;
+		case 140u: goto st9;
+		case 180u: goto st9;
+		case 214u: goto tr434;
+		case 230u: goto tr435;
+	}
+	if ( (*( current_position)) < 112u ) {
+		if ( (*( current_position)) < 48u ) {
+			if ( (*( current_position)) <= 15u )
+				goto tr0;
+		} else if ( (*( current_position)) > 55u ) {
+			if ( 64u <= (*( current_position)) && (*( current_position)) <= 79u )
+				goto st7;
+		} else
+			goto tr0;
+	} else if ( (*( current_position)) > 119u ) {
+		if ( (*( current_position)) < 176u ) {
+			if ( 128u <= (*( current_position)) && (*( current_position)) <= 143u )
+				goto st3;
+		} else if ( (*( current_position)) > 183u ) {
+			if ( (*( current_position)) > 207u ) {
+				if ( 240u <= (*( current_position)) && (*( current_position)) <= 247u )
+					goto tr0;
+			} else if ( (*( current_position)) >= 192u )
+				goto tr0;
+		} else
+			goto st3;
+	} else
+		goto st7;
+	goto tr16;
+st216:
+	if ( ++( current_position) == ( end_of_bundle) )
+		goto _test_eof216;
+case 216:
+	if ( (*( current_position)) == 224u )
+		goto tr442;
+	goto tr11;
+tr442:
+	{
+    SET_IMMEDIATE_FORMAT(IMM8);
+    SET_IMMEDIATE_POINTER(current_position);
+  }
+	{}
+	{
+    /* Mark start of this instruction as a valid target for jump.  */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(instruction_begin, instruction_end,
+                              instruction_info_collected, callback_data);
+    }
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    instruction_begin = instruction_end;
+
+    /* Clear variables (well, one variable currently).  */
+    instruction_info_collected = 0;
+  }
+	goto st226;
 st226:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof226;
 case 226:
 	switch( (*( current_position)) ) {
-		case 4u: goto st2;
-		case 5u: goto st3;
-		case 12u: goto st2;
-		case 13u: goto st3;
-		case 52u: goto st2;
-		case 53u: goto st3;
-		case 68u: goto st8;
-		case 76u: goto st8;
-		case 116u: goto st8;
-		case 132u: goto st9;
-		case 140u: goto st9;
-		case 180u: goto st9;
-		case 212u: goto tr461;
-		case 228u: goto tr462;
-	}
-	if ( (*( current_position)) < 112u ) {
-		if ( (*( current_position)) < 48u ) {
-			if ( (*( current_position)) <= 15u )
-				goto tr0;
-		} else if ( (*( current_position)) > 55u ) {
-			if ( 64u <= (*( current_position)) && (*( current_position)) <= 79u )
-				goto st7;
-		} else
-			goto tr0;
-	} else if ( (*( current_position)) > 119u ) {
-		if ( (*( current_position)) < 176u ) {
-			if ( 128u <= (*( current_position)) && (*( current_position)) <= 143u )
-				goto st3;
-		} else if ( (*( current_position)) > 183u ) {
-			if ( (*( current_position)) > 207u ) {
-				if ( 240u <= (*( current_position)) && (*( current_position)) <= 247u )
-					goto tr0;
-			} else if ( (*( current_position)) >= 192u )
-				goto tr0;
-		} else
-			goto st3;
-	} else
-		goto st7;
-	goto tr16;
-st227:
-	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof227;
-case 227:
-	if ( (*( current_position)) == 224u )
-		goto tr467;
-	goto tr11;
-tr467:
-	{
-    SET_IMM_TYPE(IMM8);
-    SET_IMM_PTR(current_position);
-  }
-	{}
-	{
-    /* Mark start of this instruction as a valid target for jump.  */
-    MarkValidJumpTarget(instruction_begin - data, valid_targets);
-
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(instruction_begin, instruction_end,
-                              instruction_info_collected, callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /* Clear variables (well, one variable currently).  */
-    instruction_info_collected = 0;
-  }
-	goto st239;
-st239:
-	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof239;
-case 239:
-	switch( (*( current_position)) ) {
 		case 4u: goto st10;
 		case 5u: goto st11;
 		case 12u: goto st10;
@@ -8579,31 +8622,31 @@ case 239:
 		case 131u: goto st139;
 		case 141u: goto st115;
 		case 143u: goto st141;
-		case 155u: goto tr413;
+		case 155u: goto tr386;
 		case 168u: goto st10;
 		case 169u: goto st11;
 		case 196u: goto st153;
-		case 198u: goto st185;
-		case 199u: goto st186;
+		case 198u: goto st170;
+		case 199u: goto st171;
 		case 201u: goto tr0;
-		case 216u: goto st187;
-		case 217u: goto st188;
-		case 218u: goto st189;
-		case 219u: goto st190;
-		case 220u: goto st191;
-		case 221u: goto st192;
-		case 222u: goto st193;
-		case 223u: goto st194;
-		case 232u: goto st195;
+		case 216u: goto st172;
+		case 217u: goto st173;
+		case 218u: goto st174;
+		case 219u: goto st175;
+		case 220u: goto st176;
+		case 221u: goto st177;
+		case 222u: goto st178;
+		case 223u: goto st179;
+		case 232u: goto st180;
 		case 233u: goto st52;
 		case 235u: goto st67;
-		case 240u: goto st199;
-		case 242u: goto st202;
-		case 243u: goto st210;
-		case 246u: goto st215;
-		case 247u: goto st216;
-		case 254u: goto st217;
-		case 255u: goto st228;
+		case 240u: goto st184;
+		case 242u: goto st187;
+		case 243u: goto st195;
+		case 246u: goto st200;
+		case 247u: goto st201;
+		case 254u: goto st202;
+		case 255u: goto st217;
 	}
 	if ( (*( current_position)) < 132u ) {
 		if ( (*( current_position)) < 32u ) {
@@ -8671,10 +8714,10 @@ case 239:
 	} else
 		goto st1;
 	goto tr16;
-st228:
+st217:
 	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof228;
-case 228:
+		goto _test_eof217;
+case 217:
 	switch( (*( current_position)) ) {
 		case 4u: goto st2;
 		case 5u: goto st3;
@@ -8688,418 +8731,8 @@ case 228:
 		case 132u: goto st9;
 		case 140u: goto st9;
 		case 180u: goto st9;
-		case 213u: goto tr461;
-		case 229u: goto tr462;
-	}
-	if ( (*( current_position)) < 112u ) {
-		if ( (*( current_position)) < 48u ) {
-			if ( (*( current_position)) <= 15u )
-				goto tr0;
-		} else if ( (*( current_position)) > 55u ) {
-			if ( 64u <= (*( current_position)) && (*( current_position)) <= 79u )
-				goto st7;
-		} else
-			goto tr0;
-	} else if ( (*( current_position)) > 119u ) {
-		if ( (*( current_position)) < 176u ) {
-			if ( 128u <= (*( current_position)) && (*( current_position)) <= 143u )
-				goto st3;
-		} else if ( (*( current_position)) > 183u ) {
-			if ( (*( current_position)) > 207u ) {
-				if ( 240u <= (*( current_position)) && (*( current_position)) <= 247u )
-					goto tr0;
-			} else if ( (*( current_position)) >= 192u )
-				goto tr0;
-		} else
-			goto st3;
-	} else
-		goto st7;
-	goto tr16;
-st229:
-	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof229;
-case 229:
-	if ( (*( current_position)) == 224u )
-		goto tr468;
-	goto tr11;
-tr468:
-	{
-    SET_IMM_TYPE(IMM8);
-    SET_IMM_PTR(current_position);
-  }
-	{}
-	{
-    /* Mark start of this instruction as a valid target for jump.  */
-    MarkValidJumpTarget(instruction_begin - data, valid_targets);
-
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(instruction_begin, instruction_end,
-                              instruction_info_collected, callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /* Clear variables (well, one variable currently).  */
-    instruction_info_collected = 0;
-  }
-	goto st240;
-st240:
-	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof240;
-case 240:
-	switch( (*( current_position)) ) {
-		case 4u: goto st10;
-		case 5u: goto st11;
-		case 12u: goto st10;
-		case 13u: goto st11;
-		case 15u: goto st15;
-		case 20u: goto st10;
-		case 21u: goto st11;
-		case 28u: goto st10;
-		case 29u: goto st11;
-		case 36u: goto st10;
-		case 37u: goto st11;
-		case 44u: goto st10;
-		case 45u: goto st11;
-		case 46u: goto st65;
-		case 52u: goto st10;
-		case 53u: goto st11;
-		case 60u: goto st10;
-		case 61u: goto st11;
-		case 62u: goto st65;
-		case 101u: goto st68;
-		case 102u: goto st74;
-		case 104u: goto st11;
-		case 105u: goto st130;
-		case 106u: goto st10;
-		case 107u: goto st56;
-		case 128u: goto st56;
-		case 129u: goto st130;
-		case 131u: goto st139;
-		case 141u: goto st115;
-		case 143u: goto st141;
-		case 155u: goto tr413;
-		case 168u: goto st10;
-		case 169u: goto st11;
-		case 196u: goto st153;
-		case 198u: goto st185;
-		case 199u: goto st186;
-		case 201u: goto tr0;
-		case 216u: goto st187;
-		case 217u: goto st188;
-		case 218u: goto st189;
-		case 219u: goto st190;
-		case 220u: goto st191;
-		case 221u: goto st192;
-		case 222u: goto st193;
-		case 223u: goto st194;
-		case 232u: goto st195;
-		case 233u: goto st52;
-		case 235u: goto st67;
-		case 240u: goto st199;
-		case 242u: goto st202;
-		case 243u: goto st210;
-		case 246u: goto st215;
-		case 247u: goto st216;
-		case 254u: goto st217;
-		case 255u: goto st230;
-	}
-	if ( (*( current_position)) < 132u ) {
-		if ( (*( current_position)) < 32u ) {
-			if ( (*( current_position)) < 8u ) {
-				if ( (*( current_position)) <= 3u )
-					goto st1;
-			} else if ( (*( current_position)) > 11u ) {
-				if ( (*( current_position)) > 19u ) {
-					if ( 24u <= (*( current_position)) && (*( current_position)) <= 27u )
-						goto st1;
-				} else if ( (*( current_position)) >= 16u )
-					goto st1;
-			} else
-				goto st1;
-		} else if ( (*( current_position)) > 35u ) {
-			if ( (*( current_position)) < 56u ) {
-				if ( (*( current_position)) > 43u ) {
-					if ( 48u <= (*( current_position)) && (*( current_position)) <= 51u )
-						goto st1;
-				} else if ( (*( current_position)) >= 40u )
-					goto st1;
-			} else if ( (*( current_position)) > 59u ) {
-				if ( (*( current_position)) > 95u ) {
-					if ( 112u <= (*( current_position)) && (*( current_position)) <= 127u )
-						goto st67;
-				} else if ( (*( current_position)) >= 64u )
-					goto tr0;
-			} else
-				goto st1;
-		} else
-			goto st1;
-	} else if ( (*( current_position)) > 139u ) {
-		if ( (*( current_position)) < 176u ) {
-			if ( (*( current_position)) < 160u ) {
-				if ( (*( current_position)) > 153u ) {
-					if ( 158u <= (*( current_position)) && (*( current_position)) <= 159u )
-						goto tr0;
-				} else if ( (*( current_position)) >= 144u )
-					goto tr0;
-			} else if ( (*( current_position)) > 163u ) {
-				if ( (*( current_position)) > 171u ) {
-					if ( 174u <= (*( current_position)) && (*( current_position)) <= 175u )
-						goto tr0;
-				} else if ( (*( current_position)) >= 164u )
-					goto tr0;
-			} else
-				goto st3;
-		} else if ( (*( current_position)) > 183u ) {
-			if ( (*( current_position)) < 208u ) {
-				if ( (*( current_position)) > 191u ) {
-					if ( 192u <= (*( current_position)) && (*( current_position)) <= 193u )
-						goto st116;
-				} else if ( (*( current_position)) >= 184u )
-					goto st11;
-			} else if ( (*( current_position)) > 211u ) {
-				if ( (*( current_position)) > 249u ) {
-					if ( 252u <= (*( current_position)) && (*( current_position)) <= 253u )
-						goto tr0;
-				} else if ( (*( current_position)) >= 244u )
-					goto tr0;
-			} else
-				goto st118;
-		} else
-			goto st10;
-	} else
-		goto st1;
-	goto tr16;
-st230:
-	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof230;
-case 230:
-	switch( (*( current_position)) ) {
-		case 4u: goto st2;
-		case 5u: goto st3;
-		case 12u: goto st2;
-		case 13u: goto st3;
-		case 52u: goto st2;
-		case 53u: goto st3;
-		case 68u: goto st8;
-		case 76u: goto st8;
-		case 116u: goto st8;
-		case 132u: goto st9;
-		case 140u: goto st9;
-		case 180u: goto st9;
-		case 214u: goto tr461;
-		case 230u: goto tr462;
-	}
-	if ( (*( current_position)) < 112u ) {
-		if ( (*( current_position)) < 48u ) {
-			if ( (*( current_position)) <= 15u )
-				goto tr0;
-		} else if ( (*( current_position)) > 55u ) {
-			if ( 64u <= (*( current_position)) && (*( current_position)) <= 79u )
-				goto st7;
-		} else
-			goto tr0;
-	} else if ( (*( current_position)) > 119u ) {
-		if ( (*( current_position)) < 176u ) {
-			if ( 128u <= (*( current_position)) && (*( current_position)) <= 143u )
-				goto st3;
-		} else if ( (*( current_position)) > 183u ) {
-			if ( (*( current_position)) > 207u ) {
-				if ( 240u <= (*( current_position)) && (*( current_position)) <= 247u )
-					goto tr0;
-			} else if ( (*( current_position)) >= 192u )
-				goto tr0;
-		} else
-			goto st3;
-	} else
-		goto st7;
-	goto tr16;
-st231:
-	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof231;
-case 231:
-	if ( (*( current_position)) == 224u )
-		goto tr469;
-	goto tr11;
-tr469:
-	{
-    SET_IMM_TYPE(IMM8);
-    SET_IMM_PTR(current_position);
-  }
-	{}
-	{
-    /* Mark start of this instruction as a valid target for jump.  */
-    MarkValidJumpTarget(instruction_begin - data, valid_targets);
-
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(instruction_begin, instruction_end,
-                              instruction_info_collected, callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /* Clear variables (well, one variable currently).  */
-    instruction_info_collected = 0;
-  }
-	goto st241;
-st241:
-	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof241;
-case 241:
-	switch( (*( current_position)) ) {
-		case 4u: goto st10;
-		case 5u: goto st11;
-		case 12u: goto st10;
-		case 13u: goto st11;
-		case 15u: goto st15;
-		case 20u: goto st10;
-		case 21u: goto st11;
-		case 28u: goto st10;
-		case 29u: goto st11;
-		case 36u: goto st10;
-		case 37u: goto st11;
-		case 44u: goto st10;
-		case 45u: goto st11;
-		case 46u: goto st65;
-		case 52u: goto st10;
-		case 53u: goto st11;
-		case 60u: goto st10;
-		case 61u: goto st11;
-		case 62u: goto st65;
-		case 101u: goto st68;
-		case 102u: goto st74;
-		case 104u: goto st11;
-		case 105u: goto st130;
-		case 106u: goto st10;
-		case 107u: goto st56;
-		case 128u: goto st56;
-		case 129u: goto st130;
-		case 131u: goto st139;
-		case 141u: goto st115;
-		case 143u: goto st141;
-		case 155u: goto tr413;
-		case 168u: goto st10;
-		case 169u: goto st11;
-		case 196u: goto st153;
-		case 198u: goto st185;
-		case 199u: goto st186;
-		case 201u: goto tr0;
-		case 216u: goto st187;
-		case 217u: goto st188;
-		case 218u: goto st189;
-		case 219u: goto st190;
-		case 220u: goto st191;
-		case 221u: goto st192;
-		case 222u: goto st193;
-		case 223u: goto st194;
-		case 232u: goto st195;
-		case 233u: goto st52;
-		case 235u: goto st67;
-		case 240u: goto st199;
-		case 242u: goto st202;
-		case 243u: goto st210;
-		case 246u: goto st215;
-		case 247u: goto st216;
-		case 254u: goto st217;
-		case 255u: goto st232;
-	}
-	if ( (*( current_position)) < 132u ) {
-		if ( (*( current_position)) < 32u ) {
-			if ( (*( current_position)) < 8u ) {
-				if ( (*( current_position)) <= 3u )
-					goto st1;
-			} else if ( (*( current_position)) > 11u ) {
-				if ( (*( current_position)) > 19u ) {
-					if ( 24u <= (*( current_position)) && (*( current_position)) <= 27u )
-						goto st1;
-				} else if ( (*( current_position)) >= 16u )
-					goto st1;
-			} else
-				goto st1;
-		} else if ( (*( current_position)) > 35u ) {
-			if ( (*( current_position)) < 56u ) {
-				if ( (*( current_position)) > 43u ) {
-					if ( 48u <= (*( current_position)) && (*( current_position)) <= 51u )
-						goto st1;
-				} else if ( (*( current_position)) >= 40u )
-					goto st1;
-			} else if ( (*( current_position)) > 59u ) {
-				if ( (*( current_position)) > 95u ) {
-					if ( 112u <= (*( current_position)) && (*( current_position)) <= 127u )
-						goto st67;
-				} else if ( (*( current_position)) >= 64u )
-					goto tr0;
-			} else
-				goto st1;
-		} else
-			goto st1;
-	} else if ( (*( current_position)) > 139u ) {
-		if ( (*( current_position)) < 176u ) {
-			if ( (*( current_position)) < 160u ) {
-				if ( (*( current_position)) > 153u ) {
-					if ( 158u <= (*( current_position)) && (*( current_position)) <= 159u )
-						goto tr0;
-				} else if ( (*( current_position)) >= 144u )
-					goto tr0;
-			} else if ( (*( current_position)) > 163u ) {
-				if ( (*( current_position)) > 171u ) {
-					if ( 174u <= (*( current_position)) && (*( current_position)) <= 175u )
-						goto tr0;
-				} else if ( (*( current_position)) >= 164u )
-					goto tr0;
-			} else
-				goto st3;
-		} else if ( (*( current_position)) > 183u ) {
-			if ( (*( current_position)) < 208u ) {
-				if ( (*( current_position)) > 191u ) {
-					if ( 192u <= (*( current_position)) && (*( current_position)) <= 193u )
-						goto st116;
-				} else if ( (*( current_position)) >= 184u )
-					goto st11;
-			} else if ( (*( current_position)) > 211u ) {
-				if ( (*( current_position)) > 249u ) {
-					if ( 252u <= (*( current_position)) && (*( current_position)) <= 253u )
-						goto tr0;
-				} else if ( (*( current_position)) >= 244u )
-					goto tr0;
-			} else
-				goto st118;
-		} else
-			goto st10;
-	} else
-		goto st1;
-	goto tr16;
-st232:
-	if ( ++( current_position) == ( end_of_bundle) )
-		goto _test_eof232;
-case 232:
-	switch( (*( current_position)) ) {
-		case 4u: goto st2;
-		case 5u: goto st3;
-		case 12u: goto st2;
-		case 13u: goto st3;
-		case 52u: goto st2;
-		case 53u: goto st3;
-		case 68u: goto st8;
-		case 76u: goto st8;
-		case 116u: goto st8;
-		case 132u: goto st9;
-		case 140u: goto st9;
-		case 180u: goto st9;
-		case 215u: goto tr461;
-		case 231u: goto tr462;
+		case 215u: goto tr434;
+		case 231u: goto tr435;
 	}
 	if ( (*( current_position)) < 112u ) {
 		if ( (*( current_position)) < 48u ) {
@@ -9126,7 +8759,7 @@ case 232:
 		goto st7;
 	goto tr16;
 	}
-	_test_eof233: ( current_state) = 233; goto _test_eof; 
+	_test_eof218: ( current_state) = 218; goto _test_eof; 
 	_test_eof1: ( current_state) = 1; goto _test_eof; 
 	_test_eof2: ( current_state) = 2; goto _test_eof; 
 	_test_eof3: ( current_state) = 3; goto _test_eof; 
@@ -9267,7 +8900,7 @@ case 232:
 	_test_eof138: ( current_state) = 138; goto _test_eof; 
 	_test_eof139: ( current_state) = 139; goto _test_eof; 
 	_test_eof140: ( current_state) = 140; goto _test_eof; 
-	_test_eof234: ( current_state) = 234; goto _test_eof; 
+	_test_eof219: ( current_state) = 219; goto _test_eof; 
 	_test_eof141: ( current_state) = 141; goto _test_eof; 
 	_test_eof142: ( current_state) = 142; goto _test_eof; 
 	_test_eof143: ( current_state) = 143; goto _test_eof; 
@@ -9332,41 +8965,26 @@ case 232:
 	_test_eof202: ( current_state) = 202; goto _test_eof; 
 	_test_eof203: ( current_state) = 203; goto _test_eof; 
 	_test_eof204: ( current_state) = 204; goto _test_eof; 
+	_test_eof220: ( current_state) = 220; goto _test_eof; 
 	_test_eof205: ( current_state) = 205; goto _test_eof; 
 	_test_eof206: ( current_state) = 206; goto _test_eof; 
+	_test_eof221: ( current_state) = 221; goto _test_eof; 
 	_test_eof207: ( current_state) = 207; goto _test_eof; 
 	_test_eof208: ( current_state) = 208; goto _test_eof; 
+	_test_eof222: ( current_state) = 222; goto _test_eof; 
 	_test_eof209: ( current_state) = 209; goto _test_eof; 
 	_test_eof210: ( current_state) = 210; goto _test_eof; 
+	_test_eof223: ( current_state) = 223; goto _test_eof; 
 	_test_eof211: ( current_state) = 211; goto _test_eof; 
 	_test_eof212: ( current_state) = 212; goto _test_eof; 
+	_test_eof224: ( current_state) = 224; goto _test_eof; 
 	_test_eof213: ( current_state) = 213; goto _test_eof; 
 	_test_eof214: ( current_state) = 214; goto _test_eof; 
+	_test_eof225: ( current_state) = 225; goto _test_eof; 
 	_test_eof215: ( current_state) = 215; goto _test_eof; 
 	_test_eof216: ( current_state) = 216; goto _test_eof; 
-	_test_eof217: ( current_state) = 217; goto _test_eof; 
-	_test_eof218: ( current_state) = 218; goto _test_eof; 
-	_test_eof219: ( current_state) = 219; goto _test_eof; 
-	_test_eof235: ( current_state) = 235; goto _test_eof; 
-	_test_eof220: ( current_state) = 220; goto _test_eof; 
-	_test_eof221: ( current_state) = 221; goto _test_eof; 
-	_test_eof236: ( current_state) = 236; goto _test_eof; 
-	_test_eof222: ( current_state) = 222; goto _test_eof; 
-	_test_eof223: ( current_state) = 223; goto _test_eof; 
-	_test_eof237: ( current_state) = 237; goto _test_eof; 
-	_test_eof224: ( current_state) = 224; goto _test_eof; 
-	_test_eof225: ( current_state) = 225; goto _test_eof; 
-	_test_eof238: ( current_state) = 238; goto _test_eof; 
 	_test_eof226: ( current_state) = 226; goto _test_eof; 
-	_test_eof227: ( current_state) = 227; goto _test_eof; 
-	_test_eof239: ( current_state) = 239; goto _test_eof; 
-	_test_eof228: ( current_state) = 228; goto _test_eof; 
-	_test_eof229: ( current_state) = 229; goto _test_eof; 
-	_test_eof240: ( current_state) = 240; goto _test_eof; 
-	_test_eof230: ( current_state) = 230; goto _test_eof; 
-	_test_eof231: ( current_state) = 231; goto _test_eof; 
-	_test_eof241: ( current_state) = 241; goto _test_eof; 
-	_test_eof232: ( current_state) = 232; goto _test_eof; 
+	_test_eof217: ( current_state) = 217; goto _test_eof; 
 
 	_test_eof: {}
 	if ( ( current_position) == ( end_of_bundle) )
@@ -9589,21 +9207,6 @@ case 232:
 	case 215: 
 	case 216: 
 	case 217: 
-	case 218: 
-	case 219: 
-	case 220: 
-	case 221: 
-	case 222: 
-	case 223: 
-	case 224: 
-	case 225: 
-	case 226: 
-	case 227: 
-	case 228: 
-	case 229: 
-	case 230: 
-	case 231: 
-	case 232: 
 	{
     result &= user_callback(instruction_begin, current_position,
                             UNRECOGNIZED_INSTRUCTION, callback_data);
@@ -9630,8 +9233,12 @@ case 232:
    * Check the direct jumps.  All the targets from jump_dests must be in
    * valid_targets.
    */
-  result &= ProcessInvalidJumpTargets(data, size, valid_targets, jump_dests,
-                                      user_callback, callback_data);
+  result &= ProcessInvalidJumpTargets(codeblock,
+                                      size,
+                                      valid_targets,
+                                      jump_dests,
+                                      user_callback,
+                                      callback_data);
 
   /* We only use malloc for a large code sequences  */
   if (jump_dests != &jump_dests_small) free(jump_dests);

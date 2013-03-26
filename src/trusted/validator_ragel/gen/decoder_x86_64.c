@@ -20,15 +20,12 @@
 
 #include "native_client/src/include/elf32.h"
 #include "native_client/src/shared/utils/types.h"
-#include "native_client/src/trusted/validator_ragel/unreviewed/decoder_internal.h"
+#include "native_client/src/trusted/validator_ragel/decoder_internal.h"
 
-/*
- * These prefixes are only useful in AMD64 mode, but they will "cleaned up" by
- * decoder's cleanup procedure in IA32 mode anyway.  That's why we define them
- * twice: "real" version here and "do-nothing" in decoder_x86_32.rl.
- */
-#define SET_REX_PREFIX(P) instruction.prefix.rex = (P)
-#define SET_VEX_PREFIX2(P) vex_prefix2 = (P)
+#define GET_REX_PREFIX() instruction.prefix.rex
+#define SET_REX_PREFIX(PREFIX_BYTE) instruction.prefix.rex = (PREFIX_BYTE)
+#define GET_VEX_PREFIX2() vex_prefix2
+#define SET_VEX_PREFIX2(PREFIX_BYTE) vex_prefix2 = (PREFIX_BYTE)
 #define CLEAR_SPURIOUS_REX_B() \
   instruction.prefix.rex_b_spurious = FALSE
 #define SET_SPURIOUS_REX_B() \
@@ -49,6 +46,10 @@
 
 
 
+/*
+ * The "write data" statement causes Ragel to emit the constant static data
+ * needed by the ragel machine.
+ */
 
 static const short _x86_64_decoder_actions[] = {
 	0, 1, 0, 1, 1, 1, 2, 1, 
@@ -12618,8 +12619,8 @@ static const unsigned char _x86_64_decoder_trans_keys[] = {
 	96u, 103u, 104u, 111u, 112u, 119u, 120u, 127u, 
 	128u, 135u, 136u, 143u, 144u, 151u, 152u, 159u, 
 	160u, 167u, 168u, 175u, 176u, 183u, 184u, 191u, 
-	200u, 207u, 208u, 215u, 216u, 223u, 224u, 231u, 
-	232u, 239u, 240u, 247u, 248u, 255u, 5u, 13u, 
+	192u, 199u, 200u, 207u, 208u, 215u, 216u, 223u, 
+	224u, 231u, 240u, 247u, 248u, 255u, 5u, 13u, 
 	21u, 29u, 37u, 45u, 53u, 61u, 69u, 77u, 
 	85u, 93u, 101u, 109u, 117u, 125u, 133u, 141u, 
 	149u, 157u, 165u, 173u, 181u, 189u, 197u, 205u, 
@@ -12634,8 +12635,8 @@ static const unsigned char _x86_64_decoder_trans_keys[] = {
 	104u, 111u, 112u, 119u, 120u, 127u, 128u, 135u, 
 	136u, 143u, 144u, 151u, 152u, 159u, 160u, 167u, 
 	168u, 175u, 176u, 183u, 184u, 191u, 192u, 199u, 
-	200u, 207u, 208u, 215u, 224u, 231u, 232u, 239u, 
-	240u, 247u, 248u, 255u, 5u, 13u, 21u, 29u, 
+	200u, 207u, 208u, 215u, 216u, 223u, 224u, 231u, 
+	232u, 239u, 248u, 255u, 5u, 13u, 21u, 29u, 
 	37u, 45u, 53u, 61u, 69u, 77u, 85u, 93u, 
 	101u, 109u, 117u, 125u, 133u, 141u, 149u, 157u, 
 	165u, 173u, 181u, 189u, 197u, 205u, 213u, 221u, 
@@ -12779,7 +12780,7 @@ static const unsigned char _x86_64_decoder_trans_keys[] = {
 	80u, 87u, 88u, 95u, 96u, 103u, 104u, 111u, 
 	112u, 119u, 120u, 127u, 128u, 135u, 136u, 143u, 
 	144u, 151u, 152u, 159u, 160u, 167u, 168u, 175u, 
-	176u, 183u, 184u, 191u, 192u, 199u, 208u, 215u, 
+	176u, 183u, 184u, 191u, 200u, 207u, 208u, 215u, 
 	216u, 223u, 224u, 231u, 232u, 239u, 240u, 247u, 
 	248u, 255u, 4u, 5u, 20u, 21u, 28u, 29u, 
 	36u, 37u, 44u, 45u, 52u, 53u, 60u, 61u, 
@@ -13325,8 +13326,8 @@ static const unsigned char _x86_64_decoder_trans_keys[] = {
 	111u, 112u, 119u, 120u, 127u, 128u, 135u, 136u, 
 	143u, 144u, 151u, 152u, 159u, 160u, 167u, 168u, 
 	175u, 176u, 183u, 184u, 191u, 192u, 199u, 200u, 
-	207u, 208u, 215u, 216u, 223u, 224u, 231u, 232u, 
-	239u, 240u, 247u, 4u, 5u, 12u, 13u, 20u, 
+	207u, 216u, 223u, 224u, 231u, 232u, 239u, 240u, 
+	247u, 248u, 255u, 4u, 5u, 12u, 13u, 20u, 
 	21u, 28u, 29u, 36u, 37u, 44u, 45u, 52u, 
 	53u, 60u, 61u, 68u, 76u, 84u, 92u, 100u, 
 	108u, 116u, 124u, 132u, 140u, 148u, 156u, 164u, 
@@ -14660,8 +14661,8 @@ static const unsigned char _x86_64_decoder_trans_keys[] = {
 	119u, 120u, 127u, 128u, 135u, 136u, 143u, 144u, 
 	151u, 152u, 159u, 160u, 167u, 168u, 175u, 176u, 
 	183u, 184u, 191u, 192u, 199u, 200u, 207u, 208u, 
-	215u, 216u, 223u, 224u, 231u, 232u, 239u, 240u, 
-	247u, 5u, 13u, 21u, 29u, 37u, 45u, 53u, 
+	215u, 216u, 223u, 224u, 231u, 232u, 239u, 248u, 
+	255u, 5u, 13u, 21u, 29u, 37u, 45u, 53u, 
 	61u, 69u, 77u, 85u, 93u, 101u, 109u, 117u, 
 	125u, 133u, 141u, 149u, 157u, 165u, 173u, 181u, 
 	189u, 197u, 205u, 213u, 221u, 229u, 237u, 245u, 
@@ -14676,7 +14677,7 @@ static const unsigned char _x86_64_decoder_trans_keys[] = {
 	127u, 128u, 135u, 136u, 143u, 144u, 151u, 152u, 
 	159u, 160u, 167u, 168u, 175u, 176u, 183u, 184u, 
 	191u, 192u, 199u, 200u, 207u, 208u, 215u, 216u, 
-	223u, 224u, 231u, 232u, 239u, 248u, 255u, 4u, 
+	223u, 224u, 231u, 232u, 239u, 240u, 247u, 4u, 
 	5u, 12u, 13u, 20u, 21u, 28u, 29u, 36u, 
 	37u, 44u, 45u, 52u, 53u, 60u, 61u, 68u, 
 	76u, 84u, 92u, 100u, 108u, 116u, 124u, 132u, 
@@ -25724,34 +25725,34 @@ static const unsigned char _x86_64_decoder_trans_keys[] = {
 	84u, 92u, 140u, 148u, 156u, 8u, 15u, 16u, 
 	23u, 24u, 31u, 72u, 79u, 80u, 87u, 88u, 
 	95u, 136u, 143u, 144u, 151u, 152u, 159u, 200u, 
-	207u, 208u, 215u, 216u, 223u, 1u, 2u, 3u, 
-	4u, 5u, 6u, 7u, 9u, 10u, 11u, 12u, 
-	13u, 14u, 15u, 17u, 18u, 19u, 20u, 21u, 
-	22u, 23u, 25u, 26u, 27u, 28u, 29u, 30u, 
-	31u, 33u, 34u, 35u, 36u, 37u, 38u, 39u, 
-	41u, 42u, 43u, 44u, 45u, 46u, 47u, 49u, 
-	50u, 51u, 52u, 53u, 54u, 55u, 57u, 58u, 
-	59u, 60u, 61u, 62u, 63u, 65u, 66u, 67u, 
-	68u, 69u, 70u, 71u, 73u, 74u, 75u, 76u, 
-	77u, 78u, 79u, 81u, 82u, 83u, 84u, 85u, 
-	86u, 87u, 89u, 90u, 91u, 92u, 93u, 94u, 
-	95u, 97u, 98u, 99u, 100u, 101u, 102u, 103u, 
-	105u, 106u, 107u, 108u, 109u, 110u, 111u, 113u, 
-	114u, 115u, 116u, 117u, 118u, 119u, 120u, 121u, 
-	122u, 123u, 124u, 125u, 126u, 127u, 129u, 130u, 
-	131u, 132u, 133u, 134u, 135u, 137u, 138u, 139u, 
-	140u, 141u, 142u, 143u, 145u, 146u, 147u, 148u, 
-	149u, 150u, 151u, 153u, 154u, 155u, 156u, 157u, 
-	158u, 159u, 161u, 162u, 163u, 164u, 165u, 166u, 
-	167u, 169u, 170u, 171u, 172u, 173u, 174u, 175u, 
-	177u, 178u, 179u, 180u, 181u, 182u, 183u, 185u, 
-	186u, 187u, 188u, 189u, 190u, 191u, 193u, 194u, 
-	195u, 196u, 197u, 198u, 199u, 201u, 202u, 203u, 
-	204u, 205u, 206u, 207u, 209u, 210u, 211u, 212u, 
-	213u, 214u, 215u, 217u, 218u, 219u, 220u, 221u, 
-	222u, 223u, 225u, 226u, 227u, 228u, 229u, 230u, 
-	231u, 233u, 234u, 235u, 236u, 237u, 238u, 239u, 
-	241u, 242u, 243u, 244u, 245u, 246u, 247u, 248u, 
+	207u, 208u, 215u, 216u, 223u, 0u, 1u, 3u, 
+	4u, 5u, 6u, 7u, 8u, 9u, 11u, 12u, 
+	13u, 14u, 15u, 16u, 17u, 19u, 20u, 21u, 
+	22u, 23u, 24u, 25u, 27u, 28u, 29u, 30u, 
+	31u, 32u, 33u, 35u, 36u, 37u, 38u, 39u, 
+	40u, 41u, 43u, 44u, 45u, 46u, 47u, 48u, 
+	49u, 51u, 52u, 53u, 54u, 55u, 56u, 57u, 
+	59u, 60u, 61u, 62u, 63u, 64u, 65u, 67u, 
+	68u, 69u, 70u, 71u, 72u, 73u, 75u, 76u, 
+	77u, 78u, 79u, 80u, 81u, 83u, 84u, 85u, 
+	86u, 87u, 88u, 89u, 91u, 92u, 93u, 94u, 
+	95u, 96u, 97u, 99u, 100u, 101u, 102u, 103u, 
+	104u, 105u, 107u, 108u, 109u, 110u, 111u, 112u, 
+	113u, 115u, 116u, 117u, 118u, 119u, 120u, 121u, 
+	122u, 123u, 124u, 125u, 126u, 127u, 128u, 129u, 
+	131u, 132u, 133u, 134u, 135u, 136u, 137u, 139u, 
+	140u, 141u, 142u, 143u, 144u, 145u, 147u, 148u, 
+	149u, 150u, 151u, 152u, 153u, 155u, 156u, 157u, 
+	158u, 159u, 160u, 161u, 163u, 164u, 165u, 166u, 
+	167u, 168u, 169u, 171u, 172u, 173u, 174u, 175u, 
+	176u, 177u, 179u, 180u, 181u, 182u, 183u, 184u, 
+	185u, 187u, 188u, 189u, 190u, 191u, 192u, 193u, 
+	195u, 196u, 197u, 198u, 199u, 200u, 201u, 203u, 
+	204u, 205u, 206u, 207u, 208u, 209u, 211u, 212u, 
+	213u, 214u, 215u, 216u, 217u, 219u, 220u, 221u, 
+	222u, 223u, 224u, 225u, 227u, 228u, 229u, 230u, 
+	231u, 232u, 233u, 235u, 236u, 237u, 238u, 239u, 
+	240u, 241u, 243u, 244u, 245u, 246u, 247u, 248u, 
 	249u, 250u, 251u, 252u, 253u, 254u, 255u, 0u, 
 	1u, 8u, 9u, 15u, 16u, 17u, 24u, 25u, 
 	32u, 33u, 40u, 41u, 48u, 49u, 102u, 128u, 
@@ -29116,8 +29117,8 @@ static const short _x86_64_decoder_indicies[] = {
 	2818, 2820, 2765, 2768, 2771, 2774, 2777, 2780, 
 	2783, 2786, 2789, 2791, 2793, 2795, 2797, 2799, 
 	2801, 2803, 2805, 2807, 2809, 2811, 2813, 2815, 
-	2817, 2819, 2822, 2823, 2824, 2825, 2826, 2827, 
-	2828, 2821, 2830, 2830, 2830, 2830, 2830, 2830, 
+	2817, 2819, 2821, 2822, 2823, 2824, 2825, 2827, 
+	2828, 2826, 2830, 2830, 2830, 2830, 2830, 2830, 
 	2830, 2830, 2830, 2830, 2830, 2830, 2830, 2830, 
 	2830, 2830, 2830, 2830, 2830, 2830, 2830, 2830, 
 	2830, 2830, 2830, 2830, 2830, 2830, 2830, 2830, 
@@ -29131,7 +29132,7 @@ static const short _x86_64_decoder_indicies[] = {
 	2854, 2857, 2860, 2863, 2866, 2869, 2872, 2875, 
 	2877, 2879, 2881, 2883, 2885, 2887, 2889, 2891, 
 	2893, 2895, 2897, 2899, 2901, 2903, 2905, 2907, 
-	2908, 2909, 2911, 2912, 2913, 2914, 2910, 2916, 
+	2908, 2909, 2910, 2911, 2912, 2914, 2913, 2916, 
 	2916, 2916, 2916, 2916, 2916, 2916, 2916, 2916, 
 	2916, 2916, 2916, 2916, 2916, 2916, 2916, 2916, 
 	2916, 2916, 2916, 2916, 2916, 2916, 2916, 2916, 
@@ -29249,7 +29250,7 @@ static const short _x86_64_decoder_indicies[] = {
 	3461, 3464, 3467, 3470, 3473, 3476, 3479, 3482, 
 	3485, 3487, 3489, 3491, 3493, 3495, 3497, 3499, 
 	3501, 3503, 3505, 3507, 3509, 3511, 3513, 3515, 
-	3517, 3519, 3520, 3521, 3522, 3523, 3524, 3518, 
+	3518, 3519, 3520, 3521, 3522, 3523, 3524, 3517, 
 	3526, 3527, 3529, 3530, 3532, 3533, 3535, 3536, 
 	3538, 3539, 3541, 3542, 3544, 3545, 3547, 3549, 
 	3551, 3553, 3555, 3557, 3559, 3561, 3563, 3565, 
@@ -29726,7 +29727,7 @@ static const short _x86_64_decoder_indicies[] = {
 	4898, 4901, 4904, 4907, 4910, 4913, 4916, 4918, 
 	4920, 4922, 4924, 4926, 4928, 4930, 4932, 4934, 
 	4936, 4938, 4940, 4942, 4944, 4946, 4948, 4949, 
-	4950, 4951, 4952, 4953, 4954, 4955, 4957, 4958, 
+	4951, 4952, 4953, 4954, 4955, 4950, 4957, 4958, 
 	4957, 4958, 4957, 4958, 4957, 4958, 4957, 4958, 
 	4957, 4958, 4957, 4958, 4957, 4958, 4960, 4960, 
 	4960, 4960, 4960, 4960, 4960, 4960, 4962, 4962, 
@@ -30988,7 +30989,7 @@ static const short _x86_64_decoder_indicies[] = {
 	7639, 7642, 7645, 7648, 7651, 7654, 7656, 7658, 
 	7660, 7662, 7664, 7666, 7668, 7670, 7672, 7674, 
 	7676, 7678, 7680, 7682, 7684, 7686, 7687, 7688, 
-	7689, 7690, 7691, 7692, 7693, 7695, 7695, 7695, 
+	7689, 7690, 7691, 7693, 7692, 7695, 7695, 7695, 
 	7695, 7695, 7695, 7695, 7695, 7695, 7695, 7695, 
 	7695, 7695, 7695, 7695, 7695, 7695, 7695, 7695, 
 	7695, 7695, 7695, 7695, 7695, 7695, 7695, 7695, 
@@ -31003,7 +31004,7 @@ static const short _x86_64_decoder_indicies[] = {
 	7734, 7737, 7740, 7742, 7744, 7746, 7748, 7750, 
 	7752, 7754, 7756, 7758, 7760, 7762, 7764, 7766, 
 	7768, 7770, 7772, 7773, 7774, 7775, 7776, 7777, 
-	7779, 7778, 7781, 7782, 7781, 7782, 7781, 7782, 
+	7778, 7779, 7781, 7782, 7781, 7782, 7781, 7782, 
 	7781, 7782, 7781, 7782, 7781, 7782, 7781, 7782, 
 	7781, 7782, 7784, 7784, 7784, 7784, 7784, 7784, 
 	7784, 7784, 7786, 7786, 7786, 7786, 7786, 7786, 
@@ -41853,35 +41854,35 @@ static const short _x86_64_decoder_indicies[] = {
 	117, 17312, 17382, 17313, 17383, 17314, 17384, 17295, 
 	17296, 17297, 17298, 17299, 17300, 17354, 17355, 17356, 
 	17357, 17358, 17359, 17360, 17361, 17362, 17363, 17364, 
-	17365, 117, 17386, 17387, 17388, 17389, 17390, 17391, 
-	17392, 17386, 17387, 17388, 17389, 17390, 17391, 17392, 
-	17386, 17387, 17388, 17389, 17390, 17391, 17392, 17386, 
-	17387, 17388, 17389, 17390, 17391, 17392, 17386, 17387, 
-	17388, 17389, 17390, 17391, 17392, 17386, 17387, 17388, 
-	17389, 17390, 17391, 17392, 17386, 17387, 17388, 17389, 
-	17390, 17391, 17392, 17386, 17387, 17388, 17389, 17390, 
-	17391, 17392, 17386, 17387, 17388, 17389, 17390, 17391, 
-	17392, 17386, 17387, 17388, 17389, 17390, 17391, 17392, 
-	17386, 17387, 17388, 17389, 17390, 17391, 17392, 17386, 
-	17387, 17388, 17389, 17390, 17391, 17392, 17386, 17387, 
-	17388, 17389, 17390, 17391, 17392, 17386, 17387, 17388, 
-	17389, 17390, 17391, 17392, 17386, 17387, 17388, 17389, 
+	17365, 117, 17385, 17386, 17388, 17389, 17390, 17391, 
+	17392, 17385, 17386, 17388, 17389, 17390, 17391, 17392, 
+	17385, 17386, 17388, 17389, 17390, 17391, 17392, 17385, 
+	17386, 17388, 17389, 17390, 17391, 17392, 17385, 17386, 
+	17388, 17389, 17390, 17391, 17392, 17385, 17386, 17388, 
+	17389, 17390, 17391, 17392, 17385, 17386, 17388, 17389, 
+	17390, 17391, 17392, 17385, 17386, 17388, 17389, 17390, 
+	17391, 17392, 17385, 17386, 17388, 17389, 17390, 17391, 
+	17392, 17385, 17386, 17388, 17389, 17390, 17391, 17392, 
+	17385, 17386, 17388, 17389, 17390, 17391, 17392, 17385, 
+	17386, 17388, 17389, 17390, 17391, 17392, 17385, 17386, 
+	17388, 17389, 17390, 17391, 17392, 17385, 17386, 17388, 
+	17389, 17390, 17391, 17392, 17385, 17386, 17388, 17389, 
 	17390, 17391, 17392, 17393, 17394, 17395, 17396, 17397, 
-	17398, 17399, 17400, 17401, 17387, 17388, 17389, 17390, 
-	17391, 17392, 17401, 17387, 17388, 17389, 17390, 17391, 
-	17392, 17401, 17387, 17388, 17389, 17390, 17391, 17392, 
-	17401, 17387, 17388, 17389, 17390, 17391, 17392, 17401, 
-	17387, 17388, 17389, 17390, 17391, 17392, 17401, 17387, 
-	17388, 17389, 17390, 17391, 17392, 17401, 17387, 17388, 
-	17389, 17390, 17391, 17392, 17401, 17387, 17388, 17389, 
-	17390, 17391, 17392, 17401, 17387, 17388, 17389, 17390, 
-	17391, 17392, 17401, 17387, 17388, 17389, 17390, 17391, 
-	17392, 17401, 17387, 17388, 17389, 17390, 17391, 17392, 
-	17401, 17387, 17388, 17389, 17390, 17391, 17392, 17401, 
-	17387, 17388, 17389, 17390, 17391, 17392, 17401, 17387, 
-	17388, 17389, 17390, 17391, 17392, 17401, 17387, 17388, 
+	17398, 17399, 17400, 17385, 17401, 17388, 17389, 17390, 
+	17391, 17392, 17385, 17401, 17388, 17389, 17390, 17391, 
+	17392, 17385, 17401, 17388, 17389, 17390, 17391, 17392, 
+	17385, 17401, 17388, 17389, 17390, 17391, 17392, 17385, 
+	17401, 17388, 17389, 17390, 17391, 17392, 17385, 17401, 
+	17388, 17389, 17390, 17391, 17392, 17385, 17401, 17388, 
+	17389, 17390, 17391, 17392, 17385, 17401, 17388, 17389, 
+	17390, 17391, 17392, 17385, 17401, 17388, 17389, 17390, 
+	17391, 17392, 17385, 17401, 17388, 17389, 17390, 17391, 
+	17392, 17385, 17401, 17388, 17389, 17390, 17391, 17392, 
+	17385, 17401, 17388, 17389, 17390, 17391, 17392, 17385, 
+	17401, 17388, 17389, 17390, 17391, 17392, 17385, 17401, 
+	17388, 17389, 17390, 17391, 17392, 17385, 17401, 17388, 
 	17389, 17390, 17391, 17392, 17402, 17403, 17395, 17396, 
-	17404, 17398, 17399, 17400, 17385, 17405, 17406, 17407, 
+	17404, 17398, 17399, 17400, 17387, 17405, 17406, 17407, 
 	17408, 17409, 17410, 17411, 17412, 17413, 17414, 17415, 
 	17416, 17417, 17418, 17419, 17422, 17423, 17424, 17425, 
 	17426, 17427, 17428, 17429, 17430, 17431, 17420, 17421, 
@@ -47554,11 +47555,19 @@ int DecodeChunkAMD64(const uint8_t *data, size_t size,
 
   memset(&instruction, 0, sizeof instruction);
 
+  /*
+   * The "write init" statement causes Ragel to emit initialization code.
+   * This should be executed once before the ragel machine is started.
+   */
   
 	{
 	( current_state) = x86_64_decoder_start;
 	}
 
+  /*
+   * The "write exec" statement causes Ragel to emit the ragel machine's
+   * execution code.
+   */
   
 	{
 	int _klen;
@@ -47757,20 +47766,20 @@ _match:
 	break;
 	case 29:
 	{
-    SET_DISP_TYPE(DISP8);
-    SET_DISP_PTR(current_position);
+    SET_DISPLACEMENT_FORMAT(DISP8);
+    SET_DISPLACEMENT_POINTER(current_position);
   }
 	break;
 	case 30:
 	{
-    SET_DISP_TYPE(DISP32);
-    SET_DISP_PTR(current_position - 3);
+    SET_DISPLACEMENT_FORMAT(DISP32);
+    SET_DISPLACEMENT_POINTER(current_position - 3);
   }
 	break;
 	case 31:
 	{
-    SET_DISP_TYPE(DISP64);
-    SET_DISP_PTR(current_position - 7);
+    SET_DISPLACEMENT_FORMAT(DISP64);
+    SET_DISPLACEMENT_POINTER(current_position - 7);
   }
 	break;
 	case 32:
@@ -47778,7 +47787,7 @@ _match:
 	break;
 	case 33:
 	{
-    SET_DISP_TYPE(DISPNONE);
+    SET_DISPLACEMENT_FORMAT(DISPNONE);
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
@@ -47806,7 +47815,7 @@ _match:
 	break;
 	case 36:
 	{
-    SET_DISP_TYPE(DISPNONE);
+    SET_DISPLACEMENT_FORMAT(DISPNONE);
     SET_MODRM_BASE(NO_REG);
     SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
                                     IndexExtentionFromREX(GET_REX_PREFIX()) |
@@ -47816,7 +47825,7 @@ _match:
 	break;
 	case 37:
 	{
-    SET_DISP_TYPE(DISPNONE);
+    SET_DISPLACEMENT_FORMAT(DISPNONE);
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
@@ -48170,38 +48179,38 @@ _match:
 	break;
 	case 128:
 	{
-    SET_IMM_TYPE(IMM2);
-    SET_IMM_PTR(current_position);
+    SET_IMMEDIATE_FORMAT(IMM2);
+    SET_IMMEDIATE_POINTER(current_position);
   }
 	break;
 	case 129:
 	{
-    SET_IMM_TYPE(IMM8);
-    SET_IMM_PTR(current_position);
+    SET_IMMEDIATE_FORMAT(IMM8);
+    SET_IMMEDIATE_POINTER(current_position);
   }
 	break;
 	case 130:
 	{
-    SET_IMM2_TYPE(IMM8);
-    SET_IMM2_PTR(current_position);
+    SET_SECOND_IMMEDIATE_FORMAT(IMM8);
+    SET_SECOND_IMMEDIATE_POINTER(current_position);
   }
 	break;
 	case 131:
 	{
-    SET_IMM_TYPE(IMM16);
-    SET_IMM_PTR(current_position - 1);
+    SET_IMMEDIATE_FORMAT(IMM16);
+    SET_IMMEDIATE_POINTER(current_position - 1);
   }
 	break;
 	case 132:
 	{
-    SET_IMM_TYPE(IMM32);
-    SET_IMM_PTR(current_position - 3);
+    SET_IMMEDIATE_FORMAT(IMM32);
+    SET_IMMEDIATE_POINTER(current_position - 3);
   }
 	break;
 	case 133:
 	{
-    SET_IMM_TYPE(IMM64);
-    SET_IMM_PTR(current_position - 7);
+    SET_IMMEDIATE_FORMAT(IMM64);
+    SET_IMMEDIATE_POINTER(current_position - 7);
   }
 	break;
 	case 134:
@@ -48209,8 +48218,8 @@ _match:
     SET_MODRM_BASE(REG_RIP);
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
-    SET_DISP_TYPE(DISP8);
-    SET_DISP_PTR(current_position);
+    SET_DISPLACEMENT_FORMAT(DISP8);
+    SET_DISPLACEMENT_POINTER(current_position);
   }
 	break;
 	case 135:
@@ -48218,8 +48227,8 @@ _match:
     SET_MODRM_BASE(REG_RIP);
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
-    SET_DISP_TYPE(DISP16);
-    SET_DISP_PTR(current_position - 1);
+    SET_DISPLACEMENT_FORMAT(DISP16);
+    SET_DISPLACEMENT_POINTER(current_position - 1);
   }
 	break;
 	case 136:
@@ -48227,8 +48236,8 @@ _match:
     SET_MODRM_BASE(REG_RIP);
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
-    SET_DISP_TYPE(DISP32);
-    SET_DISP_PTR(current_position - 3);
+    SET_DISPLACEMENT_FORMAT(DISP32);
+    SET_DISPLACEMENT_POINTER(current_position - 3);
   }
 	break;
 	case 137:
@@ -51971,9 +51980,9 @@ _match:
     process_instruction(instruction_begin, current_position + 1, &instruction,
                         userdata);
     instruction_begin = current_position + 1;
-    SET_DISP_TYPE(DISPNONE);
-    SET_IMM_TYPE(IMMNONE);
-    SET_IMM2_TYPE(IMMNONE);
+    SET_DISPLACEMENT_FORMAT(DISPNONE);
+    SET_IMMEDIATE_FORMAT(IMMNONE);
+    SET_SECOND_IMMEDIATE_FORMAT(IMMNONE);
     SET_REX_PREFIX(FALSE);
     SET_DATA16_PREFIX(FALSE);
     SET_LOCK_PREFIX(FALSE);

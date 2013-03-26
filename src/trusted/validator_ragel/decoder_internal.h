@@ -12,41 +12,45 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_RAGEL_DECODER_INTERNAL_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_RAGEL_DECODER_INTERNAL_H_
 
-#include "native_client/src/trusted/validator_ragel/unreviewed/decoding.h"
+#include "native_client/src/trusted/validator_ragel/decoding.h"
 
 /*
  * Set of macroses used in actions defined in parse_instruction.rl to pull
  * parts of the instruction from a byte stream and store them for future use.
  */
-#define GET_REX_PREFIX() instruction.prefix.rex
-#define GET_VEX_PREFIX2() vex_prefix2
 #define GET_VEX_PREFIX3() vex_prefix3
-#define SET_VEX_PREFIX3(P) vex_prefix3 = (P)
-#define SET_DATA16_PREFIX(S) instruction.prefix.data16 = (S)
-#define SET_LOCK_PREFIX(S) instruction.prefix.lock = (S)
-#define SET_REPZ_PREFIX(S) instruction.prefix.repz = (S)
-#define SET_REPNZ_PREFIX(S) instruction.prefix.repnz = (S)
-#define SET_BRANCH_TAKEN(S) instruction.prefix.branch_taken = (S)
-#define SET_BRANCH_NOT_TAKEN(S) instruction.prefix.branch_not_taken = (S)
-#define SET_INSTRUCTION_NAME(N) instruction.name = (N)
-#define GET_OPERAND_NAME(N) instruction.operands[(N)].name
-#define SET_OPERAND_NAME(N, S) instruction.operands[(N)].name = (S)
-#define SET_OPERAND_FORMAT(N, S) instruction.operands[(N)].format = (S)
-#define SET_OPERANDS_COUNT(N) instruction.operands_count = (N)
-#define SET_MODRM_BASE(N) instruction.rm.base = (N)
-#define SET_MODRM_INDEX(N) instruction.rm.index = (N)
-#define SET_MODRM_SCALE(S) instruction.rm.scale = (S)
-#define SET_DISP_TYPE(T) instruction.rm.disp_type = (T)
-#define SET_DISP_PTR(P) \
-  instruction.rm.offset = DecodeDisplacementValue(instruction.rm.disp_type, (P))
-#define SET_IMM_TYPE(T) imm_operand = (T)
-#define SET_IMM_PTR(P) \
-  instruction.imm[0] = DecodeImmediateValue(imm_operand, (P))
-#define SET_IMM2_TYPE(T) imm2_operand = (T)
-#define SET_IMM2_PTR(P) \
-  instruction.imm[1] = DecodeImmediateValue(imm2_operand, (P))
-#define SET_CPU_FEATURE(F)
-#define SET_ATT_INSTRUCTION_SUFFIX(S) instruction.att_instruction_suffix = (S)
+#define SET_VEX_PREFIX3(PREFIX_BYTE) vex_prefix3 = (PREFIX_BYTE)
+#define SET_DATA16_PREFIX(STATUS) instruction.prefix.data16 = (STATUS)
+#define SET_LOCK_PREFIX(STATUS) instruction.prefix.lock = (STATUS)
+#define SET_REPZ_PREFIX(STATUS) instruction.prefix.repz = (STATUS)
+#define SET_REPNZ_PREFIX(STATUS) instruction.prefix.repnz = (STATUS)
+#define SET_BRANCH_TAKEN(STATUS) instruction.prefix.branch_taken = (STATUS)
+#define SET_BRANCH_NOT_TAKEN(STATUS) \
+  instruction.prefix.branch_not_taken = (STATUS)
+#define SET_INSTRUCTION_NAME(NAME) instruction.name = (NAME)
+#define GET_OPERAND_NAME(INDEX) instruction.operands[(INDEX)].name
+#define SET_OPERAND_NAME(INDEX, NAME) \
+  instruction.operands[(INDEX)].name = (NAME)
+#define SET_OPERAND_FORMAT(INDEX, FORMAT) \
+  instruction.operands[(INDEX)].format = (FORMAT)
+#define SET_OPERANDS_COUNT(COUNT) instruction.operands_count = (COUNT)
+#define SET_MODRM_BASE(REG_NUMBER) instruction.rm.base = (REG_NUMBER)
+#define SET_MODRM_INDEX(REG_NUMBER) instruction.rm.index = (REG_NUMBER)
+#define SET_MODRM_SCALE(VALUE) instruction.rm.scale = (VALUE)
+#define SET_DISPLACEMENT_FORMAT(FORMAT) instruction.rm.disp_type = (FORMAT)
+#define SET_DISPLACEMENT_POINTER(POINTER) \
+  instruction.rm.offset = \
+    DecodeDisplacementValue(instruction.rm.disp_type, (POINTER))
+#define SET_IMMEDIATE_FORMAT(FORMAT) imm_operand = (FORMAT)
+#define SET_IMMEDIATE_POINTER(POINTER) \
+  instruction.imm[0] = DecodeImmediateValue(imm_operand, (POINTER))
+#define SET_SECOND_IMMEDIATE_FORMAT(FORMAT) imm2_operand = (FORMAT)
+#define SET_SECOND_IMMEDIATE_POINTER(POINTER) \
+  instruction.imm[1] = DecodeImmediateValue(imm2_operand, (POINTER))
+/* We don't support CPUID feature detection in decoder.  */
+#define SET_CPU_FEATURE(FEATURE)
+#define SET_ATT_INSTRUCTION_SUFFIX(SUFFIX_STRING) \
+  instruction.att_instruction_suffix = (SUFFIX_STRING)
 
 /*
  * Immediate mode: size of the instruction's immediate operand.  Note that there

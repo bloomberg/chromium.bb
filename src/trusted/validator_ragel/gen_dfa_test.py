@@ -556,7 +556,7 @@ class TestInstructionPrinter(unittest.TestCase):
              @modifiable_instruction
              @operand0_from_modrm_reg
          any* &
-         single_register_memory @check_access)
+         single_register_memory @check_memory_access)
         @process_1_operand_zero_extends
         """.split())
 

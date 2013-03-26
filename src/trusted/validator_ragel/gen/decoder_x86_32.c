@@ -19,11 +19,15 @@
 #include <string.h>
 
 #include "native_client/src/shared/utils/types.h"
-#include "native_client/src/trusted/validator_ragel/unreviewed/decoder_internal.h"
+#include "native_client/src/trusted/validator_ragel/decoder_internal.h"
 
 
 
 
+/*
+ * The "write data" statement causes Ragel to emit the constant static data
+ * needed by the ragel machine.
+ */
 
 static const short _x86_32_decoder_actions[] = {
 	0, 1, 0, 1, 1, 1, 2, 1, 
@@ -11552,7 +11556,7 @@ static const unsigned char _x86_32_decoder_trans_keys[] = {
 	112u, 119u, 120u, 127u, 128u, 135u, 136u, 143u, 
 	144u, 151u, 152u, 159u, 160u, 167u, 168u, 175u, 
 	176u, 183u, 184u, 191u, 192u, 199u, 200u, 207u, 
-	208u, 215u, 216u, 223u, 224u, 231u, 232u, 239u, 
+	208u, 215u, 224u, 231u, 232u, 239u, 240u, 247u, 
 	248u, 255u, 5u, 13u, 21u, 29u, 37u, 45u, 
 	53u, 61u, 69u, 77u, 85u, 93u, 101u, 109u, 
 	117u, 125u, 133u, 141u, 149u, 157u, 165u, 173u, 
@@ -11567,8 +11571,8 @@ static const unsigned char _x86_32_decoder_trans_keys[] = {
 	88u, 95u, 96u, 103u, 104u, 111u, 112u, 119u, 
 	120u, 127u, 128u, 135u, 136u, 143u, 144u, 151u, 
 	152u, 159u, 160u, 167u, 168u, 175u, 176u, 183u, 
-	184u, 191u, 192u, 199u, 200u, 207u, 208u, 215u, 
-	216u, 223u, 224u, 231u, 232u, 239u, 240u, 247u, 
+	184u, 191u, 192u, 199u, 200u, 207u, 216u, 223u, 
+	224u, 231u, 232u, 239u, 240u, 247u, 248u, 255u, 
 	4u, 5u, 12u, 13u, 20u, 21u, 28u, 29u, 
 	36u, 37u, 44u, 45u, 52u, 53u, 60u, 61u, 
 	68u, 76u, 84u, 92u, 100u, 108u, 116u, 124u, 
@@ -11798,7 +11802,7 @@ static const unsigned char _x86_32_decoder_trans_keys[] = {
 	119u, 120u, 127u, 128u, 135u, 136u, 143u, 144u, 
 	151u, 152u, 159u, 160u, 167u, 168u, 175u, 176u, 
 	183u, 184u, 191u, 192u, 199u, 200u, 207u, 208u, 
-	215u, 224u, 231u, 232u, 239u, 240u, 247u, 248u, 
+	215u, 216u, 223u, 232u, 239u, 240u, 247u, 248u, 
 	255u, 4u, 5u, 12u, 13u, 20u, 21u, 28u, 
 	29u, 36u, 37u, 44u, 45u, 52u, 53u, 60u, 
 	61u, 68u, 76u, 84u, 92u, 100u, 108u, 116u, 
@@ -11809,8 +11813,8 @@ static const unsigned char _x86_32_decoder_trans_keys[] = {
 	95u, 96u, 103u, 104u, 111u, 112u, 119u, 120u, 
 	127u, 128u, 135u, 136u, 143u, 144u, 151u, 152u, 
 	159u, 160u, 167u, 168u, 175u, 176u, 183u, 184u, 
-	191u, 192u, 199u, 208u, 215u, 216u, 223u, 224u, 
-	231u, 232u, 239u, 240u, 247u, 248u, 255u, 5u, 
+	191u, 192u, 199u, 200u, 207u, 208u, 215u, 216u, 
+	223u, 224u, 231u, 232u, 239u, 248u, 255u, 5u, 
 	13u, 21u, 29u, 37u, 45u, 53u, 61u, 69u, 
 	77u, 85u, 93u, 101u, 109u, 117u, 125u, 133u, 
 	141u, 149u, 157u, 165u, 173u, 181u, 189u, 197u, 
@@ -11825,8 +11829,8 @@ static const unsigned char _x86_32_decoder_trans_keys[] = {
 	103u, 104u, 111u, 112u, 119u, 120u, 127u, 128u, 
 	135u, 136u, 143u, 144u, 151u, 152u, 159u, 160u, 
 	167u, 168u, 175u, 176u, 183u, 184u, 191u, 192u, 
-	199u, 200u, 207u, 216u, 223u, 224u, 231u, 232u, 
-	239u, 240u, 247u, 248u, 255u, 4u, 5u, 12u, 
+	199u, 200u, 207u, 208u, 215u, 216u, 223u, 224u, 
+	231u, 240u, 247u, 248u, 255u, 4u, 5u, 12u, 
 	13u, 20u, 21u, 28u, 29u, 36u, 37u, 44u, 
 	45u, 52u, 53u, 60u, 61u, 68u, 76u, 84u, 
 	92u, 100u, 108u, 116u, 124u, 132u, 140u, 148u, 
@@ -15085,7 +15089,7 @@ static const unsigned char _x86_32_decoder_trans_keys[] = {
 	80u, 87u, 88u, 95u, 96u, 103u, 104u, 111u, 
 	112u, 119u, 120u, 127u, 128u, 135u, 136u, 143u, 
 	144u, 151u, 152u, 159u, 160u, 167u, 168u, 175u, 
-	176u, 183u, 184u, 191u, 200u, 207u, 208u, 215u, 
+	176u, 183u, 184u, 191u, 192u, 199u, 208u, 215u, 
 	216u, 223u, 224u, 231u, 232u, 239u, 240u, 247u, 
 	248u, 255u, 4u, 5u, 20u, 21u, 28u, 29u, 
 	36u, 37u, 44u, 45u, 52u, 53u, 60u, 61u, 
@@ -18449,8 +18453,8 @@ static const short _x86_32_decoder_indicies[] = {
 	4676, 4678, 4680, 4682, 4627, 4630, 4633, 4636, 
 	4639, 4642, 4645, 4648, 4651, 4653, 4655, 4657, 
 	4659, 4661, 4663, 4665, 4667, 4669, 4671, 4673, 
-	4675, 4677, 4679, 4681, 4683, 4684, 4685, 4686, 
-	4687, 4688, 4690, 4689, 4692, 4692, 4692, 4692, 
+	4675, 4677, 4679, 4681, 4683, 4684, 4685, 4687, 
+	4688, 4689, 4690, 4686, 4692, 4692, 4692, 4692, 
 	4692, 4692, 4692, 4692, 4692, 4692, 4692, 4692, 
 	4692, 4692, 4692, 4692, 4692, 4692, 4692, 4692, 
 	4692, 4692, 4692, 4692, 4692, 4692, 4692, 4692, 
@@ -18462,8 +18466,8 @@ static const short _x86_32_decoder_indicies[] = {
 	4749, 4751, 4753, 4755, 4700, 4703, 4706, 4709, 
 	4712, 4715, 4718, 4721, 4724, 4726, 4728, 4730, 
 	4732, 4734, 4736, 4738, 4740, 4742, 4744, 4746, 
-	4748, 4750, 4752, 4754, 4756, 4757, 4758, 4759, 
-	4760, 4761, 4762, 4763, 4765, 4766, 4765, 4766, 
+	4748, 4750, 4752, 4754, 4756, 4757, 4759, 4760, 
+	4761, 4762, 4763, 4758, 4765, 4766, 4765, 4766, 
 	4765, 4766, 4765, 4766, 4765, 4766, 4765, 4766, 
 	4765, 4766, 4765, 4766, 4768, 4768, 4768, 4768, 
 	4768, 4768, 4768, 4768, 4770, 4770, 4770, 4770, 
@@ -18659,16 +18663,16 @@ static const short _x86_32_decoder_indicies[] = {
 	5281, 5283, 5285, 5287, 5232, 5235, 5238, 5241, 
 	5244, 5247, 5250, 5253, 5256, 5258, 5260, 5262, 
 	5264, 5266, 5268, 5270, 5272, 5274, 5276, 5278, 
-	5280, 5282, 5284, 5286, 5288, 5289, 5290, 5292, 
-	5293, 5294, 5295, 5291, 5297, 5298, 5300, 5301, 
+	5280, 5282, 5284, 5286, 5288, 5289, 5290, 5291, 
+	5293, 5294, 5295, 5292, 5297, 5298, 5300, 5301, 
 	5303, 5304, 5306, 5307, 5309, 5310, 5312, 5313, 
 	5315, 5316, 5318, 5319, 5321, 5323, 5325, 5327, 
 	5329, 5331, 5333, 5335, 5337, 5339, 5341, 5343, 
 	5345, 5347, 5349, 5351, 5296, 5299, 5302, 5305, 
 	5308, 5311, 5314, 5317, 5320, 5322, 5324, 5326, 
 	5328, 5330, 5332, 5334, 5336, 5338, 5340, 5342, 
-	5344, 5346, 5348, 5350, 5352, 5354, 5355, 5356, 
-	5357, 5358, 5359, 5353, 5361, 5361, 5361, 5361, 
+	5344, 5346, 5348, 5350, 5352, 5353, 5354, 5355, 
+	5356, 5357, 5359, 5358, 5361, 5361, 5361, 5361, 
 	5361, 5361, 5361, 5361, 5361, 5361, 5361, 5361, 
 	5361, 5361, 5361, 5361, 5361, 5361, 5361, 5361, 
 	5361, 5361, 5361, 5361, 5361, 5361, 5361, 5361, 
@@ -18680,8 +18684,8 @@ static const short _x86_32_decoder_indicies[] = {
 	5418, 5420, 5422, 5424, 5369, 5372, 5375, 5378, 
 	5381, 5384, 5387, 5390, 5393, 5395, 5397, 5399, 
 	5401, 5403, 5405, 5407, 5409, 5411, 5413, 5415, 
-	5417, 5419, 5421, 5423, 5425, 5426, 5428, 5429, 
-	5430, 5431, 5432, 5427, 5434, 5435, 5434, 5435, 
+	5417, 5419, 5421, 5423, 5425, 5426, 5427, 5428, 
+	5429, 5431, 5432, 5430, 5434, 5435, 5434, 5435, 
 	5434, 5435, 5434, 5435, 5434, 5435, 5434, 5435, 
 	5434, 5435, 5434, 5435, 5437, 5437, 5437, 5437, 
 	5437, 5437, 5437, 5437, 5439, 5439, 5439, 5439, 
@@ -21773,8 +21777,8 @@ static const short _x86_32_decoder_indicies[] = {
 	12025, 12027, 12029, 12031, 11976, 11979, 11982, 11985, 
 	11988, 11991, 11994, 11997, 12000, 12002, 12004, 12006, 
 	12008, 12010, 12012, 12014, 12016, 12018, 12020, 12022, 
-	12024, 12026, 12028, 12030, 12033, 12034, 12035, 12036, 
-	12037, 12038, 12039, 12032, 12041, 12042, 12044, 12045, 
+	12024, 12026, 12028, 12030, 12032, 12034, 12035, 12036, 
+	12037, 12038, 12039, 12033, 12041, 12042, 12044, 12045, 
 	12047, 12048, 12050, 12051, 12053, 12054, 12056, 12057, 
 	12059, 12060, 12062, 12064, 12066, 12068, 12070, 12072, 
 	12074, 12076, 12078, 12080, 12082, 12084, 12086, 12088, 
@@ -25865,11 +25869,19 @@ int DecodeChunkIA32(const uint8_t *data, size_t size,
 
   memset(&instruction, 0, sizeof instruction);
 
+  /*
+   * The "write init" statement causes Ragel to emit initialization code.
+   * This should be executed once before the ragel machine is started.
+   */
   
 	{
 	( current_state) = x86_32_decoder_start;
 	}
 
+  /*
+   * The "write exec" statement causes Ragel to emit the ragel machine's
+   * execution code.
+   */
   
 	{
 	int _klen;
@@ -26047,14 +26059,14 @@ _match:
 	break;
 	case 22:
 	{
-    SET_DISP_TYPE(DISP8);
-    SET_DISP_PTR(current_position);
+    SET_DISPLACEMENT_FORMAT(DISP8);
+    SET_DISPLACEMENT_POINTER(current_position);
   }
 	break;
 	case 23:
 	{
-    SET_DISP_TYPE(DISP32);
-    SET_DISP_PTR(current_position - 3);
+    SET_DISPLACEMENT_FORMAT(DISP32);
+    SET_DISPLACEMENT_POINTER(current_position - 3);
   }
 	break;
 	case 24:
@@ -26062,7 +26074,7 @@ _match:
 	break;
 	case 25:
 	{
-    SET_DISP_TYPE(DISPNONE);
+    SET_DISPLACEMENT_FORMAT(DISPNONE);
     SET_MODRM_BASE(RMFromModRM(*current_position));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
@@ -26085,7 +26097,7 @@ _match:
 	break;
 	case 28:
 	{
-    SET_DISP_TYPE(DISPNONE);
+    SET_DISPLACEMENT_FORMAT(DISPNONE);
     SET_MODRM_BASE(NO_REG);
     SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position)]);
     SET_MODRM_SCALE(ScaleFromSIB(*current_position));
@@ -26093,7 +26105,7 @@ _match:
 	break;
 	case 29:
 	{
-    SET_DISP_TYPE(DISPNONE);
+    SET_DISPLACEMENT_FORMAT(DISPNONE);
     SET_MODRM_BASE(BaseFromSIB(*current_position));
     SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position)]);
     SET_MODRM_SCALE(ScaleFromSIB(*current_position));
@@ -26418,32 +26430,32 @@ _match:
 	break;
 	case 117:
 	{
-    SET_IMM_TYPE(IMM2);
-    SET_IMM_PTR(current_position);
+    SET_IMMEDIATE_FORMAT(IMM2);
+    SET_IMMEDIATE_POINTER(current_position);
   }
 	break;
 	case 118:
 	{
-    SET_IMM_TYPE(IMM8);
-    SET_IMM_PTR(current_position);
+    SET_IMMEDIATE_FORMAT(IMM8);
+    SET_IMMEDIATE_POINTER(current_position);
   }
 	break;
 	case 119:
 	{
-    SET_IMM2_TYPE(IMM8);
-    SET_IMM2_PTR(current_position);
+    SET_SECOND_IMMEDIATE_FORMAT(IMM8);
+    SET_SECOND_IMMEDIATE_POINTER(current_position);
   }
 	break;
 	case 120:
 	{
-    SET_IMM_TYPE(IMM16);
-    SET_IMM_PTR(current_position - 1);
+    SET_IMMEDIATE_FORMAT(IMM16);
+    SET_IMMEDIATE_POINTER(current_position - 1);
   }
 	break;
 	case 121:
 	{
-    SET_IMM_TYPE(IMM32);
-    SET_IMM_PTR(current_position - 3);
+    SET_IMMEDIATE_FORMAT(IMM32);
+    SET_IMMEDIATE_POINTER(current_position - 3);
   }
 	break;
 	case 122:
@@ -26451,8 +26463,8 @@ _match:
     SET_MODRM_BASE(REG_RIP);
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
-    SET_DISP_TYPE(DISP8);
-    SET_DISP_PTR(current_position);
+    SET_DISPLACEMENT_FORMAT(DISP8);
+    SET_DISPLACEMENT_POINTER(current_position);
   }
 	break;
 	case 123:
@@ -26460,8 +26472,8 @@ _match:
     SET_MODRM_BASE(REG_RIP);
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
-    SET_DISP_TYPE(DISP16);
-    SET_DISP_PTR(current_position - 1);
+    SET_DISPLACEMENT_FORMAT(DISP16);
+    SET_DISPLACEMENT_POINTER(current_position - 1);
   }
 	break;
 	case 124:
@@ -26469,8 +26481,8 @@ _match:
     SET_MODRM_BASE(REG_RIP);
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
-    SET_DISP_TYPE(DISP32);
-    SET_DISP_PTR(current_position - 3);
+    SET_DISPLACEMENT_FORMAT(DISP32);
+    SET_DISPLACEMENT_POINTER(current_position - 3);
   }
 	break;
 	case 125:
@@ -30162,9 +30174,9 @@ _match:
     process_instruction(instruction_begin, current_position + 1, &instruction,
                         userdata);
     instruction_begin = current_position + 1;
-    SET_DISP_TYPE(DISPNONE);
-    SET_IMM_TYPE(IMMNONE);
-    SET_IMM2_TYPE(IMMNONE);
+    SET_DISPLACEMENT_FORMAT(DISPNONE);
+    SET_IMMEDIATE_FORMAT(IMMNONE);
+    SET_SECOND_IMMEDIATE_FORMAT(IMMNONE);
     SET_DATA16_PREFIX(FALSE);
     SET_LOCK_PREFIX(FALSE);
     SET_REPNZ_PREFIX(FALSE);

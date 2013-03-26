@@ -180,7 +180,7 @@ if ragel_involved:
     include_dir = rl_instruction_file.dir.get_abspath()
     assert include_dir == byte_machines.dir.get_abspath()
 
-    rl_file = env.File('unreviewed/%s_x86_%s.rl' % (automaton, bits))
+    rl_file = env.File('%s_x86_%s.rl' % (automaton, bits))
 
     (c_file,) = env.AutoDepsCommand(
         '%s_x86_%s.c' % (automaton, bits),

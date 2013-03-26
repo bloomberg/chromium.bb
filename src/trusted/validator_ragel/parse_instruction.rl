@@ -250,7 +250,7 @@
   machine modrm_actions_ia32;
 
   action modrm_only_base {
-    SET_DISP_TYPE(DISPNONE);
+    SET_DISPLACEMENT_FORMAT(DISPNONE);
     SET_MODRM_BASE(RMFromModRM(*current_position));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
@@ -267,13 +267,13 @@
     SET_MODRM_SCALE(0);
   }
   action modrm_pure_index {
-    SET_DISP_TYPE(DISPNONE);
+    SET_DISPLACEMENT_FORMAT(DISPNONE);
     SET_MODRM_BASE(NO_REG);
     SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position)]);
     SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
   action modrm_parse_sib {
-    SET_DISP_TYPE(DISPNONE);
+    SET_DISPLACEMENT_FORMAT(DISPNONE);
     SET_MODRM_BASE(BaseFromSIB(*current_position));
     SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position)]);
     SET_MODRM_SCALE(ScaleFromSIB(*current_position));
@@ -284,7 +284,7 @@
   machine modrm_actions_amd64;
 
   action modrm_only_base {
-    SET_DISP_TYPE(DISPNONE);
+    SET_DISPLACEMENT_FORMAT(DISPNONE);
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
@@ -306,7 +306,7 @@
     SET_MODRM_SCALE(0);
   }
   action modrm_pure_index {
-    SET_DISP_TYPE(DISPNONE);
+    SET_DISPLACEMENT_FORMAT(DISPNONE);
     SET_MODRM_BASE(NO_REG);
     SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
                                     IndexExtentionFromREX(GET_REX_PREFIX()) |
@@ -314,7 +314,7 @@
     SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
   action modrm_parse_sib {
-    SET_DISP_TYPE(DISPNONE);
+    SET_DISPLACEMENT_FORMAT(DISPNONE);
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
@@ -656,16 +656,16 @@
   machine displacement_fields_parsing;
 
   action disp8_operand {
-    SET_DISP_TYPE(DISP8);
-    SET_DISP_PTR(current_position);
+    SET_DISPLACEMENT_FORMAT(DISP8);
+    SET_DISPLACEMENT_POINTER(current_position);
   }
   action disp32_operand {
-    SET_DISP_TYPE(DISP32);
-    SET_DISP_PTR(current_position - 3);
+    SET_DISPLACEMENT_FORMAT(DISP32);
+    SET_DISPLACEMENT_POINTER(current_position - 3);
   }
   action disp64_operand {
-    SET_DISP_TYPE(DISP64);
-    SET_DISP_PTR(current_position - 7);
+    SET_DISPLACEMENT_FORMAT(DISP64);
+    SET_DISPLACEMENT_POINTER(current_position - 7);
   }
 
   # This action is used to mark transitions corresponding to immediates,
@@ -683,40 +683,40 @@
   machine immediate_fields_parsing;
 
   action imm2_operand {
-    SET_IMM_TYPE(IMM2);
-    SET_IMM_PTR(current_position);
+    SET_IMMEDIATE_FORMAT(IMM2);
+    SET_IMMEDIATE_POINTER(current_position);
   }
   action imm8_operand {
-    SET_IMM_TYPE(IMM8);
-    SET_IMM_PTR(current_position);
+    SET_IMMEDIATE_FORMAT(IMM8);
+    SET_IMMEDIATE_POINTER(current_position);
   }
   action imm8_second_operand {
-    SET_IMM2_TYPE(IMM8);
-    SET_IMM2_PTR(current_position);
+    SET_SECOND_IMMEDIATE_FORMAT(IMM8);
+    SET_SECOND_IMMEDIATE_POINTER(current_position);
   }
   action imm16_operand {
-    SET_IMM_TYPE(IMM16);
-    SET_IMM_PTR(current_position - 1);
+    SET_IMMEDIATE_FORMAT(IMM16);
+    SET_IMMEDIATE_POINTER(current_position - 1);
   }
   action imm16_second_operand {
-    SET_IMM2_TYPE(IMM16);
-    SET_IMM2_PTR(current_position - 1);
+    SET_SECOND_IMMEDIATE_FORMAT(IMM16);
+    SET_SECOND_IMMEDIATE_POINTER(current_position - 1);
   }
   action imm32_operand {
-    SET_IMM_TYPE(IMM32);
-    SET_IMM_PTR(current_position - 3);
+    SET_IMMEDIATE_FORMAT(IMM32);
+    SET_IMMEDIATE_POINTER(current_position - 3);
   }
   action imm32_second_operand {
-    SET_IMM2_TYPE(IMM32);
-    SET_IMM2_PTR(current_position - 3);
+    SET_SECOND_IMMEDIATE_FORMAT(IMM32);
+    SET_SECOND_IMMEDIATE_POINTER(current_position - 3);
   }
   action imm64_operand {
-    SET_IMM_TYPE(IMM64);
-    SET_IMM_PTR(current_position - 7);
+    SET_IMMEDIATE_FORMAT(IMM64);
+    SET_IMMEDIATE_POINTER(current_position - 7);
   }
   action imm64_second_operand {
-    SET_IMM2_TYPE(IMM64);
-    SET_IMM2_PTR(current_position - 7);
+    SET_SECOND_IMMEDIATE_FORMAT(IMM64);
+    SET_SECOND_IMMEDIATE_POINTER(current_position - 7);
   }
 
   imm8 = any @imm8_operand $any_byte;
@@ -734,22 +734,22 @@
     SET_MODRM_BASE(REG_RIP);
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
-    SET_DISP_TYPE(DISP8);
-    SET_DISP_PTR(current_position);
+    SET_DISPLACEMENT_FORMAT(DISP8);
+    SET_DISPLACEMENT_POINTER(current_position);
   }
   action rel16_operand {
     SET_MODRM_BASE(REG_RIP);
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
-    SET_DISP_TYPE(DISP16);
-    SET_DISP_PTR(current_position - 1);
+    SET_DISPLACEMENT_FORMAT(DISP16);
+    SET_DISPLACEMENT_POINTER(current_position - 1);
   }
   action rel32_operand {
     SET_MODRM_BASE(REG_RIP);
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
-    SET_DISP_TYPE(DISP32);
-    SET_DISP_PTR(current_position - 3);
+    SET_DISPLACEMENT_FORMAT(DISP32);
+    SET_DISPLACEMENT_POINTER(current_position - 3);
   }
 }%%
 
@@ -758,7 +758,7 @@
 
   # rel8 actions are used in relative jumps with 8-bit offset.
   action rel8_operand {
-    Rel8Operand(current_position + 1, data, jump_dests, size,
+    Rel8Operand(current_position + 1, codeblock, jump_dests, size,
                 &instruction_info_collected);
   }
 
@@ -772,8 +772,17 @@
 
   # rel32 actions are used in relative calls and jumps with 32-bit offset.
   action rel32_operand {
-    Rel32Operand(current_position + 1, data, jump_dests, size,
+    Rel32Operand(current_position + 1, codeblock, jump_dests, size,
                  &instruction_info_collected);
+  }
+
+  # Action which marks last byte as not immediate.  Most 3DNow! instructions,
+  # some AVX and XOP instructions have this property.
+  #
+  # This action is referenced by decode_x86_32 ragel machine in [autogenerated]
+  # "validator_x86_32_instruction.rl" file.
+  action last_byte_is_not_immediate {
+    instruction_info_collected |= LAST_BYTE_IS_NOT_IMMEDIATE;
   }
 }%%
 
