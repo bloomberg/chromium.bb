@@ -176,12 +176,24 @@ class Delegate(object):
     """Print a message."""
     raise NotImplementedError()
 
+  def SendMail(self, subject, text):
+    """Send an email.
+
+    Args:
+      subject: The subject of the email.
+      text: The text of the email.
+    """
+    raise NotImplementedError()
+
 
 class RealDelegate(Delegate):
-  def __init__(self, dryrun=False, gsutil=None, verbose=False):
+  def __init__(self, dryrun=False, gsutil=None, verbose=False,
+               mailfrom=None, mailto=None):
     super(RealDelegate, self).__init__()
     self.dryrun = dryrun
     self.verbose = verbose
+    self.mailfrom = mailfrom
+    self.mailto = mailto
     if gsutil:
       self.gsutil = gsutil
     else:
@@ -237,6 +249,19 @@ class RealDelegate(Delegate):
     if self.verbose:
       self.Print(*args)
 
+  def SendMail(self, subject, text):
+    """See Delegate.SendMail"""
+    if self.mailfrom and self.mailto:
+      msg = email.MIMEMultipart.MIMEMultipart()
+      msg['From'] = self.mailfrom
+      msg['To'] = ', '.join(self.mailto)
+      msg['Date'] = email.Utils.formatdate(localtime=True)
+      msg['Subject'] = subject
+      msg.attach(email.MIMEText.MIMEText(text))
+      smtp_obj = smtplib.SMTP('localhost')
+      smtp_obj.sendmail(self.mailfrom, self.mailto, msg.as_string())
+      smtp_obj.close()
+
   def _RunGsUtil(self, stdin, *args):
     """Run gsutil as a subprocess.
 
@@ -264,6 +289,10 @@ class RealDelegate(Delegate):
       sys.stderr.write(stderr)
       raise subprocess.CalledProcessError(process.returncode, ' '.join(cmd))
     return stdout
+
+
+class NoSharedVersionException(Exception):
+  pass
 
 
 class VersionFinder(object):
@@ -398,7 +427,7 @@ class VersionFinder(object):
           for version, channel, missing_archives in skipped_versions:
             archive_msg = '(missing %s)' % (', '.join(missing_archives))
           msg += '  %s (%s) %s\n' % (version, channel, archive_msg)
-        raise Exception(msg)
+        raise NoSharedVersionException(msg)
 
       archives, missing_archives = self.GetAvailablePlatformArchivesFor(
           version, allow_trunk_revisions)
@@ -507,10 +536,15 @@ class VersionFinder(object):
     return filter(lambda a: a + '.json' in manifests, archives)
 
 
+class UnknownLockedBundleException(Exception):
+  pass
+
+
 class Updater(object):
   def __init__(self, delegate):
     self.delegate = delegate
     self.versions_to_update = []
+    self.locked_bundles = []
     self.online_manifest = manifest_util.SDKManifest()
     self._FetchOnlineManifest()
 
@@ -523,6 +557,18 @@ class Updater(object):
       channel: The stability of the pepper bundle, e.g. 'beta'
       archives: A sequence of archive URLs for this bundle."""
     self.versions_to_update.append((bundle_name, version, channel, archives))
+
+  def AddLockedBundle(self, bundle_name):
+    """Add a "locked" bundle to the updater.
+
+    A locked bundle is a bundle that wasn't found in the history. When this
+    happens, the bundle is now "locked" to whatever was last found. We want to
+    ensure that the online manifest has this bundle.
+
+    Args:
+      bundle_name: The name of the locked bundle.
+    """
+    self.locked_bundles.append(bundle_name)
 
   def Update(self, manifest):
     """Update a manifest and upload it.
@@ -541,6 +587,28 @@ class Updater(object):
     # Add 0 in case there are no stable versions.
     max_stable_version = max([0] + stable_major_versions)
 
+    # Ensure that all locked bundles exist in the online manifest.
+    for bundle_name in self.locked_bundles:
+      online_bundle = self.online_manifest.GetBundle(bundle_name)
+      if online_bundle:
+        manifest.SetBundle(online_bundle)
+      else:
+        msg = ('Attempted to update bundle "%s", but no shared versions were '
+            'found, and there is no online bundle with that name.')
+        raise UnknownLockedBundleException(msg % bundle_name)
+
+    if self.locked_bundles:
+      # Send a nagging email that we shouldn't be wasting time looking for
+      # bundles that are no longer in the history.
+      scriptname = os.path.basename(sys.argv[0])
+      subject = '[%s] Reminder: remove bundles from %s' % (scriptname,
+                                                           MANIFEST_BASENAME)
+      text = 'These bundles are not in the omahaproxy history anymore: ' + \
+              ', '.join(self.locked_bundles)
+      self.delegate.SendMail(subject, text)
+
+
+    # Update all versions.
     for bundle_name, version, channel, archives in self.versions_to_update:
       self.delegate.Print('Updating %s to %s...' % (bundle_name, version))
       bundle = manifest.GetBundle(bundle_name)
@@ -680,11 +748,17 @@ def Run(delegate, platforms, extra_archives, fixed_bundle_versions=None):
   updater = Updater(delegate)
 
   for bundle in auto_update_bundles:
-    if bundle.name == CANARY_BUNDLE_NAME:
-      version, channel, archives = version_finder.GetMostRecentSharedCanary()
-    else:
-      version, channel, archives = version_finder.GetMostRecentSharedVersion(
-          bundle.version)
+    try:
+      if bundle.name == CANARY_BUNDLE_NAME:
+        version, channel, archives = version_finder.GetMostRecentSharedCanary()
+      else:
+        version, channel, archives = version_finder.GetMostRecentSharedVersion(
+            bundle.version)
+    except NoSharedVersionException:
+      # If we can't find a shared version, make sure that there is an uploaded
+      # bundle with that name already.
+      updater.AddLockedBundle(bundle.name)
+      continue
 
     if bundle.name in fixed_bundle_versions:
       # Ensure this version is valid for all platforms.
@@ -704,27 +778,6 @@ def Run(delegate, platforms, extra_archives, fixed_bundle_versions=None):
     updater.AddVersionToUpdate(bundle.name, version, channel, archives)
 
   updater.Update(manifest)
-
-
-def SendMail(send_from, send_to, subject, text, smtp='localhost'):
-  """Send an email.
-
-  Args:
-    send_from: The sender's email address.
-    send_to: A list of addresses to send to.
-    subject: The subject of the email.
-    text: The text of the email.
-    smtp: The smtp server to use. Default is localhost.
-  """
-  msg = email.MIMEMultipart.MIMEMultipart()
-  msg['From'] = send_from
-  msg['To'] = ', '.join(send_to)
-  msg['Date'] = email.Utils.formatdate(localtime=True)
-  msg['Subject'] = subject
-  msg.attach(email.MIMEText.MIMEText(text))
-  smtp_obj = smtplib.SMTP(smtp)
-  smtp_obj.sendmail(send_from, send_to, msg.as_string())
-  smtp_obj.close()
 
 
 class CapturedFile(object):
@@ -778,11 +831,13 @@ def main(args):
 
   try:
     try:
-      delegate = RealDelegate(options.dryrun, options.gsutil, options.verbose)
+      delegate = RealDelegate(options.dryrun, options.gsutil, options.verbose,
+                              options.mailfrom, options.mailto)
       # Only look for naclports archives > 26.0.1391.0 = r178222
       extra_archives = [('naclports.tar.bz2', '26.0.1391.0')]
       Run(delegate, ('mac', 'win', 'linux'), extra_archives,
           fixed_bundle_versions)
+      return 0
     except Exception:
       if options.mailfrom and options.mailto:
         traceback.print_exc()
@@ -790,15 +845,15 @@ def main(args):
         subject = '[%s] Failed to update manifest' % (scriptname,)
         text = '%s failed.\n\nSTDERR:\n%s\n' % (scriptname,
                                                 sys.stderr.getvalue())
-        SendMail(options.mailfrom, options.mailto, subject, text)
-        sys.exit(1)
+        delegate.SendMail(subject, text)
+        return 1
       else:
         raise
   except manifest_util.Error as e:
     if options.debug:
       raise
     print e
-    sys.exit(1)
+    return 1
 
 
 if __name__ == '__main__':

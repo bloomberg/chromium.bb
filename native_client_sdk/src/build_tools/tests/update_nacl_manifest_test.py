@@ -188,6 +188,7 @@ class TestDelegate(update_nacl_manifest.Delegate):
     self.version_mapping = version_mapping
     self.dryrun = 0
     self.called_gsutil_cp = False
+    self.called_sendmail = False
 
   def GetRepoManifest(self):
     return self.manifest
@@ -226,6 +227,9 @@ class TestDelegate(update_nacl_manifest.Delegate):
   def Print(self, *args):
     # eat all informational messages
     pass
+
+  def SendMail(self, subject, text):
+    self.called_sendmail = True
 
 
 # Shorthand for premade bundles/versions
@@ -671,6 +675,30 @@ mac,canary,21.0.1156.0,2012-05-30 12:14:21.305090"""
     self.assertEqual(2, len(bundles))
     self.assertEqual('pepper_18', bundles[0].name)
     self.assertEqual('pepper_19', bundles[1].name)
+
+  def testBundleWithoutHistoryUsesOnline(self):
+    online_manifest = MakeManifest(B18_0_1025_163_R1_MLW)
+    self.files.AddOnlineManifest(online_manifest.GetDataAsString())
+
+    self.manifest = MakeManifest(B18_R1_NONE)
+
+    self._MakeDelegate()
+    # This should not raise.
+    self._Run(OS_MLW)
+    self._ReadUploadedManifest()
+
+    # But it should have sent an email nagging the users to lock this bundle
+    # manually.
+    self.assertTrue(self.delegate.called_sendmail)
+
+    uploaded_bundle = self.uploaded_manifest.GetBundle('pepper_18')
+    self.assertEqual(uploaded_bundle, B18_0_1025_163_R1_MLW)
+
+  def testBundleWithoutHistoryOrOnlineRaises(self):
+    self.manifest = MakeManifest(B18_R1_NONE)
+    self._MakeDelegate()
+    self.assertRaises(update_nacl_manifest.UnknownLockedBundleException,
+                      self._Run, OS_MLW)
 
 
 class TestUpdateVitals(unittest.TestCase):
