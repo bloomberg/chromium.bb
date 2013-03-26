@@ -319,11 +319,13 @@ void AutocompleteController::UpdateResult(
     bool regenerate_result,
     bool force_notify_default_match_changed) {
   const bool last_default_was_valid = result_.default_match() != result_.end();
-  // The following two variables are only set and used if
+  // The following three variables are only set and used if
   // |last_default_was_valid|.
-  string16 last_default_fill_into_edit, last_default_associated_keyword;
+  string16 last_default_fill_into_edit, last_default_keyword,
+      last_default_associated_keyword;
   if (last_default_was_valid) {
     last_default_fill_into_edit = result_.default_match()->fill_into_edit;
+    last_default_keyword = result_.default_match()->keyword;
     if (result_.default_match()->associated_keyword != NULL)
       last_default_associated_keyword =
           result_.default_match()->associated_keyword->keyword;
@@ -366,17 +368,21 @@ void AutocompleteController::UpdateResult(
         result_.default_match()->associated_keyword->keyword;
   }
   // We've gotten async results. Send notification that the default match
-  // updated if fill_into_edit differs or associated_keyword differ.  (The
-  // latter can change if we've just started Chrome and the keyword database
-  // finishes loading while processing this request.) We don't check the URL
-  // as that may change for the default match even though the fill into edit
-  // hasn't changed (see SearchProvider for one case of this).
+  // updated if fill_into_edit, associated_keyword, or keyword differ.  (The
+  // second can change if we've just started Chrome and the keyword database
+  // finishes loading while processing this request.  The third can change
+  // if we swapped from interpreting the input as a search--which gets
+  // labeled with the default search provider's keyword--to a URL.)
+  // We don't check the URL as that may change for the default match
+  // even though the fill into edit hasn't changed (see SearchProvider
+  // for one case of this).
   const bool notify_default_match =
       (last_default_was_valid != default_is_valid) ||
       (last_default_was_valid &&
        ((result_.default_match()->fill_into_edit !=
           last_default_fill_into_edit) ||
-         (default_associated_keyword != last_default_associated_keyword)));
+        (default_associated_keyword != last_default_associated_keyword) ||
+        (result_.default_match()->keyword != last_default_keyword)));
   if (notify_default_match)
     last_time_default_match_changed_ = base::TimeTicks::Now();
 
