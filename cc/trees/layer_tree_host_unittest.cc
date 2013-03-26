@@ -467,67 +467,45 @@ class LayerTreeHostTestCommit : public LayerTreeHostTest {
 
 MULTI_THREAD_TEST_F(LayerTreeHostTestCommit);
 
-// Verifies that startPageScaleAnimation events propagate correctly
+// Verifies that StartPageScaleAnimation events propagate correctly
 // from LayerTreeHost to LayerTreeHostImpl in the MT compositor.
 class LayerTreeHostTestStartPageScaleAnimation : public LayerTreeHostTest {
- public:
-  LayerTreeHostTestStartPageScaleAnimation() : animation_requested_(false) {}
+public:
+ LayerTreeHostTestStartPageScaleAnimation() {}
 
-  virtual void BeginTest() OVERRIDE {
-    layer_tree_host()->root_layer()->SetScrollable(true);
-    layer_tree_host()->root_layer()->SetScrollOffset(gfx::Vector2d());
-    PostSetNeedsCommitToMainThread();
-    PostSetNeedsRedrawToMainThread();
-  }
+ virtual void BeginTest() OVERRIDE {
+   layer_tree_host()->root_layer()->SetScrollable(true);
+   layer_tree_host()->root_layer()->SetScrollOffset(gfx::Vector2d());
+   layer_tree_host()->SetPageScaleFactorAndLimits(1.f, 0.5f, 2.f);
+   layer_tree_host()->StartPageScaleAnimation(
+       gfx::Vector2d(), false, 1.25f, base::TimeDelta());
+   PostSetNeedsCommitToMainThread();
+   PostSetNeedsRedrawToMainThread();
+ }
 
-  void RequestStartPageScaleAnimation() {
-    layer_tree_host()->StartPageScaleAnimation(
-        gfx::Vector2d(), false, 1.25f, base::TimeDelta());
-  }
+ virtual void ApplyScrollAndScale(gfx::Vector2d scroll_delta, float scale)
+     OVERRIDE {
+   gfx::Vector2d offset = layer_tree_host()->root_layer()->scroll_offset();
+   layer_tree_host()->root_layer()->SetScrollOffset(offset + scroll_delta);
+   layer_tree_host()->SetPageScaleFactorAndLimits(scale, 0.5f, 2.f);
+ }
 
-  virtual void DrawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE {
-    impl->active_tree()->root_layer()->SetScrollable(true);
-    impl->active_tree()->root_layer()->SetScrollOffset(gfx::Vector2d());
-    impl->active_tree()->SetPageScaleFactorAndLimits(
-        impl->active_tree()->page_scale_factor(), 0.5f, 2.f);
+ virtual void CommitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+   impl->ProcessScrollDeltas();
+   // We get one commit before the first draw, and the animation doesn't happen
+   // until the second draw.
+   if (impl->active_tree()->source_frame_number() == 1) {
+     EXPECT_EQ(1.25f, impl->active_tree()->page_scale_factor());
+     EndTest();
+   } else {
+     PostSetNeedsRedrawToMainThread();
+   }
+ }
 
-    // We request animation only once.
-    if (!animation_requested_) {
-      impl->proxy()->MainThread()->PostTask(
-          base::Bind(&LayerTreeHostTestStartPageScaleAnimation::
-                         RequestStartPageScaleAnimation,
-                     base::Unretained(this)));
-      animation_requested_ = true;
-    }
-  }
-
-  virtual void ApplyScrollAndScale(gfx::Vector2d scroll_delta, float scale)
-      OVERRIDE {
-    gfx::Vector2d offset = layer_tree_host()->root_layer()->scroll_offset();
-    layer_tree_host()->root_layer()->SetScrollOffset(offset + scroll_delta);
-    layer_tree_host()->SetPageScaleFactorAndLimits(scale, 0.5f, 2.f);
-  }
-
-  virtual void CommitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE {
-    impl->ProcessScrollDeltas();
-    // We get one commit before the first draw, and the animation doesn't
-    // happen until the second draw.
-    if (impl->active_tree()->source_frame_number() == 1) {
-      EXPECT_EQ(1.25f, impl->active_tree()->page_scale_factor());
-      EndTest();
-    } else {
-      PostSetNeedsRedrawToMainThread();
-    }
-  }
-
-  virtual void AfterTest() OVERRIDE {}
-
- private:
-  bool animation_requested_;
+ virtual void AfterTest() OVERRIDE {}
 };
 
-// TODO(aelias): This test is currently broken: http://crbug.com/178295
-// MULTI_THREAD_TEST_F(LayerTreeHostTestStartPageScaleAnimation);
+MULTI_THREAD_TEST_F(LayerTreeHostTestStartPageScaleAnimation);
 
 class LayerTreeHostTestSetVisible : public LayerTreeHostTest {
  public:

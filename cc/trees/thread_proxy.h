@@ -39,10 +39,6 @@ class ThreadProxy : public Proxy,
 
   // Proxy implementation
   virtual bool CompositeAndReadback(void* pixels, gfx::Rect rect) OVERRIDE;
-  virtual void StartPageScaleAnimation(gfx::Vector2d target_offset,
-                                       bool use_anchor,
-                                       float scale,
-                                       base::TimeDelta duration) OVERRIDE;
   virtual void FinishAllRendering() OVERRIDE;
   virtual bool IsStarted() const OVERRIDE;
   virtual bool InitializeOutputSurface() OVERRIDE;
@@ -154,10 +150,6 @@ class ThreadProxy : public Proxy,
       scoped_refptr<cc::ContextProvider> offscreen_context_provider);
   void BeginFrameAbortedOnImplThread();
   void RequestReadbackOnImplThread(ReadbackRequest* request);
-  void RequestStartPageScaleAnimationOnImplThread(gfx::Vector2d target_offset,
-                                                  bool use_anchor,
-                                                  float scale,
-                                                  base::TimeDelta duration);
   void FinishAllRenderingOnImplThread(CompletionEvent* completion);
   void InitializeImplOnImplThread(CompletionEvent* completion,
                                   InputHandler* input_handler);

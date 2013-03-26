@@ -49,11 +49,6 @@ class CC_EXPORT Proxy {
 
   virtual bool CompositeAndReadback(void* pixels, gfx::Rect rect) = 0;
 
-  virtual void StartPageScaleAnimation(gfx::Vector2d target_offset,
-                                       bool use_anchor,
-                                       float scale,
-                                       base::TimeDelta duration) = 0;
-
   virtual void FinishAllRendering() = 0;
 
   virtual bool IsStarted() const = 0;

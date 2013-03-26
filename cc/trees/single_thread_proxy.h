@@ -24,10 +24,6 @@ class SingleThreadProxy : public Proxy, LayerTreeHostImplClient {
 
   // Proxy implementation
   virtual bool CompositeAndReadback(void* pixels, gfx::Rect rect) OVERRIDE;
-  virtual void StartPageScaleAnimation(gfx::Vector2d target_offset,
-                                       bool use_anchor,
-                                       float scale,
-                                       base::TimeDelta duration) OVERRIDE;
   virtual void FinishAllRendering() OVERRIDE;
   virtual bool IsStarted() const OVERRIDE;
   virtual bool InitializeOutputSurface() OVERRIDE;

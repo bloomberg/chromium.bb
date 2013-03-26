@@ -72,14 +72,6 @@ bool SingleThreadProxy::CompositeAndReadback(void* pixels, gfx::Rect rect) {
   return true;
 }
 
-void SingleThreadProxy::StartPageScaleAnimation(gfx::Vector2d target_offset,
-                                                bool use_anchor,
-                                                float scale,
-                                                base::TimeDelta duration) {
-  layer_tree_host_impl_->StartPageScaleAnimation(
-      target_offset, use_anchor, scale, base::TimeTicks::Now(), duration);
-}
-
 void SingleThreadProxy::FinishAllRendering() {
   DCHECK(Proxy::IsMainThread());
   {

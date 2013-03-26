@@ -329,6 +329,15 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
   host_impl->SetOverdrawBottomHeight(overdraw_bottom_height_);
   host_impl->SetDeviceScaleFactor(device_scale_factor_);
   host_impl->SetDebugState(debug_state_);
+  if (pending_page_scale_animation_) {
+    host_impl->StartPageScaleAnimation(
+        pending_page_scale_animation_->target_offset,
+        pending_page_scale_animation_->use_anchor,
+        pending_page_scale_animation_->scale,
+        base::TimeTicks::Now(),
+        pending_page_scale_animation_->duration);
+    pending_page_scale_animation_.reset();
+  }
 
   DCHECK(!sync_tree->ViewportSizeInvalid());
 
@@ -616,7 +625,13 @@ void LayerTreeHost::StartPageScaleAnimation(gfx::Vector2d target_offset,
                                             bool use_anchor,
                                             float scale,
                                             base::TimeDelta duration) {
-  proxy_->StartPageScaleAnimation(target_offset, use_anchor, scale, duration);
+  pending_page_scale_animation_.reset(new PendingPageScaleAnimation);
+  pending_page_scale_animation_->target_offset = target_offset;
+  pending_page_scale_animation_->use_anchor = use_anchor;
+  pending_page_scale_animation_->scale = scale;
+  pending_page_scale_animation_->duration = duration;
+
+  SetNeedsCommit();
 }
 
 void LayerTreeHost::Composite(base::TimeTicks frame_begin_time) {

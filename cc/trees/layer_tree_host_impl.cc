@@ -306,8 +306,7 @@ void LayerTreeHostImpl::StartPageScaleAnimation(gfx::Vector2d target_offset,
   gfx::Vector2dF scroll_total =
       RootScrollLayer()->scroll_offset() + RootScrollLayer()->scroll_delta();
   gfx::SizeF scaled_scrollable_size = active_tree_->ScrollableSize();
-  gfx::SizeF viewport_size =
-      gfx::ScaleSize(device_viewport_size_, 1.f / device_scale_factor_);
+  gfx::SizeF viewport_size = VisibleViewportSize();
 
   double start_time_seconds = (start_time - base::TimeTicks()).InSecondsF();
   page_scale_animation_ =

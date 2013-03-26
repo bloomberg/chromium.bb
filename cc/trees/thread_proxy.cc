@@ -130,32 +130,6 @@ void ThreadProxy::RequestReadbackOnImplThread(ReadbackRequest* request) {
   scheduler_on_impl_thread_->SetNeedsForcedRedraw();
 }
 
-void ThreadProxy::StartPageScaleAnimation(gfx::Vector2d target_offset,
-                                          bool use_anchor,
-                                          float scale,
-                                          base::TimeDelta duration) {
-  DCHECK(Proxy::IsMainThread());
-  Proxy::ImplThread()->PostTask(
-      base::Bind(&ThreadProxy::RequestStartPageScaleAnimationOnImplThread,
-                 impl_thread_weak_ptr_,
-                 target_offset,
-                 use_anchor,
-                 scale,
-                 duration));
-}
-
-void ThreadProxy::RequestStartPageScaleAnimationOnImplThread(
-    gfx::Vector2d target_offset,
-    bool use_anchor,
-    float scale,
-    base::TimeDelta duration) {
-  DCHECK(Proxy::IsImplThread());
-  if (layer_tree_host_impl_) {
-    layer_tree_host_impl_->StartPageScaleAnimation(
-        target_offset, use_anchor, scale, base::TimeTicks::Now(), duration);
-  }
-}
-
 void ThreadProxy::FinishAllRendering() {
   DCHECK(Proxy::IsMainThread());
   DCHECK(!defer_commits_);
