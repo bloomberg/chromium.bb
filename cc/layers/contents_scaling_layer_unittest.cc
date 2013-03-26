@@ -21,21 +21,21 @@ class MockContentsScalingLayer : public ContentsScalingLayer {
   }
 
   void ResetNeedsDisplay() {
-      needs_display_ = false;
+    needs_display_ = false;
   }
 
   const gfx::RectF& LastNeedsDisplayRect() const {
-     return last_needs_display_rect_;
+    return last_needs_display_rect_;
   }
 
   void UpdateContentsScale(float contents_scale) {
-      // Simulate CalcDrawProperties.
-      CalculateContentsScale(
-          contents_scale,
-          false,  // animating_transform_to_screen
-          &draw_properties().contents_scale_x,
-          &draw_properties().contents_scale_y,
-          &draw_properties().content_bounds);
+    // Simulate CalcDrawProperties.
+    CalculateContentsScale(
+        contents_scale,
+        false,  // animating_transform_to_screen
+        &draw_properties().contents_scale_x,
+        &draw_properties().contents_scale_y,
+        &draw_properties().content_bounds);
   }
 
  private:
@@ -45,15 +45,15 @@ class MockContentsScalingLayer : public ContentsScalingLayer {
 };
 
 void CalcDrawProps(Layer* root, float device_scale) {
-    std::vector<scoped_refptr<Layer> > render_surface_layer_list;
-    LayerTreeHostCommon::CalculateDrawProperties(
-        root,
-        gfx::Size(500, 500),
-        device_scale,
-        1.f,
-        1024,
-        false,
-        &render_surface_layer_list);
+  std::vector<scoped_refptr<Layer> > render_surface_layer_list;
+  LayerTreeHostCommon::CalculateDrawProperties(
+      root,
+      gfx::Size(500, 500),
+      device_scale,
+      1.f,
+      1024,
+      false,
+      &render_surface_layer_list);
 }
 
 TEST(ContentsScalingLayerTest, CheckContentsBounds) {
