@@ -29,14 +29,23 @@ _THIS_DIR = os.path.abspath(os.path.dirname(__file__))
 _DESKTOP_OS_NEGATIVE_FILTER = []
 if util.IsLinux():
   _DESKTOP_OS_NEGATIVE_FILTER = [
+      # https://code.google.com/p/chromedriver/issues/detail?id=284
       'TypingTest#testArrowKeysAndPageUpAndDown',
       'TypingTest#testHomeAndEndAndPageUpAndPageDownKeys',
       'TypingTest#testNumberpadKeys',
   ]
+elif util.IsWindows():
+  _DESKTOP_OS_NEGATIVE_FILTER = [
+      # https://code.google.com/p/chromedriver/issues/detail?id=282
+      'PageLoadingTest#'
+      'testShouldNotHangIfDocumentOpenCallIsNeverFollowedByDocumentCloseCall',
+  ]
+
 
 _DESKTOP_NEGATIVE_FILTER = {}
 _DESKTOP_NEGATIVE_FILTER['HEAD'] = (
     _DESKTOP_OS_NEGATIVE_FILTER + [
+        # https://code.google.com/p/chromedriver/issues/detail?id=283
         'ExecutingAsyncJavascriptTest#'
         'shouldNotTimeoutIfScriptCallsbackInsideAZeroTimeout',
     ]
