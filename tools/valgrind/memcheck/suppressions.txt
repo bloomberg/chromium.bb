@@ -6964,12 +6964,3 @@
    fun:_ZN7WebCore15FeatureObserver10didObserveENS0_7FeatureE
    fun:_ZN7WebCore15FeatureObserver7observeEPNS_8DocumentENS0_7FeatureE
 }
-{
-   bug_223393
-   Memcheck:Uninitialized
-   fun:_ZN22MockNetworkTransaction5StartEPKN3net15HttpRequestInfoERKN4base8CallbackIFviEEERKNS0_11BoundNetLogE
-   fun:_ZN3net9HttpCache11Transaction13DoSendRequestEv
-   fun:_ZN3net9HttpCache11Transaction6DoLoopEi
-   fun:_ZN3net9HttpCache11Transaction12OnIOCompleteEi
-}
-

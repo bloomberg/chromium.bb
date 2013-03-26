@@ -239,6 +239,8 @@ int MockNetworkTransaction::Start(const net::HttpRequestInfo* request,
   if (!t)
     return net::ERR_FAILED;
 
+  test_mode_ = t->test_mode;
+
   // Return immediately if we're returning in error.
   if (net::OK != t->return_code) {
     if (test_mode_ & TEST_MODE_SYNC_NET_START)
@@ -271,7 +273,6 @@ int MockNetworkTransaction::Start(const net::HttpRequestInfo* request,
   response_.vary_data.Init(*request, *response_.headers);
   response_.ssl_info.cert_status = t->cert_status;
   data_ = resp_data;
-  test_mode_ = t->test_mode;
 
   if (test_mode_ & TEST_MODE_SYNC_NET_START)
     return net::OK;
