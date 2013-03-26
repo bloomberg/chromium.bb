@@ -83,7 +83,7 @@ class MockAutofillMetrics : public AutofillMetrics {
 class TestPersonalDataManager : public PersonalDataManager {
  public:
   TestPersonalDataManager() : autofill_enabled_(true) {
-    set_metric_logger(new MockAutofillMetrics);
+    set_metric_logger(new testing::NiceMock<MockAutofillMetrics>());
     CreateTestAutofillProfiles(&web_profiles_);
   }
 
@@ -186,7 +186,7 @@ class TestAutofillManager : public AutofillManager {
         autofill_enabled_(true),
         did_finish_async_form_submit_(false),
         message_loop_is_running_(false) {
-    set_metric_logger(new MockAutofillMetrics);
+    set_metric_logger(new testing::NiceMock<MockAutofillMetrics>);
   }
   virtual ~TestAutofillManager() {}
 
@@ -284,8 +284,6 @@ class AutofillMetricsTest : public ChromeRenderViewHostTestHarness {
   TestPersonalDataManager personal_data_;
 
  private:
-  std::string default_gmock_verbosity_level_;
-
   DISALLOW_COPY_AND_ASSIGN(AutofillMetricsTest);
 };
 
@@ -318,21 +316,9 @@ void AutofillMetricsTest::SetUp() {
       &personal_data_));
 
   file_thread_.Start();
-
-  // Ignore any metrics that we haven't explicitly set expectations for.
-  // If we don't override the verbosity level, we'll get lots of log spew from
-  // mocked functions that aren't relevant to a test but happen to be called
-  // during the test's execution.
-  // CAUTION: This is a global variable.  So as to not affect other tests, this
-  // _must_ be restored to its original value at the end of the test.
-  default_gmock_verbosity_level_ = ::testing::FLAGS_gmock_verbose;
-  ::testing::FLAGS_gmock_verbose = "error";
 }
 
 void AutofillMetricsTest::TearDown() {
-  // Restore the global Gmock verbosity level to its default value.
-  ::testing::FLAGS_gmock_verbose = default_gmock_verbosity_level_;
-
   // Order of destruction is important as AutofillManager relies on
   // PersonalDataManager to be around when it gets destroyed. Also, a real
   // AutofillManager is tied to the lifetime of the WebContents, so it must
@@ -1146,7 +1132,7 @@ TEST_F(AutofillMetricsTest, AutofillIsEnabledAtPageLoad) {
 
 // Test that credit card infobar metrics are logged correctly.
 TEST_F(AutofillMetricsTest, CreditCardInfoBar) {
-  MockAutofillMetrics metric_logger;
+  testing::NiceMock<MockAutofillMetrics> metric_logger;
   ::testing::InSequence dummy;
 
   // Accept the infobar.
@@ -1194,7 +1180,7 @@ TEST_F(AutofillMetricsTest, CreditCardInfoBar) {
 
 // Test that server query response experiment id metrics are logged correctly.
 TEST_F(AutofillMetricsTest, ServerQueryExperimentIdForQuery) {
-  MockAutofillMetrics metric_logger;
+  testing::NiceMock<MockAutofillMetrics> metric_logger;
   ::testing::InSequence dummy;
 
   // No experiment specified.
