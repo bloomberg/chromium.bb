@@ -139,13 +139,11 @@ bool BezelGestureHandler::HandleLauncherControl(const ui::GestureEvent& event) {
 
 bool BezelGestureHandler::HandleApplicationControl(
     const ui::GestureEvent& event) {
-  ash::AcceleratorController* accelerator =
-      ash::Shell::GetInstance()->accelerator_controller();
   if (start_location_ == BEZEL_START_LEFT && event.details().scroll_x() > 0) {
-    accelerator->PerformAction(CYCLE_BACKWARD_LINEAR, ui::Accelerator());
+    Launcher::ForPrimaryDisplay()->CycleWindowLinear(CYCLE_BACKWARD);
   } else if (start_location_ == BEZEL_START_RIGHT &&
       event.details().scroll_x() < 0) {
-    accelerator->PerformAction(CYCLE_FORWARD_LINEAR, ui::Accelerator());
+    Launcher::ForPrimaryDisplay()->CycleWindowLinear(CYCLE_FORWARD);
   } else {
     return false;
   }

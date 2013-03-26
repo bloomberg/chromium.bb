@@ -149,13 +149,24 @@ void WindowCycleController::HandleCycleWindow(Direction direction,
   }
 }
 
+void WindowCycleController::HandleLinearCycleWindow() {
+  if (!CanCycle() || IsCycling())
+    return;
+
+  // Use the reversed list of windows to prevent a 2-cycle of the most recent
+  // windows occurring.
+  WindowCycleList cycle_list(BuildWindowList(NULL,true));
+  cycle_list.Step(WindowCycleList::FORWARD);
+}
+
 void WindowCycleController::AltKeyReleased() {
   StopCycling();
 }
 
 // static
 std::vector<aura::Window*> WindowCycleController::BuildWindowList(
-    const std::list<aura::Window*>* mru_windows) {
+    const std::list<aura::Window*>* mru_windows,
+    bool top_most_at_end) {
   WindowCycleList::WindowList windows;
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
 
@@ -198,7 +209,8 @@ std::vector<aura::Window*> WindowCycleController::BuildWindowList(
   }
 
   // Window cycling expects the topmost window at the front of the list.
-  std::reverse(windows.begin(), windows.end());
+  if (!top_most_at_end)
+    std::reverse(windows.begin(), windows.end());
 
   return windows;
 }
@@ -225,7 +237,7 @@ void WindowCycleController::OnRootWindowAdded(aura::RootWindow* root_window) {
 // WindowCycleController, private:
 
 void WindowCycleController::StartCycling() {
-  windows_.reset(new WindowCycleList(BuildWindowList(&mru_windows_)));
+  windows_.reset(new WindowCycleList(BuildWindowList(&mru_windows_, false)));
 }
 
 void WindowCycleController::Step(Direction direction) {

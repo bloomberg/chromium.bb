@@ -134,7 +134,7 @@ class WindowStateManager : public aura::WindowObserver {
   }
 
   void BuildWindowListAndMinimizeInactive(aura::Window* active_window) {
-    windows_ = ash::WindowCycleController::BuildWindowList(NULL);
+    windows_ = ash::WindowCycleController::BuildWindowList(NULL, false);
     // Remove active window.
     std::vector<aura::Window*>::iterator last =
         std::remove(windows_.begin(), windows_.end(), active_window);

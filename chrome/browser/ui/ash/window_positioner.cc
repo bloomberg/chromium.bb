@@ -100,7 +100,7 @@ gfx::Rect WindowPositioner::SmartPopupPosition(
     const gfx::Rect& work_area,
     int grid) {
   const std::vector<aura::Window*> windows =
-      ash::WindowCycleController::BuildWindowList(NULL);
+      ash::WindowCycleController::BuildWindowList(NULL, false);
 
   std::vector<const gfx::Rect*> regions;
   // Process the window list and check if we can bail immediately.

@@ -17,7 +17,7 @@ namespace ash {
 namespace {
 
 bool HasFocusableWindow() {
-  return !WindowCycleController::BuildWindowList(NULL).empty();
+  return !WindowCycleController::BuildWindowList(NULL, false).empty();
 }
 
 }  // namespace

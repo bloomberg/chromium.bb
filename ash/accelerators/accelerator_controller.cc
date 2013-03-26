@@ -95,7 +95,8 @@ bool HandleCycleWindowMRU(WindowCycleController::Direction direction,
 }
 
 void HandleCycleWindowLinear(CycleDirection direction) {
-  Launcher::ForPrimaryDisplay()->CycleWindowLinear(direction);
+  Shell::GetInstance()->
+        window_cycle_controller()->HandleLinearCycleWindow();
 }
 
 #if defined(OS_CHROMEOS)

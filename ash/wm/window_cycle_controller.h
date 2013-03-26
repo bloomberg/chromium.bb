@@ -58,6 +58,10 @@ class ASH_EXPORT WindowCycleController
   // installs a key filter to watch for alt being released.
   void HandleCycleWindow(Direction direction, bool is_alt_down);
 
+  // Cycles between windows without maintaining a multi-step cycle sequence
+  // (see above).
+  void HandleLinearCycleWindow();
+
   // Informs the controller that the Alt key has been released and it can
   // terminate the existing multi-step cycle.
   void AltKeyReleased();
@@ -78,8 +82,11 @@ class ASH_EXPORT WindowCycleController
   // windows being iterated over.
   // If |mru_windows| is not NULL, windows in this list are put at the head of
   // the window list.
+  // If |top_most_at_end| the window list will return in ascending order instead
+  // of the default descending.
   static std::vector<aura::Window*> BuildWindowList(
-      const std::list<aura::Window*>* mru_windows);
+      const std::list<aura::Window*>* mru_windows,
+      bool top_most_at_end);
 
  private:
   // Call to start cycling windows.  You must call StopCycling() when done.
