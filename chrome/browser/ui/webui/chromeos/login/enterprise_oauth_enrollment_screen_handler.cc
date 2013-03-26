@@ -32,10 +32,6 @@ namespace {
 const char kGaiaExtStartPage[] =
     "chrome-extension://mfffpogegjflfpflabcdkioaeobkgjik/main.html";
 
-// OAuth V2 service scope for device management.
-const char kServiceScopeChromeOSDeviceManagement[] =
-    "https://www.googleapis.com/auth/chromeosdevicemanagement";
-
 // Enrollment step names.
 const char kEnrollmentStepSignin[] = "signin";
 const char kEnrollmentStepWorking[] = "working";
@@ -57,7 +53,7 @@ class EnterpriseOAuthEnrollmentScreenHandler::TokenRevoker
                Profile* profile,
                EnterpriseOAuthEnrollmentScreenHandler* owner)
       : oauth_fetcher_(this, profile->GetRequestContext(),
-                       kServiceScopeChromeOSDeviceManagement),
+                       GaiaConstants::kDeviceManagementServiceOAuth),
         owner_(owner) {
     if (secret.empty())
       oauth_fetcher_.StartOAuthRevokeWrapToken(token);

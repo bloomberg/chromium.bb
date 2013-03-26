@@ -30,9 +30,6 @@ const int kMaxRequestAttemptCount = 5;
 // OAuth token request retry delay in milliseconds.
 const int kRequestRestartDelay = 3000;
 
-const char kServiceScopeChromeOSDeviceManagement[] =
-    "https://www.googleapis.com/auth/chromeosdevicemanagement";
-
 }  // namespace
 
 OAuth2PolicyFetcher::OAuth2PolicyFetcher(
@@ -76,7 +73,7 @@ void OAuth2PolicyFetcher::StartFetchingRefreshToken() {
 
 void OAuth2PolicyFetcher::StartFetchingAccessToken() {
   std::vector<std::string> scopes;
-  scopes.push_back(kServiceScopeChromeOSDeviceManagement);
+  scopes.push_back(GaiaConstants::kDeviceManagementServiceOAuth);
   access_token_fetcher_.reset(
       new OAuth2AccessTokenFetcher(this, system_context_getter_));
   access_token_fetcher_->Start(

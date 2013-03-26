@@ -456,8 +456,6 @@
         'browser/chromeos/login/parallel_authenticator.cc',
         'browser/chromeos/login/parallel_authenticator.h',
         'browser/chromeos/login/user_flow.h',
-        'browser/chromeos/login/policy_oauth_fetcher.cc',
-        'browser/chromeos/login/policy_oauth_fetcher.h',
         'browser/chromeos/login/profile_auth_data.cc',
         'browser/chromeos/login/profile_auth_data.h',
         'browser/chromeos/login/proxy_settings_dialog.cc',

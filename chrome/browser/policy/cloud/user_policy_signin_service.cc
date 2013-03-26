@@ -36,9 +36,6 @@ namespace em = enterprise_management;
 
 namespace {
 
-// Various OAuth service scopes required to do CloudPolicyClient registration.
-const char kServiceScopeChromeOSDeviceManagement[] =
-    "https://www.googleapis.com/auth/chromeosdevicemanagement";
 const char kServiceScopeGetUserInfo[] =
     "https://www.googleapis.com/auth/userinfo.email";
 
@@ -146,7 +143,7 @@ void CloudPolicyClientRegistrationHelper::StartRegistration(
   oauth2_access_token_fetcher_.reset(
       new OAuth2AccessTokenFetcher(this, context_));
   std::vector<std::string> scopes;
-  scopes.push_back(kServiceScopeChromeOSDeviceManagement);
+  scopes.push_back(GaiaConstants::kDeviceManagementServiceOAuth);
   scopes.push_back(kServiceScopeGetUserInfo);
   GaiaUrls* gaia_urls = GaiaUrls::GetInstance();
   oauth2_access_token_fetcher_->Start(
@@ -159,7 +156,7 @@ void CloudPolicyClientRegistrationHelper::StartRegistration(
 void CloudPolicyClientRegistrationHelper::OnGetTokenFailure(
     const GoogleServiceAuthError& error) {
   DLOG(WARNING) << "Could not fetch access token for "
-                << kServiceScopeChromeOSDeviceManagement;
+                << GaiaConstants::kDeviceManagementServiceOAuth;
   oauth2_access_token_fetcher_.reset();
 
   // Invoke the callback to let them know the fetch failed.
