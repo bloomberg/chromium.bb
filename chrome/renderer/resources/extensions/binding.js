@@ -15,16 +15,19 @@ var extensionId = process.GetExtensionId();
 var manifestVersion = process.GetManifestVersion();
 var schemaRegistry = requireNative('schema_registry');
 var schemaUtils = require('schemaUtils');
-var sendRequest = require('sendRequest').sendRequest;
 var utils = require('utils');
 var CHECK = requireNative('logging').CHECK;
+var sendRequestHandler = require('sendRequest');
+var sendRequest = sendRequestHandler.sendRequest;
+var logActivity = requireNative('activityLogger').LogActivity;
 
 // Stores the name and definition of each API function, with methods to
 // modify their behaviour (such as a custom way to handle requests to the
 // API, a custom callback, etc).
-function APIFunctions() {
+function APIFunctions(namespace) {
   this.apiFunctions_ = {};
   this.unavailableApiFunctions_ = {};
+  this.namespace = namespace;
 }
 
 APIFunctions.prototype.register = function(apiName, apiFunction) {
@@ -49,7 +52,17 @@ APIFunctions.prototype.setHook_ =
 
 APIFunctions.prototype.setHandleRequest =
     function(apiName, customizedFunction) {
-  return this.setHook_(apiName, 'handleRequest', customizedFunction);
+  var prefix = this.namespace;
+  return this.setHook_(apiName, 'handleRequest',
+    function() {
+      var ret = customizedFunction.apply(this, arguments);
+      // Logs API calls to the Activity Log if it doesn't go through an
+      // ExtensionFunction.
+      if (!sendRequestHandler.getCalledSendRequest())
+        logActivity(extensionId, prefix + "." + apiName,
+            Array.prototype.slice.call(arguments));
+      return ret;
+    });
 };
 
 APIFunctions.prototype.setUpdateArgumentsPostValidate =
@@ -135,7 +148,7 @@ var platform = getPlatform();
 
 function Binding(schema) {
   this.schema_ = schema;
-  this.apiFunctions_ = new APIFunctions();
+  this.apiFunctions_ = new APIFunctions(schema.namespace);
   this.customEvent_ = null;
   this.customHooks_ = [];
 };
@@ -288,6 +301,8 @@ Binding.prototype = {
           if (this.updateArgumentsPostValidate)
             args = this.updateArgumentsPostValidate.apply(this, args);
 
+          sendRequestHandler.clearCalledSendRequest();
+
           var retval;
           if (this.handleRequest) {
             retval = this.handleRequest.apply(this, args);
@@ -299,6 +314,7 @@ Binding.prototype = {
                                  this.definition.parameters,
                                  optArgs);
           }
+          sendRequestHandler.clearCalledSendRequest();
 
           // Validate return value if defined - only in debug.
           if (chromeHidden.validateCallbacks &&

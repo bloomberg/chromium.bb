@@ -48,6 +48,8 @@
         'renderer/automation/automation_renderer_helper.h',
         'renderer/benchmarking_extension.cc',
         'renderer/benchmarking_extension.h',
+        'renderer/extensions/api_activity_logger.cc',
+        'renderer/extensions/api_activity_logger.h',
         'renderer/extensions/api_definitions_natives.cc',
         'renderer/extensions/api_definitions_natives.h',
         'renderer/extensions/app_bindings.cc',

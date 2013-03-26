@@ -17,6 +17,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
 
 class CookieSettings;
+struct ExtensionHostMsg_APIAction_Params;
 struct ExtensionHostMsg_DOMAction_Params;
 struct ExtensionHostMsg_Request_Params;
 class ExtensionInfoMap;
@@ -152,6 +153,9 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
   void OnExtensionSuspendAck(const std::string& extension_id);
   void OnExtensionGenerateUniqueID(int* unique_id);
   void OnExtensionResumeRequests(int route_id);
+  void OnAddAPIActionToExtensionActivityLog(
+      const std::string& extension_id,
+      const ExtensionHostMsg_APIAction_Params& params);
   void OnAddDOMActionToExtensionActivityLog(
       const std::string& extension_id,
       const ExtensionHostMsg_DOMAction_Params& params);

@@ -5,5 +5,6 @@
   "permissions": [ "cookies", "tabs", "webRequest", "webRequestBlocking",
                    "http://*/*", "https://*/*" ],
   "options_page": "options.html",
-  "manifest_version": 2
+  "manifest_version": 2,
+  "omnibox": { "keyword" : "hello" }
 }

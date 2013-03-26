@@ -13,6 +13,10 @@ var validate = require('schemaUtils').validate;
 // All outstanding requests from sendRequest().
 var requests = {};
 
+// Used to prevent double Activity Logging for API calls that use both custom
+// bindings and ExtensionFunctions (via sendRequest).
+var calledSendRequest = false;
+
 // Callback handling.
 chromeHidden.handleResponse = function(requestId, name,
                                        success, responseList, error) {
@@ -103,6 +107,7 @@ function prepareRequest(args, argSchemas) {
 //   thread.
 // - preserveNullInObjects: true if it is safe for null to be in objects.
 function sendRequest(functionName, args, argSchemas, optArgs) {
+  calledSendRequest = true;
   if (!optArgs)
     optArgs = {};
   var request = prepareRequest(args, argSchemas);
@@ -134,4 +139,14 @@ function sendRequest(functionName, args, argSchemas, optArgs) {
                         optArgs.preserveNullInObjects);
 }
 
+function getCalledSendRequest() {
+  return calledSendRequest;
+}
+
+function clearCalledSendRequest() {
+  calledSendRequest = false;
+}
+
 exports.sendRequest = sendRequest;
+exports.getCalledSendRequest = getCalledSendRequest;
+exports.clearCalledSendRequest = clearCalledSendRequest;

@@ -30,6 +30,18 @@
 
 IPC_ENUM_TRAITS(chrome::ViewType)
 
+// Parameters structure for ExtensionHostMsg_AddAPIActionToActivityLog.
+IPC_STRUCT_BEGIN(ExtensionHostMsg_APIAction_Params)
+  // API name.
+  IPC_STRUCT_MEMBER(std::string, api_call)
+
+  // List of arguments.
+  IPC_STRUCT_MEMBER(ListValue, arguments)
+
+  // Extra logging information.
+  IPC_STRUCT_MEMBER(std::string, extra)
+IPC_STRUCT_END()
+
 // Parameters structure for ExtensionHostMsg_AddDOMActionToActivityLog.
 IPC_STRUCT_BEGIN(ExtensionHostMsg_DOMAction_Params)
   // URL of the page.
@@ -588,7 +600,12 @@ IPC_MESSAGE_CONTROL1(ExtensionHostMsg_ResumeRequests, int /* route_id */)
 IPC_MESSAGE_ROUTED1(ExtensionHostMsg_UpdateDraggableRegions,
                     std::vector<extensions::DraggableRegion> /* regions */)
 
-// Sent by the renderer to log a DOM action on the extension activity log.
+// Sent by the renderer to log an API action to the extension activity log.
+IPC_MESSAGE_CONTROL2(ExtensionHostMsg_AddAPIActionToActivityLog,
+                     std::string /* extension_id */,
+                     ExtensionHostMsg_APIAction_Params)
+
+// Sent by the renderer to log a DOM action to the extension activity log.
 IPC_MESSAGE_CONTROL2(ExtensionHostMsg_AddDOMActionToActivityLog,
                      std::string /* extension_id */,
                      ExtensionHostMsg_DOMAction_Params)

@@ -15,6 +15,8 @@
 
 using WebKit::WebString;
 
+// Used to log DOM API calls from within WebKit. The events are sent via IPC to
+// extensions::ActivityLog for recording and display.
 namespace extensions {
 
 class DOMActivityLogger: public WebKit::WebDOMActivityLogger {

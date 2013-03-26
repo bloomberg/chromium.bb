@@ -23,6 +23,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/common/view_type.h"
 #include "chrome/renderer/chrome_render_process_observer.h"
+#include "chrome/renderer/extensions/api_activity_logger.h"
 #include "chrome/renderer/extensions/api_definitions_natives.h"
 #include "chrome/renderer/extensions/app_bindings.h"
 #include "chrome/renderer/extensions/app_runtime_custom_bindings.h"
@@ -728,6 +729,8 @@ void Dispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
   module_system->RegisterNativeHandler(
       "contentWatcherNative",
       content_watcher_->MakeNatives(v8_context));
+  module_system->RegisterNativeHandler("activityLogger",
+      scoped_ptr<NativeHandler>(new APIActivityLogger(this, v8_context)));
 
   // Natives used by multiple APIs.
   module_system->RegisterNativeHandler("file_system_natives",

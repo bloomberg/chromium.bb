@@ -54,6 +54,20 @@ function makeApiCall() {
   setCompleted('makeApiCall');
 }
 
+// Makes an API call that has a custom binding.
+function makeSpecialApiCalls() {
+  var url = chrome.extension.getURL("image/cat.jpg");
+  var noparam = chrome.extension.getViews();
+  setCompleted('makeSpecialApiCalls');
+}
+
+// Checks that we don't double-log calls that go through setHandleRequest
+// *and* the ExtensionFunction machinery.
+function checkNoDoubleLogging() {
+  chrome.omnibox.setDefaultSuggestion({description: 'hello world'});
+  setCompleted('checkNoDoubleLogging');
+}
+
 // Makes an API call that the extension doesn't have permission for.
 function makeBlockedApiCall() {
   try {
@@ -164,12 +178,14 @@ function doWebRequestModifications() {
 // Attach the tests to buttons.
 function setupEvents() {
   $('api_call').addEventListener('click', makeApiCall);
+  $('special_call').addEventListener('click', makeSpecialApiCalls);
   $('blocked_call').addEventListener('click', makeBlockedApiCall);
   $('inject_cs').addEventListener('click', injectContentScript);
   $('inject_blob').addEventListener('click', injectScriptBlob);
   $('background_xhr').addEventListener('click', doBackgroundXHR);
   $('cs_xhr').addEventListener('click', doContentScriptXHR);
   $('webrequest').addEventListener('click', doWebRequestModifications);
+  $('double').addEventListener('click', checkNoDoubleLogging);
 
   completed = 0;
   total = document.getElementsByTagName('button').length;

@@ -57,6 +57,31 @@ using WebKit::WebSecurityOrigin;
 
 namespace {
 
+void AddAPIActionToExtensionActivityLog(
+    Profile* profile,
+    const extensions::Extension* extension,
+    const std::string& api_call,
+    scoped_ptr<ListValue> args,
+    const std::string& extra) {
+  // The ActivityLog can only be accessed from the main (UI) thread.  If we're
+  // running on the wrong thread, re-dispatch from the main thread.
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    BrowserThread::PostTask(BrowserThread::UI,
+                            FROM_HERE,
+                            base::Bind(&AddAPIActionToExtensionActivityLog,
+                                       profile,
+                                       extension,
+                                       api_call,
+                                       base::Passed(&args),
+                                       extra));
+  } else {
+    extensions::ActivityLog* activity_log =
+        extensions::ActivityLog::GetInstance(profile);
+    if (activity_log && activity_log->IsLogEnabled())
+      activity_log->LogAPIAction(extension, api_call, args.get(), extra);
+  }
+}
+
 void AddDOMActionToExtensionActivityLog(
     Profile* profile,
     const extensions::Extension* extension,
@@ -81,7 +106,7 @@ void AddDOMActionToExtensionActivityLog(
   } else {
     extensions::ActivityLog* activity_log =
         extensions::ActivityLog::GetInstance(profile);
-    if (activity_log)
+    if (activity_log && activity_log->IsLogEnabled())
       activity_log->LogDOMAction(extension, url, url_title,
                                  api_call, args.get(), extra);
   }
@@ -153,6 +178,8 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_SuspendAck, OnExtensionSuspendAck)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_ResumeRequests,
                         OnExtensionResumeRequests);
+    IPC_MESSAGE_HANDLER(ExtensionHostMsg_AddAPIActionToActivityLog,
+                        OnAddAPIActionToExtensionActivityLog);
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_AddDOMActionToActivityLog,
                         OnAddDOMActionToExtensionActivityLog);
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_AllowDatabase, OnAllowDatabase)
@@ -560,6 +587,19 @@ void ChromeRenderMessageFilter::OnExtensionGenerateUniqueID(int* unique_id) {
 void ChromeRenderMessageFilter::OnExtensionResumeRequests(int route_id) {
   content::ResourceDispatcherHost::Get()->ResumeBlockedRequestsForRoute(
       render_process_id_, route_id);
+}
+
+void ChromeRenderMessageFilter::OnAddAPIActionToExtensionActivityLog(
+    const std::string& extension_id,
+    const ExtensionHostMsg_APIAction_Params& params) {
+  const extensions::Extension* extension =
+      extension_info_map_->extensions().GetByID(extension_id);
+  scoped_ptr<ListValue> args(params.arguments.DeepCopy());
+  // The activity is recorded as an API action in the extension
+  // activity log.
+  AddAPIActionToExtensionActivityLog(profile_, extension,
+                                     params.api_call, args.Pass(),
+                                     params.extra);
 }
 
 void ChromeRenderMessageFilter::OnAddDOMActionToExtensionActivityLog(
