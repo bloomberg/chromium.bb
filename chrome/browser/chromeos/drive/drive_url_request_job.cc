@@ -474,9 +474,10 @@ void DriveURLRequestJob::OnUrlFetchDownloadData(
 
   if (download_data->empty())
     return;
-  // Copy from download data into download buffer.
-  download_buf_.assign(download_data->data(), download_data->length());
-  download_buf_remaining_.set(download_buf_.data(), download_buf_.size());
+
+  // Move the ownership from |download_data| to |pending_downloaded_data_|.
+  pending_downloaded_data_.push_back(download_data.release());
+
   // If this is the first data we have, report request has started successfully.
   if (!streaming_download_) {
     streaming_download_ = true;
@@ -520,30 +521,41 @@ bool DriveURLRequestJob::ContinueReadFromDownloadData(int* bytes_read) {
 bool DriveURLRequestJob::ReadFromDownloadData() {
   DCHECK(streaming_download_);
 
-  // If download buffer is empty or there's no read buffer, return false.
-  if (download_buf_remaining_.empty() ||
+  // If either download data or read buffer is not available, do nothing.
+  if (pending_downloaded_data_.empty() ||
       !read_buf_ || read_buf_remaining_.empty()) {
     return false;
   }
 
-  // Number of bytes to read is the lesser of remaining bytes in read buffer or
-  // written bytes in download buffer.
-  int bytes_to_read = std::min(read_buf_remaining_.size(),
-                               download_buf_remaining_.size());
-  // If read buffer doesn't have enough space, there will be bytes in download
-  // buffer that will not be copied to read buffer.
-  int bytes_not_copied = download_buf_remaining_.size() - bytes_to_read;
-  // Copy from download buffer to read buffer.
-  const size_t offset = read_buf_remaining_.data() - read_buf_->data();
-  std::memmove(read_buf_->data() + offset, download_buf_remaining_.data(),
-               bytes_to_read);
-  // Advance read buffer.
-  RecordBytesRead(bytes_to_read);
-  DVLOG(1) << "Copied from download data: bytes_read=" << bytes_to_read;
-  // If download buffer has bytes that are not copied over, move them to
-  // beginning of download buffer.
-  if (bytes_not_copied > 0)
-    download_buf_remaining_.remove_prefix(bytes_to_read);
+  // Copy the downloaded data to |read_buf_| as much as possible.
+  size_t index = 0;
+  for (;
+       index < pending_downloaded_data_.size() && !read_buf_remaining_.empty();
+       ++index) {
+    const std::string& chunk = *pending_downloaded_data_[index];
+    DCHECK(!chunk.empty());
+    if (chunk.size() > read_buf_remaining_.size()) {
+      // There is no enough space to store the chunk'ed data.
+      // So copy the first part, consume it, and end the loop without
+      // increment |index|.
+      int bytes_to_read = read_buf_remaining_.size();
+      const size_t offset = read_buf_remaining_.data() - read_buf_->data();
+      std::memmove(read_buf_->data() + offset, chunk.data(), bytes_to_read);
+      RecordBytesRead(bytes_to_read);
+      DVLOG(1) << "Copied from download data: bytes_read=" << bytes_to_read;
+      pending_downloaded_data_[index]->erase(0, bytes_to_read);
+      break;
+    }
+
+    const size_t offset = read_buf_remaining_.data() - read_buf_->data();
+    std::memmove(read_buf_->data() + offset, chunk.data(), chunk.size());
+    RecordBytesRead(chunk.size());
+    DVLOG(1) << "Copied from download data: bytes_read=" << chunk.size();
+  }
+
+  // Consume the copied downloaded data.
+  pending_downloaded_data_.erase(pending_downloaded_data_.begin(),
+                                 pending_downloaded_data_.begin() + index);
 
   // Return true if read buffer is filled up or there's no more bytes to read.
   return read_buf_remaining_.empty() || remaining_bytes_ == 0;

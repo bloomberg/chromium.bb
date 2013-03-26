@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/string_piece.h"
 #include "chrome/browser/chromeos/drive/drive_file_error.h"
@@ -35,6 +36,10 @@ class DriveFileSystemInterface;
 // requests for drive resources and DriveFileSytem.  It exposes content URLs
 // formatted as drive://<resource-id>.
 // The methods should be run on IO thread.
+// This class seems to have some timing issue and to handle edge cases somehow
+// wrongly. Also, probably because of the requirement change, the code path
+// is getting complicated.
+// TODO(hidehiko): Clean the code up and handles edge cases correctly.
 class DriveURLRequestJob : public net::URLRequestJob {
  public:
 
@@ -131,8 +136,7 @@ class DriveURLRequestJob : public net::URLRequestJob {
   bool streaming_download_;
   scoped_refptr<net::IOBuffer> read_buf_;
   base::StringPiece read_buf_remaining_;
-  std::string download_buf_;
-  base::StringPiece download_buf_remaining_;
+  ScopedVector<std::string> pending_downloaded_data_;
 
   // This should remain the last member so it'll be destroyed first and
   // invalidate its weak pointers before other members are destroyed.
