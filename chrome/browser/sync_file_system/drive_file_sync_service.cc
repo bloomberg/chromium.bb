@@ -1226,7 +1226,7 @@ DriveFileSyncService::ResolveLocalSyncOperationType(
       url, &remote_change);
 
   if (has_remote_change) {
-    if (param && !has_metadata)
+    if (param && param->drive_metadata.resource_id().empty())
       param->drive_metadata.set_resource_id(remote_change.resource_id);
 
     // Remote change for the file identified by |url| exists in the pending
@@ -1304,7 +1304,6 @@ void DriveFileSyncService::DidUploadNewFileForLocalSync(
     const std::string& resource_id,
     const std::string& file_md5) {
   DCHECK(param);
-  DCHECK(!param->has_drive_metadata);
   const FileSystemURL& url = param->url;
   if (error == google_apis::HTTP_CREATED) {
     param->drive_metadata.set_resource_id(resource_id);
