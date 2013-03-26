@@ -81,7 +81,7 @@ TEST(IBusObjectTest, WriteReadTest) {
   // Check the fourth boolean value.
   bool expected_bool = true;
   ASSERT_TRUE(ibus_object_reader.PopBool(&expected_bool));
-  EXPECT_EQ(kSampleBool, expected_bool);
+  EXPECT_TRUE(kSampleBool == expected_bool);
   // Check the fifth value which is array of uint32.
   dbus::MessageReader array_reader(NULL);
   ASSERT_TRUE(ibus_object_reader.PopArray(&array_reader));
@@ -215,7 +215,7 @@ TEST(IBusObjectTest, PopAppendIBusPropertyTest) {
   EXPECT_EQ(kSampleLabel, result_property.label());
   EXPECT_EQ(kSampleTooltip, result_property.tooltip());
   EXPECT_EQ(kSampleVisible, result_property.visible());
-  EXPECT_EQ(kSampleChecked, result_property.checked());
+  EXPECT_TRUE(kSampleChecked == result_property.checked());
 }
 
 }  // namespace chromeos

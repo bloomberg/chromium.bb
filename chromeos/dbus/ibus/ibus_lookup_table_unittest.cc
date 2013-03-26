@@ -60,7 +60,7 @@ TEST(IBusLookupTable, WriteReadTest) {
   // Check values.
   EXPECT_EQ(kPageSize, target_lookup_table.page_size());
   EXPECT_EQ(kCursorPosition, target_lookup_table.cursor_position());
-  EXPECT_EQ(kIsCursorVisible, target_lookup_table.is_cursor_visible());
+  EXPECT_TRUE(kIsCursorVisible == target_lookup_table.is_cursor_visible());
   EXPECT_EQ(kOrientation, target_lookup_table.orientation());
   ASSERT_EQ(2UL, target_lookup_table.candidates().size());
   EXPECT_EQ(kSampleText1, target_lookup_table.candidates().at(0).value);
@@ -195,8 +195,8 @@ TEST(IBusLookupTable, ReadMozcCandidateTest) {
   EXPECT_EQ(kSampleText2, target_lookup_table.candidates().at(1).value);
   EXPECT_EQ(kSampleLabel1, target_lookup_table.candidates().at(0).label);
   EXPECT_EQ(kSampleLabel2, target_lookup_table.candidates().at(1).label);
-  EXPECT_EQ(kShowWindowAtComposition,
-            target_lookup_table.show_window_at_composition());
+  EXPECT_TRUE(kShowWindowAtComposition ==
+              target_lookup_table.show_window_at_composition());
 }
 
 TEST(IBusLookupTable, IsEqualTest) {
