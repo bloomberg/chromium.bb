@@ -581,7 +581,7 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   layer->SetNonFastScrollableRegion(non_fast_scrollable_region_);
   layer->SetTouchEventHandlerRegion(touch_event_handler_region_);
   layer->SetContentsOpaque(contents_opaque_);
-  if (!layer->OpacityIsAnimatingOnImplOnly())
+  if (!layer->OpacityIsAnimatingOnImplOnly() && !OpacityIsAnimating())
     layer->SetOpacity(opacity_);
   DCHECK(!(OpacityIsAnimating() && layer->OpacityIsAnimatingOnImplOnly()));
   layer->SetPosition(position_);
@@ -591,7 +591,7 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   layer->SetPreserves3d(preserves_3d());
   layer->SetUseParentBackfaceVisibility(use_parent_backface_visibility_);
   layer->SetSublayerTransform(sublayer_transform_);
-  if (!layer->TransformIsAnimatingOnImplOnly())
+  if (!layer->TransformIsAnimatingOnImplOnly() && !TransformIsAnimating())
     layer->SetTransform(transform_);
   DCHECK(!(TransformIsAnimating() && layer->TransformIsAnimatingOnImplOnly()));
 
