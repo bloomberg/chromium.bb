@@ -55,7 +55,7 @@ cr.define('login', function() {
    * @type {number}
    * @const
    */
-  var HELP_TOPIC_PUBLIC_SESSION = 3017014;
+  var HELP_TOPIC_PUBLIC_SESSION = 3041033;
 
   /**
    * Oauth token status. These must match UserManager::OAuthTokenStatus.
