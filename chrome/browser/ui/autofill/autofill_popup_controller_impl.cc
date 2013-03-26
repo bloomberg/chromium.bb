@@ -157,6 +157,14 @@ void AutofillPopupControllerImpl::Show(
 
   if (!view_) {
     view_ = AutofillPopupView::Create(this);
+
+    // It is possible to fail to create the popup, in this case
+    // treat the popup as hiding right away.
+    if (!view_) {
+      Hide();
+      return;
+    }
+
     ShowView();
   } else {
     UpdateBoundsAndRedrawPopup();

@@ -20,7 +20,11 @@ class AutofillPopupViewViews : public AutofillPopupView,
                                public views::WidgetDelegateView,
                                public views::WidgetObserver {
  public:
-  explicit AutofillPopupViewViews(AutofillPopupController* controller);
+  // The observing widget should be the top level widget for the native
+  // view, which we need to listen to for several signals that indicate the
+  // popup should be closed.
+  AutofillPopupViewViews(AutofillPopupController* controller,
+                         views::Widget* observing_widget);
 
  private:
   virtual ~AutofillPopupViewViews();

@@ -29,9 +29,9 @@ const SkColor kValueTextColor = SkColorSetARGB(0xFF, 0x00, 0x00, 0x00);
 }  // namespace
 
 AutofillPopupViewViews::AutofillPopupViewViews(
-    AutofillPopupController* controller)
+    AutofillPopupController* controller, views::Widget* observing_widget)
     : controller_(controller),
-      observing_widget_(NULL) {}
+      observing_widget_(observing_widget) {}
 
 AutofillPopupViewViews::~AutofillPopupViewViews() {
   if (controller_) {
@@ -117,6 +117,8 @@ void AutofillPopupViewViews::OnWidgetBoundsChanged(
 
 void AutofillPopupViewViews::Show() {
   if (!GetWidget()) {
+    observing_widget_->AddObserver(this);
+
     // The widget is destroyed by the corresponding NativeWidget, so we use
     // a weak pointer to hold the reference and don't have to worry about
     // deletion.
@@ -126,12 +128,6 @@ void AutofillPopupViewViews::Show() {
     params.parent = controller_->container_view();
     widget->Init(params);
     widget->SetContentsView(this);
-
-    // Setup an observer to check for when the browser moves or changes size,
-    // since the popup should always be hidden in those cases.
-    observing_widget_ = views::Widget::GetTopLevelWidgetForNativeView(
-        controller_->container_view());
-    observing_widget_->AddObserver(this);
   }
 
   set_border(views::Border::CreateSolidBorder(kBorderThickness, kBorderColor));
@@ -152,8 +148,7 @@ void AutofillPopupViewViews::UpdateBoundsAndRedrawPopup() {
 void AutofillPopupViewViews::HideInternal() {
   AutofillPopupView::Hide();
 
-  if (observing_widget_)
-    observing_widget_->RemoveObserver(this);
+  observing_widget_->RemoveObserver(this);
 }
 
 void AutofillPopupViewViews::DrawAutofillEntry(gfx::Canvas* canvas,
@@ -217,5 +212,14 @@ void AutofillPopupViewViews::DrawAutofillEntry(gfx::Canvas* canvas,
 
 AutofillPopupView* AutofillPopupView::Create(
     AutofillPopupController* controller) {
-  return new AutofillPopupViewViews(controller);
+  views::Widget* observing_widget =
+      views::Widget::GetTopLevelWidgetForNativeView(
+          controller->container_view());
+
+  // If the top level widget can't be found, cancel the popup since we can't
+  // fully set it up.
+  if (!observing_widget)
+    return NULL;
+
+  return new AutofillPopupViewViews(controller, observing_widget);
 }
