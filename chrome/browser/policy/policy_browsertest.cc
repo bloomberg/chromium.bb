@@ -102,6 +102,7 @@
 #include "policy/policy_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "webkit/plugins/npapi/plugin_utils.h"
@@ -555,6 +556,21 @@ class PolicyTest : public InProcessBrowserTest {
     DCHECK(MessageLoop::current());
     base::RunLoop loop;
     loop.RunUntilIdle();
+  }
+
+  // Sends a mouse click at the given coordinates to the current renderer.
+  void PerformClick(int x, int y) {
+    content::WebContents* contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
+    WebKit::WebMouseEvent click_event;
+    click_event.type = WebKit::WebInputEvent::MouseDown;
+    click_event.button = WebKit::WebMouseEvent::ButtonLeft;
+    click_event.clickCount = 1;
+    click_event.x = x;
+    click_event.y = y;
+    contents->GetRenderViewHost()->ForwardMouseEvent(click_event);
+    click_event.type = WebKit::WebInputEvent::MouseUp;
+    contents->GetRenderViewHost()->ForwardMouseEvent(click_event);
   }
 
   MockConfigurationPolicyProvider provider_;
@@ -1315,6 +1331,52 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionAllowedTypes) {
 
   // The user can remove the extension.
   UninstallExtension(kHostedAppCrxId, true);
+}
+
+// Checks that a click on an extension CRX download triggers the extension
+// installation prompt without further user interaction when the source is
+// whitelisted by policy.
+IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallSources) {
+  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kAppsGalleryInstallAutoConfirmForTests, "accept");
+
+  const GURL install_source_url(URLRequestMockHTTPJob::GetMockUrl(
+      base::FilePath(FILE_PATH_LITERAL("extensions/*"))));
+  const GURL referrer_url(URLRequestMockHTTPJob::GetMockUrl(
+      base::FilePath(FILE_PATH_LITERAL("policy/*"))));
+
+  const GURL download_page_url(URLRequestMockHTTPJob::GetMockUrl(base::FilePath(
+      FILE_PATH_LITERAL("policy/extension_install_sources_test.html"))));
+  ui_test_utils::NavigateToURL(browser(), download_page_url);
+
+  // As long as the policy is not present, extensions are considered dangerous.
+  content::DownloadTestObserverTerminal download_observer(
+      content::BrowserContext::GetDownloadManager(browser()->profile()), 1,
+      content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_DENY);
+  PerformClick(0, 0);
+  download_observer.WaitForFinished();
+
+  // Install the policy and trigger another download.
+  base::ListValue install_sources;
+  install_sources.AppendString(install_source_url.spec());
+  install_sources.AppendString(referrer_url.spec());
+  PolicyMap policies;
+  policies.Set(key::kExtensionInstallSources, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, install_sources.DeepCopy());
+  UpdateProviderPolicy(policies);
+
+  content::WindowedNotificationObserver observer(
+      chrome::NOTIFICATION_EXTENSION_INSTALLED,
+      content::NotificationService::AllSources());
+  PerformClick(1, 0);
+  observer.Wait();
+
+  content::Details<const extensions::Extension> details = observer.details();
+  EXPECT_EQ(kAdBlockCrxId, details->id());
+
+  // The first extension shouldn't be present, the second should be there.
+  EXPECT_FALSE(extension_service()->GetExtensionById(kGoodCrxId, true));
+  EXPECT_TRUE(extension_service()->GetExtensionById(kAdBlockCrxId, false));
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, HomepageLocation) {
