@@ -486,7 +486,6 @@
         '../webkit/fileapi/webfilewriter_base_unittest.cc',
         '../webkit/glue/cpp_variant_unittest.cc',
         '../webkit/glue/glue_serialize_unittest.cc',
-        '../webkit/glue/regular_expression_unittest.cc',
         '../webkit/glue/resource_request_body_unittest.cc',
         '../webkit/glue/multipart_response_delegate_unittest.cc',
         '../webkit/glue/touch_fling_gesture_curve_unittest.cc',
