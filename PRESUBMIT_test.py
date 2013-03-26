@@ -295,7 +295,7 @@ class IncludeOrderTest(unittest.TestCase):
     self.assertEqual(0, len(warnings))
 
 
-class VersionControlerConflictsTest(unittest.TestCase):
+class VersionControlConflictsTest(unittest.TestCase):
   def testTypicalConflict(self):
     lines = ['<<<<<<< HEAD',
              '  base::ScopedTempDir temp_dir_;',
@@ -354,6 +354,26 @@ class BadExtensionsTest(unittest.TestCase):
     ])
     results = PRESUBMIT.GetPreferredTrySlaves(None, mock_change)
     self.assertEqual(0, len(results))
+
+
+class InvalidOSMacroNamesTest(unittest.TestCase):
+  def testInvalidOSMacroNames(self):
+    lines = ['#if defined(OS_WINDOWS)',
+             ' #elif defined(OS_WINDOW)',
+             ' # if defined(OS_MACOSX) || defined(OS_CHROME)',
+             '# else  // defined(OS_MAC)',
+             '#endif  // defined(OS_MACOS)']
+    errors = PRESUBMIT._CheckForInvalidOSMacrosInFile(
+        MockInputApi(), MockFile('some/path/foo_platform.cc', lines))
+    self.assertEqual(len(lines), len(errors))
+    self.assertTrue(':1 OS_WINDOWS' in errors[0])
+    self.assertTrue('(did you mean OS_WIN?)' in errors[0])
+
+  def testValidOSMacroNames(self):
+    lines = ['#if defined(%s)' % m for m in PRESUBMIT._VALID_OS_MACROS]
+    errors = PRESUBMIT._CheckForInvalidOSMacrosInFile(
+        MockInputApi(), MockFile('some/path/foo_platform.cc', lines))
+    self.assertEqual(0, len(errors))
 
 
 if __name__ == '__main__':

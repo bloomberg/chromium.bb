@@ -165,6 +165,25 @@ _BANNED_CPP_FUNCTIONS = (
 )
 
 
+_VALID_OS_MACROS = (
+    # Please keep sorted.
+    'OS_ANDROID',
+    'OS_BSD',
+    'OS_CAT',       # For testing.
+    'OS_CHROMEOS',
+    'OS_FREEBSD',
+    'OS_IOS',
+    'OS_LINUX',
+    'OS_MACOSX',
+    'OS_NACL',
+    'OS_OPENBSD',
+    'OS_POSIX',
+    'OS_SOLARIS',
+    'OS_SUN',       # Not in build/build_config.h but in skia.
+    'OS_WIN',
+)
+
+
 def _CheckNoProductionCodeUsingTestOnlyFunctions(input_api, output_api):
   """Attempts to prevent use of functions intended only for testing in
   non-testing code. For now this is just a best-effort implementation
@@ -714,6 +733,7 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckPatchFiles(input_api, output_api))
   results.extend(_CheckHardcodedGoogleHostsInLowerLayers(input_api, output_api))
   results.extend(_CheckNoAbbreviationInPngFileName(input_api, output_api))
+  results.extend(_CheckForInvalidOSMacros(input_api, output_api))
 
   if any('PRESUBMIT.py' == f.LocalPath() for f in input_api.AffectedFiles()):
     results.extend(input_api.canned_checks.RunUnitTestsInDirectory(
@@ -804,6 +824,56 @@ def _CheckPatchFiles(input_api, output_api):
         "Don't commit .rej and .orig files.", problems)]
   else:
     return []
+
+
+def _DidYouMeanOSMacro(bad_macro):
+  try:
+    return {'A': 'OS_ANDROID',
+            'B': 'OS_BSD',
+            'C': 'OS_CHROMEOS',
+            'F': 'OS_FREEBSD',
+            'L': 'OS_LINUX',
+            'M': 'OS_MACOSX',
+            'N': 'OS_NACL',
+            'O': 'OS_OPENBSD',
+            'P': 'OS_POSIX',
+            'S': 'OS_SOLARIS',
+            'W': 'OS_WIN'}[bad_macro[3].upper()]
+  except KeyError:
+    return ''
+
+
+def _CheckForInvalidOSMacrosInFile(input_api, f):
+  """Check for sensible looking, totally invalid OS macros."""
+  preprocessor_statement = input_api.re.compile(r'^\s*#')
+  os_macro = input_api.re.compile(r'defined\((OS_[^)]+)\)')
+  results = []
+  for lnum, line in f.ChangedContents():
+    if preprocessor_statement.search(line):
+      for match in os_macro.finditer(line):
+        if not match.group(1) in _VALID_OS_MACROS:
+          good = _DidYouMeanOSMacro(match.group(1))
+          did_you_mean = ' (did you mean %s?)' % good if good else ''
+          results.append('    %s:%d %s%s' % (f.LocalPath(),
+                                             lnum,
+                                             match.group(1),
+                                             did_you_mean))
+  return results
+
+
+def _CheckForInvalidOSMacros(input_api, output_api):
+  """Check all affected files for invalid OS macros."""
+  bad_macros = []
+  for f in input_api.AffectedFiles():
+    if not f.LocalPath().endswith(('.py', '.js', '.html', '.css')):
+      bad_macros.extend(_CheckForInvalidOSMacrosInFile(input_api, f))
+
+  if not bad_macros:
+    return []
+
+  return [output_api.PresubmitError(
+      'Possibly invalid OS macro[s] found. Please fix your code\n'
+      'or add your macro to src/PRESUBMIT.py.', bad_macros)]
 
 
 def CheckChangeOnUpload(input_api, output_api):
