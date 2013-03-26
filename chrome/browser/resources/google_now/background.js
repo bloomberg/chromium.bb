@@ -396,7 +396,13 @@ function onNotificationClicked(notificationId, selector) {
         return;
       }
 
-      chrome.tabs.create({url: url});
+      chrome.tabs.create({url: url}, function(tab) {
+        if (!tab) {
+          chrome.windows.create({url: url}, function(window) {
+            // TODO(vadimt): Report an error if window fails to create.
+          });
+        }
+      });
       callback();
     });
   });
