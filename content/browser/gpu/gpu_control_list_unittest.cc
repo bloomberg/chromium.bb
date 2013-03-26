@@ -827,6 +827,228 @@ TEST_F(GpuControlListTest, LexicalDriverVersion) {
             },
             "vendor_id": "0x1002",
             "driver_version": {
+              "op": "<",
+              "style": "lexical",
+              "number": "8.201"
+            },
+            "features": [
+              "test_feature_0"
+            ]
+          }
+        ]
+      }
+  );
+  GPUInfo gpu_info;
+  gpu_info.gpu.vendor_id = 0x1002;
+
+  scoped_ptr<GpuControlList> control_list(Create());
+  EXPECT_TRUE(control_list->LoadList(lexical_json, GpuControlList::kAllOs));
+
+  gpu_info.driver_version = "8.001.100";
+  int features = control_list->MakeDecision(
+      GpuControlList::kOsLinux, kOsVersion, gpu_info);
+  EXPECT_EQ(TEST_FEATURE_0, features);
+
+  gpu_info.driver_version = "8.109";
+  features = control_list->MakeDecision(
+      GpuControlList::kOsLinux, kOsVersion, gpu_info);
+  EXPECT_EQ(TEST_FEATURE_0, features);
+
+  gpu_info.driver_version = "8.10900";
+  features = control_list->MakeDecision(
+      GpuControlList::kOsLinux, kOsVersion, gpu_info);
+  EXPECT_EQ(TEST_FEATURE_0, features);
+
+  gpu_info.driver_version = "8.109.100";
+  features = control_list->MakeDecision(
+      GpuControlList::kOsLinux, kOsVersion, gpu_info);
+  EXPECT_EQ(TEST_FEATURE_0, features);
+
+  gpu_info.driver_version = "8.2";
+  features = control_list->MakeDecision(
+      GpuControlList::kOsLinux, kOsVersion, gpu_info);
+  EXPECT_EQ(TEST_FEATURE_0, features);
+
+  gpu_info.driver_version = "8.20";
+  features = control_list->MakeDecision(
+      GpuControlList::kOsLinux, kOsVersion, gpu_info);
+  EXPECT_EQ(TEST_FEATURE_0, features);
+
+  gpu_info.driver_version = "8.200";
+  features = control_list->MakeDecision(
+      GpuControlList::kOsLinux, kOsVersion, gpu_info);
+  EXPECT_EQ(TEST_FEATURE_0, features);
+
+  gpu_info.driver_version = "8.20.100";
+  features = control_list->MakeDecision(
+      GpuControlList::kOsLinux, kOsVersion, gpu_info);
+  EXPECT_EQ(TEST_FEATURE_0, features);
+
+  gpu_info.driver_version = "8.201";
+  features = control_list->MakeDecision(
+      GpuControlList::kOsLinux, kOsVersion, gpu_info);
+  EXPECT_EQ(0, features);
+
+  gpu_info.driver_version = "8.2010";
+  features = control_list->MakeDecision(
+      GpuControlList::kOsLinux, kOsVersion, gpu_info);
+  EXPECT_EQ(0, features);
+
+  gpu_info.driver_version = "8.21";
+  features = control_list->MakeDecision(
+      GpuControlList::kOsLinux, kOsVersion, gpu_info);
+  EXPECT_EQ(0, features);
+
+  gpu_info.driver_version = "8.21.100";
+  features = control_list->MakeDecision(
+      GpuControlList::kOsLinux, kOsVersion, gpu_info);
+  EXPECT_EQ(0, features);
+
+  gpu_info.driver_version = "9.002";
+  features = control_list->MakeDecision(
+      GpuControlList::kOsLinux, kOsVersion, gpu_info);
+  EXPECT_EQ(0, features);
+
+  gpu_info.driver_version = "9.201";
+  features = control_list->MakeDecision(
+      GpuControlList::kOsLinux, kOsVersion, gpu_info);
+  EXPECT_EQ(0, features);
+
+  gpu_info.driver_version = "12";
+  features = control_list->MakeDecision(
+      GpuControlList::kOsLinux, kOsVersion, gpu_info);
+  EXPECT_EQ(0, features);
+
+  gpu_info.driver_version = "12.201";
+  features = control_list->MakeDecision(
+      GpuControlList::kOsLinux, kOsVersion, gpu_info);
+  EXPECT_EQ(0, features);
+}
+
+TEST_F(GpuControlListTest, LexicalDriverVersion2) {
+  const std::string lexical_json = LONG_STRING_CONST(
+      {
+        "name": "gpu control list",
+        "version": "0.1",
+        "entries": [
+          {
+            "id": 1,
+            "os": {
+              "type": "linux"
+            },
+            "vendor_id": "0x1002",
+            "driver_version": {
+              "op": "<",
+              "style": "lexical",
+              "number": "9.002"
+            },
+            "features": [
+              "test_feature_0"
+            ]
+          }
+        ]
+      }
+  );
+  GPUInfo gpu_info;
+  gpu_info.gpu.vendor_id = 0x1002;
+
+  scoped_ptr<GpuControlList> control_list(Create());
+  EXPECT_TRUE(control_list->LoadList(lexical_json, GpuControlList::kAllOs));
+
+  gpu_info.driver_version = "8.001.100";
+  int features = control_list->MakeDecision(
+      GpuControlList::kOsLinux, kOsVersion, gpu_info);
+  EXPECT_EQ(TEST_FEATURE_0, features);
+
+  gpu_info.driver_version = "8.109";
+  features = control_list->MakeDecision(
+      GpuControlList::kOsLinux, kOsVersion, gpu_info);
+  EXPECT_EQ(TEST_FEATURE_0, features);
+
+  gpu_info.driver_version = "8.10900";
+  features = control_list->MakeDecision(
+      GpuControlList::kOsLinux, kOsVersion, gpu_info);
+  EXPECT_EQ(TEST_FEATURE_0, features);
+
+  gpu_info.driver_version = "8.109.100";
+  features = control_list->MakeDecision(
+      GpuControlList::kOsLinux, kOsVersion, gpu_info);
+  EXPECT_EQ(TEST_FEATURE_0, features);
+
+  gpu_info.driver_version = "8.2";
+  features = control_list->MakeDecision(
+      GpuControlList::kOsLinux, kOsVersion, gpu_info);
+  EXPECT_EQ(TEST_FEATURE_0, features);
+
+  gpu_info.driver_version = "8.20";
+  features = control_list->MakeDecision(
+      GpuControlList::kOsLinux, kOsVersion, gpu_info);
+  EXPECT_EQ(TEST_FEATURE_0, features);
+
+  gpu_info.driver_version = "8.200";
+  features = control_list->MakeDecision(
+      GpuControlList::kOsLinux, kOsVersion, gpu_info);
+  EXPECT_EQ(TEST_FEATURE_0, features);
+
+  gpu_info.driver_version = "8.20.100";
+  features = control_list->MakeDecision(
+      GpuControlList::kOsLinux, kOsVersion, gpu_info);
+  EXPECT_EQ(TEST_FEATURE_0, features);
+
+  gpu_info.driver_version = "8.201";
+  features = control_list->MakeDecision(
+      GpuControlList::kOsLinux, kOsVersion, gpu_info);
+  EXPECT_EQ(TEST_FEATURE_0, features);
+
+  gpu_info.driver_version = "8.2010";
+  features = control_list->MakeDecision(
+      GpuControlList::kOsLinux, kOsVersion, gpu_info);
+  EXPECT_EQ(TEST_FEATURE_0, features);
+
+  gpu_info.driver_version = "8.21";
+  features = control_list->MakeDecision(
+      GpuControlList::kOsLinux, kOsVersion, gpu_info);
+  EXPECT_EQ(TEST_FEATURE_0, features);
+
+  gpu_info.driver_version = "8.21.100";
+  features = control_list->MakeDecision(
+      GpuControlList::kOsLinux, kOsVersion, gpu_info);
+  EXPECT_EQ(TEST_FEATURE_0, features);
+
+  gpu_info.driver_version = "9.002";
+  features = control_list->MakeDecision(
+      GpuControlList::kOsLinux, kOsVersion, gpu_info);
+  EXPECT_EQ(0, features);
+
+  gpu_info.driver_version = "9.201";
+  features = control_list->MakeDecision(
+      GpuControlList::kOsLinux, kOsVersion, gpu_info);
+  EXPECT_EQ(0, features);
+
+  gpu_info.driver_version = "12";
+  features = control_list->MakeDecision(
+      GpuControlList::kOsLinux, kOsVersion, gpu_info);
+  EXPECT_EQ(0, features);
+
+  gpu_info.driver_version = "12.201";
+  features = control_list->MakeDecision(
+      GpuControlList::kOsLinux, kOsVersion, gpu_info);
+  EXPECT_EQ(0, features);
+}
+
+TEST_F(GpuControlListTest, LexicalDriverVersion3) {
+  const std::string lexical_json = LONG_STRING_CONST(
+      {
+        "name": "gpu control list",
+        "version": "0.1",
+        "entries": [
+          {
+            "id": 1,
+            "os": {
+              "type": "linux"
+            },
+            "vendor_id": "0x1002",
+            "driver_version": {
               "op": "=",
               "style": "lexical",
               "number": "8.76"
