@@ -605,6 +605,7 @@ paladin = _config(
   trybot_list=True,
   description='Commit Queue',
   hw_tests_timeout=50 * 60,
+  hw_tests_file_bugs=False,
   upload_standalone_images=False,
 )
 
