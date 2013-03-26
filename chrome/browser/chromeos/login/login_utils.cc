@@ -121,6 +121,8 @@ class LoginUtilsImpl
         login_manager_(OAuthLoginManager::Create(this)),
         delegate_(NULL),
         should_restore_auth_session_(false),
+        session_restore_strategy_(
+            OAuthLoginManager::RESTORE_FROM_SAVED_OAUTH2_REFRESH_TOKEN),
         url_request_context_getter_(NULL) {
     net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
     // During tests, the browser_process may not be initialized yet causing
