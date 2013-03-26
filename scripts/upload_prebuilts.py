@@ -428,7 +428,7 @@ class PrebuiltUploader(object):
 
     # Finally, also update the pointer to the latest SDK on which polling
     # scripts rely.
-    with osutils.TempDirContextManager() as tmpdir:
+    with osutils.TempDir() as tmpdir:
       pointerfile = os.path.join(tmpdir, 'cros-sdk-latest.conf')
       remote_pointerfile = toolchain.GetSdkURL(for_gsutil=True,
                                                suburl='cros-sdk-latest.conf')

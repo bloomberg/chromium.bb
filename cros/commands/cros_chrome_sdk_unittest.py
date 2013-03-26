@@ -45,7 +45,7 @@ class ParserTest(cros_test_lib.MockTempDirTestCase):
 
 def _GSCopyMock(_self, path, dest):
   """Used to simulate a GS Copy operation."""
-  with osutils.TempDirContextManager() as tempdir:
+  with osutils.TempDir() as tempdir:
     local_path = os.path.join(tempdir, os.path.basename(path))
     osutils.Touch(local_path)
     shutil.move(local_path, dest)

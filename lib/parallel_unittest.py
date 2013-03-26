@@ -282,7 +282,7 @@ class TestHalting(cros_test_lib.MockOutputTestCase, TestBackgroundWrapper):
 
   def testTempFileCleanup(self):
     """Test that all temp files are cleaned up."""
-    with osutils.TempDirContextManager() as tempdir:
+    with osutils.TempDir() as tempdir:
       self.assertEqual(os.listdir(tempdir), [])
       self.testExceptionRaising()
       self.assertEqual(os.listdir(tempdir), [])

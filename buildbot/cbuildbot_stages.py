@@ -471,7 +471,7 @@ class SyncStage(bs.BuilderStage):
 
   def _PerformStage(self):
     self.Initialize()
-    with osutils.TempDirContextManager() as tempdir:
+    with osutils.TempDir() as tempdir:
       # Save off the last manifest.
       fresh_sync = True
       if os.path.exists(self.repo.directory) and not self._options.clobber:
@@ -1442,7 +1442,7 @@ class AUTestStage(HWTestStage):
     local_archive_path = self._archive_stage.GetArchivePath()
     remote_archive_path = self._archive_stage.GetGSUploadLocation()
 
-    with osutils.TempDirContextManager() as tempdir:
+    with osutils.TempDir() as tempdir:
       tarball = commands.BuildAUTestTarball(
           self._build_root, self._current_board, tempdir,
           self._archive_stage.GetVersion(),
@@ -1858,7 +1858,7 @@ class ArchiveStage(BoardSpecificBuilderStage):
     chrome_dir = self._SingleMatchGlob(
         os.path.join(self._pkg_dir, constants.CHROME_CP) + '-*')
     env_bzip = os.path.join(chrome_dir, 'environment.bz2')
-    with osutils.TempDirContextManager() as tempdir:
+    with osutils.TempDir() as tempdir:
       # Convert from bzip2 to tar format.
       bzip2 = cros_build_lib.FindCompressor(cros_build_lib.COMP_BZIP2)
       cros_build_lib.RunCommand(

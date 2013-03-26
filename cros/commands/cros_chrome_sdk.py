@@ -63,8 +63,7 @@ class SDKFetcher(object):
 
   def _UpdateTarball(self, url, ref):
     """Worker function to fetch tarballs"""
-    with osutils.TempDirContextManager(
-        base_dir=self.tarball_cache.staging_dir) as tempdir:
+    with osutils.TempDir(base_dir=self.tarball_cache.staging_dir) as tempdir:
       local_path = os.path.join(tempdir, os.path.basename(url))
       self.gs_ctx.Copy(url, tempdir)
       ref.SetDefault(local_path, lock=True)
@@ -429,7 +428,7 @@ class ChromeSDKCommand(cros.CrosCommand):
     # here.
     # Having a wrapper rc file will also allow us to inject bash functions into
     # the environment, not just variables.
-    with osutils.TempDirContextManager() as tempdir:
+    with osutils.TempDir() as tempdir:
       contents = []
       for key, value in env.iteritems():
         contents.append("export %s='%s'\n" % (key, value))

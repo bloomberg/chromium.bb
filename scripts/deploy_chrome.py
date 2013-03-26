@@ -447,7 +447,7 @@ def main(argv):
   else:
     logging.getLogger().setLevel(logging.INFO)
 
-  with osutils.TempDirContextManager() as tempdir:
+  with osutils.TempDir(set_global=True) as tempdir:
     staging_dir = options.staging_dir
     if not staging_dir:
       staging_dir = os.path.join(tempdir, 'chrome')

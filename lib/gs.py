@@ -123,8 +123,7 @@ class GSContext(object):
       logging.debug('Reusing cached gsutil.')
     else:
       logging.debug('Fetching gsutil.')
-      with osutils.TempDirContextManager(
-          base_dir=tar_cache.staging_dir) as tempdir:
+      with osutils.TempDir(base_dir=tar_cache.staging_dir) as tempdir:
         gsutil_tar = os.path.join(tempdir, cls.GSUTIL_TAR)
         cros_build_lib.RunCurl([cls.GSUTIL_URL, '-o', gsutil_tar],
                                debug_level=logging.DEBUG)

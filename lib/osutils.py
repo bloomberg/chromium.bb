@@ -4,7 +4,6 @@
 
 """Common file and os related utilities, including tempdir manipulation."""
 
-import contextlib
 import errno
 import logging
 import os
@@ -257,10 +256,10 @@ def FindInPathParents(path_to_find, start_path, test_func=None):
 
 
 # pylint: disable=W0212,R0904,W0702
-def _TempDirSetup(self, prefix='tmp', update_env=True, base_dir=None):
+def _TempDirSetup(self, prefix='tmp', set_global=True, base_dir=None):
   """Generate a tempdir, modifying the object, and env to use it.
 
-  Specifically, if update_env is True, then from this invocation forward,
+  Specifically, if set_global is True, then from this invocation forward,
   python and all subprocesses will use this location for their tempdir.
 
   The matching _TempDirTearDown restores the env to what it was.
@@ -270,7 +269,7 @@ def _TempDirSetup(self, prefix='tmp', update_env=True, base_dir=None):
   self.tempdir = tempfile.mkdtemp(prefix=prefix, dir=base_dir)
   os.chmod(self.tempdir, 0700)
 
-  if update_env:
+  if set_global:
     with tempfile._once_lock:
       self._tempdir_value = tempfile._get_default_tempdir()
       self._tempdir_env = tuple((x, os.environ.get(x))
@@ -313,37 +312,52 @@ def _TempDirTearDown(self, force_sudo):
           os.environ[key] = value
 
 
-@contextlib.contextmanager
-def TempDirContextManager(prefix='tmp', base_dir=None, storage=None,
-                          sudo_rm=False):
-  """ContextManager constraining all tempfile/TMPDIR activity to a tempdir
+class TempDir(object):
+  """Object that creates a temporary directory.
 
-  Arguments:
-    prefix: See tempfile.mkdtemp documentation.
-    base_dir: The directory to place the temporary directory.
-    storage: The object that will have its 'tempdir' attribute set.
-    sudo_rm: Whether the temporary dir will need root privileges to remove.
+  This object can either be used as a context manager or just as a simple
+  object. The temporary directory is stored as self.tempdir in the object, and
+  is returned as a string by a 'with' statement.
   """
-  if storage is None:
-    # Fake up a mutable object.
-    # TOOD(build): rebase this to EasyAttr from cros_test_lib once it moves
-    # to an importable location.
-    class foon(object):
-      pass
-    storage = foon()
 
-  _TempDirSetup(storage, base_dir=base_dir, prefix=prefix)
-  try:
-    yield storage.tempdir
-  finally:
-    _TempDirTearDown(storage, sudo_rm)
+  def __init__(self, **kwargs):
+    """Constructor. Creates the temporary directory.
+
+    Arguments:
+      prefix: See tempfile.mkdtemp documentation.
+      base_dir: The directory to place the temporary directory.
+      set_global: Set this directory as the global temporary directory.
+      storage: The object that will have its 'tempdir' attribute set.
+      sudo_rm: Whether the temporary dir will need root privileges to remove.
+    """
+    self.kwargs = kwargs.copy()
+    self.sudo_rm = kwargs.pop('sudo_rm', False)
+    self.tempdir = None
+    _TempDirSetup(self, **kwargs)
+
+  def Cleanup(self):
+    """Clean up the temporary directory."""
+    if self.tempdir is not None:
+      _TempDirTearDown(self, self.sudo_rm)
+      self.tempdir = None
+
+  def __enter__(self):
+    """Return the temporary directory."""
+    return self.tempdir
+
+  def __exit__(self, _type, _value, _traceback):
+    self.Cleanup()
+
+  def __del__(self):
+    self.Cleanup()
 
 
 # pylint: disable=W0212,R0904,W0702
 def TempDirDecorator(func):
   """Populates self.tempdir with path to a temporary writeable directory."""
   def f(self, *args, **kwargs):
-    with TempDirContextManager(storage=self):
+    with TempDir() as tempdir:
+      self.tempdir = tempdir
       return func(self, *args, **kwargs)
 
   f.__name__ = func.__name__

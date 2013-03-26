@@ -106,7 +106,7 @@ def main(argv):
   cros_build_lib.AssertInsideChroot()
 
   with sudo.SudoKeepAlive(ttyless_sudo=False):
-    with osutils.TempDirContextManager(sudo_rm=True) as tempdir:
+    with osutils.TempDir(set_global=True, sudo_rm=True) as tempdir:
       sysroot = os.path.join(tempdir, SYSROOT)
       os.mkdir(sysroot)
       GenerateSysroot(sysroot, options).Perform()

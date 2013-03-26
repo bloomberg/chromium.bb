@@ -679,14 +679,17 @@ class TempDirTestCase(TestCase):
   def __init__(self, *args, **kwds):
     TestCase.__init__(self, *args, **kwds)
     self.tempdir = None
+    self._tempdir_obj = None
 
   def setUp(self):
-    #pylint: disable=W0212
-    osutils._TempDirSetup(self)
+    self._tempdir_obj = osutils.TempDir(set_global=True)
+    self.tempdir = self._tempdir_obj.tempdir
 
   def tearDown(self):
-    #pylint: disable=W0212
-    osutils._TempDirTearDown(self, self.sudo_cleanup)
+    if self._tempdir_obj is not None:
+      self._tempdir_obj.Cleanup()
+      self.tempdir = None
+      self._tempdir_obj = None
 
 
 class _RunCommandMock(mox.MockObject):

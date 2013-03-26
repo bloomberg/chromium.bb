@@ -205,7 +205,7 @@ class DiskCache(object):
     return locking.FileLock(lock_path)
 
   def _TempDirContext(self):
-    return osutils.TempDirContextManager(base_dir=self.staging_dir)
+    return osutils.TempDir(base_dir=self.staging_dir)
 
   def _Insert(self, key, path):
     """Insert a file or a directory into the cache at a given key."""
@@ -246,7 +246,7 @@ class TarballCache(DiskCache):
 
   def _Insert(self, key, tarball_path):
     """Insert a tarball and its extracted contents into the cache."""
-    with osutils.TempDirContextManager(base_dir=self.staging_dir) as tempdir:
+    with osutils.TempDir(base_dir=self.staging_dir) as tempdir:
       extract_path = os.path.join(tempdir, 'extract')
       os.mkdir(extract_path)
       Untar(tarball_path, extract_path)

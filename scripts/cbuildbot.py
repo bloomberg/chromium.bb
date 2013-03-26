@@ -551,7 +551,7 @@ def _DisableYamaHardLinkChecks():
     return
 
   # Create a hardlink in a tempdir and see if we get back EPERM.
-  with osutils.TempDirContextManager() as tempdir:
+  with osutils.TempDir() as tempdir:
     try:
       os.link('/bin/sh', os.path.join(tempdir, 'sh'))
     except OSError as e:
@@ -1268,7 +1268,7 @@ def main(argv):
     if not options.resume:
       # If we're in resume mode, use our parents tempdir rather than
       # nesting another layer.
-      stack.Add(osutils.TempDirContextManager, prefix='cbuildbot-tmp')
+      stack.Add(osutils.TempDir, prefix='cbuildbot-tmp', set_global=True)
       logging.debug("Cbuildbot tempdir is %r.", os.environ.get('TMP'))
 
     # TODO(ferringb): update this once https://gerrit.chromium.org/gerrit/25359

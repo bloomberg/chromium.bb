@@ -908,7 +908,7 @@ def CreatePackages(targets_wanted, output_dir, root='/'):
   ldpaths = lddtree.LoadLdpaths(root)
   targets = ExpandTargets(targets_wanted)
 
-  with osutils.TempDirContextManager() as tempdir:
+  with osutils.TempDir() as tempdir:
     # We have to split the root generation from the compression stages.  This is
     # because we hardlink in all the files (to avoid overhead of reading/writing
     # the copies multiple times).  But tar gets angry if a file's hardlink count
