@@ -94,6 +94,7 @@ int CursorShapeFromNative(const gfx::NativeCursor& native_cursor) {
       return XC_hand2;
     case ui::kCursorIBeam:
       return XC_xterm;
+    case ui::kCursorProgress:
     case ui::kCursorWait:
       return XC_watch;
     case ui::kCursorHelp:
@@ -118,10 +119,6 @@ int CursorShapeFromNative(const gfx::NativeCursor& native_cursor) {
       return XC_sb_v_double_arrow;
     case ui::kCursorEastWestResize:
       return XC_sb_h_double_arrow;
-    case ui::kCursorNorthEastSouthWestResize:
-    case ui::kCursorNorthWestSouthEastResize:
-      // There isn't really a useful cursor available for these.
-      return XC_left_ptr;
     case ui::kCursorColumnResize:
       return XC_sb_h_double_arrow;
     case ui::kCursorRowResize:

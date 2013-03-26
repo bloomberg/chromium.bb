@@ -121,6 +121,8 @@
         'base/cursor/cursor_loader_x11.h',
         'base/cursor/cursor_win.cc',
         'base/cursor/cursor_x11.cc',
+        'base/cursor/cursors_aura.cc',
+        'base/cursor/cursors_aura.h',
         'base/dragdrop/cocoa_dnd_util.h',
         'base/dragdrop/cocoa_dnd_util.mm',
         'base/dragdrop/drag_drop_types.h',

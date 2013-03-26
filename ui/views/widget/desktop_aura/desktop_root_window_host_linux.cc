@@ -29,6 +29,7 @@
 #include "ui/views/ime/input_method.h"
 #include "ui/views/widget/desktop_aura/desktop_activation_client.h"
 #include "ui/views/widget/desktop_aura/desktop_capture_client.h"
+#include "ui/views/widget/desktop_aura/desktop_cursor_loader_updater_aurax11.h"
 #include "ui/views/widget/desktop_aura/desktop_dispatcher_client.h"
 #include "ui/views/widget/desktop_aura/desktop_focus_rules.h"
 #include "ui/views/widget/desktop_aura/desktop_layout_manager.h"
@@ -248,7 +249,10 @@ aura::RootWindow* DesktopRootWindowHostLinux::InitRootWindow(
   cursor_client_.reset(
       new views::corewm::CursorManager(
           scoped_ptr<corewm::NativeCursorManager>(
-              new views::DesktopNativeCursorManager(root_window_))));
+              new views::DesktopNativeCursorManager(
+                  root_window_,
+                  scoped_ptr<DesktopCursorLoaderUpdater>(
+                      new DesktopCursorLoaderUpdaterAuraX11)))));
   aura::client::SetCursorClient(root_window_,
                                 cursor_client_.get());
 
