@@ -38,141 +38,14 @@ std::string EncodeMessage(const std::string& message) {
   return result + message;
 }
 
-class AdbSocket {
- public:
-  AdbSocket(const std::string& host, int port) : host_(host), port_(port) {
-  }
-
-  ~AdbSocket() {
-  }
-
- protected:
-  void Connect(const net::CompletionCallback& callback) {
-    net::IPAddressNumber ip_number;
-    if (!net::ParseIPLiteralToNumber(host_, &ip_number)) {
-      callback.Run(net::ERR_FAILED);
-      return;
-    }
-
-    net::AddressList address_list =
-        net::AddressList::CreateFromIPAddress(ip_number, port_);
-    socket_.reset(new net::TCPClientSocket(address_list, NULL,
-                                           net::NetLog::Source()));
-    int result = socket_->Connect(callback);
-    if (result != net::ERR_IO_PENDING)
-      callback.Run(result);
-  }
-
-  void SendCommand(const std::string& command,
-                   bool is_void,
-                   const CommandCallback& callback) {
-    scoped_refptr<net::StringIOBuffer> request_buffer =
-        new net::StringIOBuffer(EncodeMessage(command));
-    int result = socket_->Write(request_buffer, request_buffer->size(),
-        base::Bind(&AdbSocket::ReadResponse, base::Unretained(this),
-                   callback, is_void));
-    if (result != net::ERR_IO_PENDING)
-      ReadResponse(callback, is_void, result);
-  }
-
-  scoped_ptr<net::TCPClientSocket> socket_;
-
- private:
-  void ReadResponse(const CommandCallback& callback, bool is_void, int result) {
-    if (result < 0) {
-      callback.Run(result, "IO error");
-      return;
-    }
-    scoped_refptr<net::IOBuffer> response_buffer =
-        new net::IOBuffer(kBufferSize);
-    result = socket_->Read(response_buffer, kBufferSize,
-        base::Bind(&AdbSocket::OnResponseHeader, base::Unretained(this),
-                   callback, is_void, response_buffer));
-    if (result != net::ERR_IO_PENDING)
-      OnResponseHeader(callback, is_void, response_buffer, result);
-  }
-
-  void OnResponseHeader(const CommandCallback& callback,
-                        bool is_void,
-                        scoped_refptr<net::IOBuffer> response_buffer,
-                        int result) {
-    if (result < 0) {
-      callback.Run(result, "IO error");
-      return;
-    }
-
-    std::string data = std::string(response_buffer->data(), result);
-    if (result < 4) {
-      callback.Run(net::ERR_FAILED, "Response is too short: " + data);
-      return;
-    }
-
-    std::string status = data.substr(0, 4);
-    if (status != kOkayResponse) {
-      callback.Run(net::ERR_FAILED, data);
-      return;
-    }
-
-    data = data.substr(4);
-
-    if (!is_void) {
-      int payload_length = 0;
-      int bytes_left = -1;
-      if (data.length() >= 4 &&
-          base::HexStringToInt(data.substr(0, 4), &payload_length)) {
-        data = data.substr(4);
-        bytes_left = payload_length - result + 8;
-      } else {
-        bytes_left = -1;
-      }
-      OnResponseData(callback, data, response_buffer, bytes_left, 0);
-    } else {
-      callback.Run(net::OK, data);
-    }
-  }
-
-  void OnResponseData(const CommandCallback& callback,
-                      const std::string& response,
-                      scoped_refptr<net::IOBuffer> response_buffer,
-                      int bytes_left,
-                      int result) {
-    if (result < 0) {
-      callback.Run(result, "IO error");
-      return;
-    }
-
-    bytes_left -= result;
-    std::string new_response =
-        response + std::string(response_buffer->data(), result);
-    if (bytes_left == 0) {
-      callback.Run(net::OK, new_response);
-      return;
-    }
-
-    // Read tail
-    result = socket_->Read(response_buffer, kBufferSize,
-        base::Bind(&AdbSocket::OnResponseData, base::Unretained(this),
-                     callback, new_response, response_buffer, bytes_left));
-    if (result > 0) {
-      OnResponseData(callback, new_response, response_buffer, bytes_left,
-          result);
-    } else if (result != net::ERR_IO_PENDING) {
-      callback.Run(net::OK, new_response);
-    }
-  }
-
-  std::string host_;
-  int port_;
-};
-
-class AdbTransportSocket : public AdbSocket {
+class AdbTransportSocket : public AdbClientSocket {
  public:
   AdbTransportSocket(const std::string& host,
                      int port,
                      const std::string& serial,
                      const std::string& socket_name,
                      const SocketCallback& callback)
-    : AdbSocket(host, port),
+    : AdbClientSocket(host, port),
       serial_(serial),
       socket_name_(socket_name),
       callback_(callback) {
@@ -294,6 +167,10 @@ class HttpOverAdbSocket {
                       int result) {
     if (!CheckNetResultOrDie(result))
       return;
+    if (result == 0) {
+      CheckNetResultOrDie(net::ERR_CONNECTION_CLOSED);
+      return;
+    }
 
     response_ += std::string(response_buffer->data(), result);
     int expected_length = 0;
@@ -354,13 +231,13 @@ class HttpOverAdbSocket {
   size_t body_pos_;
 };
 
-class AdbQuerySocket : AdbSocket {
+class AdbQuerySocket : AdbClientSocket {
  public:
   AdbQuerySocket(const std::string& host,
                  int port,
                  const std::string& query,
                  const CommandCallback& callback)
-      : AdbSocket(host, port),
+      : AdbClientSocket(host, port),
         current_query_(0),
         callback_(callback) {
     if (Tokenize(query, "|", &queries_) == 0) {
@@ -373,7 +250,6 @@ class AdbQuerySocket : AdbSocket {
 
  private:
   ~AdbQuerySocket() {
-
   }
 
   void SendNextQuery(int result) {
@@ -440,8 +316,123 @@ void AdbClientSocket::HttpQuery(int port,
       callback);
 }
 
-AdbClientSocket::AdbClientSocket() {
+AdbClientSocket::AdbClientSocket(const std::string& host, int port)
+    : host_(host), port_(port) {
 }
 
 AdbClientSocket::~AdbClientSocket() {
+}
+
+void AdbClientSocket::Connect(const net::CompletionCallback& callback) {
+  net::IPAddressNumber ip_number;
+  if (!net::ParseIPLiteralToNumber(host_, &ip_number)) {
+    callback.Run(net::ERR_FAILED);
+    return;
+  }
+
+  net::AddressList address_list =
+      net::AddressList::CreateFromIPAddress(ip_number, port_);
+  socket_.reset(new net::TCPClientSocket(address_list, NULL,
+                                         net::NetLog::Source()));
+  int result = socket_->Connect(callback);
+  if (result != net::ERR_IO_PENDING)
+    callback.Run(result);
+}
+
+void AdbClientSocket::SendCommand(const std::string& command,
+                                  bool is_void,
+                                  const CommandCallback& callback) {
+  scoped_refptr<net::StringIOBuffer> request_buffer =
+      new net::StringIOBuffer(EncodeMessage(command));
+  int result = socket_->Write(request_buffer, request_buffer->size(),
+      base::Bind(&AdbClientSocket::ReadResponse, base::Unretained(this),
+                 callback, is_void));
+  if (result != net::ERR_IO_PENDING)
+    ReadResponse(callback, is_void, result);
+}
+
+void AdbClientSocket::ReadResponse(const CommandCallback& callback,
+                                   bool is_void,
+                                   int result) {
+  if (result < 0) {
+    callback.Run(result, "IO error");
+    return;
+  }
+  scoped_refptr<net::IOBuffer> response_buffer =
+      new net::IOBuffer(kBufferSize);
+  result = socket_->Read(response_buffer, kBufferSize,
+      base::Bind(&AdbClientSocket::OnResponseHeader, base::Unretained(this),
+                 callback, is_void, response_buffer));
+  if (result != net::ERR_IO_PENDING)
+    OnResponseHeader(callback, is_void, response_buffer, result);
+}
+
+void AdbClientSocket::OnResponseHeader(
+    const CommandCallback& callback,
+    bool is_void,
+    scoped_refptr<net::IOBuffer> response_buffer,
+    int result) {
+  if (result <= 0) {
+    callback.Run(result == 0 ? net::ERR_CONNECTION_CLOSED : result,
+                 "IO error");
+    return;
+  }
+
+  std::string data = std::string(response_buffer->data(), result);
+  if (result < 4) {
+    callback.Run(net::ERR_FAILED, "Response is too short: " + data);
+    return;
+  }
+
+  std::string status = data.substr(0, 4);
+  if (status != kOkayResponse) {
+    callback.Run(net::ERR_FAILED, data);
+    return;
+  }
+
+  data = data.substr(4);
+
+  if (!is_void) {
+    int payload_length = 0;
+    int bytes_left = -1;
+    if (data.length() >= 4 &&
+        base::HexStringToInt(data.substr(0, 4), &payload_length)) {
+      data = data.substr(4);
+      bytes_left = payload_length - result + 8;
+    } else {
+      bytes_left = -1;
+    }
+    OnResponseData(callback, data, response_buffer, bytes_left, 0);
+  } else {
+    callback.Run(net::OK, data);
+  }
+}
+
+void AdbClientSocket::OnResponseData(
+    const CommandCallback& callback,
+    const std::string& response,
+    scoped_refptr<net::IOBuffer> response_buffer,
+    int bytes_left,
+    int result) {
+  if (result < 0) {
+    callback.Run(result, "IO error");
+    return;
+  }
+
+  bytes_left -= result;
+  std::string new_response =
+      response + std::string(response_buffer->data(), result);
+  if (bytes_left == 0) {
+    callback.Run(net::OK, new_response);
+    return;
+  }
+
+  // Read tail
+  result = socket_->Read(response_buffer, kBufferSize,
+      base::Bind(&AdbClientSocket::OnResponseData, base::Unretained(this),
+                 callback, new_response, response_buffer, bytes_left));
+  if (result > 0)
+    OnResponseData(callback, new_response, response_buffer, bytes_left, result);
+  else if (result != net::ERR_IO_PENDING)
+    callback.Run(net::OK, new_response);
 }

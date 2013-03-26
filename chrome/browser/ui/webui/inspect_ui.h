@@ -44,7 +44,7 @@ class InspectUI : public content::WebUIController,
       const std::string& path,
       const content::WebUIDataSource::GotDataCallback& callback);
 
-  bool HandleAdbDevicesCallback(
+  bool HandleAdbPagesCallback(
       const std::string& path,
       const content::WebUIDataSource::GotDataCallback& callback);
 
@@ -61,13 +61,16 @@ class InspectUI : public content::WebUIController,
       int result,
       const std::string& response);
 
+  void OnAdbPages(const content::WebUIDataSource::GotDataCallback& callback,
+                  int result,
+                  DevToolsAdbBridge::RemotePages* pages);
 
   scoped_refptr<WorkerCreationDestructionListener> observer_;
 
   // A scoped container for notification registries.
   content::NotificationRegistrar registrar_;
 
-  DevToolsAdbBridge* adb_bridge_;
+  scoped_ptr<DevToolsAdbBridge> adb_bridge_;
   base::WeakPtrFactory<InspectUI> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(InspectUI);

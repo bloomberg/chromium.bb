@@ -9,7 +9,9 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "net/socket/tcp_client_socket.h"
 
 namespace base {
@@ -17,92 +19,77 @@ class Thread;
 class DictionaryValue;
 }
 
+class MessageLoop;
+class Profile;
+
 class DevToolsAdbBridge {
  public:
   typedef base::Callback<void(int result,
                               const std::string& response)> Callback;
 
-  class AgentHost : public base::RefCounted<AgentHost> {
+  class RemotePage : public base::RefCounted<RemotePage> {
    public:
-    AgentHost(const std::string& serial,
-              const std::string& model,
-              const base::DictionaryValue& value);
+    RemotePage(const std::string& serial,
+               const std::string& model,
+               const base::DictionaryValue& value);
 
     std::string serial() { return serial_; }
     std::string model() { return model_; }
     std::string id() { return id_; }
+    std::string url() { return url_; }
     std::string title() { return title_; }
     std::string description() { return description_; }
     std::string favicon_url() { return favicon_url_; }
     std::string debug_url() { return debug_url_; }
+    std::string frontend_url() { return frontend_url_; }
 
    private:
-    friend class base::RefCounted<AgentHost>;
-
-    virtual ~AgentHost();
+    friend class base::RefCounted<RemotePage>;
+    virtual ~RemotePage();
     std::string serial_;
     std::string model_;
     std::string id_;
+    std::string url_;
     std::string title_;
     std::string description_;
     std::string favicon_url_;
     std::string debug_url_;
-    DISALLOW_COPY_AND_ASSIGN(AgentHost);
+    std::string frontend_url_;
+    DISALLOW_COPY_AND_ASSIGN(RemotePage);
   };
 
-  typedef std::vector<scoped_refptr<AgentHost> > AgentHosts;
-  typedef base::Callback<void(int, AgentHosts*)> HostsCallback;
+  typedef std::vector<scoped_refptr<RemotePage> > RemotePages;
+  typedef base::Callback<void(int, RemotePages*)> PagesCallback;
 
-  static DevToolsAdbBridge* Start();
+  explicit DevToolsAdbBridge(Profile* profile);
+  ~DevToolsAdbBridge();
+
   void Query(const std::string query, const Callback& callback);
-  void Devices();
-  void Stop();
+  void Pages(const PagesCallback& callback);
+  void Attach(scoped_refptr<RemotePage> page);
 
  private:
-  friend class base::RefCountedThreadSafe<DevToolsAdbBridge>;
+  friend class AdbWebSocket;
 
+  class RefCountedAdbThread : public base::RefCounted<RefCountedAdbThread> {
+   public:
+    static scoped_refptr<RefCountedAdbThread> GetInstance();
+    RefCountedAdbThread();
+    MessageLoop* message_loop();
 
-  explicit DevToolsAdbBridge();
-  virtual ~DevToolsAdbBridge();
+   private:
+    friend class base::RefCounted<RefCountedAdbThread>;
+    static DevToolsAdbBridge::RefCountedAdbThread* instance_;
+    static void StopThread(base::Thread* thread);
 
-  void StopHandlerOnFileThread();
+    virtual ~RefCountedAdbThread();
+    base::Thread* thread_;
+  };
 
-  void ResetHandlerAndReleaseOnUIThread();
-  void ResetHandlerOnUIThread();
-
-  void QueryOnHandlerThread(const std::string query, const Callback& callback);
-  void QueryResponseOnHandlerThread(const Callback& callback,
-                                    int result,
-                                    const std::string& response);
-
-  void DevicesOnHandlerThread(const HostsCallback& callback);
-  void ReceivedDevices(const HostsCallback& callback,
-                       int result,
-                       const std::string& response);
-  void ProcessSerials(const HostsCallback& callback,
-                      AgentHosts* hosts,
-                      std::vector<std::string>* serials);
-  void ReceivedModel(const HostsCallback& callback,
-                     AgentHosts* hosts,
-                     std::vector<std::string>* serials,
-                     int result,
-                     const std::string& response);
-  void ReceivedPages(const HostsCallback& callback,
-                     AgentHosts* hosts,
-                     std::vector<std::string>* serials,
-                     const std::string& model,
-                     int result,
-                     const std::string& response);
-
-  void RespondOnUIThread(const Callback& callback,
-                         int result,
-                         const std::string& response);
-
-  void PrintHosts(int result, AgentHosts* hosts);
-
-  // The thread used by the devtools to run client socket.
-  scoped_ptr<base::Thread> thread_;
-
+  Profile* profile_;
+  scoped_refptr<RefCountedAdbThread> adb_thread_;
+  base::WeakPtrFactory<DevToolsAdbBridge> weak_factory_;
+  bool has_message_loop_;
   DISALLOW_COPY_AND_ASSIGN(DevToolsAdbBridge);
 };
 

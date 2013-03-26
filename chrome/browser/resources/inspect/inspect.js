@@ -104,16 +104,15 @@ AdbDevice.adbQuery_ = function(query) {
  * @return {?Object} ADB query result.
  * @private
  */
-AdbDevice.adbDevices_ = function() {
+AdbDevice.adbPages_ = function() {
   var xhr = new XMLHttpRequest();
-  xhr.open('GET', 'adb-devices', false);
+  xhr.open('GET', 'adb-pages', false);
   xhr.send(null);
   if (xhr.status !== 200)
     return null;
 
   try {
-    var result = JSON.parse(xhr.responseText);
-    return result[0] ? null : result[1];
+    return JSON.parse(xhr.responseText);
   } catch (e) {
   }
   return null;
@@ -164,8 +163,8 @@ AdbDevice.prototype.targets = function() {
     target['name'] = json['title'];
     target['url'] = json['url'];
     target['attached'] = !json['webSocketDebuggerUrl'];
-    target['favicon_url'] = json['faviconUrl'];
-    target['inspect_url'] = json['devtoolsFrontendUrl'];
+    target['faviconUrl'] = json['faviconUrl'];
+    target['inspectUrl'] = json['devtoolsFrontendUrl'];
     targets.push(target);
   }
   return targets;
@@ -205,8 +204,8 @@ function requestData() {
 }
 
 function inspect(data) {
-  if (data['inspect_url']) {
-    window.open(data['inspect_url'], undefined,
+  if (data['inspectUrl']) {
+    window.open(data['inspectUrl'], undefined,
         'location=0,width=800,height=600');
     return;
   }
@@ -278,14 +277,14 @@ function populateDeviceLists() {
 
     for (var j = 0; j < targets.length; j++) {
       addTargetToList(targets[j], 'device-' + device.serial,
-            ['favicon_url', 'name', 'url']);
+            ['faviconUrl', 'name', 'url']);
     }
   }
   setTimeout(populateDeviceLists, 1000);
 }
 
 function addToPagesList(data) {
-  addTargetToList(data, 'pages', ['favicon_url', 'name', 'url']);
+  addTargetToList(data, 'pages', ['faviconUrl', 'name', 'url']);
 }
 
 function addToExtensionsList(data) {
@@ -306,7 +305,7 @@ function addToOthersList(data) {
 function formatValue(data, property) {
   var value = data[property];
 
-  if (property == 'favicon_url') {
+  if (property == 'faviconUrl') {
     var faviconElement = document.createElement('img');
     if (value)
       faviconElement.src = value;

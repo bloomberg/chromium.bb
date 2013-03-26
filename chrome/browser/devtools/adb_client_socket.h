@@ -31,9 +31,34 @@ class AdbClientSocket {
                         const std::string& request,
                         const SocketCallback& callback);
 
- private:
-  AdbClientSocket();
+  AdbClientSocket(const std::string& host, int port);
   ~AdbClientSocket();
+
+ protected:
+  void Connect(const net::CompletionCallback& callback);
+
+  void SendCommand(const std::string& command,
+                   bool is_void,
+                   const CommandCallback& callback);
+
+  scoped_ptr<net::TCPClientSocket> socket_;
+
+ private:
+  void ReadResponse(const CommandCallback& callback, bool is_void, int result);
+
+  void OnResponseHeader(const CommandCallback& callback,
+                        bool is_void,
+                        scoped_refptr<net::IOBuffer> response_buffer,
+                        int result);
+
+  void OnResponseData(const CommandCallback& callback,
+                      const std::string& response,
+                      scoped_refptr<net::IOBuffer> response_buffer,
+                      int bytes_left,
+                      int result);
+
+  std::string host_;
+  int port_;
 
   DISALLOW_COPY_AND_ASSIGN(AdbClientSocket);
 };

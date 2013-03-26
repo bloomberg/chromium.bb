@@ -42,6 +42,7 @@
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
+#include "net/base/net_errors.h"
 #include "ui/base/resource/resource_bundle.h"
 
 using content::BrowserThread;
@@ -62,12 +63,13 @@ namespace {
 
 static const char kDataFile[] = "targets-data.json";
 static const char kAdbQuery[] = "adb-query/";
-static const char kAdbDevices[] = "adb-devices";
+static const char kAdbPages[] = "adb-pages";
 static const char kLocalXhr[] = "local-xhr/";
 
 static const char kExtensionTargetType[]  = "extension";
 static const char kPageTargetType[]  = "page";
 static const char kWorkerTargetType[]  = "worker";
+static const char kAdbTargetType[]  = "adb_page";
 
 static const char kInspectCommand[]  = "inspect";
 static const char kTerminateCommand[]  = "terminate";
@@ -78,8 +80,12 @@ static const char kProcessIdField[]  = "processId";
 static const char kRouteIdField[]  = "routeId";
 static const char kUrlField[]  = "url";
 static const char kNameField[]  = "name";
-static const char kFaviconUrlField[] = "favicon_url";
+static const char kFaviconUrlField[] = "faviconUrl";
 static const char kPidField[]  = "pid";
+static const char kAdbSerialField[] = "adbSerial";
+static const char kAdbModelField[] = "adbModel";
+static const char kAdbPageIdField[] = "adbPageId";
+static const char kAdbDebugUrl[] = "adbDebugUrl";
 
 DictionaryValue* BuildTargetDescriptor(
     const std::string& target_type,
@@ -169,7 +175,6 @@ void SendDescriptors(
 
   std::string json_string;
   base::JSONWriter::Write(rvh_list, &json_string);
-
   callback.Run(base::RefCountedString::TakeString(&json_string));
 }
 
@@ -338,7 +343,7 @@ InspectUI::InspectUI(content::WebUI* web_ui)
   web_ui->AddMessageHandler(new InspectMessageHandler());
 
   Profile* profile = Profile::FromWebUI(web_ui);
-  adb_bridge_ = DevToolsAdbBridge::Start();
+  adb_bridge_.reset(new DevToolsAdbBridge(profile));
   content::WebUIDataSource::Add(profile, CreateInspectUIHTMLSource());
 
   registrar_.Add(this,
@@ -383,10 +388,7 @@ void InspectUI::StopListeningNotifications()
 {
   if (!observer_)
     return;
-  if (adb_bridge_) {
-    adb_bridge_->Stop();
-    adb_bridge_ = NULL;
-  }
+  adb_bridge_.reset();
   observer_->InspectUIDestroyed();
   observer_ = NULL;
   registrar_.RemoveAll();
@@ -408,8 +410,8 @@ bool InspectUI::HandleRequestCallback(
     const content::WebUIDataSource::GotDataCallback& callback) {
   if (path == kDataFile)
     return HandleDataRequestCallback(path, callback);
-  if (path.find(kAdbDevices) == 0)
-    return HandleAdbDevicesCallback(path, callback);
+  if (path.find(kAdbPages) == 0)
+    return HandleAdbPagesCallback(path, callback);
   if (path.find(kAdbQuery) == 0)
     return HandleAdbQueryCallback(path, callback);
   if (path.find(kLocalXhr) == 0)
@@ -429,13 +431,39 @@ bool InspectUI::HandleAdbQueryCallback(
   return true;
 }
 
-bool InspectUI::HandleAdbDevicesCallback(
+bool InspectUI::HandleAdbPagesCallback(
     const std::string& path,
     const content::WebUIDataSource::GotDataCallback& callback) {
-  adb_bridge_->Devices();
-  std::string json_string = "";
-  callback.Run(base::RefCountedString::TakeString(&json_string));
+  adb_bridge_->Pages(base::Bind(&InspectUI::OnAdbPages,
+                                weak_factory_.GetWeakPtr(),
+                                callback));
   return true;
+}
+
+void InspectUI::OnAdbPages(
+    const content::WebUIDataSource::GotDataCallback& callback,
+    int result,
+    DevToolsAdbBridge::RemotePages* pages) {
+  if (result != net::OK)
+    return;
+  ListValue targets;
+  scoped_ptr<DevToolsAdbBridge::RemotePages> my_pages(pages);
+  for (DevToolsAdbBridge::RemotePages::iterator it = my_pages->begin();
+       it != my_pages->end(); ++it) {
+    DevToolsAdbBridge::RemotePage* page = it->get();
+    DictionaryValue* target_data = BuildTargetDescriptor(kAdbTargetType,
+        false, GURL(page->url()), page->title(), GURL(page->favicon_url()), 0,
+        0);
+    target_data->SetString(kAdbSerialField, page->serial());
+    target_data->SetString(kAdbModelField, page->model());
+    target_data->SetString(kAdbPageIdField, page->id());
+    target_data->SetString(kAdbDebugUrl, page->debug_url());
+    targets.Append(target_data);
+  }
+
+  std::string json_string = "";
+  base::JSONWriter::Write(&targets, &json_string);
+  callback.Run(base::RefCountedString::TakeString(&json_string));
 }
 
 bool InspectUI::HandleLocalXhrCallback(
