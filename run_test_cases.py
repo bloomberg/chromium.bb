@@ -722,11 +722,15 @@ def process_output(lines, test_cases):
   test_cases = test_cases[:]
   test_case = None
   test_case_data = None
-  terminated_early = False
+  # Accumulates the junk between test cases.
+  accumulation = ''
+  eat_last_lines = False
+
   for line in lines:
-    if not (test_case or test_cases):
-      terminated_early = True
-      break
+    if eat_last_lines:
+      test_case_data['output'] += line
+      continue
+
     i = line.find(RUN_PREFIX)
     if i > 0 and test_case_data:
       # This may occur specifically in browser_tests, because the test case is
@@ -736,7 +740,6 @@ def process_output(lines, test_cases):
       test_case_data['output'] += line[:i]
       line = line[i:]
       i = 0
-
     if i >= 0:
       if test_case:
         # The previous test case had crashed. No idea about its duration
@@ -755,8 +758,10 @@ def process_output(lines, test_cases):
         'test_case': test_case,
         'returncode': None,
         'duration': None,
-        'output': line,
+        'output': accumulation + line,
       }
+      accumulation = ''
+
     elif test_case:
       test_case_data['output'] += line
       i = line.find(OK_PREFIX)
@@ -771,25 +776,29 @@ def process_output(lines, test_cases):
         if match:
           test_case_data['duration'] = float(match.group(1)) / 1000.
         test_case_data['returncode'] = int(line.startswith(FAILED_PREFIX))
+        if not test_cases:
+          # Its the last test case. Eat all the remaining lines.
+          eat_last_lines = True
+          continue
         yield test_case_data
         test_case = None
         test_case_data = None
+    else:
+      accumulation += line
+
+  # It's guaranteed here that the lines generator is exhausted.
+  if eat_last_lines:
+    yield test_case_data
+    test_case = None
+    test_case_data = None
 
   if test_case_data:
-    assert not terminated_early
     # This means the last one likely crashed.
     test_case_data['crashed'] = True
     test_case_data['duration'] = 0
     test_case_data['returncode'] = 1
+    test_case_data['output'] += accumulation
     yield test_case_data
-  elif terminated_early:
-    for _ in lines:
-      # Exhaust the generator. It is necessary so that the input generator is
-      # in a consistent state. More practically in our specific case, it is
-      # necessary to ensure that yield_any() was called back again so that it
-      # calls poll() and detects the process termination and/or wait for it. We
-      # don't want this generator to quit before the process has terminated.
-      pass
 
   # If test_cases is not empty, these test cases were not run.
   for t in test_cases:
