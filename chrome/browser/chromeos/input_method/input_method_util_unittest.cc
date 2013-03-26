@@ -9,7 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
-#include "chromeos/ime/input_method_whitelist.h"
+#include "chrome/browser/chromeos/input_method/input_method_whitelist.h"
 #include "chromeos/ime/mock_input_method_delegate.h"
 #include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"

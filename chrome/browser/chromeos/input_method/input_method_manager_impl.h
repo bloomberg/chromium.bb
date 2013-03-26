@@ -15,8 +15,8 @@
 #include "chrome/browser/chromeos/input_method/ibus_controller.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
+#include "chrome/browser/chromeos/input_method/input_method_whitelist.h"
 #include "chromeos/ime/ibus_daemon_controller.h"
-#include "chromeos/ime/input_method_whitelist.h"
 
 namespace chromeos {
 class InputMethodEngineIBus;

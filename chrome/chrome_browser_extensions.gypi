@@ -741,8 +741,8 @@
         ['chromeos==1', {
           'dependencies': [
             '../build/linux/system.gyp:dbus',
-            '../chromeos/ime/input_method.gyp:gencode',
             '../third_party/libevent/libevent.gyp:libevent',
+            'browser/chromeos/input_method/input_method.gyp:gencode',
             'contacts_proto',
           ],
           'sources!': [
