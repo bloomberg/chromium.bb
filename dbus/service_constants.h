@@ -682,8 +682,9 @@ const char kUnknownString[] = "UNKNOWN";
 namespace shill {
 // Function names.
 const char kClearPropertiesFunction[] = "ClearProperties";
-const char kConfigureServiceForProfileFunction[] = "ConfigureServiceForProfile";
 const char kCompleteCellularActivationFunction[] = "CompleteCellularActivation";
+const char kConfigureServiceForProfileFunction[] = "ConfigureServiceForProfile";
+const char kConnectToBestServiceFunction[] = "ConnectToBestService";
 const char kGetNetworksForGeolocation[] = "GetNetworksForGeolocation";
 const char kRefreshFunction[] = "Refresh";
 const char kResetFunction[] = "Reset";
