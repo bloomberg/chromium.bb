@@ -50,15 +50,6 @@ class SpellcheckLanguage {
  private:
   friend class SpellCheckTest;
 
-  // When called, relays the request to check the spelling to the proper
-  // backend, either hunspell or a platform-specific backend.
-  bool CheckSpelling(const string16& word_to_check, int tag);
-
-  // When called, relays the request to fill the list with suggestions to
-  // the proper backend, either hunspell or a platform-specific backend.
-  void FillSuggestionList(const string16& wrong_word,
-                          std::vector<string16>* optional_suggestions);
-
   // Returns whether or not the given word is a contraction of valid words
   // (e.g. "word:word").
   bool IsValidContraction(const string16& word, int tag);

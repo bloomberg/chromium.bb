@@ -68,10 +68,11 @@ bool SpellcheckLanguage::SpellCheckWord(
   }
 
   text_iterator_.SetText(in_word, in_word_len);
+  DCHECK(platform_spelling_engine_.get());
   while (text_iterator_.GetNextWord(&word, &word_start, &word_length)) {
     // Found a word (or a contraction) that the spellchecker can check the
     // spelling of.
-    if (CheckSpelling(word, tag))
+    if (platform_spelling_engine_->CheckSpelling(word, tag))
       continue;
 
     // If the given word is a concatenated word of two or more valid words
@@ -83,26 +84,14 @@ bool SpellcheckLanguage::SpellCheckWord(
     *misspelling_len = word_length;
 
     // Get the list of suggested words.
-    if (optional_suggestions)
-      FillSuggestionList(word, optional_suggestions);
+    if (optional_suggestions) {
+      platform_spelling_engine_->FillSuggestionList(word,
+                                                    optional_suggestions);
+    }
     return false;
   }
 
   return true;
-}
-
-// Relays the request to check the spelling to the proper backend.
-bool SpellcheckLanguage::CheckSpelling(const string16& word_to_check, int tag) {
-  DCHECK(platform_spelling_engine_.get());
-  return platform_spelling_engine_->CheckSpelling(word_to_check, tag);
-}
-
-void SpellcheckLanguage::FillSuggestionList(
-    const string16& wrong_word,
-    std::vector<string16>* optional_suggestions) {
-  DCHECK(platform_spelling_engine_.get());
-  platform_spelling_engine_->FillSuggestionList(wrong_word,
-                                                optional_suggestions);
 }
 
 // Returns whether or not the given string is a valid contraction.
@@ -123,8 +112,10 @@ bool SpellcheckLanguage::IsValidContraction(const string16& contraction,
   string16 word;
   int word_start;
   int word_length;
+
+  DCHECK(platform_spelling_engine_.get());
   while (contraction_iterator_.GetNextWord(&word, &word_start, &word_length)) {
-    if (!CheckSpelling(word, tag))
+    if (!platform_spelling_engine_->CheckSpelling(word, tag))
       return false;
   }
   return true;

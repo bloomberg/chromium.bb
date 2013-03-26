@@ -81,7 +81,8 @@ class SpellCheckTest : public testing::Test {
   SpellCheck* spell_check() { return spell_check_.get(); }
 
   bool CheckSpelling(const std::string& word, int tag) {
-    return spell_check_->spellcheck_.CheckSpelling(ASCIIToUTF16(word), tag);
+    return spell_check_->spellcheck_.platform_spelling_engine_->CheckSpelling(
+        ASCIIToUTF16(word), tag);
   }
 
 #if !defined(OS_MACOSX)
