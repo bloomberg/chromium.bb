@@ -468,7 +468,7 @@ void CompositingIOSurfaceMac::DrawIOSurface(
     RenderWidgetHostViewFrameSubscriber::DeliverFrameCallback callback;
     if (frame_subscriber->ShouldCaptureFrame(&frame, &callback)) {
       copy_done_callback = CopyToVideoFrameWithinContext(
-          gfx::Rect(io_surface_size_), scale_factor, true, frame,
+          gfx::Rect(pixel_io_surface_size_), scale_factor, true, frame,
           base::Bind(callback, base::Time::Now()));
     }
   }
