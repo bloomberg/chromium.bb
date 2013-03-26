@@ -13,7 +13,6 @@
 #include "base/string_piece.h"
 #include "net/base/net_export.h"
 #include "net/quic/crypto/crypto_protocol.h"
-#include "net/quic/crypto/crypto_utils.h"
 
 namespace net {
 
@@ -25,12 +24,16 @@ class QuicClock;
 
 // An intermediate format of a handshake message that's convenient for a
 // CryptoFramer to serialize from or parse into.
-struct NET_EXPORT_PRIVATE CryptoHandshakeMessage {
+class NET_EXPORT_PRIVATE CryptoHandshakeMessage {
+ public:
   CryptoHandshakeMessage();
   CryptoHandshakeMessage(const CryptoHandshakeMessage& other);
   ~CryptoHandshakeMessage();
 
   CryptoHandshakeMessage& operator=(const CryptoHandshakeMessage& other);
+
+  // Clears state.
+  void Clear();
 
   // GetSerialized returns the serialized form of this message and caches the
   // result. Subsequently altering the message does not invalidate the cache.
@@ -39,24 +42,36 @@ struct NET_EXPORT_PRIVATE CryptoHandshakeMessage {
   // SetValue sets an element with the given tag to the raw, memory contents of
   // |v|.
   template<class T> void SetValue(CryptoTag tag, const T& v) {
-    tag_value_map[tag] = std::string(reinterpret_cast<const char*>(&v),
-                                     sizeof(v));
+    tag_value_map_[tag] = std::string(reinterpret_cast<const char*>(&v),
+                                      sizeof(v));
   }
 
   // SetVector sets an element with the given tag to the raw contents of an
   // array of elements in |v|.
   template<class T> void SetVector(CryptoTag tag, const std::vector<T>& v) {
     if (v.empty()) {
-      tag_value_map[tag] = std::string();
+      tag_value_map_[tag] = std::string();
     } else {
-      tag_value_map[tag] = std::string(reinterpret_cast<const char*>(&v[0]),
-                                       v.size() * sizeof(T));
+      tag_value_map_[tag] = std::string(reinterpret_cast<const char*>(&v[0]),
+                                        v.size() * sizeof(T));
     }
   }
+
+  // Returns the message tag.
+  CryptoTag tag() const { return tag_; }
+  // Sets the message tag.
+  void set_tag(CryptoTag tag) { tag_ = tag; }
+
+  const CryptoTagValueMap& tag_value_map() const { return tag_value_map_; }
+
+  void Insert(CryptoTagValueMap::const_iterator begin,
+              CryptoTagValueMap::const_iterator end);
 
   // SetTaglist sets an element with the given tag to contain a list of tags,
   // passed as varargs. The argument list must be terminated with a 0 element.
   void SetTaglist(CryptoTag tag, ...);
+
+  void SetStringPiece(CryptoTag tag, base::StringPiece value);
 
   // GetTaglist finds an element with the given tag containing zero or more
   // tags. If such a tag doesn't exist, it returns false. Otherwise it sets
@@ -78,8 +93,9 @@ struct NET_EXPORT_PRIVATE CryptoHandshakeMessage {
   QuicErrorCode GetUint16(CryptoTag tag, uint16* out) const;
   QuicErrorCode GetUint32(CryptoTag tag, uint32* out) const;
 
-  CryptoTag tag;
-  CryptoTagValueMap tag_value_map;
+  // DebugString returns a multi-line, string representation of the message
+  // suitable for including in debug output.
+  std::string DebugString() const;
 
  private:
   // GetPOD is a utility function for extracting a plain-old-data value. If
@@ -90,6 +106,11 @@ struct NET_EXPORT_PRIVATE CryptoHandshakeMessage {
   // If used to copy integers then this assumes that the machine is
   // little-endian.
   QuicErrorCode GetPOD(CryptoTag tag, void* out, size_t len) const;
+
+  std::string DebugStringInternal(size_t indent) const;
+
+  CryptoTag tag_;
+  CryptoTagValueMap tag_value_map_;
 
   // The serialized form of the handshake message. This member is constructed
   // lasily.
@@ -150,10 +171,10 @@ class NET_EXPORT_PRIVATE QuicServerConfigProtobuf {
 };
 
 // Parameters negotiated by the crypto handshake.
-struct NET_EXPORT_PRIVATE QuicCryptoNegotiatedParams {
+struct NET_EXPORT_PRIVATE QuicCryptoNegotiatedParameters {
   // Initializes the members to 0 or empty values.
-  QuicCryptoNegotiatedParams();
-  ~QuicCryptoNegotiatedParams();
+  QuicCryptoNegotiatedParameters();
+  ~QuicCryptoNegotiatedParameters();
 
   uint16 version;
   CryptoTag key_exchange;
@@ -161,6 +182,7 @@ struct NET_EXPORT_PRIVATE QuicCryptoNegotiatedParams {
   std::string premaster_secret;
   scoped_ptr<QuicEncrypter> encrypter;
   scoped_ptr<QuicDecrypter> decrypter;
+  std::string server_config_id;
 };
 
 // QuicCryptoConfig contains common configuration between clients and servers.
@@ -169,19 +191,11 @@ class NET_EXPORT_PRIVATE QuicCryptoConfig {
   QuicCryptoConfig();
   ~QuicCryptoConfig();
 
-  // ProcessPeerHandshake performs common processing when receiving a peer's
-  // handshake message.
-  bool ProcessPeerHandshake(const CryptoHandshakeMessage& peer_handshake,
-                            CryptoUtils::Priority priority,
-                            QuicCryptoNegotiatedParams* out_params,
-                            std::string* error_details) const;
-
   // Protocol version
   uint16 version;
   // Key exchange methods. The following two members' values correspond by
   // index.
   CryptoTagVector kexs;
-  std::vector<KeyExchange*> key_exchanges;
   // Authenticated encryption with associated data (AEAD) algorithms.
   CryptoTagVector aead;
 
@@ -193,17 +207,82 @@ class NET_EXPORT_PRIVATE QuicCryptoConfig {
 // client.
 class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
  public:
-  QuicCryptoClientConfig();
+  // A CachedState contains the information that the client needs in order to
+  // perform a 0-RTT handshake with a server. This information can be reused
+  // over several connections to the same server.
+  class CachedState {
+   public:
+    CachedState();
+    ~CachedState();
 
-  // Sets the members to reasonable, default values. |rand| is used in order to
-  // generate ephemeral ECDH keys.
-  void SetDefaults(QuicRandom* rand);
+    // is_complete returns true if this object contains enough information to
+    // perform a handshake with the server.
+    bool is_complete() const;
+
+    // GetServerConfig returns the parsed contents of |server_config|, or NULL
+    // if |server_config| is empty. The return value is owned by this object
+    // and is destroyed when this object is.
+    const CryptoHandshakeMessage* GetServerConfig() const;
+
+    // SetServerConfig checks that |scfg| parses correctly and stores it in
+    // |server_config|. It returns true if the parsing succeeds and false
+    // otherwise.
+    bool SetServerConfig(base::StringPiece scfg);
+
+    const std::string& server_config() const;
+    const std::string& source_address_token() const;
+    const std::string& orbit() const;
+
+   private:
+    std::string server_config_id_;  // An opaque id from the server.
+    std::string server_config_;  // A serialized handshake message.
+    std::string source_address_token_;  // An opaque proof of IP ownership.
+    std::string orbit_;  // An opaque server-id used in nonce generation.
+
+    // scfg contains the cached, parsed value of |server_config|.
+    mutable scoped_ptr<CryptoHandshakeMessage> scfg_;
+  };
+
+  QuicCryptoClientConfig();
+  ~QuicCryptoClientConfig();
+
+  // Sets the members to reasonable, default values.
+  void SetDefaults();
+
+  // Lookup returns a CachedState for the given hostname, or NULL if no
+  // information is known.
+  const CachedState* Lookup(const std::string& server_hostname);
+
+  // FillInchoateClientHello sets |out| to be a CHLO message that elicits a
+  // source-address token or SCFG from a server. If |cached| is non-NULL, the
+  // source-address token will be taken from it.
+  void FillInchoateClientHello(const std::string& server_hostname,
+                               const CachedState* cached,
+                               CryptoHandshakeMessage* out);
 
   // FillClientHello sets |out| to be a CHLO message based on the configuration
-  // of this object.
-  void FillClientHello(const std::string& nonce,
-                       const std::string& server_hostname,
-                       CryptoHandshakeMessage* out);
+  // of this object. This object must have cached enough information about
+  // |server_hostname| in order to perform a handshake. This can be checked
+  // with the |is_complete| member of |CachedState|.
+  //
+  // |clock| and |rand| are used to generate the nonce and |out_params| is
+  // filled with the results of the handshake that the server is expected to
+  // accept.
+  QuicErrorCode FillClientHello(const std::string& server_hostname,
+                                QuicGuid guid,
+                                const CachedState* cached,
+                                const QuicClock* clock,
+                                QuicRandom* rand,
+                                QuicCryptoNegotiatedParameters* out_params,
+                                CryptoHandshakeMessage* out,
+                                std::string* error_details);
+
+  // ProcessRejection processes a REJ message from a server and updates the
+  // cached information about that server. After this, |is_complete| may return
+  // true for that server's CachedState.
+  QuicErrorCode ProcessRejection(const std::string& server_hostname,
+                                 const CryptoHandshakeMessage& rej,
+                                 std::string* error_details);
 
   // ProcessServerHello processes the message in |server_hello|, writes the
   // negotiated parameters to |out_params| and returns QUIC_NO_ERROR. If
@@ -211,11 +290,13 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
   // |error_details| and returns an error code.
   QuicErrorCode ProcessServerHello(const CryptoHandshakeMessage& server_hello,
                                    const std::string& nonce,
-                                   QuicCryptoNegotiatedParams* out_params,
+                                   QuicCryptoNegotiatedParameters* out_params,
                                    std::string* error_details);
 
-  // The |info| string for the HKDF function.
-  std::string hkdf_info;
+ private:
+  // cached_states_ maps from the server hostname to the cached information
+  // about that server.
+  std::map<std::string, CachedState*> cached_states_;
 };
 
 // QuicCryptoServerConfig contains the crypto configuration of a QUIC server.
@@ -236,29 +317,28 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
       const QuicClock* clock,
       const CryptoHandshakeMessage& extra_tags);
 
-  // It returns the tag/value map of the config if successful. The caller takes
-  // ownership of the map.
-  CryptoTagValueMap* AddConfig(QuicServerConfigProtobuf* protobuf);
+  // AddConfig adds a QuicServerConfigProtobuf to the availible configurations.
+  // It returns the SCFG message from the config if successful. The caller
+  // takes ownership of the CryptoHandshakeMessage.
+  CryptoHandshakeMessage* AddConfig(QuicServerConfigProtobuf* protobuf);
 
   // AddTestingConfig creates a test config and then calls AddConfig to add it.
   // Any tags in |extra_tags| will be copied into the config.
-  CryptoTagValueMap* AddTestingConfig(QuicRandom* rand,
-                                      const QuicClock* clock,
-                                      const CryptoHandshakeMessage& extra_tags);
+  CryptoHandshakeMessage* AddTestingConfig(
+      QuicRandom* rand,
+      const QuicClock* clock,
+      const CryptoHandshakeMessage& extra_tags);
 
   // ProcessClientHello processes |client_hello| and decides whether to accept
   // or reject the connection. If the connection is to be accepted, |out| is
-  // set to the contents of the ServerHello, |out_params| is completed and true
-  // is returned. |nonce| is used as the server's nonce.  Otherwise |out| is
-  // set to be a REJ message and false is returned.
-  bool ProcessClientHello(const CryptoHandshakeMessage& client_hello,
-                          const std::string& nonce,
-                          CryptoHandshakeMessage* out,
-                          QuicCryptoNegotiatedParams* out_params,
-                          std::string* error_details);
-
-  // The |info| string for the HKDF function.
-  std::string hkdf_info;
+  // set to the contents of the ServerHello, |out_params| is completed and
+  // QUIC_NO_ERROR is returned. |nonce| is used as the server's nonce.
+  // Otherwise |out| is set to be a REJ message and an error code is returned.
+  QuicErrorCode ProcessClientHello(const CryptoHandshakeMessage& client_hello,
+                                   QuicGuid guid,
+                                   CryptoHandshakeMessage* out,
+                                   QuicCryptoNegotiatedParameters* out_params,
+                                   std::string* error_details);
 
  private:
   // Config represents a server config: a collection of preferences and
@@ -270,9 +350,19 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
     // serialized contains the bytes of this server config, suitable for sending
     // on the wire.
     std::string serialized;
+    // id contains the SCID of this server config.
+    std::string id;
+
+    // key_exchanges contains key exchange objects with the private keys
+    // already loaded. The values correspond, one-to-one, with the tags in
+    // |kexs| from the parent class.
+    std::vector<KeyExchange*> key_exchanges;
 
     // tag_value_map contains the raw key/value pairs for the config.
     CryptoTagValueMap tag_value_map;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(Config);
   };
 
   std::map<ServerConfigID, Config*> configs_;

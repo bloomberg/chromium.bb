@@ -14,6 +14,7 @@
 #include "net/quic/test_tools/simple_quic_framer.h"
 
 using base::StringPiece;
+using std::string;
 
 namespace net {
 namespace test {
@@ -106,6 +107,15 @@ void CryptoTestUtils::HandshakeWithFakeClient(
 }
 
 // static
+string CryptoTestUtils::GetValueForTag(const CryptoHandshakeMessage& message,
+                                       CryptoTag tag) {
+  CryptoTagValueMap::const_iterator it = message.tag_value_map().find(tag);
+  if (it == message.tag_value_map().end()) {
+    return string();
+  }
+  return it->second;
+}
+
 void CryptoTestUtils::CompareClientAndServerKeys(
     QuicCryptoClientStream* client,
     QuicCryptoServerStream* server) {

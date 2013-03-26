@@ -59,8 +59,7 @@ size_t GetFecGroupOffset(bool include_version) {
 
 // Index into the nonce proof of the public reset packet.
 const size_t kPublicResetPacketNonceProofOffset =
-                                                          kPublicFlagsOffset +
-                                                          kPublicFlagsSize;
+    kPublicFlagsOffset + kPublicFlagsSize;
 // Index into the rejected sequence number of the public reset packet.
 const size_t kPublicResetPacketRejectedSequenceNumberOffset =
     kPublicResetPacketNonceProofOffset + kPublicResetNonceSize;

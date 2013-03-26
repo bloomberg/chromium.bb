@@ -12,13 +12,13 @@
 #include "net/quic/congestion_control/send_algorithm_interface.h"
 
 namespace {
-const int kBitrateSmoothingPeriodMs = 1000;
-const int kMinBitrateSmoothingPeriodMs = 500;
-const int kHistoryPeriodMs = 5000;
+static const int kBitrateSmoothingPeriodMs = 1000;
+static const int kMinBitrateSmoothingPeriodMs = 500;
+static const int kHistoryPeriodMs = 5000;
 
-const int kDefaultRetransmissionTimeMs = 500;
-const size_t kMaxRetransmissions = 10;
-const size_t kTailDropWindowSize = 5;
+static const int kDefaultRetransmissionTimeMs = 500;
+static const size_t kMaxRetransmissions = 10;
+static const size_t kTailDropWindowSize = 5;
 
 COMPILE_ASSERT(kHistoryPeriodMs >= kBitrateSmoothingPeriodMs,
                history_must_be_longer_or_equal_to_the_smoothing_period);

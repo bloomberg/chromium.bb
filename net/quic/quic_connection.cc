@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "net/base/net_errors.h"
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/crypto/quic_encrypter.h"
 #include "net/quic/quic_utils.h"
@@ -387,7 +386,7 @@ void QuicConnection::OnAckFrame(const QuicAckFrame& incoming_ack) {
       OnCanWrite();
     }
   } else if (!delay.IsInfinite()) {
-    helper_->SetSendAlarm(delay);
+    helper_->SetSendAlarm(time_of_last_received_packet_.Add(delay));
   }
 }
 
@@ -690,6 +689,9 @@ const QuicConnectionStats& QuicConnection::GetStats() {
 void QuicConnection::ProcessUdpPacket(const IPEndPoint& self_address,
                                       const IPEndPoint& peer_address,
                                       const QuicEncryptedPacket& packet) {
+  if (!connected_) {
+    return;
+  }
   if (debug_visitor_) {
     debug_visitor_->OnPacketReceived(self_address, peer_address, packet);
   }
@@ -725,7 +727,7 @@ bool QuicConnection::OnCanWrite() {
       // We're not write blocked, but some stream didn't write out all of its
       // bytes.  Register for 'immediate' resumption so we'll keep writing after
       // other quic connections have had a chance to use the socket.
-      helper_->SetSendAlarm(QuicTime::Delta::Zero());
+      helper_->SetSendAlarm(clock_->ApproximateNow());
     }
   }
 
@@ -867,15 +869,17 @@ bool QuicConnection::CanWrite(bool is_retransmission,
     return false;
   }
 
+  QuicTime now = clock_->Now();
   QuicTime::Delta delay = congestion_manager_.TimeUntilSend(
-      clock_->Now(), is_retransmission, has_retransmittable_data);
+      now, is_retransmission, has_retransmittable_data);
   if (delay.IsInfinite()) {
-    return false;
+    // TODO(pwestin): should be false but trigger other bugs see b/8350327.
+    return true;
   }
 
   // If the scheduler requires a delay, then we can not send this packet now.
   if (!delay.IsZero()) {
-    helper_->SetSendAlarm(delay);
+    helper_->SetSendAlarm(now.Add(delay));
     return false;
   }
   return true;
@@ -949,12 +953,15 @@ bool QuicConnection::WritePacket(QuicPacketSequenceNumber sequence_number,
   int error;
   QuicTime now = clock_->Now();
   int rv = helper_->WritePacketToWire(*encrypted, &error);
-  if (rv == -1 && error == ERR_IO_PENDING) {
+  if (rv == -1 && helper_->IsWriteBlocked(error)) {
     // TODO(satyashekhar): It might be more efficient (fewer system calls), if
     // all connections share this variable i.e this becomes a part of
     // PacketWriterInterface.
     write_blocked_ = true;
-    return false;
+    // If the socket buffers the the data, then the packet should not
+    // be queued and sent again, which would result in an unnecessary duplicate
+    // packet being sent.
+    return helper_->IsWriteBlockedDataBuffered();
   }
   time_of_last_sent_packet_ = now;
   DVLOG(1) << "time of last sent packet: " << now.ToMicroseconds();
@@ -1153,10 +1160,16 @@ void QuicConnection::SendConnectionClosePacket(QuicErrorCode error,
 
   SerializedPacket serialized_packet =
       packet_creator_.SerializeConnectionClose(&frame);
-  SendOrQueuePacket(serialized_packet.sequence_number,
-                    serialized_packet.packet,
-                    serialized_packet.entropy_hash,
-                    serialized_packet.retransmittable_frames != NULL);
+
+  // We need to update the sent entrophy hash for all sent packets.
+  entropy_manager_.RecordSentPacketEntropyHash(
+      serialized_packet.sequence_number,
+      serialized_packet.entropy_hash);
+
+  WritePacket(serialized_packet.sequence_number,
+              serialized_packet.packet,
+              serialized_packet.retransmittable_frames != NULL,
+              kForce);
 }
 
 void QuicConnection::SendConnectionCloseWithDetails(QuicErrorCode error,

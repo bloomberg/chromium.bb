@@ -29,6 +29,10 @@ class CryptoTestUtils {
   static void HandshakeWithFakeClient(PacketSavingConnection* server_conn,
                                       QuicCryptoServerStream* server);
 
+  // Returns the value for the tag |tag| in the tag value map of |message|.
+  static std::string GetValueForTag(const CryptoHandshakeMessage& message,
+                                    CryptoTag tag);
+
  private:
   static void CompareClientAndServerKeys(QuicCryptoClientStream* client,
                                          QuicCryptoServerStream* server);

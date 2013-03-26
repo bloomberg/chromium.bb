@@ -47,8 +47,10 @@ class NET_EXPORT_PRIVATE QuicConnectionHelper
   virtual QuicRandom* GetRandomGenerator() OVERRIDE;
   virtual int WritePacketToWire(const QuicEncryptedPacket& packet,
                                 int* error) OVERRIDE;
+  virtual bool IsWriteBlockedDataBuffered() OVERRIDE;
+  virtual bool IsWriteBlocked(int error) OVERRIDE;
   virtual void SetRetransmissionAlarm(QuicTime::Delta delay) OVERRIDE;
-  virtual void SetSendAlarm(QuicTime::Delta delay) OVERRIDE;
+  virtual void SetSendAlarm(QuicTime alarm_time) OVERRIDE;
   virtual void SetTimeoutAlarm(QuicTime::Delta delay) OVERRIDE;
   virtual bool IsSendAlarmSet() OVERRIDE;
   virtual void UnregisterSendAlarmIfRegistered() OVERRIDE;

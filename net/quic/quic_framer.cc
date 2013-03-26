@@ -1067,7 +1067,8 @@ size_t QuicFramer::ComputeFrameLength(const QuicFrame& frame) {
       DCHECK(false);
       return 0;
   }
-  // Not reachable, but some Chrome compilers can't figure that out.
+
+  // Not reachable, but some Chrome compilers can't figure that out.  *sigh*
   DCHECK(false);
   return 0;
 }

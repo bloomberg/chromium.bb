@@ -186,9 +186,11 @@ class MockHelper : public QuicConnectionHelperInterface {
   QuicRandom* GetRandomGenerator();
   MOCK_METHOD2(WritePacketToWire, int(const QuicEncryptedPacket& packet,
                                       int* error));
+  MOCK_METHOD0(IsWriteBlockedDataBuffered, bool());
+  MOCK_METHOD1(IsWriteBlocked, bool(int));
   MOCK_METHOD1(SetRetransmissionAlarm, void(QuicTime::Delta delay));
   MOCK_METHOD1(SetAckAlarm, void(QuicTime::Delta delay));
-  MOCK_METHOD1(SetSendAlarm, void(QuicTime::Delta delay));
+  MOCK_METHOD1(SetSendAlarm, void(QuicTime alarm_time));
   MOCK_METHOD1(SetTimeoutAlarm, void(QuicTime::Delta delay));
   MOCK_METHOD0(IsSendAlarmSet, bool());
   MOCK_METHOD0(UnregisterSendAlarmIfRegistered, void());
@@ -212,7 +214,8 @@ class MockConnection : public QuicConnection {
                                       const IPEndPoint& peer_address,
                                       const QuicEncryptedPacket& packet));
   MOCK_METHOD1(SendConnectionClose, void(QuicErrorCode error));
-
+  MOCK_METHOD2(SendConnectionCloseWithDetails, void(QuicErrorCode error,
+                                                    const string& details));
   MOCK_METHOD2(SendRstStream, void(QuicStreamId id,
                                    QuicErrorCode error));
   MOCK_METHOD3(SendGoAway, void(QuicErrorCode error,
@@ -307,7 +310,6 @@ class TestEntropyCalculator :
 
   virtual QuicPacketEntropyHash ReceivedEntropyHash(
       QuicPacketSequenceNumber sequence_number) const OVERRIDE;
-
 };
 
 }  // namespace test

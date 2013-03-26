@@ -195,6 +195,15 @@ enum QuicErrorCode {
   // A crypto message was received that contained a parameter with too few
   // values.
   QUIC_CRYPTO_MESSAGE_INDEX_NOT_FOUND,
+  // An internal error occured in crypto processing.
+  QUIC_CRYPTO_INTERNAL_ERROR,
+  // A crypto handshake message specified an unsupported version.
+  QUIC_VERSION_NOT_SUPPORTED,
+  // There was no intersection between the crypto primitives supported by the
+  // peer and ourselves.
+  QUIC_CRYPTO_NO_SUPPORT,
+
+  QUIC_LAST_ERROR,
 };
 
 // Version and Crypto tags are written to the wire with a big-endian

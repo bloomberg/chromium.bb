@@ -48,7 +48,6 @@ class OneShotVisitor : public CryptoFramerVisitorInterface {
 
 CryptoFramer::CryptoFramer()
     : visitor_(NULL),
-      message_tag_(0),
       num_entries_(0),
       values_len_(0) {
   Clear();
@@ -86,7 +85,9 @@ bool CryptoFramer::ProcessInput(StringPiece input) {
       if (reader.BytesRemaining() < kCryptoTagSize) {
         break;
       }
-      reader.ReadUInt32(&message_tag_);
+      CryptoTag message_tag;
+      reader.ReadUInt32(&message_tag);
+      message_.set_tag(message_tag);
       state_ = STATE_READING_NUM_ENTRIES;
     case STATE_READING_NUM_ENTRIES:
       if (reader.BytesRemaining() < kNumEntriesSize) {
@@ -146,12 +147,9 @@ bool CryptoFramer::ProcessInput(StringPiece input) {
       for (int i = 0; i < num_entries_; ++i) {
         StringPiece value;
         reader.ReadStringPiece(&value, tag_length_map_[tags_[i]]);
-        tag_value_map_[tags_[i]] = value.as_string();
+        message_.SetStringPiece(tags_[i], value);
       }
-      CryptoHandshakeMessage message;
-      message.tag = message_tag_;
-      message.tag_value_map.swap(tag_value_map_);
-      visitor_->OnHandshakeMessage(message);
+      visitor_->OnHandshakeMessage(message_);
       Clear();
       state_ = STATE_READING_TAG;
       break;
@@ -164,57 +162,57 @@ bool CryptoFramer::ProcessInput(StringPiece input) {
 // static
 QuicData* CryptoFramer::ConstructHandshakeMessage(
     const CryptoHandshakeMessage& message) {
-  if (message.tag_value_map.size() > kMaxEntries) {
+  if (message.tag_value_map().size() > kMaxEntries) {
     return NULL;
   }
   size_t len = sizeof(uint32);  // message tag
   len += sizeof(uint16);  // number of map entries
-  CryptoTagValueMap::const_iterator it = message.tag_value_map.begin();
-  while (it != message.tag_value_map.end()) {
+  CryptoTagValueMap::const_iterator it = message.tag_value_map().begin();
+  while (it != message.tag_value_map().end()) {
     len += sizeof(uint32);  // tag
     len += sizeof(uint16);  // value len
     len += it->second.length(); // value
     ++it;
   }
-  if (message.tag_value_map.size() % 2 == 1) {
+  if (message.tag_value_map().size() % 2 == 1) {
     len += sizeof(uint16);  // padding
   }
 
   QuicDataWriter writer(len);
-  if (!writer.WriteUInt32(message.tag)) {
+  if (!writer.WriteUInt32(message.tag())) {
     DCHECK(false) << "Failed to write message tag.";
     return NULL;
   }
-  if (!writer.WriteUInt16(message.tag_value_map.size())) {
+  if (!writer.WriteUInt16(message.tag_value_map().size())) {
     DCHECK(false) << "Failed to write size.";
     return NULL;
   }
   // Tags
-  for (it = message.tag_value_map.begin();
-       it != message.tag_value_map.end(); ++it) {
+  for (it = message.tag_value_map().begin();
+       it != message.tag_value_map().end(); ++it) {
     if (!writer.WriteUInt32(it->first)) {
       DCHECK(false) << "Failed to write tag.";
       return NULL;
     }
   }
   // Lengths
-  for (it = message.tag_value_map.begin();
-       it != message.tag_value_map.end(); ++it) {
+  for (it = message.tag_value_map().begin();
+       it != message.tag_value_map().end(); ++it) {
     if (!writer.WriteUInt16(it->second.length())) {
       DCHECK(false) << "Failed to write length.";
       return NULL;
     }
   }
   // Possible padding
-  if (message.tag_value_map.size() % 2 == 1) {
+  if (message.tag_value_map().size() % 2 == 1) {
     if (!writer.WriteUInt16(0)) {
       DCHECK(false) << "Failed to write padding.";
       return NULL;
     }
   }
   // Values
-  for (it = message.tag_value_map.begin();
-       it != message.tag_value_map.end(); ++it) {
+  for (it = message.tag_value_map().begin();
+       it != message.tag_value_map().end(); ++it) {
     if (!writer.WriteBytes(it->second.data(), it->second.length())) {
       DCHECK(false) << "Failed to write value.";
       return NULL;
@@ -224,7 +222,7 @@ QuicData* CryptoFramer::ConstructHandshakeMessage(
 }
 
 void CryptoFramer::Clear() {
-  tag_value_map_.clear();
+  message_.Clear();
   tag_length_map_.clear();
   tags_.clear();
   error_ = QUIC_NO_ERROR;

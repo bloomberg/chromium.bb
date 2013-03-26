@@ -9,6 +9,8 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "net/quic/crypto/crypto_handshake.h"
+#include "net/quic/crypto/crypto_protocol.h"
+#include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -48,9 +50,9 @@ class QuicCryptoStreamTest : public ::testing::Test {
         connection_(new MockConnection(1, addr_, false)),
         session_(connection_, true),
         stream_(&session_) {
-    message_.tag = kSHLO;
-    message_.tag_value_map[1] = "abc";
-    message_.tag_value_map[2] = "def";
+    message_.set_tag(kSHLO);
+    message_.SetStringPiece(1, "abc");
+    message_.SetStringPiece(2, "def");
     ConstructHandshakeMessage();
   }
 
@@ -86,10 +88,11 @@ TEST_F(QuicCryptoStreamTest, ProcessData) {
             stream_.ProcessData(message_data_->data(),
                                 message_data_->length()));
   ASSERT_EQ(1u, stream_.messages()->size());
-  EXPECT_EQ(kSHLO, (*stream_.messages())[0].tag);
-  EXPECT_EQ(2u, (*stream_.messages())[0].tag_value_map.size());
-  EXPECT_EQ("abc", (*stream_.messages())[0].tag_value_map[1]);
-  EXPECT_EQ("def", (*stream_.messages())[0].tag_value_map[2]);
+  const CryptoHandshakeMessage& message = (*stream_.messages())[0];
+  EXPECT_EQ(kSHLO, message.tag());
+  EXPECT_EQ(2u, message.tag_value_map().size());
+  EXPECT_EQ("abc", CryptoTestUtils::GetValueForTag(message, 1));
+  EXPECT_EQ("def", CryptoTestUtils::GetValueForTag(message, 2));
 }
 
 TEST_F(QuicCryptoStreamTest, ProcessBadData) {

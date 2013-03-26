@@ -13,7 +13,6 @@
 namespace net {
 
 class QuicSession;
-struct CryptoHandshakeMessage;
 
 namespace test {
 class CryptoTestUtils;
@@ -30,16 +29,33 @@ class NET_EXPORT_PRIVATE QuicCryptoClientStream : public QuicCryptoStream {
 
   // Performs a crypto handshake with the server. Returns true if the crypto
   // handshake is started successfully.
+  // TODO(agl): this should probably return void.
   virtual bool CryptoConnect();
+
+  const QuicNegotiatedParameters& negotiated_params() const;
+  const QuicCryptoNegotiatedParameters& crypto_negotiated_params() const;
 
  private:
   friend class test::CryptoTestUtils;
+
+  enum State {
+    STATE_IDLE,
+    STATE_SEND_CHLO,
+    STATE_RECV_REJ,
+    STATE_RECV_SHLO,
+  };
+
+  // DoHandshakeLoop performs a step of the handshake state machine. Note that
+  // |in| is NULL for the first call.
+  void DoHandshakeLoop(const CryptoHandshakeMessage* in);
+
+  State next_state_;
 
   QuicConfig config_;
   QuicCryptoClientConfig crypto_config_;
 
   QuicNegotiatedParameters negotiated_params_;
-  QuicCryptoNegotiatedParams crypto_negotiated_params_;
+  QuicCryptoNegotiatedParameters crypto_negotiated_params_;
 
   // Client's connection nonce (4-byte timestamp + 28 random bytes)
   std::string nonce_;

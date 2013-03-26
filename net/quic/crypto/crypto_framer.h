@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string_piece.h"
 #include "net/base/net_export.h"
+#include "net/quic/crypto/crypto_handshake.h"
 #include "net/quic/crypto/crypto_protocol.h"
 #include "net/quic/quic_protocol.h"
 
@@ -20,7 +21,6 @@ namespace net {
 class CryptoFramer;
 class QuicDataReader;
 class QuicData;
-struct CryptoHandshakeMessage;
 
 class NET_EXPORT_PRIVATE CryptoFramerVisitorInterface {
  public:
@@ -99,8 +99,8 @@ class NET_EXPORT_PRIVATE CryptoFramer {
   std::string buffer_;
   // Current state of the parsing.
   CryptoFramerState state_;
-  // Tag of the message currently being parsed.
-  CryptoTag message_tag_;
+  // The message currently being parsed.
+  CryptoHandshakeMessage message_;
   // Number of entires in the message currently being parsed.
   uint16 num_entries_;
   // Vector of tags in the message currently being parsed.
@@ -108,8 +108,6 @@ class NET_EXPORT_PRIVATE CryptoFramer {
   // Length of the data associated with each tag in the message currently
   // being parsed.
   std::map<CryptoTag, size_t> tag_length_map_;
-  // Data associated with each tag in the message currently being parsed.
-  CryptoTagValueMap tag_value_map_;
   // Cumulative length of all values in the message currently being parsed.
   size_t values_len_;
 };

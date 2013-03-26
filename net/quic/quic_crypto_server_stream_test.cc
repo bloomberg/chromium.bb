@@ -104,13 +104,13 @@ TEST_F(QuicCryptoServerStreamTest, MessageAfterHandshake) {
   CompleteCryptoHandshake();
   EXPECT_CALL(*connection_, SendConnectionClose(
       QUIC_CRYPTO_MESSAGE_AFTER_HANDSHAKE_COMPLETE));
-  message_.tag = kCHLO;
+  message_.set_tag(kCHLO);
   ConstructHandshakeMessage();
   stream_.ProcessData(message_data_->data(), message_data_->length());
 }
 
 TEST_F(QuicCryptoServerStreamTest, BadMessageType) {
-  message_.tag = kSHLO;
+  message_.set_tag(kSHLO);
   ConstructHandshakeMessage();
   EXPECT_CALL(*connection_, SendConnectionClose(
       QUIC_INVALID_CRYPTO_MESSAGE_TYPE));

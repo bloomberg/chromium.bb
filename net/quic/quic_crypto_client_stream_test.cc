@@ -90,66 +90,6 @@ TEST_F(QuicCryptoClientStreamTest, NotInitiallyConected) {
   EXPECT_FALSE(stream_.handshake_complete());
 }
 
-TEST_F(QuicCryptoClientStreamTest, ClientHelloContents) {
-  EXPECT_TRUE(stream_.CryptoConnect());
-
-  SimpleQuicFramer framer;
-  ASSERT_TRUE(framer.ProcessPacket(*connection_->packets_[0]));
-  ASSERT_EQ(1u, framer.stream_frames().size());
-  const QuicStreamFrame& frame(framer.stream_frames()[0]);
-  EXPECT_EQ(kCryptoStreamId, frame.stream_id);
-  EXPECT_FALSE(frame.fin);
-  EXPECT_EQ(0u, frame.offset);
-
-  scoped_ptr<CryptoHandshakeMessage> chlo(framer.HandshakeMessage(0));
-  EXPECT_EQ(kCHLO, chlo->tag);
-
-  CryptoTagValueMap& tag_value_map = chlo->tag_value_map;
-
-  // kSNI
-  EXPECT_EQ(kServerHostname, tag_value_map[kSNI]);
-
-  // kNONC
-  // TODO(wtc): check the nonce.
-  ASSERT_EQ(32u, tag_value_map[kNONC].size());
-
-  // kVERS
-  ASSERT_EQ(2u, tag_value_map[kVERS].size());
-  uint16 version;
-  memcpy(&version, tag_value_map[kVERS].data(), 2);
-  EXPECT_EQ(0u, version);
-
-  // kKEXS
-  ASSERT_EQ(4u, tag_value_map[kKEXS].size());
-  CryptoTag key_exchange[1];
-  memcpy(&key_exchange[0], &tag_value_map[kKEXS][0], 4);
-  EXPECT_EQ(kC255, key_exchange[0]);
-
-  // kAEAD
-  ASSERT_EQ(4u, tag_value_map[kAEAD].size());
-  CryptoTag cipher[1];
-  memcpy(&cipher[0], &tag_value_map[kAEAD][0], 4);
-  EXPECT_EQ(kAESG, cipher[0]);
-
-  // kICSL
-  ASSERT_EQ(4u, tag_value_map[kICSL].size());
-  uint32 idle_lifetime;
-  memcpy(&idle_lifetime, tag_value_map[kICSL].data(), 4);
-  EXPECT_EQ(300u, idle_lifetime);
-
-  // kKATO
-  ASSERT_EQ(4u, tag_value_map[kKATO].size());
-  uint32 keepalive_timeout;
-  memcpy(&keepalive_timeout, tag_value_map[kKATO].data(), 4);
-  EXPECT_EQ(0u, keepalive_timeout);
-
-  // kCGST
-  ASSERT_EQ(4u, tag_value_map[kCGST].size());
-  CryptoTag congestion[1];
-  memcpy(&congestion[0], &tag_value_map[kCGST][0], 4);
-  EXPECT_EQ(kQBIC, congestion[0]);
-}
-
 TEST_F(QuicCryptoClientStreamTest, ConnectedAfterSHLO) {
   CompleteCryptoHandshake();
   EXPECT_TRUE(stream_.handshake_complete());
@@ -160,22 +100,34 @@ TEST_F(QuicCryptoClientStreamTest, MessageAfterHandshake) {
 
   EXPECT_CALL(*connection_, SendConnectionClose(
       QUIC_CRYPTO_MESSAGE_AFTER_HANDSHAKE_COMPLETE));
-  message_.tag = kCHLO;
+  message_.set_tag(kCHLO);
   ConstructHandshakeMessage();
   stream_.ProcessData(message_data_->data(), message_data_->length());
 }
 
 TEST_F(QuicCryptoClientStreamTest, BadMessageType) {
-  message_.tag = kCHLO;
+  EXPECT_TRUE(stream_.CryptoConnect());
+
+  message_.set_tag(kCHLO);
   ConstructHandshakeMessage();
 
-  EXPECT_CALL(*connection_,
-              SendConnectionClose(QUIC_INVALID_CRYPTO_MESSAGE_TYPE));
+  EXPECT_CALL(*connection_, SendConnectionCloseWithDetails(
+        QUIC_INVALID_CRYPTO_MESSAGE_TYPE, "Expected REJ"));
   stream_.ProcessData(message_data_->data(), message_data_->length());
 }
 
-TEST_F(QuicCryptoClientStreamTest, CryptoConnect) {
-  EXPECT_TRUE(stream_.CryptoConnect());
+TEST_F(QuicCryptoClientStreamTest, NegotiatedParameters) {
+  CompleteCryptoHandshake();
+
+  const QuicNegotiatedParameters& params(stream_.negotiated_params());
+  EXPECT_EQ(kQBIC, params.congestion_control);
+  EXPECT_EQ(300, params.idle_connection_state_lifetime.ToSeconds());
+  EXPECT_EQ(0, params.keepalive_timeout.ToSeconds());
+
+  const QuicCryptoNegotiatedParameters& crypto_params(
+      stream_.crypto_negotiated_params());
+  EXPECT_EQ(kAESG, crypto_params.aead);
+  EXPECT_EQ(kC255, crypto_params.key_exchange);
 }
 
 }  // namespace

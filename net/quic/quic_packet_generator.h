@@ -6,7 +6,7 @@
 // Packets are serialized just-in-time.  Control frames are queued.
 // Ack and Feedback frames will be requested from the Connection
 // just-in-time.  When a packet needs to be sent, the Generator
-// will serialized a packet and pass it to QuicConnection::SendOrQueuePacket()
+// will serialize a packet and pass it to QuicConnection::SendOrQueuePacket()
 //
 // The Generator's mode of operation is controlled by two conditions:
 //

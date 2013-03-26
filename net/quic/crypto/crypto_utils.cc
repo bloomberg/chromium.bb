@@ -4,8 +4,11 @@
 
 #include "net/quic/crypto/crypto_utils.h"
 
-#include "base/string_piece.h"
+#include "crypto/hkdf.h"
+#include "net/quic/crypto/crypto_handshake.h"
 #include "net/quic/crypto/crypto_protocol.h"
+#include "net/quic/crypto/quic_decrypter.h"
+#include "net/quic/crypto/quic_encrypter.h"
 #include "net/quic/crypto/quic_random.h"
 #include "net/quic/quic_clock.h"
 
@@ -63,15 +66,46 @@ bool CryptoUtils::FindMutualTag(const CryptoTagVector& our_tags_vector,
 
 void CryptoUtils::GenerateNonce(const QuicClock* clock,
                                 QuicRandom* random_generator,
+                                const string& orbit,
                                 string* nonce) {
   // a 4-byte timestamp + 28 random bytes.
   nonce->reserve(kNonceSize);
   nonce->resize(kNonceSize);
   QuicTime::Delta now = clock->NowAsDeltaSinceUnixEpoch();
   uint32 gmt_unix_time = now.ToSeconds();
-  const size_t time_size = sizeof(gmt_unix_time);
-  memcpy(&(*nonce)[0], &gmt_unix_time, time_size);
-  random_generator->RandBytes(&(*nonce)[time_size], kNonceSize - time_size);
+  memcpy(&(*nonce)[0], &gmt_unix_time, sizeof(gmt_unix_time));
+
+  size_t bytes_written = sizeof(gmt_unix_time);
+  if (orbit.size() == 8) {
+    memcpy(&(*nonce)[bytes_written], orbit.data(), orbit.size());
+    bytes_written += orbit.size();
+  }
+  random_generator->RandBytes(&(*nonce)[bytes_written],
+                              kNonceSize - bytes_written);
+}
+
+void CryptoUtils::DeriveKeys(QuicCryptoNegotiatedParameters* params,
+                             StringPiece nonce,
+                             const string& hkdf_input,
+                             Perspective perspective) {
+  params->encrypter.reset(QuicEncrypter::Create(params->aead));
+  params->decrypter.reset(QuicDecrypter::Create(params->aead));
+  size_t key_bytes = params->encrypter->GetKeySize();
+  size_t nonce_prefix_bytes = params->encrypter->GetNoncePrefixSize();
+
+  crypto::HKDF hkdf(params->premaster_secret, nonce,
+                    hkdf_input, key_bytes, nonce_prefix_bytes);
+  if (perspective == SERVER) {
+    params->encrypter->SetKey(hkdf.server_write_key());
+    params->encrypter->SetNoncePrefix(hkdf.server_write_iv());
+    params->decrypter->SetKey(hkdf.client_write_key());
+    params->decrypter->SetNoncePrefix(hkdf.client_write_iv());
+  } else {
+    params->encrypter->SetKey(hkdf.client_write_key());
+    params->encrypter->SetNoncePrefix(hkdf.client_write_iv());
+    params->decrypter->SetKey(hkdf.server_write_key());
+    params->decrypter->SetNoncePrefix(hkdf.server_write_iv());
+  }
 }
 
 }  // namespace net

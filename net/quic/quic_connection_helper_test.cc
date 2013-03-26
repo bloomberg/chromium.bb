@@ -224,12 +224,14 @@ TEST_F(QuicConnectionHelperTest, IsSendAlarmSet) {
 }
 
 TEST_F(QuicConnectionHelperTest, SetSendAlarm) {
-  helper_->SetSendAlarm(QuicTime::Delta::Zero());
+  helper_->SetSendAlarm(
+      clock_.ApproximateNow().Add(QuicTime::Delta::FromSeconds(1)));
   EXPECT_TRUE(helper_->IsSendAlarmSet());
 }
 
 TEST_F(QuicConnectionHelperTest, UnregisterSendAlarmIfRegistered) {
-  helper_->SetSendAlarm(QuicTime::Delta::Zero());
+  helper_->SetSendAlarm(
+      clock_.ApproximateNow().Add(QuicTime::Delta::FromSeconds(1)));
   helper_->UnregisterSendAlarmIfRegistered() ;
   EXPECT_FALSE(helper_->IsSendAlarmSet());
 }

@@ -135,8 +135,16 @@ class TestConnectionHelper : public QuicConnectionHelperInterface {
     retransmission_alarm_ = clock_->ApproximateNow().Add(delay);
   }
 
-  virtual void SetSendAlarm(QuicTime::Delta delay) OVERRIDE {
-    send_alarm_ = clock_->ApproximateNow().Add(delay);
+  virtual bool IsWriteBlockedDataBuffered() OVERRIDE {
+    return false;
+  }
+
+  virtual bool IsWriteBlocked(int error) OVERRIDE {
+    return error == ERR_IO_PENDING;
+  }
+
+  virtual void SetSendAlarm(QuicTime alarm_time) OVERRIDE {
+    send_alarm_ = alarm_time;
   }
 
   virtual void SetTimeoutAlarm(QuicTime::Delta delay) OVERRIDE {
@@ -809,7 +817,8 @@ TEST_F(QuicConnectionTest, FECQueueing) {
 
 TEST_F(QuicConnectionTest, FramePacking) {
   // Block the connection.
-  helper_->SetSendAlarm(QuicTime::Delta::FromSeconds(1));
+  helper_->SetSendAlarm(
+      clock_.ApproximateNow().Add(QuicTime::Delta::FromSeconds(1)));
 
   // Send an ack and two stream frames in 1 packet by queueing them.
   connection_.SendAck();
@@ -842,7 +851,8 @@ TEST_F(QuicConnectionTest, FramePackingFEC) {
   // Enable fec.
   connection_.options()->max_packets_per_fec_group = 6;
   // Block the connection.
-  helper_->SetSendAlarm(QuicTime::Delta::FromSeconds(1));
+  helper_->SetSendAlarm(
+      clock_.ApproximateNow().Add(QuicTime::Delta::FromSeconds(1)));
 
   // Send an ack and two stream frames in 1 packet by queueing them.
   connection_.SendAck();

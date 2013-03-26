@@ -18,17 +18,23 @@ QuicCryptoServerStream::QuicCryptoServerStream(QuicSession* session)
   CryptoHandshakeMessage extra_tags;
   config_.ToHandshakeMessage(&extra_tags);
 
-  QuicGuid guid = session->connection()->guid();
-  crypto_config_.hkdf_info.append(reinterpret_cast<char*>(&guid),
-                                  sizeof(guid));
   // TODO(agl): AddTestingConfig generates a new, random config. In the future
   // this will be replaced with a real source of configs.
-  scoped_ptr<CryptoTagValueMap> config_tags(
+  scoped_ptr<CryptoHandshakeMessage> scfg(
       crypto_config_.AddTestingConfig(session->connection()->random_generator(),
                                       session->connection()->clock(),
                                       extra_tags));
   // If we were using the same config in many servers then we would have to
   // parse a QuicConfig from config_tags here.
+
+  // Our non-crypto configuration is also expressed in the SCFG because it's
+  // signed. Thus |config_| needs to be consistent with that.
+  if (!config_.SetFromHandshakeMessage(*scfg)) {
+    // TODO(agl): when we aren't generating testing configs then this can be a
+    // CHECK at startup time.
+    LOG(WARNING) << "SCFG could not be parsed by QuicConfig.";
+    DCHECK(false);
+  }
 }
 
 QuicCryptoServerStream::~QuicCryptoServerStream() {
@@ -42,35 +48,42 @@ void QuicCryptoServerStream::OnHandshakeMessage(
     return;
   }
 
-  if (message.tag != kCHLO) {
+  if (message.tag() != kCHLO) {
     CloseConnection(QUIC_INVALID_CRYPTO_MESSAGE_TYPE);
     return;
   }
 
   string error_details;
-  QuicErrorCode error = config_.ProcessPeerHandshake(
-      message, CryptoUtils::LOCAL_PRIORITY, &negotiated_params_,
-      &error_details);
-  if (error != QUIC_NO_ERROR) {
-    CloseConnectionWithDetails(error, "negotiated params");
-    return;
+  CryptoHandshakeMessage reply;
+  crypto_config_.ProcessClientHello(
+      message, session()->connection()->guid(), &reply,
+      &crypto_negotiated_params_, &error_details);
+
+  if (reply.tag() == kSHLO) {
+    // If we are returning a SHLO then we accepted the handshake.
+    QuicErrorCode error = config_.ProcessFinalPeerHandshake(
+        message, CryptoUtils::LOCAL_PRIORITY, &negotiated_params_,
+        &error_details);
+    if (error != QUIC_NO_ERROR) {
+      CloseConnectionWithDetails(error, error_details);
+      return;
+    }
+
+    SetHandshakeComplete(QUIC_NO_ERROR);
   }
 
-  CryptoHandshakeMessage shlo;
-  CryptoUtils::GenerateNonce(session()->connection()->clock(),
-                             session()->connection()->random_generator(),
-                             &server_nonce_);
-  crypto_config_.ProcessClientHello(message, server_nonce_, &shlo,
-                                    &crypto_negotiated_params_, &error_details);
-  if (!error_details.empty()) {
-    DLOG(INFO) << "Rejecting CHLO: " << error_details;
-  }
-  config_.ToHandshakeMessage(&shlo);
-  SendHandshakeMessage(shlo);
-
-  // TODO(rch): correctly validate the message
-  SetHandshakeComplete(QUIC_NO_ERROR);
+  SendHandshakeMessage(reply);
   return;
+}
+
+const QuicNegotiatedParameters&
+QuicCryptoServerStream::negotiated_params() const {
+  return negotiated_params_;
+}
+
+const QuicCryptoNegotiatedParameters&
+QuicCryptoServerStream::crypto_negotiated_params() const {
+  return crypto_negotiated_params_;
 }
 
 }  // namespace net

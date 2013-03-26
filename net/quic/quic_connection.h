@@ -149,6 +149,15 @@ class NET_EXPORT_PRIVATE QuicConnectionHelperInterface {
   virtual int WritePacketToWire(const QuicEncryptedPacket& packet,
                                 int* error) = 0;
 
+  // Returns true if the helper buffers and subsequently rewrites data
+  // when an attempt to write results in the underlying socket becoming
+  // write blocked.
+  virtual bool IsWriteBlockedDataBuffered() = 0;
+
+  // Returns true if |error| represents a write-block error code such
+  // as EAGAIN or ERR_IO_PENDING.
+  virtual bool IsWriteBlocked(int error) = 0;
+
   // Sets up an alarm to retransmit a packet if we haven't received an ack
   // in the expected time frame.  Implementations must invoke
   // OnRetransmissionAlarm when the alarm fires.  Implementations must also
@@ -156,10 +165,10 @@ class NET_EXPORT_PRIVATE QuicConnectionHelperInterface {
   // alarm is already set, this call is a no-op.
   virtual void SetRetransmissionAlarm(QuicTime::Delta delay) = 0;
 
-  // Sets an alarm to send packets after |delay_in_us|.  Implementations must
+  // Sets an alarm to send packets at |alarm_time|.  Implementations must
   // invoke OnCanWrite when the alarm fires.  Implementations must also
   // handle the case where |this| is deleted before the alarm fires.
-  virtual void SetSendAlarm(QuicTime::Delta delay) = 0;
+  virtual void SetSendAlarm(QuicTime alarm_time) = 0;
 
   // Sets an alarm which fires when the connection may have timed out.
   // Implementations must call CheckForTimeout() and then reregister the alarm

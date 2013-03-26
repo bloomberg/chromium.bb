@@ -9,6 +9,7 @@
 #include "base/task_runner.h"
 #include "base/time.h"
 #include "net/base/io_buffer.h"
+#include "net/base/net_errors.h"
 #include "net/quic/quic_utils.h"
 
 namespace net {
@@ -69,6 +70,16 @@ int QuicConnectionHelper::WritePacketToWire(
   return rv;
 }
 
+bool QuicConnectionHelper::IsWriteBlockedDataBuffered() {
+  // Chrome sockets' Write() methods buffer the data until the Write is
+  // permitted.
+  return true;
+}
+
+bool QuicConnectionHelper::IsWriteBlocked(int error) {
+  return error == ERR_IO_PENDING;
+}
+
 void QuicConnectionHelper::SetRetransmissionAlarm(QuicTime::Delta delay) {
   if (!retransmission_alarm_registered_) {
     task_runner_->PostDelayedTask(
@@ -95,13 +106,14 @@ void QuicConnectionHelper::ClearAckAlarm() {
   ack_alarm_time_ = QuicTime::Zero();
 }
 
-void QuicConnectionHelper::SetSendAlarm(QuicTime::Delta delay) {
+void QuicConnectionHelper::SetSendAlarm(QuicTime alarm_time) {
   send_alarm_registered_ = true;
   task_runner_->PostDelayedTask(
       FROM_HERE,
       base::Bind(&QuicConnectionHelper::OnSendAlarm,
                  weak_factory_.GetWeakPtr()),
-      base::TimeDelta::FromMicroseconds(delay.ToMicroseconds()));
+      base::TimeDelta::FromMicroseconds(
+          alarm_time.Subtract(QuicTime::Zero()).ToMicroseconds()));
 }
 
 void QuicConnectionHelper::SetTimeoutAlarm(QuicTime::Delta delay) {

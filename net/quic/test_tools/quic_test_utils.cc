@@ -292,7 +292,7 @@ static QuicPacket* ConstructPacketFromHandshakeMessage(
 
 QuicPacket* ConstructHandshakePacket(QuicGuid guid, CryptoTag tag) {
   CryptoHandshakeMessage message;
-  message.tag = tag;
+  message.set_tag(tag);
   return ConstructPacketFromHandshakeMessage(guid, message, false);
 }
 

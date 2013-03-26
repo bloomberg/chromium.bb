@@ -25,7 +25,7 @@ typedef std::vector<CryptoTag> CryptoTagVector;
 
 const CryptoTag kCHLO = MAKE_TAG('C', 'H', 'L', 'O');  // Client hello
 const CryptoTag kSHLO = MAKE_TAG('S', 'H', 'L', 'O');  // Server hello
-const CryptoTag kSCFG = MAKE_TAG('S', 'H', 'L', 'O');  // Server config
+const CryptoTag kSCFG = MAKE_TAG('S', 'C', 'F', 'G');  // Server config
 const CryptoTag kREJ  = MAKE_TAG('R', 'E', 'J', '\0');  // Reject
 
 // Key exchange methods
@@ -56,6 +56,7 @@ const CryptoTag kSNI = MAKE_TAG('S', 'N', 'I', '\0');  // Server name
                                                        // indication
 const CryptoTag kPUBS = MAKE_TAG('P', 'U', 'B', 'S');  // Public key values
 const CryptoTag kSCID = MAKE_TAG('S', 'C', 'I', 'D');  // Server config id
+const CryptoTag kSRCT = MAKE_TAG('S', 'R', 'C', 'T');  // Source-address token
 
 const size_t kMaxEntries = 16;  // Max number of entries in a message.
 

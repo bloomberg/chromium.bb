@@ -12,8 +12,8 @@
 
 namespace net {
 
+class CryptoHandshakeMessage;
 class QuicSession;
-struct CryptoHandshakeMessage;
 
 // Crypto handshake messages in QUIC take place over a reserved
 // reliable stream with the id 1.  Each endpoint (client and server)
@@ -79,22 +79,31 @@ class NET_EXPORT_PRIVATE QuicConfig {
   // SetDefaults sets the members to sensible, default values.
   void SetDefaults();
 
+  // SetFromMessage extracts the non-crypto configuration from |msg| and sets
+  // the members of this object to match. This is expected to be called in the
+  // case of a server which is loading a server config. The server config
+  // contains the non-crypto parameters and so the server will need to keep its
+  // QuicConfig in sync with the server config that it'll be sending to
+  // clients.
+  bool SetFromHandshakeMessage(const CryptoHandshakeMessage& scfg);
+
   // ToHandshakeMessage serializes the settings in this object as a series of
   // tags /value pairs and adds them to |out|.
   void ToHandshakeMessage(CryptoHandshakeMessage* out) const;
 
-  QuicErrorCode ProcessPeerHandshake(
+  QuicErrorCode ProcessFinalPeerHandshake(
       const CryptoHandshakeMessage& peer_handshake,
       CryptoUtils::Priority priority,
       QuicNegotiatedParameters* out_params,
       string* error_details) const;
 
+ private:
   // Congestion control feedback type.
-  CryptoTagVector congestion_control;
+  CryptoTagVector congestion_control_;
   // Idle connection state lifetime
-  QuicTime::Delta idle_connection_state_lifetime;
+  QuicTime::Delta idle_connection_state_lifetime_;
   // Keepalive timeout, or 0 to turn off keepalive probes
-  QuicTime::Delta keepalive_timeout;
+  QuicTime::Delta keepalive_timeout_;
 };
 
 }  // namespace net

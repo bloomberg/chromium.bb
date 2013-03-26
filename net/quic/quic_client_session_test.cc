@@ -75,7 +75,7 @@ TEST_F(QuicClientSessionTest, GoAwayReceived) {
   ASSERT_TRUE(session_.CryptoConnect(callback_.callback()));
   // Simulate the server crypto handshake.
   CryptoHandshakeMessage server_message;
-  server_message.tag = kSHLO;
+  server_message.set_tag(kSHLO);
   session_.GetCryptoStream()->OnHandshakeMessage(server_message);
 
   // After receiving a GoAway, I should no longer be able to create outgoing
