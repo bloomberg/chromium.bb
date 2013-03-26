@@ -244,6 +244,38 @@ TEST(ScrollbarLayerTest, SolidColorDrawQuads) {
   }
 }
 
+TEST(ScrollbarLayerTest, LayerDrivenSolidColorDrawQuads) {
+  LayerTreeSettings layer_tree_settings;
+  layer_tree_settings.solid_color_scrollbars = true;
+  layer_tree_settings.solid_color_scrollbar_thickness_dip = 3;
+  FakeImplProxy proxy;
+  FakeLayerTreeHostImpl host_impl(layer_tree_settings, &proxy);
+
+  scoped_ptr<WebKit::WebScrollbar> scrollbar(FakeWebScrollbar::Create());
+  static_cast<FakeWebScrollbar*>(scrollbar.get())->set_overlay(true);
+  scoped_ptr<LayerImpl> layer_impl_tree_root =
+      LayerImplForScrollAreaAndScrollbar(&host_impl, scrollbar.Pass(), false);
+  ScrollbarLayerImpl* scrollbar_layer_impl =
+      static_cast<ScrollbarLayerImpl*>(layer_impl_tree_root->children()[1]);
+
+  // Make sure that this ends up calling SetViewportWithinScrollableArea.
+  layer_impl_tree_root->SetHorizontalScrollbarLayer(scrollbar_layer_impl);
+  layer_impl_tree_root->SetMaxScrollOffset(gfx::Vector2d(8, 8));
+  layer_impl_tree_root->SetBounds(gfx::Size(2, 2));
+  layer_impl_tree_root->ScrollBy(gfx::Vector2dF(4.f, 0.f));
+
+  {
+    MockQuadCuller quad_culler;
+    AppendQuadsData data;
+    scrollbar_layer_impl->AppendQuads(&quad_culler, &data);
+
+    const QuadList& quads = quad_culler.quad_list();
+    ASSERT_EQ(1, quads.size());
+    EXPECT_EQ(DrawQuad::SOLID_COLOR, quads[0]->material);
+    EXPECT_RECT_EQ(gfx::Rect(4, 0, 2, 3), quads[0]->rect);
+  }
+}
+
 class ScrollbarLayerTestMaxTextureSize : public LayerTreeTest {
  public:
   ScrollbarLayerTestMaxTextureSize() {}

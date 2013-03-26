@@ -800,15 +800,22 @@ void LayerImpl::CalculateContentsScale(
 void LayerImpl::UpdateScrollbarPositions() {
   gfx::Vector2dF current_offset = scroll_offset_ + scroll_delta_;
 
+  gfx::RectF viewport(PointAtOffsetFromOrigin(current_offset), bounds_);
+  gfx::SizeF scrollable_size(max_scroll_offset_.x() + bounds_.width(),
+                             max_scroll_offset_.y() + bounds_.height());
   if (horizontal_scrollbar_layer_) {
     horizontal_scrollbar_layer_->SetCurrentPos(current_offset.x());
     horizontal_scrollbar_layer_->SetTotalSize(bounds_.width());
     horizontal_scrollbar_layer_->SetMaximum(max_scroll_offset_.x());
+    horizontal_scrollbar_layer_->SetViewportWithinScrollableArea(
+        viewport, scrollable_size);
   }
   if (vertical_scrollbar_layer_) {
     vertical_scrollbar_layer_->SetCurrentPos(current_offset.y());
     vertical_scrollbar_layer_->SetTotalSize(bounds_.height());
     vertical_scrollbar_layer_->SetMaximum(max_scroll_offset_.y());
+    vertical_scrollbar_layer_->SetViewportWithinScrollableArea(
+        viewport, scrollable_size);
   }
 
   if (current_offset == last_scroll_offset_)
