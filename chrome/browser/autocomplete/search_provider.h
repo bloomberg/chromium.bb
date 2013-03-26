@@ -64,6 +64,7 @@ class SearchProvider : public AutocompleteProvider,
   // the instant result.
   void FinalizeInstantQuery(const string16& input_text,
                             const InstantSuggestion& suggestion);
+  void ClearInstantSuggestion();
 
   // AutocompleteProvider:
   virtual void Start(const AutocompleteInput& input,

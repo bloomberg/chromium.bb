@@ -1157,6 +1157,9 @@ void InstantController::SetSuggestions(
   } else {
     if (FixSuggestion(&suggestion)) {
       last_suggestion_ = suggestion;
+      if (suggestion.type == INSTANT_SUGGESTION_SEARCH &&
+          suggestion.behavior == INSTANT_COMPLETE_NEVER)
+        last_omnibox_text_ = last_user_text_;
       LOG_INSTANT_DEBUG_EVENT(this, base::StringPrintf(
           "SetInstantSuggestion: text='%s' behavior=%d",
           UTF16ToUTF8(suggestion.text).c_str(),
@@ -1578,12 +1581,6 @@ void InstantController::SendMostVisitedItems(
 }
 
 bool InstantController::FixSuggestion(InstantSuggestion* suggestion) const {
-  // Don't suggest gray text if there already was inline autocompletion.
-  // http://crbug.com/162303
-  if (suggestion->behavior == INSTANT_COMPLETE_NEVER &&
-      last_omnibox_text_has_inline_autocompletion_)
-    return false;
-
   // If the page is trying to set inline autocompletion in verbatim mode,
   // instead try suggesting the exact omnibox text. This makes the omnibox
   // interpret user text as an URL if possible while preventing unwanted
@@ -1613,12 +1610,14 @@ bool InstantController::FixSuggestion(InstantSuggestion* suggestion) const {
     return suggestion->query == last_user_text_;
   }
 
+  // We use |last_user_text_| because |last_omnibox_text| may contain text from
+  // a previous URL suggestion at this point.
   if (suggestion->type == INSTANT_SUGGESTION_SEARCH) {
-    if (StartsWith(suggestion->text, last_omnibox_text_, true)) {
+    if (StartsWith(suggestion->text, last_user_text_, true)) {
       // The user typed an exact prefix of the suggestion.
-      suggestion->text.erase(0, last_omnibox_text_.size());
+      suggestion->text.erase(0, last_user_text_.size());
       return true;
-    } else if (NormalizeAndStripPrefix(&suggestion->text, last_omnibox_text_)) {
+    } else if (NormalizeAndStripPrefix(&suggestion->text, last_user_text_)) {
       // Unicode normalize and case-fold the user text and suggestion. If the
       // user text is a prefix, suggest the normalized, case-folded completion
       // for instance, if the user types 'i' and the suggestion is 'INSTANT',

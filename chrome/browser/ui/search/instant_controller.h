@@ -207,6 +207,8 @@ class InstantController : public InstantPage::Delegate,
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest,
                            OmniboxTextUponFocusedCommittedSERP);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest,
+                           NavigationSuggestionIsDiscardedUponSearchSuggestion);
+  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest,
                            MiddleClickOnSuggestionOpensInNewTab);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, NTPIsPreloaded);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, PreloadedNTPIsUsedInNewTab);

@@ -384,6 +384,41 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
   EXPECT_EQ(ASCIIToUTF16(""), omnibox()->GetInstantSuggestion());
 }
 
+// Checks that a previous Navigation suggestion is not re-used when a search
+// suggestion comes in. Disabled on Mac because omnibox focus loss is not
+// working correctly. http://crbug.com/178520
+#if defined(OS_MACOSX)
+#define MAYBE_NavigationSuggestionIsDiscardedUponSearchSuggestion \
+        DISABLED_NavigationSuggestionIsDiscardedUponSearchSuggestion
+#else
+#define MAYBE_NavigationSuggestionIsDiscardedUponSearchSuggestion \
+        NavigationSuggestionIsDiscardedUponSearchSuggestion
+#endif
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
+    MAYBE_NavigationSuggestionIsDiscardedUponSearchSuggestion) {
+  // Setup Instant.
+  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  FocusOmniboxAndWaitForInstantExtendedSupport();
+
+  // Tell the page to send a URL suggestion.
+  EXPECT_TRUE(ExecuteScript("suggestion = 'http://www.example.com';"
+                            "behavior = 0;"));
+  SetOmniboxTextAndWaitForOverlayToShow("exa");
+  EXPECT_EQ(ASCIIToUTF16("example.com"), omnibox()->GetText());
+
+  // Now send a search suggestion and see that Navigation suggestion is no
+  // longer kept.
+  SetOmniboxText("exam");
+  EXPECT_TRUE(ExecuteScript("suggestion = 'exams are great';"
+                            "behavior = 2;"
+                            "handleOnChange();"));
+  instant()->overlay()->contents()->GetView()->Focus();
+  EXPECT_EQ(ASCIIToUTF16("exams are great"), omnibox()->GetText());
+
+  // TODO(jered): Remove this after fixing OnBlur().
+  omnibox()->RevertAll();
+}
+
 // This test simulates a search provider using the InstantExtended API to
 // navigate through the suggested results and back to the original user query.
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest, NavigateSuggestionsWithArrowKeys) {
@@ -415,10 +450,8 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, NavigateSuggestionsWithArrowKeys) {
 
 
   // Commit the search by pressing Enter.
-  // TODO(sreeram): Enable this check once @mathp's CL lands:
-  //     https://codereview.chromium.org/12179025/
-  // browser()->window()->GetLocationBar()->AcceptInput();
-  // EXPECT_EQ("hello", GetOmniboxText());
+  browser()->window()->GetLocationBar()->AcceptInput();
+  EXPECT_EQ("hello", GetOmniboxText());
 }
 
 // This test simulates a search provider using the InstantExtended API to

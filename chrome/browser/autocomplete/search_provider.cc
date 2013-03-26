@@ -208,6 +208,15 @@ void SearchProvider::FinalizeInstantQuery(const string16& input_text,
     listener_->OnProviderUpdate(results_updated);
 }
 
+void SearchProvider::ClearInstantSuggestion() {
+  default_provider_suggestion_ = InstantSuggestion();
+  if (done_ || instant_finalized_)
+    return;
+  instant_finalized_ = true;
+  UpdateMatches();
+  listener_->OnProviderUpdate(true);
+}
+
 void SearchProvider::Start(const AutocompleteInput& input,
                            bool minimal_changes) {
   // Do our best to load the model as early as possible.  This will reduce

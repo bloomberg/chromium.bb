@@ -231,10 +231,15 @@ void OmniboxEditModel::SetInstantSuggestion(
         FinalizeInstantQuery(view_->GetText(), suggestion, false);
       break;
 
-    case INSTANT_COMPLETE_NEVER:
+    case INSTANT_COMPLETE_NEVER: {
       DCHECK_EQ(INSTANT_SUGGESTION_SEARCH, suggestion.type);
       view_->SetInstantSuggestion(suggestion.text);
+      SearchProvider* search_provider =
+          autocomplete_controller_->search_provider();
+      if (search_provider)
+        search_provider->ClearInstantSuggestion();
       break;
+    }
 
     case INSTANT_COMPLETE_REPLACE: {
       const bool save_original_selection = !has_temporary_text_;
