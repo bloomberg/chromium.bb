@@ -13,6 +13,7 @@
 namespace aura {
 class RootWindow;
 class Window;
+class WindowDelegate;
 }
 
 namespace ash {
@@ -25,7 +26,8 @@ namespace internal {
 // is supported for now.
 class ASH_EXPORT DragDropTracker {
  public:
-  explicit DragDropTracker(aura::RootWindow* context_root);
+  DragDropTracker(aura::RootWindow* context_root,
+                  aura::WindowDelegate* delegate);
   ~DragDropTracker();
 
   aura::Window* capture_window() { return capture_window_.get(); }

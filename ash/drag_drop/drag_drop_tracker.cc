@@ -11,25 +11,28 @@
 #include "ui/base/events/event.h"
 #include "ui/gfx/screen.h"
 
+namespace ash {
+namespace internal {
+
 namespace {
 
 // Creates a window for capturing drag events.
-aura::Window* CreateCaptureWindow(aura::RootWindow* context_root) {
-  aura::Window* window = new aura::Window(NULL);
+aura::Window* CreateCaptureWindow(aura::RootWindow* context_root,
+                                  aura::WindowDelegate* delegate) {
+  aura::Window* window = new aura::Window(delegate);
   window->SetType(aura::client::WINDOW_TYPE_NORMAL);
   window->Init(ui::LAYER_NOT_DRAWN);
   window->SetDefaultParentByRootWindow(context_root, gfx::Rect());
   window->Show();
+  DCHECK(window->bounds().size().IsEmpty());
   return window;
 }
 
 }  // namespace
 
-namespace ash {
-namespace internal {
-
-DragDropTracker::DragDropTracker(aura::RootWindow* context_root)
-    : capture_window_(CreateCaptureWindow(context_root)) {
+DragDropTracker::DragDropTracker(aura::RootWindow* context_root,
+                                 aura::WindowDelegate* delegate)
+    : capture_window_(CreateCaptureWindow(context_root, delegate)) {
 }
 
 DragDropTracker::~DragDropTracker()  {

@@ -32,7 +32,8 @@ class DragDropTrackerTest : public test::AshTestBase {
 
   static aura::Window* GetTarget(const gfx::Point& location) {
     scoped_ptr<internal::DragDropTracker> tracker(
-        new internal::DragDropTracker(Shell::GetPrimaryRootWindow()));
+        new internal::DragDropTracker(Shell::GetPrimaryRootWindow(),
+                                      NULL));
     ui::MouseEvent e(ui::ET_MOUSE_DRAGGED,
                      location,
                      location,
@@ -44,7 +45,8 @@ class DragDropTrackerTest : public test::AshTestBase {
   static ui::LocatedEvent* ConvertEvent(aura::Window* target,
                                            const ui::MouseEvent& event) {
     scoped_ptr<internal::DragDropTracker> tracker(
-        new internal::DragDropTracker(Shell::GetPrimaryRootWindow()));
+        new internal::DragDropTracker(Shell::GetPrimaryRootWindow(),
+                                      NULL));
     ui::LocatedEvent* converted = tracker->ConvertEvent(target, event);
     return converted;
   }

@@ -16,11 +16,14 @@
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_delegate.h"
 #include "ui/base/animation/linear_animation.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/events/event.h"
 #include "ui/base/events/event_utils.h"
+#include "ui/base/hit_test.h"
+#include "ui/gfx/path.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/rect_conversions.h"
@@ -77,6 +80,61 @@ void DispatchGestureEndToWindow(aura::Window* window) {
 }
 }  // namespace
 
+class DragDropTrackerDelegate : public aura::WindowDelegate {
+ public:
+  explicit DragDropTrackerDelegate(DragDropController* controller)
+      : drag_drop_controller_(controller) {}
+  virtual ~DragDropTrackerDelegate() {}
+
+  // Overridden from WindowDelegate:
+  virtual gfx::Size GetMinimumSize() const OVERRIDE {
+    return gfx::Size();
+  }
+
+  virtual gfx::Size GetMaximumSize() const OVERRIDE {
+    return gfx::Size();
+  }
+
+  virtual void OnBoundsChanged(const gfx::Rect& old_bounds,
+                               const gfx::Rect& new_bounds) OVERRIDE {}
+  virtual gfx::NativeCursor GetCursor(const gfx::Point& point) OVERRIDE {
+    return gfx::kNullCursor;
+  }
+  virtual int GetNonClientComponent(const gfx::Point& point) const OVERRIDE {
+    return HTCAPTION;
+  }
+  virtual bool ShouldDescendIntoChildForEventHandling(
+      aura::Window* child,
+      const gfx::Point& location) OVERRIDE {
+    return true;
+  }
+  virtual bool CanFocus() OVERRIDE { return true; }
+  virtual void OnCaptureLost() OVERRIDE {
+    if (drag_drop_controller_->IsDragDropInProgress())
+      drag_drop_controller_->DragCancel();
+  }
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
+  }
+  virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE {}
+  virtual void OnWindowDestroying() OVERRIDE {}
+  virtual void OnWindowDestroyed() OVERRIDE {}
+  virtual void OnWindowTargetVisibilityChanged(bool visible) OVERRIDE {}
+  virtual bool HasHitTestMask() const OVERRIDE {
+    return true;
+  }
+  virtual void GetHitTestMask(gfx::Path* mask) const OVERRIDE {
+    DCHECK(mask->isEmpty());
+  }
+  virtual scoped_refptr<ui::Texture> CopyTexture() OVERRIDE {
+    return scoped_refptr<ui::Texture>();
+  }
+
+ private:
+  DragDropController* drag_drop_controller_;
+
+  DISALLOW_COPY_AND_ASSIGN(DragDropTrackerDelegate);
+};
+
 ////////////////////////////////////////////////////////////////////////////////
 // DragDropController, public:
 
@@ -87,6 +145,8 @@ DragDropController::DragDropController()
       drag_window_(NULL),
       drag_source_window_(NULL),
       should_block_during_drag_drop_(true),
+      ALLOW_THIS_IN_INITIALIZER_LIST(
+          drag_drop_window_delegate_(new DragDropTrackerDelegate(this))),
       current_drag_event_source_(ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE),
       weak_factory_(this) {
   Shell::GetInstance()->AddPreTargetHandler(this);
@@ -118,7 +178,8 @@ int DragDropController::StartDragAndDrop(
     return 0;
 
   current_drag_event_source_ = source;
-  DragDropTracker* tracker = new DragDropTracker(root_window);
+  DragDropTracker* tracker =
+      new DragDropTracker(root_window, drag_drop_window_delegate_.get());
   if (source == ui::DragDropTypes::DRAG_EVENT_SOURCE_TOUCH) {
     // We need to transfer the current gesture sequence and the GR's touch event
     // queue to the |drag_drop_tracker_|'s capture window so that when it takes

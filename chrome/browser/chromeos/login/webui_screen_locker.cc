@@ -25,6 +25,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_ui.h"
+#include "ui/aura/client/capture_client.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/screen.h"
@@ -273,8 +274,12 @@ void WebUIScreenLocker::OnLockWindowReady() {
 
 void WebUIScreenLocker::OnSessionStateEvent(
     ash::SessionStateObserver::EventType event) {
-  if (event == ash::SessionStateObserver::EVENT_LOCK_ANIMATION_FINISHED)
+  if (event == ash::SessionStateObserver::EVENT_LOCK_ANIMATION_FINISHED) {
+    // Release capture if any.
+    aura::client::GetCaptureClient(GetNativeWindow()->GetRootWindow())->
+        SetCapture(NULL);
     GetWebUI()->CallJavascriptFunction("cr.ui.Oobe.animateOnceFullyDisplayed");
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

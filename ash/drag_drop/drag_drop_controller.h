@@ -34,6 +34,7 @@ class DragDropControllerTest;
 namespace internal {
 
 class DragDropTracker;
+class DragDropTrackerDelegate;
 class DragImageView;
 
 class ASH_EXPORT DragDropController
@@ -127,6 +128,7 @@ class ASH_EXPORT DragDropController
   base::Closure quit_closure_;
 
   scoped_ptr<ash::internal::DragDropTracker> drag_drop_tracker_;
+  scoped_ptr<DragDropTrackerDelegate> drag_drop_window_delegate_;
 
   ui::DragDropTypes::DragEventSource current_drag_event_source_;
 
