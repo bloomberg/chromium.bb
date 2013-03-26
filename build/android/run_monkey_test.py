@@ -91,15 +91,19 @@ def DispatchPythonTests(options):
   """Dispatches the Monkey tests, sharding it if there multiple devices."""
   logger = logging.getLogger()
   logger.setLevel(logging.DEBUG)
-
-  available_tests = [MonkeyTest('testMonkey')]
   attached_devices = android_commands.GetAttachedDevices()
   if not attached_devices:
     raise Exception('You have no devices attached or visible!')
 
   # Actually run the tests.
   logging.debug('Running monkey tests.')
-  available_tests *= len(attached_devices)
+  # TODO(frankf): This is a stop-gap solution. Come up with a
+  # general way for running tests on every devices.
+  available_tests = []
+  for k in range(len(attached_devices)):
+    new_method = 'testMonkey%d' % k
+    setattr(MonkeyTest, new_method, MonkeyTest.testMonkey)
+    available_tests.append(MonkeyTest(new_method))
   options.ensure_value('shard_retries', 1)
   sharder = python_test_sharder.PythonTestSharder(
       attached_devices, available_tests, options)
