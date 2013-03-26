@@ -141,7 +141,8 @@ gfx::Rect BrowserAccessibility::GetLocalBoundsRect() {
   // nested web area.
   BrowserAccessibility* parent = parent_;
   bool need_to_offset_web_area =
-      (role_ == AccessibilityNodeData::ROLE_WEB_AREA);
+      (role_ == AccessibilityNodeData::ROLE_WEB_AREA ||
+       role_ == AccessibilityNodeData::ROLE_ROOT_WEB_AREA);
   while (parent) {
     if (need_to_offset_web_area &&
         parent->location().width() > 0 &&
@@ -149,7 +150,8 @@ gfx::Rect BrowserAccessibility::GetLocalBoundsRect() {
       bounds.Offset(parent->location().x(), parent->location().y());
       need_to_offset_web_area = false;
     }
-    if (parent->role() == AccessibilityNodeData::ROLE_WEB_AREA) {
+    if (parent->role() == AccessibilityNodeData::ROLE_WEB_AREA ||
+        parent->role() == AccessibilityNodeData::ROLE_ROOT_WEB_AREA) {
       int sx = 0;
       int sy = 0;
       if (parent->GetIntAttribute(AccessibilityNodeData::ATTR_SCROLL_X, &sx) &&
