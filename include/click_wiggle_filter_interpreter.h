@@ -28,14 +28,12 @@ class ClickWiggleFilterInterpreter : public FilterInterpreter {
   struct ClickWiggleRec {
     float x_, y_;  // position where we started blocking wiggle
     stime_t began_press_suppression_;  // when we started blocking inc/dec press
-    bool suppress_inc_press_:1;
-    bool suppress_dec_press_:1;
+    bool suppress_:1;
     bool operator==(const ClickWiggleRec& that) const {
       return x_ == that.x_ &&
           y_ == that.y_ &&
           began_press_suppression_ == that.began_press_suppression_ &&
-          suppress_inc_press_ == that.suppress_inc_press_ &&
-          suppress_dec_press_ == that.suppress_dec_press_;
+          suppress_ == that.suppress_;
     }
     bool operator!=(const ClickWiggleRec& that) const {
       return !(*this == that);

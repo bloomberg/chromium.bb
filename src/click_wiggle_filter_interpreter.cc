@@ -78,8 +78,7 @@ void ClickWiggleFilterInterpreter::UpdateClickWiggle(
         fs.position_x,  // button down x
         fs.position_y,  // button down y
         hwstate.timestamp + timeout,  // unused during click down
-        !button_up_edge,  // block inc press
-        true  // block dec press
+        true  // suppress
       };
       wiggle_recs_[fs.tracking_id] = rec;
       continue;
@@ -88,39 +87,22 @@ void ClickWiggleFilterInterpreter::UpdateClickWiggle(
     // We have an existing finger
     ClickWiggleRec* rec = &(*it).second;
 
-    if (!rec->suppress_inc_press_ && !rec->suppress_dec_press_)
+    if (!rec->suppress_)
       continue;  // It's already broken out of wiggle suppression
 
     float dx = fs.position_x - rec->x_;
     float dy = fs.position_y - rec->y_;
     if (dx * dx + dy * dy > wiggle_max_dist_.val_ * wiggle_max_dist_.val_) {
       // It's moved too much to be considered wiggle
-      rec->suppress_inc_press_ = rec->suppress_dec_press_ = false;
+      rec->suppress_ = false;
       continue;
     }
 
     if (hwstate.timestamp >= rec->began_press_suppression_) {
       // Too much time has passed to consider this wiggle
-      rec->suppress_inc_press_ = rec->suppress_dec_press_ = false;
+      rec->suppress_ = false;
       continue;
     }
-
-    if (!rec->suppress_inc_press_ && !rec->suppress_dec_press_)
-      continue;  // This happens when a finger is around on a down-edge
-
-    if (!MapContainsKey(prev_pressure_, fs.tracking_id)) {
-      Err("Missing prev_fs?");
-      continue;
-    }
-
-    if (fs.pressure >= prev_pressure_[fs.tracking_id] &&
-        rec->suppress_inc_press_)
-      continue;
-    rec->suppress_inc_press_ = false;
-    if (fs.pressure <= prev_pressure_[fs.tracking_id] &&
-        rec->suppress_dec_press_)
-      continue;
-    rec->suppress_dec_press_ = false;
   }
 }
 
@@ -142,8 +124,7 @@ void ClickWiggleFilterInterpreter::SetWarpFlags(HardwareState* hwstate) const {
       Err("Missing finger in wiggle recs.");
       continue;
     }
-    if (wiggle_recs_[fs->tracking_id].suppress_inc_press_ ||
-        wiggle_recs_[fs->tracking_id].suppress_dec_press_)
+    if (wiggle_recs_[fs->tracking_id].suppress_)
       fs->flags |= (GESTURES_FINGER_WARP_X | GESTURES_FINGER_WARP_Y);
   }
 }
