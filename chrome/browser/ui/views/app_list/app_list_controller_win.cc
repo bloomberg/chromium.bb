@@ -17,6 +17,7 @@
 #include "base/timer.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/shortcut.h"
+#include "base/win/windows_version.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_prefs.h"
@@ -565,6 +566,15 @@ void AppListController::PopulateViewFromProfile(Profile* profile) {
                               views::BubbleBorder::FLOAT,
                               false /* border_accepts_events */);
   HWND hwnd = GetAppListHWND();
+
+  // Vista and lower do not offer pinning to the taskbar, which makes any
+  // presence on the taskbar useless. So, hide the window on the taskbar
+  // for these versions of Windows.
+  if (base::win::GetVersion() <= base::win::VERSION_VISTA) {
+    LONG_PTR ex_styles = GetWindowLongPtr(hwnd, GWL_EXSTYLE);
+    ex_styles |= WS_EX_TOOLWINDOW;
+    SetWindowLongPtr(hwnd, GWL_EXSTYLE, ex_styles);
+  }
 
   ui::win::SetAppIdForWindow(GetAppModelId(), hwnd);
   CommandLine relaunch = GetAppListCommandLine();
