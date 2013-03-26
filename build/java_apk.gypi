@@ -60,7 +60,7 @@
     'proguard_enabled%': 'false',
     'proguard_flags_path%': '<(DEPTH)/build/android/empty_proguard.flags',
     'native_libs_paths': [],
-    'jar_name%': 'chromium_apk_<(_target_name).jar',
+    'jar_name': 'chromium_apk_<(_target_name).jar',
     'resource_dir%':'<(DEPTH)/build/android/ant/empty/res',
     'R_package%':'',
     'additional_res_dirs': [],
@@ -73,11 +73,19 @@
     'asset_location%': '<(intermediate_dir)/assets',
     'codegen_stamp': '<(intermediate_dir)/codegen.stamp',
     'compile_stamp': '<(intermediate_dir)/compile.stamp',
+    'jar_stamp': '<(intermediate_dir)/jar.stamp',
+    'obfuscate_stamp': '<(intermediate_dir)/obfuscate.stamp',
+    'classes_dir': '<(intermediate_dir)/classes',
+    'javac_includes': [],
+    'jar_excluded_classes': [],
+    'jar_path': '<(PRODUCT_DIR)/lib.java/<(jar_name)',
+    'obfuscated_jar_path': '<(intermediate_dir)/obfuscated.jar',
+    'dex_path': '<(intermediate_dir)/classes.dex',
     'android_manifest': '<(java_in_dir)/AndroidManifest.xml',
     'codegen_input_paths': [],
   },
   'sources': [
-      '<@(native_libs_paths)'
+      '<@(native_libs_paths)',
   ],
   # Pass the jar path to the apk's "fake" jar target.  This would be better as
   # direct_dependent_settings, but a variable set by a direct_dependent_settings
@@ -196,20 +204,73 @@
       ],
     },
     {
-      'action_name': 'ant_compile_<(_target_name)',
+      'action_name': 'javac_<(_target_name)',
       'message': 'Compiling java for <(_target_name)',
+      'variables': {
+        'all_src_dirs': [
+          '<(java_in_dir)/src',
+          '<(intermediate_dir)/gen',
+          '>@(additional_src_dirs)',
+          '>@(generated_src_dirs)',
+        ],
+      },
       'inputs': [
-        '<(DEPTH)/build/android/ant/apk-compile.xml',
-        '<(DEPTH)/build/android/ant/create-test-jar.js',
+        '<(DEPTH)/build/android/pylib/build_utils.py',
+        '<(DEPTH)/build/android/javac.py',
         # If there is a separate find for additional_src_dirs, it will find the
         # wrong .java files when additional_src_dirs is empty.
         '>!@(find >(java_in_dir) >(additional_src_dirs) -name "*.java")',
         '>@(input_jars_paths)',
         '<(codegen_stamp)',
-        '<(proguard_flags_path)',
       ],
       'outputs': [
         '<(compile_stamp)',
+      ],
+      'action': [
+        'python', '<(DEPTH)/build/android/javac.py',
+        '--output-dir=<(classes_dir)',
+        '--classpath=>(input_jars_paths) <(android_sdk_jar)',
+        '--src-dirs=>(all_src_dirs)',
+        '--javac-includes=<(javac_includes)',
+        '--stamp=<(compile_stamp)',
+
+        # TODO(newt): remove this once http://crbug.com/177552 is fixed in ninja.
+        '--ignore=>!(echo \'>(_inputs)\' | md5sum)',
+      ],
+    },
+    {
+      'action_name': 'jar_<(_target_name)',
+      'message': 'Creating <(_target_name) jar',
+      'inputs': [
+        '<(DEPTH)/build/android/pylib/build_utils.py',
+        '<(DEPTH)/build/android/jar.py',
+        '<(compile_stamp)',
+      ],
+      'outputs': [
+        '<(jar_stamp)',
+      ],
+      'action': [
+        'python', '<(DEPTH)/build/android/jar.py',
+        '--classes-dir=<(classes_dir)',
+        '--jar-path=<(jar_path)',
+        '--excluded-classes=<(jar_excluded_classes)',
+        '--stamp=<(jar_stamp)',
+
+        # TODO(newt): remove this once http://crbug.com/177552 is fixed in ninja.
+        '--ignore=>!(echo \'>(_inputs)\' | md5sum)',
+      ]
+    },
+    {
+      'action_name': 'ant_obfuscate_<(_target_name)',
+      'message': 'Obfuscating <(_target_name)',
+      'inputs': [
+        '<(DEPTH)/build/android/ant/apk-obfuscate.xml',
+        '<(DEPTH)/build/android/ant/create-test-jar.js',
+        '<(compile_stamp)',
+        '<(proguard_flags_path)',
+      ],
+      'outputs': [
+        '<(obfuscate_stamp)',
       ],
       'action': [
         'ant', '-quiet',
@@ -223,16 +284,16 @@
         '-DINPUT_JARS_PATHS=>(input_jars_paths)',
         '-DIS_TEST_APK=<(is_test_apk)',
         '-DJAR_PATH=<(PRODUCT_DIR)/lib.java/<(jar_name)',
+        '-DOBFUSCATED_JAR_PATH=<(obfuscated_jar_path)',
         '-DOUT_DIR=<(intermediate_dir)',
         '-DPROGUARD_ENABLED=<(proguard_enabled)',
         '-DPROGUARD_FLAGS=<(proguard_flags_path)',
-        '-DSOURCE_DIR=<(java_in_dir)/src',
         '-DTEST_JAR_PATH=<(PRODUCT_DIR)/test.lib.java/<(apk_name).jar',
 
-        '-DSTAMP=<(compile_stamp)',
+        '-DSTAMP=<(obfuscate_stamp)',
         '-Dbasedir=.',
         '-buildfile',
-        '<(DEPTH)/build/android/ant/apk-compile.xml',
+        '<(DEPTH)/build/android/ant/apk-obfuscate.xml',
 
         # Add list of inputs to the command line, so if inputs change
         # (e.g. if a Java file is removed), the command will be re-run.
@@ -241,14 +302,54 @@
       ],
     },
     {
+      'action_name': 'dex_<(_target_name)',
+      'message': 'Dexing <(_target_name) jar',
+      'variables': {
+        'conditions': [
+          ['proguard_enabled==1', {
+            'dex_inputs': [ '<(obfuscated_jar_path)' ],
+            'dex_generated_inputs': [],
+          }, {
+            'dex_inputs': [
+              '>@(input_jars_paths)',
+            ],
+            'dex_generated_inputs': [
+              '<(classes_dir)',
+            ],
+          }],
+        ],
+      },
+      'inputs': [
+        '<(DEPTH)/build/android/pylib/build_utils.py',
+        '<(DEPTH)/build/android/dex.py',
+        '<(compile_stamp)',
+        '>@(dex_inputs)',
+      ],
+      'outputs': [
+        '<(dex_path)',
+      ],
+      'action': [
+        'python', '<(DEPTH)/build/android/dex.py',
+        '--dex-path=<(dex_path)',
+        '--android-sdk-root=<(android_sdk_root)',
+
+        # TODO(newt): remove this once http://crbug.com/177552 is fixed in ninja.
+        '--ignore=>!(echo >(_inputs) | md5sum)',
+
+        '>@(dex_inputs)',
+        '>@(dex_generated_inputs)',
+      ]
+    },
+    {
       'action_name': 'ant_package_<(_target_name)',
       'message': 'Packaging <(_target_name).',
       'inputs': [
         '<(DEPTH)/build/android/ant/apk-package.xml',
         #TODO(cjhopman): this should be the stripped library paths.
         '>@(native_libs_paths)',
+        '<(dex_path)',
         '<(codegen_stamp)',
-        '<(compile_stamp)',
+        '<(obfuscate_stamp)',
       ],
       'conditions': [
         ['is_test_apk == 1', {

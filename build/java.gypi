@@ -56,7 +56,7 @@
     'javac_includes': [],
     'jar_name': '<(_target_name).jar',
     'jar_path': '<(PRODUCT_DIR)/lib.java/<(jar_name)',
-    'excluded_classes': [ '*/R.class', '*/R##*.class' ],
+    'jar_excluded_classes': [ '*/R.class', '*/R##*.class' ],
     'additional_input_paths': [],
     'generated_src_dirs': ['>@(generated_R_dirs)'],
     'generated_R_dirs': [],
@@ -170,7 +170,7 @@
       'message': 'Compiling <(_target_name) java sources',
       'variables': {
         'all_src_dirs': [
-          '>@(java_in_dir)/src',
+          '>(java_in_dir)/src',
           '>@(additional_src_dirs)',
           '>@(generated_src_dirs)',
         ],
@@ -212,7 +212,7 @@
         'python', '<(DEPTH)/build/android/jar.py',
         '--classes-dir=<(classes_dir)',
         '--jar-path=<(jar_path)',
-        '--excluded-classes=<(excluded_classes)',
+        '--excluded-classes=<(jar_excluded_classes)',
 
         # TODO(newt): remove this once http://crbug.com/177552 is fixed in ninja.
         '--ignore=>!(echo \'>(_inputs)\' | md5sum)',
