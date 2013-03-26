@@ -331,9 +331,6 @@ HostProcess::HostProcess(scoped_ptr<ChromotingHostContext> context,
 #endif  // defined(REMOTING_MULTI_PROCESS)
       ALLOW_THIS_IN_INITIALIZER_LIST(self_(this)),
       exit_code_out_(exit_code_out) {
-  // Create a NetworkChangeNotifier for use by the signalling connector.
-  network_change_notifier_.reset(net::NetworkChangeNotifier::Create());
-
   // Create the platform-specific curtain-mode implementation.
   // TODO(wez): Create this on the network thread?
   curtain_ = CurtainMode::Create(
@@ -913,6 +910,9 @@ void HostProcess::StartHost() {
       new DnsBlackholeChecker(context_->url_request_context_getter(),
                               talkgadget_prefix_));
 
+  // Create a NetworkChangeNotifier for use by the signaling connector.
+  network_change_notifier_.reset(net::NetworkChangeNotifier::Create());
+
   signaling_connector_.reset(new SignalingConnector(
       signal_strategy_.get(),
       context_->url_request_context_getter(),
@@ -1072,6 +1072,7 @@ void HostProcess::ShutdownOnNetworkThread() {
   host_change_notification_listener_.reset();
   signaling_connector_.reset();
   signal_strategy_.reset();
+  network_change_notifier_.reset();
 
   if (state_ == HOST_STOPPING_TO_RESTART) {
     StartHost();
