@@ -68,6 +68,7 @@ class InstantRestrictedIDCache {
   FRIEND_TEST_ALL_PREFIXES(InstantRestrictedIDCacheTest, CrazyIDGeneration);
   FRIEND_TEST_ALL_PREFIXES(InstantRestrictedIDCacheTest, ManualIDGeneration);
   FRIEND_TEST_ALL_PREFIXES(InstantRestrictedIDCacheTest, MixIDGeneration);
+  FRIEND_TEST_ALL_PREFIXES(InstantRestrictedIDCacheTest, AddEmptySet);
 
   typedef base::MRUCache<InstantRestrictedID, T> CacheImpl;
 
@@ -92,8 +93,12 @@ InstantRestrictedIDCache<T>::~InstantRestrictedIDCache() {
 
 template <typename T>
 void InstantRestrictedIDCache<T>::AddItems(const ItemVector& items) {
-  if (items.size() == 0 || items.size() > cache_.max_size())
+  DCHECK_LE(items.size(), cache_.max_size());
+
+  if (items.empty()) {
+    last_add_start_ = cache_.rend();
     return;
+  }
 
   for (size_t i = 0; i < items.size(); ++i) {
     InstantRestrictedID id = ++last_restricted_id_;
@@ -106,8 +111,12 @@ void InstantRestrictedIDCache<T>::AddItems(const ItemVector& items) {
 template <typename T>
 void InstantRestrictedIDCache<T>::AddItemsWithRestrictedID(
     const ItemIDVector& items) {
-  if (items.size() == 0 || items.size() > cache_.max_size())
+  DCHECK_LE(items.size(), cache_.max_size());
+
+  if (items.empty()) {
+    last_add_start_ = cache_.rend();
     return;
+  }
 
   std::set<InstantRestrictedID> ids_added;
   for (size_t i = 0; i < items.size(); ++i) {

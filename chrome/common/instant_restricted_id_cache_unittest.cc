@@ -346,3 +346,49 @@ TEST_F(InstantRestrictedIDCacheTest, MixIDGeneration) {
   EXPECT_TRUE(cache.GetItemWithRestrictedID(7, &t));
   EXPECT_EQ(input3[2].second, t);
 }
+
+TEST_F(InstantRestrictedIDCacheTest, AddEmptySet) {
+  InstantRestrictedIDCache<TestData> cache(9);
+  EXPECT_EQ(0u, cache.cache_.size());
+  EXPECT_EQ(0, cache.last_restricted_id_);
+
+  // Add a non-empty set of items.
+  std::vector<TestData> input1;
+  input1.push_back(TestData("A"));
+  input1.push_back(TestData("B"));
+  input1.push_back(TestData("C"));
+  cache.AddItems(input1);
+  EXPECT_EQ(3u, cache.cache_.size());
+  EXPECT_EQ(3, cache.last_restricted_id_);
+
+  std::vector<ItemIDPair> output;
+  cache.GetCurrentItems(&output);
+  EXPECT_EQ(3u, output.size());
+
+  // Add an empty set.
+  cache.AddItems(std::vector<TestData>());
+  EXPECT_EQ(3u, cache.cache_.size());
+  EXPECT_EQ(3, cache.last_restricted_id_);
+
+  cache.GetCurrentItems(&output);
+  EXPECT_TRUE(output.empty());
+
+  // Manual IDs.
+  std::vector<ItemIDPair> input2;
+  input2.push_back(std::make_pair(10, TestData("A")));
+  input2.push_back(std::make_pair(11, TestData("B")));
+  input2.push_back(std::make_pair(12, TestData("C")));
+  cache.AddItemsWithRestrictedID(input2);
+  EXPECT_EQ(6u, cache.cache_.size());
+  EXPECT_EQ(12, cache.last_restricted_id_);
+
+  cache.GetCurrentItems(&output);
+  EXPECT_EQ(3u, output.size());
+
+  cache.AddItemsWithRestrictedID(std::vector<ItemIDPair>());
+  EXPECT_EQ(6u, cache.cache_.size());
+  EXPECT_EQ(12, cache.last_restricted_id_);
+
+  cache.GetCurrentItems(&output);
+  EXPECT_TRUE(output.empty());
+}
