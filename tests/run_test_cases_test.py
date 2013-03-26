@@ -645,6 +645,22 @@ class RunTestCases(unittest.TestCase):
     actual = process_output(data, ['Test.1', 'Test.2'], 23.0, 0)
     self.assertEquals(expected, actual)
 
+  def test_process_output_no_lr(self):
+    data = (
+      '[ RUN      ] Test.1\n'
+      'junkjunk[       OK ] Test.1 (2000 ms)\n')
+    expected = [
+      {
+        'duration': 2.,
+        'output':
+            '[ RUN      ] Test.1\njunkjunk[       OK ] Test.1 (2000 ms)\n',
+        'returncode': 0,
+        'test_case': 'Test.1',
+      },
+    ]
+    actual = process_output(data, ['Test.1'], 2., 0)
+    self.assertEquals(expected, actual)
+
   def test_calc_cluster_default(self):
     expected = [
       ((0, 1), 0),

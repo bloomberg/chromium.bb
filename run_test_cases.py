@@ -741,7 +741,13 @@ def process_output(lines, test_cases):
       }
     elif test_case:
       test_case_data['output'] += line
-      if line.startswith((OK_PREFIX, FAILED_PREFIX)):
+      i = line.find(OK_PREFIX)
+      if i == -1:
+        i = line.find(FAILED_PREFIX)
+      if i > 0:
+        # Missing a LF at the end of the test case.
+        line = line[i:]
+      if i >= 0:
         # The test completed.
         match = re.search(r' \((\d+) ms\)', line)
         if match:
