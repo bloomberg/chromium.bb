@@ -684,7 +684,7 @@ namespace shill {
 const char kClearPropertiesFunction[] = "ClearProperties";
 const char kCompleteCellularActivationFunction[] = "CompleteCellularActivation";
 const char kConfigureServiceForProfileFunction[] = "ConfigureServiceForProfile";
-const char kConnectToBestServiceFunction[] = "ConnectToBestService";
+const char kConnectToBestServicesFunction[] = "ConnectToBestServices";
 const char kGetNetworksForGeolocation[] = "GetNetworksForGeolocation";
 const char kRefreshFunction[] = "Refresh";
 const char kResetFunction[] = "Reset";
