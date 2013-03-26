@@ -92,7 +92,7 @@ void ReverseArgumentOrder(
 // the snapshot path, we just memcpy the data into our output bitmap since the
 // width, height, and stride should all be equal.
 bool MapBufferToSkBitmap(const SkBitmap* output, const void* buf, int ignored) {
-  TRACE_EVENT0("browser", "MapBufferToSkBitmap()");
+  TRACE_EVENT0("browser", "MapBufferToSkBitmap");
 
   if (buf) {
     SkAutoLockPixels output_lock(*output);
@@ -116,7 +116,7 @@ bool MapBufferToVideoFrame(
   COMPILE_ASSERT(media::VideoFrame::kUPlane == 1, VideoFrame_kUPlane_mismatch);
   COMPILE_ASSERT(media::VideoFrame::kVPlane == 2, VideoFrame_kVPlane_mismatch);
 
-  TRACE_EVENT1("browser", "MapBufferToVideoFrame()", "plane", plane);
+  TRACE_EVENT1("browser", "MapBufferToVideoFrame", "plane", plane);
 
   // Apply black-out in the regions surrounding the view area (for
   // letterboxing/pillarboxing).  Only do this once, since this is performed on
@@ -752,7 +752,7 @@ base::Closure CompositingIOSurfaceMac::CopyToSelectedOutputWithinContext(
 
   const bool async_copy = IsAsynchronousReadbackSupported();
   TRACE_EVENT2(
-      "browser", "CompositingIOSurfaceMac::CopyToSelectedOutputWithinContext()",
+      "browser", "CompositingIOSurfaceMac::CopyToSelectedOutputWithinContext",
       "output", bitmap_output ? "SkBitmap (ARGB)" : "VideoFrame (YV12)",
       "async_readback", async_copy);
 
@@ -827,7 +827,7 @@ void CompositingIOSurfaceMac::AsynchronousReadbackForCopy(
   CHECK_GL_ERROR();
   for (int i = 0; i < copy_context->num_outputs; ++i) {
     TRACE_EVENT1(
-        "browser", "CompositingIOSurfaceMac::AsynchronousReadbackForCopy()",
+        "browser", "CompositingIOSurfaceMac::AsynchronousReadbackForCopy",
         "plane", i);
 
     // Attach the output texture to the FBO.
@@ -898,7 +898,7 @@ void CompositingIOSurfaceMac::FinishAllCopiesWithinContext(
     bool success = true;
     for (int i = 0; success && i < copy_context.num_outputs; ++i) {
       TRACE_EVENT1(
-        "browser", "CompositingIOSurfaceMac::FinishAllCopyWithinContext()",
+        "browser", "CompositingIOSurfaceMac::FinishAllCopyWithinContext",
         "plane", i);
 
       glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, copy_context.pixel_buffers[i]);
@@ -929,7 +929,7 @@ bool CompositingIOSurfaceMac::SynchronousReadbackForCopy(
   CHECK_GL_ERROR();
   for (int i = 0; i < copy_context->num_outputs; ++i) {
     TRACE_EVENT1(
-        "browser", "CompositingIOSurfaceMac::SynchronousReadbackForCopy()",
+        "browser", "CompositingIOSurfaceMac::SynchronousReadbackForCopy",
         "plane", i);
 
     // Attach the output texture to the FBO.
