@@ -280,9 +280,6 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandlerClient,
   void SetDebugState(const LayerTreeDebugState& debug_state);
   const LayerTreeDebugState& debug_state() const { return debug_state_; }
 
-  void SavePaintTime(const base::TimeDelta& total_paint_time,
-                     int commit_number);
-
   class CC_EXPORT CullRenderPassesWithCachedTextures {
  public:
     bool ShouldRemoveRenderPass(const RenderPassDrawQuad& quad,

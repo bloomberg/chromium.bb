@@ -979,6 +979,12 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame,
         debug_state_);
   }
 
+  if (!settings_.impl_side_painting && debug_state_.continuous_painting) {
+    const RenderingStats& stats =
+        rendering_stats_instrumentation_->GetRenderingStats();
+    paint_time_counter_->SavePaintTime(stats.total_paint_time);
+  }
+
   if (debug_state_.trace_all_rendered_frames) {
     TRACE_EVENT_INSTANT1("cc.debug", "Frame", TRACE_EVENT_SCOPE_THREAD,
                          "frame", ValueToString(FrameStateAsValue()));
@@ -1195,12 +1201,12 @@ void LayerTreeHostImpl::ActivatePendingTree() {
   client_->SetNeedsRedrawOnImplThread();
   client_->RenewTreePriority();
 
-  if (tile_manager_ && debug_state_.continuous_painting) {
-    RenderingStats stats =
+  if (debug_state_.continuous_painting) {
+    const RenderingStats& stats =
         rendering_stats_instrumentation_->GetRenderingStats();
-    paint_time_counter_->SaveRasterizeTime(
-        stats.total_rasterize_time_for_now_bins_on_pending_tree,
-        active_tree_->source_frame_number());
+    paint_time_counter_->SavePaintTime(
+        stats.total_paint_time +
+            stats.total_rasterize_time_for_now_bins_on_pending_tree);
   }
 }
 
@@ -2027,12 +2033,6 @@ void LayerTreeHostImpl::SetDebugState(const LayerTreeDebugState& debug_state) {
     paint_time_counter_->ClearHistory();
 
   debug_state_ = debug_state;
-}
-
-void LayerTreeHostImpl::SavePaintTime(const base::TimeDelta& total_paint_time,
-                                      int commit_number) {
-  DCHECK(debug_state_.continuous_painting);
-  paint_time_counter_->SavePaintTime(total_paint_time, commit_number);
 }
 
 }  // namespace cc

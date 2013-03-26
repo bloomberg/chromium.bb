@@ -12,35 +12,17 @@ scoped_ptr<PaintTimeCounter> PaintTimeCounter::Create() {
 }
 
 PaintTimeCounter::PaintTimeCounter()
-  : can_save_paint_time_delta_(false),
-    can_save_rasterize_time_delta_(false) {
+  : can_save_paint_time_delta_(false) {
 }
 
-void PaintTimeCounter::SavePaintTime(const base::TimeDelta& total_paint_time,
-                                     int commit_number) {
+void PaintTimeCounter::SavePaintTime(const base::TimeDelta& total_paint_time) {
   if (can_save_paint_time_delta_) {
-    Entry entry;
-    entry.commit_number = commit_number;
-    entry.paint_time = total_paint_time - last_total_paint_time_;
-    ring_buffer_.SaveToBuffer(entry);
+    base::TimeDelta paint_time = total_paint_time - last_total_paint_time_;
+    ring_buffer_.SaveToBuffer(paint_time);
   }
 
   last_total_paint_time_ = total_paint_time;
   can_save_paint_time_delta_ = true;
-}
-
-void PaintTimeCounter::SaveRasterizeTime(
-    const base::TimeDelta& total_rasterize_time,
-    int commit_number) {
-  if (can_save_rasterize_time_delta_) {
-    Entry* entry =
-        ring_buffer_.MutableReadBuffer(ring_buffer_.BufferSize() - 1);
-    DCHECK(commit_number == entry->commit_number);
-    entry->rasterize_time = total_rasterize_time - last_total_rasterize_time_;
-  }
-
-  last_total_rasterize_time_ = total_rasterize_time;
-  can_save_rasterize_time_delta_ = true;
 }
 
 void PaintTimeCounter::GetMinAndMaxPaintTime(base::TimeDelta* min,
@@ -49,7 +31,7 @@ void PaintTimeCounter::GetMinAndMaxPaintTime(base::TimeDelta* min,
   *max = base::TimeDelta();
 
   for (RingBufferType::Iterator it = ring_buffer_.Begin(); it; ++it) {
-    const base::TimeDelta paint_time = it->total_time();
+    const base::TimeDelta paint_time = **it;
 
     if (paint_time < *min)
       *min = paint_time;
@@ -64,7 +46,6 @@ void PaintTimeCounter::GetMinAndMaxPaintTime(base::TimeDelta* min,
 void PaintTimeCounter::ClearHistory() {
   ring_buffer_.Clear();
   can_save_paint_time_delta_ = false;
-  can_save_rasterize_time_delta_ = false;
 }
 
 }  // namespace cc

@@ -204,7 +204,7 @@ void HeadsUpDisplayLayerImpl::UpdateHudContents() {
       base::TimeDelta latest, min, max;
 
       if (paint_time_counter->End())
-        latest = paint_time_counter->End()->total_time();
+        latest = **paint_time_counter->End();
       paint_time_counter->GetMinAndMaxPaintTime(&min, &max);
 
       paint_time_graph_.value = latest.InMillisecondsF();
@@ -594,7 +594,7 @@ SkRect HeadsUpDisplayLayerImpl::DrawPaintTimeDisplay(
            paint_time_counter->End();
        it;
        --it) {
-    double pt = it->total_time().InMillisecondsF();
+    double pt = it->InMillisecondsF();
 
     if (pt == 0.0)
       continue;
