@@ -1899,7 +1899,11 @@ int ImmediateInterpreter::EvaluateButtonType(
   if (num_fingers == 2) {
     // Only one finger hot -> moving -> left click
     if (num_hot == 1)
-        return GESTURES_BUTTON_LEFT;
+      return GESTURES_BUTTON_LEFT;
+
+    // 1 finger is cold and in the dampened zone? Probably a thumb!
+    if (num_cold == 1 && FingerInDampenedZone(*fingers[0]))
+      return GESTURES_BUTTON_LEFT;
 
     // Close fingers -> same hand -> right click
     // Fingers apart -> second hand finger or thumb -> left click
