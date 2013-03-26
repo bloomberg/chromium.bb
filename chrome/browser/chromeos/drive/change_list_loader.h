@@ -152,8 +152,10 @@ class ChangeListLoader {
       google_apis::GDataErrorCode status,
       scoped_ptr<google_apis::AboutResource> about_resource);
 
-  // Initiates the directory contents loading, based on
-  // |directory_fetch_info|.
+  // Initiates the directory contents loading, based on |directory_fetch_info|.
+  // When it is finished it just runs |callback| but no other callbacks in
+  // |pending_load_callback_|, because it depends on the caller whether to flush
+  // callbacks. Thus, the caller must be responsible for task flushing.
   void DoLoadDirectoryFromServer(const DirectoryFetchInfo& directory_fetch_info,
                                  const FileOperationCallback& callback);
 

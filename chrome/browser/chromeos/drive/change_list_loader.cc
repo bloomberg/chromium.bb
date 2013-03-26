@@ -207,8 +207,9 @@ void ChangeListLoader::CompareChangestampsAndLoadIfNeeded(
   int64 start_changestamp = local_changestamp > 0 ? local_changestamp + 1 : 0;
   if (start_changestamp == 0 && !about_resource.get()) {
     // Full update needs AboutResource. If this is a full update, we should just
-    // give up.
-    callback.Run(DRIVE_FILE_ERROR_FAILED);
+    // give up. Note that to exit from the feed loading, we always have to flush
+    // the pending callback tasks via OnChangeListLoadComplete.
+    OnChangeListLoadComplete(callback, DRIVE_FILE_ERROR_FAILED);
     return;
   }
 
@@ -235,8 +236,14 @@ void ChangeListLoader::CompareChangestampsAndLoadIfNeeded(
                    start_changestamp,
                    callback));
   } else {
-    // The directory is up-to-date, hence there is no need to load.
-    OnChangeListLoadComplete(callback, DRIVE_FILE_OK);
+    // The directory is up-to-date, but not the case for other parts.
+    // Proceed to change list loading. StartLoadChangeListFromServer will
+    // run |callback| for notifying the directory is ready before feed load.
+    StartLoadChangeListFromServer(directory_fetch_info,
+                                  about_resource.Pass(),
+                                  start_changestamp,
+                                  callback,
+                                  DRIVE_FILE_OK);
   }
 }
 
@@ -270,7 +277,7 @@ void ChangeListLoader::StartLoadChangeListFromServer(
   DCHECK(refreshing_);
 
   if (error == DRIVE_FILE_OK) {
-    callback.Run(DRIVE_FILE_OK);
+    OnDirectoryLoadComplete(directory_fetch_info, callback, DRIVE_FILE_OK);
     DVLOG(1) << "Fast-fetch was successful: " << directory_fetch_info.ToString()
              << "; Start loading the change list";
     // Stop passing |callback| as it's just consumed.
@@ -288,7 +295,7 @@ void ChangeListLoader::StartLoadChangeListFromServer(
 }
 
 void ChangeListLoader::OnGetAppList(google_apis::GDataErrorCode status,
-                                   scoped_ptr<google_apis::AppList> app_list) {
+                                    scoped_ptr<google_apis::AppList> app_list) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   DriveFileError error = util::GDataToDriveFileError(status);
@@ -414,7 +421,7 @@ void ChangeListLoader::DoLoadDirectoryFromServerAfterRefresh(
   DCHECK(!callback.is_null());
 
   DVLOG(1) << "Directory loaded: " << directory_fetch_info.ToString();
-  OnDirectoryLoadComplete(directory_fetch_info, callback, error);
+  callback.Run(error);
   // Also notify the observers.
   if (error == DRIVE_FILE_OK) {
     FOR_EACH_OBSERVER(ChangeListLoaderObserver, observers_,
@@ -740,11 +747,16 @@ void ChangeListLoader::ScheduleRun(
     return;
   }
 
-  // The directory should be fetched. Add the callback to the pending list. The
-  // callback will be run after the directory is loaded.
-  pending_load_callback_[resource_id].push_back(callback);
-  DoLoadDirectoryFromServer(directory_fetch_info,
-                            base::Bind(&util::EmptyFileOperationCallback));
+  // The directory should be fetched. Add a dummy task to so ScheduleRun()
+  // can check that the directory is being fetched.
+  pending_load_callback_[resource_id].push_back(
+      base::Bind(&util::EmptyFileOperationCallback));
+  DoLoadDirectoryFromServer(
+      directory_fetch_info,
+      base::Bind(&ChangeListLoader::OnDirectoryLoadComplete,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 directory_fetch_info,
+                 callback));
 }
 
 void ChangeListLoader::NotifyDirectoryChangedAfterApplyFeed(
