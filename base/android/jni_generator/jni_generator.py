@@ -264,14 +264,14 @@ def ExtractNatives(contents):
                          '\(\"(?P<native_class_name>.*?)\"\))?\s*'
                          '(@NativeCall(\(\"(?P<java_class_name>.*?)\"\)))?\s*'
                          '(?P<qualifiers>\w+\s\w+|\w+|\s+)\s*?native '
-                         '(?P<return>\S*?) '
+                         '(?P<return_type>\S*?) '
                          '(?P<name>\w+?)\((?P<params>.*?)\);')
   for match in re.finditer(re_native, contents):
     native = NativeMethod(
         static='static' in match.group('qualifiers'),
         java_class_name=match.group('java_class_name'),
         native_class_name=match.group('native_class_name'),
-        return_type=match.group('return'),
+        return_type=match.group('return_type'),
         name=match.group('name').replace('native', ''),
         params=JniParams.Parse(match.group('params')))
     natives += [native]
@@ -381,7 +381,7 @@ RE_SCOPED_JNI_RETURN_TYPES = re.compile('jobject|jclass|jstring|.*Array')
 RE_CALLED_BY_NATIVE = re.compile(
     '@CalledByNative(?P<Unchecked>(Unchecked)*?)(?:\("(?P<annotation>.*)"\))?'
     '\s+(?P<prefix>[\w ]*?)'
-    '\s*(?P<return_type>[\w\.]+(\[\])*?)'
+    '\s*(?P<return_type>\S+?)'
     '\s+(?P<name>\w+)'
     '\s*\((?P<params>[^\)]*)\)')
 
