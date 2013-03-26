@@ -283,7 +283,7 @@ remoting.ServerLogEntry.makeStats = function(statsAccumulator, mode) {
 remoting.ServerLogEntry.prototype.addStatsField = function(
     entryKey, statsKey, statsAccumulator) {
   var val = statsAccumulator.calcMean(statsKey);
-  this.set(entryKey, val.toString());
+  this.set(entryKey, val.toFixed(2));
   return (val != 0);
 };
 
