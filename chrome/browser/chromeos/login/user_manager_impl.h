@@ -191,6 +191,12 @@ class UserManagerImpl
   // Notifies observers that merge session state had changed.
   void NotifyMergeSessionStateChanged();
 
+  // Returns true if there is non-committed user creation transaction.
+  bool HasFailedLocallyManagedUserCreationTransaction();
+
+  // Attempts to clean up data that could be left from failed user creation.
+  void RollbackLocallyManagedUserCreationTransaction();
+
   // Lazily creates default user flow.
   UserFlow* GetDefaultUserFlow() const;
 

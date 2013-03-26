@@ -848,6 +848,10 @@ void UserManagerImpl::EnsureUsersLoaded() {
     return;
   users_loaded_ = true;
 
+  // Clean up user list first.
+  if (HasFailedLocallyManagedUserCreationTransaction())
+    RollbackLocallyManagedUserCreationTransaction();
+
   PrefService* local_state = g_browser_process->local_state();
   const ListValue* prefs_regular_users = local_state->GetList(kRegularUsers);
   const ListValue* prefs_public_accounts =
@@ -1009,6 +1013,9 @@ void UserManagerImpl::RemoveNonCryptohomeData(const std::string& email) {
 
   DictionaryPrefUpdate prefs_display_email_update(prefs, kUserDisplayEmail);
   prefs_display_email_update->RemoveWithoutPathExpansion(email, NULL);
+
+  ListPrefUpdate prefs_new_users_update(prefs, kLocallyManagedUsersFirstRun);
+  prefs_new_users_update->Remove(base::StringValue(email), NULL);
 }
 
 User* UserManagerImpl::RemoveRegularOrLocallyManagedUserFromList(
@@ -1142,6 +1149,7 @@ void UserManagerImpl::StartLocallyManagedUserCreationTransaction(
   g_browser_process->local_state()->
       SetString(kLocallyManagedUserCreationTransactionDisplayName,
            UTF16ToASCII(display_name));
+  g_browser_process->local_state()->CommitPendingWrite();
 }
 
 void UserManagerImpl::SetLocallyManagedUserCreationTransactionUserId(
@@ -1149,6 +1157,7 @@ void UserManagerImpl::SetLocallyManagedUserCreationTransactionUserId(
   g_browser_process->local_state()->
       SetString(kLocallyManagedUserCreationTransactionUserId,
                 email);
+  g_browser_process->local_state()->CommitPendingWrite();
 }
 
 void UserManagerImpl::CommitLocallyManagedUserCreationTransaction() {
@@ -1156,6 +1165,51 @@ void UserManagerImpl::CommitLocallyManagedUserCreationTransaction() {
       ClearPref(kLocallyManagedUserCreationTransactionDisplayName);
   g_browser_process->local_state()->
       ClearPref(kLocallyManagedUserCreationTransactionUserId);
+  g_browser_process->local_state()->CommitPendingWrite();
+}
+
+bool UserManagerImpl::HasFailedLocallyManagedUserCreationTransaction() {
+  return !(g_browser_process->local_state()->
+               GetString(kLocallyManagedUserCreationTransactionDisplayName).
+                   empty());
+}
+
+void UserManagerImpl::RollbackLocallyManagedUserCreationTransaction() {
+  PrefService* prefs = g_browser_process->local_state();
+
+  std::string display_name = prefs->
+      GetString(kLocallyManagedUserCreationTransactionDisplayName);
+  std::string user_id = prefs->
+      GetString(kLocallyManagedUserCreationTransactionUserId);
+
+  LOG(WARNING) << "Cleaning up transaction for "
+               << display_name << "/" << user_id;
+
+  if (user_id.empty()) {
+    // Not much to do - just remove transaction.
+    prefs->ClearPref(kLocallyManagedUserCreationTransactionDisplayName);
+    return;
+  }
+
+  if (gaia::ExtractDomainName(user_id) != kLocallyManagedUserDomain) {
+    LOG(WARNING) << "Clean up transaction for  non-locally managed user found :"
+                 << user_id << ", will not remove data";
+    prefs->ClearPref(kLocallyManagedUserCreationTransactionDisplayName);
+    prefs->ClearPref(kLocallyManagedUserCreationTransactionUserId);
+    return;
+  }
+
+  ListPrefUpdate prefs_users_update(prefs, kRegularUsers);
+  prefs_users_update->Remove(base::StringValue(user_id), NULL);
+
+  RemoveNonCryptohomeData(user_id);
+
+  cryptohome::AsyncMethodCaller::GetInstance()->AsyncRemove(
+      user_id, base::Callback<void(bool, cryptohome::MountError)>());
+
+  prefs->ClearPref(kLocallyManagedUserCreationTransactionDisplayName);
+  prefs->ClearPref(kLocallyManagedUserCreationTransactionUserId);
+  prefs->CommitPendingWrite();
 }
 
 UserFlow* UserManagerImpl::GetCurrentUserFlow() const {
