@@ -7,7 +7,7 @@
 #include "ash/system/tray/hover_highlight_view.h"
 #include "ash/system/tray/throbber_view.h"
 #include "ash/system/tray/tray_constants.h"
-#include "ash/system/tray/tray_views.h"
+#include "ash/system/tray/tray_popup_header_button.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "ui/base/resource/resource_bundle.h"

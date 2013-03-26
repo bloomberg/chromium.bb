@@ -16,6 +16,8 @@
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_details_view.h"
+#include "ash/system/tray/tray_popup_header_button.h"
+#include "ash/system/tray/tray_popup_label_button.h"
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
 #include "chromeos/chromeos_switches.h"

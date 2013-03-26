@@ -13,6 +13,7 @@
 #include "grit/ash_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/font.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
 
 namespace ash {

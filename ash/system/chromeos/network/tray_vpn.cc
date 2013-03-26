@@ -14,6 +14,7 @@
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_item_more.h"
+#include "ash/system/tray/tray_popup_label_button.h"
 #include "base/command_line.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
