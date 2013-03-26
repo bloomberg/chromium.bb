@@ -1145,11 +1145,9 @@ bool LayerTreeHostImpl::ActivatePendingTreeIfNeeded() {
                           "PendingTree", pending_tree_.get(), "activate",
                           "state", ValueToString(ActivationStateAsValue()));
 
-  // It's always fine to activate to an empty tree.  Otherwise, only
-  // activate once all visible resources in pending tree are ready
+  // Activate once all visible resources in pending tree are ready
   // or tile manager has no work scheduled for pending tree.
-  if (active_tree_->root_layer() &&
-      !pending_tree_->AreVisibleResourcesReady()) {
+  if (!pending_tree_->AreVisibleResourcesReady()) {
     // In smoothness takes priority mode, the pending tree's priorities are
     // ignored, so the tile manager may not have work for it even though it
     // is simultaneously not ready to be activated.
