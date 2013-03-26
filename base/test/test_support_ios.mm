@@ -55,7 +55,7 @@ static char** g_argv;
   // Add a label with the app name.
   UILabel* label = [[[UILabel alloc] initWithFrame:bounds] autorelease];
   label.text = [[NSProcessInfo processInfo] processName];
-  label.textAlignment = UITextAlignmentCenter;
+  label.textAlignment = NSTextAlignmentCenter;
   [window_ addSubview:label];
 
   if ([self shouldRedirectOutputToFile])
