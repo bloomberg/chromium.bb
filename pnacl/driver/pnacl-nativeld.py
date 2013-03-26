@@ -153,6 +153,7 @@ LDPatterns = [
   ( '(--gc-sections)',            PassThrough),
   ( '(--unresolved-symbols=.*)',  PassThrough),
   ( '(--dynamic-linker=.*)',      PassThrough),
+  ( '(-g)',                       PassThrough),
 
   ( '-melf_nacl',            "env.set('ARCH', 'X8632')"),
   ( ('-m','elf_nacl'),       "env.set('ARCH', 'X8632')"),

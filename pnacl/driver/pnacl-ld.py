@@ -224,6 +224,8 @@ LDPatterns = [
   ( '-S',                  "env.set('STRIP_MODE', 'debug')"),
   ( '--strip-debug',       "env.set('STRIP_MODE', 'debug')"),
 
+  ( '-g', ""),
+
   # Inputs and options that need to be kept in order
   ( '(-l.*)',              "env.append('INPUTS', $0)"),
   ( ('(-l)','(.*)'),       "env.append('INPUTS', $0+$1)"),
