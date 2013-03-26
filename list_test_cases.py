@@ -33,7 +33,7 @@ def main():
         disabled=options.disabled,
         fails=options.fails,
         flaky=options.flaky,
-        pre=options.pre,
+        pre=False,
         manual=options.manual,
         seed=0)
     for test in tests:
