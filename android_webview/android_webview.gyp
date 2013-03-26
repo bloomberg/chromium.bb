@@ -29,6 +29,7 @@
             # The "android" gyp backend doesn't quite handle static libraries'
             # dependencies correctly; force this to be linked as a workaround.
             'cpufeatures.a',
+            '-lcutils',
           ],
         }],
       ],

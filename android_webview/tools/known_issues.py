@@ -50,6 +50,7 @@ KNOWN_INCOMPATIBLE = {
 
         # Code we don't want to build/include by accident from the main chromium
         # src/ directory.
+        'third_party/ashmem/*.[ch]',
         'third_party/expat/files/lib',
         'third_party/libjpeg/*.[ch]',
     ],
