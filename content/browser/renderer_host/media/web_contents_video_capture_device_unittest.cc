@@ -350,6 +350,11 @@ class StubConsumer : public media::VideoCaptureDevice::EventHandler {
     }
   }
 
+  bool HasError() {
+    base::AutoLock guard(lock_);
+    return error_encountered_;
+  }
+
   virtual scoped_refptr<media::VideoFrame> ReserveOutputBuffer() OVERRIDE {
     return buffer_pool_->ReserveForProducer(0);
   }
@@ -571,6 +576,75 @@ TEST_F(WebContentsVideoCaptureDeviceTest, WebContentsDestroyed) {
       base::Bind(&WebContentsVideoCaptureDeviceTest::ResetWebContents,
                  base::Unretained(this)));
   ASSERT_NO_FATAL_FAILURE(consumer()->WaitForError());
+  device()->DeAllocate();
+}
+
+TEST_F(WebContentsVideoCaptureDeviceTest,
+       StopDeviceBeforeCaptureMachineCreation) {
+  device()->Allocate(kTestWidth, kTestHeight, kTestFramesPerSecond, consumer());
+  device()->Start();
+  // Make a point of not running the UI messageloop here.
+  device()->Stop();
+  device()->DeAllocate();
+
+  // Currently, there should be CreateCaptureMachineOnUIThread() and
+  // DestroyCaptureMachineOnUIThread() tasks pending on the current (UI) message
+  // loop. These should both succeed without crashing, and the machine should
+  // wind up in the idle state.
+  content::RunAllPendingInMessageLoop();
+}
+
+TEST_F(WebContentsVideoCaptureDeviceTest, StopWithRendererWorkToDo) {
+  // Set up the test to use RGB copies and an normal
+  source()->SetCanCopyToVideoFrame(false);
+  source()->SetUseFrameSubscriber(false);
+  device()->Allocate(kTestWidth, kTestHeight, kTestFramesPerSecond,
+                     consumer());
+  device()->Start();
+  // Make a point of not running the UI messageloop here.
+  content::RunAllPendingInMessageLoop();
+
+  for (int i = 0; i < 10; ++i)
+    SimulateDrawEvent();
+
+  device()->Stop();
+  device()->DeAllocate();
+  // Currently, there should be CreateCaptureMachineOnUIThread() and
+  // DestroyCaptureMachineOnUIThread() tasks pending on the current message
+  // loop. These should both succeed without crashing, and the machine should
+  // wind up in the idle state.
+  ASSERT_FALSE(consumer()->HasError());
+  content::RunAllPendingInMessageLoop();
+  ASSERT_FALSE(consumer()->HasError());
+}
+
+TEST_F(WebContentsVideoCaptureDeviceTest, DeviceRestart) {
+  device()->Allocate(kTestWidth, kTestHeight, kTestFramesPerSecond, consumer());
+  device()->Start();
+  content::RunAllPendingInMessageLoop();
+  source()->SetSolidColor(SK_ColorRED);
+  SimulateDrawEvent();
+  SimulateDrawEvent();
+  ASSERT_NO_FATAL_FAILURE(consumer()->WaitForNextColor(SK_ColorRED));
+  SimulateDrawEvent();
+  SimulateDrawEvent();
+  source()->SetSolidColor(SK_ColorGREEN);
+  SimulateDrawEvent();
+  ASSERT_NO_FATAL_FAILURE(consumer()->WaitForNextColor(SK_ColorGREEN));
+  device()->Stop();
+
+  // Device is stopped, but content can still be animating.
+  SimulateDrawEvent();
+  SimulateDrawEvent();
+  content::RunAllPendingInMessageLoop();
+
+  device()->Start();
+  source()->SetSolidColor(SK_ColorBLUE);
+  SimulateDrawEvent();
+  ASSERT_NO_FATAL_FAILURE(consumer()->WaitForNextColor(SK_ColorBLUE));
+  source()->SetSolidColor(SK_ColorYELLOW);
+  SimulateDrawEvent();
+  ASSERT_NO_FATAL_FAILURE(consumer()->WaitForNextColor(SK_ColorYELLOW));
   device()->DeAllocate();
 }
 
@@ -798,7 +872,6 @@ TEST(SmoothEventSamplerTest, Sample30HertzAt30Hertz) {
     ASSERT_FALSE(sampler.IsOverdueForSamplingAt(t));
   }
 }
-
 
 // 24Hz sampled at 30Hz should produce 24Hz.
 TEST(SmoothEventSamplerTest, Sample24HertzAt30Hertz) {

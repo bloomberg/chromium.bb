@@ -61,8 +61,10 @@
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
+#include "base/sequenced_task_runner.h"
 #include "base/stringprintf.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
@@ -269,30 +271,18 @@ class ContentCaptureSubscription : public content::NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(ContentCaptureSubscription);
 };
 
-// Renders captures (from the backing store) into video frame buffers on a
-// dedicated thread. Intended for use in the software rendering case, when GPU
-// acceleration of these activities is not possible.
-class VideoFrameRenderer {
- public:
-  VideoFrameRenderer();
-
-  // Render the SkBitmap |input| into the given VideoFrame buffer |output|, then
-  // invoke |done_cb| to indicate success or failure. |input| is expected to be
-  // ARGB. |output| must be YV12 or I420. Colorspace conversion is always done.
-  // Scaling and letterboxing will be done as needed.
-  void Render(const SkBitmap& input,
-              const scoped_refptr<media::VideoFrame>& output,
-              const base::Callback<void(bool)>& done_cb);
-
- private:
-  void RenderOnRenderThread(const SkBitmap& input,
-                            const scoped_refptr<media::VideoFrame>& output,
-                            const base::Callback<void(bool)>& done_cb);
-
-  base::Thread render_thread_;
-
-  DISALLOW_COPY_AND_ASSIGN(VideoFrameRenderer);
-};
+// Render the SkBitmap |input| into the given VideoFrame buffer |output|, then
+// invoke |done_cb| to indicate success or failure. |input| is expected to be
+// ARGB. |output| must be YV12 or I420. Colorspace conversion is always done.
+// Scaling and letterboxing will be done as needed.
+//
+// This software implementation should be used only when GPU acceleration of
+// these activities is not possible. This operation may be expensive (tens to
+// hundreds of milliseconds), so the caller should ensure that it runs on a
+// thread where such a pause would cause UI jank.
+void RenderVideoFrame(const SkBitmap& input,
+                      const scoped_refptr<media::VideoFrame>& output,
+                      const base::Callback<void(bool)>& done_cb);
 
 // Keeps track of the RenderView to be sourced, and executes copying of the
 // backing store on the UI BrowserThread.
@@ -311,6 +301,7 @@ class CaptureMachine : public WebContentsObserver,
   static scoped_ptr<CaptureMachine> Create(
       int render_process_id,
       int render_view_id,
+      const scoped_refptr<base::SequencedTaskRunner>& render_task_runner,
       const scoped_refptr<CaptureOracle>& oracle);
 
   // Starts a copy from the backing store or the composited surface. Must be run
@@ -350,7 +341,9 @@ class CaptureMachine : public WebContentsObserver,
   virtual void WebContentsDestroyed(WebContents* web_contents) OVERRIDE;
 
  private:
-  explicit CaptureMachine(const scoped_refptr<CaptureOracle>& oracle);
+  CaptureMachine(
+     const scoped_refptr<base::SequencedTaskRunner>& render_task_runner,
+     const scoped_refptr<CaptureOracle>& oracle);
 
   // Starts observing the web contents, returning false if lookup fails.
   bool StartObservingWebContents(int initial_render_process_id,
@@ -378,6 +371,11 @@ class CaptureMachine : public WebContentsObserver,
   // attached views.
   void RenewFrameSubscription();
 
+  // The task runner of the thread on which SkBitmap->VideoFrame conversion will
+  // occur. Only used when this activity cannot be done on the GPU.
+  const scoped_refptr<base::SequencedTaskRunner> render_task_runner_;
+
+  // Makes all the decisions about which frames to copy, and how.
   const scoped_refptr<CaptureOracle> oracle_;
 
   // Routing ID of any active fullscreen render widget or MSG_ROUTING_NONE
@@ -387,12 +385,9 @@ class CaptureMachine : public WebContentsObserver,
   // Last known RenderView size.
   gfx::Size last_view_size_;
 
+  // Responsible for forwarding events from the active RenderWidgetHost to the
+  // oracle, and initiating captures accordingly.
   scoped_ptr<ContentCaptureSubscription> subscription_;
-
-  // Handles SkBitmap->VideoFrame copying (including scaling, letterboxing, and
-  // YV12 conversion) on another thread for us. Only used when this activity
-  // cannot be done on the GPU.
-  VideoFrameRenderer renderer_;
 
   DISALLOW_COPY_AND_ASSIGN(CaptureMachine);
 };
@@ -631,25 +626,9 @@ void ContentCaptureSubscription::OnTimer() {
   }
 }
 
-VideoFrameRenderer::VideoFrameRenderer()
-    : render_thread_("WebContentsVideo_RenderThread") {
-  render_thread_.Start();
-}
-
-void VideoFrameRenderer::Render(const SkBitmap& input,
-                                const scoped_refptr<media::VideoFrame>& output,
-                                const base::Callback<void(bool)>& done_cb) {
-  render_thread_.message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&VideoFrameRenderer::RenderOnRenderThread,
-                 base::Unretained(this), input, output, done_cb));
-}
-
-void VideoFrameRenderer::RenderOnRenderThread(
-    const SkBitmap& input,
-    const scoped_refptr<media::VideoFrame>& output,
-    const base::Callback<void(bool)>& done_cb) {
-  DCHECK_EQ(render_thread_.message_loop(), MessageLoop::current());
+void RenderVideoFrame(const SkBitmap& input,
+                      const scoped_refptr<media::VideoFrame>& output,
+                      const base::Callback<void(bool)>& done_cb) {
   base::ScopedClosureRunner failure_handler(base::Bind(done_cb, false));
 
   SkAutoLockPixels locker(input);
@@ -748,9 +727,13 @@ void VideoFrameDeliveryLog::ChronicleFrameDelivery(int frame_number) {
 scoped_ptr<CaptureMachine> CaptureMachine::Create(
     int render_process_id,
     int render_view_id,
+    const scoped_refptr<base::SequencedTaskRunner>& render_task_runner,
     const scoped_refptr<CaptureOracle>& oracle) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  scoped_ptr<CaptureMachine> machine(new CaptureMachine(oracle));
+  DCHECK(render_task_runner);
+  DCHECK(oracle);
+  scoped_ptr<CaptureMachine> machine(
+      new CaptureMachine(render_task_runner, oracle));
 
   if (!machine->StartObservingWebContents(render_process_id, render_view_id))
     machine.reset();
@@ -758,8 +741,11 @@ scoped_ptr<CaptureMachine> CaptureMachine::Create(
   return machine.Pass();
 }
 
-CaptureMachine::CaptureMachine(const scoped_refptr<CaptureOracle>& oracle)
-    : oracle_(oracle),
+CaptureMachine::CaptureMachine(
+    const scoped_refptr<base::SequencedTaskRunner>& render_task_runner,
+    const scoped_refptr<CaptureOracle>& oracle)
+    : render_task_runner_(render_task_runner),
+      oracle_(oracle),
       fullscreen_widget_id_(MSG_ROUTING_NONE) {}
 
 CaptureMachine::~CaptureMachine() {
@@ -894,9 +880,9 @@ void CaptureMachine::DidCopyFromBackingStore(
   if (success) {
     UMA_HISTOGRAM_TIMES("TabCapture.CopyTimeBitmap", now - start_time);
     TRACE_EVENT_ASYNC_STEP0("mirroring", "Capture", target.get(), "Render");
-    renderer_.Render(bitmap,
-                     target,
-                     base::Bind(deliver_frame_cb, now));
+    render_task_runner_->PostTask(FROM_HERE, base::Bind(
+        &RenderVideoFrame, bitmap, target,
+        base::Bind(deliver_frame_cb, now)));
   } else {
     // Capture can fail due to transient issues, so just skip this frame.
     DVLOG(1) << "CopyFromBackingStore failed; skipping frame.";
@@ -983,6 +969,7 @@ class WebContentsVideoCaptureDevice::Impl
   void Error();
 
   bool CreateCaptureMachineOnUIThread(
+      const scoped_refptr<base::SequencedTaskRunner>& render_task_runner,
       const scoped_refptr<CaptureOracle>& oracle);
   void DestroyCaptureMachineOnUIThread();
 
@@ -1003,6 +990,10 @@ class WebContentsVideoCaptureDevice::Impl
 
   // Current lifecycle state.
   State state_;
+
+  // A dedicated worker thread for doing image operations. Started/joined here,
+  // but used by the CaptureMachine.
+  base::Thread render_thread_;
 
   // Tracks the CaptureMachine that's doing work on our behalf on the UI thread.
   // This value should never be dereferenced by this class, other than to
@@ -1027,6 +1018,7 @@ WebContentsVideoCaptureDevice::Impl::Impl(int render_process_id,
       initial_render_view_id_(render_view_id),
       consumer_(NULL),
       state_(kIdle),
+      render_thread_("WebContentsVideo_RenderThread"),
       destroy_cb_(destroy_cb) {
 }
 
@@ -1044,6 +1036,12 @@ void WebContentsVideoCaptureDevice::Impl::Allocate(
 
   if (frame_rate <= 0) {
     DVLOG(1) << "invalid frame_rate: " << frame_rate;
+    consumer->OnError();
+    return;
+  }
+
+  if (!render_thread_.Start()) {
+    DVLOG(1) << "Failed to spawn render thread.";
     consumer->OnError();
     return;
   }
@@ -1095,11 +1093,18 @@ void WebContentsVideoCaptureDevice::Impl::Start() {
 
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&Impl::CreateCaptureMachineOnUIThread, this, oracle_),
+      base::Bind(&Impl::CreateCaptureMachineOnUIThread, this,
+                 render_thread_.message_loop_proxy(), oracle_),
       base::Bind(&Impl::DidCreateCaptureMachine, this));
 }
 
+// Thread safety note: The only data members that this method may use are (a)
+// |capture_machine_|, which is used exclusively from the UI thread, (b) members
+// ones that are set in the ctor, like |initial_render_process_id_|. In
+// particular it would be improper to reference |oracle_| here, as Stop() and
+// Deallocate() may already have occurred.
 bool WebContentsVideoCaptureDevice::Impl::CreateCaptureMachineOnUIThread(
+    const scoped_refptr<base::SequencedTaskRunner>& render_task_runner,
     const scoped_refptr<CaptureOracle>& oracle) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -1107,14 +1112,17 @@ bool WebContentsVideoCaptureDevice::Impl::CreateCaptureMachineOnUIThread(
   // will be tracking render view swapping over its lifetime, and we don't want
   // to lose our reference to the current render view by starting over with the
   // stale |initial_render_view_id_|.
+
   if (!capture_machine_) {
     capture_machine_ = CaptureMachine::Create(
-        initial_render_process_id_, initial_render_view_id_, oracle).Pass();
+        initial_render_process_id_, initial_render_view_id_,
+        render_task_runner, oracle).Pass();
   }
 
   return capture_machine_ != NULL;
 }
 
+// Thread safety note: same restrictions as CreateCaptureMachineOnUIThread().
 void WebContentsVideoCaptureDevice::Impl::DestroyCaptureMachineOnUIThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   capture_machine_.reset();
@@ -1148,6 +1156,7 @@ void WebContentsVideoCaptureDevice::Impl::DeAllocate() {
     oracle_->InvalidateConsumer();
     consumer_ = NULL;
     oracle_ = NULL;
+    render_thread_.Stop();
 
     // The above call to InvalidateConsumer() has shut-off capture at the
     // |consumer_| interface. But there is still a capture pipeline running that
