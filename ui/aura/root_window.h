@@ -28,6 +28,7 @@
 #include "ui/gfx/insets.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/point.h"
+#include "ui/gfx/transform.h"
 
 class SkCanvas;
 
@@ -293,6 +294,13 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // window that ate mouse downs).
   void ClearMouseHandlers();
 
+  // Sets the window's transform and inverted transform. This is necessary
+  // to reverse translate the point without computation error.
+  // TODO(oshima): Remove this once the computation error is resolved.
+  // crbug.com/222483.
+  void SetTransformPair(const gfx::Transform& transform,
+                        const gfx::Transform& inverted);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(RootWindowTest, KeepTranslatedEventInRoot);
 
@@ -350,7 +358,8 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // transform and insets.
   void UpdateWindowSize(const gfx::Size& host_size);
 
-  void SetTransformInternal(const gfx::Transform& transform);
+  void SetTransformInternal(const gfx::Transform& transform,
+                            const gfx::Transform& insert);
 
   // Overridden from ui::EventDispatcherDelegate.
   virtual bool CanDispatchToTarget(EventTarget* target) OVERRIDE;
@@ -406,6 +415,7 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   void SynthesizeMouseMoveEvent();
 
   gfx::Transform GetRootTransform() const;
+  gfx::Transform GetInvertedRootTransform() const;
 
   scoped_ptr<ui::Compositor> compositor_;
 
@@ -461,6 +471,9 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // Note that this should not be confused with the device scale
   // factor, which specfies the pixel density of the display.
   float root_window_scale_;
+
+  // The invert of |layer()|'s transform.
+  gfx::Transform invert_transform_;
 
   DISALLOW_COPY_AND_ASSIGN(RootWindow);
 };

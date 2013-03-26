@@ -159,7 +159,8 @@ void RootWindow::Init() {
                                 host_->GetBounds().size());
   Window::Init(ui::LAYER_NOT_DRAWN);
   compositor()->SetRootLayer(layer());
-  SetTransformInternal(gfx::Transform());
+  gfx::Transform identity;
+  SetTransformInternal(identity, identity);
   UpdateWindowSize(host_->GetBounds().size());
   Env::GetInstance()->NotifyRootWindowInitialized(this);
   Show();
@@ -403,7 +404,7 @@ void RootWindow::ConvertPointToHost(gfx::Point* point) const {
 
 void RootWindow::ConvertPointFromHost(gfx::Point* point) const {
   gfx::Point3F point_3f(*point);
-  GetRootTransform().TransformPointReverse(point_3f);
+  GetInvertedRootTransform().TransformPoint(point_3f);
   *point = gfx::ToFlooredPoint(point_3f.AsPointF());
 }
 
@@ -493,7 +494,15 @@ const RootWindow* RootWindow::GetRootWindow() const {
 }
 
 void RootWindow::SetTransform(const gfx::Transform& transform) {
-  SetTransformInternal(transform);
+  gfx::Transform invert;
+  if (!transform.GetInverse(&invert))
+    NOTREACHED() << "Singular matrix is set.";
+  SetTransformPair(transform, invert);
+}
+
+void RootWindow::SetTransformPair(const gfx::Transform& transform,
+                                  const gfx::Transform& invert) {
+  SetTransformInternal(transform, invert);
 
   // If the layer is not animating, then we need to update the host size
   // immediately.
@@ -501,17 +510,23 @@ void RootWindow::SetTransform(const gfx::Transform& transform) {
     OnHostResized(host_->GetBounds().size());
 }
 
-void RootWindow::SetTransformInternal(const gfx::Transform& transform) {
+void RootWindow::SetTransformInternal(const gfx::Transform& transform,
+                                      const gfx::Transform& inverted) {
   gfx::Insets insets = host_->GetInsets();
   gfx::Transform translate;
+  invert_transform_ = inverted;
+  invert_transform_.Scale(root_window_scale_, root_window_scale_);
+
   if (insets.top() != 0 || insets.left() != 0) {
     float device_scale_factor = GetDeviceScaleFactor();
-    translate.Translate(insets.left() / device_scale_factor,
-                        insets.top() / device_scale_factor);
-    Window::SetTransform(translate * transform);
+    float x_offset = insets.left() / device_scale_factor;
+    float y_offset = insets.top() / device_scale_factor;
+    translate.Translate(x_offset, y_offset);
+    invert_transform_.Translate(-x_offset, -y_offset);
   }
-  float invert = 1.0f / root_window_scale_;
-  translate.Scale(invert, invert);
+  float inverted_scale = 1.0f / root_window_scale_;
+  translate.Scale(inverted_scale, inverted_scale);
+
   Window::SetTransform(translate * transform);
 }
 
@@ -671,7 +686,7 @@ void RootWindow::ClearMouseHandlers() {
 
 void RootWindow::TransformEventForDeviceScaleFactor(bool keep_inside_root,
                                                     ui::LocatedEvent* event) {
-  event->UpdateForRootTransform(GetRootTransform());
+  event->UpdateForRootTransform(GetInvertedRootTransform());
 #if defined(OS_CHROMEOS)
   const gfx::Rect& root_bounds = bounds();
   if (keep_inside_root &
@@ -680,8 +695,8 @@ void RootWindow::TransformEventForDeviceScaleFactor(bool keep_inside_root,
     // Make sure that the mouse location inside the host window gets
     // translated inside root window.
     // TODO(oshima): This is (hopefully) short term bandaid to deal
-    // with calculation error in inverted matrix. We'll try better
-    // alternative (crbug.com/222483) for m28.
+    // with calculation error due to the fact that we rotate in dip
+    // coordinates instead of pixels. crbug.com/222483.
     int x = event->location().x();
     int y = event->location().y();
     x = std::min(std::max(x, root_bounds.x()), root_bounds.right());
@@ -1177,6 +1192,13 @@ gfx::Transform RootWindow::GetRootTransform() const {
   transform.Scale(scale, scale);
   transform *= layer()->transform();
   return transform;
+}
+
+gfx::Transform RootWindow::GetInvertedRootTransform() const {
+  float scale = ui::GetDeviceScaleFactor(layer());
+  gfx::Transform transform;
+  transform.Scale(1.0f / scale, 1.0f / scale);
+  return invert_transform_ * transform;
 }
 
 }  // namespace aura
