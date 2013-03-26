@@ -664,7 +664,14 @@ int ProcessUtilTest::CountOpenFDsInChild() {
   return num_open_files;
 }
 
-TEST_F(ProcessUtilTest, FDRemapping) {
+#if defined(ADDRESS_SANITIZER)
+// ProcessUtilTest.FDRemapping is flaky when ran under xvfb-run on Precise.
+// The problem is 100% reproducible with ASan. See http://crbug.com/136720.
+#define MAYBE_FDRemapping DISABLED_FDRemapping
+#else
+#define MAYBE_FDRemapping FDRemapping
+#endif
+TEST_F(ProcessUtilTest, MAYBE_FDRemapping) {
   int fds_before = CountOpenFDsInChild();
 
   // open some dummy fds to make sure they don't propagate over to the
