@@ -984,9 +984,8 @@ void TileManager::RunRasterTask(
 
   base::TimeTicks start_time = stats_instrumentation->StartRecording();
 
-  int64 total_pixels_rasterized = 0;
-  picture_pile->Raster(&canvas, rect, contents_scale,
-                       &total_pixels_rasterized);
+  int64 total_pixels_rasterized =
+      picture_pile->Raster(&canvas, rect, contents_scale);
 
   base::TimeDelta duration = stats_instrumentation->EndRecording(start_time);
 

@@ -71,11 +71,10 @@ PicturePileImpl* PicturePileImpl::GetCloneForDrawingOnThread(
   return clones_for_drawing_.clones_[thread_index];
 }
 
-void PicturePileImpl::Raster(
+int64 PicturePileImpl::Raster(
     SkCanvas* canvas,
     gfx::Rect canvas_rect,
-    float contents_scale,
-    int64* total_pixels_rasterized) {
+    float contents_scale) {
 
   DCHECK(contents_scale >= min_contents_scale_);
 
@@ -120,6 +119,8 @@ void PicturePileImpl::Raster(
   canvas->clipRect(gfx::RectToSkRect(content_rect),
                    SkRegion::kReplace_Op);
   Region unclipped(content_rect);
+
+  int64 total_pixels_rasterized = 0;
   for (TilingData::Iterator tile_iter(&tiling_, layer_rect);
        tile_iter; ++tile_iter) {
     PictureListMap::iterator map_iter =
@@ -158,7 +159,7 @@ void PicturePileImpl::Raster(
           SkRegion::kDifference_Op);
       unclipped.Subtract(content_clip);
 
-      *total_pixels_rasterized +=
+      total_pixels_rasterized +=
           content_clip.width() * content_clip.height();
     }
   }
@@ -177,6 +178,8 @@ void PicturePileImpl::Raster(
   DCHECK(!unclipped.Contains(content_rect));
 
   canvas->restore();
+
+  return total_pixels_rasterized;
 }
 
 void PicturePileImpl::GatherPixelRefs(
@@ -217,8 +220,7 @@ skia::RefPtr<SkPicture> PicturePileImpl::GetFlattenedPicture() {
       layer_rect.height(),
       SkPicture::kUsePathBoundsForClip_RecordingFlag);
 
-  int64 total_pixels_rasterized = 0;
-  Raster(canvas, layer_rect, 1.0, &total_pixels_rasterized);
+  Raster(canvas, layer_rect, 1.0);
   picture->endRecording();
 
   return picture;
@@ -239,8 +241,7 @@ void PicturePileImpl::AnalyzeInRect(const gfx::Rect& content_rect,
   skia::AnalysisDevice device(empty_bitmap);
   skia::AnalysisCanvas canvas(&device);
 
-  int64 total_pixels_rasterized = 0;
-  Raster(&canvas, content_rect, contents_scale, &total_pixels_rasterized);
+  Raster(&canvas, content_rect, contents_scale);
 
   analysis->is_transparent = canvas.isTransparent();
   analysis->is_solid_color = canvas.getColorIfSolid(&analysis->solid_color);

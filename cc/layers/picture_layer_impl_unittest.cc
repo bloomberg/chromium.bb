@@ -254,13 +254,11 @@ class PictureLayerImplTest : public testing::Test {
     SkBitmap store;
     store.setConfig(SkBitmap::kNo_Config, 1000, 1000);
     SkDevice device(store);
-    int64 pixels_rasterized;
 
     std::vector<SkRect>::const_iterator rect_iter = rects.begin();
     for (tile_iter = tiles.begin(); tile_iter < tiles.end(); tile_iter++) {
       MockCanvas mock_canvas(&device);
-      active_pile->Raster(&mock_canvas, (*tile_iter)->content_rect(),
-          1.0f, &pixels_rasterized);
+      active_pile->Raster(&mock_canvas, (*tile_iter)->content_rect(), 1.0f);
 
       // This test verifies that when drawing the contents of a specific tile
       // at content scale 1.0, the playback canvas never receives content from
