@@ -247,14 +247,16 @@ BOOL ThePasteboardIsTooDamnBig() {
   // greyed-out "Paste and Go"?
   if ([self isEditable]) {
     // Paste and go/search.
-    AutocompleteTextFieldObserver* observer = [self observer];
-    DCHECK(observer);
-    const int string_id = observer->GetPasteActionStringId();
-    NSString* label = l10n_util::GetNSStringWithFixup(string_id);
-    DCHECK([label length]);
-    [menu addItemWithTitle:label
-                    action:@selector(pasteAndGo:)
-             keyEquivalent:@""];
+    if (!ThePasteboardIsTooDamnBig()) {
+      AutocompleteTextFieldObserver* observer = [self observer];
+      DCHECK(observer);
+      const int string_id = observer->GetPasteActionStringId();
+      NSString* label = l10n_util::GetNSStringWithFixup(string_id);
+      DCHECK([label length]);
+      [menu addItemWithTitle:label
+                      action:@selector(pasteAndGo:)
+               keyEquivalent:@""];
+    }
 
     NSString* search_engine_label =
         l10n_util::GetNSStringWithFixup(IDS_EDIT_SEARCH_ENGINES);
