@@ -6,6 +6,7 @@
 
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/feedback/feedback_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/apps_model_builder.h"
@@ -15,7 +16,6 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/host_desktop.h"
-#include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/public/browser/user_metrics.h"
 
@@ -143,5 +143,6 @@ void AppListViewDelegate::OpenFeedback() {
       controller_->GetAppListWindow());
   Browser* browser = chrome::FindOrCreateTabbedBrowser(
       profile_, desktop);
-  chrome::ShowFeedbackPage(browser, std::string(), std::string());
+  chrome::ShowFeedbackPage(browser, std::string(),
+                           chrome::kAppLauncherCategoryTag);
 }
