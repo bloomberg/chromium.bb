@@ -17,10 +17,12 @@ namespace content {
 class CONTENT_EXPORT DeviceData :
     public base::RefCountedThreadSafe<DeviceData> {
  public:
+  // TODO(timvolodine): move the DeviceData::Type enum to the service class
+  // once it is implemented.
   enum Type {
-    kTypeMotion,
-    kTypeOrientation,
-    kTypeTest
+    kTypeOrientation = 0,
+    kTypeMotion = 1,
+    kTypeTest = 100
   };
 
   virtual IPC::Message* CreateIPCMessage(int render_view_id) const = 0;

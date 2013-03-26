@@ -7,7 +7,7 @@
 #include "base/android/jni_android.h"
 #include "base/logging.h"
 #include "content/browser/device_orientation/orientation.h"
-#include "jni/DeviceOrientation_jni.h"
+#include "jni/DeviceMotionAndOrientation_jni.h"
 
 using base::android::AttachCurrentThread;
 
@@ -23,7 +23,7 @@ const int kPeriodInMilliseconds = 100;
 
 DataFetcherImplAndroid::DataFetcherImplAndroid() {
   device_orientation_.Reset(
-      Java_DeviceOrientation_getInstance(AttachCurrentThread()));
+      Java_DeviceMotionAndOrientation_getInstance(AttachCurrentThread()));
 }
 
 void DataFetcherImplAndroid::Init(JNIEnv* env) {
@@ -31,9 +31,11 @@ void DataFetcherImplAndroid::Init(JNIEnv* env) {
   DCHECK(result);
 }
 
+// TODO(timvolodine): Modify this method to be able to distinguish
+// device motion from orientation.
 DataFetcher* DataFetcherImplAndroid::Create() {
   scoped_ptr<DataFetcherImplAndroid> fetcher(new DataFetcherImplAndroid);
-  if (fetcher->Start(kPeriodInMilliseconds))
+  if (fetcher->Start(DeviceData::kTypeOrientation, kPeriodInMilliseconds))
     return fetcher.release();
 
   LOG(ERROR) << "DataFetcherImplAndroid::Start failed!";
@@ -41,7 +43,9 @@ DataFetcher* DataFetcherImplAndroid::Create() {
 }
 
 DataFetcherImplAndroid::~DataFetcherImplAndroid() {
-  Stop();
+  // TODO(timvolodine): Support device motion as well. Only stop
+  // the active event type(s).
+  Stop(DeviceData::kTypeOrientation);
 }
 
 const DeviceData* DataFetcherImplAndroid::GetDeviceData(
@@ -76,17 +80,35 @@ void DataFetcherImplAndroid::GotOrientation(
   next_orientation_ = orientation;
 }
 
-bool DataFetcherImplAndroid::Start(int rate_in_milliseconds) {
-  DCHECK(!device_orientation_.is_null());
-  return Java_DeviceOrientation_start(AttachCurrentThread(),
-                                      device_orientation_.obj(),
-                                      reinterpret_cast<jint>(this),
-                                      rate_in_milliseconds);
+void DataFetcherImplAndroid::GotAcceleration(
+    JNIEnv*, jobject, double x, double y, double z) {
+  NOTIMPLEMENTED();
 }
 
-void DataFetcherImplAndroid::Stop() {
+void DataFetcherImplAndroid::GotAccelerationIncludingGravity(
+    JNIEnv*, jobject, double x, double y, double z) {
+  NOTIMPLEMENTED();
+}
+
+void DataFetcherImplAndroid::GotRotationRate(
+    JNIEnv*, jobject, double alpha, double beta, double gamma) {
+  NOTIMPLEMENTED();
+}
+
+bool DataFetcherImplAndroid::Start(
+    DeviceData::Type event_type, int rate_in_milliseconds) {
   DCHECK(!device_orientation_.is_null());
-  Java_DeviceOrientation_stop(AttachCurrentThread(), device_orientation_.obj());
+  return Java_DeviceMotionAndOrientation_start(
+      AttachCurrentThread(), device_orientation_.obj(),
+      reinterpret_cast<jint>(this), static_cast<jint>(event_type),
+      rate_in_milliseconds);
+}
+
+void DataFetcherImplAndroid::Stop(DeviceData::Type event_type) {
+  DCHECK(!device_orientation_.is_null());
+  Java_DeviceMotionAndOrientation_stop(
+      AttachCurrentThread(), device_orientation_.obj(),
+      static_cast<jint>(event_type));
 }
 
 }  // namespace content

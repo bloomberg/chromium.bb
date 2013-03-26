@@ -37,6 +37,12 @@ class DataFetcherImplAndroid : public DataFetcher {
   // Called from Java via JNI.
   void GotOrientation(JNIEnv*, jobject,
                       double alpha, double beta, double gamma);
+  void GotAcceleration(JNIEnv*, jobject,
+                       double x, double y, double z);
+  void GotAccelerationIncludingGravity(JNIEnv*, jobject,
+                                       double x, double y, double z);
+  void GotRotationRate(JNIEnv*, jobject,
+                       double alpha, double beta, double gamma);
 
   // Implementation of DataFetcher.
   virtual const DeviceData* GetDeviceData(DeviceData::Type type) OVERRIDE;
@@ -46,8 +52,10 @@ class DataFetcherImplAndroid : public DataFetcher {
   const Orientation* GetOrientation();
 
   // Wrappers for JNI methods.
-  bool Start(int rate_in_milliseconds);
-  void Stop();
+  // TODO(timvolodine): move the DeviceData::Type enum to the service class
+  // once it is implemented.
+  bool Start(DeviceData::Type event_type, int rate_in_milliseconds);
+  void Stop(DeviceData::Type event_type);
 
   // Value returned by GetDeviceData.
   scoped_refptr<Orientation> current_orientation_;
