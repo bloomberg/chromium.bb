@@ -11,30 +11,26 @@
 namespace cc {
 
 struct AppendQuadsData {
-    AppendQuadsData()
-        : hadOcclusionFromOutsideTargetSurface(false)
-        , hadIncompleteTile(false)
-        , numMissingTiles(0)
-        , renderPassId(0, 0)
-    {
-    }
+  AppendQuadsData()
+      : had_occlusion_from_outside_target_surface(false),
+        had_incomplete_tile(false),
+        num_missing_tiles(0),
+        render_pass_id(0, 0) {}
 
-    explicit AppendQuadsData(RenderPass::Id renderPassId)
-        : hadOcclusionFromOutsideTargetSurface(false)
-        , hadIncompleteTile(false)
-        , numMissingTiles(0)
-        , renderPassId(renderPassId)
-    {
-    }
+  explicit AppendQuadsData(RenderPass::Id render_pass_id)
+      : had_occlusion_from_outside_target_surface(false),
+        had_incomplete_tile(false),
+        num_missing_tiles(0),
+        render_pass_id(render_pass_id) {}
 
-    // Set by the QuadCuller.
-    bool hadOcclusionFromOutsideTargetSurface;
-    // Set by the layer appending quads.
-    bool hadIncompleteTile;
-    // Set by the layer appending quads.
-    int64 numMissingTiles;
-    // Given to the layer appending quads.
-    const RenderPass::Id renderPassId;
+  // Set by the QuadCuller.
+  bool had_occlusion_from_outside_target_surface;
+  // Set by the layer appending quads.
+  bool had_incomplete_tile;
+  // Set by the layer appending quads.
+  int64 num_missing_tiles;
+  // Given to the layer appending quads.
+  const RenderPass::Id render_pass_id;
 };
 
 }

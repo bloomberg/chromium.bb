@@ -205,7 +205,7 @@ void TiledLayerImpl::AppendQuads(QuadSink* quad_sink,
               shared_quad_state, tile_rect, checker_color);
           if (quad_sink->Append(checkerboard_quad.PassAs<DrawQuad>(),
                                 append_quads_data))
-            append_quads_data->numMissingTiles++;
+            append_quads_data->num_missing_tiles++;
         } else {
           scoped_ptr<SolidColorDrawQuad> solid_color_quad =
               SolidColorDrawQuad::Create();
@@ -213,7 +213,7 @@ void TiledLayerImpl::AppendQuads(QuadSink* quad_sink,
               shared_quad_state, tile_rect, background_color());
           if (quad_sink->Append(solid_color_quad.PassAs<DrawQuad>(),
                                 append_quads_data))
-            append_quads_data->numMissingTiles++;
+            append_quads_data->num_missing_tiles++;
         }
         continue;
       }

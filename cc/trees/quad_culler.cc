@@ -104,7 +104,7 @@ bool QuadCuller::Append(scoped_ptr<DrawQuad> draw_quad,
         &has_occlusion_from_outside_target_surface);
   }
 
-  append_quads_data->hadOcclusionFromOutsideTargetSurface |=
+  append_quads_data->had_occlusion_from_outside_target_surface |=
       has_occlusion_from_outside_target_surface;
 
   return AppendQuadInternal(draw_quad.Pass(),

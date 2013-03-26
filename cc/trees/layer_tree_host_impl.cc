@@ -577,7 +577,8 @@ bool LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
                                        contributing_render_pass,
                                        occlusion_tracker,
                                        &append_quads_data);
-    } else if (it.represents_itself() && !it->visible_content_rect().IsEmpty()) {
+    } else if (it.represents_itself() &&
+               !it->visible_content_rect().IsEmpty()) {
       bool has_occlusion_from_outside_target_surface;
       bool impl_draw_transform_is_unknown = false;
       if (occlusion_tracker.Occluded(
@@ -588,7 +589,7 @@ bool LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
               it->is_clipped(),
               it->clip_rect(),
               &has_occlusion_from_outside_target_surface)) {
-        append_quads_data.hadOcclusionFromOutsideTargetSurface |=
+        append_quads_data.had_occlusion_from_outside_target_surface |=
             has_occlusion_from_outside_target_surface;
       } else {
         DCHECK_EQ(active_tree_, it->layer_tree_impl());
@@ -623,12 +624,12 @@ bool LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
       ++layers_drawn;
     }
 
-    if (append_quads_data.hadOcclusionFromOutsideTargetSurface)
+    if (append_quads_data.had_occlusion_from_outside_target_surface)
       target_render_pass->has_occlusion_from_outside_target_surface = true;
 
-    if (append_quads_data.numMissingTiles) {
+    if (append_quads_data.num_missing_tiles) {
       rendering_stats_instrumentation_->AddMissingTiles(
-          append_quads_data.numMissingTiles);
+          append_quads_data.num_missing_tiles);
       bool layer_has_animating_transform =
           it->screen_space_transform_is_animating() ||
           it->draw_transform_is_animating();
@@ -636,7 +637,7 @@ bool LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
         draw_frame = false;
     }
 
-    if (append_quads_data.hadIncompleteTile)
+    if (append_quads_data.had_incomplete_tile)
       frame->contains_incomplete_tile = true;
 
     occlusion_tracker.LeaveLayer(it);

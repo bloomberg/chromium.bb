@@ -159,15 +159,15 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
         SkColor color = DebugColors::DefaultCheckerboardColor();
         quad->SetNew(shared_quad_state, geometry_rect, color);
         if (quad_sink->Append(quad.PassAs<DrawQuad>(), append_quads_data))
-          append_quads_data->numMissingTiles++;
+          append_quads_data->num_missing_tiles++;
       } else {
         scoped_ptr<SolidColorDrawQuad> quad = SolidColorDrawQuad::Create();
         quad->SetNew(shared_quad_state, geometry_rect, background_color());
         if (quad_sink->Append(quad.PassAs<DrawQuad>(), append_quads_data))
-          append_quads_data->numMissingTiles++;
+          append_quads_data->num_missing_tiles++;
       }
 
-      append_quads_data->hadIncompleteTile = true;
+      append_quads_data->had_incomplete_tile = true;
       continue;
     }
 
@@ -175,7 +175,7 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
     switch (drawing_info.mode()) {
       case ManagedTileState::DrawingInfo::TEXTURE_MODE: {
         if (iter->contents_scale() != ideal_contents_scale_)
-          append_quads_data->hadIncompleteTile = true;
+          append_quads_data->had_incomplete_tile = true;
 
         gfx::RectF texture_rect = iter.texture_rect();
         gfx::Rect opaque_rect = iter->opaque_rect();

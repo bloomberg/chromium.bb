@@ -225,7 +225,7 @@ void DelegatedRendererLayerImpl::AppendQuads(
   if (render_passes_in_draw_order_.empty())
     return;
 
-  RenderPass::Id target_render_pass_id = append_quads_data->renderPassId;
+  RenderPass::Id target_render_pass_id = append_quads_data->render_pass_id;
 
   const RenderPass* root_delegated_render_pass =
       render_passes_in_draw_order_.back();
@@ -389,7 +389,7 @@ void DelegatedRendererLayerImpl::AppendRenderPassQuads(
       RenderPass::Id output_contributing_render_pass_id =
           ConvertDelegatedRenderPassId(delegated_contributing_render_pass_id);
       DCHECK(output_contributing_render_pass_id !=
-             append_quads_data->renderPassId);
+             append_quads_data->render_pass_id);
 
       output_quad = RenderPassDrawQuad::MaterialCast(delegated_quad)->Copy(
           output_shared_quad_state,
