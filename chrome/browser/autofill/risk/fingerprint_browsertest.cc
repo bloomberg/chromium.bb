@@ -62,6 +62,7 @@ class AutofillRiskFingerprintTest : public InProcessBrowserTest {
     ASSERT_TRUE(machine.graphics_card().has_vendor_id());
     ASSERT_TRUE(machine.graphics_card().has_device_id());
     ASSERT_TRUE(machine.has_browser_build());
+    ASSERT_TRUE(machine.has_browser_feature());
 
     ASSERT_TRUE(fingerprint->has_transient_state());
     const Fingerprint_TransientState& transient_state =
@@ -88,6 +89,9 @@ class AutofillRiskFingerprintTest : public InProcessBrowserTest {
               machine.unavailable_screen_size().width());
     EXPECT_EQ(kUnavailableScreenBounds.height(),
               machine.unavailable_screen_size().height());
+    EXPECT_EQ(
+        Fingerprint_MachineCharacteristics_BrowserFeature_FEATURE_AUTOCHECKOUT,
+        machine.browser_feature());
     EXPECT_EQ(kContentBounds.width(),
               transient_state.inner_window_size().width());
     EXPECT_EQ(kContentBounds.height(),
@@ -124,8 +128,8 @@ IN_PROC_BROWSER_TEST_F(AutofillRiskFingerprintTest, MAYBE_GetFingerprint) {
   screen_info.availableRect = WebKit::WebRect(kAvailableScreenBounds);
 
   internal::GetFingerprintInternal(
-      kGaiaId, kWindowBounds, kContentBounds, screen_info,
-      "25.0.0.123", kCharset, kAcceptLanguages, base::Time::Now(),
+      kGaiaId, kWindowBounds, kContentBounds, screen_info, "25.0.0.123",
+      kCharset, kAcceptLanguages, base::Time::Now(), DIALOG_TYPE_AUTOCHECKOUT,
       base::Bind(&AutofillRiskFingerprintTest::GetFingerprintTestCallback,
                  base::Unretained(this)));
 

@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
+#include "components/autofill/browser/autofill_manager_delegate.h"
 
 class PrefService;
 
@@ -51,6 +52,7 @@ void GetFingerprint(
     const std::string& charset,
     const std::string& accept_languages,
     const base::Time& install_time,
+    DialogType dialog_type,
     const base::Callback<void(scoped_ptr<Fingerprint>)>& callback);
 
 // Exposed for testing:
@@ -65,6 +67,7 @@ void GetFingerprintInternal(
     const std::string& charset,
     const std::string& accept_languages,
     const base::Time& install_time,
+    DialogType dialog_type,
     const base::Callback<void(scoped_ptr<Fingerprint>)>& callback);
 
 }  // namespace internal

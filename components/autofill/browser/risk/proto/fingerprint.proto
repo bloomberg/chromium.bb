@@ -61,6 +61,13 @@ message Fingerprint {
       optional PerformanceStatistics performance_statistics = 5;
     }
 
+    // Browser features that integrate with Risk.
+    enum BrowserFeature {
+      FEATURE_UNKNOWN = 0;  // Should not be reachable.
+      FEATURE_AUTOCHECKOUT = 1;
+      FEATURE_REQUEST_AUTOCOMPLETE = 2;
+    }
+
     // A hash of the concatenatation of:
     //   * The username of the user currently logged into computer / device.
     //   * The user-assigned computer or device name.
@@ -124,6 +131,9 @@ message Fingerprint {
 
     // Build version string for browser.
     optional string browser_build = 19;
+
+    // The client-side feature corresponding to this request.
+    optional BrowserFeature browser_feature = 20;
   }
 
   // Contains properties relating to more transient computer / browser state.

@@ -57,6 +57,19 @@ std::string GetOperatingSystemVersion() {
       base::SysInfo::OperatingSystemVersion();
 }
 
+Fingerprint_MachineCharacteristics_BrowserFeature
+    DialogTypeToBrowserFeature(DialogType dialog_type) {
+  switch (dialog_type) {
+    case DIALOG_TYPE_AUTOCHECKOUT:
+      return Fingerprint_MachineCharacteristics_BrowserFeature_FEATURE_AUTOCHECKOUT;
+    case DIALOG_TYPE_REQUEST_AUTOCOMPLETE:
+      return Fingerprint_MachineCharacteristics_BrowserFeature_FEATURE_REQUEST_AUTOCOMPLETE;
+  }
+
+  NOTREACHED();
+  return Fingerprint_MachineCharacteristics_BrowserFeature_FEATURE_UNKNOWN;
+}
+
 // Adds the list of |fonts| to the |machine|.
 void AddFontsToFingerprint(const base::ListValue& fonts,
                            Fingerprint_MachineCharacteristics* machine) {
@@ -175,6 +188,7 @@ class FingerprintDataLoader : public content::GpuDataManagerObserver {
       const std::string& charset,
       const std::string& accept_languages,
       const base::Time& install_time,
+      DialogType dialog_type,
       const base::Callback<void(scoped_ptr<Fingerprint>)>& callback);
 
  private:
@@ -206,6 +220,7 @@ class FingerprintDataLoader : public content::GpuDataManagerObserver {
   const std::string charset_;
   const std::string accept_languages_;
   const base::Time install_time_;
+  DialogType dialog_type_;
 
   // Data that will be loaded asynchronously.
   scoped_ptr<base::ListValue> fonts_;
@@ -227,6 +242,7 @@ FingerprintDataLoader::FingerprintDataLoader(
     const std::string& charset,
     const std::string& accept_languages,
     const base::Time& install_time,
+    DialogType dialog_type,
     const base::Callback<void(scoped_ptr<Fingerprint>)>& callback)
     : gpu_data_manager_(content::GpuDataManager::GetInstance()),
       gaia_id_(gaia_id),
@@ -237,6 +253,7 @@ FingerprintDataLoader::FingerprintDataLoader(
       charset_(charset),
       accept_languages_(accept_languages),
       install_time_(install_time),
+      dialog_type_(dialog_type),
       has_loaded_plugins_(false),
       callback_(callback) {
   DCHECK(!install_time_.is_null());
@@ -307,6 +324,7 @@ void FingerprintDataLoader::FillFingerprint() {
   machine->set_user_agent(content::GetContentClient()->GetUserAgent());
   machine->set_ram(base::SysInfo::AmountOfPhysicalMemory());
   machine->set_browser_build(version_);
+  machine->set_browser_feature(DialogTypeToBrowserFeature(dialog_type_));
   AddFontsToFingerprint(*fonts_, machine);
   AddPluginsToFingerprint(plugins_, machine);
   AddAcceptLanguagesToFingerprint(accept_languages_, machine);
@@ -352,6 +370,7 @@ void GetFingerprint(
     const std::string& charset,
     const std::string& accept_languages,
     const base::Time& install_time,
+    DialogType dialog_type,
     const base::Callback<void(scoped_ptr<Fingerprint>)>& callback) {
   gfx::Rect content_bounds;
   web_contents.GetView()->GetContainerBounds(&content_bounds);
@@ -364,7 +383,7 @@ void GetFingerprint(
 
   internal::GetFingerprintInternal(
       gaia_id, window_bounds, content_bounds, screen_info, version, charset,
-      accept_languages, install_time, callback);
+      accept_languages, install_time, dialog_type, callback);
 }
 
 namespace internal {
@@ -378,12 +397,13 @@ void GetFingerprintInternal(
     const std::string& charset,
     const std::string& accept_languages,
     const base::Time& install_time,
+    DialogType dialog_type,
     const base::Callback<void(scoped_ptr<Fingerprint>)>& callback) {
   // Begin loading all of the data that we need to load asynchronously.
   // This class is responsible for freeing its own memory.
   new FingerprintDataLoader(gaia_id, window_bounds, content_bounds, screen_info,
                             version, charset, accept_languages, install_time,
-                            callback);
+                            dialog_type, callback);
 }
 
 }  // namespace internal
