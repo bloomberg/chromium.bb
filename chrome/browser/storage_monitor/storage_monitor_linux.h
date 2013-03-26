@@ -33,13 +33,7 @@ class FilePath;
 // On success, fills in metadata fields.
 typedef void (*GetDeviceInfoFunc)(const base::FilePath& device_path,
                                   const base::FilePath& mount_point,
-                                  std::string* device_id,
-                                  string16* name,
-                                  bool* removable,
-                                  uint64* partition_size_in_bytes,
-                                  string16* volume_label,
-                                  string16* vendor_name,
-                                  string16* model_name);
+                                  chrome::StorageInfo* storage_info);
 
 namespace chrome {
 

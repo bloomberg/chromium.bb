@@ -69,39 +69,29 @@ const TestDeviceData kTestDeviceData[] = {
 
 void GetDeviceInfo(const base::FilePath& device_path,
                    const base::FilePath& mount_point,
-                   std::string* device_id,
-                   string16* name,
-                   bool* removable,
-                   uint64* partition_size_in_bytes,
-                   string16* out_volume_label,
-                   string16* out_vendor_name,
-                   string16* out_model_name) {
-  for (size_t i = 0; i < arraysize(kTestDeviceData); i++) {
+                   StorageInfo* storage_info) {
+  bool device_found = false;
+  size_t i = 0;
+  for (; i < arraysize(kTestDeviceData); i++) {
     if (device_path.value() == kTestDeviceData[i].device_path) {
-      if (name)
-        *name = ASCIIToUTF16(kTestDeviceData[i].device_name);
-      MediaStorageUtil::Type type = kTestDeviceData[i].type;
-      if (removable) {
-        *removable =
-          (type == MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM) ||
-          (type == MediaStorageUtil::REMOVABLE_MASS_STORAGE_NO_DCIM);
-      }
-      if (device_id) {
-        *device_id =
-            MediaStorageUtil::MakeDeviceId(type, kTestDeviceData[i].unique_id);
-      }
-      if (partition_size_in_bytes)
-        *partition_size_in_bytes = kTestDeviceData[i].partition_size_in_bytes;
-      if (out_volume_label)
-        *out_volume_label = ASCIIToUTF16("volume label");
-      if (out_vendor_name)
-        *out_vendor_name = ASCIIToUTF16("vendor name");
-      if (out_model_name)
-        *out_model_name = ASCIIToUTF16("model name");
-      return;
+      device_found = true;
+      break;
     }
   }
-  NOTREACHED();
+  if (!device_found) {
+    NOTREACHED();
+    return;
+  }
+
+  MediaStorageUtil::Type type = kTestDeviceData[i].type;
+  *storage_info = StorageInfo(
+      MediaStorageUtil::MakeDeviceId(type, kTestDeviceData[i].unique_id),
+      ASCIIToUTF16(kTestDeviceData[i].device_name),
+      mount_point.value(),
+      ASCIIToUTF16("volume label"),
+      ASCIIToUTF16("vendor name"),
+      ASCIIToUTF16("model name"),
+      kTestDeviceData[i].partition_size_in_bytes);
 }
 
 uint64 GetDevicePartitionSize(const std::string& device) {

@@ -111,6 +111,7 @@ std::string MakeDeviceUniqueId(struct udev_device* device) {
 }
 
 // Records GetDeviceInfo result, to see how often we fail to get device details.
+// TODO(thestig) Make this a scoper.
 void RecordGetDeviceInfoResult(bool result) {
   UMA_HISTOGRAM_BOOLEAN("MediaDeviceNotification.UdevRequestSuccess", result);
 }
@@ -173,18 +174,13 @@ string16 GetDeviceName(struct udev_device* device,
 }
 
 // Get the device information using udev library.
-// On success, returns true and fill in |unique_id|, |name|, |removable| and
-// |partition_size_in_bytes|.
+// Fills in |storage_info|.
 void GetDeviceInfo(const base::FilePath& device_path,
                    const base::FilePath& mount_point,
-                   std::string* device_id,
-                   string16* name,
-                   bool* removable,
-                   uint64* partition_size_in_bytes,
-                   string16* out_volume_label,
-                   string16* out_vendor_name,
-                   string16* out_model_name) {
+                   StorageInfo* storage_info) {
   DCHECK(!device_path.empty());
+  DCHECK(storage_info);
+
   ScopedUdevObject udev_obj(udev_new());
   if (!udev_obj.get()) {
     RecordGetDeviceInfoResult(false);
@@ -219,14 +215,12 @@ void GetDeviceInfo(const base::FilePath& device_path,
   string16 model_name;
   string16 device_name = GetDeviceName(device, &volume_label,
                                        &vendor_name, &model_name);
-  if (name)
-    *name = device_name;
-
   std::string unique_id = MakeDeviceUniqueId(device);
+
+  // Keep track of device info details to see how often we get invalid values.
   MediaStorageUtil::RecordDeviceInfoHistogram(true, unique_id, device_name);
 
-  const char* value = udev_device_get_sysattr_value(device,
-                                                    kRemovableSysAttr);
+  const char* value = udev_device_get_sysattr_value(device, kRemovableSysAttr);
   if (!value) {
     // |parent_device| is owned by |device| and does not need to be cleaned
     // up.
@@ -236,24 +230,24 @@ void GetDeviceInfo(const base::FilePath& device_path,
                                                       kDiskDeviceTypeKey);
     value = udev_device_get_sysattr_value(parent_device, kRemovableSysAttr);
   }
-  bool is_removable = (value && atoi(value) == 1);
-  if (removable) {
-    *removable = is_removable;
+  const bool is_removable = (value && atoi(value) == 1);
+
+  MediaStorageUtil::Type type = MediaStorageUtil::FIXED_MASS_STORAGE;
+  if (is_removable) {
+    if (MediaStorageUtil::HasDcim(mount_point.value()))
+      type = MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM;
+    else
+      type = MediaStorageUtil::REMOVABLE_MASS_STORAGE_NO_DCIM;
   }
 
-  if (device_id) {
-    MediaStorageUtil::Type type = MediaStorageUtil::FIXED_MASS_STORAGE;
-    if (is_removable) {
-      if (MediaStorageUtil::HasDcim(mount_point.value()))
-        type = MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM;
-      else
-        type = MediaStorageUtil::REMOVABLE_MASS_STORAGE_NO_DCIM;
-    }
-    *device_id = MediaStorageUtil::MakeDeviceId(type, unique_id);
-  }
-
-  if (partition_size_in_bytes)
-    *partition_size_in_bytes = GetDeviceStorageSize(device_path, device);
+  *storage_info = StorageInfo(
+      MediaStorageUtil::MakeDeviceId(type, unique_id),
+      device_name,
+      mount_point.value(),
+      volume_label,
+      vendor_name,
+      model_name,
+      GetDeviceStorageSize(device_path, device));
   RecordGetDeviceInfoResult(true);
 }
 
@@ -460,35 +454,24 @@ void StorageMonitorLinux::AddNewMount(const base::FilePath& mount_device,
     return;
   }
 
-  std::string device_id;
-  string16 name;
-  bool removable;
-  uint64 partition_size_in_bytes;
-  string16 volume_label;
-  string16 vendor_name;
-  string16 model_name;
-  get_device_info_func_(mount_device, mount_point, &device_id, &name,
-                        &removable, &partition_size_in_bytes,
-                        &volume_label, &vendor_name, &model_name);
+  StorageInfo storage_info;
+  get_device_info_func_(mount_device, mount_point, &storage_info);
 
-  // Keep track of device info details to see how often we get invalid values.
-  if (device_id.empty() || name.empty())
+  if (storage_info.device_id.empty() || storage_info.name.empty())
     return;
 
+  bool removable = MediaStorageUtil::IsRemovableDevice(storage_info.device_id);
   MountPointInfo mount_point_info;
   mount_point_info.mount_device = mount_device;
-  mount_point_info.storage_info = StorageInfo(
-      device_id, name, mount_point.value(), volume_label,
-      vendor_name, model_name, partition_size_in_bytes);
+  mount_point_info.storage_info = storage_info;
   mount_info_map_[mount_point] = mount_point_info;
   mount_priority_map_[mount_device][mount_point] = removable;
 
   if (removable) {
-    string16 display_name = MediaStorageUtil::GetDisplayNameForDevice(
-        partition_size_in_bytes, name);
-
-    receiver()->ProcessAttach(StorageInfo(device_id, display_name,
-                                          mount_point.value()));
+    // TODO(gbillock) Do this in a higher level instead of here.
+    storage_info.name = MediaStorageUtil::GetDisplayNameForDevice(
+        storage_info.total_size_in_bytes, storage_info.name);
+    receiver()->ProcessAttach(storage_info);
   }
 }
 
