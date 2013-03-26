@@ -33,7 +33,7 @@ class VSyncProvider {
 // external vsync signal.
 class CC_EXPORT VSyncTimeSource : public TimeSource, public VSyncClient {
  public:
-  static scoped_refptr<VSyncTimeSource> create(VSyncProvider* vsync_provider);
+  static scoped_refptr<VSyncTimeSource> Create(VSyncProvider* vsync_provider);
 
   // TimeSource implementation
   virtual void SetClient(TimeSourceClient* client) OVERRIDE;

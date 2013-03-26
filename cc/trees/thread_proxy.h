@@ -12,6 +12,7 @@
 #include "cc/base/completion_event.h"
 #include "cc/resources/resource_update_controller.h"
 #include "cc/scheduler/scheduler.h"
+#include "cc/scheduler/vsync_time_source.h"
 #include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/proxy.h"
 
@@ -28,7 +29,8 @@ class Thread;
 class ThreadProxy : public Proxy,
                     LayerTreeHostImplClient,
                     SchedulerClient,
-                    ResourceUpdateControllerClient {
+                    ResourceUpdateControllerClient,
+                    VSyncProvider {
  public:
   static scoped_ptr<Proxy> Create(LayerTreeHost* layer_tree_host,
                                   scoped_ptr<Thread> impl_thread);
@@ -69,6 +71,7 @@ class ThreadProxy : public Proxy,
   virtual void OnSwapBuffersCompleteOnImplThread() OVERRIDE;
   virtual void OnVSyncParametersChanged(base::TimeTicks timebase,
                                         base::TimeDelta interval) OVERRIDE;
+  virtual void DidVSync(base::TimeTicks frame_time) OVERRIDE;
   virtual void OnCanDrawStateChanged(bool can_draw) OVERRIDE;
   virtual void OnHasPendingTreeStateChanged(bool has_pending_tree) OVERRIDE;
   virtual void SetNeedsRedrawOnImplThread() OVERRIDE;
@@ -103,6 +106,9 @@ class ThreadProxy : public Proxy,
 
   // ResourceUpdateControllerClient implementation
   virtual void ReadyToFinalizeTextureUpdates() OVERRIDE;
+
+  // VSyncProvider implementation
+  virtual void RequestVSyncNotification(VSyncClient* client) OVERRIDE;
 
   int MaxFramesPendingForTesting() const {
     return scheduler_on_impl_thread_->MaxFramesPending();
@@ -248,6 +254,8 @@ class ThreadProxy : public Proxy,
   bool next_frame_is_newly_committed_frame_on_impl_thread_;
 
   bool render_vsync_enabled_;
+  bool render_vsync_notification_enabled_;
+  VSyncClient* vsync_client_;
 
   bool inside_draw_;
 

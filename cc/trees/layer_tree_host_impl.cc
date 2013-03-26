@@ -915,6 +915,10 @@ void LayerTreeHostImpl::OnVSyncParametersChanged(base::TimeTicks timebase,
   client_->OnVSyncParametersChanged(timebase, interval);
 }
 
+void LayerTreeHostImpl::DidVSync(base::TimeTicks frame_time) {
+  client_->DidVSync(frame_time);
+}
+
 void LayerTreeHostImpl::OnSendFrameToParentCompositorAck(
     const CompositorFrameAck& ack) {
   if (!renderer_)
@@ -1037,6 +1041,11 @@ const RendererCapabilities& LayerTreeHostImpl::GetRendererCapabilities() const {
 
 bool LayerTreeHostImpl::SwapBuffers() {
   return renderer_->SwapBuffers();
+}
+
+void LayerTreeHostImpl::EnableVSyncNotification(bool enable) {
+  if (output_surface_)
+    output_surface_->EnableVSyncNotification(enable);
 }
 
 gfx::Size LayerTreeHostImpl::DeviceViewportSize() const {

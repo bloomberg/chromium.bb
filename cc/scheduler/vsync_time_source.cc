@@ -6,7 +6,7 @@
 
 namespace cc {
 
-scoped_refptr<VSyncTimeSource> VSyncTimeSource::create(
+scoped_refptr<VSyncTimeSource> VSyncTimeSource::Create(
     VSyncProvider* vsync_provider) {
   return make_scoped_refptr(new VSyncTimeSource(vsync_provider));
 }

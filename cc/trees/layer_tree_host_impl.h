@@ -51,6 +51,7 @@ class LayerTreeHostImplClient {
   virtual void OnSwapBuffersCompleteOnImplThread() = 0;
   virtual void OnVSyncParametersChanged(base::TimeTicks timebase,
                                         base::TimeDelta interval) = 0;
+  virtual void DidVSync(base::TimeTicks frame_time) = 0;
   virtual void OnCanDrawStateChanged(bool can_draw) = 0;
   virtual void OnHasPendingTreeStateChanged(bool has_pending_tree) = 0;
   virtual void SetNeedsRedrawOnImplThread() = 0;
@@ -182,6 +183,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandlerClient,
   // OutputSurfaceClient implementation.
   virtual void OnVSyncParametersChanged(base::TimeTicks timebase,
                                         base::TimeDelta interval) OVERRIDE;
+  virtual void DidVSync(base::TimeTicks frame_time) OVERRIDE;
   virtual void OnSendFrameToParentCompositorAck(const CompositorFrameAck& ack)
       OVERRIDE;
 
@@ -205,6 +207,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandlerClient,
   const RendererCapabilities& GetRendererCapabilities() const;
 
   virtual bool SwapBuffers();
+  void EnableVSyncNotification(bool enable);
 
   void Readback(void* pixels, gfx::Rect rect_in_device_viewport);
 

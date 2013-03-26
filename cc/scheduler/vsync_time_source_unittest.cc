@@ -32,7 +32,7 @@ class FakeVSyncProvider : public VSyncProvider {
 
 class VSyncTimeSourceTest : public testing::Test {
  public:
-  VSyncTimeSourceTest() : timer_(VSyncTimeSource::create(&provider_)) {
+  VSyncTimeSourceTest() : timer_(VSyncTimeSource::Create(&provider_)) {
     timer_->SetClient(&client_);
   }
 

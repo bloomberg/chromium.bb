@@ -16,6 +16,7 @@
 #include "cc/scheduler/delay_based_time_source.h"
 #include "cc/scheduler/frame_rate_controller.h"
 #include "cc/scheduler/scheduler.h"
+#include "cc/scheduler/vsync_time_source.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_impl.h"
 
@@ -59,6 +60,9 @@ ThreadProxy::ThreadProxy(LayerTreeHost* layer_tree_host,
       texture_acquisition_completion_event_on_impl_thread_(NULL),
       next_frame_is_newly_committed_frame_on_impl_thread_(false),
       render_vsync_enabled_(layer_tree_host->settings().render_vsync_enabled),
+      render_vsync_notification_enabled_(
+          layer_tree_host->settings().render_vsync_notification_enabled),
+      vsync_client_(NULL),
       inside_draw_(false),
       defer_commits_(false),
       renew_tree_priority_on_impl_thread_pending_(false) {
@@ -348,6 +352,21 @@ void ThreadProxy::OnVSyncParametersChanged(base::TimeTicks timebase,
                "interval",
                interval.InMilliseconds());
   scheduler_on_impl_thread_->SetTimebaseAndInterval(timebase, interval);
+}
+
+void ThreadProxy::DidVSync(base::TimeTicks frame_time) {
+  DCHECK(IsImplThread());
+  TRACE_EVENT0("cc", "ThreadProxy::DidVSync");
+  if (vsync_client_)
+    vsync_client_->DidVSync(frame_time);
+}
+
+void ThreadProxy::RequestVSyncNotification(VSyncClient* client) {
+  DCHECK(IsImplThread());
+  TRACE_EVENT1(
+      "cc", "ThreadProxy::RequestVSyncNotification", "enable", !!client);
+  vsync_client_ = client;
+  layer_tree_host_impl_->EnableVSyncNotification(client);
 }
 
 void ThreadProxy::OnCanDrawStateChanged(bool can_draw) {
@@ -1067,9 +1086,14 @@ void ThreadProxy::InitializeImplOnImplThread(CompletionEvent* completion,
                                         60);
   scoped_ptr<FrameRateController> frame_rate_controller;
   if (render_vsync_enabled_) {
-    frame_rate_controller.reset(
-        new FrameRateController(DelayBasedTimeSource::Create(
-            display_refresh_interval, Proxy::ImplThread())));
+    if (render_vsync_notification_enabled_) {
+      frame_rate_controller.reset(
+          new FrameRateController(VSyncTimeSource::Create(this)));
+    } else {
+      frame_rate_controller.reset(
+          new FrameRateController(DelayBasedTimeSource::Create(
+              display_refresh_interval, Proxy::ImplThread())));
+    }
   } else {
     frame_rate_controller.reset(new FrameRateController(Proxy::ImplThread()));
   }
@@ -1128,10 +1152,12 @@ void ThreadProxy::LayerTreeHostClosedOnImplThread(CompletionEvent* completion) {
   DCHECK(IsImplThread());
   layer_tree_host_->DeleteContentsTexturesOnImplThread(
       layer_tree_host_impl_->resource_provider());
+  layer_tree_host_impl_->EnableVSyncNotification(false);
   input_handler_on_impl_thread_.reset();
   layer_tree_host_impl_.reset();
   scheduler_on_impl_thread_.reset();
   weak_factory_on_impl_thread_.InvalidateWeakPtrs();
+  vsync_client_ = NULL;
   completion->Signal();
 }
 

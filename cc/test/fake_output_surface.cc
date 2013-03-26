@@ -4,12 +4,15 @@
 
 #include "cc/test/fake_output_surface.h"
 
+#include "cc/output/output_surface_client.h"
+
 namespace cc {
 
 FakeOutputSurface::FakeOutputSurface(
     scoped_ptr<WebKit::WebGraphicsContext3D> context3d, bool has_parent)
     : OutputSurface(context3d.Pass()),
-      num_sent_frames_(0) {
+      num_sent_frames_(0),
+      vsync_notification_enabled_(false) {
   capabilities_.has_parent_compositor = has_parent;
 }
 
@@ -35,6 +38,14 @@ void FakeOutputSurface::SendFrameToParentCompositor(
     CompositorFrame* frame) {
   frame->AssignTo(&last_sent_frame_);
   ++num_sent_frames_;
+}
+
+void FakeOutputSurface::EnableVSyncNotification(bool enable) {
+  vsync_notification_enabled_ = enable;
+}
+
+void FakeOutputSurface::DidVSync(base::TimeTicks frame_time) {
+  client_->DidVSync(frame_time);
 }
 
 }  // namespace cc

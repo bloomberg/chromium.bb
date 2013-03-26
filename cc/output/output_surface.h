@@ -91,6 +91,11 @@ class CC_EXPORT OutputSurface {
   // processing should be stopped, or lowered in priority.
   virtual void UpdateSmoothnessTakesPriority(bool prefer_smoothness) {}
 
+  // Requests a vsync notification from the output surface. The notification
+  // will be delivered by calling OutputSurfaceClient::DidVSync for all future
+  // vsync events until the callback is disabled.
+  virtual void EnableVSyncNotification(bool enable_vsync) {}
+
  protected:
   OutputSurfaceClient* client_;
   struct cc::OutputSurface::Capabilities capabilities_;

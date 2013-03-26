@@ -2164,5 +2164,56 @@ class LayerTreeHostTestLCDNotification : public LayerTreeHostTest {
 
 SINGLE_THREAD_TEST_F(LayerTreeHostTestLCDNotification);
 
+// Verify that the vsync notification is used to initiate rendering.
+class LayerTreeHostTestVSyncNotification : public LayerTreeHostTest {
+ public:
+  virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
+    settings->render_vsync_notification_enabled = true;
+  }
+
+  virtual void BeginTest() OVERRIDE {
+    PostSetNeedsCommitToMainThread();
+  }
+
+  virtual void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+    FakeOutputSurface* fake_output_surface =
+        reinterpret_cast<FakeOutputSurface*>(host_impl->output_surface());
+
+    // The vsync notification is turned off now but will get enabled once we
+    // return, so post a task to trigger it.
+    ASSERT_FALSE(fake_output_surface->vsync_notification_enabled());
+    PostVSyncOnImplThread(fake_output_surface);
+  }
+
+  void PostVSyncOnImplThread(FakeOutputSurface* fake_output_surface) {
+    DCHECK(ImplThread());
+    ImplThread()->PostTask(
+        base::Bind(&LayerTreeHostTestVSyncNotification::DidVSync,
+                   base::Unretained(this),
+                   base::Unretained(fake_output_surface)));
+  }
+
+  void DidVSync(FakeOutputSurface* fake_output_surface) {
+    ASSERT_TRUE(fake_output_surface->vsync_notification_enabled());
+    fake_output_surface->DidVSync(frame_time_);
+  }
+
+  virtual bool PrepareToDrawOnThread(
+      LayerTreeHostImpl* host_impl,
+      LayerTreeHostImpl::FrameData* frame,
+      bool result) OVERRIDE {
+    EndTest();
+    return true;
+  }
+
+  virtual void AfterTest() OVERRIDE {
+  }
+
+ private:
+  base::TimeTicks frame_time_;
+};
+
+MULTI_THREAD_TEST_F(LayerTreeHostTestVSyncNotification);
+
 }  // namespace
 }  // namespace cc

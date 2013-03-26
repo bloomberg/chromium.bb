@@ -91,6 +91,7 @@ class LayerTreeHostImplTest : public testing::Test,
   virtual void OnSwapBuffersCompleteOnImplThread() OVERRIDE {}
   virtual void OnVSyncParametersChanged(base::TimeTicks timebase,
                                         base::TimeDelta interval) OVERRIDE {}
+  virtual void DidVSync(base::TimeTicks frame_time) OVERRIDE {}
   virtual void OnCanDrawStateChanged(bool can_draw) OVERRIDE {
     on_can_draw_state_changed_called_ = true;
   }
