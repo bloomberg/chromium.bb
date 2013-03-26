@@ -21,24 +21,18 @@ class WebToCCScrollbarThemePainterAdapter : public cc::ScrollbarThemePainter {
   }
   virtual ~WebToCCScrollbarThemePainterAdapter();
 
-  virtual void PaintScrollbarBackground(SkCanvas* canvas, const gfx::Rect& rect)
+  virtual void PaintScrollbarBackground(SkCanvas* canvas,
+                                        gfx::Rect rect) OVERRIDE;
+  virtual void PaintTrackBackground(SkCanvas* canvas, gfx::Rect rect) OVERRIDE;
+  virtual void PaintBackTrackPart(SkCanvas* canvas, gfx::Rect rect) OVERRIDE;
+  virtual void PaintForwardTrackPart(SkCanvas* canvas, gfx::Rect rect) OVERRIDE;
+  virtual void PaintBackButtonStart(SkCanvas* canvas, gfx::Rect rect) OVERRIDE;
+  virtual void PaintBackButtonEnd(SkCanvas* canvas, gfx::Rect rect) OVERRIDE;
+  virtual void PaintForwardButtonStart(SkCanvas* canvas, gfx::Rect rect)
       OVERRIDE;
-  virtual void PaintTrackBackground(SkCanvas* canvas, const gfx::Rect& rect)
-      OVERRIDE;
-  virtual void PaintBackTrackPart(SkCanvas* canvas, const gfx::Rect& rect)
-      OVERRIDE;
-  virtual void PaintForwardTrackPart(SkCanvas* canvas, const gfx::Rect& rect)
-      OVERRIDE;
-  virtual void PaintBackButtonStart(SkCanvas* canvas, const gfx::Rect& rect)
-      OVERRIDE;
-  virtual void PaintBackButtonEnd(SkCanvas* canvas, const gfx::Rect& rect)
-      OVERRIDE;
-  virtual void PaintForwardButtonStart(SkCanvas* canvas, const gfx::Rect& rect)
-      OVERRIDE;
-  virtual void PaintForwardButtonEnd(SkCanvas* canvas, const gfx::Rect& rect)
-      OVERRIDE;
-  virtual void PaintTickmarks(SkCanvas* canvas, const gfx::Rect& rect) OVERRIDE;
-  virtual void PaintThumb(SkCanvas* canvas, const gfx::Rect& rect) OVERRIDE;
+  virtual void PaintForwardButtonEnd(SkCanvas* canvas, gfx::Rect rect) OVERRIDE;
+  virtual void PaintTickmarks(SkCanvas* canvas, gfx::Rect rect) OVERRIDE;
+  virtual void PaintThumb(SkCanvas* canvas, gfx::Rect rect) OVERRIDE;
 
  private:
   explicit WebToCCScrollbarThemePainterAdapter(

@@ -9,52 +9,52 @@
 namespace cc {
 
 void FakeScrollbarThemePainter::PaintScrollbarBackground(
-    SkCanvas* canvas, const gfx::Rect& rect) {
+    SkCanvas* canvas, gfx::Rect rect) {
   Paint(canvas, rect);
 }
 
 void FakeScrollbarThemePainter::PaintTrackBackground(
-    SkCanvas* canvas, const gfx::Rect& rect) {
+    SkCanvas* canvas, gfx::Rect rect) {
   Paint(canvas, rect);
 }
 
 void FakeScrollbarThemePainter::PaintBackTrackPart(
-    SkCanvas* canvas, const gfx::Rect& rect) {
+    SkCanvas* canvas, gfx::Rect rect) {
   Paint(canvas, rect);
 }
 
 void FakeScrollbarThemePainter::PaintForwardTrackPart(
-    SkCanvas* canvas, const gfx::Rect& rect) {
+    SkCanvas* canvas, gfx::Rect rect) {
   Paint(canvas, rect);
 }
 
 void FakeScrollbarThemePainter::PaintBackButtonStart(
-    SkCanvas* canvas, const gfx::Rect& rect) {
+    SkCanvas* canvas, gfx::Rect rect) {
   Paint(canvas, rect);
 }
 
 void FakeScrollbarThemePainter::PaintBackButtonEnd(
-    SkCanvas* canvas, const gfx::Rect& rect) {
+    SkCanvas* canvas, gfx::Rect rect) {
   Paint(canvas, rect);
 }
 
 void FakeScrollbarThemePainter::PaintForwardButtonStart(
-    SkCanvas* canvas, const gfx::Rect& rect) {
+    SkCanvas* canvas, gfx::Rect rect) {
   Paint(canvas, rect);
 }
 
 void FakeScrollbarThemePainter::PaintForwardButtonEnd(
-    SkCanvas* canvas, const gfx::Rect& rect) {
+    SkCanvas* canvas, gfx::Rect rect) {
   Paint(canvas, rect);
 }
 
 void FakeScrollbarThemePainter::PaintTickmarks(
-    SkCanvas* canvas, const gfx::Rect& rect) {
+    SkCanvas* canvas, gfx::Rect rect) {
   Paint(canvas, rect);
 }
 
 void FakeScrollbarThemePainter::PaintThumb(
-    SkCanvas* canvas, const gfx::Rect& rect) {
+    SkCanvas* canvas, gfx::Rect rect) {
   Paint(canvas, rect);
 }
 

@@ -12,53 +12,53 @@ namespace cc {
 PinchZoomScrollbarPainter::~PinchZoomScrollbarPainter() {}
 
 void PinchZoomScrollbarPainter::PaintScrollbarBackground(
-    SkCanvas*,
-    const gfx::Rect&) {
+    SkCanvas* canvas,
+    gfx::Rect rect) {
 }
 
 void PinchZoomScrollbarPainter::PaintTrackBackground(
-    SkCanvas*,
-    const gfx::Rect&) {
+    SkCanvas* canvas,
+    gfx::Rect rect) {
 }
 
 void PinchZoomScrollbarPainter::PaintBackTrackPart(
-    SkCanvas*,
-    const gfx::Rect&) {
+    SkCanvas* canvas,
+    gfx::Rect rect) {
 }
 
 void PinchZoomScrollbarPainter::PaintForwardTrackPart(
-    SkCanvas*,
-    const gfx::Rect&) {
+    SkCanvas* canvas,
+    gfx::Rect rect) {
 }
 
 void PinchZoomScrollbarPainter::PaintBackButtonStart(
-    SkCanvas*,
-    const gfx::Rect&) {
+    SkCanvas* canvas,
+    gfx::Rect rect) {
 }
 
 void PinchZoomScrollbarPainter::PaintBackButtonEnd(
-    SkCanvas*,
-    const gfx::Rect&) {
+    SkCanvas* canvas,
+    gfx::Rect rect) {
 }
 
 void PinchZoomScrollbarPainter::PaintForwardButtonStart(
-    SkCanvas*,
-    const gfx::Rect&) {
+    SkCanvas* canvas,
+    gfx::Rect rect) {
 }
 
 void PinchZoomScrollbarPainter::PaintForwardButtonEnd(
-    SkCanvas*,
-    const gfx::Rect&) {
+    SkCanvas* canvas,
+    gfx::Rect rect) {
 }
 
 void PinchZoomScrollbarPainter::PaintTickmarks(
-    SkCanvas*, 
-    const gfx::Rect&) {
+    SkCanvas* canvas, 
+    gfx::Rect rect) {
 }
 
 void PinchZoomScrollbarPainter::PaintThumb(
     SkCanvas* canvas,
-    const gfx::Rect& thumb_rect) {
+    gfx::Rect thumb_rect) {
   canvas->clear(SkColorSetARGB(0, 0, 0, 0));
   SkPaint paint;
 
