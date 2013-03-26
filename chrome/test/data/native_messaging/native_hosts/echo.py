@@ -6,8 +6,18 @@
 # A simple native client in python.
 # All this client does is echo the text it receives back at the extension.
 
+import os
 import sys
 import struct
+
+def WriteMessage(message):
+  try:
+    sys.stdout.write(struct.pack("I", len(message)))
+    sys.stdout.write(message)
+    sys.stdout.flush()
+    return True
+  except IOError:
+    return False
 
 def Main():
   message_number = 0
@@ -36,16 +46,23 @@ def Main():
     if 'bigMessageTest' in text:
       text = '{"key": "' + ("x" * 1024 * 1024) + '"}'
 
+    # "stopHostTest" verifies that Chrome properly handles the case when the
+    # host quits before port is closed. When the test receives response it
+    # will try sending second message and it should fail becasue the stdin
+    # pipe will be closed at that point.
+    if 'stopHostTest' in text:
+      # Using os.close() here because sys.stdin.close() doesn't really close
+      # the pipe (it just marks it as closed, but doesn't close the file
+      # descriptor).
+      os.close(sys.stdin.fileno())
+      WriteMessage('{"stopped": true }')
+      sys.exit(0)
+
     message_number += 1
 
-    response = '{{"id": {0}, "echo": {1}, "caller_url": "{2}"}}'.format(
-        message_number, text, caller_url).encode('utf-8')
-
-    try:
-      sys.stdout.write(struct.pack("I", len(response)))
-      sys.stdout.write(response)
-      sys.stdout.flush()
-    except IOError:
+    if not WriteMessage(
+        '{{"id": {0}, "echo": {1}, "caller_url": "{2}"}}'.format(
+          message_number, text, caller_url).encode('utf-8')):
       break
 
 if __name__ == '__main__':

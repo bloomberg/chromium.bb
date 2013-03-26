@@ -198,7 +198,7 @@ void NativeMessageProcessHost::WaitRead() {
   // FileStream uses overlapped IO, so that optimization isn't necessary there.
 #if defined(OS_POSIX)
   MessageLoopForIO::current()->WatchFileDescriptor(
-    read_file_, true /* persistent */, MessageLoopForIO::WATCH_READ,
+    read_file_, false /* persistent */, MessageLoopForIO::WATCH_READ,
     &read_watcher_, this);
 #else  // defined(OS_POSIX)
   DoRead();

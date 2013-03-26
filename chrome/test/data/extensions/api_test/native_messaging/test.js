@@ -67,6 +67,23 @@ chrome.test.getConfig(function(config) {
           else
             port.postMessage(messagesToSend[currentMessage]);
         });
+      },
+
+      // Verify that the case when host stops itself is handled properly.
+      function stopHost() {
+        port = chrome.extension.connectNative(appName);
+
+        port.onMessage.addListener(function(message) {
+          port.onDisconnect.addListener(chrome.test.callback(
+              function() {},
+              "Error when communicating with the native messaging host."));
+          // Sending second message here should fail because the host has
+          // already stopped.
+          port.postMessage({ "secondMessage" : "foo" });
+        });
+
+        // Send first message that should stop the host.
+        port.postMessage({ "stopHostTest": true });
       }
     ]);
 });
