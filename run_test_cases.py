@@ -480,7 +480,7 @@ def gtest_list_tests(cmd, cwd):
   cmd = cmd[:]
   cmd.append('--gtest_list_tests')
   env = setup_gtest_env()
-  timeout = 60.
+  timeout = 0.
   try:
     out, err, returncode, _ = call_with_timeout(
         cmd,
