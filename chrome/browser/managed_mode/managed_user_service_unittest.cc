@@ -95,6 +95,56 @@ TEST(ManagedUserServiceTest, ExtensionManagementPolicyProvider) {
   }
 }
 
+TEST(ManagedUserServiceTest, GetManualExceptionsForHost) {
+  TestingProfile profile;
+  ManagedUserService managed_user_service(&profile);
+  GURL kExampleFooURL("http://www.example.com/foo");
+  GURL kExampleBarURL("http://www.example.com/bar");
+  GURL kExampleFooNoWWWURL("http://example.com/foo");
+  GURL kBlurpURL("http://blurp.net/bla");
+  GURL kMooseURL("http://moose.org/baz");
+  std::vector<GURL> urls_to_allow;
+  urls_to_allow.push_back(kExampleFooURL);
+  urls_to_allow.push_back(kExampleFooNoWWWURL);
+  urls_to_allow.push_back(kBlurpURL);
+  managed_user_service.SetManualBehaviorForURLs(
+      urls_to_allow, ManagedUserService::MANUAL_ALLOW);
+  std::vector<GURL> urls_to_block;
+  urls_to_block.push_back(kExampleBarURL);
+  managed_user_service.SetManualBehaviorForURLs(
+      urls_to_block, ManagedUserService::MANUAL_BLOCK);
+  EXPECT_EQ(ManagedUserService::MANUAL_ALLOW,
+            managed_user_service.GetManualBehaviorForURL(kExampleFooURL));
+  EXPECT_EQ(ManagedUserService::MANUAL_BLOCK,
+            managed_user_service.GetManualBehaviorForURL(kExampleBarURL));
+  EXPECT_EQ(ManagedUserService::MANUAL_ALLOW,
+            managed_user_service.GetManualBehaviorForURL(kExampleFooNoWWWURL));
+  EXPECT_EQ(ManagedUserService::MANUAL_ALLOW,
+            managed_user_service.GetManualBehaviorForURL(kBlurpURL));
+  EXPECT_EQ(ManagedUserService::MANUAL_NONE,
+            managed_user_service.GetManualBehaviorForURL(kMooseURL));
+  std::vector<GURL> exceptions;
+  managed_user_service.GetManualExceptionsForHost("www.example.com",
+                                                   &exceptions);
+  ASSERT_EQ(2u, exceptions.size());
+  EXPECT_EQ(kExampleBarURL, exceptions[0]);
+  EXPECT_EQ(kExampleFooURL, exceptions[1]);
+
+  // Remove exceptions for www.example.com.
+  managed_user_service.SetManualBehaviorForURLs(
+      exceptions, ManagedUserService::MANUAL_NONE);
+  EXPECT_EQ(ManagedUserService::MANUAL_NONE,
+            managed_user_service.GetManualBehaviorForURL(kExampleFooURL));
+  EXPECT_EQ(ManagedUserService::MANUAL_NONE,
+            managed_user_service.GetManualBehaviorForURL(kExampleBarURL));
+  EXPECT_EQ(ManagedUserService::MANUAL_ALLOW,
+            managed_user_service.GetManualBehaviorForURL(kExampleFooNoWWWURL));
+  EXPECT_EQ(ManagedUserService::MANUAL_ALLOW,
+            managed_user_service.GetManualBehaviorForURL(kBlurpURL));
+  EXPECT_EQ(ManagedUserService::MANUAL_NONE,
+            managed_user_service.GetManualBehaviorForURL(kMooseURL));
+}
+
 class ManagedUserServiceExtensionTest : public ExtensionServiceTestBase {
  public:
   ManagedUserServiceExtensionTest() {}

@@ -86,6 +86,10 @@ class ManagedUserService : public ProfileKeyedService,
   void SetManualBehaviorForURLs(const std::vector<GURL>& url,
                                 ManualBehavior behavior);
 
+  // Returns all URLS on the given host that have exceptions.
+  void GetManualExceptionsForHost(const std::string& host,
+                                  std::vector<GURL>* urls);
+
   // Deprecated. Use the CanSkipPassphraseDialog() method which requires a
   // WebContents parameter instead.
   bool CanSkipPassphraseDialog();

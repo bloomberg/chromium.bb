@@ -668,6 +668,13 @@ void BrowsingHistoryHandler::HandleProcessManagedUrls(const ListValue* args) {
   service->SetManualBehaviorForHosts(hosts_to_be_changed,
                                      allow ? ManagedUserService::MANUAL_ALLOW :
                                              ManagedUserService::MANUAL_BLOCK);
+  std::vector<GURL> urls_to_remove;
+  for (std::vector<std::string>::iterator it = hosts_to_be_changed.begin();
+       it != hosts_to_be_changed.end(); ++it) {
+    service->GetManualExceptionsForHost(*it, &urls_to_remove);
+  }
+  service->SetManualBehaviorForURLs(urls_to_remove,
+                                    ManagedUserService::MANUAL_NONE);
   service->SetManualBehaviorForURLs(urls_to_be_changed,
                                     allow ? ManagedUserService::MANUAL_ALLOW :
                                             ManagedUserService::MANUAL_BLOCK);

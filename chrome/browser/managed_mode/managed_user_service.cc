@@ -25,6 +25,21 @@
 
 using content::BrowserThread;
 
+namespace {
+
+std::string CanonicalizeHostname(const std::string& hostname) {
+  std::string canonicalized;
+  url_canon::StdStringCanonOutput output(&canonicalized);
+  url_parse::Component in_comp(0, hostname.length());
+  url_parse::Component out_comp;
+
+  url_canon::CanonicalizeHost(hostname.c_str(), in_comp, &output, &out_comp);
+  output.Complete();
+  return canonicalized;
+}
+
+}  // namespace
+
 ManagedUserService::URLFilterContext::URLFilterContext()
     : ui_url_filter_(new ManagedModeURLFilter),
       io_url_filter_(new ManagedModeURLFilter) {}
@@ -351,6 +366,9 @@ void ManagedUserService::SetManualBehaviorForHosts(
   DictionaryValue* dict = update.Get();
   for (std::vector<std::string>::const_iterator it = hostnames.begin();
        it != hostnames.end(); ++it) {
+    // The hostname should already be canonicalized, i.e. canonicalizing it
+    // shouldn't change it.
+    DCHECK_EQ(CanonicalizeHostname(*it), *it);
     if (behavior == MANUAL_NONE)
       dict->RemoveWithoutPathExpansion(*it, NULL);
     else
@@ -390,6 +408,17 @@ void ManagedUserService::SetManualBehaviorForURLs(const std::vector<GURL>& urls,
   }
 
   UpdateManualURLs();
+}
+
+void ManagedUserService::GetManualExceptionsForHost(const std::string& host,
+                                                    std::vector<GURL>* urls) {
+  const DictionaryValue* dict =
+      profile_->GetPrefs()->GetDictionary(prefs::kManagedModeManualURLs);
+  for (DictionaryValue::Iterator it(*dict); !it.IsAtEnd(); it.Advance()) {
+    GURL url(it.key());
+    if (url.host() == host)
+      urls->push_back(url);
+  }
 }
 
 // TODO(akuegel): Rename to SetElevatedForTesting when all callers are changed

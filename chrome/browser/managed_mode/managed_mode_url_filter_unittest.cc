@@ -150,4 +150,41 @@ TEST_F(ManagedModeURLFilterTest, IPAddress) {
   EXPECT_FALSE(IsURLWhitelisted("http://123.123.123.124/"));
 }
 
+TEST_F(ManagedModeURLFilterTest, Canonicalization) {
+  // We assume that the hosts and URLs are already canonicalized.
+  std::map<std::string, bool> hosts;
+  hosts["www.moose.org"] = true;
+  hosts["www.xn--n3h.net"] = true;
+  std::map<GURL, bool> urls;
+  urls[GURL("http://www.example.com/foo/")] = true;
+  urls[GURL("http://www.example.com/%C3%85t%C3%B8mstr%C3%B6m")] = true;
+  filter_->SetManualHosts(&hosts);
+  filter_->SetManualURLs(&urls);
+
+  // Base cases.
+  EXPECT_TRUE(IsURLWhitelisted("http://www.example.com/foo/"));
+  EXPECT_TRUE(IsURLWhitelisted(
+      "http://www.example.com/%C3%85t%C3%B8mstr%C3%B6m"));
+
+  // Verify that non-URI characters are escaped.
+  EXPECT_TRUE(IsURLWhitelisted(
+      "http://www.example.com/\xc3\x85t\xc3\xb8mstr\xc3\xb6m"));
+
+  // Verify that unnecessary URI escapes are unescaped.
+  EXPECT_TRUE(IsURLWhitelisted("http://www.example.com/%66%6F%6F/"));
+
+  // Verify that the default port are removed.
+  EXPECT_TRUE(IsURLWhitelisted("http://www.example.com:80/foo/"));
+
+  // Verify that scheme and hostname are lowercased.
+  EXPECT_TRUE(IsURLWhitelisted("htTp://wWw.eXamPle.com/foo/"));
+  EXPECT_TRUE(IsURLWhitelisted("HttP://WwW.mOOsE.orG/blurp/"));
+
+  // Verify that UTF-8 in hostnames are converted to punycode.
+  EXPECT_TRUE(IsURLWhitelisted("http://www.\xe2\x98\x83\x0a.net/bla/"));
+
+  // Verify that query and ref are stripped.
+  EXPECT_TRUE(IsURLWhitelisted("http://www.example.com/foo/?bar=baz#ref"));
+}
+
 #endif  // ENABLE_CONFIGURATION_POLICY
