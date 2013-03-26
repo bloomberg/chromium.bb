@@ -110,6 +110,9 @@ def MaybeRelease(revision):
   zip_path = os.path.join(temp_dir, zip_name)
   f = zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED)
   f.write(server, server_name)
+  if util.IsLinux():
+    adb_commands = os.path.join(_THIS_DIR, 'chrome', 'adb_commands.py')
+    f.write(adb_commands, 'adb_commands.py')
   f.close()
 
   cmd = [
