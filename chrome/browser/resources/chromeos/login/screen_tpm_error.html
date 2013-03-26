@@ -1,10 +1,15 @@
 <div id="tpm-error-message" class="step faded hidden">
   <div class="step-contents">
-    <div id="tpm-error-message-body">
-      <div id="tmp-error-text" i18n-content="errorTpmFailure"></div>
-      <div id="tmp-error-reboot-text"
+    <div class="error-header">
+      <img alt class="error-icon" src="chrome://theme/IDR_FATAL_ERROR">
+      <div id="tpm-error-title" class="error-title"
+          i18n-content="errorTpmFailureTitle"></div>
+    </div>
+    <div class="error-body">
+      <div id="tmp-error-reboot-text" class="error-message-paragraph"
           i18n-content="errorTpmFailureReboot"></div>
-      <div id="tpm-error-icon"></div>
+      <div id="tpm-error-message-controls"
+          class="error-message-paragraph"></div>
     </div>
   </div>
 </div>

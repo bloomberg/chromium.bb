@@ -256,10 +256,10 @@ Press any key to continue exploring.
     What is your language?
   </message>
   <message name="IDS_NETWORK_SELECTION_SELECT" desc="Label for network selection dropdown">
-    Select a network:
+    Select a network
   </message>
   <message name="IDS_ANOTHER_NETWORK_SELECTION_SELECT" desc="Label for network selection dropdown on the network error screen.">
-    Or select another network:
+    Or, select a new network
   </message>
   <message name="IDS_LANGUAGE_SELECTION_SELECT" desc="Label for language selection dropdown">
     Select your language:
@@ -428,7 +428,7 @@ Press any key to continue exploring.
     If you don't have a Google Account you can <ph name="LINK_START">$1<ex>&gt;a&lt;</ex></ph>Create a Google Account<ph name="LINK_END">$2<ex>&gt;/a&lt;</ex></ph> now.
   </message>
   <message name="IDS_BROWSE_WITHOUT_SIGNING_IN_HTML" desc="Text shown on side of Google sign-in UI.">
-    You may also skip sign in and <ph name="LINK_START">$1<ex>&gt;a&lt;</ex></ph>Browse as Guest<ph name="LINK_END">$2<ex>&gt;/a&lt;</ex></ph>.
+    You may also skip signing in and <ph name="LINK_START">$1<ex>&gt;a&lt;</ex></ph>browse as guest<ph name="LINK_END">$2<ex>&gt;/a&lt;</ex></ph>.
   </message>
   <message name="IDS_CREATE_LOCALLY_MANAGED_USER_HTML" desc="Text shown on side of Google sign-in UI to create a locally managed user.">
     <ph name="LINK_START">$1<ex>&gt;a&lt;</ex></ph>Create managed user<ph name="LINK_END">$2<ex>&gt;/a&lt;</ex></ph>
@@ -3472,17 +3472,23 @@ Battery full
   <message name="IDS_LOGIN_ERROR_OWNER_KEY_LOST" desc="Couldn't sign in because the owner key has been lost, device settings corruption or incorrect local time.">
     Login failed, please connect to the internet and try again.
   </message>
-  <message name="IDS_LOGIN_ERROR_TPM_FAILURE" desc="Couldn't sign in because of the critical TPM error.">
-    Oops, something went wrong with signing in.
+  <message name="IDS_LOGIN_ERROR_TPM_FAILURE_TITLE" desc="Title of the screen notifying user about TPM error.">
+    Something went wrong with signing in
   </message>
-  <message name="IDS_LOGIN_ERROR_TPM_FAILURE_REBOOT" desc="Notify user that Chrome OS will reboot">
-    <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph> will automatically reboot to fix this error.
+  <message name="IDS_LOGIN_ERROR_TPM_FAILURE_REBOOT" desc="Suggestion to restart device in case of the TPM error.">
+    Please restart your device to fix this error.
+  </message>
+  <message name="IDS_LOGIN_ERROR_TPM_FAILURE_REBOOT_BUTTON" desc="Label on button that restarts device.">
+    Restart
   </message>
   <message name="IDS_LOGIN_FIX_CAPTIVE_PORTAL" desc="An link text to fix Internet connection (captive portal) in guest mode.">
     Enter as Guest
   </message>
+  <message name="IDS_LOGIN_PROXY_ERROR_TITLE" desc="A title of screen containing a message about proxy error.">
+    Oops, something went wrong with signing in
+  </message>
   <message name="IDS_LOGIN_PROXY_ERROR_MESSAGE" desc="An offline message shown when a proxy error has appeared.">
-    The sign-in page failed to load using the current proxy settings. Please <ph name="GAIA_RELOAD_LINK_START">$1<ex>&gt;a&lt;</ex></ph>try to sign in again<ph name="GAIA_RELOAD_LINK_END">$2<ex>&gt;/a&lt;</ex></ph> or use different <ph name="PROXY_SETTINGS_LINK_START">$3<ex>&gt;a&lt;</ex></ph>proxy settings<ph name="PROXY_SETTINGS_LINK_END">$4<ex>&gt;/a&lt;</ex></ph>.
+    The sign-in page failed to load using the current proxy settings. Please <ph name="GAIA_RELOAD_LINK_START">$1<ex>&gt;a&lt;</ex></ph>try to sign in again<ph name="GAIA_RELOAD_LINK_END">$2<ex>&gt;/a&lt;</ex></ph>, or use different <ph name="PROXY_SETTINGS_LINK_START">$3<ex>&gt;a&lt;</ex></ph>proxy settings<ph name="PROXY_SETTINGS_LINK_END">$4<ex>&gt;/a&lt;</ex></ph>.
   </message>
   <message name="IDS_LOGIN_CAPTIVE_PORTAL_WINDOW_TITLE" desc="Title of the window which is opened to sign in to the captive portal.">
     To use the network <ph name="NETWORK_ID">$1<ex>Adelaide Airport Wireless</ex></ph>, first complete your connection to the Internet below.
@@ -3491,11 +3497,11 @@ Battery full
     Network not available
   </message>
   <message name="IDS_LOGIN_MAYBE_CAPTIVE_PORTAL" desc="An offline message shown when we suggest that user may be behind the captive portal. Translation note: enter as Guest - could also be said enter as Guest user. Word user may be added to the translation if needed.">
-    To use <ph name="NETWORK_ID">$1<ex>&gt;b&lt;Public Wifi&gt;/b&lt;</ex></ph> you may first need to <ph name="LINK_START">$2<ex>&gt;a&lt;</ex></ph>visit the network's sign-in page<ph name="LINK_END">$3<ex>&gt;/a&lt;</ex></ph>, which will open automatically in a few seconds. If it didn't happen, network can't be used for the Internet connection.
+    To use <ph name="NETWORK_ID">$1<ex>&gt;b&lt;Public Wifi&gt;/b&lt;</ex></ph> you may first need to <ph name="LINK_START">$2<ex>&gt;a&lt;</ex></ph>visit the network's sign-in page<ph name="LINK_END">$3<ex>&gt;/a&lt;</ex></ph>, which will open automatically in a few seconds. If it doesn't happen, the network can't be used.
   </message>
   <message name="IDS_LOGIN_MAYBE_CAPTIVE_PORTAL_PROXY" desc="An offline mssage shown when we suggest that user should configure the proxy.">
-    If you use a proxy server, check your proxy settings or
-    contact your network administrator to make sure the proxy
+    If you are using a proxy server, check your proxy settings or
+    contact your network administrator to check that the proxy
     server is working. If you don't believe you should be using a
     proxy server, adjust your <ph name="LINK_START">$1<ex>&gt;a&lt;</ex></ph>proxy settings<ph name="LINK_END">$2<ex>&gt;/a&lt;</ex></ph>.
   </message>
@@ -3512,7 +3518,7 @@ Battery full
     You are currently offline
   </message>
   <message name="IDS_LOGIN_OFFLINE_MESSAGE" desc="An offline message that shows up in OOBE sign-in screen.">
-    Please connect to the Internet to signin into your Chromebook.
+    Please connect to the Internet to sign in to your Chromebook.
   </message>
   <message name="IDS_GUEST" desc="Shown in login panel for users that would like to browse without signing in.">
     Guest

@@ -4,32 +4,7 @@
  */
 
 #error-message {
-  min-height: 184px;
-  /* Screen has no controls but has padding at the last text message */
-  padding: 70px 17px 50px;
-  width: 688px;
-}
-
-#error-message-screen-title {
-  -webkit-margin-end: 60px;
-  -webkit-margin-start: 60px;
-  display: block;
-  font-weight: bold;
-  margin-bottom: 20px;
-}
-
-#error-message-body {
-  -webkit-margin-end: 60px;
-  -webkit-margin-start: 60px;
-  display: block;
-}
-
-#captive-portal-proxy-message-text {
-  margin-top: 20px;
-}
-
-#captive-portal-network-select-text {
-  margin-top: 20px;
+  min-width: 650px;
 }
 
 .show-with-proxy-error,
@@ -50,12 +25,53 @@
   display: block;
 }
 
-.show-captive-portal-error .dont-show-with-captive-portal-error {
-  display: none;
+#oobe.error-message #step-logo {
+  z-index: 1;
 }
 
-#error-guest-signin,
-#error-offline-login {
-  -webkit-margin-start: 60px;
-  margin-bottom: 21px;
+.error-header {
+  background: -webkit-linear-gradient(rgba(255,255,255,0.99),
+                                      rgba(255,255,255,0.97));
+  border-bottom: 1px solid #eee;
+  padding: 71px 20px 50px;
+  text-align: center;
 }
+
+.error-icon {
+  -webkit-margin-after: 40px;
+}
+
+.error-title {
+  color: #606060;
+  font-size: 15px;
+}
+
+.error-body {
+  background: -webkit-linear-gradient(rgba(255,255,255,0.97),
+                                      rgba(255,255,255,0.95));
+  padding: 20px 20px 20px;
+}
+
+.error-message-paragraph {
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.error-message-paragraph {
+  -webkit-margin-before: 20px;
+}
+
+.error-message-paragraph a {
+  color: rgb(17,85,204);
+  text-decoration: none;
+}
+
+#offline-network-control {
+  -webkit-align-items: center;
+  display: -webkit-flex;
+}
+
+.offline-network-list-label {
+  -webkit-margin-end: 10px;
+}
+

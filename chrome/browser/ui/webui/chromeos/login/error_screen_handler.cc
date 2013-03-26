@@ -147,8 +147,8 @@ void ErrorScreenHandler::RegisterMessages() {
 
 void ErrorScreenHandler::GetLocalizedStrings(
     base::DictionaryValue* localized_strings) {
-  localized_strings->SetString("offlineMessageTitle",
-      l10n_util::GetStringUTF16(IDS_LOGIN_OFFLINE_TITLE));
+  localized_strings->SetString("proxyErrorTitle",
+      l10n_util::GetStringUTF16(IDS_LOGIN_PROXY_ERROR_TITLE));
   localized_strings->SetString("offlineMessageBody",
       l10n_util::GetStringUTF16(IDS_LOGIN_OFFLINE_MESSAGE));
   localized_strings->SetString("captivePortalTitle",

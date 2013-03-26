@@ -4,25 +4,14 @@
  */
 
 #tpm-error-message {
-  height: 570px;
-  /* Screen has no controls but has padding at the last text message */
-  padding: 70px 17px 50px;
-  width: 485px;
+  min-width: 650px;
 }
 
-#tpm-error-message-body {
-  color: #606060;
-  margin: 60px 50px;
+#oobe.tpm-error-message #step-logo {
+  z-index: 1;
 }
 
-#tmp-error-text,
-#tmp-error-reboot-text {
-  margin-top: 15px;
+#tpm-error-message-controls {
+  text-align: end;
 }
 
-#tpm-error-icon {
-  background: url(chrome://theme/IDR_CRITICAL_ERROR) no-repeat center center;
-  height: 130px;
-  margin-top: 45px;
-  width: 351px; /* tpm-error-message-body content width */
-}

@@ -69,16 +69,12 @@ button:not(.custom-appearance) {
   -webkit-box-align: center;
   -webkit-box-pack: center;
   -webkit-perspective: 600px;
-  bottom: 41px;  /* Leave space for the header bar */
+  bottom: 48px;  /* Leave space for the header bar */
   display: -webkit-box;
   left: 0;
   position: absolute;
   right: 0;
   top: 0;
-}
-
-#oobe {
-  margin-top: 40px;  /* Compensate bottom header to center content. */
 }
 
 #inner-container {
@@ -96,14 +92,12 @@ button:not(.custom-appearance) {
 #oobe.enrollment #inner-container,
 #oobe.eula #inner-container,
 #oobe.gaia-signin #inner-container,
-#oobe.error-message #inner-container,
 #oobe.oauth-enrollment #inner-container,
 #oobe.reset #inner-container,
 #oobe.update #inner-container,
 #oobe.user-image #inner-container,
 #oobe.managed-user-creation-dialog #inner-container,
 #oobe.managed-user-creation-flow #inner-container,
-#oobe.tpm-error-message #inner-container,
 #oobe.password-changed #inner-container,
 #oobe.terms-of-service #inner-container,
 #oobe.wrong-hwid #inner-container {
@@ -112,6 +106,14 @@ button:not(.custom-appearance) {
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3),
               0 4px 23px 5px rgba(0, 0, 0, 0.2),
               0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+#oobe.error-message #inner-container,
+#oobe.tpm-error-message #inner-container {
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3),
+              0 4px 23px 5px rgba(0, 0, 0, 0.2),
+              0 2px 6px rgba(0, 0, 0, 0.15);
+
 }
 
 /* Only play this animation when 'down' class is removed. */
@@ -1071,7 +1073,7 @@ body.login-display #inner-container {
 }
 
 body.login-display #progress-dots {
-  visibility: hidden;
+  display: none;
 }
 
 span.bold {
@@ -1088,10 +1090,6 @@ span.bold {
       0 0 4px rgba(0,0,0,.6),
       0 1px 2px rgba(0,0,0,.8),
       0 -1px 2px rgba(0,0,0,1);
-}
-
-#offline-network-control {
-  margin-left: 60px;
 }
 
 #notification-area {

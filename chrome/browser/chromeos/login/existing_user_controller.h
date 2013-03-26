@@ -176,11 +176,8 @@ class ExistingUserController : public LoginDisplay::Delegate,
   // Shows "reset device" screen.
   void ShowResetScreen();
 
-  // Shows "critical TPM error" screen and starts reboot timer.
-  void ShowTPMErrorAndScheduleReboot();
-
-  // Reboot timer handler.
-  void OnRebootTimeElapsed();
+  // Shows "critical TPM error" screen.
+  void ShowTPMError();
 
   // Invoked to complete login. Login might be suspended if auto-enrollment
   // has to be performed, and will resume once auto-enrollment completes.

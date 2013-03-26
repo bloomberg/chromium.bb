@@ -403,12 +403,12 @@ void SigninScreenHandler::GetLocalizedStrings(
           IDS_LOGIN_POD_OWNER_USER));
   localized_strings->SetString("removeUser",
       l10n_util::GetStringUTF16(IDS_LOGIN_POD_REMOVE_USER));
-  localized_strings->SetString("errorTpmFailure",
-      l10n_util::GetStringUTF16(IDS_LOGIN_ERROR_TPM_FAILURE));
+  localized_strings->SetString("errorTpmFailureTitle",
+      l10n_util::GetStringUTF16(IDS_LOGIN_ERROR_TPM_FAILURE_TITLE));
   localized_strings->SetString("errorTpmFailureReboot",
-      l10n_util::GetStringFUTF16(
-          IDS_LOGIN_ERROR_TPM_FAILURE_REBOOT,
-          l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME)));
+      l10n_util::GetStringUTF16(IDS_LOGIN_ERROR_TPM_FAILURE_REBOOT));
+  localized_strings->SetString("errorTpmFailureRebootButton",
+      l10n_util::GetStringUTF16(IDS_LOGIN_ERROR_TPM_FAILURE_REBOOT_BUTTON));
   localized_strings->SetString("disabledAddUserTooltip",
       l10n_util::GetStringUTF16(
           g_browser_process->browser_policy_connector()->IsEnterpriseManaged() ?
@@ -792,6 +792,9 @@ void SigninScreenHandler::RegisterMessages() {
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("offlineLogin",
       base::Bind(&SigninScreenHandler::HandleOfflineLogin,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("rebootSystem",
+      base::Bind(&SigninScreenHandler::HandleRebootSystem,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("showAddUser",
       base::Bind(&SigninScreenHandler::HandleShowAddUser,
@@ -1257,12 +1260,7 @@ void SigninScreenHandler::HandleOfflineLogin(const base::ListValue* args) {
 }
 
 void SigninScreenHandler::HandleShutdownSystem(const base::ListValue* args) {
-#if defined(USE_AURA)
-  // Display the shutdown animation before actually requesting shutdown.
   ash::Shell::GetInstance()->session_state_controller()->RequestShutdown();
-#else
-  DBusThreadManager::Get()->GetPowerManagerClient()->RequestShutdown();
-#endif
 }
 
 void SigninScreenHandler::HandleLoadWallpaper(const base::ListValue* args) {
@@ -1276,6 +1274,10 @@ void SigninScreenHandler::HandleLoadWallpaper(const base::ListValue* args) {
   }
 
   delegate_->LoadWallpaper(email);
+}
+
+void SigninScreenHandler::HandleRebootSystem(const base::ListValue* args) {
+  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart();
 }
 
 void SigninScreenHandler::HandleRemoveUser(const base::ListValue* args) {

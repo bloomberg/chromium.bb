@@ -439,10 +439,6 @@ cr.define('cr.ui.login', function() {
       var currentScreen = $(currentScreenId);
       this.updateScreenSize(currentScreen);
 
-      // This screen is a special case as it's not registered with the rest of
-      // the screens.
-      login.ErrorMessageScreen.updateLocalizedContent();
-
       // Trigger network drop-down to reload its state
       // so that strings are reloaded.
       // Will be reloaded if drowdown is actually shown.

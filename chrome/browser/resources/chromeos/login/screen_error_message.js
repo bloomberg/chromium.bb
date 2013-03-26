@@ -103,6 +103,7 @@ cr.define('login', function() {
       $('error-offline-login-link').onclick = function() {
         chrome.send('offlineLogin');
       };
+      this.onContentChange_();
     },
 
     /**
@@ -123,6 +124,15 @@ cr.define('login', function() {
     },
 
     /**
+     * Method called after content of the screen changed.
+     * @private
+     */
+    onContentChange_: function() {
+      if (Oobe.getInstance().currentScreen === this)
+        Oobe.getInstance().updateScreenSize(this);
+    },
+
+    /**
       * Sets current state of the error screen.
       * @param {string} state New state of the error screen.
       * @private
@@ -137,6 +147,7 @@ cr.define('login', function() {
           this.classList.remove(states[i]);
       }
       this.classList.add(state);
+      this.onContentChange_();
     },
 
     /**
@@ -145,8 +156,6 @@ cr.define('login', function() {
      */
     showProxyError_: function() {
       this.setState_(SCREEN_STATE.PROXY_ERROR);
-      if (Oobe.getInstance().currentScreen === this)
-        Oobe.getInstance().updateScreenSize(this);
     },
 
     /**
@@ -157,18 +166,14 @@ cr.define('login', function() {
     showCaptivePortalError_: function(network) {
       $(CURRENT_NETWORK_NAME_ID).textContent = network;
       this.setState_(SCREEN_STATE.CAPTIVE_PORTAL_ERROR);
-      if (Oobe.getInstance().currentScreen === this)
-        Oobe.getInstance().updateScreenSize(this);
     },
 
     /**
-     * Prepares error screen to show gaia loading timeout error.
-     * @private
-     */
+    * Prepares error screen to show gaia loading timeout error.
+    * @private
+    */
     showTimeoutError_: function() {
       this.setState_(SCREEN_STATE.TIMEOUT_ERROR);
-      if (Oobe.getInstance().currentScreen === this)
-        Oobe.getInstance().updateScreenSize(this);
     },
 
     /**
@@ -177,8 +182,6 @@ cr.define('login', function() {
      */
     showOfflineError_: function() {
       this.setState_(SCREEN_STATE.OFFLINE_ERROR);
-      if (Oobe.getInstance().currentScreen === this)
-        Oobe.getInstance().updateScreenSize(this);
     },
 
     /**
@@ -187,6 +190,7 @@ cr.define('login', function() {
      */
     allowGuestSignin_: function(allowed) {
       this.classList[allowed ? 'add' : 'remove']('allow-guest-signin');
+      this.onContentChange_();
     },
 
     /**
@@ -195,6 +199,7 @@ cr.define('login', function() {
      */
     allowOfflineLogin_: function(allowed) {
       this.classList[allowed ? 'add' : 'remove']('allow-offline-login');
+      this.onContentChange_();
     },
   };
 

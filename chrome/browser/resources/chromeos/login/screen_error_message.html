@@ -1,33 +1,42 @@
 <div id="error-message" class="step hidden show-offline-error">
   <div class="step-contents">
-    <div id="error-message-screen-title">
-      <span id="captive-portal-title" i18n-content="captivePortalTitle"
-          class="show-with-captive-portal-error show-with-proxy-error"></span>
-      <span id="error-message-title" i18n-content="offlineMessageTitle"
-          class="show-with-offline-error show-with-timeout-error"></span>
-    </div>
-    <div id="error-message-body">
-      <span id="offline-message-text" i18n-content="offlineMessageBody"
-          class="show-with-offline-error show-with-timeout-error"></span>
-      <div id="captive-portal-message-text"
-          class="show-with-captive-portal-error"></div>
-      <div id="captive-portal-proxy-message-text"
-          class="show-with-captive-portal-error show-with-timeout-error"></div>
-      <div id="proxy-message-text"
-          class="show-with-proxy-error"></div>
-    </div>
-    <div id="offline-network-control" class="control-with-label">
-      <label for="offline-networks-list-dropdown" i18n-content="selectNetwork"
-          class="flexible-label dont-show-with-captive-portal-error"></label>
-      <label for="offline-networks-list-dropdown"
-          i18n-content="selectAnotherNetwork"
-          class="flexible-label show-with-captive-portal-error"></label>
-      <div class="menu-area">
-        <div id="offline-networks-list" class="menu-control">
-        </div>
+    <div class="error-header">
+      <img alt class="error-icon" src="chrome://theme/IDR_NETWORK_ERROR">
+      <div id="captive-portal-title" i18n-content="captivePortalTitle"
+          class="error-title show-with-captive-portal-error
+              show-with-offline-error"></div>
+      <div id="proxy-error-title" i18n-content="proxyErrorTitle"
+          class="error-title show-with-proxy-error show-with-timeout-error">
       </div>
     </div>
-    <div id="error-guest-signin" class="guest-signin"></div>
-    <div id="error-offline-login" class="offline-login"></div>
+    <div class="error-body">
+      <div id="offline-message-text" i18n-content="offlineMessageBody"
+          class="error-message-paragraph show-with-offline-error
+              show-with-timeout-error"></div>
+      <div id="captive-portal-message-text"
+          class="error-message-paragraph show-with-captive-portal-error"></div>
+      <div id="captive-portal-proxy-message-text"
+          class="error-message-paragraph show-with-captive-portal-error
+              show-with-timeout-error"></div>
+      <div id="proxy-message-text"
+          class="error-message-paragraph show-with-proxy-error"></div>
+      <div id="offline-network-control" class="error-message-paragraph">
+        <label for="offline-networks-list-dropdown" i18n-content="selectNetwork"
+            class="offline-network-list-label show-with-proxy-error
+                show-with-offline-error show-with-timeout-error"></label>
+        <label for="offline-networks-list-dropdown"
+            i18n-content="selectAnotherNetwork"
+            class="offline-network-list-label show-with-captive-portal-error">
+        </label>
+        <div class="menu-area">
+          <div id="offline-networks-list" class="menu-control"></div>
+        </div>
+      </div>
+      <div id="error-guest-signin" class="error-message-paragraph guest-signin">
+      </div>
+      <div id="error-offline-login"
+          class="error-message-paragraph offline-login"></div>
+    </div>
   </div>
 </div>
+
