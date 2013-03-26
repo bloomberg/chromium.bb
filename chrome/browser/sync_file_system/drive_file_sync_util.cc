@@ -56,7 +56,15 @@ SyncStatusCode GDataErrorCodeToSyncStatusCode(
     case google_apis::GDATA_NO_SPACE:
       return SYNC_FILE_ERROR_NO_SPACE;
   }
-  NOTREACHED();
+
+  // There's a case where DriveService layer returns GDataErrorCode==-1
+  // when network is unavailable. (http://crbug.com/223042)
+  // TODO(kinuko,nhiroki): We should identify from where this undefined error
+  // code is coming.
+  if (error == -1)
+    return SYNC_STATUS_NETWORK_ERROR;
+
+  LOG(WARNING) << "Got unexpected error: " << error;
   return SYNC_STATUS_FAILED;
 }
 
