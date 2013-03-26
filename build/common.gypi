@@ -543,18 +543,12 @@
         # linux_use_gold_binary: whether to use the binary checked into
         # third_party/gold.  Gold is not used for 32-bit linux builds
         # as it runs out of address space.
+        # linux_use_gold_flags: whether to use build flags that rely on gold.
         ['OS=="linux" and (target_arch=="x64" or target_arch=="arm")', {
           'linux_use_gold_binary%': 1,
-        }, {
-          'linux_use_gold_binary%': 0,
-        }],
-
-        # linux_use_gold_flags: whether to use build flags that rely on gold.
-        # On by default for x64 Linux.  Temporarily off for ChromeOS as
-        # it failed on a buildbot.
-        ['OS=="linux" and target_arch=="x64" and chromeos==0', {
           'linux_use_gold_flags%': 1,
         }, {
+          'linux_use_gold_binary%': 0,
           'linux_use_gold_flags%': 0,
         }],
 
