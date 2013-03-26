@@ -145,6 +145,20 @@ class MediaGalleriesPrivateEjectDeviceFunction
   void HandleResponse(chrome::StorageMonitor::EjectStatus status);
 };
 
+// Implements the chrome.mediaGalleriesPrivate.getHandlers method.
+class MediaGalleriesPrivateGetHandlersFunction
+    : public AsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("mediaGalleriesPrivate.getHandlers",
+                             MEDIAGALLERIESPRIVATE_GETHANDLERS);
+
+ protected:
+  virtual ~MediaGalleriesPrivateGetHandlersFunction();
+
+  // AsyncExtensionFunction overrides.
+  virtual bool RunImpl() OVERRIDE;
+};
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_MEDIA_GALLERIES_PRIVATE_MEDIA_GALLERIES_PRIVATE_API_H_

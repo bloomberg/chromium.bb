@@ -6,7 +6,7 @@
 // systeminfo.storage API in M24.
 
 namespace mediaGalleriesPrivate {
-    // A dictionary that describes an attached device.
+  // A dictionary that describes an attached device.
   [inline_doc] dictionary DeviceAttachmentDetails {
     // The name of the device.
     DOMString deviceName;
@@ -63,6 +63,23 @@ namespace mediaGalleriesPrivate {
 
   callback EjectDeviceCallback = void (EjectDeviceResultCode result);
 
+  // A dictionary that describes a media galleries handler.
+  [inline_doc] dictionary MediaGalleriesHandler {
+    // Unique action id per extension.
+    DOMString id;
+
+    // ID of the extension handling this handler.
+    DOMString extensionId;
+
+    // Localized title describing the action.
+    DOMString title;
+
+    // Url of the icon.
+    DOMString iconUrl;
+  };
+
+  callback GetHandlersCallback = void (MediaGalleriesHandler[] handlers);
+
   interface Functions {
     static void addGalleryWatch(DOMString galleryId,
                                 AddGalleryWatchCallback callback);
@@ -70,5 +87,6 @@ namespace mediaGalleriesPrivate {
     static void getAllGalleryWatch(GetAllGalleryWatchCallback callback);
     static void removeAllGalleryWatch();
     static void ejectDevice(DOMString deviceId, EjectDeviceCallback callback);
+    static void getHandlers(GetHandlersCallback callback);
   };
 };
