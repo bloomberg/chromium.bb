@@ -164,7 +164,7 @@ DirectoryItem.prototype.decorate = function(
         volumeManager.unmount(path, function() {}, function() {});
       }.bind(this));
 
-  if ('expanded' in parentDirItem || parentDirItem.expanded)
+  if (parentDirItem.expanded)
     this.updateSubDirectories_();
 };
 
@@ -268,6 +268,13 @@ DirectoryTree.decorate = function(el, directoryModel) {
 
 DirectoryTree.prototype = {
   __proto__: cr.ui.Tree.prototype,
+
+  // DirectoryTree is always expanded.
+  get expanded() { return true; },
+  /**
+   * @param {boolean} value Not used.
+   */
+  set expanded(value) {}
 };
 
 /**
