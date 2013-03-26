@@ -150,7 +150,8 @@ class RenderWidgetHostViewAndroid : public RenderWidgetHostViewBase {
                                const gfx::SizeF& content_size,
                                const gfx::SizeF& viewport_size,
                                const gfx::Vector2dF& controls_offset,
-                               const gfx::Vector2dF& content_offset) OVERRIDE;
+                               const gfx::Vector2dF& content_offset,
+                               float overdraw_bottom_height) OVERRIDE;
   virtual void ShowDisambiguationPopup(const gfx::Rect& target_rect,
                                        const SkBitmap& zoomed_bitmap) OVERRIDE;
 

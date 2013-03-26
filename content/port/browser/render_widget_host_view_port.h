@@ -309,7 +309,8 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView,
                                const gfx::SizeF& content_size,
                                const gfx::SizeF& viewport_size,
                                const gfx::Vector2dF& controls_offset,
-                               const gfx::Vector2dF& content_offset) = 0;
+                               const gfx::Vector2dF& content_offset,
+                               float overdraw_bottom_height) = 0;
   virtual void HasTouchEventHandlers(bool need_touch_events) = 0;
 #endif
 

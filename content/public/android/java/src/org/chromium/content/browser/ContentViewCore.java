@@ -1934,7 +1934,8 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
             float pageScaleFactor, float minPageScaleFactor, float maxPageScaleFactor,
             float contentWidth, float contentHeight,
             float viewportWidth, float viewportHeight,
-            float controlsOffsetYCss, float contentOffsetYCss) {
+            float controlsOffsetYCss, float contentOffsetYCss,
+            float overdrawBottomHeightCss) {
 
         // Adjust contentWidth/Height to be always at least as big as
         // the actual viewport (as set by onSizeChanged).
@@ -2001,7 +2002,9 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
         final float deviceScale = mRenderCoordinates.getDeviceScaleFactor();
         final float controlsOffsetPix = controlsOffsetYCss * deviceScale;
         final float contentOffsetYPix = contentOffsetYCss * deviceScale;
-        getContentViewClient().onOffsetsForFullscreenChanged(controlsOffsetPix, contentOffsetYPix);
+        final float overdrawBottomHeightPix = overdrawBottomHeightCss * deviceScale;
+        getContentViewClient().onOffsetsForFullscreenChanged(
+                controlsOffsetPix, contentOffsetYPix, overdrawBottomHeightPix);
     }
 
     @SuppressWarnings("unused")

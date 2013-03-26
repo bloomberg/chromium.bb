@@ -404,7 +404,8 @@ void RenderWidgetHostViewGuest::UpdateFrameInfo(
     const gfx::SizeF& content_size,
     const gfx::SizeF& viewport_size,
     const gfx::Vector2dF& controls_offset,
-    const gfx::Vector2dF& content_offset) {
+    const gfx::Vector2dF& content_offset,
+    float overdraw_bottom_height) {
 }
 
 void RenderWidgetHostViewGuest::HasTouchEventHandlers(bool need_touch_events) {

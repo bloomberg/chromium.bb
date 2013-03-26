@@ -1608,7 +1608,8 @@ bool RenderWidgetHostImpl::OnSwapCompositorFrame(
         frame->metadata.root_layer_size,
         frame->metadata.viewport_size,
         frame->metadata.location_bar_offset,
-        frame->metadata.location_bar_content_translation);
+        frame->metadata.location_bar_content_translation,
+        frame->metadata.overdraw_bottom_height);
 #endif
     view_->OnSwapCompositorFrame(frame.Pass());
   } else {

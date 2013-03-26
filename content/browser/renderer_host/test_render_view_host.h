@@ -147,7 +147,8 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
                                const gfx::SizeF& content_size,
                                const gfx::SizeF& viewport_size,
                                const gfx::Vector2dF& controls_offset,
-                               const gfx::Vector2dF& content_offset) OVERRIDE {}
+                               const gfx::Vector2dF& content_offset,
+                               float overdraw_bottom_height) OVERRIDE {}
   virtual void HasTouchEventHandlers(bool need_touch_events) OVERRIDE {}
 #elif defined(OS_WIN) && !defined(USE_AURA)
   virtual void WillWmDestroy() OVERRIDE;

@@ -238,7 +238,8 @@ class ContentViewCoreImpl : public ContentViewCore,
                        const gfx::SizeF& content_size,
                        const gfx::SizeF& viewport_size,
                        const gfx::Vector2dF& controls_offset,
-                       const gfx::Vector2dF& content_offset);
+                       const gfx::Vector2dF& content_offset,
+                       float overdraw_bottom_height);
 
   void UpdateImeAdapter(int native_ime_adapter, int text_input_type,
                         const std::string& text,

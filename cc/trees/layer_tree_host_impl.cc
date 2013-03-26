@@ -942,6 +942,7 @@ CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() const {
         gfx::Vector2dF(0.f, top_controls_manager_->controls_top_offset());
     metadata.location_bar_content_translation =
         gfx::Vector2dF(0.f, top_controls_manager_->content_top_offset());
+    metadata.overdraw_bottom_height = overdraw_bottom_height_;
   }
 
   if (!RootScrollLayer())

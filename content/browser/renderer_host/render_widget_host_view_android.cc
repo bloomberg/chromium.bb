@@ -508,9 +508,9 @@ void RenderWidgetHostViewAndroid::OnSwapCompositorFrame(
   gfx::Vector2dF offset;
   if (texture_size.GetArea() > 0)
     offset = frame->metadata.location_bar_content_translation;
+  offset.set_y(offset.y() + frame->metadata.overdraw_bottom_height);
   gfx::SizeF content_size(texture_size.width() - offset.x() * dp2px,
                           texture_size.height() - offset.y() * dp2px);
-
   BuffersSwapped(frame->gl_frame_data->mailbox,
                  texture_size,
                  content_size,
@@ -737,12 +737,14 @@ void RenderWidgetHostViewAndroid::UpdateFrameInfo(
     const gfx::SizeF& content_size,
     const gfx::SizeF& viewport_size,
     const gfx::Vector2dF& controls_offset,
-    const gfx::Vector2dF& content_offset) {
+    const gfx::Vector2dF& content_offset,
+    float overdraw_bottom_height) {
   if (content_view_core_) {
     // All offsets and sizes are in CSS pixels.
     content_view_core_->UpdateFrameInfo(
         scroll_offset, page_scale_factor, page_scale_factor_limits,
-        content_size, viewport_size, controls_offset, content_offset);
+        content_size, viewport_size, controls_offset, content_offset,
+        overdraw_bottom_height);
   }
 }
 
