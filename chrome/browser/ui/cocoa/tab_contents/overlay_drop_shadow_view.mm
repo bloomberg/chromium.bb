@@ -2,28 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/tab_contents/overlay_separator_view.h"
+#import "chrome/browser/ui/cocoa/tab_contents/overlay_drop_shadow_view.h"
 
-#import "chrome/browser/ui/cocoa/nsview_additions.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 
-@implementation OverlayTopSeparatorView
-
-+ (CGFloat)preferredHeight {
-  return 1;
-}
-
-- (void)drawRect:(NSRect)rect {
-  NSRect separatorRect = [self bounds];
-  separatorRect.size.height = [self cr_lineWidth];
-  [[self strokeColor] set];
-  NSRectFillUsingOperation(separatorRect, NSCompositeSourceOver);
-}
-
-@end
-
-@implementation OverlayBottomSeparatorView
+@implementation OverlayDropShadowView
 
 + (CGFloat)preferredHeight {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();

@@ -6,7 +6,6 @@
 
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "chrome/common/url_constants.h"
@@ -71,22 +70,21 @@ IN_PROC_BROWSER_TEST_F(DevToolsControllerTest, ViewSize) {
   NSView* dev_tools_view = [[container_view subviews] lastObject];
   CGFloat width = NSWidth([[controller() splitView] bounds]);
   CGFloat height = NSHeight([[controller() splitView] bounds]);
-  CGFloat offset = [controller() topContentOffset];
+
+  SetDockSide(DEVTOOLS_DOCK_SIDE_BOTTOM);
+  EXPECT_EQ(width, NSWidth([dev_tools_view bounds]));
+
+  SetDockSide(DEVTOOLS_DOCK_SIDE_RIGHT);
+  EXPECT_EQ(height, NSHeight([dev_tools_view bounds]));
+
+  CGFloat offset = 50;
+  [controller() setTopContentOffset:offset];
 
   SetDockSide(DEVTOOLS_DOCK_SIDE_BOTTOM);
   EXPECT_EQ(width, NSWidth([dev_tools_view bounds]));
 
   SetDockSide(DEVTOOLS_DOCK_SIDE_RIGHT);
   EXPECT_EQ(height - offset, NSHeight([dev_tools_view bounds]));
-
-  CGFloat new_offset = 50;
-  [controller() setTopContentOffset:new_offset];
-
-  SetDockSide(DEVTOOLS_DOCK_SIDE_BOTTOM);
-  EXPECT_EQ(width, NSWidth([dev_tools_view bounds]));
-
-  SetDockSide(DEVTOOLS_DOCK_SIDE_RIGHT);
-  EXPECT_EQ(height - new_offset, NSHeight([dev_tools_view bounds]));
 }
 
 // Verify that the dev tool's web view is layed out correctly when docked to the
@@ -115,19 +113,4 @@ IN_PROC_BROWSER_TEST_F(DevToolsControllerTest, WebViewLayout) {
   [controller() setTopContentOffset:new_offset];
   EXPECT_EQ(height - new_offset, NSHeight([web_view bounds]));
   EXPECT_EQ(0, NSMinY([web_view bounds]));
-}
-
-// Verify that the dev tools undocked window is layed out correctly.
-IN_PROC_BROWSER_TEST_F(DevToolsControllerTest, UndockedOffset) {
-  BrowserList* browser_list =
-      BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_NATIVE);
-  EXPECT_EQ(1u, browser_list->size());
-  SetDockSide(DEVTOOLS_DOCK_SIDE_UNDOCKED);
-  EXPECT_EQ(2u, browser_list->size());
-
-  Browser* dev_tools_browser = browser_list->get(1);
-  BrowserWindowController* window_controller =
-      [BrowserWindowController browserWindowControllerForWindow:
-              dev_tools_browser->window()->GetNativeWindow()];
-  EXPECT_EQ(0.0, [[window_controller devToolsController] topContentOffset]);
 }

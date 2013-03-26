@@ -7,7 +7,7 @@
 #include "base/mac/bundle_locations.h"
 #include "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "chrome/browser/ui/cocoa/tab_contents/instant_overlay_controller_mac.h"
-#include "chrome/browser/ui/cocoa/tab_contents/overlay_separator_view.h"
+#include "chrome/browser/ui/cocoa/tab_contents/overlay_drop_shadow_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 
@@ -15,7 +15,6 @@
 - (void)viewDidResize:(NSNotification*)note;
 - (void)layoutViews;
 - (CGFloat)overlayHeightInPixels;
-- (BOOL)shouldShowTopSeparator;
 @end
 
 @implementation OverlayableContentsController
@@ -42,9 +41,6 @@
 
     instantOverlayController_.reset(
         new InstantOverlayControllerMac(browser, windowController, self));
-    topSeparatorView_.reset(
-        [[OverlayTopSeparatorView alloc] initWithFrame:NSZeroRect]);
-    [[self view] addSubview:topSeparatorView_];
   }
   return self;
 }
@@ -94,7 +90,7 @@
   if (drawDropShadow_) {
     if (!dropShadowView_) {
       dropShadowView_.reset(
-          [[OverlayBottomSeparatorView alloc] initWithFrame:NSZeroRect]);
+          [[OverlayDropShadowView alloc] initWithFrame:NSZeroRect]);
       [[self view] addSubview:dropShadowView_];
     }
   } else {
@@ -152,39 +148,23 @@
 - (void)layoutViews {
   NSRect bounds = [[self view] bounds];
 
-  // Layout the separator at the top of the view.
-  NSRect separatorRect = bounds;
-  if ([self shouldShowTopSeparator])
-    separatorRect.size.height = [OverlayTopSeparatorView preferredHeight];
-  else
-    separatorRect.size.height = 0;
-  separatorRect.origin.y = NSMaxY(bounds) - NSHeight(separatorRect);
-  [topSeparatorView_ setFrame:separatorRect];
-
-  // Layout the overlay.
   if (overlayContents_) {
     NSRect overlayFrame = bounds;
     overlayFrame.size.height = [self overlayHeightInPixels];
-    overlayFrame.origin.y =
-        NSMinY([topSeparatorView_ frame]) - NSHeight(overlayFrame);
+    overlayFrame.origin.y = NSMaxY(bounds) - NSHeight(overlayFrame);
     [overlayContents_->GetView()->GetNativeView() setFrame:overlayFrame];
 
     if (dropShadowView_) {
       NSRect dropShadowFrame = bounds;
-      dropShadowFrame.size.height =
-          [OverlayBottomSeparatorView preferredHeight];
+      dropShadowFrame.size.height = [OverlayDropShadowView preferredHeight];
       dropShadowFrame.origin.y =
           NSMinY(overlayFrame) - NSHeight(dropShadowFrame);
       [dropShadowView_ setFrame:dropShadowFrame];
     }
   }
 
-  // Layout the active tab contents.
   NSRect activeFrame = bounds;
-  if (activeContainerOffset_)
-    activeFrame.size.height -= activeContainerOffset_;
-  else
-    activeFrame.size.height -= NSHeight([topSeparatorView_ frame]);
+  activeFrame.size.height -= activeContainerOffset_;
   if (!NSEqualRects(activeFrame, [activeContainer_ frame])) {
     [[activeContainer_ window] disableScreenUpdatesUntilFlush];
     [activeContainer_ setFrame:activeFrame];
@@ -192,28 +172,13 @@
 }
 
 - (CGFloat)overlayHeightInPixels {
-  CGFloat height =
-      NSHeight([[self view] bounds]) - NSHeight([topSeparatorView_ frame]);
+  CGFloat height = NSHeight([[self view] bounds]);
   switch (overlayHeightUnits_) {
     case INSTANT_SIZE_PERCENT:
       return std::min(height, (height * overlayHeight_) / 100);
     case INSTANT_SIZE_PIXELS:
       return std::min(height, overlayHeight_);
   }
-}
-
-- (BOOL)shouldShowTopSeparator {
-  // In presentation mode tab contents are flush with the top of the screen
-  // so there's no need for a separator.
-  if ([windowController_ inPresentationMode])
-    return NO;
-
-  if (![windowController_ hasToolbar])
-    return NO;
-
-  // Show a separator is the overlay or the tab contents will be shown right
-  // next to the omnibox.
-  return activeContainerOffset_ == 0 || overlayContents_;
 }
 
 @end
