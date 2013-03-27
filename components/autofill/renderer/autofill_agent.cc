@@ -152,6 +152,7 @@ AutofillAgent::AutofillAgent(
       has_shown_autofill_popup_for_current_edit_(false),
       did_set_node_text_(false),
       autocheckout_click_in_progress_(false),
+      is_whitelisted_for_autocheckout_(false),
       ignore_text_changes_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   render_view->GetWebView()->setAutofillClient(this);
@@ -185,6 +186,8 @@ bool AutofillAgent::OnMessageReceived(const IPC::Message& message) {
                         OnRequestAutocompleteResult)
     IPC_MESSAGE_HANDLER(AutofillMsg_FillFormsAndClick,
                         OnFillFormsAndClick)
+    IPC_MESSAGE_HANDLER(AutofillMsg_WhitelistedForAutocheckout,
+                        OnWhitelistedForAutocheckout)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -204,6 +207,7 @@ void AutofillAgent::DidFinishDocumentLoad(WebFrame* frame) {
     form_elements_.clear();
     has_more_forms = form_cache_.ExtractFormsAndFormElements(
         *frame, kRequiredAutofillFields, &forms, &form_elements_);
+    is_whitelisted_for_autocheckout_ = false;
   } else {
     form_cache_.ExtractForms(*frame, &forms);
   }
@@ -278,10 +282,7 @@ void AutofillAgent::ZoomLevelChanged() {
 }
 
 void AutofillAgent::FocusedNodeChanged(const WebKit::WebNode& node) {
-  // TODO(ahutter): Remove this hack once Autocheckout whitelisting info is
-  // pushed to the renderer.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableExperimentalFormFilling))
+  if (!is_whitelisted_for_autocheckout_)
     return;
 
   if (node.isNull() || !node.isElementNode())
@@ -770,6 +771,10 @@ void AutofillAgent::OnFillFormsAndClick(
     Send(new AutofillHostMsg_ClickFailed(routing_id(),
                                          MISSING_ADVANCE));
   }
+}
+
+void AutofillAgent::OnWhitelistedForAutocheckout() {
+  is_whitelisted_for_autocheckout_ = true;
 }
 
 void AutofillAgent::ClickFailed() {

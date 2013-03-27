@@ -139,6 +139,9 @@ class AutofillAgent : public content::RenderViewObserver,
   void OnFillFormsAndClick(const std::vector<FormData>& form_data,
                            const WebElementDescriptor& element_descriptor);
 
+  // Called when |topmost_frame_| is whitelisted for Autocheckout.
+  void OnWhitelistedForAutocheckout();
+
   // Called when clicking an Autocheckout proceed element fails to do anything.
   void ClickFailed();
 
@@ -249,6 +252,9 @@ class AutofillAgent : public content::RenderViewObserver,
   // Used to signal that we need to watch for loading failures in an
   // Autocheckout flow.
   bool autocheckout_click_in_progress_;
+
+  // Whether or not |topmost_frame_| is whitelisted for Autocheckout.
+  bool is_whitelisted_for_autocheckout_;
 
   // Whether or not to ignore text changes.  Useful for when we're committing
   // a composition when we are defocusing the WebView and we don't want to

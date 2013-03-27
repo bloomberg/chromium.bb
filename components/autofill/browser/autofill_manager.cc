@@ -453,10 +453,14 @@ void AutofillManager::OnFormsSeen(const std::vector<FormData>& forms,
   if (!host)
     return;
 
-  // If whitelisted URL, fetch all the forms.
-  if (has_more_forms && !GetAutocheckoutURLPrefix().empty()) {
-    host->Send(new AutofillMsg_GetAllForms(host->GetRoutingID()));
-    return;
+  if (!GetAutocheckoutURLPrefix().empty()) {
+    host->Send(
+        new AutofillMsg_WhitelistedForAutocheckout(host->GetRoutingID()));
+    // If whitelisted URL, fetch all the forms.
+    if (has_more_forms) {
+      host->Send(new AutofillMsg_GetAllForms(host->GetRoutingID()));
+      return;
+    }
   }
 
   autocheckout_manager_.OnFormsSeen();
