@@ -735,11 +735,9 @@ void BrowserPlugin::OnUpdateRect(
                                        params.scroll_rect,
                                        params.view_size);
   }
-  for (unsigned i = 0; i < params.copy_rects.size(); i++) {
-    backing_store_->PaintToBackingStore(params.bitmap_rect,
-                                        params.copy_rects,
-                                        current_damage_buffer_->memory());
-  }
+  backing_store_->PaintToBackingStore(params.bitmap_rect,
+                                      params.copy_rects,
+                                      current_damage_buffer_->memory());
 
   // Invalidate the container.
   // If the BrowserPlugin is scheduled to be deleted, then container_ will be
