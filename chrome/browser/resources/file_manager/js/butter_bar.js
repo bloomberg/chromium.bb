@@ -329,7 +329,7 @@ ButterBar.prototype.onCopyProgress_ = function(event) {
       break;
 
     default:
-      console.log('Unknown "copy-progress" event reason: ' + event.reason);
+      console.warn('Unknown "copy-progress" event reason: ' + event.reason);
   }
 };
 
@@ -375,6 +375,6 @@ ButterBar.prototype.onDelete_ = function(event) {
       break;
 
     default:
-      console.log('Unknown "delete" event reason: ' + event.reason);
+      console.warn('Unknown "delete" event reason: ' + event.reason);
   }
 };

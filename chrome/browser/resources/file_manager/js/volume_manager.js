@@ -244,7 +244,7 @@ VolumeManager.prototype.onMountCompleted_ = function(event) {
         cr.dispatchSimpleEvent(this, 'change');
       }.bind(this));
     } else {
-      console.log('No mount path');
+      console.warn('No mount path.');
       this.finishRequest_(requestKey, event.status);
     }
   } else if (event.eventType == 'unmount') {
@@ -252,14 +252,14 @@ VolumeManager.prototype.onMountCompleted_ = function(event) {
     this.validateMountPath_(mountPath);
     var status = event.status;
     if (status == VolumeManager.Error.PATH_UNMOUNTED) {
-      console.log('Volume already unmounted: ', mountPath);
+      console.warn('Volume already unmounted: ', mountPath);
       status = 'success';
     }
     var requestKey = this.makeRequestKey_('unmount', '', event.mountPath);
     var requested = requestKey in this.requests_;
     if (event.status == 'success' && !requested &&
         mountPath in this.mountedVolumes_) {
-      console.log('Mounted volume without a request: ', mountPath);
+      console.warn('Mounted volume without a request: ', mountPath);
       var e = new cr.Event('externally-unmounted');
       e.mountPath = mountPath;
       this.dispatchEvent(e);
@@ -489,8 +489,8 @@ VolumeManager.prototype.mount_ = function(url, mountType,
 
   chrome.fileBrowserPrivate.addMount(url, mountType, {},
                                      function(sourcePath) {
-    console.log('Mount request: url=' + url + '; mountType=' + mountType +
-                '; sourceUrl=' + sourcePath);
+    console.info('Mount request: url=' + url + '; mountType=' + mountType +
+                 '; sourceUrl=' + sourcePath);
     var requestKey = this.makeRequestKey_('mount', mountType, sourcePath);
     this.startRequest_(requestKey, successCallback, errorCallback);
   }.bind(this));
@@ -586,7 +586,6 @@ VolumeManager.prototype.validateError_ = function(error) {
  * @private
  */
 VolumeManager.prototype.validateMountPath_ = function(mountPath) {
-  console.log(mountPath);
   if (!/^\/(drive|drive_offline|Downloads)$/.test(mountPath) &&
       !/^\/((archive|removable|drive)\/[^\/]+)$/.test(mountPath))
     throw new Error('Invalid mount path: ', mountPath);

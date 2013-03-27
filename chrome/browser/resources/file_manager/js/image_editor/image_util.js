@@ -582,7 +582,7 @@ ImageUtil.ImageLoader.prototype.copyStrip_ = function(
     try {
       setTimeout(this.callback_, 0, context.canvas);
     } catch (e) {
-      console.log(e);
+      console.error(e);
     }
     this.callback_ = null;
   } else {

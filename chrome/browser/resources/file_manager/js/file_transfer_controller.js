@@ -218,14 +218,13 @@ FileTransferController.prototype = {
       files: dataTransfer.getData('fs/files')
     };
 
+    // Check if not moving to the same directory as the source one.
     if (!toMove || operationInfo.sourceDir != destinationPath) {
       var targetOnDrive = (PathUtil.getRootType(destinationPath) ===
                            RootType.DRIVE);
       this.copyManager_.paste(operationInfo,
                               destinationPath,
                               targetOnDrive);
-    } else {
-      console.log('Ignore move into the same folder');
     }
 
     return toMove ? 'move' : 'copy';

@@ -328,14 +328,13 @@ FileCopyManager.prototype.maybeScheduleCloseBackgroundPage_ = function() {
 };
 
 /**
- * Write to console.log on all the active FileManager windows.
- *
+ * Reports an error on all of the active Files.app's windows.
  * @private
  */
 FileCopyManager.prototype.log_ = function() {
   var windows = getContentWindows();
   for (var i = 0; i < windows.length; i++) {
-    windows[i].console.log.apply(windows[i].console, arguments);
+    windows[i].console.error.apply(windows[i].console, arguments);
   }
 };
 

@@ -1127,7 +1127,6 @@ DialogType.isModal = function(type) {
    */
   FileManager.prototype.onCopyManagerOperationComplete_ = function(event) {
     var currentPath = this.directoryModel_.getCurrentDirPath();
-    console.log(event);
     if (this.isOnDrive() && this.directoryModel_.isSearching())
       return;
 
@@ -1137,15 +1136,12 @@ DialogType.isModal = function(type) {
                                        entry.name.length - 1);
       return dirPath == currentPath;
     };
-    console.log(event);
-    console.log(event.reason);
     for (var i = 0; i < event.affectedEntries.length; i++) {
       var entry = event.affectedEntries[i];
       if (inCurrentDirectory(entry)) {
         this.directoryModel_.onEntryChanged(entry.name);
       } else if (event.reason == 'copied' && FileType.isImage(entry)) {
         // Preload a thumbnail if the new copied entry an image.
-        console.log('Preloading!');
         var metadata = entry.getMetadata(function(metadata) {
           var url = entry.toURL();
           var thumbnailLoader_ = new ThumbnailLoader(
@@ -2867,7 +2863,7 @@ DialogType.isModal = function(type) {
     for (var i = 0; i < selectedIndexes.length; i++) {
       var entry = dm.item(selectedIndexes[i]);
       if (!entry) {
-        console.log('Error locating selected file at index: ' + i);
+        console.error('Error locating selected file at index: ' + i);
         continue;
       }
 

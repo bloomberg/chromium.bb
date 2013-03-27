@@ -203,9 +203,6 @@ function reload() {
         return;
       }
       src = streaming.url;
-      console.log('Streaming: ' + src);
-    } else {
-      console.log('Playing local file: ' + src);
     }
 
     // Detach the previous video element, if exists.

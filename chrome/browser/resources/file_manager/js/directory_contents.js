@@ -521,7 +521,7 @@ DirectoryContentsDriveSearch.prototype.readNextChunk = function() {
   var searchCallback = (function(results, nextFeed) {
     // TODO(tbarzic): Improve error handling.
     if (!results) {
-      console.log('Drive search encountered an error');
+      console.error('Drive search encountered an error');
       this.lastChunkReceived();
       return;
     }

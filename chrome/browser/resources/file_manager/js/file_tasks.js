@@ -383,7 +383,6 @@ FileTasks.prototype.mountArchives_ = function(urls) {
   fm.resolveSelectResults_(urls, function(urls) {
     for (var index = 0; index < urls.length; ++index) {
       fm.volumeManager_.mountArchive(urls[index], function(mountPath) {
-        console.log('Mounted at: ', mountPath);
         tracker.stop();
         if (!tracker.hasChanged)
           fm.directoryModel_.changeDirectory(mountPath);

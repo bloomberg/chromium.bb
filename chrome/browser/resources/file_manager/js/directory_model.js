@@ -873,7 +873,7 @@ DirectoryModel.prototype.setupPath = function(path, opt_pathResolveCallback) {
   };
 
   var noParentDirectory = function(leafName, error) {
-    console.log('Can\'t resolve parent directory: ' + path, error);
+    console.warn('Can\'t resolve parent directory: ' + path, error);
     changeToDefault(leafName);
   };
 
@@ -1439,7 +1439,7 @@ FileWatcher.prototype.changeWatchedEntry = function(entry) {
         this.watchedDirectoryEntry_.toURL(),
         function(result) {
           if (!result) {
-            console.log('Failed to remove file watch');
+            console.error('Failed to remove file watch');
           }
         });
   }
@@ -1450,7 +1450,7 @@ FileWatcher.prototype.changeWatchedEntry = function(entry) {
         this.watchedDirectoryEntry_.toURL(),
         function(result) {
           if (!result) {
-            console.log('Failed to add file watch');
+            console.error('Failed to add file watch');
             if (this.watchedDirectoryEntry_ == entry)
               this.watchedDirectoryEntry_ = null;
           }

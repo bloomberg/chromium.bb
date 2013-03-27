@@ -132,7 +132,6 @@ Gallery.Item.prototype.saveToFile = function(
   var name = this.getFileName();
 
   var onSuccess = function(url) {
-    console.log('Saved from gallery', name);
     ImageUtil.metrics.recordEnum(ImageUtil.getMetricName('SaveResult'), 1, 2);
     ImageUtil.metrics.recordInterval(ImageUtil.getMetricName('SaveTime'));
     this.setUrl(url);
@@ -140,7 +139,7 @@ Gallery.Item.prototype.saveToFile = function(
   }.bind(this);
 
   function onError(error) {
-    console.log('Error saving from gallery', name, error);
+    console.error('Error saving from gallery', name, error);
     ImageUtil.metrics.recordEnum(ImageUtil.getMetricName('SaveResult'), 0, 2);
     if (opt_callback) opt_callback(false);
   }
@@ -215,7 +214,7 @@ Gallery.Item.prototype.rename = function(name, onSuccess, onExists) {
   if (oldName == newName) return;
 
   function onError() {
-    console.log('Rename error: "' + oldName + '" to "' + newName + '"');
+    console.error('Rename error: "' + oldName + '" to "' + newName + '"');
   }
 
   var onRenamed = function(entry) {
