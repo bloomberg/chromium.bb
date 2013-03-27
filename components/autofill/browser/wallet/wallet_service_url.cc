@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "base/metrics/field_trial.h"
 #include "components/autofill/common/autofill_switches.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "googleurl/src/gurl.h"
@@ -24,13 +25,19 @@ const char kSandboxWalletServiceUrl[] =
 const char kSandboxWalletSecureServiceUrl[] =
     "https://wallet-web.sandbox.google.com/";
 
+bool IsWalletProductionEnabled() {
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  return command_line.HasSwitch(switches::kWalletServiceUseProd) ||
+         base::FieldTrialList::FindFullName("WalletProductionService") == "Yes";
+}
+
 GURL GetWalletHostUrl() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   std::string wallet_service_hostname =
       command_line.GetSwitchValueASCII(switches::kWalletServiceUrl);
   if (!wallet_service_hostname.empty())
     return GURL(wallet_service_hostname);
-  if (command_line.HasSwitch(switches::kWalletServiceUseProd))
+  if (IsWalletProductionEnabled())
     return GURL(kProdWalletServiceUrl);
   return GURL(kSandboxWalletServiceUrl);
 }
@@ -49,7 +56,7 @@ GURL GetBaseSecureUrl() {
       command_line.GetSwitchValueASCII(switches::kWalletSecureServiceUrl);
   if (!wallet_secure_url.empty())
     return GURL(wallet_secure_url);
-  if (command_line.HasSwitch(switches::kWalletServiceUseProd))
+  if (IsWalletProductionEnabled())
     return GURL(kProdWalletServiceUrl);
   return GURL(kSandboxWalletSecureServiceUrl);
 }
@@ -90,7 +97,7 @@ GURL GetPassiveAuthUrl() {
 GURL GetEncryptionUrl() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   // TODO(ahutter): Stop checking these switches once we switch over to prod.
-  if (command_line.HasSwitch(switches::kWalletServiceUseProd) ||
+  if (IsWalletProductionEnabled() ||
       command_line.HasSwitch(switches::kWalletServiceUrl)) {
     return GetWalletHostUrl().Resolve(
         "online-secure/temporarydata/cvv?s7e=cvv");
@@ -103,7 +110,7 @@ GURL GetEncryptionUrl() {
 GURL GetEscrowUrl() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   // TODO(ahutter): Stop checking these switches once we switch over to prod.
-  if (command_line.HasSwitch(switches::kWalletServiceUseProd) ||
+  if (IsWalletProductionEnabled() ||
       command_line.HasSwitch(switches::kWalletServiceUrl)) {
     return GetBaseSecureUrl().Resolve("dehEfe?s7e=cardNumber%3Bcvv");
   } else {
