@@ -19,9 +19,9 @@ namespace {
 const char kHtmlFilename[] = "local-ntp.html";
 const char kJSFilename[] = "local-ntp.js";
 const char kCssFilename[] = "local-ntp.css";
-const char kCloseBarFilename[] = "images/close_bar.png";
-const char kCloseBarHoverFilename[] = "images/close_bar_hover.png";
-const char kCloseBarActiveFilename[] = "images/close_bar_active.png";
+const char kCloseBarFilename[] = "images/close_2.png";
+const char kCloseBarHoverFilename[] = "images/close_2_hover.png";
+const char kCloseBarActiveFilename[] = "images/close_2_active.png";
 
 }  // namespace
 
@@ -47,11 +47,11 @@ void LocalNtpSource::StartDataRequest(
   } else if (path == kCssFilename) {
     identifier = IDR_LOCAL_NTP_CSS;
   } else if (path == kCloseBarFilename) {
-    identifier = IDR_CLOSE_BAR;
+    identifier = IDR_CLOSE_2;
   } else if (path == kCloseBarHoverFilename) {
-    identifier = IDR_CLOSE_BAR_H;
+    identifier = IDR_CLOSE_2_H;
   } else if (path == kCloseBarActiveFilename) {
-    identifier = IDR_CLOSE_BAR_P;
+    identifier = IDR_CLOSE_2_P;
   } else {
     callback.Run(NULL);
     return;

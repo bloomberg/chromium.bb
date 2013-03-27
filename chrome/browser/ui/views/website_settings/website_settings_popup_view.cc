@@ -181,11 +181,11 @@ PopupHeaderView::PopupHeaderView(views::ButtonListener* close_button_listener)
       new views::ImageButton(close_button_listener);
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   close_button->SetImage(views::CustomButton::STATE_NORMAL,
-                         rb.GetImageNamed(IDR_CLOSE_BAR).ToImageSkia());
+                         rb.GetImageNamed(IDR_CLOSE_2).ToImageSkia());
   close_button->SetImage(views::CustomButton::STATE_HOVERED,
-                         rb.GetImageNamed(IDR_CLOSE_BAR_H).ToImageSkia());
+                         rb.GetImageNamed(IDR_CLOSE_2_H).ToImageSkia());
   close_button->SetImage(views::CustomButton::STATE_PRESSED,
-                         rb.GetImageNamed(IDR_CLOSE_BAR_P).ToImageSkia());
+                         rb.GetImageNamed(IDR_CLOSE_2_P).ToImageSkia());
   layout->AddView(close_button, 1, 1, views::GridLayout::TRAILING,
                   views::GridLayout::LEADING);
 

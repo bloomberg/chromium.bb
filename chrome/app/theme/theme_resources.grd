@@ -742,8 +742,8 @@
         <structure type="chrome_scaled_image" name="IDR_TABPOSE_CLOSE" file="mac/tabpose_close.png" />
       </if>
       <!-- Note: Tab close buttons are not traditional buttons.  Tab close buttons
-           fill a background with a color from the theme, tile IDR_TAB_CLOSE over it,
-           then apply IDR_TAB_CLOSE_MASK.  See chrome/browser/ui/views/tabs/tab.cc -->
+           fill a background with a color from the theme, tile IDR_CLOSE_1 over it,
+           then apply IDR_CLOSE_1_MASK.  See chrome/browser/ui/views/tabs/tab.cc -->
       <if expr="not pp_ifdef('toolkit_views') and not is_macosx">
         <structure type="chrome_scaled_image" name="IDR_TAB_ALPHA_LEFT" file="tab_alpha_left.png" />
         <structure type="chrome_scaled_image" name="IDR_TAB_ALPHA_RIGHT" file="tab_alpha_right.png" />
@@ -756,10 +756,10 @@
         <structure type="chrome_scaled_image" name="IDR_TAB_ALPHA_LEFT" file="mac/tab_alpha_left.png" />
         <structure type="chrome_scaled_image" name="IDR_TAB_ALPHA_RIGHT" file="mac/tab_alpha_right.png" />
       </if>
-      <structure type="chrome_scaled_image" name="IDR_TAB_CLOSE" file="common/tab_close_normal.png" />
-      <structure type="chrome_scaled_image" name="IDR_TAB_CLOSE_H" file="common/tab_close_hover.png" />
-      <structure type="chrome_scaled_image" name="IDR_TAB_CLOSE_MASK" file="common/tab_close_mask.png" />
-      <structure type="chrome_scaled_image" name="IDR_TAB_CLOSE_P" file="common/tab_close_pressed.png" />
+      <structure type="chrome_scaled_image" name="IDR_CLOSE_1" file="common/close_1.png" />
+      <structure type="chrome_scaled_image" name="IDR_CLOSE_1_H" file="common/close_1_hover.png" />
+      <structure type="chrome_scaled_image" name="IDR_CLOSE_1_MASK" file="common/close_1_mask.png" />
+      <structure type="chrome_scaled_image" name="IDR_CLOSE_1_P" file="common/close_1_pressed.png" />
       <structure type="chrome_scaled_image" name="IDR_TAB_DROP_DOWN" file="tab_drop_down.png" />
       <structure type="chrome_scaled_image" name="IDR_TAB_DROP_UP" file="tab_drop_up.png" />
       <if expr="not pp_ifdef('toolkit_views') and not is_macosx">

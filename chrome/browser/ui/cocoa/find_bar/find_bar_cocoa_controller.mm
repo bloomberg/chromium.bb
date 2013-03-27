@@ -8,6 +8,7 @@
 #include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
+#include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -129,13 +130,13 @@ const float kRightEdgeOffset = 25;
 }
 
 - (void)awakeFromNib {
-  [[closeButton_ cell] setImageID:IDR_CLOSE_BAR
+  [[closeButton_ cell] setImageID:IDR_CLOSE_1
                    forButtonState:image_button_cell::kDefaultState];
-  [[closeButton_ cell] setImageID:IDR_CLOSE_BAR_H
+  [[closeButton_ cell] setImageID:IDR_CLOSE_1_H
                    forButtonState:image_button_cell::kHoverState];
-  [[closeButton_ cell] setImageID:IDR_CLOSE_BAR_P
+  [[closeButton_ cell] setImageID:IDR_CLOSE_1_P
                    forButtonState:image_button_cell::kPressedState];
-  [[closeButton_ cell] setImageID:IDR_CLOSE_BAR
+  [[closeButton_ cell] setImageID:IDR_CLOSE_1
                    forButtonState:image_button_cell::kDisabledState];
 
   [findBarView_ setFrame:[self hiddenFindBarFrame]];

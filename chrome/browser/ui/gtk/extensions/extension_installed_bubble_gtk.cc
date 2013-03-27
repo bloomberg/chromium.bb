@@ -320,7 +320,7 @@ void ExtensionInstalledBubbleGtk::ShowInternal() {
   // Create and pack the close button.
   GtkWidget* close_column = gtk_vbox_new(FALSE, 0);
   gtk_box_pack_start(GTK_BOX(bubble_content), close_column, FALSE, FALSE, 0);
-  close_button_.reset(CustomDrawButton::CloseButton(theme_provider));
+  close_button_.reset(CustomDrawButton::CloseButtonBubble(theme_provider));
   g_signal_connect(close_button_->widget(), "clicked",
                    G_CALLBACK(OnButtonClick), this);
   gtk_box_pack_start(GTK_BOX(close_column), close_button_->widget(),

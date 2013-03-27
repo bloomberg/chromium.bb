@@ -16,6 +16,7 @@
 #import "chrome/browser/ui/cocoa/infobars/infobar_container_controller.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_gradient_view.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
+#include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
 #include "ui/gfx/image/image.h"
 
@@ -60,13 +61,13 @@ const float kAnimateCloseDuration = 0.12;
 - (void)awakeFromNib {
   DCHECK(delegate_);
 
-  [[closeButton_ cell] setImageID:IDR_CLOSE_BAR
+  [[closeButton_ cell] setImageID:IDR_CLOSE_1
                    forButtonState:image_button_cell::kDefaultState];
-  [[closeButton_ cell] setImageID:IDR_CLOSE_BAR_H
+  [[closeButton_ cell] setImageID:IDR_CLOSE_1_H
                    forButtonState:image_button_cell::kHoverState];
-  [[closeButton_ cell] setImageID:IDR_CLOSE_BAR_P
+  [[closeButton_ cell] setImageID:IDR_CLOSE_1_P
                    forButtonState:image_button_cell::kPressedState];
-  [[closeButton_ cell] setImageID:IDR_CLOSE_BAR
+  [[closeButton_ cell] setImageID:IDR_CLOSE_1
                    forButtonState:image_button_cell::kDisabledState];
 
   if (delegate_->GetIcon()) {

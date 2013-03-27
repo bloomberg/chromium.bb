@@ -489,7 +489,7 @@ void WebsiteSettingsPopupGtk::SetIdentityInfo(
   gtk_label_set_attributes(GTK_LABEL(identity_label), attributes);
   pango_attr_list_unref(attributes);
   gtk_box_pack_start(GTK_BOX(hbox), identity_label, FALSE, FALSE, 0);
-  close_button_.reset(CustomDrawButton::CloseButton(theme_service_));
+  close_button_.reset(CustomDrawButton::CloseButtonBubble(theme_service_));
   g_signal_connect(close_button_->widget(), "clicked",
                    G_CALLBACK(OnCloseButtonClickedThunk), this);
   gtk_box_pack_start(GTK_BOX(hbox), close_button_->widget(), FALSE, FALSE, 0);
