@@ -17,42 +17,21 @@ class Rect;
 
 namespace ui {
 class KeyEvent;
-class TextInputClient;
 }
 
 namespace views {
 
-class View;
-
-// A helper class providing functionalities shared among InputMethod
-// implementations.
-class VIEWS_EXPORT InputMethodBase : NON_EXPORTED_BASE(public InputMethod),
+// A helper that provides functionality shared by InputMethod implementations.
+class VIEWS_EXPORT InputMethodBase : public InputMethod,
                                      public FocusChangeListener {
  public:
   InputMethodBase();
   virtual ~InputMethodBase();
 
   // Overridden from InputMethod.
-  virtual void set_delegate(internal::InputMethodDelegate* delegate) OVERRIDE;
-
-  // If a derived class overrides this method, it should call parent's
-  // implementation first.
+  virtual void SetDelegate(internal::InputMethodDelegate* delegate) OVERRIDE;
   virtual void Init(Widget* widget) OVERRIDE;
-
-  // If a derived class overrides this method, it should call parent's
-  // implementation first, to make sure |widget_focused_| flag can be updated
-  // correctly.
-  virtual void OnFocus() OVERRIDE;
-
-  // If a derived class overrides this method, it should call parent's
-  // implementation first, to make sure |widget_focused_| flag can be updated
-  // correctly.
-  virtual void OnBlur() OVERRIDE;
-
-  // If a derived class overrides this method, it should call parent's
-  // implementation.
   virtual void OnTextInputTypeChanged(View* view) OVERRIDE;
-
   virtual ui::TextInputClient* GetTextInputClient() const OVERRIDE;
   virtual ui::TextInputType GetTextInputType() const OVERRIDE;
   virtual bool IsMock() const OVERRIDE;
@@ -62,24 +41,18 @@ class VIEWS_EXPORT InputMethodBase : NON_EXPORTED_BASE(public InputMethod),
   virtual void OnDidChangeFocus(View* focused_before, View* focused) OVERRIDE;
 
  protected:
-  // Getters and setters of properties.
   internal::InputMethodDelegate* delegate() const { return delegate_; }
   Widget* widget() const { return widget_; }
-  bool widget_focused() const { return widget_focused_; }
   View* GetFocusedView() const;
 
-  // Checks if the given View is focused. Returns true only if the View and
-  // the Widget are both focused.
+  // Returns true only if the View is focused and its Widget is active.
   bool IsViewFocused(View* view) const;
 
-  // Checks if the focused text input client's text input type is
-  // ui::TEXT_INPUT_TYPE_NONE. Also returns true if there is no focused text
-  // input client.
+  // Returns true if there is no focused text input client or its type is none.
   bool IsTextInputTypeNone() const;
 
-  // Convenience method to call the focused text input client's
-  // OnInputMethodChanged() method. It'll only take effect if the current text
-  // input type is not ui::TEXT_INPUT_TYPE_NONE.
+  // Calls the focused text input client's OnInputMethodChanged() method.
+  // This has no effect if the text input type is ui::TEXT_INPUT_TYPE_NONE.
   void OnInputMethodChanged() const;
 
   // Convenience method to call delegate_->DispatchKeyEventPostIME().
@@ -92,9 +65,6 @@ class VIEWS_EXPORT InputMethodBase : NON_EXPORTED_BASE(public InputMethod),
  private:
   internal::InputMethodDelegate* delegate_;
   Widget* widget_;
-
-  // Indicates if the top-level widget is focused or not.
-  bool widget_focused_;
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodBase);
 };

@@ -33,7 +33,7 @@ MockInputMethod::MockInputMethod(internal::InputMethodDelegate* delegate)
       locale_("en-US"),
       direction_(base::i18n::LEFT_TO_RIGHT),
       active_(true) {
-  set_delegate(delegate);
+  SetDelegate(delegate);
 }
 
 MockInputMethod::~MockInputMethod() {
@@ -42,6 +42,10 @@ MockInputMethod::~MockInputMethod() {
 void MockInputMethod::Init(Widget* widget) {
   InputMethodBase::Init(widget);
 }
+
+void MockInputMethod::OnFocus() {}
+
+void MockInputMethod::OnBlur() {}
 
 void MockInputMethod::DispatchKeyEvent(const ui::KeyEvent& key) {
   bool handled = (composition_changed_ || result_text_.length()) &&

@@ -1417,7 +1417,7 @@ bool Widget::GetSavedWindowPlacement(gfx::Rect* bounds,
 
 void Widget::ReplaceInputMethod(InputMethod* input_method) {
   input_method_.reset(input_method);
-  input_method->set_delegate(native_widget_->GetInputMethodDelegate());
+  input_method->SetDelegate(native_widget_->GetInputMethodDelegate());
   input_method->Init(this);
 }
 

@@ -24,6 +24,8 @@ class VIEWS_EXPORT MockInputMethod : public InputMethodBase {
 
   // Overridden from InputMethod:
   virtual void Init(Widget* widget) OVERRIDE;
+  virtual void OnFocus() OVERRIDE;
+  virtual void OnBlur() OVERRIDE;
   virtual void DispatchKeyEvent(const ui::KeyEvent& key) OVERRIDE;
   virtual void OnTextInputTypeChanged(View* view) OVERRIDE;
   virtual void OnCaretBoundsChanged(View* view) OVERRIDE;

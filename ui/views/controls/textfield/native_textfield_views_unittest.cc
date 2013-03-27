@@ -172,7 +172,7 @@ class NativeTextfieldViewsTest : public ViewsTestBase,
     ASSERT_FALSE(textfield_);
     textfield_ = new TestTextfield(style);
     textfield_->SetController(this);
-    widget_ = new Widget;
+    widget_ = new Widget();
     Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
     params.bounds = gfx::Rect(100, 100, 100, 100);
     widget_->Init(params);
@@ -198,11 +198,8 @@ class NativeTextfieldViewsTest : public ViewsTestBase,
     input_method_ = new MockInputMethod();
     widget_->ReplaceInputMethod(input_method_);
 
-    // Assumes the Widget is always focused.
-    input_method_->OnFocus();
-
-    // TODO(msw): Determine why this requires two calls to work on Windows.
-    textfield_->RequestFocus();
+    // Activate the widget and focus the textfield for input handling.
+    widget_->Activate();
     textfield_->RequestFocus();
   }
 

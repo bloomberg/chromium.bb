@@ -19,7 +19,7 @@ InputMethodBridge::InputMethodBridge(internal::InputMethodDelegate* delegate,
       shared_input_method_(shared_input_method),
       context_focused_(false) {
   DCHECK(host_);
-  set_delegate(delegate);
+  SetDelegate(delegate);
 }
 
 InputMethodBridge::~InputMethodBridge() {
@@ -32,10 +32,7 @@ void InputMethodBridge::Init(Widget* widget) {
 }
 
 void InputMethodBridge::OnFocus() {
-  InputMethodBase::OnFocus();
-
-  // Ask the system-wide IME to send all TextInputClient messages to |this|
-  // object.
+  // Direct the shared IME to send TextInputClient messages to |this| object.
   if (shared_input_method_ || !host_->GetTextInputClient())
     host_->SetFocusedTextInputClient(this);
 
@@ -46,12 +43,7 @@ void InputMethodBridge::OnFocus() {
 }
 
 void InputMethodBridge::OnBlur() {
-  // win32 sends multiple focus lost events, ignore all but the first.
-  if (widget_focused())
-    return;
-
   ConfirmCompositionText();
-  InputMethodBase::OnBlur();
   if (host_->GetTextInputClient() == this)
     host_->SetFocusedTextInputClient(NULL);
 }

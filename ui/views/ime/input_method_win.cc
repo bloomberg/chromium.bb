@@ -29,7 +29,7 @@ InputMethodWin::InputMethodWin(internal::InputMethodDelegate* delegate,
       direction_(base::i18n::UNKNOWN_DIRECTION),
       pending_requested_direction_(base::i18n::UNKNOWN_DIRECTION),
       host_(host) {
-  set_delegate(delegate);
+  SetDelegate(delegate);
 }
 
 InputMethodWin::~InputMethodWin() {
@@ -38,22 +38,18 @@ InputMethodWin::~InputMethodWin() {
 }
 
 void InputMethodWin::Init(Widget* widget) {
+  InputMethodBase::Init(widget);
+
   // Gets the initial input locale and text direction information.
   OnInputLangChange(0, 0);
-
-  InputMethodBase::Init(widget);
 }
 
 void InputMethodWin::OnFocus() {
-  DCHECK(!widget_focused());
-  InputMethodBase::OnFocus();
   UpdateIMEState();
 }
 
 void InputMethodWin::OnBlur() {
-  DCHECK(widget_focused());
   ConfirmCompositionText();
-  InputMethodBase::OnBlur();
 }
 
 void InputMethodWin::DispatchKeyEvent(const ui::KeyEvent& key) {
