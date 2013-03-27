@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/debug/trace_event.h"
-#include "cc/debug/rendering_stats_instrumentation.h"
+#include "cc/debug/rendering_stats.h"
 #include "cc/layers/content_layer_client.h"
 #include "cc/resources/picture.h"
 #include "skia/ext/analysis_canvas.h"
@@ -79,7 +79,7 @@ void Picture::CloneForDrawing(int num_threads) {
 }
 
 void Picture::Record(ContentLayerClient* painter,
-                     RenderingStatsInstrumentation* stats_instrumentation,
+                     RenderingStats* stats,
                      const SkTileGridPicture::TileGridInfo& tile_grid_info) {
   TRACE_EVENT2("cc", "Picture::Record",
                "width", layer_rect_.width(), "height", layer_rect_.height());
@@ -111,13 +111,15 @@ void Picture::Record(ContentLayerClient* painter,
   canvas->drawRect(layer_skrect, paint);
 
   gfx::RectF opaque_layer_rect;
-  base::TimeTicks start_time = stats_instrumentation->StartRecording();
-
+  base::TimeTicks begin_paint_time;
+  if (stats)
+    begin_paint_time = base::TimeTicks::Now();
   painter->PaintContents(canvas, layer_rect_, &opaque_layer_rect);
-
-  base::TimeDelta duration = stats_instrumentation->EndRecording(start_time);
-  stats_instrumentation->AddPaint(duration,
-                                  layer_rect_.width() * layer_rect_.height());
+  if (stats) {
+    stats->total_paint_time += base::TimeTicks::Now() - begin_paint_time;
+    stats->total_pixels_painted +=
+        layer_rect_.width() * layer_rect_.height();
+  }
 
   canvas->restore();
   picture_->endRecording();

@@ -449,6 +449,13 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandlerClient,
   scoped_ptr<MemoryHistory> memory_history_;
   scoped_ptr<DebugRectHistory> debug_rect_history_;
 
+  int64 num_impl_thread_scrolls_;
+  int64 num_main_thread_scrolls_;
+
+  int64 cumulative_num_layers_drawn_;
+
+  int64 cumulative_num_missing_tiles_;
+
   size_t last_sent_memory_visible_bytes_;
   size_t last_sent_memory_visible_and_nearby_bytes_;
   size_t last_sent_memory_use_bytes_;

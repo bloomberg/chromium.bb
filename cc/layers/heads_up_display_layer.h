@@ -16,7 +16,8 @@ class CC_EXPORT HeadsUpDisplayLayer : public Layer {
   static scoped_refptr<HeadsUpDisplayLayer> Create();
 
   virtual void Update(ResourceUpdateQueue* queue,
-                      const OcclusionTracker* tracker) OVERRIDE;
+                      const OcclusionTracker* tracker,
+                      RenderingStats* stats) OVERRIDE;
   virtual bool DrawsContent() const OVERRIDE;
 
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)

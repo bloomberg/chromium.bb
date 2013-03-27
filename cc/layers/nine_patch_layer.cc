@@ -57,7 +57,8 @@ void NinePatchLayer::SetBitmap(const SkBitmap& bitmap, gfx::Rect aperture) {
 }
 
 void NinePatchLayer::Update(ResourceUpdateQueue* queue,
-                            const OcclusionTracker* occlusion) {
+                            const OcclusionTracker* occlusion,
+                            RenderingStats* stats) {
   CreateUpdaterIfNeeded();
 
   if (resource_ &&

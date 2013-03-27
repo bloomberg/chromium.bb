@@ -29,7 +29,8 @@ SingleThreadProxy::SingleThreadProxy(LayerTreeHost* layer_tree_host)
       created_offscreen_context_provider_(false),
       renderer_initialized_(false),
       next_frame_is_newly_committed_frame_(false),
-      inside_draw_(false) {
+      inside_draw_(false),
+      total_commit_count_(0) {
   TRACE_EVENT0("cc", "SingleThreadProxy::SingleThreadProxy");
   DCHECK(Proxy::IsMainThread());
   DCHECK(layer_tree_host);

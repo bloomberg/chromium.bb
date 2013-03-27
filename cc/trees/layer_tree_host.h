@@ -255,7 +255,8 @@ class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
   bool PaintLayerContents(const LayerList& render_surface_layer_list,
                           ResourceUpdateQueue* quue);
   bool PaintMasksForRenderSurface(Layer* render_surface_layer,
-                                  ResourceUpdateQueue* queue);
+                                  ResourceUpdateQueue* queue,
+                                  RenderingStats* stats);
 
   void UpdateLayers(Layer* root_layer, ResourceUpdateQueue* queue);
   void UpdateHudLayer();

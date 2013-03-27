@@ -17,6 +17,7 @@ class PrioritizedResource;
 class PrioritizedResourceManager;
 class ResourceUpdateQueue;
 class TextureManager;
+struct RenderingStats;
 
 class CC_EXPORT LayerUpdater : public base::RefCounted<LayerUpdater> {
  public:
@@ -31,7 +32,8 @@ class CC_EXPORT LayerUpdater : public base::RefCounted<LayerUpdater> {
     virtual void Update(ResourceUpdateQueue* queue,
                         gfx::Rect source_rect,
                         gfx::Vector2d dest_offset,
-                        bool partial_update) = 0;
+                        bool partial_update,
+                        RenderingStats* stats) = 0;
    protected:
     explicit Resource(scoped_ptr<PrioritizedResource> texture);
 
@@ -52,7 +54,8 @@ class CC_EXPORT LayerUpdater : public base::RefCounted<LayerUpdater> {
                                gfx::Size tile_size,
                                float contents_width_scale,
                                float contents_height_scale,
-                               gfx::Rect* resulting_opaque_rect) {}
+                               gfx::Rect* resulting_opaque_rect,
+                               RenderingStats* stats) {}
 
   // Set true by the layer when it is known that the entire output is going to
   // be opaque.

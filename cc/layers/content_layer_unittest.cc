@@ -6,7 +6,6 @@
 
 #include "cc/layers/content_layer_client.h"
 #include "cc/resources/bitmap_content_layer_updater.h"
-#include "cc/test/fake_rendering_stats_instrumentation.h"
 #include "cc/test/geometry_test_utils.h"
 #include "skia/ext/platform_canvas.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -38,18 +37,17 @@ TEST(ContentLayerTest, ContentLayerPainterWithDeviceScale) {
   gfx::RectF opaque_rect_in_content_space = gfx::ScaleRect(
       opaque_rect_in_layer_space, contents_scale, contents_scale);
   MockContentLayerClient client(opaque_rect_in_layer_space);
-  FakeRenderingStatsInstrumentation stats_instrumentation;
   scoped_refptr<BitmapContentLayerUpdater> updater =
-      BitmapContentLayerUpdater::Create(
-          ContentLayerPainter::Create(&client).PassAs<LayerPainter>(),
-          &stats_instrumentation);
+      BitmapContentLayerUpdater::Create(ContentLayerPainter::Create(&client).
+                                            PassAs<LayerPainter>());
 
   gfx::Rect resulting_opaque_rect;
   updater->PrepareToUpdate(content_rect,
                            gfx::Size(256, 256),
                            contents_scale,
                            contents_scale,
-                           &resulting_opaque_rect);
+                           &resulting_opaque_rect,
+                           NULL);
 
   EXPECT_RECT_EQ(gfx::ToEnclosingRect(opaque_rect_in_content_space),
                  resulting_opaque_rect);

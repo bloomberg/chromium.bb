@@ -25,8 +25,9 @@ scoped_ptr<LayerImpl> FakeContentLayer::CreateLayerImpl(
 }
 
 void FakeContentLayer::Update(ResourceUpdateQueue* queue,
-                              const OcclusionTracker* occlusion) {
-  ContentLayer::Update(queue, occlusion);
+                              const OcclusionTracker* occlusion,
+                              RenderingStats* stats) {
+  ContentLayer::Update(queue, occlusion, stats);
   update_count_++;
 }
 

@@ -11,7 +11,6 @@
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/fake_output_surface.h"
-#include "cc/test/fake_rendering_stats_instrumentation.h"
 #include "cc/test/impl_side_painting_settings.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -96,8 +95,7 @@ class TestablePicturePileImpl : public PicturePileImpl {
       return;
     gfx::Rect bounds(tiling().TileBounds(x, y));
     scoped_refptr<Picture> picture(Picture::Create(bounds));
-    FakeRenderingStatsInstrumentation stats_instrumentation;
-    picture->Record(&client_, &stats_instrumentation, tile_grid_info_);
+    picture->Record(&client_, NULL, tile_grid_info_);
     picture_list_map_[std::pair<int, int>(x, y)].push_back(picture);
     EXPECT_TRUE(HasRecordingAt(x, y));
 

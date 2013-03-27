@@ -41,7 +41,8 @@ void ImageLayer::SetTexturePriorities(const PriorityCalculator& priority_calc) {
 }
 
 void ImageLayer::Update(ResourceUpdateQueue* queue,
-                        const OcclusionTracker* occlusion) {
+                        const OcclusionTracker* occlusion,
+                        RenderingStats* stats) {
   CreateUpdaterIfNeeded();
   if (needs_display_) {
     updater_->set_bitmap(bitmap_);
@@ -49,7 +50,7 @@ void ImageLayer::Update(ResourceUpdateQueue* queue,
     InvalidateContentRect(gfx::Rect(content_bounds()));
     needs_display_ = false;
   }
-  TiledLayer::Update(queue, occlusion);
+  TiledLayer::Update(queue, occlusion, stats);
 }
 
 void ImageLayer::CreateUpdaterIfNeeded() {

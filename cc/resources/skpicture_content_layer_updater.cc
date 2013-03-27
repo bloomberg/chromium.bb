@@ -22,25 +22,21 @@ SkPictureContentLayerUpdater::Resource::~Resource() {}
 void SkPictureContentLayerUpdater::Resource::Update(ResourceUpdateQueue* queue,
                                                     gfx::Rect source_rect,
                                                     gfx::Vector2d dest_offset,
-                                                    bool partial_update) {
+                                                    bool partial_update,
+                                                    RenderingStats*) {
   updater_->UpdateTexture(
       queue, texture(), source_rect, dest_offset, partial_update);
 }
 
 SkPictureContentLayerUpdater::SkPictureContentLayerUpdater(
-    scoped_ptr<LayerPainter> painter,
-    RenderingStatsInstrumentation* stats_instrumentation)
-    : ContentLayerUpdater(painter.Pass(), stats_instrumentation),
-      layer_is_opaque_(false) {}
+    scoped_ptr<LayerPainter> painter)
+    : ContentLayerUpdater(painter.Pass()), layer_is_opaque_(false) {}
 
 SkPictureContentLayerUpdater::~SkPictureContentLayerUpdater() {}
 
 scoped_refptr<SkPictureContentLayerUpdater>
-SkPictureContentLayerUpdater::Create(
-    scoped_ptr<LayerPainter> painter,
-    RenderingStatsInstrumentation* stats_instrumentation) {
-  return make_scoped_refptr(
-      new SkPictureContentLayerUpdater(painter.Pass(), stats_instrumentation));
+SkPictureContentLayerUpdater::Create(scoped_ptr<LayerPainter> painter) {
+  return make_scoped_refptr(new SkPictureContentLayerUpdater(painter.Pass()));
 }
 
 scoped_ptr<LayerUpdater::Resource> SkPictureContentLayerUpdater::CreateResource(
@@ -54,14 +50,16 @@ void SkPictureContentLayerUpdater::PrepareToUpdate(
     gfx::Size,
     float contents_width_scale,
     float contents_height_scale,
-    gfx::Rect* resulting_opaque_rect) {
+    gfx::Rect* resulting_opaque_rect,
+    RenderingStats* stats) {
   SkCanvas* canvas =
       picture_.beginRecording(content_rect.width(), content_rect.height());
   PaintContents(canvas,
                 content_rect,
                 contents_width_scale,
                 contents_height_scale,
-                resulting_opaque_rect);
+                resulting_opaque_rect,
+                stats);
   picture_.endRecording();
 }
 
