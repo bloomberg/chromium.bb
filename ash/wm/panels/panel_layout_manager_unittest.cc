@@ -65,20 +65,21 @@ class PanelLayoutManagerTest : public test::AshTestBase {
         test::TestLauncherDelegate::instance();
     launcher_delegate->AddLauncherItem(window);
     PanelLayoutManager* manager =
-        static_cast<PanelLayoutManager*>(GetPanelContainer()->layout_manager());
+        static_cast<PanelLayoutManager*>(GetPanelContainer(window)->
+                                         layout_manager());
     manager->Relayout();
     return window;
   }
 
-  aura::Window* GetPanelContainer() {
-    return Shell::GetContainer(
-        Shell::GetPrimaryRootWindow(),
-        internal::kShellWindowId_PanelContainer);
+  aura::Window* GetPanelContainer(aura::Window* panel) {
+    return Shell::GetContainer(panel->GetRootWindow(),
+                               internal::kShellWindowId_PanelContainer);
   }
 
   views::Widget* GetCalloutWidgetForPanel(aura::Window* panel) {
     PanelLayoutManager* manager =
-        static_cast<PanelLayoutManager*>(GetPanelContainer()->layout_manager());
+        static_cast<PanelLayoutManager*>(GetPanelContainer(panel)->
+                                         layout_manager());
     DCHECK(manager);
     PanelLayoutManager::PanelList::iterator found = std::find(
         manager->panel_windows_.begin(), manager->panel_windows_.end(),
@@ -117,11 +118,12 @@ class PanelLayoutManagerTest : public test::AshTestBase {
     // Waits until all launcher view animations are done.
     launcher_view_test()->RunMessageLoopUntilAnimationsDone();
 
-    Launcher* launcher = Launcher::ForPrimaryDisplay();
+    Launcher* launcher =
+        RootWindowController::ForLauncher(panel)->shelf()->launcher();
     gfx::Rect icon_bounds = launcher->GetScreenBoundsOfItemIconForWindow(panel);
     ASSERT_FALSE(icon_bounds.IsEmpty());
 
-    gfx::Rect window_bounds = panel->GetBoundsInRootWindow();
+    gfx::Rect window_bounds = panel->GetBoundsInScreen();
     gfx::Rect launcher_bounds = launcher->shelf_widget()->
         GetWindowBoundsInScreen();
     ShelfAlignment alignment = GetAlignment();
@@ -159,9 +161,12 @@ class PanelLayoutManagerTest : public test::AshTestBase {
     base::RunLoop().RunUntilIdle();
     views::Widget* widget = GetCalloutWidgetForPanel(panel);
 
-    Launcher* launcher = Launcher::ForPrimaryDisplay();
+    Launcher* launcher =
+        RootWindowController::ForLauncher(panel)->shelf()->launcher();
     gfx::Rect icon_bounds = launcher->GetScreenBoundsOfItemIconForWindow(panel);
-    gfx::Rect panel_bounds = panel->GetBoundsInRootWindow();
+    ASSERT_FALSE(icon_bounds.IsEmpty());
+
+    gfx::Rect panel_bounds = panel->GetBoundsInScreen();
     gfx::Rect callout_bounds = widget->GetWindowBoundsInScreen();
     ASSERT_FALSE(icon_bounds.IsEmpty());
 
@@ -210,7 +215,6 @@ class PanelLayoutManagerTest : public test::AshTestBase {
     test::LauncherViewTestAPI test_api(launcher_view);
     test_api.SetAnimationDuration(1);
     test_api.RunMessageLoopUntilAnimationsDone();
-
     LauncherModel* model =
         test::ShellTestApi(Shell::GetInstance()).launcher_model();
     test::TestLauncherDelegate* launcher_delegate =
@@ -251,7 +255,7 @@ class PanelLayoutManagerTest : public test::AshTestBase {
 TEST_F(PanelLayoutManagerTest, AddOnePanel) {
   gfx::Rect bounds(0, 0, 201, 201);
   scoped_ptr<aura::Window> window(CreatePanelWindow(bounds));
-  EXPECT_EQ(GetPanelContainer(), window->parent());
+  EXPECT_EQ(GetPanelContainer(window.get()), window->parent());
   EXPECT_NO_FATAL_FAILURE(IsPanelAboveLauncherIcon(window.get()));
 }
 
@@ -472,13 +476,17 @@ TEST_F(PanelLayoutManagerTest, MinimizeRestorePanel) {
 // http://crbug.com/165962
 #define MAYBE_PanelMoveBetweenMultipleDisplays \
         DISABLED_PanelMoveBetweenMultipleDisplays
+#define MAYBE_PanelAttachPositionMultipleDisplays \
+        DISABLED_PanelAttachPositionMultipleDisplays
 #else
 #define MAYBE_PanelMoveBetweenMultipleDisplays PanelMoveBetweenMultipleDisplays
+#define MAYBE_PanelAttachPositionMultipleDisplays \
+        PanelAttachPositionMultipleDisplays
 #endif
 
 TEST_F(PanelLayoutManagerTest, MAYBE_PanelMoveBetweenMultipleDisplays) {
   // Keep the displays wide so that launchers have enough
-  // spaces for launcher buttons.
+  // space for launcher buttons.
   UpdateDisplay("600x400,600x400");
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
 
@@ -542,6 +550,26 @@ TEST_F(PanelLayoutManagerTest, MAYBE_PanelMoveBetweenMultipleDisplays) {
   EXPECT_TRUE(root_windows[0]->GetBoundsInScreen().Contains(
       p1_d2->GetBoundsInScreen()));
 }
+
+TEST_F(PanelLayoutManagerTest, MAYBE_PanelAttachPositionMultipleDisplays) {
+  // Keep the displays wide so that launchers have enough space for launcher
+  // buttons. Use differently sized displays so the launcher is in a different
+  // position on second display.
+  UpdateDisplay("600x400,600x600");
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+
+  scoped_ptr<aura::Window> p1_d1(CreatePanelWindow(gfx::Rect(0, 0, 50, 50)));
+  scoped_ptr<aura::Window> p1_d2(CreatePanelWindow(gfx::Rect(600, 0, 50, 50)));
+
+  EXPECT_EQ(root_windows[0], p1_d1->GetRootWindow());
+  EXPECT_EQ(root_windows[1], p1_d2->GetRootWindow());
+
+  IsPanelAboveLauncherIcon(p1_d1.get());
+  IsCalloutAboveLauncherIcon(p1_d1.get());
+  IsPanelAboveLauncherIcon(p1_d2.get());
+  IsCalloutAboveLauncherIcon(p1_d2.get());
+}
+
 
 TEST_F(PanelLayoutManagerTest, AlignmentLeft) {
   gfx::Rect bounds(0, 0, 201, 201);
