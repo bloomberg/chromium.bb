@@ -501,8 +501,9 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
       command_line.HasSwitch(switches::kEnableExperimentalWebKitFeatures);
   prefs.css_grid_layout_enabled =
       command_line.HasSwitch(switches::kEnableExperimentalWebKitFeatures);
-  prefs.threaded_html_parser =
-      !command_line.HasSwitch(switches::kDisableThreadedHTMLParser);
+  // TODO(eseidel): Turn on the threaded HTML parser, and only disable it if
+  // kDisableThreadHTMLParser is given. crbug.com/224260 & crbug.com/223473.
+  prefs.threaded_html_parser = false;
 #if defined(OS_ANDROID)
   prefs.user_gesture_required_for_media_playback = !command_line.HasSwitch(
       switches::kDisableGestureRequirementForMediaPlayback);
