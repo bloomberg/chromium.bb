@@ -1154,19 +1154,6 @@ class UprevStage(bs.BuilderStage):
       self._boards = boards
 
   def _PerformStage(self):
-    # Perform chrome uprev.
-    chrome_atom_to_build = None
-    if self._chrome_rev:
-      # TODO(build): If anyone wants this to run outside of the chroot, we'll
-      # need to update a few things first.  But no one does, so we'll leave it.
-      chrome_atom_to_build = commands.MarkChromeAsStable(
-          self._build_root, self._target_manifest_branch,
-          self._chrome_rev, self._boards,
-          chrome_version=self._options.chrome_version)
-
-    useflags = self._build_config['useflags'] or []
-    pgo_generate = constants.USE_PGO_GENERATE in useflags
-
     # Perform other uprevs.
     if self._build_config['uprev']:
       overlays, _ = self._ExtractOverlays()
@@ -1174,9 +1161,6 @@ class UprevStage(bs.BuilderStage):
                              self._boards,
                              overlays,
                              enter_chroot=self._enter_chroot)
-    elif self._chrome_rev and not chrome_atom_to_build and not pgo_generate:
-      # TODO(sosa): Do this in a better way.
-      sys.exit(0)
 
 
 class SyncChromeStage(bs.BuilderStage):
@@ -1189,6 +1173,14 @@ class SyncChromeStage(bs.BuilderStage):
     return set(self._GetPortageEnvVar('ARCH', b) for b in self._boards)
 
   def _PerformStage(self):
+    # Perform chrome uprev.
+    chrome_atom_to_build = None
+    if self._chrome_rev:
+      chrome_atom_to_build = commands.MarkChromeAsStable(
+          self._build_root, self._target_manifest_branch,
+          self._chrome_rev, self._boards,
+          chrome_version=self._options.chrome_version)
+
     kwargs = {}
     if self._chrome_rev == constants.CHROME_REV_SPEC:
       kwargs['revision'] = self._options.chrome_version
@@ -1199,14 +1191,18 @@ class SyncChromeStage(bs.BuilderStage):
                                           buildroot=self._build_root)
       kwargs['tag'] = cpv.version_no_rev.partition('_')[0]
       cros_build_lib.PrintBuildbotStepText('tag %s' % kwargs['tag'])
+
     useflags = self._build_config['useflags'] or []
     commands.SyncChrome(self._build_root, self._options.chrome_root, useflags,
                         **kwargs)
     if constants.USE_PGO_USE in useflags and cpv is not None:
       commands.WaitForPGOData(self._GetArchitectures(), cpv)
-    if (constants.USE_PGO_GENERATE in useflags and cpv is not None and
-        commands.CheckPGOData(self._GetArchitectures(), cpv)):
+    elif (constants.USE_PGO_GENERATE in useflags and cpv is not None and
+          commands.CheckPGOData(self._GetArchitectures(), cpv)):
       cros_build_lib.Info('PGO data already generated')
+      sys.exit(0)
+    elif self._chrome_rev and chrome_atom_to_build and self._options.buildbot:
+      cros_build_lib.Info('Chrome already uprevved')
       sys.exit(0)
 
 

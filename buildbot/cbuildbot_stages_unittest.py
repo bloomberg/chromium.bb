@@ -772,82 +772,22 @@ class UprevStageTest(AbstractStageTest):
 
   def setUp(self):
     # Disable most paths by default and selectively enable in tests
-
-    self.options.chrome_rev = None
     self.build_config['uprev'] = False
-    self.mox.StubOutWithMock(commands, 'MarkChromeAsStable')
     self.mox.StubOutWithMock(commands, 'UprevPackages')
-    self.mox.StubOutWithMock(sys, 'exit')
 
   def ConstructStage(self):
     return stages.UprevStage(self.options, self.build_config)
 
-  def testChromeRevSuccess(self):
-    """Case where MarkChromeAsStable returns an atom.  We shouldn't exit."""
-    self.options.chrome_rev = 'tot'
-    chrome_atom = '%s-12.0.719.0_alpha-r1' % constants.CHROME_CP
-
-    commands.MarkChromeAsStable(
-        self.build_root,
-        self.TARGET_MANIFEST_BRANCH,
-        self.options.chrome_rev,
-        self._boards,
-        chrome_version=None).AndReturn(chrome_atom)
-
-    self.mox.ReplayAll()
-    self.RunStage()
-    self.mox.VerifyAll()
-
-  def testChromeRevFoundNothing(self):
-    """Verify we exit when MarkChromeAsStable doesn't return an atom."""
-    self.options.chrome_rev = 'tot'
-
-    commands.MarkChromeAsStable(
-        self.build_root,
-        self.TARGET_MANIFEST_BRANCH,
-        self.options.chrome_rev,
-        self._boards,
-        chrome_version=None)
-
-    sys.exit(0)
-
-    self.mox.ReplayAll()
-    self.RunStage()
-    self.mox.VerifyAll()
-
   def testBuildRev(self):
     """Uprevving the build without uprevving chrome."""
     self.build_config['uprev'] = True
-
     commands.UprevPackages(self.build_root, self._boards, [], enter_chroot=True)
-
     self.mox.ReplayAll()
     self.RunStage()
     self.mox.VerifyAll()
 
   def testNoRev(self):
     """No paths are enabled."""
-    self.mox.ReplayAll()
-    self.RunStage()
-    self.mox.VerifyAll()
-
-  def testUprevAll(self):
-    """Uprev both Chrome and built packages."""
-    self.build_config['uprev'] = True
-    self.options.chrome_rev = 'tot'
-
-    # Even if MarkChromeAsStable didn't find anything to rev,
-    # if we rev the build then we don't exit
-
-    commands.MarkChromeAsStable(
-        self.build_root,
-        self.TARGET_MANIFEST_BRANCH,
-        self.options.chrome_rev,
-        self._boards,
-        chrome_version=None).AndReturn(None)
-
-    commands.UprevPackages(self.build_root, self._boards, [], enter_chroot=True)
-
     self.mox.ReplayAll()
     self.RunStage()
     self.mox.VerifyAll()
