@@ -43,6 +43,19 @@ class CHROMEOS_EXPORT CryptohomeClient {
       const std::string& label,
       const std::string& user_pin)> Pkcs11GetTpmTokenInfoCallback;
 
+  // Options available for customizing an attestation certificate.
+  enum AttestationCertificateOptions {
+    CERTIFICATE_OPTION_NONE = 0,
+    INCLUDE_STABLE_ID = 1,
+    INCLUDE_DEVICE_STATE = 1 << 1
+  };
+
+  // Key types supported by the Chrome OS attestation subsystem.
+  enum AttestationKeyType {
+    DEVICE_KEY,
+    USER_KEY
+  };
+
   virtual ~CryptohomeClient();
 
   // Factory function, creates a new instance and returns ownership.
@@ -216,14 +229,15 @@ class CHROMEOS_EXPORT CryptohomeClient {
       const std::string& pca_response,
       const AsyncMethodCallback& callback) = 0;
 
-  // Asynchronously creates an attestation certificate request.  The callback
-  // will be called when the dbus call completes.  When the operation completes,
-  // the AsyncCallStatusWithDataHandler signal handler is called.  The data that
-  // is sent with the signal is a certificate request to be sent to the Privacy
-  // CA.  The certificate request is completed by calling
+  // Asynchronously creates an attestation certificate request according to
+  // |options|, which is a combination of AttestationCertificateOptions.
+  // |callback| will be called when the dbus call completes.  When the operation
+  // completes, the AsyncCallStatusWithDataHandler signal handler is called.
+  // The data that is sent with the signal is a certificate request to be sent
+  // to the Privacy CA.  The certificate request is completed by calling
   // AsyncTpmAttestationFinishCertRequest.
   virtual void AsyncTpmAttestationCreateCertRequest(
-      bool is_cert_for_owner,
+      int options,
       const AsyncMethodCallback& callback) = 0;
 
   // Asynchronously finishes a certificate request operation.  The callback will
@@ -231,8 +245,12 @@ class CHROMEOS_EXPORT CryptohomeClient {
   // AsyncCallStatusWithDataHandler signal handler is called.  The data that is
   // sent with the signal is a certificate chain in PEM format.  |pca_response|
   // is the response to the certificate request emitted by the Privacy CA.
+  // |key_type| determines whether the certified key is to be associated with
+  // the current user.  |key_name| is a name for the key.
   virtual void AsyncTpmAttestationFinishCertRequest(
       const std::string& pca_response,
+      AttestationKeyType key_type,
+      const std::string& key_name,
       const AsyncMethodCallback& callback) = 0;
 
  protected:

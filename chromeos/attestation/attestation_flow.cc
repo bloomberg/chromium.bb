@@ -146,14 +146,19 @@ void AttestationFlow::StartCertificateRequest(
     const std::string& name,
     const CertificateCallback& callback) {
   // Get the attestation service to create a Privacy CA certificate request.
+  int options = CryptohomeClient::INCLUDE_DEVICE_STATE;
+  if (name == kEnterpriseMachineKey)
+    options |= CryptohomeClient::INCLUDE_STABLE_ID;
   async_caller_->AsyncTpmAttestationCreateCertRequest(
-      (name == kEnterpriseMachineKey),
+      options,
       base::Bind(&AttestationFlow::SendCertificateRequestToPCA,
                  weak_factory_.GetWeakPtr(),
+                 name,
                  callback));
 }
 
 void AttestationFlow::SendCertificateRequestToPCA(
+    const std::string& name,
     const CertificateCallback& callback,
     bool success,
     const std::string& data) {
@@ -169,10 +174,12 @@ void AttestationFlow::SendCertificateRequestToPCA(
       data,
       base::Bind(&AttestationFlow::SendCertificateResponseToDaemon,
                  weak_factory_.GetWeakPtr(),
+                 name,
                  callback));
 }
 
 void AttestationFlow::SendCertificateResponseToDaemon(
+    const std::string& name,
     const CertificateCallback& callback,
     bool success,
     const std::string& data) {
@@ -184,7 +191,12 @@ void AttestationFlow::SendCertificateResponseToDaemon(
   }
 
   // Forward the response to the attestation service to complete the operation.
+  CryptohomeClient::AttestationKeyType key_type = CryptohomeClient::USER_KEY;
+  if (name == kEnterpriseMachineKey)
+    key_type = CryptohomeClient::DEVICE_KEY;
   async_caller_->AsyncTpmAttestationFinishCertRequest(data,
+                                                      key_type,
+                                                      name,
                                                       base::Bind(callback));
 }
 

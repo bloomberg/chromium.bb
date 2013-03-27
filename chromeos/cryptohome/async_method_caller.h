@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "chromeos/chromeos_export.h"
+#include "chromeos/dbus/cryptohome_client.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace cryptohome {
@@ -96,18 +97,23 @@ class CHROMEOS_EXPORT AsyncMethodCaller {
                                          const Callback& callback) = 0;
 
   // Asks cryptohomed to asynchronously create an attestation certificate
-  // request.  On success the data sent to |callback| is a request to be sent
-  // to the Privacy CA.
+  // request according to |options|, which is a combination of
+  // CryptohomeClient::AttestationCertificateOptions.  On success the data sent
+  // to |callback| is a request to be sent to the Privacy CA.
   virtual void AsyncTpmAttestationCreateCertRequest(
-      bool is_cert_for_owner,
+      int options,
       const DataCallback& callback) = 0;
 
   // Asks cryptohomed to asynchronously finish an attestation certificate
   // request.  On success the data sent to |callback| is a certificate chain
   // in PEM format.  |pca_response| is the response to the certificate request
-  // emitted by the Privacy CA.
+  // emitted by the Privacy CA.  |key_type| determines whether the certified key
+  // is to be associated with the current user.  |key_name| is a name for the
+  // key.
   virtual void AsyncTpmAttestationFinishCertRequest(
       const std::string& pca_response,
+      chromeos::CryptohomeClient::AttestationKeyType key_type,
+      const std::string& key_name,
       const DataCallback& callback) = 0;
 
   // Asks cryptohome  to asynchronously retrieve a string associated with given

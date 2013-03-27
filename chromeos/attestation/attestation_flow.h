@@ -139,10 +139,12 @@ class CHROMEOS_EXPORT AttestationFlow {
   // to the PCA.
   //
   // Parameters
+  //   name - The name of the key for which a certificate is requested.
   //   callback - Called when the operation completes.
   //   success - The status of request creation.
   //   data - The request data for the Privacy CA.
-  void SendCertificateRequestToPCA(const CertificateCallback& callback,
+  void SendCertificateRequestToPCA(const std::string& name,
+                                   const CertificateCallback& callback,
                                    bool success,
                                    const std::string& data);
 
@@ -151,10 +153,12 @@ class CHROMEOS_EXPORT AttestationFlow {
   // complete the operation.
   //
   // Parameters
+  //   name - The name of the key for which a certificate is requested.
   //   callback - Called when the operation completes.
   //   success - The status of the Privacy CA operation.
   //   data - The response data from the Privacy CA.
-  void SendCertificateResponseToDaemon(const CertificateCallback& callback,
+  void SendCertificateResponseToDaemon(const std::string& name,
+                                       const CertificateCallback& callback,
                                        bool success,
                                        const std::string& data);
 

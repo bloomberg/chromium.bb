@@ -110,25 +110,32 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller {
   }
 
   virtual void AsyncTpmAttestationCreateCertRequest(
-      bool is_cert_for_owner,
+      int options,
       const DataCallback& callback) OVERRIDE {
     DBusThreadManager::Get()->GetCryptohomeClient()->
-        AsyncTpmAttestationCreateCertRequest(is_cert_for_owner, base::Bind(
-            &AsyncMethodCallerImpl::RegisterAsyncDataCallback,
-            weak_ptr_factory_.GetWeakPtr(),
-            callback,
-            "Couldn't initiate async attestation cert request."));
+        AsyncTpmAttestationCreateCertRequest(
+            options,
+            base::Bind(&AsyncMethodCallerImpl::RegisterAsyncDataCallback,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       callback,
+                       "Couldn't initiate async attestation cert request."));
   }
 
   virtual void AsyncTpmAttestationFinishCertRequest(
       const std::string& pca_response,
+      chromeos::CryptohomeClient::AttestationKeyType key_type,
+      const std::string& key_name,
       const DataCallback& callback) OVERRIDE {
     DBusThreadManager::Get()->GetCryptohomeClient()->
-        AsyncTpmAttestationFinishCertRequest(pca_response, base::Bind(
-            &AsyncMethodCallerImpl::RegisterAsyncDataCallback,
-            weak_ptr_factory_.GetWeakPtr(),
-            callback,
-            "Couldn't initiate async attestation finish cert request."));
+        AsyncTpmAttestationFinishCertRequest(
+            pca_response,
+            key_type,
+            key_name,
+            base::Bind(
+                &AsyncMethodCallerImpl::RegisterAsyncDataCallback,
+                weak_ptr_factory_.GetWeakPtr(),
+                callback,
+                "Couldn't initiate async attestation finish cert request."));
   }
 
   virtual void AsyncGetSanitizedUsername(

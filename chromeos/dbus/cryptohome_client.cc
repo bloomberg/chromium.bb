@@ -405,13 +405,16 @@ class CryptohomeClientImpl : public CryptohomeClient {
 
   // CryptohomeClient override.
   virtual void AsyncTpmAttestationCreateCertRequest(
-      bool is_cert_for_owner,
+      int options,
       const AsyncMethodCallback& callback) OVERRIDE {
     dbus::MethodCall method_call(
         cryptohome::kCryptohomeInterface,
         cryptohome::kCryptohomeAsyncTpmAttestationCreateCertRequest);
     dbus::MessageWriter writer(&method_call);
-    writer.AppendBool(is_cert_for_owner);
+    bool include_stable_id = (options & INCLUDE_STABLE_ID);
+    writer.AppendBool(include_stable_id);
+    bool include_device_state = (options & INCLUDE_DEVICE_STATE);
+    writer.AppendBool(include_device_state);
     proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
                        base::Bind(&CryptohomeClientImpl::OnAsyncMethodCall,
                                   weak_ptr_factory_.GetWeakPtr(),
@@ -421,6 +424,8 @@ class CryptohomeClientImpl : public CryptohomeClient {
   // CryptohomeClient override.
   virtual void AsyncTpmAttestationFinishCertRequest(
       const std::string& pca_response,
+      AttestationKeyType key_type,
+      const std::string& key_name,
       const AsyncMethodCallback& callback) OVERRIDE {
     dbus::MethodCall method_call(
         cryptohome::kCryptohomeInterface,
@@ -429,6 +434,9 @@ class CryptohomeClientImpl : public CryptohomeClient {
     writer.AppendArrayOfBytes(
         reinterpret_cast<const uint8*>(pca_response.data()),
         pca_response.size());
+    bool is_user_specific = (key_type == USER_KEY);
+    writer.AppendBool(is_user_specific);
+    writer.AppendString(key_name);
     proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
                        base::Bind(&CryptohomeClientImpl::OnAsyncMethodCall,
                                   weak_ptr_factory_.GetWeakPtr(),
@@ -849,7 +857,7 @@ class CryptohomeClientStubImpl : public CryptohomeClient {
 
   // CryptohomeClient override.
   virtual void AsyncTpmAttestationCreateCertRequest(
-      bool is_cert_for_owner,
+      int options,
       const AsyncMethodCallback& callback) OVERRIDE {
     ReturnAsyncMethodResult(callback, true);
   }
@@ -857,6 +865,8 @@ class CryptohomeClientStubImpl : public CryptohomeClient {
   // CryptohomeClient override.
   virtual void AsyncTpmAttestationFinishCertRequest(
       const std::string& pca_response,
+      AttestationKeyType key_type,
+      const std::string& key_name,
       const AsyncMethodCallback& callback) OVERRIDE {
     ReturnAsyncMethodResult(callback, true);
   }

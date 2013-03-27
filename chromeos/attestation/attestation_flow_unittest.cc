@@ -82,7 +82,9 @@ TEST_F(AttestationFlowTest, GetCertificate) {
       .Times(1)
       .InSequence(flow_order);
 
-  EXPECT_CALL(async_caller, AsyncTpmAttestationCreateCertRequest(false, _))
+  int options = CryptohomeClient::INCLUDE_DEVICE_STATE;
+  EXPECT_CALL(async_caller,
+              AsyncTpmAttestationCreateCertRequest(options, _))
       .Times(1)
       .InSequence(flow_order);
 
@@ -95,7 +97,10 @@ TEST_F(AttestationFlowTest, GetCertificate) {
       cryptohome::MockAsyncMethodCaller::kFakeAttestationCertRequest;
   fake_cert_response += "_response";
   EXPECT_CALL(async_caller,
-              AsyncTpmAttestationFinishCertRequest(fake_cert_response, _))
+              AsyncTpmAttestationFinishCertRequest(fake_cert_response,
+                                                   CryptohomeClient::USER_KEY,
+                                                   "test",
+                                                   _))
       .Times(1)
       .InSequence(flow_order);
 
@@ -202,13 +207,18 @@ TEST_F(AttestationFlowTest, GetCertificate_FailEnroll) {
 TEST_F(AttestationFlowTest, GetOwnerCertificateAlreadyEnrolled) {
   StrictMock<cryptohome::MockAsyncMethodCaller> async_caller;
   async_caller.SetUp(true, cryptohome::MOUNT_ERROR_NONE);
-  EXPECT_CALL(async_caller, AsyncTpmAttestationCreateCertRequest(true, _))
+  int options = CryptohomeClient::INCLUDE_DEVICE_STATE |
+                CryptohomeClient::INCLUDE_STABLE_ID;
+  EXPECT_CALL(async_caller, AsyncTpmAttestationCreateCertRequest(options, _))
       .Times(1);
   std::string fake_cert_response =
       cryptohome::MockAsyncMethodCaller::kFakeAttestationCertRequest;
   fake_cert_response += "_response";
   EXPECT_CALL(async_caller,
-              AsyncTpmAttestationFinishCertRequest(fake_cert_response, _))
+              AsyncTpmAttestationFinishCertRequest(fake_cert_response,
+                                                   CryptohomeClient::DEVICE_KEY,
+                                                   "attest-ent-machine",
+                                                   _))
       .Times(1);
 
   chromeos::MockCryptohomeClient client;
@@ -237,7 +247,9 @@ TEST_F(AttestationFlowTest, GetOwnerCertificateAlreadyEnrolled) {
 TEST_F(AttestationFlowTest, GetCertificate_FailCreateCertRequest) {
   StrictMock<cryptohome::MockAsyncMethodCaller> async_caller;
   async_caller.SetUp(false, cryptohome::MOUNT_ERROR_NONE);
-  EXPECT_CALL(async_caller, AsyncTpmAttestationCreateCertRequest(false, _))
+  int options = CryptohomeClient::INCLUDE_DEVICE_STATE;
+  EXPECT_CALL(async_caller,
+              AsyncTpmAttestationCreateCertRequest(options, _))
       .Times(1);
 
   chromeos::MockCryptohomeClient client;
@@ -261,7 +273,9 @@ TEST_F(AttestationFlowTest, GetCertificate_FailCreateCertRequest) {
 TEST_F(AttestationFlowTest, GetCertificate_CertRequestRejected) {
   StrictMock<cryptohome::MockAsyncMethodCaller> async_caller;
   async_caller.SetUp(true, cryptohome::MOUNT_ERROR_NONE);
-  EXPECT_CALL(async_caller, AsyncTpmAttestationCreateCertRequest(false, _))
+  int options = CryptohomeClient::INCLUDE_DEVICE_STATE;
+  EXPECT_CALL(async_caller,
+              AsyncTpmAttestationCreateCertRequest(options, _))
       .Times(1);
 
   chromeos::MockCryptohomeClient client;

@@ -312,10 +312,12 @@ class FakeCryptohomeClient : public chromeos::CryptohomeClient {
       const std::string& pca_response,
       const AsyncMethodCallback& callback) OVERRIDE {}
   virtual void AsyncTpmAttestationCreateCertRequest(
-      bool is_cert_for_owner,
+      int options,
       const AsyncMethodCallback& callback) OVERRIDE {}
   virtual void AsyncTpmAttestationFinishCertRequest(
       const std::string& pca_response,
+      AttestationKeyType key_type,
+      const std::string& key_name,
       const AsyncMethodCallback& callback) OVERRIDE {}
 
  private:

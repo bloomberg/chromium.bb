@@ -45,9 +45,12 @@ class MockAsyncMethodCaller : public AsyncMethodCaller {
   MOCK_METHOD2(AsyncTpmAttestationEnroll,
                void(const std::string& pca_response, const Callback& callback));
   MOCK_METHOD2(AsyncTpmAttestationCreateCertRequest,
-               void(bool is_cert_for_owner, const DataCallback& callback));
-  MOCK_METHOD2(AsyncTpmAttestationFinishCertRequest,
+               void(int options,
+                    const DataCallback& callback));
+  MOCK_METHOD4(AsyncTpmAttestationFinishCertRequest,
                void(const std::string& pca_response,
+                    chromeos::CryptohomeClient::AttestationKeyType key_type,
+                    const std::string& key_name,
                     const DataCallback& callback));
   MOCK_METHOD2(AsyncGetSanitizedUsername,
                void(const std::string& user,

@@ -50,9 +50,9 @@ void MockAsyncMethodCaller::SetUp(bool success, MountError return_code) {
       .WillByDefault(
           WithArgs<1>(Invoke(this,
                              &MockAsyncMethodCaller::FakeCreateCertRequest)));
-  ON_CALL(*this, AsyncTpmAttestationFinishCertRequest(_, _))
+  ON_CALL(*this, AsyncTpmAttestationFinishCertRequest(_, _, _, _))
       .WillByDefault(
-          WithArgs<1>(Invoke(this,
+          WithArgs<3>(Invoke(this,
                              &MockAsyncMethodCaller::FakeFinishCertRequest)));
   ON_CALL(*this, AsyncGetSanitizedUsername(_, _))
       .WillByDefault(
