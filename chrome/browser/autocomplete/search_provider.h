@@ -353,6 +353,18 @@ class SearchProvider : public AutocompleteProvider,
   AutocompleteMatch NavigationToMatch(const NavigationResult& navigation,
                                       bool is_keyword);
 
+  // Resets the scores of all |keyword_navigation_results_| matches to
+  // be below that of the top keyword query match (the verbatim match
+  // as expressed by |keyword_verbatim_relevance_| or keyword query
+  // suggestions stored in |keyword_suggest_results_|).  May change
+  // the order of matches in |keyword_navigation_results_| in the
+  // process.  Returns true if the top scoring keyword match is now
+  // a query match of some form (not a navigation match) (i.e.,
+  // navigation matches were demoted if necessary).  In other words,
+  // returns false if there are no keyword query suggestions and
+  // the keyword verbatim match is suppressed.
+  bool DemoteKeywordNavigationMatchesBelowTopQueryMatch();
+
   // Updates the value of |done_| from the internal state.
   void UpdateDone();
 

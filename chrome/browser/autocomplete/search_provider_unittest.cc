@@ -117,7 +117,8 @@ class SearchProviderTest : public testing::Test,
 
   // Invokes Start on provider_, then runs all pending tasks.
   void QueryForInput(const string16& text,
-                     bool prevent_inline_autocomplete);
+                     bool prevent_inline_autocomplete,
+                     bool prefer_keyword);
 
   // Calls QueryForInput(), finishes any suggest query, then if |wyt_match| is
   // non-NULL, sets it to the "what you typed" entry for |text|.
@@ -255,11 +256,12 @@ void SearchProviderTest::RunTillProviderDone() {
 }
 
 void SearchProviderTest::QueryForInput(const string16& text,
-                                       bool prevent_inline_autocomplete) {
+                                       bool prevent_inline_autocomplete,
+                                       bool prefer_keyword) {
   // Start a query.
   AutocompleteInput input(text, string16::npos, string16(), GURL(),
                           prevent_inline_autocomplete,
-                          false, true, AutocompleteInput::ALL_MATCHES);
+                          prefer_keyword, true, AutocompleteInput::ALL_MATCHES);
   provider_->Start(input, false);
 
   // RunUntilIdle so that the task scheduled by SearchProvider to create the
@@ -270,7 +272,7 @@ void SearchProviderTest::QueryForInput(const string16& text,
 void SearchProviderTest::QueryForInputAndSetWYTMatch(
     const string16& text,
     AutocompleteMatch* wyt_match) {
-  QueryForInput(text, false);
+  QueryForInput(text, false, false);
   profile_.BlockUntilHistoryProcessesPendingRequests();
   ASSERT_NO_FATAL_FAILURE(FinishDefaultSuggestQuery());
   EXPECT_NE(chrome::IsInstantEnabled(&profile_), provider_->done());
@@ -375,7 +377,7 @@ void SearchProviderTest::FinishDefaultSuggestQuery() {
 // created for the default provider suggest results.
 TEST_F(SearchProviderTest, QueryDefaultProvider) {
   string16 term = term1_.substr(0, term1_.length() - 1);
-  QueryForInput(term, false);
+  QueryForInput(term, false, false);
 
   // Make sure the default providers suggest service was queried.
   net::TestURLFetcher* fetcher = test_factory_.GetFetcherByID(
@@ -414,7 +416,7 @@ TEST_F(SearchProviderTest, QueryDefaultProvider) {
 
 TEST_F(SearchProviderTest, HonorPreventInlineAutocomplete) {
   string16 term = term1_.substr(0, term1_.length() - 1);
-  QueryForInput(term, true);
+  QueryForInput(term, true, false);
 
   ASSERT_FALSE(provider_->matches().empty());
   ASSERT_EQ(AutocompleteMatch::SEARCH_WHAT_YOU_TYPED,
@@ -425,7 +427,9 @@ TEST_F(SearchProviderTest, HonorPreventInlineAutocomplete) {
 // is queried as well as URLFetchers getting created.
 TEST_F(SearchProviderTest, QueryKeywordProvider) {
   string16 term = keyword_term_.substr(0, keyword_term_.length() - 1);
-  QueryForInput(keyword_t_url_->keyword() + UTF8ToUTF16(" ") + term, false);
+  QueryForInput(keyword_t_url_->keyword() + UTF8ToUTF16(" ") + term,
+                false,
+                false);
 
   // Make sure the default providers suggest service was queried.
   net::TestURLFetcher* default_fetcher = test_factory_.GetFetcherByID(
@@ -486,7 +490,7 @@ TEST_F(SearchProviderTest, DontSendPrivateDataToSuggest) {
   };
 
   for (size_t i = 0; i < arraysize(inputs); ++i) {
-    QueryForInput(ASCIIToUTF16(inputs[i]), false);
+    QueryForInput(ASCIIToUTF16(inputs[i]), false, false);
     // Make sure the default providers suggest service was not queried.
     ASSERT_TRUE(test_factory_.GetFetcherByID(
         SearchProvider::kDefaultProviderURLFetcherID) == NULL);
@@ -620,7 +624,7 @@ TEST_F(SearchProviderTest, RememberInstantQuery) {
   PrefService* service = profile_.GetPrefs();
   service->SetBoolean(prefs::kInstantEnabled, true);
 
-  QueryForInput(ASCIIToUTF16("foo"), false);
+  QueryForInput(ASCIIToUTF16("foo"), false, false);
 
   // Finalize the Instant query immediately.
   provider_->FinalizeInstantQuery(ASCIIToUTF16("foo"),
@@ -967,7 +971,7 @@ TEST_F(SearchProviderTest, KeywordVerbatim) {
 // Also verifies that just the *first* navigational result is listed as a match
 // if suggested relevance scores were not sent.
 TEST_F(SearchProviderTest, NavSuggestNoSuggestedRelevanceScores) {
-  QueryForInput(ASCIIToUTF16("a.c"), false);
+  QueryForInput(ASCIIToUTF16("a.c"), false, false);
 
   // Make sure the default providers suggest service was queried.
   net::TestURLFetcher* fetcher = test_factory_.GetFetcherByID(
@@ -994,7 +998,7 @@ TEST_F(SearchProviderTest, NavSuggestNoSuggestedRelevanceScores) {
 
 // Verifies that the most relevant suggest results are added properly.
 TEST_F(SearchProviderTest, SuggestRelevance) {
-  QueryForInput(ASCIIToUTF16("a"), false);
+  QueryForInput(ASCIIToUTF16("a"), false, false);
 
   // Make sure the default provider's suggest service was queried.
   net::TestURLFetcher* fetcher = test_factory_.GetFetcherByID(
@@ -1175,7 +1179,7 @@ TEST_F(SearchProviderTest, DefaultFetcherSuggestRelevance) {
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); i++) {
-    QueryForInput(ASCIIToUTF16("a"), false);
+    QueryForInput(ASCIIToUTF16("a"), false, false);
     net::TestURLFetcher* fetcher = WaitUntilURLFetcherIsReady(
         SearchProvider::kDefaultProviderURLFetcherID);
     ASSERT_TRUE(fetcher);
@@ -1208,7 +1212,7 @@ TEST_F(SearchProviderTest, DefaultFetcherSuggestRelevance) {
 // test DefaultFetcherSuggestRelevance above but this uses inputs that
 // trigger keyword suggestions (i.e., "k a" rather than "a") and has
 // different expectations (because now the results are a mix of
-// keyword suggestions and default provider suggestions.  When a new
+// keyword suggestions and default provider suggestions).  When a new
 // test is added to this TEST_F, please consider if it would be
 // appropriate to add to DefaultFetcherSuggestRelevance as well.
 TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevance) {
@@ -1238,14 +1242,14 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevance) {
     // TODO(mpearson): Investigate the implications (if any) of
     // tagging these results appropriately.  If so, do it because it
     // makes more sense.
-    { "[\"a\",[\"http://b.com\", \"http://c.com\"],[],[],"
-       "{\"google:suggesttype\":[\"NAVIGATION\", \"NAVIGATION\"],"
-       "\"google:suggestrelevance\":[1, 2]}]",
+    { "[\"a\",[\"http://b.com\", \"http://c.com\", \"d\"],[],[],"
+       "{\"google:suggesttype\":[\"NAVIGATION\", \"NAVIGATION\", \"QUERY\"],"
+       "\"google:suggestrelevance\":[1301, 1302, 1303]}]",
       { { "a", true },
-        { "k a", false },
+        { "d", true },
         { "c.com", false },
         { "b.com", false },
-        { kNotApplicable, false } } },
+        { "k a", false }, } },
 
     // Without suggested relevance scores, we should only allow one
     // navsuggest result to be be displayed.
@@ -1293,33 +1297,6 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevance) {
         "\"google:suggestrelevance\":[9998]}]",
       { { "a", true },
         { "a.com", false },
-        { "k a", false },
-        { kNotApplicable, false },
-        { kNotApplicable, false } } },
-    { "[\"a\",[\"http://a.com\"],[],[],"
-       "{\"google:suggesttype\":[\"NAVIGATION\"],"
-        "\"google:verbatimrelevance\":9998,"
-        "\"google:suggestrelevance\":[9999]}]",
-      { { "a.com", false },
-        { "a", true },
-        { "k a", false },
-        { kNotApplicable, false },
-        { kNotApplicable, false } } },
-    { "[\"a\",[\"http://a.com\"],[],[],"
-       "{\"google:suggesttype\":[\"NAVIGATION\"],"
-        "\"google:verbatimrelevance\":0,"
-        "\"google:suggestrelevance\":[9999]}]",
-      { { "a.com", false },
-        { "k a", false },
-        { kNotApplicable, false },
-        { kNotApplicable, false },
-        { kNotApplicable, false } } },
-    { "[\"a\",[\"http://a.com\"],[],[],"
-       "{\"google:suggesttype\":[\"NAVIGATION\"],"
-        "\"google:verbatimrelevance\":-1,"
-        "\"google:suggestrelevance\":[9999]}]",
-      { { "a.com", false },
-        { "a", true },
         { "k a", false },
         { kNotApplicable, false },
         { kNotApplicable, false } } },
@@ -1405,24 +1382,6 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevance) {
         { "k a", false },
         { "a2", true },
         { "a1", true },
-        { kNotApplicable, false } } },
-    { "[\"a\",[\"http://a.com\"],[],[],"
-       "{\"google:suggesttype\":[\"NAVIGATION\"],"
-        "\"google:suggestrelevance\":[1],"
-        "\"google:verbatimrelevance\":0}]",
-      { { "a", true },
-        { "k a", false },
-        { "a.com", false },
-        { kNotApplicable, false },
-        { kNotApplicable, false } } },
-    { "[\"a\",[\"http://a1.com\", \"http://a2.com\"],[],[],"
-       "{\"google:suggesttype\":[\"NAVIGATION\", \"NAVIGATION\"],"
-        "\"google:suggestrelevance\":[1, 2],"
-        "\"google:verbatimrelevance\":0}]",
-      { { "a", true },
-        { "k a", false },
-        { "a2.com", false },
-        { "a1.com", false },
         { kNotApplicable, false } } },
 
     // Ensure that all suggestions are considered, regardless of order.
@@ -1513,10 +1472,135 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevance) {
         { kNotApplicable, false },
         { kNotApplicable, false },
         { kNotApplicable, false } } },
+
+    // Check that navsuggestions will be demoted below queries.
+    // (Navsuggestions are not allowed to appear first.)  In the process,
+    // make sure the navsuggestions still remain in the same order.
+    // First, check the situation where navsuggest scores more than verbatim
+    // and there are no query suggestions.
+    { "[\"a\",[\"http://a1.com\", \"http://a2.com\"],[],[],"
+       "{\"google:suggesttype\":[\"NAVIGATION\", \"NAVIGATION\"],"
+        "\"google:verbatimrelevance\":9990,"
+        "\"google:suggestrelevance\":[9998, 9999]}]",
+      { { "a", true },
+        { "a2.com", false },
+        { "a1.com", false },
+        { "k a", false },
+        { kNotApplicable, false } } },
+    { "[\"a\",[\"http://a1.com\", \"http://a2.com\"],[],[],"
+       "{\"google:suggesttype\":[\"NAVIGATION\", \"NAVIGATION\"],"
+        "\"google:verbatimrelevance\":9990,"
+        "\"google:suggestrelevance\":[9999, 9998]}]",
+      { { "a", true },
+        { "a1.com", false },
+        { "a2.com", false },
+        { "k a", false },
+        { kNotApplicable, false } } },
+    // Check when navsuggest scores more than verbatim and there is query
+    // suggestion but it scores lower.
+    { "[\"a\",[\"http://a1.com\", \"http://a2.com\", \"a3\"],[],[],"
+       "{\"google:suggesttype\":[\"NAVIGATION\", \"NAVIGATION\", \"QUERY\"],"
+        "\"google:verbatimrelevance\":9990,"
+        "\"google:suggestrelevance\":[9998, 9999, 1300]}]",
+      { { "a", true },
+        { "a2.com", false },
+        { "a1.com", false },
+        { "a3", true },
+        { "k a", false } } },
+    { "[\"a\",[\"http://a1.com\", \"http://a2.com\", \"a3\"],[],[],"
+       "{\"google:suggesttype\":[\"NAVIGATION\", \"NAVIGATION\", \"QUERY\"],"
+        "\"google:verbatimrelevance\":9990,"
+        "\"google:suggestrelevance\":[9999, 9998, 1300]}]",
+      { { "a", true },
+        { "a1.com", false },
+        { "a2.com", false },
+        { "a3", true },
+        { "k a", false } } },
+    // Check when navsuggest scores more than a query suggestion.  There is
+    // a verbatim but it scores lower.
+    { "[\"a\",[\"http://a1.com\", \"http://a2.com\", \"a3\"],[],[],"
+       "{\"google:suggesttype\":[\"NAVIGATION\", \"NAVIGATION\", \"QUERY\"],"
+        "\"google:verbatimrelevance\":9990,"
+        "\"google:suggestrelevance\":[9998, 9999, 9997]}]",
+      { { "a3", true },
+        { "a2.com", false },
+        { "a1.com", false },
+        { "a", true },
+        { "k a", false } } },
+    { "[\"a\",[\"http://a1.com\", \"http://a2.com\", \"a3\"],[],[],"
+       "{\"google:suggesttype\":[\"NAVIGATION\", \"NAVIGATION\", \"QUERY\"],"
+        "\"google:verbatimrelevance\":9990,"
+        "\"google:suggestrelevance\":[9999, 9998, 9997]}]",
+      { { "a3", true },
+        { "a1.com", false },
+        { "a2.com", false },
+        { "a", true },
+        { "k a", false } } },
+    { "[\"a\",[\"http://a1.com\", \"http://a2.com\", \"a3\"],[],[],"
+       "{\"google:suggesttype\":[\"NAVIGATION\", \"NAVIGATION\", \"QUERY\"],"
+        "\"google:verbatimrelevance\":0,"
+        "\"google:suggestrelevance\":[9998, 9999, 9997]}]",
+      { { "a3", true },
+        { "a2.com", false },
+        { "a1.com", false },
+        { "k a", false },
+        { kNotApplicable, false } } },
+    { "[\"a\",[\"http://a1.com\", \"http://a2.com\", \"a3\"],[],[],"
+       "{\"google:suggesttype\":[\"NAVIGATION\", \"NAVIGATION\", \"QUERY\"],"
+        "\"google:verbatimrelevance\":0,"
+        "\"google:suggestrelevance\":[9999, 9998, 9997]}]",
+      { { "a3", true },
+        { "a1.com", false },
+        { "a2.com", false },
+        { "k a", false },
+        { kNotApplicable, false } } },
+    // Check when there is neither verbatim nor a query suggestion that,
+    // because we can demote navsuggestions below a query suggestion,
+    // we abandon suggested relevance scores entirely.  One consequence is
+    // that this means we restore the keyword verbatim match.  Another
+    // consequence is that we only accept one navsuggestion (the first in the
+    // list).
+    { "[\"a\",[\"http://a1.com\", \"http://a2.com\"],[],[],"
+       "{\"google:suggesttype\":[\"NAVIGATION\", \"NAVIGATION\"],"
+        "\"google:verbatimrelevance\":0,"
+        "\"google:suggestrelevance\":[9998, 9999]}]",
+      { { "a", true },
+        { "a1.com", false },
+        { "k a", false },
+        { kNotApplicable, false },
+        { kNotApplicable, false } } },
+    { "[\"a\",[\"http://a1.com\", \"http://a2.com\"],[],[],"
+       "{\"google:suggesttype\":[\"NAVIGATION\", \"NAVIGATION\"],"
+        "\"google:verbatimrelevance\":0,"
+        "\"google:suggestrelevance\":[9999, 9998]}]",
+      { { "a", true },
+        { "a1.com", false },
+        { "k a", false },
+        { kNotApplicable, false },
+        { kNotApplicable, false } } },
+    // More checks that everything works when it's not necessary to demote.
+    { "[\"a\",[\"http://a1.com\", \"http://a2.com\", \"a3\"],[],[],"
+       "{\"google:suggesttype\":[\"NAVIGATION\", \"NAVIGATION\", \"QUERY\"],"
+        "\"google:verbatimrelevance\":9990,"
+        "\"google:suggestrelevance\":[9997, 9998, 9999]}]",
+      { { "a3", true },
+        { "a2.com", false },
+        { "a1.com", false },
+        { "a", true },
+        { "k a", false } } },
+    { "[\"a\",[\"http://a1.com\", \"http://a2.com\", \"a3\"],[],[],"
+       "{\"google:suggesttype\":[\"NAVIGATION\", \"NAVIGATION\", \"QUERY\"],"
+        "\"google:verbatimrelevance\":9990,"
+        "\"google:suggestrelevance\":[9998, 9997, 9999]}]",
+      { { "a3", true },
+        { "a1.com", false },
+        { "a2.com", false },
+        { "a", true },
+        { "k a", false } } },
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); i++) {
-    QueryForInput(ASCIIToUTF16("k a"), false);
+    QueryForInput(ASCIIToUTF16("k a"), false, true);
 
     // Set up a default fetcher with no results.
     net::TestURLFetcher* default_fetcher = WaitUntilURLFetcherIsReady(
@@ -1630,7 +1714,7 @@ TEST_F(SearchProviderTest, DefaultProviderSuggestRelevanceScoringUrlInput) {
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); i++) {
-    QueryForInput(ASCIIToUTF16(cases[i].input), false);
+    QueryForInput(ASCIIToUTF16(cases[i].input), false, false);
     net::TestURLFetcher* fetcher = WaitUntilURLFetcherIsReady(
         SearchProvider::kDefaultProviderURLFetcherID);
     ASSERT_TRUE(fetcher);
@@ -1656,7 +1740,7 @@ TEST_F(SearchProviderTest, DefaultProviderSuggestRelevanceScoringUrlInput) {
 
 // A basic test that verifies the field trial triggered parsing logic.
 TEST_F(SearchProviderTest, FieldTrialTriggeredParsing) {
-  QueryForInput(ASCIIToUTF16("foo"), false);
+  QueryForInput(ASCIIToUTF16("foo"), false, false);
 
   // Make sure the default providers suggest service was queried.
   net::TestURLFetcher* fetcher = test_factory_.GetFetcherByID(
@@ -1828,7 +1912,7 @@ TEST_F(SearchProviderTest, NavigationInline) {
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); i++) {
-    QueryForInput(ASCIIToUTF16(cases[i].input), false);
+    QueryForInput(ASCIIToUTF16(cases[i].input), false, false);
     SearchProvider::NavigationResult result(GURL(cases[i].url), string16(), 0);
     AutocompleteMatch match(provider_->NavigationToMatch(result, false));
     EXPECT_EQ(cases[i].inline_offset, match.inline_autocomplete_offset);
@@ -1843,14 +1927,14 @@ TEST_F(SearchProviderTest, NavigationInlineSchemeSubstring) {
   const SearchProvider::NavigationResult result(GURL(url), string16(), 0);
 
   // Check the offset and strings when inline autocompletion is allowed.
-  QueryForInput(input, false);
+  QueryForInput(input, false, false);
   AutocompleteMatch match_inline(provider_->NavigationToMatch(result, false));
   EXPECT_EQ(2U, match_inline.inline_autocomplete_offset);
   EXPECT_EQ(url, match_inline.fill_into_edit);
   EXPECT_EQ(url, match_inline.contents);
 
   // Check the same offset and strings when inline autocompletion is prevented.
-  QueryForInput(input, true);
+  QueryForInput(input, true, false);
   AutocompleteMatch match_prevent(provider_->NavigationToMatch(result, false));
   EXPECT_EQ(string16::npos, match_prevent.inline_autocomplete_offset);
   EXPECT_EQ(url, match_prevent.fill_into_edit);
@@ -1859,7 +1943,7 @@ TEST_F(SearchProviderTest, NavigationInlineSchemeSubstring) {
 
 // Verifies that input "w" marks a more significant domain label than "www.".
 TEST_F(SearchProviderTest, NavigationInlineDomainClassify) {
-  QueryForInput(ASCIIToUTF16("w"), false);
+  QueryForInput(ASCIIToUTF16("w"), false, false);
   const GURL url("http://www.wow.com");
   const SearchProvider::NavigationResult result(url, string16(), 0);
   AutocompleteMatch match(provider_->NavigationToMatch(result, false));
