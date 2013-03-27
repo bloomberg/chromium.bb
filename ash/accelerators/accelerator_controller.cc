@@ -172,18 +172,25 @@ gfx::Display::Rotation GetNextRotation(gfx::Display::Rotation current) {
 }
 
 bool HandleScaleUI(bool up) {
-  // UI Scaling is effective only on internal display.
-  int64 display_id = gfx::Display::InternalDisplayId();
-#if defined(OS_CHROMEOS)
-  // On linux desktop, allow ui scalacing on the first dislpay.
-  if (!base::chromeos::IsRunningOnChromeOS())
-    display_id = Shell::GetInstance()->display_manager()->first_display_id();
-#endif
-  const DisplayInfo& display_info = Shell::GetInstance()->display_manager()->
-      GetDisplayInfo(display_id);
-  Shell::GetInstance()->display_manager()->SetDisplayUIScale(
-      display_id,
-      internal::DisplayManager::GetNextUIScale(display_info.ui_scale(), up));
+  internal::DisplayManager* display_manager =
+      Shell::GetInstance()->display_manager();
+  int64 display_id = display_manager->GetDisplayIdForUIScaling();
+  if (display_id == gfx::Display::kInvalidDisplayID)
+    return false;
+  const DisplayInfo& display_info = display_manager->GetDisplayInfo(display_id);
+  float next_scale =
+      internal::DisplayManager::GetNextUIScale(display_info.ui_scale(), up);
+  display_manager->SetDisplayUIScale(display_id, next_scale);
+  return true;
+}
+
+bool HandleScaleReset() {
+  internal::DisplayManager* display_manager =
+      Shell::GetInstance()->display_manager();
+  int64 display_id = display_manager->GetDisplayIdForUIScaling();
+  if (display_id == gfx::Display::kInvalidDisplayID)
+    return false;
+  display_manager->SetDisplayUIScale(display_id, 1.0f);
   return true;
 }
 
@@ -792,6 +799,8 @@ bool AcceleratorController::PerformAction(int action,
       return HandleScaleUI(true /* up */);
     case SCALE_UI_DOWN:
       return HandleScaleUI(false /* down */);
+    case SCALE_UI_RESET:
+      return HandleScaleReset();
     case ROTATE_WINDOW:
       return HandleRotateActiveWindow();
     case ROTATE_SCREEN:

@@ -156,6 +156,12 @@ class ASH_EXPORT DisplayManager : public aura::RootWindowObserver {
   // Returns the human-readable name for the display |id|.
   std::string GetDisplayNameForId(int64 id);
 
+  // Returns the display id that is capable of UI scaling. On device,
+  // this returns internal display's ID if its device scale factor is 2,
+  // or invalid ID if such internal display doesn't exist. On linux
+  // desktop, this returns the first display ID.
+  int64 GetDisplayIdForUIScaling() const;
+
   // RootWindowObserver overrides:
   virtual void OnRootWindowResized(const aura::RootWindow* root,
                                    const gfx::Size& new_size) OVERRIDE;

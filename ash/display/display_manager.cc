@@ -54,10 +54,10 @@ typedef std::vector<DisplayInfo> DisplayInfoList;
 
 namespace {
 
-// List of value UI Scale values. These scales are equivalent to 1024,
-// 1280, 1600 and 1920 pixel width respectively on 2560 pixel width 2x
+// List of value UI Scale values. These scales are equivalent to 640, 800, 1024,
+// 1280, 1440, 1600 and 1920 pixel width respectively on 2560 pixel width 2x
 // density display.
-const float kUIScales[] = {0.8f, 1.0f, 1.25f, 1.5f};
+const float kUIScales[] = {0.5f, 0.625f, 0.8f, 1.0f, 1.125f, 1.25f, 1.5f};
 const size_t kUIScaleTableSize = arraysize(kUIScales);
 
 struct DisplaySortFunctor {
@@ -265,18 +265,7 @@ bool DisplayManager::IsDisplayUIScalingEnabled() const {
       HasSwitch(switches::kAshDisableUIScaling);
   if (!enabled)
     return false;
-  // UI Scaling is effective only when the internal display has
-  // 2x density (currently Pixel).
-  int64 display_id = gfx::Display::InternalDisplayId();
-#if defined(OS_CHROMEOS)
-  // On linux desktop, allow ui scaling on the first dislpay if an internal
-  // display isn't specified.
-  if (display_id == gfx::Display::kInvalidDisplayID &&
-      !base::chromeos::IsRunningOnChromeOS()) {
-    display_id = Shell::GetInstance()->display_manager()->first_display_id();
-  }
-#endif
-  return GetDisplayForId(display_id).device_scale_factor() == 2.0f;
+  return GetDisplayIdForUIScaling() != gfx::Display::kInvalidDisplayID;
 }
 
 gfx::Insets DisplayManager::GetOverscanInsets(int64 display_id) const {
@@ -431,7 +420,6 @@ void DisplayManager::UpdateDisplays(
   }
 
   displays_ = new_displays;
-
   // Temporarily add displays to be removed because display object
   // being removed are accessed during shutting down the root.
   displays_.insert(displays_.end(), removed_displays.begin(),
@@ -572,6 +560,20 @@ void DisplayManager::OnRootWindowResized(const aura::RootWindow* root,
       Shell::GetInstance()->screen()->NotifyBoundsChanged(display);
     }
   }
+}
+
+int64 DisplayManager::GetDisplayIdForUIScaling() const {
+  // UI Scaling is effective only on internal display.
+  int64 display_id = gfx::Display::InternalDisplayId();
+#if defined(OS_CHROMEOS)
+  // On linux desktop, allow ui scalacing on the first dislpay.
+  if (!base::chromeos::IsRunningOnChromeOS())
+    display_id = first_display_id();
+#elif defined(OS_WIN)
+  display_id = first_display_id();
+#endif
+  return GetDisplayForId(display_id).device_scale_factor() == 2.0f ?
+      display_id : gfx::Display::kInvalidDisplayID;
 }
 
 void DisplayManager::Init() {

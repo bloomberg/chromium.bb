@@ -700,5 +700,40 @@ TEST_F(DisplayManagerTest, Rotate) {
             GetDisplayInfoAt(1).size_in_pixel().ToString());
 }
 
+TEST_F(DisplayManagerTest, UIScale) {
+  // 1x display does not support scaling.
+  UpdateDisplay("100x200");
+  int64 display_id = Shell::GetScreen()->GetPrimaryDisplay().id();
+
+  display_manager()->SetDisplayUIScale(display_id, 1.5f);
+  EXPECT_EQ(1.0f, GetDisplayInfoAt(0).ui_scale());
+  display_manager()->SetDisplayUIScale(display_id, 1.25f);
+  EXPECT_EQ(1.0f, GetDisplayInfoAt(0).ui_scale());
+  display_manager()->SetDisplayUIScale(display_id, 1.125f);
+  EXPECT_EQ(1.0, GetDisplayInfoAt(0).ui_scale());
+  display_manager()->SetDisplayUIScale(display_id, 0.8f);
+  EXPECT_EQ(1.0f, GetDisplayInfoAt(0).ui_scale());
+  display_manager()->SetDisplayUIScale(display_id, 0.625f);
+  EXPECT_EQ(1.0f, GetDisplayInfoAt(0).ui_scale());
+  display_manager()->SetDisplayUIScale(display_id, 0.5f);
+  EXPECT_EQ(1.0f, GetDisplayInfoAt(0).ui_scale());
+
+  // 2x display supports all scales.
+  UpdateDisplay("100x200*2");
+  EXPECT_EQ(1.0f, GetDisplayInfoAt(0).ui_scale());
+  display_manager()->SetDisplayUIScale(display_id, 1.5f);
+  EXPECT_EQ(1.5f, GetDisplayInfoAt(0).ui_scale());
+  display_manager()->SetDisplayUIScale(display_id, 1.25f);
+  EXPECT_EQ(1.25f, GetDisplayInfoAt(0).ui_scale());
+  display_manager()->SetDisplayUIScale(display_id, 1.125f);
+  EXPECT_EQ(1.125f, GetDisplayInfoAt(0).ui_scale());
+  display_manager()->SetDisplayUIScale(display_id, 0.8f);
+  EXPECT_EQ(0.8f, GetDisplayInfoAt(0).ui_scale());
+  display_manager()->SetDisplayUIScale(display_id, 0.625f);
+  EXPECT_EQ(0.625f, GetDisplayInfoAt(0).ui_scale());
+  display_manager()->SetDisplayUIScale(display_id, 0.5f);
+  EXPECT_EQ(0.5f, GetDisplayInfoAt(0).ui_scale());
+}
+
 }  // namespace internal
 }  // namespace ash

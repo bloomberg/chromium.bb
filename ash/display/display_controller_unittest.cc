@@ -243,14 +243,14 @@ TEST_F(DisplayControllerTest, BoundsUpdated) {
   EXPECT_EQ("0,0 400x400", GetPrimaryDisplay().bounds().ToString());
   EXPECT_EQ(1, Shell::GetScreen()->GetNumDisplays());
 
-  UpdateDisplay("400x500,700x700*2");
+  UpdateDisplay("400x500*2,300x300");
   EXPECT_EQ(1, observer.CountAndReset());
   ASSERT_EQ(2, Shell::GetScreen()->GetNumDisplays());
-  EXPECT_EQ("0,0 400x500", GetPrimaryDisplay().bounds().ToString());
-  EXPECT_EQ("0,500 350x350", GetSecondaryDisplay().bounds().ToString());
+  EXPECT_EQ("0,0 200x250", GetPrimaryDisplay().bounds().ToString());
+  EXPECT_EQ("0,250 300x300", GetSecondaryDisplay().bounds().ToString());
 
   // No change
-  UpdateDisplay("400x500,700x700*2");
+  UpdateDisplay("400x500*2,300x300");
   EXPECT_EQ(0, observer.CountAndReset());
 
   // Rotation
@@ -260,12 +260,14 @@ TEST_F(DisplayControllerTest, BoundsUpdated) {
   display_manager->SetDisplayRotation(primary_id, gfx::Display::ROTATE_90);
   EXPECT_EQ(0, observer.CountAndReset());
 
-  // UI scale
+  // UI scale is eanbled only on internal display (=1st display in unittest).
   int64 secondary_id = GetSecondaryDisplay().id();
   gfx::Display::SetInternalDisplayId(secondary_id);
   display_manager->SetDisplayUIScale(secondary_id, 1.25f);
+  EXPECT_EQ(0, observer.CountAndReset());
+  display_manager->SetDisplayUIScale(primary_id, 1.25f);
   EXPECT_EQ(1, observer.CountAndReset());
-  display_manager->SetDisplayUIScale(secondary_id, 1.25f);
+  display_manager->SetDisplayUIScale(primary_id, 1.25f);
   EXPECT_EQ(0, observer.CountAndReset());
 }
 

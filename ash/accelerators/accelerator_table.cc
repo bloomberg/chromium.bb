@@ -78,10 +78,8 @@ const AcceleratorData kAcceleratorData[] = {
   { true, ui::VKEY_POWER, ui::EF_SHIFT_DOWN, LOCK_PRESSED },
   { false, ui::VKEY_POWER, ui::EF_SHIFT_DOWN, LOCK_RELEASED },
   // Extra shortcut to rotate/scale up/down the screen on linux desktop.
-  { true, ui::VKEY_F3, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, ROTATE_SCREEN },
-  { true, ui::VKEY_F2, ui::EF_CONTROL_DOWN , SCALE_UI_UP },
-  { true, ui::VKEY_F2,
-    ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN, SCALE_UI_DOWN },
+  { true, ui::VKEY_R,
+    ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN, ROTATE_SCREEN },
 #endif  // !defined(NDEBUG)
   { true, ui::VKEY_O, ui::EF_CONTROL_DOWN, OPEN_FILE_DIALOG },
   { true, ui::VKEY_M, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN,
@@ -105,10 +103,12 @@ const AcceleratorData kAcceleratorData[] = {
     NEW_INCOGNITO_WINDOW },
   { true, ui::VKEY_N, ui::EF_CONTROL_DOWN, NEW_WINDOW },
   { true, ui::VKEY_T, ui::EF_CONTROL_DOWN, NEW_TAB },
-  { true, ui::VKEY_BROWSER_BACK,
+  { true, ui::VKEY_OEM_MINUS,
     ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN, SCALE_UI_UP },
-  { true, ui::VKEY_BROWSER_FORWARD,
+  { true, ui::VKEY_OEM_PLUS,
     ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN, SCALE_UI_DOWN },
+  { true, ui::VKEY_0,
+    ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN, SCALE_UI_RESET },
   { true, ui::VKEY_BROWSER_REFRESH,
     ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN, ROTATE_SCREEN },
   { true, ui::VKEY_BROWSER_REFRESH,
@@ -312,6 +312,7 @@ const AcceleratorAction kNonrepeatableActions[] = {
   ROTATE_WINDOW,
   SCALE_UI_UP,
   SCALE_UI_DOWN,
+  SCALE_UI_RESET,
   TOGGLE_MAXIMIZED,
   WINDOW_MINIMIZE,
 };
@@ -342,6 +343,7 @@ const AcceleratorAction kActionsAllowedInAppMode[] = {
   ROTATE_SCREEN,
   SCALE_UI_UP,
   SCALE_UI_DOWN,
+  SCALE_UI_RESET,
   SWAP_PRIMARY_DISPLAY,
   SWITCH_IME,  // Switch to another IME depending on the accelerator.
   TOGGLE_CAPS_LOCK,
