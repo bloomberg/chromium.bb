@@ -6,6 +6,7 @@
 
 #include "ash/launcher/launcher.h"
 #include "ash/root_window_controller.h"
+#include "ash/screen_ash.h"
 #include "ash/shelf/shelf_types.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
@@ -59,13 +60,6 @@ void PanelWindowResizer::Drag(const gfx::Point& location, int event_flags) {
 }
 
 void PanelWindowResizer::CompleteDrag(int event_flags) {
-  if (details_.window->GetProperty(internal::kPanelAttachedKey) !=
-      should_attach_) {
-    details_.window->SetProperty(internal::kPanelAttachedKey, should_attach_);
-    details_.window->SetDefaultParentByRootWindow(
-            details_.window->GetRootWindow(),
-            details_.window->bounds());
-  }
   FinishDragging();
 }
 
@@ -74,6 +68,7 @@ void PanelWindowResizer::RevertDrag() {
     return;
 
   details_.window->SetBounds(details_.initial_bounds_in_parent);
+  should_attach_ = was_attached_;
 
   if (!details_.restore_bounds.IsEmpty())
     SetRestoreBoundsInScreen(details_.window, details_.restore_bounds);
@@ -108,6 +103,9 @@ bool PanelWindowResizer::AttachToLauncher(gfx::Rect* bounds) {
   if (panel_layout_manager_) {
     gfx::Rect launcher_bounds = panel_layout_manager_->launcher()->
         shelf_widget()->GetWindowBoundsInScreen();
+    launcher_bounds = ScreenAsh::ConvertRectFromScreen(
+        details_.window->parent(),
+        launcher_bounds);
     switch (panel_layout_manager_->launcher()->alignment()) {
       case SHELF_ALIGNMENT_BOTTOM:
         if (bounds->bottom() >= (launcher_bounds.y() -
@@ -151,12 +149,19 @@ void PanelWindowResizer::StartedDragging() {
     details_.window->SetProperty(internal::kContinueDragAfterReparent, true);
     details_.window->SetProperty(internal::kPanelAttachedKey, true);
     details_.window->SetDefaultParentByRootWindow(
-            details_.window->GetRootWindow(),
-            details_.window->bounds());
+        details_.window->GetRootWindow(),
+        details_.window->GetBoundsInScreen());
   }
 }
 
 void PanelWindowResizer::FinishDragging() {
+  if (details_.window->GetProperty(internal::kPanelAttachedKey) !=
+      should_attach_) {
+    details_.window->SetProperty(internal::kPanelAttachedKey, should_attach_);
+    details_.window->SetDefaultParentByRootWindow(
+        details_.window->GetRootWindow(),
+        details_.window->GetBoundsInScreen());
+  }
   panel_layout_manager_->FinishDragging();
 }
 
