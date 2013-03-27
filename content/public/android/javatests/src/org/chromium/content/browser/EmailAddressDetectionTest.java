@@ -6,7 +6,6 @@ package org.chromium.content.browser;
 
 import android.test.suitebuilder.annotation.MediumTest;
 
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 
 /**
@@ -22,14 +21,11 @@ public class EmailAddressDetectionTest extends ContentDetectionTestBase {
         return intentUrl.equals(expectedUrl);
     }
 
-    /*
     @MediumTest
     @Feature({"ContentDetection", "TabContents"})
-    http://crbug.com/172786
-    */
-    @DisabledTest
     public void testValidEmailAddresses() throws Throwable {
         startActivityWithTestUrl("content/content_detection/email.html");
+        assertWaitForPageScaleFactorMatch(1.0f);
 
         // valid_1: i.want.a.pony@chromium.org.
         String intentUrl = scrollAndTapExpectingIntent("valid_1");

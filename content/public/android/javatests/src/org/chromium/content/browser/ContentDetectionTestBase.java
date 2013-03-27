@@ -10,6 +10,8 @@ import android.net.Uri;
 import java.util.concurrent.TimeUnit;
 
 import org.chromium.base.test.util.UrlUtils;
+import org.chromium.content.browser.test.util.Criteria;
+import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content.browser.test.util.JavaScriptUtils;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
@@ -93,5 +95,21 @@ public class ContentDetectionTestBase extends ContentShellTestBase {
         onPageFinishedHelper.waitForCallback(currentCallCount, 1, WAIT_TIMEOUT_SECONDS,
                 TimeUnit.SECONDS);
         getInstrumentation().waitForIdleSync();
+    }
+
+    // TODO(aelias): This method needs to be removed once http://crbug.com/179511 is fixed.
+    // Meanwhile, we have to wait if the page has the <meta viewport> tag.
+    /**
+     * Waits till the ContentViewCore receives the expected page scale factor
+     * from the compositor and asserts that this happens.
+     */
+    protected void assertWaitForPageScaleFactorMatch(final float expectedScale)
+            throws InterruptedException {
+        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return getContentViewCore().getScale() == expectedScale;
+            }
+        }));
     }
 }
