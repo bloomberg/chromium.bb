@@ -460,14 +460,29 @@ void FaviconCache::OnReceivedSyncFavicon(const GURL& page_url,
            << icon_url.spec();
   page_favicon_map_[page_url] = icon_url;
 
-  // If this favicon is already synced, do nothing else.
-  if (synced_favicons_.find(icon_url) != synced_favicons_.end())
-    return;
-
   // If there is no actual image, it means there either is no synced
   // favicon, or it's on its way (race condition).
   // TODO(zea): potentially trigger a favicon web download here (delayed?).
   if (icon_bytes.size() == 0)
+    return;
+
+  // Post a task to do the actual association because this method may have been
+  // called while in a transaction.
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&FaviconCache::OnReceivedSyncFaviconImpl,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 icon_url,
+                 icon_bytes,
+                 visit_time_ms));
+}
+
+void FaviconCache::OnReceivedSyncFaviconImpl(
+    const GURL& icon_url,
+    const std::string& icon_bytes,
+    int64 visit_time_ms) {
+  // If this favicon is already synced, do nothing else.
+  if (synced_favicons_.find(icon_url) != synced_favicons_.end())
     return;
 
   // Don't add any more favicons once we hit our in memory limit.
@@ -486,14 +501,9 @@ void FaviconCache::OnReceivedSyncFavicon(const GURL& page_url,
   favicon_info->bitmap_data[SIZE_16].pixel_size.set_height(16);
   UpdateFaviconVisitTime(icon_url, syncer::ProtoTimeToTime(visit_time_ms));
 
-  // Post a task, as this can be called while still in a transaction.
-  MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&FaviconCache::UpdateSyncState,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 icon_url,
-                 SYNC_BOTH,
-                 syncer::SyncChange::ACTION_ADD));
+  UpdateSyncState(icon_url,
+                  SYNC_BOTH,
+                  syncer::SyncChange::ACTION_ADD);
 }
 
 void FaviconCache::SetLegacyDelegate(FaviconCacheObserver* observer) {

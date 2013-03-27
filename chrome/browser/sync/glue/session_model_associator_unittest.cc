@@ -43,6 +43,7 @@ class SyncSessionModelAssociatorTest : public testing::Test {
 
   void LoadTabFavicon(const sync_pb::SessionTab& tab) {
     model_associator_.LoadForeignTabFavicon(tab);
+    message_loop_.RunUntilIdle();
   }
 
   static GURL GetCurrentVirtualURL(const SyncedTabDelegate& tab_delegate) {

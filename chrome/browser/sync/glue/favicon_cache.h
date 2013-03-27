@@ -141,6 +141,12 @@ class FaviconCache : public syncer::SyncableService,
     SYNC_BOTH
   };
 
+  // Helper method to perform OnReceivedSyncFavicon work without worrying about
+  // whether caller holds a sync transaction.
+  void OnReceivedSyncFaviconImpl(const GURL& icon_url,
+                                 const std::string& icon_bytes,
+                                 int64 visit_time_ms);
+
   // Callback method to store a tab's favicon into its sync node once it becomes
   // available. Does nothing if no favicon data was available.
   void OnFaviconDataAvailable(

@@ -287,6 +287,13 @@ class SyncFaviconCacheTest : public testing::Test {
   // Finish an outstanding favicon load for the icon described in |test_data|.
   void OnCustomFaviconDataAvailable(const TestFaviconData& test_data);
 
+  // Helper method to run the message loop after invoking
+  // OnReceivedSyncFavicon, which posts an internal task.
+  void TriggerSyncFaviconReceived(const GURL& page_url,
+                                  const GURL& icon_url,
+                                  const std::string& icon_bytes,
+                                  int64 last_visit_time_ms);
+
  private:
   MessageLoopForUI message_loop_;
   FaviconCache cache_;
@@ -441,6 +448,18 @@ void SyncFaviconCacheTest::OnCustomFaviconDataAvailable(
   cache()->OnFaviconDataAvailable(test_data.page_url, bitmap_results);
 }
 
+void SyncFaviconCacheTest::TriggerSyncFaviconReceived(
+    const GURL& page_url,
+    const GURL& icon_url,
+    const std::string& icon_bytes,
+    int64 last_visit_time_ms) {
+  cache()->OnReceivedSyncFavicon(page_url,
+                                 icon_url,
+                                 icon_bytes,
+                                 last_visit_time_ms);
+  message_loop_.RunUntilIdle();
+}
+
 // A freshly constructed cache should be empty.
 TEST_F(SyncFaviconCacheTest, Empty) {
   EXPECT_EQ(0U, GetFaviconCount());
@@ -451,7 +470,7 @@ TEST_F(SyncFaviconCacheTest, ReceiveSyncFavicon) {
   std::string fav_url = "http://www.google.com/favicon.ico";
   std::string bytes = "bytes";
   EXPECT_EQ(0U, GetFaviconCount());
-  cache()->OnReceivedSyncFavicon(GURL(page_url), GURL(fav_url), bytes, 0);
+  TriggerSyncFaviconReceived(GURL(page_url), GURL(fav_url), bytes, 0);
   EXPECT_EQ(1U, GetFaviconCount());
   EXPECT_TRUE(ExpectFaviconEquals(page_url, bytes));
 }
@@ -461,15 +480,15 @@ TEST_F(SyncFaviconCacheTest, ReceiveEmptySyncFavicon) {
   std::string fav_url = "http://www.google.com/favicon.ico";
   std::string bytes = "bytes";
   EXPECT_EQ(0U, GetFaviconCount());
-  cache()->OnReceivedSyncFavicon(GURL(page_url),
-                                 GURL(fav_url),
-                                 std::string(),
-                                 0);
+  TriggerSyncFaviconReceived(GURL(page_url),
+                             GURL(fav_url),
+                             std::string(),
+                             0);
   EXPECT_EQ(0U, GetFaviconCount());
   EXPECT_FALSE(ExpectFaviconEquals(page_url, std::string()));
 
   // Then receive the actual favicon.
-  cache()->OnReceivedSyncFavicon(GURL(page_url), GURL(fav_url), bytes, 0);
+  TriggerSyncFaviconReceived(GURL(page_url), GURL(fav_url), bytes, 0);
   EXPECT_EQ(1U, GetFaviconCount());
   EXPECT_TRUE(ExpectFaviconEquals(page_url, bytes));
 }
@@ -480,13 +499,13 @@ TEST_F(SyncFaviconCacheTest, ReceiveUpdatedSyncFavicon) {
   std::string bytes = "bytes";
   std::string bytes2 = "bytes2";
   EXPECT_EQ(0U, GetFaviconCount());
-  cache()->OnReceivedSyncFavicon(GURL(page_url), GURL(fav_url), bytes, 0);
+  TriggerSyncFaviconReceived(GURL(page_url), GURL(fav_url), bytes, 0);
   EXPECT_EQ(1U, GetFaviconCount());
   EXPECT_TRUE(ExpectFaviconEquals(page_url, bytes));
 
   // The cache should not update existing favicons from tab sync favicons
   // (which can be reassociated several times).
-  cache()->OnReceivedSyncFavicon(GURL(page_url), GURL(fav_url), bytes2, 0);
+  TriggerSyncFaviconReceived(GURL(page_url), GURL(fav_url), bytes2, 0);
   EXPECT_EQ(1U, GetFaviconCount());
   EXPECT_TRUE(ExpectFaviconEquals(page_url, bytes));
   EXPECT_FALSE(ExpectFaviconEquals(page_url, bytes2));
@@ -498,12 +517,12 @@ TEST_F(SyncFaviconCacheTest, MultipleMappings) {
   std::string fav_url = "http://www.google.com/favicon.ico";
   std::string bytes = "bytes";
   EXPECT_EQ(0U, GetFaviconCount());
-  cache()->OnReceivedSyncFavicon(GURL(page_url), GURL(fav_url), bytes, 0);
+  TriggerSyncFaviconReceived(GURL(page_url), GURL(fav_url), bytes, 0);
   EXPECT_EQ(1U, GetFaviconCount());
   EXPECT_TRUE(ExpectFaviconEquals(page_url, bytes));
 
   // Map another page to the same favicon. They should share the same data.
-  cache()->OnReceivedSyncFavicon(GURL(page2_url), GURL(fav_url), bytes, 0);
+  TriggerSyncFaviconReceived(GURL(page2_url), GURL(fav_url), bytes, 0);
   EXPECT_EQ(1U, GetFaviconCount());
   EXPECT_TRUE(ExpectFaviconEquals(page2_url, bytes));
 }
@@ -545,10 +564,10 @@ TEST_F(SyncFaviconCacheTest, SyncExistingLocal) {
   std::vector<int> expected_icons;
   for (int i = 0; i < kFaviconBatchSize; ++i) {
     TestFaviconData favicon = BuildFaviconData(i);
-    cache()->OnReceivedSyncFavicon(favicon.page_url,
-                                   favicon.icon_url,
-                                   favicon.image_16,
-                                   i);
+    TriggerSyncFaviconReceived(favicon.page_url,
+                               favicon.icon_url,
+                               favicon.image_16,
+                               i);
     expected_change_types.push_back(syncer::SyncChange::ACTION_ADD);
     expected_icons.push_back(i);
   }
@@ -647,10 +666,10 @@ TEST_F(SyncFaviconCacheTest, SyncMergesImages) {
   // First go through and add local 16p favicons.
   for (int i = 0; i < kFaviconBatchSize; ++i) {
     TestFaviconData favicon = BuildFaviconData(i);
-    cache()->OnReceivedSyncFavicon(favicon.page_url,
-                                   favicon.icon_url,
-                                   favicon.image_16,
-                                   i);
+    TriggerSyncFaviconReceived(favicon.page_url,
+                               favicon.icon_url,
+                               favicon.image_16,
+                               i);
   }
 
   // Then go through and create the initial sync data, which does not have 16p
@@ -726,10 +745,10 @@ TEST_F(SyncFaviconCacheTest, SyncMergesTracking) {
   // First go through and add local 16p favicons.
   for (int i = 0; i < kFaviconBatchSize; ++i) {
     TestFaviconData favicon = BuildFaviconData(i);
-    cache()->OnReceivedSyncFavicon(favicon.page_url,
-                                   favicon.icon_url,
-                                   favicon.image_16,
-                                   i);
+    TriggerSyncFaviconReceived(favicon.page_url,
+                               favicon.icon_url,
+                               favicon.image_16,
+                               i);
   }
 
   // Then go through and create the initial sync data, which for the first half
@@ -1079,10 +1098,10 @@ TEST_F(SyncFaviconCacheTest, ExpireOnMergeData) {
     expected_icons.push_back(i);
 
     TestFaviconData favicon = BuildFaviconData(i+kMaxSyncFavicons);
-    cache()->OnReceivedSyncFavicon(favicon.page_url,
-                                   favicon.icon_url,
-                                   favicon.image_16,
-                                   i+kMaxSyncFavicons);
+    TriggerSyncFaviconReceived(favicon.page_url,
+                               favicon.icon_url,
+                               favicon.image_16,
+                               i+kMaxSyncFavicons);
   }
 
   EXPECT_FALSE(VerifyLocalIcons(expected_icons));
