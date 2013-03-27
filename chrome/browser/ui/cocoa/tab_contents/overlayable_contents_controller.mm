@@ -22,7 +22,6 @@
 
 @synthesize drawDropShadow = drawDropShadow_;
 @synthesize activeContainerOffset = activeContainerOffset_;
-@synthesize overlayContentsOffset = overlayContentsOffset_;
 
 - (id)initWithBrowser:(Browser*)browser
      windowController:(BrowserWindowController*)windowController {
@@ -146,14 +145,6 @@
   [self layoutViews];
 }
 
-- (void)setOverlayContentsOffset:(CGFloat)overlayContentsOffset {
-  if (overlayContentsOffset_ == overlayContentsOffset)
-    return;
-
-  overlayContentsOffset_ = overlayContentsOffset;
-  [self layoutViews];
-}
-
 - (void)viewDidResize:(NSNotification*)note {
   [self layoutViews];
 }
@@ -174,8 +165,8 @@
   if (overlayContents_) {
     NSRect overlayFrame = bounds;
     overlayFrame.size.height = [self overlayHeightInPixels];
-    overlayFrame.origin.y = NSMinY([topSeparatorView_ frame]) -
-                            NSHeight(overlayFrame) - overlayContentsOffset_;
+    overlayFrame.origin.y =
+        NSMinY([topSeparatorView_ frame]) - NSHeight(overlayFrame);
     [overlayContents_->GetView()->GetNativeView() setFrame:overlayFrame];
 
     if (dropShadowView_) {
@@ -201,8 +192,8 @@
 }
 
 - (CGFloat)overlayHeightInPixels {
-  CGFloat height = NSHeight([[self view] bounds]) -
-                   NSHeight([topSeparatorView_ frame]) - overlayContentsOffset_;
+  CGFloat height =
+      NSHeight([[self view] bounds]) - NSHeight([topSeparatorView_ frame]);
   switch (overlayHeightUnits_) {
     case INSTANT_SIZE_PERCENT:
       return std::min(height, (height * overlayHeight_) / 100);

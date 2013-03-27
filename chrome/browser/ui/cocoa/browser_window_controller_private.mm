@@ -209,7 +209,7 @@ willPositionSheet:(NSWindow*)sheet
   CGFloat toolbarTopY = maxY;
   maxY = [self layoutToolbarAtMinX:minX maxY:maxY width:width];
 
-  // If we're not displaying the bookmark bar below the info bar, then it goes
+  // If we're not displaying the bookmark bar below the infobar, then it goes
   // immediately below the toolbar.
   BOOL placeBookmarkBarBelowInfoBar = [self placeBookmarkBarBelowInfoBar];
   if (!placeBookmarkBarBelowInfoBar)
@@ -232,7 +232,7 @@ willPositionSheet:(NSWindow*)sheet
   if (inPresentationMode)
     maxY = NSMaxY(contentBounds);
 
-  // Also place the info bar container immediate below the toolbar, except in
+  // Also place the infobar container immediate below the toolbar, except in
   // presentation mode in which case it's at the top of the visual content area.
   maxY = [self layoutInfoBarAtMinX:minX maxY:maxY width:width];
 
@@ -244,30 +244,19 @@ willPositionSheet:(NSWindow*)sheet
     maxY = [self layoutBookmarkBarAtMinX:minX maxY:maxY width:width];
 
   // In presentation mode the content area takes up all the remaining space
-  // (from the bottom of the info bar down). In normal mode the content area
+  // (from the bottom of the infobar down). In normal mode the content area
   // takes up the space between the bottom of the toolbar down.
   CGFloat contentAreaTop = 0;
   if (inPresentationMode) {
-    // The tabContentaArea starts at the bottom of the info bar (or top of the
-    // screen if there's no info bar).
+    toolbarToWebContentsOffset_ = 0;
     contentAreaTop = maxY;
-    CGFloat floatingBarHeight =
-        NSHeight(floatingBarBackingRect) * [self floatingBarShownFraction];
-    // When an instant overlay is shown this is the amount it needs to be pushed
-    // down so that it doesn't get covered by the floating toolbar.
-    toolbarToWebContentsOffset_ =
-        floatingBarHeight - (NSMaxY(contentBounds) - maxY);
   } else {
-    // The tabContentArea view starts below the omnibox.
     CGFloat minToolbarHeight = 0;
     if ([self hasToolbar]) {
       minToolbarHeight = [toolbarController_
           desiredHeightForCompression:bookmarks::kBookmarkBarOverlap];
     }
     contentAreaTop = toolbarTopY - minToolbarHeight;
-    // This is the space between the bottom of the omnibox and the bottom of the
-    // last bar (info bar or bookmark bar or toolbar). This is used to push the
-    // tab web content down when no instant overlay is shown.
     toolbarToWebContentsOffset_ = contentAreaTop - maxY;
   }
   [self updateContentOffsets];
@@ -393,7 +382,7 @@ willPositionSheet:(NSWindow*)sheet
 - (BOOL)placeBookmarkBarBelowInfoBar {
   // If we are currently displaying the NTP detached bookmark bar or animating
   // to/from it (from/to anything else), we display the bookmark bar below the
-  // info bar.
+  // infobar.
   return [bookmarkBarController_ isInState:BookmarkBar::DETACHED] ||
          [bookmarkBarController_ isAnimatingToState:BookmarkBar::DETACHED] ||
          [bookmarkBarController_ isAnimatingFromState:BookmarkBar::DETACHED];
@@ -877,53 +866,25 @@ willPositionSheet:(NSWindow*)sheet
 }
 
 - (void)updateContentOffsets {
-  if ([self inPresentationMode]) {
-    // In presentation mode the tabContentArea starts at the bottom of the info
-    // bar (or top of the screen if there's no info bar).
-    if ([self currentInstantUIState] !=
-        browser_window_controller::kInstantUIFullPageResults) {
-      // Normal mode, keep the tab web contents at the top (below the info bar).
-      [overlayableContentsController_ setActiveContainerOffset:0];
-    } else {
-      // Instant suggestions are displayed in the main tab contents so push that
-      // down so that the floating toolbar doesn't obscure it.
-      [overlayableContentsController_
-          setActiveContainerOffset:toolbarToWebContentsOffset_];
-    }
-    // Floating overlay (if any) should also be below the floating toolbar.
-    [overlayableContentsController_
-        setOverlayContentsOffset:toolbarToWebContentsOffset_];
-
-    [[self tabContentArea] setContentOffset:0];
-    [devToolsController_ setTopContentOffset:0];
-  } else {
-    // In normal mode the tabContentArea starts just below the omnibox and the
-    // bookmark bar and info bar overlap it.
-    if ([self currentInstantUIState] !=
-        browser_window_controller::kInstantUIFullPageResults) {
-      // Normal mode, push the tab web contents down so that it doesn't obscure
-      // the bookmark bar and info bar.
-      [overlayableContentsController_
-          setActiveContainerOffset:toolbarToWebContentsOffset_];
-    } else {
-      // Instant suggestions are displayed in the main tab contents so don't
-      // push it down (keep it next to the omnibox).
-      [overlayableContentsController_ setActiveContainerOffset:0];
-    }
-    // Floating overlay (if any) should also be at the top (next to the
-    // omnibox).
-    [overlayableContentsController_ setOverlayContentsOffset:0];
-
-    // Prevent the fast resize view from drawing white over the bookmark bar.
-    [[self tabContentArea] setContentOffset:toolbarToWebContentsOffset_];
-    // Prevent the dev tools splitter from overlapping the bookmark bar.
-    if ([self currentInstantUIState] !=
-        browser_window_controller::kInstantUINone) {
-      [devToolsController_ setTopContentOffset:0];
-    } else {
-      [devToolsController_ setTopContentOffset:toolbarToWebContentsOffset_];
-    }
+  // Normally the tab contents sits below the bookmark bar. This is achieved by
+  // setting the offset to the height of the bookmark bar. The only exception
+  // is on the search results page where the Instant results are shown inside
+  // the page and not in the overlay contents as usual.
+  CGFloat tabContentsOffset = toolbarToWebContentsOffset_;
+  if ([self currentInstantUIState] ==
+      browser_window_controller::kInstantUIFullPageResults) {
+    tabContentsOffset = 0;
   }
+  [overlayableContentsController_ setActiveContainerOffset:tabContentsOffset];
+
+  // Prevent the fast resize view from drawing white over the bookmark bar.
+  [[self tabContentArea] setContentOffset:toolbarToWebContentsOffset_];
+
+  // Prevent the dev tools splitter from overlapping the bookmark bar.
+  if ([self currentInstantUIState] != browser_window_controller::kInstantUINone)
+    [devToolsController_ setTopContentOffset:0];
+  else
+    [devToolsController_ setTopContentOffset:toolbarToWebContentsOffset_];
 }
 
 - (void)updateSubviewZOrder:(BOOL)inPresentationMode {
@@ -937,7 +898,7 @@ willPositionSheet:(NSWindow*)sheet
                      isPositioned:NSWindowAbove
                        relativeTo:[self tabContentArea]];
   } else {
-    // Toolbar is below tab contents so that the infob ar arrow can appear above
+    // Toolbar is below tab contents so that the infobar arrow can appear above
     // it.  Unlike other views the toolbar never overlaps the actual web
     // content.
     [contentView cr_ensureSubview:toolbarView
@@ -953,7 +914,7 @@ willPositionSheet:(NSWindow*)sheet
                      relativeTo:toolbarView];
 
   if (inPresentationMode) {
-    // In presentation mode the info bar is below all other views.
+    // In presentation mode the infobar is below all other views.
     [contentView cr_ensureSubview:[infoBarContainerController_ view]
                      isPositioned:NSWindowBelow
                        relativeTo:[self tabContentArea]];
