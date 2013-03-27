@@ -77,6 +77,9 @@ bool PpapiHost::OnMessageReceived(const IPC::Message& msg) {
 
 void PpapiHost::SendReply(const ReplyMessageContext& context,
                           const IPC::Message& msg) {
+  TRACE_EVENT2("ppapi proxy", "PpapiHost::SendReply",
+               "Class", IPC_MESSAGE_ID_CLASS(msg.type()),
+               "Line", IPC_MESSAGE_ID_LINE(msg.type()));
   if (context.sync_reply_msg) {
     PpapiHostMsg_ResourceSyncCall::WriteReplyParams(context.sync_reply_msg,
                                                     context.params, msg);
@@ -88,6 +91,9 @@ void PpapiHost::SendReply(const ReplyMessageContext& context,
 
 void PpapiHost::SendUnsolicitedReply(PP_Resource resource,
                                      const IPC::Message& msg) {
+  TRACE_EVENT2("ppapi proxy", "PpapiHost::SendUnsolicitedReply",
+               "Class", IPC_MESSAGE_ID_CLASS(msg.type()),
+               "Line", IPC_MESSAGE_ID_LINE(msg.type()));
   DCHECK(resource);  // If this fails, host is probably pending.
   proxy::ResourceMessageReplyParams params(resource, 0);
   Send(new PpapiPluginMsg_ResourceReply(params, msg));
@@ -115,6 +121,9 @@ void PpapiHost::AddInstanceMessageFilter(
 void PpapiHost::OnHostMsgResourceCall(
     const proxy::ResourceMessageCallParams& params,
     const IPC::Message& nested_msg) {
+  TRACE_EVENT2("ppapi proxy", "PpapiHost::OnHostMsgResourceCall",
+               "Class", IPC_MESSAGE_ID_CLASS(nested_msg.type()),
+               "Line", IPC_MESSAGE_ID_LINE(nested_msg.type()));
   HostMessageContext context(params);
   HandleResourceCall(params, nested_msg, &context);
 }
@@ -123,6 +132,9 @@ void PpapiHost::OnHostMsgResourceSyncCall(
     const proxy::ResourceMessageCallParams& params,
     const IPC::Message& nested_msg,
     IPC::Message* reply_msg) {
+  TRACE_EVENT2("ppapi proxy", "PpapiHost::OnHostMsgResourceSyncCall",
+               "Class", IPC_MESSAGE_ID_CLASS(nested_msg.type()),
+               "Line", IPC_MESSAGE_ID_LINE(nested_msg.type()));
   // Sync messages should always have callback set because they always expect
   // a reply from the host.
   DCHECK(params.has_callback());
@@ -153,6 +165,9 @@ void PpapiHost::OnHostMsgResourceCreated(
     const proxy::ResourceMessageCallParams& params,
     PP_Instance instance,
     const IPC::Message& nested_msg) {
+  TRACE_EVENT2("ppapi proxy", "PpapiHost::OnHostMsgResourceCreated",
+               "Class", IPC_MESSAGE_ID_CLASS(nested_msg.type()),
+               "Line", IPC_MESSAGE_ID_LINE(nested_msg.type()));
   if (resources_.size() >= kMaxResourcesPerPlugin)
     return;
 
