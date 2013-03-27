@@ -154,6 +154,9 @@ class Builder(object):
     # Set the toolchain directories
     self.toolchain = os.path.join(options.toolpath, tooldir)
     self.toolbin = os.path.join(self.toolchain, tool_subdir, 'bin')
+    self.toolstamp = os.path.join(self.toolchain, 'stamp.prep')
+    if not os.path.isfile(self.toolstamp):
+      ErrOut('Could not find toolchain prep stamp file: %s' % (self.toolstamp))
 
     self.inc_paths = ArgToList(options.incdirs)
     self.lib_paths = ArgToList(options.libdirs)
@@ -314,6 +317,10 @@ class Builder(object):
     return path
 
   def NeedsRebuild(self, outd, out, src, rebuilt=False):
+    if not os.path.isfile(self.toolstamp):
+      if rebuilt:
+        print 'Could not find toolchain stamp file %s.' % self.toolstamp
+      return True
     if not os.path.isfile(outd):
       if rebuilt:
         print 'Could not find dependency file %s.' % outd
@@ -322,9 +329,15 @@ class Builder(object):
       if rebuilt:
         print 'Could not find output file %s.' % out
       return True
+    stamp_tm = GetMTime(self.toolstamp)
     out_tm = GetMTime(out)
     outd_tm = GetMTime(outd)
     src_tm = GetMTime(src)
+    if IsStale(out_tm, stamp_tm, rebuilt):
+      if rebuilt:
+        print 'Output %s is older than toolchain stamp %s' % (out,
+                                                              self.toolstamp)
+      return True
     if IsStale(out_tm, src_tm, rebuilt):
       if rebuilt:
         print 'Output %s is older than source %s.' % (out, src)
