@@ -6,8 +6,10 @@
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
+#include "base/file_util.h"
 #include "base/process.h"
 #include "base/process_util.h"
+#include "base/win/registry.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/scoped_process_information.h"
 #include "chrome/common/chrome_switches.h"
@@ -16,6 +18,9 @@
 namespace {
 
 const int kShutdownTimeoutMs = 30 * 1000;
+
+static const char16 kAutoRunKeyPath[] =
+    L"Software\\Microsoft\\Windows\\CurrentVersion\\Run";
 
 void ShutdownChrome(HANDLE process, DWORD thread_id) {
   if (::PostThreadMessage(thread_id, WM_QUIT, 0, 0) &&
@@ -50,6 +55,39 @@ bool LaunchProcess(const CommandLine& cmdline,
   return true;
 }
 
+void DeleteAutorunKeys(const base::FilePath& user_data_dir) {
+  base::win::RegKey key(HKEY_CURRENT_USER, kAutoRunKeyPath, KEY_SET_VALUE);
+  if (!key.Valid())
+    return;
+  std::vector<string16> to_delete;
+
+  base::FilePath abs_user_data_dir = user_data_dir;
+  file_util::AbsolutePath(&abs_user_data_dir);
+
+  {
+    base::win::RegistryValueIterator value(HKEY_CURRENT_USER, kAutoRunKeyPath);
+    for (; value.Valid(); ++value) {
+      if (value.Type() == REG_SZ && value.Value()) {
+        CommandLine cmd = CommandLine::FromString(value.Value());
+        if (cmd.GetSwitchValueASCII(switches::kProcessType) ==
+            switches::kServiceProcess &&
+            cmd.HasSwitch(switches::kUserDataDir)) {
+          base::FilePath path_from_reg =
+              cmd.GetSwitchValuePath(switches::kUserDataDir);
+          file_util::AbsolutePath(&path_from_reg);
+          if (path_from_reg == abs_user_data_dir) {
+            to_delete.push_back(value.Name());
+          }
+        }
+      }
+    }
+  }
+
+  for (size_t i = 0; i < to_delete.size(); ++i) {
+    key.DeleteValue(to_delete[i].c_str());
+  }
+}
+
 }  // namespace
 
 ChromeLauncher::ChromeLauncher(const base::FilePath& user_data)
@@ -61,6 +99,7 @@ ChromeLauncher::~ChromeLauncher() {
 }
 
 bool ChromeLauncher::Start() {
+  DeleteAutorunKeys(user_data_);
   stop_event_.Reset();
   thread_.reset(new base::DelegateSimpleThread(this, "chrome_launcher"));
   thread_->Start();
