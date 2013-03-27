@@ -37,6 +37,10 @@ class SurfaceStatsCollector(object):
     self._data_queue = None
     self._stop_event = None
     self._results = []
+    self._warn_about_empty_data = True
+
+  def DisableWarningAboutEmptyData(self):
+    self._warn_about_empty_data = False
 
   def Start(self):
     assert not self._collector_thread
@@ -58,6 +62,12 @@ class SurfaceStatsCollector(object):
       self._collector_thread.join()
       self._collector_thread = None
 
+  def SampleResults(self):
+    self._StorePerfResults()
+    results = self._results
+    self._results = []
+    return results
+
   def GetResults(self):
     return self._results
 
@@ -77,7 +87,8 @@ class SurfaceStatsCollector(object):
       assert self._collector_thread
       (refresh_period, timestamps) = self._GetDataFromThread()
       if not refresh_period or not len(timestamps) >= 3:
-        logging.warning('Surface stat data is empty')
+        if self._warn_about_empty_data:
+          logging.warning('Surface stat data is empty')
         return
       frame_count = len(timestamps)
       seconds = timestamps[-1] - timestamps[0]
@@ -208,11 +219,19 @@ class SurfaceStatsCollector(object):
     nanoseconds_per_second = 1e9
     refresh_period = long(results[0]) / nanoseconds_per_second
 
+    # SurfaceFlinger sometimes gives an invalid timestamp for the very latest
+    # frame if it is queried while the frame is still being presented. We ignore
+    # these timestamps.
+    bad_timestamp = (1 << 63) - 1
+
     for line in results[1:]:
       fields = line.split()
       if len(fields) != 3:
         continue
-      timestamp = long(fields[1]) / nanoseconds_per_second
+      timestamp = long(fields[1])
+      if timestamp == bad_timestamp:
+        continue
+      timestamp /= nanoseconds_per_second
       timestamps.append(timestamp)
 
     return (refresh_period, timestamps)
