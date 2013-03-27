@@ -9,9 +9,9 @@
 #include "base/logging.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
-#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "base/strings/string_number_conversions.h"
 #include "webkit/fileapi/file_system_url.h"
 
 namespace fileapi {

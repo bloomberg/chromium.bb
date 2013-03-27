@@ -4,7 +4,7 @@
 
 #include "chrome/renderer/searchbox/searchbox.h"
 
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"

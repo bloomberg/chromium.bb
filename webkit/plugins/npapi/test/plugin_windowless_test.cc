@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #define STRSAFE_NO_DEPRECATE
-#include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "webkit/plugins/npapi/test/plugin_windowless_test.h"
 #include "webkit/plugins/npapi/test/plugin_client.h"
 

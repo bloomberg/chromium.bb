@@ -17,7 +17,7 @@
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/rand_util.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/sys_info.h"
 #include "base/utf_string_conversions.h"
 #include "net/base/net_module.h"

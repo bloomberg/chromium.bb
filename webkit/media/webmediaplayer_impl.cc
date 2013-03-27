@@ -13,7 +13,7 @@
 #include "base/callback.h"
 #include "base/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "cc/layers/video_layer.h"
 #include "gpu/GLES2/gl2extchromium.h"

@@ -5,8 +5,8 @@
 #include "webkit/glue/multipart_response_delegate.h"
 
 #include "base/logging.h"
-#include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "net/base/net_util.h"
 #include "net/http/http_util.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebHTTPHeaderVisitor.h"

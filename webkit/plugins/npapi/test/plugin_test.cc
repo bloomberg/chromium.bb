@@ -4,8 +4,8 @@
 
 #include "webkit/plugins/npapi/test/plugin_test.h"
 
-#include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "webkit/plugins/npapi/test/npapi_constants.h"
 
 namespace NPAPIClient {

@@ -8,7 +8,7 @@
 #include "build/build_config.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "net/base/escape.h"
 #include "webkit/glue/webkit_glue.h"

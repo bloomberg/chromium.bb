@@ -6,7 +6,7 @@
 
 #include "ash/display/display_manager.h"
 #include "ash/shell.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/rect.h"
 

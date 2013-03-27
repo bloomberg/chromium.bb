@@ -11,7 +11,7 @@
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/display/overscan_calibrator.h"
 #include "content/public/browser/web_ui.h"

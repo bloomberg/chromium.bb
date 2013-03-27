@@ -8,8 +8,8 @@
 
 #include "base/file_util.h"
 #include "base/mac/mac_util.h"
-#include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/utf_string_conversions.h"
 #include "webkit/plugins/npapi/plugin_lib.h"
