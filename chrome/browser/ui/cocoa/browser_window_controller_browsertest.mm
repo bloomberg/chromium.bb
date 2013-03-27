@@ -317,6 +317,29 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
   VerifyZOrder(view_list);
 }
 
+// Verify that in presentation mode, Instant search results are below the
+// floating toolbar.
+IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
+                       DISABLED_OverlayOffsetInstantPresentationMode) {
+  chrome::ToggleFullscreenMode(browser());
+  ShowInstantResults();
+  [controller() setFloatingBarShownFraction:0.0];
+  EXPECT_EQ(
+      0, [[controller() overlayableContentsController] overlayContentsOffset]);
+  EXPECT_EQ(
+      0, [[controller() overlayableContentsController] activeContainerOffset]);
+  [controller() setFloatingBarShownFraction:1.0];
+
+  NSView* floating_bar = GetViewWithID(VIEW_ID_FULLSCREEN_FLOATING_BAR);
+  CGFloat floating_bar_height = NSHeight([floating_bar frame]);
+  EXPECT_EQ(
+      floating_bar_height,
+      [[controller() overlayableContentsController] overlayContentsOffset]);
+  EXPECT_EQ(
+      floating_bar_height,
+      [[controller() overlayableContentsController] activeContainerOffset]);
+}
+
 // Verify that if the fullscreen floating bar view is below the tab content area
 // then calling |updateSubviewZOrder:| will correctly move back above.
 IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,

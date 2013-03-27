@@ -172,3 +172,23 @@ IN_PROC_BROWSER_TEST_F(OverlayableContentsControllerTest, HeightChangeNoHide) {
   instant_overlay_model_.SetOverlayState(mode, 11, INSTANT_SIZE_PERCENT);
   EXPECT_EQ(1, visibility_changed_count_);
 }
+
+IN_PROC_BROWSER_TEST_F(OverlayableContentsControllerTest, OverlayOffset) {
+  chrome::search::Mode mode;
+  mode.mode = chrome::search::Mode::MODE_NTP;
+  CGFloat expected_height = 10;
+  InstantSizeUnits units = INSTANT_SIZE_PIXELS;
+  instant_overlay_model_.SetOverlayState(mode, expected_height, units);
+
+  CGFloat separator_height = [OverlayTopSeparatorView preferredHeight];
+  NSView* overlay_view = web_contents_->GetView()->GetNativeView();
+  EXPECT_EQ(separator_height,
+            NSMaxY([[overlay_view superview] frame]) -
+            NSMaxY([overlay_view frame]));
+
+  CGFloat offset = 30;
+  [controller_ setOverlayContentsOffset:offset];
+  EXPECT_EQ(separator_height + offset,
+            NSMaxY([[overlay_view superview] frame]) -
+            NSMaxY([overlay_view frame]));
+}
