@@ -19,6 +19,8 @@ class ManifestFeature : public SimpleFeature {
       Feature::Context context,
       const GURL& url,
       Feature::Platform platform) const OVERRIDE;
+
+  virtual std::string Parse(const DictionaryValue* value) OVERRIDE;
 };
 
 }  // extensions

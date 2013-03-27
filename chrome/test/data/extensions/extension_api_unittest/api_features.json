@@ -1,0 +1,54 @@
+{
+  "test1": {
+    "contexts": ["content_script", "blessed_extension", "unblessed_extension"]
+  },
+  "test2": {
+    "contexts": ["web_page"],
+    "matches": ["<all_urls>"]
+  },
+  "test2.foo": {
+    "contexts": ["content_script"]
+  },
+  "test3": {
+    "contexts": ["content_script"]
+  },
+  "test3.foo": {
+    "contexts": ["web_page", "blessed_extension"],
+    "matches": ["<all_urls>"]
+  },
+  "test4": {
+    "contexts": ["blessed_extension"],
+    "dependencies": ["api:test3.foo"]
+  },
+  "test4.foo": {
+    "contexts": ["unblessed_extension"],
+    "dependencies": ["api:test4"]
+  },
+  "test4.foo.foo": {
+    "contexts": ["content_script"]
+  },
+  "test5": {
+    "contexts": ["web_page"],
+    "matches": ["http://foo.com/*"]
+  },
+  "test6": {
+    "contexts": ["content_script"]
+  },
+  "test6.foo": {
+    "contexts": ["blessed_extension"]
+  },
+  "test7": {
+    "contexts": ["web_page"],
+    "matches": ["http://foo.com/*"]
+  },
+  "test7.foo": {
+    "contexts": ["web_page"],
+    "matches": ["<all_urls>"],
+    "dependencies": ["test7"]
+  },
+  "test7.bar": {
+    "contexts": ["web_page"],
+    "matches": ["http://bar.com/*"],
+    "dependencies": ["test7.foo"]
+  }
+}

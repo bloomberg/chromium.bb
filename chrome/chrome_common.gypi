@@ -223,6 +223,8 @@
         'common/extensions/extension_set.h',
         'common/extensions/feature_switch.cc',
         'common/extensions/feature_switch.h',
+        'common/extensions/features/api_feature.cc',
+        'common/extensions/features/api_feature.h',
         'common/extensions/features/base_feature_provider.cc',
         'common/extensions/features/base_feature_provider.h',
         'common/extensions/features/complex_feature.cc',

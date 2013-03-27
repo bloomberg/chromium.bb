@@ -208,9 +208,10 @@ bool SimpleFeature::Equals(const SimpleFeature& other) const {
       channel_ == other.channel_;
 }
 
-void SimpleFeature::Parse(const DictionaryValue* value) {
+std::string SimpleFeature::Parse(const DictionaryValue* value) {
   ParseURLPatterns(value, "matches", &matches_);
   ParseSet(value, "whitelist", &whitelist_);
+  ParseSet(value, "dependencies", &dependencies_);
   ParseEnumSet<Manifest::Type>(value, "extension_types", &extension_types_,
                                 g_mappings.Get().extension_types);
   ParseEnumSet<Context>(value, "contexts", &contexts_,
@@ -224,6 +225,11 @@ void SimpleFeature::Parse(const DictionaryValue* value) {
   ParseEnum<VersionInfo::Channel>(
       value, "channel", &channel_,
       g_mappings.Get().channels);
+  if (matches_.is_empty() && contexts_.count(WEB_PAGE_CONTEXT) != 0) {
+    return name() + ": Allowing web_page contexts requires supplying a value " +
+        "for matches.";
+  }
+  return "";
 }
 
 Feature::Availability SimpleFeature::IsAvailableToManifest(

@@ -5,17 +5,6 @@
 [
   {
     "namespace": "webstore",
-
-    // Any webpage can use the webstore API.
-    "matches": [ "http://*/*", "https://*/*" ],
-
-    // Hosted apps can use the webstore API from within a blessed context.
-    "uses_feature_system": true,
-    "channel": "stable",
-    "extension_types": ["hosted_app"],
-    "contexts": ["blessed_extension"],
-    "dependencies": [],
-
     "functions": [
       {
         "name": "install",
