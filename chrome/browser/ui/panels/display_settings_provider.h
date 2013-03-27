@@ -122,6 +122,12 @@ class DisplaySettingsProvider {
   bool is_full_screen() const { return is_full_screen_; }
 
  protected:
+  enum FullScreenCheckMode {
+    ASSUME_FULLSCREEN_ON,
+    ASSUME_FULLSCREEN_OFF,
+    PERFORM_FULLSCREEN_CHECK
+  };
+
   DisplaySettingsProvider();
 
   // Returns true if we need to perform fullscreen check periodically.
@@ -131,7 +137,7 @@ class DisplaySettingsProvider {
   virtual bool IsFullScreen();
 
   // Callback to perform periodic check for full screen mode changes.
-  void CheckFullScreenMode();
+  void CheckFullScreenMode(FullScreenCheckMode check_mode);
 
  private:
   // Observers that listen to various display settings changes.

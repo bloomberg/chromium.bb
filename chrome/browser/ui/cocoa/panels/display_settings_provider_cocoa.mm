@@ -124,7 +124,13 @@ void DisplaySettingsProviderCocoa::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   DCHECK_EQ(chrome::NOTIFICATION_FULLSCREEN_CHANGED, type);
-  CheckFullScreenMode();
+  // When we receive the fullscreen notification, the Chrome Window has not been
+  // put on the active space yet and thus IsFullScreen will return false.
+  // Since the fullscreen result is already known here, we can pass it dierctly
+  // to CheckFullScreenMode.
+  bool is_fullscreen = *(content::Details<bool>(details)).ptr();
+  CheckFullScreenMode(
+      is_fullscreen ? ASSUME_FULLSCREEN_ON : ASSUME_FULLSCREEN_OFF);
 }
 
 void DisplaySettingsProviderCocoa::ActiveWorkSpaceChanged() {
@@ -133,7 +139,8 @@ void DisplaySettingsProviderCocoa::ActiveWorkSpaceChanged() {
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&DisplaySettingsProviderCocoa::CheckFullScreenMode,
-                 weak_factory_.GetWeakPtr()),
+                 weak_factory_.GetWeakPtr(),
+                 PERFORM_FULLSCREEN_CHECK),
       base::TimeDelta::FromMilliseconds(kCheckFullScreenDelayTimeMs));
 }
 

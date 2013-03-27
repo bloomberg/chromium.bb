@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/panels/display_settings_provider.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "chrome/browser/fullscreen.h"
 #include "ui/gfx/screen.h"
@@ -47,7 +48,9 @@ void DisplaySettingsProvider::AddFullScreenObserver(
   if (full_screen_observers_.size() == 1 && NeedsPeriodicFullScreenCheck()) {
     full_screen_mode_timer_.Start(FROM_HERE,
         base::TimeDelta::FromMilliseconds(kFullScreenModeCheckIntervalMs),
-        this, &DisplaySettingsProvider::CheckFullScreenMode);
+        base::Bind(&DisplaySettingsProvider::CheckFullScreenMode,
+                   base::Unretained(this),
+                   PERFORM_FULLSCREEN_CHECK));
   }
 }
 
@@ -127,8 +130,23 @@ bool DisplaySettingsProvider::NeedsPeriodicFullScreenCheck() const {
   return true;
 }
 
-void DisplaySettingsProvider::CheckFullScreenMode() {
-  bool is_full_screen = IsFullScreen();
+void DisplaySettingsProvider::CheckFullScreenMode(
+    FullScreenCheckMode check_mode) {
+  bool is_full_screen = false;
+  switch (check_mode) {
+    case ASSUME_FULLSCREEN_ON:
+      is_full_screen = true;
+      break;
+    case ASSUME_FULLSCREEN_OFF:
+      is_full_screen = false;
+      break;
+    case PERFORM_FULLSCREEN_CHECK:
+      is_full_screen = IsFullScreen();
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
   if (is_full_screen == is_full_screen_)
     return;
   is_full_screen_ = is_full_screen;
