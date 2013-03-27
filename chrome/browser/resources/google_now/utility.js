@@ -74,6 +74,7 @@ function buildTaskManager(areConflicting) {
         ', queue = ' + JSON.stringify(queue));
     var entry = queue[0];
     stepName = entry.name + '-initial';
+    console.log('Starting task ' + entry.name);
     entry.task(finish);
   }
 
@@ -84,8 +85,11 @@ function buildTaskManager(areConflicting) {
    */
   function canQueue(taskName) {
     for (var i = 0; i < queue.length; ++i) {
-      if (areConflicting(taskName, queue[i].name))
+      if (areConflicting(taskName, queue[i].name)) {
+        console.log('Conflict: new=' + taskName +
+                    ', scheduled=' + queue[i].name);
         return false;
+      }
     }
 
     return true;
@@ -100,6 +104,7 @@ function buildTaskManager(areConflicting) {
    *     parameter.
    */
   function add(taskName, task) {
+    console.log('Adding task ' + taskName);
     if (!canQueue(taskName))
       return;
 
@@ -116,6 +121,7 @@ function buildTaskManager(areConflicting) {
   function finish() {
     verify(queue.length >= 1,
            'tasks.finish: The task queue is empty; step = ' + stepName);
+    console.log('Finishing task ' + queue[0].name);
     queue.shift();
     stepName = null;
 

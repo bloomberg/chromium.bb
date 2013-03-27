@@ -24,8 +24,8 @@
 // TODO(vadimt): Gather UMAs.
 // TODO(vadimt): Honor the flag the enables Google Now integration.
 // TODO(vadimt): Figure out the final values of the constants.
-// TODO(vadimt): Report internal and server errors. Collect UMAs on errors where
-// appropriate. Also consider logging errors or throwing exceptions.
+// TODO(vadimt): Collect UMAs on internal and server errors. Consider throwing
+// exceptions. Remove 'console' calls.
 // TODO(vadimt): Consider processing errors for all storage.set calls.
 
 // TODO(vadimt): Figure out the server name. Use it in the manifest and for
@@ -115,6 +115,7 @@ var tasks = buildTaskManager(areTasksConflicting);
  *     notification's set of URLs.
  */
 function createNotification(card, notificationsUrlInfo) {
+  console.log('createNotification ' + JSON.stringify(card));
   // Create a notification or quietly update if it already exists.
   // TODO(vadimt): Implement non-quiet updates.
   chrome.notifications.create(
@@ -132,27 +133,33 @@ function createNotification(card, notificationsUrlInfo) {
  * @param {function()} callback Completion callback.
  */
 function parseAndShowNotificationCards(response, callback) {
+  console.log('parseAndShowNotificationCards ' + response);
   try {
     var parsedResponse = JSON.parse(response);
   } catch (error) {
-    // TODO(vadimt): Report errors to the user.
+    // TODO(vadimt): Increase UMA counter.
+    console.error('parseAndShowNotificationCards parse error: ' + error);
+    callback();
     return;
   }
 
   var cards = parsedResponse.cards;
 
   if (!(cards instanceof Array)) {
-    // TODO(vadimt): Report errors to the user.
+    // TODO(vadimt): Increase UMA counter.
+    callback();
     return;
   }
 
   if (typeof parsedResponse.expiration_timestamp_seconds != 'number') {
-    // TODO(vadimt): Report errors to the user.
+    // TODO(vadimt): Increase UMA counter.
+    callback();
     return;
   }
 
   tasks.debugSetStepName('parseAndShowNotificationCards-storage-get');
   storage.get(['activeNotifications', 'recentDismissals'], function(items) {
+    console.log('parseAndShowNotificationCards-get ' + JSON.stringify(items));
     // Build a set of non-expired recent dismissals. It will be used for
     // client-side filtering of cards.
     var updatedRecentDismissals = {};
@@ -178,7 +185,10 @@ function parseAndShowNotificationCards(response, callback) {
 
     // Delete notifications that didn't receive an update.
     for (var notificationId in items.activeNotifications) {
+      console.log('parseAndShowNotificationCards-delete-check ' +
+                  notificationId);
       if (!items.activeNotifications[notificationId].hasUpdate) {
+        console.log('parseAndShowNotificationCards-delete ' + notificationId);
         chrome.notifications.clear(
             notificationId,
             function() {});
@@ -194,7 +204,8 @@ function parseAndShowNotificationCards(response, callback) {
         try {
           createNotification(card, notificationsUrlInfo);
         } catch (error) {
-          // TODO(vadimt): Report errors to the user.
+          // TODO(vadimt): Increase UMA counter.
+          console.error('Error in createNotification: ' + error);
         }
       }
     }
@@ -219,11 +230,13 @@ function parseAndShowNotificationCards(response, callback) {
  * @param {function()} callback Completion callback.
  */
 function requestNotificationCards(requestParameters, callback) {
+  console.log('requestNotificationCards ' + requestParameters);
   // TODO(vadimt): Figure out how to send user's identity to the server.
   var request = new XMLHttpRequest();
 
   request.responseType = 'text';
   request.onloadend = function(event) {
+    console.log('requestNotificationCards-onloadend ' + request.status);
     if (request.status == HTTP_OK)
       parseAndShowNotificationCards(request.response, callback);
     else
@@ -258,9 +271,13 @@ function requestNotificationCardsWithLocation(position, callback) {
  * location.
  */
 function updateNotificationsCards() {
+  console.log('updateNotificationsCards');
   tasks.add(UPDATE_CARDS_TASK_NAME, function(callback) {
+    console.log('updateNotificationsCards-task-begin');
     tasks.debugSetStepName('updateNotificationsCards-get-retryDelaySeconds');
     storage.get('retryDelaySeconds', function(items) {
+      console.log('updateNotificationsCards-get-retryDelaySeconds ' +
+                  JSON.stringify(items));
       // Immediately schedule the update after the current retry period. Then,
       // we'll use update time from the server if available.
       scheduleNextUpdate(items.retryDelaySeconds);
@@ -300,11 +317,13 @@ function updateNotificationsCards() {
  *     parameter.
  */
 function requestCardDismissal(notificationId, callbackBoolean) {
+  console.log('requestDismissingCard ' + notificationId);
   // Send a dismiss request to the server.
   var requestParameters = '?id=' + notificationId;
   var request = new XMLHttpRequest();
   request.responseType = 'text';
   request.onloadend = function(event) {
+    console.log('requestDismissingCard-onloadend ' + request.status);
     callbackBoolean(request.status == HTTP_OK);
   };
 
@@ -324,6 +343,8 @@ function requestCardDismissal(notificationId, callbackBoolean) {
 function processPendingDismissals(callbackBoolean) {
   tasks.debugSetStepName('processPendingDismissals-storage-get');
   storage.get(['pendingDismissals', 'recentDismissals'], function(items) {
+    console.log('processPendingDismissals-storage-get ' +
+                JSON.stringify(items));
     var dismissalsChanged = false;
 
     function onFinish(success) {
@@ -383,7 +404,7 @@ function onNotificationClicked(notificationId, selector) {
     storage.get('activeNotifications', function(items) {
       var actionUrls = items.activeNotifications[notificationId];
       if (typeof actionUrls != 'object') {
-        // TODO(vadimt): report an error.
+      // TODO(vadimt): Increase UMA counter.
         callback();
         return;
       }
@@ -391,7 +412,7 @@ function onNotificationClicked(notificationId, selector) {
       var url = selector(actionUrls);
 
       if (typeof url != 'string') {
-        // TODO(vadimt): report an error.
+        // TODO(vadimt): Increase UMA counter.
         callback();
         return;
       }
@@ -399,7 +420,7 @@ function onNotificationClicked(notificationId, selector) {
       chrome.tabs.create({url: url}, function(tab) {
         if (!tab) {
           chrome.windows.create({url: url}, function(window) {
-            // TODO(vadimt): Report an error if window fails to create.
+            // TODO(vadimt): Increase UMA counter.
           });
         }
       });
@@ -449,6 +470,7 @@ function onNotificationClosed(notificationId, byUser) {
  *     event should fire.
  */
 function scheduleNextUpdate(delaySeconds) {
+  console.log('scheduleNextUpdate ' + delaySeconds);
   // Schedule an alarm after the specified delay. 'periodInMinutes' is for the
   // case when we fail to re-register the alarm.
   var alarmInfo = {
@@ -473,6 +495,7 @@ function initialize() {
 }
 
 chrome.runtime.onInstalled.addListener(function(details) {
+  console.log('onInstalled ' + JSON.stringify(details));
   if (details.reason != 'chrome_update') {
     storage.set({pendingDismissals: []});
     initialize();
@@ -480,6 +503,7 @@ chrome.runtime.onInstalled.addListener(function(details) {
 });
 
 chrome.runtime.onStartup.addListener(function() {
+  console.log('onStartup');
   initialize();
 });
 
