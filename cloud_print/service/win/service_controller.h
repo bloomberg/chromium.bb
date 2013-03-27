@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/string16.h"
-#include "cloud_print/service/win/resource.h"
+#include "cloud_print/resources.h"
 
 namespace base {
 class FilePath;
@@ -18,7 +18,7 @@ class FilePath;
 class ServiceController {
  public:
   DECLARE_REGISTRY_APPID_RESOURCEID(IDR_CLOUDPRINTSERVICE,
-                                  "{8013FB7C-2E3E-4992-B8BD-05C0C4AB0627}")
+                                    "{8013FB7C-2E3E-4992-B8BD-05C0C4AB0627}")
 
   explicit ServiceController(const string16& name);
   ~ServiceController();
