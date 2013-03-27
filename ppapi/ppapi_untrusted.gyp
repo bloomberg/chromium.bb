@@ -67,6 +67,13 @@
         'compile_flags': [
           '-DGL_GLEXT_PROTOTYPES',
         ],
+        # Speed up pnacl linking by not generating debug info for tests.
+        # We compile with --strip-all under extra_args so debug info is
+        # discarded anyway.  Remove this and the --strip-all flag if
+        # debug info is really needed.
+       'compile_flags!': [
+          '-g',
+        ],
         'defines': [
           'GL_GLEXT_PROTOTYPES',
         ],
@@ -80,6 +87,12 @@
           '-lppapi_cpp',
           '-lppapi',
           '-pthread',
+        ],
+        'link_flags!': [
+          '-O3',
+        ],
+        'translate_flags': [
+          '-O0',
         ],
         # TODO(bradchen): get rid of extra_deps64 and extra_deps32
         # once native_client/build/untrusted.gypi no longer needs them.
