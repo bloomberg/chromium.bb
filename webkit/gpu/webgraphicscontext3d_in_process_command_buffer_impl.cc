@@ -51,7 +51,7 @@ using gpu::TransferBufferManagerInterface;
 namespace webkit {
 namespace gpu {
 
-class GLInProcessContext : public base::SupportsWeakPtr<GLInProcessContext> {
+class GLInProcessContext {
  public:
   // These are the same error codes as used by EGL.
   enum Error {
@@ -98,9 +98,8 @@ class GLInProcessContext : public base::SupportsWeakPtr<GLInProcessContext> {
   // outlive its parent.  attrib_list must be NULL or a NONE-terminated list of
   // attribute/value pairs.
   static GLInProcessContext* CreateOffscreenContext(
-      GLInProcessContext* parent,
       const gfx::Size& size,
-      GLInProcessContext* context_group,
+      bool share_resources,
       const char* allowed_extensions,
       const int32* attrib_list,
       gfx::GpuPreference gpu_preference);
@@ -144,11 +143,12 @@ class GLInProcessContext : public base::SupportsWeakPtr<GLInProcessContext> {
 
   CommandBufferService* GetCommandBufferService();
 
+  ::gpu::gles2::GLES2Decoder* GetDecoder();
+
  private:
-  explicit GLInProcessContext(GLInProcessContext* parent);
+  explicit GLInProcessContext(bool share_resources);
 
   bool Initialize(const gfx::Size& size,
-                  GLInProcessContext* context_group,
                   const char* allowed_extensions,
                   const int32* attrib_list,
                   gfx::GpuPreference gpu_preference);
@@ -156,9 +156,7 @@ class GLInProcessContext : public base::SupportsWeakPtr<GLInProcessContext> {
 
   void OnContextLost();
 
-  base::WeakPtr<GLInProcessContext> parent_;
   base::Closure context_lost_callback_;
-  uint32 parent_texture_id_;
   scoped_ptr<TransferBufferManagerInterface> transfer_buffer_manager_;
   scoped_ptr<CommandBufferService> command_buffer_;
   scoped_ptr< ::gpu::GpuScheduler> gpu_scheduler_;
@@ -169,6 +167,7 @@ class GLInProcessContext : public base::SupportsWeakPtr<GLInProcessContext> {
   scoped_ptr<TransferBuffer> transfer_buffer_;
   scoped_ptr<GLES2Implementation> gles2_implementation_;
   Error last_error_;
+  bool share_resources_;
   bool context_lost_;
 
   DISALLOW_COPY_AND_ASSIGN(GLInProcessContext);
@@ -182,12 +181,6 @@ const int32 kCommandBufferSize = 1024 * 1024;
 const size_t kStartTransferBufferSize = 4 * 1024 * 1024;
 const size_t kMinTransferBufferSize = 1 * 256 * 1024;
 const size_t kMaxTransferBufferSize = 16 * 1024 * 1024;
-
-static base::LazyInstance<
-    std::set<WebGraphicsContext3DInProcessCommandBufferImpl*> >
-        g_all_shared_contexts = LAZY_INSTANCE_INITIALIZER;
-static base::LazyInstance<base::Lock>::Leaky
-    g_all_shared_contexts_lock = LAZY_INSTANCE_INITIALIZER;
 
 // Singleton used to initialize and terminate the gles2 library.
 class GLES2Initializer {
@@ -216,16 +209,15 @@ GLInProcessContext::~GLInProcessContext() {
 }
 
 GLInProcessContext* GLInProcessContext::CreateOffscreenContext(
-    GLInProcessContext* parent,
     const gfx::Size& size,
-    GLInProcessContext* context_group,
+    bool share_resources,
     const char* allowed_extensions,
     const int32* attrib_list,
     gfx::GpuPreference gpu_preference) {
-  scoped_ptr<GLInProcessContext> context(new GLInProcessContext(parent));
+  scoped_ptr<GLInProcessContext> context(
+      new GLInProcessContext(share_resources));
   if (!context->Initialize(
       size,
-      context_group,
       allowed_extensions,
       attrib_list,
       gpu_preference))
@@ -242,9 +234,51 @@ GLInProcessContext* GLInProcessContext::CreateOffscreenContext(
 static base::LazyInstance<base::Lock> g_decoder_lock =
     LAZY_INSTANCE_INITIALIZER;
 
+static base::LazyInstance<
+    std::set<GLInProcessContext*> >
+        g_all_shared_contexts = LAZY_INSTANCE_INITIALIZER;
+
+namespace {
+
+// Also calls DetachFromThread on all GLES2Decoders before the lock is released
+// to maintain the invariant that all decoders are unbounded while the lock is
+// not held. This is to workaround DumpRenderTree uses WGC3DIPCBI with shared
+// resources on different threads.
+class AutoLockAndDecoderDetachThread {
+ public:
+  AutoLockAndDecoderDetachThread(base::Lock& lock,
+                                 const std::set<GLInProcessContext*>& contexts);
+  ~AutoLockAndDecoderDetachThread();
+
+ private:
+  base::AutoLock auto_lock_;
+  const std::set<GLInProcessContext*>& contexts_;
+};
+
+AutoLockAndDecoderDetachThread::AutoLockAndDecoderDetachThread(
+    base::Lock& lock,
+    const std::set<GLInProcessContext*>& contexts)
+    : auto_lock_(lock),
+      contexts_(contexts) {
+}
+
+void DetachThread(GLInProcessContext* context) {
+  if (context->GetDecoder())
+    context->GetDecoder()->DetachFromThread();
+}
+
+AutoLockAndDecoderDetachThread::~AutoLockAndDecoderDetachThread() {
+  std::for_each(contexts_.begin(),
+                contexts_.end(),
+                &DetachThread);
+}
+
+}  // namespace
+
 void GLInProcessContext::PumpCommands() {
   if (!context_lost_) {
-    base::AutoLock lock(g_decoder_lock.Get());
+    AutoLockAndDecoderDetachThread lock(g_decoder_lock.Get(),
+                                        g_all_shared_contexts.Get());
     decoder_->MakeCurrent();
     gpu_scheduler_->PutChanged();
     ::gpu::CommandBuffer::State state = command_buffer_->GetState();
@@ -259,7 +293,7 @@ bool GLInProcessContext::GetBufferChanged(int32 transfer_buffer_id) {
 }
 
 uint32 GLInProcessContext::GetParentTextureId() {
-  return parent_texture_id_;
+  return 0;
 }
 
 uint32 GLInProcessContext::CreateParentTexture(const gfx::Size& size) {
@@ -332,6 +366,10 @@ CommandBufferService* GLInProcessContext::GetCommandBufferService() {
   return command_buffer_.get();
 }
 
+::gpu::gles2::GLES2Decoder* GLInProcessContext::GetDecoder() {
+  return decoder_.get();
+}
+
 // TODO(gman): Remove This
 void GLInProcessContext::DisableShaderTranslation() {
   NOTREACHED();
@@ -341,16 +379,13 @@ GLES2Implementation* GLInProcessContext::GetImplementation() {
   return gles2_implementation_.get();
 }
 
-GLInProcessContext::GLInProcessContext(GLInProcessContext* parent)
-    : parent_(parent ?
-          parent->AsWeakPtr() : base::WeakPtr<GLInProcessContext>()),
-      parent_texture_id_(0),
-      last_error_(SUCCESS),
+GLInProcessContext::GLInProcessContext(bool share_resources)
+    : last_error_(SUCCESS),
+      share_resources_(share_resources),
       context_lost_(false) {
 }
 
 bool GLInProcessContext::Initialize(const gfx::Size& size,
-                                    GLInProcessContext* context_group,
                                     const char* allowed_extensions,
                                     const int32* attrib_list,
                                     gfx::GpuPreference gpu_preference) {
@@ -362,15 +397,6 @@ bool GLInProcessContext::Initialize(const gfx::Size& size,
 
   // Ensure the gles2 library is initialized first in a thread safe way.
   g_gles2_initializer.Get();
-
-  // Allocate a frame buffer ID with respect to the parent.
-  if (parent_.get()) {
-    // Flush any remaining commands in the parent context to make sure the
-    // texture id accounting stays consistent.
-    int32 token = parent_->gles2_helper_->InsertToken();
-    parent_->gles2_helper_->WaitForToken(token);
-    parent_texture_id_ = parent_->gles2_implementation_->MakeTextureId();
-  }
 
   std::vector<int32> attribs;
   while (attrib_list) {
@@ -414,63 +440,64 @@ bool GLInProcessContext::Initialize(const gfx::Size& size,
     return false;
   }
 
-  // TODO(gman): This needs to be true if this is Pepper.
-  bool bind_generates_resource = false;
-  decoder_.reset(::gpu::gles2::GLES2Decoder::Create(context_group ?
-      context_group->decoder_->GetContextGroup() :
-          new ::gpu::gles2::ContextGroup(
-              NULL, NULL, NULL, bind_generates_resource)));
+  GLInProcessContext* context_group = NULL;
 
-  gpu_scheduler_.reset(new GpuScheduler(command_buffer_.get(),
-                                        decoder_.get(),
-                                        decoder_.get()));
+  {
+    AutoLockAndDecoderDetachThread lock(g_decoder_lock.Get(),
+                                        g_all_shared_contexts.Get());
+    if (share_resources_ && !g_all_shared_contexts.Get().empty())
+      context_group = *g_all_shared_contexts.Get().begin();
 
-  decoder_->set_engine(gpu_scheduler_.get());
+    // TODO(gman): This needs to be true if this is Pepper.
+    bool bind_generates_resource = false;
+    decoder_.reset(::gpu::gles2::GLES2Decoder::Create(context_group ?
+        context_group->decoder_->GetContextGroup() :
+            new ::gpu::gles2::ContextGroup(
+                NULL, NULL, NULL, bind_generates_resource)));
 
-  surface_ = gfx::GLSurface::CreateOffscreenGLSurface(false, gfx::Size(1, 1));
+    gpu_scheduler_.reset(new GpuScheduler(command_buffer_.get(),
+                                          decoder_.get(),
+                                          decoder_.get()));
 
-  if (!surface_.get()) {
-    LOG(ERROR) << "Could not create GLSurface.";
-    Destroy();
-    return false;
-  }
+    decoder_->set_engine(gpu_scheduler_.get());
 
-  context_ = gfx::GLContext::CreateGLContext(share_group.get(),
-                                             surface_.get(),
-                                             gpu_preference);
-  if (!context_.get()) {
-    LOG(ERROR) << "Could not create GLContext.";
-    Destroy();
-    return false;
-  }
+    surface_ = gfx::GLSurface::CreateOffscreenGLSurface(false, gfx::Size(1, 1));
 
-  if (!context_->MakeCurrent(surface_.get())) {
-    LOG(ERROR) << "Could not make context current.";
-    Destroy();
-    return false;
-  }
+    if (!surface_.get()) {
+      LOG(ERROR) << "Could not create GLSurface.";
+      Destroy();
+      return false;
+    }
 
-  ::gpu::gles2::DisallowedFeatures disallowed_features;
-  disallowed_features.swap_buffer_complete_callback = true;
-  disallowed_features.gpu_memory_manager = true;
-  if (!decoder_->Initialize(surface_,
-                            context_,
-                            true,
-                            size,
-                            disallowed_features,
-                            allowed_extensions,
-                            attribs)) {
-    LOG(ERROR) << "Could not initialize decoder.";
-    Destroy();
-    return false;
-  }
+    context_ = gfx::GLContext::CreateGLContext(share_group.get(),
+                                               surface_.get(),
+                                               gpu_preference);
+    if (!context_.get()) {
+      LOG(ERROR) << "Could not create GLContext.";
+      Destroy();
+      return false;
+    }
 
-  if (!decoder_->SetParent(
-      parent_.get() ? parent_->decoder_.get() : NULL,
-      parent_texture_id_)) {
-    LOG(ERROR) << "Could not set parent.";
-    Destroy();
-    return false;
+    if (!context_->MakeCurrent(surface_.get())) {
+      LOG(ERROR) << "Could not make context current.";
+      Destroy();
+      return false;
+    }
+
+    ::gpu::gles2::DisallowedFeatures disallowed_features;
+    disallowed_features.swap_buffer_complete_callback = true;
+    disallowed_features.gpu_memory_manager = true;
+    if (!decoder_->Initialize(surface_,
+                              context_,
+                              true,
+                              size,
+                              disallowed_features,
+                              allowed_extensions,
+                              attribs)) {
+      LOG(ERROR) << "Could not initialize decoder.";
+      Destroy();
+      return false;
+    }
   }
 
   command_buffer_->SetPutOffsetChangeCallback(
@@ -506,16 +533,17 @@ bool GLInProcessContext::Initialize(const gfx::Size& size,
     return false;
   }
 
+  if (share_resources_) {
+    AutoLockAndDecoderDetachThread lock(g_decoder_lock.Get(),
+                                        g_all_shared_contexts.Get());
+    g_all_shared_contexts.Pointer()->insert(this);
+  }
+
   return true;
 }
 
 void GLInProcessContext::Destroy() {
   bool context_lost = IsCommandBufferContextLost();
-
-  if (parent_.get() && parent_texture_id_ != 0) {
-    parent_->gles2_implementation_->FreeTextureId(parent_texture_id_);
-    parent_texture_id_ = 0;
-  }
 
   if (gles2_implementation_.get()) {
     // First flush the context to ensure that any pending frees of resources
@@ -532,9 +560,13 @@ void GLInProcessContext::Destroy() {
   gles2_helper_.reset();
   command_buffer_.reset();
 
+  AutoLockAndDecoderDetachThread lock(g_decoder_lock.Get(),
+                                      g_all_shared_contexts.Get());
   if (decoder_.get()) {
     decoder_->Destroy(!context_lost);
   }
+
+  g_all_shared_contexts.Pointer()->erase(this);
 }
 
 void GLInProcessContext::OnContextLost() {
@@ -543,11 +575,15 @@ void GLInProcessContext::OnContextLost() {
 }
 
 WebGraphicsContext3DInProcessCommandBufferImpl::
-    WebGraphicsContext3DInProcessCommandBufferImpl()
-    : context_(NULL),
+    WebGraphicsContext3DInProcessCommandBufferImpl(
+        const WebKit::WebGraphicsContext3D::Attributes& attributes)
+    : initialized_(false),
+      initialize_failed_(false),
+      context_(NULL),
       gl_(NULL),
       context_lost_callback_(NULL),
       context_lost_reason_(GL_NO_ERROR),
+      attributes_(attributes),
       cached_width_(0),
       cached_height_(0),
       bound_fbo_(0) {
@@ -555,20 +591,22 @@ WebGraphicsContext3DInProcessCommandBufferImpl::
 
 WebGraphicsContext3DInProcessCommandBufferImpl::
     ~WebGraphicsContext3DInProcessCommandBufferImpl() {
-  base::AutoLock a(g_all_shared_contexts_lock.Get());
-  g_all_shared_contexts.Pointer()->erase(this);
 }
 
-bool WebGraphicsContext3DInProcessCommandBufferImpl::Initialize(
-    WebGraphicsContext3D::Attributes attributes,
-    WebKit::WebGraphicsContext3D* view_context) {
+bool WebGraphicsContext3DInProcessCommandBufferImpl::MaybeInitializeGL() {
+  if (initialized_)
+    return true;
+
+  if (initialize_failed_)
+    return false;
+
   // Convert WebGL context creation attributes into GLInProcessContext / EGL
   // size requests.
-  const int alpha_size = attributes.alpha ? 8 : 0;
-  const int depth_size = attributes.depth ? 24 : 0;
-  const int stencil_size = attributes.stencil ? 8 : 0;
-  const int samples = attributes.antialias ? 4 : 0;
-  const int sample_buffers = attributes.antialias ? 1 : 0;
+  const int alpha_size = attributes_.alpha ? 8 : 0;
+  const int depth_size = attributes_.depth ? 24 : 0;
+  const int stencil_size = attributes_.stencil ? 8 : 0;
+  const int samples = attributes_.antialias ? 4 : 0;
+  const int sample_buffers = attributes_.antialias ? 1 : 0;
   const int32 attribs[] = {
     GLInProcessContext::ALPHA_SIZE, alpha_size,
     GLInProcessContext::DEPTH_SIZE, depth_size,
@@ -587,34 +625,21 @@ bool WebGraphicsContext3DInProcessCommandBufferImpl::Initialize(
   // discrete GPU is created, or the last one is destroyed.
   gfx::GpuPreference gpu_preference = gfx::PreferDiscreteGpu;
 
-  GLInProcessContext* parent_context = NULL;
-  if (view_context) {
-    WebGraphicsContext3DInProcessCommandBufferImpl* context_impl =
-        static_cast<WebGraphicsContext3DInProcessCommandBufferImpl*>(
-            view_context);
-    parent_context = context_impl->context_;
-  }
-
-  WebGraphicsContext3DInProcessCommandBufferImpl* context_group = NULL;
-  base::AutoLock lock(g_all_shared_contexts_lock.Get());
-  if (attributes.shareResources)
-    context_group = g_all_shared_contexts.Pointer()->empty() ?
-        NULL : *g_all_shared_contexts.Pointer()->begin();
-
   context_ = GLInProcessContext::CreateOffscreenContext(
-      parent_context,
       gfx::Size(1, 1),
-      context_group ? context_group->context_ : NULL,
+      attributes_.shareResources,
       preferred_extensions,
       attribs,
       gpu_preference);
 
-  if (!context_)
+  if (!context_) {
+    initialize_failed_ = true;
     return false;
+  }
 
   gl_ = context_->GetImplementation();
 
-  if (gl_ && attributes.noExtensions)
+  if (gl_ && attributes_.noExtensions)
     gl_->EnableFeatureCHROMIUM("webgl_enable_glsl_webgl_validation");
 
   context_->SetContextLostCallback(
@@ -624,7 +649,6 @@ bool WebGraphicsContext3DInProcessCommandBufferImpl::Initialize(
 
   // Set attributes_ from created offscreen context.
   {
-    attributes_ = attributes;
     GLint alpha_bits = 0;
     getIntegerv(GL_ALPHA_BITS, &alpha_bits);
     attributes_.alpha = alpha_bits > 0;
@@ -638,15 +662,15 @@ bool WebGraphicsContext3DInProcessCommandBufferImpl::Initialize(
     getIntegerv(GL_SAMPLE_BUFFERS, &sample_buffers);
     attributes_.antialias = sample_buffers > 0;
   }
-  makeContextCurrent();
 
-  if (attributes.shareResources)
-    g_all_shared_contexts.Pointer()->insert(this);
-
+  initialized_ = true;
   return true;
 }
 
 bool WebGraphicsContext3DInProcessCommandBufferImpl::makeContextCurrent() {
+  if (!MaybeInitializeGL())
+    return false;
+
   return GLInProcessContext::MakeCurrent(context_);
 }
 
