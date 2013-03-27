@@ -558,7 +558,7 @@ static inline void UpdateLayerContentsScale(
 template <typename LayerType, typename LayerList>
 static inline void RemoveSurfaceForEarlyExit(
     LayerType* layer_to_remove,
-    LayerList& render_surface_layer_list) {
+    LayerList* render_surface_layer_list) {
   DCHECK(layer_to_remove->render_surface());
   // Technically, we know that the layer we want to remove should be
   // at the back of the render_surface_layer_list. However, we have had

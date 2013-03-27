@@ -51,7 +51,7 @@ static inline float AreaOfMappedQuad(const gfx::Transform& transform,
   MathUtil::MapClippedQuad(transform,
                            quad,
                            clipped_quad,
-                           num_vertices_in_clipped_quad);
+                           &num_vertices_in_clipped_quad);
   return PolygonArea(clipped_quad, num_vertices_in_clipped_quad);
 }
 

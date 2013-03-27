@@ -55,7 +55,7 @@ struct TransformOperation {
   static bool BlendTransformOperations(const TransformOperation* from,
                                        const TransformOperation* to,
                                        double progress,
-                                       gfx::Transform& result);
+                                       gfx::Transform* result);
 };
 
 }  // namespace cc

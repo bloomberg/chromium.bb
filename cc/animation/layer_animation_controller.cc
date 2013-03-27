@@ -54,7 +54,7 @@ struct HasAnimationId {
 
 void LayerAnimationController::RemoveAnimation(int animation_id) {
   ScopedPtrVector<Animation>& animations = active_animations_;
-  animations.erase(cc::remove_if(animations,
+  animations.erase(cc::remove_if(&animations,
                                  animations.begin(),
                                  animations.end(),
                                  HasAnimationId(animation_id)),
@@ -79,7 +79,7 @@ void LayerAnimationController::RemoveAnimation(
     int animation_id,
     Animation::TargetProperty target_property) {
   ScopedPtrVector<Animation>& animations = active_animations_;
-  animations.erase(cc::remove_if(animations,
+  animations.erase(cc::remove_if(&animations,
                                  animations.begin(),
                                  animations.end(),
                                  HasAnimationIdAndProperty(animation_id,
@@ -325,7 +325,7 @@ void LayerAnimationController::RemoveAnimationsCompletedOnMainThread(
   // guaranteeing progress towards loop termination.
   ScopedPtrVector<Animation>& animations =
       controller_impl->active_animations_;
-  animations.erase(cc::remove_if(animations,
+  animations.erase(cc::remove_if(&animations,
                                  animations.begin(),
                                  animations.end(),
                                  IsCompleted(*this)),
@@ -514,7 +514,7 @@ static bool IsWaitingForDeletion(Animation* animation) {
 
 void LayerAnimationController::PurgeAnimationsMarkedForDeletion() {
   ScopedPtrVector<Animation>& animations = active_animations_;
-  animations.erase(cc::remove_if(animations,
+  animations.erase(cc::remove_if(&animations,
                                  animations.begin(),
                                  animations.end(),
                                  IsWaitingForDeletion),

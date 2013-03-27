@@ -223,7 +223,7 @@ PictureLayerTilingSet::Iterator& PictureLayerTilingSet::Iterator::operator++() {
     // This will also happen the first time through the loop.
     if (!region_iter_.has_rect()) {
       current_tiling_ = NextTiling();
-      current_region_.Swap(missing_region_);
+      current_region_.Swap(&missing_region_);
       missing_region_.Clear();
       region_iter_ = Region::Iterator(current_region_);
 

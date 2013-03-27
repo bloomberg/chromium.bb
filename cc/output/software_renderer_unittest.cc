@@ -107,7 +107,7 @@ TEST_F(SoftwareRendererTest, SolidColorQuad) {
 
   RenderPassList list;
   list.push_back(root_render_pass.PassAs<RenderPass>());
-  renderer()->DrawFrame(list);
+  renderer()->DrawFrame(&list);
 
   scoped_array<SkColor> pixels(new SkColor[DeviceViewportSize().width() *
       DeviceViewportSize().height()]);
@@ -193,7 +193,7 @@ TEST_F(SoftwareRendererTest, TileQuad) {
 
   RenderPassList list;
   list.push_back(root_render_pass.PassAs<RenderPass>());
-  renderer()->DrawFrame(list);
+  renderer()->DrawFrame(&list);
 
   scoped_array<SkColor> pixels(new SkColor[DeviceViewportSize().width() *
       DeviceViewportSize().height()]);
@@ -217,12 +217,12 @@ TEST_F(SoftwareRendererTest, ShouldClearRootRenderPass) {
 
   // Draw a fullscreen green quad in a first frame.
   RenderPass::Id root_clear_pass_id(1, 0);
-  TestRenderPass* root_clear_pass =
-      AddRenderPass(&list, root_clear_pass_id, viewport_rect, gfx::Transform());
+  TestRenderPass* root_clear_pass = AddRenderPass(
+      &list, root_clear_pass_id, viewport_rect, gfx::Transform());
   AddQuad(root_clear_pass, viewport_rect, SK_ColorGREEN);
 
   renderer()->DecideRenderPassAllocationsForFrame(list);
-  renderer()->DrawFrame(list);
+  renderer()->DrawFrame(&list);
   renderer()->GetFramebufferPixels(pixels.get(), viewport_rect);
 
   EXPECT_EQ(SK_ColorGREEN, pixels[0]);
@@ -240,7 +240,7 @@ TEST_F(SoftwareRendererTest, ShouldClearRootRenderPass) {
   AddQuad(root_smaller_pass, smaller_rect, SK_ColorMAGENTA);
 
   renderer()->DecideRenderPassAllocationsForFrame(list);
-  renderer()->DrawFrame(list);
+  renderer()->DrawFrame(&list);
   renderer()->GetFramebufferPixels(pixels.get(), viewport_rect);
 
   // If we didn't clear, the borders should still be green.

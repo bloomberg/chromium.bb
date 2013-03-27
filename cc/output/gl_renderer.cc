@@ -235,21 +235,21 @@ void GLRenderer::ReleaseRenderPassTextures() { render_pass_textures_.clear(); }
 
 void GLRenderer::ViewportChanged() { is_viewport_changed_ = true; }
 
-void GLRenderer::ClearFramebuffer(DrawingFrame& frame) {
+void GLRenderer::ClearFramebuffer(DrawingFrame* frame) {
   // On DEBUG builds, opaque render passes are cleared to blue to easily see
   // regions that were not drawn on the screen.
-  if (frame.current_render_pass->has_transparent_background)
+  if (frame->current_render_pass->has_transparent_background)
     GLC(context_, context_->clearColor(0, 0, 0, 0));
   else
     GLC(context_, context_->clearColor(0, 0, 1, 1));
 
 #ifdef NDEBUG
-  if (frame.current_render_pass->has_transparent_background)
+  if (frame->current_render_pass->has_transparent_background)
 #endif
     context_->clear(GL_COLOR_BUFFER_BIT);
 }
 
-void GLRenderer::BeginDrawingFrame(DrawingFrame& frame) {
+void GLRenderer::BeginDrawingFrame(DrawingFrame* frame) {
   // FIXME: Remove this once backbuffer is automatically recreated on first use
   EnsureBackbuffer();
 
@@ -284,7 +284,7 @@ void GLRenderer::DoNoOp() {
   GLC(context_, context_->flush());
 }
 
-void GLRenderer::DoDrawQuad(DrawingFrame& frame, const DrawQuad* quad) {
+void GLRenderer::DoDrawQuad(DrawingFrame* frame, const DrawQuad* quad) {
   DCHECK(quad->rect.Contains(quad->visible_rect));
   if (quad->material != DrawQuad::TEXTURE_CONTENT) {
     FlushTextureQuadCache();
@@ -324,7 +324,7 @@ void GLRenderer::DoDrawQuad(DrawingFrame& frame, const DrawQuad* quad) {
   }
 }
 
-void GLRenderer::DrawCheckerboardQuad(const DrawingFrame& frame,
+void GLRenderer::DrawCheckerboardQuad(const DrawingFrame* frame,
                                       const CheckerboardDrawQuad* quad) {
   SetBlendEnabled(quad->ShouldDrawWithBlending());
 
@@ -367,7 +367,7 @@ void GLRenderer::DrawCheckerboardQuad(const DrawingFrame& frame,
                    program->vertex_shader().matrix_location());
 }
 
-void GLRenderer::DrawDebugBorderQuad(const DrawingFrame& frame,
+void GLRenderer::DrawDebugBorderQuad(const DrawingFrame* frame,
                                      const DebugBorderDrawQuad* quad) {
   SetBlendEnabled(quad->ShouldDrawWithBlending());
 
@@ -384,7 +384,7 @@ void GLRenderer::DrawDebugBorderQuad(const DrawingFrame& frame,
                           0.5f * layer_rect.height() + layer_rect.y());
   render_matrix.Scale(layer_rect.width(), layer_rect.height());
   GLRenderer::ToGLMatrix(&gl_matrix[0],
-                         frame.projection_matrix * render_matrix);
+                         frame->projection_matrix * render_matrix);
   GLC(Context(),
       Context()->uniformMatrix4fv(
           program->vertex_shader().matrix_location(), 1, false, &gl_matrix[0]));
@@ -529,7 +529,7 @@ static SkBitmap ApplyImageFilter(GLRenderer* renderer,
 }
 
 scoped_ptr<ScopedResource> GLRenderer::DrawBackgroundFilters(
-    DrawingFrame& frame,
+    DrawingFrame* frame,
     const RenderPassDrawQuad* quad,
     const gfx::Transform& contents_device_transform,
     const gfx::Transform& contents_device_transform_inverse) {
@@ -563,9 +563,9 @@ scoped_ptr<ScopedResource> GLRenderer::DrawBackgroundFilters(
   // FIXME: We only allow background filters on an opaque render surface because
   // other surfaces may contain translucent pixels, and the contents behind
   // those translucent pixels wouldn't have the filter applied.
-  if (frame.current_render_pass->has_transparent_background)
+  if (frame->current_render_pass->has_transparent_background)
     return scoped_ptr<ScopedResource>();
-  DCHECK(!frame.current_texture);
+  DCHECK(!frame->current_texture);
 
   // FIXME: Do a single readback for both the surface and replica and cache the
   // filtered results (once filter textures are not reused).
@@ -576,7 +576,7 @@ scoped_ptr<ScopedResource> GLRenderer::DrawBackgroundFilters(
   filters.getOutsets(top, right, bottom, left);
   device_rect.Inset(-left, -top, -right, -bottom);
 
-  device_rect.Intersect(frame.current_render_pass->output_rect);
+  device_rect.Intersect(frame->current_render_pass->output_rect);
 
   scoped_ptr<ScopedResource> device_background_texture =
       ScopedResource::create(resource_provider_);
@@ -599,7 +599,7 @@ scoped_ptr<ScopedResource> GLRenderer::DrawBackgroundFilters(
                                     ResourceProvider::TextureUsageFramebuffer))
     return scoped_ptr<ScopedResource>();
 
-  const RenderPass* target_render_pass = frame.current_render_pass;
+  const RenderPass* target_render_pass = frame->current_render_pass;
   bool using_background_texture =
       UseScopedTexture(frame, background_texture.get(), quad->rect);
 
@@ -633,7 +633,7 @@ scoped_ptr<ScopedResource> GLRenderer::DrawBackgroundFilters(
   return background_texture.Pass();
 }
 
-void GLRenderer::DrawRenderPassQuad(DrawingFrame& frame,
+void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
                                     const RenderPassDrawQuad* quad) {
   SetBlendEnabled(quad->ShouldDrawWithBlending());
 
@@ -645,7 +645,7 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame& frame,
   gfx::Transform quad_rect_matrix;
   QuadRectTransform(&quad_rect_matrix, quad->quadTransform(), quad->rect);
   gfx::Transform contents_device_transform =
-      frame.window_matrix * frame.projection_matrix * quad_rect_matrix;
+      frame->window_matrix * frame->projection_matrix * quad_rect_matrix;
   contents_device_transform.FlattenTo2d();
 
   // Can only draw surface if device matrix is invertible.
@@ -953,13 +953,13 @@ bool GLRenderer::SetupQuadForAntialiasing(
   return true;
 }
 
-void GLRenderer::DrawSolidColorQuad(const DrawingFrame& frame,
+void GLRenderer::DrawSolidColorQuad(const DrawingFrame* frame,
                                     const SolidColorDrawQuad* quad) {
   SetBlendEnabled(quad->ShouldDrawWithBlending());
   gfx::Rect tile_rect = quad->visible_rect;
 
   gfx::Transform device_transform =
-      frame.window_matrix * frame.projection_matrix * quad->quadTransform();
+      frame->window_matrix * frame->projection_matrix * quad->quadTransform();
   device_transform.FlattenTo2d();
   if (!device_transform.IsInvertible())
     return;
@@ -1036,7 +1036,7 @@ static void TileUniformLocation(T program, TileProgramUniforms* uniforms) {
   uniforms->edge_location = program->fragment_shader().edge_location();
 }
 
-void GLRenderer::DrawTileQuad(const DrawingFrame& frame,
+void GLRenderer::DrawTileQuad(const DrawingFrame* frame,
                               const TileDrawQuad* quad) {
   gfx::Rect tile_rect = quad->visible_rect;
 
@@ -1088,7 +1088,7 @@ void GLRenderer::DrawTileQuad(const DrawingFrame& frame,
   float fragment_tex_scale_y = clamp_tex_rect.height() / texture_size.height();
 
   gfx::Transform device_transform =
-      frame.window_matrix * frame.projection_matrix * quad->quadTransform();
+      frame->window_matrix * frame->projection_matrix * quad->quadTransform();
   device_transform.FlattenTo2d();
   if (!device_transform.IsInvertible())
     return;
@@ -1184,7 +1184,7 @@ void GLRenderer::DrawTileQuad(const DrawingFrame& frame,
       frame, quad->quadTransform(), centered_rect, uniforms.matrix_location);
 }
 
-void GLRenderer::DrawYUVVideoQuad(const DrawingFrame& frame,
+void GLRenderer::DrawYUVVideoQuad(const DrawingFrame* frame,
                                   const YUVVideoDrawQuad* quad) {
   SetBlendEnabled(quad->ShouldDrawWithBlending());
 
@@ -1252,7 +1252,7 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame& frame,
   GLC(Context(), Context()->activeTexture(GL_TEXTURE0));
 }
 
-void GLRenderer::DrawStreamVideoQuad(const DrawingFrame& frame,
+void GLRenderer::DrawStreamVideoQuad(const DrawingFrame* frame,
                                      const StreamVideoDrawQuad* quad) {
   SetBlendEnabled(quad->ShouldDrawWithBlending());
 
@@ -1386,7 +1386,7 @@ void GLRenderer::FlushTextureQuadCache() {
   draw_cache_.matrix_data.resize(0);
 }
 
-void GLRenderer::EnqueueTextureQuad(const DrawingFrame& frame,
+void GLRenderer::EnqueueTextureQuad(const DrawingFrame* frame,
                                     const TextureDrawQuad* quad) {
   // Choose the correct texture program binding
   TexTransformTextureProgramBinding binding;
@@ -1430,14 +1430,14 @@ void GLRenderer::EnqueueTextureQuad(const DrawingFrame& frame,
   // Generate the transform matrix
   gfx::Transform quad_rect_matrix;
   QuadRectTransform(&quad_rect_matrix, quad->quadTransform(), quad->rect);
-  quad_rect_matrix = frame.projection_matrix * quad_rect_matrix;
+  quad_rect_matrix = frame->projection_matrix * quad_rect_matrix;
 
   Float16 m;
   quad_rect_matrix.matrix().asColMajorf(m.data);
   draw_cache_.matrix_data.push_back(m);
 }
 
-void GLRenderer::DrawTextureQuad(const DrawingFrame& frame,
+void GLRenderer::DrawTextureQuad(const DrawingFrame* frame,
                                  const TextureDrawQuad* quad) {
   TexTransformTextureProgramBinding binding;
   if (quad->flipped)
@@ -1485,7 +1485,7 @@ void GLRenderer::DrawTextureQuad(const DrawingFrame& frame,
     GLC(context_, context_->blendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA));
 }
 
-void GLRenderer::DrawIOSurfaceQuad(const DrawingFrame& frame,
+void GLRenderer::DrawIOSurfaceQuad(const DrawingFrame* frame,
                                    const IOSurfaceDrawQuad* quad) {
   SetBlendEnabled(quad->ShouldDrawWithBlending());
 
@@ -1526,9 +1526,9 @@ void GLRenderer::DrawIOSurfaceQuad(const DrawingFrame& frame,
   GLC(Context(), Context()->bindTexture(GL_TEXTURE_RECTANGLE_ARB, 0));
 }
 
-void GLRenderer::FinishDrawingFrame(DrawingFrame& frame) {
+void GLRenderer::FinishDrawingFrame(DrawingFrame* frame) {
   current_framebuffer_lock_.reset();
-  swap_buffer_rect_.Union(gfx::ToEnclosingRect(frame.root_damage_rect));
+  swap_buffer_rect_.Union(gfx::ToEnclosingRect(frame->root_damage_rect));
 
   GLC(context_, context_->disable(GL_BLEND));
   blend_shadow_ = false;
@@ -1605,21 +1605,21 @@ void GLRenderer::SetUseProgram(unsigned program) {
   program_shadow_ = program;
 }
 
-void GLRenderer::DrawQuadGeometry(const DrawingFrame& frame,
+void GLRenderer::DrawQuadGeometry(const DrawingFrame* frame,
                                   const gfx::Transform& draw_transform,
                                   const gfx::RectF& quad_rect,
                                   int matrix_location) {
   gfx::Transform quad_rect_matrix;
   QuadRectTransform(&quad_rect_matrix, draw_transform, quad_rect);
   static float gl_matrix[16];
-  ToGLMatrix(&gl_matrix[0], frame.projection_matrix * quad_rect_matrix);
+  ToGLMatrix(&gl_matrix[0], frame->projection_matrix * quad_rect_matrix);
   GLC(context_,
       context_->uniformMatrix4fv(matrix_location, 1, false, &gl_matrix[0]));
 
   GLC(context_, context_->drawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0));
 }
 
-void GLRenderer::CopyTextureToFramebuffer(const DrawingFrame& frame,
+void GLRenderer::CopyTextureToFramebuffer(const DrawingFrame* frame,
                                           int texture_id,
                                           gfx::Rect rect,
                                           const gfx::Transform& draw_matrix) {
@@ -1887,22 +1887,22 @@ bool GLRenderer::GetFramebufferTexture(ScopedResource* texture,
   return true;
 }
 
-bool GLRenderer::UseScopedTexture(DrawingFrame& frame,
+bool GLRenderer::UseScopedTexture(DrawingFrame* frame,
                                   const ScopedResource* texture,
                                   gfx::Rect viewport_rect) {
   DCHECK(texture->id());
-  frame.current_render_pass = 0;
-  frame.current_texture = texture;
+  frame->current_render_pass = NULL;
+  frame->current_texture = texture;
 
   return BindFramebufferToTexture(frame, texture, viewport_rect);
 }
 
-void GLRenderer::BindFramebufferToOutputSurface(DrawingFrame& frame) {
+void GLRenderer::BindFramebufferToOutputSurface(DrawingFrame* frame) {
   current_framebuffer_lock_.reset();
   output_surface_->BindFramebuffer();
 }
 
-bool GLRenderer::BindFramebufferToTexture(DrawingFrame& frame,
+bool GLRenderer::BindFramebufferToTexture(DrawingFrame* frame,
                                           const ScopedResource* texture,
                                           gfx::Rect framebuffer_rect) {
   DCHECK(texture->id());

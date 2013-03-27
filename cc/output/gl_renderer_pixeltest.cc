@@ -87,7 +87,7 @@ TEST_F(GLRendererPixelTest, SimpleGreenRect) {
   RenderPassList pass_list;
   pass_list.push_back(pass.Pass());
 
-  renderer_->DrawFrame(pass_list);
+  renderer_->DrawFrame(&pass_list);
 
   EXPECT_TRUE(PixelsMatchReference(
       base::FilePath(FILE_PATH_LITERAL("green.png"))));
@@ -141,7 +141,7 @@ TEST_F(GLRendererPixelTest, RenderPassChangesSize) {
 
   renderer_->SetEnlargePassTextureAmountForTesting(gfx::Vector2d(50, 75));
   renderer_->DecideRenderPassAllocationsForFrame(pass_list);
-  renderer_->DrawFrame(pass_list);
+  renderer_->DrawFrame(&pass_list);
 
   EXPECT_TRUE(PixelsMatchReference(
       base::FilePath(FILE_PATH_LITERAL("blue_yellow.png"))));
@@ -254,7 +254,7 @@ class GLRendererPixelTestWithBackgroundFilter : public GLRendererPixelTest {
     pass_list.push_back(root_pass.Pass());
 
     renderer_->DecideRenderPassAllocationsForFrame(pass_list);
-    renderer_->DrawFrame(pass_list);
+    renderer_->DrawFrame(&pass_list);
   }
 
   WebKit::WebFilterOperations background_filters_;
@@ -314,7 +314,7 @@ TEST_F(GLRendererPixelTest, AntiAliasing) {
   RenderPassList pass_list;
   pass_list.push_back(pass.Pass());
 
-  renderer_->DrawFrame(pass_list);
+  renderer_->DrawFrame(&pass_list);
 
   EXPECT_TRUE(PixelsMatchReference(
       base::FilePath(FILE_PATH_LITERAL("anti_aliasing.png"))));

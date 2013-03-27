@@ -28,7 +28,7 @@ class CC_EXPORT DelegatingRenderer :
 
   virtual const RendererCapabilities& Capabilities() const OVERRIDE;
 
-  virtual void DrawFrame(RenderPassList& render_passes_in_draw_order) OVERRIDE;
+  virtual void DrawFrame(RenderPassList* render_passes_in_draw_order) OVERRIDE;
 
   virtual void Finish() OVERRIDE {}
 

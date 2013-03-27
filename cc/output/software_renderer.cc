@@ -95,13 +95,13 @@ void SoftwareRenderer::ViewportChanged() {
   output_device_->Resize(ViewportSize());
 }
 
-void SoftwareRenderer::BeginDrawingFrame(DrawingFrame& frame) {
+void SoftwareRenderer::BeginDrawingFrame(DrawingFrame* frame) {
   TRACE_EVENT0("cc", "SoftwareRenderer::BeginDrawingFrame");
   root_canvas_ = output_device_->BeginPaint(
-      gfx::ToEnclosingRect(frame.root_damage_rect));
+      gfx::ToEnclosingRect(frame->root_damage_rect));
 }
 
-void SoftwareRenderer::FinishDrawingFrame(DrawingFrame& frame) {
+void SoftwareRenderer::FinishDrawingFrame(DrawingFrame* frame) {
   TRACE_EVENT0("cc", "SoftwareRenderer::FinishDrawingFrame");
   current_framebuffer_lock_.reset();
   current_canvas_ = NULL;
@@ -148,13 +148,13 @@ void SoftwareRenderer::EnsureScissorTestDisabled() {
 
 void SoftwareRenderer::Finish() {}
 
-void SoftwareRenderer::BindFramebufferToOutputSurface(DrawingFrame& frame) {
+void SoftwareRenderer::BindFramebufferToOutputSurface(DrawingFrame* frame) {
   current_framebuffer_lock_.reset();
   current_canvas_ = root_canvas_;
 }
 
 bool SoftwareRenderer::BindFramebufferToTexture(
-    DrawingFrame& frame,
+    DrawingFrame* frame,
     const ScopedResource* texture,
     gfx::Rect framebuffer_rect) {
   current_framebuffer_lock_ = make_scoped_ptr(
@@ -190,8 +190,8 @@ void SoftwareRenderer::ClearCanvas(SkColor color) {
     current_canvas_->clear(color);
 }
 
-void SoftwareRenderer::ClearFramebuffer(DrawingFrame& frame) {
-  if (frame.current_render_pass->has_transparent_background) {
+void SoftwareRenderer::ClearFramebuffer(DrawingFrame* frame) {
+  if (frame->current_render_pass->has_transparent_background) {
     ClearCanvas(SkColorSetARGB(0, 0, 0, 0));
   } else {
 #ifndef NDEBUG
@@ -217,12 +217,12 @@ bool SoftwareRenderer::IsSoftwareResource(
   return false;
 }
 
-void SoftwareRenderer::DoDrawQuad(DrawingFrame& frame, const DrawQuad* quad) {
+void SoftwareRenderer::DoDrawQuad(DrawingFrame* frame, const DrawQuad* quad) {
   TRACE_EVENT0("cc", "SoftwareRenderer::DoDrawQuad");
   gfx::Transform quad_rect_matrix;
   QuadRectTransform(&quad_rect_matrix, quad->quadTransform(), quad->rect);
   gfx::Transform contents_device_transform =
-      frame.window_matrix * frame.projection_matrix * quad_rect_matrix;
+      frame->window_matrix * frame->projection_matrix * quad_rect_matrix;
   contents_device_transform.FlattenTo2d();
   SkMatrix sk_device_matrix;
   ToSkMatrix(&sk_device_matrix, contents_device_transform);
@@ -265,7 +265,7 @@ void SoftwareRenderer::DoDrawQuad(DrawingFrame& frame, const DrawQuad* quad) {
   current_canvas_->resetMatrix();
 }
 
-void SoftwareRenderer::DrawDebugBorderQuad(const DrawingFrame& frame,
+void SoftwareRenderer::DrawDebugBorderQuad(const DrawingFrame* frame,
                                            const DebugBorderDrawQuad* quad) {
   // We need to apply the matrix manually to have pixel-sized stroke width.
   SkPoint vertices[4];
@@ -284,7 +284,7 @@ void SoftwareRenderer::DrawDebugBorderQuad(const DrawingFrame& frame,
                               4, transformed_vertices, current_paint_);
 }
 
-void SoftwareRenderer::DrawSolidColorQuad(const DrawingFrame& frame,
+void SoftwareRenderer::DrawSolidColorQuad(const DrawingFrame* frame,
                                           const SolidColorDrawQuad* quad) {
   current_paint_.setColor(quad->color);
   current_paint_.setAlpha(quad->opacity() * SkColorGetA(quad->color));
@@ -292,7 +292,7 @@ void SoftwareRenderer::DrawSolidColorQuad(const DrawingFrame& frame,
                             current_paint_);
 }
 
-void SoftwareRenderer::DrawTextureQuad(const DrawingFrame& frame,
+void SoftwareRenderer::DrawTextureQuad(const DrawingFrame* frame,
                                        const TextureDrawQuad* quad) {
   if (!IsSoftwareResource(quad->resource_id)) {
     DrawUnsupportedQuad(frame, quad);
@@ -315,7 +315,7 @@ void SoftwareRenderer::DrawTextureQuad(const DrawingFrame& frame,
                                         &current_paint_);
 }
 
-void SoftwareRenderer::DrawTileQuad(const DrawingFrame& frame,
+void SoftwareRenderer::DrawTileQuad(const DrawingFrame* frame,
                                     const TileDrawQuad* quad) {
   DCHECK(IsSoftwareResource(quad->resource_id));
   ResourceProvider::ScopedReadLockSoftware lock(resource_provider_,
@@ -328,7 +328,7 @@ void SoftwareRenderer::DrawTileQuad(const DrawingFrame& frame,
                                         &current_paint_);
 }
 
-void SoftwareRenderer::DrawRenderPassQuad(const DrawingFrame& frame,
+void SoftwareRenderer::DrawRenderPassQuad(const DrawingFrame* frame,
                                           const RenderPassDrawQuad* quad) {
   CachedResource* content_texture =
       render_pass_textures_.get(quad->render_pass_id);
@@ -394,7 +394,7 @@ void SoftwareRenderer::DrawRenderPassQuad(const DrawingFrame& frame,
   }
 }
 
-void SoftwareRenderer::DrawUnsupportedQuad(const DrawingFrame& frame,
+void SoftwareRenderer::DrawUnsupportedQuad(const DrawingFrame* frame,
                                            const DrawQuad* quad) {
 #ifndef NDEBUG
   current_paint_.setColor(SK_ColorWHITE);

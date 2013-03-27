@@ -95,16 +95,16 @@ class CC_EXPORT GLRenderer :
   bool GetFramebufferTexture(ScopedResource* resource, gfx::Rect device_rect);
   void ReleaseRenderPassTextures();
 
-  virtual void BindFramebufferToOutputSurface(DrawingFrame& frame) OVERRIDE;
-  virtual bool BindFramebufferToTexture(DrawingFrame& frame,
+  virtual void BindFramebufferToOutputSurface(DrawingFrame* frame) OVERRIDE;
+  virtual bool BindFramebufferToTexture(DrawingFrame* frame,
                                         const ScopedResource* resource,
                                         gfx::Rect framebuffer_rect) OVERRIDE;
   virtual void SetDrawViewportSize(gfx::Size viewport_size) OVERRIDE;
   virtual void SetScissorTestRect(gfx::Rect scissor_rect) OVERRIDE;
-  virtual void ClearFramebuffer(DrawingFrame& frame) OVERRIDE;
-  virtual void DoDrawQuad(DrawingFrame& frame, const class DrawQuad*) OVERRIDE;
-  virtual void BeginDrawingFrame(DrawingFrame& frame) OVERRIDE;
-  virtual void FinishDrawingFrame(DrawingFrame& frame) OVERRIDE;
+  virtual void ClearFramebuffer(DrawingFrame* frame) OVERRIDE;
+  virtual void DoDrawQuad(DrawingFrame* frame, const class DrawQuad*) OVERRIDE;
+  virtual void BeginDrawingFrame(DrawingFrame* frame) OVERRIDE;
+  virtual void FinishDrawingFrame(DrawingFrame* frame) OVERRIDE;
   virtual bool FlippedFramebuffer() const OVERRIDE;
   virtual void EnsureScissorTestEnabled() OVERRIDE;
   virtual void EnsureScissorTestDisabled() OVERRIDE;
@@ -117,40 +117,40 @@ class CC_EXPORT GLRenderer :
   static ManagedMemoryPolicy::PriorityCutoff PriorityCutoff(
       WebKit::WebGraphicsMemoryAllocation::PriorityCutoff priority_cutoff);
 
-  void DrawCheckerboardQuad(const DrawingFrame& frame,
+  void DrawCheckerboardQuad(const DrawingFrame* frame,
                             const CheckerboardDrawQuad* quad);
-  void DrawDebugBorderQuad(const DrawingFrame& frame,
+  void DrawDebugBorderQuad(const DrawingFrame* frame,
                            const DebugBorderDrawQuad* quad);
   scoped_ptr<ScopedResource> DrawBackgroundFilters(
-      DrawingFrame& frame,
+      DrawingFrame* frame,
       const RenderPassDrawQuad* quad,
       const gfx::Transform& contents_device_transform,
       const gfx::Transform& contents_device_transformInverse);
-  void DrawRenderPassQuad(DrawingFrame& frame, const RenderPassDrawQuad* quad);
-  void DrawSolidColorQuad(const DrawingFrame& frame,
+  void DrawRenderPassQuad(DrawingFrame* frame, const RenderPassDrawQuad* quad);
+  void DrawSolidColorQuad(const DrawingFrame* frame,
                           const SolidColorDrawQuad* quad);
-  void DrawStreamVideoQuad(const DrawingFrame& frame,
+  void DrawStreamVideoQuad(const DrawingFrame* frame,
                            const StreamVideoDrawQuad* quad);
-  void DrawTextureQuad(const DrawingFrame& frame, const TextureDrawQuad* quad);
-  void EnqueueTextureQuad(const DrawingFrame& frame,
+  void DrawTextureQuad(const DrawingFrame* frame, const TextureDrawQuad* quad);
+  void EnqueueTextureQuad(const DrawingFrame* frame,
                           const TextureDrawQuad* quad);
   void FlushTextureQuadCache();
-  void DrawIOSurfaceQuad(const DrawingFrame& frame,
+  void DrawIOSurfaceQuad(const DrawingFrame* frame,
                          const IOSurfaceDrawQuad* quad);
-  void DrawTileQuad(const DrawingFrame& frame, const TileDrawQuad* quad);
-  void DrawYUVVideoQuad(const DrawingFrame& frame,
+  void DrawTileQuad(const DrawingFrame* frame, const TileDrawQuad* quad);
+  void DrawYUVVideoQuad(const DrawingFrame* frame,
                         const YUVVideoDrawQuad* quad);
 
   void SetShaderOpacity(float opacity, int alpha_location);
   void SetShaderQuadF(const gfx::QuadF& quad, int quad_location);
-  void DrawQuadGeometry(const DrawingFrame& frame,
+  void DrawQuadGeometry(const DrawingFrame* frame,
                         const gfx::Transform& draw_transform,
                         const gfx::RectF& quad_rect,
                         int matrix_location);
   void SetBlendEnabled(bool enabled);
   void SetUseProgram(unsigned program);
 
-  void CopyTextureToFramebuffer(const DrawingFrame& frame,
+  void CopyTextureToFramebuffer(const DrawingFrame* frame,
                                 int texture_id,
                                 gfx::Rect rect,
                                 const gfx::Transform& draw_matrix);
@@ -166,7 +166,7 @@ class CC_EXPORT GLRenderer :
                                 gfx::QuadF* local_quad,
                                 float edge[24]) const;
 
-  bool UseScopedTexture(DrawingFrame& frame,
+  bool UseScopedTexture(DrawingFrame* frame,
                         const ScopedResource* resource,
                         gfx::Rect viewport_rect);
 

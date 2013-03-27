@@ -44,17 +44,17 @@ class CC_EXPORT SoftwareRenderer : public DirectRenderer {
       const CompositorFrameAck& ack) OVERRIDE;
 
  protected:
-  virtual void BindFramebufferToOutputSurface(DrawingFrame& frame) OVERRIDE;
+  virtual void BindFramebufferToOutputSurface(DrawingFrame* frame) OVERRIDE;
   virtual bool BindFramebufferToTexture(
-      DrawingFrame& frame,
+      DrawingFrame* frame,
       const ScopedResource* texture,
       gfx::Rect framebuffer_rect) OVERRIDE;
   virtual void SetDrawViewportSize(gfx::Size viewport_size) OVERRIDE;
   virtual void SetScissorTestRect(gfx::Rect scissor_rect) OVERRIDE;
-  virtual void ClearFramebuffer(DrawingFrame& frame) OVERRIDE;
-  virtual void DoDrawQuad(DrawingFrame& frame, const DrawQuad* quad) OVERRIDE;
-  virtual void BeginDrawingFrame(DrawingFrame& frame) OVERRIDE;
-  virtual void FinishDrawingFrame(DrawingFrame& frame) OVERRIDE;
+  virtual void ClearFramebuffer(DrawingFrame* frame) OVERRIDE;
+  virtual void DoDrawQuad(DrawingFrame* frame, const DrawQuad* quad) OVERRIDE;
+  virtual void BeginDrawingFrame(DrawingFrame* frame) OVERRIDE;
+  virtual void FinishDrawingFrame(DrawingFrame* frame) OVERRIDE;
   virtual bool FlippedFramebuffer() const OVERRIDE;
   virtual void EnsureScissorTestEnabled() OVERRIDE;
   virtual void EnsureScissorTestDisabled() OVERRIDE;
@@ -69,17 +69,17 @@ class CC_EXPORT SoftwareRenderer : public DirectRenderer {
   void SetClipRect(gfx::Rect rect);
   bool IsSoftwareResource(ResourceProvider::ResourceId resource_id) const;
 
-  void DrawDebugBorderQuad(const DrawingFrame& frame,
+  void DrawDebugBorderQuad(const DrawingFrame* frame,
                            const DebugBorderDrawQuad* quad);
-  void DrawSolidColorQuad(const DrawingFrame& frame,
+  void DrawSolidColorQuad(const DrawingFrame* frame,
                           const SolidColorDrawQuad* quad);
-  void DrawTextureQuad(const DrawingFrame& frame,
+  void DrawTextureQuad(const DrawingFrame* frame,
                        const TextureDrawQuad* quad);
-  void DrawTileQuad(const DrawingFrame& frame,
+  void DrawTileQuad(const DrawingFrame* frame,
                     const TileDrawQuad* quad);
-  void DrawRenderPassQuad(const DrawingFrame& frame,
+  void DrawRenderPassQuad(const DrawingFrame* frame,
                           const RenderPassDrawQuad* quad);
-  void DrawUnsupportedQuad(const DrawingFrame& frame,
+  void DrawUnsupportedQuad(const DrawingFrame* frame,
                            const DrawQuad* quad);
 
   RendererCapabilities capabilities_;

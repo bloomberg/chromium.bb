@@ -859,7 +859,7 @@ void Layer::RemoveThreadedAnimation(int animation_id) {
   }
 
   pending_threaded_animations_.erase(
-      cc::remove_if(pending_threaded_animations_,
+      cc::remove_if(&pending_threaded_animations_,
                     pending_threaded_animations_.begin(),
                     pending_threaded_animations_.end(),
                     HasAnimationId(animation_id)),

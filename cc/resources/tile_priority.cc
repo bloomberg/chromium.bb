@@ -30,8 +30,11 @@ bool Range::IsEmpty() {
   return start_ >= end_;
 }
 
-inline void IntersectNegativeHalfplane(Range* out, float previous,
-    float current, float target, float time_delta) {
+inline void IntersectNegativeHalfplane(Range* out,
+                                       float previous,
+                                       float current,
+                                       float target,
+                                       float time_delta) {
   float time_per_dist = time_delta / (current - previous);
   float t = (target - current) * time_per_dist;
   if (time_per_dist > 0.0f)
@@ -40,8 +43,11 @@ inline void IntersectNegativeHalfplane(Range* out, float previous,
     out->end_ = std::min(out->end_, t);
 }
 
-inline void IntersectPositiveHalfplane(Range* out, float previous,
-    float current, float target, float time_delta) {
+inline void IntersectPositiveHalfplane(Range* out,
+                                       float previous,
+                                       float current,
+                                       float target,
+                                       float time_delta) {
   float time_per_dist = time_delta / (current - previous);
   float t = (target - current) * time_per_dist;
   if (time_per_dist < 0.0f)

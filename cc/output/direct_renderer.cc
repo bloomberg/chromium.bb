@@ -77,36 +77,36 @@ void DirectRenderer::QuadRectTransform(gfx::Transform* quad_rect_transform,
 }
 
 // static
-void DirectRenderer::InitializeMatrices(DrawingFrame& frame,
+void DirectRenderer::InitializeMatrices(DrawingFrame* frame,
                                         gfx::Rect draw_rect,
                                         bool flip_y) {
   if (flip_y) {
-    frame.projection_matrix = OrthoProjectionMatrix(draw_rect.x(),
-                                                    draw_rect.right(),
-                                                    draw_rect.bottom(),
-                                                    draw_rect.y());
+    frame->projection_matrix = OrthoProjectionMatrix(draw_rect.x(),
+                                                     draw_rect.right(),
+                                                     draw_rect.bottom(),
+                                                     draw_rect.y());
   } else {
-    frame.projection_matrix = OrthoProjectionMatrix(draw_rect.x(),
-                                                    draw_rect.right(),
-                                                    draw_rect.y(),
-                                                    draw_rect.bottom());
+    frame->projection_matrix = OrthoProjectionMatrix(draw_rect.x(),
+                                                     draw_rect.right(),
+                                                     draw_rect.y(),
+                                                     draw_rect.bottom());
   }
-  frame.window_matrix =
+  frame->window_matrix =
       window_matrix(0, 0, draw_rect.width(), draw_rect.height());
-  frame.flipped_y = flip_y;
+  frame->flipped_y = flip_y;
 }
 
 // static
 gfx::Rect DirectRenderer::MoveScissorToWindowSpace(
-    const DrawingFrame& frame, const gfx::RectF& scissor_rect) {
+    const DrawingFrame* frame, const gfx::RectF& scissor_rect) {
   gfx::Rect scissor_rect_in_canvas_space = gfx::ToEnclosingRect(scissor_rect);
   // The scissor coordinates must be supplied in viewport space so we need to
   // offset by the relative position of the top left corner of the current
   // render pass.
-  gfx::Rect framebuffer_output_rect = frame.current_render_pass->output_rect;
+  gfx::Rect framebuffer_output_rect = frame->current_render_pass->output_rect;
   scissor_rect_in_canvas_space.set_x(
       scissor_rect_in_canvas_space.x() - framebuffer_output_rect.x());
-  if (frame.flipped_y && !frame.current_texture) {
+  if (frame->flipped_y && !frame->current_texture) {
     scissor_rect_in_canvas_space.set_y(
         framebuffer_output_rect.height() -
         (scissor_rect_in_canvas_space.bottom() - framebuffer_output_rect.y()));
@@ -176,12 +176,12 @@ void DirectRenderer::DecideRenderPassAllocationsForFrame(
   }
 }
 
-void DirectRenderer::DrawFrame(RenderPassList& render_passes_in_draw_order) {
+void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order) {
   TRACE_EVENT0("cc", "DirectRenderer::DrawFrame");
   UMA_HISTOGRAM_COUNTS("Renderer4.renderPassCount",
-                       render_passes_in_draw_order.size());
+                       render_passes_in_draw_order->size());
 
-  const RenderPass* root_render_pass = render_passes_in_draw_order.back();
+  const RenderPass* root_render_pass = render_passes_in_draw_order->back();
   DCHECK(root_render_pass);
 
   DrawingFrame frame;
@@ -191,34 +191,35 @@ void DirectRenderer::DrawFrame(RenderPassList& render_passes_in_draw_order) {
       root_render_pass->damage_rect : root_render_pass->output_rect;
   frame.root_damage_rect.Intersect(gfx::Rect(ViewportSize()));
 
-  BeginDrawingFrame(frame);
-  for (size_t i = 0; i < render_passes_in_draw_order.size(); ++i)
-    DrawRenderPass(frame, render_passes_in_draw_order[i]);
-  FinishDrawingFrame(frame);
+  BeginDrawingFrame(&frame);
+  for (size_t i = 0; i < render_passes_in_draw_order->size(); ++i)
+    DrawRenderPass(&frame, render_passes_in_draw_order->at(i));
+  FinishDrawingFrame(&frame);
 
-  render_passes_in_draw_order.clear();
+  render_passes_in_draw_order->clear();
 }
 
 gfx::RectF DirectRenderer::ComputeScissorRectForRenderPass(
-    const DrawingFrame& frame) {
-  gfx::RectF render_pass_scissor = frame.current_render_pass->output_rect;
+    const DrawingFrame* frame) {
+  gfx::RectF render_pass_scissor = frame->current_render_pass->output_rect;
 
-  if (frame.root_damage_rect == frame.root_render_pass->output_rect)
+  if (frame->root_damage_rect == frame->root_render_pass->output_rect)
     return render_pass_scissor;
 
   gfx::Transform inverse_transform(gfx::Transform::kSkipInitialization);
-  if (frame.current_render_pass->transform_to_root_target.GetInverse(
+  if (frame->current_render_pass->transform_to_root_target.GetInverse(
           &inverse_transform)) {
     // Only intersect inverse-projected damage if the transform is invertible.
     gfx::RectF damage_rect_in_render_pass_space =
-        MathUtil::ProjectClippedRect(inverse_transform, frame.root_damage_rect);
+        MathUtil::ProjectClippedRect(inverse_transform,
+                                     frame->root_damage_rect);
     render_pass_scissor.Intersect(damage_rect_in_render_pass_space);
   }
 
   return render_pass_scissor;
 }
 
-void DirectRenderer::SetScissorStateForQuad(const DrawingFrame& frame,
+void DirectRenderer::SetScissorStateForQuad(const DrawingFrame* frame,
                                             const DrawQuad& quad) {
   if (quad.isClipped()) {
     gfx::RectF quad_scissor_rect = quad.clipRect();
@@ -229,7 +230,7 @@ void DirectRenderer::SetScissorStateForQuad(const DrawingFrame& frame,
 }
 
 void DirectRenderer::SetScissorStateForQuadWithRenderPassScissor(
-    const DrawingFrame& frame,
+    const DrawingFrame* frame,
     const DrawQuad& quad,
     const gfx::RectF& render_pass_scissor,
     bool* should_skip_quad) {
@@ -249,7 +250,7 @@ void DirectRenderer::SetScissorStateForQuadWithRenderPassScissor(
 
 void DirectRenderer::FinishDrawingQuadList() {}
 
-void DirectRenderer::DrawRenderPass(DrawingFrame& frame,
+void DirectRenderer::DrawRenderPass(DrawingFrame* frame,
                                     const RenderPass* render_pass) {
   TRACE_EVENT0("cc", "DirectRenderer::DrawRenderPass");
   if (!UseRenderPass(frame, render_pass))
@@ -263,7 +264,7 @@ void DirectRenderer::DrawRenderPass(DrawingFrame& frame,
     SetScissorTestRect(MoveScissorToWindowSpace(frame, render_pass_scissor));
   }
 
-  if (frame.current_render_pass != frame.root_render_pass ||
+  if (frame->current_render_pass != frame->root_render_pass ||
       client_->ShouldClearRootRenderPass()) {
     if (!using_scissor_as_optimization)
       EnsureScissorTestDisabled();
@@ -296,12 +297,12 @@ void DirectRenderer::DrawRenderPass(DrawingFrame& frame,
   }
 }
 
-bool DirectRenderer::UseRenderPass(DrawingFrame& frame,
+bool DirectRenderer::UseRenderPass(DrawingFrame* frame,
                                    const RenderPass* render_pass) {
-  frame.current_render_pass = render_pass;
-  frame.current_texture = NULL;
+  frame->current_render_pass = render_pass;
+  frame->current_texture = NULL;
 
-  if (render_pass == frame.root_render_pass) {
+  if (render_pass == frame->root_render_pass) {
     BindFramebufferToOutputSurface(frame);
     InitializeMatrices(frame, render_pass->output_rect, FlippedFramebuffer());
     SetDrawViewportSize(render_pass->output_rect.size());

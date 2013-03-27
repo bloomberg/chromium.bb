@@ -437,7 +437,7 @@ TEST(RegionSwap, Swap) {
   Region r1, r2, r3;
 
   r1 = gfx::Rect(0, 0, 50, 50);
-  r1.Swap(r2);
+  r1.Swap(&r2);
   EXPECT_TRUE(r1.IsEmpty());
   EXPECT_EQ(r2.ToString(), Region(gfx::Rect(0, 0, 50, 50)).ToString());
 
@@ -445,7 +445,7 @@ TEST(RegionSwap, Swap) {
   r1.Union(gfx::Rect(100, 0, 50, 50));
   r1.Union(gfx::Rect(0, 0, 500, 500));
   r3 = r1;
-  r1.Swap(r2);
+  r1.Swap(&r2);
   EXPECT_EQ(r1.ToString(), Region(gfx::Rect(0, 0, 50, 50)).ToString());
   EXPECT_EQ(r2.ToString(), r3.ToString());
 }

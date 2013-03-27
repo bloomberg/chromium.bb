@@ -107,16 +107,16 @@ class QuadCullerTest : public testing::Test {
   }
 
   void AppendQuads(QuadList* quad_list,
-                   SharedQuadStateList& shared_state_list,
+                   SharedQuadStateList* shared_state_list,
                    TiledLayerImpl* layer,
-                   LayerIteratorType& it,
-                   OcclusionTrackerImpl& occlusion_tracker) {
-    occlusion_tracker.EnterLayer(it);
+                   LayerIteratorType* it,
+                   OcclusionTrackerImpl* occlusion_tracker) {
+    occlusion_tracker->EnterLayer(*it);
     QuadCuller quad_culler(
-        quad_list, &shared_state_list, layer, occlusion_tracker, false, false);
+        quad_list, shared_state_list, layer, *occlusion_tracker, false, false);
     AppendQuadsData data;
     layer->AppendQuads(&quad_culler, &data);
-    occlusion_tracker.LeaveLayer(it);
+    occlusion_tracker->LeaveLayer(*it);
     ++it;
   }
 
@@ -159,10 +159,16 @@ TEST_F(QuadCullerTest, VerifyNoCulling) {
   TestOcclusionTrackerImpl occlusion_tracker(gfx::Rect(-100, -100, 1000, 1000));
   LayerIteratorType it = LayerIteratorType::Begin(&render_surface_layer_list);
 
-  AppendQuads(
-      &quad_list, shared_state_list, child_layer.get(), it, occlusion_tracker);
-  AppendQuads(
-      &quad_list, shared_state_list, root_layer.get(), it, occlusion_tracker);
+  AppendQuads(&quad_list,
+              &shared_state_list,
+              child_layer.get(),
+              &it,
+              &occlusion_tracker);
+  AppendQuads(&quad_list,
+              &shared_state_list,
+              root_layer.get(),
+              &it,
+              &occlusion_tracker);
   EXPECT_EQ(quad_list.size(), 13u);
   EXPECT_NEAR(
       occlusion_tracker.overdraw_metrics()->pixels_drawn_opaque(), 90000, 1);
@@ -194,10 +200,16 @@ TEST_F(QuadCullerTest, VerifyCullChildLinesUpTopLeft) {
   TestOcclusionTrackerImpl occlusion_tracker(gfx::Rect(-100, -100, 1000, 1000));
   LayerIteratorType it = LayerIteratorType::Begin(&render_surface_layer_list);
 
-  AppendQuads(
-      &quad_list, shared_state_list, child_layer.get(), it, occlusion_tracker);
-  AppendQuads(
-      &quad_list, shared_state_list, root_layer.get(), it, occlusion_tracker);
+  AppendQuads(&quad_list,
+              &shared_state_list,
+              child_layer.get(),
+              &it,
+              &occlusion_tracker);
+  AppendQuads(&quad_list,
+              &shared_state_list,
+              root_layer.get(),
+              &it,
+              &occlusion_tracker);
   EXPECT_EQ(quad_list.size(), 9u);
   EXPECT_NEAR(
       occlusion_tracker.overdraw_metrics()->pixels_drawn_opaque(), 90000, 1);
@@ -229,10 +241,16 @@ TEST_F(QuadCullerTest, VerifyCullWhenChildOpacityNotOne) {
   TestOcclusionTrackerImpl occlusion_tracker(gfx::Rect(-100, -100, 1000, 1000));
   LayerIteratorType it = LayerIteratorType::Begin(&render_surface_layer_list);
 
-  AppendQuads(
-      &quad_list, shared_state_list, child_layer.get(), it, occlusion_tracker);
-  AppendQuads(
-      &quad_list, shared_state_list, root_layer.get(), it, occlusion_tracker);
+  AppendQuads(&quad_list,
+              &shared_state_list,
+              child_layer.get(),
+              &it,
+              &occlusion_tracker);
+  AppendQuads(&quad_list,
+              &shared_state_list,
+              root_layer.get(),
+              &it,
+              &occlusion_tracker);
   EXPECT_EQ(quad_list.size(), 13u);
   EXPECT_NEAR(
       occlusion_tracker.overdraw_metrics()->pixels_drawn_opaque(), 90000, 1);
@@ -264,10 +282,16 @@ TEST_F(QuadCullerTest, VerifyCullWhenChildOpaqueFlagFalse) {
   TestOcclusionTrackerImpl occlusion_tracker(gfx::Rect(-100, -100, 1000, 1000));
   LayerIteratorType it = LayerIteratorType::Begin(&render_surface_layer_list);
 
-  AppendQuads(
-      &quad_list, shared_state_list, child_layer.get(), it, occlusion_tracker);
-  AppendQuads(
-      &quad_list, shared_state_list, root_layer.get(), it, occlusion_tracker);
+  AppendQuads(&quad_list,
+              &shared_state_list,
+              child_layer.get(),
+              &it,
+              &occlusion_tracker);
+  AppendQuads(&quad_list,
+              &shared_state_list,
+              root_layer.get(),
+              &it,
+              &occlusion_tracker);
   EXPECT_EQ(quad_list.size(), 13u);
   EXPECT_NEAR(
       occlusion_tracker.overdraw_metrics()->pixels_drawn_opaque(), 90000, 1);
@@ -299,10 +323,16 @@ TEST_F(QuadCullerTest, VerifyCullCenterTileOnly) {
   TestOcclusionTrackerImpl occlusion_tracker(gfx::Rect(-100, -100, 1000, 1000));
   LayerIteratorType it = LayerIteratorType::Begin(&render_surface_layer_list);
 
-  AppendQuads(
-      &quad_list, shared_state_list, child_layer.get(), it, occlusion_tracker);
-  AppendQuads(
-      &quad_list, shared_state_list, root_layer.get(), it, occlusion_tracker);
+  AppendQuads(&quad_list,
+              &shared_state_list,
+              child_layer.get(),
+              &it,
+              &occlusion_tracker);
+  AppendQuads(&quad_list,
+              &shared_state_list,
+              root_layer.get(),
+              &it,
+              &occlusion_tracker);
   ASSERT_EQ(quad_list.size(), 12u);
 
   gfx::Rect quad_visible_rect1 = quad_list[5]->visible_rect;
@@ -359,10 +389,16 @@ TEST_F(QuadCullerTest, VerifyCullCenterTileNonIntegralSize1) {
   TestOcclusionTrackerImpl occlusion_tracker(gfx::Rect(-100, -100, 1000, 1000));
   LayerIteratorType it = LayerIteratorType::Begin(&render_surface_layer_list);
 
-  AppendQuads(
-      &quad_list, shared_state_list, child_layer.get(), it, occlusion_tracker);
-  AppendQuads(
-      &quad_list, shared_state_list, root_layer.get(), it, occlusion_tracker);
+  AppendQuads(&quad_list,
+              &shared_state_list,
+              child_layer.get(),
+              &it,
+              &occlusion_tracker);
+  AppendQuads(&quad_list,
+              &shared_state_list,
+              root_layer.get(),
+              &it,
+              &occlusion_tracker);
   EXPECT_EQ(quad_list.size(), 2u);
 
   EXPECT_NEAR(
@@ -404,10 +440,16 @@ TEST_F(QuadCullerTest, VerifyCullCenterTileNonIntegralSize2) {
   TestOcclusionTrackerImpl occlusion_tracker(gfx::Rect(-100, -100, 1000, 1000));
   LayerIteratorType it = LayerIteratorType::Begin(&render_surface_layer_list);
 
-  AppendQuads(
-      &quad_list, shared_state_list, child_layer.get(), it, occlusion_tracker);
-  AppendQuads(
-      &quad_list, shared_state_list, root_layer.get(), it, occlusion_tracker);
+  AppendQuads(&quad_list,
+              &shared_state_list,
+              child_layer.get(),
+              &it,
+              &occlusion_tracker);
+  AppendQuads(&quad_list,
+              &shared_state_list,
+              root_layer.get(),
+              &it,
+              &occlusion_tracker);
   EXPECT_EQ(quad_list.size(), 2u);
 
   EXPECT_NEAR(
@@ -439,10 +481,16 @@ TEST_F(QuadCullerTest, VerifyCullChildLinesUpBottomRight) {
   TestOcclusionTrackerImpl occlusion_tracker(gfx::Rect(-100, -100, 1000, 1000));
   LayerIteratorType it = LayerIteratorType::Begin(&render_surface_layer_list);
 
-  AppendQuads(
-      &quad_list, shared_state_list, child_layer.get(), it, occlusion_tracker);
-  AppendQuads(
-      &quad_list, shared_state_list, root_layer.get(), it, occlusion_tracker);
+  AppendQuads(&quad_list,
+              &shared_state_list,
+              child_layer.get(),
+              &it,
+              &occlusion_tracker);
+  AppendQuads(&quad_list,
+              &shared_state_list,
+              root_layer.get(),
+              &it,
+              &occlusion_tracker);
   EXPECT_EQ(quad_list.size(), 9u);
   EXPECT_NEAR(
       occlusion_tracker.overdraw_metrics()->pixels_drawn_opaque(), 90000, 1);
@@ -478,10 +526,16 @@ TEST_F(QuadCullerTest, VerifyCullSubRegion) {
   TestOcclusionTrackerImpl occlusion_tracker(gfx::Rect(-100, -100, 1000, 1000));
   LayerIteratorType it = LayerIteratorType::Begin(&render_surface_layer_list);
 
-  AppendQuads(
-      &quad_list, shared_state_list, child_layer.get(), it, occlusion_tracker);
-  AppendQuads(
-      &quad_list, shared_state_list, root_layer.get(), it, occlusion_tracker);
+  AppendQuads(&quad_list,
+              &shared_state_list,
+              child_layer.get(),
+              &it,
+              &occlusion_tracker);
+  AppendQuads(&quad_list,
+              &shared_state_list,
+              root_layer.get(),
+              &it,
+              &occlusion_tracker);
   EXPECT_EQ(quad_list.size(), 12u);
   EXPECT_NEAR(
       occlusion_tracker.overdraw_metrics()->pixels_drawn_opaque(), 90000, 1);
@@ -518,10 +572,16 @@ TEST_F(QuadCullerTest, VerifyCullSubRegion2) {
   TestOcclusionTrackerImpl occlusion_tracker(gfx::Rect(-100, -100, 1000, 1000));
   LayerIteratorType it = LayerIteratorType::Begin(&render_surface_layer_list);
 
-  AppendQuads(
-      &quad_list, shared_state_list, child_layer.get(), it, occlusion_tracker);
-  AppendQuads(
-      &quad_list, shared_state_list, root_layer.get(), it, occlusion_tracker);
+  AppendQuads(&quad_list,
+              &shared_state_list,
+              child_layer.get(),
+              &it,
+              &occlusion_tracker);
+  AppendQuads(&quad_list,
+              &shared_state_list,
+              root_layer.get(),
+              &it,
+              &occlusion_tracker);
   EXPECT_EQ(quad_list.size(), 12u);
   EXPECT_NEAR(
       occlusion_tracker.overdraw_metrics()->pixels_drawn_opaque(), 90000, 1);
@@ -558,10 +618,16 @@ TEST_F(QuadCullerTest, VerifyCullSubRegionCheckOvercull) {
   TestOcclusionTrackerImpl occlusion_tracker(gfx::Rect(-100, -100, 1000, 1000));
   LayerIteratorType it = LayerIteratorType::Begin(&render_surface_layer_list);
 
-  AppendQuads(
-      &quad_list, shared_state_list, child_layer.get(), it, occlusion_tracker);
-  AppendQuads(
-      &quad_list, shared_state_list, root_layer.get(), it, occlusion_tracker);
+  AppendQuads(&quad_list,
+              &shared_state_list,
+              child_layer.get(),
+              &it,
+              &occlusion_tracker);
+  AppendQuads(&quad_list,
+              &shared_state_list,
+              root_layer.get(),
+              &it,
+              &occlusion_tracker);
   EXPECT_EQ(quad_list.size(), 13u);
   EXPECT_NEAR(
       occlusion_tracker.overdraw_metrics()->pixels_drawn_opaque(), 90000, 1);
@@ -596,10 +662,16 @@ TEST_F(QuadCullerTest, VerifyNonAxisAlignedQuadsDontOcclude) {
   TestOcclusionTrackerImpl occlusion_tracker(gfx::Rect(-100, -100, 1000, 1000));
   LayerIteratorType it = LayerIteratorType::Begin(&render_surface_layer_list);
 
-  AppendQuads(
-      &quad_list, shared_state_list, child_layer.get(), it, occlusion_tracker);
-  AppendQuads(
-      &quad_list, shared_state_list, root_layer.get(), it, occlusion_tracker);
+  AppendQuads(&quad_list,
+              &shared_state_list,
+              child_layer.get(),
+              &it,
+              &occlusion_tracker);
+  AppendQuads(&quad_list,
+              &shared_state_list,
+              root_layer.get(),
+              &it,
+              &occlusion_tracker);
   EXPECT_EQ(quad_list.size(), 13u);
   EXPECT_NEAR(
       occlusion_tracker.overdraw_metrics()->pixels_drawn_opaque(), 130000, 1);
@@ -639,10 +711,16 @@ TEST_F(QuadCullerTest, VerifyNonAxisAlignedQuadsSafelyCulled) {
   TestOcclusionTrackerImpl occlusion_tracker(gfx::Rect(-100, -100, 1000, 1000));
   LayerIteratorType it = LayerIteratorType::Begin(&render_surface_layer_list);
 
-  AppendQuads(
-      &quad_list, shared_state_list, child_layer.get(), it, occlusion_tracker);
-  AppendQuads(
-      &quad_list, shared_state_list, root_layer.get(), it, occlusion_tracker);
+  AppendQuads(&quad_list,
+              &shared_state_list,
+              child_layer.get(),
+              &it,
+              &occlusion_tracker);
+  AppendQuads(&quad_list,
+              &shared_state_list,
+              root_layer.get(),
+              &it,
+              &occlusion_tracker);
   EXPECT_EQ(quad_list.size(), 12u);
   EXPECT_NEAR(
       occlusion_tracker.overdraw_metrics()->pixels_drawn_opaque(), 100600, 1);
@@ -673,10 +751,16 @@ TEST_F(QuadCullerTest, VerifyCullOutsideScissorOverTile) {
   TestOcclusionTrackerImpl occlusion_tracker(gfx::Rect(200, 100, 100, 100));
   LayerIteratorType it = LayerIteratorType::Begin(&render_surface_layer_list);
 
-  AppendQuads(
-      &quad_list, shared_state_list, child_layer.get(), it, occlusion_tracker);
-  AppendQuads(
-      &quad_list, shared_state_list, root_layer.get(), it, occlusion_tracker);
+  AppendQuads(&quad_list,
+              &shared_state_list,
+              child_layer.get(),
+              &it,
+              &occlusion_tracker);
+  AppendQuads(&quad_list,
+              &shared_state_list,
+              root_layer.get(),
+              &it,
+              &occlusion_tracker);
   EXPECT_EQ(quad_list.size(), 1u);
   EXPECT_NEAR(
       occlusion_tracker.overdraw_metrics()->pixels_drawn_opaque(), 10000, 1);
@@ -707,10 +791,16 @@ TEST_F(QuadCullerTest, VerifyCullOutsideScissorOverCulledTile) {
   TestOcclusionTrackerImpl occlusion_tracker(gfx::Rect(100, 100, 100, 100));
   LayerIteratorType it = LayerIteratorType::Begin(&render_surface_layer_list);
 
-  AppendQuads(
-      &quad_list, shared_state_list, child_layer.get(), it, occlusion_tracker);
-  AppendQuads(
-      &quad_list, shared_state_list, root_layer.get(), it, occlusion_tracker);
+  AppendQuads(&quad_list,
+              &shared_state_list,
+              child_layer.get(),
+              &it,
+              &occlusion_tracker);
+  AppendQuads(&quad_list,
+              &shared_state_list,
+              root_layer.get(),
+              &it,
+              &occlusion_tracker);
   EXPECT_EQ(quad_list.size(), 1u);
   EXPECT_NEAR(
       occlusion_tracker.overdraw_metrics()->pixels_drawn_opaque(), 10000, 1);
@@ -741,10 +831,16 @@ TEST_F(QuadCullerTest, VerifyCullOutsideScissorOverPartialTiles) {
   TestOcclusionTrackerImpl occlusion_tracker(gfx::Rect(50, 50, 200, 200));
   LayerIteratorType it = LayerIteratorType::Begin(&render_surface_layer_list);
 
-  AppendQuads(
-      &quad_list, shared_state_list, child_layer.get(), it, occlusion_tracker);
-  AppendQuads(
-      &quad_list, shared_state_list, root_layer.get(), it, occlusion_tracker);
+  AppendQuads(&quad_list,
+              &shared_state_list,
+              child_layer.get(),
+              &it,
+              &occlusion_tracker);
+  AppendQuads(&quad_list,
+              &shared_state_list,
+              root_layer.get(),
+              &it,
+              &occlusion_tracker);
   EXPECT_EQ(quad_list.size(), 9u);
   EXPECT_NEAR(
       occlusion_tracker.overdraw_metrics()->pixels_drawn_opaque(), 40000, 1);
@@ -775,10 +871,16 @@ TEST_F(QuadCullerTest, VerifyCullOutsideScissorOverNoTiles) {
   TestOcclusionTrackerImpl occlusion_tracker(gfx::Rect(500, 500, 100, 100));
   LayerIteratorType it = LayerIteratorType::Begin(&render_surface_layer_list);
 
-  AppendQuads(
-      &quad_list, shared_state_list, child_layer.get(), it, occlusion_tracker);
-  AppendQuads(
-      &quad_list, shared_state_list, root_layer.get(), it, occlusion_tracker);
+  AppendQuads(&quad_list,
+              &shared_state_list,
+              child_layer.get(),
+              &it,
+              &occlusion_tracker);
+  AppendQuads(&quad_list,
+              &shared_state_list,
+              root_layer.get(),
+              &it,
+              &occlusion_tracker);
   EXPECT_EQ(quad_list.size(), 0u);
   EXPECT_NEAR(
       occlusion_tracker.overdraw_metrics()->pixels_drawn_opaque(), 0, 1);
@@ -810,10 +912,16 @@ TEST_F(QuadCullerTest, VerifyWithoutMetrics) {
                                              false);
   LayerIteratorType it = LayerIteratorType::Begin(&render_surface_layer_list);
 
-  AppendQuads(
-      &quad_list, shared_state_list, child_layer.get(), it, occlusion_tracker);
-  AppendQuads(
-      &quad_list, shared_state_list, root_layer.get(), it, occlusion_tracker);
+  AppendQuads(&quad_list,
+              &shared_state_list,
+              child_layer.get(),
+              &it,
+              &occlusion_tracker);
+  AppendQuads(&quad_list,
+              &shared_state_list,
+              root_layer.get(),
+              &it,
+              &occlusion_tracker);
   EXPECT_EQ(quad_list.size(), 9u);
   EXPECT_NEAR(
       occlusion_tracker.overdraw_metrics()->pixels_drawn_opaque(), 0, 1);

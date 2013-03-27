@@ -4282,18 +4282,18 @@ class TestRenderer : public GLRenderer, public RendererClient {
 };
 
 static void ConfigureRenderPassTestData(const char* test_script,
-                                        RenderPassRemovalTestData& test_data,
+                                        RenderPassRemovalTestData* test_data,
                                         TestRenderer* renderer) {
   renderer->ClearCachedTextures();
 
   // One shared state for all quads - we don't need the correct details
-  test_data.shared_quad_state = SharedQuadState::Create();
-  test_data.shared_quad_state->SetAll(gfx::Transform(),
-                                      gfx::Size(),
-                                      gfx::Rect(),
-                                      gfx::Rect(),
-                                      false,
-                                      1.f);
+  test_data->shared_quad_state = SharedQuadState::Create();
+  test_data->shared_quad_state->SetAll(gfx::Transform(),
+                                       gfx::Size(),
+                                       gfx::Rect(),
+                                       gfx::Rect(),
+                                       false,
+                                       1.f);
 
   const char* current_char = test_script;
 
@@ -4302,7 +4302,7 @@ static void ConfigureRenderPassTestData(const char* test_script,
       RenderPass::Id(test_script[0], test_script[1]);
   scoped_ptr<TestRenderPass> pass = TestRenderPass::Create();
   pass->SetNew(root_render_pass_id, gfx::Rect(), gfx::Rect(), gfx::Transform());
-  test_data.render_pass_cache.add(root_render_pass_id, pass.Pass());
+  test_data->render_pass_cache.add(root_render_pass_id, pass.Pass());
   while (*current_char) {
     int layer_id = *current_char;
     current_char++;
@@ -4313,18 +4313,18 @@ static void ConfigureRenderPassTestData(const char* test_script,
     RenderPass::Id render_pass_id = RenderPass::Id(layer_id, index);
 
     bool is_replica = false;
-    if (!test_data.render_pass_cache.contains(render_pass_id))
+    if (!test_data->render_pass_cache.contains(render_pass_id))
       is_replica = true;
 
     scoped_ptr<TestRenderPass> render_pass =
-        test_data.render_pass_cache.take(render_pass_id);
+        test_data->render_pass_cache.take(render_pass_id);
 
     // Cycle through quad data and create all quads.
     while (*current_char && *current_char != '\n') {
       if (*current_char == 's') {
         // Solid color draw quad.
         scoped_ptr<SolidColorDrawQuad> quad = SolidColorDrawQuad::Create();
-        quad->SetNew(test_data.shared_quad_state.get(),
+        quad->SetNew(test_data->shared_quad_state.get(),
                      gfx::Rect(0, 0, 10, 10),
                      SK_ColorWHITE);
 
@@ -4359,8 +4359,8 @@ static void ConfigureRenderPassTestData(const char* test_script,
             current_char++;
         }
 
-        if (test_data.render_pass_cache.find(new_render_pass_id) ==
-            test_data.render_pass_cache.end()) {
+        if (test_data->render_pass_cache.find(new_render_pass_id) ==
+            test_data->render_pass_cache.end()) {
           if (has_texture)
             renderer->SetHaveCachedResourcesForRenderPassId(new_render_pass_id);
 
@@ -4369,14 +4369,14 @@ static void ConfigureRenderPassTestData(const char* test_script,
                        gfx::Rect(),
                        gfx::Rect(),
                        gfx::Transform());
-          test_data.render_pass_cache.add(new_render_pass_id, pass.Pass());
+          test_data->render_pass_cache.add(new_render_pass_id, pass.Pass());
         }
 
         gfx::Rect quad_rect = gfx::Rect(0, 0, 1, 1);
         gfx::Rect contents_changed_rect =
             contents_changed ? quad_rect : gfx::Rect();
         scoped_ptr<RenderPassDrawQuad> quad = RenderPassDrawQuad::Create();
-        quad->SetNew(test_data.shared_quad_state.get(),
+        quad->SetNew(test_data->shared_quad_state.get(),
                      quad_rect,
                      new_render_pass_id,
                      is_replica,
@@ -4389,9 +4389,9 @@ static void ConfigureRenderPassTestData(const char* test_script,
         render_pass->AppendQuad(quad.PassAs<DrawQuad>());
       }
     }
-    test_data.render_passes_by_id[render_pass_id] = render_pass.get();
-    test_data.render_passes.insert(test_data.render_passes.begin(),
-                                   render_pass.PassAs<RenderPass>());
+    test_data->render_passes_by_id[render_pass_id] = render_pass.get();
+    test_data->render_passes.insert(test_data->render_passes.begin(),
+                                    render_pass.PassAs<RenderPass>());
     if (*current_char)
       current_char++;
   }
@@ -4607,7 +4607,7 @@ TEST_F(LayerTreeHostImplTest, TestRemoveRenderPasses) {
     RenderPassRemovalTestData test_data;
     ConfigureRenderPassTestData(
         remove_render_passes_cases[test_case_index].init_script,
-        test_data,
+        &test_data,
         renderer.get());
     LayerTreeHostImpl::RemoveRenderPasses(
         LayerTreeHostImpl::CullRenderPassesWithCachedTextures(renderer.get()),

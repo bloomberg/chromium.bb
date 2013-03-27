@@ -40,7 +40,7 @@ void PictureLayer::PushPropertiesTo(LayerImpl* base_layer) {
   layer_impl->SetIsMask(is_mask_);
   layer_impl->CreateTilingSet();
   layer_impl->invalidation_.Clear();
-  layer_impl->invalidation_.Swap(pile_invalidation_);
+  layer_impl->invalidation_.Swap(&pile_invalidation_);
   layer_impl->pile_ =
       PicturePileImpl::CreateFromOther(pile_, layer_impl->is_using_lcd_text_);
   layer_impl->SyncFromActiveLayer();
@@ -77,7 +77,7 @@ void PictureLayer::Update(ResourceUpdateQueue*,
 
   // Calling paint in WebKit can sometimes cause invalidations, so save
   // off the invalidation prior to calling update.
-  pile_invalidation_.Swap(pending_invalidation_);
+  pile_invalidation_.Swap(&pending_invalidation_);
   pending_invalidation_.Clear();
 
   gfx::Rect visible_layer_rect = gfx::ToEnclosingRect(

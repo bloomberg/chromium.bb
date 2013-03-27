@@ -135,9 +135,9 @@ static inline void ExpandBoundsToIncludePoint(float* xmin,
 
 static inline void AddVertexToClippedQuad(gfx::PointF new_vertex,
                                           gfx::PointF clipped_quad[8],
-                                          int& num_vertices_in_clipped_quad) {
-  clipped_quad[num_vertices_in_clipped_quad] = new_vertex;
-  num_vertices_in_clipped_quad++;
+                                          int* num_vertices_in_clipped_quad) {
+  clipped_quad[*num_vertices_in_clipped_quad] = new_vertex;
+  (*num_vertices_in_clipped_quad)++;
 }
 
 gfx::Rect MathUtil::MapClippedRect(const gfx::Transform& transform,
@@ -197,7 +197,7 @@ gfx::RectF MathUtil::ProjectClippedRect(const gfx::Transform& transform,
 void MathUtil::MapClippedQuad(const gfx::Transform& transform,
                               const gfx::QuadF& src_quad,
                               gfx::PointF clipped_quad[8],
-                              int& num_vertices_in_clipped_quad) {
+                              int* num_vertices_in_clipped_quad) {
   HomogeneousCoordinate h1 =
       MapHomogeneousPoint(transform, gfx::Point3F(src_quad.p1()));
   HomogeneousCoordinate h2 =
@@ -210,7 +210,7 @@ void MathUtil::MapClippedQuad(const gfx::Transform& transform,
   // The order of adding the vertices to the array is chosen so that
   // clockwise / counter-clockwise orientation is retained.
 
-  num_vertices_in_clipped_quad = 0;
+  *num_vertices_in_clipped_quad = 0;
 
   if (!h1.ShouldBeClipped()) {
     AddVertexToClippedQuad(
@@ -260,7 +260,7 @@ void MathUtil::MapClippedQuad(const gfx::Transform& transform,
         num_vertices_in_clipped_quad);
   }
 
-  DCHECK_LE(num_vertices_in_clipped_quad, 8);
+  DCHECK_LE(*num_vertices_in_clipped_quad, 8);
 }
 
 gfx::RectF MathUtil::ComputeEnclosingRectOfVertices(gfx::PointF vertices[],

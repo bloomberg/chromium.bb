@@ -25,7 +25,7 @@ class CC_EXPORT Region {
   const Region& operator=(gfx::Rect rect);
   const Region& operator=(const Region& region);
 
-  void Swap(Region& region);
+  void Swap(Region* region);
   void Clear();
   bool IsEmpty() const;
 

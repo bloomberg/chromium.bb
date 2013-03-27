@@ -48,7 +48,7 @@ class DelegatingRendererTestDraw : public DelegatingRendererTest {
       OVERRIDE {
     EXPECT_EQ(0u, output_surface_->num_sent_frames());
 
-    CompositorFrame& last_frame = output_surface_->last_sent_frame();
+    const CompositorFrame& last_frame = output_surface_->last_sent_frame();
     EXPECT_FALSE(last_frame.delegated_frame_data);
     EXPECT_FALSE(last_frame.gl_frame_data);
     EXPECT_EQ(0.f, last_frame.metadata.min_page_scale_factor);
@@ -59,7 +59,7 @@ class DelegatingRendererTestDraw : public DelegatingRendererTest {
   virtual void DrawLayersOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
     EXPECT_EQ(1u, output_surface_->num_sent_frames());
 
-    CompositorFrame& last_frame = output_surface_->last_sent_frame();
+    const CompositorFrame& last_frame = output_surface_->last_sent_frame();
     DelegatedFrameData* last_frame_data = last_frame.delegated_frame_data.get();
     ASSERT_TRUE(last_frame.delegated_frame_data);
     EXPECT_FALSE(last_frame.gl_frame_data);
@@ -116,7 +116,7 @@ class DelegatingRendererTestResources : public DelegatingRendererTest {
   virtual void DrawLayersOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
     EXPECT_EQ(1u, output_surface_->num_sent_frames());
 
-    CompositorFrame& last_frame = output_surface_->last_sent_frame();
+    const CompositorFrame& last_frame = output_surface_->last_sent_frame();
     ASSERT_TRUE(last_frame.delegated_frame_data);
 
     EXPECT_EQ(2u, last_frame.delegated_frame_data->render_pass_list.size());

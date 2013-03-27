@@ -11,14 +11,14 @@ namespace cc {
 // assignment to their iterators.
 template <class ForwardIterator, class Predicate, class ScopedContainer>
 ForwardIterator remove_if(
-    ScopedContainer& container,
+    ScopedContainer* container,
     ForwardIterator first,
     ForwardIterator last,
     Predicate predicate) {
   ForwardIterator result = first;
   for (; first != last; ++first) {
     if (!predicate(*first)) {
-      container.swap(first, result);
+      container->swap(first, result);
       ++result;
     }
   }

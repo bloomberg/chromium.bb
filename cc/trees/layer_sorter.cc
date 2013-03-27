@@ -193,7 +193,7 @@ LayerShape::LayerShape(float width,
   MathUtil::MapClippedQuad(draw_transform,
                            layer_quad,
                            clipped_quad,
-                           num_vertices_in_clipped_quad);
+                           &num_vertices_in_clipped_quad);
 
   if (num_vertices_in_clipped_quad < 3) {
     projected_bounds = gfx::RectF();

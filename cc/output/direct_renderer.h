@@ -28,7 +28,7 @@ class CC_EXPORT DirectRenderer : public Renderer {
       const RenderPassList& render_passes_in_draw_order) OVERRIDE;
   virtual bool HaveCachedResourcesForRenderPassId(RenderPass::Id id) const
       OVERRIDE;
-  virtual void DrawFrame(RenderPassList& render_passes_in_draw_order) OVERRIDE;
+  virtual void DrawFrame(RenderPassList* render_passes_in_draw_order) OVERRIDE;
 
   struct CC_EXPORT DrawingFrame {
     DrawingFrame();
@@ -76,15 +76,15 @@ class CC_EXPORT DirectRenderer : public Renderer {
   static void QuadRectTransform(gfx::Transform* quad_rect_transform,
                                 const gfx::Transform& quad_transform,
                                 const gfx::RectF& quad_rect);
-  static void InitializeMatrices(DrawingFrame& frame,
+  static void InitializeMatrices(DrawingFrame* frame,
                                  gfx::Rect draw_rect,
                                  bool flip_y);
-  static gfx::Rect MoveScissorToWindowSpace(const DrawingFrame& frame,
+  static gfx::Rect MoveScissorToWindowSpace(const DrawingFrame* frame,
                                             const gfx::RectF& scissor_rect);
-  static gfx::RectF ComputeScissorRectForRenderPass(const DrawingFrame& frame);
-  void SetScissorStateForQuad(const DrawingFrame& frame, const DrawQuad& quad);
+  static gfx::RectF ComputeScissorRectForRenderPass(const DrawingFrame* frame);
+  void SetScissorStateForQuad(const DrawingFrame* frame, const DrawQuad& quad);
   void SetScissorStateForQuadWithRenderPassScissor(
-      const DrawingFrame& frame,
+      const DrawingFrame* frame,
       const DrawQuad& quad,
       const gfx::RectF& render_pass_scissor,
       bool* should_skip_quad);
@@ -92,19 +92,19 @@ class CC_EXPORT DirectRenderer : public Renderer {
   static gfx::Size RenderPassTextureSize(const RenderPass* render_pass);
   static GLenum RenderPassTextureFormat(const RenderPass* render_pass);
 
-  void DrawRenderPass(DrawingFrame& frame, const RenderPass* render_pass);
-  bool UseRenderPass(DrawingFrame& frame, const RenderPass* render_pass);
+  void DrawRenderPass(DrawingFrame* frame, const RenderPass* render_pass);
+  bool UseRenderPass(DrawingFrame* frame, const RenderPass* render_pass);
 
-  virtual void BindFramebufferToOutputSurface(DrawingFrame& frame) = 0;
-  virtual bool BindFramebufferToTexture(DrawingFrame& frame,
+  virtual void BindFramebufferToOutputSurface(DrawingFrame* frame) = 0;
+  virtual bool BindFramebufferToTexture(DrawingFrame* frame,
                                         const ScopedResource* resource,
                                         gfx::Rect framebuffer_rect) = 0;
   virtual void SetDrawViewportSize(gfx::Size viewport_size) = 0;
   virtual void SetScissorTestRect(gfx::Rect scissor_rect) = 0;
-  virtual void ClearFramebuffer(DrawingFrame& frame) = 0;
-  virtual void DoDrawQuad(DrawingFrame& frame, const DrawQuad* quad) = 0;
-  virtual void BeginDrawingFrame(DrawingFrame& frame) = 0;
-  virtual void FinishDrawingFrame(DrawingFrame& frame) = 0;
+  virtual void ClearFramebuffer(DrawingFrame* frame) = 0;
+  virtual void DoDrawQuad(DrawingFrame* frame, const DrawQuad* quad) = 0;
+  virtual void BeginDrawingFrame(DrawingFrame* frame) = 0;
+  virtual void FinishDrawingFrame(DrawingFrame* frame) = 0;
   virtual void FinishDrawingQuadList();
   virtual bool FlippedFramebuffer() const = 0;
   virtual void EnsureScissorTestEnabled() = 0;

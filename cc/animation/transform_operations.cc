@@ -157,7 +157,7 @@ bool TransformOperations::BlendInternal(const TransformOperations& from,
           from_identity ? 0 : &from.operations_[i],
           to_identity ? 0 : &operations_[i],
           progress,
-          blended))
+          &blended))
           return false;
       result->PreconcatTransform(blended);
     }
