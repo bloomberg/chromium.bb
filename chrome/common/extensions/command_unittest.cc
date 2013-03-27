@@ -41,10 +41,10 @@ TEST(CommandTest, ExtensionCommandParsing) {
   } kTests[] = {
     // Negative test (one or more missing required fields). We don't need to
     // test |command_name| being blank as it is used as a key in the manifest,
-    // so it can't be blank (and we CHECK() when it is).
+    // so it can't be blank (and we CHECK() when it is). A blank shortcut is
+    // permitted.
     { false, none, "command", "",       "" },
     { false, none, "command", "Ctrl+f", "" },
-    { false, none, "command", "",       "description" },
     // Ctrl+Alt is not permitted, see MSDN link in comments in Parse function.
     { false, none, "command", "Ctrl+Alt+F", "description" },
     // Unsupported shortcuts/too many, or missing modifier.
@@ -56,6 +56,7 @@ TEST(CommandTest, ExtensionCommandParsing) {
     { false, shift_f, "command", "Shift+F",       "description" },
     { false, shift_f, "command", "F+Shift",       "description" },
     // Basic tests.
+    { true, none,         "command", "",             "description" },
     { true, ctrl_f,       "command", "Ctrl+F",       "description" },
     { true, alt_f,        "command", "Alt+F",        "description" },
     { true, ctrl_shift_f, "command", "Ctrl+Shift+F", "description" },
@@ -101,22 +102,24 @@ TEST(CommandTest, ExtensionCommandParsing) {
     }
 
     // Now parse the command as a dictionary of multiple values.
-    input.reset(new DictionaryValue);
-    DictionaryValue* key_dict = new DictionaryValue();
-    key_dict->SetString("default", kTests[i].key);
-    key_dict->SetString("windows", kTests[i].key);
-    key_dict->SetString("mac", kTests[i].key);
-    input->Set("suggested_key", key_dict);
-    input->SetString("description", kTests[i].description);
+    if (kTests[i].key[0] != '\0') {
+      input.reset(new DictionaryValue);
+      DictionaryValue* key_dict = new DictionaryValue();
+      key_dict->SetString("default", kTests[i].key);
+      key_dict->SetString("windows", kTests[i].key);
+      key_dict->SetString("mac", kTests[i].key);
+      input->Set("suggested_key", key_dict);
+      input->SetString("description", kTests[i].description);
 
-    result = command.Parse(input.get(), kTests[i].command_name, i, &error);
+      result = command.Parse(input.get(), kTests[i].command_name, i, &error);
 
-    EXPECT_EQ(kTests[i].expected_result, result);
-    if (result) {
-      EXPECT_STREQ(kTests[i].description,
-                   UTF16ToASCII(command.description()).c_str());
-      EXPECT_STREQ(kTests[i].command_name, command.command_name().c_str());
-      EXPECT_EQ(kTests[i].accelerator, command.accelerator());
+      EXPECT_EQ(kTests[i].expected_result, result);
+      if (result) {
+        EXPECT_STREQ(kTests[i].description,
+                     UTF16ToASCII(command.description()).c_str());
+        EXPECT_STREQ(kTests[i].command_name, command.command_name().c_str());
+        EXPECT_EQ(kTests[i].accelerator, command.accelerator());
+      }
     }
   }
 }

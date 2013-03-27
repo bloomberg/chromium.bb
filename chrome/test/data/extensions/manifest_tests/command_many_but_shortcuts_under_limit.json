@@ -1,5 +1,5 @@
 {
-  "name": "Command test - too many commands with shortcuts",
+  "name": "Command test - many commands, but not too many shortcuts",
   "manifest_version": 2,
   "version": "2",
   "commands": {
@@ -20,7 +20,6 @@
       "description": "feature4"
     },
     "feature5": {
-      "suggested_key": "Ctrl+E",
       "description": "feature5"
     }
   }

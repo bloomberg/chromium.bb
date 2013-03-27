@@ -22,9 +22,6 @@ class CommandsManifestTest : public ExtensionManifestTest {
 };
 
 TEST_F(CommandsManifestTest, CommandManifestSimple) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalExtensionApis);
-
 #if defined(OS_MACOSX)
   int ctrl = ui::EF_COMMAND_DOWN;
 #else
@@ -67,26 +64,22 @@ TEST_F(CommandsManifestTest, CommandManifestSimple) {
   ASSERT_EQ(ctrl_f, page_action->accelerator());
 }
 
-TEST_F(CommandsManifestTest, CommandManifestTooMany) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalExtensionApis);
-
+TEST_F(CommandsManifestTest, CommandManifestShortcutsTooMany) {
   LoadAndExpectError("command_too_many.json",
                      errors::kInvalidKeyBindingTooMany);
 }
 
-TEST_F(CommandsManifestTest, CommandManifestAllowNumbers) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalExtensionApis);
+TEST_F(CommandsManifestTest, CommandManifestManyButWithinBounds) {
+  scoped_refptr<Extension> extension =
+      LoadAndExpectSuccess("command_many_but_shortcuts_under_limit.json");
+}
 
+TEST_F(CommandsManifestTest, CommandManifestAllowNumbers) {
   scoped_refptr<Extension> extension =
       LoadAndExpectSuccess("command_allow_numbers.json");
 }
 
 TEST_F(CommandsManifestTest, CommandManifestRejectJustShift) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalExtensionApis);
-
   LoadAndExpectError("command_reject_just_shift.json",
       errors::kInvalidKeyBinding);
 }

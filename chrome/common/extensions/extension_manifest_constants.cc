@@ -352,7 +352,7 @@ const char kInvalidKeyBindingMissingPlatform[] =
     "Could not find key specification for 'command[*].*': Either specify a key "
     "for '*', or specify a default key.";
 const char kInvalidKeyBindingTooMany[] =
-    "Too many commands specified for 'commands': The maximum is *.";
+    "Too many shortcuts specified for 'commands': The maximum is *.";
 const char kInvalidKeyBindingUnknownPlatform[] =
     "Unknown platform for 'command[*]': *. Valid values are: 'windows', 'mac'"
     " 'chromeos', 'linux' and 'default'.";

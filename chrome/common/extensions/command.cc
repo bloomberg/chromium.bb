@@ -208,6 +208,19 @@ bool Command::Parse(const DictionaryValue* command,
                     string16* error) {
   DCHECK(!command_name.empty());
 
+  string16 description;
+  if (command_name != values::kPageActionCommandEvent &&
+      command_name != values::kBrowserActionCommandEvent &&
+      command_name != values::kScriptBadgeCommandEvent) {
+    if (!command->GetString(keys::kDescription, &description) ||
+        description.empty()) {
+      *error = ErrorUtils::FormatErrorMessageUTF16(
+          errors::kInvalidKeyBindingDescription,
+          base::IntToString(index));
+      return false;
+    }
+  }
+
   // We'll build up a map of platform-to-shortcut suggestions.
   typedef std::map<const std::string, std::string> SuggestionMap;
   SuggestionMap suggestions;
@@ -242,12 +255,7 @@ bool Command::Parse(const DictionaryValue* command,
       // If only a single string is provided, it must be default for all.
       suggestions["default"] = suggested_key_string;
     } else {
-      *error = ErrorUtils::FormatErrorMessageUTF16(
-          errors::kInvalidKeyBinding,
-          base::IntToString(index),
-          keys::kSuggestedKey,
-          kMissing);
-       return false;
+      suggestions["default"] = "";
     }
   }
 
@@ -290,38 +298,26 @@ bool Command::Parse(const DictionaryValue* command,
   std::map<const std::string, std::string>::const_iterator iter =
       suggestions.begin();
   for ( ; iter != suggestions.end(); ++iter) {
-    // Note that we pass iter->first to pretend we are on a platform we're not
-    // on.
-    ui::Accelerator accelerator =
-        ParseImpl(iter->second, iter->first, index, error);
-    if (accelerator.key_code() == ui::VKEY_UNKNOWN) {
-      *error = ErrorUtils::FormatErrorMessageUTF16(
-          errors::kInvalidKeyBinding,
-          base::IntToString(index),
-          iter->first,
-          iter->second);
-      return false;
+    ui::Accelerator accelerator;
+    if (!iter->second.empty()) {
+      // Note that we pass iter->first to pretend we are on a platform we're not
+      // on.
+      accelerator = ParseImpl(iter->second, iter->first, index, error);
+      if (accelerator.key_code() == ui::VKEY_UNKNOWN) {
+        *error = ErrorUtils::FormatErrorMessageUTF16(
+            errors::kInvalidKeyBinding,
+            base::IntToString(index),
+            iter->first,
+            iter->second);
+        return false;
+      }
     }
 
     if (iter->first == key) {
       // This platform is our platform, so grab this key.
       accelerator_ = accelerator;
       command_name_ = command_name;
-
-      if (command_name !=
-              extension_manifest_values::kPageActionCommandEvent &&
-          command_name !=
-              extension_manifest_values::kBrowserActionCommandEvent &&
-          command_name !=
-              extension_manifest_values::kScriptBadgeCommandEvent) {
-        if (!command->GetString(keys::kDescription, &description_) ||
-            description_.empty()) {
-          *error = ErrorUtils::FormatErrorMessageUTF16(
-              errors::kInvalidKeyBindingDescription,
-              base::IntToString(index));
-          return false;
-        }
-      }
+      description_ = description;
     }
   }
   return true;

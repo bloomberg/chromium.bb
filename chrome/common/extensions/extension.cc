@@ -73,10 +73,6 @@ namespace {
 const int kModernManifestVersion = 2;
 const int kPEMOutputColumns = 65;
 
-// The maximum number of commands (including page action/browser actions) an
-// extension can have.
-const size_t kMaxCommandsPerExtension = 4;
-
 // KEY MARKERS
 const char kKeyBeginHeaderMarker[] = "-----BEGIN";
 const char kKeyBeginFooterMarker[] = "-----END";

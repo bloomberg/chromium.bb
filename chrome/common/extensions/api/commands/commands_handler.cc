@@ -15,9 +15,9 @@ namespace keys = extension_manifest_keys;
 namespace extensions {
 
 namespace {
-// The maximum number of commands (including page action/browser actions) an
-// extension can have.
-const size_t kMaxCommandsPerExtension = 4;
+// The maximum number of commands (including page action/browser actions) with a
+// keybinding an extension can have.
+const int kMaxCommandsWithKeybindingPerExtension = 4;
 }  // namespace
 
 CommandsInfo::CommandsInfo() {
@@ -76,16 +76,10 @@ bool CommandsHandler::Parse(Extension* extension, string16* error) {
     return false;
   }
 
-  if (dict->size() > kMaxCommandsPerExtension) {
-    *error = ErrorUtils::FormatErrorMessageUTF16(
-        extension_manifest_errors::kInvalidKeyBindingTooMany,
-        base::IntToString(kMaxCommandsPerExtension));
-    return false;
-  }
-
   scoped_ptr<CommandsInfo> commands_info(new CommandsInfo);
 
   int command_index = 0;
+  int keybindings_found = 0;
   for (DictionaryValue::Iterator iter(*dict); !iter.IsAtEnd();
        iter.Advance()) {
     ++command_index;
@@ -101,6 +95,15 @@ bool CommandsHandler::Parse(Extension* extension, string16* error) {
     scoped_ptr<extensions::Command> binding(new Command());
     if (!binding->Parse(command, iter.key(), command_index, error))
       return false;  // |error| already set.
+
+    if (binding->accelerator().key_code() != ui::VKEY_UNKNOWN) {
+      if (++keybindings_found > kMaxCommandsWithKeybindingPerExtension) {
+        *error = ErrorUtils::FormatErrorMessageUTF16(
+            extension_manifest_errors::kInvalidKeyBindingTooMany,
+            base::IntToString(kMaxCommandsWithKeybindingPerExtension));
+        return false;
+      }
+    }
 
     std::string command_name = binding->command_name();
     if (command_name == extension_manifest_values::kBrowserActionCommandEvent) {
