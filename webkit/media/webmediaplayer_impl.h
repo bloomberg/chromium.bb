@@ -31,6 +31,7 @@
 #include "media/base/audio_renderer_sink.h"
 #include "media/base/decryptor.h"
 #include "media/base/pipeline.h"
+#include "media/filters/gpu_video_decoder.h"
 #include "media/filters/skcanvas_video_renderer.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
@@ -358,6 +359,8 @@ class WebMediaPlayerImpl
   // A pointer back to the compositor to inform it about state changes. This is
   // not NULL while the compositor is actively using this webmediaplayer.
   cc::VideoFrameProvider::Client* video_frame_provider_client_;
+
+  scoped_refptr<media::GpuVideoDecoder::Factories> gpu_factories_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerImpl);
 };

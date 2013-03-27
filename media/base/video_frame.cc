@@ -13,6 +13,7 @@
 #include "base/string_piece.h"
 #include "media/base/limits.h"
 #include "media/base/video_util.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace media {
 
@@ -79,7 +80,7 @@ scoped_refptr<VideoFrame> VideoFrame::WrapNativeTexture(
   return frame;
 }
 
-void VideoFrame::ReadPixelsFromNativeTexture(void* pixels) {
+void VideoFrame::ReadPixelsFromNativeTexture(const SkBitmap& pixels) {
   DCHECK_EQ(format_, NATIVE_TEXTURE);
   if (!read_pixels_cb_.is_null())
     read_pixels_cb_.Run(pixels);

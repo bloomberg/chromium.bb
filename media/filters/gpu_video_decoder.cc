@@ -69,7 +69,7 @@ GpuVideoDecoder::GpuVideoDecoder(
 void GpuVideoDecoder::Reset(const base::Closure& closure)  {
   DCHECK(gvd_loop_proxy_->BelongsToCurrentThread());
 
-  if (state_ == kDrainingDecoder) {
+  if (state_ == kDrainingDecoder && !factories_->IsAborted()) {
     gvd_loop_proxy_->PostTask(FROM_HERE, base::Bind(
         &GpuVideoDecoder::Reset, this, closure));
     // NOTE: if we're deferring Reset() until a Flush() completes, return
@@ -103,6 +103,10 @@ void GpuVideoDecoder::Stop(const base::Closure& closure) {
   DCHECK(gvd_loop_proxy_->BelongsToCurrentThread());
   if (vda_.get())
     DestroyVDA();
+  if (!pending_read_cb_.is_null())
+    EnqueueFrameAndTriggerFrameDelivery(VideoFrame::CreateEmptyFrame());
+  if (!pending_reset_cb_.is_null())
+    base::ResetAndReturn(&pending_reset_cb_).Run();
   BindToCurrentLoop(closure).Run();
 }
 
@@ -283,6 +287,9 @@ void GpuVideoDecoder::RequestBufferDecode(
 
   size_t size = buffer->GetDataSize();
   SHMBuffer* shm_buffer = GetSHM(size);
+  if (!shm_buffer)
+    return;
+
   memcpy(shm_buffer->shm->memory(), buffer->GetData(), size);
   BitstreamBuffer bitstream_buffer(
       next_bitstream_buffer_id_, shm_buffer->shm->handle(), size);
@@ -479,7 +486,9 @@ GpuVideoDecoder::SHMBuffer* GpuVideoDecoder::GetSHM(size_t min_size) {
       available_shm_segments_.back()->size < min_size) {
     size_t size_to_allocate = std::max(min_size, kSharedMemorySegmentBytes);
     base::SharedMemory* shm = factories_->CreateSharedMemory(size_to_allocate);
-    DCHECK(shm);
+    // CreateSharedMemory() can return NULL during Shutdown.
+    if (!shm)
+      return NULL;
     return new SHMBuffer(shm, size_to_allocate);
   }
   SHMBuffer* ret = available_shm_segments_.back();
@@ -567,9 +576,6 @@ void GpuVideoDecoder::NotifyResetDone() {
         &GpuVideoDecoder::NotifyResetDone, this));
     return;
   }
-
-  if (!vda_.get())
-    return;
 
   DCHECK(ready_video_frames_.empty());
 
