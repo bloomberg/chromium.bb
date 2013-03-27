@@ -335,7 +335,7 @@
         '--android-sdk-root=<(android_sdk_root)',
 
         # TODO(newt): remove this once http://crbug.com/177552 is fixed in ninja.
-        '--ignore=>!(echo >(_inputs) | md5sum)',
+        '--ignore=>!(echo \'>(_inputs)\' | md5sum)',
 
         '>@(dex_inputs)',
         '>@(dex_generated_inputs)',
