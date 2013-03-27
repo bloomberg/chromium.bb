@@ -480,6 +480,150 @@ TEST_F(ShelfLayoutManagerTest, SetAutoHideBehavior) {
             widget->GetWorkAreaBoundsInScreen().bottom());
 }
 
+// Basic assertions around the dimming of the shelf.
+TEST_F(ShelfLayoutManagerTest, TestDimmingBehavior) {
+  // Since ShelfLayoutManager queries for mouse location, move the mouse so
+  // it isn't over the shelf.
+  aura::test::EventGenerator generator(
+      Shell::GetPrimaryRootWindow(), gfx::Point());
+  generator.MoveMouseTo(0, 0);
+
+  ShelfLayoutManager* shelf = GetShelfLayoutManager();
+  shelf->shelf_widget()->DisableDimmingAnimationsForTest();
+
+  views::Widget* widget = new views::Widget;
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
+  params.bounds = gfx::Rect(0, 0, 200, 200);
+  params.context = CurrentContext();
+  // Widget is now owned by the parent window.
+  widget->Init(params);
+  widget->Show();
+  aura::Window* window = widget->GetNativeWindow();
+  gfx::Rect display_bounds(
+      Shell::GetScreen()->GetDisplayNearestWindow(window).bounds());
+
+  gfx::Point off_shelf = display_bounds.CenterPoint();
+  gfx::Point on_shelf =
+      shelf->shelf_widget()->GetWindowBoundsInScreen().CenterPoint();
+
+  // Test there is no dimming object active at this point.
+  generator.MoveMouseTo(on_shelf.x(), on_shelf.y());
+  EXPECT_EQ(-1, shelf->shelf_widget()->GetDimmingAlphaForTest());
+  generator.MoveMouseTo(off_shelf.x(), off_shelf.y());
+  EXPECT_EQ(-1, shelf->shelf_widget()->GetDimmingAlphaForTest());
+
+  // After maximization, the shelf should be visible and the dimmer created.
+  widget->Maximize();
+
+  on_shelf = shelf->shelf_widget()->GetWindowBoundsInScreen().CenterPoint();
+  EXPECT_LT(0, shelf->shelf_widget()->GetDimmingAlphaForTest());
+
+  // Moving the mouse off the shelf should dim the bar.
+  generator.MoveMouseTo(off_shelf.x(), off_shelf.y());
+  EXPECT_LT(0, shelf->shelf_widget()->GetDimmingAlphaForTest());
+
+  // Adding touch events outside the shelf should still keep the shelf in
+  // dimmed state.
+  generator.PressTouch();
+  generator.MoveTouch(off_shelf);
+  EXPECT_LT(0, shelf->shelf_widget()->GetDimmingAlphaForTest());
+  // Move the touch into the shelf area should undim.
+  generator.MoveTouch(on_shelf);
+  EXPECT_EQ(0, shelf->shelf_widget()->GetDimmingAlphaForTest());
+  generator.ReleaseTouch();
+  // And a release dims again.
+  EXPECT_LT(0, shelf->shelf_widget()->GetDimmingAlphaForTest());
+
+  // Moving the mouse on the shelf should undim the bar.
+  generator.MoveMouseTo(on_shelf);
+  EXPECT_EQ(0, shelf->shelf_widget()->GetDimmingAlphaForTest());
+
+  // No matter what the touch events do, the shelf should stay undimmed.
+  generator.PressTouch();
+  generator.MoveTouch(off_shelf);
+  EXPECT_EQ(0, shelf->shelf_widget()->GetDimmingAlphaForTest());
+  generator.MoveTouch(on_shelf);
+  EXPECT_EQ(0, shelf->shelf_widget()->GetDimmingAlphaForTest());
+  generator.MoveTouch(off_shelf);
+  EXPECT_EQ(0, shelf->shelf_widget()->GetDimmingAlphaForTest());
+  generator.MoveTouch(on_shelf);
+  generator.ReleaseTouch();
+
+  // After restore, the dimming object should be deleted again.
+  widget->Restore();
+  EXPECT_EQ(-1, shelf->shelf_widget()->GetDimmingAlphaForTest());
+}
+
+// Assertions around the dimming of the shelf in conjunction with menus.
+TEST_F(ShelfLayoutManagerTest, TestDimmingBehaviorWithMenus) {
+  // Since ShelfLayoutManager queries for mouse location, move the mouse so
+  // it isn't over the shelf.
+  aura::test::EventGenerator generator(
+      Shell::GetPrimaryRootWindow(), gfx::Point());
+  generator.MoveMouseTo(0, 0);
+
+  ShelfLayoutManager* shelf = GetShelfLayoutManager();
+  shelf->shelf_widget()->DisableDimmingAnimationsForTest();
+
+  views::Widget* widget = new views::Widget;
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
+  params.bounds = gfx::Rect(0, 0, 200, 200);
+  params.context = CurrentContext();
+  // Widget is now owned by the parent window.
+  widget->Init(params);
+  widget->Show();
+  aura::Window* window = widget->GetNativeWindow();
+  gfx::Rect display_bounds(
+      Shell::GetScreen()->GetDisplayNearestWindow(window).bounds());
+
+  // After maximization, the shelf should be visible and the dimmer created.
+  widget->Maximize();
+
+  gfx::Point off_shelf = display_bounds.CenterPoint();
+  gfx::Point on_shelf =
+      shelf->shelf_widget()->GetWindowBoundsInScreen().CenterPoint();
+
+  // Moving the mouse on the shelf should undim the bar.
+  generator.MoveMouseTo(on_shelf.x(), on_shelf.y());
+  EXPECT_EQ(0, shelf->shelf_widget()->GetDimmingAlphaForTest());
+
+  // Simulate a menu opening.
+  shelf->shelf_widget()->ForceUndimming(true);
+
+  // Moving the mouse off the shelf should not dim the bar.
+  generator.MoveMouseTo(off_shelf.x(), off_shelf.y());
+  EXPECT_EQ(0, shelf->shelf_widget()->GetDimmingAlphaForTest());
+
+  // No matter what the touch events do, the shelf should stay undimmed.
+  generator.PressTouch();
+  generator.MoveTouch(off_shelf);
+  EXPECT_EQ(0, shelf->shelf_widget()->GetDimmingAlphaForTest());
+  generator.MoveTouch(on_shelf);
+  EXPECT_EQ(0, shelf->shelf_widget()->GetDimmingAlphaForTest());
+  generator.MoveTouch(off_shelf);
+  EXPECT_EQ(0, shelf->shelf_widget()->GetDimmingAlphaForTest());
+  generator.ReleaseTouch();
+  EXPECT_EQ(0, shelf->shelf_widget()->GetDimmingAlphaForTest());
+
+  // "Closing the menu" should now turn off the menu since no event is inside
+  // the shelf any longer.
+  shelf->shelf_widget()->ForceUndimming(false);
+  EXPECT_LT(0, shelf->shelf_widget()->GetDimmingAlphaForTest());
+
+  // Moving the mouse again on the shelf which should undim the bar again.
+  // This time we check that the bar stays undimmed when the mouse remains on
+  // the bar and the "menu gets closed".
+  generator.MoveMouseTo(on_shelf.x(), on_shelf.y());
+  EXPECT_EQ(0, shelf->shelf_widget()->GetDimmingAlphaForTest());
+  shelf->shelf_widget()->ForceUndimming(true);
+  generator.MoveMouseTo(off_shelf.x(), off_shelf.y());
+  EXPECT_EQ(0, shelf->shelf_widget()->GetDimmingAlphaForTest());
+  generator.MoveMouseTo(on_shelf.x(), on_shelf.y());
+  EXPECT_EQ(0, shelf->shelf_widget()->GetDimmingAlphaForTest());
+  shelf->shelf_widget()->ForceUndimming(true);
+  EXPECT_EQ(0, shelf->shelf_widget()->GetDimmingAlphaForTest());
+}
+
 // Verifies the shelf is visible when status/launcher is focused.
 TEST_F(ShelfLayoutManagerTest, VisibleWhenStatusOrLauncherFocused) {
   // Since ShelfLayoutManager queries for mouse location, move the mouse so

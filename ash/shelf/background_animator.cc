@@ -30,6 +30,10 @@ BackgroundAnimator::BackgroundAnimator(BackgroundAnimatorDelegate* delegate,
 BackgroundAnimator::~BackgroundAnimator() {
 }
 
+void BackgroundAnimator::SetDuration(int time_in_ms) {
+  animation_.SetSlideDuration(time_in_ms);
+}
+
 void BackgroundAnimator::SetPaintsBackground(bool value, ChangeType type) {
   if (paints_background_ == value)
     return;

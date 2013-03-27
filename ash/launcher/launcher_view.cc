@@ -376,7 +376,8 @@ LauncherView::LauncherView(LauncherModel* model,
       leading_inset_(kDefaultLeadingInset),
       cancelling_drag_model_changed_(false),
       last_hidden_index_(0),
-      closing_event_time_(base::TimeDelta()) {
+      closing_event_time_(base::TimeDelta()),
+      got_deleted_(NULL) {
   DCHECK(model_);
   bounds_animator_.reset(new views::BoundsAnimator(this));
   bounds_animator_->AddObserver(this);
@@ -389,6 +390,10 @@ LauncherView::LauncherView(LauncherModel* model,
 LauncherView::~LauncherView() {
   bounds_animator_->RemoveObserver(this);
   model_->RemoveObserver(this);
+  // If we are inside the MenuRunner, we need to know if we were getting
+  // deleted while it was running.
+  if (got_deleted_)
+    *got_deleted_ = true;
 }
 
 void LauncherView::Init() {
@@ -1428,10 +1433,11 @@ void LauncherView::ShowMenu(
       views::MenuItemView::TOPLEFT;
   gfx::Rect anchor_point = gfx::Rect(click_point, gfx::Size());
 
+  ShelfWidget* shelf = RootWindowController::ForLauncher(
+      GetWidget()->GetNativeView())->shelf();
   if (!context_menu) {
     // Application lists use a bubble.
-    ash::ShelfAlignment align = RootWindowController::ForLauncher(
-        GetWidget()->GetNativeView())->shelf()->GetAlignment();
+    ash::ShelfAlignment align = shelf->GetAlignment();
     anchor_point = source->GetBoundsInScreen();
 
     // Launcher items can have an asymmetrical border for spacing reasons.
@@ -1454,6 +1460,12 @@ void LauncherView::ShowMenu(
         break;
     }
   }
+  // If this gets deleted while we are in the menu, the launcher will be gone
+  // as well.
+  bool got_deleted = false;
+  got_deleted_ = &got_deleted;
+
+  shelf->ForceUndimming(true);
   // NOTE: if you convert to HAS_MNEMONICS be sure and update menu building
   // code.
   if (launcher_menu_runner_->RunMenuAt(
@@ -1461,8 +1473,15 @@ void LauncherView::ShowMenu(
           NULL,
           anchor_point,
           menu_alignment,
-          views::MenuRunner::CONTEXT_MENU) == views::MenuRunner::MENU_DELETED)
+          views::MenuRunner::CONTEXT_MENU) == views::MenuRunner::MENU_DELETED) {
+    if (!got_deleted) {
+      got_deleted_ = NULL;
+      shelf->ForceUndimming(false);
+    }
     return;
+  }
+  got_deleted_ = NULL;
+  shelf->ForceUndimming(false);
 
   // Unpinning an item will reset the |launcher_menu_runner_| before coming
   // here.

@@ -221,7 +221,7 @@ void ShelfLayoutManager::LayoutShelf() {
   TargetBounds target_bounds;
   CalculateTargetBounds(state_, &target_bounds);
   GetLayer(shelf_)->SetOpacity(target_bounds.opacity);
-  shelf_->SetBounds(
+  shelf_->SetWidgetBounds(
       ScreenAsh::ConvertRectToScreen(
           shelf_->GetNativeView()->parent(),
           target_bounds.shelf_bounds_in_root));

@@ -35,13 +35,6 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
-namespace {
-// Size of black border at bottom (or side) of launcher.
-const int kNumBlackPixels = 3;
-// Alpha to paint dimming image with.
-const int kDimAlpha = 96;
-}
-
 namespace ash {
 
 Launcher::Launcher(LauncherModel* launcher_model,

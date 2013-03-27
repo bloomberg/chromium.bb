@@ -36,6 +36,9 @@ class ASH_EXPORT BackgroundAnimator : public ui::AnimationDelegate {
                      int max_alpha);
   virtual ~BackgroundAnimator();
 
+  // Sets the transition time in ms.
+  void SetDuration(int time_in_ms);
+
   // Sets whether a background is rendered. Initial value is false. If |type|
   // is |CHANGE_IMMEDIATE| and an animation is not in progress this notifies
   // the delegate immediately (synchronously from this method).
