@@ -37,6 +37,30 @@
       <input id="user-email-text">
     </div>
 <if expr="pp_ifdef('chromeos')">
+    <!-- Attach a file -->
+    <!-- Normal -->
+    <div id="attach-file-container" class="input-text-container checkbox">
+      <label>
+        <input id="attach-file-checkbox" type="checkbox">
+        <span i18n-content="attach-file-label"></span>
+      </label>
+      <input id="attach-file" type="file">
+      <div id="attach-error" class="attach-file-notification"
+          i18n-content="attach-file-to-big" hidden></div>
+      <div id="reading-file" class="attach-file-notification"
+          i18n-content="reading-file" hidden></div>
+    </div>
+    <!-- Custom -->
+    <div id="attach-file-custom-container" class="input-text-container checkbox"
+      hidden>
+      <label>
+        <input id="attach-file-custom-checkbox" type="checkbox">
+        <span i18n-content="attach-file-label"></span>
+      </label>
+      <span id="attach-file-custom-name" ></span>
+    </div>
+    <div id="attach-file-note" i18n-values=".innerHTML:attach-file-note"></div>
+
     <!-- System Information -->
     <div class="checkbox">
       <label>
@@ -71,28 +95,6 @@
 </if>
       <div id="current-screenshots" class="thumbnail-list"></div>
     </div>
-<if expr="pp_ifdef('chromeos')">
-    <!-- Attach a file -->
-    <!-- Normal -->
-    <div id="attach-file-container">
-      <input id="attach-file-checkbox" type="checkbox">
-      <input id="attach-file" type="file">
-      <div id="attach-error" class="attach-file-notification"
-          i18n-content="attach-file-to-big" hidden></div>
-      <div id="reading-file" class="attach-file-notification"
-          i18n-content="reading-file" hidden></div>
-    </div>
-    <!-- Custom -->
-    <div id="attach-file-custom-container" class="input-text-container checkbox"
-      hidden>
-      <label id="attach-file-container-label">
-        <input id="attach-file-custom-checkbox" type="checkbox">
-        <span i18n-content="attach-file-custom-label"></span>
-      </label>
-      <span id="attach-file-custom-name" ></span>
-    </div>
-    <div id="attach-file-note" i18n-values=".innerHTML:attach-file-note"></div>
-</if>
     <div id="privacy-note" i18n-values=".innerHTML:privacy-note"></div>
     <!-- Buttons -->
     <div id="buttons-pane">

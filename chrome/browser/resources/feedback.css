@@ -97,7 +97,14 @@
 }
 
 #attach-file-note {
-  padding: 10px 0 20px
+  -webkit-margin-start: 150px;
+  -webkit-padding-start: 1em;
+  padding-bottom: 20px
+  padding-top: 10px;
+}
+
+#attach-file {
+  margin: 0;
 }
 
 .attach-file-notification {

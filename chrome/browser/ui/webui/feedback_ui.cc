@@ -318,7 +318,7 @@ content::WebUIDataSource* CreateFeedbackUIHTMLSource(bool successful_init) {
                              IDS_FEEDBACK_CHOOSE_DIFFERENT_SCREENSHOT);
   source->AddLocalizedString("choose-original-screenshot",
                              IDS_FEEDBACK_CHOOSE_ORIGINAL_SCREENSHOT);
-  source->AddLocalizedString("attach-file-custom-label",
+  source->AddLocalizedString("attach-file-label",
                              IDS_FEEDBACK_ATTACH_FILE_LABEL);
   source->AddLocalizedString("attach-file-note",
                              IDS_FEEDBACK_ATTACH_FILE_NOTE);
