@@ -4,6 +4,7 @@
 
 #include "cloud_print/service/win/chrome_launcher.h"
 
+#include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/process.h"
 #include "base/process_util.h"
@@ -11,7 +12,6 @@
 #include "base/win/scoped_process_information.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/installer/launcher_support/chrome_launcher_support.h"
-#include "cloud_print/service/service_switches.h"
 
 namespace {
 
@@ -83,8 +83,24 @@ void ChromeLauncher::Run() {
 
     if (!chrome_path.empty()) {
       CommandLine cmd(chrome_path);
+      CopySwitchesFromCurrent(&cmd);
+
+      // Required switches.
       cmd.AppendSwitchASCII(switches::kProcessType, switches::kServiceProcess);
       cmd.AppendSwitchPath(switches::kUserDataDir, user_data_);
+      cmd.AppendSwitch(switches::kNoServiceAutorun);
+
+      // Optional.
+      cmd.AppendSwitch(switches::kAutoLaunchAtStartup);
+      cmd.AppendSwitch(switches::kDisableBackgroundMode);
+      cmd.AppendSwitch(switches::kDisableDefaultApps);
+      cmd.AppendSwitch(switches::kDisableExtensions);
+      cmd.AppendSwitch(switches::kDisableGpu);
+      cmd.AppendSwitch(switches::kDisableSoftwareRasterizer);
+      cmd.AppendSwitch(switches::kDisableSync);
+      cmd.AppendSwitch(switches::kNoFirstRun);
+      cmd.AppendSwitch(switches::kNoStartupWindow);
+
       base::win::ScopedHandle chrome_handle;
       base::Time started = base::Time::Now();
       DWORD thread_id = 0;
@@ -111,4 +127,13 @@ void ChromeLauncher::Run() {
   }
 }
 
+void ChromeLauncher::CopySwitchesFromCurrent(CommandLine* destination) {
+  static const char* const kSwitchesToCopy[] = {
+    switches::kEnableLogging,
+    switches::kV,
+  };
+  destination->CopySwitchesFrom(*CommandLine::ForCurrentProcess(),
+                                kSwitchesToCopy,
+                                arraysize(kSwitchesToCopy));
+}
 

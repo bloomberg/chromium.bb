@@ -52,6 +52,7 @@
       'defines': ['COMPILE_CONTENT_STATICALLY'],
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
+        '<(DEPTH)/base/base.gyp:base_static',
         '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
         '<(DEPTH)/ipc/ipc.gyp:ipc',
         '<(DEPTH)/net/net.gyp:net',

@@ -381,7 +381,8 @@ BOOL CloudPrintServiceModule::ConsoleCtrlHandler(DWORD type) {
   return TRUE;
 }
 
-int main() {
+int main(int argc, char** argv) {
+  CommandLine::Init(argc, argv);
   base::AtExitManager at_exit;
   return _AtlModule.WinMain(0);
 }

@@ -12,6 +12,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/simple_thread.h"
 
+class CommandLine;
+
 class ChromeLauncher : public base::DelegateSimpleThread::Delegate {
  public:
   explicit ChromeLauncher(const base::FilePath& user_data);
@@ -22,6 +24,9 @@ class ChromeLauncher : public base::DelegateSimpleThread::Delegate {
   void Stop();
 
   virtual void Run() OVERRIDE;
+
+  // Copy additional chrome switches.
+  static void CopySwitchesFromCurrent(CommandLine* destination);
 
  private:
   base::FilePath user_data_;

@@ -13,6 +13,7 @@
 #include "base/path_service.h"
 #include "base/win/scoped_handle.h"
 #include "chrome/common/chrome_switches.h"
+#include "cloud_print/service/win/chrome_launcher.h"
 #include "cloud_print/service/win/local_security_policy.h"
 
 namespace {
@@ -132,6 +133,7 @@ HRESULT ServiceController::InstallService(const string16& user,
   command_line.AppendSwitch(run_switch);
   if (!user_data_dir.empty())
     command_line.AppendSwitchPath(switches::kUserDataDir, user_data_dir);
+  ChromeLauncher::CopySwitchesFromCurrent(&command_line);
 
   LocalSecurityPolicy local_security_policy;
   if (local_security_policy.Open()) {
