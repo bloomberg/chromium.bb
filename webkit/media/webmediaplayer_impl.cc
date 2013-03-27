@@ -188,7 +188,6 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
         new media::GpuVideoDecoder(
             media_thread_.message_loop_proxy(),
             params.gpu_factories()));
-    gpu_factories_ = params.gpu_factories();
   }
 
   // Create default video renderer.
@@ -1156,11 +1155,6 @@ void WebMediaPlayerImpl::Destroy() {
     data_source_->Abort();
   if (chunk_demuxer_)
     chunk_demuxer_->Shutdown();
-
-  if (gpu_factories_) {
-    gpu_factories_->Abort();
-    gpu_factories_ = NULL;
-  }
 
   // Make sure to kill the pipeline so there's no more media threads running.
   // Note: stopping the pipeline might block for a long time.

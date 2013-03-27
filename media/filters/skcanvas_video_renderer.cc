@@ -227,7 +227,7 @@ static void ConvertVideoFrameToBitmap(
                              yuv_type);
   } else {
     DCHECK_EQ(video_frame->format(), media::VideoFrame::NATIVE_TEXTURE);
-    video_frame->ReadPixelsFromNativeTexture(*bitmap);
+    video_frame->ReadPixelsFromNativeTexture(bitmap->getPixels());
   }
   bitmap->notifyPixelsChanged();
   bitmap->unlockPixels();

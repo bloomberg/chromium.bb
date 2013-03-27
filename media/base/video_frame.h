@@ -11,8 +11,6 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 
-class SkBitmap;
-
 namespace media {
 
 class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
@@ -71,8 +69,8 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
                             const gfx::Size& natural_size);
 
   // CB to write pixels from the texture backing this frame into the
-  // |const SkBitmap&| parameter.
-  typedef base::Callback<void(const SkBitmap&)> ReadPixelsCB;
+  // |void*| parameter.
+  typedef base::Callback<void(void*)> ReadPixelsCB;
 
   // Wraps a native texture of the given parameters with a VideoFrame.  When the
   // frame is destroyed |no_longer_needed_cb.Run()| will be called.
@@ -81,7 +79,6 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // any) is applied.
   // |natural_size| is the width and height of the frame when the frame's aspect
   // ratio is applied to |visible_rect|.
-
   // |read_pixels_cb| may be used to do (slow!) readbacks from the
   // texture to main memory.
   static scoped_refptr<VideoFrame> WrapNativeTexture(
@@ -95,9 +92,9 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
       const base::Closure& no_longer_needed_cb);
 
   // Read pixels from the native texture backing |*this| and write
-  // them to |pixels| as BGRA.  |pixels| must point to a buffer at
+  // them to |*pixels| as BGRA.  |pixels| must point to a buffer at
   // least as large as 4*visible_rect().width()*visible_rect().height().
-  void ReadPixelsFromNativeTexture(const SkBitmap& pixels);
+  void ReadPixelsFromNativeTexture(void* pixels);
 
   // Wraps external YUV data of the given parameters with a VideoFrame.
   // The returned VideoFrame does not own the data passed in. When the frame

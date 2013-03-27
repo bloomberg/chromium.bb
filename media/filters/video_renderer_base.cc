@@ -72,10 +72,6 @@ void VideoRendererBase::Flush(const base::Closure& callback) {
   flush_cb_ = callback;
   state_ = kFlushingDecoder;
 
-  // This is necessary if the decoder has already seen an end of stream and
-  // needs to drain it before flushing it.
-  ready_frames_.clear();
-  received_end_of_stream_ = false;
   video_frame_stream_.Reset(base::Bind(
       &VideoRendererBase::OnVideoFrameStreamResetDone, weak_this_));
 }
@@ -492,8 +488,9 @@ void VideoRendererBase::OnVideoFrameStreamResetDone() {
 void VideoRendererBase::AttemptFlush_Locked() {
   lock_.AssertAcquired();
   DCHECK_EQ(kFlushing, state_);
-  DCHECK(ready_frames_.empty());
-  DCHECK(!received_end_of_stream_);
+
+  ready_frames_.clear();
+  received_end_of_stream_ = false;
 
   if (pending_read_)
     return;
