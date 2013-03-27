@@ -63,10 +63,10 @@ class CHROMEOS_EXPORT ComponentExtentionIMEManager {
   // Unloads |input_method_id| component extension IME. This function returns
   // true on success. This function is safe to call multiple times. Returns
   // false if already corresponding component extension is unloaded.
-  bool UnloadComonentExtensionIME(const std::string& input_method_id);
+  bool UnloadComponentExtensionIME(const std::string& input_method_id);
 
   // Returns true if |input_method_id| is component extension ime id.
-  void IsComponentExtensionIMEId(const std::string& input_method_id);
+  bool IsComponentExtensionIMEId(const std::string& input_method_id);
 
   // Returns localized name of |input_method_id|.
   std::string GetName(const std::string& input_method_id);
@@ -78,7 +78,15 @@ class CHROMEOS_EXPORT ComponentExtentionIMEManager {
   std::vector<std::string> ListIMEByLanguage(const std::string& language);
 
  private:
+  // Finds ComponentExtensionIME and EngineDescription associated with
+  // |input_method_id|. This function retruns true if it is found, otherwise
+  // returns false. |out_extension| and |out_engine| can be NULL.
+  bool FindEngineEntry(const std::string& input_method_id,
+                       ComponentExtensionIME* out_extension,
+                       IBusComponent::EngineDescription* out_engine);
   scoped_ptr<ComponentExtentionIMEManagerDelegate> delegate_;
+
+  std::vector<ComponentExtensionIME> component_extension_imes_;
 
   DISALLOW_COPY_AND_ASSIGN(ComponentExtentionIMEManager);
 };

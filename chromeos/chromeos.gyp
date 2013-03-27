@@ -406,6 +406,7 @@
         'dbus/introspectable_client_unittest.cc',
         'dbus/modem_messaging_client_unittest.cc',
         'disks/disk_mount_manager_unittest.cc',
+        'ime/component_extension_ime_manager_unittest.cc',
         'ime/extension_ime_util_unittest.cc',
         'ime/input_method_descriptor_unittest.cc',
         'ime/input_method_property_unittest.cc',
