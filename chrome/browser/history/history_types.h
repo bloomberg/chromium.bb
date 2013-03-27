@@ -14,6 +14,7 @@
 #include "base/basictypes.h"
 #include "base/containers/stack_container.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/memory/scoped_vector.h"
 #include "base/string16.h"
 #include "base/time.h"
 #include "chrome/browser/history/snippet.h"
@@ -417,7 +418,7 @@ class QueryResults {
 
   // The ordered list of results. The pointers inside this are owned by this
   // QueryResults object.
-  URLResultVector results_;
+  ScopedVector<URLResult> results_;
 
   // Maps URLs to entries in results_.
   URLToResultIndices url_to_results_;

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/memory/scoped_vector.h"
 #include "base/message_loop.h"
 #include "base/stl_util.h"
 #include "base/utf_string_conversions.h"
@@ -27,13 +28,11 @@ class TestingSpellCheckMessageFilter : public SpellCheckMessageFilterMac {
     return true;
   }
 
-  std::vector<IPC::Message*> sent_messages_;
+  ScopedVector<IPC::Message> sent_messages_;
   MessageLoopForUI* loop_;
 
  private:
-  virtual ~TestingSpellCheckMessageFilter() {
-    STLDeleteContainerPointers(sent_messages_.begin(), sent_messages_.end());
-  }
+  virtual ~TestingSpellCheckMessageFilter() {}
 };
 
 typedef InProcessBrowserTest SpellCheckMessageFilterMacBrowserTest;
