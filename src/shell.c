@@ -2008,7 +2008,11 @@ add_popup_grab(struct shell_surface *shsurf, struct shell_seat *shseat)
 	if (wl_list_empty(&shseat->popup_grab.surfaces_list)) {
 		shseat->popup_grab.client = shsurf->surface->surface.resource.client;
 		shseat->popup_grab.grab.interface = &popup_grab_interface;
-		shseat->popup_grab.initial_up = 0;
+		/* We must make sure here that this popup was opened after
+		 * a mouse press, and not just by moving around with other
+		 * popups already open. */
+		if (shseat->seat->pointer.button_count > 0)
+			shseat->popup_grab.initial_up = 0;
 
 		wl_pointer_start_grab(seat->pointer, &shseat->popup_grab.grab);
 	}
