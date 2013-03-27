@@ -25,7 +25,6 @@ public:
 
     int Open(const char*);
     void Close();
-    bool IsOpen() const;
 
     virtual int Read(long long position, long length, unsigned char* buffer);
     virtual int Length(long long* total, long long* available);
