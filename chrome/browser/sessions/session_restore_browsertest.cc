@@ -209,6 +209,30 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, NoSessionRestoreNewWindowChromeOS) {
   EXPECT_EQ(GURL(chrome::kChromeUINewTabURL),
             new_browser->tab_strip_model()->GetWebContentsAt(0)->GetURL());
 }
+
+// Test that maximized applications get restored maximized.
+IN_PROC_BROWSER_TEST_F(SessionRestoreTest, MaximizedApps) {
+  const char* app_name = "TestApp";
+  Browser* app_browser = CreateBrowserForApp(app_name, browser()->profile());
+  app_browser->window()->Maximize();
+  app_browser->window()->Show();
+  EXPECT_TRUE(app_browser->window()->IsMaximized());
+  EXPECT_TRUE(app_browser->is_app());
+  EXPECT_TRUE(app_browser->is_type_popup());
+
+  // Close the normal browser. After this we only have the app_browser window.
+  CloseBrowserSynchronously(browser());
+
+  // Create a new window, which should open NTP.
+  ui_test_utils::BrowserAddedObserver browser_added_observer;
+  chrome::NewWindow(app_browser);
+  Browser* new_browser = browser_added_observer.WaitForSingleNewBrowser();
+
+  ASSERT_TRUE(new_browser);
+  EXPECT_TRUE(app_browser->window()->IsMaximized());
+  EXPECT_TRUE(app_browser->is_app());
+  EXPECT_TRUE(app_browser->is_type_popup());
+}
 #endif  // OS_CHROMEOS
 
 #if !defined(OS_CHROMEOS)
