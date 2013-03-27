@@ -79,6 +79,10 @@ const base::FilePath& GetDriveOtherDirPath();
 // Returns the Drive mount point path, which looks like "/special/drive".
 const base::FilePath& GetDriveMountPointPath();
 
+// Checks if the resource ID is a special one, which is effective only in our
+// implementation and is not supposed to be sent to the server.
+bool IsSpecialResourceId(const std::string& resource_id);
+
 // Returns the Drive mount path as string.
 const std::string& GetDriveMountPointPathAsString();
 

@@ -156,6 +156,11 @@ const base::FilePath& GetDriveMountPointPath() {
   return drive_mount_path;
 }
 
+bool IsSpecialResourceId(const std::string& resource_id) {
+  return resource_id == kDriveGrandRootSpecialResourceId ||
+      resource_id == kDriveOtherDirSpecialResourceId;
+}
+
 const std::string& GetDriveMountPointPathAsString() {
   CR_DEFINE_STATIC_LOCAL(std::string, drive_mount_path_string,
       (kDriveMountPointPath));
