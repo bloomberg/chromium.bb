@@ -5,13 +5,12 @@
 #ifndef CHROME_BROWSER_UI_GTK_AVATAR_MENU_BUBBLE_GTK_H_
 #define CHROME_BROWSER_UI_GTK_AVATAR_MENU_BUBBLE_GTK_H_
 
-#include <vector>
-
 #include <gtk/gtk.h>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "chrome/browser/profiles/avatar_menu_model_observer.h"
 #include "chrome/browser/ui/gtk/avatar_menu_item_gtk.h"
 #include "chrome/browser/ui/gtk/bubble/bubble_gtk.h"
@@ -75,7 +74,7 @@ class AvatarMenuBubbleGtk : public BubbleDelegateGtk,
   GtkWidget* new_profile_link_;
 
   // A vector of all profile items in the menu.
-  std::vector<AvatarMenuItemGtk*> items_;
+  ScopedVector<AvatarMenuItemGtk> items_;
 
   // The minimum width to display the bubble. This is used to prevent the bubble
   // from automatically reducing its size when hovering over a profile item.

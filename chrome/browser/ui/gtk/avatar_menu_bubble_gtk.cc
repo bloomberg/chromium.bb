@@ -63,9 +63,7 @@ AvatarMenuBubbleGtk::AvatarMenuBubbleGtk(Browser* browser,
                    G_CALLBACK(&OnDestroyThunk), this);
 }
 
-AvatarMenuBubbleGtk::~AvatarMenuBubbleGtk() {
-  STLDeleteContainerPointers(items_.begin(), items_.end());
-}
+AvatarMenuBubbleGtk::~AvatarMenuBubbleGtk() {}
 
 void AvatarMenuBubbleGtk::OnDestroy(GtkWidget* widget) {
   // We are self deleting, we have a destroy signal setup to catch when we
@@ -80,7 +78,6 @@ void AvatarMenuBubbleGtk::BubbleClosing(BubbleGtk* bubble,
 
 void AvatarMenuBubbleGtk::OnAvatarMenuModelChanged(
     AvatarMenuModel* avatar_menu_model) {
-  STLDeleteContainerPointers(items_.begin(), items_.end());
   items_.clear();
   minimum_width_ = kBubbleMinWidth;
 
@@ -136,7 +133,6 @@ void AvatarMenuBubbleGtk::InitContents() {
     AvatarMenuModel::Item menu_item = avatar_menu_model_->GetItemAt(i);
     AvatarMenuItemGtk* item = new AvatarMenuItemGtk(
         this, menu_item, i, theme_service_);
-
     items_.push_back(item);
 
     gtk_box_pack_start(GTK_BOX(items_vbox), item->widget(), TRUE, TRUE, 0);
