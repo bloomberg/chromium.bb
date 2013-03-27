@@ -407,11 +407,6 @@ html[dir='rtl'] #footer.showing-trash-mode #trash.drag-target .lid {
   line-height: 49px;
 }
 
-#footer-menu-container .invisible {
-  -webkit-order: -1;
-  visibility: hidden;
-}
-
 #chrome-web-store-link:hover {
   color: #666;
 }
@@ -421,21 +416,19 @@ html[dir='rtl'] #chrome-web-store-title {
 }
 
 #vertical-separator {
-  -webkit-order: -1;
+  -webkit-order: 2;
   background-color: rgb(178, 178, 178);
-  display: inline-block;
+  display: none;
   height: 20px;
   margin: 0;
   vertical-align: middle;
-  visibility: hidden;
   width: 1px;
 }
 
 /* Show the separator only if one of the menus is visible. */
-.footer-menu-button:not(.invisible) ~ #chrome-web-store-link:not(.invisible)
-                                    ~ #vertical-separator {
-  -webkit-order: 2;
-  visibility: visible;
+.footer-menu-button:not([hidden]) ~ #chrome-web-store-link:not([hidden])
+                                  ~ #vertical-separator {
+  display: inline-block;
 }
 
 /* In trash mode, hide the menus and web store link. */
@@ -455,11 +448,11 @@ html[dir='rtl'] #chrome-web-store-title {
   margin: 0;
 }
 
-#recently-closed-menu-button:not(.invisible) {
+#recently-closed-menu-button {
   -webkit-order: 1;
 }
 
-#other-sessions-menu-button:not(.invisible) {
+#other-sessions-menu-button {
   -webkit-order: 0;
 }
 

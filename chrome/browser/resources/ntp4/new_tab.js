@@ -193,7 +193,7 @@ cr.define('ntp', function() {
       var webStoreIcon = $('chrome-web-store-link');
       // Not all versions of the NTP have a footer, so this may not exist.
       if (webStoreIcon)
-        webStoreIcon.classList.add('invisible');
+        webStoreIcon.hidden = true;
     } else {
       var webStoreLink = loadTimeData.getString('webStoreLink');
       var url = appendParam(webStoreLink, 'utm_source', 'chrome-ntp-launcher');
@@ -373,9 +373,9 @@ cr.define('ntp', function() {
     var menu = $('footer-menu-container');
     var logo = $('logo-img');
     if (menu.clientWidth > logo.clientWidth)
-      logo.style.width = menu.clientWidth + 'px';
+      logo.style.WebkitFlex = '0 1 ' + menu.clientWidth + 'px';
     else
-      menu.style.width = logo.clientWidth + 'px';
+      menu.style.WebkitFlex = '0 1 ' + logo.clientWidth + 'px';
   }
 
   function themeChanged(opt_hasAttribution) {
@@ -530,6 +530,7 @@ cr.define('ntp', function() {
 
   function setRecentlyClosedTabs(dataItems) {
     $('recently-closed-menu-button').dataItems = dataItems;
+    layoutFooter();
   }
 
   function setMostVisitedPages(data, hasBlacklistedUrls) {
@@ -589,8 +590,10 @@ cr.define('ntp', function() {
     } else if (loginBubble) {
       loginBubble.reposition();
     }
-    if (otherSessionsButton)
+    if (otherSessionsButton) {
       otherSessionsButton.updateSignInState(isUserSignedIn);
+      layoutFooter();
+    }
   }
 
   /**
@@ -646,8 +649,10 @@ cr.define('ntp', function() {
   }
 
   function setForeignSessions(sessionList, isTabSyncEnabled) {
-    if (otherSessionsButton)
+    if (otherSessionsButton) {
       otherSessionsButton.setForeignSessions(sessionList, isTabSyncEnabled);
+      layoutFooter();
+    }
   }
 
   function getAppsCallback() {

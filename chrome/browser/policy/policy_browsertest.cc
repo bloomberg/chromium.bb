@@ -394,8 +394,7 @@ bool ContainsVisibleElement(content::WebContents* contents,
   EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
       contents,
       "var elem = document.getElementById('" + id + "');"
-      "domAutomationController.send("
-      "    !!elem && !elem.classList.contains('invisible'));",
+      "domAutomationController.send(!!elem && !elem.hidden);",
       &result));
   return result;
 }

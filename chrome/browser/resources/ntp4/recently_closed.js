@@ -63,7 +63,7 @@ cr.define('ntp', function() {
     set dataItems(dataItems) {
       this.dataItems_ = dataItems;
       this.needsRebuild_ = true;
-      this.classList.toggle('invisible', !dataItems.length);
+      this.hidden = !dataItems.length;
     },
 
     /**
