@@ -107,7 +107,7 @@ class LayerTreeHostTestSetNeedsCommit1 : public LayerTreeHostTest {
   int num_draws_;
 };
 
-// MULTI_THREAD_TEST_F(LayerTreeHostTestSetNeedsCommit1);
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestSetNeedsCommit1);
 
 // A setNeedsCommit should lead to 1 commit. Issuing a second commit after that
 // first committed frame draws should lead to another commit.
