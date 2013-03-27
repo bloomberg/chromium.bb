@@ -118,25 +118,32 @@ if subprocess.mswindows:
 
     If timeout is None, it's blocking. If timeout is 0, it is not blocking.
     """
+    # TODO(maruel): Use WaitForMultipleObjects(). Python creates anonymous pipes
+    # for proc.stdout and proc.stderr but they are implemented as named pipes on
+    # Windows. Since named pipes are not waitable object, they can't be passed
+    # as-is to WFMO(). So this means N times CreateEvent(), N times ReadFile()
+    # and finally WFMO(). This requires caching the events handles in the Popen
+    # object and remembering the pending ReadFile() calls. This will require
+    # some re-architecture.
     maxsize = max(maxsize or 16384, 1)
     if timeout:
       start = time.time()
     handles = [msvcrt.get_osfhandle(conn.fileno()) for conn in conns]
-    try:
-      while True:
-        for i, handle in enumerate(handles):
-          # TODO(maruel): Use WaitForMultipleObjects().
+    while handles:
+      for i, handle in enumerate(handles):
+        try:
           avail = min(PeekNamedPipe(handle), maxsize)
           if avail:
             return i, ReadFile(handle, avail)[1]
-        if (timeout and (time.time() - start) >= timeout) or timeout == 0:
-          return None, None
-        # Polling rocks.
-        time.sleep(0.001)
-    except OSError:
-      # Not classy but fits our needs, this is usually caused by the process
-      # shutting down.
-      return None, None
+          if (timeout and (time.time() - start) >= timeout) or timeout == 0:
+            return None, None
+          # Polling rocks.
+          time.sleep(0.001)
+        except OSError:
+          handles.pop(i)
+          break
+    # Nothing to wait for.
+    return None, None
 
 else:
   import fcntl  # pylint: disable=F0401
