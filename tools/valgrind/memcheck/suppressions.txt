@@ -6964,17 +6964,3 @@
    fun:_ZN7WebCore15FeatureObserver10didObserveENS0_7FeatureE
    fun:_ZN7WebCore15FeatureObserver7observeEPNS_8DocumentENS0_7FeatureE
 }
-{
-   bug_224206a
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN10extensions*ExtensionAPI_APIFeatures_Test*
-}
-{
-   bug_224206b
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN10extensions*ExtensionAPI_IsPrivilegedFeatures_Test*
-}
