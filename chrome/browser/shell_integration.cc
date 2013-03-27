@@ -10,6 +10,7 @@
 #include "base/path_service.h"
 #include "base/prefs/pref_service.h"
 #include "base/string_util.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/policy/policy_path_parser.h"
 #include "chrome/common/chrome_paths.h"
@@ -61,6 +62,7 @@ CommandLine ShellIntegration::CommandLineArgsForLauncher(
     const GURL& url,
     const std::string& extension_app_id,
     const base::FilePath& profile_path) {
+  base::ThreadRestrictions::AssertIOAllowed();
   const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
   CommandLine new_cmd_line(CommandLine::NO_PROGRAM);
 

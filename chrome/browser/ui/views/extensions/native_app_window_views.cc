@@ -75,15 +75,37 @@ const std::map<ui::Accelerator, int>& GetAcceleratorTable() {
 }
 
 #if defined(OS_WIN)
-void CreateIconForApp(const base::FilePath web_app_path,
-                      const base::FilePath icon_file,
-                      const SkBitmap& image) {
+void CreateIconAndSetRelaunchDetails(
+    const base::FilePath web_app_path,
+    const base::FilePath icon_file,
+    const ShellIntegration::ShortcutInfo& shortcut_info,
+    const HWND hwnd) {
   DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
+
+  // Set the relaunch data so "Pin this program to taskbar" has the app's
+  // information.
+  CommandLine command_line = ShellIntegration::CommandLineArgsForLauncher(
+      shortcut_info.url,
+      shortcut_info.extension_id,
+      shortcut_info.profile_path);
+
+  // TODO(benwells): Change this to use app_host.exe.
+  base::FilePath chrome_exe;
+  if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
+     NOTREACHED();
+     return;
+  }
+  command_line.SetProgram(CommandLine::ForCurrentProcess()->GetProgram());
+  ui::win::SetRelaunchDetailsForWindow(command_line.GetCommandLineString(),
+      shortcut_info.title, hwnd);
+
   if (!file_util::PathExists(web_app_path) &&
       !file_util::CreateDirectory(web_app_path)) {
     return;
   }
-  web_app::internals::CheckAndSaveIcon(icon_file, image);
+  ui::win::SetAppIconForWindow(icon_file.value(), hwnd);
+  web_app::internals::CheckAndSaveIcon(icon_file,
+                                       *shortcut_info.favicon.ToSkBitmap());
 }
 #endif
 
@@ -187,29 +209,11 @@ void NativeAppWindowViews::OnShortcutInfoLoaded(
   base::FilePath icon_file = web_app_path
       .Append(web_app::internals::GetSanitizedFileName(shortcut_info.title))
       .ReplaceExtension(FILE_PATH_LITERAL(".ico"));
-  ui::win::SetAppIconForWindow(icon_file.value(), hwnd);
-
-  // Set the relaunch data so "Pin this program to taskbar" has the app's
-  // information.
-  CommandLine command_line = ShellIntegration::CommandLineArgsForLauncher(
-      shortcut_info.url,
-      shortcut_info.extension_id,
-      shortcut_info.profile_path);
-
-  // TODO(benwells): Change this to use app_host.exe.
-  base::FilePath chrome_exe;
-  if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
-     NOTREACHED();
-     return;
-  }
-  command_line.SetProgram(CommandLine::ForCurrentProcess()->GetProgram());
-  ui::win::SetRelaunchDetailsForWindow(command_line.GetCommandLineString(),
-      shortcut_info.title, hwnd);
 
   content::BrowserThread::PostBlockingPoolTask(
       FROM_HERE,
-      base::Bind(&CreateIconForApp, web_app_path, icon_file,
-                 *shortcut_info.favicon.ToSkBitmap()));
+      base::Bind(&CreateIconAndSetRelaunchDetails,
+                 web_app_path, icon_file, shortcut_info, hwnd));
 }
 
 HWND NativeAppWindowViews::GetNativeAppWindowHWND() const {
