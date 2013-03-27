@@ -24,6 +24,7 @@ namespace cc {
 
 class GLRendererShaderTest;
 class OutputSurface;
+class PictureDrawQuad;
 class ScopedResource;
 class StreamVideoDrawQuad;
 class TextureDrawQuad;
@@ -138,8 +139,13 @@ class CC_EXPORT GLRenderer :
   void DrawIOSurfaceQuad(const DrawingFrame* frame,
                          const IOSurfaceDrawQuad* quad);
   void DrawTileQuad(const DrawingFrame* frame, const TileDrawQuad* quad);
+  void DrawContentQuad(const DrawingFrame* frame,
+                       const ContentDrawQuadBase* quad,
+                       ResourceProvider::ResourceId resource_id);
   void DrawYUVVideoQuad(const DrawingFrame* frame,
                         const YUVVideoDrawQuad* quad);
+  void DrawPictureQuad(const DrawingFrame* frame,
+                       const PictureDrawQuad* quad);
 
   void SetShaderOpacity(float opacity, int alpha_location);
   void SetShaderQuadF(const gfx::QuadF& quad, int quad_location);
@@ -319,6 +325,9 @@ class CC_EXPORT GLRenderer :
   scoped_ptr<ResourceProvider::ScopedWriteLockGL> current_framebuffer_lock_;
 
   scoped_refptr<ResourceProvider::Fence> last_swap_fence_;
+
+  SkBitmap on_demand_tile_raster_bitmap_;
+  ResourceProvider::ResourceId on_demand_tile_raster_resource_id_;
 
   DISALLOW_COPY_AND_ASSIGN(GLRenderer);
 };

@@ -22,6 +22,7 @@
 #include "cc/output/gl_frame_data.h"
 #include "cc/output/output_surface.h"
 #include "cc/output/render_surface_filters.h"
+#include "cc/quads/picture_draw_quad.h"
 #include "cc/quads/render_pass.h"
 #include "cc/quads/stream_video_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
@@ -104,7 +105,8 @@ GLRenderer::GLRenderer(RendererClient* client,
       discard_backbuffer_when_not_visible_(false),
       is_using_bind_uniform_(false),
       visible_(true),
-      is_scissor_enabled_(false) {
+      is_scissor_enabled_(false),
+      on_demand_tile_raster_resource_id_(0) {
   DCHECK(context_);
 }
 
@@ -302,6 +304,9 @@ void GLRenderer::DoDrawQuad(DrawingFrame* frame, const DrawQuad* quad) {
       break;
     case DrawQuad::IO_SURFACE_CONTENT:
       DrawIOSurfaceQuad(frame, IOSurfaceDrawQuad::MaterialCast(quad));
+      break;
+    case DrawQuad::PICTURE_CONTENT:
+      DrawPictureQuad(frame, PictureDrawQuad::MaterialCast(quad));
       break;
     case DrawQuad::RENDER_PASS:
       DrawRenderPassQuad(frame, RenderPassDrawQuad::MaterialCast(quad));
@@ -1038,6 +1043,12 @@ static void TileUniformLocation(T program, TileProgramUniforms* uniforms) {
 
 void GLRenderer::DrawTileQuad(const DrawingFrame* frame,
                               const TileDrawQuad* quad) {
+  DrawContentQuad(frame, quad, quad->resource_id);
+}
+
+void GLRenderer::DrawContentQuad(const DrawingFrame* frame,
+                                 const ContentDrawQuadBase* quad,
+                                 ResourceProvider::ResourceId resource_id) {
   gfx::Rect tile_rect = quad->visible_rect;
 
   gfx::RectF tex_coord_rect = quad->tex_coord_rect;
@@ -1126,7 +1137,7 @@ void GLRenderer::DrawTileQuad(const DrawingFrame* frame,
                   ? GL_LINEAR
                   : GL_NEAREST;
   ResourceProvider::ScopedSamplerGL quad_resource_lock(
-      resource_provider_, quad->resource_id, GL_TEXTURE_2D, filter);
+      resource_provider_, resource_id, GL_TEXTURE_2D, filter);
 
   if (use_aa) {
     GLC(Context(), Context()->uniform3fv(uniforms.edge_location, 8, edge));
@@ -1280,6 +1291,41 @@ void GLRenderer::DrawStreamVideoQuad(const DrawingFrame* frame,
                    quad->quadTransform(),
                    quad->rect,
                    program->vertex_shader().matrix_location());
+}
+
+void GLRenderer::DrawPictureQuad(const DrawingFrame* frame,
+                                 const PictureDrawQuad* quad) {
+  if (on_demand_tile_raster_bitmap_.width() != quad->texture_size.width() ||
+      on_demand_tile_raster_bitmap_.height() != quad->texture_size.height()) {
+    on_demand_tile_raster_bitmap_.setConfig(
+        SkBitmap::kARGB_8888_Config,
+        quad->texture_size.width(),
+        quad->texture_size.height());
+    on_demand_tile_raster_bitmap_.allocPixels();
+
+    if (on_demand_tile_raster_resource_id_)
+      resource_provider_->DeleteResource(on_demand_tile_raster_resource_id_);
+
+    on_demand_tile_raster_resource_id_ = resource_provider_->CreateGLTexture(
+        quad->texture_size,
+        GL_RGBA,
+        GL_TEXTURE_POOL_UNMANAGED_CHROMIUM,
+        ResourceProvider::TextureUsageAny);
+  }
+
+  SkDevice device(on_demand_tile_raster_bitmap_);
+  SkCanvas canvas(&device);
+
+  quad->picture_pile->Raster(&canvas, quad->content_rect, quad->contents_scale);
+
+  resource_provider_->SetPixels(
+      on_demand_tile_raster_resource_id_,
+      reinterpret_cast<uint8_t*>(on_demand_tile_raster_bitmap_.getPixels()),
+      gfx::Rect(quad->texture_size),
+      gfx::Rect(quad->texture_size),
+      gfx::Vector2d());
+
+  DrawContentQuad(frame, quad, on_demand_tile_raster_resource_id_);
 }
 
 struct TextureProgramBinding {
@@ -2227,6 +2273,9 @@ void GLRenderer::CleanupSharedObjects() {
 
   if (offscreen_framebuffer_id_)
     GLC(context_, context_->deleteFramebuffer(offscreen_framebuffer_id_));
+
+  if (on_demand_tile_raster_resource_id_)
+    resource_provider_->DeleteResource(on_demand_tile_raster_resource_id_);
 
   ReleaseRenderPassTextures();
 }

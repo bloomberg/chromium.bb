@@ -14,6 +14,7 @@
 #include "cc/layers/quad_sink.h"
 #include "cc/quads/checkerboard_draw_quad.h"
 #include "cc/quads/debug_border_draw_quad.h"
+#include "cc/quads/picture_draw_quad.h"
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/tile_draw_quad.h"
 #include "cc/trees/layer_tree_impl.h"
@@ -119,6 +120,9 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
             mode == ManagedTileState::DrawingInfo::TRANSPARENT_MODE) {
           color = DebugColors::SolidColorTileBorderColor();
           width = DebugColors::SolidColorTileBorderWidth(layer_tree_impl());
+        } else if (mode == ManagedTileState::DrawingInfo::PICTURE_PILE_MODE) {
+          color = DebugColors::PictureTileBorderColor();
+          width = DebugColors::PictureTileBorderWidth(layer_tree_impl());
         } else if (iter->priority(ACTIVE_TREE).resolution == HIGH_RESOLUTION) {
           color = DebugColors::HighResTileBorderColor();
           width = DebugColors::HighResTileBorderWidth(layer_tree_impl());
@@ -178,13 +182,13 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
 
     const ManagedTileState::DrawingInfo& drawing_info = iter->drawing_info();
     switch (drawing_info.mode()) {
-      case ManagedTileState::DrawingInfo::TEXTURE_MODE: {
-        if (iter->contents_scale() != ideal_contents_scale_)
-          append_quads_data->had_incomplete_tile = true;
-
+      case ManagedTileState::DrawingInfo::RESOURCE_MODE: {
         gfx::RectF texture_rect = iter.texture_rect();
         gfx::Rect opaque_rect = iter->opaque_rect();
         opaque_rect.Intersect(content_rect);
+
+        if (iter->contents_scale() != ideal_contents_scale_)
+          append_quads_data->had_incomplete_tile = true;
 
         scoped_ptr<TileDrawQuad> quad = TileDrawQuad::Create();
         quad->SetNew(shared_quad_state,
@@ -194,6 +198,24 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
                      texture_rect,
                      iter.texture_size(),
                      drawing_info.contents_swizzled());
+        quad_sink->Append(quad.PassAs<DrawQuad>(), append_quads_data);
+        break;
+      }
+      case ManagedTileState::DrawingInfo::PICTURE_PILE_MODE: {
+        gfx::RectF texture_rect = iter.texture_rect();
+        gfx::Rect opaque_rect = iter->opaque_rect();
+        opaque_rect.Intersect(content_rect);
+
+        scoped_ptr<PictureDrawQuad> quad = PictureDrawQuad::Create();
+        quad->SetNew(shared_quad_state,
+                     geometry_rect,
+                     opaque_rect,
+                     texture_rect,
+                     iter.texture_size(),
+                     drawing_info.contents_swizzled(),
+                     iter->content_rect(),
+                     iter->contents_scale(),
+                     pile_);
         quad_sink->Append(quad.PassAs<DrawQuad>(), append_quads_data);
         break;
       }
@@ -207,8 +229,6 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
       }
       case ManagedTileState::DrawingInfo::TRANSPARENT_MODE:
         break;
-      case ManagedTileState::DrawingInfo::PICTURE_PILE_MODE:
-        // TODO(leandrogarcia): crbug.com/173011 would fill this part in.
       default:
         NOTREACHED();
     }
@@ -486,7 +506,7 @@ ResourceProvider::ResourceId PictureLayerImpl::ContentsResourceId() const {
     // Mask resource not ready yet.
     if (!*iter ||
         iter->drawing_info().mode() !=
-            ManagedTileState::DrawingInfo::TEXTURE_MODE ||
+            ManagedTileState::DrawingInfo::RESOURCE_MODE ||
         !iter->drawing_info().IsReadyToDraw())
       return 0;
     // Masks only supported if they fit on exactly one tile.

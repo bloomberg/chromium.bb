@@ -320,6 +320,9 @@ void ParamTraits<cc::RenderPass>::Write(
       case cc::DrawQuad::IO_SURFACE_CONTENT:
         WriteParam(m, *cc::IOSurfaceDrawQuad::MaterialCast(quad));
         break;
+      case cc::DrawQuad::PICTURE_CONTENT:
+        NOTREACHED();
+        break;
       case cc::DrawQuad::TEXTURE_CONTENT:
         WriteParam(m, *cc::TextureDrawQuad::MaterialCast(quad));
         break;
@@ -434,6 +437,9 @@ bool ParamTraits<cc::RenderPass>::Read(
       case cc::DrawQuad::IO_SURFACE_CONTENT:
         draw_quad = ReadDrawQuad<cc::IOSurfaceDrawQuad>(m, iter);
         break;
+      case cc::DrawQuad::PICTURE_CONTENT:
+        NOTREACHED();
+        return false;
       case cc::DrawQuad::TEXTURE_CONTENT:
         draw_quad = ReadDrawQuad<cc::TextureDrawQuad>(m, iter);
         break;
@@ -512,6 +518,9 @@ void ParamTraits<cc::RenderPass>::Log(
         break;
       case cc::DrawQuad::IO_SURFACE_CONTENT:
         LogParam(*cc::IOSurfaceDrawQuad::MaterialCast(quad), l);
+        break;
+      case cc::DrawQuad::PICTURE_CONTENT:
+        NOTREACHED();
         break;
       case cc::DrawQuad::TEXTURE_CONTENT:
         LogParam(*cc::TextureDrawQuad::MaterialCast(quad), l);

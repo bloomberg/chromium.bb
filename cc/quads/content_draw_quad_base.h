@@ -1,48 +1,48 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_QUADS_TILE_DRAW_QUAD_H_
-#define CC_QUADS_TILE_DRAW_QUAD_H_
+#ifndef CC_QUADS_CONTENT_DRAW_QUAD_BASE_H_
+#define CC_QUADS_CONTENT_DRAW_QUAD_BASE_H_
 
-#include "cc/quads/content_draw_quad_base.h"
+#include "base/memory/scoped_ptr.h"
+#include "cc/base/cc_export.h"
+#include "cc/quads/draw_quad.h"
+#include "third_party/khronos/GLES2/gl2.h"
+#include "ui/gfx/point.h"
+#include "ui/gfx/size.h"
 
 namespace cc {
 
-class CC_EXPORT TileDrawQuad : public ContentDrawQuadBase {
+class CC_EXPORT ContentDrawQuadBase : public DrawQuad {
  public:
-  static scoped_ptr<TileDrawQuad> Create();
-  virtual ~TileDrawQuad();
-
   void SetNew(const SharedQuadState* shared_quad_state,
+              DrawQuad::Material material,
               gfx::Rect rect,
               gfx::Rect opaque_rect,
-              unsigned resource_id,
               const gfx::RectF& tex_coord_rect,
               gfx::Size texture_size,
               bool swizzle_contents);
 
   void SetAll(const SharedQuadState* shared_quad_state,
+              DrawQuad::Material material,
               gfx::Rect rect,
               gfx::Rect opaque_rect,
               gfx::Rect visible_rect,
               bool needs_blending,
-              unsigned resource_id,
               const gfx::RectF& tex_coord_rect,
               gfx::Size texture_size,
               bool swizzle_contents);
 
-  unsigned resource_id;
+  gfx::RectF tex_coord_rect;
+  gfx::Size texture_size;
+  bool swizzle_contents;
 
-  virtual void IterateResources(const ResourceIteratorCallback& callback)
-      OVERRIDE;
-
-  static const TileDrawQuad* MaterialCast(const DrawQuad*);
-
- private:
-  TileDrawQuad();
+ protected:
+  ContentDrawQuadBase();
+  virtual ~ContentDrawQuadBase();
 };
 
-}  // namespace cc
+}
 
-#endif  // CC_QUADS_TILE_DRAW_QUAD_H_
+#endif  // CC_QUADS_CONTENT_DRAW_QUAD_BASE_H_

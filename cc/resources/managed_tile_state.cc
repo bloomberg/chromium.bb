@@ -26,7 +26,7 @@ ManagedTileState::ManagedTileState()
 }
 
 ManagedTileState::DrawingInfo::DrawingInfo()
-    : mode_(TEXTURE_MODE),
+    : mode_(RESOURCE_MODE),
       resource_is_being_initialized_(false),
       can_be_freed_(true),
       contents_swizzled_(false) {
@@ -37,7 +37,7 @@ ManagedTileState::DrawingInfo::~DrawingInfo() {
 
 bool ManagedTileState::DrawingInfo::IsReadyToDraw() const {
   switch (mode_) {
-    case TEXTURE_MODE:
+    case RESOURCE_MODE:
       return resource_ &&
              !resource_is_being_initialized_ &&
              resource_->id();

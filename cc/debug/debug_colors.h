@@ -56,6 +56,9 @@ class DebugColors {
   static SkColor SolidColorTileBorderColor();
   static int SolidColorTileBorderWidth(const LayerTreeImpl* tree_impl);
 
+  static SkColor PictureTileBorderColor();
+  static int PictureTileBorderWidth(const LayerTreeImpl* tree_impl);
+
   static SkColor DefaultCheckerboardColor();
   static SkColor EvictedTileCheckerboardColor();
   static SkColor InvalidatedTileCheckerboardColor();

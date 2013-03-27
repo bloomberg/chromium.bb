@@ -128,6 +128,10 @@ int DebugColors::SolidColorTileBorderWidth(const LayerTreeImpl* tree_impl) {
   return Scale(1, tree_impl);
 }
 
+// Picture tile borders are dark grey.
+SkColor DebugColors::PictureTileBorderColor() { return SkColorSetARGB(64, 64, 64, 0); }
+int DebugColors::PictureTileBorderWidth(const LayerTreeImpl* tree_impl) { return Scale(1, tree_impl); }
+
 // ======= Checkerboard colors =======
 
 // Non-debug checkerboards are grey.

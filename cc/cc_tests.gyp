@@ -29,6 +29,7 @@
       'trees/layer_tree_host_common_unittest.cc',
       'trees/layer_tree_host_impl_unittest.cc',
       'trees/layer_tree_host_pixeltest_filters.cc',
+      'trees/layer_tree_host_pixeltest_on_demand_raster.cc',
       'trees/layer_tree_host_unittest.cc',
       'trees/layer_tree_host_unittest_animation.cc',
       'trees/layer_tree_host_unittest_context.cc',

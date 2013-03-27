@@ -15,6 +15,7 @@ using cc::DelegatedFrameData;
 using cc::DebugBorderDrawQuad;
 using cc::DrawQuad;
 using cc::IOSurfaceDrawQuad;
+using cc::PictureDrawQuad;
 using cc::RenderPass;
 using cc::RenderPassDrawQuad;
 using cc::ResourceProvider;
@@ -76,6 +77,10 @@ class CCMessagesTest : public testing::Test {
       case DrawQuad::IO_SURFACE_CONTENT:
         Compare(IOSurfaceDrawQuad::MaterialCast(a),
                 IOSurfaceDrawQuad::MaterialCast(b));
+        break;
+      case DrawQuad::PICTURE_CONTENT:
+        Compare(PictureDrawQuad::MaterialCast(a),
+                PictureDrawQuad::MaterialCast(b));
         break;
       case DrawQuad::RENDER_PASS:
         Compare(RenderPassDrawQuad::MaterialCast(a),

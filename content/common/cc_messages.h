@@ -11,6 +11,7 @@
 #include "cc/quads/debug_border_draw_quad.h"
 #include "cc/quads/draw_quad.h"
 #include "cc/quads/io_surface_draw_quad.h"
+#include "cc/quads/picture_draw_quad.h"
 #include "cc/quads/render_pass.h"
 #include "cc/quads/render_pass_draw_quad.h"
 #include "cc/quads/shared_quad_state.h"

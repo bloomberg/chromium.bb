@@ -593,8 +593,12 @@ void TileManager::AssignGpuMemoryToTiles() {
           mts.bin[LOW_PRIORITY_BIN] == NOW_BIN)
           bytes_that_exceeded_memory_budget_in_now_bin += tile_bytes;
       FreeResourcesForTile(tile);
+      tile->drawing_info().set_rasterize_on_demand();
+      tile->drawing_info().set_contents_swizzled(
+          !PlatformColor::SameComponentOrder(tile->format_));
       continue;
     }
+    tile->drawing_info().set_use_resource();
     bytes_left -= tile_bytes;
     mts.can_use_gpu_memory = true;
     if (!tile->drawing_info().resource_ &&

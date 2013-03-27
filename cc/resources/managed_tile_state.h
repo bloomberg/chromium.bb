@@ -21,7 +21,7 @@ class CC_EXPORT ManagedTileState {
   class CC_EXPORT DrawingInfo {
     public:
       enum Mode {
-        TEXTURE_MODE,
+        RESOURCE_MODE,
         SOLID_COLOR_MODE,
         TRANSPARENT_MODE,
         PICTURE_PILE_MODE,
@@ -38,7 +38,7 @@ class CC_EXPORT ManagedTileState {
       bool IsReadyToDraw() const;
 
       ResourceProvider::ResourceId get_resource_id() const {
-        DCHECK(mode_ == TEXTURE_MODE);
+        DCHECK(mode_ == RESOURCE_MODE);
         DCHECK(resource_);
         DCHECK(!resource_is_being_initialized_);
         return resource_->id();
@@ -55,7 +55,7 @@ class CC_EXPORT ManagedTileState {
       }
 
       bool requires_resource() const {
-        return mode_ == TEXTURE_MODE ||
+        return mode_ == RESOURCE_MODE ||
                mode_ == PICTURE_PILE_MODE;
       }
 
@@ -67,6 +67,10 @@ class CC_EXPORT ManagedTileState {
       friend class TileManager;
       friend class ManagedTileState;
 
+      void set_use_resource() {
+        mode_ = RESOURCE_MODE;
+      }
+
       void set_transparent() {
         mode_ = TRANSPARENT_MODE;
       }
@@ -74,6 +78,14 @@ class CC_EXPORT ManagedTileState {
       void set_solid_color(const SkColor& color) {
         mode_ = SOLID_COLOR_MODE;
         solid_color_ = color;
+      }
+
+      void set_rasterize_on_demand() {
+        mode_ = PICTURE_PILE_MODE;
+      }
+
+      void set_contents_swizzled(bool contents_swizzled) {
+        contents_swizzled_ = contents_swizzled;
       }
 
       Mode mode_;

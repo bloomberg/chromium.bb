@@ -11,12 +11,14 @@
 #include "cc/quads/checkerboard_draw_quad.h"
 #include "cc/quads/debug_border_draw_quad.h"
 #include "cc/quads/io_surface_draw_quad.h"
+#include "cc/quads/picture_draw_quad.h"
 #include "cc/quads/render_pass_draw_quad.h"
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/stream_video_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/quads/tile_draw_quad.h"
 #include "cc/quads/yuv_video_draw_quad.h"
+#include "cc/resources/picture_pile_impl.h"
 #include "cc/test/geometry_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFilterOperations.h"
@@ -657,6 +659,50 @@ TEST(DrawQuadTest, CopyYUVVideoDrawQuad) {
   EXPECT_EQ(v_plane.format, copy_quad->v_plane.format);
 }
 
+TEST(DrawQuadTest, CopyPictureDrawQuad) {
+  gfx::Rect opaque_rect(33, 44, 22, 33);
+  unsigned resource_id = 104;
+  gfx::RectF tex_coord_rect(31.f, 12.f, 54.f, 20.f);
+  gfx::Size texture_size(85, 32);
+  bool swizzle_contents = true;
+  gfx::Rect content_rect(30, 40, 20, 30);
+  float contents_scale = 3.141592f;
+  scoped_refptr<PicturePileImpl> picture_pile = PicturePileImpl::Create(false);
+  CREATE_SHARED_STATE();
+
+  CREATE_QUAD_7_NEW(PictureDrawQuad,
+                    opaque_rect,
+                    tex_coord_rect,
+                    texture_size,
+                    swizzle_contents,
+                    content_rect,
+                    contents_scale,
+                    picture_pile);
+  EXPECT_EQ(DrawQuad::PICTURE_CONTENT, copy_quad->material);
+  EXPECT_RECT_EQ(opaque_rect, copy_quad->opaque_rect);
+  EXPECT_EQ(tex_coord_rect, copy_quad->tex_coord_rect);
+  EXPECT_EQ(texture_size, copy_quad->texture_size);
+  EXPECT_EQ(swizzle_contents, copy_quad->swizzle_contents);
+  EXPECT_RECT_EQ(content_rect, copy_quad->content_rect);
+  EXPECT_EQ(contents_scale, copy_quad->contents_scale);
+  EXPECT_EQ(picture_pile, copy_quad->picture_pile);
+
+  CREATE_QUAD_6_ALL(PictureDrawQuad,
+                    tex_coord_rect,
+                    texture_size,
+                    swizzle_contents,
+                    content_rect,
+                    contents_scale,
+                    picture_pile);
+  EXPECT_EQ(DrawQuad::PICTURE_CONTENT, copy_quad->material);
+  EXPECT_EQ(tex_coord_rect, copy_quad->tex_coord_rect);
+  EXPECT_EQ(texture_size, copy_quad->texture_size);
+  EXPECT_EQ(swizzle_contents, copy_quad->swizzle_contents);
+  EXPECT_RECT_EQ(content_rect, copy_quad->content_rect);
+  EXPECT_EQ(contents_scale, copy_quad->contents_scale);
+  EXPECT_EQ(picture_pile, copy_quad->picture_pile);
+}
+
 class DrawQuadIteratorTest : public testing::Test {
  protected:
   ResourceProvider::ResourceId IncrementResourceId(
@@ -824,6 +870,28 @@ TEST_F(DrawQuadIteratorTest, YUVVideoDrawQuad) {
   EXPECT_EQ(y_plane.resource_id + 1, quad_new->y_plane.resource_id);
   EXPECT_EQ(u_plane.resource_id + 1, quad_new->u_plane.resource_id);
   EXPECT_EQ(v_plane.resource_id + 1, quad_new->v_plane.resource_id);
+}
+
+TEST_F(DrawQuadIteratorTest, PictureDrawQuad) {
+  gfx::Rect opaque_rect(33, 44, 22, 33);
+  unsigned resource_id = 104;
+  gfx::RectF tex_coord_rect(31.f, 12.f, 54.f, 20.f);
+  gfx::Size texture_size(85, 32);
+  bool swizzle_contents = true;
+  gfx::Rect content_rect(30, 40, 20, 30);
+  float contents_scale = 3.141592f;
+  scoped_refptr<PicturePileImpl> picture_pile = PicturePileImpl::Create(false);
+
+  CREATE_SHARED_STATE();
+  CREATE_QUAD_7_NEW(PictureDrawQuad,
+                    opaque_rect,
+                    tex_coord_rect,
+                    texture_size,
+                    swizzle_contents,
+                    content_rect,
+                    contents_scale,
+                    picture_pile);
+  EXPECT_EQ(0, IterateAndCount(quad_new.get()));
 }
 
 }  // namespace
