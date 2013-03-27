@@ -1027,17 +1027,6 @@ bool Extension::is_theme() const {
   return manifest()->is_theme();
 }
 
-bool Extension::is_content_pack() const {
-  return !content_pack_site_list_.empty();
-}
-
-ExtensionResource Extension::GetContentPackSiteList() const {
-  if (!is_content_pack())
-    return ExtensionResource();
-
-  return GetResource(content_pack_site_list_);
-}
-
 Extension::RuntimeData::RuntimeData() {}
 Extension::RuntimeData::RuntimeData(const PermissionSet* active)
     : active_permissions_(active) {}
@@ -1117,47 +1106,6 @@ bool Extension::InitExtensionID(extensions::Manifest* manifest,
     manifest->set_extension_id(extension_id);
     return true;
   }
-}
-
-bool Extension::LoadManagedModeFeatures(string16* error) {
-  if (!manifest_->HasKey(keys::kContentPack))
-    return true;
-  const DictionaryValue* content_pack_value = NULL;
-  if (!manifest_->GetDictionary(keys::kContentPack, &content_pack_value)) {
-    *error = ASCIIToUTF16(errors::kInvalidContentPack);
-    return false;
-  }
-
-  if (!LoadManagedModeSites(content_pack_value, error))
-    return false;
-  if (!LoadManagedModeConfigurations(content_pack_value, error))
-    return false;
-
-  return true;
-}
-
-bool Extension::LoadManagedModeSites(
-    const DictionaryValue* content_pack_value,
-    string16* error) {
-  if (!content_pack_value->HasKey(keys::kContentPackSites))
-    return true;
-
-  base::FilePath::StringType site_list_str;
-  if (!content_pack_value->GetString(keys::kContentPackSites, &site_list_str)) {
-    *error = ASCIIToUTF16(errors::kInvalidContentPackSites);
-    return false;
-  }
-
-  content_pack_site_list_ = base::FilePath(site_list_str);
-
-  return true;
-}
-
-bool Extension::LoadManagedModeConfigurations(
-    const DictionaryValue* content_pack_value,
-    string16* error) {
-  NOTIMPLEMENTED();
-  return true;
 }
 
 // static
@@ -1276,9 +1224,6 @@ bool Extension::InitFromValue(int flags, string16* error) {
   if (manifest_->HasKey(keys::kConvertedFromUserScript))
     manifest_->GetBoolean(keys::kConvertedFromUserScript,
                           &converted_from_user_script_);
-
-  if (!LoadManagedModeFeatures(error))
-    return false;
 
   if (HasMultipleUISurfaces()) {
     *error = ASCIIToUTF16(errors::kOneUISurfaceOnly);

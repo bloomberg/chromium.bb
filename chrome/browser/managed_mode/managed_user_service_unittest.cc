@@ -11,6 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/extensions/api/managed_mode_private/managed_mode_handler.h"
 #include "chrome/common/extensions/manifest_handler.h"
 #include "chrome/common/extensions/manifest_handlers/requirements_handler.h"
 #include "chrome/common/pref_names.h"
@@ -154,6 +155,7 @@ class ManagedUserServiceExtensionTest : public ExtensionServiceTestBase {
     ExtensionServiceTestBase::SetUp();
     InitializeEmptyExtensionService();
     (new extensions::RequirementsHandler)->Register();
+    (new extensions::ManagedModeHandler)->Register();
   }
 
   virtual void TearDown() OVERRIDE {

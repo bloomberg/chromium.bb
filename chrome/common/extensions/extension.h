@@ -470,10 +470,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // Theme-related.
   bool is_theme() const;
 
-  // Content pack related.
-  bool is_content_pack() const;
-  ExtensionResource GetContentPackSiteList() const;
-
  private:
   friend class base::RefCountedThreadSafe<Extension>;
 
@@ -551,13 +547,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool LoadKioskEnabled(string16* error);
   bool LoadOfflineEnabled(string16* error);
   bool LoadTextToSpeechVoices(string16* error);
-  bool LoadManagedModeFeatures(string16* error);
-  bool LoadManagedModeSites(
-      const base::DictionaryValue* content_pack_value,
-      string16* error);
-  bool LoadManagedModeConfigurations(
-      const base::DictionaryValue* content_pack_value,
-      string16* error);
 
   // Returns true if the extension has more than one "UI surface". For example,
   // an extension that has a browser action and a page action.
@@ -649,9 +638,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // The public key used to sign the contents of the crx package.
   std::string public_key_;
-
-  // A file containing a list of sites for Managed Mode.
-  base::FilePath content_pack_site_list_;
 
   // The manifest from which this extension was created.
   scoped_ptr<Manifest> manifest_;

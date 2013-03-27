@@ -20,6 +20,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/api/managed_mode_private.h"
+#include "chrome/common/extensions/api/managed_mode_private/managed_mode_handler.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_details.h"
 
@@ -130,6 +131,7 @@ ManagedModeAPI::ManagedModeAPI(Profile* profile)
     : profile_(profile) {
   ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
       this, kChangeEventName);
+  (new ManagedModeHandler)->Register();
 }
 
 ManagedModeAPI::~ManagedModeAPI() {

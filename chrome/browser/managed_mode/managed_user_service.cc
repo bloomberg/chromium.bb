@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/extensions/api/managed_mode_private/managed_mode_handler.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/pref_names.h"
 #include "components/user_prefs/pref_registry_syncable.h"
@@ -274,17 +275,19 @@ void ManagedUserService::Observe(int type,
     case chrome::NOTIFICATION_EXTENSION_LOADED: {
       const extensions::Extension* extension =
           content::Details<extensions::Extension>(details).ptr();
-      if (!extension->GetContentPackSiteList().empty())
+      if (!extensions::ManagedModeInfo::GetContentPackSiteList(
+              extension).empty()) {
         UpdateSiteLists();
-
+      }
       break;
     }
     case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
       const extensions::UnloadedExtensionInfo* extension_info =
           content::Details<extensions::UnloadedExtensionInfo>(details).ptr();
-      if (!extension_info->extension->GetContentPackSiteList().empty())
+      if (!extensions::ManagedModeInfo::GetContentPackSiteList(
+              extension_info->extension).empty()) {
         UpdateSiteLists();
-
+      }
       break;
     }
     default:
@@ -325,7 +328,7 @@ ScopedVector<ManagedModeSiteList> ManagedUserService::GetActiveSiteLists() {
       continue;
 
     extensions::ExtensionResource site_list =
-        extension->GetContentPackSiteList();
+        extensions::ManagedModeInfo::GetContentPackSiteList(extension);
     if (!site_list.empty())
       site_lists.push_back(new ManagedModeSiteList(extension->id(), site_list));
   }
