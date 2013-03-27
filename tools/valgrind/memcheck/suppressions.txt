@@ -6885,7 +6885,7 @@
    Memcheck:Leak
    fun:_Znw*
    ...
-   fun:_ZN6chrome12_GLOBAL__N_18ReadMtabERKN4base8FilePathERKSt3setISsSt4lessISsESaISsEEPSt3mapIS2_S2_S6_IS2_ESaISt4pairIS3_S2_EEE
+   fun:_ZN6chrome12_GLOBAL__N_18ReadMtab*
    fun:_ZN6chrome19StorageMonitorLinux10UpdateMtabEv
    fun:_ZN6chrome19StorageMonitorLinux16InitOnFileThreadEv
 }
@@ -6893,7 +6893,7 @@
    bug_222687b
    Memcheck:Leak
    ...
-   fun:_ZN6chrome12_GLOBAL__N_113GetDeviceInfoERKN4base8FilePathES4_PSsPSbItNS1_20string16_char_traitsESaItEEPbPmS9_S9_S9_
+   fun:_ZN6chrome12_GLOBAL__N_113GetDeviceInfo*
    fun:_ZN6chrome19StorageMonitorLinux11AddNewMountERKN4base8FilePathES4_
    fun:_ZN6chrome19StorageMonitorLinux10UpdateMtabEv
    fun:_ZN6chrome19StorageMonitorLinux16InitOnFileThreadEv
