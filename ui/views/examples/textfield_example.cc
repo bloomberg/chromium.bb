@@ -8,6 +8,7 @@
 #include "ui/base/events/event.h"
 #include "ui/base/range/range.h"
 #include "ui/gfx/render_text.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/grid_layout.h"
@@ -26,11 +27,11 @@ void TextfieldExample::CreateExampleView(View* container) {
   name_ = new Textfield();
   password_ = new Textfield(Textfield::STYLE_OBSCURED);
   password_->set_placeholder_text(ASCIIToUTF16("password"));
-  show_password_ = new TextButton(this, ASCIIToUTF16("Show password"));
-  clear_all_ = new TextButton(this, ASCIIToUTF16("Clear All"));
-  append_ = new TextButton(this, ASCIIToUTF16("Append"));
-  set_ = new TextButton(this, ASCIIToUTF16("Set"));
-  set_style_ = new TextButton(this, ASCIIToUTF16("Set Styles"));
+  show_password_ = new LabelButton(this, ASCIIToUTF16("Show password"));
+  clear_all_ = new LabelButton(this, ASCIIToUTF16("Clear All"));
+  append_ = new LabelButton(this, ASCIIToUTF16("Append"));
+  set_ = new LabelButton(this, ASCIIToUTF16("Set"));
+  set_style_ = new LabelButton(this, ASCIIToUTF16("Set Styles"));
   name_->SetController(this);
   password_->SetController(this);
 

@@ -6,7 +6,8 @@
 
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
-#include "ui/views/controls/button/text_button.h"
+#include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/button/radio_button.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/view.h"
 
@@ -22,8 +23,8 @@ RadioButtonExample::~RadioButtonExample() {
 }
 
 void RadioButtonExample::CreateExampleView(View* container) {
-  select_ = new TextButton(this, ASCIIToUTF16("Select"));
-  status_ = new TextButton(this, ASCIIToUTF16("Show Status"));
+  select_ = new LabelButton(this, ASCIIToUTF16("Select"));
+  status_ = new LabelButton(this, ASCIIToUTF16("Show Status"));
 
   int group = 1;
   for (size_t i = 0; i < arraysize(radio_buttons_); ++i) {

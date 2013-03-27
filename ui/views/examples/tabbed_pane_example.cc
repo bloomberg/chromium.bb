@@ -5,6 +5,7 @@
 #include "ui/views/examples/tabbed_pane_example.h"
 
 #include "base/utf_string_conversions.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/tabbed_pane/tabbed_pane.h"
 #include "ui/views/layout/grid_layout.h"
 
@@ -20,9 +21,9 @@ TabbedPaneExample::~TabbedPaneExample() {
 void TabbedPaneExample::CreateExampleView(View* container) {
   tabbed_pane_ = new TabbedPane();
   tabbed_pane_->set_listener(this);
-  add_ = new TextButton(this, ASCIIToUTF16("Add"));
-  add_at_ = new TextButton(this, ASCIIToUTF16("Add At 1"));
-  select_at_ = new TextButton(this, ASCIIToUTF16("Select At 1"));
+  add_ = new LabelButton(this, ASCIIToUTF16("Add"));
+  add_at_ = new LabelButton(this, ASCIIToUTF16("Add At 1"));
+  select_at_ = new LabelButton(this, ASCIIToUTF16("Select At 1"));
 
   GridLayout* layout = new GridLayout(container);
   container->SetLayoutManager(layout);
@@ -57,7 +58,7 @@ void TabbedPaneExample::ButtonPressed(Button* sender, const ui::Event& event) {
     AddButton("Added");
   } else if (sender == add_at_) {
     const string16 label = ASCIIToUTF16("Added at 1");
-    tabbed_pane_->AddTabAtIndex(1, label, new TextButton(NULL, label));
+    tabbed_pane_->AddTabAtIndex(1, label, new LabelButton(NULL, label));
   } else if (sender == select_at_) {
     if (tabbed_pane_->GetTabCount() > 1)
       tabbed_pane_->SelectTabAt(1);
@@ -77,7 +78,7 @@ void TabbedPaneExample::PrintStatus() {
 }
 
 void TabbedPaneExample::AddButton(const std::string& label) {
-  TextButton* button = new TextButton(NULL, ASCIIToUTF16(label));
+  LabelButton* button = new LabelButton(NULL, ASCIIToUTF16(label));
   tabbed_pane_->AddTab(ASCIIToUTF16(label), button);
 }
 

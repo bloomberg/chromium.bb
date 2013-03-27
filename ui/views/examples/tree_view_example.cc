@@ -5,6 +5,7 @@
 #include "ui/views/examples/tree_view_example.h"
 
 #include "base/utf_string_conversions.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/tree/tree_view.h"
@@ -43,11 +44,11 @@ void TreeViewExample::CreateExampleView(View* container) {
   tree_view_->SetRootShown(false);
   tree_view_->SetModel(&model_);
   tree_view_->SetController(this);
-  add_ = new TextButton(this, ASCIIToUTF16("Add"));
+  add_ = new LabelButton(this, ASCIIToUTF16("Add"));
   add_->set_focusable(true);
-  remove_ = new TextButton(this, ASCIIToUTF16("Remove"));
+  remove_ = new LabelButton(this, ASCIIToUTF16("Remove"));
   remove_->set_focusable(true);
-  change_title_ = new TextButton(this, ASCIIToUTF16("Change Title"));
+  change_title_ = new LabelButton(this, ASCIIToUTF16("Change Title"));
   change_title_->set_focusable(true);
 
   GridLayout* layout = new GridLayout(container);

@@ -9,14 +9,14 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "ui/views/controls/button/radio_button.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/examples/example_base.h"
 
-namespace events {
-class TextButton;
-}
-
 namespace views {
+
+class LabelButton;
+class RadioButton;
+
 namespace examples {
 
 class RadioButtonExample : public ExampleBase, public ButtonListener {
@@ -35,8 +35,8 @@ class RadioButtonExample : public ExampleBase, public ButtonListener {
   RadioButton* radio_buttons_[3];
 
   // Control button to select radio buttons, and show the status of buttons.
-  TextButton* select_;
-  TextButton* status_;
+  LabelButton* select_;
+  LabelButton* status_;
 
   // The number of times the button is pressed.
   int count_;
