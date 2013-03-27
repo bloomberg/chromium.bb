@@ -992,6 +992,8 @@
         'browser/metrics/variations/variations_http_header_provider.h',
         'browser/metrics/variations/variations_registry_syncer_win.cc',
         'browser/metrics/variations/variations_registry_syncer_win.h',
+        'browser/metrics/variations/variations_request_scheduler.cc',
+        'browser/metrics/variations/variations_request_scheduler.h',
         'browser/metrics/variations/variations_service.cc',
         'browser/metrics/variations/variations_service.h',
         'browser/native_window_notification_source.h',

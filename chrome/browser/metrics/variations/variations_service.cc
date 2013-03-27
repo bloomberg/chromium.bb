@@ -41,9 +41,6 @@ const char kDefaultVariationsServerURL[] =
     "https://clients4.google.com/chrome-variations/seed";
 const int kMaxRetrySeedFetch = 5;
 
-// Time between seed fetches, in hours.
-const int kSeedFetchPeriodHours = 5;
-
 // TODO(mad): To be removed when we stop updating the NetworkTimeTracker.
 // For the HTTP date headers, the resolution of the server time is 1 second.
 const int64 kServerTimeResolutionMs = 1000;
@@ -190,12 +187,14 @@ void VariationsService::StartRepeatedVariationsSeedFetch() {
   // retrieve the serial number that will be sent to the server.
   DCHECK(create_trials_from_seed_called_);
 
-  // Perform the first fetch.
-  FetchVariationsSeed();
-
-  // Repeat this periodically.
-  timer_.Start(FROM_HERE, base::TimeDelta::FromHours(kSeedFetchPeriodHours),
-               this, &VariationsService::FetchVariationsSeed);
+  DCHECK(!request_scheduler_.get());
+  // Note that the act of instantiating the scheduler will start the fetch, if
+  // the scheduler deems appropriate. Using Unretained is fine here since the
+  // lifespan of request_scheduler_ is guaranteed to be shorter than that of
+  // this service.
+  request_scheduler_.reset(new VariationsRequestScheduler(
+      base::Bind(&VariationsService::FetchVariationsSeed,
+          base::Unretained(this))));
 }
 
 bool VariationsService::GetNetworkTime(base::Time* network_time,
@@ -350,8 +349,10 @@ void VariationsService::OnResourceRequestsAllowed() {
   // to call this method again until another failed attempt occurs.
   DVLOG(1) << "Retrying fetch.";
   DoActualFetch();
-  if (timer_.IsRunning())
-    timer_.Reset();
+
+  // This service must have created a scheduler in order for this to be called.
+  DCHECK(request_scheduler_.get());
+  request_scheduler_->Reset();
 }
 
 bool VariationsService::StoreSeedData(const std::string& seed_data,

@@ -12,11 +12,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/time.h"
-#include "base/timer.h"
 #include "chrome/browser/metrics/proto/study.pb.h"
 #include "chrome/browser/metrics/proto/trials_seed.pb.h"
 #include "chrome/browser/metrics/variations/network_time_tracker.h"
 #include "chrome/browser/metrics/variations/resource_request_allowed_notifier.h"
+#include "chrome/browser/metrics/variations/variations_request_scheduler.h"
 #include "chrome/common/chrome_version_info.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -178,6 +178,11 @@ class VariationsService
   // The pref service used to store persist the variations seed.
   PrefService* local_state_;
 
+  // Contains the scheduler instance that handles timing for requests to the
+  // server. Initially NULL and instantiated when the initial fetch is
+  // requested.
+  scoped_ptr<VariationsRequestScheduler> request_scheduler_;
+
   // Contains the current seed request. Will only have a value while a request
   // is pending, and will be reset by |OnURLFetchComplete|.
   scoped_ptr<net::URLFetcher> pending_seed_request_;
@@ -191,11 +196,6 @@ class VariationsService
   // Tracks whether |CreateTrialsFromSeed| has been called, to ensure that
   // it gets called prior to |StartRepeatedVariationsSeedFetch|.
   bool create_trials_from_seed_called_;
-
-  // The timer used to repeatedly ping the server. Keep this as an instance
-  // member so if VariationsService goes out of scope, the timer is
-  // automatically canceled.
-  base::RepeatingTimer<VariationsService> timer_;
 
   // Helper class used to tell this service if it's allowed to make network
   // resource requests.
