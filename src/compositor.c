@@ -3307,17 +3307,17 @@ print_backtrace(void)
 #endif
 
 static void
-on_segv_signal(int s, siginfo_t *siginfo, void *context)
+on_caught_signal(int s, siginfo_t *siginfo, void *context)
 {
-	/* This SIGSEGV handler will do a best-effort backtrace, and
+	/* This signal handler will do a best-effort backtrace, and
 	 * then call the backend restore function, which will switch
 	 * back to the vt we launched from or ungrab X etc and then
 	 * raise SIGTRAP.  If we run weston under gdb from X or a
-	 * different vt, and tell gdb "handle SIGSEGV nostop", this
+	 * different vt, and tell gdb "handle *s* nostop", this
 	 * will allow weston to switch back to gdb on crash and then
-	 * gdb will catch the crash with SIGTRAP. */
+	 * gdb will catch the crash with SIGTRAP.*/
 
-	weston_log("caught segv\n");
+	weston_log("caught signal: %d\n", s);
 
 	print_backtrace();
 
@@ -3325,7 +3325,6 @@ on_segv_signal(int s, siginfo_t *siginfo, void *context)
 
 	raise(SIGTRAP);
 }
-
 
 static void *
 load_module(const char *name, const char *entrypoint)
@@ -3479,6 +3478,18 @@ usage(int error_code)
 	exit(error_code);
 }
 
+static void
+catch_signals(void)
+{
+	struct sigaction action;
+
+	action.sa_flags = SA_SIGINFO | SA_RESETHAND;
+	action.sa_sigaction = on_caught_signal;
+	sigemptyset(&action.sa_mask);
+	sigaction(SIGSEGV, &action, NULL);
+	sigaction(SIGABRT, &action, NULL);
+}
+
 int main(int argc, char *argv[])
 {
 	int ret = EXIT_SUCCESS;
@@ -3486,7 +3497,6 @@ int main(int argc, char *argv[])
 	struct weston_compositor *ec;
 	struct wl_event_source *signals[4];
 	struct wl_event_loop *loop;
-	struct sigaction segv_action;
 	struct weston_compositor
 		*(*backend_init)(struct wl_display *display,
 				 int *argc, char *argv[], const char *config_file);
@@ -3577,10 +3587,7 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	segv_action.sa_flags = SA_SIGINFO | SA_RESETHAND;
-	segv_action.sa_sigaction = on_segv_signal;
-	sigemptyset(&segv_action.sa_mask);
-	sigaction(SIGSEGV, &segv_action, NULL);
+	catch_signals();
 	segv_compositor = ec;
 
 	ec->idle_time = idle_time;
