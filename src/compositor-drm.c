@@ -2166,6 +2166,13 @@ drm_compositor_create(struct wl_display *display,
 		goto err_base;
 	}
 
+	/* Check if we run drm-backend using weston-launch */
+	if (ec->base.launcher_sock == -1) {
+		weston_log("fatal: drm backend should be run "
+			   "using weston-launch binary\n");
+		goto err_compositor;
+	}
+
 	ec->udev = udev_new();
 	if (ec->udev == NULL) {
 		weston_log("failed to initialize udev context\n");
