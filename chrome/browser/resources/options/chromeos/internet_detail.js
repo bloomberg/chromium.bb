@@ -276,8 +276,17 @@ cr.define('options.internet', function() {
       $('user-dns-radio').addEventListener('click',
         this.handleNameServerTypeChange_);
 
-      $('google-dns-label').innerHTML =
-        loadTimeData.getString('googleNameServers');
+      // We only load this string if we have the string data available
+      // because the proxy settings page on the login screen re-uses the
+      // proxy sub-page from the internet options, and it doesn't ever
+      // show the DNS settings, so we don't need this string there.
+      // The string isn't available because
+      // chrome://settings-frame/strings.js (where the string is
+      // stored) is not accessible from the login screen.
+      if (loadTimeData.data) {
+        $('google-dns-label').innerHTML =
+          loadTimeData.getString('googleNameServers');
+      }
     },
 
     /**
