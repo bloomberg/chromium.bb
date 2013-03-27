@@ -49,7 +49,8 @@ class LoopbackAudioConverter : public AudioConverter::InputCallback {
 };
 
 VirtualAudioInputStream::VirtualAudioInputStream(
-    const AudioParameters& params, base::MessageLoopProxy* message_loop,
+    const AudioParameters& params,
+    const scoped_refptr<base::MessageLoopProxy>& message_loop,
     const AfterCloseCallback& after_close_cb)
     : message_loop_(message_loop),
       after_close_cb_(after_close_cb),

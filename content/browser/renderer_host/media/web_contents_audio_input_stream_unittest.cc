@@ -88,7 +88,8 @@ class MockWebContentsTracker : public WebContentsTracker {
 // tests to check how/when they are invoked.
 class MockVirtualAudioInputStream : public VirtualAudioInputStream {
  public:
-  explicit MockVirtualAudioInputStream(base::MessageLoopProxy* message_loop)
+  explicit MockVirtualAudioInputStream(
+      const scoped_refptr<base::MessageLoopProxy>& message_loop)
       : VirtualAudioInputStream(TestAudioParameters(), message_loop,
                                 VirtualAudioInputStream::AfterCloseCallback()),
         real_(TestAudioParameters(), message_loop,

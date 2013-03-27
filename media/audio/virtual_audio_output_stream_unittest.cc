@@ -26,7 +26,8 @@ const AudioParameters kParams(
 
 class MockVirtualAudioInputStream : public VirtualAudioInputStream {
  public:
-  explicit MockVirtualAudioInputStream(base::MessageLoopProxy* message_loop)
+  explicit MockVirtualAudioInputStream(
+      const scoped_refptr<base::MessageLoopProxy>& message_loop)
       : VirtualAudioInputStream(
             kParams,
             message_loop,

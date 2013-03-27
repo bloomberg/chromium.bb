@@ -35,9 +35,10 @@ class MEDIA_EXPORT VirtualAudioInputStream : public AudioInputStream {
 
   // Construct a target for audio loopback which mixes multiple data streams
   // into a single stream having the given |params|.
-  VirtualAudioInputStream(const AudioParameters& params,
-                          base::MessageLoopProxy* message_loop,
-                          const AfterCloseCallback& after_close_cb);
+  VirtualAudioInputStream(
+      const AudioParameters& params,
+      const scoped_refptr<base::MessageLoopProxy>& message_loop,
+      const AfterCloseCallback& after_close_cb);
 
   virtual ~VirtualAudioInputStream();
 
@@ -73,7 +74,7 @@ class MEDIA_EXPORT VirtualAudioInputStream : public AudioInputStream {
   // Stop() is called.
   void ReadAudio();
 
-  base::MessageLoopProxy* const message_loop_;
+  const scoped_refptr<base::MessageLoopProxy> message_loop_;
 
   AfterCloseCallback after_close_cb_;
 

@@ -58,7 +58,7 @@ class CONTENT_EXPORT WebContentsAudioInputStream
   static WebContentsAudioInputStream* Create(
       const std::string& device_id,
       const media::AudioParameters& params,
-      base::MessageLoopProxy* message_loop);
+      const scoped_refptr<base::MessageLoopProxy>& message_loop);
 
  private:
   friend class WebContentsAudioInputStreamTest;
@@ -72,7 +72,7 @@ class CONTENT_EXPORT WebContentsAudioInputStream
 
   WebContentsAudioInputStream(
       int render_process_id, int render_view_id,
-      base::MessageLoopProxy* message_loop,
+      const scoped_refptr<base::MessageLoopProxy>& message_loop,
       AudioMirroringManager* mirroring_manager,
       const scoped_refptr<WebContentsTracker>& tracker,
       media::VirtualAudioInputStream* mixer_stream);
