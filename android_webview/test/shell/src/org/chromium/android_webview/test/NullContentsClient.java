@@ -4,7 +4,6 @@
 
 package org.chromium.android_webview.test;
 
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Picture;
 import android.net.http.SslError;
@@ -172,6 +171,11 @@ public class NullContentsClient extends AwContentsClient {
 
     @Override
     protected View getVideoLoadingProgressView() {
+        return null;
+    }
+
+    @Override
+    public Bitmap getDefaultVideoPoster() {
         return null;
     }
 }

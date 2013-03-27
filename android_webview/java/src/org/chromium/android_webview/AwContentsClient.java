@@ -294,6 +294,12 @@ public abstract class AwContentsClient extends ContentViewClient {
     public void onHideCustomView() {
     }
 
+    // TODO (michaelbai): This method should be abstract, having empty body here
+    // makes the merge to the Android easy.
+    public Bitmap getDefaultVideoPoster() {
+        return null;
+    }
+
     //--------------------------------------------------------------------------------------------
     //                              Other WebView-specific methods
     //--------------------------------------------------------------------------------------------

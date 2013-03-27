@@ -124,6 +124,8 @@ public class AwContents {
     // Must call nativeUpdateLastHitTestData first to update this before use.
     private final HitTestData mPossiblyStaleHitTestData;
 
+    private DefaultVideoPosterRequestHandler mDefaultVideoPosterRequestHandler;
+
     private static final class DestroyRunnable implements Runnable {
         private int mNativeAwContents;
         private DestroyRunnable(int nativeAwContents) {
@@ -148,8 +150,12 @@ public class AwContents {
         @Override
         public InterceptedRequestData shouldInterceptRequest(final String url,
                 boolean isMainFrame) {
-            InterceptedRequestData interceptedRequestData =
-                mContentsClient.shouldInterceptRequest(url);
+            InterceptedRequestData interceptedRequestData;
+            // Return the response directly if the url is default video poster url.
+            interceptedRequestData = mDefaultVideoPosterRequestHandler.shouldInterceptRequest(url);
+            if (interceptedRequestData != null) return interceptedRequestData;
+
+            interceptedRequestData = mContentsClient.shouldInterceptRequest(url);
 
             if (interceptedRequestData == null) {
                 mContentsClient.getCallbackHelper().postOnLoadResource(url);
@@ -298,6 +304,9 @@ public class AwContents {
         mDIPScale = DeviceDisplayInfo.create(containerView.getContext()).getDIPScale();
         mContentsClient.setDIPScale(mDIPScale);
         mSettings.setDIPScale(mDIPScale);
+        mDefaultVideoPosterRequestHandler = new DefaultVideoPosterRequestHandler(mContentsClient);
+        mContentViewCore.getContentSettings().setDefaultVideoPosterURL(
+                mDefaultVideoPosterRequestHandler.getDefaultVideoPosterURL());
 
         ContentVideoView.registerContentVideoViewContextDelegate(
                 new AwContentVideoViewDelegate(contentsClient, containerView.getContext()));
@@ -1236,6 +1245,27 @@ public class AwContents {
         return result;
     }
 
+    @CalledByNative
+    private void handleJsAlert(String url, String message, JsResultReceiver receiver) {
+        mContentsClient.handleJsAlert(url, message, receiver);
+    }
+
+    @CalledByNative
+    private void handleJsBeforeUnload(String url, String message, JsResultReceiver receiver) {
+        mContentsClient.handleJsBeforeUnload(url, message, receiver);
+    }
+
+    @CalledByNative
+    private void handleJsConfirm(String url, String message, JsResultReceiver receiver) {
+        mContentsClient.handleJsConfirm(url, message, receiver);
+    }
+
+    @CalledByNative
+    private void handleJsPrompt(String url, String message, String defaultValue,
+            JsPromptResultReceiver receiver) {
+        mContentsClient.handleJsPrompt(url, message, defaultValue, receiver);
+    }
+
     // -------------------------------------------------------------------------------------------
     // Helper methods
     // -------------------------------------------------------------------------------------------
@@ -1285,27 +1315,6 @@ public class AwContents {
 
         Log.e(TAG, "Unable to auto generate archive name for path: " + baseName);
         return null;
-    }
-
-    @CalledByNative
-    private void handleJsAlert(String url, String message, JsResultReceiver receiver) {
-        mContentsClient.handleJsAlert(url, message, receiver);
-    }
-
-    @CalledByNative
-    private void handleJsBeforeUnload(String url, String message, JsResultReceiver receiver) {
-        mContentsClient.handleJsBeforeUnload(url, message, receiver);
-    }
-
-    @CalledByNative
-    private void handleJsConfirm(String url, String message, JsResultReceiver receiver) {
-        mContentsClient.handleJsConfirm(url, message, receiver);
-    }
-
-    @CalledByNative
-    private void handleJsPrompt(String url, String message, String defaultValue,
-            JsPromptResultReceiver receiver) {
-        mContentsClient.handleJsPrompt(url, message, defaultValue, receiver);
     }
 
     //--------------------------------------------------------------------------------------------
