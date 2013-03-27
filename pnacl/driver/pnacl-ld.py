@@ -346,7 +346,11 @@ def main(argv):
     #  * -nacl-expand-tls leave TLS variables unconverted.
     if env.getbool('STATIC') and len(native_objects) == 0:
       passes = ['-nacl-expand-ctors',
-                '-nacl-expand-tls']
+                '-resolve-aliases',
+                '-nacl-expand-tls',
+                # Global cleanup needs to run after expand-tls because
+                # __tls_template_start etc are extern_weak before expansion
+                '-nacl-global-cleanup']
       chain.add(DoLLVMPasses(passes), 'expand_features.' + bitcode_type)
 
     if env.getone('OPT_LEVEL') != '' and env.getone('OPT_LEVEL') != '0':
