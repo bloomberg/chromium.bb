@@ -13,6 +13,7 @@
     "fileBrowserHandler",
     "fileBrowserPrivate",
     "mediaPlayerPrivate",
+    "mediaGalleriesPrivate",
     "metricsPrivate",
     "unlimitedStorage",
     "chrome://extension-icon/",

@@ -25,11 +25,11 @@ function ActionChoice(dom, filesystem, params) {
   this.volumeManager_ = VolumeManager.getInstance();
   this.volumeManager_.addEventListener('externally-unmounted',
      this.onDeviceUnmounted_.bind(this));
+  this.actions_ = [];
+  this.actionsById_ = {};
   this.initDom_();
 
   this.rememberedChoice_ = null;
-  this.enabledOptions_ = [ActionChoice.Action.VIEW_FILES];
-
   util.storage.local.get(['action-choice'], function(result) {
     // In the advanced mode, skip auto-choice.
     if (!params.advancedMode)
@@ -37,31 +37,46 @@ function ActionChoice(dom, filesystem, params) {
     this.initializeVolumes_();
   }.bind(this));
 
-  this.viewFilesItem_ = {
+  this.viewFilesAction_ = {
+    id: 'view-files',
     title: loadTimeData.getString('ACTION_CHOICE_VIEW_FILES'),
-    name: 'Files.app',
     class: 'view-files'
   };
 
-  this.importPhotosToDriveItem_ = {
+  this.importPhotosToDriveAction_ = {
+    id: 'import-photos-to-drive',
     title: loadTimeData.getString('ACTION_CHOICE_DRIVE_NOT_REACHED'),
-    name: 'Files.app',
     class: 'import-photos-to-drive',
     disabled: true
   };
 
-  this.watchSingleVideoItem_ = {
-    title: '',
-    name: 'Files.app',
-    class: 'play-video',
+  this.watchSingleVideoAction_ = {
+    id: 'watch-single-video',
+    class: 'watch-single-video',
     hidden: true
   };
 
-  this.staticItems_ = [
-    this.viewFilesItem_,
-    this.importPhotosToDriveItem_,
-    this.watchSingleVideoItem_
-  ];
+  this.registerAction_(this.viewFilesAction_);
+  this.registerAction_(this.importPhotosToDriveAction_);
+  this.registerAction_(this.watchSingleVideoAction_);
+
+  chrome.mediaGalleriesPrivate.getHandlers(function(handlers) {
+    for (var i = 0; i < handlers.length; i++) {
+      var action = {
+        id: handlers[i].extensionId + ':' + handlers[i].id,
+        title: handlers[i].title,
+        // TODO(mtomasz): Get the passed icon instead of the extension icon.
+        icon100:
+            'chrome://extension-icon/' + handlers[i].extensionId + '/32/1',
+        icon200:
+            'chrome://extension-icon/' + handlers[i].extensionId + '/64/1',
+        extensionId: handlers[i].extensionId,
+        actionId: handlers[i].id
+      };
+      this.registerAction_(action);
+    }
+    this.renderList_();
+  }.bind(this));
 
   // Try to render, what is already available.
   this.renderList_();
@@ -75,18 +90,6 @@ ActionChoice.prototype = { __proto__: cr.EventTarget.prototype };
  * @const
  */
 ActionChoice.PREVIEW_COUNT = 3;
-
-/**
- * Action to perform depending on an user's choice.
- * @enum {string}
- * @const
- */
-ActionChoice.Action = {
-  VIEW_FILES: 'view-files',
-  IMPORT_PHOTOS_TO_DRIVE: 'import-photos-to-drive',
-  WATCH_SINGLE_VIDEO: 'watch-single-video',
-  OPEN_IN_GPLUS_PHOTOS: 'open-in-gplus-photos'
-};
 
 /**
  * Loads app in the document body.
@@ -123,6 +126,16 @@ ActionChoice.load = function(opt_filesystem, opt_params) {
 };
 
 /**
+ * Registers an action.
+ * @param {Object} action Action item.
+ * @private
+ */
+ActionChoice.prototype.registerAction_ = function(action) {
+  this.actions_.push(action);
+  this.actionsById_[action.id] = action;
+};
+
+/**
  * Initializes the source and Drive. If the remembered choice is available,
  * then performs the action.
  * @private
@@ -136,9 +149,10 @@ ActionChoice.prototype.initializeVolumes_ = function() {
       return;
 
     // Run the remembered action if it is available.
-    if (this.rememberedChoice_ &&
-        this.enabledOptions_.indexOf(this.rememberedChoice_) != -1) {
-      this.runAction_(this.rememberedChoice_);
+    if (this.rememberedChoice_) {
+      var action = this.actionsById_[this.rememberedChoice_];
+      if (action && !action.hidden && !action.disabled)
+        this.runAction_(action);
     }
   }.bind(this);
 
@@ -201,14 +215,10 @@ ActionChoice.prototype.renderList_ = function() {
   this.list_.startBatchUpdates();
   this.list_.dataModel.splice(0, this.list_.dataModel.length);
 
-  // Add predefined items.
-  for (var i = 0; i < this.staticItems_.length; i++) {
-    if (!this.staticItems_[i].hidden)
-      this.list_.dataModel.push(this.staticItems_[i]);
+  for (var i = 0; i < this.actions_.length; i++) {
+    if (!this.actions_[i].hidden)
+      this.list_.dataModel.push(this.actions_[i]);
   }
-
-  // Add dynamic Media Galleries handlers.
-  // TODO(mtomasz): Implement this.
 
   for (var i = 0; i < this.list_.dataModel.length; i++) {
     if (this.list_.dataModel.item(i) == currentItem) {
@@ -232,8 +242,10 @@ ActionChoice.prototype.renderItem = function(item) {
   div.textContent = item.title;
   if (item.class)
     div.classList.add(item.class);
-  if (item.icon)
-    div.style.backgroundImage = 'url(' + item.icon + ')';
+  if (item.icon100 && item.icon200)
+    div.style.backgroundImage = '-webkit-image-set(' +
+        'url(' + item.icon100 + ') 1x,' +
+        'url(' + item.icon200 + ') 2x)';
   if (item.disabled)
     div.classList.add('disabled');
 
@@ -252,11 +264,10 @@ ActionChoice.prototype.renderItem = function(item) {
  */
 ActionChoice.prototype.checkDrive_ = function(callback) {
   var onMounted = function() {
-    this.importPhotosToDriveItem_.disabled = false;
-    this.importPhotosToDriveItem_.title =
+    this.importPhotosToDriveAction_.disabled = false;
+    this.importPhotosToDriveAction_.title =
         loadTimeData.getString('ACTION_CHOICE_PHOTOS_DRIVE');
     this.renderList_();
-    this.enabledOptions_.push(ActionChoice.Action.IMPORT_PHOTOS_TO_DRIVE);
     callback();
   }.bind(this);
 
@@ -280,10 +291,9 @@ ActionChoice.prototype.loadSource_ = function(source, callback) {
     var videos = results.filter(FileType.isVideo);
     if (videos.length == 1) {
       this.singleVideo_ = videos[0];
-      this.enabledOptions_.push(ActionChoice.Action.WATCH_SINGLE_VIDEO);
-      this.watchSingleVideoItem_.title = loadTimeData.getStringF(
+      this.watchSingleVideoAction_.title = loadTimeData.getStringF(
           'ACTION_CHOICE_WATCH_SINGLE_VIDEO', videos[0].name);
-      this.watchSingleVideoItem_.hidden = false;
+      this.watchSingleVideoAction_.hidden = false;
       this.renderList_();
     }
 
@@ -416,67 +426,65 @@ ActionChoice.prototype.onKeyDown_ = function(e) {
 
 /**
  * Runs an action.
- * @param {ActionChoice.Action} action Action to perform.
+ * @param {Object} action Action item to perform.
  * @private
  */
 ActionChoice.prototype.runAction_ = function(action) {
-  switch (action) {
-    case ActionChoice.Action.IMPORT_PHOTOS_TO_DRIVE:
-      var url = util.platform.getURL('photo_import.html') +
-          '#' + this.sourceEntry_.fullPath;
-      var width = 728;
-      var height = 656;
-      var top = Math.round((window.screen.availHeight - height) / 2);
-      var left = Math.round((window.screen.availWidth - width) / 2);
-      util.platform.createWindow(url,
-          {height: height, width: width, left: left, top: top});
-      this.recordAction_('import-photos-to-drive');
-      break;
-    case ActionChoice.Action.WATCH_SINGLE_VIDEO:
-      chrome.fileBrowserPrivate.viewFiles([this.singleVideo_.toURL()], 'watch',
-          function(success) {});
-      this.recordAction_('watch-single-video');
-      break;
-    case ActionChoice.Action.OPEN_IN_GPLUS_PHOTOS:
-      // TODO(mtomasz): Not yet implemented.
-      break;
-    case ActionChoice.Action.VIEW_FILES:
-    default:
-      this.viewFiles_();
-      this.recordAction_('view-files');
-      break;
+  // TODO(mtomasz): Remove these predefined actions in Apps v2.
+  if (action == this.importPhotosToDriveAction_) {
+    var url = util.platform.getURL('photo_import.html') +
+        '#' + this.sourceEntry_.fullPath;
+    var width = 728;
+    var height = 656;
+    var top = Math.round((window.screen.availHeight - height) / 2);
+    var left = Math.round((window.screen.availWidth - width) / 2);
+    util.platform.createWindow(url,
+        {height: height, width: width, left: left, top: top});
+    this.recordAction_('import-photos-to-drive');
+    this.close_();
+    return;
   }
+
+  if (action == this.watchSingleVideoAction_) {
+    chrome.fileBrowserPrivate.viewFiles([this.singleVideo_.toURL()], 'watch',
+        function(success) {});
+    this.recordAction_('watch-single-video');
+    this.close_();
+    return;
+  }
+
+  if (action == this.viewFilesAction_) {
+    this.viewFiles_();
+    this.recordAction_('view-files');
+    this.close_();
+    return;
+  }
+
+  if (!action.extensionId) {
+    console.error('Unknown predefined action.');
+    return;
+  }
+
+  // Run the media galleries handler.
+  chrome.mediaGalleriesPrivate.launchHandler(action.extensionId,
+                                             action.actionId,
+                                             this.params_.source);
   this.close_();
 };
 
 /**
- * Runs importing on Files.app depending on choice and remembers the choice.
+ * Handles accepting an action. Checks if the action is available, remembers
+ * and runs it.
  * @private
  */
 ActionChoice.prototype.acceptAction_ = function() {
-  var item = this.list_.dataModel.item(this.list_.selectionModel.selectedIndex);
-  if (!item || item.disabled)
+  var action =
+      this.list_.dataModel.item(this.list_.selectionModel.selectedIndex);
+  if (!action || action.hidden || action.disabled)
     return;
 
-  if (item == this.importPhotosToDriveItem_) {
-    this.runAction_(ActionChoice.Action.IMPORT_PHOTOS_TO_DRIVE);
-    util.storage.local.set(
-        {'action-choice': ActionChoice.Action.IMPORT_PHOTOS_TO_DRIVE});
-    return;
-  }
-
-  if (item == this.viewFilesItem_) {
-    this.runAction_(ActionChoice.Action.VIEW_FILES);
-    util.storage.local.set(
-        {'action-choice': ActionChoice.Action.VIEW_FILES});
-    return;
-  }
-
-  if (item == this.playVideoItem_) {
-    this.runAction_(ActionChoice.Action.WATCH_SINGLE_VIDEO);
-    util.storage.local.set(
-        {'action-choice': ActionChoice.Action.WATCH_SINGLE_VIDEO});
-  }
+  this.runAction_(action);
+  util.storage.local.set({'action-choice': action.id});
 };
 
 /**
