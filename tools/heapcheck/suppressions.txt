@@ -198,14 +198,14 @@
    Heapcheck:Leak
    fun:add_codeset.isra.10
    ...
-   fun:RootWindowHostLinux
+   fun:RootWindowHostX11
    fun:aura::RootWindowHost::Create
 }
 {
    bug_146464_c
    Heapcheck:Leak
    ...
-   fun:RootWindowHostLinux
+   fun:RootWindowHostX11
    fun:aura::RootWindowHost::Create
 }
 # leak in OSMesa used to run compositor_unittests in bots.
