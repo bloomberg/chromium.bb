@@ -48,11 +48,9 @@ public class NavigationPopup extends ListPopupWindow implements AdapterView.OnIt
     private static final int MAXIMUM_HISTORY_ITEMS = 8;
 
     private final Context mContext;
-    private final NavigationPopupDelegate mDelegate;
     private final NavigationClient mNavigationClient;
     private final NavigationHistory mHistory;
     private final NavigationAdapter mAdapter;
-    private final TextView mShowHistoryView;
 
     private final int mListItemHeight;
     private final int mFaviconSize;
@@ -61,29 +59,16 @@ public class NavigationPopup extends ListPopupWindow implements AdapterView.OnIt
     private int mNativeNavigationPopup;
 
     /**
-     * Delegate functionality required to operate on the history.
-     */
-    public interface NavigationPopupDelegate {
-        /** Open the complete browser history page */
-        void openHistory();
-    }
-
-    /**
      * Constructs a new popup with the given history information.
      *
      * @param context The context used for building the popup.
-     * @param delegate The delegate that handles history actions outside of the given
-     *                 {@link ContentViewCore}.
      * @param navigationClient The owner of the history being displayed.
      * @param isForward Whether to request forward navigation entries.
      */
     public NavigationPopup(
-            Context context, NavigationPopupDelegate delegate,
-            NavigationClient navigationClient, boolean isForward) {
+            Context context, NavigationClient navigationClient, boolean isForward) {
         super(context, null, android.R.attr.popupMenuStyle);
         mContext = context;
-        assert delegate != null : "NavigationPopup requires non-null delegate.";
-        mDelegate = delegate;
         mNavigationClient = navigationClient;
         mHistory = mNavigationClient.getDirectedNavigationHistory(
                 isForward, MAXIMUM_HISTORY_ITEMS);
@@ -99,21 +84,7 @@ public class NavigationPopup extends ListPopupWindow implements AdapterView.OnIt
         setHeight(ViewGroup.LayoutParams.WRAP_CONTENT);
         setOnItemClickListener(this);
 
-        FixedViewInfo footerInfo = new ListView(context).new FixedViewInfo();
-        mShowHistoryView = createListItem();
-        mShowHistoryView.setText(R.string.show_history_label);
-        footerInfo.isSelectable = true;
-        footerInfo.view = mShowHistoryView;
-        ArrayList<FixedViewInfo> footerInfoList = new ArrayList<FixedViewInfo>(1);
-        footerInfoList.add(footerInfo);
-        setAdapter(new HeaderViewListAdapter(null, footerInfoList, mAdapter));
-    }
-
-    /**
-     * @return The URL of the page for managing history.
-     */
-    public static String getHistoryUrl() {
-        return nativeGetHistoryUrl();
+        setAdapter(new HeaderViewListAdapter(null, null, mAdapter));
     }
 
     /**
@@ -161,20 +132,13 @@ public class NavigationPopup extends ListPopupWindow implements AdapterView.OnIt
             NavigationEntry entry = mHistory.getEntryAtIndex(i);
             if (TextUtils.equals(url, entry.getUrl())) entry.updateFavicon((Bitmap) favicon);
         }
-        if (TextUtils.equals(url, nativeGetHistoryUrl())) {
-            updateBitmapForTextView(mShowHistoryView, (Bitmap) favicon);
-        }
         mAdapter.notifyDataSetChanged();
     }
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        if (position == mHistory.getEntryCount()) {
-            mDelegate.openHistory();
-        } else {
-            NavigationEntry entry = (NavigationEntry) parent.getItemAtPosition(position);
-            mNavigationClient.goToNavigationIndex(entry.getIndex());
-        }
+        NavigationEntry entry = (NavigationEntry) parent.getItemAtPosition(position);
+        mNavigationClient.goToNavigationIndex(entry.getIndex());
         dismiss();
     }
 

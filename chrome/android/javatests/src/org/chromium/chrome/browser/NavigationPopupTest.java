@@ -11,7 +11,6 @@ import android.test.suitebuilder.annotation.SmallTest;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
-import org.chromium.chrome.browser.NavigationPopup.NavigationPopupDelegate;
 import org.chromium.chrome.testshell.ChromiumTestShellActivity;
 import org.chromium.chrome.testshell.ChromiumTestShellTestBase;
 import org.chromium.content.browser.NavigationClient;
@@ -55,15 +54,6 @@ public class NavigationPopupTest extends ChromiumTestShellTestBase {
         }
     }
 
-    private static class TestNavigationPopupDelegate implements NavigationPopupDelegate {
-        private boolean mHistoryRequested;
-
-        @Override
-        public void openHistory() {
-            mHistoryRequested = true;
-        }
-    }
-
     private static class TestNavigationClient implements NavigationClient {
         private TestNavigationHistory mHistory;
         private int mNavigatedIndex = INVALID_NAVIGATION_INDEX;
@@ -92,7 +82,7 @@ public class NavigationPopupTest extends ChromiumTestShellTestBase {
     public void testFaviconFetching() throws InterruptedException {
         final TestNavigationClient client = new TestNavigationClient();
         final NavigationPopup popup = new NavigationPopup(
-                mActivity, new TestNavigationPopupDelegate(), client, true);
+                mActivity, client, true);
         popup.setWidth(300);
         popup.setAnchorView(mActivity.getActiveContentView());
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -136,7 +126,7 @@ public class NavigationPopupTest extends ChromiumTestShellTestBase {
     public void testItemSelection() {
         final TestNavigationClient client = new TestNavigationClient();
         final NavigationPopup popup = new NavigationPopup(
-                mActivity, new TestNavigationPopupDelegate(), client, true);
+                mActivity, client, true);
         popup.setWidth(300);
         popup.setAnchorView(mActivity.getActiveContentView());
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -155,34 +145,6 @@ public class NavigationPopupTest extends ChromiumTestShellTestBase {
 
         assertFalse("Popup did not hide as expected.", popup.isShowing());
         assertEquals("Popup attempted to navigate to the wrong index", 5, client.mNavigatedIndex);
-    }
-
-    @SmallTest
-    @Feature({"Navigation"})
-    public void testShowHistorySelection() {
-        final TestNavigationClient client = new TestNavigationClient();
-        TestNavigationPopupDelegate delegate = new TestNavigationPopupDelegate();
-        final NavigationPopup popup = new NavigationPopup(mActivity, delegate, client, true);
-        popup.setWidth(300);
-        popup.setAnchorView(mActivity.getActiveContentView());
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                popup.show();
-            }
-        });
-
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                popup.performItemClick(2);
-            }
-        });
-
-        assertFalse("Popup did not hide as expected.", popup.isShowing());
-        assertTrue("Popup did not correctly request history.", delegate.mHistoryRequested);
-        assertEquals("Popup attempted to navigate instead of showing history",
-                INVALID_NAVIGATION_INDEX, client.mNavigatedIndex);
     }
 
 }
