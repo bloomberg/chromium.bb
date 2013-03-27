@@ -19,6 +19,7 @@
 #include "base/string16.h"
 #include "base/stringprintf.h"
 #include "base/test/test_file_util.h"
+#include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -75,6 +76,7 @@
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
@@ -88,6 +90,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
+#include "content/public/test/mock_notification_observer.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "content/test/net/url_request_failed_job.h"
@@ -120,6 +123,7 @@
 using content::BrowserThread;
 using content::URLRequestMockHTTPJob;
 using testing::AnyNumber;
+using testing::Mock;
 using testing::Return;
 using testing::_;
 
@@ -1680,6 +1684,44 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DisableAudioOutput) {
   EXPECT_CALL(*mock, OnMuteToggled()).Times(1);
   audio_handler->SetMuted(prior_state);
   audio_handler->RemoveVolumeObserver(mock.get());
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyTest, PRE_SessionLengthLimit) {
+  // Set the session start time to 2 hours ago.
+  g_browser_process->local_state()->SetInt64(
+      prefs::kSessionStartTime,
+      (base::TimeTicks::Now() - base::TimeDelta::FromHours(2))
+          .ToInternalValue());
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyTest, SessionLengthLimit) {
+  content::MockNotificationObserver observer;
+  content::NotificationRegistrar registrar;
+  registrar.Add(&observer,
+                chrome::NOTIFICATION_APP_TERMINATING,
+                content::NotificationService::AllSources());
+
+  // Set the session length limit to 3 hours. Verify that the session is not
+  // terminated.
+  EXPECT_CALL(observer, Observe(chrome::NOTIFICATION_APP_TERMINATING, _, _))
+      .Times(0);
+  PolicyMap policies;
+  policies.Set(key::kSessionLengthLimit, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER,
+               base::Value::CreateIntegerValue(180 * 60 * 1000));  // 3 hours.
+  UpdateProviderPolicy(policies);
+  base::RunLoop().RunUntilIdle();
+  Mock::VerifyAndClearExpectations(&observer);
+
+  // Decrease the session length limit to 1 hour. Verify that the session is
+  // terminated immediately.
+  EXPECT_CALL(observer, Observe(chrome::NOTIFICATION_APP_TERMINATING, _, _));
+  policies.Set(key::kSessionLengthLimit, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER,
+               base::Value::CreateIntegerValue(60 * 60 * 1000));  // 1 hour.
+  UpdateProviderPolicy(policies);
+  base::RunLoop().RunUntilIdle();
+  Mock::VerifyAndClearExpectations(&observer);
 }
 #endif
 
