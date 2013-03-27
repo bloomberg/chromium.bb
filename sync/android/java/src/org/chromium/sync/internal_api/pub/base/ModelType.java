@@ -35,11 +35,11 @@ public enum ModelType {
     /**
      * Flags to enable experimental features.
      */
-    EXPERIMENTS("EXPERIMENTS", true),
+    EXPERIMENTS("EXPERIMENTS"),
     /**
      * An object representing a set of Nigori keys.
      */
-    NIGORI("NIGORI", true),
+    NIGORI("NIGORI"),
     /**
      * A password entry.
      */
@@ -51,7 +51,27 @@ public enum ModelType {
     /**
      * A typed_url folder or a typed_url object.
      */
-    TYPED_URL("TYPED_URL");
+    TYPED_URL("TYPED_URL"),
+    /**
+     * A history delete directive object.
+     */
+    HISTORY_DELETE_DIRECTIVE("HISTORY_DELETE_DIRECTIVE"),
+    /**
+     * A device info object.
+     */
+    DEVICE_INFO("DEVICE_INFO"),
+    /**
+     * A proxy tabs object (placeholder for sessions).
+     */
+    PROXY_TABS("NULL"),
+    /**
+     * A favicon image object.
+     */
+    FAVICON_IMAGE("FAVICON_IMAGE"),
+    /**
+     * A favicon tracking object.
+     */
+    FAVICON_TRACKING("FAVICON_TRACKING");
 
     /** Special type representing all possible types. */
     public static final String ALL_TYPES_TYPE = "ALL_TYPES";
@@ -60,18 +80,8 @@ public enum ModelType {
 
     private final String mModelType;
 
-    /**
-     * True if this is a control type.
-     */
-    private final boolean mControl;
-
     ModelType(String modelType) {
-        this(modelType, false);
-    }
-
-    ModelType(String modelType, boolean control) {
         mModelType = modelType;
-        mControl = control;
     }
 
     public ObjectId toObjectId() {
@@ -130,28 +140,5 @@ public enum ModelType {
             objectIds.add(modelType.toString());
         }
         return objectIds;
-    }
-
-    /**
-     * Returns a set of all the control {@link ModelType}s.
-     */
-    public static Set<ModelType> controlTypes() {
-        Set<ModelType> controlTypes = new HashSet<ModelType>();
-        for (ModelType modelType : values()) {
-            if (modelType.mControl) {
-                controlTypes.add(modelType);
-            }
-        }
-        return controlTypes;
-    }
-
-    /**
-     * Returns a Multimap of all the {@link ModelType} groups. The key is the main
-     * {@link ModelType}, and the value is a collection of {@link ModelType}s in the same group.
-     */
-    public static Multimap<ModelType, ModelType> modelTypeGroups() {
-        Multimap<ModelType, ModelType> modelTypeGroups = HashMultimap.create();
-        modelTypeGroups.put(AUTOFILL, AUTOFILL_PROFILE);
-        return modelTypeGroups;
     }
 }

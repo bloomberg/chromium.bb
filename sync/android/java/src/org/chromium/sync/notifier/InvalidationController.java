@@ -119,7 +119,9 @@ public class InvalidationController implements ActivityStatus.StateListener {
      * @param types    Set of types for which to register. Ignored if {@code allTypes == true}.
      */
     public void setRegisteredTypes(Account account, boolean allTypes, Set<ModelType> types) {
-        Set<ModelType> typesToRegister = getModelTypeResolver().resolveModelTypes(types);
+        Set<ModelType> typesToRegister = types;
+        // Proxy types should never receive notifications.
+        typesToRegister.remove(ModelType.PROXY_TABS);
         Intent registerIntent = IntentProtocol.createRegisterIntent(account, allTypes,
                 typesToRegister);
         setDestinationClassName(registerIntent);
@@ -132,6 +134,7 @@ public class InvalidationController implements ActivityStatus.StateListener {
      * values. It can be used on startup of Chrome to ensure we always have a consistent set of
      * registrations.
      */
+    @Deprecated
     public void refreshRegisteredTypes() {
         InvalidationPreferences invalidationPreferences = new InvalidationPreferences(mContext);
         Set<String> savedSyncedTypes = invalidationPreferences.getSavedSyncedTypes();
@@ -141,6 +144,22 @@ public class InvalidationController implements ActivityStatus.StateListener {
         Set<ModelType> modelTypes = savedSyncedTypes == null ?
                 new HashSet<ModelType>() : ModelType.syncTypesToModelTypes(savedSyncedTypes);
         setRegisteredTypes(account, allTypes, modelTypes);
+    }
+
+    /**
+     * Reads all stored preferences and calls
+     * {@link #setRegisteredTypes(android.accounts.Account, boolean, java.util.Set)} with the stored
+     * values, refreshing the set of types with {@code types}. It can be used on startup of Chrome
+     * to ensure we always have a set of registrations consistent with the native code.
+     * @param types    Set of types for which to register.
+     */
+    public void refreshRegisteredTypes(Set<ModelType> types) {
+        InvalidationPreferences invalidationPreferences = new InvalidationPreferences(mContext);
+        Set<String> savedSyncedTypes = invalidationPreferences.getSavedSyncedTypes();
+        Account account = invalidationPreferences.getSavedSyncedAccount();
+        boolean allTypes = savedSyncedTypes != null &&
+                savedSyncedTypes.contains(ModelType.ALL_TYPES_TYPE);
+        setRegisteredTypes(account, allTypes, types);
     }
 
     /**
@@ -238,11 +257,6 @@ public class InvalidationController implements ActivityStatus.StateListener {
             Log.wtf(TAG, "Cannot read own application info", exception);
         }
         return null;
-    }
-
-    @VisibleForTesting
-    ModelTypeResolver getModelTypeResolver() {
-        return new ModelTypeResolverImpl();
     }
 
     @Override

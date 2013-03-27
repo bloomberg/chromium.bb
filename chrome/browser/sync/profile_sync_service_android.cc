@@ -461,12 +461,60 @@ jboolean ProfileSyncServiceAndroid::IsSyncKeystoreMigrationDone(
   return is_status_valid && !status.keystore_migration_time.is_null();
 }
 
+jlong ProfileSyncServiceAndroid::GetEnabledDataTypes(JNIEnv* env,
+                                                     jobject obj) {
+  jlong model_type_selection = 0;
+  syncer::ModelTypeSet types = sync_service_->GetPreferredDataTypes();
+  types.PutAll(syncer::ControlTypes());
+  if (types.Has(syncer::BOOKMARKS)) {
+    model_type_selection |= BOOKMARK;
+  }
+  if (types.Has(syncer::AUTOFILL)) {
+    model_type_selection |= AUTOFILL;
+  }
+  if (types.Has(syncer::AUTOFILL_PROFILE)) {
+    model_type_selection |= AUTOFILL_PROFILE;
+  }
+  if (types.Has(syncer::PASSWORDS)) {
+    model_type_selection |= PASSWORD;
+  }
+  if (types.Has(syncer::TYPED_URLS)) {
+    model_type_selection |= TYPED_URL;
+  }
+  if (types.Has(syncer::SESSIONS)) {
+    model_type_selection |= SESSION;
+  }
+  if (types.Has(syncer::HISTORY_DELETE_DIRECTIVES)) {
+    model_type_selection |= HISTORY_DELETE_DIRECTIVE;
+  }
+  if (types.Has(syncer::PROXY_TABS)) {
+    model_type_selection |= PROXY_TABS;
+  }
+  if (types.Has(syncer::FAVICON_IMAGES)) {
+    model_type_selection |= FAVICON_IMAGE;
+  }
+  if (types.Has(syncer::FAVICON_TRACKING)) {
+    model_type_selection |= FAVICON_TRACKING;
+  }
+  if (types.Has(syncer::DEVICE_INFO)) {
+    model_type_selection |= DEVICE_INFO;
+  }
+  if (types.Has(syncer::NIGORI)) {
+    model_type_selection |= NIGORI;
+  }
+  if (types.Has(syncer::EXPERIMENTS)) {
+    model_type_selection |= EXPERIMENTS;
+  }
+  return model_type_selection;
+}
+
 void ProfileSyncServiceAndroid::SetPreferredDataTypes(
     JNIEnv* env, jobject obj,
     jboolean sync_everything,
     jlong model_type_selection) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   syncer::ModelTypeSet types;
+  // Note: only user selectable types should be included here.
   if (model_type_selection & AUTOFILL)
     types.Put(syncer::AUTOFILL);
   if (model_type_selection & BOOKMARK)
@@ -477,6 +525,7 @@ void ProfileSyncServiceAndroid::SetPreferredDataTypes(
     types.Put(syncer::SESSIONS);
   if (model_type_selection & TYPED_URL)
     types.Put(syncer::TYPED_URLS);
+  DCHECK(syncer::UserSelectableTypes().HasAll(types));
   sync_service_->OnUserChoseDatatypes(sync_everything, types);
 }
 
@@ -509,41 +558,6 @@ jboolean ProfileSyncServiceAndroid::HasKeepEverythingSynced(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   browser_sync::SyncPrefs prefs(profile_->GetPrefs());
   return prefs.HasKeepEverythingSynced();
-}
-
-jboolean ProfileSyncServiceAndroid::IsAutofillSyncEnabled(
-    JNIEnv* env, jobject obj) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return HasKeepEverythingSynced(env, obj) ||
-      sync_service_->GetPreferredDataTypes().Has(syncer::AUTOFILL);
-}
-
-jboolean ProfileSyncServiceAndroid::IsBookmarkSyncEnabled(
-    JNIEnv* env, jobject obj) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return HasKeepEverythingSynced(env, obj) ||
-      sync_service_->GetPreferredDataTypes().Has(syncer::BOOKMARKS);
-}
-
-jboolean ProfileSyncServiceAndroid::IsPasswordSyncEnabled(
-    JNIEnv* env, jobject obj) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return HasKeepEverythingSynced(env, obj) ||
-      sync_service_->GetPreferredDataTypes().Has(syncer::PASSWORDS);
-}
-
-jboolean ProfileSyncServiceAndroid::IsTypedUrlSyncEnabled(
-    JNIEnv* env, jobject obj) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return HasKeepEverythingSynced(env, obj) ||
-      sync_service_->GetPreferredDataTypes().Has(syncer::TYPED_URLS);
-}
-
-jboolean ProfileSyncServiceAndroid::IsSessionSyncEnabled(
-    JNIEnv* env, jobject obj) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return HasKeepEverythingSynced(env, obj) ||
-      sync_service_->GetPreferredDataTypes().Has(syncer::SESSIONS);
 }
 
 jboolean ProfileSyncServiceAndroid::HasUnrecoverableError(

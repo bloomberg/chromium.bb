@@ -149,6 +149,12 @@ class ProfileSyncServiceAndroid : public ProfileSyncServiceObserver {
   // Returns true if sync has been migrated.
   jboolean IsSyncKeystoreMigrationDone(JNIEnv* env, jobject obj);
 
+  // Get the set of enabled data types. These are the types currently both
+  // registered and preferred. Note that control types are always included here.
+  // Returns a bit map of the values from
+  // profile_sync_service_model_type_selection_android.h.
+  jlong GetEnabledDataTypes(JNIEnv* env, jobject obj);
+
   // Enables the passed data types.
   // If |sync_everything| is true, then all data types are enabled and the
   // contents of |model_type_selection| is
@@ -172,21 +178,6 @@ class ProfileSyncServiceAndroid : public ProfileSyncServiceObserver {
 
   // Returns true if sync is configured to "sync everything".
   jboolean HasKeepEverythingSynced(JNIEnv* env, jobject obj);
-
-  // Returns true if the user has autofill sync enabled.
-  jboolean IsAutofillSyncEnabled(JNIEnv* env, jobject obj);
-
-  // Returns true if the user has bookmark sync enabled.
-  jboolean IsBookmarkSyncEnabled(JNIEnv* env, jobject obj);
-
-  // Returns true if the user has password sync enabled.
-  jboolean IsPasswordSyncEnabled(JNIEnv* env, jobject obj);
-
-  // Returns true if the user has typed URL sync enabled.
-  jboolean IsTypedUrlSyncEnabled(JNIEnv* env, jobject obj);
-
-  // Returns true if the user has session sync enabled.
-  jboolean IsSessionSyncEnabled(JNIEnv* env, jobject obj);
 
   // Turns on encryption for all data types. This is an asynchronous operation
   // which happens after the current configuration pass is done, so a call to

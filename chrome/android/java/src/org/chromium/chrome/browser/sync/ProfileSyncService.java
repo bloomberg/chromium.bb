@@ -420,22 +420,47 @@ public class ProfileSyncService {
      * @return Set of enabled types.
      */
     public Set<ModelType> getPreferredDataTypes() {
+        long modelTypeSelection =
+            nativeGetEnabledDataTypes(mNativeProfileSyncServiceAndroid);
         Set<ModelType> syncTypes = new HashSet<ModelType>();
-
-        if (nativeIsAutofillSyncEnabled(mNativeProfileSyncServiceAndroid)) {
-            syncTypes.add(ModelType.AUTOFILL);
+        if ((modelTypeSelection & ModelTypeSelection.AUTOFILL) != 0) {
+          syncTypes.add(ModelType.AUTOFILL);
         }
-        if (nativeIsBookmarkSyncEnabled(mNativeProfileSyncServiceAndroid)) {
-            syncTypes.add(ModelType.BOOKMARK);
+        if ((modelTypeSelection & ModelTypeSelection.AUTOFILL_PROFILE) != 0) {
+          syncTypes.add(ModelType.AUTOFILL_PROFILE);
         }
-        if (nativeIsPasswordSyncEnabled(mNativeProfileSyncServiceAndroid)) {
-            syncTypes.add(ModelType.PASSWORD);
+        if ((modelTypeSelection & ModelTypeSelection.BOOKMARK) != 0) {
+          syncTypes.add(ModelType.BOOKMARK);
         }
-        if (nativeIsTypedUrlSyncEnabled(mNativeProfileSyncServiceAndroid)) {
-            syncTypes.add(ModelType.TYPED_URL);
+        if ((modelTypeSelection & ModelTypeSelection.EXPERIMENTS) != 0) {
+          syncTypes.add(ModelType.EXPERIMENTS);
         }
-        if (nativeIsSessionSyncEnabled(mNativeProfileSyncServiceAndroid)) {
-            syncTypes.add(ModelType.SESSION);
+        if ((modelTypeSelection & ModelTypeSelection.NIGORI) != 0) {
+          syncTypes.add(ModelType.NIGORI);
+        }
+        if ((modelTypeSelection & ModelTypeSelection.PASSWORD) != 0) {
+          syncTypes.add(ModelType.PASSWORD);
+        }
+        if ((modelTypeSelection & ModelTypeSelection.SESSION) != 0) {
+          syncTypes.add(ModelType.SESSION);
+        }
+        if ((modelTypeSelection & ModelTypeSelection.TYPED_URL) != 0) {
+          syncTypes.add(ModelType.TYPED_URL);
+        }
+        if ((modelTypeSelection & ModelTypeSelection.HISTORY_DELETE_DIRECTIVE) != 0) {
+          syncTypes.add(ModelType.HISTORY_DELETE_DIRECTIVE);
+        }
+        if ((modelTypeSelection & ModelTypeSelection.DEVICE_INFO) != 0) {
+          syncTypes.add(ModelType.DEVICE_INFO);
+        }
+        if ((modelTypeSelection & ModelTypeSelection.PROXY_TABS) != 0) {
+          syncTypes.add(ModelType.PROXY_TABS);
+        }
+        if ((modelTypeSelection & ModelTypeSelection.FAVICON_IMAGE) != 0) {
+          syncTypes.add(ModelType.FAVICON_IMAGE);
+        }
+        if ((modelTypeSelection & ModelTypeSelection.FAVICON_TRACKING) != 0) {
+          syncTypes.add(ModelType.FAVICON_TRACKING);
         }
         return syncTypes;
     }
@@ -577,6 +602,8 @@ public class ProfileSyncService {
     private native String nativeGetSyncEnterCustomPassphraseBodyText(
             int nativeProfileSyncServiceAndroid);
     private native boolean nativeIsSyncKeystoreMigrationDone(int nativeProfileSyncServiceAndroid);
+    private native long nativeGetEnabledDataTypes(
+        int nativeProfileSyncServiceAndroid);
     private native void nativeSetPreferredDataTypes(
             int nativeProfileSyncServiceAndroid, boolean syncEverything, long modelTypeSelection);
     private native void nativeSetSetupInProgress(
@@ -584,11 +611,6 @@ public class ProfileSyncService {
     private native void nativeSetSyncSetupCompleted(int nativeProfileSyncServiceAndroid);
     private native boolean nativeHasSyncSetupCompleted(int nativeProfileSyncServiceAndroid);
     private native boolean nativeHasKeepEverythingSynced(int nativeProfileSyncServiceAndroid);
-    private native boolean nativeIsAutofillSyncEnabled(int nativeProfileSyncServiceAndroid);
-    private native boolean nativeIsBookmarkSyncEnabled(int nativeProfileSyncServiceAndroid);
-    private native boolean nativeIsPasswordSyncEnabled(int nativeProfileSyncServiceAndroid);
-    private native boolean nativeIsTypedUrlSyncEnabled(int nativeProfileSyncServiceAndroid);
-    private native boolean nativeIsSessionSyncEnabled(int nativeProfileSyncServiceAndroid);
     private native boolean nativeHasUnrecoverableError(int nativeProfileSyncServiceAndroid);
     private native String nativeGetAboutInfoForTest(int nativeProfileSyncServiceAndroid);
     private native void nativeOAuth2TokenFetched(
