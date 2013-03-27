@@ -1425,6 +1425,8 @@ bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
     if (flavor == -1) {
       *exit_code = installer::UNKNOWN_STATUS;
     } else {
+      // This code is called (via setup.exe relaunch) only if a product is known
+      // to run user experiments, so no check is required.
       const Products& products = installer_state->products();
       for (Products::const_iterator it = products.begin(); it < products.end();
            ++it) {

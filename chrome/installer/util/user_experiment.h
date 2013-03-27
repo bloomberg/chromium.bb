@@ -60,7 +60,7 @@ void LaunchBrowserUserExperiment(const CommandLine& base_command,
 // function just performs it.
 void InactiveUserToastExperiment(int flavor,
                                  const string16& experiment_group,
-                                 const Product& installation,
+                                 const Product& product,
                                  const base::FilePath& application_path);
 
 }  // namespace installer
