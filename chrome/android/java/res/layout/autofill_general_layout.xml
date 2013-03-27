@@ -9,6 +9,12 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:columnCount="4">
+    <CheckBox
+        android:id="@+id/top_notification"
+        android:padding="5dp"
+        android:textSize="12sp"
+        android:visibility="gone"
+        android:layout_columnSpan="4"/>
     <Spinner
         android:layout_margin="5dp"
         android:id="@+id/email_spinner"
@@ -54,12 +60,10 @@
         android:id="@+id/address_spinner"
         android:layout_gravity="fill_horizontal"
         android:layout_columnSpan="4"/>
-     <CheckBox
-        android:id="@+id/check_box"
-        android:layout_margin="5dp"
+    <LinearLayout
+        android:id="@+id/bottom_notifications"
         android:visibility="gone"
-        android:textSize="12sp"
-        android:text="@string/autofill_use_wallet"
+        android:layout_gravity="fill_horizontal"
         android:layout_columnSpan="4"/>
     <View
         android:id="@+id/line_bottom"

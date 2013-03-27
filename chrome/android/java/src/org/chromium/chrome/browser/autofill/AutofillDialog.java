@@ -11,11 +11,15 @@ import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.res.Resources;
 import android.text.TextUtils;
+import android.util.TypedValue;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ScrollView;
+import android.widget.TextView;
 
 import org.chromium.chrome.R;
 
@@ -244,7 +248,32 @@ public class AutofillDialog extends AlertDialog
      * @param notifications Array of notifications to be displayed in the dialog.
      */
     public void updateNotificationArea(AutofillDialogNotification[] notifications) {
-        // TODO(yusufo): Start displaying these notifications.
+        for (AutofillDialogNotification notification: notifications) {
+            if (notification.mHasArrow && notification.mHasCheckbox) {
+                // Assuming that there will always be only one top notification.
+                CheckBox checkBox = ((CheckBox) findViewById(R.id.top_notification));
+                checkBox.setBackgroundColor(notification.mBackgroundColor);
+                checkBox.setTextColor(notification.mTextColor);
+                checkBox.setText(notification.mText);
+                checkBox.setVisibility(View.VISIBLE);
+            } else {
+                TextView notificationView = new TextView(getContext());
+                notificationView.setBackgroundColor(notification.mBackgroundColor);
+                notificationView.setTextColor(notification.mTextColor);
+                notificationView.setText(notification.mText);
+                notificationView.setTextSize(TypedValue.COMPLEX_UNIT_PX,
+                        getContext().getResources().getDimension(
+                                R.dimen.autofill_notification_text_size));
+                int padding = getContext().getResources().
+                        getDimensionPixelSize(R.dimen.autofill_notification_padding);
+                notificationView.setPadding(padding, padding, padding, padding);
+
+                ViewGroup notificationsContainer =
+                        ((ViewGroup) findViewById(R.id.bottom_notifications));
+                notificationsContainer.addView(notificationView);
+                notificationsContainer.setVisibility(View.VISIBLE);
+            }
+        }
     }
 
     /**
