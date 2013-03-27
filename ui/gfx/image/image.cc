@@ -119,11 +119,13 @@ scoped_refptr<base::RefCountedMemory> Get1xPNGBytesFromUIImage(
 // Caller takes ownership of the returned UIImage.
 UIImage* CreateUIImageFromPNG(
     const std::vector<gfx::ImagePNGRep>& image_png_reps);
+gfx::Size UIImageSize(UIImage* image);
 #elif defined(OS_MACOSX)
 scoped_refptr<base::RefCountedMemory> Get1xPNGBytesFromNSImage(
     NSImage* nsimage);
 // Caller takes ownership of the returned NSImage.
 NSImage* NSImageFromPNG(const std::vector<gfx::ImagePNGRep>& image_png_reps);
+gfx::Size NSImageSize(NSImage* image);
 #endif // defined(OS_MACOSX)
 
 #if defined(OS_IOS)
@@ -237,6 +239,10 @@ class ImageRep {
 
   Image::RepresentationType type() const { return type_; }
 
+  virtual int Width() const = 0;
+  virtual int Height() const = 0;
+  virtual gfx::Size Size() const = 0;
+
  private:
   Image::RepresentationType type_;
 };
@@ -254,10 +260,37 @@ class ImageRepPNG : public ImageRep {
   virtual ~ImageRepPNG() {
   }
 
-  const std::vector<ImagePNGRep>& image_reps() { return image_png_reps_; }
+  virtual int Width() const {
+    return Size().width();
+  }
+
+  virtual int Height() const {
+    return Size().height();
+  }
+
+  virtual gfx::Size Size() const {
+    // Read the PNG data to get the image size, caching it.
+    if (!size_cache_) {
+      for (std::vector<ImagePNGRep>::const_iterator it = image_reps().begin();
+           it != image_reps().end(); ++it) {
+        if (it->scale_factor == ui::SCALE_FACTOR_100P) {
+          size_cache_.reset(new gfx::Size(it->Size()));
+          return *size_cache_;
+        }
+      }
+      size_cache_.reset(new gfx::Size);
+    }
+
+    return *size_cache_;
+  }
+
+  const std::vector<ImagePNGRep>& image_reps() const { return image_png_reps_; }
 
  private:
   std::vector<ImagePNGRep> image_png_reps_;
+
+  // Cached to avoid having to parse the raw data multiple times.
+  mutable scoped_ptr<gfx::Size> size_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageRepPNG);
 };
@@ -271,6 +304,18 @@ class ImageRepSkia : public ImageRep {
   }
 
   virtual ~ImageRepSkia() {
+  }
+
+  virtual int Width() const {
+    return image_->width();
+  }
+
+  virtual int Height() const {
+    return image_->height();
+  }
+
+  virtual gfx::Size Size() const {
+    return image_->size();
   }
 
   ImageSkia* image() { return image_.get(); }
@@ -297,6 +342,18 @@ class ImageRepGdk : public ImageRep {
     }
   }
 
+  virtual int Width() const {
+    return gdk_pixbuf_get_width(pixbuf_);
+  }
+
+  virtual int Height() const {
+    return gdk_pixbuf_get_height(pixbuf_);
+  }
+
+  virtual gfx::Size Size() const {
+    return gfx::Size(Width(), Height());
+  }
+
   GdkPixbuf* pixbuf() const { return pixbuf_; }
 
  private:
@@ -317,6 +374,18 @@ class ImageRepCairo : public ImageRep {
 
   virtual ~ImageRepCairo() {
     delete cairo_cache_;
+  }
+
+  virtual int Width() const {
+    return cairo_cache_->Width();
+  }
+
+  virtual int Height() const {
+    return cairo_cache_->Height();
+  }
+
+  virtual gfx::Size Size() const {
+    return gfx::Size(Width(), Height());
   }
 
   CairoCachedSurface* surface() const { return cairo_cache_; }
@@ -342,6 +411,18 @@ class ImageRepCocoaTouch : public ImageRep {
     image_ = nil;
   }
 
+  virtual int Width() const {
+    return Size().width();
+  }
+
+  virtual int Height() const {
+    return Size().height();
+  }
+
+  virtual gfx::Size Size() const {
+    return internal::UIImageSize(image_);
+  }
+
   UIImage* image() const { return image_; }
 
  private:
@@ -361,6 +442,18 @@ class ImageRepCocoa : public ImageRep {
   virtual ~ImageRepCocoa() {
     base::mac::NSObjectRelease(image_);
     image_ = nil;
+  }
+
+  virtual int Width() const {
+    return Size().width();
+  }
+
+  virtual int Height() const {
+    return Size().height();
+  }
+
+  virtual gfx::Size Size() const {
+    return internal::NSImageSize(image_);
   }
 
   NSImage* image() const { return image_; }
@@ -779,6 +872,24 @@ size_t Image::RepresentationCount() const {
 
 bool Image::IsEmpty() const {
   return RepresentationCount() == 0;
+}
+
+int Image::Width() const {
+  if (IsEmpty())
+    return 0;
+  return GetRepresentation(DefaultRepresentationType(), true)->Width();
+}
+
+int Image::Height() const {
+  if (IsEmpty())
+    return 0;
+  return GetRepresentation(DefaultRepresentationType(), true)->Height();
+}
+
+gfx::Size Image::Size() const {
+  if (IsEmpty())
+    return gfx::Size();
+  return GetRepresentation(DefaultRepresentationType(), true)->Size();
 }
 
 void Image::SwapRepresentations(gfx::Image* other) {

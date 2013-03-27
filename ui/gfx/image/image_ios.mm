@@ -15,6 +15,7 @@
 #include "ui/gfx/image/image_png_rep.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_util_ios.h"
+#include "ui/gfx/size.h"
 
 namespace gfx {
 namespace internal {
@@ -125,6 +126,12 @@ ImageSkia* ImageSkiaFromPNG(
       image_skia->AddRepresentation(image_skia_rep);
   }
   return image_skia;
+}
+
+gfx::Size UIImageSize(UIImage* image) {
+  int width = static_cast<int>(image.size.width);
+  int height = static_cast<int>(image.size.height);
+  return gfx::Size(width, height);
 }
 
 } // namespace internal

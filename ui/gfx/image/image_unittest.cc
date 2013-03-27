@@ -40,18 +40,28 @@ TEST_F(ImageTest, EmptyImage) {
   gfx::Image image;
   EXPECT_EQ(0U, image.RepresentationCount());
   EXPECT_TRUE(image.IsEmpty());
+  EXPECT_EQ(0, image.Width());
+  EXPECT_EQ(0, image.Height());
 
   // Test the copy constructor.
   gfx::Image imageCopy(image);
   EXPECT_TRUE(imageCopy.IsEmpty());
+  EXPECT_EQ(0, imageCopy.Width());
+  EXPECT_EQ(0, imageCopy.Height());
 
   // Test calling SwapRepresentations() with an empty image.
   gfx::Image image2(gt::CreateImageSkia(25, 25));
   EXPECT_FALSE(image2.IsEmpty());
+  EXPECT_EQ(25, image2.Width());
+  EXPECT_EQ(25, image2.Height());
 
   image.SwapRepresentations(&image2);
   EXPECT_FALSE(image.IsEmpty());
+  EXPECT_EQ(25, image.Width());
+  EXPECT_EQ(25, image.Height());
   EXPECT_TRUE(image2.IsEmpty());
+  EXPECT_EQ(0, image2.Width());
+  EXPECT_EQ(0, image2.Height());
 }
 
 // Test constructing a gfx::Image from an empty PlatformImage.
@@ -59,6 +69,8 @@ TEST_F(ImageTest, EmptyImageFromEmptyPlatformImage) {
 #if defined(OS_IOS) || defined(OS_MACOSX) || defined(TOOLKIT_GTK)
   gfx::Image image1(NULL);
   EXPECT_TRUE(image1.IsEmpty());
+  EXPECT_EQ(0, image1.Width());
+  EXPECT_EQ(0, image1.Height());
   EXPECT_EQ(0U, image1.RepresentationCount());
 #endif
 
@@ -67,11 +79,15 @@ TEST_F(ImageTest, EmptyImageFromEmptyPlatformImage) {
   EXPECT_TRUE(image_skia.isNull());
   gfx::Image image2(image_skia);
   EXPECT_TRUE(image2.IsEmpty());
+  EXPECT_EQ(0, image2.Width());
+  EXPECT_EQ(0, image2.Height());
   EXPECT_EQ(0U, image2.RepresentationCount());
 
   std::vector<gfx::ImagePNGRep> image_png_reps;
   gfx::Image image3(image_png_reps);
   EXPECT_TRUE(image3.IsEmpty());
+  EXPECT_EQ(0, image3.Width());
+  EXPECT_EQ(0, image3.Height());
   EXPECT_EQ(0U, image3.RepresentationCount());
 }
 
@@ -92,8 +108,23 @@ TEST_F(ImageTest, EmptyImageFromObviouslyInvalidPNGImage) {
   EXPECT_EQ(0U, image2.RepresentationCount());
 }
 
+// Test the Width, Height and Size of an empty and non-empty image.
+TEST_F(ImageTest, ImageSize) {
+  gfx::Image image;
+  EXPECT_EQ(0, image.Width());
+  EXPECT_EQ(0, image.Height());
+  EXPECT_EQ(gfx::Size(0, 0), image.Size());
+
+  gfx::Image image2(gt::CreateImageSkia(10, 25));
+  EXPECT_EQ(10, image2.Width());
+  EXPECT_EQ(25, image2.Height());
+  EXPECT_EQ(gfx::Size(10, 25), image2.Size());
+}
+
 TEST_F(ImageTest, SkiaToSkia) {
   gfx::Image image(gt::CreateImageSkia(25, 25));
+  EXPECT_EQ(25, image.Width());
+  EXPECT_EQ(25, image.Height());
 
   // Test ToImageSkia().
   const gfx::ImageSkia* image_skia1 = image.ToImageSkia();
@@ -145,6 +176,9 @@ TEST_F(ImageTest, ImageNo1xToPNG) {
   image_png_reps.push_back(gfx::ImagePNGRep(
       gt::CreatePNGBytes(kSize2x), ui::SCALE_FACTOR_200P));
   gfx::Image image2(image_png_reps);
+  EXPECT_FALSE(image2.IsEmpty());
+  EXPECT_EQ(0, image2.Width());
+  EXPECT_EQ(0, image2.Height());
   scoped_refptr<base::RefCountedMemory> png_bytes2 = image2.As1xPNGBytes();
   EXPECT_TRUE(png_bytes2.get());
   EXPECT_FALSE(png_bytes2->size());
@@ -163,6 +197,9 @@ TEST_F(ImageTest, CreateExtractPNGBytes) {
       gt::CreatePNGBytes(kSize2x), ui::SCALE_FACTOR_200P));
 
   gfx::Image image(image_png_reps);
+  EXPECT_FALSE(image.IsEmpty());
+  EXPECT_EQ(25, image.Width());
+  EXPECT_EQ(25, image.Height());
 
   EXPECT_TRUE(std::equal(bytes1x->front(), bytes1x->front() + bytes1x->size(),
                          image.As1xPNGBytes()->front()));
@@ -309,6 +346,8 @@ TEST_F(ImageTest, PNGDecodeToPlatformFailure) {
 
 TEST_F(ImageTest, SkiaToPlatform) {
   gfx::Image image(gt::CreateImageSkia(25, 25));
+  EXPECT_EQ(25, image.Width());
+  EXPECT_EQ(25, image.Height());
   const size_t kRepCount = kUsesSkiaNatively ? 1U : 2U;
 
   EXPECT_TRUE(image.HasRepresentation(gfx::Image::kImageRepSkia));
@@ -324,10 +363,14 @@ TEST_F(ImageTest, SkiaToPlatform) {
 
   EXPECT_TRUE(image.HasRepresentation(gfx::Image::kImageRepSkia));
   EXPECT_TRUE(image.HasRepresentation(gt::GetPlatformRepresentationType()));
+  EXPECT_EQ(25, image.Width());
+  EXPECT_EQ(25, image.Height());
 }
 
 TEST_F(ImageTest, PlatformToSkia) {
   gfx::Image image(gt::CreatePlatformImage());
+  EXPECT_EQ(25, image.Width());
+  EXPECT_EQ(25, image.Height());
   const size_t kRepCount = kUsesSkiaNatively ? 1U : 2U;
 
   EXPECT_TRUE(image.HasRepresentation(gt::GetPlatformRepresentationType()));
@@ -343,10 +386,14 @@ TEST_F(ImageTest, PlatformToSkia) {
   EXPECT_EQ(kRepCount, image.RepresentationCount());
 
   EXPECT_TRUE(image.HasRepresentation(gfx::Image::kImageRepSkia));
+  EXPECT_EQ(25, image.Width());
+  EXPECT_EQ(25, image.Height());
 }
 
 TEST_F(ImageTest, PlatformToPlatform) {
   gfx::Image image(gt::CreatePlatformImage());
+  EXPECT_EQ(25, image.Width());
+  EXPECT_EQ(25, image.Height());
   EXPECT_TRUE(gt::IsPlatformImageValid(gt::ToPlatformType(image)));
   EXPECT_EQ(1U, image.RepresentationCount());
 
@@ -357,6 +404,8 @@ TEST_F(ImageTest, PlatformToPlatform) {
   EXPECT_TRUE(image.HasRepresentation(gt::GetPlatformRepresentationType()));
   if (!kUsesSkiaNatively)
     EXPECT_FALSE(image.HasRepresentation(gfx::Image::kImageRepSkia));
+  EXPECT_EQ(25, image.Width());
+  EXPECT_EQ(25, image.Height());
 }
 
 TEST_F(ImageTest, PlatformToSkiaToCopy) {
@@ -547,7 +596,11 @@ TEST_F(ImageTest, Copy) {
   const size_t kRepCount = kUsesSkiaNatively ? 1U : 2U;
 
   gfx::Image image1(gt::CreateImageSkia(25, 25));
+  EXPECT_EQ(25, image1.Width());
+  EXPECT_EQ(25, image1.Height());
   gfx::Image image2(image1);
+  EXPECT_EQ(25, image2.Width());
+  EXPECT_EQ(25, image2.Height());
 
   EXPECT_EQ(1U, image1.RepresentationCount());
   EXPECT_EQ(1U, image2.RepresentationCount());
@@ -560,7 +613,14 @@ TEST_F(ImageTest, Copy) {
 
 TEST_F(ImageTest, Assign) {
   gfx::Image image1(gt::CreatePlatformImage());
-  gfx::Image image2 = image1;
+  EXPECT_EQ(25, image1.Width());
+  EXPECT_EQ(25, image1.Height());
+  // Assignment must be on a separate line to the declaration in order to test
+  // assignment operator (instead of copy constructor).
+  gfx::Image image2;
+  image2 = image1;
+  EXPECT_EQ(25, image2.Width());
+  EXPECT_EQ(25, image2.Height());
 
   EXPECT_EQ(1U, image1.RepresentationCount());
   EXPECT_EQ(1U, image2.RepresentationCount());
@@ -590,6 +650,8 @@ TEST_F(ImageTest, MultiResolutionImageSkia) {
   // Check that the image has a single representation.
   gfx::Image image(image_skia);
   EXPECT_EQ(1u, image.RepresentationCount());
+  EXPECT_EQ(kWidth1x, image.Width());
+  EXPECT_EQ(kHeight1x, image.Height());
 }
 
 TEST_F(ImageTest, RemoveFromMultiResolutionImageSkia) {

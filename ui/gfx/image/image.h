@@ -38,6 +38,7 @@ class ImageMacTest;
 namespace gfx {
 struct ImagePNGRep;
 class ImageSkia;
+class Size;
 
 #if defined(TOOLKIT_GTK)
 class CairoCachedSurface;
@@ -165,6 +166,11 @@ class UI_EXPORT Image {
 
   // Returns true if this Image has no representations.
   bool IsEmpty() const;
+
+  // Width and height of image in DIP coordinate system.
+  int Width() const;
+  int Height() const;
+  gfx::Size Size() const;
 
   // Swaps this image's internal representations with |other|.
   void SwapRepresentations(gfx::Image* other);

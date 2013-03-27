@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_nsobject.h"
 #include "ui/gfx/image/image_png_rep.h"
+#include "ui/gfx/size.h"
 
 namespace gfx {
 namespace internal {
@@ -78,6 +79,13 @@ NSImage* NSImageFromPNG(const std::vector<gfx::ImagePNGRep>& image_png_reps) {
   }
 
   return image.release();
+}
+
+gfx::Size NSImageSize(NSImage* image) {
+  NSSize size = [image size];
+  int width = static_cast<int>(size.width);
+  int height = static_cast<int>(size.height);
+  return gfx::Size(width, height);
 }
 
 } // namespace internal

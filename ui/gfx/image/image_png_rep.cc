@@ -4,6 +4,10 @@
 
 #include "ui/gfx/image/image_png_rep.h"
 
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/size.h"
+
 namespace gfx {
 
 ImagePNGRep::ImagePNGRep()
@@ -18,6 +22,19 @@ ImagePNGRep::ImagePNGRep(const scoped_refptr<base::RefCountedMemory>& data,
 }
 
 ImagePNGRep::~ImagePNGRep() {
+}
+
+gfx::Size ImagePNGRep::Size() const {
+  // The only way to get the width and height of a raw PNG stream, at least
+  // using the gfx::PNGCodec API, is to decode the whole thing.
+  CHECK(raw_data.get());
+  SkBitmap bitmap;
+  if (!gfx::PNGCodec::Decode(raw_data->front(), raw_data->size(),
+                             &bitmap)) {
+    LOG(ERROR) << "Unable to decode PNG.";
+    return gfx::Size(0, 0);
+  }
+  return gfx::Size(bitmap.width(), bitmap.height());
 }
 
 }  // namespace gfx

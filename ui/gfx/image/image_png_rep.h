@@ -10,6 +10,7 @@
 #include "ui/base/ui_export.h"
 
 namespace gfx {
+class Size;
 
 // An ImagePNGRep represents a bitmap's png encoded data and the scale factor it
 // was intended for.
@@ -18,6 +19,12 @@ struct UI_EXPORT ImagePNGRep {
   ImagePNGRep(const scoped_refptr<base::RefCountedMemory>& data,
               ui::ScaleFactor data_scale_factor);
   ~ImagePNGRep();
+
+  // Width and height of the image, in pixels.
+  // If the image is invalid, returns gfx::Size(0, 0).
+  // Warning: This operation processes the entire image stream, so its result
+  // should be cached if it is needed multiple times.
+  gfx::Size Size() const;
 
   scoped_refptr<base::RefCountedMemory> raw_data;
   ui::ScaleFactor scale_factor;
