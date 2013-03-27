@@ -79,8 +79,10 @@ class PartialScreenshotView::OverlayDelegate
 };
 
 // static
-void PartialScreenshotView::StartPartialScreenshot(
+std::vector<PartialScreenshotView*>
+PartialScreenshotView::StartPartialScreenshot(
     ScreenshotDelegate* screenshot_delegate) {
+  std::vector<PartialScreenshotView*> views;
   OverlayDelegate* overlay_delegate = new OverlayDelegate();
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   for (Shell::RootWindowList::iterator it = root_windows.begin();
@@ -88,7 +90,9 @@ void PartialScreenshotView::StartPartialScreenshot(
     PartialScreenshotView* new_view = new PartialScreenshotView(
         overlay_delegate, screenshot_delegate);
     new_view->Init(*it);
+    views.push_back(new_view);
   }
+  return views;
 }
 
 PartialScreenshotView::PartialScreenshotView(

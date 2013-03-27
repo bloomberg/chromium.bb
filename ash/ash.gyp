@@ -662,6 +662,7 @@
         'wm/frame_painter_unittest.cc',
         'wm/panels/panel_layout_manager_unittest.cc',
         'wm/panels/panel_window_resizer_unittest.cc',
+        'wm/partial_screenshot_view_unittest.cc',
         'wm/power_button_controller_unittest.cc',
         'wm/screen_dimmer_unittest.cc',
         'wm/session_state_controller_impl2_unittest.cc',
