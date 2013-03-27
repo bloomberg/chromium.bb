@@ -9,7 +9,6 @@ import android.test.TouchUtils;
 import android.view.KeyEvent;
 
 import org.chromium.android_webview.test.util.VideoTestWebServer;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 
 /**
@@ -17,12 +16,8 @@ import org.chromium.base.test.util.Feature;
  */
 public class AwContentsClientFullScreenVideoTest extends AwTestBase {
 
-    /*
-     * @Feature({"AndroidWebView"})
-     * @SmallTest
-     * http://crbug.com/180575
-     */
-    @DisabledTest
+    @Feature({"AndroidWebView"})
+    @SmallTest
     public void testOnShowAndHideCustomView() throws Throwable {
         FullScreenVideoTestAwContentsClient contentsClient =
                 new FullScreenVideoTestAwContentsClient(getActivity());
