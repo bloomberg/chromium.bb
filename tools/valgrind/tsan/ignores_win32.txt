@@ -43,3 +43,6 @@ fun_r:*PlatformThread*SetName*
 fun_r:base::Histogram::Add
 fun_r:base::HistogramSamples::Add
 fun_r:base::HistogramBase::AddTime
+
+# ffmpegsumo.dll appears to read a few bytes beyond the end of the buffer.
+fun:_ff_prefetch_mmxext
