@@ -9,6 +9,7 @@
 #include "base/process_util.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/scoped_process_information.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/installer/launcher_support/chrome_launcher_support.h"
 #include "cloud_print/service/service_switches.h"
 
@@ -82,8 +83,8 @@ void ChromeLauncher::Run() {
 
     if (!chrome_path.empty()) {
       CommandLine cmd(chrome_path);
-      cmd.AppendSwitchASCII(kChromeTypeSwitch, "service");
-      cmd.AppendSwitchPath(kUserDataDirSwitch, user_data_);
+      cmd.AppendSwitchASCII(switches::kProcessType, switches::kServiceProcess);
+      cmd.AppendSwitchPath(switches::kUserDataDir, user_data_);
       base::win::ScopedHandle chrome_handle;
       base::Time started = base::Time::Now();
       DWORD thread_id = 0;

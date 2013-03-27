@@ -32,6 +32,7 @@
     {
       'target_name': 'cloud_print_service_lib',
       'type': 'static_library',
+      'defines': ['COMPILE_CONTENT_STATICALLY'],
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
@@ -44,10 +45,12 @@
           'dependencies': [
             '<(DEPTH)/chrome/chrome.gyp:chrome_version_header',
             '<(DEPTH)/chrome/chrome.gyp:launcher_support',
+            '<(DEPTH)/chrome/common_constants.gyp:common_constants',
           ],
         }],
       ],
       'sources': [
+        '<(DEPTH)/content/public/common/content_switches.cc',
         'service_state.cc',
         'service_state.h',
         'service_switches.cc',

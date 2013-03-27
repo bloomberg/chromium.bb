@@ -23,8 +23,8 @@
 #include "base/win/registry.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/installer/launcher_support/chrome_launcher_support.h"
-#include "cloud_print/virtual_driver/virtual_driver_switches.h"
 #include "cloud_print/virtual_driver/win/port_monitor/spooler_win.h"
 #include "cloud_print/virtual_driver/win/virtual_driver_consts.h"
 #include "cloud_print/virtual_driver/win/virtual_driver_helpers.h"
@@ -215,8 +215,7 @@ bool LaunchPrintDialog(const base::FilePath& xps_path,
 
   base::FilePath chrome_profile = GetChromeProfilePath();
   if (!chrome_profile.empty()) {
-    command_line.AppendSwitchPath(switches::kCloudPrintUserDataDir,
-                                  chrome_profile);
+    command_line.AppendSwitchPath(switches::kUserDataDir, chrome_profile);
   }
 
   command_line.AppendSwitchPath(switches::kCloudPrintFile,

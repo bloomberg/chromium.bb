@@ -9,6 +9,8 @@
   'target_defaults': {
     'dependencies': [
       '<(DEPTH)/base/base.gyp:base',
+      '<(DEPTH)/chrome/chrome.gyp:launcher_support',
+      '<(DEPTH)/chrome/common_constants.gyp:common_constants',
     ],
 
   },

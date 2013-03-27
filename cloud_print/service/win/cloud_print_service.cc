@@ -17,6 +17,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/scoped_handle.h"
+#include "chrome/common/chrome_switches.h"
 #include "cloud_print/service/service_state.h"
 #include "cloud_print/service/service_switches.h"
 #include "cloud_print/service/win/chrome_launcher.h"
@@ -39,7 +40,7 @@ void InvalidUsage() {
     std::cout << "[";
       std::cout << "[";
         std::cout << " -" << kInstallSwitch;
-        std::cout << " -" << kUserDataDirSwitch << "=DIRECTORY";
+        std::cout << " -" << switches::kUserDataDir << "=DIRECTORY";
       std::cout << "]";
     std::cout << "]";
     std::cout << " | -" << kUninstallSwitch;
@@ -53,7 +54,8 @@ void InvalidUsage() {
     const char* description;
   } kSwitchHelp[] = {
     { kInstallSwitch, "Installs cloud print as service." },
-    { kUserDataDirSwitch, "User data directory with \"Service State\" file." },
+    { switches::kUserDataDir,
+      "User data directory with \"Service State\" file." },
     { kUninstallSwitch, "Uninstalls service." },
     { kStartSwitch, "Starts service. May be combined with installation." },
     { kStopSwitch, "Stops service." },
@@ -177,7 +179,7 @@ class CloudPrintServiceModule
       return E_INVALIDARG;
     *is_service = false;
 
-    user_data_dir_ = command_line.GetSwitchValuePath(kUserDataDirSwitch);
+    user_data_dir_ = command_line.GetSwitchValuePath(switches::kUserDataDir);
     if (command_line.HasSwitch(kStopSwitch))
       return controller_->StopService();
 
@@ -185,7 +187,7 @@ class CloudPrintServiceModule
       return controller_->UninstallService();
 
     if (command_line.HasSwitch(kInstallSwitch)) {
-      if (!command_line.HasSwitch(kUserDataDirSwitch)) {
+      if (!command_line.HasSwitch(switches::kUserDataDir)) {
         InvalidUsage();
         return S_FALSE;
       }

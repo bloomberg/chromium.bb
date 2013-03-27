@@ -19,8 +19,6 @@
       'target_name': 'virtual_driver_lib<(virtual_driver_suffix)',
       'type': 'static_library',
       'sources': [
-        '../virtual_driver_switches.cc',
-        '../virtual_driver_switches.h',
         'virtual_driver_consts.cc',
         'virtual_driver_consts.h',
         'virtual_driver_helpers.cc',
@@ -35,7 +33,6 @@
         'port_monitor/port_monitor.h',
       ],
       'dependencies': [
-        '<(DEPTH)/chrome/chrome.gyp:launcher_support<(virtual_driver_suffix)',
         'virtual_driver_lib<(virtual_driver_suffix)',
       ],
     },

@@ -12,7 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/win/scoped_handle.h"
-#include "cloud_print/service/service_switches.h"
+#include "chrome/common/chrome_switches.h"
 #include "cloud_print/service/win/local_security_policy.h"
 
 namespace {
@@ -130,7 +130,7 @@ HRESULT ServiceController::InstallService(const string16& user,
   CHECK(PathService::Get(base::FILE_EXE, &service_path));
   CommandLine command_line(service_path);
   command_line.AppendSwitch(run_switch);
-  command_line.AppendSwitchPath(kUserDataDirSwitch, user_data_dir);
+  command_line.AppendSwitchPath(switches::kUserDataDir, user_data_dir);
 
   LocalSecurityPolicy local_security_policy;
   if (local_security_policy.Open()) {
