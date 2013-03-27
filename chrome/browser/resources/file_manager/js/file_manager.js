@@ -2344,20 +2344,14 @@ DialogType.isModal = function(type) {
    */
   FileManager.prototype.showSpinner_ = function(on) {
     if (on && this.directoryModel_ && this.directoryModel_.isScanning()) {
-      if (this.directoryModel_.isSearching()) {
-        this.dialogContainer_.classList.add('searching');
+      if (this.directoryModel_.isSearching())
         this.spinner_.style.display = 'none';
-      } else {
+      else
         this.spinner_.style.display = '';
-        this.dialogContainer_.classList.remove('searching');
-      }
     }
 
-    if (!on && (!this.directoryModel_ || !this.directoryModel_.isScanning())) {
+    if (!on && (!this.directoryModel_ || !this.directoryModel_.isScanning()))
       this.spinner_.style.display = 'none';
-      if (this.dialogContainer_)
-        this.dialogContainer_.classList.remove('searching');
-    }
   };
 
   FileManager.prototype.createNewFolder = function() {
