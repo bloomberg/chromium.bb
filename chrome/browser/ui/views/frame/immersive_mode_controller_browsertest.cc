@@ -183,7 +183,7 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerTest, ImmersiveMode) {
   ASSERT_TRUE(browser_view->IsFullscreen());
   EXPECT_TRUE(controller->enabled());
   controller->StartRevealForTest(true);
-  controller->OnRevealViewLostMouseForTest();
+  controller->SetMouseHoveredForTest(false);
   EXPECT_FALSE(controller->IsRevealed());
 
   // Window restore tracking is only implemented in the Aura port.
@@ -224,6 +224,9 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerTest, Focus) {
 
   // 1) Test that focusing the location bar automatically reveals the
   // top-of-window views.
+  //
+  // Move the mouse of the way.
+  controller->SetMouseHoveredForTest(false);
   browser_view->SetFocusToLocationBar(false);
   EXPECT_TRUE(controller->IsRevealed());
   browser_view->GetFocusManager()->ClearFocus();
@@ -237,7 +240,7 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerTest, Focus) {
   browser_view->GetFocusManager()->ClearFocus();
   EXPECT_TRUE(controller->IsRevealed());
   browser_view->SetFocusToLocationBar(false);
-  controller->OnRevealViewLostMouseForTest();
+  controller->SetMouseHoveredForTest(false);
   EXPECT_TRUE(controller->IsRevealed());
   browser_view->GetFocusManager()->ClearFocus();
   EXPECT_FALSE(controller->IsRevealed());
@@ -281,6 +284,57 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerTest, Focus) {
 }
 #endif  // OS_WIN
 
+// Test behavior when the mouse becomes hovered without moving.
+IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerTest, MouseHoveredWithoutMoving) {
+  ui::ScopedAnimationDurationScaleMode zero_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
+  ASSERT_TRUE(ImmersiveModeController::UseImmersiveFullscreen());
+  chrome::ToggleFullscreenMode(browser());
+
+  BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
+  ImmersiveModeController* controller =
+      browser_view->immersive_mode_controller();
+  scoped_ptr<ImmersiveModeController::RevealedLock> lock(NULL);
+
+  // 1) Test that if the mouse becomes hovered without the mouse moving due to a
+  // lock causing the top-of-window views to be revealed (and the mouse
+  // happening to be near the top of the screen), the top-of-window views do not
+  // hide till the mouse moves off of the top-of-window views.
+  controller->SetMouseHoveredForTest(true);
+  EXPECT_FALSE(controller->IsRevealed());
+  lock.reset(controller->GetRevealedLock());
+  EXPECT_TRUE(controller->IsRevealed());
+  lock.reset();
+  EXPECT_TRUE(controller->IsRevealed());
+  controller->SetMouseHoveredForTest(false);
+  EXPECT_FALSE(controller->IsRevealed());
+
+  // 2) Test that if the mouse becomes hovered without moving because of a
+  // reveal in ImmersiveModeController::SetEnabled(true) and there are no locks
+  // keeping the top-of-window views revealed, that mouse hover does not prevent
+  // the top-of-window views from closing.
+  chrome::ToggleFullscreenMode(browser());
+  controller->SetMouseHoveredForTest(true);
+  EXPECT_FALSE(controller->IsRevealed());
+  chrome::ToggleFullscreenMode(browser());
+  EXPECT_FALSE(controller->IsRevealed());
+
+  // 3) Test that if the mouse becomes hovered without moving because of a
+  // reveal in ImmersiveModeController::SetEnabled(true) and there is a lock
+  // keeping the top-of-window views revealed, that the top-of-window views do
+  // not hide till the mouse moves off of the top-of-window views.
+  chrome::ToggleFullscreenMode(browser());
+  controller->SetMouseHoveredForTest(true);
+  lock.reset(controller->GetRevealedLock());
+  EXPECT_FALSE(controller->IsRevealed());
+  chrome::ToggleFullscreenMode(browser());
+  EXPECT_TRUE(controller->IsRevealed());
+  lock.reset();
+  EXPECT_TRUE(controller->IsRevealed());
+  controller->SetMouseHoveredForTest(false);
+  EXPECT_FALSE(controller->IsRevealed());
+}
+
 // GetRevealedLock() specific tests.
 IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerTest, RevealedLock) {
   scoped_ptr<ImmersiveModeController::RevealedLock> lock1(NULL);
@@ -296,6 +350,9 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerTest, RevealedLock) {
 
   // Immersive mode is not on by default.
   EXPECT_FALSE(controller->enabled());
+
+  // Move the mouse out of the way.
+  controller->SetMouseHoveredForTest(false);
 
   // 1) Test acquiring and releasing a revealed state lock while immersive mode
   // is disabled. Acquiring or releasing the lock should have no effect till

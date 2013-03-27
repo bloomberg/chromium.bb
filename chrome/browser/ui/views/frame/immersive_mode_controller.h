@@ -104,7 +104,7 @@ class ImmersiveModeController : public ui::EventHandler,
   // Testing interface.
   void SetHideTabIndicatorsForTest(bool hide);
   void StartRevealForTest(bool hovered);
-  void OnRevealViewLostMouseForTest();
+  void SetMouseHoveredForTest(bool hovered);
 
  private:
   enum Animate {
@@ -122,6 +122,14 @@ class ImmersiveModeController : public ui::EventHandler,
   // Enables or disables observers for mouse move, focus, and window restore.
   void EnableWindowObservers(bool enable);
 
+  // Update |mouse_revealed_lock_| based on the current mouse state and the
+  // currently active widget.
+  // |maybe_drag| is true if the user may be in the middle of a drag.
+  void UpdateMouseRevealedLock(bool maybe_drag);
+
+  // Acquire the mouse revealed lock if it is not already held.
+  void AcquireMouseRevealedLock();
+
   // Update |focus_revealed_lock_| based on the currently active view and the
   // currently active widget.
   void UpdateFocusRevealedLock();
@@ -133,6 +141,9 @@ class ImmersiveModeController : public ui::EventHandler,
   void LockRevealedState();
   void UnlockRevealedState();
 
+  // Returns the animation duration given |animate|.
+  int GetAnimationDuration(Animate animate) const;
+
   // Temporarily reveals the top-of-window views while in immersive mode,
   // hiding them when the cursor exits the area of the top views. If |animate|
   // is not ANIMATE_NO, slides in the view, otherwise shows it immediately.
@@ -143,11 +154,8 @@ class ImmersiveModeController : public ui::EventHandler,
   void LayoutBrowserView(bool immersive_style);
 
   // Slides open the reveal view at the top of the screen.
-  void AnimateSlideOpen();
+  void AnimateSlideOpen(int duration_ms);
   void OnSlideOpenAnimationCompleted();
-
-  // Called when the mouse exits the reveal view area, may end the reveal.
-  void OnRevealViewLostMouse();
 
   // Hides the top-of-window views if immersive mode is enabled and nothing is
   // keeping them revealed. Optionally animates.
@@ -178,15 +186,16 @@ class ImmersiveModeController : public ui::EventHandler,
   // Timer to track cursor being held at the top.
   base::OneShotTimer<ImmersiveModeController> top_timer_;
 
-  // Mouse is hovering over the revealed view.
-  bool reveal_hovered_;
-
-  // Native window for the browser, needed to clean up observers.
-  gfx::NativeWindow native_window_;
+  // Lock which keeps the top-of-window views revealed based on the current
+  // mouse state.
+  scoped_ptr<RevealedLock> mouse_revealed_lock_;
 
   // Lock which keeps the top-of-window views revealed based on the focused view
   // and the active widget.
   scoped_ptr<RevealedLock> focus_revealed_lock_;
+
+  // Native window for the browser, needed to clean up observers.
+  gfx::NativeWindow native_window_;
 
 #if defined(USE_AURA)
   // Observer to disable immersive mode when window leaves the maximized state.

@@ -10,6 +10,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/gfx/screen.h"
 #include "ui/gfx/transform.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -25,6 +26,8 @@
 #if defined(USE_AURA)
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/client/capture_client.h"
+#include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #endif
@@ -164,7 +167,6 @@ ImmersiveModeController::ImmersiveModeController()
       reveal_state_(CLOSED),
       revealed_lock_count_(0),
       hide_tab_indicators_(false),
-      reveal_hovered_(false),
       native_window_(NULL),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
 }
@@ -215,16 +217,31 @@ void ImmersiveModeController::SetEnabled(bool enabled) {
 
   TopContainerView* top_container = browser_view_->top_container();
   if (enabled_) {
-    // Reset the hovered state and the focus revealed lock so that they do not
-    // affect whether the top-of-window views are hidden.
-    reveal_hovered_ = false;
+    // Animate enabling immersive mode by sliding out the top-of-window views.
+    // No animation occurs if a lock is holding the top-of-window views open.
+
+    // Do a reveal to set the initial state for the animation. (And any
+    // required state in case the animation cannot run because of a lock holding
+    // the top-of-window views open.)
+    StartReveal(ANIMATE_NO);
+
+    // Reset the mouse and the focus revealed locks so that they do not affect
+    // whether the top-of-window views are hidden. Reacquire the locks if ending
+    // the reveal is unsuccessful.
+    bool had_mouse_revealed_lock = (mouse_revealed_lock_.get() != NULL);
+    bool had_focus_revealed_lock = (focus_revealed_lock_.get() != NULL);
+    mouse_revealed_lock_.reset();
     focus_revealed_lock_.reset();
-    // If no other code has a reveal lock, slide out the top-of-window views by
-    // triggering an end-reveal animation.
-    reveal_state_ = REVEALED;
-    top_container->SetPaintToLayer(true);
-    top_container->SetFillsBoundsOpaquely(true);
+
+    // Try doing the animation.
     MaybeEndReveal(ANIMATE_SLOW);
+
+    if (IsRevealed()) {
+      if (had_mouse_revealed_lock)
+        mouse_revealed_lock_.reset(GetRevealedLock());
+      if (had_focus_revealed_lock)
+        focus_revealed_lock_.reset(GetRevealedLock());
+    }
   } else {
     // Stop cursor-at-top tracking.
     top_timer_.Stop();
@@ -266,11 +283,14 @@ void ImmersiveModeController::MaybeStartReveal() {
 }
 
 void ImmersiveModeController::CancelReveal() {
-  // Reset the hovered state so that it does not affect whether the
-  // top-of-window views are hidden.
-  reveal_hovered_ = false;
-
+  // Reset the mouse revealed lock so that it does not affect whether
+  // the top-of-window views are hidden. Reaquire the lock if ending the reveal
+  // is unsuccessful.
+  bool had_mouse_revealed_lock = (mouse_revealed_lock_.get() != NULL);
+  mouse_revealed_lock_.reset();
   MaybeEndReveal(ANIMATE_NO);
+  if (IsRevealed() && had_mouse_revealed_lock)
+    mouse_revealed_lock_.reset(GetRevealedLock());
 }
 
 ImmersiveModeController::RevealedLock*
@@ -285,6 +305,9 @@ void ImmersiveModeController::OnMouseEvent(ui::MouseEvent* event) {
   if (!enabled_)
     return;
 
+  if (event->flags() & ui::EF_IS_SYNTHESIZED)
+    return;
+
   // Handle ET_MOUSE_PRESSED and ET_MOUSE_RELEASED so that we get the updated
   // mouse position ASAP once a nested message loop finishes running.
   if (event->type() != ui::ET_MOUSE_MOVED &&
@@ -293,32 +316,28 @@ void ImmersiveModeController::OnMouseEvent(ui::MouseEvent* event) {
     return;
   }
 
-  if (event->location().y() == 0) {
+  // Mouse hover should not initiate revealing the top-of-window views while
+  // |native_window_| is inactive.
+  if (!views::Widget::GetWidgetForNativeWindow(native_window_)->IsActive())
+    return;
+
+  if ((reveal_state_ == SLIDING_CLOSED || reveal_state_ == CLOSED) &&
+      event->location().y() == 0) {
     // Start a reveal if the mouse touches the top of the screen and then stops
     // moving for a little while. This mirrors the Ash launcher behavior.
     top_timer_.Stop();
     // Timer is stopped when |this| is destroyed, hence Unretained() is safe.
-    top_timer_.Start(FROM_HERE,
-                     base::TimeDelta::FromMilliseconds(kTopEdgeRevealDelayMs),
-                     base::Bind(&ImmersiveModeController::StartReveal,
-                                base::Unretained(this),
-                                ANIMATE_FAST));
+    top_timer_.Start(
+        FROM_HERE,
+        base::TimeDelta::FromMilliseconds(kTopEdgeRevealDelayMs),
+        base::Bind(&ImmersiveModeController::AcquireMouseRevealedLock,
+                   base::Unretained(this)));
   } else {
-    // Cursor left the top edge.
+    // Cursor left the top edge or the top-of-window views are already revealed.
     top_timer_.Stop();
   }
 
-  if (reveal_state_ == SLIDING_OPEN || reveal_state_ == REVEALED) {
-    // Look for the mouse leaving the bottom edge of the revealed view.
-    int bottom_edge = browser_view_->top_container()->bounds().bottom();
-    if (event->location().y() > bottom_edge) {
-      reveal_hovered_ = false;
-      OnRevealViewLostMouse();
-    } else {
-      reveal_hovered_ = true;
-    }
-  }
-
+  UpdateMouseRevealedLock(false);
   // Pass along event for further handling.
 }
 
@@ -342,6 +361,11 @@ void ImmersiveModeController::OnWidgetDestroying(views::Widget* widget) {
 
 void ImmersiveModeController::OnWidgetActivationChanged(views::Widget* widget,
                                                         bool active) {
+  // Mouse hover should not initiate revealing the top-of-window views while
+  // |native_window_| is inactive.
+  top_timer_.Stop();
+
+  UpdateMouseRevealedLock(true);
   UpdateFocusRevealedLock();
 }
 
@@ -353,13 +377,25 @@ void ImmersiveModeController::SetHideTabIndicatorsForTest(bool hide) {
 }
 
 void ImmersiveModeController::StartRevealForTest(bool hovered) {
-  reveal_hovered_ = hovered;
   StartReveal(ANIMATE_NO);
+  SetMouseHoveredForTest(hovered);
 }
 
-void ImmersiveModeController::OnRevealViewLostMouseForTest() {
-  reveal_hovered_ = false;
-  OnRevealViewLostMouse();
+void ImmersiveModeController::SetMouseHoveredForTest(bool hovered) {
+#if defined(USE_AURA)
+  // TODO(pkotwicz): Porting to non-Aura will require a better way of
+  // setting the mouse hovered state.
+  views::View* top_container = browser_view_->top_container();
+  gfx::Point cursor_pos;
+  if (!hovered) {
+    int bottom_edge = top_container->bounds().bottom();
+    cursor_pos = gfx::Point(0, bottom_edge + 100);
+  }
+  views::View::ConvertPointToScreen(top_container, &cursor_pos);
+  aura::Env::GetInstance()->set_last_mouse_location(cursor_pos);
+#endif  // defined(USE_AURA)
+
+  UpdateMouseRevealedLock(true);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -398,6 +434,49 @@ void ImmersiveModeController::EnableWindowObservers(bool enable) {
   // for window restore, which is not provided by views Widget.
   window_observer_.reset(enable ? new WindowObserver(this) : NULL);
 #endif  // defined(USE_AURA)
+}
+
+void ImmersiveModeController::UpdateMouseRevealedLock(bool maybe_drag) {
+  if (!enabled_)
+    return;
+
+  // Hover cannot initiate a reveal when the top-of-window views are sliding
+  // closed or are closed. (With the exception of hovering at y = 0 which is
+  // handled in OnMouseEvent() ).
+  if (reveal_state_ == SLIDING_CLOSED || reveal_state_ == CLOSED)
+    return;
+
+  // Mouse hover should not keep the top-of-window views revealed if
+  // |native_window_| is not active.
+  if (!views::Widget::GetWidgetForNativeWindow(native_window_)->IsActive()) {
+    mouse_revealed_lock_.reset();
+    return;
+  }
+
+#if defined(USE_AURA)
+  // TODO(pkotwicz): Porting to non-Aura will require a way of getting the
+  // widget which currently has mouse capture which is not yet provided by
+  // views::Widget.
+  // If a window has capture, we may be in the middle of a drag. Delay updating
+  // the revealed lock till we get more specifics via OnMouseEvent().
+  if (maybe_drag && aura::client::GetCaptureWindow(native_window_))
+    return;
+#endif  // defined(USE_AURA)
+
+  views::View* top_container = browser_view_->top_container();
+  gfx::Point cursor_pos = gfx::Screen::GetScreenFor(
+      native_window_)->GetCursorScreenPoint();
+  views::View::ConvertPointFromScreen(top_container, &cursor_pos);
+
+  if (top_container->bounds().Contains(cursor_pos))
+    AcquireMouseRevealedLock();
+  else
+    mouse_revealed_lock_.reset();
+}
+
+void ImmersiveModeController::AcquireMouseRevealedLock() {
+  if (!mouse_revealed_lock_.get())
+    mouse_revealed_lock_.reset(GetRevealedLock());
 }
 
 void ImmersiveModeController::UpdateFocusRevealedLock() {
@@ -445,8 +524,20 @@ void ImmersiveModeController::UnlockRevealedState() {
     MaybeEndReveal(ANIMATE_FAST);
 }
 
+int ImmersiveModeController::GetAnimationDuration(Animate animate) const {
+  switch (animate) {
+    case ANIMATE_NO:
+      return 0;
+    case ANIMATE_SLOW:
+      return kRevealSlowAnimationDurationMs;
+    case ANIMATE_FAST:
+      return kRevealFastAnimationDurationMs;
+  }
+  NOTREACHED();
+  return 0;
+}
+
 void ImmersiveModeController::StartReveal(Animate animate) {
-  DCHECK_NE(ANIMATE_SLOW, animate);
   if (reveal_state_ == CLOSED) {
     reveal_state_ = SLIDING_OPEN;
     // Turn on layer painting so we can smoothly animate.
@@ -458,19 +549,19 @@ void ImmersiveModeController::StartReveal(Animate animate) {
     // computed at normal (non-immersive-style) size.
     LayoutBrowserView(false);
 
-    // Slide in the reveal view.
     if (animate != ANIMATE_NO) {
+      // Now that we have a layer, move it to the initial offscreen position.
       ui::Layer* layer = top_container->layer();
       gfx::Transform transform;
       transform.Translate(0, -layer->bounds().height());
       layer->SetTransform(transform);
-
-      AnimateSlideOpen();  // Show is always fast.
     }
+    // Slide in the reveal view.
+    AnimateSlideOpen(GetAnimationDuration(animate));
   } else if (reveal_state_ == SLIDING_CLOSED) {
     reveal_state_ = SLIDING_OPEN;
     // Reverse the animation.
-    AnimateSlideOpen();
+    AnimateSlideOpen(GetAnimationDuration(animate));
   }
 }
 
@@ -482,7 +573,7 @@ void ImmersiveModeController::LayoutBrowserView(bool immersive_style) {
   browser_view_->Layout();
 }
 
-void ImmersiveModeController::AnimateSlideOpen() {
+void ImmersiveModeController::AnimateSlideOpen(int duration_ms) {
   ui::Layer* layer = browser_view_->top_container()->layer();
   // Stop any slide closed animation in progress.
   layer->GetAnimator()->AbortAllAnimations();
@@ -491,35 +582,31 @@ void ImmersiveModeController::AnimateSlideOpen() {
   settings.AddObserver(slide_open_observer_.get());
   settings.SetTweenType(ui::Tween::EASE_OUT);
   settings.SetTransitionDuration(
-      base::TimeDelta::FromMilliseconds(kRevealFastAnimationDurationMs));
+      base::TimeDelta::FromMilliseconds(duration_ms));
   layer->SetTransform(gfx::Transform());
 }
 
 void ImmersiveModeController::OnSlideOpenAnimationCompleted() {
-  if (reveal_state_ == SLIDING_OPEN)
+  if (reveal_state_ == SLIDING_OPEN) {
     reveal_state_ = REVEALED;
-}
 
-void ImmersiveModeController::OnRevealViewLostMouse() {
-  MaybeEndReveal(ANIMATE_FAST);
+    // The user may not have moved the mouse since the reveal was initiated.
+    // Update the revealed lock to reflect the mouse's current state.
+    UpdateMouseRevealedLock(true);
+  }
 }
 
 void ImmersiveModeController::MaybeEndReveal(Animate animate) {
-  if (enabled_ &&
-      reveal_state_ != CLOSED &&
-      revealed_lock_count_ == 0 &&
-      !reveal_hovered_) {
+  if (enabled_ && reveal_state_ != CLOSED && revealed_lock_count_ == 0)
     EndReveal(animate);
-  }
 }
 
 void ImmersiveModeController::EndReveal(Animate animate) {
   if (reveal_state_ == SLIDING_OPEN || reveal_state_ == REVEALED) {
     reveal_state_ = SLIDING_CLOSED;
-    if (animate == ANIMATE_FAST)
-      AnimateSlideClosed(kRevealFastAnimationDurationMs);
-    else if (animate == ANIMATE_SLOW)
-      AnimateSlideClosed(kRevealSlowAnimationDurationMs);
+    int duration_ms = GetAnimationDuration(animate);
+    if (duration_ms > 0)
+      AnimateSlideClosed(duration_ms);
     else
       OnSlideClosedAnimationCompleted();
   }
