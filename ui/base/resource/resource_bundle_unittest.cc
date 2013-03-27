@@ -498,36 +498,6 @@ TEST_F(ResourceBundleImageTest, GetImageNamedFallback1x) {
   EXPECT_EQ(20, image_rep.pixel_height());
 }
 
-// Tests GetImageNamed() behaves properly when the size of a scaled image
-// requires rounding as a result of using a non-integer scale factor.
-TEST_F(ResourceBundleImageTest, GetImageNamedFallback1xRounding) {
-  base::FilePath data_path = dir_path().AppendASCII("sample.pak");
-  base::FilePath data_140P_path = dir_path().AppendASCII("sample_140P.pak");
-  base::FilePath data_180P_path = dir_path().AppendASCII("sample_180P.pak");
-
-  CreateDataPackWithSingleBitmap(data_path, 8, base::StringPiece());
-  // Mark 140% and 180% images as requiring 1x fallback.
-  CreateDataPackWithSingleBitmap(data_140P_path, 8, base::StringPiece(
-    reinterpret_cast<const char*>(kPngScaleChunk),
-    arraysize(kPngScaleChunk)));
-  CreateDataPackWithSingleBitmap(data_180P_path, 8, base::StringPiece(
-    reinterpret_cast<const char*>(kPngScaleChunk),
-    arraysize(kPngScaleChunk)));
-
-  ResourceBundle* resource_bundle = CreateResourceBundleWithEmptyLocalePak();
-  resource_bundle->AddDataPackFromPath(data_path, SCALE_FACTOR_100P);
-  resource_bundle->AddDataPackFromPath(data_140P_path, SCALE_FACTOR_140P);
-  resource_bundle->AddDataPackFromPath(data_180P_path, SCALE_FACTOR_180P);
-
-  // Non-integer dimensions should be rounded up.
-  gfx::ImageSkia* image_skia = resource_bundle->GetImageSkiaNamed(3);
-  gfx::ImageSkiaRep image_rep =
-    image_skia->GetRepresentation(ui::SCALE_FACTOR_140P);
-  EXPECT_EQ(12, image_rep.pixel_width());
-  image_rep = image_skia->GetRepresentation(ui::SCALE_FACTOR_180P);
-  EXPECT_EQ(15, image_rep.pixel_width());
-}
-
 TEST_F(ResourceBundleImageTest, FallbackToNone) {
   base::FilePath data_default_path = dir_path().AppendASCII("sample.pak");
 

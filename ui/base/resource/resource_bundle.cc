@@ -86,8 +86,8 @@ class ResourceBundle::ResourceBundleImageSource : public gfx::ImageSkiaSource {
       image = skia::ImageOperations::Resize(
           image,
           skia::ImageOperations::RESIZE_LANCZOS3,
-          gfx::ToCeiledInt(image.width() * scale),
-          gfx::ToCeiledInt(image.height() * scale));
+          gfx::ToFlooredInt(image.width() * scale),
+          gfx::ToFlooredInt(image.height() * scale));
       // If --highlight-missing-scaled-resources is specified, log the resource
       // id and blend the created resource with red.
       if (ShouldHighlightMissingScaledResources()) {
