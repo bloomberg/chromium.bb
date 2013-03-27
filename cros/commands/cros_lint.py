@@ -83,6 +83,7 @@ run other checks (e.g. pyflakes, cpplint, etc.)
   def Run(self):
     errors = False
     for pylintrc, paths in sorted(_GetPylintGroups(self.options.files).items()):
+      paths = sorted(list(set([os.path.realpath(x) for x in paths])))
       cmd = ['pylint', '--rcfile=%s' % pylintrc] + paths
       extra_env = {'PYTHONPATH': ':'.join(_GetPythonPath(paths))}
       res = cros_build_lib.RunCommand(cmd, extra_env=extra_env,
