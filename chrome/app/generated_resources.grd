@@ -10736,7 +10736,7 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         Expiration date
       </message>
 
-      <!-- autofill dialog: field labels. -->
+      <!-- Autofill dialog: field labels. -->
       <message name="IDS_AUTOFILL_DIALOG_PLACEHOLDER_EMAIL" desc="The placeholder/label text for email in the requestAutocomplete dialog.">
         Email address
       </message>
@@ -10780,7 +10780,7 @@ form signature: <ph name="FORM_SIGNATURE">$4<ex>1234567812345678</ex></ph>
 experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
       </message>
 
-      <!-- autofill dialog: title bar -->
+      <!-- Autofill dialog: title bar -->
       <message name="IDS_AUTOFILL_DIALOG_TITLE" desc="Title for autofill dialog which asks user to input address + payment info.">
         Submit Payment Details
       </message>
@@ -10810,7 +10810,7 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
         Oops. Auto-Checkout cannout complete this form. You'll have to the finish this transaction from here.
       </message>
 
-      <!-- autofill dialog: detail section -->
+      <!-- Autofill dialog: detail section -->
       <message name="IDS_AUTOFILL_DIALOG_EDIT" desc="Text of link in autofill dialog which allows user to edit address + payment info.">
         Edit
       </message>
@@ -10839,7 +10839,7 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
         Auto-Checkout...
       </message>
 
-      <!-- autofill dialog: combobox menu items -->
+      <!-- Autofill dialog: combobox menu items -->
       <message name="IDS_AUTOFILL_DIALOG_ADD_EMAIL_ADDRESS" desc="Menu item for adding a new email address in the autofill dialog.">
         Add email address...
       </message>
@@ -10855,6 +10855,13 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
       <message name="IDS_AUTOFILL_DIALOG_ADD_SHIPPING_ADDRESS" desc="Menu item for adding new shipping address in the autofill dialog.">
         Add shipping address...
       </message>
+
+      <!-- Autofill dialog: legal documents -->
+      <message name="IDS_AUTOFILL_DIALOG_PRIVACY_POLICY_LINK" desc="The text of an extra link that is appended to the end of whatever other legal documents need to be accepted or updated.">
+        Privacy Policy
+      </message>
+
+      <!-- Autocheckout bubble -->
       <message name="IDS_AUTOCHECKOUT_BUBBLE_PROMPT" desc="Text for prompting a user to start an Autocheckout flow.">
         Complete this form without typing?
       </message>

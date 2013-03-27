@@ -9,7 +9,9 @@
 #include "base/values.h"
 #include "components/autofill/browser/autofill_type.h"
 #include "googleurl/src/gurl.h"
+#include "grit/generated_resources.h"
 #include "grit/webkit_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 
@@ -20,6 +22,21 @@ namespace {
 
 const char kLegalDocumentUrl[] =
     "https://wallet.google.com/legaldocument?docId=";
+const char kPrivacyNoticeUrl[] = "https://wallet.google.com/files/privacy.html";
+
+// TODO(estade): move to base/.
+template<class T>
+bool VectorsAreEqual(const std::vector<T*>& a, const std::vector<T*>& b) {
+  if (a.size() != b.size())
+    return false;
+
+  for (size_t i = 0; i < a.size(); ++i) {
+    if (*a[i] != *b[i])
+      return false;
+  }
+
+  return true;
+}
 
 WalletItems::MaskedInstrument::Type
     TypeFromString(const std::string& type_string) {
@@ -286,44 +303,53 @@ string16 WalletItems::MaskedInstrument::GetInfo(AutofillFieldType type) const {
   return string16();
 }
 
-WalletItems::LegalDocument::LegalDocument(const std::string& document_id,
-                                          const std::string& display_name)
-    : document_id_(document_id),
-      display_name_(display_name) {}
-
 WalletItems::LegalDocument::~LegalDocument() {}
 
 scoped_ptr<WalletItems::LegalDocument>
     WalletItems::LegalDocument::CreateLegalDocument(
     const base::DictionaryValue& dictionary) {
-  std::string document_id;
-  if (!dictionary.GetString("legal_document_id", &document_id)) {
+  std::string id;
+  if (!dictionary.GetString("legal_document_id", &id)) {
     DLOG(ERROR) << "Response from Google Wallet missing legal document id";
     return scoped_ptr<LegalDocument>();
   }
 
-  std::string display_name;
+  string16 display_name;
   if (!dictionary.GetString("display_name", &display_name)) {
     DLOG(ERROR) << "Response from Google Wallet missing display name";
     return scoped_ptr<LegalDocument>();
   }
 
-  return scoped_ptr<LegalDocument>(new LegalDocument(document_id,
-                                                     display_name));
+  return scoped_ptr<LegalDocument>(new LegalDocument(id, display_name));
 }
 
-GURL WalletItems::LegalDocument::GetUrl() {
-  return GURL(kLegalDocumentUrl + document_id_);
+scoped_ptr<WalletItems::LegalDocument>
+    WalletItems::LegalDocument::CreatePrivacyPolicyDocument() {
+  return scoped_ptr<LegalDocument>(new LegalDocument(
+      GURL(kPrivacyNoticeUrl),
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_PRIVACY_POLICY_LINK)));
 }
 
 bool WalletItems::LegalDocument::operator==(const LegalDocument& other) const {
-  return document_id_ == other.document_id_ &&
+  return id_ == other.id_ &&
+         url_ == other.url_ &&
          display_name_ == other.display_name_;
 }
 
 bool WalletItems::LegalDocument::operator!=(const LegalDocument& other) const {
   return !(*this == other);
 }
+
+WalletItems::LegalDocument::LegalDocument(const std::string& id,
+                                          const string16& display_name)
+    : id_(id),
+      url_(kLegalDocumentUrl + id),
+      display_name_(display_name) {}
+
+WalletItems::LegalDocument::LegalDocument(const GURL& url,
+                                          const string16& display_name)
+    : url_(url),
+      display_name_(display_name) {}
 
 WalletItems::WalletItems(const std::vector<RequiredAction>& required_actions,
                          const std::string& google_transaction_id,
@@ -400,6 +426,12 @@ scoped_ptr<WalletItems>
         }
       }
     }
+
+    if (!legal_docs->empty()) {
+      // Always append the privacy policy link as well.
+      wallet_items->AddLegalDocument(
+          LegalDocument::CreatePrivacyPolicyDocument());
+    }
   } else {
     DVLOG(1) << "Response from Google wallet missing legal docs";
   }
@@ -442,12 +474,16 @@ scoped_ptr<WalletItems>
 }
 
 bool WalletItems::operator==(const WalletItems& other) const {
-  // TODO(ahutter): Check scoped vector equality.
   return google_transaction_id_ == other.google_transaction_id_ &&
          default_instrument_id_ == other.default_instrument_id_ &&
          default_address_id_ == other.default_address_id_ &&
          required_actions_ == other.required_actions_ &&
-         obfuscated_gaia_id_ == other.obfuscated_gaia_id_;
+         obfuscated_gaia_id_ == other.obfuscated_gaia_id_ &&
+         VectorsAreEqual<MaskedInstrument>(instruments(),
+                                           other.instruments()) &&
+         VectorsAreEqual<Address>(addresses(), other.addresses()) &&
+         VectorsAreEqual<LegalDocument>(legal_documents(),
+                                        other.legal_documents());
 }
 
 bool WalletItems::operator!=(const WalletItems& other) const {

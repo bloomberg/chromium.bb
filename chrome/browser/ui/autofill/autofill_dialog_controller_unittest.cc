@@ -89,7 +89,7 @@ class TestWalletClient : public wallet::WalletClient {
   virtual ~TestWalletClient() {}
 
   MOCK_METHOD3(AcceptLegalDocuments,
-      void(const std::vector<std::string>& document_ids,
+      void(const std::vector<wallet::WalletItems::LegalDocument*>& documents,
            const std::string& google_transaction_id,
            const GURL& source_url));
 
@@ -170,7 +170,7 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
 
  private:
   TestPersonalDataManager test_manager_;
-  testing::StrictMock<TestWalletClient> test_wallet_client_;
+  testing::NiceMock<TestWalletClient> test_wallet_client_;
   bool is_paying_with_wallet_;
 
   DISALLOW_COPY_AND_ASSIGN(TestAutofillDialogController);

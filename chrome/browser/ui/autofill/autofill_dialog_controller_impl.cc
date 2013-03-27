@@ -1133,6 +1133,8 @@ std::string AutofillDialogControllerImpl::GetRiskData() const {
 }
 
 void AutofillDialogControllerImpl::OnDidAcceptLegalDocuments() {
+  // TODO(dbeam): Don't send risk params until legal documents are accepted:
+  // http://crbug.com/173505
 }
 
 void AutofillDialogControllerImpl::OnDidAuthenticateInstrument(bool success) {
@@ -1629,14 +1631,10 @@ void AutofillDialogControllerImpl::SubmitWithWallet() {
     }
   }
 
-  if (!wallet_items_->legal_documents().empty()) {
-    std::vector<std::string> doc_ids;
-    for (size_t i = 0; i < wallet_items_->legal_documents().size(); ++i) {
-      doc_ids.push_back(wallet_items_->legal_documents()[i]->document_id());
-    }
-    GetWalletClient()->AcceptLegalDocuments(
-        doc_ids, wallet_items_->google_transaction_id(), source_url_);
-  }
+  GetWalletClient()->AcceptLegalDocuments(
+      wallet_items_->legal_documents(),
+      wallet_items_->google_transaction_id(),
+      source_url_);
 
   scoped_ptr<wallet::Instrument> new_instrument;
   if (active_instrument_id_.empty()) {

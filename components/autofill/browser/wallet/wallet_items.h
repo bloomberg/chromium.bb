@@ -16,8 +16,7 @@
 #include "base/string16.h"
 #include "components/autofill/browser/wallet/required_action.h"
 #include "components/autofill/browser/wallet/wallet_address.h"
-
-class GURL;
+#include "googleurl/src/gurl.h"
 
 namespace base {
 class DictionaryValue;
@@ -156,33 +155,39 @@ class WalletItems {
    public:
     ~LegalDocument();
 
-    // Returns null if input is invalid or a valid legal document. Caller owns
-    // returned pointer.
+    // Returns null if input is invalid or a valid legal document.
     static scoped_ptr<LegalDocument>
         CreateLegalDocument(const base::DictionaryValue& dictionary);
 
-    // Get the url where this legal document is hosted.
-    GURL GetUrl();
+    // Returns a document for the privacy policy (acceptance of which is not
+    // tracked by the server).
+    static scoped_ptr<LegalDocument> CreatePrivacyPolicyDocument();
 
     bool operator==(const LegalDocument& other) const;
     bool operator!=(const LegalDocument& other) const;
 
-    const std::string& document_id() const { return document_id_; }
-    const std::string& display_name() const { return display_name_; }
+    const std::string& id() { return id_; }
+    const GURL& url() const { return url_; }
+    const string16& display_name() const { return display_name_; }
 
    private:
     friend class WalletItemsTest;
     FRIEND_TEST_ALL_PREFIXES(WalletItemsTest, CreateLegalDocument);
     FRIEND_TEST_ALL_PREFIXES(WalletItemsTest, CreateWalletItems);
-    FRIEND_TEST_ALL_PREFIXES(WalletItemsTest, LegalDocumentGetUrl);
-    LegalDocument(const std::string& document_id,
-                  const std::string& display_name);
+    FRIEND_TEST_ALL_PREFIXES(WalletItemsTest, LegalDocumentUrl);
+    FRIEND_TEST_ALL_PREFIXES(WalletItemsTest, LegalDocumentEmptyId);
+    LegalDocument(const std::string& id,
+                  const string16& display_name);
+    LegalDocument(const GURL& url,
+                  const string16& display_name);
 
-    // Externalized Online Wallet id for the document.
-    std::string document_id_;
-
+    // Externalized Online Wallet id for the document, or an empty string for
+    // documents not tracked by the server (such as the privacy policy).
+    std::string id_;
+    // The human-visitable URL that displays the document.
+    GURL url_;
     // User displayable name for the document.
-    std::string display_name_;
+    string16 display_name_;
     DISALLOW_COPY_AND_ASSIGN(LegalDocument);
   };
 

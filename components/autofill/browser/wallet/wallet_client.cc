@@ -233,38 +233,17 @@ WalletClient::WalletClient(net::URLRequestContextGetter* context_getter,
 WalletClient::~WalletClient() {}
 
 void WalletClient::AcceptLegalDocuments(
-    const std::vector<std::string>& document_ids,
+    const std::vector<WalletItems::LegalDocument*>& documents,
     const std::string& google_transaction_id,
     const GURL& source_url) {
-  if (HasRequestInProgress()) {
-    pending_requests_.push(base::Bind(&WalletClient::AcceptLegalDocuments,
-                                      base::Unretained(this),
-                                      document_ids,
-                                      google_transaction_id,
-                                      source_url));
+  if (documents.empty())
     return;
+
+  std::vector<std::string> document_ids;
+  for (size_t i = 0; i < documents.size(); ++i) {
+    document_ids.push_back(documents[i]->id());
   }
-
-  DCHECK_EQ(NO_PENDING_REQUEST, request_type_);
-  request_type_ = ACCEPT_LEGAL_DOCUMENTS;
-
-  base::DictionaryValue request_dict;
-  request_dict.SetString(kApiKeyKey, google_apis::GetAPIKey());
-  request_dict.SetString(kGoogleTransactionIdKey, google_transaction_id);
-  request_dict.SetString(kMerchantDomainKey,
-                         source_url.GetWithEmptyPath().spec());
-  scoped_ptr<base::ListValue> docs_list(new base::ListValue());
-  for (std::vector<std::string>::const_iterator it = document_ids.begin();
-       it != document_ids.end();
-       ++it) {
-    docs_list->AppendString(*it);
-  }
-  request_dict.Set(kAcceptedLegalDocumentKey, docs_list.release());
-
-  std::string post_body;
-  base::JSONWriter::Write(&request_dict, &post_body);
-
-  MakeWalletRequest(GetAcceptLegalDocumentsUrl(), post_body);
+  DoAcceptLegalDocuments(document_ids, google_transaction_id, source_url);
 }
 
 void WalletClient::AuthenticateInstrument(
@@ -567,6 +546,41 @@ void WalletClient::CancelPendingRequests() {
   while (!pending_requests_.empty()) {
     pending_requests_.pop();
   }
+}
+
+void WalletClient::DoAcceptLegalDocuments(
+    const std::vector<std::string>& document_ids,
+    const std::string& google_transaction_id,
+    const GURL& source_url) {
+  if (HasRequestInProgress()) {
+    pending_requests_.push(base::Bind(&WalletClient::DoAcceptLegalDocuments,
+                                      base::Unretained(this),
+                                      document_ids,
+                                      google_transaction_id,
+                                      source_url));
+    return;
+  }
+
+  DCHECK_EQ(NO_PENDING_REQUEST, request_type_);
+  request_type_ = ACCEPT_LEGAL_DOCUMENTS;
+
+  base::DictionaryValue request_dict;
+  request_dict.SetString(kApiKeyKey, google_apis::GetAPIKey());
+  request_dict.SetString(kGoogleTransactionIdKey, google_transaction_id);
+  request_dict.SetString(kMerchantDomainKey,
+                         source_url.GetWithEmptyPath().spec());
+  scoped_ptr<base::ListValue> docs_list(new base::ListValue());
+  for (std::vector<std::string>::const_iterator it = document_ids.begin();
+       it != document_ids.end(); ++it) {
+    if (!it->empty())
+      docs_list->AppendString(*it);
+  }
+  request_dict.Set(kAcceptedLegalDocumentKey, docs_list.release());
+
+  std::string post_body;
+  base::JSONWriter::Write(&request_dict, &post_body);
+
+  MakeWalletRequest(GetAcceptLegalDocumentsUrl(), post_body);
 }
 
 void WalletClient::MakeWalletRequest(const GURL& url,

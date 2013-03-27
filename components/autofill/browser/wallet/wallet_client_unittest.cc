@@ -278,8 +278,8 @@ const char kAcceptLegalDocumentsValidRequest[] =
     "{"
         "\"accepted_legal_document\":"
         "["
-            "\"doc_1\","
-            "\"doc_2\""
+            "\"doc_id_1\","
+            "\"doc_id_2\""
         "],"
         "\"google_transaction_id\":\"google-transaction-id\","
         "\"merchant_domain\":\"https://example.com/\""
@@ -470,7 +470,6 @@ const char kSendAutocheckoutStatusOfFailureValidRequest[] =
         "\"reason\":\"CANNOT_PROCEED\","
         "\"success\":false"
     "}";
-
 
 const char kUpdateAddressValidRequest[] =
     "{"
@@ -820,10 +819,19 @@ TEST_F(WalletClientTest, GetFullWalletMalformedResponse) {
 TEST_F(WalletClientTest, AcceptLegalDocuments) {
   EXPECT_CALL(delegate_, OnDidAcceptLegalDocuments()).Times(1);
 
-  std::vector<std::string> doc_ids;
-  doc_ids.push_back("doc_1");
-  doc_ids.push_back("doc_2");
-  wallet_client_->AcceptLegalDocuments(doc_ids,
+  ScopedVector<WalletItems::LegalDocument> docs;
+  base::DictionaryValue document;
+  document.SetString("legal_document_id", "doc_id_1");
+  document.SetString("display_name", "doc_1");
+  docs.push_back(
+      WalletItems::LegalDocument::CreateLegalDocument(document).release());
+  document.SetString("legal_document_id", "doc_id_2");
+  document.SetString("display_name", "doc_2");
+  docs.push_back(
+      WalletItems::LegalDocument::CreateLegalDocument(document).release());
+  docs.push_back(
+      WalletItems::LegalDocument::CreatePrivacyPolicyDocument().release());
+  wallet_client_->AcceptLegalDocuments(docs.get(),
                                        kGoogleTransactionId,
                                        GURL(kMerchantUrl));
   net::TestURLFetcher* fetcher = factory_.GetFetcherByID(0);

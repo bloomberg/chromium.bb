@@ -17,6 +17,7 @@
 #include "components/autofill/browser/wallet/encryption_escrow_client.h"
 #include "components/autofill/browser/wallet/encryption_escrow_client_observer.h"
 #include "components/autofill/browser/wallet/full_wallet.h"
+#include "components/autofill/browser/wallet/wallet_items.h"
 #include "components/autofill/common/autocheckout_status.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -34,7 +35,6 @@ class Address;
 class FullWallet;
 class Instrument;
 class WalletClientDelegate;
-class WalletItems;
 
 // WalletClient is responsible for making calls to the Online Wallet backend on
 // the user's behalf. The normal flow for using this class is as follows:
@@ -145,10 +145,10 @@ class WalletClient
 
   // The GetWalletItems call to the Online Wallet backend may require the user
   // to accept various legal documents before a FullWallet can be generated.
-  // The |document_ids| and |google_transaction_id| are provided in the response
-  // to the GetWalletItems call.
+  // The |google_transaction_id| is provided in the response to the
+  // GetWalletItems call.
   virtual void AcceptLegalDocuments(
-      const std::vector<std::string>& document_ids,
+      const std::vector<WalletItems::LegalDocument*>& documents,
       const std::string& google_transaction_id,
       const GURL& source_url);
 
@@ -221,6 +221,12 @@ class WalletClient
     UPDATE_ADDRESS,
     UPDATE_INSTRUMENT,
   };
+
+  // Like AcceptLegalDocuments, but takes a vector of document ids.
+  void DoAcceptLegalDocuments(
+      const std::vector<std::string>& document_ids,
+      const std::string& google_transaction_id,
+      const GURL& source_url);
 
   // Posts |post_body| to |url| and notifies |observer| when the request is
   // complete.
