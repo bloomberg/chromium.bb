@@ -147,9 +147,9 @@ uint32 BluetoothDeviceMac::ComputeDeviceFingerprint(
   for (IOBluetoothSDPServiceRecord* record in [device services]) {
     base::StringAppendF(
         &device_string,
-        "|%s|%u",
+        "|%s|%lu",
         base::SysNSStringToUTF8([record getServiceName]).c_str(),
-        [[record attributes] count]);
+        static_cast<unsigned long>([[record attributes] count]));
   }
 
   return base::Hash(device_string);
