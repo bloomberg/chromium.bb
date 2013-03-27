@@ -606,7 +606,7 @@ ChromiumEnv::ChromiumEnv()
     : page_size_(::base::SysInfo::VMAllocationGranularity()),
       bgsignal_(&mu_),
       started_bgthread_(false),
-      kMaxRenameTimeMillis(500) {
+      kMaxRenameTimeMillis(1000) {
   InitHistograms("LevelDBEnv");
 }
 
@@ -623,10 +623,14 @@ void ChromiumEnv::InitHistograms(const std::string& uma_title) {
 
   std::string retry_name(uma_title);
   retry_name.append(".TimeToRename");
+  // Do not change this value or historical data will be invalidated.
+  const int kBucketSizeMillis = 25;
+  // Add 2, 1 for each of the buckets <1 and >max.
+  int num_buckets = kMaxRenameTimeMillis / kBucketSizeMillis + 2;
   rename_time_histogram_ = base::LinearHistogram::FactoryTimeGet(
       retry_name, base::TimeDelta::FromMilliseconds(1),
       base::TimeDelta::FromMilliseconds(kMaxRenameTimeMillis),
-      22, // 20 buckets between min and max, and 1 on either side.
+      num_buckets,
       base::Histogram::kUmaTargetedHistogramFlag);
 }
 
