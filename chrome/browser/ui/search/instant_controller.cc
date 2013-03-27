@@ -572,8 +572,11 @@ void InstantController::HandleAutocompleteResults(
     if (from_search_provider &&
         (instant_tab_ || !overlay_->IsUsingLocalOverlay()))
       continue;
-    // Only send autocomplete results when all the providers are done.
-    if (!(*provider)->done()) {
+    // Only send autocomplete results when all the providers are done. Skip
+    // this check for the SearchProvider, since it isn't done until the page
+    // calls SetSuggestions (causing SearchProvider::FinalizeInstantQuery() to
+    // be called), which makes it a chicken-and-egg thing.
+    if (!from_search_provider && !(*provider)->done()) {
       DVLOG(1) << "Waiting for " << (*provider)->GetName();
       return;
     }
