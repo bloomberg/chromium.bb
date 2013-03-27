@@ -12,7 +12,11 @@ function forEach(obj, f, self) {
   //
   // Note: not (instanceof Array) because the array might come from a different
   // context than our own.
-  if (obj.constructor && obj.constructor.name == 'Array') {
+  //
+  // For nodelists, make sure the indices are numbers not strings because
+  // Nodelist objects have "length" and "item" properties.
+  if (obj.constructor && (obj.constructor.name == 'Array' ||
+      obj.constructor.name == 'NodeList')) {
     for (var i = 0; i < obj.length; i++)
       f.call(self, i, obj[i]);
   } else {
