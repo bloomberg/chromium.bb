@@ -824,7 +824,15 @@ void AutofillDialogViews::OnWillChangeFocus(
 
 void AutofillDialogViews::OnDidChangeFocus(
     views::View* focused_before,
-    views::View* focused_now) {}
+    views::View* focused_now) {
+  if (!focused_before)
+    return;
+
+  // If user leaves an edit-field, revalidate the group it belongs to.
+  DetailsGroup* group = GroupForView(focused_before);
+  if (group)
+    ValidateGroup(group, AutofillDialogController::VALIDATE_EDIT);
+}
 
 void AutofillDialogViews::LinkClicked(views::Link* source, int event_flags) {
   // Edit links.
@@ -838,16 +846,9 @@ void AutofillDialogViews::LinkClicked(views::Link* source, int event_flags) {
 }
 
 void AutofillDialogViews::OnSelectedIndexChanged(views::Combobox* combobox) {
-  DetailsGroup* group = NULL;
-  for (DetailGroupMap::iterator iter = detail_groups_.begin();
-       iter != detail_groups_.end(); ++iter) {
-    if (combobox->parent() == iter->second.manual_input) {
-      group = &iter->second;
-      break;
-    }
-  }
+  DetailsGroup* group = GroupForView(combobox);
   DCHECK(group);
-  ValidateGroup(group);
+  ValidateGroup(group, AutofillDialogController::VALIDATE_EDIT);
 }
 
 void AutofillDialogViews::InitChildViews() {
@@ -1123,7 +1124,9 @@ bool AutofillDialogViews::AtLeastOneSectionIsEditing() {
   return false;
 }
 
-bool AutofillDialogViews::ValidateGroup(DetailsGroup* group) {
+bool AutofillDialogViews::ValidateGroup(
+    DetailsGroup* group,
+    AutofillDialogController::ValidationType validation_type) {
   DCHECK(group->container->visible());
 
   scoped_ptr<DetailInput> cvc_input;
@@ -1160,7 +1163,7 @@ bool AutofillDialogViews::ValidateGroup(DetailsGroup* group) {
   }
 
   std::vector<AutofillFieldType> invalid_inputs;
-  invalid_inputs = controller_->InputsAreValid(detail_outputs);
+  invalid_inputs = controller_->InputsAreValid(detail_outputs, validation_type);
   // Flag invalid fields, removing them from |field_map|.
   for (std::vector<AutofillFieldType>::const_iterator iter =
            invalid_inputs.begin(); iter != invalid_inputs.end(); ++iter) {
@@ -1185,7 +1188,7 @@ bool AutofillDialogViews::ValidateForm() {
     if (!group->container->visible())
       continue;
 
-   if (!ValidateGroup(group))
+   if (!ValidateGroup(group, AutofillDialogController::VALIDATE_FINAL))
      all_valid = false;
   }
 
@@ -1195,17 +1198,7 @@ bool AutofillDialogViews::ValidateForm() {
 void AutofillDialogViews::TextfieldEditedOrActivated(
     views::Textfield* textfield,
     bool was_edit) {
-  views::View* ancestor =
-      textfield->GetAncestorWithClassName(kDecoratedTextfieldClassName);
-  DetailsGroup* group = NULL;
-  for (DetailGroupMap::iterator iter = detail_groups_.begin();
-       iter != detail_groups_.end(); ++iter) {
-    if (ancestor->parent() == iter->second.manual_input ||
-        ancestor == iter->second.suggested_info->decorated_textfield()) {
-      group = &iter->second;
-      break;
-    }
-  }
+  DetailsGroup* group = GroupForView(textfield);
   DCHECK(group);
 
   // Figure out the AutofillFieldType this textfield represents.
@@ -1213,6 +1206,8 @@ void AutofillDialogViews::TextfieldEditedOrActivated(
   DecoratedTextfield* decorated = NULL;
 
   // Look for the input in the manual inputs.
+  views::View* ancestor =
+      textfield->GetAncestorWithClassName(kDecoratedTextfieldClassName);
   for (TextfieldMap::const_iterator iter = group->textfields.begin();
        iter != group->textfields.end();
        ++iter) {
@@ -1235,9 +1230,19 @@ void AutofillDialogViews::TextfieldEditedOrActivated(
   }
   DCHECK_NE(UNKNOWN_TYPE, type);
 
-  // Re-validate the group with the new input.
-  if (was_edit)
-    ValidateGroup(group);
+  // If the field is marked as invalid, check if the text is now valid.
+  // Many fields (i.e. CC#) are invalid for most of the duration of editing,
+  // so flagging them as invalid prematurely is not helpful. However,
+  // correcting a minor mistake (i.e. a wrong CC digit) should immediately
+  // result in validation - positive user feedback.
+  if (decorated->invalid() && was_edit) {
+    decorated->SetInvalid(!controller_->InputIsValid(type, textfield->text()));
+
+    // If the field transitioned from invalid to valid, re-validate the group,
+    // since inter-field checks become meaningful with valid fields.
+    if (!decorated->invalid())
+      ValidateGroup(group, AutofillDialogController::VALIDATE_EDIT);
+  }
 
   gfx::Image icon = controller_->IconForField(type, textfield->text());
   textfield->SetIcon(icon.AsImageSkia());
@@ -1251,6 +1256,31 @@ void AutofillDialogViews::ContentsPreferredSizeChanged() {
 AutofillDialogViews::DetailsGroup* AutofillDialogViews::GroupForSection(
     DialogSection section) {
   return &detail_groups_.find(section)->second;
+}
+
+AutofillDialogViews::DetailsGroup* AutofillDialogViews::GroupForView(
+  views::View* view) {
+  DCHECK(view);
+  // Textfields are treated slightly differently. For them, inspect
+  // the DecoratedTextfield ancestor, not the actual control.
+  views::View* ancestor =
+      view->GetAncestorWithClassName(kDecoratedTextfieldClassName);
+
+  views::View* control = ancestor ? ancestor : view;
+  for (DetailGroupMap::iterator iter = detail_groups_.begin();
+       iter != detail_groups_.end(); ++iter) {
+    if (control->parent() == iter->second.manual_input)
+      return &iter->second;
+
+    // Textfields need to check a second case, since they can be
+    // suggested inputs instead of directly editable inputs. Those are
+    // accessed via |suggested_info|.
+    if (ancestor &&
+        ancestor == iter->second.suggested_info->decorated_textfield()) {
+      return &iter->second;
+    }
+  }
+  return NULL;
 }
 
 AutofillDialogViews::DetailsGroup::DetailsGroup(DialogSection section)

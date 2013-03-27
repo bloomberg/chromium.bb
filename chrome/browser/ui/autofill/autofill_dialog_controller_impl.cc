@@ -774,20 +774,25 @@ bool AutofillDialogControllerImpl::InputIsValid(AutofillFieldType type,
 }
 
 std::vector<AutofillFieldType> AutofillDialogControllerImpl::InputsAreValid(
-    const DetailOutputMap& inputs) {
+    const DetailOutputMap& inputs, ValidationType validation_type) {
   std::vector<AutofillFieldType> invalid_fields;
   std::map<AutofillFieldType, string16> field_values;
   for (DetailOutputMap::const_iterator iter = inputs.begin();
        iter != inputs.end(); ++iter) {
+    // Skip empty fields in edit mode.
+    if (validation_type == VALIDATE_EDIT && iter->second.empty())
+      continue;
+
     field_values[iter->first->type] = iter->second;
+
     if (!InputIsValid(iter->first->type, iter->second))
       invalid_fields.push_back(iter->first->type);
   }
 
-  // If the dialog has a CC month, there must 4 digit year.
-  // Validate the date formed by month and appropriate year field.
-  if (field_values.count(CREDIT_CARD_EXP_MONTH)) {
-    DCHECK(field_values.count(CREDIT_CARD_EXP_4_DIGIT_YEAR));
+  // Validate the date formed by month and year field. (Autofill dialog is
+  // never supposed to have 2-digit years, so not checked).
+  if (field_values.count(CREDIT_CARD_EXP_MONTH) &&
+      field_values.count(CREDIT_CARD_EXP_4_DIGIT_YEAR)) {
     if (!autofill::IsValidCreditCardExpirationDate(
             field_values[CREDIT_CARD_EXP_4_DIGIT_YEAR],
             field_values[CREDIT_CARD_EXP_MONTH],
@@ -799,7 +804,8 @@ std::vector<AutofillFieldType> AutofillDialogControllerImpl::InputsAreValid(
 
   // If there is a credit card number and a CVC, validate them together.
   if (field_values.count(CREDIT_CARD_NUMBER) &&
-      field_values.count(CREDIT_CARD_VERIFICATION_CODE)) {
+      field_values.count(CREDIT_CARD_VERIFICATION_CODE) &&
+      InputIsValid(CREDIT_CARD_NUMBER, field_values[CREDIT_CARD_NUMBER])) {
     if (!autofill::IsValidCreditCardSecurityCode(
             field_values[CREDIT_CARD_VERIFICATION_CODE],
             field_values[CREDIT_CARD_NUMBER])) {

@@ -387,9 +387,14 @@ class AutofillDialogViews : public AutofillDialogView,
   // of the dialog.
   DetailsGroup* GroupForSection(DialogSection section);
 
+  // Gets a pointer to the DetailsGroup that's associated with a given |view|.
+  // Returns NULL if no DetailsGroup was found.
+  DetailsGroup* GroupForView(views::View* view);
+
   // Checks all manual inputs in |group| for validity. Decorates the invalid
   // ones and returns true if all were valid.
-  bool ValidateGroup(DetailsGroup* group);
+  bool ValidateGroup(DetailsGroup* group,
+                     AutofillDialogController::ValidationType type);
 
   // Checks all manual inputs in the form for validity. Decorates the invalid
   // ones and returns true if all were valid.

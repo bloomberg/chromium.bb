@@ -35,6 +35,10 @@ namespace autofill {
 // This class defines the interface to the controller that the dialog view sees.
 class AutofillDialogController {
  public:
+  enum ValidationType {
+    VALIDATE_EDIT,   // validate user edits. Allow for empty fields.
+    VALIDATE_FINAL,  // Full form validation. Mandatory fields can't be empty.
+  };
 
   // Strings -------------------------------------------------------------------
 
@@ -109,7 +113,7 @@ class AutofillDialogController {
   // Decides whether the combination of all |inputs| is valid, returns a
   // vector of all invalid fields.
   virtual std::vector<AutofillFieldType> InputsAreValid(
-      const DetailOutputMap& inputs) = 0;
+      const DetailOutputMap& inputs, ValidationType validation_type) = 0;
 
   // Called when the user changes the contents of a text field or activates it
   // (by focusing and then clicking it). |was_edit| is true when the function
