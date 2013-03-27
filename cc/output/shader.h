@@ -6,6 +6,8 @@
 #define CC_OUTPUT_SHADER_H_
 
 #include <string>
+
+#include "base/basictypes.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
 
 namespace WebKit {
@@ -28,6 +30,8 @@ class VertexShaderPosTex {
 
  private:
   int matrix_location_;
+
+  DISALLOW_COPY_AND_ASSIGN(VertexShaderPosTex);
 };
 
 class VertexShaderPosTexYUVStretch {
@@ -46,6 +50,8 @@ class VertexShaderPosTexYUVStretch {
  private:
   int matrix_location_;
   int tex_scale_location_;
+
+  DISALLOW_COPY_AND_ASSIGN(VertexShaderPosTexYUVStretch);
 };
 
 class VertexShaderPos {
@@ -62,6 +68,8 @@ class VertexShaderPos {
 
  private:
   int matrix_location_;
+
+  DISALLOW_COPY_AND_ASSIGN(VertexShaderPos);
 };
 
 class VertexShaderPosTexIdentity {
@@ -91,6 +99,8 @@ class VertexShaderPosTexTransform {
   int matrix_location_;
   int tex_transform_location_;
   int vertex_opacity_location_;
+
+  DISALLOW_COPY_AND_ASSIGN(VertexShaderPosTexTransform);
 };
 
 class VertexShaderPosTexTransformFlip : public VertexShaderPosTexTransform {
@@ -116,6 +126,8 @@ class VertexShaderQuad {
   int matrix_location_;
   int point_location_;
   int tex_scale_location_;
+
+  DISALLOW_COPY_AND_ASSIGN(VertexShaderQuad);
 };
 
 class VertexShaderTile {
@@ -138,6 +150,8 @@ class VertexShaderTile {
   int matrix_location_;
   int point_location_;
   int vertex_tex_transform_location_;
+
+  DISALLOW_COPY_AND_ASSIGN(VertexShaderTile);
 };
 
 class VertexShaderVideoTransform {
@@ -156,6 +170,8 @@ class VertexShaderVideoTransform {
  private:
   int matrix_location_;
   int tex_matrix_location_;
+
+  DISALLOW_COPY_AND_ASSIGN(VertexShaderVideoTransform);
 };
 
 class FragmentTexAlphaBinding {
@@ -174,6 +190,8 @@ class FragmentTexAlphaBinding {
  private:
   int sampler_location_;
   int alpha_location_;
+
+  DISALLOW_COPY_AND_ASSIGN(FragmentTexAlphaBinding);
 };
 
 class FragmentTexOpaqueBinding {
@@ -191,6 +209,8 @@ class FragmentTexOpaqueBinding {
 
  private:
   int sampler_location_;
+
+  DISALLOW_COPY_AND_ASSIGN(FragmentTexOpaqueBinding);
 };
 
 class FragmentShaderRGBATexVaryingAlpha : public FragmentTexOpaqueBinding {
@@ -233,6 +253,8 @@ class FragmentShaderRGBATexSwizzleOpaque : public FragmentTexOpaqueBinding {
 // Fragment shader for external textures.
 class FragmentShaderOESImageExternal : public FragmentTexAlphaBinding {
  public:
+  FragmentShaderOESImageExternal();
+
   std::string GetShaderString() const;
   bool Init(WebKit::WebGraphicsContext3D*,
             unsigned program,
@@ -240,6 +262,8 @@ class FragmentShaderOESImageExternal : public FragmentTexAlphaBinding {
             int* base_uniform_index);
  private:
   int sampler_location_;
+
+  DISALLOW_COPY_AND_ASSIGN(FragmentShaderOESImageExternal);
 };
 
 class FragmentShaderRGBATexAlphaAA {
@@ -260,6 +284,8 @@ class FragmentShaderRGBATexAlphaAA {
   int sampler_location_;
   int alpha_location_;
   int edge_location_;
+
+  DISALLOW_COPY_AND_ASSIGN(FragmentShaderRGBATexAlphaAA);
 };
 
 class FragmentTexClampAlphaAABinding {
@@ -282,6 +308,8 @@ class FragmentTexClampAlphaAABinding {
   int alpha_location_;
   int fragment_tex_transform_location_;
   int edge_location_;
+
+  DISALLOW_COPY_AND_ASSIGN(FragmentTexClampAlphaAABinding);
 };
 
 class FragmentShaderRGBATexClampAlphaAA :
@@ -322,6 +350,8 @@ class FragmentShaderRGBATexAlphaMask {
   int alpha_location_;
   int mask_tex_coord_scale_location_;
   int mask_tex_coord_offset_location_;
+
+  DISALLOW_COPY_AND_ASSIGN(FragmentShaderRGBATexAlphaMask);
 };
 
 class FragmentShaderRGBATexAlphaMaskAA {
@@ -351,6 +381,8 @@ class FragmentShaderRGBATexAlphaMaskAA {
   int edge_location_;
   int mask_tex_coord_scale_location_;
   int mask_tex_coord_offset_location_;
+
+  DISALLOW_COPY_AND_ASSIGN(FragmentShaderRGBATexAlphaMaskAA);
 };
 
 class FragmentShaderYUVVideo {
@@ -376,6 +408,8 @@ class FragmentShaderYUVVideo {
   int alpha_location_;
   int yuv_matrix_location_;
   int yuv_adj_location_;
+
+  DISALLOW_COPY_AND_ASSIGN(FragmentShaderYUVVideo);
 };
 
 class FragmentShaderColor {
@@ -392,6 +426,8 @@ class FragmentShaderColor {
 
  private:
   int color_location_;
+
+  DISALLOW_COPY_AND_ASSIGN(FragmentShaderColor);
 };
 
 class FragmentShaderColorAA {
@@ -409,6 +445,8 @@ class FragmentShaderColorAA {
  private:
   int edge_location_;
   int color_location_;
+
+  DISALLOW_COPY_AND_ASSIGN(FragmentShaderColorAA);
 };
 
 class FragmentShaderCheckerboard {
@@ -430,6 +468,8 @@ class FragmentShaderCheckerboard {
   int tex_transform_location_;
   int frequency_location_;
   int color_location_;
+
+  DISALLOW_COPY_AND_ASSIGN(FragmentShaderCheckerboard);
 };
 
 } // namespace cc

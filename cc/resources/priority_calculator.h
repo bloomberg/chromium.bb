@@ -5,6 +5,7 @@
 #ifndef CC_RESOURCES_PRIORITY_CALCULATOR_H_
 #define CC_RESOURCES_PRIORITY_CALCULATOR_H_
 
+#include "base/basictypes.h"
 #include "cc/base/cc_export.h"
 
 namespace gfx { class Rect; }
@@ -13,6 +14,8 @@ namespace cc {
 
 class CC_EXPORT PriorityCalculator {
  public:
+  PriorityCalculator() {}
+
   static int UIPriority(bool draws_to_root_surface);
   static int VisiblePriority(bool draws_to_root_surface);
   static int RenderSurfacePriority();
@@ -34,6 +37,9 @@ class CC_EXPORT PriorityCalculator {
   static int AllowVisibleOnlyCutoff();
   static int AllowVisibleAndNearbyCutoff();
   static int AllowEverythingCutoff();
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PriorityCalculator);
 };
 
 }  // namespace cc

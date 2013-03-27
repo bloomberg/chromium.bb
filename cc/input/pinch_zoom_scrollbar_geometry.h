@@ -5,6 +5,7 @@
 #ifndef CC_INPUT_PINCH_ZOOM_SCROLLBAR_GEOMETRY_H_
 #define CC_INPUT_PINCH_ZOOM_SCROLLBAR_GEOMETRY_H_
 
+#include "base/basictypes.h"
 #include "cc/base/cc_export.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebScrollbarThemeGeometry.h"
 
@@ -16,6 +17,7 @@ namespace cc {
 
 class PinchZoomScrollbarGeometry : public WebScrollbarThemeGeometry {
  public:
+  PinchZoomScrollbarGeometry() {}
   virtual ~PinchZoomScrollbarGeometry() {}
 
   static const int kTrackWidth;
@@ -43,6 +45,9 @@ class PinchZoomScrollbarGeometry : public WebScrollbarThemeGeometry {
   virtual void splitTrack(
     WebScrollbar* scrollbar, const WebRect& track, WebRect& start_track,
     WebRect& thumb, WebRect& end_track);
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PinchZoomScrollbarGeometry);
 };
 
 }  // namespace WebKit

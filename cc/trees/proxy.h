@@ -135,12 +135,15 @@ class DebugScopedSetMainThreadBlocked {
   }
  private:
   Proxy* proxy_;
+  DISALLOW_COPY_AND_ASSIGN(DebugScopedSetMainThreadBlocked);
 };
 #else
 class DebugScopedSetMainThreadBlocked {
  public:
   explicit DebugScopedSetMainThreadBlocked(Proxy* proxy) {}
   ~DebugScopedSetMainThreadBlocked() {}
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DebugScopedSetMainThreadBlocked);
 };
 #endif
 

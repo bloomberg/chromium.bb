@@ -35,6 +35,8 @@ class CC_EXPORT ContentsScalingLayer : public Layer {
  private:
   float last_update_contents_scale_x_;
   float last_update_contents_scale_y_;
+
+  DISALLOW_COPY_AND_ASSIGN(ContentsScalingLayer);
 };
 
 }  // namespace cc

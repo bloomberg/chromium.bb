@@ -47,6 +47,8 @@ class CC_EXPORT ScrollbarAnimationControllerLinearFade
 
   base::TimeDelta fadeout_delay_;
   base::TimeDelta fadeout_length_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScrollbarAnimationControllerLinearFade);
 };
 
 }  // namespace cc

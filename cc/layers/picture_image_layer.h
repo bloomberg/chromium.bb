@@ -36,6 +36,8 @@ class CC_EXPORT PictureImageLayer : public PictureLayer, ContentLayerClient {
   virtual ~PictureImageLayer();
 
   SkBitmap bitmap_;
+
+  DISALLOW_COPY_AND_ASSIGN(PictureImageLayer);
 };
 
 }  // namespace cc

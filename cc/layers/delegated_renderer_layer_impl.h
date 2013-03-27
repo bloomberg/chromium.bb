@@ -86,6 +86,8 @@ class CC_EXPORT DelegatedRendererLayerImpl : public LayerImpl {
 
   gfx::Size display_size_;
   int child_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(DelegatedRendererLayerImpl);
 };
 
 }  // namespace cc

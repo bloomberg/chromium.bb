@@ -589,6 +589,9 @@ class CC_EXPORT FakeWebGraphicsContext3D
 
   virtual void drawBuffersEXT(WebKit::WGC3Dsizei m,
                               const WebKit::WGC3Denum* bufs) {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FakeWebGraphicsContext3D);
 };
 
 }  // namespace cc

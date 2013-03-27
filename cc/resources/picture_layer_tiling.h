@@ -168,6 +168,9 @@ class CC_EXPORT PictureLayerTiling {
   double last_impl_frame_time_;
 
   friend class Iterator;
+
+ private:
+  DISALLOW_ASSIGN(PictureLayerTiling);
 };
 
 }  // namespace cc

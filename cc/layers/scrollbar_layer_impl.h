@@ -100,6 +100,8 @@ class CC_EXPORT ScrollbarLayerImpl : public ScrollbarLayerImplBase {
 
    private:
     ScrollbarLayerImpl* owner_;
+
+    DISALLOW_COPY_AND_ASSIGN(Scrollbar);
   };
 
   virtual const char* LayerTypeAsString() const OVERRIDE;
@@ -143,6 +145,8 @@ class CC_EXPORT ScrollbarLayerImpl : public ScrollbarLayerImplBase {
   bool enabled_;
   bool is_custom_scrollbar_;
   bool is_overlay_scrollbar_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScrollbarLayerImpl);
 };
 
 }  // namespace cc

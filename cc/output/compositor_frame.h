@@ -25,6 +25,9 @@ class CC_EXPORT CompositorFrame {
   scoped_ptr<SoftwareFrameData> software_frame_data;
 
   void AssignTo(CompositorFrame* target);
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(CompositorFrame);
 };
 
 }  // namespace cc

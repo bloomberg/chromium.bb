@@ -46,7 +46,7 @@ class PinchZoomScrollbar : public WebKit::WebScrollbar {
   LayerTreeHost* owner_;
 
   DISALLOW_COPY_AND_ASSIGN(PinchZoomScrollbar);
-};  // class PinchZoomScrollbar
+};
 
 }  // namespace cc
 #endif  // CC_INPUT_PINCH_ZOOM_SCROLLBAR_H_

@@ -92,6 +92,8 @@ class CC_EXPORT ScrollbarLayer : public ContentsScalingLayer {
   scoped_ptr<LayerUpdater::Resource> back_track_;
   scoped_ptr<LayerUpdater::Resource> fore_track_;
   scoped_ptr<LayerUpdater::Resource> thumb_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScrollbarLayer);
 };
 
 }  // namespace cc

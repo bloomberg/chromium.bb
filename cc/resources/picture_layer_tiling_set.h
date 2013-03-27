@@ -118,6 +118,7 @@ class CC_EXPORT PictureLayerTilingSet {
   ScopedPtrVector<PictureLayerTiling> tilings_;
 
   friend class Iterator;
+  DISALLOW_COPY_AND_ASSIGN(PictureLayerTilingSet);
 };
 
 }  // namespace cc

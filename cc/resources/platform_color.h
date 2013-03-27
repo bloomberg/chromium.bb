@@ -5,6 +5,7 @@
 #ifndef CC_RESOURCES_PLATFORM_COLOR_H_
 #define CC_RESOURCES_PLATFORM_COLOR_H_
 
+#include "base/basictypes.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
@@ -54,6 +55,9 @@ class PlatformColor {
         return false;
     }
   }
+
+ private:
+  DISALLOW_IMPLICIT_CONSTRUCTORS(PlatformColor);
 };
 
 }  // namespace cc

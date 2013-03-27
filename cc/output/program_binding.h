@@ -41,6 +41,9 @@ class ProgramBindingBase {
   unsigned vertex_shader_id_;
   unsigned fragment_shader_id_;
   bool initialized_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ProgramBindingBase);
 };
 
 template <class VertexShader, class FragmentShader>
@@ -83,6 +86,8 @@ class ProgramBinding : public ProgramBindingBase {
  private:
   VertexShader vertex_shader_;
   FragmentShader fragment_shader_;
+
+  DISALLOW_COPY_AND_ASSIGN(ProgramBinding);
 };
 
 }  // namespace cc

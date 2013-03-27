@@ -6,6 +6,7 @@
 #ifndef CC_OUTPUT_RENDER_SURFACE_FILTERS_H_
 #define CC_OUTPUT_RENDER_SURFACE_FILTERS_H_
 
+#include "base/basictypes.h"
 #include "cc/base/cc_export.h"
 
 class GrContext;
@@ -31,7 +32,7 @@ class CC_EXPORT RenderSurfaceFilters {
       const WebKit::WebFilterOperations& filters);
 
  private:
-  RenderSurfaceFilters();
+  DISALLOW_IMPLICIT_CONSTRUCTORS(RenderSurfaceFilters);
 };
 
 }

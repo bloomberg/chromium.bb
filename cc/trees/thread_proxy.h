@@ -256,6 +256,8 @@ class ThreadProxy : public Proxy,
 
   base::TimeTicks smoothness_takes_priority_expiration_time_;
   bool renew_tree_priority_on_impl_thread_pending_;
+
+  DISALLOW_COPY_AND_ASSIGN(ThreadProxy);
 };
 
 }  // namespace cc

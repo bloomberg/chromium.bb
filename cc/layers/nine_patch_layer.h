@@ -54,6 +54,8 @@ class CC_EXPORT NinePatchLayer : public Layer {
   // The transparent center region that shows the parent layer's contents in
   // image space.
   gfx::Rect image_aperture_;
+
+  DISALLOW_COPY_AND_ASSIGN(NinePatchLayer);
 };
 
 }  // namespace cc

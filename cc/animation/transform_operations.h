@@ -74,6 +74,8 @@ class CC_EXPORT TransformOperations {
   // For efficiency, we cache the decomposed transform.
   mutable scoped_ptr<gfx::DecomposedTransform> decomposed_transform_;
   mutable bool decomposed_transform_dirty_;
+
+  DISALLOW_ASSIGN(TransformOperations);
 };
 
 }  // namespace cc

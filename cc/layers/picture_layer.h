@@ -50,6 +50,8 @@ class CC_EXPORT PictureLayer : public ContentsScalingLayer {
   // Invalidation from the last time update was called.
   Region pile_invalidation_;
   bool is_mask_;
+
+  DISALLOW_COPY_AND_ASSIGN(PictureLayer);
 };
 
 }  // namespace cc

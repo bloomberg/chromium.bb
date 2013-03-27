@@ -20,6 +20,9 @@ class CC_EXPORT DelegatedFrameData {
 
   TransferableResourceArray resource_list;
   ScopedPtrVector<RenderPass> render_pass_list;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DelegatedFrameData);
 };
 
 }  // namespace cc

@@ -5,6 +5,7 @@
 #ifndef CC_ANIMATION_ANIMATION_ID_PROVIDER_H_
 #define CC_ANIMATION_ANIMATION_ID_PROVIDER_H_
 
+#include "base/basictypes.h"
 #include "cc/base/cc_export.h"
 
 namespace cc {
@@ -14,6 +15,9 @@ class CC_EXPORT AnimationIdProvider {
   // These functions each return monotonically increasing values.
   static int NextAnimationId();
   static int NextGroupId();
+
+ private:
+  DISALLOW_IMPLICIT_CONSTRUCTORS(AnimationIdProvider);
 };
 
 }  // namespace cc

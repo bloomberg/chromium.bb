@@ -113,6 +113,8 @@ class RingBuffer {
 
   T buffer_[kSize];
   size_t current_index_;
+
+  DISALLOW_COPY_AND_ASSIGN(RingBuffer);
 };
 
 }  // namespace cc

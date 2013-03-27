@@ -58,6 +58,8 @@ class CC_EXPORT NinePatchLayerImpl : public LayerImpl {
   gfx::Rect image_aperture_;
 
   ResourceProvider::ResourceId resource_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(NinePatchLayerImpl);
 };
 
 }  // namespace cc

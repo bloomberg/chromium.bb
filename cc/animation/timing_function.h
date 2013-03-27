@@ -21,6 +21,9 @@ class CC_EXPORT TimingFunction : public FloatAnimationCurve {
 
  protected:
   TimingFunction();
+
+ private:
+  DISALLOW_ASSIGN(TimingFunction);
 };
 
 class CC_EXPORT CubicBezierTimingFunction : public TimingFunction {
@@ -40,26 +43,41 @@ class CC_EXPORT CubicBezierTimingFunction : public TimingFunction {
   SkScalar y1_;
   SkScalar x2_;
   SkScalar y2_;
+
+ private:
+  DISALLOW_ASSIGN(CubicBezierTimingFunction);
 };
 
 class CC_EXPORT EaseTimingFunction {
  public:
   static scoped_ptr<TimingFunction> Create();
+
+ private:
+  DISALLOW_IMPLICIT_CONSTRUCTORS(EaseTimingFunction);
 };
 
 class CC_EXPORT EaseInTimingFunction {
  public:
   static scoped_ptr<TimingFunction> Create();
+
+ private:
+  DISALLOW_IMPLICIT_CONSTRUCTORS(EaseInTimingFunction);
 };
 
 class CC_EXPORT EaseOutTimingFunction {
  public:
   static scoped_ptr<TimingFunction> Create();
+
+ private:
+  DISALLOW_IMPLICIT_CONSTRUCTORS(EaseOutTimingFunction);
 };
 
 class CC_EXPORT EaseInOutTimingFunction {
  public:
   static scoped_ptr<TimingFunction> Create();
+
+ private:
+  DISALLOW_IMPLICIT_CONSTRUCTORS(EaseInOutTimingFunction);
 };
 
 }  // namespace cc

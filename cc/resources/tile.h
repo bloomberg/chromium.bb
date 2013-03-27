@@ -95,6 +95,8 @@ class CC_EXPORT Tile : public base::RefCounted<Tile> {
   TilePriority priority_[NUM_BIN_PRIORITIES];
   ManagedTileState managed_state_;
   int layer_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(Tile);
 };
 
 }  // namespace cc

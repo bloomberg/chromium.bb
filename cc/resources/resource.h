@@ -37,6 +37,8 @@ class CC_EXPORT Resource {
   ResourceProvider::ResourceId id_;
   gfx::Size size_;
   GLenum format_;
+
+  DISALLOW_COPY_AND_ASSIGN(Resource);
 };
 
 }  // namespace cc

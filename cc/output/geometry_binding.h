@@ -5,6 +5,8 @@
 #ifndef CC_OUTPUT_GEOMETRY_BINDING_H_
 #define CC_OUTPUT_GEOMETRY_BINDING_H_
 
+#include "base/basictypes.h"
+
 namespace gfx { class RectF; }
 
 namespace WebKit { class WebGraphicsContext3D; }
@@ -31,6 +33,8 @@ class GeometryBinding {
 
   unsigned quad_vertices_vbo_;
   unsigned quad_elements_vbo_;
+
+  DISALLOW_COPY_AND_ASSIGN(GeometryBinding);
 };
 
 }  // namespace cc

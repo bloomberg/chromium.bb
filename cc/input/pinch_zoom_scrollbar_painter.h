@@ -5,6 +5,7 @@
 #ifndef CC_INPUT_PINCH_ZOOM_SCROLLBAR_PAINTER_H_
 #define CC_INPUT_PINCH_ZOOM_SCROLLBAR_PAINTER_H_
 
+#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "cc/layers/scrollbar_theme_painter.h"
 
@@ -27,6 +28,9 @@ class PinchZoomScrollbarPainter : public ScrollbarThemePainter {
   virtual void PaintForwardButtonEnd(SkCanvas* canvas, gfx::Rect rect) OVERRIDE;
   virtual void PaintTickmarks(SkCanvas* canvas, gfx::Rect rect) OVERRIDE;
   virtual void PaintThumb(SkCanvas* canvas, gfx::Rect rect) OVERRIDE;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PinchZoomScrollbarPainter);
 };
 
 }  // namespace cc

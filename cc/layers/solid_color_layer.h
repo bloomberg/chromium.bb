@@ -27,6 +27,8 @@ class CC_EXPORT SolidColorLayer : public Layer {
 
  private:
   virtual ~SolidColorLayer();
+
+  DISALLOW_COPY_AND_ASSIGN(SolidColorLayer);
 };
 
 }  // namespace cc

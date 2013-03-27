@@ -28,6 +28,8 @@ class CC_EXPORT HeadsUpDisplayLayer : public Layer {
 
  private:
   virtual ~HeadsUpDisplayLayer();
+
+  DISALLOW_COPY_AND_ASSIGN(HeadsUpDisplayLayer);
 };
 
 }  // namespace cc

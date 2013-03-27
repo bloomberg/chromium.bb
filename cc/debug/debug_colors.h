@@ -104,6 +104,7 @@ class DebugColors {
   static SkColor MemoryDisplayTextColor();
   static SkColor PaintTimeDisplayTextAndGraphColor();
 
+ private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(DebugColors);
 };
 

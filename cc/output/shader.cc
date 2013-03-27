@@ -443,6 +443,9 @@ void FragmentTexOpaqueBinding::Init(WebGraphicsContext3D* context,
   DCHECK(sampler_location_ != -1);
 }
 
+FragmentShaderOESImageExternal::FragmentShaderOESImageExternal()
+    : sampler_location_(-1) {}
+
 bool FragmentShaderOESImageExternal::Init(WebGraphicsContext3D* context,
                                           unsigned program,
                                           bool using_bind_uniform,
