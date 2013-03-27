@@ -1320,8 +1320,9 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
   // Make the primary display smaller.
   // Expect that all panels except P5 should be collapsed and their bounds
   // should be updated.
-  gfx::Rect primary_display_area(0, 0, 500, 300);
-  gfx::Rect primary_work_area(0, 0, 500, 280);
+  int new_primary_area_width = 500;
+  gfx::Rect primary_display_area(0, 0, new_primary_area_width, 300);
+  gfx::Rect primary_work_area(0, 0, new_primary_area_width, 280);
   mock_display_settings_provider()->SetPrimaryDisplay(
       primary_display_area, primary_work_area);
 
@@ -1332,9 +1333,10 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
   EXPECT_FALSE(panel5->IsMinimized());
 
   gfx::Rect bounds1 = panel1->GetBounds();
-  EXPECT_LE(primary_work_area.x(), bounds1.x());
+  EXPECT_EQ(primary_work_area.x(), bounds1.x());
   EXPECT_LE(bounds1.x(), primary_work_area.right());
   EXPECT_LE(primary_work_area.y(), bounds1.y());
+  EXPECT_EQ(new_primary_area_width, bounds1.width());
 
   gfx::Rect bounds2 = panel2->GetBounds();
   EXPECT_EQ(bounds1.x(), bounds2.x());

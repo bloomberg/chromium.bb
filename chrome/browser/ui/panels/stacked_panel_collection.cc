@@ -65,7 +65,7 @@ void StackedPanelCollection::OnDisplayChanged() {
        iter != panels_.end(); iter++) {
     Panel* panel = *iter;
     gfx::Rect bounds = panel->GetBounds();
-    bounds.SetRect(common_x, start_y, common_x, bounds.height());
+    bounds.SetRect(common_x, start_y, common_width, bounds.height());
     panel->SetPanelBoundsInstantly(bounds);
     start_y += bounds.height();
   }
