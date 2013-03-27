@@ -11,6 +11,11 @@ body {
   width: 100%;
 }
 
+body {
+  -webkit-flex-direction: column;
+  display: -webkit-flex;
+}
+
 list {
   display: block;
   overflow-x: hidden;
@@ -21,7 +26,7 @@ list > * {
   -webkit-padding-end: 20px;
   -webkit-padding-start: 3px;
   color: hsl(0, 0%, 70%);
-  display: -webkit-box;
+  display: -webkit-flex;
   line-height: 20px;
   margin: 0;
   padding-bottom: 0;
@@ -46,9 +51,12 @@ list > * > .label {
 }
 
 list > * > .url {
-  -webkit-box-flex: 1;
+  -webkit-flex: 1;
   direction: ltr; /* URLs always read LTR */
   display: none;
+  /* TODO(arv): Remove min-width once bug is fixed:
+   * https://bugs.webkit.org/show_bug.cgi?id=111790 */
+  min-width: 0;
 }
 
 list > :hover > .url,
@@ -193,16 +201,11 @@ list > .folder > .label,
 </if>
 
 .main {
-  bottom: 0;
-  display: -webkit-box;
-  left: 0;
-  position: absolute;
-  right: 0;
-  top: 79px;
-}
-
-.main > * {
-  height: 100%;
+  -webkit-flex: 1;
+  display: -webkit-flex;
+  /* TODO(arv): Remove min-height once bug is fixed:
+   * https://bugs.webkit.org/show_bug.cgi?id=111790 */
+  min-height: 0;
 }
 
 #tree-container {
@@ -233,8 +236,11 @@ list > .folder > .label,
 }
 
 #list {
-  -webkit-box-flex: 1;
+  -webkit-flex: 1;
   box-sizing: border-box;
+  /* TODO(arv): Remove min-width once bug is fixed:
+   * https://bugs.webkit.org/show_bug.cgi?id=111790 */
+  min-width: 0;
   padding: 5px;
 }
 
