@@ -29,6 +29,9 @@ def main():
       '-s', '--swarm-server',
       default='https://chromium-swarm-dev.appspot.com/',
       help='Isolate server to use default:%default')
+  parser.add_option(
+      '-l', '--logs',
+      help='Destination where to store the failure logs (recommended)')
   parser.add_option('-v', '--verbose', action='store_true')
   options, args = parser.parse_args()
   if args:
@@ -100,7 +103,7 @@ def main():
               '--test-name-prefix', prefix,
               '--data-server', options.isolate_server,
               '--run_from_hash', hashvals[i][j],
-              'swarm_client_tests_' + platform + os.path.basename(test),
+              'swarm_client_tests_%s_%s' % (platform, os.path.basename(test)),
               # Number of shards.
               '1',
               '',
@@ -114,13 +117,13 @@ def main():
       print('  %s' % os.path.basename(test))
       for platform in oses:
         print('    Retrieving results for %s' % platform)
+        name = '%s_%s' % (platform, os.path.basename(test))
         process = subprocess.Popen(
             [
               sys.executable,
               'swarm_get_results.py',
               '--url', options.swarm_server,
-              prefix + 'swarm_client_tests_' + platform +
-                os.path.basename(test),
+              prefix + 'swarm_client_tests_' + name,
             ],
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
@@ -131,6 +134,9 @@ def main():
         if process.returncode:
           print stdout
           failed_tests.setdefault(test, []).append(platform)
+          if options.logs:
+            with open(os.path.join(options.logs, name + '.log'), 'wb') as f:
+              f.write(stdout)
         result = result or process.returncode
   finally:
     shutil.rmtree(tempdir)
