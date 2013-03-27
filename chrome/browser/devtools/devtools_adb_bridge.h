@@ -66,10 +66,13 @@ class DevToolsAdbBridge {
 
   void Query(const std::string query, const Callback& callback);
   void Pages(const PagesCallback& callback);
-  void Attach(scoped_refptr<RemotePage> page);
+  void Attach(const std::string& serial,
+              const std::string& debug_url,
+              const std::string& frontend_url);
 
  private:
-  friend class AdbWebSocket;
+  friend class AdbAttachCommand;
+  friend class AgentHostDelegate;
 
   class RefCountedAdbThread : public base::RefCounted<RefCountedAdbThread> {
    public:

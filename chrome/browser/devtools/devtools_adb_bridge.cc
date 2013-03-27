@@ -4,13 +4,16 @@
 
 #include "chrome/browser/devtools/devtools_adb_bridge.h"
 
+#include <map>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/json/json_reader.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/message_loop_proxy.h"
+#include "base/rand_util.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/strings/string_number_conversions.h"
@@ -21,6 +24,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_client_host.h"
+#include "content/public/browser/devtools_external_agent_proxy.h"
+#include "content/public/browser/devtools_external_agent_proxy_delegate.h"
 #include "content/public/browser/devtools_manager.h"
 #include "net/base/net_errors.h"
 #include "net/server/web_socket.h"
@@ -180,17 +185,185 @@ class AdbPagesCommand : public base::RefCounted<AdbPagesCommand> {
   scoped_ptr<DevToolsAdbBridge::RemotePages> pages_;
 };
 
+}  // namespace
+
+class AgentHostDelegate;
+
+typedef std::map<std::string, AgentHostDelegate*> AgentHostDelegates;
+
+base::LazyInstance<AgentHostDelegates>::Leaky g_host_delegates =
+    LAZY_INSTANCE_INITIALIZER;
+
+class AgentHostDelegate : public base::RefCountedThreadSafe<AgentHostDelegate>,
+                          public content::DevToolsExternalAgentProxyDelegate {
+ public:
+  AgentHostDelegate(
+      const std::string& id,
+      scoped_refptr<DevToolsAdbBridge::RefCountedAdbThread> adb_thread,
+      net::TCPClientSocket* socket)
+      : id_(id),
+        adb_thread_(adb_thread),
+        socket_(socket) {
+    AddRef();  // Balanced in SelfDestruct.
+    proxy_.reset(content::DevToolsExternalAgentProxy::Create(this));
+    g_host_delegates.Get()[id] = this;
+  }
+
+  scoped_refptr<content::DevToolsAgentHost> GetAgentHost() {
+    return proxy_->GetAgentHost();
+  }
+
+ private:
+  friend class base::RefCountedThreadSafe<AgentHostDelegate>;
+
+  virtual ~AgentHostDelegate() {
+    g_host_delegates.Get().erase(id_);
+  }
+
+  virtual void Attach() OVERRIDE {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    adb_thread_->message_loop()->PostTask(
+        FROM_HERE,
+        base::Bind(&AgentHostDelegate::StartListeningOnHandlerThread, this));
+  }
+
+  virtual void Detach() OVERRIDE {
+    adb_thread_->message_loop()->PostTask(
+        FROM_HERE,
+        base::Bind(&AgentHostDelegate::CloseConnection, this, net::OK, false));
+  }
+
+  virtual void SendMessageToBackend(const std::string& message) OVERRIDE {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    adb_thread_->message_loop()->PostTask(
+        FROM_HERE,
+        base::Bind(&AgentHostDelegate::SendFrameOnHandlerThread, this,
+                   message));
+  }
+
+  void StartListeningOnHandlerThread() {
+    scoped_refptr<net::IOBuffer> response_buffer =
+        new net::IOBuffer(kBufferSize);
+    int result = socket_->Read(response_buffer, kBufferSize,
+        base::Bind(&AgentHostDelegate::OnBytesRead, this, response_buffer));
+    if (result != net::ERR_IO_PENDING)
+      OnBytesRead(response_buffer, result);
+  }
+
+  void OnBytesRead(scoped_refptr<net::IOBuffer> response_buffer, int result) {
+    if (!socket_)
+      return;
+
+    if (result <= 0) {
+      CloseIfNecessary(net::ERR_CONNECTION_CLOSED);
+      return;
+    }
+
+    std::string data = std::string(response_buffer->data(), result);
+    response_buffer_ += data;
+
+    int bytes_consumed;
+    std::string output;
+    WebSocket::ParseResult parse_result = WebSocket::DecodeFrameHybi17(
+        response_buffer_, false, &bytes_consumed, &output);
+
+    while (parse_result == WebSocket::FRAME_OK) {
+      response_buffer_ = response_buffer_.substr(bytes_consumed);
+      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+          base::Bind(&AgentHostDelegate::OnFrameRead, this, output));
+      parse_result = WebSocket::DecodeFrameHybi17(
+          response_buffer_, false, &bytes_consumed, &output);
+    }
+
+    if (parse_result == WebSocket::FRAME_ERROR ||
+        parse_result == WebSocket::FRAME_CLOSE) {
+      CloseIfNecessary(net::ERR_CONNECTION_CLOSED);
+      return;
+    }
+
+    result = socket_->Read(response_buffer, kBufferSize,
+        base::Bind(&AgentHostDelegate::OnBytesRead, this, response_buffer));
+    if (result != net::ERR_IO_PENDING)
+      OnBytesRead(response_buffer, result);
+  }
+
+  void SendFrameOnHandlerThread(const std::string& data) {
+    int mask = base::RandInt(0, 0x7FFFFFFF);
+    std::string encoded_frame = WebSocket::EncodeFrameHybi17(data, mask);
+    scoped_refptr<net::StringIOBuffer> request_buffer =
+        new net::StringIOBuffer(encoded_frame);
+    if (!socket_)
+      return;
+    int result = socket_->Write(request_buffer, request_buffer->size(),
+        base::Bind(&AgentHostDelegate::CloseIfNecessary, this));
+    if (result != net::ERR_IO_PENDING)
+      CloseIfNecessary(result);
+  }
+
+  void CloseConnection(int result, bool initiated_by_me) {
+    if (!socket_)
+      return;
+    socket_->Disconnect();
+    socket_.reset();
+    if (initiated_by_me) {
+      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+          base::Bind(&AgentHostDelegate::OnSocketClosed, this, result));
+    }
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+        base::Bind(&AgentHostDelegate::SelfDestruct, this));
+  }
+
+  void SelfDestruct() {
+    Release();  // Balanced in constructor.
+  }
+
+  void CloseIfNecessary(int result) {
+    if (result >= 0)
+      return;
+    CloseConnection(result, true);
+  }
+
+  void OnFrameRead(const std::string& message) {
+    scoped_ptr<base::Value> value(base::JSONReader::Read(message));
+    DictionaryValue* dvalue;
+    if (!value || !value->GetAsDictionary(&dvalue))
+      return;
+
+    content::DevToolsManager* manager = content::DevToolsManager::GetInstance();
+    content::DevToolsClientHost* client_host =
+        manager->GetDevToolsClientHostFor(proxy_->GetAgentHost());
+    if (client_host)
+      client_host->DispatchOnInspectorFrontend(message);
+  }
+
+  void OnSocketClosed(int result) {
+    proxy_->ConnectionClosed();
+  }
+
+  std::string id_;
+  scoped_refptr<DevToolsAdbBridge::RefCountedAdbThread> adb_thread_;
+  scoped_ptr<net::TCPClientSocket> socket_;
+  scoped_ptr<content::DevToolsExternalAgentProxy> proxy_;
+  std::string response_buffer_;
+  DISALLOW_COPY_AND_ASSIGN(AgentHostDelegate);
+};
+
 class AdbAttachCommand : public base::RefCounted<AdbAttachCommand> {
  public:
-  explicit AdbAttachCommand(scoped_refptr<DevToolsAdbBridge::RemotePage> page)
-      : page_(page) {
+  explicit AdbAttachCommand(const base::WeakPtr<DevToolsAdbBridge>& bridge,
+                            const std::string& serial,
+                            const std::string& debug_url,
+                            const std::string& frontend_url)
+      : bridge_(bridge),
+        serial_(serial),
+        debug_url_(debug_url),
+        frontend_url_(frontend_url) {
   }
 
   void Run() {
     AdbClientSocket::HttpQuery(
-        kAdbPort, page_->serial(), kDevToolsChannelName,
-        base::StringPrintf(kWebSocketUpgradeRequest,
-                           page_->debug_url().c_str()),
+        kAdbPort, serial_, kDevToolsChannelName,
+        base::StringPrintf(kWebSocketUpgradeRequest, debug_url_.c_str()),
         base::Bind(&AdbAttachCommand::Handle, this));
   }
 
@@ -208,14 +381,32 @@ class AdbAttachCommand : public base::RefCounted<AdbAttachCommand> {
 
   void OpenDevToolsWindow(net::TCPClientSocket* socket) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    scoped_ptr<net::TCPClientSocket> tcp_socket(socket);
-    // TODO(pfeldman): Show DevToolsWindow here.
+
+    DevToolsAdbBridge* bridge = bridge_.get();
+    if (!bridge)
+      return;
+
+    std::string id = base::StringPrintf("%s:%s", serial_.c_str(),
+                                        debug_url_.c_str());
+    AgentHostDelegates::iterator it = g_host_delegates.Get().find(id);
+    AgentHostDelegate* delegate;
+    if (it != g_host_delegates.Get().end())
+      delegate = it->second;
+    else
+      delegate = new AgentHostDelegate(id, bridge->adb_thread_, socket);
+    // TODO(pfeldman): uncomment once DevToolsWindow is ready for external
+    // hosts.
+    // DevToolsWindow::OpenExternalFrontend(bridge->profile_,
+    //                                      frontend_url_,
+    //                                      delegate->GetAgentHost());
+    LOG(INFO) << delegate;
   }
 
-  scoped_refptr<DevToolsAdbBridge::RemotePage> page_;
+  base::WeakPtr<DevToolsAdbBridge> bridge_;
+  std::string serial_;
+  std::string debug_url_;
+  std::string frontend_url_;
 };
-
-}  // namespace
 
 DevToolsAdbBridge::RemotePage::RemotePage(const std::string& serial,
                                           const std::string& model,
@@ -238,6 +429,8 @@ DevToolsAdbBridge::RemotePage::RemotePage(const std::string& serial,
   size_t ws_param = frontend_url_.find("?ws");
   if (ws_param != std::string::npos)
     frontend_url_ = frontend_url_.substr(0, ws_param);
+  if (frontend_url_.find("http:") == 0)
+    frontend_url_ = "https:" + frontend_url_.substr(5);
 }
 
 DevToolsAdbBridge::RemotePage::~RemotePage() {
@@ -320,12 +513,16 @@ void DevToolsAdbBridge::Pages(const PagesCallback& callback) {
       base::Bind(&AdbPagesCommand::Run, command));
 }
 
-void DevToolsAdbBridge::Attach(scoped_refptr<RemotePage> page) {
+void DevToolsAdbBridge::Attach(const std::string& serial,
+                               const std::string& debug_url,
+                               const std::string& frontend_url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!has_message_loop_)
     return;
 
-  scoped_refptr<AdbAttachCommand> command(new AdbAttachCommand(page));
+  scoped_refptr<AdbAttachCommand> command(
+      new AdbAttachCommand(weak_factory_.GetWeakPtr(), serial, debug_url,
+                           frontend_url));
   adb_thread_->message_loop()->PostTask(
       FROM_HERE,
       base::Bind(&AdbAttachCommand::Run, command));
