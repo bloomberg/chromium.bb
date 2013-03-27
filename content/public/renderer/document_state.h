@@ -169,6 +169,15 @@ class DocumentState : public WebKit::WebDataSource::ExtraData {
     searchable_form_encoding_ = encoding;
   }
 
+  // If set, contains the PasswordForm that we believe triggered the current
+  // navigation (there is some ambiguity in the case of javascript initiated
+  // navigations). This information is used by the PasswordManager to determine
+  // if the user should be prompted to save their password.
+  //
+  // Note that setting this field doesn't affect where the data is sent or what
+  // origin we associate it with, only whether we prompt the user to save it.
+  // That is, a false positive is a usability issue (e.g. may try to save a
+  // mis-typed password) not a security issue.
   PasswordForm* password_form_data() const {
     return password_form_data_.get();
   }

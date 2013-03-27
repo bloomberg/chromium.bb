@@ -1359,6 +1359,7 @@
         'browser/net/websocket_browsertest.cc',
         'browser/notifications/message_center_notifications_browsertest.cc',
         'browser/page_cycler/page_cycler_browsertest.cc',
+        'browser/password_manager/password_manager_browsertest.cc',
         'browser/performance_monitor/performance_monitor_browsertest.cc',
         'browser/policy/cloud/cloud_policy_browsertest.cc',
         'browser/policy/cloud/cloud_policy_manager_browsertest.cc',

@@ -3357,6 +3357,23 @@ void RenderViewImpl::didStartProvisionalLoad(WebFrame* frame) {
     navigation_gesture_ = WebUserGestureIndicator::isProcessingUserGesture() ?
         NavigationGestureUser : NavigationGestureAuto;
 
+    // If the navigation is not triggered by a user gesture, e.g. by some ajax
+    // callback, then inherit the submitted password form from the previous
+    // state. This fixes the no password save issue for ajax login, tracked in
+    // [http://crbug/43219]. Note that there are still some sites that this
+    // fails for because they use some element other than a submit button to
+    // trigger submission.
+    if (navigation_gesture_ == NavigationGestureAuto) {
+      DocumentState* old_document_state = DocumentState::FromDataSource(
+          frame->dataSource());
+      const content::PasswordForm* old_password_form =
+          old_document_state->password_form_data();
+      if (old_password_form) {
+        document_state->set_password_form_data(
+            make_scoped_ptr(new content::PasswordForm(*old_password_form)));
+      }
+    }
+
     // Make sure redirect tracking state is clear for the new load.
     completed_client_redirect_src_ = Referrer();
   } else if (frame->parent()->isLoading()) {
