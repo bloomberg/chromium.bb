@@ -427,6 +427,8 @@ html[dir='rtl'] .site-domain-arrow.expand {
 }
 
 button.menu-button.drop-down {
+  /* Workaround for bug in flex box: http://crbug.com/223542 */
+  min-width: 12px;
   top: 0;
 }
 
