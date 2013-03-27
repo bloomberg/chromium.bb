@@ -280,6 +280,7 @@
         '-DANDROID_SDK_VERSION=<(android_sdk_version)',
         '-DAPK_NAME=<(apk_name)',
         '-DCREATE_TEST_JAR_PATH=<(DEPTH)/build/android/ant/create-test-jar.js',
+        '-DCONFIGURATION_NAME=<(CONFIGURATION_NAME)',
         '-DGENERATED_SRC_DIRS=>(generated_src_dirs)',
         '-DINPUT_JARS_PATHS=>(input_jars_paths)',
         '-DIS_TEST_APK=<(is_test_apk)',

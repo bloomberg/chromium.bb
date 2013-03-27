@@ -29,6 +29,11 @@
   <property name="target" value="android-${ANDROID_SDK_VERSION}"/>
   <property name="android.tools.dir" location="${sdk.dir}/tools" />
 
+  <property name="project.target.android.jar" location="${ANDROID_SDK_JAR}" />
+  <path id="project.target.class.path">
+    <pathelement location="${project.target.android.jar}" />
+  </path>
+
 
   <!-- jar file from where the tasks are loaded -->
   <path id="android.antlibs">
@@ -70,7 +75,13 @@
         <script language="javascript" src="${create.test.jar.file}"/>
       </then>
     </if>
-    <if condition="${proguard.enabled}">
+    <if>
+      <condition>
+        <and>
+          <istrue value="${proguard.enabled}"/>
+          <equals arg1="${CONFIGURATION_NAME}" arg2="Release"/>
+        </and>
+      </condition>
       <then>
         <property name="obfuscate.absolute.dir" location="${out.absolute.dir}/proguard"/>
         <property name="preobfuscate.jar.file" value="${obfuscate.absolute.dir}/original.jar"/>
