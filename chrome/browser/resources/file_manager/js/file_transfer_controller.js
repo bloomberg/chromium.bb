@@ -494,6 +494,10 @@ FileTransferController.prototype = {
     if (domElement && isDirectory && destinationPath &&
         this.canPasteOrDrop_(dataTransfer, destinationPath)) {
       this.navigateTimer_ = setTimeout(function() {
+        if (domElement instanceof DirectoryItem)
+          // Do custom action.
+          (/** @type {DirectoryItem} */ domElement).doDropTargetAction();
+
         this.directoryModel_.changeDirectory(destinationPath);
       }.bind(this), 2000);
     }

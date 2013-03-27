@@ -168,7 +168,7 @@ DirectoryItem.prototype.decorate = function(
   // Special search does not have children.
   this.hasChildren = !PathUtil.isSpecialSearchRoot(path);
 
-  this.addEventListener('expand', this.onExpand_.bind(this), true);
+  this.addEventListener('expand', this.onExpand_.bind(this), false);
   var volumeManager = VolumeManager.getInstance();
   var icon = this.querySelector('.icon');
   if (PathUtil.isRootPath(path)) {
@@ -268,6 +268,13 @@ DirectoryItem.prototype.redrawSubDirectoryList_ = function() {
       this,
       function(i) { return entries[i]; },
       this.directoryModel_);
+};
+
+/**
+ * Executes the assigned action as a drop target.
+ */
+DirectoryItem.prototype.doDropTargetAction = function() {
+  this.expanded = true;
 };
 
 /**
