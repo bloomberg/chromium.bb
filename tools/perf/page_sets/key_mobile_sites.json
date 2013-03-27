@@ -1,10 +1,10 @@
 {
-  "description": "Mobile sites for M25",
+  "description": "Key mobile sites",
+  "archive_data_file": "../data/key_mobile_sites.json",
   "credentials_path": "../data/credentials.json",
   "user_agent_type": "mobile",
   "pages": [
     {
-      "disabled": "Disabled due to crbug.com/169980",
       "url": "http://www.androidpolice.com/2012/10/03/rumor-evidence-mounts-that-an-lg-optimus-g-nexus-is-coming-along-with-a-nexus-phone-certification-program/",
       "smoothness": { "action": "scroll" }
     },
@@ -29,7 +29,6 @@
       "smoothness": { "action": "scroll" }
     },
     {
-      "disabled": "Disabled due to crbug.com/169980",
       "url": "http://theverge.com",
       "smoothness": { "action": "scroll" }
     },
@@ -60,7 +59,6 @@
       "smoothness": { "action": "scroll" }
     },
     {
-      "disabled": "Disabled due to crbug.com/169980",
       "url": "https://www.google.com/#hl=en&q=barack+obama",
       "why": "top google property; a google tab is often open",
       "smoothness": { "action": "scroll" }
@@ -100,6 +98,7 @@
       "smoothness": { "action": "scroll" }
     },
     {
+      "disabled": "Forbidden (Rate Limit Exceeded)",
       "name": "Twitter",
       "url": "http://twitter.com/katyperry",
       "why": "#8 (Alexa global),Picked an interesting page",
@@ -222,7 +221,8 @@
       "smoothness": { "action": "scroll" }
     },
     {
-      "url": "http://www.sahadan.com/",
+      "disabled": "Crashes; crbug.com/223148",
+      "url": "http://www.sahadan.com/default.aspx",
       "smoothness": { "action": "scroll" }
     },
     {
@@ -259,6 +259,11 @@
     },
     {
       "url": "http://www.sueddeutsche.de",
+      "smoothness": { "action": "scroll" }
+    },
+    {
+      "url": "http://www.boingboing.net",
+      "why": "Problematic use of fixed position elements",
       "smoothness": { "action": "scroll" }
     }
   ]
