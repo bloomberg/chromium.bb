@@ -64,11 +64,12 @@ class ImageTransportSurface {
   virtual void OnResizeViewACK() = 0;
   virtual void OnResize(gfx::Size size) = 0;
 
-  // Creates the appropriate surface depending on the GL implementation.
-  static scoped_refptr<gfx::GLSurface>
-      CreateSurface(GpuChannelManager* manager,
-                    GpuCommandBufferStub* stub,
-                    const gfx::GLSurfaceHandle& handle);
+  // Creates a surface with the given attributes.
+  static scoped_refptr<gfx::GLSurface> CreateSurface(
+      GpuChannelManager* manager,
+      GpuCommandBufferStub* stub,
+      const gfx::GLSurfaceHandle& handle);
+
 #if defined(OS_MACOSX)
   CONTENT_EXPORT static void SetAllowOSMesaForTesting(bool allow);
 #endif
@@ -79,6 +80,18 @@ class ImageTransportSurface {
   virtual ~ImageTransportSurface();
 
  private:
+  // Creates the appropriate native surface depending on the GL implementation.
+  // This will be implemented separately by each platform.
+  //
+  // This will not be called for texture transport surfaces which are
+  // cross-platform. The platform implementation should only create the
+  // surface and should not initialize it. On failure, a null scoped_refptr
+  // should be returned.
+  static scoped_refptr<gfx::GLSurface> CreateNativeSurface(
+      GpuChannelManager* manager,
+      GpuCommandBufferStub* stub,
+      const gfx::GLSurfaceHandle& handle);
+
   DISALLOW_COPY_AND_ASSIGN(ImageTransportSurface);
 };
 

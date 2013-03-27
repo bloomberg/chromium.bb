@@ -12,6 +12,7 @@
 #include "content/common/gpu/gpu_channel_manager.h"
 #include "content/common/gpu/gpu_command_buffer_stub.h"
 #include "content/common/gpu/gpu_messages.h"
+#include "content/common/gpu/texture_image_transport_surface.h"
 #include "gpu/command_buffer/service/gpu_scheduler.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_switches.h"
@@ -22,6 +23,21 @@ namespace content {
 ImageTransportSurface::ImageTransportSurface() {}
 
 ImageTransportSurface::~ImageTransportSurface() {}
+
+scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateSurface(
+    GpuChannelManager* manager,
+    GpuCommandBufferStub* stub,
+    const gfx::GLSurfaceHandle& handle) {
+  scoped_refptr<gfx::GLSurface> surface;
+  if (handle.transport_type == gfx::TEXTURE_TRANSPORT)
+    surface = new TextureImageTransportSurface(manager, stub, handle);
+  else
+    surface = CreateNativeSurface(manager, stub, handle);
+
+  if (!surface->Initialize())
+    return NULL;
+  return surface;
+}
 
 ImageTransportHelper::ImageTransportHelper(ImageTransportSurface* surface,
                                            GpuChannelManager* manager,

@@ -7,7 +7,6 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/gpu/gpu_messages.h"
-#include "content/common/gpu/texture_image_transport_surface.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
@@ -437,49 +436,37 @@ bool g_allow_os_mesa = false;
 }  // namespace
 
 // static
-scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateSurface(
+scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateNativeSurface(
     GpuChannelManager* manager,
     GpuCommandBufferStub* stub,
     const gfx::GLSurfaceHandle& surface_handle) {
-  scoped_refptr<gfx::GLSurface> surface;
-  if (surface_handle.transport_type == gfx::TEXTURE_TRANSPORT) {
-     surface = new TextureImageTransportSurface(manager, stub, surface_handle);
-  } else {
-    DCHECK(surface_handle.transport_type == gfx::NATIVE_TRANSPORT);
-    IOSurfaceSupport* io_surface_support = IOSurfaceSupport::Initialize();
+  DCHECK(surface_handle.transport_type == gfx::NATIVE_TRANSPORT);
+  IOSurfaceSupport* io_surface_support = IOSurfaceSupport::Initialize();
 
-    switch (gfx::GetGLImplementation()) {
-      case gfx::kGLImplementationDesktopGL:
-      case gfx::kGLImplementationAppleGL:
-        if (!io_surface_support) {
-          DLOG(WARNING) << "No IOSurface support";
-          return NULL;
-        } else {
-          surface = new IOSurfaceImageTransportSurface(
-              manager, stub, surface_handle.handle);
-        }
-        break;
-      default:
-        // Content shell in DRT mode spins up a gpu process which needs an
-        // image transport surface, but that surface isn't used to read pixel
-        // baselines. So this is mostly a dummy surface.
-        if (g_allow_os_mesa) {
-          surface = new DRTSurfaceOSMesa();
-          if (!surface || !surface->Initialize())
-            return NULL;
+  switch (gfx::GetGLImplementation()) {
+    case gfx::kGLImplementationDesktopGL:
+    case gfx::kGLImplementationAppleGL:
+      if (!io_surface_support) {
+        DLOG(WARNING) << "No IOSurface support";
+        return scoped_refptr<gfx::GLSurface>();
+      }
+      return scoped_refptr<gfx::GLSurface>(new IOSurfaceImageTransportSurface(
+          manager, stub, surface_handle.handle));
 
-          surface = new PassThroughImageTransportSurface(
-              manager, stub, surface.get(), /*is_transport=*/false);
-        } else {
-          NOTREACHED();
-          return NULL;
-        }
-    }
+    default:
+      // Content shell in DRT mode spins up a gpu process which needs an
+      // image transport surface, but that surface isn't used to read pixel
+      // baselines. So this is mostly a dummy surface.
+      if (!g_allow_os_mesa) {
+        NOTREACHED();
+        return scoped_refptr<gfx::GLSurface>();
+      }
+      scoped_refptr<gfx::GLSurface> surface(new DRTSurfaceOSMesa());
+      if (!surface || !surface->Initialize())
+        return surface;
+      return scoped_refptr<gfx::GLSurface>(new PassThroughImageTransportSurface(
+          manager, stub, surface.get(), false));
   }
-  if (surface->Initialize())
-    return surface;
-  else
-    return NULL;
 }
 
 // static
