@@ -47,6 +47,13 @@ def main():
     for i in glob.iglob(os.path.join(ROOT_DIR, '..', 'tests', '*_test.py'))
   ]
 
+  on_windows = sys.platform in ('win32', 'cygwin')
+  if on_windows:
+    # If we are on Windows, don't generate the tests for Linux and Mac since
+    # they use symlinks and we can't create symlinks on windows.
+    oses = ('win32')
+    isolate_oses = ('win')
+
   result = 0
   tempdir = tempfile.mkdtemp(prefix='swarm_client_tests')
   try:
@@ -127,6 +134,9 @@ def main():
         result = result or process.returncode
   finally:
     shutil.rmtree(tempdir)
+
+  if on_windows:
+    print 'Linux and Mac tests skipped since running on Windows.'
 
   if result:
     print 'Detected the following failures:'

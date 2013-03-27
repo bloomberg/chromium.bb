@@ -131,9 +131,6 @@ def expand_symlinks(indir, relfile):
   Fails when a directory loop is detected, although in theory we could support
   that case.
   """
-  if sys.platform == 'win32':
-    return relfile, []
-
   is_directory = relfile.endswith(os.path.sep)
   done = indir
   todo = relfile.strip(os.path.sep)
@@ -184,7 +181,7 @@ def expand_symlinks(indir, relfile):
   return relfile, symlinks
 
 
-def expand_directory_and_symlink(indir, relfile, blacklist):
+def expand_directory_and_symlink(indir, relfile, blacklist, follow_symlinks):
   """Expands a single input. It can result in multiple outputs.
 
   This function is recursive when relfile is a directory.
@@ -211,7 +208,9 @@ def expand_directory_and_symlink(indir, relfile, blacklist):
           'File path doesn\'t equal native file path\n%s != %s' %
           (filepath, native_filepath))
 
-  relfile, symlinks = expand_symlinks(indir, relfile)
+  symlinks = []
+  if follow_symlinks:
+    relfile, symlinks = expand_symlinks(indir, relfile)
 
   if relfile.endswith(os.path.sep):
     if not os.path.isdir(infile):
@@ -230,7 +229,8 @@ def expand_directory_and_symlink(indir, relfile, blacklist):
         if os.path.isdir(os.path.join(indir, inner_relfile)):
           inner_relfile += os.path.sep
         outfiles.extend(
-            expand_directory_and_symlink(indir, inner_relfile, blacklist))
+            expand_directory_and_symlink(indir, inner_relfile, blacklist,
+                                         follow_symlinks))
       return outfiles
     except OSError as e:
       raise run_isolated.MappingError('Unable to iterate over directories.\n'
@@ -249,7 +249,7 @@ def expand_directory_and_symlink(indir, relfile, blacklist):
 
 
 def expand_directories_and_symlinks(indir, infiles, blacklist,
-    ignore_broken_items):
+                                    follow_symlinks, ignore_broken_items):
   """Expands the directories and the symlinks, applies the blacklist and
   verifies files exist.
 
@@ -258,7 +258,8 @@ def expand_directories_and_symlinks(indir, infiles, blacklist,
   outfiles = []
   for relfile in infiles:
     try:
-      outfiles.extend(expand_directory_and_symlink(indir, relfile, blacklist))
+      outfiles.extend(expand_directory_and_symlink(indir, relfile, blacklist,
+                                                   follow_symlinks))
     except run_isolated.MappingError as e:
       if ignore_broken_items:
         logging.info('warning: %s', e)
@@ -1549,12 +1550,14 @@ class CompleteState(object):
       relpath(normpath(os.path.join(relative_base_dir, f)), root_dir)
       for f in touched
     ]
+    follow_symlinks = variables['OS'] != 'win'
     # Expand the directories by listing each file inside. Up to now, trailing
     # os.path.sep must be kept. Do not expand 'touched'.
     infiles = expand_directories_and_symlinks(
         root_dir,
         infiles,
         lambda x: re.match(r'.*\.(git|svn|pyc)$', x),
+        follow_symlinks,
         ignore_broken_items)
 
     # If we ignore broken items then remove any missing touched items.
