@@ -144,16 +144,6 @@ net/proxy/proxy_resolver_script.h
 net/socket/ssl_client_socket_nss.cc
 # Copyright The Android Open Source Project; ASL v2 license.
 skia/config/SkUserConfig.h
-# Copyright Google Inc; ASL v2 license.
-skia/ext/SkFontHost_fontconfig_control.h
-# Copyright Google Inc; ASL v2 license.
-skia/ext/SkFontHost_fontconfig.cpp
-# Copyright Google Inc; ASL v2 license.
-skia/ext/SkFontHost_fontconfig_direct.cpp
-# Copyright Google Inc; ASL v2 license.
-skia/ext/SkFontHost_fontconfig_direct.h
-# Copyright Google Inc; ASL v2 license.
-skia/ext/SkFontHost_fontconfig_impl.h
 # Contains word 'copyright' in comments.
 tools/gen_keyboard_overlay_data/gen_keyboard_overlay_data.py
 # Copyright Ero Carrera; BSD license. Tool only.
