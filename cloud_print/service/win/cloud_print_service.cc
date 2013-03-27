@@ -28,6 +28,7 @@
 
 namespace {
 
+const wchar_t kAppDataSubDir[] = L"Google\\Cloud Printe Service";
 const wchar_t kServiceStateFileName[] = L"Service State";
 
 void InvalidUsage() {
@@ -40,7 +41,7 @@ void InvalidUsage() {
     std::cout << "[";
       std::cout << "[";
         std::cout << " -" << kInstallSwitch;
-        std::cout << " -" << switches::kUserDataDir << "=DIRECTORY";
+        std::cout << " [ -" << switches::kUserDataDir << "=DIRECTORY ]";
       std::cout << "]";
     std::cout << "]";
     std::cout << " | -" << kUninstallSwitch;
@@ -179,7 +180,8 @@ class CloudPrintServiceModule
       return E_INVALIDARG;
     *is_service = false;
 
-    user_data_dir_ = command_line.GetSwitchValuePath(switches::kUserDataDir);
+    user_data_dir_switch_ =
+        command_line.GetSwitchValuePath(switches::kUserDataDir);
     if (command_line.HasSwitch(kStopSwitch))
       return controller_->StopService();
 
@@ -187,21 +189,20 @@ class CloudPrintServiceModule
       return controller_->UninstallService();
 
     if (command_line.HasSwitch(kInstallSwitch)) {
-      if (!command_line.HasSwitch(switches::kUserDataDir)) {
-        InvalidUsage();
-        return S_FALSE;
-      }
-
       string16 run_as_user;
       string16 run_as_password;
-      SelectWindowsAccount(&run_as_user, &run_as_password);
+      base::FilePath user_data_dir;
+      SelectWindowsAccount(&run_as_user, &run_as_password, &user_data_dir);
+      DCHECK(user_data_dir_switch_.empty() ||
+             user_data_dir_switch_ == user_data_dir);
 
-      HRESULT hr = SetupServiceState();
+      HRESULT hr = SetupServiceState(user_data_dir);
       if (FAILED(hr))
         return hr;
 
       hr = controller_->InstallService(run_as_user, run_as_password,
-                                       kServiceSwitch, user_data_dir_, true);
+                                       kServiceSwitch, user_data_dir_switch_,
+                                       true);
       if (SUCCEEDED(hr) && command_line.HasSwitch(kStartSwitch))
         return controller_->StartService();
 
@@ -231,7 +232,8 @@ class CloudPrintServiceModule
     return S_FALSE;
   }
 
-  void SelectWindowsAccount(string16* run_as_user, string16* run_as_password) {
+  void SelectWindowsAccount(string16* run_as_user, string16* run_as_password,
+                            base::FilePath* user_data_dir) {
     *run_as_user = GetCurrentUserName();
     for (;;) {
       std::cout << "\nPlease provide Windows account to run service.\n";
@@ -242,7 +244,7 @@ class CloudPrintServiceModule
       SetupListener setup(*run_as_user);
       if (FAILED(controller_->InstallService(*run_as_user, *run_as_password,
                                              kRequirementsSwitch,
-                                             user_data_dir_, false))) {
+                                             user_data_dir_switch_, false))) {
         LOG(ERROR) << "Failed to install service as " << *run_as_user << ".";
         continue;
       }
@@ -261,7 +263,7 @@ class CloudPrintServiceModule
         continue;
       }
       if (setup.user_data_dir().empty()) {
-        LOG(ERROR) << "Service can't access " << user_data_dir_.value() << ".";
+        LOG(ERROR) << "Service can't access user data dir.";
         continue;
       }
       if (setup.chrome_path().empty()) {
@@ -276,18 +278,20 @@ class CloudPrintServiceModule
       std::cout << "\nService requirements check result: \n";
       std::cout << "Username: " << setup.user_name()<< "\n";
       std::cout << "Chrome: " << setup.chrome_path().value()<< "\n";
+      std::cout << "UserDataDir: " << setup.user_data_dir().value()<< "\n";
       std::cout << "Printers:\n  ";
       std::ostream_iterator<std::string> cout_it(std::cout, "\n  ");
       std::copy(setup.printers().begin(), setup.printers().end(), cout_it);
       std::cout << "\n";
 
+      *user_data_dir = setup.user_data_dir();
       if (AskUser("Do you want to use " + WideToASCII(*run_as_user) + "?"))
         return;
     }
   }
 
-  HRESULT SetupServiceState() {
-    base::FilePath file = user_data_dir_.Append(kServiceStateFileName);
+  HRESULT SetupServiceState(const base::FilePath& user_data_dir) {
+    base::FilePath file = user_data_dir.Append(kServiceStateFileName);
 
     for (;;) {
       std::string contents;
@@ -338,11 +342,11 @@ class CloudPrintServiceModule
   }
 
   void CheckRequirements() {
-    setup_listener_.reset(new ServiceListener(user_data_dir_));
+    setup_listener_.reset(new ServiceListener(GetUserDataDir()));
   }
 
   HRESULT StartConnector() {
-    chrome_.reset(new ChromeLauncher(user_data_dir_));
+    chrome_.reset(new ChromeLauncher(GetUserDataDir()));
     return chrome_->Start() ? S_OK : E_FAIL;
   }
 
@@ -353,10 +357,18 @@ class CloudPrintServiceModule
     }
   }
 
+  base::FilePath GetUserDataDir() const {
+    if (!user_data_dir_switch_.empty())
+      return user_data_dir_switch_;
+    base::FilePath result;
+    CHECK(PathService::Get(base::DIR_LOCAL_APP_DATA, &result));
+    return result.Append(kAppDataSubDir);
+  }
+
   static BOOL WINAPI ConsoleCtrlHandler(DWORD type);
 
   bool check_requirements_;
-  base::FilePath user_data_dir_;
+  base::FilePath user_data_dir_switch_;
   scoped_ptr<ChromeLauncher> chrome_;
   scoped_ptr<ServiceController> controller_;
   scoped_ptr<ServiceListener> setup_listener_;

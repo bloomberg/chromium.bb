@@ -130,7 +130,8 @@ HRESULT ServiceController::InstallService(const string16& user,
   CHECK(PathService::Get(base::FILE_EXE, &service_path));
   CommandLine command_line(service_path);
   command_line.AppendSwitch(run_switch);
-  command_line.AppendSwitchPath(switches::kUserDataDir, user_data_dir);
+  if (!user_data_dir.empty())
+    command_line.AppendSwitchPath(switches::kUserDataDir, user_data_dir);
 
   LocalSecurityPolicy local_security_policy;
   if (local_security_policy.Open()) {
