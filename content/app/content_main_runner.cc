@@ -126,7 +126,11 @@ void EnableThemeSupportOnAllWindowStations() {
   DCHECK(current_station);
 
   HWINSTA winsta0 = ::OpenWindowStationA("WinSta0", FALSE, GENERIC_READ);
-  if (!winsta0 || !::SetProcessWindowStation(winsta0)) {
+  if (!winsta0) {
+    DLOG(INFO) << "Unable to open to WinSta0, we: "<< ::GetLastError();
+    return;
+  }
+  if (!::SetProcessWindowStation(winsta0)) {
     // Could not set the alternate window station. There is a possibility
     // that the theme wont be correctly initialized.
     NOTREACHED() << "Unable to switch to WinSta0, we: "<< ::GetLastError();
