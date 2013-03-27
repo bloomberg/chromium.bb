@@ -137,6 +137,8 @@ cr.define('cr.ui', function() {
         return;
 
       var item = this.selectedItem;
+      if (!item)
+        return;
 
       var rtl = getComputedStyle(item).direction == 'rtl';
 
