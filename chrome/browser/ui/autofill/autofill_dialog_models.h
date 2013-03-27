@@ -125,6 +125,9 @@ class AccountChooserModel : public ui::SimpleMenuModel,
   // Should be called when the Wallet server returns an error.
   void SetHadWalletError();
 
+  // Should be called when the Online Wallet sign-in attempt has failed.
+  void SetHadWalletSigninError();
+
   bool had_wallet_error() const { return had_wallet_error_; }
 
   bool WalletIsSelected() const;

@@ -160,6 +160,11 @@ void AccountChooserModel::SetHadWalletError() {
   account_delegate_->AccountChoiceChanged();
 }
 
+void AccountChooserModel::SetHadWalletSigninError() {
+  checked_item_ = kAutofillItemId;
+  account_delegate_->AccountChoiceChanged();
+}
+
 bool AccountChooserModel::WalletIsSelected() const {
   return checked_item_ == kWalletItemId;
 }

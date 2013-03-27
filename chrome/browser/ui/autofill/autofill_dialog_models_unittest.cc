@@ -62,6 +62,18 @@ TEST_F(AccountChooserModelTest, HandlesError) {
   EXPECT_FALSE(model()->IsCommandIdEnabled(0));
 }
 
+TEST_F(AccountChooserModelTest, HandlesSigninError) {
+  EXPECT_CALL(*delegate(), AccountChoiceChanged()).Times(2);
+
+  profile()->GetPrefs()->SetBoolean(
+      prefs::kAutofillDialogPayWithoutWallet, false);
+  EXPECT_TRUE(model()->WalletIsSelected());
+
+  model()->SetHadWalletSigninError();
+  EXPECT_FALSE(model()->WalletIsSelected());
+  EXPECT_TRUE(model()->IsCommandIdEnabled(0));
+}
+
 TEST_F(AccountChooserModelTest, RespectsUserChoice) {
   EXPECT_CALL(*delegate(), AccountChoiceChanged()).Times(3);
 

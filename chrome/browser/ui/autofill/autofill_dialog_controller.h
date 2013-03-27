@@ -58,6 +58,10 @@ class AutofillDialogController {
   // Whether the user is known to be signed in.
   virtual DialogSignedInState SignedInState() const = 0;
 
+  // Whether the dialog is in a not exactly well-defined state
+  // (while attempting to sign-in or retrieving the wallet data etc).
+  virtual bool ShouldShowSpinner() const = 0;
+
   // Whether to show the checkbox to save data locally (in Autofill).
   virtual bool ShouldOfferToSaveInChrome() const = 0;
 

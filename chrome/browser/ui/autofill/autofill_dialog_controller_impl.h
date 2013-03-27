@@ -28,6 +28,7 @@
 #include "components/autofill/browser/wallet/required_action.h"
 #include "components/autofill/browser/wallet/wallet_client.h"
 #include "components/autofill/browser/wallet/wallet_client_delegate.h"
+#include "components/autofill/browser/wallet/wallet_signin_helper_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/common/ssl_status.h"
@@ -53,6 +54,10 @@ namespace risk {
 class Fingerprint;
 }
 
+namespace wallet {
+class WalletSigninHelper;
+}
+
 // This class drives the dialog that appears when a site uses the imperative
 // autocomplete API to fill out a form.
 class AutofillDialogControllerImpl : public AutofillDialogController,
@@ -60,6 +65,7 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
                                      public content::NotificationObserver,
                                      public SuggestionsMenuModelDelegate,
                                      public wallet::WalletClientDelegate,
+                                     public wallet::WalletSigninHelperDelegate,
                                      public PersonalDataManagerObserver,
                                      public AccountChooserModelDelegate {
  public:
@@ -96,6 +102,7 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   virtual string16 CancelSignInText() const OVERRIDE;
   virtual string16 ProgressBarText() const OVERRIDE;
   virtual DialogSignedInState SignedInState() const OVERRIDE;
+  virtual bool ShouldShowSpinner() const OVERRIDE;
   virtual bool ShouldOfferToSaveInChrome() const OVERRIDE;
   virtual ui::MenuModel* MenuModelForAccountChooser() OVERRIDE;
   virtual gfx::Image AccountChooserImage() OVERRIDE;
@@ -193,6 +200,20 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // AccountChooserModelDelegate implementation.
   virtual void AccountChoiceChanged() OVERRIDE;
 
+  // wallet::WalletSigninHelperDelegate implementation.
+  virtual void OnPassiveSigninSuccess(
+      const std::string& auth_username) OVERRIDE;
+  virtual void OnPassiveSigninFailure(
+      const GoogleServiceAuthError& error) OVERRIDE;
+  virtual void OnAutomaticSigninSuccess(
+      const std::string& auth_username) OVERRIDE;
+  virtual void OnAutomaticSigninFailure(
+      const GoogleServiceAuthError& error) OVERRIDE;
+  virtual void OnUserNameFetchSuccess(
+      const std::string& auth_username) OVERRIDE;
+  virtual void OnUserNameFetchFailure(
+      const GoogleServiceAuthError& error) OVERRIDE;
+
   DialogType dialog_type() const { return dialog_type_; }
 
  protected:
@@ -235,6 +256,15 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
 
   // Whether the user's wallet items have at least one address and instrument.
   bool HasCompleteWallet() const;
+
+  // Starts fetching the wallet items.
+  void StartFetchingWalletItems();
+
+  // Refreshes the model on Wallet or sign-in state update.
+  void OnWalletOrSigninUpdate();
+
+  // Should be called on the Wallet sign-in error.
+  void OnWalletSigninError();
 
   // Creates a DataModelWrapper item for the item that's checked in the
   // suggestion model for |section|. This may represent Autofill
@@ -337,6 +367,16 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // The AccountChooserModel acts as the MenuModel for the account chooser,
   // and also tracks which data source the dialog is using.
   AccountChooserModel account_chooser_model_;
+
+  // The sign-in helper to fetch the user info and perform passive sign-in.
+  // The helper is set only during fetch/sign-in, and NULL otherwise.
+  scoped_ptr<wallet::WalletSigninHelper> signin_helper_;
+
+  // The user account name (email).
+  // Valid only if PayingWithWallet() and SigninState() == SIGNED_IN.
+  // Set whenever the sign-in helper fetches the user info.
+  // TODO(aruslan): this should be removed (AccountChooser should deal with it).
+  std::string current_username_;
 
   // A client to talk to the Online Wallet API.
   wallet::WalletClient wallet_client_;
