@@ -287,20 +287,11 @@ void WebUILoginDisplayHost::RenderViewGone(base::TerminationStatus status) {
     return;
 
   if (status != base::TERMINATION_STATUS_NORMAL_TERMINATION) {
-    // Restart if renderer has crashed.
-    LOG(ERROR) << "Renderer crash on login window";
-    switch (restore_path_) {
-      case RESTORE_WIZARD:
-        StartWizard(wizard_first_screen_name_,
-                    wizard_screen_parameters_.release());
-        break;
-      case RESTORE_SIGN_IN:
-        StartSignInScreen();
-        break;
-      default:
-        NOTREACHED();
-        break;
-    }
+    // Render with login screen crashed. Let's crash browser process to let
+    // session manager restart it properly. It is hard to reload the page
+    // and get to controlled state that is fully functional.
+    // If you see check, search for renderer crash for the same client.
+    LOG(FATAL) << "Renderer crash on login window";
   }
 }
 
