@@ -5,6 +5,10 @@
 
 """Simulate a failing google-test executable that return 0.
 
+The exit code is considered the primary reliable indicator of test success but
+the test case must still print [       OK ] to ensure that. Make sure
+run_test_cases correctly retry a test case even if the process exit code was 0.
+
 http://code.google.com/p/googletest/
 """
 

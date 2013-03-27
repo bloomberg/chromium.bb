@@ -5,6 +5,11 @@
 
 """Simulate a passing google-test executable that return 1.
 
+The exit code is considered the primary reliable indicator of test success. So
+even if all the test cases printed [       OK ], it doesn't mean the test run is
+valid if the exit code is non-zero. So run_test_cases.py must retry all the test
+cases individually to figure out which test case failed.
+
 http://code.google.com/p/googletest/
 """
 
