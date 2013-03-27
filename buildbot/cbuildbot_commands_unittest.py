@@ -15,6 +15,7 @@ from chromite.buildbot import cbuildbot_commands as commands
 from chromite.buildbot import cbuildbot_results as results_lib
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
+from chromite.lib import gs
 from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import partial_mock
@@ -444,4 +445,5 @@ class UnmockedTests(cros_test_lib.TempDirTestCase):
 
 
 if __name__ == '__main__':
+  gs.GSUTIL_BIN = '/fake/path/to/gsutil'
   cros_test_lib.main()
