@@ -644,7 +644,7 @@ ProfileImpl::~ProfileImpl() {
   if (host_content_settings_map_)
     host_content_settings_map_->ShutdownOnUIThread();
 
-#if defined(ENABLE_MANAGED_USERS)
+#if defined(ENABLE_CONFIGURATION_POLICY) && defined(ENABLE_MANAGED_USERS)
   if (managed_mode_policy_provider_)
     managed_mode_policy_provider_->Shutdown();
 #endif
@@ -788,7 +788,7 @@ Profile::ExitType ProfileImpl::GetLastSessionExitType() {
 }
 
 policy::ManagedModePolicyProvider* ProfileImpl::GetManagedModePolicyProvider() {
-#if defined(ENABLE_MANAGED_USERS)
+#if defined(ENABLE_CONFIGURATION_POLICY) && defined(ENABLE_MANAGED_USERS)
   return managed_mode_policy_provider_.get();
 #else
   return NULL;
