@@ -21,7 +21,7 @@ int DriveFileStreamReader::Read(net::IOBuffer* buf, int buf_len,
   return 0;
 }
 
-int DriveFileStreamReader::GetLength(
+int64 DriveFileStreamReader::GetLength(
     const net::Int64CompletionCallback& callback) {
   // TODO(hidehiko): Implement this.
   NOTIMPLEMENTED();

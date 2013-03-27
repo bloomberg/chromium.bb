@@ -184,17 +184,17 @@ TEST_F(FileSystemFileStreamReaderTest, Empty) {
   ASSERT_EQ(0U, data.size());
 
   net::TestInt64CompletionCallback callback;
-  result = reader->GetLength(callback.callback());
-  if (result == net::ERR_IO_PENDING)
-    result = callback.WaitForResult();
-  ASSERT_EQ(0, result);
+  int64 length_result = reader->GetLength(callback.callback());
+  if (length_result == net::ERR_IO_PENDING)
+    length_result = callback.WaitForResult();
+  ASSERT_EQ(0, length_result);
 }
 
 TEST_F(FileSystemFileStreamReaderTest, GetLengthNormal) {
   scoped_ptr<FileSystemFileStreamReader> reader(
       CreateFileReader(kTestFileName, 0, test_file_modification_time()));
   net::TestInt64CompletionCallback callback;
-  int result = reader->GetLength(callback.callback());
+  int64 result = reader->GetLength(callback.callback());
   if (result == net::ERR_IO_PENDING)
     result = callback.WaitForResult();
   ASSERT_EQ(kTestDataSize, result);
@@ -208,7 +208,7 @@ TEST_F(FileSystemFileStreamReaderTest, GetLengthAfterModified) {
   scoped_ptr<FileSystemFileStreamReader> reader(
       CreateFileReader(kTestFileName, 0, fake_expected_modification_time));
   net::TestInt64CompletionCallback callback;
-  int result = reader->GetLength(callback.callback());
+  int64 result = reader->GetLength(callback.callback());
   if (result == net::ERR_IO_PENDING)
     result = callback.WaitForResult();
   ASSERT_EQ(net::ERR_UPLOAD_FILE_CHANGED, result);
@@ -225,7 +225,7 @@ TEST_F(FileSystemFileStreamReaderTest, GetLengthWithOffset) {
   scoped_ptr<FileSystemFileStreamReader> reader(
       CreateFileReader(kTestFileName, 3, base::Time()));
   net::TestInt64CompletionCallback callback;
-  int result = reader->GetLength(callback.callback());
+  int64 result = reader->GetLength(callback.callback());
   if (result == net::ERR_IO_PENDING)
     result = callback.WaitForResult();
   // Initial offset does not affect the result of GetLength.

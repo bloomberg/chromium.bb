@@ -41,13 +41,13 @@ class WEBKIT_STORAGE_EXPORT LocalFileStreamReader : public FileStreamReader {
   LocalFileStreamReader(base::TaskRunner* task_runner,
                         const base::FilePath& file_path,
                         int64 initial_offset,
-                   const base::Time& expected_modification_time);
+                        const base::Time& expected_modification_time);
   virtual ~LocalFileStreamReader();
 
   // FileStreamReader overrides.
   virtual int Read(net::IOBuffer* buf, int buf_len,
                    const net::CompletionCallback& callback) OVERRIDE;
-  virtual int GetLength(
+  virtual int64 GetLength(
       const net::Int64CompletionCallback& callback) OVERRIDE;
 
  private:

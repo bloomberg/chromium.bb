@@ -57,7 +57,7 @@ int LocalFileStreamReader::Read(net::IOBuffer* buf, int buf_len,
                          make_scoped_refptr(buf), buf_len, callback));
 }
 
-int LocalFileStreamReader::GetLength(
+int64 LocalFileStreamReader::GetLength(
     const net::Int64CompletionCallback& callback) {
   const bool posted = base::FileUtilProxy::GetFileInfo(
       task_runner_, file_path_,

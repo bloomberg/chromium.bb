@@ -74,7 +74,7 @@ int FileSystemFileStreamReader::Read(
       callback);
 }
 
-int FileSystemFileStreamReader::GetLength(
+int64 FileSystemFileStreamReader::GetLength(
     const net::Int64CompletionCallback& callback) {
   if (local_file_reader_.get())
     return local_file_reader_->GetLength(callback);

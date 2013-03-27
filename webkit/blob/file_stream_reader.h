@@ -41,11 +41,14 @@ class WEBKIT_STORAGE_EXPORT FileStreamReader {
 
   // Returns the length of the file if it could successfully retrieve the
   // file info *and* its last modification time equals to
-  // expected_modification_time_ (rv >= 0 cases).
+  // expected modification time (rv >= 0 cases).
   // Otherwise, a negative error code is returned (rv < 0 cases).
   // If the stream is deleted while it has an in-flight GetLength operation
   // |callback| will not be called.
-  virtual int GetLength(const net::Int64CompletionCallback& callback) = 0;
+  // Note that the return type is int64 to return a larger file's size (a file
+  // larger than 2G) but an error code should fit in the int range (may be
+  // smaller than int64 range).
+  virtual int64 GetLength(const net::Int64CompletionCallback& callback) = 0;
 };
 
 }  // namespace webkit_blob

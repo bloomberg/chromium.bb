@@ -48,7 +48,7 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE FileSystemFileStreamReader
   // FileStreamReader overrides.
   virtual int Read(net::IOBuffer* buf, int buf_len,
                    const net::CompletionCallback& callback) OVERRIDE;
-  virtual int GetLength(
+  virtual int64 GetLength(
       const net::Int64CompletionCallback& callback) OVERRIDE;
 
  private:

@@ -46,7 +46,7 @@ int UploadFileSystemFileElementReader::Init(
           expected_modification_time_));
   DCHECK(stream_reader_);
 
-  const int result = stream_reader_->GetLength(
+  const int64 result = stream_reader_->GetLength(
       base::Bind(&UploadFileSystemFileElementReader::OnGetLength,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback));
@@ -54,7 +54,9 @@ int UploadFileSystemFileElementReader::Init(
     stream_length_ = result;
     return net::OK;
   }
-  return result;
+
+  // The error code can be casted to int.
+  return static_cast<int>(result);
 }
 
 uint64 UploadFileSystemFileElementReader::GetContentLength() const {

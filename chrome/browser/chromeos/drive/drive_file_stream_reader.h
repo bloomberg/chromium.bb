@@ -18,7 +18,8 @@ class DriveFileStreamReader : public webkit_blob::FileStreamReader {
   // webkit_blob::FileStreamReader overrides.
   virtual int Read(net::IOBuffer* buf, int buf_len,
                    const net::CompletionCallback& callback) OVERRIDE;
-  virtual int GetLength(const net::Int64CompletionCallback& callback) OVERRIDE;
+  virtual int64 GetLength(
+      const net::Int64CompletionCallback& callback) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DriveFileStreamReader);
