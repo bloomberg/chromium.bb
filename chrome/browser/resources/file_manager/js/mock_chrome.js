@@ -506,7 +506,6 @@ chrome.fileBrowserPrivate = {
       DRIVE_DIRECTORY_LABEL: 'Google Drive',
       DRIVE_OFFLINE_COLLECTION_LABEL: 'Offline',
       DRIVE_SHARED_WITH_ME_COLLECTION_LABEL: 'Shared with me',
-      DRIVE_DIRECTORY_LABEL: 'Google Drive',
       ENABLE_DRIVE: true,
       PDF_VIEW_ENABLED: true,
       SWF_VIEW_ENABLED: true,
