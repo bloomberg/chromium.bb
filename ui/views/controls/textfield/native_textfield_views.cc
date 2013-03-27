@@ -444,12 +444,17 @@ void NativeTextfieldViews::WriteDragDataForView(views::View* sender,
 
 int NativeTextfieldViews::GetDragOperationsForView(views::View* sender,
                                                    const gfx::Point& p) {
+  int drag_operations = ui::DragDropTypes::DRAG_COPY;
   if (!textfield_->enabled() || textfield_->IsObscured() ||
       !GetRenderText()->IsPointInSelection(p))
-    return ui::DragDropTypes::DRAG_NONE;
-  if (sender == this && !textfield_->read_only())
-    return ui::DragDropTypes::DRAG_MOVE | ui::DragDropTypes::DRAG_COPY;
-  return ui::DragDropTypes::DRAG_COPY;
+    drag_operations = ui::DragDropTypes::DRAG_NONE;
+  else if (sender == this && !textfield_->read_only())
+    drag_operations =
+        ui::DragDropTypes::DRAG_MOVE | ui::DragDropTypes::DRAG_COPY;
+  TextfieldController* controller = textfield_->GetController();
+  if (controller)
+    controller->OnGetDragOperationsForTextfield(&drag_operations);
+  return drag_operations;
 }
 
 bool NativeTextfieldViews::CanStartDragForView(View* sender,

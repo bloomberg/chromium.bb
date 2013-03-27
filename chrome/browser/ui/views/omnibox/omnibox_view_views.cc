@@ -42,6 +42,7 @@
 #include "ui/gfx/font.h"
 #include "ui/gfx/selection_model.h"
 #include "ui/views/border.h"
+#include "ui/views/button_drag_utils.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/ime/input_method.h"
 #include "ui/views/layout/fill_layout.h"
@@ -670,15 +671,33 @@ void OmniboxViewViews::OnAfterCutOrCopy() {
   }
 }
 
-void OmniboxViewViews::OnWriteDragData(ui::OSExchangeData* data) {
+void OmniboxViewViews::OnGetDragOperationsForTextfield(int* drag_operations) {
   string16 selected_text = GetSelectedText();
   GURL url;
   bool write_url;
   model()->AdjustTextForCopy(GetSelectedRange().GetMin(), IsSelectAll(),
                              &selected_text, &url, &write_url);
-  data->SetString(selected_text);
   if (write_url)
-    data->SetURL(url, selected_text);
+    *drag_operations |= ui::DragDropTypes::DRAG_LINK;
+}
+
+void OmniboxViewViews::OnWriteDragData(ui::OSExchangeData* data) {
+  string16 selected_text = GetSelectedText();
+  GURL url;
+  bool write_url;
+  bool is_all_selected = IsSelectAll();
+  model()->AdjustTextForCopy(GetSelectedRange().GetMin(), is_all_selected,
+                             &selected_text, &url, &write_url);
+  data->SetString(selected_text);
+  if (write_url) {
+    gfx::Image favicon;
+    string16 title = selected_text;
+    if (is_all_selected)
+      model()->GetDataForURLExport(&url, &title, &favicon);
+    button_drag_utils::SetURLAndDragImage(url, title, favicon.AsImageSkia(),
+                                          data, GetWidget());
+    data->SetURL(url, title);
+  }
 }
 
 void OmniboxViewViews::AppendDropFormats(

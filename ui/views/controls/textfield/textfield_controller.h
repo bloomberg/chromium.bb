@@ -58,6 +58,10 @@ class VIEWS_EXPORT TextfieldController {
   // chance to modify the drag data.
   virtual void OnWriteDragData(ui::OSExchangeData* data) {}
 
+  // Called after the textfield has set default drag operations to give the
+  // controller a chance to update them.
+  virtual void OnGetDragOperationsForTextfield(int* drag_operations) {}
+
   // Enables the controller to append to the accepted drop formats.
   virtual void AppendDropFormats(
       int* formats,
