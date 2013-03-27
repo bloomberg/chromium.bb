@@ -10,6 +10,7 @@
 #include "base/values.h"
 #include "chrome/common/extensions/csp_validator.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
+#include "chrome/common/extensions/manifest_handlers/sandboxed_page_info.h"
 
 namespace keys = extension_manifest_keys;
 namespace errors = extension_manifest_errors;
@@ -58,6 +59,15 @@ const std::string& CSPInfo::GetContentSecurityPolicy(
   CSPInfo* csp_info = static_cast<CSPInfo*>(
           extension->GetManifestData(keys::kContentSecurityPolicy));
   return csp_info ? csp_info->content_security_policy : EmptyString();
+}
+
+// static
+const std::string& CSPInfo::GetResourceContentSecurityPolicy(
+    const Extension* extension,
+    const std::string& relative_path) {
+  return SandboxedPageInfo::IsSandboxedPage(extension, relative_path) ?
+      SandboxedPageInfo::GetContentSecurityPolicy(extension) :
+      GetContentSecurityPolicy(extension);
 }
 
 CSPHandler::CSPHandler(bool is_platform_app)

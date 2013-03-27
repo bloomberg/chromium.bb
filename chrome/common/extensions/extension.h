@@ -214,15 +214,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool ResourceMatches(const URLPatternSet& pattern_set,
                        const std::string& resource) const;
 
-  // Returns true if the specified page is sandboxed (served in a unique
-  // origin).
-  bool IsSandboxedPage(const std::string& relative_path) const;
-
-  // Returns the Content Security Policy that the specified resource should be
-  // served with.
-  std::string GetResourceContentSecurityPolicy(const std::string& relative_path)
-      const;
-
   // Returns an extension resource object. |relative_path| should be UTF8
   // encoded.
   ExtensionResource GetResource(const std::string& relative_path) const;
@@ -557,7 +548,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool LoadDescription(string16* error);
   bool LoadManifestVersion(string16* error);
   bool LoadNaClModules(string16* error);
-  bool LoadSandboxedPages(string16* error);
   bool LoadKioskEnabled(string16* error);
   bool LoadOfflineEnabled(string16* error);
   bool LoadTextToSpeechVoices(string16* error);
@@ -656,15 +646,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // Optional list of NaCl modules and associated properties.
   std::vector<NaClModuleInfo> nacl_modules_;
-
-  // Optional list of extension pages that are sandboxed (served from a unique
-  // origin with a different Content Security Policy).
-  URLPatternSet sandboxed_pages_;
-
-  // Content Security Policy that should be used to enforce the sandbox used
-  // by sandboxed pages (guaranteed to have the "sandbox" directive without the
-  // "allow-same-origin" token).
-  std::string sandboxed_pages_content_security_policy_;
 
   // The public key used to sign the contents of the crx package.
   std::string public_key_;

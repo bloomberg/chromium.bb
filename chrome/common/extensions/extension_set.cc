@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/manifest_handlers/sandboxed_page_info.h"
 #include "chrome/common/url_constants.h"
 #include "extensions/common/constants.h"
 
@@ -168,7 +169,8 @@ bool ExtensionSet::IsSandboxedPage(const ExtensionURLInfo& info) const {
   if (info.url().SchemeIs(extensions::kExtensionScheme)) {
     const Extension* extension = GetByID(info.url().host());
     if (extension) {
-      return extension->IsSandboxedPage(info.url().path());
+      return extensions::SandboxedPageInfo::IsSandboxedPage(extension,
+                                                            info.url().path());
     }
   }
   return false;

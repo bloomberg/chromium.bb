@@ -28,6 +28,7 @@
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/extensions/incognito_handler.h"
 #include "chrome/common/extensions/manifest_handler.h"
+#include "chrome/common/extensions/manifest_handlers/sandboxed_page_info.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/extensions/web_accessible_resources_handler.h"
 #include "chrome/common/external_ipc_fuzzer.h"
@@ -140,12 +141,13 @@ const char kAdViewTagName[] = "ADVIEW";
 // fields used in the renderer.
 void RegisterExtensionManifestHandlers() {
   (new extensions::BackgroundManifestHandler)->Register();
-  (new extensions::DevToolsPageHandler)->Register();
-  (new extensions::WebAccessibleResourcesHandler)->Register();
-  (new extensions::PageActionHandler)->Register();
   (new extensions::CSPHandler(false))->Register();  // not platform app.
   (new extensions::CSPHandler(true))->Register();  // platform app.
+  (new extensions::DevToolsPageHandler)->Register();
   (new extensions::IncognitoHandler)->Register();
+  (new extensions::PageActionHandler)->Register();
+  (new extensions::SandboxedPageHandler)->Register();
+  (new extensions::WebAccessibleResourcesHandler)->Register();
 }
 
 static void AppendParams(const std::vector<string16>& additional_names,

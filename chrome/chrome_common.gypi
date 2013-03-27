@@ -248,6 +248,8 @@
         'common/extensions/manifest_handlers/content_scripts_handler.h',
         'common/extensions/manifest_handlers/requirements_handler.cc',
         'common/extensions/manifest_handlers/requirements_handler.h',
+        'common/extensions/manifest_handlers/sandboxed_page_info.cc',
+        'common/extensions/manifest_handlers/sandboxed_page_info.h',
         'common/extensions/manifest_url_handler.cc',
         'common/extensions/manifest_url_handler.h',
         'common/extensions/message_bundle.cc',

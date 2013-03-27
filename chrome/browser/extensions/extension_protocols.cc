@@ -22,6 +22,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/api/icons/icons_handler.h"
 #include "chrome/common/extensions/background_info.h"
+#include "chrome/common/extensions/csp_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/incognito_handler.h"
@@ -356,7 +357,8 @@ ExtensionProtocolHandler::MaybeCreateJob(
   if (extension) {
     std::string resource_path = request->url().path();
     content_security_policy =
-        extension->GetResourceContentSecurityPolicy(resource_path);
+        extensions::CSPInfo::GetResourceContentSecurityPolicy(extension,
+                                                              resource_path);
     if ((extension->manifest_version() >= 2 ||
          extensions::WebAccessibleResourcesInfo::HasWebAccessibleResources(
              extension)) &&

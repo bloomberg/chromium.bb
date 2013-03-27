@@ -24,6 +24,12 @@ struct CSPInfo : public Extension::ManifestData {
 
   static const std::string& GetContentSecurityPolicy(
       const Extension* extension);
+
+  // Returns the Content Security Policy that the specified resource should be
+  // served with.
+  static const std::string& GetResourceContentSecurityPolicy(
+      const Extension* extension,
+      const std::string& relative_path);
 };
 
 // Parses "content_security_policy" and "app.content_security_policy" keys.

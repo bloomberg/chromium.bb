@@ -32,8 +32,6 @@
 #include "chrome/common/extensions/api/plugins/plugins_handler.h"
 #include "chrome/common/extensions/api/themes/theme_handler.h"
 #include "chrome/common/extensions/background_info.h"
-#include "chrome/common/extensions/csp_handler.h"
-#include "chrome/common/extensions/csp_validator.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/feature_switch.h"
@@ -68,9 +66,6 @@ namespace values = extension_manifest_values;
 namespace errors = extension_manifest_errors;
 namespace info_keys = extension_info_keys;
 
-using extensions::csp_validator::ContentSecurityPolicyIsLegal;
-using extensions::csp_validator::ContentSecurityPolicyIsSandboxed;
-
 namespace extensions {
 
 namespace {
@@ -90,9 +85,6 @@ const char kPublic[] = "PUBLIC";
 const char kPrivate[] = "PRIVATE";
 
 const int kRSAKeySize = 1024;
-
-const char kDefaultSandboxedPageContentSecurityPolicy[] =
-    "sandbox allow-scripts allow-forms allow-popups";
 
 const char kThumbsWhiteListedExtension[] = "khopmbdjffemhegeeobelklnbglcdgfh";
 
@@ -314,17 +306,6 @@ GURL Extension::GetResourceURL(const GURL& extension_url,
 bool Extension::ResourceMatches(const URLPatternSet& pattern_set,
                                 const std::string& resource) const {
   return pattern_set.MatchesURL(extension_url_.Resolve(resource));
-}
-
-bool Extension::IsSandboxedPage(const std::string& relative_path) const {
-  return ResourceMatches(sandboxed_pages_, relative_path);
-}
-
-std::string Extension::GetResourceContentSecurityPolicy(
-    const std::string& relative_path) const {
-  return IsSandboxedPage(relative_path) ?
-      sandboxed_pages_content_security_policy_ :
-      CSPInfo::GetContentSecurityPolicy(this);
 }
 
 ExtensionResource Extension::GetResource(
@@ -1656,7 +1637,6 @@ bool Extension::LoadSharedFeatures(string16* error) {
   if (!LoadDescription(error) ||
       !ManifestHandler::ParseExtension(this, error) ||
       !LoadNaClModules(error) ||
-      !LoadSandboxedPages(error) ||
       !LoadKioskEnabled(error) ||
       !LoadOfflineEnabled(error))
     return false;
@@ -1734,58 +1714,6 @@ bool Extension::LoadNaClModules(string16* error) {
     nacl_modules_.push_back(NaClModuleInfo());
     nacl_modules_.back().url = GetResourceURL(path_str);
     nacl_modules_.back().mime_type = mime_type;
-  }
-
-  return true;
-}
-
-bool Extension::LoadSandboxedPages(string16* error) {
-  if (!manifest_->HasPath(keys::kSandboxedPages))
-    return true;
-
-  const ListValue* list_value = NULL;
-  if (!manifest_->GetList(keys::kSandboxedPages, &list_value)) {
-    *error = ASCIIToUTF16(errors::kInvalidSandboxedPagesList);
-    return false;
-  }
-  for (size_t i = 0; i < list_value->GetSize(); ++i) {
-    std::string relative_path;
-    if (!list_value->GetString(i, &relative_path)) {
-      *error = ErrorUtils::FormatErrorMessageUTF16(
-          errors::kInvalidSandboxedPage, base::IntToString(i));
-      return false;
-    }
-    URLPattern pattern(URLPattern::SCHEME_EXTENSION);
-    if (pattern.Parse(extension_url_.spec()) != URLPattern::PARSE_SUCCESS) {
-      *error = ErrorUtils::FormatErrorMessageUTF16(
-          errors::kInvalidURLPatternError, extension_url_.spec());
-      return false;
-    }
-    while (relative_path[0] == '/')
-      relative_path = relative_path.substr(1, relative_path.length() - 1);
-    pattern.SetPath(pattern.path() + relative_path);
-    sandboxed_pages_.AddPattern(pattern);
-  }
-
-  if (manifest_->HasPath(keys::kSandboxedPagesCSP)) {
-    if (!manifest_->GetString(
-        keys::kSandboxedPagesCSP, &sandboxed_pages_content_security_policy_)) {
-      *error = ASCIIToUTF16(errors::kInvalidSandboxedPagesCSP);
-      return false;
-    }
-
-    if (!ContentSecurityPolicyIsLegal(
-            sandboxed_pages_content_security_policy_) ||
-        !ContentSecurityPolicyIsSandboxed(
-            sandboxed_pages_content_security_policy_, GetType())) {
-      *error = ASCIIToUTF16(errors::kInvalidSandboxedPagesCSP);
-      return false;
-    }
-  } else {
-    sandboxed_pages_content_security_policy_ =
-        kDefaultSandboxedPageContentSecurityPolicy;
-    CHECK(ContentSecurityPolicyIsSandboxed(
-        sandboxed_pages_content_security_policy_, GetType()));
   }
 
   return true;

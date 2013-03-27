@@ -5,17 +5,20 @@
 #include "chrome/common/extensions/csp_handler.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/manifest_handler.h"
+#include "chrome/common/extensions/manifest_handlers/sandboxed_page_info.h"
 #include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using extensions::Extension;
-
 namespace errors = extension_manifest_errors;
 
+namespace extensions {
+
 class SandboxedPagesManifestTest : public ExtensionManifestTest {
+ protected:
   virtual void SetUp() OVERRIDE {
     ExtensionManifestTest::SetUp();
-    (new extensions::CSPHandler(false))->Register();  // Not platform app.
+    (new SandboxedPageHandler)->Register();
+    (new CSPHandler(false))->Register();  // Not platform app.
   }
 };
 
@@ -47,18 +50,22 @@ TEST_F(SandboxedPagesManifestTest, SandboxedPages) {
       "sandbox; script-src: https://www.google.com";
 
   EXPECT_EQ(kSandboxedCSP,
-      extension1->GetResourceContentSecurityPolicy("/test"));
-  EXPECT_EQ(kDefaultCSP, extension1->GetResourceContentSecurityPolicy("/none"));
-  EXPECT_EQ(kDefaultCSP, extension2->GetResourceContentSecurityPolicy("/test"));
-  EXPECT_EQ(kCustomSandboxedCSP,
-      extension3->GetResourceContentSecurityPolicy("/test"));
-  EXPECT_EQ(kDefaultCSP, extension3->GetResourceContentSecurityPolicy("/none"));
-  EXPECT_EQ(kSandboxedCSP,
-      extension4->GetResourceContentSecurityPolicy("/test"));
-  EXPECT_EQ(kSandboxedCSP,
-      extension5->GetResourceContentSecurityPolicy("/path/test.ext"));
+            CSPInfo::GetResourceContentSecurityPolicy(extension1, "/test"));
   EXPECT_EQ(kDefaultCSP,
-      extension5->GetResourceContentSecurityPolicy("/test"));
+            CSPInfo::GetResourceContentSecurityPolicy(extension1, "/none"));
+  EXPECT_EQ(kDefaultCSP,
+            CSPInfo::GetResourceContentSecurityPolicy(extension2, "/test"));
+  EXPECT_EQ(kCustomSandboxedCSP,
+            CSPInfo::GetResourceContentSecurityPolicy(extension3, "/test"));
+  EXPECT_EQ(kDefaultCSP,
+            CSPInfo::GetResourceContentSecurityPolicy(extension3, "/none"));
+  EXPECT_EQ(kSandboxedCSP,
+            CSPInfo::GetResourceContentSecurityPolicy(extension4, "/test"));
+  EXPECT_EQ(
+      kSandboxedCSP,
+      CSPInfo::GetResourceContentSecurityPolicy(extension5, "/path/test.ext"));
+  EXPECT_EQ(kDefaultCSP,
+            CSPInfo::GetResourceContentSecurityPolicy(extension5, "/test"));
 
   Testcase testcases[] = {
     Testcase("sandboxed_pages_invalid_1.json",
@@ -75,3 +82,5 @@ TEST_F(SandboxedPagesManifestTest, SandboxedPages) {
   RunTestcases(testcases, arraysize(testcases),
                EXPECT_TYPE_ERROR);
 }
+
+}  // namespace extensions

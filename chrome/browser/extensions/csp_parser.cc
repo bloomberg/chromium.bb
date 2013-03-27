@@ -7,12 +7,14 @@
 #include "base/lazy_instance.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/csp_handler.h"
+#include "chrome/common/extensions/manifest_handlers/sandboxed_page_info.h"
 
 namespace extensions {
 
 CSPParser::CSPParser(Profile* profile) {
-  (new CSPHandler(false))->Register();  // platform app.
+  (new CSPHandler(false))->Register();  // not platform app.
   (new CSPHandler(true))->Register();  // platform app.
+  (new SandboxedPageHandler)->Register();
 }
 
 CSPParser::~CSPParser() {
