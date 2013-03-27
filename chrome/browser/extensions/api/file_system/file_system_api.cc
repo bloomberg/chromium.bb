@@ -417,13 +417,10 @@ class FileSystemChooseEntryFunction::FilePicker
 
     if (g_skip_picker_for_test) {
       if (g_path_to_be_picked_for_test) {
-        ui::SelectedFileInfo selected_path(*g_path_to_be_picked_for_test,
-                                           base::FilePath());
         content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
             base::Bind(
-                &FileSystemChooseEntryFunction::FilePicker::
-                    FileSelectedWithExtraInfo,
-                base::Unretained(this), selected_path, 1,
+                &FileSystemChooseEntryFunction::FilePicker::FileSelected,
+                base::Unretained(this), *g_path_to_be_picked_for_test, 1,
                 static_cast<void*>(NULL)));
       } else {
         content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
@@ -449,8 +446,8 @@ class FileSystemChooseEntryFunction::FilePicker
   virtual void FileSelected(const base::FilePath& path,
                             int index,
                             void* params) OVERRIDE {
-    // The version taking ui::SelectedFileInfo should be used.
-    NOTREACHED();
+    function_->FileSelected(path, entry_type_);
+    delete this;
   }
 
   virtual void FileSelectedWithExtraInfo(const ui::SelectedFileInfo& file,
