@@ -247,8 +247,14 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewBrowserTest,
 }
 
 // Test copying from backing store when page is non-accelerated-composited.
+// Flaky. http://crbug.com/224351
+#if defined(OS_MACOSX) || defined(OS_WIN)
+#define MAYBE_CopyFromBackingStore DISABLED_CopyFromBackingStore
+#else
+#define MAYBE_CopyFromBackingStore CopyFromBackingStore
+#endif
 IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewBrowserTest,
-                       CopyFromBackingStore) {
+                       MAYBE_CopyFromBackingStore) {
   SetupNonCompositing();
   base::RunLoop run_loop;
 
