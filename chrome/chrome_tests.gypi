@@ -1532,6 +1532,7 @@
         'browser/ui/webui/sync_setup_browsertest.js',
         'browser/ui/webui/web_ui_test_handler.cc',
         'browser/ui/webui/web_ui_test_handler.h',
+        'browser/user_data_dir_extractor_win_browsertest.cc',
         'browser/unload_browsertest.cc',
         'common/mac/mock_launchd.cc',
         'common/mac/mock_launchd.h',
@@ -1833,6 +1834,7 @@
             # TODO(port): http://crbug.com/45770
             'browser/printing/printing_layout_browsertest.cc',
             'browser/ui/views/app_list/app_list_controller_win_browsertest.cc',
+            'browser/user_data_dir_extractor_win_browsertest.cc',
           ],
         }],
         ['toolkit_uses_gtk == 1', {

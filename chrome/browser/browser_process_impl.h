@@ -137,6 +137,7 @@ class BrowserProcessImpl : public BrowserProcess,
       media_file_system_registry() OVERRIDE;
   virtual void PlatformSpecificCommandLineProcessing(
       const CommandLine& command_line) OVERRIDE;
+  virtual bool created_local_state() const OVERRIDE;
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
 

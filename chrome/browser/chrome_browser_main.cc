@@ -103,6 +103,7 @@
 #include "chrome/browser/ui/uma_browsing_activity_observer.h"
 #include "chrome/browser/ui/user_data_dir_dialog.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
+#include "chrome/browser/user_data_dir_extractor.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -386,35 +387,10 @@ Profile* CreateProfile(const content::MainFunctionParams& parameters,
   if (profile)
     return profile;
 
-#if defined(OS_WIN)
-#if defined(USE_AURA)
-  // TODO(beng):
-  NOTIMPLEMENTED();
-#else
-  // Ideally, we should be able to run w/o access to disk.  For now, we
-  // prompt the user to pick a different user-data-dir and restart chrome
-  // with the new dir.
-  // http://code.google.com/p/chromium/issues/detail?id=11510
-  base::FilePath new_user_data_dir =
-      chrome::ShowUserDataDirDialog(user_data_dir);
-
-  if (!new_user_data_dir.empty()) {
-    // Because of the way CommandLine parses, it's sufficient to append a new
-    // --user-data-dir switch.  The last flag of the same name wins.
-    // TODO(tc): It would be nice to remove the flag we don't want, but that
-    // sounds risky if we parse differently than CommandLineToArgvW.
-    CommandLine new_command_line = parameters.command_line;
-    new_command_line.AppendSwitchPath(switches::kUserDataDir,
-                                      new_user_data_dir);
-    base::LaunchProcess(new_command_line, base::LaunchOptions(), NULL);
-  }
-#endif
-#else
   // TODO(port): fix this.  See comments near the definition of
   // user_data_dir.  It is better to CHECK-fail here than it is to
   // silently exit because of missing code in the above test.
   CHECK(profile) << "Cannot get default profile.";
-#endif
 
   return NULL;
 }
@@ -806,17 +782,7 @@ int ChromeBrowserMainParts::PreCreateThreads() {
 
 int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   run_message_loop_ = false;
-#if defined(OS_WIN)
-  PathService::Get(chrome::DIR_USER_DATA, &user_data_dir_);
-#else
-  // Getting the user data dir can fail if the directory isn't
-  // creatable, for example; on Windows in code below we bring up a
-  // dialog prompting the user to pick a different directory.
-  // However, ProcessSingleton needs a real user_data_dir on Mac/Linux,
-  // so it's better to fail here than fail mysteriously elsewhere.
-  CHECK(PathService::Get(chrome::DIR_USER_DATA, &user_data_dir_))
-      << "Must be able to get user data directory!";
-#endif
+  user_data_dir_ = chrome::GetUserDataDir(parameters());
 
   // Whether this is First Run. |do_first_run_tasks_| should be prefered to this
   // unless the desire is actually to know whether this is really First Run

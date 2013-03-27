@@ -225,6 +225,8 @@ class BrowserProcess {
   virtual void PlatformSpecificCommandLineProcessing(
       const CommandLine& command_line) = 0;
 
+  virtual bool created_local_state() const = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserProcess);
 };

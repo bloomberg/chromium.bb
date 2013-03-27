@@ -638,6 +638,10 @@ void BrowserProcessImpl::PlatformSpecificCommandLineProcessing(
 }
 #endif
 
+bool BrowserProcessImpl::created_local_state() const {
+    return created_local_state_;
+}
+
 // static
 void BrowserProcessImpl::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kDefaultBrowserSettingEnabled,
