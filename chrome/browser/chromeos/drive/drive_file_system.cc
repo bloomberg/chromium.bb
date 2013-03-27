@@ -22,6 +22,7 @@
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 #include "chrome/browser/chromeos/drive/drive_scheduler.h"
 #include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
+#include "chrome/browser/chromeos/drive/search_metadata.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/drive_api_util.h"
 #include "chrome/browser/google_apis/drive_service_interface.h"
@@ -1167,6 +1168,22 @@ void DriveFileSystem::Search(const std::string& search_query,
                  weak_ptr_factory_.GetWeakPtr(),
                  shared_with_me,
                  callback));
+}
+
+void DriveFileSystem::SearchMetadata(const std::string& query,
+                                     int at_most_num_matches,
+                                     const SearchMetadataCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  const SearchMetadataTarget target =
+      (hide_hosted_docs_ ?
+       SEARCH_METADATA_EXCLUDE_HOSTED_DOCUMENTS :
+       SEARCH_METADATA_ALL);
+  drive::SearchMetadata(resource_metadata_,
+                        query,
+                        at_most_num_matches,
+                        target,
+                        callback);
 }
 
 void DriveFileSystem::OnDirectoryChangedByOperation(

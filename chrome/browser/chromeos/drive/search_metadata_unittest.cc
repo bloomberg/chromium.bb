@@ -104,9 +104,10 @@ TEST_F(SearchMetadataTest, SearchMetadata_ZeroMatches) {
   DriveFileError error = DRIVE_FILE_ERROR_FAILED;
   scoped_ptr<MetadataSearchResultVector> result;
 
-  SearchMetadata(file_system_.get(),
+  SearchMetadata(resource_metadata_.get(),
                  "NonExistent",
                  kDefaultAtMostNumMatches,
+                 SEARCH_METADATA_ALL,
                  google_apis::test_util::CreateCopyResultCallback(
                      &error, &result));
   google_apis::test_util::RunBlockingPoolTask();
@@ -118,9 +119,10 @@ TEST_F(SearchMetadataTest, SearchMetadata_RegularFile) {
   DriveFileError error = DRIVE_FILE_ERROR_FAILED;
   scoped_ptr<MetadataSearchResultVector> result;
 
-  SearchMetadata(file_system_.get(),
+  SearchMetadata(resource_metadata_.get(),
                  "SubDirectory File 1.txt",
                  kDefaultAtMostNumMatches,
+                 SEARCH_METADATA_ALL,
                  google_apis::test_util::CreateCopyResultCallback(
                      &error, &result));
   google_apis::test_util::RunBlockingPoolTask();
@@ -137,9 +139,10 @@ TEST_F(SearchMetadataTest, SearchMetadata_CaseInsensitiveSearch) {
   scoped_ptr<MetadataSearchResultVector> result;
 
   // The query is all in lower case.
-  SearchMetadata(file_system_.get(),
+  SearchMetadata(resource_metadata_.get(),
                  "subdirectory file 1.txt",
                  kDefaultAtMostNumMatches,
+                 SEARCH_METADATA_ALL,
                  google_apis::test_util::CreateCopyResultCallback(
                      &error, &result));
   google_apis::test_util::RunBlockingPoolTask();
@@ -153,9 +156,10 @@ TEST_F(SearchMetadataTest, SearchMetadata_RegularFiles) {
   DriveFileError error = DRIVE_FILE_ERROR_FAILED;
   scoped_ptr<MetadataSearchResultVector> result;
 
-  SearchMetadata(file_system_.get(),
+  SearchMetadata(resource_metadata_.get(),
                  "SubDir",
                  kDefaultAtMostNumMatches,
+                 SEARCH_METADATA_ALL,
                  google_apis::test_util::CreateCopyResultCallback(
                      &error, &result));
   google_apis::test_util::RunBlockingPoolTask();
@@ -183,9 +187,10 @@ TEST_F(SearchMetadataTest, SearchMetadata_AtMostOneFile) {
 
   // There are two files matching "SubDir" but only one file should be
   // returned.
-  SearchMetadata(file_system_.get(),
+  SearchMetadata(resource_metadata_.get(),
                  "SubDir",
                  1,  // at_most_num_matches
+                 SEARCH_METADATA_ALL,
                  google_apis::test_util::CreateCopyResultCallback(
                      &error, &result));
   google_apis::test_util::RunBlockingPoolTask();
@@ -201,9 +206,10 @@ TEST_F(SearchMetadataTest, SearchMetadata_Directory) {
   DriveFileError error = DRIVE_FILE_ERROR_FAILED;
   scoped_ptr<MetadataSearchResultVector> result;
 
-  SearchMetadata(file_system_.get(),
+  SearchMetadata(resource_metadata_.get(),
                  "Directory 1",
                  kDefaultAtMostNumMatches,
+                 SEARCH_METADATA_ALL,
                  google_apis::test_util::CreateCopyResultCallback(
                      &error, &result));
   google_apis::test_util::RunBlockingPoolTask();
@@ -218,9 +224,10 @@ TEST_F(SearchMetadataTest, SearchMetadata_HostedDocument) {
   DriveFileError error = DRIVE_FILE_ERROR_FAILED;
   scoped_ptr<MetadataSearchResultVector> result;
 
-  SearchMetadata(file_system_.get(),
+  SearchMetadata(resource_metadata_.get(),
                  "Document",
                  kDefaultAtMostNumMatches,
+                 SEARCH_METADATA_ALL,
                  google_apis::test_util::CreateCopyResultCallback(
                      &error, &result));
   google_apis::test_util::RunBlockingPoolTask();
@@ -231,18 +238,14 @@ TEST_F(SearchMetadataTest, SearchMetadata_HostedDocument) {
             result->at(0).path);
 }
 
-TEST_F(SearchMetadataTest, SearchMetadata_HideHostedDocument) {
-  // This test is similar to HostedDocument test above, but change a
-  // preference to hide hosted documents from the result.
-  PrefService* pref_service = profile_->GetPrefs();
-  pref_service->SetBoolean(prefs::kDisableDriveHostedFiles, true);
-
+TEST_F(SearchMetadataTest, SearchMetadata_ExcludeHostedDocument) {
   DriveFileError error = DRIVE_FILE_ERROR_FAILED;
   scoped_ptr<MetadataSearchResultVector> result;
 
-  SearchMetadata(file_system_.get(),
+  SearchMetadata(resource_metadata_.get(),
                  "Document",
                  kDefaultAtMostNumMatches,
+                 SEARCH_METADATA_EXCLUDE_HOSTED_DOCUMENTS,
                  google_apis::test_util::CreateCopyResultCallback(
                      &error, &result));
   google_apis::test_util::RunBlockingPoolTask();

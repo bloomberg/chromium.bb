@@ -38,13 +38,15 @@ bool CompareByTimestamp(const MetadataSearchResult& a,
 // Helper class for searching the local resource metadata.
 class SearchMetadataHelper {
  public:
-  SearchMetadataHelper(DriveFileSystemInterface* file_system,
+  SearchMetadataHelper(DriveResourceMetadata* resource_metadata,
                        const std::string& query,
                        int at_most_num_matches,
+                       SearchMetadataTarget target,
                        const SearchMetadataCallback& callback)
-    : file_system_(file_system),
+    : resource_metadata_(resource_metadata),
       query_(query),
       at_most_num_matches_(at_most_num_matches),
+      target_(target),
       callback_(callback),
       results_(new MetadataSearchResultVector),
       num_pending_reads_(0),
@@ -55,7 +57,7 @@ class SearchMetadataHelper {
   // directory.
   void Start() {
     ++num_pending_reads_;
-    file_system_->ReadDirectoryByPath(
+    resource_metadata_->ReadDirectoryByPath(
         util::GetDriveMyDriveRootPath(),
         base::Bind(&SearchMetadataHelper::DidReadDirectoryByPath,
                    weak_ptr_factory_.GetWeakPtr(),
@@ -68,7 +70,6 @@ class SearchMetadataHelper {
   // metadata by recursively reading sub directories.
   void DidReadDirectoryByPath(const base::FilePath& parent_path,
                               DriveFileError error,
-                              bool hide_hosted_documents,
                               scoped_ptr<DriveEntryProtoVector> entries) {
     if (error != DRIVE_FILE_OK) {
       callback_.Run(error, scoped_ptr<MetadataSearchResultVector>());
@@ -86,7 +87,7 @@ class SearchMetadataHelper {
           base::FilePath::FromUTF8Unsafe(entry.base_name()));
       // Skip the hosted document if "hide hosted documents" setting is
       // enabled.
-      if (hide_hosted_documents &&
+      if (target_ == SEARCH_METADATA_EXCLUDE_HOSTED_DOCUMENTS &&
           entry.file_specific_info().is_hosted_document())
         continue;
 
@@ -101,7 +102,7 @@ class SearchMetadataHelper {
       // Recursively reading the sub directory.
       if (entry.file_info().is_directory()) {
         ++num_pending_reads_;
-        file_system_->ReadDirectoryByPath(
+        resource_metadata_->ReadDirectoryByPath(
             current_path,
             base::Bind(&SearchMetadataHelper::DidReadDirectoryByPath,
                        weak_ptr_factory_.GetWeakPtr(),
@@ -122,9 +123,10 @@ class SearchMetadataHelper {
     }
   }
 
-  DriveFileSystemInterface* file_system_;
+  DriveResourceMetadata* resource_metadata_;
   const std::string query_;
   const int at_most_num_matches_;
+  const SearchMetadataTarget target_;
   const SearchMetadataCallback callback_;
   scoped_ptr<MetadataSearchResultVector> results_;
   int num_pending_reads_;
@@ -134,18 +136,20 @@ class SearchMetadataHelper {
   base::WeakPtrFactory<SearchMetadataHelper> weak_ptr_factory_;
 };
 
-void SearchMetadata(DriveFileSystemInterface* file_system,
+void SearchMetadata(DriveResourceMetadata* resource_metadata,
                     const std::string& query,
                     int at_most_num_matches,
+                    SearchMetadataTarget target,
                     const SearchMetadataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
   // |helper| will delete itself when the search is done.
   SearchMetadataHelper* helper =
-      new SearchMetadataHelper(file_system,
+      new SearchMetadataHelper(resource_metadata,
                                query,
                                at_most_num_matches,
+                               target,
                                callback);
   helper->Start();
 }

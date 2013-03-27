@@ -186,6 +186,13 @@ void FakeDriveFileSystem::Search(const std::string& search_query,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
+void FakeDriveFileSystem::SearchMetadata(
+    const std::string& query,
+    int at_most_num_matches,
+    const SearchMetadataCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+}
+
 void FakeDriveFileSystem::GetAvailableSpace(
     const GetAvailableSpaceCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

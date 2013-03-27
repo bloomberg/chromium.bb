@@ -3076,8 +3076,7 @@ void SearchDriveMetadataFunction::OnFileSystemOpened(
   }
 
   const int kAtMostNumMatches = 4;
-  drive::SearchMetadata(
-      system_service->file_system(),
+  system_service->file_system()->SearchMetadata(
       query_,
       kAtMostNumMatches,
       base::Bind(&SearchDriveMetadataFunction::OnSearchMetadata, this));

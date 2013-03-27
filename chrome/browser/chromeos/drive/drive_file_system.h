@@ -84,6 +84,9 @@ class DriveFileSystem : public DriveFileSystemInterface,
                       bool shared_with_me,
                       const GURL& next_feed,
                       const SearchCallback& callback) OVERRIDE;
+  virtual void SearchMetadata(const std::string& query,
+                              int at_most_num_matches,
+                              const SearchMetadataCallback& callback) OVERRIDE;
   virtual void TransferFileFromRemoteToLocal(
       const base::FilePath& remote_src_file_path,
       const base::FilePath& local_dest_file_path,

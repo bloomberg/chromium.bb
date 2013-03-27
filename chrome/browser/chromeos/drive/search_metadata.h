@@ -12,47 +12,23 @@
 
 namespace drive {
 
-// Struct to represent a search result for SearchMetadata().
-struct MetadataSearchResult {
-  MetadataSearchResult(const base::FilePath& in_path,
-                       const DriveEntryProto& in_entry_proto,
-                       const std::string& in_highlighted_base_name)
-      : path(in_path),
-        entry_proto(in_entry_proto),
-        highlighted_base_name(in_highlighted_base_name) {
-  }
+class DriveResourceMetadata;
 
-  // The two members are used to create FileEntry object.
-  base::FilePath path;
-  DriveEntryProto entry_proto;
-
-  // The base name to be displayed in the UI. The parts matched the search
-  // query are highlighted with <b> tag. Meta characters are escaped like &lt;
-  //
-  // Why HTML? we could instead provide matched ranges using pairs of
-  // integers, but this is fragile as we'll eventually converting strings
-  // from UTF-8 (StringValue in base/values.h uses std::string) to UTF-16
-  // when sending strings from C++ to JavaScript.
-  //
-  // Why <b> instead of <strong>? Because <b> is shorter.
-  std::string highlighted_base_name;
+// Used to specify target entries for SearchMetadata().
+enum SearchMetadataTarget {
+  SEARCH_METADATA_ALL,  // All entries including files and directories.
+  SEARCH_METADATA_EXCLUDE_HOSTED_DOCUMENTS,  // Exclude the hosted documents.
 };
-
-typedef std::vector<MetadataSearchResult> MetadataSearchResultVector;
-
-// Callback for SearchMetadata(). On success, |error| is DRIVE_FILE_OK, and
-// |result| contains the search result.
-typedef base::Callback<void(
-    DriveFileError error,
-    scoped_ptr<MetadataSearchResultVector> result)> SearchMetadataCallback;
 
 // Searches the local resource metadata, and returns the entries
 // |at_most_num_matches| that contain |query| in their base names. Search is
-// done in a case-insensitive fashion. |callback| must not be null. Must be
-// called on UI thread. No entries are returned if |query| is empty.
-void SearchMetadata(DriveFileSystemInterface* file_system,
+// done in a case-insensitive fashion. |target| specifies the target entries
+// |callback| must not be null.
+// Must be called on UI thread. No entries are returned if |query| is empty.
+void SearchMetadata(DriveResourceMetadata* resource_metadata,
                     const std::string& query,
                     int at_most_num_matches,
+                    SearchMetadataTarget target,
                     const SearchMetadataCallback& callback);
 
 // Finds |query| in |text| while ignoring case. Returns true if |query| is

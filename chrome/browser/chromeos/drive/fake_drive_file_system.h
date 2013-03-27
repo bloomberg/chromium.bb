@@ -109,6 +109,9 @@ class FakeDriveFileSystem : public DriveFileSystemInterface {
                       bool shared_with_me,
                       const GURL& next_feed,
                       const SearchCallback& callback) OVERRIDE;
+  virtual void SearchMetadata(const std::string& query,
+                              int at_most_num_matches,
+                              const SearchMetadataCallback& callback) OVERRIDE;
   virtual void GetAvailableSpace(
       const GetAvailableSpaceCallback& callback) OVERRIDE;
   virtual void AddUploadedFile(scoped_ptr<google_apis::ResourceEntry> doc_entry,

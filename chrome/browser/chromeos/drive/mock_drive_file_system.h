@@ -39,6 +39,9 @@ class MockDriveFileSystem : public DriveFileSystemInterface {
                             bool shared_with_me,
                             const GURL& next_feed,
                             const SearchCallback& callback));
+  MOCK_METHOD3(SearchMetadata, void(const std::string& query,
+                                    int at_most_num_matches,
+                                    const SearchMetadataCallback& callback));
   MOCK_METHOD3(TransferFileFromRemoteToLocal,
                void(const base::FilePath& local_src_file_path,
                     const base::FilePath& remote_dest_file_path,

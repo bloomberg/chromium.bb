@@ -39,6 +39,34 @@ struct SearchResultInfo {
   DriveEntryProto entry_proto;
 };
 
+// Struct to represent a search result for SearchMetadata().
+struct MetadataSearchResult {
+  MetadataSearchResult(const base::FilePath& in_path,
+                       const DriveEntryProto& in_entry_proto,
+                       const std::string& in_highlighted_base_name)
+      : path(in_path),
+        entry_proto(in_entry_proto),
+        highlighted_base_name(in_highlighted_base_name) {
+  }
+
+  // The two members are used to create FileEntry object.
+  base::FilePath path;
+  DriveEntryProto entry_proto;
+
+  // The base name to be displayed in the UI. The parts matched the search
+  // query are highlighted with <b> tag. Meta characters are escaped like &lt;
+  //
+  // Why HTML? we could instead provide matched ranges using pairs of
+  // integers, but this is fragile as we'll eventually converting strings
+  // from UTF-8 (StringValue in base/values.h uses std::string) to UTF-16
+  // when sending strings from C++ to JavaScript.
+  //
+  // Why <b> instead of <strong>? Because <b> is shorter.
+  std::string highlighted_base_name;
+};
+
+typedef std::vector<MetadataSearchResult> MetadataSearchResultVector;
+
 // Used to get files from the file system.
 typedef base::Callback<void(DriveFileError error,
                             const base::FilePath& file_path,
@@ -61,6 +89,12 @@ typedef base::Callback<void(
     DriveFileError error,
     const GURL& next_feed,
     scoped_ptr<std::vector<SearchResultInfo> > result_paths)> SearchCallback;
+
+// Callback for SearchMetadata(). On success, |error| is DRIVE_FILE_OK, and
+// |result| contains the search result.
+typedef base::Callback<void(
+    DriveFileError error,
+    scoped_ptr<MetadataSearchResultVector> result)> SearchMetadataCallback;
 
 // Used to open files from the file system. |file_path| is the path on the local
 // file system for the opened file.
@@ -338,6 +372,14 @@ class DriveFileSystemInterface {
                       bool shared_with_me,
                       const GURL& next_feed,
                       const SearchCallback& callback) = 0;
+
+  // Searches the local resource metadata, and returns the entries
+  // |at_most_num_matches| that contain |query| in their base names. Search is
+  // done in a case-insensitive fashion. |callback| must not be null. Must be
+  // called on UI thread. No entries are returned if |query| is empty.
+  virtual void SearchMetadata(const std::string& query,
+                              int at_most_num_matches,
+                              const SearchMetadataCallback& callback) = 0;
 
   // Fetches the user's Account Metadata to find out current quota information
   // and returns it to the callback.
