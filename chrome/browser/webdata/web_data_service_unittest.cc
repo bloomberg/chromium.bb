@@ -20,7 +20,7 @@
 #include "chrome/browser/webdata/autofill_change.h"
 #include "chrome/browser/webdata/autofill_entry.h"
 #include "chrome/browser/webdata/autofill_table.h"
-#include "chrome/browser/webdata/autofill_web_data_service_impl.h"
+#include "chrome/browser/webdata/autofill_web_data_service.h"
 #include "chrome/browser/webdata/web_data_service_test_util.h"
 #include "chrome/browser/webdata/web_database_service.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -83,7 +83,7 @@ class WebDataServiceTest : public testing::Test {
     wdbs_->AddTable(scoped_ptr<WebDatabaseTable>(new AutofillTable()));
     wdbs_->LoadDatabase(WebDatabaseService::InitCallback());
 
-    wds_ = new AutofillWebDataServiceImpl(wdbs_,
+    wds_ = new AutofillWebDataService(wdbs_,
         WebDataServiceBase::ProfileErrorCallback());
     wds_->Init();
   }

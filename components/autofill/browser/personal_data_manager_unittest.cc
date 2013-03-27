@@ -10,7 +10,7 @@
 #include "base/message_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/api/webdata/autofill_web_data_service.h"
+#include "chrome/browser/webdata/autofill_web_data_service.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/browser/autofill_common_test.h"

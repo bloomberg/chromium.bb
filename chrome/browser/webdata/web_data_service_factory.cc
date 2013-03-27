@@ -11,7 +11,7 @@
 #include "chrome/browser/webdata/autocomplete_syncable_service.h"
 #include "chrome/browser/webdata/autofill_profile_syncable_service.h"
 #include "chrome/browser/webdata/autofill_table.h"
-#include "chrome/browser/webdata/autofill_web_data_service_impl.h"
+#include "chrome/browser/webdata/autofill_web_data_service.h"
 #include "chrome/browser/webdata/keyword_table.h"
 #include "chrome/browser/webdata/logins_table.h"
 #include "chrome/browser/webdata/token_service_table.h"
@@ -78,7 +78,7 @@ WebDataServiceWrapper::WebDataServiceWrapper(Profile* profile) {
 
   web_database_->LoadDatabase(WebDatabaseService::InitCallback());
 
-  autofill_web_data_ = new AutofillWebDataServiceImpl(
+  autofill_web_data_ = new AutofillWebDataService(
       web_database_, base::Bind(&ProfileErrorCallback));
   autofill_web_data_->Init();
 
@@ -153,7 +153,7 @@ WebDataServiceWrapper* WebDataServiceFactory::GetForProfile(
     Profile* profile, Profile::ServiceAccessType access_type) {
   // If |access_type| starts being used for anything other than this
   // DCHECK, we need to start taking it as a parameter to
-  // AutofillWebDataServiceImpl::FromBrowserContext (see above).
+  // AutofillWebDataService::FromBrowserContext (see above).
   DCHECK(access_type != Profile::IMPLICIT_ACCESS || !profile->IsOffTheRecord());
   return static_cast<WebDataServiceWrapper*>(
           GetInstance()->GetServiceForProfile(profile, true));
@@ -164,7 +164,7 @@ WebDataServiceWrapper* WebDataServiceFactory::GetForProfileIfExists(
     Profile* profile, Profile::ServiceAccessType access_type) {
   // If |access_type| starts being used for anything other than this
   // DCHECK, we need to start taking it as a parameter to
-  // AutofillWebDataServiceImpl::FromBrowserContext (see above).
+  // AutofillWebDataService::FromBrowserContext (see above).
   DCHECK(access_type != Profile::IMPLICIT_ACCESS || !profile->IsOffTheRecord());
   return static_cast<WebDataServiceWrapper*>(
           GetInstance()->GetServiceForProfile(profile, false));

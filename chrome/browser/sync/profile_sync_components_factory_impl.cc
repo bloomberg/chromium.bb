@@ -4,7 +4,6 @@
 
 #include "base/command_line.h"
 #include "build/build_config.h"
-#include "chrome/browser/api/webdata/autofill_web_data_service.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/extensions/api/storage/settings_frontend.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -12,6 +11,7 @@
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/webdata/autofill_web_data_service.h"
 #if !defined(OS_ANDROID)
 #include "chrome/browser/notifications/sync_notifier/chrome_notifier_service.h"
 #include "chrome/browser/notifications/sync_notifier/chrome_notifier_service_factory.h"

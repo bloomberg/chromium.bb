@@ -40,7 +40,7 @@
 #include "chrome/browser/webdata/autofill_entry.h"
 #include "chrome/browser/webdata/autofill_profile_syncable_service.h"
 #include "chrome/browser/webdata/autofill_table.h"
-#include "chrome/browser/webdata/autofill_web_data_service_impl.h"
+#include "chrome/browser/webdata/autofill_web_data_service.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/browser/webdata/web_data_service_test_util.h"
 #include "chrome/browser/webdata/web_database.h"
@@ -172,10 +172,10 @@ class TokenWebDataServiceFake : public WebDataService {
   DISALLOW_COPY_AND_ASSIGN(TokenWebDataServiceFake);
 };
 
-class WebDataServiceFake : public AutofillWebDataServiceImpl {
+class WebDataServiceFake : public AutofillWebDataService {
  public:
   WebDataServiceFake()
-      : AutofillWebDataServiceImpl(
+      : AutofillWebDataService(
             NULL, WebDataServiceBase::ProfileErrorCallback()),
         web_database_(NULL),
         syncable_service_created_or_destroyed_(false, false) {

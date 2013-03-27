@@ -12,7 +12,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/api/webdata/autofill_web_data_service.h"
+#include "chrome/browser/webdata/autofill_web_data_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "components/autofill/browser/autofill-inl.h"
 #include "components/autofill/browser/autofill_country.h"

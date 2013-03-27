@@ -4,7 +4,6 @@
 
 #include "chrome/browser/sync/test/integration/autofill_helper.h"
 
-#include "chrome/browser/api/webdata/autofill_web_data_service.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -13,6 +12,7 @@
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/webdata/autofill_entry.h"
 #include "chrome/browser/webdata/autofill_table.h"
+#include "chrome/browser/webdata/autofill_web_data_service.h"
 #include "chrome/browser/webdata/web_database.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/thread_observer_helper.h"

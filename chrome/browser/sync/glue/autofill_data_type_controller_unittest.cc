@@ -16,7 +16,7 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/browser/webdata/autocomplete_syncable_service.h"
-#include "chrome/browser/webdata/autofill_web_data_service_impl.h"
+#include "chrome/browser/webdata/autofill_web_data_service.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/browser/webdata/web_data_service_test_util.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -40,10 +40,10 @@ using testing::Return;
 
 // Fake WebDataService implementation that stubs out the database
 // loading.
-class FakeWebDataService : public AutofillWebDataServiceImpl {
+class FakeWebDataService : public AutofillWebDataService {
  public:
   FakeWebDataService()
-      : AutofillWebDataServiceImpl(
+      : AutofillWebDataService(
             NULL, WebDataServiceBase::ProfileErrorCallback()),
         is_database_loaded_(false) {}
 

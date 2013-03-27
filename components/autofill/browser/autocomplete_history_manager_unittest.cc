@@ -8,7 +8,7 @@
 #include "base/prefs/testing_pref_service.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/webdata/autofill_web_data_service_impl.h"
+#include "chrome/browser/webdata/autofill_web_data_service.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/browser/webdata/web_data_service_test_util.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -30,10 +30,10 @@ using testing::_;
 
 namespace {
 
-class MockWebDataService : public AutofillWebDataServiceImpl {
+class MockWebDataService : public AutofillWebDataService {
  public:
   MockWebDataService()
-      : AutofillWebDataServiceImpl(
+      : AutofillWebDataService(
             NULL, WebDataServiceBase::ProfileErrorCallback()) {
     current_mock_web_data_service_ = this;
   }

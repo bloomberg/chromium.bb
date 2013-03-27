@@ -6,11 +6,11 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram.h"
-#include "chrome/browser/api/webdata/autofill_web_data_service.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_components_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/webdata/autofill_web_data_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "components/autofill/browser/personal_data_manager.h"
 #include "content/public/browser/browser_thread.h"

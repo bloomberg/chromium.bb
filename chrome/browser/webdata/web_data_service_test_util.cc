@@ -4,7 +4,7 @@
 
 #include "chrome/browser/webdata/web_data_service_test_util.h"
 
-#include "chrome/browser/api/webdata/autofill_web_data_service.h"
+#include "chrome/browser/webdata/autofill_web_data_service.h"
 
 MockWebDataServiceWrapperBase::MockWebDataServiceWrapperBase() {
 }

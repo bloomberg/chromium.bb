@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/webdata/autofill_web_data_service_impl.h"
+#include "chrome/browser/webdata/autofill_web_data_service.h"
 
 #include "base/logging.h"
 #include "base/stl_util.h"
@@ -63,108 +63,100 @@ AutofillWebDataService::AutofillWebDataService()
                          WebDataServiceBase::ProfileErrorCallback()) {
 }
 
-AutofillWebDataServiceImpl::AutofillWebDataServiceImpl(
-    scoped_refptr<WebDatabaseService> wdbs,
-    const ProfileErrorCallback& callback)
-    : AutofillWebDataService(wdbs, callback) {
-}
-
-content::NotificationSource
-AutofillWebDataServiceImpl::GetNotificationSource() {
+content::NotificationSource AutofillWebDataService::GetNotificationSource() {
   return content::Source<AutofillWebDataService>(this);
 }
 
-void AutofillWebDataServiceImpl::AddFormFields(
+void AutofillWebDataService::AddFormFields(
     const std::vector<FormFieldData>& fields) {
   wdbs_->ScheduleDBTask(FROM_HERE,
-      Bind(&AutofillWebDataServiceImpl::AddFormElementsImpl, this, fields));
+      Bind(&AutofillWebDataService::AddFormElementsImpl, this, fields));
 }
 
-WebDataServiceBase::Handle
-AutofillWebDataServiceImpl::GetFormValuesForElementName(
+WebDataServiceBase::Handle AutofillWebDataService::GetFormValuesForElementName(
     const string16& name, const string16& prefix, int limit,
     WebDataServiceConsumer* consumer) {
   return wdbs_->ScheduleDBTaskWithResult(FROM_HERE,
-      Bind(&AutofillWebDataServiceImpl::GetFormValuesForElementNameImpl,
+      Bind(&AutofillWebDataService::GetFormValuesForElementNameImpl,
            this, name, prefix, limit), consumer);
 }
 
-void AutofillWebDataServiceImpl::RemoveFormElementsAddedBetween(
+void AutofillWebDataService::RemoveFormElementsAddedBetween(
     const Time& delete_begin, const Time& delete_end) {
   wdbs_->ScheduleDBTask(FROM_HERE,
-      Bind(&AutofillWebDataServiceImpl::RemoveFormElementsAddedBetweenImpl,
+      Bind(&AutofillWebDataService::RemoveFormElementsAddedBetweenImpl,
            this, delete_begin, delete_end));
 }
 
-void AutofillWebDataServiceImpl::RemoveExpiredFormElements() {
+void AutofillWebDataService::RemoveExpiredFormElements() {
   wdbs_->ScheduleDBTask(FROM_HERE,
-      Bind(&AutofillWebDataServiceImpl::RemoveExpiredFormElementsImpl, this));
+      Bind(&AutofillWebDataService::RemoveExpiredFormElementsImpl, this));
 }
 
-void AutofillWebDataServiceImpl::RemoveFormValueForElementName(
+void AutofillWebDataService::RemoveFormValueForElementName(
     const string16& name, const string16& value) {
   wdbs_->ScheduleDBTask(FROM_HERE,
-      Bind(&AutofillWebDataServiceImpl::RemoveFormValueForElementNameImpl,
+      Bind(&AutofillWebDataService::RemoveFormValueForElementNameImpl,
            this, name, value));
 }
 
-void AutofillWebDataServiceImpl::AddAutofillProfile(
+void AutofillWebDataService::AddAutofillProfile(
     const AutofillProfile& profile) {
   wdbs_->ScheduleDBTask(FROM_HERE,
-      Bind(&AutofillWebDataServiceImpl::AddAutofillProfileImpl, this, profile));
+      Bind(&AutofillWebDataService::AddAutofillProfileImpl, this, profile));
 }
 
-void AutofillWebDataServiceImpl::UpdateAutofillProfile(
+void AutofillWebDataService::UpdateAutofillProfile(
     const AutofillProfile& profile) {
   wdbs_->ScheduleDBTask(FROM_HERE,
-      Bind(&AutofillWebDataServiceImpl::UpdateAutofillProfileImpl,
+      Bind(&AutofillWebDataService::UpdateAutofillProfileImpl,
            this, profile));
 }
 
-void AutofillWebDataServiceImpl::RemoveAutofillProfile(
+void AutofillWebDataService::RemoveAutofillProfile(
     const std::string& guid) {
   wdbs_->ScheduleDBTask(FROM_HERE,
-      Bind(&AutofillWebDataServiceImpl::RemoveAutofillProfileImpl, this, guid));
+      Bind(&AutofillWebDataService::RemoveAutofillProfileImpl, this, guid));
 }
 
-WebDataServiceBase::Handle AutofillWebDataServiceImpl::GetAutofillProfiles(
+WebDataServiceBase::Handle AutofillWebDataService::GetAutofillProfiles(
     WebDataServiceConsumer* consumer) {
   return wdbs_->ScheduleDBTaskWithResult(FROM_HERE,
-      Bind(&AutofillWebDataServiceImpl::GetAutofillProfilesImpl, this),
+      Bind(&AutofillWebDataService::GetAutofillProfilesImpl, this),
       consumer);
 }
 
-void AutofillWebDataServiceImpl::AddCreditCard(const CreditCard& credit_card) {
+void AutofillWebDataService::AddCreditCard(const CreditCard& credit_card) {
   wdbs_->ScheduleDBTask(FROM_HERE,
-      Bind(&AutofillWebDataServiceImpl::AddCreditCardImpl, this, credit_card));
+      Bind(&AutofillWebDataService::AddCreditCardImpl, this, credit_card));
 }
 
-void AutofillWebDataServiceImpl::UpdateCreditCard(
+void AutofillWebDataService::UpdateCreditCard(
     const CreditCard& credit_card) {
   wdbs_->ScheduleDBTask(FROM_HERE,
-      Bind(&AutofillWebDataServiceImpl::UpdateCreditCardImpl, this,
+      Bind(&AutofillWebDataService::UpdateCreditCardImpl, this,
            credit_card));
 }
 
-void AutofillWebDataServiceImpl::RemoveCreditCard(const std::string& guid) {
+void AutofillWebDataService::RemoveCreditCard(const std::string& guid) {
   wdbs_->ScheduleDBTask(FROM_HERE,
-      Bind(&AutofillWebDataServiceImpl::RemoveCreditCardImpl, this, guid));
+      Bind(&AutofillWebDataService::RemoveCreditCardImpl, this, guid));
 }
 
-AutofillWebDataServiceImpl::Handle AutofillWebDataServiceImpl::GetCreditCards(
+WebDataServiceBase::Handle AutofillWebDataService::GetCreditCards(
     WebDataServiceConsumer* consumer) {
   return wdbs_->ScheduleDBTaskWithResult(FROM_HERE,
-      Bind(&AutofillWebDataServiceImpl::GetCreditCardsImpl, this), consumer);
+      Bind(&AutofillWebDataService::GetCreditCardsImpl, this), consumer);
 }
 
-void AutofillWebDataServiceImpl::RemoveAutofillDataModifiedBetween(
+void AutofillWebDataService::RemoveAutofillDataModifiedBetween(
     const Time& delete_begin, const Time& delete_end) {
   wdbs_->ScheduleDBTask(FROM_HERE, Bind(
-&AutofillWebDataServiceImpl::RemoveAutofillDataModifiedBetweenImpl,
+&AutofillWebDataService::RemoveAutofillDataModifiedBetweenImpl,
       this, delete_begin, delete_end));
 }
 
-AutofillWebDataServiceImpl::~AutofillWebDataServiceImpl() {
+AutofillWebDataService::~AutofillWebDataService() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -173,7 +165,7 @@ AutofillWebDataServiceImpl::~AutofillWebDataServiceImpl() {
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-WebDatabase::State AutofillWebDataServiceImpl::AddFormElementsImpl(
+WebDatabase::State AutofillWebDataService::AddFormElementsImpl(
     const std::vector<FormFieldData>& fields, WebDatabase* db) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   AutofillChangeList changes;
@@ -195,7 +187,7 @@ WebDatabase::State AutofillWebDataServiceImpl::AddFormElementsImpl(
 }
 
 scoped_ptr<WDTypedResult>
-AutofillWebDataServiceImpl::GetFormValuesForElementNameImpl(
+AutofillWebDataService::GetFormValuesForElementNameImpl(
     const string16& name, const string16& prefix, int limit, WebDatabase* db) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   std::vector<string16> values;
@@ -205,8 +197,7 @@ AutofillWebDataServiceImpl::GetFormValuesForElementNameImpl(
       new WDResult<std::vector<string16> >(AUTOFILL_VALUE_RESULT, values));
 }
 
-WebDatabase::State
-AutofillWebDataServiceImpl::RemoveFormElementsAddedBetweenImpl(
+WebDatabase::State AutofillWebDataService::RemoveFormElementsAddedBetweenImpl(
     const base::Time& delete_begin, const base::Time& delete_end,
     WebDatabase* db) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
@@ -228,7 +219,7 @@ AutofillWebDataServiceImpl::RemoveFormElementsAddedBetweenImpl(
   return WebDatabase::COMMIT_NOT_NEEDED;
 }
 
-WebDatabase::State AutofillWebDataServiceImpl::RemoveExpiredFormElementsImpl(
+WebDatabase::State AutofillWebDataService::RemoveExpiredFormElementsImpl(
     WebDatabase* db) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   AutofillChangeList changes;
@@ -248,8 +239,7 @@ WebDatabase::State AutofillWebDataServiceImpl::RemoveExpiredFormElementsImpl(
   return WebDatabase::COMMIT_NOT_NEEDED;
 }
 
-WebDatabase::State
-AutofillWebDataServiceImpl::RemoveFormValueForElementNameImpl(
+WebDatabase::State AutofillWebDataService::RemoveFormValueForElementNameImpl(
     const string16& name, const string16& value, WebDatabase* db) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
 
@@ -269,7 +259,7 @@ AutofillWebDataServiceImpl::RemoveFormValueForElementNameImpl(
   return WebDatabase::COMMIT_NOT_NEEDED;
 }
 
-WebDatabase::State AutofillWebDataServiceImpl::AddAutofillProfileImpl(
+WebDatabase::State AutofillWebDataService::AddAutofillProfileImpl(
     const AutofillProfile& profile, WebDatabase* db) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   if (!AutofillTable::FromWebDatabase(db)->AddAutofillProfile(profile)) {
@@ -288,7 +278,7 @@ WebDatabase::State AutofillWebDataServiceImpl::AddAutofillProfileImpl(
   return WebDatabase::COMMIT_NEEDED;
 }
 
-WebDatabase::State AutofillWebDataServiceImpl::UpdateAutofillProfileImpl(
+WebDatabase::State AutofillWebDataService::UpdateAutofillProfileImpl(
     const AutofillProfile& profile, WebDatabase* db) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   // Only perform the update if the profile exists.  It is currently
@@ -318,7 +308,7 @@ WebDatabase::State AutofillWebDataServiceImpl::UpdateAutofillProfileImpl(
   return WebDatabase::COMMIT_NEEDED;
 }
 
-WebDatabase::State AutofillWebDataServiceImpl::RemoveAutofillProfileImpl(
+WebDatabase::State AutofillWebDataService::RemoveAutofillProfileImpl(
     const std::string& guid, WebDatabase* db) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   AutofillProfile* profile = NULL;
@@ -343,7 +333,7 @@ WebDatabase::State AutofillWebDataServiceImpl::RemoveAutofillProfileImpl(
   return WebDatabase::COMMIT_NEEDED;
 }
 
-scoped_ptr<WDTypedResult> AutofillWebDataServiceImpl::GetAutofillProfilesImpl(
+scoped_ptr<WDTypedResult> AutofillWebDataService::GetAutofillProfilesImpl(
     WebDatabase* db) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   std::vector<AutofillProfile*> profiles;
@@ -352,11 +342,11 @@ scoped_ptr<WDTypedResult> AutofillWebDataServiceImpl::GetAutofillProfilesImpl(
       new WDDestroyableResult<std::vector<AutofillProfile*> >(
           AUTOFILL_PROFILES_RESULT,
           profiles,
-          base::Bind(&AutofillWebDataServiceImpl::DestroyAutofillProfileResult,
+          base::Bind(&AutofillWebDataService::DestroyAutofillProfileResult,
               base::Unretained(this))));
 }
 
-WebDatabase::State AutofillWebDataServiceImpl::AddCreditCardImpl(
+WebDatabase::State AutofillWebDataService::AddCreditCardImpl(
     const CreditCard& credit_card, WebDatabase* db) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   if (!AutofillTable::FromWebDatabase(db)->AddCreditCard(credit_card)) {
@@ -367,7 +357,7 @@ WebDatabase::State AutofillWebDataServiceImpl::AddCreditCardImpl(
   return WebDatabase::COMMIT_NEEDED;
 }
 
-WebDatabase::State AutofillWebDataServiceImpl::UpdateCreditCardImpl(
+WebDatabase::State AutofillWebDataService::UpdateCreditCardImpl(
     const CreditCard& credit_card, WebDatabase* db) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   // It is currently valid to try to update a missing profile.  We simply drop
@@ -386,7 +376,7 @@ WebDatabase::State AutofillWebDataServiceImpl::UpdateCreditCardImpl(
   return WebDatabase::COMMIT_NEEDED;
 }
 
-WebDatabase::State AutofillWebDataServiceImpl::RemoveCreditCardImpl(
+WebDatabase::State AutofillWebDataService::RemoveCreditCardImpl(
     const std::string& guid, WebDatabase* db) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   if (!AutofillTable::FromWebDatabase(db)->RemoveCreditCard(guid)) {
@@ -396,7 +386,7 @@ WebDatabase::State AutofillWebDataServiceImpl::RemoveCreditCardImpl(
   return WebDatabase::COMMIT_NEEDED;
 }
 
-scoped_ptr<WDTypedResult> AutofillWebDataServiceImpl::GetCreditCardsImpl(
+scoped_ptr<WDTypedResult> AutofillWebDataService::GetCreditCardsImpl(
     WebDatabase* db) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   std::vector<CreditCard*> credit_cards;
@@ -405,12 +395,12 @@ scoped_ptr<WDTypedResult> AutofillWebDataServiceImpl::GetCreditCardsImpl(
       new WDDestroyableResult<std::vector<CreditCard*> >(
           AUTOFILL_CREDITCARDS_RESULT,
           credit_cards,
-        base::Bind(&AutofillWebDataServiceImpl::DestroyAutofillCreditCardResult,
+        base::Bind(&AutofillWebDataService::DestroyAutofillCreditCardResult,
               base::Unretained(this))));
 }
 
 WebDatabase::State
-AutofillWebDataServiceImpl::RemoveAutofillDataModifiedBetweenImpl(
+AutofillWebDataService::RemoveAutofillDataModifiedBetweenImpl(
         const base::Time& delete_begin, const base::Time& delete_end,
         WebDatabase* db) {
   std::vector<std::string> profile_guids;
@@ -437,7 +427,7 @@ AutofillWebDataServiceImpl::RemoveAutofillDataModifiedBetweenImpl(
   return WebDatabase::COMMIT_NOT_NEEDED;
 }
 
-void AutofillWebDataServiceImpl::DestroyAutofillProfileResult(
+void AutofillWebDataService::DestroyAutofillProfileResult(
     const WDTypedResult* result) {
   DCHECK(result->GetType() == AUTOFILL_PROFILES_RESULT);
   const WDResult<std::vector<AutofillProfile*> >* r =
@@ -446,7 +436,7 @@ void AutofillWebDataServiceImpl::DestroyAutofillProfileResult(
   STLDeleteElements(&profiles);
 }
 
-void AutofillWebDataServiceImpl::DestroyAutofillCreditCardResult(
+void AutofillWebDataService::DestroyAutofillCreditCardResult(
       const WDTypedResult* result) {
   DCHECK(result->GetType() == AUTOFILL_CREDITCARDS_RESULT);
   const WDResult<std::vector<CreditCard*> >* r =
