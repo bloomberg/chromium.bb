@@ -33,7 +33,7 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, ApiTests) {
                                   "api_tests.html")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, ApiTestsAudio) {
+IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, DISABLED_ApiTestsAudio) {
   extensions::FeatureSwitch::ScopedOverride tab_capture(
       extensions::FeatureSwitch::tab_capture(), true);
   ASSERT_TRUE(RunExtensionSubtest("tab_capture/experimental",
