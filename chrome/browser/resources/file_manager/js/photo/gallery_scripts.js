@@ -64,5 +64,7 @@
 // Exports
 window.ImageUtil = ImageUtil;
 window.Gallery = Gallery;
+window.beforeunload = beforeunload;
+window.unload = unload;
 
 })();

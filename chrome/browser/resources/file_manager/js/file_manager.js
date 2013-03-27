@@ -1820,13 +1820,16 @@ DialogType.isModal = function(type) {
         this.filePopup_.contentWindow.unload();
       }
 
-      this.dialogDom_.removeChild(this.filePopup_);
-      this.filePopup_ = null;
       if (this.filePopupCloseCallback_) {
         this.filePopupCloseCallback_();
         this.filePopupCloseCallback_ = null;
       }
       this.refocus();
+
+      // These operations have to be in the end, otherwise v8 crashes on an
+      // assert. See: crbug.com/224174.
+      this.dialogDom_.removeChild(this.filePopup_);
+      this.filePopup_ = null;
     }
   };
 
