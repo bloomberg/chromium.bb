@@ -9,7 +9,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "chrome/browser/ui/cocoa/tab_contents/instant_overlay_controller_mac.h"
-#include "chrome/browser/ui/cocoa/tab_contents/overlay_drop_shadow_view.h"
+#include "chrome/browser/ui/cocoa/tab_contents/overlay_separator_view.h"
 #include "chrome/browser/ui/search/instant_overlay_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/notification_source.h"
@@ -29,9 +29,12 @@ class OverlayableContentsControllerTest : public InProcessBrowserTest,
         content::WebContents::CreateParams(browser()->profile())));
     instant_overlay_model_.SetOverlayContents(web_contents_.get());
 
+    BrowserWindowController* window_controller =
+        [BrowserWindowController browserWindowControllerForWindow:
+                browser()->window()->GetNativeWindow()];
     controller_.reset([[OverlayableContentsController alloc]
          initWithBrowser:browser()
-        windowController:nil]);
+        windowController:window_controller]);
     [[controller_ view] setFrame:NSMakeRect(0, 0, 100, 200)];
     instant_overlay_model_.AddObserver([controller_ instantOverlayController]);
   }
@@ -47,6 +50,7 @@ class OverlayableContentsControllerTest : public InProcessBrowserTest,
   void VerifyOverlayFrame(CGFloat expected_height,
                           InstantSizeUnits units) {
     NSRect container_bounds = [[controller_ view] bounds];
+    container_bounds.size.height -= [OverlayTopSeparatorView preferredHeight];
     NSRect overlay_frame =
         [web_contents_->GetView()->GetNativeView() frame];
 
@@ -113,8 +117,8 @@ IN_PROC_BROWSER_TEST_F(OverlayableContentsControllerTest, SizePixels) {
   VerifyOverlayFrame(expected_height, units);
 }
 
-// Verify that a shadow is not shown when the overlay covers the entire page
-// or when the overlay is in NTP mode.
+// Verify that a bottom border is not shown when the overlay covers the entire
+// page or when the overlay is in NTP mode.
 IN_PROC_BROWSER_TEST_F(OverlayableContentsControllerTest, NoShadowFullHeight) {
   SearchMode mode;
   mode.mode = SearchMode::MODE_SEARCH_SUGGESTIONS;
@@ -140,7 +144,7 @@ IN_PROC_BROWSER_TEST_F(OverlayableContentsControllerTest, NoShadowNTP) {
   NSRect dropShadowFrame = [[controller_ dropShadowView] frame];
   NSRect controllerBounds = [[controller_ view] bounds];
   EXPECT_EQ(NSWidth(controllerBounds), NSWidth(dropShadowFrame));
-  EXPECT_EQ([OverlayDropShadowView preferredHeight],
+  EXPECT_EQ([OverlayBottomSeparatorView preferredHeight],
             NSHeight(dropShadowFrame));
 }
 
