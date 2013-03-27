@@ -18,6 +18,7 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -942,6 +943,17 @@ void BookmarkBarView::BookmarkMenuDeleted(BookmarkMenuController* controller) {
 }
 
 void BookmarkBarView::ShowImportDialog() {
+  int64 install_time =
+      g_browser_process->local_state()->GetInt64(prefs::kInstallDate);
+  int64 time_from_install = base::Time::Now().ToTimeT() - install_time;
+  if (bookmark_bar_state_ == BookmarkBar::SHOW)
+    UMA_HISTOGRAM_COUNTS("Import_ShowDlg.FromBookmarkBarView",
+                         time_from_install);
+  else if (bookmark_bar_state_ == BookmarkBar::DETACHED) {
+    UMA_HISTOGRAM_COUNTS("Import_ShowDlg.FromFloatingBookmarkBarView",
+                         time_from_install);
+  }
+
   chrome::ShowImportDialog(browser_);
 }
 
