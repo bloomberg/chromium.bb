@@ -174,6 +174,56 @@ class OldValidator(object):
     return self._errors
 
 
+def CheckFinalRestrictedRegister(
+    sandboxing,
+    instruction,
+    disassembly,
+    old_validator):
+  bundle = sandboxing + instruction
+  assert len(bundle) <= validator.BUNDLE_SIZE
+  bundle += [NOP] * (validator.BUNDLE_SIZE - len(bundle))
+
+  final_restricted_register = [None]
+
+  def Callback(begin, end, info):
+    if begin == len(sandboxing):
+      assert end == len(sandboxing) + len(instruction)
+      final_restricted_register[0] = (
+          (info & validator.RESTRICTED_REGISTER_MASK) >>
+          validator.RESTRICTED_REGISTER_SHIFT)
+    elif begin > len(sandboxing):
+      assert bundle[begin:end] == [NOP]
+
+  result = validator.ValidateChunk(
+      ''.join(map(chr, bundle)),
+      bitness=options.bitness,
+      callback=Callback,
+      on_each_instruction=True)
+  assert result, (disassembly, map(hex, bundle))
+
+  (final_restricted_register,) = final_restricted_register
+  if final_restricted_register == validator.NO_REG:
+    final_restricted_register = None
+
+  assert final_restricted_register != validator.REG_R15, (
+      'restricted register can not be r15')
+
+  if final_restricted_register is not None:
+    register_name = REGISTER_NAMES[final_restricted_register]
+    memory_reference = 'mov (%%r15, %s), %%al' % register_name
+    bundle = sandboxing + instruction + Assemble(64, memory_reference)
+    assert len(bundle) <= validator.BUNDLE_SIZE
+    bundle += [NOP] * (validator.BUNDLE_SIZE - len(bundle))
+
+    assert validator.ValidateChunk(
+        ''.join(map(chr, bundle)),
+        bitness=options.bitness), (bundle, disassembly, memory_reference)
+
+    old_validator.Validate(
+        bundle,
+        (disassembly + '; ' + memory_reference, instruction))
+
+
 def ValidateInstruction(instruction, disassembly, old_validator):
   assert len(instruction) <= validator.BUNDLE_SIZE
   bundle = instruction + [NOP] * (validator.BUNDLE_SIZE - len(instruction))
@@ -187,47 +237,38 @@ def ValidateInstruction(instruction, disassembly, old_validator):
       old_validator.Validate(bundle, (disassembly, instruction))
     return result
   else:
-    # TODO(shcherbina): memory access (check that it requires proper sandboxing)
     result = validator.ValidateChunk(
         ''.join(map(chr, bundle)),
         bitness=options.bitness)
     if result:
       old_validator.Validate(bundle, (disassembly, instruction))
+      CheckFinalRestrictedRegister([], instruction, disassembly, old_validator)
 
-      final_restricted_register = [None]
-
-      def Callback(begin, end, info):
-        if begin == 0:
-          final_restricted_register[0] = (
-              (info & validator.RESTRICTED_REGISTER_MASK) >>
-              validator.RESTRICTED_REGISTER_SHIFT)
-        else:
-          assert bundle[begin:end] == [NOP]
-
-      validator.ValidateChunk(
+    # Additionally, we try to restrict all possible
+    # registers and check whether instruction would be accepted.
+    for register, register_name in REGISTER_NAMES.items():
+      if register == validator.REG_R15:
+        continue
+      if validator.ValidateChunk(
           ''.join(map(chr, bundle)),
           bitness=options.bitness,
-          callback=Callback,
-          on_each_instruction=True)
+          restricted_register=register):
 
-      (final_restricted_register,) = final_restricted_register
-      if final_restricted_register == validator.NO_REG:
-        final_restricted_register = None
+        # %r8 -> %r8d
+        # %rax -> %eax
+        if re.match(r'%r\d+$', register_name):
+          register_name += 'd'
+        else:
+          assert register_name.startswith('%r')
+          register_name = '%e' + register_name[2:]
 
-      if final_restricted_register is not None:
-        register_name = REGISTER_NAMES[final_restricted_register]
-        memory_reference = 'mov (%%r15, %s), %%al' % register_name
-        bundle = instruction + Assemble(64, memory_reference)
-        assert len(bundle) <= validator.BUNDLE_SIZE
-        bundle += [NOP] * (validator.BUNDLE_SIZE - len(bundle))
-
-        assert validator.ValidateChunk(
-            ''.join(map(chr, bundle)),
-            bitness=options.bitness), (bundle, disassembly, memory_reference)
-
-        old_validator.Validate(
-            bundle,
-            (disassembly + '; ' + memory_reference, instruction))
+        sandboxing = 'mov %%eax, %s' % register_name
+        CheckFinalRestrictedRegister(
+            Assemble(64, sandboxing),
+            instruction,
+            sandboxing + '; ' + disassembly,
+            old_validator)
+        result = True
 
     return result
 
