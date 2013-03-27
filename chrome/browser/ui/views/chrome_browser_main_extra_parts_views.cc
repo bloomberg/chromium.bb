@@ -7,6 +7,8 @@
 #include "chrome/browser/chrome_browser_main.h"
 #include "chrome/browser/toolkit_extra_parts.h"
 #include "chrome/browser/ui/views/chrome_views_delegate.h"
+#include "chrome/common/chrome_switches.h"
+#include "ui/base/ui_base_switches.h"
 
 ChromeBrowserMainExtraPartsViews::ChromeBrowserMainExtraPartsViews() {
 }
@@ -16,6 +18,17 @@ void ChromeBrowserMainExtraPartsViews::ToolkitInitialized() {
   // display the correct icon.
   if (!views::ViewsDelegate::views_delegate)
     views::ViewsDelegate::views_delegate = new ChromeViewsDelegate;
+}
+
+void ChromeBrowserMainExtraPartsViews::PreCreateThreads() {
+  // Enable the new style dialogs when using the interactive autocomplete
+  // dialog. Modifying the command line is only safe before starting threads.
+  // It also has to come after about flags modifies the command line, which
+  // is why it's not possible to do this in ToolkitInitialized.
+  // TODO(estade): remove this.
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kEnableInteractiveAutocomplete))
+    command_line->AppendSwitch(switches::kEnableNewDialogStyle);
 }
 
 namespace chrome {

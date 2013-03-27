@@ -777,6 +777,12 @@ int ChromeBrowserMainParts::PreCreateThreads() {
 #if !defined(OS_ANDROID)
   DCHECK(browser_creator_.get());
 #endif
+
+  if (result_code_ == 0) {
+    for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
+      chrome_extra_parts_[i]->PreCreateThreads();
+  }
+
   return result_code_;
 }
 
