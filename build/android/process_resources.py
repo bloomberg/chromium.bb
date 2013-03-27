@@ -84,6 +84,7 @@ def main():
 
   # Crunch image resources. This shrinks png files and is necessary for 9-patch
   # images to display correctly.
+  build_utils.MakeDirectory(options.crunch_output_dir)
   subprocess.check_call([aapt,
                          'crunch',
                          '-S', options.crunch_input_dir,

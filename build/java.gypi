@@ -88,13 +88,17 @@
         'R_stamp': '<(intermediate_dir)/resources.stamp',
         'generated_src_dirs': ['<(R_dir)'],
         'additional_input_paths': ['<(R_stamp)'],
+        'additional_res_dirs': [],
+        'dependencies_res_files': [],
       },
       'all_dependent_settings': {
         'variables': {
           # Dependent jars include this target's R.java file via
-          # generated_R_dirs and additional_R_files.
+          # generated_R_dirs and include its resources via
+          # dependencies_res_files.
           'generated_R_dirs': ['<(R_dir)'],
           'additional_input_paths': ['<(R_stamp)'],
+          'dependencies_res_files': ['<@(resource_input_paths)'],
 
           # Dependent APKs include this target's resources via
           # additional_res_dirs, additional_res_packages, and
@@ -133,11 +137,15 @@
           'message': 'processing resources for <(_target_name)',
           'variables': {
             'android_manifest': '<(DEPTH)/build/android/AndroidManifest.xml',
+            # Include the dependencies' res dirs so that references to
+            # resources in dependencies can be resolved.
+            'all_res_dirs': ['<@(res_input_dirs)', '>@(additional_res_dirs)'],
           },
           'inputs': [
             '<(DEPTH)/build/android/pylib/build_utils.py',
             '<(DEPTH)/build/android/process_resources.py',
             '>@(resource_input_paths)',
+            '>@(dependencies_res_files)',
           ],
           'outputs': [
             '<(R_stamp)',
@@ -147,7 +155,7 @@
             '--android-sdk', '<(android_sdk)',
             '--android-sdk-tools', '<(android_sdk_tools)',
             '--R-dir', '<(R_dir)',
-            '--res-dirs', '<(res_input_dirs)',
+            '--res-dirs', '>(all_res_dirs)',
             '--crunch-input-dir', '>(res_dir)',
             '--crunch-output-dir', '<(res_crunched_dir)',
             '--android-manifest', '<(android_manifest)',
