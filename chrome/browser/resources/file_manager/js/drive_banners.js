@@ -228,7 +228,7 @@ FileListBannerController.prototype.prepareAndShowWelcomeBanner_ =
 
   dismiss.classList.add('drive-welcome-dismiss');
   dismiss.textContent = str('DRIVE_WELCOME_DISMISS');
-  dismiss.addEventListener('click', this.closeBanner_.bind(this));
+  dismiss.addEventListener('click', this.closeWelcomeBanner_.bind(this));
 
   this.previousDirWasOnDrive_ = false;
 };
