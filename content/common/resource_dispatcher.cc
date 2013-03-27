@@ -33,6 +33,20 @@ using webkit_glue::ResourceResponseInfo;
 
 namespace content {
 
+namespace {
+
+// Converts |time| from a remote to local TimeTicks, overwriting the original
+// value.
+void RemoteToLocalTimeTicks(
+    const InterProcessTimeTicksConverter& converter,
+    base::TimeTicks* time) {
+  RemoteTimeTicks remote_time = RemoteTimeTicks::FromTimeTicks(*time);
+  *time = converter.ToLocalTimeTicks(remote_time).ToTimeTicks();
+}
+
+
+}  // namespace
+
 static void CrashOnMapFailure() {
 #if defined(OS_WIN)
   DWORD last_err = GetLastError();
@@ -232,8 +246,6 @@ void IPCResourceLoaderBridge::SyncLoad(SyncLoadResponse* response) {
   response->request_time = result.request_time;
   response->response_time = result.response_time;
   response->encoded_data_length = result.encoded_data_length;
-  response->connection_id = result.connection_id;
-  response->connection_reused = result.connection_reused;
   response->load_timing = result.load_timing;
   response->devtools_info = result.devtools_info;
   response->data.swap(result.data);
@@ -647,7 +659,7 @@ void ResourceDispatcher::ToResourceResponseInfo(
       request_info.response_start.is_null() ||
       browser_info.request_start.is_null() ||
       browser_info.response_start.is_null() ||
-      browser_info.load_timing.base_ticks.is_null()) {
+      browser_info.load_timing.request_start.is_null()) {
     return;
   }
   InterProcessTimeTicksConverter converter(
@@ -656,28 +668,19 @@ void ResourceDispatcher::ToResourceResponseInfo(
       RemoteTimeTicks::FromTimeTicks(browser_info.request_start),
       RemoteTimeTicks::FromTimeTicks(browser_info.response_start));
 
-  LocalTimeTicks renderer_base_ticks = converter.ToLocalTimeTicks(
-      RemoteTimeTicks::FromTimeTicks(browser_info.load_timing.base_ticks));
-  renderer_info->load_timing.base_ticks = renderer_base_ticks.ToTimeTicks();
-
-#define CONVERT(field) \
-  LocalTimeDelta renderer_##field = converter.ToLocalTimeDelta( \
-      RemoteTimeDelta::FromRawDelta(browser_info.load_timing.field)); \
-  renderer_info->load_timing.field = renderer_##field.ToInt32()
-
-  CONVERT(proxy_start);
-  CONVERT(dns_start);
-  CONVERT(dns_end);
-  CONVERT(connect_start);
-  CONVERT(connect_end);
-  CONVERT(ssl_start);
-  CONVERT(ssl_end);
-  CONVERT(send_start);
-  CONVERT(send_end);
-  CONVERT(receive_headers_start);
-  CONVERT(receive_headers_end);
-
-#undef CONVERT
+  net::LoadTimingInfo* load_timing = &renderer_info->load_timing;
+  RemoteToLocalTimeTicks(converter, &load_timing->request_start);
+  RemoteToLocalTimeTicks(converter, &load_timing->proxy_resolve_start);
+  RemoteToLocalTimeTicks(converter, &load_timing->proxy_resolve_end);
+  RemoteToLocalTimeTicks(converter, &load_timing->connect_timing.dns_start);
+  RemoteToLocalTimeTicks(converter, &load_timing->connect_timing.dns_end);
+  RemoteToLocalTimeTicks(converter, &load_timing->connect_timing.connect_start);
+  RemoteToLocalTimeTicks(converter, &load_timing->connect_timing.connect_end);
+  RemoteToLocalTimeTicks(converter, &load_timing->connect_timing.ssl_start);
+  RemoteToLocalTimeTicks(converter, &load_timing->connect_timing.ssl_end);
+  RemoteToLocalTimeTicks(converter, &load_timing->send_start);
+  RemoteToLocalTimeTicks(converter, &load_timing->send_end);
+  RemoteToLocalTimeTicks(converter, &load_timing->receive_headers_end);
 }
 
 base::TimeTicks ResourceDispatcher::ToRendererCompletionTime(

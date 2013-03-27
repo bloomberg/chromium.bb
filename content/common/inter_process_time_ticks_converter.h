@@ -55,14 +55,14 @@ class CONTENT_EXPORT InterProcessTimeTicksConverter {
 
   // Returns the value within the local's bounds that correlates to
   // |remote_ms|.
-  LocalTimeTicks ToLocalTimeTicks(const RemoteTimeTicks& remote_ms);
+  LocalTimeTicks ToLocalTimeTicks(const RemoteTimeTicks& remote_ms) const;
 
   // Returns the equivalent delta after applying remote-to-local scaling to
   // |remote_delta|.
-  LocalTimeDelta ToLocalTimeDelta(const RemoteTimeDelta& remote_delta);
+  LocalTimeDelta ToLocalTimeDelta(const RemoteTimeDelta& remote_delta) const;
 
  private:
-  int64 Convert(int64 value);
+  int64 Convert(int64 value) const;
 
   // The local time which |remote_lower_bound_| is mapped to.
   int64 local_base_time_;

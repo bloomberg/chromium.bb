@@ -83,8 +83,6 @@ bool SyncResourceHandler::OnResponseStarted(
   result_.download_file_path = response->head.download_file_path;
   result_.request_time = response->head.request_time;
   result_.response_time = response->head.response_time;
-  result_.connection_id = response->head.connection_id;
-  result_.connection_reused = response->head.connection_reused;
   result_.load_timing = response->head.load_timing;
   result_.devtools_info = response->head.devtools_info;
   return true;

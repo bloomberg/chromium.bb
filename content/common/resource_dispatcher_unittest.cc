@@ -400,16 +400,19 @@ TEST_F(TimeConversionTest, DISABLED_ProperlyInitialized) {
   response_head.error_code = net::OK;
   response_head.request_start = base::TimeTicks::FromInternalValue(5);
   response_head.response_start = base::TimeTicks::FromInternalValue(15);
-  response_head.load_timing.base_time = base::Time::Now();
-  response_head.load_timing.base_ticks = base::TimeTicks::FromInternalValue(10);
-  response_head.load_timing.dns_start = -1;
-  response_head.load_timing.connect_start = 3;
+  response_head.load_timing.request_start_time = base::Time::Now();
+  response_head.load_timing.request_start =
+      base::TimeTicks::FromInternalValue(10);
+  response_head.load_timing.connect_timing.connect_start =
+      base::TimeTicks::FromInternalValue(13);
 
   PerformTest(response_head);
 
-  EXPECT_LT(0, response_info().load_timing.base_ticks.ToInternalValue());
-  EXPECT_EQ(-1, response_info().load_timing.dns_start);
-  EXPECT_LE(0, response_info().load_timing.connect_start);
+  EXPECT_LT(base::TimeTicks(), response_info().load_timing.request_start);
+  EXPECT_EQ(base::TimeTicks(),
+            response_info().load_timing.connect_timing.dns_start);
+  EXPECT_LE(response_head.load_timing.request_start,
+            response_info().load_timing.connect_timing.connect_start);
 }
 
 TEST_F(TimeConversionTest, PartiallyInitialized) {
@@ -420,8 +423,9 @@ TEST_F(TimeConversionTest, PartiallyInitialized) {
 
   PerformTest(response_head);
 
-  EXPECT_EQ(0, response_info().load_timing.base_ticks.ToInternalValue());
-  EXPECT_EQ(-1, response_info().load_timing.dns_start);
+  EXPECT_EQ(base::TimeTicks(), response_info().load_timing.request_start);
+  EXPECT_EQ(base::TimeTicks(),
+            response_info().load_timing.connect_timing.dns_start);
 }
 
 TEST_F(TimeConversionTest, NotInitialized) {
@@ -430,8 +434,9 @@ TEST_F(TimeConversionTest, NotInitialized) {
 
   PerformTest(response_head);
 
-  EXPECT_EQ(0, response_info().load_timing.base_ticks.ToInternalValue());
-  EXPECT_EQ(-1, response_info().load_timing.dns_start);
+  EXPECT_EQ(base::TimeTicks(), response_info().load_timing.request_start);
+  EXPECT_EQ(base::TimeTicks(),
+            response_info().load_timing.connect_timing.dns_start);
 }
 
 }  // namespace content

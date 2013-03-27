@@ -48,7 +48,7 @@ InterProcessTimeTicksConverter::InterProcessTimeTicksConverter(
 }
 
 LocalTimeTicks InterProcessTimeTicksConverter::ToLocalTimeTicks(
-    const RemoteTimeTicks& remote_ms) {
+    const RemoteTimeTicks& remote_ms) const {
   // If input time is "null", return another "null" time.
   if (remote_ms.value_ == 0)
     return LocalTimeTicks(0);
@@ -60,12 +60,12 @@ LocalTimeTicks InterProcessTimeTicksConverter::ToLocalTimeTicks(
 }
 
 LocalTimeDelta InterProcessTimeTicksConverter::ToLocalTimeDelta(
-    const RemoteTimeDelta& remote_delta) {
+    const RemoteTimeDelta& remote_delta) const {
   DCHECK_GE(remote_upper_bound_, remote_lower_bound_ + remote_delta.value_);
   return LocalTimeDelta(Convert(remote_delta.value_));
 }
 
-int64 InterProcessTimeTicksConverter::Convert(int64 value) {
+int64 InterProcessTimeTicksConverter::Convert(int64 value) const {
   if (value <= 0) {
     return value;
   }

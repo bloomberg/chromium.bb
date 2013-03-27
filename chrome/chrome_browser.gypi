@@ -1027,8 +1027,6 @@
         'browser/net/gaia/gaia_oauth_consumer.h',
         'browser/net/gaia/gaia_oauth_fetcher.cc',
         'browser/net/gaia/gaia_oauth_fetcher.h',
-        'browser/net/load_timing_observer.cc',
-        'browser/net/load_timing_observer.h',
         'browser/net/http_pipelining_compatibility_client.cc',
         'browser/net/http_pipelining_compatibility_client.h',
         'browser/net/http_server_properties_manager.h',

@@ -30,6 +30,7 @@
 #include "base/values.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/host_port_pair.h"
+#include "net/base/load_timing_info.h"
 #include "net/base/request_priority.h"
 #include "net/url_request/url_request_status.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebReferrerPolicy.h"
@@ -43,67 +44,6 @@ class HttpResponseHeaders;
 
 namespace webkit_glue {
 class ResourceRequestBody;
-
-// Structure containing timing information for the request. It addresses
-// http://groups.google.com/group/http-archive-specification/web/har-1-1-spec
-// and http://dev.w3.org/2006/webapi/WebTiming/ needs.
-//
-// All the values for starts and ends are given in milliseconds and are
-// offsets with respect to the given base time.
-struct ResourceLoadTimingInfo {
-  WEBKIT_GLUE_EXPORT ResourceLoadTimingInfo();
-  WEBKIT_GLUE_EXPORT ~ResourceLoadTimingInfo();
-
-  // All the values in this struct are given as offsets in ticks wrt
-  // this base tick count.
-  base::TimeTicks base_ticks;
-
-  // The value of Time::Now() when base_ticks was set.
-  base::Time base_time;
-
-  // The time that proxy processing started. For requests with no proxy phase,
-  // this time is -1.
-  int32 proxy_start;
-
-  // The time that proxy processing ended. For reused sockets this time
-  // is -1.
-  int32 proxy_end;
-
-  // The time that DNS lookup started. For reused sockets this time is -1.
-  int32 dns_start;
-
-  // The time that DNS lookup ended. For reused sockets this time is -1.
-  int32 dns_end;
-
-  // The time that establishing connection started. Connect time includes
-  // DNS, blocking, TCP, TCP retries and SSL time.
-  int32 connect_start;
-
-  // The time that establishing connection ended. Connect time includes
-  // DNS, blocking, TCP, TCP retries and SSL time.
-  int32 connect_end;
-
-  // The time at which SSL handshake started. For non-HTTPS requests this
-  // is 0.
-  int32 ssl_start;
-
-  // The time at which SSL handshake ended. For non-HTTPS requests this is 0.
-  int32 ssl_end;
-
-  // The time that HTTP request started. For non-HTTP requests this is 0.
-  int32 send_start;
-
-  // The time that HTTP request ended. For non-HTTP requests this is 0.
-  int32 send_end;
-
-  // The time at which receiving HTTP headers started. For non-HTTP requests
-  // this is 0.
-  int32 receive_headers_start;
-
-  // The time at which receiving HTTP headers ended. For non-HTTP requests
-  // this is 0.
-  int32 receive_headers_end;
-};
 
 struct ResourceDevToolsInfo : base::RefCounted<ResourceDevToolsInfo> {
   typedef std::vector<std::pair<std::string, std::string> >
@@ -163,16 +103,9 @@ struct ResourceResponseInfo {
   // Note: this value is only populated for main resource requests.
   GURL appcache_manifest_url;
 
-  // Connection identifier from the underlying network stack. In case there
-  // is no associated connection, contains 0.
-  uint32 connection_id;
-
-  // Determines whether physical connection reused.
-  bool connection_reused;
-
   // Detailed timing information used by the WebTiming, HAR and Developer
-  // Tools.
-  ResourceLoadTimingInfo load_timing;
+  // Tools.  Includes socket ID and socket reuse information.
+  net::LoadTimingInfo load_timing;
 
   // Actual request and response headers, as obtained from the network stack.
   // Only present if request had LOAD_REPORT_RAW_HEADERS in load_flags, and

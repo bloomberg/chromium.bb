@@ -19,7 +19,6 @@
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/metrics/variations/variations_http_header_provider.h"
-#include "chrome/browser/net/load_timing_observer.h"
 #include "chrome/browser/net/resource_prefetch_predictor_observer.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_tracker.h"
@@ -43,8 +42,10 @@
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/stream_handle.h"
+#include "content/public/common/resource_response.h"
 #include "extensions/common/constants.h"
 #include "net/base/load_flags.h"
+#include "net/base/load_timing_info.h"
 #include "net/http/http_response_headers.h"
 #include "net/ssl/ssl_config_service.h"
 #include "net/url_request/url_request.h"
@@ -87,6 +88,50 @@ void NotifyDownloadInitiatedOnUI(int render_process_id, int render_view_id) {
       chrome::NOTIFICATION_DOWNLOAD_INITIATED,
       content::Source<RenderViewHost>(rvh),
       content::NotificationService::NoDetails());
+}
+
+// The network stack returns actual connect times, while the renderer process
+// expects times that the request was blocked in each phase of setting up
+// a connection.  Due to preconnect and late binding, it is possible for a
+// connection attempt to start before a request has been started, so this
+// function is needed to convert times from the network stack to times the
+// renderer process expects.
+void FixupLoadTimingInfo(net::LoadTimingInfo* load_timing_info) {
+  // If there are no times, do nothing.
+  if (load_timing_info->request_start.is_null())
+    return;
+
+  // Starting the request and resolving the proxy are the only phases of the
+  // request that occur before it blocks on starting a connection.
+  base::TimeTicks block_on_connect_start = load_timing_info->request_start;
+  if (!load_timing_info->proxy_resolve_end.is_null())
+    block_on_connect_start = load_timing_info->proxy_resolve_end;
+
+  net::LoadTimingInfo::ConnectTiming* connect_timing =
+      &load_timing_info->connect_timing;
+  if (!connect_timing->dns_start.is_null()) {
+    DCHECK(!connect_timing->dns_end.is_null());
+    if (connect_timing->dns_start < block_on_connect_start)
+      connect_timing->dns_start = block_on_connect_start;
+    if (connect_timing->dns_end < block_on_connect_start)
+      connect_timing->dns_end = block_on_connect_start;
+  }
+
+  if (!connect_timing->connect_start.is_null()) {
+    DCHECK(!connect_timing->connect_end.is_null());
+    if (connect_timing->connect_start < block_on_connect_start)
+      connect_timing->connect_start = block_on_connect_start;
+    if (connect_timing->connect_end < block_on_connect_start)
+      connect_timing->connect_end = block_on_connect_start;
+  }
+
+  if (!connect_timing->ssl_start.is_null()) {
+    DCHECK(!connect_timing->ssl_end.is_null());
+    if (connect_timing->ssl_start < block_on_connect_start)
+      connect_timing->ssl_start = block_on_connect_start;
+    if (connect_timing->ssl_end < block_on_connect_start)
+      connect_timing->ssl_end = block_on_connect_start;
+  }
 }
 
 // Goes through the extension's file browser handlers and checks if there is one
@@ -486,7 +531,11 @@ void ChromeResourceDispatcherHostDelegate::OnResponseStarted(
     content::ResourceContext* resource_context,
     content::ResourceResponse* response,
     IPC::Sender* sender) {
-  LoadTimingObserver::PopulateTimingInfo(request, response);
+  // TODO(mmenke):  Figure out if LOAD_ENABLE_LOAD_TIMING is safe to remove.
+  if (request->load_flags() & net::LOAD_ENABLE_LOAD_TIMING) {
+    request->GetLoadTimingInfo(&response->head.load_timing);
+    FixupLoadTimingInfo(&response->head.load_timing);
+  }
 
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
 
@@ -545,7 +594,11 @@ void ChromeResourceDispatcherHostDelegate::OnRequestRedirected(
     net::URLRequest* request,
     content::ResourceContext* resource_context,
     content::ResourceResponse* response) {
-  LoadTimingObserver::PopulateTimingInfo(request, response);
+  // TODO(mmenke):  Figure out if LOAD_ENABLE_LOAD_TIMING is safe to remove.
+  if (request->load_flags() & net::LOAD_ENABLE_LOAD_TIMING) {
+    request->GetLoadTimingInfo(&response->head.load_timing);
+    FixupLoadTimingInfo(&response->head.load_timing);
+  }
 
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
 

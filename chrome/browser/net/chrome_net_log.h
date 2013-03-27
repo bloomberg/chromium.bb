@@ -11,7 +11,6 @@
 #include "base/synchronization/lock.h"
 #include "net/base/net_log.h"
 
-class LoadTimingObserver;
 class NetLogLogger;
 class NetLogTempFile;
 
@@ -34,10 +33,6 @@ class ChromeNetLog : public net::NetLog {
   virtual void SetObserverLogLevel(ThreadSafeObserver* observer,
                                    LogLevel log_level) OVERRIDE;
   virtual void RemoveThreadSafeObserver(ThreadSafeObserver* observer) OVERRIDE;
-
-  LoadTimingObserver* load_timing_observer() {
-    return load_timing_observer_.get();
-  }
 
   NetLogTempFile* net_log_temp_file() {
     return net_log_temp_file_.get();
@@ -64,7 +59,6 @@ class ChromeNetLog : public net::NetLog {
   // The current log level.
   base::subtle::Atomic32 effective_log_level_;
 
-  scoped_ptr<LoadTimingObserver> load_timing_observer_;
   scoped_ptr<NetLogLogger> net_log_logger_;
   scoped_ptr<NetLogTempFile> net_log_temp_file_;
 

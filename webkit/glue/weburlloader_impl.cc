@@ -130,8 +130,8 @@ bool GetInfoFromDataURL(const GURL& url,
     *error_code = net::OK;
     // Assure same time for all time fields of data: URLs.
     Time now = Time::Now();
-    info->load_timing.base_time = now;
-    info->load_timing.base_ticks = TimeTicks::Now();
+    info->load_timing.request_start = TimeTicks::Now();
+    info->load_timing.request_start_time = now;
     info->request_time = now;
     info->response_time = now;
     info->headers = NULL;
@@ -150,6 +150,53 @@ bool GetInfoFromDataURL(const GURL& url,
 
 typedef ResourceDevToolsInfo::HeadersVector HeadersVector;
 
+// Given a base time and a second time, returns the time from the base time to
+// the second time, in milliseconds.  If the second time is null, returns -1.
+// The base time must not be null.
+int TimeTicksToOffset(base::TimeTicks base_time, base::TimeTicks time) {
+  if (time.is_null())
+    return -1;
+  DCHECK(!base_time.is_null());
+  return static_cast<int>((time - base_time).InMillisecondsRoundedUp());
+}
+
+// Converts timing data from |load_timing| to the format used by WebKit.
+void PopulateURLLoadTiming(const net::LoadTimingInfo& load_timing,
+                           WebURLLoadTiming* url_timing) {
+  DCHECK(!load_timing.request_start.is_null());
+
+  url_timing->initialize();
+  url_timing->setRequestTime(
+      (load_timing.request_start - TimeTicks()).InSecondsF());
+  url_timing->setProxyStart(TimeTicksToOffset(load_timing.request_start,
+                                              load_timing.proxy_resolve_start));
+  url_timing->setProxyEnd(TimeTicksToOffset(load_timing.request_start,
+                                            load_timing.proxy_resolve_end));
+  url_timing->setDNSStart(TimeTicksToOffset(
+      load_timing.request_start,
+      load_timing.connect_timing.dns_start));
+  url_timing->setDNSEnd(TimeTicksToOffset(load_timing.request_start,
+                                          load_timing.connect_timing.dns_end));
+  url_timing->setConnectStart(
+      TimeTicksToOffset(load_timing.request_start,
+                        load_timing.connect_timing.connect_start));
+  url_timing->setConnectEnd(
+      TimeTicksToOffset(load_timing.request_start,
+                        load_timing.connect_timing.connect_end));
+  url_timing->setSSLStart(
+      TimeTicksToOffset(load_timing.request_start,
+                        load_timing.connect_timing.ssl_start));
+  url_timing->setSSLEnd(TimeTicksToOffset(load_timing.request_start,
+                                          load_timing.connect_timing.ssl_end));
+  url_timing->setSendStart(TimeTicksToOffset(load_timing.request_start,
+                                             load_timing.send_start));
+  url_timing->setSendEnd(TimeTicksToOffset(load_timing.request_start,
+                                           load_timing.send_end));
+  url_timing->setReceiveHeadersEnd(
+      TimeTicksToOffset(load_timing.request_start,
+                        load_timing.receive_headers_end));
+}
+
 void PopulateURLResponse(
     const GURL& url,
     const ResourceResponseInfo& info,
@@ -162,13 +209,13 @@ void PopulateURLResponse(
   response->setSecurityInfo(info.security_info);
   response->setAppCacheID(info.appcache_id);
   response->setAppCacheManifestURL(info.appcache_manifest_url);
-  response->setWasCached(!info.load_timing.base_time.is_null() &&
-      info.response_time < info.load_timing.base_time);
+  response->setWasCached(!info.load_timing.request_start_time.is_null() &&
+      info.response_time < info.load_timing.request_start_time);
   response->setRemoteIPAddress(
       WebString::fromUTF8(info.socket_address.host()));
   response->setRemotePort(info.socket_address.port());
-  response->setConnectionID(info.connection_id);
-  response->setConnectionReused(info.connection_reused);
+  response->setConnectionID(info.load_timing.socket_log_id);
+  response->setConnectionReused(info.load_timing.socket_reused);
   response->setDownloadFilePath(
       webkit_base::FilePathToWebString(info.download_file_path));
   WebURLResponseExtraDataImpl* extra_data =
@@ -180,22 +227,12 @@ void PopulateURLResponse(
       info.was_alternate_protocol_available);
   extra_data->set_was_fetched_via_proxy(info.was_fetched_via_proxy);
 
-  const ResourceLoadTimingInfo& timing_info = info.load_timing;
-  if (!timing_info.base_time.is_null()) {
+  // If there's no received headers end time, don't set load timing.  This is
+  // the case for non-HTTP requests, requests that don't go over the wire, and
+  // certain error cases.
+  if (!info.load_timing.receive_headers_end.is_null()) {
     WebURLLoadTiming timing;
-    timing.initialize();
-    timing.setRequestTime((timing_info.base_ticks - TimeTicks()).InSecondsF());
-    timing.setProxyStart(timing_info.proxy_start);
-    timing.setProxyEnd(timing_info.proxy_end);
-    timing.setDNSStart(timing_info.dns_start);
-    timing.setDNSEnd(timing_info.dns_end);
-    timing.setConnectStart(timing_info.connect_start);
-    timing.setConnectEnd(timing_info.connect_end);
-    timing.setSSLStart(timing_info.ssl_start);
-    timing.setSSLEnd(timing_info.ssl_end);
-    timing.setSendStart(timing_info.send_start);
-    timing.setSendEnd(timing_info.send_end);
-    timing.setReceiveHeadersEnd(timing_info.receive_headers_end);
+    PopulateURLLoadTiming(info.load_timing, &timing);
     response->setLoadTiming(timing);
   }
 

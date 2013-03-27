@@ -4,6 +4,7 @@
 
 #include "content/common/resource_messages.h"
 
+#include "net/base/load_timing_info.h"
 #include "net/http/http_response_headers.h"
 #include "webkit/glue/resource_loader_bridge.h"
 
@@ -175,80 +176,85 @@ void ParamTraits<scoped_refptr<webkit_glue::ResourceDevToolsInfo> >::Log(
   l->append(")");
 }
 
-void ParamTraits<webkit_glue::ResourceLoadTimingInfo>::Write(
+void ParamTraits<net::LoadTimingInfo>::Write(
     Message* m, const param_type& p) {
-  WriteParam(m, p.base_time.is_null());
-  if (p.base_time.is_null())
+  WriteParam(m, p.socket_log_id);
+  WriteParam(m, p.socket_reused);
+  WriteParam(m, p.request_start_time.is_null());
+  if (p.request_start_time.is_null())
     return;
-  WriteParam(m, p.base_ticks);
-  WriteParam(m, p.base_time);
-  WriteParam(m, p.proxy_start);
-  WriteParam(m, p.proxy_end);
-  WriteParam(m, p.dns_start);
-  WriteParam(m, p.dns_end);
-  WriteParam(m, p.connect_start);
-  WriteParam(m, p.connect_end);
-  WriteParam(m, p.ssl_start);
-  WriteParam(m, p.ssl_end);
+  WriteParam(m, p.request_start_time);
+  WriteParam(m, p.request_start);
+  WriteParam(m, p.proxy_resolve_start);
+  WriteParam(m, p.proxy_resolve_end);
+  WriteParam(m, p.connect_timing.dns_start);
+  WriteParam(m, p.connect_timing.dns_end);
+  WriteParam(m, p.connect_timing.connect_start);
+  WriteParam(m, p.connect_timing.connect_end);
+  WriteParam(m, p.connect_timing.ssl_start);
+  WriteParam(m, p.connect_timing.ssl_end);
   WriteParam(m, p.send_start);
   WriteParam(m, p.send_end);
-  WriteParam(m, p.receive_headers_start);
   WriteParam(m, p.receive_headers_end);
 }
 
-bool ParamTraits<webkit_glue::ResourceLoadTimingInfo>::Read(
+bool ParamTraits<net::LoadTimingInfo>::Read(
     const Message* m, PickleIterator* iter, param_type* r) {
-  bool is_null;
-  if (!ReadParam(m, iter, &is_null))
+  bool has_no_times;
+  if (!ReadParam(m, iter, &r->socket_log_id) ||
+      !ReadParam(m, iter, &r->socket_reused) ||
+      !ReadParam(m, iter, &has_no_times)) {
     return false;
-  if (is_null)
+  }
+  if (has_no_times)
     return true;
 
   return
-      ReadParam(m, iter, &r->base_ticks) &&
-      ReadParam(m, iter, &r->base_time) &&
-      ReadParam(m, iter, &r->proxy_start) &&
-      ReadParam(m, iter, &r->proxy_end) &&
-      ReadParam(m, iter, &r->dns_start) &&
-      ReadParam(m, iter, &r->dns_end) &&
-      ReadParam(m, iter, &r->connect_start) &&
-      ReadParam(m, iter, &r->connect_end) &&
-      ReadParam(m, iter, &r->ssl_start) &&
-      ReadParam(m, iter, &r->ssl_end) &&
+      ReadParam(m, iter, &r->request_start_time) &&
+      ReadParam(m, iter, &r->request_start) &&
+      ReadParam(m, iter, &r->proxy_resolve_start) &&
+      ReadParam(m, iter, &r->proxy_resolve_end) &&
+      ReadParam(m, iter, &r->connect_timing.dns_start) &&
+      ReadParam(m, iter, &r->connect_timing.dns_end) &&
+      ReadParam(m, iter, &r->connect_timing.connect_start) &&
+      ReadParam(m, iter, &r->connect_timing.connect_end) &&
+      ReadParam(m, iter, &r->connect_timing.ssl_start) &&
+      ReadParam(m, iter, &r->connect_timing.ssl_end) &&
       ReadParam(m, iter, &r->send_start) &&
       ReadParam(m, iter, &r->send_end) &&
-      ReadParam(m, iter, &r->receive_headers_start) &&
       ReadParam(m, iter, &r->receive_headers_end);
 }
 
-void ParamTraits<webkit_glue::ResourceLoadTimingInfo>::Log(const param_type& p,
-                                                           std::string* l) {
+void ParamTraits<net::LoadTimingInfo>::Log(const param_type& p,
+                                           std::string* l) {
   l->append("(");
-  LogParam(p.base_ticks, l);
+  LogParam(p.socket_log_id, l);
+  l->append(",");
+  LogParam(p.socket_reused, l);
+  l->append(",");
+  LogParam(p.request_start_time, l);
   l->append(", ");
-  LogParam(p.base_time, l);
+  LogParam(p.request_start, l);
   l->append(", ");
-  LogParam(p.proxy_start, l);
+  LogParam(p.proxy_resolve_start, l);
   l->append(", ");
-  LogParam(p.proxy_end, l);
+  LogParam(p.proxy_resolve_end, l);
   l->append(", ");
-  LogParam(p.dns_start, l);
+  LogParam(p.connect_timing.dns_start, l);
   l->append(", ");
-  LogParam(p.dns_end, l);
+  LogParam(p.connect_timing.dns_end, l);
   l->append(", ");
-  LogParam(p.connect_start, l);
+  LogParam(p.connect_timing.connect_start, l);
   l->append(", ");
-  LogParam(p.connect_end, l);
+  LogParam(p.connect_timing.connect_end, l);
   l->append(", ");
-  LogParam(p.ssl_start, l);
+  LogParam(p.connect_timing.ssl_start, l);
   l->append(", ");
-  LogParam(p.ssl_end, l);
+  LogParam(p.connect_timing.ssl_end, l);
   l->append(", ");
   LogParam(p.send_start, l);
   l->append(", ");
   LogParam(p.send_end, l);
-  l->append(", ");
-  LogParam(p.receive_headers_start, l);
   l->append(", ");
   LogParam(p.receive_headers_end, l);
   l->append(")");

@@ -19,9 +19,12 @@
 #ifndef CONTENT_COMMON_RESOURCE_MESSAGES_H_
 #define CONTENT_COMMON_RESOURCE_MESSAGES_H_
 
+namespace net {
+struct LoadTimingInfo;
+}
+
 namespace webkit_glue {
 struct ResourceDevToolsInfo;
-struct ResourceLoadTimingInfo;
 }
 
 namespace IPC {
@@ -51,8 +54,8 @@ struct ParamTraits<scoped_refptr<webkit_glue::ResourceDevToolsInfo> > {
 };
 
 template <>
-struct ParamTraits<webkit_glue::ResourceLoadTimingInfo> {
-  typedef webkit_glue::ResourceLoadTimingInfo param_type;
+struct ParamTraits<net::LoadTimingInfo> {
+  typedef net::LoadTimingInfo param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
@@ -99,8 +102,6 @@ IPC_STRUCT_TRAITS_BEGIN(webkit_glue::ResourceResponseInfo)
   IPC_STRUCT_TRAITS_MEMBER(encoded_data_length)
   IPC_STRUCT_TRAITS_MEMBER(appcache_id)
   IPC_STRUCT_TRAITS_MEMBER(appcache_manifest_url)
-  IPC_STRUCT_TRAITS_MEMBER(connection_id)
-  IPC_STRUCT_TRAITS_MEMBER(connection_reused)
   IPC_STRUCT_TRAITS_MEMBER(load_timing)
   IPC_STRUCT_TRAITS_MEMBER(devtools_info)
   IPC_STRUCT_TRAITS_MEMBER(download_file_path)
