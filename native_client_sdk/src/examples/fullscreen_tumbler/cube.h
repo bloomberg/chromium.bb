@@ -63,17 +63,17 @@ class Cube {
 
  private:
   // Create the shaders used to draw the cube, and link them into a program.
-  // Initializes |shader_progam_object_|, |position_loction_| and
+  // Initializes |shader_program_object_|, |position_location_| and
   // |mvp_location_|.
   bool CreateShaders();
 
   // Generates a cube as a series of GL_TRIANGLE_STRIPs, and initializes
   // |index_count_| to the number of indices in the index list used as a VBO.
   // Creates the |vbo_ids_| required for the vertex and index data and uploads
-  // the the VBO data.
+  // the VBO data.
   void CreateCube();
 
-  // Build up the model-view transform from the eye and orienation properties.
+  // Build up the model-view transform from the eye and orientation properties.
   // Assumes that |model_view| is a 4x4 matrix.
   void ComputeModelViewTransform(GLfloat* model_view);
 

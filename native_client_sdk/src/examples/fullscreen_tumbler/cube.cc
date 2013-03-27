@@ -231,7 +231,7 @@ void Cube::CreateCube() {
 }
 
 void Cube::ComputeModelViewTransform(GLfloat* model_view) {
-  // This method takes into account the possiblity that |orientation_|
+  // This method takes into account the possibility that |orientation_|
   // might not be normalized.
   double sqrx = orientation_[0] * orientation_[0];
   double sqry = orientation_[1] * orientation_[1];

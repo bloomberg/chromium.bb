@@ -10,7 +10,7 @@
 
 # Default configuration
 #
-# By default we will build a Debug configuration using the GCC newlib toolcahin
+# By default we will build a Debug configuration using the GCC newlib toolchain
 # to override this, specify TOOLCHAIN=newlib|glibc or CONFIG=Debug|Release on
 # the make command-line or in this file prior to including common.mk.  The
 # toolchain we use by default will be the first valid one listed

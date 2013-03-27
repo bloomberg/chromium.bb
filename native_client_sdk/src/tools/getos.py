@@ -118,13 +118,13 @@ def GetChromePath():
 
 def GetNaClArch(platform):
   if platform == 'win':
-    # On windows the nacl arch always maches to system arch
+    # On windows the nacl arch always matches to system arch
     return GetSystemArch(platform)
   elif platform == 'mac':
     # On Mac the nacl arch is currently always 32-bit.
     return 'x86_32'
 
-  # On linux the nacl arch matches to chrome arch, so we inspect the chome
+  # On linux the nacl arch matches to chrome arch, so we inspect the chrome
   # binary using objdump
   chrome_path = GetChromePath()
 

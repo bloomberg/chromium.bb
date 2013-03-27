@@ -700,7 +700,7 @@ def BuildStepCopyExamples(pepperdir, toolchains, build_experimental, clobber):
   if build_experimental:
     args.append('--experimental')
 
-  print "Generting Makefiles: %s" % str(args)
+  print "Generating Makefiles: %s" % str(args)
   if generate_make.main(args):
     buildbot_common.ErrorExit('Failed to build examples.')
 
@@ -884,7 +884,7 @@ def BuildStepSyncNaClPorts():
   """Pull the pinned revision of naclports from SVN."""
   buildbot_common.BuildStep('Sync naclports')
   if not os.path.exists(NACLPORTS_DIR):
-    # chedckout new copy of naclports
+    # checkout new copy of naclports
     cmd = ['svn', 'checkout', '-q', '-r', str(NACLPORTS_REV), NACLPORTS_URL,
            'naclports']
     buildbot_common.Run(cmd, cwd=os.path.dirname(NACLPORTS_DIR))

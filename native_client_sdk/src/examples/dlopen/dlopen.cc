@@ -13,7 +13,7 @@
 /// method on the object returned by CreateModule().  If the CreateInstance
 /// returns successfully, then Init function is called, which will load the
 /// shared object on a worker thread.  We use a worker because dlopen is
-/// a blocking call, which is not alowed on the main thread.
+/// a blocking call, which is not allowed on the main thread.
 
 #include <dlfcn.h> 
 #include <pthread.h>

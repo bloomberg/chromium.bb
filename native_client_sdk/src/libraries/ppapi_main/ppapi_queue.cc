@@ -35,7 +35,7 @@ bool PPAPIQueue::SetSize(uint32_t queue_size) {
 }
 
 bool PPAPIQueue::AddNewMessage(void* msg) {
-  // Writting a NULL message is illegal
+  // Writing a NULL message is illegal
   assert(array_ != NULL);
   assert(msg != NULL);
 

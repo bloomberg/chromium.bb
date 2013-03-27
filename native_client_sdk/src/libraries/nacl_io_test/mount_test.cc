@@ -56,7 +56,7 @@ TEST(MountTest, Sanity) {
   // A memory mount starts with one directory node: the root.
   EXPECT_EQ(1, mnt->num_nodes());
 
-  // Fail to open non existant file
+  // Fail to open non existent file
   EXPECT_EQ(NULL_NODE, mnt->Open(Path("/foo"), O_RDWR));
   EXPECT_EQ(errno, ENOENT);
 

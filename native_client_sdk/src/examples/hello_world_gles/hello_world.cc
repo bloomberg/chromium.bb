@@ -395,7 +395,7 @@ static void URLOpened(void* user_data, int mode) {
   }
 
   // Otherwise allocate a buffer with enough space for a terminating
-  // NUL in case we need one.
+  // NULL in case we need one.
   cnt = (total > LONG_MAX) ? LONG_MAX : (int32_t) total;
   req->buf_ = (char *) malloc(cnt + 1);
   req->buf_[cnt] = 0;

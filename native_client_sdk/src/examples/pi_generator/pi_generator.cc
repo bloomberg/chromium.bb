@@ -34,7 +34,7 @@ void FlushCallback(void* data, int32_t result) {
 
 namespace pi_generator {
 
-// A small helper RAII class that implementes a scoped pthread_mutex lock.
+// A small helper RAII class that implements a scoped pthread_mutex lock.
 class ScopedMutexLock {
  public:
   explicit ScopedMutexLock(pthread_mutex_t* mutex) : mutex_(mutex) {

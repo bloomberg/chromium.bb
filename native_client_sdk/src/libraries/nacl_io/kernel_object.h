@@ -16,7 +16,7 @@ class KernelHandle;
 class Mount;
 
 // KernelObject provides basic functionality for threadsafe
-// acces to kernel objects such as file descriptors and
+// access to kernel objects such as file descriptors and
 // file handles.  It also provides access to the CWD for
 // path resolution.
 class KernelObject {
@@ -41,7 +41,7 @@ class KernelObject {
   Mount* AcquireMountAndPath(const std::string& relpath, Path *pobj);
   void ReleaseMount(Mount* mnt);
 
-  // Convert from FD to KernelHandle, and aquire the handle.
+  // Convert from FD to KernelHandle, and acquire the handle.
   KernelHandle* AcquireHandle(int fd);
   void ReleaseHandle(KernelHandle* handle);
 
@@ -64,7 +64,7 @@ class KernelObject {
   // Kernel lock protects kernel wide resources such as the mount table...
   pthread_mutex_t kernel_lock_;
 
-  // Process lock proctects process wide resources such as CWD, file handles...
+  // Process lock protects process wide resources such as CWD, file handles...
   pthread_mutex_t process_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(KernelObject);

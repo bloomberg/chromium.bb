@@ -180,7 +180,7 @@ StringArray_t Path::Split(const std::string& path) {
   while (next != std::string::npos) {
     next = path.find('/', offs);
 
-    // Remove extra seperators
+    // Remove extra separators
     if (next == offs) {
       ++offs;
       continue;

@@ -11,7 +11,7 @@
 #include "opengl_context.h"
 
 namespace {
-// This is called by the brower when the 3D context has been flushed to the
+// This is called by the browser when the 3D context has been flushed to the
 // browser window.
 void FlushCallback(void* data, int32_t result) {
   static_cast<tumbler::OpenGLContext*>(data)->set_flush_pending(false);

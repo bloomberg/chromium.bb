@@ -11,7 +11,7 @@
  *
  * There are techniques to implement a queue like this without using memory
  * barriers or locks on x86, but ARM's memory system is different from x86, so
- * we cannot make the same assuptions about visibility order of writes. Using a
+ * we cannot make the same assumptions about visibility order of writes. Using a
  * mutex is slower, but also simpler.
  *
  * We make the assumption that messages are only enqueued on the main thread

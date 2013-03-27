@@ -12,7 +12,7 @@
 
 namespace transform_4x4 {
 
-// Pre-multply |m| with a projection transformation 4x4 matrix from a
+// Pre-multiply |m| with a projection transformation 4x4 matrix from a
 // truncated pyramid viewing frustum.
 void Frustum(GLfloat* m,
              GLfloat left,

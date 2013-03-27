@@ -294,7 +294,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
     WriteTarget(makefile, target_info)
 
   makefile.write('''
-# include (if they exists) the .d dependancy files that the compiler generates
+# include (if they exists) the .d dependency files that the compiler generates
 -include $(DEPFILES)
 
 endif

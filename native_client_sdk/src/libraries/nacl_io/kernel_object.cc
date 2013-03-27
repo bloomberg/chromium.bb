@@ -115,7 +115,7 @@ void KernelObject::ReleaseHandle(KernelHandle* handle) {
 }
 
 // Helper function to properly sort FD order in the heap, forcing
-// lower numberd FD to be available first.
+// lower numbered FD to be available first.
 static bool FdOrder(int i, int j) {
   return i > j;
 }
@@ -148,7 +148,7 @@ void KernelObject::FreeAndReassignFD(int fd, KernelHandle* handle) {
   } else {
     AutoLock lock(&process_lock_);
 
-    // Acquire the new handle first incase they are the same.
+    // Acquire the new handle first in case they are the same.
     if (handle) {
       handle->Acquire();
       handle->mount_->Acquire();

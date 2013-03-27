@@ -138,7 +138,7 @@ class TestNmfUtils(unittest.TestCase):
     self.assertEqual(archfile.arch, 'x86-32')
 
   def StripDependencies(self, deps):
-    """Strip the dirnames and version suffixs from
+    """Strip the dirnames and version suffixes from
     a list of nexe dependencies.
 
     e.g:
@@ -157,7 +157,7 @@ class TestNmfUtils(unittest.TestCase):
     needed = nmf.GetNeeded()
     names = needed.keys()
 
-    # this nexe has 5 dependancies
+    # this nexe has 5 dependencies
     expected = set(self.dyn_deps)
     expected.add(os.path.basename(self.dyn_nexe))
 
@@ -168,7 +168,7 @@ class TestNmfUtils(unittest.TestCase):
     self.Mktemp()
     nmf = self.CreateNmfUtils()
 
-    # Stage dependancies
+    # Stage dependencies
     nmf.StageDependencies(self.tempdir)
 
     # Verify directory contents

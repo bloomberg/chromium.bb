@@ -43,7 +43,7 @@ const char* const kDeletePrefix = "de";
 
 /// The Instance class.  One of these exists for each instance of your NaCl
 /// module on the web page.  The browser will ask the Module object to create
-/// a new Instance for each occurence of the <embed> tag that has these
+/// a new Instance for each occurrence of the <embed> tag that has these
 /// attributes:
 ///     type="application/x-nacl"
 ///     src="file_io.nmf"

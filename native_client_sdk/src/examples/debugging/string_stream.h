@@ -8,7 +8,7 @@
 #define STRING_STREAM_H
 
 /*
- * Support for a stream stream in 'C', which is appened to via an sprintf-like
+ * Support for a stream stream in 'C', which is appended to via an sprintf-like
  * function.
  */
 

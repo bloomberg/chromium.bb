@@ -16,7 +16,7 @@ class GTestRunner {
  public:
   // Factory function to create the background gtest thread and associated
   // GTestRunner singleton. It is an error to call the factory function more
-  // than once that raises an assert in debug mde.
+  // than once that raises an assert in debug mode.
   //
   // Parameters:
   // instance: the NaCl instance.

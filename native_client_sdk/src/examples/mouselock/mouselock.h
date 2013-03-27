@@ -78,7 +78,7 @@ class MouseLockInstance : public pp::Instance, public pp::MouseLock {
   // movement in it.  Return the new pp::ImageData.
   pp::ImageData PaintImage(const pp::Size& size);
 
-  // Fill the image with the backgroud color.
+  // Fill the image with the background color.
   void ClearToBackground(pp::ImageData* image);
 
   void DrawCenterSpot(pp::ImageData* image, uint32_t spot_color);

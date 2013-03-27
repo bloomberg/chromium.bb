@@ -108,7 +108,7 @@ def Copy(args):
   Copies multiple sources to a single destination using the normal cp
   semantics.  In addition, it support inclusion and exclusion filters which
   allows the copy to skip certain types of files."""
-  parser = optparse.OptionParser(usage='usage: cp [Options] souces... dest')
+  parser = optparse.OptionParser(usage='usage: cp [Options] sources... dest')
   parser.add_option(
       '-R', '-r', '--recursive', dest='recursive', action='store_true',
       default=False,
@@ -172,7 +172,7 @@ def Mkdir(args):
       if os.path.isdir(dst):
         if options.parents:
           continue
-        raise OSError('mkdir: Already exsists: ' + dst)
+        raise OSError('mkdir: Already exists: ' + dst)
       else:
         raise OSError('mkdir: Failed to create: ' + dst)
   return 0
@@ -209,7 +209,7 @@ def MovePath(options, src, dst):
 
 
 def Move(args):
-  parser = optparse.OptionParser(usage='usage: mv [Options] souces... dest')
+  parser = optparse.OptionParser(usage='usage: mv [Options] sources... dest')
   parser.add_option(
       '-v', '--verbose', dest='verbose', action='store_true',
       default=False,

@@ -141,7 +141,7 @@ void PPAPIInstance3D::BuildContext(int32_t result, const pp::Size& new_size) {
   is_context_bound_ = BindGraphics(device_context_);
   printf("Context is bound=%d\n", is_context_bound_);
 
-  // The the context regardless to make sure we have a valid one
+  // Set the context regardless to make sure we have a valid one
   glSetCurrentContextPPAPI(device_context_.pp_resource());
   if (is_context_bound_) {
     PPAPIBuildContext(size_.width(), size_.height());

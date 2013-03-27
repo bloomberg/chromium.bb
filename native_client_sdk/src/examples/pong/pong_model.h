@@ -119,7 +119,7 @@ class PongModelDelegate {
    * when a player scores. */
   virtual void OnScoreChanged() = 0;
   /** Called only when a player scores, not when the score is changed
-   * programatically. */
+   * programmatically. */
   virtual void OnPlayerScored() = 0;
 };
 

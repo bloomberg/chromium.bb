@@ -58,7 +58,7 @@ void identity_matrix(Matrix_t mat) {
 
 void multiply_matrix(const Matrix_t a, const Matrix_t b, Matrix_t mat) {
   // Generate to a temporary first in case the output matrix and input
-  // matrix are thes same.
+  // matrix are the same.
   Matrix_t out;
 
   out[0]  = a[0] * b[0]  + a[4] * b[1]  + a[8] * b[2]   + a[12] * b[3];

@@ -43,14 +43,14 @@ class GetURLHandler {
   GetURLHandler(pp::Instance* instance_, const std::string& url);
   ~GetURLHandler();
 
-  // Callback fo the pp::URLLoader::Open().
+  // Callback for the pp::URLLoader::Open().
   // Called by pp::URLLoader when response headers are received or when an
   // error occurs (in response to the call of pp::URLLoader::Open()).
   // Look at <ppapi/c/ppb_url_loader.h> and
   // <ppapi/cpp/url_loader.h> for more information about pp::URLLoader.
   void OnOpen(int32_t result);
 
-  // Callback fo the pp::URLLoader::ReadResponseBody().
+  // Callback for the pp::URLLoader::ReadResponseBody().
   // |result| contains the number of bytes read or an error code.
   // Appends data from this->buffer_ to this->url_response_body_.
   void OnRead(int32_t result);

@@ -61,7 +61,7 @@ class Path {
 
  private:
   // Internal representation of the path stored an array of string representing
-  // the directory traversal.  The first string is a "/" if this is an abolute
+  // the directory traversal.  The first string is a "/" if this is an absolute
   // path.
   StringArray_t paths_;
 };

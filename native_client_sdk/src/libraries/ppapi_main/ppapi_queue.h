@@ -61,7 +61,7 @@ class PPAPIQueue {
   // available NULL will be returned.  Once the consumer is done with the
   // message, ReleaseTopMessage is called to signal that the payload is no
   // longer visible to the consumer and can be recycled or destroyed.
-  // Since messages are freed in order, it is recquired that messages are
+  // Since messages are freed in order, it is required that messages are
   // consumed in order.  For this reason, it is illegal to call Acquire again
   // after a non-NULL message pointer is returned, until Release is called on
   // the old message.  This means the consumer can only look at one message

@@ -94,7 +94,7 @@ void HelloWorldInstance::HandleMessage(const pp::Var& var_message) {
   }
   // Post the return result back to the browser.  Note that HandleMessage() is
   // always called on the main thread, so it's OK to post the return message
-  // directly from here.  The return post is asynhronous: PostMessage returns
+  // directly from here.  The return post is asynchronous: PostMessage returns
   // immediately.
   PostMessage(return_var);
 }

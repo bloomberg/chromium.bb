@@ -18,7 +18,7 @@ EXTERN_C_BEGIN
 /*
  * Event Structures
  *
- * The following event structures are based on the equivilent structs
+ * The following event structures are based on the equivalent structs
  * defined in ppapi/c/ppb_input_event.h.
  *
  */

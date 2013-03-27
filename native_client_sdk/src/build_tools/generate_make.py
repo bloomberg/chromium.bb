@@ -282,7 +282,7 @@ def ProcessHTML(srcroot, dstroot, desc, toolchains):
 def LoadProject(filename, toolchains):
   """Generate a Master Makefile that builds all examples.
 
-  Load a project desciption file, verifying it conforms and checking
+  Load a project description file, verifying it conforms and checking
   if it matches the set of requested toolchains.  Return None if the
   project is filtered out."""
 

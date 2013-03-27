@@ -115,7 +115,7 @@ MountNode* MountMem::Open(const Path& path, int mode) {
     // If the node does not exist and we can't create it, fail
     if ((mode & O_CREAT) == 0) return NULL;
 
-    // Otherwise, create it with a single refernece
+    // Otherwise, create it with a single reference
     mode = OpenModeToPermission(mode);
     node = AllocateData(mode);
     if (NULL == node) return NULL;
@@ -134,7 +134,7 @@ MountNode* MountMem::Open(const Path& path, int mode) {
     return NULL;
   }
 
-  // Verify we got the requested permisions.
+  // Verify we got the requested permissions.
   int req_mode = OpenModeToPermission(mode);
   int obj_mode = node->GetMode() & OpenModeToPermission(O_RDWR);
   if ((obj_mode & req_mode) != req_mode) {

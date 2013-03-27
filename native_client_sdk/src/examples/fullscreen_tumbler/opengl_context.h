@@ -37,7 +37,7 @@ class OpenGLContext : public pp::Graphics3DClient {
   /// context invalid.
   virtual ~OpenGLContext();
 
-  /// The Graphics3DClient interfcace.
+  /// The Graphics3DClient interface.
   virtual void Graphics3DContextLost() {
     assert(!"Unexpectedly lost graphics context");
   }

@@ -48,7 +48,7 @@ class TestGetos(TestCaseExtended):
     self.patch2.stop()
 
   def testGetSDKPath(self):
-    """honors enironment variable."""
+    """honors environment variable."""
     with mock.patch.dict('os.environ', {'NACL_SDK_ROOT': 'dummy'}):
       self.assertEqual(getos.GetSDKPath(), 'dummy')
 
@@ -63,7 +63,7 @@ class TestGetos(TestCaseExtended):
     self.assertIn(platform, ('mac', 'linux', 'win'))
 
   def testGetSystemArch(self):
-    """returns a valid architecuture."""
+    """returns a valid architecture."""
     arch = getos.GetSystemArch(getos.GetPlatform())
     self.assertIn(arch, ('x86_64', 'x86_32', 'arm'))
 
@@ -79,7 +79,7 @@ class TestGetos(TestCaseExtended):
         self.assertRaises(getos.Error, getos.GetChromePath)
 
   def testGetChromePathCheckExists(self):
-    """checks that existence of explictly CHROME_PATH is checked."""
+    """checks that existence of explicitly CHROME_PATH is checked."""
     mock_location = '/bin/ls'
     if getos.GetPlatform() == 'win':
       mock_location = 'c:\\nowhere'
@@ -117,7 +117,7 @@ class TestGetos(TestCaseExtended):
       mock_exists.assert_called_with(loader)
 
   def testGetNaClArch(self):
-    """returns a valid architecuture."""
+    """returns a valid architecture."""
     platform = getos.GetPlatform()
     # Since the unix implementation of GetNaClArch will run objdump on the
     # chrome binary, and we want to be able to run this test without chrome

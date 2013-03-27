@@ -105,7 +105,7 @@ TEST_F(KernelObjectTest, Referencing) {
   EXPECT_EQ(4, mnt->RefCount());
   EXPECT_EQ(2, handle2->RefCount());
 
-  // Handles are expectd to come out in order
+  // Handles are expected to come out in order
   EXPECT_EQ(0, fd1);
   EXPECT_EQ(1, fd2);
   EXPECT_EQ(2, fd3);
@@ -114,7 +114,7 @@ TEST_F(KernelObjectTest, Referencing) {
   EXPECT_EQ(handle, proxy->AcquireHandle(fd1));
   EXPECT_EQ(handle, proxy->AcquireHandle(fd2));
 
-  // A non existant fd should fail
+  // A non existent fd should fail
   EXPECT_EQ(NULL, proxy->AcquireHandle(-1));
   EXPECT_EQ(EBADF, errno);
   EXPECT_EQ(NULL, proxy->AcquireHandle(100));
@@ -162,7 +162,7 @@ TEST_F(KernelObjectTest, FreeAndReassignFD) {
   EXPECT_EQ(1, handle_count);
   EXPECT_EQ(1, handle->RefCount());
 
-  // Assign to a non-existant FD
+  // Assign to a non-existent FD
   proxy->FreeAndReassignFD(2, handle);
   EXPECT_EQ((KernelHandle*)NULL, proxy->AcquireHandle(0));
   EXPECT_EQ((KernelHandle*)NULL, proxy->AcquireHandle(1));

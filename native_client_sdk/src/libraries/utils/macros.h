@@ -17,7 +17,7 @@
 #define MEMBER_SIZE(struct_name, member) sizeof(((struct_name*)0)->member)
 
 /**
- * Macros to prevent name mangling of defnitions, allowing them to be
+ * Macros to prevent name mangling of definitions, allowing them to be
  * referenced from C.
  */
 #ifdef __cplusplus

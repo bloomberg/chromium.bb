@@ -152,7 +152,7 @@ bool PPAPIInstance::ProcessProperties() {
   const char* stderr_path = GetProperty("pm_stderr", "/dev/console3");
   const char* queue_size = GetProperty("pm_queue_size", "1024");
 
-  // Force a miniumum size of 4
+  // Force a minimum size of 4
   uint32_t queue_size_int = atoi(queue_size);
   if (queue_size_int < 4) queue_size_int = 4;
   event_queue_.SetSize(queue_size_int);

@@ -12,7 +12,7 @@
 #
 # Default configuration
 #
-# By default we will build a Debug configuration using the GCC newlib toolcahin
+# By default we will build a Debug configuration using the GCC newlib toolchain
 # to override this, specify TOOLCHAIN=newlib|glibc or CONFIG=Debug|Release on
 # the make command-line or in this file prior to including common.mk.  The
 # toolchain we use by default will be the first valid one listed
@@ -62,7 +62,7 @@ TARGET={{targets[0]['NAME']}}
 # switches.
 #
 # We break this list down into two parts, the set we need to rebuild (DEPS)
-# and the set we do not.  This example does not havea any additional library
+# and the set we do not.  This example does not have a any additional library
 # dependencies.
 #
 DEPS={{' '.join(targets[0].get('DEPS', []))}}
@@ -96,6 +96,6 @@ $(eval $(call LINK_RULE,{{name}},$({{name}}_SOURCES),$(LIBS),$(DEPS)))
 [[]]
 
 #
-# Specify the NMF to be created with no additional arugments.
+# Specify the NMF to be created with no additional arguments.
 #
 $(eval $(call NMF_RULE,$(TARGET),))

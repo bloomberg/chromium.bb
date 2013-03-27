@@ -41,7 +41,7 @@ class ThreadCondition {
   }
 
   // Wait for a Signal().  Note that this can spuriously return, so you should
-  // have a guard bool to see if the condtion is really true.  E.g., in the
+  // have a guard bool to see if the condition is really true.  E.g., in the
   // calling thread:
   //   cond_lock->Lock();
   //   cond_true = true;

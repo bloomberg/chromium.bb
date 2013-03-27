@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2012 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -25,7 +25,7 @@ class CoreDecoder(object):
 
     Args:
       main_nexe: nexe to resolve NaClMain references from.
-      nmf_filename: nmf to resovle references from.
+      nmf_filename: nmf to resolve references from.
       addr2line: path to appropriate addr2line.
       library_paths: list of paths to search for libraries.
       platform: platform string to use in nmf files.
@@ -141,7 +141,7 @@ class CoreDecoder(object):
     Args:
       core_path: source file containing a dump.
     Returns:
-      An embelished core dump dict (decoded code addresses).
+      An embellished core dump dict (decoded code addresses).
     """
     core = json.load(open(core_path))
     for frame in core['frames']:
