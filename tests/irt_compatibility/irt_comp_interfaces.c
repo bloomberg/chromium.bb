@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2013 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -22,26 +22,9 @@ static const struct nacl_interface_table irt_interfaces[] = {
   { NACL_IRT_FILENAME_v0_1, &nacl_irt_filename, sizeof(nacl_irt_filename) },
   { NACL_IRT_MEMORY_v0_1, &nacl_irt_memory,
       sizeof(struct nacl_irt_memory_v0_1) },
-  { NACL_IRT_MEMORY_v0_2, &nacl_irt_memory,
-      sizeof(struct nacl_irt_memory_v0_2) },
   { NACL_IRT_DYNCODE_v0_1, &nacl_irt_dyncode, sizeof(nacl_irt_dyncode) },
-  { NACL_IRT_THREAD_v0_1, &nacl_irt_thread, sizeof(nacl_irt_thread) },
-  { NACL_IRT_MUTEX_v0_1, &nacl_irt_mutex, sizeof(nacl_irt_mutex) },
-  { NACL_IRT_COND_v0_1, &nacl_irt_cond, sizeof(nacl_irt_cond) },
-  { NACL_IRT_SEM_v0_1, &nacl_irt_sem, sizeof(nacl_irt_sem) },
   { NACL_IRT_TLS_v0_1, &nacl_irt_tls, sizeof(nacl_irt_tls) },
   { NACL_IRT_BLOCKHOOK_v0_1, &nacl_irt_blockhook, sizeof(nacl_irt_blockhook) },
-  { NACL_IRT_RESOURCE_OPEN_v0_1, &nacl_irt_resource_open,
-      sizeof(nacl_irt_resource_open) },
-#ifdef IRT_PPAPI
-  { NACL_IRT_PPAPIHOOK_v0_1, &nacl_irt_ppapihook, sizeof(nacl_irt_ppapihook) },
-#endif
-  { NACL_IRT_RANDOM_v0_1, &nacl_irt_random, sizeof(nacl_irt_random) },
-  { NACL_IRT_CLOCK_v0_1, &nacl_irt_clock, sizeof(nacl_irt_clock) },
-  { NACL_IRT_DEV_GETPID_v0_1, &nacl_irt_dev_getpid,
-    sizeof(nacl_irt_dev_getpid) },
-  { NACL_IRT_DEV_EXCEPTION_HANDLING_v0_1, &nacl_irt_dev_exception_handling,
-    sizeof(nacl_irt_dev_exception_handling) },
 };
 
 size_t nacl_irt_interface(const char *interface_ident,

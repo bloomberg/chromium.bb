@@ -1,0 +1,42 @@
+# -*- python -*-
+# Copyright (c) 2013 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+Import('env')
+
+# IRT backward compatibility test
+
+# This test uses a nexe built by another test.  Nexes do not get
+# staged in pexe mode, so only run this test in nonpexe mode.
+if env.Bit('pnacl_generate_pexe'):
+  Return()
+
+blob_env = env['NACL_IRT_ENV'].Clone()
+blob_env.Append(LINKFLAGS=blob_env.RodataSwitch('${IRT_BLOB_DATA_START}'))
+# The PNaCl linker (gold) does not implement the "-Ttext-segment"
+# option.  However, with the linker for x86, the "-Ttext" option does
+# not affect the executable's base address.
+if blob_env.Bit('bitcode'):
+  blob_env.Append(LINKFLAGS='-Wl,-Ttext=${IRT_BLOB_CODE_START}')
+else:
+  blob_env.Append(LINKFLAGS='-Wl,-Ttext-segment=${IRT_BLOB_CODE_START}')
+
+irt_entry_obj = blob_env.ComponentObject(
+    '${MAIN_DIR}/src/untrusted/irt/irt_entry.c')
+
+# Build custom IRT library which provides old interface versions.
+irt_comp_test_library = blob_env.ComponentProgram(
+    'irt_comp_test', [irt_entry_obj, 'irt_comp_interfaces.c'],
+    EXTRA_LIBS=['irt_support_private'])
+
+# Don't provide IRT, we provide it ourselves via -B.
+env.ClearBits('tests_use_irt')
+
+node = env.CommandSelLdrTestNacl(
+    'irt_compatibility_test.out',
+    env.File('${STAGING_DIR}/hello_world.nexe'),
+    sel_ldr_flags=['-B', irt_comp_test_library],
+    stdout_golden=env.File('../hello_world/hello_world.stdout'))
+
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_irt_compatibility_test')

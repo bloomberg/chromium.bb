@@ -15,7 +15,7 @@
 struct nacl_irt_basic __libnacl_irt_basic;
 struct nacl_irt_fdio __libnacl_irt_fdio;
 struct nacl_irt_filename __libnacl_irt_filename;
-struct nacl_irt_memory __libnacl_irt_memory;
+struct nacl_irt_memory_v0_2 __libnacl_irt_memory;
 struct nacl_irt_dyncode __libnacl_irt_dyncode;
 struct nacl_irt_tls __libnacl_irt_tls;
 struct nacl_irt_blockhook __libnacl_irt_blockhook;
@@ -23,6 +23,10 @@ struct nacl_irt_clock __libnacl_irt_clock;
 struct nacl_irt_dev_getpid __libnacl_irt_dev_getpid;
 
 TYPE_nacl_irt_query __nacl_irt_query;
+
+static int __libnacl_irt_mprotect(void *addr, size_t len, int prot) {
+  return ENOSYS;
+}
 
 /*
  * Avoid a dependency on libc's strlen function.
@@ -77,12 +81,20 @@ static void grok_auxv(const Elf32_auxv_t *auxv) {
   }
 }
 
-void __libnacl_mandatory_irt_query(const char *interface,
-                                   void *table, size_t table_size) {
+int __libnacl_irt_query(const char *interface,
+                        void *table, size_t table_size) {
   if (NULL == __nacl_irt_query) {
     __libnacl_fatal("No IRT interface query routine!\n");
   }
   if (__nacl_irt_query(interface, table, table_size) != table_size) {
+    return 0;
+  }
+  return 1;
+}
+
+void __libnacl_mandatory_irt_query(const char *interface,
+                                   void *table, size_t table_size) {
+  if (!__libnacl_irt_query(interface, table, table_size)) {
     __libnacl_fatal("IRT interface query failed for essential interface\n");
   }
 }
@@ -101,7 +113,14 @@ void __libnacl_irt_init(Elf32_auxv_t *auxv) {
   DO_QUERY(NACL_IRT_BASIC_v0_1, basic);
   DO_QUERY(NACL_IRT_FDIO_v0_1, fdio);
   DO_QUERY(NACL_IRT_FILENAME_v0_1, filename);
-  DO_QUERY(NACL_IRT_MEMORY_v0_1, memory);
+  if (!__libnacl_irt_query(NACL_IRT_MEMORY_v0_2,
+                           &__libnacl_irt_memory,
+                           sizeof(__libnacl_irt_memory))) {
+    __libnacl_mandatory_irt_query(NACL_IRT_MEMORY_v0_1,
+                                  &__libnacl_irt_memory,
+                                  sizeof(struct nacl_irt_memory_v0_1));
+    __libnacl_irt_memory.mprotect = __libnacl_irt_mprotect;
+  }
   DO_QUERY(NACL_IRT_DYNCODE_v0_1, dyncode);
   DO_QUERY(NACL_IRT_TLS_v0_1, tls);
   DO_QUERY(NACL_IRT_BLOCKHOOK_v0_1, blockhook);

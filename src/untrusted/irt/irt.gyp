@@ -28,7 +28,6 @@
       'irt_clock.c',
       'irt_dev_getpid.c',
       'irt_dev_exception_handling.c',
-      'irt_dev_mprotect.c',
       'irt_nameservice.c',
       'irt_random.c',
 # support_srcs

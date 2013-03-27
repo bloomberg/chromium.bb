@@ -20,6 +20,20 @@ node = env.CommandSelLdrTestNacl(
 
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_irt_present_test')
 
+# IRT interface prefix test
+
+nexe = env.ComponentProgram('irt_interface_prefix_test',
+                            'irt_interface_prefix_test.c',
+                            EXTRA_LIBS=['${NONIRT_LIBS}'],
+                            )
+
+node = env.CommandSelLdrTestNacl(
+     'irt_interface_prefix_test.out',
+     nexe,
+     )
+
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_irt_interface_prefix_test')
+
 # sel_universal test
 
 # Don't provide IRT, we provide it ourselves over SRPC

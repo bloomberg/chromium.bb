@@ -14,7 +14,7 @@ extern size_t nacl_irt_interface(const char *interface_ident,
 extern const struct nacl_irt_basic nacl_irt_basic;
 extern const struct nacl_irt_fdio nacl_irt_fdio;
 extern const struct nacl_irt_filename nacl_irt_filename;
-extern const struct nacl_irt_memory nacl_irt_memory;
+extern const struct nacl_irt_memory_v0_2 nacl_irt_memory;
 extern const struct nacl_irt_dyncode nacl_irt_dyncode;
 extern const struct nacl_irt_thread nacl_irt_thread;
 extern const struct nacl_irt_mutex nacl_irt_mutex;
@@ -29,6 +29,5 @@ extern const struct nacl_irt_clock nacl_irt_clock;
 extern const struct nacl_irt_dev_getpid nacl_irt_dev_getpid;
 extern const struct nacl_irt_dev_exception_handling
     nacl_irt_dev_exception_handling;
-extern const struct nacl_irt_dev_mprotect nacl_irt_dev_mprotect;
 
 #endif  /* NATIVE_CLIENT_SRC_UNTRUSTED_IRT_IRT_INTERFACES_H_ */

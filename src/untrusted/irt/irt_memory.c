@@ -45,8 +45,13 @@ static int nacl_irt_munmap(void *addr, size_t len) {
   return -NACL_SYSCALL(munmap)(addr, len);
 }
 
-const struct nacl_irt_memory nacl_irt_memory = {
+static int nacl_irt_mprotect(void *addr, size_t len, int prot) {
+  return -NACL_SYSCALL(mprotect)(addr, len, prot);
+}
+
+const struct nacl_irt_memory_v0_2 nacl_irt_memory = {
   nacl_irt_sysbrk,
   nacl_irt_mmap,
   nacl_irt_munmap,
+  nacl_irt_mprotect,
 };

@@ -3036,6 +3036,10 @@ nacl_irt_env = nacl_env.Clone(
     NACL_BUILD_FAMILY = 'UNTRUSTED_IRT',
 )
 
+# Provide access to the IRT build environment from the default environment
+# which is needed when compiling custom IRT for testing purposes.
+nacl_env['NACL_IRT_ENV'] = nacl_irt_env
+
 # Since we don't build src/untrusted/pthread/nacl.scons in
 # nacl_irt_env, we must tell the IRT how to find the pthread.h header.
 nacl_irt_env.Append(CPPPATH='${MAIN_DIR}/src/untrusted/pthread')
@@ -3132,6 +3136,7 @@ nacl_env.AddChromeFilesFromGroup('untrusted_scons_files')
 irt_only_tests = [
     #### ALPHABETICALLY SORTED ####
     'tests/irt/nacl.scons',
+    'tests/irt_compatibility/nacl.scons',
     'tests/random/nacl.scons',
     'tests/translator_size_limits/nacl.scons',
     ]
