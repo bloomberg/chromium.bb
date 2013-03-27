@@ -70,3 +70,7 @@ WebrtcBrowserTest.CanSetupAudioAndVideoCall
 WebrtcBrowserTest.CanSetupAudioAndVideoCallWithoutMsidAndBundle
 WebrtcBrowserTest.CallWithDataOnly
 WebrtcBrowserTest.CallWithDataAndMedia
+WebrtcBrowserTest.CanMakeEmptyCallThenAddStreamsAndRenegotiate
+
+# http://crbug.com/224134
+RenderWidgetHostBrowserTest.GetSnapshotFromRendererTest
