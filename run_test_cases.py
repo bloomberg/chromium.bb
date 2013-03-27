@@ -1055,12 +1055,11 @@ def dump_results_as_json(result_file, results):
 def dump_results_as_xml(gtest_output, results, now):
   """Write the results out to a xml file in google-test compatible format."""
   # TODO(maruel): Print all the test cases, including the ones that weren't run
-  # and the retries. For now, ditch the failures from the retries, which is a
-  # bit sad.
+  # and the retries.
   test_suites = {}
   for test_case, result in results['test_cases'].iteritems():
     suite, case = test_case.split('.', 1)
-    test_suites.setdefault(suite, {})[case] = result[-1]
+    test_suites.setdefault(suite, {})[case] = result[0]
 
   with open(gtest_output, 'wb') as f:
     # Sanity warning: hand-rolling XML. What could possibly go wrong?
