@@ -31,7 +31,9 @@ def _LogToFile(results, test_type, test_suite, build_type):
 
   logging.info('Writing results to %s.' % full_file_name)
   with open(full_file_name, 'a') as log_file:
-    print >> log_file, '%s%s' % (test_suite.ljust(30), results.GetShortForm())
+    shortened_suite_name = test_suite[:25] + (test_suite[25:] and '...')
+    print >> log_file, '%s%s' % (shortened_suite_name.ljust(30),
+                                 results.GetShortForm())
 
 
 def _LogToFlakinessDashboard(results, test_type, test_package,
