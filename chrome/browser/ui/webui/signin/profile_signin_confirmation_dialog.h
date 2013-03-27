@@ -44,14 +44,14 @@ class ProfileSigninConfirmationDialog : public ui::WebDialogDelegate {
       const base::Closure& continue_signin);
   virtual ~ProfileSigninConfirmationDialog();
 
-  // Shows the dialog and releases ownership of this object.  It will
-  // delete itself when the dialog is closed.
-  void Show();
+  // Shows the dialog and releases ownership of this object. It will
+  // delete itself when the dialog is closed. If |prompt_for_new_profile|
+  // is true, the dialog will offer to create a new profile before signin.
+  void Show(bool prompt_for_new_profile);
 
   // Determines whether the user should be prompted to create a new
   // profile before signin.
   void CheckShouldPromptForNewProfile(base::Callback<void(bool)> callback);
-  void OnPromptCheckComplete(bool prompt_for_new_profile);
   bool HasBeenShutdown();
   bool HasBookmarks();
   void CheckHasHistory(int max_entries,

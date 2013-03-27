@@ -178,11 +178,15 @@ void ProfileSigninConfirmationDialog::ShowDialog(
     const base::Closure& cancel_signin,
     const base::Closure& signin_with_new_profile,
     const base::Closure& continue_signin) {
-  new ProfileSigninConfirmationDialog(profile,
-                                      username,
-                                      cancel_signin,
-                                      signin_with_new_profile,
-                                      continue_signin);
+  ProfileSigninConfirmationDialog *dialog =
+    new ProfileSigninConfirmationDialog(profile,
+                                        username,
+                                        cancel_signin,
+                                        signin_with_new_profile,
+                                        continue_signin);
+  dialog->CheckShouldPromptForNewProfile(
+      base::Bind(&ProfileSigninConfirmationDialog::Show,
+                 dialog->weak_pointer_factory_.GetWeakPtr()));
 }
 
 ProfileSigninConfirmationDialog::ProfileSigninConfirmationDialog(
@@ -192,14 +196,12 @@ ProfileSigninConfirmationDialog::ProfileSigninConfirmationDialog(
     const base::Closure& signin_with_new_profile,
     const base::Closure& continue_signin)
   : username_(username),
+    prompt_for_new_profile_(true),
     cancel_signin_(cancel_signin),
     signin_with_new_profile_(signin_with_new_profile),
     continue_signin_(continue_signin),
     profile_(profile),
     weak_pointer_factory_(this) {
-  CheckShouldPromptForNewProfile(
-      base::Bind(&ProfileSigninConfirmationDialog::OnPromptCheckComplete,
-                 weak_pointer_factory_.GetWeakPtr()));
 }
 
 ProfileSigninConfirmationDialog::~ProfileSigninConfirmationDialog() {
@@ -210,7 +212,9 @@ void ProfileSigninConfirmationDialog::Close() const {
   delegate_->OnDialogCloseFromWebUI();
 }
 
-void ProfileSigninConfirmationDialog::Show() {
+void ProfileSigninConfirmationDialog::Show(bool prompt) {
+  prompt_for_new_profile_ = prompt;
+
   Browser* browser = FindBrowserWithProfile(profile_,
                                             chrome::GetActiveDesktop());
   if (!browser) {
@@ -377,9 +381,4 @@ void ProfileSigninConfirmationDialog::CheckShouldPromptForNewProfile(
       base::Bind(&ProfileSigninConfirmationDialog::CheckHasTypedURLs,
                  weak_pointer_factory_.GetWeakPtr()),
       return_result);
-}
-
-void ProfileSigninConfirmationDialog::OnPromptCheckComplete(bool prompt) {
-  prompt_for_new_profile_ = prompt;
-  Show();
 }
