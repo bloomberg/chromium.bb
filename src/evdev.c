@@ -284,7 +284,7 @@ evdev_flush_motion(struct evdev_device *device, uint32_t time)
 	}
 	if (device->pending_events & EVDEV_ABSOLUTE_MOTION) {
 		transform_absolute(device);
-		notify_motion(master, time,
+		notify_motion_absolute(master, time,
 			      wl_fixed_from_int(device->abs.x),
 			      wl_fixed_from_int(device->abs.y));
 		device->pending_events &= ~EVDEV_ABSOLUTE_MOTION;
