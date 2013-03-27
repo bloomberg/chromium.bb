@@ -18,6 +18,8 @@ import tempfile
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 
+OSES = {'win32': 'win', 'linux2': 'linux', 'darwin': 'mac'}
+
 
 def main():
   parser = optparse.OptionParser(description=sys.modules[__name__].__doc__)
@@ -32,6 +34,8 @@ def main():
   parser.add_option(
       '-l', '--logs',
       help='Destination where to store the failure logs (recommended)')
+  parser.add_option('-o', '--os', help='Run tests only on this OS')
+  parser.add_option('-t', '--test', help='Run only this test')
   parser.add_option('-v', '--verbose', action='store_true')
   options, args = parser.parse_args()
   if args:
@@ -43,19 +47,32 @@ def main():
 
   # Note that the swarm and the isolate code use different strings for the
   # different oses.
-  oses = ('win32', 'linux2', 'darwin')
-  isolate_oses = ('win', 'linux', 'mac')
+  oses = OSES.copy()
   tests = [
     os.path.relpath(i, ROOT_DIR)
     for i in glob.iglob(os.path.join(ROOT_DIR, '..', 'tests', '*_test.py'))
   ]
 
+  if options.test:
+    valid_tests = sorted(map(os.path.basename, tests))
+    if not options.test in valid_tests:
+      parser.error(
+          '--test %s is unknown. Valid values are:\n%s' % (
+            options.test, '\n'.join('  ' + i for i in valid_tests)))
+    tests = [t for t in tests if t.endswith(os.path.sep + options.test)]
+
   on_windows = sys.platform in ('win32', 'cygwin')
   if on_windows:
     # If we are on Windows, don't generate the tests for Linux and Mac since
     # they use symlinks and we can't create symlinks on windows.
-    oses = ('win32')
-    isolate_oses = ('win')
+    oses = {'win32': 'win'}
+
+  if options.os:
+    if options.os not in oses:
+      parser.error(
+          '--os %s is unknown. Valid values are %s' % (
+            options.os, ', '.join(sorted(oses))))
+    oses = dict((k, v) for k, v in oses.iteritems() if options.os == k)
 
   result = 0
   tempdir = tempfile.mkdtemp(prefix='swarm_client_tests')
@@ -71,7 +88,7 @@ def main():
     hashvals = []
     for i, test in enumerate(tests):
       hashvals.append([])
-      for platform in isolate_oses:
+      for platform in oses.itervalues():
         subprocess.check_call(
             [
                 sys.executable,
@@ -92,7 +109,7 @@ def main():
       sys.stdout.write('  %s: ' % os.path.basename(test))
       for j, platform in enumerate(oses):
         sys.stdout.write(platform)
-        if platform != oses[-1]:
+        if j != len(oses) - 1:
           sys.stdout.write(', ')
         subprocess.check_call(
             [
