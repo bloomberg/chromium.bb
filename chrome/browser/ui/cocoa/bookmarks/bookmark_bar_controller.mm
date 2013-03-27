@@ -489,6 +489,8 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 }
 
 - (void)updateAppsPageShortcutButtonVisibility {
+  if (!appsPageShortcutButton_.get())
+    return  ;
   [self setAppsPageShortcutButtonVisibility];
   [self reconfigureBookmarkBar];
 }
@@ -1157,10 +1159,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
     return NO;
 
   BOOL visible = bookmarkModel_->IsLoaded() &&
-      chrome::IsInstantExtendedAPIEnabled() &&
-      browser_->profile()->GetPrefs()->GetBoolean(
-          prefs::kShowAppsShortcutInBookmarkBar) &&
-      !browser_->profile()->IsOffTheRecord();
+      chrome::ShouldShowAppsShortcutInBookmarkBar(browser_->profile());
   [appsPageShortcutButton_ setHidden:!visible];
   return visible;
 }

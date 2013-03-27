@@ -13,7 +13,6 @@
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/chrome_pages.h"
@@ -94,7 +93,7 @@ void BookmarkContextMenuController::BuildMenu() {
 
   AddSeparator();
   AddItem(IDC_BOOKMARK_MANAGER, IDS_BOOKMARK_MANAGER);
-  if (chrome::IsInstantExtendedAPIEnabled() && !profile_->IsOffTheRecord()) {
+  if (chrome::IsAppsShortcutEnabled(profile_)) {
     AddCheckboxItem(IDC_BOOKMARK_BAR_SHOW_APPS_SHORTCUT,
                     IDS_BOOKMARK_BAR_SHOW_APPS_SHORTCUT);
   }

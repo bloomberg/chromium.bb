@@ -368,11 +368,11 @@ class BookmarkBarView : public DetachableToolbarView,
   // desired bounds. If |compute_bounds_only| = FALSE, the bounds are set.
   gfx::Size LayoutItems(bool compute_bounds_only);
 
-  // Returns true if we should show the apps shortcut.
-  bool ShouldShowAppsShortcut() const;
-
   // Updates the visibility of the apps shortcut based on the pref value.
-  void OnAppsPageShortcutVisibilityChanged();
+  void OnAppsPageShortcutVisibilityPrefChanged();
+
+  // Called when we know whether the app launcher is enabled.
+  void OnAppLauncherEnabledCompleted(bool app_launcher_enabled);
 
   // Needed to react to kShowAppsShortcutInBookmarkBar changes.
   PrefChangeRegistrar profile_pref_registrar_;

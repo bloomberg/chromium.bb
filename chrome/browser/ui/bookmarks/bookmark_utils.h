@@ -15,6 +15,7 @@ class BookmarkNode;
 class Browser;
 class GURL;
 class PrefService;
+class Profile;
 
 namespace content {
 class BrowserContext;
@@ -79,6 +80,14 @@ void ToggleBookmarkBarWhenVisible(content::BrowserContext* browser_context);
 // should call URLFixerUpper::FixupURL().
 string16 FormatBookmarkURLForDisplay(const GURL& url,
                                      const PrefService* prefs);
+
+// Returns whether the Apps shortcut is enabled. If true, then the visibility
+// of the Apps shortcut should be controllable via an item in the bookmark
+// context menu.
+bool IsAppsShortcutEnabled(const Profile* profile);
+
+// Returns true if the Apps shortcut should be displayed in the bookmark bar.
+bool ShouldShowAppsShortcutInBookmarkBar(Profile* profile);
 
 }  // namespace chrome
 

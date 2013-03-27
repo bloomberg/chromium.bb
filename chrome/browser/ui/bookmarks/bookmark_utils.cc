@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 
+#include "apps/app_launcher.h"
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
@@ -12,6 +13,7 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -262,6 +264,17 @@ string16 FormatBookmarkURLForDisplay(const GURL& url,
       url, languages,
       net::kFormatUrlOmitAll & ~net::kFormatUrlOmitUsernamePassword,
       net::UnescapeRule::SPACES, NULL, NULL, NULL);
+}
+
+bool IsAppsShortcutEnabled(const Profile* profile) {
+  return chrome::IsInstantExtendedAPIEnabled() &&
+      !apps::WasAppLauncherEnabled() &&
+      !profile->IsOffTheRecord();
+}
+
+bool ShouldShowAppsShortcutInBookmarkBar(Profile* profile) {
+  return IsAppsShortcutEnabled(profile) &&
+      profile->GetPrefs()->GetBoolean(prefs::kShowAppsShortcutInBookmarkBar);
 }
 
 }  // namespace chrome

@@ -22,6 +22,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/interactive_test_utils.h"
+#include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/test_browser_window.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -124,6 +125,8 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
     browser_.reset(
         chrome::CreateBrowserWithTestWindowForParams(&native_params));
 
+    local_state_.reset(new ScopedTestingLocalState(
+        TestingBrowserProcess::GetGlobal()));
     model_->ClearStore();
 
     bb_view_.reset(new BookmarkBarView(browser_.get(), NULL));
@@ -232,6 +235,7 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
   gfx::Size bb_view_pref_;
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<Browser> browser_;
+  scoped_ptr<ScopedTestingLocalState> local_state_;
   content::TestBrowserThread file_thread_;
   ChromeViewsDelegate views_delegate_;
 };

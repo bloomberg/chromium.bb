@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 
+#include "apps/app_launcher.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
@@ -12,6 +13,8 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
+#include "chrome/test/base/scoped_testing_local_state.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "ui/views/controls/button/text_button.h"
 
@@ -19,6 +22,7 @@ typedef BrowserWithTestWindowTest BookmarkBarViewTest;
 
 // Verify that the apps shortcut is never visible without instant extended.
 TEST_F(BookmarkBarViewTest, NoAppsShortcutWithoutInstantExtended) {
+  ScopedTestingLocalState local_state(TestingBrowserProcess::GetGlobal());
   profile()->CreateBookmarkModel(true);
   ui_test_utils::WaitForBookmarkModelToLoad(profile());
   BookmarkBarView bookmark_bar_view(browser(), NULL);
@@ -56,6 +60,7 @@ class BookmarkBarViewInstantExtendedTest : public BrowserWithTestWindowTest {
 // Verify that in instant extended mode the visibility of the apps shortcut
 // button properly follows the pref value.
 TEST_F(BookmarkBarViewInstantExtendedTest, AppsShortcutVisibility) {
+  ScopedTestingLocalState local_state(TestingBrowserProcess::GetGlobal());
   profile()->CreateBookmarkModel(true);
   ui_test_utils::WaitForBookmarkModelToLoad(profile());
   BookmarkBarView bookmark_bar_view(browser(), NULL);
@@ -63,9 +68,17 @@ TEST_F(BookmarkBarViewInstantExtendedTest, AppsShortcutVisibility) {
   browser()->profile()->GetPrefs()->SetBoolean(
       prefs::kShowAppsShortcutInBookmarkBar, false);
   EXPECT_FALSE(bookmark_bar_view.apps_page_shortcut_->visible());
+
+  // Try to make the Apps shortcut visible. Its visibility depends on whether
+  // the app launcher is enabled.
   browser()->profile()->GetPrefs()->SetBoolean(
       prefs::kShowAppsShortcutInBookmarkBar, true);
-  EXPECT_TRUE(bookmark_bar_view.apps_page_shortcut_->visible());
+  if (apps::WasAppLauncherEnabled()) {
+    EXPECT_FALSE(bookmark_bar_view.apps_page_shortcut_->visible());
+  } else {
+    EXPECT_TRUE(bookmark_bar_view.apps_page_shortcut_->visible());
+  }
+
   // Make sure we can also properly transition from true to false.
   browser()->profile()->GetPrefs()->SetBoolean(
       prefs::kShowAppsShortcutInBookmarkBar, false);

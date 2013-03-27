@@ -9,6 +9,7 @@
 #include <set>
 #include <vector>
 
+#include "apps/app_launcher.h"
 #include "base/bind.h"
 #include "base/i18n/rtl.h"
 #include "base/metrics/histogram.h"
@@ -1260,9 +1261,10 @@ void BookmarkBarView::Init() {
   profile_pref_registrar_.Init(browser_->profile()->GetPrefs());
   profile_pref_registrar_.Add(
       prefs::kShowAppsShortcutInBookmarkBar,
-      base::Bind(&BookmarkBarView::OnAppsPageShortcutVisibilityChanged,
-      base::Unretained(this)));
-  apps_page_shortcut_->SetVisible(ShouldShowAppsShortcut());
+      base::Bind(&BookmarkBarView::OnAppsPageShortcutVisibilityPrefChanged,
+                 base::Unretained(this)));
+  apps_page_shortcut_->SetVisible(
+      chrome::ShouldShowAppsShortcutInBookmarkBar(browser_->profile()));
 
   bookmarks_separator_view_ = new ButtonSeparatorView();
   AddChildView(bookmarks_separator_view_);
@@ -1283,6 +1285,11 @@ void BookmarkBarView::Init() {
     // else case: we'll receive notification back from the BookmarkModel when
     // done loading, then we'll populate the bar.
   }
+
+  // The first check for the app launcher is asynchronous, run it now.
+  apps::GetIsAppLauncherEnabled(
+      base::Bind(&BookmarkBarView::OnAppLauncherEnabledCompleted,
+                 base::Unretained(this)));
 }
 
 int BookmarkBarView::GetBookmarkButtonCount() {
@@ -1842,16 +1849,19 @@ gfx::Size BookmarkBarView::LayoutItems(bool compute_bounds_only) {
   return prefsize;
 }
 
-bool BookmarkBarView::ShouldShowAppsShortcut() const {
-  return chrome::IsInstantExtendedAPIEnabled() &&
-      browser_->profile()->GetPrefs()->GetBoolean(
-          prefs::kShowAppsShortcutInBookmarkBar) &&
-      !browser_->profile()->IsOffTheRecord();
-}
-
-void BookmarkBarView::OnAppsPageShortcutVisibilityChanged() {
+void BookmarkBarView::OnAppsPageShortcutVisibilityPrefChanged() {
   DCHECK(apps_page_shortcut_);
-  apps_page_shortcut_->SetVisible(ShouldShowAppsShortcut());
+  // Only perform layout if required.
+  bool visible = chrome::ShouldShowAppsShortcutInBookmarkBar(
+      browser_->profile());
+  if (apps_page_shortcut_->visible() == visible)
+    return;
+  apps_page_shortcut_->SetVisible(visible);
   UpdateBookmarksSeparatorVisibility();
   Layout();
+}
+
+void BookmarkBarView::OnAppLauncherEnabledCompleted(bool app_launcher_enabled) {
+  // Disregard |app_launcher_enabled|, use apps::WasAppLauncherEnable instead.
+  OnAppsPageShortcutVisibilityPrefChanged();
 }
