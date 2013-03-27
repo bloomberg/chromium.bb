@@ -113,7 +113,9 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, DisableOneAtATime) {
     // AUTOFILL_PROFILE is lumped together with AUTOFILL.
     // SESSIONS is lumped together with PROXY_TABS and
     // HISTORY_DELETE_DIRECTIVES.
-    if (it.Get() == syncer::AUTOFILL_PROFILE || it.Get() == syncer::SESSIONS) {
+    // PRIORITY_PREFERENCES is lumped together with PREFERENCES.
+    if (it.Get() == syncer::AUTOFILL_PROFILE || it.Get() == syncer::SESSIONS ||
+        it.Get() == syncer::PRIORITY_PREFERENCES) {
       continue;
     }
 
@@ -131,6 +133,9 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, DisableOneAtATime) {
                it.Get() == syncer::PROXY_TABS) {
       ASSERT_FALSE(DoesTopLevelNodeExist(user_share,
                                          syncer::SESSIONS));
+    } else if (it.Get() == syncer::PREFERENCES) {
+      ASSERT_FALSE(DoesTopLevelNodeExist(user_share,
+                                         syncer::PRIORITY_PREFERENCES));
     }
   }
 

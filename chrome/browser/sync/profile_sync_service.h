@@ -623,6 +623,9 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // Used by test classes that derive from ProfileSyncService.
   virtual browser_sync::SyncBackendHost* GetBackendForTest();
 
+  // Helper to configure the priority data types.
+  void ConfigurePriorityDataTypes();
+
   // Helper to install and configure a data type manager.
   void ConfigureDataTypeManager();
 

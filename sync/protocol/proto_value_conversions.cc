@@ -312,14 +312,6 @@ base::DictionaryValue* BookmarkSpecificsToValue(
   return value;
 }
 
-base::DictionaryValue* PriorityPreferenceSpecificsToValue(
-    const sync_pb::PriorityPreferenceSpecifics& proto) {
-  base::DictionaryValue* value = new base::DictionaryValue();
-  SET_STR(name);
-  SET_STR(value);
-  return value;
-}
-
 base::DictionaryValue* DeviceInfoSpecificsToValue(
     const sync_pb::DeviceInfoSpecifics& proto) {
   base::DictionaryValue* value = new base::DictionaryValue();
@@ -447,6 +439,13 @@ base::DictionaryValue* PreferenceSpecificsToValue(
   base::DictionaryValue* value = new base::DictionaryValue();
   SET_STR(name);
   SET_STR(value);
+  return value;
+}
+
+base::DictionaryValue* PriorityPreferenceSpecificsToValue(
+    const sync_pb::PriorityPreferenceSpecifics& specifics) {
+  base::DictionaryValue* value = new base::DictionaryValue();
+  SET_FIELD(preference, PreferenceSpecificsToValue);
   return value;
 }
 

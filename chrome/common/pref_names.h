@@ -605,6 +605,7 @@ extern const char kSyncKeepEverythingSynced[];
 extern const char kSyncBookmarks[];
 extern const char kSyncPasswords[];
 extern const char kSyncPreferences[];
+extern const char kSyncPriorityPreferences[];
 extern const char kSyncAppNotifications[];
 extern const char kSyncAppSettings[];
 extern const char kSyncApps[];

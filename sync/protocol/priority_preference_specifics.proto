@@ -14,8 +14,9 @@ option retain_unknown_fields = true;
 
 package sync_pb;
 
+import "preference_specifics.proto";
+
 // Properties of a synced priority preference.
 message PriorityPreferenceSpecifics {
-  optional string name = 1;
-  optional string value = 2;
+  optional PreferenceSpecifics preference = 1;
 }

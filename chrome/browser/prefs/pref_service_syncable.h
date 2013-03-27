@@ -7,6 +7,7 @@
 
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/prefs/pref_model_associator.h"
+#include "components/user_prefs/pref_registry_syncable.h"
 
 class PrefRegistrySyncable;
 class PrefServiceSyncableObserver;
@@ -56,14 +57,22 @@ class PrefServiceSyncable : public PrefService {
   // preferences. If true is returned it can be assumed the local preferences
   // has applied changes from the remote preferences. The two may not be
   // identical if a change is in flight (from either side).
+  //
+  // TODO(albertb): Given that we now support priority preferences, callers of
+  // this method are likely better off making the preferences they care about
+  // into priority preferences and calling IsPrioritySyncing().
   bool IsSyncing();
+
+  // Returns true if priority preferences state has synchronized with the remote
+  // priority preferences.
+  bool IsPrioritySyncing();
 
   void AddObserver(PrefServiceSyncableObserver* observer);
   void RemoveObserver(PrefServiceSyncableObserver* observer);
 
   // TODO(zea): Have PrefServiceSyncable implement
   // syncer::SyncableService directly.
-  syncer::SyncableService* GetSyncableService();
+  syncer::SyncableService* GetSyncableService(const syncer::ModelType& type);
 
   // Do not call this after having derived an incognito or per tab pref service.
   virtual void UpdateCommandLinePrefStore(PrefStore* cmd_line_store) OVERRIDE;
@@ -71,16 +80,23 @@ class PrefServiceSyncable : public PrefService {
  private:
   friend class PrefModelAssociator;
 
-  void AddRegisteredSyncablePreference(const char* path);
+  void AddRegisteredSyncablePreference(
+      const char* path,
+      const PrefRegistrySyncable::PrefSyncStatus sync_status);
 
   // Invoked internally when the IsSyncing() state changes.
   void OnIsSyncingChanged();
+
+  // Process a local preference change. This can trigger new SyncChanges being
+  // sent to the syncer.
+  void ProcessPrefChange(const std::string& name);
 
   // Whether CreateIncognitoPrefService() has been called to create a
   // "forked" PrefService.
   bool pref_service_forked_;
 
   PrefModelAssociator pref_sync_associator_;
+  PrefModelAssociator priority_pref_sync_associator_;
 
   ObserverList<PrefServiceSyncableObserver> observer_list_;
 

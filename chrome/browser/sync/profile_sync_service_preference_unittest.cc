@@ -156,7 +156,7 @@ class ProfileSyncServicePreferenceTest
             profile_.get(), &TestProfileSyncService::BuildAutoStartAsyncInit));
     sync_service_->set_backend_init_callback(callback);
     pref_sync_service_ = reinterpret_cast<PrefModelAssociator*>(
-        prefs_->GetSyncableService());
+        prefs_->GetSyncableService(syncer::PREFERENCES));
     if (!pref_sync_service_)
       return false;
     ProfileSyncComponentsFactoryMock* components =
@@ -223,9 +223,9 @@ class ProfileSyncServicePreferenceTest
                          const Value& value,
                          syncer::WriteNode* node) {
     syncer::SyncData sync_data;
-    if (!PrefModelAssociator::CreatePrefSyncData(name,
-                                                 value,
-                                                 &sync_data)) {
+    if (!pref_sync_service_->CreatePrefSyncData(name,
+                                                value,
+                                                &sync_data)) {
       return syncer::kInvalidId;
     }
     node->SetEntitySpecifics(sync_data.GetSpecifics());
@@ -301,7 +301,7 @@ TEST_F(ProfileSyncServicePreferenceTest, CreatePrefSyncData) {
   const PrefService::Preference* pref =
       prefs_->FindPreference(prefs::kHomePage);
   syncer::SyncData sync_data;
-  EXPECT_TRUE(PrefModelAssociator::CreatePrefSyncData(pref->name(),
+  EXPECT_TRUE(pref_sync_service_->CreatePrefSyncData(pref->name(),
       *pref->GetValue(), &sync_data));
   EXPECT_EQ(std::string(prefs::kHomePage), sync_data.GetTag());
   const sync_pb::PreferenceSpecifics& specifics(sync_data.GetSpecifics().
@@ -595,6 +595,7 @@ TEST_F(ProfileSyncServicePreferenceTest, DynamicManagedPreferences) {
       Value::CreateStringValue("http://example.com/initial"));
   profile_->GetPrefs()->Set(prefs::kHomePage, *initial_value);
   scoped_ptr<const Value> actual(GetSyncedValue(prefs::kHomePage));
+  ASSERT_TRUE(actual.get());
   EXPECT_TRUE(initial_value->Equals(actual.get()));
 
   // Switch kHomePage to managed and set a different value.

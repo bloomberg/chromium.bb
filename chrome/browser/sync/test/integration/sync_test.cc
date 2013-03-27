@@ -211,6 +211,11 @@ void SyncTest::AddTestSwitches(CommandLine* cl) {
 
   if (!cl->HasSwitch(switches::kSyncShortInitialRetryOverride))
     cl->AppendSwitch(switches::kSyncShortInitialRetryOverride);
+
+  // TODO(sync): Fix enable_disable_test.cc to play nice with priority
+  // preferences.
+  if (!cl->HasSwitch(switches::kDisableSyncPriorityPreferences))
+    cl->AppendSwitch(switches::kDisableSyncPriorityPreferences);
 }
 
 void SyncTest::AddOptionalTypesToCommandLine(CommandLine* cl) {}

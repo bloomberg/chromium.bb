@@ -90,6 +90,9 @@ enum ModelType {
   FAVICON_IMAGES,
   // Favicon tracking information.
   FAVICON_TRACKING,
+  // These preferences are synced before other user types and are never
+  // encrypted.
+  PRIORITY_PREFERENCES,
 
   // ---- Proxy types ----
   // Proxy types are excluded from the sync protocol, but are still considered
@@ -113,10 +116,7 @@ enum ModelType {
   DEVICE_INFO,
   // Flags to enable experimental features.
   EXPERIMENTS,
-  // These preferences are never encrypted so that they can be applied before
-  // the encryption system is fully initialized.
-  PRIORITY_PREFERENCES,
-  LAST_CONTROL_MODEL_TYPE = PRIORITY_PREFERENCES,
+  LAST_CONTROL_MODEL_TYPE = EXPERIMENTS,
 
   LAST_REAL_MODEL_TYPE = LAST_CONTROL_MODEL_TYPE,
 
@@ -178,6 +178,10 @@ SYNC_EXPORT bool IsUserSelectableType(ModelType model_type);
 
 // This is the subset of UserTypes() that can be encrypted.
 SYNC_EXPORT_PRIVATE ModelTypeSet EncryptableUserTypes();
+
+// This is the subset of UserTypes() that have priority over other types.  These
+// types are synced before other user types and are never encrypted.
+SYNC_EXPORT ModelTypeSet PriorityUserTypes();
 
 // Proxy types are placeholder types for handling implicitly enabling real
 // types. They do not exist at the server, and are simply used for

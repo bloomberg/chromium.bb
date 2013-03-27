@@ -344,6 +344,8 @@ const char* SyncPrefs::GetPrefNameForDataType(syncer::ModelType data_type) {
       return prefs::kSyncFaviconTracking;
     case syncer::PROXY_TABS:
       return prefs::kSyncTabs;
+    case syncer::PRIORITY_PREFERENCES:
+      return prefs::kSyncPriorityPreferences;
     default:
       break;
   }
@@ -409,6 +411,7 @@ void SyncPrefs::RegisterPrefGroups() {
   pref_groups_[syncer::EXTENSIONS].Put(syncer::EXTENSION_SETTINGS);
 
   pref_groups_[syncer::PREFERENCES].Put(syncer::DICTIONARY);
+  pref_groups_[syncer::PREFERENCES].Put(syncer::PRIORITY_PREFERENCES);
   pref_groups_[syncer::PREFERENCES].Put(syncer::SEARCH_ENGINES);
 
   pref_groups_[syncer::TYPED_URLS].Put(syncer::HISTORY_DELETE_DIRECTIVES);

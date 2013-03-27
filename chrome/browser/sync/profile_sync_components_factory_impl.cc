@@ -205,6 +205,13 @@ void ProfileSyncComponentsFactoryImpl::RegisterDesktopDataTypes(
   if (!command_line_->HasSwitch(switches::kDisableSyncPreferences)) {
     pss->RegisterDataTypeController(
         new UIDataTypeController(syncer::PREFERENCES, this, profile_, pss));
+
+  }
+
+  if (!command_line_->HasSwitch(switches::kDisableSyncPriorityPreferences)) {
+    pss->RegisterDataTypeController(
+        new UIDataTypeController(syncer::PRIORITY_PREFERENCES,
+                                 this, profile_, pss));
   }
 
 #if defined(ENABLE_THEMES)
@@ -298,7 +305,10 @@ base::WeakPtr<syncer::SyncableService> ProfileSyncComponentsFactoryImpl::
   switch (type) {
     case syncer::PREFERENCES:
       return PrefServiceSyncable::FromProfile(
-          profile_)->GetSyncableService()->AsWeakPtr();
+          profile_)->GetSyncableService(syncer::PREFERENCES)->AsWeakPtr();
+    case syncer::PRIORITY_PREFERENCES:
+      return PrefServiceSyncable::FromProfile(profile_)->GetSyncableService(
+          syncer::PRIORITY_PREFERENCES)->AsWeakPtr();
     case syncer::AUTOFILL:
     case syncer::AUTOFILL_PROFILE: {
       if (!web_data_service_.get())

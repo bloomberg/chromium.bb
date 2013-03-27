@@ -1513,6 +1513,17 @@ SyncBackendHost* ProfileSyncService::GetBackendForTest() {
   return backend_.get();
 }
 
+void ProfileSyncService::ConfigurePriorityDataTypes() {
+  const syncer::ModelTypeSet priority_types =
+      Intersection(GetPreferredDataTypes(), syncer::PriorityUserTypes());
+  if (!priority_types.Empty()) {
+    const syncer::ConfigureReason reason = HasSyncSetupCompleted() ?
+        syncer::CONFIGURE_REASON_RECONFIGURATION :
+        syncer::CONFIGURE_REASON_NEW_CLIENT;
+    data_type_manager_->Configure(priority_types, reason);
+  }
+}
+
 void ProfileSyncService::ConfigureDataTypeManager() {
   // Don't configure datatypes if the setup UI is still on the screen - this
   // is to help multi-screen setting UIs (like iOS) where they don't want to
@@ -1540,6 +1551,7 @@ void ProfileSyncService::ConfigureDataTypeManager() {
             base::Bind(&ProfileSyncService::StartSyncingWithServer,
                        base::Unretained(this))));
   }
+  ConfigurePriorityDataTypes();
 
 #if defined(OS_ANDROID)
   if (GetPreferredDataTypes().Has(syncer::PASSWORDS) &&

@@ -119,6 +119,7 @@ extern const char kDisableSyncExtensions[];
 extern const char kDisableSyncHistoryDeleteDirectives[];
 extern const char kDisableSyncPasswords[];
 extern const char kDisableSyncPreferences[];
+extern const char kDisableSyncPriorityPreferences[];
 extern const char kDisableSyncSearchEngines[];
 extern const char kDisableSyncThemes[];
 extern const char kDisableSyncTypedUrls[];

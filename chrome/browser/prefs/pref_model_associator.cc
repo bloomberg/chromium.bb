@@ -21,12 +21,41 @@
 #include "sync/protocol/sync.pb.h"
 
 using syncer::PREFERENCES;
+using syncer::PRIORITY_PREFERENCES;
 
-PrefModelAssociator::PrefModelAssociator()
+namespace {
+
+const sync_pb::PreferenceSpecifics& GetSpecifics(const syncer::SyncData& pref) {
+  DCHECK(pref.GetDataType() == syncer::PREFERENCES ||
+         pref.GetDataType() == syncer::PRIORITY_PREFERENCES);
+  if (pref.GetDataType() == syncer::PRIORITY_PREFERENCES) {
+    return pref.GetSpecifics().priority_preference().preference();
+  } else {
+    return pref.GetSpecifics().preference();
+  }
+}
+
+sync_pb::PreferenceSpecifics* GetMutableSpecifics(
+    const syncer::ModelType type,
+    sync_pb::EntitySpecifics* specifics) {
+  if (type == syncer::PRIORITY_PREFERENCES) {
+    DCHECK(!specifics->has_preference());
+    return specifics->mutable_priority_preference()->mutable_preference();
+  } else {
+    DCHECK(!specifics->has_priority_preference());
+    return specifics->mutable_preference();
+  }
+}
+
+}  // namespace
+
+PrefModelAssociator::PrefModelAssociator(syncer::ModelType type)
     : models_associated_(false),
       processing_syncer_changes_(false),
-      pref_service_(NULL) {
+      pref_service_(NULL),
+      type_(type) {
   DCHECK(CalledOnValidThread());
+  DCHECK(type_ == PREFERENCES || type_ == PRIORITY_PREFERENCES);
 }
 
 PrefModelAssociator::~PrefModelAssociator() {
@@ -43,8 +72,7 @@ void PrefModelAssociator::InitPrefAndAssociate(
   VLOG(1) << "Associating preference " << pref_name;
 
   if (sync_pref.IsValid()) {
-    const sync_pb::PreferenceSpecifics& preference =
-        sync_pref.GetSpecifics().preference();
+    const sync_pb::PreferenceSpecifics& preference = GetSpecifics(sync_pref);
     DCHECK_EQ(pref_name, preference.name());
 
     base::JSONReader reader;
@@ -124,7 +152,7 @@ syncer::SyncMergeResult PrefModelAssociator::MergeDataAndStartSyncing(
     const syncer::SyncDataList& initial_sync_data,
     scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
     scoped_ptr<syncer::SyncErrorFactory> sync_error_factory) {
-  DCHECK_EQ(type, PREFERENCES);
+  DCHECK_EQ(type_, type);
   DCHECK(CalledOnValidThread());
   DCHECK(pref_service_);
   DCHECK(!sync_processor_.get());
@@ -143,8 +171,11 @@ syncer::SyncMergeResult PrefModelAssociator::MergeDataAndStartSyncing(
            initial_sync_data.begin();
        sync_iter != initial_sync_data.end();
        ++sync_iter) {
-    DCHECK_EQ(PREFERENCES, sync_iter->GetDataType());
-    std::string sync_pref_name = sync_iter->GetSpecifics().preference().name();
+    DCHECK_EQ(type_, sync_iter->GetDataType());
+
+    const sync_pb::PreferenceSpecifics& preference = GetSpecifics(*sync_iter);
+    const std::string& sync_pref_name = preference.name();
+
     if (remaining_preferences.count(sync_pref_name) == 0) {
       // We're not syncing this preference locally, ignore the sync data.
       // TODO(zea): Eventually we want to be able to have the syncable service
@@ -178,7 +209,7 @@ syncer::SyncMergeResult PrefModelAssociator::MergeDataAndStartSyncing(
 }
 
 void PrefModelAssociator::StopSyncing(syncer::ModelType type) {
-  DCHECK_EQ(type, PREFERENCES);
+  DCHECK_EQ(type_, type);
   models_associated_ = false;
   sync_processor_.reset();
   sync_error_factory_.reset();
@@ -205,7 +236,7 @@ scoped_ptr<Value> PrefModelAssociator::MergePreference(
 bool PrefModelAssociator::CreatePrefSyncData(
     const std::string& name,
     const Value& value,
-    syncer::SyncData* sync_data) {
+    syncer::SyncData* sync_data) const {
   if (value.IsType(Value::TYPE_NULL)) {
     LOG(ERROR) << "Attempting to sync a null pref value for " << name;
     return false;
@@ -221,7 +252,9 @@ bool PrefModelAssociator::CreatePrefSyncData(
   }
 
   sync_pb::EntitySpecifics specifics;
-  sync_pb::PreferenceSpecifics* pref_specifics = specifics.mutable_preference();
+  sync_pb::PreferenceSpecifics* pref_specifics =
+      GetMutableSpecifics(type_, &specifics);
+
   pref_specifics->set_name(name);
   pref_specifics->set_value(serialized);
   *sync_data = syncer::SyncData::CreateLocalData(name, name, specifics);
@@ -290,7 +323,7 @@ Value* PrefModelAssociator::MergeDictionaryValues(
 syncer::SyncDataList PrefModelAssociator::GetAllSyncData(
     syncer::ModelType type)
     const {
-  DCHECK_EQ(PREFERENCES, type);
+  DCHECK_EQ(type_, type);
   syncer::SyncDataList current_data;
   for (PreferenceSet::const_iterator iter = synced_preferences_.begin();
        iter != synced_preferences_.end();
@@ -322,11 +355,12 @@ syncer::SyncError PrefModelAssociator::ProcessSyncChanges(
   base::AutoReset<bool> processing_changes(&processing_syncer_changes_, true);
   syncer::SyncChangeList::const_iterator iter;
   for (iter = change_list.begin(); iter != change_list.end(); ++iter) {
-    DCHECK_EQ(PREFERENCES, iter->sync_data().GetDataType());
+    DCHECK_EQ(type_, iter->sync_data().GetDataType());
 
     std::string name;
-    sync_pb::PreferenceSpecifics pref_specifics =
-        iter->sync_data().GetSpecifics().preference();
+    const sync_pb::PreferenceSpecifics& pref_specifics =
+        GetSpecifics(iter->sync_data());
+
     scoped_ptr<Value> value(ReadPreferenceSpecifics(pref_specifics,
                                                     &name));
 

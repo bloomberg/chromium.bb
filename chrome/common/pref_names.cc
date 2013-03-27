@@ -1722,6 +1722,7 @@ const char kSyncKeepEverythingSynced[] = "sync.keep_everything_synced";
 const char kSyncBookmarks[] = "sync.bookmarks";
 const char kSyncPasswords[] = "sync.passwords";
 const char kSyncPreferences[] = "sync.preferences";
+const char kSyncPriorityPreferences[] = "sync.priority_preferences";
 const char kSyncAppNotifications[] = "sync.app_notifications";
 const char kSyncAppSettings[] = "sync.app_settings";
 const char kSyncApps[] = "sync.apps";

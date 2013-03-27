@@ -397,6 +397,10 @@ const char kDisableSyncPasswords[]          = "disable-sync-passwords";
 // Disables syncing of preferences.
 const char kDisableSyncPreferences[]        = "disable-sync-preferences";
 
+// Disables syncing of priority preferences.
+const char kDisableSyncPriorityPreferences[] =
+    "disable-sync-priority-preferences";
+
 // Disable syncing custom search engines.
 const char kDisableSyncSearchEngines[]      = "disable-sync-search-engines";
 

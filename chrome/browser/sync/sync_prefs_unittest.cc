@@ -145,6 +145,7 @@ TEST_F(SyncPrefsTest, PreferredTypesNotKeepEverythingSynced) {
     }
     if (it.Get() == syncer::PREFERENCES) {
       expected_preferred_types.Put(syncer::DICTIONARY);
+      expected_preferred_types.Put(syncer::PRIORITY_PREFERENCES);
       expected_preferred_types.Put(syncer::SEARCH_ENGINES);
     }
     if (it.Get() == syncer::APPS) {

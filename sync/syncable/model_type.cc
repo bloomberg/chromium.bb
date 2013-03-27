@@ -353,11 +353,18 @@ ModelTypeSet EncryptableUserTypes() {
   encryptable_user_types.Remove(HISTORY_DELETE_DIRECTIVES);
   // Synced notifications are not encrypted since the server must see changes.
   encryptable_user_types.Remove(SYNCED_NOTIFICATIONS);
+  // Priority preferences are not encrypted because they might be synced before
+  // encryption is ready.
+  encryptable_user_types.RemoveAll(PriorityUserTypes());
   // Proxy types have no sync representation and are therefore not encrypted.
   // Note however that proxy types map to one or more protocol types, which
   // may or may not be encrypted themselves.
   encryptable_user_types.RemoveAll(ProxyTypes());
   return encryptable_user_types;
+}
+
+ModelTypeSet PriorityUserTypes() {
+  return ModelTypeSet(PRIORITY_PREFERENCES);
 }
 
 ModelTypeSet ControlTypes() {
@@ -368,9 +375,6 @@ ModelTypeSet ControlTypes() {
   for (int i = FIRST_CONTROL_MODEL_TYPE; i <= LAST_CONTROL_MODEL_TYPE; ++i) {
     set.Put(ModelTypeFromInt(i));
   }
-
-  // TODO(albertb): Re-enable this when the server supports it.
-  set.Remove(PRIORITY_PREFERENCES);
 
   return set;
 }

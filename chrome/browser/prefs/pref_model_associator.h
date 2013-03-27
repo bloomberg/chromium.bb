@@ -33,7 +33,7 @@ class PrefModelAssociator
     : public syncer::SyncableService,
       public base::NonThreadSafe {
  public:
-  PrefModelAssociator();
+  explicit PrefModelAssociator(syncer::ModelType type);
   virtual ~PrefModelAssociator();
 
   // See description above field for details.
@@ -84,9 +84,9 @@ class PrefModelAssociator
 
   // Fills |sync_data| with a sync representation of the preference data
   // provided.
-  static bool CreatePrefSyncData(const std::string& name,
-                                 const base::Value& value,
-                                 syncer::SyncData* sync_data);
+  bool CreatePrefSyncData(const std::string& name,
+                          const base::Value& value,
+                          syncer::SyncData* sync_data) const;
 
   // Extract preference value and name from sync specifics.
   base::Value* ReadPreferenceSpecifics(
@@ -148,6 +148,10 @@ class PrefModelAssociator
 
   // Sync's error handler. We use this to create sync errors.
   scoped_ptr<syncer::SyncErrorFactory> sync_error_factory_;
+
+  // The datatype that this associator is responible for, either PREFERENCES or
+  // PRIORITY_PREFERENCES.
+  syncer::ModelType type_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefModelAssociator);
 };
