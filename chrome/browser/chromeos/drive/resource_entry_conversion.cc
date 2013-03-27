@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
 
+#include <algorithm>
 #include <string>
 
 #include "base/logging.h"
@@ -16,6 +17,21 @@
 #include "net/base/escape.h"
 
 namespace drive {
+
+namespace {
+
+const char kSharedWithMeLabel[] = "shared-with-me";
+
+// Checks if |entry| has a label "shared-with-me", which is added to entries
+// shared with the user.
+bool HasSharedWithMeLabel(const google_apis::ResourceEntry& entry) {
+  std::vector<std::string>::const_iterator it =
+      std::find(entry.labels().begin(), entry.labels().end(),
+                kSharedWithMeLabel);
+  return it != entry.labels().end();
+}
+
+}  // namespace
 
 DriveEntryProto ConvertResourceEntryToDriveEntryProto(
     const google_apis::ResourceEntry& entry) {
@@ -48,6 +64,7 @@ DriveEntryProto ConvertResourceEntryToDriveEntryProto(
 
   entry_proto.set_deleted(entry.deleted());
   entry_proto.set_kind(entry.kind());
+  entry_proto.set_shared_with_me(HasSharedWithMeLabel(entry));
 
   PlatformFileInfoProto* file_info = entry_proto.mutable_file_info();
 

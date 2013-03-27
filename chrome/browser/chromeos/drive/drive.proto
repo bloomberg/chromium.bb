@@ -79,6 +79,8 @@ message DriveEntryProto {
   // This field is used for processing the feeds from the server. Deleted
   // entries won't be stored in the metadata storage.
   optional bool deleted = 11;
+  // True if the entry is labeled with "shared-with-me".
+  optional bool shared_with_me = 14;
 
   // File specific information, such as MD5.
   optional DriveFileSpecificInfo file_specific_info = 9;

@@ -37,6 +37,8 @@ TEST(ResourceEntryConversionTest, ConvertResourceEntryToDriveEntryProto_File) {
   EXPECT_FALSE(entry_proto.deleted());
   EXPECT_EQ(google_apis::ENTRY_KIND_FILE, entry_proto.kind());
 
+  EXPECT_FALSE(entry_proto.shared_with_me());
+
   base::Time expected_creation_time;
   base::Time expected_modified_time;
 
@@ -119,6 +121,8 @@ TEST(ResourceEntryConversionTest,
 
   EXPECT_FALSE(entry_proto.deleted());
   EXPECT_EQ(google_apis::ENTRY_KIND_DOCUMENT, entry_proto.kind());
+
+  EXPECT_FALSE(entry_proto.shared_with_me());
 
   // 2011-12-12T23:28:52.783Z
   base::Time::Exploded exploded;
@@ -206,6 +210,8 @@ TEST(ResourceEntryConversionTest,
   EXPECT_FALSE(entry_proto.deleted());
   EXPECT_EQ(google_apis::ENTRY_KIND_FOLDER, entry_proto.kind());
 
+  EXPECT_FALSE(entry_proto.shared_with_me());
+
   // 2011-04-01T18:34:08.234Z
   base::Time::Exploded exploded;
   exploded.year = 2011;
@@ -282,6 +288,8 @@ TEST(ResourceEntryConversionTest,
   EXPECT_TRUE(entry_proto.deleted());  // The document was deleted.
   EXPECT_EQ(google_apis::ENTRY_KIND_DOCUMENT, entry_proto.kind());
 
+  EXPECT_FALSE(entry_proto.shared_with_me());
+
   // 2012-04-10T22:50:55.797Z
   base::Time::Exploded exploded;
   exploded.year = 2012;
@@ -338,6 +346,22 @@ TEST(ResourceEntryConversionTest,
 
   // The size should be 0 for a hosted document.
   EXPECT_EQ(0,  entry_proto.file_info().size());
+}
+
+TEST(ResourceEntryConversionTest,
+     ConvertResourceEntryToDriveEntryProto_SharedWithMeEntry) {
+  scoped_ptr<base::Value> value = google_apis::test_util::LoadJSONFile(
+      "chromeos/gdata/shared_with_me_entry.json");
+  ASSERT_TRUE(value.get());
+
+  scoped_ptr<google_apis::ResourceEntry> resource_entry(
+      google_apis::ResourceEntry::ExtractAndParse(*value));
+  ASSERT_TRUE(resource_entry.get());
+
+  DriveEntryProto entry_proto =
+      ConvertResourceEntryToDriveEntryProto(*resource_entry);
+
+  EXPECT_TRUE(entry_proto.shared_with_me());
 }
 
 }  // namespace drive
