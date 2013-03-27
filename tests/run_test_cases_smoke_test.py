@@ -702,21 +702,26 @@ class RunTestCases(unittest.TestCase):
       r'\[1\/1\]   \d\.\d\ds Foo\.Bar1 \(\d+\.\d\ds\)',
       # TODO(maruel): Why 2 empty lines are stripped off.
     ] + get_whole_test_re('Foo.Bar1', False, '100', 'Foo.Bar1')[:-2] + [
+
       r'\[2\/2\]   \d\.\d\ds Foo\.Bar1 \(\d+\.\d\ds\) - retry #1',
     ] + get_whole_test_re('Foo.Bar1', False, '100', 'Foo.Bar1') + [
-      # TODO(maruel): The test case should be tried 3 times, not 2.
+
+      re.escape(l) for l in run_test_cases.running_serial_warning()
+    ] + [
+      r'\[3\/3\]   \d\.\d\ds Foo\.Bar1 \(\d+\.\d\ds\) - retry #2',
+    ] + get_whole_test_re('Foo.Bar1', False, '100', 'Foo.Bar1') + [
       re.escape('Failed tests:'),
       re.escape('  Foo.Bar1'),
       re.escape('Summary:'),
       re.escape('  Success:    0   0.00%    0.00s'),
       re.escape('    Flaky:    0   0.00%    0.00s'),
       re.escape('     Fail:    1 100.00% ') + r' +\d+\.\d\ds',
-      r'  \d+\.\d\ds Done running 1 tests with 2 executions. \d+\.\d\d test/s',
+      r'  \d+\.\d\ds Done running 1 tests with 3 executions. \d+\.\d\d test/s',
     ]
     self._check_results(expected_out_re, out, err)
 
     test_cases = [
-      ('Foo.Bar1', 2),
+      ('Foo.Bar1', 3),
     ]
     self._check_results_file(
         fail=[u'Foo.Bar1'],

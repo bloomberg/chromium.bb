@@ -970,10 +970,10 @@ class Runner(object):
         # Crash after pass.
         results[-1]['returncode'] = proc.returncode
 
-      if try_count + 1 < self.retries:
+      if try_count < self.retries:
         # This is tricky, one of the test case failed but each did print that
         # they succeeded! Retry them *all* individually.
-        if not self.verbose:
+        if not self.verbose and not try_count:
           # Print all the output as one shot when not verbose to be sure the
           # potential stack trace is printed.
           output = ''.join(i['output'] for i in results)
