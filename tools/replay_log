@@ -75,8 +75,8 @@ binarydata/${LOG_FILE}?id=${LOG_IDNUM}&logIndex=0"
     while true; do
       http_proxy=http://cache.corp.google.com:3128/ curl -b "$COOKIE_FILE" \
         -L -o "$LOG_FILE" "$LOG_URL"
-      TYPE="$(file "$LOG_FILE")"
-      if [[ "$TYPE" = *bzip2* ]]; then
+      TYPE="$(file -b "$LOG_FILE" | cut -d ' ' -f 1)"
+      if [[ "$TYPE" = bzip2 || "$TYPE" = Zip ]]; then
         # download success
         infile="$LOG_FILE"
         break
@@ -112,10 +112,14 @@ expand_input_file() {
     intype="ASCII"
   fi
 
-  if [ "$intype" = "bzip2" ]; then
+  if [ "$intype" = "bzip2" -o "$intype" = "Zip" ]; then
     # Expand to the bzip2ed file within
     local raw_text_log="raw_text_log.txt"
-    bzcat "$infile" > "$raw_text_log"
+    CAT=bzcat
+    if [ "$intype" = "Zip" ]; then
+      CAT=zcat
+    fi
+    $CAT "$infile" > "$raw_text_log"
     cp "$raw_text_log" "full_feedback_log.txt"
     if fgrep -q hack-33025-touchpad_activity "$raw_text_log"; then
       # Expand the hack touchpad activity log
