@@ -24,6 +24,7 @@
       <include name="IDR_BOOKMARK_MANAGER_BOOKMARK_MAIN_JS" file="bookmark_manager/js/main.js" type="BINDATA" />
       <include name="IDR_BOOKMARK_MANAGER_BOOKMARK_BMM_LIST_JS" file="bookmark_manager/js/bmm/bookmark_list.js" type="BINDATA" />
       <include name="IDR_BOOKMARK_MANAGER_BOOKMARK_BMM_TREE_JS" file="bookmark_manager/js/bmm/bookmark_tree.js" type="BINDATA" />
+      <include name="IDR_BOOKMARK_MANAGER_BOOKMARK_DND_JS" file="bookmark_manager/js/dnd.js" type="BINDATA" />
       <include name="IDR_BOOKMARK_MANAGER_BOOKMARK_BMM_JS" file="bookmark_manager/js/bmm.js" type="BINDATA" />
       <include name="IDR_BOOKMARK_MANAGER_BOOKMARK_CSS_JS" file="bookmark_manager/css/bmm.css.js" type="BINDATA" />
       <if expr="pp_ifdef('chromeos')">

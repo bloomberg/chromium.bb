@@ -29,6 +29,7 @@ list > * {
   display: -webkit-flex;
   line-height: 20px;
   margin: 0;
+  overflow: visible;
   padding-bottom: 0;
   padding-top: 0;
   text-decoration: none;
@@ -280,27 +281,47 @@ html[dir=rtl] .header form {
   float: right;
 }
 
-#drop-overlay {
+.tree-row.drag-on,
+.drag-on {
   background-color: hsla(214, 91%, 85%, .5);
   border: 1px solid hsl(214, 91%, 85%);
   border-radius: 3px;
   box-sizing: border-box;
-  display: none;
-  overflow: hidden;
-  pointer-events: none;
-  position: absolute;
-  z-index: -1;
 }
 
-#drop-overlay.line {
+.drag-above::before,
+.drag-below::after {
   background-clip: padding-box;
   background-color: black;
   border: 3px solid black;
   border-bottom-color: transparent;
   border-radius: 0;
   border-top-color: transparent;
+  box-sizing: border-box;
+  content: '';
+  display: block;
   height: 8px;
+  left: 0;
+  position: absolute;
+  right: 0;
   z-index: 10;
+}
+
+.drag-above::before {
+  top: calc((8px/2 + 1px) * -1)
+}
+
+.drag-below::after {
+  bottom: calc((8px/2 + 1px) * -1)
+}
+
+list.drag-above::before {
+  top: 0
+}
+
+list > .drag-below,
+list > .drag-above {
+  overflow : visible;
 }
 
 .summary {
