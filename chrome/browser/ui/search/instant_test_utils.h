@@ -31,7 +31,7 @@ class WebContents;
 class InstantTestModelObserver : public InstantOverlayModelObserver {
  public:
   InstantTestModelObserver(InstantOverlayModel* model,
-                           chrome::search::Mode::Type desired_mode_type);
+                           SearchMode::Type desired_mode_type);
   ~InstantTestModelObserver();
 
   void WaitForDesiredOverlayState();
@@ -41,7 +41,7 @@ class InstantTestModelObserver : public InstantOverlayModelObserver {
 
  private:
   InstantOverlayModel* const model_;
-  const chrome::search::Mode::Type desired_mode_type_;
+  const SearchMode::Type desired_mode_type_;
   base::RunLoop run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(InstantTestModelObserver);

@@ -427,7 +427,7 @@ int GetCrashSignalFD(const CommandLine& command_line) {
 //
 // If the input is already an effective URL then that same URL is returned.
 GURL GetEffectiveURLForInstant(const GURL& url, Profile* profile) {
-  CHECK(chrome::search::ShouldAssignURLToInstantRenderer(url, profile))
+  CHECK(chrome::ShouldAssignURLToInstantRenderer(url, profile))
       << "Error granting Instant access.";
 
   if (url.SchemeIs(chrome::kChromeSearchScheme))
@@ -711,7 +711,7 @@ GURL ChromeContentBrowserClient::GetEffectiveURL(
 
   // If the input |url| should be assigned to the Instant renderer, make its
   // effective URL distinct from other URLs on the search provider's domain.
-  if (chrome::search::ShouldAssignURLToInstantRenderer(url, profile))
+  if (chrome::ShouldAssignURLToInstantRenderer(url, profile))
     return GetEffectiveURLForInstant(url, profile);
 
   // If the input |url| should be assigned to the Signin renderer, make its
@@ -755,7 +755,7 @@ bool ChromeContentBrowserClient::ShouldUseProcessPerSite(
   if (!profile)
     return false;
 
-  if (chrome::search::ShouldAssignURLToInstantRenderer(effective_url, profile))
+  if (chrome::ShouldAssignURLToInstantRenderer(effective_url, profile))
     return true;
 
   if (SigninManager::IsWebBasedSigninFlowURL(effective_url))
@@ -836,7 +836,7 @@ bool ChromeContentBrowserClient::IsSuitableHost(
       InstantServiceFactory::GetForProfile(profile);
   if (instant_service &&
       instant_service->IsInstantProcess(process_host->GetID()))
-    return chrome::search::ShouldAssignURLToInstantRenderer(site_url, profile);
+    return chrome::ShouldAssignURLToInstantRenderer(site_url, profile);
 
   SigninManager* signin_manager = SigninManagerFactory::GetForProfile(profile);
   if (signin_manager && signin_manager->IsSigninProcess(process_host->GetID()))
@@ -930,7 +930,7 @@ void ChromeContentBrowserClient::SiteInstanceGotProcess(
 
   // Remember the ID of the Instant process to signal the renderer process
   // on startup in |AppendExtraCommandLineSwitches| below.
-  if (chrome::search::ShouldAssignURLToInstantRenderer(
+  if (chrome::ShouldAssignURLToInstantRenderer(
           site_instance->GetSiteURL(), profile)) {
     InstantService* instant_service =
         InstantServiceFactory::GetForProfile(profile);

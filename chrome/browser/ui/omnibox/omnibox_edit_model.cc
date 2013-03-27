@@ -130,7 +130,7 @@ OmniboxEditModel::OmniboxEditModel(OmniboxView* view,
   // Use a restricted subset of the autocomplete providers if we're using the
   // Instant Extended API, as it doesn't support them all.
   autocomplete_controller_.reset(new AutocompleteController(profile, this,
-      chrome::search::IsInstantExtendedAPIEnabled() ?
+      chrome::IsInstantExtendedAPIEnabled() ?
           AutocompleteClassifier::kInstantExtendedOmniboxProviders :
           AutocompleteClassifier::kDefaultOmniboxProviders));
   delegate_.reset(new OmniboxCurrentPageDelegateImpl(controller, profile));

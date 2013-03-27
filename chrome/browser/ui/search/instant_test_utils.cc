@@ -33,7 +33,7 @@ std::string WrapScript(const std::string& script) {
 
 InstantTestModelObserver::InstantTestModelObserver(
     InstantOverlayModel* model,
-    chrome::search::Mode::Type desired_mode_type)
+    SearchMode::Type desired_mode_type)
     : model_(model),
       desired_mode_type_(desired_mode_type) {
   model_->AddObserver(this);
@@ -143,7 +143,7 @@ void InstantTestBase::SetOmniboxText(const std::string& text) {
 void InstantTestBase::SetOmniboxTextAndWaitForOverlayToShow(
     const std::string& text) {
   InstantTestModelObserver observer(
-      instant()->model(), chrome::search::Mode::MODE_SEARCH_SUGGESTIONS);
+      instant()->model(), SearchMode::MODE_SEARCH_SUGGESTIONS);
   SetOmniboxText(text);
   observer.WaitForDesiredOverlayState();
 }

@@ -76,7 +76,7 @@ class InstantExtendedTest : public InProcessBrowserTest,
   }
  protected:
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
-    chrome::search::EnableInstantExtendedAPIForTesting();
+    chrome::EnableInstantExtendedAPIForTesting();
     ASSERT_TRUE(https_test_server().Start());
     GURL instant_url = https_test_server().GetURL(
         "files/instant_extended.html?strk=1&");
@@ -134,7 +134,7 @@ class InstantPolicyTest : public ExtensionBrowserTest, public InstantTestBase {
 
  protected:
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
-    chrome::search::EnableInstantExtendedAPIForTesting();
+    chrome::EnableInstantExtendedAPIForTesting();
     ASSERT_TRUE(https_test_server().Start());
     GURL instant_url = https_test_server().GetURL(
         "files/instant_extended.html?strk=1&");
@@ -518,7 +518,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, PreloadedNTPIsUsedInNewTab) {
   content::WebContents* active_tab =
       browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_EQ(ntp_contents, active_tab);
-  EXPECT_TRUE(chrome::search::IsInstantNTP(active_tab));
+  EXPECT_TRUE(chrome::IsInstantNTP(active_tab));
 }
 
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest, PreloadedNTPIsUsedInSameTab) {
@@ -540,7 +540,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, PreloadedNTPIsUsedInSameTab) {
   content::WebContents* active_tab =
       browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_EQ(ntp_contents, active_tab);
-  EXPECT_TRUE(chrome::search::IsInstantNTP(active_tab));
+  EXPECT_TRUE(chrome::IsInstantNTP(active_tab));
 }
 
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest, PreloadedNTPForWrongProvider) {

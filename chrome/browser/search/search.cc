@@ -24,7 +24,6 @@
 #include "content/public/browser/web_contents.h"
 
 namespace chrome {
-namespace search {
 
 namespace {
 
@@ -322,7 +321,7 @@ bool ShouldAssignURLToInstantRenderer(const GURL& url, Profile* profile) {
           IsInstantURL(url, profile));
 }
 
-void RegisterUserPrefs(PrefRegistrySyncable* registry) {
+void RegisterInstantUserPrefs(PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(prefs::kInstantConfirmDialogShown, false,
                                 PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterBooleanPref(prefs::kInstantEnabled, false,
@@ -545,5 +544,4 @@ GURL CoerceCommandLineURLToTemplateURL(const GURL& instant_url,
   return instant_url.ReplaceComponents(replacements);
 }
 
-}  // namespace search
 }  // namespace chrome

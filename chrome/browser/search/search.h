@@ -24,7 +24,6 @@ class WebContents;
 }
 
 namespace chrome {
-namespace search {
 
 // The key used to store search terms data in the NavigationEntry to be later
 // displayed in the omnibox. With the context of the user's exact query,
@@ -74,7 +73,7 @@ bool NavEntryIsInstantNTP(const content::WebContents* contents,
                           const content::NavigationEntry* nav_entry);
 
 // Registers Instant-related user preferences. Called at startup.
-void RegisterUserPrefs(PrefRegistrySyncable* registry);
+void RegisterInstantUserPrefs(PrefRegistrySyncable* registry);
 
 // Returns prefs::kInstantExtendedEnabled in extended mode;
 // prefs::kInstantEnabled otherwise.
@@ -153,7 +152,6 @@ GURL CoerceCommandLineURLToTemplateURL(const GURL& instant_url,
                                        const TemplateURLRef& ref,
                                        int start_margin);
 
-}  // namespace search
 }  // namespace chrome
 
 #endif  // CHROME_BROWSER_SEARCH_SEARCH_H_

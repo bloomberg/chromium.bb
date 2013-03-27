@@ -143,7 +143,7 @@ void BrowserTabContents::AttachTabHelpers(WebContents* web_contents) {
   SadTabHelper::CreateForWebContents(web_contents);
   safe_browsing::SafeBrowsingTabObserver::CreateForWebContents(web_contents);
   SearchEngineTabHelper::CreateForWebContents(web_contents);
-  chrome::search::SearchTabHelper::CreateForWebContents(web_contents);
+  SearchTabHelper::CreateForWebContents(web_contents);
   SSLTabHelper::CreateForWebContents(web_contents);
   TabContentsSyncedTabDelegate::CreateForWebContents(web_contents);
   TabSpecificContentSettings::CreateForWebContents(web_contents);

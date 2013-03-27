@@ -32,7 +32,7 @@ TEST_F(BookmarkBarViewTest, NoAppsShortcutWithoutInstantExtended) {
 class BookmarkBarViewInstantExtendedTest : public BrowserWithTestWindowTest {
  public:
   BookmarkBarViewInstantExtendedTest() {
-    chrome::search::EnableInstantExtendedAPIForTesting();
+    chrome::EnableInstantExtendedAPIForTesting();
   }
 
  protected:

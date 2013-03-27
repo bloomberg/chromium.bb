@@ -311,8 +311,8 @@ void SearchProvider::Start(const AutocompleteInput& input,
   // TODO(dcblack): Once we are done refactoring the omnibox so we don't need to
   // use FinalizeInstantQuery anymore, we can take out this check and remove
   // this provider from kInstantExtendedOmniboxProviders.
-  if (!chrome::search::IsInstantExtendedAPIEnabled() ||
-      !chrome::search::IsInstantEnabled(profile_)) {
+  if (!chrome::IsInstantExtendedAPIEnabled() ||
+      !chrome::IsInstantEnabled(profile_)) {
     DoHistoryQuery(minimal_changes);
     StartOrStopSuggestQuery(minimal_changes);
   }
@@ -782,7 +782,7 @@ bool SearchProvider::ParseSuggestResults(Value* root_val, bool is_keyword) {
     extras->GetList("google:suggesttype", &types);
 
     // Only accept relevance suggestions if Instant is disabled.
-    if (!chrome::search::IsInstantEnabled(profile_)) {
+    if (!chrome::IsInstantEnabled(profile_)) {
       // Discard this list if its size does not match that of the suggestions.
       if (extras->GetList("google:suggestrelevance", &relevances) &&
           relevances->GetSize() != results->GetSize())
@@ -1437,5 +1437,5 @@ void SearchProvider::UpdateDone() {
   // We're done when the timer isn't running, there are no suggest queries
   // pending, and we're not waiting on Instant.
   done_ = (!timer_.IsRunning() && (suggest_results_pending_ == 0) &&
-           (instant_finalized_ || !chrome::search::IsInstantEnabled(profile_)));
+           (instant_finalized_ || !chrome::IsInstantEnabled(profile_)));
 }

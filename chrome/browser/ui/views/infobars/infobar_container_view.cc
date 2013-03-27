@@ -14,9 +14,8 @@
 // static
 const char InfoBarContainerView::kViewClassName[] = "InfoBarContainerView";
 
-InfoBarContainerView::InfoBarContainerView(
-    Delegate* delegate,
-    chrome::search::SearchModel* search_model)
+InfoBarContainerView::InfoBarContainerView(Delegate* delegate,
+                                           SearchModel* search_model)
     : InfoBarContainer(delegate, search_model) {
   set_id(VIEW_ID_INFO_BAR_CONTAINER);
 }

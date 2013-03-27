@@ -367,10 +367,9 @@ Browser::Browser(const CreateParams& params)
   tab_strip_model_->AddObserver(this);
 
   toolbar_model_.reset(new ToolbarModelImpl(toolbar_model_delegate_.get()));
-  search_model_.reset(new chrome::search::SearchModel());
+  search_model_.reset(new SearchModel());
   search_delegate_.reset(
-      new chrome::search::SearchDelegate(search_model_.get(),
-                                         toolbar_model_.get()));
+      new SearchDelegate(search_model_.get(), toolbar_model_.get()));
 
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                  content::Source<Profile>(profile_->GetOriginalProfile()));
@@ -409,7 +408,7 @@ Browser::Browser(const CreateParams& params)
                              profile_->GetPrefs());
 
   if (is_type_tabbed())
-    instant_controller_.reset(new chrome::BrowserInstantController(this));
+    instant_controller_.reset(new BrowserInstantController(this));
 
   UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_INIT);
 
@@ -1401,7 +1400,7 @@ void Browser::BeforeUnloadFired(WebContents* web_contents,
 bool Browser::ShouldFocusLocationBarByDefault(WebContents* source) {
   const content::NavigationEntry* entry =
       source->GetController().GetActiveEntry();
-  return chrome::search::NavEntryIsInstantNTP(source, entry);
+  return chrome::NavEntryIsInstantNTP(source, entry);
 }
 
 void Browser::SetFocusToLocationBar(bool select_all) {
@@ -1809,13 +1808,10 @@ void Browser::Observe(int type,
   }
 }
 
-void Browser::ModelChanged(
-    const chrome::search::SearchModel::State& old_state,
-    const chrome::search::SearchModel::State& new_state) {
-  if (chrome::search::SearchModel::ShouldChangeTopBarsVisibility(old_state,
-                                                                 new_state)) {
+void Browser::ModelChanged(const SearchModel::State& old_state,
+                           const SearchModel::State& new_state) {
+  if (SearchModel::ShouldChangeTopBarsVisibility(old_state, new_state))
     UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_TAB_STATE);
-  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1839,7 +1835,7 @@ void Browser::UpdateToolbar(bool should_restore_state) {
 }
 
 void Browser::UpdateSearchState(WebContents* contents) {
-  if (chrome::search::IsInstantExtendedAPIEnabled())
+  if (chrome::IsInstantExtendedAPIEnabled())
     search_delegate_->OnTabActivated(contents);
 }
 

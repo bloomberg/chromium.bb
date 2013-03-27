@@ -42,7 +42,7 @@ TEST_F(BookmarkTest, DetachedBookmarkBarOnCustomNTP) {
 class BookmarkInstantExtendedTest : public BrowserWithTestWindowTest {
  public:
   BookmarkInstantExtendedTest() {
-    chrome::search::EnableInstantExtendedAPIForTesting();
+    chrome::EnableInstantExtendedAPIForTesting();
   }
 
  protected:

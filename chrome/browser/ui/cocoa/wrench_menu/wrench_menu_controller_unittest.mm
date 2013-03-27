@@ -191,7 +191,7 @@ TEST_F(WrenchMenuControllerTest, RecentTabsElideTitle) {
 // Verify that |RecentTabsMenuModelDelegate| is deleted before the model
 // it's observing.
 TEST_F(WrenchMenuControllerTest, RecentTabDeleteOrder) {
-  chrome::search::EnableInstantExtendedAPIForTesting();
+  chrome::EnableInstantExtendedAPIForTesting();
   [controller_ menuNeedsUpdate:[controller_ menu]];
   // If the delete order is wrong then the test will crash on exit.
 }

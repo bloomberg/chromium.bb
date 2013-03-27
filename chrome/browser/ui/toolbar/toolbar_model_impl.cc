@@ -173,7 +173,7 @@ bool ToolbarModelImpl::ShouldDisplayURL() const {
     return false;
 #endif
 
-  if (chrome::search::IsInstantNTP(web_contents))
+  if (chrome::IsInstantNTP(web_contents))
     return false;
 
   return true;
@@ -250,7 +250,7 @@ Profile* ToolbarModelImpl::GetProfile() const {
 
 string16 ToolbarModelImpl::GetSearchTerms() const {
   const WebContents* contents = delegate_->GetActiveWebContents();
-  string16 search_terms = chrome::search::GetSearchTerms(contents);
+  string16 search_terms = chrome::GetSearchTerms(contents);
 
   // Don't extract search terms that the omnibox would treat as a navigation.
   // This might confuse users into believing that the search terms were the

@@ -65,7 +65,7 @@ scoped_ptr<content::NavigationEntry> MakeNavigationEntryForTest() {
   navigation_entry->SetIsOverridingUserAgent(kIsOverridingUserAgent);
   navigation_entry->SetTimestamp(kTimestamp);
   navigation_entry->SetExtraData(
-      chrome::search::kInstantExtendedSearchTermsKey, kSearchTerms);
+      chrome::kInstantExtendedSearchTermsKey, kSearchTerms);
   navigation_entry->GetFavicon().valid = true;
   navigation_entry->GetFavicon().url = kFaviconURL;
   return navigation_entry.Pass();
@@ -238,7 +238,7 @@ TEST(TabNavigationTest, ToNavigationEntry) {
   EXPECT_EQ(kIsOverridingUserAgent,
             new_navigation_entry->GetIsOverridingUserAgent());
   EXPECT_EQ(kSearchTerms,
-            chrome::search::GetSearchTermsFromNavigationEntry(
+            chrome::GetSearchTermsFromNavigationEntry(
                 new_navigation_entry.get()));
 }
 

@@ -178,7 +178,7 @@ class ToolbarModelTest : public BrowserWithTestWindowTest {
     const std::string kInstantExtendedPrefix(
         "https://google.com/search?espv=1&q=");
 
-    chrome::search::EnableInstantExtendedAPIForTesting();
+    chrome::EnableInstantExtendedAPIForTesting();
 
     ResetDefaultTemplateURL();
     AddTab(browser(), GURL(chrome::kAboutBlankURL));
@@ -230,7 +230,7 @@ class ToolbarModelTest : public BrowserWithTestWindowTest {
 
 // Test that we don't replace any URLs when the query extraction is disabled.
 TEST_F(ToolbarModelTest, ShouldDisplayURLQueryExtractionDisabled) {
-  ASSERT_FALSE(chrome::search::IsQueryExtractionEnabled())
+  ASSERT_FALSE(chrome::IsQueryExtractionEnabled())
       << "This test expects query extraction to be disabled.";
 
   ResetDefaultTemplateURL();
@@ -247,7 +247,7 @@ TEST_F(ToolbarModelTest, ShouldDisplayURLQueryExtractionDisabled) {
 
 // Test that we replace URLs when the query extraction API is enabled.
 TEST_F(ToolbarModelTest, ShouldDisplayURLQueryExtractionEnabled) {
-  chrome::search::EnableInstantExtendedAPIForTesting();
+  chrome::EnableInstantExtendedAPIForTesting();
 
   ResetDefaultTemplateURL();
   AddTab(browser(), GURL(chrome::kAboutBlankURL));

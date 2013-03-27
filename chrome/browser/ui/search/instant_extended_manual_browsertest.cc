@@ -53,7 +53,7 @@ class InstantExtendedManualTest : public InProcessBrowserTest,
 
  protected:
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
-    chrome::search::EnableInstantExtendedAPIForTesting();
+    chrome::EnableInstantExtendedAPIForTesting();
   }
 
   content::WebContents* active_tab() {
@@ -76,7 +76,7 @@ class InstantExtendedManualTest : public InProcessBrowserTest,
 
   bool PressBackspaceAndWaitForOverlayToShow() {
     InstantTestModelObserver observer(
-        instant()->model(), chrome::search::Mode::MODE_SEARCH_SUGGESTIONS);
+        instant()->model(), SearchMode::MODE_SEARCH_SUGGESTIONS);
     bool result = PressBackspace();
     observer.WaitForDesiredOverlayState();
     return result;

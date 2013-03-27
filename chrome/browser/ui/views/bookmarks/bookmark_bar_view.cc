@@ -340,13 +340,13 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 }
 
 int GetNewtabHorizontalPadding() {
-  return chrome::search::IsInstantExtendedAPIEnabled()
+  return chrome::IsInstantExtendedAPIEnabled()
          ? kSearchNewTabHorizontalPadding
          : BookmarkBarView::kNewtabHorizontalPadding;
 }
 
 int GetNewtabVerticalPadding() {
-  return chrome::search::IsInstantExtendedAPIEnabled()
+  return chrome::IsInstantExtendedAPIEnabled()
          ? kSearchNewTabVerticalPadding
          : BookmarkBarView::kNewtabVerticalPadding;
 }
@@ -1812,7 +1812,7 @@ gfx::Size BookmarkBarView::LayoutItems(bool compute_bounds_only) {
       x += static_cast<int>(GetNewtabHorizontalPadding() *
           (1 - size_animation_->GetCurrentValue()));
       int ntp_bookmark_bar_height =
-          chrome::search::IsInstantExtendedAPIEnabled()
+          chrome::IsInstantExtendedAPIEnabled()
           ? kSearchNewTabBookmarkBarHeight : chrome::kNTPBookmarkBarHeight;
       prefsize.set_height(
           browser_defaults::kBookmarkBarHeight +
@@ -1831,7 +1831,7 @@ gfx::Size BookmarkBarView::LayoutItems(bool compute_bounds_only) {
 }
 
 bool BookmarkBarView::ShouldShowAppsShortcut() const {
-  return chrome::search::IsInstantExtendedAPIEnabled() &&
+  return chrome::IsInstantExtendedAPIEnabled() &&
       browser_->profile()->GetPrefs()->GetBoolean(
           prefs::kShowAppsShortcutInBookmarkBar) &&
       !browser_->profile()->IsOffTheRecord();

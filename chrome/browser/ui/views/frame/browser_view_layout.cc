@@ -268,7 +268,7 @@ void BrowserViewLayout::Layout(views::View* host) {
   // "removing" the bookmark bar/infobars).  To prevent this, we save off the
   // content origin here, then once we finish laying things out, force the
   // contents to continue to display from that origin.
-  const chrome::search::Mode& mode = browser()->search_model()->mode();
+  const SearchMode& mode = browser()->search_model()->mode();
   views::WebView* contents = browser_view_->contents_container_;
   int overlay_height = contents_container_->overlay_height();
   gfx::Point old_contents_origin;

@@ -69,7 +69,7 @@ void OmniboxCurrentPageDelegateImpl::NotifySearchTabHelper(
     bool cancelling) {
   if (!controller_->GetWebContents())
     return;
-  chrome::search::SearchTabHelper::FromWebContents(
+  SearchTabHelper::FromWebContents(
       controller_->GetWebContents())->OmniboxEditModelChanged(
           user_input_in_progress, cancelling);
 }

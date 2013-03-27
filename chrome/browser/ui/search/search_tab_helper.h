@@ -17,9 +17,6 @@ namespace content {
 class WebContents;
 }
 
-namespace chrome {
-namespace search {
-
 // Per-tab search "helper".  Acts as the owner and controller of the tab's
 // search UI model.
 class SearchTabHelper : public content::NotificationObserver,
@@ -77,8 +74,5 @@ class SearchTabHelper : public content::NotificationObserver,
 
   DISALLOW_COPY_AND_ASSIGN(SearchTabHelper);
 };
-
-}  // namespace search
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_UI_SEARCH_SEARCH_TAB_HELPER_H_

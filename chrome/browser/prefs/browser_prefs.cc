@@ -180,7 +180,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   apps::RegisterPrefs(registry);
   browser_shutdown::RegisterPrefs(registry);
   BrowserProcessImpl::RegisterPrefs(registry);
-  chrome::RegisterScreenshotPrefs(registry);
+  RegisterScreenshotPrefs(registry);
   ExternalProtocolHandler::RegisterPrefs(registry);
   FlagsUI::RegisterPrefs(registry);
   geolocation::RegisterPrefs(registry);
@@ -267,7 +267,7 @@ void RegisterUserPrefs(PrefRegistrySyncable* registry) {
   BookmarkPromptPrefs::RegisterUserPrefs(registry);
   bookmark_utils::RegisterUserPrefs(registry);
   browser_sync::SyncPrefs::RegisterUserPrefs(registry);
-  chrome::search::RegisterUserPrefs(registry);
+  chrome::RegisterInstantUserPrefs(registry);
   ChromeContentBrowserClient::RegisterUserPrefs(registry);
   ChromeDownloadManagerDelegate::RegisterUserPrefs(registry);
   ChromeVersionService::RegisterUserPrefs(registry);

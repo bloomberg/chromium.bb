@@ -181,11 +181,11 @@ void PaintDetachedBookmarkBar(gfx::Canvas* canvas,
                               ui::ThemeProvider* theme_provider) {
   // Paint background for detached state; if animating, this is fade in/out.
   canvas->DrawColor(
-      chrome::search::GetDetachedBookmarkBarBackgroundColor(theme_provider));
+      chrome::GetDetachedBookmarkBarBackgroundColor(theme_provider));
   // Draw the separators above and below bookmark bar;
   // if animating, these are fading in/out.
   SkColor separator_color =
-      chrome::search::GetDetachedBookmarkBarSeparatorColor(theme_provider);
+      chrome::GetDetachedBookmarkBarSeparatorColor(theme_provider);
   DetachableToolbarView::PaintHorizontalBorder(canvas, view, true,
                                                separator_color);
   // The bottom border needs to be 1-px thick in both regular and retina
@@ -305,7 +305,7 @@ void BookmarkExtensionBackground::Paint(gfx::Canvas* canvas,
     // - if animating between pinned and unpinned states:
     //   - cross-fade the bar backgrounds
     //   - fade in/out the separator between toolbar and bookmark bar.
-    if (chrome::search::IsInstantExtendedAPIEnabled()) {
+    if (chrome::IsInstantExtendedAPIEnabled()) {
       if (current_state == 0.0 || current_state == 1.0) {
         PaintDetachedBookmarkBar(canvas, host_view_, tp);
         return;
@@ -954,7 +954,7 @@ void BrowserView::ToolbarSizeChanged(bool is_animating) {
   {
     int top_arrow_height = 0;
     // Hide the arrows on the Instant Extended NTP.
-    if (!chrome::search::IsInstantExtendedAPIEnabled() ||
+    if (!chrome::IsInstantExtendedAPIEnabled() ||
         !browser()->search_model()->mode().is_ntp()) {
       const LocationIconView* location_icon_view =
           toolbar_->location_bar()->location_icon_view();

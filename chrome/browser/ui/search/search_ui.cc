@@ -9,7 +9,6 @@
 #include "ui/base/theme_provider.h"
 
 namespace chrome {
-namespace search {
 
 SkColor GetDetachedBookmarkBarBackgroundColor(
     ui::ThemeProvider* theme_provider) {
@@ -33,5 +32,4 @@ SkColor GetDetachedBookmarkBarSeparatorColor(
       theme_provider->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT), 128);
 }
 
-}  // namespace search
 }  // namespace chrome

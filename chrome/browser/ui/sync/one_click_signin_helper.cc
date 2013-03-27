@@ -968,7 +968,7 @@ void OneClickSigninHelper::RedirectToNtpOrAppsPage(bool show_bubble) {
     pref_service->SetString(prefs::kSyncPromoErrorMessage, error_message_);
   }
 
-  GURL url(chrome::search::IsInstantExtendedAPIEnabled() ?
+  GURL url(chrome::IsInstantExtendedAPIEnabled() ?
            chrome::kChromeUIAppsURL : chrome::kChromeUINewTabURL);
   content::OpenURLParams params(url,
                                 content::Referrer(),

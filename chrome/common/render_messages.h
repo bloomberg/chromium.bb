@@ -179,9 +179,9 @@ IPC_STRUCT_TRAITS_BEGIN(InstantSuggestion)
   IPC_STRUCT_TRAITS_MEMBER(query)
 IPC_STRUCT_TRAITS_END()
 
-IPC_ENUM_TRAITS(chrome::search::Mode::Type)
-IPC_ENUM_TRAITS(chrome::search::Mode::Origin)
-IPC_STRUCT_TRAITS_BEGIN(chrome::search::Mode)
+IPC_ENUM_TRAITS(SearchMode::Type)
+IPC_ENUM_TRAITS(SearchMode::Origin)
+IPC_STRUCT_TRAITS_BEGIN(SearchMode)
   IPC_STRUCT_TRAITS_MEMBER(mode)
   IPC_STRUCT_TRAITS_MEMBER(origin)
 IPC_STRUCT_TRAITS_END()
@@ -324,7 +324,7 @@ IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxCancelSelection,
                     string16 /* value */)
 
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxModeChanged,
-                    chrome::search::Mode /* mode */)
+                    SearchMode /* mode */)
 
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxSetDisplayInstantResults,
                     bool /* display_instant_results */)

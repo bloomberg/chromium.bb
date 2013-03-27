@@ -7,9 +7,6 @@
 
 #include "chrome/browser/ui/search/search_model.h"
 
-namespace chrome {
-namespace search {
-
 // This class defines the observer interface for the |SearchModel|.
 class SearchModelObserver {
  public:
@@ -20,8 +17,5 @@ class SearchModelObserver {
  protected:
   virtual ~SearchModelObserver() {}
 };
-
-}  // namespace search
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_UI_SEARCH_SEARCH_MODEL_OBSERVER_H_

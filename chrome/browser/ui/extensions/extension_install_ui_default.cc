@@ -247,7 +247,7 @@ void ExtensionInstallUI::OpenAppInstalledUI(Profile* profile,
       content::Details<const std::string>(&app_id));
 #else
   Browser* browser = FindOrCreateVisibleBrowser(profile);
-  GURL url(chrome::search::IsInstantExtendedAPIEnabled() ?
+  GURL url(chrome::IsInstantExtendedAPIEnabled() ?
            chrome::kChromeUIAppsURL : chrome::kChromeUINewTabURL);
   chrome::NavigateParams params(
       chrome::GetSingletonTabNavigateParams(browser, url));

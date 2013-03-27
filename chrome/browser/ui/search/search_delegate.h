@@ -15,9 +15,6 @@ namespace content {
 class WebContents;
 }
 
-namespace chrome {
-namespace search {
-
 class SearchModel;
 
 // The SearchDelegate class acts as a helper to the Browser class.
@@ -62,8 +59,5 @@ class SearchDelegate : public SearchModelObserver {
 
   DISALLOW_COPY_AND_ASSIGN(SearchDelegate);
 };
-
-}  // namespace search
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_UI_SEARCH_SEARCH_DELEGATE_H_

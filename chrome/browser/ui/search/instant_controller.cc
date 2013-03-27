@@ -179,7 +179,7 @@ void EnsureSearchTermsAreSet(content::WebContents* contents,
 
   // If search terms are already correct or there is already a transient entry
   // (there shouldn't be), bail out early.
-  if (chrome::search::GetSearchTerms(contents) == search_terms ||
+  if (chrome::GetSearchTerms(contents) == search_terms ||
       controller->GetTransientEntry())
     return;
 
@@ -191,12 +191,10 @@ void EnsureSearchTermsAreSet(content::WebContents* contents,
       false,
       std::string(),
       contents->GetBrowserContext());
-  transient->SetExtraData(chrome::search::kInstantExtendedSearchTermsKey,
-                          search_terms);
+  transient->SetExtraData(chrome::kInstantExtendedSearchTermsKey, search_terms);
   controller->SetTransientEntry(transient);
 
-  chrome::search::SearchTabHelper::FromWebContents(contents)->
-      NavigationEntryUpdated();
+  SearchTabHelper::FromWebContents(contents)->NavigationEntryUpdated();
 }
 
 bool GetURLForMostVisitedItemID(Profile* profile,
@@ -226,7 +224,7 @@ bool MatchesOriginAndPath(const GURL& my_url, const GURL& other_url) {
 
 }  // namespace
 
-InstantController::InstantController(chrome::BrowserInstantController* browser,
+InstantController::InstantController(BrowserInstantController* browser,
                                      bool extended_enabled)
     : browser_(browser),
       extended_enabled_(extended_enabled),
@@ -317,7 +315,7 @@ bool InstantController::Update(const AutocompleteMatch& match,
   // "return false" conditions is hit, suggestions will be disallowed. If the
   // query is sent to the overlay, the mode is set to "allow" further below.
   if (!extended_enabled_)
-    search_mode_.mode = chrome::search::Mode::MODE_DEFAULT;
+    search_mode_.mode = SearchMode::MODE_DEFAULT;
 
   last_match_was_search_ = AutocompleteMatch::IsSearchType(match.type) &&
                            !user_text.empty();
@@ -450,7 +448,7 @@ bool InstantController::Update(const AutocompleteMatch& match,
   // Allow search suggestions. In extended mode, SearchModeChanged() will set
   // this, but it's not called in non-extended mode, so fake it.
   if (!extended_enabled_)
-    search_mode_.mode = chrome::search::Mode::MODE_SEARCH_SUGGESTIONS;
+    search_mode_.mode = SearchMode::MODE_SEARCH_SUGGESTIONS;
 
   if (instant_tab_) {
     // If we have an |instant_tab_| but it doesn't support Instant yet, sever
@@ -783,7 +781,7 @@ bool InstantController::CommitIfPossible(InstantCommitType type) {
       content::NotificationService::NoDetails());
 
   // Hide explicitly. See comments in HideOverlay() for why.
-  model_.SetOverlayState(chrome::search::Mode(), 0, INSTANT_SIZE_PERCENT);
+  model_.SetOverlayState(SearchMode(), 0, INSTANT_SIZE_PERCENT);
 
   // Delay deletion as we could've gotten here from an InstantOverlay method.
   MessageLoop::current()->DeleteSoon(FROM_HERE, overlay_.release());
@@ -839,9 +837,8 @@ void InstantController::OmniboxFocusChanged(
   }
 }
 
-void InstantController::SearchModeChanged(
-    const chrome::search::Mode& old_mode,
-    const chrome::search::Mode& new_mode) {
+void InstantController::SearchModeChanged(const SearchMode& old_mode,
+                                          const SearchMode& new_mode) {
   if (!extended_enabled_)
     return;
 
@@ -1376,7 +1373,7 @@ void InstantController::HideInternal() {
   // change the state just yet; else we may hide the overlay unnecessarily.
   // Instead, the state will be set correctly after the commit is done.
   if (GetOverlayContents()) {
-    model_.SetOverlayState(chrome::search::Mode(), 0, INSTANT_SIZE_PERCENT);
+    model_.SetOverlayState(SearchMode(), 0, INSTANT_SIZE_PERCENT);
     allow_overlay_to_show_search_suggestions_ = false;
 
     // Send a message asking the overlay to clear out old results.
@@ -1402,7 +1399,7 @@ void InstantController::ShowOverlay(int height, InstantSizeUnits units) {
   // The page is trying to hide itself. Hide explicitly (i.e., don't use
   // HideOverlay()) so that it can change its mind.
   if (height == 0) {
-    model_.SetOverlayState(chrome::search::Mode(), 0, INSTANT_SIZE_PERCENT);
+    model_.SetOverlayState(SearchMode(), 0, INSTANT_SIZE_PERCENT);
     return;
   }
 
@@ -1468,8 +1465,8 @@ bool InstantController::GetInstantURL(Profile* profile,
     return true;
   }
 
-  const GURL instant_url_obj =
-      chrome::search::GetInstantURL(profile, omnibox_bounds_.x());
+  const GURL instant_url_obj = chrome::GetInstantURL(profile,
+                                                     omnibox_bounds_.x());
   if (!instant_url_obj.is_valid())
     return false;
 

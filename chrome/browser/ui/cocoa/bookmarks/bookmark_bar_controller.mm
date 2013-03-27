@@ -476,7 +476,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   // Add padding to the detached bookmark bar.
   // The state of our morph (if any); 1 is total bubble, 0 is the regular bar.
   CGFloat morph = [self detachedMorphProgress];
-  CGFloat padding = chrome::search::IsInstantExtendedAPIEnabled()
+  CGFloat padding = chrome::IsInstantExtendedAPIEnabled()
                     ? bookmarks::kSearchNTPBookmarkBarPadding
                     : bookmarks::kNTPBookmarkBarPadding;
   buttonViewFrame =
@@ -909,7 +909,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
     [[self backgroundGradientView] setShowsDivider:YES];
     [[self view] setHidden:NO];
     AnimatableView* view = [self animatableView];
-    CGFloat newHeight = chrome::search::IsInstantExtendedAPIEnabled()
+    CGFloat newHeight = chrome::IsInstantExtendedAPIEnabled()
                         ? bookmarks::kSearchNewTabBookmarkBarHeight
                         : chrome::kNTPBookmarkBarHeight;
     [view animateToNewHeight:newHeight
@@ -956,7 +956,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
     case BookmarkBar::SHOW:
       return bookmarks::kBookmarkBarHeight;
     case BookmarkBar::DETACHED:
-      if (chrome::search::IsInstantExtendedAPIEnabled())
+      if (chrome::IsInstantExtendedAPIEnabled())
         return bookmarks::kSearchNewTabBookmarkBarHeight;
       return chrome::kNTPBookmarkBarHeight;
     case BookmarkBar::HIDDEN:
@@ -1160,7 +1160,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
     return NO;
 
   BOOL visible = bookmarkModel_->IsLoaded() &&
-      chrome::search::IsInstantExtendedAPIEnabled() &&
+      chrome::IsInstantExtendedAPIEnabled() &&
       browser_->profile()->GetPrefs()->GetBoolean(
           prefs::kShowAppsShortcutInBookmarkBar) &&
       !browser_->profile()->IsOffTheRecord();

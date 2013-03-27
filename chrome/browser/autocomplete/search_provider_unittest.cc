@@ -273,7 +273,7 @@ void SearchProviderTest::QueryForInputAndSetWYTMatch(
   QueryForInput(text, false);
   profile_.BlockUntilHistoryProcessesPendingRequests();
   ASSERT_NO_FATAL_FAILURE(FinishDefaultSuggestQuery());
-  EXPECT_NE(chrome::search::IsInstantEnabled(&profile_), provider_->done());
+  EXPECT_NE(chrome::IsInstantEnabled(&profile_), provider_->done());
   if (!wyt_match)
     return;
   ASSERT_GE(provider_->matches().size(), 1u);

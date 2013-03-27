@@ -15,7 +15,7 @@ class InfoBarContainerView : public views::AccessiblePaneView,
   static const char kViewClassName[];
 
   explicit InfoBarContainerView(Delegate* delegate,
-                                chrome::search::SearchModel* search_model);
+                                SearchModel* search_model);
   virtual ~InfoBarContainerView();
 
  private:

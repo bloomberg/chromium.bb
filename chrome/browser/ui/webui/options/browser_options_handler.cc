@@ -422,7 +422,7 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
       "defaultSearchGroupLabel",
       l10n_util::GetStringFUTF16(IDS_SEARCH_PREF_EXPLANATION, omnibox_url));
 
-  std::string instant_pref_name = chrome::search::GetInstantPrefName();
+  std::string instant_pref_name = chrome::GetInstantPrefName();
   int instant_message_id = instant_pref_name == prefs::kInstantEnabled ?
       IDS_INSTANT_PREF_WITH_WARNING : IDS_INSTANT_EXTENDED_PREF_WITH_WARNING;
   string16 instant_learn_more_url = ASCIIToUTF16(chrome::kInstantLearnMoreURL);

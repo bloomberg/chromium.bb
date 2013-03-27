@@ -47,6 +47,7 @@
 #include "ui/shell_dialogs/select_file_dialog.h"
 
 class BrowserContentSettingBubbleModelDelegate;
+class BrowserInstantController;
 class BrowserSyncedWindowDelegate;
 class BrowserToolbarModelDelegate;
 class BrowserTabRestoreServiceDelegate;
@@ -55,21 +56,18 @@ class FindBarController;
 class FullscreenController;
 class PrefService;
 class Profile;
+class SearchDelegate;
+class SearchModel;
 class StatusBubble;
 class TabNavigation;
 class TabStripModel;
 class TabStripModelDelegate;
+struct SearchMode;
 struct WebApplicationInfo;
 
 namespace chrome {
 class BrowserCommandController;
-class BrowserInstantController;
 class UnloadController;
-namespace search {
-struct Mode;
-class SearchDelegate;
-class SearchModel;
-}
 }
 
 namespace content {
@@ -103,7 +101,7 @@ class Browser : public TabStripModelObserver,
                 public content::PageNavigator,
                 public content::NotificationObserver,
                 public ui::SelectFileDialog::Listener,
-                public chrome::search::SearchModelObserver {
+                public SearchModelObserver {
  public:
   // SessionService::WindowType mirrors these values.  If you add to this
   // enum, look at SessionService::WindowType to see if it needs to be
@@ -244,11 +242,11 @@ class Browser : public TabStripModelObserver,
   chrome::BrowserCommandController* command_controller() {
     return command_controller_.get();
   }
-  chrome::search::SearchModel* search_model() { return search_model_.get(); }
-  const chrome::search::SearchModel* search_model() const {
+  SearchModel* search_model() { return search_model_.get(); }
+  const SearchModel* search_model() const {
       return search_model_.get();
   }
-  chrome::search::SearchDelegate* search_delegate() {
+  SearchDelegate* search_delegate() {
     return search_delegate_.get();
   }
   const SessionID& session_id() const { return session_id_; }
@@ -262,7 +260,7 @@ class Browser : public TabStripModelObserver,
   BrowserSyncedWindowDelegate* synced_window_delegate() {
     return synced_window_delegate_.get();
   }
-  chrome::BrowserInstantController* instant_controller() {
+  BrowserInstantController* instant_controller() {
     return instant_controller_.get();
   }
 
@@ -674,10 +672,9 @@ class Browser : public TabStripModelObserver,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // Overridden from chrome::search::SearchModelObserver:
-  virtual void ModelChanged(
-      const chrome::search::SearchModel::State& old_state,
-      const chrome::search::SearchModel::State& new_state) OVERRIDE;
+  // Overridden from SearchModelObserver:
+  virtual void ModelChanged(const SearchModel::State& old_state,
+                            const SearchModel::State& new_state) OVERRIDE;
 
   // Command and state updating ///////////////////////////////////////////////
 
@@ -831,7 +828,7 @@ class Browser : public TabStripModelObserver,
   // When a new tab is activated its model state is propagated to this active
   // model.  This way, observers only have to attach to this single model for
   // updates, and don't have to worry about active tab changes directly.
-  scoped_ptr<chrome::search::SearchModel> search_model_;
+  scoped_ptr<SearchModel> search_model_;
 
   // UI update coalescing and handling ////////////////////////////////////////
 
@@ -899,7 +896,7 @@ class Browser : public TabStripModelObserver,
 
   // A delegate that handles the details of updating the "active"
   // |search_model_| state with the tab's state.
-  scoped_ptr<chrome::search::SearchDelegate> search_delegate_;
+  scoped_ptr<SearchDelegate> search_delegate_;
 
   // Helper which implements the TabRestoreServiceDelegate interface.
   scoped_ptr<BrowserTabRestoreServiceDelegate> tab_restore_service_delegate_;
@@ -907,7 +904,7 @@ class Browser : public TabStripModelObserver,
   // Helper which implements the SyncedWindowDelegate interface.
   scoped_ptr<BrowserSyncedWindowDelegate> synced_window_delegate_;
 
-  scoped_ptr<chrome::BrowserInstantController> instant_controller_;
+  scoped_ptr<BrowserInstantController> instant_controller_;
 
   BookmarkBar::State bookmark_bar_state_;
 

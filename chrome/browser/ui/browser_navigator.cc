@@ -359,8 +359,7 @@ bool SwapInPrerender(WebContents* target_contents, const GURL& url) {
 bool SwapInInstantNTP(chrome::NavigateParams* params,
                       const GURL& url,
                       content::WebContents* source_contents) {
-  chrome::BrowserInstantController* instant =
-      params->browser->instant_controller();
+  BrowserInstantController* instant = params->browser->instant_controller();
   return instant && instant->MaybeSwapInInstantNTPContents(
       url, source_contents, &params->target_contents);
 }

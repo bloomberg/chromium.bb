@@ -12,7 +12,6 @@ class ThemeProvider;
 }
 
 namespace chrome {
-namespace search {
 
 // Returns the color to use to draw the detached bookmark bar background.
 SkColor GetDetachedBookmarkBarBackgroundColor(
@@ -21,7 +20,6 @@ SkColor GetDetachedBookmarkBarBackgroundColor(
 // Returns the color to use to draw the detached bookmark bar separator.
 SkColor GetDetachedBookmarkBarSeparatorColor(ui::ThemeProvider* theme_provider);
 
-}  // namespace search
 }  // namespace chrome
 
 #endif  // CHROME_BROWSER_UI_SEARCH_SEARCH_UI_H_

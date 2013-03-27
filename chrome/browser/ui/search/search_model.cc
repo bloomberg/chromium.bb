@@ -7,9 +7,6 @@
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/search/search_model_observer.h"
 
-namespace chrome {
-namespace search {
-
 SearchModel::SearchModel() {
 }
 
@@ -30,7 +27,7 @@ bool SearchModel::ShouldChangeTopBarsVisibility(const State& old_state,
 }
 
 void SearchModel::SetState(const State& new_state) {
-  DCHECK(IsInstantExtendedAPIEnabled())
+  DCHECK(chrome::IsInstantExtendedAPIEnabled())
       << "Please do not try to set the SearchModel mode without first "
       << "checking if Search is enabled.";
 
@@ -44,8 +41,8 @@ void SearchModel::SetState(const State& new_state) {
                     ModelChanged(old_state, state_));
 }
 
-void SearchModel::SetMode(const Mode& new_mode) {
-  DCHECK(IsInstantExtendedAPIEnabled())
+void SearchModel::SetMode(const SearchMode& new_mode) {
+  DCHECK(chrome::IsInstantExtendedAPIEnabled())
       << "Please do not try to set the SearchModel mode without first "
       << "checking if Search is enabled.";
 
@@ -66,7 +63,7 @@ void SearchModel::SetMode(const Mode& new_mode) {
 }
 
 void SearchModel::SetTopBarsVisible(bool visible) {
-  DCHECK(IsInstantExtendedAPIEnabled())
+  DCHECK(chrome::IsInstantExtendedAPIEnabled())
       << "Please do not try to set the SearchModel mode without first "
       << "checking if Search is enabled.";
 
@@ -87,6 +84,3 @@ void SearchModel::AddObserver(SearchModelObserver* observer) {
 void SearchModel::RemoveObserver(SearchModelObserver* observer) {
   observers_.RemoveObserver(observer);
 }
-
-} //  namespace search
-} //  namespace chrome

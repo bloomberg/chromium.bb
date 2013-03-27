@@ -754,7 +754,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_NewWindowDismissesInstant) {
   EXPECT_TRUE(instant()->model()->mode().is_search_suggestions());
 
   InstantTestModelObserver observer(instant()->model(),
-                                    chrome::search::Mode::MODE_DEFAULT);
+                                    SearchMode::MODE_DEFAULT);
   chrome::NewEmptyWindow(browser()->profile(),
                          chrome::HOST_DESKTOP_TYPE_NATIVE);
   observer.WaitForDesiredOverlayState();

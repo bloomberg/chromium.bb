@@ -657,9 +657,8 @@ extensions::ActiveTabPermissionGranter*
   return tab_helper ? tab_helper->active_tab_permission_granter() : NULL;
 }
 
-void BrowserWindowCocoa::ModelChanged(
-    const chrome::search::SearchModel::State& old_state,
-    const chrome::search::SearchModel::State& new_state) {
+void BrowserWindowCocoa::ModelChanged(const SearchModel::State& old_state,
+                                      const SearchModel::State& new_state) {
   [controller_ updateBookmarkBarStateForInstantOverlay];
 }
 

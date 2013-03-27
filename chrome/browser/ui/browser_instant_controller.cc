@@ -31,15 +31,13 @@
 
 using content::UserMetricsAction;
 
-namespace chrome {
-
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserInstantController, public:
 
 BrowserInstantController::BrowserInstantController(Browser* browser)
     : browser_(browser),
       instant_(ALLOW_THIS_IN_INITIALIZER_LIST(this),
-               chrome::search::IsInstantExtendedAPIEnabled()),
+               chrome::IsInstantExtendedAPIEnabled()),
       instant_unload_handler_(browser),
       initialized_theme_info_(false) {
 
@@ -47,7 +45,7 @@ BrowserInstantController::BrowserInstantController(Browser* browser)
   // preference's default value is set to the existing value of kInstantEnabled.
   // Because this requires reading the value of the kInstantEnabled value, we
   // reset the default for kInstantExtendedEnabled here.
-  chrome::search::SetInstantExtendedPrefDefault(profile());
+  chrome::SetInstantExtendedPrefDefault(profile());
 
   profile_pref_registrar_.Init(profile()->GetPrefs());
   profile_pref_registrar_.Add(
@@ -227,9 +225,9 @@ void BrowserInstantController::ResetInstant(const std::string& pref_name) {
   // Update the default value of the kInstantExtendedEnabled pref to match the
   // value of the kInstantEnabled pref, if necessary.
   if (pref_name == prefs::kInstantEnabled)
-    chrome::search::SetInstantExtendedPrefDefault(profile());
+    chrome::SetInstantExtendedPrefDefault(profile());
 
-  bool instant_pref_enabled = chrome::search::IsInstantPrefEnabled(profile());
+  bool instant_pref_enabled = chrome::IsInstantPrefEnabled(profile());
   bool use_local_overlay_only = profile()->IsOffTheRecord() ||
       (!instant_pref_enabled &&
        !profile()->GetPrefs()->GetBoolean(prefs::kSearchSuggestEnabled));
@@ -237,17 +235,17 @@ void BrowserInstantController::ResetInstant(const std::string& pref_name) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// BrowserInstantController, search::SearchModelObserver implementation:
+// BrowserInstantController, SearchModelObserver implementation:
 
 void BrowserInstantController::ModelChanged(
-    const search::SearchModel::State& old_state,
-    const search::SearchModel::State& new_state) {
+    const SearchModel::State& old_state,
+    const SearchModel::State& new_state) {
   if (old_state.mode == new_state.mode)
     return;
 
-  const search::Mode& new_mode = new_state.mode;
+  const SearchMode& new_mode = new_state.mode;
 
-  if (search::IsInstantExtendedAPIEnabled()) {
+  if (chrome::IsInstantExtendedAPIEnabled()) {
     // Record some actions corresponding to the mode change. Note that to get
     // the full story, it's necessary to look at other UMA actions as well,
     // such as tab switches.
@@ -353,5 +351,3 @@ void BrowserInstantController::OnThemeChanged(ThemeService* theme_service) {
   if (browser_->search_model()->mode().is_ntp())
     instant_.ThemeChanged(theme_info_);
 }
-
-}  // namespace chrome

@@ -25,9 +25,8 @@
 InfoBarContainer::Delegate::~Delegate() {
 }
 
-InfoBarContainer::InfoBarContainer(
-    Delegate* delegate,
-    chrome::search::SearchModel* search_model)
+InfoBarContainer::InfoBarContainer(Delegate* delegate,
+                                   SearchModel* search_model)
     : delegate_(delegate),
       infobar_service_(NULL),
       infobars_shown_(true),
@@ -176,11 +175,9 @@ void InfoBarContainer::Observe(int type,
   }
 }
 
-void InfoBarContainer::ModelChanged(
-    const chrome::search::SearchModel::State& old_state,
-    const chrome::search::SearchModel::State& new_state) {
-  if (!chrome::search::SearchModel::ShouldChangeTopBarsVisibility(old_state,
-                                                                  new_state))
+void InfoBarContainer::ModelChanged(const SearchModel::State& old_state,
+                                    const SearchModel::State& new_state) {
+  if (!SearchModel::ShouldChangeTopBarsVisibility(old_state, new_state))
     return;
 
   if (new_state.top_bars_visible && !infobars_shown_) {

@@ -115,7 +115,7 @@ TEST_F(OmniboxViewMacTest, GetFieldFont) {
 }
 
 TEST_F(OmniboxViewMacTest, TabToAutocomplete) {
-  chrome::search::EnableInstantExtendedAPIForTesting();
+  chrome::EnableInstantExtendedAPIForTesting();
   OmniboxViewMac view(NULL, NULL, profile(), NULL, NULL);
 
   // This is deleted by the omnibox view.

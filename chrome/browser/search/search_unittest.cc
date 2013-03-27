@@ -16,7 +16,6 @@
 #include "content/public/browser/web_contents.h"
 
 namespace chrome {
-namespace search {
 
 TEST(EmbeddedSearchFieldTrialTest, GetFieldTrialInfo) {
   FieldTrialFlags flags;
@@ -330,5 +329,4 @@ TEST_F(SearchTest, StartMarginCGI) {
             GetInstantURL(profile(), 10));
 }
 
-}  // namespace search
 }  // namespace chrome

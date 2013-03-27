@@ -81,8 +81,8 @@ class OverlayableContentsControllerTest : public InProcessBrowserTest,
 
 // Verify that the view is correctly laid out when size is specified in percent.
 IN_PROC_BROWSER_TEST_F(OverlayableContentsControllerTest, SizePerecent) {
-  chrome::search::Mode mode;
-  mode.mode = chrome::search::Mode::MODE_NTP;
+  SearchMode mode;
+  mode.mode = SearchMode::MODE_NTP;
   CGFloat expected_height = 30;
   InstantSizeUnits units = INSTANT_SIZE_PERCENT;
   instant_overlay_model_.SetOverlayState(mode, expected_height, units);
@@ -98,8 +98,8 @@ IN_PROC_BROWSER_TEST_F(OverlayableContentsControllerTest, SizePerecent) {
 
 // Verify that the view is correctly laid out when size is specified in pixels.
 IN_PROC_BROWSER_TEST_F(OverlayableContentsControllerTest, SizePixels) {
-  chrome::search::Mode mode;
-  mode.mode = chrome::search::Mode::MODE_NTP;
+  SearchMode mode;
+  mode.mode = SearchMode::MODE_NTP;
   CGFloat expected_height = 30;
   InstantSizeUnits units = INSTANT_SIZE_PIXELS;
   instant_overlay_model_.SetOverlayState(mode, expected_height, units);
@@ -116,13 +116,13 @@ IN_PROC_BROWSER_TEST_F(OverlayableContentsControllerTest, SizePixels) {
 // Verify that a shadow is not shown when the overlay covers the entire page
 // or when the overlay is in NTP mode.
 IN_PROC_BROWSER_TEST_F(OverlayableContentsControllerTest, NoShadowFullHeight) {
-  chrome::search::Mode mode;
-  mode.mode = chrome::search::Mode::MODE_SEARCH_SUGGESTIONS;
+  SearchMode mode;
+  mode.mode = SearchMode::MODE_SEARCH_SUGGESTIONS;
   instant_overlay_model_.SetOverlayState(mode, 100, INSTANT_SIZE_PERCENT);
   EXPECT_FALSE([controller_ dropShadowView]);
   EXPECT_FALSE([controller_ drawDropShadow]);
 
-  mode.mode = chrome::search::Mode::MODE_NTP;
+  mode.mode = SearchMode::MODE_NTP;
   instant_overlay_model_.SetOverlayState(mode, 10, INSTANT_SIZE_PERCENT);
   EXPECT_FALSE([controller_ dropShadowView]);
   EXPECT_FALSE([controller_ drawDropShadow]);
@@ -130,8 +130,8 @@ IN_PROC_BROWSER_TEST_F(OverlayableContentsControllerTest, NoShadowFullHeight) {
 
 // Verify that a shadow is shown when the overlay is in search mode.
 IN_PROC_BROWSER_TEST_F(OverlayableContentsControllerTest, NoShadowNTP) {
-  chrome::search::Mode mode;
-  mode.mode = chrome::search::Mode::MODE_SEARCH_SUGGESTIONS;
+  SearchMode mode;
+  mode.mode = SearchMode::MODE_SEARCH_SUGGESTIONS;
   instant_overlay_model_.SetOverlayState(mode, 10, INSTANT_SIZE_PERCENT);
   EXPECT_TRUE([controller_ dropShadowView]);
   EXPECT_TRUE([controller_ drawDropShadow]);
@@ -146,8 +146,8 @@ IN_PROC_BROWSER_TEST_F(OverlayableContentsControllerTest, NoShadowNTP) {
 
 // Verify that the shadow is hidden when hiding the overlay.
 IN_PROC_BROWSER_TEST_F(OverlayableContentsControllerTest, HideShadow) {
-  chrome::search::Mode mode;
-  mode.mode = chrome::search::Mode::MODE_SEARCH_SUGGESTIONS;
+  SearchMode mode;
+  mode.mode = SearchMode::MODE_SEARCH_SUGGESTIONS;
   instant_overlay_model_.SetOverlayState(mode, 10, INSTANT_SIZE_PERCENT);
   EXPECT_TRUE([controller_ dropShadowView]);
 
@@ -157,8 +157,8 @@ IN_PROC_BROWSER_TEST_F(OverlayableContentsControllerTest, HideShadow) {
 
 // Verify that the web contents is not hidden when just the height changes.
 IN_PROC_BROWSER_TEST_F(OverlayableContentsControllerTest, HeightChangeNoHide) {
-  chrome::search::Mode mode;
-  mode.mode = chrome::search::Mode::MODE_SEARCH_SUGGESTIONS;
+  SearchMode mode;
+  mode.mode = SearchMode::MODE_SEARCH_SUGGESTIONS;
   instant_overlay_model_.SetOverlayState(mode, 10, INSTANT_SIZE_PERCENT);
 
   registrar_.Add(this,

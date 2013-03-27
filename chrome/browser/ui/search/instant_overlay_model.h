@@ -26,11 +26,11 @@ class InstantOverlayModel {
 
   // InstantOverlayModel only uses Mode::mode internally. Other parts of Mode,
   // such as Mode::origin, may have arbitrary values, and should be ignored.
-  const chrome::search::Mode& mode() const { return mode_; }
+  const SearchMode& mode() const { return mode_; }
   int height() const { return height_; }
   InstantSizeUnits height_units() const { return height_units_; }
 
-  void SetOverlayState(const chrome::search::Mode& mode,
+  void SetOverlayState(const SearchMode& mode,
                        int height,
                        InstantSizeUnits height_units);
 
@@ -42,7 +42,7 @@ class InstantOverlayModel {
   void RemoveObserver(InstantOverlayModelObserver* observer);
 
  private:
-  chrome::search::Mode mode_;
+  SearchMode mode_;
   int height_;
   InstantSizeUnits height_units_;
 

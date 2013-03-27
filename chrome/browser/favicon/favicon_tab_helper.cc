@@ -92,7 +92,7 @@ bool FaviconTabHelper::ShouldDisplayFavicon() {
     return true;
 
   // No favicon on Instant New Tab Pages.
-  if (chrome::search::IsInstantNTP(web_contents()))
+  if (chrome::IsInstantNTP(web_contents()))
     return false;
 
   content::WebUI* web_ui = web_contents()->GetWebUIForCurrentState();

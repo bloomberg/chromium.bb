@@ -98,9 +98,9 @@ class BrowserWindowControllerTest : public InProcessBrowserTest {
   }
 
   void ShowInstantResults() {
-    chrome::search::EnableInstantExtendedAPIForTesting();
-    chrome::search::Mode mode(chrome::search::Mode::MODE_SEARCH_SUGGESTIONS,
-                              chrome::search::Mode::ORIGIN_SEARCH);
+    chrome::EnableInstantExtendedAPIForTesting();
+    SearchMode mode(SearchMode::MODE_SEARCH_SUGGESTIONS,
+                    SearchMode::ORIGIN_SEARCH);
     browser()->search_model()->SetMode(mode);
     browser()->search_model()->SetTopBarsVisible(false);
     EXPECT_TRUE(browser()->search_model()->mode().is_search_suggestions());
@@ -109,9 +109,8 @@ class BrowserWindowControllerTest : public InProcessBrowserTest {
   }
 
   void ShowInstantNTP() {
-    chrome::search::EnableInstantExtendedAPIForTesting();
-    chrome::search::Mode mode(chrome::search::Mode::MODE_NTP,
-                              chrome::search::Mode::ORIGIN_NTP);
+    chrome::EnableInstantExtendedAPIForTesting();
+    SearchMode mode(SearchMode::MODE_NTP, SearchMode::ORIGIN_NTP);
     browser()->search_model()->SetMode(mode);
     browser()->search_model()->SetTopBarsVisible(true);
     EXPECT_TRUE(browser()->search_model()->mode().is_ntp());

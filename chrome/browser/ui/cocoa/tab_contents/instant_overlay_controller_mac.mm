@@ -28,7 +28,7 @@ InstantOverlayControllerMac::~InstantOverlayControllerMac() {
 
 void InstantOverlayControllerMac::OverlayStateChanged(
     const InstantOverlayModel& model) {
-  bool set_top_bars_visibility = chrome::search::IsInstantExtendedAPIEnabled();
+  bool set_top_bars_visibility = chrome::IsInstantExtendedAPIEnabled();
 
   if (model.mode().is_ntp() || model.mode().is_search_suggestions()) {
     // Drop shadow is only needed if search mode is not |NTP| and overlay does
@@ -53,9 +53,8 @@ void InstantOverlayControllerMac::OverlayStateChanged(
     // Set top bars (bookmark and info bars) visibility for current tab via
     // |SearchTabHelper| of current active web contents: top bars are hidden if
     // there's overlay.
-    chrome::search::SearchTabHelper* search_tab_helper =
-        chrome::search::SearchTabHelper::FromWebContents(
-            browser_->tab_strip_model()->GetActiveWebContents());
+    SearchTabHelper* search_tab_helper = SearchTabHelper::FromWebContents(
+        browser_->tab_strip_model()->GetActiveWebContents());
     if (search_tab_helper) {
       search_tab_helper->model()->SetTopBarsVisible(
           ![overlay_ isShowingOverlay]);

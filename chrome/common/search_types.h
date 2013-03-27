@@ -5,12 +5,9 @@
 #ifndef CHROME_COMMON_SEARCH_TYPES_H_
 #define CHROME_COMMON_SEARCH_TYPES_H_
 
-namespace chrome {
-namespace search {
-
 // The Mode structure encodes the visual states encountered when interacting
 // with the NTP and the Omnibox.
-struct Mode {
+struct SearchMode {
   // The visual state that applies to the current interaction.
   enum Type {
     // The default state means anything but the following states.
@@ -38,19 +35,19 @@ struct Mode {
     ORIGIN_SEARCH,
   };
 
-  Mode() : mode(MODE_DEFAULT), origin(ORIGIN_DEFAULT) {
+  SearchMode() : mode(MODE_DEFAULT), origin(ORIGIN_DEFAULT) {
   }
 
-  Mode(Type in_mode, Origin in_origin)
+  SearchMode(Type in_mode, Origin in_origin)
       : mode(in_mode),
         origin(in_origin) {
   }
 
-  bool operator==(const Mode& rhs) const {
+  bool operator==(const SearchMode& rhs) const {
     return mode == rhs.mode && origin == rhs.origin;
   }
 
-  bool operator!=(const Mode& rhs) const {
+  bool operator!=(const SearchMode& rhs) const {
     return !(*this == rhs);
   }
 
@@ -89,8 +86,5 @@ struct Mode {
   Type mode;
   Origin origin;
 };
-
-}  // namespace search
-}  // namespace chrome
 
 #endif  // CHROME_COMMON_SEARCH_TYPES_H_

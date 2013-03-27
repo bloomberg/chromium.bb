@@ -17,7 +17,7 @@ InstantOverlayModel::InstantOverlayModel(InstantController* controller)
 InstantOverlayModel::~InstantOverlayModel() {
 }
 
-void InstantOverlayModel::SetOverlayState(const chrome::search::Mode& mode,
+void InstantOverlayModel::SetOverlayState(const SearchMode& mode,
                                           int height,
                                           InstantSizeUnits height_units) {
   if (mode_.mode == mode.mode && height_ == height &&

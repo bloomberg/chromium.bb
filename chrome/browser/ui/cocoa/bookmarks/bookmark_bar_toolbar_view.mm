@@ -43,7 +43,7 @@ const CGFloat kBorderRadius = 3.0;
   if ([controller_ isInState:BookmarkBar::DETACHED] ||
       [controller_ isAnimatingToState:BookmarkBar::DETACHED] ||
       [controller_ isAnimatingFromState:BookmarkBar::DETACHED]) {
-    if (chrome::search::IsInstantExtendedAPIEnabled())
+    if (chrome::IsInstantExtendedAPIEnabled())
       [self drawAsDetachedInstantExtendedUI];
     else
       [self drawAsDetachedBubble];
@@ -158,7 +158,7 @@ const CGFloat kBorderRadius = 3.0;
 
   // Overlay with a ligher background color.
   NSColor* toolbarColor = gfx::SkColorToCalibratedNSColor(
-        chrome::search::GetDetachedBookmarkBarBackgroundColor(themeProvider));
+        chrome::GetDetachedBookmarkBarBackgroundColor(themeProvider));
   CGFloat alpha = morph * [toolbarColor alphaComponent];
   [[toolbarColor colorWithAlphaComponent:alpha] set];
   NSRectFillUsingOperation(bounds, NSCompositeSourceOver);
@@ -177,7 +177,7 @@ const CGFloat kBorderRadius = 3.0;
 
   // Bottom stroke.
   NSColor* strokeColor = gfx::SkColorToCalibratedNSColor(
-        chrome::search::GetDetachedBookmarkBarSeparatorColor(themeProvider));
+        chrome::GetDetachedBookmarkBarSeparatorColor(themeProvider));
   strokeColor = [[self strokeColor] blendedColorWithFraction:morph
                                                      ofColor:strokeColor];
   strokeColor = [strokeColor colorWithAlphaComponent:0.5];

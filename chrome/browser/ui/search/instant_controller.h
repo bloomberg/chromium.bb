@@ -34,14 +34,11 @@
 
 struct AutocompleteMatch;
 class AutocompleteProvider;
+class BrowserInstantController;
 class InstantNTP;
 class InstantOverlay;
 class InstantTab;
 class TemplateURL;
-
-namespace chrome {
-class BrowserInstantController;
-}
 
 namespace content {
 class WebContents;
@@ -72,7 +69,7 @@ class WebContents;
 class InstantController : public InstantPage::Delegate,
                           public content::NotificationObserver {
  public:
-  InstantController(chrome::BrowserInstantController* browser,
+  InstantController(BrowserInstantController* browser,
                     bool extended_enabled);
   virtual ~InstantController();
 
@@ -142,8 +139,8 @@ class InstantController : public InstantPage::Delegate,
   // The search mode in the active tab has changed. Pass the message down to
   // the overlay which will notify the renderer. Create |instant_tab_| if the
   // |new_mode| reflects an Instant search results page.
-  void SearchModeChanged(const chrome::search::Mode& old_mode,
-                         const chrome::search::Mode& new_mode);
+  void SearchModeChanged(const SearchMode& old_mode,
+                         const SearchMode& new_mode);
 
   // The user switched tabs. Hide the overlay. Create |instant_tab_| if the
   // newly active tab is an Instant search results page.
@@ -365,7 +362,7 @@ class InstantController : public InstantPage::Delegate,
   // returns false.)
   bool FixSuggestion(InstantSuggestion* suggestion) const;
 
-  chrome::BrowserInstantController* const browser_;
+  BrowserInstantController* const browser_;
 
   // Whether the extended API and regular API are enabled. If both are false,
   // Instant is effectively disabled.
@@ -420,7 +417,7 @@ class InstantController : public InstantPage::Delegate,
   OmniboxFocusState omnibox_focus_state_;
 
   // The search model mode for the active tab.
-  chrome::search::Mode search_mode_;
+  SearchMode search_mode_;
 
   // Current omnibox popup bounds.
   gfx::Rect popup_bounds_;

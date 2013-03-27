@@ -18,12 +18,7 @@
 class InfoBar;
 class InfoBarDelegate;
 class InfoBarService;
-
-namespace chrome {
-namespace search {
 class SearchModel;
-}
-}
 
 // InfoBarContainer is a cross-platform base class to handle the visibility-
 // related aspects of InfoBars.  While InfoBars own themselves, the
@@ -35,7 +30,7 @@ class SearchModel;
 //
 // This class also observes changes to the SearchModel modes.  It hides infobars
 // temporarily if the user changes into |SEARCH_SUGGESTIONS| mode (refer to
-// chrome::search::Mode in chrome/common/search_types.h for all search modes)
+// SearchMode in chrome/common/search_types.h for all search modes)
 // when on a :
 // - |DEFAULT| page: when Instant overlay is ready;
 // - |NTP| or |SEARCH_RESULTS| page: immediately;
@@ -49,7 +44,7 @@ class SearchModel;
 // would re-show the infobars only to instantly animate them closed.  The window
 // to re-hide infobars without animation is canceled if a tab change occurs.
 class InfoBarContainer : public content::NotificationObserver,
-                         public chrome::search::SearchModelObserver {
+                         public SearchModelObserver {
  public:
   class Delegate {
    public:
@@ -70,8 +65,7 @@ class InfoBarContainer : public content::NotificationObserver,
 
   // |search_model| may be NULL if this class is used in a window that does not
   // support Instant Extended.
-  InfoBarContainer(Delegate* delegate,
-                   chrome::search::SearchModel* search_model);
+  InfoBarContainer(Delegate* delegate, SearchModel* search_model);
   virtual ~InfoBarContainer();
 
   // Changes the InfoBarService for which this container is showing
@@ -129,10 +123,9 @@ class InfoBarContainer : public content::NotificationObserver,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // chrome::search::SearchModelObserver:
-  virtual void ModelChanged(
-      const chrome::search::SearchModel::State& old_state,
-      const chrome::search::SearchModel::State& new_state) OVERRIDE;
+  // SearchModelObserver:
+  virtual void ModelChanged(const SearchModel::State& old_state,
+                            const SearchModel::State& new_state) OVERRIDE;
 
   // Hides an InfoBar for the specified delegate, in response to a notification
   // from the selected InfoBarService.  The InfoBar's disappearance will be
@@ -174,7 +167,7 @@ class InfoBarContainer : public content::NotificationObserver,
 
   // Tracks which search mode is active, as well as mode changes, for Instant
   // Extended.
-  chrome::search::SearchModel* search_model_;
+  SearchModel* search_model_;
 
   // Calculated in SetMaxTopArrowHeight().
   int top_arrow_target_height_;

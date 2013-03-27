@@ -9,15 +9,12 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 
-namespace chrome {
-namespace search {
-
 typedef BrowserWithTestWindowTest SearchDelegateTest;
 
 // Test the propagation of search "mode" changes from the tab's search model to
 // the browser's search model.
 TEST_F(SearchDelegateTest, SearchModel) {
-  chrome::search::EnableInstantExtendedAPIForTesting();
+  chrome::EnableInstantExtendedAPIForTesting();
 
   // Initial state.
   EXPECT_TRUE(browser()->search_model()->mode().is_default());
@@ -26,8 +23,8 @@ TEST_F(SearchDelegateTest, SearchModel) {
   AddTab(browser(), GURL("http://foo/0"));
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetWebContentsAt(0);
-  chrome::search::SearchTabHelper::FromWebContents(web_contents)->model()->
-      SetMode(Mode(Mode::MODE_NTP, Mode::ORIGIN_NTP));
+  SearchTabHelper::FromWebContents(web_contents)->model()->
+      SetMode(SearchMode(SearchMode::MODE_NTP, SearchMode::ORIGIN_NTP));
   EXPECT_TRUE(browser()->search_model()->mode().is_ntp());
 
   // Add second tab, make it active, and make sure its mode changes
@@ -35,16 +32,14 @@ TEST_F(SearchDelegateTest, SearchModel) {
   AddTab(browser(), GURL("http://foo/1"));
   browser()->tab_strip_model()->ActivateTabAt(1, true);
   web_contents = browser()->tab_strip_model()->GetWebContentsAt(1);
-  chrome::search::SearchTabHelper::FromWebContents(web_contents)->model()->
-      SetMode(Mode(Mode::MODE_SEARCH_RESULTS, Mode::ORIGIN_DEFAULT));
+  SearchTabHelper::FromWebContents(web_contents)->model()->
+      SetMode(SearchMode(SearchMode::MODE_SEARCH_RESULTS,
+                         SearchMode::ORIGIN_DEFAULT));
   EXPECT_TRUE(browser()->search_model()->mode().is_search());
 
   // The first tab is not active so changes should not propagate.
   web_contents = browser()->tab_strip_model()->GetWebContentsAt(0);
-  chrome::search::SearchTabHelper::FromWebContents(web_contents)->model()->
-      SetMode(Mode(Mode::MODE_NTP, Mode::ORIGIN_NTP));
+  SearchTabHelper::FromWebContents(web_contents)->model()->
+      SetMode(SearchMode(SearchMode::MODE_NTP, SearchMode::ORIGIN_NTP));
   EXPECT_TRUE(browser()->search_model()->mode().is_search());
 }
-
-}  // namespace search
-}  // namespace chrome

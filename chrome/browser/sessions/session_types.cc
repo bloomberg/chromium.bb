@@ -54,7 +54,7 @@ TabNavigation TabNavigation::FromNavigationEntry(
   // add support for persisting it. It is currently only used for layout tests.
   CHECK(entry.GetFrameToNavigate().empty());
   navigation.search_terms_ =
-      chrome::search::GetSearchTermsFromNavigationEntry(&entry);
+      chrome::GetSearchTermsFromNavigationEntry(&entry);
   if (entry.GetFavicon().valid)
     navigation.favicon_url_ = entry.GetFavicon().url;
 
@@ -346,8 +346,7 @@ scoped_ptr<NavigationEntry> TabNavigation::ToNavigationEntry(
   entry->SetOriginalRequestURL(original_request_url_);
   entry->SetIsOverridingUserAgent(is_overriding_user_agent_);
   entry->SetTimestamp(timestamp_);
-  entry->SetExtraData(chrome::search::kInstantExtendedSearchTermsKey,
-                      search_terms_);
+  entry->SetExtraData(chrome::kInstantExtendedSearchTermsKey, search_terms_);
 
   return entry.Pass();
 }

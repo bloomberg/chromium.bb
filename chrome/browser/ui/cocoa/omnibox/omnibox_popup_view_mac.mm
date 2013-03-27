@@ -284,7 +284,7 @@ NSAttributedString* OmniboxPopupViewMac::MatchText(
 OmniboxPopupView* OmniboxPopupViewMac::Create(OmniboxView* omnibox_view,
                                               OmniboxEditModel* edit_model,
                                               NSTextField* field) {
-  if (chrome::search::IsInstantExtendedAPIEnabled())
+  if (chrome::IsInstantExtendedAPIEnabled())
     return new OmniboxPopupNonView(edit_model);
   return new OmniboxPopupViewMac(omnibox_view, edit_model, field);
 }

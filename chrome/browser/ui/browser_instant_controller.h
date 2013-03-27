@@ -30,10 +30,8 @@ namespace gfx {
 class Rect;
 }
 
-namespace chrome {
-
 class BrowserInstantController : public content::NotificationObserver,
-                                 public search::SearchModelObserver {
+                                 public SearchModelObserver {
  public:
   explicit BrowserInstantController(Browser* browser);
   virtual ~BrowserInstantController();
@@ -111,9 +109,8 @@ class BrowserInstantController : public content::NotificationObserver,
   void ResetInstant(const std::string& pref_name);
 
   // Overridden from search::SearchModelObserver:
-  virtual void ModelChanged(
-      const search::SearchModel::State& old_state,
-      const search::SearchModel::State& new_state) OVERRIDE;
+  virtual void ModelChanged(const SearchModel::State& old_state,
+                            const SearchModel::State& new_state) OVERRIDE;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
@@ -143,7 +140,5 @@ class BrowserInstantController : public content::NotificationObserver,
 
   DISALLOW_COPY_AND_ASSIGN(BrowserInstantController);
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_UI_BROWSER_INSTANT_CONTROLLER_H_

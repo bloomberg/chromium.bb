@@ -61,7 +61,7 @@ class ToolbarModelImpl : public ToolbarModel {
   // Helper method to extract the profile from the navigation controller.
   Profile* GetProfile() const;
 
-  // Returns search terms as in chrome::search::GetSearchTerms unless those
+  // Returns search terms as in chrome::GetSearchTerms unless those
   // terms would be treated by the omnibox as a navigation.
   string16 GetSearchTerms() const;
 
