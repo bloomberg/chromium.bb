@@ -19,6 +19,7 @@
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_sender.h"
+#include "ui/base/gestures/gesture_sequence.h"
 #include "ui/metro_viewer/metro_viewer_messages.h"
 #include "win8/metro_driver/file_picker_ash.h"
 #include "win8/metro_driver/metro_driver.h"
@@ -145,7 +146,8 @@ class PointerInfoHandler {
       y_(0),
       wheel_delta_(0),
       update_kind_(winui::Input::PointerUpdateKind_Other),
-      timestamp_(0) {}
+      timestamp_(0),
+      pointer_id_(0) {}
 
   HRESULT Init(winui::Core::IPointerEventArgs* args) {
     HRESULT hr = args->get_CurrentPoint(&pointer_point_);
@@ -169,10 +171,13 @@ class PointerInfoHandler {
     hr = properties->get_MouseWheelDelta(&wheel_delta_);
     if (FAILED(hr))
       return hr;
-
     x_ = point.X;
     y_ = point.Y;
     pointer_point_->get_Timestamp(&timestamp_);
+    pointer_point_->get_PointerId(&pointer_id_);
+    // Map the OS touch event id to a range allowed by the gesture recognizer.
+    if (IsTouch())
+      pointer_id_ %= ui::GestureSequence::kMaxGesturePoints;
     return S_OK;
   }
 
@@ -218,12 +223,17 @@ class PointerInfoHandler {
   int x() const { return x_; }
   int y() const { return y_; }
 
+  uint32 pointer_id() const {
+    return pointer_id_;
+  }
+
   uint64 timestamp() const { return timestamp_; }
 
  private:
   int x_;
   int y_;
   int wheel_delta_;
+  uint32 pointer_id_;
   winui::Input::PointerUpdateKind update_kind_;
   mswr::ComPtr<winui::Input::IPointerPoint> pointer_point_;
   uint64 timestamp_;
@@ -548,7 +558,8 @@ HRESULT ChromeAppViewAsh::OnPointerMoved(winui::Core::ICoreWindow* sender,
     DCHECK(pointer.IsTouch());
     ui_channel_->Send(new MetroViewerHostMsg_TouchMoved(pointer.x(),
                                                         pointer.y(),
-                                                        pointer.timestamp()));
+                                                        pointer.timestamp(),
+                                                        pointer.pointer_id()));
   }
   return S_OK;
 }
@@ -577,7 +588,8 @@ HRESULT ChromeAppViewAsh::OnPointerPressed(
     DCHECK(pointer.IsTouch());
     ui_channel_->Send(new MetroViewerHostMsg_TouchDown(pointer.x(),
                                                        pointer.y(),
-                                                       pointer.timestamp()));
+                                                       pointer.timestamp(),
+                                                       pointer.pointer_id()));
   }
   return S_OK;
 }
@@ -601,7 +613,8 @@ HRESULT ChromeAppViewAsh::OnPointerReleased(
     DCHECK(pointer.IsTouch());
     ui_channel_->Send(new MetroViewerHostMsg_TouchUp(pointer.x(),
                                                      pointer.y(),
-                                                     pointer.timestamp()));
+                                                     pointer.timestamp(),
+                                                     pointer.pointer_id()));
   }
   return S_OK;
 }

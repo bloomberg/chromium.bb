@@ -27,9 +27,6 @@ namespace {
 
 const char* kRootWindowHostWinKey = "__AURA_REMOTE_ROOT_WINDOW_HOST_WIN__";
 
-// The touch id to be used for touch events coming in from Windows Ash.
-const int kRemoteWindowTouchId = 10;
-
 // Sets the keystate for the virtual key passed in to down or up.
 void SetKeyState(uint8* key_states, bool key_down, uint32 virtual_key_code) {
   DCHECK(key_states);
@@ -373,28 +370,35 @@ void RemoteRootWindowHostWin::OnVisibilityChanged(bool visible) {
     delegate_->OnHostActivated();
 }
 
-void RemoteRootWindowHostWin::OnTouchDown(int32 x, int32 y, uint64 timestamp) {
+void RemoteRootWindowHostWin::OnTouchDown(int32 x,
+                                          int32 y,
+                                          uint64 timestamp,
+                                          uint32 pointer_id) {
   ui::TouchEvent event(ui::ET_TOUCH_PRESSED,
                        gfx::Point(x, y),
-                       kRemoteWindowTouchId,
+                       pointer_id,
                        base::TimeDelta::FromMicroseconds(timestamp));
   delegate_->OnHostTouchEvent(&event);
 }
 
-void RemoteRootWindowHostWin::OnTouchUp(int32 x, int32 y, uint64 timestamp) {
+void RemoteRootWindowHostWin::OnTouchUp(int32 x,
+                                        int32 y,
+                                        uint64 timestamp,
+                                        uint32 pointer_id) {
   ui::TouchEvent event(ui::ET_TOUCH_RELEASED,
                        gfx::Point(x, y),
-                       kRemoteWindowTouchId,
+                       pointer_id,
                        base::TimeDelta::FromMicroseconds(timestamp));
   delegate_->OnHostTouchEvent(&event);
 }
 
 void RemoteRootWindowHostWin::OnTouchMoved(int32 x,
                                            int32 y,
-                                           uint64 timestamp) {
+                                           uint64 timestamp,
+                                           uint32 pointer_id) {
   ui::TouchEvent event(ui::ET_TOUCH_MOVED,
                        gfx::Point(x, y),
-                       kRemoteWindowTouchId,
+                       pointer_id,
                        base::TimeDelta::FromMicroseconds(timestamp));
   delegate_->OnHostTouchEvent(&event);
 }

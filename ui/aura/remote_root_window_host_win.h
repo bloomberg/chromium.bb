@@ -127,9 +127,9 @@ class AURA_EXPORT RemoteRootWindowHostWin : public RootWindowHost {
               uint32 scan_code,
               uint32 flags);
   void OnVisibilityChanged(bool visible);
-  void OnTouchDown(int32 x, int32 y, uint64 timestamp);
-  void OnTouchUp(int32 x, int32 y, uint64 timestamp);
-  void OnTouchMoved(int32 x, int32 y, uint64 timestamp);
+  void OnTouchDown(int32 x, int32 y, uint64 timestamp, uint32 pointer_id);
+  void OnTouchUp(int32 x, int32 y, uint64 timestamp, uint32 pointer_id);
+  void OnTouchMoved(int32 x, int32 y, uint64 timestamp, uint32 pointer_id);
   void OnFileSaveAsDone(bool success,
                         string16 filename,
                         int filter_index);

@@ -67,6 +67,7 @@
 #include "ui/gfx/skia_util.h"
 
 #if defined(OS_WIN)
+#include "base/win/windows_version.h"
 #include "content/browser/accessibility/browser_accessibility_manager_win.h"
 #include "content/browser/accessibility/browser_accessibility_win.h"
 #include "ui/base/win/hidden_window.h"
@@ -265,6 +266,10 @@ void GetScreenInfoForWindow(WebScreenInfo* results, aura::Window* window) {
 }
 
 bool ShouldSendPinchGesture() {
+#if defined(OS_WIN)
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+    return true;
+#endif
   static bool pinch_allowed =
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableViewport) ||
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnablePinch);

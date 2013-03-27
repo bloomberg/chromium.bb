@@ -12,6 +12,7 @@
 #include "base/win/windows_version.h"
 #include "ui/base/events/event.h"
 #include "ui/base/events/event_utils.h"
+#include "ui/base/gestures/gesture_sequence.h"
 #include "ui/base/keycodes/keyboard_code_conversion_win.h"
 #include "ui/base/win/hwnd_util.h"
 #include "ui/base/win/mouse_wheel_util.h"
@@ -291,10 +292,6 @@ bool ProcessChildWindowMessage(UINT message,
 
 // The thickness of an auto-hide taskbar in pixels.
 const int kAutoHideTaskbarThicknessPx = 2;
-
-// The touch id to be used for touch events coming in from Windows Aura
-// Desktop.
-const int kDesktopChromeAuraTouchId = 9;
 
 // For windows with the standard frame removed, the client area needs to be
 // different from the window area to avoid a "feature" in Windows's handling of
@@ -2003,7 +2000,7 @@ LRESULT HWNDMessageHandler::OnTouchEvent(UINT message,
         ui::TouchEvent event(
             touch_event_type,
             gfx::Point(point.x, point.y),
-            kDesktopChromeAuraTouchId,
+            input[i].dwID % ui::GestureSequence::kMaxGesturePoints,
             base::TimeDelta::FromMilliseconds(input[i].dwTime));
         delegate_->HandleTouchEvent(event);
       }

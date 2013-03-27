@@ -54,18 +54,21 @@ IPC_MESSAGE_CONTROL4(MetroViewerHostMsg_Character,
 IPC_MESSAGE_CONTROL1(MetroViewerHostMsg_VisibilityChanged,
                      bool          /* visible */);
 
-IPC_MESSAGE_CONTROL3(MetroViewerHostMsg_TouchDown,
+IPC_MESSAGE_CONTROL4(MetroViewerHostMsg_TouchDown,
                      int32,           /* x-coordinate */
                      int32,           /* y-coordinate */
-                     uint64)          /* timestamp */
-IPC_MESSAGE_CONTROL3(MetroViewerHostMsg_TouchUp,
+                     uint64,          /* timestamp */
+                     uint32)          /* pointer_id */
+IPC_MESSAGE_CONTROL4(MetroViewerHostMsg_TouchUp,
                      int32,           /* x-coordinate */
                      int32,           /* y-coordinate */
-                     uint64)          /* timestamp */
-IPC_MESSAGE_CONTROL3(MetroViewerHostMsg_TouchMoved,
+                     uint64,          /* timestamp */
+                     uint32)          /* pointer_id */
+IPC_MESSAGE_CONTROL4(MetroViewerHostMsg_TouchMoved,
                      int32,           /* x-coordinate */
                      int32,           /* y-coordinate */
-                     uint64)          /* timestamp */
+                     uint64,          /* timestamp */
+                     uint32)          /* pointer_id */
 
 // Informs the browser of the result of a file save as operation.
 IPC_MESSAGE_CONTROL3(MetroViewerHostMsg_FileSaveAsDone,
