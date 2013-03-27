@@ -1082,7 +1082,7 @@ def dump_results_as_xml(gtest_output, results, now):
             '  <testcase classname="%s" name="%s" status="run" time="%f">\n' %
             (suite_name, case_name, (case['duration'] or 0)))
           # While at it, hand-roll CDATA escaping too.
-          output = ']]><![CDATA['.join(case['output'].split(']]>'))
+          output = ']]><![CDATA['.join((case['output'] or '').split(']]>'))
           # TODO(maruel): message="" type=""
           f.write('<failure><![CDATA[%s]]></failure></testcase>\n' % output)
       f.write('</testsuite>\n')

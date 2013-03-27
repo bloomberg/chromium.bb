@@ -780,6 +780,14 @@ class RunTestCasesTmp(unittest.TestCase):
             "test_case": "AlignedMemoryTest.ScopedDynamicAllocation"
           }
         ],
+        "Foo.Bar": [
+          {
+            "duration": None,
+            "output": None,
+            "returncode": None,
+            "test_case": "Foo.Bar",
+          },
+        ],
       },
     }
     expected = (
@@ -793,12 +801,17 @@ class RunTestCasesTmp(unittest.TestCase):
         '  <testcase classname="AlignedMemoryTest" '
           'name="ScopedDynamicAllocation" status="run" time="0.032738"/>\n'
         '</testsuite>\n'
+        '<testsuite name="Foo" tests="1">\n'
+        '  <testcase classname="Foo" name="Bar" '
+          'status="run" time="0.000000">\n'
+          '<failure><![CDATA[]]></failure></testcase>\n'
+        '</testsuite>\n'
         '</testsuites>')
     filepath = os.path.join(self.tmpdir, 'foo.xml')
     run_test_cases.dump_results_as_xml(filepath, data, '1996')
     with open(filepath, 'rb') as f:
       actual = f.read()
-    self.assertEqual(expected, actual)
+    self.assertEqual(expected.splitlines(), actual.splitlines())
 
 
 class FakeProgress(object):
