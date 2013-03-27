@@ -375,7 +375,14 @@ class BrowserPluginHostTest : public ContentBrowserTest {
 // guest.
 //
 // Disabled on Windows and Linux since it is flaky. crbug.com/164812
-IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, GuestUnresponsive) {
+// THIS TEST IS ALWAYS FLAKY. DO NOT ENABLE AGAIN WITHOUT REWRITING.
+#if defined(OS_WIN) || defined(OS_LINUX)
+#define MAYBE_GuestUnresponsive DISABLED_GuestUnresponsive
+#else
+#define MAYBE_GuestUnresponsive GuestUnresponsive
+#endif
+IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest,
+                       MAYBE_GuestUnresponsive) {
   // Override the hang timeout for guest to be very small.
   content::BrowserPluginGuest::set_factory_for_testing(
       TestShortHangTimeoutGuestFactory::GetInstance());
