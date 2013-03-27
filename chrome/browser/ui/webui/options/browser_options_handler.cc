@@ -967,8 +967,7 @@ void BrowserOptionsHandler::Observe(
       break;
 #endif
     case chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED:
-      if (ShouldShowMultiProfilesUserList())
-        SendProfilesInfo();
+      SendProfilesInfo();
       break;
     case chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL:
     case chrome::NOTIFICATION_GOOGLE_SIGNED_OUT:
@@ -1046,6 +1045,8 @@ scoped_ptr<ListValue> BrowserOptionsHandler::GetProfilesInfoList() {
 }
 
 void BrowserOptionsHandler::SendProfilesInfo() {
+  if (!ShouldShowMultiProfilesUserList())
+    return;
   web_ui()->CallJavascriptFunction("BrowserOptions.setProfilesInfo",
                                    *GetProfilesInfoList());
 }
