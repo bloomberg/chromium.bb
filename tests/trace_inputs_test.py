@@ -79,6 +79,12 @@ class TraceInputs(unittest.TestCase):
     path = trace_inputs.get_native_path_case(ROOT_DIR) + os.path.sep
     self.assertEqual(trace_inputs.get_native_path_case(path), path)
 
+  def test_native_case_end_with_dot_os_path_sep(self):
+    path = trace_inputs.get_native_path_case(ROOT_DIR + os.path.sep)
+    self.assertEqual(
+        trace_inputs.get_native_path_case(path + '.' + os.path.sep),
+        path)
+
   def test_native_case_non_existing(self):
     # Make sure it doesn't throw on non-existing files.
     non_existing = 'trace_input_test_this_file_should_not_exist'

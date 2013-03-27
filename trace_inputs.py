@@ -326,6 +326,9 @@ elif sys.platform == 'darwin':
       logging.debug('get_native_path_case(%s) = %s' % (path, resolved))
       return resolved
 
+    if resolved.lower() + './' == path.lower():
+      return resolved[:-2]
+
     # There was a symlink, process it.
     base, symlink, rest = _split_at_symlink_native(None, path)
     assert symlink, (path, base, symlink, rest, resolved)
