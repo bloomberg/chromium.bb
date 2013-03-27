@@ -2820,9 +2820,10 @@ TEST_F(AutofillManagerTest, FormSubmittedWithDefaultValues) {
 // thing on all platforms.
 TEST_F(AutofillManagerTest, AuxiliaryProfilesReset) {
   PrefService* prefs = components::UserPrefs::Get(profile());
-#if defined(OS_MACOSX)
-  // Auxiliary profiles is implemented on Mac only.  It enables Mac Address
-  // Book integration.
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
+  // Auxiliary profiles is implemented on Mac and Android only.
+  // OSX: enables Mac Address Book integration.
+  // Android: enables integration with user's contact profile.
   ASSERT_TRUE(prefs->GetBoolean(prefs::kAutofillAuxiliaryProfilesEnabled));
   prefs->SetBoolean(prefs::kAutofillAuxiliaryProfilesEnabled, false);
   prefs->ClearPref(prefs::kAutofillAuxiliaryProfilesEnabled);

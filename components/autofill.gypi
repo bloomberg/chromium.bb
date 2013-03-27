@@ -41,9 +41,6 @@
         {
           'target_name': 'autofill_common',
           'type': 'static_library',
-          'include_dirs': [
-            '..',
-          ],
           'dependencies': [
             '../base/base.gyp:base',
             '../build/temp_gyp/googleurl.gyp:googleurl',
@@ -52,7 +49,25 @@
             '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
             '../ui/ui.gyp:ui',
           ],
+          'conditions': [
+            ['OS == "android"', {
+              'dependencies': [
+                'autofill_jni_headers',
+              ],
+            }],
+          ],
+          'include_dirs': [
+            '..',
+            '<(SHARED_INTERMEDIATE_DIR)/autofill'
+          ],
           'sources': [
+            'autofill/browser/android/auxiliary_profile_loader_android.cc',
+            'autofill/browser/android/auxiliary_profile_loader_android.h',
+            'autofill/browser/android/auxiliary_profiles_android.cc',
+            'autofill/browser/android/auxiliary_profiles_android.h',
+            'autofill/browser/android/component_jni_registrar.cc',
+            'autofill/browser/android/component_jni_registrar.h',
+            'autofill/browser/android/personal_data_manager_android.cc',
             'autofill/common/autocheckout_status.h',
             'autofill/common/autofill_constants.cc',
             'autofill/common/autofill_constants.h',
@@ -76,6 +91,33 @@
             'autofill/common/web_element_descriptor.cc',
             'autofill/common/web_element_descriptor.h',
           ],
+        },
+      ],
+    }],
+    ['OS == "android"', {
+      'targets': [
+        {
+          'target_name': 'autofill_java',
+          'type': 'none',
+          'dependencies': [
+            '../base/base.gyp:base',
+            '../content/content.gyp:content_java',
+          ],
+          'variables': {
+            'java_in_dir': 'autofill/browser/android/java',
+          },
+          'includes': [ '../build/java.gypi' ],
+        },
+        {
+          'target_name': 'autofill_jni_headers',
+          'type': 'none',
+          'sources': [
+            'autofill/browser/android/java/src/org/chromium/components/browser/autofill/PersonalAutofillPopulator.java',
+          ],
+          'variables': {
+            'jni_gen_package': 'autofill',
+          },
+          'includes': [ '../build/jni_generator.gypi' ],
         },
       ],
     }],

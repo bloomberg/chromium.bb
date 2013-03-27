@@ -204,7 +204,7 @@ class PersonalDataManager : public WebDataServiceConsumer,
   // Loads the saved profiles from the web database.
   virtual void LoadProfiles();
 
-  // Loads the auxiliary profiles.  Currently Mac only.
+  // Loads the auxiliary profiles.  Currently Mac and Android only.
   virtual void LoadAuxiliaryProfiles();
 
   // Loads the saved credit cards from the web database.

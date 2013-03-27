@@ -271,6 +271,8 @@
 
         # TODO(joi): Move to //components/components.gypi once
         # remaining dependencies back to //chrome are eliminated.
+        '../components/autofill/browser/android/test_auxiliary_profile_loader_android.cc',
+        '../components/autofill/browser/android/test_auxiliary_profile_loader_android.h',
         '../components/autofill/browser/autofill_common_test.cc',
         '../components/autofill/browser/autofill_common_test.h',
         '../components/autofill/browser/data_driven_test.cc',
@@ -1639,6 +1641,7 @@
         # remaining dependencies back to //chrome are eliminated.
         '../components/autofill/browser/address_field_unittest.cc',
         '../components/autofill/browser/address_unittest.cc',
+        '../components/autofill/browser/android/auxiliary_profile_unittest_android.cc',
         '../components/autofill/browser/autocheckout/whitelist_manager_unittest.cc',
         '../components/autofill/browser/autocheckout_manager_unittest.cc',
         '../components/autofill/browser/autocheckout_page_meta_data_unittest.cc',

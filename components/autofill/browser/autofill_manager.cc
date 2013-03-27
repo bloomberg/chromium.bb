@@ -231,7 +231,7 @@ void AutofillManager::RegisterUserPrefs(PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(prefs::kPasswordGenerationEnabled,
                                 true,
                                 PrefRegistrySyncable::SYNCABLE_PREF);
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
   registry->RegisterBooleanPref(prefs::kAutofillAuxiliaryProfilesEnabled,
                                 true,
                                 PrefRegistrySyncable::SYNCABLE_PREF);
