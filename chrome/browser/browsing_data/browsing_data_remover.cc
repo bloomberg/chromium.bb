@@ -698,15 +698,18 @@ void BrowsingDataRemover::DoClearCache(int rv) {
         net::HttpTransactionFactory* factory =
             getter->GetURLRequestContext()->http_transaction_factory();
 
+        next_cache_state_ = (next_cache_state_ == STATE_CREATE_MAIN) ?
+                                STATE_DELETE_MAIN : STATE_DELETE_MEDIA;
         rv = factory->GetCache()->GetBackend(
             &cache_, base::Bind(&BrowsingDataRemover::DoClearCache,
                                 base::Unretained(this)));
-        next_cache_state_ = (next_cache_state_ == STATE_CREATE_MAIN) ?
-                                STATE_DELETE_MAIN : STATE_DELETE_MEDIA;
         break;
       }
       case STATE_DELETE_MAIN:
       case STATE_DELETE_MEDIA: {
+        next_cache_state_ = (next_cache_state_ == STATE_DELETE_MAIN) ?
+                                STATE_CREATE_MEDIA : STATE_DELETE_EXPERIMENT;
+
         // |cache_| can be null if it cannot be initialized.
         if (cache_) {
           if (delete_begin_.is_null()) {
@@ -721,12 +724,12 @@ void BrowsingDataRemover::DoClearCache(int rv) {
           }
           cache_ = NULL;
         }
-        next_cache_state_ = (next_cache_state_ == STATE_DELETE_MAIN) ?
-                                STATE_CREATE_MEDIA : STATE_DELETE_EXPERIMENT;
         break;
       }
       case STATE_DELETE_EXPERIMENT: {
         cache_ = NULL;
+        next_cache_state_ = STATE_DONE;
+
         // Get a pointer to the experiment.
         net::HttpTransactionFactory* factory =
             main_context_getter_->GetURLRequestContext()->
@@ -744,25 +747,23 @@ void BrowsingDataRemover::DoClearCache(int rv) {
               base::Bind(&BrowsingDataRemover::DoClearCache,
                          base::Unretained(this)));
         }
-        next_cache_state_ = STATE_DONE;
         break;
       }
       case STATE_DONE: {
         cache_ = NULL;
+        next_cache_state_ = STATE_NONE;
 
         // Notify the UI thread that we are done.
         BrowserThread::PostTask(
             BrowserThread::UI, FROM_HERE,
             base::Bind(&BrowsingDataRemover::ClearedCache,
                        base::Unretained(this)));
-
-        next_cache_state_ = STATE_NONE;
-        break;
+        return;
       }
       default: {
         NOTREACHED() << "bad state";
         next_cache_state_ = STATE_NONE;  // Stop looping.
-        break;
+        return;
       }
     }
   }
