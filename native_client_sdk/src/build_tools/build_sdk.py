@@ -909,6 +909,9 @@ def BuildStepBuildNaClPorts(pepper_ver, pepperdir):
   buildbot_common.Run([build_script], env=env, cwd=NACLPORTS_DIR)
 
   out_dir = os.path.join(bundle_dir, 'pepper_XX')
+  out_dir_final = os.path.join(bundle_dir, 'pepper_%s' % pepper_ver)
+  buildbot_common.RemoveDir(out_dir_final)
+  buildbot_common.Move(out_dir, out_dir_final)
 
   # Some naclports do not include a standalone LICENSE/COPYING file
   # so we explicitly list those here for inclusion.
@@ -916,13 +919,10 @@ def BuildStepBuildNaClPorts(pepper_ver, pepperdir):
                     'jpeg-8d/README',
                     'zlib-1.2.3/README')
   src_root = os.path.join(NACLPORTS_DIR, 'out', 'repository-i686')
-  output_license = os.path.join(out_dir, 'LICENSE')
+  output_license = os.path.join(out_dir_final, 'ports', 'LICENSE')
   GenerateNotice(src_root , output_license, extra_licenses)
-  readme = os.path.join(out_dir, 'README')
+  readme = os.path.join(out_dir_final, 'ports', 'README')
   oshelpers.Copy(['-v', os.path.join(SDK_SRC_DIR, 'README.naclports'), readme])
-
-  out_dir_final = os.path.join(bundle_dir, 'pepper_%s' % pepper_ver)
-  buildbot_common.Move(out_dir, out_dir_final)
 
 
 def BuildStepTarNaClPorts(pepper_ver, tarfile):
@@ -930,8 +930,7 @@ def BuildStepTarNaClPorts(pepper_ver, tarfile):
   buildbot_common.BuildStep('Tar naclports Bundle')
   buildbot_common.MakeDir(os.path.dirname(tarfile))
   pepper_dir = 'pepper_%s' % pepper_ver
-  archive_dirs = [os.path.join(pepper_dir, 'ports', 'lib'),
-                  os.path.join(pepper_dir, 'ports', 'include')]
+  archive_dirs = [os.path.join(pepper_dir, 'ports')]
 
   ports_out = os.path.join(NACLPORTS_DIR, 'out', 'sdk_bundle')
   cmd = [sys.executable, CYGTAR, '-C', ports_out, '-cjf', tarfile]
