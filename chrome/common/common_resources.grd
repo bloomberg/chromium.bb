@@ -9,7 +9,6 @@
   </outputs>
   <release seq="1">
     <includes>
-      <include name="IDR_EXTENSION_API_FEATURES" file="extensions\api\_api_features.json" type="BINDATA" />
       <include name="IDR_EXTENSION_MANIFEST_FEATURES" file="extensions\api\_manifest_features.json" type="BINDATA" />
       <include name="IDR_EXTENSION_PERMISSION_FEATURES" file="extensions\api\_permission_features.json" type="BINDATA" />
       <include name="IDR_WEB_APP_SCHEMA" file="web_app_schema.json" type="BINDATA" />

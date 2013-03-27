@@ -37,7 +37,7 @@ class Feature;
 // WARNING: This class is accessed on multiple threads in the browser process
 // (see ExtensionFunctionDispatcher). No state should be modified after
 // construction.
-class ExtensionAPI {
+class ExtensionAPI : public FeatureProvider {
  public:
   // Returns a single shared instance of this class. This is the typical use
   // case in Chrome.
@@ -88,6 +88,11 @@ class ExtensionAPI {
 
   std::set<std::string> GetAllAPINames();
 
+  // Gets a Feature object describing the API with the specified |full_name|.
+  // This can be either an API namespace (like history, or
+  // experimental.bookmarks), or it can be an individual function or event.
+  virtual Feature* GetFeature(const std::string& full_name) OVERRIDE;
+
   // Splits a full name from the extension API into its API and child name
   // parts. Some examples:
   //
@@ -101,10 +106,6 @@ class ExtensionAPI {
                                      std::string* child_name);
 
   void InitDefaultConfiguration();
-
-  // Gets a feature from any dependency provider registered with ExtensionAPI.
-  // Returns NULL if the feature could not be found.
-  Feature* GetFeatureDependency(const std::string& dependency_name);
 
  private:
   friend struct DefaultSingletonTraits<ExtensionAPI>;
@@ -132,6 +133,24 @@ class ExtensionAPI {
                                 Feature::Context context,
                                 const Extension* extension,
                                 const GURL& url);
+
+  // Returns true if the API uses the feature system.
+  bool UsesFeatureSystem(const std::string& full_name);
+
+  // Gets a feature from any dependency provider.
+  Feature* GetFeatureDependency(const std::string& dependency_name);
+
+  // Adds dependent schemas to |out| as determined by the "dependencies"
+  // property.
+  // TODO(aa): Consider making public and adding tests.
+  void ResolveDependencies(std::set<std::string>* out);
+
+  // Adds any APIs listed in "dependencies" found in the schema for |api_name|
+  // but not in |excluding| to |out|.
+  void GetMissingDependencies(
+      const std::string& api_name,
+      const std::set<std::string>& excluding,
+      std::set<std::string>* out);
 
   // Checks if an API is *entirely* privileged. This won't include APIs such as
   // "storage" which is entirely unprivileged, nor "extension" which has

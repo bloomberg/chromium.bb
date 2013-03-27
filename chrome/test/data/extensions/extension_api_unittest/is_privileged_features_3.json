@@ -1,0 +1,8 @@
+[
+  {
+    "namespace": "test",
+    "uses_feature_system": true,
+    "extension_types": ["extension"],
+    "contexts": ["content_script", "blessed_extension"]
+  }
+]

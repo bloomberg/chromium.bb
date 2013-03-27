@@ -34,20 +34,4 @@ Feature::Availability ManifestFeature::IsAvailableToContext(
   return CreateAvailability(IS_AVAILABLE);
 }
 
-std::string ManifestFeature::Parse(const DictionaryValue* value) {
-  std::string error = SimpleFeature::Parse(value);
-  if (!error.empty())
-    return error;
-
-  if (extension_types()->empty()) {
-    return name() + ": Manifest features must specify at least one " +
-        "value for extension_types.";
-  }
-
-  if (!GetContexts()->empty())
-    return name() + ": Manifest features do not support contexts.";
-
-  return "";
-}
-
 }  // namespace

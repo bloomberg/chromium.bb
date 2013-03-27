@@ -6,7 +6,6 @@
 
 #include "base/json/json_reader.h"
 #include "base/lazy_instance.h"
-#include "chrome/common/extensions/features/api_feature.h"
 #include "chrome/common/extensions/features/complex_feature.h"
 #include "chrome/common/extensions/features/manifest_feature.h"
 #include "chrome/common/extensions/features/permission_feature.h"
@@ -24,11 +23,7 @@ SimpleFeature* CreateFeature() {
 
 struct Static {
   Static()
-      : api_features(
-            LoadProvider("api",
-                         &CreateFeature<APIFeature>,
-                         IDR_EXTENSION_API_FEATURES)),
-        manifest_features(
+      : manifest_features(
             LoadProvider("manifest",
                          &CreateFeature<ManifestFeature>,
                          IDR_EXTENSION_MANIFEST_FEATURES)),
@@ -38,7 +33,6 @@ struct Static {
                          IDR_EXTENSION_PERMISSION_FEATURES)) {
   }
 
-  scoped_ptr<BaseFeatureProvider> api_features;
   scoped_ptr<BaseFeatureProvider> manifest_features;
   scoped_ptr<BaseFeatureProvider> permission_features;
 
@@ -73,10 +67,20 @@ bool ParseFeature(const DictionaryValue* value,
                   const std::string& name,
                   SimpleFeature* feature) {
   feature->set_name(name);
-  std::string error = feature->Parse(value);
-  if (!error.empty())
-    LOG(ERROR) << error;
-  return error.empty();
+  feature->Parse(value);
+
+  if (feature->extension_types()->empty()) {
+    LOG(ERROR) << name << ": Simple features must specify at least one "
+               << "value for extension_types.";
+    return false;
+  }
+
+  if (!feature->GetContexts()->empty()) {
+    LOG(ERROR) << name << ": Simple features do not support contexts.";
+    return false;
+  }
+
+  return true;
 }
 
 base::LazyInstance<Static> g_static = LAZY_INSTANCE_INITIALIZER;
@@ -134,11 +138,6 @@ BaseFeatureProvider::BaseFeatureProvider(const DictionaryValue& root,
 }
 
 BaseFeatureProvider::~BaseFeatureProvider() {
-}
-
-// static
-BaseFeatureProvider* BaseFeatureProvider::GetApiFeatures() {
-  return g_static.Get().api_features.get();
 }
 
 // static

@@ -61,8 +61,6 @@ Feature::Availability Feature::CreateAvailability(AvailabilityResult result,
   return Availability(result, message);
 }
 
-Feature::Feature() {}
-
 Feature::~Feature() {}
 
 }  // namespace extensions

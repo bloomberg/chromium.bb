@@ -4,7 +4,6 @@
 
 #include "chrome/common/extensions/features/base_feature_provider.h"
 
-#include "chrome/common/extensions/features/permission_feature.h"
 #include "chrome/common/extensions/value_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -15,7 +14,6 @@ using extensions::Extension;
 using extensions::Feature;
 using extensions::ListBuilder;
 using extensions::Manifest;
-using extensions::PermissionFeature;
 using extensions::SimpleFeature;
 
 TEST(BaseFeatureProvider, ManifestFeatures) {
@@ -102,10 +100,6 @@ TEST(BaseFeatureProvider, PermissionFeatures) {
       extension.get(), Feature::UNSPECIFIED_CONTEXT).result());
 }
 
-SimpleFeature* CreatePermissionFeature() {
-  return new PermissionFeature();
-}
-
 TEST(BaseFeatureProvider, Validation) {
   scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
 
@@ -122,14 +116,14 @@ TEST(BaseFeatureProvider, Validation) {
   value->Set("feature2", feature2);
 
   scoped_ptr<BaseFeatureProvider> provider(
-      new BaseFeatureProvider(*value, CreatePermissionFeature));
+      new BaseFeatureProvider(*value, NULL));
 
   // feature1 won't validate because it lacks an extension type.
   EXPECT_FALSE(provider->GetFeature("feature1"));
 
   // If we add one, it works.
   feature1->Set("extension_types", extension_types->DeepCopy());
-  provider.reset(new BaseFeatureProvider(*value, CreatePermissionFeature));
+  provider.reset(new BaseFeatureProvider(*value, NULL));
   EXPECT_TRUE(provider->GetFeature("feature1"));
 
   // feature2 won't validate because of the presence of "contexts".
@@ -137,7 +131,7 @@ TEST(BaseFeatureProvider, Validation) {
 
   // If we remove it, it works.
   feature2->Remove("contexts", NULL);
-  provider.reset(new BaseFeatureProvider(*value, CreatePermissionFeature));
+  provider.reset(new BaseFeatureProvider(*value, NULL));
   EXPECT_TRUE(provider->GetFeature("feature2"));
 }
 
