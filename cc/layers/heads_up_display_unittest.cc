@@ -94,7 +94,7 @@ class HudWithRootLayerChange : public HeadsUpDisplayTest {
   int num_commits_;
 };
 
-MULTI_THREAD_TEST_F(HudWithRootLayerChange)
+MULTI_THREAD_TEST_F(HudWithRootLayerChange);
 
 }  // namespace
 }  // namespace cc

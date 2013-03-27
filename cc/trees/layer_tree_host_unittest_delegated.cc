@@ -157,7 +157,7 @@ class LayerTreeHostDelegatedTestCreateChildId
   bool did_reset_child_id_;
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostDelegatedTestCreateChildId)
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostDelegatedTestCreateChildId);
 
 class LayerTreeHostDelegatedTestLayerUsesFrameDamage
     : public LayerTreeHostDelegatedTestCaseSingleDelegatedLayer {
@@ -327,7 +327,7 @@ class LayerTreeHostDelegatedTestLayerUsesFrameDamage
   bool first_draw_for_source_frame_;
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostDelegatedTestLayerUsesFrameDamage)
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostDelegatedTestLayerUsesFrameDamage);
 
 class LayerTreeHostDelegatedTestMergeResources
     : public LayerTreeHostDelegatedTestCaseSingleDelegatedLayer {
@@ -377,7 +377,7 @@ class LayerTreeHostDelegatedTestMergeResources
   virtual void AfterTest() OVERRIDE {}
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostDelegatedTestMergeResources)
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostDelegatedTestMergeResources);
 
 class LayerTreeHostDelegatedTestRemapResourcesInQuads
     : public LayerTreeHostDelegatedTestCaseSingleDelegatedLayer {
@@ -428,7 +428,7 @@ class LayerTreeHostDelegatedTestRemapResourcesInQuads
   virtual void AfterTest() OVERRIDE {}
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostDelegatedTestRemapResourcesInQuads)
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostDelegatedTestRemapResourcesInQuads);
 
 class LayerTreeHostDelegatedTestReturnUnusedResources
     : public LayerTreeHostDelegatedTestCaseSingleDelegatedLayer {
@@ -498,7 +498,7 @@ class LayerTreeHostDelegatedTestReturnUnusedResources
   virtual void AfterTest() OVERRIDE {}
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostDelegatedTestReturnUnusedResources)
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostDelegatedTestReturnUnusedResources);
 
 class LayerTreeHostDelegatedTestReusedResources
     : public LayerTreeHostDelegatedTestCaseSingleDelegatedLayer {
@@ -557,7 +557,7 @@ class LayerTreeHostDelegatedTestReusedResources
   virtual void AfterTest() OVERRIDE {}
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostDelegatedTestReusedResources)
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostDelegatedTestReusedResources);
 
 class LayerTreeHostDelegatedTestFrameBeforeAck
     : public LayerTreeHostDelegatedTestCaseSingleDelegatedLayer {
@@ -654,7 +654,7 @@ class LayerTreeHostDelegatedTestFrameBeforeAck
   virtual void AfterTest() OVERRIDE {}
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostDelegatedTestFrameBeforeAck)
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostDelegatedTestFrameBeforeAck);
 
 class LayerTreeHostDelegatedTestFrameBeforeTakeResources
     : public LayerTreeHostDelegatedTestCaseSingleDelegatedLayer {
@@ -759,7 +759,7 @@ class LayerTreeHostDelegatedTestFrameBeforeTakeResources
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(
-    LayerTreeHostDelegatedTestFrameBeforeTakeResources)
+    LayerTreeHostDelegatedTestFrameBeforeTakeResources);
 
 class LayerTreeHostDelegatedTestBadFrame
     : public LayerTreeHostDelegatedTestCaseSingleDelegatedLayer {
@@ -901,7 +901,7 @@ class LayerTreeHostDelegatedTestBadFrame
   virtual void AfterTest() OVERRIDE {}
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostDelegatedTestBadFrame)
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostDelegatedTestBadFrame);
 
 class LayerTreeHostDelegatedTestUnnamedResource
     : public LayerTreeHostDelegatedTestCaseSingleDelegatedLayer {
@@ -958,7 +958,7 @@ class LayerTreeHostDelegatedTestUnnamedResource
   virtual void AfterTest() OVERRIDE {}
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostDelegatedTestUnnamedResource)
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostDelegatedTestUnnamedResource);
 
 class LayerTreeHostDelegatedTestDontLeakResource
     : public LayerTreeHostDelegatedTestCaseSingleDelegatedLayer {
@@ -1021,7 +1021,7 @@ class LayerTreeHostDelegatedTestDontLeakResource
   virtual void AfterTest() OVERRIDE {}
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostDelegatedTestDontLeakResource)
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostDelegatedTestDontLeakResource);
 
 class LayerTreeHostDelegatedTestResourceSentToParent
     : public LayerTreeHostDelegatedTestCaseSingleDelegatedLayer {
@@ -1136,7 +1136,7 @@ class LayerTreeHostDelegatedTestResourceSentToParent
   virtual void AfterTest() OVERRIDE {}
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostDelegatedTestResourceSentToParent)
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostDelegatedTestResourceSentToParent);
 
 class LayerTreeHostDelegatedTestCommitWithoutTake
     : public LayerTreeHostDelegatedTestCaseSingleDelegatedLayer {
@@ -1235,7 +1235,7 @@ class LayerTreeHostDelegatedTestCommitWithoutTake
   virtual void AfterTest() OVERRIDE {}
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostDelegatedTestCommitWithoutTake)
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostDelegatedTestCommitWithoutTake);
 
 }  // namespace
 }  // namespace cc

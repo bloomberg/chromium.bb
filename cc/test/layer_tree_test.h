@@ -167,18 +167,21 @@ class LayerTreeTest : public testing::Test, public TestHooks {
 
 }  // namespace cc
 
-#define SINGLE_THREAD_TEST_F(TEST_FIXTURE_NAME) \
-  TEST_F(TEST_FIXTURE_NAME, RunSingleThread) {  \
-    RunTest(false);                             \
-  }
+#define SINGLE_THREAD_TEST_F(TEST_FIXTURE_NAME)           \
+  TEST_F(TEST_FIXTURE_NAME, RunSingleThread) {            \
+    RunTest(false);                                       \
+  }                                                       \
+  class SingleThreadNeedsSemicolon##TEST_FIXTURE_NAME {}
 
-#define MULTI_THREAD_TEST_F(TEST_FIXTURE_NAME)  \
-  TEST_F(TEST_FIXTURE_NAME, RunMultiThread) {   \
-    RunTest(true);                              \
-  }
+
+#define MULTI_THREAD_TEST_F(TEST_FIXTURE_NAME)            \
+  TEST_F(TEST_FIXTURE_NAME, RunMultiThread) {             \
+    RunTest(true);                                        \
+  }                                                       \
+  class MultiThreadNeedsSemicolon##TEST_FIXTURE_NAME {}
 
 #define SINGLE_AND_MULTI_THREAD_TEST_F(TEST_FIXTURE_NAME) \
-  SINGLE_THREAD_TEST_F(TEST_FIXTURE_NAME)                 \
+  SINGLE_THREAD_TEST_F(TEST_FIXTURE_NAME);                \
   MULTI_THREAD_TEST_F(TEST_FIXTURE_NAME)
 
 #endif  // CC_TEST_LAYER_TREE_TEST_H_

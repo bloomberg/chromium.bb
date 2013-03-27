@@ -77,7 +77,7 @@ class DelegatingRendererTestDraw : public DelegatingRendererTest {
   }
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(DelegatingRendererTestDraw)
+SINGLE_AND_MULTI_THREAD_TEST_F(DelegatingRendererTestDraw);
 
 class DelegatingRendererTestResources : public DelegatingRendererTest {
  public:
@@ -131,6 +131,6 @@ class DelegatingRendererTestResources : public DelegatingRendererTest {
   }
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(DelegatingRendererTestResources)
+SINGLE_AND_MULTI_THREAD_TEST_F(DelegatingRendererTestResources);
 
 }  // namespace cc

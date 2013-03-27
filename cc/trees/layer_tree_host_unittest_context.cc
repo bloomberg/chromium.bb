@@ -382,7 +382,7 @@ class LayerTreeHostContextTestLostContextSucceeds :
   bool recovered_context_;
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostContextTestLostContextSucceeds)
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostContextTestLostContextSucceeds);
 
 class LayerTreeHostContextTestLostContextSucceedsWithContent :
     public LayerTreeHostContextTestLostContextSucceeds {
@@ -536,7 +536,7 @@ class LayerTreeHostContextTestOffscreenContextFails
   scoped_refptr<ContentLayer> content_;
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostContextTestOffscreenContextFails)
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostContextTestOffscreenContextFails);
 
 class LayerTreeHostContextTestLostContextFails :
     public LayerTreeHostContextTest {
@@ -648,7 +648,7 @@ class LayerTreeHostContextTestFinishAllRenderingAfterLoss :
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(
-    LayerTreeHostContextTestFinishAllRenderingAfterLoss)
+    LayerTreeHostContextTestFinishAllRenderingAfterLoss);
 
 class LayerTreeHostContextTestLostContextAndEvictTextures :
     public LayerTreeHostContextTest {
@@ -804,7 +804,7 @@ class LayerTreeHostContextTestLostContextWhileUpdatingResources :
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(
-    LayerTreeHostContextTestLostContextWhileUpdatingResources)
+    LayerTreeHostContextTestLostContextWhileUpdatingResources);
 
 class LayerTreeHostContextTestLayersNotified :
     public LayerTreeHostContextTest {
@@ -888,7 +888,7 @@ class LayerTreeHostContextTestLayersNotified :
   scoped_refptr<FakeContentLayer> grandchild_;
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostContextTestLayersNotified)
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostContextTestLayersNotified);
 
 class LayerTreeHostContextTestDontUseLostResources :
     public LayerTreeHostContextTest {
@@ -1104,7 +1104,7 @@ class LayerTreeHostContextTestDontUseLostResources :
   FakeVideoFrameProvider scaled_hw_frame_provider_;
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostContextTestDontUseLostResources)
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostContextTestDontUseLostResources);
 
 class LayerTreeHostContextTestFailsImmediately :
     public LayerTreeHostContextTest {
@@ -1182,7 +1182,7 @@ class LayerTreeHostContextTestImplSidePainting :
   FakeContentLayerClient client_;
 };
 
-MULTI_THREAD_TEST_F(LayerTreeHostContextTestImplSidePainting)
+MULTI_THREAD_TEST_F(LayerTreeHostContextTestImplSidePainting);
 
 class ScrollbarLayerLostContext : public LayerTreeHostContextTest {
  public:
@@ -1232,7 +1232,7 @@ class ScrollbarLayerLostContext : public LayerTreeHostContextTest {
   scoped_refptr<FakeScrollbarLayer> scrollbar_layer_;
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(ScrollbarLayerLostContext)
+SINGLE_AND_MULTI_THREAD_TEST_F(ScrollbarLayerLostContext);
 
 }  // namespace
 }  // namespace cc

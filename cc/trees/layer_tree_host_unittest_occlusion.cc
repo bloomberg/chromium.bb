@@ -135,7 +135,7 @@ class LayerTreeHostOcclusionTestOcclusionSurfaceClipping :
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(
-    LayerTreeHostOcclusionTestOcclusionSurfaceClipping)
+    LayerTreeHostOcclusionTestOcclusionSurfaceClipping);
 
 class LayerTreeHostOcclusionTestOcclusionSurfaceClippingOpaque :
     public LayerTreeHostOcclusionTest {
@@ -198,7 +198,7 @@ class LayerTreeHostOcclusionTestOcclusionTwoChildren :
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(
-    LayerTreeHostOcclusionTestOcclusionTwoChildren)
+    LayerTreeHostOcclusionTestOcclusionTwoChildren);
 
 class LayerTreeHostOcclusionTestOcclusionMask :
     public LayerTreeHostOcclusionTest {
@@ -231,7 +231,7 @@ class LayerTreeHostOcclusionTestOcclusionMask :
   }
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostOcclusionTestOcclusionMask)
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostOcclusionTestOcclusionMask);
 
 class LayerTreeHostOcclusionTestOcclusionMaskBelowOcclusion :
     public LayerTreeHostOcclusionTest {
@@ -267,7 +267,7 @@ class LayerTreeHostOcclusionTestOcclusionMaskBelowOcclusion :
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(
-    LayerTreeHostOcclusionTestOcclusionMaskBelowOcclusion)
+    LayerTreeHostOcclusionTestOcclusionMaskBelowOcclusion);
 
 class LayerTreeHostOcclusionTestOcclusionOpacity :
     public LayerTreeHostOcclusionTest {
@@ -300,7 +300,7 @@ class LayerTreeHostOcclusionTestOcclusionOpacity :
   }
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostOcclusionTestOcclusionOpacity)
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostOcclusionTestOcclusionOpacity);
 
 class LayerTreeHostOcclusionTestOcclusionOpacityBelowOcclusion :
     public LayerTreeHostOcclusionTest {
@@ -336,7 +336,7 @@ class LayerTreeHostOcclusionTestOcclusionOpacityBelowOcclusion :
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(
-    LayerTreeHostOcclusionTestOcclusionOpacityBelowOcclusion)
+    LayerTreeHostOcclusionTestOcclusionOpacityBelowOcclusion);
 
 class LayerTreeHostOcclusionTestOcclusionOpacityFilter :
     public LayerTreeHostOcclusionTest {
@@ -380,7 +380,7 @@ class LayerTreeHostOcclusionTestOcclusionOpacityFilter :
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(
-    LayerTreeHostOcclusionTestOcclusionOpacityFilter)
+    LayerTreeHostOcclusionTestOcclusionOpacityFilter);
 
 class LayerTreeHostOcclusionTestOcclusionBlurFilter :
     public LayerTreeHostOcclusionTest {
@@ -422,7 +422,7 @@ class LayerTreeHostOcclusionTestOcclusionBlurFilter :
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(
-    LayerTreeHostOcclusionTestOcclusionBlurFilter)
+    LayerTreeHostOcclusionTestOcclusionBlurFilter);
 
 class LayerTreeHostOcclusionTestManySurfaces :
     public LayerTreeHostOcclusionTest {
@@ -470,7 +470,7 @@ class LayerTreeHostOcclusionTestManySurfaces :
   }
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostOcclusionTestManySurfaces)
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostOcclusionTestManySurfaces);
 
 }  // namespace
 }  // namespace cc

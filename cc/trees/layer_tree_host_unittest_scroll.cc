@@ -88,7 +88,7 @@ class LayerTreeHostScrollTestScrollSimple : public LayerTreeHostScrollTest {
   int num_scrolls_;
 };
 
-MULTI_THREAD_TEST_F(LayerTreeHostScrollTestScrollSimple)
+MULTI_THREAD_TEST_F(LayerTreeHostScrollTestScrollSimple);
 
 class LayerTreeHostScrollTestScrollMultipleRedraw
     : public LayerTreeHostScrollTest {
@@ -173,7 +173,7 @@ class LayerTreeHostScrollTestScrollMultipleRedraw
   int num_scrolls_;
 };
 
-MULTI_THREAD_TEST_F(LayerTreeHostScrollTestScrollMultipleRedraw)
+MULTI_THREAD_TEST_F(LayerTreeHostScrollTestScrollMultipleRedraw);
 
 class LayerTreeHostScrollTestFractionalScroll : public LayerTreeHostScrollTest {
  public:
@@ -232,7 +232,7 @@ class LayerTreeHostScrollTestFractionalScroll : public LayerTreeHostScrollTest {
   gfx::Vector2dF scroll_amount_;
 };
 
-MULTI_THREAD_TEST_F(LayerTreeHostScrollTestFractionalScroll)
+MULTI_THREAD_TEST_F(LayerTreeHostScrollTestFractionalScroll);
 
 class LayerTreeHostScrollTestCaseWithChild
     : public LayerTreeHostScrollTest,
@@ -658,7 +658,8 @@ class LayerTreeHostScrollTestScrollZeroMaxScrollOffset
   virtual void AfterTest() OVERRIDE {}
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostScrollTestScrollZeroMaxScrollOffset)
+SINGLE_AND_MULTI_THREAD_TEST_F(
+    LayerTreeHostScrollTestScrollZeroMaxScrollOffset);
 
 }  // namespace
 }  // namespace cc
