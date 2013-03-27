@@ -44,19 +44,7 @@
       'dependencies': [
         'android_webview_apk',
       ],
-      'all_dependent_settings': {
-        'variables': {
-          'input_jars_paths': ['>(apk_output_jar_path)'],
-        },
-      },
-      'actions': [
-        {
-          'action_name': 'fake_generate_jar',
-          'inputs': [],
-          'outputs': ['>(apk_output_jar_path)'],
-          'action': [],
-        },
-      ],
+      'includes': [ '../build/apk_fake_jar.gypi' ],
     },
     {
       'target_name': 'android_webview_test_apk',

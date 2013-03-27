@@ -53,6 +53,7 @@
   'variables': {
     'additional_input_paths': [],
     'input_jars_paths': [],
+    'library_dexed_jars_paths': [],
     'additional_src_dirs': [],
     'generated_src_dirs': [],
     'app_manifest_version_name%': '<(android_app_version_name)',
@@ -312,7 +313,7 @@
             'dex_generated_inputs': [],
           }, {
             'dex_inputs': [
-              '>@(input_jars_paths)',
+              '>@(library_dexed_jars_paths)',
             ],
             'dex_generated_inputs': [
               '<(classes_dir)',

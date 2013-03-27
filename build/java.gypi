@@ -58,6 +58,7 @@
     'jar_path': '<(PRODUCT_DIR)/lib.java/<(jar_name)',
     'jar_excluded_classes': [ '*/R.class', '*/R##*.class' ],
     'additional_input_paths': [],
+    'dex_path': '<(PRODUCT_DIR)/lib.java/<(_target_name).dex.jar',
     'generated_src_dirs': ['>@(generated_R_dirs)'],
     'generated_R_dirs': [],
     'has_java_resources%': 0,
@@ -74,6 +75,7 @@
   'all_dependent_settings': {
     'variables': {
       'input_jars_paths': ['<(jar_path)'],
+      'library_dexed_jars_paths': ['<(dex_path)'],
     },
   },
   'conditions': [
@@ -226,5 +228,28 @@
         '--ignore=>!(echo \'>(_inputs)\' | md5sum)',
       ]
     },
+    {
+      'action_name': 'dex_<(_target_name)',
+      'message': 'Dexing <(_target_name) jar',
+      'inputs': [
+        '<(DEPTH)/build/android/pylib/build_utils.py',
+        '<(DEPTH)/build/android/dex.py',
+        '<(jar_path)',
+      ],
+      'outputs': [
+        '<(dex_path)',
+      ],
+      'action': [
+        'python', '<(DEPTH)/build/android/dex.py',
+        '--dex-path=<(dex_path)',
+        '--android-sdk-root=<(android_sdk_root)',
+
+        # TODO(newt): remove this once http://crbug.com/177552 is fixed in ninja.
+        '--ignore=>!(echo >(_inputs) | md5sum)',
+
+        '<(jar_path)',
+      ]
+    },
+
   ],
 }

@@ -78,23 +78,7 @@
       'dependencies': [
         'chromium_testshell',
       ],
-      # This all_dependent_settings is used for java targets only. This will add
-      # the chromium_testshell jar to the classpath of dependent java targets.
-      'all_dependent_settings': {
-        'variables': {
-          'input_jars_paths': ['>(apk_output_jar_path)'],
-        },
-      },
-      # Add an action with the appropriate output. This allows the generated
-      # buildfiles to determine which target the output corresponds to.
-      'actions': [
-        {
-          'action_name': 'fake_generate_jar',
-          'inputs': [],
-          'outputs': ['>(apk_output_jar_path)'],
-          'action': [],
-        },
-      ],
+      'includes': [ '../build/apk_fake_jar.gypi' ],
     },
     {
       'target_name': 'chrome_android_core',
