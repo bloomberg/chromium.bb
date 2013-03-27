@@ -31,9 +31,8 @@ namespace {
 // Dimensions.
 const int kIconColumnWidth = message_center::kNotificationIconSize;
 const int kLegacyIconSize = 40;
-const int kIconToTextPadding = 16;
-const int kTextTopPadding = 6;
-const int kTextLeftPadding = kIconColumnWidth + kIconToTextPadding;
+const int kTextLeftPadding = kIconColumnWidth +
+    message_center::kIconToTextPadding;
 const int kTextBottomPadding = 6;
 const int kTextRightPadding = 23;
 const int kItemTitleToMessagePadding = 3;
@@ -50,16 +49,14 @@ const size_t kMessageCharacterLimit = 200;
 // Notification colors. The text background colors below are used only to keep
 // view::Label from modifying the text color and will not actually be drawn.
 // See view::Label's SetEnabledColor() and SetBackgroundColor() for details.
-const SkColor kBackgroundColor = SkColorSetRGB(255, 255, 255);
-const SkColor kLegacyIconBackgroundColor = SkColorSetRGB(230, 230, 230);
-const SkColor kRegularTextColor = SkColorSetRGB(68, 68, 68);
 const SkColor kRegularTextBackgroundColor = SK_ColorWHITE;
 const SkColor kDimTextColor = SkColorSetRGB(136, 136, 136);
 const SkColor kDimTextBackgroundColor = SK_ColorBLACK;
 const SkColor kButtonSeparatorColor = SkColorSetRGB(234, 234, 234);
 
 // Static.
-views::Background* MakeBackground(SkColor color = kBackgroundColor) {
+views::Background* MakeBackground(
+    SkColor color = message_center::kBackgroundColor) {
   return views::Background::CreateSolidBackground(color);
 }
 
@@ -129,7 +126,7 @@ ItemView::ItemView(const message_center::NotificationItem& item) {
   title->set_collapse_when_hidden(true);
   title->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   title->SetElideBehavior(views::Label::ELIDE_AT_END);
-  title->SetEnabledColor(kRegularTextColor);
+  title->SetEnabledColor(message_center::kRegularTextColor);
   title->SetBackgroundColor(kRegularTextBackgroundColor);
   AddChildView(title);
 
@@ -290,7 +287,7 @@ void NotificationButton::SetTitle(const string16& title) {
     title_ = new views::Label(title);
     title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     title_->SetElideBehavior(views::Label::ELIDE_AT_END);
-    title_->SetEnabledColor(kRegularTextColor);
+    title_->SetEnabledColor(message_center::kRegularTextColor);
     title_->SetBackgroundColor(kRegularTextBackgroundColor);
     title_->set_border(MakeBorder(kButtonTitleTopPadding, 0, 0, 0));
     AddChildView(title_);
@@ -367,7 +364,7 @@ NotificationView::NotificationView(const Notification& notification,
     else
       title_view_->SetElideBehavior(views::Label::ELIDE_AT_END);
     title_view_->SetFont(title_view_->font().DeriveFont(2));
-    title_view_->SetEnabledColor(kRegularTextColor);
+    title_view_->SetEnabledColor(message_center::kRegularTextColor);
     title_view_->SetBackgroundColor(kRegularTextBackgroundColor);
     title_view_->set_border(MakeBorder(kTextTopPadding, 3));
     top_view_->AddChildView(title_view_);
@@ -385,7 +382,7 @@ NotificationView::NotificationView(const Notification& notification,
       message_view_->SetMultiLine(true);
     else
       message_view_->SetElideBehavior(views::Label::ELIDE_AT_END);
-    message_view_->SetEnabledColor(kRegularTextColor);
+    message_view_->SetEnabledColor(message_center::kRegularTextColor);
     message_view_->SetBackgroundColor(kRegularTextBackgroundColor);
     message_view_->set_border(MakeBorder(0, 3));
     top_view_->AddChildView(message_view_);

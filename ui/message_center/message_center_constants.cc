@@ -11,13 +11,31 @@ const int kNotificationPreferredImageSize = 300;
 const int kNotificationButtonIconSize = 16;
 const int kSettingsIconSize = 16;
 
+const int kControlButtonSize = 29;
+
+const int kIconToTextPadding = 16;
+
+const int kTextTopPadding = 6;
+
 const int kNotificationWidth = 300;
 
 const int kNotificationMaximumImageHeight = kNotificationWidth;
+
 const size_t kNotificationMaximumItems = 8;
 
 const int kAutocloseHighPriorityDelaySeconds = 25;
 const int kAutocloseDefaultDelaySeconds = 8;
 
 const int kMarginBetweenItems = 10;
+
+const SkColor kBackgroundColor = SkColorSetRGB(255, 255, 255);
+
+const SkColor kLegacyIconBackgroundColor = SkColorSetRGB(230, 230, 230);
+
+const SkColor kRegularTextColor = SkColorSetRGB(68, 68, 68);
+
+const int kTitleFontSize = 14;
+
+const int kMessageFontSize = 12;
+
 }  // namespace message_center

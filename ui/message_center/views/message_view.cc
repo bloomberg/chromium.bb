@@ -13,6 +13,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/shadow_value.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/message_center/message_center_constants.h"
 #include "ui/message_center/message_center_util.h"
 #include "ui/message_center/notification_change_observer.h"
 #include "ui/views/controls/button/image_button.h"
@@ -23,7 +24,6 @@
 
 namespace {
 
-const int kControlButtonSize = 29;
 const int kCloseIconTopPadding = 5;
 const int kCloseIconRightPadding = 5;
 const int kExpandIconBottomPadding = 8;
@@ -109,7 +109,8 @@ void ControlButton::SetPressedImage(int resource_id) {
 }
 
 gfx::Size ControlButton::GetPreferredSize() {
-  return gfx::Size(kControlButtonSize, kControlButtonSize);
+  return gfx::Size(message_center::kControlButtonSize,
+                   message_center::kControlButtonSize);
 }
 
 void ControlButton::OnPaint(gfx::Canvas* canvas) {

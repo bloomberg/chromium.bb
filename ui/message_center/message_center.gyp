@@ -25,6 +25,8 @@
         'MESSAGE_CENTER_IMPLEMENTATION',
       ],
       'sources': [
+        'cocoa/notification_controller.mm',
+        'cocoa/notification_controller.h',
         'message_center.cc',
         'message_center.h',
         'message_center_constants.cc',
@@ -75,6 +77,14 @@
             ['exclude', 'views/'],
           ],
         }],
+        ['OS=="mac"', {
+          'dependencies': [
+            '../ui.gyp:ui_cocoa_third_party_toolkits',
+          ],
+          'include_dirs': [
+            '../../third_party/GTM',
+          ],
+        }],
       ],
     },
     {
@@ -90,8 +100,16 @@
         'message_center',
       ],
       'sources': [
+        'cocoa/notification_controller_unittest.mm',
         'message_center_tray_unittest.cc',
         'notification_list_unittest.cc',
+      ],
+      'conditions': [
+        ['OS=="mac"', {
+          'dependencies': [
+            '../ui.gyp:ui_test_support',
+          ],
+        }],
       ],
     },
   ],
