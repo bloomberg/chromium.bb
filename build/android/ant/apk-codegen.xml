@@ -63,7 +63,11 @@
   </path>
 
   <!-- manifest merger default value -->
-  <property name="manifestmerger.enabled" value="false" />
+  <condition property="manifestmerger.enabled"
+      value="false"
+      else="true">
+    <equals arg1="${LIBRARY_MANIFEST_PATHS}" arg2="" />
+  </condition>
 
   <property name="resource.absolute.dir" value="${RESOURCE_DIR}"/>
 
