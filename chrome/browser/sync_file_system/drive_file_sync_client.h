@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_FILE_SYNC_CLIENT_H_
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_FILE_SYNC_CLIENT_H_
 
+#include <map>
 #include <string>
 
 #include "base/memory/weak_ptr.h"
@@ -101,6 +102,9 @@ class DriveFileSyncClient
       net::NetworkChangeNotifier::ConnectionType type) OVERRIDE;
 
  private:
+  typedef int64 UploadKey;
+  typedef std::map<UploadKey, UploadFileCallback> UploadCallbackMap;
+
   friend class DriveFileSyncClientTest;
   friend class DriveFileSyncServiceMockTest;
 
@@ -159,7 +163,7 @@ class DriveFileSyncClient
 
   void DidUploadNewFile(const std::string& parent_resource_id,
                         const std::string& title,
-                        const UploadFileCallback& callback,
+                        UploadKey upload_key,
                         google_apis::GDataErrorCode error,
                         scoped_ptr<google_apis::ResourceEntry> entry);
 
@@ -176,7 +180,7 @@ class DriveFileSyncClient
       google_apis::GDataErrorCode error,
       scoped_ptr<google_apis::ResourceEntry> entry);
 
-  void DidUploadExistingFile(const UploadFileCallback& callback,
+  void DidUploadExistingFile(UploadKey upload_key,
                              google_apis::GDataErrorCode error,
                              scoped_ptr<google_apis::ResourceEntry> entry);
 
@@ -205,11 +209,18 @@ class DriveFileSyncClient
       const GDataErrorCallback& callback,
       google_apis::GDataErrorCode error);
 
+  UploadKey RegisterUploadCallback(const UploadFileCallback& callback);
+  UploadFileCallback GetAndUnregisterUploadCallback(UploadKey key);
+  void CancelAllUploads(google_apis::GDataErrorCode error);
+
   static std::string FormatTitleQuery(const std::string& title);
 
   scoped_ptr<google_apis::DriveServiceInterface> drive_service_;
   scoped_ptr<google_apis::DriveUploaderInterface> drive_uploader_;
   google_apis::GDataWapiUrlGenerator url_generator_;
+
+  UploadCallbackMap upload_callback_map_;
+  UploadKey upload_next_key_;
 
   ObserverList<DriveFileSyncClientObserver> observers_;
 

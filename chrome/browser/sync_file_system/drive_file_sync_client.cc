@@ -124,7 +124,8 @@ void UploadResultAdapter(
 
 DriveFileSyncClient::DriveFileSyncClient(Profile* profile)
     : url_generator_(GURL(
-          google_apis::GDataWapiUrlGenerator::kBaseUrlForProduction)) {
+          google_apis::GDataWapiUrlGenerator::kBaseUrlForProduction)),
+      upload_next_key_(0) {
   drive_service_.reset(new google_apis::GDataWapiService(
       profile->GetRequestContext(),
       GURL(google_apis::GDataWapiUrlGenerator::kBaseUrlForProduction),
@@ -150,7 +151,8 @@ DriveFileSyncClient::DriveFileSyncClient(
     const GURL& base_url,
     scoped_ptr<google_apis::DriveServiceInterface> drive_service,
     scoped_ptr<google_apis::DriveUploaderInterface> drive_uploader)
-    : url_generator_(base_url) {
+    : url_generator_(base_url),
+      upload_next_key_(0) {
   drive_service_ = drive_service.Pass();
   drive_service_->Initialize(profile);
   drive_service_->AddObserver(this);
@@ -442,9 +444,10 @@ void DriveFileSyncClient::UploadNewFile(
           local_file_path.Extension(), &mime_type))
     mime_type = kMimeTypeOctetStream;
 
+  UploadKey upload_key = RegisterUploadCallback(callback);
   ResourceEntryCallback did_upload_callback =
       base::Bind(&DriveFileSyncClient::DidUploadNewFile, AsWeakPtr(),
-                 directory_resource_id, title, callback);
+                 directory_resource_id, title, upload_key);
   drive_uploader_->UploadNewFile(
       directory_resource_id,
       base::FilePath(kDummyDrivePath),
@@ -532,9 +535,16 @@ void DriveFileSyncClient::OnReadyToPerformOperations() {
 void DriveFileSyncClient::OnConnectionTypeChanged(
     net::NetworkChangeNotifier::ConnectionType type) {
   DCHECK(CalledOnValidThread());
-  if (type != net::NetworkChangeNotifier::CONNECTION_NONE)
+  if (type != net::NetworkChangeNotifier::CONNECTION_NONE) {
     FOR_EACH_OBSERVER(DriveFileSyncClientObserver,
                       observers_, OnNetworkConnected());
+    return;
+  }
+  // We're now disconnected, reset the drive_uploader_ to force stop
+  // uploading, otherwise the uploader may get stuck.
+  // TODO(kinuko): Check the uploader behavior if it's the expected behavior
+  // (http://crbug.com/223818)
+  CancelAllUploads(google_apis::GDATA_NO_CONNECTION);
 }
 
 void DriveFileSyncClient::DidGetResourceList(
@@ -647,9 +657,11 @@ void DriveFileSyncClient::DidDownloadFile(
 void DriveFileSyncClient::DidUploadNewFile(
     const std::string& parent_resource_id,
     const std::string& title,
-    const UploadFileCallback& callback,
+    UploadKey upload_key,
     google_apis::GDataErrorCode error,
     scoped_ptr<google_apis::ResourceEntry> entry) {
+  UploadFileCallback callback = GetAndUnregisterUploadCallback(upload_key);
+  DCHECK(!callback.is_null());
   if (error != google_apis::HTTP_SUCCESS &&
       error != google_apis::HTTP_CREATED) {
     DVLOG(2) << "Error on uploading new file: " << error;
@@ -727,9 +739,10 @@ void DriveFileSyncClient::UploadExistingFileInternal(
           local_file_path.Extension(), &mime_type))
     mime_type = kMimeTypeOctetStream;
 
+  UploadKey upload_key = RegisterUploadCallback(callback);
   ResourceEntryCallback did_upload_callback =
       base::Bind(&DriveFileSyncClient::DidUploadExistingFile,
-                 AsWeakPtr(), callback);
+                 AsWeakPtr(), upload_key);
   drive_uploader_->UploadExistingFile(
       entry->resource_id(),
       base::FilePath(kDummyDrivePath),
@@ -744,10 +757,12 @@ bool DriveFileSyncClient::IsAuthenticated() const {
 }
 
 void DriveFileSyncClient::DidUploadExistingFile(
-    const UploadFileCallback& callback,
+    UploadKey upload_key,
     google_apis::GDataErrorCode error,
     scoped_ptr<google_apis::ResourceEntry> entry) {
   DCHECK(CalledOnValidThread());
+  UploadFileCallback callback = GetAndUnregisterUploadCallback(upload_key);
+  DCHECK(!callback.is_null());
   if (error != google_apis::HTTP_SUCCESS) {
     DVLOG(2) << "Error on uploading existing file: " << error;
     callback.Run(error, std::string(), std::string());
@@ -919,6 +934,37 @@ void DriveFileSyncClient::DidDeleteEntriesForEnsuringTitleUniqueness(
 
   DVLOG(2) << "Deletion completed";
   DeleteEntriesForEnsuringTitleUniqueness(entries.Pass(), callback);
+}
+
+DriveFileSyncClient::UploadKey DriveFileSyncClient::RegisterUploadCallback(
+    const UploadFileCallback& callback) {
+  const bool inserted = upload_callback_map_.insert(
+      std::make_pair(upload_next_key_, callback)).second;
+  CHECK(inserted);
+  return upload_next_key_++;
+}
+
+DriveFileSyncClient::UploadFileCallback
+DriveFileSyncClient::GetAndUnregisterUploadCallback(
+    UploadKey key) {
+  UploadFileCallback callback;
+  UploadCallbackMap::iterator found = upload_callback_map_.find(key);
+  if (found == upload_callback_map_.end())
+    return callback;
+  callback = found->second;
+  upload_callback_map_.erase(found);
+  return callback;
+}
+
+void DriveFileSyncClient::CancelAllUploads(google_apis::GDataErrorCode error) {
+  if (upload_callback_map_.empty())
+    return;
+  for (UploadCallbackMap::iterator iter = upload_callback_map_.begin();
+       iter != upload_callback_map_.end(); ++iter) {
+    iter->second.Run(error, std::string(), std::string());
+  }
+  upload_callback_map_.clear();
+  drive_uploader_.reset(new google_apis::DriveUploader(drive_service_.get()));
 }
 
 }  // namespace sync_file_system
