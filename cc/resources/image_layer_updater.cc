@@ -17,8 +17,7 @@ ImageLayerUpdater::Resource::~Resource() {}
 void ImageLayerUpdater::Resource::Update(ResourceUpdateQueue* queue,
                                          gfx::Rect source_rect,
                                          gfx::Vector2d dest_offset,
-                                         bool partial_update,
-                                         RenderingStats*) {
+                                         bool partial_update) {
   updater_->UpdateTexture(
       queue, texture(), source_rect, dest_offset, partial_update);
 }

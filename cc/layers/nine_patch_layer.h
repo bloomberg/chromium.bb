@@ -24,8 +24,7 @@ class CC_EXPORT NinePatchLayer : public Layer {
   virtual void SetTexturePriorities(const PriorityCalculator& priority_calc)
       OVERRIDE;
   virtual void Update(ResourceUpdateQueue* queue,
-                      const OcclusionTracker* occlusion,
-                      RenderingStats* stats) OVERRIDE;
+                      const OcclusionTracker* occlusion) OVERRIDE;
   virtual void PushPropertiesTo(LayerImpl* layer) OVERRIDE;
 
   // aperture is in the pixel space of the bitmap resource and refers to

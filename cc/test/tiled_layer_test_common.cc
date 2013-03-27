@@ -18,8 +18,7 @@ FakeLayerUpdater::Resource::~Resource() {}
 void FakeLayerUpdater::Resource::Update(ResourceUpdateQueue* queue,
                                         gfx::Rect source_rect,
                                         gfx::Vector2d dest_offset,
-                                        bool partial_update,
-                                        RenderingStats* stats) {
+                                        bool partial_update) {
   const gfx::Rect kRect(0, 0, 10, 10);
   ResourceUpdate upload = ResourceUpdate::Create(
       texture(), &bitmap_, kRect, kRect, gfx::Vector2d());
@@ -39,8 +38,7 @@ void FakeLayerUpdater::PrepareToUpdate(gfx::Rect content_rect,
                                        gfx::Size tile_size,
                                        float contents_width_scale,
                                        float contents_height_scale,
-                                       gfx::Rect* resulting_opaque_rect,
-                                       RenderingStats* stats) {
+                                       gfx::Rect* resulting_opaque_rect) {
   prepare_count_++;
   last_update_rect_ = content_rect;
   if (!rect_to_invalidate_.IsEmpty()) {

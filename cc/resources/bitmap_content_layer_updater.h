@@ -13,6 +13,7 @@ class SkCanvas;
 namespace cc {
 
 class LayerPainter;
+class RenderingStatsInstrumenation;
 
 // This class rasterizes the content_rect into a skia bitmap canvas. It then
 // updates textures by copying from the canvas into the texture, using
@@ -28,8 +29,7 @@ class CC_EXPORT BitmapContentLayerUpdater : public ContentLayerUpdater {
     virtual void Update(ResourceUpdateQueue* queue,
                         gfx::Rect source_rect,
                         gfx::Vector2d dest_offset,
-                        bool partial_update,
-                        RenderingStats* stats) OVERRIDE;
+                        bool partial_update) OVERRIDE;
 
    private:
     BitmapContentLayerUpdater* updater_;
@@ -38,7 +38,8 @@ class CC_EXPORT BitmapContentLayerUpdater : public ContentLayerUpdater {
   };
 
   static scoped_refptr<BitmapContentLayerUpdater> Create(
-      scoped_ptr<LayerPainter> painter);
+      scoped_ptr<LayerPainter> painter,
+      RenderingStatsInstrumentation* stats_instrumenation);
 
   virtual scoped_ptr<LayerUpdater::Resource> CreateResource(
       PrioritizedResourceManager* manager) OVERRIDE;
@@ -46,8 +47,7 @@ class CC_EXPORT BitmapContentLayerUpdater : public ContentLayerUpdater {
                                gfx::Size tile_size,
                                float contents_width_scale,
                                float contents_height_scale,
-                               gfx::Rect* resulting_opaque_rect,
-                               RenderingStats* stats) OVERRIDE;
+                               gfx::Rect* resulting_opaque_rect) OVERRIDE;
   void UpdateTexture(ResourceUpdateQueue* queue,
                      PrioritizedResource* resource,
                      gfx::Rect source_rect,
@@ -57,7 +57,9 @@ class CC_EXPORT BitmapContentLayerUpdater : public ContentLayerUpdater {
   virtual void SetOpaque(bool opaque) OVERRIDE;
 
  protected:
-  explicit BitmapContentLayerUpdater(scoped_ptr<LayerPainter> painter);
+  BitmapContentLayerUpdater(
+      scoped_ptr<LayerPainter> painter,
+      RenderingStatsInstrumentation* stats_instrumenation);
   virtual ~BitmapContentLayerUpdater();
 
   scoped_ptr<SkCanvas> canvas_;

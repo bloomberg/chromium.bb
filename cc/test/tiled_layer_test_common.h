@@ -32,8 +32,7 @@ class FakeLayerUpdater : public LayerUpdater {
     virtual void Update(ResourceUpdateQueue* queue,
                         gfx::Rect source_rect,
                         gfx::Vector2d dest_offset,
-                        bool partial_update,
-                        RenderingStats* stats) OVERRIDE;
+                        bool partial_update) OVERRIDE;
 
    private:
     FakeLayerUpdater* layer_;
@@ -51,8 +50,7 @@ class FakeLayerUpdater : public LayerUpdater {
                                gfx::Size tile_size,
                                float contents_width_scale,
                                float contents_height_scale,
-                               gfx::Rect* resulting_opaque_rect,
-                               RenderingStats* stats) OVERRIDE;
+                               gfx::Rect* resulting_opaque_rect) OVERRIDE;
   // Sets the rect to invalidate during the next call to PrepareToUpdate().
   // After the next call to PrepareToUpdate() the rect is reset.
   void SetRectToInvalidate(gfx::Rect rect, FakeTiledLayer* layer);

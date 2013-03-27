@@ -14,22 +14,25 @@ class SkCanvas;
 namespace cc {
 
 class LayerPainter;
+class RenderingStatsInstrumentation;
 
 // Base class for BitmapContentLayerUpdater and
 // SkPictureContentLayerUpdater that reduces code duplication between
 // their respective PaintContents implementations.
 class CC_EXPORT ContentLayerUpdater : public LayerUpdater {
  protected:
-  explicit ContentLayerUpdater(scoped_ptr<LayerPainter> painter);
+  ContentLayerUpdater(scoped_ptr<LayerPainter> painter,
+                      RenderingStatsInstrumentation* stats_instrumentation);
   virtual ~ContentLayerUpdater();
 
   void PaintContents(SkCanvas* canvas,
                      gfx::Rect content_rect,
                      float contents_width_scale,
                      float contents_height_scale,
-                     gfx::Rect* resulting_opaque_rect,
-                     RenderingStats* stats);
+                     gfx::Rect* resulting_opaque_rect);
   gfx::Rect content_rect() const { return content_rect_; }
+
+  RenderingStatsInstrumentation* rendering_stats_instrumentation_;
 
  private:
   gfx::Rect content_rect_;

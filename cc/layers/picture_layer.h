@@ -15,7 +15,6 @@ namespace cc {
 
 class ContentLayerClient;
 class ResourceUpdateQueue;
-struct RenderingStats;
 
 class CC_EXPORT PictureLayer : public ContentsScalingLayer {
  public:
@@ -32,8 +31,7 @@ class CC_EXPORT PictureLayer : public ContentsScalingLayer {
   virtual void SetNeedsDisplayRect(const gfx::RectF& layer_rect) OVERRIDE;
   virtual void Update(
       ResourceUpdateQueue* queue,
-      const OcclusionTracker* occlusion,
-      RenderingStats* stats) OVERRIDE;
+      const OcclusionTracker* occlusion) OVERRIDE;
   virtual void SetIsMask(bool is_mask) OVERRIDE;
 
  protected:

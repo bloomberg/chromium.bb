@@ -30,8 +30,7 @@ class SkPictureContentLayerUpdater : public ContentLayerUpdater {
     virtual void Update(ResourceUpdateQueue* queue,
                         gfx::Rect source_rect,
                         gfx::Vector2d dest_offset,
-                        bool partial_update,
-                        RenderingStats* stats) OVERRIDE;
+                        bool partial_update) OVERRIDE;
 
    private:
     SkPictureContentLayerUpdater* updater_;
@@ -40,22 +39,24 @@ class SkPictureContentLayerUpdater : public ContentLayerUpdater {
   };
 
   static scoped_refptr<SkPictureContentLayerUpdater> Create(
-      scoped_ptr<LayerPainter> painter);
+      scoped_ptr<LayerPainter> painter,
+      RenderingStatsInstrumentation* stats_instrumentation);
 
   virtual scoped_ptr<LayerUpdater::Resource> CreateResource(
       PrioritizedResourceManager* manager) OVERRIDE;
   virtual void SetOpaque(bool opaque) OVERRIDE;
 
  protected:
-  explicit SkPictureContentLayerUpdater(scoped_ptr<LayerPainter> painter);
+  SkPictureContentLayerUpdater(
+      scoped_ptr<LayerPainter> painter,
+      RenderingStatsInstrumentation* stats_instrumentation);
   virtual ~SkPictureContentLayerUpdater();
 
   virtual void PrepareToUpdate(gfx::Rect content_rect,
                                gfx::Size tile_size,
                                float contents_width_scale,
                                float contents_height_scale,
-                               gfx::Rect* resulting_opaque_rect,
-                               RenderingStats* stats) OVERRIDE;
+                               gfx::Rect* resulting_opaque_rect) OVERRIDE;
   void DrawPicture(SkCanvas* canvas);
   void UpdateTexture(ResourceUpdateQueue* queue,
                      PrioritizedResource* texture,

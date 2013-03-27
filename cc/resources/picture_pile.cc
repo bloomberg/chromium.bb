@@ -36,7 +36,7 @@ void PicturePile::Update(
     SkColor background_color,
     const Region& invalidation,
     gfx::Rect visible_layer_rect,
-    RenderingStats* stats) {
+    RenderingStatsInstrumentation* stats_instrumentation) {
   background_color_ = background_color;
 
   gfx::Rect interest_rect = visible_layer_rect;
@@ -103,7 +103,7 @@ void PicturePile::Update(
     for (PictureList::iterator pic = pic_list.begin();
          pic != pic_list.end(); ++pic) {
       if (!(*pic)->HasRecording()) {
-        (*pic)->Record(painter, stats, tile_grid_info_);
+        (*pic)->Record(painter, stats_instrumentation, tile_grid_info_);
         (*pic)->CloneForDrawing(num_raster_threads_);
       }
     }

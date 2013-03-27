@@ -35,8 +35,7 @@ void ContentsScalingLayer::CalculateContentsScale(
 
 void ContentsScalingLayer::Update(
     ResourceUpdateQueue* queue,
-    const OcclusionTracker* occlusion,
-    RenderingStats* stats) {
+    const OcclusionTracker* occlusion) {
   if (draw_properties().contents_scale_x == last_update_contents_scale_x_ &&
       draw_properties().contents_scale_y == last_update_contents_scale_y_)
     return;

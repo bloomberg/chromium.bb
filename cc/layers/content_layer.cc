@@ -68,8 +68,7 @@ void ContentLayer::SetTexturePriorities(
 }
 
 void ContentLayer::Update(ResourceUpdateQueue* queue,
-                          const OcclusionTracker* occlusion,
-                          RenderingStats* stats) {
+                          const OcclusionTracker* occlusion) {
   {
     base::AutoReset<bool> ignore_set_needs_commit(&ignore_set_needs_commit_,
                                                   true);
@@ -78,7 +77,7 @@ void ContentLayer::Update(ResourceUpdateQueue* queue,
     UpdateCanUseLCDText();
   }
 
-  TiledLayer::Update(queue, occlusion, stats);
+  TiledLayer::Update(queue, occlusion);
   needs_display_ = false;
 }
 
@@ -96,11 +95,17 @@ void ContentLayer::CreateUpdaterIfNeeded() {
   scoped_ptr<LayerPainter> painter =
       ContentLayerPainter::Create(client_).PassAs<LayerPainter>();
   if (layer_tree_host()->settings().accelerate_painting)
-    updater_ = SkPictureContentLayerUpdater::Create(painter.Pass());
+    updater_ = SkPictureContentLayerUpdater::Create(
+        painter.Pass(),
+        rendering_stats_instrumentation());
   else if (layer_tree_host()->settings().per_tile_painting_enabled)
-    updater_ = BitmapSkPictureContentLayerUpdater::Create(painter.Pass());
+    updater_ = BitmapSkPictureContentLayerUpdater::Create(
+        painter.Pass(),
+        rendering_stats_instrumentation());
   else
-    updater_ = BitmapContentLayerUpdater::Create(painter.Pass());
+    updater_ = BitmapContentLayerUpdater::Create(
+        painter.Pass(),
+        rendering_stats_instrumentation());
   updater_->SetOpaque(contents_opaque());
 
   unsigned texture_format =
