@@ -322,15 +322,9 @@ class Builder(object):
       if rebuilt:
         print 'Could not find output file %s.' % out
       return True
-    cc_tm = GetMTime(self.GetCCompiler())
     out_tm = GetMTime(out)
     outd_tm = GetMTime(outd)
     src_tm = GetMTime(src)
-    if IsStale(out_tm, cc_tm, rebuilt):
-      if rebuilt:
-        print 'Output %s is older than compiler %s' % (out,
-                                                       self.GetCCompiler())
-      return True
     if IsStale(out_tm, src_tm, rebuilt):
       if rebuilt:
         print 'Output %s is older than source %s.' % (out, src)
