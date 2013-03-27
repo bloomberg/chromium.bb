@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/search/instant_test_utils.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/search_types.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -309,4 +310,101 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
   EXPECT_TRUE(PressEnterAndWaitForNavigationWithTitle(
       instant()->GetOverlayContents(),
       ASCIIToUTF16("e.co - Google Search")));
+}
+
+IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest, MANUAL_TypeURLAndPressEnter) {
+  set_browser(browser());
+  FocusOmniboxAndWaitForInstantExtendedSupport();
+
+  // Type "www.facebook.com" and expect the top suggestion to be the URL
+  // facebook.com.
+  SetOmniboxTextAndWaitForOverlayToShow("www.facebook.com");
+  EXPECT_EQ(ASCIIToUTF16("www.facebook.com"), omnibox()->GetText());
+  EXPECT_EQ(ASCIIToUTF16(""), GetBlueText());
+  bool selected = false;
+  EXPECT_TRUE(GetSelectionState(&selected));
+  EXPECT_TRUE(selected);
+
+  // Press Enter. Should navigate to facebook.com.
+  PressEnterAndWaitForNavigation();
+  EXPECT_TRUE(GetActiveTabURL().DomainIs("facebook.com"));
+}
+
+IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
+                       MANUAL_TypeAutocompletedURLAndPressEnter) {
+  set_browser(browser());
+  FocusOmniboxAndWaitForInstantExtendedSupport();
+
+  // Type "www.facebook." and expect the top suggestion to be the URL
+  // www.facebook.com.
+  SetOmniboxTextAndWaitForSuggestion("www.facebook.");
+  EXPECT_EQ(ASCIIToUTF16("www.facebook.com"), omnibox()->GetText());
+  EXPECT_EQ(ASCIIToUTF16("com"), GetBlueText());
+  bool selected = false;
+  EXPECT_TRUE(GetSelectionState(&selected));
+  EXPECT_TRUE(selected);
+
+  // Press Enter. Should navigate to facebook.com.
+  PressEnterAndWaitForNavigation();
+  EXPECT_TRUE(GetActiveTabURL().DomainIs("facebook.com"));
+}
+
+IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
+                       MANUAL_PasteURLAndPressEnter) {
+  set_browser(browser());
+  FocusOmniboxAndWaitForInstantExtendedSupport();
+
+  // Paste "www.facebook.com" and expect the top suggestion to be the URL
+  // facebook.com.
+  InstantTestModelObserver observer(
+      instant()->model(), SearchMode::MODE_SEARCH_SUGGESTIONS);
+  omnibox()->OnBeforePossibleChange();
+  omnibox()->model()->on_paste();
+  SetOmniboxText("www.facebook.com");
+  omnibox()->OnAfterPossibleChange();
+  observer.WaitForDesiredOverlayState();
+  EXPECT_EQ(ASCIIToUTF16("www.facebook.com"), omnibox()->GetText());
+  EXPECT_EQ(string16(), GetBlueText());
+  bool selected = false;
+  EXPECT_TRUE(GetSelectionState(&selected));
+  EXPECT_TRUE(selected);
+
+  // Press Enter. Should navigate to facebook.com.
+  PressEnterAndWaitForNavigation();
+  EXPECT_TRUE(GetActiveTabURL().DomainIs("facebook.com"));
+}
+
+IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest, MANUAL_PasteAndGo) {
+  set_browser(browser());
+  FocusOmniboxAndWaitForInstantExtendedSupport();
+
+  // "Paste and Go" with the text www.facebook.com.
+  content::WindowedNotificationObserver nav_observer(
+      content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+      content::NotificationService::AllSources());
+  omnibox()->model()->PasteAndGo(ASCIIToUTF16("www.facebook.com"));
+  nav_observer.Wait();
+  EXPECT_TRUE(GetActiveTabURL().DomainIs("facebook.com"));
+}
+
+IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
+                       MANUAL_TypeSearchAndPressControlEnter) {
+  set_browser(browser());
+  FocusOmniboxAndWaitForInstantExtendedSupport();
+
+  // Type "example" and expect Google to suggest a query, i.e., no blue text.
+  SetOmniboxTextAndWaitForSuggestion("example");
+  EXPECT_EQ(ASCIIToUTF16("example"), omnibox()->GetText());
+  EXPECT_EQ(string16(), GetBlueText());
+
+  // Press ctrl+enter and expect to navigate to example.com.
+  content::WindowedNotificationObserver nav_observer(
+      content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+      content::NotificationService::AllSources());
+  omnibox()->model()->OnControlKeyChanged(true);
+  browser()->window()->GetLocationBar()->AcceptInput();
+  nav_observer.Wait();
+  // example.com redirects to iana.
+  EXPECT_TRUE(GetActiveTabURL().DomainIs("example.com") ||
+              GetActiveTabURL().DomainIs("iana.org"));
 }
