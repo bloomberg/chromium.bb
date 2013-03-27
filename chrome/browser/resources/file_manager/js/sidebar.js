@@ -80,9 +80,9 @@ DirectoryTreeUtil.updateSubElementsFromList = function(
  * @param {DirectoryEntry|Object} dirEntry DirectoryEntry to be checked.
  * @return {boolean} True if the given directory entry is dummy.
  */
-function isDummyEntry(dirEntry) {
+DirectoryTreeUtil.isDummyEntry = function(dirEntry) {
   return !('createReader' in dirEntry);
-}
+};
 
 /**
  * A directory in the tree. Each element represents one directory.
@@ -214,7 +214,7 @@ DirectoryItem.prototype.onExpand_ = function(e) {
  */
 DirectoryItem.prototype.updateSubDirectories = function(opt_errorCallback) {
   // Tries to retrieve new entry if the cached entry is dummy.
-  if (isDummyEntry(this.dirEntry_)) {
+  if (DirectoryTreeUtil.isDummyEntry(this.dirEntry_)) {
     // Fake Drive root.
     this.directoryModel_.resolveDirectory(
         this.fullPath,
@@ -222,7 +222,7 @@ DirectoryItem.prototype.updateSubDirectories = function(opt_errorCallback) {
           this.dirEntry_ = entry;
 
           // If the retrieved entry is dummy again, returns with an error.
-          if (isDummyEntry(entry)) {
+          if (DirectoryTreeUtil.isDummyEntry(entry)) {
             if (opt_errorCallback)
               opt_errorCallback();
             return;
