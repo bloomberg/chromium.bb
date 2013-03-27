@@ -2078,15 +2078,8 @@ notify_pointer_focus(struct weston_seat *seat, struct weston_output *output,
 	struct wl_pointer *pointer = seat->seat.pointer;
 
 	if (output) {
-		clip_pointer_motion(seat, &x, &y);
-		weston_seat_update_drag_surface(seat,
-						x - pointer->x,
-						y - pointer->y);
-
-		pointer->x = x;
-		pointer->y = y;
+		move_pointer(seat, x, y);
 		compositor->focus = 1;
-		weston_compositor_repick(compositor);
 	} else {
 		compositor->focus = 0;
 		/* FIXME: We should call wl_pointer_set_focus(seat,
