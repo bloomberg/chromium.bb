@@ -87,7 +87,7 @@ bool BaseFocusRules::CanFocusWindow(aura::Window* window) const {
   // The focused window is always inside the active window, so windows that
   // aren't activatable can't contain the focused window.
   aura::Window* activatable = GetActivatableWindow(window);
-  if (!activatable->Contains(window))
+  if (!activatable || !activatable->Contains(window))
     return false;
   return window->CanFocus();
 }
