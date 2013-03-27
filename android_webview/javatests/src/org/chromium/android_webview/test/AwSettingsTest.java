@@ -2379,13 +2379,8 @@ public class AwSettingsTest extends AwTestBase {
         assertEquals(viewportTagSpecifiedWidth, getTitleOnUiThread(awContents));
     }
 
-
-    /* Started failing after http://trac.webkit.org/changeset/146378
-     * http://crbug.com/222584
-     * @MediumTest
-     * @Feature({"AndroidWebView", "Preferences"})
-     */
-    @DisabledTest
+    @MediumTest
+    @Feature({"AndroidWebView", "Preferences"})
     public void testUseWideViewportControlsDoubleTabToZoom() throws Throwable {
         final TestAwContentsClient contentClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
