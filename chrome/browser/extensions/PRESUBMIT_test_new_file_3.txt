@@ -1,0 +1,32 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_FUNCTION_HISTOGRAM_VALUE_H_
+#define CHROME_BROWSER_EXTENSIONS_EXTENSION_FUNCTION_HISTOGRAM_VALUE_H_
+
+
+namespace extensions {
+namespace functions {
+
+//
+// This is some comment.
+// This is another comment.
+// This is yet another comment.
+//
+enum HistogramValue {
+  UNKNOWN = 0,
+  WEBNAVIGATION_GETALLFRAMES,
+  BROWSINGDATA_REMOVEWEBSQL,
+  WALLPAPERPRIVATE_SETCUSTOMWALLPAPERLAYOUT,
+  DOWNLOADSINTERNAL_DETERMINEFILENAME,
+  SYNCFILESYSTEM_GETFILESYNCSTATUSES2, // Rename here!!!
+  MEDIAGALLERIESPRIVATE_GETHANDLERS,
+  WALLPAPERPRIVATE_RESETWALLPAPER,
+  ENUM_BOUNDARY // Last entry: Add new entries above.
+};
+
+}  // namespace functions
+}  // namespace extensions
+
+#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_FUNCTION_HISTOGRAM_VALUE_H_

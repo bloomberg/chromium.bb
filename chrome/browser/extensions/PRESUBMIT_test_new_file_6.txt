@@ -1,0 +1,7 @@
+// End enum marker is before start enum marker
+
+  ENUM_BOUNDARY // Last entry: Add new entries above.
+//
+enum HistogramValue {
+  UNKNOWN = 0,
+

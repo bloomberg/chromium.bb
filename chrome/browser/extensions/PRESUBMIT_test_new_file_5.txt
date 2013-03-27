@@ -1,0 +1,5 @@
+
+enum HistogramValue {
+
+
+// Missing end enum marker
