@@ -56,7 +56,8 @@ run_and_ignore_error() {
   if [ "$(whoami)" = "$user" ]; then
     "$exec" "$@"
   else
-    start-stop-daemon --chuid "$user" --exec "$exec" --start -- "$@"
+    USER="$user" LOGNAME="$user" start-stop-daemon \
+      --chuid "$user" --exec "$exec" --start -- "$@"
   fi
 }
 
