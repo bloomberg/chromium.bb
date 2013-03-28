@@ -785,7 +785,12 @@ int CFUrlRequestUnittestRunner::PreCreateThreads() {
   fake_chrome_.reset(new FakeExternalTab());
   fake_chrome_->Initialize();
   fake_chrome_->browser_process()->PreCreateThreads();
-  process_singleton_.reset(new ProcessSingleton(fake_chrome_->user_data()));
+  ProcessSingleton::NotificationCallback callback(
+      base::Bind(
+          &CFUrlRequestUnittestRunner::ProcessSingletonNotificationCallback,
+          base::Unretained(this)));
+  process_singleton_.reset(new ProcessSingleton(fake_chrome_->user_data(),
+                                                callback));
   process_singleton_->Lock(NULL);
   return 0;
 }
@@ -808,13 +813,9 @@ bool CFUrlRequestUnittestRunner::ProcessSingletonNotificationCallback(
 
 void CFUrlRequestUnittestRunner::PreMainMessageLoopRun() {
   fake_chrome_->InitializePostThreadsCreated();
-  ProcessSingleton::NotificationCallback callback(
-      base::Bind(
-          &CFUrlRequestUnittestRunner::ProcessSingletonNotificationCallback,
-          base::Unretained(this)));
   // Call Create directly instead of NotifyOtherProcessOrCreate as failure is
   // prefered to notifying another process here.
-  if (!process_singleton_->Create(callback)) {
+  if (!process_singleton_->Create()) {
     LOG(FATAL) << "Failed to start up ProcessSingleton. Is another test "
                << "executable or Chrome Frame running?";
     if (crash_service_)

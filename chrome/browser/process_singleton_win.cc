@@ -252,8 +252,11 @@ bool ProcessSingleton::EscapeVirtualization(
   return false;
 }
 
-ProcessSingleton::ProcessSingleton(const base::FilePath& user_data_dir)
+ProcessSingleton::ProcessSingleton(
+    const base::FilePath& user_data_dir,
+    const NotificationCallback& notification_callback)
     : window_(NULL), locked_(false), foreground_window_(NULL),
+      notification_callback_(notification_callback),
       is_virtualized_(false), lock_file_(INVALID_HANDLE_VALUE),
       user_data_dir_(user_data_dir) {
 }
@@ -384,10 +387,9 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcess() {
   return PROCESS_NONE;
 }
 
-ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessOrCreate(
-    const NotificationCallback& notification_callback) {
+ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessOrCreate() {
   ProcessSingleton::NotifyResult result = PROCESS_NONE;
-  if (!Create(notification_callback)) {
+  if (!Create()) {
     result = NotifyOtherProcess();
     if (result == PROCESS_NONE)
       result = PROFILE_IN_USE;
@@ -401,10 +403,7 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessOrCreate(
 // Look for a Chrome instance that uses the same profile directory. If there
 // isn't one, create a message window with its title set to the profile
 // directory path.
-bool ProcessSingleton::Create(
-    const NotificationCallback& notification_callback) {
-  DCHECK(notification_callback_.is_null());
-
+bool ProcessSingleton::Create() {
   static const wchar_t kMutexName[] = L"Local\\ChromeProcessSingletonStartup!";
   static const wchar_t kMetroActivationEventName[] =
       L"Local\\ChromeProcessSingletonStartupMetroActivation!";
@@ -530,9 +529,6 @@ bool ProcessSingleton::Create(
       }
     }
   }
-
-  if (window_ != NULL)
-    notification_callback_ = notification_callback;
 
   return window_ != NULL;
 }

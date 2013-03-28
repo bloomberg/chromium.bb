@@ -67,9 +67,10 @@ class ProcessSingletonMacTest : public PlatformTest {
 
 // Test that the base case doesn't blow up.
 TEST_F(ProcessSingletonMacTest, Basic) {
-  ProcessSingleton ps(temp_dir_.path());
+  ProcessSingleton ps(temp_dir_.path(),
+                      ProcessSingleton::NotificationCallback());
   EXPECT_FALSE(IsLocked());
-  EXPECT_TRUE(ps.Create(ProcessSingleton::NotificationCallback()));
+  EXPECT_TRUE(ps.Create());
   EXPECT_TRUE(IsLocked());
   ps.Cleanup();
   EXPECT_FALSE(IsLocked());
@@ -79,8 +80,9 @@ TEST_F(ProcessSingletonMacTest, Basic) {
 TEST_F(ProcessSingletonMacTest, DestructorReleases) {
   EXPECT_FALSE(IsLocked());
   {
-    ProcessSingleton ps(temp_dir_.path());
-    EXPECT_TRUE(ps.Create(ProcessSingleton::NotificationCallback()));
+    ProcessSingleton ps(temp_dir_.path(),
+                        ProcessSingleton::NotificationCallback());
+    EXPECT_TRUE(ps.Create());
     EXPECT_TRUE(IsLocked());
   }
   EXPECT_FALSE(IsLocked());
@@ -88,8 +90,10 @@ TEST_F(ProcessSingletonMacTest, DestructorReleases) {
 
 // Multiple singletons should interlock appropriately.
 TEST_F(ProcessSingletonMacTest, Interlock) {
-  ProcessSingleton ps1(temp_dir_.path());
-  ProcessSingleton ps2(temp_dir_.path());
+  ProcessSingleton ps1(temp_dir_.path(),
+                       ProcessSingleton::NotificationCallback());
+  ProcessSingleton ps2(temp_dir_.path(),
+                       ProcessSingleton::NotificationCallback());
 
   // Windows and Linux use a command-line flag to suppress this, but
   // it is on a sub-process so the scope is contained.  Rather than
@@ -99,24 +103,26 @@ TEST_F(ProcessSingletonMacTest, Interlock) {
 
   // When |ps1| has the lock, |ps2| cannot get it.
   EXPECT_FALSE(IsLocked());
-  EXPECT_TRUE(ps1.Create(ProcessSingleton::NotificationCallback()));
+  EXPECT_TRUE(ps1.Create());
   EXPECT_TRUE(IsLocked());
-  EXPECT_FALSE(ps2.Create(ProcessSingleton::NotificationCallback()));
+  EXPECT_FALSE(ps2.Create());
   ps1.Cleanup();
 
   // And when |ps2| has the lock, |ps1| cannot get it.
   EXPECT_FALSE(IsLocked());
-  EXPECT_TRUE(ps2.Create(ProcessSingleton::NotificationCallback()));
+  EXPECT_TRUE(ps2.Create());
   EXPECT_TRUE(IsLocked());
-  EXPECT_FALSE(ps1.Create(ProcessSingleton::NotificationCallback()));
+  EXPECT_FALSE(ps1.Create());
   ps2.Cleanup();
   EXPECT_FALSE(IsLocked());
 }
 
 // Like |Interlock| test, but via |NotifyOtherProcessOrCreate()|.
 TEST_F(ProcessSingletonMacTest, NotifyOtherProcessOrCreate) {
-  ProcessSingleton ps1(temp_dir_.path());
-  ProcessSingleton ps2(temp_dir_.path());
+  ProcessSingleton ps1(temp_dir_.path(),
+                       ProcessSingleton::NotificationCallback());
+  ProcessSingleton ps2(temp_dir_.path(),
+                       ProcessSingleton::NotificationCallback());
 
   // Windows and Linux use a command-line flag to suppress this, but
   // it is on a sub-process so the scope is contained.  Rather than
@@ -128,22 +134,22 @@ TEST_F(ProcessSingletonMacTest, NotifyOtherProcessOrCreate) {
   EXPECT_FALSE(IsLocked());
   EXPECT_EQ(
       ProcessSingleton::PROCESS_NONE,
-      ps1.NotifyOtherProcessOrCreate(ProcessSingleton::NotificationCallback()));
+      ps1.NotifyOtherProcessOrCreate());
   EXPECT_TRUE(IsLocked());
   EXPECT_EQ(
       ProcessSingleton::PROFILE_IN_USE,
-      ps2.NotifyOtherProcessOrCreate(ProcessSingleton::NotificationCallback()));
+      ps2.NotifyOtherProcessOrCreate());
   ps1.Cleanup();
 
   // And when |ps2| has the lock, |ps1| cannot get it.
   EXPECT_FALSE(IsLocked());
   EXPECT_EQ(
       ProcessSingleton::PROCESS_NONE,
-      ps2.NotifyOtherProcessOrCreate(ProcessSingleton::NotificationCallback()));
+      ps2.NotifyOtherProcessOrCreate());
   EXPECT_TRUE(IsLocked());
   EXPECT_EQ(
       ProcessSingleton::PROFILE_IN_USE,
-      ps1.NotifyOtherProcessOrCreate(ProcessSingleton::NotificationCallback()));
+      ps1.NotifyOtherProcessOrCreate());
   ps2.Cleanup();
   EXPECT_FALSE(IsLocked());
 }

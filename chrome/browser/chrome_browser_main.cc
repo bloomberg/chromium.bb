@@ -480,8 +480,8 @@ bool ProcessSingletonNotificationCallback(
   g_browser_process->PlatformSpecificCommandLineProcessing(command_line);
 
   // TODO(erikwright): Consider removing this - AFAIK it is no longer used.
-  // Handle the --uninstall-extension startup action. This needs to done here
-  // in the process that is running with the target profile, otherwise the
+  // Handle the --uninstall-extension startup action. This needs to done here in
+  // the process that is running with the target profile, otherwise the
   // uninstall will fail to unload and remove all components.
   if (command_line.HasSwitch(switches::kUninstallExtension)) {
     // The uninstall extension switch can't be combined with the profile
@@ -797,7 +797,8 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   // Android's first run is done in Java instead of native.
 #if !defined(OS_ANDROID)
 
-  process_singleton_.reset(new ProcessSingleton(user_data_dir_));
+  process_singleton_.reset(new ProcessSingleton(
+      user_data_dir_, base::Bind(&ProcessSingletonNotificationCallback)));
   // Ensure ProcessSingleton won't process messages too early. It will be
   // unlocked in PostBrowserStart().
   process_singleton_->Lock(NULL);
@@ -1157,8 +1158,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
     // new one. NotifyOtherProcess will currently give the other process up to
     // 20 seconds to respond. Note that this needs to be done before we attempt
     // to read the profile.
-    notify_result_ = process_singleton_->NotifyOtherProcessOrCreate(
-        base::Bind(&ProcessSingletonNotificationCallback));
+    notify_result_ = process_singleton_->NotifyOtherProcessOrCreate();
     UMA_HISTOGRAM_ENUMERATION("NotifyOtherProcessOrCreate.Result",
                                notify_result_,
                                ProcessSingleton::NUM_NOTIFY_RESULTS);

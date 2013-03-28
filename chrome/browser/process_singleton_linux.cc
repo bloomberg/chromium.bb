@@ -692,9 +692,12 @@ void ProcessSingleton::LinuxWatcher::SocketReader::FinishWithACK(
 ///////////////////////////////////////////////////////////////////////////////
 // ProcessSingleton
 //
-ProcessSingleton::ProcessSingleton(const base::FilePath& user_data_dir)
+ProcessSingleton::ProcessSingleton(
+    const base::FilePath& user_data_dir,
+    const NotificationCallback& notification_callback)
     : locked_(false),
       foreground_window_(NULL),
+      notification_callback_(notification_callback),
       current_pid_(base::GetCurrentProcId()),
       ALLOW_THIS_IN_INITIALIZER_LIST(watcher_(new LinuxWatcher(this))) {
   socket_path_ = user_data_dir.Append(chrome::kSingletonSocketFilename);
@@ -835,24 +838,21 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessWithTimeout(
   return PROCESS_NOTIFIED;
 }
 
-ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessOrCreate(
-    const NotificationCallback& notification_callback) {
+ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessOrCreate() {
   return NotifyOtherProcessWithTimeoutOrCreate(
       *CommandLine::ForCurrentProcess(),
-      notification_callback,
       kTimeoutInSeconds);
 }
 
 ProcessSingleton::NotifyResult
 ProcessSingleton::NotifyOtherProcessWithTimeoutOrCreate(
     const CommandLine& command_line,
-    const NotificationCallback& notification_callback,
     int timeout_seconds) {
   NotifyResult result = NotifyOtherProcessWithTimeout(command_line,
                                                       timeout_seconds, true);
   if (result != PROCESS_NONE)
     return result;
-  if (Create(notification_callback))
+  if (Create())
     return PROCESS_NONE;
   // If the Create() failed, try again to notify. (It could be that another
   // instance was starting at the same time and managed to grab the lock before
@@ -879,8 +879,7 @@ void ProcessSingleton::DisablePromptForTesting() {
   g_disable_prompt = true;
 }
 
-bool ProcessSingleton::Create(
-    const NotificationCallback& notification_callback) {
+bool ProcessSingleton::Create() {
   int sock;
   sockaddr_un addr;
 
@@ -936,8 +935,6 @@ bool ProcessSingleton::Create(
 
   if (listen(sock, 5) < 0)
     NOTREACHED() << "listen failed: " << safe_strerror(errno);
-
-  notification_callback_ = notification_callback;
 
   DCHECK(BrowserThread::IsMessageLoopValid(BrowserThread::IO));
   BrowserThread::PostTask(
@@ -999,4 +996,3 @@ void ProcessSingleton::KillProcess(int pid) {
   DCHECK(rv == 0 || errno == ESRCH) << "Error killing process: "
                                     << safe_strerror(errno);
 }
-

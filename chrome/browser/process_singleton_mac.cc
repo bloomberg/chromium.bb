@@ -38,7 +38,9 @@ const int kMaxErrno = 102;
 // ourselves.  An exclusive lock is used to flush out anyone making incorrect
 // assumptions.
 
-ProcessSingleton::ProcessSingleton(const base::FilePath& user_data_dir)
+ProcessSingleton::ProcessSingleton(
+    const base::FilePath& user_data_dir,
+    const NotificationCallback& /* notification_callback */)
     : locked_(false),
       foreground_window_(NULL),
       lock_path_(user_data_dir.Append(chrome::kSingletonLockFilename)),
@@ -56,10 +58,9 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcess() {
   return PROCESS_NONE;
 }
 
-ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessOrCreate(
-    const NotificationCallback& notification_callback) {
+ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessOrCreate() {
   // Windows tries NotifyOtherProcess() first.
-  return Create(notification_callback) ? PROCESS_NONE : PROFILE_IN_USE;
+  return Create() ? PROCESS_NONE : PROFILE_IN_USE;
 }
 
 // Attempt to acquire an exclusive lock on an empty file in the
@@ -71,8 +72,7 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessOrCreate(
 // that for now because it would require confidence that this code is
 // never called in a situation where an alert wouldn't work.
 // http://crbug.com/59061
-bool ProcessSingleton::Create(
-    const NotificationCallback& notification_callback) {
+bool ProcessSingleton::Create() {
   DCHECK_EQ(-1, lock_fd_) << "lock_path_ is already open.";
 
   lock_fd_ = HANDLE_EINTR(open(lock_path_.value().c_str(),

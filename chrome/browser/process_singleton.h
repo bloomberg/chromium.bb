@@ -60,28 +60,26 @@ class ProcessSingleton : public base::NonThreadSafe {
       const CommandLine& command_line,
       const base::FilePath& current_directory)> NotificationCallback;
 
-  explicit ProcessSingleton(const base::FilePath& user_data_dir);
+  ProcessSingleton(const base::FilePath& user_data_dir,
+                   const NotificationCallback& notification_callback);
   ~ProcessSingleton();
 
   // Notify another process, if available. Otherwise sets ourselves as the
-  // singleton instance and stores the provided callback for notification from
-  // future processes. Returns PROCESS_NONE if we became the singleton
+  // singleton instance. Returns PROCESS_NONE if we became the singleton
   // instance. Callers are guaranteed to either have notified an existing
   // process or have grabbed the singleton (unless the profile is locked by an
   // unreachable process).
   // TODO(brettw): Make the implementation of this method non-platform-specific
   // by making Linux re-use the Windows implementation.
-  NotifyResult NotifyOtherProcessOrCreate(
-      const NotificationCallback& notification_callback);
+  NotifyResult NotifyOtherProcessOrCreate();
 
   // Sets ourself up as the singleton instance.  Returns true on success.  If
   // false is returned, we are not the singleton instance and the caller must
-  // exit. Otherwise, stores the provided callback for notification from
-  // future processes.
+  // exit.
   // NOTE: Most callers should generally prefer NotifyOtherProcessOrCreate() to
   // this method, only callers for whom failure is prefered to notifying another
   // process should call this directly.
-  bool Create(const NotificationCallback& notification_callback);
+  bool Create();
 
   // Clear any lock state during shutdown.
   void Cleanup();
@@ -133,7 +131,6 @@ class ProcessSingleton : public base::NonThreadSafe {
                                              bool kill_unresponsive);
   NotifyResult NotifyOtherProcessWithTimeoutOrCreate(
       const CommandLine& command_line,
-      const NotificationCallback& notification_callback,
       int timeout_seconds);
   void OverrideCurrentPidForTesting(base::ProcessId pid);
   void OverrideKillCallbackForTesting(
