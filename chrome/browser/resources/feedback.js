@@ -19,7 +19,6 @@ var categoryTag = '';
 var filePath = '';
 var forceDisableScreenshots = false;
 
-
 // Globals to manage reading data from the attach a file option.
 var attachFileBinaryData = '';
 var lastReader = null;
@@ -298,25 +297,19 @@ function load() {
   $('cancel-button').onclick = cancel;
 
   // Set default values for the possible parameters, and then parse the actual
-  // values from the URL hash.
+  // values from the URL href.
   var parameters = {
     'description': '',
     'categoryTag': '',
     'customPageUrl': '',
     'filePath': '',
   };
-  var queryPos = window.location.hash.indexOf('?');
-  if (queryPos !== -1) {
-    // Get an array of parameters in 'name=value' form.
-    var query = window.location.hash.substring(queryPos + 1).split('&');
-    for (var i = 0; i < query.length; i++) {
-      // Decode and store each parameter value.
-      parameter = query[i].split('=');
-      parameters[parameter[0]] = decodeURIComponent(parameter[1]);
-    }
 
-    // For a clean URL, trim the parameters from the hash.
-    window.location.hash = window.location.hash.substring(0, queryPos);
+  var query = window.location.search.substr(1).split('&');
+  for (var i = 0; i < query.length; i++) {
+    // Decode and store each parameter value.
+    parameter = query[i].split('=');
+    parameters[parameter[0]] = decodeURIComponent(parameter[1]);
   }
 
   // Set the initial description text.

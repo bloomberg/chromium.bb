@@ -635,6 +635,7 @@ void FeedbackHandler::HandleSendReport(const ListValue* list_value) {
   // TODO(rkc): We are not setting the category tag here since this
   // functionality is broken on the feedback server side. Fix this once the
   // issue is resolved.
+  feedback_data_->set_category_tag(category_tag);
   feedback_data_->set_description(description);
   feedback_data_->set_image(image_ptr);
   feedback_data_->set_page_url(page_url);

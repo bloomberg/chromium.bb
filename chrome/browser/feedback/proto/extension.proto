@@ -64,6 +64,10 @@ message ExtensionSubmit {
   repeated ProductSpecificBinaryData product_specific_binary_data = 15;
 
   optional string category_tag = 16;
+
+  optional int32 product_id = 17;
+
+  optional string bucket = 18;
 };
 
 // A query for suggestions, sent when the user hits the preview button.
