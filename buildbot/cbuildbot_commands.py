@@ -1262,7 +1262,7 @@ def BuildAUTestTarball(buildroot, board, work_dir, version, archive_url):
                                          print_cmd=False)
 
   cmd = ['site_utils/autoupdate/full_release_test.py',
-         '--npo', '--dump',
+         '--npo', '--nmo', '--dump',
          '--dump_dir', autotest_dir, '--archive_url', archive_url,
          basic_version, board, '--log=debug']
 

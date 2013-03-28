@@ -784,7 +784,7 @@ chrome_pgo = chrome_pfq.derive(
 
   vm_tests=None,
   hw_tests=[HWTestConfig('PGO_record', pool=constants.HWTEST_CHROME_PFQ_POOL,
-                         timeout=90 * 60, critical=True, num=1)],
+                         timeout=90 * 60, critical=True, num=2)],
   disk_layout='2gb-rootfs',
 
   # TODO(petermayo): Remove once PGO is reliable again.
