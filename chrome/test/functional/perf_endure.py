@@ -16,11 +16,13 @@ The following variables are related to the Deep Memory Profiler.
   DEEP_MEMORY_PROFILE_UPLOAD: Upload dumped files if the variable has a Google
       Storage bucket like gs://chromium-endure/.  The 'gsutil' script in $PATH
       is used by default, or set a variable 'GSUTIL' to specify a path to the
-      'gsutil' script.  A variable 'REVISION' is used as a subdirectory in
-      the destination if it is set.
+      'gsutil' script.  A variable 'REVISION' (or 'BUILDBOT_GOT_REVISION') is
+      used as a subdirectory in the destination if it is set.
   GSUTIL: A path to the 'gsutil' script.  Not mandatory.
   REVISION: A string that represents the revision or some build configuration.
       Not mandatory.
+  BUILDBOT_GOT_REVISION: Similar to 'REVISION', but checked only if 'REVISION'
+      is not specified.  Not mandatory.
 
   ENDURE_NO_WPR: Run tests without Web Page Replay if it's set.
   WPR_RECORD: Run tests in record mode. If you want to make a fresh
@@ -307,6 +309,9 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
     # before perf.BasePerfTest.setUp() to inherit them to Chrome.
     self._dmprof = DeepMemoryProfiler()
     self._revision = str(os.environ.get('REVISION', self._REVISION))
+    if not self._revision:
+      self._revision = str(os.environ.get('BUILDBOT_GOT_REVISION',
+                                          self._REVISION))
     self._gsutil = str(os.environ.get('GSUTIL', self._GSUTIL))
     if self._dmprof:
       self._dmprof.SetUp(self.IsLinux(), self._revision, self._gsutil)
