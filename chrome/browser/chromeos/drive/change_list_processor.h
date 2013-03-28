@@ -27,6 +27,27 @@ namespace drive {
 class DriveEntryProto;
 class DriveResourceMetadata;
 
+// Class to represent a change list.
+class ChangeList {
+ public:
+  explicit ChangeList(const google_apis::ResourceList& resource_list);
+  ~ChangeList();
+
+  const std::vector<DriveEntryProto>& entries() const { return entries_; }
+  std::vector<DriveEntryProto>* mutable_entries() { return &entries_; }
+  const GURL& root_upload_url() const { return root_upload_url_; }
+  const GURL& next_url() const { return next_url_; }
+  int64 largest_changestamp() const { return largest_changestamp_; }
+
+ private:
+  std::vector<DriveEntryProto> entries_;
+  GURL root_upload_url_;
+  GURL next_url_;
+  int64 largest_changestamp_;
+
+  DISALLOW_COPY_AND_ASSIGN(ChangeList);
+};
+
 // ChangeListProcessor is used to process feeds from WAPI (codename for
 // Documents List API) or Google Drive API.
 class ChangeListProcessor {
@@ -52,19 +73,17 @@ class ChangeListProcessor {
   // |on_complete_callback| must not be null.
   // TODO(achuith): Change the type of on_complete_callback to
   // FileOperationCallback instead.
-  void ApplyFeeds(
-      scoped_ptr<google_apis::AboutResource> about_resource,
-      const ScopedVector<google_apis::ResourceList>& feed_list,
-      bool is_delta_feed,
-      const base::Closure& on_complete_callback);
+  void ApplyFeeds(scoped_ptr<google_apis::AboutResource> about_resource,
+                  ScopedVector<ChangeList> change_lists,
+                  bool is_delta_feed,
+                  const base::Closure& on_complete_callback);
 
   // Converts list of document feeds from collected feeds into a
   // DriveEntryProtoMap. |feed_changestamp| and/or |uma_stats| may be NULL.
   // entry_proto_map_ and root_upload_url_ are updated as side effects.
-  void FeedToEntryProtoMap(
-      const ScopedVector<google_apis::ResourceList>& feed_list,
-      int64* feed_changestamp,
-      ChangeListToEntryProtoMapUMAStats* uma_stats);
+  void FeedToEntryProtoMap(ScopedVector<ChangeList> change_lists,
+                           int64* feed_changestamp,
+                           ChangeListToEntryProtoMapUMAStats* uma_stats);
 
   // A map of DriveEntryProto's representing a feed.
   const DriveEntryProtoMap& entry_proto_map() const { return entry_proto_map_; }

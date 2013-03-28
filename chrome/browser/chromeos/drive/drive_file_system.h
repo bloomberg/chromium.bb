@@ -33,7 +33,6 @@ class AboutResource;
 class DriveServiceInterface;
 class DriveUploaderInterface;
 class ResourceEntry;
-class ResourceList;
 }
 
 namespace drive {
@@ -186,11 +185,11 @@ class DriveFileSystem : public DriveFileSystemInterface,
 
   // Callback passed to ChangeListLoader from |Search| method.
   // |callback| is that should be run with data received. It must not be null.
-  // |feed_list| is the document feed for content search.
+  // |change_lists| is the document feed for content search.
   // |error| is the error code returned by ChangeListLoader.
   void OnSearch(bool shared_with_me,
                 const SearchCallback& callback,
-                const ScopedVector<google_apis::ResourceList>& feed_list,
+                ScopedVector<ChangeList> change_lists,
                 DriveFileError error);
 
   // Callback for DriveResourceMetadata::RefreshEntry, from OnSearch.

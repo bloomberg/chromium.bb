@@ -26,15 +26,15 @@ class ResourceList;
 
 namespace drive {
 
+class ChangeList;
 class ChangeListLoaderObserver;
 class ChangeListProcessor;
 class DriveScheduler;
 class DriveWebAppsRegistry;
 
 // Callback run as a response to SearchFromServer and LoadDirectoryFromServer.
-typedef base::Callback<
-    void(const ScopedVector<google_apis::ResourceList>& feed_list,
-         DriveFileError error)> LoadFeedListCallback;
+typedef base::Callback<void(ScopedVector<ChangeList> change_lists,
+                            DriveFileError error)> LoadFeedListCallback;
 
 // ChangeListLoader is used to load feeds from WAPI (codename for
 // Documents List API) or Google Drive API and load the cached metadata.
@@ -105,11 +105,10 @@ class ChangeListLoader {
   // See comments at ChangeListProcessor::ApplyFeeds() for
   // |about_resource| and |is_delta_feed|.
   // |update_finished_callback| must not be null.
-  void UpdateFromFeed(
-      scoped_ptr<google_apis::AboutResource> about_resource,
-      const ScopedVector<google_apis::ResourceList>& feed_list,
-      bool is_delta_feed,
-      const base::Closure& update_finished_callback);
+  void UpdateFromFeed(scoped_ptr<google_apis::AboutResource> about_resource,
+                      ScopedVector<ChangeList> change_lists,
+                      bool is_delta_feed,
+                      const base::Closure& update_finished_callback);
 
   // Indicates whether there is a feed refreshing server request is in flight.
   bool refreshing() const { return refreshing_; }
@@ -164,7 +163,7 @@ class ChangeListLoader {
   void DoLoadDirectoryFromServerAfterLoad(
       const DirectoryFetchInfo& directory_fetch_info,
       const FileOperationCallback& callback,
-      const ScopedVector<google_apis::ResourceList>& resource_list,
+      ScopedVector<ChangeList> change_lists,
       DriveFileError error);
 
   // Part of DoLoadDirectoryFromServer(). Called after
@@ -226,7 +225,7 @@ class ChangeListLoader {
       scoped_ptr<google_apis::AboutResource> about_resource,
       bool is_delta_feed,
       const FileOperationCallback& callback,
-      const ScopedVector<google_apis::ResourceList>& feed_list,
+      ScopedVector<ChangeList> change_lists,
       DriveFileError error);
 
   // Save filesystem to disk.

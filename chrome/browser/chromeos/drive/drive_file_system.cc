@@ -16,6 +16,7 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/drive/change_list_loader.h"
+#include "chrome/browser/chromeos/drive/change_list_processor.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_cache.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_observer.h"
@@ -1059,11 +1060,10 @@ void DriveFileSystem::OnGetAboutResource(
                about_resource->quota_bytes_used());
 }
 
-void DriveFileSystem::OnSearch(
-    bool shared_with_me,
-    const SearchCallback& search_callback,
-    const ScopedVector<google_apis::ResourceList>& feed_list,
-    DriveFileError error) {
+void DriveFileSystem::OnSearch(bool shared_with_me,
+                               const SearchCallback& search_callback,
+                               ScopedVector<ChangeList> change_lists,
+                               DriveFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!search_callback.is_null());
 
@@ -1080,17 +1080,16 @@ void DriveFileSystem::OnSearch(
   std::vector<SearchResultInfo>* results(new std::vector<SearchResultInfo>());
   scoped_ptr<std::vector<SearchResultInfo> > result_vec(results);
 
-  DCHECK_EQ(1u, feed_list.size());
-  const google_apis::ResourceList* feed = feed_list[0];
+  DCHECK_EQ(1u, change_lists.size());
+  const ChangeList* change_list = change_lists[0];
 
   // TODO(tbarzic): Limit total number of returned results for the query.
-  GURL next_feed;
-  feed->GetNextFeedURL(&next_feed);
+  const GURL& next_feed = change_list->next_url();
 
   const base::Closure callback = base::Bind(
       search_callback, DRIVE_FILE_OK, next_feed, base::Passed(&result_vec));
 
-  const ScopedVector<google_apis::ResourceEntry>& entries = feed->entries();
+  const std::vector<DriveEntryProto>& entries = change_list->entries();
   if (entries.empty()) {
     callback.Run();
     return;
@@ -1102,8 +1101,7 @@ void DriveFileSystem::OnSearch(
   for (size_t i = 0; i < entries.size(); ++i) {
     // Run the callback if this is the last iteration of the loop.
     const bool should_run_callback = (i + 1 == entries.size());
-    DriveEntryProto entry_proto =
-        ConvertResourceEntryToDriveEntryProto(*entries[i]);
+    const DriveEntryProto& entry_proto = entries[i];
 
     const GetEntryInfoWithFilePathCallback entry_info_callback =
         base::Bind(&DriveFileSystem::AddToSearchResults,

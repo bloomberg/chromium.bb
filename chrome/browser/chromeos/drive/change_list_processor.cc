@@ -33,6 +33,22 @@ void RunOnCompleteCallback(const base::Closure& on_complete_callback,
 
 }  // namespace
 
+ChangeList::ChangeList(const google_apis::ResourceList& resource_list)
+    : largest_changestamp_(resource_list.largest_changestamp()) {
+  const google_apis::Link* root_feed_upload_link = resource_list.GetLinkByType(
+      google_apis::Link::LINK_RESUMABLE_CREATE_MEDIA);
+  if (root_feed_upload_link)
+    root_upload_url_ = root_feed_upload_link->href();
+  resource_list.GetNextFeedURL(&next_url_);
+
+  for (size_t i = 0; i < resource_list.entries().size(); ++i) {
+    entries_.push_back(
+        ConvertResourceEntryToDriveEntryProto(*resource_list.entries()[i]));
+  }
+}
+
+ChangeList::~ChangeList() {}
+
 class ChangeListProcessor::ChangeListToEntryProtoMapUMAStats {
  public:
   ChangeListToEntryProtoMapUMAStats()
@@ -71,7 +87,7 @@ ChangeListProcessor::~ChangeListProcessor() {
 
 void ChangeListProcessor::ApplyFeeds(
     scoped_ptr<google_apis::AboutResource> about_resource,
-    const ScopedVector<google_apis::ResourceList>& feed_list,
+    ScopedVector<ChangeList> change_lists,
     bool is_delta_feed,
     const base::Closure& on_complete_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -80,7 +96,7 @@ void ChangeListProcessor::ApplyFeeds(
 
   int64 delta_feed_changestamp = 0;
   ChangeListToEntryProtoMapUMAStats uma_stats;
-  FeedToEntryProtoMap(feed_list, &delta_feed_changestamp, &uma_stats);
+  FeedToEntryProtoMap(change_lists.Pass(), &delta_feed_changestamp, &uma_stats);
   // Note FeedToEntryProtoMap calls Clear() which resets on_complete_callback_.
   on_complete_callback_ = on_complete_callback;
   largest_changestamp_ = 0;
@@ -336,35 +352,34 @@ void ChangeListProcessor::NotifyForRefreshEntry(
 }
 
 void ChangeListProcessor::FeedToEntryProtoMap(
-    const ScopedVector<google_apis::ResourceList>& feed_list,
+    ScopedVector<ChangeList> change_lists,
     int64* feed_changestamp,
     ChangeListToEntryProtoMapUMAStats* uma_stats) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   Clear();
 
-  for (size_t i = 0; i < feed_list.size(); ++i) {
-    const google_apis::ResourceList* feed = feed_list[i];
+  for (size_t i = 0; i < change_lists.size(); ++i) {
+    ChangeList* change_list = change_lists[i];
 
     // Get upload url from the root feed. Links for all other collections will
     // be handled in ConvertResourceEntryToDriveEntryProto.
     if (i == 0) {
       // The root upload link appears in the first page of the full resource
       // list. The link does not appear in the change list.
-      const google_apis::Link* root_feed_upload_link = feed->GetLinkByType(
-          google_apis::Link::LINK_RESUMABLE_CREATE_MEDIA);
-      if (root_feed_upload_link)
-        root_upload_url_ = root_feed_upload_link->href();
+      root_upload_url_ = change_list->root_upload_url();
       // The changestamp appears in the first page of the change list.
       // The changestamp does not appear in the full resource list.
       if (feed_changestamp)
-        *feed_changestamp = feed->largest_changestamp();
-      DCHECK_GE(feed->largest_changestamp(), 0);
+        *feed_changestamp = change_list->largest_changestamp();
+      DCHECK_GE(change_list->largest_changestamp(), 0);
     }
 
-    for (size_t j = 0; j < feed->entries().size(); ++j) {
-      const google_apis::ResourceEntry* entry = feed->entries()[j];
-      DriveEntryProto entry_proto =
-          ConvertResourceEntryToDriveEntryProto(*entry);
+    // Iterate over |entries| with pop_back() to avoid redundant memory usage,
+    // there is no need to have duplicated copies of DriveEntryProto in
+    // |entries| and |entry_proto_map_| at the same time.
+    std::vector<DriveEntryProto>* entries = change_list->mutable_entries();
+    for (; !entries->empty(); entries->pop_back()) {
+      const DriveEntryProto& entry_proto = entries->back();
       // Some document entries don't map into files (i.e. sites).
       if (entry_proto.resource_id().empty())
         continue;

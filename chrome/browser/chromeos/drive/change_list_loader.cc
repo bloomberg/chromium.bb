@@ -59,7 +59,7 @@ struct ChangeListLoader::LoadFeedParams {
   std::string directory_resource_id;
   GURL feed_to_load;
   bool load_subsequent_feeds;
-  ScopedVector<google_apis::ResourceList> feed_list;
+  ScopedVector<ChangeList> change_lists;
   scoped_ptr<GetResourceListUiState> ui_state;
 };
 
@@ -385,7 +385,7 @@ void ChangeListLoader::DoLoadDirectoryFromServer(
 void ChangeListLoader::DoLoadDirectoryFromServerAfterLoad(
     const DirectoryFetchInfo& directory_fetch_info,
     const FileOperationCallback& callback,
-    const ScopedVector<google_apis::ResourceList>& resource_list,
+    ScopedVector<ChangeList> change_lists,
     DriveFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -402,7 +402,7 @@ void ChangeListLoader::DoLoadDirectoryFromServerAfterLoad(
   // Do not use |change_list_processor_| as it may be in use for other
   // purposes.
   ChangeListProcessor change_list_processor(resource_metadata_);
-  change_list_processor.FeedToEntryProtoMap(resource_list, NULL, NULL);
+  change_list_processor.FeedToEntryProtoMap(change_lists.Pass(), NULL, NULL);
   resource_metadata_->RefreshDirectory(
       directory_fetch_info,
       change_list_processor.entry_proto_map(),
@@ -448,7 +448,7 @@ void ChangeListLoader::UpdateMetadataFromFeedAfterLoadFromServer(
     scoped_ptr<google_apis::AboutResource> about_resource,
     bool is_delta_feed,
     const FileOperationCallback& callback,
-    const ScopedVector<google_apis::ResourceList>& feed_list,
+    ScopedVector<ChangeList> change_lists,
     DriveFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -460,7 +460,7 @@ void ChangeListLoader::UpdateMetadataFromFeedAfterLoadFromServer(
   }
 
   UpdateFromFeed(about_resource.Pass(),
-                 feed_list,
+                 change_lists.Pass(),
                  is_delta_feed,
                  base::Bind(&ChangeListLoader::OnUpdateFromFeed,
                             weak_ptr_factory_.GetWeakPtr(),
@@ -477,14 +477,14 @@ void ChangeListLoader::LoadFromServerAfterGetResourceList(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (params->feed_list.empty()) {
+  if (params->change_lists.empty()) {
     UMA_HISTOGRAM_TIMES("Drive.InitialFeedLoadTime",
                         base::TimeTicks::Now() - start_time);
   }
 
   DriveFileError error = util::GDataToDriveFileError(status);
   if (error != DRIVE_FILE_OK) {
-    callback.Run(params->feed_list, error);
+    callback.Run(params->change_lists.Pass(), error);
     return;
   }
   DCHECK(resource_list);
@@ -495,12 +495,12 @@ void ChangeListLoader::LoadFromServerAfterGetResourceList(
       resource_list->GetNextFeedURL(&next_feed_url);
 
   // Add the current feed to the list of collected feeds for this directory.
-  params->feed_list.push_back(resource_list.release());
+  params->change_lists.push_back(new ChangeList(*resource_list));
 
   // Compute and notify the number of entries fetched so far.
   int num_accumulated_entries = 0;
-  for (size_t i = 0; i < params->feed_list.size(); ++i)
-    num_accumulated_entries += params->feed_list[i]->entries().size();
+  for (size_t i = 0; i < params->change_lists.size(); ++i)
+    num_accumulated_entries += params->change_lists[i]->entries().size();
 
   // Check if we need to collect more data to complete the directory list.
   if (has_next_feed_url && !next_feed_url.is_empty()) {
@@ -550,7 +550,7 @@ void ChangeListLoader::LoadFromServerAfterGetResourceList(
                       base::TimeTicks::Now() - start_time);
 
   // Run the callback so the client can process the retrieved feeds.
-  callback.Run(params->feed_list, DRIVE_FILE_OK);
+  callback.Run(params->change_lists.Pass(), DRIVE_FILE_OK);
 }
 
 void ChangeListLoader::OnNotifyResourceListFetched(
@@ -692,7 +692,7 @@ void ChangeListLoader::SaveFileSystem() {
 
 void ChangeListLoader::UpdateFromFeed(
     scoped_ptr<google_apis::AboutResource> about_resource,
-    const ScopedVector<google_apis::ResourceList>& feed_list,
+    ScopedVector<ChangeList> change_lists,
     bool is_delta_feed,
     const base::Closure& update_finished_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -706,7 +706,7 @@ void ChangeListLoader::UpdateFromFeed(
 
   change_list_processor_->ApplyFeeds(
       about_resource.Pass(),
-      feed_list,
+      change_lists.Pass(),
       is_delta_feed,
       base::Bind(&ChangeListLoader::NotifyDirectoryChangedAfterApplyFeed,
                  weak_ptr_factory_.GetWeakPtr(),

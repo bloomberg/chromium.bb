@@ -11,6 +11,7 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/message_loop.h"
 #include "chrome/browser/chromeos/drive/change_list_loader.h"
+#include "chrome/browser/chromeos/drive/change_list_processor.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_cache.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
@@ -54,8 +55,8 @@ bool LoadChangeFeed(const std::string& relative_path,
   if (!document_feed.get())
     return false;
 
-  ScopedVector<google_apis::ResourceList> feed_list;
-  feed_list.push_back(document_feed.release());
+  ScopedVector<ChangeList> change_lists;
+  change_lists.push_back(new ChangeList(*document_feed));
 
   scoped_ptr<google_apis::AboutResource> about_resource(
       new google_apis::AboutResource);
@@ -64,7 +65,7 @@ bool LoadChangeFeed(const std::string& relative_path,
 
   change_list_loader->UpdateFromFeed(
       about_resource.Pass(),
-      feed_list,
+      change_lists.Pass(),
       is_delta_feed,
       base::Bind(&base::DoNothing));
   // ChangeListLoader::UpdateFromFeed is asynchronous, so wait for it to finish.
