@@ -9,6 +9,8 @@ import os
 
 CHROME_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                           os.pardir, os.pardir, os.pardir))
+EMULATOR_SDK_ROOT = os.path.abspath(os.path.join(CHROME_DIR, os.pardir,
+                                                 os.pardir))
 
 CHROME_PACKAGE = 'com.google.android.apps.chrome'
 CHROME_ACTIVITY = 'com.google.android.apps.chrome.Main'
