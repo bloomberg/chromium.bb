@@ -220,7 +220,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
     }
 
     private void initGestureDetectors(final Context context) {
-        int scaledTouchSlop = ViewConfiguration.get(context).getScaledTouchSlop();
+        final int scaledTouchSlop = ViewConfiguration.get(context).getScaledTouchSlop();
         mScaledTouchSlopSquare = scaledTouchSlop * scaledTouchSlop;
         try {
             TraceEvent.begin();
@@ -244,6 +244,19 @@ class ContentViewGestureHandler implements LongPressDelegate {
                     @Override
                     public boolean onScroll(MotionEvent e1, MotionEvent e2,
                             float distanceX, float distanceY) {
+                        if (!mSeenFirstScrollEvent) {
+                            // Remove the touch slop region from the first scroll event to avoid a
+                            // jump.
+                            mSeenFirstScrollEvent = true;
+                            double distance = Math.sqrt(
+                                    distanceX * distanceX + distanceY * distanceY);
+                            double epsilon = 1e-3;
+                            if (distance > epsilon) {
+                                double ratio = Math.max(0, distance - scaledTouchSlop) / distance;
+                                distanceX *= ratio;
+                                distanceY *= ratio;
+                            }
+                        }
                         mSnapScrollController.updateSnapScrollMode(distanceX, distanceY);
                         if (mSnapScrollController.isSnappingScrolls()) {
                             if (mSnapScrollController.isSnapHorizontal()) {
@@ -251,12 +264,6 @@ class ContentViewGestureHandler implements LongPressDelegate {
                             } else {
                                 distanceX = 0;
                             }
-                        }
-
-                        if (!mSeenFirstScrollEvent) {
-                            // Ignore the first scroll delta to avoid a visible jump.
-                            mSeenFirstScrollEvent = true;
-                            return true;
                         }
 
                         boolean didUIStealScroll = mMotionEventDelegate.didUIStealScroll(

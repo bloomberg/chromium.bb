@@ -11,6 +11,7 @@ import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.util.Log;
 import android.view.MotionEvent;
+import android.view.ViewConfiguration;
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.ContentViewGestureHandler.MotionEventDelegate;
@@ -522,12 +523,6 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
                 FAKE_COORD_X * 5, FAKE_COORD_Y * 5, 0);
         assertTrue(mGestureHandler.onTouchEvent(event));
 
-        // The first scroll event is ignored so submit a second one.
-        event = MotionEvent.obtain(
-                downTime, eventTime + 13, MotionEvent.ACTION_MOVE,
-                FAKE_COORD_X * 10, FAKE_COORD_Y * 10, 0);
-        assertTrue(mGestureHandler.onTouchEvent(event));
-
         assertEquals("We should have started scrolling",
                 ContentViewGestureHandler.GESTURE_SCROLL_BY,
                         mockDelegate.mMostRecentGestureEvent.mType);
@@ -808,31 +803,42 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
     }
 
     /**
-     * Verify that the first scroll delta is ignored to avoid a jump when starting to scroll.
+     * Verify that the touch slop region is removed from the first scroll delta to avoid a jump when
+     * starting to scroll.
      * @throws Exception
      */
     @SmallTest
     @Feature({"Gestures"})
-    public void testFirstScrollDeltaIgnored() throws Exception {
+    public void testTouchSlopRemovedFromScroll() throws Exception {
+        Context context = getInstrumentation().getTargetContext();
         final long downTime = SystemClock.uptimeMillis();
         final long eventTime = SystemClock.uptimeMillis();
+        final int scaledTouchSlop = ViewConfiguration.get(context).getScaledTouchSlop();
+        final int scrollDelta = 5;
 
         GestureRecordingMotionEventDelegate mockDelegate =
                 new GestureRecordingMotionEventDelegate();
         mGestureHandler = new ContentViewGestureHandler(
-                getInstrumentation().getTargetContext(), mockDelegate,
-                new MockZoomManager(getInstrumentation().getTargetContext(), null));
+                context, mockDelegate,
+                new MockZoomManager(context, null));
 
         MotionEvent event = motionEvent(MotionEvent.ACTION_DOWN, downTime, downTime);
         assertTrue(mGestureHandler.onTouchEvent(event));
 
         event = MotionEvent.obtain(
                 downTime, eventTime + 10, MotionEvent.ACTION_MOVE,
-                FAKE_COORD_X * 10, FAKE_COORD_Y * 10, 0);
+                FAKE_COORD_X, FAKE_COORD_Y + scaledTouchSlop + scrollDelta, 0);
         assertTrue(mGestureHandler.onTouchEvent(event));
 
-        assertEquals("We should not have started scrolling yet",
-                ContentViewGestureHandler.GESTURE_FLING_CANCEL,
+        assertEquals("We should have started scrolling",
+                ContentViewGestureHandler.GESTURE_SCROLL_BY,
                 mockDelegate.mMostRecentGestureEvent.mType);
+
+        GestureRecordingMotionEventDelegate.GestureEvent gestureEvent =
+                mockDelegate.getMostRecentGestureEvent();
+        assertNotNull(gestureEvent);
+        Bundle extraParams = gestureEvent.getExtraParams();
+        assertEquals(0, extraParams.getInt(ContentViewGestureHandler.DISTANCE_X));
+        assertEquals(-scrollDelta, extraParams.getInt(ContentViewGestureHandler.DISTANCE_Y));
     }
 }
