@@ -260,17 +260,17 @@ wl_client_connection_data(int fd, uint32_t mask, void *data)
 						  &client->objects, message);
 		len -= size;
 
-		if ((closure == NULL && errno == EINVAL) ||
-		    wl_closure_lookup_objects(closure, &client->objects) < 0) {
+		if (closure == NULL && errno == ENOMEM) {
+			wl_resource_post_no_memory(resource);
+			break;
+		} else if ((closure == NULL && errno == EINVAL) ||
+			   wl_closure_lookup_objects(closure, &client->objects) < 0) {
 			wl_resource_post_error(client->display_resource,
 					       WL_DISPLAY_ERROR_INVALID_METHOD,
 					       "invalid arguments for %s@%u.%s",
 					       object->interface->name,
 					       object->id,
 					       message->name);
-			break;
-		} else if (closure == NULL && errno == ENOMEM) {
-			wl_resource_post_no_memory(resource);
 			break;
 		}
 
