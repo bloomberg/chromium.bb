@@ -378,15 +378,16 @@ class SimpleBuilder(Builder):
 
     # We can not run hw tests without archiving the payloads.
     if self.options.archive:
-      for suite in config['hw_tests']:
-        if suite == constants.HWTEST_AU_SUITE:
-          stage_list.append([stages.AUTestStage, board, archive_stage, suite])
+      for suite_config in config['hw_tests']:
+        if suite_config.async:
+          stage_list.append([stages.ASyncHWTestStage, board, archive_stage,
+                             suite_config])
+        elif suite_config.suite == constants.HWTEST_AU_SUITE:
+          stage_list.append([stages.AUTestStage, board, archive_stage,
+                             suite_config])
         else:
-          stage_list.append([stages.HWTestStage, board, archive_stage, suite])
-
-      for suite in config['async_hw_tests']:
-        stage_list.append([stages.ASyncHWTestStage, board, archive_stage,
-                           suite])
+          stage_list.append([stages.HWTestStage, board, archive_stage,
+                             suite_config])
 
     stage_objs = [self._GetStageInstance(*x, config=config) for x in stage_list]
     self._RunParallelStages(stage_objs + [archive_stage])

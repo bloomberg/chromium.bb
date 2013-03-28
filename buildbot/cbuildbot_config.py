@@ -43,11 +43,6 @@ CONFIG_TYPE_DUMP_ORDER = (
     'refresh-packages',
 )
 
-# hw_tests_timeout -- Usually, 2 hours and ten minutes. This must be less than
-#                     lib.parallel._BackgroundTask.MINIMUM_SILENT_TIMEOUT.
-DEFAULT_HW_TESTS = ['bvt']
-DEFAULT_HW_TEST_TIMEOUT = 60 * 130
-
 def OverrideConfigForTrybot(build_config, options):
   """Apply trybot-specific configuration settings.
 
@@ -73,14 +68,16 @@ def OverrideConfigForTrybot(build_config, options):
 
     my_config['upload_symbols'] = False
     my_config['push_image'] = False
-    my_config['hw_tests_pool'] = constants.HWTEST_TRYBOT_POOL
-    my_config['hw_tests_num'] = constants.HWTEST_TRYBOT_NUM
-    my_config['hw_tests_file_bugs'] = False
-
     if options.hwtest:
       if not my_config['hw_tests']:
-        my_config['hw_tests'] = DEFAULT_HW_TESTS
-      my_config['hw_tests_timeout'] = DEFAULT_HW_TEST_TIMEOUT
+        my_config['hw_tests'] = HWTestConfig.DefaultList(
+            num=constants.HWTEST_TRYBOT_NUM, pool=constants.HWTEST_TRYBOT_POOL,
+            file_bugs=False)
+      else:
+        for hw_config in my_config['hw_tests']:
+          hw_config.num = constants.HWTEST_TRYBOT_NUM
+          hw_config.pool = constants.HWTEST_TRYBOT_POOL
+          hw_config.file_bugs = False
 
     # Default to starting with a fresh chroot on remote trybot runs.
     if options.remote_trybot:
@@ -312,30 +309,8 @@ _settings = dict(
 # vm_tests -- Run vm test type defined in constants.
   vm_tests=constants.SIMPLE_AU_TEST_TYPE,
 
-# hw_copy_perf_results: If set to True, copy test results back from GS and send
-# them to the perf dashboard.
-  hw_copy_perf_results=False,
-
-# hw_tests_timeout -- Usually, 2 hours and ten minutes. This must be less than
-#                     lib.parallel._BackgroundTask.MINIMUM_SILENT_TIMEOUT.
-  hw_tests_timeout=DEFAULT_HW_TEST_TIMEOUT,
-
-# hw_tests_pool -- Pool to use for hw testing.
-  hw_tests_pool=constants.HWTEST_MACH_POOL,
-
-# hw_tests -- A list of autotest suites to run on remote hardware.
+  # A list of HWTestConfig objects to run.
   hw_tests=[],
-# async_hw_tests -- A list of autotest suites to kick off and forget about.
-  async_hw_tests=[],
-
-# hw_tests_critical -- Usually we consider structural failures here as OK.
-  hw_tests_critical=False,
-
-# Maximum number of devices to use when scheduling tests in the hw lab.
-  hw_tests_num=constants.HWTEST_DEFAULT_NUM,
-
-# Should we file bugs if a test fails in a suite run.
-  hw_tests_file_bugs=True,
 
 # upload_hw_test_artifacts -- If true, uploads artifacts for hw testing.
   upload_hw_test_artifacts=False,
@@ -453,6 +428,61 @@ _settings = dict(
 
 # =============================================================================
 )
+
+
+class _JSONEncoder(json.JSONEncoder):
+  """Json Encoder that encodes objects as their dictionaries."""
+  # pylint: disable=E0202
+  def default(self, obj):
+    return self.encode(obj.__dict__)
+
+
+class HWTestConfig(object):
+  """Config object for test suites.
+
+  Members:
+    copy_perf_results: If set to True, copy test results back from GS and send
+                       them to the perf dashboard.
+    timeout: How long to wait before timing out waiting for results. Usually,
+             2 hours and ten minutes. This must be less than
+             lib.parallel._BackgroundTask.MINIMUM_SILENT_TIMEOUT.
+    pool: Pool to use for hw testing.
+    async: Fire-and-forget suite.
+    critical: Usually we consider structural failures here as OK.
+    num: Maximum number of devices to use when scheduling tests in the hw lab.
+    file_bugs: Should we file bugs if a test fails in a suite run.
+  """
+
+  DEFAULT_HW_TEST = 'bvt'
+  DEFAULT_HW_TEST_TIMEOUT = 60 * 130
+
+  @classmethod
+  def DefaultList(cls, **dargs):
+    """Returns the default list of tests with overrides for optional args."""
+    return [cls(cls.DEFAULT_HW_TEST, **dargs)]
+
+  @classmethod
+  def DefaultListCQ(cls, **dargs):
+    """Returns the default list for cq tests with overrides."""
+    default_dict = dict(pool=constants.HWTEST_PALADIN_POOL, timeout=50 * 60,
+                        file_bugs=False)
+    # Allows dargs overrides to default_dict for cq.
+    default_dict.update(dargs)
+    return [cls(cls.DEFAULT_HW_TEST, **default_dict)]
+
+  def __init__(self, suite, num=constants.HWTEST_DEFAULT_NUM,
+               pool=constants.HWTEST_MACH_POOL, copy_perf_results=False,
+               timeout=DEFAULT_HW_TEST_TIMEOUT, async=False, critical=False,
+               file_bugs=True):
+    """Constructor -- see members above."""
+    self.suite = suite
+    self.num = num
+    self.pool = pool
+    self.copy_perf_results = copy_perf_results
+    self.timeout = timeout
+    self.async = async
+    self.critical = critical
+    self.file_bugs = file_bugs
 
 
 class _config(dict):
@@ -607,8 +637,6 @@ paladin = _config(
   manifest_version=True,
   trybot_list=True,
   description='Commit Queue',
-  hw_tests_timeout=50 * 60,
-  hw_tests_file_bugs=False,
   upload_standalone_images=False,
 )
 
@@ -649,7 +677,7 @@ _cros_sdk = full.add_config('chromiumos-sdk',
 asan = _config(
   chroot_replace=True,
   profile='asan',
-  useflags=['asan'],  # see profile for more
+  useflags=['asan'], # see profile for more
   disk_layout='2gb-rootfs',
   disk_vm_layout='2gb-rootfs-updatable',
 )
@@ -755,11 +783,8 @@ chrome_pgo = chrome_pfq.derive(
   usepkg_build_packages=False,
 
   vm_tests=None,
-  hw_tests=['PGO_record'],
-  hw_tests_critical=True,
-  hw_tests_pool=constants.HWTEST_CHROME_PFQ_POOL,
-  hw_tests_num=1,
-  hw_tests_timeout=90 * 60,
+  hw_tests=[HWTestConfig('PGO_record', pool=constants.HWTEST_CHROME_PFQ_POOL,
+                         timeout=90 * 60, critical=True, num=1)],
   disk_layout='2gb-rootfs',
 
   # TODO(petermayo): Remove once PGO is reliable again.
@@ -790,12 +815,9 @@ chrome_perf = chrome_info.derive(
   vm_tests=None,
   upload_hw_test_artifacts=True,
 
-  hw_copy_perf_results=True,
-  hw_tests=['pyauto_perf'],
-  hw_tests_critical=True,
-  hw_tests_pool=constants.HWTEST_CHROME_PERF_POOL,
-  hw_tests_num=1,
-  hw_tests_timeout=90 * 60,
+  hw_tests=[HWTestConfig('pyauto_perf', pool=constants.HWTEST_CHROME_PERF_POOL,
+                         timeout=90 * 60, critical=True, num=1,
+                         copy_perf_results=True)],
   nowithdebug=True,
   use_chrome_lkgm=True,
   use_lkgm=False,
@@ -948,7 +970,6 @@ internal_pfq_branch = internal_pfq.derive(overlays=constants.BOTH_OVERLAYS,
 internal_paladin = internal.derive(paladin,
   overlays=constants.BOTH_OVERLAYS,
   vm_tests=None,
-  hw_tests_pool=constants.HWTEST_PALADIN_POOL,
   description=paladin['description'] + ' (internal)',
 )
 
@@ -1002,7 +1023,7 @@ internal_paladin.add_config('zgb-paladin',
 internal_paladin.add_config('alex-paladin',
   boards=['x86-alex'],
   paladin_builder_name='alex paladin',
-  hw_tests=DEFAULT_HW_TESTS,
+  hw_tests=HWTestConfig.DefaultListCQ(),
   upload_hw_test_artifacts=True,
 )
 
@@ -1022,7 +1043,7 @@ internal_paladin.add_config('stumpy-paladin',
 internal_paladin.add_config('lumpy-paladin',
   boards=['lumpy'],
   paladin_builder_name='lumpy paladin',
-  hw_tests=DEFAULT_HW_TESTS,
+  hw_tests=HWTestConfig.DefaultListCQ(),
   upload_hw_test_artifacts=True,
 )
 
@@ -1084,7 +1105,8 @@ _release = full.derive(official, internal,
   dev_installer_prebuilts=True,
   git_sync=False,
   vm_tests=constants.FULL_AU_TEST_TYPE,
-  hw_tests=DEFAULT_HW_TESTS + [constants.HWTEST_AU_SUITE],
+  hw_tests=(HWTestConfig.DefaultList() +
+            [HWTestConfig(constants.HWTEST_AU_SUITE, num=2)]),
   upload_hw_test_artifacts=True,
   signer_tests=True,
   trybot_list=True,
@@ -1134,9 +1156,8 @@ _release.add_config('lumpy-release',
 
 _release.add_config('lumpy-pgo-release',
   boards=['lumpy'],
-  hw_tests=DEFAULT_HW_TESTS,
-  hw_tests_pool=constants.HWTEST_CHROME_PERF_POOL,
-  hw_tests_num=4,
+  hw_tests=HWTestConfig.DefaultList(pool=constants.HWTEST_CHROME_PERF_POOL,
+                                    num=4),
   useflags=official['useflags'] + [constants.USE_PGO_USE],
   push_image=False,
   dev_installer_prebuilts=False,
@@ -1154,7 +1175,7 @@ _release.add_config('parrot-release',
 
 _release.add_config('stout-release',
   boards=['stout'],
-  hw_tests_num=3,
+  hw_tests=HWTestConfig.DefaultList(num=3),
 )
 
 _release.add_config('butterfly-release',
@@ -1174,7 +1195,7 @@ _arm_release = _release.derive(arm)
 
 _arm_release.add_config('daisy-release',
   boards=['daisy'],
-  hw_tests_num=4,
+  hw_tests=HWTestConfig.DefaultList(num=4),
   critical_for_chrome=True,
 )
 
@@ -1336,7 +1357,7 @@ def main(argv=None):
   my_config = convert(config)
 
   if options.dump:
-    print json.dumps(my_config)
+    print json.dumps(my_config, cls=_JSONEncoder)
   elif options.compare:
     with open(options.compare, 'rb') as f:
       original = convert(json.load(f))

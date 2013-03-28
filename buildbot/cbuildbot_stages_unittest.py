@@ -647,7 +647,8 @@ class HWTestStageTest(AbstractStageTest):
     self.options.log_dir = '/b/cbuild/mylogdir'
     self.build_config = config.config[self.bot_id].copy()
     self.StartPatcher(ArchiveStageMock())
-    self.suite = 'bvt'
+    self.suite_config = self.build_config['hw_tests'][0]
+    self.suite = self.suite_config.suite
     self.archive_stage = stages.ArchiveStage(self.options, self.build_config,
                                              self._current_board, '')
     self.mox.StubOutWithMock(commands, 'RunHWTestSuite')
@@ -659,7 +660,7 @@ class HWTestStageTest(AbstractStageTest):
   def ConstructStage(self):
     return stages.HWTestStage(self.options, self.build_config,
                               self._current_board, self.archive_stage,
-                              self.suite)
+                              self.suite_config)
 
   def _RunHWTestSuite(self, debug=False, returncode=0, fails=False):
     """Pretend to run the HWTest suite to assist with tests.
@@ -669,7 +670,8 @@ class HWTestStageTest(AbstractStageTest):
       returncode: The return value of the HWTest command.
       fails: Whether the command as a whole should fail.
     """
-    m = commands.RunHWTestSuite(mox.IgnoreArg(), self.suite,
+    m = commands.RunHWTestSuite(mox.IgnoreArg(),
+                                self.suite,
                                 self._current_board, mox.IgnoreArg(),
                                 mox.IgnoreArg(), mox.IgnoreArg(), True, debug)
 
@@ -733,6 +735,7 @@ class HWTestStageTest(AbstractStageTest):
     self.suite = 'pyauto_perf'
     self.bot_id = 'lumpy-chrome-perf'
     self.build_config = config.config['lumpy-chrome-perf'].copy()
+    self.suite_config = self.build_config['hw_tests'][0]
     self.mox.StubOutWithMock(stages.HWTestStage, '_PrintFile')
 
     results_file = 'pyauto_perf.results'
@@ -756,12 +759,13 @@ class AUTestStageTest(AbstractStageTest,
                      return_value='foo.txt')
     self.archive_stage = stages.ArchiveStage(self.options, self.build_config,
                                              self._current_board, '0.0.1')
-    self.suite = 'bvt'
+    self.suite_config = self.build_config['hw_tests'][0]
+    self.suite = self.suite_config.suite
 
   def ConstructStage(self):
     return stages.AUTestStage(self.options, self.build_config,
                               self._current_board, self.archive_stage,
-                              self.suite)
+                              self.suite_config)
 
   def testPerformStage(self):
     """Tests that we correctly generate a tarball and archive it."""

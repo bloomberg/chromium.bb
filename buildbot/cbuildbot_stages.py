@@ -1473,12 +1473,11 @@ class HWTestStage(ArchivingStage):
 
   PERF_RESULTS_EXTENSION = 'results'
 
-  def __init__(self, options, build_config, board, archive_stage, suite):
+  def __init__(self, options, build_config, board, archive_stage, suite_config):
     super(HWTestStage, self).__init__(options, build_config, board,
-                                      archive_stage, suffix=' [%s]' % suite)
-    self._suite = suite
-    # Bind this early so derived classes can override it.
-    self._timeout = build_config['hw_tests_timeout']
+                                      archive_stage,
+                                      suffix=' [%s]' % suite_config.suite)
+    self.suite_config = suite_config
     self.wait_for_results = True
 
   def _PrintFile(self, filename):
@@ -1487,7 +1486,7 @@ class HWTestStage(ArchivingStage):
 
   def _SendPerfResults(self):
     """Sends the perf results from the test to the perf dashboard."""
-    result_file_name = '%s.%s' % (self._suite,
+    result_file_name = '%s.%s' % (self.suite_config.suite,
                                   HWTestStage.PERF_RESULTS_EXTENSION)
     gs_results_file = '/'.join([self.upload_url, result_file_name])
     gs_context = gs.GSContext()
@@ -1506,13 +1505,13 @@ class HWTestStage(ArchivingStage):
     codes_handled_as_warning = [2, 11, 12, 13]
     if (isinstance(exception, cros_build_lib.RunCommandError) and
         exception.result.returncode in codes_handled_as_warning and
-        not self._build_config['hw_tests_critical']):
+        not self.suite_config.critical):
       return self._HandleExceptionAsWarning(exception)
     else:
       return super(HWTestStage, self)._HandleStageException(exception)
 
   def DealWithTimeout(self, exception):
-    if not self._build_config['hw_tests_critical']:
+    if not self.suite_config.critical:
       return self._HandleExceptionAsWarning(exception)
 
     return super(HWTestStage, self)._HandleStageException(exception)
@@ -1524,15 +1523,17 @@ class HWTestStage(ArchivingStage):
     else:
       debug = self._options.debug
     try:
-      with cros_build_lib.SubCommandTimeout(self._timeout):
-        commands.RunHWTestSuite(build, self._suite, self._current_board,
-                                self._build_config['hw_tests_pool'],
-                                self._build_config['hw_tests_num'],
-                                self._build_config['hw_tests_file_bugs'],
+      with cros_build_lib.SubCommandTimeout(self.suite_config.timeout):
+        commands.RunHWTestSuite(build,
+                                self.suite_config.suite,
+                                self._current_board,
+                                self.suite_config.pool,
+                                self.suite_config.num,
+                                self.suite_config.file_bugs,
                                 self.wait_for_results,
                                 debug)
 
-        if self._build_config['hw_copy_perf_results']:
+        if self.suite_config.copy_perf_results:
           self._SendPerfResults()
 
     except cros_build_lib.TimeoutError as exception:
@@ -1556,9 +1557,8 @@ class AUTestStage(HWTestStage):
 class ASyncHWTestStage(HWTestStage, ForgivingBuilderStage):
   """Stage that fires and forgets hw test suites to the Autotest lab."""
 
-  def __init__(self, options, build_config, board, archive_stage, suite):
-    super(ASyncHWTestStage, self).__init__(self, options, build_config, board,
-                                           archive_stage, suite)
+  def __init__(self, *args, **dargs):
+    super(ASyncHWTestStage, self).__init__(self, *args, **dargs)
     self.wait_for_results = False
 
 
