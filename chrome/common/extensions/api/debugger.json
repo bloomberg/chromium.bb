@@ -12,7 +12,25 @@
         "description": "Debuggee identifier. Either tabId or extensionId must be specified",
         "properties": {
           "tabId": { "type": "integer", "optional": true, "description": "The id of the tab which you intend to debug." },
-          "extensionId": { "type": "string", "optional": true, "description": "The id of the extension which you intend to debug. Attaching to an extension background page is only possible when 'enable-silent-debugging' flag is enabled on the target browser." }
+          "extensionId": { "type": "string", "optional": true, "description": "The id of the extension which you intend to debug. Attaching to an extension background page is only possible when 'enable-silent-debugging' flag is enabled on the target browser." },
+          "targetId": { "type": "string", "optional": true, "description": "The opaque id of the debug target." }
+        }
+      },
+      {
+        "id": "TargetInfo",
+        "type": "object",
+        "description": "Debug target information",
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "Target type.",
+            "enum" : ["page", "background_page", "other" ]
+          },
+          "id": { "type": "string", "description": "Target id." },
+          "attached": { "type": "boolean", "description": "True if debugger is already attached." },
+          "title": { "type": "string", "description": "Target page title." },
+          "url": { "type": "string", "description": "Target URL." },
+          "faviconUrl": { "type": "string", "optional": true, "description": "Target favicon URL." }
         }
       }
     ],
@@ -96,6 +114,25 @@
               }
             ],
             "description": "Response body. If an error occurs while posting the message, the callback will be called with no arguments and $ref:runtime.lastError will be set to the error message."
+          }
+        ]
+      },
+      {
+        "name": "getTargets",
+        "type": "function",
+        "description": "Returns the list of available debug targets.",
+        "parameters": [
+          {
+            "type": "function",
+            "name": "callback",
+            "parameters": [
+              {
+                "type": "array",
+                "name": "result",
+                "items": {"$ref": "TargetInfo"},
+                "description": "Array of TargetInfo objects corresponding to the available debug targets."
+              }
+            ]
           }
         ]
       }
