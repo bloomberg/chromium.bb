@@ -1489,8 +1489,12 @@ class HWTestStage(ArchivingStage):
   # pylint: disable=W0212
   def _HandleStageException(self, exception):
     """Override and don't set status to FAIL but FORGIVEN instead."""
+    # 2 for warnings returned by run_suite.py, or CLIENT_HTTP_CODE error
+    # returned by autotest_rpc_client.py. It is the former that we care about.
+    # 11, 12, 13 for cases when rpc is down, see autotest_rpc_errors.py.
+    codes_handled_as_warning = [2, 11, 12, 13]
     if (isinstance(exception, cros_build_lib.RunCommandError) and
-        exception.result.returncode == 2 and
+        exception.result.returncode in codes_handled_as_warning and
         not self._build_config['hw_tests_critical']):
       return self._HandleExceptionAsWarning(exception)
     else:
