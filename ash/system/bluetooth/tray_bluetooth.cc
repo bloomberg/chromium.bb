@@ -107,12 +107,13 @@ class BluetoothDetailedView : public TrayDetailsView,
         ash::Shell::GetInstance()->system_tray_delegate();
     bool bluetooth_enabled = delegate->GetBluetoothEnabled();
     if (!bluetooth_discovering_ && bluetooth_enabled) {
+      bluetooth_discovering_ = true;
       delegate->BluetoothStartDiscovering();
       throbber_->Start();
     } else if(!bluetooth_enabled) {
+      bluetooth_discovering_ = false;
       throbber_->Stop();
     }
-    bluetooth_discovering_ = bluetooth_enabled;
   }
 
   void BluetoothStopDiscovering() {
