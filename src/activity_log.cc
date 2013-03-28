@@ -32,7 +32,8 @@ using std::string;
 namespace gestures {
 
 ActivityLog::ActivityLog(PropRegistry* prop_reg)
-    : head_idx_(0), size_(0), max_fingers_(0), prop_reg_(prop_reg) {}
+    : head_idx_(0), size_(0), max_fingers_(0), hwprops_(),
+      prop_reg_(prop_reg) {}
 
 void ActivityLog::SetHardwareProperties(const HardwareProperties& hwprops) {
   hwprops_ = hwprops;
