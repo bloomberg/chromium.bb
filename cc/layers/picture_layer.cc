@@ -68,7 +68,8 @@ void PictureLayer::SetNeedsDisplayRect(const gfx::RectF& layer_rect) {
 }
 
 void PictureLayer::Update(ResourceUpdateQueue*,
-                          const OcclusionTracker*) {
+                          const OcclusionTracker*,
+                          RenderingStats* stats) {
   // Do not early-out of this function so that PicturePile::Update has a chance
   // to record pictures due to changing visibility of this layer.
 
@@ -86,7 +87,7 @@ void PictureLayer::Update(ResourceUpdateQueue*,
                 background_color(),
                 pile_invalidation_,
                 visible_layer_rect,
-                rendering_stats_instrumentation());
+                stats);
 }
 
 void PictureLayer::SetIsMask(bool is_mask) {

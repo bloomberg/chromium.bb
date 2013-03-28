@@ -43,7 +43,7 @@ class PriorityCalculator;
 class ResourceUpdateQueue;
 class ScrollbarLayer;
 struct AnimationEvent;
-class RenderingStatsInstrumentation;
+struct RenderingStats;
 
 // Base class for composited layers. Special layer types are derived from
 // this class.
@@ -267,7 +267,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   // These methods typically need to be overwritten by derived classes.
   virtual bool DrawsContent() const;
   virtual void Update(ResourceUpdateQueue* queue,
-                      const OcclusionTracker* occlusion) {}
+                      const OcclusionTracker* occlusion,
+                      RenderingStats* stats) {}
   virtual bool NeedMoreUpdates();
   virtual void SetIsMask(bool is_mask) {}
 
@@ -368,8 +369,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
 
   bool NeedsDisplayForTesting() const { return needs_display_; }
   void ResetNeedsDisplayForTesting() { needs_display_ = false; }
-
-  RenderingStatsInstrumentation* rendering_stats_instrumentation() const;
 
  protected:
   friend class LayerImpl;

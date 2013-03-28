@@ -5,6 +5,7 @@
 #include "base/debug/trace_event.h"
 #include "cc/base/region.h"
 #include "cc/debug/debug_colors.h"
+#include "cc/debug/rendering_stats.h"
 #include "cc/resources/picture_pile_impl.h"
 #include "skia/ext/analysis_canvas.h"
 #include "third_party/skia/include/core/SkCanvas.h"

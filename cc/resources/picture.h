@@ -24,7 +24,7 @@ class AnalysisCanvas;
 namespace cc {
 
 class ContentLayerClient;
-class RenderingStatsInstrumentation;
+struct RenderingStats;
 
 class CC_EXPORT Picture
     : public base::RefCountedThreadSafe<Picture> {
@@ -43,9 +43,8 @@ class CC_EXPORT Picture
 
   // Record a paint operation. To be able to safely use this SkPicture for
   // playback on a different thread this can only be called once.
-  void Record(ContentLayerClient* painter,
-              RenderingStatsInstrumentation* stats_instrumentation,
-              const SkTileGridPicture::TileGridInfo& tile_grid_info);
+  void Record(ContentLayerClient*, RenderingStats*,
+      const SkTileGridPicture::TileGridInfo& tile_grid_info);
 
   // Has Record() been called yet?
   bool HasRecording() const { return picture_.get() != NULL; }

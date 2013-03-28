@@ -29,7 +29,8 @@ class FakeScrollbarLayer : public ScrollbarLayer {
   }
 
   virtual void Update(ResourceUpdateQueue* queue,
-                      const OcclusionTracker* occlusion) OVERRIDE;
+                      const OcclusionTracker* occlusion,
+                      RenderingStats* stats) OVERRIDE;
 
  private:
   FakeScrollbarLayer(bool paint_during_update,

@@ -23,7 +23,8 @@ class CC_EXPORT ContentsScalingLayer : public Layer {
 
   virtual void Update(
     ResourceUpdateQueue* queue,
-    const OcclusionTracker* occlusion) OVERRIDE;
+    const OcclusionTracker* occlusion,
+    RenderingStats* stats) OVERRIDE;
 
  protected:
   ContentsScalingLayer();

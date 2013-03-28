@@ -11,7 +11,7 @@
 namespace cc {
 class PicturePileImpl;
 class Region;
-class RenderingStatsInstrumentation;
+struct RenderingStats;
 
 class CC_EXPORT PicturePile : public PicturePileBase {
  public:
@@ -24,7 +24,7 @@ class CC_EXPORT PicturePile : public PicturePileBase {
       SkColor background_color,
       const Region& invalidation,
       gfx::Rect visible_layer_rect,
-      RenderingStatsInstrumentation* stats_instrumentation);
+      RenderingStats* stats);
 
   void set_num_raster_threads(int num_raster_threads) {
     num_raster_threads_ = num_raster_threads;
