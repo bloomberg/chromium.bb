@@ -198,13 +198,18 @@ class RunSwarmStep(unittest.TestCase):
       self.assertEquals(0, returncode)
 
       # Ensure the correct files have been placed in the temp directory.
-      self.assertTrue(os.path.exists(os.path.join(out_dir, 'file1.txt')))
-      self.assertTrue(os.path.lexists(os.path.join(out_dir,
-                                                   'file1_symlink.txt')))
-      self.assertTrue(os.path.exists(os.path.join(out_dir, 'new_folder',
-                                                  'file1.txt')))
-      self.assertTrue(os.path.exists(os.path.join(out_dir,
-                                                  'repeated_files.py')))
+      expected = [
+        'file1.txt',
+        os.path.join('new_folder', 'file1.txt'),
+        'repeated_files.py',
+      ]
+      if sys.platform != 'win32':
+        expected.append('file1_symlink.txt')
+      actual = list_files_tree(out_dir)
+      self.assertEqual(sorted(expected), sorted(actual))
+      if sys.platform != 'win32':
+        self.assertTrue(
+            os.path.lexists(os.path.join(out_dir, 'file1_symlink.txt')))
     finally:
       if out_dir:
         run_isolated.rmtree(out_dir)

@@ -1254,6 +1254,11 @@ def create_links(base_directory, files):
   for filepath, properties in files:
     if 'l' not in properties:
       continue
+    if sys.platform == 'win32':
+      # TODO(maruel): Create junctions or empty text files similar to what
+      # cygwin do?
+      logging.warning('Ignoring symlink %s', filepath)
+      continue
     outfile = os.path.join(base_directory, filepath)
     # symlink doesn't exist on Windows. So the 'link' property should
     # never be specified for windows .isolated file.
