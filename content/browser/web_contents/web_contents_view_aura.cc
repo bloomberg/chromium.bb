@@ -1320,8 +1320,10 @@ void WebContentsViewAura::StartDragging(
     const gfx::Vector2d& image_offset,
     const DragEventSourceInfo& event_info) {
   aura::RootWindow* root_window = GetNativeView()->GetRootWindow();
-  if (!aura::client::GetDragDropClient(root_window))
+  if (!aura::client::GetDragDropClient(root_window)) {
+    web_contents_->SystemDragEnded();
     return;
+  }
 
   ui::OSExchangeData::Provider* provider = ui::OSExchangeData::CreateProvider();
   PrepareDragData(drop_data, provider);
@@ -1349,15 +1351,17 @@ void WebContentsViewAura::StartDragging(
   }
 
   // Bail out immediately if the contents view window is gone. Note that it is
-  // not safe to access any class members after system drag-and-drop returns
-  // since the class instance might be gone. The local variable |drag_source|
-  // is still valid and we can check its window property that is set to NULL
-  // when the contents are gone.
-  if (!drag_source->window())
+  // not safe to access any class members in this case since |this| may already
+  // be destroyed. The local variable |drag_source| will still be valid though,
+  // so we can use it to determine if the window is gone.
+  if (!drag_source->window()) {
+    // Note that in this case, we don't need to call SystemDragEnded() since the
+    // renderer is going away.
     return;
+  }
 
   EndDrag(ConvertToWeb(result_op));
-  web_contents_->GetRenderViewHost()->DragSourceSystemDragEnded();
+  web_contents_->SystemDragEnded();
 }
 
 void WebContentsViewAura::UpdateDragCursor(WebKit::WebDragOperation operation) {

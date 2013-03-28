@@ -69,7 +69,7 @@ WebDragSourceGtk::~WebDragSourceGtk() {
   gtk_widget_destroy(drag_icon_);
 }
 
-void WebDragSourceGtk::StartDragging(const WebDropData& drop_data,
+bool WebDragSourceGtk::StartDragging(const WebDropData& drop_data,
                                      WebDragOperationsMask allowed_ops,
                                      GdkEventButton* last_mouse_down,
                                      const SkBitmap& image,
@@ -77,8 +77,7 @@ void WebDragSourceGtk::StartDragging(const WebDropData& drop_data,
   // Guard against re-starting before previous drag completed.
   if (drag_context_) {
     NOTREACHED();
-    web_contents_->SystemDragEnded();
-    return;
+    return false;
   }
 
   int targets_mask = 0;
@@ -146,11 +145,11 @@ void WebDragSourceGtk::StartDragging(const WebDropData& drop_data,
   if (!drag_context_) {
     drag_failed_ = true;
     drop_data_.reset();
-    web_contents_->SystemDragEnded();
-    return;
+    return false;
   }
 
   MessageLoopForUI::current()->AddObserver(this);
+  return true;
 }
 
 void WebDragSourceGtk::WillProcessEvent(GdkEvent* event) {

@@ -375,11 +375,11 @@ void WebContentsViewGtk::StartDragging(const WebDropData& drop_data,
 
   RenderWidgetHostViewGtk* view_gtk = static_cast<RenderWidgetHostViewGtk*>(
       web_contents_->GetRenderWidgetHostView());
-  if (!view_gtk || !view_gtk->GetLastMouseDown())
-    return;
-
-  drag_source_->StartDragging(drop_data, ops, view_gtk->GetLastMouseDown(),
-                              *image.bitmap(), image_offset);
+  if (!view_gtk || !view_gtk->GetLastMouseDown() ||
+      !drag_source_->StartDragging(drop_data, ops, view_gtk->GetLastMouseDown(),
+                                   *image.bitmap(), image_offset)) {
+    web_contents_->SystemDragEnded();
+  }
 }
 
 // -----------------------------------------------------------------------------

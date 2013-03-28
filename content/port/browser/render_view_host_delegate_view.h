@@ -50,7 +50,9 @@ class CONTENT_EXPORT RenderViewHostDelegateView {
 
   // The user started dragging content of the specified type within the
   // RenderView. Contextual information about the dragged content is supplied
-  // by WebDropData.
+  // by WebDropData. If the delegate's view cannot start the drag for /any/
+  // reason, it must inform the renderer that the drag has ended; otherwise,
+  // this results in bugs like http://crbug.com/157134.
   virtual void StartDragging(const WebDropData& drop_data,
                              WebKit::WebDragOperationsMask allowed_ops,
                              const gfx::ImageSkia& image,
