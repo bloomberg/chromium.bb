@@ -49,14 +49,6 @@ class BluetoothAdapter : public base::RefCounted<BluetoothAdapter> {
     virtual void AdapterDiscoveringChanged(BluetoothAdapter* adapter,
                                            bool discovering) {}
 
-    // Called when the scanning discovery state of the adapter |adapter|
-    // changes during discovery. When |scanning| is true the adapter is
-    // actively scanning for new devices and when false it is contacting
-    // the devices found to update information; the adapter will repeatedly
-    // cycle between both states during discovery.
-    virtual void AdapterScanningChanged(BluetoothAdapter* adapter,
-                                        bool scanning) {}
-
     // Called when a new device |device| is added to the adapter |adapter|,
     // either because it has been discovered or a connection made. |device|
     // should not be cached, instead copy its address.
@@ -119,11 +111,6 @@ class BluetoothAdapter : public base::RefCounted<BluetoothAdapter> {
 
   // Indicates whether the adapter is currently discovering new devices.
   virtual bool IsDiscovering() const = 0;
-
-  // Indicates whether the adapter is currently scanning for new devices
-  // during discovery; when false the adapter is contacting the devices found
-  // to obtain information.
-  virtual bool IsScanning() const = 0;
 
   // Requests that the adapter begin discovering new devices, code must
   // always call this method if they require the adapter be in discovery

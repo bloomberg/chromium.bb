@@ -50,7 +50,6 @@ class BluetoothAdapterChromeOS
       const base::Closure& callback,
       const ErrorCallback& error_callback) OVERRIDE;
   virtual bool IsDiscovering() const OVERRIDE;
-  virtual bool IsScanning() const OVERRIDE;
   virtual void StartDiscovering(
       const base::Closure& callback,
       const ErrorCallback& error_callback) OVERRIDE;
@@ -128,7 +127,7 @@ class BluetoothAdapterChromeOS
                        const dbus::ObjectPath& adapter_path,
                        bool success);
 
-  // Updates the tracked state of the adapter's scanning state to
+  // Updates the tracked state of the adapter's discovering state to
   // |discovering| and notifies observers. Called on receipt of a property
   // changed signal, and directly using values obtained from properties.
   void DiscoveringChanged(bool discovering);
@@ -222,10 +221,10 @@ class BluetoothAdapterChromeOS
   // Tracked adapter state, cached locally so we only send change notifications
   // to observers on a genuine change.
   bool powered_;
-  bool scanning_;
+  bool discovering_;
 
   // Count of callers to StartDiscovering() and StopDiscovering(), used to
-  // provide the IsDiscovering() status.
+  // track whether to clear the discovered devices list on start.
   int discovering_count_;
 
   // Note: This should remain the last member so it'll be destroyed and

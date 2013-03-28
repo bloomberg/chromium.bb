@@ -38,7 +38,6 @@ class BluetoothAdapterChromeOSExperimental
       const base::Closure& callback,
       const ErrorCallback& error_callback) OVERRIDE;
   virtual bool IsDiscovering() const OVERRIDE;
-  virtual bool IsScanning() const OVERRIDE;
   virtual void StartDiscovering(
       const base::Closure& callback,
       const ErrorCallback& error_callback) OVERRIDE;

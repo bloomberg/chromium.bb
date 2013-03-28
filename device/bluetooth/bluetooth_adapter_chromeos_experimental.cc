@@ -48,10 +48,6 @@ bool BluetoothAdapterChromeOSExperimental::IsDiscovering() const {
   return false;
 }
 
-bool BluetoothAdapterChromeOSExperimental::IsScanning() const {
-  return false;
-}
-
 void BluetoothAdapterChromeOSExperimental::StartDiscovering(
     const base::Closure& callback,
     const ErrorCallback& error_callback) {

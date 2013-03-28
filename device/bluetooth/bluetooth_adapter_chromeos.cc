@@ -28,7 +28,7 @@ namespace chromeos {
 BluetoothAdapterChromeOS::BluetoothAdapterChromeOS() : BluetoothAdapter(),
                                                        track_default_(false),
                                                        powered_(false),
-                                                       scanning_(false),
+                                                       discovering_(false),
                                                        discovering_count_(0),
                                                        weak_ptr_factory_(this) {
   DBusThreadManager::Get()->GetBluetoothManagerClient()->
@@ -46,6 +46,8 @@ BluetoothAdapterChromeOS::~BluetoothAdapterChromeOS() {
       RemoveObserver(this);
   DBusThreadManager::Get()->GetBluetoothManagerClient()->
       RemoveObserver(this);
+
+  STLDeleteValues(&devices_);
 }
 
 void BluetoothAdapterChromeOS::AddObserver(
@@ -87,11 +89,7 @@ void BluetoothAdapterChromeOS::SetPowered(bool powered,
 }
 
 bool BluetoothAdapterChromeOS::IsDiscovering() const {
-  return discovering_count_ > 0;
-}
-
-bool BluetoothAdapterChromeOS::IsScanning() const {
-  return scanning_;
+  return discovering_;
 }
 
 void BluetoothAdapterChromeOS::StartDiscovering(
@@ -245,9 +243,6 @@ void BluetoothAdapterChromeOS::OnStartDiscovery(
 
       // Clear devices found in previous discovery attempts
       ClearDiscoveredDevices();
-
-      FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
-                        AdapterDiscoveringChanged(this, true));
     }
 
     callback.Run();
@@ -264,9 +259,6 @@ void BluetoothAdapterChromeOS::OnStopDiscovery(
   if (success) {
     if (--discovering_count_ == 0) {
       VLOG(1) << object_path_.value() << ": stopped discovery.";
-
-      FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
-                        AdapterDiscoveringChanged(this, false));
     } else if (discovering_count_ < 0) {
       LOG(WARNING) << adapter_path.value() << ": call to StopDiscovering "
                    << "without matching StartDiscovering.";
@@ -283,15 +275,13 @@ void BluetoothAdapterChromeOS::OnStopDiscovery(
 }
 
 void BluetoothAdapterChromeOS::DiscoveringChanged(bool discovering) {
-  // The BlueZ discovering property actually just indicates whether the
-  // device is in an inquiry scan, so update our scanning property.
-  if (discovering == scanning_)
+  if (discovering == discovering_)
     return;
 
-  scanning_ = discovering;
+  discovering_ = discovering;
 
   FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
-                    AdapterScanningChanged(this, scanning_));
+                    AdapterDiscoveringChanged(this, discovering_));
 }
 
 void BluetoothAdapterChromeOS::OnReadLocalData(

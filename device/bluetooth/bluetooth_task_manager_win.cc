@@ -188,12 +188,6 @@ void BluetoothTaskManagerWin::OnDiscoveryStopped() {
                     DiscoveryStopped());
 }
 
-void BluetoothTaskManagerWin::OnScanningChanged(bool scanning) {
-  DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
-  FOR_EACH_OBSERVER(BluetoothTaskManagerWin::Observer, observers_,
-                    ScanningChanged(scanning));
-}
-
 void BluetoothTaskManagerWin::OnDevicesDiscovered(
     const ScopedVector<DeviceState>* devices) {
   DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
@@ -290,18 +284,11 @@ void BluetoothTaskManagerWin::DiscoverDevices(int timeout) {
     return;
   }
 
-  ui_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&BluetoothTaskManagerWin::OnScanningChanged, this, true));
-
   ScopedVector<DeviceState>* device_list = new ScopedVector<DeviceState>();
   SearchDevices(timeout, false, device_list);
   if (device_list->empty()) {
     delete device_list;
   } else {
-    ui_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&BluetoothTaskManagerWin::OnScanningChanged, this, false));
     DiscoverServices(device_list);
     ui_task_runner_->PostTask(
         FROM_HERE,

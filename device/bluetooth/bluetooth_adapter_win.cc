@@ -24,7 +24,6 @@ BluetoothAdapterWin::BluetoothAdapterWin(const InitCallback& init_callback)
       initialized_(false),
       powered_(false),
       discovery_status_(NOT_DISCOVERING),
-      scanning_(false),
       num_discovery_listeners_(0),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
 }
@@ -70,10 +69,6 @@ void BluetoothAdapterWin::SetPowered(
 bool BluetoothAdapterWin::IsDiscovering() const {
   return discovery_status_ == DISCOVERING ||
       discovery_status_ == DISCOVERY_STOPPING;
-}
-
-bool BluetoothAdapterWin::IsScanning() const {
-  return scanning_;
 }
 
 // If the method is called when |discovery_status_| is DISCOVERY_STOPPING,
@@ -140,7 +135,6 @@ void BluetoothAdapterWin::DiscoveryStopped() {
   }
   num_discovery_listeners_ = 0;
   on_stop_discovery_callbacks_.clear();
-  ScanningChanged(false);
   if (was_discovering)
     FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
                       AdapterDiscoveringChanged(this, false));
@@ -174,14 +168,6 @@ void BluetoothAdapterWin::AdapterStateChanged(
   if (!initialized_) {
     initialized_ = true;
     init_callback_.Run();
-  }
-}
-
-void BluetoothAdapterWin::ScanningChanged(bool scanning) {
-  if (scanning_ != scanning) {
-    scanning_ = scanning;
-    FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
-                      AdapterScanningChanged(this, scanning_));
   }
 }
 

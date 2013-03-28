@@ -83,10 +83,6 @@ bool BluetoothAdapterMac::IsDiscovering() const {
   return false;
 }
 
-bool BluetoothAdapterMac::IsScanning() const {
-  return false;
-}
-
 void BluetoothAdapterMac::StartDiscovering(
     const base::Closure& callback,
     const ErrorCallback& error_callback) {

@@ -44,7 +44,6 @@ class BluetoothAdapterWin : public BluetoothAdapter,
       const base::Closure& callback,
       const ErrorCallback& error_callback) OVERRIDE;
   virtual bool IsDiscovering() const OVERRIDE;
-  virtual bool IsScanning() const OVERRIDE;
 
   virtual void StartDiscovering(
       const base::Closure& callback,
@@ -61,7 +60,6 @@ class BluetoothAdapterWin : public BluetoothAdapter,
       const BluetoothTaskManagerWin::AdapterState& state) OVERRIDE;
   virtual void DiscoveryStarted(bool success) OVERRIDE;
   virtual void DiscoveryStopped() OVERRIDE;
-  virtual void ScanningChanged(bool scanning) OVERRIDE;
   virtual void DevicesDiscovered(
       const ScopedVector<BluetoothTaskManagerWin::DeviceState>& devices)
           OVERRIDE;
@@ -92,7 +90,6 @@ class BluetoothAdapterWin : public BluetoothAdapter,
   bool initialized_;
   bool powered_;
   DiscoveryStatus discovery_status_;
-  bool scanning_;
 
   std::vector<std::pair<base::Closure, ErrorCallback> >
       on_start_discovery_callbacks_;

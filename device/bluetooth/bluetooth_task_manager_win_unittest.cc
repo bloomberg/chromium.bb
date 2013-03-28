@@ -34,10 +34,6 @@ class BluetoothTaskObserver : public device::BluetoothTaskManagerWin::Observer {
     num_discovery_stopped_++;
   }
 
-  virtual void ScanningChanged(bool scanning) OVERRIDE {
-    num_scanning_changed_++;
-  }
-
   virtual void DevicesDiscovered(
       const ScopedVector<device::BluetoothTaskManagerWin::DeviceState>&
           devices) OVERRIDE {
@@ -48,7 +44,6 @@ class BluetoothTaskObserver : public device::BluetoothTaskManagerWin::Observer {
     num_adapter_state_changed_ = 0;
     num_discovery_started_ = 0;
     num_discovery_stopped_ = 0;
-    num_scanning_changed_ = 0;
     num_devices_discovered_ = 0;
   }
 
@@ -64,10 +59,6 @@ class BluetoothTaskObserver : public device::BluetoothTaskManagerWin::Observer {
     return num_discovery_stopped_;
   }
 
-  int num_scanning_changed() const {
-    return num_scanning_changed_;
-  }
-
   int num_devices_discovered() const {
     return num_devices_discovered_;
   }
@@ -76,7 +67,6 @@ class BluetoothTaskObserver : public device::BluetoothTaskManagerWin::Observer {
    int num_adapter_state_changed_;
    int num_discovery_started_;
    int num_discovery_stopped_;
-   int num_scanning_changed_;
    int num_devices_discovered_;
 };
 
