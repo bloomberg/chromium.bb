@@ -495,7 +495,7 @@ const char kUpdateAddressValidRequest[] =
         "}"
     "}";
 
-const char kUpdateInstrumentValidRequest[] =
+const char kUpdateInstrumentAddressValidRequest[] =
     "{"
         "\"instrument_phone_number\":\"phone_number\","
         "\"merchant_domain\":\"https://example.com/\","
@@ -513,6 +513,74 @@ const char kUpdateInstrumentValidRequest[] =
             "\"postal_code_number\":\"postal_code_number\","
             "\"recipient_name\":\"recipient_name\""
         "},"
+        "\"upgraded_instrument_id\":\"instrument_id\""
+    "}";
+
+const char kUpdateInstrumentAddressWithNameChangeValidRequest[] =
+    "{"
+        "\"instrument_escrow_handle\":\"escrow_handle\","
+        "\"instrument_phone_number\":\"phone_number\","
+        "\"merchant_domain\":\"https://example.com/\","
+        "\"risk_params\":\"risky business\","
+        "\"upgraded_billing_address\":"
+        "{"
+            "\"address_line\":"
+            "["
+                "\"address_line_1\","
+                "\"address_line_2\""
+            "],"
+            "\"administrative_area_name\":\"admin_area_name\","
+            "\"country_name_code\":\"country_name_code\","
+            "\"locality_name\":\"locality_name\","
+            "\"postal_code_number\":\"postal_code_number\","
+            "\"recipient_name\":\"recipient_name\""
+        "},"
+        "\"upgraded_instrument_id\":\"instrument_id\""
+    "}";
+
+const char kUpdateInstrumentAddressAndExpirationDateValidRequest[] =
+    "{"
+        "\"instrument\":"
+        "{"
+            "\"credit_card\":"
+            "{"
+                "\"exp_month\":12,"
+                "\"exp_year\":2015"
+            "}"
+        "},"
+        "\"instrument_escrow_handle\":\"escrow_handle\","
+        "\"instrument_phone_number\":\"phone_number\","
+        "\"merchant_domain\":\"https://example.com/\","
+        "\"risk_params\":\"risky business\","
+        "\"upgraded_billing_address\":"
+        "{"
+            "\"address_line\":"
+            "["
+                "\"address_line_1\","
+                "\"address_line_2\""
+            "],"
+            "\"administrative_area_name\":\"admin_area_name\","
+            "\"country_name_code\":\"country_name_code\","
+            "\"locality_name\":\"locality_name\","
+            "\"postal_code_number\":\"postal_code_number\","
+            "\"recipient_name\":\"recipient_name\""
+        "},"
+        "\"upgraded_instrument_id\":\"instrument_id\""
+    "}";
+
+const char kUpdateInstrumentExpirationDateValidRequest[] =
+    "{"
+        "\"instrument\":"
+        "{"
+            "\"credit_card\":"
+            "{"
+                "\"exp_month\":12,"
+                "\"exp_year\":2015"
+            "}"
+        "},"
+        "\"instrument_escrow_handle\":\"escrow_handle\","
+        "\"merchant_domain\":\"https://example.com/\","
+        "\"risk_params\":\"risky business\","
         "\"upgraded_instrument_id\":\"instrument_id\""
     "}";
 
@@ -1409,19 +1477,105 @@ TEST_F(WalletClientTest, UpdateAddressMalformedResponse) {
                          kUpdateMalformedResponse);
 }
 
-TEST_F(WalletClientTest, UpdateInstrumentSucceeded) {
+TEST_F(WalletClientTest, UpdateInstrumentAddressSucceeded) {
   EXPECT_CALL(delegate_,
               OnDidUpdateInstrument("instrument_id",
                                     std::vector<RequiredAction>())).Times(1);
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::UPDATE_INSTRUMENT,
                                            1);
 
-  scoped_ptr<Address> address = GetTestAddress();
-  wallet_client_->UpdateInstrument("instrument_id",
-                                   *address,
-                                   GURL(kMerchantUrl));
+  WalletClient::UpdateInstrumentRequest update_instrument_request(
+      "instrument_id",
+      GURL(kMerchantUrl));
+
+  wallet_client_->UpdateInstrument(update_instrument_request, GetTestAddress());
+
   VerifyAndFinishRequest(net::HTTP_OK,
-                         kUpdateInstrumentValidRequest,
+                         kUpdateInstrumentAddressValidRequest,
+                         kUpdateInstrumentValidResponse);
+}
+
+TEST_F(WalletClientTest, UpdateInstrumentExpirationDateSuceeded) {
+  EXPECT_CALL(delegate_,
+              OnDidUpdateInstrument("instrument_id",
+                                    std::vector<RequiredAction>())).Times(1);
+  delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::UPDATE_INSTRUMENT,
+                                           1);
+
+  WalletClient::UpdateInstrumentRequest update_instrument_request(
+      "instrument_id",
+      GURL(kMerchantUrl));
+  update_instrument_request.expiration_month = 12;
+  update_instrument_request.expiration_year = 2015;
+  update_instrument_request.card_verification_number =
+      "card_verification_number";
+  update_instrument_request.obfuscated_gaia_id = "obfuscated_gaia_id";
+  wallet_client_->UpdateInstrument(update_instrument_request,
+                                   scoped_ptr<Address>());
+
+  net::TestURLFetcher* encryption_fetcher = factory_.GetFetcherByID(1);
+  ASSERT_TRUE(encryption_fetcher);
+  encryption_fetcher->set_response_code(net::HTTP_OK);
+  encryption_fetcher->SetResponseString("escrow_handle");
+  encryption_fetcher->delegate()->OnURLFetchComplete(encryption_fetcher);
+
+  VerifyAndFinishRequest(net::HTTP_OK,
+                         kUpdateInstrumentExpirationDateValidRequest,
+                         kUpdateInstrumentValidResponse);
+}
+
+TEST_F(WalletClientTest, UpdateInstrumentAddressWithNameChangeSucceeded) {
+  EXPECT_CALL(delegate_,
+              OnDidUpdateInstrument("instrument_id",
+                                    std::vector<RequiredAction>())).Times(1);
+  delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::UPDATE_INSTRUMENT,
+                                           1);
+
+  WalletClient::UpdateInstrumentRequest update_instrument_request(
+      "instrument_id",
+      GURL(kMerchantUrl));
+  update_instrument_request.card_verification_number =
+      "card_verification_number";
+  update_instrument_request.obfuscated_gaia_id = "obfuscated_gaia_id";
+
+  wallet_client_->UpdateInstrument(update_instrument_request, GetTestAddress());
+
+  net::TestURLFetcher* encryption_fetcher = factory_.GetFetcherByID(1);
+  ASSERT_TRUE(encryption_fetcher);
+  encryption_fetcher->set_response_code(net::HTTP_OK);
+  encryption_fetcher->SetResponseString("escrow_handle");
+  encryption_fetcher->delegate()->OnURLFetchComplete(encryption_fetcher);
+
+  VerifyAndFinishRequest(net::HTTP_OK,
+                         kUpdateInstrumentAddressWithNameChangeValidRequest,
+                         kUpdateInstrumentValidResponse);
+}
+
+TEST_F(WalletClientTest, UpdateInstrumentAddressAndExpirationDateSucceeded) {
+  EXPECT_CALL(delegate_,
+              OnDidUpdateInstrument("instrument_id",
+                                    std::vector<RequiredAction>())).Times(1);
+  delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::UPDATE_INSTRUMENT,
+                                           1);
+
+  WalletClient::UpdateInstrumentRequest update_instrument_request(
+      "instrument_id",
+      GURL(kMerchantUrl));
+  update_instrument_request.expiration_month = 12;
+  update_instrument_request.expiration_year = 2015;
+  update_instrument_request.card_verification_number =
+      "card_verification_number";
+  update_instrument_request.obfuscated_gaia_id = "obfuscated_gaia_id";
+  wallet_client_->UpdateInstrument(update_instrument_request, GetTestAddress());
+
+  net::TestURLFetcher* encryption_fetcher = factory_.GetFetcherByID(1);
+  ASSERT_TRUE(encryption_fetcher);
+  encryption_fetcher->set_response_code(net::HTTP_OK);
+  encryption_fetcher->SetResponseString("escrow_handle");
+  encryption_fetcher->delegate()->OnURLFetchComplete(encryption_fetcher);
+
+  VerifyAndFinishRequest(net::HTTP_OK,
+                         kUpdateInstrumentAddressAndExpirationDateValidRequest,
                          kUpdateInstrumentValidResponse);
 }
 
@@ -1437,12 +1591,14 @@ TEST_F(WalletClientTest, UpdateInstrumentWithRequiredActionsSucceeded) {
               OnDidUpdateInstrument(std::string(),
                                     required_actions)).Times(1);
 
-  scoped_ptr<Address> address = GetTestAddress();
-  wallet_client_->UpdateInstrument("instrument_id",
-                                   *address,
-                                   GURL(kMerchantUrl));
+  WalletClient::UpdateInstrumentRequest update_instrument_request(
+      "instrument_id",
+      GURL(kMerchantUrl));
+
+  wallet_client_->UpdateInstrument(update_instrument_request, GetTestAddress());
+
   VerifyAndFinishRequest(net::HTTP_OK,
-                         kUpdateInstrumentValidRequest,
+                         kUpdateInstrumentAddressValidRequest,
                          kUpdateWithRequiredActionsValidResponse);
 }
 
@@ -1451,13 +1607,37 @@ TEST_F(WalletClientTest, UpdateInstrumentFailedInvalidRequiredAction) {
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::UPDATE_INSTRUMENT,
                                            1);
 
-  scoped_ptr<Address> address = GetTestAddress();
-  wallet_client_->UpdateInstrument("instrument_id",
-                                   *address,
-                                   GURL(kMerchantUrl));
+  WalletClient::UpdateInstrumentRequest update_instrument_request(
+      "instrument_id",
+      GURL(kMerchantUrl));
+
+  wallet_client_->UpdateInstrument(update_instrument_request, GetTestAddress());
+
   VerifyAndFinishRequest(net::HTTP_OK,
-                         kUpdateInstrumentValidRequest,
+                         kUpdateInstrumentAddressValidRequest,
                          kSaveWithInvalidRequiredActionsResponse);
+}
+
+TEST_F(WalletClientTest, UpdateInstrumentEscrowFailed) {
+  EXPECT_CALL(delegate_,
+              OnNetworkError(net::HTTP_INTERNAL_SERVER_ERROR)).Times(1);
+  delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::UPDATE_INSTRUMENT,
+                                           0);
+
+  WalletClient::UpdateInstrumentRequest update_instrument_request(
+      "instrument_id",
+      GURL(kMerchantUrl));
+  update_instrument_request.card_verification_number =
+      "card_verification_number";
+  update_instrument_request.obfuscated_gaia_id = "obfuscated_gaia_id";
+
+  wallet_client_->UpdateInstrument(update_instrument_request, GetTestAddress());
+
+  net::TestURLFetcher* encryption_fetcher = factory_.GetFetcherByID(1);
+  ASSERT_TRUE(encryption_fetcher);
+  encryption_fetcher->set_response_code(net::HTTP_INTERNAL_SERVER_ERROR);
+  encryption_fetcher->SetResponseString(std::string());
+  encryption_fetcher->delegate()->OnURLFetchComplete(encryption_fetcher);
 }
 
 TEST_F(WalletClientTest, UpdateInstrumentMalformedResponse) {
@@ -1465,12 +1645,14 @@ TEST_F(WalletClientTest, UpdateInstrumentMalformedResponse) {
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::UPDATE_INSTRUMENT,
                                            1);
 
-  scoped_ptr<Address> address = GetTestAddress();
-  wallet_client_->UpdateInstrument("instrument_id",
-                                   *address,
-                                   GURL(kMerchantUrl));
+  WalletClient::UpdateInstrumentRequest update_instrument_request(
+      "instrument_id",
+      GURL(kMerchantUrl));
+
+  wallet_client_->UpdateInstrument(update_instrument_request, GetTestAddress());
+
   VerifyAndFinishRequest(net::HTTP_OK,
-                         kUpdateInstrumentValidRequest,
+                         kUpdateInstrumentAddressValidRequest,
                          kUpdateMalformedResponse);
 }
 

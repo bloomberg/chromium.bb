@@ -131,6 +131,33 @@ class WalletClient
     DISALLOW_ASSIGN(FullWalletRequest);
   };
 
+  struct UpdateInstrumentRequest {
+   public:
+    UpdateInstrumentRequest(const std::string& instrument_id,
+                            const GURL& source_url);
+    ~UpdateInstrumentRequest();
+
+    // The id of the instrument being modified.
+    std::string instrument_id;
+
+    // The new expiration date. If these are set, |card_verification_number| and
+    // |obfuscated_gaia_id| must be provided.
+    int expiration_month;
+    int expiration_year;
+
+    // Used to authenticate the card the user is modifying.
+    std::string card_verification_number;
+
+    // Used to key the escrow of |card_verification_number|.
+    std::string obfuscated_gaia_id;
+
+    // The url this call is initiated from.
+    GURL source_url;
+
+   private:
+    DISALLOW_ASSIGN(UpdateInstrumentRequest);
+  };
+
   // |context_getter| is reference counted so it has no lifetime or ownership
   // requirements. |observer| must outlive |this|.
   WalletClient(net::URLRequestContextGetter* context_getter,
@@ -191,14 +218,11 @@ class WalletClient
   void UpdateAddress(const Address& address,
                      const GURL& source_url);
 
-  // UpdateInstrument changes the instrument with id |instrument_id| with the
-  // information in |billing_address|. Its primary use is for upgrading ZIP code
-  // only addresses or those missing phone numbers. DO NOT change the name on
-  // |billing_address| from the one returned by Online Wallet or this call will
-  // fail.
-  void UpdateInstrument(const std::string& instrument_id,
-                        const Address& billing_address,
-                        const GURL& source_url);
+  // Updates Online Wallet with the data in |update_instrument_request| and, if
+  // it's provided, |billing_address|.
+  void UpdateInstrument(
+      const UpdateInstrumentRequest& update_instrument_request,
+      scoped_ptr<Address> billing_address);
 
   // Whether there is a currently running request (i.e. |request_| != NULL).
   bool HasRequestInProgress() const;
@@ -230,7 +254,7 @@ class WalletClient
       const std::string& google_transaction_id,
       const GURL& source_url);
 
-  // Posts |post_body| to |url| and notifies |observer| when the request is
+  // Posts |post_body| to |url| and notifies |delegate_| when the request is
   // complete.
   void MakeWalletRequest(const GURL& url, const std::string& post_body);
 
