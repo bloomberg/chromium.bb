@@ -611,7 +611,7 @@ TEST_F(CrosNetworkFunctionsTest, CrosRequestVirtualNetworkProperties) {
   properties.SetWithoutPathExpansion(
       flimflam::kTypeProperty, new base::StringValue("vpn"));
   properties.SetWithoutPathExpansion(
-      flimflam::kProviderNameProperty,
+      flimflam::kNameProperty,
       new base::StringValue(service_name));
   properties.SetWithoutPathExpansion(
       flimflam::kProviderHostProperty,
@@ -619,9 +619,6 @@ TEST_F(CrosNetworkFunctionsTest, CrosRequestVirtualNetworkProperties) {
   properties.SetWithoutPathExpansion(
       flimflam::kProviderTypeProperty,
       new base::StringValue(provider_type));
-  properties.SetWithoutPathExpansion(
-      flimflam::kVPNDomainProperty,
-      new base::StringValue(service_name));
 
   // Set expectations.
   const dbus::ObjectPath service_path("/service/path");

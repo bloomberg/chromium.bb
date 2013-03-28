@@ -489,7 +489,7 @@ void CrosRequestVirtualNetworkProperties(
       flimflam::kTypeProperty,
       new base::StringValue(flimflam::kTypeVPN));
   properties.SetWithoutPathExpansion(
-      flimflam::kProviderNameProperty,
+      flimflam::kNameProperty,
       new base::StringValue(service_name));
   properties.SetWithoutPathExpansion(
       flimflam::kProviderHostProperty,
@@ -497,10 +497,6 @@ void CrosRequestVirtualNetworkProperties(
   properties.SetWithoutPathExpansion(
       flimflam::kProviderTypeProperty,
       new base::StringValue(provider_type));
-  // The actual value of Domain does not matter, so just use service_name.
-  properties.SetWithoutPathExpansion(
-      flimflam::kVPNDomainProperty,
-      new base::StringValue(service_name));
 
   // shill.Manger.ConfigureService() will apply the property changes in
   // |properties| and pass a new or existing service to OnGetService().
