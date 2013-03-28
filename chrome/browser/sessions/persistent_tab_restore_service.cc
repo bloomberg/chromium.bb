@@ -100,7 +100,7 @@ const SessionCommand::id_type kCommandWindow = 3;
 const SessionCommand::id_type kCommandSelectedNavigationInTab = 4;
 const SessionCommand::id_type kCommandPinnedState = 5;
 const SessionCommand::id_type kCommandSetExtensionAppID = 6;
-const SessionCommand::id_type kCommandSetWindowAppName = 7;
+const SessionCommand::id_type kCommandSetWindowApp = 7;
 const SessionCommand::id_type kCommandSetTabUserAgentOverride = 8;
 
 // Number of entries (not commands) before we clobber the file and write
@@ -399,9 +399,10 @@ void PersistentTabRestoreService::Delegate::ScheduleCommandsForWindow(
 
   if (!window.app_name.empty()) {
     ScheduleCommand(
-        CreateSetWindowAppNameCommand(kCommandSetWindowAppName,
-                                      window.id,
-                                      window.app_name));
+        CreateSetWindowAppCommand(kCommandSetWindowApp,
+                                  window.id,
+                                  window.app_name,
+                                  window.app_type));
   }
 
   for (size_t i = 0; i < window.tabs.size(); ++i) {
@@ -687,7 +688,7 @@ void PersistentTabRestoreService::Delegate::CreateEntriesFromCommands(
         break;
       }
 
-      case kCommandSetWindowAppName: {
+      case kCommandSetWindowApp: {
         if (!current_window) {
           // We should have created a window already.
           NOTREACHED();
@@ -696,7 +697,10 @@ void PersistentTabRestoreService::Delegate::CreateEntriesFromCommands(
 
         SessionID::id_type window_id;
         std::string app_name;
-        if (!RestoreSetWindowAppNameCommand(command, &window_id, &app_name))
+        if (!RestoreSetWindowAppCommand(command,
+                                        &window_id,
+                                        &app_name,
+                                        &current_window->app_type))
           return;
 
         current_window->app_name.swap(app_name);
@@ -800,6 +804,8 @@ bool PersistentTabRestoreService::Delegate::ConvertSessionWindowToWindow(
       std::min(session_window->selected_tab_index,
                static_cast<int>(window->tabs.size() - 1));
   window->timestamp = base::Time();
+  window->app_name = session_window->app_name;
+  window->app_type = session_window->app_type;
   return true;
 }
 

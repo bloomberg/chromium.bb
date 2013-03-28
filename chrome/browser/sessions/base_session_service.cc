@@ -196,10 +196,11 @@ SessionCommand* BaseSessionService::CreateSetTabUserAgentOverrideCommand(
   return new SessionCommand(command_id, pickle);
 }
 
-SessionCommand* BaseSessionService::CreateSetWindowAppNameCommand(
+SessionCommand* BaseSessionService::CreateSetWindowAppCommand(
     SessionID::id_type command_id,
     SessionID::id_type window_id,
-    const std::string& app_name) {
+    const std::string& app_name,
+    SessionAppType app_type) {
   // Use pickle to handle marshalling.
   Pickle pickle;
   pickle.WriteInt(window_id);
@@ -211,6 +212,7 @@ SessionCommand* BaseSessionService::CreateSetWindowAppNameCommand(
   int bytes_written = 0;
 
   WriteStringToPickle(pickle, &bytes_written, max_id_size, app_name);
+  pickle.WriteInt(static_cast<int>(app_type));
 
   return new SessionCommand(command_id, pickle);
 }
@@ -254,17 +256,30 @@ bool BaseSessionService::RestoreSetTabUserAgentOverrideCommand(
       pickle->ReadString(&iterator, user_agent_override);
 }
 
-bool BaseSessionService::RestoreSetWindowAppNameCommand(
+bool BaseSessionService::RestoreSetWindowAppCommand(
     const SessionCommand& command,
     SessionID::id_type* window_id,
-    std::string* app_name) {
+    std::string* app_name,
+    SessionAppType* app_type) {
   scoped_ptr<Pickle> pickle(command.PayloadAsPickle());
   if (!pickle.get())
     return false;
 
   PickleIterator iterator(*pickle);
-  return pickle->ReadInt(&iterator, window_id) &&
-      pickle->ReadString(&iterator, app_name);
+  if (!pickle->ReadInt(&iterator, window_id) ||
+      !pickle->ReadString(&iterator, app_name))
+    return false;
+
+  // As we previously didn't write the type, don't fail if it's not there.
+  int app_type_as_int = 0;
+  if (pickle->ReadInt(&iterator, &app_type_as_int) &&
+      (app_type_as_int == SESSION_APP_TYPE_CHILD ||
+          app_type_as_int == SESSION_APP_TYPE_HOST)) {
+    *app_type = static_cast<SessionAppType>(app_type_as_int);
+  } else {
+    *app_type = SESSION_APP_TYPE_HOST;
+  }
+  return true;
 }
 
 bool BaseSessionService::ShouldTrackEntry(const GURL& url) {

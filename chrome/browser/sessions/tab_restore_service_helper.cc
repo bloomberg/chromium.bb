@@ -119,6 +119,7 @@ void TabRestoreServiceHelper::BrowserClosing(
   window->selected_tab_index = delegate->GetSelectedIndex();
   window->timestamp = TimeNow();
   window->app_name = delegate->GetAppName();
+  window->app_type = delegate->GetAppType();
 
   // Don't use std::vector::resize() because it will push copies of an empty tab
   // into the vector, which will give all tabs in a window the same ID.
@@ -230,8 +231,10 @@ void TabRestoreServiceHelper::RestoreEntryById(
     // single tab within it. If the entry's ID matches the one to restore, then
     // the entire window will be restored.
     if (!restoring_tab_in_window) {
-      delegate = TabRestoreServiceDelegate::Create(profile_, host_desktop_type,
-                                                   window->app_name);
+      delegate = TabRestoreServiceDelegate::Create(profile_,
+                                                   host_desktop_type,
+                                                   window->app_name,
+                                                   window->app_type);
       for (size_t tab_i = 0; tab_i < window->tabs.size(); ++tab_i) {
         const Tab& tab = window->tabs[tab_i];
         WebContents* restored_tab =
@@ -451,8 +454,11 @@ TabRestoreServiceDelegate* TabRestoreServiceHelper::RestoreTab(
     if (delegate && disposition != NEW_WINDOW) {
       tab_index = tab.tabstrip_index;
     } else {
-      delegate = TabRestoreServiceDelegate::Create(profile_, host_desktop_type,
-                                                   std::string());
+      delegate = TabRestoreServiceDelegate::Create(
+          profile_,
+          host_desktop_type,
+          std::string(),
+          SESSION_APP_TYPE_CHILD);
       if (tab.has_browser())
         UpdateTabBrowserIDs(tab.browser_id, delegate->GetSessionID().id());
     }

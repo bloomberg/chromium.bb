@@ -142,9 +142,10 @@ class SessionService : public BaseSessionService,
                      Browser::Type type,
                      AppType app_type);
 
-  // Sets the application name of the specified window.
-  void SetWindowAppName(const SessionID& window_id,
-                        const std::string& app_name);
+  // Sets the application name and type of the specified window.
+  void SetWindowApp(const SessionID& window_id,
+                    const std::string& app_name,
+                    SessionAppType app_type);
 
   // Invoked when the NavigationController has removed entries from the back of
   // the list. |count| gives the number of entries in the navigation controller.

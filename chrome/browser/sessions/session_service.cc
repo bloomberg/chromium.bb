@@ -72,7 +72,7 @@ static const SessionCommand::id_type
 static const SessionCommand::id_type kCommandSetPinnedState = 12;
 static const SessionCommand::id_type kCommandSetExtensionAppID = 13;
 static const SessionCommand::id_type kCommandSetWindowBounds3 = 14;
-static const SessionCommand::id_type kCommandSetWindowAppName = 15;
+static const SessionCommand::id_type kCommandSetWindowApp = 15;
 static const SessionCommand::id_type kCommandTabClosed = 16;
 static const SessionCommand::id_type kCommandWindowClosed = 17;
 static const SessionCommand::id_type kCommandSetTabUserAgentOverride = 18;
@@ -358,16 +358,17 @@ void SessionService::SetWindowType(const SessionID& window_id,
       CreateSetWindowTypeCommand(window_id, WindowTypeForBrowserType(type)));
 }
 
-void SessionService::SetWindowAppName(
+void SessionService::SetWindowApp(
     const SessionID& window_id,
-    const std::string& app_name) {
+    const std::string& app_name,
+    SessionAppType app_type) {
   if (!ShouldTrackChangesToWindow(window_id))
     return;
 
-  ScheduleCommand(CreateSetTabExtensionAppIDCommand(
-                      kCommandSetWindowAppName,
-                      window_id.id(),
-                      app_name));
+  ScheduleCommand(CreateSetWindowAppCommand(kCommandSetWindowApp,
+                                            window_id.id(),
+                                            app_name,
+                                            app_type));
 }
 
 void SessionService::TabNavigationPathPrunedFromBack(const SessionID& window_id,
@@ -581,9 +582,14 @@ void SessionService::Observe(int type,
         return;
 
       AppType app_type = browser->is_app() ? TYPE_APP : TYPE_NORMAL;
+      SessionAppType session_app_type =
+          browser->app_type() == Browser::APP_TYPE_CHILD ?
+              SESSION_APP_TYPE_CHILD : SESSION_APP_TYPE_HOST;
       RestoreIfNecessary(std::vector<GURL>(), browser);
       SetWindowType(browser->session_id(), browser->type(), app_type);
-      SetWindowAppName(browser->session_id(), browser->app_name());
+      SetWindowApp(browser->session_id(),
+                   browser->app_name(),
+                   session_app_type);
       break;
     }
 
@@ -1199,13 +1205,18 @@ bool SessionService::CreateTabsAndWindows(
         break;
       }
 
-      case kCommandSetWindowAppName: {
+      case kCommandSetWindowApp: {
         SessionID::id_type window_id;
         std::string app_name;
-        if (!RestoreSetWindowAppNameCommand(*command, &window_id, &app_name))
+        SessionAppType app_type;
+        if (!RestoreSetWindowAppCommand(*command,
+                                        &window_id,
+                                        &app_name,
+                                        &app_type))
           return true;
 
         GetWindow(window_id, windows)->app_name.swap(app_name);
+        GetWindow(window_id, windows)->app_type = app_type;
         break;
       }
 
@@ -1361,10 +1372,14 @@ void SessionService::BuildCommandsForBrowser(
       browser->session_id(), WindowTypeForBrowserType(browser->type())));
 
   if (!browser->app_name().empty()) {
-    commands->push_back(CreateSetWindowAppNameCommand(
-        kCommandSetWindowAppName,
+    SessionAppType app_type =
+        browser->app_type() == Browser::APP_TYPE_CHILD ?
+            SESSION_APP_TYPE_CHILD : SESSION_APP_TYPE_HOST;
+    commands->push_back(CreateSetWindowAppCommand(
+        kCommandSetWindowApp,
         browser->session_id().id(),
-        browser->app_name()));
+        browser->app_name(),
+        app_type));
   }
 
   windows_to_track->insert(browser->session_id().id());

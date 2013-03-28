@@ -10,6 +10,7 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_id.h"
+#include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/ui/host_desktop.h"
 
 class Profile;
@@ -41,6 +42,9 @@ class TabRestoreServiceDelegate {
   // see Browser::app_name()
   virtual std::string GetAppName() const = 0;
 
+  // see Browser::app_type()
+  virtual SessionAppType GetAppType() const = 0;
+
   // see Browser methods with the same names
   virtual content::WebContents* GetWebContentsAt(int index) const = 0;
   virtual content::WebContents* GetActiveWebContents() const = 0;
@@ -68,7 +72,8 @@ class TabRestoreServiceDelegate {
   static TabRestoreServiceDelegate* Create(
       Profile* profile,
       chrome::HostDesktopType host_desktop_type,
-      const std::string& app_name);
+      const std::string& app_name,
+      SessionAppType app_type);
 
   // see browser::FindBrowserForWebContents
   static TabRestoreServiceDelegate* FindDelegateForWebContents(

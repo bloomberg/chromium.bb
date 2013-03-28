@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -12,6 +13,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
@@ -66,7 +68,12 @@ class AppNonClientFrameViewAshTest : public InProcessBrowserTest {
     params.initial_show_state = ui::SHOW_STATE_MAXIMIZED;
     params.app_type = Browser::APP_TYPE_HOST;
     app_browser_ = new Browser(params);
-    chrome::AddBlankTabAt(app_browser_, -1, true);
+    GURL url(ui_test_utils::GetTestUrl(
+        base::FilePath(base::FilePath::kCurrentDirectory),
+        base::FilePath(FILE_PATH_LITERAL("title1.html"))));
+    // Add a single tab.
+    ui_test_utils::NavigateToURL(app_browser_, url);
+//    chrome::AddBlankTabAt(app_browser_, -1, true);
     app_browser_->window()->Show();
   }
 
@@ -132,6 +139,36 @@ IN_PROC_BROWSER_TEST_F(AppNonClientFrameViewAshTest, SwitchFrames) {
   MaximizeWindow(native_window);
   EXPECT_EQ(kAppFrameClassName, GetFrameClassName());
 }
+
+// Confirm that a closed app window can be reopened with controls reenabled.
+IN_PROC_BROWSER_TEST_F(AppNonClientFrameViewAshTest, Reopen) {
+  aura::RootWindow* root_window = GetRootWindow();
+  aura::test::EventGenerator eg(root_window, gfx::Point(0, 1));
+
+  // Click close button.
+  eg.MoveMouseTo(root_window->bounds().width() - 1, 0);
+  content::WindowedNotificationObserver signal(
+      chrome::NOTIFICATION_BROWSER_CLOSED,
+      content::Source<Browser>(app_browser()));
+  eg.ClickLeftButton();
+  signal.Wait();
+  EXPECT_EQ(1u, chrome::GetBrowserCount(browser()->profile(),
+                                        browser()->host_desktop_type()));
+
+  // Restore window.
+  chrome::RestoreTab(browser());
+  EXPECT_EQ(2u, chrome::GetBrowserCount(browser()->profile(),
+                                        browser()->host_desktop_type()));
+  Browser* restored_browser =
+      chrome::FindBrowserWithProfile(browser()->profile(),
+                                     chrome::HOST_DESKTOP_TYPE_ASH);
+  ASSERT_NE(browser(), restored_browser);
+  aura::Window* native_window = restored_browser->window()->GetNativeWindow();
+  // Control window exists again.
+  EXPECT_TRUE(HasChildWindowNamed(
+      native_window, AppNonClientFrameViewAsh::kControlWindowName));
+}
+
 #endif  // USE_ASH
 
 // Ensure that we can click the close button when the controls are shown.
@@ -148,7 +185,7 @@ IN_PROC_BROWSER_TEST_F(AppNonClientFrameViewAshTest, ClickClose) {
   eg.ClickLeftButton();
   signal.Wait();
   EXPECT_EQ(1u, chrome::GetBrowserCount(browser()->profile(),
-                                      browser()->host_desktop_type()));
+                                        browser()->host_desktop_type()));
 }
 
 // Ensure that closing a maximized app with Ctrl-W does not crash the
