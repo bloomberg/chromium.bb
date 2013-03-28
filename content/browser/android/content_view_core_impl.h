@@ -273,6 +273,7 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   gfx::Size GetPhysicalBackingSize() const;
   gfx::Size GetViewportSizeDip() const;
+  gfx::Size GetViewportSizeOffsetDip() const;
   float GetOverdrawBottomHeightDip() const;
 
   InputEventAckState FilterInputEvent(const WebKit::WebInputEvent& input_event);
@@ -307,6 +308,7 @@ class ContentViewCoreImpl : public ContentViewCore,
       float xPix, float yPix) const;
 
   gfx::Size GetViewportSizePix() const;
+  gfx::Size GetViewportSizeOffsetPix() const;
 
   void UpdateVSyncFlagOnInputEvent(WebKit::WebInputEvent* event) const;
 

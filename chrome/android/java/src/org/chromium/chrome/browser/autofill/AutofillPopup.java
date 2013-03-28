@@ -154,6 +154,7 @@ public class AutofillPopup extends ListPopupWindow implements AdapterView.OnItem
         float scale = (float) DeviceDisplayInfo.create(mNativeWindow.getContext()).getDIPScale();
         mAnchorRect = new Rect(Math.round(x * scale), Math.round(y * scale),
                 Math.round((x + width) * scale), Math.round((y + height) * scale));
+        mAnchorRect.offset(0, mContainerViewDelegate.getChildViewOffsetYPix());
     }
 
     /**

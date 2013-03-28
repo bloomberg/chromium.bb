@@ -33,6 +33,8 @@ public class RenderCoordinates {
     // Cached device density.
     private float mDeviceScaleFactor;
 
+    private float mContentOffsetYPix;
+
     // Internally-visible set of update methods (used by ContentViewCore).
     void reset() {
         mScrollXCss = mScrollYCss = 0;
@@ -52,12 +54,14 @@ public class RenderCoordinates {
             float scrollXCss, float scrollYCss,
             float contentWidthCss, float contentHeightCss,
             float viewportWidthCss, float viewportHeightCss,
-            float pageScaleFactor, float minPageScaleFactor, float maxPageScaleFactor) {
+            float pageScaleFactor, float minPageScaleFactor, float maxPageScaleFactor,
+            float contentOffsetYPix) {
         mScrollXCss = scrollXCss;
         mScrollYCss = scrollYCss;
         mPageScaleFactor = pageScaleFactor;
         mMinPageScaleFactor = minPageScaleFactor;
         mMaxPageScaleFactor = maxPageScaleFactor;
+        mContentOffsetYPix = contentOffsetYPix;
 
         updateContentSizeCss(contentWidthCss, contentHeightCss);
         mLastFrameViewportWidthCss = viewportWidthCss;
@@ -102,7 +106,7 @@ public class RenderCoordinates {
         /**
          * @return Physical (screen) Y coordinate of the point.
          */
-        public float getYPix() { return getYLocalDip() * mDeviceScaleFactor; }
+        public float getYPix() { return getYLocalDip() * mDeviceScaleFactor + mContentOffsetYPix; }
 
         /**
          * Sets the point to the given absolute CSS (document) coordinates.
@@ -127,7 +131,7 @@ public class RenderCoordinates {
         public void setScreen(float xPix, float yPix) {
             setLocalDip(xPix / mDeviceScaleFactor, yPix / mDeviceScaleFactor);
         }
-}
+    }
 
     /**
      * @return A helper to convert a point between between absolute CSS and local DIP spaces.
@@ -232,6 +236,13 @@ public class RenderCoordinates {
      */
     public int getLastFrameViewportHeightPixInt() {
         return (int) Math.ceil(getLastFrameViewportHeightPix());
+    }
+
+    /**
+     * @return The Physical on-screen Y offset amount below the top controls.
+     */
+    public float getContentOffsetYPix() {
+        return mContentOffsetYPix;
     }
 
     /**

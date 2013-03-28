@@ -205,6 +205,8 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
     private int mPhysicalBackingWidthPix;
     private int mPhysicalBackingHeightPix;
     private int mOverdrawBottomHeightPix;
+    private int mViewportSizeOffsetWidthPix;
+    private int mViewportSizeOffsetHeightPix;
 
     // Cached copy of all positions and scales as reported by the renderer.
     private final RenderCoordinates mRenderCoordinates;
@@ -278,6 +280,21 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
     }
 
     /**
+     * Specifies how much smaller the WebKit layout size should be relative to the size of this
+     * view.
+     * @param offsetXPix The X amount in pixels to shrink the viewport by.
+     * @param offsetYPix The Y amount in pixels to shrink the viewport by.
+     */
+    public void setViewportSizeOffset(int offsetXPix, int offsetYPix) {
+        if (offsetXPix != mViewportSizeOffsetWidthPix ||
+                offsetYPix != mViewportSizeOffsetHeightPix) {
+            mViewportSizeOffsetWidthPix = offsetXPix;
+            mViewportSizeOffsetHeightPix = offsetYPix;
+            if (mNativeContentViewCore != 0) nativeWasResized(mNativeContentViewCore);
+        }
+    }
+
+    /**
      * Returns a delegate that can be used to add and remove views from the ContainerView.
      *
      * NOTE: Use with care, as not all ContentViewCore users setup their ContainerView in the same
@@ -299,6 +316,11 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
             @Override
             public void removeViewFromContainerView(View view) {
                 mContainerView.removeView(view);
+            }
+
+            @Override
+            public int getChildViewOffsetYPix() {
+                return (int) mRenderCoordinates.getContentOffsetYPix();
             }
         };
     }
@@ -806,6 +828,18 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
      */
     @CalledByNative
     public int getOverdrawBottomHeightPix() { return mOverdrawBottomHeightPix; }
+
+    /**
+     * @return The amount to shrink the viewport relative to {@link #getViewportWidthPix()}.
+     */
+    @CalledByNative
+    private int getViewportSizeOffsetWidthPix() { return mViewportSizeOffsetWidthPix; }
+
+    /**
+     * @return The amount to shrink the viewport relative to {@link #getViewportHeightPix()}.
+     */
+    @CalledByNative
+    private int getViewportSizeOffsetHeightPix() { return mViewportSizeOffsetHeightPix; }
 
     /**
      * @see android.webkit.WebView#getContentHeight()
@@ -1690,7 +1724,9 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
                 @Override
                 public void selectBetweenCoordinates(int x1, int y1, int x2, int y2) {
                     if (mNativeContentViewCore != 0 && !(x1 == x2 && y1 == y2)) {
-                        nativeSelectBetweenCoordinates(mNativeContentViewCore, x1, y1, x2, y2);
+                        nativeSelectBetweenCoordinates(mNativeContentViewCore,
+                                x1, y1 - mRenderCoordinates.getContentOffsetYPix(),
+                                x2, y2 - mRenderCoordinates.getContentOffsetYPix());
                     }
                 }
 
@@ -1716,7 +1752,8 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
                 @Override
                 public void setCursorPosition(int x, int y) {
                     if (mNativeContentViewCore != 0) {
-                        nativeMoveCaret(mNativeContentViewCore, x, y);
+                        nativeMoveCaret(mNativeContentViewCore,
+                                x, y - mRenderCoordinates.getContentOffsetYPix());
                     }
                 }
 
@@ -1945,6 +1982,8 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
         contentHeight = Math.max(contentHeight,
                 mRenderCoordinates.fromPixToLocalCss(mViewportHeightPix));
 
+        final float contentOffsetYPix = mRenderCoordinates.fromDipToPix(contentOffsetYCss);
+
         final boolean contentSizeChanged =
                 contentWidth != mRenderCoordinates.getContentWidthCss()
                 || contentHeight != mRenderCoordinates.getContentHeightCss();
@@ -1957,6 +1996,9 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
                 pageScaleChanged
                 || scrollOffsetX != mRenderCoordinates.getScrollX()
                 || scrollOffsetY != mRenderCoordinates.getScrollY();
+        final boolean contentOffsetChanged =
+                contentOffsetYPix != mRenderCoordinates.getContentOffsetYPix();
+
         final boolean needHidePopupZoomer = contentSizeChanged || scrollChanged;
         final boolean needUpdateZoomControls = scaleLimitsChanged || scrollChanged;
         final boolean needTemporarilyHideHandles = scrollChanged;
@@ -1983,7 +2025,8 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
                 scrollOffsetX, scrollOffsetY,
                 contentWidth, contentHeight,
                 viewportWidth, viewportHeight,
-                pageScaleFactor, minPageScaleFactor, maxPageScaleFactor);
+                pageScaleFactor, minPageScaleFactor, maxPageScaleFactor,
+                contentOffsetYPix);
 
         if (contentSizeChanged) {
             getContentViewClient().onContentSizeChanged(
@@ -1998,11 +2041,11 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
 
         if (needTemporarilyHideHandles) temporarilyHideTextHandles();
         if (needUpdateZoomControls) mZoomManager.updateZoomControls();
+        if (contentOffsetChanged) updateHandleScreenPositions();
 
         // Update offsets for fullscreen.
         final float deviceScale = mRenderCoordinates.getDeviceScaleFactor();
         final float controlsOffsetPix = controlsOffsetYCss * deviceScale;
-        final float contentOffsetYPix = contentOffsetYCss * deviceScale;
         final float overdrawBottomHeightPix = overdrawBottomHeightCss * deviceScale;
         getContentViewClient().onOffsetsForFullscreenChanged(
                 controlsOffsetPix, contentOffsetYPix, overdrawBottomHeightPix);

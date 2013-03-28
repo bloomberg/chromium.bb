@@ -617,13 +617,29 @@ gfx::Size ContentViewCoreImpl::GetViewportSizePix() const {
   ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
   if (j_obj.is_null())
     return gfx::Size();
-  return gfx::Size(Java_ContentViewCore_getViewportWidthPix(env, j_obj.obj()),
-                   Java_ContentViewCore_getViewportHeightPix(env, j_obj.obj()));
+  return gfx::Size(
+      Java_ContentViewCore_getViewportWidthPix(env, j_obj.obj()),
+      Java_ContentViewCore_getViewportHeightPix(env, j_obj.obj()));
+}
+
+gfx::Size ContentViewCoreImpl::GetViewportSizeOffsetPix() const {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
+  if (j_obj.is_null())
+    return gfx::Size();
+  return gfx::Size(
+      Java_ContentViewCore_getViewportSizeOffsetWidthPix(env, j_obj.obj()),
+      Java_ContentViewCore_getViewportSizeOffsetHeightPix(env, j_obj.obj()));
 }
 
 gfx::Size ContentViewCoreImpl::GetViewportSizeDip() const {
   return gfx::ToCeiledSize(
       gfx::ScaleSize(GetViewportSizePix(), 1.0f / GetDpiScale()));
+}
+
+gfx::Size ContentViewCoreImpl::GetViewportSizeOffsetDip() const {
+  return gfx::ToCeiledSize(
+      gfx::ScaleSize(GetViewportSizeOffsetPix(), 1.0f / GetDpiScale()));
 }
 
 float ContentViewCoreImpl::GetOverdrawBottomHeightDip() const {

@@ -22,4 +22,10 @@ public interface ContainerViewDelegate {
      * @param view The view to be removed.
      */
     public void removeViewFromContainerView(View view);
+
+    /**
+     * Used for any calculations that need to place a View near a particular piece of web content.
+     * @return The Y offset in pixels to apply to any added views.
+     */
+    public int getChildViewOffsetYPix();
 }

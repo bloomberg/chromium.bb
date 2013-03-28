@@ -314,7 +314,11 @@ gfx::Rect RenderWidgetHostViewAndroid::GetViewBounds() const {
   if (GetPhysicalBackingSize().IsEmpty())
     return gfx::Rect();
 
-  return gfx::Rect(content_view_core_->GetViewportSizeDip());
+  gfx::Size size = content_view_core_->GetViewportSizeDip();
+  gfx::Size offset = content_view_core_->GetViewportSizeOffsetDip();
+  size.Enlarge(-offset.width(), -offset.height());
+
+  return gfx::Rect(size);
 }
 
 gfx::Size RenderWidgetHostViewAndroid::GetPhysicalBackingSize() const {

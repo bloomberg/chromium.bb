@@ -44,6 +44,9 @@ public class ContentView extends FrameLayout implements ContentViewCore.Internal
 
     private ContentViewCore mContentViewCore;
 
+    private float mCurrentTouchOffsetX;
+    private float mCurrentTouchOffsetY;
+
     /**
      * Creates an instance of a ContentView.
      * @param context The Context the view is running in, through which it can
@@ -491,7 +494,10 @@ public class ContentView extends FrameLayout implements ContentViewCore.Internal
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        return mContentViewCore.onTouchEvent(event);
+        MotionEvent offset = createOffsetMotionEvent(event);
+        boolean consumed = mContentViewCore.onTouchEvent(offset);
+        offset.recycle();
+        return consumed;
     }
 
     /**
@@ -507,6 +513,23 @@ public class ContentView extends FrameLayout implements ContentViewCore.Internal
     @Override
     public boolean onGenericMotionEvent(MotionEvent event) {
         return mContentViewCore.onGenericMotionEvent(event);
+    }
+
+    /**
+     * Sets the current amount to offset incoming touch events by.  This is used to handle content
+     * moving and not lining up properly with the android input system.
+     * @param dx The X offset in pixels to shift touch events.
+     * @param dy The Y offset in pixels to shift touch events.
+     */
+    public void setCurrentMotionEventOffsets(float dx, float dy) {
+        mCurrentTouchOffsetX = dx;
+        mCurrentTouchOffsetY = dy;
+    }
+
+    private MotionEvent createOffsetMotionEvent(MotionEvent src) {
+        MotionEvent dst = MotionEvent.obtain(src);
+        dst.offsetLocation(mCurrentTouchOffsetX, mCurrentTouchOffsetY);
+        return dst;
     }
 
     @Override
