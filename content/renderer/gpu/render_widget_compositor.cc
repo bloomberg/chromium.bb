@@ -257,6 +257,18 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
       settings.max_tiles_for_interest_area = max_tiles_for_interest_area;
   }
 
+  if (cmd->HasSwitch(cc::switches::kMaxUnusedResourceMemoryUsagePercentage)) {
+    int max_unused_resource_memory_percentage;
+    if (GetSwitchValueAsInt(
+            *cmd,
+            cc::switches::kMaxUnusedResourceMemoryUsagePercentage,
+            0, 100,
+            &max_unused_resource_memory_percentage)) {
+      settings.max_unused_resource_memory_percentage =
+          max_unused_resource_memory_percentage;
+    }
+  }
+
 #if defined(OS_ANDROID)
   // TODO(danakj): Move these to the android code.
   settings.can_use_lcd_text = false;

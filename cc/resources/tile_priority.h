@@ -176,12 +176,14 @@ class GlobalStateThatImpactsTilePriority {
   GlobalStateThatImpactsTilePriority()
     : memory_limit_policy(ALLOW_NOTHING)
     , memory_limit_in_bytes(0)
+    , unused_memory_limit_in_bytes(0)
     , tree_priority(SAME_PRIORITY_FOR_BOTH_TREES) {
   }
 
   TileMemoryLimitPolicy memory_limit_policy;
 
   size_t memory_limit_in_bytes;
+  size_t unused_memory_limit_in_bytes;
 
   TreePriority tree_priority;
 

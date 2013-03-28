@@ -76,6 +76,10 @@ const char kMaxPrepaintTileDistance[] = "max-prepaint-tile-distance";
 // Max tiles allowed for each tilings interest area.
 const char kMaxTilesForInterestArea[] = "max-tiles-for-interest-area";
 
+// The amount of unused resource memory compositor is allowed to keep around.
+const char kMaxUnusedResourceMemoryUsagePercentage[] =
+    "max-unused-resource-memory-usage-percentage";
+
 // Causes the compositor to render to textures which are then sent to the parent
 // through the texture mailbox mechanism.
 // Requires --enable-compositor-frame-message.

@@ -42,15 +42,21 @@ class CC_EXPORT ResourcePool {
       const gfx::Size&, GLenum format);
   void ReleaseResource(scoped_ptr<ResourcePool::Resource>);
 
-  void SetMaxMemoryUsageBytes(size_t max_memory_usage_bytes);
+  void SetMaxMemoryUsageBytes(
+      size_t max_memory_usage_bytes,
+      size_t max_unused_memory_usage_bytes);
 
  protected:
   explicit ResourcePool(ResourceProvider* resource_provider);
 
+  bool MemoryUsageTooHigh();
+
  private:
   ResourceProvider* resource_provider_;
   size_t max_memory_usage_bytes_;
+  size_t max_unused_memory_usage_bytes_;
   size_t memory_usage_bytes_;
+  size_t unused_memory_usage_bytes_;
 
   typedef std::list<Resource*> ResourceList;
   ResourceList resources_;

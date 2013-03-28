@@ -30,11 +30,13 @@ ResourcePool::Resource::~Resource() {
 ResourcePool::ResourcePool(ResourceProvider* resource_provider)
     : resource_provider_(resource_provider),
       max_memory_usage_bytes_(0),
-      memory_usage_bytes_(0) {
+      max_unused_memory_usage_bytes_(0),
+      memory_usage_bytes_(0),
+      unused_memory_usage_bytes_(0) {
 }
 
 ResourcePool::~ResourcePool() {
-  SetMaxMemoryUsageBytes(0);
+  SetMaxMemoryUsageBytes(0, 0);
 }
 
 scoped_ptr<ResourcePool::Resource> ResourcePool::AcquireResource(
@@ -55,6 +57,7 @@ scoped_ptr<ResourcePool::Resource> ResourcePool::AcquireResource(
       continue;
 
     resources_.erase(it);
+    unused_memory_usage_bytes_ -= resource->bytes();
     return make_scoped_ptr(resource);
   }
 
@@ -73,25 +76,41 @@ scoped_ptr<ResourcePool::Resource> ResourcePool::AcquireResource(
 
 void ResourcePool::ReleaseResource(
     scoped_ptr<ResourcePool::Resource> resource) {
-  if (memory_usage_bytes_ > max_memory_usage_bytes_) {
+  if (MemoryUsageTooHigh()) {
     memory_usage_bytes_ -= resource->bytes();
     return;
   }
 
+  unused_memory_usage_bytes_ += resource->bytes();
   resources_.push_back(resource.release());
 }
 
-void ResourcePool::SetMaxMemoryUsageBytes(size_t max_memory_usage_bytes) {
+void ResourcePool::SetMaxMemoryUsageBytes(
+    size_t max_memory_usage_bytes,
+    size_t max_unused_memory_usage_bytes) {
   max_memory_usage_bytes_ = max_memory_usage_bytes;
+  max_unused_memory_usage_bytes_ = max_unused_memory_usage_bytes;
 
   while (!resources_.empty()) {
-    if (memory_usage_bytes_ <= max_memory_usage_bytes_)
+    if (!MemoryUsageTooHigh())
       break;
-    Resource* resource = resources_.front();
-    resources_.pop_front();
+
+    // MRU eviction pattern as least recently used is less likely to
+    // be blocked by read lock fence.
+    Resource* resource = resources_.back();
+    resources_.pop_back();
     memory_usage_bytes_ -= resource->bytes();
+    unused_memory_usage_bytes_ -= resource->bytes();
     delete resource;
   }
+}
+
+bool ResourcePool::MemoryUsageTooHigh() {
+  if (memory_usage_bytes_ > max_memory_usage_bytes_)
+    return true;
+  if (unused_memory_usage_bytes_ > max_unused_memory_usage_bytes_)
+    return true;
+  return false;
 }
 
 }  // namespace cc

@@ -198,7 +198,9 @@ TileManager::~TileManager() {
 void TileManager::SetGlobalState(
     const GlobalStateThatImpactsTilePriority& global_state) {
   global_state_ = global_state;
-  resource_pool_->SetMaxMemoryUsageBytes(global_state_.memory_limit_in_bytes);
+  resource_pool_->SetMaxMemoryUsageBytes(
+      global_state_.memory_limit_in_bytes,
+      global_state_.unused_memory_limit_in_bytes);
   ScheduleManageTiles();
   UpdateCheapTasksTimeLimit();
 }

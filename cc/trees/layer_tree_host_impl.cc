@@ -859,6 +859,11 @@ void LayerTreeHostImpl::EnforceManagedMemoryPolicy(
     new_state.memory_limit_in_bytes = visible_ ?
                                       policy.bytes_limit_when_visible :
                                       policy.bytes_limit_when_not_visible;
+    // TODO(reveman): We should avoid keeping around unused resources if
+    // possible. crbug.com/224475
+    new_state.unused_memory_limit_in_bytes =
+        (new_state.memory_limit_in_bytes *
+         settings_.max_unused_resource_memory_percentage) / 100;
     new_state.memory_limit_policy =
         ManagedMemoryPolicy::PriorityCutoffToTileMemoryLimitPolicy(
             visible_ ?

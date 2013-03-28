@@ -38,6 +38,7 @@ CC_EXPORT extern const char kLowResolutionContentsScaleFactor[];
 CC_EXPORT extern const char kCompositeToMailbox[];
 CC_EXPORT extern const char kMaxPrepaintTileDistance[];
 CC_EXPORT extern const char kMaxTilesForInterestArea[];
+CC_EXPORT extern const char kMaxUnusedResourceMemoryUsagePercentage[];
 
 // Switches for both the renderer and ui compositors.
 CC_EXPORT extern const char kEnablePartialSwap[];
