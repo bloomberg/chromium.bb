@@ -125,7 +125,8 @@ class RasterBitmap {
       NOTREACHED() << "Raster bitmap creation for printing failed";
 
     saved_object_ = ::SelectObject(context_, bitmap_);
-    ::FillRect(context_, &bitmap_rect.ToRECT(),
+    RECT rect = bitmap_rect.ToRECT();
+    ::FillRect(context_, &rect,
                static_cast<HBRUSH>(::GetStockObject(WHITE_BRUSH)));
 
   }
@@ -229,11 +230,12 @@ bool Emf::SafePlayback(HDC context) const {
   }
   Emf::EnumerationContext playback_context;
   playback_context.base_matrix = &base_matrix;
+  RECT rect = GetPageBounds(1).ToRECT();
   return EnumEnhMetaFile(context,
                          emf_,
                          &Emf::SafePlaybackProc,
                          reinterpret_cast<void*>(&playback_context),
-                         &GetPageBounds(1).ToRECT()) != 0;
+                         &rect) != 0;
 }
 
 gfx::Rect Emf::GetPageBounds(unsigned int page_number) const {
@@ -615,7 +617,8 @@ Emf* Emf::RasterizeMetafile(int raster_area_in_pixels) const {
   RasterBitmap bitmap(page_size);
 
   gfx::Rect bitmap_rect(page_size);
-  Playback(bitmap.context(), &bitmap_rect.ToRECT());
+  RECT rect = bitmap_rect.ToRECT();
+  Playback(bitmap.context(), &rect);
 
   scoped_ptr<Emf> result(new Emf);
   result->Init();
@@ -663,8 +666,8 @@ Emf* Emf::RasterizeAlphaBlend() const {
   skia::InitializeDC(hdc);
 
   HDC bitmap_dc = bitmap.context();
-  ::EnumEnhMetaFile(hdc, emf(), &RasterizeAlphaBlendProc, &bitmap_dc,
-                    &page_bounds.ToRECT());
+  RECT rect = page_bounds.ToRECT();
+  ::EnumEnhMetaFile(hdc, emf(), &RasterizeAlphaBlendProc, &bitmap_dc, &rect);
 
   result->FinishDocument();
 
