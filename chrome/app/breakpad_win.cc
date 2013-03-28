@@ -31,6 +31,7 @@
 #include "chrome/app/crash_analysis_win.h"
 #include "chrome/app/hard_error_handler_win.h"
 #include "chrome/common/child_process_logging.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/crash_keys.h"
@@ -278,6 +279,49 @@ void SetPluginPath(const std::wstring& path) {
   }
 }
 
+// Determine whether configuration management allows loading the crash reporter.
+// Since the configuration management infrastructure is not initialized at this
+// point, we read the corresponding registry key directly. The return status
+// indicates whether policy data was successfully read. If it is true, |result|
+// contains the value set by policy.
+static bool MetricsReportingControlledByPolicy(bool* result) {
+  string16 key_name = UTF8ToUTF16(policy::key::kMetricsReportingEnabled);
+  DWORD value = 0;
+  base::win::RegKey hklm_policy_key(HKEY_LOCAL_MACHINE,
+                                    policy::kRegistryMandatorySubKey, KEY_READ);
+  if (hklm_policy_key.ReadValueDW(key_name.c_str(), &value) == ERROR_SUCCESS) {
+    *result = value != 0;
+    return true;
+  }
+
+  base::win::RegKey hkcu_policy_key(HKEY_CURRENT_USER,
+                                    policy::kRegistryMandatorySubKey, KEY_READ);
+  if (hkcu_policy_key.ReadValueDW(key_name.c_str(), &value) == ERROR_SUCCESS) {
+    *result = value != 0;
+    return true;
+  }
+
+  return false;
+}
+
+// Appends the breakpad dump path to |g_custom_entries|.
+void SetBreakpadDumpPath() {
+  DCHECK(g_custom_entries);
+  // By setting the BREAKPAD_DUMP_LOCATION environment variable, an alternate
+  // location to write breakpad crash dumps can be set.
+  scoped_ptr<base::Environment> env(base::Environment::Create());
+  std::string alternate_crash_dump_location;
+  base::FilePath crash_dumps_dir_path;
+  if (env->GetVar("BREAKPAD_DUMP_LOCATION", &alternate_crash_dump_location)) {
+    crash_dumps_dir_path = base::FilePath::FromUTF8Unsafe(
+        alternate_crash_dump_location);
+    g_custom_entries->push_back(
+        google_breakpad::CustomInfoEntry(
+            L"breakpad-dump-location",
+            crash_dumps_dir_path.value().c_str()));
+  }
+}
+
 // Returns a string containing a list of all modifiers for the loaded profile.
 std::wstring GetProfileType() {
   std::wstring profile_type;
@@ -456,6 +500,18 @@ google_breakpad::CustomClientInfo* GetCustomInfo(const std::wstring& exe_path,
     g_custom_entries->push_back(
         google_breakpad::CustomInfoEntry(L"num-views", L"N/A"));
   }
+
+  // Check whether configuration management controls crash reporting.
+  bool crash_reporting_enabled = true;
+  bool controlled_by_policy =
+      MetricsReportingControlledByPolicy(&crash_reporting_enabled);
+  const CommandLine& command = *CommandLine::ForCurrentProcess();
+  bool use_crash_service = !controlled_by_policy &&
+      ((command.HasSwitch(switches::kNoErrorDialogs) ||
+      GetEnvironmentVariable(
+          ASCIIToWide(env_vars::kHeadless).c_str(), NULL, 0)));
+  if (use_crash_service)
+    SetBreakpadDumpPath();
 
   g_num_of_experiments_offset = g_custom_entries->size();
   g_custom_entries->push_back(
@@ -798,31 +854,6 @@ extern "C" int __declspec(dllexport) CrashForException(
     ::TerminateProcess(::GetCurrentProcess(), content::RESULT_CODE_KILLED);
   }
   return EXCEPTION_CONTINUE_SEARCH;
-}
-
-// Determine whether configuration management allows loading the crash reporter.
-// Since the configuration management infrastructure is not initialized at this
-// point, we read the corresponding registry key directly. The return status
-// indicates whether policy data was successfully read. If it is true, |result|
-// contains the value set by policy.
-static bool MetricsReportingControlledByPolicy(bool* result) {
-  std::wstring key_name = UTF8ToWide(policy::key::kMetricsReportingEnabled);
-  DWORD value = 0;
-  base::win::RegKey hklm_policy_key(HKEY_LOCAL_MACHINE,
-                                    policy::kRegistryMandatorySubKey, KEY_READ);
-  if (hklm_policy_key.ReadValueDW(key_name.c_str(), &value) == ERROR_SUCCESS) {
-    *result = value != 0;
-    return true;
-  }
-
-  base::win::RegKey hkcu_policy_key(HKEY_CURRENT_USER,
-                                    policy::kRegistryMandatorySubKey, KEY_READ);
-  if (hkcu_policy_key.ReadValueDW(key_name.c_str(), &value) == ERROR_SUCCESS) {
-    *result = value != 0;
-    return true;
-  }
-
-  return false;
 }
 
 // Check whether the installed version of google update supports deferred
