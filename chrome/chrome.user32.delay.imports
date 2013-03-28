@@ -1,0 +1,29 @@
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+#
+# This file is used to create a custom import library for Chrome.dll's use of
+# user32.dll APIs added post-Windows XP to obviate the need for delay loading
+# all of user32.dll.
+{
+  'architecture': 'x86',
+
+  # The DLL to bind to - we delay load these imports.
+  'dll_name': 'user32-delay.dll',
+
+  # Name of the generated import library.
+  'importlib_name': 'chrome.user32.delay.lib',
+
+  # Chrome.dll uses these post-Windows XP (SP2) exports, and so they must be
+  # delay loaded for Chrome.dll to load on Windows XP computers.
+  'imports': [
+    'CloseGestureInfoHandle@4',
+    'CloseTouchInputHandle@4',
+    'GetGestureInfo@8',
+    'GetTouchInputInfo@16',
+    'IsTouchWindow@8',
+    'RegisterTouchWindow@8',
+    'SetGestureConfig@20',
+    'UnregisterTouchWindow@4',
+  ],
+}
