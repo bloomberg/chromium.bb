@@ -2531,10 +2531,13 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
     /**
      * Changes whether hiding the top controls is enabled.
      *
-     * @param enable Whether hiding the top controls should be enabled.
+     * @param enableHiding Whether hiding the top controls should be enabled or not.
+     * @param enableShowing Whether showing the top controls should be enabled or not.
+     * @param animate Whether the transition should be animated or not.
      */
-    public void enableHidingTopControls(boolean enable) {
-        nativeEnableHidingTopControls(mNativeContentViewCore, enable);
+    public void updateTopControlsState(boolean enableHiding, boolean enableShowing,
+            boolean animate) {
+        nativeUpdateTopControlsState(mNativeContentViewCore, enableHiding, enableShowing, animate);
     }
 
     /**
@@ -2801,8 +2804,8 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
     private native boolean nativeIsRenderWidgetHostViewReady(int nativeContentViewCoreImpl);
 
     private native void nativeExitFullscreen(int nativeContentViewCoreImpl);
-    private native void nativeEnableHidingTopControls(
-            int nativeContentViewCoreImpl, boolean enable);
+    private native void nativeUpdateTopControlsState(int nativeContentViewCoreImpl,
+            boolean enableHiding, boolean enableShowing, boolean animate);
 
     private native void nativeShowImeIfNeeded(int nativeContentViewCoreImpl);
 

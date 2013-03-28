@@ -31,6 +31,12 @@ class CC_EXPORT TopControlsManager
     HIDING_CONTROLS
   };
 
+  enum VisibilityRestriction {
+    ALWAYS_SHOWN,
+    ALWAYS_HIDDEN,
+    NONE
+  };
+
   static scoped_ptr<TopControlsManager> Create(
       TopControlsManagerClient* client,
       float top_controls_height,
@@ -47,7 +53,9 @@ class CC_EXPORT TopControlsManager
   }
   AnimationDirection animation_direction() { return animation_direction_; }
 
-  void EnableHidingTopControls(bool enable);
+  void UpdateTopControlsState(bool enable_hiding,
+                              bool enable_showing,
+                              bool animate);
 
   void ScrollBegin();
   gfx::Vector2dF ScrollBy(const gfx::Vector2dF pending_delta);
@@ -73,7 +81,7 @@ class CC_EXPORT TopControlsManager
 
   scoped_ptr<KeyframedFloatAnimationCurve> top_controls_animation_;
   AnimationDirection animation_direction_;
-  bool enable_hiding_;
+  VisibilityRestriction visibility_restriction_;
   float controls_top_offset_;
   float top_controls_height_;
 

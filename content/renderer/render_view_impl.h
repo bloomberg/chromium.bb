@@ -1041,7 +1041,9 @@ class CONTENT_EXPORT RenderViewImpl
   void OnSelectPopupMenuItems(bool canceled,
                               const std::vector<int>& selected_indices);
   void OnUndoScrollFocusedEditableNodeIntoRect();
-  void OnEnableHidingTopControls(bool enable);
+  void OnUpdateTopControlsState(bool enable_hiding,
+                                bool enable_showing,
+                                bool animate);
 #elif defined(OS_MACOSX)
   void OnCopyToFindPboard();
   void OnPluginImeCompositionCompleted(const string16& text, int plugin_id);

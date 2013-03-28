@@ -35,7 +35,9 @@ class RenderWidgetCompositor : public WebKit::WebLayerTreeView,
   void Composite(base::TimeTicks frame_begin_time);
   void GetRenderingStats(cc::RenderingStats* stats);
   skia::RefPtr<SkPicture> CapturePicture();
-  void EnableHidingTopControls(bool enable);
+  void UpdateTopControlsState(bool enable_hiding,
+                              bool enable_showing,
+                              bool animate);
   void SetOverdrawBottomHeight(float overdraw_bottom_height);
 
   // WebLayerTreeView implementation.

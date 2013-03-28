@@ -11,10 +11,12 @@
 
 namespace content {
 
-void RenderViewImpl::OnEnableHidingTopControls(bool enable) {
+void RenderViewImpl::OnUpdateTopControlsState(bool enable_hiding,
+                                              bool enable_showing,
+                                              bool animate) {
   DCHECK(compositor_);
   if (compositor_) {
-    compositor_->EnableHidingTopControls(enable);
+    compositor_->UpdateTopControlsState(enable_hiding, enable_showing, animate);
   }
 }
 

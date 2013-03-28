@@ -309,8 +309,12 @@ skia::RefPtr<SkPicture> RenderWidgetCompositor::CapturePicture() {
   return layer_tree_host_->CapturePicture();
 }
 
-void RenderWidgetCompositor::EnableHidingTopControls(bool enable) {
-  layer_tree_host_->EnableHidingTopControls(enable);
+void RenderWidgetCompositor::UpdateTopControlsState(bool enable_hiding,
+                                                    bool enable_showing,
+                                                    bool animate) {
+  layer_tree_host_->UpdateTopControlsState(enable_hiding,
+                                           enable_showing,
+                                           animate);
 }
 
 void RenderWidgetCompositor::SetOverdrawBottomHeight(

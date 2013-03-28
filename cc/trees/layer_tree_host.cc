@@ -983,13 +983,18 @@ void LayerTreeHost::SetDeviceScaleFactor(float device_scale_factor) {
   SetNeedsCommit();
 }
 
-void LayerTreeHost::EnableHidingTopControls(bool enable) {
+void LayerTreeHost::UpdateTopControlsState(bool enable_hiding,
+                                           bool enable_showing,
+                                           bool animate) {
   if (!settings_.calculate_top_controls_position)
     return;
 
   proxy_->ImplThread()->PostTask(
-      base::Bind(&TopControlsManager::EnableHidingTopControls,
-                 top_controls_manager_weak_ptr_, enable));
+      base::Bind(&TopControlsManager::UpdateTopControlsState,
+                 top_controls_manager_weak_ptr_,
+                 enable_hiding,
+                 enable_showing,
+                 animate));
 }
 
 bool LayerTreeHost::BlocksPendingCommit() const {

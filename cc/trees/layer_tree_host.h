@@ -224,7 +224,9 @@ class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
   void SetDeviceScaleFactor(float device_scale_factor);
   float device_scale_factor() const { return device_scale_factor_; }
 
-  void EnableHidingTopControls(bool enable);
+  void UpdateTopControlsState(bool enable_hiding,
+                              bool enable_showing,
+                              bool animate);
 
   HeadsUpDisplayLayer* hud_layer() const { return hud_layer_.get(); }
 

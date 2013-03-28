@@ -1091,8 +1091,8 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_SelectPopupMenuItems, OnSelectPopupMenuItems)
     IPC_MESSAGE_HANDLER(ViewMsg_UndoScrollFocusedEditableNodeIntoView,
                         OnUndoScrollFocusedEditableNodeIntoRect)
-    IPC_MESSAGE_HANDLER(ViewMsg_EnableHidingTopControls,
-                        OnEnableHidingTopControls)
+    IPC_MESSAGE_HANDLER(ViewMsg_UpdateTopControlsState,
+                        OnUpdateTopControlsState)
 #elif defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(ViewMsg_CopyToFindPboard, OnCopyToFindPboard)
     IPC_MESSAGE_HANDLER(ViewMsg_PluginImeCompositionCompleted,

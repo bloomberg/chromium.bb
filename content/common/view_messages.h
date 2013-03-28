@@ -1352,9 +1352,12 @@ IPC_MESSAGE_ROUTED0(ViewMsg_UndoScrollFocusedEditableNodeIntoView)
 IPC_MESSAGE_ROUTED1(ViewMsg_ImeBatchStateChanged,
     bool /* is_begin */)
 
-// Notifies the renderer whether hiding the top controls is enabled.
-IPC_MESSAGE_ROUTED1(ViewMsg_EnableHidingTopControls,
-                    bool /* enable */)
+// Notifies the renderer whether hiding/showing the top controls is enabled
+// and whether or not to animate to the proper state.
+IPC_MESSAGE_ROUTED3(ViewMsg_UpdateTopControlsState,
+                    bool /* enable_hiding */,
+                    bool /* enable_showing */,
+                    bool /* animate */)
 
 IPC_MESSAGE_ROUTED0(ViewMsg_ShowImeIfNeeded)
 

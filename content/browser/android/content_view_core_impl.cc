@@ -1253,10 +1253,16 @@ void ContentViewCoreImpl::ExitFullscreen(JNIEnv* env, jobject obj) {
   host->ExitFullscreen();
 }
 
-void ContentViewCoreImpl::EnableHidingTopControls(JNIEnv* env, jobject obj,
-                                                  bool enable) {
+void ContentViewCoreImpl::UpdateTopControlsState(JNIEnv* env,
+                                                 jobject obj,
+                                                 bool enable_hiding,
+                                                 bool enable_showing,
+                                                 bool animate) {
   RenderViewHost* host = web_contents_->GetRenderViewHost();
-  host->Send(new ViewMsg_EnableHidingTopControls(host->GetRoutingID(), enable));
+  host->Send(new ViewMsg_UpdateTopControlsState(host->GetRoutingID(),
+                                                enable_hiding,
+                                                enable_showing,
+                                                animate));
 }
 
 void ContentViewCoreImpl::ShowImeIfNeeded(JNIEnv* env, jobject obj) {
