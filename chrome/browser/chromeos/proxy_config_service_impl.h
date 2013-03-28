@@ -241,6 +241,10 @@ class ProxyConfigServiceImpl
   // returns false if user is logged in and true otherwise.
   bool GetUseSharedProxies();
 
+  // Returns true if proxy is to be ignored for network, which happens if
+  // network is shared and use-shared-proxies is turned off.
+  bool IgnoreProxy(const Network* network);
+
   // Determines effective proxy config based on prefs from config tracker,
   // |network| and if user is using shared proxies.
   // If |activate| is true, effective config is stored in |active_config_| and
@@ -252,12 +256,6 @@ class ProxyConfigServiceImpl
   // Determines |current_ui_config_| based on |network|, called from
   // UISetCurrentNetwork and UIMakeActiveNetworkActive.
   void OnUISetCurrentNetwork(const Network* network);
-
-  // Returns true if proxy is to be ignored for network, which happens if
-  // network is shared and use-shared-proxies is turned off.
-  bool IgnoreProxy(const Network* network) {
-    return network->profile_type() == PROFILE_SHARED && !GetUseSharedProxies();
-  }
 
   // Reset UI cache variables that keep track of UI activities.
   void ResetUICache();
