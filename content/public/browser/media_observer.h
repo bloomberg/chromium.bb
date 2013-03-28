@@ -43,12 +43,13 @@ class MediaObserver {
       const MediaStreamDevice& device,
       MediaRequestState state) = 0;
 
-  // Called when an audio stream is played or paused.
+  // Called when an audio stream transitions into playing audible or silent
+  // sound, and when the stream is stopped.
   virtual void OnAudioStreamPlayingChanged(
       int render_process_id,
       int render_view_id,
       int stream_id,
-      bool playing) = 0;
+      bool is_playing_and_audible) = 0;
 
  protected:
   virtual ~MediaObserver() {}

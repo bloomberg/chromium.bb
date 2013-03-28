@@ -23,7 +23,7 @@ class AudioStreamIndicator
   void UpdateWebContentsStatus(int render_process_id,
                                int render_view_id,
                                int stream_id,
-                               bool playing);
+                               bool is_playing_and_audible);
 
   // This method should be called on the UI thread.
   bool IsPlayingAudio(content::WebContents* contents);

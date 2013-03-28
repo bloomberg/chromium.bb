@@ -38,12 +38,13 @@ class MockAudioOutputControllerEventHandler
  public:
   MockAudioOutputControllerEventHandler() {}
 
-  MOCK_METHOD1(OnCreated, void(AudioOutputController* controller));
-  MOCK_METHOD1(OnPlaying, void(AudioOutputController* controller));
-  MOCK_METHOD1(OnPaused, void(AudioOutputController* controller));
-  MOCK_METHOD1(OnError, void(AudioOutputController* controller));
-  MOCK_METHOD3(OnDeviceChange, void(AudioOutputController* controller,
-                                    int new_buffer_size, int new_sample_rate));
+  MOCK_METHOD0(OnCreated, void());
+  MOCK_METHOD0(OnPlaying, void());
+  MOCK_METHOD1(OnAudible, void(bool is_audible));
+  MOCK_METHOD0(OnPaused, void());
+  MOCK_METHOD0(OnError, void());
+  MOCK_METHOD2(OnDeviceChange, void(int new_buffer_size, int new_sample_rate));
+
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAudioOutputControllerEventHandler);
 };
@@ -116,7 +117,7 @@ class AudioOutputControllerTest : public testing::Test {
         kSampleRate, kBitsPerSample, samples_per_packet);
 
     if (params_.IsValid()) {
-      EXPECT_CALL(mock_event_handler_, OnCreated(NotNull()))
+      EXPECT_CALL(mock_event_handler_, OnCreated())
           .WillOnce(SignalEvent(&create_event_));
     }
 
@@ -130,14 +131,17 @@ class AudioOutputControllerTest : public testing::Test {
   }
 
   void Play() {
-    // Expect the event handler to receive one OnPlaying() call.
-    EXPECT_CALL(mock_event_handler_, OnPlaying(NotNull()))
+    // Expect the event handler to receive one OnPlaying() call and one or more
+    // OnAudible() calls.
+    EXPECT_CALL(mock_event_handler_, OnPlaying())
         .WillOnce(SignalEvent(&play_event_));
+    EXPECT_CALL(mock_event_handler_, OnAudible(_))
+        .Times(AtLeast(1));
 
     // During playback, the mock pretends to provide audio data rendered and
     // sent from the render process.
     EXPECT_CALL(mock_sync_reader_, UpdatePendingBytes(_))
-        .Times(AtLeast(2));
+        .Times(AtLeast(1));
     EXPECT_CALL(mock_sync_reader_, Read(_, _))
         .WillRepeatedly(DoAll(PopulateBuffer(),
                               SignalEvent(&read_event_),
@@ -150,7 +154,7 @@ class AudioOutputControllerTest : public testing::Test {
 
   void Pause() {
     // Expect the event handler to receive one OnPaused() call.
-    EXPECT_CALL(mock_event_handler_, OnPaused(NotNull()))
+    EXPECT_CALL(mock_event_handler_, OnPaused())
         .WillOnce(SignalEvent(&pause_event_));
 
     controller_->Pause();
@@ -159,9 +163,9 @@ class AudioOutputControllerTest : public testing::Test {
   void ChangeDevice() {
     // Expect the event handler to receive one OnPaying() call and no OnPaused()
     // call.
-    EXPECT_CALL(mock_event_handler_, OnPlaying(NotNull()))
+    EXPECT_CALL(mock_event_handler_, OnPlaying())
         .WillOnce(SignalEvent(&play_event_));
-    EXPECT_CALL(mock_event_handler_, OnPaused(NotNull()))
+    EXPECT_CALL(mock_event_handler_, OnPaused())
         .Times(0);
 
     // Simulate a device change event to AudioOutputController from the
@@ -175,7 +179,7 @@ class AudioOutputControllerTest : public testing::Test {
     if (was_playing) {
       // Expect the handler to receive one OnPlaying() call as a result of the
       // stream switching.
-      EXPECT_CALL(mock_event_handler_, OnPlaying(NotNull()))
+      EXPECT_CALL(mock_event_handler_, OnPlaying())
           .WillOnce(SignalEvent(&play_event_));
     }
 
@@ -207,7 +211,7 @@ class AudioOutputControllerTest : public testing::Test {
     if (was_playing) {
       // Expect the handler to receive one OnPlaying() call as a result of the
       // stream switching back.
-      EXPECT_CALL(mock_event_handler_, OnPlaying(NotNull()))
+      EXPECT_CALL(mock_event_handler_, OnPlaying())
           .WillOnce(SignalEvent(&play_event_));
     }
 

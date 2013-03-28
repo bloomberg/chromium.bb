@@ -8,7 +8,9 @@
 #include "base/atomic_ref_count.h"
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/timer.h"
 #include "media/audio/audio_buffers_state.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_manager.h"
@@ -57,6 +59,8 @@ class MessageLoop;
 
 namespace media {
 
+class AudioSilenceDetector;
+
 class MEDIA_EXPORT AudioOutputController
     : public base::RefCountedThreadSafe<AudioOutputController>,
       public AudioOutputStream::AudioSourceCallback,
@@ -67,12 +71,12 @@ class MEDIA_EXPORT AudioOutputController
   // following methods are called on the audio manager thread.
   class MEDIA_EXPORT EventHandler {
    public:
-    virtual void OnCreated(AudioOutputController* controller) = 0;
-    virtual void OnPlaying(AudioOutputController* controller) = 0;
-    virtual void OnPaused(AudioOutputController* controller) = 0;
-    virtual void OnError(AudioOutputController* controller) = 0;
-    virtual void OnDeviceChange(AudioOutputController* controller,
-                                int new_buffer_size, int new_sample_rate) = 0;
+    virtual void OnCreated() = 0;
+    virtual void OnPlaying() = 0;
+    virtual void OnAudible(bool is_audible) = 0;
+    virtual void OnPaused() = 0;
+    virtual void OnError() = 0;
+    virtual void OnDeviceChange(int new_buffer_size, int new_sample_rate) = 0;
 
    protected:
     virtual ~EventHandler() {}
@@ -193,6 +197,10 @@ class MEDIA_EXPORT AudioOutputController
   void DoStartDiverting(AudioOutputStream* to_stream);
   void DoStopDiverting();
 
+  // Called at regular intervals during playback to check for a change in
+  // silence and call EventHandler::OnAudible() when state changes occur.
+  void MaybeInvokeAudibleCallback();
+
   // Helper methods that start/stop physical stream.
   void StartStream();
   void StopStream();
@@ -244,6 +252,11 @@ class MEDIA_EXPORT AudioOutputController
   // Used to auto-cancel the delayed tasks that are created to poll for data
   // (when starting-up a stream).
   base::WeakPtrFactory<AudioOutputController> weak_this_;
+
+  // Scans audio samples from OnMoreIOData() as input and causes
+  // EventHandler::OnAudbile() to be called whenever a transition to a period of
+  // silence or non-silence is detected.
+  scoped_ptr<AudioSilenceDetector> silence_detector_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioOutputController);
 };

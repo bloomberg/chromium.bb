@@ -70,7 +70,6 @@ class MockAudioRendererHost : public AudioRendererHost {
   MOCK_METHOD1(OnStreamPlaying, void(int stream_id));
   MOCK_METHOD1(OnStreamPaused, void(int stream_id));
   MOCK_METHOD1(OnStreamError, void(int stream_id));
-  MOCK_METHOD2(OnStreamVolume, void(int stream_id, double volume));
 
  private:
   virtual ~MockAudioRendererHost() {
@@ -101,13 +100,13 @@ class MockAudioRendererHost : public AudioRendererHost {
   }
 
   void OnStreamCreated(const IPC::Message& msg, int stream_id,
-                                 base::SharedMemoryHandle handle,
+                       base::SharedMemoryHandle handle,
 #if defined(OS_WIN)
-                                 base::SyncSocket::Handle socket_handle,
+                       base::SyncSocket::Handle socket_handle,
 #else
-                                 base::FileDescriptor socket_descriptor,
+                       base::FileDescriptor socket_descriptor,
 #endif
-                                 uint32 length) {
+                       uint32 length) {
     // Maps the shared memory.
     shared_memory_.reset(new base::SharedMemory(handle, false));
     CHECK(shared_memory_->Map(length));
@@ -199,6 +198,9 @@ class AudioRendererHostTest : public testing::Test {
   void Create() {
     EXPECT_CALL(*observer_,
                 OnSetAudioStreamStatus(_, kStreamId, "created"));
+    // All created streams should ultimately be closed.
+    EXPECT_CALL(*observer_,
+                OnSetAudioStreamStatus(_, kStreamId, "closed"));
 
     InSequence s;
     // We will first receive an OnStreamCreated() signal.
@@ -235,9 +237,6 @@ class AudioRendererHostTest : public testing::Test {
   }
 
   void Close() {
-    EXPECT_CALL(*observer_,
-                OnSetAudioStreamStatus(_, kStreamId, "closed"));
-
     // Send a message to AudioRendererHost to tell it we want to close the
     // stream.
     host_->OnCloseStream(kStreamId);
@@ -275,18 +274,14 @@ class AudioRendererHostTest : public testing::Test {
   void SimulateError() {
     EXPECT_CALL(*observer_,
                 OnSetAudioStreamStatus(_, kStreamId, "error"));
-    // Find the first AudioOutputController in the AudioRendererHost.
-    CHECK(host_->audio_entries_.size())
+    EXPECT_EQ(1u, host_->audio_entries_.size())
         << "Calls Create() before calling this method";
-    media::AudioOutputController* controller =
-        host_->LookupControllerByIdForTesting(kStreamId);
-    CHECK(controller) << "AudioOutputController not found";
 
     // Expect an error signal sent through IPC.
     EXPECT_CALL(*host_, OnStreamError(kStreamId));
 
     // Simulate an error sent from the audio device.
-    host_->OnError(controller);
+    host_->ReportErrorAndClose(kStreamId);
     SyncWithAudioThread();
 
     // Expect the audio stream record is removed.
