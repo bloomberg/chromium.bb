@@ -199,8 +199,8 @@ void SearchProvider::FinalizeInstantQuery(const string16& input_text,
     matches_.push_back(NavigationToMatch(
         NavigationResult(GURL(UTF16ToUTF8(suggestion.text)),
                          string16(),
-                         kNonURLVerbatimRelevance + 1),
-        false));
+                         false,
+                         kNonURLVerbatimRelevance + 1)));
     results_updated = true;
   }
 
@@ -319,24 +319,45 @@ void SearchProvider::Start(const AutocompleteInput& input,
   UpdateMatches();
 }
 
-SearchProvider::Result::Result(int relevance) : relevance_(relevance) {}
+SearchProvider::Result::Result(bool from_keyword_provider, int relevance)
+    : from_keyword_provider_(from_keyword_provider),
+      relevance_(relevance) {
+}
+
 SearchProvider::Result::~Result() {}
 
 SearchProvider::SuggestResult::SuggestResult(const string16& suggestion,
+                                             bool from_keyword_provider,
                                              int relevance)
-    : Result(relevance),
+    : Result(from_keyword_provider, relevance),
       suggestion_(suggestion) {
 }
 
 SearchProvider::SuggestResult::~SuggestResult() {}
 
-SearchProvider::NavigationResult::NavigationResult(const GURL& url,
-                                                   const string16& description,
-                                                   int relevance)
-    : Result(relevance),
+int SearchProvider::SuggestResult::CalculateRelevance(
+    const AutocompleteInput& input,
+    bool keyword_provider_requested) const {
+  if (!from_keyword_provider_ && keyword_provider_requested)
+    return 100;
+  return ((input.type() == AutocompleteInput::URL) ? 300 : 600);
+}
+
+SearchProvider::NavigationResult::NavigationResult(
+    const GURL& url,
+    const string16& description,
+    bool from_keyword_provider,
+    int relevance)
+    : Result(from_keyword_provider, relevance),
       url_(url),
       description_(description) {
   DCHECK(url_.is_valid());
+}
+
+int SearchProvider::NavigationResult::CalculateRelevance(
+    const AutocompleteInput& input,
+    bool keyword_provider_requested) const {
+  return (from_keyword_provider_ || !keyword_provider_requested) ? 800 : 150;
 }
 
 SearchProvider::NavigationResult::~NavigationResult() {}
@@ -659,8 +680,9 @@ void SearchProvider::AdjustDefaultProviderSuggestion(
     NavigationResults list;
     // Description and relevance do not matter in the check for staleness.
     NavigationResult result(GURL(default_provider_suggestion_.text),
-                                 string16(),
-                                 100);
+                            string16(),
+                            false,
+                            100);
     list.push_back(result);
     RemoveStaleNavigationResults(&list, current_input);
     // If navigation suggestion is stale, clear |default_provider_suggestion_|.
@@ -690,29 +712,32 @@ void SearchProvider::AdjustDefaultProviderSuggestion(
 }
 
 void SearchProvider::ApplyCalculatedRelevance() {
-  ApplyCalculatedSuggestRelevance(&keyword_suggest_results_, true);
-  ApplyCalculatedSuggestRelevance(&default_suggest_results_, false);
-  ApplyCalculatedNavigationRelevance(&keyword_navigation_results_, true);
-  ApplyCalculatedNavigationRelevance(&default_navigation_results_, false);
+  ApplyCalculatedSuggestRelevance(&keyword_suggest_results_);
+  ApplyCalculatedSuggestRelevance(&default_suggest_results_);
+  ApplyCalculatedNavigationRelevance(&keyword_navigation_results_);
+  ApplyCalculatedNavigationRelevance(&default_navigation_results_);
   has_default_suggested_relevance_ = false;
   has_keyword_suggested_relevance_ = false;
   default_verbatim_relevance_ = -1;
   keyword_verbatim_relevance_ = -1;
 }
 
-void SearchProvider::ApplyCalculatedSuggestRelevance(SuggestResults* list,
-                                                     bool is_keyword) {
+void SearchProvider::ApplyCalculatedSuggestRelevance(SuggestResults* list) {
   for (size_t i = 0; i < list->size(); ++i) {
-    (*list)[i].set_relevance(CalculateRelevanceForSuggestion(is_keyword) +
-                             (list->size() - i - 1));
+    SuggestResult& result = (*list)[i];
+    result.set_relevance(
+        result.CalculateRelevance(input_, providers_.has_keyword_provider()) +
+        (list->size() - i - 1));
   }
 }
 
-void SearchProvider::ApplyCalculatedNavigationRelevance(NavigationResults* list,
-                                                        bool is_keyword) {
+void SearchProvider::ApplyCalculatedNavigationRelevance(
+    NavigationResults* list) {
   for (size_t i = 0; i < list->size(); ++i) {
-    (*list)[i].set_relevance(CalculateRelevanceForNavigation(is_keyword) +
-                             (list->size() - i - 1));
+    NavigationResult& result = (*list)[i];
+    result.set_relevance(
+        result.CalculateRelevance(input_, providers_.has_keyword_provider()) +
+        (list->size() - i - 1));
   }
 }
 
@@ -825,11 +850,12 @@ bool SearchProvider::ParseSuggestResults(Value* root_val, bool is_keyword) {
       if (url.is_valid()) {
         if (descriptions != NULL)
           descriptions->GetString(index, &title);
-        navigation_results->push_back(NavigationResult(url, title, relevance));
+        navigation_results->push_back(NavigationResult(
+            url, title, is_keyword, relevance));
       }
     } else {
       // TODO(kochi): Improve calculator result presentation.
-      suggest_results->push_back(SuggestResult(result, relevance));
+      suggest_results->push_back(SuggestResult(result, is_keyword, relevance));
     }
   }
 
@@ -845,8 +871,8 @@ bool SearchProvider::ParseSuggestResults(Value* root_val, bool is_keyword) {
 
   // Apply calculated relevance scores if a valid list was not provided.
   if (relevances == NULL) {
-    ApplyCalculatedSuggestRelevance(suggest_results, is_keyword);
-    ApplyCalculatedNavigationRelevance(navigation_results, is_keyword);
+    ApplyCalculatedSuggestRelevance(suggest_results);
+    ApplyCalculatedNavigationRelevance(navigation_results);
   } else {
     *has_suggested_relevance = true;
   }
@@ -905,8 +931,8 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
   AddHistoryResultsToMap(default_history_results_, false,
                          did_not_accept_default_suggestion, &map);
 
-  AddSuggestResultsToMap(keyword_suggest_results_, true, &map);
-  AddSuggestResultsToMap(default_suggest_results_, false, &map);
+  AddSuggestResultsToMap(keyword_suggest_results_, &map);
+  AddSuggestResultsToMap(default_suggest_results_, &map);
 
   // Now add the most relevant matches from the map to |matches_|.
   matches_.clear();
@@ -921,8 +947,8 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
     matches_.push_back(NavigationToMatch(
         NavigationResult(GURL(UTF16ToUTF8(default_provider_suggestion_.text)),
                          string16(),
-                         kNonURLVerbatimRelevance + 1),
-        false));
+                         false,
+                         kNonURLVerbatimRelevance + 1)));
   }
   AddNavigationResultsToMatches(keyword_navigation_results_, true);
   AddNavigationResultsToMatches(default_navigation_results_, false);
@@ -993,8 +1019,8 @@ void SearchProvider::UpdateMatches() {
       // type is URL and the top match is a highly-ranked search suggestion.
       // For example, prevent a search for "foo.com" from outranking another
       // provider's navigation for "foo.com" or "foo.com/url_from_history".
-      ApplyCalculatedSuggestRelevance(&keyword_suggest_results_, true);
-      ApplyCalculatedSuggestRelevance(&default_suggest_results_, false);
+      ApplyCalculatedSuggestRelevance(&keyword_suggest_results_);
+      ApplyCalculatedSuggestRelevance(&default_suggest_results_);
       default_verbatim_relevance_ = -1;
       keyword_verbatim_relevance_ = -1;
       ConvertResultsToAutocompleteMatches();
@@ -1027,7 +1053,7 @@ void SearchProvider::AddNavigationResultsToMatches(
       has_keyword_suggested_relevance_ : has_default_suggested_relevance_) {
     for (NavigationResults::const_iterator it = navigation_results.begin();
          it != navigation_results.end(); ++it)
-      matches_.push_back(NavigationToMatch(*it, is_keyword));
+      matches_.push_back(NavigationToMatch(*it));
   } else {
     // Pick one element only in absence of the suggested relevance scores.
     // TODO(kochi|msw): Add more navigational results if they get more
@@ -1037,7 +1063,7 @@ void SearchProvider::AddNavigationResultsToMatches(
         std::min_element(navigation_results.begin(),
                          navigation_results.end(),
                          CompareScoredResults()));
-    matches_.push_back(NavigationToMatch(*result, is_keyword));
+    matches_.push_back(NavigationToMatch(*result));
   }
 }
 
@@ -1120,7 +1146,7 @@ SearchProvider::SuggestResults SearchProvider::ScoreHistoryResults(
 
     int relevance = CalculateRelevanceForHistory(i->time, is_keyword,
                                                  prevent_inline_autocomplete);
-    scored_results.push_back(SuggestResult(i->term, relevance));
+    scored_results.push_back(SuggestResult(i->term, is_keyword, relevance));
   }
 
   // History returns results sorted for us.  However, we may have docked some
@@ -1142,12 +1168,11 @@ SearchProvider::SuggestResults SearchProvider::ScoreHistoryResults(
 }
 
 void SearchProvider::AddSuggestResultsToMap(const SuggestResults& results,
-                                            bool is_keyword,
                                             MatchMap* map) {
-  const string16& input_text =
-      is_keyword ? keyword_input_.text() : input_.text();
   for (size_t i = 0; i < results.size(); ++i) {
-    AddMatchToMap(results[i].suggestion(), input_text, results[i].relevance(),
+    const bool is_keyword = results[i].from_keyword_provider();
+    const string16& input = is_keyword ? keyword_input_.text() : input_.text();
+    AddMatchToMap(results[i].suggestion(), input, results[i].relevance(),
                   AutocompleteMatch::SEARCH_SUGGEST, i, is_keyword, map);
   }
 }
@@ -1244,7 +1269,7 @@ int SearchProvider::CalculateRelevanceForHistory(
   // minutes ago is discounted 50 points, while the relevance of a search two
   // weeks ago is discounted 450 points.
   double elapsed_time = std::max((Time::Now() - time).InSecondsF(), 0.);
-  bool is_primary_provider = providers_.is_primary_provider(is_keyword);
+  bool is_primary_provider = is_keyword || !providers_.has_keyword_provider();
   if (is_primary_provider && !prevent_inline_autocomplete) {
     // Searches with the past two days get a different curve.
     const double autocomplete_time = 2 * 24 * 60 * 60;
@@ -1266,15 +1291,6 @@ int SearchProvider::CalculateRelevanceForHistory(
   else
     base_score = 200;
   return std::max(0, base_score - score_discount);
-}
-
-int SearchProvider::CalculateRelevanceForSuggestion(bool for_keyword) const {
-  return !providers_.is_primary_provider(for_keyword) ? 100 :
-      ((input_.type() == AutocompleteInput::URL) ? 300 : 600);
-}
-
-int SearchProvider::CalculateRelevanceForNavigation(bool for_keyword) const {
-  return providers_.is_primary_provider(for_keyword) ? 800 : 150;
 }
 
 void SearchProvider::AddMatchToMap(const string16& query_string,
@@ -1382,9 +1398,9 @@ void SearchProvider::AddMatchToMap(const string16& query_string,
 }
 
 AutocompleteMatch SearchProvider::NavigationToMatch(
-    const NavigationResult& navigation,
-    bool is_keyword) {
-  const string16& input = is_keyword ? keyword_input_.text() : input_.text();
+    const NavigationResult& navigation) {
+  const string16& input = navigation.from_keyword_provider() ?
+      keyword_input_.text() : input_.text();
   AutocompleteMatch match(this, navigation.relevance(), false,
                           AutocompleteMatch::NAVSUGGEST);
   match.destination_url = navigation.url();

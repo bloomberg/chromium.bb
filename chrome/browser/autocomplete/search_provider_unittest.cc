@@ -1913,8 +1913,9 @@ TEST_F(SearchProviderTest, NavigationInline) {
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); i++) {
     QueryForInput(ASCIIToUTF16(cases[i].input), false, false);
-    SearchProvider::NavigationResult result(GURL(cases[i].url), string16(), 0);
-    AutocompleteMatch match(provider_->NavigationToMatch(result, false));
+    SearchProvider::NavigationResult result(
+        GURL(cases[i].url), string16(), false, 0);
+    AutocompleteMatch match(provider_->NavigationToMatch(result));
     EXPECT_EQ(cases[i].inline_offset, match.inline_autocomplete_offset);
     EXPECT_EQ(ASCIIToUTF16(cases[i].fill_into_edit), match.fill_into_edit);
   }
@@ -1924,18 +1925,19 @@ TEST_F(SearchProviderTest, NavigationInline) {
 TEST_F(SearchProviderTest, NavigationInlineSchemeSubstring) {
   const string16 input(ASCIIToUTF16("ht"));
   const string16 url(ASCIIToUTF16("http://a.com"));
-  const SearchProvider::NavigationResult result(GURL(url), string16(), 0);
+  const SearchProvider::NavigationResult result(
+      GURL(url), string16(), false, 0);
 
   // Check the offset and strings when inline autocompletion is allowed.
   QueryForInput(input, false, false);
-  AutocompleteMatch match_inline(provider_->NavigationToMatch(result, false));
+  AutocompleteMatch match_inline(provider_->NavigationToMatch(result));
   EXPECT_EQ(2U, match_inline.inline_autocomplete_offset);
   EXPECT_EQ(url, match_inline.fill_into_edit);
   EXPECT_EQ(url, match_inline.contents);
 
   // Check the same offset and strings when inline autocompletion is prevented.
   QueryForInput(input, true, false);
-  AutocompleteMatch match_prevent(provider_->NavigationToMatch(result, false));
+  AutocompleteMatch match_prevent(provider_->NavigationToMatch(result));
   EXPECT_EQ(string16::npos, match_prevent.inline_autocomplete_offset);
   EXPECT_EQ(url, match_prevent.fill_into_edit);
   EXPECT_EQ(url, match_prevent.contents);
@@ -1945,8 +1947,8 @@ TEST_F(SearchProviderTest, NavigationInlineSchemeSubstring) {
 TEST_F(SearchProviderTest, NavigationInlineDomainClassify) {
   QueryForInput(ASCIIToUTF16("w"), false, false);
   const GURL url("http://www.wow.com");
-  const SearchProvider::NavigationResult result(url, string16(), 0);
-  AutocompleteMatch match(provider_->NavigationToMatch(result, false));
+  const SearchProvider::NavigationResult result(url, string16(), false, 0);
+  AutocompleteMatch match(provider_->NavigationToMatch(result));
   EXPECT_EQ(5U, match.inline_autocomplete_offset);
   EXPECT_EQ(ASCIIToUTF16("www.wow.com"), match.fill_into_edit);
   EXPECT_EQ(ASCIIToUTF16("www.wow.com"), match.contents);

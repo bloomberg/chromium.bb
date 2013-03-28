@@ -132,11 +132,8 @@ class SearchProvider : public AutocompleteProvider,
     const TemplateURL* GetDefaultProviderURL() const;
     const TemplateURL* GetKeywordProviderURL() const;
 
-    // Returns true if |from_keyword_provider| is true, or the keyword provider
-    // is not valid.
-    bool is_primary_provider(bool from_keyword_provider) const {
-      return from_keyword_provider || keyword_provider_.empty();
-    }
+    // Returns true if there is a valid keyword provider.
+    bool has_keyword_provider() const { return !keyword_provider_.empty(); }
 
    private:
     TemplateURLService* template_url_service_;
@@ -158,23 +155,44 @@ class SearchProvider : public AutocompleteProvider,
   //           highly fragmented SearchProvider logic for each Result type.
   class Result {
    public:
-    explicit Result(int relevance);
+    // Takes whether the result is from the keyword provider and its
+    // assigned relevance score.
+    explicit Result(bool from_keyword_provider, int relevance);
     virtual ~Result();
+
+    bool from_keyword_provider() const { return from_keyword_provider_; }
 
     int relevance() const { return relevance_; }
     void set_relevance(int relevance) { relevance_ = relevance; }
 
-   private:
+    // Returns the default relevance value for this result (which may
+    // be left over from a previous omnibox input) given the current
+    // input and whether the current input caused a keyword provider
+    // to be active.
+    virtual int CalculateRelevance(const AutocompleteInput& input,
+                                   bool keyword_provider_requested) const = 0;
+
+   protected:
+    // True if the result came from the keyword provider.
+    bool from_keyword_provider_;
+
     // The relevance score.
     int relevance_;
   };
 
   class SuggestResult : public Result {
    public:
-    SuggestResult(const string16& suggestion, int relevance);
+    SuggestResult(const string16& suggestion,
+                  bool from_keyword_provider,
+                  int relevance);
     virtual ~SuggestResult();
 
     const string16& suggestion() const { return suggestion_; }
+
+    // Result:
+    virtual int CalculateRelevance(
+        const AutocompleteInput& input,
+        bool keyword_provider_requested) const OVERRIDE;
 
    private:
     // The search suggestion string.
@@ -185,11 +203,17 @@ class SearchProvider : public AutocompleteProvider,
    public:
     NavigationResult(const GURL& url,
                      const string16& description,
+                     bool from_keyword_provider,
                      int relevance);
     virtual ~NavigationResult();
 
     const GURL& url() const { return url_; }
     const string16& description() const { return description_; }
+
+    // Result:
+    virtual int CalculateRelevance(
+        const AutocompleteInput& input,
+        bool keyword_provider_requested) const OVERRIDE;
 
    private:
     // The suggested url for navigation.
@@ -245,9 +269,8 @@ class SearchProvider : public AutocompleteProvider,
 
   // Apply calculated relevance scores to the current results.
   void ApplyCalculatedRelevance();
-  void ApplyCalculatedSuggestRelevance(SuggestResults* list, bool is_keyword);
-  void ApplyCalculatedNavigationRelevance(NavigationResults* list,
-                                          bool is_keyword);
+  void ApplyCalculatedSuggestRelevance(SuggestResults* list);
+  void ApplyCalculatedNavigationRelevance(NavigationResults* list);
 
   // Starts a new URLFetcher requesting suggest results from |template_url|;
   // callers own the returned URLFetcher, which is NULL for invalid providers.
@@ -294,11 +317,8 @@ class SearchProvider : public AutocompleteProvider,
                                      const string16& input_text,
                                      bool is_keyword);
 
-  // Adds matches for |results| to |map|. |is_keyword| indicates whether the
-  // results correspond to the keyword provider or default provider.
-  void AddSuggestResultsToMap(const SuggestResults& results,
-                              bool is_keyword,
-                              MatchMap* map);
+  // Adds matches for |results| to |map|.
+  void AddSuggestResultsToMap(const SuggestResults& results, MatchMap* map);
 
   // Gets the relevance score for the verbatim result; this value may be
   // provided by the suggest server; otherwise it is calculated locally.
@@ -331,12 +351,6 @@ class SearchProvider : public AutocompleteProvider,
   int CalculateRelevanceForHistory(const base::Time& time,
                                    bool is_keyword,
                                    bool prevent_inline_autocomplete) const;
-  // Calculates the relevance for search suggestion results. Set |for_keyword|
-  // to true for relevance values applicable to keyword provider results.
-  int CalculateRelevanceForSuggestion(bool for_keyword) const;
-  // Calculates the relevance for navigation results. Set |for_keyword| to true
-  // for relevance values applicable to keyword provider results.
-  int CalculateRelevanceForNavigation(bool for_keyword) const;
 
   // Creates an AutocompleteMatch for "Search <engine> for |query_string|" with
   // the supplied relevance.  Adds this match to |map|; if such a match already
@@ -350,8 +364,7 @@ class SearchProvider : public AutocompleteProvider,
                      MatchMap* map);
 
   // Returns an AutocompleteMatch for a navigational suggestion.
-  AutocompleteMatch NavigationToMatch(const NavigationResult& navigation,
-                                      bool is_keyword);
+  AutocompleteMatch NavigationToMatch(const NavigationResult& navigation);
 
   // Resets the scores of all |keyword_navigation_results_| matches to
   // be below that of the top keyword query match (the verbatim match
