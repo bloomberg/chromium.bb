@@ -26,6 +26,10 @@ class BaseFeatureProvider : public FeatureProvider {
   BaseFeatureProvider(const DictionaryValue& root, FeatureFactory factory);
   virtual ~BaseFeatureProvider();
 
+  // Gets an instance for the _api_features.json file that is baked into
+  // Chrome as a resource.
+  static BaseFeatureProvider* GetApiFeatures();
+
   // Gets an instance for the _manifest_features.json file that is baked into
   // Chrome as a resource.
   static BaseFeatureProvider* GetManifestFeatures();

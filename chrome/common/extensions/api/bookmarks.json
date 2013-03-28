@@ -5,10 +5,6 @@
 [
   {
     "namespace": "bookmarks",
-    "uses_feature_system": true,
-    "channel": "stable",
-    "dependencies": ["permission:bookmarks"],
-    "contexts": ["blessed_extension"],
     "properties": {
       "MAX_WRITE_OPERATIONS_PER_HOUR": {
         "value": 100,

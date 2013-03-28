@@ -88,6 +88,7 @@ class Feature {
     const std::string message_;
   };
 
+  Feature();
   virtual ~Feature();
 
   // Used by ChromeV8Context until the feature system is fully functional.
@@ -124,6 +125,7 @@ class Feature {
 
   const std::string& name() const { return name_; }
   void set_name(const std::string& name) { name_ = name; }
+  const std::set<std::string>& dependencies() { return dependencies_; }
 
   // Gets the platform the code is currently running on.
   static Platform GetCurrentPlatform();
@@ -131,7 +133,6 @@ class Feature {
   // Gets the Feature::Location value for the specified Manifest::Location.
   static Location ConvertLocation(Manifest::Location extension_location);
 
-  // TODO(justinlin): Remove and move to APIFeature when it exists.
   virtual std::set<Context>* GetContexts() = 0;
 
   // Returns true if the feature is available to be parsed into a new extension
@@ -167,6 +168,7 @@ class Feature {
 
  protected:
   std::string name_;
+  std::set<std::string> dependencies_;
 };
 
 }  // namespace extensions

@@ -30,8 +30,9 @@ class SimpleFeature : public Feature {
 
   // Parses the JSON representation of a feature into the fields of this object.
   // Unspecified values in the JSON are not modified in the object. This allows
-  // us to implement inheritance by parsing one value after another.
-  void Parse(const DictionaryValue* value);
+  // us to implement inheritance by parsing one value after another. Returns
+  // the error found, or an empty string on success.
+  virtual std::string Parse(const DictionaryValue* value);
 
   // Returns true if the feature contains the same values as another.
   bool Equals(const SimpleFeature& other) const;
