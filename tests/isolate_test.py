@@ -70,7 +70,8 @@ class IsolateTest(IsolateBase):
     expected = {
       'command': [],
       'files': {},
-      'isolate_file': unicode(os.path.join(ROOT_DIR, 'maybe')),
+      'isolate_file': isolate.trace_inputs.get_native_path_case(
+          os.path.join(ROOT_DIR, 'maybe')),
       'isolated_files': [],
       'variables': {
         'foo': 42,
@@ -1016,7 +1017,7 @@ class IsolateLoad(IsolateBase):
           's': _size('isolate.py'),
         },
       },
-      'isolate_file': isolate_file,
+      'isolate_file': isolate.trace_inputs.get_native_path_case(isolate_file),
       'isolated_files': [],
       'relative_cwd': os.path.join('tests', 'isolate'),
       'variables': {
@@ -1066,7 +1067,7 @@ class IsolateLoad(IsolateBase):
           's': _size('tests', 'isolate', 'touch_root.py'),
         },
       },
-      'isolate_file': isolate_file,
+      'isolate_file': isolate.trace_inputs.get_native_path_case(isolate_file),
       'isolated_files': [],
       'relative_cwd': os.path.join('tests', 'isolate'),
       'variables': {
@@ -1116,7 +1117,7 @@ class IsolateLoad(IsolateBase):
           's': _size('tests', 'isolate', 'touch_root.py'),
         },
       },
-      'isolate_file': isolate_file,
+      'isolate_file': isolate.trace_inputs.get_native_path_case(isolate_file),
       'isolated_files': [],
       'relative_cwd': os.path.join('tests', 'isolate'),
       'variables': {
@@ -1190,7 +1191,7 @@ class IsolateLoad(IsolateBase):
           's': _size('tests', 'isolate', 'touch_root.py'),
         },
       },
-      'isolate_file': isolate_file,
+      'isolate_file': isolate.trace_inputs.get_native_path_case(isolate_file),
       'isolated_files': [],
       'relative_cwd': os.path.join('tests', 'isolate'),
       'variables': {
@@ -1294,7 +1295,7 @@ class IsolateLoad(IsolateBase):
           u's': _size('tests', 'isolate', 'test', 'data', 'foo.txt'),
         },
       },
-      u'isolate_file': unicode(isolate_file),
+      u'isolate_file': isolate.trace_inputs.get_native_path_case(isolate_file),
       u'isolated_files': [
         unicode(options.isolated),
         unicode(options.isolated[:-len('.isolated')] + '.0.isolated'),

@@ -1506,6 +1506,7 @@ class CompleteState(object):
     """
     # Make sure to not depend on os.getcwd().
     assert os.path.isabs(isolate_file), isolate_file
+    isolate_file = trace_inputs.get_native_path_case(isolate_file)
     logging.info(
         'CompleteState.load_isolate(%s, %s, %s, %s)',
         cwd, isolate_file, variables, ignore_broken_items)
@@ -1651,6 +1652,7 @@ def load_complete_state(options, cwd, subdir):
   Arguments:
     options: Options instance generated with OptionParserIsolate.
   """
+  cwd = trace_inputs.get_native_path_case(unicode(cwd))
   if options.isolated:
     # Load the previous state if it was present. Namely, "foo.isolated.state".
     complete_state = CompleteState.load_files(options.isolated)
@@ -2127,7 +2129,7 @@ class OptionParserIsolate(trace_inputs.OptionParserWithNiceDescription):
     if not self.allow_interspersed_args and args:
       self.error('Unsupported argument: %s' % args)
 
-    cwd = os.getcwd()
+    cwd = trace_inputs.get_native_path_case(unicode(os.getcwd()))
     parse_isolated_option(self, options, cwd, self.require_isolated)
     parse_variable_option(options)
 
