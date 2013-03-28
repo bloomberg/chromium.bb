@@ -125,35 +125,20 @@ void ServiceProcessControl::Launch(const base::Closure& success_task,
   cmd_line->AppendSwitchASCII(switches::kProcessType,
                               switches::kServiceProcess);
 
-  const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
-  base::FilePath user_data_dir =
-      browser_command_line.GetSwitchValuePath(switches::kUserDataDir);
-  if (!user_data_dir.empty())
-    cmd_line->AppendSwitchPath(switches::kUserDataDir, user_data_dir);
-
-  std::string logging_level = browser_command_line.GetSwitchValueASCII(
-      switches::kLoggingLevel);
-  if (!logging_level.empty())
-    cmd_line->AppendSwitchASCII(switches::kLoggingLevel, logging_level);
-
-  std::string v_level = browser_command_line.GetSwitchValueASCII(
-      switches::kV);
-  if (!v_level.empty())
-    cmd_line->AppendSwitchASCII(switches::kV, v_level);
-
-  std::string v_modules = browser_command_line.GetSwitchValueASCII(
-      switches::kVModule);
-  if (!v_modules.empty())
-    cmd_line->AppendSwitchASCII(switches::kVModule, v_modules);
-
-  if (browser_command_line.HasSwitch(switches::kWaitForDebuggerChildren))
-    cmd_line->AppendSwitch(switches::kWaitForDebugger);
-
-  if (browser_command_line.HasSwitch(switches::kEnableLogging))
-    cmd_line->AppendSwitch(switches::kEnableLogging);
-
-  std::string locale = g_browser_process->GetApplicationLocale();
-  cmd_line->AppendSwitchASCII(switches::kLang, locale);
+  static const char* const kSwitchesToCopy[] = {
+    switches::kCloudPrintSetupProxy,
+    switches::kEnableLogging,
+    switches::kLang,
+    switches::kLoggingLevel,
+    switches::kNoServiceAutorun,
+    switches::kUserDataDir,
+    switches::kV,
+    switches::kVModule,
+    switches::kWaitForDebugger,
+  };
+  cmd_line->CopySwitchesFrom(*CommandLine::ForCurrentProcess(),
+                             kSwitchesToCopy,
+                             arraysize(kSwitchesToCopy));
 
   // And then start the process asynchronously.
   launcher_ = new Launcher(this, cmd_line);
