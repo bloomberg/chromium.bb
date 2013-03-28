@@ -1375,8 +1375,8 @@ TEST_F(HostResolverImplDnsTest, ServeFromHosts) {
 
   Request* req3 = CreateRequest("er_both", 80);
   EXPECT_EQ(OK, req3->Resolve());
-  EXPECT_TRUE(req3->HasOneAddress("127.0.0.1", 80) ||
-              req3->HasOneAddress("::1", 80));
+  EXPECT_TRUE(req3->HasAddress("127.0.0.1", 80) &&
+              req3->HasAddress("::1", 80));
 
   // Requests with specified AddressFamily.
   Request* req4 = CreateRequest("er_ipv4", 80, MEDIUM, ADDRESS_FAMILY_IPV4);

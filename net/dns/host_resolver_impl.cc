@@ -1951,30 +1951,35 @@ bool HostResolverImpl::ServeFromHosts(const Key& key,
   if (!HaveDnsConfig())
     return false;
 
+  addresses->clear();
+
   // HOSTS lookups are case-insensitive.
   std::string hostname = StringToLowerASCII(key.hostname);
+
+  const DnsHosts& hosts = dns_client_->GetConfig()->hosts;
 
   // If |address_family| is ADDRESS_FAMILY_UNSPECIFIED other implementations
   // (glibc and c-ares) return the first matching line. We have more
   // flexibility, but lose implicit ordering.
-  // TODO(szym) http://crbug.com/117850
-  const DnsHosts& hosts = dns_client_->GetConfig()->hosts;
-  DnsHosts::const_iterator it = hosts.find(
-      DnsHostsKey(hostname,
-                  key.address_family == ADDRESS_FAMILY_UNSPECIFIED ?
-                      ADDRESS_FAMILY_IPV4 : key.address_family));
-
-  if (it == hosts.end()) {
-    if (key.address_family != ADDRESS_FAMILY_UNSPECIFIED)
-      return false;
-
-    it = hosts.find(DnsHostsKey(hostname, ADDRESS_FAMILY_IPV6));
-    if (it == hosts.end())
-      return false;
+  // We prefer IPv6 because "happy eyeballs" will fall back to IPv4 if
+  // necessary.
+  if (key.address_family == ADDRESS_FAMILY_IPV6 ||
+      key.address_family == ADDRESS_FAMILY_UNSPECIFIED) {
+    DnsHosts::const_iterator it = hosts.find(
+        DnsHostsKey(hostname, ADDRESS_FAMILY_IPV6));
+    if (it != hosts.end())
+      addresses->push_back(IPEndPoint(it->second, info.port()));
   }
 
-  *addresses = AddressList::CreateFromIPAddress(it->second, info.port());
-  return true;
+  if (key.address_family == ADDRESS_FAMILY_IPV4 ||
+      key.address_family == ADDRESS_FAMILY_UNSPECIFIED) {
+    DnsHosts::const_iterator it = hosts.find(
+        DnsHostsKey(hostname, ADDRESS_FAMILY_IPV4));
+    if (it != hosts.end())
+      addresses->push_back(IPEndPoint(it->second, info.port()));
+  }
+
+  return !addresses->empty();
 }
 
 void HostResolverImpl::CacheResult(const Key& key,
