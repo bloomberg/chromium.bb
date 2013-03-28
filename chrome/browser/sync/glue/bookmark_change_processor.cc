@@ -58,6 +58,8 @@ BookmarkChangeProcessor::~BookmarkChangeProcessor() {
 
 void BookmarkChangeProcessor::StartImpl(Profile* profile) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(profile);
+  profile_ = profile;
   DCHECK(!bookmark_model_);
   bookmark_model_ = BookmarkModelFactory::GetForProfile(profile);
   DCHECK(bookmark_model_->IsLoaded());
@@ -547,6 +549,7 @@ void BookmarkChangeProcessor::ApplyChangesFromSyncModel(
       }
 
       const BookmarkNode* node = CreateOrUpdateBookmarkNode(&src, model,
+                                                            profile_,
                                                             model_associator_);
       if (node) {
         bookmark_model_->SetNodeMetaInfo(node, kBookmarkTransactionVersionKey,
@@ -602,6 +605,7 @@ void BookmarkChangeProcessor::ApplyChangesFromSyncModel(
 const BookmarkNode* BookmarkChangeProcessor::CreateOrUpdateBookmarkNode(
     syncer::BaseNode* src,
     BookmarkModel* model,
+    Profile* profile,
     BookmarkModelAssociator* model_associator) {
   const BookmarkNode* parent =
       model_associator->GetChromeNodeFromSyncId(src->GetParentId());
@@ -618,7 +622,7 @@ const BookmarkNode* BookmarkChangeProcessor::CreateOrUpdateBookmarkNode(
   const BookmarkNode* dst = model_associator->GetChromeNodeFromSyncId(
       src->GetId());
   if (!dst) {
-    dst = CreateBookmarkNode(src, parent, model, index);
+    dst = CreateBookmarkNode(src, parent, model, profile, index);
     if (dst)
       model_associator->Associate(dst, src->GetId());
   } else {
@@ -639,7 +643,7 @@ const BookmarkNode* BookmarkChangeProcessor::CreateOrUpdateBookmarkNode(
                               specifics.creation_time_us()));
     }
 
-    SetBookmarkFavicon(src, dst, model);
+    SetBookmarkFavicon(src, dst, model, profile);
   }
 
   return dst;
@@ -667,6 +671,7 @@ const BookmarkNode* BookmarkChangeProcessor::CreateBookmarkNode(
     syncer::BaseNode* sync_node,
     const BookmarkNode* parent,
     BookmarkModel* model,
+    Profile* profile,
     int index) {
   DCHECK(parent);
   DCHECK(index >= 0 && index <= parent->child_count());
@@ -686,7 +691,7 @@ const BookmarkNode* BookmarkChangeProcessor::CreateBookmarkNode(
                                          UTF8ToUTF16(sync_node->GetTitle()),
                                          GURL(specifics.url()), create_time);
     if (node)
-      SetBookmarkFavicon(sync_node, node, model);
+      SetBookmarkFavicon(sync_node, node, model, profile);
   }
   return node;
 }
@@ -696,7 +701,8 @@ const BookmarkNode* BookmarkChangeProcessor::CreateBookmarkNode(
 bool BookmarkChangeProcessor::SetBookmarkFavicon(
     syncer::BaseNode* sync_node,
     const BookmarkNode* bookmark_node,
-    BookmarkModel* bookmark_model) {
+    BookmarkModel* bookmark_model,
+    Profile* profile) {
   const sync_pb::BookmarkSpecifics& specifics =
       sync_node->GetBookmarkSpecifics();
   const std::string& icon_bytes_str = specifics.favicon();
@@ -714,8 +720,7 @@ bool BookmarkChangeProcessor::SetBookmarkFavicon(
   if (icon_url.is_empty())
     icon_url = bookmark_node->url();
 
-  ApplyBookmarkFavicon(bookmark_node, bookmark_model->profile(), icon_url,
-                       icon_bytes);
+  ApplyBookmarkFavicon(bookmark_node, profile, icon_url, icon_bytes);
 
   return true;
 }

@@ -19,6 +19,7 @@
 
 class BookmarkModel;
 class BookmarkNode;
+class Profile;
 
 namespace syncer {
 class BaseNode;
@@ -41,6 +42,7 @@ class BookmarkModelAssociator
   // Should be set to true only by mobile clients.
   BookmarkModelAssociator(
       BookmarkModel* bookmark_model,
+      Profile* profile_,
       syncer::UserShare* user_share,
       DataTypeErrorHandler* unrecoverable_error_handler,
       bool expect_mobile_bookmarks_folder);
@@ -142,6 +144,7 @@ class BookmarkModelAssociator
   void CheckModelSyncState() const;
 
   BookmarkModel* bookmark_model_;
+  Profile* profile_;
   syncer::UserShare* user_share_;
   DataTypeErrorHandler* unrecoverable_error_handler_;
   const bool expect_mobile_bookmarks_folder_;

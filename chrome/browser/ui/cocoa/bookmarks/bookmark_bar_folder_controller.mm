@@ -235,13 +235,16 @@ struct LayoutMetrics {
 
 - (id)initWithParentButton:(BookmarkButton*)button
           parentController:(BookmarkBarFolderController*)parentController
-             barController:(BookmarkBarController*)barController {
+             barController:(BookmarkBarController*)barController
+                   profile:(Profile*)profile {
   NSString* nibPath =
       [base::mac::FrameworkBundle() pathForResource:@"BookmarkBarFolderWindow"
                                              ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibPath owner:self])) {
     parentButton_.reset([button retain]);
     selectedIndex_ = -1;
+
+    profile_ = profile;
 
     // We want the button to remain bordered as part of the menu path.
     [button forceButtonBorderToStayOnAlways:YES];
@@ -1462,10 +1465,8 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 - (std::vector<const BookmarkNode*>)retrieveBookmarkNodeData {
   std::vector<const BookmarkNode*> dragDataNodes;
   BookmarkNodeData dragData;
-  if(dragData.ReadFromDragClipboard()) {
-    BookmarkModel* bookmarkModel = [self bookmarkModel];
-    Profile* profile = bookmarkModel->profile();
-    std::vector<const BookmarkNode*> nodes(dragData.GetNodes(profile));
+  if (dragData.ReadFromDragClipboard()) {
+    std::vector<const BookmarkNode*> nodes(dragData.GetNodes(profile_));
     dragDataNodes.assign(nodes.begin(), nodes.end());
   }
   return dragDataNodes;
@@ -1731,7 +1732,8 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   folderController_ =
       [[BookmarkBarFolderController alloc] initWithParentButton:parentButton
                                                parentController:self
-                                                  barController:barController_];
+                                                  barController:barController_
+                                                        profile:profile_];
   [folderController_ showWindow:self];
 }
 

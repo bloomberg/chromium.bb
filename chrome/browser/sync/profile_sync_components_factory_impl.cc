@@ -384,6 +384,7 @@ ProfileSyncComponentsFactory::SyncComponents
 #endif
   BookmarkModelAssociator* model_associator =
       new BookmarkModelAssociator(bookmark_model,
+                                  profile_sync_service->profile(),
                                   user_share,
                                   error_handler,
                                   kExpectMobileBookmarksFolder);

@@ -209,7 +209,8 @@ class BookmarkBarFolderControllerTest : public CocoaProfileTest {
       [[BookmarkBarFolderControllerPong alloc]
                initWithParentButton:parentButton
                    parentController:nil
-                      barController:bar_];
+                      barController:bar_
+                            profile:profile()];
     [c window];  // Force nib load.
     return c;
   }
@@ -267,7 +268,8 @@ TEST_F(BookmarkBarFolderControllerTest, BasicPosition) {
   bbfc.reset([[BookmarkBarFolderController alloc]
                initWithParentButton:parentButton
                    parentController:nil
-                      barController:bar_]);
+                      barController:bar_
+                            profile:profile()]);
   [bbfc window];
   NSPoint pt = [bbfc windowTopLeftForWidth:0 height:100];  // screen coords
   NSPoint buttonOriginInWindow =
@@ -291,7 +293,8 @@ TEST_F(BookmarkBarFolderControllerTest, BasicPosition) {
   bbfc2.reset([[BookmarkBarFolderController alloc]
                 initWithParentButton:[[bbfc buttons] objectAtIndex:0]
                     parentController:bbfc.get()
-                       barController:bar_]);
+                       barController:bar_
+                             profile:profile()]);
   [bbfc2 window];
   pt = [bbfc2 windowTopLeftForWidth:0 height:100];
   // We're now overlapping the window a bit.
@@ -327,7 +330,8 @@ TEST_F(BookmarkBarFolderControllerTest, PositionRightLeftRight) {
         [[BookmarkBarFolderControllerNoLevel alloc]
           initWithParentButton:parentButton
               parentController:parentController
-                 barController:bar_];
+                 barController:bar_
+                       profile:profile()];
     [folder_controller_array addObject:bbfcl];
     [bbfcl autorelease];
     [bbfcl window];
@@ -1316,10 +1320,12 @@ TEST_F(BookmarkBarFolderControllerMenuTest, HoverThenDeleteBookmark) {
 
 - (id)initWithParentButton:(BookmarkButton*)button
           parentController:(BookmarkBarFolderController*)parentController
-             barController:(BookmarkBarController*)barController {
+             barController:(BookmarkBarController*)barController
+                   profile:(Profile*)profile {
   if ((self = [super initWithParentButton:button
                          parentController:parentController
-                            barController:barController])) {
+                            barController:barController
+                                  profile:profile])) {
     dragDataNode_ = NULL;
   }
   return self;
@@ -1362,7 +1368,8 @@ TEST_F(BookmarkBarFolderControllerMenuTest, DragBookmarkData) {
   folderController.reset([[BookmarkBarFolderControllerDragData alloc]
                           initWithParentButton:button
                               parentController:nil
-                                 barController:bar_]);
+                                 barController:bar_
+                                       profile:profile()]);
   BookmarkButton* targetButton =
       [folderController buttonWithTitleEqualTo:@"2f1b"];
   ASSERT_TRUE(targetButton);
@@ -1420,7 +1427,8 @@ TEST_F(BookmarkBarFolderControllerMenuTest, DragBookmarkDataToTrash) {
   folderController.reset([[BookmarkBarFolderControllerDragData alloc]
                           initWithParentButton:button
                               parentController:nil
-                                 barController:bar_]);
+                                 barController:bar_
+                                       profile:profile()]);
 
   // Drag a button to the trash.
   BookmarkButton* buttonToDelete =

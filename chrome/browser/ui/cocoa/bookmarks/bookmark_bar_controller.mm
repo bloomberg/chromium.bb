@@ -2367,10 +2367,9 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 - (std::vector<const BookmarkNode*>)retrieveBookmarkNodeData {
   std::vector<const BookmarkNode*> dragDataNodes;
   BookmarkNodeData dragData;
-  if(dragData.ReadFromDragClipboard()) {
-    BookmarkModel* bookmarkModel = [self bookmarkModel];
-    Profile* profile = bookmarkModel->profile();
-    std::vector<const BookmarkNode*> nodes(dragData.GetNodes(profile));
+  if (dragData.ReadFromDragClipboard()) {
+    std::vector<const BookmarkNode*> nodes(
+        dragData.GetNodes(browser_->profile()));
     dragDataNodes.assign(nodes.begin(), nodes.end());
   }
   return dragDataNodes;
@@ -2464,9 +2463,11 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 
   // Folder controller, like many window controllers, owns itself.
   folderController_ =
-      [[BookmarkBarFolderController alloc] initWithParentButton:parentButton
-                                               parentController:nil
-                                                  barController:self];
+      [[BookmarkBarFolderController alloc]
+          initWithParentButton:parentButton
+              parentController:nil
+                 barController:self
+                       profile:browser_->profile()];
   [folderController_ showWindow:self];
 
   // Only BookmarkBarController has this; the

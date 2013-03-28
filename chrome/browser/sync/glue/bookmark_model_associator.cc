@@ -191,10 +191,12 @@ const BookmarkNode* BookmarkNodeIdIndex::Find(int64 id) const {
 
 BookmarkModelAssociator::BookmarkModelAssociator(
     BookmarkModel* bookmark_model,
+    Profile* profile,
     syncer::UserShare* user_share,
     DataTypeErrorHandler* unrecoverable_error_handler,
     bool expect_mobile_bookmarks_folder)
     : bookmark_model_(bookmark_model),
+      profile_(profile),
       user_share_(user_share),
       unrecoverable_error_handler_(unrecoverable_error_handler),
       expect_mobile_bookmarks_folder_(expect_mobile_bookmarks_folder),
@@ -501,6 +503,7 @@ syncer::SyncError BookmarkModelAssociator::BuildAssociations(
           BookmarkChangeProcessor::CreateOrUpdateBookmarkNode(
               &sync_child_node,
               bookmark_model_,
+              profile_,
               this);
       if (new_child_node != child_node) {
         local_merge_result->set_num_items_added(

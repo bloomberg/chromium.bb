@@ -11,6 +11,8 @@
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_button.h"
 #import "ui/base/cocoa/tracking_area.h"
 
+class Profile;
+
 @class BookmarkBarController;
 @class BookmarkBarFolderView;
 @class BookmarkBarFolderHoverState;
@@ -139,12 +141,15 @@
 
   int selectedIndex_;
   NSString* typedPrefix_;
+
+  Profile* profile_;
 }
 
 // Designated initializer.
 - (id)initWithParentButton:(BookmarkButton*)button
           parentController:(BookmarkBarFolderController*)parentController
-             barController:(BookmarkBarController*)barController;
+             barController:(BookmarkBarController*)barController
+                   profile:(Profile*)profile;
 
 // Return the parent button that owns the bookmark folder we represent.
 - (BookmarkButton*)parentButton;

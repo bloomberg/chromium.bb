@@ -73,6 +73,7 @@ class BookmarkChangeProcessor : public BookmarkModelObserver,
   static const BookmarkNode* CreateOrUpdateBookmarkNode(
       syncer::BaseNode* src,
       BookmarkModel* model,
+      Profile* profile,
       BookmarkModelAssociator* model_associator);
 
   // The following methods are static and hence may be invoked at any time,
@@ -83,6 +84,7 @@ class BookmarkChangeProcessor : public BookmarkModelObserver,
       syncer::BaseNode* sync_node,
       const BookmarkNode* parent,
       BookmarkModel* model,
+      Profile* profile,
       int index);
 
   // Sets the favicon of the given bookmark node from the given sync node.
@@ -91,7 +93,8 @@ class BookmarkChangeProcessor : public BookmarkModelObserver,
   // for the bookmark in question.
   static bool SetBookmarkFavicon(syncer::BaseNode* sync_node,
                                  const BookmarkNode* bookmark_node,
-                                 BookmarkModel* model);
+                                 BookmarkModel* model,
+                                 Profile* profile);
 
   // Applies the 1x favicon |bitmap_data| and |icon_url| to |bookmark_node|.
   // |profile| is the profile that contains the HistoryService and BookmarkModel
@@ -181,6 +184,8 @@ class BookmarkChangeProcessor : public BookmarkModelObserver,
   // The bookmark model we are processing changes from.  Non-NULL when
   // |running_| is true.
   BookmarkModel* bookmark_model_;
+
+  Profile* profile_;
 
   // The two models should be associated according to this ModelAssociator.
   BookmarkModelAssociator* model_associator_;

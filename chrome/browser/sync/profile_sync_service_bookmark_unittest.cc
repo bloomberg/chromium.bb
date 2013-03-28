@@ -382,6 +382,7 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
     // Set up model associator.
     model_associator_.reset(new BookmarkModelAssociator(
         BookmarkModelFactory::GetForProfile(&profile_),
+        &profile_,
         test_user_share_.user_share(),
         &mock_error_handler_,
         kExpectMobileBookmarks));
