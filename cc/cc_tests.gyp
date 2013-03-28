@@ -36,6 +36,7 @@
       'trees/layer_tree_host_unittest_delegated.cc',
       'trees/layer_tree_host_unittest_occlusion.cc',
       'trees/layer_tree_host_unittest_scroll.cc',
+      'trees/layer_tree_host_unittest_video.cc',
       'layers/layer_unittest.cc',
       'base/math_util_unittest.cc',
       'layers/nine_patch_layer_impl_unittest.cc',

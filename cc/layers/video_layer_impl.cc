@@ -465,6 +465,7 @@ void VideoLayerImpl::DidLoseOutputSurface() {
 }
 
 void VideoLayerImpl::SetNeedsRedraw() {
+  set_update_rect(gfx::UnionRects(update_rect(), gfx::RectF(bounds())));
   layer_tree_impl()->SetNeedsRedraw();
 }
 

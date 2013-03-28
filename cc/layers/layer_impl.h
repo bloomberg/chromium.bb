@@ -332,6 +332,7 @@ class CC_EXPORT LayerImpl : LayerAnimationValueObserver {
   bool TransformIsAnimating() const;
   bool TransformIsAnimatingOnImplOnly() const;
 
+  // Note this rect is in layer space (not content space).
   void set_update_rect(const gfx::RectF& update_rect) {
     update_rect_ = update_rect;
   }
