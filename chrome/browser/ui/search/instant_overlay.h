@@ -67,10 +67,6 @@ class InstantOverlay : public InstantPage,
   // to the history service had this WebContents not been used for Instant.
   void DidNavigate(const history::HistoryAddPageArgs& add_page_args);
 
-  // Returns true if the overlay is using
-  // InstantController::kLocalOmniboxPopupURL as the |instant_url_|.
-  bool IsUsingLocalOverlay() const;
-
   // Overridden from InstantPage:
   virtual void Update(const string16& text,
                       size_t selection_start,

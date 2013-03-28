@@ -105,6 +105,10 @@ GURL GetInstantURL(Profile* profile, int start_margin);
 // lead to an infinite recursion.
 bool IsInstantEnabled(Profile* profile);
 
+// Returns true if the aggressive local NTP fallback is enabled in field
+// trials.
+bool IsAggressiveLocalNTPFallbackEnabled();
+
 // -----------------------------------------------------
 // The following APIs are exposed for use in tests only.
 // -----------------------------------------------------

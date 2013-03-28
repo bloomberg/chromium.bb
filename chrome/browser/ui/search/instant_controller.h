@@ -272,14 +272,15 @@ class InstantController : public InstantPage::Delegate,
   void OmniboxLostFocus(gfx::NativeView view_gaining_focus);
 
   // Creates a new NTP, using the instant_url property of the default
-  // TemplateURL.
-  void ResetNTP(bool ignore_blacklist);
+  // TemplateURL, or chrome::kChromeSearchLocalNTPURL if |use_local_ntp| is
+  // true. For |ignore_blacklist| look at comments in GetInstantURL().
+  void ResetNTP(bool ignore_blacklist, bool use_local_ntp);
 
   // Ensures that |overlay_| uses the Instant URL returned by GetInstantURL(),
   // creating a new overlay if necessary. In extended mode, will fallback to
   // using the kLocalOmniboxPopupURL as the Instant URL in case GetInstantURL()
   // returns false. Returns true if an Instant URL could be determined.
-  // For |ignore_blacklist| look at comments in |GetInstantURL|.
+  // For |ignore_blacklist| look at comments in GetInstantURL().
   bool EnsureOverlayIsCurrent(bool ignore_blacklist);
 
   // Recreates the |overlay_| with |instant_url|. Note that |overlay_| is
@@ -361,6 +362,15 @@ class InstantController : public InstantPage::Delegate,
   // true if successful. (Note that |suggestion| may be modified even if this
   // returns false.)
   bool FixSuggestion(InstantSuggestion* suggestion) const;
+
+  // Returns true if we should use |instant_tab_| instead of |overlay_| for
+  // handling suggestions.
+  // TODO(samarth|sreeram): this is brittle. Instead, we should probably just
+  // combine the two local pages into one.
+  bool UseInstantTabToShowSuggestions() const;
+
+  // Returns true if we should switch to using the local NTP.
+  bool ShouldSwitchToLocalNTP() const;
 
   BrowserInstantController* const browser_;
 

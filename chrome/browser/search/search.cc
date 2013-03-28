@@ -55,6 +55,9 @@ const char kInstantExtendedActivationName[] = "instant";
 const InstantExtendedDefault kInstantExtendedActivationDefault =
     INSTANT_DEFAULT_ON;
 
+// Key for specifying local NTP beahvior trials.
+const char kLocalNTPFlagName[] = "local_ntp";
+
 // Constants for the field trial name and group prefix.
 const char kInstantExtendedFieldTrialName[] = "InstantExtended";
 const char kGroupNumberPrefix[] = "Group";
@@ -445,6 +448,24 @@ GURL GetInstantURL(Profile* profile, int start_margin) {
 
 bool IsInstantEnabled(Profile* profile) {
   return GetInstantURL(profile, kDisableStartMargin).is_valid();
+}
+
+bool IsAggressiveLocalNTPFallbackEnabled() {
+  // Check the command-line/about:flags setting first, which should have
+  // precedence and allows the trial to not be reported (if it's never queried).
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kDisableInstantExtendedAPI) ||
+      command_line->HasSwitch(switches::kEnableInstantExtendedAPI)) {
+    return false;
+  }
+
+  FieldTrialFlags flags;
+  if (GetFieldTrialInfo(
+          base::FieldTrialList::FindFullName(kInstantExtendedFieldTrialName),
+          &flags, NULL)) {
+    return GetBoolValueForFlagWithDefault(kLocalNTPFlagName, false, flags);
+  }
+  return false;
 }
 
 void EnableInstantExtendedAPIForTesting() {

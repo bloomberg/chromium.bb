@@ -6,6 +6,7 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/font.h"
@@ -14,6 +15,16 @@ InstantPage::Delegate::~Delegate() {
 }
 
 InstantPage::~InstantPage() {
+}
+
+bool InstantPage::IsLocalNTP() const {
+  return contents() &&
+      contents()->GetURL() == GURL(chrome::kChromeSearchLocalNtpUrl);
+}
+
+bool InstantPage::IsLocalOverlay() const {
+  return contents() &&
+      contents()->GetURL() == GURL(chrome::kChromeSearchLocalOmniboxPopupURL);
 }
 
 void InstantPage::Update(const string16& text,

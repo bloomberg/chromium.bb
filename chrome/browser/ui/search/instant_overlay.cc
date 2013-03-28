@@ -72,10 +72,6 @@ void InstantOverlay::DidNavigate(
   last_navigation_ = add_page_args;
 }
 
-bool InstantOverlay::IsUsingLocalOverlay() const {
-  return instant_url_ == chrome::kChromeSearchLocalOmniboxPopupURL;
-}
-
 void InstantOverlay::Update(const string16& text,
                             size_t selection_start,
                             size_t selection_end,
