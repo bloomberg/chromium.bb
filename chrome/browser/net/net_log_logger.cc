@@ -6,35 +6,23 @@
 
 #include <stdio.h>
 
-#include "base/file_util.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "chrome/browser/ui/webui/net_internals/net_internals_ui.h"
 
-NetLogLogger::NetLogLogger(const base::FilePath &log_path)
-    : added_events_(false) {
-  if (!log_path.empty()) {
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
-    FILE* fp = file_util::OpenFile(log_path, "w");
-    if (!fp) {
-      LOG(ERROR) << "Could not open file " << log_path.value()
-                 << " for net logging";
-      return;
-    }
-    file_.Set(fp);
+NetLogLogger::NetLogLogger(FILE* file) : file_(file), added_events_(false) {
+  DCHECK(file);
 
-    // Write constants to the output file.  This allows loading files that have
-    // different source and event types, as they may be added and removed
-    // between Chrome versions.
-    scoped_ptr<Value> value(NetInternalsUI::GetConstants());
-    std::string json;
-    base::JSONWriter::Write(value.get(), &json);
-    fprintf(file_.get(), "{\"constants\": %s,\n", json.c_str());
-    fprintf(file_.get(), "\"events\": [\n");
-  }
+  // Write constants to the output file.  This allows loading files that have
+  // different source and event types, as they may be added and removed
+  // between Chrome versions.
+  scoped_ptr<Value> value(NetInternalsUI::GetConstants());
+  std::string json;
+  base::JSONWriter::Write(value.get(), &json);
+  fprintf(file_.get(), "{\"constants\": %s,\n", json.c_str());
+  fprintf(file_.get(), "\"events\": [\n");
 }
 
 NetLogLogger::~NetLogLogger() {
@@ -51,20 +39,14 @@ void NetLogLogger::StopObserving() {
 }
 
 void NetLogLogger::OnAddEntry(const net::NetLog::Entry& entry) {
+  // Add a comma and newline for every event but the first.  Newlines are needed
+  // so can load partial log files by just ignoring the last line.  For this to
+  // work, lines cannot be pretty printed.
   scoped_ptr<Value> value(entry.ToValue());
-  // Don't pretty print, so each JSON value occupies a single line, with no
-  // breaks (Line breaks in any text field will be escaped).  Using strings
-  // instead of integer identifiers allows logs from older versions to be
-  // loaded, though a little extra parsing has to be done when loading a log.
   std::string json;
   base::JSONWriter::Write(value.get(), &json);
-  if (!file_.get()) {
-    VLOG(1) << json;
-  } else {
-    // Add a comma and newline for every event but the first.
-    fprintf(file_.get(), "%s%s",
-            (added_events_ ? ",\n" : ""),
-            json.c_str());
-    added_events_ = true;
-  }
+  fprintf(file_.get(), "%s%s",
+          (added_events_ ? ",\n" : ""),
+          json.c_str());
+  added_events_ = true;
 }

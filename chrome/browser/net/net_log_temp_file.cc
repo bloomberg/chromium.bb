@@ -95,12 +95,11 @@ void NetLogTempFile::StartNetLog() {
   // Try to make sure we can create the file.
   // TODO(rtenneti): Find a better for doing the following. Surface some error
   // to the user if we couldn't create the file.
-  FILE* fp = file_util::OpenFile(log_path_, "w");
-  if (!fp)
+  FILE* file = file_util::OpenFile(log_path_, "w");
+  if (file == NULL)
     return;
-  file_util::CloseFile(fp);
 
-  net_log_logger_.reset(new NetLogLogger(log_path_));
+  net_log_logger_.reset(new NetLogLogger(file));
   net_log_logger_->StartObserving(chrome_net_log_);
   state_ = STATE_ALLOW_STOP;
 }

@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_NET_NET_LOG_LOGGER_H_
 #define CHROME_BROWSER_NET_NET_LOG_LOGGER_H_
 
+#include <stdio.h>
+
 #include "base/memory/scoped_handle.h"
 #include "net/base/net_log.h"
 
@@ -13,21 +15,19 @@ class FilePath;
 }
 
 // NetLogLogger watches the NetLog event stream, and sends all entries to
-// VLOG(1) or a path specified on creation.  This is to debug errors that
-// prevent getting to the about:net-internals page.
+// a file specified on creation.  This is to debug errors in cases where
+// about:net-internals doesn't work well (Mobile, startup / shutdown errors,
+// errors that prevent getting to the about:net-internals).
 //
-// When writing directly to a file rather than VLOG(1), the text file will
-// contain a single JSON object, with an extra comma on the end and missing
-// a terminal "]}".
+// The text file will contain a single JSON object.
 //
 // Relies on ChromeNetLog only calling an Observer once at a time for
 // thread-safety.
 class NetLogLogger : public net::NetLog::ThreadSafeObserver {
  public:
-  // If |log_path| is empty or file creation fails, writes to VLOG(1).
-  // Otherwise, writes to |log_path|.  Uses one line per entry, for
-  // easy parsing.
-  explicit NetLogLogger(const base::FilePath &log_path);
+  // Takes ownership of |file| and will write network events to it once logging
+  // starts.  |file| must be non-NULL handle and be open for writing.
+  explicit NetLogLogger(FILE* file);
   virtual ~NetLogLogger();
 
   // Starts observing specified NetLog.  Must not already be watching a NetLog.

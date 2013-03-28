@@ -12,7 +12,6 @@
 #include "net/base/net_log.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-
 class NetLogLoggerTest : public testing::Test {
  public:
   virtual void SetUp() {
@@ -25,11 +24,12 @@ class NetLogLoggerTest : public testing::Test {
   base::FilePath log_path_;
 };
 
-
 TEST_F(NetLogLoggerTest, GeneratesValidJSONForNoEvents) {
   {
     // Create and destroy a logger.
-    NetLogLogger logger(log_path_);
+    FILE* file = file_util::OpenFile(log_path_, "w");
+    ASSERT_TRUE(file);
+    NetLogLogger logger(file);
   }
 
   std::string input;
@@ -37,12 +37,20 @@ TEST_F(NetLogLoggerTest, GeneratesValidJSONForNoEvents) {
 
   base::JSONReader reader;
   scoped_ptr<base::Value> root(reader.ReadToValue(input));
-  EXPECT_TRUE(root.get()) << reader.GetErrorMessage();
+  ASSERT_TRUE(root) << reader.GetErrorMessage();
+
+  base::DictionaryValue* dict;
+  ASSERT_TRUE(root->GetAsDictionary(&dict));
+  base::ListValue* events;
+  ASSERT_TRUE(dict->GetList("events", &events));
+  ASSERT_EQ(0u, events->GetSize());
 }
 
 TEST_F(NetLogLoggerTest, GeneratesValidJSONWithOneEvent) {
   {
-    NetLogLogger logger(log_path_);
+    FILE* file = file_util::OpenFile(log_path_, "w");
+    ASSERT_TRUE(file);
+    NetLogLogger logger(file);
 
     const int kDummyId = 1;
     net::NetLog::Source source(net::NetLog::SOURCE_SPDY_SESSION, kDummyId);
@@ -60,12 +68,20 @@ TEST_F(NetLogLoggerTest, GeneratesValidJSONWithOneEvent) {
 
   base::JSONReader reader;
   scoped_ptr<base::Value> root(reader.ReadToValue(input));
-  EXPECT_TRUE(root.get()) << reader.GetErrorMessage();
+  ASSERT_TRUE(root) << reader.GetErrorMessage();
+
+  base::DictionaryValue* dict;
+  ASSERT_TRUE(root->GetAsDictionary(&dict));
+  base::ListValue* events;
+  ASSERT_TRUE(dict->GetList("events", &events));
+  ASSERT_EQ(1u, events->GetSize());
 }
 
 TEST_F(NetLogLoggerTest, GeneratesValidJSONWithMultipleEvents) {
   {
-    NetLogLogger logger(log_path_);
+    FILE* file = file_util::OpenFile(log_path_, "w");
+    ASSERT_TRUE(file);
+    NetLogLogger logger(file);
 
     const int kDummyId = 1;
     net::NetLog::Source source(net::NetLog::SOURCE_SPDY_SESSION, kDummyId);
@@ -86,5 +102,11 @@ TEST_F(NetLogLoggerTest, GeneratesValidJSONWithMultipleEvents) {
 
   base::JSONReader reader;
   scoped_ptr<base::Value> root(reader.ReadToValue(input));
-  EXPECT_TRUE(root.get()) << reader.GetErrorMessage();
+  ASSERT_TRUE(root) << reader.GetErrorMessage();
+
+  base::DictionaryValue* dict;
+  ASSERT_TRUE(root->GetAsDictionary(&dict));
+  base::ListValue* events;
+  ASSERT_TRUE(dict->GetList("events", &events));
+  ASSERT_EQ(2u, events->GetSize());
 }

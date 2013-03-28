@@ -4,6 +4,8 @@
 
 #include "chrome/browser/net/chrome_net_log.h"
 
+#include <stdio.h>
+
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/logging.h"
@@ -35,9 +37,28 @@ ChromeNetLog::ChromeNetLog()
   }
 
   if (command_line->HasSwitch(switches::kLogNetLog)) {
-    net_log_logger_.reset(new NetLogLogger(
-        command_line->GetSwitchValuePath(switches::kLogNetLog)));
-    net_log_logger_->StartObserving(this);
+    base::FilePath log_path =
+        command_line->GetSwitchValuePath(switches::kLogNetLog);
+    // Much like logging.h, bypass threading restrictions by using fopen
+    // directly.  Have to write on a thread that's shutdown to handle events on
+    // shutdown properly, and posting events to another thread as they occur
+    // would result in an unbounded buffer size, so not much can be gained by
+    // doing this on another thread.  It's only used when debugging Chrome, so
+    // performance is not a big concern.
+    FILE* file = NULL;
+#if defined(OS_WIN)
+    file = _wfopen(log_path.value().c_str(), L"w");
+#elif defined(OS_POSIX)
+    file = fopen(log_path.value().c_str(), "w");
+#endif
+
+    if (file == NULL) {
+      LOG(ERROR) << "Could not open file " << log_path.value()
+                 << " for net logging";
+    } else {
+      net_log_logger_.reset(new NetLogLogger(file));
+      net_log_logger_->StartObserving(this);
+    }
   }
 }
 
