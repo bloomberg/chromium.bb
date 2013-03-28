@@ -333,7 +333,7 @@ int EvdevWriteEventToFile(FILE* fp, const struct input_event* ev) {
 int EvdevReadInfoFromFile(FILE* fp, EvdevInfoPtr info) {
   int ret;
 
-  ret = fscanf(fp, "# device: %1024s\n", info->name);
+  ret = fscanf(fp, "# device: %1024[^\n]\n", info->name);
   if (ret <= 0)
     return ret;
 
