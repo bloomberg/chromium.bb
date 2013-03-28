@@ -1,6 +1,7 @@
 # Generated files
 *.pyc
 *~
+*.swp
 buildbot/cbuildbot.log
 buildbot/revisions.pfq
 .project
