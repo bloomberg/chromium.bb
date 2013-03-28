@@ -133,8 +133,9 @@ const char* const kDefaultSupportedLanguages[] = {
 };
 
 const char* const kTranslateScriptURL =
-    "https://translate.google.com/translate_a/element.js?"
-    "cb=cr.googleTranslate.onTranslateElementLoad&hl=%s";
+    "https://translate.google.com/translate_a/element.js";
+const char* const kTranslateScriptQuery =
+    "?cb=cr.googleTranslate.onTranslateElementLoad&hl=%s";
 const char* const kTranslateScriptHeader =
     "Google-Translate-Element-Mode: library";
 const char* const kReportLanguageDetectionErrorURL =
@@ -800,8 +801,29 @@ void TranslateManager::RequestTranslateScript() {
   if (translate_script_request_pending_.get() != NULL)
     return;
 
-  GURL translate_script_url = GURL(base::StringPrintf(
-      kTranslateScriptURL,
+  GURL translate_script_url;
+  std::string translate_script;
+  // Check if command-line contains an alternative URL for translate service.
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kTranslateScriptURL)) {
+    translate_script = std::string(
+        command_line.GetSwitchValueASCII(switches::kTranslateScriptURL));
+    translate_script_url = GURL(translate_script.c_str());
+    if (!translate_script_url.is_valid() ||
+        !translate_script_url.query().empty()) {
+      LOG(WARNING) << "The following translate URL specified at the "
+                   << "command-line is invalid: " << translate_script;
+      translate_script.clear();
+    }
+  }
+  // Use default URL when command-line argument is not specified, or specified
+  // URL is invalid.
+  if (translate_script.empty())
+    translate_script = std::string(kTranslateScriptURL);
+
+  translate_script += std::string(kTranslateScriptQuery);
+  translate_script_url = GURL(base::StringPrintf(
+      translate_script.c_str(),
       GetLanguageCode(g_browser_process->GetApplicationLocale()).c_str()));
   AddApiKeyToUrl(&translate_script_url);
   translate_script_request_pending_.reset(net::URLFetcher::Create(
