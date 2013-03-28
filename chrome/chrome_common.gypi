@@ -250,6 +250,8 @@
         'common/extensions/manifest_handler_helpers.h',
         'common/extensions/manifest_handlers/content_scripts_handler.cc',
         'common/extensions/manifest_handlers/content_scripts_handler.h',
+        'common/extensions/manifest_handlers/offline_enabled_info.cc',
+        'common/extensions/manifest_handlers/offline_enabled_info.h',
         'common/extensions/manifest_handlers/requirements_handler.cc',
         'common/extensions/manifest_handlers/requirements_handler.h',
         'common/extensions/manifest_handlers/sandboxed_page_info.cc',

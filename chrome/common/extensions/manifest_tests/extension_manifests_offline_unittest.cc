@@ -5,10 +5,9 @@
 #include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
+#include "chrome/common/extensions/manifest_handlers/offline_enabled_info.h"
 #include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using extensions::Extension;
 
 namespace errors = extension_manifest_errors;
 
@@ -17,6 +16,7 @@ namespace extensions {
 class ExtensionManifestOfflineEnabledTest : public ExtensionManifestTest {
   virtual void SetUp() OVERRIDE {
     ExtensionManifestTest::SetUp();
+    (new OfflineEnabledHandler)->Register();
     (new BackgroundManifestHandler)->Register();
   }
 };
@@ -26,22 +26,22 @@ TEST_F(ExtensionManifestOfflineEnabledTest, OfflineEnabled) {
                      errors::kInvalidOfflineEnabled);
   scoped_refptr<Extension> extension_0(
       LoadAndExpectSuccess("offline_enabled_extension.json"));
-  EXPECT_TRUE(extension_0->offline_enabled());
+  EXPECT_TRUE(OfflineEnabledInfo::IsOfflineEnabled(extension_0));
   scoped_refptr<Extension> extension_1(
       LoadAndExpectSuccess("offline_enabled_packaged_app.json"));
-  EXPECT_TRUE(extension_1->offline_enabled());
+  EXPECT_TRUE(OfflineEnabledInfo::IsOfflineEnabled(extension_1));
   scoped_refptr<Extension> extension_2(
       LoadAndExpectSuccess("offline_disabled_packaged_app.json"));
-  EXPECT_FALSE(extension_2->offline_enabled());
+  EXPECT_FALSE(OfflineEnabledInfo::IsOfflineEnabled(extension_2));
   scoped_refptr<Extension> extension_3(
       LoadAndExpectSuccess("offline_default_packaged_app.json"));
-  EXPECT_FALSE(extension_3->offline_enabled());
+  EXPECT_FALSE(OfflineEnabledInfo::IsOfflineEnabled(extension_3));
   scoped_refptr<Extension> extension_4(
       LoadAndExpectSuccess("offline_enabled_hosted_app.json"));
-  EXPECT_TRUE(extension_4->offline_enabled());
+  EXPECT_TRUE(OfflineEnabledInfo::IsOfflineEnabled(extension_4));
   scoped_refptr<Extension> extension_5(
       LoadAndExpectSuccess("offline_default_platform_app.json"));
-  EXPECT_TRUE(extension_5->offline_enabled());
+  EXPECT_TRUE(OfflineEnabledInfo::IsOfflineEnabled(extension_5));
 }
 
 }  // namespace extensions

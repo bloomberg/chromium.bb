@@ -31,6 +31,7 @@
 #include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/incognito_handler.h"
+#include "chrome/common/extensions/manifest_handlers/offline_enabled_info.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
@@ -44,14 +45,12 @@
 #include "ui/base/l10n/l10n_util.h"
 
 using content::RenderViewHost;
-using extensions::DeveloperPrivateAPI;
-using extensions::Extension;
-using extensions::ExtensionSystem;
-using extensions::ManagementPolicy;
+
+namespace extensions {
 
 namespace {
 
-extensions::ExtensionUpdater* GetExtensionUpdater(Profile* profile) {
+ExtensionUpdater* GetExtensionUpdater(Profile* profile) {
     return profile->GetExtensionService()->updater();
 }
 
@@ -68,10 +67,7 @@ GURL ToDataURL(const base::FilePath& path) {
   return GURL(kDataURLPrefix + contents_base64);
 }
 
-
 }  // namespace
-
-namespace extensions {
 
 namespace AllowFileAccess = api::developer_private::AllowFileAccess;
 namespace AllowIncognito = api::developer_private::AllowIncognito;
@@ -88,8 +84,7 @@ DeveloperPrivateAPI* DeveloperPrivateAPI::Get(Profile* profile) {
 }
 
 DeveloperPrivateAPI::DeveloperPrivateAPI(Profile* profile) {
-
-      RegisterNotifications();
+  RegisterNotifications();
 }
 
 
@@ -124,9 +119,9 @@ void DeveloperPrivateAPI::Shutdown() {}
 namespace api {
 
 bool DeveloperPrivateAutoUpdateFunction::RunImpl() {
-  extensions::ExtensionUpdater* updater = GetExtensionUpdater(profile());
+  ExtensionUpdater* updater = GetExtensionUpdater(profile());
   if (updater)
-    updater->CheckNow(extensions::ExtensionUpdater::CheckParams());
+    updater->CheckNow(ExtensionUpdater::CheckParams());
   SetResult(Value::CreateBooleanValue(true));
   return true;
 }
@@ -145,7 +140,7 @@ scoped_ptr<developer::ItemInfo>
   info->id = item.id();
   info->name = item.name();
   info->enabled = service->IsExtensionEnabled(info->id);
-  info->offline_enabled = item.offline_enabled();
+  info->offline_enabled = OfflineEnabledInfo::IsOfflineEnabled(&item);
   info->version = item.VersionString();
   info->description = item.description();
 
@@ -166,7 +161,7 @@ scoped_ptr<developer::ItemInfo>
     NOTREACHED();
   }
 
-  if (extensions::Manifest::IsUnpackedLocation(item.location())) {
+  if (Manifest::IsUnpackedLocation(item.location())) {
     info->path.reset(
         new std::string(UTF16ToUTF8(item.path().LossyDisplayName())));
   }
@@ -174,14 +169,13 @@ scoped_ptr<developer::ItemInfo>
   info->incognito_enabled = service->IsIncognitoEnabled(item.id());
   info->wants_file_access = item.wants_file_access();
   info->allow_file_access = service->AllowFileAccess(&item);
-  info->allow_reload =
-      extensions::Manifest::IsUnpackedLocation(item.location());
-  info->is_unpacked = extensions::Manifest::IsUnpackedLocation(item.location());
+  info->allow_reload = Manifest::IsUnpackedLocation(item.location());
+  info->is_unpacked = Manifest::IsUnpackedLocation(item.location());
   info->terminated = service->terminated_extensions()->Contains(item.id());
   info->allow_incognito = item.can_be_incognito_enabled();
 
   info->homepage_url.reset(new std::string(
-      extensions::ManifestURL::GetHomepageURL(&item).spec()));
+      ManifestURL::GetHomepageURL(&item).spec()));
   if (!ManifestURL::GetOptionsPage(&item).is_empty()) {
     info->options_url.reset(
         new std::string(ManifestURL::GetOptionsPage(&item).spec()));
@@ -250,16 +244,15 @@ void DeveloperPrivateGetItemsInfoFunction::
 
 void DeveloperPrivateGetItemsInfoFunction::
     GetShellWindowPagesForExtensionProfile(
-        const extensions::Extension* extension,
+        const Extension* extension,
         ItemInspectViewList* result) {
-  extensions::ShellWindowRegistry* registry =
-      extensions::ShellWindowRegistry::Get(profile());
+  ShellWindowRegistry* registry = ShellWindowRegistry::Get(profile());
   if (!registry) return;
 
-  const extensions::ShellWindowRegistry::ShellWindowSet windows =
+  const ShellWindowRegistry::ShellWindowSet windows =
       registry->GetShellWindowsForApp(extension->id());
 
-  for (extensions::ShellWindowRegistry::const_iterator it = windows.begin();
+  for (ShellWindowRegistry::const_iterator it = windows.begin();
        it != windows.end(); ++it) {
     content::WebContents* web_contents = (*it)->web_contents();
     RenderViewHost* host = web_contents->GetRenderViewHost();
@@ -280,7 +273,7 @@ linked_ptr<developer::ItemInspectView> DeveloperPrivateGetItemsInfoFunction::
         bool incognito) {
   linked_ptr<developer::ItemInspectView> view(new developer::ItemInspectView());
 
-  if (url.scheme() == extensions::kExtensionScheme) {
+  if (url.scheme() == kExtensionScheme) {
     // No leading slash.
     view->path = url.path().substr(1);
   } else {
@@ -296,7 +289,7 @@ linked_ptr<developer::ItemInspectView> DeveloperPrivateGetItemsInfoFunction::
 
 ItemInspectViewList DeveloperPrivateGetItemsInfoFunction::
     GetInspectablePagesForExtension(
-        const extensions::Extension* extension,
+        const Extension* extension,
         bool extension_is_enabled) {
 
   ItemInspectViewList result;
@@ -370,9 +363,9 @@ bool DeveloperPrivateGetItemsInfoFunction::RunImpl() {
     const Extension& item = **iter;
 
     ExtensionResource item_resource =
-        extensions::IconsInfo::GetIconResource(&item,
-                                               48,
-                                               ExtensionIconSet::MATCH_BIGGER);
+        IconsInfo::GetIconResource(&item,
+                                   48,
+                                   ExtensionIconSet::MATCH_BIGGER);
     id_to_icon[item.id()] = item_resource;
 
     if (item.location() == Manifest::COMPONENT)
@@ -399,8 +392,7 @@ bool DeveloperPrivateAllowFileAccessFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(user_gesture_);
 
   ExtensionSystem* system = ExtensionSystem::Get(profile());
-  extensions::ManagementPolicy* management_policy =
-      system->management_policy();
+  ManagementPolicy* management_policy = system->management_policy();
   ExtensionService* service = profile()->GetExtensionService();
   const Extension* extension = service->GetInstalledExtension(params->item_id);
   bool result = true;
@@ -477,8 +469,7 @@ bool DeveloperPrivateEnableFunction::RunImpl() {
   std::string extension_id = params->item_id;
 
   ExtensionSystem* system = ExtensionSystem::Get(profile());
-  extensions::ManagementPolicy* management_policy =
-      system->management_policy();
+  ManagementPolicy* management_policy = system->management_policy();
   ExtensionService* service = profile()->GetExtensionService();
 
   const Extension* extension = service->GetInstalledExtension(extension_id);
@@ -490,7 +481,7 @@ bool DeveloperPrivateEnableFunction::RunImpl() {
   }
 
   if (params->enable) {
-    extensions::ExtensionPrefs* prefs = service->extension_prefs();
+    ExtensionPrefs* prefs = service->extension_prefs();
     if (prefs->DidExtensionEscalatePermissions(extension_id)) {
       ShellWindowRegistry* registry = ShellWindowRegistry::Get(profile());
       CHECK(registry);
@@ -500,8 +491,8 @@ bool DeveloperPrivateEnableFunction::RunImpl() {
         return false;
       }
 
-      extensions::ShowExtensionDisabledDialog(
-      service, shell_window->web_contents(), extension);
+      ShowExtensionDisabledDialog(
+          service, shell_window->web_contents(), extension);
     } else if ((prefs->GetDisableReasons(extension_id) &
                   Extension::DISABLE_UNSUPPORTED_REQUIREMENT) &&
                !requirements_checker_.get()) {
@@ -509,7 +500,7 @@ bool DeveloperPrivateEnableFunction::RunImpl() {
       scoped_refptr<const Extension> extension =
           service->GetExtensionById(extension_id,
                                      true );// include_disabled
-      requirements_checker_.reset(new extensions::RequirementsChecker());
+      requirements_checker_.reset(new RequirementsChecker);
       // Released by OnRequirementsChecked.
       AddRef();
       requirements_checker_->Check(
@@ -558,7 +549,7 @@ bool DeveloperPrivateInspectFunction::RunImpl() {
     // or incognito background page.
     ExtensionService* service = profile()->GetExtensionService();
     if (options.incognito)
-      service = extensions::ExtensionSystem::Get(
+      service = ExtensionSystem::Get(
           service->profile()->GetOffTheRecordProfile())->extension_service();
     const Extension* extension = service->extensions()->GetByID(
         options.extension_id);
@@ -602,7 +593,7 @@ bool DeveloperPrivateLoadUnpackedFunction::RunImpl() {
 void DeveloperPrivateLoadUnpackedFunction::FileSelected(
     const base::FilePath& path) {
   ExtensionService* service = profile()->GetExtensionService();
-  extensions::UnpackedInstaller::Create(service)->Load(path);
+  UnpackedInstaller::Create(service)->Load(path);
   DeveloperPrivateAPI::Get(profile())->SetLastUnpackedDirectory(path);
   SendResponse(true);
   Release();
@@ -645,8 +636,7 @@ void DeveloperPrivatePackDirectoryFunction::OnPackSuccess(
     const base::FilePath& pem_file) {
   developer::PackDirectoryResponse response;
   response.message =
-      UTF16ToUTF8(extensions::PackExtensionJob::StandardSuccessMessage(
-          crx_file, pem_file));
+      UTF16ToUTF8(PackExtensionJob::StandardSuccessMessage(crx_file, pem_file));
   response.status = developer::PACK_STATUS_SUCCESS;
   results_ = developer::PackDirectory::Results::Create(response);
   SendResponse(true);
@@ -655,13 +645,13 @@ void DeveloperPrivatePackDirectoryFunction::OnPackSuccess(
 
 void DeveloperPrivatePackDirectoryFunction::OnPackFailure(
     const std::string& error,
-    extensions::ExtensionCreator::ErrorType error_type) {
+    ExtensionCreator::ErrorType error_type) {
   developer::PackDirectoryResponse response;
   response.message = error;
-  if (error_type == extensions::ExtensionCreator::kCRXExists) {
+  if (error_type == ExtensionCreator::kCRXExists) {
     response.item_path = item_path_str_;
     response.pem_path = key_path_str_;
-    response.override_flags = extensions::ExtensionCreator::kOverwriteCRX;
+    response.override_flags = ExtensionCreator::kOverwriteCRX;
     response.status = developer::PACK_STATUS_WARNING;
   } else {
     response.status = developer::PACK_STATUS_ERROR;
@@ -713,8 +703,7 @@ bool DeveloperPrivatePackDirectoryFunction::RunImpl() {
   // Balanced in OnPackSuccess / OnPackFailure.
   AddRef();
 
-  pack_job_ = new extensions::PackExtensionJob(
-      this, root_directory, key_file, flags);
+  pack_job_ = new PackExtensionJob(this, root_directory, key_file, flags);
   pack_job_->Start();
   return true;
 }

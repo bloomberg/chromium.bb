@@ -41,6 +41,7 @@
 #include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/manifest_handler.h"
 #include "chrome/common/extensions/manifest_handler_helpers.h"
+#include "chrome/common/extensions/manifest_handlers/offline_enabled_info.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/extensions/permissions/api_permission_set.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
@@ -262,7 +263,8 @@ void Extension::GetBasicInfo(bool enabled,
   info->SetString(info_keys::kNameKey, name());
   info->SetBoolean(info_keys::kEnabledKey, enabled);
   info->SetBoolean(info_keys::kKioskEnabledKey, kiosk_enabled());
-  info->SetBoolean(info_keys::kOfflineEnabledKey, offline_enabled());
+  info->SetBoolean(info_keys::kOfflineEnabledKey,
+                   OfflineEnabledInfo::IsOfflineEnabled(this));
   info->SetString(info_keys::kVersionKey, VersionString());
   info->SetString(info_keys::kDescriptionKey, description());
   info->SetString(info_keys::kOptionsUrlKey,
@@ -1118,7 +1120,6 @@ Extension::Extension(const base::FilePath& path,
                      scoped_ptr<extensions::Manifest> manifest)
     : manifest_version_(0),
       kiosk_enabled_(false),
-      offline_enabled_(false),
       converted_from_user_script_(false),
       manifest_(manifest.release()),
       finished_parsing_manifest_(false),
@@ -1578,8 +1579,7 @@ bool Extension::LoadSharedFeatures(string16* error) {
   if (!LoadDescription(error) ||
       !ManifestHandler::ParseExtension(this, error) ||
       !LoadNaClModules(error) ||
-      !LoadKioskEnabled(error) ||
-      !LoadOfflineEnabled(error))
+      !LoadKioskEnabled(error))
     return false;
 
   return true;
@@ -1673,19 +1673,6 @@ bool Extension::LoadKioskEnabled(string16* error) {
   // checks.
   DCHECK(is_platform_app());
 
-  return true;
-}
-
-bool Extension::LoadOfflineEnabled(string16* error) {
-  // Defaults to false, except for platform apps which are offline by default.
-  if (!manifest_->HasKey(keys::kOfflineEnabled)) {
-    offline_enabled_ = is_platform_app();
-    return true;
-  }
-  if (!manifest_->GetBoolean(keys::kOfflineEnabled, &offline_enabled_)) {
-    *error = ASCIIToUTF16(errors::kInvalidOfflineEnabled);
-    return false;
-  }
   return true;
 }
 
