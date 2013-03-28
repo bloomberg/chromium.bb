@@ -133,6 +133,7 @@ void NaClDebugExceptionHandlerRun(HANDLE process_handle,
   HANDLE thread_handle;
   DWORD exception_code;
   HANDLE exception_event = INVALID_HANDLE_VALUE;
+  int seen_breakin_breakpoint = 0;
 
   if (info_size != sizeof(struct StartupInfo)) {
     return;
@@ -183,7 +184,8 @@ void NaClDebugExceptionHandlerRun(HANDLE process_handle,
                               debug_event.dwThreadId, thread_handle,
                               exception_code, &exception_event)) {
             continue_status = DBG_CONTINUE;
-          } else if (exception_code == EXCEPTION_BREAKPOINT) {
+          } else if (exception_code == EXCEPTION_BREAKPOINT &&
+                     !seen_breakin_breakpoint) {
             /*
              * When we attach to a process, the Windows debug API
              * triggers a breakpoint in the process by injecting a
@@ -201,6 +203,13 @@ void NaClDebugExceptionHandlerRun(HANDLE process_handle,
              * http://code.google.com/p/nativeclient/issues/detail?id=2726).
              */
             continue_status = DBG_CONTINUE;
+            /*
+             * Allow resuming from a breakpoint only once, because
+             * Chromium code uses int3 (via _debugbreak()) as a way to
+             * exit the process via a crash.  See:
+             * https://code.google.com/p/nativeclient/issues/detail?id=2772
+             */
+            seen_breakin_breakpoint = 1;
           }
         }
         break;
