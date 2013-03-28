@@ -12,8 +12,6 @@
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 
@@ -24,16 +22,12 @@ ConstrainedWindowMac::ConstrainedWindowMac(
     : delegate_(delegate),
       web_contents_(web_contents),
       sheet_([sheet retain]),
-      pending_show_(false) {
+      shown_(false) {
   DCHECK(web_contents);
   DCHECK(sheet_.get());
   WebContentsModalDialogManager* web_contents_modal_dialog_manager =
       WebContentsModalDialogManager::FromWebContents(web_contents);
   web_contents_modal_dialog_manager->ShowDialog(this);
-
-  registrar_.Add(this,
-                 content::NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED,
-                 content::Source<content::WebContents>(web_contents));
 }
 
 ConstrainedWindowMac::~ConstrainedWindowMac() {
@@ -41,13 +35,15 @@ ConstrainedWindowMac::~ConstrainedWindowMac() {
 }
 
 void ConstrainedWindowMac::ShowWebContentsModalDialog() {
+  if (shown_)
+    return;
+
   NSWindow* parent_window = GetParentWindow();
   NSView* parent_view = GetSheetParentViewForWebContents(web_contents_);
-  if (!parent_window || !parent_view) {
-    pending_show_ = true;
+  if (!parent_window || !parent_view)
     return;
-  }
 
+  shown_ = true;
   ConstrainedWindowSheetController* controller =
       [ConstrainedWindowSheetController
           controllerForParentWindow:parent_window];
@@ -55,10 +51,6 @@ void ConstrainedWindowMac::ShowWebContentsModalDialog() {
 }
 
 void ConstrainedWindowMac::CloseWebContentsModalDialog() {
-  // This function may be called even if the constrained window was never shown.
-  // Unset |pending_show_| to prevent the window from being reshown.
-  pending_show_ = false;
-
   [[ConstrainedWindowSheetController controllerForSheet:sheet_]
       closeSheet:sheet_];
   WebContentsModalDialogManager* web_contents_modal_dialog_manager =
@@ -81,21 +73,6 @@ NativeWebContentsModalDialog ConstrainedWindowMac::GetNativeDialog() {
   // ConstrainedWindowSheet pointer, in conjunction with the corresponding
   // changes to NativeWebContentsModalDialogManagerCocoa.
   return this;
-}
-
-void ConstrainedWindowMac::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  if (type != content::NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED) {
-    NOTREACHED();
-    return;
-  }
-
-  if (pending_show_) {
-    pending_show_ = false;
-    ShowWebContentsModalDialog();
-  }
 }
 
 NSWindow* ConstrainedWindowMac::GetParentWindow() const {

@@ -40,17 +40,24 @@ class NativeWebContentsModalDialogManagerGtk
   }
 
   virtual void ShowDialog(NativeWebContentsModalDialog dialog) OVERRIDE {
+    GtkWidget* widget = GetGtkWidget(dialog);
+
     // Any previously-shown widget should be destroyed before showing a new
     // widget.
-    DCHECK(shown_widget_ == NULL);
-
-    GtkWidget* widget = GetGtkWidget(dialog);
+    DCHECK(shown_widget_ == widget || shown_widget_ == NULL);
     gtk_widget_show_all(widget);
-    shown_widget_ = widget;
 
-    // We collaborate with WebContentsView and stick ourselves in the
-    // WebContentsView's floating container.
-    ContainingView()->AttachWebContentsModalDialog(widget);
+    if (!shown_widget_) {
+      // We collaborate with WebContentsView and stick ourselves in the
+      // WebContentsView's floating container.
+      ContainingView()->AttachWebContentsModalDialog(widget);
+    }
+
+    shown_widget_ = widget;
+  }
+
+  virtual void HideDialog(NativeWebContentsModalDialog dialog) OVERRIDE {
+    gtk_widget_hide(GetGtkWidget(dialog));
   }
 
   virtual void CloseDialog(NativeWebContentsModalDialog dialog) OVERRIDE {

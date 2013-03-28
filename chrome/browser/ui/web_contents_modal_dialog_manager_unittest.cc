@@ -37,6 +37,8 @@ class NativeWebContentsModalDialogManagerCloseTest
   }
   virtual void ShowDialog(NativeWebContentsModalDialog dialog) OVERRIDE {
   }
+  virtual void HideDialog(NativeWebContentsModalDialog dialog) OVERRIDE {
+  }
   virtual void CloseDialog(NativeWebContentsModalDialog dialog) OVERRIDE {
     delegate_->WillClose(dialog);
     close_count++;

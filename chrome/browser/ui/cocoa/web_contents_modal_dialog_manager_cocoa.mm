@@ -26,6 +26,9 @@ class NativeWebContentsModalDialogManagerCocoa
     GetConstrainedWindowMac(dialog)->ShowWebContentsModalDialog();
   }
 
+  virtual void HideDialog(NativeWebContentsModalDialog dialog) OVERRIDE {
+  }
+
   virtual void CloseDialog(NativeWebContentsModalDialog dialog) OVERRIDE {
     GetConstrainedWindowMac(dialog)->CloseWebContentsModalDialog();
   }

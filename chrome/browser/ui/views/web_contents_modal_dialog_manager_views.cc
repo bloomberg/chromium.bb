@@ -80,6 +80,10 @@ class NativeWebContentsModalDialogManagerViews
     FocusDialog(dialog);
   }
 
+  virtual void HideDialog(NativeWebContentsModalDialog dialog) OVERRIDE {
+    GetWidget(dialog)->Hide();
+  }
+
   virtual void CloseDialog(NativeWebContentsModalDialog dialog) OVERRIDE {
     GetWidget(dialog)->Close();
   }

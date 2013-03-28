@@ -40,6 +40,9 @@ class NativeWebContentsModalDialogManager {
   // dialog is shown at a time per tab.
   virtual void ShowDialog(NativeWebContentsModalDialog dialog) = 0;
 
+  // Hides the web contents modal dialog without closing it.
+  virtual void HideDialog(NativeWebContentsModalDialog dialog) = 0;
+
   // Closes the web contents modal dialog.
   virtual void CloseDialog(NativeWebContentsModalDialog dialog) = 0;
 
