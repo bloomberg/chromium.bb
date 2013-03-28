@@ -34,6 +34,8 @@ const unsigned int kMaxRecentlyClosedSessionResults = 25;
 const char kRecentlyClosedListEmpty[] =
     "There are no recently closed sessions.";
 const char kInvalidSessionId[] = "Invalid session id.";
+const char kNoBrowserToRestoreSession[] =
+    "There are no browser windows to restore the session.";
 
 }  // namespace
 
@@ -161,7 +163,11 @@ bool SessionRestoreRestoreFunction::RunImpl() {
   Browser* browser =
       chrome::FindBrowserWithProfile(profile(),
                                      chrome::HOST_DESKTOP_TYPE_NATIVE);
-  DCHECK(browser);
+  if (!browser) {
+    error_ = kNoBrowserToRestoreSession;
+    return false;
+  }
+
   TabRestoreService* tab_restore_service =
       TabRestoreServiceFactory::GetForProfile(profile());
   TabRestoreServiceDelegate* delegate =
