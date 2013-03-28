@@ -94,6 +94,13 @@ class CONTENT_EXPORT GpuControlList {
   void AddFeature(const std::string& feature_name, int feature_id);
 
  private:
+  friend class GpuControlListEntryTest;
+  friend class MachineModelInfoTest;
+  friend class NumberInfoTest;
+  friend class OsInfoTest;
+  friend class StringInfoTest;
+  friend class VersionInfoTest;
+
   enum BrowserVersionSupport {
     kSupported,
     kUnsupported,
@@ -111,7 +118,7 @@ class CONTENT_EXPORT GpuControlList {
     kUnknown  // Indicates the data is invalid.
   };
 
-  class VersionInfo {
+  class CONTENT_EXPORT VersionInfo {
    public:
     // If version_style is empty, it defaults to kNumerical.
     VersionInfo(const std::string& version_op,
@@ -145,10 +152,9 @@ class CONTENT_EXPORT GpuControlList {
     // Return 1 if version > version_ref,
     //        0 if version = version_ref,
     //       -1 if version < version_ref.
-    // Note that we only compare as many as segments as version_ref contains.
-    // If version_ref is xxx.yyy, it's considered as xxx.yyy.*
+    // Note that we only compare as many segments as both versions contain.
     // For example: Compare("10.3.1", "10.3") returns 0,
-    //              Compare("10.3", "10.3.1") returns -1.
+    //              Compare("10.3", "10.3.1") returns 0.
     // If "version_style" is Lexical, the first segment is compared
     // numerically, all other segments are compared lexically.
     // Lexical is used for AMD Linux driver versions only.
@@ -162,7 +168,7 @@ class CONTENT_EXPORT GpuControlList {
     std::vector<std::string> version2_;
   };
 
-  class OsInfo {
+  class CONTENT_EXPORT OsInfo {
    public:
     OsInfo(const std::string& os,
            const std::string& version_op,
@@ -186,7 +192,7 @@ class CONTENT_EXPORT GpuControlList {
     scoped_ptr<VersionInfo> version_info_;
   };
 
-  class StringInfo {
+  class CONTENT_EXPORT StringInfo {
    public:
     StringInfo(const std::string& string_op, const std::string& string_value);
 
@@ -212,7 +218,7 @@ class CONTENT_EXPORT GpuControlList {
     std::string value_;
   };
 
-  class FloatInfo {
+  class CONTENT_EXPORT FloatInfo {
    public:
     FloatInfo(const std::string& float_op,
               const std::string& float_value,
@@ -230,7 +236,7 @@ class CONTENT_EXPORT GpuControlList {
     float value2_;
   };
 
-  class IntInfo {
+  class CONTENT_EXPORT IntInfo {
    public:
     IntInfo(const std::string& int_op,
             const std::string& int_value,
@@ -248,7 +254,7 @@ class CONTENT_EXPORT GpuControlList {
     int value2_;
   };
 
-  class MachineModelInfo {
+  class CONTENT_EXPORT MachineModelInfo {
    public:
     MachineModelInfo(const std::string& name_op,
                      const std::string& name_value,
@@ -273,7 +279,8 @@ class CONTENT_EXPORT GpuControlList {
 
   typedef base::hash_map<std::string, int> FeatureMap;
 
-  class GpuControlListEntry : public base::RefCounted<GpuControlListEntry> {
+  class CONTENT_EXPORT GpuControlListEntry
+      : public base::RefCounted<GpuControlListEntry> {
    public:
     // Constructs GpuControlListEntry from DictionaryValue loaded from json.
     // Top-level entry must have an id number.  Others are exceptions.

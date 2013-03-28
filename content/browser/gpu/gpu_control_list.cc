@@ -329,13 +329,15 @@ GpuControlList::FloatInfo::FloatInfo(const std::string& float_op,
     : op_(kUnknown),
       value_(0.f),
       value2_(0.f) {
+  op_ = StringToNumericOp(float_op);
+  if (op_ == kAny)
+    return;
   double dvalue = 0;
   if (!base::StringToDouble(float_value, &dvalue)) {
     op_ = kUnknown;
     return;
   }
   value_ = static_cast<float>(dvalue);
-  op_ = StringToNumericOp(float_op);
   if (op_ == kBetween) {
     if (!base::StringToDouble(float_value2, &dvalue)) {
       op_ = kUnknown;
@@ -375,11 +377,13 @@ GpuControlList::IntInfo::IntInfo(const std::string& int_op,
     : op_(kUnknown),
       value_(0),
       value2_(0) {
+  op_ = StringToNumericOp(int_op);
+  if (op_ == kAny)
+    return;
   if (!base::StringToInt(int_value, &value_)) {
     op_ = kUnknown;
     return;
   }
-  op_ = StringToNumericOp(int_op);
   if (op_ == kBetween &&
       !base::StringToInt(int_value2, &value2_))
     op_ = kUnknown;
