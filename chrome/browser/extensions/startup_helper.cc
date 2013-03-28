@@ -7,18 +7,25 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/files/file_path.h"
 #include "base/message_loop.h"
+#include "base/run_loop.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/sandboxed_unpacker.h"
 #include "chrome/browser/extensions/webstore_startup_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/i18n/default_locale_handler.h"
 #include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "ipc/ipc_message.h"
+
+using content::BrowserThread;
 
 namespace {
 
@@ -70,6 +77,124 @@ bool StartupHelper::PackExtension(const CommandLine& cmd_line) {
   pack_job_->Start();
 
   return pack_job_succeeded_;
+}
+
+namespace {
+
+class ValidateCrxHelper : public SandboxedUnpackerClient {
+ public:
+  ValidateCrxHelper(const base::FilePath& crx_file,
+                    const base::FilePath& temp_dir,
+                    base::RunLoop* run_loop)
+      : crx_file_(crx_file), temp_dir_(temp_dir), run_loop_(run_loop),
+        finished_(false), success_(false) {}
+
+  bool finished() { return finished_; }
+  bool success() { return success_; }
+  const string16& error() { return error_; }
+
+  void Start() {
+    BrowserThread::PostTask(BrowserThread::FILE,
+                            FROM_HERE,
+                            base::Bind(&ValidateCrxHelper::StartOnFileThread,
+                                       this));
+  }
+
+ protected:
+  virtual ~ValidateCrxHelper() {}
+
+  virtual void OnUnpackSuccess(const base::FilePath& temp_dir,
+                               const base::FilePath& extension_root,
+                               const base::DictionaryValue* original_manifest,
+                               const Extension* extension) {
+    finished_ = true;
+    success_ = true;
+    BrowserThread::PostTask(BrowserThread::UI,
+                            FROM_HERE,
+                            base::Bind(&ValidateCrxHelper::FinishOnUIThread,
+                                       this));
+  }
+
+  virtual void OnUnpackFailure(const string16& error) {
+    finished_ = true;
+    success_ = false;
+    error_ = error;
+    BrowserThread::PostTask(BrowserThread::UI,
+                            FROM_HERE,
+                            base::Bind(&ValidateCrxHelper::FinishOnUIThread,
+                                       this));
+  }
+
+  void FinishOnUIThread() {
+    CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    if (run_loop_->running())
+      run_loop_->Quit();
+  }
+
+  void StartOnFileThread() {
+    CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+    scoped_refptr<base::MessageLoopProxy> file_thread_proxy =
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE);
+
+    scoped_refptr<SandboxedUnpacker> unpacker(
+        new SandboxedUnpacker(crx_file_,
+                              true /* out of process */,
+                              Manifest::INTERNAL,
+                              0, /* no special creation flags */
+                              temp_dir_,
+                              file_thread_proxy,
+                              this));
+    unpacker->Start();
+  }
+
+  // The file being validated.
+  const base::FilePath& crx_file_;
+
+  // The temporary directory where the sandboxed unpacker will do work.
+  const base::FilePath& temp_dir_;
+
+  // Unowned pointer to a runloop, so our consumer can wait for us to finish.
+  base::RunLoop* run_loop_;
+
+  // Whether we're finished unpacking;
+  bool finished_;
+
+  // Whether the unpacking was successful.
+  bool success_;
+
+  // If the unpacking wasn't successful, this contains an error message.
+  string16 error_;
+};
+
+}  // namespace
+
+bool StartupHelper::ValidateCrx(const CommandLine& cmd_line,
+                                std::string* error) {
+  CHECK(error);
+  base::FilePath path = cmd_line.GetSwitchValuePath(switches::kValidateCrx);
+  if (path.empty()) {
+    *error = base::StringPrintf("Empty path passed for %s",
+                                switches::kValidateCrx);
+    return false;
+  }
+  base::ScopedTempDir temp_dir;
+
+  if (!temp_dir.CreateUniqueTempDir()) {
+    *error = std::string("Failed to create temp dir");
+    return false;
+  }
+
+  base::RunLoop run_loop;
+  scoped_refptr<ValidateCrxHelper> helper(
+      new ValidateCrxHelper(path, temp_dir.path(), &run_loop));
+  helper->Start();
+  if (!helper->finished())
+    run_loop.Run();
+
+  bool success = helper->success();
+  if (!success)
+    *error = UTF16ToUTF8(helper->error());
+  return success;
 }
 
 bool StartupHelper::UninstallExtension(const CommandLine& cmd_line,

@@ -542,6 +542,24 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
     return false;
   }
 
+  if (command_line.HasSwitch(switches::kValidateCrx)) {
+    if (!process_startup) {
+      LOG(ERROR) << "chrome is already running; you must close all running "
+                 << "instances before running with the --"
+                 << switches::kValidateCrx << " flag";
+      return false;
+    }
+    extensions::StartupHelper helper;
+    std::string message;
+    std::string error;
+    if (helper.ValidateCrx(command_line, &error))
+      message = std::string("ValidateCrx Success");
+    else
+      message = std::string("ValidateCrx Failure: ") + error;
+    printf("%s\n", message.c_str());
+    return false;
+  }
+
   if (command_line.HasSwitch(switches::kLimitedInstallFromWebstore)) {
     extensions::StartupHelper helper;
     helper.LimitedInstallFromWebstore(command_line, last_used_profile,

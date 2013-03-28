@@ -29,6 +29,12 @@ class StartupHelper : public PackExtensionJob::Client {
   // extension. Returns false if the pack job failed.
   bool PackExtension(const CommandLine& cmd_line);
 
+  // Validates a crx at the path given by the --validate-extension flag - can
+  // it be installed? Returns true if the crx is valid, or false otherwise.
+  // If the return value is false, a description of the problem may be written
+  // into |error|.
+  bool ValidateCrx(const CommandLine& cmd_line, std::string* error);
+
   // Handle --uninstall-extension flag from the |cmd_line| by uninstalling the
   // specified extension from |profile|. Returns false if the uninstall job
   // could not be started.
