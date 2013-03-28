@@ -63,6 +63,7 @@ class ImeAdapter {
      * Selection value should be -1 if not known. See EditorInfo.java for details.
      */
     static final int INVALID_SELECTION = -1;
+    static final int INVALID_COMPOSITION = -1;
 
     static int sEventTypeRawKeyDown;
     static int sEventTypeKeyUp;
@@ -495,6 +496,11 @@ class ImeAdapter {
         private int mNumNestedBatchEdits = 0;
         private boolean mIgnoreTextInputStateUpdates = false;
 
+        private int mLastUpdateSelectionStart = INVALID_SELECTION;
+        private int mLastUpdateSelectionEnd = INVALID_SELECTION;
+        private int mLastUpdateCompositionStart = INVALID_COMPOSITION;
+        private int mLastUpdateCompositionEnd = INVALID_COMPOSITION;
+
         /**
          * Updates the AdapterInputConnection's internal representation of the text
          * being edited and its selection and composition properties. The resulting
@@ -553,6 +559,13 @@ class ImeAdapter {
         protected void updateSelection(
                 int selectionStart, int selectionEnd,
                 int compositionStart, int compositionEnd) {
+            // Avoid sending update if we sent an exact update already previously.
+            if (mLastUpdateSelectionStart == selectionStart &&
+                    mLastUpdateSelectionEnd == selectionEnd &&
+                    mLastUpdateCompositionStart == compositionStart &&
+                    mLastUpdateCompositionEnd == compositionEnd) {
+                return;
+            }
             if (DEBUG) {
                 Log.w(TAG, "updateSelection [" + selectionStart + " " + selectionEnd + "] ["
                         + compositionStart + " " + compositionEnd + "]");
@@ -561,6 +574,10 @@ class ImeAdapter {
             // if it happens not within a batch edit, or at the end of each top level batch edit.
             getInputMethodManagerWrapper().updateSelection(mInternalView,
                     selectionStart, selectionEnd, compositionStart, compositionEnd);
+            mLastUpdateSelectionStart = selectionStart;
+            mLastUpdateSelectionEnd = selectionEnd;
+            mLastUpdateCompositionStart = compositionStart;
+            mLastUpdateCompositionEnd = compositionEnd;
         }
 
         @Override
