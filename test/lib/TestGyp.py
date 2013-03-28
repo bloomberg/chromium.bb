@@ -14,6 +14,7 @@ import subprocess
 import sys
 import tempfile
 
+import TestCmd
 import TestCommon
 from TestCommon import __all__
 
@@ -983,6 +984,20 @@ class TestGypXcode(TestGypBase):
     if symroot:
       arguments.append('SYMROOT='+symroot)
     kw['arguments'] = arguments
+
+    # Work around spurious stderr output from Xcode 4, http://crbug.com/181012
+    match = kw.pop('match', self.match)
+    def match_filter_xcode(actual, expected):
+      if actual:
+        if not TestCmd.is_List(actual):
+          actual = actual.split('\n')
+        if not TestCmd.is_List(expected):
+          expected = expected.split('\n')
+        actual = [a for a in actual
+                    if 'No recorder, buildTask: <Xcode3BuildTask:' not in a]
+      return match(actual, expected)
+    kw['match'] = match_filter_xcode
+
     return self.run(program=self.build_tool, **kw)
   def up_to_date(self, gyp_file, target=None, **kw):
     """
