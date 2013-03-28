@@ -16,6 +16,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "device/bluetooth/bluetooth_out_of_band_pairing_data.h"
 #include "device/bluetooth/bluetooth_service_record_mac.h"
+#include "device/bluetooth/bluetooth_socket_mac.h"
 
 // Replicate specific 10.7 SDK declarations for building with prior SDKs.
 #if !defined(MAC_OS_X_VERSION_10_7) || \
@@ -41,6 +42,13 @@ BluetoothDeviceMac::BluetoothDeviceMac(const IOBluetoothDevice* device)
   connected_ = [device isConnected];
   bonded_ = [device isPaired];
   visible_ = true;
+
+  for (IOBluetoothSDPServiceRecord* service in [device services]) {
+    BluetoothServiceRecord* service_record =
+        new BluetoothServiceRecordMac(service);
+    service_record_list_.push_back(service_record);
+    service_uuids_.push_back(service_record->uuid());
+  }
 }
 
 BluetoothDeviceMac::~BluetoothDeviceMac() {
@@ -57,11 +65,21 @@ const BluetoothDevice::ServiceList& BluetoothDeviceMac::GetServices() const {
 void BluetoothDeviceMac::GetServiceRecords(
     const ServiceRecordsCallback& callback,
     const ErrorCallback& error_callback) {
+  callback.Run(service_record_list_);
 }
 
 void BluetoothDeviceMac::ProvidesServiceWithName(
     const std::string& name,
     const ProvidesServiceCallback& callback) {
+  for (ServiceRecordList::const_iterator iter = service_record_list_.begin();
+       iter != service_record_list_.end();
+       ++iter) {
+    if ((*iter)->name() == name) {
+      callback.Run(true);
+      return;
+    }
+  }
+  callback.Run(false);
 }
 
 bool BluetoothDeviceMac::ExpectingPinCode() const {
@@ -119,6 +137,19 @@ void BluetoothDeviceMac::Forget(const ErrorCallback& error_callback) {
 void BluetoothDeviceMac::ConnectToService(
     const std::string& service_uuid,
     const SocketCallback& callback) {
+  for (ServiceRecordList::const_iterator iter = service_record_list_.begin();
+       iter != service_record_list_.end();
+       ++iter) {
+    if ((*iter)->uuid() == service_uuid) {
+      // If multiple service records are found, use the first one that works.
+      scoped_refptr<BluetoothSocket> socket(
+        BluetoothSocketMac::CreateBluetoothSocket(**iter));
+      if (socket.get() != NULL) {
+        callback.Run(socket);
+        return;
+      }
+    }
+  }
 }
 
 void BluetoothDeviceMac::SetOutOfBandPairingData(

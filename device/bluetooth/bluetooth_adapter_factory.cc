@@ -19,6 +19,8 @@
 #include "device/bluetooth/bluetooth_adapter_chromeos_experimental.h"
 #elif defined(OS_WIN)
 #include "device/bluetooth/bluetooth_adapter_win.h"
+#elif defined(OS_MACOSX)
+#include "device/bluetooth/bluetooth_adapter_mac.h"
 #endif
 
 namespace {
@@ -64,6 +66,8 @@ bool BluetoothAdapterFactory::IsBluetoothAdapterAvailable() {
   return true;
 #elif defined(OS_WIN)
   return true;
+#elif defined(OS_MACOSX)
+  return true;
 #endif
   return false;
 }
@@ -87,6 +91,10 @@ void BluetoothAdapterFactory::GetAdapter(const AdapterCallback& callback) {
 #elif defined(OS_WIN)
     BluetoothAdapterWin* new_adapter = new BluetoothAdapterWin(
         base::Bind(&RunAdapterCallbacks));
+    new_adapter->TrackDefaultAdapter();
+    default_adapter.Get() = new_adapter->weak_ptr_factory_.GetWeakPtr();
+#elif defined(OS_MACOSX)
+    BluetoothAdapterMac* new_adapter = new BluetoothAdapterMac();
     new_adapter->TrackDefaultAdapter();
     default_adapter.Get() = new_adapter->weak_ptr_factory_.GetWeakPtr();
 #endif

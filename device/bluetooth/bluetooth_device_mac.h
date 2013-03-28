@@ -71,6 +71,7 @@ class BluetoothDeviceMac : public BluetoothDevice {
 
   // Used to compare the devices.
   const uint32 device_fingerprint_;
+  ServiceRecordList service_record_list_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothDeviceMac);
 };
