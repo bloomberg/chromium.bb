@@ -709,6 +709,7 @@ void DesktopRootWindowHostWin::HandleClientSizeChanged(
     root_window_host_delegate_->OnHostResized(new_size);
   // TODO(beng): replace with a layout manager??
   content_window_->SetBounds(gfx::Rect(without_expansion));
+  native_widget_delegate_->OnNativeWidgetSizeChanged(new_size);
 }
 
 void DesktopRootWindowHostWin::HandleFrameChanged() {

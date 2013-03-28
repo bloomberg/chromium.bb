@@ -16,6 +16,7 @@
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/native_widget_delegate.h"
+#include "ui/views/window/native_frame_view.h"
 
 #if defined(USE_AURA)
 #include "ui/aura/client/aura_constants.h"
@@ -209,6 +210,21 @@ class GestureCaptureView : public View {
   }
 
   DISALLOW_COPY_AND_ASSIGN(GestureCaptureView);
+};
+
+// A view that implements GetMinimumSize.
+class MinimumSizeFrameView : public NativeFrameView {
+ public:
+  explicit MinimumSizeFrameView(Widget* frame): NativeFrameView(frame) {}
+  virtual ~MinimumSizeFrameView() {}
+
+ private:
+  // Overridden from View:
+  virtual gfx::Size GetMinimumSize() OVERRIDE {
+    return gfx::Size(300, 400);
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(MinimumSizeFrameView);
 };
 
 // An event handler that simply keeps a count of the different types of events
@@ -1209,6 +1225,26 @@ TEST_F(WidgetTest, FocusChangesOnBubble) {
 
 // Desktop native widget Aura tests are for non Chrome OS platforms.
 #if !defined(OS_CHROMEOS)
+// Test to ensure that after minimize, view width is set to zero.
+TEST_F(WidgetTest, TestViewWidthAfterMinimizingWidget) {
+  // Create a widget.
+  Widget widget;
+  Widget::InitParams init_params =
+      CreateParams(Widget::InitParams::TYPE_WINDOW);
+  init_params.show_state = ui::SHOW_STATE_NORMAL;
+  gfx::Rect initial_bounds(0, 0, 300, 400);
+  init_params.bounds = initial_bounds;
+  init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  init_params.native_widget = new DesktopNativeWidgetAura(&widget);
+  widget.Init(init_params);
+  NonClientView* non_client_view = widget.non_client_view();
+  NonClientFrameView* frame_view = new MinimumSizeFrameView(&widget);
+  non_client_view->SetFrameView(frame_view);
+  widget.Show();
+  widget.Minimize();
+  EXPECT_EQ(0, frame_view->width());
+}
+
 // This class validates whether paints are received for a visible Widget.
 // To achieve this it overrides the Show and Close methods on the Widget class
 // and sets state whether subsequent paints are expected.

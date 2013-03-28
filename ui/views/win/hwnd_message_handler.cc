@@ -980,19 +980,19 @@ void HWNDMessageHandler::TrackMouseEvents(DWORD mouse_tracking_flags) {
 
 void HWNDMessageHandler::ClientAreaSizeChanged() {
   RECT r = {0, 0, 0, 0};
-  if (delegate_->WidgetSizeIsClientSize()) {
-    // TODO(beng): investigate whether this could be done
-    // from other branch of if-else.
-    if (!IsMinimized()) {
-      GetClientRect(hwnd(), &r);
-      // This is needed due to a hack that works around a "feature" in
-      // Windows's handling of WM_NCCALCSIZE. See the comment near the end of
-      // GetClientAreaInsets for more details.
-      if (remove_standard_frame_)
-        r.bottom += kClientAreaBottomInsetHack;
+  // In case of minimized window GetWindowRect can return normally unexpected
+  // coordinates.
+  if (!IsMinimized()) {
+    if (delegate_->WidgetSizeIsClientSize()) {
+        GetClientRect(hwnd(), &r);
+        // This is needed due to a hack that works around a "feature" in
+        // Windows's handling of WM_NCCALCSIZE. See the comment near the end of
+        // GetClientAreaInsets for more details.
+        if (remove_standard_frame_)
+          r.bottom += kClientAreaBottomInsetHack;
+    } else {
+      GetWindowRect(hwnd(), &r);
     }
-  } else {
-    GetWindowRect(hwnd(), &r);
   }
   gfx::Size s(std::max(0, static_cast<int>(r.right - r.left)),
               std::max(0, static_cast<int>(r.bottom - r.top)));
