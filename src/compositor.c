@@ -2075,7 +2075,6 @@ notify_pointer_focus(struct weston_seat *seat, struct weston_output *output,
 		     wl_fixed_t x, wl_fixed_t y)
 {
 	struct weston_compositor *compositor = seat->compositor;
-	struct wl_pointer *pointer = seat->seat.pointer;
 
 	if (output) {
 		move_pointer(seat, x, y);
