@@ -38,11 +38,9 @@ class AudioRendererAlgorithmTest : public testing::Test {
 
   void Initialize(ChannelLayout channel_layout, int bits_per_channel,
                   int samples_per_second) {
-    static const int kFrames = kRawDataSize / ((kDefaultSampleBits / 8) *
-        ChannelLayoutToChannelCount(kDefaultChannelLayout));
     AudioParameters params(
         media::AudioParameters::AUDIO_PCM_LINEAR, channel_layout,
-        samples_per_second, bits_per_channel, kFrames);
+        samples_per_second, bits_per_channel, samples_per_second / 100);
 
     algorithm_.Initialize(1, params);
     FillAlgorithmQueue();
@@ -82,7 +80,7 @@ class AudioRendererAlgorithmTest : public testing::Test {
   }
 
   void TestPlaybackRate(double playback_rate) {
-    const int kDefaultBufferSize = algorithm_.samples_per_second() / 10;
+    const int kDefaultBufferSize = algorithm_.samples_per_second() / 100;
     const int kDefaultFramesRequested = 2 * algorithm_.samples_per_second();
 
     TestPlaybackRate(playback_rate, kDefaultBufferSize,
