@@ -82,6 +82,11 @@ BluetoothNodeClient*
   return NULL;
 }
 
+CrasAudioClient* MockDBusThreadManagerWithoutGMock::GetCrasAudioClient() {
+  NOTIMPLEMENTED();
+  return NULL;
+}
+
 CrosDisksClient* MockDBusThreadManagerWithoutGMock::GetCrosDisksClient() {
   NOTIMPLEMENTED();
   return NULL;

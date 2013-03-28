@@ -11,6 +11,7 @@
 #include "chromeos/dbus/mock_bluetooth_manager_client.h"
 #include "chromeos/dbus/mock_bluetooth_node_client.h"
 #include "chromeos/dbus/mock_bluetooth_out_of_band_client.h"
+#include "chromeos/dbus/mock_cras_audio_client.h"
 #include "chromeos/dbus/mock_cros_disks_client.h"
 #include "chromeos/dbus/mock_cryptohome_client.h"
 #include "chromeos/dbus/mock_debug_daemon_client.h"
@@ -49,6 +50,7 @@ MockDBusThreadManager::MockDBusThreadManager()
       mock_bluetooth_manager_client_(new MockBluetoothManagerClient),
       mock_bluetooth_node_client_(new MockBluetoothNodeClient),
       mock_bluetooth_out_of_band_client_(new MockBluetoothOutOfBandClient),
+      mock_cras_audio_client_(new MockCrasAudioClient),
       mock_cros_disks_client_(new MockCrosDisksClient),
       mock_cryptohome_client_(new MockCryptohomeClient),
       mock_debugdaemon_client_(new MockDebugDaemonClient),
@@ -87,6 +89,8 @@ MockDBusThreadManager::MockDBusThreadManager()
       .WillRepeatedly(Return(mock_bluetooth_node_client_.get()));
   EXPECT_CALL(*this, GetBluetoothOutOfBandClient())
       .WillRepeatedly(Return(mock_bluetooth_out_of_band_client_.get()));
+  EXPECT_CALL(*this, GetCrasAudioClient())
+      .WillRepeatedly(Return(mock_cras_audio_client()));
   EXPECT_CALL(*this, GetCrosDisksClient())
       .WillRepeatedly(Return(mock_cros_disks_client()));
   EXPECT_CALL(*this, GetCryptohomeClient())
@@ -159,6 +163,12 @@ MockDBusThreadManager::MockDBusThreadManager()
       .WillRepeatedly(Return(power_policy_controller_.get()));
 
   // These observers calls are used in ChromeBrowserMainPartsChromeos.
+  EXPECT_CALL(*mock_cras_audio_client_.get(), AddObserver(_))
+      .Times(AnyNumber());
+  EXPECT_CALL(*mock_cras_audio_client_.get(), RemoveObserver(_))
+      .Times(AnyNumber());
+  EXPECT_CALL(*mock_cras_audio_client_.get(), HasObserver(_))
+      .Times(AnyNumber());
   EXPECT_CALL(*mock_session_manager_client_.get(), AddObserver(_))
       .Times(AnyNumber());
   EXPECT_CALL(*mock_session_manager_client_.get(), RemoveObserver(_))
