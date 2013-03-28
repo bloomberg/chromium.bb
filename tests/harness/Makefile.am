@@ -1,6 +1,7 @@
 EXTRA_DIST = 				\
 	en-gb-g1_harness.txt		\
 	en-GB-g2_harness.txt		\
+	en-ueb-g2-dictionary_harness.txt \
 	ethio-g1_harness.txt		\
 	hu-hu-comp8_harness.txt		\
 	hu-hu-g1_harness.txt		\
