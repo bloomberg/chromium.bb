@@ -459,6 +459,7 @@ void WebPreferences::Apply(WebView* web_view) const {
   settings->setInitializeAtMinimumPageScale(initialize_at_minimum_page_scale);
 
   settings->setSmartInsertDeleteEnabled(smart_insert_delete_enabled);
+  settings->setSelectionIncludesAltImageText(true);
 
 #if defined(OS_ANDROID)
   settings->setAllowCustomScrollbarInMainFrame(false);
