@@ -535,6 +535,8 @@ void UserManagerImpl::SaveUserOAuthStatus(
   if (user)
     user->set_oauth_token_status(oauth_token_status);
 
+  GetUserFlow(username)->HandleOAuthTokenStatusChange(oauth_token_status);
+
   // Do not update local store if data stored or cached outside the user's
   // cryptohome is to be treated as ephemeral.
   if (IsUserNonCryptohomeDataEphemeral(username))
@@ -558,7 +560,11 @@ User::OAuthTokenStatus UserManagerImpl::LoadUserOAuthStatus(
   if (prefs_oauth_status &&
       prefs_oauth_status->GetIntegerWithoutPathExpansion(
           username, &oauth_token_status)) {
-    return static_cast<User::OAuthTokenStatus>(oauth_token_status);
+    User::OAuthTokenStatus result =
+        static_cast<User::OAuthTokenStatus>(oauth_token_status);
+    if (result == User::OAUTH2_TOKEN_STATUS_INVALID)
+      GetUserFlow(username)->HandleOAuthTokenStatusChange(result);
+    return result;
   }
   return User::OAUTH_TOKEN_STATUS_UNKNOWN;
 }

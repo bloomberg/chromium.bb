@@ -272,9 +272,11 @@ void LoginPerformer::LoginAsLocallyManagedUser(
             gaia::ExtractDomainName(credentials.username));
   // TODO(nkostylev): Check that policy allows locally managed user login.
 
-  UserManager::Get()->SetUserFlow(credentials.username,
-                                  new LocallyManagedUserLoginFlow(
-                                      credentials.username));
+  UserFlow* new_flow = new LocallyManagedUserLoginFlow(credentials.username);
+  new_flow->set_host(
+      UserManager::Get()->GetUserFlow(credentials.username)->host());
+  UserManager::Get()->SetUserFlow(credentials.username, new_flow);
+
   authenticator_ = LoginUtils::Get()->CreateAuthenticator(this);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,

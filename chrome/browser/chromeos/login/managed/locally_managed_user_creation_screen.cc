@@ -42,10 +42,10 @@ void LocallyManagedUserCreationScreen::Show() {
 void LocallyManagedUserCreationScreen::
     ShowManagerInconsistentStateErrorScreen() {
   if (!actor_)
-    return
+    return;
   actor_->ShowErrorMessage(
       l10n_util::GetStringUTF16(
-          IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_ERROR_TPM_ERROR),
+          IDS_CREATE_LOCALLY_MANAGED_USER_MANAGER_INCONSISTENT_STATE),
       false);
 }
 

@@ -17,6 +17,9 @@ void UnregisterFlow(const std::string& user_id) {
 
 } // namespace
 
+
+UserFlow::UserFlow() : host_(NULL) {}
+
 UserFlow::~UserFlow() {}
 
 DefaultUserFlow::~DefaultUserFlow() {}
@@ -29,17 +32,19 @@ bool DefaultUserFlow::ShouldSkipPostLoginScreens() {
   return false;
 }
 
-bool DefaultUserFlow::HandleLoginFailure(const LoginFailure& failure,
-    LoginDisplayHost* host) {
+bool DefaultUserFlow::HandleLoginFailure(const LoginFailure& failure) {
   return false;
 }
 
-bool DefaultUserFlow::HandlePasswordChangeDetected(LoginDisplayHost* host) {
+bool DefaultUserFlow::HandlePasswordChangeDetected() {
   return false;
 }
 
-void DefaultUserFlow::LaunchExtraSteps(Profile* profile,
-                                       LoginDisplayHost* host) {
+void DefaultUserFlow::HandleOAuthTokenStatusChange(
+    User::OAuthTokenStatus status) {
+}
+
+void DefaultUserFlow::LaunchExtraSteps(Profile* profile) {
 }
 
 ExtendedUserFlow::ExtendedUserFlow(const std::string& user_id)

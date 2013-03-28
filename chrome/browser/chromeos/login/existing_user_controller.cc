@@ -422,6 +422,9 @@ void ExistingUserController::Login(const UserCredentials& credentials) {
 void ExistingUserController::PerformLogin(
     const UserCredentials& credentials,
     LoginPerformer::AuthorizationMode auth_mode) {
+  UserManager::Get()->GetUserFlow(last_login_attempt_username_)->
+      set_host(host_);
+
   // Disable UI while loading user profile.
   login_display_->SetUIEnabled(false);
 
@@ -666,7 +669,7 @@ void ExistingUserController::OnLoginFailure(const LoginFailure& failure) {
   std::string error = failure.GetErrorString();
 
   if (UserManager::Get()->GetUserFlow(last_login_attempt_username_)->
-          HandleLoginFailure(failure, host_)) {
+          HandleLoginFailure(failure)) {
     return;
   }
 
@@ -828,7 +831,7 @@ void ExistingUserController::OnPasswordChangeDetected() {
   }
 
   if (UserManager::Get()->GetUserFlow(last_login_attempt_username_)->
-          HandlePasswordChangeDetected(host_)) {
+          HandlePasswordChangeDetected()) {
     return;
   }
 

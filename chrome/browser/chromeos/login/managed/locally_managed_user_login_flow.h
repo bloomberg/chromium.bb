@@ -23,11 +23,11 @@ class LocallyManagedUserLoginFlow : public ExtendedUserFlow {
 
   virtual bool ShouldLaunchBrowser() OVERRIDE;
   virtual bool ShouldSkipPostLoginScreens() OVERRIDE;
-  virtual bool HandleLoginFailure(const LoginFailure& failure,
-                                  LoginDisplayHost* host) OVERRIDE;
-  virtual bool HandlePasswordChangeDetected(LoginDisplayHost* host) OVERRIDE;
-  virtual void LaunchExtraSteps(Profile* profile,
-                                LoginDisplayHost* host) OVERRIDE;
+  virtual bool HandleLoginFailure(const LoginFailure& failure) OVERRIDE;
+  virtual bool HandlePasswordChangeDetected() OVERRIDE;
+  virtual void HandleOAuthTokenStatusChange(User::OAuthTokenStatus status)
+      OVERRIDE;
+  virtual void LaunchExtraSteps(Profile* profile) OVERRIDE;
 
   virtual void LoadSyncSetupData();
   virtual void OnSyncSetupDataLoaded(const std::string& token);
@@ -36,7 +36,6 @@ class LocallyManagedUserLoginFlow : public ExtendedUserFlow {
  private:
   bool data_loaded_;
   Profile* profile_;
-  LoginDisplayHost* host_;
   base::WeakPtrFactory<LocallyManagedUserLoginFlow> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(LocallyManagedUserLoginFlow);

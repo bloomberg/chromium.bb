@@ -13,25 +13,32 @@
 namespace chromeos {
 
 // UserFlow implementation for creating new locally managed user.
-class LocallyManagedUserCreationFlow : public UserFlow {
+class LocallyManagedUserCreationFlow : public ExtendedUserFlow {
  public:
-  LocallyManagedUserCreationFlow(string16 name,
-                                 std::string password);
+  LocallyManagedUserCreationFlow(const std::string& manager_id,
+                                 string16 name,
+                                 const std::string& password);
   virtual ~LocallyManagedUserCreationFlow();
 
   virtual bool ShouldLaunchBrowser() OVERRIDE;
   virtual bool ShouldSkipPostLoginScreens() OVERRIDE;
-  virtual bool HandleLoginFailure(const LoginFailure& failure,
-                                  LoginDisplayHost* host) OVERRIDE;
-  virtual bool HandlePasswordChangeDetected(LoginDisplayHost* host) OVERRIDE;
-  virtual void LaunchExtraSteps(Profile* profile,
-                                LoginDisplayHost* host) OVERRIDE;
-
+  virtual bool HandleLoginFailure(const LoginFailure& failure) OVERRIDE;
+  virtual bool HandlePasswordChangeDetected() OVERRIDE;
+  virtual void HandleOAuthTokenStatusChange(User::OAuthTokenStatus status)
+      OVERRIDE;
+  virtual void LaunchExtraSteps(Profile* profile) OVERRIDE;
  private:
   // Display name for user being created.
   string16 name_;
   // Password for user being created.
   std::string password_;
+
+  // Indicates if manager OAuth2 token has been validated.
+  bool token_validated_;
+
+  // Indicates if manager was successfully authenticated against
+  // local cryptohome.
+  bool logged_in_;
 
   DISALLOW_COPY_AND_ASSIGN(LocallyManagedUserCreationFlow);
 };

@@ -233,12 +233,12 @@ void LocallyManagedUserCreationScreenHandler::
 
   string16 new_user_name;
   std::string new_user_password;
-  std::string custodian_username;
-  std::string custodian_password;
+  std::string manager_username;
+  std::string manager_password;
   if (!args->GetString(0, &new_user_name) ||
       !args->GetString(1, &new_user_password) ||
-      !args->GetString(2, &custodian_username) ||
-      !args->GetString(3, &custodian_password)) {
+      !args->GetString(2, &manager_username) ||
+      !args->GetString(3, &manager_password)) {
     NOTREACHED();
     return;
   }
@@ -263,14 +263,16 @@ void LocallyManagedUserCreationScreenHandler::
     return;
   }
 
-  custodian_username = gaia::SanitizeEmail(custodian_username);
+  manager_username = gaia::SanitizeEmail(manager_username);
 
   UserFlow* flow =
-      new LocallyManagedUserCreationFlow(new_user_name, new_user_password);
-  UserManager::Get()->SetUserFlow(custodian_username, flow);
+      new LocallyManagedUserCreationFlow(manager_username,
+                                         new_user_name,
+                                         new_user_password);
+  UserManager::Get()->SetUserFlow(manager_username, flow);
 
   delegate_->RunFlow(new_user_name, new_user_password,
-                     custodian_username, custodian_password);
+                     manager_username, manager_password);
 }
 
 }  // namespace chromeos

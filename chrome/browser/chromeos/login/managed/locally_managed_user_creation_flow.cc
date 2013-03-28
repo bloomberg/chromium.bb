@@ -24,9 +24,13 @@ LocallyManagedUserCreationScreen* GetScreen(LoginDisplayHost* host) {
 } // namespace
 
 LocallyManagedUserCreationFlow::LocallyManagedUserCreationFlow(
+    const std::string& manager_id,
     string16 name,
-    std::string password) : name_(name),
-                            password_(password) {}
+    const std::string& password) : ExtendedUserFlow(manager_id),
+                            name_(name),
+                            password_(password),
+                            token_validated_(false),
+                            logged_in_(false) {}
 
 LocallyManagedUserCreationFlow::~LocallyManagedUserCreationFlow() {}
 
@@ -38,26 +42,44 @@ bool LocallyManagedUserCreationFlow::ShouldSkipPostLoginScreens() {
   return true;
 }
 
+void LocallyManagedUserCreationFlow::HandleOAuthTokenStatusChange(
+    User::OAuthTokenStatus status) {
+  if (status == User::OAUTH_TOKEN_STATUS_UNKNOWN)
+    return;
+  if (status == User::OAUTH2_TOKEN_STATUS_INVALID) {
+    GetScreen(host())->ShowManagerInconsistentStateErrorScreen();
+    return;
+  }
+  DCHECK(status == User::OAUTH2_TOKEN_STATUS_VALID);
+  // We expect that LaunchExtraSteps is called by this time (local
+  // authentication happens before oauth token validation).
+  token_validated_ = true;
+
+  if (token_validated_ && logged_in_)
+    GetScreen(host())->OnManagerSignIn();
+}
+
+
 bool LocallyManagedUserCreationFlow::HandleLoginFailure(
-    const LoginFailure& failure,
-    LoginDisplayHost* host) {
+    const LoginFailure& failure) {
   if (failure.reason() == LoginFailure::COULD_NOT_MOUNT_CRYPTOHOME)
-    GetScreen(host)->OnManagerLoginFailure();
+    GetScreen(host())->OnManagerLoginFailure();
   else
-    GetScreen(host)->ShowManagerInconsistentStateErrorScreen();
+    GetScreen(host())->ShowManagerInconsistentStateErrorScreen();
   return true;
 }
 
-bool LocallyManagedUserCreationFlow::HandlePasswordChangeDetected(
-    LoginDisplayHost* host) {
-  GetScreen(host)->ShowManagerInconsistentStateErrorScreen();
+bool LocallyManagedUserCreationFlow::HandlePasswordChangeDetected() {
+  GetScreen(host())->ShowManagerInconsistentStateErrorScreen();
   return true;
 }
 
 void LocallyManagedUserCreationFlow::LaunchExtraSteps(
-    Profile* profile,
-    LoginDisplayHost* host) {
-  GetScreen(host)->OnManagerSignIn();
+    Profile* profile) {
+
+  logged_in_ = true;
+  if (token_validated_ && logged_in_)
+    GetScreen(host())->OnManagerSignIn();
 }
 
 }  // namespace chromeos

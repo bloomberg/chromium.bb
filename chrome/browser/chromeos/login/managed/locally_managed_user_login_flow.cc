@@ -54,14 +54,16 @@ bool LocallyManagedUserLoginFlow::ShouldSkipPostLoginScreens() {
 }
 
 bool LocallyManagedUserLoginFlow::HandleLoginFailure(
-    const LoginFailure& failure,
-    LoginDisplayHost* host) {
+    const LoginFailure& failure) {
   return false;
 }
 
-bool LocallyManagedUserLoginFlow::HandlePasswordChangeDetected(
-    LoginDisplayHost* host) {
+bool LocallyManagedUserLoginFlow::HandlePasswordChangeDetected() {
   return false;
+}
+
+void LocallyManagedUserLoginFlow::HandleOAuthTokenStatusChange(
+    User::OAuthTokenStatus status) {
 }
 
 void LocallyManagedUserLoginFlow::LoadSyncSetupData() {
@@ -90,17 +92,14 @@ void LocallyManagedUserLoginFlow::ConfigureSync(const std::string& token) {
   data_loaded_ = true;
   // TODO(antrim): Propagate token when we know API.
 
-  LoginUtils::Get()->DoBrowserLaunch(profile_, host_);
+  LoginUtils::Get()->DoBrowserLaunch(profile_, host());
   profile_ = NULL;
-  host_ = NULL;
   UnregisterFlowSoon();
 }
 
 void LocallyManagedUserLoginFlow::LaunchExtraSteps(
-    Profile* profile,
-    LoginDisplayHost* host) {
+    Profile* profile) {
   profile_ = profile;
-  host_ = host;
 //  PrefService* prefs = profile->GetPrefs();
   const std::string token;
 //     =  prefs->GetString(kSyncServiceAuthorizationToken);
