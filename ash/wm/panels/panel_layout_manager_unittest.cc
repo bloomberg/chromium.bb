@@ -126,7 +126,7 @@ class PanelLayoutManagerTest : public test::AshTestBase {
     gfx::Rect window_bounds = panel->GetBoundsInScreen();
     gfx::Rect launcher_bounds = launcher->shelf_widget()->
         GetWindowBoundsInScreen();
-    ShelfAlignment alignment = GetAlignment();
+    ShelfAlignment alignment = GetAlignment(panel->GetRootWindow());
 
     if (IsHorizontal(alignment)) {
       // The horizontal bounds of the panel window should contain the bounds of
@@ -172,7 +172,7 @@ class PanelLayoutManagerTest : public test::AshTestBase {
 
     EXPECT_TRUE(widget->IsVisible());
 
-    ShelfAlignment alignment = GetAlignment();
+    ShelfAlignment alignment = GetAlignment(panel->GetRootWindow());
     switch (alignment) {
       case SHELF_ALIGNMENT_BOTTOM:
         EXPECT_EQ(panel_bounds.bottom(), callout_bounds.y());
@@ -229,14 +229,14 @@ class PanelLayoutManagerTest : public test::AshTestBase {
     test_api.RunMessageLoopUntilAnimationsDone();
   }
 
-  void SetAlignment(ShelfAlignment alignment) {
+  void SetAlignment(aura::RootWindow* root_window, ShelfAlignment alignment) {
     ash::Shell* shell = ash::Shell::GetInstance();
-    shell->SetShelfAlignment(alignment, shell->GetPrimaryRootWindow());
+    shell->SetShelfAlignment(alignment, root_window);
   }
 
-  ShelfAlignment GetAlignment() {
+  ShelfAlignment GetAlignment(aura::RootWindow* root_window) {
     ash::Shell* shell = ash::Shell::GetInstance();
-    return shell->GetShelfAlignment(shell->GetPrimaryRootWindow());
+    return shell->GetShelfAlignment(root_window);
   }
 
  private:
@@ -478,10 +478,12 @@ TEST_F(PanelLayoutManagerTest, MinimizeRestorePanel) {
         DISABLED_PanelMoveBetweenMultipleDisplays
 #define MAYBE_PanelAttachPositionMultipleDisplays \
         DISABLED_PanelAttachPositionMultipleDisplays
+#define MAYBE_PanelAlignmentSecondDisplay DISABLED_PanelAlignmentSecondDisplay
 #else
 #define MAYBE_PanelMoveBetweenMultipleDisplays PanelMoveBetweenMultipleDisplays
 #define MAYBE_PanelAttachPositionMultipleDisplays \
         PanelAttachPositionMultipleDisplays
+#define MAYBE_PanelAlignmentSecondDisplay PanelAlignmentSecondDisplay
 #endif
 
 TEST_F(PanelLayoutManagerTest, MAYBE_PanelMoveBetweenMultipleDisplays) {
@@ -570,11 +572,31 @@ TEST_F(PanelLayoutManagerTest, MAYBE_PanelAttachPositionMultipleDisplays) {
   IsCalloutAboveLauncherIcon(p1_d2.get());
 }
 
+TEST_F(PanelLayoutManagerTest, MAYBE_PanelAlignmentSecondDisplay) {
+  UpdateDisplay("600x400,600x400");
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+
+  scoped_ptr<aura::Window> p1_d2(CreatePanelWindow(gfx::Rect(600, 0, 50, 50)));
+  EXPECT_EQ(root_windows[1], p1_d2->GetRootWindow());
+
+  IsPanelAboveLauncherIcon(p1_d2.get());
+  IsCalloutAboveLauncherIcon(p1_d2.get());
+
+  SetAlignment(root_windows[1], SHELF_ALIGNMENT_RIGHT);
+  IsPanelAboveLauncherIcon(p1_d2.get());
+  IsCalloutAboveLauncherIcon(p1_d2.get());
+  SetAlignment(root_windows[1], SHELF_ALIGNMENT_LEFT);
+  IsPanelAboveLauncherIcon(p1_d2.get());
+  IsCalloutAboveLauncherIcon(p1_d2.get());
+  SetAlignment(root_windows[1], SHELF_ALIGNMENT_TOP);
+  IsPanelAboveLauncherIcon(p1_d2.get());
+  IsCalloutAboveLauncherIcon(p1_d2.get());
+}
 
 TEST_F(PanelLayoutManagerTest, AlignmentLeft) {
   gfx::Rect bounds(0, 0, 201, 201);
   scoped_ptr<aura::Window> w(CreatePanelWindow(bounds));
-  SetAlignment(SHELF_ALIGNMENT_LEFT);
+  SetAlignment(Shell::GetPrimaryRootWindow(), SHELF_ALIGNMENT_LEFT);
   IsPanelAboveLauncherIcon(w.get());
   IsCalloutAboveLauncherIcon(w.get());
 }
@@ -582,7 +604,7 @@ TEST_F(PanelLayoutManagerTest, AlignmentLeft) {
 TEST_F(PanelLayoutManagerTest, AlignmentRight) {
   gfx::Rect bounds(0, 0, 201, 201);
   scoped_ptr<aura::Window> w(CreatePanelWindow(bounds));
-  SetAlignment(SHELF_ALIGNMENT_RIGHT);
+  SetAlignment(Shell::GetPrimaryRootWindow(), SHELF_ALIGNMENT_RIGHT);
   IsPanelAboveLauncherIcon(w.get());
   IsCalloutAboveLauncherIcon(w.get());
 }
@@ -590,7 +612,7 @@ TEST_F(PanelLayoutManagerTest, AlignmentRight) {
 TEST_F(PanelLayoutManagerTest, AlignmentTop) {
   gfx::Rect bounds(0, 0, 201, 201);
   scoped_ptr<aura::Window> w(CreatePanelWindow(bounds));
-  SetAlignment(SHELF_ALIGNMENT_TOP);
+  SetAlignment(Shell::GetPrimaryRootWindow(), SHELF_ALIGNMENT_TOP);
   IsPanelAboveLauncherIcon(w.get());
   IsCalloutAboveLauncherIcon(w.get());
 }

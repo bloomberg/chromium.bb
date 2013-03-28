@@ -423,8 +423,8 @@ void PanelLayoutManager::Relayout() {
   ShelfAlignment alignment = launcher_->shelf_widget()->GetAlignment();
   bool horizontal = alignment == SHELF_ALIGNMENT_TOP ||
                     alignment == SHELF_ALIGNMENT_BOTTOM;
-  gfx::Rect launcher_bounds = launcher_->shelf_widget()->
-      GetWindowBoundsInScreen();
+  gfx::Rect launcher_bounds = ash::ScreenAsh::ConvertRectFromScreen(
+      panel_container_, launcher_->shelf_widget()->GetWindowBoundsInScreen());
   int panel_start_bounds = kPanelIdealSpacing;
   int panel_end_bounds = horizontal ?
       panel_container_->bounds().width() - kPanelIdealSpacing :
@@ -579,7 +579,7 @@ void PanelLayoutManager::UpdateCallouts() {
     aura::Window* panel = iter->window;
     views::Widget* callout_widget = iter->callout_widget;
 
-    gfx::Rect bounds = panel->GetBoundsInRootWindow();
+    gfx::Rect bounds = panel->GetBoundsInScreen();
     gfx::Rect icon_bounds =
         launcher_->GetScreenBoundsOfItemIconForWindow(panel);
     if (icon_bounds.IsEmpty() || !panel->IsVisible() ||
