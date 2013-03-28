@@ -8,7 +8,7 @@
 
 #include <string>
 
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/extensions/extension.h"
 #include "grit/chromium_strings.h"

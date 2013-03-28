@@ -6,7 +6,7 @@
 
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
 #include "chrome/browser/ui/cocoa/autofill/autofill_popup_view_bridge.h"
 #include "grit/ui_resources.h"

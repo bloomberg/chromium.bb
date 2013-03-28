@@ -9,7 +9,7 @@
 #include "base/mac/mac_util.h"
 #include "base/message_loop.h"
 #import "base/memory/scoped_nsobject.h"
-#import "base/sys_string_conversions.h"
+#import "base/strings/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/importer/importer_host.h"
 #include "chrome/browser/importer/importer_observer.h"

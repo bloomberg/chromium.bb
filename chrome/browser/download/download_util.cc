@@ -19,7 +19,7 @@
 #include "base/path_service.h"
 #include "base/string16.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "base/value_conversions.h"

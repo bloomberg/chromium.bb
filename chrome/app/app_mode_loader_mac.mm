@@ -18,7 +18,7 @@
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #import "chrome/common/mac/app_mode_chrome_locator.h"
 #include "chrome/common/mac/app_mode_common.h"
 

@@ -12,7 +12,7 @@
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/process_util.h"
 #include "base/stringprintf.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "third_party/GTM/Foundation/GTMServiceManagement.h"
 
 namespace {

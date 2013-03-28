@@ -7,7 +7,7 @@
 #include "base/auto_reset.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
 #include "chrome/browser/profiles/profile.h"

@@ -4,7 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/content_settings/cookie_tree_node.h"
 
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 
 @implementation CocoaCookieTreeNode
 

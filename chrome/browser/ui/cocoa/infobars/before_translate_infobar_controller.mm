@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/cocoa/infobars/before_translate_infobar_controller.h"
 
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_utilities.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"

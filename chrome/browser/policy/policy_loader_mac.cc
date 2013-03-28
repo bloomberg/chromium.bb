@@ -13,7 +13,7 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/path_service.h"
 #include "base/platform_file.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/policy/policy_bundle.h"
 #include "chrome/browser/policy/policy_map.h"

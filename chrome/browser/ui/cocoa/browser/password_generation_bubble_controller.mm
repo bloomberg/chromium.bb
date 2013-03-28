@@ -5,7 +5,7 @@
 #import "chrome/browser/ui/cocoa/browser/password_generation_bubble_controller.h"
 
 #include "base/mac/foundation_util.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"

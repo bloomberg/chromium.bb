@@ -6,7 +6,7 @@
 
 #include "base/memory/scoped_nsobject.h"
 #include "base/memory/singleton.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/speech/tts_controller.h"

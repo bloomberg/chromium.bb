@@ -5,7 +5,7 @@
 #include "chrome/browser/icon_manager.h"
 
 #include "base/files/file_path.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 
 IconGroupID IconManager::GetGroupIDFromFilepath(
     const base::FilePath& filepath) {

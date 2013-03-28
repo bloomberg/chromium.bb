@@ -6,7 +6,7 @@
 
 #include "base/stringprintf.h"
 #include "base/string_util.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 
 CrashUploadListWin::CrashUploadListWin(Delegate* delegate)
     : CrashUploadList(delegate) {}

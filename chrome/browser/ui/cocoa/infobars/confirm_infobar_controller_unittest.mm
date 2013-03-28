@@ -6,7 +6,7 @@
 
 #include "base/memory/scoped_nsobject.h"
 #include "base/string_util.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"

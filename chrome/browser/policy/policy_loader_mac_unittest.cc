@@ -6,7 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/mac/scoped_cftyperef.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/policy/async_policy_provider.h"
 #include "chrome/browser/policy/configuration_policy_provider_test.h"

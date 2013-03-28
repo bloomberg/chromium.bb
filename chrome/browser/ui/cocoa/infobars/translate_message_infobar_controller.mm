@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/cocoa/infobars/translate_message_infobar_controller.h"
 
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_utilities.h"
 
 using InfoBarUtilities::MoveControl;

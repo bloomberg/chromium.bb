@@ -17,7 +17,7 @@
 #include "base/process_util.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/mac/launchd.h"
 #include "chrome/common/service_process_util.h"

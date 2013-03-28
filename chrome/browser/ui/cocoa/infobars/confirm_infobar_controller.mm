@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/cocoa/infobars/confirm_infobar_controller.h"
 
 #include "base/logging.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/ui/cocoa/event_utils.h"
 #import "chrome/browser/ui/cocoa/hyperlink_text_view.h"

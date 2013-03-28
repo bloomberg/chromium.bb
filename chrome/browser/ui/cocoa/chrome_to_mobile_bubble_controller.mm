@@ -6,7 +6,7 @@
 
 #include "base/mac/mac_util.h"
 #include "base/memory/weak_ptr.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/chrome_to_mobile_service_factory.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"

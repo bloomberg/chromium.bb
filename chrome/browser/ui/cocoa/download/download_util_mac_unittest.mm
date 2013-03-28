@@ -6,7 +6,7 @@
 
 #include "base/files/file_path.h"
 #include "base/path_service.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/download/download_util_mac.h"
 #include "chrome/common/chrome_paths.h"

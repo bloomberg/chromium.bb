@@ -18,7 +18,7 @@
 #include "base/i18n/icu_util.h"
 #include "base/logging.h"
 #include "base/stringprintf.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/diagnostics/diagnostics_model.h"

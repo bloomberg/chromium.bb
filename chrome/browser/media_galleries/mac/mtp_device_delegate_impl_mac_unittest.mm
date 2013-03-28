@@ -11,7 +11,7 @@
 #include "base/memory/scoped_nsobject.h"
 #include "base/message_loop.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/test/sequenced_worker_pool_owner.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/media_galleries/mac/mtp_device_delegate_impl_mac.h"

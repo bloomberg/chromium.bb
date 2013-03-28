@@ -5,7 +5,7 @@
 #import "chrome/browser/ui/cocoa/omnibox/omnibox_popup_view_mac.h"
 
 #include "base/memory/scoped_ptr.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "testing/platform_test.h"
 #include "ui/base/text/text_elider.h"

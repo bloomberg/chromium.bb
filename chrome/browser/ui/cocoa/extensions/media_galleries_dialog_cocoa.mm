@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/cocoa/extensions/media_galleries_dialog_cocoa.h"
 
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_alert.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_sheet.h"
 #import "chrome/browser/ui/cocoa/key_equivalent_constants.h"

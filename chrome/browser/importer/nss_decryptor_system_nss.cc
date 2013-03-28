@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/stringprintf.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "crypto/nss_util.h"
 
 NSSDecryptor::NSSDecryptor() : is_nss_initialized_(false), db_slot_(NULL) {}

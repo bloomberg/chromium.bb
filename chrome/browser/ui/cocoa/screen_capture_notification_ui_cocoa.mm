@@ -10,7 +10,7 @@
 #include "base/i18n/rtl.h"
 #include "base/mac/bundle_locations.h"
 #include "base/string_util.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 

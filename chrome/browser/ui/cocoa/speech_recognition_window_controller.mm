@@ -5,7 +5,7 @@
 #import "speech_recognition_window_controller.h"
 
 #include "base/logging.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/ui/cocoa/info_bubble_view.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"

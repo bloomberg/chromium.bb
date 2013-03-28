@@ -8,7 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #import "base/memory/scoped_nsobject.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/sessions/session_tab_helper.h"

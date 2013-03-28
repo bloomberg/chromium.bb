@@ -8,7 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/process_util.h"
 #include "base/string_piece.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/test/test_file_util.h"
 
 int main(int argc, const char* argv[]) {

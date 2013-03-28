@@ -8,7 +8,7 @@
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/platform_file.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/renderer/spellchecker/hunspell_engine.h"
 #include "chrome/renderer/spellchecker/spellcheck.h"

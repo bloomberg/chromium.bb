@@ -8,7 +8,7 @@
 
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 
 #include "chrome/browser/importer/firefox_importer_utils.h"
 #include "chrome/browser/importer/nss_decryptor_mac.h"

@@ -5,7 +5,7 @@
 #import "chrome/browser/ui/cocoa/location_bar/ev_bubble_decoration.h"
 
 #import "base/logging.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_icon_decoration.h"
 #include "ui/base/text/text_elider.h"
 #include "ui/gfx/font.h"

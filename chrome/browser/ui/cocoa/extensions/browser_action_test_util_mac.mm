@@ -5,7 +5,7 @@
 #include "chrome/browser/extensions/browser_action_test_util.h"
 
 #include "base/mac/foundation_util.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
 #import "chrome/browser/ui/cocoa/browser_window_cocoa.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"

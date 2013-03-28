@@ -6,7 +6,7 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_logging.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #import "chrome/common/cloud_print/cloud_print_class_mac.h"
 #include "chrome/common/chrome_switches.h"
 

@@ -5,7 +5,7 @@
 #import "chrome/browser/ui/cocoa/global_error_bubble_controller.h"
 
 #include "base/logging.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/search_engines/util.h"
 #import "chrome/browser/ui/browser.h"

@@ -4,7 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/browser/avatar_button_controller.h"
 
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/command_updater.h"

@@ -11,7 +11,7 @@
 #include "base/mac/mac_util.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #import "chrome/browser/ui/cocoa/bubble_view.h"
 #include "net/base/net_util.h"

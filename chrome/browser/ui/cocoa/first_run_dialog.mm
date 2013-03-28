@@ -10,7 +10,7 @@
 #include "base/memory/ref_counted.h"
 #import "base/memory/scoped_nsobject.h"
 #include "base/message_loop.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/first_run/first_run_dialog.h"
 #include "chrome/browser/profiles/profile.h"

@@ -6,7 +6,7 @@
 
 #include "base/prefs/pref_service.h"
 #include "base/string16.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_expanded_state_tracker.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/net/url_fixer_upper.h"

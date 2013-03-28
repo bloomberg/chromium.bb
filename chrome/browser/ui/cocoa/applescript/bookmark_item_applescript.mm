@@ -4,7 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/applescript/bookmark_item_applescript.h"
 
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #import "chrome/browser/ui/cocoa/applescript/error_applescript.h"

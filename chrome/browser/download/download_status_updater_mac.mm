@@ -7,7 +7,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/memory/scoped_nsobject.h"
 #include "base/supports_user_data.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "content/public/browser/download_item.h"
 #import "chrome/browser/ui/cocoa/dock_icon.h"
 #include "googleurl/src/gurl.h"

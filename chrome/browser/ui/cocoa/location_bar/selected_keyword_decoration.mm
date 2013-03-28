@@ -4,7 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/location_bar/selected_keyword_decoration.h"
 
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #import "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
 #include "chrome/browser/ui/omnibox/location_bar_util.h"
 #include "grit/generated_resources.h"

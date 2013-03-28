@@ -7,7 +7,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/string16.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/toolbar/encoding_menu_controller.h"

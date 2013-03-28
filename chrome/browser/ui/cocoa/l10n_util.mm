@@ -5,7 +5,7 @@
 #import "chrome/browser/ui/cocoa/l10n_util.h"
 
 #include "base/string_util.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 
 namespace cocoa_l10n_util {

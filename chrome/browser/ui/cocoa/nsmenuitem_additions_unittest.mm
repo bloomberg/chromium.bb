@@ -9,7 +9,7 @@
 #include <ostream>
 
 #include "base/memory/scoped_nsobject.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 NSEvent* KeyEvent(const NSUInteger modifierFlags,

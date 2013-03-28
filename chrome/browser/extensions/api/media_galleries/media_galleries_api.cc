@@ -34,7 +34,7 @@
 #include "content/public/browser/web_contents.h"
 
 #if defined(OS_WIN)
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #endif
 
 using chrome::MediaFileSystemInfo;

@@ -14,7 +14,7 @@
 #import "base/mac/bundle_locations.h"
 #import "base/mac/foundation_util.h"
 #import "base/mac/scoped_nsautorelease_pool.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "chrome/common/chrome_paths_internal.h"
 
 void SetUpBundleOverrides() {

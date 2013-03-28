@@ -5,7 +5,7 @@
 #import "chrome/browser/ui/cocoa/confirm_bubble_controller.h"
 
 #include "base/mac/mac_util.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #import "chrome/browser/ui/cocoa/confirm_bubble_cocoa.h"
 #import "chrome/browser/ui/confirm_bubble_model.h"
 #include "ui/gfx/image/image.h"

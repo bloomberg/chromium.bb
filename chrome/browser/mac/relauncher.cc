@@ -27,7 +27,7 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/process_util.h"
 #include "base/stringprintf.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/mac/install_from_dmg.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/common/content_paths.h"

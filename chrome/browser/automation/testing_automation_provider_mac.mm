@@ -8,7 +8,7 @@
 
 #include "ui/base/l10n/l10n_util.h"
 #include "base/logging.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/automation/automation_browser_tracker.h"
 #include "chrome/browser/automation/automation_window_tracker.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"

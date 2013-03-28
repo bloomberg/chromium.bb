@@ -5,7 +5,7 @@
 #import <Cocoa/Cocoa.h>
 #include "chrome/browser/ui/cocoa/find_bar/find_bar_bridge.h"
 
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #import "chrome/browser/ui/cocoa/find_bar/find_bar_cocoa_controller.h"
 
 // static

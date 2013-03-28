@@ -8,7 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/mac/bundle_locations.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 
 namespace chrome {
 

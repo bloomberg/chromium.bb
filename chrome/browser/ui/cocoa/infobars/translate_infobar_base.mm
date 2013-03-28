@@ -5,7 +5,7 @@
 #import "chrome/browser/ui/cocoa/infobars/translate_infobar_base.h"
 
 #include "base/logging.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
 #import "chrome/browser/ui/cocoa/hover_close_button.h"

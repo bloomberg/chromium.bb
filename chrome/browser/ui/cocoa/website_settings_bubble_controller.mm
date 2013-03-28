@@ -9,7 +9,7 @@
 #import <AppKit/AppKit.h>
 
 #include "base/strings/string_number_conversions.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #import "chrome/browser/certificate_viewer.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #import "chrome/browser/ui/browser_dialogs.h"

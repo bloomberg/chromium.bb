@@ -6,7 +6,7 @@
 
 #include "base/mac/cocoa_protocols.h"
 #include "base/mac/mac_util.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/balloon_notification_ui_manager.h"
 

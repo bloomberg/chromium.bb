@@ -8,7 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #import "base/mac/scoped_nsautorelease_pool.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "policy/policy_constants.h"
 
 #import <Cocoa/Cocoa.h>

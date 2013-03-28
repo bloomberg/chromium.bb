@@ -12,7 +12,7 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_service.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/devtools/devtools_window.h"

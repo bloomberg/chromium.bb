@@ -16,8 +16,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"
 #include "base/string_util.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/synchronization/lock.h"
-#include "base/sys_string_conversions.h"
 
 // Clients use this listener interface to get notifications about
 // events happening as a particular ImageCapture device is interacted with.

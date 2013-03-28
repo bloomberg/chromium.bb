@@ -7,7 +7,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/plugins/plugin_finder.h"

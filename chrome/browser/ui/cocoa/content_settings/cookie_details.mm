@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/cocoa/content_settings/cookie_details.h"
 
 #import "base/i18n/time_formatting.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/browsing_data/cookies_tree_model.h"
 #include "grit/generated_resources.h"
 #include "net/cookies/canonical_cookie.h"

@@ -20,7 +20,7 @@
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "grit/chromium_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #endif

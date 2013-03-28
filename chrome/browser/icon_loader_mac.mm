@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/threading/thread.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_util_mac.h"
 

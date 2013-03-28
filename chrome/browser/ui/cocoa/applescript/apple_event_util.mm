@@ -7,7 +7,7 @@
 #import <Carbon/Carbon.h>
 
 #include "base/logging.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
 
 namespace chrome {

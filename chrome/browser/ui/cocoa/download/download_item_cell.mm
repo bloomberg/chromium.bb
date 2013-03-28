@@ -4,7 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/download/download_item_cell.h"
 
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_util.h"
 #import "chrome/browser/themes/theme_properties.h"

@@ -9,7 +9,7 @@
 #include <stdlib.h>
 
 #include "base/logging.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/ui_strings.h"
