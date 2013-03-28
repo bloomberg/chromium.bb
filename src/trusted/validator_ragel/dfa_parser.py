@@ -3,6 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import collections
 from lxml import etree
 
 
@@ -43,6 +44,9 @@ class Transition(object):
   ]
 
 
+Action = collections.namedtuple('Action', ['name', 'body'])
+
+
 def ParseXml(xml_file):
   """Parse XML representation of automaton and return (states, start) pair.
 
@@ -66,11 +70,12 @@ def ParseXml(xml_file):
     assert action_id == expected_action_id
     # If action have no name then use it's text as a name
     action_name = action.get('name')
-    if action_name is None:
-      assert len(action) == 1
-      assert action[0].text is not None
-      action_name = action[0].text
-    actions.append(action_name)
+    action_body = ''
+    assert len(action) <= 1
+    if len(action) == 1:
+      action_body = action[0].text
+      assert action_body is not None
+    actions.append(Action(action_name, action_body))
 
   action_tables = []
   xml_action_tables = xml_tree.xpath('//action_table')
@@ -85,7 +90,8 @@ def ParseXml(xml_file):
     action_tables.append(action_list)
 
   # There are only one global error action and it's called "report_fatal_error"
-  assert action_tables[0] == ['report_fatal_error']
+  (error_action,) = action_tables[0]
+  assert error_action.name == 'report_fatal_error'
 
   (error_state,) = xml_tree.xpath('//error_state')
   error_state_id = int(error_state.text)
@@ -143,7 +149,7 @@ def ParseXml(xml_file):
     if (len(transitions) == 256 and
         len(set(t.to_state for t in transitions)) == 1 and
         len(set(tuple(t.actions) for t in transitions)) == 1 and
-        'any_byte' in transitions[0].actions):
+        any(action.name == 'any_byte' for action in transitions[0].actions)):
       state.any_byte = True
     else:
       state.any_byte = False

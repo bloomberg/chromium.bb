@@ -30,7 +30,7 @@ def CheckForProperCleanup(states):
   for state in states:
     for transition in state.forward_transitions.values():
       if transition.to_state.is_accepting:
-        assert transition.actions[-1] == 'end_of_instruction_cleanup'
+        assert transition.actions[-1].name == 'end_of_instruction_cleanup'
 
 
 def CheckDFAActions(start_state, states):
