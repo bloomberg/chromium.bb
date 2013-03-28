@@ -1,0 +1,35 @@
+@hex:
+  # See https://code.google.com/p/nativeclient/issues/detail?id=3356
+  # crc32w %ax,%eax
+  66 f2 0f 38 f1 c0
+  90
+  90
+  90
+  90
+  90
+  90
+@nval:
+  VALIDATOR: 0: Bad prefix usage
+  VALIDATOR: 0: Undefined instruction
+  *** <input> IS UNSAFE ***
+@dis:
+  00000000: 66 f2 0f 38 f1 c0                            crc32 %eax, %ax
+  00000006: 90                                           nop
+  00000007: 90                                           nop
+  00000008: 90                                           nop
+  00000009: 90                                           nop
+  0000000a: 90                                           nop
+  0000000b: 90                                           nop
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  # crc32w %eax,%eax
+  f2 0f 38 f1 c0
+@nval:
+  *** <input> is safe ***
+@dis:
+  00000000: f2 0f 38 f1 c0                               crc32 %eax, %eax
+@rdfa_output:
+  return code: 0

@@ -242,9 +242,11 @@ cpuid, 0x0f 0xa2
 # following five variations, so it's better to make it explicit, and second,
 # rules to determine what suffix instruction name is followed with, special
 # treatment would be required (for compatibility with objdump).
+# Note: crc32 Ew Gd is disallowed for consistency with old validator, see
+#  https://code.google.com/p/nativeclient/issues/detail?id=3356
 crc32b Eb Gd, 0xf2 0x0f 0x38 0xf0, norexw CPUFeature_SSE42
 crc32b Eb Gq, rexw 0xf2 0x0f 0x38 0xf0, amd64 CPUFeature_SSE42
-crc32w Ew Gd, data16 0xf2 0x0f 0x38 0xf1, norexw CPUFeature_SSE42
+crc32w Ew Gd, data16 0xf2 0x0f 0x38 0xf1, norexw CPUFeature_SSE42 nacl-forbidden
 crc32l Ed Gd, 0xf2 0x0f 0x38 0xf1, norexw CPUFeature_SSE42
 crc32q Eq Gq, rexw 0xf2 0x0f 0x38 0xf1, amd64 CPUFeature_SSE42
 ######## DEC ###################################################################

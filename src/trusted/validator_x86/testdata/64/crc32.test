@@ -1,0 +1,27 @@
+@hex:
+  # See https://code.google.com/p/nativeclient/issues/detail?id=3356
+  # crc32w %ax,%eax
+  66 f2 0f 38 f1 c0
+@rval:
+  VALIDATOR: 0000000000000000: 66 f2 0f 38 f1 c0                            crc32 %eax, %ax
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: Checking jump targets: 0 to 6
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 66 f2 0f 38 f1 c0                            crc32 %eax, %ax
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  # crc32w %eax,%eax
+  f2 0f 38 f1 c0
+@rval:
+  VALIDATOR: Checking jump targets: 0 to 5
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@dis:
+  0000000000000000: f2 0f 38 f1 c0                               crc32 %eax, %eax
+@rdfa_output:
+  return code: 0
