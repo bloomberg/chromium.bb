@@ -8,9 +8,21 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "base/strings/sys_string_conversions.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #import "ui/base/cocoa/hover_image_button.h"
 #import "ui/base/test/ui_cocoa_test_helper.h"
 #include "ui/message_center/message_center_constants.h"
+#include "ui/message_center/notification.h"
+#include "ui/message_center/notification_change_observer.h"
+
+namespace {
+
+class MockChangeObserver : public message_center::NotificationChangeObserver {
+ public:
+  MOCK_METHOD2(OnRemoveNotification, void(const std::string&, bool));
+};
+
+}  // namespace
 
 @implementation MCNotificationController (TestingInterface)
 - (NSButton*)closeButton {
@@ -50,8 +62,8 @@ TEST_F(NotificationControllerTest, BasicLayout) {
   notification->set_icon(gfx::Image([TestIcon() retain]));
 
   scoped_nsobject<MCNotificationController> controller(
-      [[MCNotificationController alloc] initWithNotification:
-          notification.get()]);
+      [[MCNotificationController alloc] initWithNotification:notification.get()
+                                              changeObserver:NULL]);
   [controller view];
 
   EXPECT_EQ(TestIcon(), [[controller iconView] image]);
@@ -76,10 +88,32 @@ TEST_F(NotificationControllerTest, OverflowText) {
           std::string(),
           NULL));
   scoped_nsobject<MCNotificationController> controller(
-      [[MCNotificationController alloc] initWithNotification:
-          notification.get()]);
+      [[MCNotificationController alloc] initWithNotification:notification.get()
+                                              changeObserver:NULL]);
   [controller view];
 
   EXPECT_GT(NSHeight([[controller view] frame]),
             message_center::kNotificationIconSize);
+}
+
+TEST_F(NotificationControllerTest, Close) {
+  scoped_ptr<message_center::Notification> notification(
+      new message_center::Notification(
+          message_center::NOTIFICATION_TYPE_SIMPLE,
+          "an_id",
+          string16(),
+          string16(),
+          string16(),
+          std::string(),
+          NULL));
+  MockChangeObserver observer;
+
+  scoped_nsobject<MCNotificationController> controller(
+      [[MCNotificationController alloc] initWithNotification:notification.get()
+                                              changeObserver:&observer]);
+  [controller view];
+
+  EXPECT_CALL(observer, OnRemoveNotification("an_id", true));
+
+  [[controller closeButton] performClick:nil];
 }

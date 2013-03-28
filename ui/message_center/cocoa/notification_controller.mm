@@ -11,6 +11,8 @@
 #import "ui/base/cocoa/hover_image_button.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/message_center/message_center_constants.h"
+#include "ui/message_center/notification.h"
+#include "ui/message_center/notification_change_observer.h"
 
 @interface MCNotificationController (Private)
 // Configures a NSBox to be borderless, titleless, and otherwise appearance-
@@ -41,9 +43,11 @@
 
 @implementation MCNotificationController
 
-- (id)initWithNotification:(const message_center::Notification*)notification {
+- (id)initWithNotification:(const message_center::Notification*)notification
+    changeObserver:(message_center::NotificationChangeObserver*)observer {
   if ((self = [super initWithNibName:nil bundle:nil])) {
     notification_ = notification;
+    observer_ = observer;
   }
   return self;
 }
@@ -84,7 +88,11 @@
 }
 
 - (void)close:(id)sender {
-  // TODO(rsesek): Figure me out.
+  observer_->OnRemoveNotification(notification_->id(), /*by_user=*/true);
+}
+
+- (const message_center::Notification*)notification {
+  return notification_;
 }
 
 // Private /////////////////////////////////////////////////////////////////////

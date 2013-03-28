@@ -8,7 +8,11 @@
 #import <Cocoa/Cocoa.h>
 
 #import "base/memory/scoped_nsobject.h"
-#include "ui/message_center/notification.h"
+
+namespace message_center {
+class Notification;
+class NotificationChangeObserver;
+}
 
 @class HoverImageButton;
 
@@ -17,8 +21,11 @@
 // the content for both a popup bubble and a view in the notification tray.
 @interface MCNotificationController : NSViewController {
  @protected
-  // The message object.
+  // The message object. Weak.
   const message_center::Notification* notification_;
+
+  // Observer of the notification, where action messages are forwarded. Weak.
+  message_center::NotificationChangeObserver* observer_;
 
   // The button that invokes |-close:|, in the upper-right corner.
   scoped_nsobject<HoverImageButton> closeButton_;
@@ -34,10 +41,14 @@
 }
 
 // Creates a new controller for a given notification.
-- (id)initWithNotification:(const message_center::Notification*)notification;
+- (id)initWithNotification:(const message_center::Notification*)notification
+    changeObserver:(message_center::NotificationChangeObserver*)observer;
 
 // Action for clicking on the notification's |closeButton_|.
 - (void)close:(id)sender;
+
+// Accessor for the notification.
+- (const message_center::Notification*)notification;
 
 @end
 

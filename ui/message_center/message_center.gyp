@@ -25,8 +25,10 @@
         'MESSAGE_CENTER_IMPLEMENTATION',
       ],
       'sources': [
-        'cocoa/notification_controller.mm',
         'cocoa/notification_controller.h',
+        'cocoa/notification_controller.mm',
+        'cocoa/popup_controller.h',
+        'cocoa/popup_controller.mm',
         'message_center.cc',
         'message_center.h',
         'message_center_constants.cc',
@@ -94,6 +96,7 @@
         '../../base/base.gyp:base',
         '../../base/base.gyp:test_support_base',
         '../../skia/skia.gyp:skia',
+        '../../testing/gmock.gyp:gmock',
         '../../testing/gtest.gyp:gtest',
         '../ui.gyp:run_ui_unittests',
         '../ui.gyp:ui',
@@ -101,6 +104,7 @@
       ],
       'sources': [
         'cocoa/notification_controller_unittest.mm',
+        'cocoa/popup_controller_unittest.mm',
         'message_center_tray_unittest.cc',
         'notification_list_unittest.cc',
       ],
