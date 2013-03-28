@@ -449,7 +449,7 @@ bool SearchBox::GenerateDataURLForSuggestionRequest(const GURL& request_url,
     response_html = kInvalidSuggestionHtml;
   }
 
-  *data_url = GURL("data:text/html," + response_html);
+  *data_url = GURL("data:text/html;charset=utf-8," + response_html);
   return true;
 }
 
