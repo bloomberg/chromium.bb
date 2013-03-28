@@ -36,11 +36,6 @@ std::string BrowserTabRestoreServiceDelegate::GetAppName() const {
   return browser_->app_name();
 }
 
-SessionAppType BrowserTabRestoreServiceDelegate::GetAppType() const {
-  return browser_->app_type() == Browser::APP_TYPE_HOST ?
-      SESSION_APP_TYPE_HOST : SESSION_APP_TYPE_CHILD;
-}
-
 WebContents* BrowserTabRestoreServiceDelegate::GetWebContentsAt(
     int index) const {
   return browser_->tab_strip_model()->GetWebContentsAt(index);
@@ -92,21 +87,15 @@ void BrowserTabRestoreServiceDelegate::CloseTab() {
 TabRestoreServiceDelegate* TabRestoreServiceDelegate::Create(
     Profile* profile,
     chrome::HostDesktopType host_desktop_type,
-    const std::string& app_name,
-    SessionAppType app_type) {
+    const std::string& app_name) {
   Browser* browser;
   if (app_name.empty()) {
     browser = new Browser(Browser::CreateParams(profile, host_desktop_type));
   } else {
-    Browser::CreateParams params(Browser::TYPE_POPUP,
-                                 profile,
-                                 host_desktop_type);
-    params.app_name = app_name;
-    params.app_type = app_type ==
-        SESSION_APP_TYPE_CHILD ?
-            Browser::APP_TYPE_CHILD : Browser::APP_TYPE_HOST;
-    params.initial_bounds = gfx::Rect();
-    browser = new Browser(params);
+    browser = new Browser(
+        Browser::CreateParams::CreateForApp(
+            Browser::TYPE_POPUP, app_name, gfx::Rect(), profile,
+            host_desktop_type));
   }
   if (browser)
     return browser->tab_restore_service_delegate();

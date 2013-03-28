@@ -15,7 +15,6 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/sessions/session_id.h"
-#include "chrome/browser/sessions/session_types.h"
 #include "chrome/common/cancelable_task_tracker.h"
 #include "googleurl/src/gurl.h"
 
@@ -105,12 +104,11 @@ class BaseSessionService : public CancelableRequestProvider {
       SessionID::id_type tab_id,
       const std::string& user_agent_override);
 
-  // Creates a SessionCommand stores a browser window's app name and type.
-  SessionCommand* CreateSetWindowAppCommand(
+  // Creates a SessionCommand stores a browser window's app name.
+  SessionCommand* CreateSetWindowAppNameCommand(
       SessionID::id_type command_id,
       SessionID::id_type window_id,
-      const std::string& app_name,
-      SessionAppType app_type);
+      const std::string& app_name);
 
   // Converts a SessionCommand previously created by
   // CreateUpdateTabNavigationCommand into a TabNavigation. Returns true
@@ -135,13 +133,11 @@ class BaseSessionService : public CancelableRequestProvider {
       std::string* user_agent_override);
 
   // Extracts a SessionCommand as previously created by
-  // CreateSetWindowAppNameCommand into the window id and application name and
-  // type.
-  bool RestoreSetWindowAppCommand(
+  // CreateSetWindowAppNameCommand into the window id and application name.
+  bool RestoreSetWindowAppNameCommand(
       const SessionCommand& command,
       SessionID::id_type* window_id,
-      std::string* app_name,
-      SessionAppType* app_type);
+      std::string* app_name);
 
   // Returns true if the entry at specified |url| should be written to disk.
   bool ShouldTrackEntry(const GURL& url);

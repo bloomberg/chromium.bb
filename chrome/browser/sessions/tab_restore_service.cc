@@ -42,10 +42,7 @@ TabRestoreService::Tab::~Tab() {
 
 // Window ---------------------------------------------------------------------
 
-TabRestoreService::Window::Window()
-    : Entry(WINDOW),
-      selected_tab_index(-1),
-      app_type(SESSION_APP_TYPE_HOST) {
+TabRestoreService::Window::Window() : Entry(WINDOW), selected_tab_index(-1) {
 }
 
 TabRestoreService::Window::~Window() {

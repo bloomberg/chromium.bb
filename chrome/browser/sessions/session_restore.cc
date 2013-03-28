@@ -570,8 +570,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
           static_cast<Browser::Type>((*i)->type),
           (*i)->bounds,
           (*i)->show_state,
-          (*i)->app_name,
-          (*i)->app_type);
+          (*i)->app_name);
 
       // Restore and show the browser.
       const int initial_tab_count = 0;
@@ -845,8 +844,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
               static_cast<Browser::Type>((*i)->type),
               (*i)->bounds,
               show_state,
-              (*i)->app_name,
-              (*i)->app_type);
+              (*i)->app_name);
         }
 #if defined(OS_CHROMEOS)
     chromeos::BootTimesLoader::Get()->AddLoginTimeMarker(
@@ -1033,12 +1031,9 @@ class SessionRestoreImpl : public content::NotificationObserver {
   Browser* CreateRestoredBrowser(Browser::Type type,
                                  gfx::Rect bounds,
                                  ui::WindowShowState show_state,
-                                 const std::string& app_name,
-                                 SessionAppType app_type) {
+                                 const std::string& app_name) {
     Browser::CreateParams params(type, profile_, host_desktop_type_);
     params.app_name = app_name;
-    params.app_type = app_type == SESSION_APP_TYPE_HOST ?
-        Browser::APP_TYPE_HOST : Browser::APP_TYPE_CHILD;
     params.initial_bounds = bounds;
     params.initial_show_state = show_state;
     params.is_session_restore = true;

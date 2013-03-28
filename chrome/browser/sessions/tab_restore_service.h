@@ -119,9 +119,6 @@ class TabRestoreService : public ProfileKeyedService {
 
     // If an application window, the name of the app.
     std::string app_name;
-
-    // Hosted or child application. Only valid if app_name is non empty.
-    SessionAppType app_type;
   };
 
   typedef std::list<Entry*> Entries;

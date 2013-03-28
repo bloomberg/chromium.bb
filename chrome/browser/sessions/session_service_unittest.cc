@@ -537,7 +537,7 @@ TEST_F(SessionServiceTest, RestoreApp) {
   service()->SetWindowBounds(window2_id,
                              window_bounds,
                              ui::SHOW_STATE_NORMAL);
-  service()->SetWindowApp(window2_id, "TestApp", SESSION_APP_TYPE_HOST);
+  service()->SetWindowAppName(window2_id, "TestApp");
 
   TabNavigation nav1 =
       SessionTypesTestHelper::CreateNavigation("http://google.com", "abc");
@@ -570,7 +570,6 @@ TEST_F(SessionServiceTest, RestoreApp) {
   ASSERT_EQ(1U, windows[app_index]->tabs.size());
   ASSERT_TRUE(windows[app_index]->type == Browser::TYPE_POPUP);
   ASSERT_EQ("TestApp", windows[app_index]->app_name);
-  ASSERT_EQ(SESSION_APP_TYPE_HOST, windows[app_index]->app_type);
 
   tab = windows[app_index]->tabs[0];
   helper_.AssertTabEquals(window2_id, tab2_id, 0, 0, 1, *tab);

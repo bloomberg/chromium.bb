@@ -198,13 +198,6 @@ struct SessionTab {
   DISALLOW_COPY_AND_ASSIGN(SessionTab);
 };
 
-// see Browser::AppType. Do not change existing enum values as they are
-// persisted to disk.
-enum SessionAppType {
-  SESSION_APP_TYPE_HOST = 1,
-  SESSION_APP_TYPE_CHILD = 2
-};
-
 // SessionWindow -------------------------------------------------------------
 
 // Describes a saved window.
@@ -248,7 +241,6 @@ struct SessionWindow {
   ui::WindowShowState show_state;
 
   std::string app_name;
-  SessionAppType app_type;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SessionWindow);
