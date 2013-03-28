@@ -26,10 +26,11 @@ const char16 kPopDirectionalFormatting = 0x202C;
 const char16 kLeftToRightOverride = 0x202D;
 const char16 kRightToLeftOverride = 0x202E;
 
+// Locale.java mirrored this enum TextDirection. Please keep in sync.
 enum TextDirection {
-  UNKNOWN_DIRECTION,
-  RIGHT_TO_LEFT,
-  LEFT_TO_RIGHT,
+  UNKNOWN_DIRECTION = 0,
+  RIGHT_TO_LEFT = 1,
+  LEFT_TO_RIGHT = 2,
 };
 
 // Get the locale that the currently running process has been configured to use.

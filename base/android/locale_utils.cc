@@ -7,6 +7,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
+#include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "jni/LocaleUtils_jni.h"
@@ -14,6 +15,16 @@
 
 namespace base {
 namespace android {
+
+jboolean IsRTL(JNIEnv* env, jclass clazz) {
+  return base::i18n::IsRTL();
+}
+
+jint GetFirstStrongCharacterDirection(JNIEnv* env, jclass clazz,
+                                      jstring string) {
+  return base::i18n::GetFirstStrongCharacterDirection(
+      base::android::ConvertJavaStringToUTF16(env, string));
+}
 
 std::string GetDefaultLocale() {
   JNIEnv* env = AttachCurrentThread();
