@@ -40,6 +40,7 @@ import dgen_decoder_output
 import dgen_test_output
 import dgen_actuals
 import dgen_baselines
+import dgen_decoder
 
 def _localize_filename(filename):
   """ Strips off directories above 'native_client', returning
@@ -54,6 +55,8 @@ def _localize_filename(filename):
 
 def install_actuals_and_baselines(decoder, cl_args):
     if not decoder.primary: raise Exception('No tables provided')
+
+    decoder = dgen_decoder.AddImplicitMethodsToDecoder(decoder)
 
     # Generate baselines form descriptions in tables.
     decoder = dgen_baselines.AddBaselinesToDecoder(decoder)

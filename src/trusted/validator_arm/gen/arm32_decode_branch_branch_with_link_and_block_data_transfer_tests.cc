@@ -56,6 +56,7 @@ namespace nacl_arm_test {
 //               SmallestGPR(registers) => UNKNOWN],
 //       small_imm_base_wb: wback,
 //       uses: Union({Rn}, registers),
+//       violations: [implied by 'base'],
 //       wback: W(21)=1}
 class STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_0TesterCase0
     : public Arm32DecoderTester {
@@ -110,6 +111,7 @@ bool STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_0TesterCase0
 //         Contains(registers, Pc) => FORBIDDEN_OPERANDS],
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
+//       violations: [implied by 'base'],
 //       wback: W(21)=1}
 class LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_0TesterCase1
     : public Arm32DecoderTester {
@@ -165,6 +167,7 @@ bool LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_0TesterCase1
 //               SmallestGPR(registers) => UNKNOWN],
 //       small_imm_base_wb: wback,
 //       uses: Union({Rn}, registers),
+//       violations: [implied by 'base'],
 //       wback: W(21)=1}
 class STM_STMIA_STMEA_cccc100010w0nnnnrrrrrrrrrrrrrrrr_case_0TesterCase2
     : public Arm32DecoderTester {
@@ -219,6 +222,7 @@ bool STM_STMIA_STMEA_cccc100010w0nnnnrrrrrrrrrrrrrrrr_case_0TesterCase2
 //         Contains(registers, Pc) => FORBIDDEN_OPERANDS],
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
+//       violations: [implied by 'base'],
 //       wback: W(21)=1}
 class LDM_LDMIA_LDMFD_cccc100010w1nnnnrrrrrrrrrrrrrrrr_case_0TesterCase3
     : public Arm32DecoderTester {
@@ -274,6 +278,7 @@ bool LDM_LDMIA_LDMFD_cccc100010w1nnnnrrrrrrrrrrrrrrrr_case_0TesterCase3
 //               SmallestGPR(registers) => UNKNOWN],
 //       small_imm_base_wb: wback,
 //       uses: Union({Rn}, registers),
+//       violations: [implied by 'base'],
 //       wback: W(21)=1}
 class STMDB_STMFD_cccc100100w0nnnnrrrrrrrrrrrrrrrr_case_0TesterCase4
     : public Arm32DecoderTester {
@@ -328,6 +333,7 @@ bool STMDB_STMFD_cccc100100w0nnnnrrrrrrrrrrrrrrrr_case_0TesterCase4
 //         Contains(registers, Pc) => FORBIDDEN_OPERANDS],
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
+//       violations: [implied by 'base'],
 //       wback: W(21)=1}
 class LDMDB_LDMEA_cccc100100w1nnnnrrrrrrrrrrrrrrrr_case_0TesterCase5
     : public Arm32DecoderTester {
@@ -383,6 +389,7 @@ bool LDMDB_LDMEA_cccc100100w1nnnnrrrrrrrrrrrrrrrr_case_0TesterCase5
 //               SmallestGPR(registers) => UNKNOWN],
 //       small_imm_base_wb: wback,
 //       uses: Union({Rn}, registers),
+//       violations: [implied by 'base'],
 //       wback: W(21)=1}
 class STMIB_STMFA_cccc100110w0nnnnrrrrrrrrrrrrrrrr_case_0TesterCase6
     : public Arm32DecoderTester {
@@ -437,6 +444,7 @@ bool STMIB_STMFA_cccc100110w0nnnnrrrrrrrrrrrrrrrr_case_0TesterCase6
 //         Contains(registers, Pc) => FORBIDDEN_OPERANDS],
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
+//       violations: [implied by 'base'],
 //       wback: W(21)=1}
 class LDMIB_LDMED_cccc100110w1nnnnrrrrrrrrrrrrrrrr_case_0TesterCase7
     : public Arm32DecoderTester {
@@ -603,7 +611,8 @@ bool LDM_exception_return_cccc100pu1w1nnnn1rrrrrrrrrrrrrrr_case_0TesterCase10
 //       rule: B,
 //       safety: [true => MAY_BE_SAFE],
 //       true: true,
-//       uses: {Pc}}
+//       uses: {Pc},
+//       violations: [implied by 'relative']}
 class B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_0TesterCase11
     : public Arm32DecoderTester {
  public:
@@ -647,7 +656,8 @@ bool B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_0TesterCase11
 //       rule: BL_BLX_immediate,
 //       safety: [true => MAY_BE_SAFE],
 //       true: true,
-//       uses: {Pc}}
+//       uses: {Pc},
+//       violations: [implied by 'relative']}
 class BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_0TesterCase12
     : public Arm32DecoderTester {
  public:
@@ -707,6 +717,7 @@ bool BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_0TesterCase12
 //               SmallestGPR(registers) => UNKNOWN],
 //       small_imm_base_wb: wback,
 //       uses: Union({Rn}, registers),
+//       violations: [implied by 'base'],
 //       wback: W(21)=1}
 class STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_0Tester_Case0
     : public STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_0TesterCase0 {
@@ -742,6 +753,7 @@ class STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_0Tester_Case0
 //         Contains(registers, Pc) => FORBIDDEN_OPERANDS],
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
+//       violations: [implied by 'base'],
 //       wback: W(21)=1}
 class LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_0Tester_Case1
     : public LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_0TesterCase1 {
@@ -778,6 +790,7 @@ class LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_0Tester_Case1
 //               SmallestGPR(registers) => UNKNOWN],
 //       small_imm_base_wb: wback,
 //       uses: Union({Rn}, registers),
+//       violations: [implied by 'base'],
 //       wback: W(21)=1}
 class STM_STMIA_STMEA_cccc100010w0nnnnrrrrrrrrrrrrrrrr_case_0Tester_Case2
     : public STM_STMIA_STMEA_cccc100010w0nnnnrrrrrrrrrrrrrrrr_case_0TesterCase2 {
@@ -813,6 +826,7 @@ class STM_STMIA_STMEA_cccc100010w0nnnnrrrrrrrrrrrrrrrr_case_0Tester_Case2
 //         Contains(registers, Pc) => FORBIDDEN_OPERANDS],
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
+//       violations: [implied by 'base'],
 //       wback: W(21)=1}
 class LDM_LDMIA_LDMFD_cccc100010w1nnnnrrrrrrrrrrrrrrrr_case_0Tester_Case3
     : public LDM_LDMIA_LDMFD_cccc100010w1nnnnrrrrrrrrrrrrrrrr_case_0TesterCase3 {
@@ -849,6 +863,7 @@ class LDM_LDMIA_LDMFD_cccc100010w1nnnnrrrrrrrrrrrrrrrr_case_0Tester_Case3
 //               SmallestGPR(registers) => UNKNOWN],
 //       small_imm_base_wb: wback,
 //       uses: Union({Rn}, registers),
+//       violations: [implied by 'base'],
 //       wback: W(21)=1}
 class STMDB_STMFD_cccc100100w0nnnnrrrrrrrrrrrrrrrr_case_0Tester_Case4
     : public STMDB_STMFD_cccc100100w0nnnnrrrrrrrrrrrrrrrr_case_0TesterCase4 {
@@ -884,6 +899,7 @@ class STMDB_STMFD_cccc100100w0nnnnrrrrrrrrrrrrrrrr_case_0Tester_Case4
 //         Contains(registers, Pc) => FORBIDDEN_OPERANDS],
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
+//       violations: [implied by 'base'],
 //       wback: W(21)=1}
 class LDMDB_LDMEA_cccc100100w1nnnnrrrrrrrrrrrrrrrr_case_0Tester_Case5
     : public LDMDB_LDMEA_cccc100100w1nnnnrrrrrrrrrrrrrrrr_case_0TesterCase5 {
@@ -920,6 +936,7 @@ class LDMDB_LDMEA_cccc100100w1nnnnrrrrrrrrrrrrrrrr_case_0Tester_Case5
 //               SmallestGPR(registers) => UNKNOWN],
 //       small_imm_base_wb: wback,
 //       uses: Union({Rn}, registers),
+//       violations: [implied by 'base'],
 //       wback: W(21)=1}
 class STMIB_STMFA_cccc100110w0nnnnrrrrrrrrrrrrrrrr_case_0Tester_Case6
     : public STMIB_STMFA_cccc100110w0nnnnrrrrrrrrrrrrrrrr_case_0TesterCase6 {
@@ -955,6 +972,7 @@ class STMIB_STMFA_cccc100110w0nnnnrrrrrrrrrrrrrrrr_case_0Tester_Case6
 //         Contains(registers, Pc) => FORBIDDEN_OPERANDS],
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
+//       violations: [implied by 'base'],
 //       wback: W(21)=1}
 class LDMIB_LDMED_cccc100110w1nnnnrrrrrrrrrrrrrrrr_case_0Tester_Case7
     : public LDMIB_LDMED_cccc100110w1nnnnrrrrrrrrrrrrrrrr_case_0TesterCase7 {
@@ -1033,7 +1051,8 @@ class LDM_exception_return_cccc100pu1w1nnnn1rrrrrrrrrrrrrrr_case_0Tester_Case10
 //       rule: B,
 //       safety: [true => MAY_BE_SAFE],
 //       true: true,
-//       uses: {Pc}}
+//       uses: {Pc},
+//       violations: [implied by 'relative']}
 class B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_0Tester_Case11
     : public B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_0TesterCase11 {
  public:
@@ -1058,7 +1077,8 @@ class B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_0Tester_Case11
 //       rule: BL_BLX_immediate,
 //       safety: [true => MAY_BE_SAFE],
 //       true: true,
-//       uses: {Pc}}
+//       uses: {Pc},
+//       violations: [implied by 'relative']}
 class BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_0Tester_Case12
     : public BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_0TesterCase12 {
  public:
@@ -1103,6 +1123,7 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //               SmallestGPR(registers) => UNKNOWN],
 //       small_imm_base_wb: wback,
 //       uses: Union({Rn}, registers),
+//       violations: [implied by 'base'],
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
        STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_0Tester_Case0_TestCase0) {
@@ -1137,6 +1158,7 @@ TEST_F(Arm32DecoderStateTests,
 //         Contains(registers, Pc) => FORBIDDEN_OPERANDS],
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
+//       violations: [implied by 'base'],
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
        LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_0Tester_Case1_TestCase1) {
@@ -1172,6 +1194,7 @@ TEST_F(Arm32DecoderStateTests,
 //               SmallestGPR(registers) => UNKNOWN],
 //       small_imm_base_wb: wback,
 //       uses: Union({Rn}, registers),
+//       violations: [implied by 'base'],
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
        STM_STMIA_STMEA_cccc100010w0nnnnrrrrrrrrrrrrrrrr_case_0Tester_Case2_TestCase2) {
@@ -1206,6 +1229,7 @@ TEST_F(Arm32DecoderStateTests,
 //         Contains(registers, Pc) => FORBIDDEN_OPERANDS],
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
+//       violations: [implied by 'base'],
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
        LDM_LDMIA_LDMFD_cccc100010w1nnnnrrrrrrrrrrrrrrrr_case_0Tester_Case3_TestCase3) {
@@ -1241,6 +1265,7 @@ TEST_F(Arm32DecoderStateTests,
 //               SmallestGPR(registers) => UNKNOWN],
 //       small_imm_base_wb: wback,
 //       uses: Union({Rn}, registers),
+//       violations: [implied by 'base'],
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
        STMDB_STMFD_cccc100100w0nnnnrrrrrrrrrrrrrrrr_case_0Tester_Case4_TestCase4) {
@@ -1275,6 +1300,7 @@ TEST_F(Arm32DecoderStateTests,
 //         Contains(registers, Pc) => FORBIDDEN_OPERANDS],
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
+//       violations: [implied by 'base'],
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
        LDMDB_LDMEA_cccc100100w1nnnnrrrrrrrrrrrrrrrr_case_0Tester_Case5_TestCase5) {
@@ -1310,6 +1336,7 @@ TEST_F(Arm32DecoderStateTests,
 //               SmallestGPR(registers) => UNKNOWN],
 //       small_imm_base_wb: wback,
 //       uses: Union({Rn}, registers),
+//       violations: [implied by 'base'],
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
        STMIB_STMFA_cccc100110w0nnnnrrrrrrrrrrrrrrrr_case_0Tester_Case6_TestCase6) {
@@ -1344,6 +1371,7 @@ TEST_F(Arm32DecoderStateTests,
 //         Contains(registers, Pc) => FORBIDDEN_OPERANDS],
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
+//       violations: [implied by 'base'],
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
        LDMIB_LDMED_cccc100110w1nnnnrrrrrrrrrrrrrrrr_case_0Tester_Case7_TestCase7) {
@@ -1418,7 +1446,8 @@ TEST_F(Arm32DecoderStateTests,
 //       rule: B,
 //       safety: [true => MAY_BE_SAFE],
 //       true: true,
-//       uses: {Pc}}
+//       uses: {Pc},
+//       violations: [implied by 'relative']}
 TEST_F(Arm32DecoderStateTests,
        B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_0Tester_Case11_TestCase11) {
   B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_0Tester_Case11 baseline_tester;
@@ -1442,7 +1471,8 @@ TEST_F(Arm32DecoderStateTests,
 //       rule: BL_BLX_immediate,
 //       safety: [true => MAY_BE_SAFE],
 //       true: true,
-//       uses: {Pc}}
+//       uses: {Pc},
+//       violations: [implied by 'relative']}
 TEST_F(Arm32DecoderStateTests,
        BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_0Tester_Case12_TestCase12) {
   BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_0Tester_Case12 baseline_tester;

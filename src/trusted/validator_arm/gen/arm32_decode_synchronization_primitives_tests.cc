@@ -44,7 +44,8 @@ namespace nacl_arm_test {
 //       rule: STREX,
 //       safety: [Pc in {Rd, Rt, Rn} => UNPREDICTABLE,
 //         Rd in {Rn, Rt} => UNPREDICTABLE],
-//       uses: {Rn, Rt}}
+//       uses: {Rn, Rt},
+//       violations: [implied by 'base']}
 class STREX_cccc00011000nnnndddd11111001tttt_case_0TesterCase0
     : public Arm32DecoderTester {
  public:
@@ -88,7 +89,8 @@ bool STREX_cccc00011000nnnndddd11111001tttt_case_0TesterCase0
 //       pattern: cccc00011001nnnntttt111110011111,
 //       rule: LDREX,
 //       safety: [Pc in {Rt, Rn} => UNPREDICTABLE],
-//       uses: {Rn}}
+//       uses: {Rn},
+//       violations: [implied by 'base']}
 class LDREX_cccc00011001nnnntttt111110011111_case_0TesterCase1
     : public Arm32DecoderTester {
  public:
@@ -139,7 +141,8 @@ bool LDREX_cccc00011001nnnntttt111110011111_case_0TesterCase1
 //            Rt  ==
 //               Lr => UNPREDICTABLE,
 //         Rd in {Rn, Rt, Rt2} => UNPREDICTABLE],
-//       uses: {Rn, Rt, Rt2}}
+//       uses: {Rn, Rt, Rt2},
+//       violations: [implied by 'base']}
 class STREXD_cccc00011010nnnndddd11111001tttt_case_0TesterCase2
     : public Arm32DecoderTester {
  public:
@@ -189,7 +192,8 @@ bool STREXD_cccc00011010nnnndddd11111001tttt_case_0TesterCase2
 //               Lr ||
 //            Rn  ==
 //               Pc => UNPREDICTABLE],
-//       uses: {Rn}}
+//       uses: {Rn},
+//       violations: [implied by 'base']}
 class LDREXD_cccc00011011nnnntttt111110011111_case_0TesterCase3
     : public Arm32DecoderTester {
  public:
@@ -235,7 +239,8 @@ bool LDREXD_cccc00011011nnnntttt111110011111_case_0TesterCase3
 //       rule: STREXB,
 //       safety: [Pc in {Rd, Rt, Rn} => UNPREDICTABLE,
 //         Rd in {Rn, Rt} => UNPREDICTABLE],
-//       uses: {Rn, Rt}}
+//       uses: {Rn, Rt},
+//       violations: [implied by 'base']}
 class STREXB_cccc00011100nnnndddd11111001tttt_case_0TesterCase4
     : public Arm32DecoderTester {
  public:
@@ -279,7 +284,8 @@ bool STREXB_cccc00011100nnnndddd11111001tttt_case_0TesterCase4
 //       pattern: cccc00011101nnnntttt111110011111,
 //       rule: LDREXB,
 //       safety: [Pc in {Rt, Rn} => UNPREDICTABLE],
-//       uses: {Rn}}
+//       uses: {Rn},
+//       violations: [implied by 'base']}
 class LDREXB_cccc00011101nnnntttt111110011111_case_0TesterCase5
     : public Arm32DecoderTester {
  public:
@@ -325,7 +331,8 @@ bool LDREXB_cccc00011101nnnntttt111110011111_case_0TesterCase5
 //       rule: STREXH,
 //       safety: [Pc in {Rd, Rt, Rn} => UNPREDICTABLE,
 //         Rd in {Rn, Rt} => UNPREDICTABLE],
-//       uses: {Rn, Rt}}
+//       uses: {Rn, Rt},
+//       violations: [implied by 'base']}
 class STREXH_cccc00011110nnnndddd11111001tttt_case_0TesterCase6
     : public Arm32DecoderTester {
  public:
@@ -369,7 +376,8 @@ bool STREXH_cccc00011110nnnndddd11111001tttt_case_0TesterCase6
 //       pattern: cccc00011111nnnntttt111110011111,
 //       rule: STREXH,
 //       safety: [Pc in {Rt, Rn} => UNPREDICTABLE],
-//       uses: {Rn}}
+//       uses: {Rn},
+//       violations: [implied by 'base']}
 class STREXH_cccc00011111nnnntttt111110011111_case_0TesterCase7
     : public Arm32DecoderTester {
  public:
@@ -460,7 +468,8 @@ bool SWP_SWPB_cccc00010b00nnnntttt00001001tttt_case_0TesterCase8
 //       rule: STREX,
 //       safety: [Pc in {Rd, Rt, Rn} => UNPREDICTABLE,
 //         Rd in {Rn, Rt} => UNPREDICTABLE],
-//       uses: {Rn, Rt}}
+//       uses: {Rn, Rt},
+//       violations: [implied by 'base']}
 class STREX_cccc00011000nnnndddd11111001tttt_case_0Tester_Case0
     : public STREX_cccc00011000nnnndddd11111001tttt_case_0TesterCase0 {
  public:
@@ -482,7 +491,8 @@ class STREX_cccc00011000nnnndddd11111001tttt_case_0Tester_Case0
 //       pattern: cccc00011001nnnntttt111110011111,
 //       rule: LDREX,
 //       safety: [Pc in {Rt, Rn} => UNPREDICTABLE],
-//       uses: {Rn}}
+//       uses: {Rn},
+//       violations: [implied by 'base']}
 class LDREX_cccc00011001nnnntttt111110011111_case_0Tester_Case1
     : public LDREX_cccc00011001nnnntttt111110011111_case_0TesterCase1 {
  public:
@@ -511,7 +521,8 @@ class LDREX_cccc00011001nnnntttt111110011111_case_0Tester_Case1
 //            Rt  ==
 //               Lr => UNPREDICTABLE,
 //         Rd in {Rn, Rt, Rt2} => UNPREDICTABLE],
-//       uses: {Rn, Rt, Rt2}}
+//       uses: {Rn, Rt, Rt2},
+//       violations: [implied by 'base']}
 class STREXD_cccc00011010nnnndddd11111001tttt_case_0Tester_Case2
     : public STREXD_cccc00011010nnnndddd11111001tttt_case_0TesterCase2 {
  public:
@@ -539,7 +550,8 @@ class STREXD_cccc00011010nnnndddd11111001tttt_case_0Tester_Case2
 //               Lr ||
 //            Rn  ==
 //               Pc => UNPREDICTABLE],
-//       uses: {Rn}}
+//       uses: {Rn},
+//       violations: [implied by 'base']}
 class LDREXD_cccc00011011nnnntttt111110011111_case_0Tester_Case3
     : public LDREXD_cccc00011011nnnntttt111110011111_case_0TesterCase3 {
  public:
@@ -563,7 +575,8 @@ class LDREXD_cccc00011011nnnntttt111110011111_case_0Tester_Case3
 //       rule: STREXB,
 //       safety: [Pc in {Rd, Rt, Rn} => UNPREDICTABLE,
 //         Rd in {Rn, Rt} => UNPREDICTABLE],
-//       uses: {Rn, Rt}}
+//       uses: {Rn, Rt},
+//       violations: [implied by 'base']}
 class STREXB_cccc00011100nnnndddd11111001tttt_case_0Tester_Case4
     : public STREXB_cccc00011100nnnndddd11111001tttt_case_0TesterCase4 {
  public:
@@ -585,7 +598,8 @@ class STREXB_cccc00011100nnnndddd11111001tttt_case_0Tester_Case4
 //       pattern: cccc00011101nnnntttt111110011111,
 //       rule: LDREXB,
 //       safety: [Pc in {Rt, Rn} => UNPREDICTABLE],
-//       uses: {Rn}}
+//       uses: {Rn},
+//       violations: [implied by 'base']}
 class LDREXB_cccc00011101nnnntttt111110011111_case_0Tester_Case5
     : public LDREXB_cccc00011101nnnntttt111110011111_case_0TesterCase5 {
  public:
@@ -609,7 +623,8 @@ class LDREXB_cccc00011101nnnntttt111110011111_case_0Tester_Case5
 //       rule: STREXH,
 //       safety: [Pc in {Rd, Rt, Rn} => UNPREDICTABLE,
 //         Rd in {Rn, Rt} => UNPREDICTABLE],
-//       uses: {Rn, Rt}}
+//       uses: {Rn, Rt},
+//       violations: [implied by 'base']}
 class STREXH_cccc00011110nnnndddd11111001tttt_case_0Tester_Case6
     : public STREXH_cccc00011110nnnndddd11111001tttt_case_0TesterCase6 {
  public:
@@ -631,7 +646,8 @@ class STREXH_cccc00011110nnnndddd11111001tttt_case_0Tester_Case6
 //       pattern: cccc00011111nnnntttt111110011111,
 //       rule: STREXH,
 //       safety: [Pc in {Rt, Rn} => UNPREDICTABLE],
-//       uses: {Rn}}
+//       uses: {Rn},
+//       violations: [implied by 'base']}
 class STREXH_cccc00011111nnnntttt111110011111_case_0Tester_Case7
     : public STREXH_cccc00011111nnnntttt111110011111_case_0TesterCase7 {
  public:
@@ -682,7 +698,8 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //       rule: STREX,
 //       safety: [Pc in {Rd, Rt, Rn} => UNPREDICTABLE,
 //         Rd in {Rn, Rt} => UNPREDICTABLE],
-//       uses: {Rn, Rt}}
+//       uses: {Rn, Rt},
+//       violations: [implied by 'base']}
 TEST_F(Arm32DecoderStateTests,
        STREX_cccc00011000nnnndddd11111001tttt_case_0Tester_Case0_TestCase0) {
   STREX_cccc00011000nnnndddd11111001tttt_case_0Tester_Case0 baseline_tester;
@@ -703,7 +720,8 @@ TEST_F(Arm32DecoderStateTests,
 //       pattern: cccc00011001nnnntttt111110011111,
 //       rule: LDREX,
 //       safety: [Pc in {Rt, Rn} => UNPREDICTABLE],
-//       uses: {Rn}}
+//       uses: {Rn},
+//       violations: [implied by 'base']}
 TEST_F(Arm32DecoderStateTests,
        LDREX_cccc00011001nnnntttt111110011111_case_0Tester_Case1_TestCase1) {
   LDREX_cccc00011001nnnntttt111110011111_case_0Tester_Case1 baseline_tester;
@@ -731,7 +749,8 @@ TEST_F(Arm32DecoderStateTests,
 //            Rt  ==
 //               Lr => UNPREDICTABLE,
 //         Rd in {Rn, Rt, Rt2} => UNPREDICTABLE],
-//       uses: {Rn, Rt, Rt2}}
+//       uses: {Rn, Rt, Rt2},
+//       violations: [implied by 'base']}
 TEST_F(Arm32DecoderStateTests,
        STREXD_cccc00011010nnnndddd11111001tttt_case_0Tester_Case2_TestCase2) {
   STREXD_cccc00011010nnnndddd11111001tttt_case_0Tester_Case2 baseline_tester;
@@ -758,7 +777,8 @@ TEST_F(Arm32DecoderStateTests,
 //               Lr ||
 //            Rn  ==
 //               Pc => UNPREDICTABLE],
-//       uses: {Rn}}
+//       uses: {Rn},
+//       violations: [implied by 'base']}
 TEST_F(Arm32DecoderStateTests,
        LDREXD_cccc00011011nnnntttt111110011111_case_0Tester_Case3_TestCase3) {
   LDREXD_cccc00011011nnnntttt111110011111_case_0Tester_Case3 baseline_tester;
@@ -781,7 +801,8 @@ TEST_F(Arm32DecoderStateTests,
 //       rule: STREXB,
 //       safety: [Pc in {Rd, Rt, Rn} => UNPREDICTABLE,
 //         Rd in {Rn, Rt} => UNPREDICTABLE],
-//       uses: {Rn, Rt}}
+//       uses: {Rn, Rt},
+//       violations: [implied by 'base']}
 TEST_F(Arm32DecoderStateTests,
        STREXB_cccc00011100nnnndddd11111001tttt_case_0Tester_Case4_TestCase4) {
   STREXB_cccc00011100nnnndddd11111001tttt_case_0Tester_Case4 baseline_tester;
@@ -802,7 +823,8 @@ TEST_F(Arm32DecoderStateTests,
 //       pattern: cccc00011101nnnntttt111110011111,
 //       rule: LDREXB,
 //       safety: [Pc in {Rt, Rn} => UNPREDICTABLE],
-//       uses: {Rn}}
+//       uses: {Rn},
+//       violations: [implied by 'base']}
 TEST_F(Arm32DecoderStateTests,
        LDREXB_cccc00011101nnnntttt111110011111_case_0Tester_Case5_TestCase5) {
   LDREXB_cccc00011101nnnntttt111110011111_case_0Tester_Case5 baseline_tester;
@@ -825,7 +847,8 @@ TEST_F(Arm32DecoderStateTests,
 //       rule: STREXH,
 //       safety: [Pc in {Rd, Rt, Rn} => UNPREDICTABLE,
 //         Rd in {Rn, Rt} => UNPREDICTABLE],
-//       uses: {Rn, Rt}}
+//       uses: {Rn, Rt},
+//       violations: [implied by 'base']}
 TEST_F(Arm32DecoderStateTests,
        STREXH_cccc00011110nnnndddd11111001tttt_case_0Tester_Case6_TestCase6) {
   STREXH_cccc00011110nnnndddd11111001tttt_case_0Tester_Case6 baseline_tester;
@@ -846,7 +869,8 @@ TEST_F(Arm32DecoderStateTests,
 //       pattern: cccc00011111nnnntttt111110011111,
 //       rule: STREXH,
 //       safety: [Pc in {Rt, Rn} => UNPREDICTABLE],
-//       uses: {Rn}}
+//       uses: {Rn},
+//       violations: [implied by 'base']}
 TEST_F(Arm32DecoderStateTests,
        STREXH_cccc00011111nnnntttt111110011111_case_0Tester_Case7_TestCase7) {
   STREXH_cccc00011111nnnntttt111110011111_case_0Tester_Case7 baseline_tester;

@@ -215,6 +215,7 @@ bool LDRBT_A1_cccc0100u111nnnnttttiiiiiiiiiiii_case_0TesterCase3
 //               Rt) => UNPREDICTABLE],
 //       small_imm_base_wb: wback,
 //       uses: {Rn, Rt},
+//       violations: [implied by 'base'],
 //       wback: P(24)=0 ||
 //            W(21)=1}
 class STR_immediate_cccc010pu0w0nnnnttttiiiiiiiiiiii_case_0TesterCase4
@@ -289,6 +290,7 @@ bool STR_immediate_cccc010pu0w0nnnnttttiiiiiiiiiiii_case_0TesterCase4
 //               Pc => FORBIDDEN_OPERANDS],
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
+//       violations: [implied by 'base'],
 //       wback: P(24)=0 ||
 //            W(21)=1}
 class LDR_immediate_cccc010pu0w1nnnnttttiiiiiiiiiiii_case_0TesterCase5
@@ -342,7 +344,8 @@ bool LDR_immediate_cccc010pu0w1nnnnttttiiiiiiiiiiii_case_0TesterCase5
 //       safety: [Rt  ==
 //               Pc => FORBIDDEN_OPERANDS],
 //       true: true,
-//       uses: {Pc}}
+//       uses: {Pc},
+//       violations: [implied by 'base']}
 class LDR_literal_cccc0101u0011111ttttiiiiiiiiiiii_case_0TesterCase6
     : public Arm32DecoderTester {
  public:
@@ -410,6 +413,7 @@ bool LDR_literal_cccc0101u0011111ttttiiiiiiiiiiii_case_0TesterCase6
 //               Rt) => UNPREDICTABLE],
 //       small_imm_base_wb: wback,
 //       uses: {Rn, Rt},
+//       violations: [implied by 'base'],
 //       wback: P(24)=0 ||
 //            W(21)=1}
 class STRB_immediate_cccc010pu1w0nnnnttttiiiiiiiiiiii_case_0TesterCase7
@@ -473,6 +477,7 @@ bool STRB_immediate_cccc010pu1w0nnnnttttiiiiiiiiiiii_case_0TesterCase7
 //               Rt => UNPREDICTABLE],
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
+//       violations: [implied by 'base'],
 //       wback: P(24)=0 ||
 //            W(21)=1}
 class LDRB_immediate_cccc010pu1w1nnnnttttiiiiiiiiiiii_case_0TesterCase8
@@ -526,7 +531,8 @@ bool LDRB_immediate_cccc010pu1w1nnnnttttiiiiiiiiiiii_case_0TesterCase8
 //       safety: [Rt  ==
 //               Pc => UNPREDICTABLE],
 //       true: true,
-//       uses: {Pc}}
+//       uses: {Pc},
+//       violations: [implied by 'base']}
 class LDRB_literal_cccc0101u1011111ttttiiiiiiiiiiii_case_0TesterCase9
     : public Arm32DecoderTester {
  public:
@@ -773,6 +779,7 @@ bool LDRBT_A2_cccc0110u111nnnnttttiiiiitt0mmmm_case_0TesterCase13
 //               Rm => UNPREDICTABLE,
 //         index => FORBIDDEN],
 //       uses: {Rm, Rn, Rt},
+//       violations: [implied by 'base'],
 //       wback: P(24)=0 ||
 //            W(21)=1}
 class STR_register_cccc011pd0w0nnnnttttiiiiitt0mmmm_case_0TesterCase14
@@ -848,6 +855,7 @@ bool STR_register_cccc011pd0w0nnnnttttiiiiitt0mmmm_case_0TesterCase14
 //         Rt  ==
 //               Pc => FORBIDDEN_OPERANDS],
 //       uses: {Rm, Rn},
+//       violations: [implied by 'base'],
 //       wback: P(24)=0 ||
 //            W(21)=1}
 class LDR_register_cccc011pu0w1nnnnttttiiiiitt0mmmm_case_0TesterCase15
@@ -920,6 +928,7 @@ bool LDR_register_cccc011pu0w1nnnnttttiiiiitt0mmmm_case_0TesterCase15
 //               Rm => UNPREDICTABLE,
 //         index => FORBIDDEN],
 //       uses: {Rm, Rn, Rt},
+//       violations: [implied by 'base'],
 //       wback: P(24)=0 ||
 //            W(21)=1}
 class STRB_register_cccc011pu1w0nnnnttttiiiiitt0mmmm_case_0TesterCase16
@@ -992,6 +1001,7 @@ bool STRB_register_cccc011pu1w0nnnnttttiiiiitt0mmmm_case_0TesterCase16
 //               Rm => UNPREDICTABLE,
 //         index => FORBIDDEN],
 //       uses: {Rm, Rn},
+//       violations: [implied by 'base'],
 //       wback: P(24)=0 ||
 //            W(21)=1}
 class LDRB_register_cccc011pu1w1nnnnttttiiiiitt0mmmm_case_0TesterCase17
@@ -1133,6 +1143,7 @@ class LDRBT_A1_cccc0100u111nnnnttttiiiiiiiiiiii_case_0Tester_Case3
 //               Rt) => UNPREDICTABLE],
 //       small_imm_base_wb: wback,
 //       uses: {Rn, Rt},
+//       violations: [implied by 'base'],
 //       wback: P(24)=0 ||
 //            W(21)=1}
 class STR_immediate_cccc010pu0w0nnnnttttiiiiiiiiiiii_case_0Tester_Case4
@@ -1182,6 +1193,7 @@ class STR_immediate_cccc010pu0w0nnnnttttiiiiiiiiiiii_case_0Tester_Case4
 //               Pc => FORBIDDEN_OPERANDS],
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
+//       violations: [implied by 'base'],
 //       wback: P(24)=0 ||
 //            W(21)=1}
 class LDR_immediate_cccc010pu0w1nnnnttttiiiiiiiiiiii_case_0Tester_Case5
@@ -1207,7 +1219,8 @@ class LDR_immediate_cccc010pu0w1nnnnttttiiiiiiiiiiii_case_0Tester_Case5
 //       safety: [Rt  ==
 //               Pc => FORBIDDEN_OPERANDS],
 //       true: true,
-//       uses: {Pc}}
+//       uses: {Pc},
+//       violations: [implied by 'base']}
 class LDR_literal_cccc0101u0011111ttttiiiiiiiiiiii_case_0Tester_Case6
     : public LDR_literal_cccc0101u0011111ttttiiiiiiiiiiii_case_0TesterCase6 {
  public:
@@ -1244,6 +1257,7 @@ class LDR_literal_cccc0101u0011111ttttiiiiiiiiiiii_case_0Tester_Case6
 //               Rt) => UNPREDICTABLE],
 //       small_imm_base_wb: wback,
 //       uses: {Rn, Rt},
+//       violations: [implied by 'base'],
 //       wback: P(24)=0 ||
 //            W(21)=1}
 class STRB_immediate_cccc010pu1w0nnnnttttiiiiiiiiiiii_case_0Tester_Case7
@@ -1282,6 +1296,7 @@ class STRB_immediate_cccc010pu1w0nnnnttttiiiiiiiiiiii_case_0Tester_Case7
 //               Rt => UNPREDICTABLE],
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
+//       violations: [implied by 'base'],
 //       wback: P(24)=0 ||
 //            W(21)=1}
 class LDRB_immediate_cccc010pu1w1nnnnttttiiiiiiiiiiii_case_0Tester_Case8
@@ -1307,7 +1322,8 @@ class LDRB_immediate_cccc010pu1w1nnnnttttiiiiiiiiiiii_case_0Tester_Case8
 //       safety: [Rt  ==
 //               Pc => UNPREDICTABLE],
 //       true: true,
-//       uses: {Pc}}
+//       uses: {Pc},
+//       violations: [implied by 'base']}
 class LDRB_literal_cccc0101u1011111ttttiiiiiiiiiiii_case_0Tester_Case9
     : public LDRB_literal_cccc0101u1011111ttttiiiiiiiiiiii_case_0TesterCase9 {
  public:
@@ -1423,6 +1439,7 @@ class LDRBT_A2_cccc0110u111nnnnttttiiiiitt0mmmm_case_0Tester_Case13
 //               Rm => UNPREDICTABLE,
 //         index => FORBIDDEN],
 //       uses: {Rm, Rn, Rt},
+//       violations: [implied by 'base'],
 //       wback: P(24)=0 ||
 //            W(21)=1}
 class STR_register_cccc011pd0w0nnnnttttiiiiitt0mmmm_case_0Tester_Case14
@@ -1470,6 +1487,7 @@ class STR_register_cccc011pd0w0nnnnttttiiiiitt0mmmm_case_0Tester_Case14
 //         Rt  ==
 //               Pc => FORBIDDEN_OPERANDS],
 //       uses: {Rm, Rn},
+//       violations: [implied by 'base'],
 //       wback: P(24)=0 ||
 //            W(21)=1}
 class LDR_register_cccc011pu0w1nnnnttttiiiiitt0mmmm_case_0Tester_Case15
@@ -1514,6 +1532,7 @@ class LDR_register_cccc011pu0w1nnnnttttiiiiitt0mmmm_case_0Tester_Case15
 //               Rm => UNPREDICTABLE,
 //         index => FORBIDDEN],
 //       uses: {Rm, Rn, Rt},
+//       violations: [implied by 'base'],
 //       wback: P(24)=0 ||
 //            W(21)=1}
 class STRB_register_cccc011pu1w0nnnnttttiiiiitt0mmmm_case_0Tester_Case16
@@ -1558,6 +1577,7 @@ class STRB_register_cccc011pu1w0nnnnttttiiiiitt0mmmm_case_0Tester_Case16
 //               Rm => UNPREDICTABLE,
 //         index => FORBIDDEN],
 //       uses: {Rm, Rn},
+//       violations: [implied by 'base'],
 //       wback: P(24)=0 ||
 //            W(21)=1}
 class LDRB_register_cccc011pu1w1nnnnttttiiiiitt0mmmm_case_0Tester_Case17
@@ -1671,6 +1691,7 @@ TEST_F(Arm32DecoderStateTests,
 //               Rt) => UNPREDICTABLE],
 //       small_imm_base_wb: wback,
 //       uses: {Rn, Rt},
+//       violations: [implied by 'base'],
 //       wback: P(24)=0 ||
 //            W(21)=1}
 TEST_F(Arm32DecoderStateTests,
@@ -1719,6 +1740,7 @@ TEST_F(Arm32DecoderStateTests,
 //               Pc => FORBIDDEN_OPERANDS],
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
+//       violations: [implied by 'base'],
 //       wback: P(24)=0 ||
 //            W(21)=1}
 TEST_F(Arm32DecoderStateTests,
@@ -1743,7 +1765,8 @@ TEST_F(Arm32DecoderStateTests,
 //       safety: [Rt  ==
 //               Pc => FORBIDDEN_OPERANDS],
 //       true: true,
-//       uses: {Pc}}
+//       uses: {Pc},
+//       violations: [implied by 'base']}
 TEST_F(Arm32DecoderStateTests,
        LDR_literal_cccc0101u0011111ttttiiiiiiiiiiii_case_0Tester_Case6_TestCase6) {
   LDR_literal_cccc0101u0011111ttttiiiiiiiiiiii_case_0Tester_Case6 baseline_tester;
@@ -1779,6 +1802,7 @@ TEST_F(Arm32DecoderStateTests,
 //               Rt) => UNPREDICTABLE],
 //       small_imm_base_wb: wback,
 //       uses: {Rn, Rt},
+//       violations: [implied by 'base'],
 //       wback: P(24)=0 ||
 //            W(21)=1}
 TEST_F(Arm32DecoderStateTests,
@@ -1816,6 +1840,7 @@ TEST_F(Arm32DecoderStateTests,
 //               Rt => UNPREDICTABLE],
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
+//       violations: [implied by 'base'],
 //       wback: P(24)=0 ||
 //            W(21)=1}
 TEST_F(Arm32DecoderStateTests,
@@ -1840,7 +1865,8 @@ TEST_F(Arm32DecoderStateTests,
 //       safety: [Rt  ==
 //               Pc => UNPREDICTABLE],
 //       true: true,
-//       uses: {Pc}}
+//       uses: {Pc},
+//       violations: [implied by 'base']}
 TEST_F(Arm32DecoderStateTests,
        LDRB_literal_cccc0101u1011111ttttiiiiiiiiiiii_case_0Tester_Case9_TestCase9) {
   LDRB_literal_cccc0101u1011111ttttiiiiiiiiiiii_case_0Tester_Case9 baseline_tester;
@@ -1951,6 +1977,7 @@ TEST_F(Arm32DecoderStateTests,
 //               Rm => UNPREDICTABLE,
 //         index => FORBIDDEN],
 //       uses: {Rm, Rn, Rt},
+//       violations: [implied by 'base'],
 //       wback: P(24)=0 ||
 //            W(21)=1}
 TEST_F(Arm32DecoderStateTests,
@@ -1997,6 +2024,7 @@ TEST_F(Arm32DecoderStateTests,
 //         Rt  ==
 //               Pc => FORBIDDEN_OPERANDS],
 //       uses: {Rm, Rn},
+//       violations: [implied by 'base'],
 //       wback: P(24)=0 ||
 //            W(21)=1}
 TEST_F(Arm32DecoderStateTests,
@@ -2040,6 +2068,7 @@ TEST_F(Arm32DecoderStateTests,
 //               Rm => UNPREDICTABLE,
 //         index => FORBIDDEN],
 //       uses: {Rm, Rn, Rt},
+//       violations: [implied by 'base'],
 //       wback: P(24)=0 ||
 //            W(21)=1}
 TEST_F(Arm32DecoderStateTests,
@@ -2083,6 +2112,7 @@ TEST_F(Arm32DecoderStateTests,
 //               Rm => UNPREDICTABLE,
 //         index => FORBIDDEN],
 //       uses: {Rm, Rn},
+//       violations: [implied by 'base'],
 //       wback: P(24)=0 ||
 //            W(21)=1}
 TEST_F(Arm32DecoderStateTests,

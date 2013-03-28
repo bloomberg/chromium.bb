@@ -385,7 +385,8 @@ bool MRS_Banked_register_cccc00010r10mmmm1111001m0000nnnn_case_0TesterCase6
 //       rule: Bx,
 //       safety: [Rm(3:0)=1111 => FORBIDDEN_OPERANDS],
 //       target: Rm,
-//       uses: {Rm}}
+//       uses: {Rm},
+//       violations: [implied by 'target']}
 class Bx_cccc000100101111111111110001mmmm_case_0TesterCase7
     : public Arm32DecoderTester {
  public:
@@ -521,7 +522,8 @@ bool BXJ_cccc000100101111111111110010mmmm_case_0TesterCase9
 //       rule: BLX_register,
 //       safety: [Rm(3:0)=1111 => FORBIDDEN_OPERANDS],
 //       target: Rm,
-//       uses: {Rm}}
+//       uses: {Rm},
+//       violations: [implied by 'target']}
 class BLX_register_cccc000100101111111111110011mmmm_case_0TesterCase10
     : public Arm32DecoderTester {
  public:
@@ -612,7 +614,8 @@ bool ERET_cccc0001011000000000000001101110_case_0TesterCase11
 //       rule: BKPT,
 //       safety: [cond(31:28)=~1110 => UNPREDICTABLE,
 //         not IsBreakPointAndConstantPoolHead(inst) => FORBIDDEN_OPERANDS],
-//       uses: {}}
+//       uses: {},
+//       violations: [implied by 'is_literal_pool_head']}
 class BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_0TesterCase12
     : public Arm32DecoderTester {
  public:
@@ -882,7 +885,8 @@ class MRS_Banked_register_cccc00010r10mmmm1111001m0000nnnn_case_0Tester_Case6
 //       rule: Bx,
 //       safety: [Rm(3:0)=1111 => FORBIDDEN_OPERANDS],
 //       target: Rm,
-//       uses: {Rm}}
+//       uses: {Rm},
+//       violations: [implied by 'target']}
 class Bx_cccc000100101111111111110001mmmm_case_0Tester_Case7
     : public Bx_cccc000100101111111111110001mmmm_case_0TesterCase7 {
  public:
@@ -943,7 +947,8 @@ class BXJ_cccc000100101111111111110010mmmm_case_0Tester_Case9
 //       rule: BLX_register,
 //       safety: [Rm(3:0)=1111 => FORBIDDEN_OPERANDS],
 //       target: Rm,
-//       uses: {Rm}}
+//       uses: {Rm},
+//       violations: [implied by 'target']}
 class BLX_register_cccc000100101111111111110011mmmm_case_0Tester_Case10
     : public BLX_register_cccc000100101111111111110011mmmm_case_0TesterCase10 {
  public:
@@ -984,7 +989,8 @@ class ERET_cccc0001011000000000000001101110_case_0Tester_Case11
 //       rule: BKPT,
 //       safety: [cond(31:28)=~1110 => UNPREDICTABLE,
 //         not IsBreakPointAndConstantPoolHead(inst) => FORBIDDEN_OPERANDS],
-//       uses: {}}
+//       uses: {},
+//       violations: [implied by 'is_literal_pool_head']}
 class BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_0Tester_Case12
     : public BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_0TesterCase12 {
  public:
@@ -1182,7 +1188,8 @@ TEST_F(Arm32DecoderStateTests,
 //       rule: Bx,
 //       safety: [Rm(3:0)=1111 => FORBIDDEN_OPERANDS],
 //       target: Rm,
-//       uses: {Rm}}
+//       uses: {Rm},
+//       violations: [implied by 'target']}
 TEST_F(Arm32DecoderStateTests,
        Bx_cccc000100101111111111110001mmmm_case_0Tester_Case7_TestCase7) {
   Bx_cccc000100101111111111110001mmmm_case_0Tester_Case7 baseline_tester;
@@ -1240,7 +1247,8 @@ TEST_F(Arm32DecoderStateTests,
 //       rule: BLX_register,
 //       safety: [Rm(3:0)=1111 => FORBIDDEN_OPERANDS],
 //       target: Rm,
-//       uses: {Rm}}
+//       uses: {Rm},
+//       violations: [implied by 'target']}
 TEST_F(Arm32DecoderStateTests,
        BLX_register_cccc000100101111111111110011mmmm_case_0Tester_Case10_TestCase10) {
   BLX_register_cccc000100101111111111110011mmmm_case_0Tester_Case10 baseline_tester;
@@ -1279,7 +1287,8 @@ TEST_F(Arm32DecoderStateTests,
 //       rule: BKPT,
 //       safety: [cond(31:28)=~1110 => UNPREDICTABLE,
 //         not IsBreakPointAndConstantPoolHead(inst) => FORBIDDEN_OPERANDS],
-//       uses: {}}
+//       uses: {},
+//       violations: [implied by 'is_literal_pool_head']}
 TEST_F(Arm32DecoderStateTests,
        BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_0Tester_Case12_TestCase12) {
   BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_0Tester_Case12 baseline_tester;

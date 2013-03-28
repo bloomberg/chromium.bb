@@ -78,6 +78,7 @@ namespace nacl_arm_dec {
 //    uses: {m
 //         if wback
 //         else None, n},
+//    violations: [implied by 'base'],
 //    wback: (m  !=
 //            Pc)}
 class VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0
@@ -91,6 +92,13 @@ class VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0
   virtual bool base_address_register_writeback_small_immediate(
       Instruction i) const;
   virtual RegisterList uses(Instruction i) const;
+  virtual ViolationSet get_violations(
+      const nacl_arm_val::DecodedInstruction& first,
+      const nacl_arm_val::DecodedInstruction& second,
+      const nacl_arm_val::SfiValidator& sfi,
+      nacl_arm_val::AddressSet* branches,
+      nacl_arm_val::AddressSet* critical,
+      uint32_t* next_inst_addr) const;
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0);
@@ -149,6 +157,7 @@ class VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0
 //    uses: {m
 //         if wback
 //         else None, n},
+//    violations: [implied by 'base'],
 //    wback: (m  !=
 //            Pc)}
 class VLD1_single_element_to_all_lanes_111101001d10nnnndddd1100sstammmm_case_0
@@ -162,6 +171,13 @@ class VLD1_single_element_to_all_lanes_111101001d10nnnndddd1100sstammmm_case_0
   virtual bool base_address_register_writeback_small_immediate(
       Instruction i) const;
   virtual RegisterList uses(Instruction i) const;
+  virtual ViolationSet get_violations(
+      const nacl_arm_val::DecodedInstruction& first,
+      const nacl_arm_val::DecodedInstruction& second,
+      const nacl_arm_val::SfiValidator& sfi,
+      nacl_arm_val::AddressSet* branches,
+      nacl_arm_val::AddressSet* critical,
+      uint32_t* next_inst_addr) const;
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       VLD1_single_element_to_all_lanes_111101001d10nnnndddd1100sstammmm_case_0);
@@ -246,6 +262,7 @@ class VLD1_single_element_to_all_lanes_111101001d10nnnndddd1100sstammmm_case_0
 //    uses: {m
 //         if wback
 //         else None, n},
+//    violations: [implied by 'base'],
 //    wback: (m  !=
 //            Pc)}
 class VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_0
@@ -259,6 +276,13 @@ class VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_0
   virtual bool base_address_register_writeback_small_immediate(
       Instruction i) const;
   virtual RegisterList uses(Instruction i) const;
+  virtual ViolationSet get_violations(
+      const nacl_arm_val::DecodedInstruction& first,
+      const nacl_arm_val::DecodedInstruction& second,
+      const nacl_arm_val::SfiValidator& sfi,
+      nacl_arm_val::AddressSet* branches,
+      nacl_arm_val::AddressSet* critical,
+      uint32_t* next_inst_addr) const;
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_0);
@@ -323,6 +347,7 @@ class VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_0
 //    uses: {m
 //         if wback
 //         else None, n},
+//    violations: [implied by 'base'],
 //    wback: (m  !=
 //            Pc)}
 class VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_0
@@ -336,6 +361,13 @@ class VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_0
   virtual bool base_address_register_writeback_small_immediate(
       Instruction i) const;
   virtual RegisterList uses(Instruction i) const;
+  virtual ViolationSet get_violations(
+      const nacl_arm_val::DecodedInstruction& first,
+      const nacl_arm_val::DecodedInstruction& second,
+      const nacl_arm_val::SfiValidator& sfi,
+      nacl_arm_val::AddressSet* branches,
+      nacl_arm_val::AddressSet* critical,
+      uint32_t* next_inst_addr) const;
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_0);
@@ -393,6 +425,7 @@ class VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_0
 //    uses: {m
 //         if wback
 //         else None, n},
+//    violations: [implied by 'base'],
 //    wback: (m  !=
 //            Pc)}
 class VLD2_single_2_element_structure_to_all_lanes_111101001d10nnnndddd1101sstammmm_case_0
@@ -406,6 +439,13 @@ class VLD2_single_2_element_structure_to_all_lanes_111101001d10nnnndddd1101sstam
   virtual bool base_address_register_writeback_small_immediate(
       Instruction i) const;
   virtual RegisterList uses(Instruction i) const;
+  virtual ViolationSet get_violations(
+      const nacl_arm_val::DecodedInstruction& first,
+      const nacl_arm_val::DecodedInstruction& second,
+      const nacl_arm_val::SfiValidator& sfi,
+      nacl_arm_val::AddressSet* branches,
+      nacl_arm_val::AddressSet* critical,
+      uint32_t* next_inst_addr) const;
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       VLD2_single_2_element_structure_to_all_lanes_111101001d10nnnndddd1101sstammmm_case_0);
@@ -488,6 +528,7 @@ class VLD2_single_2_element_structure_to_all_lanes_111101001d10nnnndddd1101sstam
 //    uses: {m
 //         if wback
 //         else None, n},
+//    violations: [implied by 'base'],
 //    wback: (m  !=
 //            Pc)}
 class VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaammmm_case_0
@@ -501,6 +542,13 @@ class VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaamm
   virtual bool base_address_register_writeback_small_immediate(
       Instruction i) const;
   virtual RegisterList uses(Instruction i) const;
+  virtual ViolationSet get_violations(
+      const nacl_arm_val::DecodedInstruction& first,
+      const nacl_arm_val::DecodedInstruction& second,
+      const nacl_arm_val::SfiValidator& sfi,
+      nacl_arm_val::AddressSet* branches,
+      nacl_arm_val::AddressSet* critical,
+      uint32_t* next_inst_addr) const;
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaammmm_case_0);
@@ -562,6 +610,7 @@ class VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaamm
 //    uses: {m
 //         if wback
 //         else None, n},
+//    violations: [implied by 'base'],
 //    wback: (m  !=
 //            Pc)}
 class VLD3_multiple_3_element_structures_111101000d10nnnnddddttttssaammmm_case_0
@@ -575,6 +624,13 @@ class VLD3_multiple_3_element_structures_111101000d10nnnnddddttttssaammmm_case_0
   virtual bool base_address_register_writeback_small_immediate(
       Instruction i) const;
   virtual RegisterList uses(Instruction i) const;
+  virtual ViolationSet get_violations(
+      const nacl_arm_val::DecodedInstruction& first,
+      const nacl_arm_val::DecodedInstruction& second,
+      const nacl_arm_val::SfiValidator& sfi,
+      nacl_arm_val::AddressSet* branches,
+      nacl_arm_val::AddressSet* critical,
+      uint32_t* next_inst_addr) const;
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       VLD3_multiple_3_element_structures_111101000d10nnnnddddttttssaammmm_case_0);
@@ -632,6 +688,7 @@ class VLD3_multiple_3_element_structures_111101000d10nnnnddddttttssaammmm_case_0
 //    uses: {m
 //         if wback
 //         else None, n},
+//    violations: [implied by 'base'],
 //    wback: (m  !=
 //            Pc)}
 class VLD3_single_3_element_structure_to_all_lanes_111101001d10nnnndddd1110sstammmm_case_0
@@ -645,6 +702,13 @@ class VLD3_single_3_element_structure_to_all_lanes_111101001d10nnnndddd1110sstam
   virtual bool base_address_register_writeback_small_immediate(
       Instruction i) const;
   virtual RegisterList uses(Instruction i) const;
+  virtual ViolationSet get_violations(
+      const nacl_arm_val::DecodedInstruction& first,
+      const nacl_arm_val::DecodedInstruction& second,
+      const nacl_arm_val::SfiValidator& sfi,
+      nacl_arm_val::AddressSet* branches,
+      nacl_arm_val::AddressSet* critical,
+      uint32_t* next_inst_addr) const;
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       VLD3_single_3_element_structure_to_all_lanes_111101001d10nnnndddd1110sstammmm_case_0);
@@ -720,6 +784,7 @@ class VLD3_single_3_element_structure_to_all_lanes_111101001d10nnnndddd1110sstam
 //    uses: {m
 //         if wback
 //         else None, n},
+//    violations: [implied by 'base'],
 //    wback: (m  !=
 //            Pc)}
 class VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaammmm_case_0
@@ -733,6 +798,13 @@ class VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaamm
   virtual bool base_address_register_writeback_small_immediate(
       Instruction i) const;
   virtual RegisterList uses(Instruction i) const;
+  virtual ViolationSet get_violations(
+      const nacl_arm_val::DecodedInstruction& first,
+      const nacl_arm_val::DecodedInstruction& second,
+      const nacl_arm_val::SfiValidator& sfi,
+      nacl_arm_val::AddressSet* branches,
+      nacl_arm_val::AddressSet* critical,
+      uint32_t* next_inst_addr) const;
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaammmm_case_0);
@@ -794,6 +866,7 @@ class VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaamm
 //    uses: {m
 //         if wback
 //         else None, n},
+//    violations: [implied by 'base'],
 //    wback: (m  !=
 //            Pc)}
 class VLD4_multiple_4_element_structures_111101000d10nnnnddddttttssaammmm_case_0
@@ -807,6 +880,13 @@ class VLD4_multiple_4_element_structures_111101000d10nnnnddddttttssaammmm_case_0
   virtual bool base_address_register_writeback_small_immediate(
       Instruction i) const;
   virtual RegisterList uses(Instruction i) const;
+  virtual ViolationSet get_violations(
+      const nacl_arm_val::DecodedInstruction& first,
+      const nacl_arm_val::DecodedInstruction& second,
+      const nacl_arm_val::SfiValidator& sfi,
+      nacl_arm_val::AddressSet* branches,
+      nacl_arm_val::AddressSet* critical,
+      uint32_t* next_inst_addr) const;
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       VLD4_multiple_4_element_structures_111101000d10nnnnddddttttssaammmm_case_0);
@@ -873,6 +953,7 @@ class VLD4_multiple_4_element_structures_111101000d10nnnnddddttttssaammmm_case_0
 //    uses: {m
 //         if wback
 //         else None, n},
+//    violations: [implied by 'base'],
 //    wback: (m  !=
 //            Pc)}
 class VLD4_single_4_element_structure_to_all_lanes_111101001d10nnnndddd1111sstammmm_case_0
@@ -886,6 +967,13 @@ class VLD4_single_4_element_structure_to_all_lanes_111101001d10nnnndddd1111sstam
   virtual bool base_address_register_writeback_small_immediate(
       Instruction i) const;
   virtual RegisterList uses(Instruction i) const;
+  virtual ViolationSet get_violations(
+      const nacl_arm_val::DecodedInstruction& first,
+      const nacl_arm_val::DecodedInstruction& second,
+      const nacl_arm_val::SfiValidator& sfi,
+      nacl_arm_val::AddressSet* branches,
+      nacl_arm_val::AddressSet* critical,
+      uint32_t* next_inst_addr) const;
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       VLD4_single_4_element_structure_to_all_lanes_111101001d10nnnndddd1111sstammmm_case_0);
@@ -970,6 +1058,7 @@ class VLD4_single_4_element_structure_to_all_lanes_111101001d10nnnndddd1111sstam
 //    uses: {m
 //         if wback
 //         else None, n},
+//    violations: [implied by 'base'],
 //    wback: (m  !=
 //            Pc)}
 class VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss11aaaammmm_case_0
@@ -983,6 +1072,13 @@ class VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss11aaaamm
   virtual bool base_address_register_writeback_small_immediate(
       Instruction i) const;
   virtual RegisterList uses(Instruction i) const;
+  virtual ViolationSet get_violations(
+      const nacl_arm_val::DecodedInstruction& first,
+      const nacl_arm_val::DecodedInstruction& second,
+      const nacl_arm_val::SfiValidator& sfi,
+      nacl_arm_val::AddressSet* branches,
+      nacl_arm_val::AddressSet* critical,
+      uint32_t* next_inst_addr) const;
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss11aaaammmm_case_0);
@@ -1047,6 +1143,7 @@ class VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss11aaaamm
 //    small_imm_base_wb: wback,
 //    true: true,
 //    uses: {Rn},
+//    violations: [implied by 'base'],
 //    wback: W(21)=1}
 class VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0
      : public ClassDecoder {
@@ -1060,6 +1157,13 @@ class VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0
   virtual bool base_address_register_writeback_small_immediate(
       Instruction i) const;
   virtual RegisterList uses(Instruction i) const;
+  virtual ViolationSet get_violations(
+      const nacl_arm_val::DecodedInstruction& first,
+      const nacl_arm_val::DecodedInstruction& second,
+      const nacl_arm_val::SfiValidator& sfi,
+      nacl_arm_val::AddressSet* branches,
+      nacl_arm_val::AddressSet* critical,
+      uint32_t* next_inst_addr) const;
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0);
@@ -1131,6 +1235,7 @@ class VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0
 //    single_regs: false,
 //    small_imm_base_wb: wback,
 //    uses: {Rn},
+//    violations: [implied by 'base'],
 //    wback: W(21)=1}
 class VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0
      : public ClassDecoder {
@@ -1144,6 +1249,13 @@ class VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0
   virtual bool base_address_register_writeback_small_immediate(
       Instruction i) const;
   virtual RegisterList uses(Instruction i) const;
+  virtual ViolationSet get_violations(
+      const nacl_arm_val::DecodedInstruction& first,
+      const nacl_arm_val::DecodedInstruction& second,
+      const nacl_arm_val::SfiValidator& sfi,
+      nacl_arm_val::AddressSet* branches,
+      nacl_arm_val::AddressSet* critical,
+      uint32_t* next_inst_addr) const;
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0);
@@ -1172,7 +1284,8 @@ class VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0
 //    rule: VLDR,
 //    single_reg: true,
 //    true: true,
-//    uses: {Rn}}
+//    uses: {Rn},
+//    violations: [implied by 'base']}
 class VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_0
      : public ClassDecoder {
  public:
@@ -1183,6 +1296,13 @@ class VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_0
   virtual bool is_literal_load(Instruction i) const;
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList uses(Instruction i) const;
+  virtual ViolationSet get_violations(
+      const nacl_arm_val::DecodedInstruction& first,
+      const nacl_arm_val::DecodedInstruction& second,
+      const nacl_arm_val::SfiValidator& sfi,
+      nacl_arm_val::AddressSet* branches,
+      nacl_arm_val::AddressSet* critical,
+      uint32_t* next_inst_addr) const;
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_0);
@@ -1211,7 +1331,8 @@ class VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_0
 //    pattern: cccc1101ud01nnnndddd1011iiiiiiii,
 //    rule: VLDR,
 //    single_reg: false,
-//    uses: {Rn}}
+//    uses: {Rn},
+//    violations: [implied by 'base']}
 class VLDR_cccc1101ud01nnnndddd1011iiiiiiii_case_0
      : public ClassDecoder {
  public:
@@ -1222,6 +1343,13 @@ class VLDR_cccc1101ud01nnnndddd1011iiiiiiii_case_0
   virtual bool is_literal_load(Instruction i) const;
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList uses(Instruction i) const;
+  virtual ViolationSet get_violations(
+      const nacl_arm_val::DecodedInstruction& first,
+      const nacl_arm_val::DecodedInstruction& second,
+      const nacl_arm_val::SfiValidator& sfi,
+      nacl_arm_val::AddressSet* branches,
+      nacl_arm_val::AddressSet* critical,
+      uint32_t* next_inst_addr) const;
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       VLDR_cccc1101ud01nnnndddd1011iiiiiiii_case_0);
@@ -3872,7 +4000,8 @@ class VPMIN_1111001u0dssnnnndddd1010n0m1mmmm_case_0
 //    single_regs: true,
 //    small_imm_base_wb: true,
 //    true: true,
-//    uses: {Sp}}
+//    uses: {Sp},
+//    violations: [implied by 'base']}
 class VPOP_cccc11001d111101dddd1010iiiiiiii_case_0
      : public ClassDecoder {
  public:
@@ -3884,6 +4013,13 @@ class VPOP_cccc11001d111101dddd1010iiiiiiii_case_0
   virtual bool base_address_register_writeback_small_immediate(
       Instruction i) const;
   virtual RegisterList uses(Instruction i) const;
+  virtual ViolationSet get_violations(
+      const nacl_arm_val::DecodedInstruction& first,
+      const nacl_arm_val::DecodedInstruction& second,
+      const nacl_arm_val::SfiValidator& sfi,
+      nacl_arm_val::AddressSet* branches,
+      nacl_arm_val::AddressSet* critical,
+      uint32_t* next_inst_addr) const;
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       VPOP_cccc11001d111101dddd1010iiiiiiii_case_0);
@@ -3920,7 +4056,8 @@ class VPOP_cccc11001d111101dddd1010iiiiiiii_case_0
 //    single_regs: false,
 //    small_imm_base_wb: true,
 //    true: true,
-//    uses: {Sp}}
+//    uses: {Sp},
+//    violations: [implied by 'base']}
 class VPOP_cccc11001d111101dddd1011iiiiiiii_case_0
      : public ClassDecoder {
  public:
@@ -3932,6 +4069,13 @@ class VPOP_cccc11001d111101dddd1011iiiiiiii_case_0
   virtual bool base_address_register_writeback_small_immediate(
       Instruction i) const;
   virtual RegisterList uses(Instruction i) const;
+  virtual ViolationSet get_violations(
+      const nacl_arm_val::DecodedInstruction& first,
+      const nacl_arm_val::DecodedInstruction& second,
+      const nacl_arm_val::SfiValidator& sfi,
+      nacl_arm_val::AddressSet* branches,
+      nacl_arm_val::AddressSet* critical,
+      uint32_t* next_inst_addr) const;
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       VPOP_cccc11001d111101dddd1011iiiiiiii_case_0);
@@ -3960,7 +4104,8 @@ class VPOP_cccc11001d111101dddd1011iiiiiiii_case_0
 //    single_regs: true,
 //    small_imm_base_wb: true,
 //    true: true,
-//    uses: {Sp}}
+//    uses: {Sp},
+//    violations: [implied by 'base']}
 class VPUSH_cccc11010d101101dddd1010iiiiiiii_case_0
      : public ClassDecoder {
  public:
@@ -3972,6 +4117,13 @@ class VPUSH_cccc11010d101101dddd1010iiiiiiii_case_0
   virtual bool base_address_register_writeback_small_immediate(
       Instruction i) const;
   virtual RegisterList uses(Instruction i) const;
+  virtual ViolationSet get_violations(
+      const nacl_arm_val::DecodedInstruction& first,
+      const nacl_arm_val::DecodedInstruction& second,
+      const nacl_arm_val::SfiValidator& sfi,
+      nacl_arm_val::AddressSet* branches,
+      nacl_arm_val::AddressSet* critical,
+      uint32_t* next_inst_addr) const;
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       VPUSH_cccc11010d101101dddd1010iiiiiiii_case_0);
@@ -4008,7 +4160,8 @@ class VPUSH_cccc11010d101101dddd1010iiiiiiii_case_0
 //    single_regs: false,
 //    small_imm_base_wb: true,
 //    true: true,
-//    uses: {Sp}}
+//    uses: {Sp},
+//    violations: [implied by 'base']}
 class VPUSH_cccc11010d101101dddd1011iiiiiiii_case_0
      : public ClassDecoder {
  public:
@@ -4020,6 +4173,13 @@ class VPUSH_cccc11010d101101dddd1011iiiiiiii_case_0
   virtual bool base_address_register_writeback_small_immediate(
       Instruction i) const;
   virtual RegisterList uses(Instruction i) const;
+  virtual ViolationSet get_violations(
+      const nacl_arm_val::DecodedInstruction& first,
+      const nacl_arm_val::DecodedInstruction& second,
+      const nacl_arm_val::SfiValidator& sfi,
+      nacl_arm_val::AddressSet* branches,
+      nacl_arm_val::AddressSet* critical,
+      uint32_t* next_inst_addr) const;
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       VPUSH_cccc11010d101101dddd1011iiiiiiii_case_0);
@@ -6773,6 +6933,7 @@ class VSRI_111100111diiiiiidddd0100lqm1mmmm_case_0
 //    uses: {m
 //         if wback
 //         else None, n},
+//    violations: [implied by 'base'],
 //    wback: (m  !=
 //            Pc)}
 class VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0
@@ -6786,6 +6947,13 @@ class VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0
   virtual bool base_address_register_writeback_small_immediate(
       Instruction i) const;
   virtual RegisterList uses(Instruction i) const;
+  virtual ViolationSet get_violations(
+      const nacl_arm_val::DecodedInstruction& first,
+      const nacl_arm_val::DecodedInstruction& second,
+      const nacl_arm_val::SfiValidator& sfi,
+      nacl_arm_val::AddressSet* branches,
+      nacl_arm_val::AddressSet* critical,
+      uint32_t* next_inst_addr) const;
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0);
@@ -6870,6 +7038,7 @@ class VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0
 //    uses: {m
 //         if wback
 //         else None, n},
+//    violations: [implied by 'base'],
 //    wback: (m  !=
 //            Pc)}
 class VST1_single_element_from_one_lane_111101001d00nnnnddddss00aaaammmm_case_0
@@ -6883,6 +7052,13 @@ class VST1_single_element_from_one_lane_111101001d00nnnnddddss00aaaammmm_case_0
   virtual bool base_address_register_writeback_small_immediate(
       Instruction i) const;
   virtual RegisterList uses(Instruction i) const;
+  virtual ViolationSet get_violations(
+      const nacl_arm_val::DecodedInstruction& first,
+      const nacl_arm_val::DecodedInstruction& second,
+      const nacl_arm_val::SfiValidator& sfi,
+      nacl_arm_val::AddressSet* branches,
+      nacl_arm_val::AddressSet* critical,
+      uint32_t* next_inst_addr) const;
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       VST1_single_element_from_one_lane_111101001d00nnnnddddss00aaaammmm_case_0);
@@ -6947,6 +7123,7 @@ class VST1_single_element_from_one_lane_111101001d00nnnnddddss00aaaammmm_case_0
 //    uses: {m
 //         if wback
 //         else None, n},
+//    violations: [implied by 'base'],
 //    wback: (m  !=
 //            Pc)}
 class VST2_multiple_2_element_structures_111101000d00nnnnddddttttssaammmm_case_0
@@ -6960,6 +7137,13 @@ class VST2_multiple_2_element_structures_111101000d00nnnnddddttttssaammmm_case_0
   virtual bool base_address_register_writeback_small_immediate(
       Instruction i) const;
   virtual RegisterList uses(Instruction i) const;
+  virtual ViolationSet get_violations(
+      const nacl_arm_val::DecodedInstruction& first,
+      const nacl_arm_val::DecodedInstruction& second,
+      const nacl_arm_val::SfiValidator& sfi,
+      nacl_arm_val::AddressSet* branches,
+      nacl_arm_val::AddressSet* critical,
+      uint32_t* next_inst_addr) const;
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       VST2_multiple_2_element_structures_111101000d00nnnnddddttttssaammmm_case_0);
@@ -7042,6 +7226,7 @@ class VST2_multiple_2_element_structures_111101000d00nnnnddddttttssaammmm_case_0
 //    uses: {m
 //         if wback
 //         else None, n},
+//    violations: [implied by 'base'],
 //    wback: (m  !=
 //            Pc)}
 class VST2_single_2_element_structure_from_one_lane_111101001d00nnnnddddss01aaaammmm_case_0
@@ -7055,6 +7240,13 @@ class VST2_single_2_element_structure_from_one_lane_111101001d00nnnnddddss01aaaa
   virtual bool base_address_register_writeback_small_immediate(
       Instruction i) const;
   virtual RegisterList uses(Instruction i) const;
+  virtual ViolationSet get_violations(
+      const nacl_arm_val::DecodedInstruction& first,
+      const nacl_arm_val::DecodedInstruction& second,
+      const nacl_arm_val::SfiValidator& sfi,
+      nacl_arm_val::AddressSet* branches,
+      nacl_arm_val::AddressSet* critical,
+      uint32_t* next_inst_addr) const;
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       VST2_single_2_element_structure_from_one_lane_111101001d00nnnnddddss01aaaammmm_case_0);
@@ -7116,6 +7308,7 @@ class VST2_single_2_element_structure_from_one_lane_111101001d00nnnnddddss01aaaa
 //    uses: {m
 //         if wback
 //         else None, n},
+//    violations: [implied by 'base'],
 //    wback: (m  !=
 //            Pc)}
 class VST3_multiple_3_element_structures_111101000d00nnnnddddttttssaammmm_case_0
@@ -7129,6 +7322,13 @@ class VST3_multiple_3_element_structures_111101000d00nnnnddddttttssaammmm_case_0
   virtual bool base_address_register_writeback_small_immediate(
       Instruction i) const;
   virtual RegisterList uses(Instruction i) const;
+  virtual ViolationSet get_violations(
+      const nacl_arm_val::DecodedInstruction& first,
+      const nacl_arm_val::DecodedInstruction& second,
+      const nacl_arm_val::SfiValidator& sfi,
+      nacl_arm_val::AddressSet* branches,
+      nacl_arm_val::AddressSet* critical,
+      uint32_t* next_inst_addr) const;
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       VST3_multiple_3_element_structures_111101000d00nnnnddddttttssaammmm_case_0);
@@ -7204,6 +7404,7 @@ class VST3_multiple_3_element_structures_111101000d00nnnnddddttttssaammmm_case_0
 //    uses: {m
 //         if wback
 //         else None, n},
+//    violations: [implied by 'base'],
 //    wback: (m  !=
 //            Pc)}
 class VST3_single_3_element_structure_from_one_lane_111101001d00nnnnddddss10aaaammmm_case_0
@@ -7217,6 +7418,13 @@ class VST3_single_3_element_structure_from_one_lane_111101001d00nnnnddddss10aaaa
   virtual bool base_address_register_writeback_small_immediate(
       Instruction i) const;
   virtual RegisterList uses(Instruction i) const;
+  virtual ViolationSet get_violations(
+      const nacl_arm_val::DecodedInstruction& first,
+      const nacl_arm_val::DecodedInstruction& second,
+      const nacl_arm_val::SfiValidator& sfi,
+      nacl_arm_val::AddressSet* branches,
+      nacl_arm_val::AddressSet* critical,
+      uint32_t* next_inst_addr) const;
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       VST3_single_3_element_structure_from_one_lane_111101001d00nnnnddddss10aaaammmm_case_0);
@@ -7278,6 +7486,7 @@ class VST3_single_3_element_structure_from_one_lane_111101001d00nnnnddddss10aaaa
 //    uses: {m
 //         if wback
 //         else None, n},
+//    violations: [implied by 'base'],
 //    wback: (m  !=
 //            Pc)}
 class VST4_multiple_4_element_structures_111101000d00nnnnddddttttssaammmm_case_0
@@ -7291,6 +7500,13 @@ class VST4_multiple_4_element_structures_111101000d00nnnnddddttttssaammmm_case_0
   virtual bool base_address_register_writeback_small_immediate(
       Instruction i) const;
   virtual RegisterList uses(Instruction i) const;
+  virtual ViolationSet get_violations(
+      const nacl_arm_val::DecodedInstruction& first,
+      const nacl_arm_val::DecodedInstruction& second,
+      const nacl_arm_val::SfiValidator& sfi,
+      nacl_arm_val::AddressSet* branches,
+      nacl_arm_val::AddressSet* critical,
+      uint32_t* next_inst_addr) const;
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       VST4_multiple_4_element_structures_111101000d00nnnnddddttttssaammmm_case_0);
@@ -7375,6 +7591,7 @@ class VST4_multiple_4_element_structures_111101000d00nnnnddddttttssaammmm_case_0
 //    uses: {m
 //         if wback
 //         else None, n},
+//    violations: [implied by 'base'],
 //    wback: (m  !=
 //            Pc)}
 class VST4_single_4_element_structure_form_one_lane_111101001d00nnnnddddss11aaaammmm_case_0
@@ -7388,6 +7605,13 @@ class VST4_single_4_element_structure_form_one_lane_111101001d00nnnnddddss11aaaa
   virtual bool base_address_register_writeback_small_immediate(
       Instruction i) const;
   virtual RegisterList uses(Instruction i) const;
+  virtual ViolationSet get_violations(
+      const nacl_arm_val::DecodedInstruction& first,
+      const nacl_arm_val::DecodedInstruction& second,
+      const nacl_arm_val::SfiValidator& sfi,
+      nacl_arm_val::AddressSet* branches,
+      nacl_arm_val::AddressSet* critical,
+      uint32_t* next_inst_addr) const;
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       VST4_single_4_element_structure_form_one_lane_111101001d00nnnnddddss11aaaammmm_case_0);
@@ -7452,6 +7676,7 @@ class VST4_single_4_element_structure_form_one_lane_111101001d00nnnnddddss11aaaa
 //    small_imm_base_wb: wback,
 //    true: true,
 //    uses: {Rn},
+//    violations: [implied by 'base'],
 //    wback: W(21)=1}
 class VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0
      : public ClassDecoder {
@@ -7464,6 +7689,13 @@ class VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0
   virtual bool base_address_register_writeback_small_immediate(
       Instruction i) const;
   virtual RegisterList uses(Instruction i) const;
+  virtual ViolationSet get_violations(
+      const nacl_arm_val::DecodedInstruction& first,
+      const nacl_arm_val::DecodedInstruction& second,
+      const nacl_arm_val::SfiValidator& sfi,
+      nacl_arm_val::AddressSet* branches,
+      nacl_arm_val::AddressSet* critical,
+      uint32_t* next_inst_addr) const;
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0);
@@ -7535,6 +7767,7 @@ class VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0
 //    single_regs: false,
 //    small_imm_base_wb: wback,
 //    uses: {Rn},
+//    violations: [implied by 'base'],
 //    wback: W(21)=1}
 class VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0
      : public ClassDecoder {
@@ -7547,6 +7780,13 @@ class VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0
   virtual bool base_address_register_writeback_small_immediate(
       Instruction i) const;
   virtual RegisterList uses(Instruction i) const;
+  virtual ViolationSet get_violations(
+      const nacl_arm_val::DecodedInstruction& first,
+      const nacl_arm_val::DecodedInstruction& second,
+      const nacl_arm_val::SfiValidator& sfi,
+      nacl_arm_val::AddressSet* branches,
+      nacl_arm_val::AddressSet* critical,
+      uint32_t* next_inst_addr) const;
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0);
@@ -7575,7 +7815,8 @@ class VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0
 //            Pc => FORBIDDEN_OPERANDS],
 //    single_reg: true,
 //    true: true,
-//    uses: {Rn}}
+//    uses: {Rn},
+//    violations: [implied by 'base']}
 class VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_0
      : public ClassDecoder {
  public:
@@ -7585,6 +7826,13 @@ class VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_0
   virtual RegisterList defs(Instruction inst) const;
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList uses(Instruction i) const;
+  virtual ViolationSet get_violations(
+      const nacl_arm_val::DecodedInstruction& first,
+      const nacl_arm_val::DecodedInstruction& second,
+      const nacl_arm_val::SfiValidator& sfi,
+      nacl_arm_val::AddressSet* branches,
+      nacl_arm_val::AddressSet* critical,
+      uint32_t* next_inst_addr) const;
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_0);
@@ -7613,7 +7861,8 @@ class VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_0
 //    safety: [n  ==
 //            Pc => FORBIDDEN_OPERANDS],
 //    single_reg: false,
-//    uses: {Rn}}
+//    uses: {Rn},
+//    violations: [implied by 'base']}
 class VSTR_cccc1101ud00nnnndddd1011iiiiiiii_case_0
      : public ClassDecoder {
  public:
@@ -7623,6 +7872,13 @@ class VSTR_cccc1101ud00nnnndddd1011iiiiiiii_case_0
   virtual RegisterList defs(Instruction inst) const;
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList uses(Instruction i) const;
+  virtual ViolationSet get_violations(
+      const nacl_arm_val::DecodedInstruction& first,
+      const nacl_arm_val::DecodedInstruction& second,
+      const nacl_arm_val::SfiValidator& sfi,
+      nacl_arm_val::AddressSet* branches,
+      nacl_arm_val::AddressSet* critical,
+      uint32_t* next_inst_addr) const;
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       VSTR_cccc1101ud00nnnndddd1011iiiiiiii_case_0);

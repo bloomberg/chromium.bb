@@ -503,7 +503,8 @@ bool Unnamed_11110100x001xxxxxxxxxxxxxxxxxxxx_case_0TesterCase11
 //       rule: PLI_immediate_literal,
 //       safety: [true => MAY_BE_SAFE],
 //       true: true,
-//       uses: {Rn}}
+//       uses: {Rn},
+//       violations: [implied by 'base']}
 class PLI_immediate_literal_11110100u101nnnn1111iiiiiiiiiiii_case_0TesterCase12
     : public Arm32DecoderTester {
  public:
@@ -545,7 +546,8 @@ bool PLI_immediate_literal_11110100u101nnnn1111iiiiiiiiiiii_case_0TesterCase12
 //       pattern: 11110101ur01nnnn1111iiiiiiiiiiii,
 //       rule: PLD_PLDW_immediate,
 //       safety: [Rn(19:16)=1111 => DECODER_ERROR],
-//       uses: {Rn}}
+//       uses: {Rn},
+//       violations: [implied by 'base']}
 class PLD_PLDW_immediate_11110101ur01nnnn1111iiiiiiiiiiii_case_0TesterCase13
     : public Arm32DecoderTester {
  public:
@@ -626,7 +628,8 @@ bool Unnamed_11110101x001xxxxxxxxxxxxxxxxxxxx_case_0TesterCase14
 //       pattern: 11110101ur01nnnn1111iiiiiiiiiiii,
 //       rule: PLD_PLDW_immediate,
 //       safety: [Rn(19:16)=1111 => DECODER_ERROR],
-//       uses: {Rn}}
+//       uses: {Rn},
+//       violations: [implied by 'base']}
 class PLD_PLDW_immediate_11110101ur01nnnn1111iiiiiiiiiiii_case_1TesterCase15
     : public Arm32DecoderTester {
  public:
@@ -669,7 +672,8 @@ bool PLD_PLDW_immediate_11110101ur01nnnn1111iiiiiiiiiiii_case_1TesterCase15
 //       rule: PLD_literal,
 //       safety: [true => MAY_BE_SAFE],
 //       true: true,
-//       uses: {Pc}}
+//       uses: {Pc},
+//       violations: [implied by 'base']}
 class PLD_literal_11110101u10111111111iiiiiiiiiiii_case_0TesterCase16
     : public Arm32DecoderTester {
  public:
@@ -752,7 +756,8 @@ bool Unnamed_11110110x001xxxxxxxxxxxxxxx0xxxx_case_0TesterCase17
 //               Pc => UNPREDICTABLE,
 //         true => FORBIDDEN_OPERANDS],
 //       true: true,
-//       uses: {Rm, Rn}}
+//       uses: {Rm, Rn},
+//       violations: [implied by 'base']}
 class PLI_register_11110110u101nnnn1111iiiiitt0mmmm_case_0TesterCase18
     : public Arm32DecoderTester {
  public:
@@ -804,7 +809,8 @@ bool PLI_register_11110110u101nnnn1111iiiiitt0mmmm_case_0TesterCase18
 //            is_pldw) => UNPREDICTABLE,
 //         true => FORBIDDEN_OPERANDS],
 //       true: true,
-//       uses: {Rm, Rn}}
+//       uses: {Rm, Rn},
+//       violations: [implied by 'base']}
 class PLD_PLDW_register_11110111u001nnnn1111iiiiitt0mmmm_case_0TesterCase19
     : public Arm32DecoderTester {
  public:
@@ -856,7 +862,8 @@ bool PLD_PLDW_register_11110111u001nnnn1111iiiiitt0mmmm_case_0TesterCase19
 //            is_pldw) => UNPREDICTABLE,
 //         true => FORBIDDEN_OPERANDS],
 //       true: true,
-//       uses: {Rm, Rn}}
+//       uses: {Rm, Rn},
+//       violations: [implied by 'base']}
 class PLD_PLDW_register_11110111u101nnnn1111iiiiitt0mmmm_case_0TesterCase20
     : public Arm32DecoderTester {
  public:
@@ -1222,7 +1229,8 @@ class Unnamed_11110100x001xxxxxxxxxxxxxxxxxxxx_case_0Tester_Case11
 //       rule: PLI_immediate_literal,
 //       safety: [true => MAY_BE_SAFE],
 //       true: true,
-//       uses: {Rn}}
+//       uses: {Rn},
+//       violations: [implied by 'base']}
 class PLI_immediate_literal_11110100u101nnnn1111iiiiiiiiiiii_case_0Tester_Case12
     : public PLI_immediate_literal_11110100u101nnnn1111iiiiiiiiiiii_case_0TesterCase12 {
  public:
@@ -1245,7 +1253,8 @@ class PLI_immediate_literal_11110100u101nnnn1111iiiiiiiiiiii_case_0Tester_Case12
 //       pattern: 11110101ur01nnnn1111iiiiiiiiiiii,
 //       rule: PLD_PLDW_immediate,
 //       safety: [Rn(19:16)=1111 => DECODER_ERROR],
-//       uses: {Rn}}
+//       uses: {Rn},
+//       violations: [implied by 'base']}
 class PLD_PLDW_immediate_11110101ur01nnnn1111iiiiiiiiiiii_case_0Tester_Case13
     : public PLD_PLDW_immediate_11110101ur01nnnn1111iiiiiiiiiiii_case_0TesterCase13 {
  public:
@@ -1285,7 +1294,8 @@ class Unnamed_11110101x001xxxxxxxxxxxxxxxxxxxx_case_0Tester_Case14
 //       pattern: 11110101ur01nnnn1111iiiiiiiiiiii,
 //       rule: PLD_PLDW_immediate,
 //       safety: [Rn(19:16)=1111 => DECODER_ERROR],
-//       uses: {Rn}}
+//       uses: {Rn},
+//       violations: [implied by 'base']}
 class PLD_PLDW_immediate_11110101ur01nnnn1111iiiiiiiiiiii_case_1Tester_Case15
     : public PLD_PLDW_immediate_11110101ur01nnnn1111iiiiiiiiiiii_case_1TesterCase15 {
  public:
@@ -1306,7 +1316,8 @@ class PLD_PLDW_immediate_11110101ur01nnnn1111iiiiiiiiiiii_case_1Tester_Case15
 //       rule: PLD_literal,
 //       safety: [true => MAY_BE_SAFE],
 //       true: true,
-//       uses: {Pc}}
+//       uses: {Pc},
+//       violations: [implied by 'base']}
 class PLD_literal_11110101u10111111111iiiiiiiiiiii_case_0Tester_Case16
     : public PLD_literal_11110101u10111111111iiiiiiiiiiii_case_0TesterCase16 {
  public:
@@ -1348,7 +1359,8 @@ class Unnamed_11110110x001xxxxxxxxxxxxxxx0xxxx_case_0Tester_Case17
 //               Pc => UNPREDICTABLE,
 //         true => FORBIDDEN_OPERANDS],
 //       true: true,
-//       uses: {Rm, Rn}}
+//       uses: {Rm, Rn},
+//       violations: [implied by 'base']}
 class PLI_register_11110110u101nnnn1111iiiiitt0mmmm_case_0Tester_Case18
     : public PLI_register_11110110u101nnnn1111iiiiitt0mmmm_case_0TesterCase18 {
  public:
@@ -1378,7 +1390,8 @@ class PLI_register_11110110u101nnnn1111iiiiitt0mmmm_case_0Tester_Case18
 //            is_pldw) => UNPREDICTABLE,
 //         true => FORBIDDEN_OPERANDS],
 //       true: true,
-//       uses: {Rm, Rn}}
+//       uses: {Rm, Rn},
+//       violations: [implied by 'base']}
 class PLD_PLDW_register_11110111u001nnnn1111iiiiitt0mmmm_case_0Tester_Case19
     : public PLD_PLDW_register_11110111u001nnnn1111iiiiitt0mmmm_case_0TesterCase19 {
  public:
@@ -1408,7 +1421,8 @@ class PLD_PLDW_register_11110111u001nnnn1111iiiiitt0mmmm_case_0Tester_Case19
 //            is_pldw) => UNPREDICTABLE,
 //         true => FORBIDDEN_OPERANDS],
 //       true: true,
-//       uses: {Rm, Rn}}
+//       uses: {Rm, Rn},
+//       violations: [implied by 'base']}
 class PLD_PLDW_register_11110111u101nnnn1111iiiiitt0mmmm_case_0Tester_Case20
     : public PLD_PLDW_register_11110111u101nnnn1111iiiiitt0mmmm_case_0TesterCase20 {
  public:
@@ -1693,7 +1707,8 @@ TEST_F(Arm32DecoderStateTests,
 //       rule: PLI_immediate_literal,
 //       safety: [true => MAY_BE_SAFE],
 //       true: true,
-//       uses: {Rn}}
+//       uses: {Rn},
+//       violations: [implied by 'base']}
 TEST_F(Arm32DecoderStateTests,
        PLI_immediate_literal_11110100u101nnnn1111iiiiiiiiiiii_case_0Tester_Case12_TestCase12) {
   PLI_immediate_literal_11110100u101nnnn1111iiiiiiiiiiii_case_0Tester_Case12 baseline_tester;
@@ -1715,7 +1730,8 @@ TEST_F(Arm32DecoderStateTests,
 //       pattern: 11110101ur01nnnn1111iiiiiiiiiiii,
 //       rule: PLD_PLDW_immediate,
 //       safety: [Rn(19:16)=1111 => DECODER_ERROR],
-//       uses: {Rn}}
+//       uses: {Rn},
+//       violations: [implied by 'base']}
 TEST_F(Arm32DecoderStateTests,
        PLD_PLDW_immediate_11110101ur01nnnn1111iiiiiiiiiiii_case_0Tester_Case13_TestCase13) {
   PLD_PLDW_immediate_11110101ur01nnnn1111iiiiiiiiiiii_case_0Tester_Case13 baseline_tester;
@@ -1753,7 +1769,8 @@ TEST_F(Arm32DecoderStateTests,
 //       pattern: 11110101ur01nnnn1111iiiiiiiiiiii,
 //       rule: PLD_PLDW_immediate,
 //       safety: [Rn(19:16)=1111 => DECODER_ERROR],
-//       uses: {Rn}}
+//       uses: {Rn},
+//       violations: [implied by 'base']}
 TEST_F(Arm32DecoderStateTests,
        PLD_PLDW_immediate_11110101ur01nnnn1111iiiiiiiiiiii_case_1Tester_Case15_TestCase15) {
   PLD_PLDW_immediate_11110101ur01nnnn1111iiiiiiiiiiii_case_1Tester_Case15 baseline_tester;
@@ -1773,7 +1790,8 @@ TEST_F(Arm32DecoderStateTests,
 //       rule: PLD_literal,
 //       safety: [true => MAY_BE_SAFE],
 //       true: true,
-//       uses: {Pc}}
+//       uses: {Pc},
+//       violations: [implied by 'base']}
 TEST_F(Arm32DecoderStateTests,
        PLD_literal_11110101u10111111111iiiiiiiiiiii_case_0Tester_Case16_TestCase16) {
   PLD_literal_11110101u10111111111iiiiiiiiiiii_case_0Tester_Case16 baseline_tester;
@@ -1813,7 +1831,8 @@ TEST_F(Arm32DecoderStateTests,
 //               Pc => UNPREDICTABLE,
 //         true => FORBIDDEN_OPERANDS],
 //       true: true,
-//       uses: {Rm, Rn}}
+//       uses: {Rm, Rn},
+//       violations: [implied by 'base']}
 TEST_F(Arm32DecoderStateTests,
        PLI_register_11110110u101nnnn1111iiiiitt0mmmm_case_0Tester_Case18_TestCase18) {
   PLI_register_11110110u101nnnn1111iiiiitt0mmmm_case_0Tester_Case18 baseline_tester;
@@ -1842,7 +1861,8 @@ TEST_F(Arm32DecoderStateTests,
 //            is_pldw) => UNPREDICTABLE,
 //         true => FORBIDDEN_OPERANDS],
 //       true: true,
-//       uses: {Rm, Rn}}
+//       uses: {Rm, Rn},
+//       violations: [implied by 'base']}
 TEST_F(Arm32DecoderStateTests,
        PLD_PLDW_register_11110111u001nnnn1111iiiiitt0mmmm_case_0Tester_Case19_TestCase19) {
   PLD_PLDW_register_11110111u001nnnn1111iiiiitt0mmmm_case_0Tester_Case19 baseline_tester;
@@ -1871,7 +1891,8 @@ TEST_F(Arm32DecoderStateTests,
 //            is_pldw) => UNPREDICTABLE,
 //         true => FORBIDDEN_OPERANDS],
 //       true: true,
-//       uses: {Rm, Rn}}
+//       uses: {Rm, Rn},
+//       violations: [implied by 'base']}
 TEST_F(Arm32DecoderStateTests,
        PLD_PLDW_register_11110111u101nnnn1111iiiiitt0mmmm_case_0Tester_Case20_TestCase20) {
   PLD_PLDW_register_11110111u101nnnn1111iiiiitt0mmmm_case_0Tester_Case20 baseline_tester;

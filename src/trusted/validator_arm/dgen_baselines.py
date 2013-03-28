@@ -229,7 +229,7 @@ def generate_baselines_h(decoder, decoder_name,
 
 BASELINE_CC_HEADER="""%(FILE_HEADER)s
 #include "native_client/src/trusted/validator_arm/gen/arm32_decode_baselines.h"
-#include "native_client/src/trusted/validator_arm/validator.h"
+#include "native_client/src/trusted/validator_arm/inst_classes_inline.h"
 
 namespace nacl_arm_dec {
 """

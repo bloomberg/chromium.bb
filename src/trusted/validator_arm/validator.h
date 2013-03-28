@@ -192,11 +192,21 @@ class SfiValidator {
   }
 
   // Returns the Bundle containing a given address.
-  inline const Bundle bundle_for_address(uint32_t) const;
+  inline const Bundle bundle_for_address(uint32_t address) const;
 
   // Returns true if both addresses are in the same bundle.
   inline bool in_same_bundle(const DecodedInstruction& first,
                              const DecodedInstruction& second) const;
+
+  // Checks that both instructions can be in the same bundle,
+  // add updates the critical set to include the second instruction,
+  // since it can't be safely jumped to. If the instruction crosses
+  // a bundle, a set with the given violation will be returned.
+  inline nacl_arm_dec::ViolationSet validate_instruction_pair_allowed(
+      const DecodedInstruction& first,
+      const DecodedInstruction& second,
+      AddressSet* critical,
+      nacl_arm_dec::Violation violation) const;
 
   // Copy the given validator state.
   SfiValidator& operator=(const SfiValidator& v);
@@ -503,6 +513,17 @@ const Bundle SfiValidator::bundle_for_address(uint32_t address) const {
 bool SfiValidator::in_same_bundle(const DecodedInstruction& first,
                                   const DecodedInstruction& second) const {
   return bundle_for_address(first.addr()) == bundle_for_address(second.addr());
+}
+
+nacl_arm_dec::ViolationSet SfiValidator::validate_instruction_pair_allowed(
+    const DecodedInstruction& first,
+    const DecodedInstruction& second,
+    AddressSet* critical,
+    nacl_arm_dec::Violation violation) const {
+  if (!in_same_bundle(first, second))
+    return nacl_arm_dec::ViolationBit(violation);
+  critical->add(second.addr());
+  return nacl_arm_dec::kNoViolations;
 }
 
 }  // namespace nacl_arm_val

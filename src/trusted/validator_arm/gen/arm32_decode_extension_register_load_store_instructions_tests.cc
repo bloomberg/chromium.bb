@@ -83,6 +83,7 @@ namespace nacl_arm_test {
 //               32 => UNPREDICTABLE],
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
+//       violations: [implied by 'base'],
 //       wback: W(21)=1}
 class VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0TesterCase0
     : public Arm32DecoderTester {
@@ -175,6 +176,7 @@ bool VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0TesterCase0
 //               1 => DEPRECATED],
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
+//       violations: [implied by 'base'],
 //       wback: W(21)=1}
 class VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0TesterCase1
     : public Arm32DecoderTester {
@@ -259,6 +261,7 @@ bool VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0TesterCase1
 //               32 => UNPREDICTABLE],
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
+//       violations: [implied by 'base'],
 //       wback: W(21)=1}
 class VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0TesterCase2
     : public Arm32DecoderTester {
@@ -350,6 +353,7 @@ bool VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0TesterCase2
 //               1 => DEPRECATED],
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
+//       violations: [implied by 'base'],
 //       wback: W(21)=1}
 class VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0TesterCase3
     : public Arm32DecoderTester {
@@ -435,6 +439,7 @@ bool VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0TesterCase3
 //               32 => UNPREDICTABLE],
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
+//       violations: [implied by 'base'],
 //       wback: W(21)=1}
 class VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0TesterCase4
     : public Arm32DecoderTester {
@@ -527,6 +532,7 @@ bool VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0TesterCase4
 //               1 => DEPRECATED],
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
+//       violations: [implied by 'base'],
 //       wback: W(21)=1}
 class VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0TesterCase5
     : public Arm32DecoderTester {
@@ -611,6 +617,7 @@ bool VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0TesterCase5
 //               32 => UNPREDICTABLE],
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
+//       violations: [implied by 'base'],
 //       wback: W(21)=1}
 class VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0TesterCase6
     : public Arm32DecoderTester {
@@ -705,6 +712,7 @@ bool VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0TesterCase6
 //               1 => DEPRECATED],
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
+//       violations: [implied by 'base'],
 //       wback: W(21)=1}
 class VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0TesterCase7
     : public Arm32DecoderTester {
@@ -760,7 +768,8 @@ bool VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0TesterCase7
 //               32 => UNPREDICTABLE],
 //       small_imm_base_wb: true,
 //       true: true,
-//       uses: {Sp}}
+//       uses: {Sp},
+//       violations: [implied by 'base']}
 class VPOP_cccc11001d111101dddd1010iiiiiiii_case_0TesterCase8
     : public Arm32DecoderTester {
  public:
@@ -822,7 +831,8 @@ bool VPOP_cccc11001d111101dddd1010iiiiiiii_case_0TesterCase8
 //               1 => DEPRECATED],
 //       small_imm_base_wb: true,
 //       true: true,
-//       uses: {Sp}}
+//       uses: {Sp},
+//       violations: [implied by 'base']}
 class VPOP_cccc11001d111101dddd1011iiiiiiii_case_0TesterCase9
     : public Arm32DecoderTester {
  public:
@@ -910,6 +920,7 @@ bool VPOP_cccc11001d111101dddd1011iiiiiiii_case_0TesterCase9
 //               32 => UNPREDICTABLE],
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
+//       violations: [implied by 'base'],
 //       wback: W(21)=1}
 class VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0TesterCase10
     : public Arm32DecoderTester {
@@ -1005,6 +1016,7 @@ bool VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0TesterCase10
 //               1 => DEPRECATED],
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
+//       violations: [implied by 'base'],
 //       wback: W(21)=1}
 class VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0TesterCase11
     : public Arm32DecoderTester {
@@ -1060,7 +1072,8 @@ bool VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0TesterCase11
 //               32 => UNPREDICTABLE],
 //       small_imm_base_wb: true,
 //       true: true,
-//       uses: {Sp}}
+//       uses: {Sp},
+//       violations: [implied by 'base']}
 class VPUSH_cccc11010d101101dddd1010iiiiiiii_case_0TesterCase12
     : public Arm32DecoderTester {
  public:
@@ -1122,7 +1135,8 @@ bool VPUSH_cccc11010d101101dddd1010iiiiiiii_case_0TesterCase12
 //               1 => DEPRECATED],
 //       small_imm_base_wb: true,
 //       true: true,
-//       uses: {Sp}}
+//       uses: {Sp},
+//       violations: [implied by 'base']}
 class VPUSH_cccc11010d101101dddd1011iiiiiiii_case_0TesterCase13
     : public Arm32DecoderTester {
  public:
@@ -1209,6 +1223,7 @@ bool VPUSH_cccc11010d101101dddd1011iiiiiiii_case_0TesterCase13
 //               32 => UNPREDICTABLE],
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
+//       violations: [implied by 'base'],
 //       wback: W(21)=1}
 class VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0TesterCase14
     : public Arm32DecoderTester {
@@ -1300,6 +1315,7 @@ bool VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0TesterCase14
 //               1 => DEPRECATED],
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
+//       violations: [implied by 'base'],
 //       wback: W(21)=1}
 class VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0TesterCase15
     : public Arm32DecoderTester {
@@ -1345,7 +1361,8 @@ bool VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0TesterCase15
 //       rule: VSTR,
 //       safety: [n  ==
 //               Pc => FORBIDDEN_OPERANDS],
-//       uses: {Rn}}
+//       uses: {Rn},
+//       violations: [implied by 'base']}
 class VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_0TesterCase16
     : public Arm32DecoderTester {
  public:
@@ -1390,7 +1407,8 @@ bool VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_0TesterCase16
 //       rule: VSTR,
 //       safety: [n  ==
 //               Pc => FORBIDDEN_OPERANDS],
-//       uses: {Rn}}
+//       uses: {Rn},
+//       violations: [implied by 'base']}
 class VSTR_cccc1101ud00nnnndddd1011iiiiiiii_case_0TesterCase17
     : public Arm32DecoderTester {
  public:
@@ -1434,7 +1452,8 @@ bool VSTR_cccc1101ud00nnnndddd1011iiiiiiii_case_0TesterCase17
 //               Pc,
 //       pattern: cccc1101ud01nnnndddd1010iiiiiiii,
 //       rule: VLDR,
-//       uses: {Rn}}
+//       uses: {Rn},
+//       violations: [implied by 'base']}
 class VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_0TesterCase18
     : public Arm32DecoderTester {
  public:
@@ -1478,7 +1497,8 @@ bool VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_0TesterCase18
 //               Pc,
 //       pattern: cccc1101ud01nnnndddd1011iiiiiiii,
 //       rule: VLDR,
-//       uses: {Rn}}
+//       uses: {Rn},
+//       violations: [implied by 'base']}
 class VLDR_cccc1101ud01nnnndddd1011iiiiiiii_case_0TesterCase19
     : public Arm32DecoderTester {
  public:
@@ -1568,6 +1588,7 @@ bool VLDR_cccc1101ud01nnnndddd1011iiiiiiii_case_0TesterCase19
 //               32 => UNPREDICTABLE],
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
+//       violations: [implied by 'base'],
 //       wback: W(21)=1}
 class VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0Tester_Case0
     : public VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0TesterCase0 {
@@ -1638,6 +1659,7 @@ class VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0Tester_Case0
 //               1 => DEPRECATED],
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
+//       violations: [implied by 'base'],
 //       wback: W(21)=1}
 class VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0Tester_Case1
     : public VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0TesterCase1 {
@@ -1700,6 +1722,7 @@ class VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0Tester_Case1
 //               32 => UNPREDICTABLE],
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
+//       violations: [implied by 'base'],
 //       wback: W(21)=1}
 class VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0Tester_Case2
     : public VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0TesterCase2 {
@@ -1769,6 +1792,7 @@ class VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0Tester_Case2
 //               1 => DEPRECATED],
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
+//       violations: [implied by 'base'],
 //       wback: W(21)=1}
 class VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0Tester_Case3
     : public VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0TesterCase3 {
@@ -1832,6 +1856,7 @@ class VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0Tester_Case3
 //               32 => UNPREDICTABLE],
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
+//       violations: [implied by 'base'],
 //       wback: W(21)=1}
 class VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0Tester_Case4
     : public VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0TesterCase4 {
@@ -1902,6 +1927,7 @@ class VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0Tester_Case4
 //               1 => DEPRECATED],
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
+//       violations: [implied by 'base'],
 //       wback: W(21)=1}
 class VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0Tester_Case5
     : public VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0TesterCase5 {
@@ -1964,6 +1990,7 @@ class VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0Tester_Case5
 //               32 => UNPREDICTABLE],
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
+//       violations: [implied by 'base'],
 //       wback: W(21)=1}
 class VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0Tester_Case6
     : public VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0TesterCase6 {
@@ -2033,6 +2060,7 @@ class VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0Tester_Case6
 //               1 => DEPRECATED],
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
+//       violations: [implied by 'base'],
 //       wback: W(21)=1}
 class VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0Tester_Case7
     : public VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0TesterCase7 {
@@ -2063,7 +2091,8 @@ class VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0Tester_Case7
 //               32 => UNPREDICTABLE],
 //       small_imm_base_wb: true,
 //       true: true,
-//       uses: {Sp}}
+//       uses: {Sp},
+//       violations: [implied by 'base']}
 class VPOP_cccc11001d111101dddd1010iiiiiiii_case_0Tester_Case8
     : public VPOP_cccc11001d111101dddd1010iiiiiiii_case_0TesterCase8 {
  public:
@@ -2100,7 +2129,8 @@ class VPOP_cccc11001d111101dddd1010iiiiiiii_case_0Tester_Case8
 //               1 => DEPRECATED],
 //       small_imm_base_wb: true,
 //       true: true,
-//       uses: {Sp}}
+//       uses: {Sp},
+//       violations: [implied by 'base']}
 class VPOP_cccc11001d111101dddd1011iiiiiiii_case_0Tester_Case9
     : public VPOP_cccc11001d111101dddd1011iiiiiiii_case_0TesterCase9 {
  public:
@@ -2163,6 +2193,7 @@ class VPOP_cccc11001d111101dddd1011iiiiiiii_case_0Tester_Case9
 //               32 => UNPREDICTABLE],
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
+//       violations: [implied by 'base'],
 //       wback: W(21)=1}
 class VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0Tester_Case10
     : public VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0TesterCase10 {
@@ -2233,6 +2264,7 @@ class VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0Tester_Case10
 //               1 => DEPRECATED],
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
+//       violations: [implied by 'base'],
 //       wback: W(21)=1}
 class VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0Tester_Case11
     : public VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0TesterCase11 {
@@ -2263,7 +2295,8 @@ class VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0Tester_Case11
 //               32 => UNPREDICTABLE],
 //       small_imm_base_wb: true,
 //       true: true,
-//       uses: {Sp}}
+//       uses: {Sp},
+//       violations: [implied by 'base']}
 class VPUSH_cccc11010d101101dddd1010iiiiiiii_case_0Tester_Case12
     : public VPUSH_cccc11010d101101dddd1010iiiiiiii_case_0TesterCase12 {
  public:
@@ -2300,7 +2333,8 @@ class VPUSH_cccc11010d101101dddd1010iiiiiiii_case_0Tester_Case12
 //               1 => DEPRECATED],
 //       small_imm_base_wb: true,
 //       true: true,
-//       uses: {Sp}}
+//       uses: {Sp},
+//       violations: [implied by 'base']}
 class VPUSH_cccc11010d101101dddd1011iiiiiiii_case_0Tester_Case13
     : public VPUSH_cccc11010d101101dddd1011iiiiiiii_case_0TesterCase13 {
  public:
@@ -2362,6 +2396,7 @@ class VPUSH_cccc11010d101101dddd1011iiiiiiii_case_0Tester_Case13
 //               32 => UNPREDICTABLE],
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
+//       violations: [implied by 'base'],
 //       wback: W(21)=1}
 class VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0Tester_Case14
     : public VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0TesterCase14 {
@@ -2431,6 +2466,7 @@ class VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0Tester_Case14
 //               1 => DEPRECATED],
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
+//       violations: [implied by 'base'],
 //       wback: W(21)=1}
 class VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0Tester_Case15
     : public VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0TesterCase15 {
@@ -2454,7 +2490,8 @@ class VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0Tester_Case15
 //       rule: VSTR,
 //       safety: [n  ==
 //               Pc => FORBIDDEN_OPERANDS],
-//       uses: {Rn}}
+//       uses: {Rn},
+//       violations: [implied by 'base']}
 class VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_0Tester_Case16
     : public VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_0TesterCase16 {
  public:
@@ -2477,7 +2514,8 @@ class VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_0Tester_Case16
 //       rule: VSTR,
 //       safety: [n  ==
 //               Pc => FORBIDDEN_OPERANDS],
-//       uses: {Rn}}
+//       uses: {Rn},
+//       violations: [implied by 'base']}
 class VSTR_cccc1101ud00nnnndddd1011iiiiiiii_case_0Tester_Case17
     : public VSTR_cccc1101ud00nnnndddd1011iiiiiiii_case_0TesterCase17 {
  public:
@@ -2499,7 +2537,8 @@ class VSTR_cccc1101ud00nnnndddd1011iiiiiiii_case_0Tester_Case17
 //               Pc,
 //       pattern: cccc1101ud01nnnndddd1010iiiiiiii,
 //       rule: VLDR,
-//       uses: {Rn}}
+//       uses: {Rn},
+//       violations: [implied by 'base']}
 class VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_0Tester_Case18
     : public VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_0TesterCase18 {
  public:
@@ -2521,7 +2560,8 @@ class VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_0Tester_Case18
 //               Pc,
 //       pattern: cccc1101ud01nnnndddd1011iiiiiiii,
 //       rule: VLDR,
-//       uses: {Rn}}
+//       uses: {Rn},
+//       violations: [implied by 'base']}
 class VLDR_cccc1101ud01nnnndddd1011iiiiiiii_case_0Tester_Case19
     : public VLDR_cccc1101ud01nnnndddd1011iiiiiiii_case_0TesterCase19 {
  public:
@@ -2593,6 +2633,7 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //               32 => UNPREDICTABLE],
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
+//       violations: [implied by 'base'],
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
        VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0Tester_Case0_TestCase0) {
@@ -2662,6 +2703,7 @@ TEST_F(Arm32DecoderStateTests,
 //               1 => DEPRECATED],
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
+//       violations: [implied by 'base'],
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
        VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0Tester_Case1_TestCase1) {
@@ -2723,6 +2765,7 @@ TEST_F(Arm32DecoderStateTests,
 //               32 => UNPREDICTABLE],
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
+//       violations: [implied by 'base'],
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
        VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0Tester_Case2_TestCase2) {
@@ -2791,6 +2834,7 @@ TEST_F(Arm32DecoderStateTests,
 //               1 => DEPRECATED],
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
+//       violations: [implied by 'base'],
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
        VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0Tester_Case3_TestCase3) {
@@ -2853,6 +2897,7 @@ TEST_F(Arm32DecoderStateTests,
 //               32 => UNPREDICTABLE],
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
+//       violations: [implied by 'base'],
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
        VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0Tester_Case4_TestCase4) {
@@ -2922,6 +2967,7 @@ TEST_F(Arm32DecoderStateTests,
 //               1 => DEPRECATED],
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
+//       violations: [implied by 'base'],
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
        VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0Tester_Case5_TestCase5) {
@@ -2983,6 +3029,7 @@ TEST_F(Arm32DecoderStateTests,
 //               32 => UNPREDICTABLE],
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
+//       violations: [implied by 'base'],
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
        VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0Tester_Case6_TestCase6) {
@@ -3051,6 +3098,7 @@ TEST_F(Arm32DecoderStateTests,
 //               1 => DEPRECATED],
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
+//       violations: [implied by 'base'],
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
        VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0Tester_Case7_TestCase7) {
@@ -3080,7 +3128,8 @@ TEST_F(Arm32DecoderStateTests,
 //               32 => UNPREDICTABLE],
 //       small_imm_base_wb: true,
 //       true: true,
-//       uses: {Sp}}
+//       uses: {Sp},
+//       violations: [implied by 'base']}
 TEST_F(Arm32DecoderStateTests,
        VPOP_cccc11001d111101dddd1010iiiiiiii_case_0Tester_Case8_TestCase8) {
   VPOP_cccc11001d111101dddd1010iiiiiiii_case_0Tester_Case8 baseline_tester;
@@ -3116,7 +3165,8 @@ TEST_F(Arm32DecoderStateTests,
 //               1 => DEPRECATED],
 //       small_imm_base_wb: true,
 //       true: true,
-//       uses: {Sp}}
+//       uses: {Sp},
+//       violations: [implied by 'base']}
 TEST_F(Arm32DecoderStateTests,
        VPOP_cccc11001d111101dddd1011iiiiiiii_case_0Tester_Case9_TestCase9) {
   VPOP_cccc11001d111101dddd1011iiiiiiii_case_0Tester_Case9 baseline_tester;
@@ -3178,6 +3228,7 @@ TEST_F(Arm32DecoderStateTests,
 //               32 => UNPREDICTABLE],
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
+//       violations: [implied by 'base'],
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
        VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0Tester_Case10_TestCase10) {
@@ -3247,6 +3298,7 @@ TEST_F(Arm32DecoderStateTests,
 //               1 => DEPRECATED],
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
+//       violations: [implied by 'base'],
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
        VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0Tester_Case11_TestCase11) {
@@ -3276,7 +3328,8 @@ TEST_F(Arm32DecoderStateTests,
 //               32 => UNPREDICTABLE],
 //       small_imm_base_wb: true,
 //       true: true,
-//       uses: {Sp}}
+//       uses: {Sp},
+//       violations: [implied by 'base']}
 TEST_F(Arm32DecoderStateTests,
        VPUSH_cccc11010d101101dddd1010iiiiiiii_case_0Tester_Case12_TestCase12) {
   VPUSH_cccc11010d101101dddd1010iiiiiiii_case_0Tester_Case12 baseline_tester;
@@ -3312,7 +3365,8 @@ TEST_F(Arm32DecoderStateTests,
 //               1 => DEPRECATED],
 //       small_imm_base_wb: true,
 //       true: true,
-//       uses: {Sp}}
+//       uses: {Sp},
+//       violations: [implied by 'base']}
 TEST_F(Arm32DecoderStateTests,
        VPUSH_cccc11010d101101dddd1011iiiiiiii_case_0Tester_Case13_TestCase13) {
   VPUSH_cccc11010d101101dddd1011iiiiiiii_case_0Tester_Case13 baseline_tester;
@@ -3373,6 +3427,7 @@ TEST_F(Arm32DecoderStateTests,
 //               32 => UNPREDICTABLE],
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
+//       violations: [implied by 'base'],
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
        VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0Tester_Case14_TestCase14) {
@@ -3441,6 +3496,7 @@ TEST_F(Arm32DecoderStateTests,
 //               1 => DEPRECATED],
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
+//       violations: [implied by 'base'],
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
        VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0Tester_Case15_TestCase15) {
@@ -3463,7 +3519,8 @@ TEST_F(Arm32DecoderStateTests,
 //       rule: VSTR,
 //       safety: [n  ==
 //               Pc => FORBIDDEN_OPERANDS],
-//       uses: {Rn}}
+//       uses: {Rn},
+//       violations: [implied by 'base']}
 TEST_F(Arm32DecoderStateTests,
        VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_0Tester_Case16_TestCase16) {
   VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_0Tester_Case16 baseline_tester;
@@ -3485,7 +3542,8 @@ TEST_F(Arm32DecoderStateTests,
 //       rule: VSTR,
 //       safety: [n  ==
 //               Pc => FORBIDDEN_OPERANDS],
-//       uses: {Rn}}
+//       uses: {Rn},
+//       violations: [implied by 'base']}
 TEST_F(Arm32DecoderStateTests,
        VSTR_cccc1101ud00nnnndddd1011iiiiiiii_case_0Tester_Case17_TestCase17) {
   VSTR_cccc1101ud00nnnndddd1011iiiiiiii_case_0Tester_Case17 baseline_tester;
@@ -3506,7 +3564,8 @@ TEST_F(Arm32DecoderStateTests,
 //               Pc,
 //       pattern: cccc1101ud01nnnndddd1010iiiiiiii,
 //       rule: VLDR,
-//       uses: {Rn}}
+//       uses: {Rn},
+//       violations: [implied by 'base']}
 TEST_F(Arm32DecoderStateTests,
        VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_0Tester_Case18_TestCase18) {
   VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_0Tester_Case18 baseline_tester;
@@ -3527,7 +3586,8 @@ TEST_F(Arm32DecoderStateTests,
 //               Pc,
 //       pattern: cccc1101ud01nnnndddd1011iiiiiiii,
 //       rule: VLDR,
-//       uses: {Rn}}
+//       uses: {Rn},
+//       violations: [implied by 'base']}
 TEST_F(Arm32DecoderStateTests,
        VLDR_cccc1101ud01nnnndddd1011iiiiiiii_case_0Tester_Case19_TestCase19) {
   VLDR_cccc1101ud01nnnndddd1011iiiiiiii_case_0Tester_Case19 baseline_tester;

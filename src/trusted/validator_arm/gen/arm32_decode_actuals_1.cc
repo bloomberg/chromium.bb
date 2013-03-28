@@ -7,7 +7,7 @@
 // DO NOT EDIT: GENERATED CODE
 
 #include "native_client/src/trusted/validator_arm/gen/arm32_decode_actuals.h"
-#include "native_client/src/trusted/validator_arm/validator.h"
+#include "native_client/src/trusted/validator_arm/inst_classes_inline.h"
 
 namespace nacl_arm_dec {
 
@@ -560,7 +560,8 @@ uses(Instruction inst) const {
 //            inst,
 //    safety: [inst(31:28)=~1110 => UNPREDICTABLE,
 //      not IsBreakPointAndConstantPoolHead(inst) => FORBIDDEN_OPERANDS],
-//    uses: {}}
+//    uses: {},
+//    violations: [implied by 'is_literal_pool_head']}
 
 RegisterList Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1::
 defs(Instruction inst) const {
@@ -601,6 +602,24 @@ uses(Instruction inst) const {
   return RegisterList();
 }
 
+ViolationSet Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1::
+get_violations(const nacl_arm_val::DecodedInstruction& first,
+               const nacl_arm_val::DecodedInstruction& second,
+               const nacl_arm_val::SfiValidator& sfi,
+               nacl_arm_val::AddressSet* branches,
+               nacl_arm_val::AddressSet* critical,
+               uint32_t* next_inst_addr) const {
+  ViolationSet violations = ClassDecoder::get_violations(
+      first, second, sfi, branches, critical, next_inst_addr);
+
+  // If a pool head, mark address appropriately and then skip over
+  // the constant bundle.
+  validate_literal_pool_head(second, sfi, critical, next_inst_addr);
+
+  return violations;
+}
+
+
 // Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1
 //
 // Actual:
@@ -640,7 +659,8 @@ uses(Instruction inst) const {
 //   {defs: {15, 14},
 //    safety: [inst(3:0)=1111 => FORBIDDEN_OPERANDS],
 //    target: inst(3:0),
-//    uses: {inst(3:0)}}
+//    uses: {inst(3:0)},
+//    violations: [implied by 'target']}
 
 RegisterList Actual_BLX_register_cccc000100101111111111110011mmmm_case_1::
 defs(Instruction inst) const {
@@ -679,6 +699,27 @@ uses(Instruction inst) const {
    Add(Register((inst.Bits() & 0x0000000F)));
 }
 
+ViolationSet Actual_BLX_register_cccc000100101111111111110011mmmm_case_1::
+get_violations(const nacl_arm_val::DecodedInstruction& first,
+               const nacl_arm_val::DecodedInstruction& second,
+               const nacl_arm_val::SfiValidator& sfi,
+               nacl_arm_val::AddressSet* branches,
+               nacl_arm_val::AddressSet* critical,
+               uint32_t* next_inst_addr) const {
+  ViolationSet violations = ClassDecoder::get_violations(
+      first, second, sfi, branches, critical, next_inst_addr);
+
+  // Indirect branches (through a target register) need to be masked,
+  // and if they represent a call, they need to be end-of-bundle aligned.
+  violations = ViolationUnion(
+      violations, get_branch_mask_violations(first, second, sfi, critical));
+  violations = ViolationUnion(
+      violations, get_call_position_violations(second, sfi));
+
+  return violations;
+}
+
+
 // Actual_BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_1
 //
 // Actual:
@@ -686,7 +727,8 @@ uses(Instruction inst) const {
 //    relative: true,
 //    relative_offset: SignExtend(inst(23:0):'00'(1:0), 32) + 8,
 //    safety: [true => MAY_BE_SAFE],
-//    uses: {15}}
+//    uses: {15},
+//    violations: [implied by 'relative']}
 
 RegisterList Actual_BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_1::
 defs(Instruction inst) const {
@@ -733,6 +775,25 @@ uses(Instruction inst) const {
    Add(Register(15));
 }
 
+ViolationSet Actual_BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_1::
+get_violations(const nacl_arm_val::DecodedInstruction& first,
+               const nacl_arm_val::DecodedInstruction& second,
+               const nacl_arm_val::SfiValidator& sfi,
+               nacl_arm_val::AddressSet* branches,
+               nacl_arm_val::AddressSet* critical,
+               uint32_t* next_inst_addr) const {
+  ViolationSet violations = ClassDecoder::get_violations(
+      first, second, sfi, branches, critical, next_inst_addr);
+
+  // Direct (relative) branches can represent a call. If so, they need
+  // to be end-of-bundle aligned.
+  violations = ViolationUnion(
+      violations, get_call_position_violations(second, sfi));
+
+  return violations;
+}
+
+
 // Actual_B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_1
 //
 // Actual:
@@ -740,7 +801,8 @@ uses(Instruction inst) const {
 //    relative: true,
 //    relative_offset: SignExtend(inst(23:0):'00'(1:0), 32) + 8,
 //    safety: [true => MAY_BE_SAFE],
-//    uses: {15}}
+//    uses: {15},
+//    violations: [implied by 'relative']}
 
 RegisterList Actual_B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_1::
 defs(Instruction inst) const {
@@ -786,13 +848,33 @@ uses(Instruction inst) const {
    Add(Register(15));
 }
 
+ViolationSet Actual_B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_1::
+get_violations(const nacl_arm_val::DecodedInstruction& first,
+               const nacl_arm_val::DecodedInstruction& second,
+               const nacl_arm_val::SfiValidator& sfi,
+               nacl_arm_val::AddressSet* branches,
+               nacl_arm_val::AddressSet* critical,
+               uint32_t* next_inst_addr) const {
+  ViolationSet violations = ClassDecoder::get_violations(
+      first, second, sfi, branches, critical, next_inst_addr);
+
+  // Direct (relative) branches can represent a call. If so, they need
+  // to be end-of-bundle aligned.
+  violations = ViolationUnion(
+      violations, get_call_position_violations(second, sfi));
+
+  return violations;
+}
+
+
 // Actual_Bx_cccc000100101111111111110001mmmm_case_1
 //
 // Actual:
 //   {defs: {15},
 //    safety: [inst(3:0)=1111 => FORBIDDEN_OPERANDS],
 //    target: inst(3:0),
-//    uses: {inst(3:0)}}
+//    uses: {inst(3:0)},
+//    violations: [implied by 'target']}
 
 RegisterList Actual_Bx_cccc000100101111111111110001mmmm_case_1::
 defs(Instruction inst) const {
@@ -829,6 +911,27 @@ uses(Instruction inst) const {
   return RegisterList().
    Add(Register((inst.Bits() & 0x0000000F)));
 }
+
+ViolationSet Actual_Bx_cccc000100101111111111110001mmmm_case_1::
+get_violations(const nacl_arm_val::DecodedInstruction& first,
+               const nacl_arm_val::DecodedInstruction& second,
+               const nacl_arm_val::SfiValidator& sfi,
+               nacl_arm_val::AddressSet* branches,
+               nacl_arm_val::AddressSet* critical,
+               uint32_t* next_inst_addr) const {
+  ViolationSet violations = ClassDecoder::get_violations(
+      first, second, sfi, branches, critical, next_inst_addr);
+
+  // Indirect branches (through a target register) need to be masked,
+  // and if they represent a call, they need to be end-of-bundle aligned.
+  violations = ViolationUnion(
+      violations, get_branch_mask_violations(first, second, sfi, critical));
+  violations = ViolationUnion(
+      violations, get_call_position_violations(second, sfi));
+
+  return violations;
+}
+
 
 // Actual_CLZ_cccc000101101111dddd11110001mmmm_case_1
 //
@@ -1161,7 +1264,8 @@ uses(Instruction inst) const {
 //      inst(21)=1 &&
 //         Contains(RegisterList(inst(15:0)), inst(19:16)) => UNKNOWN],
 //    small_imm_base_wb: inst(21)=1,
-//    uses: {inst(19:16)}}
+//    uses: {inst(19:16)},
+//    violations: [implied by 'base']}
 
 Register Actual_LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_1::
 base_address_register(Instruction inst) const {
@@ -1227,6 +1331,25 @@ uses(Instruction inst) const {
    Add(Register(((inst.Bits() & 0x000F0000) >> 16)));
 }
 
+ViolationSet Actual_LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_1::
+get_violations(const nacl_arm_val::DecodedInstruction& first,
+               const nacl_arm_val::DecodedInstruction& second,
+               const nacl_arm_val::SfiValidator& sfi,
+               nacl_arm_val::AddressSet* branches,
+               nacl_arm_val::AddressSet* critical,
+               uint32_t* next_inst_addr) const {
+  ViolationSet violations = ClassDecoder::get_violations(
+      first, second, sfi, branches, critical, next_inst_addr);
+
+  // Report unsafe loads/stores of a base address by the given instruction
+  // pair.
+  violations = ViolationUnion(
+      violations, get_loadstore_violations(first, second, sfi, critical));
+
+  return violations;
+}
+
+
 // Actual_LDRB_immediate_cccc010pu1w1nnnnttttiiiiiiiiiiii_case_1
 //
 // Actual:
@@ -1247,7 +1370,8 @@ uses(Instruction inst) const {
 //            inst(19:16) => UNPREDICTABLE],
 //    small_imm_base_wb: inst(24)=0 ||
 //         inst(21)=1,
-//    uses: {inst(19:16)}}
+//    uses: {inst(19:16)},
+//    violations: [implied by 'base']}
 
 Register Actual_LDRB_immediate_cccc010pu1w1nnnnttttiiiiiiiiiiii_case_1::
 base_address_register(Instruction inst) const {
@@ -1330,6 +1454,25 @@ uses(Instruction inst) const {
    Add(Register(((inst.Bits() & 0x000F0000) >> 16)));
 }
 
+ViolationSet Actual_LDRB_immediate_cccc010pu1w1nnnnttttiiiiiiiiiiii_case_1::
+get_violations(const nacl_arm_val::DecodedInstruction& first,
+               const nacl_arm_val::DecodedInstruction& second,
+               const nacl_arm_val::SfiValidator& sfi,
+               nacl_arm_val::AddressSet* branches,
+               nacl_arm_val::AddressSet* critical,
+               uint32_t* next_inst_addr) const {
+  ViolationSet violations = ClassDecoder::get_violations(
+      first, second, sfi, branches, critical, next_inst_addr);
+
+  // Report unsafe loads/stores of a base address by the given instruction
+  // pair.
+  violations = ViolationUnion(
+      violations, get_loadstore_violations(first, second, sfi, critical));
+
+  return violations;
+}
+
+
 // Actual_LDRB_literal_cccc0101u1011111ttttiiiiiiiiiiii_case_1
 //
 // Actual:
@@ -1338,7 +1481,8 @@ uses(Instruction inst) const {
 //    is_literal_load: true,
 //    safety: [15  ==
 //            inst(15:12) => UNPREDICTABLE],
-//    uses: {15}}
+//    uses: {15},
+//    violations: [implied by 'base']}
 
 Register Actual_LDRB_literal_cccc0101u1011111ttttiiiiiiiiiiii_case_1::
 base_address_register(Instruction inst) const {
@@ -1383,6 +1527,25 @@ uses(Instruction inst) const {
    Add(Register(15));
 }
 
+ViolationSet Actual_LDRB_literal_cccc0101u1011111ttttiiiiiiiiiiii_case_1::
+get_violations(const nacl_arm_val::DecodedInstruction& first,
+               const nacl_arm_val::DecodedInstruction& second,
+               const nacl_arm_val::SfiValidator& sfi,
+               nacl_arm_val::AddressSet* branches,
+               nacl_arm_val::AddressSet* critical,
+               uint32_t* next_inst_addr) const {
+  ViolationSet violations = ClassDecoder::get_violations(
+      first, second, sfi, branches, critical, next_inst_addr);
+
+  // Report unsafe loads/stores of a base address by the given instruction
+  // pair.
+  violations = ViolationUnion(
+      violations, get_loadstore_violations(first, second, sfi, critical));
+
+  return violations;
+}
+
+
 // Actual_LDRB_register_cccc011pu1w1nnnnttttiiiiitt0mmmm_case_1
 //
 // Actual:
@@ -1410,7 +1573,8 @@ uses(Instruction inst) const {
 //         inst(15:12)  ==
 //            inst(19:16)) => UNPREDICTABLE,
 //      inst(24)=1 => FORBIDDEN],
-//    uses: {inst(3:0), inst(19:16)}}
+//    uses: {inst(3:0), inst(19:16)},
+//    violations: [implied by 'base']}
 
 Register Actual_LDRB_register_cccc011pu1w1nnnnttttiiiiitt0mmmm_case_1::
 base_address_register(Instruction inst) const {
@@ -1502,6 +1666,25 @@ uses(Instruction inst) const {
    Add(Register(((inst.Bits() & 0x000F0000) >> 16)));
 }
 
+ViolationSet Actual_LDRB_register_cccc011pu1w1nnnnttttiiiiitt0mmmm_case_1::
+get_violations(const nacl_arm_val::DecodedInstruction& first,
+               const nacl_arm_val::DecodedInstruction& second,
+               const nacl_arm_val::SfiValidator& sfi,
+               nacl_arm_val::AddressSet* branches,
+               nacl_arm_val::AddressSet* critical,
+               uint32_t* next_inst_addr) const {
+  ViolationSet violations = ClassDecoder::get_violations(
+      first, second, sfi, branches, critical, next_inst_addr);
+
+  // Report unsafe loads/stores of a base address by the given instruction
+  // pair.
+  violations = ViolationUnion(
+      violations, get_loadstore_violations(first, second, sfi, critical));
+
+  return violations;
+}
+
+
 // Actual_LDRD_immediate_cccc000pu1w0nnnnttttiiii1101iiii_case_1
 //
 // Actual:
@@ -1524,7 +1707,8 @@ uses(Instruction inst) const {
 //         inst(21)=1 => UNPREDICTABLE],
 //    small_imm_base_wb: (inst(24)=0) ||
 //         (inst(21)=1),
-//    uses: {inst(19:16)}}
+//    uses: {inst(19:16)},
+//    violations: [implied by 'base']}
 
 Register Actual_LDRD_immediate_cccc000pu1w0nnnnttttiiii1101iiii_case_1::
 base_address_register(Instruction inst) const {
@@ -1616,6 +1800,25 @@ uses(Instruction inst) const {
    Add(Register(((inst.Bits() & 0x000F0000) >> 16)));
 }
 
+ViolationSet Actual_LDRD_immediate_cccc000pu1w0nnnnttttiiii1101iiii_case_1::
+get_violations(const nacl_arm_val::DecodedInstruction& first,
+               const nacl_arm_val::DecodedInstruction& second,
+               const nacl_arm_val::SfiValidator& sfi,
+               nacl_arm_val::AddressSet* branches,
+               nacl_arm_val::AddressSet* critical,
+               uint32_t* next_inst_addr) const {
+  ViolationSet violations = ClassDecoder::get_violations(
+      first, second, sfi, branches, critical, next_inst_addr);
+
+  // Report unsafe loads/stores of a base address by the given instruction
+  // pair.
+  violations = ViolationUnion(
+      violations, get_loadstore_violations(first, second, sfi, critical));
+
+  return violations;
+}
+
+
 // Actual_LDRD_literal_cccc0001u1001111ttttiiii1101iiii_case_1
 //
 // Actual:
@@ -1625,7 +1828,8 @@ uses(Instruction inst) const {
 //    safety: [15  ==
 //            inst(15:12) + 1 => UNPREDICTABLE,
 //      inst(15:12)(0)=1 => UNPREDICTABLE],
-//    uses: {15}}
+//    uses: {15},
+//    violations: [implied by 'base']}
 
 Register Actual_LDRD_literal_cccc0001u1001111ttttiiii1101iiii_case_1::
 base_address_register(Instruction inst) const {
@@ -1676,6 +1880,25 @@ uses(Instruction inst) const {
    Add(Register(15));
 }
 
+ViolationSet Actual_LDRD_literal_cccc0001u1001111ttttiiii1101iiii_case_1::
+get_violations(const nacl_arm_val::DecodedInstruction& first,
+               const nacl_arm_val::DecodedInstruction& second,
+               const nacl_arm_val::SfiValidator& sfi,
+               nacl_arm_val::AddressSet* branches,
+               nacl_arm_val::AddressSet* critical,
+               uint32_t* next_inst_addr) const {
+  ViolationSet violations = ClassDecoder::get_violations(
+      first, second, sfi, branches, critical, next_inst_addr);
+
+  // Report unsafe loads/stores of a base address by the given instruction
+  // pair.
+  violations = ViolationUnion(
+      violations, get_loadstore_violations(first, second, sfi, critical));
+
+  return violations;
+}
+
+
 // Actual_LDRD_register_cccc000pu0w0nnnntttt00001101mmmm_case_1
 //
 // Actual:
@@ -1710,7 +1933,8 @@ uses(Instruction inst) const {
 //      inst(24)=0 &&
 //         inst(21)=1 => UNPREDICTABLE,
 //      inst(24)=1 => FORBIDDEN],
-//    uses: {inst(19:16), inst(3:0)}}
+//    uses: {inst(19:16), inst(3:0)},
+//    violations: [implied by 'base']}
 
 Register Actual_LDRD_register_cccc000pu0w0nnnntttt00001101mmmm_case_1::
 base_address_register(Instruction inst) const {
@@ -1817,6 +2041,25 @@ uses(Instruction inst) const {
    Add(Register((inst.Bits() & 0x0000000F)));
 }
 
+ViolationSet Actual_LDRD_register_cccc000pu0w0nnnntttt00001101mmmm_case_1::
+get_violations(const nacl_arm_val::DecodedInstruction& first,
+               const nacl_arm_val::DecodedInstruction& second,
+               const nacl_arm_val::SfiValidator& sfi,
+               nacl_arm_val::AddressSet* branches,
+               nacl_arm_val::AddressSet* critical,
+               uint32_t* next_inst_addr) const {
+  ViolationSet violations = ClassDecoder::get_violations(
+      first, second, sfi, branches, critical, next_inst_addr);
+
+  // Report unsafe loads/stores of a base address by the given instruction
+  // pair.
+  violations = ViolationUnion(
+      violations, get_loadstore_violations(first, second, sfi, critical));
+
+  return violations;
+}
+
+
 // Actual_LDREXB_cccc00011101nnnntttt111110011111_case_1
 //
 // Actual:
@@ -1826,7 +2069,8 @@ uses(Instruction inst) const {
 //            inst(15:12) ||
 //         15  ==
 //            inst(19:16) => UNPREDICTABLE],
-//    uses: {inst(19:16)}}
+//    uses: {inst(19:16)},
+//    violations: [implied by 'base']}
 
 Register Actual_LDREXB_cccc00011101nnnntttt111110011111_case_1::
 base_address_register(Instruction inst) const {
@@ -1867,6 +2111,25 @@ uses(Instruction inst) const {
    Add(Register(((inst.Bits() & 0x000F0000) >> 16)));
 }
 
+ViolationSet Actual_LDREXB_cccc00011101nnnntttt111110011111_case_1::
+get_violations(const nacl_arm_val::DecodedInstruction& first,
+               const nacl_arm_val::DecodedInstruction& second,
+               const nacl_arm_val::SfiValidator& sfi,
+               nacl_arm_val::AddressSet* branches,
+               nacl_arm_val::AddressSet* critical,
+               uint32_t* next_inst_addr) const {
+  ViolationSet violations = ClassDecoder::get_violations(
+      first, second, sfi, branches, critical, next_inst_addr);
+
+  // Report unsafe loads/stores of a base address by the given instruction
+  // pair.
+  violations = ViolationUnion(
+      violations, get_loadstore_violations(first, second, sfi, critical));
+
+  return violations;
+}
+
+
 // Actual_LDREXD_cccc00011011nnnntttt111110011111_case_1
 //
 // Actual:
@@ -1877,7 +2140,8 @@ uses(Instruction inst) const {
 //            inst(15:12) ||
 //         15  ==
 //            inst(19:16) => UNPREDICTABLE],
-//    uses: {inst(19:16)}}
+//    uses: {inst(19:16)},
+//    violations: [implied by 'base']}
 
 Register Actual_LDREXD_cccc00011011nnnntttt111110011111_case_1::
 base_address_register(Instruction inst) const {
@@ -1922,6 +2186,25 @@ uses(Instruction inst) const {
    Add(Register(((inst.Bits() & 0x000F0000) >> 16)));
 }
 
+ViolationSet Actual_LDREXD_cccc00011011nnnntttt111110011111_case_1::
+get_violations(const nacl_arm_val::DecodedInstruction& first,
+               const nacl_arm_val::DecodedInstruction& second,
+               const nacl_arm_val::SfiValidator& sfi,
+               nacl_arm_val::AddressSet* branches,
+               nacl_arm_val::AddressSet* critical,
+               uint32_t* next_inst_addr) const {
+  ViolationSet violations = ClassDecoder::get_violations(
+      first, second, sfi, branches, critical, next_inst_addr);
+
+  // Report unsafe loads/stores of a base address by the given instruction
+  // pair.
+  violations = ViolationUnion(
+      violations, get_loadstore_violations(first, second, sfi, critical));
+
+  return violations;
+}
+
+
 // Actual_LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_1
 //
 // Actual:
@@ -1943,7 +2226,8 @@ uses(Instruction inst) const {
 //         inst(21)=1 => DECODER_ERROR],
 //    small_imm_base_wb: (inst(24)=0) ||
 //         (inst(21)=1),
-//    uses: {inst(19:16)}}
+//    uses: {inst(19:16)},
+//    violations: [implied by 'base']}
 
 Register Actual_LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_1::
 base_address_register(Instruction inst) const {
@@ -2029,6 +2313,25 @@ uses(Instruction inst) const {
    Add(Register(((inst.Bits() & 0x000F0000) >> 16)));
 }
 
+ViolationSet Actual_LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_1::
+get_violations(const nacl_arm_val::DecodedInstruction& first,
+               const nacl_arm_val::DecodedInstruction& second,
+               const nacl_arm_val::SfiValidator& sfi,
+               nacl_arm_val::AddressSet* branches,
+               nacl_arm_val::AddressSet* critical,
+               uint32_t* next_inst_addr) const {
+  ViolationSet violations = ClassDecoder::get_violations(
+      first, second, sfi, branches, critical, next_inst_addr);
+
+  // Report unsafe loads/stores of a base address by the given instruction
+  // pair.
+  violations = ViolationUnion(
+      violations, get_loadstore_violations(first, second, sfi, critical));
+
+  return violations;
+}
+
+
 // Actual_LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_1
 //
 // Actual:
@@ -2041,7 +2344,8 @@ uses(Instruction inst) const {
 //            inst(24) => UNPREDICTABLE,
 //      inst(24)=0 &&
 //         inst(21)=1 => DECODER_ERROR],
-//    uses: {15}}
+//    uses: {15},
+//    violations: [implied by 'base']}
 
 Register Actual_LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_1::
 base_address_register(Instruction inst) const {
@@ -2099,6 +2403,25 @@ uses(Instruction inst) const {
    Add(Register(15));
 }
 
+ViolationSet Actual_LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_1::
+get_violations(const nacl_arm_val::DecodedInstruction& first,
+               const nacl_arm_val::DecodedInstruction& second,
+               const nacl_arm_val::SfiValidator& sfi,
+               nacl_arm_val::AddressSet* branches,
+               nacl_arm_val::AddressSet* critical,
+               uint32_t* next_inst_addr) const {
+  ViolationSet violations = ClassDecoder::get_violations(
+      first, second, sfi, branches, critical, next_inst_addr);
+
+  // Report unsafe loads/stores of a base address by the given instruction
+  // pair.
+  violations = ViolationUnion(
+      violations, get_loadstore_violations(first, second, sfi, critical));
+
+  return violations;
+}
+
+
 // Actual_LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_1
 //
 // Actual:
@@ -2126,7 +2449,8 @@ uses(Instruction inst) const {
 //      inst(24)=0 &&
 //         inst(21)=1 => DECODER_ERROR,
 //      inst(24)=1 => FORBIDDEN],
-//    uses: {inst(19:16), inst(3:0)}}
+//    uses: {inst(19:16), inst(3:0)},
+//    violations: [implied by 'base']}
 
 Register Actual_LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_1::
 base_address_register(Instruction inst) const {
@@ -2218,6 +2542,25 @@ uses(Instruction inst) const {
    Add(Register((inst.Bits() & 0x0000000F)));
 }
 
+ViolationSet Actual_LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_1::
+get_violations(const nacl_arm_val::DecodedInstruction& first,
+               const nacl_arm_val::DecodedInstruction& second,
+               const nacl_arm_val::SfiValidator& sfi,
+               nacl_arm_val::AddressSet* branches,
+               nacl_arm_val::AddressSet* critical,
+               uint32_t* next_inst_addr) const {
+  ViolationSet violations = ClassDecoder::get_violations(
+      first, second, sfi, branches, critical, next_inst_addr);
+
+  // Report unsafe loads/stores of a base address by the given instruction
+  // pair.
+  violations = ViolationUnion(
+      violations, get_loadstore_violations(first, second, sfi, critical));
+
+  return violations;
+}
+
+
 // Actual_LDR_immediate_cccc010pu0w1nnnnttttiiiiiiiiiiii_case_1
 //
 // Actual:
@@ -2248,7 +2591,8 @@ uses(Instruction inst) const {
 //            inst(19:16) => UNPREDICTABLE],
 //    small_imm_base_wb: inst(24)=0 ||
 //         inst(21)=1,
-//    uses: {inst(19:16)}}
+//    uses: {inst(19:16)},
+//    violations: [implied by 'base']}
 
 Register Actual_LDR_immediate_cccc010pu0w1nnnnttttiiiiiiiiiiii_case_1::
 base_address_register(Instruction inst) const {
@@ -2357,6 +2701,25 @@ uses(Instruction inst) const {
    Add(Register(((inst.Bits() & 0x000F0000) >> 16)));
 }
 
+ViolationSet Actual_LDR_immediate_cccc010pu0w1nnnnttttiiiiiiiiiiii_case_1::
+get_violations(const nacl_arm_val::DecodedInstruction& first,
+               const nacl_arm_val::DecodedInstruction& second,
+               const nacl_arm_val::SfiValidator& sfi,
+               nacl_arm_val::AddressSet* branches,
+               nacl_arm_val::AddressSet* critical,
+               uint32_t* next_inst_addr) const {
+  ViolationSet violations = ClassDecoder::get_violations(
+      first, second, sfi, branches, critical, next_inst_addr);
+
+  // Report unsafe loads/stores of a base address by the given instruction
+  // pair.
+  violations = ViolationUnion(
+      violations, get_loadstore_violations(first, second, sfi, critical));
+
+  return violations;
+}
+
+
 // Actual_LDR_literal_cccc0101u0011111ttttiiiiiiiiiiii_case_1
 //
 // Actual:
@@ -2365,7 +2728,8 @@ uses(Instruction inst) const {
 //    is_literal_load: true,
 //    safety: [15  ==
 //            inst(15:12) => FORBIDDEN_OPERANDS],
-//    uses: {15}}
+//    uses: {15},
+//    violations: [implied by 'base']}
 
 Register Actual_LDR_literal_cccc0101u0011111ttttiiiiiiiiiiii_case_1::
 base_address_register(Instruction inst) const {
@@ -2410,6 +2774,25 @@ uses(Instruction inst) const {
    Add(Register(15));
 }
 
+ViolationSet Actual_LDR_literal_cccc0101u0011111ttttiiiiiiiiiiii_case_1::
+get_violations(const nacl_arm_val::DecodedInstruction& first,
+               const nacl_arm_val::DecodedInstruction& second,
+               const nacl_arm_val::SfiValidator& sfi,
+               nacl_arm_val::AddressSet* branches,
+               nacl_arm_val::AddressSet* critical,
+               uint32_t* next_inst_addr) const {
+  ViolationSet violations = ClassDecoder::get_violations(
+      first, second, sfi, branches, critical, next_inst_addr);
+
+  // Report unsafe loads/stores of a base address by the given instruction
+  // pair.
+  violations = ViolationUnion(
+      violations, get_loadstore_violations(first, second, sfi, critical));
+
+  return violations;
+}
+
+
 // Actual_LDR_register_cccc011pu0w1nnnnttttiiiiitt0mmmm_case_1
 //
 // Actual:
@@ -2437,7 +2820,8 @@ uses(Instruction inst) const {
 //         inst(15:12)  ==
 //            inst(19:16)) => UNPREDICTABLE,
 //      inst(24)=1 => FORBIDDEN],
-//    uses: {inst(3:0), inst(19:16)}}
+//    uses: {inst(3:0), inst(19:16)},
+//    violations: [implied by 'base']}
 
 Register Actual_LDR_register_cccc011pu0w1nnnnttttiiiiitt0mmmm_case_1::
 base_address_register(Instruction inst) const {
@@ -2531,6 +2915,25 @@ uses(Instruction inst) const {
    Add(Register(((inst.Bits() & 0x000F0000) >> 16)));
 }
 
+ViolationSet Actual_LDR_register_cccc011pu0w1nnnnttttiiiiitt0mmmm_case_1::
+get_violations(const nacl_arm_val::DecodedInstruction& first,
+               const nacl_arm_val::DecodedInstruction& second,
+               const nacl_arm_val::SfiValidator& sfi,
+               nacl_arm_val::AddressSet* branches,
+               nacl_arm_val::AddressSet* critical,
+               uint32_t* next_inst_addr) const {
+  ViolationSet violations = ClassDecoder::get_violations(
+      first, second, sfi, branches, critical, next_inst_addr);
+
+  // Report unsafe loads/stores of a base address by the given instruction
+  // pair.
+  violations = ViolationUnion(
+      violations, get_loadstore_violations(first, second, sfi, critical));
+
+  return violations;
+}
+
+
 // Actual_LSL_immediate_cccc0001101s0000ddddiiiii000mmmm_case_1
 //
 // Actual:
@@ -2594,6 +2997,8 @@ uses(Instruction inst) const {
 //
 // Actual:
 //   {defs: {},
+//    diagnostics: [inst(31:0)=xxxx111000000111xxxx111110111010 =>
+//     error('Consider using DSB (defined in ARMv7) for memory barrier')],
 //    safety: [true => FORBIDDEN],
 //    uses: {},
 //    violations: [inst(31:0)=xxxx111000000111xxxx111110111010 =>
@@ -2605,6 +3010,28 @@ defs(Instruction inst) const {
   // defs: '{}'
   return RegisterList();
 }
+
+void Actual_MCR_cccc1110ooo0nnnnttttccccooo1mmmm_case_1::
+generate_diagnostics(ViolationSet violations,
+                     const nacl_arm_val::DecodedInstruction& first,
+                     const nacl_arm_val::DecodedInstruction& second,
+                     const nacl_arm_val::SfiValidator& sfi,
+                     nacl_arm_val::ProblemSink* out) const {
+  ClassDecoder::generate_diagnostics(violations, first, second, sfi, out);
+  const Instruction& inst = second.inst();
+  if (ContainsViolation(violations, OTHER_VIOLATION)) {
+
+    // inst(31:0)=xxxx111000000111xxxx111110111010 =>
+    //   error('Consider using DSB (defined in ARMv7) for memory barrier')
+    if ((inst.Bits() & 0x0FFF0FFF)  ==
+          0x0E070FBA) {
+      out->ReportProblemDiagnostic(OTHER_VIOLATION, second.addr(),
+         "Consider using DSB (defined in ARMv7) for memory barrier");
+    }
+
+  }
+}
+
 
 SafetyLevel Actual_MCR_cccc1110ooo0nnnnttttccccooo1mmmm_case_1::
 safety(Instruction inst) const {
@@ -2643,28 +3070,6 @@ get_violations(const nacl_arm_val::DecodedInstruction& first,
      violations = ViolationUnion(violations, ViolationBit(OTHER_VIOLATION));
 
   return violations;
-}
-
-
-void Actual_MCR_cccc1110ooo0nnnnttttccccooo1mmmm_case_1::
-generate_diagnostics(ViolationSet violations,
-                     const nacl_arm_val::DecodedInstruction& first,
-                     const nacl_arm_val::DecodedInstruction& second,
-                     const nacl_arm_val::SfiValidator& sfi,
-                     nacl_arm_val::ProblemSink* out) const {
-  ClassDecoder::generate_diagnostics(violations, first, second, sfi, out);
-  const Instruction& inst = second.inst();
-  if (ContainsViolation(violations, OTHER_VIOLATION)) {
-
-    // inst(31:0)=xxxx111000000111xxxx111110111010 =>
-    //   error('Consider using DSB (defined in ARMv7) for memory barrier')
-    if ((inst.Bits() & 0x0FFF0FFF)  ==
-          0x0E070FBA) {
-      out->ReportProblemDiagnostic(OTHER_VIOLATION, second.addr(),
-         "Consider using DSB (defined in ARMv7) for memory barrier");
-    }
-
-  }
 }
 
 
@@ -3336,7 +3741,8 @@ uses(Instruction inst) const {
 //    is_literal_load: 15  ==
 //            inst(19:16),
 //    safety: [inst(19:16)=1111 => DECODER_ERROR],
-//    uses: {inst(19:16)}}
+//    uses: {inst(19:16)},
+//    violations: [implied by 'base']}
 
 Register Actual_PLD_PLDW_immediate_11110101ur01nnnn1111iiiiiiiiiiii_case_1::
 base_address_register(Instruction inst) const {
@@ -3381,6 +3787,25 @@ uses(Instruction inst) const {
    Add(Register(((inst.Bits() & 0x000F0000) >> 16)));
 }
 
+ViolationSet Actual_PLD_PLDW_immediate_11110101ur01nnnn1111iiiiiiiiiiii_case_1::
+get_violations(const nacl_arm_val::DecodedInstruction& first,
+               const nacl_arm_val::DecodedInstruction& second,
+               const nacl_arm_val::SfiValidator& sfi,
+               nacl_arm_val::AddressSet* branches,
+               nacl_arm_val::AddressSet* critical,
+               uint32_t* next_inst_addr) const {
+  ViolationSet violations = ClassDecoder::get_violations(
+      first, second, sfi, branches, critical, next_inst_addr);
+
+  // Report unsafe loads/stores of a base address by the given instruction
+  // pair.
+  violations = ViolationUnion(
+      violations, get_loadstore_violations(first, second, sfi, critical));
+
+  return violations;
+}
+
+
 // Actual_PLD_PLDW_register_11110111u001nnnn1111iiiiitt0mmmm_case_1
 //
 // Actual:
@@ -3392,7 +3817,8 @@ uses(Instruction inst) const {
 //            inst(19:16) &&
 //         inst(22)=1) => UNPREDICTABLE,
 //      true => FORBIDDEN_OPERANDS],
-//    uses: {inst(3:0), inst(19:16)}}
+//    uses: {inst(3:0), inst(19:16)},
+//    violations: [implied by 'base']}
 
 Register Actual_PLD_PLDW_register_11110111u001nnnn1111iiiiitt0mmmm_case_1::
 base_address_register(Instruction inst) const {
@@ -3440,6 +3866,25 @@ uses(Instruction inst) const {
    Add(Register(((inst.Bits() & 0x000F0000) >> 16)));
 }
 
+ViolationSet Actual_PLD_PLDW_register_11110111u001nnnn1111iiiiitt0mmmm_case_1::
+get_violations(const nacl_arm_val::DecodedInstruction& first,
+               const nacl_arm_val::DecodedInstruction& second,
+               const nacl_arm_val::SfiValidator& sfi,
+               nacl_arm_val::AddressSet* branches,
+               nacl_arm_val::AddressSet* critical,
+               uint32_t* next_inst_addr) const {
+  ViolationSet violations = ClassDecoder::get_violations(
+      first, second, sfi, branches, critical, next_inst_addr);
+
+  // Report unsafe loads/stores of a base address by the given instruction
+  // pair.
+  violations = ViolationUnion(
+      violations, get_loadstore_violations(first, second, sfi, critical));
+
+  return violations;
+}
+
+
 // Actual_PLD_literal_11110101u10111111111iiiiiiiiiiii_case_1
 //
 // Actual:
@@ -3447,7 +3892,8 @@ uses(Instruction inst) const {
 //    defs: {},
 //    is_literal_load: true,
 //    safety: [true => MAY_BE_SAFE],
-//    uses: {15}}
+//    uses: {15},
+//    violations: [implied by 'base']}
 
 Register Actual_PLD_literal_11110101u10111111111iiiiiiiiiiii_case_1::
 base_address_register(Instruction inst) const {
@@ -3490,6 +3936,25 @@ uses(Instruction inst) const {
    Add(Register(15));
 }
 
+ViolationSet Actual_PLD_literal_11110101u10111111111iiiiiiiiiiii_case_1::
+get_violations(const nacl_arm_val::DecodedInstruction& first,
+               const nacl_arm_val::DecodedInstruction& second,
+               const nacl_arm_val::SfiValidator& sfi,
+               nacl_arm_val::AddressSet* branches,
+               nacl_arm_val::AddressSet* critical,
+               uint32_t* next_inst_addr) const {
+  ViolationSet violations = ClassDecoder::get_violations(
+      first, second, sfi, branches, critical, next_inst_addr);
+
+  // Report unsafe loads/stores of a base address by the given instruction
+  // pair.
+  violations = ViolationUnion(
+      violations, get_loadstore_violations(first, second, sfi, critical));
+
+  return violations;
+}
+
+
 // Actual_PLI_immediate_literal_11110100u101nnnn1111iiiiiiiiiiii_case_1
 //
 // Actual:
@@ -3498,7 +3963,8 @@ uses(Instruction inst) const {
 //    is_literal_load: 15  ==
 //            inst(19:16),
 //    safety: [true => MAY_BE_SAFE],
-//    uses: {inst(19:16)}}
+//    uses: {inst(19:16)},
+//    violations: [implied by 'base']}
 
 Register Actual_PLI_immediate_literal_11110100u101nnnn1111iiiiiiiiiiii_case_1::
 base_address_register(Instruction inst) const {
@@ -3542,6 +4008,25 @@ uses(Instruction inst) const {
    Add(Register(((inst.Bits() & 0x000F0000) >> 16)));
 }
 
+ViolationSet Actual_PLI_immediate_literal_11110100u101nnnn1111iiiiiiiiiiii_case_1::
+get_violations(const nacl_arm_val::DecodedInstruction& first,
+               const nacl_arm_val::DecodedInstruction& second,
+               const nacl_arm_val::SfiValidator& sfi,
+               nacl_arm_val::AddressSet* branches,
+               nacl_arm_val::AddressSet* critical,
+               uint32_t* next_inst_addr) const {
+  ViolationSet violations = ClassDecoder::get_violations(
+      first, second, sfi, branches, critical, next_inst_addr);
+
+  // Report unsafe loads/stores of a base address by the given instruction
+  // pair.
+  violations = ViolationUnion(
+      violations, get_loadstore_violations(first, second, sfi, critical));
+
+  return violations;
+}
+
+
 // Actual_PLI_register_11110110u101nnnn1111iiiiitt0mmmm_case_1
 //
 // Actual:
@@ -3550,7 +4035,8 @@ uses(Instruction inst) const {
 //    safety: [15  ==
 //            inst(3:0) => UNPREDICTABLE,
 //      true => FORBIDDEN_OPERANDS],
-//    uses: {inst(3:0), inst(19:16)}}
+//    uses: {inst(3:0), inst(19:16)},
+//    violations: [implied by 'base']}
 
 Register Actual_PLI_register_11110110u101nnnn1111iiiiitt0mmmm_case_1::
 base_address_register(Instruction inst) const {
@@ -3591,6 +4077,25 @@ uses(Instruction inst) const {
    Add(Register((inst.Bits() & 0x0000000F))).
    Add(Register(((inst.Bits() & 0x000F0000) >> 16)));
 }
+
+ViolationSet Actual_PLI_register_11110110u101nnnn1111iiiiitt0mmmm_case_1::
+get_violations(const nacl_arm_val::DecodedInstruction& first,
+               const nacl_arm_val::DecodedInstruction& second,
+               const nacl_arm_val::SfiValidator& sfi,
+               nacl_arm_val::AddressSet* branches,
+               nacl_arm_val::AddressSet* critical,
+               uint32_t* next_inst_addr) const {
+  ViolationSet violations = ClassDecoder::get_violations(
+      first, second, sfi, branches, critical, next_inst_addr);
+
+  // Report unsafe loads/stores of a base address by the given instruction
+  // pair.
+  violations = ViolationUnion(
+      violations, get_loadstore_violations(first, second, sfi, critical));
+
+  return violations;
+}
+
 
 // Actual_SBFX_cccc0111101wwwwwddddlllll101nnnn_case_1
 //
@@ -4109,7 +4614,8 @@ uses(Instruction inst) const {
 //         SmallestGPR(RegisterList(inst(15:0)))  !=
 //            inst(19:16) => UNKNOWN],
 //    small_imm_base_wb: inst(21)=1,
-//    uses: Union({inst(19:16)}, RegisterList(inst(15:0)))}
+//    uses: Union({inst(19:16)}, RegisterList(inst(15:0))),
+//    violations: [implied by 'base']}
 
 Register Actual_STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_1::
 base_address_register(Instruction inst) const {
@@ -4174,6 +4680,25 @@ uses(Instruction inst) const {
    Add(Register(((inst.Bits() & 0x000F0000) >> 16))), nacl_arm_dec::RegisterList((inst.Bits() & 0x0000FFFF)));
 }
 
+ViolationSet Actual_STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_1::
+get_violations(const nacl_arm_val::DecodedInstruction& first,
+               const nacl_arm_val::DecodedInstruction& second,
+               const nacl_arm_val::SfiValidator& sfi,
+               nacl_arm_val::AddressSet* branches,
+               nacl_arm_val::AddressSet* critical,
+               uint32_t* next_inst_addr) const {
+  ViolationSet violations = ClassDecoder::get_violations(
+      first, second, sfi, branches, critical, next_inst_addr);
+
+  // Report unsafe loads/stores of a base address by the given instruction
+  // pair.
+  violations = ViolationUnion(
+      violations, get_loadstore_violations(first, second, sfi, critical));
+
+  return violations;
+}
+
+
 // Actual_STRB_immediate_cccc010pu1w0nnnnttttiiiiiiiiiiii_case_1
 //
 // Actual:
@@ -4194,7 +4719,8 @@ uses(Instruction inst) const {
 //            inst(19:16)) => UNPREDICTABLE],
 //    small_imm_base_wb: inst(24)=0 ||
 //         inst(21)=1,
-//    uses: {inst(19:16), inst(15:12)}}
+//    uses: {inst(19:16), inst(15:12)},
+//    violations: [implied by 'base']}
 
 Register Actual_STRB_immediate_cccc010pu1w0nnnnttttiiiiiiiiiiii_case_1::
 base_address_register(Instruction inst) const {
@@ -4275,6 +4801,25 @@ uses(Instruction inst) const {
    Add(Register(((inst.Bits() & 0x0000F000) >> 12)));
 }
 
+ViolationSet Actual_STRB_immediate_cccc010pu1w0nnnnttttiiiiiiiiiiii_case_1::
+get_violations(const nacl_arm_val::DecodedInstruction& first,
+               const nacl_arm_val::DecodedInstruction& second,
+               const nacl_arm_val::SfiValidator& sfi,
+               nacl_arm_val::AddressSet* branches,
+               nacl_arm_val::AddressSet* critical,
+               uint32_t* next_inst_addr) const {
+  ViolationSet violations = ClassDecoder::get_violations(
+      first, second, sfi, branches, critical, next_inst_addr);
+
+  // Report unsafe loads/stores of a base address by the given instruction
+  // pair.
+  violations = ViolationUnion(
+      violations, get_loadstore_violations(first, second, sfi, critical));
+
+  return violations;
+}
+
+
 // Actual_STRB_register_cccc011pu1w0nnnnttttiiiiitt0mmmm_case_1
 //
 // Actual:
@@ -4302,7 +4847,8 @@ uses(Instruction inst) const {
 //         inst(15:12)  ==
 //            inst(19:16)) => UNPREDICTABLE,
 //      inst(24)=1 => FORBIDDEN],
-//    uses: {inst(3:0), inst(19:16), inst(15:12)}}
+//    uses: {inst(3:0), inst(19:16), inst(15:12)},
+//    violations: [implied by 'base']}
 
 Register Actual_STRB_register_cccc011pu1w0nnnnttttiiiiitt0mmmm_case_1::
 base_address_register(Instruction inst) const {
@@ -4394,6 +4940,25 @@ uses(Instruction inst) const {
    Add(Register(((inst.Bits() & 0x0000F000) >> 12)));
 }
 
+ViolationSet Actual_STRB_register_cccc011pu1w0nnnnttttiiiiitt0mmmm_case_1::
+get_violations(const nacl_arm_val::DecodedInstruction& first,
+               const nacl_arm_val::DecodedInstruction& second,
+               const nacl_arm_val::SfiValidator& sfi,
+               nacl_arm_val::AddressSet* branches,
+               nacl_arm_val::AddressSet* critical,
+               uint32_t* next_inst_addr) const {
+  ViolationSet violations = ClassDecoder::get_violations(
+      first, second, sfi, branches, critical, next_inst_addr);
+
+  // Report unsafe loads/stores of a base address by the given instruction
+  // pair.
+  violations = ViolationUnion(
+      violations, get_loadstore_violations(first, second, sfi, critical));
+
+  return violations;
+}
+
+
 // Actual_STRD_immediate_cccc000pu1w0nnnnttttiiii1111iiii_case_1
 //
 // Actual:
@@ -4417,7 +4982,8 @@ uses(Instruction inst) const {
 //         inst(21)=1 => UNPREDICTABLE],
 //    small_imm_base_wb: (inst(24)=0) ||
 //         (inst(21)=1),
-//    uses: {inst(15:12), inst(15:12) + 1, inst(19:16)}}
+//    uses: {inst(15:12), inst(15:12) + 1, inst(19:16)},
+//    violations: [implied by 'base']}
 
 Register Actual_STRD_immediate_cccc000pu1w0nnnnttttiiii1111iiii_case_1::
 base_address_register(Instruction inst) const {
@@ -4507,6 +5073,25 @@ uses(Instruction inst) const {
    Add(Register(((inst.Bits() & 0x000F0000) >> 16)));
 }
 
+ViolationSet Actual_STRD_immediate_cccc000pu1w0nnnnttttiiii1111iiii_case_1::
+get_violations(const nacl_arm_val::DecodedInstruction& first,
+               const nacl_arm_val::DecodedInstruction& second,
+               const nacl_arm_val::SfiValidator& sfi,
+               nacl_arm_val::AddressSet* branches,
+               nacl_arm_val::AddressSet* critical,
+               uint32_t* next_inst_addr) const {
+  ViolationSet violations = ClassDecoder::get_violations(
+      first, second, sfi, branches, critical, next_inst_addr);
+
+  // Report unsafe loads/stores of a base address by the given instruction
+  // pair.
+  violations = ViolationUnion(
+      violations, get_loadstore_violations(first, second, sfi, critical));
+
+  return violations;
+}
+
+
 // Actual_STRD_register_cccc000pu0w0nnnntttt00001111mmmm_case_1
 //
 // Actual:
@@ -4537,7 +5122,8 @@ uses(Instruction inst) const {
 //      inst(24)=0 &&
 //         inst(21)=1 => UNPREDICTABLE,
 //      inst(24)=1 => FORBIDDEN],
-//    uses: {inst(15:12), inst(15:12) + 1, inst(19:16), inst(3:0)}}
+//    uses: {inst(15:12), inst(15:12) + 1, inst(19:16), inst(3:0)},
+//    violations: [implied by 'base']}
 
 Register Actual_STRD_register_cccc000pu0w0nnnntttt00001111mmmm_case_1::
 base_address_register(Instruction inst) const {
@@ -4638,6 +5224,25 @@ uses(Instruction inst) const {
    Add(Register((inst.Bits() & 0x0000000F)));
 }
 
+ViolationSet Actual_STRD_register_cccc000pu0w0nnnntttt00001111mmmm_case_1::
+get_violations(const nacl_arm_val::DecodedInstruction& first,
+               const nacl_arm_val::DecodedInstruction& second,
+               const nacl_arm_val::SfiValidator& sfi,
+               nacl_arm_val::AddressSet* branches,
+               nacl_arm_val::AddressSet* critical,
+               uint32_t* next_inst_addr) const {
+  ViolationSet violations = ClassDecoder::get_violations(
+      first, second, sfi, branches, critical, next_inst_addr);
+
+  // Report unsafe loads/stores of a base address by the given instruction
+  // pair.
+  violations = ViolationUnion(
+      violations, get_loadstore_violations(first, second, sfi, critical));
+
+  return violations;
+}
+
+
 // Actual_STREXB_cccc00011100nnnndddd11111001tttt_case_1
 //
 // Actual:
@@ -4653,7 +5258,8 @@ uses(Instruction inst) const {
 //            inst(19:16) ||
 //         inst(15:12)  ==
 //            inst(3:0) => UNPREDICTABLE],
-//    uses: {inst(19:16), inst(3:0)}}
+//    uses: {inst(19:16), inst(3:0)},
+//    violations: [implied by 'base']}
 
 Register Actual_STREXB_cccc00011100nnnndddd11111001tttt_case_1::
 base_address_register(Instruction inst) const {
@@ -4706,6 +5312,25 @@ uses(Instruction inst) const {
    Add(Register((inst.Bits() & 0x0000000F)));
 }
 
+ViolationSet Actual_STREXB_cccc00011100nnnndddd11111001tttt_case_1::
+get_violations(const nacl_arm_val::DecodedInstruction& first,
+               const nacl_arm_val::DecodedInstruction& second,
+               const nacl_arm_val::SfiValidator& sfi,
+               nacl_arm_val::AddressSet* branches,
+               nacl_arm_val::AddressSet* critical,
+               uint32_t* next_inst_addr) const {
+  ViolationSet violations = ClassDecoder::get_violations(
+      first, second, sfi, branches, critical, next_inst_addr);
+
+  // Report unsafe loads/stores of a base address by the given instruction
+  // pair.
+  violations = ViolationUnion(
+      violations, get_loadstore_violations(first, second, sfi, critical));
+
+  return violations;
+}
+
+
 // Actual_STREXD_cccc00011010nnnndddd11111001tttt_case_1
 //
 // Actual:
@@ -4724,7 +5349,8 @@ uses(Instruction inst) const {
 //            inst(3:0) ||
 //         inst(15:12)  ==
 //            inst(3:0) + 1 => UNPREDICTABLE],
-//    uses: {inst(19:16), inst(3:0), inst(3:0) + 1}}
+//    uses: {inst(19:16), inst(3:0), inst(3:0) + 1},
+//    violations: [implied by 'base']}
 
 Register Actual_STREXD_cccc00011010nnnndddd11111001tttt_case_1::
 base_address_register(Instruction inst) const {
@@ -4784,6 +5410,25 @@ uses(Instruction inst) const {
    Add(Register((inst.Bits() & 0x0000000F) + 1));
 }
 
+ViolationSet Actual_STREXD_cccc00011010nnnndddd11111001tttt_case_1::
+get_violations(const nacl_arm_val::DecodedInstruction& first,
+               const nacl_arm_val::DecodedInstruction& second,
+               const nacl_arm_val::SfiValidator& sfi,
+               nacl_arm_val::AddressSet* branches,
+               nacl_arm_val::AddressSet* critical,
+               uint32_t* next_inst_addr) const {
+  ViolationSet violations = ClassDecoder::get_violations(
+      first, second, sfi, branches, critical, next_inst_addr);
+
+  // Report unsafe loads/stores of a base address by the given instruction
+  // pair.
+  violations = ViolationUnion(
+      violations, get_loadstore_violations(first, second, sfi, critical));
+
+  return violations;
+}
+
+
 // Actual_STRH_immediate_cccc000pu1w0nnnnttttiiii1011iiii_case_1
 //
 // Actual:
@@ -4804,7 +5449,8 @@ uses(Instruction inst) const {
 //         inst(21)=1 => DECODER_ERROR],
 //    small_imm_base_wb: (inst(24)=0) ||
 //         (inst(21)=1),
-//    uses: {inst(15:12), inst(19:16)}}
+//    uses: {inst(15:12), inst(19:16)},
+//    violations: [implied by 'base']}
 
 Register Actual_STRH_immediate_cccc000pu1w0nnnnttttiiii1011iiii_case_1::
 base_address_register(Instruction inst) const {
@@ -4885,6 +5531,25 @@ uses(Instruction inst) const {
    Add(Register(((inst.Bits() & 0x000F0000) >> 16)));
 }
 
+ViolationSet Actual_STRH_immediate_cccc000pu1w0nnnnttttiiii1011iiii_case_1::
+get_violations(const nacl_arm_val::DecodedInstruction& first,
+               const nacl_arm_val::DecodedInstruction& second,
+               const nacl_arm_val::SfiValidator& sfi,
+               nacl_arm_val::AddressSet* branches,
+               nacl_arm_val::AddressSet* critical,
+               uint32_t* next_inst_addr) const {
+  ViolationSet violations = ClassDecoder::get_violations(
+      first, second, sfi, branches, critical, next_inst_addr);
+
+  // Report unsafe loads/stores of a base address by the given instruction
+  // pair.
+  violations = ViolationUnion(
+      violations, get_loadstore_violations(first, second, sfi, critical));
+
+  return violations;
+}
+
+
 // Actual_STRH_register_cccc000pu0w0nnnntttt00001011mmmm_case_1
 //
 // Actual:
@@ -4912,7 +5577,8 @@ uses(Instruction inst) const {
 //      inst(24)=0 &&
 //         inst(21)=1 => DECODER_ERROR,
 //      inst(24)=1 => FORBIDDEN],
-//    uses: {inst(15:12), inst(19:16), inst(3:0)}}
+//    uses: {inst(15:12), inst(19:16), inst(3:0)},
+//    violations: [implied by 'base']}
 
 Register Actual_STRH_register_cccc000pu0w0nnnntttt00001011mmmm_case_1::
 base_address_register(Instruction inst) const {
@@ -5004,6 +5670,25 @@ uses(Instruction inst) const {
    Add(Register((inst.Bits() & 0x0000000F)));
 }
 
+ViolationSet Actual_STRH_register_cccc000pu0w0nnnntttt00001011mmmm_case_1::
+get_violations(const nacl_arm_val::DecodedInstruction& first,
+               const nacl_arm_val::DecodedInstruction& second,
+               const nacl_arm_val::SfiValidator& sfi,
+               nacl_arm_val::AddressSet* branches,
+               nacl_arm_val::AddressSet* critical,
+               uint32_t* next_inst_addr) const {
+  ViolationSet violations = ClassDecoder::get_violations(
+      first, second, sfi, branches, critical, next_inst_addr);
+
+  // Report unsafe loads/stores of a base address by the given instruction
+  // pair.
+  violations = ViolationUnion(
+      violations, get_loadstore_violations(first, second, sfi, critical));
+
+  return violations;
+}
+
+
 // Actual_STR_immediate_cccc010pu0w0nnnnttttiiiiiiiiiiii_case_1
 //
 // Actual:
@@ -5022,7 +5707,8 @@ uses(Instruction inst) const {
 //            inst(19:16)) => UNPREDICTABLE],
 //    small_imm_base_wb: inst(24)=0 ||
 //         inst(21)=1,
-//    uses: {inst(19:16), inst(15:12)}}
+//    uses: {inst(19:16), inst(15:12)},
+//    violations: [implied by 'base']}
 
 Register Actual_STR_immediate_cccc010pu0w0nnnnttttiiiiiiiiiiii_case_1::
 base_address_register(Instruction inst) const {
@@ -5098,6 +5784,25 @@ uses(Instruction inst) const {
    Add(Register(((inst.Bits() & 0x0000F000) >> 12)));
 }
 
+ViolationSet Actual_STR_immediate_cccc010pu0w0nnnnttttiiiiiiiiiiii_case_1::
+get_violations(const nacl_arm_val::DecodedInstruction& first,
+               const nacl_arm_val::DecodedInstruction& second,
+               const nacl_arm_val::SfiValidator& sfi,
+               nacl_arm_val::AddressSet* branches,
+               nacl_arm_val::AddressSet* critical,
+               uint32_t* next_inst_addr) const {
+  ViolationSet violations = ClassDecoder::get_violations(
+      first, second, sfi, branches, critical, next_inst_addr);
+
+  // Report unsafe loads/stores of a base address by the given instruction
+  // pair.
+  violations = ViolationUnion(
+      violations, get_loadstore_violations(first, second, sfi, critical));
+
+  return violations;
+}
+
+
 // Actual_STR_register_cccc011pd0w0nnnnttttiiiiitt0mmmm_case_1
 //
 // Actual:
@@ -5123,7 +5828,8 @@ uses(Instruction inst) const {
 //         inst(15:12)  ==
 //            inst(19:16)) => UNPREDICTABLE,
 //      inst(24)=1 => FORBIDDEN],
-//    uses: {inst(3:0), inst(19:16), inst(15:12)}}
+//    uses: {inst(3:0), inst(19:16), inst(15:12)},
+//    violations: [implied by 'base']}
 
 Register Actual_STR_register_cccc011pd0w0nnnnttttiiiiitt0mmmm_case_1::
 base_address_register(Instruction inst) const {
@@ -5211,6 +5917,25 @@ uses(Instruction inst) const {
    Add(Register(((inst.Bits() & 0x000F0000) >> 16))).
    Add(Register(((inst.Bits() & 0x0000F000) >> 12)));
 }
+
+ViolationSet Actual_STR_register_cccc011pd0w0nnnnttttiiiiitt0mmmm_case_1::
+get_violations(const nacl_arm_val::DecodedInstruction& first,
+               const nacl_arm_val::DecodedInstruction& second,
+               const nacl_arm_val::SfiValidator& sfi,
+               nacl_arm_val::AddressSet* branches,
+               nacl_arm_val::AddressSet* critical,
+               uint32_t* next_inst_addr) const {
+  ViolationSet violations = ClassDecoder::get_violations(
+      first, second, sfi, branches, critical, next_inst_addr);
+
+  // Report unsafe loads/stores of a base address by the given instruction
+  // pair.
+  violations = ViolationUnion(
+      violations, get_loadstore_violations(first, second, sfi, critical));
+
+  return violations;
+}
+
 
 // Actual_SWP_SWPB_cccc00010b00nnnntttt00001001tttt_case_1
 //

@@ -114,6 +114,8 @@ bool MRRC_cccc11000101ttttttttccccoooommmm_case_0TesterCase1
 //    = {actual: Actual_MCR_cccc1110ooo0nnnnttttccccooo1mmmm_case_1,
 //       baseline: MCR_cccc1110ooo0nnnnttttccccooo1mmmm_case_0,
 //       defs: {},
+//       diagnostics: [inst(31:0)=xxxx111000000111xxxx111110111010 =>
+//        error('Consider using DSB (defined in ARMv7) for memory barrier')],
 //       pattern: cccc1110ooo0nnnnttttccccooo1mmmm,
 //       rule: MCR,
 //       safety: [true => FORBIDDEN],
@@ -494,6 +496,8 @@ class MRRC_cccc11000101ttttttttccccoooommmm_case_0Tester_Case1
 //    = {actual: Actual_MCR_cccc1110ooo0nnnnttttccccooo1mmmm_case_1,
 //       baseline: MCR_cccc1110ooo0nnnnttttccccooo1mmmm_case_0,
 //       defs: {},
+//       diagnostics: [inst(31:0)=xxxx111000000111xxxx111110111010 =>
+//        error('Consider using DSB (defined in ARMv7) for memory barrier')],
 //       pattern: cccc1110ooo0nnnnttttccccooo1mmmm,
 //       rule: MCR,
 //       safety: [true => FORBIDDEN],
@@ -682,6 +686,8 @@ TEST_F(Arm32DecoderStateTests,
 //    = {actual: Actual_MCR_cccc1110ooo0nnnnttttccccooo1mmmm_case_1,
 //       baseline: MCR_cccc1110ooo0nnnnttttccccooo1mmmm_case_0,
 //       defs: {},
+//       diagnostics: [inst(31:0)=xxxx111000000111xxxx111110111010 =>
+//        error('Consider using DSB (defined in ARMv7) for memory barrier')],
 //       pattern: cccc1110ooo0nnnnttttccccooo1mmmm,
 //       rule: MCR,
 //       safety: [true => FORBIDDEN],

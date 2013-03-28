@@ -86,6 +86,7 @@ namespace nacl_arm_test {
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 class VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0TesterCase0
@@ -172,6 +173,7 @@ bool VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0Tester
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 class VST2_multiple_2_element_structures_111101000d00nnnnddddttttssaammmm_case_0TesterCase1
@@ -261,6 +263,7 @@ bool VST2_multiple_2_element_structures_111101000d00nnnnddddttttssaammmm_case_0T
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 class VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0TesterCase2
@@ -342,6 +345,7 @@ bool VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0Tester
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 class VST4_multiple_4_element_structures_111101000d00nnnnddddttttssaammmm_case_0TesterCase3
@@ -425,6 +429,7 @@ bool VST4_multiple_4_element_structures_111101000d00nnnnddddttttssaammmm_case_0T
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 class VST3_multiple_3_element_structures_111101000d00nnnnddddttttssaammmm_case_0TesterCase4
@@ -514,6 +519,7 @@ bool VST3_multiple_3_element_structures_111101000d00nnnnddddttttssaammmm_case_0T
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 class VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0TesterCase5
@@ -600,6 +606,7 @@ bool VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0Tester
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 class VST2_multiple_2_element_structures_111101000d00nnnnddddttttssaammmm_case_0TesterCase6
@@ -673,6 +680,7 @@ bool VST2_multiple_2_element_structures_111101000d00nnnnddddttttssaammmm_case_0T
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 class VST1_single_element_from_one_lane_111101001d00nnnnddddss00aaaammmm_case_0TesterCase7
@@ -761,6 +769,7 @@ bool VST1_single_element_from_one_lane_111101001d00nnnnddddss00aaaammmm_case_0Te
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 class VST2_single_2_element_structure_from_one_lane_111101001d00nnnnddddss01aaaammmm_case_0TesterCase8
@@ -854,6 +863,7 @@ bool VST2_single_2_element_structure_from_one_lane_111101001d00nnnnddddss01aaaam
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 class VST3_single_3_element_structure_from_one_lane_111101001d00nnnnddddss10aaaammmm_case_0TesterCase9
@@ -944,6 +954,7 @@ bool VST3_single_3_element_structure_from_one_lane_111101001d00nnnnddddss10aaaam
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 class VST4_single_4_element_structure_form_one_lane_111101001d00nnnnddddss11aaaammmm_case_0TesterCase10
@@ -1017,6 +1028,7 @@ bool VST4_single_4_element_structure_form_one_lane_111101001d00nnnnddddss11aaaam
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 class VST1_single_element_from_one_lane_111101001d00nnnnddddss00aaaammmm_case_0TesterCase11
@@ -1105,6 +1117,7 @@ bool VST1_single_element_from_one_lane_111101001d00nnnnddddss00aaaammmm_case_0Te
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 class VST2_single_2_element_structure_from_one_lane_111101001d00nnnnddddss01aaaammmm_case_0TesterCase12
@@ -1198,6 +1211,7 @@ bool VST2_single_2_element_structure_from_one_lane_111101001d00nnnnddddss01aaaam
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 class VST3_single_3_element_structure_from_one_lane_111101001d00nnnnddddss10aaaammmm_case_0TesterCase13
@@ -1288,6 +1302,7 @@ bool VST3_single_3_element_structure_from_one_lane_111101001d00nnnnddddss10aaaam
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 class VST4_single_4_element_structure_form_one_lane_111101001d00nnnnddddss11aaaammmm_case_0TesterCase14
@@ -1377,6 +1392,7 @@ bool VST4_single_4_element_structure_form_one_lane_111101001d00nnnnddddss11aaaam
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 class VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0TesterCase15
@@ -1463,6 +1479,7 @@ bool VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0Tester
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 class VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_0TesterCase16
@@ -1552,6 +1569,7 @@ bool VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_0T
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 class VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0TesterCase17
@@ -1633,6 +1651,7 @@ bool VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0Tester
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 class VLD4_multiple_4_element_structures_111101000d10nnnnddddttttssaammmm_case_0TesterCase18
@@ -1716,6 +1735,7 @@ bool VLD4_multiple_4_element_structures_111101000d10nnnnddddttttssaammmm_case_0T
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 class VLD3_multiple_3_element_structures_111101000d10nnnnddddttttssaammmm_case_0TesterCase19
@@ -1805,6 +1825,7 @@ bool VLD3_multiple_3_element_structures_111101000d10nnnnddddttttssaammmm_case_0T
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 class VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0TesterCase20
@@ -1891,6 +1912,7 @@ bool VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0Tester
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 class VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_0TesterCase21
@@ -1964,6 +1986,7 @@ bool VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_0T
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 class VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_0TesterCase22
@@ -2052,6 +2075,7 @@ bool VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_0Test
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 class VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaammmm_case_0TesterCase23
@@ -2145,6 +2169,7 @@ bool VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaammm
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 class VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaammmm_case_0TesterCase24
@@ -2235,6 +2260,7 @@ bool VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaammm
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 class VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss11aaaammmm_case_0TesterCase25
@@ -2316,6 +2342,7 @@ bool VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss11aaaammm
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 class VLD1_single_element_to_all_lanes_111101001d10nnnndddd1100sstammmm_case_0TesterCase26
@@ -2389,6 +2416,7 @@ bool VLD1_single_element_to_all_lanes_111101001d10nnnndddd1100sstammmm_case_0Tes
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 class VLD2_single_2_element_structure_to_all_lanes_111101001d10nnnndddd1101sstammmm_case_0TesterCase27
@@ -2471,6 +2499,7 @@ bool VLD2_single_2_element_structure_to_all_lanes_111101001d10nnnndddd1101sstamm
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 class VLD3_single_3_element_structure_to_all_lanes_111101001d10nnnndddd1110sstammmm_case_0TesterCase28
@@ -2554,6 +2583,7 @@ bool VLD3_single_3_element_structure_to_all_lanes_111101001d10nnnndddd1110sstamm
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 class VLD4_single_4_element_structure_to_all_lanes_111101001d10nnnndddd1111sstammmm_case_0TesterCase29
@@ -2627,6 +2657,7 @@ bool VLD4_single_4_element_structure_to_all_lanes_111101001d10nnnndddd1111sstamm
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 class VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_0TesterCase30
@@ -2715,6 +2746,7 @@ bool VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_0Test
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 class VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaammmm_case_0TesterCase31
@@ -2808,6 +2840,7 @@ bool VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaammm
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 class VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaammmm_case_0TesterCase32
@@ -2898,6 +2931,7 @@ bool VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaammm
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 class VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss11aaaammmm_case_0TesterCase33
@@ -2992,6 +3026,7 @@ bool VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss11aaaammm
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 class VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0Tester_Case0
@@ -3056,6 +3091,7 @@ class VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0Teste
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 class VST2_multiple_2_element_structures_111101000d00nnnnddddttttssaammmm_case_0Tester_Case1
@@ -3123,6 +3159,7 @@ class VST2_multiple_2_element_structures_111101000d00nnnnddddttttssaammmm_case_0
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 class VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0Tester_Case2
@@ -3182,6 +3219,7 @@ class VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0Teste
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 class VST4_multiple_4_element_structures_111101000d00nnnnddddttttssaammmm_case_0Tester_Case3
@@ -3243,6 +3281,7 @@ class VST4_multiple_4_element_structures_111101000d00nnnnddddttttssaammmm_case_0
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 class VST3_multiple_3_element_structures_111101000d00nnnnddddttttssaammmm_case_0Tester_Case4
@@ -3310,6 +3349,7 @@ class VST3_multiple_3_element_structures_111101000d00nnnnddddttttssaammmm_case_0
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 class VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0Tester_Case5
@@ -3374,6 +3414,7 @@ class VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0Teste
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 class VST2_multiple_2_element_structures_111101000d00nnnnddddttttssaammmm_case_0Tester_Case6
@@ -3425,6 +3466,7 @@ class VST2_multiple_2_element_structures_111101000d00nnnnddddttttssaammmm_case_0
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 class VST1_single_element_from_one_lane_111101001d00nnnnddddss00aaaammmm_case_0Tester_Case7
@@ -3491,6 +3533,7 @@ class VST1_single_element_from_one_lane_111101001d00nnnnddddss00aaaammmm_case_0T
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 class VST2_single_2_element_structure_from_one_lane_111101001d00nnnnddddss01aaaammmm_case_0Tester_Case8
@@ -3562,6 +3605,7 @@ class VST2_single_2_element_structure_from_one_lane_111101001d00nnnnddddss01aaaa
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 class VST3_single_3_element_structure_from_one_lane_111101001d00nnnnddddss10aaaammmm_case_0Tester_Case9
@@ -3630,6 +3674,7 @@ class VST3_single_3_element_structure_from_one_lane_111101001d00nnnnddddss10aaaa
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 class VST4_single_4_element_structure_form_one_lane_111101001d00nnnnddddss11aaaammmm_case_0Tester_Case10
@@ -3681,6 +3726,7 @@ class VST4_single_4_element_structure_form_one_lane_111101001d00nnnnddddss11aaaa
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 class VST1_single_element_from_one_lane_111101001d00nnnnddddss00aaaammmm_case_0Tester_Case11
@@ -3747,6 +3793,7 @@ class VST1_single_element_from_one_lane_111101001d00nnnnddddss00aaaammmm_case_0T
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 class VST2_single_2_element_structure_from_one_lane_111101001d00nnnnddddss01aaaammmm_case_0Tester_Case12
@@ -3818,6 +3865,7 @@ class VST2_single_2_element_structure_from_one_lane_111101001d00nnnnddddss01aaaa
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 class VST3_single_3_element_structure_from_one_lane_111101001d00nnnnddddss10aaaammmm_case_0Tester_Case13
@@ -3886,6 +3934,7 @@ class VST3_single_3_element_structure_from_one_lane_111101001d00nnnnddddss10aaaa
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 class VST4_single_4_element_structure_form_one_lane_111101001d00nnnnddddss11aaaammmm_case_0Tester_Case14
@@ -3953,6 +4002,7 @@ class VST4_single_4_element_structure_form_one_lane_111101001d00nnnnddddss11aaaa
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 class VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0Tester_Case15
@@ -4017,6 +4067,7 @@ class VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0Teste
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 class VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_0Tester_Case16
@@ -4084,6 +4135,7 @@ class VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_0
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 class VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0Tester_Case17
@@ -4143,6 +4195,7 @@ class VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0Teste
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 class VLD4_multiple_4_element_structures_111101000d10nnnnddddttttssaammmm_case_0Tester_Case18
@@ -4204,6 +4257,7 @@ class VLD4_multiple_4_element_structures_111101000d10nnnnddddttttssaammmm_case_0
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 class VLD3_multiple_3_element_structures_111101000d10nnnnddddttttssaammmm_case_0Tester_Case19
@@ -4271,6 +4325,7 @@ class VLD3_multiple_3_element_structures_111101000d10nnnnddddttttssaammmm_case_0
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 class VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0Tester_Case20
@@ -4335,6 +4390,7 @@ class VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0Teste
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 class VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_0Tester_Case21
@@ -4386,6 +4442,7 @@ class VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_0
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 class VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_0Tester_Case22
@@ -4452,6 +4509,7 @@ class VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_0Tes
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 class VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaammmm_case_0Tester_Case23
@@ -4523,6 +4581,7 @@ class VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaamm
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 class VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaammmm_case_0Tester_Case24
@@ -4591,6 +4650,7 @@ class VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaamm
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 class VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss11aaaammmm_case_0Tester_Case25
@@ -4650,6 +4710,7 @@ class VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss11aaaamm
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 class VLD1_single_element_to_all_lanes_111101001d10nnnndddd1100sstammmm_case_0Tester_Case26
@@ -4701,6 +4762,7 @@ class VLD1_single_element_to_all_lanes_111101001d10nnnndddd1100sstammmm_case_0Te
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 class VLD2_single_2_element_structure_to_all_lanes_111101001d10nnnndddd1101sstammmm_case_0Tester_Case27
@@ -4761,6 +4823,7 @@ class VLD2_single_2_element_structure_to_all_lanes_111101001d10nnnndddd1101sstam
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 class VLD3_single_3_element_structure_to_all_lanes_111101001d10nnnndddd1110sstammmm_case_0Tester_Case28
@@ -4822,6 +4885,7 @@ class VLD3_single_3_element_structure_to_all_lanes_111101001d10nnnndddd1110sstam
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 class VLD4_single_4_element_structure_to_all_lanes_111101001d10nnnndddd1111sstammmm_case_0Tester_Case29
@@ -4873,6 +4937,7 @@ class VLD4_single_4_element_structure_to_all_lanes_111101001d10nnnndddd1111sstam
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 class VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_0Tester_Case30
@@ -4939,6 +5004,7 @@ class VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_0Tes
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 class VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaammmm_case_0Tester_Case31
@@ -5010,6 +5076,7 @@ class VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaamm
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 class VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaammmm_case_0Tester_Case32
@@ -5078,6 +5145,7 @@ class VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaamm
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 class VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss11aaaammmm_case_0Tester_Case33
@@ -5154,6 +5222,7 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 TEST_F(Arm32DecoderStateTests,
@@ -5217,6 +5286,7 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 TEST_F(Arm32DecoderStateTests,
@@ -5283,6 +5353,7 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 TEST_F(Arm32DecoderStateTests,
@@ -5341,6 +5412,7 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 TEST_F(Arm32DecoderStateTests,
@@ -5401,6 +5473,7 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 TEST_F(Arm32DecoderStateTests,
@@ -5467,6 +5540,7 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 TEST_F(Arm32DecoderStateTests,
@@ -5530,6 +5604,7 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 TEST_F(Arm32DecoderStateTests,
@@ -5580,6 +5655,7 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 TEST_F(Arm32DecoderStateTests,
@@ -5645,6 +5721,7 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 TEST_F(Arm32DecoderStateTests,
@@ -5715,6 +5792,7 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 TEST_F(Arm32DecoderStateTests,
@@ -5782,6 +5860,7 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 TEST_F(Arm32DecoderStateTests,
@@ -5832,6 +5911,7 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 TEST_F(Arm32DecoderStateTests,
@@ -5897,6 +5977,7 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 TEST_F(Arm32DecoderStateTests,
@@ -5967,6 +6048,7 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 TEST_F(Arm32DecoderStateTests,
@@ -6034,6 +6116,7 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 TEST_F(Arm32DecoderStateTests,
@@ -6100,6 +6183,7 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 TEST_F(Arm32DecoderStateTests,
@@ -6163,6 +6247,7 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 TEST_F(Arm32DecoderStateTests,
@@ -6229,6 +6314,7 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 TEST_F(Arm32DecoderStateTests,
@@ -6287,6 +6373,7 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 TEST_F(Arm32DecoderStateTests,
@@ -6347,6 +6434,7 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 TEST_F(Arm32DecoderStateTests,
@@ -6413,6 +6501,7 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 TEST_F(Arm32DecoderStateTests,
@@ -6476,6 +6565,7 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 TEST_F(Arm32DecoderStateTests,
@@ -6526,6 +6616,7 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 TEST_F(Arm32DecoderStateTests,
@@ -6591,6 +6682,7 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 TEST_F(Arm32DecoderStateTests,
@@ -6661,6 +6753,7 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 TEST_F(Arm32DecoderStateTests,
@@ -6728,6 +6821,7 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 TEST_F(Arm32DecoderStateTests,
@@ -6786,6 +6880,7 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 TEST_F(Arm32DecoderStateTests,
@@ -6836,6 +6931,7 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 TEST_F(Arm32DecoderStateTests,
@@ -6895,6 +6991,7 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 TEST_F(Arm32DecoderStateTests,
@@ -6955,6 +7052,7 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 TEST_F(Arm32DecoderStateTests,
@@ -7005,6 +7103,7 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 TEST_F(Arm32DecoderStateTests,
@@ -7070,6 +7169,7 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 TEST_F(Arm32DecoderStateTests,
@@ -7140,6 +7240,7 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 TEST_F(Arm32DecoderStateTests,
@@ -7207,6 +7308,7 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {m
 //            if wback
 //            else None, n},
+//       violations: [implied by 'base'],
 //       wback: (m  !=
 //               Pc)}
 TEST_F(Arm32DecoderStateTests,

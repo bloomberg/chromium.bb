@@ -963,6 +963,22 @@ class ParenthesizedExp(BitExpr):
   def neutral_repr(self):
     return '(%s)' % neutral_repr(self._exp)
 
+class Implicit(BitExpr):
+  """Models an implicit method definition, based on the values of
+     other method definitions."""
+  def __init__(self, methods):
+    self._methods = methods
+
+  def methods(self):
+    return list(self._methods)
+
+  def __repr__(self):
+    return ("implied by %s" %
+            ', '.join([repr(m) for m in self._methods]))
+
+  def neutral_repr(self):
+    return repr(self)
+
 class QuotedString(BitExpr):
   """Models a quoted string."""
 
