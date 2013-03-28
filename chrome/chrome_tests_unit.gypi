@@ -1561,7 +1561,6 @@
         'common/json_schema/json_schema_validator_unittest.cc',
         'common/json_schema/json_schema_validator_unittest_base.cc',
         'common/json_schema/json_schema_validator_unittest_base.h',
-        'common/json_value_serializer_unittest.cc',
         'common/mac/cfbundle_blocker_unittest.mm',
         'common/mac/mock_launchd.cc',
         'common/mac/mock_launchd.h',

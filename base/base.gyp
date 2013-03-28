@@ -699,9 +699,10 @@
               'action_name': 'copy_test_data',
               'variables': {
                 'test_data_files': [
-                  'data/json/bom_feff.json',
                   'data/file_util_unittest',
+                  'data/json/bom_feff.json',
                   'prefs/test/data/pref_service',
+                  'test/data',
                 ],
                 'test_data_prefix': 'base',
               },

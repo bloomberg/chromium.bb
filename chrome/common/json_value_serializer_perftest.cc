@@ -4,30 +4,31 @@
 
 #include <vector>
 
+#include "base/base_paths.h"
 #include "base/file_util.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/path_service.h"
 #include "base/perftimer.h"
 #include "base/string_util.h"
 #include "base/values.h"
-#include "chrome/common/chrome_paths.h"
 #include "chrome/common/logging_chrome.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
+
 class JSONValueSerializerTests : public testing::Test {
  protected:
-  virtual void SetUp() {
+  virtual void SetUp() OVERRIDE {
     static const char* const kTestFilenames[] = {
-      "serializer_nested_test.js",
-      "serializer_test.js",
-      "serializer_test_nowhitespace.js",
+      "serializer_nested_test.json",
+      "serializer_test.json",
+      "serializer_test_nowhitespace.json",
     };
 
     // Load test cases
     for (size_t i = 0; i < arraysize(kTestFilenames); ++i) {
       base::FilePath filename;
-      EXPECT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &filename));
+      EXPECT_TRUE(PathService::Get(base::DIR_TEST_DATA, &filename));
       filename = filename.AppendASCII(kTestFilenames[i]);
 
       std::string test_case;

@@ -35,6 +35,9 @@ def _GetDataFilesForTestSuite(test_suite_basename):
         'base/data/file_util_unittest',
         'base/data/json/bom_feff.json',
         'base/prefs/test/data/pref_service',
+        'base/test/data/serializer_nested_test.json',
+        'base/test/data/serializer_test.json',
+        'base/test/data/serializer_test_nowhitespace.json',
         'chrome/test/data/download-test1.lib',
         'chrome/test/data/extensions/bad_magic.crx',
         'chrome/test/data/extensions/good.crx',
@@ -58,9 +61,6 @@ def _GetDataFilesForTestSuite(test_suite_basename):
         'chrome/test/data/History/',
         'chrome/test/data/json_schema_validator/',
         'chrome/test/data/pref_service/',
-        'chrome/test/data/serializer_nested_test.js',
-        'chrome/test/data/serializer_test.js',
-        'chrome/test/data/serializer_test_nowhitespace.js',
         'chrome/test/data/top_sites/',
         'chrome/test/data/web_app_info/',
         'chrome/test/data/web_database',
@@ -120,6 +120,10 @@ def _GetDataFilesForTestSuite(test_suite_basename):
   elif test_suite_basename == 'cc_perftests':
     return [
       'cc/test/data',
+    ]
+  elif test_suite_basename == 'perf_tests':
+    return [
+      'base/test/data',
     ]
   elif test_suite_basename == 'content_browsertests':
     return [
