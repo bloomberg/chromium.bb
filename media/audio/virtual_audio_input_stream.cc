@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "media/audio/virtual_audio_output_stream.h"
 
@@ -55,22 +54,20 @@ VirtualAudioInputStream::VirtualAudioInputStream(
     : message_loop_(message_loop),
       after_close_cb_(after_close_cb),
       callback_(NULL),
-      buffer_duration_(base::TimeDelta::FromMicroseconds(
-          params.frames_per_buffer() * base::Time::kMicrosecondsPerSecond /
-          static_cast<float>(params.sample_rate()))),
       buffer_(new uint8[params.GetBytesPerBuffer()]),
       params_(params),
-      audio_bus_(AudioBus::Create(params_)),
       mixer_(params_, params_, false),
-      num_attached_output_streams_(0) {
+      num_attached_output_streams_(0),
+      fake_consumer_(message_loop_, params_) {
   DCHECK(params_.IsValid());
   DCHECK(message_loop_);
 }
 
 VirtualAudioInputStream::~VirtualAudioInputStream() {
   for (AudioConvertersMap::iterator it = converters_.begin();
-       it != converters_.end(); ++it)
+       it != converters_.end(); ++it) {
     delete it->second;
+  }
 
   DCHECK_EQ(0, num_attached_output_streams_);
 }
@@ -84,15 +81,13 @@ bool VirtualAudioInputStream::Open() {
 void VirtualAudioInputStream::Start(AudioInputCallback* callback) {
   DCHECK(message_loop_->BelongsToCurrentThread());
   callback_ = callback;
-  next_read_time_ = base::Time::Now();
-  on_more_data_cb_.Reset(base::Bind(&VirtualAudioInputStream::ReadAudio,
-                                    base::Unretained(this)));
-  message_loop_->PostTask(FROM_HERE, on_more_data_cb_.callback());
+  fake_consumer_.Start(base::Bind(
+      &VirtualAudioInputStream::ReadAudio, base::Unretained(this)));
 }
 
 void VirtualAudioInputStream::Stop() {
   DCHECK(message_loop_->BelongsToCurrentThread());
-  on_more_data_cb_.Cancel();
+  fake_consumer_.Stop();
 }
 
 void VirtualAudioInputStream::AddOutputStream(
@@ -124,43 +119,26 @@ void VirtualAudioInputStream::RemoveOutputStream(
   DCHECK_LE(0, num_attached_output_streams_);
 }
 
-void VirtualAudioInputStream::ReadAudio() {
+void VirtualAudioInputStream::ReadAudio(AudioBus* audio_bus) {
   DCHECK(message_loop_->BelongsToCurrentThread());
   DCHECK(callback_);
 
-  mixer_.Convert(audio_bus_.get());
-  audio_bus_->ToInterleaved(params_.frames_per_buffer(),
-                            params_.bits_per_sample() / 8,
-                            buffer_.get());
+  mixer_.Convert(audio_bus);
+  audio_bus->ToInterleaved(params_.frames_per_buffer(),
+                           params_.bits_per_sample() / 8,
+                           buffer_.get());
 
   callback_->OnData(this,
                     buffer_.get(),
                     params_.GetBytesPerBuffer(),
                     params_.GetBytesPerBuffer(),
                     1.0);
-
-  // Need to account for time spent here due to renderer side mixing as well as
-  // the imprecision of PostDelayedTask.
-  next_read_time_ += buffer_duration_;
-  base::Time now = base::Time::Now();
-  base::TimeDelta delay = next_read_time_ - now;
-  if (delay < base::TimeDelta()) {
-    // Reset the next read time if we end up getting too far behind. We'll just
-    // slow down playback to avoid using up all the CPU.
-    delay = buffer_duration_;
-    next_read_time_ = now + buffer_duration_;
-  }
-
-  message_loop_->PostDelayedTask(FROM_HERE,
-                                 on_more_data_cb_.callback(),
-                                 delay);
 }
 
 void VirtualAudioInputStream::Close() {
   DCHECK(message_loop_->BelongsToCurrentThread());
 
   if (callback_) {
-    DCHECK(on_more_data_cb_.IsCancelled());
     callback_->OnClose(this);
     callback_ = NULL;
   }
