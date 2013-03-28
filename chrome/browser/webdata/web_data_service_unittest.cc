@@ -25,6 +25,7 @@
 #include "chrome/browser/webdata/web_database_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/thread_observer_helper.h"
+#include "components/autofill/browser/autofill_country.h"
 #include "components/autofill/browser/autofill_profile.h"
 #include "components/autofill/browser/credit_card.h"
 #include "components/autofill/common/form_field_data.h"
@@ -79,7 +80,7 @@ class WebDataServiceTest : public testing::Test {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     base::FilePath path = temp_dir_.path().AppendASCII("TestWebDB");
 
-    wdbs_ = new WebDatabaseService(path);
+    wdbs_ = new WebDatabaseService(path, AutofillCountry::ApplicationLocale());
     wdbs_->AddTable(scoped_ptr<WebDatabaseTable>(new AutofillTable()));
     wdbs_->LoadDatabase(WebDatabaseService::InitCallback());
 

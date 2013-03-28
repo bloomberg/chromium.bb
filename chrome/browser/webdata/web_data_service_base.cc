@@ -45,11 +45,6 @@ void WebDataServiceBase::ShutdownOnUIThread() {
       base::Bind(&WebDataServiceBase::ShutdownOnDBThread, this));
 }
 
-void WebDataServiceBase::AddTable(scoped_ptr<WebDatabaseTable> table) {
-  DCHECK(wdbs_.get());
-  wdbs_->AddTable(table.Pass());
-}
-
 void WebDataServiceBase::Init() {
   DCHECK(wdbs_.get());
   wdbs_->LoadDatabase(Bind(&WebDataServiceBase::DatabaseInitOnDB, this));

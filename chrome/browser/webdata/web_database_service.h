@@ -50,8 +50,10 @@ class WebDatabaseService
   typedef base::Callback<WebDatabase::State(WebDatabase*)> WriteTask;
   typedef base::Callback<void(sql::InitStatus)> InitCallback;
 
-  // Takes the path to the WebDatabase file.
-  explicit WebDatabaseService(const base::FilePath& path);
+  // Takes the path to the WebDatabase file, and the locale (for migration
+  // purposes).
+  explicit WebDatabaseService(
+      const base::FilePath& path, const std::string app_locale);
 
   // Adds |table| as a WebDatabaseTable that will participate in
   // managing the database, transferring ownership. All calls to this
@@ -97,6 +99,11 @@ class WebDatabaseService
   virtual ~WebDatabaseService();
 
   base::FilePath path_;
+
+  // The application locale.  The locale is needed for some database migrations,
+  // and must be read on the UI thread.  It's cached here so that we can pass it
+  // to the migration code on the DB thread.
+  std::string app_locale_;
 
   // The primary owner is |WebDatabaseService| but is refcounted because
   // PostTask on DB thread may outlive us.

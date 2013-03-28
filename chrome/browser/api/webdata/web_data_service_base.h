@@ -60,15 +60,6 @@ class WebDataServiceBase
   // call.
   virtual void ShutdownOnUIThread();
 
-  // Adds the given table to the database. Passes ownership. Must be
-  // called for all tables before Init.
-  //
-  // TODO(joi): This method is duplicated a couple of layers deep;
-  // once we have a single object creating the WebDatabaseService as
-  // well as all the XyzWebDataService objects, we should be able to
-  // simplify.
-  void AddTable(scoped_ptr<WebDatabaseTable> table);
-
   // Initializes the web data service.
   virtual void Init();
 

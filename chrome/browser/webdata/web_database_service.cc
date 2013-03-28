@@ -10,8 +10,6 @@
 #include "chrome/browser/api/webdata/web_data_results.h"
 #include "chrome/browser/api/webdata/web_data_service_consumer.h"
 #include "chrome/browser/webdata/web_data_request_manager.h"
-// TODO(caitkp): Remove this autofill dependency.
-#include "components/autofill/browser/autofill_country.h"
 
 using base::Bind;
 using base::FilePath;
@@ -29,7 +27,8 @@ class WebDataServiceBackend
     : public base::RefCountedThreadSafe<WebDataServiceBackend,
                                         BrowserThread::DeleteOnDBThread> {
  public:
-  explicit WebDataServiceBackend(const FilePath& path);
+  explicit WebDataServiceBackend(
+      const FilePath& path, const std::string app_locale);
 
   // Must call only before InitDatabaseWithCallback.
   void AddTable(scoped_ptr<WebDatabaseTable> table);
@@ -106,12 +105,14 @@ class WebDataServiceBackend
   DISALLOW_COPY_AND_ASSIGN(WebDataServiceBackend);
 };
 
-WebDataServiceBackend::WebDataServiceBackend(const FilePath& path)
+WebDataServiceBackend::WebDataServiceBackend(
+    const FilePath& path,
+    const std::string app_locale)
     : db_path_(path),
       request_manager_(new WebDataRequestManager()),
       init_status_(sql::INIT_FAILURE),
       init_complete_(false),
-      app_locale_(AutofillCountry::ApplicationLocale()) {
+      app_locale_(app_locale) {
 }
 
 void WebDataServiceBackend::AddTable(scoped_ptr<WebDatabaseTable> table) {
@@ -196,8 +197,11 @@ void WebDataServiceBackend::Commit() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-WebDatabaseService::WebDatabaseService(const base::FilePath& path)
-    : path_(path) {
+WebDatabaseService::WebDatabaseService(
+    const base::FilePath& path,
+    const std::string app_locale)
+    : path_(path),
+      app_locale_(app_locale) {
   // WebDatabaseService should be instantiated on UI thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // WebDatabaseService requires DB thread if instantiated.
@@ -209,7 +213,7 @@ WebDatabaseService::~WebDatabaseService() {
 
 void WebDatabaseService::AddTable(scoped_ptr<WebDatabaseTable> table) {
   if (!wds_backend_) {
-    wds_backend_ = new WebDataServiceBackend(path_);
+    wds_backend_ = new WebDataServiceBackend(path_, app_locale_);
   }
   wds_backend_->AddTable(table.Pass());
 }

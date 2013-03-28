@@ -25,6 +25,7 @@
 #include "chrome/browser/webdata/web_database_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/autofill/browser/autofill_country.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -117,7 +118,7 @@ class PasswordStoreWinTest : public testing::Test {
     ASSERT_TRUE(login_db_->Init(temp_dir_.path().Append(
         FILE_PATH_LITERAL("login_test"))));
     base::FilePath path = temp_dir_.path().AppendASCII("web_data_test");
-    wdbs_ = new WebDatabaseService(path);
+    wdbs_ = new WebDatabaseService(path, AutofillCountry::ApplicationLocale());
     // Need to add at least one table so the database gets created.
     wdbs_->AddTable(scoped_ptr<WebDatabaseTable>(new LoginsTable()));
     wdbs_->LoadDatabase(WebDatabaseService::InitCallback());

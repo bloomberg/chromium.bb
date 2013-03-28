@@ -19,6 +19,7 @@
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/browser/webdata/web_intents_table.h"
 #include "chrome/browser/webdata/webdata_constants.h"
+#include "components/autofill/browser/autofill_country.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -52,7 +53,8 @@ WebDataServiceWrapper::WebDataServiceWrapper(Profile* profile) {
   base::FilePath path = profile->GetPath();
   path = path.Append(kWebDataFilename);
 
-  web_database_ = new WebDatabaseService(path);
+  web_database_ = new WebDatabaseService(
+      path, AutofillCountry::ApplicationLocale());
 
   // All tables objects that participate in managing the database must
   // be added here.
