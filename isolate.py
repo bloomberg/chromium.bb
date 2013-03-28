@@ -328,7 +328,7 @@ def recreate_tree(outdir, indir, infiles, action, as_sha1):
       run_isolated.link_file(outfile, infile, action)
 
 
-def process_input(filepath, prevdict, read_only):
+def process_input(filepath, prevdict, read_only, flavor):
   """Processes an input file, a dependency, and return meta data about it.
 
   Arguments:
@@ -368,7 +368,7 @@ def process_input(filepath, prevdict, read_only):
     raise run_isolated.MappingError('%s is missing' % filepath)
   is_link = stat.S_ISLNK(filestats.st_mode)
 
-  if get_flavor() != 'win':
+  if flavor != 'win':
     # Ignore file mode on Windows since it's not really useful there.
     filemode = stat.S_IMODE(filestats.st_mode)
     # Remove write access for group and all access to 'others'.
@@ -1591,7 +1591,8 @@ class CompleteState(object):
         self.saved_state.files[infile] = process_input(
             filepath,
             self.saved_state.files[infile],
-            self.saved_state.read_only)
+            self.saved_state.read_only,
+            self.saved_state.variables['OS'])
 
   def save_files(self):
     """Saves self.saved_state and creates a .isolated file."""

@@ -1336,8 +1336,10 @@ def download_test_data(isolated_hash, target_directory, remote):
         else:
           shutil.copyfile(no_cache.path(obj), outfile)
 
-        if 'm' in properties:
-          # It's not set on Windows.
+        if 'm' in properties and not sys.platform == 'win32':
+          # It's not set on Windows. It could be set only in the case of
+          # downloading content generated from another OS. Do not crash in that
+          # case.
           os.chmod(outfile, properties['m'])
 
       if time.time() - last_update > DELAY_BETWEEN_UPDATES_IN_SECS:

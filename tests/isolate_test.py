@@ -5,6 +5,7 @@
 
 import cStringIO
 import hashlib
+import json
 import logging
 import os
 import sys
@@ -1343,6 +1344,44 @@ class IsolateCommand(IsolateBase):
       actual = f.read()
 
     expected = "# Foo\n{\n  'conditions': [\n  ],\n}\n"
+    self.assertEqual(expected, actual)
+
+  def test_CMDcheck_no_mode_on_windows(self):
+    # Store for Windows, make sure file mode are not included. Hopefully, run
+    # this test on another OS.
+    isolate_file = os.path.join(
+        ROOT_DIR, 'tests', 'isolate', 'symlink_full.isolate')
+    isolated_file = os.path.join(self.cwd, 'foo.isolated')
+    cmd = [
+      '-i', isolate_file,
+      '-V', 'OS', 'win',
+      '-V', 'chromeos', '0',
+      '-s', isolated_file,
+    ]
+    self.assertEqual(0, isolate.CMDcheck(cmd))
+    with open(isolated_file, 'rb') as f:
+      actual = json.load(f)
+    mapped = [
+      os.path.join('files2', 'subdir', '42.txt'),
+      os.path.join('files2', 'test_file1.txt'),
+      os.path.join('files2', 'test_file2.txt'),
+      os.path.join('symlink_full.py'),
+    ]
+    files = dict(
+        (
+          f,
+          {
+            'h': _sha1('tests', 'isolate', f),
+            's': _size('tests', 'isolate', f),
+          }
+        )
+        for f in mapped)
+    expected = {
+      u'command': [u'python', u'symlink_full.py'],
+      u'files': files,
+      u'os': u'win',
+      u'relative_cwd': u'.',
+    }
     self.assertEqual(expected, actual)
 
 
