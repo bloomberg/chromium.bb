@@ -4,6 +4,10 @@
 
 #include "webkit/compositor_bindings/web_transform_operations_impl.h"
 
+#include <algorithm>
+
+#include "ui/gfx/transform.h"
+
 namespace webkit {
 
 WebTransformOperationsImpl::WebTransformOperationsImpl() {}

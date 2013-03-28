@@ -60,7 +60,8 @@ class WebLayerTreeViewImplForTesting : public WebKit::WebLayerTreeView,
   virtual bool compositeAndReadback(void* pixels, const WebKit::WebRect& rect);
   virtual void finishAllRendering();
   virtual void setDeferCommits(bool defer_commits);
-  virtual void renderingStats(WebKit::WebRenderingStats& stats) const;
+  virtual void renderingStats(
+      WebKit::WebRenderingStats& stats) const;  // NOLINT(runtime/references)
 
   // cc::LayerTreeHostClient implementation.
   virtual void WillBeginFrame() OVERRIDE {}

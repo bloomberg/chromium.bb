@@ -156,7 +156,6 @@ void CompareFixedBoundsLayerAndNormalLayer(
                                 fixed_bounds_layer->layer());
   ExpectEqualLayerRectsInTarget(sublayer_under_normal_layer->layer(),
                                 sublayer_under_fixed_bounds_layer->layer());
-
 }
 
 // A black box test that ensures WebLayerImplFixedBounds won't change target

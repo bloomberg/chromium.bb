@@ -34,6 +34,6 @@ class WebToCCInputHandlerAdapter : public cc::InputHandler {
   DISALLOW_COPY_AND_ASSIGN(WebToCCInputHandlerAdapter);
 };
 
-}
+}  // namespace webkit
 
 #endif  // WEBKIT_COMPOSITOR_BINDINGS_WEB_TO_CCINPUT_HANDLER_ADAPTER_H_

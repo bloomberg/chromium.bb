@@ -29,6 +29,6 @@ class WebImageLayerImpl : public WebKit::WebImageLayer {
   DISALLOW_COPY_AND_ASSIGN(WebImageLayerImpl);
 };
 
-}
+}  // namespace webkit
 
 #endif  // WEBKIT_COMPOSITOR_BINDINGS_WEB_IMAGE_LAYER_IMPL_H_
