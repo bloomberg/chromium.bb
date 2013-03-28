@@ -77,15 +77,15 @@ static inline bool LayerImplDrawTransformIsUnknown(const LayerImpl* layer) {
 }
 
 template <typename LayerType, typename RenderSurfaceType>
-class TestOcclusionTrackerWithClip :
-    public TestOcclusionTrackerBase<LayerType, RenderSurfaceType> {
+class TestOcclusionTrackerWithClip
+    : public TestOcclusionTrackerBase<LayerType, RenderSurfaceType> {
  public:
   TestOcclusionTrackerWithClip(gfx::Rect viewport_rect,
                                bool record_metrics_for_frame)
       : TestOcclusionTrackerBase<LayerType, RenderSurfaceType>(
             viewport_rect,
             record_metrics_for_frame) {}
-  TestOcclusionTrackerWithClip(gfx::Rect viewport_rect)
+  explicit TestOcclusionTrackerWithClip(gfx::Rect viewport_rect)
       : TestOcclusionTrackerBase<LayerType, RenderSurfaceType>(viewport_rect,
                                                                false) {}
 
@@ -197,7 +197,7 @@ int OcclusionTrackerTestImplThreadTypes::next_layer_impl_id = 1;
 
 template <typename Types> class OcclusionTrackerTest : public testing::Test {
  protected:
-  OcclusionTrackerTest(bool opaque_layers)
+  explicit OcclusionTrackerTest(bool opaque_layers)
       : host_impl_(&proxy_), opaque_layers_(opaque_layers) {}
 
   virtual void RunMyTest() = 0;
@@ -471,34 +471,34 @@ OcclusionTrackerTest<OcclusionTrackerTestImplThreadTypes>::GetHost() {
 }
 
 #define RUN_TEST_MAIN_THREAD_OPAQUE_LAYERS(ClassName)                          \
-  class ClassName##MainThreadOpaqueLayers :                                    \
-      public ClassName<OcclusionTrackerTestMainThreadTypes> {                  \
-   public:                                                                     \
+  class ClassName##MainThreadOpaqueLayers                                      \
+      : public ClassName<OcclusionTrackerTestMainThreadTypes> {                \
+   public: /* NOLINT(whitespace/indent) */                                     \
     ClassName##MainThreadOpaqueLayers()                                        \
         : ClassName<OcclusionTrackerTestMainThreadTypes>(true) {}              \
   };                                                                           \
   TEST_F(ClassName##MainThreadOpaqueLayers, RunTest) { RunMyTest(); }
 #define RUN_TEST_MAIN_THREAD_OPAQUE_PAINTS(ClassName)                          \
-  class ClassName##MainThreadOpaquePaints :                                    \
-      public ClassName<OcclusionTrackerTestMainThreadTypes> {                  \
-   public:                                                                     \
+  class ClassName##MainThreadOpaquePaints                                      \
+      : public ClassName<OcclusionTrackerTestMainThreadTypes> {                \
+   public: /* NOLINT(whitespace/indent) */                                     \
     ClassName##MainThreadOpaquePaints()                                        \
         : ClassName<OcclusionTrackerTestMainThreadTypes>(false) {}             \
   };                                                                           \
   TEST_F(ClassName##MainThreadOpaquePaints, RunTest) { RunMyTest(); }
 
 #define RUN_TEST_IMPL_THREAD_OPAQUE_LAYERS(ClassName)                          \
-  class ClassName##ImplThreadOpaqueLayers :                                    \
-      public ClassName<OcclusionTrackerTestImplThreadTypes> {                  \
-   public:                                                                     \
+  class ClassName##ImplThreadOpaqueLayers                                      \
+      : public ClassName<OcclusionTrackerTestImplThreadTypes> {                \
+   public: /* NOLINT(whitespace/indent) */                                     \
     ClassName##ImplThreadOpaqueLayers()                                        \
         : ClassName<OcclusionTrackerTestImplThreadTypes>(true) {}              \
   };                                                                           \
   TEST_F(ClassName##ImplThreadOpaqueLayers, RunTest) { RunMyTest(); }
 #define RUN_TEST_IMPL_THREAD_OPAQUE_PAINTS(ClassName)                          \
-  class ClassName##ImplThreadOpaquePaints :                                    \
-      public ClassName<OcclusionTrackerTestImplThreadTypes> {                  \
-   public:                                                                     \
+  class ClassName##ImplThreadOpaquePaints                                      \
+      : public ClassName<OcclusionTrackerTestImplThreadTypes> {                \
+   public: /* NOLINT(whitespace/indent) */                                     \
     ClassName##ImplThreadOpaquePaints()                                        \
         : ClassName<OcclusionTrackerTestImplThreadTypes>(false) {}             \
   };                                                                           \
@@ -521,10 +521,10 @@ OcclusionTrackerTest<OcclusionTrackerTestImplThreadTypes>::GetHost() {
       RUN_TEST_IMPL_THREAD_OPAQUE_LAYERS(ClassName)
 
 template <class Types>
-class OcclusionTrackerTestIdentityTransforms :
-    public OcclusionTrackerTest<Types> {
+class OcclusionTrackerTestIdentityTransforms
+    : public OcclusionTrackerTest<Types> {
  protected:
-  OcclusionTrackerTestIdentityTransforms(bool opaque_layers)
+  explicit OcclusionTrackerTestIdentityTransforms(bool opaque_layers)
       : OcclusionTrackerTest<Types>(opaque_layers) {}
 
   void RunMyTest() {
@@ -591,10 +591,10 @@ class OcclusionTrackerTestIdentityTransforms :
 ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestIdentityTransforms);
 
 template <class Types>
-class OcclusionTrackerTestQuadsMismatchLayer :
-    public OcclusionTrackerTest<Types> {
+class OcclusionTrackerTestQuadsMismatchLayer
+    : public OcclusionTrackerTest<Types> {
  protected:
-  OcclusionTrackerTestQuadsMismatchLayer(bool opaque_layers)
+  explicit OcclusionTrackerTestQuadsMismatchLayer(bool opaque_layers)
       : OcclusionTrackerTest<Types>(opaque_layers) {}
   void RunMyTest() {
     gfx::Transform layer_transform;
@@ -675,7 +675,7 @@ ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestQuadsMismatchLayer);
 template <class Types>
 class OcclusionTrackerTestRotatedChild : public OcclusionTrackerTest<Types> {
  protected:
-  OcclusionTrackerTestRotatedChild(bool opaque_layers)
+  explicit OcclusionTrackerTestRotatedChild(bool opaque_layers)
       : OcclusionTrackerTest<Types>(opaque_layers) {}
   void RunMyTest() {
     gfx::Transform layer_transform;
@@ -748,7 +748,7 @@ ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestRotatedChild);
 template <class Types>
 class OcclusionTrackerTestTranslatedChild : public OcclusionTrackerTest<Types> {
  protected:
-  OcclusionTrackerTestTranslatedChild(bool opaque_layers)
+  explicit OcclusionTrackerTestTranslatedChild(bool opaque_layers)
       : OcclusionTrackerTest<Types>(opaque_layers) {}
   void RunMyTest() {
     gfx::Transform layer_transform;
@@ -814,10 +814,10 @@ class OcclusionTrackerTestTranslatedChild : public OcclusionTrackerTest<Types> {
 ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestTranslatedChild);
 
 template <class Types>
-class OcclusionTrackerTestChildInRotatedChild :
-    public OcclusionTrackerTest<Types> {
+class OcclusionTrackerTestChildInRotatedChild
+    : public OcclusionTrackerTest<Types> {
  protected:
-  OcclusionTrackerTestChildInRotatedChild(bool opaque_layers)
+  explicit OcclusionTrackerTestChildInRotatedChild(bool opaque_layers)
       : OcclusionTrackerTest<Types>(opaque_layers) {}
   void RunMyTest() {
     gfx::Transform child_transform;
@@ -918,10 +918,10 @@ class OcclusionTrackerTestChildInRotatedChild :
 ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestChildInRotatedChild);
 
 template <class Types>
-class OcclusionTrackerTestScaledRenderSurface :
-    public OcclusionTrackerTest<Types> {
+class OcclusionTrackerTestScaledRenderSurface
+    : public OcclusionTrackerTest<Types> {
  protected:
-  OcclusionTrackerTestScaledRenderSurface(bool opaque_layers)
+  explicit OcclusionTrackerTestScaledRenderSurface(bool opaque_layers)
       : OcclusionTrackerTest<Types>(opaque_layers) {}
 
   void RunMyTest() {
@@ -975,10 +975,10 @@ class OcclusionTrackerTestScaledRenderSurface :
 ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestScaledRenderSurface);
 
 template <class Types>
-class OcclusionTrackerTestVisitTargetTwoTimes :
-    public OcclusionTrackerTest<Types> {
+class OcclusionTrackerTestVisitTargetTwoTimes
+    : public OcclusionTrackerTest<Types> {
  protected:
-  OcclusionTrackerTestVisitTargetTwoTimes(bool opaque_layers)
+  explicit OcclusionTrackerTestVisitTargetTwoTimes(bool opaque_layers)
       : OcclusionTrackerTest<Types>(opaque_layers) {}
   void RunMyTest() {
     gfx::Transform child_transform;
@@ -1153,10 +1153,10 @@ class OcclusionTrackerTestVisitTargetTwoTimes :
 ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestVisitTargetTwoTimes);
 
 template <class Types>
-class OcclusionTrackerTestSurfaceRotatedOffAxis :
-    public OcclusionTrackerTest<Types> {
+class OcclusionTrackerTestSurfaceRotatedOffAxis
+    : public OcclusionTrackerTest<Types> {
  protected:
-  OcclusionTrackerTestSurfaceRotatedOffAxis(bool opaque_layers)
+  explicit OcclusionTrackerTestSurfaceRotatedOffAxis(bool opaque_layers)
       : OcclusionTrackerTest<Types>(opaque_layers) {}
   void RunMyTest() {
     gfx::Transform child_transform;
@@ -1211,10 +1211,10 @@ class OcclusionTrackerTestSurfaceRotatedOffAxis :
 ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestSurfaceRotatedOffAxis);
 
 template <class Types>
-class OcclusionTrackerTestSurfaceWithTwoOpaqueChildren :
-    public OcclusionTrackerTest<Types> {
+class OcclusionTrackerTestSurfaceWithTwoOpaqueChildren
+    : public OcclusionTrackerTest<Types> {
  protected:
-  OcclusionTrackerTestSurfaceWithTwoOpaqueChildren(bool opaque_layers)
+  explicit OcclusionTrackerTestSurfaceWithTwoOpaqueChildren(bool opaque_layers)
       : OcclusionTrackerTest<Types>(opaque_layers) {}
   void RunMyTest() {
     gfx::Transform child_transform;
@@ -1344,10 +1344,10 @@ class OcclusionTrackerTestSurfaceWithTwoOpaqueChildren :
 ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestSurfaceWithTwoOpaqueChildren);
 
 template <class Types>
-class OcclusionTrackerTestOverlappingSurfaceSiblings :
-    public OcclusionTrackerTest<Types> {
+class OcclusionTrackerTestOverlappingSurfaceSiblings
+    : public OcclusionTrackerTest<Types> {
  protected:
-  OcclusionTrackerTestOverlappingSurfaceSiblings(bool opaque_layers)
+  explicit OcclusionTrackerTestOverlappingSurfaceSiblings(bool opaque_layers)
       : OcclusionTrackerTest<Types>(opaque_layers) {}
   void RunMyTest() {
     gfx::Transform child_transform;
@@ -1461,10 +1461,10 @@ class OcclusionTrackerTestOverlappingSurfaceSiblings :
 ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestOverlappingSurfaceSiblings);
 
 template <class Types>
-class OcclusionTrackerTestOverlappingSurfaceSiblingsWithTwoTransforms :
-    public OcclusionTrackerTest<Types> {
+class OcclusionTrackerTestOverlappingSurfaceSiblingsWithTwoTransforms
+    : public OcclusionTrackerTest<Types> {
  protected:
-  OcclusionTrackerTestOverlappingSurfaceSiblingsWithTwoTransforms(
+  explicit OcclusionTrackerTestOverlappingSurfaceSiblingsWithTwoTransforms(
       bool opaque_layers)
       : OcclusionTrackerTest<Types>(opaque_layers) {}
   void RunMyTest() {
@@ -1583,7 +1583,7 @@ ALL_OCCLUSIONTRACKER_TEST(
 template <class Types>
 class OcclusionTrackerTestFilters : public OcclusionTrackerTest<Types> {
  protected:
-  OcclusionTrackerTestFilters(bool opaque_layers)
+  explicit OcclusionTrackerTestFilters(bool opaque_layers)
       : OcclusionTrackerTest<Types>(opaque_layers) {}
   void RunMyTest() {
     gfx::Transform layer_transform;
@@ -1681,10 +1681,10 @@ class OcclusionTrackerTestFilters : public OcclusionTrackerTest<Types> {
 ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestFilters);
 
 template <class Types>
-class OcclusionTrackerTestReplicaDoesOcclude :
-    public OcclusionTrackerTest<Types> {
+class OcclusionTrackerTestReplicaDoesOcclude
+    : public OcclusionTrackerTest<Types> {
  protected:
-  OcclusionTrackerTestReplicaDoesOcclude(bool opaque_layers)
+  explicit OcclusionTrackerTestReplicaDoesOcclude(bool opaque_layers)
       : OcclusionTrackerTest<Types>(opaque_layers) {}
   void RunMyTest() {
     typename Types::ContentLayerType* parent = this->CreateRoot(
@@ -1722,10 +1722,10 @@ class OcclusionTrackerTestReplicaDoesOcclude :
 ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestReplicaDoesOcclude);
 
 template <class Types>
-class OcclusionTrackerTestReplicaWithClipping :
-    public OcclusionTrackerTest<Types> {
+class OcclusionTrackerTestReplicaWithClipping
+    : public OcclusionTrackerTest<Types> {
  protected:
-  OcclusionTrackerTestReplicaWithClipping(bool opaque_layers)
+  explicit OcclusionTrackerTestReplicaWithClipping(bool opaque_layers)
       : OcclusionTrackerTest<Types>(opaque_layers) {}
   void RunMyTest() {
     typename Types::ContentLayerType* parent = this->CreateRoot(
@@ -1766,7 +1766,7 @@ ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestReplicaWithClipping);
 template <class Types>
 class OcclusionTrackerTestReplicaWithMask : public OcclusionTrackerTest<Types> {
  protected:
-  OcclusionTrackerTestReplicaWithMask(bool opaque_layers)
+  explicit OcclusionTrackerTestReplicaWithMask(bool opaque_layers)
       : OcclusionTrackerTest<Types>(opaque_layers) {}
   void RunMyTest() {
     typename Types::ContentLayerType* parent = this->CreateRoot(
@@ -1804,10 +1804,10 @@ class OcclusionTrackerTestReplicaWithMask : public OcclusionTrackerTest<Types> {
 ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestReplicaWithMask);
 
 template <class Types>
-class OcclusionTrackerTestLayerClipRectOutsideChild :
-    public OcclusionTrackerTest<Types> {
+class OcclusionTrackerTestLayerClipRectOutsideChild
+    : public OcclusionTrackerTest<Types> {
  protected:
-  OcclusionTrackerTestLayerClipRectOutsideChild(bool opaque_layers)
+  explicit OcclusionTrackerTestLayerClipRectOutsideChild(bool opaque_layers)
       : OcclusionTrackerTest<Types>(opaque_layers) {}
   void RunMyTest() {
     typename Types::ContentLayerType* parent = this->CreateRoot(
@@ -1857,10 +1857,10 @@ class OcclusionTrackerTestLayerClipRectOutsideChild :
 ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestLayerClipRectOutsideChild);
 
 template <class Types>
-class OcclusionTrackerTestViewportRectOutsideChild :
-    public OcclusionTrackerTest<Types> {
+class OcclusionTrackerTestViewportRectOutsideChild
+    : public OcclusionTrackerTest<Types> {
  protected:
-  OcclusionTrackerTestViewportRectOutsideChild(bool opaque_layers)
+  explicit OcclusionTrackerTestViewportRectOutsideChild(bool opaque_layers)
       : OcclusionTrackerTest<Types>(opaque_layers) {}
   void RunMyTest() {
     typename Types::ContentLayerType* parent = this->CreateRoot(
@@ -1909,10 +1909,10 @@ class OcclusionTrackerTestViewportRectOutsideChild :
 ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestViewportRectOutsideChild);
 
 template <class Types>
-class OcclusionTrackerTestLayerClipRectOverChild :
-    public OcclusionTrackerTest<Types> {
+class OcclusionTrackerTestLayerClipRectOverChild
+    : public OcclusionTrackerTest<Types> {
  protected:
-  OcclusionTrackerTestLayerClipRectOverChild(bool opaque_layers)
+  explicit OcclusionTrackerTestLayerClipRectOverChild(bool opaque_layers)
       : OcclusionTrackerTest<Types>(opaque_layers) {}
   void RunMyTest() {
     typename Types::ContentLayerType* parent = this->CreateRoot(
@@ -1969,10 +1969,10 @@ class OcclusionTrackerTestLayerClipRectOverChild :
 ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestLayerClipRectOverChild);
 
 template <class Types>
-class OcclusionTrackerTestViewportRectOverChild :
-    public OcclusionTrackerTest<Types> {
+class OcclusionTrackerTestViewportRectOverChild
+    : public OcclusionTrackerTest<Types> {
  protected:
-  OcclusionTrackerTestViewportRectOverChild(bool opaque_layers)
+  explicit OcclusionTrackerTestViewportRectOverChild(bool opaque_layers)
       : OcclusionTrackerTest<Types>(opaque_layers) {}
   void RunMyTest() {
     typename Types::ContentLayerType* parent = this->CreateRoot(
@@ -2018,10 +2018,10 @@ class OcclusionTrackerTestViewportRectOverChild :
 ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestViewportRectOverChild);
 
 template <class Types>
-class OcclusionTrackerTestLayerClipRectPartlyOverChild :
-    public OcclusionTrackerTest<Types> {
+class OcclusionTrackerTestLayerClipRectPartlyOverChild
+    : public OcclusionTrackerTest<Types> {
  protected:
-  OcclusionTrackerTestLayerClipRectPartlyOverChild(bool opaque_layers)
+  explicit OcclusionTrackerTestLayerClipRectPartlyOverChild(bool opaque_layers)
       : OcclusionTrackerTest<Types>(opaque_layers) {}
   void RunMyTest() {
     typename Types::ContentLayerType* parent = this->CreateRoot(
@@ -2069,10 +2069,10 @@ class OcclusionTrackerTestLayerClipRectPartlyOverChild :
 ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestLayerClipRectPartlyOverChild);
 
 template <class Types>
-class OcclusionTrackerTestViewportRectPartlyOverChild :
-    public OcclusionTrackerTest<Types> {
+class OcclusionTrackerTestViewportRectPartlyOverChild
+    : public OcclusionTrackerTest<Types> {
  protected:
-  OcclusionTrackerTestViewportRectPartlyOverChild(bool opaque_layers)
+  explicit OcclusionTrackerTestViewportRectPartlyOverChild(bool opaque_layers)
       : OcclusionTrackerTest<Types>(opaque_layers) {}
   void RunMyTest() {
     typename Types::ContentLayerType* parent = this->CreateRoot(
@@ -2134,10 +2134,10 @@ class OcclusionTrackerTestViewportRectPartlyOverChild :
 ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestViewportRectPartlyOverChild);
 
 template <class Types>
-class OcclusionTrackerTestViewportRectOverNothing :
-    public OcclusionTrackerTest<Types> {
+class OcclusionTrackerTestViewportRectOverNothing
+    : public OcclusionTrackerTest<Types> {
  protected:
-  OcclusionTrackerTestViewportRectOverNothing(bool opaque_layers)
+  explicit OcclusionTrackerTestViewportRectOverNothing(bool opaque_layers)
       : OcclusionTrackerTest<Types>(opaque_layers) {}
   void RunMyTest() {
     typename Types::ContentLayerType* parent = this->CreateRoot(
@@ -2191,10 +2191,11 @@ class OcclusionTrackerTestViewportRectOverNothing :
 ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestViewportRectOverNothing);
 
 template <class Types>
-class OcclusionTrackerTestLayerClipRectForLayerOffOrigin :
-    public OcclusionTrackerTest<Types> {
+class OcclusionTrackerTestLayerClipRectForLayerOffOrigin
+    : public OcclusionTrackerTest<Types> {
  protected:
-  OcclusionTrackerTestLayerClipRectForLayerOffOrigin(bool opaque_layers)
+  explicit OcclusionTrackerTestLayerClipRectForLayerOffOrigin(
+      bool opaque_layers)
       : OcclusionTrackerTest<Types>(opaque_layers) {}
   void RunMyTest() {
     typename Types::ContentLayerType* parent = this->CreateRoot(
@@ -2226,10 +2227,10 @@ class OcclusionTrackerTestLayerClipRectForLayerOffOrigin :
 ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestLayerClipRectForLayerOffOrigin);
 
 template <class Types>
-class OcclusionTrackerTestOpaqueContentsRegionEmpty :
-    public OcclusionTrackerTest<Types> {
+class OcclusionTrackerTestOpaqueContentsRegionEmpty
+    : public OcclusionTrackerTest<Types> {
  protected:
-  OcclusionTrackerTestOpaqueContentsRegionEmpty(bool opaque_layers)
+  explicit OcclusionTrackerTestOpaqueContentsRegionEmpty(bool opaque_layers)
       : OcclusionTrackerTest<Types>(opaque_layers) {}
   void RunMyTest() {
     typename Types::ContentLayerType* parent = this->CreateRoot(
@@ -2266,10 +2267,10 @@ class OcclusionTrackerTestOpaqueContentsRegionEmpty :
 MAIN_AND_IMPL_THREAD_TEST(OcclusionTrackerTestOpaqueContentsRegionEmpty);
 
 template <class Types>
-class OcclusionTrackerTestOpaqueContentsRegionNonEmpty :
-    public OcclusionTrackerTest<Types> {
+class OcclusionTrackerTestOpaqueContentsRegionNonEmpty
+    : public OcclusionTrackerTest<Types> {
  protected:
-  OcclusionTrackerTestOpaqueContentsRegionNonEmpty(bool opaque_layers)
+  explicit OcclusionTrackerTestOpaqueContentsRegionNonEmpty(bool opaque_layers)
       : OcclusionTrackerTest<Types>(opaque_layers) {}
   void RunMyTest() {
     typename Types::ContentLayerType* parent = this->CreateRoot(
@@ -2349,7 +2350,7 @@ MAIN_AND_IMPL_THREAD_TEST(OcclusionTrackerTestOpaqueContentsRegionNonEmpty);
 template <class Types>
 class OcclusionTrackerTest3dTransform : public OcclusionTrackerTest<Types> {
  protected:
-  OcclusionTrackerTest3dTransform(bool opaque_layers)
+  explicit OcclusionTrackerTest3dTransform(bool opaque_layers)
       : OcclusionTrackerTest<Types>(opaque_layers) {}
   void RunMyTest() {
     gfx::Transform transform;
@@ -2383,10 +2384,10 @@ class OcclusionTrackerTest3dTransform : public OcclusionTrackerTest<Types> {
 MAIN_AND_IMPL_THREAD_TEST(OcclusionTrackerTest3dTransform);
 
 template <class Types>
-class OcclusionTrackerTestUnsorted3dLayers :
-    public OcclusionTrackerTest<Types> {
+class OcclusionTrackerTestUnsorted3dLayers
+    : public OcclusionTrackerTest<Types> {
  protected:
-  OcclusionTrackerTestUnsorted3dLayers(bool opaque_layers)
+  explicit OcclusionTrackerTestUnsorted3dLayers(bool opaque_layers)
       : OcclusionTrackerTest<Types>(opaque_layers) {}
   void RunMyTest() {
     // Currently, The main thread layer iterator does not iterate over 3d items
@@ -2433,10 +2434,10 @@ class OcclusionTrackerTestUnsorted3dLayers :
 MAIN_THREAD_TEST(OcclusionTrackerTestUnsorted3dLayers);
 
 template <class Types>
-class OcclusionTrackerTestPerspectiveTransform :
-    public OcclusionTrackerTest<Types> {
+class OcclusionTrackerTestPerspectiveTransform
+    : public OcclusionTrackerTest<Types> {
  protected:
-  OcclusionTrackerTestPerspectiveTransform(bool opaque_layers)
+  explicit OcclusionTrackerTestPerspectiveTransform(bool opaque_layers)
       : OcclusionTrackerTest<Types>(opaque_layers) {}
   void RunMyTest() {
     gfx::Transform transform;
@@ -2476,10 +2477,11 @@ class OcclusionTrackerTestPerspectiveTransform :
 IMPL_THREAD_TEST(OcclusionTrackerTestPerspectiveTransform);
 
 template <class Types>
-class OcclusionTrackerTestPerspectiveTransformBehindCamera :
-    public OcclusionTrackerTest<Types> {
+class OcclusionTrackerTestPerspectiveTransformBehindCamera
+    : public OcclusionTrackerTest<Types> {
  protected:
-  OcclusionTrackerTestPerspectiveTransformBehindCamera(bool opaque_layers)
+  explicit OcclusionTrackerTestPerspectiveTransformBehindCamera(
+      bool opaque_layers)
       : OcclusionTrackerTest<Types>(opaque_layers) {}
   void RunMyTest() {
     // This test is based on the platform/chromium/compositing/3d-corners.html
@@ -2522,10 +2524,11 @@ class OcclusionTrackerTestPerspectiveTransformBehindCamera :
 IMPL_THREAD_TEST(OcclusionTrackerTestPerspectiveTransformBehindCamera);
 
 template <class Types>
-class OcclusionTrackerTestLayerBehindCameraDoesNotOcclude :
-    public OcclusionTrackerTest<Types> {
+class OcclusionTrackerTestLayerBehindCameraDoesNotOcclude
+    : public OcclusionTrackerTest<Types> {
  protected:
-  OcclusionTrackerTestLayerBehindCameraDoesNotOcclude(bool opaque_layers)
+  explicit OcclusionTrackerTestLayerBehindCameraDoesNotOcclude(
+      bool opaque_layers)
       : OcclusionTrackerTest<Types>(opaque_layers) {}
   void RunMyTest() {
     gfx::Transform transform;
@@ -2560,10 +2563,11 @@ class OcclusionTrackerTestLayerBehindCameraDoesNotOcclude :
 IMPL_THREAD_TEST(OcclusionTrackerTestLayerBehindCameraDoesNotOcclude);
 
 template <class Types>
-class OcclusionTrackerTestLargePixelsOccludeInsideClipRect :
-    public OcclusionTrackerTest<Types> {
+class OcclusionTrackerTestLargePixelsOccludeInsideClipRect
+    : public OcclusionTrackerTest<Types> {
  protected:
-  OcclusionTrackerTestLargePixelsOccludeInsideClipRect(bool opaque_layers)
+  explicit OcclusionTrackerTestLargePixelsOccludeInsideClipRect(
+      bool opaque_layers)
       : OcclusionTrackerTest<Types>(opaque_layers) {}
   void RunMyTest() {
     gfx::Transform transform;
@@ -2603,10 +2607,10 @@ class OcclusionTrackerTestLargePixelsOccludeInsideClipRect :
 IMPL_THREAD_TEST(OcclusionTrackerTestLargePixelsOccludeInsideClipRect);
 
 template <class Types>
-class OcclusionTrackerTestAnimationOpacity1OnMainThread :
-    public OcclusionTrackerTest<Types> {
+class OcclusionTrackerTestAnimationOpacity1OnMainThread
+    : public OcclusionTrackerTest<Types> {
  protected:
-  OcclusionTrackerTestAnimationOpacity1OnMainThread(bool opaque_layers)
+  explicit OcclusionTrackerTestAnimationOpacity1OnMainThread(bool opaque_layers)
       : OcclusionTrackerTest<Types>(opaque_layers) {}
   void RunMyTest() {
     // parent
@@ -2732,10 +2736,10 @@ class OcclusionTrackerTestAnimationOpacity1OnMainThread :
 MAIN_THREAD_TEST(OcclusionTrackerTestAnimationOpacity1OnMainThread);
 
 template <class Types>
-class OcclusionTrackerTestAnimationOpacity0OnMainThread :
-    public OcclusionTrackerTest<Types> {
+class OcclusionTrackerTestAnimationOpacity0OnMainThread
+    : public OcclusionTrackerTest<Types> {
  protected:
-  OcclusionTrackerTestAnimationOpacity0OnMainThread(bool opaque_layers)
+  explicit OcclusionTrackerTestAnimationOpacity0OnMainThread(bool opaque_layers)
       : OcclusionTrackerTest<Types>(opaque_layers) {}
   void RunMyTest() {
     typename Types::ContentLayerType* parent = this->CreateRoot(
@@ -2853,10 +2857,11 @@ class OcclusionTrackerTestAnimationOpacity0OnMainThread :
 MAIN_THREAD_TEST(OcclusionTrackerTestAnimationOpacity0OnMainThread);
 
 template <class Types>
-class OcclusionTrackerTestAnimationTranslateOnMainThread :
-    public OcclusionTrackerTest<Types> {
+class OcclusionTrackerTestAnimationTranslateOnMainThread
+    : public OcclusionTrackerTest<Types> {
  protected:
-  OcclusionTrackerTestAnimationTranslateOnMainThread(bool opaque_layers)
+  explicit OcclusionTrackerTestAnimationTranslateOnMainThread(
+      bool opaque_layers)
       : OcclusionTrackerTest<Types>(opaque_layers) {}
   void RunMyTest() {
     typename Types::ContentLayerType* parent = this->CreateRoot(
@@ -3004,10 +3009,11 @@ class OcclusionTrackerTestAnimationTranslateOnMainThread :
 MAIN_THREAD_TEST(OcclusionTrackerTestAnimationTranslateOnMainThread);
 
 template <class Types>
-class OcclusionTrackerTestSurfaceOcclusionTranslatesToParent :
-    public OcclusionTrackerTest<Types> {
+class OcclusionTrackerTestSurfaceOcclusionTranslatesToParent
+    : public OcclusionTrackerTest<Types> {
  protected:
-  OcclusionTrackerTestSurfaceOcclusionTranslatesToParent(bool opaque_layers)
+  explicit OcclusionTrackerTestSurfaceOcclusionTranslatesToParent(
+      bool opaque_layers)
       : OcclusionTrackerTest<Types>(opaque_layers) {}
   void RunMyTest() {
     gfx::Transform surface_transform;
@@ -3059,10 +3065,11 @@ MAIN_AND_IMPL_THREAD_TEST(
     OcclusionTrackerTestSurfaceOcclusionTranslatesToParent);
 
 template <class Types>
-class OcclusionTrackerTestSurfaceOcclusionTranslatesWithClipping :
-    public OcclusionTrackerTest<Types> {
+class OcclusionTrackerTestSurfaceOcclusionTranslatesWithClipping
+    : public OcclusionTrackerTest<Types> {
  protected:
-  OcclusionTrackerTestSurfaceOcclusionTranslatesWithClipping(bool opaque_layers)
+  explicit OcclusionTrackerTestSurfaceOcclusionTranslatesWithClipping(
+      bool opaque_layers)
       : OcclusionTrackerTest<Types>(opaque_layers) {}
   void RunMyTest() {
     typename Types::ContentLayerType* parent = this->CreateRoot(
@@ -3097,7 +3104,7 @@ MAIN_AND_IMPL_THREAD_TEST(
 template <class Types>
 class OcclusionTrackerTestReplicaOccluded : public OcclusionTrackerTest<Types> {
  protected:
-  OcclusionTrackerTestReplicaOccluded(bool opaque_layers)
+  explicit OcclusionTrackerTestReplicaOccluded(bool opaque_layers)
       : OcclusionTrackerTest<Types>(opaque_layers) {}
   void RunMyTest() {
     typename Types::ContentLayerType* parent = this->CreateRoot(
@@ -3151,10 +3158,10 @@ class OcclusionTrackerTestReplicaOccluded : public OcclusionTrackerTest<Types> {
 ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestReplicaOccluded);
 
 template <class Types>
-class OcclusionTrackerTestSurfaceWithReplicaUnoccluded :
-    public OcclusionTrackerTest<Types> {
+class OcclusionTrackerTestSurfaceWithReplicaUnoccluded
+    : public OcclusionTrackerTest<Types> {
  protected:
-  OcclusionTrackerTestSurfaceWithReplicaUnoccluded(bool opaque_layers)
+  explicit OcclusionTrackerTestSurfaceWithReplicaUnoccluded(bool opaque_layers)
       : OcclusionTrackerTest<Types>(opaque_layers) {}
   void RunMyTest() {
     typename Types::ContentLayerType* parent = this->CreateRoot(
@@ -3211,10 +3218,11 @@ class OcclusionTrackerTestSurfaceWithReplicaUnoccluded :
 ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestSurfaceWithReplicaUnoccluded);
 
 template <class Types>
-class OcclusionTrackerTestSurfaceAndReplicaOccludedDifferently :
-    public OcclusionTrackerTest<Types> {
+class OcclusionTrackerTestSurfaceAndReplicaOccludedDifferently
+    : public OcclusionTrackerTest<Types> {
  protected:
-  OcclusionTrackerTestSurfaceAndReplicaOccludedDifferently(bool opaque_layers)
+  explicit OcclusionTrackerTestSurfaceAndReplicaOccludedDifferently(
+      bool opaque_layers)
       : OcclusionTrackerTest<Types>(opaque_layers) {}
   void RunMyTest() {
     typename Types::ContentLayerType* parent = this->CreateRoot(
@@ -3278,10 +3286,10 @@ ALL_OCCLUSIONTRACKER_TEST(
     OcclusionTrackerTestSurfaceAndReplicaOccludedDifferently);
 
 template <class Types>
-class OcclusionTrackerTestSurfaceChildOfSurface :
-    public OcclusionTrackerTest<Types> {
+class OcclusionTrackerTestSurfaceChildOfSurface
+    : public OcclusionTrackerTest<Types> {
  protected:
-  OcclusionTrackerTestSurfaceChildOfSurface(bool opaque_layers)
+  explicit OcclusionTrackerTestSurfaceChildOfSurface(bool opaque_layers)
       : OcclusionTrackerTest<Types>(opaque_layers) {}
   void RunMyTest() {
     // This test verifies that the surface cliprect does not end up empty and
@@ -3362,10 +3370,11 @@ class OcclusionTrackerTestSurfaceChildOfSurface :
 ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestSurfaceChildOfSurface);
 
 template <class Types>
-class OcclusionTrackerTestTopmostSurfaceIsClippedToViewport :
-    public OcclusionTrackerTest<Types> {
+class OcclusionTrackerTestTopmostSurfaceIsClippedToViewport
+    : public OcclusionTrackerTest<Types> {
  protected:
-  OcclusionTrackerTestTopmostSurfaceIsClippedToViewport(bool opaque_layers)
+  explicit OcclusionTrackerTestTopmostSurfaceIsClippedToViewport(
+      bool opaque_layers)
       : OcclusionTrackerTest<Types>(opaque_layers) {}
   void RunMyTest() {
     // This test verifies that the top-most surface is considered occluded
@@ -3422,10 +3431,10 @@ ALL_OCCLUSIONTRACKER_TEST(
     OcclusionTrackerTestTopmostSurfaceIsClippedToViewport);
 
 template <class Types>
-class OcclusionTrackerTestSurfaceChildOfClippingSurface :
-    public OcclusionTrackerTest<Types> {
+class OcclusionTrackerTestSurfaceChildOfClippingSurface
+    : public OcclusionTrackerTest<Types> {
  protected:
-  OcclusionTrackerTestSurfaceChildOfClippingSurface(bool opaque_layers)
+  explicit OcclusionTrackerTestSurfaceChildOfClippingSurface(bool opaque_layers)
       : OcclusionTrackerTest<Types>(opaque_layers) {}
   void RunMyTest() {
     // This test verifies that the surface cliprect does not end up empty and
@@ -3499,10 +3508,10 @@ class OcclusionTrackerTestSurfaceChildOfClippingSurface :
 ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestSurfaceChildOfClippingSurface);
 
 template <class Types>
-class OcclusionTrackerTestDontOccludePixelsNeededForBackgroundFilter :
-    public OcclusionTrackerTest<Types> {
+class OcclusionTrackerTestDontOccludePixelsNeededForBackgroundFilter
+    : public OcclusionTrackerTest<Types> {
  protected:
-  OcclusionTrackerTestDontOccludePixelsNeededForBackgroundFilter(
+  explicit OcclusionTrackerTestDontOccludePixelsNeededForBackgroundFilter(
       bool opaque_layers)
       : OcclusionTrackerTest<Types>(opaque_layers) {}
   void RunMyTest() {
@@ -3708,10 +3717,10 @@ ALL_OCCLUSIONTRACKER_TEST(
     OcclusionTrackerTestDontOccludePixelsNeededForBackgroundFilter);
 
 template <class Types>
-class OcclusionTrackerTestTwoBackgroundFiltersReduceOcclusionTwice :
-    public OcclusionTrackerTest<Types> {
+class OcclusionTrackerTestTwoBackgroundFiltersReduceOcclusionTwice
+    : public OcclusionTrackerTest<Types> {
  protected:
-  OcclusionTrackerTestTwoBackgroundFiltersReduceOcclusionTwice(
+  explicit OcclusionTrackerTestTwoBackgroundFiltersReduceOcclusionTwice(
       bool opaque_layers)
       : OcclusionTrackerTest<Types>(opaque_layers) {}
   void RunMyTest() {
@@ -3783,9 +3792,10 @@ ALL_OCCLUSIONTRACKER_TEST(
     OcclusionTrackerTestTwoBackgroundFiltersReduceOcclusionTwice);
 
 template <class Types>
-class OcclusionTrackerTestDontOccludePixelsNeededForBackgroundFilterWithClip :
-    public OcclusionTrackerTest<Types> {
+class OcclusionTrackerTestDontOccludePixelsNeededForBackgroundFilterWithClip
+    : public OcclusionTrackerTest<Types> {
  protected:
+  explicit
   OcclusionTrackerTestDontOccludePixelsNeededForBackgroundFilterWithClip(
       bool opaque_layers)
       : OcclusionTrackerTest<Types>(opaque_layers) {}
@@ -4013,10 +4023,10 @@ ALL_OCCLUSIONTRACKER_TEST(
     OcclusionTrackerTestDontOccludePixelsNeededForBackgroundFilterWithClip);
 
 template <class Types>
-class OcclusionTrackerTestDontReduceOcclusionBelowBackgroundFilter :
-    public OcclusionTrackerTest<Types> {
+class OcclusionTrackerTestDontReduceOcclusionBelowBackgroundFilter
+    : public OcclusionTrackerTest<Types> {
  protected:
-  OcclusionTrackerTestDontReduceOcclusionBelowBackgroundFilter(
+  explicit OcclusionTrackerTestDontReduceOcclusionBelowBackgroundFilter(
       bool opaque_layers)
       : OcclusionTrackerTest<Types>(opaque_layers) {}
   void RunMyTest() {
@@ -4091,10 +4101,10 @@ ALL_OCCLUSIONTRACKER_TEST(
     OcclusionTrackerTestDontReduceOcclusionBelowBackgroundFilter);
 
 template <class Types>
-class OcclusionTrackerTestDontReduceOcclusionIfBackgroundFilterIsOccluded :
-    public OcclusionTrackerTest<Types> {
+class OcclusionTrackerTestDontReduceOcclusionIfBackgroundFilterIsOccluded
+    : public OcclusionTrackerTest<Types> {
  protected:
-  OcclusionTrackerTestDontReduceOcclusionIfBackgroundFilterIsOccluded(
+  explicit OcclusionTrackerTestDontReduceOcclusionIfBackgroundFilterIsOccluded(
       bool opaque_layers)
       : OcclusionTrackerTest<Types>(opaque_layers) {}
   void RunMyTest() {
@@ -4182,10 +4192,10 @@ ALL_OCCLUSIONTRACKER_TEST(
     OcclusionTrackerTestDontReduceOcclusionIfBackgroundFilterIsOccluded);
 
 template <class Types>
-class
-    OcclusionTrackerTestReduceOcclusionWhenBackgroundFilterIsPartiallyOccluded :
-    public OcclusionTrackerTest<Types> {
+class OcclusionTrackerTestReduceOcclusionWhenBackgroundFilterIsPartiallyOccluded
+    : public OcclusionTrackerTest<Types> {
  protected:
+  explicit
   OcclusionTrackerTestReduceOcclusionWhenBackgroundFilterIsPartiallyOccluded(
       bool opaque_layers)
       : OcclusionTrackerTest<Types>(opaque_layers) {}
@@ -4299,10 +4309,10 @@ ALL_OCCLUSIONTRACKER_TEST(
     OcclusionTrackerTestReduceOcclusionWhenBackgroundFilterIsPartiallyOccluded);
 
 template <class Types>
-class OcclusionTrackerTestMinimumTrackingSize :
-    public OcclusionTrackerTest<Types> {
+class OcclusionTrackerTestMinimumTrackingSize
+    : public OcclusionTrackerTest<Types> {
  protected:
-  OcclusionTrackerTestMinimumTrackingSize(bool opaque_layers)
+  explicit OcclusionTrackerTestMinimumTrackingSize(bool opaque_layers)
       : OcclusionTrackerTest<Types>(opaque_layers) {}
   void RunMyTest() {
     gfx::Size tracking_size(100, 100);
@@ -4346,10 +4356,11 @@ class OcclusionTrackerTestMinimumTrackingSize :
 ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestMinimumTrackingSize);
 
 template <class Types>
-class OcclusionTrackerTestViewportClipIsExternalOcclusion :
-    public OcclusionTrackerTest<Types> {
+class OcclusionTrackerTestViewportClipIsExternalOcclusion
+    : public OcclusionTrackerTest<Types> {
  protected:
-  OcclusionTrackerTestViewportClipIsExternalOcclusion(bool opaque_layers)
+  explicit OcclusionTrackerTestViewportClipIsExternalOcclusion(
+      bool opaque_layers)
       : OcclusionTrackerTest<Types>(opaque_layers) {}
   void RunMyTest() {
     typename Types::ContentLayerType* parent = this->CreateRoot(
@@ -4422,11 +4433,13 @@ class OcclusionTrackerTestViewportClipIsExternalOcclusion :
 };
 
 ALL_OCCLUSIONTRACKER_TEST(
-    OcclusionTrackerTestViewportClipIsExternalOcclusion) template <class Types>
-class OcclusionTrackerTestLayerClipIsExternalOcclusion :
-    public OcclusionTrackerTest<Types> {
+    OcclusionTrackerTestViewportClipIsExternalOcclusion)
+
+template <class Types>
+class OcclusionTrackerTestLayerClipIsExternalOcclusion
+    : public OcclusionTrackerTest<Types> {
  protected:
-  OcclusionTrackerTestLayerClipIsExternalOcclusion(bool opaque_layers)
+  explicit OcclusionTrackerTestLayerClipIsExternalOcclusion(bool opaque_layers)
       : OcclusionTrackerTest<Types>(opaque_layers) {}
   void RunMyTest() {
     typename Types::ContentLayerType* parent = this->CreateRoot(

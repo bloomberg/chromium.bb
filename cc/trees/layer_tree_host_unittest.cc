@@ -4,6 +4,8 @@
 
 #include "cc/trees/layer_tree_host.h"
 
+#include <algorithm>
+
 #include "base/synchronization/lock.h"
 #include "cc/animation/timing_function.h"
 #include "cc/layers/content_layer.h"
@@ -443,7 +445,6 @@ MULTI_THREAD_TEST_F(LayerTreeHostTestAbortFrameWhenInvisible);
 // to the impl side.
 class LayerTreeHostTestCommit : public LayerTreeHostTest {
  public:
-
   LayerTreeHostTestCommit() {}
 
   virtual void BeginTest() OVERRIDE {
@@ -509,7 +510,6 @@ MULTI_THREAD_TEST_F(LayerTreeHostTestStartPageScaleAnimation);
 
 class LayerTreeHostTestSetVisible : public LayerTreeHostTest {
  public:
-
   LayerTreeHostTestSetVisible() : num_draws_(0) {}
 
   virtual void BeginTest() OVERRIDE {

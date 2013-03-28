@@ -24,8 +24,6 @@
 #include "third_party/skia/include/effects/SkColorMatrixFilter.h"
 #include "ui/gfx/transform.h"
 
-using namespace WebKit;
-
 using testing::_;
 using testing::AnyNumber;
 using testing::AtLeast;
@@ -34,6 +32,19 @@ using testing::InSequence;
 using testing::Mock;
 using testing::Return;
 using testing::StrictMock;
+using WebKit::WebGraphicsMemoryAllocation;
+using WebKit::WebGLId;
+using WebKit::WebString;
+using WebKit::WGC3Dbitfield;
+using WebKit::WGC3Dboolean;
+using WebKit::WGC3Dchar;
+using WebKit::WGC3Denum;
+using WebKit::WGC3Dfloat;
+using WebKit::WGC3Dint;
+using WebKit::WGC3Dintptr;
+using WebKit::WGC3Dsizei;
+using WebKit::WGC3Dsizeiptr;
+using WebKit::WGC3Duint;
 
 namespace cc {
 
@@ -85,8 +96,8 @@ namespace {
 TEST_F(GLRendererShaderPixelTest, AllShadersCompile) { TestShaders(); }
 #endif
 
-class FrameCountingMemoryAllocationSettingContext :
-    public TestWebGraphicsContext3D {
+class FrameCountingMemoryAllocationSettingContext
+    : public TestWebGraphicsContext3D {
  public:
   FrameCountingMemoryAllocationSettingContext() : frame_(0) {}
 
@@ -327,8 +338,9 @@ TEST_F(GLRendererTest, SuggestBackbufferYesWhenItAlreadyExistsShouldDoNothing) {
 // Suggest discarding framebuffer when one exists and the renderer is not
 // visible.
 // Expected: it is discarded and damage tracker is reset.
-TEST_F(GLRendererTest,
-       SuggestBackbufferNoShouldDiscardBackbufferAndDamageRootLayerWhileNotVisible) {
+TEST_F(
+    GLRendererTest,
+    SuggestBackbufferNoShouldDiscardBackbufferAndDamageRootLayerIfNotVisible) {
   renderer_.SetVisible(false);
   context()->SetMemoryAllocation(suggest_have_backbuffer_no_);
   EXPECT_EQ(1, mock_client_.set_full_root_layer_damage_count());
@@ -444,8 +456,7 @@ class ForbidSynchronousCallContext : public TestWebGraphicsContext3D {
     if (pname == GL_MAX_TEXTURE_SIZE) {
       // MAX_TEXTURE_SIZE is cached client side, so it's OK to query.
       *value = 1024;
-    }
-    else {
+    } else {
       ADD_FAILURE();
     }
   }
@@ -596,8 +607,8 @@ TEST(GLRendererTest2, InitializationWithQuicklyLostContextDoesNotAssert) {
   renderer.Initialize();
 }
 
-class ContextThatDoesNotSupportMemoryManagmentExtensions :
-    public TestWebGraphicsContext3D {
+class ContextThatDoesNotSupportMemoryManagmentExtensions
+    : public TestWebGraphicsContext3D {
  public:
   ContextThatDoesNotSupportMemoryManagmentExtensions() {}
 
@@ -610,8 +621,9 @@ class ContextThatDoesNotSupportMemoryManagmentExtensions :
   virtual WebString getString(WebKit::WGC3Denum name) { return WebString(); }
 };
 
-TEST(GLRendererTest2,
-     InitializationWithoutGpuMemoryManagerExtensionSupportShouldDefaultToNonZeroAllocation) {
+TEST(
+    GLRendererTest2,
+    InitWithoutGpuMemManagerExtensionSupportShouldDefaultToNonZeroAllocation) {
   FakeRendererClient mock_client;
   scoped_ptr<OutputSurface> output_surface(
       FakeOutputSurface::Create3d(scoped_ptr<WebKit::WebGraphicsContext3D>(
@@ -684,8 +696,8 @@ TEST(GLRendererTest2, TransparentBackground) {
   EXPECT_EQ(1, context->clear_count());
 }
 
-class VisibilityChangeIsLastCallTrackingContext :
-    public TestWebGraphicsContext3D {
+class VisibilityChangeIsLastCallTrackingContext
+    : public TestWebGraphicsContext3D {
  public:
   VisibilityChangeIsLastCallTrackingContext()
       : last_call_was_set_visibility_(0) {}
@@ -1333,8 +1345,8 @@ TEST_F(MockOutputSurfaceTestWithPartialSwap, DrawFrameAndSwap) {
   renderer_.SwapBuffers();
 }
 
-class MockOutputSurfaceTestWithSendCompositorFrame :
-    public MockOutputSurfaceTest {
+class MockOutputSurfaceTestWithSendCompositorFrame
+    : public MockOutputSurfaceTest {
  public:
   virtual const LayerTreeSettings& Settings() const OVERRIDE {
     static LayerTreeSettings fake_settings;

@@ -5,8 +5,6 @@
 #ifndef CC_OUTPUT_OUTPUT_SURFACE_H_
 #define CC_OUTPUT_OUTPUT_SURFACE_H_
 
-#define USE_CC_OUTPUT_SURFACE // TODO(danakj): Remove this.
-
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
@@ -32,9 +30,9 @@ class OutputSurfaceClient;
 //      surface (on the compositor thread) and go back to step 1.
 class CC_EXPORT OutputSurface {
  public:
-  OutputSurface(scoped_ptr<WebKit::WebGraphicsContext3D> context3d);
+  explicit OutputSurface(scoped_ptr<WebKit::WebGraphicsContext3D> context3d);
 
-  OutputSurface(scoped_ptr<cc::SoftwareOutputDevice> software_device);
+  explicit OutputSurface(scoped_ptr<cc::SoftwareOutputDevice> software_device);
 
   OutputSurface(scoped_ptr<WebKit::WebGraphicsContext3D> context3d,
                 scoped_ptr<cc::SoftwareOutputDevice> software_device);
@@ -70,12 +68,12 @@ class CC_EXPORT OutputSurface {
   // thread-specific data for the output surface can be initialized, since from
   // this point on the output surface will only be used on the compositor
   // thread.
-  virtual bool BindToClient(OutputSurfaceClient*);
+  virtual bool BindToClient(OutputSurfaceClient* client);
 
   // Sends frame data to the parent compositor. This should only be called when
   // capabilities().has_parent_compositor. The implementation may destroy or
   // steal the contents of the CompositorFrame passed in.
-  virtual void SendFrameToParentCompositor(CompositorFrame*);
+  virtual void SendFrameToParentCompositor(CompositorFrame* frame);
 
   virtual void EnsureBackbuffer();
   virtual void DiscardBackbuffer();

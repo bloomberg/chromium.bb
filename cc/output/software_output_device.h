@@ -52,4 +52,4 @@ class CC_EXPORT SoftwareOutputDevice {
 
 }  // namespace cc
 
-#endif // CC_OUTPUT_SOFTWARE_OUTPUT_DEVICE_H_
+#endif  // CC_OUTPUT_SOFTWARE_OUTPUT_DEVICE_H_

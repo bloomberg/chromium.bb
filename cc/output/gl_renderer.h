@@ -32,16 +32,16 @@ class GeometryBinding;
 class ScopedEnsureFramebufferAllocation;
 
 // Class that handles drawing of composited render layers using GL.
-class CC_EXPORT GLRenderer :
-    public DirectRenderer,
-    public NON_EXPORTED_BASE(
-        WebKit::WebGraphicsContext3D::
-            WebGraphicsSwapBuffersCompleteCallbackCHROMIUM),
-    public NON_EXPORTED_BASE(
-        WebKit::WebGraphicsContext3D::
-            WebGraphicsMemoryAllocationChangedCallbackCHROMIUM),
-    public NON_EXPORTED_BASE(
-        WebKit::WebGraphicsContext3D::WebGraphicsContextLostCallback) {
+class CC_EXPORT GLRenderer
+    : public DirectRenderer,
+      public NON_EXPORTED_BASE(
+          WebKit::WebGraphicsContext3D::
+              WebGraphicsSwapBuffersCompleteCallbackCHROMIUM),
+      public NON_EXPORTED_BASE(
+          WebKit::WebGraphicsContext3D::
+              WebGraphicsMemoryAllocationChangedCallbackCHROMIUM),
+      public NON_EXPORTED_BASE(
+          WebKit::WebGraphicsContext3D::WebGraphicsContextLostCallback) {
  public:
   static scoped_ptr<GLRenderer> Create(RendererClient* client,
                                        OutputSurface* output_surface,
@@ -364,11 +364,11 @@ class CC_EXPORT GLRenderer :
 
 #if DEBUG_GL_CALLS && !defined(NDEBUG)
 #define GLC(context, x)                                                        \
-  (x, GLRenderer::DebugGLCall (&* context, #x, __FILE__, __LINE__))
+  (x, GLRenderer::DebugGLCall(&* context, #x, __FILE__, __LINE__))
 #else
 #define GLC(context, x) (x)
 #endif
 
-}
+}  // namespace cc
 
 #endif  // CC_OUTPUT_GL_RENDERER_H_

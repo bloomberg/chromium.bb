@@ -126,7 +126,7 @@ void VideoLayerImpl::WillDrawInternal(ResourceProvider* resource_provider) {
     return;
   }
 
-  // TODO: If we're in software compositing mode, we do the YUV -> RGB
+  // TODO(skaslev): If we're in software compositing mode, we do the YUV -> RGB
   // conversion here. That involves an extra copy of each frame to a bitmap.
   // Obviously, this is suboptimal and should be addressed once ubercompositor
   // starts shaping up.
@@ -161,8 +161,8 @@ void VideoLayerImpl::AppendQuads(QuadSink* quad_sink,
       quad_sink->UseSharedQuadState(CreateSharedQuadState());
   AppendDebugBorderQuad(quad_sink, shared_quad_state, append_quads_data);
 
-  // TODO: When we pass quads out of process, we need to double-buffer, or
-  // otherwise synchonize use of all textures in the quad.
+  // TODO(danakj): When we pass quads out of process, we need to double-buffer,
+  // or otherwise synchonize use of all textures in the quad.
 
   gfx::Rect quad_rect(content_bounds());
   gfx::Rect opaque_rect(contents_opaque() ? quad_rect : gfx::Rect());
@@ -314,9 +314,9 @@ void VideoLayerImpl::DidDraw(ResourceProvider* resource_provider) {
   if (format_ == media::VideoFrame::NATIVE_TEXTURE &&
       frame_->texture_target() == GL_TEXTURE_2D) {
     DCHECK(external_texture_resource_);
-    // TODO: the following assert will not be true when sending resources to a
-    // parent compositor. We will probably need to hold on to frame_ for
-    // longer, and have several "current frames" in the pipeline.
+    // TODO(danakj): the following assert will not be true when sending
+    // resources to a parent compositor. We will probably need to hold on to
+    // frame_ for longer, and have several "current frames" in the pipeline.
     DCHECK(!resource_provider->InUseByConsumer(external_texture_resource_));
     resource_provider->DeleteResource(external_texture_resource_);
     external_texture_resource_ = 0;
@@ -397,8 +397,8 @@ bool VideoLayerImpl::SetupFramePlanes(ResourceProvider* resource_provider) {
     VideoLayerImpl::FramePlane* plane = &frame_planes_[plane_index];
 
     gfx::Size required_texture_size = VideoFrameDimension(frame_, plane_index);
-    // TODO: Remove the test against max_texture_size when tiled layers are
-    // implemented.
+    // TODO(danakj): Remove the test against max_texture_size when tiled layers
+    // are implemented.
     if (required_texture_size.IsEmpty() ||
         required_texture_size.width() > max_texture_size ||
         required_texture_size.height() > max_texture_size)

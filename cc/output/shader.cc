@@ -4,6 +4,8 @@
 
 #include "cc/output/shader.h"
 
+#include <algorithm>
+
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
@@ -40,7 +42,7 @@ static void GetProgramUniformLocations(WebGraphicsContext3D* context,
   }
 }
 
-}
+}  // namespace
 
 VertexShaderPosTex::VertexShaderPosTex()
       : matrix_location_(-1) {}
@@ -64,7 +66,7 @@ void VertexShaderPosTex::Init(WebGraphicsContext3D* context,
                              base_uniform_index);
 
   matrix_location_ = locations[0];
-  DCHECK(matrix_location_ != -1);
+  DCHECK_NE(matrix_location_, -1);
 }
 
 std::string VertexShaderPosTex::GetShaderString() const {
@@ -77,7 +79,7 @@ std::string VertexShaderPosTex::GetShaderString() const {
       gl_Position = matrix * a_position;
       v_texCoord = a_texCoord;
     }
-  );
+  );  // NOLINT(whitespace/parens)
 }
 
 VertexShaderPosTexYUVStretch::VertexShaderPosTexYUVStretch()
@@ -120,7 +122,7 @@ std::string VertexShaderPosTexYUVStretch::GetShaderString() const {
         gl_Position = matrix * a_position;
         v_texCoord = a_texCoord * texScale;
     }
-  );
+  );  // NOLINT(whitespace/parens)
 }
 
 VertexShaderPos::VertexShaderPos()
@@ -145,7 +147,7 @@ void VertexShaderPos::Init(WebGraphicsContext3D* context,
                              base_uniform_index);
 
   matrix_location_ = locations[0];
-  DCHECK(matrix_location_ != -1);
+  DCHECK_NE(matrix_location_, -1);
 }
 
 std::string VertexShaderPos::GetShaderString() const {
@@ -155,7 +157,7 @@ std::string VertexShaderPos::GetShaderString() const {
     void main() {
         gl_Position = matrix * a_position;
     }
-  );
+  );  // NOLINT(whitespace/parens)
 }
 
 VertexShaderPosTexTransform::VertexShaderPosTexTransform()
@@ -201,12 +203,12 @@ std::string VertexShaderPosTexTransform::GetShaderString() const {
     varying vec2 v_texCoord;
     varying float v_alpha;
     void main() {
-      gl_Position = matrix[int(a_index * 0.25)] * a_position;
-      vec4 texTrans = texTransform[int(a_index * 0.25)];
+      gl_Position = matrix[int(a_index * 0.25)] * a_position;  // NOLINT
+      vec4 texTrans = texTransform[int(a_index * 0.25)];  // NOLINT
       v_texCoord = a_texCoord * texTrans.zw + texTrans.xy;
-      v_alpha = opacity[int(a_index)];
+      v_alpha = opacity[int(a_index)]; // NOLINT
     }
-  );
+  );  // NOLINT(whitespace/parens)
 }
 
 std::string VertexShaderPosTexTransformFlip::GetShaderString() const {
@@ -220,13 +222,13 @@ std::string VertexShaderPosTexTransformFlip::GetShaderString() const {
     varying vec2 v_texCoord;
     varying float v_alpha;
     void main() {
-      gl_Position = matrix[int(a_index * 0.25)] * a_position;
-      vec4 texTrans = texTransform[int(a_index * 0.25)];
+      gl_Position = matrix[int(a_index * 0.25)] * a_position;  // NOLINT
+      vec4 texTrans = texTransform[int(a_index * 0.25)];  // NOLINT
       v_texCoord = a_texCoord * texTrans.zw + texTrans.xy;
       v_texCoord.y = 1.0 - v_texCoord.y;
-      v_alpha = opacity[int(a_index)];
+      v_alpha = opacity[int(a_index)];  // NOLINT
     }
-  );
+  );  // NOLINT(whitespace/parens)
 }
 
 std::string VertexShaderPosTexIdentity::GetShaderString() const {
@@ -237,7 +239,7 @@ std::string VertexShaderPosTexIdentity::GetShaderString() const {
       gl_Position = a_position;
       v_texCoord = (a_position.xy + vec2(1.0)) * 0.5;
     }
-  );
+  );  // NOLINT(whitespace/parens)
 }
 
 VertexShaderQuad::VertexShaderQuad()
@@ -291,7 +293,7 @@ std::string VertexShaderQuad::GetShaderString() const {
       gl_Position = matrix * pos;
       v_texCoord = (pos.xy + vec2(0.5)) * texScale;
     }
-  );
+  );  // NOLINT(whitespace/parens)
 }
 
 VertexShaderTile::VertexShaderTile()
@@ -344,7 +346,7 @@ std::string VertexShaderTile::GetShaderString() const {
       gl_Position = matrix * pos;
       v_texCoord = pos.xy * vertexTexTransform.zw + vertexTexTransform.xy;
     }
-  );
+  );  // NOLINT(whitespace/parens)
 }
 
 VertexShaderVideoTransform::VertexShaderVideoTransform()
@@ -387,7 +389,7 @@ std::string VertexShaderVideoTransform::GetShaderString() const {
         v_texCoord =
             vec2(texMatrix * vec4(a_texCoord.x, 1.0 - a_texCoord.y, 0.0, 1.0));
     }
-  );
+  );  // NOLINT(whitespace/parens)
 }
 
 FragmentTexAlphaBinding::FragmentTexAlphaBinding()
@@ -475,7 +477,7 @@ void FragmentTexOpaqueBinding::Init(WebGraphicsContext3D* context,
                              base_uniform_index);
 
   sampler_location_ = locations[0];
-  DCHECK(sampler_location_ != -1);
+  DCHECK_NE(sampler_location_, -1);
 }
 
 FragmentShaderOESImageExternal::FragmentShaderOESImageExternal()
@@ -514,7 +516,7 @@ std::string FragmentShaderOESImageExternal::GetShaderString() const {
            vec4 texColor = texture2D(s_texture, v_texCoord);
            gl_FragColor = vec4(texColor.x, texColor.y, texColor.z, texColor.w);
          }
-      );
+      );  // NOLINT(whitespace/parens)
 }
 
 std::string FragmentShaderRGBATexAlpha::GetShaderString() const {
@@ -527,7 +529,7 @@ std::string FragmentShaderRGBATexAlpha::GetShaderString() const {
       vec4 texColor = texture2D(s_texture, v_texCoord);
       gl_FragColor = texColor * alpha;
     }
-  );
+  );  // NOLINT(whitespace/parens)
 }
 
 std::string FragmentShaderRGBATexColorMatrixAlpha::GetShaderString() const {
@@ -547,7 +549,7 @@ std::string FragmentShaderRGBATexColorMatrixAlpha::GetShaderString() const {
       texColor = clamp(texColor, 0.0, 1.0);
       gl_FragColor = texColor * alpha;
     }
-  );
+  );  // NOLINT(whitespace/parens)
 }
 
 std::string FragmentShaderRGBATexVaryingAlpha::GetShaderString() const {
@@ -560,7 +562,7 @@ std::string FragmentShaderRGBATexVaryingAlpha::GetShaderString() const {
       vec4 texColor = texture2D(s_texture, v_texCoord);
       gl_FragColor = texColor * v_alpha;
     }
-  );
+  );  // NOLINT(whitespace/parens)
 }
 
 std::string FragmentShaderRGBATexRectVaryingAlpha::GetShaderString() const {
@@ -574,7 +576,7 @@ std::string FragmentShaderRGBATexRectVaryingAlpha::GetShaderString() const {
           vec4 texColor = texture2DRect(s_texture, v_texCoord);
           gl_FragColor = texColor * v_alpha;
         }
-      );
+      );  // NOLINT(whitespace/parens)
 }
 
 std::string FragmentShaderRGBATexOpaque::GetShaderString() const {
@@ -586,7 +588,7 @@ std::string FragmentShaderRGBATexOpaque::GetShaderString() const {
       vec4 texColor = texture2D(s_texture, v_texCoord);
       gl_FragColor = vec4(texColor.rgb, 1.0);
     }
-  );
+  );  // NOLINT(whitespace/parens)
 }
 
 std::string FragmentShaderRGBATex::GetShaderString() const {
@@ -597,7 +599,7 @@ std::string FragmentShaderRGBATex::GetShaderString() const {
     void main() {
       gl_FragColor = texture2D(s_texture, v_texCoord);
     }
-  );
+  );  // NOLINT(whitespace/parens)
 }
 
 std::string FragmentShaderRGBATexSwizzleAlpha::GetShaderString() const {
@@ -611,7 +613,7 @@ std::string FragmentShaderRGBATexSwizzleAlpha::GetShaderString() const {
         gl_FragColor =
             vec4(texColor.z, texColor.y, texColor.x, texColor.w) * alpha;
     }
-  );
+  );  // NOLINT(whitespace/parens)
 }
 
 std::string FragmentShaderRGBATexSwizzleOpaque::GetShaderString() const {
@@ -623,7 +625,7 @@ std::string FragmentShaderRGBATexSwizzleOpaque::GetShaderString() const {
       vec4 texColor = texture2D(s_texture, v_texCoord);
       gl_FragColor = vec4(texColor.z, texColor.y, texColor.x, 1.0);
     }
-  );
+  );  // NOLINT(whitespace/parens)
 }
 
 FragmentShaderRGBATexAlphaAA::FragmentShaderRGBATexAlphaAA()
@@ -679,7 +681,7 @@ std::string FragmentShaderRGBATexAlphaAA::GetShaderString() const {
       gl_FragColor = texColor * alpha * min(min(a0, a2) * min(a1, a3),
                                             min(a4, a6) * min(a5, a7));
     }
-  );
+  );  // NOLINT(whitespace/parens)
 }
 
 FragmentTexClampAlphaAABinding::FragmentTexClampAlphaAABinding()
@@ -741,7 +743,7 @@ std::string FragmentShaderRGBATexClampAlphaAA::GetShaderString() const {
       gl_FragColor = texColor * alpha * min(min(a0, a2) * min(a1, a3),
                                             min(a4, a6) * min(a5, a7));
     }
-  );
+  );  // NOLINT(whitespace/parens)
 }
 
 std::string FragmentShaderRGBATexClampSwizzleAlphaAA::GetShaderString() const {
@@ -768,7 +770,7 @@ std::string FragmentShaderRGBATexClampSwizzleAlphaAA::GetShaderString() const {
       gl_FragColor = vec4(texColor.z, texColor.y, texColor.x, texColor.w) *
           alpha * min(min(a0, a2) * min(a1, a3), min(a4, a6) * min(a5, a7));
     }
-  );
+  );  // NOLINT(whitespace/parens)
 }
 
 FragmentShaderRGBATexAlphaMask::FragmentShaderRGBATexAlphaMask()
@@ -827,7 +829,7 @@ std::string FragmentShaderRGBATexAlphaMask::GetShaderString() const {
       gl_FragColor = vec4(texColor.x, texColor.y,
                           texColor.z, texColor.w) * alpha * maskColor.w;
     }
-  );
+  );  // NOLINT(whitespace/parens)
 }
 
 FragmentShaderRGBATexAlphaMaskAA::FragmentShaderRGBATexAlphaMaskAA()
@@ -900,10 +902,11 @@ std::string FragmentShaderRGBATexAlphaMaskAA::GetShaderString() const {
           alpha * maskColor.w * min(min(a0, a2) * min(a1, a3),
                                     min(a4, a6) * min(a5, a7));
     }
-  );
+  );  // NOLINT(whitespace/parens)
 }
 
-FragmentShaderRGBATexAlphaMaskColorMatrixAA::FragmentShaderRGBATexAlphaMaskColorMatrixAA()
+FragmentShaderRGBATexAlphaMaskColorMatrixAA::
+    FragmentShaderRGBATexAlphaMaskColorMatrixAA()
     : sampler_location_(-1)
     , mask_sampler_location_(-1)
     , alpha_location_(-1)
@@ -951,7 +954,8 @@ void FragmentShaderRGBATexAlphaMaskColorMatrixAA::Init(
          color_matrix_location_ != -1 && color_offset_location_ != -1);
 }
 
-std::string FragmentShaderRGBATexAlphaMaskColorMatrixAA::GetShaderString() const {
+std::string FragmentShaderRGBATexAlphaMaskColorMatrixAA::GetShaderString()
+    const {
   return SHADER(
     precision mediump float;
     varying vec2 v_texCoord;
@@ -988,10 +992,11 @@ std::string FragmentShaderRGBATexAlphaMaskColorMatrixAA::GetShaderString() const
           alpha * maskColor.w * min(min(a0, a2) * min(a1, a3), min(a4, a6) *
           min(a5, a7));
     }
-  );
+  );  // NOLINT(whitespace/parens)
 }
 
-FragmentShaderRGBATexAlphaColorMatrixAA::FragmentShaderRGBATexAlphaColorMatrixAA()
+FragmentShaderRGBATexAlphaColorMatrixAA::
+    FragmentShaderRGBATexAlphaColorMatrixAA()
     : sampler_location_(-1)
     , alpha_location_(-1)
     , edge_location_(-1)
@@ -1057,10 +1062,11 @@ std::string FragmentShaderRGBATexAlphaColorMatrixAA::GetShaderString() const {
       gl_FragColor = vec4(texColor.x, texColor.y, texColor.z, texColor.w) *
           alpha * min(min(a0, a2) * min(a1, a3), min(a4, a6) * min(a5, a7));
     }
-  );
+  );  // NOLINT(whitespace/parens)
 }
 
-FragmentShaderRGBATexAlphaMaskColorMatrix::FragmentShaderRGBATexAlphaMaskColorMatrix()
+FragmentShaderRGBATexAlphaMaskColorMatrix::
+    FragmentShaderRGBATexAlphaMaskColorMatrix()
     : sampler_location_(-1)
     , mask_sampler_location_(-1)
     , alpha_location_(-1)
@@ -1126,7 +1132,7 @@ std::string FragmentShaderRGBATexAlphaMaskColorMatrix::GetShaderString() const {
       gl_FragColor = vec4(texColor.x, texColor.y, texColor.z, texColor.w) *
           alpha * maskColor.w;
     }
-  );
+  );  // NOLINT(whitespace/parens)
 }
 
 FragmentShaderYUVVideo::FragmentShaderYUVVideo()
@@ -1189,9 +1195,9 @@ std::string FragmentShaderYUVVideo::GetShaderString() const {
       float v_unsigned = texture2D(v_texture, v_texCoord).x;
       vec3 yuv = vec3(y_raw, u_unsigned, v_unsigned) + yuv_adj;
       vec3 rgb = yuv_matrix * yuv;
-      gl_FragColor = vec4(rgb, float(1)) * alpha;
+      gl_FragColor = vec4(rgb, float(1)) * alpha;  // NOLINT
     }
-  );
+  );  // NOLINT(whitespace/parens)
 }
 
 FragmentShaderColor::FragmentShaderColor()
@@ -1216,7 +1222,7 @@ void FragmentShaderColor::Init(WebGraphicsContext3D* context,
                              base_uniform_index);
 
   color_location_ = locations[0];
-  DCHECK(color_location_ != -1);
+  DCHECK_NE(color_location_, -1);
 }
 
 std::string FragmentShaderColor::GetShaderString() const {
@@ -1226,7 +1232,7 @@ std::string FragmentShaderColor::GetShaderString() const {
     void main() {
       gl_FragColor = color;
     }
-  );
+  );  // NOLINT(whitespace/parens)
 }
 
 FragmentShaderColorAA::FragmentShaderColorAA()
@@ -1275,7 +1281,7 @@ std::string FragmentShaderColorAA::GetShaderString() const {
       gl_FragColor = color * min(min(a0, a2) * min(a1, a3),
                                  min(a4, a6) * min(a5, a7));
     }
-  );
+  );  // NOLINT(whitespace/parens)
 }
 
 FragmentShaderCheckerboard::FragmentShaderCheckerboard()
@@ -1332,7 +1338,7 @@ std::string FragmentShaderCheckerboard::GetShaderString() const {
       float picker = abs(coord.x - coord.y);
       gl_FragColor = mix(color1, color2, picker) * alpha;
     }
-  );
+  );  // NOLINT(whitespace/parens)
 }
 
 }  // namespace cc

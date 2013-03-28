@@ -5317,7 +5317,7 @@ TEST(LayerTreeHostCommonTest, HitTestingForSimpleClippedLayer) {
         LayerImpl::Create(host_impl.active_tree(), 123);
     // this layer is positioned, and hit testing should correctly know where the
     // layer is located.
-    gfx::PointF position( 25.f, 25.f);
+    gfx::PointF position(25.f, 25.f);
     gfx::Size bounds(50, 50);
     SetLayerPropertiesForTesting(clipping_layer.get(),
                                  identity_matrix,

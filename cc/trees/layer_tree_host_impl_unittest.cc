@@ -1478,10 +1478,10 @@ TEST_F(LayerTreeHostImplTest, ScrollRootAndChangePageScaleOnMainThread) {
 
   // The page scale delta remains constant because the impl thread did not
   // scale.
-  // TODO: If possible, use gfx::Transform() or Skia equality functions. At
-  //       the moment we avoid that because skia does exact bit-wise equality
-  //       checking that does not consider -0 == +0.
-  //       http://code.google.com/p/chromium/issues/detail?id=162747
+  // TODO(shawnsingh): If possible, use gfx::Transform() or Skia equality
+  //   functions. At the moment we avoid that because skia does exact bit-wise
+  //   equality checking that does not consider -0 == +0.
+  //   http://code.google.com/p/chromium/issues/detail?id=162747
   EXPECT_EQ(1.0,
             host_impl_->active_tree()->root_layer()->
                 impl_transform().matrix().getDouble(0, 0));

@@ -123,7 +123,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandlerClient,
 
   struct CC_EXPORT FrameData : public RenderPassSink {
     FrameData();
-    ~FrameData();
+    virtual ~FrameData();
 
     std::vector<gfx::Rect> occluding_screen_space_rects;
     std::vector<gfx::Rect> non_occluding_screen_space_rects;

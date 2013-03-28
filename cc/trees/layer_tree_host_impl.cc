@@ -1463,8 +1463,8 @@ gfx::Vector2dF LayerTreeHostImpl::ScrollLayerWithViewportSpaceDelta(
       gfx::Transform::kSkipInitialization);
   bool did_invert = layer_impl->screen_space_transform().GetInverse(
       &inverse_screen_space_transform);
-  // TODO: With the advent of impl-side crolling for non-root layers, we may
-  // need to explicitly handle uninvertible transforms here.
+  // TODO(shawnsingh): With the advent of impl-side crolling for non-root
+  // layers, we may need to explicitly handle uninvertible transforms here.
   DCHECK(did_invert);
 
   gfx::PointF screen_space_point =

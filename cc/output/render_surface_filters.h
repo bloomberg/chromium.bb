@@ -35,5 +35,6 @@ class CC_EXPORT RenderSurfaceFilters {
   DISALLOW_IMPLICIT_CONSTRUCTORS(RenderSurfaceFilters);
 };
 
-}
+}  // namespace cc
+
 #endif  // CC_OUTPUT_RENDER_SURFACE_FILTERS_H_

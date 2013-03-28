@@ -4,6 +4,8 @@
 
 #include "cc/output/render_surface_filters.h"
 
+#include <algorithm>
+
 #include "base/logging.h"
 #include "skia/ext/refptr.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFilterOperation.h"

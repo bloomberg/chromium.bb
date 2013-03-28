@@ -656,7 +656,8 @@ gfx::Rect OcclusionTrackerBase<LayerType, RenderSurfaceType>::
     return content_rect;
 
   gfx::Transform draw_transform =
-      for_replica ? surface->replica_draw_transform() : surface->draw_transform();
+      for_replica ? surface->replica_draw_transform()
+                  : surface->draw_transform();
   gfx::Transform inverse_draw_transform(gfx::Transform::kSkipInitialization);
   if (!draw_transform.GetInverse(&inverse_draw_transform))
     return content_rect;

@@ -49,7 +49,6 @@ class TestLayer : public Layer {
 
 class LayerTreeHostOcclusionTest : public LayerTreeTest {
  public:
-
   LayerTreeHostOcclusionTest()
       : root_(TestLayer::Create()),
         child_(TestLayer::Create()),
@@ -106,8 +105,8 @@ class LayerTreeHostOcclusionTest : public LayerTreeTest {
 };
 
 
-class LayerTreeHostOcclusionTestOcclusionSurfaceClipping :
-    public LayerTreeHostOcclusionTest {
+class LayerTreeHostOcclusionTestOcclusionSurfaceClipping
+    : public LayerTreeHostOcclusionTest {
  public:
   virtual void SetupTree() OVERRIDE {
     // The child layer is a surface and the grand_child is opaque, but clipped
@@ -124,7 +123,7 @@ class LayerTreeHostOcclusionTestOcclusionSurfaceClipping :
 
     child_->SetMasksToBounds(true);
     child_->SetForceRenderSurface(true);
-    
+
     child_->set_expected_occlusion(gfx::Rect(0, 0, 10, 190));
     root_->set_expected_occlusion(gfx::Rect(10, 10, 10, 190));
 
@@ -136,8 +135,8 @@ class LayerTreeHostOcclusionTestOcclusionSurfaceClipping :
 SINGLE_AND_MULTI_THREAD_TEST_F(
     LayerTreeHostOcclusionTestOcclusionSurfaceClipping);
 
-class LayerTreeHostOcclusionTestOcclusionSurfaceClippingOpaque :
-    public LayerTreeHostOcclusionTest {
+class LayerTreeHostOcclusionTestOcclusionSurfaceClippingOpaque
+    : public LayerTreeHostOcclusionTest {
  public:
   virtual void SetupTree() OVERRIDE {
     // If the child layer is opaque, then it adds to the occlusion seen by the
@@ -166,8 +165,8 @@ class LayerTreeHostOcclusionTestOcclusionSurfaceClippingOpaque :
 SINGLE_AND_MULTI_THREAD_TEST_F(
     LayerTreeHostOcclusionTestOcclusionSurfaceClippingOpaque);
 
-class LayerTreeHostOcclusionTestOcclusionTwoChildren :
-    public LayerTreeHostOcclusionTest {
+class LayerTreeHostOcclusionTestOcclusionTwoChildren
+    : public LayerTreeHostOcclusionTest {
  public:
   virtual void SetupTree() OVERRIDE {
     // Add a second child to the root layer and the regions should merge
@@ -199,8 +198,8 @@ class LayerTreeHostOcclusionTestOcclusionTwoChildren :
 SINGLE_AND_MULTI_THREAD_TEST_F(
     LayerTreeHostOcclusionTestOcclusionTwoChildren);
 
-class LayerTreeHostOcclusionTestOcclusionMask :
-    public LayerTreeHostOcclusionTest {
+class LayerTreeHostOcclusionTestOcclusionMask
+    : public LayerTreeHostOcclusionTest {
  public:
   virtual void SetupTree() OVERRIDE {
     // If the child layer has a mask on it, then it shouldn't contribute to
@@ -232,8 +231,8 @@ class LayerTreeHostOcclusionTestOcclusionMask :
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostOcclusionTestOcclusionMask);
 
-class LayerTreeHostOcclusionTestOcclusionMaskBelowOcclusion :
-    public LayerTreeHostOcclusionTest {
+class LayerTreeHostOcclusionTestOcclusionMaskBelowOcclusion
+    : public LayerTreeHostOcclusionTest {
  public:
   virtual void SetupTree() OVERRIDE {
     // If the child layer with a mask is below child2, then child2 should
@@ -255,7 +254,7 @@ class LayerTreeHostOcclusionTestOcclusionMaskBelowOcclusion :
     child_->SetMasksToBounds(true);
     child_->SetForceRenderSurface(true);
     child_->SetMaskLayer(mask_.get());
-  
+
     grand_child_->set_expected_occlusion(gfx::Rect(10, 0, 10, 190));
     child_->set_expected_occlusion(gfx::Rect(0, 0, 20, 190));
     root_->set_expected_occlusion(gfx::Rect(20, 10, 10, 190));
@@ -268,8 +267,8 @@ class LayerTreeHostOcclusionTestOcclusionMaskBelowOcclusion :
 SINGLE_AND_MULTI_THREAD_TEST_F(
     LayerTreeHostOcclusionTestOcclusionMaskBelowOcclusion);
 
-class LayerTreeHostOcclusionTestOcclusionOpacity :
-    public LayerTreeHostOcclusionTest {
+class LayerTreeHostOcclusionTestOcclusionOpacity
+    : public LayerTreeHostOcclusionTest {
  public:
   virtual void SetupTree() OVERRIDE {
     // If the child layer has a non-opaque opacity, then it shouldn't
@@ -301,8 +300,8 @@ class LayerTreeHostOcclusionTestOcclusionOpacity :
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostOcclusionTestOcclusionOpacity);
 
-class LayerTreeHostOcclusionTestOcclusionOpacityBelowOcclusion :
-    public LayerTreeHostOcclusionTest {
+class LayerTreeHostOcclusionTestOcclusionOpacityBelowOcclusion
+    : public LayerTreeHostOcclusionTest {
  public:
   virtual void SetupTree() OVERRIDE {
     // If the child layer with non-opaque opacity is below child2, then
@@ -337,8 +336,8 @@ class LayerTreeHostOcclusionTestOcclusionOpacityBelowOcclusion :
 SINGLE_AND_MULTI_THREAD_TEST_F(
     LayerTreeHostOcclusionTestOcclusionOpacityBelowOcclusion);
 
-class LayerTreeHostOcclusionTestOcclusionOpacityFilter :
-    public LayerTreeHostOcclusionTest {
+class LayerTreeHostOcclusionTestOcclusionOpacityFilter
+    : public LayerTreeHostOcclusionTest {
  public:
   virtual void SetupTree() OVERRIDE {
     gfx::Transform child_transform;
@@ -381,8 +380,8 @@ class LayerTreeHostOcclusionTestOcclusionOpacityFilter :
 SINGLE_AND_MULTI_THREAD_TEST_F(
     LayerTreeHostOcclusionTestOcclusionOpacityFilter);
 
-class LayerTreeHostOcclusionTestOcclusionBlurFilter :
-    public LayerTreeHostOcclusionTest {
+class LayerTreeHostOcclusionTestOcclusionBlurFilter
+    : public LayerTreeHostOcclusionTest {
  public:
   virtual void SetupTree() OVERRIDE {
     gfx::Transform child_transform;
@@ -423,8 +422,8 @@ class LayerTreeHostOcclusionTestOcclusionBlurFilter :
 SINGLE_AND_MULTI_THREAD_TEST_F(
     LayerTreeHostOcclusionTestOcclusionBlurFilter);
 
-class LayerTreeHostOcclusionTestManySurfaces :
-    public LayerTreeHostOcclusionTest {
+class LayerTreeHostOcclusionTestManySurfaces
+    : public LayerTreeHostOcclusionTest {
  public:
   virtual void SetupTree() OVERRIDE {
     // We create enough RenderSurfaces that it will trigger Vector reallocation

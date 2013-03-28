@@ -9,10 +9,13 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/khronos/GLES2/gl2.h"
 
-using namespace WebKit;
 using testing::InSequence;
 using testing::Test;
 using testing::_;
+using WebKit::WebGLId;
+using WebKit::WGC3Denum;
+using WebKit::WGC3Dint;
+using WebKit::WGC3Dsizei;
 
 namespace cc {
 namespace {
@@ -36,7 +39,8 @@ TEST(TextureCopierTest, TestDrawArraysCopy) {
 
     EXPECT_CALL(*mock_context, disable(GL_SCISSOR_TEST));
 
-    // Here we check just some essential properties of copyTexture() to avoid mirroring the full implementation.
+    // Here we check just some essential properties of copyTexture() to avoid
+    // mirroring the full implementation.
     EXPECT_CALL(*mock_context, bindFramebuffer(GL_FRAMEBUFFER, _));
 
     // Make sure linear filtering is disabled during the copy.
@@ -51,7 +55,8 @@ TEST(TextureCopierTest, TestDrawArraysCopy) {
 
     EXPECT_CALL(*mock_context, drawArrays(_, _, _));
 
-    // Linear filtering, default framebuffer and scissor test should be restored.
+    // Linear filtering, default framebuffer and scissor test should be
+    // restored.
     EXPECT_CALL(*mock_context,
                 texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
     EXPECT_CALL(*mock_context,

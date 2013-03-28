@@ -37,9 +37,12 @@ GeometryBinding::GeometryBinding(WebKit::WebGraphicsContext3D* context,
     uint16_t data[6];
   };
 
-  COMPILE_ASSERT(sizeof(Quad) == 24 * sizeof(float), struct_is_densely_packed);
-  COMPILE_ASSERT(sizeof(QuadIndex) == 6 * sizeof(uint16_t),
-                 struct_is_densely_packed);
+  COMPILE_ASSERT(
+      sizeof(Quad) == 24 * sizeof(float),  // NOLINT(runtime/sizeof)
+      struct_is_densely_packed);
+  COMPILE_ASSERT(
+      sizeof(QuadIndex) == 6 * sizeof(uint16_t),  // NOLINT(runtime/sizeof)
+      struct_is_densely_packed);
 
   Quad quad_list[8];
   QuadIndex quad_index_list[8];
@@ -86,21 +89,28 @@ void GeometryBinding::PrepareForDraw() {
   GLC(context_, context_->bindBuffer(GL_ARRAY_BUFFER, quad_vertices_vbo_));
   GLC(context_,
       context_->vertexAttribPointer(
-          PositionAttribLocation(), 3, GL_FLOAT, false, 6 * sizeof(float), 0));
+          PositionAttribLocation(),
+          3,
+          GL_FLOAT,
+          false,
+          6 * sizeof(float),  // NOLINT(runtime/sizeof)
+          0));
   GLC(context_,
-      context_->vertexAttribPointer(TexCoordAttribLocation(),
-                                    2,
-                                    GL_FLOAT,
-                                    false,
-                                    6 * sizeof(float),
-                                    3 * sizeof(float)));
+      context_->vertexAttribPointer(
+          TexCoordAttribLocation(),
+          2,
+          GL_FLOAT,
+          false,
+          6 * sizeof(float),  // NOLINT(runtime/sizeof)
+          3 * sizeof(float)));  // NOLINT(runtime/sizeof)
   GLC(context_,
-      context_->vertexAttribPointer(TriangleIndexAttribLocation(),
-                                    1,
-                                    GL_FLOAT,
-                                    false,
-                                    6 * sizeof(float),
-                                    5 * sizeof(float)));
+      context_->vertexAttribPointer(
+          TriangleIndexAttribLocation(),
+          1,
+          GL_FLOAT,
+          false,
+          6 * sizeof(float),  // NOLINT(runtime/sizeof)
+          5 * sizeof(float)));  // NOLINT(runtime/sizeof)
   GLC(context_, context_->enableVertexAttribArray(PositionAttribLocation()));
   GLC(context_, context_->enableVertexAttribArray(TexCoordAttribLocation()));
   GLC(context_,

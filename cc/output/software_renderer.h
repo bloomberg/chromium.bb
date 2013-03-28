@@ -99,6 +99,6 @@ class CC_EXPORT SoftwareRenderer : public DirectRenderer {
   DISALLOW_COPY_AND_ASSIGN(SoftwareRenderer);
 };
 
-}
+}  // namespace cc
 
 #endif  // CC_OUTPUT_SOFTWARE_RENDERER_H_

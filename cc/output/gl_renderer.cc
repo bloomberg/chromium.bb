@@ -4,6 +4,7 @@
 
 #include "cc/output/gl_renderer.h"
 
+#include <algorithm>
 #include <set>
 #include <string>
 #include <vector>
@@ -202,7 +203,7 @@ void GLRenderer::DebugGLCall(WebGraphicsContext3D* context,
                              const char* command,
                              const char* file,
                              int line) {
-  unsigned long error = context->getError();
+  unsigned error = context->getError();
   if (error != GL_NO_ERROR)
     LOG(ERROR) << "GL command failed: File: " << file << "\n\tLine " << line
                << "\n\tcommand: " << command << ", error "
@@ -216,8 +217,8 @@ void GLRenderer::SetVisible(bool visible) {
 
   EnforceMemoryPolicy();
 
-  // TODO: Replace setVisibilityCHROMIUM() with an extension to explicitly
-  // manage front/backbuffers
+  // TODO(jamesr): Replace setVisibilityCHROMIUM() with an extension to
+  // explicitly manage front/backbuffers
   // crbug.com/116049
   if (capabilities_.using_set_visibility)
     context_->setVisibilityCHROMIUM(visible);
@@ -726,12 +727,13 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
     GrTexture* texture =
         reinterpret_cast<GrTexture*>(filter_bitmap.getTexture());
     Context()->bindTexture(GL_TEXTURE_2D, texture->getTextureHandle());
-  } else
+  } else {
     contents_resource_lock = make_scoped_ptr(
         new ResourceProvider::ScopedSamplerGL(resource_provider_,
                                               contents_texture->id(),
                                               GL_TEXTURE_2D,
                                               GL_LINEAR));
+  }
 
   int shader_quad_location = -1;
   int shader_edge_location = -1;
@@ -897,8 +899,8 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
   }
 
   if (shader_mask_sampler_location != -1) {
-    DCHECK(shader_mask_tex_coord_scale_location != 1);
-    DCHECK(shader_mask_tex_coord_offset_location != 1);
+    DCHECK_NE(shader_mask_tex_coord_scale_location, 1);
+    DCHECK_NE(shader_mask_tex_coord_offset_location, 1);
     GLC(Context(), Context()->activeTexture(GL_TEXTURE1));
     GLC(Context(), Context()->uniform1i(shader_mask_sampler_location, 1));
     GLC(Context(),
@@ -1498,9 +1500,12 @@ void GLRenderer::FlushTextureQuadCache() {
             GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE));
   }
 
-  COMPILE_ASSERT(sizeof(Float4) == 4 * sizeof(float), struct_is_densely_packed);
-  COMPILE_ASSERT(sizeof(Float16) == 16 * sizeof(float),
-                 struct_is_densely_packed);
+  COMPILE_ASSERT(
+      sizeof(Float4) == 4 * sizeof(float),  // NOLINT(runtime/sizeof)
+      struct_is_densely_packed);
+  COMPILE_ASSERT(
+      sizeof(Float16) == 16 * sizeof(float),  // NOLINT(runtime/sizeof)
+      struct_is_densely_packed);
 
   // Upload the tranforms for both points and uvs.
   GLC(context_,

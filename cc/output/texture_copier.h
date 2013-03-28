@@ -64,6 +64,6 @@ class CC_EXPORT AcceleratedTextureCopier : public TextureCopier {
   DISALLOW_COPY_AND_ASSIGN(AcceleratedTextureCopier);
 };
 
-}
+}  // namespace cc
 
 #endif  // CC_OUTPUT_TEXTURE_COPIER_H_

@@ -85,6 +85,6 @@ class CC_EXPORT Renderer {
   DISALLOW_COPY_AND_ASSIGN(Renderer);
 };
 
-}
+}  // namespace cc
 
 #endif  // CC_OUTPUT_RENDERER_H_

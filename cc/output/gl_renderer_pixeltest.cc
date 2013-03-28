@@ -392,7 +392,7 @@ class GLRendererPixelTestWithBackgroundFilter : public GLRendererPixelTest {
           false,  // is_replica
           0,  // mask_resource_id
           filter_pass_content_rect_,  // contents_changed_since_last_frame
-          gfx::RectF(), // mask_uv_rect
+          gfx::RectF(),  // mask_uv_rect
           WebKit::WebFilterOperations(),  // filters
           skia::RefPtr<SkImageFilter>(),  // filter
           background_filters_);

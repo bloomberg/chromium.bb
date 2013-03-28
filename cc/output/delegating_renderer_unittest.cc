@@ -91,7 +91,6 @@ class DelegatingRendererTestResources : public DelegatingRendererTest {
       LayerTreeHostImpl* host_impl,
       LayerTreeHostImpl::FrameData* frame,
       bool result) OVERRIDE {
-
     frame->render_passes.clear();
     frame->render_passes_by_id.clear();
 

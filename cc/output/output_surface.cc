@@ -69,7 +69,7 @@ bool OutputSurface::BindToClient(
   return true;
 }
 
-void OutputSurface::SendFrameToParentCompositor(CompositorFrame*) {
+void OutputSurface::SendFrameToParentCompositor(CompositorFrame* frame) {
   NOTIMPLEMENTED();
 }
 

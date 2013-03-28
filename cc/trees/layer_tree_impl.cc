@@ -191,7 +191,8 @@ void LayerTreeImpl::SetPageScaleDelta(float delta) {
     LayerTreeImpl* pending_tree = layer_tree_host_impl_->pending_tree();
     if (pending_tree) {
       DCHECK_EQ(1, pending_tree->sent_page_scale_delta());
-      pending_tree->SetPageScaleDelta(page_scale_delta_ / sent_page_scale_delta_);
+      pending_tree->SetPageScaleDelta(
+          page_scale_delta_ / sent_page_scale_delta_);
     }
   }
 
@@ -257,7 +258,9 @@ struct UpdateTilePrioritiesForLayer {
 };
 
 void LayerTreeImpl::UpdateDrawProperties(UpdateDrawPropertiesReason reason) {
-  if (settings().solid_color_scrollbars && IsActiveTree() && RootScrollLayer()) {
+  if (settings().solid_color_scrollbars &&
+      IsActiveTree() &&
+      RootScrollLayer()) {
     UpdateSolidColorScrollbars();
 
     // The top controls manager is incompatible with the WebKit-created cliprect
@@ -620,7 +623,8 @@ static void StartFadeInAnimation(ScrollbarLayerImpl* layer) {
   DCHECK(layer);
   float start_opacity = layer->opacity();
   LayerAnimationController* controller = layer->layer_animation_controller();
-  // TODO() It shouldn't be necessary to manually remove the old animation.
+  // TODO(wjmaclean) It shouldn't be necessary to manually remove the old
+  // animation.
   if (Animation* animation = controller->GetAnimation(Animation::Opacity))
     controller->RemoveAnimation(animation->id());
   controller->AddAnimation(MakePinchZoomFadeAnimation(start_opacity,
@@ -661,5 +665,4 @@ bool LayerTreeImpl::HasPinchZoomScrollbars() const {
          pinch_zoom_scrollbar_vertical_layer_id_ != Layer::INVALID_ID;
 }
 
-
-} // namespace cc
+}  // namespace cc

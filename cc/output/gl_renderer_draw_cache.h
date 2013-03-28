@@ -12,10 +12,14 @@
 namespace cc {
 
 // Collects 4 floats at a time for easy upload to GL.
-struct Float4 { float data[4]; };
+struct Float4 {
+  float data[4];
+};
 
 // Collects 16 floats at a time for easy upload to GL.
-struct Float16 { float data[16]; };
+struct Float16 {
+  float data[16];
+};
 
 // A cache for storing textured quads to be drawn.  Stores the minimum required
 // data to tell if two back to back draws only differ in their transform. Quads

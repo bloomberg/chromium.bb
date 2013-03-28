@@ -8,7 +8,8 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFilterOperation.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFilterOperations.h"
 
-using namespace WebKit;
+using WebKit::WebFilterOperation;
+using WebKit::WebFilterOperations;
 
 namespace cc {
 namespace {
@@ -70,7 +71,7 @@ TEST(RenderSurfaceFiltersTest, TestColorMatrixFiltersCombined) {
   // Several filters should never combine: blur, drop-shadow.
   EXPECT_FALSE(IsCombined(WebFilterOperation::createBlurFilter(3.0f)));
   EXPECT_FALSE(IsCombined(WebFilterOperation::createDropShadowFilter(
-      WebPoint(2, 2), 3.0f, 0xffffffff)));
+      gfx::Point(2, 2), 3.0f, 0xffffffff)));
 
   // sepia and hue may or may not combine depending on the value.
   EXPECT_TRUE(IsCombined(WebFilterOperation::createSepiaFilter(0.0f)));

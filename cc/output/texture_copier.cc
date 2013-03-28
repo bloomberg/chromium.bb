@@ -58,7 +58,8 @@ void AcceleratedTextureCopier::CopyTexture(Parameters parameters) {
 
 #if defined(OS_ANDROID)
   // Clear destination to improve performance on tiling GPUs.
-  // TODO: Use EXT_discard_framebuffer or skip clearing if it isn't available.
+  // TODO(epenner): Use EXT_discard_framebuffer or skip clearing if it isn't
+  // available.
   GLC(context_, context_->clear(GL_COLOR_BUFFER_BIT));
 #endif
 
@@ -74,7 +75,7 @@ void AcceleratedTextureCopier::CopyTexture(Parameters parameters) {
   if (!blit_program_->initialized())
     blit_program_->Initialize(context_, using_bind_uniforms_);
 
-  // TODO: Use EXT_framebuffer_blit if available.
+  // TODO(danakj): Use EXT_framebuffer_blit if available.
   GLC(context_, context_->useProgram(blit_program_->program()));
 
   const int kPositionAttribute = 0;

@@ -14,6 +14,9 @@ class RenderPass;
 class CC_EXPORT RenderPassSink {
  public:
   virtual void AppendRenderPass(scoped_ptr<RenderPass> render_pass) = 0;
+
+ protected:
+  virtual ~RenderPassSink() {}
 };
 
 }  // namespace cc

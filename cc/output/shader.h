@@ -195,7 +195,7 @@ class FragmentTexAlphaBinding {
 };
 
 class FragmentTexColorMatrixAlphaBinding {
-public:
+ public:
     FragmentTexColorMatrixAlphaBinding();
 
     void Init(WebKit::WebGraphicsContext3D*,
@@ -209,7 +209,7 @@ public:
     int fragment_tex_transform_location() const { return -1; }
     int sampler_location() const { return sampler_location_; }
 
-private:
+ private:
     int sampler_location_;
     int alpha_location_;
     int color_matrix_location_;
@@ -245,8 +245,9 @@ class FragmentShaderRGBATexAlpha : public FragmentTexAlphaBinding {
   std::string GetShaderString() const;
 };
 
-class FragmentShaderRGBATexColorMatrixAlpha : public FragmentTexColorMatrixAlphaBinding {
-public:
+class FragmentShaderRGBATexColorMatrixAlpha
+    : public FragmentTexColorMatrixAlphaBinding {
+ public:
     std::string GetShaderString() const;
 };
 
@@ -339,15 +340,15 @@ class FragmentTexClampAlphaAABinding {
   DISALLOW_COPY_AND_ASSIGN(FragmentTexClampAlphaAABinding);
 };
 
-class FragmentShaderRGBATexClampAlphaAA :
-  public FragmentTexClampAlphaAABinding {
+class FragmentShaderRGBATexClampAlphaAA
+    : public FragmentTexClampAlphaAABinding {
  public:
   std::string GetShaderString() const;
 };
 
 // Swizzles the red and blue component of sampled texel.
-class FragmentShaderRGBATexClampSwizzleAlphaAA :
-  public FragmentTexClampAlphaAABinding {
+class FragmentShaderRGBATexClampSwizzleAlphaAA
+    : public FragmentTexClampAlphaAABinding {
  public:
   std::string GetShaderString() const;
 };
@@ -413,7 +414,7 @@ class FragmentShaderRGBATexAlphaMaskAA {
 };
 
 class FragmentShaderRGBATexAlphaMaskColorMatrixAA {
-public:
+ public:
   FragmentShaderRGBATexAlphaMaskColorMatrixAA();
   std::string GetShaderString() const;
 
@@ -434,7 +435,7 @@ public:
   int color_matrix_location() const { return color_matrix_location_; }
   int color_offset_location() const { return color_offset_location_; }
 
-private:
+ private:
   int sampler_location_;
   int mask_sampler_location_;
   int alpha_location_;
@@ -446,7 +447,7 @@ private:
 };
 
 class FragmentShaderRGBATexAlphaColorMatrixAA {
-public:
+ public:
   FragmentShaderRGBATexAlphaColorMatrixAA();
   std::string GetShaderString() const;
 
@@ -460,7 +461,7 @@ public:
   int color_matrix_location() const { return color_matrix_location_; }
   int color_offset_location() const { return color_offset_location_; }
 
-private:
+ private:
   int sampler_location_;
   int alpha_location_;
   int edge_location_;
@@ -469,7 +470,7 @@ private:
 };
 
 class FragmentShaderRGBATexAlphaMaskColorMatrix {
-public:
+ public:
   FragmentShaderRGBATexAlphaMaskColorMatrix();
   std::string GetShaderString() const;
 
@@ -489,7 +490,7 @@ public:
   int color_matrix_location() const { return color_matrix_location_; }
   int color_offset_location() const { return color_offset_location_; }
 
-private:
+ private:
   int sampler_location_;
   int mask_sampler_location_;
   int alpha_location_;
@@ -586,6 +587,6 @@ class FragmentShaderCheckerboard {
   DISALLOW_COPY_AND_ASSIGN(FragmentShaderCheckerboard);
 };
 
-} // namespace cc
+}  // namespace cc
 
 #endif  // CC_OUTPUT_SHADER_H_

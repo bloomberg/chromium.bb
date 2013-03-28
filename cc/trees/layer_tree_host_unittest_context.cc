@@ -227,15 +227,14 @@ class LayerTreeHostContextTest : public LayerTreeTest {
   scoped_refptr<FakeContextProvider> offscreen_contexts_compositor_thread_;
 };
 
-class LayerTreeHostContextTestLostContextSucceeds :
-      public LayerTreeHostContextTest {
+class LayerTreeHostContextTestLostContextSucceeds
+    : public LayerTreeHostContextTest {
  public:
   LayerTreeHostContextTestLostContextSucceeds()
       : LayerTreeHostContextTest(),
         test_case_(0),
         num_losses_(0),
-        recovered_context_(true) {
-  }
+        recovered_context_(true) {}
 
   virtual void BeginTest() OVERRIDE {
     PostSetNeedsCommitToMainThread();
@@ -277,77 +276,77 @@ class LayerTreeHostContextTestLostContextSucceeds :
     static const TestCase kTests[] = {
       // Losing the context and failing to recreate it (or losing it again
       // immediately) a small number of times should succeed.
-      { 1, // times_to_lose_during_commit
-        0, // times_to_lose_during_draw
-        3, // times_to_fail_reinitialize
-        0, // times_to_fail_recreate
-        0, // times_to_lose_on_recreate
-        0, // times_to_fail_recreate_offscreen
+      { 1,  // times_to_lose_during_commit
+        0,  // times_to_lose_during_draw
+        3,  // times_to_fail_reinitialize
+        0,  // times_to_fail_recreate
+        0,  // times_to_lose_on_recreate
+        0,  // times_to_fail_recreate_offscreen
       },
-      { 0, // times_to_lose_during_commit
-        1, // times_to_lose_during_draw
-        3, // times_to_fail_reinitialize
-        0, // times_to_fail_recreate
-        0, // times_to_lose_on_recreate
-        0, // times_to_fail_recreate_offscreen
+      { 0,  // times_to_lose_during_commit
+        1,  // times_to_lose_during_draw
+        3,  // times_to_fail_reinitialize
+        0,  // times_to_fail_recreate
+        0,  // times_to_lose_on_recreate
+        0,  // times_to_fail_recreate_offscreen
       },
-      { 1, // times_to_lose_during_commit
-        0, // times_to_lose_during_draw
-        0, // times_to_fail_reinitialize
-        3, // times_to_fail_recreate
-        0, // times_to_lose_on_recreate
-        0, // times_to_fail_recreate_offscreen
+      { 1,  // times_to_lose_during_commit
+        0,  // times_to_lose_during_draw
+        0,  // times_to_fail_reinitialize
+        3,  // times_to_fail_recreate
+        0,  // times_to_lose_on_recreate
+        0,  // times_to_fail_recreate_offscreen
       },
-      { 0, // times_to_lose_during_commit
-        1, // times_to_lose_during_draw
-        0, // times_to_fail_reinitialize
-        3, // times_to_fail_recreate
-        0, // times_to_lose_on_recreate
-        0, // times_to_fail_recreate_offscreen
+      { 0,  // times_to_lose_during_commit
+        1,  // times_to_lose_during_draw
+        0,  // times_to_fail_reinitialize
+        3,  // times_to_fail_recreate
+        0,  // times_to_lose_on_recreate
+        0,  // times_to_fail_recreate_offscreen
       },
-      { 1, // times_to_lose_during_commit
-        0, // times_to_lose_during_draw
-        0, // times_to_fail_reinitialize
-        0, // times_to_fail_recreate
-        3, // times_to_lose_on_recreate
-        0, // times_to_fail_recreate_offscreen
+      { 1,  // times_to_lose_during_commit
+        0,  // times_to_lose_during_draw
+        0,  // times_to_fail_reinitialize
+        0,  // times_to_fail_recreate
+        3,  // times_to_lose_on_recreate
+        0,  // times_to_fail_recreate_offscreen
       },
-      { 0, // times_to_lose_during_commit
-        1, // times_to_lose_during_draw
-        0, // times_to_fail_reinitialize
-        0, // times_to_fail_recreate
-        3, // times_to_lose_on_recreate
-        0, // times_to_fail_recreate_offscreen
+      { 0,  // times_to_lose_during_commit
+        1,  // times_to_lose_during_draw
+        0,  // times_to_fail_reinitialize
+        0,  // times_to_fail_recreate
+        3,  // times_to_lose_on_recreate
+        0,  // times_to_fail_recreate_offscreen
       },
-      { 1, // times_to_lose_during_commit
-        0, // times_to_lose_during_draw
-        0, // times_to_fail_reinitialize
-        0, // times_to_fail_recreate
-        0, // times_to_lose_on_recreate
-        3, // times_to_fail_recreate_offscreen
+      { 1,  // times_to_lose_during_commit
+        0,  // times_to_lose_during_draw
+        0,  // times_to_fail_reinitialize
+        0,  // times_to_fail_recreate
+        0,  // times_to_lose_on_recreate
+        3,  // times_to_fail_recreate_offscreen
       },
-      { 0, // times_to_lose_during_commit
-        1, // times_to_lose_during_draw
-        0, // times_to_fail_reinitialize
-        0, // times_to_fail_recreate
-        0, // times_to_lose_on_recreate
-        3, // times_to_fail_recreate_offscreen
+      { 0,  // times_to_lose_during_commit
+        1,  // times_to_lose_during_draw
+        0,  // times_to_fail_reinitialize
+        0,  // times_to_fail_recreate
+        0,  // times_to_lose_on_recreate
+        3,  // times_to_fail_recreate_offscreen
       },
       // Losing the context and recreating it any number of times should
       // succeed.
-      { 10, // times_to_lose_during_commit
-        0, // times_to_lose_during_draw
-        0, // times_to_fail_reinitialize
-        0, // times_to_fail_recreate
-        0, // times_to_lose_on_recreate
-        0, // times_to_fail_recreate_offscreen
+      { 10,  // times_to_lose_during_commit
+        0,  // times_to_lose_during_draw
+        0,  // times_to_fail_reinitialize
+        0,  // times_to_fail_recreate
+        0,  // times_to_lose_on_recreate
+        0,  // times_to_fail_recreate_offscreen
       },
-      { 0, // times_to_lose_during_commit
-        10, // times_to_lose_during_draw
-        0, // times_to_fail_reinitialize
-        0, // times_to_fail_recreate
-        0, // times_to_lose_on_recreate
-        0, // times_to_fail_recreate_offscreen
+      { 0,  // times_to_lose_during_commit
+        10,  // times_to_lose_during_draw
+        0,  // times_to_fail_reinitialize
+        0,  // times_to_fail_recreate
+        0,  // times_to_lose_on_recreate
+        0,  // times_to_fail_recreate_offscreen
       },
     };
 
@@ -384,13 +383,11 @@ class LayerTreeHostContextTestLostContextSucceeds :
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostContextTestLostContextSucceeds);
 
-class LayerTreeHostContextTestLostContextSucceedsWithContent :
-    public LayerTreeHostContextTestLostContextSucceeds {
+class LayerTreeHostContextTestLostContextSucceedsWithContent
+    : public LayerTreeHostContextTestLostContextSucceeds {
  public:
-
   LayerTreeHostContextTestLostContextSucceedsWithContent()
-      : LayerTreeHostContextTestLostContextSucceeds() {
-  }
+      : LayerTreeHostContextTestLostContextSucceeds() {}
 
   virtual void SetupTree() OVERRIDE {
     root_ = Layer::Create();
@@ -438,7 +435,7 @@ class LayerTreeHostContextTestLostContextSucceedsWithContent :
     if (use_surface_) {
       EXPECT_TRUE(contexts->Context3d());
       // TODO(danakj): Make a fake GrContext.
-      //EXPECT_TRUE(contexts->GrContext());
+      // EXPECT_TRUE(contexts->GrContext());
     } else {
       EXPECT_FALSE(contexts);
     }
@@ -538,8 +535,8 @@ class LayerTreeHostContextTestOffscreenContextFails
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostContextTestOffscreenContextFails);
 
-class LayerTreeHostContextTestLostContextFails :
-    public LayerTreeHostContextTest {
+class LayerTreeHostContextTestLostContextFails
+    : public LayerTreeHostContextTest {
  public:
   LayerTreeHostContextTestLostContextFails()
       : LayerTreeHostContextTest(),
@@ -628,8 +625,8 @@ TEST_F(LayerTreeHostContextTestLostContextFails,
   RunTest(true);
 }
 
-class LayerTreeHostContextTestFinishAllRenderingAfterLoss :
-      public LayerTreeHostContextTest {
+class LayerTreeHostContextTestFinishAllRenderingAfterLoss
+    : public LayerTreeHostContextTest {
  public:
   virtual void BeginTest() OVERRIDE {
     // Lose the context until the compositor gives up on it.
@@ -650,15 +647,14 @@ class LayerTreeHostContextTestFinishAllRenderingAfterLoss :
 SINGLE_AND_MULTI_THREAD_TEST_F(
     LayerTreeHostContextTestFinishAllRenderingAfterLoss);
 
-class LayerTreeHostContextTestLostContextAndEvictTextures :
-    public LayerTreeHostContextTest {
+class LayerTreeHostContextTestLostContextAndEvictTextures
+    : public LayerTreeHostContextTest {
  public:
   LayerTreeHostContextTestLostContextAndEvictTextures()
       : LayerTreeHostContextTest(),
         layer_(FakeContentLayer::Create(&client_)),
         impl_host_(0),
-        num_commits_(0) {
-  }
+        num_commits_(0) {}
 
   virtual void SetupTree() OVERRIDE {
     layer_->SetBounds(gfx::Size(10, 20));
@@ -745,14 +741,13 @@ TEST_F(LayerTreeHostContextTestLostContextAndEvictTextures,
   RunTest(true);
 }
 
-class LayerTreeHostContextTestLostContextWhileUpdatingResources :
-    public LayerTreeHostContextTest {
+class LayerTreeHostContextTestLostContextWhileUpdatingResources
+    : public LayerTreeHostContextTest {
  public:
   LayerTreeHostContextTestLostContextWhileUpdatingResources()
       : parent_(FakeContentLayer::Create(&client_)),
         num_children_(50),
-        times_to_lose_on_end_query_(3) {
-  }
+        times_to_lose_on_end_query_(3) {}
 
   virtual scoped_ptr<TestWebGraphicsContext3D> CreateContext3d() OVERRIDE {
     scoped_ptr<TestWebGraphicsContext3D> context =
@@ -806,13 +801,12 @@ class LayerTreeHostContextTestLostContextWhileUpdatingResources :
 SINGLE_AND_MULTI_THREAD_TEST_F(
     LayerTreeHostContextTestLostContextWhileUpdatingResources);
 
-class LayerTreeHostContextTestLayersNotified :
-    public LayerTreeHostContextTest {
+class LayerTreeHostContextTestLayersNotified
+    : public LayerTreeHostContextTest {
  public:
   LayerTreeHostContextTestLayersNotified()
       : LayerTreeHostContextTest(),
-        num_commits_(0) {
-  }
+        num_commits_(0) {}
 
   virtual void SetupTree() OVERRIDE {
     root_ = FakeContentLayer::Create(&client_);
@@ -890,8 +884,8 @@ class LayerTreeHostContextTestLayersNotified :
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostContextTestLayersNotified);
 
-class LayerTreeHostContextTestDontUseLostResources :
-    public LayerTreeHostContextTest {
+class LayerTreeHostContextTestDontUseLostResources
+    : public LayerTreeHostContextTest {
  public:
   virtual void SetupTree() OVERRIDE {
     context3d_->set_have_extension_io_surface(true);
@@ -1106,12 +1100,11 @@ class LayerTreeHostContextTestDontUseLostResources :
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostContextTestDontUseLostResources);
 
-class LayerTreeHostContextTestFailsImmediately :
-    public LayerTreeHostContextTest {
+class LayerTreeHostContextTestFailsImmediately
+    : public LayerTreeHostContextTest {
  public:
   LayerTreeHostContextTestFailsImmediately()
-      : LayerTreeHostContextTest() {
-  }
+      : LayerTreeHostContextTest() {}
 
   virtual ~LayerTreeHostContextTestFailsImmediately() {}
 
@@ -1119,8 +1112,7 @@ class LayerTreeHostContextTestFailsImmediately :
     PostSetNeedsCommitToMainThread();
   }
 
-  virtual void AfterTest() OVERRIDE {
-  }
+  virtual void AfterTest() OVERRIDE {}
 
   virtual scoped_ptr<TestWebGraphicsContext3D> CreateContext3d() OVERRIDE {
     scoped_ptr<TestWebGraphicsContext3D> context =
@@ -1147,8 +1139,8 @@ class ImplSidePaintingLayerTreeHostContextTest
   }
 };
 
-class LayerTreeHostContextTestImplSidePainting :
-    public ImplSidePaintingLayerTreeHostContextTest {
+class LayerTreeHostContextTestImplSidePainting
+    : public ImplSidePaintingLayerTreeHostContextTest {
  public:
   virtual void SetupTree() OVERRIDE {
     scoped_refptr<Layer> root = Layer::Create();
@@ -1198,8 +1190,7 @@ class ScrollbarLayerLostContext : public LayerTreeHostContextTest {
     PostSetNeedsCommitToMainThread();
   }
 
-  virtual void AfterTest() OVERRIDE {
-  }
+  virtual void AfterTest() OVERRIDE {}
 
   virtual void CommitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE {
     LayerTreeHostContextTest::CommitCompleteOnThread(impl);
@@ -1207,7 +1198,7 @@ class ScrollbarLayerLostContext : public LayerTreeHostContextTest {
     ++commits_;
     size_t upload_count = scrollbar_layer_->last_update_full_upload_size() +
         scrollbar_layer_->last_update_partial_upload_size();
-    switch(commits_) {
+    switch (commits_) {
       case 1:
         // First (regular) update, we should upload 2 resources (thumb, and
         // backtrack).

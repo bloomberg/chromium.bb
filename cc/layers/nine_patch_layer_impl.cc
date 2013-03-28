@@ -110,7 +110,10 @@ void NinePatchLayerImpl::AppendQuads(QuadSink* quad_sink,
       top_right.x(), bottom_left.y(), right_width, bottom_height);
   gfx::Rect top(top_left.right(), 0, middle_width, top_height);
   gfx::Rect left(0, top_left.bottom(), left_width, middle_height);
-  gfx::Rect right(top_right.x(), top_right.bottom(), right_width, left.height());
+  gfx::Rect right(top_right.x(),
+                  top_right.bottom(),
+                  right_width,
+                  left.height());
   gfx::Rect bottom(top.x(), bottom_left.y(), top.width(), bottom_height);
 
   float img_width = image_bounds_.width();
