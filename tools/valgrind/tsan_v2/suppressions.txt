@@ -1,3 +1,8 @@
+# False positives in libflashplayer.so and libglib.so. Since we don't
+# instrument them, we cannot reason about the synchronization in them.
+race:libflashplayer.so
+race:libglib*.so
+
 # Intentional race in ToolsSanityTest.DataRace in base_unittests.
 race:base/tools_sanity_unittest.cc
 
@@ -40,3 +45,7 @@ race:pcache1AllocPage
 
 # http://crbug.com/115540
 race:base::Thread::ThreadMain
+race:content::BrowserThread::GetCurrentThreadIdentifier
+
+# http://crbug.com/223955
+race:PassRefPtr
