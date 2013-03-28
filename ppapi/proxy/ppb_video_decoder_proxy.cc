@@ -61,6 +61,8 @@ VideoDecoder::VideoDecoder(const HostResource& decoder)
 }
 
 VideoDecoder::~VideoDecoder() {
+  FlushCommandBuffer();
+  PPB_VideoDecoder_Shared::Destroy();
 }
 
 int32_t VideoDecoder::Decode(

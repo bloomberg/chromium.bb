@@ -206,13 +206,13 @@ int32_t PPB_VideoDecoder_Impl::Reset(scoped_refptr<TrackedCallback> callback) {
 }
 
 void PPB_VideoDecoder_Impl::Destroy() {
-  if (!platform_video_decoder_.get())
-    return;
-
   FlushCommandBuffer();
-  platform_video_decoder_.release()->Destroy();
-  ::ppapi::PPB_VideoDecoder_Shared::Destroy();
+
+  if (platform_video_decoder_)
+    platform_video_decoder_.release()->Destroy();
   ppp_videodecoder_ = NULL;
+
+  ::ppapi::PPB_VideoDecoder_Shared::Destroy();
 }
 
 void PPB_VideoDecoder_Impl::ProvidePictureBuffers(

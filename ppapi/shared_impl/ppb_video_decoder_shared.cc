@@ -27,6 +27,8 @@ PPB_VideoDecoder_Shared::PPB_VideoDecoder_Shared(
 }
 
 PPB_VideoDecoder_Shared::~PPB_VideoDecoder_Shared() {
+  // Destroy() must be called before the object is destroyed.
+  DCHECK(graphics_context_ == 0);
 }
 
 thunk::PPB_VideoDecoder_API* PPB_VideoDecoder_Shared::AsPPB_VideoDecoder_API() {
@@ -44,9 +46,12 @@ void PPB_VideoDecoder_Shared::InitCommon(
 }
 
 void PPB_VideoDecoder_Shared::Destroy() {
-  graphics_context_ = 0;
+  if (graphics_context_) {
+    PpapiGlobals::Get()->GetResourceTracker()->ReleaseResource(
+        graphics_context_);
+    graphics_context_ = 0;
+  }
   gles2_impl_ = NULL;
-  PpapiGlobals::Get()->GetResourceTracker()->ReleaseResource(graphics_context_);
 }
 
 bool PPB_VideoDecoder_Shared::SetFlushCallback(
