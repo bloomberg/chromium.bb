@@ -21,10 +21,9 @@ const char kNotAttachedError[] =
 const char kProtocolVersionNotSupportedError[] =
     "Requested protocol version is not supported: *.";
 const char kSilentDebuggingRequired[] =
-    "Cannot attach to this target unless '*' flag is enabled.";
+    "Cannot attach to an extension unless '*' flag is enabled.";
 
 const char kTabTargetType[] = "tab";
-const char kBackgroundPageTargetType[] = "background page";
-const char kOpaqueTargetType[] = "target";
+const char kExtensionTargetType[] = "extension";
 
 }  // namespace debugger_api_constants

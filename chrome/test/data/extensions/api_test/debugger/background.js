@@ -9,9 +9,6 @@ var tabId;
 var debuggee;
 var protocolVersion = "1.0";
 
-var SILENT_FLAG_REQUIRED = "Cannot attach to this target unless " +
-    "'silent-debugger-extension-api' flag is enabled.";
-
 chrome.test.runTests([
 
   function attachMalformedVersion() {
@@ -109,41 +106,10 @@ chrome.test.runTests([
         fail("No tab with given id " + missingDebuggee.tabId + "."));
   },
 
-  function attachToOwnBackgroundPageWithNoSilentFlag() {
-    var ownExtensionId = chrome.extension.getURL('').split('/')[2];
-    debuggeeExtension = {extensionId: ownExtensionId};
+  function attachToExtensionWithNoSilentFlag() {
+    debuggeeExtension = {extensionId: "foo"};
     chrome.debugger.attach(debuggeeExtension, protocolVersion,
-        fail(SILENT_FLAG_REQUIRED));
-  },
-
-  function createAndDiscoverTab() {
-    chrome.test.listenOnce(chrome.tabs.onUpdated, function () {
-      chrome.debugger.getTargets(function(targets) {
-        var page = targets.filter(
-            function(t) {
-              return t.type == 'page' && t.title == 'Test page';
-            })[0];
-        if (page) {
-          chrome.debugger.attach(
-              {targetId: page.id}, protocolVersion, pass());
-        } else {
-          chrome.test.fail("Cannot discover a newly created tab");
-        }
-      });
-    });
-    chrome.tabs.create({url: "inspected.html"});
-  },
-
-  function discoverBackgroundPageWithNoSilentFlag() {
-    chrome.debugger.getTargets(function(targets) {
-      var target = targets.filter(
-          function(target) { return target.type == 'background_page'})[0];
-      if (target) {
-        chrome.debugger.attach({targetId: target.id}, protocolVersion,
-            fail(SILENT_FLAG_REQUIRED));
-      } else {
-        chrome.test.succeed();
-      }
-    });
+        fail("Cannot attach to an extension unless " +
+            "'silent-debugger-extension-api' flag is enabled."));
   }
 ]);

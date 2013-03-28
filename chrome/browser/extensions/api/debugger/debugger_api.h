@@ -86,18 +86,4 @@ class DebuggerSendCommandFunction : public DebuggerFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-// Implements the debugger.getTargets() extension function.
-class DebuggerGetTargetsFunction : public DebuggerFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("debugger.getTargets", DEBUGGER_ATTACH)
-
-  DebuggerGetTargetsFunction();
-
- protected:
-  virtual ~DebuggerGetTargetsFunction();
-
-  // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
-};
-
 #endif  // CHROME_BROWSER_EXTENSIONS_API_DEBUGGER_DEBUGGER_API_H_
