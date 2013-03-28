@@ -6964,3 +6964,12 @@
    fun:_ZN7WebCore15FeatureObserver10didObserveENS0_7FeatureE
    fun:_ZN7WebCore15FeatureObserver7observeEPNS_8DocumentENS0_7FeatureE
 }
+{
+   bug_224747
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base8internal20PostTaskAndReplyImpl16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEESA_
+   ...
+   fun:_ZN64BackgroundApplicationListModelTest_AddRemovePermissionsTest_Test8TestBodyEv
+}
+
