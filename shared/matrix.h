@@ -24,6 +24,10 @@
 #ifndef WESTON_MATRIX_H
 #define WESTON_MATRIX_H
 
+#ifdef  __cplusplus
+extern "C" {
+#endif
+
 enum weston_matrix_transform_type {
 	WESTON_MATRIX_TRANSFORM_TRANSLATE	= (1 << 0),
 	WESTON_MATRIX_TRANSFORM_SCALE		= (1 << 1),
@@ -69,6 +73,10 @@ inverse_transform(const double *LU, const unsigned *p, float *v);
 
 #else
 #  define MATRIX_TEST_EXPORT static
+#endif
+
+#ifdef  __cplusplus
+}
 #endif
 
 #endif /* WESTON_MATRIX_H */

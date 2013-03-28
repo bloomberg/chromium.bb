@@ -76,7 +76,7 @@ notify_pointer_position(struct weston_test *test, struct wl_resource *resource)
 static void
 test_surface_configure(struct weston_surface *surface, int32_t sx, int32_t sy, int32_t width, int32_t height)
 {
-	struct weston_test_surface *test_surface = surface->private;
+	struct weston_test_surface *test_surface = surface->configure_private;
 	struct weston_test *test = test_surface->test;
 
 	if (wl_list_empty(&surface->layer_link))
@@ -99,9 +99,9 @@ move_surface(struct wl_client *client, struct wl_resource *resource,
 	struct weston_test_surface *test_surface;
 
 	surface->configure = test_surface_configure;
-	if (surface->private == NULL)
-		surface->private = malloc(sizeof *test_surface);
-	test_surface = surface->private;
+	if (surface->configure_private == NULL)
+		surface->configure_private = malloc(sizeof *test_surface);
+	test_surface = surface->configure_private;
 	if (test_surface == NULL) {
 		wl_resource_post_no_memory(resource);
 		return;

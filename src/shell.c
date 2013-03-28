@@ -1676,7 +1676,7 @@ create_black_surface(struct weston_compositor *ec,
 	}
 
 	surface->configure = black_surface_configure;
-	surface->private = fs_surface;
+	surface->configure_private = fs_surface;
 	weston_surface_configure(surface, x, y, w, h);
 	weston_surface_set_color(surface, 0.0, 0.0, 0.0, 1);
 	pixman_region32_fini(&surface->opaque);
@@ -2142,7 +2142,7 @@ static struct shell_surface *
 get_shell_surface(struct weston_surface *surface)
 {
 	if (surface->configure == shell_surface_configure)
-		return surface->private;
+		return surface->configure_private;
 	else
 		return NULL;
 }
@@ -2165,7 +2165,7 @@ create_shell_surface(void *shell, struct weston_surface *surface,
 	}
 
 	surface->configure = shell_surface_configure;
-	surface->private = shsurf;
+	surface->configure_private = shsurf;
 
 	shsurf->shell = (struct desktop_shell *) shell;
 	shsurf->unresponsive = 0;
@@ -2322,7 +2322,7 @@ configure_static_surface(struct weston_surface *es, struct weston_layer *layer, 
 static void
 background_configure(struct weston_surface *es, int32_t sx, int32_t sy, int32_t width, int32_t height)
 {
-	struct desktop_shell *shell = es->private;
+	struct desktop_shell *shell = es->configure_private;
 
 	configure_static_surface(es, &shell->background_layer, width, height);
 }
@@ -2344,7 +2344,7 @@ desktop_shell_set_background(struct wl_client *client,
 	}
 
 	surface->configure = background_configure;
-	surface->private = shell;
+	surface->configure_private = shell;
 	surface->output = output_resource->data;
 	desktop_shell_send_configure(resource, 0,
 				     surface_resource,
@@ -2355,7 +2355,7 @@ desktop_shell_set_background(struct wl_client *client,
 static void
 panel_configure(struct weston_surface *es, int32_t sx, int32_t sy, int32_t width, int32_t height)
 {
-	struct desktop_shell *shell = es->private;
+	struct desktop_shell *shell = es->configure_private;
 
 	configure_static_surface(es, &shell->panel_layer, width, height);
 }
@@ -2377,7 +2377,7 @@ desktop_shell_set_panel(struct wl_client *client,
 	}
 
 	surface->configure = panel_configure;
-	surface->private = shell;
+	surface->configure_private = shell;
 	surface->output = output_resource->data;
 	desktop_shell_send_configure(resource, 0,
 				     surface_resource,
@@ -2388,7 +2388,7 @@ desktop_shell_set_panel(struct wl_client *client,
 static void
 lock_surface_configure(struct weston_surface *surface, int32_t sx, int32_t sy, int32_t width, int32_t height)
 {
-	struct desktop_shell *shell = surface->private;
+	struct desktop_shell *shell = surface->configure_private;
 
 	if (width == 0)
 		return;
@@ -2433,7 +2433,7 @@ desktop_shell_set_lock_surface(struct wl_client *client,
 		      &shell->lock_surface_listener);
 
 	surface->configure = lock_surface_configure;
-	surface->private = shell;
+	surface->configure_private = shell;
 }
 
 static void
@@ -2858,7 +2858,7 @@ is_black_surface (struct weston_surface *es, struct weston_surface **fs_surface)
 {
 	if (es->configure == black_surface_configure) {
 		if (fs_surface)
-			*fs_surface = (struct weston_surface *)es->private;
+			*fs_surface = (struct weston_surface *)es->configure_private;
 		return true;
 	}
 	return false;
@@ -3413,7 +3413,7 @@ bind_desktop_shell(struct wl_client *client,
 static void
 screensaver_configure(struct weston_surface *surface, int32_t sx, int32_t sy, int32_t width, int32_t height)
 {
-	struct desktop_shell *shell = surface->private;
+	struct desktop_shell *shell = surface->configure_private;
 
 	if (width == 0)
 		return;
@@ -3445,7 +3445,7 @@ screensaver_set_surface(struct wl_client *client,
 	struct weston_output *output = output_resource->data;
 
 	surface->configure = screensaver_configure;
-	surface->private = shell;
+	surface->configure_private = shell;
 	surface->output = output;
 }
 
@@ -3524,7 +3524,7 @@ static struct input_panel_surface *
 get_input_panel_surface(struct weston_surface *surface)
 {
 	if (surface->configure == input_panel_configure) {
-		return surface->private;
+		return surface->configure_private;
 	} else {
 		return NULL;
 	}
@@ -3556,7 +3556,7 @@ create_input_panel_surface(struct desktop_shell *shell,
 		return NULL;
 
 	surface->configure = input_panel_configure;
-	surface->private = input_panel_surface;
+	surface->configure_private = input_panel_surface;
 
 	input_panel_surface->shell = shell;
 

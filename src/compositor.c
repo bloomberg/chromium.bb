@@ -2271,7 +2271,7 @@ static void
 pointer_cursor_surface_configure(struct weston_surface *es,
 				 int32_t dx, int32_t dy, int32_t width, int32_t height)
 {
-	struct weston_seat *seat = es->private;
+	struct weston_seat *seat = es->configure_private;
 	int x, y;
 
 	if (width == 0)
@@ -2305,7 +2305,7 @@ pointer_unmap_sprite(struct weston_seat *seat)
 
 	wl_list_remove(&seat->sprite_destroy_listener.link);
 	seat->sprite->configure = NULL;
-	seat->sprite->private = NULL;
+	seat->sprite->configure_private = NULL;
 	seat->sprite = NULL;
 }
 
@@ -2347,7 +2347,7 @@ pointer_set_cursor(struct wl_client *client, struct wl_resource *resource,
 		      &seat->sprite_destroy_listener);
 
 	surface->configure = pointer_cursor_surface_configure;
-	surface->private = seat;
+	surface->configure_private = seat;
 	seat->sprite = surface;
 	seat->hotspot_x = x;
 	seat->hotspot_y = y;

@@ -24,6 +24,10 @@
 #ifndef _WAYLAND_SYSTEM_COMPOSITOR_H_
 #define _WAYLAND_SYSTEM_COMPOSITOR_H_
 
+#ifdef  __cplusplus
+extern "C" {
+#endif
+
 #include <pixman.h>
 #include <xkbcommon/xkbcommon.h>
 #include <wayland-server.h>
@@ -496,7 +500,7 @@ struct weston_surface {
 	 * are the sx and sy paramerters supplied to surface::attach .
 	 */
 	void (*configure)(struct weston_surface *es, int32_t sx, int32_t sy, int32_t width, int32_t height);
-	void *private;
+	void *configure_private;
 };
 
 enum weston_key_state_update {
@@ -879,5 +883,9 @@ pixman_box32_t
 weston_transformed_rect(int width, int height,
 			enum wl_output_transform transform,
 			pixman_box32_t rect);
+
+#ifdef  __cplusplus
+}
+#endif
 
 #endif
