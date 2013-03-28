@@ -93,7 +93,7 @@ if test x$enable_x11_compositor = xyes; then
   LIBS=$xcb_save_LIBS
   CFLAGS=$xcb_save_CFLAGS
 
-  X11_COMPOSITOR_MODULES="x11 x11-xcb"
+  X11_COMPOSITOR_MODULES="x11 x11-xcb xcb-shm"
 
   PKG_CHECK_MODULES(X11_COMPOSITOR_XKB, [xcb-xkb],
 		    [have_xcb_xkb="yes"], [have_xcb_xkb="no"])
