@@ -227,15 +227,16 @@ class DownloadItemTest : public testing::Test {
     scoped_ptr<DownloadCreateInfo> info_;
 
     info_.reset(new DownloadCreateInfo());
-    static int next_id;
-    info_->download_id = DownloadId(kValidDownloadItemIdDomain, ++next_id);
+    static int next_id = 0;
+    DownloadId id(DownloadId(kValidDownloadItemIdDomain, ++next_id));
     info_->save_info = scoped_ptr<DownloadSaveInfo>(new DownloadSaveInfo());
     info_->save_info->prompt_for_save_location = false;
     info_->url_chain.push_back(GURL());
     info_->etag = "SomethingToSatisfyResumption";
 
     DownloadItemImpl* download =
-        new DownloadItemImpl(&delegate_, *(info_.get()), net::BoundNetLog());
+        new DownloadItemImpl(
+            &delegate_, id, *(info_.get()), net::BoundNetLog());
     allocated_downloads_.insert(download);
     return download;
   }

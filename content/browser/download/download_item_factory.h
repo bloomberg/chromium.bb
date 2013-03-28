@@ -57,14 +57,15 @@ public:
 
   virtual DownloadItemImpl* CreateActiveItem(
       DownloadItemImplDelegate* delegate,
+      DownloadId download_id,
       const DownloadCreateInfo& info,
       const net::BoundNetLog& bound_net_log) = 0;
 
   virtual DownloadItemImpl* CreateSavePageItem(
       DownloadItemImplDelegate* delegate,
+      DownloadId download_id,
       const base::FilePath& path,
       const GURL& url,
-      DownloadId download_id,
       const std::string& mime_type,
       scoped_ptr<DownloadRequestHandleInterface> request_handle,
       const net::BoundNetLog& bound_net_log) = 0;

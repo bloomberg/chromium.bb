@@ -240,14 +240,15 @@ class MockDownloadItemFactory
       const net::BoundNetLog& bound_net_log) OVERRIDE;
   virtual DownloadItemImpl* CreateActiveItem(
       DownloadItemImplDelegate* delegate,
+      DownloadId download_id,
       const DownloadCreateInfo& info,
       const net::BoundNetLog& bound_net_log) OVERRIDE;
   virtual DownloadItemImpl* CreateSavePageItem(
       DownloadItemImplDelegate* delegate,
+      DownloadId download_id,
       const base::FilePath& path,
       const GURL& url,
-      DownloadId download_id,
-      const std::string& mime_type,
+        const std::string& mime_type,
       scoped_ptr<DownloadRequestHandleInterface> request_handle,
       const net::BoundNetLog& bound_net_log) OVERRIDE;
 
@@ -314,9 +315,10 @@ DownloadItemImpl* MockDownloadItemFactory::CreatePersistedItem(
 
 DownloadItemImpl* MockDownloadItemFactory::CreateActiveItem(
     DownloadItemImplDelegate* delegate,
+    DownloadId download_id,
     const DownloadCreateInfo& info,
     const net::BoundNetLog& bound_net_log) {
-  int local_id = info.download_id.local();
+  int local_id = download_id.local();
   DCHECK(items_.find(local_id) == items_.end());
 
   MockDownloadItemImpl* result =
@@ -324,7 +326,7 @@ DownloadItemImpl* MockDownloadItemFactory::CreateActiveItem(
   EXPECT_CALL(*result, GetId())
       .WillRepeatedly(Return(local_id));
   EXPECT_CALL(*result, GetGlobalId())
-      .WillRepeatedly(Return(DownloadId(delegate, local_id)));
+      .WillRepeatedly(Return(download_id));
   items_[local_id] = result;
 
   // Active items are created and then immediately are called to start
@@ -336,9 +338,9 @@ DownloadItemImpl* MockDownloadItemFactory::CreateActiveItem(
 
 DownloadItemImpl* MockDownloadItemFactory::CreateSavePageItem(
     DownloadItemImplDelegate* delegate,
+    DownloadId download_id,
     const base::FilePath& path,
     const GURL& url,
-    DownloadId download_id,
     const std::string& mime_type,
     scoped_ptr<DownloadRequestHandleInterface> request_handle,
     const net::BoundNetLog& bound_net_log) {
@@ -500,7 +502,7 @@ class DownloadManagerTest : public testing::Test {
     ++next_download_id_;
     info.request_handle = DownloadRequestHandle();
     download_manager_->CreateActiveItem(DownloadId(kDownloadIdDomain, id),
-                                        &info);
+                                        info);
     DCHECK(mock_download_item_factory_->GetItem(id));
     MockDownloadItemImpl& item(*mock_download_item_factory_->GetItem(id));
     // Satisfy expectation.  If the item is created in StartDownload(),

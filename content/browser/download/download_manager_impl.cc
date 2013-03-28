@@ -208,20 +208,21 @@ class DownloadItemFactoryImpl : public DownloadItemFactory {
 
   virtual DownloadItemImpl* CreateActiveItem(
       DownloadItemImplDelegate* delegate,
+      DownloadId download_id,
       const DownloadCreateInfo& info,
       const net::BoundNetLog& bound_net_log) OVERRIDE {
-      return new DownloadItemImpl(delegate, info, bound_net_log);
+    return new DownloadItemImpl(delegate, download_id, info, bound_net_log);
   }
 
   virtual DownloadItemImpl* CreateSavePageItem(
       DownloadItemImplDelegate* delegate,
+      DownloadId download_id,
       const base::FilePath& path,
       const GURL& url,
-      DownloadId download_id,
       const std::string& mime_type,
       scoped_ptr<DownloadRequestHandleInterface> request_handle,
       const net::BoundNetLog& bound_net_log) OVERRIDE {
-    return new DownloadItemImpl(delegate, path, url, download_id,
+    return new DownloadItemImpl(delegate, download_id, path, url,
                                 mime_type, request_handle.Pass(),
                                 bound_net_log);
   }
@@ -244,14 +245,12 @@ DownloadManagerImpl::~DownloadManagerImpl() {
   DCHECK(!shutdown_needed_);
 }
 
-// TODO(rdsmith): Make info const.
-void DownloadManagerImpl::CreateActiveItem(DownloadId id,
-                                           DownloadCreateInfo* info) {
+void DownloadManagerImpl::CreateActiveItem(
+    DownloadId id, const DownloadCreateInfo& info) {
   net::BoundNetLog bound_net_log =
       net::BoundNetLog::Make(net_log_, net::NetLog::SOURCE_DOWNLOAD);
-  info->download_id = id;
   downloads_[id.local()] =
-      item_factory_->CreateActiveItem(this, *info, bound_net_log);
+      item_factory_->CreateActiveItem(this, id, info, bound_net_log);
 }
 
 DownloadId DownloadManagerImpl::GetNextId() {
@@ -402,7 +401,7 @@ DownloadItem* DownloadManagerImpl::StartDownload(
   // Create a new download item if this isn't a resumption.
   bool new_download(!ContainsKey(downloads_, id.local()));
   if (new_download)
-    CreateActiveItem(id, info.get());
+    CreateActiveItem(id, *info);
 
   DownloadItemImpl* download(downloads_[id.local()]);
   DCHECK(download);
@@ -475,9 +474,9 @@ DownloadItemImpl* DownloadManagerImpl::CreateSavePackageDownloadItem(
       net::BoundNetLog::Make(net_log_, net::NetLog::SOURCE_DOWNLOAD);
   DownloadItemImpl* download_item = item_factory_->CreateSavePageItem(
       this,
+      GetNextId(),
       main_file_path,
       page_url,
-      GetNextId(),
       mime_type,
       request_handle.Pass(),
       bound_net_log);

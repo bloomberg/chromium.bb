@@ -143,10 +143,11 @@ DownloadItemImpl::DownloadItemImpl(DownloadItemImplDelegate* delegate,
 // Constructing for a regular download:
 DownloadItemImpl::DownloadItemImpl(
     DownloadItemImplDelegate* delegate,
+    DownloadId download_id,
     const DownloadCreateInfo& info,
     const net::BoundNetLog& bound_net_log)
     : is_save_package_download_(false),
-      download_id_(info.download_id),
+      download_id_(download_id),
       target_disposition_(
           (info.save_info->prompt_for_save_location) ?
               TARGET_DISPOSITION_PROMPT : TARGET_DISPOSITION_OVERWRITE),
@@ -199,9 +200,9 @@ DownloadItemImpl::DownloadItemImpl(
 // Constructing for the "Save Page As..." feature:
 DownloadItemImpl::DownloadItemImpl(
     DownloadItemImplDelegate* delegate,
+    DownloadId download_id,
     const base::FilePath& path,
     const GURL& url,
-    DownloadId download_id,
     const std::string& mime_type,
     scoped_ptr<DownloadRequestHandleInterface> request_handle,
     const net::BoundNetLog& bound_net_log)

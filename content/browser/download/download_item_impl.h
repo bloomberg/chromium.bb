@@ -70,15 +70,16 @@ class CONTENT_EXPORT DownloadItemImpl
   // Constructing for a regular download.
   // |bound_net_log| is constructed externally for our use.
   DownloadItemImpl(DownloadItemImplDelegate* delegate,
+                   DownloadId download_id,
                    const DownloadCreateInfo& info,
                    const net::BoundNetLog& bound_net_log);
 
   // Constructing for the "Save Page As..." feature:
   // |bound_net_log| is constructed externally for our use.
   DownloadItemImpl(DownloadItemImplDelegate* delegate,
+                   DownloadId download_id,
                    const base::FilePath& path,
                    const GURL& url,
-                   DownloadId download_id,
                    const std::string& mime_type,
                    scoped_ptr<DownloadRequestHandleInterface> request_handle,
                    const net::BoundNetLog& bound_net_log);

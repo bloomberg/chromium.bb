@@ -109,7 +109,7 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
 
   // Create a new active item based on the info.  Separate from
   // StartDownload() for testing.
-  void CreateActiveItem(DownloadId id, DownloadCreateInfo* info);
+  void CreateActiveItem(DownloadId id, const DownloadCreateInfo& info);
 
   // Get next download id.
   DownloadId GetNextId();
