@@ -8,6 +8,7 @@ publican_sources = \
 	$(srcdir)/en_US/Library.xml \
 	$(srcdir)/en_US/Compositors.xml \
 	$(srcdir)/en_US/Overview.xml \
+	$(srcdir)/en_US/Revision_History.xml \
 	$(srcdir)/en_US/images/icon.svg  \
 	$(srcdir)/en_US/images/wayland-architecture.png \
 	$(srcdir)/en_US/images/wayland.png  \
