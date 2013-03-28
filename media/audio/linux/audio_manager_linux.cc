@@ -275,7 +275,7 @@ AudioInputStream* AudioManagerLinux::MakeLowLatencyInputStream(
 
 AudioParameters AudioManagerLinux::GetPreferredOutputStreamParameters(
     const AudioParameters& input_params) {
-  static const int kDefaultOutputBufferSize = 512;
+  static const int kDefaultOutputBufferSize = 2048;
   ChannelLayout channel_layout = CHANNEL_LAYOUT_STEREO;
   int sample_rate = kDefaultSampleRate;
   int buffer_size = kDefaultOutputBufferSize;
