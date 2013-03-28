@@ -40,13 +40,8 @@ using base::WritePlatformFile;
 namespace {
 
 std::string GetFilenameForKeyAndIndex(const std::string& key, int index) {
-  const std::string sha_hash = base::SHA1HashString(key);
-  return base::StringPrintf("%02x%02x%02x%02x%02x_%1d",
-                            implicit_cast<unsigned char>(sha_hash[0]),
-                            implicit_cast<unsigned char>(sha_hash[1]),
-                            implicit_cast<unsigned char>(sha_hash[2]),
-                            implicit_cast<unsigned char>(sha_hash[3]),
-                            implicit_cast<unsigned char>(sha_hash[4]), index);
+  return disk_cache::GetEntryHashForKey(key) +
+      base::StringPrintf("_%1d", index);
 }
 
 int32 DataSizeFromKeyAndFileSize(size_t key_size, int64 file_size) {
@@ -89,7 +84,6 @@ void SimpleSynchronousEntry::CreateEntry(
     const SynchronousCreationCallback& callback) {
   SimpleSynchronousEntry* sync_entry =
       new SimpleSynchronousEntry(callback_runner, path, key);
-
   if (!sync_entry->InitializeForCreate()) {
     delete sync_entry;
     sync_entry = NULL;
@@ -279,7 +273,6 @@ bool SimpleSynchronousEntry::InitializeForCreate() {
     DLOG(WARNING) << "Could not create platform files.";
     return false;
   }
-
   for (int i = 0; i < kSimpleEntryFileCount; ++i) {
     SimpleFileHeader header;
     header.initial_magic_number = kSimpleInitialMagicNumber;
@@ -302,7 +295,6 @@ bool SimpleSynchronousEntry::InitializeForCreate() {
       return false;
     }
   }
-
   initialized_ = true;
   return true;
 }

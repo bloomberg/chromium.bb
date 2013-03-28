@@ -25,6 +25,8 @@ namespace disk_cache {
 
 // See http://www.chromium.org/developers/design-documents/network-stack/disk-cache/very-simple-backend
 
+class SimpleIndex;
+
 class SimpleBackendImpl : public Backend {
  public:
   virtual ~SimpleBackendImpl();
@@ -34,7 +36,7 @@ class SimpleBackendImpl : public Backend {
                            int max_bytes,
                            net::CacheType type,
                            uint32 flags,
-                           scoped_refptr<base::TaskRunner> thread,
+                           scoped_refptr<base::TaskRunner> cache_thread,
                            net::NetLog* net_log,
                            Backend** backend,
                            const CompletionCallback& callback);
@@ -62,24 +64,25 @@ class SimpleBackendImpl : public Backend {
   virtual void OnExternalCacheHit(const std::string& key) OVERRIDE;
 
  private:
-  explicit SimpleBackendImpl(const base::FilePath& path);
+  SimpleBackendImpl(
+      const scoped_refptr<base::TaskRunner>& cache_thread,
+      const base::FilePath& path);
 
   // Creates the Cache directory if needed. Performs blocking IO, so it cannot
   // be called on IO thread.
   static void EnsureCachePathExists(
       const base::FilePath& path,
-      const scoped_refptr<base::TaskRunner>& callback_runner,
+      const scoped_refptr<base::TaskRunner>& cache_thread,
+      const scoped_refptr<base::TaskRunner>& io_thread,
       const CompletionCallback& callback,
       Backend** backend);
 
-  // IO thread completion of cache creation, called from EnsureCachePath exists
-  // to complete initialization of the cache on the IO thread.
-  static void OnCachePathCreated(int result,
-                                 const base::FilePath& path,
-                                 const CompletionCallback& callback,
-                                 Backend** backend);
+  // Must run on Cache Thread.
+  void Initialize();
 
   const base::FilePath path_;
+
+  scoped_ptr<SimpleIndex> index_;
 };
 
 }  // namespace disk_cache

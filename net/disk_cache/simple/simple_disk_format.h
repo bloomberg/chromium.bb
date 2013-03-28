@@ -5,6 +5,9 @@
 #ifndef NET_DISK_CACHE_SIMPLE_SIMPLE_DISK_FORMAT_H_
 #define NET_DISK_CACHE_SIMPLE_SIMPLE_DISK_FORMAT_H_
 
+#include <string>
+
+#include "base/basictypes.h"
 #include "base/port.h"
 
 namespace disk_cache {
@@ -24,6 +27,10 @@ struct SimpleFileHeader {
   uint32 key_length;
   uint32 key_hash;
 };
+
+// kHashKeySize must conform to the pattern in the GetHashForKey function.
+const int kEntryHashKeySize = 10;
+std::string GetEntryHashForKey(const std::string& key);
 
 }  // namespace disk_cache
 

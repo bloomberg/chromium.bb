@@ -12,6 +12,7 @@
 #include "base/threading/worker_pool.h"
 #include "net/base/net_errors.h"
 #include "net/disk_cache/simple/simple_entry_impl.h"
+#include "net/disk_cache/simple/simple_index.h"
 
 using base::FilePath;
 using base::MessageLoopProxy;
@@ -24,6 +25,16 @@ namespace {
 
 const char* kSimpleBackendSubdirectory = "Simple";
 
+// Must run on IO Thread.
+void DeleteBackendImpl(disk_cache::Backend** backend,
+                       const net::CompletionCallback& callback,
+                       int result) {
+  DCHECK(*backend);
+  delete *backend;
+  *backend = NULL;
+  callback.Run(result);
+}
+
 }  // namespace
 
 namespace disk_cache {
@@ -35,7 +46,7 @@ int SimpleBackendImpl::CreateBackend(
     int max_bytes,
     net::CacheType type,
     uint32 flags,
-    scoped_refptr<base::TaskRunner> task_runner,
+    scoped_refptr<base::TaskRunner> cache_thread,
     net::NetLog* net_log,
     Backend** backend,
     const CompletionCallback& callback) {
@@ -43,16 +54,23 @@ int SimpleBackendImpl::CreateBackend(
   DCHECK_EQ(net::DISK_CACHE, type);
   FilePath simple_cache_path =
       full_path.AppendASCII(kSimpleBackendSubdirectory);
-  WorkerPool::PostTask(FROM_HERE,
-                       base::Bind(&SimpleBackendImpl::EnsureCachePathExists,
-                                  simple_cache_path,
-                                  MessageLoopProxy::current(), callback,
-                                  backend),
-                       true);
+
+  // In order to not leak when the EnsureCachePathExists fails, we need to
+  // delete this in DeleteBackendImpl on the IO Thread.
+  *backend = new SimpleBackendImpl(cache_thread, simple_cache_path);
+
+  cache_thread->PostTask(FROM_HERE,
+                         base::Bind(&SimpleBackendImpl::EnsureCachePathExists,
+                                    simple_cache_path,
+                                    cache_thread,
+                                    MessageLoopProxy::current(),
+                                    callback,
+                                    backend));
   return net::ERR_IO_PENDING;
 }
 
 SimpleBackendImpl::~SimpleBackendImpl() {
+  index_->Cleanup();
 }
 
 net::CacheType SimpleBackendImpl::GetCacheType() const {
@@ -67,18 +85,20 @@ int32 SimpleBackendImpl::GetEntryCount() const {
 int SimpleBackendImpl::OpenEntry(const std::string& key,
                                  Entry** entry,
                                  const CompletionCallback& callback) {
-  return SimpleEntryImpl::OpenEntry(path_, key, entry, callback);
+  return SimpleEntryImpl::OpenEntry(
+      index_->AsWeakPtr(), path_, key, entry, callback);
 }
 
 int SimpleBackendImpl::CreateEntry(const std::string& key,
                                    Entry** entry,
                                    const CompletionCallback& callback) {
-  return SimpleEntryImpl::CreateEntry(path_, key, entry, callback);
+  return SimpleEntryImpl::CreateEntry(
+      index_->AsWeakPtr(), path_, key, entry, callback);
 }
 
 int SimpleBackendImpl::DoomEntry(const std::string& key,
                                  const net::CompletionCallback& callback) {
-  return SimpleEntryImpl::DoomEntry(path_, key, callback);
+  return SimpleEntryImpl::DoomEntry(index_->AsWeakPtr(), path_, key, callback);
 }
 
 int SimpleBackendImpl::DoomAllEntries(const CompletionCallback& callback) {
@@ -122,33 +142,39 @@ void SimpleBackendImpl::OnExternalCacheHit(const std::string& key) {
 }
 
 SimpleBackendImpl::SimpleBackendImpl(
+    const scoped_refptr<base::TaskRunner>& cache_thread,
     const FilePath& path) : path_(path) {
+  index_.reset(new SimpleIndex(cache_thread, path));
+}
+
+void SimpleBackendImpl::Initialize() {
+  index_->Initialize();
 }
 
 // static
 void SimpleBackendImpl::EnsureCachePathExists(
     const FilePath& path,
-    const scoped_refptr<base::TaskRunner>& callback_runner,
+    const scoped_refptr<base::TaskRunner>& cache_thread,
+    const scoped_refptr<base::TaskRunner>& io_thread,
     const CompletionCallback& callback,
     Backend** backend) {
   int result = net::OK;
   if (!DirectoryExists(path) && !CreateDirectory(path))
     result = net::ERR_FAILED;
-  callback_runner->PostTask(FROM_HERE,
-                            base::Bind(&SimpleBackendImpl::OnCachePathCreated,
-                                       result, path, callback, backend));
-}
 
-// static
-void SimpleBackendImpl::OnCachePathCreated(int result,
-                                           const FilePath& path,
-                                           const CompletionCallback& callback,
-                                           Backend** backend) {
-  if (result == net::OK)
-    *backend = new SimpleBackendImpl(path);
-  else
-    *backend = NULL;
-  callback.Run(result);
+  if (result == net::OK) {
+    DCHECK(*backend);
+    // TODO(pasko): Move the object creation and initalization out of
+    // CreateBackend and fix this downcast.
+    static_cast<SimpleBackendImpl*>(*backend)->Initialize();
+    io_thread->PostTask(FROM_HERE,
+                        base::Bind(callback, result));
+  } else {
+    io_thread->PostTask(FROM_HERE,
+                        base::Bind(
+                            &DeleteBackendImpl,
+                            backend, callback, result));
+  }
 }
 
 }  // namespace disk_cache

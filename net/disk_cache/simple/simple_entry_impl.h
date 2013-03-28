@@ -11,6 +11,8 @@
 #include "base/memory/weak_ptr.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/disk_cache/simple/simple_disk_format.h"
+#include "net/disk_cache/simple/simple_index.h"
+
 
 namespace net {
 class IOBuffer;
@@ -25,17 +27,20 @@ class SimpleSynchronousEntry;
 // on the worker thread.
 class SimpleEntryImpl : public Entry {
  public:
-  static int OpenEntry(const base::FilePath& path,
+  static int OpenEntry(base::WeakPtr<SimpleIndex> index,
+                       const base::FilePath& path,
                        const std::string& key,
                        Entry** entry,
                        const CompletionCallback& callback);
 
-  static int CreateEntry(const base::FilePath& path,
+  static int CreateEntry(base::WeakPtr<SimpleIndex> index,
+                         const base::FilePath& path,
                          const std::string& key,
                          Entry** entry,
                          const CompletionCallback& callback);
 
-  static int DoomEntry(const base::FilePath& path,
+  static int DoomEntry(base::WeakPtr<SimpleIndex> index,
+                       const base::FilePath& path,
                        const std::string& key,
                        const CompletionCallback& callback);
 
@@ -74,7 +79,8 @@ class SimpleEntryImpl : public Entry {
   virtual int ReadyForSparseIO(const CompletionCallback& callback) OVERRIDE;
 
  private:
-  explicit SimpleEntryImpl(SimpleSynchronousEntry* synchronous_entry);
+  SimpleEntryImpl(SimpleSynchronousEntry* synchronous_entry,
+                  base::WeakPtr<SimpleIndex> index);
 
   virtual ~SimpleEntryImpl();
 
@@ -83,7 +89,9 @@ class SimpleEntryImpl : public Entry {
   // and passes it back to the caller via |out_entry|. Also runs
   // |completion_callback|.
   static void CreationOperationComplete(
+      base::WeakPtr<SimpleIndex> index,
       const CompletionCallback& completion_callback,
+      const std::string& key,
       Entry** out_entry,
       SimpleSynchronousEntry* sync_entry);
 
@@ -123,9 +131,11 @@ class SimpleEntryImpl : public Entry {
   SimpleSynchronousEntry* synchronous_entry_;
 
   // Set to true when a worker operation is posted on the |synchronous_entry_|,
-  // and false after. Used to insure thread safety by not allowing multiple
+  // and false after. Used to ensure thread safety by not allowing multiple
   // threads to access the |synchronous_entry_| simultaneously.
   bool synchronous_entry_in_use_by_worker_;
+
+  base::WeakPtr<SimpleIndex> index_;
 };
 
 }  // namespace disk_cache
