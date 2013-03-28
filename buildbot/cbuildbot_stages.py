@@ -1201,7 +1201,9 @@ class SyncChromeStage(bs.BuilderStage):
           commands.CheckPGOData(self._GetArchitectures(), cpv)):
       cros_build_lib.Info('PGO data already generated')
       sys.exit(0)
-    elif self._chrome_rev and chrome_atom_to_build and self._options.buildbot:
+    elif (self._chrome_rev and not chrome_atom_to_build and
+          self._options.buildbot and
+          self._build_config['build_type'] == constants.CHROME_PFQ_TYPE):
       cros_build_lib.Info('Chrome already uprevved')
       sys.exit(0)
 
