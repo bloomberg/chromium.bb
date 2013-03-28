@@ -8,7 +8,7 @@
 #include "media/filters/chunk_demuxer.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebCString.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSourceBuffer.h"
+#include "webkit/media/websourcebuffer_impl.h"
 
 using ::WebKit::WebString;
 using ::WebKit::WebMediaSourceClient;
@@ -23,66 +23,6 @@ COMPILE_ASSERT_MATCHING_STATUS_ENUM(AddStatusOk, kOk);
 COMPILE_ASSERT_MATCHING_STATUS_ENUM(AddStatusNotSupported, kNotSupported);
 COMPILE_ASSERT_MATCHING_STATUS_ENUM(AddStatusReachedIdLimit, kReachedIdLimit);
 #undef COMPILE_ASSERT_MATCHING_ENUM
-
-class WebSourceBufferImpl : public WebKit::WebSourceBuffer {
- public:
-  WebSourceBufferImpl(const std::string& id,
-                      scoped_refptr<media::ChunkDemuxer> demuxer);
-  virtual ~WebSourceBufferImpl();
-
-  // WebKit::WebSourceBuffer implementation.
-  virtual WebKit::WebTimeRanges buffered() OVERRIDE;
-  virtual void append(const unsigned char* data, unsigned length) OVERRIDE;
-  virtual void abort() OVERRIDE;
-  virtual bool setTimestampOffset(double offset) OVERRIDE;
-  virtual void removedFromMediaSource() OVERRIDE;
-
- private:
-  std::string id_;
-  scoped_refptr<media::ChunkDemuxer> demuxer_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebSourceBufferImpl);
-};
-
-WebSourceBufferImpl::WebSourceBufferImpl(
-    const std::string& id, scoped_refptr<media::ChunkDemuxer> demuxer)
-    : id_(id),
-      demuxer_(demuxer) {
-  DCHECK(demuxer_);
-}
-
-WebSourceBufferImpl::~WebSourceBufferImpl() {
-  DCHECK(!demuxer_) << "Object destroyed w/o removedFromMediaSource() call";
-}
-
-WebKit::WebTimeRanges WebSourceBufferImpl::buffered() {
-  media::Ranges<base::TimeDelta> ranges = demuxer_->GetBufferedRanges(id_);
-  WebKit::WebTimeRanges result(ranges.size());
-  for (size_t i = 0; i < ranges.size(); i++) {
-    result[i].start = ranges.start(i).InSecondsF();
-    result[i].end = ranges.end(i).InSecondsF();
-  }
-  return result;
-}
-
-void WebSourceBufferImpl::append(const unsigned char* data, unsigned length) {
-  demuxer_->AppendData(id_, data, length);
-}
-
-void WebSourceBufferImpl::abort() {
-  demuxer_->Abort(id_);
-}
-
-bool WebSourceBufferImpl::setTimestampOffset(double offset) {
-  base::TimeDelta time_offset = base::TimeDelta::FromMicroseconds(
-      offset * base::Time::kMicrosecondsPerSecond);
-  return demuxer_->SetTimestampOffset(id_, time_offset);
-}
-
-void WebSourceBufferImpl::removedFromMediaSource() {
-  demuxer_->RemoveId(id_);
-  demuxer_ = NULL;
-}
 
 WebMediaSourceClientImpl::WebMediaSourceClientImpl(
     const scoped_refptr<media::ChunkDemuxer>& demuxer,
