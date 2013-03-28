@@ -108,7 +108,6 @@ class ConstrainedWebDialogDelegateViewViews
   virtual views::View* GetInitiallyFocusedView() OVERRIDE {
     return this;
   }
-  virtual bool CanResize() const OVERRIDE { return true; }
   virtual void WindowClosing() OVERRIDE {
     if (!impl_->closed_via_webui())
       GetWebDialogDelegate()->OnDialogClosed(std::string());
@@ -181,6 +180,7 @@ class ConstrainedWebDialogDelegateViewViews
     return impl_->window();
   }
 
+ private:
   scoped_ptr<ConstrainedWebDialogDelegateViews> impl_;
 
   DISALLOW_COPY_AND_ASSIGN(ConstrainedWebDialogDelegateViewViews);
