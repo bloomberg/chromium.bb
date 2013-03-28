@@ -1413,7 +1413,7 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
         else:
           ldflags = config.get('ldflags', [])
           # Compute an rpath for this output if needed.
-          if any(dep.endswith('.so') for dep in deps):
+          if any(dep.endswith('.so') or '.so.' in dep for dep in deps):
             # We want to get the literal string "$ORIGIN" into the link command,
             # so we need lots of escaping.
             ldflags.append(r'-Wl,-rpath=\$$ORIGIN/lib.%s/' % self.toolset)
