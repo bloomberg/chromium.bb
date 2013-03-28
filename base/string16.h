@@ -34,18 +34,19 @@
 
 #if defined(WCHAR_T_IS_UTF16)
 
+namespace base {
+
 typedef wchar_t char16;
 typedef std::wstring string16;
-
-namespace base {
 typedef std::char_traits<wchar_t> string16_char_traits;
-}
+
+}  // namespace base
 
 #elif defined(WCHAR_T_IS_UTF32)
 
-typedef uint16 char16;
-
 namespace base {
+
+typedef uint16 char16;
 
 // char16 versions of the functions required by string16_char_traits; these
 // are based on the wide character functions of similar names ("w" or "wcs"
@@ -126,6 +127,14 @@ struct string16_char_traits {
   }
 };
 
+typedef std::basic_string<char16, base::string16_char_traits> string16;
+
+BASE_EXPORT extern std::ostream& operator<<(std::ostream& out,
+                                            const string16& str);
+
+// This is required by googletest to print a readable output on test failures.
+BASE_EXPORT extern void PrintTo(const string16& str, std::ostream* out);
+
 }  // namespace base
 
 // The string class will be explicitly instantiated only once, in string16.cc.
@@ -168,18 +177,13 @@ struct string16_char_traits {
 // TODO(mark): File this bug with Apple and update this note with a bug number.
 
 extern template
-class BASE_EXPORT std::basic_string<char16, base::string16_char_traits>;
-
-typedef std::basic_string<char16, base::string16_char_traits> string16;
-
-namespace base {
-BASE_EXPORT extern std::ostream& operator<<(std::ostream& out,
-                                            const string16& str);
-
-// This is required by googletest to print a readable output on test failures.
-BASE_EXPORT extern void PrintTo(const string16& str, std::ostream* out);
-}
+class BASE_EXPORT std::basic_string<base::char16, base::string16_char_traits>;
 
 #endif  // WCHAR_T_IS_UTF32
+
+// TODO(brettw) update users of string16 to use the namespace and remove
+// this "using".
+using base::char16;
+using base::string16;
 
 #endif  // BASE_STRING16_H_
