@@ -103,7 +103,12 @@ class AutofillDialogController {
   virtual string16 LabelForSection(DialogSection section) const = 0;
   virtual string16 SuggestionTextForSection(DialogSection section) = 0;
   virtual gfx::Image SuggestionIconForSection(DialogSection section) = 0;
+
+  // Should be called when the user starts editing of the section.
   virtual void EditClickedForSection(DialogSection section) = 0;
+
+  // Should be called when the user cancels editing of the section.
+  virtual void EditCancelledForSection(DialogSection section) = 0;
 
   // Returns an icon to be displayed along with the input for the given type.
   // |user_input| is the current text in the textfield.

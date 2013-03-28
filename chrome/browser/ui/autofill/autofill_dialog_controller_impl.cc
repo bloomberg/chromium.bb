@@ -737,6 +737,15 @@ void AutofillDialogControllerImpl::EditClickedForSection(
   view_->UpdateSection(section);
 }
 
+void AutofillDialogControllerImpl::EditCancelledForSection(
+    DialogSection section) {
+  DetailInputs* inputs = MutableRequestedFieldsForSection(section);
+  for (size_t i = 0; i < inputs->size(); ++i)
+    (*inputs)[i].autofilled_value.clear();
+  section_editing_state_[section] = false;
+  view_->UpdateSection(section);
+}
+
 gfx::Image AutofillDialogControllerImpl::IconForField(
     AutofillFieldType type, const string16& user_input) const {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
@@ -1168,9 +1177,8 @@ void AutofillDialogControllerImpl::Observe(
 
 void AutofillDialogControllerImpl::SuggestionItemSelected(
     const SuggestionsMenuModel& model) {
-  DialogSection section = SectionForSuggestionsMenuModel(model);
-  section_editing_state_[section] = false;
-  view_->UpdateSection(section);
+  const DialogSection section = SectionForSuggestionsMenuModel(model);
+  EditCancelledForSection(section);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
