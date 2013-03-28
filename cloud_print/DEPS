@@ -1,7 +1,8 @@
 include_rules = [
-  "+chrome/common/chrome_switches.h",
+  "+chrome/common",
   "+chrome/installer/launcher_support",
-  "+grit",  # For generated headers
+  "+google_apis/gaia/gaia_urls.h",
+  "+grit",
   "+net",
   "+printing",
 ]

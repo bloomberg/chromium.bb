@@ -17,6 +17,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/scoped_handle.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "cloud_print/service/service_state.h"
 #include "cloud_print/service/service_switches.h"
@@ -29,7 +30,6 @@
 namespace {
 
 const wchar_t kAppDataSubDir[] = L"Google\\Cloud Printe Service";
-const wchar_t kServiceStateFileName[] = L"Service State";
 
 void InvalidUsage() {
   base::FilePath service_path;
@@ -193,11 +193,13 @@ class CloudPrintServiceModule
       string16 run_as_user;
       string16 run_as_password;
       base::FilePath user_data_dir;
-      SelectWindowsAccount(&run_as_user, &run_as_password, &user_data_dir);
+      std::vector<std::string> printers;
+      SelectWindowsAccount(&run_as_user, &run_as_password, &user_data_dir,
+                           &printers);
       DCHECK(user_data_dir_switch_.empty() ||
              user_data_dir_switch_ == user_data_dir);
 
-      HRESULT hr = SetupServiceState(user_data_dir);
+      HRESULT hr = SetupServiceState(user_data_dir, printers);
       if (FAILED(hr))
         return hr;
 
@@ -234,7 +236,8 @@ class CloudPrintServiceModule
   }
 
   void SelectWindowsAccount(string16* run_as_user, string16* run_as_password,
-                            base::FilePath* user_data_dir) {
+                            base::FilePath* user_data_dir,
+                            std::vector<std::string>* printers) {
     *run_as_user = GetCurrentUserName();
     for (;;) {
       std::cout << "\nPlease provide Windows account to run service.\n";
@@ -285,29 +288,34 @@ class CloudPrintServiceModule
       std::copy(setup.printers().begin(), setup.printers().end(), cout_it);
       std::cout << "\n";
 
-      *user_data_dir = setup.user_data_dir();
-      if (AskUser("Do you want to use " + WideToASCII(*run_as_user) + "?"))
+      if (AskUser("Do you want to use " + WideToASCII(*run_as_user) + "?")) {
+        *user_data_dir = setup.user_data_dir();
+        *printers = setup.printers();
         return;
+      }
     }
   }
 
-  HRESULT SetupServiceState(const base::FilePath& user_data_dir) {
-    base::FilePath file = user_data_dir.Append(kServiceStateFileName);
+  HRESULT SetupServiceState(const base::FilePath& user_data_dir,
+                            const std::vector<std::string>& printers) {
+    base::FilePath file = user_data_dir.Append(chrome::kServiceStateFileName);
 
-    for (;;) {
+    for (size_t try_count = 0;; ++try_count) {
       std::string contents;
       ServiceState service_state;
 
       bool is_valid = file_util::ReadFileToString(file, &contents) &&
                       service_state.FromString(contents);
+      std::string proxy_id = service_state.proxy_id();
 
       std::cout << "\nFile '" << file.value() << "' content:\n";
       std::cout << contents << "\n";
 
-      if (!is_valid)
-        LOG(ERROR) << "Invalid file: " << file.value();
+      if (!is_valid && try_count) {
+        LOG(ERROR) << "Invalid or missing file: " << file.value();
+      }
 
-      if (!contents.empty()) {
+      if (is_valid) {
         if (AskUser("Do you want to use '" + WideToASCII(file.value()) + "'")) {
           return S_OK;
         } else {
@@ -316,16 +324,11 @@ class CloudPrintServiceModule
       }
 
       while (!is_valid) {
-        std::cout << "\nPlease provide Cloud Print Settings.\n";
-        std::string email = GetOption("email", service_state.email(), false);
-        std::string password = GetOption("password", "", true);
-        std::string proxy_id = service_state.proxy_id();
-        if (proxy_id.empty())
-          proxy_id = base::GenerateGUID();
-        proxy_id = GetOption("connector_id", proxy_id, false);
-        is_valid = service_state.Configure(email, password, proxy_id);
+        std::cout << "\nUse Chrome to setup Cloud Print Settings.\n";
+        std::string new_contents =
+            ChromeLauncher::CreateServiceStateFile(proxy_id, printers);
+        is_valid = !new_contents.empty();
         if (is_valid) {
-          std::string new_contents = service_state.ToString();
           if (new_contents != contents) {
             size_t  written = file_util::WriteFile(file, new_contents.c_str(),
                                                    new_contents.size());

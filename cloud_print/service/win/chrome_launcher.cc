@@ -7,13 +7,22 @@
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
+#include "base/json/json_reader.h"
+#include "base/json/json_writer.h"
 #include "base/process.h"
 #include "base/process_util.h"
+#include "base/values.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/scoped_process_information.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/installer/launcher_support/chrome_launcher_support.h"
+#include "google_apis/gaia/gaia_urls.h"
+#include "googleurl/src/gurl.h"
+#include "net/base/url_util.h"
 
 namespace {
 
@@ -53,6 +62,55 @@ bool LaunchProcess(const CommandLine& cmdline,
     *thread_id = process_info.thread_id();
 
   return true;
+}
+
+GURL GetCloudPrintServiceEnableURL(const std::string& proxy_id) {
+  GURL url(
+      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kCloudPrintServiceURL));
+  if (url.is_empty())
+    url = GURL("https://www.google.com/cloudprint");
+  url = net::AppendQueryParameter(url, "proxy", proxy_id);
+  std::string url_path(url.path() + "/enable_chrome_connector/enable.html");
+  GURL::Replacements replacements;
+  replacements.SetPathStr(url_path);
+  return url.ReplaceComponents(replacements);
+}
+
+GURL GetCloudPrintServiceEnableURLWithSignin(const std::string& proxy_id) {
+  GURL url(GaiaUrls::GetInstance()->service_login_url());
+  url = net::AppendQueryParameter(url, "service", "cloudprint");
+  url = net::AppendQueryParameter(url, "sarp", "1");
+  return net::AppendQueryParameter(
+      url, "continue", GetCloudPrintServiceEnableURL(proxy_id).spec());
+}
+
+std::string UpdateServiceState(const std::string& json) {
+  std::string result;
+
+  scoped_ptr<base::Value> service_state(base::JSONReader::Read(json));
+  base::DictionaryValue* dictionary = NULL;
+  if (!service_state->GetAsDictionary(&dictionary) || !dictionary) {
+    return result;
+  }
+
+  bool enabled = false;
+  if (!dictionary->GetBoolean(prefs::kCloudPrintProxyEnabled, &enabled) ||
+      !enabled) {
+    return result;
+  }
+
+  // Remove everything except kCloudPrintRoot.
+  base::Value* cloud_print_root = NULL;
+  dictionary->Remove(prefs::kCloudPrintRoot, &cloud_print_root);
+  dictionary->Clear();
+  dictionary->Set(prefs::kCloudPrintRoot, cloud_print_root);
+
+  dictionary->SetBoolean(prefs::kCloudPrintXmppPingEnabled, true);
+
+  base::JSONWriter::Write(dictionary, &result);
+
+  return result;
 }
 
 void DeleteAutorunKeys(const base::FilePath& user_data_dir) {
@@ -174,5 +232,76 @@ void ChromeLauncher::CopySwitchesFromCurrent(CommandLine* destination) {
   destination->CopySwitchesFrom(*CommandLine::ForCurrentProcess(),
                                 kSwitchesToCopy,
                                 arraysize(kSwitchesToCopy));
+}
+
+std::string ChromeLauncher::CreateServiceStateFile(
+    const std::string& proxy_id,
+    const std::vector<std::string>& printers) {
+  std::string result;
+
+  base::ScopedTempDir temp_user_data;
+  if (!temp_user_data.CreateUniqueTempDir()) {
+    LOG(ERROR) << "Can't create temp dir.";
+    return result;
+  }
+
+  base::FilePath chrome_path = chrome_launcher_support::GetAnyChromePath();
+
+  if (chrome_path.empty()) {
+    LOG(ERROR) << "Can't find Chrome.";
+    return result;
+  }
+
+  base::FilePath printers_file = temp_user_data.path().Append(L"printers.json");
+
+  base::ListValue printer_list;
+  printer_list.AppendStrings(printers);
+  std::string printers_json;
+  base::JSONWriter::Write(&printer_list, &printers_json);
+  size_t written = file_util::WriteFile(printers_file,
+                                        printers_json.c_str(),
+                                        printers_json.size());
+  if (written != printers_json.size()) {
+    LOG(ERROR) << "Can't write file.";
+    return result;
+  }
+
+  CommandLine cmd(chrome_path);
+  CopySwitchesFromCurrent(&cmd);
+  cmd.AppendSwitchPath(switches::kUserDataDir, temp_user_data.path());
+  cmd.AppendSwitchPath(switches::kCloudPrintSetupProxy, printers_file);
+  cmd.AppendSwitch(switches::kNoServiceAutorun);
+
+  // Optional.
+  cmd.AppendSwitch(switches::kDisableBackgroundMode);
+  cmd.AppendSwitch(switches::kDisableDefaultApps);
+  cmd.AppendSwitch(switches::kDisableExtensions);
+  cmd.AppendSwitch(switches::kDisableSync);
+  cmd.AppendSwitch(switches::kNoDefaultBrowserCheck);
+  cmd.AppendSwitch(switches::kNoFirstRun);
+
+  cmd.AppendArg(GetCloudPrintServiceEnableURLWithSignin(proxy_id).spec());
+
+  base::win::ScopedHandle chrome_handle;
+  DWORD thread_id = 0;
+  if (!LaunchProcess(cmd, chrome_handle.Receive(), &thread_id)) {
+    LOG(ERROR) << "Unable to launch Chrome.";
+    return result;
+  }
+
+  int exit_code = 0;
+  DWORD wait_result = ::WaitForSingleObject(chrome_handle, INFINITE);
+  if (wait_result != WAIT_OBJECT_0) {
+    LOG(ERROR) << "Chrome launch failed.";
+    return result;
+  }
+
+  std::string json;
+  if (!file_util::ReadFileToString(
+          temp_user_data.path().Append(chrome::kServiceStateFileName), &json)) {
+    return result;
+  }
+
+  return UpdateServiceState(json);
 }
 

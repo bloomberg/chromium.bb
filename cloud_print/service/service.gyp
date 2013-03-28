@@ -53,7 +53,9 @@
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/base/base.gyp:base_static',
+        '<(DEPTH)/base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
+        '<(DEPTH)/google_apis/google_apis.gyp:google_apis',
         '<(DEPTH)/ipc/ipc.gyp:ipc',
         '<(DEPTH)/net/net.gyp:net',
         '<(DEPTH)/printing/printing.gyp:printing',
