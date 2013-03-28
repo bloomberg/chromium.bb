@@ -15,6 +15,10 @@ BitReader::BitReader(const uint8* data, off_t size)
 
 BitReader::~BitReader() {}
 
+int BitReader::bits_available() const {
+  return 8 * bytes_left_ + num_remaining_bits_in_curr_byte_;
+}
+
 bool BitReader::ReadBitsInternal(int num_bits, uint64* out) {
   DCHECK_LE(num_bits, 64);
 

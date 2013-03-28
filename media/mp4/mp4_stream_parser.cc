@@ -281,7 +281,8 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
   if (moov_->extends.header.fragment_duration > 0) {
     duration = TimeDeltaFromRational(moov_->extends.header.fragment_duration,
                                      moov_->header.timescale);
-  } else if (moov_->header.duration > 0) {
+  } else if (moov_->header.duration > 0 &&
+             moov_->header.duration != kuint64max) {
     duration = TimeDeltaFromRational(moov_->header.duration,
                                      moov_->header.timescale);
   } else {

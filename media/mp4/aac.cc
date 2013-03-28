@@ -88,7 +88,8 @@ bool AAC::Parse(const std::vector<uint8>& data) {
   RCHECK(SkipErrorSpecificConfig());
 
   // Read extension configuration again
-  if (extension_type != 5) {
+  // Note: The check for 16 available bits comes from the AAC spec.
+  if (extension_type != 5 && reader.bits_available() >= 16) {
     uint16 sync_extension_type;
     uint8 sbr_present_flag;
     uint8 ps_present_flag;
@@ -104,11 +105,13 @@ bool AAC::Parse(const std::vector<uint8>& data) {
           if (extension_frequency_index == 0xf)
             RCHECK(reader.ReadBits(24, &extension_frequency_));
 
-          RCHECK(reader.ReadBits(11, &sync_extension_type));
-
-          if (sync_extension_type == 0x548) {
-            RCHECK(reader.ReadBits(1, &ps_present_flag));
-            ps_present = ps_present_flag != 0;
+          // Note: The check for 12 available bits comes from the AAC spec.
+          if (reader.bits_available() >= 12) {
+            RCHECK(reader.ReadBits(11, &sync_extension_type));
+            if (sync_extension_type == 0x548) {
+              RCHECK(reader.ReadBits(1, &ps_present_flag));
+              ps_present = ps_present_flag != 0;
+            }
           }
         }
       }

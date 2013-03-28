@@ -37,6 +37,9 @@ class MEDIA_EXPORT BitReader {
     return ret;
   }
 
+  // Returns the number of bits available for reading.
+  int bits_available() const;
+
  private:
   // Help function used by ReadBits to avoid inlining the bit reading logic.
   bool ReadBitsInternal(int num_bits, uint64* out);
