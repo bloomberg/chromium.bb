@@ -227,7 +227,7 @@ permission in <code>manifest.json</code>:
  ]
 </pre>
 
-<h3 id="channelid">Get channel ID</h2>
+<h3 id="channelid">Get channel ID</h3>
 
 <p>
 Similar to an email address,
@@ -415,7 +415,7 @@ function showPushMessage(message) {
 You need to add the "notifications" permission
 to <code>manifest.json</code>
 to use text notifications
-(see <a href="notifications.html">Desktop Notifications</a>):
+(see <a href="desktop_notifications.html">Desktop Notifications</a>):
 </p>
 
 <pre>
@@ -452,7 +452,7 @@ Here's a brief summary of the push messaging errors:
   or errors in the HTTP post such as a missing access token).</li>
 </ul>
 
-<h2 id="test">Testing</h3>
+<h2 id="test">Testing</h2>
 
 <p>
 To test push messaging locally,
@@ -461,8 +461,9 @@ your app or extension on the Extensions management page
 (go to <strong>chrome://extensions</strong> in your browser).
 Your app or extension doesn't need to be running, just installed.
 You need to get the channel ID at install time
-using <a href="http://developer.chrome.com/apps/app.runtime.html#event-onLaunched">app.runtime.onLaunched</a> (apps) or
-<a href="http://developer.chrome.com/extensions/runtime.html#event-onInstalled">runtime.onInstalled</a> (extensions).
+using
+{{?is_apps}}$ref:app.runtime.onLaunched.{{/is_apps}}
+{{^is_apps}}$ref:runtime.onInstalled.{{/is_apps}}
 Then, use that channel ID on the server to send a test
 push message through the system.
 If all goes well,

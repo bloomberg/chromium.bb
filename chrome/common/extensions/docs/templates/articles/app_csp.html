@@ -39,12 +39,12 @@ you from doing the following:</p>
 <ul>
 	<li>You can’t use inline scripting in your packaged app pages.
 		The restriction bans both &lt;script> blocks and
-		event handlers (&lt;button onclick=”...”>).</li>
+		event handlers (&lt;button onclick="...">).</li>
 	<li>You can’t reference any external resources in any of your app files
 		(except for video and audio resources).
 		You can’t embed external resources in an iframe.</li>
 	<li>You can’t use string-to-JavaScript methods like
-		<code>eval()</code> and <code>function()</code>.</li>
+		<code>eval()</code> and <code>new Function()</code>.</li>
 </ul>
 
 <p>This is implemented via the following policy value:</p>
@@ -120,7 +120,7 @@ because they have good fallback behavior when offline or under spotty connectivi
 <p>
 Instead of using an iframe,
 you can call out to an external URL using an object tag
-(see <a href="app_external.html#objecttag">Embed external web pages</a>).
+(see <a href="app_external.html#webview">Embed external web pages</a>).
 </p>
 
 <p class="backtotop"><a href="#top">Back to top</a></p>

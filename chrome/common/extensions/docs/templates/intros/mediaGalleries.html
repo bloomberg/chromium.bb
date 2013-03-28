@@ -47,17 +47,17 @@ specific media galleries at runtime using the media gallery configuration
 dialog. This dialog can be programmatically triggered.  Alternatively,
 specifying the "allAutoDetected" permission parameter grants access to all
 auto-detected media galleries on the user's computer. However, this
-permission displays an install time prompt indicating that the extension
+permission displays an install time prompt indicating that the app
 will have access to all of the user's media files.</p>
 
 <p>On the access type axis, the "read" permission parameter grants the
-extension the right to read files. This permission does not trigger an install
+app the right to read files. This permission does not trigger an install
 time permission prompt because the user must still grant access to particular
 galleries, either with the "allAutoDetected" permission parameter or at
 runtime by using the media gallery management dialog. For example:</p>
 
 <pre>{
-  "name": "My extension",
+  "name": "My app",
   ...
   "permissions": [
     <b>{ "mediaGalleries": ["read", "allAutoDetected"] }</b>
@@ -66,9 +66,9 @@ runtime by using the media gallery management dialog. For example:</p>
 }</pre>
 
 <p>This permission will trigger an install time permission prompt
-and let the extension read from all auto-detected media galleries on the
+and let the app read from all auto-detected media galleries on the
 user's computer. The user may add or remove galleries using the
-media gallery management dialog, after which the extension will be able
+media gallery management dialog, after which the app will be able
 to read all the media files from galleries that the user has selected.</p>
 
 <p>Currently "read" is the only access type supported by

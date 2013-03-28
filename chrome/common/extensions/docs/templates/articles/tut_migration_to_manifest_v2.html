@@ -51,7 +51,7 @@ followed by more detailed summaries of what these changes mean and why they were
   <li>Are you using the <code>chrome.extension.getTabContentses()</code>
     or the <code>chrome.extension.getExtensionTabs()</code> APIs?</li>
     <ul>
-      <li>Replace with <code>chrome.extension.getViews( { “type” : “tab” } )</code>.</li>
+      <li>Replace with <code>chrome.extension.getViews( { "type" : "tab" } )</code>.</li>
     </ul>
   <li>Does your extension use a background page?</li>
     <ul>
@@ -111,7 +111,7 @@ followed by more detailed summaries of what these changes mean and why they were
         packaging it in your extension,
         then loading it from the local package.</li>
       <li>Whitelist the HTTPS domain that serves the resource
-        in the "content_security_policy” part of your manifest.</li>
+        in the "content_security_policy" part of your manifest.</li>
     </ul>
 </ul>
 
@@ -182,7 +182,7 @@ A few extension APIs have been removed and replaced with new counterparts:
     with <code>Port.sender</code>.</li>
   <li>The <code>chrome.extension.getTabContentses()</code> and the
     <code>chrome.extension.getExtensionTabs()</code> APIs have been replaced
-    by <code>chrome.extension.getViews( { “type” : “tab” } )</code>.</li>
+    by <code>chrome.extension.getViews( { "type" : "tab" } )</code>.</li>
 </ul>
 
 <h2 id="security-summary">Summary of security changes</h2>
@@ -229,8 +229,8 @@ For example, consider common instances such as:
 </p>
 
 <pre>
-&lt;body onload=”initialize()”>
-&lt;button onclick=”handleClick()” id=”button1”>
+&lt;body onload="initialize()">
+&lt;button onclick="handleClick()" id="button1">
 </pre>
 
 <p>
@@ -242,9 +242,9 @@ For example, in your JS code, use:
 </p>
 
 <pre>
-window.addEventListener(“load”, initialize);
+window.addEventListener("load", initialize);
 ...
-document.getElementById(“button1”).addEventListener(“click”,handleClick);
+document.getElementById("button1").addEventListener("click",handleClick);
 </pre>
 
 <p>

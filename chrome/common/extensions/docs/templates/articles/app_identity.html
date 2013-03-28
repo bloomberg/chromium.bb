@@ -176,7 +176,7 @@ You need to register an OAuth2 client ID with the provider
 and configure the client ID as a website.
 For the  redirect URI to be entered during registration,
 use the URL of the form:
-<code>https://<extension-id>.chromiumapp.org/<anything-here></code>
+<code>https://&lt;extension-id&gt;.chromiumapp.org/&lt;anything-here&gt;</code>
 </p>
 
 <p>
@@ -190,7 +190,7 @@ you should use:
 <h3 id="permissions_provider">Add permissions for provider</h3>
 
 <p>
-To make cross-original XHRs to Google API endpoints,
+To make cross-origin XHRs to Google API endpoints,
 you need to whitelist those patterns in the permissions:
 </p>
 
@@ -199,7 +199,7 @@ you need to whitelist those patterns in the permissions:
   ...
   "https://docs.google.com/feeds/",
   "https://docs.googleusercontent.com/",
-  “https://www.website-of-provider-with-user-photos.com/photos/”
+  "https://www.website-of-provider-with-user-photos.com/photos/"
 ]
 </pre>
 
