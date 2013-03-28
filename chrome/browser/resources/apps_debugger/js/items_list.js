@@ -434,8 +434,10 @@ cr.define('apps_dev_tool', function() {
    * @param {string} id Item ID.
    */
   ItemsList.launchApp = function(id) {
-    chrome.management.launchApp(id);
-    ItemsList.loadItemsInfo();
+    chrome.management.launchApp(id, function() {
+      // There is a delay in generation of background page for the app.
+      setTimeout(ItemsList.loadItemsInfo, 1000);
+    });
   };
 
   return {

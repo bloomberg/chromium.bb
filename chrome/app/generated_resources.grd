@@ -5400,6 +5400,9 @@ Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS">$3<ex>24</ex></ph> bits):
       <message name="IDS_APPS_DEVTOOL_UPDATE_BUTTON" desc="Text for the 'Update app/extensions' button.">
         Update apps/extensions now
       </message>
+      <message name="IDS_APPS_DEVTOOL_SEARCH" desc="Placeholder text that appears inside the search box until the user inputs data.">
+        Search
+      </message>
       <message name="IDS_APPS_DEVTOOL_NONE_INSTALLED" desc="Text that lets the user know that no extensions are installed.">
         Boo... You have no apps or extensions :-(
       </message>

@@ -793,6 +793,7 @@ bool DeveloperPrivateGetStringsFunction::RunImpl() {
 
   SET_STRING("appsDevtoolNoItems",
              IDS_APPS_DEVTOOL_NONE_INSTALLED);
+  SET_STRING("appsDevtoolSearch", IDS_APPS_DEVTOOL_SEARCH);
   SET_STRING("appsDevtoolTitle", IDS_APPS_DEVTOOL_TITLE);
   SET_STRING("extensionSettingsGetMoreExtensions", IDS_GET_MORE_EXTENSIONS);
   SET_STRING("extensionSettingsExtensionId", IDS_EXTENSIONS_ID);
