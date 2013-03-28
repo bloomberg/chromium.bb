@@ -18,30 +18,30 @@ namespace base {
 
 SharedMemory::SharedMemory()
     : mapped_file_(-1),
-      mapped_size_(0),
       inode_(0),
+      mapped_size_(0),
       memory_(NULL),
       read_only_(false),
-      created_size_(0) {
+      requested_size_(0) {
 }
 
 SharedMemory::SharedMemory(SharedMemoryHandle handle, bool read_only)
     : mapped_file_(handle.fd),
-      mapped_size_(0),
       inode_(0),
+      mapped_size_(0),
       memory_(NULL),
       read_only_(read_only),
-      created_size_(0) {
+      requested_size_(0) {
 }
 
 SharedMemory::SharedMemory(SharedMemoryHandle handle, bool read_only,
                            ProcessHandle process)
     : mapped_file_(handle.fd),
-      mapped_size_(0),
       inode_(0),
+      mapped_size_(0),
       memory_(NULL),
       read_only_(read_only),
-      created_size_(0) {
+      requested_size_(0) {
   NOTREACHED();
 }
 

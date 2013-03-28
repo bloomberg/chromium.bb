@@ -183,7 +183,7 @@ void AudioRendererHost::DoCompleteCreation(
       entry->stream_id,
       foreign_memory_handle,
       foreign_socket_handle,
-      media::PacketSizeInBytes(entry->shared_memory.created_size())));
+      media::PacketSizeInBytes(entry->shared_memory.requested_size())));
 }
 
 void AudioRendererHost::DoSendPlayingMessage(

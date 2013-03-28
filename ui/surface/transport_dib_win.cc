@@ -13,22 +13,20 @@
 #include "base/sys_info.h"
 #include "skia/ext/platform_canvas.h"
 
-TransportDIB::TransportDIB() {
+TransportDIB::TransportDIB()
+    : size_(0) {
 }
 
 TransportDIB::~TransportDIB() {
 }
 
 TransportDIB::TransportDIB(HANDLE handle)
-    : shared_memory_(handle, false /* read write */) {
+    : shared_memory_(handle, false /* read write */),
+      size_(0) {
 }
 
 // static
 TransportDIB* TransportDIB::Create(size_t size, uint32 sequence_num) {
-  size_t allocation_granularity = base::SysInfo::VMAllocationGranularity();
-  size = size / allocation_granularity + 1;
-  size = size * allocation_granularity;
-
   TransportDIB* dib = new TransportDIB;
 
   if (!dib->shared_memory_.CreateAnonymous(size)) {
@@ -70,8 +68,18 @@ skia::PlatformCanvas* TransportDIB::GetPlatformCanvas(int w, int h) {
   // will map it again.
   DCHECK(!memory()) << "Mapped file twice in the same process.";
 
-  return skia::CreatePlatformCanvas(w, h, true, handle(),
-                                    skia::RETURN_NULL_ON_FAILURE);
+  // We can't check the canvas size before mapping, but it's safe because
+  // Windows will fail to map the section if the dimensions of the canvas
+  // are too large.
+  skia::PlatformCanvas* canvas =
+      skia::CreatePlatformCanvas(w, h, true, handle(),
+                                 skia::RETURN_NULL_ON_FAILURE);
+
+  // Calculate the size for the memory region backing the canvas.
+  if (canvas)
+    size_ = skia::PlatformCanvasStrideForWidth(w) * h;
+
+  return canvas;
 }
 
 bool TransportDIB::Map() {
@@ -87,11 +95,7 @@ bool TransportDIB::Map() {
     return false;
   }
 
-  // There doesn't seem to be any way to find the size of the shared memory
-  // region! GetFileSize indicates that the handle is invalid. Thus, we
-  // conservatively set the size to the maximum and hope that the renderer
-  // isn't about to ask us to read off the end of the array.
-  size_ = std::numeric_limits<size_t>::max();
+  size_ = shared_memory_.mapped_size();
   return true;
 }
 

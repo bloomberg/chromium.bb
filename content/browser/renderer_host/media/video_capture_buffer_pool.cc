@@ -65,7 +65,7 @@ scoped_refptr<media::VideoFrame> VideoCaptureBufferPool::ReserveForProducer(
 
   Buffer* buffer = buffers_[buffer_id];
 
-  CHECK_GE(buffer->shared_memory.created_size(), GetMemorySize());
+  CHECK_GE(buffer->shared_memory.requested_size(), GetMemorySize());
 
   // Complete the reservation.
   buffer->held_by_producer = true;

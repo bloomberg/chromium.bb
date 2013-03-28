@@ -197,10 +197,17 @@ TEST(SharedMemoryTest, OpenExclusive) {
   EXPECT_TRUE(rv);
 
   // Memory1 knows it's size because it created it.
-  EXPECT_EQ(memory1.created_size(), kDataSize);
+  EXPECT_EQ(memory1.requested_size(), kDataSize);
 
   rv = memory1.Map(kDataSize);
   EXPECT_TRUE(rv);
+
+  // The mapped memory1 must be at least the size we asked for.
+  EXPECT_GE(memory1.mapped_size(), kDataSize);
+
+  // The mapped memory1 shouldn't exceed rounding for allocation granularity.
+  EXPECT_LT(memory1.mapped_size(),
+            kDataSize + base::SysInfo::VMAllocationGranularity());
 
   memset(memory1.memory(), 'G', kDataSize);
 
@@ -214,11 +221,18 @@ TEST(SharedMemoryTest, OpenExclusive) {
   EXPECT_TRUE(rv);
 
   // Memory2 shouldn't know the size because we didn't create it.
-  EXPECT_EQ(memory2.created_size(), 0U);
+  EXPECT_EQ(memory2.requested_size(), 0U);
 
   // We should be able to map the original size.
   rv = memory2.Map(kDataSize);
   EXPECT_TRUE(rv);
+
+  // The mapped memory2 must be at least the size of the original.
+  EXPECT_GE(memory2.mapped_size(), kDataSize);
+
+  // The mapped memory2 shouldn't exceed rounding for allocation granularity.
+  EXPECT_LT(memory2.mapped_size(),
+            kDataSize2 + base::SysInfo::VMAllocationGranularity());
 
   // Verify that opening memory2 didn't truncate or delete memory 1.
   char *start_ptr = static_cast<char *>(memory2.memory());
@@ -382,9 +396,9 @@ TEST(SharedMemoryTest, AnonymousExecutable) {
   options.executable = true;
 
   EXPECT_TRUE(shared_memory.Create(options));
-  EXPECT_TRUE(shared_memory.Map(shared_memory.created_size()));
+  EXPECT_TRUE(shared_memory.Map(shared_memory.requested_size()));
 
-  EXPECT_EQ(0, mprotect(shared_memory.memory(), shared_memory.created_size(),
+  EXPECT_EQ(0, mprotect(shared_memory.memory(), shared_memory.requested_size(),
                         PROT_READ | PROT_EXEC));
 }
 #endif

@@ -205,6 +205,10 @@ class SURFACE_EXPORT TransportDIB {
 
  private:
   TransportDIB();
+
+  // Verifies that the dib can hold a canvas of the requested dimensions.
+  bool VerifyCanvasSize(int w, int h);
+
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_ANDROID)
   explicit TransportDIB(base::SharedMemoryHandle dib);
   base::SharedMemory shared_memory_;

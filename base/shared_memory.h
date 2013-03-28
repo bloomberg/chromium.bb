@@ -159,15 +159,11 @@ class BASE_EXPORT SharedMemory {
   // memory is not mapped.
   bool Unmap();
 
-  // Get the size of the shared memory backing file.
-  // Note:  This size is only available to the creator of the
-  // shared memory, and not to those that opened shared memory
-  // created externally.
-  // Returns 0 if not created or unknown.
-  // Deprecated method, please keep track of the size yourself if you created
-  // it.
-  // http://crbug.com/60821
-  size_t created_size() const { return created_size_; }
+  // The size requested when the map is first created.
+  size_t requested_size() const { return requested_size_; }
+
+  // The actual size of the mapped memory (may be larger than requested).
+  size_t mapped_size() const { return mapped_size_; }
 
   // Gets a pointer to the opened memory space if it has been
   // Mapped via Map().  Returns NULL if it is not mapped.
@@ -246,12 +242,12 @@ class BASE_EXPORT SharedMemory {
   HANDLE             mapped_file_;
 #elif defined(OS_POSIX)
   int                mapped_file_;
-  size_t             mapped_size_;
   ino_t              inode_;
 #endif
+  size_t             mapped_size_;
   void*              memory_;
   bool               read_only_;
-  size_t             created_size_;
+  size_t             requested_size_;
 #if !defined(OS_POSIX)
   SharedMemoryLock   lock_;
 #endif

@@ -42,20 +42,20 @@ LazyInstance<Lock>::Leaky g_thread_lock_ = LAZY_INSTANCE_INITIALIZER;
 
 SharedMemory::SharedMemory()
     : mapped_file_(-1),
-      mapped_size_(0),
       inode_(0),
+      mapped_size_(0),
       memory_(NULL),
       read_only_(false),
-      created_size_(0) {
+      requested_size_(0) {
 }
 
 SharedMemory::SharedMemory(SharedMemoryHandle handle, bool read_only)
     : mapped_file_(handle.fd),
-      mapped_size_(0),
       inode_(0),
+      mapped_size_(0),
       memory_(NULL),
       read_only_(read_only),
-      created_size_(0) {
+      requested_size_(0) {
   struct stat st;
   if (fstat(handle.fd, &st) == 0) {
     // If fstat fails, then the file descriptor is invalid and we'll learn this
@@ -67,11 +67,11 @@ SharedMemory::SharedMemory(SharedMemoryHandle handle, bool read_only)
 SharedMemory::SharedMemory(SharedMemoryHandle handle, bool read_only,
                            ProcessHandle process)
     : mapped_file_(handle.fd),
-      mapped_size_(0),
       inode_(0),
+      mapped_size_(0),
       memory_(NULL),
       read_only_(read_only),
-      created_size_(0) {
+      requested_size_(0) {
   // We don't handle this case yet (note the ignored parameter); let's die if
   // someone comes calling.
   NOTREACHED();
@@ -164,7 +164,7 @@ bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
         return false;
       }
     }
-    created_size_ = options.size;
+    requested_size_ = options.size;
   }
   if (fp == NULL) {
 #if !defined(OS_MACOSX)
@@ -235,7 +235,7 @@ bool SharedMemory::MapAt(off_t offset, size_t bytes) {
     // TODO(port): we set the created size here so that it is available in
     // transport_dib_android.cc. We should use ashmem_get_size_region()
     // in transport_dib_android.cc.
-    created_size_ = ashmem_bytes;
+    mapped_size_ = ashmem_bytes;
   }
 #endif
 
@@ -244,7 +244,9 @@ bool SharedMemory::MapAt(off_t offset, size_t bytes) {
 
   bool mmap_succeeded = memory_ != (void*)-1 && memory_ != NULL;
   if (mmap_succeeded) {
+#if !defined(OS_ANDROID)
     mapped_size_ = bytes;
+#endif
     DCHECK_EQ(0U, reinterpret_cast<uintptr_t>(memory_) &
         (SharedMemory::MAP_MINIMUM_ALIGNMENT - 1));
   } else {

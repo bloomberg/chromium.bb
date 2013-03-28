@@ -18,9 +18,9 @@ AudioInputSyncWriter::AudioInputSyncWriter(
       shared_memory_segment_count_(shared_memory_segment_count),
       current_segment_id_(0) {
   DCHECK_GT(shared_memory_segment_count, 0);
-  DCHECK_EQ(shared_memory->created_size() % shared_memory_segment_count, 0u);
+  DCHECK_EQ(shared_memory->requested_size() % shared_memory_segment_count, 0u);
   shared_memory_segment_size_ =
-      shared_memory->created_size() / shared_memory_segment_count;
+      shared_memory->requested_size() / shared_memory_segment_count;
 }
 
 AudioInputSyncWriter::~AudioInputSyncWriter() {}

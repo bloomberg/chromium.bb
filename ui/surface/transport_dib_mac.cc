@@ -61,7 +61,7 @@ bool TransportDIB::is_valid_id(Id id) {
 }
 
 skia::PlatformCanvas* TransportDIB::GetPlatformCanvas(int w, int h) {
-  if (!memory() && !Map())
+  if ((!memory() && !Map()) || !VerifyCanvasSize(w, h))
     return NULL;
   return skia::CreatePlatformCanvas(w, h, true, 
                                     reinterpret_cast<uint8_t*>(memory()),

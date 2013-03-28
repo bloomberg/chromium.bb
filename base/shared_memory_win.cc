@@ -7,13 +7,27 @@
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 
+namespace {
+
+// Returns the length of the memory section starting at the supplied address.
+size_t GetMemorySectionSize(void* address) {
+  MEMORY_BASIC_INFORMATION memory_info;
+  if (!::VirtualQuery(address, &memory_info, sizeof(memory_info)))
+    return 0;
+  return memory_info.RegionSize - (static_cast<char*>(address) -
+         static_cast<char*>(memory_info.AllocationBase));
+}
+
+}  // namespace.
+
 namespace base {
 
 SharedMemory::SharedMemory()
     : mapped_file_(NULL),
       memory_(NULL),
       read_only_(false),
-      created_size_(0),
+      mapped_size_(0),
+      requested_size_(0),
       lock_(NULL) {
 }
 
@@ -21,7 +35,8 @@ SharedMemory::SharedMemory(const std::wstring& name)
     : mapped_file_(NULL),
       memory_(NULL),
       read_only_(false),
-      created_size_(0),
+      requested_size_(0),
+      mapped_size_(0),
       lock_(NULL),
       name_(name) {
 }
@@ -30,7 +45,8 @@ SharedMemory::SharedMemory(SharedMemoryHandle handle, bool read_only)
     : mapped_file_(handle),
       memory_(NULL),
       read_only_(read_only),
-      created_size_(0),
+      requested_size_(0),
+      mapped_size_(0),
       lock_(NULL) {
 }
 
@@ -39,7 +55,8 @@ SharedMemory::SharedMemory(SharedMemoryHandle handle, bool read_only,
     : mapped_file_(NULL),
       memory_(NULL),
       read_only_(read_only),
-      created_size_(0),
+      requested_size_(0),
+      mapped_size_(0),
       lock_(NULL) {
   ::DuplicateHandle(process, handle,
                     GetCurrentProcess(), &mapped_file_,
@@ -75,22 +92,20 @@ bool SharedMemory::CreateAndMapAnonymous(size_t size) {
 }
 
 bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
+  // TODO(bsy,sehr): crbug.com/210609 NaCl forces us to round up 64k here,
+  // wasting 32k per mapping on average.
+  static const size_t kSectionMask = 65536 - 1;
   DCHECK(!options.executable);
   DCHECK(!mapped_file_);
   if (options.size == 0)
     return false;
 
-  if (options.size > static_cast<size_t>(std::numeric_limits<int>::max()))
+  // Check maximum accounting for overflow.
+  if (options.size >
+      static_cast<size_t>(std::numeric_limits<int>::max()) - kSectionMask)
     return false;
 
-  // NaCl's memory allocator requires 0mod64K alignment and size for
-  // shared memory objects.  To allow passing shared memory to NaCl,
-  // therefore we round the size actually created to the nearest 64K unit.
-  // To avoid client impact, we continue to retain the size as the
-  // actual requested size.
-  uint32 rounded_size = (options.size + 0xffff) & ~0xffff;
-  if (rounded_size < options.size)
-    return false;
+  size_t rounded_size = (options.size + kSectionMask) & ~kSectionMask;
   name_ = ASCIIToWide(options.name == NULL ? "" : *options.name);
   mapped_file_ = CreateFileMapping(INVALID_HANDLE_VALUE, NULL,
       PAGE_READWRITE, 0, static_cast<DWORD>(rounded_size),
@@ -98,13 +113,13 @@ bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
   if (!mapped_file_)
     return false;
 
-  created_size_ = options.size;
+  requested_size_ = options.size;
 
   // Check if the shared memory pre-exists.
   if (GetLastError() == ERROR_ALREADY_EXISTS) {
-    // If the file already existed, set created_size_ to 0 to show that
+    // If the file already existed, set requested_size_ to 0 to show that
     // we don't know the size.
-    created_size_ = 0;
+    requested_size_ = 0;
     if (!options.open_existing) {
       Close();
       return false;
@@ -149,6 +164,7 @@ bool SharedMemory::MapAt(off_t offset, size_t bytes) {
   if (memory_ != NULL) {
     DCHECK_EQ(0U, reinterpret_cast<uintptr_t>(memory_) &
         (SharedMemory::MAP_MINIMUM_ALIGNMENT - 1));
+    mapped_size_ = GetMemorySectionSize(memory_);
     return true;
   }
   return false;

@@ -24,7 +24,7 @@ AudioSyncReader::AudioSyncReader(base::SharedMemory* shared_memory,
       input_channels_(input_channels),
       renderer_callback_count_(0),
       renderer_missed_callback_count_(0) {
-  packet_size_ = media::PacketSizeInBytes(shared_memory_->created_size());
+  packet_size_ = media::PacketSizeInBytes(shared_memory_->requested_size());
   int input_memory_size = 0;
   int output_memory_size = AudioBus::CalculateMemorySize(params);
   if (input_channels_ > 0) {

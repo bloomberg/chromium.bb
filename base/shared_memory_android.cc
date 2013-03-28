@@ -37,7 +37,7 @@ bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
     DLOG(ERROR) << "Error " << err << " when setting protection of ashmem";
     return false;
   }
-  created_size_ = options.size;
+  requested_size_ = options.size;
 
   return true;
 }

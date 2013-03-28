@@ -63,7 +63,7 @@ bool TransportDIB::is_valid_id(Id id) {
 }
 
 skia::PlatformCanvas* TransportDIB::GetPlatformCanvas(int w, int h) {
-  if (!memory() && !Map())
+  if ((!memory() && !Map()) || !VerifyCanvasSize(w, h))
     return NULL;
   return skia::CreatePlatformCanvas(w, h, true,
                                     reinterpret_cast<uint8_t*>(memory()),
@@ -71,15 +71,10 @@ skia::PlatformCanvas* TransportDIB::GetPlatformCanvas(int w, int h) {
 }
 
 bool TransportDIB::Map() {
-  if (!is_valid_handle(handle()))
-    return false;
-  // We will use ashmem_get_size_region() to figure out the size in Map(size).
-  if (!shared_memory_.Map(0))
+  if (!is_valid_handle(handle()) || !shared_memory_.Map(0))
     return false;
 
-  // TODO: Note that using created_size() below is a hack. See the comment in
-  // SharedMemory::Map().
-  size_ = shared_memory_.created_size();
+  size_ = shared_memory_.mapped_size();
   return true;
 }
 

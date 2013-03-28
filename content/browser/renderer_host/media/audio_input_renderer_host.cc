@@ -159,7 +159,7 @@ void AudioInputRendererHost::DoCompleteCreation(
 
   Send(new AudioInputMsg_NotifyStreamCreated(entry->stream_id,
       foreign_memory_handle, foreign_socket_handle,
-      entry->shared_memory.created_size(),
+      entry->shared_memory.requested_size(),
       entry->shared_memory_segment_count));
 }
 
