@@ -1426,16 +1426,18 @@ void Tab::PaintIcon(gfx::Canvas* canvas) {
                        data().favicon.width(),
                        data().favicon.height(),
                        bounds, true, SkPaint());
+      } else if (!icon_animation_ && tab_audio_indicator_->IsAnimating()) {
+        // Draw the audio indicator UI only if no other icon animation is
+        // active.
+        if (!icon_animation_ && tab_audio_indicator_->IsAnimating()) {
+          tab_audio_indicator_->set_favicon(data().favicon);
+          tab_audio_indicator_->Paint(canvas, bounds);
+        }
       } else {
         DrawIconCenter(canvas, data().favicon, 0,
                        data().favicon.width(),
                        data().favicon.height(),
                        bounds, true, SkPaint());
-
-        // Draw the audio indicator UI only if no other icon animation is
-        // active.
-        if (!icon_animation_ && tab_audio_indicator_->IsAnimating())
-          tab_audio_indicator_->Paint(canvas, bounds);
       }
     }
   }

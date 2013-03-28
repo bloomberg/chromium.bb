@@ -6,6 +6,7 @@
 
 #include "chrome/browser/ui/tabs/tab_audio_indicator.h"
 #include "ui/gfx/canvas_skia_paint.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/rect.h"
 
 class TabAudioIndicatorDelegateMac : public TabAudioIndicator::Delegate {
@@ -44,7 +45,8 @@ class TabAudioIndicatorDelegateMac : public TabAudioIndicator::Delegate {
 }
 
 - (void)setBackgroundImage:(NSImage*)backgroundImage {
-  backgroundImage_.reset([backgroundImage retain]);
+  gfx::Image image([backgroundImage retain]);
+  tabAudioIndicator_->set_favicon(*image.ToImageSkia());
 }
 
 - (BOOL)isAnimating {
@@ -52,11 +54,6 @@ class TabAudioIndicatorDelegateMac : public TabAudioIndicator::Delegate {
 }
 
 - (void)drawRect:(NSRect)rect {
-  [backgroundImage_ drawInRect:[self bounds]
-                      fromRect:NSZeroRect
-                     operation:NSCompositeSourceOver
-                      fraction:1];
-
   gfx::CanvasSkiaPaint canvas(rect, false);
   canvas.set_composite_alpha(true);
   tabAudioIndicator_->Paint(&canvas, gfx::Rect(NSRectToCGRect([self bounds])));

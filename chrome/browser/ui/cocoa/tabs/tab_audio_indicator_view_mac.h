@@ -21,7 +21,6 @@ class TabAudioIndicatorDelegateMac;
  @private
   scoped_ptr<TabAudioIndicator> tabAudioIndicator_;
   scoped_ptr<TabAudioIndicatorDelegateMac> delegate_;
-  scoped_nsobject<NSImage> backgroundImage_;
 }
 
 - (void)setIsPlayingAudio:(BOOL)isPlayingAudio;

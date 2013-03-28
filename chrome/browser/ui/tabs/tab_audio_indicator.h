@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/base/animation/animation_delegate.h"
+#include "ui/gfx/image/image_skia.h"
 
 namespace gfx {
 class Canvas;
@@ -36,6 +37,8 @@ class TabAudioIndicator : public ui::AnimationDelegate {
 
   explicit TabAudioIndicator(Delegate* delegate);
   virtual ~TabAudioIndicator();
+
+  void set_favicon(const gfx::ImageSkia& favicon) { favicon_ = favicon; }
 
   void SetAnimationContainer(ui::AnimationContainer* animation_container);
   void SetIsPlayingAudio(bool is_playing_audio);
@@ -64,6 +67,7 @@ class TabAudioIndicator : public ui::AnimationDelegate {
   Delegate* delegate_;
   scoped_ptr<ui::LinearAnimation> animation_;
   scoped_refptr<ui::AnimationContainer> animation_container_;
+  gfx::ImageSkia favicon_;
 
   // The equalizer frame that's currently being displayed.
   size_t frame_index_;

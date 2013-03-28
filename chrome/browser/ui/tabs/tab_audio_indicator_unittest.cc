@@ -5,8 +5,10 @@
 #include "chrome/browser/ui/tabs/tab_audio_indicator.h"
 
 #include "base/message_loop.h"
+#include "grit/theme_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/animation/linear_animation.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/rect.h"
 
@@ -53,6 +55,11 @@ TEST_F(TabAudioIndicatorTest, Paint) {
 
   // Nothing to test here. Just exercise the paint code to verify that nothing
   // leaks or crashes.
+  indicator.Paint(&canvas, rect);
+
+  // Paint with a favicon.
+  ui::ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  indicator.set_favicon(*rb.GetImageSkiaNamed(IDR_PRODUCT_LOGO_16));
   indicator.Paint(&canvas, rect);
 }
 
