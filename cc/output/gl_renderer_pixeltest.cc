@@ -4,8 +4,13 @@
 
 #include "cc/output/gl_renderer.h"
 
+#include "cc/layers/append_quads_data.h"
 #include "cc/quads/draw_quad.h"
 #include "cc/test/pixel_test.h"
+#include "third_party/skia/include/core/SkImageFilter.h"
+#include "third_party/skia/include/core/SkMatrix.h"
+#include "third_party/skia/include/effects/SkColorFilterImageFilter.h"
+#include "third_party/skia/include/effects/SkColorMatrixFilter.h"
 
 namespace cc {
 namespace {
@@ -90,7 +95,202 @@ TEST_F(GLRendererPixelTest, SimpleGreenRect) {
   renderer_->DrawFrame(&pass_list);
 
   EXPECT_TRUE(PixelsMatchReference(
-      base::FilePath(FILE_PATH_LITERAL("green.png"))));
+      base::FilePath(FILE_PATH_LITERAL("green.png")), true));
+}
+
+TEST_F(GLRendererPixelTest, fastPassColorFilterAlpha) {
+  gfx::Rect viewport_rect(device_viewport_size_);
+
+  RenderPass::Id root_pass_id(1, 1);
+  scoped_ptr<RenderPass> root_pass =
+      CreateTestRootRenderPass(root_pass_id, viewport_rect);
+
+  RenderPass::Id child_pass_id(2, 2);
+  gfx::Rect pass_rect(device_viewport_size_);
+  gfx::Transform transform_to_root;
+  scoped_ptr<RenderPass> child_pass =
+      CreateTestRenderPass(child_pass_id, pass_rect, transform_to_root);
+
+  gfx::Transform content_to_target_transform;
+  scoped_ptr<SharedQuadState> shared_state =
+      CreateTestSharedQuadState(content_to_target_transform, viewport_rect);
+  shared_state->opacity = 0.5f;
+
+  scoped_ptr<SolidColorDrawQuad> blue = SolidColorDrawQuad::Create();
+  blue->SetNew(shared_state.get(),
+               gfx::Rect(0,
+                         0,
+                         device_viewport_size_.width() / 2,
+                         device_viewport_size_.height()),
+               SK_ColorBLUE);
+  scoped_ptr<SolidColorDrawQuad> yellow = SolidColorDrawQuad::Create();
+  yellow->SetNew(shared_state.get(),
+                 gfx::Rect(device_viewport_size_.width() / 2,
+                           0,
+                           device_viewport_size_.width() / 2,
+                           device_viewport_size_.height()),
+                 SK_ColorYELLOW);
+
+  scoped_ptr<SharedQuadState> blank_state =
+      CreateTestSharedQuadState(content_to_target_transform, viewport_rect);
+
+  scoped_ptr<SolidColorDrawQuad> white = SolidColorDrawQuad::Create();
+  white->SetNew(blank_state.get(),
+                viewport_rect,
+                SK_ColorWHITE);
+
+  child_pass->quad_list.push_back(blue.PassAs<DrawQuad>());
+  child_pass->quad_list.push_back(yellow.PassAs<DrawQuad>());
+  child_pass->quad_list.push_back(white.PassAs<DrawQuad>());
+
+  scoped_ptr<SharedQuadState> pass_shared_state =
+      CreateTestSharedQuadState(gfx::Transform(), pass_rect);
+
+  SkScalar matrix[20];
+  float amount = 0.5f;
+  matrix[0] = 0.213f + 0.787f * amount;
+  matrix[1] = 0.715f - 0.715f * amount;
+  matrix[2] = 1.f - (matrix[0] + matrix[1]);
+  matrix[3] = matrix[4] = 0;
+  matrix[5] = 0.213f - 0.213f * amount;
+  matrix[6] = 0.715f + 0.285f * amount;
+  matrix[7] = 1.f - (matrix[5] + matrix[6]);
+  matrix[8] = matrix[9] = 0;
+  matrix[10] = 0.213f - 0.213f * amount;
+  matrix[11] = 0.715f - 0.715f * amount;
+  matrix[12] = 1.f - (matrix[10] + matrix[11]);
+  matrix[13] = matrix[14] = 0;
+  matrix[15] = matrix[16] = matrix[17] = matrix[19] = 0;
+  matrix[18] = 1;
+  skia::RefPtr<SkColorFilter> colorFilter(skia::AdoptRef(
+      new SkColorMatrixFilter(matrix)));
+  skia::RefPtr<SkImageFilter> filter =
+      skia::AdoptRef(SkColorFilterImageFilter::Create(colorFilter.get(), NULL));
+
+  scoped_ptr<RenderPassDrawQuad> render_pass_quad = RenderPassDrawQuad::Create();
+  render_pass_quad->SetNew(pass_shared_state.get(),
+                           pass_rect,
+                           child_pass_id,
+                           false,
+                           0,
+                           pass_rect,
+                           gfx::RectF(),
+                           WebKit::WebFilterOperations(),
+                           filter,
+                           WebKit::WebFilterOperations());
+
+  root_pass->quad_list.push_back(render_pass_quad.PassAs<DrawQuad>());
+
+  RenderPassList pass_list;
+  pass_list.push_back(child_pass.Pass());
+  pass_list.push_back(root_pass.Pass());
+
+  renderer_->SetEnlargePassTextureAmountForTesting(gfx::Vector2d(50, 75));
+  renderer_->DecideRenderPassAllocationsForFrame(pass_list);
+  renderer_->DrawFrame(&pass_list);
+
+  EXPECT_TRUE(PixelsMatchReference(
+      base::FilePath(FILE_PATH_LITERAL("blue_yellow_alpha.png")), false));
+}
+
+TEST_F(GLRendererPixelTest, fastPassColorFilterAlphaTranslation) {
+  gfx::Rect viewport_rect(device_viewport_size_);
+
+  RenderPass::Id root_pass_id(1, 1);
+  scoped_ptr<RenderPass> root_pass =
+      CreateTestRootRenderPass(root_pass_id, viewport_rect);
+
+  RenderPass::Id child_pass_id(2, 2);
+  gfx::Rect pass_rect(device_viewport_size_);
+  gfx::Transform transform_to_root;
+  scoped_ptr<RenderPass> child_pass =
+      CreateTestRenderPass(child_pass_id, pass_rect, transform_to_root);
+
+  gfx::Transform content_to_target_transform;
+  scoped_ptr<SharedQuadState> shared_state =
+      CreateTestSharedQuadState(content_to_target_transform, viewport_rect);
+  shared_state->opacity = 0.5f;
+
+  scoped_ptr<SolidColorDrawQuad> blue = SolidColorDrawQuad::Create();
+  blue->SetNew(shared_state.get(),
+               gfx::Rect(0,
+                         0,
+                         device_viewport_size_.width() / 2,
+                         device_viewport_size_.height()),
+               SK_ColorBLUE);
+  scoped_ptr<SolidColorDrawQuad> yellow = SolidColorDrawQuad::Create();
+  yellow->SetNew(shared_state.get(),
+                 gfx::Rect(device_viewport_size_.width() / 2,
+                           0,
+                           device_viewport_size_.width() / 2,
+                           device_viewport_size_.height()),
+                 SK_ColorYELLOW);
+
+  scoped_ptr<SharedQuadState> blank_state =
+      CreateTestSharedQuadState(content_to_target_transform, viewport_rect);
+
+  scoped_ptr<SolidColorDrawQuad> white = SolidColorDrawQuad::Create();
+  white->SetNew(blank_state.get(),
+                viewport_rect,
+                SK_ColorWHITE);
+
+  child_pass->quad_list.push_back(blue.PassAs<DrawQuad>());
+  child_pass->quad_list.push_back(yellow.PassAs<DrawQuad>());
+  child_pass->quad_list.push_back(white.PassAs<DrawQuad>());
+
+  scoped_ptr<SharedQuadState> pass_shared_state =
+      CreateTestSharedQuadState(gfx::Transform(), pass_rect);
+
+  SkScalar matrix[20];
+  float amount = 0.5f;
+  matrix[0] = 0.213f + 0.787f * amount;
+  matrix[1] = 0.715f - 0.715f * amount;
+  matrix[2] = 1.f - (matrix[0] + matrix[1]);
+  matrix[3] = 0;
+  matrix[4] = 20.f;
+  matrix[5] = 0.213f - 0.213f * amount;
+  matrix[6] = 0.715f + 0.285f * amount;
+  matrix[7] = 1.f - (matrix[5] + matrix[6]);
+  matrix[8] = 0;
+  matrix[9] = 200.f;
+  matrix[10] = 0.213f - 0.213f * amount;
+  matrix[11] = 0.715f - 0.715f * amount;
+  matrix[12] = 1.f - (matrix[10] + matrix[11]);
+  matrix[13] = 0;
+  matrix[14] = 1.5f;
+  matrix[15] = matrix[16] = matrix[17] = matrix[19] = 0;
+  matrix[18] = 1;
+  skia::RefPtr<SkColorFilter> colorFilter(skia::AdoptRef(
+      new SkColorMatrixFilter(matrix)));
+  skia::RefPtr<SkImageFilter> filter =
+      skia::AdoptRef(SkColorFilterImageFilter::Create(colorFilter.get(), NULL));
+
+  scoped_ptr<RenderPassDrawQuad> render_pass_quad =
+      RenderPassDrawQuad::Create();
+  render_pass_quad->SetNew(pass_shared_state.get(),
+                           pass_rect,
+                           child_pass_id,
+                           false,
+                           0,
+                           pass_rect,
+                           gfx::RectF(),
+                           WebKit::WebFilterOperations(),
+                           filter,
+                           WebKit::WebFilterOperations());
+
+  root_pass->quad_list.push_back(render_pass_quad.PassAs<DrawQuad>());
+  RenderPassList pass_list;
+
+  pass_list.push_back(child_pass.Pass());
+  pass_list.push_back(root_pass.Pass());
+
+  renderer_->SetEnlargePassTextureAmountForTesting(gfx::Vector2d(50, 75));
+  renderer_->DecideRenderPassAllocationsForFrame(pass_list);
+  renderer_->DrawFrame(&pass_list);
+
+  EXPECT_TRUE(PixelsMatchReference(
+      base::FilePath(FILE_PATH_LITERAL("blue_yellow_alpha_translate.png")),
+      false));
 }
 
 TEST_F(GLRendererPixelTest, RenderPassChangesSize) {
@@ -144,7 +344,7 @@ TEST_F(GLRendererPixelTest, RenderPassChangesSize) {
   renderer_->DrawFrame(&pass_list);
 
   EXPECT_TRUE(PixelsMatchReference(
-      base::FilePath(FILE_PATH_LITERAL("blue_yellow.png"))));
+      base::FilePath(FILE_PATH_LITERAL("blue_yellow.png")), true));
 }
 
 class GLRendererPixelTestWithBackgroundFilter : public GLRendererPixelTest {
@@ -271,7 +471,7 @@ TEST_F(GLRendererPixelTestWithBackgroundFilter, InvertFilter) {
 
   DrawFrame();
   EXPECT_TRUE(PixelsMatchReference(
-      base::FilePath(FILE_PATH_LITERAL("background_filter.png"))));
+      base::FilePath(FILE_PATH_LITERAL("background_filter.png")), true));
 }
 
 TEST_F(GLRendererPixelTest, AntiAliasing) {
@@ -317,7 +517,7 @@ TEST_F(GLRendererPixelTest, AntiAliasing) {
   renderer_->DrawFrame(&pass_list);
 
   EXPECT_TRUE(PixelsMatchReference(
-      base::FilePath(FILE_PATH_LITERAL("anti_aliasing.png"))));
+      base::FilePath(FILE_PATH_LITERAL("anti_aliasing.png")), true));
 }
 #endif
 
