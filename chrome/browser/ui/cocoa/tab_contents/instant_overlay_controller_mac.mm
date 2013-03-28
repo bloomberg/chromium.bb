@@ -53,9 +53,12 @@ void InstantOverlayControllerMac::OverlayStateChanged(
     // Set top bars (bookmark and info bars) visibility for current tab via
     // |SearchTabHelper| of current active web contents: top bars are hidden if
     // there's overlay.
+    // Only do so if origin is |DEFAULT|; top bars visibilty for other origins
+    // are determined by SearchBox API.
     SearchTabHelper* search_tab_helper = SearchTabHelper::FromWebContents(
         browser_->tab_strip_model()->GetActiveWebContents());
-    if (search_tab_helper) {
+    if (search_tab_helper &&
+        search_tab_helper->model()->mode().is_origin_default()) {
       search_tab_helper->model()->SetTopBarsVisible(
           ![overlay_ isShowingOverlay]);
     }

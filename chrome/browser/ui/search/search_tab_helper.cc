@@ -69,6 +69,18 @@ void SearchTabHelper::NavigationEntryUpdated() {
   UpdateMode();
 }
 
+void SearchTabHelper::OnStopObservingTab() {
+  if (!is_search_enabled_)
+    return;
+
+  // When switching away from a |DEFAULT| tab with an Instant overlay, the
+  // overlay will be closed, so bookmark and info bars should be visible for
+  // this tab if user switches back to it.
+  const SearchMode& mode = model_.state().mode;
+  if (mode.is_origin_default() && mode.is_search_suggestions())
+    model_.SetTopBarsVisible(true);
+}
+
 void SearchTabHelper::Observe(
     int type,
     const content::NotificationSource& source,

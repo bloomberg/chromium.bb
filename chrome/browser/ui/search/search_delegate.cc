@@ -43,6 +43,10 @@ void SearchDelegate::StopObservingTab(content::WebContents* web_contents) {
       SearchTabHelper::FromWebContents(web_contents);
   if (search_tab_helper->model() == tab_model_) {
     tab_model_->RemoveObserver(this);
+    // We let SearchTabHelper handle tab deactivation/detachment after we've
+    // stopped observing this tab's search model because there's no need to
+    // notify observers of state change of a detactivated/detached tab.
+    search_tab_helper->OnStopObservingTab();
     tab_model_ = NULL;
   }
 }
