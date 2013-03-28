@@ -169,6 +169,38 @@ std::string GetPrefixForDialogType(autofill::DialogType dialog_type) {
   return "UnknownDialogType";
 }
 
+std::string WalletApiMetricToString(
+    AutofillMetrics::WalletApiCallMetric metric) {
+  switch (metric) {
+    case AutofillMetrics::ACCEPT_LEGAL_DOCUMENTS:
+      return "ACCEPT_LEGAL_DOCUMENTS";
+    case AutofillMetrics::AUTHENTICATE_INSTRUMENT:
+      return "AUTHENTICATE_INSTRUMENT";
+    case AutofillMetrics::GET_FULL_WALLET:
+      return "GET_FULL_WALLET";
+    case AutofillMetrics::GET_WALLET_ITEMS:
+      return "GET_WALLET_ITEMS";
+    case AutofillMetrics::SAVE_ADDRESS:
+      return "SAVE_ADDRESS";
+    case AutofillMetrics::SAVE_INSTRUMENT:
+      return "SAVE_INSTRUMENT";
+    case AutofillMetrics::SAVE_INSTRUMENT_AND_ADDRESS:
+      return "SAVE_INSTRUMENT_AND_ADDRESS";
+    case AutofillMetrics::SEND_STATUS:
+      return "SEND_STATUS";
+    case AutofillMetrics::UPDATE_ADDRESS:
+      return "UPDATE_ADDRESS";
+    case AutofillMetrics::UPDATE_INSTRUMENT:
+      return "UPDATE_INSTRUMENT";
+    case AutofillMetrics::UNKNOWN_API_CALL:
+      NOTREACHED();
+      return "UNKNOWN_API_CALL";
+  }
+
+  NOTREACHED();
+  return "UNKNOWN_API_CALL";
+}
+
 // A version of the UMA_HISTOGRAM_ENUMERATION macro that allows the |name|
 // to vary over the program's runtime.
 void LogUMAHistogramEnumeration(const std::string& name,
@@ -185,6 +217,21 @@ void LogUMAHistogramEnumeration(const std::string& name,
           boundary_value + 1,
           base::HistogramBase::kUmaTargetedHistogramFlag);
   histogram->Add(sample);
+}
+
+// A version of the UMA_HISTOGRAM_TIMES macro that allows the |name|
+// to vary over the program's runtime.
+void LogUMAHistogramTimes(const std::string& name,
+                          const base::TimeDelta& duration) {
+  // Note: This leaks memory, which is expected behavior.
+  base::HistogramBase* histogram =
+      base::Histogram::FactoryTimeGet(
+          name,
+          base::TimeDelta::FromMilliseconds(1),
+          base::TimeDelta::FromSeconds(10),
+          50,
+          base::HistogramBase::kUmaTargetedHistogramFlag);
+  histogram->AddTime(duration);
 }
 
 // A version of the UMA_HISTOGRAM_LONG_TIMES macro that allows the |name|
@@ -342,6 +389,13 @@ void AutofillMetrics::LogWalletErrorMetric(autofill::DialogType dialog_type,
                                            WalletErrorMetric metric) const {
   std::string name = GetPrefixForDialogType(dialog_type) + ".WalletErrors";
   LogUMAHistogramEnumeration(name, metric, NUM_WALLET_ERROR_METRICS);
+}
+
+void AutofillMetrics::LogWalletApiCallDuration(
+    WalletApiCallMetric metric,
+    const base::TimeDelta& duration) const {
+  LogUMAHistogramTimes("Wallet." + WalletApiMetricToString(metric) +
+                       ".ApiCallDuration", duration);
 }
 
 void AutofillMetrics::LogWalletRequiredActionMetric(

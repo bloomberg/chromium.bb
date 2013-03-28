@@ -197,6 +197,22 @@ class AutofillMetrics {
     NUM_USER_HAPPINESS_METRICS,
   };
 
+  // For measuring the network request time of various Wallet API calls. See
+  // WalletClient::RequestType.
+  enum WalletApiCallMetric {
+    UNKNOWN_API_CALL,  // Catch all. Should never be used.
+    ACCEPT_LEGAL_DOCUMENTS,
+    AUTHENTICATE_INSTRUMENT,
+    GET_FULL_WALLET,
+    GET_WALLET_ITEMS,
+    SAVE_ADDRESS,
+    SAVE_INSTRUMENT,
+    SAVE_INSTRUMENT_AND_ADDRESS,
+    SEND_STATUS,
+    UPDATE_ADDRESS,
+    UPDATE_INSTRUMENT,
+  };
+
   // For measuring the frequency of errors while communicating with the Wallet
   // server.
   enum WalletErrorMetric {
@@ -237,7 +253,7 @@ class AutofillMetrics {
     // Baseline metric: Issued a request to the Wallet server.
     WALLET_REQUIRED_ACTION_BASELINE_ISSUED_REQUEST = 0,
     // Values from the autofill::wallet::RequiredAction enum:
-    UNKNOWN_TYPE,  // Catch all type.
+    UNKNOWN_REQUIRED_ACTION,  // Catch all type.
     GAIA_AUTH,
     PASSIVE_GAIA_AUTH,
     SETUP_WALLET,
@@ -309,6 +325,11 @@ class AutofillMetrics {
   // Logs |metric| to the Wallet errors histogram for |dialog_type|.
   virtual void LogWalletErrorMetric(autofill::DialogType dialog_type,
                                     WalletErrorMetric metric) const;
+
+  // Logs the network request time of Wallet API calls.
+  virtual void LogWalletApiCallDuration(
+      WalletApiCallMetric metric,
+      const base::TimeDelta& duration) const;
 
   // Logs |required_action| to the required actions histogram for |dialog_type|.
   virtual void LogWalletRequiredActionMetric(

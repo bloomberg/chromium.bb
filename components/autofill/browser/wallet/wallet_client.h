@@ -11,8 +11,10 @@
 
 #include "base/callback.h"  // For base::Closure.
 #include "base/memory/ref_counted.h"
+#include "base/time.h"
 #include "base/values.h"
 #include "components/autofill/browser/autofill_manager_delegate.h"
+#include "components/autofill/browser/autofill_metrics.h"
 #include "components/autofill/browser/wallet/cart.h"
 #include "components/autofill/browser/wallet/encryption_escrow_client.h"
 #include "components/autofill/browser/wallet/encryption_escrow_client_observer.h"
@@ -259,6 +261,10 @@ class WalletClient
   void LogRequiredActions(
       const std::vector<RequiredAction>& required_actions) const;
 
+  // Converts |request_type| to an UMA metric.
+  AutofillMetrics::WalletApiCallMetric RequestTypeToUmaMetric(
+      RequestType request_type) const;
+
   // The context for the request. Ensures the gdToken cookie is set as a header
   // in the requests to Online Wallet if it is present.
   scoped_refptr<net::URLRequestContextGetter> context_getter_;
@@ -288,6 +294,9 @@ class WalletClient
   // This client is repsonsible for making encryption and escrow calls to Online
   // Wallet.
   EncryptionEscrowClient encryption_escrow_client_;
+
+  // When the current request started. Used to track client side latency.
+  base::Time request_started_timestamp_;
 
   DISALLOW_COPY_AND_ASSIGN(WalletClient);
 };

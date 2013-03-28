@@ -147,7 +147,7 @@ AutofillMetrics::WalletRequiredActionMetric RequiredActionToUmaMetric(
     RequiredAction required_action) {
   switch (required_action) {
     case UNKNOWN_TYPE:
-      return AutofillMetrics::UNKNOWN_TYPE;
+      return AutofillMetrics::UNKNOWN_REQUIRED_ACTION;
     case CHOOSE_ANOTHER_INSTRUMENT_OR_ADDRESS:
       return AutofillMetrics::CHOOSE_ANOTHER_INSTRUMENT_OR_ADDRESS;
     case SETUP_WALLET:
@@ -171,7 +171,7 @@ AutofillMetrics::WalletRequiredActionMetric RequiredActionToUmaMetric(
   }
 
   NOTREACHED();
-  return AutofillMetrics::UNKNOWN_TYPE;
+  return AutofillMetrics::UNKNOWN_REQUIRED_ACTION;
 }
 
 // Keys for JSON communication with the Online Wallet server.
@@ -592,6 +592,7 @@ void WalletClient::MakeWalletRequest(const GURL& url,
   request_->SetRequestContext(context_getter_);
   DVLOG(1) << "Making request to " << url << " with post_body=" << post_body;
   request_->SetUploadData(kJsonMimeType, post_body);
+  request_started_timestamp_ = base::Time::Now();
   request_->Start();
 
   delegate_->GetMetricLogger().LogWalletErrorMetric(
@@ -605,6 +606,10 @@ void WalletClient::MakeWalletRequest(const GURL& url,
 // TODO(ahutter): Add manual retry logic if it's necessary.
 void WalletClient::OnURLFetchComplete(
     const net::URLFetcher* source) {
+  delegate_->GetMetricLogger().LogWalletApiCallDuration(
+      RequestTypeToUmaMetric(request_type_),
+      base::Time::Now() - request_started_timestamp_);
+
   DCHECK_EQ(source, request_.get());
   DVLOG(1) << "Got response from " << source->GetOriginalURL();
 
@@ -891,6 +896,38 @@ void WalletClient::LogRequiredActions(
         delegate_->GetDialogType(),
         RequiredActionToUmaMetric(required_actions[i]));
   }
+}
+
+AutofillMetrics::WalletApiCallMetric WalletClient::RequestTypeToUmaMetric(
+    RequestType request_type) const {
+  switch (request_type) {
+    case ACCEPT_LEGAL_DOCUMENTS:
+      return AutofillMetrics::ACCEPT_LEGAL_DOCUMENTS;
+    case AUTHENTICATE_INSTRUMENT:
+      return AutofillMetrics::AUTHENTICATE_INSTRUMENT;
+    case GET_FULL_WALLET:
+      return AutofillMetrics::GET_FULL_WALLET;
+    case GET_WALLET_ITEMS:
+      return AutofillMetrics::GET_WALLET_ITEMS;
+    case SAVE_ADDRESS:
+      return AutofillMetrics::SAVE_ADDRESS;
+    case SAVE_INSTRUMENT:
+      return AutofillMetrics::SAVE_INSTRUMENT;
+    case SAVE_INSTRUMENT_AND_ADDRESS:
+      return AutofillMetrics::SAVE_INSTRUMENT_AND_ADDRESS;
+    case SEND_STATUS:
+      return AutofillMetrics::SEND_STATUS;
+    case UPDATE_ADDRESS:
+      return AutofillMetrics::UPDATE_ADDRESS;
+    case UPDATE_INSTRUMENT:
+      return AutofillMetrics::UPDATE_INSTRUMENT;
+    case NO_PENDING_REQUEST:
+      NOTREACHED();
+      return AutofillMetrics::UNKNOWN_API_CALL;
+  }
+
+  NOTREACHED();
+  return AutofillMetrics::UNKNOWN_API_CALL;
 }
 
 }  // namespace wallet
