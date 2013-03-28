@@ -103,16 +103,6 @@ void SyncInvalidationListener::Start(
   registration_manager_.reset(
       new RegistrationManager(invalidation_client_.get()));
 
-  // TODO(rlarocque): This call exists as part of an effort to move the
-  // invalidator's ID out of sync.  It writes the provided (sync-managed) ID to
-  // storage that lives on the UI thread.  Once this has been in place for a
-  // milestone or two, we can remove it and start looking for invalidator client
-  // IDs exclusively in the InvalidationStateTracker.  See crbug.com/124142.
-  invalidation_state_tracker_.Call(
-      FROM_HERE,
-      &InvalidationStateTracker::SetInvalidatorClientId,
-      client_id);
-
   // Set up reminders for any invalidations that have not been locally
   // acknowledged.
   ObjectIdSet unacknowledged_ids;

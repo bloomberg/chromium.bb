@@ -33,7 +33,6 @@ class AndroidInvalidatorBridgeProxy : public syncer::Invalidator {
   virtual void Acknowledge(const invalidation::ObjectId& id,
                            const syncer::AckHandle& ack_handle) OVERRIDE;
   virtual syncer::InvalidatorState GetInvalidatorState() const OVERRIDE;
-  virtual void SetUniqueId(const std::string& unique_id) OVERRIDE;
   virtual void UpdateCredentials(
       const std::string& email, const std::string& token) OVERRIDE;
   virtual void SendInvalidation(

@@ -33,6 +33,7 @@ class InvalidationNotifierTestDelegate {
   }
 
   void CreateInvalidator(
+      const std::string& invalidator_client_id,
       const std::string& initial_state,
       const base::WeakPtr<InvalidationStateTracker>&
           invalidation_state_tracker) {
@@ -40,6 +41,7 @@ class InvalidationNotifierTestDelegate {
     invalidator_.reset(
         new InvalidationNotifier(
             scoped_ptr<notifier::PushClient>(new notifier::FakePushClient()),
+            invalidator_client_id,
             InvalidationStateMap(),
             initial_state,
             MakeWeakHandle(invalidation_state_tracker),

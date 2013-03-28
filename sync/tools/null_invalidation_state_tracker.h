@@ -30,6 +30,8 @@ class NullInvalidationStateTracker
   virtual std::string GetBootstrapData() const OVERRIDE;
   virtual void SetBootstrapData(const std::string& data) OVERRIDE;
 
+  virtual void Clear() OVERRIDE;
+
   virtual void GenerateAckHandles(
       const ObjectIdSet& ids,
       const scoped_refptr<base::TaskRunner>& task_runner,

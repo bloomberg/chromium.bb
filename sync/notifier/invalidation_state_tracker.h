@@ -75,6 +75,9 @@ class InvalidationStateTracker {
   virtual void SetBootstrapData(const std::string& data) = 0;
   virtual std::string GetBootstrapData() const = 0;
 
+  // Erases invalidation versions, client ID, and state stored on disk.
+  virtual void Clear() = 0;
+
   // Used for generating our own local ack handles. Generates a new ack handle
   // for each object id in |ids|. The result is returned via |callback| posted
   // to |task_runner|.

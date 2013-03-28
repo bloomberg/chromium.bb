@@ -338,6 +338,7 @@ int SyncClientMain(int argc, char* argv[]) {
                     credentials,
                     scoped_ptr<Invalidator>(
                         invalidator_factory.CreateInvalidator()),
+                    invalidator_factory.GetInvalidatorClientId(),
                     kRestoredKeyForBootstrapping,
                     kRestoredKeystoreKeyForBootstrapping,
                     scoped_ptr<InternalComponentsFactory>(

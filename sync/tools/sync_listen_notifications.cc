@@ -201,8 +201,6 @@ int SyncListenNotificationsMain(int argc, char* argv[]) {
       invalidator_factory.CreateInvalidator());
   NotificationPrinter notification_printer;
 
-  const char kUniqueId[] = "fake_unique_id";
-  invalidator->SetUniqueId(kUniqueId);
   invalidator->UpdateCredentials(email, token);
 
   // Listen for notifications for all known types.

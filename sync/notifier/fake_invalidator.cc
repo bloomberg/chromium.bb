@@ -19,10 +19,6 @@ ObjectIdSet FakeInvalidator::GetRegisteredIds(
   return registrar_.GetRegisteredIds(handler);
 }
 
-const std::string& FakeInvalidator::GetUniqueId() const {
-  return unique_id_;
-}
-
 const std::string& FakeInvalidator::GetCredentialsEmail() const {
   return email_;
 }
@@ -65,10 +61,6 @@ void FakeInvalidator::Acknowledge(const invalidation::ObjectId& id,
 
 InvalidatorState FakeInvalidator::GetInvalidatorState() const {
   return registrar_.GetInvalidatorState();
-}
-
-void FakeInvalidator::SetUniqueId(const std::string& unique_id) {
-  unique_id_ = unique_id;
 }
 
 void FakeInvalidator::UpdateCredentials(

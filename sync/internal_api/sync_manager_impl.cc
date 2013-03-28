@@ -340,6 +340,7 @@ void SyncManagerImpl::Init(
     SyncManager::ChangeDelegate* change_delegate,
     const SyncCredentials& credentials,
     scoped_ptr<Invalidator> invalidator,
+    const std::string& invalidator_client_id,
     const std::string& restored_key_for_bootstrapping,
     const std::string& restored_keystore_key_for_bootstrapping,
     scoped_ptr<InternalComponentsFactory> internal_components_factory,
@@ -417,16 +418,11 @@ void SyncManagerImpl::Init(
 
   std::string sync_id = directory()->cache_guid();
 
-  // TODO(rlarocque): The invalidator client ID should be independent from the
-  // sync client ID.  See crbug.com/124142.
-  const std::string invalidator_client_id = sync_id;
-
   allstatus_.SetSyncId(sync_id);
   allstatus_.SetInvalidatorClientId(invalidator_client_id);
 
   DVLOG(1) << "Setting sync client ID: " << sync_id;
   DVLOG(1) << "Setting invalidator client ID: " << invalidator_client_id;
-  invalidator_->SetUniqueId(invalidator_client_id);
 
   // Build a SyncSessionContext and store the worker in it.
   DVLOG(1) << "Sync is bringing up SyncSessionContext.";

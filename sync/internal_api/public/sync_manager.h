@@ -292,6 +292,8 @@ class SYNC_EXPORT SyncManager {
   // |user_agent| is a 7-bit ASCII string suitable for use as the User-Agent
   // HTTP header. Used internally when collecting stats to classify clients.
   // |invalidator| is owned and used to listen for invalidations.
+  // |invalidator_client_id| is used to unqiuely identify this client to the
+  // invalidation notification server.
   // |restored_key_for_bootstrapping| is the key used to boostrap the
   // cryptographer
   // |keystore_encryption_enabled| determines whether we enable the keystore
@@ -312,6 +314,7 @@ class SYNC_EXPORT SyncManager {
       ChangeDelegate* change_delegate,
       const SyncCredentials& credentials,
       scoped_ptr<Invalidator> invalidator,
+      const std::string& invalidator_client_id,
       const std::string& restored_key_for_bootstrapping,
       const std::string& restored_keystore_key_for_bootstrapping,
       scoped_ptr<InternalComponentsFactory> internal_components_factory,

@@ -40,9 +40,6 @@ class InvalidatorStorage : public base::SupportsWeakPtr<InvalidatorStorage>,
   explicit InvalidatorStorage(PrefService* pref_service);
   virtual ~InvalidatorStorage();
 
-  // Erases invalidation versions and state stored on disk.
-  void Clear();
-
   // InvalidationStateTracker implementation.
   virtual syncer::InvalidationStateMap GetAllInvalidationStates() const
       OVERRIDE;
@@ -54,6 +51,7 @@ class InvalidatorStorage : public base::SupportsWeakPtr<InvalidatorStorage>,
   virtual std::string GetInvalidatorClientId() const OVERRIDE;
   virtual void SetBootstrapData(const std::string& data) OVERRIDE;
   virtual std::string GetBootstrapData() const OVERRIDE;
+  virtual void Clear() OVERRIDE;
   virtual void GenerateAckHandles(
       const syncer::ObjectIdSet& ids,
       const scoped_refptr<base::TaskRunner>& task_runner,

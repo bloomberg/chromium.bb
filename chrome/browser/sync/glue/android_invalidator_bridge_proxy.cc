@@ -46,10 +46,6 @@ void AndroidInvalidatorBridgeProxy::Acknowledge(
   bridge_->Acknowledge(id, ack_handle);
 }
 
-void AndroidInvalidatorBridgeProxy::SetUniqueId(const string& unique_id) {
-  bridge_->SetUniqueId(unique_id);
-}
-
 void AndroidInvalidatorBridgeProxy::UpdateCredentials(
     const string& email, const string& token) {
   bridge_->UpdateCredentials(email, token);

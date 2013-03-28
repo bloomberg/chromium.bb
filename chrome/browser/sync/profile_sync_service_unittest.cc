@@ -556,10 +556,6 @@ class ProfileSyncServiceInvalidator : public syncer::Invalidator {
     return service_->GetInvalidatorState();
   }
 
-  virtual void SetUniqueId(const std::string& unique_id) OVERRIDE {
-    // Do nothing.
-  }
-
   virtual void UpdateCredentials(
       const std::string& email, const std::string& token) OVERRIDE {
     // Do nothing.
@@ -590,6 +586,7 @@ class ProfileSyncServiceInvalidatorTestDelegate {
   }
 
   void CreateInvalidator(
+      const std::string& invalidation_client_id,
       const std::string& initial_state,
       const base::WeakPtr<syncer::InvalidationStateTracker>&
           invalidation_state_tracker) {

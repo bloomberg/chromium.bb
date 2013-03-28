@@ -30,6 +30,7 @@ class NonBlockingInvalidator::Core
   // Helpers called on I/O thread.
   void Initialize(
       const notifier::NotifierOptions& notifier_options,
+      const std::string& invalidator_client_id,
       const InvalidationStateMap& initial_invalidation_state_map,
       const std::string& invalidation_bootstrap_data,
       const WeakHandle<InvalidationStateTracker>& invalidation_state_tracker,
@@ -38,7 +39,6 @@ class NonBlockingInvalidator::Core
   void UpdateRegisteredIds(const ObjectIdSet& ids);
   void Acknowledge(const invalidation::ObjectId& id,
                    const AckHandle& ack_handle);
-  void SetUniqueId(const std::string& unique_id);
   void UpdateCredentials(const std::string& email, const std::string& token);
 
   // InvalidationHandler implementation (all called on I/O thread by
@@ -72,6 +72,7 @@ NonBlockingInvalidator::Core::~Core() {
 
 void NonBlockingInvalidator::Core::Initialize(
     const notifier::NotifierOptions& notifier_options,
+    const std::string& invalidator_client_id,
     const InvalidationStateMap& initial_invalidation_state_map,
     const std::string& invalidation_bootstrap_data,
     const WeakHandle<InvalidationStateTracker>& invalidation_state_tracker,
@@ -85,6 +86,7 @@ void NonBlockingInvalidator::Core::Initialize(
   invalidation_notifier_.reset(
       new InvalidationNotifier(
           notifier::PushClient::CreateDefaultOnIOThread(notifier_options),
+          invalidator_client_id,
           initial_invalidation_state_map,
           invalidation_bootstrap_data,
           invalidation_state_tracker,
@@ -110,11 +112,6 @@ void NonBlockingInvalidator::Core::Acknowledge(const invalidation::ObjectId& id,
   invalidation_notifier_->Acknowledge(id, ack_handle);
 }
 
-void NonBlockingInvalidator::Core::SetUniqueId(const std::string& unique_id) {
-  DCHECK(network_task_runner_->BelongsToCurrentThread());
-  invalidation_notifier_->SetUniqueId(unique_id);
-}
-
 void NonBlockingInvalidator::Core::UpdateCredentials(const std::string& email,
                                                      const std::string& token) {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
@@ -138,6 +135,7 @@ void NonBlockingInvalidator::Core::OnIncomingInvalidation(
 
 NonBlockingInvalidator::NonBlockingInvalidator(
     const notifier::NotifierOptions& notifier_options,
+    const std::string& invalidator_client_id,
     const InvalidationStateMap& initial_invalidation_state_map,
     const std::string& invalidation_bootstrap_data,
     const WeakHandle<InvalidationStateTracker>&
@@ -156,6 +154,7 @@ NonBlockingInvalidator::NonBlockingInvalidator(
               &NonBlockingInvalidator::Core::Initialize,
               core_.get(),
               notifier_options,
+              invalidator_client_id,
               initial_invalidation_state_map,
               invalidation_bootstrap_data,
               invalidation_state_tracker,
@@ -215,16 +214,6 @@ void NonBlockingInvalidator::Acknowledge(const invalidation::ObjectId& id,
 InvalidatorState NonBlockingInvalidator::GetInvalidatorState() const {
   DCHECK(parent_task_runner_->BelongsToCurrentThread());
   return registrar_.GetInvalidatorState();
-}
-
-void NonBlockingInvalidator::SetUniqueId(const std::string& unique_id) {
-  DCHECK(parent_task_runner_->BelongsToCurrentThread());
-  if (!network_task_runner_->PostTask(
-          FROM_HERE,
-          base::Bind(&NonBlockingInvalidator::Core::SetUniqueId,
-                     core_.get(), unique_id))) {
-    NOTREACHED();
-  }
 }
 
 void NonBlockingInvalidator::UpdateCredentials(const std::string& email,

@@ -19,6 +19,7 @@ namespace syncer {
 
 InvalidationNotifier::InvalidationNotifier(
     scoped_ptr<notifier::PushClient> push_client,
+    const std::string& invalidator_client_id,
     const InvalidationStateMap& initial_invalidation_state_map,
     const std::string& invalidation_bootstrap_data,
     const WeakHandle<InvalidationStateTracker>& invalidation_state_tracker,
@@ -27,6 +28,7 @@ InvalidationNotifier::InvalidationNotifier(
       initial_invalidation_state_map_(initial_invalidation_state_map),
       invalidation_state_tracker_(invalidation_state_tracker),
       client_info_(client_info),
+      invalidator_client_id_(invalidator_client_id),
       invalidation_bootstrap_data_(invalidation_bootstrap_data),
       invalidation_listener_(&tick_clock_, push_client.Pass()) {
 }
@@ -63,19 +65,12 @@ InvalidatorState InvalidationNotifier::GetInvalidatorState() const {
   return registrar_.GetInvalidatorState();
 }
 
-void InvalidationNotifier::SetUniqueId(const std::string& unique_id) {
-  DCHECK(CalledOnValidThread());
-  client_id_ = unique_id;
-  DVLOG(1) << "Setting unique ID to " << unique_id;
-  CHECK(!client_id_.empty());
-}
-
 void InvalidationNotifier::UpdateCredentials(
     const std::string& email, const std::string& token) {
   if (state_ == STOPPED) {
     invalidation_listener_.Start(
         base::Bind(&invalidation::CreateInvalidationClient),
-        client_id_, client_info_, invalidation_bootstrap_data_,
+        invalidator_client_id_, client_info_, invalidation_bootstrap_data_,
         initial_invalidation_state_map_,
         invalidation_state_tracker_,
         this);

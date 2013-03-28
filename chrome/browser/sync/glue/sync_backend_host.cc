@@ -1194,6 +1194,7 @@ void SyncBackendHost::Core::DoInitialize(const DoInitializeOptions& options) {
       scoped_ptr<syncer::Invalidator>(
           options.invalidator_factory->CreateInvalidator()),
 #endif
+      options.invalidator_factory->GetInvalidatorClientId(),
       options.restored_key_for_bootstrapping,
       options.restored_keystore_key_for_bootstrapping,
       scoped_ptr<InternalComponentsFactory>(

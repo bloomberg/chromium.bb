@@ -38,6 +38,7 @@ class SYNC_EXPORT_PRIVATE NonBlockingInvalidator
   // |invalidation_state_tracker| must be initialized.
   NonBlockingInvalidator(
       const notifier::NotifierOptions& notifier_options,
+      const std::string& invalidator_client_id,
       const InvalidationStateMap& initial_invalidation_state_map,
       const std::string& invalidation_bootstrap_data,
       const WeakHandle<InvalidationStateTracker>&
@@ -54,7 +55,6 @@ class SYNC_EXPORT_PRIVATE NonBlockingInvalidator
   virtual void Acknowledge(const invalidation::ObjectId& id,
                            const AckHandle& ack_handle) OVERRIDE;
   virtual InvalidatorState GetInvalidatorState() const OVERRIDE;
-  virtual void SetUniqueId(const std::string& unique_id) OVERRIDE;
   virtual void UpdateCredentials(
       const std::string& email, const std::string& token) OVERRIDE;
   virtual void SendInvalidation(

@@ -815,6 +815,7 @@ class SyncManagerTest : public testing::Test,
                        workers, &extensions_activity_monitor_, this,
                        credentials,
                        scoped_ptr<Invalidator>(fake_invalidator_),
+                       "fake_invalidator_client_id",
                        "", "",  // bootstrap tokens
                        scoped_ptr<InternalComponentsFactory>(GetFactory()),
                        &encryptor_,

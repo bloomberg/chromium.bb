@@ -43,6 +43,7 @@ class SYNC_EXPORT_PRIVATE InvalidationNotifier
   // |invalidation_state_tracker| must be initialized.
   InvalidationNotifier(
       scoped_ptr<notifier::PushClient> push_client,
+      const std::string& invalidator_client_id,
       const InvalidationStateMap& initial_invalidation_state_map,
       const std::string& invalidation_bootstrap_data,
       const WeakHandle<InvalidationStateTracker>&
@@ -59,7 +60,6 @@ class SYNC_EXPORT_PRIVATE InvalidationNotifier
   virtual void Acknowledge(const invalidation::ObjectId& id,
                            const AckHandle& ack_handle) OVERRIDE;
   virtual InvalidatorState GetInvalidatorState() const OVERRIDE;
-  virtual void SetUniqueId(const std::string& unique_id) OVERRIDE;
   virtual void UpdateCredentials(
       const std::string& email, const std::string& token) OVERRIDE;
   virtual void SendInvalidation(
@@ -95,7 +95,7 @@ class SYNC_EXPORT_PRIVATE InvalidationNotifier
   const std::string client_info_;
 
   // The client ID to pass to |invalidation_listener_|.
-  std::string client_id_;
+  const std::string invalidator_client_id_;
 
   // The initial bootstrap data to pass to |invalidation_listener_|.
   const std::string invalidation_bootstrap_data_;

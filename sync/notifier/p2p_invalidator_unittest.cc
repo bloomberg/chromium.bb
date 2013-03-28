@@ -27,6 +27,7 @@ class P2PInvalidatorTestDelegate {
   }
 
   void CreateInvalidator(
+      const std::string& invalidator_client_id,
       const std::string& initial_state,
       const base::WeakPtr<InvalidationStateTracker>&
           invalidation_state_tracker) {
@@ -36,6 +37,7 @@ class P2PInvalidatorTestDelegate {
     invalidator_.reset(
         new P2PInvalidator(
             scoped_ptr<notifier::PushClient>(fake_push_client_),
+            invalidator_client_id,
             NOTIFY_OTHERS));
   }
 
@@ -84,7 +86,8 @@ class P2PInvalidatorTest : public testing::Test {
  protected:
   P2PInvalidatorTest()
       : next_sent_notification_to_reflect_(0) {
-    delegate_.CreateInvalidator("fake_state",
+    delegate_.CreateInvalidator("sender",
+                                "fake_state",
                                 base::WeakPtr<InvalidationStateTracker>());
     delegate_.GetInvalidator()->RegisterHandler(&fake_handler_);
   }
@@ -214,8 +217,6 @@ TEST_F(P2PInvalidatorTest, NotificationsBasic) {
   invalidator->UpdateRegisteredIds(&fake_handler_,
                                    ModelTypeSetToObjectIdSet(enabled_types));
 
-  invalidator->SetUniqueId("sender");
-
   const char kEmail[] = "foo@bar.com";
   const char kToken[] = "token";
   invalidator->UpdateCredentials(kEmail, kToken);
@@ -272,7 +273,6 @@ TEST_F(P2PInvalidatorTest, SendNotificationData) {
   invalidator->UpdateRegisteredIds(&fake_handler_,
                                    ModelTypeSetToObjectIdSet(enabled_types));
 
-  invalidator->SetUniqueId("sender");
   invalidator->UpdateCredentials("foo@bar.com", "fake_token");
 
   ReflectSentNotifications();

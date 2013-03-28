@@ -263,6 +263,7 @@ void InvalidatorStorage::DeserializeMap(
 
 void InvalidatorStorage::SetInvalidatorClientId(const std::string& client_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  Clear();  // We can't reuse our old invalidation state if the ID changes.
   pref_service_->SetString(prefs::kInvalidatorClientId, client_id);
 }
 

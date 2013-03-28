@@ -31,6 +31,7 @@ class FakeInvalidationStateTracker
   virtual std::string GetInvalidatorClientId() const OVERRIDE;
   virtual void SetBootstrapData(const std::string& data) OVERRIDE;
   virtual std::string GetBootstrapData() const OVERRIDE;
+  virtual void Clear() OVERRIDE;
   virtual void GenerateAckHandles(
       const ObjectIdSet& ids,
       const scoped_refptr<base::TaskRunner>& task_runner,

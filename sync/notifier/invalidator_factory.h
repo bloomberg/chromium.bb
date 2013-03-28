@@ -36,13 +36,18 @@ class SYNC_EXPORT InvalidatorFactory {
   // factory from which it was created.  Can be called on any thread.
   Invalidator* CreateInvalidator();
 
+  // Returns the unique ID that was (or will be) passed to the invalidator.
+  std::string GetInvalidatorClientId() const;
+
  private:
   const notifier::NotifierOptions notifier_options_;
+
+  // Some of these should be const, but can't be set up in member initializers.
+  InvalidationStateMap initial_invalidation_state_map_;
   const std::string client_info_;
-  const InvalidationStateMap initial_invalidation_state_map_;
-  const std::string invalidation_bootstrap_data_;
-  const WeakHandle<InvalidationStateTracker>
-      invalidation_state_tracker_;
+  std::string invalidator_client_id_;
+  std::string invalidation_bootstrap_data_;
+  WeakHandle<InvalidationStateTracker> invalidation_state_tracker_;
 };
 
 }  // namespace syncer

@@ -52,10 +52,6 @@ class RegistrarInvalidator : public Invalidator {
     return registrar_.GetInvalidatorState();
   }
 
-  virtual void SetUniqueId(const std::string& unique_id) OVERRIDE {
-    // Do nothing.
-  }
-
   virtual void UpdateCredentials(
       const std::string& email, const std::string& token) OVERRIDE {
     // Do nothing.
@@ -81,6 +77,7 @@ class RegistrarInvalidatorTestDelegate {
   }
 
   void CreateInvalidator(
+      const std::string& invalidator_client_id,
       const std::string& initial_state,
       const base::WeakPtr<InvalidationStateTracker>&
           invalidation_state_tracker) {

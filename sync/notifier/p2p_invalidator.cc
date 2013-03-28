@@ -137,8 +137,10 @@ bool P2PNotificationData::ResetFromString(const std::string& str) {
 }
 
 P2PInvalidator::P2PInvalidator(scoped_ptr<notifier::PushClient> push_client,
+                               const std::string& invalidator_client_id,
                                P2PNotificationTarget send_notification_target)
     : push_client_(push_client.Pass()),
+      invalidator_client_id_(invalidator_client_id),
       logged_in_(false),
       notifications_enabled_(false),
       send_notification_target_(send_notification_target) {
@@ -169,7 +171,8 @@ void P2PInvalidator::UpdateRegisteredIds(InvalidationHandler* handler,
                       ObjectIdLessThan());
   registrar_.UpdateRegisteredIds(handler, ids);
   const P2PNotificationData notification_data(
-      unique_id_, NOTIFY_SELF, ObjectIdSetToInvalidationMap(new_ids, ""));
+      invalidator_client_id_, NOTIFY_SELF,
+      ObjectIdSetToInvalidationMap(new_ids, ""));
   SendNotificationData(notification_data);
 }
 
@@ -187,11 +190,6 @@ void P2PInvalidator::Acknowledge(const invalidation::ObjectId& id,
 InvalidatorState P2PInvalidator::GetInvalidatorState() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   return registrar_.GetInvalidatorState();
-}
-
-void P2PInvalidator::SetUniqueId(const std::string& unique_id) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  unique_id_ = unique_id;
 }
 
 void P2PInvalidator::UpdateCredentials(
@@ -215,7 +213,7 @@ void P2PInvalidator::SendInvalidation(
     const ObjectIdInvalidationMap& invalidation_map) {
   DCHECK(thread_checker_.CalledOnValidThread());
   const P2PNotificationData notification_data(
-      unique_id_, send_notification_target_, invalidation_map);
+      invalidator_client_id_, send_notification_target_, invalidation_map);
   SendNotificationData(notification_data);
 }
 
@@ -226,7 +224,7 @@ void P2PInvalidator::OnNotificationsEnabled() {
   registrar_.UpdateInvalidatorState(INVALIDATIONS_ENABLED);
   if (just_turned_on) {
     const P2PNotificationData notification_data(
-        unique_id_, NOTIFY_SELF,
+        invalidator_client_id_, NOTIFY_SELF,
         ObjectIdSetToInvalidationMap(registrar_.GetAllRegisteredIds(), ""));
     SendNotificationData(notification_data);
   }
@@ -260,10 +258,10 @@ void P2PInvalidator::OnIncomingNotification(
                  << notification.data;
     notification_data =
         P2PNotificationData(
-            unique_id_, NOTIFY_ALL,
+            invalidator_client_id_, NOTIFY_ALL,
             ObjectIdSetToInvalidationMap(registrar_.GetAllRegisteredIds(), ""));
   }
-  if (!notification_data.IsTargeted(unique_id_)) {
+  if (!notification_data.IsTargeted(invalidator_client_id_)) {
     DVLOG(1) << "Not a target of the notification -- "
              << "not emitting notification";
     return;

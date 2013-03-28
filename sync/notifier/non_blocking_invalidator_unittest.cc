@@ -33,6 +33,7 @@ class NonBlockingInvalidatorTestDelegate {
   }
 
   void CreateInvalidator(
+      const std::string& invalidator_client_id,
       const std::string& initial_state,
       const base::WeakPtr<InvalidationStateTracker>&
           invalidation_state_tracker) {
@@ -47,6 +48,7 @@ class NonBlockingInvalidatorTestDelegate {
     invalidator_.reset(
         new NonBlockingInvalidator(
             invalidator_options,
+            invalidator_client_id,
             InvalidationStateMap(),
             initial_state,
             MakeWeakHandle(invalidation_state_tracker),

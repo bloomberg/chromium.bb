@@ -43,6 +43,12 @@ void NullInvalidationStateTracker::SetInvalidatorClientId(
 }
 
 std::string NullInvalidationStateTracker::GetInvalidatorClientId() const {
+  // The caller of this function is probably looking for an ID it can use to
+  // identify this client as the originator of some notifiable change.  It does
+  // this so the invalidation server can prevent it from being notified of its
+  // own changes.  This invalidation state tracker doesn't remember its ID, so
+  // it can't support this feature.
+  NOTREACHED() << "This state tracker does not support reflection-blocking";
   return std::string();
 }
 
@@ -54,6 +60,10 @@ void NullInvalidationStateTracker::SetBootstrapData(const std::string& data) {
   std::string base64_data;
   CHECK(base::Base64Encode(data, &base64_data));
   LOG(INFO) << "Setting bootstrap data to: " << base64_data;
+}
+
+void NullInvalidationStateTracker::Clear() {
+  // We have no members to clear.
 }
 
 void NullInvalidationStateTracker::GenerateAckHandles(

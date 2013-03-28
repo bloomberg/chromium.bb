@@ -101,11 +101,11 @@ class InvalidatorTest : public testing::Test {
   }
 
   Invalidator* CreateAndInitializeInvalidator() {
-    this->delegate_.CreateInvalidator("fake_initial_state",
+    this->delegate_.CreateInvalidator("fake_invalidator_client_id",
+                                      "fake_initial_state",
                                       this->fake_tracker_.AsWeakPtr());
     Invalidator* const invalidator = this->delegate_.GetInvalidator();
 
-    invalidator->SetUniqueId("fake_id");
     this->delegate_.WaitForInvalidator();
     invalidator->UpdateCredentials("foo@bar.com", "fake_token");
     this->delegate_.WaitForInvalidator();

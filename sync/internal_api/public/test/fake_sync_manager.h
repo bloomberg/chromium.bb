@@ -81,6 +81,7 @@ class FakeSyncManager : public SyncManager {
       ChangeDelegate* change_delegate,
       const SyncCredentials& credentials,
       scoped_ptr<Invalidator> invalidator,
+      const std::string& invalidator_client_id,
       const std::string& restored_key_for_bootstrapping,
       const std::string& restored_keystore_key_for_bootstrapping,
       scoped_ptr<InternalComponentsFactory> internal_components_factory,

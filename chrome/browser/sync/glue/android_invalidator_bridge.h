@@ -52,7 +52,6 @@ class AndroidInvalidatorBridge
 
   // The following members of the Invalidator interface are not applicable to
   // this invalidator and are implemented as no-ops.
-  virtual void SetUniqueId(const std::string& unique_id) OVERRIDE;
   virtual void UpdateCredentials(
       const std::string& email, const std::string& token) OVERRIDE;
   virtual void SendInvalidation(

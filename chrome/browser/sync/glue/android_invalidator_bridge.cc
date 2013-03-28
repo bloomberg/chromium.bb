@@ -174,8 +174,6 @@ syncer::InvalidatorState AndroidInvalidatorBridge::GetInvalidatorState() const {
   return syncer::INVALIDATIONS_ENABLED;
 }
 
-void AndroidInvalidatorBridge::SetUniqueId(const std::string& unique_id) { }
-
 void AndroidInvalidatorBridge::UpdateCredentials(
     const std::string& email, const std::string& token) { }
 
