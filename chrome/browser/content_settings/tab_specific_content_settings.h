@@ -285,11 +285,6 @@ class TabSpecificContentSettings
   // This method is called when a media stream is allowed.
   void OnMediaStreamAllowed();
 
-  void OnMicrophoneAccessed();
-  void OnMicrophoneAccessBlocked();
-  void OnCameraAccessed();
-  void OnCameraAccessBlocked();
-
   // Adds the given |SiteDataObserver|. The |observer| is notified when a
   // locale shared object, like for example a cookie, is accessed.
   void AddSiteDataObserver(SiteDataObserver* observer);
