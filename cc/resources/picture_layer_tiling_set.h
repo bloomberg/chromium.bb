@@ -72,13 +72,13 @@ class CC_EXPORT PictureLayerTilingSet {
   // through null tiles with valid geometry_rect() until the rect is full.
   // If all tiles have resources, the union of all geometry_rects will
   // exactly fill rect with no overlap.
-  class CC_EXPORT Iterator {
+  class CC_EXPORT CoverageIterator {
    public:
-    Iterator(const PictureLayerTilingSet* set,
+    CoverageIterator(const PictureLayerTilingSet* set,
       float contents_scale,
       gfx::Rect content_rect,
       float ideal_contents_scale);
-    ~Iterator();
+    ~CoverageIterator();
 
     // Visible rect (no borders), always in the space of rect,
     // regardless of the relative contents scale of the tiling.
@@ -91,7 +91,7 @@ class CC_EXPORT PictureLayerTilingSet {
     Tile* operator->() const;
     Tile* operator*() const;
 
-    Iterator& operator++();
+    CoverageIterator& operator++();
     operator bool() const;
 
     PictureLayerTiling* CurrentTiling();
@@ -102,7 +102,7 @@ class CC_EXPORT PictureLayerTilingSet {
     const PictureLayerTilingSet* set_;
     float contents_scale_;
     float ideal_contents_scale_;
-    PictureLayerTiling::Iterator tiling_iter_;
+    PictureLayerTiling::CoverageIterator tiling_iter_;
     int current_tiling_;
     int ideal_tiling_;
 

@@ -106,10 +106,8 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
       gfx::QuadF(rect),
       &clipped);
   if (ShowDebugBorders()) {
-    for (PictureLayerTilingSet::Iterator iter(tilings_.get(),
-                                              contents_scale_x(),
-                                              rect,
-                                              ideal_contents_scale_);
+    for (PictureLayerTilingSet::CoverageIterator iter(
+        tilings_.get(), contents_scale_x(), rect, ideal_contents_scale_);
          iter;
          ++iter) {
       SkColor color;
@@ -154,10 +152,8 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
   // unused can be considered for removal.
   std::vector<PictureLayerTiling*> seen_tilings;
 
-  for (PictureLayerTilingSet::Iterator iter(tilings_.get(),
-                                            contents_scale_x(),
-                                            rect,
-                                            ideal_contents_scale_);
+  for (PictureLayerTilingSet::CoverageIterator iter(
+      tilings_.get(), contents_scale_x(), rect, ideal_contents_scale_);
        iter;
        ++iter) {
     gfx::Rect geometry_rect = iter.geometry_rect();
@@ -502,7 +498,7 @@ void PictureLayerImpl::SetIsMask(bool is_mask) {
 ResourceProvider::ResourceId PictureLayerImpl::ContentsResourceId() const {
   gfx::Rect content_rect(content_bounds());
   float scale = contents_scale_x();
-  for (PictureLayerTilingSet::Iterator
+  for (PictureLayerTilingSet::CoverageIterator
            iter(tilings_.get(), scale, content_rect, ideal_contents_scale_);
        iter;
        ++iter) {
@@ -549,7 +545,9 @@ bool PictureLayerImpl::AreVisibleResourcesReady() const {
     if (tiling->contents_scale() < min_acceptable_scale)
       continue;
 
-    for (PictureLayerTiling::Iterator iter(tiling, contents_scale_x(), rect);
+    for (PictureLayerTiling::CoverageIterator iter(tiling,
+                                                   contents_scale_x(),
+                                                   rect);
          iter;
          ++iter) {
       if (should_force_uploads && *iter)

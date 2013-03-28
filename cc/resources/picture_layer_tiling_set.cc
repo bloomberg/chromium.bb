@@ -111,7 +111,7 @@ void PictureLayerTilingSet::CreateTilesFromLayerRect(gfx::Rect layer_rect) {
     tilings_[i]->CreateTilesFromLayerRect(layer_rect);
 }
 
-PictureLayerTilingSet::Iterator::Iterator(
+PictureLayerTilingSet::CoverageIterator::CoverageIterator(
     const PictureLayerTilingSet* set,
     float contents_scale,
     gfx::Rect content_rect,
@@ -139,10 +139,10 @@ PictureLayerTilingSet::Iterator::Iterator(
   ++(*this);
 }
 
-PictureLayerTilingSet::Iterator::~Iterator() {
+PictureLayerTilingSet::CoverageIterator::~CoverageIterator() {
 }
 
-gfx::Rect PictureLayerTilingSet::Iterator::geometry_rect() const {
+gfx::Rect PictureLayerTilingSet::CoverageIterator::geometry_rect() const {
   if (!tiling_iter_) {
     if (!region_iter_.has_rect())
       return gfx::Rect();
@@ -151,31 +151,31 @@ gfx::Rect PictureLayerTilingSet::Iterator::geometry_rect() const {
   return tiling_iter_.geometry_rect();
 }
 
-gfx::RectF PictureLayerTilingSet::Iterator::texture_rect() const {
+gfx::RectF PictureLayerTilingSet::CoverageIterator::texture_rect() const {
   if (!tiling_iter_)
     return gfx::RectF();
   return tiling_iter_.texture_rect();
 }
 
-gfx::Size PictureLayerTilingSet::Iterator::texture_size() const {
+gfx::Size PictureLayerTilingSet::CoverageIterator::texture_size() const {
   if (!tiling_iter_)
     return gfx::Size();
   return tiling_iter_.texture_size();
 }
 
-Tile* PictureLayerTilingSet::Iterator::operator->() const {
+Tile* PictureLayerTilingSet::CoverageIterator::operator->() const {
   if (!tiling_iter_)
     return NULL;
   return *tiling_iter_;
 }
 
-Tile* PictureLayerTilingSet::Iterator::operator*() const {
+Tile* PictureLayerTilingSet::CoverageIterator::operator*() const {
   if (!tiling_iter_)
     return NULL;
   return *tiling_iter_;
 }
 
-PictureLayerTiling* PictureLayerTilingSet::Iterator::CurrentTiling() {
+PictureLayerTiling* PictureLayerTilingSet::CoverageIterator::CurrentTiling() {
   if (current_tiling_ < 0)
     return NULL;
   if (static_cast<size_t>(current_tiling_) >= set_->tilings_.size())
@@ -183,7 +183,7 @@ PictureLayerTiling* PictureLayerTilingSet::Iterator::CurrentTiling() {
   return set_->tilings_[current_tiling_];
 }
 
-int PictureLayerTilingSet::Iterator::NextTiling() const {
+int PictureLayerTilingSet::CoverageIterator::NextTiling() const {
   // Order returned by this method is:
   // 1. Ideal tiling index
   // 2. Tiling index < Ideal in decreasing order (higher res than ideal)
@@ -199,7 +199,8 @@ int PictureLayerTilingSet::Iterator::NextTiling() const {
     return ideal_tiling_ + 1;
 }
 
-PictureLayerTilingSet::Iterator& PictureLayerTilingSet::Iterator::operator++() {
+PictureLayerTilingSet::CoverageIterator&
+PictureLayerTilingSet::CoverageIterator::operator++() {
   bool first_time = current_tiling_ < 0;
 
   if (!*this && !first_time)
@@ -249,7 +250,7 @@ PictureLayerTilingSet::Iterator& PictureLayerTilingSet::Iterator::operator++() {
 
     // Construct a new iterator for the next tiling, but we need to loop
     // again until we get to a valid one.
-    tiling_iter_ = PictureLayerTiling::Iterator(
+    tiling_iter_ = PictureLayerTiling::CoverageIterator(
         set_->tilings_[current_tiling_],
         contents_scale_,
         last_rect);
@@ -258,7 +259,7 @@ PictureLayerTilingSet::Iterator& PictureLayerTilingSet::Iterator::operator++() {
   return *this;
 }
 
-PictureLayerTilingSet::Iterator::operator bool() const {
+PictureLayerTilingSet::CoverageIterator::operator bool() const {
   return current_tiling_ < static_cast<int>(set_->tilings_.size()) ||
       region_iter_.has_rect();
 }

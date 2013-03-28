@@ -137,7 +137,9 @@ void PictureLayerTiling::Invalidate(const Region& layer_invalidation) {
     gfx::Rect rect =
         gfx::ToEnclosingRect(ScaleRect(layer_invalidation, contents_scale_));
 
-    for (PictureLayerTiling::Iterator tile_iter(this, contents_scale_, rect);
+    for (PictureLayerTiling::CoverageIterator tile_iter(this,
+                                                        contents_scale_,
+                                                        rect);
          tile_iter;
          ++tile_iter) {
       TileMapKey key(tile_iter.tile_i_, tile_iter.tile_j_);
@@ -171,7 +173,7 @@ void PictureLayerTiling::CreateTilesFromContentRect(gfx::Rect content_rect) {
   }
 }
 
-PictureLayerTiling::Iterator::Iterator()
+PictureLayerTiling::CoverageIterator::CoverageIterator()
     : tiling_(NULL),
       current_tile_(NULL),
       tile_i_(0),
@@ -182,9 +184,10 @@ PictureLayerTiling::Iterator::Iterator()
       bottom_(-1) {
 }
 
-PictureLayerTiling::Iterator::Iterator(const PictureLayerTiling* tiling,
-                                       float dest_scale,
-                                       gfx::Rect dest_rect)
+PictureLayerTiling::CoverageIterator::CoverageIterator(
+    const PictureLayerTiling* tiling,
+    float dest_scale,
+    gfx::Rect dest_rect)
     : tiling_(tiling),
       dest_rect_(dest_rect),
       dest_to_content_scale_(0),
@@ -228,10 +231,11 @@ PictureLayerTiling::Iterator::Iterator(const PictureLayerTiling* tiling,
   ++(*this);
 }
 
-PictureLayerTiling::Iterator::~Iterator() {
+PictureLayerTiling::CoverageIterator::~CoverageIterator() {
 }
 
-PictureLayerTiling::Iterator& PictureLayerTiling::Iterator::operator++() {
+PictureLayerTiling::CoverageIterator&
+PictureLayerTiling::CoverageIterator::operator++() {
   if (tile_j_ > bottom_)
     return *this;
 
@@ -292,17 +296,18 @@ PictureLayerTiling::Iterator& PictureLayerTiling::Iterator::operator++() {
   return *this;
 }
 
-gfx::Rect PictureLayerTiling::Iterator::geometry_rect() const {
+gfx::Rect PictureLayerTiling::CoverageIterator::geometry_rect() const {
   return current_geometry_rect_;
 }
 
-gfx::Rect PictureLayerTiling::Iterator::full_tile_geometry_rect() const {
+gfx::Rect
+PictureLayerTiling::CoverageIterator::full_tile_geometry_rect() const {
   gfx::Rect rect = tiling_->tiling_data_.TileBoundsWithBorder(tile_i_, tile_j_);
   rect.set_size(tiling_->tiling_data_.max_texture_size());
   return rect;
 }
 
-gfx::RectF PictureLayerTiling::Iterator::texture_rect() const {
+gfx::RectF PictureLayerTiling::CoverageIterator::texture_rect() const {
   gfx::PointF tex_origin =
       tiling_->tiling_data_.TileBoundsWithBorder(tile_i_, tile_j_).origin();
 
@@ -316,7 +321,7 @@ gfx::RectF PictureLayerTiling::Iterator::texture_rect() const {
   return texture_rect;
 }
 
-gfx::Size PictureLayerTiling::Iterator::texture_size() const {
+gfx::Size PictureLayerTiling::CoverageIterator::texture_size() const {
   return tiling_->tiling_data_.max_texture_size();
 }
 

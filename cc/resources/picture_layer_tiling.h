@@ -80,13 +80,13 @@ class CC_EXPORT PictureLayerTiling {
   // (i.e. no valid resource) this tiling should still iterate over them.
   // The union of all geometry_rect calls for each element iterated over should
   // exactly equal content_rect and no two geometry_rects should intersect.
-  class CC_EXPORT Iterator {
+  class CC_EXPORT CoverageIterator {
    public:
-    Iterator();
-    Iterator(const PictureLayerTiling* tiling,
+    CoverageIterator();
+    CoverageIterator(const PictureLayerTiling* tiling,
         float dest_scale,
         gfx::Rect rect);
-    ~Iterator();
+    ~CoverageIterator();
 
     // Visible rect (no borders), always in the space of content_rect,
     // regardless of the contents scale of the tiling.
@@ -102,7 +102,7 @@ class CC_EXPORT PictureLayerTiling {
     Tile* operator->() const { return current_tile_; }
     Tile* operator*() const { return current_tile_; }
 
-    Iterator& operator++();
+    CoverageIterator& operator++();
     operator bool() const { return tile_j_ <= bottom_; }
 
    private:
@@ -168,7 +168,7 @@ class CC_EXPORT PictureLayerTiling {
   int last_source_frame_number_;
   double last_impl_frame_time_;
 
-  friend class Iterator;
+  friend class CoverageIterator;
 
  private:
   DISALLOW_ASSIGN(PictureLayerTiling);

@@ -35,7 +35,7 @@ TEST(PictureLayerTilingSetTest, NoResources) {
   gfx::Rect content_rect(content_bounds);
 
   Region remaining(content_rect);
-  PictureLayerTilingSet::Iterator iter(
+  PictureLayerTilingSet::CoverageIterator iter(
       &set,
       contents_scale,
       content_rect,
@@ -93,7 +93,7 @@ class PictureLayerTilingSetTestWithResources : public testing::Test {
     gfx::Rect content_rect(content_bounds);
 
     Region remaining(content_rect);
-    PictureLayerTilingSet::Iterator iter(
+    PictureLayerTilingSet::CoverageIterator iter(
         &set,
         max_contents_scale,
         content_rect,

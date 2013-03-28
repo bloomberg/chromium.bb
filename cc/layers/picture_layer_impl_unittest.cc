@@ -189,7 +189,7 @@ class PictureLayerImplTest : public testing::Test {
   static void VerifyAllTilesExistAndHavePile(
       const PictureLayerTiling* tiling,
       PicturePileImpl* pile) {
-    for (PictureLayerTiling::Iterator
+    for (PictureLayerTiling::CoverageIterator
              iter(tiling, tiling->contents_scale(), tiling->ContentRect());
          iter;
          ++iter) {
@@ -331,7 +331,7 @@ TEST_F(PictureLayerImplTest, ClonePartialInvalidation) {
     gfx::Rect content_invalidation = gfx::ToEnclosingRect(gfx::ScaleRect(
         layer_invalidation,
         tiling->contents_scale()));
-    for (PictureLayerTiling::Iterator
+    for (PictureLayerTiling::CoverageIterator
              iter(tiling,
                   tiling->contents_scale(),
                   tiling->ContentRect());
@@ -393,7 +393,7 @@ TEST_F(PictureLayerImplTest, NoInvalidationBoundsChange) {
     gfx::Rect active_content_bounds = gfx::ToEnclosingRect(gfx::ScaleRect(
         gfx::Rect(active_layer_bounds),
         tiling->contents_scale()));
-    for (PictureLayerTiling::Iterator
+    for (PictureLayerTiling::CoverageIterator
              iter(tiling,
                   tiling->contents_scale(),
                   tiling->ContentRect());
@@ -444,7 +444,7 @@ TEST_F(PictureLayerImplTest, AddTilesFromNewRecording) {
   for (size_t i = 0; i < tilings.num_tilings(); ++i) {
     const PictureLayerTiling* tiling = tilings.tiling_at(i);
 
-    for (PictureLayerTiling::Iterator
+    for (PictureLayerTiling::CoverageIterator
              iter(tiling,
                   tiling->contents_scale(),
                   tiling->ContentRect());
