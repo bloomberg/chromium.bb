@@ -299,10 +299,10 @@ TryChromeDialogView::Result TryChromeDialogView::ShowModal(
   // already be locked and it will not process WM_COPYDATA requests. Change the
   // window to bring to foreground if a request arrives.
   CHECK(process_singleton->locked());
-  process_singleton->SetForegroundWindow(popup_->GetNativeView());
+  process_singleton->SetActiveModalDialog(popup_->GetNativeView());
   popup_->Show();
   MessageLoop::current()->Run();
-  process_singleton->SetForegroundWindow(NULL);
+  process_singleton->SetActiveModalDialog(NULL);
   return result_;
 }
 
