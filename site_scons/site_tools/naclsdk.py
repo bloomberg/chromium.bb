@@ -291,6 +291,7 @@ def _SetEnvForPnacl(env, root):
   pnacl_ld = binprefix + 'ld' + binext
   pnacl_nativeld = binprefix + 'nativeld' + binext
   pnacl_disass = binprefix + 'dis' + binext
+  pnacl_finalize = binprefix + 'finalize' + binext
   pnacl_strip = binprefix + 'strip' + binext
   pnacl_nmf = binprefix + 'nmf' + binext
   pnacl_link_and_translate = os.path.join(subroot,
@@ -352,6 +353,7 @@ def _SetEnvForPnacl(env, root):
               STRIP=pnacl_strip,
               GENNMF=pnacl_nmf,
               TRANSLATE=pnacl_translate + arch_flag + pnacl_translate_flags,
+              PNACLFINALIZE=pnacl_finalize,
               )
 
   if env.Bit('pnacl_shared_newlib'):
@@ -380,6 +382,7 @@ def _SetEnvForPnacl(env, root):
     env.Replace(INSTALL=FakeInstall)
     if env.Bit('translate_in_build_step'):
       env.Replace(TRANSLATE='true')
+    env.Replace(PNACLFINALIZE='true')
 
 
 def _SetEnvForSdkManually(env):
@@ -713,7 +716,7 @@ def generate(env):
   env.Tool('as')
 
   if env.Bit('pnacl_generate_pexe'):
-    suffix = '.pexe'
+    suffix = '.nonfinal.pexe'
   else:
     suffix = '.nexe'
 
@@ -752,13 +755,16 @@ def generate(env):
       ASPPCOM='$ASPP $BASE_ASPPFLAGS $ASPPFLAGS $EXTRA_ASPPFLAGS ' +
               '$CPPFLAGS $_CPPDEFFLAGS $_CPPINCFLAGS -c -o $TARGET $SOURCES',
 
-        # Strip doesn't seem to be a first-class citizen in SCons country,
+      # Strip doesn't seem to be a first-class citizen in SCons country,
       # so we have to add these *COM, *COMSTR manually.
       # Note: it appears we cannot add this in component_setup.py
       STRIPFLAGS=['--strip-all'],
       STRIPCOM='${STRIP} ${STRIPFLAGS}',
       TRANSLATEFLAGS=['-Wl,-L${LIB_DIR}'],
       TRANSLATECOM='${TRANSLATE} ${TRANSLATEFLAGS} ${SOURCES} -o ${TARGET}',
+      PNACLFINALIZEFLAGS=[],
+      PNACLFINALIZECOM='${PNACLFINALIZE} ${PNACLFINALIZEFLAGS} ' +
+                       '${SOURCES} -o ${TARGET}',
   )
 
   # Windows has a small limit on the command line size.  The linking and AR

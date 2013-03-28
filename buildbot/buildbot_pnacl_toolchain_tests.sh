@@ -28,7 +28,7 @@ ARCHIVED_PEXE_TRANSLATOR_REV=10489
 # test. The toolchain downloader expects this information in a specially
 # formatted file. We generate that file in this script from this information,
 # to keep all our versions in one place
-ARCHIVED_TOOLCHAIN_REV=11011
+ARCHIVED_TOOLCHAIN_REV=11078
 
 readonly PNACL_BUILD="pnacl/build.sh"
 readonly UP_DOWN_LOAD="buildbot/file_up_down_load.sh"
@@ -224,7 +224,8 @@ archived-frontend-test() {
         rev ${ARCHIVED_TOOLCHAIN_REV} BUILD@@@"
   local targets="small_tests medium_tests large_tests"
   local flags="--mode=opt-host,nacl platform=${arch} \
-               translate_in_build_step=0 skip_trusted_tests=1"
+               translate_in_build_step=0 skip_trusted_tests=1 \
+               skip_nonstable_bitcode=1"
 
   rm -rf scons-out/nacl-${arch}*
 

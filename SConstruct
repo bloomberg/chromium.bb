@@ -352,6 +352,9 @@ def SetUpArgumentBits(env):
   BitFromArgument(env, 'arm_hard_float', default=False,
                   desc='Build for hard float ARM ABI')
 
+  BitFromArgument(env, 'skip_nonstable_bitcode', default=False,
+                  desc='Skip tests involving non-stable bitcode')
+
   #########################################################################
   # EXPERIMENTAL
   # This is for generating a testing library for use within private test
@@ -1231,6 +1234,11 @@ def HasSuffix(item, suffix):
     return item.path.endswith(suffix)
 
 
+def StripSuffix(string, suffix):
+  assert string.endswith(suffix)
+  return string[:-len(suffix)]
+
+
 def DualLibrary(env, lib_name, *args, **kwargs):
   """Builder to build both .a and _shared.a library in one step.
 
@@ -1560,10 +1568,67 @@ pre_base_env.AddMethod(ShouldUseVerboseOptions)
 
 DeclareBit('tests_use_irt', 'Non-browser tests also load the IRT image', False)
 
+# Bit to be set by individual test/nacl.scons files that need to opt out.
+DeclareBit('nonstable_bitcode', 'Tests use non-stable bitcode features', False)
+
+
+def GetFinalizedPexe(env, pexe):
+  """ Prep and finalize the ABI for a given pexe if needed.
+  """
+  if not env.Bit('pnacl_generate_pexe') or env.Bit('nonstable_bitcode'):
+    return pexe
+
+  # We can remove this once we move all CommandSelLdrTestNacl to a nacl.scons
+  # file instead.  There are currently some canned nexe tests in build.scons.
+  if env['NACL_BUILD_FAMILY'] == 'TRUSTED':
+    return pexe
+
+  # Otherwise, finalize during the build step, since there is no finalize tool
+  # that can run on triggered bots such as the ARM HW bots.
+  pexe_name = pexe.abspath
+  final_name = StripSuffix(pexe_name, '.nonfinal.pexe') + '.final.pexe'
+  # Make sure the pexe doesn't get removed by the fake builders when
+  # built_elsewhere=1
+  env.Precious(pexe)
+  node = env.Command(target=final_name, source=[pexe_name],
+                     action=[Action('${PNACLFINALIZECOM}',
+                                    '${PNACLFINALIZECOMSTR}')])
+  assert len(node) == 1, node
+  return node[0]
+
+
 # Translate the given pexe.
 def GetTranslatedNexe(env, pexe):
+  # First finalize the pexe.
+  pexe = GetFinalizedPexe(env, pexe)
+
+  # Then check if we need to translate.
+  # Check if we started with a pexe, so there is actually a translation step.
+  if not env.Bit('pnacl_generate_pexe'):
+    return pexe
+
+  # We can remove this once we move all CommandSelLdrTestNacl to a nacl.scons
+  # file instead.  There are currently some canned nexe tests in build.scons.
+  if env['NACL_BUILD_FAMILY'] == 'TRUSTED':
+    return pexe
+
+  # Often there is a build step (do_not_run_tests=1) and a test step
+  # (which is run with -j1). Normally we want to translate in the build step
+  # so we can translate in parallel. However when we do sandboxed translation
+  # on arm hw, we do the build step on x86 and translation on arm, so we have
+  # to force the translation to be done in the test step. Hence,
+  # we check the bit 'translate_in_build_step' / check if we are
+  # in the test step.
+  if not env.Bit('translate_in_build_step') and env.Bit('do_not_run_tests'):
+    return pexe
+
   pexe_name = pexe.abspath
-  nexe_name = pexe_name[:pexe_name.index('.pexe')] + '.nexe'
+  # Tidy up the suffix (remove the .final.pexe or .nonfinal.pexe),
+  # depending on whether or not the pexe was finalized.
+  suffix_to_strip = '.final.pexe'
+  if not pexe_name.endswith(suffix_to_strip):
+    suffix_to_strip = '.nonfinal.pexe'
+  nexe_name = StripSuffix(pexe_name, suffix_to_strip) + '.nexe'
   # Make sure the pexe doesn't get removed by the fake builders when
   # built_elsewhere=1
   env.Precious(pexe)
@@ -1573,30 +1638,6 @@ def GetTranslatedNexe(env, pexe):
   return node[0]
 
 pre_base_env.AddMethod(GetTranslatedNexe)
-
-
-def ShouldTranslateToNexe(env, pexe):
-  """ Determine when we need to translate a Pexe to a Nexe.
-  """
-  # Check if we started with a pexe, so there is actually a translation step.
-  if not env.Bit('pnacl_generate_pexe'):
-    return False
-
-  # There is no bitcode for trusted code.
-  if env['NACL_BUILD_FAMILY'] == 'TRUSTED':
-    return False
-
-  # Often there is a build step (do_not_run_tests=1) and a test step
-  # (which is run with -j1). Normally we want to translate in the build step
-  # so we can translate in parallel. However when we do sandboxed translation
-  # on arm hw, we do the build step on x86 and translation on arm, so we have
-  # to force the translation to be done in the test step. Hence,
-  # we check the bit 'translate_in_build_step' / check if we are
-  # in the test step.
-  return (
-    env.Bit('translate_in_build_step') or not env.Bit('do_not_run_tests'))
-
-pre_base_env.AddMethod(ShouldTranslateToNexe)
 
 
 def CommandTestFileDumpCheck(env,
@@ -1614,12 +1655,9 @@ def CommandTestFileDumpCheck(env,
   # ARM objdump though... a TODO(jvoung) for when there is time.
   if env.Bit('built_elsewhere'):
     return []
-  if env.ShouldTranslateToNexe(target):
-    target_obj = env.GetTranslatedNexe(target)
-  else:
-    target_obj = target
+  target = env.GetTranslatedNexe(target)
   return env.CommandTestFileCheck(name,
-                                  ['${OBJDUMP}', objdump_flags, target_obj],
+                                  ['${OBJDUMP}', objdump_flags, target],
                                   check_file)
 
 pre_base_env.AddMethod(CommandTestFileDumpCheck)
@@ -1660,9 +1698,9 @@ def CommandSelLdrTestNacl(env, name, nexe,
       env['TRUSTED_ENV'].Bit('windows')):
     return []
 
-  if env.ShouldTranslateToNexe(nexe):
-    # The nexe is actually a pexe.  Translate it before we run it.
-    nexe = env.GetTranslatedNexe(nexe)
+  # The nexe might be a pexe that needs finalization, and translation.
+  nexe = env.GetTranslatedNexe(nexe)
+
   command = [nexe]
   if args is not None:
     command += args

@@ -22,6 +22,16 @@ env.Replace(LIBS=[],
 if env.Bit('build_arm'):
   env.Append(CPPDEFINES='SMALL_REGS_TEST')
 
+# The barebones_reloc test need symbols preserved, since it provides
+# a stub function for something that normally comes from the system libraries.
+# TODO(jvoung): That can be fixed by removing -nostdlib from TRANSLATEFLAGS.
+# Then the translator will get the required functions from system libs.
+# However, removing -nostdlib from TRANSLATEFLAGS will break due to:
+# https://code.google.com/p/nativeclient/issues/detail?id=3069
+if env.Bit('bitcode'):
+  env.SetBits('nonstable_bitcode')
+if env.Bit('skip_nonstable_bitcode'):
+  Return()
 
 # NOTE: the x86 linker wants _start() to be the very first function
 FAKE_STARTUP = env.ComponentObject('fake_startup', 'fake_startup.c')

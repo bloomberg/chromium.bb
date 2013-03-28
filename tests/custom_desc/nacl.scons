@@ -17,8 +17,7 @@ test_guest = env.ComponentProgram(
     'desc_test_guest', ['desc_test_guest.c'],
     EXTRA_LIBS=['imc_syscalls', '${NONIRT_LIBS}'])
 
-if env.ShouldTranslateToNexe(test_guest):
-  test_guest = env.GetTranslatedNexe(test_guest)
+test_guest = env.GetTranslatedNexe(test_guest)
 
 node = env.CommandTest('custom_desc_test.out',
                        env.AddBootstrap(test_host, [test_guest]))

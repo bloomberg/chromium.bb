@@ -22,8 +22,7 @@ test_prog = env.ComponentProgram(
     EXTRA_LIBS=['imc_syscalls', '${NONIRT_LIBS}'])
 
 # If we are generating a pexe, translate it first
-if env.ShouldTranslateToNexe(test_prog):
-  test_prog = env.GetTranslatedNexe(test_prog)
+test_prog = env.GetTranslatedNexe(test_prog)
 
 node = env.CommandTest('multidomain_test.out', [runner, test_prog],
                        # Increase verbosity to get more information in

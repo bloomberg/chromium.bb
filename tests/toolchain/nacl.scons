@@ -289,24 +289,29 @@ debug_env = env.Clone()
 debug_env.Append(CFLAGS=['-g', '-O0'])
 debug_env.Append(CCFLAGS=['-g', '-O0'])
 debug_env.Append(LINKFLAGS=['-O0'])
-dwarf_local_var_nexe = debug_env.ComponentProgram('dwarf_local_var',
-                                                  ['dwarf_local_var.c',
-                                                   'dwarf_local_var_dummy.c'],
-                                                  EXTRA_LIBS=['${NONIRT_LIBS}'])
-# Sanity-check -- make sure it runs.
-node = debug_env.CommandSelLdrTestNacl('dwarf_local_var_run.out',
-                                       dwarf_local_var_nexe,
-                                       exit_status=55)
-debug_env.AddNodeToTestSuite(node,
-                             ['toolchain_tests', 'small_tests'],
-                             'run_dwarf_local_var_run_test')
-node = debug_env.CommandTestFileDumpCheck('dwarf_local_var_objdump.out',
-                                          dwarf_local_var_nexe,
-                                          debug_env.File('dwarf_local_var.c'),
-                                          '-W')
-debug_env.AddNodeToTestSuite(node,
-                             ['small_tests', 'toolchain_tests'],
-                             'run_dwarf_local_var_objdump_test')
+# This requires preserving nonstable bitcode debug metadata.
+if debug_env.Bit('bitcode'):
+  debug_env.SetBits('nonstable_bitcode')
+if not debug_env.Bit('skip_nonstable_bitcode'):
+  dwarf_local_var_nexe = debug_env.ComponentProgram(
+      'dwarf_local_var',
+      ['dwarf_local_var.c',
+       'dwarf_local_var_dummy.c'],
+      EXTRA_LIBS=['${NONIRT_LIBS}'])
+  # Sanity-check -- make sure it runs.
+  node = debug_env.CommandSelLdrTestNacl('dwarf_local_var_run.out',
+                                         dwarf_local_var_nexe,
+                                         exit_status=55)
+  debug_env.AddNodeToTestSuite(node,
+                               ['toolchain_tests', 'small_tests'],
+                               'run_dwarf_local_var_run_test')
+  node = debug_env.CommandTestFileDumpCheck('dwarf_local_var_objdump.out',
+                                            dwarf_local_var_nexe,
+                                            debug_env.File('dwarf_local_var.c'),
+                                            '-W')
+  debug_env.AddNodeToTestSuite(node,
+                               ['small_tests', 'toolchain_tests'],
+                               'run_dwarf_local_var_objdump_test')
 
 if env.Bit('nacl_glibc'):
   nexe = env.ComponentProgram('byteswap64', 'byteswap64.c',

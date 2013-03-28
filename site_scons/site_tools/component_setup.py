@@ -207,6 +207,7 @@ def generate(env):
         # so we have to add these *COM, *COMSTR manually.
         STRIPCOMSTR='________Stripping to create $TARGET',
         TRANSLATECOMSTR='________Translating $TARGET',
+        PNACLFINALIZECOMSTR='________Finalizing pexe $TARGET',
     )
 
   # Add other default tools from our toolkit

@@ -36,8 +36,7 @@ subprogram_nexe = env.ComponentProgram('subprogram',
                                                    '${PTHREAD_LIBS}',
                                                    '${NONIRT_LIBS}'])
 
-if env.ShouldTranslateToNexe(subprogram_nexe):
-  subprogram_nexe = env.GetTranslatedNexe(subprogram_nexe)
+subprogram_nexe = env.GetTranslatedNexe(subprogram_nexe)
 
 if env.Bit('tests_use_irt'):
   irt_var_flags = [ '--var', 'irt_nexe', env.GetIrtNexe() ]

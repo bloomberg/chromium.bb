@@ -29,6 +29,11 @@ env.Append(CCFLAGS=['-O0', '-g', '-fno-omit-frame-pointer'])
 if env.Bit('bitcode'):
   env.Append(LINKFLAGS=['-O0'])
   env.Append(TRANSLATEFLAGS=['-O0'])
+  # This requires preserving nonstable bitcode debug metadata.
+  env.SetBits('nonstable_bitcode')
+
+if env.Bit('skip_nonstable_bitcode'):
+  Return()
 
 test_args = ['--gdb', env['GDB'],
              '--output_dir', env.subst('${TARGET_ROOT}/test_results')]
@@ -47,8 +52,7 @@ test_suites = ['medium_tests', 'gdb_tests']
 gdb_test_guest = env.ComponentProgram(
     'gdb_test_guest', 'gdb_test_guest.c',
     EXTRA_LIBS=['${NONIRT_LIBS}'])
-if env.ShouldTranslateToNexe(gdb_test_guest):
-  gdb_test_guest = env.GetTranslatedNexe(gdb_test_guest)
+gdb_test_guest = env.GetTranslatedNexe(gdb_test_guest)
 
 node = env.CommandTest(
     'gdb_stepi_after_break.out',
@@ -146,8 +150,7 @@ if not env.Bit('nacl_static_link'):
 gdb_test_guest_thread = env.ComponentProgram(
     'gdb_test_guest_thread', 'gdb_test_guest_thread.c',
     EXTRA_LIBS=['${PTHREAD_LIBS}', '${NONIRT_LIBS}'])
-if env.ShouldTranslateToNexe(gdb_test_guest_thread):
-  gdb_test_guest_thread = env.GetTranslatedNexe(gdb_test_guest_thread)
+gdb_test_guest_thread = env.GetTranslatedNexe(gdb_test_guest_thread)
 
 node = env.CommandTest(
     'gdb_break_continue_thread.out',

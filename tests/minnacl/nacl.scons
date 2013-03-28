@@ -27,9 +27,8 @@ test_prog = env.ComponentProgram(
     ['minimal_test_guest.c'],
     EXTRA_LINKFLAGS=['-nostdlib'])
 
-if env.ShouldTranslateToNexe(test_prog):
-  env.Replace(TRANSLATEFLAGS=['-nostdlib'])
-  test_prog = env.GetTranslatedNexe(test_prog)
+env.Replace(TRANSLATEFLAGS=['-nostdlib'])
+test_prog = env.GetTranslatedNexe(test_prog)
 
 is_broken = not env.Bit('nacl_static_link')
 

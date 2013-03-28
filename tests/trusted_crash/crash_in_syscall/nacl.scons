@@ -8,10 +8,7 @@ Import('env')
 
 test_prog = env.ComponentProgram('test_guest', ['test_guest.c'],
                                  EXTRA_LIBS=['${NONIRT_LIBS}'])
-
-# If we are generating a pexe, translate it first
-if env.ShouldTranslateToNexe(test_prog):
-  test_prog = env.GetTranslatedNexe(test_prog)
+test_prog = env.GetTranslatedNexe(test_prog)
 
 # This test covers how NaCl interacts with host-OS-specific
 # interfaces, and it is only implemented for Windows and Linux.  On
