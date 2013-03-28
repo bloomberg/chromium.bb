@@ -147,12 +147,6 @@ void AutoLoginPrompter::AddInfoBarToWebContents() {
   if (infobar_shown_)
     return;
 
-  // Make sure the infobar will appear for the URL that the WebContents finished
-  // loading on.  Otherwise, the infobar will incorrectly redirect the user.
-  if (web_contents()->GetURL() != url_) {
-    return;
-  }
-
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents());
   // |infobar_service| is NULL for WebContents hosted in WebDialog.
