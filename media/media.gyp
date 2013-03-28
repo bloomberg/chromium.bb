@@ -162,6 +162,8 @@
         'audio/pulse/pulse_output.h',
         'audio/pulse/pulse_input.cc',
         'audio/pulse/pulse_input.h',
+        'audio/pulse/pulse_unified.cc',
+        'audio/pulse/pulse_unified.h',
         'audio/pulse/pulse_util.cc',
         'audio/pulse/pulse_util.h',
         'audio/sample_rates.cc',
@@ -731,7 +733,7 @@
               },
             }],
           ],
-        }, {  # else: use_pulseaudio==1
+        }, {  # else: use_pulseaudio==0
           'sources!': [
             'audio/pulse/audio_manager_pulse.cc',
             'audio/pulse/audio_manager_pulse.h',
@@ -739,6 +741,8 @@
             'audio/pulse/pulse_input.h',
             'audio/pulse/pulse_output.cc',
             'audio/pulse/pulse_output.h',
+            'audio/pulse/pulse_unified.cc',
+            'audio/pulse/pulse_unified.h',
             'audio/pulse/pulse_util.cc',
             'audio/pulse/pulse_util.h',
           ],

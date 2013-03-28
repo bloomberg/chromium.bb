@@ -13,6 +13,8 @@
 
 namespace media {
 
+class AudioParameters;
+
 namespace pulse {
 
 // A helper class that acquires pa_threaded_mainloop_lock() while in scope.
@@ -40,12 +42,36 @@ pa_sample_format_t BitsToPASampleFormat(int bits_per_sample);
 
 pa_channel_map ChannelLayoutToPAChannelMap(ChannelLayout channel_layout);
 
-void WaitForOperationCompletion(pa_threaded_mainloop* pa_mainloop,
+void WaitForOperationCompletion(pa_threaded_mainloop* mainloop,
                                 pa_operation* operation);
 
 int GetHardwareLatencyInBytes(pa_stream* stream,
                               int sample_rate,
                               int bytes_per_frame);
+
+// Create a recording stream for the threaded mainloop, return true if success,
+// otherwise false. |mainloop| and |context| have to be from a valid Pulse
+// threaded mainloop and the handle of the created stream will be returned by
+// |stream|.
+bool CreateInputStream(pa_threaded_mainloop* mainloop,
+                       pa_context* context,
+                       pa_stream** stream,
+                       const AudioParameters& params,
+                       const std::string& device_id,
+                       pa_stream_notify_cb_t stream_callback,
+                       void* user_data);
+
+// Create a playback stream for the threaded mainloop, return true if success,
+// otherwise false. This function will create a new Pulse threaded mainloop,
+// and the handles of the mainloop, context and stream will be returned by
+// |mainloop|, |context| and |stream|.
+bool CreateOutputStream(pa_threaded_mainloop** mainloop,
+                        pa_context** context,
+                        pa_stream** stream,
+                        const AudioParameters& params,
+                        pa_stream_notify_cb_t stream_callback,
+                        pa_stream_request_cb_t write_callback,
+                        void* user_data);
 
 }  // namespace pulse
 

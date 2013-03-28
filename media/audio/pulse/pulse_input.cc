@@ -45,70 +45,12 @@ PulseAudioInputStream::~PulseAudioInputStream() {
 bool PulseAudioInputStream::Open() {
   DCHECK(thread_checker_.CalledOnValidThread());
   AutoPulseLock auto_lock(pa_mainloop_);
-
-  // Set sample specifications.
-  pa_sample_spec pa_sample_specifications;
-  pa_sample_specifications.format = pulse::BitsToPASampleFormat(
-      params_.bits_per_sample());
-  pa_sample_specifications.rate = params_.sample_rate();
-  pa_sample_specifications.channels = params_.channels();
-
-  // Get channel mapping and open recording stream.
-  pa_channel_map source_channel_map = pulse::ChannelLayoutToPAChannelMap(
-      params_.channel_layout());
-  pa_channel_map* map = (source_channel_map.channels != 0) ?
-      &source_channel_map : NULL;
-
-  // Create a new recording stream.
-  handle_ = pa_stream_new(pa_context_, "RecordStream",
-                          &pa_sample_specifications, map);
-  if (!handle_) {
-    DLOG(ERROR) << "Open: failed to create PA stream";
+  if (!pulse::CreateInputStream(pa_mainloop_, pa_context_, &handle_, params_,
+                                device_name_, &StreamNotifyCallback, this)) {
     return false;
   }
 
-  pa_stream_set_state_callback(handle_, &StreamNotifyCallback, this);
-
-  // Set server-side capture buffer metrics. Detailed documentation on what
-  // values should be chosen can be found at
-  // freedesktop.org/software/pulseaudio/doxygen/structpa__buffer__attr.html.
-  pa_buffer_attr buffer_attributes;
-  const unsigned int buffer_size = params_.GetBytesPerBuffer();
-  buffer_attributes.maxlength = static_cast<uint32_t>(-1);
-  buffer_attributes.tlength = buffer_size;
-  buffer_attributes.minreq = buffer_size;
-  buffer_attributes.prebuf = static_cast<uint32_t>(-1);
-  buffer_attributes.fragsize = buffer_size;
-  int flags = PA_STREAM_AUTO_TIMING_UPDATE |
-              PA_STREAM_INTERPOLATE_TIMING |
-              PA_STREAM_ADJUST_LATENCY |
-              PA_STREAM_START_CORKED;
-  int err = pa_stream_connect_record(
-      handle_,
-      device_name_ == AudioManagerBase::kDefaultDeviceId ?
-          NULL : device_name_.c_str(),
-      &buffer_attributes,
-      static_cast<pa_stream_flags_t>(flags));
-  if (err) {
-    DLOG(ERROR) << "pa_stream_connect_playback FAILED " << err;
-    return false;
-  }
-
-  // Wait for the stream to be ready.
-  while (true) {
-    pa_stream_state_t stream_state = pa_stream_get_state(handle_);
-    if (!PA_STREAM_IS_GOOD(stream_state)) {
-      DLOG(ERROR) << "Invalid PulseAudio stream state";
-      return false;
-    }
-
-    if (stream_state == PA_STREAM_READY)
-      break;
-    pa_threaded_mainloop_wait(pa_mainloop_);
-  }
-
-  pa_stream_set_read_callback(handle_, &ReadCallback, this);
-  pa_stream_readable_size(handle_);
+  DCHECK(handle_);
 
   buffer_.reset(new media::SeekableBuffer(0, 2 * params_.GetBytesPerBuffer()));
   audio_data_buffer_.reset(new uint8[params_.GetBytesPerBuffer()]);
@@ -129,8 +71,10 @@ void PulseAudioInputStream::Start(AudioInputCallback* callback) {
   buffer_->Clear();
 
   // Start the streaming.
-  stream_started_ = true;
   callback_ = callback;
+  pa_stream_set_read_callback(handle_, &ReadCallback, this);
+  pa_stream_readable_size(handle_);
+  stream_started_ = true;
 
   pa_operation* operation = pa_stream_cork(handle_, 0, NULL, NULL);
   WaitForOperationCompletion(pa_mainloop_, operation);
