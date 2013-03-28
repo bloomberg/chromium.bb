@@ -46,6 +46,7 @@ import shutil
 import subprocess
 import sys
 import threading
+import time
 
 import bisect_utils
 
@@ -669,6 +670,8 @@ class BisectPerformanceMetrics(object):
     cwd = os.getcwd()
     os.chdir(self.src_cwd)
 
+    start_time = time.time()
+
     metric_values = []
     for i in xrange(self.opts.repeat_test_count):
       # Can ignore the return code since if the tests fail, it won't return 0.
@@ -676,6 +679,11 @@ class BisectPerformanceMetrics(object):
           self.opts.output_buildbot_annotations)
 
       metric_values += self.ParseMetricValuesFromOutput(metric, output)
+
+      elapsed_minutes = (time.time() - start_time) / 60.0
+
+      if elapsed_minutes >= self.opts.repeat_test_max_time:
+        break
 
     os.chdir(cwd)
 
@@ -1528,16 +1536,25 @@ def main():
                     'supplied, the script will work from the current depot.')
   parser.add_option('-r', '--repeat_test_count',
                     type='int',
-                    default=5,
+                    default=20,
                     help='The number of times to repeat the performance test. '
                     'Values will be clamped to range [1, 100]. '
-                    'Default value is 5.')
+                    'Default value is 20.')
+  parser.add_option('--repeat_test_max_time',
+                    type='int',
+                    default=20,
+                    help='The maximum time (in minutes) to take running the '
+                    'performance tests. The script will run the performance '
+                    'tests according to --repeat_test_count, so long as it '
+                    'doesn\'t exceed --repeat_test_max_time. Values will be '
+                    'clamped to range [1, 60].'
+                    'Default value is 20.')
   parser.add_option('-t', '--truncate_percent',
                     type='int',
-                    default=10,
+                    default=25,
                     help='The highest/lowest % are discarded to form a '
                     'truncated mean. Values will be clamped to range [0, 25]. '
-                    'Default value is 10 (highest/lowest 10% will be '
+                    'Default value is 25 (highest/lowest 25% will be '
                     'discarded).')
   parser.add_option('--build_preference',
                     type='choice',
@@ -1587,6 +1604,7 @@ def main():
     return 1
 
   opts.repeat_test_count = min(max(opts.repeat_test_count, 1), 100)
+  opts.repeat_test_max_time = min(max(opts.repeat_test_max_time, 1), 60)
   opts.truncate_percent = min(max(opts.truncate_percent, 0), 25)
   opts.truncate_percent = opts.truncate_percent / 100.0
 
