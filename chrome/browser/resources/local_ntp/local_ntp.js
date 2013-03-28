@@ -23,6 +23,12 @@ var tilesContainer;
 var notification;
 
 /**
+ * The container for the theme attribution.
+ * @type {Element}
+ */
+var attribution;
+
+/**
  * The array of rendered tiles, ordered by appearance.
  * @type {Array.<Tile>}
  */
@@ -111,34 +117,35 @@ var MIN_TOTAL_HORIZONTAL_PADDING = 188;
  * @const
  */
 var CLASSES = {
-  TILE: 'mv-tile',
-  PAGE: 'mv-page',  // page tiles
-  TITLE: 'mv-title',
-  THUMBNAIL: 'mv-thumb',
-  DOMAIN: 'mv-domain',
+  BLACKLIST: 'mv-blacklist',  // triggers tile blacklist animation
   BLACKLIST_BUTTON: 'mv-x',
+  DELAYED_HIDE_NOTIFICATION: 'mv-notice-delayed-hide',
+  DOMAIN: 'mv-domain',
   FAVICON: 'mv-favicon',
   FILLER: 'mv-filler',  // filler tiles
-  BLACKLIST: 'mv-blacklist',  // triggers tile blacklist animation
-  HIDE_TILE: 'mv-tile-hide', // hides tiles on small browser width
   HIDE_BLACKLIST_BUTTON: 'mv-x-hide', // hides blacklist button during animation
-  DELAYED_HIDE_NOTIFICATION: 'mv-notice-delayed-hide',
-  HIDE_NOTIFICATION: 'mv-notice-hide'
+  HIDE_NOTIFICATION: 'mv-notice-hide',
+  HIDE_TILE: 'mv-tile-hide', // hides tiles on small browser width
+  PAGE: 'mv-page',  // page tiles
+  THUMBNAIL: 'mv-thumb',
+  TILE: 'mv-tile',
+  TITLE: 'mv-title'
 };
 
 /**
- * Enum for ids.
+ * Enum for HTML element ids.
  * @enum {string}
  * @const
  */
 var IDS = {
-  TOP_MARGIN: 'mv-top-margin',
-  TILES: 'mv-tiles',
+  ATTRIBUTION: 'attribution',
   NOTIFICATION: 'mv-notice',
+  NOTIFICATION_CLOSE_BUTTON: 'mv-notice-x',
   NOTIFICATION_MESSAGE: 'mv-msg',
-  UNDO_LINK: 'mv-undo',
   RESTORE_ALL_LINK: 'mv-restore',
-  NOTIFICATION_CLOSE_BUTTON: 'mv-notice-x'
+  TILES: 'mv-tiles',
+  TOP_MARGIN: 'mv-top-margin',
+  UNDO_LINK: 'mv-undo'
 };
 
 /**
@@ -174,6 +181,32 @@ function onThemeChange() {
   document.body.style.background = background;
   var isCustom = !!background && WHITE.indexOf(background) == -1;
   document.body.classList.toggle('custom-theme', isCustom);
+  updateAttribution(info.attributionUrl);
+}
+
+/**
+ * Renders the attribution if the image is present and loadable.  Otherwise
+ * hides it.
+ * @param {string} url The URL of the attribution image, if any.
+ * @private
+ */
+function updateAttribution(url) {
+  if (!url) {
+    attribution.hidden = true;
+    return;
+  }
+  var attributionImage = new Image();
+  attributionImage.onload = function() {
+    var oldAttributionImage = attribution.querySelector('img');
+    if (oldAttributionImage)
+      removeNode(oldAttributionImage);
+    attribution.appendChild(attributionImage);
+    attribution.hidden = false;
+  };
+  attributionImage.onerror = function() {
+    attribution.hidden = true;
+  };
+  attributionImage.src = url;
 }
 
 /**
@@ -485,6 +518,7 @@ function init() {
   topMarginElement = document.getElementById(IDS.TOP_MARGIN);
   tilesContainer = document.getElementById(IDS.TILES);
   notification = document.getElementById(IDS.NOTIFICATION);
+  attribution = document.getElementById(IDS.ATTRIBUTION);
 
   // TODO(jeremycho): i18n.
   var notificationMessage = document.getElementById(IDS.NOTIFICATION_MESSAGE);
@@ -495,6 +529,8 @@ function init() {
   var restoreAllLink = document.getElementById(IDS.RESTORE_ALL_LINK);
   restoreAllLink.addEventListener('click', onRestoreAll);
   restoreAllLink.innerText = 'Restore all';
+  attribution.innerText = 'Theme created by';
+
   var notificationCloseButton =
       document.getElementById(IDS.NOTIFICATION_CLOSE_BUTTON);
   notificationCloseButton.addEventListener('click', hideNotification);

@@ -192,3 +192,19 @@ body {
 #mv-notice.mv-notice-hide {
   visibility: hidden;
 }
+
+#attribution {
+  -webkit-user-select: none;
+  bottom: 0;
+  color: #fff;
+  cursor: default;
+  font-size: 75%;
+  position: absolute;
+  right: 13px;
+  text-align: left;
+  z-index: -1;
+}
+
+#attribution img {
+  display: block;
+}
