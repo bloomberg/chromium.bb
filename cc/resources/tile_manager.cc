@@ -166,6 +166,7 @@ TileManager::TileManager(
       use_cheapness_estimator_(use_cheapness_estimator),
       use_color_estimator_(use_color_estimator),
       prediction_benchmarking_(prediction_benchmarking),
+      did_initialize_visible_tile_(false),
       pending_tasks_(0),
       max_pending_tasks_(kMaxNumPendingTasksPerThread * num_raster_threads),
       rendering_stats_instrumentation_(rendering_stats_instrumentation) {
@@ -437,6 +438,11 @@ void TileManager::ForceTileUploadToComplete(Tile* tile) {
     DidTileRasterStateChange(tile, FORCED_UPLOAD_COMPLETION_STATE);
     DidFinishTileInitialization(tile);
   }
+
+  if (did_initialize_visible_tile_) {
+    did_initialize_visible_tile_ = false;
+    client_->DidInitializeVisibleTile();
+  }
 }
 
 void TileManager::GetMemoryStats(
@@ -685,10 +691,15 @@ void TileManager::DispatchMoreTasks() {
       tiles_with_image_decoding_tasks_.push_back(tile);
     } else {
       if (!CanDispatchRasterTask(tile))
-        return;
+        break;
       DispatchOneRasterTask(tile);
     }
     tiles_that_need_to_be_rasterized_.pop_back();
+  }
+
+  if (did_initialize_visible_tile_) {
+    did_initialize_visible_tile_ = false;
+    client_->DidInitializeVisibleTile();
   }
 }
 
@@ -925,7 +936,7 @@ void TileManager::OnRasterTaskCompleted(
 void TileManager::DidFinishTileInitialization(Tile* tile) {
   tile->drawing_info().resource_is_being_initialized_ = false;
   if (tile->priority(ACTIVE_TREE).distance_to_visible_in_pixels == 0)
-    client_->DidInitializeVisibleTile();
+    did_initialize_visible_tile_ = true;
 }
 
 void TileManager::DidTileRasterStateChange(Tile* tile, TileRasterState state) {

@@ -217,6 +217,7 @@ class CC_EXPORT TileManager : public WorkerPoolClient {
   bool use_color_estimator_;
   int raster_state_count_[NUM_STATES][NUM_TREES][NUM_BINS];
   bool prediction_benchmarking_;
+  bool did_initialize_visible_tile_;
 
   size_t pending_tasks_;
   size_t max_pending_tasks_;
