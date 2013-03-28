@@ -35,6 +35,13 @@ namespace em = enterprise_management;
 namespace policy {
 namespace {
 
+void CopyLockResult(base::RunLoop* loop,
+                    EnterpriseInstallAttributes::LockResult* out,
+                    EnterpriseInstallAttributes::LockResult result) {
+  *out = result;
+  loop->Quit();
+}
+
 class DeviceCloudPolicyManagerChromeOSTest
     : public chromeos::DeviceSettingsTestBase {
  protected:
@@ -82,10 +89,15 @@ TEST_F(DeviceCloudPolicyManagerChromeOSTest, FreshDevice) {
 }
 
 TEST_F(DeviceCloudPolicyManagerChromeOSTest, EnrolledDevice) {
-  ASSERT_EQ(EnterpriseInstallAttributes::LOCK_SUCCESS,
-            install_attributes_.LockDevice(PolicyBuilder::kFakeUsername,
-                                           DEVICE_MODE_ENTERPRISE,
-                                           PolicyBuilder::kFakeDeviceId));
+  base::RunLoop loop;
+  EnterpriseInstallAttributes::LockResult result;
+  install_attributes_.LockDevice(PolicyBuilder::kFakeUsername,
+                                 DEVICE_MODE_ENTERPRISE,
+                                 PolicyBuilder::kFakeDeviceId,
+                                 base::Bind(&CopyLockResult, &loop, &result));
+  loop.Run();
+  ASSERT_EQ(EnterpriseInstallAttributes::LOCK_SUCCESS, result);
+
   FlushDeviceSettings();
   EXPECT_EQ(CloudPolicyStore::STATUS_OK, store_->status());
   EXPECT_TRUE(manager_.IsInitializationComplete(POLICY_DOMAIN_CHROME));
@@ -292,10 +304,14 @@ TEST_F(DeviceCloudPolicyManagerChromeOSEnrollmentTest, AutoEnrollment) {
 }
 
 TEST_F(DeviceCloudPolicyManagerChromeOSEnrollmentTest, Reenrollment) {
-  ASSERT_EQ(EnterpriseInstallAttributes::LOCK_SUCCESS,
-            install_attributes_.LockDevice(PolicyBuilder::kFakeUsername,
-                                           DEVICE_MODE_ENTERPRISE,
-                                           PolicyBuilder::kFakeDeviceId));
+  base::RunLoop loop;
+  EnterpriseInstallAttributes::LockResult result;
+  install_attributes_.LockDevice(PolicyBuilder::kFakeUsername,
+                                 DEVICE_MODE_ENTERPRISE,
+                                 PolicyBuilder::kFakeDeviceId,
+                                 base::Bind(&CopyLockResult, &loop, &result));
+  loop.Run();
+  ASSERT_EQ(EnterpriseInstallAttributes::LOCK_SUCCESS, result);
 
   RunTest();
   ExpectSuccessfulEnrollment();

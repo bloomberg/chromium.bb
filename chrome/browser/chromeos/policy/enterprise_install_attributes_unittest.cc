@@ -4,14 +4,27 @@
 
 #include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
 
+#include "base/bind.h"
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/run_loop.h"
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
 #include "chrome/browser/chromeos/policy/proto/install_attributes.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace policy {
+
+namespace {
+
+void CopyLockResult(base::RunLoop* loop,
+                    EnterpriseInstallAttributes::LockResult* out,
+                    EnterpriseInstallAttributes::LockResult result) {
+  *out = result;
+  loop->Quit();
+}
+
+}  // namespace
 
 static const char kTestUser[] = "test@example.com";
 static const char kTestDomain[] = "example.com";
@@ -44,29 +57,41 @@ class EnterpriseInstallAttributesTest : public testing::Test {
   base::ScopedTempDir temp_dir_;
   scoped_ptr<chromeos::CryptohomeLibrary> cryptohome_;
   EnterpriseInstallAttributes install_attributes_;
+
+  EnterpriseInstallAttributes::LockResult LockDeviceAndWaitForResult(
+      const std::string& user,
+      DeviceMode device_mode,
+      const std::string& device_id) {
+    base::RunLoop loop;
+    EnterpriseInstallAttributes::LockResult result;
+    install_attributes_.LockDevice(user, device_mode, device_id,
+                                   base::Bind(&CopyLockResult, &loop, &result));
+    loop.Run();
+    return result;
+  }
 };
 
 TEST_F(EnterpriseInstallAttributesTest, Lock) {
   EXPECT_EQ(EnterpriseInstallAttributes::LOCK_SUCCESS,
-            install_attributes_.LockDevice(
+            LockDeviceAndWaitForResult(
                 kTestUser,
                 DEVICE_MODE_ENTERPRISE,
                 kTestDeviceId));
 
   EXPECT_EQ(EnterpriseInstallAttributes::LOCK_SUCCESS,
-            install_attributes_.LockDevice(
+            LockDeviceAndWaitForResult(
                 kTestUser,
                 DEVICE_MODE_ENTERPRISE,
                 kTestDeviceId));
-  // Another user from the4 same domain should also succeed.
+  // Another user from the same domain should also succeed.
   EXPECT_EQ(EnterpriseInstallAttributes::LOCK_SUCCESS,
-            install_attributes_.LockDevice(
+            LockDeviceAndWaitForResult(
                 "test1@example.com",
                 DEVICE_MODE_ENTERPRISE,
                 kTestDeviceId));
   // But another domain should fail.
   EXPECT_EQ(EnterpriseInstallAttributes::LOCK_WRONG_USER,
-            install_attributes_.LockDevice(
+            LockDeviceAndWaitForResult(
                 "test@bluebears.com",
                 DEVICE_MODE_ENTERPRISE,
                 kTestDeviceId));
@@ -76,7 +101,7 @@ TEST_F(EnterpriseInstallAttributesTest, IsEnterpriseDevice) {
   install_attributes_.ReadCacheFile(GetTempPath());
   EXPECT_FALSE(install_attributes_.IsEnterpriseDevice());
   ASSERT_EQ(EnterpriseInstallAttributes::LOCK_SUCCESS,
-            install_attributes_.LockDevice(
+            LockDeviceAndWaitForResult(
                 kTestUser,
                 DEVICE_MODE_ENTERPRISE,
                 kTestDeviceId));
@@ -87,7 +112,7 @@ TEST_F(EnterpriseInstallAttributesTest, GetDomain) {
   install_attributes_.ReadCacheFile(GetTempPath());
   EXPECT_EQ(std::string(), install_attributes_.GetDomain());
   ASSERT_EQ(EnterpriseInstallAttributes::LOCK_SUCCESS,
-            install_attributes_.LockDevice(
+            LockDeviceAndWaitForResult(
                 kTestUser,
                 DEVICE_MODE_ENTERPRISE,
                 kTestDeviceId));
@@ -98,7 +123,7 @@ TEST_F(EnterpriseInstallAttributesTest, GetRegistrationUser) {
   install_attributes_.ReadCacheFile(GetTempPath());
   EXPECT_EQ(std::string(), install_attributes_.GetRegistrationUser());
   ASSERT_EQ(EnterpriseInstallAttributes::LOCK_SUCCESS,
-            install_attributes_.LockDevice(
+            LockDeviceAndWaitForResult(
                 kTestUser,
                 DEVICE_MODE_ENTERPRISE,
                 kTestDeviceId));
@@ -109,7 +134,7 @@ TEST_F(EnterpriseInstallAttributesTest, GetDeviceId) {
   install_attributes_.ReadCacheFile(GetTempPath());
   EXPECT_EQ(std::string(), install_attributes_.GetDeviceId());
   ASSERT_EQ(EnterpriseInstallAttributes::LOCK_SUCCESS,
-            install_attributes_.LockDevice(
+            LockDeviceAndWaitForResult(
                 kTestUser,
                 DEVICE_MODE_ENTERPRISE,
                 kTestDeviceId));
@@ -120,7 +145,7 @@ TEST_F(EnterpriseInstallAttributesTest, GetMode) {
   install_attributes_.ReadCacheFile(GetTempPath());
   EXPECT_EQ(DEVICE_MODE_PENDING, install_attributes_.GetMode());
   ASSERT_EQ(EnterpriseInstallAttributes::LOCK_SUCCESS,
-            install_attributes_.LockDevice(
+            LockDeviceAndWaitForResult(
                 kTestUser,
                 DEVICE_MODE_KIOSK,
                 kTestDeviceId));

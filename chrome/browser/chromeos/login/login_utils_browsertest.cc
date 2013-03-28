@@ -11,6 +11,7 @@
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_registry_simple.h"
+#include "base/run_loop.h"
 #include "base/string_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -136,6 +137,13 @@ ACTION_P(MockSessionManagerClientRetrievePolicyCallback, policy) {
 
 ACTION_P(MockSessionManagerClientStorePolicyCallback, success) {
   arg1.Run(success);
+}
+
+void CopyLockResult(base::RunLoop* loop,
+                    policy::EnterpriseInstallAttributes::LockResult* out,
+                    policy::EnterpriseInstallAttributes::LockResult result) {
+  *out = result;
+  loop->Quit();
 }
 
 class LoginUtilsTest : public testing::Test,
@@ -396,9 +404,14 @@ class LoginUtilsTest : public testing::Test,
     EXPECT_CALL(*cryptohome_, InstallAttributesIsFirstInstall())
         .WillOnce(Return(true))
         .WillRepeatedly(Return(false));
-    EXPECT_EQ(policy::EnterpriseInstallAttributes::LOCK_SUCCESS,
-              connector_->GetInstallAttributes()->LockDevice(
-                  username, policy::DEVICE_MODE_ENTERPRISE, kDeviceId));
+
+    base::RunLoop loop;
+    policy::EnterpriseInstallAttributes::LockResult result;
+    connector_->GetInstallAttributes()->LockDevice(
+        username, policy::DEVICE_MODE_ENTERPRISE, kDeviceId,
+        base::Bind(&CopyLockResult, &loop, &result));
+    loop.Run();
+    EXPECT_EQ(policy::EnterpriseInstallAttributes::LOCK_SUCCESS, result);
     RunUntilIdle();
   }
 

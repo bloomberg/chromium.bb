@@ -8,7 +8,6 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_store_chromeos.h"
-#include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
 #include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
 #include "chrome/browser/policy/cloud/cloud_policy_constants.h"
 #include "chrome/browser/policy/cloud/proto/device_management_backend.pb.h"
@@ -182,8 +181,20 @@ void EnrollmentHandlerChromeOS::WriteInstallAttributes(
   // Since this method is also called directly.
   weak_factory_.InvalidateWeakPtrs();
 
-  EnterpriseInstallAttributes::LockResult lock_result =
-      install_attributes_->LockDevice(user, device_mode, device_id);
+  install_attributes_->LockDevice(
+      user, device_mode, device_id,
+      base::Bind(&EnrollmentHandlerChromeOS::HandleLockDeviceResult,
+                 weak_factory_.GetWeakPtr(),
+                 user,
+                 device_mode,
+                 device_id));
+}
+
+void EnrollmentHandlerChromeOS::HandleLockDeviceResult(
+    const std::string& user,
+    DeviceMode device_mode,
+    const std::string& device_id,
+    EnterpriseInstallAttributes::LockResult lock_result) {
   switch (lock_result) {
     case EnterpriseInstallAttributes::LOCK_SUCCESS:
       enrollment_step_ = STEP_STORE_POLICY;

@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/run_loop.h"
 #include "chrome/browser/chromeos/cros/mock_cryptohome_library.h"
 #include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
 #include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
@@ -17,6 +18,17 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace policy {
+
+namespace {
+
+void CopyLockResult(base::RunLoop* loop,
+                    EnterpriseInstallAttributes::LockResult* out,
+                    EnterpriseInstallAttributes::LockResult result) {
+  *out = result;
+  loop->Quit();
+}
+
+}  // namespace
 
 class DeviceCloudPolicyStoreChromeOSTest
     : public chromeos::DeviceSettingsTestBase {
@@ -31,10 +43,15 @@ class DeviceCloudPolicyStoreChromeOSTest
   virtual void SetUp() OVERRIDE {
     DeviceSettingsTestBase::SetUp();
 
-    ASSERT_EQ(EnterpriseInstallAttributes::LOCK_SUCCESS,
-              install_attributes_->LockDevice(PolicyBuilder::kFakeUsername,
-                                              DEVICE_MODE_ENTERPRISE,
-                                              PolicyBuilder::kFakeDeviceId));
+    base::RunLoop loop;
+    EnterpriseInstallAttributes::LockResult result;
+    install_attributes_->LockDevice(
+        PolicyBuilder::kFakeUsername,
+        DEVICE_MODE_ENTERPRISE,
+        PolicyBuilder::kFakeDeviceId,
+        base::Bind(&CopyLockResult, &loop, &result));
+    loop.Run();
+    ASSERT_EQ(EnterpriseInstallAttributes::LOCK_SUCCESS, result);
   }
 
   void ExpectFailure(CloudPolicyStore::Status expected_status) {

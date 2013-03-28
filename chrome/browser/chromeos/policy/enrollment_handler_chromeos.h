@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_validator.h"
+#include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
 #include "chrome/browser/policy/cloud/cloud_policy_client.h"
 #include "chrome/browser/policy/cloud/cloud_policy_store.h"
 
@@ -21,8 +22,6 @@ class PolicyFetchResponse;
 }
 
 namespace policy {
-
-class EnterpriseInstallAttributes;
 
 // Implements the logic that establishes enterprise enrollment for Chromium OS
 // devices. The process is as follows:
@@ -92,11 +91,20 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
   // attributes locking if successful.
   void PolicyValidated(DeviceCloudPolicyValidator* validator);
 
-  // Writes install attributes and proceeds to policy installation. If
-  // unsuccessful, reports the result.
+  // Calls LockDevice() and proceeds to policy installation. If unsuccessful,
+  // reports the result. Actual installation or error report will be done in
+  // HandleLockDeviceResult().
   void WriteInstallAttributes(const std::string& user,
                               DeviceMode device_mode,
                               const std::string& device_id);
+
+  // Helper for WriteInstallAttributes(). It performs the actual action based on
+  // the result of LockDevice.
+  void HandleLockDeviceResult(
+      const std::string& user,
+      DeviceMode device_mode,
+      const std::string& device_id,
+      EnterpriseInstallAttributes::LockResult lock_result);
 
   // Drops any ongoing actions.
   void Stop();

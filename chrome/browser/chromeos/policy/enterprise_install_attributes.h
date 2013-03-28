@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "chrome/browser/policy/cloud/cloud_policy_constants.h"
@@ -30,6 +31,9 @@ class EnterpriseInstallAttributes {
     LOCK_BACKEND_ERROR,
     LOCK_WRONG_USER,
   };
+
+  // A callback to handle responses of methods returning a LockResult value.
+  typedef base::Callback<void(LockResult lock_result)> LockResultCallback;
 
   // Constants for the possible device modes that can be stored in the lockbox.
   static const char kConsumerDeviceMode[];
@@ -58,9 +62,11 @@ class EnterpriseInstallAttributes {
   // Locks the device to be an enterprise device registered by the given user.
   // This can also be called after the lock has already been taken, in which
   // case it checks that the passed user agrees with the locked attribute.
-  LockResult LockDevice(const std::string& user,
-                        DeviceMode device_mode,
-                        const std::string& device_id) WARN_UNUSED_RESULT;
+  // |callback| must not be null and is called with the result.
+  void LockDevice(const std::string& user,
+                  DeviceMode device_mode,
+                  const std::string& device_id,
+                  const LockResultCallback& callback);
 
   // Checks whether this is an enterprise device.
   bool IsEnterpriseDevice();
