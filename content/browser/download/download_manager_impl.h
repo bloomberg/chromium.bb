@@ -107,11 +107,9 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
 
   virtual ~DownloadManagerImpl();
 
-  // Retrieves the download item corresponding to the passed
-  // DownloadCreateInfo (generated on the IO thread).  This will create
-  // the download item if this is a new download (common case) or retrieve an
-  // existing download item if this is a resuming download.
-  virtual DownloadItemImpl* GetOrCreateDownloadItem(DownloadCreateInfo* info);
+  // Create a new active item based on the info.  Separate from
+  // StartDownload() for testing.
+  void CreateActiveItem(DownloadId id, DownloadCreateInfo* info);
 
   // Get next download id.
   DownloadId GetNextId();

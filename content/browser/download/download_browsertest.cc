@@ -58,12 +58,28 @@ class MockDownloadItemObserver : public DownloadItem::Observer {
 
 class MockDownloadManagerObserver : public DownloadManager::Observer {
  public:
-  MockDownloadManagerObserver() {}
-  virtual ~MockDownloadManagerObserver() {}
+  MockDownloadManagerObserver(DownloadManager* manager) {
+    manager_ = manager;
+    manager->AddObserver(this);
+  }
+  virtual ~MockDownloadManagerObserver() {
+    if (manager_)
+      manager_->RemoveObserver(this);
+  }
 
   MOCK_METHOD2(OnDownloadCreated, void(DownloadManager*, DownloadItem*));
   MOCK_METHOD1(ModelChanged, void(DownloadManager*));
-  MOCK_METHOD1(ManagerGoingDown, void(DownloadManager*));
+  void ManagerGoingDown(DownloadManager* manager) {
+    DCHECK_EQ(manager_, manager);
+    MockManagerGoingDown(manager);
+
+    manager_->RemoveObserver(this);
+    manager_ = NULL;
+  }
+
+  MOCK_METHOD1(MockManagerGoingDown, void(DownloadManager*));
+ private:
+  DownloadManager* manager_;
 };
 
 class DownloadFileWithDelayFactory;
@@ -873,15 +889,15 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ShutdownInProgress) {
   // notifications in the right order.
   StrictMock<MockDownloadItemObserver> item_observer;
   items[0]->AddObserver(&item_observer);
-  MockDownloadManagerObserver manager_observer;
+  MockDownloadManagerObserver manager_observer(
+      DownloadManagerForShell(shell()));
   // Don't care about ModelChanged() events.
   EXPECT_CALL(manager_observer, ModelChanged(_))
       .WillRepeatedly(Return());
-  DownloadManagerForShell(shell())->AddObserver(&manager_observer);
   {
     InSequence notifications;
 
-    EXPECT_CALL(manager_observer, ManagerGoingDown(
+    EXPECT_CALL(manager_observer, MockManagerGoingDown(
         DownloadManagerForShell(shell())))
         .WillOnce(Return());
     EXPECT_CALL(item_observer, OnDownloadUpdated(
@@ -960,8 +976,12 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeInterruptedDownload) {
       base::StringPrintf("rangereset?size=%d&rst_boundary=%d",
                    GetSafeBufferChunk() * 3, GetSafeBufferChunk()));
 
+  MockDownloadManagerObserver dm_observer(DownloadManagerForShell(shell()));
+  EXPECT_CALL(dm_observer, OnDownloadCreated(_,_)).Times(1);
+
   DownloadItem* download(StartDownloadAndReturnItem(url));
   WaitForData(download, GetSafeBufferChunk());
+  ::testing::Mock::VerifyAndClearExpectations(&dm_observer);
 
   // Confirm resumption while in progress doesn't do anything.
   download->ResumeInterruptedDownload();
@@ -975,12 +995,15 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeInterruptedDownload) {
       base::FilePath(FILE_PATH_LITERAL("rangereset.crdownload")));
 
   // Resume, confirming received bytes on resumption is correct.
+  // Make sure no creation calls are included.
+  EXPECT_CALL(dm_observer, OnDownloadCreated(_,_)).Times(0);
   int initial_size = 0;
   DownloadUpdatedObserver initial_size_observer(
       download, base::Bind(&InitialSizeFilter, &initial_size));
   download->ResumeInterruptedDownload();
   initial_size_observer.WaitForEvent();
   EXPECT_EQ(GetSafeBufferChunk(), initial_size);
+  ::testing::Mock::VerifyAndClearExpectations(&dm_observer);
 
   // and wait for expected data.
   WaitForData(download, GetSafeBufferChunk() * 2);

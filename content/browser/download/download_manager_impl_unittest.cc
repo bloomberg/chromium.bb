@@ -498,10 +498,9 @@ class DownloadManagerTest : public testing::Test {
     // null.
     int id = next_download_id_;
     ++next_download_id_;
-    info.download_id = DownloadId(kDownloadIdDomain, id);
     info.request_handle = DownloadRequestHandle();
-    download_manager_->GetOrCreateDownloadItem(&info);
-
+    download_manager_->CreateActiveItem(DownloadId(kDownloadIdDomain, id),
+                                        &info);
     DCHECK(mock_download_item_factory_->GetItem(id));
     MockDownloadItemImpl& item(*mock_download_item_factory_->GetItem(id));
     // Satisfy expectation.  If the item is created in StartDownload(),

@@ -244,6 +244,16 @@ DownloadManagerImpl::~DownloadManagerImpl() {
   DCHECK(!shutdown_needed_);
 }
 
+// TODO(rdsmith): Make info const.
+void DownloadManagerImpl::CreateActiveItem(DownloadId id,
+                                           DownloadCreateInfo* info) {
+  net::BoundNetLog bound_net_log =
+      net::BoundNetLog::Make(net_log_, net::NetLog::SOURCE_DOWNLOAD);
+  info->download_id = id;
+  downloads_[id.local()] =
+      item_factory_->CreateActiveItem(this, *info, bound_net_log);
+}
+
 DownloadId DownloadManagerImpl::GetNextId() {
   DownloadId id;
   if (delegate_)
@@ -384,10 +394,21 @@ DownloadItem* DownloadManagerImpl::StartDownload(
                           &default_download_directory, &skip_dir_check);
   }
 
-  // We create the DownloadItem before the DownloadFile because the
-  // DownloadItem already needs to handle a state in which there is
-  // no associated DownloadFile (history downloads, !IN_PROGRESS downloads)
-  DownloadItemImpl* download = GetOrCreateDownloadItem(info.get());
+  // If we don't have a valid id, that's a signal to generate one.
+  DownloadId id(info->download_id);
+  if (!id.IsValid())
+    id = GetNextId();
+
+  // Create a new download item if this isn't a resumption.
+  bool new_download(!ContainsKey(downloads_, id.local()));
+  if (new_download)
+    CreateActiveItem(id, info.get());
+
+  DownloadItemImpl* download(downloads_[id.local()]);
+  DCHECK(download);
+  DCHECK(new_download || download->IsInterrupted());
+
+  // Create the download file and start the download.
   scoped_ptr<DownloadFile> download_file(
       file_factory_->CreateFile(
           info->save_info.Pass(), default_download_directory,
@@ -399,9 +420,13 @@ DownloadItem* DownloadManagerImpl::StartDownload(
       new DownloadRequestHandle(info->request_handle));
   download->Start(download_file.Pass(), req_handle.Pass());
 
-  // Delay notification until after Start() so that download_file is bound
-  // to download and all the usual setters (e.g. Cancel) work.
-  FOR_EACH_OBSERVER(Observer, observers_, OnDownloadCreated(this, download));
+  // For interrupted downloads, Start() will transition the state to
+  // IN_PROGRESS and consumers will be notified via OnDownloadUpdated().
+  // For new downloads, we notify here, rather than earlier, so that
+  // the download_file is bound to download and all the usual
+  // setters (e.g. Cancel) work.
+  if (new_download)
+    FOR_EACH_OBSERVER(Observer, observers_, OnDownloadCreated(this, download));
 
   return download;
 }
@@ -438,29 +463,6 @@ void DownloadManagerImpl::OnFileExistenceChecked(int32 download_id,
 
 BrowserContext* DownloadManagerImpl::GetBrowserContext() const {
   return browser_context_;
-}
-
-DownloadItemImpl* DownloadManagerImpl::GetOrCreateDownloadItem(
-    DownloadCreateInfo* info) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (!info->download_id.IsValid())
-    info->download_id = GetNextId();
-
-  DownloadItemImpl* download = NULL;
-  if (ContainsKey(downloads_, info->download_id.local())) {
-    // Resuming an existing download.
-    download = downloads_[info->download_id.local()];
-    DCHECK(download->IsInterrupted());
-  } else {
-    // New download
-    net::BoundNetLog bound_net_log =
-        net::BoundNetLog::Make(net_log_, net::NetLog::SOURCE_DOWNLOAD);
-    download = item_factory_->CreateActiveItem(this, *info, bound_net_log);
-    downloads_[download->GetId()] = download;
-  }
-
-  return download;
 }
 
 DownloadItemImpl* DownloadManagerImpl::CreateSavePackageDownloadItem(
