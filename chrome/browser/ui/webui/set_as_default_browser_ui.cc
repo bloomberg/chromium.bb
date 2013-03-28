@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/singleton_tabs.h"
@@ -211,7 +212,8 @@ bool SetAsDefaultBrowserHandler::ShouldAttemptImmersiveRestart() {
 // A web dialog delegate implementation for when 'Make Chrome Metro' UI
 // is displayed on a dialog.
 class SetAsDefaultBrowserDialogImpl : public ui::WebDialogDelegate,
-                                      public ResponseDelegate {
+                                      public ResponseDelegate,
+                                      public chrome::BrowserListObserver {
  public:
   SetAsDefaultBrowserDialogImpl(Profile* profile, Browser* browser);
   virtual ~SetAsDefaultBrowserDialogImpl();
@@ -237,6 +239,9 @@ class SetAsDefaultBrowserDialogImpl : public ui::WebDialogDelegate,
   // Overridden from ResponseDelegate:
   virtual void SetDialogInteractionResult(MakeChromeDefaultResult result);
 
+  // Overridden from BrowserListObserver:
+  virtual void OnBrowserRemoved(Browser* browser) OVERRIDE;
+
  private:
   // Reset the first-run sentinel file, so must be called on the FILE thread.
   // This is needed if the browser should be restarted in immersive mode.
@@ -260,9 +265,12 @@ SetAsDefaultBrowserDialogImpl::SetAsDefaultBrowserDialogImpl(Profile* profile,
       owns_handler_(true),
       handler_(new SetAsDefaultBrowserHandler(this)),
       dialog_interaction_result_(MAKE_CHROME_DEFAULT_DECLINED) {
+  BrowserList::AddObserver(this);
 }
 
 SetAsDefaultBrowserDialogImpl::~SetAsDefaultBrowserDialogImpl() {
+  if (browser_)
+    BrowserList::RemoveObserver(this);
   if (owns_handler_)
     delete handler_;
 }
@@ -271,9 +279,7 @@ void SetAsDefaultBrowserDialogImpl::ShowDialog() {
   // Use a NULL parent window to make sure that the dialog will have an item
   // in the Windows task bar. The code below will make it highlight if the
   // dialog is not in the foreground.
-  gfx::NativeWindow native_window = chrome::ShowWebDialog(NULL,
-                                                          browser_->profile(),
-                                                          this);
+  gfx::NativeWindow native_window = chrome::ShowWebDialog(NULL, profile_, this);
   views::Widget* widget = views::Widget::GetWidgetForNativeWindow(
       native_window);
   widget->FlashFrame(true);
@@ -336,11 +342,14 @@ void SetAsDefaultBrowserDialogImpl::OnDialogClosed(
     // Carry on with a normal chrome session. For the purpose of surfacing this
     // dialog the actual browser window had to remain hidden. Now it's time to
     // show it.
-    BrowserWindow* window = browser_->window();
-    WebContents* contents = browser_->tab_strip_model()->GetActiveWebContents();
-    window->Show();
-    if (contents)
-      contents->GetView()->SetInitialFocus();
+    if (browser_) {
+      BrowserWindow* window = browser_->window();
+      WebContents* contents =
+          browser_->tab_strip_model()->GetActiveWebContents();
+      window->Show();
+      if (contents)
+        contents->GetView()->SetInitialFocus();
+    }
   }
 
   delete this;
@@ -363,6 +372,13 @@ bool SetAsDefaultBrowserDialogImpl::HandleContextMenu(
 void SetAsDefaultBrowserDialogImpl::SetDialogInteractionResult(
     MakeChromeDefaultResult result) {
   dialog_interaction_result_ = result;
+}
+
+void SetAsDefaultBrowserDialogImpl::OnBrowserRemoved(Browser* browser) {
+  if (browser_ == browser) {
+    browser_ = NULL;
+    BrowserList::RemoveObserver(this);
+  }
 }
 
 void SetAsDefaultBrowserDialogImpl::
