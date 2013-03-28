@@ -11,14 +11,19 @@
 namespace cc {
 
 scoped_refptr<CachingBitmapContentLayerUpdater>
-CachingBitmapContentLayerUpdater::Create(scoped_ptr<LayerPainter> painter) {
+CachingBitmapContentLayerUpdater::Create(
+    scoped_ptr<LayerPainter> painter,
+    RenderingStatsInstrumentation* stats_instrumentation) {
   return make_scoped_refptr(
-      new CachingBitmapContentLayerUpdater(painter.Pass()));
+      new CachingBitmapContentLayerUpdater(painter.Pass(),
+                                           stats_instrumentation));
 }
 
 CachingBitmapContentLayerUpdater::CachingBitmapContentLayerUpdater(
-    scoped_ptr<LayerPainter> painter)
-    : BitmapContentLayerUpdater(painter.Pass()), pixels_did_change_(false) {}
+    scoped_ptr<LayerPainter> painter,
+    RenderingStatsInstrumentation* stats_instrumentation)
+    : BitmapContentLayerUpdater(painter.Pass(), stats_instrumentation),
+      pixels_did_change_(false) {}
 
 CachingBitmapContentLayerUpdater::~CachingBitmapContentLayerUpdater() {}
 
@@ -27,14 +32,12 @@ void CachingBitmapContentLayerUpdater::PrepareToUpdate(
     gfx::Size tile_size,
     float contents_width_scale,
     float contents_height_scale,
-    gfx::Rect* resulting_opaque_rect,
-    RenderingStats* stats) {
+    gfx::Rect* resulting_opaque_rect) {
   BitmapContentLayerUpdater::PrepareToUpdate(content_rect,
                                              tile_size,
                                              contents_width_scale,
                                              contents_height_scale,
-                                             resulting_opaque_rect,
-                                             stats);
+                                             resulting_opaque_rect);
 
   const SkBitmap& new_bitmap = canvas_->getDevice()->accessBitmap(false);
   SkAutoLockPixels lock(new_bitmap);

@@ -104,9 +104,6 @@ class SingleThreadProxy : public Proxy, LayerTreeHostImplClient {
 
   bool inside_draw_;
 
-  base::TimeDelta total_commit_time_;
-  size_t total_commit_count_;
-
   DISALLOW_COPY_AND_ASSIGN(SingleThreadProxy);
 };
 

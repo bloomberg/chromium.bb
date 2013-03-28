@@ -270,7 +270,8 @@ void ScrollbarLayer::CreateUpdaterIfNeeded() {
             scrollbar_.get(),
             painter_.get(),
             geometry_.get(),
-            WebKit::WebScrollbar::BackTrackPart).PassAs<LayerPainter>());
+            WebKit::WebScrollbar::BackTrackPart).PassAs<LayerPainter>(),
+        rendering_stats_instrumentation());
   }
   if (!back_track_) {
     back_track_ = back_track_updater_->CreateResource(
@@ -286,7 +287,8 @@ void ScrollbarLayer::CreateUpdaterIfNeeded() {
               scrollbar_.get(),
               painter_.get(),
               geometry_.get(),
-              WebKit::WebScrollbar::ForwardTrackPart).PassAs<LayerPainter>());
+              WebKit::WebScrollbar::ForwardTrackPart).PassAs<LayerPainter>(),
+          rendering_stats_instrumentation());
     }
     if (!fore_track_) {
       fore_track_ = fore_track_updater_->CreateResource(
@@ -298,7 +300,8 @@ void ScrollbarLayer::CreateUpdaterIfNeeded() {
     thumb_updater_ = CachingBitmapContentLayerUpdater::Create(
         ScrollbarThumbPainter::Create(scrollbar_.get(),
                                       painter_.get(),
-                                      geometry_.get()).PassAs<LayerPainter>());
+                                      geometry_.get()).PassAs<LayerPainter>(),
+        rendering_stats_instrumentation());
   }
   if (!thumb_) {
     thumb_ = thumb_updater_->CreateResource(
@@ -309,8 +312,7 @@ void ScrollbarLayer::CreateUpdaterIfNeeded() {
 void ScrollbarLayer::UpdatePart(CachingBitmapContentLayerUpdater* painter,
                                 LayerUpdater::Resource* resource,
                                 gfx::Rect rect,
-                                ResourceUpdateQueue* queue,
-                                RenderingStats* stats) {
+                                ResourceUpdateQueue* queue) {
   if (layer_tree_host()->settings().solid_color_scrollbars)
     return;
 
@@ -332,8 +334,7 @@ void ScrollbarLayer::UpdatePart(CachingBitmapContentLayerUpdater* painter,
                            rect.size(),
                            contents_scale_x(),
                            contents_scale_y(),
-                           &painted_opaque_rect,
-                           stats);
+                           &painted_opaque_rect);
   if (!painter->pixels_did_change() &&
       resource->texture()->have_backing_texture()) {
     TRACE_EVENT_INSTANT0("cc",
@@ -348,7 +349,7 @@ void ScrollbarLayer::UpdatePart(CachingBitmapContentLayerUpdater* painter,
     resource->texture()->ReturnBackingTexture();
 
   gfx::Vector2d dest_offset(0, 0);
-  resource->Update(queue, rect, dest_offset, partial_updates_allowed, stats);
+  resource->Update(queue, rect, dest_offset, partial_updates_allowed);
 }
 
 gfx::Rect ScrollbarLayer::ScrollbarLayerRectToContentRect(
@@ -395,9 +396,8 @@ void ScrollbarLayer::SetTexturePriorities(
 }
 
 void ScrollbarLayer::Update(ResourceUpdateQueue* queue,
-                            const OcclusionTracker* occlusion,
-                            RenderingStats* stats) {
-  ContentsScalingLayer::Update(queue, occlusion, stats);
+                            const OcclusionTracker* occlusion) {
+  ContentsScalingLayer::Update(queue, occlusion);
 
   dirty_rect_.Union(update_rect_);
   if (content_bounds().IsEmpty())
@@ -412,14 +412,12 @@ void ScrollbarLayer::Update(ResourceUpdateQueue* queue,
   UpdatePart(back_track_updater_.get(),
              back_track_.get(),
              content_rect,
-             queue,
-             stats);
+             queue);
   if (fore_track_ && fore_track_updater_) {
     UpdatePart(fore_track_updater_.get(),
                fore_track_.get(),
                content_rect,
-               queue,
-               stats);
+               queue);
   }
 
   // Consider the thumb to be at the origin when painting.
@@ -431,8 +429,7 @@ void ScrollbarLayer::Update(ResourceUpdateQueue* queue,
     UpdatePart(thumb_updater_.get(),
                thumb_.get(),
                origin_thumb_rect,
-               queue,
-               stats);
+               queue);
   }
 
   dirty_rect_ = gfx::RectF();

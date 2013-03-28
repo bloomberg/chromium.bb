@@ -14,21 +14,23 @@ namespace cc {
 class CachingBitmapContentLayerUpdater : public BitmapContentLayerUpdater {
  public:
   static scoped_refptr<CachingBitmapContentLayerUpdater> Create(
-      scoped_ptr<LayerPainter>);
+      scoped_ptr<LayerPainter>,
+      RenderingStatsInstrumentation* stats_instrumentation);
 
   virtual void PrepareToUpdate(gfx::Rect content_rect,
                                gfx::Size tile_size,
                                float contents_width_scale,
                                float contents_height_scale,
-                               gfx::Rect* resulting_opaque_rect,
-                               RenderingStats* stats) OVERRIDE;
+                               gfx::Rect* resulting_opaque_rect) OVERRIDE;
 
   bool pixels_did_change() const {
     return pixels_did_change_;
   }
 
  private:
-  explicit CachingBitmapContentLayerUpdater(scoped_ptr<LayerPainter> painter);
+  CachingBitmapContentLayerUpdater(
+      scoped_ptr<LayerPainter> painter,
+      RenderingStatsInstrumentation* stats_instrumentation);
   virtual ~CachingBitmapContentLayerUpdater();
 
   bool pixels_did_change_;

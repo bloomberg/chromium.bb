@@ -6,7 +6,7 @@
 
 #include "base/debug/trace_event.h"
 #include "base/time.h"
-#include "cc/debug/rendering_stats.h"
+#include "cc/debug/rendering_stats_instrumentation.h"
 #include "cc/resources/layer_painter.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPaint.h"
@@ -17,8 +17,11 @@
 
 namespace cc {
 
-ContentLayerUpdater::ContentLayerUpdater(scoped_ptr<LayerPainter> painter)
-    : painter_(painter.Pass()) {}
+ContentLayerUpdater::ContentLayerUpdater(
+    scoped_ptr<LayerPainter> painter,
+    RenderingStatsInstrumentation* stats_instrumentation)
+    : painter_(painter.Pass()),
+      rendering_stats_instrumentation_(stats_instrumentation) {}
 
 ContentLayerUpdater::~ContentLayerUpdater() {}
 
@@ -26,8 +29,7 @@ void ContentLayerUpdater::PaintContents(SkCanvas* canvas,
                                         gfx::Rect content_rect,
                                         float contents_width_scale,
                                         float contents_height_scale,
-                                        gfx::Rect* resulting_opaque_rect,
-                                        RenderingStats* stats) {
+                                        gfx::Rect* resulting_opaque_rect) {
   TRACE_EVENT0("cc", "ContentLayerUpdater::PaintContents");
   canvas->save();
   canvas->translate(SkFloatToScalar(-content_rect.x()),
@@ -53,14 +55,18 @@ void ContentLayerUpdater::PaintContents(SkCanvas* canvas,
   canvas->clipRect(layer_sk_rect);
 
   gfx::RectF opaque_layer_rect;
-  base::TimeTicks paint_begin_time;
-  if (stats)
-    paint_begin_time = base::TimeTicks::Now();
+
+  base::TimeTicks start_time =
+      rendering_stats_instrumentation_->StartRecording();
+
   painter_->Paint(canvas, layer_rect, &opaque_layer_rect);
-  if (stats) {
-    stats->total_paint_time += base::TimeTicks::Now() - paint_begin_time;
-    stats->total_pixels_painted += content_rect.width() * content_rect.height();
-  }
+
+  base::TimeDelta duration =
+      rendering_stats_instrumentation_->EndRecording(start_time);
+  rendering_stats_instrumentation_->AddPaint(
+      duration,
+      content_rect.width() * content_rect.height());
+
   canvas->restore();
 
   gfx::RectF opaque_content_rect = gfx::ScaleRect(
