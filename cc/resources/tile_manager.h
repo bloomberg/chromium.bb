@@ -76,6 +76,7 @@ class CC_EXPORT TileManager : public WorkerPoolClient {
   TileManager(TileManagerClient* client,
               ResourceProvider *resource_provider,
               size_t num_raster_threads,
+              size_t max_prepaint_tile_distance,
               bool use_cheapess_estimator,
               bool use_color_estimator,
               bool prediction_benchmarking,
@@ -213,6 +214,7 @@ class CC_EXPORT TileManager : public WorkerPoolClient {
 
   RenderingStatsInstrumentation* rendering_stats_instrumentation_;
 
+  size_t max_prepaint_tile_distance_;
   bool use_cheapness_estimator_;
   bool use_color_estimator_;
   int raster_state_count_[NUM_STATES][NUM_TREES][NUM_BINS];

@@ -96,9 +96,6 @@ struct CC_EXPORT TilePriority {
 
   scoped_ptr<base::Value> AsValue() const;
 
-  static const float kMaxDistanceInContentSpace;
-  static const int64 kNumTilesToCoverWithInflatedViewportRectForPrioritization;
-
   static inline float manhattanDistance(const gfx::RectF& a,
                                         const gfx::RectF& b) {
     // Compute the union explicitly.

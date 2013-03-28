@@ -138,7 +138,8 @@ class CC_EXPORT PictureLayerTiling {
       const gfx::Transform& current_screen_transform,
       int current_source_frame_number,
       double current_frame_time,
-      bool store_screen_space_quads_on_tiles);
+      bool store_screen_space_quads_on_tiles,
+      size_t max_tiles_for_interest_area);
 
   // Copies the src_tree priority into the dst_tree priority for all tiles.
   // The src_tree priority is reset to the lowest priority possible.  This

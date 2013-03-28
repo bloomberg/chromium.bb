@@ -53,6 +53,8 @@ class CC_EXPORT LayerTreeSettings {
   gfx::Size max_untiled_layer_size;
   gfx::Size minimum_occlusion_tracking_size;
   bool use_pinch_zoom_scrollbars;
+  size_t max_prepaint_tile_distance;
+  size_t max_tiles_for_interest_area;
 
   LayerTreeDebugState initial_debug_state;
 };

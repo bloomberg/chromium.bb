@@ -60,12 +60,6 @@ inline void IntersectPositiveHalfplane(Range* out,
 
 namespace cc {
 
-const float TilePriority::kMaxDistanceInContentSpace = 4096.0f;
-
-// At 256x256 tiles, 128 tiles cover an area of 2048x4096 pixels.
-const int64 TilePriority::
-    kNumTilesToCoverWithInflatedViewportRectForPrioritization = 128;
-
 scoped_ptr<base::Value> WhichTreeAsValue(WhichTree tree) {
   switch (tree) {
   case ACTIVE_TREE:

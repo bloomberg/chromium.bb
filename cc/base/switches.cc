@@ -70,6 +70,12 @@ const char kUseColorEstimator[] = "use-color-estimator";
 const char kLowResolutionContentsScaleFactor[] =
     "low-resolution-contents-scale-factor";
 
+// Max distance from visible for prepaint tiles.
+const char kMaxPrepaintTileDistance[] = "max-prepaint-tile-distance";
+
+// Max tiles allowed for each tilings interest area.
+const char kMaxTilesForInterestArea[] = "max-tiles-for-interest-area";
+
 // Causes the compositor to render to textures which are then sent to the parent
 // through the texture mailbox mechanism.
 // Requires --enable-compositor-frame-message.

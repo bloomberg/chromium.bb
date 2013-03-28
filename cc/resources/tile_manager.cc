@@ -51,7 +51,9 @@ const int kRunCheapTasksTimeMs = 6;
 
 // Determine bin based on three categories of tiles: things we need now,
 // things we need soon, and eventually.
-inline TileManagerBin BinFromTilePriority(const TilePriority& prio) {
+inline TileManagerBin BinFromTilePriority(
+  const TilePriority& prio,
+  float max_distance_in_content_space) {
   if (!prio.is_live)
     return NEVER_BIN;
 
@@ -60,8 +62,7 @@ inline TileManagerBin BinFromTilePriority(const TilePriority& prio) {
   const float kBackflingGuardDistancePixels = 314.0f;
 
   // Explicitly limit how far ahead we will prepaint to limit memory usage.
-  if (prio.distance_to_visible_in_pixels >
-      TilePriority::kMaxDistanceInContentSpace)
+  if (prio.distance_to_visible_in_pixels > max_distance_in_content_space)
     return NEVER_BIN;
 
   if (prio.time_to_visible_in_seconds == 0 ||
@@ -151,6 +152,7 @@ TileManager::TileManager(
     TileManagerClient* client,
     ResourceProvider* resource_provider,
     size_t num_raster_threads,
+    size_t max_prepaint_tile_distance,
     bool use_cheapness_estimator,
     bool use_color_estimator,
     bool prediction_benchmarking,
@@ -163,6 +165,7 @@ TileManager::TileManager(
       bytes_pending_upload_(0),
       has_performed_uploads_since_last_flush_(false),
       ever_exceeded_memory_budget_(false),
+      max_prepaint_tile_distance_(max_prepaint_tile_distance),
       use_cheapness_estimator_(use_cheapness_estimator),
       use_color_estimator_(use_color_estimator),
       prediction_benchmarking_(prediction_benchmarking),
@@ -342,15 +345,23 @@ void TileManager::ManageTiles() {
         prio[HIGH_PRIORITY_BIN].time_to_visible_in_seconds;
     mts.distance_to_visible_in_pixels =
         prio[HIGH_PRIORITY_BIN].distance_to_visible_in_pixels;
-    mts.bin[HIGH_PRIORITY_BIN] = BinFromTilePriority(prio[HIGH_PRIORITY_BIN]);
-    mts.bin[LOW_PRIORITY_BIN] = BinFromTilePriority(prio[LOW_PRIORITY_BIN]);
-    mts.gpu_memmgr_stats_bin = BinFromTilePriority(tile->combined_priority());
+    mts.bin[HIGH_PRIORITY_BIN] = BinFromTilePriority(
+        prio[HIGH_PRIORITY_BIN],
+        max_prepaint_tile_distance_);
+    mts.bin[LOW_PRIORITY_BIN] = BinFromTilePriority(
+        prio[LOW_PRIORITY_BIN],
+        max_prepaint_tile_distance_);
+    mts.gpu_memmgr_stats_bin = BinFromTilePriority(
+        tile->combined_priority(),
+        max_prepaint_tile_distance_);
 
     DidTileTreeBinChange(tile,
-        bin_map[BinFromTilePriority(tile->priority(ACTIVE_TREE))],
+        bin_map[BinFromTilePriority(tile->priority(ACTIVE_TREE),
+                                    max_prepaint_tile_distance_)],
         ACTIVE_TREE);
     DidTileTreeBinChange(tile,
-        bin_map[BinFromTilePriority(tile->priority(PENDING_TREE))],
+        bin_map[BinFromTilePriority(tile->priority(PENDING_TREE),
+                                    max_prepaint_tile_distance_)],
         PENDING_TREE);
 
     for (int i = 0; i < NUM_BIN_PRIORITIES; ++i)

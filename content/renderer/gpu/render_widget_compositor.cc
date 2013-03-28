@@ -239,6 +239,24 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
                           &settings.low_res_contents_scale_factor);
   }
 
+  if (cmd->HasSwitch(cc::switches::kMaxPrepaintTileDistance)) {
+    int max_prepaint_tile_distance;
+    if (GetSwitchValueAsInt(*cmd,
+                            cc::switches::kMaxPrepaintTileDistance,
+                            0, std::numeric_limits<int>::max(),
+                            &max_prepaint_tile_distance))
+      settings.max_prepaint_tile_distance = max_prepaint_tile_distance;
+  }
+
+  if (cmd->HasSwitch(cc::switches::kMaxTilesForInterestArea)) {
+    int max_tiles_for_interest_area;
+    if (GetSwitchValueAsInt(*cmd,
+                            cc::switches::kMaxTilesForInterestArea,
+                            1, std::numeric_limits<int>::max(),
+                            &max_tiles_for_interest_area))
+      settings.max_tiles_for_interest_area = max_tiles_for_interest_area;
+  }
+
 #if defined(OS_ANDROID)
   // TODO(danakj): Move these to the android code.
   settings.can_use_lcd_text = false;

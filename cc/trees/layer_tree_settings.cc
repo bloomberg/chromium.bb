@@ -47,7 +47,10 @@ LayerTreeSettings::LayerTreeSettings()
       default_tile_size(gfx::Size(256, 256)),
       max_untiled_layer_size(gfx::Size(512, 512)),
       minimum_occlusion_tracking_size(gfx::Size(160, 160)),
-      use_pinch_zoom_scrollbars(false) {
+      use_pinch_zoom_scrollbars(false),
+      max_prepaint_tile_distance(4096),
+      // At 256x256 tiles, 128 tiles cover an area of 2048x4096 pixels.
+      max_tiles_for_interest_area(128) {
   // TODO(danakj): Renable surface caching when we can do it more realiably.
   // crbug.com/170713
   cache_render_pass_contents = false;
