@@ -146,6 +146,14 @@ void RenderViewHostTestHarness::Reload() {
       rvh())->SendNavigate(entry->GetPageID(), entry->GetURL());
 }
 
+void RenderViewHostTestHarness::FailedReload() {
+  NavigationEntry* entry = controller().GetLastCommittedEntry();
+  DCHECK(entry);
+  controller().Reload(false);
+  static_cast<TestRenderViewHost*>(
+      rvh())->SendFailedNavigate(entry->GetPageID(), entry->GetURL());
+}
+
 void RenderViewHostTestHarness::SetUp() {
 #if defined(OS_WIN)
   ole_initializer_.reset(new ui::ScopedOleInitializer());

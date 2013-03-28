@@ -238,6 +238,7 @@ class TestRenderViewHost
   // is not specified since it is synonymous with the one from
   // RenderViewHostImpl, see below.
   virtual void SendNavigate(int page_id, const GURL& url) OVERRIDE;
+  virtual void SendFailedNavigate(int page_id, const GURL& url) OVERRIDE;
   virtual void SendNavigateWithTransition(int page_id, const GURL& url,
                                           PageTransition transition) OVERRIDE;
   virtual void SendShouldCloseACK(bool proceed) OVERRIDE;
@@ -253,12 +254,6 @@ class TestRenderViewHost
   void SendNavigateWithOriginalRequestURL(
       int page_id, const GURL& url, const GURL& original_request_url);
 
-  // Calls OnNavigate on the RenderViewHost with the given information.
-  // Sets the rest of the parameters in the message to the "typical" values.
-  // This is a helper function for simulating the most common types of loads.
-  void SendNavigateWithParameters(
-      int page_id, const GURL& url, PageTransition transition,
-      const GURL& original_request_url);
 
   void TestOnStartDragging(const WebDropData& drop_data);
 
@@ -306,6 +301,21 @@ class TestRenderViewHost
 
  private:
   FRIEND_TEST_ALL_PREFIXES(RenderViewHostTest, FilterNavigate);
+
+  void SendNavigateWithTransitionAndResponseCode(int page_id,
+                                                 const GURL& url,
+                                                 PageTransition transition,
+                                                 int response_code);
+
+  // Calls OnNavigate on the RenderViewHost with the given information.
+  // Sets the rest of the parameters in the message to the "typical" values.
+  // This is a helper function for simulating the most common types of loads.
+  void SendNavigateWithParameters(int page_id,
+                                  const GURL& url,
+                                  PageTransition transition,
+                                  const GURL& original_request_url,
+                                  int response_code);
+
 
   // Tracks if the caller thinks if it created the RenderView. This is so we can
   // respond to IsRenderViewLive appropriately.

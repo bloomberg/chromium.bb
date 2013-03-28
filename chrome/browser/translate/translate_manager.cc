@@ -294,6 +294,13 @@ void TranslateManager::Observe(int type,
       if (!translate_tab_helper)
         return;
 
+      // If the navigation happened while offline don't show the translate
+      // bar since there will be nothing to translate.
+      if (load_details->http_status_code == 0 ||
+          load_details->http_status_code == 500) {
+        return;
+      }
+
       if (!load_details->is_main_frame &&
           translate_tab_helper->language_state().translation_declined()) {
         // Some sites (such as Google map) may trigger sub-frame navigations

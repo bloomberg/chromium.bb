@@ -193,9 +193,12 @@ class TranslateManagerTest : public ChromeRenderViewHostTestHarness,
     return true;
   }
 
-  void ReloadAndWait() {
+  void ReloadAndWait(bool successful_reload) {
     NavEntryCommittedObserver nav_observer(web_contents());
-    Reload();
+    if (successful_reload)
+      Reload();
+    else
+      FailedReload();
 
     // Ensures it is really handled a reload.
     const content::LoadCommittedDetails& nav_details =
@@ -436,7 +439,7 @@ TEST_F(TranslateManagerTest, NormalTranslate) {
   ASSERT_TRUE(new_infobar != NULL);
 
   // Verify reload keeps the same settings.
-  ReloadAndWait();
+  ReloadAndWait(true);
   new_infobar = GetTranslateInfoBar();
   ASSERT_TRUE(new_infobar != NULL);
   ASSERT_EQ(new_target_lang, infobar->target_language_code());
@@ -744,7 +747,8 @@ TEST_F(TranslateManagerTest, MultipleOnPageContents) {
   EXPECT_EQ(0U, infobar_service()->GetInfoBarCount());
 }
 
-// Test that reloading the page brings back the infobar.
+// Test that reloading the page brings back the infobar if the
+// reload succeeded and does not bring it back the reload fails.
 TEST_F(TranslateManagerTest, Reload) {
   // Simulate navigating to a page and getting its language.
   SimulateNavigation(GURL("http://www.google.fr"), "fr", true);
@@ -752,9 +756,16 @@ TEST_F(TranslateManagerTest, Reload) {
   // Close the infobar.
   EXPECT_TRUE(CloseTranslateInfoBar());
 
-  // Reload should bring back the infobar.
-  ReloadAndWait();
+  // Reload should bring back the infobar if the page succeds
+  ReloadAndWait(true);
   EXPECT_TRUE(GetTranslateInfoBar() != NULL);
+
+  // Close the infobar.
+  EXPECT_TRUE(CloseTranslateInfoBar());
+
+  // And not show it if the reload fails
+  ReloadAndWait(false);
+  EXPECT_EQ(NULL, GetTranslateInfoBar());
 }
 
 // Test that reloading the page by way of typing again the URL in the

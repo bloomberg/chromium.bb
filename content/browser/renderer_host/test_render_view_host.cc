@@ -273,22 +273,33 @@ void TestRenderViewHost::SendNavigate(int page_id, const GURL& url) {
   SendNavigateWithTransition(page_id, url, PAGE_TRANSITION_LINK);
 }
 
+void TestRenderViewHost::SendFailedNavigate(int page_id, const GURL& url) {
+  SendNavigateWithTransitionAndResponseCode(
+      page_id, url, PAGE_TRANSITION_LINK, 500);
+}
+
 void TestRenderViewHost::SendNavigateWithTransition(
     int page_id, const GURL& url, PageTransition transition) {
-  OnDidStartProvisionalLoadForFrame(0, -1, true, url);
-  SendNavigateWithParameters(page_id, url, transition, url);
+  SendNavigateWithTransitionAndResponseCode(page_id, url, transition, 200);
 }
 
 void TestRenderViewHost::SendNavigateWithOriginalRequestURL(
     int page_id, const GURL& url, const GURL& original_request_url) {
   OnDidStartProvisionalLoadForFrame(0, -1, true, url);
   SendNavigateWithParameters(page_id, url, PAGE_TRANSITION_LINK,
-      original_request_url);
+                             original_request_url, 200);
+}
+
+void TestRenderViewHost::SendNavigateWithTransitionAndResponseCode(
+    int page_id, const GURL& url, PageTransition transition,
+    int response_code) {
+  OnDidStartProvisionalLoadForFrame(0, -1, true, url);
+  SendNavigateWithParameters(page_id, url, transition, url, response_code);
 }
 
 void TestRenderViewHost::SendNavigateWithParameters(
     int page_id, const GURL& url, PageTransition transition,
-    const GURL& original_request_url) {
+    const GURL& original_request_url, int response_code) {
   ViewHostMsg_FrameNavigate_Params params;
 
   params.page_id = page_id;
@@ -306,7 +317,7 @@ void TestRenderViewHost::SendNavigateWithParameters(
   params.contents_mime_type = contents_mime_type_;
   params.is_post = false;
   params.was_within_same_page = false;
-  params.http_status_code = 0;
+  params.http_status_code = response_code;
   params.socket_address.set_host("2001:db8::1");
   params.socket_address.set_port(80);
   params.was_fetched_via_proxy = simulate_fetch_via_proxy_;

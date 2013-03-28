@@ -75,6 +75,7 @@ class RenderViewHostTester {
   // setting the rest of the parameters in the message to the "typical" values.
   // This is a helper function for simulating the most common types of loads.
   virtual void SendNavigate(int page_id, const GURL& url) = 0;
+  virtual void SendFailedNavigate(int page_id, const GURL& url) = 0;
 
   // Calls OnMsgNavigate on the RenderViewHost with the given information,
   // including a custom PageTransition.  Sets the rest of the
@@ -147,6 +148,7 @@ class RenderViewHostTestHarness : public testing::Test {
 
   // Simulates a reload of the current page.
   void Reload();
+  void FailedReload();
 
  protected:
   // testing::Test
