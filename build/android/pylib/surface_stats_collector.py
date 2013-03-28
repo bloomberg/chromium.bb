@@ -219,17 +219,18 @@ class SurfaceStatsCollector(object):
     nanoseconds_per_second = 1e9
     refresh_period = long(results[0]) / nanoseconds_per_second
 
-    # SurfaceFlinger sometimes gives an invalid timestamp for the very latest
-    # frame if it is queried while the frame is still being presented. We ignore
-    # these timestamps.
-    bad_timestamp = (1 << 63) - 1
+    # If a fence associated with a frame is still pending when we query the
+    # latency data, SurfaceFlinger gives the frame a timestamp of INT64_MAX.
+    # Since we only care about completed frames, we will ignore any timestamps
+    # with this value.
+    pending_fence_timestamp = (1 << 63) - 1
 
     for line in results[1:]:
       fields = line.split()
       if len(fields) != 3:
         continue
       timestamp = long(fields[1])
-      if timestamp == bad_timestamp:
+      if timestamp == pending_fence_timestamp:
         continue
       timestamp /= nanoseconds_per_second
       timestamps.append(timestamp)
