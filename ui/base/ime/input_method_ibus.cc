@@ -27,6 +27,7 @@
 #include "chromeos/dbus/ibus/ibus_client.h"
 #include "chromeos/dbus/ibus/ibus_input_context_client.h"
 #include "chromeos/dbus/ibus/ibus_text.h"
+#include "ui/base/events/event.h"
 #include "ui/base/events/event_constants.h"
 #include "ui/base/events/event_utils.h"
 #include "ui/base/ime/text_input_client.h"
@@ -209,6 +210,16 @@ bool InputMethodIBus::DispatchKeyEvent(const base::NativeEvent& native_event) {
 }
 
 bool InputMethodIBus::DispatchFabricatedKeyEvent(const ui::KeyEvent& event) {
+  // TODO(bryeung): The fabricated events should also pass through IME.
+  if (event.type() == ET_KEY_PRESSED) {
+    ProcessUnfilteredFabricatedKeyPressEvent(
+        ET_KEY_PRESSED, event.key_code(), event.flags(), 0);
+  } else {
+    DispatchFabricatedKeyEventPostIME(
+        ET_KEY_RELEASED,
+        event.key_code(),
+        event.flags());
+  }
   return true;
 }
 
