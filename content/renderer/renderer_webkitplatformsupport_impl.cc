@@ -633,23 +633,7 @@ bool RendererWebKitPlatformSupportImpl::isThreadedCompositingEnabled() {
 
 double RendererWebKitPlatformSupportImpl::audioHardwareSampleRate() {
   RenderThreadImpl* thread = RenderThreadImpl::current();
-  int sample_rate = thread->GetAudioHardwareConfig()->GetOutputSampleRate();
-
-  // In some rare cases it has been found that Windows returns
-  // a sample-rate of 0.
-  // Let's make sure to return a sane fallback sample-rate.
-  // http://crbug.com/222718
-  static const int kMinSampleRate = 22050;
-  static const int kMaxSampleRate = 192000;
-#if defined(OS_MACOSX)
-  static const int kFallbackSampleRate = 44100;
-#else
-  static const int kFallbackSampleRate = 48000;
-#endif
-  if (sample_rate < kMinSampleRate || sample_rate > kMaxSampleRate)
-    sample_rate = kFallbackSampleRate;
-
-  return sample_rate;
+  return thread->GetAudioHardwareConfig()->GetOutputSampleRate();
 }
 
 size_t RendererWebKitPlatformSupportImpl::audioHardwareBufferSize() {

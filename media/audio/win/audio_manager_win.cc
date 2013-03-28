@@ -263,13 +263,12 @@ void AudioManagerWin::GetAudioInputDeviceNames(
 
 AudioParameters AudioManagerWin::GetInputStreamParameters(
     const std::string& device_id) {
-  int sample_rate = 0;
-  ChannelLayout channel_layout = CHANNEL_LAYOUT_NONE;
-  if (!CoreAudioUtil::IsSupported()) {
-    sample_rate = 48000;
-    channel_layout = CHANNEL_LAYOUT_STEREO;
-  } else {
-    sample_rate = WASAPIAudioInputStream::HardwareSampleRate(device_id);
+  int sample_rate = 48000;
+  ChannelLayout channel_layout = CHANNEL_LAYOUT_STEREO;
+  if (CoreAudioUtil::IsSupported()) {
+    int hw_sample_rate = WASAPIAudioInputStream::HardwareSampleRate(device_id);
+    if (hw_sample_rate)
+      sample_rate = hw_sample_rate;
     channel_layout =
         WASAPIAudioInputStream::HardwareChannelCount(device_id) == 1 ?
             CHANNEL_LAYOUT_MONO : CHANNEL_LAYOUT_STEREO;
@@ -355,17 +354,12 @@ AudioParameters AudioManagerWin::GetPreferredOutputStreamParameters(
     const AudioParameters& input_params) {
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
   ChannelLayout channel_layout = CHANNEL_LAYOUT_STEREO;
-  int sample_rate = 0;
-  int buffer_size = 0;
+  int sample_rate = 48000;
+  int buffer_size = kFallbackBufferSize;
   int bits_per_sample = 16;
   int input_channels = 0;
-  if (!CoreAudioUtil::IsSupported()) {
-    // Fall back to Windows Wave implementation on Windows XP or lower.
-    // Use 48kHz as default input sample rate, kFallbackBufferSize as
-    // default buffer size.
-    sample_rate = 48000;
-    buffer_size = kFallbackBufferSize;
-  } else if (cmd_line->HasSwitch(switches::kEnableExclusiveAudio)) {
+  bool use_input_params = !CoreAudioUtil::IsSupported();
+  if (cmd_line->HasSwitch(switches::kEnableExclusiveAudio)) {
     // TODO(crogers): tune these values for best possible WebAudio performance.
     // WebRTC works well at 48kHz and a buffer size of 480 samples will be used
     // for this case. Note that exclusive mode is experimental.
@@ -373,22 +367,31 @@ AudioParameters AudioManagerWin::GetPreferredOutputStreamParameters(
     // which corresponds to an output delay of ~5.33ms.
     sample_rate = 48000;
     buffer_size = 256;
-  } else {
+  } else if (!use_input_params) {
     // Hardware sample-rate on Windows can be configured, so we must query.
     // TODO(henrika): improve possibility to specify an audio endpoint.
     // Use the default device (same as for Wave) for now to be compatible.
-    sample_rate = WASAPIAudioOutputStream::HardwareSampleRate();
+    int hw_sample_rate = WASAPIAudioOutputStream::HardwareSampleRate();
 
     AudioParameters params;
     HRESULT hr = CoreAudioUtil::GetPreferredAudioParameters(eRender, eConsole,
                                                             &params);
-    buffer_size = FAILED(hr) ? kFallbackBufferSize : params.frames_per_buffer();
+    int hw_buffer_size =
+        FAILED(hr) ? kFallbackBufferSize : params.frames_per_buffer();
     channel_layout = WASAPIAudioOutputStream::HardwareChannelLayout();
+
+    // TODO(henrika): Figure out the right thing to do here.
+    if (hw_sample_rate && hw_buffer_size) {
+      sample_rate = hw_sample_rate;
+      buffer_size = hw_buffer_size;
+    } else {
+      use_input_params = true;
+    }
   }
 
   if (input_params.IsValid()) {
     input_channels = input_params.input_channels();
-    if (!CoreAudioUtil::IsSupported()) {
+    if (use_input_params) {
       // If WASAPI isn't supported we'll fallback to WaveOut, which will take
       // care of resampling and bits per sample changes.  By setting these
       // equal to the input values, AudioOutputResampler will skip resampling
@@ -397,6 +400,7 @@ AudioParameters AudioManagerWin::GetPreferredOutputStreamParameters(
       sample_rate = input_params.sample_rate();
       bits_per_sample = input_params.bits_per_sample();
       channel_layout = input_params.channel_layout();
+      buffer_size = input_params.frames_per_buffer();
     }
   }
 
