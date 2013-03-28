@@ -8,8 +8,14 @@ MouseEvent::MouseEvent(MouseEventType type,
                        MouseButton button,
                        int x,
                        int y,
+                       int modifiers,
                        int click_count)
-    : type(type), button(button), x(x), y(y), click_count(click_count) {}
+    : type(type),
+      button(button),
+      x(x),
+      y(y),
+      modifiers(modifiers),
+      click_count(click_count) {}
 
 MouseEvent::~MouseEvent() {}
 
@@ -18,7 +24,10 @@ KeyEvent::KeyEvent(KeyEventType type,
                    const std::string& modified_text,
                    const std::string& unmodified_text,
                    ui::KeyboardCode key_code)
-    : type(type), modifiers(modifiers), modified_text(modified_text),
-      unmodified_text(unmodified_text), key_code(key_code) {}
+    : type(type),
+      modifiers(modifiers),
+      modified_text(modified_text),
+      unmodified_text(unmodified_text),
+      key_code(key_code) {}
 
 KeyEvent::~KeyEvent() {}

@@ -189,6 +189,7 @@ Status WebViewImpl::DispatchMouseEvents(const std::list<MouseEvent>& events) {
     params.SetString("type", GetAsString(it->type));
     params.SetInteger("x", it->x);
     params.SetInteger("y", it->y);
+    params.SetInteger("modifiers", it->modifiers);
     params.SetString("button", GetAsString(it->button));
     params.SetInteger("clickCount", it->click_count);
     Status status = client_->SendCommand("Input.dispatchMouseEvent", params);

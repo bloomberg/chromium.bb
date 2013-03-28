@@ -134,6 +134,8 @@ void CommandExecutorImpl::Init() {
       base::Bind(&ExecuteMouseDoubleClick);
   window_command_map[CommandNames::kGetActiveElement] =
       base::Bind(&ExecuteGetActiveElement);
+  window_command_map[CommandNames::kSendKeysToActiveElement] =
+      base::Bind(&ExecuteSendKeysToActiveElement);
   window_command_map[CommandNames::kGetStatus] =
       base::Bind(&ExecuteGetAppCacheStatus);
   window_command_map[CommandNames::kIsBrowserOnline] =

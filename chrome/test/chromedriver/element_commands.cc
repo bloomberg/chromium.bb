@@ -7,7 +7,6 @@
 #include <list>
 
 #include "base/callback.h"
-#include "base/third_party/icu/icu_utf.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/basic_types.h"
 #include "chrome/test/chromedriver/chrome/chrome.h"
@@ -16,48 +15,17 @@
 #include "chrome/test/chromedriver/chrome/ui_events.h"
 #include "chrome/test/chromedriver/chrome/web_view.h"
 #include "chrome/test/chromedriver/element_util.h"
-#include "chrome/test/chromedriver/key_converter.h"
 #include "chrome/test/chromedriver/session.h"
+#include "chrome/test/chromedriver/util.h"
 #include "third_party/webdriver/atoms.h"
 
 namespace {
-
-Status FlattenStringArray(const ListValue* src, string16* dest) {
-  string16 keys;
-  for (size_t i = 0; i < src->GetSize(); ++i) {
-    string16 keys_list_part;
-    if (!src->GetString(i, &keys_list_part))
-      return Status(kUnknownError, "keys should be a string");
-    for (size_t j = 0; j < keys_list_part.size(); ++j) {
-      if (CBU16_IS_SURROGATE(keys_list_part[j])) {
-        return Status(kUnknownError,
-                      "ChromeDriver only supports characters in the BMP");
-      }
-    }
-    keys.append(keys_list_part);
-  }
-  *dest = keys;
-  return Status(kOk);
-}
-
-Status SendKeysOnWindow(
-    WebView* web_view,
-    const string16 keys,
-    bool release_modifiers) {
-  std::list<KeyEvent> events;
-  int sticky_modifiers = 0;
-  Status status = ConvertKeysToKeyEvents(
-      keys, release_modifiers, &sticky_modifiers, &events);
-  if (status.IsError())
-    return status;
-  return web_view->DispatchKeyEvents(events);
-}
 
 Status SendKeysToElement(
     Session* session,
     WebView* web_view,
     const std::string& element_id,
-    const string16 keys) {
+    const ListValue* key_list) {
   bool is_displayed = false;
   Status status = IsElementDisplayed(
       session, web_view, element_id, true, &is_displayed);
@@ -78,7 +46,7 @@ Status SendKeysToElement(
       session->GetCurrentFrameId(), kFocusScript, args, &result);
   if (status.IsError())
     return status;
-  return SendKeysOnWindow(web_view, keys, true);
+  return SendKeysOnWindow(web_view, key_list, true, &session->sticky_modifiers);
 }
 
 }  // namespace
@@ -130,7 +98,8 @@ Status ExecuteHoverOverElement(
     return status;
 
   MouseEvent move_event(
-      kMovedMouseEventType, kNoneMouseButton, location.x, location.y, 0);
+      kMovedMouseEventType, kNoneMouseButton, location.x, location.y,
+      session->sticky_modifiers, 0);
   std::list<MouseEvent> events;
   events.push_back(move_event);
   status = web_view->DispatchMouseEvents(events);
@@ -169,13 +138,13 @@ Status ExecuteClickElement(
     std::list<MouseEvent> events;
     events.push_back(
         MouseEvent(kMovedMouseEventType, kNoneMouseButton,
-                   location.x, location.y, 0));
+                   location.x, location.y, session->sticky_modifiers, 0));
     events.push_back(
         MouseEvent(kPressedMouseEventType, kLeftMouseButton,
-                   location.x, location.y, 1));
+                   location.x, location.y, session->sticky_modifiers, 1));
     events.push_back(
         MouseEvent(kReleasedMouseEventType, kLeftMouseButton,
-                   location.x, location.y, 1));
+                   location.x, location.y, session->sticky_modifiers, 1));
     status = web_view->DispatchMouseEvents(events);
     if (status.IsOk())
       session->mouse_position = location;
@@ -204,8 +173,8 @@ Status ExecuteSendKeysToElement(
     const std::string& element_id,
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value) {
-  const base::ListValue* keys_list;
-  if (!params.GetList("value", &keys_list))
+  const base::ListValue* key_list;
+  if (!params.GetList("value", &key_list))
     return Status(kUnknownError, "'value' must be a list");
 
   bool is_input = false;
@@ -222,11 +191,7 @@ Status ExecuteSendKeysToElement(
     // TODO(chrisgao): Implement file upload.
     return Status(kUnknownError, "file upload is not implemented");
   } else {
-    string16 keys;
-    status = FlattenStringArray(keys_list, &keys);
-    if (status.IsError())
-      return status;
-    return SendKeysToElement(session, web_view, element_id, keys);
+    return SendKeysToElement(session, web_view, element_id, key_list);
   }
 }
 

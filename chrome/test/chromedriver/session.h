@@ -50,6 +50,7 @@ struct Session {
   base::Thread thread;
   scoped_ptr<Chrome> chrome;
   std::string window;
+  int sticky_modifiers;
   // List of |FrameInfo|s for each frame to the current target frame from the
   // first frame element in the root document. If target frame is window.top,
   // this list will be empty.

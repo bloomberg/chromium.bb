@@ -469,7 +469,7 @@ Status ExecuteMouseMoveTo(
   std::list<MouseEvent> events;
   events.push_back(
       MouseEvent(kMovedMouseEventType, kNoneMouseButton,
-                 location.x, location.y, 0));
+                 location.x, location.y, session->sticky_modifiers, 0));
   Status status = web_view->DispatchMouseEvents(events);
   if (status.IsOk())
     session->mouse_position = location;
@@ -488,10 +488,12 @@ Status ExecuteMouseClick(
   std::list<MouseEvent> events;
   events.push_back(
       MouseEvent(kPressedMouseEventType, button,
-                 session->mouse_position.x, session->mouse_position.y, 1));
+                 session->mouse_position.x, session->mouse_position.y,
+                 session->sticky_modifiers, 1));
   events.push_back(
       MouseEvent(kReleasedMouseEventType, button,
-                 session->mouse_position.x, session->mouse_position.y, 1));
+                 session->mouse_position.x, session->mouse_position.y,
+                 session->sticky_modifiers, 1));
   return web_view->DispatchMouseEvents(events);
 }
 
@@ -507,7 +509,8 @@ Status ExecuteMouseButtonDown(
   std::list<MouseEvent> events;
   events.push_back(
       MouseEvent(kPressedMouseEventType, button,
-                 session->mouse_position.x, session->mouse_position.y, 1));
+                 session->mouse_position.x, session->mouse_position.y,
+                 session->sticky_modifiers, 1));
   return web_view->DispatchMouseEvents(events);
 }
 
@@ -523,7 +526,8 @@ Status ExecuteMouseButtonUp(
   std::list<MouseEvent> events;
   events.push_back(
       MouseEvent(kReleasedMouseEventType, button,
-                 session->mouse_position.x, session->mouse_position.y, 1));
+                 session->mouse_position.x, session->mouse_position.y,
+                 session->sticky_modifiers, 1));
   return web_view->DispatchMouseEvents(events);
 }
 
@@ -539,10 +543,12 @@ Status ExecuteMouseDoubleClick(
   std::list<MouseEvent> events;
   events.push_back(
       MouseEvent(kPressedMouseEventType, button,
-                 session->mouse_position.x, session->mouse_position.y, 2));
+                 session->mouse_position.x, session->mouse_position.y,
+                 session->sticky_modifiers, 2));
   events.push_back(
       MouseEvent(kReleasedMouseEventType, button,
-                 session->mouse_position.x, session->mouse_position.y, 2));
+                 session->mouse_position.x, session->mouse_position.y,
+                 session->sticky_modifiers, 2));
   return web_view->DispatchMouseEvents(events);
 }
 
@@ -557,6 +563,18 @@ Status ExecuteGetActiveElement(
       "function() { return document.activeElement || document.body }",
       args,
       value);
+}
+
+Status ExecuteSendKeysToActiveElement(
+    Session* session,
+    WebView* web_view,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  const base::ListValue* key_list;
+  if (!params.GetList("value", &key_list))
+    return Status(kUnknownError, "'value' must be a list");
+  return SendKeysOnWindow(
+      web_view, key_list, false, &session->sticky_modifiers);
 }
 
 Status ExecuteGetAppCacheStatus(
