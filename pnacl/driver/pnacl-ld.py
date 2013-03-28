@@ -359,9 +359,14 @@ def main(argv):
       chain.add(DoStrip, 'stripped.' + bitcode_type)
 
     if env.getbool('STATIC'):
-      # ABI simplification pass.  This should come last because other
-      # LLVM passes might reintroduce ConstantExprs.
-      chain.add(DoLLVMPasses(['-expand-constant-expr']),
+      # ABI simplification passes.  We should not place arbitrary
+      # passes after '-expand-constant-expr' because they might
+      # reintroduce ConstantExprs.  However, '-expand-getelementptr'
+      # must follow '-expand-constant-expr' to expand the
+      # getelementptr instructions it creates.
+      passes = ['-expand-constant-expr',
+                '-expand-getelementptr']
+      chain.add(DoLLVMPasses(passes),
                 'expand_constant_exprs.' + bitcode_type)
   else:
     chain = DriverChain('', output, tng)
