@@ -38,6 +38,10 @@ static const char kSPKIHash_GoogleBackup2048[] =
     "\xbe\xae\xce\xca\x34\xa7\xa8\xe7\x28\xf6"
     "\x7c\x8c\x08\x31\x9d\xcb\xbe\xde\x8a\x33";
 
+static const char kSPKIHash_GoogleG2[] =
+    "\x43\xda\xd6\x30\xee\x53\xf8\xa9\x80\xca"
+    "\x6e\xfd\x85\xf4\x6a\xa3\x79\x90\xe0\xea";
+
 static const char kSPKIHash_EquifaxSecureCA[] =
     "\x48\xe6\x68\xf9\x2b\xd2\xb2\x95\xd7\x47"
     "\xd8\x23\x20\x10\x4f\x33\x98\x90\x9f\xd4";
@@ -250,6 +254,7 @@ static const char* const kGoogleAcceptableCerts[] = {
   kSPKIHash_Google2048,
   kSPKIHash_GoogleBackup1024,
   kSPKIHash_GoogleBackup2048,
+  kSPKIHash_GoogleG2,
   kSPKIHash_EquifaxSecureCA,
   kSPKIHash_GeoTrustGlobal,
   NULL,
