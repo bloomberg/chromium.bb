@@ -28,6 +28,16 @@ class ManagedModeInterstitial : public content::InterstitialPageDelegate {
                           const base::Callback<void(bool)>& callback);
   virtual ~ManagedModeInterstitial();
 
+  // Should be called on the IO thread.
+  // |render_process_host_id| and |render_view_id| identify the WebContents
+  // where the request was blocked. |url| is the URL that was blocked.
+  // |callback| should be called with the result (whether to allow the request
+  // or not).
+  static void ShowInterstitial(int render_process_host_id,
+                               int render_view_id,
+                               const GURL& url,
+                               const base::Callback<void(bool)>& callback);
+
  private:
   void GoToNewTabPage();
 
@@ -40,6 +50,7 @@ class ManagedModeInterstitial : public content::InterstitialPageDelegate {
   // Will be called when the passphrase dialog is closed, which is shown after
   // clicking the preview button.
   void OnAuthorizationResult(bool success);
+  void DispatchContinueRequest(bool continue_request);
 
   // Owns the interstitial, which owns us.
   content::WebContents* web_contents_;

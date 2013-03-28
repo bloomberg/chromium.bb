@@ -41,7 +41,7 @@ void ManagedModeResourceThrottleTest::SetUpOnMainThread() {
   managed_user_service_->Init();
 }
 
-// Tests that blocking a request for a WebContents without a
+// Tests that showing the blocking interstitial for a WebContents without a
 // ManagedModeNavigationObserver doesn't crash.
 IN_PROC_BROWSER_TEST_F(ManagedModeResourceThrottleTest, NoNavigationObserver) {
   scoped_ptr<WebContents> web_contents(
@@ -52,4 +52,7 @@ IN_PROC_BROWSER_TEST_F(ManagedModeResourceThrottleTest, NoNavigationObserver) {
   controller.LoadURL(GURL("http://www.example.com"), content::Referrer(),
                      content::PAGE_TRANSITION_TYPED, std::string());
   observer.Wait();
+  content::NavigationEntry* entry = controller.GetActiveEntry();
+  ASSERT_TRUE(entry);
+  EXPECT_EQ(content::PAGE_TYPE_INTERSTITIAL, entry->GetPageType());
 }

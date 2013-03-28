@@ -7,10 +7,7 @@
 
 #include <set>
 
-#include "base/memory/weak_ptr.h"
 #include "base/values.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
@@ -19,25 +16,17 @@ class ManagedModeURLFilter;
 class ManagedUserService;
 
 class ManagedModeNavigationObserver
-    : public content::WebContentsUserData<ManagedModeNavigationObserver>,
-      public content::WebContentsObserver,
-      public content::NotificationObserver {
+    : public content::WebContentsObserver,
+      public content::WebContentsUserData<ManagedModeNavigationObserver> {
  public:
-  typedef base::Callback<void(bool)> SuccessCallback;
-
   virtual ~ManagedModeNavigationObserver();
-
-  // Called when a network request was blocked. The passed in |callback| is
-  // called with the result of the interstitial, i.e. whether we should proceed
-  // with the request or not.
-  static void DidBlockRequest(int render_process_id,
-                              int render_view_id,
-                              const GURL& url,
-                              const SuccessCallback& callback);
 
   // Sets the specific infobar as dismissed.
   void WarnInfobarDismissed();
   void PreviewInfobarDismissed();
+
+  // Sets the state of the Observer from the outside.
+  void SetStateToRecordingAfterPreview();
 
   // Returns whether the user should be allowed to navigate to this URL after
   // he has clicked "Preview" on the interstitial.
@@ -76,16 +65,6 @@ class ManagedModeNavigationObserver
 
   explicit ManagedModeNavigationObserver(content::WebContents* web_contents);
 
-  // Shows the blocking interstitial if it is not already shown.
-  void ShowInterstitial(const GURL& url);
-
-  // Queues up a callback to be called with the result of the interstitial.
-  void AddInterstitialCallback(const GURL& url,
-                               const SuccessCallback& callback);
-
-  // Dispatches the result of the interstitial to all pending callbacks.
-  void OnInterstitialResult(bool result);
-
   // Adding the temporary exception stops the ResourceThrottle from showing
   // an interstitial for this RenderView. This allows the user to navigate
   // around on the website after clicking preview.
@@ -95,10 +74,6 @@ class ManagedModeNavigationObserver
   void RemoveTemporaryException();
 
   void AddURLToPatternList(const GURL& url);
-
-  // Returns whether the user would stay in elevated state if he visits this
-  // URL.
-  bool ShouldStayElevatedForURL(const GURL& url);
 
   // content::WebContentsObserver implementation.
   // An example regarding the order in which these events take place for
@@ -115,6 +90,9 @@ class ManagedModeNavigationObserver
   virtual void NavigateToPendingEntry(
       const GURL& url,
       content::NavigationController::ReloadType reload_type) OVERRIDE;
+  virtual void DidNavigateMainFrame(
+      const content::LoadCommittedDetails& details,
+      const content::FrameNavigateParams& params) OVERRIDE;
   virtual void ProvisionalChangeToMainFrameUrl(
       const GURL& url,
       content::RenderViewHost* render_view_host) OVERRIDE;
@@ -124,15 +102,11 @@ class ManagedModeNavigationObserver
       const GURL& url,
       content::PageTransition transition_type,
       content::RenderViewHost* render_view_host) OVERRIDE;
-  virtual void DidNavigateMainFrame(
-      const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) OVERRIDE;
   virtual void DidGetUserGesture() OVERRIDE;
 
-  // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  // Returns whether the user would stay in elevated state if he visits this
+  // URL.
+  bool ShouldStayElevatedForURL(const GURL& url);
 
   // Owned by the profile, so outlives us.
   ManagedUserService* managed_user_service_;
@@ -157,15 +131,6 @@ class ManagedModeNavigationObserver
   // The elevation state corresponding to the current WebContents.
   // Will be set to true for non-managed users.
   bool is_elevated_;
-
-  base::WeakPtrFactory<ManagedModeNavigationObserver> weak_ptr_factory_;
-
-  // These callbacks get queued up when we show the blocking interstitial and
-  // are posted to the IO thread with the result of the interstitial, i.e.
-  // whether the user successfully authenticated to continue.
-  std::vector<SuccessCallback> callbacks_;
-
-  content::NotificationRegistrar registrar_;
 
   int last_allowed_page_;
 

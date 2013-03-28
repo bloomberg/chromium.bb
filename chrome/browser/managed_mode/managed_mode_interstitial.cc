@@ -11,6 +11,7 @@
 #include "chrome/browser/managed_mode/managed_user_service.h"
 #include "chrome/browser/managed_mode/managed_user_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
@@ -26,6 +27,44 @@
 #include "ui/webui/web_ui_util.h"
 
 using content::BrowserThread;
+
+namespace {
+
+void ShowInterstitialOnUIThread(int render_process_host_id,
+                                int render_view_id,
+                                const GURL& url,
+                                const base::Callback<void(bool)>& callback) {
+  // The tab might have been closed.
+  content::WebContents* web_contents =
+      tab_util::GetWebContentsByID(render_process_host_id, render_view_id);
+  if (!web_contents) {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE, base::Bind(callback, true));
+    return;
+  }
+
+  ManagedModeNavigationObserver* navigation_observer =
+      ManagedModeNavigationObserver::FromWebContents(web_contents);
+  if (navigation_observer)
+    navigation_observer->SetStateToRecordingAfterPreview();
+
+  new ManagedModeInterstitial(web_contents, url, callback);
+}
+
+}  // namespace
+
+// static
+void ManagedModeInterstitial::ShowInterstitial(
+    int render_process_host_id,
+    int render_view_id,
+    const GURL& url,
+    const base::Callback<void(bool)>& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&ShowInterstitialOnUIThread, render_process_host_id,
+                                              render_view_id, url, callback));
+}
 
 ManagedModeInterstitial::ManagedModeInterstitial(
     content::WebContents* web_contents,
@@ -125,14 +164,20 @@ void ManagedModeInterstitial::CommandReceived(const std::string& command) {
 }
 
 void ManagedModeInterstitial::OnProceed() {
-  callback_.Run(true);
+  DispatchContinueRequest(true);
 }
 
 void ManagedModeInterstitial::OnDontProceed() {
-  callback_.Run(false);
+  DispatchContinueRequest(false);
 }
 
 void ManagedModeInterstitial::OnAuthorizationResult(bool success) {
   if (success)
     interstitial_page_->Proceed();
 }
+
+void ManagedModeInterstitial::DispatchContinueRequest(bool continue_request) {
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::Bind(callback_, continue_request));
+}
+

@@ -20,7 +20,6 @@
 #include "chrome/browser/managed_mode/managed_user_service.h"
 #include "chrome/browser/managed_mode/managed_user_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -31,12 +30,8 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/resource_request_details.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_view.h"
@@ -271,7 +266,6 @@ ManagedModeNavigationObserver::ManagedModeNavigationObserver(
       got_user_gesture_(false),
       state_(RECORDING_URLS_BEFORE_PREVIEW),
       is_elevated_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
       last_allowed_page_(-1) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
@@ -279,60 +273,6 @@ ManagedModeNavigationObserver::ManagedModeNavigationObserver(
   if (!managed_user_service_->ProfileIsManaged())
     is_elevated_ = true;
   url_filter_ = managed_user_service_->GetURLFilterForUIThread();
-  registrar_.Add(this, content::NOTIFICATION_RESOURCE_RECEIVED_REDIRECT,
-                 content::Source<content::WebContents>(web_contents));
-}
-
-// static
-void ManagedModeNavigationObserver::DidBlockRequest(
-    int render_process_id,
-    int render_view_id,
-    const GURL& url,
-    const ManagedModeNavigationObserver::SuccessCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  // The tab might have been closed.
-  content::WebContents* web_contents =
-      tab_util::GetWebContentsByID(render_process_id, render_view_id);
-  if (!web_contents) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE, base::Bind(callback, false));
-    return;
-  }
-
-  ManagedModeNavigationObserver* navigation_observer =
-      ManagedModeNavigationObserver::FromWebContents(web_contents);
-  if (!navigation_observer) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE, base::Bind(callback, false));
-    return;
-  }
-  navigation_observer->AddInterstitialCallback(url, callback);
-}
-
-void ManagedModeNavigationObserver::ShowInterstitial(const GURL& url) {
-  // If we already have callbacks queued up, we don't need to show the
-  // interstitial again.
-  if (!callbacks_.empty())
-    return;
-
-  new ManagedModeInterstitial(
-      web_contents(), url,
-      base::Bind(&ManagedModeNavigationObserver::OnInterstitialResult,
-                 weak_ptr_factory_.GetWeakPtr()));
-}
-
-void ManagedModeNavigationObserver::AddInterstitialCallback(
-    const GURL& url,
-    const ManagedModeNavigationObserver::SuccessCallback& callback) {
-  if (state_ == RECORDING_URLS_AFTER_PREVIEW) {
-    // Return immediately if we are in preview mode.
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE, base::Bind(callback, true));
-    return;
-  }
-
-  ShowInterstitial(url);
-  callbacks_.push_back(callback);
 }
 
 void ManagedModeNavigationObserver::AddTemporaryException() {
@@ -392,12 +332,12 @@ void ManagedModeNavigationObserver::AddSavedURLsToWhitelistAndClearState() {
   for (std::set<GURL>::const_iterator it = navigated_urls_.begin();
        it != navigated_urls_.end();
        ++it) {
-    if (!CanTemporarilyNavigateHost(*it))
+    if (it->host() != last_url_.host())
       urls.push_back(*it);
   }
   managed_user_service_->SetManualBehaviorForURLs(
       urls, ManagedUserService::MANUAL_ALLOW);
-  if (!last_url_.is_empty()) {
+  if (last_url_.is_valid()) {
     std::vector<std::string> hosts;
     hosts.push_back(last_url_.host());
     managed_user_service_->SetManualBehaviorForHosts(
@@ -417,6 +357,10 @@ void ManagedModeNavigationObserver::set_elevated(bool is_elevated) {
 void ManagedModeNavigationObserver::AddURLToPatternList(const GURL& url) {
   navigated_urls_.insert(url);
   last_url_ = url;
+}
+
+void ManagedModeNavigationObserver::SetStateToRecordingAfterPreview() {
+  state_ = RECORDING_URLS_AFTER_PREVIEW;
 }
 
 bool ManagedModeNavigationObserver::CanTemporarilyNavigateHost(
@@ -456,19 +400,6 @@ void ManagedModeNavigationObserver::ClearObserverState() {
   RemoveTemporaryException();
 }
 
-void ManagedModeNavigationObserver::OnInterstitialResult(bool result) {
-  DCHECK_EQ(RECORDING_URLS_BEFORE_PREVIEW, state_);
-  if (result)
-    state_ = RECORDING_URLS_AFTER_PREVIEW;
-
-  for (std::vector<SuccessCallback>::const_iterator it = callbacks_.begin();
-       it != callbacks_.end(); ++it) {
-    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                            base::Bind(*it, result));
-  }
-  callbacks_.clear();
-}
-
 void ManagedModeNavigationObserver::NavigateToPendingEntry(
     const GURL& url,
     content::NavigationController::ReloadType reload_type) {
@@ -483,25 +414,78 @@ void ManagedModeNavigationObserver::NavigateToPendingEntry(
   }
 }
 
+void ManagedModeNavigationObserver::DidNavigateMainFrame(
+    const content::LoadCommittedDetails& details,
+    const content::FrameNavigateParams& params) {
+  if (!ShouldStayElevatedForURL(params.url))
+    is_elevated_ = false;
+
+  content::RecordAction(UserMetricsAction("ManagedMode_MainFrameNavigation"));
+
+  ManagedModeURLFilter::FilteringBehavior behavior =
+      url_filter_->GetFilteringBehaviorForURL(params.url);
+
+  UMA_HISTOGRAM_ENUMERATION("ManagedMode.FilteringBehavior",
+                            behavior,
+                            ManagedModeURLFilter::HISTOGRAM_BOUNDING_VALUE);
+
+  // The page can be redirected to a different domain, record those URLs as
+  // well.
+  if (behavior == ManagedModeURLFilter::BLOCK &&
+      !CanTemporarilyNavigateHost(params.url))
+    AddURLToPatternList(params.url);
+
+  if (behavior == ManagedModeURLFilter::ALLOW &&
+      state_ == RECORDING_URLS_AFTER_PREVIEW) {
+    // The initial page that triggered the interstitial was blocked but the
+    // final page is already in the whitelist so add the series of URLs
+    // which lead to the final page to the whitelist as well.
+    // Update the |last_url_| since it was not added to the list before.
+    last_url_ = params.url;
+    AddSavedURLsToWhitelistAndClearState();
+    SimpleAlertInfoBarDelegate::Create(
+        InfoBarService::FromWebContents(web_contents()),
+        NULL,
+        l10n_util::GetStringUTF16(IDS_MANAGED_MODE_ALREADY_ADDED_MESSAGE),
+        true);
+    return;
+  }
+
+  // Update the exception to the last host visited. A redirect can follow this
+  // so don't update the state yet.
+  if (state_ == RECORDING_URLS_AFTER_PREVIEW) {
+    AddTemporaryException();
+  }
+
+  // The navigation is complete, unless there is a redirect. So set the
+  // new navigation to false to detect user interaction.
+  got_user_gesture_ = false;
+}
+
 void ManagedModeNavigationObserver::ProvisionalChangeToMainFrameUrl(
     const GURL& url,
     content::RenderViewHost* render_view_host) {
   if (!ShouldStayElevatedForURL(url))
     is_elevated_ = false;
 
+  // This function is the last one to be called before the resource throttle
+  // shows the interstitial if the URL must be blocked.
+  DVLOG(1) << "ProvisionalChangeToMainFrameURL " << url.spec();
   ManagedModeURLFilter::FilteringBehavior behavior =
       url_filter_->GetFilteringBehaviorForURL(url);
+
   if (behavior != ManagedModeURLFilter::BLOCK)
     return;
 
-  if (state_ == RECORDING_URLS_BEFORE_PREVIEW) {
-    ShowInterstitial(url);
-  } else {
-    if (got_user_gesture_ && !CanTemporarilyNavigateHost(url))
-      ClearObserverState();
+  if (state_ == RECORDING_URLS_AFTER_PREVIEW && got_user_gesture_ &&
+      !CanTemporarilyNavigateHost(url))
+    ClearObserverState();
 
-    got_user_gesture_ = false;
-  }
+  if (behavior == ManagedModeURLFilter::BLOCK &&
+      !CanTemporarilyNavigateHost(url))
+    AddURLToPatternList(url);
+
+  got_user_gesture_ = false;
 }
 
 void ManagedModeNavigationObserver::DidCommitProvisionalLoadForFrame(
@@ -544,72 +528,9 @@ void ManagedModeNavigationObserver::DidCommitProvisionalLoadForFrame(
     last_allowed_page_ = web_contents()->GetController().GetCurrentEntryIndex();
 }
 
-void ManagedModeNavigationObserver::DidNavigateMainFrame(
-    const content::LoadCommittedDetails& details,
-    const content::FrameNavigateParams& params) {
-  if (!ShouldStayElevatedForURL(params.url))
-    is_elevated_ = false;
-
-  content::RecordAction(UserMetricsAction("ManagedMode_MainFrameNavigation"));
-
-  ManagedModeURLFilter::FilteringBehavior behavior =
-      url_filter_->GetFilteringBehaviorForURL(params.url);
-
-  UMA_HISTOGRAM_ENUMERATION("ManagedMode.FilteringBehavior",
-                            behavior,
-                            ManagedModeURLFilter::HISTOGRAM_BOUNDING_VALUE);
-
-  // The page can be redirected to a different domain, record those URLs as
-  // well.
-  if (behavior == ManagedModeURLFilter::BLOCK &&
-      !CanTemporarilyNavigateHost(params.url))
-    AddURLToPatternList(params.url);
-
-  if (behavior == ManagedModeURLFilter::ALLOW &&
-      state_ == RECORDING_URLS_AFTER_PREVIEW) {
-    // The initial page that triggered the interstitial was blocked but the
-    // final page is already in the whitelist so add the series of URLs
-    // which lead to the final page to the whitelist as well.
-    // Update the |last_url_| since it was not added to the list before.
-    last_url_ = params.url;
-    AddSavedURLsToWhitelistAndClearState();
-    SimpleAlertInfoBarDelegate::Create(
-        InfoBarService::FromWebContents(web_contents()),
-        NULL,
-        l10n_util::GetStringUTF16(IDS_MANAGED_MODE_ALREADY_ADDED_MESSAGE),
-        true);
-    return;
-  }
-
-  // Update the exception to the last host visited. A redirect can follow this
-  // so don't update the state yet.
-  if (state_ == RECORDING_URLS_AFTER_PREVIEW)
-    AddTemporaryException();
-
-  // The navigation is complete, unless there is a redirect. So set the
-  // new navigation to false to detect user interaction.
-  got_user_gesture_ = false;
-}
-
 void ManagedModeNavigationObserver::DidGetUserGesture() {
   got_user_gesture_ = true;
   // Update the exception status so that the resource throttle knows that
   // there was a manual navigation.
   UpdateExceptionNavigationStatus();
-}
-
-void ManagedModeNavigationObserver::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK_EQ(content::NOTIFICATION_RESOURCE_RECEIVED_REDIRECT, type);
-  const GURL& url =
-      content::Details<content::ResourceRedirectDetails>(details)->url;
-  ManagedModeURLFilter::FilteringBehavior behavior =
-      url_filter_->GetFilteringBehaviorForURL(url);
-  if (behavior == ManagedModeURLFilter::BLOCK &&
-      state_ == RECORDING_URLS_AFTER_PREVIEW &&
-      !CanTemporarilyNavigateHost(url)) {
-    AddURLToPatternList(url);
-  }
 }
