@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 // Copied from strings/stringpiece.cc with modifications
 
+#include "base/strings/string_piece.h"
+
 #include <algorithm>
 #include <ostream>
-
-#include "base/string_piece.h"
 
 namespace base {
 
