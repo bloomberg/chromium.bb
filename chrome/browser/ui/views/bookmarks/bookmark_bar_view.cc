@@ -512,7 +512,8 @@ void BookmarkBarView::SetPageNavigator(PageNavigator* navigator) {
 void BookmarkBarView::SetBookmarkBarState(
     BookmarkBar::State state,
     BookmarkBar::AnimateChangeType animate_type) {
-  if (animate_type == BookmarkBar::ANIMATE_STATE_CHANGE) {
+  if (animate_type == BookmarkBar::ANIMATE_STATE_CHANGE &&
+      animations_enabled) {
     animating_detached_ = (state == BookmarkBar::DETACHED ||
                            bookmark_bar_state_ == BookmarkBar::DETACHED);
     if (state == BookmarkBar::SHOW)

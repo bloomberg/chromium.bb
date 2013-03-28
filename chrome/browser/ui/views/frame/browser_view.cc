@@ -436,7 +436,6 @@ BrowserView::BrowserView(Browser* browser)
       frame_(NULL),
       browser_(browser),
       top_container_(NULL),
-      active_bookmark_bar_(NULL),
       tabstrip_(NULL),
       toolbar_(NULL),
       window_switcher_button_(NULL),
@@ -1038,7 +1037,11 @@ void BrowserView::FocusToolbar() {
 }
 
 void BrowserView::FocusBookmarksToolbar() {
-  if (active_bookmark_bar_ && bookmark_bar_view_->visible()) {
+  // Don't use IsBookmarkBarVisible() because that might return false in
+  // immersive fullscreen and shifting focus should cause a reveal.
+  if (bookmark_bar_view_.get() &&
+      bookmark_bar_view_->visible() &&
+      bookmark_bar_view_->GetPreferredSize().height() != 0) {
     immersive_mode_controller_->MaybeStartReveal();
     bookmark_bar_view_->SetPaneFocus(bookmark_bar_view_.get());
   }
@@ -1141,11 +1144,17 @@ void BrowserView::DestroyBrowser() {
 }
 
 bool BrowserView::IsBookmarkBarVisible() const {
-  if (immersive_mode_controller_->ShouldHideTopViews())
+  if (!browser_->SupportsWindowFeature(Browser::FEATURE_BOOKMARKBAR))
     return false;
-  return browser_->SupportsWindowFeature(Browser::FEATURE_BOOKMARKBAR) &&
-      active_bookmark_bar_ &&
-      (active_bookmark_bar_->GetPreferredSize().height() != 0);
+  if (!bookmark_bar_view_.get())
+    return false;
+  if (bookmark_bar_view_->GetPreferredSize().height() == 0)
+    return false;
+  // New tab page needs visible bookmarks even when top-views are hidden.
+  if (immersive_mode_controller_->ShouldHideTopViews() &&
+      !bookmark_bar_view_->IsDetached())
+    return false;
+  return true;
 }
 
 bool BrowserView::IsBookmarkBarAnimating() const {
@@ -2153,23 +2162,46 @@ void BrowserView::LayoutStatusBubble() {
 }
 
 bool BrowserView::MaybeShowBookmarkBar(WebContents* contents) {
-  views::View* new_bookmark_bar_view = NULL;
-  if (browser_->SupportsWindowFeature(Browser::FEATURE_BOOKMARKBAR) &&
-      contents) {
-    if (!bookmark_bar_view_.get()) {
-      bookmark_bar_view_.reset(new BookmarkBarView(browser_.get(), this));
-      bookmark_bar_view_->set_owned_by_client();
-      bookmark_bar_view_->set_background(
-          new BookmarkExtensionBackground(this, bookmark_bar_view_.get(),
-                                          browser_.get()));
-      bookmark_bar_view_->SetBookmarkBarState(
-          browser_->bookmark_bar_state(),
-          BookmarkBar::DONT_ANIMATE_STATE_CHANGE);
-    }
-    bookmark_bar_view_->SetPageNavigator(contents);
-    new_bookmark_bar_view = bookmark_bar_view_.get();
+  bool show_bookmark_bar = contents &&
+      browser_->SupportsWindowFeature(Browser::FEATURE_BOOKMARKBAR);
+  if (!show_bookmark_bar && !bookmark_bar_view_.get())
+    return false;
+  if (!bookmark_bar_view_.get()) {
+    bookmark_bar_view_.reset(new BookmarkBarView(browser_.get(), this));
+    bookmark_bar_view_->set_owned_by_client();
+    bookmark_bar_view_->set_background(
+        new BookmarkExtensionBackground(this, bookmark_bar_view_.get(),
+                                        browser_.get()));
+    bookmark_bar_view_->SetBookmarkBarState(
+        browser_->bookmark_bar_state(),
+        BookmarkBar::DONT_ANIMATE_STATE_CHANGE);
   }
-  return UpdateChildViewAndLayout(new_bookmark_bar_view, &active_bookmark_bar_);
+  bookmark_bar_view_->SetVisible(show_bookmark_bar);
+  bookmark_bar_view_->SetPageNavigator(contents);
+
+  // Update parenting for the bookmark bar. This may detach it from all views.
+  bool needs_layout = false;
+  views::View* new_parent = NULL;
+  if (show_bookmark_bar) {
+    if (browser_->bookmark_bar_state() == BookmarkBar::DETACHED)
+      new_parent = this;
+    else
+      new_parent = top_container_;
+  }
+  if (new_parent != bookmark_bar_view_->parent()) {
+    if (new_parent)
+      new_parent->AddChildView(bookmark_bar_view_.get());
+    else
+      bookmark_bar_view_->parent()->RemoveChildView(bookmark_bar_view_.get());
+    needs_layout = true;
+  }
+
+  // Check for updates to the desired size.
+  if (bookmark_bar_view_->GetPreferredSize().height() !=
+      bookmark_bar_view_->height())
+    needs_layout = true;
+
+  return needs_layout;
 }
 
 bool BrowserView::MaybeShowInfoBar(WebContents* contents) {
@@ -2280,52 +2312,6 @@ void BrowserView::UpdateUIForContents(WebContents* contents) {
   needs_layout |= MaybeShowInfoBar(contents);
   if (needs_layout)
     Layout();
-}
-
-bool BrowserView::UpdateChildViewAndLayout(views::View* new_view,
-                                           views::View** old_view) {
-  DCHECK(old_view);
-  if (*old_view == new_view) {
-    // The views haven't changed, if the views pref changed schedule a layout.
-    if (new_view) {
-      if (new_view->GetPreferredSize().height() != new_view->height())
-        return true;
-    }
-    return false;
-  }
-
-  // The views differ, and one may be null (but not both). Remove the old
-  // view (if it non-null), and add the new one (if it is non-null). If the
-  // height has changed, schedule a layout, otherwise reuse the existing
-  // bounds to avoid scheduling a layout.
-
-  int current_height = 0;
-  if (*old_view) {
-    current_height = (*old_view)->height();
-    RemoveChildView(*old_view);
-  }
-
-  int new_height = 0;
-  if (new_view) {
-    new_height = new_view->GetPreferredSize().height();
-    AddChildView(new_view);
-  }
-  bool changed = false;
-  if (new_height != current_height) {
-    changed = true;
-  } else if (new_view && *old_view) {
-    // The view changed, but the new view wants the same size, give it the
-    // bounds of the last view and have it repaint.
-    new_view->SetBoundsRect((*old_view)->bounds());
-    new_view->SchedulePaint();
-  } else if (new_view) {
-    DCHECK_EQ(0, new_height);
-    // The heights are the same, but the old view is null. This only happens
-    // when the height is zero. Zero out the bounds.
-    new_view->SetBounds(0, 0, 0, 0);
-  }
-  *old_view = new_view;
-  return changed;
 }
 
 void BrowserView::ProcessFullscreen(bool fullscreen,

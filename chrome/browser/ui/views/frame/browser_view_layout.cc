@@ -63,7 +63,6 @@ BrowserViewLayout::BrowserViewLayout()
     : contents_split_(NULL),
       contents_container_(NULL),
       download_shelf_(NULL),
-      active_bookmark_bar_(NULL),
       browser_view_(NULL),
       find_bar_y_(0),
       constrained_window_top_y_(-1) {
@@ -79,6 +78,7 @@ bool BrowserViewLayout::GetConstrainedWindowTopY(int* top_y) {
 }
 
 gfx::Size BrowserViewLayout::GetMinimumSize() {
+  BookmarkBarView* bookmark_bar = browser_view_->bookmark_bar_view_.get();
   gfx::Size tabstrip_size(
       browser()->SupportsWindowFeature(Browser::FEATURE_TABSTRIP) ?
       browser_view_->tabstrip_->GetMinimumSize() : gfx::Size());
@@ -91,12 +91,13 @@ gfx::Size BrowserViewLayout::GetMinimumSize() {
   if (tabstrip_size.height() && toolbar_size.height())
     toolbar_size.Enlarge(0, -kToolbarTabStripVerticalOverlap);
   gfx::Size bookmark_bar_size;
-  if (active_bookmark_bar_ &&
+  if (bookmark_bar &&
+      bookmark_bar->visible() &&
       browser()->SupportsWindowFeature(Browser::FEATURE_BOOKMARKBAR)) {
-    bookmark_bar_size = active_bookmark_bar_->GetMinimumSize();
+    bookmark_bar_size = bookmark_bar->GetMinimumSize();
     bookmark_bar_size.Enlarge(0,
         -(views::NonClientFrameView::kClientEdgeThickness +
-            active_bookmark_bar_->GetToolbarOverlap(true)));
+            bookmark_bar->GetToolbarOverlap(true)));
   }
   gfx::Size contents_size(contents_split_->GetMinimumSize());
 
@@ -227,7 +228,6 @@ void BrowserViewLayout::Installed(views::View* host) {
   contents_split_ = NULL;
   contents_container_ = NULL;
   download_shelf_ = NULL;
-  active_bookmark_bar_ = NULL;
   browser_view_ = static_cast<BrowserView*>(host);
 }
 
@@ -245,17 +245,6 @@ void BrowserViewLayout::ViewAdded(views::View* host, views::View* view) {
     }
     case VIEW_ID_DOWNLOAD_SHELF:
       download_shelf_ = static_cast<DownloadShelfView*>(view);
-      break;
-    case VIEW_ID_BOOKMARK_BAR:
-      active_bookmark_bar_ = static_cast<BookmarkBarView*>(view);
-      break;
-  }
-}
-
-void BrowserViewLayout::ViewRemoved(views::View* host, views::View* view) {
-  switch (view->id()) {
-    case VIEW_ID_BOOKMARK_BAR:
-      active_bookmark_bar_ = NULL;
       break;
   }
 }
@@ -289,16 +278,11 @@ void BrowserViewLayout::Layout(views::View* host) {
         browser_view_->frame()->GetTabStripInsets(false).top));
   }
   top = LayoutToolbar(top);
-  // TODO(jamescook): When immersive mode supports the bookmark bar this should
-  // move below.
-  browser_view_->top_container()->SetBounds(0, 0, browser_view_->width(), top);
   top = LayoutBookmarkAndInfoBars(top);
-  // During immersive mode reveal the content stays near the top of the view.
-  if (browser_view_->immersive_mode_controller()->IsRevealed()) {
-    top = browser_view_->tabstrip_->y();
-    if (!browser_view_->immersive_mode_controller()->hide_tab_indicators())
-      top += TabStrip::GetImmersiveHeight();
-  }
+
+  // Top container requires updated toolbar and bookmark bar to compute size.
+  browser_view_->top_container_->SetSize(
+      browser_view_->top_container_->GetPreferredSize());
 
   int bottom = LayoutDownloadShelf(browser_view_->height());
   int active_top_margin = GetTopMarginForActiveContent();
@@ -421,11 +405,12 @@ int BrowserViewLayout::LayoutBookmarkAndInfoBars(int top) {
   constrained_window_top_y_ =
       top + browser_view_->y() - kConstrainedWindowOverlap;
   find_bar_y_ = top + browser_view_->y() - 1;
-  if (active_bookmark_bar_) {
+  BookmarkBarView* bookmark_bar = browser_view_->bookmark_bar_view_.get();
+  if (bookmark_bar) {
     // If we're showing the Bookmark bar in detached style, then we
     // need to show any Info bar _above_ the Bookmark bar, since the
     // Bookmark bar is styled to look like it's part of the page.
-    if (active_bookmark_bar_->IsDetached())
+    if (bookmark_bar->IsDetached())
       return LayoutBookmarkBar(LayoutInfoBar(top));
     // Otherwise, Bookmark bar first, Info bar second.
     top = std::max(browser_view_->toolbar_->bounds().bottom(),
@@ -436,26 +421,34 @@ int BrowserViewLayout::LayoutBookmarkAndInfoBars(int top) {
 }
 
 int BrowserViewLayout::LayoutBookmarkBar(int top) {
-  DCHECK(active_bookmark_bar_);
+  BookmarkBarView* bookmark_bar = browser_view_->bookmark_bar_view_.get();
+  DCHECK(bookmark_bar);
   int y = top;
   if (!browser_view_->IsBookmarkBarVisible()) {
-    active_bookmark_bar_->SetVisible(false);
-    active_bookmark_bar_->SetBounds(0, y, browser_view_->width(), 0);
+    bookmark_bar->SetVisible(false);
+    bookmark_bar->SetBounds(0, y, browser_view_->width(), 0);
     return y;
   }
 
-  active_bookmark_bar_->set_infobar_visible(InfobarVisible());
-  int bookmark_bar_height = active_bookmark_bar_->GetPreferredSize().height();
+  bookmark_bar->set_infobar_visible(InfobarVisible());
+  int bookmark_bar_height = bookmark_bar->GetPreferredSize().height();
   y -= views::NonClientFrameView::kClientEdgeThickness +
-      active_bookmark_bar_->GetToolbarOverlap(false);
-  active_bookmark_bar_->SetVisible(true);
-  active_bookmark_bar_->SetBounds(vertical_layout_rect_.x(), y,
-                                  vertical_layout_rect_.width(),
-                                  bookmark_bar_height);
+      bookmark_bar->GetToolbarOverlap(false);
+  bookmark_bar->SetVisible(true);
+  bookmark_bar->SetBounds(vertical_layout_rect_.x(), y,
+                                 vertical_layout_rect_.width(),
+                                 bookmark_bar_height);
   return y + bookmark_bar_height;
 }
 
 int BrowserViewLayout::LayoutInfoBar(int top) {
+  // In immersive fullscreen, the infobar always starts near the top of the
+  // screen, just under the "light bar" rectangular stripes.
+  if (browser_view_->immersive_mode_controller_->enabled()) {
+    top = browser_view_->immersive_mode_controller_->hide_tab_indicators() ?
+        browser_view_->y() :
+        browser_view_->y() + TabStrip::GetImmersiveHeight();
+  }
   InfoBarContainerView* infobar_container = browser_view_->infobar_container_;
   // Raise the |infobar_container| by its vertical overlap.
   infobar_container->SetVisible(InfobarVisible());
@@ -508,8 +501,10 @@ void BrowserViewLayout::LayoutTabContents(int top, int bottom) {
 }
 
 int BrowserViewLayout::GetTopMarginForActiveContent() {
-  if (!active_bookmark_bar_ || !browser_view_->IsBookmarkBarVisible() ||
-      !active_bookmark_bar_->IsDetached()) {
+  BookmarkBarView* bookmark_bar = browser_view_->bookmark_bar_view_.get();
+  if (!bookmark_bar ||
+      !browser_view_->IsBookmarkBarVisible() ||
+      !bookmark_bar->IsDetached()) {
     return 0;
   }
 
@@ -517,7 +512,7 @@ int BrowserViewLayout::GetTopMarginForActiveContent() {
     return 0;
 
   // Adjust for separator.
-  return active_bookmark_bar_->height() -
+  return bookmark_bar->height() -
       views::NonClientFrameView::kClientEdgeThickness;
 }
 

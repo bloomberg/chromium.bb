@@ -37,26 +37,25 @@ class BrowserViewLayout : public views::LayoutManager {
   bool GetConstrainedWindowTopY(int* top_y);
 
   // Returns the minimum size of the browser view.
-  virtual gfx::Size GetMinimumSize();
+  gfx::Size GetMinimumSize();
 
   // Returns the bounding box for the find bar.
-  virtual gfx::Rect GetFindBarBoundingBox() const;
+  gfx::Rect GetFindBarBoundingBox() const;
 
   // Returns true if the specified point(BrowserView coordinates) is in
   // in the window caption area of the browser window.
-  virtual bool IsPositionInWindowCaption(const gfx::Point& point);
+  bool IsPositionInWindowCaption(const gfx::Point& point);
 
   // Tests to see if the specified |point| (in nonclient view's coordinates)
   // is within the views managed by the laymanager. Returns one of
   // HitTestCompat enum defined in ui/base/hit_test.h.
   // See also ClientView::NonClientHitTest.
-  virtual int NonClientHitTest(const gfx::Point& point);
+  int NonClientHitTest(const gfx::Point& point);
 
   // views::LayoutManager overrides:
   virtual void Installed(views::View* host) OVERRIDE;
   virtual void Uninstalled(views::View* host) OVERRIDE;
   virtual void ViewAdded(views::View* host, views::View* view) OVERRIDE;
-  virtual void ViewRemoved(views::View* host, views::View* view) OVERRIDE;
   virtual void Layout(views::View* host) OVERRIDE;
   virtual gfx::Size GetPreferredSize(views::View* host) OVERRIDE;
 
@@ -66,12 +65,12 @@ class BrowserViewLayout : public views::LayoutManager {
 
   // Layout the tab strip region, returns the coordinate of the bottom of the
   // TabStrip, for laying out subsequent controls.
-  virtual int LayoutTabStripRegion();
+  int LayoutTabStripRegion();
 
   // Layout the following controls, starting at |top|, returns the coordinate
   // of the bottom of the control, for laying out the next control.
-  virtual int LayoutToolbar(int top);
-  virtual int LayoutBookmarkAndInfoBars(int top);
+  int LayoutToolbar(int top);
+  int LayoutBookmarkAndInfoBars(int top);
   int LayoutBookmarkBar(int top);
   int LayoutInfoBar(int top);
 
@@ -103,7 +102,6 @@ class BrowserViewLayout : public views::LayoutManager {
   views::SingleSplitView* contents_split_;
   ContentsContainer* contents_container_;
   DownloadShelfView* download_shelf_;
-  BookmarkBarView* active_bookmark_bar_;
 
   BrowserView* browser_view_;
 

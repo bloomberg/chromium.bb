@@ -21,6 +21,7 @@ class TopContainerView : public views::View {
   virtual ~TopContainerView();
 
   // views::View overrides:
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual std::string GetClassName() const OVERRIDE;
   virtual void PaintChildren(gfx::Canvas* canvas) OVERRIDE;
 

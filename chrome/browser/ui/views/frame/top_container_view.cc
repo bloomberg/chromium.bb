@@ -15,6 +15,14 @@ TopContainerView::TopContainerView(BrowserView* browser_view)
 TopContainerView::~TopContainerView() {
 }
 
+gfx::Size TopContainerView::GetPreferredSize() {
+  // The view wants to be as wide as its parent and tall enough to fully show
+  // its last child view.
+  int last_child_bottom =
+      child_count() > 0 ? child_at(child_count() - 1)->bounds().bottom() : 0;
+  return gfx::Size(browser_view_->width(), last_child_bottom);
+}
+
 std::string TopContainerView::GetClassName() const {
   return "TopContainerView";
 }

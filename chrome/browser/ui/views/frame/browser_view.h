@@ -247,10 +247,6 @@ class BrowserView : public BrowserWindow,
   }
 #endif
 
-  BookmarkBarView* bookmark_bar() const {
-    return bookmark_bar_view_.get();
-  }
-
   // Overridden from BrowserWindow:
   virtual void Show() OVERRIDE;
   virtual void ShowInactive() OVERRIDE;
@@ -526,13 +522,6 @@ class BrowserView : public BrowserWindow,
   // removed.
   void UpdateUIForContents(content::WebContents* contents);
 
-  // Updates an optional child View, e.g. Bookmarks Bar, Info Bar, Download
-  // Shelf. If |*old_view| differs from new_view, the old_view is removed and
-  // the new_view is added. This is intended to be used when swapping in/out
-  // child views that are referenced via a field.
-  // Returns true if anything was changed, and a re-Layout is now required.
-  bool UpdateChildViewAndLayout(views::View* new_view, views::View** old_view);
-
   // Invoked to update the necessary things when our fullscreen state changes
   // to |fullscreen|. On Windows this is invoked immediately when we toggle the
   // full screen state. On Linux changing the fullscreen state is async, so we
@@ -642,11 +631,6 @@ class BrowserView : public BrowserWindow,
   // slide out the top views in immersive fullscreen.
   TopContainerView* top_container_;
 
-  // Tool/Info bars that we are currently showing. Used for layout.
-  // active_bookmark_bar_ is either NULL, if the bookmark bar isn't showing,
-  // or is bookmark_bar_view_ if the bookmark bar is showing.
-  views::View* active_bookmark_bar_;
-
   // The TabStrip.
   TabStrip* tabstrip_;
 
@@ -658,7 +642,8 @@ class BrowserView : public BrowserWindow,
   // windows.
   views::Button* window_switcher_button_;
 
-  // The Bookmark Bar View for this window. Lazily created.
+  // The Bookmark Bar View for this window. Lazily created. May be NULL for
+  // non-tabbed browsers like popups. May not be visible.
   scoped_ptr<BookmarkBarView> bookmark_bar_view_;
 
   // The download shelf view (view at the bottom of the page).

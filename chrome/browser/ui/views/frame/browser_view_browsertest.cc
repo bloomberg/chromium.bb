@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/frame/browser_view.h"
 
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
@@ -11,36 +12,60 @@
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar_view.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "ui/views/focus/focus_manager.h"
 
 using views::FocusManager;
 
 typedef InProcessBrowserTest BrowserViewTest;
 
-IN_PROC_BROWSER_TEST_F(BrowserViewTest, Basics) {
+IN_PROC_BROWSER_TEST_F(BrowserViewTest, BrowserView) {
+  BookmarkBarView::DisableAnimationsForTesting(true);
+
   BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
-  views::View* top_container = browser_view->top_container();
+  TopContainerView* top_container = browser_view->top_container();
 
   // Verify the view hierarchy.
   EXPECT_EQ(top_container, browser_view->tabstrip()->parent());
   EXPECT_EQ(top_container, browser_view->toolbar()->parent());
+  EXPECT_EQ(top_container, browser_view->GetBookmarkBarView()->parent());
   EXPECT_EQ(browser_view, browser_view->infobar_container()->parent());
 
-  // Bookmark bar is at the front of the view hierarchy.
-  // TODO(jamescook): When top container supports the bookmark bar, the top
-  // container will be frontmost.
+  // Top container is at the front of the view hierarchy.
   EXPECT_EQ(browser_view->child_count() - 1,
-            browser_view->GetIndexOf(browser_view->bookmark_bar()));
-
-  // Top container is stacked under bookmark bar.
-  EXPECT_EQ(browser_view->child_count() - 2,
             browser_view->GetIndexOf(top_container));
 
   // Verify basic layout.
   EXPECT_EQ(0, top_container->x());
   EXPECT_EQ(0, top_container->y());
   EXPECT_EQ(browser_view->width(), top_container->width());
+
+  // Verify bookmark bar visibility.
+  BookmarkBarView* bookmark_bar = browser_view->GetBookmarkBarView();
+  EXPECT_FALSE(bookmark_bar->visible());
+  EXPECT_FALSE(bookmark_bar->IsDetached());
+  chrome::ExecuteCommand(browser(), IDC_SHOW_BOOKMARK_BAR);
+  EXPECT_TRUE(bookmark_bar->visible());
+  EXPECT_FALSE(bookmark_bar->IsDetached());
+  chrome::ExecuteCommand(browser(), IDC_SHOW_BOOKMARK_BAR);
+  EXPECT_FALSE(bookmark_bar->visible());
+  EXPECT_FALSE(bookmark_bar->IsDetached());
+
+  // Bookmark bar is reparented to BrowserView on NTP.
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+  EXPECT_TRUE(bookmark_bar->visible());
+  EXPECT_TRUE(bookmark_bar->IsDetached());
+  EXPECT_EQ(browser_view, bookmark_bar->parent());
+
+  // Bookmark bar is parented back to top container on normal page.
+  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+  EXPECT_FALSE(bookmark_bar->visible());
+  EXPECT_FALSE(bookmark_bar->IsDetached());
+  EXPECT_EQ(top_container, bookmark_bar->parent());
+
+  BookmarkBarView::DisableAnimationsForTesting(false);
 }
 
 // Active window and focus testing is not reliable on Windows crbug.com/79493
