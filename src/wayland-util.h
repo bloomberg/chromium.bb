@@ -56,7 +56,7 @@ struct wl_interface {
 
 struct wl_object {
 	const struct wl_interface *interface;
-	void (* const * implementation)(void);
+	const void *implementation;
 	uint32_t id;
 };
 
