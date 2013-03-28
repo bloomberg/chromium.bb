@@ -16,20 +16,23 @@
 }
 
 .device h3 {
-  font-weight: bold;
   margin-top: 8px;
+  white-space: nowrap;
 }
 
 .device-timestamp {
   color: rgb(151, 156, 160);
-  font-weight: normal;
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .device-tab-entry {
   -webkit-margin-end: 8px;
   -webkit-margin-start: 0;
   -webkit-padding-end: 0;
-  -webkit-padding-start: 22px;
+  -webkit-padding-start: 20px;
   background: no-repeat 0 50%;
   background-color: transparent !important;
   background-size: 16px 16px;
