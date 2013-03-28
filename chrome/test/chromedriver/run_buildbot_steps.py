@@ -71,8 +71,8 @@ def Download():
   f = zipfile.ZipFile(zip_path, 'r')
   f.extractall(build_dir)
   f.close()
-  # Set executable permissions on the server: http://bugs.python.org/issue15795
-  os.chmod(os.path.join(build_dir, 'chromedriver2_server'), 0500)
+  # Workaround for Python bug: http://bugs.python.org/issue15795
+  os.chmod(os.path.join(build_dir, 'chromedriver2_server'), 0700)
 
 
 def MaybeRelease(revision):

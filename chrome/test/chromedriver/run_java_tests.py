@@ -23,88 +23,15 @@ sys.path.insert(0, os.path.join(_THIS_DIR, os.pardir, 'pylib'))
 
 from common import chrome_paths
 from common import util
-from continuous_archive import CHROME_26_REVISION
 
+import test_environment
+
+
+DESKTOP_TEST_ENVIRONMENT_CLASS = test_environment.DesktopTestEnvironment
 if util.IsLinux():
-  sys.path.insert(0, os.path.join(_THIS_DIR, os.pardir, os.pardir, os.pardir,
-                                  'build', 'android'))
-  from pylib import android_commands
-  from pylib import forwarder
-  from pylib import valgrind_tools
-
-ANDROID_TEST_HTTP_PORT = 2311
-ANDROID_TEST_HTTPS_PORT = 2411
-
-
-class TestEnvironment(object):
-  """Manages the environment java tests require to run."""
-
-  def GlobalSetUp(self):
-    """Sets up the global test environment state."""
-    pass
-
-  def GlobalTearDown(self):
-    """Tears down the global test environment state."""
-    pass
-
-
-class AndroidTestEnvironment(TestEnvironment):
-  """Manages the environment java tests require to run on Android."""
-
-  def __init__(self):
-    super(AndroidTestEnvironment, self).__init__()
-    self._adb = None
-    self._forwarder = None
-
-  def GlobalSetUp(self):
-    """Sets up the global test environment state."""
-    os.putenv('TEST_HTTP_PORT', str(ANDROID_TEST_HTTP_PORT))
-    os.putenv('TEST_HTTPS_PORT', str(ANDROID_TEST_HTTPS_PORT))
-    self._adb = android_commands.AndroidCommands()
-    self._forwarder = forwarder.Forwarder(self._adb, 'Debug')
-    self._forwarder.Run(
-        [(ANDROID_TEST_HTTP_PORT, ANDROID_TEST_HTTP_PORT),
-         (ANDROID_TEST_HTTPS_PORT, ANDROID_TEST_HTTPS_PORT)],
-        valgrind_tools.BaseTool(), '127.0.0.1')
-
-  def GlobalTearDown(self):
-    """Tears down the global test environment state."""
-    if self._adb is not None:
-      forwarder.Forwarder.KillDevice(self._adb, valgrind_tools.BaseTool())
-    if self._forwarder is not None:
-      self._forwarder.Close()
-
-
-_DESKTOP_OS_NEGATIVE_FILTER = []
-if util.IsLinux():
-  _DESKTOP_OS_NEGATIVE_FILTER = [
-      # https://code.google.com/p/chromedriver/issues/detail?id=284
-      'TypingTest#testArrowKeysAndPageUpAndDown',
-      'TypingTest#testHomeAndEndAndPageUpAndPageDownKeys',
-      'TypingTest#testNumberpadKeys',
-  ]
+  DESKTOP_TEST_ENVIRONMENT_CLASS = test_environment.LinuxTestEnvironment
 elif util.IsWindows():
-  _DESKTOP_OS_NEGATIVE_FILTER = [
-      # https://code.google.com/p/chromedriver/issues/detail?id=282
-      'PageLoadingTest#'
-      'testShouldNotHangIfDocumentOpenCallIsNeverFollowedByDocumentCloseCall',
-  ]
-
-
-_DESKTOP_NEGATIVE_FILTER = {}
-_DESKTOP_NEGATIVE_FILTER['HEAD'] = (
-    _DESKTOP_OS_NEGATIVE_FILTER + [
-        # https://code.google.com/p/chromedriver/issues/detail?id=283
-        'ExecutingAsyncJavascriptTest#'
-        'shouldNotTimeoutIfScriptCallsbackInsideAZeroTimeout',
-    ]
-)
-_DESKTOP_NEGATIVE_FILTER[CHROME_26_REVISION] = (
-    _DESKTOP_NEGATIVE_FILTER['HEAD'] + [
-        'UploadTest#testFileUploading',
-        'AlertsTest',
-    ]
-)
+  DESKTOP_TEST_ENVIRONMENT_CLASS = test_environment.WindowsTestEnvironment
 
 
 class TestResult(object):
@@ -317,26 +244,18 @@ def main():
                  'Please run "%s --help" for help' % __file__)
 
   if options.android_package is not None:
-    environment = AndroidTestEnvironment()
+    if options.chrome_revision != 'HEAD':
+      parser.error('Android does not support the --chrome-revision argument.')
+    environment = test_environment.AndroidTestEnvironment()
   else:
-    environment = TestEnvironment()
+    environment = DESKTOP_TEST_ENVIRONMENT_CLASS(options.chrome_revision)
 
   try:
     environment.GlobalSetUp()
     # Run passed tests when filter is not provided.
     test_filter = options.filter
     if test_filter is None:
-      passed_java_tests = []
-      failed_tests = _DESKTOP_NEGATIVE_FILTER[options.chrome_revision]
-      with open(os.path.join(_THIS_DIR, 'passed_java_tests.txt'), 'r') as f:
-        for line in f:
-          java_test = line.strip('\n')
-          # Filter out failed tests.
-          suite_name = java_test.split('#')[0]
-          if java_test in failed_tests or suite_name in failed_tests:
-            continue
-          passed_java_tests.append(java_test)
-      test_filter = ','.join(passed_java_tests)
+      test_filter = ','.join(environment.GetPassedJavaTests())
 
     java_tests_src_dir = os.path.join(chrome_paths.GetSrc(), 'chrome', 'test',
                                       'chromedriver', 'third_party',
