@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
+#include "base/safe_numerics.h"
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_switches.h"
@@ -61,8 +62,8 @@ class PrivateFontFile : public ppapi::Resource {
                     uint32_t* output_length) {
     size_t temp_size = static_cast<size_t>(*output_length);
     bool rv = content::GetFontTable(
-        fd_, table, static_cast<uint8_t*>(output), &temp_size);
-    *output_length = static_cast<uint32_t>(temp_size);
+        fd_, table, 0 /* offset */, static_cast<uint8_t*>(output), &temp_size);
+    *output_length = base::checked_numeric_cast<uint32_t>(temp_size);
     return rv;
   }
 
