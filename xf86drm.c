@@ -1946,7 +1946,7 @@ int drmWaitVBlank(int fd, drmVBlankPtr vbl)
 
     ret = clock_gettime(CLOCK_MONOTONIC, &timeout);
     if (ret < 0) {
-	fprintf(stderr, "clock_gettime failed: %s\n", strerror(ret));
+	fprintf(stderr, "clock_gettime failed: %s\n", strerror(errno));
 	goto out;
     }
     timeout.tv_sec++;
