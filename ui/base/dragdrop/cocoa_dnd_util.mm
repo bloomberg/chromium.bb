@@ -5,7 +5,7 @@
 #import "ui/base/dragdrop/cocoa_dnd_util.h"
 
 #include "base/logging.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "googleurl/src/gurl.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 

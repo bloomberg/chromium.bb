@@ -11,7 +11,7 @@ extern "C" {
 
 #include "base/file_util.h"
 #include "base/files/file_path.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/test/multiprocess_test.h"
 #include "base/utf_string_conversions.h"
 #include "content/common/sandbox_mac.h"

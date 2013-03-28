@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "base/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/threading/worker_pool.h"
 #include "base/time.h"
 #include "net/base/net_errors.h"

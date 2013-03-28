@@ -6,7 +6,7 @@
 
 #include <Cocoa/Cocoa.h>
 
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 
 FontDescriptor::FontDescriptor(NSFont* font) {
   font_name = base::SysNSStringToUTF16([font fontName]);

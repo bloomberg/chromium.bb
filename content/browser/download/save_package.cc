@@ -15,7 +15,7 @@
 #include "base/stl_util.h"
 #include "base/string_piece.h"
 #include "base/strings/string_split.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
 #include "content/browser/download/download_item_impl.h"

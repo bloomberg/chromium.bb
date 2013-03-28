@@ -13,7 +13,7 @@
 #import "base/mac/foundation_util.h"
 #import "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "content/common/sandbox_mac.h"
 #include "content/public/common/content_switches.h"
 #import "content/public/common/injection_test_mac.h"

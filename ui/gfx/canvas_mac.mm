@@ -7,7 +7,7 @@
 #include "ui/gfx/canvas.h"
 
 #include "base/logging.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/rect.h"

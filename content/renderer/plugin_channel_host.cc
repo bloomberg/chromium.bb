@@ -29,7 +29,7 @@
 #if defined(OS_MACOSX)
 #include "base/debug/crash_logging.h"
 #include "base/debug/stack_trace.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 
 namespace {
 

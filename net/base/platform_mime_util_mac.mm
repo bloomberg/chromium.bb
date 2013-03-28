@@ -11,7 +11,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #import "base/memory/scoped_nsobject.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 
 #if defined(OS_IOS)
 #include <MobileCoreServices/MobileCoreServices.h>

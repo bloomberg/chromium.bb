@@ -8,7 +8,7 @@
 
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 

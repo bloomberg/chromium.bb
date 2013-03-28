@@ -13,8 +13,8 @@
 #include "base/mac/mac_util.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_nsobject.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/synchronization/lock.h"
-#include "base/sys_string_conversions.h"
 #include "ui/base/resource/resource_handle.h"
 #include "ui/gfx/image/image.h"
 

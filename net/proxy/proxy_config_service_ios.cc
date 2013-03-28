@@ -10,7 +10,7 @@
 #include "base/message_loop.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "net/proxy/proxy_config.h"
 
 namespace net {

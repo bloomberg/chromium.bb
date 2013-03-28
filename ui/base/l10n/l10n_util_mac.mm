@@ -4,10 +4,10 @@
 
 #import <Foundation/Foundation.h>
 
-#include "base/sys_string_conversions.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
+#include "base/strings/sys_string_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 

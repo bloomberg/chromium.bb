@@ -7,7 +7,7 @@
 #include "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #import "ui/base/cocoa/hover_image_button.h"
 #import "ui/base/test/ui_cocoa_test_helper.h"
 #include "ui/message_center/message_center_constants.h"

@@ -12,7 +12,7 @@
 
 #include "base/logging.h"
 #include "base/string_util.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/scoped_hdc.h"
 #include "base/win/scoped_select_object.h"

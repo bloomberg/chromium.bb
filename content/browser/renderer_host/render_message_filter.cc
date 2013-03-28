@@ -12,7 +12,7 @@
 #include "base/debug/alias.h"
 #include "base/file_util.h"
 #include "base/process_util.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/threading/thread.h"
 #include "base/threading/worker_pool.h"
 #include "base/utf_string_conversions.h"
