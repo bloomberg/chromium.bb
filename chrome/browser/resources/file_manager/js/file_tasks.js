@@ -608,7 +608,9 @@ FileTasks.prototype.showTaskPicker = function(actionDialog, title, message,
       title,
       message,
       items, defaultIdx,
-      onSuccess);
+      function(item) {
+        onSuccess(item.task);
+      });
 };
 
 FileTasks.decorate('display');

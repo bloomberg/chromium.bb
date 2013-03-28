@@ -72,6 +72,7 @@
 //
 //<include src="path_util.js"/>
 //<include src="util.js"/>
+//<include src="action_choice_util.js"/>
 //<include src="breadcrumbs_controller.js"/>
 //<include src="butter_bar.js"/>
 //<include src="directory_contents.js">
@@ -92,6 +93,7 @@
 //<include src="metadata/metadata_cache.js"/>
 //<include src="default_action_dialog.js"/>
 //<include src="file_manager_commands.js"/>
+
 // // For accurate load performance tracking place main.js should be
 // // the last include to include.
 //<include src="main.js"/>
@@ -99,8 +101,5 @@
 // Exports
 window.util = util;
 window.FileCopyManagerWrapper = FileCopyManagerWrapper;
-
-// Exports
-window.util = util;
 
 })();

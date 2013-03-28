@@ -170,21 +170,3 @@ button:focus {
 #actions-list > li > div.disabled {
   opacity: 0.5;
 }
-
-#actions-list > li > div.import-photos-to-drive {
-  background-image: -webkit-image-set(
-    url('../images/media/drive.png') 1x,
-    url('../images/media/2x/drive.png') 2x);
-}
-
-#actions-list > li > div.view-files {
-  background-image: -webkit-image-set(
-    url('../images/icon32.png') 1x,
-    url('../images/icon64.png') 2x);
-}
-
-#actions-list > li > div.watch-single-video {
-  background-image: -webkit-image-set(
-    url('../images/media/watch.png') 1x,
-    url('../images/media/2x/watch.png') 2x);
-}

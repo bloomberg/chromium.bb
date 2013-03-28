@@ -37,6 +37,7 @@
 //<include src="metrics.js"/>
 //<include src="image_editor/image_util.js"/>
 //<include src="media/media_util.js"/>
+//<include src="action_choice_util.js"/>
 
 //<include src="action_choice.js"/>
 

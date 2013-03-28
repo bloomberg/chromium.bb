@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,55 +25,31 @@ function ActionChoice(dom, filesystem, params) {
   this.volumeManager_ = VolumeManager.getInstance();
   this.volumeManager_.addEventListener('externally-unmounted',
      this.onDeviceUnmounted_.bind(this));
-  this.actions_ = [];
-  this.actionsById_ = {};
   this.initDom_();
 
+  // Load defined actions and remembered choice, then initialize volumes.
+  this.actions_ = [];
+  this.actionsById_ = {};
   this.rememberedChoice_ = null;
-  util.storage.local.get(['action-choice'], function(result) {
-    // In the advanced mode, skip auto-choice.
-    if (!params.advancedMode)
-      this.rememberedChoice_ = result['action-choice'];
-    this.initializeVolumes_();
-  }.bind(this));
 
-  this.viewFilesAction_ = {
-    id: 'view-files',
-    title: loadTimeData.getString('ACTION_CHOICE_VIEW_FILES'),
-    class: 'view-files'
-  };
-
-  this.importPhotosToDriveAction_ = {
-    id: 'import-photos-to-drive',
-    title: loadTimeData.getString('ACTION_CHOICE_DRIVE_NOT_REACHED'),
-    class: 'import-photos-to-drive',
-    disabled: true
-  };
-
-  this.watchSingleVideoAction_ = {
-    id: 'watch-single-video',
-    class: 'watch-single-video',
-    hidden: true
-  };
-
-  this.registerAction_(this.viewFilesAction_);
-  this.registerAction_(this.importPhotosToDriveAction_);
-  this.registerAction_(this.watchSingleVideoAction_);
-
-  chrome.mediaGalleriesPrivate.getHandlers(function(handlers) {
-    for (var i = 0; i < handlers.length; i++) {
-      var action = {
-        id: handlers[i].extensionId + ':' + handlers[i].id,
-        title: handlers[i].title,
-        // TODO(mtomasz): Get the passed icon instead of the extension icon.
-        icon100:
-            'chrome://extension-icon/' + handlers[i].extensionId + '/32/1',
-        icon200:
-            'chrome://extension-icon/' + handlers[i].extensionId + '/64/1',
-        extensionId: handlers[i].extensionId,
-        actionId: handlers[i].id
-      };
-      this.registerAction_(action);
+  ActionChoiceUtil.getDefinedActions(loadTimeData, function(actions) {
+    for (var i = 0; i < actions.length; i++) {
+      this.registerAction_(actions[i]);
+    }
+    this.viewFilesAction_ = this.actionsById_['view-files'];
+    this.importPhotosToDriveAction_ =
+        this.actionsById_['import-photos-to-drive'];
+    this.watchSingleVideoAction_ =
+        this.actionsById_['watch-single-video'];
+    if (this.params_.advancedMode) {
+      // In the advanced mode, skip auto-choice.
+      this.initializeVolumes_();
+    } else {
+      // Get the remembered action before initializing volumes.
+      ActionChoiceUtil.getRememberedActionId(function(actionId) {
+        this.rememberedChoice_ = actionId;
+        this.initializeVolumes_();
+      }.bind(this));
     }
     this.renderList_();
   }.bind(this));
@@ -114,9 +90,7 @@ ActionChoice.load = function(opt_filesystem, opt_params) {
 
   chrome.fileBrowserPrivate.getStrings(function(strings) {
     loadTimeData.data = strings;
-
     i18nTemplate.process(document, loadTimeData);
-
     if (opt_filesystem) {
       onFilesystem(opt_filesystem);
     } else {
@@ -239,7 +213,11 @@ ActionChoice.prototype.renderItem = function(item) {
   var result = this.document_.createElement('li');
 
   var div = this.document_.createElement('div');
-  div.textContent = item.title;
+  if (item.disabled && item.disabledTitle)
+    div.textContent = item.disabledTitle;
+  else
+    div.textContent = item.title;
+
   if (item.class)
     div.classList.add(item.class);
   if (item.icon100 && item.icon200)
@@ -265,8 +243,6 @@ ActionChoice.prototype.renderItem = function(item) {
 ActionChoice.prototype.checkDrive_ = function(callback) {
   var onMounted = function() {
     this.importPhotosToDriveAction_.disabled = false;
-    this.importPhotosToDriveAction_.title =
-        loadTimeData.getString('ACTION_CHOICE_PHOTOS_DRIVE');
     this.renderList_();
     callback();
   }.bind(this);
@@ -484,7 +460,7 @@ ActionChoice.prototype.acceptAction_ = function() {
     return;
 
   this.runAction_(action);
-  util.storage.local.set({'action-choice': action.id});
+  ActionChoiceUtil.setRememberedActionId(action.id);
 };
 
 /**

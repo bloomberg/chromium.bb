@@ -401,3 +401,22 @@ input[type='submit'][disabled]:hover {
 .progress-track.smoothed {
   -webkit-transition: width 1s linear;
 }
+
+/* Icons for the action choice dialog and choosing the default app. */
+div.import-photos-to-drive-icon {
+  background-image: -webkit-image-set(
+    url('../images/media/drive.png') 1x,
+    url('../images/media/2x/drive.png') 2x);
+}
+
+div.view-files-icon {
+  background-image: -webkit-image-set(
+    url('../images/icon32.png') 1x,
+    url('../images/icon64.png') 2x);
+}
+
+div.watch-single-video-icon {
+  background-image: -webkit-image-set(
+    url('../images/media/watch.png') 1x,
+    url('../images/media/2x/watch.png') 2x);
+}

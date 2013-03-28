@@ -16,6 +16,8 @@ cr.define('cr.filebrowser', function() {
    * Creates dialog in DOM tree.
    *
    * @param {HTMLElement} parentNode Node to be parent for this dialog.
+   * @constructor
+   * @extends {cr.ui.dialogs.BaseDialog}
    */
   function DefaultActionDialog(parentNode) {
     cr.ui.dialogs.BaseDialog.call(this, parentNode);
@@ -51,7 +53,7 @@ cr.define('cr.filebrowser', function() {
   };
 
   /**
-   * Overrides BaseDialog::onInputFocus
+   * @override
    */
   DefaultActionDialog.prototype.onInputFocus = function() {
     this.list_.select();
@@ -69,8 +71,12 @@ cr.define('cr.filebrowser', function() {
 
     if (item.iconType)
       div.setAttribute('file-type-icon', item.iconType);
-    else
+
+    if (item.iconUrl)
       div.style.backgroundImage = 'url(' + item.iconUrl + ')';
+
+    if (item.class)
+      div.classList.add(item.class);
 
     result.appendChild(div);
 
@@ -85,17 +91,17 @@ cr.define('cr.filebrowser', function() {
    *
    * @param {string} title Title in dialog caption.
    * @param {string} message Message in dialog caption.
-   * @param {Array} items Items to render in list.
+   * @param {Array.<Object>} items Items to render in the list.
    * @param {number} defaultIndex Item to select by default.
-   * @param {function} onOk Callback function.
-   * @param {function} onCancel Callback function.
-   * @param {function} onShow Callback function.
+   * @param {function(Object=)} onOk OK callback with the selected item.
+   * @param {function()=} opt_onCancel Cancel callback.
+   * @param {function()=} opt_onShow Show callback.
    */
   DefaultActionDialog.prototype.show = function(title, message, items,
-      defaultIndex, onOk, onCancel, onShow) {
+      defaultIndex, onOk, opt_onCancel, opt_onShow) {
 
-    cr.ui.dialogs.BaseDialog.prototype.showWithTitle.apply(this,
-        [title, message, onOk, onCancel, onShow]);
+    cr.ui.dialogs.BaseDialog.prototype.showWithTitle.apply(
+        this, [title, message, onOk, opt_onCancel, opt_onShow]);
 
     if (!message) {
       this.text_.setAttribute('hidden', 'hidden');
@@ -104,37 +110,34 @@ cr.define('cr.filebrowser', function() {
     }
 
     this.list_.startBatchUpdates();
-
     this.dataModel_.splice(0, this.dataModel_.length);
-
     for (var i = 0; i < items.length; i++) {
       this.dataModel_.push(items[i]);
     }
-
     this.selectionModel_.selectedIndex = defaultIndex;
-
     this.list_.endBatchUpdates();
   };
 
   /**
    * List activation handler. Closes dialog and calls 'ok' callback.
-   *
    * @param {number} index Activated index.
    */
   DefaultActionDialog.prototype.activateItemAtIndex_ = function(index) {
     this.hide();
-    if (this.onOk_)
-      this.onOk_(this.dataModel_.item(index).task);
+    this.onOk_(this.dataModel_.item(index));
   };
 
   /**
    * Closes dialog and invokes callback with currently-selected item.
+   * @override
    */
   DefaultActionDialog.prototype.onOkClick_ = function() {
     this.activateItemAtIndex_(this.selectionModel_.selectedIndex);
   };
 
-  // Overrides BaseDialog::onContainerKeyDown_;
+  /**
+   * @override
+   */
   DefaultActionDialog.prototype.onContainerKeyDown_ = function(event) {
     // Handle Escape.
     if (event.keyCode == 27) {

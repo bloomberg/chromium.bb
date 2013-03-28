@@ -15,6 +15,7 @@
     "fileBrowserHandler",
     "fileBrowserPrivate",
     "mediaPlayerPrivate",
+    "mediaGalleriesPrivate",
     "metricsPrivate",
     "unlimitedStorage",
     // Comment out chrome:// permissions to debug on a desktop browser.
