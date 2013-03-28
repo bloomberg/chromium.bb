@@ -61,6 +61,3 @@ UserCloudPolicyStoreTest.StoreThenClear
 UserCloudPolicyStoreTest.StoreThenLoad
 UserCloudPolicyStoreTest.StoreTwoTimes
 UserCloudPolicyStoreTest.StoreValidationError
-
-# Crashes on the bot. http://crbug.com/179391
-BrowserCommandControllerTest.IncognitoModeOnSigninAllowedPrefChange

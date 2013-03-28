@@ -7,6 +7,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/command_updater.h"
+#include "chrome/browser/profiles/profile_destroyer.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -310,11 +311,12 @@ TEST_F(BrowserCommandControllerTest,
   TestingProfile::Builder builder;
   TestingProfile* profile2 = builder.Build().release();
   profile2->set_incognito(true);
-  TestingProfile* profile1 =
-      testing_profile_manager.CreateTestingProfile("p1");
+  TestingProfile::Builder builder2;
+  TestingProfile* profile1 = builder2.Build().release();
   profile2->SetOriginalProfile(profile1);
   EXPECT_EQ(profile2->GetOriginalProfile(), profile1);
   profile1->SetOffTheRecordProfile(profile2);
+
   // Create a new browser based on the off the record profile.
   Browser::CreateParams profile_params(profile2,
                                        chrome::HOST_DESKTOP_TYPE_NATIVE);
@@ -332,7 +334,7 @@ TEST_F(BrowserCommandControllerTest,
   EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_SHOW_SYNC_SETUP));
   delete command_controller;
   browser2.reset();
-  testing_profile_manager.DeleteTestingProfile("p1");
+  ProfileDestroyer::DestroyProfileWhenAppropriate(profile1);
 }
 
 TEST_F(BrowserCommandControllerTest,
