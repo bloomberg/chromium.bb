@@ -97,12 +97,16 @@ int main(int argc, const char *argv[]) {
   static const char cond_mem_access_flag[] =
       "--conditional_memory_access_allowed_for_sfi";
 
+  static const char number_runs_flag[] =
+      "--number_runs";
+
   NaClCPUFeaturesArm cpu_features;
   NaClClearCPUFeaturesArm(&cpu_features);
 
   int exit_code = EXIT_FAILURE;
   bool print_usage = false;
   bool run_validation = false;
+  int number_runs = 1;
   std::string filename;
   ncfile *ncf = NULL;
 
@@ -113,6 +117,18 @@ int main(int argc, const char *argv[]) {
       print_usage = true;
       run_validation = false;
       break;
+    } else if (current_arg == number_runs_flag) {
+      // next argument is the number of runs to try. Used when timing
+      // performance, and want to run many times to get a good average
+      // time result.
+      ++i;
+      if (i < argc) {
+        number_runs = atoi(argv[i]);
+      } else {
+        // No value to got with argument, fail to run.
+        print_usage = true;
+        run_validation = false;
+      }
     } else if (current_arg == cond_mem_access_flag) {
       // This flag is disallowed by default: not all ARM CPUs support it,
       // so be pessimistic unless the user asks for it.
@@ -144,14 +160,21 @@ int main(int argc, const char *argv[]) {
   }
 
   if (print_usage) {
-    fprintf(stderr, "Usage: %s [%s] <filename>\n",
-            argv[0], cond_mem_access_flag);
+    fprintf(stderr, "Usage: %s [options] <filename>\n", argv[0]);
+    fprintf(stderr, "   %s\n", cond_mem_access_flag);
+    fprintf(stderr, "      Allow conditions on memory access.\n");
+    fprintf(stderr, "   %s n\n", number_runs_flag);
+    fprintf(stderr, "      Validate input n times.\n");
+    fprintf(stderr, "      Used for performance timing.\n");
   }
 
   // TODO(cbiffle): check OS ABI, ABI version, align mask
 
   if (run_validation) {
-    exit_code = validate(ncf, &cpu_features);
+    exit_code = 0;
+    for (int i = 0; i < number_runs; ++i) {
+      exit_code |= validate(ncf, &cpu_features);
+    }
     if (exit_code == 0)
       printf("Valid.\n");
     else
