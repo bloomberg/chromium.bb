@@ -26,6 +26,7 @@ cscope.out
 /ltmain.sh
 /missing
 /stamp-h1
+/test-driver
 Makefile
 Makefile.in
-cscope.out
+TAGS
