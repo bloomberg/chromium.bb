@@ -41,7 +41,10 @@ const char kAttributeAutofillUsed[] = "autofillused";
 const char kAttributeAutofillType[] = "autofilltype";
 const char kAttributeClientVersion[] = "clientversion";
 const char kAttributeDataPresent[] = "datapresent";
+const char kAttributeFieldID[] = "fieldid";
+const char kAttributeFieldType[] = "fieldtype";
 const char kAttributeFormSignature[] = "formsignature";
+const char kAttributeName[] = "name";
 const char kAttributeSignature[] = "signature";
 const char kAttributeUrlprefixSignature[] = "urlprefixsignature";
 const char kAcceptedFeaturesExperiment[] = "e"; // e=experiments
@@ -50,8 +53,10 @@ const char kClientVersion[] = "6.1.1715.1442/en (GGLL)";
 const char kXMLDeclaration[] = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
 const char kXMLElementAutofillQuery[] = "autofillquery";
 const char kXMLElementAutofillUpload[] = "autofillupload";
-const char kXMLElementForm[] = "form";
+const char kXMLElementFieldAssignments[] = "fieldassignments";
 const char kXMLElementField[] = "field";
+const char kXMLElementFields[] = "fields";
+const char kXMLElementForm[] = "form";
 
 // Helper for |EncodeUploadRequest()| that creates a bit field corresponding to
 // |available_field_types| and returns the hex representation as a string.
@@ -87,6 +92,60 @@ std::string EncodeFieldTypes(const FieldTypeSet& available_field_types) {
   }
 
   return data_presence;
+}
+
+// Helper for |EncodeFormRequest()| that creates XmlElements for the given field
+// in upload xml, and also add them to the parent XmlElement.
+void EncodeFieldForUpload(const AutofillField& field,
+                          buzz::XmlElement* parent) {
+  // Don't upload checkable fields.
+  if (field.is_checkable)
+    return;
+
+  FieldTypeSet types = field.possible_types();
+  // |types| could be empty in unit-tests only.
+  for (FieldTypeSet::iterator field_type = types.begin();
+       field_type != types.end(); ++field_type) {
+    buzz::XmlElement *field_element = new buzz::XmlElement(
+        buzz::QName(kXMLElementField));
+
+    field_element->SetAttr(buzz::QName(kAttributeSignature),
+                           field.FieldSignature());
+    field_element->SetAttr(buzz::QName(kAttributeAutofillType),
+                           base::IntToString(*field_type));
+    parent->AddElement(field_element);
+  }
+}
+
+// Helper for |EncodeFormRequest()| that creates XmlElement for the given field
+// in query xml, and also add it to the parent XmlElement.
+void EncodeFieldForQuery(const AutofillField& field,
+                         buzz::XmlElement* parent) {
+  buzz::XmlElement *field_element = new buzz::XmlElement(
+      buzz::QName(kXMLElementField));
+  field_element->SetAttr(buzz::QName(kAttributeSignature),
+                         field.FieldSignature());
+  parent->AddElement(field_element);
+}
+
+// Helper for |EncodeFormRequest()| that creates XmlElements for the given field
+// in field assignments xml, and also add them to the parent XmlElement.
+void EncodeFieldForFieldAssignments(const AutofillField& field,
+                                    buzz::XmlElement* parent) {
+  FieldTypeSet types = field.possible_types();
+  for (FieldTypeSet::iterator field_type = types.begin();
+       field_type != types.end(); ++field_type) {
+    buzz::XmlElement *field_element = new buzz::XmlElement(
+        buzz::QName(kXMLElementField));
+
+    field_element->SetAttr(buzz::QName(kAttributeFieldID),
+                           field.FieldSignature());
+    field_element->SetAttr(buzz::QName(kAttributeFieldType),
+                           base::IntToString(*field_type));
+    field_element->SetAttr(buzz::QName(kAttributeName),
+                           UTF16ToUTF8(field.name));
+    parent->AddElement(field_element);
+  }
 }
 
 // Returns |true| iff the |token| is a type hint for a contact field, as
@@ -319,10 +378,7 @@ bool FormStructure::EncodeUploadRequest(
     const FieldTypeSet& available_field_types,
     bool form_was_autofilled,
     std::string* encoded_xml) const {
-  if (!ShouldBeCrowdsourced()) {
-    NOTREACHED();
-    return false;
-  }
+  DCHECK(ShouldBeCrowdsourced());
 
   // Verify that |available_field_types| agrees with the possible field types we
   // are uploading.
@@ -354,12 +410,33 @@ bool FormStructure::EncodeUploadRequest(
     return false;  // Malformed form, skip it.
 
   // Obtain the XML structure as a string.
-  encoded_xml->clear();
   *encoded_xml = kXMLDeclaration;
   *encoded_xml += autofill_request_xml.Str().c_str();
 
   // To enable this logging, run with the flag --vmodule="form_structure=2".
   VLOG(2) << "\n" << *encoded_xml;
+
+  return true;
+}
+
+bool FormStructure::EncodeFieldAssignments(
+    const FieldTypeSet& available_field_types,
+    std::string* encoded_xml) const {
+  DCHECK(ShouldBeCrowdsourced());
+
+  // Set up the <fieldassignments> element and its attributes.
+  buzz::XmlElement autofill_request_xml(
+      (buzz::QName(kXMLElementFieldAssignments)));
+  autofill_request_xml.SetAttr(buzz::QName(kAttributeFormSignature),
+                               FormSignature());
+
+  if (!EncodeFormRequest(FormStructure::FIELD_ASSIGNMENTS,
+                         &autofill_request_xml))
+    return false;  // Malformed form, skip it.
+
+  // Obtain the XML structure as a string.
+  *encoded_xml = kXMLDeclaration;
+  *encoded_xml += autofill_request_xml.Str().c_str();
 
   return true;
 }
@@ -950,36 +1027,21 @@ bool FormStructure::EncodeFormRequest(
   // Add the child nodes for the form fields.
   for (size_t index = 0; index < field_count(); ++index) {
     const AutofillField* field = fields_[index];
-    if (request_type == FormStructure::UPLOAD) {
-      // Don't upload checkable fields.
-      if (field->is_checkable)
-        continue;
-
-      FieldTypeSet types = field->possible_types();
-      // |types| could be empty in unit-tests only.
-      for (FieldTypeSet::iterator field_type = types.begin();
-           field_type != types.end(); ++field_type) {
-        buzz::XmlElement *field_element = new buzz::XmlElement(
-            buzz::QName(kXMLElementField));
-
-        field_element->SetAttr(buzz::QName(kAttributeSignature),
-                               field->FieldSignature());
-        field_element->SetAttr(buzz::QName(kAttributeAutofillType),
-                               base::IntToString(*field_type));
-        encompassing_xml_element->AddElement(field_element);
-      }
-    } else {
-      // Skip putting checkable and password fields in the request if
-      // Autocheckout is not enabled.
-      if ((field->is_checkable || field->form_control_type == "password") &&
-          !IsAutocheckoutEnabled())
-        continue;
-
-      buzz::XmlElement *field_element = new buzz::XmlElement(
-          buzz::QName(kXMLElementField));
-      field_element->SetAttr(buzz::QName(kAttributeSignature),
-                             field->FieldSignature());
-      encompassing_xml_element->AddElement(field_element);
+    switch (request_type) {
+      case FormStructure::UPLOAD:
+        EncodeFieldForUpload(*field, encompassing_xml_element);
+        break;
+      case FormStructure::QUERY:
+        // Skip putting checkable and password fields in the request if
+        // Autocheckout is not enabled.
+        if ((field->is_checkable || field->form_control_type == "password") &&
+            !IsAutocheckoutEnabled())
+          continue;
+        EncodeFieldForQuery(*field, encompassing_xml_element);
+        break;
+      case FormStructure::FIELD_ASSIGNMENTS:
+        EncodeFieldForFieldAssignments(*field, encompassing_xml_element);
+        break;
     }
   }
   return true;

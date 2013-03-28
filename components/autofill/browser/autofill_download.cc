@@ -33,12 +33,19 @@ const char kAutofillQueryServerNameStartInHeader[] = "GFE/";
 
 const size_t kMaxFormCacheSize = 16;
 
-// Log the contents of the upload request
-static void LogUploadRequest(const GURL& url, const std::string& signature,
-                             const std::string& form_xml) {
-  VLOG(2) << url;
-  VLOG(2) << signature;
-  VLOG(2) << form_xml;
+// Generate field assignments xml that can be manually changed and then fed back
+// into the Autofill server as experiment data.
+static void LogFieldAssignments(
+    const FormStructure& form,
+    const FieldTypeSet& available_field_types) {
+  std::string form_xml;
+  if (!form.EncodeFieldAssignments(available_field_types, &form_xml))
+    return;
+
+  VLOG(1) << "AutofillDownloadManager FieldAssignments for "
+          << form.source_url()
+          << " :\n"
+          << form_xml;
 }
 
 };
@@ -120,7 +127,7 @@ bool AutofillDownloadManager::StartUploadRequest(
                                 &form_xml))
     return false;
 
-  LogUploadRequest(form.source_url(), form.FormSignature(), form_xml);
+  LogFieldAssignments(form, available_field_types);
 
   if (next_upload_request_ > base::Time::Now()) {
     // We are in back-off mode: do not do the request.

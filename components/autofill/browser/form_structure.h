@@ -62,6 +62,13 @@ class FormStructure {
                            bool form_was_autofilled,
                            std::string* encoded_xml) const;
 
+  // Encodes a XML block contains autofill field type from this FormStructure.
+  // This XML will be written VLOG only, never be sent to server. It will
+  // help make FieldAssignments and feed back to autofill server as
+  // experiment data.
+  bool EncodeFieldAssignments(const FieldTypeSet& available_field_types,
+                              std::string* encoded_xml) const;
+
   // Encodes the XML query request for the set of forms.
   // All fields are returned in one XML. For example, there are three forms,
   // with 2, 4, and 3 fields. The returned XML would have type info for 9
@@ -171,6 +178,7 @@ class FormStructure {
   enum EncodeRequestType {
     QUERY,
     UPLOAD,
+    FIELD_ASSIGNMENTS,
   };
 
   // Adds form info to |encompassing_xml_element|. |request_type| indicates if
