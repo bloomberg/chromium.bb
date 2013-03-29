@@ -38,6 +38,7 @@
       "default_title": "__MSG_PLAY_MEDIA__",
       "default_icon": "images/filetype_audio.png",
       "file_filters": [
+        "filesystem:*.amr",
         "filesystem:*.flac",
         "filesystem:*.m4a",
         "filesystem:*.mp3",

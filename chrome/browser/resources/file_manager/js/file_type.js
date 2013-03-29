@@ -37,6 +37,8 @@ FileType.types = [
    pattern: /\.avi$/i},
   {type: 'video', name: 'VIDEO_FILE_TYPE', subtype: 'QuickTime',
    pattern: /\.mov$/i},
+  {type: 'video', name: 'VIDEO_FILE_TYPE', subtype: 'MKV',
+   pattern: /\.mkv$/i},
   {type: 'video', name: 'VIDEO_FILE_TYPE', subtype: 'MPEG',
    pattern: /\.m(p4|4v|pg|peg|pg4|peg4)$/i},
   {type: 'video', name: 'VIDEO_FILE_TYPE', subtype: 'OGG',
@@ -45,6 +47,8 @@ FileType.types = [
    pattern: /\.webm$/i},
 
   // Audio
+  {type: 'audio', name: 'AUDIO_FILE_TYPE', subtype: 'AMR',
+   pattern: /\.amr$/i},
   {type: 'audio', name: 'AUDIO_FILE_TYPE', subtype: 'FLAC',
    pattern: /\.flac$/i},
   {type: 'audio', name: 'AUDIO_FILE_TYPE', subtype: 'MP3',

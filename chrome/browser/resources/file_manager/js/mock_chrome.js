@@ -157,7 +157,7 @@ chrome.fileBrowserPrivate = {
     var tasks = [
       { taskId: internalTaskPrefix + '|play',
         title: 'Listen',
-        regexp: /\.(flac|m4a|mp3|oga|ogg|wav)$/i,
+        regexp: /\.(amr|flac|m4a|mp3|oga|ogg|wav)$/i,
         iconUrl: emptyIcon
       },
       { taskId: internalTaskPrefix + '|mount-archive',
@@ -175,7 +175,7 @@ chrome.fileBrowserPrivate = {
       {
         taskId: internalTaskPrefix + '|watch',
         title: 'Watch',
-        regexp: /\.(3gp|avi|m4v|mov|mp4|mpeg4?|mpg4?|ogm|ogv|ogx|webm)$/i,
+        regexp: /\.(3gp|avi|m4v|mkv|mov|mp4|mpeg4?|mpg4?|ogm|ogv|ogx|webm)$/i,
         iconUrl: emptyIcon
       },
       {
