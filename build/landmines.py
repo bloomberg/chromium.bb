@@ -223,7 +223,7 @@ def main():
 
   gyp_helper.apply_chromium_gyp_env()
 
-  for target in ('Debug', 'Release'):
+  for target in ('Debug', 'Release', 'Debug_x64', 'Release_x64'):
     set_up_landmines(target)
 
   return 0
