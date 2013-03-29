@@ -52,6 +52,15 @@ class CHROMEOS_EXPORT PowerManagerClient {
     // |user_initiated| is true if the action is initiated by the user.
     virtual void BrightnessChanged(int level, bool user_initiated) {}
 
+    // Called when peripheral device battery status is received.
+    // |path| is the sysfs path for the battery of the peripheral device.
+    // |name| is the human readble name of the device.
+    // |level| within [0, 100] represents the device battery level and -1
+    // means an unknown level or device is disconnected.
+    virtual void PeripheralBatteryStatusReceived(const std::string& path,
+                                                 const std::string& name,
+                                                 int level) {}
+
     // Called when power supply polling takes place.  |status| is a data
     // structure that contains the current state of the power supply.
     virtual void PowerChanged(const PowerSupplyStatus& status) {}

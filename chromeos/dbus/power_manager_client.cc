@@ -18,6 +18,7 @@
 #include "base/time.h"
 #include "base/timer.h"
 #include "chromeos/dbus/power_manager/input_event.pb.h"
+#include "chromeos/dbus/power_manager/peripheral_battery_status.pb.h"
 #include "chromeos/dbus/power_manager/policy.pb.h"
 #include "chromeos/dbus/power_manager/suspend.pb.h"
 #include "chromeos/dbus/power_supply_properties.pb.h"
@@ -64,6 +65,14 @@ class PowerManagerClientImpl : public PowerManagerClient {
         power_manager::kPowerManagerInterface,
         power_manager::kBrightnessChangedSignal,
         base::Bind(&PowerManagerClientImpl::BrightnessChangedReceived,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&PowerManagerClientImpl::SignalConnected,
+                   weak_ptr_factory_.GetWeakPtr()));
+
+    power_manager_proxy_->ConnectToSignal(
+        power_manager::kPowerManagerInterface,
+        power_manager::kPeripheralBatteryStatusSignal,
+        base::Bind(&PowerManagerClientImpl::PeripheralBatteryStatusReceived,
                    weak_ptr_factory_.GetWeakPtr()),
         base::Bind(&PowerManagerClientImpl::SignalConnected,
                    weak_ptr_factory_.GetWeakPtr()));
@@ -353,6 +362,26 @@ class PowerManagerClientImpl : public PowerManagerClient {
             << ": user initiated " << user_initiated;
     FOR_EACH_OBSERVER(Observer, observers_,
                       BrightnessChanged(brightness_level, user_initiated));
+  }
+
+  void PeripheralBatteryStatusReceived(dbus::Signal* signal) {
+    dbus::MessageReader reader(signal);
+    power_manager::PeripheralBatteryStatus protobuf_status;
+    if (!reader.PopArrayOfBytesAsProto(&protobuf_status)) {
+      LOG(ERROR) << "Unable to decode protocol buffer from "
+                 << power_manager::kPeripheralBatteryStatusSignal << " signal";
+      return;
+    }
+
+    std::string path = protobuf_status.path();
+    std::string name = protobuf_status.name();
+    int level = protobuf_status.has_level() ? protobuf_status.level() : -1;
+
+    VLOG(1) << "Device battery status received " << level
+            << " for " << name << " at " << path;
+
+    FOR_EACH_OBSERVER(Observer, observers_,
+                      PeripheralBatteryStatusReceived(path, name, level));
   }
 
   void PowerSupplyPollReceived(dbus::Signal* unused_signal) {

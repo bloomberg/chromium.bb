@@ -453,6 +453,7 @@
       'type': 'static_library',
       'sources': [
         '../third_party/cros_system_api/dbus/power_manager/input_event.proto',
+        '../third_party/cros_system_api/dbus/power_manager/peripheral_battery_status.proto',
         '../third_party/cros_system_api/dbus/power_manager/policy.proto',
         '../third_party/cros_system_api/dbus/power_manager/suspend.proto',
       ],
