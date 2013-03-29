@@ -34,8 +34,9 @@ SkCanvas* SoftwareOutputDevice::BeginPaint(gfx::Rect damage_rect) {
 void SoftwareOutputDevice::EndPaint(SoftwareFrameData* frame_data) {
   DCHECK(device_);
   if (frame_data) {
+    frame_data->size = viewport_size_;
     frame_data->damage_rect = damage_rect_;
-    frame_data->content_dib = TransportDIB::DefaultHandleValue();
+    frame_data->dib_id = TransportDIB::Id();
   }
 }
 
@@ -54,7 +55,7 @@ void SoftwareOutputDevice::Scroll(
   NOTIMPLEMENTED();
 }
 
-void SoftwareOutputDevice::ReclaimDIB(TransportDIB::Handle handle) {
+void SoftwareOutputDevice::ReclaimDIB(const TransportDIB::Id& id) {
   NOTIMPLEMENTED();
 }
 

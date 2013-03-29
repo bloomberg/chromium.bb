@@ -6,9 +6,7 @@
 
 namespace cc {
 
-SoftwareFrameData::SoftwareFrameData()
-    : content_dib(TransportDIB::DefaultHandleValue()) {
-}
+SoftwareFrameData::SoftwareFrameData() {}
 
 SoftwareFrameData::~SoftwareFrameData() {}
 

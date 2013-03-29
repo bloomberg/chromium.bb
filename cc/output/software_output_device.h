@@ -39,7 +39,7 @@ class CC_EXPORT SoftwareOutputDevice {
                       gfx::Rect clip_rect);
 
   // TODO(skaslev) Remove this after UberCompositor lands.
-  virtual void ReclaimDIB(TransportDIB::Handle handle);
+  virtual void ReclaimDIB(const TransportDIB::Id& id);
 
  protected:
   gfx::Size viewport_size_;

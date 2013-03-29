@@ -54,6 +54,10 @@ class SURFACE_EXPORT TransportDIB {
           sequence_num(seq_num) {
     }
 
+    bool operator==(const HandleAndSequenceNum& other) const {
+      return other.handle == handle && other.sequence_num == sequence_num;
+    }
+
     bool operator<(const HandleAndSequenceNum& other) const {
       // Use the lexicographic order on the tuple <handle, sequence_num>.
       if (other.handle != handle)

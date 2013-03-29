@@ -124,7 +124,7 @@ void SoftwareRenderer::ReceiveCompositorFrameAck(
     const CompositorFrameAck& ack) {
   if (capabilities_.using_swap_complete_callback)
     client_->OnSwapBuffersComplete();
-  output_device_->ReclaimDIB(ack.last_content_dib);
+  output_device_->ReclaimDIB(ack.last_dib_id);
 }
 
 bool SoftwareRenderer::FlippedFramebuffer() const {

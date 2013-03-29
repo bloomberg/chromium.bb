@@ -6,9 +6,7 @@
 
 namespace cc {
 
-CompositorFrameAck::CompositorFrameAck()
-    : last_content_dib(TransportDIB::DefaultHandleValue()) {
-}
+CompositorFrameAck::CompositorFrameAck() {}
 
 CompositorFrameAck::~CompositorFrameAck() {}
 

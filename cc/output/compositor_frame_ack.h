@@ -20,7 +20,7 @@ class CC_EXPORT CompositorFrameAck {
 
   TransferableResourceArray resources;
   scoped_ptr<GLFrameData> gl_frame_data;
-  TransportDIB::Handle last_content_dib;
+  TransportDIB::Id last_dib_id;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CompositorFrameAck);

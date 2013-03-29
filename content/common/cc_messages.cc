@@ -627,7 +627,7 @@ void ParamTraits<cc::CompositorFrame>::Log(const param_type& p,
 void ParamTraits<cc::CompositorFrameAck>::Write(Message* m,
                                                 const param_type& p) {
   WriteParam(m, p.resources);
-  WriteParam(m, p.last_content_dib);
+  WriteParam(m, p.last_dib_id);
   if (p.gl_frame_data) {
     WriteParam(m, static_cast<int>(GL_FRAME));
     WriteParam(m, *p.gl_frame_data);
@@ -642,7 +642,7 @@ bool ParamTraits<cc::CompositorFrameAck>::Read(const Message* m,
   if (!ReadParam(m, iter, &p->resources))
     return false;
 
-  if (!ReadParam(m, iter, &p->last_content_dib))
+  if (!ReadParam(m, iter, &p->last_dib_id))
     return false;
 
   int compositor_frame_type;
@@ -668,7 +668,7 @@ void ParamTraits<cc::CompositorFrameAck>::Log(const param_type& p,
   l->append("CompositorFrameAck(");
   LogParam(p.resources, l);
   l->append(", ");
-  LogParam(p.last_content_dib, l);
+  LogParam(p.last_dib_id, l);
   l->append(", ");
   if (p.gl_frame_data)
     LogParam(*p.gl_frame_data, l);

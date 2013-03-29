@@ -19,7 +19,7 @@ class CC_EXPORT SoftwareFrameData {
 
   gfx::Size size;
   gfx::Rect damage_rect;
-  TransportDIB::Handle content_dib;
+  TransportDIB::Id dib_id;
 };
 
 }  // namespace cc
