@@ -7,7 +7,7 @@
 #include "base/mac/scoped_nsautorelease_pool.h"
 #endif
 #include "base/memory/scoped_ptr.h"
-#include "base/shared_memory.h"
+#include "base/memory/shared_memory.h"
 #include "base/sys_info.h"
 #include "base/test/multiprocess_test.h"
 #include "base/threading/platform_thread.h"
