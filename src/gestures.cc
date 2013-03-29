@@ -415,7 +415,8 @@ void GestureInterpreter::TimerCallback(stime_t now, stime_t* timeout) {
   }
   Gesture* gs = interpreter_->HandleTimer(now, timeout);
   if (gs && callback_)
-    (*callback_)(callback_data_, gs);
+    for (Gesture* it = gs; it; it = it->next)
+      (*callback_)(callback_data_, it);
 }
 
 void GestureInterpreter::SetTimerProvider(GesturesTimerProvider* tp,
