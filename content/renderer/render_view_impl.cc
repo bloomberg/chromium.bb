@@ -51,6 +51,7 @@
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/context_menu_params.h"
+#include "content/public/common/favicon_url.h"
 #include "content/public/common/file_chooser_params.h"
 #include "content/public/common/ssl_status.h"
 #include "content/public/common/three_d_api_types.h"
@@ -75,11 +76,11 @@
 #include "content/renderer/dom_automation_controller.h"
 #include "content/renderer/dom_storage/webstoragenamespace_impl.h"
 #include "content/renderer/external_popup_menu.h"
-#include "content/renderer/favicon_helper.h"
 #include "content/renderer/geolocation_dispatcher.h"
 #include "content/renderer/gpu/input_handler_manager.h"
 #include "content/renderer/gpu/render_widget_compositor.h"
 #include "content/renderer/idle_user_detector.h"
+#include "content/renderer/image_loading_helper.h"
 #include "content/renderer/input_tag_speech_dispatcher.h"
 #include "content/renderer/java/java_bridge_dispatcher.h"
 #include "content/renderer/load_progress_tracker.h"
@@ -546,6 +547,20 @@ static bool ShouldUseFixedPositionCompositing(float device_scale_factor) {
   return false;
 }
 
+static FaviconURL::IconType ToFaviconType(WebKit::WebIconURL::Type type) {
+  switch (type) {
+    case WebKit::WebIconURL::TypeFavicon:
+      return FaviconURL::FAVICON;
+    case WebKit::WebIconURL::TypeTouch:
+      return FaviconURL::TOUCH_ICON;
+    case WebKit::WebIconURL::TypeTouchPrecomposed:
+      return FaviconURL::TOUCH_PRECOMPOSED_ICON;
+    case WebKit::WebIconURL::TypeInvalid:
+      return FaviconURL::INVALID_ICON;
+  }
+  return FaviconURL::INVALID_ICON;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 struct RenderViewImpl::PendingFileChooser {
@@ -595,6 +610,15 @@ int64 ExtractPostId(const WebHistoryItem& item) {
   return item.httpBody().identifier();
 }
 
+bool TouchEnabled() {
+// Based on the definition of chrome::kEnableTouchIcon.
+#if defined(OS_ANDROID)
+  return true;
+#else
+  return false;
+#endif
+}
+
 }  // namespace
 
 RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
@@ -635,7 +659,6 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
       renderer_accessibility_(NULL),
       java_bridge_dispatcher_(NULL),
       mouse_lock_dispatcher_(NULL),
-      favicon_helper_(NULL),
 #if defined(OS_ANDROID)
       body_background_color_(SK_ColorWHITE),
       update_frame_info_scheduled_(false),
@@ -762,7 +785,8 @@ void RenderViewImpl::Initialize(RenderViewImplParams* params) {
   // along with the RenderView automatically.
   devtools_agent_ = new DevToolsAgent(this);
   mouse_lock_dispatcher_ = new RenderViewMouseLockDispatcher(this);
-  favicon_helper_ = new FaviconHelper(this);
+
+  new ImageLoadingHelper(this);
 
   // Create renderer_accessibility_ if needed.
   OnSetAccessibilityMode(params->accessibility_mode);
@@ -2108,6 +2132,8 @@ void RenderViewImpl::didStopLoading() {
 
   if (load_progress_tracker_ != NULL)
     load_progress_tracker_->DidStopLoading();
+
+  DidStopLoadingIcons();
 
   FOR_EACH_OBSERVER(RenderViewObserver, observers_, DidStopLoading());
 }
@@ -3634,8 +3660,21 @@ void RenderViewImpl::didReceiveTitle(WebFrame* frame, const WebString& title,
   UpdateEncoding(frame, frame->view()->pageEncoding().utf8());
 }
 
-void RenderViewImpl::didChangeIcon(WebFrame* frame, WebIconURL::Type type) {
-  favicon_helper_->DidChangeIcon(frame, type);
+void RenderViewImpl::didChangeIcon(WebFrame* frame,
+                                   WebIconURL::Type icon_type) {
+  if (frame->parent())
+    return;
+
+  if (!TouchEnabled() && icon_type != WebIconURL::TypeFavicon)
+    return;
+
+  WebVector<WebIconURL> icon_urls = frame->iconURLs(icon_type);
+  std::vector<FaviconURL> urls;
+  for (size_t i = 0; i < icon_urls.size(); i++) {
+    urls.push_back(FaviconURL(icon_urls[i].iconURL(),
+                              ToFaviconType(icon_urls[i].iconType())));
+  }
+  SendUpdateFaviconURL(urls);
 }
 
 void RenderViewImpl::didFinishDocumentLoad(WebFrame* frame) {
@@ -6554,5 +6593,29 @@ void RenderViewImpl::DidCommitCompositorFrame() {
   RenderWidget::DidCommitCompositorFrame();
   FOR_EACH_OBSERVER(RenderViewObserver, observers_, DidCommitCompositorFrame());
 }
+
+void RenderViewImpl::SendUpdateFaviconURL(const std::vector<FaviconURL>& urls) {
+  if (!urls.empty())
+    Send(new ViewHostMsg_UpdateFaviconURL(routing_id_, page_id_, urls));
+}
+
+void RenderViewImpl::DidStopLoadingIcons() {
+  int icon_types = WebIconURL::TypeFavicon;
+  if (TouchEnabled())
+    icon_types |= WebIconURL::TypeTouchPrecomposed | WebIconURL::TypeTouch;
+
+  WebVector<WebIconURL> icon_urls =
+      webview()->mainFrame()->iconURLs(icon_types);
+
+  std::vector<FaviconURL> urls;
+  for (size_t i = 0; i < icon_urls.size(); i++) {
+    WebURL url = icon_urls[i].iconURL();
+    if (!url.isEmpty())
+      urls.push_back(FaviconURL(url,
+                                ToFaviconType(icon_urls[i].iconType())));
+  }
+  SendUpdateFaviconURL(urls);
+}
+
 
 }  // namespace content

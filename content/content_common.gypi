@@ -264,7 +264,7 @@
     'common/gpu/texture_image_transport_surface.cc',
     'common/handle_enumerator_win.cc',
     'common/handle_enumerator_win.h',
-    'common/icon_messages.h',
+    'common/image_messages.h',
     'common/indexed_db/indexed_db_key.cc',
     'common/indexed_db/indexed_db_key.h',
     'common/indexed_db/indexed_db_key_path.cc',

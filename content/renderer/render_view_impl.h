@@ -169,6 +169,7 @@ class RenderWidgetFullscreenPepper;
 class SpeechRecognitionDispatcher;
 class WebPluginDelegateProxy;
 struct CustomContextMenuContext;
+struct FaviconURL;
 struct FileChooserParams;
 struct RenderViewImplParams;
 
@@ -1186,6 +1187,13 @@ class CONTENT_EXPORT RenderViewImpl
   // If |url| is empty, show |fallback_url|.
   void UpdateTargetURL(const GURL& url, const GURL& fallback_url);
 
+  // Tells the browser what the new list of favicons for the webpage is.
+  void SendUpdateFaviconURL(const std::vector<FaviconURL>& urls);
+
+  // Invoked from DidStopLoading(). Sends the current list of loaded favicons to
+  // the browser.
+  void DidStopLoadingIcons();
+
   // Coordinate conversion -----------------------------------------------------
 
   gfx::RectF ClientRectToPhysicalWindowRect(const gfx::RectF& rect) const;
@@ -1417,9 +1425,6 @@ class CONTENT_EXPORT RenderViewImpl
 
   // Mouse Lock dispatcher attached to this view.
   MouseLockDispatcher* mouse_lock_dispatcher_;
-
-  // Helper class to handle favicon changes.
-  FaviconHelper* favicon_helper_;
 
 #if defined(OS_ANDROID)
   // Android Specific ---------------------------------------------------------

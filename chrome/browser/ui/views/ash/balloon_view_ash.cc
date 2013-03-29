@@ -89,10 +89,10 @@ BalloonViewAsh::ImageDownload::ImageDownload(const Notification& notification,
     return;
   }
 
-  contents->DownloadFavicon(url_,
-                            false,
-                            size_,
-                            base::Bind(&ImageDownload::Downloaded,AsWeakPtr()));
+  contents->DownloadImage(url_,
+                          false,
+                          size_,
+                          base::Bind(&ImageDownload::Downloaded,AsWeakPtr()));
 }
 
 

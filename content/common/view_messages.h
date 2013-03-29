@@ -19,6 +19,7 @@
 #include "content/port/common/input_event_ack_state.h"
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/context_menu_params.h"
+#include "content/public/common/favicon_url.h"
 #include "content/public/common/file_chooser_params.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/javascript_message_type.h"
@@ -74,6 +75,7 @@ IPC_ENUM_TRAITS(WebKit::WebPopupType)
 IPC_ENUM_TRAITS(WebKit::WebTextDirection)
 IPC_ENUM_TRAITS(WebMenuItem::Type)
 IPC_ENUM_TRAITS(WindowContainerType)
+IPC_ENUM_TRAITS(content::FaviconURL::IconType)
 IPC_ENUM_TRAITS(content::FileChooserParams::Mode)
 IPC_ENUM_TRAITS(content::InputEventAckState)
 IPC_ENUM_TRAITS(content::JavaScriptMessageType)
@@ -196,6 +198,11 @@ IPC_STRUCT_TRAITS_END()
 IPC_STRUCT_TRAITS_BEGIN(content::EditCommand)
   IPC_STRUCT_TRAITS_MEMBER(name)
   IPC_STRUCT_TRAITS_MEMBER(value)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(content::FaviconURL)
+  IPC_STRUCT_TRAITS_MEMBER(icon_url)
+  IPC_STRUCT_TRAITS_MEMBER(icon_type)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::FileChooserParams)
@@ -2294,6 +2301,11 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_FrameDetached,
 // ResourceScheduler as an indication that bandwidth contention won't block
 // first paint.
 IPC_MESSAGE_ROUTED0(ViewHostMsg_WillInsertBody)
+
+// Notification that the urls for the favicon of a site has been determined.
+IPC_MESSAGE_ROUTED2(ViewHostMsg_UpdateFaviconURL,
+                    int32 /* page_id */,
+                    std::vector<content::FaviconURL> /* candidates */)
 
 #if defined(OS_ANDROID)
 // Response to ViewMsg_FindMatchRects.

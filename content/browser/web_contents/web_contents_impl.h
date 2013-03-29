@@ -265,10 +265,10 @@ class CONTENT_EXPORT WebContentsImpl
   virtual void DidChooseColorInColorChooser(int color_chooser_id,
                                             SkColor color) OVERRIDE;
   virtual void DidEndColorChooser(int color_chooser_id) OVERRIDE;
-  virtual int DownloadFavicon(const GURL& url,
-                              bool is_favicon,
-                              int image_size,
-                              const FaviconDownloadCallback& callback) OVERRIDE;
+  virtual int DownloadImage(const GURL& url,
+                            bool is_favicon,
+                            int image_size,
+                            const ImageDownloadCallback& callback) OVERRIDE;
 
   // Implementation of PageNavigator.
   virtual WebContents* OpenURL(const OpenURLParams& params) OVERRIDE;
@@ -565,10 +565,10 @@ class CONTENT_EXPORT WebContentsImpl
                                       const GURL& url,
                                       const base::FilePath& plugin_path);
   void OnBrowserPluginMessage(const IPC::Message& message);
-  void OnDidDownloadFavicon(int id,
-                            const GURL& image_url,
-                            int requested_size,
-                            const std::vector<SkBitmap>& bitmaps);
+  void OnDidDownloadImage(int id,
+                          const GURL& image_url,
+                          int requested_size,
+                          const std::vector<SkBitmap>& bitmaps);
   void OnUpdateFaviconURL(int32 page_id,
                           const std::vector<FaviconURL>& candidates);
   void OnFrameDetached(int64 frame_id);
@@ -871,9 +871,9 @@ class CONTENT_EXPORT WebContentsImpl
   // Routing id of the shown fullscreen widget or MSG_ROUTING_NONE otherwise.
   int fullscreen_widget_routing_id_;
 
-  // Maps the ids of pending favicon downloads to their callbacks
-  typedef std::map<int, FaviconDownloadCallback> FaviconDownloadMap;
-  FaviconDownloadMap favicon_download_map_;
+  // Maps the ids of pending image downloads to their callbacks
+  typedef std::map<int, ImageDownloadCallback> ImageDownloadMap;
+  ImageDownloadMap image_download_map_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsImpl);
 };

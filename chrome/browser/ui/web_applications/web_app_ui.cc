@@ -170,7 +170,7 @@ void UpdateShortcutWorker::DownloadIcon() {
     return;
   }
 
-  web_contents_->DownloadFavicon(
+  web_contents_->DownloadImage(
       unprocessed_icons_.back().url,
       true,  // favicon
       std::max(unprocessed_icons_.back().width,

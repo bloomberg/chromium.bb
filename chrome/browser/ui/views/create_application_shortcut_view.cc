@@ -489,7 +489,7 @@ void CreateUrlApplicationShortcutView::FetchIcon() {
   if (unprocessed_icons_.empty())  // No icons to fetch.
     return;
 
-  pending_download_id_ = web_contents_->DownloadFavicon(
+  pending_download_id_ = web_contents_->DownloadImage(
       unprocessed_icons_.back().url,
       true,
       std::max(unprocessed_icons_.back().width,

@@ -132,7 +132,7 @@ NavigationEntry* FaviconTabHelper::GetActiveEntry() {
 }
 
 int FaviconTabHelper::StartDownload(const GURL& url, int image_size) {
-  return web_contents()->DownloadFavicon(
+  return web_contents()->DownloadImage(
       url,
       true,
       image_size,

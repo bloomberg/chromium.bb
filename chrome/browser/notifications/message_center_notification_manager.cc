@@ -306,7 +306,7 @@ void MessageCenterNotificationManager::ImageDownloads::StartDownloadWithImage(
     return;
   }
 
-  contents->DownloadFavicon(
+  contents->DownloadImage(
       url,
       false,
       size,

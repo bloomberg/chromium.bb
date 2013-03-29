@@ -400,7 +400,7 @@ void MetroPinTabHelper::TogglePinnedToStartScreen() {
        iter != favicon_url_candidates_.end();
        ++iter) {
     favicon_chooser_->AddPendingRequest(
-        web_contents()->DownloadFavicon(iter->icon_url,
+        web_contents()->DownloadImage(iter->icon_url,
             true,
             image_size,
             base::Bind(&MetroPinTabHelper::DidDownloadFavicon,

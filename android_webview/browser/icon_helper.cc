@@ -59,7 +59,7 @@ void IconHelper::DidUpdateFaviconURL(int32 page_id,
         // TODO(acleung): only fetch the URL if favicon downloading is enabled.
         // (currently that is, the app has called WebIconDatabase.open()
         // but we should decouple that setting via a boolean setting)
-        web_contents()->DownloadFavicon(i->icon_url,
+        web_contents()->DownloadImage(i->icon_url,
             true,
             0,
             base::Bind(

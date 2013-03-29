@@ -412,19 +412,19 @@ class WebContents : public PageNavigator,
                               const GURL&, /* image_url */
                               int,  /* requested_size */
                               const std::vector<SkBitmap>& /* bitmaps*/)>
-      FaviconDownloadCallback;
+      ImageDownloadCallback;
 
-  // Sends a request to download the given favicon |url| and returns the unique
+  // Sends a request to download the given image |url| and returns the unique
   // id of the download request. When the download is finished, |callback| will
-  // be called with the bitmaps received from the renderer. If [is_favicon|,
-  // the cookeis are not sent and not accepted during download. Note that
+  // be called with the bitmaps received from the renderer. If |is_favicon| is
+  // true, the cookies are not sent and not accepted during download. Note that
   // |image_size| is a hint for images with multiple sizes. The downloaded image
   // is not resized to the given image_size. If 0 is passed, the first frame of
   // the image is returned.
-  virtual int DownloadFavicon(const GURL& url,
-                              bool is_favicon,
-                              int image_size,
-                              const FaviconDownloadCallback& callback) = 0;
+  virtual int DownloadImage(const GURL& url,
+                            bool is_favicon,
+                            int image_size,
+                            const ImageDownloadCallback& callback) = 0;
 
  private:
   // This interface should only be implemented inside content.

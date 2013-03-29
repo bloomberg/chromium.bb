@@ -100,9 +100,9 @@ class FaviconHandler {
   // history / download service.
   void ProcessCurrentUrl();
 
-  // Message handler for IconHostMsg_DidDownloadFavicon. Called when the icon
+  // Message handler for ImageHostMsg_DidDownloadImage. Called when the image
   // at |image_url| has been downloaded.
-  // |bitmaps| is a list of all the frames of the icon at |image_url|.
+  // |bitmaps| is a list of all the frames of the image at |image_url|.
   void OnDidDownloadFavicon(int id,
                             const GURL& image_url,
                             int requested_size,

@@ -42,7 +42,7 @@
 #include "content/browser/webui/web_ui_impl.h"
 #include "content/common/browser_plugin/browser_plugin_constants.h"
 #include "content/common/browser_plugin/browser_plugin_messages.h"
-#include "content/common/icon_messages.h"
+#include "content/common/image_messages.h"
 #include "content/common/ssl_status_serialization.h"
 #include "content/common/view_messages.h"
 #include "content/port/browser/render_view_host_delegate_view.h"
@@ -157,13 +157,13 @@ static int StartDownload(content::RenderViewHost* rvh,
                          const GURL& url,
                          bool is_favicon,
                          int image_size) {
-  static int g_next_favicon_download_id = 0;
-  rvh->Send(new IconMsg_DownloadFavicon(rvh->GetRoutingID(),
-                                        ++g_next_favicon_download_id,
-                                        url,
-                                        is_favicon,
-                                        image_size));
-  return g_next_favicon_download_id;
+  static int g_next_image_download_id = 0;
+  rvh->Send(new ImageMsg_DownloadImage(rvh->GetRoutingID(),
+                                       ++g_next_image_download_id,
+                                       url,
+                                       is_favicon,
+                                       image_size));
+  return g_next_image_download_id;
 }
 
 ViewMsg_Navigate_Type::Value GetNavigationType(
@@ -696,8 +696,8 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
                                 OnBrowserPluginMessage(message))
     IPC_MESSAGE_HANDLER_GENERIC(BrowserPluginHostMsg_Attach,
                                 OnBrowserPluginMessage(message))
-    IPC_MESSAGE_HANDLER(IconHostMsg_DidDownloadFavicon, OnDidDownloadFavicon)
-    IPC_MESSAGE_HANDLER(IconHostMsg_UpdateFaviconURL, OnUpdateFaviconURL)
+    IPC_MESSAGE_HANDLER(ImageHostMsg_DidDownloadImage, OnDidDownloadImage)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateFaviconURL, OnUpdateFaviconURL)
 #if defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(ViewHostMsg_FindMatchRects_Reply,
                         OnFindMatchRectsReply)
@@ -1990,13 +1990,13 @@ void WebContentsImpl::DidEndColorChooser(int color_chooser_id) {
   color_chooser_ = NULL;
 }
 
-int WebContentsImpl::DownloadFavicon(const GURL& url,
-                              bool is_favicon,
-                              int image_size,
-                              const FaviconDownloadCallback& callback) {
+int WebContentsImpl::DownloadImage(const GURL& url,
+                                   bool is_favicon,
+                                   int image_size,
+                                   const ImageDownloadCallback& callback) {
   RenderViewHost* host = GetRenderViewHost();
   int id = StartDownload(host, url, is_favicon, image_size);
-  favicon_download_map_[id] = callback;
+  image_download_map_[id] = callback;
   return id;
 }
 
@@ -2408,13 +2408,13 @@ void WebContentsImpl::OnBrowserPluginMessage(const IPC::Message& message) {
   browser_plugin_embedder_->OnMessageReceived(message);
 }
 
-void WebContentsImpl::OnDidDownloadFavicon(
+void WebContentsImpl::OnDidDownloadImage(
     int id,
     const GURL& image_url,
     int requested_size,
     const std::vector<SkBitmap>& bitmaps) {
-  FaviconDownloadMap::iterator iter = favicon_download_map_.find(id);
-  if (iter == favicon_download_map_.end()) {
+  ImageDownloadMap::iterator iter = image_download_map_.find(id);
+  if (iter == image_download_map_.end()) {
     // Currently WebContents notifies us of ANY downloads so that it is
     // possible to get here.
     return;
@@ -2422,7 +2422,7 @@ void WebContentsImpl::OnDidDownloadFavicon(
   if (!iter->second.is_null()) {
     iter->second.Run(id, image_url, requested_size, bitmaps);
   }
-  favicon_download_map_.erase(id);
+  image_download_map_.erase(id);
 }
 
 void WebContentsImpl::OnUpdateFaviconURL(
