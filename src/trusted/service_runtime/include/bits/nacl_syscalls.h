@@ -96,11 +96,12 @@
 #define NACL_sys_test_crash             110
 
 /*
- * This syscall number is set aside for use in tests that add a
- * syscall that must coexist with the normal syscalls.
+ * These syscall numbers are set aside for use in tests that add
+ * syscalls that must coexist with the normal syscalls.
  */
 #define NACL_sys_test_syscall_1         111
+#define NACL_sys_test_syscall_2         112
 
-#define NACL_MAX_SYSCALLS               112
+#define NACL_MAX_SYSCALLS               113
 
 #endif

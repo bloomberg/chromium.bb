@@ -436,6 +436,14 @@ static BOOL HandleException(const struct StartupInfo *startup_info,
   }
 #endif
 
+  /*
+   * If trusted code accidentally jumped to untrusted code, don't let
+   * the untrusted exception handler take over.
+   */
+  if ((appthread_copy.suspend_state & NACL_APP_THREAD_UNTRUSTED) == 0) {
+    return FALSE;
+  }
+
   if (app_copy.enable_faulted_thread_queue) {
     return QueueFaultedThread(process_handle, thread_handle,
                               appthread_copy.nap, &app_copy, natp_remote,
@@ -541,11 +549,8 @@ static BOOL HandleException(const struct StartupInfo *startup_info,
 
 int NaClDebugExceptionHandlerEnsureAttached(struct NaClApp *nap) {
   if (nap->attach_debug_exception_handler_func == NULL) {
-    /*
-     * No callback was provided, so we assume that the debug exception
-     * handler was attached during process startup.
-     */
-    return 1;
+    /* Error: Debug exception handler not available. */
+    return 0;
   }
   if (nap->debug_exception_handler_state
       == NACL_DEBUG_EXCEPTION_HANDLER_NOT_STARTED) {
