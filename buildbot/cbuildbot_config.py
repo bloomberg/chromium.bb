@@ -984,6 +984,12 @@ internal_arm_paladin.add_config('spring-paladin',
   important=False,
 )
 
+internal_arm_paladin.add_config('peach-paladin',
+  boards=['peach_pit'],
+  paladin_builder_name='peach pit paladin',
+  important=False,
+)
+
 internal_paladin.add_config('zgb-paladin',
   boards=['x86-zgb'],
   important=False,
