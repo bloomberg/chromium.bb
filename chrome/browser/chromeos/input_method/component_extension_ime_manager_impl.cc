@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/input_method/component_extension_ime_manager_impl.h"
 
+#include "base/file_util.h"
 #include "base/logging.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -158,6 +159,9 @@ void ComponentExtensionIMEManagerImpl::ReadComponentExtensionsInfo(
   for (size_t i = 0; i < arraysize(whitelisted_component_extension); ++i) {
     const base::FilePath extension_path = base::FilePath(
         whitelisted_component_extension[i].path);
+
+    if (!file_util::PathExists(extension_path))
+      continue;
 
     scoped_ptr<DictionaryValue> manifest = GetManifest(extension_path);
     if (!manifest.get())
