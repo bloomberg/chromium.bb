@@ -381,6 +381,8 @@ static const char* const unsupported_text_types[] = {
   "text/csv",
   "text/tab-separated-values",
   "text/tsv",
+  "text/ofx",                           // http://crbug.com/162238
+  "text/vnd.sun.j2me.app-descriptor"    // http://crbug.com/176450
 };
 
 //  Mozilla 1.8 and WinIE 7 both accept text/javascript and text/ecmascript.
