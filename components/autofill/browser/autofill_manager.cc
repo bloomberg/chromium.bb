@@ -772,7 +772,8 @@ void AutofillManager::ShowRequestAutocompleteDialog(
     const FormData& form,
     const GURL& source_url,
     autofill::DialogType dialog_type,
-    const base::Callback<void(const FormStructure*)>& callback) {
+    const base::Callback<void(const FormStructure*,
+                              const std::string&)>& callback) {
   manager_delegate_->ShowRequestAutocompleteDialog(
       form, source_url, *metric_logger_, dialog_type, callback);
 }
@@ -827,7 +828,7 @@ void AutofillManager::OnRequestAutocomplete(
     return;
   }
 
-  base::Callback<void(const FormStructure*)> callback =
+  base::Callback<void(const FormStructure*, const std::string&)> callback =
       base::Bind(&AutofillManager::ReturnAutocompleteData,
                  weak_ptr_factory_.GetWeakPtr());
   ShowRequestAutocompleteDialog(
@@ -850,7 +851,9 @@ void AutofillManager::ReturnAutocompleteResult(
                                                        form_data));
 }
 
-void AutofillManager::ReturnAutocompleteData(const FormStructure* result) {
+void AutofillManager::ReturnAutocompleteData(
+    const FormStructure* result,
+    const std::string& unused_transaction_id) {
   RequestAutocompleteDialogClosed();
   if (!result) {
     ReturnAutocompleteResult(WebFormElement::AutocompleteResultErrorCancel,
@@ -884,7 +887,7 @@ void AutofillManager::OnDidEndTextFieldEditing() {
 }
 
 void AutofillManager::OnClickFailed(autofill::AutocheckoutStatus status) {
-  // TODO(ahutter): Plug into WalletClient.
+  autocheckout_manager_.OnClickFailed(status);
 }
 
 void AutofillManager::OnMaybeShowAutocheckoutBubble(

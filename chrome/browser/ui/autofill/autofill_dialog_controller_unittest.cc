@@ -122,7 +122,8 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
       const GURL& source_url,
       const AutofillMetrics& metric_logger,
       const DialogType dialog_type,
-      const base::Callback<void(const FormStructure*)>& callback)
+      const base::Callback<void(const FormStructure*,
+                                const std::string&)>& callback)
       : AutofillDialogControllerImpl(contents,
                                      form_structure,
                                      source_url,
@@ -207,7 +208,7 @@ class AutofillDialogControllerTest : public testing::Test {
     test_web_contents_.reset(
         content::WebContentsTester::CreateTestWebContents(profile(), NULL));
 
-    base::Callback<void(const FormStructure*)> callback;
+    base::Callback<void(const FormStructure*, const std::string&)> callback;
     controller_ = new TestAutofillDialogController(
         test_web_contents_.get(),
         form_data,

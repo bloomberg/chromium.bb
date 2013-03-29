@@ -223,13 +223,7 @@ void AutofillAgent::DidFinishDocumentLoad(WebFrame* frame) {
 void AutofillAgent::DidStartProvisionalLoad(WebFrame* frame) {
   if (!frame->parent()) {
     topmost_frame_ = NULL;
-    WebKit::WebURL provisional_url =
-        frame->provisionalDataSource()->request().url();
-    WebKit::WebURL current_url = frame->dataSource()->request().url();
-    // If the URL of the topmost frame is changing and the current page is part
-    // of an Autocheckout flow, the click was successful as long as the
-    // provisional load is committed.
-    if (provisional_url != current_url && click_timer_.IsRunning()) {
+    if (click_timer_.IsRunning()) {
       click_timer_.Stop();
       autocheckout_click_in_progress_ = true;
     }
@@ -238,7 +232,7 @@ void AutofillAgent::DidStartProvisionalLoad(WebFrame* frame) {
 
 void AutofillAgent::DidFailProvisionalLoad(WebFrame* frame,
                                            const WebKit::WebURLError& error) {
-  if (autocheckout_click_in_progress_) {
+  if (!frame->parent() && autocheckout_click_in_progress_) {
     autocheckout_click_in_progress_ = false;
     ClickFailed();
   }
@@ -246,8 +240,9 @@ void AutofillAgent::DidFailProvisionalLoad(WebFrame* frame,
 
 void AutofillAgent::DidCommitProvisionalLoad(WebFrame* frame,
                                              bool is_new_navigation) {
-  autocheckout_click_in_progress_ = false;
   in_flight_request_form_.reset();
+  if (!frame->parent())
+    autocheckout_click_in_progress_ = false;
 }
 
 void AutofillAgent::FrameDetached(WebFrame* frame) {
@@ -754,6 +749,10 @@ void AutofillAgent::OnFillFormsAndClick(
   // Fill the form.
   for (size_t i = 0; i < forms.size(); ++i)
     FillFormIncludingNonFocusableElements(forms[i], form_elements_[i]);
+
+  // Exit early if there is nothing to click.
+  if (click_element_descriptor.retrieval_method == WebElementDescriptor::NONE)
+    return;
 
   // It's possible that clicking the element to proceed in an Autocheckout
   // flow will not actually proceed to the next step in the flow, e.g. there

@@ -21,7 +21,7 @@ namespace autofill {
 
 namespace {
 
-void MockCallback(const FormStructure*) {}
+void MockCallback(const FormStructure*, const std::string&) {}
 
 class MockAutofillMetrics : public AutofillMetrics {
  public:

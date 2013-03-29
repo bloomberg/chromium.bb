@@ -632,7 +632,6 @@ class MockWalletClientDelegate : public WalletClientDelegate {
                void(const std::string& instrument_id,
                     const std::string& shipping_address_id,
                     const std::vector<RequiredAction>& required_actions));
-  MOCK_METHOD0(OnDidSendAutocheckoutStatus, void());
   MOCK_METHOD2(OnDidUpdateAddress,
                void(const std::string& address_id,
                     const std::vector<RequiredAction>& required_actions));
@@ -1657,33 +1656,25 @@ TEST_F(WalletClientTest, UpdateInstrumentMalformedResponse) {
 }
 
 TEST_F(WalletClientTest, SendAutocheckoutOfStatusSuccess) {
-  EXPECT_CALL(delegate_, OnDidSendAutocheckoutStatus()).Times(1);
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::SEND_STATUS, 1);
 
   wallet_client_->SendAutocheckoutStatus(autofill::SUCCESS,
                                          GURL(kMerchantUrl),
                                          "google_transaction_id");
-  net::TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher);
-  EXPECT_EQ(kSendAutocheckoutStatusOfSuccessValidRequest, GetData(fetcher));
-  fetcher->SetResponseString(")]}'");  // Invalid JSON. Should be ignored.
-  fetcher->set_response_code(net::HTTP_OK);
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  VerifyAndFinishRequest(net::HTTP_OK,
+                         kSendAutocheckoutStatusOfSuccessValidRequest,
+                         ")]}");  // Invalid JSON. Should be ignored.
 }
 
 TEST_F(WalletClientTest, SendAutocheckoutStatusOfFailure) {
-  EXPECT_CALL(delegate_, OnDidSendAutocheckoutStatus()).Times(1);
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::SEND_STATUS, 1);
 
   wallet_client_->SendAutocheckoutStatus(autofill::CANNOT_PROCEED,
                                          GURL(kMerchantUrl),
                                          "google_transaction_id");
-  net::TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher);
-  EXPECT_EQ(kSendAutocheckoutStatusOfFailureValidRequest, GetData(fetcher));
-  fetcher->set_response_code(net::HTTP_OK);
-  fetcher->SetResponseString(")]}'");  // Invalid JSON. Should be ignored.
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  VerifyAndFinishRequest(net::HTTP_OK,
+                         kSendAutocheckoutStatusOfFailureValidRequest,
+                         ")]}");  // Invalid JSON. Should be ignored.
 }
 
 TEST_F(WalletClientTest, HasRequestInProgress) {

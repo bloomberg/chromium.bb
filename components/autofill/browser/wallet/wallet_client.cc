@@ -733,7 +733,6 @@ void WalletClient::OnURLFetchComplete(
     }
 
     case SEND_STATUS:
-      delegate_->OnDidSendAutocheckoutStatus();
       break;
 
     case GET_FULL_WALLET: {

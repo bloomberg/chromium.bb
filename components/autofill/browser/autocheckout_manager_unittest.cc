@@ -5,6 +5,7 @@
 #include "base/tuple.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "chrome/test/base/testing_profile.h"
 #include "components/autofill/browser/autocheckout_manager.h"
 #include "components/autofill/browser/autofill_common_test.h"
 #include "components/autofill/browser/autofill_manager.h"
@@ -237,9 +238,10 @@ class MockAutofillManagerDelegate : public TestAutofillManagerDelegate {
       const GURL& source_url,
       const AutofillMetrics& metric_logger,
       DialogType dialog_type,
-      const base::Callback<void(const FormStructure*)>& callback) OVERRIDE {
+      const base::Callback<void(const FormStructure*,
+                                const std::string&)>& callback) OVERRIDE {
     request_autocomplete_dialog_open_ = true;
-    callback.Run(user_supplied_data_.get());
+    callback.Run(user_supplied_data_.get(), "google_transaction_id");
   }
 
   MOCK_METHOD1(UpdateProgressBar, void(double value));
@@ -297,7 +299,8 @@ class AutocheckoutManagerTest : public ChromeRenderViewHostTestHarness {
  public:
   AutocheckoutManagerTest()
       : ChromeRenderViewHostTestHarness(),
-        ui_thread_(BrowserThread::UI, &message_loop_) {
+        ui_thread_(BrowserThread::UI, &message_loop_),
+        io_thread_(BrowserThread::IO) {
   }
 
   std::vector<FormData> ReadFilledForms() {
@@ -355,6 +358,7 @@ class AutocheckoutManagerTest : public ChromeRenderViewHostTestHarness {
 
  protected:
   content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread io_thread_;
   scoped_ptr<TestAutofillManager> autofill_manager_;
   scoped_ptr<TestAutocheckoutManager> autocheckout_manager_;
   scoped_ptr<MockAutofillManagerDelegate> autofill_manager_delegate_;
@@ -362,6 +366,8 @@ class AutocheckoutManagerTest : public ChromeRenderViewHostTestHarness {
  private:
   virtual void SetUp() OVERRIDE {
     ChromeRenderViewHostTestHarness::SetUp();
+    io_thread_.StartIOThread();
+    profile()->CreateRequestContext();
     autofill_manager_delegate_.reset(new MockAutofillManagerDelegate());
     autofill_manager_.reset(new TestAutofillManager(
         web_contents(),
@@ -374,7 +380,9 @@ class AutocheckoutManagerTest : public ChromeRenderViewHostTestHarness {
     autocheckout_manager_.reset();
     autofill_manager_delegate_.reset();
     autofill_manager_.reset();
+    profile()->ResetRequestContext();
     ChromeRenderViewHostTestHarness::TearDown();
+    io_thread_.Stop();
   }
 
   DISALLOW_COPY_AND_ASSIGN(AutocheckoutManagerTest);

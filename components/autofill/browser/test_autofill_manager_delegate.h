@@ -47,7 +47,8 @@ class TestAutofillManagerDelegate : public AutofillManagerDelegate {
       const GURL& source_url,
       const AutofillMetrics& metric_logger,
       DialogType dialog_type,
-      const base::Callback<void(const FormStructure*)>& callback) OVERRIDE;
+      const base::Callback<void(const FormStructure*,
+                                const std::string&)>& callback) OVERRIDE;
   virtual void RequestAutocompleteDialogClosed() OVERRIDE;
   virtual void ShowAutofillPopup(const gfx::RectF& element_bounds,
                                  const std::vector<string16>& values,

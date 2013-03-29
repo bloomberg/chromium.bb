@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/string16.h"
 #include "components/autofill/browser/autocheckout_page_meta_data.h"
+#include "components/autofill/common/autocheckout_status.h"
 #include "ui/gfx/native_widget_types.h"
 
 class AutofillField;
@@ -41,6 +42,10 @@ class AutocheckoutManager {
   // Fill all the forms seen by the Autofill manager with the information
   // gathered from the requestAutocomplete dialog.
   void FillForms();
+
+  // Called when clicking a proceed element in an Autocheckout flow fails.
+  // |status| is the reason for the failure.
+  void OnClickFailed(AutocheckoutStatus status);
 
   // Sets |page_meta_data_| with the meta data for the current page.
   void OnLoadedPageMetaData(
@@ -84,7 +89,11 @@ class AutocheckoutManager {
   bool IsInAutofillableFlow() const;
 
   // Callback called from AutofillDialogController on filling up the UI form.
-  void ReturnAutocheckoutData(const FormStructure* result);
+  void ReturnAutocheckoutData(const FormStructure* result,
+                              const std::string& google_transaction_id);
+
+  // Sends |status| to Online Wallet using AutocheckoutRequestManager.
+  void SendAutocheckoutStatus(AutocheckoutStatus status);
 
   // Sets value of form field data |field_to_fill| based on the Autofill
   // field type specified by |field|.
@@ -114,6 +123,8 @@ class AutocheckoutManager {
 
   // Whether or not the user is in an Autocheckout flow.
   bool in_autocheckout_flow_;
+
+  std::string google_transaction_id_;
 
   base::WeakPtrFactory<AutocheckoutManager> weak_ptr_factory_;
 

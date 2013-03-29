@@ -7,6 +7,7 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/utf_string_conversions.h"
+#include "components/autofill/browser/autocheckout_request_manager.h"
 #include "components/autofill/browser/autofill_country.h"
 #include "components/autofill/browser/autofill_field.h"
 #include "components/autofill/browser/autofill_manager.h"
@@ -14,7 +15,6 @@
 #include "components/autofill/browser/credit_card.h"
 #include "components/autofill/browser/field_types.h"
 #include "components/autofill/browser/form_structure.h"
-#include "components/autofill/common/autocheckout_status.h"
 #include "components/autofill/common/autofill_messages.h"
 #include "components/autofill/common/form_data.h"
 #include "components/autofill/common/form_field_data.h"
@@ -68,6 +68,8 @@ FormData BuildAutocheckoutFormData() {
   return formdata;
 }
 
+const char kTransactionIdNotSet[] = "transaction id not set";
+
 }  // namespace
 
 namespace autofill {
@@ -77,8 +79,8 @@ AutocheckoutManager::AutocheckoutManager(AutofillManager* autofill_manager)
       autocheckout_offered_(false),
       is_autocheckout_bubble_showing_(false),
       in_autocheckout_flow_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
-}
+      google_transaction_id_(kTransactionIdNotSet),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {}
 
 AutocheckoutManager::~AutocheckoutManager() {
 }
@@ -117,6 +119,11 @@ void AutocheckoutManager::FillForms() {
       *page_meta_data_->proceed_element_descriptor));
 }
 
+void AutocheckoutManager::OnClickFailed(AutocheckoutStatus status) {
+  SendAutocheckoutStatus(status);
+  autofill_manager_->delegate()->OnAutocheckoutError();
+}
+
 void AutocheckoutManager::OnLoadedPageMetaData(
     scoped_ptr<AutocheckoutPageMetaData> page_meta_data) {
   scoped_ptr<AutocheckoutPageMetaData> old_meta_data =
@@ -128,24 +135,30 @@ void AutocheckoutManager::OnLoadedPageMetaData(
   if (!in_autocheckout_flow_)
     return;
 
+  AutocheckoutStatus status = SUCCESS;
+
   // Missing Autofill server results.
   if (!page_meta_data_) {
     in_autocheckout_flow_ = false;
+    status = MISSING_FIELDMAPPING;
   } else if (page_meta_data_->IsStartOfAutofillableFlow()) {
     // Not possible unless Autocheckout failed to proceed.
     in_autocheckout_flow_ = false;
+    status = CANNOT_PROCEED;
   } else if (!page_meta_data_->IsInAutofillableFlow()) {
     // Missing Autocheckout meta data in the Autofill server results.
     in_autocheckout_flow_ = false;
+    status = MISSING_FIELDMAPPING;
   } else if (page_meta_data_->current_page_number <=
                  old_meta_data->current_page_number) {
     // Not possible unless Autocheckout failed to proceed.
     in_autocheckout_flow_ = false;
+    status = CANNOT_PROCEED;
   }
 
   // Encountered an error during the Autocheckout flow.
   if (!in_autocheckout_flow_) {
-    // TODO(ahutter): SendAutocheckoutStatus of the error.
+    SendAutocheckoutStatus(status);
     autofill_manager_->delegate()->OnAutocheckoutError();
     return;
   }
@@ -157,7 +170,7 @@ void AutocheckoutManager::OnLoadedPageMetaData(
   FillForms();
   // If the current page is the last page in the flow, close the dialog.
   if (page_meta_data_->IsEndOfAutofillableFlow()) {
-    // TODO(ahutter): SendAutocheckoutStatus of SUCCESS.
+    SendAutocheckoutStatus(status);
     autofill_manager_->delegate()->HideRequestAutocompleteDialog();
     in_autocheckout_flow_ = false;
   }
@@ -200,7 +213,7 @@ void AutocheckoutManager::MaybeShowAutocheckoutDialog(
 
   FormData form = BuildAutocheckoutFormData();
   form.ssl_status = ssl_status;
-  base::Callback<void(const FormStructure*)> callback =
+  base::Callback<void(const FormStructure*, const std::string&)> callback =
       base::Bind(&AutocheckoutManager::ReturnAutocheckoutData,
                  weak_ptr_factory_.GetWeakPtr());
   autofill_manager_->ShowRequestAutocompleteDialog(
@@ -215,10 +228,13 @@ bool AutocheckoutManager::IsInAutofillableFlow() const {
   return page_meta_data_ && page_meta_data_->IsInAutofillableFlow();
 }
 
-void AutocheckoutManager::ReturnAutocheckoutData(const FormStructure* result) {
+void AutocheckoutManager::ReturnAutocheckoutData(
+    const FormStructure* result,
+    const std::string& google_transaction_id) {
   if (!result)
     return;
 
+  google_transaction_id_ = google_transaction_id;
   in_autocheckout_flow_ = true;
 
   profile_.reset(new AutofillProfile());
@@ -246,7 +262,7 @@ void AutocheckoutManager::ReturnAutocheckoutData(const FormStructure* result) {
 
   // If the current page is the last page in the flow, close the dialog.
   if (page_meta_data_->IsEndOfAutofillableFlow()) {
-    // TODO(ahutter): SendAutocheckoutStatus of SUCCESS.
+    SendAutocheckoutStatus(SUCCESS);
     autofill_manager_->delegate()->HideRequestAutocompleteDialog();
     in_autocheckout_flow_ = false;
   }
@@ -288,6 +304,27 @@ void AutocheckoutManager::SetValue(const AutofillField& field,
     credit_card_->FillFormField(field, 0, field_to_fill);
   else
     profile_->FillFormField(field, 0, field_to_fill);
+}
+
+void AutocheckoutManager::SendAutocheckoutStatus(AutocheckoutStatus status) {
+  // To ensure stale data isn't being sent.
+  DCHECK_NE(kTransactionIdNotSet, google_transaction_id_);
+
+  AutocheckoutRequestManager::CreateForBrowserContext(
+      autofill_manager_->GetWebContents()->GetBrowserContext());
+  AutocheckoutRequestManager* autocheckout_request_manager =
+      AutocheckoutRequestManager::FromBrowserContext(
+          autofill_manager_->GetWebContents()->GetBrowserContext());
+  // It is assumed that the domain Autocheckout starts on does not change
+  // during the flow.  If this proves to be incorrect, the |source_url| from
+  // AutofillDialogControllerImpl will need to be provided in its callback in
+  // addition to the Google transaction id.
+  autocheckout_request_manager->SendAutocheckoutStatus(
+      status,
+      autofill_manager_->GetWebContents()->GetURL(),
+      google_transaction_id_);
+
+  google_transaction_id_ = kTransactionIdNotSet;
 }
 
 }  // namespace autofill

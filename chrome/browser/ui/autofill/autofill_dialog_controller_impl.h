@@ -75,7 +75,8 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
       const GURL& source_url,
       const AutofillMetrics& metric_logger,
       const DialogType dialog_type,
-      const base::Callback<void(const FormStructure*)>& callback);
+      const base::Callback<void(const FormStructure*,
+                                const std::string&)>& callback);
   virtual ~AutofillDialogControllerImpl();
 
   static void RegisterUserPrefs(PrefRegistrySyncable* registry);
@@ -186,7 +187,6 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
       const std::string& instrument_id,
       const std::string& address_id,
       const std::vector<wallet::RequiredAction>& required_actions) OVERRIDE;
-  virtual void OnDidSendAutocheckoutStatus() OVERRIDE;
   virtual void OnDidUpdateAddress(
       const std::string& address_id,
       const std::vector<wallet::RequiredAction>& required_actions) OVERRIDE;
@@ -369,8 +369,9 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // The SSL info from the invoking site.
   content::SSLStatus ssl_status_;
 
-  // The callback via which we return the collected data.
-  base::Callback<void(const FormStructure*)> callback_;
+  // The callback via which we return the collected data and, if Online Wallet
+  // was used, the Google transaction id.
+  base::Callback<void(const FormStructure*, const std::string&)> callback_;
 
   // The AccountChooserModel acts as the MenuModel for the account chooser,
   // and also tracks which data source the dialog is using.

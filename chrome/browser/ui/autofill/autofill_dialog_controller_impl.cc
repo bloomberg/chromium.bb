@@ -227,7 +227,8 @@ AutofillDialogControllerImpl::AutofillDialogControllerImpl(
     const GURL& source_url,
     const AutofillMetrics& metric_logger,
     DialogType dialog_type,
-    const base::Callback<void(const FormStructure*)>& callback)
+    const base::Callback<void(const FormStructure*,
+                              const std::string&)>& callback)
     : profile_(Profile::FromBrowserContext(contents->GetBrowserContext())),
       contents_(contents),
       form_structure_(form, std::string()),
@@ -301,7 +302,7 @@ void AutofillDialogControllerImpl::Show() {
                                                             &has_sections);
   // Fail if the author didn't specify autocomplete types.
   if (!has_types) {
-    callback_.Run(NULL);
+    callback_.Run(NULL, std::string());
     delete this;
     return;
   }
@@ -1147,8 +1148,9 @@ void AutofillDialogControllerImpl::OnCancel() {
   // submitted to start the flow and then cancelled to close the dialog after
   // the error.
   if (!callback_.is_null()) {
-    callback_.Run(NULL);
-    callback_ = base::Callback<void(const FormStructure*)>();
+    callback_.Run(NULL, std::string());
+    callback_ = base::Callback<void(const FormStructure*,
+                                    const std::string&)>();
   }
 }
 
@@ -1371,10 +1373,6 @@ void AutofillDialogControllerImpl::OnDidSaveInstrumentAndAddress(
   active_instrument_id_ = instrument_id;
   active_address_id_ = address_id;
   GetFullWallet();
-}
-
-void AutofillDialogControllerImpl::OnDidSendAutocheckoutStatus() {
-  NOTIMPLEMENTED();
 }
 
 void AutofillDialogControllerImpl::OnDidUpdateAddress(
@@ -1893,8 +1891,11 @@ void AutofillDialogControllerImpl::FinishSubmit() {
   } else {
     FillOutputForSection(SECTION_SHIPPING);
   }
-  callback_.Run(&form_structure_);
-  callback_ = base::Callback<void(const FormStructure*)>();
+  if (wallet_items_)
+    callback_.Run(&form_structure_, wallet_items_->google_transaction_id());
+  else
+    callback_.Run(&form_structure_, std::string());
+  callback_ = base::Callback<void(const FormStructure*, const std::string&)>();
 
   if (dialog_type_ == DIALOG_TYPE_REQUEST_AUTOCOMPLETE) {
     // This may delete us.

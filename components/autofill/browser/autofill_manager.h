@@ -122,7 +122,8 @@ class AutofillManager : public content::WebContentsObserver,
       const FormData& form,
       const GURL& source_url,
       autofill::DialogType dialog_type,
-      const base::Callback<void(const FormStructure*)>& callback);
+      const base::Callback<void(const FormStructure*,
+                                const std::string&)>& callback);
 
   // Happens when the autocomplete dialog runs its callback when being closed.
   void RequestAutocompleteDialogClosed();
@@ -267,7 +268,8 @@ class AutofillManager : public content::WebContentsObserver,
                              const GURL& frame_url);
 
   // Passes return data for an OnRequestAutocomplete call back to the page.
-  void ReturnAutocompleteData(const FormStructure* result);
+  void ReturnAutocompleteData(const FormStructure* result,
+                              const std::string& unused_transaction_id);
 
   // Called to signal clicking an element failed in some way during an
   // Autocheckout flow.

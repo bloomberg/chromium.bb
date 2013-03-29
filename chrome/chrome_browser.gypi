@@ -2154,6 +2154,8 @@
         '../components/autofill/browser/autocheckout_manager.h',
         '../components/autofill/browser/autocheckout_page_meta_data.cc',
         '../components/autofill/browser/autocheckout_page_meta_data.h',
+        '../components/autofill/browser/autocheckout_request_manager.cc',
+        '../components/autofill/browser/autocheckout_request_manager.h',
         '../components/autofill/browser/autocomplete_history_manager.cc',
         '../components/autofill/browser/autocomplete_history_manager.h',
         '../components/autofill/browser/autofill-inl.h',
