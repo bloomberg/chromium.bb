@@ -70,6 +70,9 @@ class Dispatcher : public content::RenderProcessObserver {
   ContentWatcher* content_watcher() {
     return content_watcher_.get();
   }
+  RequestSender* request_sender() {
+    return request_sender_.get();
+  }
 
   bool IsExtensionActive(const std::string& extension_id) const;
 

@@ -8,27 +8,23 @@
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "chrome/renderer/extensions/dispatcher.h"
-#include "chrome/renderer/extensions/scoped_persistent.h"
 #include "content/public/renderer/render_view.h"
-#include "content/public/renderer/v8_value_converter.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebUserGestureIndicator.h"
-
-using content::V8ValueConverter;
 
 namespace extensions {
 
 // Contains info relevant to a pending API request.
 struct PendingRequest {
  public :
-  PendingRequest(const std::string& name, ChromeV8Context* context)
-      : name(name), context(context) {
+  PendingRequest(const std::string& name, RequestSender::Source* source)
+      : name(name), source(source) {
   }
 
   std::string name;
-  ChromeV8Context* context;
+  RequestSender::Source* source;
 };
 
 RequestSender::RequestSender(Dispatcher* dispatcher) : dispatcher_(dispatcher) {
@@ -52,12 +48,21 @@ linked_ptr<PendingRequest> RequestSender::RemoveRequest(int request_id) {
   return result;
 }
 
-void RequestSender::StartRequest(ChromeV8Context* context,
+int RequestSender::GetNextRequestId() const {
+  static int next_request_id = 0;
+  return next_request_id++;
+}
+
+void RequestSender::StartRequest(Source* source,
                                  const std::string& name,
                                  int request_id,
                                  bool has_callback,
                                  bool for_io_thread,
                                  base::ListValue* value_args) {
+  ChromeV8Context* context = source->GetContext();
+  if (!context)
+    return;
+
   // Get the current RenderView so that we can send a routed IPC message from
   // the correct source.
   content::RenderView* renderview = context->GetRenderView();
@@ -83,7 +88,7 @@ void RequestSender::StartRequest(ChromeV8Context* context,
     source_origin = webframe->document().securityOrigin();
   }
 
-  InsertRequest(request_id, new PendingRequest(name, context));
+  InsertRequest(request_id, new PendingRequest(name, source));
 
   ExtensionHostMsg_Request_Params params;
   params.name = name;
@@ -106,7 +111,7 @@ void RequestSender::StartRequest(ChromeV8Context* context,
 
 void RequestSender::HandleResponse(int request_id,
                                    bool success,
-                                   const base::ListValue& responseList,
+                                   const base::ListValue& response,
                                    const std::string& error) {
   linked_ptr<PendingRequest> request = RemoveRequest(request_id);
 
@@ -115,36 +120,14 @@ void RequestSender::HandleResponse(int request_id,
     return;
   }
 
-  v8::HandleScope handle_scope;
-
-  scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
-  v8::Handle<v8::Value> argv[] = {
-    v8::Integer::New(request_id),
-    v8::String::New(request->name.c_str()),
-    v8::Boolean::New(success),
-    converter->ToV8Value(&responseList, request->context->v8_context()),
-    v8::String::New(error.c_str())
-  };
-
-  v8::Handle<v8::Value> retval;
-  CHECK(request->context->CallChromeHiddenMethod("handleResponse",
-                                                 arraysize(argv),
-                                                 argv,
-                                                 &retval));
-  // In debug, the js will validate the callback parameters and return a
-  // string if a validation error has occured.
-  if (DCHECK_IS_ON()) {
-    if (!retval.IsEmpty() && !retval->IsUndefined()) {
-      std::string error = *v8::String::AsciiValue(retval);
-      DCHECK(false) << error;
-    }
-  }
+  request->source->OnResponseReceived(request->name, request_id, success,
+                                      response, error);
 }
 
-void RequestSender::InvalidateContext(ChromeV8Context* context) {
+void RequestSender::InvalidateSource(Source* source) {
   for (PendingRequestMap::iterator it = pending_requests_.begin();
        it != pending_requests_.end();) {
-    if (it->second->context == context)
+    if (it->second->source == source)
       pending_requests_.erase(it++);
     else
       ++it;

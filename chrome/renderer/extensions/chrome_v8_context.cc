@@ -6,6 +6,7 @@
 
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_split.h"
 #include "base/values.h"
 #include "chrome/common/extensions/api/extension_api.h"
@@ -15,9 +16,12 @@
 #include "chrome/renderer/extensions/module_system.h"
 #include "chrome/renderer/extensions/user_script_slave.h"
 #include "content/public/renderer/render_view.h"
+#include "content/public/renderer/v8_value_converter.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "v8/include/v8.h"
+
+using content::V8ValueConverter;
 
 namespace extensions {
 
@@ -184,6 +188,39 @@ std::string ChromeV8Context::GetContextTypeDescription() {
   }
   NOTREACHED();
   return "";
+}
+
+ChromeV8Context* ChromeV8Context::GetContext() {
+  return this;
+}
+
+void ChromeV8Context::OnResponseReceived(const std::string& name,
+                                         int request_id,
+                                         bool success,
+                                         const base::ListValue& response,
+                                         const std::string& error) {
+  v8::HandleScope handle_scope;
+
+  scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
+  v8::Handle<v8::Value> argv[] = {
+    v8::Integer::New(request_id),
+    v8::String::New(name.c_str()),
+    v8::Boolean::New(success),
+    converter->ToV8Value(&response, v8_context_.get()),
+    v8::String::New(error.c_str())
+  };
+
+  v8::Handle<v8::Value> retval;
+  CHECK(CallChromeHiddenMethod("handleResponse", arraysize(argv), argv,
+                               &retval));
+  // In debug, the js will validate the callback parameters and return a
+  // string if a validation error has occured.
+  if (DCHECK_IS_ON()) {
+    if (!retval.IsEmpty() && !retval->IsUndefined()) {
+      std::string error = *v8::String::AsciiValue(retval);
+      DCHECK(false) << error;
+    }
+  }
 }
 
 }  // namespace extensions

@@ -22,42 +22,42 @@ struct HostMessageContext;
 template <class ObjT, class Method>
 inline int32_t DispatchResourceCall(ObjT* obj, Method method,
                                     HostMessageContext* context,
-                                    const Tuple0& arg) {
+                                    Tuple0& arg) {
   return (obj->*method)(context);
 }
 
 template <class ObjT, class Method, class A>
 inline int32_t DispatchResourceCall(ObjT* obj, Method method,
                                     HostMessageContext* context,
-                                    const Tuple1<A>& arg) {
+                                    Tuple1<A>& arg) {
   return (obj->*method)(context, arg.a);
 }
 
 template<class ObjT, class Method, class A, class B>
 inline int32_t DispatchResourceCall(ObjT* obj, Method method,
                                     HostMessageContext* context,
-                                    const Tuple2<A, B>& arg) {
+                                    Tuple2<A, B>& arg) {
   return (obj->*method)(context, arg.a, arg.b);
 }
 
 template<class ObjT, class Method, class A, class B, class C>
 inline int32_t DispatchResourceCall(ObjT* obj, Method method,
                                     HostMessageContext* context,
-                                    const Tuple3<A, B, C>& arg) {
+                                    Tuple3<A, B, C>& arg) {
   return (obj->*method)(context, arg.a, arg.b, arg.c);
 }
 
 template<class ObjT, class Method, class A, class B, class C, class D>
 inline int32_t DispatchResourceCall(ObjT* obj, Method method,
                                     HostMessageContext* context,
-                                    const Tuple4<A, B, C, D>& arg) {
+                                    Tuple4<A, B, C, D>& arg) {
   return (obj->*method)(context, arg.a, arg.b, arg.c, arg.d);
 }
 
 template<class ObjT, class Method, class A, class B, class C, class D, class E>
 inline int32_t DispatchResourceCall(ObjT* obj, Method method,
                                     HostMessageContext* context,
-                                    const Tuple5<A, B, C, D, E>& arg) {
+                                    Tuple5<A, B, C, D, E>& arg) {
   return (obj->*method)(context, arg.a, arg.b, arg.c, arg.d, arg.e);
 }
 

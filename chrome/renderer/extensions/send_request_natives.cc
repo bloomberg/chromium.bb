@@ -31,8 +31,7 @@ SendRequestNatives::SendRequestNatives(Dispatcher* dispatcher,
 
 v8::Handle<v8::Value> SendRequestNatives::GetNextRequestId(
     const v8::Arguments& args) {
-  static int next_request_id = 0;
-  return v8::Integer::New(next_request_id++);
+  return v8::Integer::New(request_sender_->GetNextRequestId());
 }
 
 // Starts an API request to the browser, with an optional callback.  The

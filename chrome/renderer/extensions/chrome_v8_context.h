@@ -8,8 +8,10 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "chrome/common/extensions/features/feature.h"
 #include "chrome/renderer/extensions/module_system.h"
+#include "chrome/renderer/extensions/request_sender.h"
 #include "chrome/renderer/extensions/scoped_persistent.h"
 #include "v8/include/v8.h"
 
@@ -29,13 +31,13 @@ class Extension;
 // TODO(aa): Consider converting this back to a set of bindings_utils. It would
 // require adding WebFrame::GetIsolatedWorldIdByV8Context() to WebCore, but then
 // we won't need this object and it's a bit less state to keep track of.
-class ChromeV8Context {
+class ChromeV8Context : public RequestSender::Source {
  public:
   ChromeV8Context(v8::Handle<v8::Context> context,
                   WebKit::WebFrame* frame,
                   const Extension* extension,
                   Feature::Context context_type);
-  ~ChromeV8Context();
+  virtual ~ChromeV8Context();
 
   // Clears the WebFrame for this contexts and invalidates the associated
   // ModuleSystem.
@@ -103,6 +105,14 @@ class ChromeV8Context {
 
   // Returns a string description of the type of context this is.
   std::string GetContextTypeDescription();
+
+  // RequestSender::Source implementation.
+  virtual ChromeV8Context* GetContext() OVERRIDE;
+  virtual void OnResponseReceived(const std::string& name,
+                                  int request_id,
+                                  bool success,
+                                  const base::ListValue& response,
+                                  const std::string& error) OVERRIDE;
 
  private:
   // The v8 context the bindings are accessible to.

@@ -1080,7 +1080,7 @@ void Dispatcher::WillReleaseScriptContext(
 
   context->DispatchOnUnloadEvent();
   // TODO(kalman): add an invalidation observer interface to ChromeV8Context.
-  request_sender_->InvalidateContext(context);
+  request_sender_->InvalidateSource(context);
 
   v8_context_set_.Remove(context);
   VLOG(1) << "Num tracked contexts: " << v8_context_set_.size();
