@@ -402,7 +402,7 @@ RenderProcessHostImpl::RenderProcessHostImpl(
   if (!GetBrowserContext()->IsOffTheRecord()) {
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                             base::Bind(&CacheShaderInfo, GetID(),
-                                       GetBrowserContext()->GetPath()));
+                                       storage_partition_impl_->GetPath()));
   }
 
   // Note: When we create the RenderProcessHostImpl, it's technically
