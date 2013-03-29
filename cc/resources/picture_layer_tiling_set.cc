@@ -4,6 +4,8 @@
 
 #include "cc/resources/picture_layer_tiling_set.h"
 
+#include <limits>
+
 namespace cc {
 
 namespace {
@@ -133,7 +135,11 @@ PictureLayerTilingSet::CoverageIterator::CoverageIterator(
     }
   }
 
-  if (ideal_tiling_ == set_->tilings_.size() && ideal_tiling_ > 0)
+  DCHECK_LE(set_->tilings_.size(),
+            static_cast<size_t>(std::numeric_limits<int>::max()));
+
+  int num_tilings = set_->tilings_.size();
+  if (ideal_tiling_ == num_tilings && ideal_tiling_ > 0)
     ideal_tiling_--;
 
   ++(*this);

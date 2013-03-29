@@ -861,7 +861,7 @@ TEST(GLRendererTest2, ActiveTextureState) {
 
   cc::DirectRenderer::DrawingFrame drawing_frame;
   renderer.BeginDrawingFrame(&drawing_frame);
-  EXPECT_EQ(context->active_texture(), GL_TEXTURE0);
+  EXPECT_EQ(static_cast<unsigned>(GL_TEXTURE0), context->active_texture());
 
   for (cc::QuadList::BackToFrontIterator
            it = pass->quad_list.BackToFrontBegin();
@@ -870,7 +870,7 @@ TEST(GLRendererTest2, ActiveTextureState) {
     renderer.DoDrawQuad(&drawing_frame, *it);
   }
   renderer.FinishDrawingQuadList();
-  EXPECT_EQ(context->active_texture(), GL_TEXTURE0);
+  EXPECT_EQ(static_cast<unsigned>(GL_TEXTURE0), context->active_texture());
   Mock::VerifyAndClearExpectations(context);
 }
 

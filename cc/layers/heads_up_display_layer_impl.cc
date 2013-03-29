@@ -69,10 +69,10 @@ double HeadsUpDisplayLayerImpl::Graph::UpdateUpperBound() {
 HeadsUpDisplayLayerImpl::HeadsUpDisplayLayerImpl(LayerTreeImpl* tree_impl,
                                                  int id)
     : LayerImpl(tree_impl, id),
-      fps_graph_(60.0, 80.0),
-      paint_time_graph_(16.0, 48.0),
       typeface_(skia::AdoptRef(
-          SkTypeface::CreateFromName("monospace", SkTypeface::kBold))) {}
+          SkTypeface::CreateFromName("monospace", SkTypeface::kBold))),
+      fps_graph_(60.0, 80.0),
+      paint_time_graph_(16.0, 48.0) {}
 
 HeadsUpDisplayLayerImpl::~HeadsUpDisplayLayerImpl() {}
 

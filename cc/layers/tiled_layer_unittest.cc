@@ -578,8 +578,9 @@ TEST_F(TiledLayerTest, PaintSmallAnimatedLayersImmediately) {
     int layer_width = 5 * FakeTiledLayer::tile_size().width();
     int layer_height = 5 * FakeTiledLayer::tile_size().height();
     int memory_for_layer = layer_width * layer_height * 4;
-    layer_tree_host_->SetViewportSize(gfx::Size(layer_width, layer_height),
-                                      gfx::Size(layer_width, layer_height));
+    layer_tree_host_->SetViewportSize(
+        gfx::Size(viewport_width, viewport_height),
+        gfx::Size(viewport_width, viewport_height));
 
     // Use 10x5 tiles to run out of memory.
     if (run_out_of_memory[i])
@@ -958,8 +959,8 @@ TEST_F(TiledLayerPartialUpdateTest, PartialUpdates) {
   {
     scoped_ptr<FakeTiledLayerImpl> layer_impl =
         make_scoped_ptr(new FakeTiledLayerImpl(host_impl_->active_tree(), 1));
-    EXPECT_EQ(6, queue_->FullUploadSize());
-    EXPECT_EQ(0, queue_->PartialUploadSize());
+    EXPECT_EQ(6u, queue_->FullUploadSize());
+    EXPECT_EQ(0u, queue_->PartialUploadSize());
     UpdateTextures();
     EXPECT_EQ(6, layer->fake_layer_updater()->update_count());
     EXPECT_FALSE(queue_->HasMoreUpdates());
@@ -975,8 +976,8 @@ TEST_F(TiledLayerPartialUpdateTest, PartialUpdates) {
   {
     scoped_ptr<FakeTiledLayerImpl> layer_impl =
         make_scoped_ptr(new FakeTiledLayerImpl(host_impl_->active_tree(), 1));
-    EXPECT_EQ(3, queue_->FullUploadSize());
-    EXPECT_EQ(3, queue_->PartialUploadSize());
+    EXPECT_EQ(3u, queue_->FullUploadSize());
+    EXPECT_EQ(3u, queue_->PartialUploadSize());
     UpdateTextures();
     EXPECT_EQ(6, layer->fake_layer_updater()->update_count());
     EXPECT_FALSE(queue_->HasMoreUpdates());
@@ -992,8 +993,8 @@ TEST_F(TiledLayerPartialUpdateTest, PartialUpdates) {
         make_scoped_ptr(new FakeTiledLayerImpl(host_impl_->active_tree(), 1));
     layer_tree_host_->UpdateLayers(queue_.get(),
                                    std::numeric_limits<size_t>::max());
-    EXPECT_EQ(2, queue_->FullUploadSize());
-    EXPECT_EQ(4, queue_->PartialUploadSize());
+    EXPECT_EQ(2u, queue_->FullUploadSize());
+    EXPECT_EQ(4u, queue_->PartialUploadSize());
     UpdateTextures();
     EXPECT_EQ(6, layer->fake_layer_updater()->update_count());
     EXPECT_FALSE(queue_->HasMoreUpdates());
@@ -1018,8 +1019,8 @@ TEST_F(TiledLayerPartialUpdateTest, PartialUpdates) {
         make_scoped_ptr(new FakeTiledLayerImpl(host_impl_->active_tree(), 1));
     layer_tree_host_->UpdateLayers(queue_.get(),
                                    std::numeric_limits<size_t>::max());
-    EXPECT_EQ(6, queue_->FullUploadSize());
-    EXPECT_EQ(0, queue_->PartialUploadSize());
+    EXPECT_EQ(6u, queue_->FullUploadSize());
+    EXPECT_EQ(0u, queue_->PartialUploadSize());
     UpdateTextures();
     EXPECT_EQ(6, layer->fake_layer_updater()->update_count());
     EXPECT_FALSE(queue_->HasMoreUpdates());
@@ -1035,8 +1036,8 @@ TEST_F(TiledLayerPartialUpdateTest, PartialUpdates) {
         make_scoped_ptr(new FakeTiledLayerImpl(host_impl_->active_tree(), 1));
     layer_tree_host_->UpdateLayers(queue_.get(),
                                    std::numeric_limits<size_t>::max());
-    EXPECT_EQ(0, queue_->FullUploadSize());
-    EXPECT_EQ(4, queue_->PartialUploadSize());
+    EXPECT_EQ(0u, queue_->FullUploadSize());
+    EXPECT_EQ(4u, queue_->PartialUploadSize());
     UpdateTextures();
     EXPECT_EQ(4, layer->fake_layer_updater()->update_count());
     EXPECT_FALSE(queue_->HasMoreUpdates());

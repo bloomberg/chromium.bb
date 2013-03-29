@@ -82,7 +82,7 @@ void SingleThreadProxy::FinishAllRendering() {
 
 bool SingleThreadProxy::IsStarted() const {
   DCHECK(Proxy::IsMainThread());
-  return layer_tree_host_impl_.get();
+  return layer_tree_host_impl_;
 }
 
 bool SingleThreadProxy::InitializeOutputSurface() {

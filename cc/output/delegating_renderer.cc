@@ -85,7 +85,6 @@ bool DelegatingRenderer::Initialize() {
   bool has_set_visibility = true;
   bool has_io_surface = true;
   bool has_arb_texture_rect = true;
-  bool has_gpu_memory_manager = true;
   bool has_egl_image = true;
   for (size_t i = 0; i < extensions.size(); ++i) {
     if (extensions[i] == "GL_EXT_read_format_bgra")
@@ -96,8 +95,6 @@ bool DelegatingRenderer::Initialize() {
       has_io_surface = true;
     else if (extensions[i] == "GL_ARB_texture_rectangle")
       has_arb_texture_rect = true;
-    else if (extensions[i] == "GL_CHROMIUM_gpu_memory_manager")
-      has_gpu_memory_manager = true;
     else if (extensions[i] == "GL_OES_EGL_image_external")
       has_egl_image = true;
   }

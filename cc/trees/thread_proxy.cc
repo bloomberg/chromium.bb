@@ -340,7 +340,7 @@ void ThreadProxy::RequestVSyncNotification(VSyncClient* client) {
   TRACE_EVENT1(
       "cc", "ThreadProxy::RequestVSyncNotification", "enable", !!client);
   vsync_client_ = client;
-  layer_tree_host_impl_->EnableVSyncNotification(client);
+  layer_tree_host_impl_->EnableVSyncNotification(!!client);
 }
 
 void ThreadProxy::OnCanDrawStateChanged(bool can_draw) {

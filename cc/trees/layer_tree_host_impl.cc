@@ -1108,7 +1108,7 @@ void LayerTreeHostImpl::Readback(void* pixels,
 }
 
 bool LayerTreeHostImpl::haveRootScrollLayer() const {
-  return RootScrollLayer();
+  return !!RootScrollLayer();
 }
 
 LayerImpl* LayerTreeHostImpl::RootLayer() const {
@@ -1395,7 +1395,7 @@ void LayerTreeHostImpl::setNeedsRedraw() {
 
 bool LayerTreeHostImpl::EnsureRenderSurfaceLayerList() {
   active_tree_->UpdateDrawProperties(LayerTreeImpl::UPDATE_ACTIVE_TREE);
-  return active_tree_->RenderSurfaceLayerList().size();
+  return !active_tree_->RenderSurfaceLayerList().empty();
 }
 
 InputHandlerClient::ScrollStatus LayerTreeHostImpl::ScrollBegin(

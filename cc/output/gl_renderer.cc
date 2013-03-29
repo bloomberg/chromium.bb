@@ -140,23 +140,24 @@ bool GLRenderer::Initialize() {
   // Use the SwapBuffers callback only with the threaded proxy.
   if (client_->HasImplThread())
     capabilities_.using_swap_complete_callback =
-        extensions.count("GL_CHROMIUM_swapbuffers_complete_callback");
+        extensions.count("GL_CHROMIUM_swapbuffers_complete_callback") > 0;
   if (capabilities_.using_swap_complete_callback)
     context_->setSwapBuffersCompleteCallbackCHROMIUM(this);
 
   capabilities_.using_set_visibility =
-      extensions.count("GL_CHROMIUM_set_visibility");
+      extensions.count("GL_CHROMIUM_set_visibility") > 0;
 
-  if (extensions.count("GL_CHROMIUM_iosurface"))
-    DCHECK(extensions.count("GL_ARB_texture_rectangle"));
+  if (extensions.count("GL_CHROMIUM_iosurface") > 0)
+    DCHECK(extensions.count("GL_ARB_texture_rectangle") > 0);
 
   capabilities_.using_gpu_memory_manager =
-      extensions.count("GL_CHROMIUM_gpu_memory_manager") &&
+      extensions.count("GL_CHROMIUM_gpu_memory_manager") > 0 &&
       Settings().use_memory_management;
   if (capabilities_.using_gpu_memory_manager)
     context_->setMemoryAllocationChangedCallbackCHROMIUM(this);
 
-  capabilities_.using_egl_image = extensions.count("GL_OES_EGL_image_external");
+  capabilities_.using_egl_image =
+      extensions.count("GL_OES_EGL_image_external") > 0;
 
   capabilities_.max_texture_size = resource_provider_->max_texture_size();
   capabilities_.best_texture_format = resource_provider_->best_texture_format();
@@ -167,12 +168,12 @@ bool GLRenderer::Initialize() {
   // Check for texture fast paths. Currently we always use MO8 textures,
   // so we only need to avoid POT textures if we have an NPOT fast-path.
   capabilities_.avoid_pow2_textures =
-      extensions.count("GL_CHROMIUM_fast_NPOT_MO8_textures");
+      extensions.count("GL_CHROMIUM_fast_NPOT_MO8_textures") > 0;
 
   capabilities_.using_offscreen_context3d = true;
 
   is_using_bind_uniform_ =
-      extensions.count("GL_CHROMIUM_bind_uniform_location");
+      extensions.count("GL_CHROMIUM_bind_uniform_location") > 0;
 
   // Make sure scissoring starts as disabled.
   GLC(context_, context_->disable(GL_SCISSOR_TEST));

@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/bind.h"
+#include "base/compiler_specific.h"
 #include "cc/base/math_util.h"
 #include "cc/quads/checkerboard_draw_quad.h"
 #include "cc/quads/debug_border_draw_quad.h"
@@ -88,13 +89,13 @@ void CompareDrawQuad(DrawQuad* quad,
 #define QUAD_DATA \
     gfx::Rect quad_rect(30, 40, 50, 60); \
     gfx::Rect quad_visible_rect(40, 50, 30, 20); \
-    gfx::Rect quad_opaque_rect(60, 55, 10, 10); \
-    bool needs_blending = true;
+    gfx::Rect ALLOW_UNUSED quad_opaque_rect(60, 55, 10, 10); \
+    bool ALLOW_UNUSED needs_blending = true;
 
 #define SETUP_AND_COPY_QUAD_NEW(Type, quad) \
     scoped_ptr<DrawQuad> copy_new(quad_new->Copy(copy_shared_state.get())); \
     CompareDrawQuad(quad_new.get(), copy_new.get(), copy_shared_state.get()); \
-    const Type* copy_quad = Type::MaterialCast(copy_new.get());
+    const Type* ALLOW_UNUSED copy_quad = Type::MaterialCast(copy_new.get());
 
 #define SETUP_AND_COPY_QUAD_ALL(Type, quad) \
     scoped_ptr<DrawQuad> copy_all(quad_all->Copy(copy_shared_state.get())); \
@@ -104,7 +105,7 @@ void CompareDrawQuad(DrawQuad* quad,
 #define SETUP_AND_COPY_QUAD_NEW_1(Type, quad, a) \
     scoped_ptr<DrawQuad> copy_new(quad_new->Copy(copy_shared_state.get(), a)); \
     CompareDrawQuad(quad_new.get(), copy_new.get(), copy_shared_state.get()); \
-    const Type* copy_quad = Type::MaterialCast(copy_new.get());
+    const Type* ALLOW_UNUSED copy_quad = Type::MaterialCast(copy_new.get());
 
 #define SETUP_AND_COPY_QUAD_ALL_1(Type, quad, a) \
     scoped_ptr<DrawQuad> copy_all(quad_all->Copy(copy_shared_state.get(), a)); \
@@ -661,7 +662,6 @@ TEST(DrawQuadTest, CopyYUVVideoDrawQuad) {
 
 TEST(DrawQuadTest, CopyPictureDrawQuad) {
   gfx::Rect opaque_rect(33, 44, 22, 33);
-  unsigned resource_id = 104;
   gfx::RectF tex_coord_rect(31.f, 12.f, 54.f, 20.f);
   gfx::Size texture_size(85, 32);
   bool swizzle_contents = true;
@@ -874,7 +874,6 @@ TEST_F(DrawQuadIteratorTest, YUVVideoDrawQuad) {
 
 TEST_F(DrawQuadIteratorTest, PictureDrawQuad) {
   gfx::Rect opaque_rect(33, 44, 22, 33);
-  unsigned resource_id = 104;
   gfx::RectF tex_coord_rect(31.f, 12.f, 54.f, 20.f);
   gfx::Size texture_size(85, 32);
   bool swizzle_contents = true;
