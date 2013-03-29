@@ -10,6 +10,7 @@
     ],
     'isolate_dependency_untracked': [
       '../base/prefs/test/data/',
+      '../extensions/test/data/',
       '../net/data/',
       '../net/tools/testserver/',
       '../testing/test_env.py',

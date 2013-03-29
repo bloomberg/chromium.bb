@@ -7,8 +7,8 @@
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
-#include "chrome/common/chrome_paths.h"
 #include "extensions/common/constants.h"
+#include "extensions/common/extension_paths.h"
 #include "extensions/common/extension_resource.h"
 #include "extensions/common/id_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -33,7 +33,7 @@ const base::FilePath::StringType ToLower(
 
 TEST(ExtensionResourceTest, CreateWithMissingResourceOnDisk) {
   base::FilePath root_path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &root_path));
+  ASSERT_TRUE(PathService::Get(DIR_TEST_DATA, &root_path));
   base::FilePath relative_path;
   relative_path = relative_path.AppendASCII("cira.js");
   std::string extension_id = id_util::GenerateId("test");

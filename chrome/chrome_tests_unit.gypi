@@ -92,8 +92,8 @@
         'browser/chromeos/login/mock_user_image_manager.h',
         'browser/chromeos/login/mock_user_manager.cc',
         'browser/chromeos/login/mock_user_manager.h',
-	'browser/chromeos/net/mock_connectivity_state_helper.cc',
-	'browser/chromeos/net/mock_connectivity_state_helper.h',
+        'browser/chromeos/net/mock_connectivity_state_helper.cc',
+        'browser/chromeos/net/mock_connectivity_state_helper.h',
         'browser/chromeos/policy/device_policy_builder.cc',
         'browser/chromeos/policy/device_policy_builder.h',
         'browser/chromeos/settings/device_settings_test_helper.cc',
@@ -1454,7 +1454,7 @@
         'browser/ui/webui/performance_monitor/performance_monitor_ui_util_unittest.cc',
         'browser/ui/webui/print_preview/print_preview_ui_unittest.cc',
         'browser/ui/webui/signin/login_ui_service_unittest.cc',
-	'browser/ui/webui/signin/profile_signin_confirmation_dialog_unittest.cc',
+        'browser/ui/webui/signin/profile_signin_confirmation_dialog_unittest.cc',
         'browser/ui/webui/sync_internals_ui_unittest.cc',
         'browser/ui/webui/sync_setup_handler_unittest.cc',
         'browser/ui/webui/theme_source_unittest.cc',
@@ -1818,6 +1818,7 @@
         }],
         ['enable_extensions==0', {
           'sources/': [
+            ['exclude', '^../extensions/'],
             ['exclude', '^browser/extensions/activity_database_unittest.cc'],
             ['exclude', '^browser/extensions/activity_log_unittest.cc'],
             ['exclude', '^browser/extensions/api/'],

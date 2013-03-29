@@ -68,6 +68,8 @@
         '../extensions/common/event_filtering_info.h',
         '../extensions/common/event_matcher.cc',
         '../extensions/common/event_matcher.h',
+        '../extensions/common/extension_paths.cc',
+        '../extensions/common/extension_paths.h',
         '../extensions/common/extension_resource.cc',
         '../extensions/common/extension_resource.h',
         '../extensions/common/id_util.cc',

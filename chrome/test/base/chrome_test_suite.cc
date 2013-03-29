@@ -26,6 +26,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "content/public/test/test_launcher.h"
+#include "extensions/common/extension_paths.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/dns/mock_host_resolver.h"
@@ -216,6 +217,8 @@ void ChromeTestSuite::Initialize() {
   }
 
 #if !defined(OS_IOS)
+  extensions::RegisterPathProvider();
+
   if (!content::GetCurrentTestLauncherDelegate()) {
     // Only want to do this for unit tests. For browser tests, this won't create
     // the right object since TestChromeWebUIControllerFactory is used. That's
