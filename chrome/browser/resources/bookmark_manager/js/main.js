@@ -316,7 +316,7 @@ function handleLoadForTree(e) {
 function updateOpenCommands(e, command) {
   var selectedItems = getSelectedBookmarkNodes(e.target);
   var isFolder = selectedItems.length == 1 && bmm.isFolder(selectedItems[0]);
-  var multiple = selectedItems.length > 1 || isFolder;
+  var multiple = selectedItems.length != 1 || isFolder;
 
   function hasBookmarks(node) {
     for (var i = 0; i < node.children.length; i++) {
