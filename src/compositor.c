@@ -1325,7 +1325,8 @@ weston_output_schedule_repaint(struct weston_output *output)
 	struct weston_compositor *compositor = output->compositor;
 	struct wl_event_loop *loop;
 
-	if (compositor->state == WESTON_COMPOSITOR_SLEEPING)
+	if (compositor->state == WESTON_COMPOSITOR_SLEEPING ||
+	    compositor->state == WESTON_COMPOSITOR_OFFSCREEN)
 		return;
 
 	loop = wl_display_get_event_loop(compositor->wl_display);
@@ -1670,6 +1671,7 @@ weston_compositor_wake(struct weston_compositor *compositor)
 		weston_compositor_dpms(compositor, WESTON_DPMS_ON);
 		/* fall through */
 	case WESTON_COMPOSITOR_IDLE:
+	case WESTON_COMPOSITOR_OFFSCREEN:
 		wl_signal_emit(&compositor->wake_signal, compositor);
 		/* fall through */
 	default:
@@ -1680,11 +1682,27 @@ weston_compositor_wake(struct weston_compositor *compositor)
 }
 
 WL_EXPORT void
+weston_compositor_offscreen(struct weston_compositor *compositor)
+{
+	switch (compositor->state) {
+	case WESTON_COMPOSITOR_OFFSCREEN:
+		return;
+	case WESTON_COMPOSITOR_SLEEPING:
+		weston_compositor_dpms(compositor, WESTON_DPMS_ON);
+		/* fall through */
+	default:
+		compositor->state = WESTON_COMPOSITOR_OFFSCREEN;
+		wl_event_source_timer_update(compositor->idle_source, 0);
+	}
+}
+
+WL_EXPORT void
 weston_compositor_sleep(struct weston_compositor *compositor)
 {
 	if (compositor->state == WESTON_COMPOSITOR_SLEEPING)
 		return;
 
+	wl_event_source_timer_update(compositor->idle_source, 0);
 	compositor->state = WESTON_COMPOSITOR_SLEEPING;
 	weston_compositor_dpms(compositor, WESTON_DPMS_OFF);
 }
@@ -3619,7 +3637,7 @@ int main(int argc, char *argv[])
 
  out:
 	/* prevent further rendering while shutting down */
-	ec->state = WESTON_COMPOSITOR_SLEEPING;
+	ec->state = WESTON_COMPOSITOR_OFFSCREEN;
 
 	wl_signal_emit(&ec->destroy_signal, ec);
 

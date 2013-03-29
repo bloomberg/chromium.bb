@@ -262,7 +262,9 @@ struct weston_seat {
 enum {
 	WESTON_COMPOSITOR_ACTIVE,
 	WESTON_COMPOSITOR_IDLE,		/* shell->unlock called on activity */
-	WESTON_COMPOSITOR_SLEEPING	/* no rendering, no frame events */
+	WESTON_COMPOSITOR_OFFSCREEN,	/* no rendering, no frame events */
+	WESTON_COMPOSITOR_SLEEPING	/* same as offscreen, but also set dmps
+                                         * to off */
 };
 
 struct weston_layer {
@@ -620,6 +622,8 @@ void
 weston_compositor_unlock(struct weston_compositor *compositor);
 void
 weston_compositor_wake(struct weston_compositor *compositor);
+void
+weston_compositor_offscreen(struct weston_compositor *compositor);
 void
 weston_compositor_sleep(struct weston_compositor *compositor);
 void

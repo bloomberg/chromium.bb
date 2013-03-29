@@ -2020,12 +2020,12 @@ vt_func(struct weston_compositor *compositor, int event)
 
 		compositor->focus = 0;
 		ec->prev_state = compositor->state;
-		compositor->state = WESTON_COMPOSITOR_SLEEPING;
+		weston_compositor_offscreen(compositor);
 
 		/* If we have a repaint scheduled (either from a
 		 * pending pageflip or the idle handler), make sure we
 		 * cancel that so we don't try to pageflip when we're
-		 * vt switched away.  The SLEEPING state will prevent
+		 * vt switched away.  The OFFSCREEN state will prevent
 		 * further attemps at repainting.  When we switch
 		 * back, we schedule a repaint, which will process
 		 * pending frame callbacks. */
