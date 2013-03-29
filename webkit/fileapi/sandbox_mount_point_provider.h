@@ -208,6 +208,12 @@ class WEBKIT_STORAGE_EXPORT SandboxMountPointProvider
     return file_system_usage_cache_.get();
   }
 
+  static void InvalidateUsageCacheOnFileThread(
+      ObfuscatedFileUtil* file_util,
+      const GURL& origin,
+      FileSystemType type,
+      FileSystemUsageCache* usage_cache);
+
   scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
 
   const base::FilePath profile_path_;
@@ -240,6 +246,11 @@ class WEBKIT_STORAGE_EXPORT SandboxMountPointProvider
   // This flag should be used only for testing and should go away when
   // we fully support directory operations. (http://crbug.com/161442)
   bool enable_sync_directory_operation_;
+
+  // Indicates if the usage tracking for FileSystem is enabled or not.
+  // The usage tracking is enabled by default and can be disabled by
+  // a command-line switch (--disable-file-system-usage-tracking).
+  bool enable_usage_tracking_;
 
   base::WeakPtrFactory<SandboxMountPointProvider> weak_factory_;
 

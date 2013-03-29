@@ -146,7 +146,8 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE ObfuscatedFileUtil
   // TODO(ericu): This doesn't really feel like it belongs in this class.
   // The previous version lives in FileSystemPathManager, but perhaps
   // SandboxMountPointProvider would be better?
-  static base::FilePath::StringType GetDirectoryNameForType(FileSystemType type);
+  static base::FilePath::StringType GetDirectoryNameForType(
+      FileSystemType type);
 
   // This method and all methods of its returned class must be called only on
   // the FILE thread.  The caller is responsible for deleting the returned

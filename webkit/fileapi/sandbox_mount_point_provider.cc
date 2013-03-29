@@ -48,6 +48,9 @@ int64 kMinimumStatsCollectionIntervalHours = 1;
 // TODO(kinuko): this command-line switch should be temporary.
 const char kEnableSyncDirectoryOperation[]  = "enable-sync-directory-operation";
 
+// A command line switch to disable usage tracking.
+const char kDisableUsageTracking[] = "disable-file-system-usage-tracking";
+
 enum FileSystemError {
   kOK = 0,
   kIncognito,
@@ -158,13 +161,18 @@ SandboxMountPointProvider::SandboxMountPointProvider(
       enable_sync_directory_operation_(
           CommandLine::ForCurrentProcess()->HasSwitch(
               kEnableSyncDirectoryOperation)),
+      enable_usage_tracking_(
+          !CommandLine::ForCurrentProcess()->HasSwitch(
+              kDisableUsageTracking)),
       weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   // Set quota observers.
   UpdateObserverList::Source update_observers_src;
   AccessObserverList::Source access_observers_src;
 
-  update_observers_src.AddObserver(quota_observer_.get(), file_task_runner_);
-  access_observers_src.AddObserver(quota_observer_.get(), NULL);
+  if (enable_usage_tracking_) {
+    update_observers_src.AddObserver(quota_observer_.get(), file_task_runner_);
+    access_observers_src.AddObserver(quota_observer_.get(), NULL);
+  }
 
   update_observers_ = UpdateObserverList(update_observers_src);
   access_observers_ = AccessObserverList(access_observers_src);
@@ -216,6 +224,17 @@ void SandboxMountPointProvider::ValidateFileSystemRoot(
       base::Bind(&DidValidateFileSystemRoot,
                  weak_factory_.GetWeakPtr(),
                  callback, base::Owned(error_ptr)));
+
+  if (enable_usage_tracking_)
+    return;
+
+  // Schedule full usage recalculation on the next launch without
+  // --disable-file-system-usage-tracking.
+  file_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&SandboxMountPointProvider::InvalidateUsageCacheOnFileThread,
+                 sandbox_sync_file_util(), origin_url, type,
+                 file_system_usage_cache_.get()));
 };
 
 base::FilePath
@@ -420,9 +439,13 @@ int64 SandboxMountPointProvider::GetOriginUsageOnFileThread(
     const GURL& origin_url,
     fileapi::FileSystemType type) {
   DCHECK(CanHandleType(type));
+  if (!enable_usage_tracking_)
+    return 0;
+
   base::FilePath base_path =
       GetBaseDirectoryForOriginAndType(origin_url, type, false);
-  if (base_path.empty() || !file_util::DirectoryExists(base_path)) return 0;
+  if (base_path.empty() || !file_util::DirectoryExists(base_path))
+    return 0;
   base::FilePath usage_file_path =
       base_path.Append(FileSystemUsageCache::kUsageFileName);
 
@@ -588,6 +611,19 @@ bool SandboxMountPointProvider::IsAllowedScheme(const GURL& url) const {
 ObfuscatedFileUtil* SandboxMountPointProvider::sandbox_sync_file_util() {
   DCHECK(sandbox_file_util_.get());
   return static_cast<ObfuscatedFileUtil*>(sandbox_file_util_->sync_file_util());
+}
+
+// static
+void SandboxMountPointProvider::InvalidateUsageCacheOnFileThread(
+    ObfuscatedFileUtil* file_util,
+    const GURL& origin,
+    FileSystemType type,
+    FileSystemUsageCache* usage_cache) {
+  base::PlatformFileError error = base::PLATFORM_FILE_OK;
+  base::FilePath usage_cache_path = GetUsageCachePathForOriginAndType(
+      file_util, origin, type, &error);
+  if (error == base::PLATFORM_FILE_OK)
+    usage_cache->IncrementDirty(usage_cache_path);
 }
 
 }  // namespace fileapi
