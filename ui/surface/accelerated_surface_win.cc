@@ -82,6 +82,7 @@ class PresentThread : public base::Thread,
   }
 
   void InitDevice();
+  void LockAndResetDevice();
   void ResetDevice();
   bool IsDeviceLost();
 
@@ -162,6 +163,8 @@ PresentThread::PresentThread(const char* name) : base::Thread(name) {
 }
 
 void PresentThread::InitDevice() {
+  lock_.AssertAcquired();
+
   if (device_)
     return;
 
@@ -170,8 +173,15 @@ void PresentThread::InitDevice() {
   ResetDevice();
 }
 
+void PresentThread::LockAndResetDevice() {
+  base::AutoLock locked(lock_);
+  ResetDevice();
+}
+
 void PresentThread::ResetDevice() {
   TRACE_EVENT0("gpu", "PresentThread::ResetDevice");
+
+  lock_.AssertAcquired();
 
   // The D3D device must be created on the present thread.
   CHECK(message_loop() == MessageLoop::current());
@@ -207,6 +217,8 @@ void PresentThread::ResetDevice() {
 }
 
 bool PresentThread::IsDeviceLost() {
+  lock_.AssertAcquired();
+
   HRESULT hr = device_->CheckDeviceState(NULL);
   return FAILED(hr) || hr == S_PRESENT_MODE_CHANGED;
 }
@@ -911,7 +923,7 @@ void AcceleratedPresenter::PresentWithGDI(HDC dc) {
       if (present_thread_->IsDeviceLost()) {
         present_thread_->message_loop()->PostTask(
             FROM_HERE,
-            base::Bind(&PresentThread::ResetDevice, present_thread_));
+            base::Bind(&PresentThread::LockAndResetDevice, present_thread_));
       }
       return;
     }
