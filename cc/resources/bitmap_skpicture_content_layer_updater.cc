@@ -31,8 +31,12 @@ void BitmapSkPictureContentLayerUpdater::Resource::Update(
   bitmap_.setIsOpaque(updater_->layer_is_opaque());
   SkDevice device(bitmap_);
   SkCanvas canvas(&device);
-
+  base::TimeTicks paint_begin_time;
+  if (stats)
+    paint_begin_time = base::TimeTicks::Now();
   updater_->PaintContentsRect(&canvas, source_rect, stats);
+  if (stats)
+    stats->total_paint_time += base::TimeTicks::Now() - paint_begin_time;
 
   ResourceUpdate upload = ResourceUpdate::Create(
       texture(), &bitmap_, source_rect, source_rect, dest_offset);
@@ -72,21 +76,16 @@ void BitmapSkPictureContentLayerUpdater::PaintContentsRect(
   // Translate the origin of content_rect to that of source_rect.
   canvas->translate(content_rect().x() - source_rect.x(),
                     content_rect().y() - source_rect.y());
-
-  base::TimeTicks start_time =
-      rendering_stats_instrumentation_->StartRecording();
-
+  base::TimeTicks rasterize_begin_time;
+  if (stats)
+    rasterize_begin_time = base::TimeTicks::Now();
   DrawPicture(canvas);
-
-  base::TimeDelta duration =
-      rendering_stats_instrumentation_->EndRecording(start_time);
-  rendering_stats_instrumentation_->AddRaster(
-      duration,
-      source_rect.width() * source_rect.height(),
-      false);
-
-  // TODO: Clarify if this needs to be saved here. crbug.com/223693
-  rendering_stats_instrumentation_->AddPaint(duration, 0);
+  if (stats) {
+    stats->total_rasterize_time +=
+        base::TimeTicks::Now() - rasterize_begin_time;
+    stats->total_pixels_rasterized +=
+        source_rect.width() * source_rect.height();
+  }
 }
 
 }  // namespace cc

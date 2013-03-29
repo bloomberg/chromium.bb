@@ -63,11 +63,10 @@ void BitmapContentLayerUpdater::PrepareToUpdate(
         canvas_size_.width(), canvas_size_.height(), opaque_));
   }
 
-  // TODO: Clarify if this needs to be saved here. crbug.com/223693
-  rendering_stats_instrumentation_->AddRaster(
-      base::TimeDelta(),
-      content_rect.width() * content_rect.height(),
-      false);
+  if (stats) {
+    stats->total_pixels_rasterized +=
+        content_rect.width() * content_rect.height();
+  }
 
   PaintContents(canvas_.get(),
                 content_rect,
