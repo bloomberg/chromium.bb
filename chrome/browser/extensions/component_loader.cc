@@ -416,7 +416,6 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
 
 #if defined(OS_CHROMEOS)
   if (!skip_session_components) {
-#if defined(GOOGLE_CHROME_BUILD)
     Add(IDR_WALLPAPERMANAGER_MANIFEST,
         base::FilePath(FILE_PATH_LITERAL("chromeos/wallpaper_manager")));
 
@@ -429,7 +428,6 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
                                   "/usr/share/chromeos-assets/quick_office")));
       }
     }
-#endif  // defined(OFFICIAL_BUILD)
 
     base::FilePath echo_extension_path(FILE_PATH_LITERAL(
         "/usr/share/chromeos-assets/echo"));

@@ -148,7 +148,7 @@ void LauncherContextMenu::Init() {
                            IDS_AURA_LAUNCHER_CONTEXT_MENU_POSITION,
                            &launcher_alignment_menu_);
   }
-#if defined(OS_CHROMEOS) && defined(GOOGLE_CHROME_BUILD)
+#if defined(OS_CHROMEOS)
   AddItem(MENU_CHANGE_WALLPAPER,
        l10n_util::GetStringUTF16(IDS_AURA_SET_DESKTOP_WALLPAPER));
 #endif
@@ -206,7 +206,7 @@ bool LauncherContextMenu::IsCommandIdEnabled(int command_id) const {
     case MENU_PIN:
       return item_.type == ash::TYPE_PLATFORM_APP ||
           controller_->IsPinnable(item_.id);
-#if defined(OS_CHROMEOS) && defined(GOOGLE_CHROME_BUILD)
+#if defined(OS_CHROMEOS)
     case MENU_CHANGE_WALLPAPER:
       return ash::Shell::GetInstance()->user_wallpaper_delegate()->
           CanOpenSetWallpaperPage();
@@ -270,7 +270,7 @@ void LauncherContextMenu::ExecuteCommand(int command_id, int event_flags) {
       break;
     case MENU_ALIGNMENT_MENU:
       break;
-#if defined(OS_CHROMEOS) && defined(GOOGLE_CHROME_BUILD)
+#if defined(OS_CHROMEOS)
     case MENU_CHANGE_WALLPAPER:
       ash::Shell::GetInstance()->user_wallpaper_delegate()->
           OpenSetWallpaperPage();

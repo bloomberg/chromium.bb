@@ -17,6 +17,7 @@ function WallpaperManager(dialogDom) {
   this.dialogDom_ = dialogDom;
   this.storage_ = chrome.storage.local;
   this.document_ = dialogDom.ownerDocument;
+  this.enableOnlineWallpaper_ = loadTimeData.valueExists('manifestBaseURL');
   this.selectedCategory = null;
   this.progressManager_ = new ProgressManager();
   this.customWallpaperData_ = null;
@@ -31,12 +32,6 @@ function WallpaperManager(dialogDom) {
 // Anonymous 'namespace'.
 // TODO(bshe): Get rid of anonymous namespace.
 (function() {
-
-  /**
-   * Base URL of the manifest file.
-   */
-  /** @const */ var ManifestBaseURL = 'https://commondatastorage.googleapis.' +
-      'com/chromeos-wallpaper-public/manifest_';
 
   /**
    * URL of the learn more page for wallpaper picker.
@@ -104,10 +99,15 @@ function WallpaperManager(dialogDom) {
    */
   WallpaperManager.prototype.fetchManifest_ = function() {
     var locale = navigator.language;
+    if (!this.enableOnlineWallpaper_) {
+      this.initDom_();
+      return;
+    }
+
     var urls = [
-        ManifestBaseURL + locale + '.json',
+        str('manifestBaseURL') + locale + '.json',
         // Fallback url. Use 'en' locale by default.
-        ManifestBaseURL + 'en.json'];
+        str('manifestBaseURL') + 'en.json'];
 
     var asyncFetchManifestFromUrls = function(urls, func, successCallback,
                                               failureCallback) {
@@ -274,46 +274,51 @@ function WallpaperManager(dialogDom) {
     this.initThumbnailsGrid_();
     this.presetCategory_();
 
-    $('surprise-me').addEventListener('click',
-                                      this.toggleSurpriseMe_.bind(this));
     $('file-selector').addEventListener(
         'change', this.onFileSelectorChanged_.bind(this));
     $('set-wallpaper-layout').addEventListener(
         'change', this.onWallpaperLayoutChanged_.bind(this));
-    var self = this;
-    var accessSurpriseMeEnabledKey =
-        this.backgroundPage_.AccessSurpriseMeEnabledKey;
-    this.storage_.get(accessSurpriseMeEnabledKey, function(items) {
-      if (items[accessSurpriseMeEnabledKey]) {
-        self.toggleSurpriseMe_();
-      }
-    });
 
-    window.addEventListener('offline', function() {
-      chrome.wallpaperPrivate.getOfflineWallpaperList(
-          wallpapers.WallpaperSourceEnum.Online, function(lists) {
-        if (!self.downloadedListMap_)
-          self.downloadedListMap_ = {};
-        for (var i = 0; i < lists.length; i++)
-          self.downloadedListMap_[lists[i]] = true;
-        var thumbnails = self.document_.querySelectorAll('.thumbnail');
-        for (var i = 0; i < thumbnails.length; i++) {
-          var thumbnail = thumbnails[i];
-          var url = self.wallpaperGrid_.dataModel.item(i).baseURL;
-          var fileName = url.substring(url.lastIndexOf('/') + 1) +
-              this.backgroundPage_.HighResolutionSuffix;
-          if (self.downloadedListMap_ &&
-              self.downloadedListMap_.hasOwnProperty(encodeURI(fileName))) {
-            thumbnail.offline = true;
-          }
+    if (this.enableOnlineWallpaper_) {
+      var self = this;
+      $('surprise-me').hidden = false;
+      $('surprise-me').addEventListener('click',
+                                        this.toggleSurpriseMe_.bind(this));
+      var accessSurpriseMeEnabledKey =
+          this.backgroundPage_.AccessSurpriseMeEnabledKey;
+      this.storage_.get(accessSurpriseMeEnabledKey, function(items) {
+        if (items[accessSurpriseMeEnabledKey]) {
+          self.toggleSurpriseMe_();
         }
       });
-      $('wallpaper-grid').classList.add('image-picker-offline');
-    });
-    window.addEventListener('online', function() {
-      self.downloadedListMap_ = null;
-      $('wallpaper-grid').classList.remove('image-picker-offline');
-    });
+
+      window.addEventListener('offline', function() {
+        chrome.wallpaperPrivate.getOfflineWallpaperList(
+            wallpapers.WallpaperSourceEnum.Online, function(lists) {
+          if (!self.downloadedListMap_)
+            self.downloadedListMap_ = {};
+          for (var i = 0; i < lists.length; i++) {
+            self.downloadedListMap_[lists[i]] = true;
+          }
+          var thumbnails = self.document_.querySelectorAll('.thumbnail');
+          for (var i = 0; i < thumbnails.length; i++) {
+            var thumbnail = thumbnails[i];
+            var url = self.wallpaperGrid_.dataModel.item(i).baseURL;
+            var fileName = url.substring(url.lastIndexOf('/') + 1) +
+                this.backgroundPage_.HighResolutionSuffix;
+            if (self.downloadedListMap_ &&
+                self.downloadedListMap_.hasOwnProperty(encodeURI(fileName))) {
+              thumbnail.offline = true;
+            }
+          }
+        });
+        $('wallpaper-grid').classList.add('image-picker-offline');
+      });
+      window.addEventListener('online', function() {
+        self.downloadedListMap_ = null;
+        $('wallpaper-grid').classList.remove('image-picker-offline');
+      });
+    }
     $('close').addEventListener('click', function() {window.close()});
     this.document_.defaultView.addEventListener(
         'resize', this.onResize_.bind(this));
@@ -403,9 +408,9 @@ function WallpaperManager(dialogDom) {
     // The currentWallpaper_ is either a url contains HightResolutionSuffix or a
     // custom wallpaper file name converted from an integer value represent
     // time (e.g., 13006377367586070).
-    if (this.currentWallpaper_ &&
+    if (!this.enableOnlineWallpaper_ || (this.currentWallpaper_ &&
         this.currentWallpaper_.indexOf(
-            this.backgroundPage_.HighResolutionSuffix) == -1) {
+            this.backgroundPage_.HighResolutionSuffix) == -1)) {
       // Custom is the last one in the categories list.
       this.categoriesList_.selectionModel.selectedIndex =
           this.categoriesList_.dataModel.length - 1;
@@ -705,10 +710,12 @@ function WallpaperManager(dialogDom) {
         'change', this.onCategoriesChange_.bind(this));
 
     var categoriesDataModel = new cr.ui.ArrayDataModel([]);
-    // Adds all category as first category.
-    categoriesDataModel.push(str('allCategoryLabel'));
-    for (var key in this.manifest_.categories) {
-      categoriesDataModel.push(this.manifest_.categories[key]);
+    if (this.enableOnlineWallpaper_) {
+      // Adds all category as first category.
+      categoriesDataModel.push(str('allCategoryLabel'));
+      for (var key in this.manifest_.categories) {
+        categoriesDataModel.push(this.manifest_.categories[key]);
+      }
     }
     // Adds custom category as last category.
     categoriesDataModel.push(str('customCategoryLabel'));

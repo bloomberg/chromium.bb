@@ -54,6 +54,11 @@ const char* kWallpaperLayoutArrays[] = {
 const char kOnlineSource[] = "ONLINE";
 const char kCustomSource[] = "CUSTOM";
 
+#if defined(GOOGLE_CHROME_BUILD)
+const char kWallpaperManifestBaseURL[] = "https://commondatastorage.googleapis."
+    "com/chromeos-wallpaper-public/manifest_";
+#endif
+
 const int kWallpaperLayoutCount = arraysize(kWallpaperLayoutArrays);
 
 ash::WallpaperLayout GetLayoutEnum(const std::string& layout) {
@@ -214,6 +219,10 @@ bool WallpaperPrivateGetStringsFunction::RunImpl() {
 
   if (wallpaper_manager->GetLoggedInUserWallpaperInfo(&info))
     dict->SetString("currentWallpaper", info.file);
+
+#if defined(GOOGLE_CHROME_BUILD)
+  dict->SetString("manifestBaseURL", kWallpaperManifestBaseURL);
+#endif
 
   return true;
 }

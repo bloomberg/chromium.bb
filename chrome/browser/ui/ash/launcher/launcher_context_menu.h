@@ -71,7 +71,7 @@ class LauncherContextMenu : public ui::SimpleMenuModel,
     MENU_NEW_WINDOW,
     MENU_NEW_INCOGNITO_WINDOW,
     MENU_ALIGNMENT_MENU,
-#if defined(OS_CHROMEOS) && defined(GOOGLE_CHROME_BUILD)
+#if defined(OS_CHROMEOS)
     MENU_CHANGE_WALLPAPER,
 #endif
   };

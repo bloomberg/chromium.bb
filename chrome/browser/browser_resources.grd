@@ -305,7 +305,7 @@
       <if expr="pp_ifdef('image_loader_extension')">
         <include name="IDR_IMAGE_LOADER_MANIFEST" file="resources\image_loader\manifest.json" type="BINDATA" />
       </if>
-      <if expr="pp_ifdef('chromeos') and pp_ifdef('_google_chrome')">
+      <if expr="pp_ifdef('chromeos')">
         <include name="IDR_WALLPAPERMANAGER_MANIFEST" file="resources\chromeos\wallpaper_manager\manifest.json" type="BINDATA" />
       </if>
       <if expr="pp_ifdef('chromeos')">
