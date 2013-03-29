@@ -40,14 +40,17 @@ class SkPictureContentLayerUpdater : public ContentLayerUpdater {
   };
 
   static scoped_refptr<SkPictureContentLayerUpdater> Create(
-      scoped_ptr<LayerPainter> painter);
+      scoped_ptr<LayerPainter> painter,
+      RenderingStatsInstrumentation* stats_instrumentation);
 
   virtual scoped_ptr<LayerUpdater::Resource> CreateResource(
       PrioritizedResourceManager* manager) OVERRIDE;
   virtual void SetOpaque(bool opaque) OVERRIDE;
 
  protected:
-  explicit SkPictureContentLayerUpdater(scoped_ptr<LayerPainter> painter);
+  SkPictureContentLayerUpdater(
+      scoped_ptr<LayerPainter> painter,
+      RenderingStatsInstrumentation* stats_instrumentation);
   virtual ~SkPictureContentLayerUpdater();
 
   virtual void PrepareToUpdate(gfx::Rect content_rect,

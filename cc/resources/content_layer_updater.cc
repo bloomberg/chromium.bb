@@ -6,7 +6,7 @@
 
 #include "base/debug/trace_event.h"
 #include "base/time.h"
-#include "cc/debug/rendering_stats.h"
+#include "cc/debug/rendering_stats_instrumentation.h"
 #include "cc/resources/layer_painter.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPaint.h"
@@ -17,8 +17,11 @@
 
 namespace cc {
 
-ContentLayerUpdater::ContentLayerUpdater(scoped_ptr<LayerPainter> painter)
-    : painter_(painter.Pass()) {}
+ContentLayerUpdater::ContentLayerUpdater(
+    scoped_ptr<LayerPainter> painter,
+    RenderingStatsInstrumentation* stats_instrumentation)
+    : painter_(painter.Pass()),
+      rendering_stats_instrumentation_(stats_instrumentation) {}
 
 ContentLayerUpdater::~ContentLayerUpdater() {}
 

@@ -4,7 +4,7 @@
 
 #include "cc/resources/bitmap_content_layer_updater.h"
 
-#include "cc/debug/rendering_stats.h"
+#include "cc/debug/rendering_stats_instrumentation.h"
 #include "cc/resources/layer_painter.h"
 #include "cc/resources/prioritized_resource.h"
 #include "cc/resources/resource_update.h"
@@ -30,13 +30,17 @@ void BitmapContentLayerUpdater::Resource::Update(ResourceUpdateQueue* queue,
 }
 
 scoped_refptr<BitmapContentLayerUpdater> BitmapContentLayerUpdater::Create(
-    scoped_ptr<LayerPainter> painter) {
-  return make_scoped_refptr(new BitmapContentLayerUpdater(painter.Pass()));
+    scoped_ptr<LayerPainter> painter,
+    RenderingStatsInstrumentation* stats_instrumentation) {
+  return make_scoped_refptr(
+      new BitmapContentLayerUpdater(painter.Pass(), stats_instrumentation));
 }
 
 BitmapContentLayerUpdater::BitmapContentLayerUpdater(
-    scoped_ptr<LayerPainter> painter)
-    : ContentLayerUpdater(painter.Pass()), opaque_(false) {}
+    scoped_ptr<LayerPainter> painter,
+    RenderingStatsInstrumentation* stats_instrumentation)
+    : ContentLayerUpdater(painter.Pass(), stats_instrumentation),
+      opaque_(false) {}
 
 BitmapContentLayerUpdater::~BitmapContentLayerUpdater() {}
 

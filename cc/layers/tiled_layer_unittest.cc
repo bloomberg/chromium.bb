@@ -17,6 +17,7 @@
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_proxy.h"
+#include "cc/test/fake_rendering_stats_instrumentation.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/tiled_layer_test_common.h"
 #include "cc/trees/single_thread_proxy.h"
@@ -1719,7 +1720,8 @@ class UpdateTrackingTiledLayer : public FakeTiledLayer {
     scoped_ptr<TrackingLayerPainter> painter(TrackingLayerPainter::Create());
     tracking_layer_painter_ = painter.get();
     layer_updater_ =
-        BitmapContentLayerUpdater::Create(painter.PassAs<LayerPainter>());
+        BitmapContentLayerUpdater::Create(painter.PassAs<LayerPainter>(),
+                                          &stats_instrumentation_);
   }
 
   TrackingLayerPainter* tracking_layer_painter() const {
@@ -1734,6 +1736,7 @@ class UpdateTrackingTiledLayer : public FakeTiledLayer {
 
   TrackingLayerPainter* tracking_layer_painter_;
   scoped_refptr<BitmapContentLayerUpdater> layer_updater_;
+  FakeRenderingStatsInstrumentation stats_instrumentation_;
 };
 
 TEST_F(TiledLayerTest, NonIntegerContentsScaleIsNotDistortedDuringPaint) {

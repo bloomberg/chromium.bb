@@ -34,7 +34,8 @@ class BitmapSkPictureContentLayerUpdater : public SkPictureContentLayerUpdater {
   };
 
   static scoped_refptr<BitmapSkPictureContentLayerUpdater> Create(
-      scoped_ptr<LayerPainter> painter);
+      scoped_ptr<LayerPainter> painter,
+      RenderingStatsInstrumentation* stats_instrumentation);
 
   virtual scoped_ptr<LayerUpdater::Resource> CreateResource(
       PrioritizedResourceManager* manager) OVERRIDE;
@@ -43,7 +44,9 @@ class BitmapSkPictureContentLayerUpdater : public SkPictureContentLayerUpdater {
                          RenderingStats* stats);
 
  private:
-  explicit BitmapSkPictureContentLayerUpdater(scoped_ptr<LayerPainter> painter);
+  BitmapSkPictureContentLayerUpdater(
+      scoped_ptr<LayerPainter> painter,
+      RenderingStatsInstrumentation* stats_instrumentation);
   virtual ~BitmapSkPictureContentLayerUpdater();
 
   DISALLOW_COPY_AND_ASSIGN(BitmapSkPictureContentLayerUpdater);

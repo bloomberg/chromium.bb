@@ -40,6 +40,7 @@ class LayerImpl;
 class LayerTreeHost;
 class LayerTreeImpl;
 class PriorityCalculator;
+class RenderingStatsInstrumentation;
 class ResourceUpdateQueue;
 class ScrollbarLayer;
 struct AnimationEvent;
@@ -369,6 +370,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
 
   bool NeedsDisplayForTesting() const { return needs_display_; }
   void ResetNeedsDisplayForTesting() { needs_display_ = false; }
+
+  RenderingStatsInstrumentation* rendering_stats_instrumentation() const;
 
  protected:
   friend class LayerImpl;

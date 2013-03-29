@@ -14,7 +14,8 @@ namespace cc {
 class CachingBitmapContentLayerUpdater : public BitmapContentLayerUpdater {
  public:
   static scoped_refptr<CachingBitmapContentLayerUpdater> Create(
-      scoped_ptr<LayerPainter>);
+      scoped_ptr<LayerPainter>,
+      RenderingStatsInstrumentation* stats_instrumentation);
 
   virtual void PrepareToUpdate(gfx::Rect content_rect,
                                gfx::Size tile_size,
@@ -28,7 +29,9 @@ class CachingBitmapContentLayerUpdater : public BitmapContentLayerUpdater {
   }
 
  private:
-  explicit CachingBitmapContentLayerUpdater(scoped_ptr<LayerPainter> painter);
+  CachingBitmapContentLayerUpdater(
+      scoped_ptr<LayerPainter> painter,
+      RenderingStatsInstrumentation* stats_instrumentation);
   virtual ~CachingBitmapContentLayerUpdater();
 
   bool pixels_did_change_;

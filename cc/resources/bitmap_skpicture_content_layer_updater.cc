@@ -5,7 +5,7 @@
 #include "cc/resources/bitmap_skpicture_content_layer_updater.h"
 
 #include "base/time.h"
-#include "cc/debug/rendering_stats.h"
+#include "cc/debug/rendering_stats_instrumentation.h"
 #include "cc/resources/layer_painter.h"
 #include "cc/resources/prioritized_resource.h"
 #include "cc/resources/resource_update_queue.h"
@@ -47,14 +47,18 @@ void BitmapSkPictureContentLayerUpdater::Resource::Update(
 }
 
 scoped_refptr<BitmapSkPictureContentLayerUpdater>
-BitmapSkPictureContentLayerUpdater::Create(scoped_ptr<LayerPainter> painter) {
+BitmapSkPictureContentLayerUpdater::Create(
+    scoped_ptr<LayerPainter> painter,
+    RenderingStatsInstrumentation* stats_instrumentation) {
   return make_scoped_refptr(
-      new BitmapSkPictureContentLayerUpdater(painter.Pass()));
+      new BitmapSkPictureContentLayerUpdater(painter.Pass(),
+                                             stats_instrumentation));
 }
 
 BitmapSkPictureContentLayerUpdater::BitmapSkPictureContentLayerUpdater(
-    scoped_ptr<LayerPainter> painter)
-    : SkPictureContentLayerUpdater(painter.Pass()) {}
+    scoped_ptr<LayerPainter> painter,
+    RenderingStatsInstrumentation* stats_instrumentation)
+    : SkPictureContentLayerUpdater(painter.Pass(), stats_instrumentation) {}
 
 BitmapSkPictureContentLayerUpdater::~BitmapSkPictureContentLayerUpdater() {}
 

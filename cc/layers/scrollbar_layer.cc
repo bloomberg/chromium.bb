@@ -270,7 +270,8 @@ void ScrollbarLayer::CreateUpdaterIfNeeded() {
             scrollbar_.get(),
             painter_.get(),
             geometry_.get(),
-            WebKit::WebScrollbar::BackTrackPart).PassAs<LayerPainter>());
+            WebKit::WebScrollbar::BackTrackPart).PassAs<LayerPainter>(),
+        rendering_stats_instrumentation());
   }
   if (!back_track_) {
     back_track_ = back_track_updater_->CreateResource(
@@ -286,7 +287,8 @@ void ScrollbarLayer::CreateUpdaterIfNeeded() {
               scrollbar_.get(),
               painter_.get(),
               geometry_.get(),
-              WebKit::WebScrollbar::ForwardTrackPart).PassAs<LayerPainter>());
+              WebKit::WebScrollbar::ForwardTrackPart).PassAs<LayerPainter>(),
+          rendering_stats_instrumentation());
     }
     if (!fore_track_) {
       fore_track_ = fore_track_updater_->CreateResource(
@@ -298,7 +300,8 @@ void ScrollbarLayer::CreateUpdaterIfNeeded() {
     thumb_updater_ = CachingBitmapContentLayerUpdater::Create(
         ScrollbarThumbPainter::Create(scrollbar_.get(),
                                       painter_.get(),
-                                      geometry_.get()).PassAs<LayerPainter>());
+                                      geometry_.get()).PassAs<LayerPainter>(),
+        rendering_stats_instrumentation());
   }
   if (!thumb_) {
     thumb_ = thumb_updater_->CreateResource(
