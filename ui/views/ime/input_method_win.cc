@@ -14,6 +14,7 @@
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/base/win/hwnd_util.h"
 
 // Extra number of chars before and after selection (or composition) range which
 // is returned to IME for improving conversion accuracy.
@@ -268,11 +269,17 @@ LRESULT InputMethodWin::OnChar(
 
   // We need to send character events to the focused text input client event if
   // its text input type is ui::TEXT_INPUT_TYPE_NONE.
-  if (!GetTextInputClient())
-    return 0;
+  if (GetTextInputClient()) {
+    GetTextInputClient()->InsertChar(static_cast<char16>(wparam),
+                                     ui::GetModifiersFromKeyState());
+  }
 
-  GetTextInputClient()->InsertChar(static_cast<char16>(wparam),
-                                   ui::GetModifiersFromKeyState());
+  // Explicitly show the system menu at a good location on [Alt]+[Space].
+  // Note: Setting |handled| to FALSE for DefWindowProc triggering of the system
+  //       menu causes unsdesirable titlebar artifacts in the classic theme.
+  if (message == WM_SYSCHAR && wparam == VK_SPACE)
+    ui::ShowSystemMenu(hwnd_);
+
   return 0;
 }
 

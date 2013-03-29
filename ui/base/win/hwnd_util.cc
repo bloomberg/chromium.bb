@@ -7,6 +7,7 @@
 #include "base/i18n/rtl.h"
 #include "base/string_util.h"
 #include "base/win/metro.h"
+#include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 
@@ -172,16 +173,25 @@ void CheckWindowCreated(HWND hwnd) {
     LOG_GETLASTERROR(FATAL);
 }
 
-void ShowSystemMenu(HWND window, int screen_x, int screen_y) {
+void ShowSystemMenu(HWND window) {
+  RECT rect;
+  GetWindowRect(window, &rect);
+  gfx::Point point = gfx::Point(rect.left, rect.top);
+  static const int kSystemMenuOffset = 10;
+  point.Offset(kSystemMenuOffset, kSystemMenuOffset);
+  ShowSystemMenuAtPoint(window, point);
+}
+
+void ShowSystemMenuAtPoint(HWND window, const gfx::Point& point) {
   // In the Metro process, we never want to show the system menu.
   if (base::win::IsMetroProcess())
     return;
   UINT flags = TPM_LEFTBUTTON | TPM_RIGHTBUTTON | TPM_RETURNCMD;
   if (base::i18n::IsRTL())
     flags |= TPM_RIGHTALIGN;
-  HMENU system_menu = GetSystemMenu(window, FALSE);
-  int command = TrackPopupMenu(system_menu, flags, screen_x, screen_y, 0,
-                               window, NULL);
+  HMENU menu = GetSystemMenu(window, FALSE);
+  const int command =
+      TrackPopupMenu(menu, flags, point.x(), point.y(), 0, window, NULL);
   if (command)
     SendMessage(window, WM_SYSCOMMAND, command, 0);
 }

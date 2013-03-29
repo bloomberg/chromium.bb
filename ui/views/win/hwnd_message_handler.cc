@@ -1444,7 +1444,7 @@ LRESULT HWNDMessageHandler::OnMouseRange(UINT message,
     w_param = SendMessage(hwnd(), WM_NCHITTEST, 0,
                           MAKELPARAM(screen_point.x, screen_point.y));
     if (w_param == HTCAPTION || w_param == HTSYSMENU) {
-      ui::ShowSystemMenu(hwnd(), screen_point.x, screen_point.y);
+      ui::ShowSystemMenuAtPoint(hwnd(), gfx::Point(screen_point));
       return 0;
     }
   } else if (message == WM_NCLBUTTONDOWN && delegate_->IsUsingCustomFrame()) {
@@ -1502,6 +1502,10 @@ LRESULT HWNDMessageHandler::OnMouseRange(UINT message,
     // Reroute the mouse wheel to the window under the pointer if applicable.
     return (ui::RerouteMouseWheel(hwnd(), w_param, l_param) ||
             delegate_->HandleMouseEvent(ui::MouseWheelEvent(msg))) ? 0 : 1;
+  } else if (message == WM_NCLBUTTONDOWN && w_param == HTSYSMENU) {
+    // Explicitly show the system menu at a good location on HTSYSMENU clicks.
+    ui::ShowSystemMenu(hwnd());
+    return 0;
   }
 
   bool handled = delegate_->HandleMouseEvent(event);

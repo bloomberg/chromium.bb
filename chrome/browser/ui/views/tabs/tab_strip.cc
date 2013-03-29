@@ -358,9 +358,9 @@ void NewTabButton::GetHitTestMask(gfx::Path* path) const {
 #if defined(OS_WIN) && !defined(USE_AURA)
 void NewTabButton::OnMouseReleased(const ui::MouseEvent& event) {
   if (event.IsOnlyRightMouseButton()) {
-    gfx::Point point(event.x(), event.y());
+    gfx::Point point = event.location();
     views::View::ConvertPointToScreen(this, &point);
-    ui::ShowSystemMenu(GetWidget()->GetNativeView(), point.x(), point.y());
+    ui::ShowSystemMenuAtPoint(GetWidget()->GetNativeView(), point);
     SetState(views::CustomButton::STATE_NORMAL);
     return;
   }

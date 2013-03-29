@@ -23,6 +23,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/base/range/range.h"
+#include "ui/base/win/hwnd_util.h"
 #include "ui/base/win/mouse_wheel_util.h"
 #include "ui/native_theme/native_theme_win.h"
 #include "ui/views/controls/label.h"
@@ -1079,15 +1080,15 @@ void NativeTextfieldWin::OnKillFocus(HWND hwnd) {
 }
 
 void NativeTextfieldWin::OnSysChar(TCHAR ch, UINT repeat_count, UINT flags) {
-  // Nearly all alt-<xxx> combos result in beeping rather than doing something
-  // useful, so we discard most.  Exceptions:
-  //   * ctrl-alt-<xxx>, which is sometimes important, generates WM_CHAR instead
-  //     of WM_SYSCHAR, so it doesn't need to be handled here.
-  //   * alt-space gets translated by the default WM_SYSCHAR handler to a
-  //     WM_SYSCOMMAND to open the application context menu, so we need to allow
-  //     it through.
-  if (ch == VK_SPACE)
-    SetMsgHandled(false);
+  DCHECK(flags & KF_ALTDOWN);
+  // Explicitly show the system menu at a good location on [Alt]+[Space].
+  // Nearly all other [Alt]+<xxx> combos result in beeping rather than doing
+  // something useful, so discard those. Note that [Ctrl]+[Alt]+<xxx> generates
+  // WM_CHAR instead of WM_SYSCHAR, so it is not handled here.
+  if (ch == VK_SPACE) {
+    ui::ShowSystemMenu(
+        container_view_->GetWidget()->GetTopLevelWidget()->GetNativeWindow());
+  }
 }
 
 void NativeTextfieldWin::OnFinalMessage(HWND hwnd) {
@@ -1096,16 +1097,11 @@ void NativeTextfieldWin::OnFinalMessage(HWND hwnd) {
 
 void NativeTextfieldWin::HandleKeystroke() {
   const MSG* msg = GetCurrentMessage();
+  ui::KeyEvent event(*msg, msg->message == WM_CHAR);
   ScopedFreeze freeze(this, GetTextObjectModel());
 
   TextfieldController* controller = textfield_->GetController();
-  bool handled = false;
-  if (controller) {
-    ui::KeyEvent event(*msg, msg->message == WM_CHAR);
-    handled = controller->HandleKeyEvent(textfield_, event);
-  }
-
-  if (!handled) {
+  if (!controller || !controller->HandleKeyEvent(textfield_, event)) {
     OnBeforePossibleChange();
 
     if (msg->wParam == ui::VKEY_HOME || msg->wParam == ui::VKEY_END) {

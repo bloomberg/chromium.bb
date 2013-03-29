@@ -62,6 +62,7 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_win.h"
+#include "ui/base/win/hwnd_util.h"
 #include "ui/base/win/mouse_wheel_util.h"
 #include "ui/base/win/touch_input.h"
 #include "ui/gfx/canvas.h"
@@ -2083,15 +2084,15 @@ LRESULT OmniboxViewWin::OnSetText(const wchar_t* text) {
 void OmniboxViewWin::OnSysChar(TCHAR ch,
                                UINT repeat_count,
                                UINT flags) {
-  // Nearly all alt-<xxx> combos result in beeping rather than doing something
-  // useful, so we discard most.  Exceptions:
-  //   * ctrl-alt-<xxx>, which is sometimes important, generates WM_CHAR instead
-  //     of WM_SYSCHAR, so it doesn't need to be handled here.
-  //   * alt-space gets translated by the default WM_SYSCHAR handler to a
-  //     WM_SYSCOMMAND to open the application context menu, so we need to allow
-  //     it through.
-  if (ch == VK_SPACE)
-    SetMsgHandled(false);
+  DCHECK(flags & KF_ALTDOWN);
+  // Explicitly show the system menu at a good location on [Alt]+[Space].
+  // Nearly all other [Alt]+<xxx> combos result in beeping rather than doing
+  // something useful, so discard those. Note that [Ctrl]+[Alt]+<xxx> generates
+  // WM_CHAR instead of WM_SYSCHAR, so it is not handled here.
+  if (ch == VK_SPACE) {
+    ui::ShowSystemMenu(
+      native_view_host_->GetWidget()->GetTopLevelWidget()->GetNativeWindow());
+  }
 }
 
 void OmniboxViewWin::OnWindowPosChanging(WINDOWPOS* window_pos) {
