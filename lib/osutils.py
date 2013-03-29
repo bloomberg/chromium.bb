@@ -256,7 +256,7 @@ def FindInPathParents(path_to_find, start_path, test_func=None):
 
 
 # pylint: disable=W0212,R0904,W0702
-def _TempDirSetup(self, prefix='tmp', set_global=True, base_dir=None):
+def _TempDirSetup(self, prefix='tmp', set_global=False, base_dir=None):
   """Generate a tempdir, modifying the object, and env to use it.
 
   Specifically, if set_global is True, then from this invocation forward,
