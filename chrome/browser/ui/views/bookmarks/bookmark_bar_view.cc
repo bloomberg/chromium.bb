@@ -333,12 +333,14 @@ class OverFlowButton : public views::MenuButton {
 
 void RecordAppLaunch(Profile* profile, GURL url) {
   DCHECK(profile->GetExtensionService());
-  if (!profile->GetExtensionService()->IsInstalledApp(url))
+  const extensions::Extension* extension =
+      profile->GetExtensionService()->GetInstalledApp(url);
+  if (!extension)
     return;
 
   AppLauncherHandler::RecordAppLaunchType(
       extension_misc::APP_LAUNCH_BOOKMARK_BAR,
-      extensions::Manifest::TYPE_PLATFORM_APP);
+      extension->GetType());
 }
 
 int GetNewtabHorizontalPadding() {
