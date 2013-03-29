@@ -17,6 +17,12 @@
 namespace testing {
 namespace internal {
 
+// Handles nil values for |obj| properly by using safe printing of %@ in
+// -stringWithFormat:.
+static inline const char* StringDescription(id<NSObject> obj) {
+  return [[NSString stringWithFormat:@"%@", obj] UTF8String];
+}
+
 // This overloaded version allows comparison between ObjC objects that conform
 // to the NSObject protocol. Used to implement {ASSERT|EXPECT}_EQ().
 GTEST_API_ AssertionResult CmpHelperNSEQ(const char* expected_expression,
@@ -28,8 +34,8 @@ GTEST_API_ AssertionResult CmpHelperNSEQ(const char* expected_expression,
   }
   return EqFailure(expected_expression,
                    actual_expression,
-                   std::string([[expected description] UTF8String]),
-                   std::string([[actual description] UTF8String]),
+                   std::string(StringDescription(expected)),
+                   std::string(StringDescription(actual)),
                    false);
 }
 
@@ -44,8 +50,8 @@ GTEST_API_ AssertionResult CmpHelperNSNE(const char* expected_expression,
   }
   Message msg;
   msg << "Expected: (" << expected_expression << ") != (" << actual_expression
-      << "), actual: " << std::string([[expected description] UTF8String])
-      << " vs " << std::string([[actual description] UTF8String]);
+      << "), actual: " << StringDescription(expected)
+      << " vs " << StringDescription(actual);
   return AssertionFailure(msg);
 }
 
