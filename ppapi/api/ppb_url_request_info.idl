@@ -8,6 +8,8 @@
  * manipulating URL requests.
  */
 
+[generate_thunk]
+
 label Chrome {
   M14 = 1.0
 };

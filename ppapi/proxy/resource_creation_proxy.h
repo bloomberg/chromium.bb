@@ -80,8 +80,7 @@ class ResourceCreationProxy : public InterfaceProxy,
       const PP_TrueTypeFontDesc_Dev& desc) OVERRIDE;
   virtual PP_Resource CreateURLLoader(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateURLRequestInfo(
-      PP_Instance instance,
-      const URLRequestInfoData& data) OVERRIDE;
+      PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateURLResponseInfo(
       PP_Instance instance,
       const URLResponseInfoData& data,

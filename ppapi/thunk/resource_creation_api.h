@@ -86,8 +86,7 @@ class ResourceCreationAPI {
       const PP_TrueTypeFontDesc_Dev& desc) = 0;
   virtual PP_Resource CreateURLLoader(PP_Instance instance) = 0;
   virtual PP_Resource CreateURLRequestInfo(
-      PP_Instance instance,
-      const URLRequestInfoData& data) = 0;
+      PP_Instance instance) = 0;
 
   // Passes a reference to the file_ref_resource, which is a process-local
   // resource corresponding to the body_as_file_ref host resource in |data|,

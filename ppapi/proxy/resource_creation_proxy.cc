@@ -157,10 +157,9 @@ PP_Resource ResourceCreationProxy::CreateURLLoader(PP_Instance instance) {
 }
 
 PP_Resource ResourceCreationProxy::CreateURLRequestInfo(
-    PP_Instance instance,
-    const URLRequestInfoData& data) {
-  return (new URLRequestInfoResource(GetConnection(),
-                                     instance, data))->GetReference();
+    PP_Instance instance) {
+  return (new URLRequestInfoResource(
+      GetConnection(), instance, URLRequestInfoData()))->GetReference();
 }
 
 PP_Resource ResourceCreationProxy::CreateURLResponseInfo(
