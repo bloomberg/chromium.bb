@@ -38,6 +38,7 @@
 #include "ash/shell.h"
 #include "ash/wm/custom_frame_view_ash.h"
 #include "ash/wm/panels/panel_frame_view.h"
+#include "ash/wm/window_properties.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "ui/aura/root_window.h"
 #endif
@@ -356,7 +357,14 @@ void NativeAppWindowViews::FlashFrame(bool flash) {
 }
 
 bool NativeAppWindowViews::IsAlwaysOnTop() const {
-  return shell_window_->window_type_is_panel();
+  if (!shell_window_->window_type_is_panel())
+    return false;
+#if defined(USE_ASH)
+  return window_->GetNativeWindow()->GetProperty(
+      ash::internal::kPanelAttachedKey);
+#else
+  return true;
+#endif
 }
 
 gfx::Insets NativeAppWindowViews::GetFrameInsets() const {
