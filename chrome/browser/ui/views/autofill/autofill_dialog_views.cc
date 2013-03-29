@@ -51,11 +51,15 @@ namespace {
 // Horizontal padding between text and other elements (in pixels).
 const int kAroundTextPadding = 4;
 
-// Size of the triangular mark that indicates an invalid textfield.
+// Size of the triangular mark that indicates an invalid textfield (in pixels).
 const size_t kDogEarSize = 10;
 
-// The space between the edges of a notification bar and the text within.
-const size_t kNotificationPadding = 10;
+// The space between the edges of a notification bar and the text within (in
+// pixels).
+const size_t kNotificationPadding = 14;
+
+// Vertical padding above and below each detail section (in pixels).
+const size_t kDetailSectionInset = 10;
 
 const size_t kAutocheckoutProgressBarWidth = 300;
 const size_t kAutocheckoutProgressBarHeight = 11;
@@ -210,6 +214,9 @@ void AutofillDialogViews::AccountChooser::LinkClicked(views::Link* source,
 
 AutofillDialogViews::NotificationArea::NotificationArea()
     : checkbox_(NULL) {
+  // Reserve vertical space for the arrow (regardless of whether one exists).
+  set_border(views::Border::CreateEmptyBorder(kArrowHeight, 0, 0, 0));
+
   views::BoxLayout* box_layout =
       new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0);
   SetLayoutManager(box_layout);
@@ -228,10 +235,6 @@ void AutofillDialogViews::NotificationArea::SetNotifications(
 
   if (notifications_.empty())
     return;
-
-  // Reserve vertical space for the arrow if necessary.
-  set_border(!HasArrow() ? NULL :
-      views::Border::CreateEmptyBorder(kArrowHeight, 0, 0, 0));
 
   for (size_t i = 0; i < notifications_.size(); ++i) {
     const DialogNotification& notification = notifications_[i];
@@ -316,6 +319,7 @@ AutofillDialogViews::SectionContainer::SectionContainer(
   set_notify_enter_exit_on_child(true);
 
   views::GridLayout* layout = new views::GridLayout(this);
+  layout->SetInsets(kDetailSectionInset, 0, kDetailSectionInset, 0);
   SetLayoutManager(layout);
 
   const int kColumnSetId = 0;
@@ -343,22 +347,21 @@ AutofillDialogViews::SectionContainer::SectionContainer(
 
 AutofillDialogViews::SectionContainer::~SectionContainer() {}
 
-void AutofillDialogViews::SectionContainer::SetForwardMouseEvents(
-    bool forward) {
-  forward_mouse_events_ = forward;
-  if (!forward)
-    set_background(NULL);
-}
-
 void AutofillDialogViews::SectionContainer::SetActive(bool active) {
   if (active == !!background())
     return;
 
   set_background(active ?
-      // TODO(estade): use the correct color.
-      views::Background::CreateSolidBackground(SK_ColorLTGRAY):
+      views::Background::CreateSolidBackground(SkColorSetARGB(9, 0, 0, 0)):
       NULL);
   SchedulePaint();
+}
+
+void AutofillDialogViews::SectionContainer::SetForwardMouseEvents(
+    bool forward) {
+  forward_mouse_events_ = forward;
+  if (!forward)
+    set_background(NULL);
 }
 
 void AutofillDialogViews::SectionContainer::OnMouseMoved(
@@ -899,7 +902,7 @@ views::View* AutofillDialogViews::CreateMainContainer() {
   main_container_ = new views::View();
   main_container_->SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kVertical, 0, 0,
-                           views::kUnrelatedControlVerticalSpacing));
+                           views::kRelatedControlVerticalSpacing));
 
   account_chooser_ = new AccountChooser(controller_);
   if (!views::DialogDelegate::UseNewStyle())
@@ -917,8 +920,7 @@ views::View* AutofillDialogViews::CreateDetailsContainer() {
   details_container_ = new views::View();
   // A box layout is used because it respects widget visibility.
   details_container_->SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kVertical, 0, 0,
-                           views::kRelatedControlVerticalSpacing));
+      new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
   for (DetailGroupMap::iterator iter = detail_groups_.begin();
        iter != detail_groups_.end(); ++iter) {
     CreateDetailsSection(iter->second.section);
