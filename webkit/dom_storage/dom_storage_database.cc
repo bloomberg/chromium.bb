@@ -72,8 +72,8 @@ void DomStorageDatabase::ReadAllValues(ValuesMap* result) {
   DCHECK(statement.is_valid());
 
   while (statement.Step()) {
-    string16 key = statement.ColumnString16(0);
-    string16 value;
+    base::string16 key = statement.ColumnString16(0);
+    base::string16 value;
     statement.ColumnBlobAsString16(1, &value);
     (*result)[key] = NullableString16(value, false);
   }
@@ -105,7 +105,7 @@ bool DomStorageDatabase::CommitChanges(bool clear_all_first,
   ValuesMap::const_iterator it = changes.begin();
   for(; it != changes.end(); ++it) {
     sql::Statement statement;
-    string16 key = it->first;
+    base::string16 key = it->first;
     NullableString16 value = it->second;
     if (value.is_null()) {
       statement.Assign(db_->GetCachedStatement(SQL_FROM_HERE,
@@ -284,7 +284,7 @@ bool DomStorageDatabase::UpgradeVersion1To2() {
   // the data into the new V2 table.
   ValuesMap values;
   while (statement.Step()) {
-    string16 key = statement.ColumnString16(0);
+    base::string16 key = statement.ColumnString16(0);
     NullableString16 value(statement.ColumnString16(1), false);
     values[key] = value;
   }

@@ -144,7 +144,7 @@ class TestShellNetworkDelegate : public net::NetworkDelegate {
   virtual void OnURLRequestDestroyed(net::URLRequest* request) OVERRIDE {}
 
   virtual void OnPACScriptError(int line_number,
-                                const string16& error) OVERRIDE {
+                                const base::string16& error) OVERRIDE {
   }
   virtual AuthRequiredResponse OnAuthRequired(
       net::URLRequest* request,

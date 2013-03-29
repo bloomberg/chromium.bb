@@ -9,20 +9,20 @@
 namespace dom_storage {
 
 TEST(DomStorageMapTest, DomStorageMapBasics) {
-  const string16 kKey(ASCIIToUTF16("key"));
-  const string16 kValue(ASCIIToUTF16("value"));
+  const base::string16 kKey(ASCIIToUTF16("key"));
+  const base::string16 kValue(ASCIIToUTF16("value"));
   const size_t kValueBytes = kValue.size() * sizeof(char16);
   const size_t kItemBytes =
       (kKey.size() + kValue.size()) * sizeof(char16);
-  const string16 kKey2(ASCIIToUTF16("key2"));
+  const base::string16 kKey2(ASCIIToUTF16("key2"));
   const size_t kKey2Bytes = kKey2.size() * sizeof(char16);
-  const string16 kValue2(ASCIIToUTF16("value2"));
+  const base::string16 kValue2(ASCIIToUTF16("value2"));
   const size_t kItem2Bytes =
       (kKey2.size() + kValue2.size()) * sizeof(char16);
   const size_t kQuota = 1024;  // 1K quota for this test.
 
   scoped_refptr<DomStorageMap> map(new DomStorageMap(kQuota));
-  string16 old_value;
+  base::string16 old_value;
   NullableString16 old_nullable_value;
   ValuesMap swap;
   scoped_refptr<DomStorageMap> copy;
@@ -83,15 +83,15 @@ TEST(DomStorageMapTest, DomStorageMapBasics) {
 }
 
 TEST(DomStorageMapTest, EnforcesQuota) {
-  const string16 kKey = ASCIIToUTF16("test_key");
-  const string16 kValue = ASCIIToUTF16("test_value");
-  const string16 kKey2 = ASCIIToUTF16("test_key_2");
+  const base::string16 kKey = ASCIIToUTF16("test_key");
+  const base::string16 kValue = ASCIIToUTF16("test_value");
+  const base::string16 kKey2 = ASCIIToUTF16("test_key_2");
 
   // A 50 byte quota is too small to hold both keys, so we
   // should see the DomStorageMap enforcing it.
   const size_t kQuota = 50;
 
-  string16 old_value;
+  base::string16 old_value;
   NullableString16 old_nullable_value;
 
   scoped_refptr<DomStorageMap> map(new DomStorageMap(kQuota));
@@ -115,9 +115,9 @@ TEST(DomStorageMapTest, EnforcesQuota) {
   // When overbudget, a new value of greater size than the existing value can
   // not be set, but a new value of lesser or equal size can be set.
   EXPECT_TRUE(map->SetItem(kKey, kValue, &old_nullable_value));
-  EXPECT_FALSE(map->SetItem(kKey, string16(kValue + kValue),
+  EXPECT_FALSE(map->SetItem(kKey, base::string16(kValue + kValue),
                             &old_nullable_value));
-  EXPECT_TRUE(map->SetItem(kKey, string16(), &old_nullable_value));
+  EXPECT_TRUE(map->SetItem(kKey, base::string16(), &old_nullable_value));
   EXPECT_EQ(kValue, old_nullable_value.string());
 }
 

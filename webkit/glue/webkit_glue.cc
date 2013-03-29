@@ -101,18 +101,18 @@ void EnableWebCoreLogChannels(const std::string& channels) {
   }
 }
 
-string16 DumpDocumentText(WebFrame* web_frame) {
+base::string16 DumpDocumentText(WebFrame* web_frame) {
   // We use the document element's text instead of the body text here because
   // not all documents have a body, such as XML documents.
   WebElement document_element = web_frame->document().documentElement();
   if (document_element.isNull())
-    return string16();
+    return base::string16();
 
   return document_element.innerText();
 }
 
-string16 DumpFramesAsText(WebFrame* web_frame, bool recursive) {
-  string16 result;
+base::string16 DumpFramesAsText(WebFrame* web_frame, bool recursive) {
+  base::string16 result;
 
   // Add header for all but the main frame. Skip empty frames.
   if (web_frame->parent() &&
@@ -134,7 +134,7 @@ string16 DumpFramesAsText(WebFrame* web_frame, bool recursive) {
   return result;
 }
 
-string16 DumpRenderer(WebFrame* web_frame) {
+base::string16 DumpRenderer(WebFrame* web_frame) {
   return web_frame->renderTreeAsText();
 }
 
@@ -154,7 +154,7 @@ int NumberOfPages(WebFrame* web_frame,
   return number_of_pages;
 }
 
-string16 DumpFrameScrollPosition(WebFrame* web_frame, bool recursive) {
+base::string16 DumpFrameScrollPosition(WebFrame* web_frame, bool recursive) {
   gfx::Size offset = web_frame->scrollOffset();
   std::string result_utf8;
 
@@ -167,7 +167,7 @@ string16 DumpFrameScrollPosition(WebFrame* web_frame, bool recursive) {
                         offset.width(), offset.height());
   }
 
-  string16 result = UTF8ToUTF16(result_utf8);
+  base::string16 result = UTF8ToUTF16(result_utf8);
 
   if (recursive) {
     WebFrame* child = web_frame->firstChild();
@@ -181,8 +181,8 @@ string16 DumpFrameScrollPosition(WebFrame* web_frame, bool recursive) {
 // Returns True if item1 < item2.
 static bool HistoryItemCompareLess(const WebHistoryItem& item1,
                                    const WebHistoryItem& item2) {
-  string16 target1 = item1.target();
-  string16 target2 = item2.target();
+  base::string16 target1 = item1.target();
+  base::string16 target2 = item2.target();
   std::transform(target1.begin(), target1.end(), target1.begin(), tolower);
   std::transform(target2.begin(), target2.end(), target2.begin(), tolower);
   return target1 < target2;
@@ -236,7 +236,7 @@ static std::string DumpHistoryItem(const WebHistoryItem& item,
   return result;
 }
 
-string16 DumpHistoryState(const std::string& history_state, int indent,
+base::string16 DumpHistoryState(const std::string& history_state, int indent,
                           bool is_current) {
   return UTF8ToUTF16(
       DumpHistoryItem(HistoryItemFromString(history_state), indent,

@@ -70,12 +70,12 @@ void GetExeDirectory(std::set<base::FilePath>* plugin_dirs) {
 
 // Gets the installed path for a registered app.
 bool GetInstalledPath(const char16* app, base::FilePath* out) {
-  string16 reg_path(kRegistryApps);
+  base::string16 reg_path(kRegistryApps);
   reg_path.append(L"\\");
   reg_path.append(app);
 
   base::win::RegKey hkcu_key(HKEY_CURRENT_USER, reg_path.c_str(), KEY_READ);
-  string16 path;
+  base::string16 path;
   // As of Win7 AppPaths can also be registered in HKCU: http://goo.gl/UgFOf.
   if (base::win::GetVersion() >= base::win::VERSION_WIN7 &&
       hkcu_key.ReadValue(kRegistryPath, &path) == ERROR_SUCCESS) {
@@ -95,17 +95,17 @@ bool GetInstalledPath(const char16* app, base::FilePath* out) {
 // Search the registry at the given path and detect plugin directories.
 void GetPluginsInRegistryDirectory(
     HKEY root_key,
-    const string16& registry_folder,
+    const base::string16& registry_folder,
     std::set<base::FilePath>* plugin_dirs) {
   for (base::win::RegistryKeyIterator iter(root_key, registry_folder.c_str());
        iter.Valid(); ++iter) {
     // Use the registry to gather plugin across the file system.
-    string16 reg_path = registry_folder;
+    base::string16 reg_path = registry_folder;
     reg_path.append(L"\\");
     reg_path.append(iter.Name());
     base::win::RegKey key(root_key, reg_path.c_str(), KEY_READ);
 
-    string16 path;
+    base::string16 path;
     if (key.ReadValue(kRegistryPath, &path) == ERROR_SUCCESS)
       plugin_dirs->insert(base::FilePath(path));
   }
@@ -117,10 +117,10 @@ void GetFirefoxInstalledPaths(std::vector<base::FilePath>* out) {
   base::win::RegistryKeyIterator it(HKEY_LOCAL_MACHINE,
                                     kRegistryFirefoxInstalled);
   for (; it.Valid(); ++it) {
-    string16 full_path = string16(kRegistryFirefoxInstalled) + L"\\" +
-                            it.Name() + L"\\Main";
+    base::string16 full_path = base::string16(kRegistryFirefoxInstalled) +
+        L"\\" + it.Name() + L"\\Main";
     base::win::RegKey key(HKEY_LOCAL_MACHINE, full_path.c_str(), KEY_READ);
-    string16 install_dir;
+    base::string16 install_dir;
     if (key.ReadValue(L"Install Directory", &install_dir) != ERROR_SUCCESS)
       continue;
     out->push_back(base::FilePath(install_dir));
@@ -179,7 +179,7 @@ void GetJavaDirectory(std::set<base::FilePath>* plugin_dirs) {
                              KEY_QUERY_VALUE);
 
   // 2. Read the current Java version
-  string16 java_version;
+  base::string16 java_version;
   if (java_key.ReadValue(kRegistryBrowserJavaVersion, &java_version) !=
       ERROR_SUCCESS) {
     java_key.ReadValue(kRegistryCurrentJavaVersion, &java_version);
@@ -190,7 +190,7 @@ void GetJavaDirectory(std::set<base::FilePath>* plugin_dirs) {
 
     // 3. Install path of the JRE binaries is specified in "JavaHome"
     //    value under the Java version key.
-    string16 java_plugin_directory;
+    base::string16 java_plugin_directory;
     if (java_key.ReadValue(kRegistryJavaHome, &java_plugin_directory) ==
         ERROR_SUCCESS) {
       // 4. The new plugin resides under the 'bin/new_plugin'
@@ -234,8 +234,8 @@ bool HaveSharedMimeType(const webkit::WebPluginInfo& plugin1,
 
 // Compares Windows style version strings (i.e. 1,2,3,4).  Returns true if b's
 // version is newer than a's, or false if it's equal or older.
-bool IsNewerVersion(const string16& a, const string16& b) {
-  std::vector<string16> a_ver, b_ver;
+bool IsNewerVersion(const base::string16& a, const base::string16& b) {
+  std::vector<base::string16> a_ver, b_ver;
   base::SplitString(a, ',', &a_ver);
   base::SplitString(b, ',', &b_ver);
   if (a_ver.size() == 1 && b_ver.size() == 1) {
@@ -299,7 +299,7 @@ void PluginList::GetPluginsInDir(
   WIN32_FIND_DATA find_file_data;
   HANDLE find_handle;
 
-  string16 dir = path.value();
+  base::string16 dir = path.value();
   // FindFirstFile requires that you specify a wildcard for directories.
   dir.append(L"\\NP*.DLL");
 

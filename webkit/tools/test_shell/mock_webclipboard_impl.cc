@@ -74,7 +74,8 @@ WebVector<WebString> MockWebClipboardImpl::readAvailableTypes(
   if (!m_image.isNull()) {
     results.push_back(WebString("image/png"));
   }
-  for (std::map<string16, string16>::const_iterator it = m_customData.begin();
+  for (std::map<base::string16, base::string16>::const_iterator it =
+           m_customData.begin();
        it != m_customData.end(); ++it) {
     CHECK(std::find(results.begin(), results.end(), it->first) ==
           results.end());
@@ -127,7 +128,8 @@ WebKit::WebData MockWebClipboardImpl::readImage(
 WebKit::WebString MockWebClipboardImpl::readCustomData(
     WebKit::WebClipboard::Buffer buffer,
     const WebKit::WebString& type) {
-  std::map<string16, string16>::const_iterator it = m_customData.find(type);
+  std::map<base::string16, base::string16>::const_iterator it =
+      m_customData.find(type);
   if (it != m_customData.end())
     return it->second;
   return WebKit::WebString();

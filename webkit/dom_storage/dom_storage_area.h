@@ -53,10 +53,10 @@ class WEBKIT_STORAGE_EXPORT DomStorageArea
 
   unsigned Length();
   NullableString16 Key(unsigned index);
-  NullableString16 GetItem(const string16& key);
-  bool SetItem(const string16& key, const string16& value,
+  NullableString16 GetItem(const base::string16& key);
+  bool SetItem(const base::string16& key, const base::string16& value,
                NullableString16* old_value);
-  bool RemoveItem(const string16& key, string16* old_value);
+  bool RemoveItem(const base::string16& key, base::string16* old_value);
   bool Clear();
   void FastClear();
 

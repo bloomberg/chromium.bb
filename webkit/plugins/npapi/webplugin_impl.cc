@@ -282,7 +282,7 @@ NPObject* WebPluginImpl::scriptableObject() {
 bool WebPluginImpl::getFormValue(WebKit::WebString& value) {
   if (!delegate_)
     return false;
-  string16 form_value;
+  base::string16 form_value;
   if (!delegate_->GetFormValue(&form_value))
     return false;
   value = form_value;

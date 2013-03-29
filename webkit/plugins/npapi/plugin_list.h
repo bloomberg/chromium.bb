@@ -121,7 +121,7 @@ class WEBKIT_PLUGINS_EXPORT PluginList {
   static bool ParseMimeTypes(
       const std::string& mime_types,
       const std::string& file_extensions,
-      const string16& mime_type_descriptions,
+      const base::string16& mime_type_descriptions,
       std::vector<webkit::WebPluginMimeType>* parsed_mime_types);
 
   // Get all the plugins synchronously, loading them if necessary.

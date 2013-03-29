@@ -508,7 +508,7 @@ void TestShell::ResizeSubViews() {
   // handled by Cocoa for us
 }
 
-/* static */ void TestShell::DumpAllBackForwardLists(string16* result) {
+/* static */ void TestShell::DumpAllBackForwardLists(base::string16* result) {
   result->clear();
   for (WindowList::iterator iter = TestShell::windowList()->begin();
        iter != TestShell::windowList()->end(); iter++) {
@@ -522,7 +522,7 @@ void TestShell::ResizeSubViews() {
 }
 
 void TestShell::LoadURLForFrame(const GURL& url,
-                                const string16& frame_name) {
+                                const base::string16& frame_name) {
   if (!url.is_valid())
     return;
 
@@ -596,20 +596,20 @@ base::StringPiece TestShell::ResourceProvider(int key) {
 
 //-----------------------------------------------------------------------------
 
-string16 TestShellWebKitInit::GetLocalizedString(int message_id) {
+base::string16 TestShellWebKitInit::GetLocalizedString(int message_id) {
   base::StringPiece res;
   if (!g_resource_data_pack->GetStringPiece(message_id, &res)) {
     LOG(FATAL) << "failed to load webkit string with id " << message_id;
   }
 
   // Data packs hold strings as either UTF8 or UTF16.
-  string16 msg;
+  base::string16 msg;
   switch (g_resource_data_pack->GetTextEncodingType()) {
   case ui::DataPack::UTF8:
     msg = UTF8ToUTF16(res);
     break;
   case ui::DataPack::UTF16:
-    msg = string16(reinterpret_cast<const char16*>(res.data()),
+    msg = base::string16(reinterpret_cast<const char16*>(res.data()),
                    res.length() / 2);
     break;
   case ui::DataPack::BINARY:

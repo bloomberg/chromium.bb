@@ -39,8 +39,8 @@ class TestObserver : public webkit_database::DatabaseTracker::Observer {
   }
 
   virtual ~TestObserver() {}
-  virtual void OnDatabaseSizeChanged(const string16& origin_identifier,
-                                     const string16& database_name,
+  virtual void OnDatabaseSizeChanged(const base::string16& origin_identifier,
+                                     const base::string16& database_name,
                                      int64 database_size) OVERRIDE {
     if (!observe_size_changes_)
       return;
@@ -50,8 +50,8 @@ class TestObserver : public webkit_database::DatabaseTracker::Observer {
     database_size_ = database_size;
   }
   virtual void OnDatabaseScheduledForDeletion(
-      const string16& origin_identifier,
-      const string16& database_name) OVERRIDE {
+      const base::string16& origin_identifier,
+      const base::string16& database_name) OVERRIDE {
     if (!observe_scheduled_deletions_)
       return;
     new_notification_received_ = true;
@@ -63,22 +63,24 @@ class TestObserver : public webkit_database::DatabaseTracker::Observer {
     new_notification_received_ = false;
     return temp_new_notification_received;
   }
-  string16 GetNotificationOriginIdentifier() { return origin_identifier_; }
-  string16 GetNotificationDatabaseName() { return database_name_; }
+  base::string16 GetNotificationOriginIdentifier() {
+    return origin_identifier_;
+  }
+  base::string16 GetNotificationDatabaseName() { return database_name_; }
   int64 GetNotificationDatabaseSize() { return database_size_; }
 
  private:
   bool new_notification_received_;
   bool observe_size_changes_;
   bool observe_scheduled_deletions_;
-  string16 origin_identifier_;
-  string16 database_name_;
+  base::string16 origin_identifier_;
+  base::string16 database_name_;
   int64 database_size_;
 };
 
 void CheckNotificationReceived(TestObserver* observer,
-                               const string16& expected_origin_identifier,
-                               const string16& expected_database_name,
+                               const base::string16& expected_origin_identifier,
+                               const base::string16& expected_database_name,
                                int64 expected_database_size) {
   EXPECT_TRUE(observer->DidReceiveNewNotification());
   EXPECT_EQ(expected_origin_identifier,
@@ -199,14 +201,14 @@ class DatabaseTracker_TestHelper_Test {
 
     // Create and open three databases.
     int64 database_size = 0;
-    const string16 kOrigin1 =
+    const base::string16 kOrigin1 =
         DatabaseUtil::GetOriginIdentifier(GURL(kOrigin1Url));
-    const string16 kOrigin2 =
+    const base::string16 kOrigin2 =
         DatabaseUtil::GetOriginIdentifier(GURL(kOrigin2Url));
-    const string16 kDB1 = ASCIIToUTF16("db1");
-    const string16 kDB2 = ASCIIToUTF16("db2");
-    const string16 kDB3 = ASCIIToUTF16("db3");
-    const string16 kDescription = ASCIIToUTF16("database_description");
+    const base::string16 kDB1 = ASCIIToUTF16("db1");
+    const base::string16 kDB2 = ASCIIToUTF16("db2");
+    const base::string16 kDB3 = ASCIIToUTF16("db3");
+    const base::string16 kDescription = ASCIIToUTF16("database_description");
 
     tracker->DatabaseOpened(kOrigin1, kDB1, kDescription, 0,
                             &database_size);
@@ -310,14 +312,14 @@ class DatabaseTracker_TestHelper_Test {
 
     // Open three new databases.
     int64 database_size = 0;
-    const string16 kOrigin1 =
+    const base::string16 kOrigin1 =
         DatabaseUtil::GetOriginIdentifier(GURL(kOrigin1Url));
-    const string16 kOrigin2 =
+    const base::string16 kOrigin2 =
         DatabaseUtil::GetOriginIdentifier(GURL(kOrigin2Url));
-    const string16 kDB1 = ASCIIToUTF16("db1");
-    const string16 kDB2 = ASCIIToUTF16("db2");
-    const string16 kDB3 = ASCIIToUTF16("db3");
-    const string16 kDescription = ASCIIToUTF16("database_description");
+    const base::string16 kDB1 = ASCIIToUTF16("db1");
+    const base::string16 kDB2 = ASCIIToUTF16("db2");
+    const base::string16 kDB3 = ASCIIToUTF16("db3");
+    const base::string16 kDescription = ASCIIToUTF16("database_description");
 
     // Get the info for kOrigin1 and kOrigin2
     DatabaseTracker::CachedOriginInfo* origin1_info =
@@ -438,9 +440,9 @@ class DatabaseTracker_TestHelper_Test {
 
   static void DatabaseTrackerQuotaIntegration() {
     const GURL kOrigin(kOrigin1Url);
-    const string16 kOriginId = DatabaseUtil::GetOriginIdentifier(kOrigin);
-    const string16 kName = ASCIIToUTF16("name");
-    const string16 kDescription = ASCIIToUTF16("description");
+    const base::string16 kOriginId = DatabaseUtil::GetOriginIdentifier(kOrigin);
+    const base::string16 kName = ASCIIToUTF16("name");
+    const base::string16 kDescription = ASCIIToUTF16("description");
 
     base::ScopedTempDir temp_dir;
     ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
@@ -532,13 +534,13 @@ class DatabaseTracker_TestHelper_Test {
 
   static void DatabaseTrackerClearSessionOnlyDatabasesOnExit() {
     int64 database_size = 0;
-    const string16 kOrigin1 =
+    const base::string16 kOrigin1 =
         DatabaseUtil::GetOriginIdentifier(GURL(kOrigin1Url));
-    const string16 kOrigin2 =
+    const base::string16 kOrigin2 =
         DatabaseUtil::GetOriginIdentifier(GURL(kOrigin2Url));
-    const string16 kDB1 = ASCIIToUTF16("db1");
-    const string16 kDB2 = ASCIIToUTF16("db2");
-    const string16 kDescription = ASCIIToUTF16("database_description");
+    const base::string16 kDB1 = ASCIIToUTF16("db1");
+    const base::string16 kDB2 = ASCIIToUTF16("db2");
+    const base::string16 kDescription = ASCIIToUTF16("database_description");
 
     // Initialize the tracker database.
     MessageLoop message_loop;
@@ -610,13 +612,13 @@ class DatabaseTracker_TestHelper_Test {
 
   static void DatabaseTrackerSetForceKeepSessionState() {
     int64 database_size = 0;
-    const string16 kOrigin1 =
+    const base::string16 kOrigin1 =
         DatabaseUtil::GetOriginIdentifier(GURL(kOrigin1Url));
-    const string16 kOrigin2 =
+    const base::string16 kOrigin2 =
         DatabaseUtil::GetOriginIdentifier(GURL(kOrigin2Url));
-    const string16 kDB1 = ASCIIToUTF16("db1");
-    const string16 kDB2 = ASCIIToUTF16("db2");
-    const string16 kDescription = ASCIIToUTF16("database_description");
+    const base::string16 kDB1 = ASCIIToUTF16("db1");
+    const base::string16 kDB2 = ASCIIToUTF16("db2");
+    const base::string16 kDescription = ASCIIToUTF16("database_description");
 
     // Initialize the tracker database.
     MessageLoop message_loop;
@@ -686,10 +688,11 @@ class DatabaseTracker_TestHelper_Test {
 
   static void EmptyDatabaseNameIsValid() {
     const GURL kOrigin(kOrigin1Url);
-    const string16 kOriginId = DatabaseUtil::GetOriginIdentifier(kOrigin);
-    const string16 kEmptyName;
-    const string16 kDescription(ASCIIToUTF16("description"));
-    const string16 kChangedDescription(ASCIIToUTF16("changed_description"));
+    const base::string16 kOriginId = DatabaseUtil::GetOriginIdentifier(kOrigin);
+    const base::string16 kEmptyName;
+    const base::string16 kDescription(ASCIIToUTF16("description"));
+    const base::string16 kChangedDescription(
+        ASCIIToUTF16("changed_description"));
 
     // Initialize a tracker database, no need to put it on disk.
     const bool kUseInMemoryTrackerDatabase = true;
@@ -733,9 +736,9 @@ class DatabaseTracker_TestHelper_Test {
 
   static void HandleSqliteError() {
     const GURL kOrigin(kOrigin1Url);
-    const string16 kOriginId = DatabaseUtil::GetOriginIdentifier(kOrigin);
-    const string16 kName(ASCIIToUTF16("name"));
-    const string16 kDescription(ASCIIToUTF16("description"));
+    const base::string16 kOriginId = DatabaseUtil::GetOriginIdentifier(kOrigin);
+    const base::string16 kName(ASCIIToUTF16("name"));
+    const base::string16 kDescription(ASCIIToUTF16("description"));
 
     // Initialize a tracker database, no need to put it on disk.
     const bool kUseInMemoryTrackerDatabase = true;

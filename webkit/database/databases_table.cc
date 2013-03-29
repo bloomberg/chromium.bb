@@ -37,8 +37,8 @@ bool DatabasesTable::Init() {
            "CREATE UNIQUE INDEX unique_index ON Databases (origin, name)"));
 }
 
-int64 DatabasesTable::GetDatabaseID(const string16& origin_identifier,
-                                    const string16& database_name) {
+int64 DatabasesTable::GetDatabaseID(const base::string16& origin_identifier,
+                                    const base::string16& database_name) {
   sql::Statement select_statement(db_->GetCachedStatement(
       SQL_FROM_HERE, "SELECT id FROM Databases WHERE origin = ? AND name = ?"));
   select_statement.BindString16(0, origin_identifier);
@@ -51,8 +51,8 @@ int64 DatabasesTable::GetDatabaseID(const string16& origin_identifier,
   return -1;
 }
 
-bool DatabasesTable::GetDatabaseDetails(const string16& origin_identifier,
-                                        const string16& database_name,
+bool DatabasesTable::GetDatabaseDetails(const base::string16& origin_identifier,
+                                        const base::string16& database_name,
                                         DatabaseDetails* details) {
   DCHECK(details);
   sql::Statement select_statement(db_->GetCachedStatement(
@@ -96,8 +96,9 @@ bool DatabasesTable::UpdateDatabaseDetails(const DatabaseDetails& details) {
   return (update_statement.Run() && db_->GetLastChangeCount());
 }
 
-bool DatabasesTable::DeleteDatabaseDetails(const string16& origin_identifier,
-                                           const string16& database_name) {
+bool DatabasesTable::DeleteDatabaseDetails(
+    const base::string16& origin_identifier,
+    const base::string16& database_name) {
   sql::Statement delete_statement(db_->GetCachedStatement(
       SQL_FROM_HERE, "DELETE FROM Databases WHERE origin = ? AND name = ?"));
   delete_statement.BindString16(0, origin_identifier);
@@ -106,7 +107,7 @@ bool DatabasesTable::DeleteDatabaseDetails(const string16& origin_identifier,
   return (delete_statement.Run() && db_->GetLastChangeCount());
 }
 
-bool DatabasesTable::GetAllOrigins(std::vector<string16>* origins) {
+bool DatabasesTable::GetAllOrigins(std::vector<base::string16>* origins) {
   sql::Statement statement(db_->GetCachedStatement(
       SQL_FROM_HERE, "SELECT DISTINCT origin FROM Databases ORDER BY origin"));
 
@@ -117,7 +118,7 @@ bool DatabasesTable::GetAllOrigins(std::vector<string16>* origins) {
 }
 
 bool DatabasesTable::GetAllDatabaseDetailsForOrigin(
-    const string16& origin_identifier,
+    const base::string16& origin_identifier,
     std::vector<DatabaseDetails>* details_vector) {
   sql::Statement statement(db_->GetCachedStatement(
       SQL_FROM_HERE, "SELECT name, description, estimated_size "
@@ -136,7 +137,7 @@ bool DatabasesTable::GetAllDatabaseDetailsForOrigin(
   return statement.Succeeded();
 }
 
-bool DatabasesTable::DeleteOrigin(const string16& origin_identifier) {
+bool DatabasesTable::DeleteOrigin(const base::string16& origin_identifier) {
   sql::Statement delete_statement(db_->GetCachedStatement(
       SQL_FROM_HERE, "DELETE FROM Databases WHERE origin = ?"));
   delete_statement.BindString16(0, origin_identifier);

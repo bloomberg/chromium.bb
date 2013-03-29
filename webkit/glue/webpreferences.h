@@ -28,7 +28,7 @@ namespace webkit_glue {
 struct WEBKIT_GLUE_EXPORT WebPreferences {
   // Map of ISO 15924 four-letter script code to font family.  For example,
   // "Arab" to "My Arabic Font".
-  typedef std::map<std::string, string16> ScriptFontFamilyMap;
+  typedef std::map<std::string, base::string16> ScriptFontFamilyMap;
 
   enum EditingBehavior {
     EDITING_BEHAVIOR_MAC,

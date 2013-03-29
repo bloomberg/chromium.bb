@@ -53,7 +53,7 @@ class MockWebClipboardImpl : public WebKit::WebClipboard {
   WebKit::WebString m_plainText;
   WebKit::WebString m_htmlText;
   WebKit::WebImage m_image;
-  std::map<string16, string16> m_customData;
+  std::map<base::string16, base::string16> m_customData;
   bool m_writeSmartPaste;
 };
 

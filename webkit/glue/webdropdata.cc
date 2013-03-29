@@ -24,8 +24,8 @@ using WebKit::WebVector;
 WebDropData::FileInfo::FileInfo() {
 }
 
-WebDropData::FileInfo::FileInfo(const string16& path,
-                                const string16& display_name)
+WebDropData::FileInfo::FileInfo(const base::string16& path,
+                                const base::string16& display_name)
     : path(path),
       display_name(display_name) {
 }
@@ -128,7 +128,8 @@ WebDragData WebDropData::ToDragData() const {
     item_list.push_back(item);
   }
 
-  for (std::map<string16, string16>::const_iterator it = custom_data.begin();
+  for (std::map<base::string16, base::string16>::const_iterator it =
+           custom_data.begin();
        it != custom_data.end();
        ++it) {
     WebDragData::Item item;

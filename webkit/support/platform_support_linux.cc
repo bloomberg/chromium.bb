@@ -38,7 +38,7 @@ void AfterShutdown() {
 
 }  // namespace webkit_support
 
-string16 TestWebKitPlatformSupport::GetLocalizedString(int message_id) {
+base::string16 TestWebKitPlatformSupport::GetLocalizedString(int message_id) {
   return ResourceBundle::GetSharedInstance().GetLocalizedString(message_id);
 }
 

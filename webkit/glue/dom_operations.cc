@@ -253,8 +253,8 @@ bool ElementDoesAutoCompleteForElementWithId(WebView* view,
 }
 
 void GetMetaElementsWithAttribute(WebDocument* document,
-                                  const string16& attribute_name,
-                                  const string16& attribute_value,
+                                  const base::string16& attribute_name,
+                                  const base::string16& attribute_value,
                                   std::vector<WebElement>* meta_elements) {
   DCHECK(document);
   DCHECK(meta_elements);

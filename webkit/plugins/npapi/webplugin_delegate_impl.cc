@@ -185,7 +185,7 @@ NPObject* WebPluginDelegateImpl::GetPluginScriptableObject() {
   return instance_->GetPluginScriptableObject();
 }
 
-bool WebPluginDelegateImpl::GetFormValue(string16* value) {
+bool WebPluginDelegateImpl::GetFormValue(base::string16* value) {
   return instance_->GetFormValue(value);
 }
 

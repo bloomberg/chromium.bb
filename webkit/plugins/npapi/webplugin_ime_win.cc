@@ -40,7 +40,7 @@ WebPluginIMEWin::WebPluginIMEWin()
 WebPluginIMEWin::~WebPluginIMEWin() {
 }
 
-void WebPluginIMEWin::CompositionUpdated(const string16& text,
+void WebPluginIMEWin::CompositionUpdated(const base::string16& text,
                                          std::vector<int> clauses,
                                          std::vector<int> target,
                                          int cursor_position) {
@@ -88,7 +88,7 @@ void WebPluginIMEWin::CompositionUpdated(const string16& text,
   delta_start_ = cursor_position;
 }
 
-void WebPluginIMEWin::CompositionCompleted(const string16& text) {
+void WebPluginIMEWin::CompositionCompleted(const base::string16& text) {
   composing_text_ = false;
 
   // We should update the following values when we finish a composition:

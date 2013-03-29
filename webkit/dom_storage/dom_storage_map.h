@@ -25,10 +25,10 @@ class WEBKIT_STORAGE_EXPORT DomStorageMap
 
   unsigned Length() const;
   NullableString16 Key(unsigned index);
-  NullableString16 GetItem(const string16& key) const;
-  bool SetItem(const string16& key, const string16& value,
+  NullableString16 GetItem(const base::string16& key) const;
+  bool SetItem(const base::string16& key, const base::string16& value,
                NullableString16* old_value);
-  bool RemoveItem(const string16& key, string16* old_value);
+  bool RemoveItem(const base::string16& key, base::string16* old_value);
 
   // Swaps this instances values_ with |map|.
   // Note: to grandfather in pre-existing files that are overbudget,

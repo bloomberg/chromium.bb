@@ -369,7 +369,7 @@ WebKeyboardEvent* BuildCharEvent(const InputEventData& event) {
   // Make sure to not read beyond the buffer in case some bad code doesn't
   // NULL-terminate it (this is called from plugins).
   size_t text_length_cap = WebKeyboardEvent::textLengthCap;
-  string16 text16 = UTF8ToUTF16(event.character_text);
+  base::string16 text16 = UTF8ToUTF16(event.character_text);
 
   memset(key_event->text, 0, text_length_cap);
   memset(key_event->unmodifiedText, 0, text_length_cap);

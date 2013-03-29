@@ -152,13 +152,13 @@ public:
 
     void LoadFile(const base::FilePath& file);
     void LoadURL(const GURL& url);
-    void LoadURLForFrame(const GURL& url, const string16& frame_name);
+    void LoadURLForFrame(const GURL& url, const base::string16& frame_name);
     void GoBackOrForward(int offset);
     void Reload();
     bool Navigate(const TestNavigationEntry& entry, bool reload);
 
     bool PromptForSaveFile(const wchar_t* prompt_title, base::FilePath* result);
-    string16 GetDocumentText();
+    base::string16 GetDocumentText();
     void DumpDocumentText();
     void DumpRenderTree();
 
@@ -191,13 +191,13 @@ public:
 
     // Writes the back-forward list data for every open window into result.
     // Should call DumpBackForwardListOfWindow on each TestShell window.
-    static void DumpAllBackForwardLists(string16* result);
+    static void DumpAllBackForwardLists(base::string16* result);
 
     // Writes the single back-forward entry into result.
-    void DumpBackForwardEntry(int index, string16* result);
+    void DumpBackForwardEntry(int index, base::string16* result);
 
     // Writes the back-forward list data for this test shell into result.
-    void DumpBackForwardList(string16* result);
+    void DumpBackForwardList(base::string16* result);
 
     static void ResetWebPreferences();
 

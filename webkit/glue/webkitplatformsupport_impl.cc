@@ -709,7 +709,7 @@ WebString WebKitPlatformSupportImpl::queryLocalizedString(
   int message_id = ToMessageID(name);
   if (message_id < 0)
     return WebString();
-  std::vector<string16> values;
+  std::vector<base::string16> values;
   values.reserve(2);
   values.push_back(value1);
   values.push_back(value2);

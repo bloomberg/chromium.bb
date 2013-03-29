@@ -415,7 +415,7 @@ void TestShell::Show(WebNavigationPolicy policy) {
   delegate_->show(policy);
 }
 
-void TestShell::DumpBackForwardEntry(int index, string16* result) {
+void TestShell::DumpBackForwardEntry(int index, base::string16* result) {
   int current_index = navigation_controller_->GetLastCommittedEntryIndex();
 
   std::string content_state =
@@ -429,7 +429,7 @@ void TestShell::DumpBackForwardEntry(int index, string16* result) {
       webkit_glue::DumpHistoryState(content_state, 8, index == current_index));
 }
 
-void TestShell::DumpBackForwardList(string16* result) {
+void TestShell::DumpBackForwardList(base::string16* result) {
   result->append(ASCIIToUTF16(
                      "\n============== Back Forward List ==============\n"));
 
@@ -503,11 +503,11 @@ void TestShell::ResetTestController() {
 }
 
 void TestShell::LoadFile(const base::FilePath& file) {
-  LoadURLForFrame(net::FilePathToFileURL(file), string16());
+  LoadURLForFrame(net::FilePathToFileURL(file), base::string16());
 }
 
 void TestShell::LoadURL(const GURL& url) {
-  LoadURLForFrame(url, string16());
+  LoadURLForFrame(url, base::string16());
 }
 
 bool TestShell::Navigate(const TestNavigationEntry& entry, bool reload) {
@@ -578,7 +578,7 @@ void TestShell::DumpRenderTree() {
   file_util::WriteFile(file_path, data.c_str(), data.length());
 }
 
-string16 TestShell::GetDocumentText() {
+base::string16 TestShell::GetDocumentText() {
   return webkit_glue::DumpDocumentText(webView()->mainFrame());
 }
 

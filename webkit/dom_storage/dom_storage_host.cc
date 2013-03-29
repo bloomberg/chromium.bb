@@ -80,7 +80,7 @@ NullableString16 DomStorageHost::GetAreaKey(int connection_id, unsigned index) {
 }
 
 NullableString16 DomStorageHost::GetAreaItem(int connection_id,
-                                             const string16& key) {
+                                             const base::string16& key) {
   DomStorageArea* area = GetOpenArea(connection_id);
   if (!area)
     return NullableString16(true);
@@ -88,8 +88,8 @@ NullableString16 DomStorageHost::GetAreaItem(int connection_id,
 }
 
 bool DomStorageHost::SetAreaItem(
-    int connection_id, const string16& key,
-    const string16& value, const GURL& page_url,
+    int connection_id, const base::string16& key,
+    const base::string16& value, const GURL& page_url,
     NullableString16* old_value) {
   DomStorageArea* area = GetOpenArea(connection_id);
   if (!area) {
@@ -106,8 +106,8 @@ bool DomStorageHost::SetAreaItem(
 }
 
 bool DomStorageHost::RemoveAreaItem(
-    int connection_id, const string16& key, const GURL& page_url,
-    string16* old_value) {
+    int connection_id, const base::string16& key, const GURL& page_url,
+    base::string16* old_value) {
   DomStorageArea* area = GetOpenArea(connection_id);
   if (!area)
     return false;

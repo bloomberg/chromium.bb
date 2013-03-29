@@ -54,8 +54,8 @@ void CreateInvalidValueColumnTable(sql::Connection* db) {
 }
 
 void InsertDataV1(sql::Connection* db,
-                  const string16& key,
-                  const string16& value) {
+                  const base::string16& key,
+                  const base::string16& value) {
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE,
       "INSERT INTO ItemTable VALUES (?,?)"));
   statement.BindString16(0, key);
@@ -72,7 +72,7 @@ void CheckValuesMatch(DomStorageDatabase* db,
 
   ValuesMap::const_iterator it = values_read.begin();
   for (; it != values_read.end(); ++it) {
-    string16 key = it->first;
+    base::string16 key = it->first;
     NullableString16 value = it->second;
     NullableString16 expected_value = expected.find(key)->second;
     EXPECT_EQ(expected_value.string(), value.string());
@@ -81,7 +81,7 @@ void CheckValuesMatch(DomStorageDatabase* db,
 }
 
 void CreateMapWithValues(ValuesMap* values) {
-  string16 kCannedKeys[] = {
+  base::string16 kCannedKeys[] = {
       ASCIIToUTF16("test"),
       ASCIIToUTF16("company"),
       ASCIIToUTF16("date"),
@@ -91,7 +91,7 @@ void CreateMapWithValues(ValuesMap* values) {
       NullableString16(ASCIIToUTF16("123"), false),
       NullableString16(ASCIIToUTF16("Google"), false),
       NullableString16(ASCIIToUTF16("18-01-2012"), false),
-      NullableString16(string16(), false)
+      NullableString16(base::string16(), false)
   };
   for (unsigned i = 0; i < sizeof(kCannedKeys) / sizeof(kCannedKeys[0]); i++)
     (*values)[kCannedKeys[i]] = kCannedValues[i];
@@ -259,7 +259,7 @@ TEST(DomStorageDatabaseTest, WriteWithClear) {
 }
 
 TEST(DomStorageDatabaseTest, UpgradeFromV1ToV2WithData) {
-  const string16 kCannedKey = ASCIIToUTF16("foo");
+  const base::string16 kCannedKey = ASCIIToUTF16("foo");
   const NullableString16 kCannedValue(ASCIIToUTF16("bar"), false);
   ValuesMap expected;
   expected[kCannedKey] = kCannedValue;
@@ -281,7 +281,7 @@ TEST(DomStorageDatabaseTest, TestSimpleRemoveOneValue) {
   DomStorageDatabase db;
 
   ASSERT_TRUE(db.LazyOpen(true));
-  const string16 kCannedKey = ASCIIToUTF16("test");
+  const base::string16 kCannedKey = ASCIIToUTF16("test");
   const NullableString16 kCannedValue(ASCIIToUTF16("data"), false);
   ValuesMap expected;
   expected[kCannedKey] = kCannedValue;

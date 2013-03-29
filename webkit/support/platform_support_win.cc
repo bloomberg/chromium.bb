@@ -69,7 +69,7 @@ void AfterShutdown() {
 
 }  // namespace webkit_support
 
-string16 TestWebKitPlatformSupport::GetLocalizedString(int message_id) {
+base::string16 TestWebKitPlatformSupport::GetLocalizedString(int message_id) {
   wchar_t localized[MAX_LOADSTRING];
   int length = ::LoadString(::GetModuleHandle(NULL), message_id,
                             localized, MAX_LOADSTRING);
@@ -77,7 +77,7 @@ string16 TestWebKitPlatformSupport::GetLocalizedString(int message_id) {
     NOTREACHED();
     return L"No string for this identifier!";
   }
-  return string16(localized, length);
+  return base::string16(localized, length);
 }
 
 base::StringPiece TestWebKitPlatformSupport::GetDataResource(

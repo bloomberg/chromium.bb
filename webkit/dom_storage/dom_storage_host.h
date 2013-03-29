@@ -38,13 +38,13 @@ class WEBKIT_STORAGE_EXPORT DomStorageHost {
   bool ExtractAreaValues(int connection_id, ValuesMap* map);
   unsigned GetAreaLength(int connection_id);
   NullableString16 GetAreaKey(int connection_id, unsigned index);
-  NullableString16 GetAreaItem(int connection_id, const string16& key);
-  bool SetAreaItem(int connection_id, const string16& key,
-                   const string16& value, const GURL& page_url,
+  NullableString16 GetAreaItem(int connection_id, const base::string16& key);
+  bool SetAreaItem(int connection_id, const base::string16& key,
+                   const base::string16& value, const GURL& page_url,
                    NullableString16* old_value);
-  bool RemoveAreaItem(int connection_id, const string16& key,
+  bool RemoveAreaItem(int connection_id, const base::string16& key,
                   const GURL& page_url,
-                  string16* old_value);
+                  base::string16* old_value);
   bool ClearArea(int connection_id, const GURL& page_url);
   bool HasAreaOpen(int namespace_id, const GURL& origin) const;
 

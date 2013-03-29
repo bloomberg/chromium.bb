@@ -19,13 +19,13 @@ class SimpleClipboardClient : public webkit_glue::ClipboardClient {
                                  ui::Clipboard::Buffer buffer) OVERRIDE;
   virtual void Clear(ui::Clipboard::Buffer buffer) OVERRIDE;
   virtual void ReadAvailableTypes(ui::Clipboard::Buffer buffer,
-                                  std::vector<string16>* types,
+                                  std::vector<base::string16>* types,
                                   bool* contains_filenames) OVERRIDE;
   virtual void ReadText(ui::Clipboard::Buffer buffer,
-                        string16* result) OVERRIDE;
+                        base::string16* result) OVERRIDE;
   virtual void ReadAsciiText(ui::Clipboard::Buffer buffer,
                              std::string* result) OVERRIDE;
-  virtual void ReadHTML(ui::Clipboard::Buffer buffer, string16* markup,
+  virtual void ReadHTML(ui::Clipboard::Buffer buffer, base::string16* markup,
                         GURL* url, uint32* fragment_start,
                         uint32* fragment_end) OVERRIDE;
   virtual void ReadRTF(ui::Clipboard::Buffer buffer,
@@ -33,8 +33,8 @@ class SimpleClipboardClient : public webkit_glue::ClipboardClient {
   virtual void ReadImage(ui::Clipboard::Buffer buffer,
                          std::string* data) OVERRIDE;
   virtual void ReadCustomData(ui::Clipboard::Buffer buffer,
-                              const string16& type,
-                              string16* data) OVERRIDE;
+                              const base::string16& type,
+                              base::string16* data) OVERRIDE;
   virtual void ReadData(const ui::Clipboard::FormatType& format,
                         std::string* data) OVERRIDE;
   virtual WriteContext* CreateWriteContext() OVERRIDE;

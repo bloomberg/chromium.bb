@@ -14,9 +14,9 @@ static void TestVfsFilePath(bool expected_result,
                             const char* expected_origin_identifier = "",
                             const char* expected_database_name = "",
                             const char* expected_sqlite_suffix = "") {
-  string16 origin_identifier;
-  string16 database_name;
-  string16 sqlite_suffix;
+  base::string16 origin_identifier;
+  base::string16 database_name;
+  base::string16 sqlite_suffix;
   EXPECT_EQ(expected_result,
             DatabaseUtil::CrackVfsFileName(ASCIIToUTF16(vfs_file_name),
                                            &origin_identifier,
@@ -28,7 +28,7 @@ static void TestVfsFilePath(bool expected_result,
 }
 
 static GURL ToAndFromOriginIdentifier(const GURL origin_url) {
-  string16 id = DatabaseUtil::GetOriginIdentifier(origin_url);
+  base::string16 id = DatabaseUtil::GetOriginIdentifier(origin_url);
   return DatabaseUtil::GetOriginFromIdentifier(id);
 }
 

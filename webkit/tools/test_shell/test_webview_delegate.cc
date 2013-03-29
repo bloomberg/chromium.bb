@@ -331,7 +331,7 @@ void TestWebViewDelegate::spellCheck(const WebString& text,
   // Check the spelling of the given text.
   // TODO(hbono): rebaseline layout-test results of Windows and Linux so we
   // can enable this mock spellchecker on them.
-  string16 word(text);
+  base::string16 word(text);
   mock_spellcheck_.SpellCheckWord(word, &misspelledOffset, &misspelledLength);
 #endif
 }
@@ -980,7 +980,7 @@ void TestWebViewDelegate::UpdateSessionHistory(WebFrame* frame) {
   entry->SetContentState(webkit_glue::HistoryItemToString(history_item));
 }
 
-string16 TestWebViewDelegate::GetFrameDescription(WebFrame* webframe) {
+base::string16 TestWebViewDelegate::GetFrameDescription(WebFrame* webframe) {
   std::string name = UTF16ToUTF8(webframe->uniqueName());
 
   if (webframe == shell_->webView()->mainFrame()) {

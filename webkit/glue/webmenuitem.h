@@ -27,8 +27,8 @@ struct WEBKIT_GLUE_EXPORT WebMenuItem {
   WebMenuItem(const WebMenuItem& item);
   ~WebMenuItem();
 
-  string16 label;
-  string16 toolTip;
+  base::string16 label;
+  base::string16 toolTip;
   Type type;
   unsigned action;
   bool rtl;

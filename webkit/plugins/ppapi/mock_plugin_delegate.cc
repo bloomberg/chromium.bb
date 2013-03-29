@@ -40,13 +40,14 @@ void MockPluginDelegate::PluginSelectionChanged(PluginInstance* instance) {
 }
 
 void MockPluginDelegate::SimulateImeSetComposition(
-    const string16& text,
+    const base::string16& text,
     const std::vector<WebKit::WebCompositionUnderline>& underlines,
     int selection_start,
     int selection_end) {
 }
 
-void MockPluginDelegate::SimulateImeConfirmComposition(const string16& text) {
+void MockPluginDelegate::SimulateImeConfirmComposition(
+    const base::string16& text) {
 }
 
 void MockPluginDelegate::PluginCrashed(PluginInstance* instance) {

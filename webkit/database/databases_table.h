@@ -20,9 +20,9 @@ struct WEBKIT_STORAGE_EXPORT_PRIVATE DatabaseDetails {
   DatabaseDetails();
   ~DatabaseDetails();
 
-  string16 origin_identifier;
-  string16 database_name;
-  string16 description;
+  base::string16 origin_identifier;
+  base::string16 database_name;
+  base::string16 description;
   int64 estimated_size;
 };
 
@@ -31,19 +31,19 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE DatabasesTable {
   explicit DatabasesTable(sql::Connection* db) : db_(db) { }
 
   bool Init();
-  int64 GetDatabaseID(const string16& origin_identifier,
-                      const string16& database_name);
-  bool GetDatabaseDetails(const string16& origin_identifier,
-                          const string16& database_name,
+  int64 GetDatabaseID(const base::string16& origin_identifier,
+                      const base::string16& database_name);
+  bool GetDatabaseDetails(const base::string16& origin_identifier,
+                          const base::string16& database_name,
                           DatabaseDetails* details);
   bool InsertDatabaseDetails(const DatabaseDetails& details);
   bool UpdateDatabaseDetails(const DatabaseDetails& details);
-  bool DeleteDatabaseDetails(const string16& origin_identifier,
-                             const string16& database_name);
-  bool GetAllOrigins(std::vector<string16>* origins);
-  bool GetAllDatabaseDetailsForOrigin(const string16& origin_identifier,
+  bool DeleteDatabaseDetails(const base::string16& origin_identifier,
+                             const base::string16& database_name);
+  bool GetAllOrigins(std::vector<base::string16>* origins);
+  bool GetAllDatabaseDetailsForOrigin(const base::string16& origin_identifier,
                                       std::vector<DatabaseDetails>* details);
-  bool DeleteOrigin(const string16& origin_identifier);
+  bool DeleteOrigin(const base::string16& origin_identifier);
  private:
   sql::Connection* db_;
 };

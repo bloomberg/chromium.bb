@@ -173,24 +173,24 @@ void AfterShutdown() {
 
 }  // namespace webkit_support
 
-string16 TestWebKitPlatformSupport::GetLocalizedString(int message_id) {
+base::string16 TestWebKitPlatformSupport::GetLocalizedString(int message_id) {
   // |g_resource_data_pack| is null on unit tests.
   // But som unit tests reach GetLocalizedString().
   if (!g_resource_data_pack)
-    return string16();
+    return base::string16();
   base::StringPiece res;
   if (!g_resource_data_pack->GetStringPiece(message_id, &res)) {
     LOG(FATAL) << "failed to load webkit string with id " << message_id;
   }
 
   // Data packs hold strings as either UTF8 or UTF16.
-  string16 msg;
+  base::string16 msg;
   switch (g_resource_data_pack->GetTextEncodingType()) {
   case ui::DataPack::UTF8:
     msg = UTF8ToUTF16(res);
     break;
   case ui::DataPack::UTF16:
-    msg = string16(reinterpret_cast<const char16*>(res.data()),
+    msg = base::string16(reinterpret_cast<const char16*>(res.data()),
                    res.length() / 2);
     break;
   case ui::DataPack::BINARY:

@@ -261,7 +261,7 @@ void TestWebViewDelegate::UpdateSelectionClipboard(bool is_empty_selection) {
 
 // Private methods ------------------------------------------------------------
 
-void TestWebViewDelegate::ShowJavaScriptAlert(const string16& message) {
+void TestWebViewDelegate::ShowJavaScriptAlert(const base::string16& message) {
   NSString *text =
       [NSString stringWithUTF8String:UTF16ToUTF8(message).c_str()];
   NSAlert *alert = [NSAlert alertWithMessageText:@"JavaScript Alert"
@@ -272,7 +272,7 @@ void TestWebViewDelegate::ShowJavaScriptAlert(const string16& message) {
   [alert runModal];
 }
 
-void TestWebViewDelegate::SetPageTitle(const string16& title) {
+void TestWebViewDelegate::SetPageTitle(const base::string16& title) {
   [[shell_->webViewHost()->view_handle() window]
       setTitle:[NSString stringWithUTF8String:UTF16ToUTF8(title).c_str()]];
 }

@@ -15,10 +15,10 @@ namespace webkit_database {
 
 const char DatabaseUtil::kJournalFileSuffix[] = "-journal";
 
-bool DatabaseUtil::CrackVfsFileName(const string16& vfs_file_name,
-                                    string16* origin_identifier,
-                                    string16* database_name,
-                                    string16* sqlite_suffix) {
+bool DatabaseUtil::CrackVfsFileName(const base::string16& vfs_file_name,
+                                    base::string16* origin_identifier,
+                                    base::string16* database_name,
+                                    base::string16* sqlite_suffix) {
   // 'vfs_file_name' is of the form <origin_identifier>/<db_name>#<suffix>.
   // <suffix> is optional.
   DCHECK(!vfs_file_name.empty());
@@ -26,8 +26,8 @@ bool DatabaseUtil::CrackVfsFileName(const string16& vfs_file_name,
   size_t last_pound_index = vfs_file_name.rfind('#');
   // '/' and '#' must be present in the string. Also, the string cannot start
   // with a '/' (origin_identifier cannot be empty) and '/' must come before '#'
-  if ((first_slash_index == string16::npos) ||
-      (last_pound_index == string16::npos) ||
+  if ((first_slash_index == base::string16::npos) ||
+      (last_pound_index == base::string16::npos) ||
       (first_slash_index == 0) ||
       (first_slash_index > last_pound_index)) {
     return false;
@@ -47,10 +47,10 @@ bool DatabaseUtil::CrackVfsFileName(const string16& vfs_file_name,
 }
 
 base::FilePath DatabaseUtil::GetFullFilePathForVfsFile(
-    DatabaseTracker* db_tracker, const string16& vfs_file_name) {
-  string16 origin_identifier;
-  string16 database_name;
-  string16 sqlite_suffix;
+    DatabaseTracker* db_tracker, const base::string16& vfs_file_name) {
+  base::string16 origin_identifier;
+  base::string16 database_name;
+  base::string16 sqlite_suffix;
   if (!CrackVfsFileName(vfs_file_name, &origin_identifier,
                         &database_name, &sqlite_suffix)) {
     return base::FilePath(); // invalid vfs_file_name
@@ -70,12 +70,13 @@ base::FilePath DatabaseUtil::GetFullFilePathForVfsFile(
   return full_path;
 }
 
-string16 DatabaseUtil::GetOriginIdentifier(const GURL& url) {
-  string16 spec = UTF8ToUTF16(url.spec());
+base::string16 DatabaseUtil::GetOriginIdentifier(const GURL& url) {
+  base::string16 spec = UTF8ToUTF16(url.spec());
   return WebKit::WebSecurityOrigin::createFromString(spec).databaseIdentifier();
 }
 
-GURL DatabaseUtil::GetOriginFromIdentifier(const string16& origin_identifier) {
+GURL DatabaseUtil::GetOriginFromIdentifier(
+    const base::string16& origin_identifier) {
   WebKit::WebSecurityOrigin web_security_origin =
       WebKit::WebSecurityOrigin::createFromDatabaseIdentifier(
           origin_identifier);
@@ -91,15 +92,16 @@ GURL DatabaseUtil::GetOriginFromIdentifier(const string16& origin_identifier) {
   return GURL(web_security_origin.toString());
 }
 
-bool DatabaseUtil::IsValidOriginIdentifier(const string16& origin_identifier) {
-  string16 dotdot = ASCIIToUTF16("..");
+bool DatabaseUtil::IsValidOriginIdentifier(
+    const base::string16& origin_identifier) {
+  base::string16 dotdot = ASCIIToUTF16("..");
   char16 forbidden[] = {'\\', '/', '\0'};
 
-  string16::size_type pos = origin_identifier.find(dotdot);
-  if (pos == string16::npos)
+  base::string16::size_type pos = origin_identifier.find(dotdot);
+  if (pos == base::string16::npos)
     pos = origin_identifier.find_first_of(forbidden, 0, arraysize(forbidden));
 
-  return pos == string16::npos;
+  return pos == base::string16::npos;
 }
 
 }  // namespace webkit_database

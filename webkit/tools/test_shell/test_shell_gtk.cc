@@ -478,7 +478,7 @@ void TestShell::ResizeSubViews() {
   // GTK manages layout for us so we do nothing.
 }
 
-/* static */ void TestShell::DumpAllBackForwardLists(string16* result) {
+/* static */ void TestShell::DumpAllBackForwardLists(base::string16* result) {
   result->clear();
   for (WindowList::iterator iter = TestShell::windowList()->begin();
        iter != TestShell::windowList()->end(); iter++) {
@@ -491,7 +491,7 @@ void TestShell::ResizeSubViews() {
 }
 
 void TestShell::LoadURLForFrame(const GURL& url,
-                                const string16& frame_name) {
+                                const base::string16& frame_name) {
   if (!url.is_valid())
     return;
 
@@ -565,7 +565,7 @@ base::StringPiece TestShell::ResourceProvider(int key) {
 
 //-----------------------------------------------------------------------------
 
-string16 TestShellWebKitInit::GetLocalizedString(int message_id) {
+base::string16 TestShellWebKitInit::GetLocalizedString(int message_id) {
   return ResourceBundle::GetSharedInstance().GetLocalizedString(message_id);
 }
 

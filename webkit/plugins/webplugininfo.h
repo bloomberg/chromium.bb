@@ -30,11 +30,11 @@ struct WEBKIT_PLUGINS_EXPORT WebPluginMimeType {
   std::vector<std::string> file_extensions;
 
   // Description of the mime type.
-  string16 description;
+  base::string16 description;
 
   // Extra parameters to include when instantiating the plugin.
-  std::vector<string16> additional_param_names;
-  std::vector<string16> additional_param_values;
+  std::vector<base::string16> additional_param_names;
+  std::vector<base::string16> additional_param_values;
 };
 
 // Describes an available NPAPI or Pepper plugin.
@@ -52,22 +52,22 @@ struct WEBKIT_PLUGINS_EXPORT WebPluginInfo {
   WebPluginInfo& operator=(const WebPluginInfo& rhs);
 
   // Special constructor only used during unit testing:
-  WebPluginInfo(const string16& fake_name,
+  WebPluginInfo(const base::string16& fake_name,
                 const base::FilePath& fake_path,
-                const string16& fake_version,
-                const string16& fake_desc);
+                const base::string16& fake_version,
+                const base::string16& fake_desc);
 
   // The name of the plugin (i.e. Flash).
-  string16 name;
+  base::string16 name;
 
   // The path to the plugin file (DLL/bundle/library).
   base::FilePath path;
 
   // The version number of the plugin file (may be OS-specific)
-  string16 version;
+  base::string16 version;
 
   // A description of the plugin that we get from its version info.
-  string16 desc;
+  base::string16 desc;
 
   // A list of all the mime types that this plugin supports.
   std::vector<WebPluginMimeType> mime_types;

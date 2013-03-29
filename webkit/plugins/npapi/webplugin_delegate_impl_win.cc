@@ -203,7 +203,7 @@ int GetPluginMajorVersion(const WebPluginInfo& plugin_info) {
 
 bool GetPluginPropertyFromWindow(
     HWND window, const wchar_t* plugin_atom_property,
-    string16* plugin_property) {
+    base::string16* plugin_property) {
   ATOM plugin_atom = reinterpret_cast<ATOM>(
       GetPropW(window, plugin_atom_property));
   if (plugin_atom != 0) {
@@ -220,12 +220,12 @@ bool GetPluginPropertyFromWindow(
 }  // namespace
 
 bool WebPluginDelegateImpl::IsPluginDelegateWindow(HWND window) {
-  return ui::GetClassName(window) == string16(kNativeWindowClassName);
+  return ui::GetClassName(window) == base::string16(kNativeWindowClassName);
 }
 
 // static
 bool WebPluginDelegateImpl::GetPluginNameFromWindow(
-    HWND window, string16* plugin_name) {
+    HWND window, base::string16* plugin_name) {
   return IsPluginDelegateWindow(window) &&
       GetPluginPropertyFromWindow(
           window, kPluginNameAtomProperty, plugin_name);
@@ -233,7 +233,7 @@ bool WebPluginDelegateImpl::GetPluginNameFromWindow(
 
 // static
 bool WebPluginDelegateImpl::GetPluginVersionFromWindow(
-    HWND window, string16* plugin_version) {
+    HWND window, base::string16* plugin_version) {
   return IsPluginDelegateWindow(window) &&
       GetPluginPropertyFromWindow(
           window, kPluginVersionAtomProperty, plugin_version);
@@ -560,7 +560,7 @@ bool WebPluginDelegateImpl::WindowedCreatePlugin() {
         DCHECK(result == TRUE) << "SetProp failed, last error = " <<
             GetLastError();
       }
-      string16 plugin_version = plugin_lib->plugin_info().version;
+      base::string16 plugin_version = plugin_lib->plugin_info().version;
       if (!plugin_version.empty()) {
         ATOM plugin_version_atom = GlobalAddAtomW(plugin_version.c_str());
         DCHECK_NE(0, plugin_version_atom);
@@ -1477,7 +1477,7 @@ LONG WINAPI WebPluginDelegateImpl::RegEnumKeyExWPatch(
 }
 
 void WebPluginDelegateImpl::ImeCompositionUpdated(
-    const string16& text,
+    const base::string16& text,
     const std::vector<int>& clauses,
     const std::vector<int>& target,
     int cursor_position) {
@@ -1488,7 +1488,8 @@ void WebPluginDelegateImpl::ImeCompositionUpdated(
   plugin_ime_->SendEvents(instance());
 }
 
-void WebPluginDelegateImpl::ImeCompositionCompleted(const string16& text) {
+void WebPluginDelegateImpl::ImeCompositionCompleted(
+    const base::string16& text) {
   if (!plugin_ime_.get())
     plugin_ime_.reset(new WebPluginIMEWin);
   plugin_ime_->CompositionCompleted(text);

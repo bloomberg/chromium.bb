@@ -50,10 +50,10 @@ WebPluginInfo& WebPluginInfo::operator=(const WebPluginInfo& rhs) {
   return *this;
 }
 
-WebPluginInfo::WebPluginInfo(const string16& fake_name,
+WebPluginInfo::WebPluginInfo(const base::string16& fake_name,
                              const base::FilePath& fake_path,
-                             const string16& fake_version,
-                             const string16& fake_desc)
+                             const base::string16& fake_version,
+                             const base::string16& fake_desc)
     : name(fake_name),
       path(fake_path),
       version(fake_version),

@@ -85,7 +85,7 @@ class WEBKIT_PLUGINS_EXPORT WebPluginDelegate {
 
   // Gets the form value associated with the plugin instance.
   // Returns false if the value is not available.
-  virtual bool GetFormValue(string16* value) = 0;
+  virtual bool GetFormValue(base::string16* value) = 0;
 
   // Receives notification about a resource load that the plugin initiated
   // for a frame.

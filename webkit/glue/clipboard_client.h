@@ -44,18 +44,19 @@ class ClipboardClient {
 
   // Reads the available types from the clipboard, if available.
   virtual void ReadAvailableTypes(ui::Clipboard::Buffer buffer,
-                                  std::vector<string16>* types,
+                                  std::vector<base::string16>* types,
                                   bool* contains_filenames) = 0;
 
   // Reads UNICODE text from the clipboard, if available.
-  virtual void ReadText(ui::Clipboard::Buffer buffer, string16* result) = 0;
+  virtual void ReadText(ui::Clipboard::Buffer buffer,
+                        base::string16* result) = 0;
 
   // Reads ASCII text from the clipboard, if available.
   virtual void ReadAsciiText(ui::Clipboard::Buffer buffer,
                              std::string* result) = 0;
 
   // Reads HTML from the clipboard, if available.
-  virtual void ReadHTML(ui::Clipboard::Buffer buffer, string16* markup,
+  virtual void ReadHTML(ui::Clipboard::Buffer buffer, base::string16* markup,
                         GURL* url, uint32* fragment_start,
                         uint32* fragment_end) = 0;
 
@@ -67,8 +68,8 @@ class ClipboardClient {
 
   // Reads a custom data type from the clipboard, if available.
   virtual void ReadCustomData(ui::Clipboard::Buffer buffer,
-                              const string16& type,
-                              string16* data) = 0;
+                              const base::string16& type,
+                              base::string16* data) = 0;
 
   // Reads raw data from the clipboard for a given format.
   virtual void ReadData(const ui::Clipboard::FormatType& format,

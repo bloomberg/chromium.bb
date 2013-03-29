@@ -119,17 +119,19 @@ class GlueSerializeTest : public testing::Test {
           ->GetPrimaryDisplay().device_scale_factor();
     }
 #endif
-    EXPECT_EQ(string16(a.urlString()), string16(b.urlString()));
-    EXPECT_EQ(string16(a.originalURLString()), string16(b.originalURLString()));
-    EXPECT_EQ(string16(a.target()), string16(b.target()));
-    EXPECT_EQ(string16(a.parent()), string16(b.parent()));
-    EXPECT_EQ(string16(a.title()), string16(b.title()));
-    EXPECT_EQ(string16(a.alternateTitle()), string16(b.alternateTitle()));
+    EXPECT_EQ(base::string16(a.urlString()), base::string16(b.urlString()));
+    EXPECT_EQ(base::string16(a.originalURLString()),
+              base::string16(b.originalURLString()));
+    EXPECT_EQ(base::string16(a.target()), base::string16(b.target()));
+    EXPECT_EQ(base::string16(a.parent()), base::string16(b.parent()));
+    EXPECT_EQ(base::string16(a.title()), base::string16(b.title()));
+    EXPECT_EQ(base::string16(a.alternateTitle()),
+              base::string16(b.alternateTitle()));
     EXPECT_EQ(a.lastVisitedTime(), b.lastVisitedTime());
     EXPECT_EQ(expectedScrollOffset, b.scrollOffset());
     EXPECT_EQ(a.isTargetItem(), b.isTargetItem());
     EXPECT_EQ(a.visitCount(), b.visitCount());
-    EXPECT_EQ(string16(a.referrer()), string16(b.referrer()));
+    EXPECT_EQ(base::string16(a.referrer()), base::string16(b.referrer()));
     if (version >= 11)
       EXPECT_EQ(expectedPageScaleFactor, b.pageScaleFactor());
     if (version >= 9)
@@ -141,7 +143,7 @@ class GlueSerializeTest : public testing::Test {
     const WebVector<WebString>& b_docstate = b.documentState();
     EXPECT_EQ(a_docstate.size(), b_docstate.size());
     for (size_t i = 0, c = a_docstate.size(); i < c; ++i)
-      EXPECT_EQ(string16(a_docstate[i]), string16(b_docstate[i]));
+      EXPECT_EQ(base::string16(a_docstate[i]), base::string16(b_docstate[i]));
   }
 
   void HistoryItemExpectFormDataEqual(const WebHistoryItem& a,
@@ -160,11 +162,13 @@ class GlueSerializeTest : public testing::Test {
           EXPECT_EQ(std::string(a_elem.data.data(), a_elem.data.size()),
                     std::string(b_elem.data.data(), b_elem.data.size()));
         } else {
-          EXPECT_EQ(string16(a_elem.filePath), string16(b_elem.filePath));
+          EXPECT_EQ(base::string16(a_elem.filePath),
+                    base::string16(b_elem.filePath));
         }
       }
     }
-    EXPECT_EQ(string16(a.httpContentType()), string16(b.httpContentType()));
+    EXPECT_EQ(base::string16(a.httpContentType()),
+              base::string16(b.httpContentType()));
   }
 
   void HistoryItemExpectChildrenEqual(const WebHistoryItem& a,

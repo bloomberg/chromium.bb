@@ -29,14 +29,14 @@ class MockSpellCheck {
   // the first invalid word to misspelledLength, respectively.
   // For example, when the given text is "   zz zz", this function sets 3 to
   // misspelledOffset and 2 to misspelledLength, respectively.
-  bool SpellCheckWord(const string16& text,
+  bool SpellCheckWord(const base::string16& text,
                       int* misspelledOffset,
                       int* misspelledLength);
 
   // Emulates suggestions for misspelled words.
   // The suggestions are pushed to |suggestions| parameters.
-  void FillSuggestions(const string16& word,
-                       std::vector<string16>* suggestions);
+  void FillSuggestions(const base::string16& word,
+                       std::vector<base::string16>* suggestions);
  private:
   // Initialize the internal resources if we need to initialize it.
   // Initializing this object may take long time. To prevent from hurting
@@ -48,7 +48,7 @@ class MockSpellCheck {
   bool InitializeIfNeeded();
 
   // A table that consists of misspelled words.
-  std::map<string16, bool> misspelled_words_;
+  std::map<base::string16, bool> misspelled_words_;
 
   // A flag representing whether or not this object is initialized.
   bool initialized_;

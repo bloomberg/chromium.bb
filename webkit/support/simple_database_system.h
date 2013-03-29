@@ -39,11 +39,12 @@ class SimpleDatabaseSystem : public webkit_database::DatabaseTracker::Observer,
 
   // SQLite VFS related methods, these are called on webcore's
   // background database threads via the WebKitPlatformSupport impl.
-  base::PlatformFile OpenFile(const string16& vfs_file_name, int desired_flags);
-  int DeleteFile(const string16& vfs_file_name, bool sync_dir);
-  uint32 GetFileAttributes(const string16& vfs_file_name);
-  int64 GetFileSize(const string16& vfs_file_name);
-  int64 GetSpaceAvailable(const string16& origin_identifier);
+  base::PlatformFile OpenFile(const base::string16& vfs_file_name,
+                              int desired_flags);
+  int DeleteFile(const base::string16& vfs_file_name, bool sync_dir);
+  uint32 GetFileAttributes(const base::string16& vfs_file_name);
+  int64 GetFileSize(const base::string16& vfs_file_name);
+  int64 GetSpaceAvailable(const base::string16& origin_identifier);
 
   // For use by testRunner, called on the main thread.
   void ClearAllDatabases();
@@ -51,36 +52,36 @@ class SimpleDatabaseSystem : public webkit_database::DatabaseTracker::Observer,
 
  private:
   // Used by our WebDatabaseObserver impl, only called on the db_thread
-  void DatabaseOpened(const string16& origin_identifier,
-                      const string16& database_name,
-                      const string16& description,
+  void DatabaseOpened(const base::string16& origin_identifier,
+                      const base::string16& database_name,
+                      const base::string16& description,
                       int64 estimated_size);
-  void DatabaseModified(const string16& origin_identifier,
-                        const string16& database_name);
-  void DatabaseClosed(const string16& origin_identifier,
-                      const string16& database_name);
+  void DatabaseModified(const base::string16& origin_identifier,
+                        const base::string16& database_name);
+  void DatabaseClosed(const base::string16& origin_identifier,
+                      const base::string16& database_name);
 
   // DatabaseTracker::Observer implementation
-  virtual void OnDatabaseSizeChanged(const string16& origin_identifier,
-                                     const string16& database_name,
+  virtual void OnDatabaseSizeChanged(const base::string16& origin_identifier,
+                                     const base::string16& database_name,
                                      int64 database_size) OVERRIDE;
   virtual void OnDatabaseScheduledForDeletion(
-      const string16& origin_identifier,
-      const string16& database_name) OVERRIDE;
+      const base::string16& origin_identifier,
+      const base::string16& database_name) OVERRIDE;
 
   // Used by our public SQLite VFS methods, only called on the db_thread.
-  void VfsOpenFile(const string16& vfs_file_name, int desired_flags,
+  void VfsOpenFile(const base::string16& vfs_file_name, int desired_flags,
                    base::PlatformFile* result, base::WaitableEvent* done_event);
-  void VfsDeleteFile(const string16& vfs_file_name, bool sync_dir,
+  void VfsDeleteFile(const base::string16& vfs_file_name, bool sync_dir,
                      int* result, base::WaitableEvent* done_event);
-  void VfsGetFileAttributes(const string16& vfs_file_name,
+  void VfsGetFileAttributes(const base::string16& vfs_file_name,
                             uint32* result, base::WaitableEvent* done_event);
-  void VfsGetFileSize(const string16& vfs_file_name,
+  void VfsGetFileSize(const base::string16& vfs_file_name,
                       int64* result, base::WaitableEvent* done_event);
-  void VfsGetSpaceAvailable(const string16& origin_identifier,
+  void VfsGetSpaceAvailable(const base::string16& origin_identifier,
                             int64* result, base::WaitableEvent* done_event);
 
-  base::FilePath GetFullFilePathForVfsFile(const string16& vfs_file_name);
+  base::FilePath GetFullFilePathForVfsFile(const base::string16& vfs_file_name);
 
   void ResetTracker();
   void ThreadCleanup(base::WaitableEvent* done_event);

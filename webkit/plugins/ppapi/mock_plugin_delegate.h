@@ -24,11 +24,11 @@ class MockPluginDelegate : public PluginDelegate {
   virtual void PluginRequestedCancelComposition(PluginInstance* instance);
   virtual void PluginSelectionChanged(PluginInstance* instance);
   virtual void SimulateImeSetComposition(
-      const string16& text,
+      const base::string16& text,
       const std::vector<WebKit::WebCompositionUnderline>& underlines,
       int selection_start,
       int selection_end);
-  virtual void SimulateImeConfirmComposition(const string16& text);
+  virtual void SimulateImeConfirmComposition(const base::string16& text);
   virtual void PluginCrashed(PluginInstance* instance);
   virtual void InstanceCreated(PluginInstance* instance);
   virtual void InstanceDeleted(PluginInstance* instance);

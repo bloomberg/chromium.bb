@@ -16,7 +16,7 @@ namespace npapi {
 // Parse a version string as used by a plug-in. This method is more lenient
 // in accepting weird version strings than Version::GetFromString()
 WEBKIT_PLUGINS_EXPORT void CreateVersionFromString(
-    const string16& version_string,
+    const base::string16& version_string,
     Version* parsed_version);
 
 // Returns true iff NPAPI plugins are supported on the current platform.

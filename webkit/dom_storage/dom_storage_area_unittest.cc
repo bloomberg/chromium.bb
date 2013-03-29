@@ -32,10 +32,10 @@ class DomStorageAreaTest : public testing::Test {
   }
 
   const GURL kOrigin;
-  const string16 kKey;
-  const string16 kValue;
-  const string16 kKey2;
-  const string16 kValue2;
+  const base::string16 kKey;
+  const base::string16 kValue;
+  const base::string16 kKey2;
+  const base::string16 kValue2;
 
   // Method used in the CommitTasks test case.
   void InjectedCommitSequencingTask(DomStorageArea* area) {
@@ -58,8 +58,8 @@ class DomStorageAreaTest : public testing::Test {
    public:
     VerifyChangesCommittedDatabase() {}
     virtual ~VerifyChangesCommittedDatabase() {
-      const string16 kKey(ASCIIToUTF16("key"));
-      const string16 kValue(ASCIIToUTF16("value"));
+      const base::string16 kKey(ASCIIToUTF16("key"));
+      const base::string16 kValue(ASCIIToUTF16("value"));
       ValuesMap values;
       ReadAllValues(&values);
       EXPECT_EQ(1u, values.size());
@@ -74,7 +74,7 @@ class DomStorageAreaTest : public testing::Test {
 TEST_F(DomStorageAreaTest, DomStorageAreaBasics) {
   scoped_refptr<DomStorageArea> area(
       new DomStorageArea(1, std::string(), kOrigin, NULL, NULL));
-  string16 old_value;
+  base::string16 old_value;
   NullableString16 old_nullable_value;
   scoped_refptr<DomStorageArea> copy;
 

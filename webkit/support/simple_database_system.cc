@@ -56,8 +56,9 @@ SimpleDatabaseSystem::~SimpleDatabaseSystem() {
 }
 
 void SimpleDatabaseSystem::databaseOpened(const WebKit::WebDatabase& database) {
-  string16 origin_identifier = database.securityOrigin().databaseIdentifier();
-  string16 database_name = database.name();
+  base::string16 origin_identifier =
+      database.securityOrigin().databaseIdentifier();
+  base::string16 database_name = database.name();
   open_connections_->AddOpenConnection(origin_identifier, database_name);
   db_thread_proxy_->PostTask(
       FROM_HERE,
@@ -79,8 +80,9 @@ void SimpleDatabaseSystem::databaseModified(
 }
 
 void SimpleDatabaseSystem::databaseClosed(const WebKit::WebDatabase& database) {
-  string16 origin_identifier = database.securityOrigin().databaseIdentifier();
-  string16 database_name = database.name();
+  base::string16 origin_identifier =
+      database.securityOrigin().databaseIdentifier();
+  base::string16 database_name = database.name();
   db_thread_proxy_->PostTask(
       FROM_HERE,
       base::Bind(&SimpleDatabaseSystem::DatabaseClosed,
@@ -88,7 +90,7 @@ void SimpleDatabaseSystem::databaseClosed(const WebKit::WebDatabase& database) {
 }
 
 base::PlatformFile SimpleDatabaseSystem::OpenFile(
-    const string16& vfs_file_name, int desired_flags) {
+    const base::string16& vfs_file_name, int desired_flags) {
   base::PlatformFile result = base::kInvalidPlatformFileValue;
   base::WaitableEvent done_event(false, false);
   db_thread_proxy_->PostTask(
@@ -102,7 +104,7 @@ base::PlatformFile SimpleDatabaseSystem::OpenFile(
 }
 
 int SimpleDatabaseSystem::DeleteFile(
-    const string16& vfs_file_name, bool sync_dir) {
+    const base::string16& vfs_file_name, bool sync_dir) {
   int result = SQLITE_OK;
   base::WaitableEvent done_event(false, false);
   db_thread_proxy_->PostTask(
@@ -115,7 +117,8 @@ int SimpleDatabaseSystem::DeleteFile(
   return result;
 }
 
-uint32 SimpleDatabaseSystem::GetFileAttributes(const string16& vfs_file_name) {
+uint32 SimpleDatabaseSystem::GetFileAttributes(
+    const base::string16& vfs_file_name) {
   uint32 result = 0;
   base::WaitableEvent done_event(false, false);
   db_thread_proxy_->PostTask(
@@ -126,7 +129,7 @@ uint32 SimpleDatabaseSystem::GetFileAttributes(const string16& vfs_file_name) {
   return result;
 }
 
-int64 SimpleDatabaseSystem::GetFileSize(const string16& vfs_file_name) {
+int64 SimpleDatabaseSystem::GetFileSize(const base::string16& vfs_file_name) {
   int64 result = 0;
   base::WaitableEvent done_event(false, false);
   db_thread_proxy_->PostTask(
@@ -138,7 +141,7 @@ int64 SimpleDatabaseSystem::GetFileSize(const string16& vfs_file_name) {
 }
 
 int64 SimpleDatabaseSystem::GetSpaceAvailable(
-    const string16& origin_identifier) {
+    const base::string16& origin_identifier) {
   int64 result = 0;
   base::WaitableEvent done_event(false, false);
   db_thread_proxy_->PostTask(
@@ -168,10 +171,11 @@ void SimpleDatabaseSystem::SetDatabaseQuota(int64 quota) {
   quota_per_origin_ = quota;
 }
 
-void SimpleDatabaseSystem::DatabaseOpened(const string16& origin_identifier,
-                                          const string16& database_name,
-                                          const string16& description,
-                                          int64 estimated_size) {
+void SimpleDatabaseSystem::DatabaseOpened(
+    const base::string16& origin_identifier,
+    const base::string16& database_name,
+    const base::string16& description,
+    int64 estimated_size) {
   DCHECK(db_thread_proxy_->BelongsToCurrentThread());
   int64 database_size = 0;
   db_tracker_->DatabaseOpened(
@@ -181,22 +185,24 @@ void SimpleDatabaseSystem::DatabaseOpened(const string16& origin_identifier,
                         database_size);
 }
 
-void SimpleDatabaseSystem::DatabaseModified(const string16& origin_identifier,
-                                            const string16& database_name) {
+void SimpleDatabaseSystem::DatabaseModified(
+    const base::string16& origin_identifier,
+    const base::string16& database_name) {
   DCHECK(db_thread_proxy_->BelongsToCurrentThread());
   db_tracker_->DatabaseModified(origin_identifier, database_name);
 }
 
-void SimpleDatabaseSystem::DatabaseClosed(const string16& origin_identifier,
-                                          const string16& database_name) {
+void SimpleDatabaseSystem::DatabaseClosed(
+    const base::string16& origin_identifier,
+    const base::string16& database_name) {
   DCHECK(db_thread_proxy_->BelongsToCurrentThread());
   db_tracker_->DatabaseClosed(origin_identifier, database_name);
   open_connections_->RemoveOpenConnection(origin_identifier, database_name);
 }
 
 void SimpleDatabaseSystem::OnDatabaseSizeChanged(
-    const string16& origin_identifier,
-    const string16& database_name,
+    const base::string16& origin_identifier,
+    const base::string16& database_name,
     int64 database_size) {
   DCHECK(db_thread_proxy_->BelongsToCurrentThread());
   // We intentionally call into webkit on our background db_thread_
@@ -207,8 +213,8 @@ void SimpleDatabaseSystem::OnDatabaseSizeChanged(
 }
 
 void SimpleDatabaseSystem::OnDatabaseScheduledForDeletion(
-    const string16& origin_identifier,
-    const string16& database_name) {
+    const base::string16& origin_identifier,
+    const base::string16& database_name) {
   DCHECK(db_thread_proxy_->BelongsToCurrentThread());
   // We intentionally call into webkit on our background db_thread_
   // to better emulate what happens in chrome where this method is
@@ -218,7 +224,7 @@ void SimpleDatabaseSystem::OnDatabaseScheduledForDeletion(
 }
 
 void SimpleDatabaseSystem::VfsOpenFile(
-    const string16& vfs_file_name, int desired_flags,
+    const base::string16& vfs_file_name, int desired_flags,
     base::PlatformFile* file_handle, base::WaitableEvent* done_event ) {
   DCHECK(db_thread_proxy_->BelongsToCurrentThread());
   base::FilePath file_name = GetFullFilePathForVfsFile(vfs_file_name);
@@ -232,7 +238,7 @@ void SimpleDatabaseSystem::VfsOpenFile(
 }
 
 void SimpleDatabaseSystem::VfsDeleteFile(
-    const string16& vfs_file_name, bool sync_dir,
+    const base::string16& vfs_file_name, bool sync_dir,
     int* result, base::WaitableEvent* done_event) {
   DCHECK(db_thread_proxy_->BelongsToCurrentThread());
   // We try to delete the file multiple times, because that's what the default
@@ -254,7 +260,7 @@ void SimpleDatabaseSystem::VfsDeleteFile(
 }
 
 void SimpleDatabaseSystem::VfsGetFileAttributes(
-    const string16& vfs_file_name,
+    const base::string16& vfs_file_name,
     uint32* result, base::WaitableEvent* done_event) {
   DCHECK(db_thread_proxy_->BelongsToCurrentThread());
   *result = VfsBackend::GetFileAttributes(
@@ -263,7 +269,7 @@ void SimpleDatabaseSystem::VfsGetFileAttributes(
 }
 
 void SimpleDatabaseSystem::VfsGetFileSize(
-    const string16& vfs_file_name,
+    const base::string16& vfs_file_name,
     int64* result, base::WaitableEvent* done_event) {
   DCHECK(db_thread_proxy_->BelongsToCurrentThread());
   *result = VfsBackend::GetFileSize(GetFullFilePathForVfsFile(vfs_file_name));
@@ -271,7 +277,7 @@ void SimpleDatabaseSystem::VfsGetFileSize(
 }
 
 void SimpleDatabaseSystem::VfsGetSpaceAvailable(
-    const string16& origin_identifier,
+    const base::string16& origin_identifier,
     int64* result, base::WaitableEvent* done_event) {
   DCHECK(db_thread_proxy_->BelongsToCurrentThread());
   // This method isn't actually part of the "vfs" interface, but it is
@@ -288,7 +294,7 @@ void SimpleDatabaseSystem::VfsGetSpaceAvailable(
 }
 
 base::FilePath SimpleDatabaseSystem::GetFullFilePathForVfsFile(
-    const string16& vfs_file_name) {
+    const base::string16& vfs_file_name) {
   DCHECK(db_thread_proxy_->BelongsToCurrentThread());
   if (vfs_file_name.empty())  // temp file, used for vacuuming
     return base::FilePath();

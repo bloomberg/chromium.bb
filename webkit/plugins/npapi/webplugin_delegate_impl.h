@@ -85,9 +85,9 @@ class WEBKIT_PLUGINS_EXPORT WebPluginDelegateImpl : public WebPluginDelegate {
 #if defined(OS_WIN)
   static bool IsPluginDelegateWindow(HWND window);
   static bool GetPluginNameFromWindow(HWND window,
-                                      string16* plugin_name);
+                                      base::string16* plugin_name);
   static bool GetPluginVersionFromWindow(HWND window,
-                                         string16* plugin_version);
+                                         base::string16* plugin_version);
 
   // Returns true if the window handle passed in is that of the dummy
   // activation window for windowless plugins.
@@ -112,7 +112,7 @@ class WEBKIT_PLUGINS_EXPORT WebPluginDelegateImpl : public WebPluginDelegate {
   virtual bool HandleInputEvent(const WebKit::WebInputEvent& event,
                                 WebKit::WebCursorInfo* cursor_info) OVERRIDE;
   virtual NPObject* GetPluginScriptableObject() OVERRIDE;
-  virtual bool GetFormValue(string16* value) OVERRIDE;
+  virtual bool GetFormValue(base::string16* value) OVERRIDE;
   virtual void DidFinishLoadWithReason(const GURL& url,
                                        NPReason reason,
                                        int notify_id) OVERRIDE;
@@ -152,14 +152,14 @@ class WEBKIT_PLUGINS_EXPORT WebPluginDelegateImpl : public WebPluginDelegate {
 
 #if defined(OS_WIN)
   // Informs the plug-in that an IME has changed its status.
-  void ImeCompositionUpdated(const string16& text,
+  void ImeCompositionUpdated(const base::string16& text,
                              const std::vector<int>& clauses,
                              const std::vector<int>& target,
                              int cursor_position);
 
   // Informs the plugin that IME composition has completed./ If |text| is empty,
   // IME was cancelled.
-  void ImeCompositionCompleted(const string16& text);
+  void ImeCompositionCompleted(const base::string16& text);
 
   // Returns the IME status retrieved from a plug-in.
   bool GetIMEStatus(int* input_type, gfx::Rect* caret_rect);
@@ -186,7 +186,7 @@ class WEBKIT_PLUGINS_EXPORT WebPluginDelegateImpl : public WebPluginDelegate {
                           const gfx::Rect& view_frame);
   // Informs the plugin that IME composition has completed.
   // If |text| is empty, IME was cancelled.
-  void ImeCompositionCompleted(const string16& text);
+  void ImeCompositionCompleted(const base::string16& text);
   // Informs the delegate that the plugin set a Cocoa NSCursor.
   void SetNSCursor(NSCursor* cursor);
 

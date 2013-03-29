@@ -119,7 +119,7 @@ class TestWebKitPlatformSupport :
   virtual void sampleGamepads(WebKit::WebGamepads& data);
   void setGamepadData(const WebKit::WebGamepads& data);
 
-  virtual string16 GetLocalizedString(int message_id) OVERRIDE;
+  virtual base::string16 GetLocalizedString(int message_id) OVERRIDE;
   virtual base::StringPiece GetDataResource(
       int resource_id,
       ui::ScaleFactor scale_factor) OVERRIDE;

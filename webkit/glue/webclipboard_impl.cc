@@ -113,7 +113,7 @@ bool WebClipboardImpl::isFormatAvailable(Format format, Buffer buffer) {
 WebVector<WebString> WebClipboardImpl::readAvailableTypes(
     Buffer buffer, bool* contains_filenames) {
   ui::Clipboard::Buffer buffer_type;
-  std::vector<string16> types;
+  std::vector<base::string16> types;
   if (ConvertBufferType(buffer, &buffer_type)) {
     client_->ReadAvailableTypes(buffer_type, &types, contains_filenames);
   }
@@ -127,7 +127,7 @@ WebString WebClipboardImpl::readPlainText(Buffer buffer) {
 
   if (client_->IsFormatAvailable(ui::Clipboard::GetPlainTextWFormatType(),
                                  buffer_type)) {
-    string16 text;
+    base::string16 text;
     client_->ReadText(buffer_type, &text);
     if (!text.empty())
       return text;
@@ -151,7 +151,7 @@ WebString WebClipboardImpl::readHTML(Buffer buffer, WebURL* source_url,
   if (!ConvertBufferType(buffer, &buffer_type))
     return WebString();
 
-  string16 html_stdstr;
+  base::string16 html_stdstr;
   GURL gurl;
   client_->ReadHTML(buffer_type, &html_stdstr, &gurl,
                     static_cast<uint32*>(fragment_start),
@@ -176,7 +176,7 @@ WebString WebClipboardImpl::readCustomData(Buffer buffer,
   if (!ConvertBufferType(buffer, &buffer_type))
     return WebString();
 
-  string16 data;
+  base::string16 data;
   client_->ReadCustomData(buffer_type, type, &data);
   return data;
 }

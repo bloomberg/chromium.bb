@@ -64,8 +64,8 @@ class TestWebKitPlatformSupport
   }
 
   // WebKitPlatformSupportImpl implementation
-  virtual string16 GetLocalizedString(int) OVERRIDE {
-    return string16();
+  virtual base::string16 GetLocalizedString(int) OVERRIDE {
+    return base::string16();
   }
 
   virtual base::StringPiece GetDataResource(int, ui::ScaleFactor) OVERRIDE {

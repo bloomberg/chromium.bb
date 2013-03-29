@@ -52,7 +52,7 @@ bool IsBlacklistedPlugin(const WebPluginInfo& info) {
   // load them.
   if (StartsWith(info.name, ASCIIToUTF16("Flip4Mac Windows Media"), false) &&
       StartsWith(info.version, ASCIIToUTF16("2.3"), false)) {
-    std::vector<string16> components;
+    std::vector<base::string16> components;
     base::SplitString(info.version, '.', &components);
     int bugfix_version = 0;
     return (components.size() >= 3 &&

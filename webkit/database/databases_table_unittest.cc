@@ -124,7 +124,7 @@ TEST(DatabasesTableTest, TestIt) {
   CheckDetailsAreEqual(details_in2, details_out_origin1[1]);
 
   // Get the list of all origins: should be "origin1" and "origin2".
-  std::vector<string16> origins_out;
+  std::vector<base::string16> origins_out;
   EXPECT_TRUE(databases_table.GetAllOrigins(&origins_out));
   EXPECT_EQ(size_t(2), origins_out.size());
   EXPECT_EQ(details_in1.origin_identifier, origins_out[0]);

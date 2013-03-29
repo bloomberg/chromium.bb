@@ -134,7 +134,7 @@ class WEBKIT_GLUE_EXPORT WebKitPlatformSupportImpl :
 
   // Gets a localized string given a message id.  Returns an empty string if the
   // message id is not found.
-  virtual string16 GetLocalizedString(int message_id) = 0;
+  virtual base::string16 GetLocalizedString(int message_id) = 0;
 
   // Returns the raw data for a resource.  This resource must have been
   // specified as BINDATA in the relevant .rc file.

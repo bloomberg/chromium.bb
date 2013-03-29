@@ -68,14 +68,14 @@ class WEBKIT_STORAGE_EXPORT DomStorageContext
    public:
     virtual void OnDomStorageItemSet(
         const DomStorageArea* area,
-        const string16& key,
-        const string16& new_value,
+        const base::string16& key,
+        const base::string16& new_value,
         const NullableString16& old_value,  // may be null on initial insert
         const GURL& page_url) = 0;
     virtual void OnDomStorageItemRemoved(
         const DomStorageArea* area,
-        const string16& key,
-        const string16& old_value,
+        const base::string16& key,
+        const base::string16& old_value,
         const GURL& page_url) = 0;
     virtual void OnDomStorageAreaCleared(
         const DomStorageArea* area,
@@ -131,14 +131,14 @@ class WEBKIT_STORAGE_EXPORT DomStorageContext
   void RemoveEventObserver(EventObserver* observer);
   void NotifyItemSet(
       const DomStorageArea* area,
-      const string16& key,
-      const string16& new_value,
+      const base::string16& key,
+      const base::string16& new_value,
       const NullableString16& old_value,
       const GURL& page_url);
   void NotifyItemRemoved(
       const DomStorageArea* area,
-      const string16& key,
-      const string16& old_value,
+      const base::string16& key,
+      const base::string16& old_value,
       const GURL& page_url);
   void NotifyAreaCleared(
       const DomStorageArea* area,

@@ -152,7 +152,7 @@ class PluginInstance : public base::RefCountedThreadSafe<PluginInstance> {
   NPObject* GetPluginScriptableObject();
 
   // Returns the form value of this instance.
-  bool GetFormValue(string16* value);
+  bool GetFormValue(base::string16* value);
 
   // WebViewDelegate methods that we implement. This is for handling
   // callbacks during getURLNotify.

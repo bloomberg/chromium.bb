@@ -20,7 +20,7 @@ namespace WebKit {
 
 #if defined(WCHAR_T_IS_UTF32)
 std::ostream& operator<<(std::ostream& out, const WebString& s) {
-  return out << static_cast<string16>(s);
+  return out << static_cast<base::string16>(s);
 }
 #endif  // defined(WCHAR_T_IS_UTF32)
 

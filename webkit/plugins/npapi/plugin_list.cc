@@ -194,10 +194,10 @@ bool PluginList::ReadPluginInfo(const base::FilePath& filename,
 bool PluginList::ParseMimeTypes(
     const std::string& mime_types_str,
     const std::string& file_extensions_str,
-    const string16& mime_type_descriptions_str,
+    const base::string16& mime_type_descriptions_str,
     std::vector<webkit::WebPluginMimeType>* parsed_mime_types) {
   std::vector<std::string> mime_types, file_extensions;
-  std::vector<string16> descriptions;
+  std::vector<base::string16> descriptions;
   base::SplitString(mime_types_str, '|', &mime_types);
   base::SplitString(file_extensions_str, '|', &file_extensions);
   base::SplitString(mime_type_descriptions_str, '|', &descriptions);
@@ -220,7 +220,7 @@ bool PluginList::ParseMimeTypes(
       // embedded in it (e.g. "SurfWriter file (*.swr)"). Remove an extension
       // list from the description if it is present.
       size_t ext = mime_type.description.find(ASCIIToUTF16("(*"));
-      if (ext != string16::npos) {
+      if (ext != base::string16::npos) {
         if (ext > 1 && mime_type.description[ext - 1] == ' ')
           ext--;
 

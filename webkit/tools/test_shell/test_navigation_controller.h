@@ -40,7 +40,7 @@ class TestNavigationEntry {
   TestNavigationEntry();
   TestNavigationEntry(int page_id,
                       const GURL& url,
-                      const string16& target_frame);
+                      const base::string16& target_frame);
 
   // Virtual to allow test_shell to extend the class.
   ~TestNavigationEntry();
@@ -61,7 +61,7 @@ class TestNavigationEntry {
   void SetPageID(int page_id) { page_id_ = page_id; }
   int32 GetPageID() const { return page_id_; }
 
-  const string16& GetTargetFrame() const { return target_frame_; }
+  const base::string16& GetTargetFrame() const { return target_frame_; }
 
  private:
   // Describes the current page that the tab represents. This is not relevant
@@ -71,7 +71,7 @@ class TestNavigationEntry {
   GURL url_;
   std::string state_;
 
-  string16 target_frame_;
+  base::string16 target_frame_;
 
   DISALLOW_COPY_AND_ASSIGN(TestNavigationEntry);
 };

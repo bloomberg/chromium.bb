@@ -362,11 +362,11 @@ class PluginDelegate {
       webkit::ppapi::PluginInstance* instance) = 0;
   // Requests simulating IME events for testing purpose.
   virtual void SimulateImeSetComposition(
-      const string16& text,
+      const base::string16& text,
       const std::vector<WebKit::WebCompositionUnderline>& underlines,
       int selection_start,
       int selection_end) = 0;
-  virtual void SimulateImeConfirmComposition(const string16& text) = 0;
+  virtual void SimulateImeConfirmComposition(const base::string16& text) = 0;
 
   // Notification that the given plugin has crashed. When a plugin crashes, all
   // instances associated with that plugin will notify that they've crashed via

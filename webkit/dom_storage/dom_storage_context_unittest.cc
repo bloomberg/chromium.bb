@@ -31,8 +31,8 @@ class DomStorageContextTest : public testing::Test {
   }
 
   const GURL kOrigin;
-  const string16 kKey;
-  const string16 kValue;
+  const base::string16 kKey;
+  const base::string16 kValue;
   const bool kDontIncludeFileInfo;
   const bool kDoIncludeFileInfo;
 
@@ -205,8 +205,8 @@ TEST_F(DomStorageContextTest, DeleteSessionStorage) {
   DomStorageNamespace* dom_namespace =
       context_->GetStorageNamespace(kSessionStorageNamespaceId);
   DomStorageArea* area = dom_namespace->OpenStorageArea(kOrigin);
-  const string16 kKey(ASCIIToUTF16("foo"));
-  const string16 kValue(ASCIIToUTF16("bar"));
+  const base::string16 kKey(ASCIIToUTF16("foo"));
+  const base::string16 kValue(ASCIIToUTF16("bar"));
   NullableString16 old_nullable_value;
   area->SetItem(kKey, kValue, &old_nullable_value);
   dom_namespace->CloseStorageArea(area);

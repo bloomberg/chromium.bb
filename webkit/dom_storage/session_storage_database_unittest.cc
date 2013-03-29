@@ -68,9 +68,9 @@ class SessionStorageDatabaseTest : public testing::Test {
   const std::string kNamespace1;
   const std::string kNamespace2;
   const std::string kNamespaceClone;
-  const string16 kKey1;
-  const string16 kKey2;
-  const string16 kKey3;
+  const base::string16 kKey1;
+  const base::string16 kKey2;
+  const base::string16 kKey3;
   const NullableString16 kValue1;
   const NullableString16 kValue2;
   const NullableString16 kValue3;
@@ -302,8 +302,8 @@ void SessionStorageDatabaseTest::DumpData() const {
   for (it->SeekToFirst(); it->Valid(); it->Next()) {
     int64 dummy_map_id;
     if (IsMapValueKey(it->key().ToString(), &dummy_map_id)) {
-      // Convert the value back to string16.
-      string16 value;
+      // Convert the value back to base::string16.
+      base::string16 value;
       size_t len = it->value().size() / sizeof(char16);
       value.resize(len);
       value.assign(reinterpret_cast<const char16*>(it->value().data()), len);
@@ -328,7 +328,7 @@ void SessionStorageDatabaseTest::CompareValuesMaps(
     const ValuesMap& map2) const {
   ASSERT_EQ(map2.size(), map1.size());
   for (ValuesMap::const_iterator it = map1.begin(); it != map1.end(); ++it) {
-    string16 key = it->first;
+    base::string16 key = it->first;
     ASSERT_TRUE(map2.find(key) != map2.end());
     NullableString16 val1 = it->second;
     NullableString16 val2 = map2.find(key)->second;
@@ -698,7 +698,7 @@ TEST_F(SessionStorageDatabaseTest, WriteRawBytes) {
   // Write data which is not valid utf8 and contains null bytes.
   unsigned char raw_data[10] = {255, 0, 0, 0, 1, 2, 3, 4, 5, 0};
   ValuesMap changes;
-  string16 string_with_raw_data;
+  base::string16 string_with_raw_data;
   string_with_raw_data.assign(reinterpret_cast<char16*>(raw_data), 5);
   changes[kKey1] = NullableString16(string_with_raw_data, false);
   EXPECT_TRUE(db_->CommitAreaChanges(kNamespace1, kOrigin1, false, changes));

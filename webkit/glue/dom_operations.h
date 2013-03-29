@@ -78,8 +78,8 @@ WEBKIT_GLUE_EXPORT WebKit::WebString GetSubResourceLinkFromElement(
 // with a value of |attribute_value| in |meta_elements|.
 WEBKIT_GLUE_EXPORT void GetMetaElementsWithAttribute(
     WebKit::WebDocument* document,
-    const string16& attribute_name,
-    const string16& atribute_value,
+    const base::string16& attribute_name,
+    const base::string16& atribute_value,
     std::vector<WebKit::WebElement>* meta_elements);
 
 }  // namespace webkit_glue

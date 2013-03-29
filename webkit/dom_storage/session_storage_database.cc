@@ -521,16 +521,16 @@ bool SessionStorageDatabase::ReadMap(const std::string& map_id,
       break;
     }
     // Key is of the form "map-<mapid>-<key>".
-    string16 key16 = UTF8ToUTF16(key.substr(map_start_key.length()));
+    base::string16 key16 = UTF8ToUTF16(key.substr(map_start_key.length()));
     if (only_keys) {
       (*result)[key16] = NullableString16(true);
     } else {
       // Convert the raw data stored in std::string (it->value()) to raw data
-      // stored in string16.
+      // stored in base::string16.
       size_t len = it->value().size() / sizeof(char16);
       const char16* data_ptr =
           reinterpret_cast<const char16*>(it->value().data());
-      (*result)[key16] = NullableString16(string16(data_ptr, len), false);
+      (*result)[key16] = NullableString16(base::string16(data_ptr, len), false);
     }
   }
   return true;
@@ -546,7 +546,7 @@ void SessionStorageDatabase::WriteValuesToMap(const std::string& map_id,
     if (value.is_null()) {
       batch->Delete(key);
     } else {
-      // Convert the raw data stored in string16 to raw data stored in
+      // Convert the raw data stored in base::string16 to raw data stored in
       // std::string.
       const char* data = reinterpret_cast<const char*>(value.string().data());
       size_t size = value.string().size() * 2;

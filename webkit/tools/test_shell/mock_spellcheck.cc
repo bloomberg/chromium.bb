@@ -19,7 +19,7 @@ MockSpellCheck::MockSpellCheck()
 MockSpellCheck::~MockSpellCheck() {
 }
 
-bool MockSpellCheck::SpellCheckWord(const string16& text,
+bool MockSpellCheck::SpellCheckWord(const base::string16& text,
                                     int* misspelledOffset,
                                     int* misspelledLength) {
   DCHECK(misspelledOffset && misspelledLength);
@@ -43,7 +43,7 @@ bool MockSpellCheck::SpellCheckWord(const string16& text,
   // don't have misspelled contractions.
   static const char* kWordCharacters =
       "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-  string16 word_characters(ASCIIToUTF16(kWordCharacters));
+  base::string16 word_characters(ASCIIToUTF16(kWordCharacters));
 
   size_t word_offset = text.find_first_of(word_characters);
   if (word_offset == std::string::npos)
@@ -58,8 +58,8 @@ bool MockSpellCheck::SpellCheckWord(const string16& text,
   // extracted word if this word is a known misspelled word.
   // (See the comment in MockSpellCheck::InitializeIfNeeded() why we use a
   // misspelled-word table.)
-  string16 word(text, word_offset, word_length);
-  std::map<string16, bool>::iterator it = misspelled_words_.find(word);
+  base::string16 word(text, word_offset, word_length);
+  std::map<base::string16, bool>::iterator it = misspelled_words_.find(word);
   if (it == misspelled_words_.end())
     return true;
 
@@ -113,7 +113,7 @@ bool MockSpellCheck::InitializeIfNeeded() {
 
   misspelled_words_.clear();
   for (size_t i = 0; i < arraysize(kMisspelledWords); ++i) {
-    misspelled_words_.insert(std::make_pair<string16, bool>(
+    misspelled_words_.insert(std::make_pair<base::string16, bool>(
         ASCIIToUTF16(kMisspelledWords[i]), false));
   }
 
@@ -126,8 +126,8 @@ bool MockSpellCheck::InitializeIfNeeded() {
   return false;
 }
 
-void MockSpellCheck::FillSuggestions(const string16& word,
-                                     std::vector<string16>* suggestions) {
+void MockSpellCheck::FillSuggestions(const base::string16& word,
+                                     std::vector<base::string16>* suggestions) {
   if (word == ASCIIToUTF16("wellcome"))
     suggestions->push_back(ASCIIToUTF16("welcome"));
 }

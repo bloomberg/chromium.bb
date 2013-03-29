@@ -22,11 +22,11 @@ class DomStorageProxy : public base::RefCounted<DomStorageProxy> {
   virtual void LoadArea(int connection_id, ValuesMap* values,
                         const CompletionCallback& callback) = 0;
 
-  virtual void SetItem(int connection_id, const string16& key,
-                       const string16& value, const GURL& page_url,
+  virtual void SetItem(int connection_id, const base::string16& key,
+                       const base::string16& value, const GURL& page_url,
                        const CompletionCallback& callback) = 0;
 
-  virtual void RemoveItem(int connection_id, const string16& key,
+  virtual void RemoveItem(int connection_id, const base::string16& key,
                           const GURL& page_url,
                           const CompletionCallback& callback) = 0;
 

@@ -171,49 +171,49 @@ WebPreferences::~WebPreferences() {
 namespace {
 
 void setStandardFontFamilyWrapper(WebSettings* settings,
-                                  const string16& font,
+                                  const base::string16& font,
                                   UScriptCode script) {
   settings->setStandardFontFamily(font, script);
 }
 
 void setFixedFontFamilyWrapper(WebSettings* settings,
-                               const string16& font,
+                               const base::string16& font,
                                UScriptCode script) {
   settings->setFixedFontFamily(font, script);
 }
 
 void setSerifFontFamilyWrapper(WebSettings* settings,
-                               const string16& font,
+                               const base::string16& font,
                                UScriptCode script) {
   settings->setSerifFontFamily(font, script);
 }
 
 void setSansSerifFontFamilyWrapper(WebSettings* settings,
-                                   const string16& font,
+                                   const base::string16& font,
                                    UScriptCode script) {
   settings->setSansSerifFontFamily(font, script);
 }
 
 void setCursiveFontFamilyWrapper(WebSettings* settings,
-                                 const string16& font,
+                                 const base::string16& font,
                                  UScriptCode script) {
   settings->setCursiveFontFamily(font, script);
 }
 
 void setFantasyFontFamilyWrapper(WebSettings* settings,
-                                 const string16& font,
+                                 const base::string16& font,
                                  UScriptCode script) {
   settings->setFantasyFontFamily(font, script);
 }
 
 void setPictographFontFamilyWrapper(WebSettings* settings,
-                               const string16& font,
+                               const base::string16& font,
                                UScriptCode script) {
   settings->setPictographFontFamily(font, script);
 }
 
 typedef void (*SetFontFamilyWrapper)(
-    WebKit::WebSettings*, const string16&, UScriptCode);
+    WebKit::WebSettings*, const base::string16&, UScriptCode);
 
 // If |scriptCode| is a member of a family of "similar" script codes, returns
 // the script code in that family that is used by WebKit for font selection

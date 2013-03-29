@@ -246,7 +246,7 @@ void TestWebViewDelegate::UpdateSelectionClipboard(bool is_empty_selection) {
 
 // Private methods ------------------------------------------------------------
 
-void TestWebViewDelegate::ShowJavaScriptAlert(const string16& message) {
+void TestWebViewDelegate::ShowJavaScriptAlert(const base::string16& message) {
   GtkWidget* dialog = gtk_message_dialog_new(
       shell_->mainWnd(), GTK_DIALOG_MODAL, GTK_MESSAGE_INFO,
       GTK_BUTTONS_OK, "%s", UTF16ToUTF8(message).c_str());
@@ -255,7 +255,7 @@ void TestWebViewDelegate::ShowJavaScriptAlert(const string16& message) {
   gtk_widget_destroy(dialog);
 }
 
-void TestWebViewDelegate::SetPageTitle(const string16& title) {
+void TestWebViewDelegate::SetPageTitle(const base::string16& title) {
   gtk_window_set_title(GTK_WINDOW(shell_->mainWnd()),
                        ("Test Shell - " + UTF16ToUTF8(title)).c_str());
 }

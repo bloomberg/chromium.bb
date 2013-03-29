@@ -603,7 +603,7 @@ bool PluginInstance::HandleDocumentLoad(PPB_URLLoader_Impl* loader) {
 }
 
 bool PluginInstance::SendCompositionEventToPlugin(PP_InputEvent_Type type,
-                                                  const string16& text) {
+                                                  const base::string16& text) {
   std::vector<WebKit::WebCompositionUnderline> empty;
   return SendCompositionEventWithUnderlineInformationToPlugin(
       type, text, empty, static_cast<int>(text.size()),
@@ -612,7 +612,7 @@ bool PluginInstance::SendCompositionEventToPlugin(PP_InputEvent_Type type,
 
 bool PluginInstance::SendCompositionEventWithUnderlineInformationToPlugin(
     PP_InputEvent_Type type,
-    const string16& text,
+    const base::string16& text,
     const std::vector<WebKit::WebCompositionUnderline>& underlines,
     int selection_start,
     int selection_end) {
@@ -693,13 +693,13 @@ void PluginInstance::RequestInputEventsHelper(uint32_t event_classes) {
     container_->setWantsWheelEvents(IsAcceptingWheelEvents());
 }
 
-bool PluginInstance::HandleCompositionStart(const string16& text) {
+bool PluginInstance::HandleCompositionStart(const base::string16& text) {
   return SendCompositionEventToPlugin(PP_INPUTEVENT_TYPE_IME_COMPOSITION_START,
                                       text);
 }
 
 bool PluginInstance::HandleCompositionUpdate(
-    const string16& text,
+    const base::string16& text,
     const std::vector<WebKit::WebCompositionUnderline>& underlines,
     int selection_start,
     int selection_end) {
@@ -708,24 +708,26 @@ bool PluginInstance::HandleCompositionUpdate(
       text, underlines, selection_start, selection_end);
 }
 
-bool PluginInstance::HandleCompositionEnd(const string16& text) {
+bool PluginInstance::HandleCompositionEnd(const base::string16& text) {
   return SendCompositionEventToPlugin(PP_INPUTEVENT_TYPE_IME_COMPOSITION_END,
                                       text);
 }
 
-bool PluginInstance::HandleTextInput(const string16& text) {
+bool PluginInstance::HandleTextInput(const base::string16& text) {
   return SendCompositionEventToPlugin(PP_INPUTEVENT_TYPE_IME_TEXT,
                                       text);
 }
 
-void PluginInstance::GetSurroundingText(string16* text,
+void PluginInstance::GetSurroundingText(base::string16* text,
                                         ui::Range* range) const {
   std::vector<size_t> offsets;
   offsets.push_back(selection_anchor_);
   offsets.push_back(selection_caret_);
   *text = base::UTF8ToUTF16AndAdjustOffsets(surrounding_text_, &offsets);
-  range->set_start(offsets[0] == string16::npos ? text->size() : offsets[0]);
-  range->set_end(offsets[1] == string16::npos ? text->size() : offsets[1]);
+  range->set_start(offsets[0] == base::string16::npos ? text->size()
+                                                      : offsets[0]);
+  range->set_end(offsets[1] == base::string16::npos ? text->size()
+                                                    : offsets[1]);
 }
 
 bool PluginInstance::IsPluginAcceptingCompositionEvents() const {
@@ -994,16 +996,16 @@ bool PluginInstance::GetBitmapForOptimizedPluginPaint(
   return true;
 }
 
-string16 PluginInstance::GetSelectedText(bool html) {
+base::string16 PluginInstance::GetSelectedText(bool html) {
   // Keep a reference on the stack. See NOTE above.
   scoped_refptr<PluginInstance> ref(this);
   if (!LoadSelectionInterface())
-    return string16();
+    return base::string16();
 
   PP_Var rv = plugin_selection_interface_->GetSelectedText(pp_instance(),
                                                            PP_FromBool(html));
   StringVar* string = StringVar::FromPPVar(rv);
-  string16 selection;
+  base::string16 selection;
   if (string)
     selection = UTF8ToUTF16(string->value());
   // Release the ref the plugin transfered to us.
@@ -1011,18 +1013,18 @@ string16 PluginInstance::GetSelectedText(bool html) {
   return selection;
 }
 
-string16 PluginInstance::GetLinkAtPosition(const gfx::Point& point) {
+base::string16 PluginInstance::GetLinkAtPosition(const gfx::Point& point) {
   // Keep a reference on the stack. See NOTE above.
   scoped_refptr<PluginInstance> ref(this);
   if (!LoadPdfInterface())
-    return string16();
+    return base::string16();
 
   PP_Point p;
   p.x = point.x();
   p.y = point.y();
   PP_Var rv = plugin_pdf_interface_->GetLinkAtPosition(pp_instance(), p);
   StringVar* string = StringVar::FromPPVar(rv);
-  string16 link;
+  base::string16 link;
   if (string)
     link = UTF8ToUTF16(string->value());
   // Release the ref the plugin transfered to us.
@@ -1048,7 +1050,7 @@ void PluginInstance::Zoom(double factor, bool text_only) {
   plugin_zoom_interface_->Zoom(pp_instance(), factor, PP_FromBool(text_only));
 }
 
-bool PluginInstance::StartFind(const string16& search_text,
+bool PluginInstance::StartFind(const base::string16& search_text,
                                bool case_sensitive,
                                int identifier) {
   // Keep a reference on the stack. See NOTE above.
@@ -1835,7 +1837,7 @@ void PluginInstance::SimulateImeSetCompositionEvent(
                  input_event.composition_segment_offsets.begin(),
                  input_event.composition_segment_offsets.end());
 
-  string16 utf16_text =
+  base::string16 utf16_text =
       base::UTF8ToUTF16AndAdjustOffsets(input_event.character_text, &offsets);
 
   std::vector<WebKit::WebCompositionUnderline> underlines;

@@ -51,7 +51,7 @@ class PluginInstance;
 //
 //   WebPluginIMEWin ime;
 //   ...
-//   string16 text = "composing";
+//   base::string16 text = "composing";
 //   std::vector<int> clauses;
 //   clauses.push_back(0);
 //   clauses.push_back(text.length());
@@ -59,7 +59,7 @@ class PluginInstance;
 //   ime.CompositionUpdated(text, clauses, target, text.length());
 //   ime.SendEvents(instance());
 //
-//   string16 result = "result";
+//   base::string16 result = "result";
 //   ime.CompositionCompleted(result);
 //   ime.SendEvents(instance());
 //
@@ -94,11 +94,11 @@ class WebPluginIMEWin {
   // mapped to two or more Windows events and it is not so trivial to send these
   // Windows events to a plug-in. This function inserts Windows events in the
   // order expected by a plug-in.
-  void CompositionUpdated(const string16& text,
+  void CompositionUpdated(const base::string16& text,
                           std::vector<int> clauses,
                           std::vector<int> target,
                           int cursor_position);
-  void CompositionCompleted(const string16& text);
+  void CompositionCompleted(const base::string16& text);
 
   // Send all the events added in Update() to a plug-in.
   bool SendEvents(PluginInstance* instance);
@@ -141,10 +141,10 @@ class WebPluginIMEWin {
   std::vector<NPEvent> events_;
 
   // The return value for GCS_COMPSTR.
-  string16 composition_text_;
+  base::string16 composition_text_;
 
   // The return value for GCS_RESULTSTR.
-  string16 result_text_;
+  base::string16 result_text_;
 
   // The return value for GCS_COMPATTR.
   std::string composition_attributes_;

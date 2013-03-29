@@ -192,16 +192,16 @@ void TestWebViewDelegate::UpdateSelectionClipboard(bool is_empty_selection) {
 
 // Private methods ------------------------------------------------------------
 
-void TestWebViewDelegate::ShowJavaScriptAlert(const string16& message) {
+void TestWebViewDelegate::ShowJavaScriptAlert(const base::string16& message) {
   MessageBox(NULL, message.c_str(), L"JavaScript Alert", MB_OK);
 }
 
-void TestWebViewDelegate::SetPageTitle(const string16& title) {
+void TestWebViewDelegate::SetPageTitle(const base::string16& title) {
   // The Windows test shell, pre-refactoring, ignored this.  *shrug*
 }
 
 void TestWebViewDelegate::SetAddressBarURL(const GURL& url) {
-  string16 url_string = UTF8ToUTF16(url.spec());
+  base::string16 url_string = UTF8ToUTF16(url.spec());
   SendMessage(shell_->editWnd(), WM_SETTEXT, 0,
               reinterpret_cast<LPARAM>(url_string.c_str()));
 }

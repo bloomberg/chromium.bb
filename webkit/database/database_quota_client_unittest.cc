@@ -32,7 +32,7 @@ class MockDatabaseTracker : public DatabaseTracker {
         async_delete_(false) {}
 
   virtual bool GetOriginInfo(
-      const string16& origin_identifier,
+      const base::string16& origin_identifier,
       OriginInfo* info) OVERRIDE {
     std::map<GURL, MockOriginInfo>::const_iterator found =
         mock_origin_infos_.find(
@@ -44,7 +44,7 @@ class MockDatabaseTracker : public DatabaseTracker {
   }
 
   virtual bool GetAllOriginIdentifiers(
-      std::vector<string16>* origins_identifiers) OVERRIDE {
+      std::vector<base::string16>* origins_identifiers) OVERRIDE {
     std::map<GURL, MockOriginInfo>::const_iterator iter;
     for (iter = mock_origin_infos_.begin();
          iter != mock_origin_infos_.end();
@@ -66,7 +66,7 @@ class MockDatabaseTracker : public DatabaseTracker {
   }
 
   virtual int DeleteDataForOrigin(
-      const string16& origin_id,
+      const base::string16& origin_id,
       const net::CompletionCallback& callback) OVERRIDE {
     ++delete_called_count_;
     if (async_delete()) {
@@ -99,11 +99,11 @@ class MockDatabaseTracker : public DatabaseTracker {
  private:
   class MockOriginInfo : public OriginInfo {
    public:
-    void set_origin(const string16& origin_id) {
+    void set_origin(const base::string16& origin_id) {
       origin_ = origin_id;
     }
 
-    void AddMockDatabase(const string16& name, int size) {
+    void AddMockDatabase(const base::string16& name, int size) {
       EXPECT_TRUE(database_info_.find(name) == database_info_.end());
       database_info_[name].first = size;
       total_size_ += size;

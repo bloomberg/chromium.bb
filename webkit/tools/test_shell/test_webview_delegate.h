@@ -321,7 +321,7 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
  private:
   // Called the title of the page changes.
   // Can be used to update the title of the window.
-  void SetPageTitle(const string16& title);
+  void SetPageTitle(const base::string16& title);
 
   // Called when the URL of the page changes.
   // Extracts the URL and forwards on to SetAddressBarURL().
@@ -334,7 +334,7 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
   // Show a JavaScript alert as a popup message.
   // The caller should test whether we're in layout test mode and only
   // call this function when we really want a message to pop up.
-  void ShowJavaScriptAlert(const string16& message);
+  void ShowJavaScriptAlert(const base::string16& message);
 
   // In the Mac code, this is called to trigger the end of a test after the
   // page has finished loading.  From here, we can generate the dump for the
@@ -359,7 +359,7 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
   void UpdateSelectionClipboard(bool is_empty_selection);
 
   // Get a string suitable for dumping a frame to the console.
-  string16 GetFrameDescription(WebKit::WebFrame* webframe);
+  base::string16 GetFrameDescription(WebKit::WebFrame* webframe);
 
   // Causes navigation actions just printout the intended navigation instead
   // of taking you to the page. This is used for cases like mailto, where you

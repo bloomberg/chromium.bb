@@ -57,7 +57,7 @@ size_t MockWebHyphenator::computeLastHyphenLocation(
   // Retrieve the positions where we can insert hyphens. This function assumes
   // the input word is an English word so it can use the position returned by
   // the hyphen library without conversion.
-  string16 word_utf16(characters, length);
+  base::string16 word_utf16(characters, length);
   if (!IsStringASCII(word_utf16))
     return 0;
   std::string word = StringToLowerASCII(UTF16ToASCII(word_utf16));

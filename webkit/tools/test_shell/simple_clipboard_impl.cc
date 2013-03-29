@@ -46,15 +46,15 @@ void SimpleClipboardClient::Clear(ui::Clipboard::Buffer buffer) {
   GetClipboard()->Clear(buffer);
 }
 
-void SimpleClipboardClient::ReadAvailableTypes(ui::Clipboard::Buffer buffer,
-                                               std::vector<string16>* types,
-                                               bool* contains_filenames) {
-  return GetClipboard()->ReadAvailableTypes(buffer, types,
-                                                     contains_filenames);
+void SimpleClipboardClient::ReadAvailableTypes(
+    ui::Clipboard::Buffer buffer,
+    std::vector<base::string16>* types,
+    bool* contains_filenames) {
+  return GetClipboard()->ReadAvailableTypes(buffer, types, contains_filenames);
 }
 
 void SimpleClipboardClient::ReadText(ui::Clipboard::Buffer buffer,
-                                     string16* result) {
+                                     base::string16* result) {
   GetClipboard()->ReadText(buffer, result);
 }
 
@@ -64,7 +64,7 @@ void SimpleClipboardClient::ReadAsciiText(ui::Clipboard::Buffer buffer,
 }
 
 void SimpleClipboardClient::ReadHTML(ui::Clipboard::Buffer buffer,
-                                     string16* markup,
+                                     base::string16* markup,
                                      GURL* url, uint32* fragment_start,
                                      uint32* fragment_end) {
   std::string url_str;
@@ -102,8 +102,8 @@ void SimpleClipboardClient::ReadImage(ui::Clipboard::Buffer buffer,
 }
 
 void SimpleClipboardClient::ReadCustomData(ui::Clipboard::Buffer buffer,
-                                           const string16& type,
-                                           string16* data) {
+                                           const base::string16& type,
+                                           base::string16* data) {
   GetClipboard()->ReadCustomData(buffer, type, data);
 }
 

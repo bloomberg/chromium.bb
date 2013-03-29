@@ -125,7 +125,7 @@ TEST(MIMEDescriptionParse, CornerCases) {
   EXPECT_EQ("mime/type", types[0].mime_type);
   EXPECT_EQ(1U, types[0].file_extensions.size());
   EXPECT_EQ("ext1", types[0].file_extensions[0]);
-  EXPECT_EQ(string16(), types[0].description);
+  EXPECT_EQ(base::string16(), types[0].description);
 }
 
 // This Java plugin has embedded semicolons in the mime type.

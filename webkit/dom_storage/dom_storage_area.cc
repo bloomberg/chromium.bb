@@ -118,15 +118,15 @@ NullableString16 DomStorageArea::Key(unsigned index) {
   return map_->Key(index);
 }
 
-NullableString16 DomStorageArea::GetItem(const string16& key) {
+NullableString16 DomStorageArea::GetItem(const base::string16& key) {
   if (is_shutdown_)
     return NullableString16(true);
   InitialImportIfNeeded();
   return map_->GetItem(key);
 }
 
-bool DomStorageArea::SetItem(const string16& key,
-                             const string16& value,
+bool DomStorageArea::SetItem(const base::string16& key,
+                             const base::string16& value,
                              NullableString16* old_value) {
   if (is_shutdown_)
     return false;
@@ -141,7 +141,8 @@ bool DomStorageArea::SetItem(const string16& key,
   return success;
 }
 
-bool DomStorageArea::RemoveItem(const string16& key, string16* old_value) {
+bool DomStorageArea::RemoveItem(const base::string16& key,
+                                base::string16* old_value) {
   if (is_shutdown_)
     return false;
   InitialImportIfNeeded();

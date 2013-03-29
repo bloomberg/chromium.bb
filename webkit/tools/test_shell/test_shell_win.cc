@@ -178,7 +178,7 @@ void TestShell::InitializeTestShell(bool layout_test_mode,
 
   const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
   if (parsed_command_line.HasSwitch(test_shell::kCrashDumps)) {
-    string16 dir(
+    base::string16 dir(
         parsed_command_line.GetSwitchValueNative(test_shell::kCrashDumps));
     if (parsed_command_line.HasSwitch(test_shell::kCrashDumpsFulldump)) {
         new google_breakpad::ExceptionHandler(
@@ -233,7 +233,7 @@ ATOM TestShell::RegisterWindowClass() {
   return RegisterClassEx(&wcex);
 }
 
-void TestShell::DumpAllBackForwardLists(string16* result) {
+void TestShell::DumpAllBackForwardLists(base::string16* result) {
   result->clear();
   for (WindowList::iterator iter = TestShell::windowList()->begin();
      iter != TestShell::windowList()->end(); iter++) {
@@ -258,7 +258,7 @@ std::string TestShell::RewriteLocalUrl(const std::string& url) {
     replace_url = replace_url.AppendASCII("third_party");
     replace_url = replace_url.AppendASCII("WebKit");
     replace_url = replace_url.AppendASCII("LayoutTests");
-    string16 replace_url_str = replace_url.value();
+    base::string16 replace_url_str = replace_url.value();
     replace_url_str.push_back(L'/');
     new_url = std::string("file:///") +
               UTF16ToUTF8(replace_url_str).append(url.substr(kPrefixLen));
@@ -486,7 +486,7 @@ void TestShell::ResizeSubViews() {
 }
 
 void TestShell::LoadURLForFrame(const GURL& url,
-                                const string16& frame_name) {
+                                const base::string16& frame_name) {
   if (!url.is_valid())
     return;
 
@@ -669,7 +669,7 @@ base::StringPiece TestShell::ResourceProvider(int key) {
 }
 
 
-string16 TestShellWebKitInit::GetLocalizedString(int message_id) {
+base::string16 TestShellWebKitInit::GetLocalizedString(int message_id) {
   wchar_t localized[MAX_LOADSTRING];
   int length = LoadString(GetModuleHandle(NULL), message_id,
                           localized, MAX_LOADSTRING);
@@ -677,7 +677,7 @@ string16 TestShellWebKitInit::GetLocalizedString(int message_id) {
     NOTREACHED();
     return L"No string for this identifier!";
   }
-  return string16(localized, length);
+  return base::string16(localized, length);
 }
 
 // TODO(tc): Convert this to using resources from test_shell.rc.

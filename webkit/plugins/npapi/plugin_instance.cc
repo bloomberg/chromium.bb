@@ -177,7 +177,7 @@ NPObject *PluginInstance::GetPluginScriptableObject() {
   return value;
 }
 
-bool PluginInstance::GetFormValue(string16* value) {
+bool PluginInstance::GetFormValue(base::string16* value) {
   // Plugins will allocate memory for the return value by using NPN_MemAlloc().
   char *plugin_value = NULL;
   NPError error = NPP_GetValue(NPPVformValue, &plugin_value);

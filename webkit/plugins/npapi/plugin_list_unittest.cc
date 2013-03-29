@@ -71,8 +71,8 @@ TEST_F(PluginListTest, GetPlugins) {
 
 TEST_F(PluginListTest, BadPluginDescription) {
   WebPluginInfo plugin_3043(
-      string16(), base::FilePath(FILE_PATH_LITERAL("/myplugin.3.0.43")),
-      string16(), string16());
+      base::string16(), base::FilePath(FILE_PATH_LITERAL("/myplugin.3.0.43")),
+      base::string16(), base::string16());
   // Simulate loading of the plugins.
   plugin_list_.ClearPluginsToLoad();
   plugin_list_.AddPluginToLoad(plugin_3043);

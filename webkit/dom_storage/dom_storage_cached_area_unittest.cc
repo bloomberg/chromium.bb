@@ -30,8 +30,8 @@ class MockProxy : public DomStorageProxy {
     *values = load_area_return_values_;
   }
 
-  virtual void SetItem(int connection_id, const string16& key,
-                       const string16& value, const GURL& page_url,
+  virtual void SetItem(int connection_id, const base::string16& key,
+                       const base::string16& value, const GURL& page_url,
                        const CompletionCallback& callback) OVERRIDE {
     pending_callbacks_.push_back(callback);
     observed_set_item_ = true;
@@ -41,7 +41,7 @@ class MockProxy : public DomStorageProxy {
     observed_page_url_ = page_url;
   }
 
-  virtual void RemoveItem(int connection_id, const string16& key,
+  virtual void RemoveItem(int connection_id, const base::string16& key,
                           const GURL& page_url,
                           const CompletionCallback& callback) OVERRIDE {
     pending_callbacks_.push_back(callback);
@@ -93,8 +93,8 @@ class MockProxy : public DomStorageProxy {
   bool observed_remove_item_;
   bool observed_clear_area_;
   int observed_connection_id_;
-  string16 observed_key_;
-  string16 observed_value_;
+  base::string16 observed_key_;
+  base::string16 observed_value_;
   GURL observed_page_url_;
 
  private:
@@ -114,8 +114,8 @@ class DomStorageCachedAreaTest : public testing::Test {
 
   const int64 kNamespaceId;
   const GURL kOrigin;
-  const string16 kKey;
-  const string16 kValue;
+  const base::string16 kKey;
+  const base::string16 kValue;
   const GURL kPageUrl;
 
   virtual void SetUp() {
@@ -131,7 +131,7 @@ class DomStorageCachedAreaTest : public testing::Test {
   }
 
   bool IsIgnoringKeyMutations(DomStorageCachedArea* cached_area,
-                              const string16& key) {
+                              const base::string16& key) {
     return cached_area->should_ignore_key_mutation(key);
   }
 

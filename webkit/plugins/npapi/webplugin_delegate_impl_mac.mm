@@ -229,7 +229,8 @@ bool WebPluginDelegateImpl::PlatformInitialize() {
         // that behavior here.
         const WebPluginInfo& plugin_info =
             instance_->plugin_lib()->plugin_info();
-        if (plugin_info.name.find(ASCIIToUTF16("Flash")) != string16::npos)
+        if (plugin_info.name.find(ASCIIToUTF16("Flash")) !=
+            base::string16::npos)
           gpu_preference = gfx::PreferIntegratedGpu;
         surface_ = plugin_->GetAcceleratedSurface(gpu_preference);
 
@@ -615,7 +616,8 @@ void WebPluginDelegateImpl::WindowFrameChanged(const gfx::Rect& window_frame,
   SetContentAreaOrigin(gfx::Point(view_frame.x(), view_frame.y()));
 }
 
-void WebPluginDelegateImpl::ImeCompositionCompleted(const string16& text) {
+void WebPluginDelegateImpl::ImeCompositionCompleted(
+    const base::string16& text) {
   ime_enabled_ = false;
 
   // If |text| is empty this was just called to tell us composition was

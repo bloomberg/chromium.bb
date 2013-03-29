@@ -47,14 +47,14 @@ class SimpleDomStorageSystem
   // calls into webkit/webcore to dispatch events.
   virtual void OnDomStorageItemSet(
       const dom_storage::DomStorageArea* area,
-      const string16& key,
-      const string16& new_value,
+      const base::string16& key,
+      const base::string16& new_value,
       const NullableString16& old_value,
       const GURL& page_url) OVERRIDE;
   virtual void OnDomStorageItemRemoved(
       const dom_storage::DomStorageArea* area,
-      const string16& key,
-      const string16& old_value,
+      const base::string16& key,
+      const base::string16& old_value,
       const GURL& page_url) OVERRIDE;
   virtual void OnDomStorageAreaCleared(
       const dom_storage::DomStorageArea* area,

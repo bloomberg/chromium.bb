@@ -35,10 +35,12 @@ class WEBKIT_STORAGE_EXPORT DomStorageCachedArea :
 
   unsigned GetLength(int connection_id);
   NullableString16 GetKey(int connection_id, unsigned index);
-  NullableString16 GetItem(int connection_id, const string16& key);
-  bool SetItem(int connection_id, const string16& key, const string16& value,
+  NullableString16 GetItem(int connection_id, const base::string16& key);
+  bool SetItem(int connection_id,
+               const base::string16& key,
+               const base::string16& value,
                const GURL& page_url);
-  void RemoveItem(int connection_id, const string16& key,
+  void RemoveItem(int connection_id, const base::string16& key,
                   const GURL& page_url);
   void Clear(int connection_id, const GURL& page_url);
 
@@ -67,16 +69,16 @@ class WEBKIT_STORAGE_EXPORT DomStorageCachedArea :
   // mutation events from other processes from overwriting local
   // changes made after the mutation.
   void OnLoadComplete(bool success);
-  void OnSetItemComplete(const string16& key, bool success);
+  void OnSetItemComplete(const base::string16& key, bool success);
   void OnClearComplete(bool success);
-  void OnRemoveItemComplete(const string16& key, bool success);
+  void OnRemoveItemComplete(const base::string16& key, bool success);
 
-  bool should_ignore_key_mutation(const string16& key) const {
+  bool should_ignore_key_mutation(const base::string16& key) const {
     return ignore_key_mutations_.find(key) != ignore_key_mutations_.end();
   }
 
   bool ignore_all_mutations_;
-  std::map<string16, int> ignore_key_mutations_;
+  std::map<base::string16, int> ignore_key_mutations_;
 
   int64 namespace_id_;
   GURL origin_;

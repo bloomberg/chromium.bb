@@ -34,14 +34,14 @@ NullableString16 DomStorageCachedArea::GetKey(
 }
 
 NullableString16 DomStorageCachedArea::GetItem(
-    int connection_id, const string16& key) {
+    int connection_id, const base::string16& key) {
   PrimeIfNeeded(connection_id);
   return map_->GetItem(key);
 }
 
 bool DomStorageCachedArea::SetItem(
-    int connection_id, const string16& key,
-    const string16& value, const GURL& page_url) {
+    int connection_id, const base::string16& key,
+    const base::string16& value, const GURL& page_url) {
   // A quick check to reject obviously overbudget items to avoid
   // the priming the cache.
   if (key.length() + value.length() > dom_storage::kPerAreaQuota)
@@ -62,9 +62,9 @@ bool DomStorageCachedArea::SetItem(
 }
 
 void DomStorageCachedArea::RemoveItem(
-    int connection_id, const string16& key, const GURL& page_url) {
+    int connection_id, const base::string16& key, const GURL& page_url) {
   PrimeIfNeeded(connection_id);
-  string16 unused;
+  base::string16 unused;
   if (!map_->RemoveItem(key, &unused))
     return;
 
@@ -101,7 +101,8 @@ void DomStorageCachedArea::ApplyMutation(
 
     // We have to retain local additions which happened after this
     // clear operation from another process.
-    std::map<string16, int>::iterator iter = ignore_key_mutations_.begin();
+    std::map<base::string16, int>::iterator iter =
+        ignore_key_mutations_.begin();
     while (iter != ignore_key_mutations_.end()) {
       NullableString16 value = old->GetItem(iter->first);
       if (!value.is_null()) {
@@ -119,7 +120,7 @@ void DomStorageCachedArea::ApplyMutation(
 
   if (new_value.is_null()) {
     // It's a remove item event.
-    string16 unused;
+    base::string16 unused;
     map_->RemoveItem(key.string(), &unused);
     return;
   }
@@ -198,21 +199,23 @@ void DomStorageCachedArea::OnLoadComplete(bool success) {
 }
 
 void DomStorageCachedArea::OnSetItemComplete(
-    const string16& key, bool success) {
+    const base::string16& key, bool success) {
   if (!success) {
     Reset();
     return;
   }
-  std::map<string16, int>::iterator found =  ignore_key_mutations_.find(key);
+  std::map<base::string16, int>::iterator found =
+      ignore_key_mutations_.find(key);
   DCHECK(found != ignore_key_mutations_.end());
   if (--found->second == 0)
     ignore_key_mutations_.erase(found);
 }
 
 void DomStorageCachedArea::OnRemoveItemComplete(
-    const string16& key, bool success) {
+    const base::string16& key, bool success) {
   DCHECK(success);
-  std::map<string16, int>::iterator found =  ignore_key_mutations_.find(key);
+  std::map<base::string16, int>::iterator found =
+      ignore_key_mutations_.find(key);
   DCHECK(found != ignore_key_mutations_.end());
   if (--found->second == 0)
     ignore_key_mutations_.erase(found);

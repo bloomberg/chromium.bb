@@ -29,12 +29,12 @@ struct WEBKIT_GLUE_EXPORT WebDropData {
   // The struct is used to represent a file in the drop data.
   struct WEBKIT_GLUE_EXPORT FileInfo {
     FileInfo();
-    FileInfo(const string16& path, const string16& display_name);
+    FileInfo(const base::string16& path, const base::string16& display_name);
 
     // The path of the file.
-    string16 path;
+    base::string16 path;
     // The display name of the file. This field is optional.
-    string16 display_name;
+    base::string16 display_name;
   };
 
   // Construct from a WebDragData object.
@@ -46,10 +46,10 @@ struct WEBKIT_GLUE_EXPORT WebDropData {
 
   // User is dragging a link into the webview.
   GURL url;
-  string16 url_title;  // The title associated with |url|.
+  base::string16 url_title;  // The title associated with |url|.
 
   // User is dragging a link out-of the webview.
-  string16 download_metadata;
+  base::string16 download_metadata;
 
   // Referrer policy to use when dragging a link out of the webview results in
   // a download.
@@ -59,7 +59,7 @@ struct WEBKIT_GLUE_EXPORT WebDropData {
   std::vector<FileInfo> filenames;
 
   // Isolated filesystem ID for the files being dragged on the webview.
-  string16 filesystem_id;
+  base::string16 filesystem_id;
 
   // User is dragging plain text into the webview.
   NullableString16 text;
@@ -71,10 +71,10 @@ struct WEBKIT_GLUE_EXPORT WebDropData {
   GURL html_base_url;
 
   // User is dragging data from the webview (e.g., an image).
-  string16 file_description_filename;
+  base::string16 file_description_filename;
   std::string file_contents;
 
-  std::map<string16, string16> custom_data;
+  std::map<base::string16, base::string16> custom_data;
 
   // Convert to a WebDragData object.
   WebKit::WebDragData ToDragData() const;
