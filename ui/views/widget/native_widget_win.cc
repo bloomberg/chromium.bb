@@ -507,7 +507,7 @@ void NativeWidgetWin::RestoreFocusOnActivate() {
   // state. If we don't do this, then ::SetFocus() to that child HWND returns
   // ERROR_INVALID_PARAMETER, despite both HWNDs being of the same thread.
   // See http://crbug.com/125976
-  if (!GetWidget()->GetFocusManager()->GetFocusedView()) {
+  {
     // Since this is a synthetic reset, we don't need to tell anyone about it.
     AutoNativeNotificationDisabler disabler;
     GetWidget()->GetFocusManager()->ClearFocus();
