@@ -27,7 +27,7 @@ class SoftwareOutputDeviceWin : public cc::SoftwareOutputDevice {
 
  private:
   ui::Compositor* compositor_;
-  HDC hdc_;
+  HWND hwnd_;
   BITMAPINFO bitmap_info_;
 };
 

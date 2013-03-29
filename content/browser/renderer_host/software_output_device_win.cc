@@ -17,13 +17,11 @@ SoftwareOutputDeviceWin::SoftwareOutputDeviceWin(ui::Compositor* compositor)
   // TODO(skaslev) Remove this when crbug.com/180702 is fixed.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  hdc_ = ::GetWindowDC(compositor->widget());
+  hwnd_ = compositor->widget();
 }
 
 SoftwareOutputDeviceWin::~SoftwareOutputDeviceWin() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  ::ReleaseDC(compositor_->widget(), hdc_);
 }
 
 void SoftwareOutputDeviceWin::Resize(gfx::Size viewport_size) {
@@ -49,13 +47,15 @@ void SoftwareOutputDeviceWin::EndPaint(cc::SoftwareFrameData* frame_data) {
     return;
 
   const SkBitmap& bitmap = device_->accessBitmap(false);
-  gfx::StretchDIBits(hdc_,
+  HDC hdc = ::GetDC(hwnd_);
+  gfx::StretchDIBits(hdc,
                      rect.x(), rect.y(),
                      rect.width(), rect.height(),
                      rect.x(), rect.y(),
                      rect.width(), rect.height(),
                      bitmap.getPixels(),
                      &bitmap_info_);
+  ::ReleaseDC(hwnd_, hdc);
 }
 
 }  // namespace content
