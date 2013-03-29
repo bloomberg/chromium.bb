@@ -69,23 +69,47 @@
       <message desc="Message for using local data for payments. [CHAR-LIMIT=64]" name="IDS_AUTOFILL_USE_LOCAL">
         Use local data to pay
       </message>
-      <message desc="Message for adding a new billing item to the autofill dialog. [CHAR-LIMIT=64]. [CHAR-LIMIT=32]" name="IDS_AUTOFILL_NEW_BILLING">
-        Add new billing
-      </message>
       <message desc="Autofill dialog title for billing details. [CHAR-LIMIT=32]" name="IDS_AUTOFILL_BILLING_TITLE">
         Billing Details
       </message>
       <message desc="Autofill dialog title for shipping details. [CHAR-LIMIT=32]" name="IDS_AUTOFILL_SHIPPING_TITLE">
         Shipping details
       </message>
-      <message desc="Message for adding a new shipping item to the autofill dialog. [CHAR-LIMIT=64]" name="IDS_AUTOFILL_NEW_SHIPPING">
-        Add new shipping
+      <message desc="Autofill dialog title for email. [CHAR-LIMIT=32]" name="IDS_AUTOFILL_EMAIL_TITLE">
+        E-mail
+      </message>
+      <message desc="Autofill dialog title for credit card. [CHAR-LIMIT=32]" name="IDS_AUTOFILL_CREDIT_CARD_TITLE">
+        Credit card
       </message>
       <message desc="Message for editing the current shipping item on the autofill dialog. [CHAR-LIMIT=64]" name="IDS_AUTOFILL_EDIT_SHIPPING">
-        Edit shipping details
+        Edit shipping address
       </message>
-      <message desc="Message for editing the current billing item on the autofill dialog. [CHAR-LIMIT=64]" name="IDS_AUTOFILL_EDIT_BILLING">
+      <message desc="Message for adding a new shipping item to the autofill dialog. [CHAR-LIMIT=64]" name="IDS_AUTOFILL_NEW_SHIPPING">
+        Add new shipping address
+      </message>
+      <message desc="Message for editing the current credit card item on the autofill dialog. [CHAR-LIMIT=64]" name="IDS_AUTOFILL_EDIT_CREDIT_CARD">
+        Edit credit card details
+      </message>
+      <message desc="Message for adding a new credir card item to the autofill dialog. [CHAR-LIMIT=64]" name="IDS_AUTOFILL_NEW_CREDIT_CARD">
+        Add new credit card
+      </message>
+      <message desc="Message for editing the current email item on the autofill dialog. [CHAR-LIMIT=64]" name="IDS_AUTOFILL_EDIT_EMAIL">
+        Edit email address
+      </message>
+      <message desc="Message for adding a new email item to the autofill dialog. [CHAR-LIMIT=64]" name="IDS_AUTOFILL_NEW_EMAIL">
+        Add new email address
+      </message>
+      <message desc="Message for editing the current billing address item on the autofill dialog. [CHAR-LIMIT=64]" name="IDS_AUTOFILL_EDIT_BILLING">
+        Edit billing address
+      </message>
+      <message desc="Message for adding a new billing address item to the autofill dialog. [CHAR-LIMIT=64]" name="IDS_AUTOFILL_NEW_BILLING">
+        Add new billing address
+      </message>
+      <message desc="Message for editing the current billing item on the autofill dialog. [CHAR-LIMIT=64]" name="IDS_AUTOFILL_EDIT_CC_BILLING">
         Edit billing details
+      </message>
+      <message desc="Message for adding a new billing item to the autofill dialog. [CHAR-LIMIT=64]" name="IDS_AUTOFILL_NEW_CC_BILLING">
+        Add new billing details
       </message>
       <message desc="Message for positive button on the autofill dialog. [CHAR-LIMIT=32]" name="IDS_AUTOFILL_POSITIVE_BUTTON">
         Submit
@@ -95,6 +119,9 @@
       </message>
       <message desc="Message for positive button while editing details on the autofill dialog. [CHAR-LIMIT=32]" name="IDS_AUTOFILL_POSITIVE_BUTTON_EDITING">
         Done
+      </message>
+      <message desc="Message for editing an single item on the autofill dialog. [CHAR-LIMIT=32]" name="IDS_AUTOFILL_EDIT_BUTTON">
+        Edit
       </message>
       <message desc="Message to show when additional information is needed for billing. [CHAR-LIMIT=64]" name="IDS_AUTOFILL_ADDITIONAL_INFO">
         Additional info needed
