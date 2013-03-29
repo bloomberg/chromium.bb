@@ -254,6 +254,9 @@ class GpuSandboxedProcessLauncherDelegate
       return;
     }
 
+    // Block this DLL even if it is not loaded by the browser process.
+    policy->AddDllToUnload(L"cmsetac.dll");
+
 #ifdef USE_AURA
     // GPU also needs to add sections to the browser for aura
     // TODO(jschuh): refactor the GPU channel to remove this. crbug.com/128786
