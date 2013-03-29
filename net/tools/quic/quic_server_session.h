@@ -7,10 +7,10 @@
 #ifndef NET_TOOLS_QUIC_QUIC_SERVER_SESSION_H_
 #define NET_TOOLS_QUIC_QUIC_SERVER_SESSION_H_
 
-#include <hash_map>
 #include <set>
 #include <vector>
 
+#include "base/hash_tables.h"
 #include "net/quic/quic_crypto_server_stream.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_session.h"

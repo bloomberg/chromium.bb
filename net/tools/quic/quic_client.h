@@ -8,9 +8,9 @@
 #ifndef NET_TOOLS_QUIC_QUIC_CLIENT_H_
 #define NET_TOOLS_QUIC_QUIC_CLIENT_H_
 
-#include <hash_set>
 #include <string>
 
+#include "base/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/base/ip_endpoint.h"
 #include "net/quic/quic_framer.h"

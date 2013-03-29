@@ -5,9 +5,9 @@
 #ifndef NET_TOOLS_QUIC_QUIC_IN_MEMORY_CACHE_H_
 #define NET_TOOLS_QUIC_QUIC_IN_MEMORY_CACHE_H_
 
-#include <hash_map>
 #include <string>
 
+#include "base/hash_tables.h"
 #include "base/memory/singleton.h"
 #include "base/string_piece.h"
 #include "net/tools/flip_server/balsa_frame.h"

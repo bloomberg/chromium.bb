@@ -9,9 +9,8 @@
 #define NET_TOOLS_QUIC_QUIC_TIME_WAIT_LIST_MANAGER_H_
 
 #include <deque>
-#include <hash_map>
-#include <hash_set>
 
+#include "base/hash_tables.h"
 #include "base/string_piece.h"
 #include "net/quic/quic_blocked_writer_interface.h"
 #include "net/quic/quic_framer.h"

@@ -2376,14 +2376,6 @@
             '../base/base.gyp:base',
             'net',
           ],
-          'cflags': [
-            '-Wno-deprecated',
-          ],
-          'direct_dependent_settings': {
-            'cflags': [
-              '-Wno-deprecated',
-            ]
-          },
           'sources': [
             'tools/flip_server/balsa_enums.h',
             'tools/flip_server/balsa_frame.cc',
@@ -2481,7 +2473,6 @@
           'dependencies': [
             '../base/base.gyp:base',
             '../third_party/openssl/openssl.gyp:openssl',
-            'flip_balsa_and_epoll_library',
             'net',
             'quic_library',
           ],
@@ -2503,7 +2494,6 @@
           'dependencies': [
             '../base/base.gyp:base',
             '../third_party/openssl/openssl.gyp:openssl',
-            'flip_balsa_and_epoll_library',
             'net',
             'quic_library',
           ],
