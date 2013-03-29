@@ -1224,6 +1224,9 @@ IPC_MESSAGE_CONTROL0(PpapiHostMsg_UDPSocketPrivate_Create)
 IPC_MESSAGE_CONTROL2(PpapiHostMsg_UDPSocketPrivate_SetBoolSocketFeature,
                      int32_t /* name */,
                      bool /* value */)
+IPC_MESSAGE_CONTROL2(PpapiHostMsg_UDPSocketPrivate_SetInt32SocketFeature,
+                     int32_t /* name */,
+                     int32_t /* value */)
 IPC_MESSAGE_CONTROL1(PpapiHostMsg_UDPSocketPrivate_Bind,
                      PP_NetAddress_Private /* net_addr */)
 IPC_MESSAGE_CONTROL1(PpapiHostMsg_UDPSocketPrivate_RecvFrom,

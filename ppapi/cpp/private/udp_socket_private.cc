@@ -16,6 +16,10 @@ namespace pp {
 
 namespace {
 
+template <> const char* interface_name<PPB_UDPSocket_Private_0_5>() {
+  return PPB_UDPSOCKET_PRIVATE_INTERFACE_0_5;
+}
+
 template <> const char* interface_name<PPB_UDPSocket_Private_0_4>() {
   return PPB_UDPSOCKET_PRIVATE_INTERFACE_0_4;
 }
@@ -27,7 +31,10 @@ template <> const char* interface_name<PPB_UDPSocket_Private_0_3>() {
 }  // namespace
 
 UDPSocketPrivate::UDPSocketPrivate(const InstanceHandle& instance) {
-  if (has_interface<PPB_UDPSocket_Private_0_4>()) {
+  if (has_interface<PPB_UDPSocket_Private_0_5>()) {
+    PassRefFromConstructor(get_interface<PPB_UDPSocket_Private_0_5>()->Create(
+        instance.pp_instance()));
+  } else if (has_interface<PPB_UDPSocket_Private_0_4>()) {
     PassRefFromConstructor(get_interface<PPB_UDPSocket_Private_0_4>()->Create(
         instance.pp_instance()));
   } else if (has_interface<PPB_UDPSocket_Private_0_3>()) {
@@ -38,12 +45,17 @@ UDPSocketPrivate::UDPSocketPrivate(const InstanceHandle& instance) {
 
 // static
 bool UDPSocketPrivate::IsAvailable() {
-  return has_interface<PPB_UDPSocket_Private_0_4>() ||
+  return has_interface<PPB_UDPSocket_Private_0_5>() ||
+      has_interface<PPB_UDPSocket_Private_0_4>() ||
       has_interface<PPB_UDPSocket_Private_0_3>();
 }
 
 int32_t UDPSocketPrivate::SetSocketFeature(PP_UDPSocketFeature_Private name,
                                            const Var& value) {
+  if (has_interface<PPB_UDPSocket_Private_0_5>()) {
+    return get_interface<PPB_UDPSocket_Private_0_5>()->SetSocketFeature(
+        pp_resource(), name, value.pp_var());
+  }
   if (has_interface<PPB_UDPSocket_Private_0_4>()) {
     return get_interface<PPB_UDPSocket_Private_0_4>()->SetSocketFeature(
         pp_resource(), name, value.pp_var());
@@ -53,6 +65,10 @@ int32_t UDPSocketPrivate::SetSocketFeature(PP_UDPSocketFeature_Private name,
 
 int32_t UDPSocketPrivate::Bind(const PP_NetAddress_Private* addr,
                                const CompletionCallback& callback) {
+  if (has_interface<PPB_UDPSocket_Private_0_5>()) {
+    return get_interface<PPB_UDPSocket_Private_0_5>()->Bind(
+        pp_resource(), addr, callback.pp_completion_callback());
+  }
   if (has_interface<PPB_UDPSocket_Private_0_4>()) {
     return get_interface<PPB_UDPSocket_Private_0_4>()->Bind(
         pp_resource(), addr, callback.pp_completion_callback());
@@ -65,6 +81,12 @@ int32_t UDPSocketPrivate::Bind(const PP_NetAddress_Private* addr,
 }
 
 bool UDPSocketPrivate::GetBoundAddress(PP_NetAddress_Private* addr) {
+  if (has_interface<PPB_UDPSocket_Private_0_5>()) {
+    PP_Bool result =
+        get_interface<PPB_UDPSocket_Private_0_5>()->GetBoundAddress(
+            pp_resource(), addr);
+    return PP_ToBool(result);
+  }
   if (has_interface<PPB_UDPSocket_Private_0_4>()) {
     PP_Bool result =
         get_interface<PPB_UDPSocket_Private_0_4>()->GetBoundAddress(
@@ -94,6 +116,18 @@ int32_t UDPSocketPrivate::RecvFrom(char* buffer,
   return callback.MayForce(PP_ERROR_NOINTERFACE);
 }
 
+int32_t UDPSocketPrivate::RecvFrom(char* buffer,
+                                   int32_t num_bytes,
+                                   PP_NetAddress_Private* addr,
+                                   const CompletionCallback& callback) {
+  if (has_interface<PPB_UDPSocket_Private_0_5>()) {
+    return get_interface<PPB_UDPSocket_Private_0_5>()->RecvFrom(
+        pp_resource(), buffer, num_bytes, addr,
+        callback.pp_completion_callback());
+  }
+  return callback.MayForce(PP_ERROR_NOINTERFACE);
+}
+
 bool UDPSocketPrivate::GetRecvFromAddress(PP_NetAddress_Private* addr) {
   if (has_interface<PPB_UDPSocket_Private_0_4>()) {
     PP_Bool result =
@@ -114,6 +148,11 @@ int32_t UDPSocketPrivate::SendTo(const char* buffer,
                                  int32_t num_bytes,
                                  const PP_NetAddress_Private* addr,
                                  const CompletionCallback& callback) {
+  if (has_interface<PPB_UDPSocket_Private_0_5>()) {
+    return get_interface<PPB_UDPSocket_Private_0_5>()->SendTo(
+        pp_resource(), buffer, num_bytes, addr,
+        callback.pp_completion_callback());
+  }
   if (has_interface<PPB_UDPSocket_Private_0_4>()) {
     return get_interface<PPB_UDPSocket_Private_0_4>()->SendTo(
         pp_resource(), buffer, num_bytes, addr,
@@ -128,6 +167,8 @@ int32_t UDPSocketPrivate::SendTo(const char* buffer,
 }
 
 void UDPSocketPrivate::Close() {
+  if (has_interface<PPB_UDPSocket_Private_0_5>())
+    return get_interface<PPB_UDPSocket_Private_0_5>()->Close(pp_resource());
   if (has_interface<PPB_UDPSocket_Private_0_4>())
     return get_interface<PPB_UDPSocket_Private_0_4>()->Close(pp_resource());
   if (has_interface<PPB_UDPSocket_Private_0_3>())

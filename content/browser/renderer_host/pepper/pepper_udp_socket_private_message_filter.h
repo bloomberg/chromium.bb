@@ -5,16 +5,19 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_PEPPER_PEPPER_UDP_SOCKET_PRIVATE_MESSAGE_FILTER_H_
 #define CONTENT_BROWSER_RENDERER_HOST_PEPPER_PEPPER_UDP_SOCKET_PRIVATE_MESSAGE_FILTER_H_
 
+#include <queue>
 #include <string>
 
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "content/public/common/process_type.h"
 #include "net/base/completion_callback.h"
+#include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_stdint.h"
@@ -23,8 +26,6 @@
 struct PP_NetAddress_Private;
 
 namespace net {
-class IOBuffer;
-class IOBufferWithSize;
 class UDPServerSocket;
 }
 
@@ -49,6 +50,24 @@ class CONTENT_EXPORT PepperUDPSocketPrivateMessageFilter
   virtual ~PepperUDPSocketPrivateMessageFilter();
 
  private:
+  enum IOState {
+    IO_STATE_IDLE = 0,
+    IO_STATE_IN_PROCESS
+  };
+
+  struct IORequest {
+    IORequest(const scoped_refptr<net::IOBuffer>& buffer,
+              int32_t buffer_size,
+              const linked_ptr<net::IPEndPoint>& end_point,
+              const ppapi::host::ReplyMessageContext& context);
+    ~IORequest();
+
+    scoped_refptr<net::IOBuffer> buffer;
+    int32_t buffer_size;
+    linked_ptr<net::IPEndPoint> end_point;
+    ppapi::host::ReplyMessageContext context;
+  };
+
   // ppapi::host::ResourceMessageFilter overrides.
   virtual scoped_refptr<base::TaskRunner> OverrideTaskRunnerForMessage(
       const IPC::Message& message) OVERRIDE;
@@ -60,6 +79,10 @@ class CONTENT_EXPORT PepperUDPSocketPrivateMessageFilter
       const ppapi::host::HostMessageContext* context,
       int32_t name,
       bool value);
+  int32_t OnMsgSetInt32SocketFeature(
+      const ppapi::host::HostMessageContext* context,
+      int32_t name,
+      int32_t value);
   int32_t OnMsgBind(const ppapi::host::HostMessageContext* context,
                     const PP_NetAddress_Private& addr);
   int32_t OnMsgRecvFrom(const ppapi::host::HostMessageContext* context,
@@ -69,6 +92,9 @@ class CONTENT_EXPORT PepperUDPSocketPrivateMessageFilter
                       const PP_NetAddress_Private& addr);
   int32_t OnMsgClose(const ppapi::host::HostMessageContext* context);
 
+  void RecvFromInternal();
+  void SendToInternal();
+
   void DoBind(const ppapi::host::ReplyMessageContext& context,
               const PP_NetAddress_Private& addr);
   void DoSendTo(const ppapi::host::ReplyMessageContext& context,
@@ -76,10 +102,8 @@ class CONTENT_EXPORT PepperUDPSocketPrivateMessageFilter
                 const PP_NetAddress_Private& addr);
   void Close();
 
-  void OnRecvFromCompleted(const ppapi::host::ReplyMessageContext& context,
-                           int32_t result);
-  void OnSendToCompleted(const ppapi::host::ReplyMessageContext& context,
-                         int32_t result);
+  void OnRecvFromCompleted(const IORequest& request, int32_t result);
+  void OnSendToCompleted(const IORequest& request, int32_t result);
 
   void SendBindReply(const ppapi::host::ReplyMessageContext& context,
                      int32_t result,
@@ -102,13 +126,19 @@ class CONTENT_EXPORT PepperUDPSocketPrivateMessageFilter
   bool allow_address_reuse_;
   bool allow_broadcast_;
 
+  bool custom_send_buffer_size_;
+  int32_t send_buffer_size_;
+
+  bool custom_recv_buffer_size_;
+  int32_t recv_buffer_size_;
+
   scoped_ptr<net::UDPServerSocket> socket_;
   bool closed_;
 
-  scoped_refptr<net::IOBuffer> recvfrom_buffer_;
-  scoped_refptr<net::IOBufferWithSize> sendto_buffer_;
-
-  net::IPEndPoint recvfrom_address_;
+  std::queue<IORequest> recvfrom_requests_;
+  std::queue<IORequest> sendto_requests_;
+  IOState recvfrom_state_;
+  IOState sendto_state_;
 
   bool external_plugin_;
   int render_process_id_;

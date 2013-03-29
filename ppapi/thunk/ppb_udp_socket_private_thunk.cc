@@ -30,13 +30,23 @@ PP_Bool IsUDPSocket(PP_Resource resource) {
   return PP_FromBool(enter.succeeded());
 }
 
-int32_t SetSocketFeature(PP_Resource udp_socket,
-                         PP_UDPSocketFeature_Private name,
-                         PP_Var value) {
+int32_t SetSocketFeature_0_5(PP_Resource udp_socket,
+                             PP_UDPSocketFeature_Private name,
+                             PP_Var value) {
   EnterUDP enter(udp_socket, true);
   if (enter.failed())
     return PP_ERROR_BADRESOURCE;
   return enter.object()->SetSocketFeature(name, value);
+}
+
+int32_t SetSocketFeature_0_4(PP_Resource udp_socket,
+                             PP_UDPSocketFeature_Private name,
+                             PP_Var value) {
+  if (name != PP_UDPSOCKETFEATURE_ADDRESS_REUSE &&
+      name != PP_UDPSOCKETFEATURE_BROADCAST) {
+    return PP_ERROR_BADARGUMENT;
+  }
+  return SetSocketFeature_0_5(udp_socket, name, value);
 }
 
 int32_t Bind(PP_Resource udp_socket,
@@ -56,10 +66,10 @@ PP_Bool GetBoundAddress(PP_Resource udp_socket,
   return enter.object()->GetBoundAddress(addr);
 }
 
-int32_t RecvFrom(PP_Resource udp_socket,
-                 char* buffer,
-                 int32_t num_bytes,
-                 PP_CompletionCallback callback) {
+int32_t RecvFrom_0_4(PP_Resource udp_socket,
+                     char* buffer,
+                     int32_t num_bytes,
+                     PP_CompletionCallback callback) {
 #ifdef NDEBUG
   EnterUDP enter(udp_socket, callback, false);
 #else
@@ -67,8 +77,24 @@ int32_t RecvFrom(PP_Resource udp_socket,
 #endif
   if (enter.failed())
     return enter.retval();
-  return enter.SetResult(enter.object()->RecvFrom(buffer, num_bytes,
-                                                  enter.callback()));
+  return enter.SetResult(enter.object()->RecvFrom_0_4(buffer, num_bytes,
+                                                      enter.callback()));
+}
+
+int32_t RecvFrom_0_5(PP_Resource udp_socket,
+                     char* buffer,
+                     int32_t num_bytes,
+                     PP_NetAddress_Private* addr,
+                     PP_CompletionCallback callback) {
+#ifdef NDEBUG
+  EnterUDP enter(udp_socket, callback, false);
+#else
+  EnterUDP enter(udp_socket, callback, true);
+#endif
+  if (enter.failed())
+    return enter.retval();
+  return enter.SetResult(enter.object()->RecvFrom_0_5(buffer, num_bytes, addr,
+                                                      enter.callback()));
 }
 
 PP_Bool GetRecvFromAddress(PP_Resource udp_socket,
@@ -101,7 +127,7 @@ const PPB_UDPSocket_Private_0_2 g_ppb_udp_socket_thunk_0_2 = {
   &Create,
   &IsUDPSocket,
   &Bind,
-  &RecvFrom,
+  &RecvFrom_0_4,
   &GetRecvFromAddress,
   &SendTo,
   &Close
@@ -112,7 +138,7 @@ const PPB_UDPSocket_Private_0_3 g_ppb_udp_socket_thunk_0_3 = {
   &IsUDPSocket,
   &Bind,
   &GetBoundAddress,
-  &RecvFrom,
+  &RecvFrom_0_4,
   &GetRecvFromAddress,
   &SendTo,
   &Close
@@ -121,11 +147,22 @@ const PPB_UDPSocket_Private_0_3 g_ppb_udp_socket_thunk_0_3 = {
 const PPB_UDPSocket_Private_0_4 g_ppb_udp_socket_thunk_0_4 = {
   &Create,
   &IsUDPSocket,
-  &SetSocketFeature,
+  &SetSocketFeature_0_4,
   &Bind,
   &GetBoundAddress,
-  &RecvFrom,
+  &RecvFrom_0_4,
   &GetRecvFromAddress,
+  &SendTo,
+  &Close
+};
+
+const PPB_UDPSocket_Private_0_5 g_ppb_udp_socket_thunk_0_5 = {
+  &Create,
+  &IsUDPSocket,
+  &SetSocketFeature_0_5,
+  &Bind,
+  &GetBoundAddress,
+  &RecvFrom_0_5,
   &SendTo,
   &Close
 };
@@ -142,6 +179,10 @@ const PPB_UDPSocket_Private_0_3* GetPPB_UDPSocket_Private_0_3_Thunk() {
 
 const PPB_UDPSocket_Private_0_4* GetPPB_UDPSocket_Private_0_4_Thunk() {
   return &g_ppb_udp_socket_thunk_0_4;
+}
+
+const PPB_UDPSocket_Private_0_5* GetPPB_UDPSocket_Private_0_5_Thunk() {
+  return &g_ppb_udp_socket_thunk_0_5;
 }
 
 }  // namespace thunk

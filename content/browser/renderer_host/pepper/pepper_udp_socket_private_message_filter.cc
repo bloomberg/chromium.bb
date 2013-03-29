@@ -15,7 +15,6 @@
 #include "content/public/common/process_type.h"
 #include "content/public/common/socket_permission_request.h"
 #include "ipc/ipc_message_macros.h"
-#include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/udp/udp_server_socket.h"
 #include "ppapi/c/pp_errors.h"
@@ -48,12 +47,32 @@ bool CanUseSocketAPIs(const SocketPermissionRequest& request,
 
 }  // namespace
 
+PepperUDPSocketPrivateMessageFilter::IORequest::IORequest(
+    const scoped_refptr<net::IOBuffer>& buffer,
+    int32_t buffer_size,
+    const linked_ptr<net::IPEndPoint>& end_point,
+    const ppapi::host::ReplyMessageContext& context)
+    : buffer(buffer),
+      buffer_size(buffer_size),
+      end_point(end_point),
+      context(context) {
+}
+
+PepperUDPSocketPrivateMessageFilter::IORequest::~IORequest() {
+}
+
 PepperUDPSocketPrivateMessageFilter::PepperUDPSocketPrivateMessageFilter(
     BrowserPpapiHostImpl* host,
     PP_Instance instance)
     : allow_address_reuse_(false),
       allow_broadcast_(false),
+      custom_send_buffer_size_(false),
+      send_buffer_size_(0),
+      custom_recv_buffer_size_(false),
+      recv_buffer_size_(0),
       closed_(false),
+      recvfrom_state_(IO_STATE_IDLE),
+      sendto_state_(IO_STATE_IDLE),
       external_plugin_(host->external_plugin()),
       render_process_id_(0),
       render_view_id_(0) {
@@ -76,6 +95,7 @@ PepperUDPSocketPrivateMessageFilter::OverrideTaskRunnerForMessage(
     const IPC::Message& message) {
   switch (message.type()) {
     case PpapiHostMsg_UDPSocketPrivate_SetBoolSocketFeature::ID:
+    case PpapiHostMsg_UDPSocketPrivate_SetInt32SocketFeature::ID:
     case PpapiHostMsg_UDPSocketPrivate_RecvFrom::ID:
     case PpapiHostMsg_UDPSocketPrivate_Close::ID:
       return BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
@@ -93,6 +113,9 @@ int32_t PepperUDPSocketPrivateMessageFilter::OnResourceMessageReceived(
     PPAPI_DISPATCH_HOST_RESOURCE_CALL(
         PpapiHostMsg_UDPSocketPrivate_SetBoolSocketFeature,
         OnMsgSetBoolSocketFeature)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(
+        PpapiHostMsg_UDPSocketPrivate_SetInt32SocketFeature,
+        OnMsgSetInt32SocketFeature)
     PPAPI_DISPATCH_HOST_RESOURCE_CALL(
         PpapiHostMsg_UDPSocketPrivate_Bind,
         OnMsgBind)
@@ -114,17 +137,47 @@ int32_t PepperUDPSocketPrivateMessageFilter::OnMsgSetBoolSocketFeature(
     int32_t name,
     bool value) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(!socket_.get());
 
   if (closed_)
     return PP_ERROR_FAILED;
 
   switch(static_cast<PP_UDPSocketFeature_Private>(name)) {
     case PP_UDPSOCKETFEATURE_ADDRESS_REUSE:
+      DCHECK(!socket_.get());
       allow_address_reuse_ = value;
       break;
     case PP_UDPSOCKETFEATURE_BROADCAST:
+      DCHECK(!socket_.get());
       allow_broadcast_ = value;
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+  return PP_OK;
+}
+
+int32_t PepperUDPSocketPrivateMessageFilter::OnMsgSetInt32SocketFeature(
+    const ppapi::host::HostMessageContext* context,
+    int32_t name,
+    int32_t value) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  if (closed_)
+    return PP_ERROR_FAILED;
+
+  switch(static_cast<PP_UDPSocketFeature_Private>(name)) {
+    case PP_UDPSOCKETFEATURE_SEND_BUFFER_SIZE:
+      custom_send_buffer_size_ = true;
+      send_buffer_size_ = value;
+      if (socket_.get())
+        socket_->SetSendBufferSize(send_buffer_size_);
+      break;
+    case PP_UDPSOCKETFEATURE_RECV_BUFFER_SIZE:
+      custom_recv_buffer_size_ = true;
+      recv_buffer_size_ = value;
+      if (socket_.get())
+        socket_->SetReceiveBufferSize(recv_buffer_size_);
       break;
     default:
       NOTREACHED();
@@ -165,20 +218,18 @@ int32_t PepperUDPSocketPrivateMessageFilter::OnMsgRecvFrom(
   if (closed_)
     return PP_ERROR_FAILED;
 
-  if (recvfrom_buffer_.get())
-    return PP_ERROR_INPROGRESS;
   if (num_bytes > ppapi::proxy::UDPSocketPrivateResource::kMaxReadSize) {
     // |num_bytes| value is checked on the plugin side.
     NOTREACHED();
     num_bytes = ppapi::proxy::UDPSocketPrivateResource::kMaxReadSize;
   }
-  recvfrom_buffer_ = new net::IOBuffer(num_bytes);
-  int result = socket_->RecvFrom(
-      recvfrom_buffer_, num_bytes, &recvfrom_address_,
-      base::Bind(&PepperUDPSocketPrivateMessageFilter::OnRecvFromCompleted,
-                 this, context->MakeReplyMessageContext()));
-  if (result != net::ERR_IO_PENDING)
-    OnRecvFromCompleted(context->MakeReplyMessageContext(), result);
+  scoped_refptr<net::IOBuffer> recvfrom_buffer(new net::IOBuffer(num_bytes));
+  linked_ptr<net::IPEndPoint> end_point(new net::IPEndPoint());
+  recvfrom_requests_.push(IORequest(recvfrom_buffer,
+                                    num_bytes,
+                                    end_point,
+                                    context->MakeReplyMessageContext()));
+  RecvFromInternal();
   return PP_OK_COMPLETIONPENDING;
 }
 
@@ -209,6 +260,38 @@ int32_t PepperUDPSocketPrivateMessageFilter::OnMsgClose(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   Close();
   return PP_OK;
+}
+
+void PepperUDPSocketPrivateMessageFilter::RecvFromInternal() {
+  if (recvfrom_requests_.empty() || recvfrom_state_ == IO_STATE_IN_PROCESS)
+    return;
+  DCHECK(recvfrom_state_ == IO_STATE_IDLE);
+  recvfrom_state_ = IO_STATE_IN_PROCESS;
+  const IORequest& request = recvfrom_requests_.front();
+  int result = socket_->RecvFrom(
+      request.buffer.get(),
+      static_cast<int>(request.buffer_size),
+      request.end_point.get(),
+      base::Bind(&PepperUDPSocketPrivateMessageFilter::OnRecvFromCompleted,
+                 this, request));
+  if (result != net::ERR_IO_PENDING)
+    OnRecvFromCompleted(request, result);
+}
+
+void PepperUDPSocketPrivateMessageFilter::SendToInternal() {
+  if (sendto_requests_.empty() || sendto_state_ == IO_STATE_IN_PROCESS)
+    return;
+  DCHECK(sendto_state_ == IO_STATE_IDLE);
+  sendto_state_ = IO_STATE_IN_PROCESS;
+  const IORequest& request = sendto_requests_.front();
+  int result = socket_->SendTo(
+      request.buffer.get(),
+      static_cast<int>(request.buffer_size),
+      *request.end_point.get(),
+      base::Bind(&PepperUDPSocketPrivateMessageFilter::OnSendToCompleted,
+                 this, request));
+  if (result != net::ERR_IO_PENDING)
+    OnSendToCompleted(request, result);
 }
 
 void PepperUDPSocketPrivateMessageFilter::DoBind(
@@ -246,9 +329,20 @@ void PepperUDPSocketPrivateMessageFilter::DoBind(
                                                      bound_address.port(),
                                                      &net_address)) {
     SendBindError(context, PP_ERROR_FAILED);
-  } else {
-    SendBindReply(context, PP_OK, net_address);
+    return;
   }
+  if (custom_send_buffer_size_ &&
+      !socket_->SetSendBufferSize(send_buffer_size_)) {
+    SendBindError(context, PP_ERROR_FAILED);
+    return;
+  }
+  if (custom_recv_buffer_size_ &&
+      !socket_->SetReceiveBufferSize(recv_buffer_size_)) {
+    SendBindError(context, PP_ERROR_FAILED);
+    return;
+  }
+
+  SendBindReply(context, PP_OK, net_address);
 }
 
 void PepperUDPSocketPrivateMessageFilter::DoSendTo(
@@ -260,11 +354,6 @@ void PepperUDPSocketPrivateMessageFilter::DoSendTo(
 
   if (closed_) {
     SendSendToError(context, PP_ERROR_FAILED);
-    return;
-  }
-
-  if (sendto_buffer_.get()) {
-    SendSendToError(context, PP_ERROR_INPROGRESS);
     return;
   }
 
@@ -281,8 +370,10 @@ void PepperUDPSocketPrivateMessageFilter::DoSendTo(
     num_bytes = static_cast<size_t>(
         ppapi::proxy::UDPSocketPrivateResource::kMaxWriteSize);
   }
-  sendto_buffer_ = new net::IOBufferWithSize(num_bytes);
-  memcpy(sendto_buffer_->data(), data.data(), num_bytes);
+
+  scoped_refptr<net::IOBuffer> sendto_buffer(
+      new net::IOBufferWithSize(num_bytes)) ;
+  memcpy(sendto_buffer->data(), data.data(), num_bytes);
 
   net::IPAddressNumber address;
   int port;
@@ -290,13 +381,13 @@ void PepperUDPSocketPrivateMessageFilter::DoSendTo(
     SendSendToError(context, PP_ERROR_FAILED);
     return;
   }
+  linked_ptr<net::IPEndPoint> end_point(new net::IPEndPoint(address, port));
 
-  int result = socket_->SendTo(
-      sendto_buffer_, sendto_buffer_->size(), net::IPEndPoint(address, port),
-      base::Bind(&PepperUDPSocketPrivateMessageFilter::OnSendToCompleted, this,
-                 context));
-  if (result != net::ERR_IO_PENDING)
-    OnSendToCompleted(context, result);
+  sendto_requests_.push(IORequest(sendto_buffer,
+                                  static_cast<int32_t>(num_bytes),
+                                  end_point,
+                                  context));
+  SendToInternal();
 }
 
 void PepperUDPSocketPrivateMessageFilter::Close() {
@@ -307,38 +398,46 @@ void PepperUDPSocketPrivateMessageFilter::Close() {
 }
 
 void PepperUDPSocketPrivateMessageFilter::OnRecvFromCompleted(
-    const ppapi::host::ReplyMessageContext& context,
+    const IORequest& request,
     int32_t result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(recvfrom_buffer_.get());
+  DCHECK(request.buffer.get());
+  DCHECK(request.end_point.get());
 
   // Convert IPEndPoint we get back from RecvFrom to a PP_NetAddress_Private,
   // to send back.
   PP_NetAddress_Private addr = NetAddressPrivateImpl::kInvalidNetAddress;
   if (result < 0 ||
       !NetAddressPrivateImpl::IPEndPointToNetAddress(
-          recvfrom_address_.address(),
-          recvfrom_address_.port(),
+          request.end_point->address(),
+          request.end_point->port(),
           &addr)) {
-    SendRecvFromError(context, PP_ERROR_FAILED);
+    SendRecvFromError(request.context, PP_ERROR_FAILED);
   } else {
-    SendRecvFromReply(context, PP_OK,
-                      std::string(recvfrom_buffer_->data(), result), addr);
+    SendRecvFromReply(request.context, PP_OK,
+                      std::string(request.buffer->data(), result), addr);
   }
-
-  recvfrom_buffer_ = NULL;
+  // Take out |request| from |recvfrom_requests_| queue.
+  recvfrom_requests_.pop();
+  recvfrom_state_ = IO_STATE_IDLE;
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+      base::Bind(&PepperUDPSocketPrivateMessageFilter::RecvFromInternal, this));
 }
 
 void PepperUDPSocketPrivateMessageFilter::OnSendToCompleted(
-    const ppapi::host::ReplyMessageContext& context,
+    const IORequest& request,
     int32_t result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(sendto_buffer_.get());
+  DCHECK(request.buffer.get());
   if (result < 0)
-    SendSendToError(context, PP_ERROR_FAILED);
+    SendSendToError(request.context, PP_ERROR_FAILED);
   else
-    SendSendToReply(context, PP_OK, result);
-  sendto_buffer_ = NULL;
+    SendSendToReply(request.context, PP_OK, result);
+  // Take out |request| from |sendto_requests_| queue.
+  sendto_requests_.pop();
+  sendto_state_ = IO_STATE_IDLE;
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+      base::Bind(&PepperUDPSocketPrivateMessageFilter::SendToInternal, this));
 }
 
 void PepperUDPSocketPrivateMessageFilter::SendBindReply(

@@ -24,9 +24,13 @@ class PPAPI_THUNK_EXPORT PPB_UDPSocket_Private_API {
   virtual int32_t Bind(const PP_NetAddress_Private* addr,
                        scoped_refptr<TrackedCallback> callback) = 0;
   virtual PP_Bool GetBoundAddress(PP_NetAddress_Private* addr) = 0;
-  virtual int32_t RecvFrom(char* buffer,
-                           int32_t num_bytes,
-                           scoped_refptr<TrackedCallback> callback) = 0;
+  virtual int32_t RecvFrom_0_4(char* buffer,
+                               int32_t num_bytes,
+                               scoped_refptr<TrackedCallback> callback) = 0;
+  virtual int32_t RecvFrom_0_5(char* buffer,
+                               int32_t num_bytes,
+                               PP_NetAddress_Private* addr,
+                               scoped_refptr<TrackedCallback> callback) = 0;
   virtual PP_Bool GetRecvFromAddress(PP_NetAddress_Private* addr) = 0;
   virtual int32_t SendTo(const char* buffer,
                          int32_t num_bytes,

@@ -29,6 +29,10 @@ class UDPSocketPrivate : public Resource {
   int32_t RecvFrom(char* buffer,
                    int32_t num_bytes,
                    const CompletionCallback& callback);
+  int32_t RecvFrom(char* buffer,
+                   int32_t num_bytes,
+                   PP_NetAddress_Private* addr,
+                   const CompletionCallback& callback);
   bool GetRecvFromAddress(PP_NetAddress_Private* addr);
   int32_t SendTo(const char* buffer,
                  int32_t num_bytes,

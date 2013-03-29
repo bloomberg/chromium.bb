@@ -31,16 +31,22 @@ class TestUDPSocketPrivate : public TestCase {
   std::string ReadSocket(pp::UDPSocketPrivate* socket,
                          PP_NetAddress_Private* address,
                          size_t size,
-                         std::string* message);
+                         std::string* message,
+                         PP_NetAddress_Private* recvfrom_address,
+                         bool is_queued_recvfrom);
   std::string PassMessage(pp::UDPSocketPrivate* target,
                           pp::UDPSocketPrivate* source,
                           PP_NetAddress_Private* address,
-                          const std::string& message);
+                          const std::string& message,
+                          PP_NetAddress_Private* recvfrom_address,
+                          bool is_queued_recvfrom);
 
   std::string TestConnect();
   std::string TestConnectFailure();
   std::string TestBroadcast();
   std::string TestSetSocketFeatureErrors();
+  std::string TestQueuedRequests();
+  std::string TestSequentialRequests();
 
   std::string host_;
   uint16_t port_;
