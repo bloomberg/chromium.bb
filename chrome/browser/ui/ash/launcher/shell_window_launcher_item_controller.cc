@@ -138,7 +138,14 @@ void ShellWindowLauncherItemController::Close() {
 void ShellWindowLauncherItemController::Clicked(const ui::Event& event) {
   if (shell_windows_.empty())
     return;
-  if (launcher_controller()->GetPerAppInterface() ||
+  if (type() == TYPE_APP_PANEL) {
+    DCHECK(shell_windows_.size() == 1);
+    ShellWindow* panel = shell_windows_.front();
+    if (panel->GetBaseWindow()->IsActive())
+      panel->GetBaseWindow()->Minimize();
+    else
+      ShowAndActivate(panel);
+  } else if (launcher_controller()->GetPerAppInterface() ||
       shell_windows_.size() == 1) {
     ShellWindow* window_to_show = last_active_shell_window_ ?
         last_active_shell_window_ : shell_windows_.front();

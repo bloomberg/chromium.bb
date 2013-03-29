@@ -563,24 +563,65 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformPerAppAppBrowserTest, AppClickBehavior) {
   LauncherItemController* item1_controller = GetItemController(item1.id);
   EXPECT_EQ(ash::TYPE_PLATFORM_APP, item1.type);
   EXPECT_EQ(ash::STATUS_ACTIVE, item1.status);
+  EXPECT_EQ(LauncherItemController::TYPE_APP, item1_controller->type());
+  // Clicking the item should have no effect.
+  TestEvent click_event(ui::ET_MOUSE_PRESSED);
+  item1_controller->Clicked(click_event);
+  EXPECT_TRUE(window1->GetNativeWindow()->IsVisible());
+  EXPECT_TRUE(window1->GetBaseWindow()->IsActive());
   // Minimize the window and confirm that the controller item is updated.
   window1->GetBaseWindow()->Minimize();
   EXPECT_FALSE(window1->GetNativeWindow()->IsVisible());
   EXPECT_FALSE(window1->GetBaseWindow()->IsActive());
   EXPECT_EQ(ash::STATUS_RUNNING, item1.status);
-  // Clicking on the controller should activate the window.
-  TestEvent default_event(ui::ET_MOUSE_PRESSED);
-  item1_controller->Clicked(default_event);
+  // Clicking the item should activate the window.
+  item1_controller->Clicked(click_event);
   EXPECT_TRUE(window1->GetNativeWindow()->IsVisible());
   EXPECT_TRUE(window1->GetBaseWindow()->IsActive());
   EXPECT_EQ(ash::STATUS_ACTIVE, item1.status);
   // Maximizing a window should preserve state after minimize + click.
   window1->GetBaseWindow()->Maximize();
   window1->GetBaseWindow()->Minimize();
-  item1_controller->Clicked(default_event);
+  item1_controller->Clicked(click_event);
   EXPECT_TRUE(window1->GetNativeWindow()->IsVisible());
   EXPECT_TRUE(window1->GetBaseWindow()->IsActive());
   EXPECT_TRUE(window1->GetBaseWindow()->IsMaximized());
+}
+
+// Confirm that click behavior for app panels is correct.
+IN_PROC_BROWSER_TEST_F(LauncherPlatformPerAppAppBrowserTest,
+                       AppPanelClickBehavior) {
+  // Enable experimental APIs to allow panel creation.
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableExperimentalExtensionApis);
+  // Launch a platform app and create a panel window for it.
+  const Extension* extension1 = LoadAndLaunchPlatformApp("launch");
+  ShellWindow::CreateParams params;
+  params.window_type = ShellWindow::WINDOW_TYPE_PANEL;
+  ShellWindow* panel = CreateShellWindowFromParams(extension1, params);
+  EXPECT_TRUE(panel->GetNativeWindow()->IsVisible());
+  // Panels should not be active by default.
+  EXPECT_FALSE(panel->GetBaseWindow()->IsActive());
+  // Confirm that a controller item was created and is the correct state.
+  const ash::LauncherItem& item1 = GetLastLauncherPanelItem();
+  LauncherItemController* item1_controller = GetItemController(item1.id);
+  EXPECT_EQ(ash::TYPE_APP_PANEL, item1.type);
+  EXPECT_EQ(ash::STATUS_RUNNING, item1.status);
+  EXPECT_EQ(LauncherItemController::TYPE_APP_PANEL, item1_controller->type());
+  // Click the item and confirm that the panel is activated.
+  TestEvent click_event(ui::ET_MOUSE_PRESSED);
+  item1_controller->Clicked(click_event);
+  EXPECT_TRUE(panel->GetBaseWindow()->IsActive());
+  EXPECT_EQ(ash::STATUS_ACTIVE, item1.status);
+  // Click the item again and confirm that the panel is minimized.
+  item1_controller->Clicked(click_event);
+  EXPECT_TRUE(panel->GetBaseWindow()->IsMinimized());
+  EXPECT_EQ(ash::STATUS_RUNNING, item1.status);
+  // Click the item again and confirm that the panel is activated.
+  item1_controller->Clicked(click_event);
+  EXPECT_TRUE(panel->GetNativeWindow()->IsVisible());
+  EXPECT_TRUE(panel->GetBaseWindow()->IsActive());
+  EXPECT_EQ(ash::STATUS_ACTIVE, item1.status);
 }
 
 IN_PROC_BROWSER_TEST_F(LauncherPlatformPerAppAppBrowserTest,
