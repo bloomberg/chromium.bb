@@ -9,7 +9,6 @@
 import optparse
 import os
 import shlex
-import subprocess
 
 from pylib import build_utils
 
@@ -80,17 +79,20 @@ def main():
     package_command.append('--non-constant-id')
   if options.custom_package:
     package_command += ['--custom-package', options.custom_package]
-  subprocess.check_call(package_command)
+  build_utils.CheckCallDie(package_command)
 
   # Crunch image resources. This shrinks png files and is necessary for 9-patch
   # images to display correctly.
   build_utils.MakeDirectory(options.crunch_output_dir)
-  subprocess.check_call([aapt,
-                         'crunch',
-                         '-S', options.crunch_input_dir,
-                         '-C', options.crunch_output_dir])
 
-  build_utils.Touch(options.stamp)
+  aapt_cmd = [aapt,
+              'crunch',
+              '-S', options.crunch_input_dir,
+              '-C', options.crunch_output_dir]
+  build_utils.CheckCallDie(aapt_cmd)
+
+  if options.stamp:
+    build_utils.Touch(options.stamp)
 
 
 if __name__ == '__main__':

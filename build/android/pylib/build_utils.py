@@ -4,8 +4,12 @@
 
 import fnmatch
 import os
+import pipes
 import shlex
 import shutil
+import subprocess
+import sys
+import traceback
 
 
 def MakeDirectory(dir_path):
@@ -50,4 +54,37 @@ def ParseGypList(gyp_string):
   gyp_string = gyp_string.replace('##', '$')
   return shlex.split(gyp_string)
 
+
+# This can be used in most cases like subprocess.check_call. The output,
+# particularly when the command fails, better highlights the command's failure.
+# This call will directly exit on a failure in the subprocess so that no python
+# stacktrace is printed after the output of the failed command.
+def CheckCallDie(args, cwd=None):
+  if not cwd:
+    cwd = os.getcwd()
+
+  child = subprocess.Popen(args,
+      stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd=cwd)
+
+  stdout, _ = child.communicate()
+
+  if child.returncode:
+    stacktrace = traceback.extract_stack()
+    print >> sys.stderr, ''.join(traceback.format_list(stacktrace))
+    # A user should be able to simply copy and paste the command that failed
+    # into their shell.
+    copyable_command = ' '.join(map(pipes.quote, args))
+    copyable_command = ('( cd ' + os.path.abspath(cwd) + '; '
+        + copyable_command + ' )')
+    print >> sys.stderr, 'Command failed:', copyable_command, '\n'
+
+    if stdout:
+      print stdout,
+
+    # Directly exit to avoid printing stacktrace.
+    sys.exit(child.returncode)
+
+  else:
+    if stdout:
+      print stdout,
 

@@ -7,7 +7,6 @@
 import fnmatch
 import optparse
 import os
-import subprocess
 import sys
 
 from pylib import build_utils
@@ -16,7 +15,7 @@ from pylib import build_utils
 def DoDex(options, paths):
   dx_binary = os.path.join(options.android_sdk_root, 'platform-tools', 'dx')
   dex_cmd = [dx_binary, '--dex', '--output', options.dex_path] + paths
-  subprocess.check_call(dex_cmd)
+  build_utils.CheckCallDie(dex_cmd)
 
 
 def main(argv):

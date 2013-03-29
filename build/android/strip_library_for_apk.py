@@ -6,7 +6,6 @@
 
 import optparse
 import os
-import subprocess
 import sys
 
 from pylib import build_utils
@@ -16,7 +15,7 @@ def StripLibrary(android_strip, android_strip_args, library_path, output_path):
   strip_cmd = ([android_strip] +
                android_strip_args +
                ['-o', output_path, library_path])
-  subprocess.check_call(strip_cmd)
+  build_utils.CheckCallDie(strip_cmd)
 
 
 def main(argv):

@@ -7,7 +7,6 @@
 import fnmatch
 import optparse
 import os
-import subprocess
 import sys
 
 from pylib import build_utils
@@ -41,7 +40,7 @@ def DoJavac(options):
   build_utils.DeleteDirectory(output_dir)
   build_utils.MakeDirectory(output_dir)
 
-  subprocess.check_call([
+  build_utils.CheckCallDie([
       'javac',
       '-g',
       '-Xlint:unchecked',

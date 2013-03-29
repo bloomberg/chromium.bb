@@ -7,7 +7,6 @@
 import fnmatch
 import optparse
 import os
-import subprocess
 import sys
 
 from pylib import build_utils
@@ -27,7 +26,7 @@ def DoJar(options):
   jar_cwd = options.classes_dir
   class_files = [os.path.relpath(f, jar_cwd) for f in class_files]
   jar_cmd = ['jar', 'cf0', jar_path] + class_files
-  subprocess.check_call(jar_cmd, cwd=jar_cwd)
+  build_utils.CheckCallDie(jar_cmd, cwd=jar_cwd)
 
 
 def main(argv):
