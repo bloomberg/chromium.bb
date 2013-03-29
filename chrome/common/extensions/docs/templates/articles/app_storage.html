@@ -304,20 +304,21 @@ The $ref:[syncFileSystem.onFileStatusChanged]
 is fired when a file's status changes to <code>'conflicting'</code>.
 'Conflicting' means there are conflicting changes
 on both the local storage and Google Drive.
-Currently the API does NOT provide automatic reconciliation mechanism
-for conflicting files.
+A file can be in this state only if the conflict resolution policy
+is set to <code>'manual'</code>.  The default policy is
+<code>'last_write_win'</code> and conflicts are automatically resolved
+by simple last-write-win policy.  The system's conflict resolution policy
+can be changed by $ref:[syncFileSystem.setConflictResolutionPolicy].
 </p>
 
 <p>
-If no action is taken,
-the app can continue to read/write the file as a detached local offline file,
-but the file will be kept detached from the remote changes made on other clients.
-The conflict is automatically resolved
-once the local or conflicting version is deleted.
-For example,
-when a file is in conflicting state,
-the app can delete or rename the local version.
-This forces the remote version to be synchronized,
+If the conflict resolution policy is set to <code>'manual'</code> and
+a file results in <code>'conflicting'</code> state, the app can still
+read and write the file as a local offline file, but the changes are not
+sync'ed and the file will be kept detached from remote changes made on
+other clients until the conflict is resolved.
+The easiest way to resolve a conflict is to delete or rename the local
+version of file. This forces the remote version to be synchronized,
 the conflicting state is resolved, and
 the <code>onFileStatusChanged</code> event is fired
 with the <code>'synced'</code> status.
@@ -352,7 +353,8 @@ an event with following values is fired:
 </p>
 
 <p>
-If both the local and remote side have conflicting changes for the same file,
+If both the local and remote side have conflicting changes for the same file
+and if the conflict resolution policy is set to <code>'manual'</code>,
 the file status is changed to <code>conflicting</code> state,
 is detached from the sync service,
 and won't be synchronized until the conflict is resolved.
@@ -403,8 +405,12 @@ chrome.syncFileSystem.getUsageAndQuota(fileSystem, function (storageInfo) {
 
 <p>
 You can also look at the user's sync backend service storage (in Google Drive).
-Synced files are saved in the Google Drive folder,
-<strong>Chrome Syncable FileSystem</strong>.
+Synced files are saved in a hidden Google Drive folder,
+<strong>Chrome Syncable FileSystem</strong>. The folder won't be shown in
+your 'My Drive' list but can be accessed by searching the folder name
+in the search box.  (Note that the remote folder layout is
+<strong>not</strong> guaranteed to remain backwards compatible between
+releases.)
 </p>
 
 <p class="backtotop"><a href="#top">Back to top</a></p>
