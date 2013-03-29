@@ -16,6 +16,7 @@
 #include "cc/base/cc_export.h"
 #include "cc/base/region.h"
 #include "cc/layers/draw_properties.h"
+#include "cc/layers/layer_lists.h"
 #include "cc/layers/render_surface.h"
 #include "cc/trees/occlusion_tracker.h"
 #include "skia/ext/refptr.h"
@@ -51,7 +52,6 @@ struct RenderingStats;
 class CC_EXPORT Layer : public base::RefCounted<Layer>,
                         public LayerAnimationValueObserver {
  public:
-  typedef std::vector<scoped_refptr<Layer> > LayerList;
   enum LayerIdLabels {
     PINCH_ZOOM_ROOT_SCROLL_LAYER_ID = -2,
     INVALID_ID = -1,
@@ -277,8 +277,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
 
   virtual void PushPropertiesTo(LayerImpl* layer);
 
-  void ClearRenderSurface() { draw_properties_.render_surface.reset(); }
   void CreateRenderSurface();
+  void ClearRenderSurface();
 
   // The contents scale converts from logical, non-page-scaled pixels to target
   // pixels. The contents scale is 1 for the root layer as it is already in

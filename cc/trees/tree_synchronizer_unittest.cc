@@ -119,9 +119,8 @@ void ExpectTreesAreIdentical(Layer* layer,
         layer->replica_layer(), layer_impl->replica_layer(), tree_impl);
   }
 
-  const std::vector<scoped_refptr<Layer> >& layer_children = layer->children();
-  const ScopedPtrVector<LayerImpl>& layer_impl_children =
-      layer_impl->children();
+  const LayerList& layer_children = layer->children();
+  const OwnedLayerImplList& layer_impl_children = layer_impl->children();
 
   ASSERT_EQ(layer_children.size(), layer_impl_children.size());
 

@@ -26,6 +26,7 @@
 #include "cc/layers/heads_up_display_layer_impl.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_iterator.h"
+#include "cc/layers/render_surface.h"
 #include "cc/layers/scrollbar_layer.h"
 #include "cc/resources/prioritized_resource_manager.h"
 #include "cc/trees/layer_tree_host_client.h"
@@ -719,7 +720,8 @@ void LayerTreeHost::UpdateLayers(Layer* root_layer,
                                  ResourceUpdateQueue* queue) {
   TRACE_EVENT0("cc", "LayerTreeHost::UpdateLayers");
 
-  LayerList update_list; {
+  LayerList update_list;
+  {
     Layer* root_scroll = FindFirstScrollableLayer(root_layer);
     if (root_scroll)
       root_scroll->SetImplTransform(impl_transform_);

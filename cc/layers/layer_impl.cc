@@ -82,7 +82,7 @@ void LayerImpl::AddChild(scoped_ptr<LayerImpl> child) {
 }
 
 scoped_ptr<LayerImpl> LayerImpl::RemoveChild(LayerImpl* child) {
-  for (ScopedPtrVector<LayerImpl>::iterator it = children_.begin();
+  for (OwnedLayerImplList::iterator it = children_.begin();
        it != children_.end();
        ++it) {
     if (*it == child) {
@@ -108,6 +108,10 @@ void LayerImpl::CreateRenderSurface() {
   draw_properties_.render_surface =
       make_scoped_ptr(new RenderSurfaceImpl(this));
   draw_properties_.render_target = this;
+}
+
+void LayerImpl::ClearRenderSurface() {
+  draw_properties_.render_surface.reset();
 }
 
 scoped_ptr<SharedQuadState> LayerImpl::CreateSharedQuadState() const {

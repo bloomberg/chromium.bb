@@ -43,8 +43,6 @@ struct RendererCapabilities;
 
 class CC_EXPORT LayerTreeImpl {
  public:
-  typedef std::vector<LayerImpl*> LayerList;
-
   static scoped_ptr<LayerTreeImpl> create(
       LayerTreeHostImpl* layer_tree_host_impl) {
     return make_scoped_ptr(new LayerTreeImpl(layer_tree_host_impl));
@@ -161,7 +159,7 @@ class CC_EXPORT LayerTreeImpl {
 
   bool AreVisibleResourcesReady() const;
 
-  const LayerList& RenderSurfaceLayerList() const;
+  const LayerImplList& RenderSurfaceLayerList() const;
 
   // These return the size of the root scrollable area and the size of
   // the user-visible scrolling viewport, in CSS layout coordinates.
@@ -239,7 +237,7 @@ class CC_EXPORT LayerTreeImpl {
 
   // List of visible layers for the most recently prepared frame. Used for
   // rendering and input event hit testing.
-  LayerList render_surface_layer_list_;
+  LayerImplList render_surface_layer_list_;
 
   bool contents_textures_purged_;
   bool viewport_size_invalid_;

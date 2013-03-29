@@ -699,6 +699,10 @@ void Layer::CreateRenderSurface() {
   draw_properties_.render_target = this;
 }
 
+void Layer::ClearRenderSurface() {
+  draw_properties_.render_surface.reset();
+}
+
 void Layer::OnOpacityAnimated(float opacity) {
   // This is called due to an ongoing accelerated animation. Since this
   // animation is also being run on the impl thread, there is no need to request

@@ -18,8 +18,9 @@ namespace cc {
 // See below for details.
 //
 // void DoStuffOnLayers(
-//     const std::vector<scoped_refptr<Layer> >& render_surface_layer_list) {
+//     const LayerList& render_surface_layer_list) {
 //   typedef LayerIterator<Layer,
+//                         LayerList,
 //                         RenderSurface,
 //                         LayerIteratorActions::FrontToBack>
 //       LayerIteratorType;

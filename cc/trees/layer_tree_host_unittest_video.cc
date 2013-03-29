@@ -5,6 +5,7 @@
 #include "cc/trees/layer_tree_host.h"
 
 #include "base/basictypes.h"
+#include "cc/layers/render_surface_impl.h"
 #include "cc/layers/video_layer.h"
 #include "cc/layers/video_layer_impl.h"
 #include "cc/test/fake_video_frame_provider.h"

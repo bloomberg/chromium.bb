@@ -25,7 +25,7 @@ namespace {
 
 void ExecuteCalculateDrawProperties(
     LayerImpl* root,
-    std::vector<LayerImpl*>& render_surface_layer_list) {
+    LayerImplList& render_surface_layer_list) {
   int dummy_max_texture_size = 512;
 
   // Sanity check: The test itself should create the root layer's render
@@ -60,7 +60,7 @@ void EmulateDrawingOneFrame(LayerImpl* root) {
   //   3. resetting all update_rects and property_changed flags for all layers
   //      and surfaces.
 
-  std::vector<LayerImpl*> render_surface_layer_list;
+  LayerImplList render_surface_layer_list;
   ExecuteCalculateDrawProperties(root, render_surface_layer_list);
 
   // Iterate back-to-front, so that damage correctly propagates from descendant

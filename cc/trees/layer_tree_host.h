@@ -18,6 +18,7 @@
 #include "cc/animation/animation_events.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/scoped_ptr_vector.h"
+#include "cc/layers/layer_lists.h"
 #include "cc/output/output_surface.h"
 #include "cc/scheduler/rate_limiter.h"
 #include "cc/trees/layer_tree_host_client.h"
@@ -249,8 +250,6 @@ class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
   bool InitializeForTesting(scoped_ptr<Proxy> proxy_for_testing);
 
  private:
-  typedef std::vector<scoped_refptr<Layer> > LayerList;
-
   bool InitializeProxy(scoped_ptr<Proxy> proxy);
   void InitializeRenderer();
 

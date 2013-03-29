@@ -12,6 +12,8 @@
 #include "cc/layers/heads_up_display_layer_impl.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_impl.h"
+#include "cc/layers/render_surface.h"
+#include "cc/layers/render_surface_impl.h"
 #include "cc/test/animation_test_common.h"
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
@@ -84,7 +86,7 @@ void ExecuteCalculateDrawProperties(Layer* root_layer,
                                     float page_scale_factor,
                                     bool can_use_lcd_text) {
   gfx::Transform identity_matrix;
-  std::vector<scoped_refptr<Layer> > dummy_render_surface_layer_list;
+  LayerList dummy_render_surface_layer_list;
   int dummy_max_texture_size = 512;
   gfx::Size device_viewport_size =
       gfx::Size(root_layer->bounds().width() * device_scale_factor,
@@ -108,7 +110,7 @@ void ExecuteCalculateDrawProperties(LayerImpl* root_layer,
                                     float page_scale_factor,
                                     bool can_use_lcd_text) {
   gfx::Transform identity_matrix;
-  std::vector<LayerImpl*> dummy_render_surface_layer_list;
+  LayerImplList dummy_render_surface_layer_list;
   int dummy_max_texture_size = 512;
   gfx::Size device_viewport_size =
       gfx::Size(root_layer->bounds().width() * device_scale_factor,
@@ -1549,7 +1551,7 @@ TEST(LayerTreeHostCommonTest,
   render_surface1->AddChild(child);
   render_surface1->SetForceRenderSurface(true);
 
-  std::vector<scoped_refptr<Layer> > render_surface_layer_list;
+  LayerList render_surface_layer_list;
   int dummy_max_texture_size = 512;
   LayerTreeHostCommon::CalculateDrawProperties(parent.get(),
                                                parent->bounds(),
@@ -1596,7 +1598,7 @@ TEST(LayerTreeHostCommonTest, RenderSurfaceListForTransparentChild) {
   render_surface1->SetForceRenderSurface(true);
   render_surface1->SetOpacity(0.f);
 
-  std::vector<scoped_refptr<Layer> > render_surface_layer_list;
+  LayerList render_surface_layer_list;
   int dummy_max_texture_size = 512;
   LayerTreeHostCommon::CalculateDrawProperties(parent.get(),
                                                parent->bounds(),
@@ -1653,7 +1655,7 @@ TEST(LayerTreeHostCommonTest, ForceRenderSurface) {
   EXPECT_FALSE(parent->render_surface());
   EXPECT_FALSE(render_surface1->render_surface());
 
-  std::vector<scoped_refptr<Layer> > render_surface_layer_list;
+  LayerList render_surface_layer_list;
   int dummy_max_texture_size = 512;
   LayerTreeHostCommon::CalculateDrawProperties(parent.get(),
                                                parent->bounds(),
@@ -2460,7 +2462,7 @@ TEST(LayerTreeHostCommonTest, ClipRectCullsRenderSurfaces) {
   grand_child->SetOpacity(0.5f);
   great_grand_child->SetOpacity(0.4f);
 
-  std::vector<scoped_refptr<Layer> > render_surface_layer_list;
+  LayerList render_surface_layer_list;
   int dummy_max_texture_size = 512;
   LayerTreeHostCommon::CalculateDrawProperties(parent.get(),
                                                parent->bounds(),
@@ -2539,7 +2541,7 @@ TEST(LayerTreeHostCommonTest, ClipRectCullsSurfaceWithoutVisibleContent) {
   grand_child->SetOpacity(0.4f);
   grand_child->SetForceRenderSurface(true);
 
-  std::vector<scoped_refptr<Layer> > render_surface_layer_list;
+  LayerList render_surface_layer_list;
   int dummy_max_texture_size = 512;
   LayerTreeHostCommon::CalculateDrawProperties(parent.get(),
                                                parent->bounds(),
@@ -2663,7 +2665,7 @@ TEST(LayerTreeHostCommonTest, IsClippedIsSetCorrectly) {
                                false);
 
   // Case 1: nothing is clipped except the root render surface.
-  std::vector<scoped_refptr<Layer> > render_surface_layer_list;
+  LayerList render_surface_layer_list;
   int dummy_max_texture_size = 512;
   LayerTreeHostCommon::CalculateDrawProperties(root.get(),
                                                parent->bounds(),
@@ -2822,7 +2824,7 @@ TEST(LayerTreeHostCommonTest, drawable_content_rectForLayers) {
   grand_child3->SetOpacity(0.5f);
   grand_child4->SetOpacity(0.5f);
 
-  std::vector<scoped_refptr<Layer> > render_surface_layer_list;
+  LayerList render_surface_layer_list;
   int dummy_max_texture_size = 512;
   LayerTreeHostCommon::CalculateDrawProperties(parent.get(),
                                                parent->bounds(),
@@ -2965,7 +2967,7 @@ TEST(LayerTreeHostCommonTest, ClipRectIsPropagatedCorrectlyToSurfaces) {
   grand_child4->SetOpacity(0.5f);
   grand_child4->SetForceRenderSurface(true);
 
-  std::vector<scoped_refptr<Layer> > render_surface_layer_list;
+  LayerList render_surface_layer_list;
   int dummy_max_texture_size = 512;
   LayerTreeHostCommon::CalculateDrawProperties(parent.get(),
                                                parent->bounds(),
@@ -4262,7 +4264,7 @@ TEST(LayerTreeHostCommonTest, BackFaceCullingWithoutPreserves3d) {
                                gfx::Size(100, 100),
                                false);
 
-  std::vector<scoped_refptr<Layer> > render_surface_layer_list;
+  LayerList render_surface_layer_list;
   int dummy_max_texture_size = 512;
   LayerTreeHostCommon::CalculateDrawProperties(parent.get(),
                                                parent->bounds(),
@@ -4454,7 +4456,7 @@ TEST(LayerTreeHostCommonTest, BackFaceCullingWithPreserves3d) {
                                gfx::Size(100, 100),
                                false);
 
-  std::vector<scoped_refptr<Layer> > render_surface_layer_list;
+  LayerList render_surface_layer_list;
   int dummy_max_texture_size = 512;
   LayerTreeHostCommon::CalculateDrawProperties(parent.get(),
                                                parent->bounds(),
@@ -4592,7 +4594,7 @@ TEST(LayerTreeHostCommonTest, BackFaceCullingWithAnimatingTransforms) {
                                gfx::Size(100, 100),
                                false);
 
-  std::vector<scoped_refptr<Layer> > render_surface_layer_list;
+  LayerList render_surface_layer_list;
   int dummy_max_texture_size = 512;
   LayerTreeHostCommon::CalculateDrawProperties(parent.get(),
                                                parent->bounds(),
@@ -4718,7 +4720,7 @@ TEST(LayerTreeHostCommonTest,
                                gfx::Size(100, 100),
                                false);
 
-  std::vector<scoped_refptr<Layer> > render_surface_layer_list;
+  LayerList render_surface_layer_list;
   int dummy_max_texture_size = 512;
   LayerTreeHostCommon::CalculateDrawProperties(parent.get(),
                                                parent->bounds(),
@@ -4762,7 +4764,7 @@ TEST(LayerTreeHostCommonTest,
 TEST(LayerTreeHostCommonTest, HitTestingForEmptyLayerList) {
   // Hit testing on an empty render_surface_layer_list should return a null
   // pointer.
-  std::vector<LayerImpl*> render_surface_layer_list;
+  LayerImplList render_surface_layer_list;
 
   gfx::Point test_point(0, 0);
   LayerImpl* result_layer = LayerTreeHostCommon::FindLayerThatIsHitByPoint(
@@ -4794,7 +4796,7 @@ TEST(LayerTreeHostCommonTest, HitTestingForSingleLayer) {
                                false);
   root->SetDrawsContent(true);
 
-  std::vector<LayerImpl*> render_surface_layer_list;
+  LayerImplList render_surface_layer_list;
   int dummy_max_texture_size = 512;
   LayerTreeHostCommon::CalculateDrawProperties(root.get(),
                                                root->bounds(),
@@ -4869,7 +4871,7 @@ TEST(LayerTreeHostCommonTest, HitTestingForSingleLayerAndHud) {
   host_impl.active_tree()->set_hud_layer(hud.get());
   root->AddChild(hud.PassAs<LayerImpl>());
 
-  std::vector<LayerImpl*> render_surface_layer_list;
+  LayerImplList render_surface_layer_list;
   int dummy_max_texture_size = 512;
   LayerTreeHostCommon::CalculateDrawProperties(root.get(),
                                                hud_bounds,
@@ -4936,7 +4938,7 @@ TEST(LayerTreeHostCommonTest, HitTestingForUninvertibleTransform) {
                                false);
   root->SetDrawsContent(true);
 
-  std::vector<LayerImpl*> render_surface_layer_list;
+  LayerImplList render_surface_layer_list;
   int dummy_max_texture_size = 512;
   LayerTreeHostCommon::CalculateDrawProperties(root.get(),
                                                root->bounds(),
@@ -5012,7 +5014,7 @@ TEST(LayerTreeHostCommonTest, HitTestingForSinglePositionedLayer) {
                                false);
   root->SetDrawsContent(true);
 
-  std::vector<LayerImpl*> render_surface_layer_list;
+  LayerImplList render_surface_layer_list;
   int dummy_max_texture_size = 512;
   LayerTreeHostCommon::CalculateDrawProperties(root.get(),
                                                root->bounds(),
@@ -5077,7 +5079,7 @@ TEST(LayerTreeHostCommonTest, HitTestingForSingleRotatedLayer) {
                                false);
   root->SetDrawsContent(true);
 
-  std::vector<LayerImpl*> render_surface_layer_list;
+  LayerImplList render_surface_layer_list;
   int dummy_max_texture_size = 512;
   LayerTreeHostCommon::CalculateDrawProperties(root.get(),
                                                root->bounds(),
@@ -5155,7 +5157,7 @@ TEST(LayerTreeHostCommonTest, HitTestingForSinglePerspectiveLayer) {
       false);
   root->SetDrawsContent(true);
 
-  std::vector<LayerImpl*> render_surface_layer_list;
+  LayerImplList render_surface_layer_list;
   int dummy_max_texture_size = 512;
   LayerTreeHostCommon::CalculateDrawProperties(root.get(),
                                                root->bounds(),
@@ -5244,7 +5246,7 @@ TEST(LayerTreeHostCommonTest, HitTestingForSingleLayerWithScaledContents) {
     root->AddChild(test_layer.Pass());
   }
 
-  std::vector<LayerImpl*> render_surface_layer_list;
+  LayerImplList render_surface_layer_list;
   int dummy_max_texture_size = 512;
   LayerTreeHostCommon::CalculateDrawProperties(root.get(),
                                                root->bounds(),
@@ -5344,7 +5346,7 @@ TEST(LayerTreeHostCommonTest, HitTestingForSimpleClippedLayer) {
     root->AddChild(clipping_layer.Pass());
   }
 
-  std::vector<LayerImpl*> render_surface_layer_list;
+  LayerImplList render_surface_layer_list;
   int dummy_max_texture_size = 512;
   LayerTreeHostCommon::CalculateDrawProperties(root.get(),
                                                root->bounds(),
@@ -5477,7 +5479,7 @@ TEST(LayerTreeHostCommonTest, HitTestingForMultiClippedRotatedLayer) {
     root->AddChild(child.Pass());
   }
 
-  std::vector<LayerImpl*> render_surface_layer_list;
+  LayerImplList render_surface_layer_list;
   int dummy_max_texture_size = 512;
   LayerTreeHostCommon::CalculateDrawProperties(root.get(),
                                                root->bounds(),
@@ -5603,7 +5605,7 @@ TEST(LayerTreeHostCommonTest, HitTestingForNonClippingIntermediateLayer) {
     root->AddChild(intermediate_layer.Pass());
   }
 
-  std::vector<LayerImpl*> render_surface_layer_list;
+  LayerImplList render_surface_layer_list;
   int dummy_max_texture_size = 512;
   LayerTreeHostCommon::CalculateDrawProperties(root.get(),
                                                root->bounds(),
@@ -5720,7 +5722,7 @@ TEST(LayerTreeHostCommonTest, HitTestingForMultipleLayers) {
   LayerImpl* child2 = root->children()[1];
   LayerImpl* grand_child1 = child1->children()[0];
 
-  std::vector<LayerImpl*> render_surface_layer_list;
+  LayerImplList render_surface_layer_list;
   int dummy_max_texture_size = 512;
   LayerTreeHostCommon::CalculateDrawProperties(root.get(),
                                                root->bounds(),
@@ -5873,7 +5875,7 @@ TEST(LayerTreeHostCommonTest, HitTestingForMultipleLayerLists) {
   LayerImpl* child2 = root->children()[1];
   LayerImpl* grand_child1 = child1->children()[0];
 
-  std::vector<LayerImpl*> render_surface_layer_list;
+  LayerImplList render_surface_layer_list;
   int dummy_max_texture_size = 512;
   LayerTreeHostCommon::CalculateDrawProperties(root.get(),
                                                root->bounds(),
@@ -5955,7 +5957,7 @@ TEST(LayerTreeHostCommonTest, HitTestingForMultipleLayerLists) {
 TEST(LayerTreeHostCommonTest, HitCheckingTouchHandlerRegionsForEmptyLayerList) {
   // Hit checking on an empty render_surface_layer_list should return a null
   // pointer.
-  std::vector<LayerImpl*> render_surface_layer_list;
+  LayerImplList render_surface_layer_list;
 
   gfx::Point test_point(0, 0);
   LayerImpl* result_layer =
@@ -5990,7 +5992,7 @@ TEST(LayerTreeHostCommonTest, HitCheckingTouchHandlerRegionsForSingleLayer) {
                                false);
   root->SetDrawsContent(true);
 
-  std::vector<LayerImpl*> render_surface_layer_list;
+  LayerImplList render_surface_layer_list;
   int dummy_max_texture_size = 512;
   LayerTreeHostCommon::CalculateDrawProperties(root.get(),
                                                root->bounds(),
@@ -6087,7 +6089,7 @@ TEST(LayerTreeHostCommonTest,
   root->SetDrawsContent(true);
   root->SetTouchEventHandlerRegion(touch_handler_region);
 
-  std::vector<LayerImpl*> render_surface_layer_list;
+  LayerImplList render_surface_layer_list;
   int dummy_max_texture_size = 512;
   LayerTreeHostCommon::CalculateDrawProperties(root.get(),
                                                root->bounds(),
@@ -6174,7 +6176,7 @@ TEST(LayerTreeHostCommonTest,
   root->SetDrawsContent(true);
   root->SetTouchEventHandlerRegion(touch_handler_region);
 
-  std::vector<LayerImpl*> render_surface_layer_list;
+  LayerImplList render_surface_layer_list;
   int dummy_max_texture_size = 512;
   LayerTreeHostCommon::CalculateDrawProperties(root.get(),
                                                root->bounds(),
@@ -6279,7 +6281,7 @@ TEST(LayerTreeHostCommonTest,
     root->AddChild(test_layer.Pass());
   }
 
-  std::vector<LayerImpl*> render_surface_layer_list;
+  LayerImplList render_surface_layer_list;
   int dummy_max_texture_size = 512;
   LayerTreeHostCommon::CalculateDrawProperties(root.get(),
                                                root->bounds(),
@@ -6387,7 +6389,7 @@ TEST(LayerTreeHostCommonTest,
     root->AddChild(test_layer.Pass());
   }
 
-  std::vector<LayerImpl*> render_surface_layer_list;
+  LayerImplList render_surface_layer_list;
   int dummy_max_texture_size = 512;
   float device_scale_factor = 3.f;
   float page_scale_factor = 5.f;
@@ -6534,7 +6536,7 @@ TEST(LayerTreeHostCommonTest,
     root->AddChild(clipping_layer.Pass());
   }
 
-  std::vector<LayerImpl*> render_surface_layer_list;
+  LayerImplList render_surface_layer_list;
   int dummy_max_texture_size = 512;
   LayerTreeHostCommon::CalculateDrawProperties(root.get(),
                                                root->bounds(),
@@ -6670,7 +6672,7 @@ TEST(LayerTreeHostCommonTest, LayerTransformsInHighDPI) {
   parent->AddChild(child_empty);
   parent->AddChild(child_no_scale);
 
-  std::vector<scoped_refptr<Layer> > render_surface_layer_list;
+  LayerList render_surface_layer_list;
   int dummy_max_texture_size = 512;
 
   float device_scale_factor = 2.5f;
@@ -6805,7 +6807,7 @@ TEST(LayerTreeHostCommonTest, SurfaceLayerTransformsInHighDPI) {
   parent->AddChild(perspective_surface);
   parent->AddChild(scale_surface);
 
-  std::vector<scoped_refptr<Layer> > render_surface_layer_list;
+  LayerList render_surface_layer_list;
   int dummy_max_texture_size = 512;
 
   float device_scale_factor = 2.5f;
@@ -6908,7 +6910,7 @@ TEST(LayerTreeHostCommonTest,
   parent->AddChild(child);
   parent->AddChild(child_no_scale);
 
-  std::vector<scoped_refptr<Layer> > render_surface_layer_list;
+  LayerList render_surface_layer_list;
   int dummy_max_texture_size = 512;
 
   float device_scale_factor = 1.7f;
@@ -7059,7 +7061,7 @@ TEST(LayerTreeHostCommonTest, ContentsScale) {
   parent->AddChild(child_no_scale);
   parent->AddChild(child_no_auto_scale);
 
-  std::vector<scoped_refptr<Layer> > render_surface_layer_list;
+  LayerList render_surface_layer_list;
   int dummy_max_texture_size = 512;
 
   float device_scale_factor = 2.5f;
@@ -7233,7 +7235,7 @@ TEST(LayerTreeHostCommonTest, SmallContentsScale) {
 
   parent->AddChild(child_scale);
 
-  std::vector<scoped_refptr<Layer> > render_surface_layer_list;
+  LayerList render_surface_layer_list;
   int dummy_max_texture_size = 512;
 
   float device_scale_factor = 2.5f;
@@ -7414,7 +7416,7 @@ TEST(LayerTreeHostCommonTest, ContentsScaleForSurfaces) {
   surface_no_auto_scale->AddChild(surface_no_auto_scale_child_scale);
   surface_no_auto_scale->AddChild(surface_no_auto_scale_child_no_scale);
 
-  std::vector<scoped_refptr<Layer> > render_surface_layer_list;
+  LayerList render_surface_layer_list;
   int dummy_max_texture_size = 512;
 
   double device_scale_factor = 5;
@@ -7623,7 +7625,7 @@ TEST(LayerTreeHostCommonTest, ContentsScaleForAnimatingLayer) {
   int animation_id = AddAnimatedTransformToController(
       child_scale->layer_animation_controller(), 10.0, 30, 0);
 
-  std::vector<scoped_refptr<Layer> > render_surface_layer_list;
+  LayerList render_surface_layer_list;
   int dummy_max_texture_size = 512;
 
   LayerTreeHostCommon::CalculateDrawProperties(parent.get(),
@@ -7706,7 +7708,7 @@ TEST(LayerTreeHostCommonTest, RenderSurfaceTransformsInHighDPI) {
   child->AddChild(duplicate_child_non_owner);
   child->SetReplicaLayer(replica.get());
 
-  std::vector<scoped_refptr<Layer> > render_surface_layer_list;
+  LayerList render_surface_layer_list;
   int dummy_max_texture_size = 512;
 
   float device_scale_factor = 1.5f;
@@ -7841,7 +7843,7 @@ TEST(LayerTreeHostCommonTest,
   child->AddChild(duplicate_child_non_owner);
   child->SetReplicaLayer(replica.get());
 
-  std::vector<scoped_refptr<Layer> > render_surface_layer_list;
+  LayerList render_surface_layer_list;
   int dummy_max_texture_size = 512;
 
   float device_scale_factor = 1.7f;

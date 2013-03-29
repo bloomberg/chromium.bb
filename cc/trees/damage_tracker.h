@@ -9,6 +9,7 @@
 #include "base/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
+#include "cc/layers/layer_lists.h"
 #include "ui/gfx/rect_f.h"
 
 class SkImageFilter;
@@ -37,7 +38,7 @@ class CC_EXPORT DamageTracker {
   void DidDrawDamagedArea() { current_damage_rect_ = gfx::RectF(); }
   void ForceFullDamageNextUpdate() { force_full_damage_next_update_ = true; }
   void UpdateDamageTrackingState(
-      const std::vector<LayerImpl*>& layer_list,
+      const LayerImplList& layer_list,
       int target_surface_layer_id,
       bool target_surface_property_changed_only_from_descendant,
       gfx::Rect target_surface_content_rect,
@@ -51,7 +52,7 @@ class CC_EXPORT DamageTracker {
   DamageTracker();
 
   gfx::RectF TrackDamageFromActiveLayers(
-      const std::vector<LayerImpl*>& layer_list,
+      const LayerImplList& layer_list,
       int target_surface_layer_id);
   gfx::RectF TrackDamageFromSurfaceMask(LayerImpl* target_surface_mask_layer);
   gfx::RectF TrackDamageFromLeftoverRects();

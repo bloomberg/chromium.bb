@@ -8,6 +8,7 @@
 #include <vector>
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "cc/layers/layer_lists.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/rect_f.h"
 
@@ -72,7 +73,7 @@ class DebugRectHistory {
   // reset.
   void SaveDebugRectsForCurrentFrame(
       LayerImpl* root_layer,
-      const std::vector<LayerImpl*>& render_surface_layer_list,
+      const LayerImplList& render_surface_layer_list,
       const std::vector<gfx::Rect>& occluding_screen_space_rects,
       const std::vector<gfx::Rect>& non_occluding_screen_space_rects,
       const LayerTreeDebugState& debug_state);
@@ -84,11 +85,11 @@ class DebugRectHistory {
 
   void SavePaintRects(LayerImpl* layer);
   void SavePropertyChangedRects(
-      const std::vector<LayerImpl*>& render_surface_layer_list);
+      const LayerImplList& render_surface_layer_list);
   void SaveSurfaceDamageRects(
-      const std::vector<LayerImpl*>& render_surface_layer_list);
+      const LayerImplList& render_surface_layer_list);
   void SaveScreenSpaceRects(
-      const std::vector<LayerImpl*>& render_surface_layer_list);
+      const LayerImplList& render_surface_layer_list);
   void SaveOccludingRects(
       const std::vector<gfx::Rect>& occluding_screen_space_rects);
   void SaveNonOccludingRects(

@@ -79,9 +79,7 @@ class CC_EXPORT LayerSorter {
   LayerSorter();
   ~LayerSorter();
 
-  typedef std::vector<LayerImpl*> LayerList;
-
-  void Sort(LayerList::iterator first, LayerList::iterator last);
+  void Sort(LayerImplList::iterator first, LayerImplList::iterator last);
 
   enum ABCompareResult {
     ABeforeB,
@@ -104,7 +102,8 @@ class CC_EXPORT LayerSorter {
   typedef base::hash_map<GraphEdge*, GraphEdge*> EdgeMap;
   EdgeMap active_edges_;
 
-  void CreateGraphNodes(LayerList::iterator first, LayerList::iterator last);
+  void CreateGraphNodes(LayerImplList::iterator first,
+                        LayerImplList::iterator last);
   void CreateGraphEdges();
   void RemoveEdgeFromList(GraphEdge* graph, std::vector<GraphEdge*>* list);
 

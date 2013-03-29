@@ -130,7 +130,7 @@ class TiledLayerTest : public testing::Test {
     if (occlusion_)
       occlusion_->SetRenderTarget(layer_tree_host_->root_layer());
 
-    std::vector<scoped_refptr<Layer> > render_surface_layer_list;
+    LayerList render_surface_layer_list;
     LayerTreeHostCommon::CalculateDrawProperties(
         layer_tree_host_->root_layer(),
         layer_tree_host_->device_viewport_size(),

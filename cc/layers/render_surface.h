@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "cc/base/cc_export.h"
+#include "cc/layers/layer_lists.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/rect_f.h"
 #include "ui/gfx/transform.h"
@@ -85,7 +86,6 @@ class CC_EXPORT RenderSurface {
   gfx::Rect clip_rect() const { return clip_rect_; }
   void SetClipRect(gfx::Rect clip_rect) { clip_rect_ = clip_rect; }
 
-  typedef std::vector<scoped_refptr<Layer> > LayerList;
   LayerList& layer_list() { return layer_list_; }
   // A no-op since DelegatedRendererLayers on the main thread don't have any
   // RenderPasses so they can't contribute to a surface.

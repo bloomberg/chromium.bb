@@ -108,6 +108,7 @@
       'layers/layer_impl.h',
       'layers/layer_iterator.cc',
       'layers/layer_iterator.h',
+      'layers/layer_lists.h',
       'resources/layer_painter.h',
       'resources/layer_quad.cc',
       'resources/layer_quad.h',

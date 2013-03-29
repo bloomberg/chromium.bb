@@ -22,8 +22,8 @@ void CollectExistingLayerImplRecursive(ScopedPtrLayerImplMap* old_layers,
   if (!layer_impl)
     return;
 
-  ScopedPtrVector<LayerImpl>& children = layer_impl->children();
-  for (ScopedPtrVector<LayerImpl>::iterator it = children.begin();
+  OwnedLayerImplList& children = layer_impl->children();
+  for (OwnedLayerImplList::iterator it = children.begin();
        it != children.end();
        ++it)
     CollectExistingLayerImplRecursive(old_layers, children.take(it));
@@ -198,7 +198,7 @@ void PushPropertiesInternal(LayerType* layer, LayerImpl* layer_impl) {
   PushPropertiesInternal(layer->mask_layer(), layer_impl->mask_layer());
   PushPropertiesInternal(layer->replica_layer(), layer_impl->replica_layer());
 
-  const ScopedPtrVector<LayerImpl>& impl_children = layer_impl->children();
+  const OwnedLayerImplList& impl_children = layer_impl->children();
   DCHECK_EQ(layer->children().size(), impl_children.size());
 
   for (size_t i = 0; i < layer->children().size(); ++i) {

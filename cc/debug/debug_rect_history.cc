@@ -6,6 +6,7 @@
 
 #include "cc/base/math_util.h"
 #include "cc/layers/layer_impl.h"
+#include "cc/layers/render_surface_impl.h"
 #include "cc/trees/damage_tracker.h"
 #include "cc/trees/layer_tree_host.h"
 
@@ -22,7 +23,7 @@ DebugRectHistory::~DebugRectHistory() {}
 
 void DebugRectHistory::SaveDebugRectsForCurrentFrame(
     LayerImpl* root_layer,
-    const std::vector<LayerImpl*>& render_surface_layer_list,
+    const LayerImplList& render_surface_layer_list,
     const std::vector<gfx::Rect>& occluding_screen_space_rects,
     const std::vector<gfx::Rect>& non_occluding_screen_space_rects,
     const LayerTreeDebugState& debug_state) {
@@ -73,7 +74,7 @@ void DebugRectHistory::SavePaintRects(LayerImpl* layer) {
 }
 
 void DebugRectHistory::SavePropertyChangedRects(
-    const std::vector<LayerImpl*>& render_surface_layer_list) {
+    const LayerImplList& render_surface_layer_list) {
   for (int surface_index = render_surface_layer_list.size() - 1;
        surface_index >= 0;
        --surface_index) {
@@ -81,7 +82,7 @@ void DebugRectHistory::SavePropertyChangedRects(
     RenderSurfaceImpl* render_surface = render_surface_layer->render_surface();
     DCHECK(render_surface);
 
-    const std::vector<LayerImpl*>& layer_list = render_surface->layer_list();
+    const LayerImplList& layer_list = render_surface->layer_list();
     for (unsigned layer_index = 0;
          layer_index < layer_list.size();
          ++layer_index) {
@@ -107,7 +108,7 @@ void DebugRectHistory::SavePropertyChangedRects(
 }
 
 void DebugRectHistory::SaveSurfaceDamageRects(
-    const std::vector<LayerImpl*>& render_surface_layer_list) {
+    const LayerImplList& render_surface_layer_list) {
   for (int surface_index = render_surface_layer_list.size() - 1;
        surface_index >= 0;
        --surface_index) {
@@ -124,7 +125,7 @@ void DebugRectHistory::SaveSurfaceDamageRects(
 }
 
 void DebugRectHistory::SaveScreenSpaceRects(
-    const std::vector<LayerImpl*>& render_surface_layer_list) {
+    const LayerImplList& render_surface_layer_list) {
   for (int surface_index = render_surface_layer_list.size() - 1;
        surface_index >= 0;
        --surface_index) {

@@ -12,6 +12,7 @@
 #include "cc/input/pinch_zoom_scrollbar.h"
 #include "cc/layers/heads_up_display_layer_impl.h"
 #include "cc/layers/layer.h"
+#include "cc/layers/render_surface_impl.h"
 #include "cc/layers/scrollbar_layer_impl.h"
 #include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_host_impl.h"
@@ -334,7 +335,7 @@ bool LayerTreeImpl::AreVisibleResourcesReady() const {
   TRACE_EVENT0("cc", "LayerTreeImpl::AreVisibleResourcesReady");
 
   typedef LayerIterator<LayerImpl,
-                        std::vector<LayerImpl*>,
+                        LayerImplList,
                         RenderSurfaceImpl,
                         LayerIteratorActions::BackToFront> LayerIteratorType;
   LayerIteratorType end = LayerIteratorType::End(&render_surface_layer_list_);
@@ -347,7 +348,7 @@ bool LayerTreeImpl::AreVisibleResourcesReady() const {
   return true;
 }
 
-const LayerTreeImpl::LayerList& LayerTreeImpl::RenderSurfaceLayerList() const {
+const LayerImplList& LayerTreeImpl::RenderSurfaceLayerList() const {
   // If this assert triggers, then the list is dirty.
   DCHECK(!needs_update_draw_properties_);
   return render_surface_layer_list_;
@@ -538,7 +539,7 @@ AnimationRegistrar* LayerTreeImpl::animationRegistrar() const {
 scoped_ptr<base::Value> LayerTreeImpl::AsValue() const {
   scoped_ptr<base::ListValue> state(new base::ListValue());
   typedef LayerIterator<LayerImpl,
-                        std::vector<LayerImpl*>,
+                        LayerImplList,
                         RenderSurfaceImpl,
                         LayerIteratorActions::BackToFront> LayerIteratorType;
   LayerIteratorType end = LayerIteratorType::End(&render_surface_layer_list_);

@@ -174,9 +174,6 @@ void LayerIteratorActions::FrontToBack::GoToHighestInSubtree(
   }
 }
 
-typedef std::vector<scoped_refptr<Layer> > LayerList;
-typedef std::vector<LayerImpl*> LayerImplList;
-
 // Declare each of the above functions for Layer and LayerImpl classes
 // so that they are linked.
 template CC_EXPORT void LayerIteratorActions::BackToFront::Begin(

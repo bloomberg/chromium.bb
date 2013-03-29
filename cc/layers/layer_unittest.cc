@@ -392,7 +392,7 @@ TEST_F(LayerTest, SetChildren) {
   scoped_refptr<Layer> child1 = Layer::Create();
   scoped_refptr<Layer> child2 = Layer::Create();
 
-  std::vector<scoped_refptr<Layer> > new_children;
+  LayerList new_children;
   new_children.push_back(child1);
   new_children.push_back(child2);
 

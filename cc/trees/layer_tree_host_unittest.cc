@@ -697,7 +697,7 @@ class LayerTreeHostTestDeviceScaleFactorScalesViewportAndLayers
     impl->PrepareToDraw(&frame_data);
     impl->DidDrawAllLayers(frame_data);
 
-    const LayerTreeHostImpl::LayerList& render_surface_layer_list =
+    const LayerImplList& render_surface_layer_list =
         *frame_data.render_surface_layer_list;
 
     // Both layers should be drawing into the root render surface.

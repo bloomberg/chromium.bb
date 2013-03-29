@@ -12,6 +12,7 @@
 
 namespace cc {
 class DelegatedFrameData;
+class RenderPassSink;
 
 class CC_EXPORT DelegatedRendererLayerImpl : public LayerImpl {
  public:

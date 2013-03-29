@@ -259,12 +259,12 @@ float LayerShape::LayerZFromProjectedPoint(gfx::PointF p) const {
   return n / d;
 }
 
-void LayerSorter::CreateGraphNodes(LayerList::iterator first,
-                                   LayerList::iterator last) {
+void LayerSorter::CreateGraphNodes(LayerImplList::iterator first,
+                                   LayerImplList::iterator last) {
   DVLOG(2) << "Creating graph nodes:";
   float min_z = FLT_MAX;
   float max_z = -FLT_MAX;
-  for (LayerList::const_iterator it = first; it < last; it++) {
+  for (LayerImplList::const_iterator it = first; it < last; it++) {
     nodes_.push_back(GraphNode(*it));
     GraphNode& node = nodes_.at(nodes_.size() - 1);
     RenderSurfaceImpl* render_surface = node.layer->render_surface();
@@ -373,7 +373,8 @@ void LayerSorter::RemoveEdgeFromList(GraphEdge* edge,
 // preserve the ordering of the original list of layers, since that list should
 // already have proper z-index ordering of layers.
 //
-void LayerSorter::Sort(LayerList::iterator first, LayerList::iterator last) {
+void LayerSorter::Sort(LayerImplList::iterator first,
+                       LayerImplList::iterator last) {
   DVLOG(2) << "Sorting start ----";
   CreateGraphNodes(first, last);
 
@@ -454,7 +455,7 @@ void LayerSorter::Sort(LayerList::iterator first, LayerList::iterator last) {
   // ref count go to zero here as they are all nodes of the layer hierarchy and
   // are kept alive by their parent nodes.
   int count = 0;
-  for (LayerList::iterator it = first; it < last; it++)
+  for (LayerImplList::iterator it = first; it < last; it++)
     *it = sorted_list[count++]->layer;
 
   DVLOG(2) << "Sorting end ----";

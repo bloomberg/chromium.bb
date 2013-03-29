@@ -136,7 +136,7 @@ struct OcclusionTrackerTestMainThreadTypes {
   typedef scoped_refptr<Layer> LayerPtrType;
   typedef scoped_refptr<ContentLayerType> ContentLayerPtrType;
   typedef LayerIterator<Layer,
-                        std::vector<scoped_refptr<Layer> >,
+                        LayerList,
                         RenderSurface,
                         LayerIteratorActions::FrontToBack> TestLayerIterator;
   typedef OcclusionTracker OcclusionTrackerType;
@@ -169,7 +169,7 @@ struct OcclusionTrackerTestImplThreadTypes {
   typedef scoped_ptr<LayerImpl> LayerPtrType;
   typedef scoped_ptr<ContentLayerType> ContentLayerPtrType;
   typedef LayerIterator<LayerImpl,
-                        std::vector<LayerImpl*>,
+                        LayerImplList,
                         RenderSurfaceImpl,
                         LayerIteratorActions::FrontToBack> TestLayerIterator;
   typedef OcclusionTrackerImpl OcclusionTrackerType;
@@ -449,13 +449,13 @@ template <typename Types> class OcclusionTrackerTest : public testing::Test {
   bool opaque_layers_;
   // These hold ownership of the layers for the duration of the test.
   typename Types::LayerPtrType root_;
-  std::vector<scoped_refptr<Layer> > render_surface_layer_list_;
-  std::vector<LayerImpl*> render_surface_layer_list_impl_;
+  LayerList render_surface_layer_list_;
+  LayerImplList render_surface_layer_list_impl_;
   typename Types::TestLayerIterator layer_iterator_begin_;
   typename Types::TestLayerIterator layer_iterator_;
   typename Types::LayerType* last_layer_visited_;
-  std::vector<scoped_refptr<Layer> > replica_layers_;
-  std::vector<scoped_refptr<Layer> > mask_layers_;
+  LayerList replica_layers_;
+  LayerList mask_layers_;
 };
 
 template <>

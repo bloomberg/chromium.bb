@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/scoped_ptr_vector.h"
+#include "cc/layers/layer_lists.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/transform.h"
 #include "ui/gfx/vector2d.h"
@@ -32,7 +33,7 @@ class CC_EXPORT LayerTreeHostCommon {
       float page_scale_factor,
       int max_texture_size,
       bool can_use_lcd_text,
-      std::vector<scoped_refptr<Layer> >* render_surface_layer_list);
+      LayerList* render_surface_layer_list);
   static void CalculateDrawProperties(
       LayerImpl* root_layer,
       gfx::Size device_viewport_size,
@@ -40,17 +41,17 @@ class CC_EXPORT LayerTreeHostCommon {
       float page_scale_factor,
       int max_texture_size,
       bool can_use_lcd_text,
-      std::vector<LayerImpl*>* render_surface_layer_list,
+      LayerImplList* render_surface_layer_list,
       bool update_tile_priorities);
 
   // Performs hit testing for a given render_surface_layer_list.
   static LayerImpl* FindLayerThatIsHitByPoint(
       gfx::PointF screen_space_point,
-      const std::vector<LayerImpl*>& render_surface_layer_list);
+      const LayerImplList& render_surface_layer_list);
 
   static LayerImpl* FindLayerThatIsHitByPointInTouchHandlerRegion(
       gfx::PointF screen_space_point,
-      const std::vector<LayerImpl*>& render_surface_layer_list);
+      const LayerImplList& render_surface_layer_list);
 
   static bool LayerHasTouchEventHandlersAt(gfx::PointF screen_space_point,
                                            LayerImpl* layer_impl);
@@ -68,13 +69,13 @@ class CC_EXPORT LayerTreeHostCommon {
   static LayerType* FindLayerInSubtree(LayerType* root_layer, int layer_id);
 
   static Layer* get_child_as_raw_ptr(
-      const std::vector<scoped_refptr<Layer> >& children,
+      const LayerList& children,
       size_t index) {
     return children[index].get();
   }
 
   static LayerImpl* get_child_as_raw_ptr(
-      const ScopedPtrVector<LayerImpl>& children,
+      const OwnedLayerImplList& children,
       size_t index) {
     return children[index];
   }

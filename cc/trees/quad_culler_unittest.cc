@@ -9,6 +9,7 @@
 #include "cc/base/math_util.h"
 #include "cc/debug/overdraw_metrics.h"
 #include "cc/layers/append_quads_data.h"
+#include "cc/layers/render_surface_impl.h"
 #include "cc/layers/tiled_layer_impl.h"
 #include "cc/quads/tile_draw_quad.h"
 #include "cc/resources/layer_tiling_data.h"
@@ -43,7 +44,7 @@ class TestOcclusionTrackerImpl : public OcclusionTrackerImpl {
 };
 
 typedef LayerIterator<LayerImpl,
-                      std::vector<LayerImpl*>,
+                      LayerImplList,
                       RenderSurfaceImpl,
                       LayerIteratorActions::FrontToBack> LayerIteratorType;
 
@@ -60,7 +61,7 @@ class QuadCullerTest : public testing::Test {
       float opacity,
       bool opaque,
       gfx::Rect layer_opaque_rect,
-      std::vector<LayerImpl*>& surface_layer_list) {
+      LayerImplList& surface_layer_list) {
     scoped_ptr<TiledLayerImpl> layer =
         TiledLayerImpl::Create(host_impl_.active_tree(), layer_id_++);
     scoped_ptr<LayerTilingData> tiler = LayerTilingData::Create(
@@ -131,7 +132,7 @@ class QuadCullerTest : public testing::Test {
 #define DECLARE_AND_INITIALIZE_TEST_QUADS()                                    \
   QuadList quad_list;                                                          \
   SharedQuadStateList shared_state_list;                                       \
-  std::vector<LayerImpl*> render_surface_layer_list;                           \
+  LayerImplList render_surface_layer_list;                                     \
   gfx::Transform child_transform;                                              \
   gfx::Size root_size = gfx::Size(300, 300);                                   \
   gfx::Rect root_rect = gfx::Rect(root_size);                                  \

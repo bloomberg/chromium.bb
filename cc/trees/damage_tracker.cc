@@ -46,7 +46,7 @@ static inline void ExpandDamageRectInsideRectWithFilters(
 }
 
 void DamageTracker::UpdateDamageTrackingState(
-    const std::vector<LayerImpl*>& layer_list,
+    const LayerImplList& layer_list,
     int target_surface_layer_id,
     bool target_surface_property_changed_only_from_descendant,
     gfx::Rect target_surface_content_rect,
@@ -184,7 +184,7 @@ void DamageTracker::SaveRectForNextFrame(int layer_id,
 }
 
 gfx::RectF DamageTracker::TrackDamageFromActiveLayers(
-    const std::vector<LayerImpl*>& layer_list,
+    const LayerImplList& layer_list,
     int target_surface_layer_id) {
   gfx::RectF damage_rect = gfx::RectF();
 

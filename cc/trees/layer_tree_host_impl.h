@@ -16,6 +16,7 @@
 #include "cc/base/cc_export.h"
 #include "cc/input/input_handler.h"
 #include "cc/input/top_controls_manager_client.h"
+#include "cc/layers/layer_lists.h"
 #include "cc/layers/render_pass_sink.h"
 #include "cc/output/output_surface_client.h"
 #include "cc/output/renderer.h"
@@ -83,8 +84,6 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandlerClient,
                                     public OutputSurfaceClient,
                                     public TopControlsManagerClient {
  public:
-  typedef std::vector<LayerImpl*> LayerList;
-
   static scoped_ptr<LayerTreeHostImpl> Create(
       const LayerTreeSettings& settings,
       LayerTreeHostImplClient* client,
@@ -129,8 +128,8 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandlerClient,
     std::vector<gfx::Rect> non_occluding_screen_space_rects;
     RenderPassList render_passes;
     RenderPassIdHashMap render_passes_by_id;
-    const LayerList* render_surface_layer_list;
-    LayerList will_draw_layers;
+    const LayerImplList* render_surface_layer_list;
+    LayerImplList will_draw_layers;
     bool contains_incomplete_tile;
 
     // RenderPassSink implementation.
@@ -381,8 +380,9 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandlerClient,
       gfx::Vector2dF viewport_delta);
 
   void UpdateMaxScrollOffset();
-  void TrackDamageForAllSurfaces(LayerImpl* root_draw_layer,
-                                 const LayerList& render_surface_layer_list);
+  void TrackDamageForAllSurfaces(
+      LayerImpl* root_draw_layer,
+      const LayerImplList& render_surface_layer_list);
 
   // Returns false if the frame should not be displayed. This function should
   // only be called from PrepareToDraw, as DidDrawAllLayers must be called

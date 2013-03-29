@@ -26,14 +26,14 @@ ScrollAndScaleSet::ScrollAndScaleSet() {}
 
 ScrollAndScaleSet::~ScrollAndScaleSet() {}
 
-static void SortLayers(std::vector<scoped_refptr<Layer> >::iterator forst,
-                       std::vector<scoped_refptr<Layer> >::iterator end,
+static void SortLayers(LayerList::iterator forst,
+                       LayerList::iterator end,
                        void* layer_sorter) {
   NOTREACHED();
 }
 
-static void SortLayers(std::vector<LayerImpl*>::iterator first,
-                       std::vector<LayerImpl*>::iterator end,
+static void SortLayers(LayerImplList::iterator first,
+                       LayerImplList::iterator end,
                        LayerSorter* layer_sorter) {
   DCHECK(layer_sorter);
   TRACE_EVENT0("cc", "LayerTreeHostCommon::SortLayers");
@@ -1294,12 +1294,12 @@ void LayerTreeHostCommon::CalculateDrawProperties(
     float page_scale_factor,
     int max_texture_size,
     bool can_use_lcd_text,
-    std::vector<scoped_refptr<Layer> >* render_surface_layer_list) {
+    LayerList* render_surface_layer_list) {
   gfx::Rect total_drawable_content_rect;
   gfx::Transform identity_matrix;
   gfx::Transform device_scale_transform;
   device_scale_transform.Scale(device_scale_factor, device_scale_factor);
-  std::vector<scoped_refptr<Layer> > dummy_layer_list;
+  LayerList dummy_layer_list;
 
   // The root layer's render_surface should receive the device viewport as the
   // initial clip rect.
@@ -1312,7 +1312,7 @@ void LayerTreeHostCommon::CalculateDrawProperties(
 
   PreCalculateMetaInformation<Layer>(root_layer);
   CalculateDrawPropertiesInternal<Layer,
-                                  std::vector<scoped_refptr<Layer> >,
+                                  LayerList,
                                   RenderSurface>(root_layer,
                                                  device_scale_transform,
                                                  identity_matrix,
@@ -1345,13 +1345,13 @@ void LayerTreeHostCommon::CalculateDrawProperties(
     float page_scale_factor,
     int max_texture_size,
     bool can_use_lcd_text,
-    std::vector<LayerImpl*>* render_surface_layer_list,
+    LayerImplList* render_surface_layer_list,
     bool update_tile_priorities) {
   gfx::Rect total_drawable_content_rect;
   gfx::Transform identity_matrix;
   gfx::Transform device_scale_transform;
   device_scale_transform.Scale(device_scale_factor, device_scale_factor);
-  std::vector<LayerImpl*> dummy_layer_list;
+  LayerImplList dummy_layer_list;
   LayerSorter layer_sorter;
 
   // The root layer's render_surface should receive the device viewport as the
@@ -1364,7 +1364,7 @@ void LayerTreeHostCommon::CalculateDrawProperties(
 
   PreCalculateMetaInformation<LayerImpl>(root_layer);
   CalculateDrawPropertiesInternal<LayerImpl,
-                                  std::vector<LayerImpl*>,
+                                  LayerImplList,
                                   RenderSurfaceImpl>(
       root_layer,
       device_scale_transform,
@@ -1483,11 +1483,11 @@ static bool PointIsClippedBySurfaceOrClipRect(gfx::PointF screen_space_point,
 
 LayerImpl* LayerTreeHostCommon::FindLayerThatIsHitByPoint(
     gfx::PointF screen_space_point,
-    const std::vector<LayerImpl*>& render_surface_layer_list) {
+    const LayerImplList& render_surface_layer_list) {
   LayerImpl* found_layer = NULL;
 
   typedef LayerIterator<LayerImpl,
-                        std::vector<LayerImpl*>,
+                        LayerImplList,
                         RenderSurfaceImpl,
                         LayerIteratorActions::FrontToBack> LayerIteratorType;
   LayerIteratorType end = LayerIteratorType::End(&render_surface_layer_list);
@@ -1529,11 +1529,11 @@ LayerImpl* LayerTreeHostCommon::FindLayerThatIsHitByPoint(
 
 LayerImpl* LayerTreeHostCommon::FindLayerThatIsHitByPointInTouchHandlerRegion(
     gfx::PointF screen_space_point,
-    const std::vector<LayerImpl*>& render_surface_layer_list) {
+    const LayerImplList& render_surface_layer_list) {
   LayerImpl* found_layer = NULL;
 
   typedef LayerIterator<LayerImpl,
-                        std::vector<LayerImpl*>,
+                        LayerImplList,
                         RenderSurfaceImpl,
                         LayerIteratorActions::FrontToBack> LayerIteratorType;
   LayerIteratorType end = LayerIteratorType::End(&render_surface_layer_list);

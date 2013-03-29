@@ -16,6 +16,7 @@
 #include "cc/layers/io_surface_layer_impl.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/quad_sink.h"
+#include "cc/layers/render_surface_impl.h"
 #include "cc/layers/scrollbar_geometry_fixed_thumb.h"
 #include "cc/layers/scrollbar_layer_impl.h"
 #include "cc/layers/solid_color_layer_impl.h"

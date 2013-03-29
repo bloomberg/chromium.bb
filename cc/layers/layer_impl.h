@@ -17,6 +17,7 @@
 #include "cc/base/scoped_ptr_vector.h"
 #include "cc/input/input_handler.h"
 #include "cc/layers/draw_properties.h"
+#include "cc/layers/layer_lists.h"
 #include "cc/layers/render_surface_impl.h"
 #include "cc/quads/render_pass.h"
 #include "cc/quads/shared_quad_state.h"
@@ -48,8 +49,6 @@ struct AppendQuadsData;
 
 class CC_EXPORT LayerImpl : LayerAnimationValueObserver {
  public:
-  typedef ScopedPtrVector<LayerImpl> LayerList;
-
   static scoped_ptr<LayerImpl> Create(LayerTreeImpl* tree_impl, int id) {
     return make_scoped_ptr(new LayerImpl(tree_impl, id));
   }
@@ -66,8 +65,8 @@ class CC_EXPORT LayerImpl : LayerAnimationValueObserver {
   // Tree structure.
   LayerImpl* parent() { return parent_; }
   const LayerImpl* parent() const { return parent_; }
-  const LayerList& children() const { return children_; }
-  LayerList& children() { return children_; }
+  const OwnedLayerImplList& children() const { return children_; }
+  OwnedLayerImplList& children() { return children_; }
   LayerImpl* child_at(size_t index) const { return children_[index]; }
   void AddChild(scoped_ptr<LayerImpl> child);
   scoped_ptr<LayerImpl> RemoveChild(LayerImpl* child);
@@ -192,7 +191,7 @@ class CC_EXPORT LayerImpl : LayerAnimationValueObserver {
   // is responsible for calling set_needs_update_draw_properties on the tree
   // so that its list can be recreated.
   void CreateRenderSurface();
-  void ClearRenderSurface() { draw_properties_.render_surface.reset(); }
+  void ClearRenderSurface();
 
   DrawProperties<LayerImpl, RenderSurfaceImpl>& draw_properties() {
     return draw_properties_;
@@ -425,7 +424,7 @@ class CC_EXPORT LayerImpl : LayerAnimationValueObserver {
 
   // Properties internal to LayerImpl
   LayerImpl* parent_;
-  LayerList children_;
+  OwnedLayerImplList children_;
   // mask_layer_ can be temporarily stolen during tree sync, we need this ID to
   // confirm newly assigned layer is still the previous one
   int mask_layer_id_;

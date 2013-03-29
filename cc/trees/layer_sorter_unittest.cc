@@ -248,7 +248,7 @@ TEST(LayerSorterTest, VerifyExistingOrderingPreservedWhenNoZDiff) {
   layer5->draw_properties().target_space_transform = BehindMatrix;
   layer5->SetDrawsContent(true);
 
-  std::vector<LayerImpl*> layer_list;
+  LayerImplList layer_list;
   layer_list.push_back(layer1.get());
   layer_list.push_back(layer2.get());
   layer_list.push_back(layer3.get());
@@ -305,7 +305,7 @@ TEST(LayerSorterTest, VerifyConcidentLayerPrecisionLossResultsInDocumentOrder) {
   layer2->draw_properties().target_space_transform = FrontMatrix;
   layer2->SetDrawsContent(true);
 
-  std::vector<LayerImpl*> layer_list;
+  LayerImplList layer_list;
   layer_list.push_back(layer1.get());
   layer_list.push_back(layer2.get());
 

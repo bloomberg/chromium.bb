@@ -24,7 +24,9 @@
 #include "cc/input/top_controls_manager.h"
 #include "cc/layers/append_quads_data.h"
 #include "cc/layers/heads_up_display_layer_impl.h"
+#include "cc/layers/layer_impl.h"
 #include "cc/layers/layer_iterator.h"
+#include "cc/layers/render_surface_impl.h"
 #include "cc/layers/scrollbar_layer_impl.h"
 #include "cc/output/compositor_frame_metadata.h"
 #include "cc/output/delegating_renderer.h"
@@ -364,7 +366,7 @@ bool LayerTreeHostImpl::HaveTouchEventHandlersAt(gfx::Point viewport_point) {
 
 void LayerTreeHostImpl::TrackDamageForAllSurfaces(
     LayerImpl* root_draw_layer,
-    const LayerList& render_surface_layer_list) {
+    const LayerImplList& render_surface_layer_list) {
   // For now, we use damage tracking to compute a global scissor. To do this, we
   // must compute all damage tracking before drawing anything, so that we know
   // the root damage rect. The root damage rect is then used to scissor each
@@ -539,7 +541,7 @@ bool LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
   // Add quads to the Render passes in FrontToBack order to allow for testing
   // occlusion and performing culling during the tree walk.
   typedef LayerIterator<LayerImpl,
-                        std::vector<LayerImpl*>,
+                        LayerImplList,
                         RenderSurfaceImpl,
                         LayerIteratorActions::FrontToBack> LayerIteratorType;
 
@@ -2040,7 +2042,7 @@ LayerImpl* LayerTreeHostImpl::GetNonCompositedContentLayerRecursive(
   if (layer->DrawsContent())
     return layer;
 
-  for (LayerImpl::LayerList::const_iterator it = layer->children().begin();
+  for (LayerImplList::const_iterator it = layer->children().begin();
        it != layer->children().end(); ++it) {
     LayerImpl* nccr = GetNonCompositedContentLayerRecursive(*it);
     if (nccr)
