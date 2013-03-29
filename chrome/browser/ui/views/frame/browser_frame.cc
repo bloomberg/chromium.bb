@@ -24,7 +24,6 @@
 #include "ui/base/hit_test.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/screen.h"
-#include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/widget/native_widget.h"
 
@@ -177,8 +176,7 @@ void BrowserFrame::ShowContextMenuForView(views::View* source,
   views::View::ConvertPointFromScreen(non_client_view(), &point_in_view_coords);
   int hit_test = non_client_view()->NonClientHitTest(point_in_view_coords);
   if (hit_test == HTCAPTION || hit_test == HTNOWHERE) {
-    views::MenuModelAdapter menu_adapter(GetSystemMenuModel());
-    menu_runner_.reset(new views::MenuRunner(menu_adapter.CreateMenu()));
+    menu_runner_.reset(new views::MenuRunner(GetSystemMenuModel()));
     if (menu_runner_->RunMenuAt(source->GetWidget(), NULL,
           gfx::Rect(p, gfx::Size(0,0)), views::MenuItemView::TOPLEFT,
           views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU) ==

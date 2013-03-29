@@ -24,7 +24,6 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/menu/menu_item_view.h"
-#include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 
 namespace app_list {
@@ -283,10 +282,7 @@ void AppListItemView::ShowContextMenuForView(views::View* source,
   if (!menu_model)
     return;
 
-  views::MenuModelAdapter menu_adapter(menu_model);
-  context_menu_runner_.reset(
-      new views::MenuRunner(new views::MenuItemView(&menu_adapter)));
-  menu_adapter.BuildMenu(context_menu_runner_->GetMenu());
+  context_menu_runner_.reset(new views::MenuRunner(menu_model));
   if (context_menu_runner_->RunMenuAt(
           GetWidget(), NULL, gfx::Rect(point, gfx::Size()),
           views::MenuItemView::TOPLEFT, views::MenuRunner::HAS_MNEMONICS) ==

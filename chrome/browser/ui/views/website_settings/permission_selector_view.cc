@@ -14,7 +14,6 @@
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/view.h"
@@ -129,8 +128,7 @@ void PermissionMenuButton::GetAccessibleState(ui::AccessibleViewState* state) {
 
 void PermissionMenuButton::OnMenuButtonClicked(View* source,
                                                const gfx::Point& point) {
-  views::MenuModelAdapter menu_model_adapter(menu_model_);
-  menu_runner_.reset(new views::MenuRunner(menu_model_adapter.CreateMenu()));
+  menu_runner_.reset(new views::MenuRunner(menu_model_));
 
   gfx::Point p(point);
   p.Offset(-source->width(), 0);

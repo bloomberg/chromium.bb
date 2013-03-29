@@ -7,10 +7,12 @@
 #include <set>
 
 #include "base/metrics/histogram.h"
+#include "ui/base/models/menu_model.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/controls/menu/menu_controller_delegate.h"
 #include "ui/views/controls/menu/menu_delegate.h"
+#include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/submenu_view.h"
 #include "ui/views/widget/widget.h"
 
@@ -309,6 +311,11 @@ DisplayChangeListener* DisplayChangeListener::Create(Widget* widget,
 #endif
 
 }  // namespace internal
+
+MenuRunner::MenuRunner(ui::MenuModel* menu_model)
+    : menu_model_adapter_(new MenuModelAdapter(menu_model)),
+      holder_(new internal::MenuRunnerImpl(menu_model_adapter_->CreateMenu())) {
+}
 
 MenuRunner::MenuRunner(MenuItemView* menu)
     : holder_(new internal::MenuRunnerImpl(menu)) {

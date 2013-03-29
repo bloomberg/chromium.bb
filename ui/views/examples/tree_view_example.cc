@@ -128,8 +128,7 @@ void TreeViewExample::ShowContextMenuForView(View* source,
   context_menu_model.AddItem(ID_EDIT, ASCIIToUTF16("Edit"));
   context_menu_model.AddItem(ID_REMOVE, ASCIIToUTF16("Remove"));
   context_menu_model.AddItem(ID_ADD, ASCIIToUTF16("Add"));
-  MenuModelAdapter menu_adapter(&context_menu_model);
-  context_menu_runner_.reset(new MenuRunner(menu_adapter.CreateMenu()));
+  context_menu_runner_.reset(new MenuRunner(&context_menu_model));
   if (context_menu_runner_->RunMenuAt(source->GetWidget(), NULL,
       gfx::Rect(point, gfx::Size()), MenuItemView::TOPLEFT, 0) ==
       MenuRunner::MENU_DELETED)

@@ -68,7 +68,6 @@
 #include "ui/gfx/image/image.h"
 #include "ui/views/button_drag_utils.h"
 #include "ui/views/controls/menu/menu_item_view.h"
-#include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/textfield/native_textfield_win.h"
 #include "ui/views/widget/widget.h"
@@ -1428,8 +1427,8 @@ void OmniboxViewWin::OnChar(TCHAR ch, UINT repeat_count, UINT flags) {
 void OmniboxViewWin::OnContextMenu(HWND window, const CPoint& point) {
   BuildContextMenu();
 
-  views::MenuModelAdapter adapter(context_menu_contents_.get());
-  context_menu_runner_.reset(new views::MenuRunner(adapter.CreateMenu()));
+  context_menu_runner_.reset(
+      new views::MenuRunner(context_menu_contents_.get()));
 
   gfx::Point location(point);
   if (point.x == -1 || point.y == -1) {

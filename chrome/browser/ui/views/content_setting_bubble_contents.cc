@@ -33,7 +33,6 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/menu/menu.h"
-#include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/separator.h"
 #include "ui/views/layout/grid_layout.h"
@@ -453,8 +452,7 @@ void ContentSettingBubbleContents::OnMenuButtonClicked(
       static_cast<views::MenuButton*>(source)));
   DCHECK(i != media_menus_.end());
 
-  views::MenuModelAdapter menu_model_adapter(i->second->menu_model.get());
-  menu_runner_.reset(new views::MenuRunner(menu_model_adapter.CreateMenu()));
+  menu_runner_.reset(new views::MenuRunner(i->second->menu_model.get()));
 
   gfx::Point screen_location;
   views::View::ConvertPointToScreen(i->first, &screen_location);

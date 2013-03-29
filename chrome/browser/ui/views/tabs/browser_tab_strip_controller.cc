@@ -30,7 +30,6 @@
 #include "ui/base/layout.h"
 #include "ui/base/models/list_selection_model.h"
 #include "ui/views/controls/menu/menu_item_view.h"
-#include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/widget/widget.h"
 
@@ -82,9 +81,7 @@ class BrowserTabStripController::TabContextMenuContents
     model_.reset(new TabMenuModel(
         this, controller->model_,
         controller->tabstrip_->GetModelIndexOfTab(tab)));
-    menu_model_adapter_.reset(new views::MenuModelAdapter(model_.get()));
-    menu_runner_.reset(
-        new views::MenuRunner(menu_model_adapter_->CreateMenu()));
+    menu_runner_.reset(new views::MenuRunner(model_.get()));
   }
 
   virtual ~TabContextMenuContents() {
@@ -145,7 +142,6 @@ class BrowserTabStripController::TabContextMenuContents
 
  private:
   scoped_ptr<TabMenuModel> model_;
-  scoped_ptr<views::MenuModelAdapter> menu_model_adapter_;
   scoped_ptr<views::MenuRunner> menu_runner_;
 
   // The tab we're showing a menu for.

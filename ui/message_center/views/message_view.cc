@@ -17,7 +17,6 @@
 #include "ui/message_center/message_center_util.h"
 #include "ui/message_center/notification_change_observer.h"
 #include "ui/views/controls/button/image_button.h"
-#include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/widget/widget.h"
@@ -365,8 +364,7 @@ void MessageView::ShowMenu(gfx::Point screen_location) {
   if (menu_model.GetItemCount() == 0)
     return;
 
-  views::MenuModelAdapter menu_model_adapter(&menu_model);
-  views::MenuRunner menu_runner(menu_model_adapter.CreateMenu());
+  views::MenuRunner menu_runner(&menu_model);
 
   views::View::ConvertPointToScreen(this, &screen_location);
   ignore_result(menu_runner.RunMenuAt(

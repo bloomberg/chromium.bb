@@ -22,7 +22,6 @@ class MenuModel;
 namespace views {
 class MenuItemView;
 class MenuButton;
-class MenuModelAdapter;
 class MenuRunner;
 }
 

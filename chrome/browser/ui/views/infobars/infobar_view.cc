@@ -30,7 +30,6 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
-#include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/focus/external_focus_tracker.h"
 #include "ui/views/widget/widget.h"
@@ -305,10 +304,9 @@ void InfoBarView::RunMenuAt(ui::MenuModel* menu_model,
                             views::MenuButton* button,
                             views::MenuItemView::AnchorPosition anchor) {
   DCHECK(owned());  // We'd better not open any menus while we're closing.
-  views::MenuModelAdapter adapter(menu_model);
   gfx::Point screen_point;
   views::View::ConvertPointToScreen(button, &screen_point);
-  menu_runner_.reset(new views::MenuRunner(adapter.CreateMenu()));
+  menu_runner_.reset(new views::MenuRunner(menu_model));
   // Ignore the result since we don't need to handle a deleted menu specially.
   ignore_result(menu_runner_->RunMenuAt(
       GetWidget(), button, gfx::Rect(screen_point, button->size()), anchor,

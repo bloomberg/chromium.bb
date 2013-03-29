@@ -17,7 +17,6 @@
 #include "chrome/common/extensions/extension.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/controls/menu/menu_item_view.h"
-#include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/menu/submenu_view.h"
 #include "ui/views/widget/widget.h"
@@ -112,10 +111,7 @@ bool BrowserActionOverflowMenuController::ShowContextMenu(
 
   scoped_refptr<ExtensionContextMenuModel> context_menu_contents =
       new ExtensionContextMenuModel(extension, browser_, owner_);
-  views::MenuModelAdapter context_menu_model_adapter(
-      context_menu_contents.get());
-  views::MenuRunner context_menu_runner(
-      context_menu_model_adapter.CreateMenu());
+  views::MenuRunner context_menu_runner(context_menu_contents.get());
 
   // We can ignore the result as we delete ourself.
   // This blocks until the user choses something or dismisses the menu.

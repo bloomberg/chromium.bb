@@ -32,7 +32,6 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
-#include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/separator.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -195,8 +194,7 @@ void AutofillDialogViews::AccountChooser::OnMouseReleased(
   if (!model)
     return;
 
-  views::MenuModelAdapter adapter(model);
-  menu_runner_.reset(new views::MenuRunner(adapter.CreateMenu()));
+  menu_runner_.reset(new views::MenuRunner(model));
   ignore_result(
       menu_runner_->RunMenuAt(GetWidget(),
                               NULL,
@@ -780,9 +778,8 @@ void AutofillDialogViews::ButtonPressed(views::Button* sender,
     }
     DCHECK(group);
 
-    views::MenuModelAdapter adapter(
-        controller_->MenuModelForSection(group->section));
-    menu_runner_.reset(new views::MenuRunner(adapter.CreateMenu()));
+    menu_runner_.reset(new views::MenuRunner(
+                           controller_->MenuModelForSection(group->section)));
 
     group->container->SetActive(true);
     // Ignore the result since we don't need to handle a deleted menu specially.

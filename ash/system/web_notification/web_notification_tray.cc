@@ -27,7 +27,6 @@
 #include "ui/message_center/views/message_popup_collection.h"
 #include "ui/views/bubble/tray_bubble_view.h"
 #include "ui/views/controls/button/image_button.h"
-#include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 
 #if defined(OS_CHROMEOS)
@@ -214,18 +213,19 @@ bool WebNotificationTray::ShouldShowMessageCenter() {
 }
 
 void WebNotificationTray::ShowQuietModeMenu() {
-  views::MenuModelAdapter menu_model_adapter(
+  scoped_ptr<ui::MenuModel> menu_model(
       message_center_tray_->CreateQuietModeMenu());
-  quiet_mode_menu_runner_.reset(
-      new views::MenuRunner(menu_model_adapter.CreateMenu()));
+  quiet_mode_menu_runner_.reset(new views::MenuRunner(menu_model.get()));
   gfx::Point point;
   views::View::ConvertPointToScreen(this, &point);
-  ignore_result(quiet_mode_menu_runner_->RunMenuAt(
+  if (quiet_mode_menu_runner_->RunMenuAt(
       GetWidget(),
       NULL,
       gfx::Rect(point, bounds().size()),
       views::MenuItemView::BUBBLE_ABOVE,
-      views::MenuRunner::HAS_MNEMONICS));
+      views::MenuRunner::HAS_MNEMONICS) == views::MenuRunner::MENU_DELETED)
+    return;
+
   quiet_mode_menu_runner_.reset();
   GetShelfLayoutManager()->UpdateAutoHideState();
 }

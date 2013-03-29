@@ -16,8 +16,6 @@ class Point;
 }
 
 namespace views {
-class MenuItemView;
-class MenuModelAdapter;
 class MenuRunner;
 class Widget;
 }
@@ -34,8 +32,6 @@ class RenderViewContextMenuViews : public RenderViewContextMenu {
   void RunMenuAt(views::Widget* parent,
                  const gfx::Point& point,
                  content::ContextMenuSourceType type);
-
-  void UpdateMenuItemStates();
 
   // RenderViewContextMenuDelegate implementation.
   virtual void UpdateMenuItem(int command_id,
@@ -54,9 +50,6 @@ class RenderViewContextMenuViews : public RenderViewContextMenu {
       ui::Accelerator* accelerator) OVERRIDE;
 
  private:
-  // The context menu itself and its contents.
-  scoped_ptr<views::MenuModelAdapter> menu_delegate_;
-  views::MenuItemView* menu_;  // Owned by menu_runner_.
   scoped_ptr<views::MenuRunner> menu_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewContextMenuViews);

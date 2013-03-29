@@ -28,7 +28,6 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/controls/menu/menu_item_view.h"
-#include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 
 using content::WebContents;
@@ -185,8 +184,7 @@ void PageActionImageView::ShowContextMenuForView(View* source,
 
   scoped_refptr<ExtensionContextMenuModel> context_menu_model(
       new ExtensionContextMenuModel(extension, browser_, this));
-  views::MenuModelAdapter menu_model_adapter(context_menu_model.get());
-  menu_runner_.reset(new views::MenuRunner(menu_model_adapter.CreateMenu()));
+  menu_runner_.reset(new views::MenuRunner(context_menu_model.get()));
   gfx::Point screen_loc;
   views::View::ConvertPointToScreen(this, &screen_loc);
   if (menu_runner_->RunMenuAt(GetWidget(), NULL, gfx::Rect(screen_loc, size()),

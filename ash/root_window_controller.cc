@@ -48,7 +48,6 @@
 #include "ui/base/models/menu_model.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
-#include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/corewm/visibility_controller.h"
 #include "ui/views/view_model.h"
@@ -443,8 +442,7 @@ void RootWindowController::ShowContextMenu(
   if (!menu_model.get())
     return;
 
-  views::MenuModelAdapter menu_model_adapter(menu_model.get());
-  views::MenuRunner menu_runner(menu_model_adapter.CreateMenu());
+  views::MenuRunner menu_runner(menu_model.get());
   views::Widget* widget =
       root_window_->GetProperty(kDesktopController)->widget();
 

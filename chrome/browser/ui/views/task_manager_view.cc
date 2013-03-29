@@ -34,7 +34,6 @@
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/link_listener.h"
-#include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/table/table_grouper.h"
 #include "ui/views/controls/table/table_view.h"
@@ -687,8 +686,7 @@ void TaskManagerView::ShowContextMenuForView(views::View* source,
        i != columns_.end(); ++i) {
     menu_model.AddCheckItem(i->id, l10n_util::GetStringUTF16(i->id));
   }
-  views::MenuModelAdapter menu_adapter(&menu_model);
-  menu_runner_.reset(new views::MenuRunner(menu_adapter.CreateMenu()));
+  menu_runner_.reset(new views::MenuRunner(&menu_model));
   if (menu_runner_->RunMenuAt(GetWidget(), NULL, gfx::Rect(point, gfx::Size()),
                               views::MenuItemView::TOPLEFT,
                               views::MenuRunner::CONTEXT_MENU) ==

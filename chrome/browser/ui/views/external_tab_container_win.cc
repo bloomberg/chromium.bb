@@ -743,7 +743,6 @@ bool ExternalTabContainerWin::HandleContextMenu(
   static_cast<RenderViewContextMenuWin*>(
       external_context_menu_.get())->SetExternal();
   external_context_menu_->Init();
-  external_context_menu_->UpdateMenuItemStates();
 
   scoped_ptr<ContextMenuModel> context_menu_model(
     ConvertMenuModel(&external_context_menu_->menu_model()));

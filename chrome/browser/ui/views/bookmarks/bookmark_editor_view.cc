@@ -28,7 +28,6 @@
 #include "ui/views/background.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/tree/tree_view.h"
@@ -244,8 +243,7 @@ void BookmarkEditorView::ShowContextMenuForView(views::View* source,
       (tree_model_->GetParent(tree_view_->GetSelectedNode()) ==
        tree_model_->GetRoot());
 
-  views::MenuModelAdapter adapter(GetMenuModel());
-  context_menu_runner_.reset(new views::MenuRunner(adapter.CreateMenu()));
+  context_menu_runner_.reset(new views::MenuRunner(GetMenuModel()));
 
   if (context_menu_runner_->RunMenuAt(source->GetWidget()->GetTopLevelWidget(),
         NULL, gfx::Rect(point, gfx::Size()), views::MenuItemView::TOPRIGHT,

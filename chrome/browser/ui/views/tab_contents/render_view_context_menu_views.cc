@@ -15,7 +15,6 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/gfx/point.h"
 #include "ui/views/controls/menu/menu_item_view.h"
-#include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 
 using content::WebContents;
@@ -26,8 +25,7 @@ using content::WebContents;
 RenderViewContextMenuViews::RenderViewContextMenuViews(
     WebContents* web_contents,
     const content::ContextMenuParams& params)
-    : RenderViewContextMenu(web_contents, params),
-      menu_(NULL) {
+    : RenderViewContextMenu(web_contents, params) {
 }
 
 RenderViewContextMenuViews::~RenderViewContextMenuViews() {
@@ -56,18 +54,11 @@ void RenderViewContextMenuViews::RunMenuAt(
     return;
 }
 
-void RenderViewContextMenuViews::UpdateMenuItemStates() {
-  menu_delegate_->BuildMenu(menu_);
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // RenderViewContextMenuViews, protected:
 
 void RenderViewContextMenuViews::PlatformInit() {
-  menu_delegate_.reset(new views::MenuModelAdapter(&menu_model_));
-  menu_ = new views::MenuItemView(menu_delegate_.get());
-  menu_runner_.reset(new views::MenuRunner(menu_));
-  UpdateMenuItemStates();
+  menu_runner_.reset(new views::MenuRunner(&menu_model_));
 }
 
 void RenderViewContextMenuViews::PlatformCancel() {
@@ -121,7 +112,8 @@ void RenderViewContextMenuViews::UpdateMenuItem(int command_id,
                                                 bool enabled,
                                                 bool hidden,
                                                 const string16& title) {
-  views::MenuItemView* item = menu_->GetMenuItemByID(command_id);
+  views::MenuItemView* item =
+      menu_runner_->GetMenu()->GetMenuItemByID(command_id);
   if (!item)
     return;
 

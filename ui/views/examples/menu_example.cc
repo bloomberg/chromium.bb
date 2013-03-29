@@ -10,7 +10,6 @@
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
-#include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/view.h"
@@ -186,8 +185,7 @@ ExampleMenuButton::~ExampleMenuButton() {
 
 void ExampleMenuButton::OnMenuButtonClicked(View* source,
                                             const gfx::Point& point) {
-  MenuModelAdapter menu_model_adapter(GetMenuModel());
-  menu_runner_.reset(new MenuRunner(menu_model_adapter.CreateMenu()));
+  menu_runner_.reset(new MenuRunner(GetMenuModel()));
 
   if (menu_runner_->RunMenuAt(source->GetWidget()->GetTopLevelWidget(), this,
         gfx::Rect(point, gfx::Size()), MenuItemView::TOPRIGHT,
