@@ -115,18 +115,22 @@ int ELF::AddSection(const string& name, const Section& section,
     // sh_entsize
     .Append(endianness(), addr_size_, entsize);
 
+  sections_.push_back(ElfSection(section, type, offset, offset_label));
+  return index;
+}
+
+void ELF::AppendSection(ElfSection &section) {
   // NULL and NOBITS sections have no content, so they
   // don't need to be written to the file.
-  if (type == SHT_NULL) {
-    offset_label = 0;
-  } else if (type == SHT_NOBITS) {
-    offset_label = offset;
+  if (section.type_ == SHT_NULL) {
+    section.offset_label_ = 0;
+  } else if (section.type_ == SHT_NOBITS) {
+    section.offset_label_ = section.offset_;
   } else {
-    Mark(&offset_label);
+    Mark(&section.offset_label_);
     Append(section);
     Align(4);
   }
-  return index;
 }
 
 void ELF::Finish() {
@@ -136,6 +140,10 @@ void ELF::Finish() {
   AddSection(".shstrtab", section_header_strings_, SHT_STRTAB);
   //printf("section_count_: %ld, sections_.size(): %ld\n",
   //     section_count_, sections_.size());
+  for (vector<ElfSection>::iterator it = sections_.begin();
+       it < sections_.end(); ++it) {
+    AppendSection(*it);
+  }
   section_count_label_ = section_count_;
   program_count_label_ = program_count_;
   // TODO:  allow adding entries to program header table

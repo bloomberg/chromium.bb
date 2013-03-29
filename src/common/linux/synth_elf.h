@@ -39,6 +39,7 @@
 #include "common/test_assembler.h"
 
 #include <list>
+#include <vector>
 #include <map>
 #include <string>
 #include <utility>
@@ -49,6 +50,7 @@ namespace google_breakpad {
 namespace synth_elf {
 
 using std::list;
+using std::vector;
 using std::map;
 using std::pair;
 using test_assembler::Endianness;
@@ -128,6 +130,23 @@ class ELF : public Section {
   Label section_header_string_index_;
   // Section containing the names of section header table entries.
   StringTable section_header_strings_;
+
+  // Record of an added section
+  struct ElfSection : public Section {
+    ElfSection(const Section& section, uint32_t type, uint32_t offset,
+               Label offset_label)
+    : Section(section), type_(type), offset_(offset)
+    , offset_label_(offset_label) {
+    }
+
+    uint32_t type_;
+    uint32_t offset_;
+    Label offset_label_;
+  };
+
+  vector<ElfSection> sections_;
+
+  void AppendSection(ElfSection &section);
 };
 
 // A class to build .symtab or .dynsym sections.
