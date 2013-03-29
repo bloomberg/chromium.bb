@@ -723,7 +723,7 @@ std::string TestFileRef::TestFileNameEscaping() {
         output_callback(instance_->pp_instance(), force_async_);
     pp::DirectoryReader_Dev directory_reader(test_dir_ref);
 
-    rv = directory_reader.ReadEntries(output_callback);
+    rv = directory_reader.ReadEntries(output_callback.GetCallback());
     if (rv == PP_OK_COMPLETIONPENDING)
       rv = output_callback.WaitForResult();
     if (rv != PP_OK && rv != PP_ERROR_FILENOTFOUND)

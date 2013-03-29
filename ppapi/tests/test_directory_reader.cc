@@ -51,7 +51,7 @@ int32_t TestDirectoryReader::DeleteDirectoryRecursively(pp::FileRef* dir) {
 
   int32_t rv = PP_OK;
   pp::DirectoryReader_Dev directory_reader(*dir);
-  rv = directory_reader.ReadEntries(output_callback);
+  rv = directory_reader.ReadEntries(output_callback.GetCallback());
   if (rv == PP_OK_COMPLETIONPENDING)
     rv = output_callback.WaitForResult();
   if (rv != PP_OK && rv != PP_ERROR_FILENOTFOUND)
@@ -151,7 +151,7 @@ std::string TestDirectoryReader::TestReadEntries() {
         instance_->pp_instance(), force_async_);
 
     pp::DirectoryReader_Dev directory_reader(test_dir);
-    rv = directory_reader.ReadEntries(output_callback);
+    rv = directory_reader.ReadEntries(output_callback.GetCallback());
     if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
       return ReportError("DirectoryReader::ReadEntries force_async", rv);
     if (rv == PP_OK_COMPLETIONPENDING)
@@ -194,7 +194,8 @@ std::string TestDirectoryReader::TestReadEntries() {
         instance_->pp_instance(), force_async_);
 
     // Note that the directory reader will be deleted immediately.
-    rv = pp::DirectoryReader_Dev(test_dir).ReadEntries(output_callback);
+    rv = pp::DirectoryReader_Dev(test_dir).ReadEntries(
+        output_callback.GetCallback());
     if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
       return ReportError("DirectoryReader::ReadEntries force_async", rv);
     if (output_callback.run_count() > 0)

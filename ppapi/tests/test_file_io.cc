@@ -92,7 +92,7 @@ int32_t ReadToArrayEntireFile(PP_Instance instance,
       instance, force_async);
 
   for (;;) {
-    callback.WaitForResult(file_io->Read(offset, 256, callback));
+    callback.WaitForResult(file_io->Read(offset, 256, callback.GetCallback()));
     int32_t rv = callback.result();
     if (rv < 0)
       return rv;
@@ -461,7 +461,7 @@ std::string TestFileIO::TestReadToArrayWriteSetLength() {
   // Check for failing read operation.
   callback2.WaitForResult(
       file_io.Read(0, -1,  // negative number of bytes to read
-                   callback2));
+                   callback2.GetCallback()));
   CHECK_CALLBACK_BEHAVIOR(callback2);
   if (callback2.result() != PP_ERROR_FAILED)
     return ReportError("FileIO::Read", callback2.result());

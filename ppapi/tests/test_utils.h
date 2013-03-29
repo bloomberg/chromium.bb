@@ -148,8 +148,11 @@ class TestCompletionCallback {
   // Reset so that this callback can be used again.
   void Reset();
 
- protected:
+  CallbackType callback_type() { return callback_type_; }
+  void set_target_loop(const pp::MessageLoop& loop) { target_loop_ = loop; }
   static void Handler(void* user_data, int32_t result);
+
+ protected:
   void RunMessageLoop();
   void QuitMessageLoop();
 
@@ -170,37 +173,54 @@ class TestCompletionCallback {
 };
 
 template <typename OutputT>
-class TestCompletionCallbackWithOutput : public TestCompletionCallback {
+class TestCompletionCallbackWithOutput {
  public:
   explicit TestCompletionCallbackWithOutput(PP_Instance instance) :
-    TestCompletionCallback(instance) {
+    callback_(instance) {
   }
 
   TestCompletionCallbackWithOutput(PP_Instance instance, bool force_async) :
-    TestCompletionCallback(instance, force_async) {
+    callback_(instance, force_async) {
   }
 
   TestCompletionCallbackWithOutput(PP_Instance instance,
                                    CallbackType callback_type) :
-    TestCompletionCallback(instance, callback_type) {
+    callback_(instance, callback_type) {
   }
 
-  pp::CompletionCallbackWithOutput<OutputT> GetCallbackWithOutput();
-  operator pp::CompletionCallbackWithOutput<OutputT>() {
-    return GetCallbackWithOutput();
-  }
-
+  pp::CompletionCallbackWithOutput<OutputT> GetCallback();
   const OutputT& output() { return output_storage_.output(); }
 
+  // Delegate functions to TestCompletionCallback
+  void SetDelegate(TestCompletionCallback::Delegate* delegate) {
+    callback_.SetDelegate(delegate);
+  }
+  int32_t WaitForResult() { return callback_.WaitForResult(); }
+  void WaitForResult(int32_t result) { callback_.WaitForResult(result); }
+  void WaitForAbortResult(int32_t result) {
+    callback_.WaitForAbortResult(result);
+  }
+  // TODO(dmichael): Remove run_count when all tests are updated. Most cases
+  //                 that use this can simply use CHECK_CALLBACK_BEHAVIOR.
+  unsigned run_count() const { return callback_.run_count(); }
+  // TODO(dmichael): Remove this; tests should use Reset() instead.
+  void reset_run_count() { callback_.reset_run_count(); }
+  bool failed() { return callback_.failed(); }
+  const std::string& errors() { return callback_.errors(); }
+  int32_t result() const { return callback_.result(); }
+  void Reset() { return callback_.Reset(); }
+
+ private:
+  TestCompletionCallback callback_;
   typename pp::CompletionCallbackWithOutput<OutputT>::OutputStorageType
       output_storage_;
 };
 
 template <typename OutputT>
 pp::CompletionCallbackWithOutput<OutputT>
-TestCompletionCallbackWithOutput<OutputT>::GetCallbackWithOutput() {
-  Reset();
-  if (callback_type_ == PP_BLOCKING) {
+TestCompletionCallbackWithOutput<OutputT>::GetCallback() {
+  callback_.Reset();
+  if (callback_.callback_type() == PP_BLOCKING) {
     pp::CompletionCallbackWithOutput<OutputT> cc(
         &TestCompletionCallback::Handler,
         this,
@@ -208,12 +228,12 @@ TestCompletionCallbackWithOutput<OutputT>::GetCallbackWithOutput() {
     return cc;
   }
 
-  target_loop_ = pp::MessageLoop::GetCurrent();
+  callback_.set_target_loop(pp::MessageLoop::GetCurrent());
   pp::CompletionCallbackWithOutput<OutputT> cc(
         &TestCompletionCallback::Handler,
         this,
         &output_storage_);
-  if (callback_type_ == PP_OPTIONAL)
+  if (callback_.callback_type() == PP_OPTIONAL)
     cc.set_flags(PP_COMPLETIONCALLBACK_FLAG_OPTIONAL);
   return cc;
 }
