@@ -24,7 +24,6 @@ vdiff = test_env.ComponentProgram(
   ['vdiff.c', 'nacl_tester.c', 'ragel_tester.c', 'str_utils.c', 'text2hex.c'],
   EXTRA_LIBS=[test_env.NaClTargetArchSuffix('ncdis_util'),
               test_env.NaClTargetArchSuffix('ncvalidate'),
-              test_env.NaClTargetArchSuffix('dfa_decode'),
               test_env.NaClTargetArchSuffix('ncval_reg_sfi'),
               test_env.NaClTargetArchSuffix('nc_decoder'),
               test_env.NaClTargetArchSuffix('nc_opcode_modeling_verbose'),

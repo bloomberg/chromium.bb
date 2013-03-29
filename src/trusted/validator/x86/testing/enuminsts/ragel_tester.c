@@ -18,7 +18,6 @@
 #include "native_client/src/trusted/validator/types_memory_model.h"
 #include "native_client/src/trusted/validator/x86/ncinstbuffer.h"
 #include "native_client/src/trusted/validator/x86/testing/enuminsts/str_utils.h"
-#include "native_client/src/trusted/validator_ragel/decoder.h"
 #include "native_client/src/trusted/validator_ragel/validator.h"
 
 #define kBufferSize 1024
@@ -36,7 +35,7 @@ static void RagelSetup(void) {
 struct RagelDecodeState {
   const uint8_t *inst_offset;
   uint8_t inst_num_bytes;
-  uint8_t valid_state;  /* indicates if this struct describes an instruction */
+  uint8_t first_call;
   const char *inst_name;
   int inst_is_legal;  /* legal means decodes correctly */
   int inst_is_valid;  /* valid means validator is happy */
@@ -56,55 +55,37 @@ static void RagelPrintInst(void) {
   for (i = 0; i < print_num_bytes; i++) {
     printf("%02x ", RState.inst_offset[i]);
   }
-  printf(": %s\n", RState.inst_name);
+  printf("\n");
 }
 
 
-
-/* It's difficult to use this to detect actual decoder errors because for */
-/* enuminst we want to ignore errors for all but the first instruction.   */
-void RagelDecodeError (const uint8_t *ptr, void *userdata) {
-  UNREFERENCED_PARAMETER(ptr);
-  UNREFERENCED_PARAMETER(userdata);
-  return;
-}
-
-Bool RagelValidateError(const uint8_t *begin, const uint8_t *end,
-                        uint32_t error, void *callback_data) {
-  UNREFERENCED_PARAMETER(begin);
-  UNREFERENCED_PARAMETER(end);
-  UNREFERENCED_PARAMETER(callback_data);
-  if (error & (UNRECOGNIZED_INSTRUCTION |
-               CPUID_UNSUPPORTED_INSTRUCTION |
-               FORBIDDEN_BASE_REGISTER |
-               UNRESTRICTED_INDEX_REGISTER |
-               R15_MODIFIED | BP_MODIFIED | SP_MODIFIED |
-               UNRESTRICTED_RBP_PROCESSED | UNRESTRICTED_RSP_PROCESSED |
-               RESTRICTED_RSP_UNPROCESSED | RESTRICTED_RBP_UNPROCESSED)) {
-    return FALSE;
-  } else {
-    return TRUE;
-  }
-}
-
-void RagelInstruction(const uint8_t *begin, const uint8_t *end,
-                      struct Instruction *instruction, void *userdata) {
+Bool RagelInstruction(const uint8_t *begin, const uint8_t *end,
+                      uint32_t info, void *userdata) {
   struct RagelDecodeState *rstate = (struct RagelDecodeState *)userdata;
-  UNREFERENCED_PARAMETER(instruction);
+
   /* Only look at the first instruction. */
-  if (rstate->valid_state) return;
-  if (end > begin) {
+  if (rstate->first_call) {
+    int restricted_register =
+        (info & RESTRICTED_REGISTER_MASK) >> RESTRICTED_REGISTER_SHIFT;
     rstate->inst_num_bytes = (uint8_t)(end - begin);
-    rstate->inst_name = instruction->name;
-  } else {
-    rstate->inst_num_bytes = 0;
+
+    rstate->inst_is_valid =
+        !(info & (VALIDATION_ERRORS_MASK & ~DIRECT_JUMP_OUT_OF_RANGE)) &&
+        restricted_register != REG_RSP &&
+        restricted_register != REG_RBP;
+    rstate->inst_is_legal = rstate->inst_is_valid;
+    rstate->first_call = 0;
   }
-  rstate->valid_state = 1;
+
+  if (info & (VALIDATION_ERRORS_MASK | BAD_JUMP_TARGET))
+    return FALSE;
+  else
+    return TRUE;
 }
 
 static void InitializeRagelDecodeState(struct RagelDecodeState *rs,
                                        const uint8_t *itext) {
-  rs->valid_state = 0;
+  rs->first_call = 1;
   rs->inst_offset = itext;
   rs->inst_num_bytes = 0;
   rs->inst_is_legal = 0;
@@ -115,52 +96,30 @@ static void InitializeRagelDecodeState(struct RagelDecodeState *rs,
 /* Defines the function to parse the first instruction. Note RState.ready */
 /* mechanism forces parsing of at most one instruction. */
 static void RParseInst(const NaClEnumerator* enumerator, const int pc_address) {
-  int res;
-  struct RagelDecodeState tempstate;
+  uint8_t chunk[(NACL_ENUM_MAX_INSTRUCTION_BYTES + kBundleMask) &
+                ~kBundleMask];
 
   UNREFERENCED_PARAMETER(pc_address);
-  InitializeRagelDecodeState(&tempstate, enumerator->_itext);
   InitializeRagelDecodeState(&RState, enumerator->_itext);
 
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_TARGET_SUBARCH == 64
-#define DecodeChunkArch DecodeChunkAMD64
 #define ValidateChunkArch ValidateChunkAMD64
 #elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_TARGET_SUBARCH == 32
-#define DecodeChunkArch DecodeChunkIA32
 #define ValidateChunkArch ValidateChunkIA32
 #else
 #error("Unsupported architecture")
 #endif
-  /* Since DecodeChunkArch looks at multiple instructions and we only */
-  /* care about the first instruction, ignore the return code here. */
-  (void)DecodeChunkArch(enumerator->_itext, enumerator->_num_bytes,
-                        RagelInstruction, RagelDecodeError, &tempstate);
 
-  if (tempstate.inst_num_bytes == 0) {
-    /* This indicates a decoder error. */
-  } else {
-    /* Decode again, this time specifying length of first instruction. */
-    res = DecodeChunkArch(enumerator->_itext, tempstate.inst_num_bytes,
-                          RagelInstruction, RagelDecodeError, &RState);
-    RState.inst_is_legal = res;
-  }
+  /* Copy the command.  */
+  memcpy(chunk, enumerator->_itext, sizeof enumerator->_itext);
+  /* Fill the rest with HLTs.  */
+  memset(chunk + sizeof enumerator->_itext, 0xf4,
+         sizeof chunk - sizeof enumerator->_itext);
+  ValidateChunkArch(chunk, sizeof(chunk),
+                    CALL_USER_CALLBACK_ON_EACH_INSTRUCTION,
+                    &kFullCPUIDFeatures,
+                    RagelInstruction, &RState);
 
-  if (RState.inst_is_legal) {
-    uint8_t chunk[(NACL_ENUM_MAX_INSTRUCTION_BYTES + kBundleMask) &
-                  ~kBundleMask];
-
-    /* Copy the command.  */
-    memcpy(chunk, enumerator->_itext, tempstate.inst_num_bytes);
-    /* Fill the rest with HLTs.  */
-    memset(chunk + tempstate.inst_num_bytes, 0xf4,
-           sizeof(chunk) - tempstate.inst_num_bytes);
-    res = ValidateChunkArch(chunk, sizeof(chunk), 0 /*options*/,
-                            &kFullCPUIDFeatures,
-                            RagelValidateError, NULL);
-    RState.inst_is_valid = res;
-  }
-
-#undef DecodeChunkArch
 #undef ValidateChunkArch
 }
 

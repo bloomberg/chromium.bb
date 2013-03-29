@@ -48,15 +48,6 @@ static Bool gVerbose = FALSE;
  */
 static Bool gSilent = FALSE;
 
-/* When true, don't report consecutive errors for consecutive instructions
- * with the same instruction mnemonic.
- */
-static Bool gSkipRepeatReports = FALSE;
-
-/* Set to true to enable checking of mnemonics (opcode names).
- */
-static Bool gCheckMnemonics = TRUE;
-
 /* Count of errors that have a high certainty of being exploitable. */
 static int gSawLethalError = 0;
 
@@ -124,9 +115,7 @@ static void PrintProgress(const char* format, ...) {
   va_end(ap);
 }
 
-/* Report a disagreement between decoders. To reduce
- * noice from uninteresting related errors, gSkipRepeatReports will
- * avoid printing consecutive errors for the same opcode.
+/* Report a disagreement between decoders.
  */
 static void DecoderError(const char *why,
                          NaClEnumerator *pinst,
@@ -141,25 +130,6 @@ static void PrintBytes(FILE *f, uint8_t* bytes, size_t len) {
   size_t i;
   for (i = 0; i < len; i++) {
     fprintf(f, "%02x", bytes[i]);
-  }
-}
-
-static Bool NotOpcodeRepeat(const char* opcode) {
-  static char last_opcode[kBufferSize] = "";
-  Bool result = (strcmp(last_opcode, opcode) != 0);
-  strncpy(last_opcode, opcode, kBufferSize);
-  return result;
-}
-
-static void CheckMnemonics(NaClEnumerator* pinst, NaClEnumerator* dinst) {
-  const char* prod_opcode = vProd->_get_inst_mnemonic_fn(pinst);
-  const char* dfa_opcode = vDFA->_get_inst_mnemonic_fn(dinst);
-
-  if (0 != strcmp(prod_opcode, dfa_opcode)) {
-    /* avoid redundant messages... */
-    if (NotOpcodeRepeat(prod_opcode)) {
-      printf("Warning: OPCODE MISMATCH: %s != %s\n", prod_opcode, dfa_opcode);
-    }
   }
 }
 
@@ -234,8 +204,6 @@ static void TryOneInstruction(uint8_t *itext, size_t nbytes) {
         /* Both validators see a legal instruction, */
         /* and they agree on critical details.      */
         IncrValid();
-        /* Warn if decoders disagree opcode name. */
-        if (gCheckMnemonics) CheckMnemonics(&pinst, &dinst);
       } else {
         DecoderError("LENGTH MISMATCH", &pinst, &dinst, "");
         IncrErrors();
@@ -433,7 +401,6 @@ static void WithREX(TestAllFunction testall,
  * all instructions.
  */
 static void TestAllInstructions(void) {
-  gSkipRepeatReports = TRUE;
   /* NOTE: Prefix byte order needs to be reversed when written as
    * an integer. For example, for integer prefix 0x3a0f, 0f will
    * go in instruction byte 0, and 3a in byte 1.
@@ -504,10 +471,6 @@ static void RunRegressionTests(void) {
   TestOneInstruction("664001d8");  /* legal; REX after data16    */
   TestOneInstruction("414001d8");  /* illegal; two REX bytes     */
 
-  /* Reset the opcode repeat test, so as not to silence errors */
-  /* that happened in the regression suite. */
-  (void)NotOpcodeRepeat("");
-
   /* And some tests for degenerate prefix patterns */
   TestOneInstruction("666690");
   TestOneInstruction("6690");
@@ -535,7 +498,6 @@ static int ParseArgv(const int argc, const char* argv[]) {
   if (nextarg < argc &&
       0 == strcmp(argv[nextarg], FLAG_EasyDiff)) {
     gEasyDiffMode = TRUE;
-    gCheckMnemonics = FALSE;
     nextarg += 1;
   }
   return nextarg;
