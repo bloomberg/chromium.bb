@@ -9,7 +9,7 @@
 namespace net {
 
 // Using a std::set<> has the benefit of removing duplicates automatically.
-typedef std::set<string16> RegistryWhitelist;
+typedef std::set<base::string16> RegistryWhitelist;
 
 // TODO(ahendrickson) -- Determine if we want separate whitelists for HTTP and
 // HTTPS, one for both, or only an HTTP one.  My understanding is that the HTTPS

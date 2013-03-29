@@ -101,14 +101,14 @@ void URLRequestFileDirJob::OnListFile(
   // can catch errors from DirectoryLister and show an error page.
   if (!wrote_header_) {
 #if defined(OS_WIN)
-    const string16& title = dir_path_.value();
+    const base::string16& title = dir_path_.value();
 #elif defined(OS_POSIX)
     // TODO(jungshik): Add SysNativeMBToUTF16 to sys_string_conversions.
     // On Mac, need to add NFKC->NFC conversion either here or in file_path.
     // On Linux, the file system encoding is not defined, but we assume that
     // SysNativeMBToWide takes care of it at least for now. We can try something
     // more sophisticated if necessary later.
-    const string16& title = WideToUTF16(
+    const base::string16& title = WideToUTF16(
         base::SysNativeMBToWide(dir_path_.value()));
 #endif
     data_.append(GetDirectoryListingHeader(title));

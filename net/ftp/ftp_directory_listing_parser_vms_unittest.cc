@@ -54,7 +54,8 @@ TEST_F(FtpDirectoryListingParserVmsTest, Good) {
     SCOPED_TRACE(base::StringPrintf("Test[%" PRIuS "]: %s", i,
                                     good_cases[i].input));
 
-    std::vector<string16> lines(GetSingleLineTestCase(good_cases[i].input));
+    std::vector<base::string16> lines(
+        GetSingleLineTestCase(good_cases[i].input));
 
     // The parser requires a directory header before accepting regular input.
     lines.insert(lines.begin(),
@@ -108,7 +109,7 @@ TEST_F(FtpDirectoryListingParserVmsTest, Bad) {
   for (size_t i = 0; i < arraysize(bad_cases); i++) {
     SCOPED_TRACE(base::StringPrintf("Test[%" PRIuS "]: %s", i, bad_cases[i]));
 
-    std::vector<string16> lines(GetSingleLineTestCase(bad_cases[i]));
+    std::vector<base::string16> lines(GetSingleLineTestCase(bad_cases[i]));
 
     // The parser requires a directory header before accepting regular input.
     lines.insert(lines.begin(),
@@ -133,7 +134,7 @@ TEST_F(FtpDirectoryListingParserVmsTest, BadDataAfterFooter) {
   for (size_t i = 0; i < arraysize(bad_cases); i++) {
     SCOPED_TRACE(base::StringPrintf("Test[%" PRIuS "]: %s", i, bad_cases[i]));
 
-    std::vector<string16> lines(
+    std::vector<base::string16> lines(
         GetSingleLineTestCase("README.TXT;4  2  18-APR-2000 10:40:39.90"));
 
     // The parser requires a directory header before accepting regular input.

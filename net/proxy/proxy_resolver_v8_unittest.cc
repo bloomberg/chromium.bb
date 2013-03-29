@@ -26,7 +26,7 @@ class MockJSBindings : public ProxyResolverV8::JSBindings {
   MockJSBindings() : my_ip_address_count(0), my_ip_address_ex_count(0),
                      should_terminate(false) {}
 
-  virtual void Alert(const string16& message) OVERRIDE {
+  virtual void Alert(const base::string16& message) OVERRIDE {
     VLOG(1) << "PAC-alert: " << message;  // Helpful when debugging.
     alerts.push_back(UTF16ToUTF8(message));
   }
@@ -65,7 +65,8 @@ class MockJSBindings : public ProxyResolverV8::JSBindings {
     return false;
   }
 
-  virtual void OnError(int line_number, const string16& message) OVERRIDE {
+  virtual void OnError(int line_number,
+                       const base::string16& message) OVERRIDE {
     // Helpful when debugging.
     VLOG(1) << "PAC-error: [" << line_number << "] " << message;
 
@@ -388,7 +389,8 @@ TEST(ProxyResolverV8Test, NoSetPacScript) {
 
   // Clear it, by initializing with an empty string.
   resolver.SetPacScript(
-      ProxyResolverScriptData::FromUTF16(string16()), CompletionCallback());
+      ProxyResolverScriptData::FromUTF16(base::string16()),
+      CompletionCallback());
 
   // Resolve should fail again now.
   result = resolver.GetProxyForURL(

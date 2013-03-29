@@ -38,12 +38,12 @@ class Rules {
           is_valid_script(is_valid_script) {
     }
 
-    string16 text() const {
+    base::string16 text() const {
       if (is_valid_script)
         return UTF8ToUTF16(url.spec() + "!FindProxyForURL");
       if (fetch_error == OK)
         return UTF8ToUTF16(url.spec() + "!invalid-script");
-      return string16();
+      return base::string16();
     }
 
     GURL url;
@@ -76,7 +76,7 @@ class Rules {
     return rules_[0];
   }
 
-  const Rule& GetRuleByText(const string16& text) const {
+  const Rule& GetRuleByText(const base::string16& text) const {
     for (RuleList::const_iterator it = rules_.begin(); it != rules_.end();
          ++it) {
       if (it->text() == text)
@@ -97,7 +97,7 @@ class RuleBasedProxyScriptFetcher : public ProxyScriptFetcher {
 
   // ProxyScriptFetcher implementation.
   virtual int Fetch(const GURL& url,
-                    string16* text,
+                    base::string16* text,
                     const CompletionCallback& callback) OVERRIDE {
     const Rules::Rule& rule = rules_->GetRuleByUrl(url);
     int rv = rule.fetch_error;
@@ -453,11 +453,11 @@ TEST(ProxyScriptDeciderTest, CustomPacFails1_WithNegativeDelay) {
 
 class SynchronousSuccessDhcpFetcher : public DhcpProxyScriptFetcher {
  public:
-  explicit SynchronousSuccessDhcpFetcher(const string16& expected_text)
+  explicit SynchronousSuccessDhcpFetcher(const base::string16& expected_text)
       : gurl_("http://dhcppac/"), expected_text_(expected_text) {
   }
 
-  virtual int Fetch(string16* utf16_text,
+  virtual int Fetch(base::string16* utf16_text,
                     const CompletionCallback& callback) OVERRIDE {
     *utf16_text = expected_text_;
     return OK;
@@ -470,13 +470,13 @@ class SynchronousSuccessDhcpFetcher : public DhcpProxyScriptFetcher {
     return gurl_;
   }
 
-  const string16& expected_text() const {
+  const base::string16& expected_text() const {
     return expected_text_;
   }
 
  private:
   GURL gurl_;
-  string16 expected_text_;
+  base::string16 expected_text_;
 
   DISALLOW_COPY_AND_ASSIGN(SynchronousSuccessDhcpFetcher);
 };
@@ -539,7 +539,7 @@ class AsyncFailDhcpFetcher
   AsyncFailDhcpFetcher() {}
   virtual ~AsyncFailDhcpFetcher() {}
 
-  virtual int Fetch(string16* utf16_text,
+  virtual int Fetch(base::string16* utf16_text,
                     const CompletionCallback& callback) OVERRIDE {
     callback_ = callback;
     MessageLoop::current()->PostTask(

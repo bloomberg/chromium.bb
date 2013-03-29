@@ -426,7 +426,7 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
   // parameter describing details related to the load state. Not all load states
   // have a parameter.
   LoadStateWithParam GetLoadState() const;
-  void SetLoadStateParam(const string16& param) {
+  void SetLoadStateParam(const base::string16& param) {
     load_state_param_ = param;
   }
 
@@ -809,7 +809,7 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
 
   // An optional parameter that provides additional information about the load
   // state. Only used with the LOAD_STATE_WAITING_FOR_DELEGATE state.
-  string16 load_state_param_;
+  base::string16 load_state_param_;
 
   base::debug::LeakTracker<URLRequest> leak_tracker_;
 

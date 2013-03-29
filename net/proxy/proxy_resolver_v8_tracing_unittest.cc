@@ -71,7 +71,7 @@ class MockErrorObserver : public ProxyResolverErrorObserver {
   MockErrorObserver() : event_(true, false) {}
 
   virtual void OnPACScriptError(int line_number,
-                                const string16& error) OVERRIDE {
+                                const base::string16& error) OVERRIDE {
     {
       base::AutoLock l(lock_);
       output += base::StringPrintf("Error: line %d: %s\n", line_number,

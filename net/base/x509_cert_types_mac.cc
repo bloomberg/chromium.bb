@@ -112,7 +112,7 @@ std::string DataToString(CSSM_DATA data) {
 
 // Converts raw CSSM_DATA in ISO-8859-1 to a std::string in UTF-8.
 std::string Latin1DataToUTF8String(CSSM_DATA data) {
-  string16 utf16;
+  base::string16 utf16;
   if (!CodepageToUTF16(DataToString(data), base::kCodepageLatin1,
                        base::OnStringConversionError::FAIL, &utf16))
     return "";

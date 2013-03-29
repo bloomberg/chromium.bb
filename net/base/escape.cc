@@ -275,7 +275,7 @@ std::string EscapeForHTML(const std::string& input) {
   return EscapeForHTMLImpl(input);
 }
 
-string16 EscapeForHTML(const string16& input) {
+base::string16 EscapeForHTML(const base::string16& input) {
   return EscapeForHTMLImpl(input);
 }
 
@@ -284,29 +284,30 @@ std::string UnescapeURLComponent(const std::string& escaped_text,
   return UnescapeURLWithOffsetsImpl(escaped_text, rules, NULL);
 }
 
-string16 UnescapeURLComponent(const string16& escaped_text,
-                              UnescapeRule::Type rules) {
+base::string16 UnescapeURLComponent(const base::string16& escaped_text,
+                                    UnescapeRule::Type rules) {
   return UnescapeURLWithOffsetsImpl(escaped_text, rules, NULL);
 }
 
-string16 UnescapeAndDecodeUTF8URLComponent(const std::string& text,
-                                           UnescapeRule::Type rules,
-                                           size_t* offset_for_adjustment) {
+base::string16 UnescapeAndDecodeUTF8URLComponent(
+    const std::string& text,
+    UnescapeRule::Type rules,
+    size_t* offset_for_adjustment) {
   std::vector<size_t> offsets;
   if (offset_for_adjustment)
     offsets.push_back(*offset_for_adjustment);
-  string16 result =
+  base::string16 result =
       UnescapeAndDecodeUTF8URLComponentWithOffsets(text, rules, &offsets);
   if (offset_for_adjustment)
     *offset_for_adjustment = offsets[0];
   return result;
 }
 
-string16 UnescapeAndDecodeUTF8URLComponentWithOffsets(
+base::string16 UnescapeAndDecodeUTF8URLComponentWithOffsets(
     const std::string& text,
     UnescapeRule::Type rules,
     std::vector<size_t>* offsets_for_adjustment) {
-  string16 result;
+  base::string16 result;
   std::vector<size_t> original_offsets;
   if (offsets_for_adjustment)
     original_offsets = *offsets_for_adjustment;
@@ -324,7 +325,7 @@ string16 UnescapeAndDecodeUTF8URLComponentWithOffsets(
   return base::UTF8ToUTF16AndAdjustOffsets(text, offsets_for_adjustment);
 }
 
-string16 UnescapeForHTML(const string16& input) {
+base::string16 UnescapeForHTML(const base::string16& input) {
   static const struct {
     const char* ampersand_code;
     const char replacement;
@@ -339,9 +340,10 @@ string16 UnescapeForHTML(const string16& input) {
   if (input.find(ASCIIToUTF16("&")) == std::string::npos)
     return input;
 
-  string16 ampersand_chars[ARRAYSIZE_UNSAFE(kEscapeToChars)];
-  string16 text(input);
-  for (string16::iterator iter = text.begin(); iter != text.end(); ++iter) {
+  base::string16 ampersand_chars[ARRAYSIZE_UNSAFE(kEscapeToChars)];
+  base::string16 text(input);
+  for (base::string16::iterator iter = text.begin();
+       iter != text.end(); ++iter) {
     if (*iter == '&') {
       // Potential ampersand encode char.
       size_t index = iter - text.begin();
@@ -366,7 +368,7 @@ AdjustEncodingOffset::AdjustEncodingOffset(const Adjustments& adjustments)
 
 void AdjustEncodingOffset::operator()(size_t& offset) {
   // For each encoded character occurring before an offset subtract 2.
-  if (offset == string16::npos)
+  if (offset == base::string16::npos)
     return;
   size_t adjusted_offset = offset;
   for (Adjustments::const_iterator i = adjustments.begin();
@@ -377,7 +379,7 @@ void AdjustEncodingOffset::operator()(size_t& offset) {
       return;
     }
     if (offset <= (location + 2)) {
-      offset = string16::npos;
+      offset = base::string16::npos;
       return;
     }
     adjusted_offset -= 2;

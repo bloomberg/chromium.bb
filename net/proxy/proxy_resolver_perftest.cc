@@ -199,7 +199,7 @@ class MockJSBindings : public net::ProxyResolverV8::JSBindings {
  public:
   MockJSBindings() {}
 
-  virtual void Alert(const string16& message) OVERRIDE {
+  virtual void Alert(const base::string16& message) OVERRIDE {
     CHECK(false);
   }
 
@@ -211,7 +211,8 @@ class MockJSBindings : public net::ProxyResolverV8::JSBindings {
     return false;
   }
 
-  virtual void OnError(int line_number, const string16& message) OVERRIDE {
+  virtual void OnError(int line_number,
+                       const base::string16& message) OVERRIDE {
     CHECK(false);
   }
 };

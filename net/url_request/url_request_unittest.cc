@@ -81,9 +81,9 @@ namespace net {
 
 namespace {
 
-const string16 kChrome(ASCIIToUTF16("chrome"));
-const string16 kSecret(ASCIIToUTF16("secret"));
-const string16 kUser(ASCIIToUTF16("user"));
+const base::string16 kChrome(ASCIIToUTF16("chrome"));
+const base::string16 kSecret(ASCIIToUTF16("secret"));
+const base::string16 kUser(ASCIIToUTF16("user"));
 
 // Tests load timing information in the case a fresh connection was used.
 // These tests use the TestServer, which doesn't support keep-alive sockets,

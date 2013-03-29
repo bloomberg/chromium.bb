@@ -93,8 +93,8 @@ class SpdyProxyClientSocketSpdy2Test : public PlatformTest {
                                         int num_reads);
 
   void AddAuthToCache() {
-    const string16 kFoo(ASCIIToUTF16("foo"));
-    const string16 kBar(ASCIIToUTF16("bar"));
+    const base::string16 kFoo(ASCIIToUTF16("foo"));
+    const base::string16 kBar(ASCIIToUTF16("bar"));
     session_->http_auth_cache()->Add(GURL(kProxyUrl),
                                      "MyRealm1",
                                      HttpAuth::AUTH_SCHEME_BASIC,

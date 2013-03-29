@@ -59,11 +59,11 @@ class NET_EXPORT_PRIVATE ProxyResolverV8 : public ProxyResolver {
                             bool* terminate) = 0;
 
     // Handler for "alert(message)"
-    virtual void Alert(const string16& message) = 0;
+    virtual void Alert(const base::string16& message) = 0;
 
     // Handler for when an error is encountered. |line_number| may be -1
     // if a line number is not applicable to this error.
-    virtual void OnError(int line_number, const string16& error) = 0;
+    virtual void OnError(int line_number, const base::string16& error) = 0;
 
    protected:
     virtual ~JSBindings() {}

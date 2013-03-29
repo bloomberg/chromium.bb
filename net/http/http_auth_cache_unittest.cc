@@ -58,15 +58,15 @@ const char* kRealm2 = "Realm2";
 const char* kRealm3 = "Realm3";
 const char* kRealm4 = "Realm4";
 const char* kRealm5 = "Realm5";
-const string16 k123(ASCIIToUTF16("123"));
-const string16 k1234(ASCIIToUTF16("1234"));
-const string16 kAdmin(ASCIIToUTF16("admin"));
-const string16 kAlice(ASCIIToUTF16("alice"));
-const string16 kAlice2(ASCIIToUTF16("alice2"));
-const string16 kPassword(ASCIIToUTF16("password"));
-const string16 kRoot(ASCIIToUTF16("root"));
-const string16 kUsername(ASCIIToUTF16("username"));
-const string16 kWileCoyote(ASCIIToUTF16("wilecoyote"));
+const base::string16 k123(ASCIIToUTF16("123"));
+const base::string16 k1234(ASCIIToUTF16("1234"));
+const base::string16 kAdmin(ASCIIToUTF16("admin"));
+const base::string16 kAlice(ASCIIToUTF16("alice"));
+const base::string16 kAlice2(ASCIIToUTF16("alice2"));
+const base::string16 kPassword(ASCIIToUTF16("password"));
+const base::string16 kRoot(ASCIIToUTF16("root"));
+const base::string16 kUsername(ASCIIToUTF16("username"));
+const base::string16 kWileCoyote(ASCIIToUTF16("wilecoyote"));
 
 AuthCredentials CreateASCIICredentials(const char* username,
                                        const char* password) {

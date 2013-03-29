@@ -50,7 +50,7 @@ bool IsPacMimeType(const std::string& mime_type) {
 // If |charset| is empty, then we don't know what it was and guess.
 void ConvertResponseToUTF16(const std::string& charset,
                             const std::string& bytes,
-                            string16* utf16) {
+                            base::string16* utf16) {
   const char* codepage;
 
   if (charset.empty()) {
@@ -116,7 +116,7 @@ void ProxyScriptFetcherImpl::OnResponseCompleted(URLRequest* request) {
 }
 
 int ProxyScriptFetcherImpl::Fetch(
-    const GURL& url, string16* text, const CompletionCallback& callback) {
+    const GURL& url, base::string16* text, const CompletionCallback& callback) {
   // It is invalid to call Fetch() while a request is already in progress.
   DCHECK(!cur_request_.get());
   DCHECK(!callback.is_null());

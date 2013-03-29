@@ -54,7 +54,7 @@ DhcpProxyScriptFetcherWin::~DhcpProxyScriptFetcherWin() {
   base::SupportsWeakPtr<DhcpProxyScriptFetcherWin>::DetachFromThread();
 }
 
-int DhcpProxyScriptFetcherWin::Fetch(string16* utf16_text,
+int DhcpProxyScriptFetcherWin::Fetch(base::string16* utf16_text,
                                      const CompletionCallback& callback) {
   DCHECK(CalledOnValidThread());
   if (state_ != STATE_START && state_ != STATE_DONE) {

@@ -117,7 +117,7 @@ class RealFetchTester {
   scoped_ptr<URLRequestContext> context_;
   scoped_ptr<DhcpProxyScriptFetcherWin> fetcher_;
   bool finished_;
-  string16 pac_text_;
+  base::string16 pac_text_;
   base::OneShotTimer<RealFetchTester> timeout_;
   base::OneShotTimer<RealFetchTester> cancel_timer_;
   bool on_completion_is_error_;
@@ -239,7 +239,7 @@ class DummyDhcpProxyScriptAdapterFetcher
     return result_;
   }
 
-  string16 GetPacScript() const OVERRIDE {
+  base::string16 GetPacScript() const OVERRIDE {
     return pac_script_;
   }
 
@@ -247,8 +247,10 @@ class DummyDhcpProxyScriptAdapterFetcher
     callback_.Run(result_);
   }
 
-  void Configure(
-      bool did_finish, int result, string16 pac_script, int fetch_delay_ms) {
+  void Configure(bool did_finish,
+                 int result,
+                 base::string16 pac_script,
+                 int fetch_delay_ms) {
     did_finish_ = did_finish;
     result_ = result;
     pac_script_ = pac_script;
@@ -258,7 +260,7 @@ class DummyDhcpProxyScriptAdapterFetcher
  private:
   bool did_finish_;
   int result_;
-  string16 pac_script_;
+  base::string16 pac_script_;
   int fetch_delay_ms_;
   CompletionCallback callback_;
   base::OneShotTimer<DummyDhcpProxyScriptAdapterFetcher> timer_;
@@ -307,7 +309,7 @@ class MockDhcpProxyScriptFetcherWin : public DhcpProxyScriptFetcherWin {
   void ConfigureAndPushBackAdapter(const std::string& adapter_name,
                                    bool did_finish,
                                    int result,
-                                   string16 pac_script,
+                                   base::string16 pac_script,
                                    base::TimeDelta fetch_delay) {
     scoped_ptr<DummyDhcpProxyScriptAdapterFetcher> adapter_fetcher(
         new DummyDhcpProxyScriptAdapterFetcher(url_request_context()));
@@ -416,7 +418,7 @@ public:
   MockDhcpProxyScriptFetcherWin fetcher_;
   bool finished_;
   int result_;
-  string16 pac_text_;
+  base::string16 pac_text_;
 };
 
 // We separate out each test's logic so that we can easily implement

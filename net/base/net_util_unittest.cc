@@ -25,7 +25,7 @@ namespace net {
 
 namespace {
 
-static const size_t kNpos = string16::npos;
+static const size_t kNpos = base::string16::npos;
 
 struct FileCase {
   const wchar_t* file;
@@ -430,9 +430,9 @@ void MakeIPv6Address(const uint8* bytes, int port, SockaddrStorage* storage) {
 // Append "::<language list>" to |expected| and |actual| to make it
 // easy to tell which sub-case fails without debugging.
 void AppendLanguagesToOutputs(const char* languages,
-                              string16* expected,
-                              string16* actual) {
-  string16 to_append = ASCIIToUTF16("::") + ASCIIToUTF16(languages);
+                              base::string16* expected,
+                              base::string16* actual) {
+  base::string16 to_append = ASCIIToUTF16("::") + ASCIIToUTF16(languages);
   expected->append(to_append);
   actual->append(to_append);
 }
@@ -442,7 +442,7 @@ void VerboseExpect(size_t expected,
                    size_t actual,
                    const std::string& original_url,
                    size_t position,
-                   const string16& formatted_url) {
+                   const base::string16& formatted_url) {
   EXPECT_EQ(expected, actual) << "Original URL: " << original_url
       << " (at char " << position << ")\nFormatted URL: " << formatted_url;
 }
@@ -457,7 +457,7 @@ void CheckAdjustedOffsets(const std::string& url_string,
   GURL url(url_string);
   for (size_t i = 0; i < num_cases; ++i) {
     size_t offset = cases[i].input_offset;
-    string16 formatted_url = FormatUrl(url, languages, format_types,
+    base::string16 formatted_url = FormatUrl(url, languages, format_types,
                                        unescape_rules, NULL, NULL, &offset);
     VerboseExpect(cases[i].output_offset, offset, url_string, i, formatted_url);
   }
@@ -466,8 +466,8 @@ void CheckAdjustedOffsets(const std::string& url_string,
   std::vector<size_t> offsets;
   for (size_t i = 0; i < url_size + 1; ++i)
     offsets.push_back(i);
-  string16 formatted_url = FormatUrlWithOffsets(url, languages, format_types,
-      unescape_rules, NULL, NULL, &offsets);
+  base::string16 formatted_url = FormatUrlWithOffsets(url, languages,
+      format_types, unescape_rules, NULL, NULL, &offsets);
   for (size_t i = 0; i < url_size; ++i)
     VerboseExpect(all_offsets[i], offsets[i], url_string, i, formatted_url);
   VerboseExpect(kNpos, offsets[url_size], url_string, url_size, formatted_url);
@@ -652,7 +652,7 @@ TEST(NetUtilTest, GetIdentityFromURL) {
                                     tests[i].input_url));
     GURL url(tests[i].input_url);
 
-    string16 username, password;
+    base::string16 username, password;
     GetIdentityFromURL(url, &username, &password);
 
     EXPECT_EQ(ASCIIToUTF16(tests[i].expected_username), username);
@@ -668,7 +668,7 @@ TEST(NetUtilTest, GetIdentityFromURL_UTF8) {
   EXPECT_EQ("%E4%BD%A0%E5%A5%BD", url.password());
 
   // Extract the unescaped identity.
-  string16 username, password;
+  base::string16 username, password;
   GetIdentityFromURL(url, &username, &password);
 
   // Verify that it was decoded as UTF8.
@@ -728,8 +728,8 @@ TEST(NetUtilTest, IDNToUnicodeFast) {
       // ja || zh-TW,en || ko,ja -> IDNToUnicodeSlow
       if (j == 3 || j == 17 || j == 18)
         continue;
-      string16 output(IDNToUnicode(idn_cases[i].input, kLanguages[j]));
-      string16 expected(idn_cases[i].unicode_allowed[j] ?
+      base::string16 output(IDNToUnicode(idn_cases[i].input, kLanguages[j]));
+      base::string16 expected(idn_cases[i].unicode_allowed[j] ?
           WideToUTF16(idn_cases[i].unicode_output) :
           ASCIIToUTF16(idn_cases[i].input));
       AppendLanguagesToOutputs(kLanguages[j], &expected, &output);
@@ -744,8 +744,8 @@ TEST(NetUtilTest, IDNToUnicodeSlow) {
       // !(ja || zh-TW,en || ko,ja) -> IDNToUnicodeFast
       if (!(j == 3 || j == 17 || j == 18))
         continue;
-      string16 output(IDNToUnicode(idn_cases[i].input, kLanguages[j]));
-      string16 expected(idn_cases[i].unicode_allowed[j] ?
+      base::string16 output(IDNToUnicode(idn_cases[i].input, kLanguages[j]));
+      base::string16 expected(idn_cases[i].unicode_allowed[j] ?
           WideToUTF16(idn_cases[i].unicode_output) :
           ASCIIToUTF16(idn_cases[i].input));
       AppendLanguagesToOutputs(kLanguages[j], &expected, &output);
@@ -792,8 +792,8 @@ TEST(NetUtilTest, CompliantHost) {
 }
 
 TEST(NetUtilTest, StripWWW) {
-  EXPECT_EQ(string16(), StripWWW(string16()));
-  EXPECT_EQ(string16(), StripWWW(ASCIIToUTF16("www.")));
+  EXPECT_EQ(base::string16(), StripWWW(base::string16()));
+  EXPECT_EQ(base::string16(), StripWWW(ASCIIToUTF16("www.")));
   EXPECT_EQ(ASCIIToUTF16("blah"), StripWWW(ASCIIToUTF16("www.blah")));
   EXPECT_EQ(ASCIIToUTF16("blah"), StripWWW(ASCIIToUTF16("blah")));
 }
@@ -2517,7 +2517,7 @@ TEST(NetUtilTest, FormatUrl) {
 
   for (size_t i = 0; i < arraysize(tests); ++i) {
     size_t prefix_len;
-    string16 formatted = FormatUrl(
+    base::string16 formatted = FormatUrl(
         GURL(tests[i].input), tests[i].languages, tests[i].format_types,
         tests[i].escape_rules, NULL, &prefix_len, NULL);
     EXPECT_EQ(WideToUTF16(tests[i].output), formatted) << tests[i].description;
@@ -2528,7 +2528,7 @@ TEST(NetUtilTest, FormatUrl) {
 TEST(NetUtilTest, FormatUrlParsed) {
   // No unescape case.
   url_parse::Parsed parsed;
-  string16 formatted = FormatUrl(
+  base::string16 formatted = FormatUrl(
       GURL("http://\xE3\x82\xB0:\xE3\x83\xBC@xn--qcka1pmc.jp:8080/"
            "%E3%82%B0/?q=%E3%82%B0#\xE3\x82\xB0"),
       "ja", kFormatUrlOmitNothing, UnescapeRule::NONE, &parsed, NULL,
@@ -2682,7 +2682,7 @@ TEST(NetUtilTest, FormatUrlRoundTripPathASCII) {
     GURL url(std::string("http://www.google.com/") +
              static_cast<char>(test_char));
     size_t prefix_len;
-    string16 formatted = FormatUrl(
+    base::string16 formatted = FormatUrl(
         url, "", kFormatUrlOmitUsernamePassword, UnescapeRule::NORMAL, NULL,
         &prefix_len, NULL);
     EXPECT_EQ(url.spec(), GURL(formatted).spec());
@@ -2699,7 +2699,7 @@ TEST(NetUtilTest, FormatUrlRoundTripPathEscaped) {
 
     GURL url(original_url);
     size_t prefix_len;
-    string16 formatted = FormatUrl(
+    base::string16 formatted = FormatUrl(
         url, "", kFormatUrlOmitUsernamePassword, UnescapeRule::NORMAL, NULL,
         &prefix_len, NULL);
     EXPECT_EQ(url.spec(), GURL(formatted).spec());
@@ -2713,7 +2713,7 @@ TEST(NetUtilTest, FormatUrlRoundTripQueryASCII) {
     GURL url(std::string("http://www.google.com/?") +
              static_cast<char>(test_char));
     size_t prefix_len;
-    string16 formatted = FormatUrl(
+    base::string16 formatted = FormatUrl(
         url, "", kFormatUrlOmitUsernamePassword, UnescapeRule::NORMAL, NULL,
         &prefix_len, NULL);
     EXPECT_EQ(url.spec(), GURL(formatted).spec());
@@ -2734,7 +2734,7 @@ TEST(NetUtilTest, FormatUrlRoundTripQueryEscaped) {
 
     GURL url(original_url);
     size_t prefix_len;
-    string16 formatted = FormatUrl(
+    base::string16 formatted = FormatUrl(
         url, "", kFormatUrlOmitUsernamePassword, UnescapeRule::NORMAL, NULL,
         &prefix_len, NULL);
 
@@ -2749,7 +2749,7 @@ TEST(NetUtilTest, FormatUrlRoundTripQueryEscaped) {
 
 TEST(NetUtilTest, FormatUrlWithOffsets) {
   const AdjustOffsetCase null_cases[] = {
-    {0, string16::npos},
+    {0, base::string16::npos},
   };
   CheckAdjustedOffsets(std::string(), "en", kFormatUrlOmitNothing,
       UnescapeRule::NORMAL, null_cases, arraysize(null_cases), NULL);
@@ -2764,9 +2764,9 @@ TEST(NetUtilTest, FormatUrlWithOffsets) {
     {22, 22},
     {23, 23},
     {25, 25},
-    {26, string16::npos},
-    {500000, string16::npos},
-    {string16::npos, string16::npos},
+    {26, base::string16::npos},
+    {500000, base::string16::npos},
+    {base::string16::npos, base::string16::npos},
   };
   const size_t basic_offsets[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13,
      14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25};
@@ -2776,11 +2776,11 @@ TEST(NetUtilTest, FormatUrlWithOffsets) {
 
   const AdjustOffsetCase omit_auth_cases_1[] = {
     {6, 6},
-    {7, string16::npos},
-    {8, string16::npos},
-    {10, string16::npos},
-    {12, string16::npos},
-    {14, string16::npos},
+    {7, base::string16::npos},
+    {8, base::string16::npos},
+    {10, base::string16::npos},
+    {12, base::string16::npos},
+    {14, base::string16::npos},
     {15, 7},
     {25, 17},
   };
@@ -2792,7 +2792,7 @@ TEST(NetUtilTest, FormatUrlWithOffsets) {
       arraysize(omit_auth_cases_1), omit_auth_offsets_1);
 
   const AdjustOffsetCase omit_auth_cases_2[] = {
-    {9, string16::npos},
+    {9, base::string16::npos},
     {11, 7},
   };
   const size_t omit_auth_offsets_2[] = {0, 1, 2, 3, 4, 5, 6, kNpos, kNpos,
@@ -2804,10 +2804,10 @@ TEST(NetUtilTest, FormatUrlWithOffsets) {
   // "http://foo\x30B0:\x30B0bar@www.google.com"
   const AdjustOffsetCase dont_omit_auth_cases[] = {
     {0, 0},
-    /*{3, string16::npos},
+    /*{3, base::string16::npos},
     {7, 0},
     {11, 4},
-    {12, string16::npos},
+    {12, base::string16::npos},
     {20, 5},
     {24, 9},*/
   };
@@ -2826,11 +2826,11 @@ TEST(NetUtilTest, FormatUrlWithOffsets) {
     {12, 12},
     {13, 13},
     {18, 18},
-    {19, string16::npos},
-    {20, string16::npos},
+    {19, base::string16::npos},
+    {20, base::string16::npos},
     {23, 19},
     {26, 22},
-    {string16::npos, string16::npos},
+    {base::string16::npos, base::string16::npos},
   };
   const size_t view_source_offsets[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
       12, 13, 14, 15, 16, 17, 18, kNpos, kNpos, kNpos, kNpos, 19, 20, 21, 22,
@@ -2841,9 +2841,9 @@ TEST(NetUtilTest, FormatUrlWithOffsets) {
 
   // "http://\x671d\x65e5\x3042\x3055\x3072.jp/foo/"
   const AdjustOffsetCase idn_hostname_cases_1[] = {
-    {8, string16::npos},
-    {16, string16::npos},
-    {24, string16::npos},
+    {8, base::string16::npos},
+    {16, base::string16::npos},
+    {24, base::string16::npos},
     {25, 12},
     {30, 17},
   };
@@ -2860,18 +2860,18 @@ TEST(NetUtilTest, FormatUrlWithOffsets) {
     {9, 9},
     {11, 11},
     {12, 12},
-    {13, string16::npos},
-    {23, string16::npos},
+    {13, base::string16::npos},
+    {23, base::string16::npos},
     {24, 14},
     {25, 15},
-    {26, string16::npos},
-    {32, string16::npos},
+    {26, base::string16::npos},
+    {32, base::string16::npos},
     {41, 19},
     {42, 20},
     {45, 23},
     {46, 24},
-    {47, string16::npos},
-    {string16::npos, string16::npos},
+    {47, base::string16::npos},
+    {base::string16::npos, base::string16::npos},
   };
   const size_t idn_hostname_offsets_2[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
       12, kNpos, kNpos, kNpos, kNpos, kNpos, kNpos, kNpos, kNpos, kNpos, kNpos,
@@ -2885,15 +2885,15 @@ TEST(NetUtilTest, FormatUrlWithOffsets) {
   // "http://www.google.com/foo bar/\x30B0\x30FC\x30B0\x30EB"
   const AdjustOffsetCase unescape_cases[] = {
     {25, 25},
-    {26, string16::npos},
-    {27, string16::npos},
+    {26, base::string16::npos},
+    {27, base::string16::npos},
     {28, 26},
-    {35, string16::npos},
+    {35, base::string16::npos},
     {41, 31},
     {59, 33},
-    {60, string16::npos},
-    {67, string16::npos},
-    {68, string16::npos},
+    {60, base::string16::npos},
+    {67, base::string16::npos},
+    {68, base::string16::npos},
   };
   const size_t unescape_offsets[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
       13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, kNpos, kNpos, 26, 27,
@@ -2910,11 +2910,11 @@ TEST(NetUtilTest, FormatUrlWithOffsets) {
   const AdjustOffsetCase ref_cases[] = {
     {30, 30},
     {31, 31},
-    {32, string16::npos},
+    {32, base::string16::npos},
     {34, 32},
-    {35, string16::npos},
+    {35, base::string16::npos},
     {37, 33},
-    {38, string16::npos},
+    {38, base::string16::npos},
   };
   const size_t ref_offsets[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13,
       14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
@@ -2925,8 +2925,8 @@ TEST(NetUtilTest, FormatUrlWithOffsets) {
       arraysize(ref_cases), ref_offsets);
 
   const AdjustOffsetCase omit_http_cases[] = {
-    {0, string16::npos},
-    {3, string16::npos},
+    {0, base::string16::npos},
+    {3, base::string16::npos},
     {7, 0},
     {8, 1},
   };
@@ -2951,8 +2951,8 @@ TEST(NetUtilTest, FormatUrlWithOffsets) {
   const AdjustOffsetCase omit_all_cases[] = {
     {12, 0},
     {13, 1},
-    {0, string16::npos},
-    {3, string16::npos},
+    {0, base::string16::npos},
+    {3, base::string16::npos},
   };
   const size_t omit_all_offsets[] = {kNpos, kNpos, kNpos, kNpos, kNpos, kNpos,
       kNpos, kNpos, kNpos, kNpos, kNpos, kNpos, 0, 1, 2, 3, 4, 5, 6, kNpos};

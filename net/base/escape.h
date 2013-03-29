@@ -25,7 +25,7 @@ NET_EXPORT std::string EscapeQueryParamValue(const std::string& text,
 
 // Escapes a partial or complete file/pathname.  This includes:
 // non-printable, non-7bit, and (including space)  "#%:<>?[\]^`{|}
-// For the string16 version, we attempt a conversion to |codepage| before
+// For the base::string16 version, we attempt a conversion to |codepage| before
 // encoding the string.  If this conversion fails, we return false.
 NET_EXPORT std::string EscapePath(const std::string& path);
 
@@ -51,7 +51,7 @@ NET_EXPORT void AppendEscapedCharForHTML(char c, std::string* output);
 
 // Escapes chars that might cause this text to be interpretted as HTML tags.
 NET_EXPORT std::string EscapeForHTML(const std::string& text);
-NET_EXPORT string16 EscapeForHTML(const string16& text);
+NET_EXPORT base::string16 EscapeForHTML(const base::string16& text);
 
 // Unescaping ------------------------------------------------------------------
 
@@ -107,30 +107,31 @@ class UnescapeRule {
 // conversions need to take place, it only unescapes.
 NET_EXPORT std::string UnescapeURLComponent(const std::string& escaped_text,
                                             UnescapeRule::Type rules);
-NET_EXPORT string16 UnescapeURLComponent(const string16& escaped_text,
-                                         UnescapeRule::Type rules);
+NET_EXPORT base::string16 UnescapeURLComponent(
+    const base::string16& escaped_text,
+    UnescapeRule::Type rules);
 
 // Unescapes the given substring as a URL, and then tries to interpret the
 // result as being encoded as UTF-8. If the result is convertable into UTF-8, it
 // will be returned as converted. If it is not, the original escaped string will
-// be converted into a string16 and returned. (|offset[s]_for_adjustment|)
+// be converted into a base::string16 and returned. (|offset[s]_for_adjustment|)
 // specifies one or more offsets into the source strings; each offset will be
 // adjusted to point at the same logical place in the result strings during
 // decoding.  If this isn't possible because an offset points past the end of
 // the source strings or into the middle of a multibyte sequence, the offending
 // offset will be set to string16::npos. |offset[s]_for_adjustment| may be NULL.
-NET_EXPORT string16 UnescapeAndDecodeUTF8URLComponent(
+NET_EXPORT base::string16 UnescapeAndDecodeUTF8URLComponent(
     const std::string& text,
     UnescapeRule::Type rules,
     size_t* offset_for_adjustment);
-NET_EXPORT string16 UnescapeAndDecodeUTF8URLComponentWithOffsets(
+NET_EXPORT base::string16 UnescapeAndDecodeUTF8URLComponentWithOffsets(
     const std::string& text,
     UnescapeRule::Type rules,
     std::vector<size_t>* offsets_for_adjustment);
 
 // Unescapes the following ampersand character codes from |text|:
 // &lt; &gt; &amp; &quot; &#39;
-NET_EXPORT string16 UnescapeForHTML(const string16& text);
+NET_EXPORT base::string16 UnescapeForHTML(const base::string16& text);
 
 namespace internal {
 

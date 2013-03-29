@@ -19,8 +19,8 @@ void ZapBuf(void* buf, size_t buf_len);
 // Overwrite a string's internal buffer with 0's.
 void ZapString(std::string* s);
 
-// Overwrite a string16's internal buffer with 0's.
-void ZapString(string16* s);
+// Overwrite a base::string16's internal buffer with 0's.
+void ZapString(base::string16* s);
 
 }  // net
 

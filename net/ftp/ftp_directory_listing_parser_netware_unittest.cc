@@ -32,7 +32,8 @@ TEST_F(FtpDirectoryListingParserNetwareTest, Good) {
     SCOPED_TRACE(base::StringPrintf("Test[%" PRIuS "]: %s", i,
                                     good_cases[i].input));
 
-    std::vector<string16> lines(GetSingleLineTestCase(good_cases[i].input));
+    std::vector<base::string16> lines(
+        GetSingleLineTestCase(good_cases[i].input));
 
     // The parser requires a "total n" line before accepting regular input.
     lines.insert(lines.begin(), ASCIIToUTF16("total 1"));
@@ -59,7 +60,7 @@ TEST_F(FtpDirectoryListingParserNetwareTest, Bad) {
     SCOPED_TRACE(base::StringPrintf("Test[%" PRIuS "]: %s", i,
                                     bad_cases[i]));
 
-    std::vector<string16> lines(GetSingleLineTestCase(bad_cases[i]));
+    std::vector<base::string16> lines(GetSingleLineTestCase(bad_cases[i]));
 
     // The parser requires a "total n" line before accepting regular input.
     lines.insert(lines.begin(), ASCIIToUTF16("total 1"));

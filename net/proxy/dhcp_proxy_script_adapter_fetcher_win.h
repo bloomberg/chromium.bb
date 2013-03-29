@@ -58,7 +58,7 @@ class NET_EXPORT_PRIVATE DhcpProxyScriptAdapterFetcher
   // Returns the contents of the PAC file retrieved.  Only valid if
   // |IsComplete()| is true.  Returns the empty string if |GetResult()|
   // returns anything other than OK.
-  virtual string16 GetPacScript() const;
+  virtual base::string16 GetPacScript() const;
 
   // Returns the PAC URL retrieved from DHCP.  Only guaranteed to be
   // valid if |IsComplete()| is true.  Returns an empty URL if no URL was
@@ -151,7 +151,7 @@ class NET_EXPORT_PRIVATE DhcpProxyScriptAdapterFetcher
   int result_;
 
   // Empty string or the PAC script downloaded.
-  string16 pac_script_;
+  base::string16 pac_script_;
 
   // Empty URL or the PAC URL configured in DHCP.
   GURL pac_url_;

@@ -38,8 +38,8 @@ const int kNumStreams = 4;
 #define DEBUGMSG(...) { printf(__VA_ARGS__); }
 #endif
 
-HANDLE OpenServer(const string16& pipe_number) {
-  string16 pipe_name(kPipePrefix);
+HANDLE OpenServer(const base::string16& pipe_number) {
+  base::string16 pipe_name(kPipePrefix);
   pipe_name.append(pipe_number);
   return CreateFile(pipe_name.c_str(), GENERIC_READ | GENERIC_WRITE, 0, NULL,
                     OPEN_EXISTING, FILE_FLAG_OVERLAPPED, NULL);
@@ -867,8 +867,8 @@ void SlaveSM::Fail() {
 
 // -----------------------------------------------------------------------
 
-HANDLE CreateServer(string16* pipe_number) {
-  string16 pipe_name(kPipePrefix);
+HANDLE CreateServer(base::string16* pipe_number) {
+  base::string16 pipe_name(kPipePrefix);
   srand(static_cast<int>(base::Time::Now().ToInternalValue()));
   *pipe_number = base::IntToString16(rand());
   pipe_name.append(*pipe_number);
@@ -895,7 +895,8 @@ int UpgradeCache(const base::FilePath& output_path, HANDLE pipe) {
 }
 
 // This process will only execute commands from the controller.
-int RunSlave(const base::FilePath& input_path, const string16& pipe_number) {
+int RunSlave(const base::FilePath& input_path,
+             const base::string16& pipe_number) {
   MessageLoop loop(MessageLoop::TYPE_IO);
 
   base::win::ScopedHandle pipe(OpenServer(pipe_number));

@@ -141,7 +141,7 @@ TEST_F(CertDatabaseNSSTest, ImportFromPKCS12WrongPassword) {
   EXPECT_EQ(ERR_PKCS12_IMPORT_BAD_PASSWORD,
             cert_db_->ImportFromPKCS12(slot_,
                                        pkcs12_data,
-                                       string16(),
+                                       base::string16(),
                                        true,  // is_extractable
                                        NULL));
 
@@ -251,7 +251,7 @@ TEST_F(CertDatabaseNSSTest, ImportFromPKCS12InvalidFile) {
   EXPECT_EQ(ERR_PKCS12_IMPORT_INVALID_FILE,
             cert_db_->ImportFromPKCS12(slot_,
                                        pkcs12_data,
-                                       string16(),
+                                       base::string16(),
                                        true,  // is_extractable
                                        NULL));
 

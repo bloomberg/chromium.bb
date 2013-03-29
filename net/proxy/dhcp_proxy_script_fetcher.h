@@ -56,7 +56,7 @@ class NET_EXPORT_PRIVATE DhcpProxyScriptFetcher {
   // deleting |this|), then no callback is invoked.
   //
   // Only one fetch is allowed to be outstanding at a time.
-  virtual int Fetch(string16* utf16_text,
+  virtual int Fetch(base::string16* utf16_text,
                     const CompletionCallback& callback) = 0;
 
   // Aborts the in-progress fetch (if any).
@@ -85,7 +85,7 @@ class NET_EXPORT_PRIVATE DoNothingDhcpProxyScriptFetcher
   DoNothingDhcpProxyScriptFetcher();
   virtual ~DoNothingDhcpProxyScriptFetcher();
 
-  virtual int Fetch(string16* utf16_text,
+  virtual int Fetch(base::string16* utf16_text,
                     const CompletionCallback& callback) OVERRIDE;
   virtual void Cancel() OVERRIDE;
   virtual const GURL& GetPacURL() const OVERRIDE;

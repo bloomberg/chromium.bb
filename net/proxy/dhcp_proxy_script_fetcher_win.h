@@ -34,7 +34,7 @@ class NET_EXPORT_PRIVATE DhcpProxyScriptFetcherWin
   virtual ~DhcpProxyScriptFetcherWin();
 
   // DhcpProxyScriptFetcher implementation.
-  int Fetch(string16* utf16_text,
+  int Fetch(base::string16* utf16_text,
             const net::CompletionCallback& callback) OVERRIDE;
   void Cancel() OVERRIDE;
   const GURL& GetPacURL() const OVERRIDE;
@@ -146,7 +146,7 @@ class NET_EXPORT_PRIVATE DhcpProxyScriptFetcherWin
 
   // Pointer to string we will write results to. Not valid in states
   // START and DONE.
-  string16* destination_string_;
+  base::string16* destination_string_;
 
   // PAC URL retrieved from DHCP, if any. Valid only in state STATE_DONE.
   GURL pac_url_;

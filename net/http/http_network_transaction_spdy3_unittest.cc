@@ -69,18 +69,18 @@ using namespace net::test_spdy3;
 
 namespace {
 
-const string16 kBar(ASCIIToUTF16("bar"));
-const string16 kBar2(ASCIIToUTF16("bar2"));
-const string16 kBar3(ASCIIToUTF16("bar3"));
-const string16 kBaz(ASCIIToUTF16("baz"));
-const string16 kFirst(ASCIIToUTF16("first"));
-const string16 kFoo(ASCIIToUTF16("foo"));
-const string16 kFoo2(ASCIIToUTF16("foo2"));
-const string16 kFoo3(ASCIIToUTF16("foo3"));
-const string16 kFou(ASCIIToUTF16("fou"));
-const string16 kSecond(ASCIIToUTF16("second"));
-const string16 kTestingNTLM(ASCIIToUTF16("testing-ntlm"));
-const string16 kWrongPassword(ASCIIToUTF16("wrongpassword"));
+const base::string16 kBar(ASCIIToUTF16("bar"));
+const base::string16 kBar2(ASCIIToUTF16("bar2"));
+const base::string16 kBar3(ASCIIToUTF16("bar3"));
+const base::string16 kBaz(ASCIIToUTF16("baz"));
+const base::string16 kFirst(ASCIIToUTF16("first"));
+const base::string16 kFoo(ASCIIToUTF16("foo"));
+const base::string16 kFoo2(ASCIIToUTF16("foo2"));
+const base::string16 kFoo3(ASCIIToUTF16("foo3"));
+const base::string16 kFou(ASCIIToUTF16("fou"));
+const base::string16 kSecond(ASCIIToUTF16("second"));
+const base::string16 kTestingNTLM(ASCIIToUTF16("testing-ntlm"));
+const base::string16 kWrongPassword(ASCIIToUTF16("wrongpassword"));
 
 // MakeNextProtos is a utility function that returns a vector of std::strings
 // from its arguments. Don't forget to terminate the argument list with a NULL.

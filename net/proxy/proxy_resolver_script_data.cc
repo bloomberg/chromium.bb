@@ -19,23 +19,24 @@ scoped_refptr<ProxyResolverScriptData> ProxyResolverScriptData::FromUTF8(
 
 // static
 scoped_refptr<ProxyResolverScriptData> ProxyResolverScriptData::FromUTF16(
-    const string16& utf16) {
+    const base::string16& utf16) {
   return new ProxyResolverScriptData(TYPE_SCRIPT_CONTENTS, GURL(), utf16);
 }
 
 // static
 scoped_refptr<ProxyResolverScriptData> ProxyResolverScriptData::FromURL(
     const GURL& url) {
-  return new ProxyResolverScriptData(TYPE_SCRIPT_URL, url, string16());
+  return new ProxyResolverScriptData(TYPE_SCRIPT_URL, url, base::string16());
 }
 
 // static
 scoped_refptr<ProxyResolverScriptData>
 ProxyResolverScriptData::ForAutoDetect() {
-  return new ProxyResolverScriptData(TYPE_AUTO_DETECT, GURL(), string16());
+  return new ProxyResolverScriptData(TYPE_AUTO_DETECT, GURL(),
+                                     base::string16());
 }
 
-const string16& ProxyResolverScriptData::utf16() const {
+const base::string16& ProxyResolverScriptData::utf16() const {
   DCHECK_EQ(TYPE_SCRIPT_CONTENTS, type_);
   return utf16_;
 }
@@ -64,7 +65,7 @@ bool ProxyResolverScriptData::Equals(
 
 ProxyResolverScriptData::ProxyResolverScriptData(Type type,
                                                  const GURL& url,
-                                                 const string16& utf16)
+                                                 const base::string16& utf16)
     : type_(type),
       url_(url),
       utf16_(utf16) {

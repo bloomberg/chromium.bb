@@ -21,14 +21,14 @@ namespace net {
 
 namespace {
 
-bool LooksLikePacScript(const string16& script) {
+bool LooksLikePacScript(const base::string16& script) {
   // Note: this is only an approximation! It may not always work correctly,
   // however it is very likely that legitimate scripts have this exact string,
   // since they must minimally define a function of this name. Conversely, a
   // file not containing the string is not likely to be a PAC script.
   //
   // An exact test would have to load the script in a javascript evaluator.
-  return script.find(ASCIIToUTF16("FindProxyForURL")) != string16::npos;
+  return script.find(ASCIIToUTF16("FindProxyForURL")) != base::string16::npos;
 }
 
 }

@@ -116,7 +116,7 @@ void NSSCertDatabase::ListModules(CryptoModuleList* modules,
 int NSSCertDatabase::ImportFromPKCS12(
     CryptoModule* module,
     const std::string& data,
-    const string16& password,
+    const base::string16& password,
     bool is_extractable,
     net::CertificateList* imported_certs) {
   int result = psm::nsPKCS12Blob_Import(module->os_module_handle(),
@@ -132,7 +132,7 @@ int NSSCertDatabase::ImportFromPKCS12(
 
 int NSSCertDatabase::ExportToPKCS12(
     const CertificateList& certs,
-    const string16& password,
+    const base::string16& password,
     std::string* output) const {
   return psm::nsPKCS12Blob_Export(output, certs, password);
 }

@@ -180,9 +180,9 @@ class NET_EXPORT_PRIVATE HttpAuthSSPI {
 // If |combined| is of form "bar", |domain| will be empty and |user| will
 // contain "bar".
 // |domain| and |user| must be non-NULL.
-NET_EXPORT_PRIVATE void SplitDomainAndUser(const string16& combined,
-                                           string16* domain,
-                                           string16* user);
+NET_EXPORT_PRIVATE void SplitDomainAndUser(const base::string16& combined,
+                                           base::string16* domain,
+                                           base::string16* user);
 
 // Determines the maximum token length in bytes for a particular SSPI package.
 //

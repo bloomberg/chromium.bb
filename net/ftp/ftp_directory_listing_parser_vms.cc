@@ -20,11 +20,12 @@ namespace {
 
 // Converts the filename component in listing to the filename we can display.
 // Returns true on success.
-bool ParseVmsFilename(const string16& raw_filename, string16* parsed_filename,
+bool ParseVmsFilename(const base::string16& raw_filename,
+                      base::string16* parsed_filename,
                       FtpDirectoryListingEntry::Type* type) {
   // On VMS, the files and directories are versioned. The version number is
   // separated from the file name by a semicolon. Example: ANNOUNCE.TXT;2.
-  std::vector<string16> listing_parts;
+  std::vector<base::string16> listing_parts;
   base::SplitString(raw_filename, ';', &listing_parts);
   if (listing_parts.size() != 2)
     return false;
@@ -38,7 +39,7 @@ bool ParseVmsFilename(const string16& raw_filename, string16* parsed_filename,
   // for directories; it's awkward for non-VMS users. Also, VMS is
   // case-insensitive, but generally uses uppercase characters. This may look
   // awkward, so we convert them to lower case.
-  std::vector<string16> filename_parts;
+  std::vector<base::string16> filename_parts;
   base::SplitString(listing_parts[0], '.', &filename_parts);
   if (filename_parts.size() != 2)
     return false;
@@ -52,7 +53,7 @@ bool ParseVmsFilename(const string16& raw_filename, string16* parsed_filename,
   return true;
 }
 
-bool ParseVmsFilesize(const string16& input, int64* size) {
+bool ParseVmsFilesize(const base::string16& input, int64* size) {
   if (ContainsOnlyChars(input, ASCIIToUTF16("*"))) {
     // Response consisting of asterisks means unknown size.
     *size = -1;
@@ -71,7 +72,7 @@ bool ParseVmsFilesize(const string16& input, int64* size) {
     return true;
   }
 
-  std::vector<string16> parts;
+  std::vector<base::string16> parts;
   base::SplitString(input, '/', &parts);
   if (parts.size() != 2)
     return false;
@@ -90,14 +91,14 @@ bool ParseVmsFilesize(const string16& input, int64* size) {
   return true;
 }
 
-bool LooksLikeVmsFileProtectionListingPart(const string16& input) {
+bool LooksLikeVmsFileProtectionListingPart(const base::string16& input) {
   if (input.length() > 4)
     return false;
 
   // On VMS there are four different permission bits: Read, Write, Execute,
   // and Delete. They appear in that order in the permission listing.
   std::string pattern("RWED");
-  string16 match(input);
+  base::string16 match(input);
   while (!match.empty() && !pattern.empty()) {
     if (match[0] == pattern[0])
       match = match.substr(1);
@@ -106,7 +107,7 @@ bool LooksLikeVmsFileProtectionListingPart(const string16& input) {
   return match.empty();
 }
 
-bool LooksLikeVmsFileProtectionListing(const string16& input) {
+bool LooksLikeVmsFileProtectionListing(const base::string16& input) {
   if (input.length() < 2)
     return false;
   if (input[0] != '(' || input[input.length() - 1] != ')')
@@ -114,7 +115,7 @@ bool LooksLikeVmsFileProtectionListing(const string16& input) {
 
   // We expect four parts of the file protection listing: for System, Owner,
   // Group, and World.
-  std::vector<string16> parts;
+  std::vector<base::string16> parts;
   base::SplitString(input.substr(1, input.length() - 2), ',', &parts);
   if (parts.size() != 4)
     return false;
@@ -125,13 +126,13 @@ bool LooksLikeVmsFileProtectionListing(const string16& input) {
       LooksLikeVmsFileProtectionListingPart(parts[3]);
 }
 
-bool LooksLikeVmsUserIdentificationCode(const string16& input) {
+bool LooksLikeVmsUserIdentificationCode(const base::string16& input) {
   if (input.length() < 2)
     return false;
   return input[0] == '[' && input[input.length() - 1] == ']';
 }
 
-bool LooksLikeVMSError(const string16& text) {
+bool LooksLikeVMSError(const base::string16& text) {
   static const char* kPermissionDeniedMessages[] = {
     "%RMS-E-FNF",  // File not found.
     "%RMS-E-PRV",  // Access denied.
@@ -140,21 +141,22 @@ bool LooksLikeVMSError(const string16& text) {
   };
 
   for (size_t i = 0; i < arraysize(kPermissionDeniedMessages); i++) {
-    if (text.find(ASCIIToUTF16(kPermissionDeniedMessages[i])) != string16::npos)
+    if (text.find(ASCIIToUTF16(kPermissionDeniedMessages[i])) !=
+        base::string16::npos)
       return true;
   }
 
   return false;
 }
 
-bool VmsDateListingToTime(const std::vector<string16>& columns,
+bool VmsDateListingToTime(const std::vector<base::string16>& columns,
                           base::Time* time) {
   DCHECK_EQ(4U, columns.size());
 
   base::Time::Exploded time_exploded = { 0 };
 
   // Date should be in format DD-MMM-YYYY.
-  std::vector<string16> date_parts;
+  std::vector<base::string16> date_parts;
   base::SplitString(columns[2], '-', &date_parts);
   if (date_parts.size() != 3)
     return false;
@@ -168,14 +170,14 @@ bool VmsDateListingToTime(const std::vector<string16>& columns,
 
   // Time can be in format HH:MM, HH:MM:SS, or HH:MM:SS.mm. Try to recognize the
   // last type first. Do not parse the seconds, they will be ignored anyway.
-  string16 time_column(columns[3]);
+  base::string16 time_column(columns[3]);
   if (time_column.length() == 11 && time_column[8] == '.')
     time_column = time_column.substr(0, 8);
   if (time_column.length() == 8 && time_column[5] == ':')
     time_column = time_column.substr(0, 5);
   if (time_column.length() != 5)
     return false;
-  std::vector<string16> time_parts;
+  std::vector<base::string16> time_parts;
   base::SplitString(time_column, ':', &time_parts);
   if (time_parts.size() != 2)
     return false;
@@ -192,7 +194,7 @@ bool VmsDateListingToTime(const std::vector<string16>& columns,
 }  // namespace
 
 bool ParseFtpDirectoryListingVms(
-    const std::vector<string16>& lines,
+    const std::vector<base::string16>& lines,
     std::vector<FtpDirectoryListingEntry>* entries) {
   // The first non-empty line is the listing header. It often
   // starts with "Directory ", but not always. We set a flag after
@@ -227,7 +229,7 @@ bool ParseFtpDirectoryListingVms(
       continue;
     }
 
-    std::vector<string16> columns;
+    std::vector<base::string16> columns;
     base::SplitString(CollapseWhitespace(lines[i], false), ' ', &columns);
 
     if (columns.size() == 1) {

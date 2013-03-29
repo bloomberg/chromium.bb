@@ -53,7 +53,7 @@ class TestNetworkDelegate : public net::NetworkDelegate {
   virtual void OnURLRequestDestroyed(URLRequest* request) OVERRIDE {}
 
   virtual void OnPACScriptError(int line_number,
-                                const string16& error) OVERRIDE {
+                                const base::string16& error) OVERRIDE {
     got_pac_error_ = true;
   }
   virtual AuthRequiredResponse OnAuthRequired(
@@ -105,7 +105,7 @@ TEST(NetworkDelegateErrorObserverTest, CallOnThread) {
   thread.message_loop()->PostTask(
       FROM_HERE,
       base::Bind(&NetworkDelegateErrorObserver::OnPACScriptError,
-                 base::Unretained(&observer), 42, string16()));
+                 base::Unretained(&observer), 42, base::string16()));
   thread.Stop();
   MessageLoop::current()->RunUntilIdle();
   ASSERT_TRUE(network_delegate.got_pac_error());
@@ -120,7 +120,7 @@ TEST(NetworkDelegateErrorObserverTest, NoDelegate) {
   thread.message_loop()->PostTask(
       FROM_HERE,
       base::Bind(&NetworkDelegateErrorObserver::OnPACScriptError,
-                 base::Unretained(&observer), 42, string16()));
+                 base::Unretained(&observer), 42, base::string16()));
   thread.Stop();
   MessageLoop::current()->RunUntilIdle();
   // Shouldn't have crashed until here...

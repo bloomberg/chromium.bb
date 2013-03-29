@@ -322,7 +322,7 @@ LoadStateWithParam URLRequest::GetLoadState() const {
                               load_state_param_);
   }
   return LoadStateWithParam(job_ ? job_->GetLoadState() : LOAD_STATE_IDLE,
-                            string16());
+                            base::string16());
 }
 
 UploadProgress URLRequest::GetUploadProgress() const {

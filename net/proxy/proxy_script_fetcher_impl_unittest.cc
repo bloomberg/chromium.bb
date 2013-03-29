@@ -41,7 +41,7 @@ const base::FilePath::CharType kDocRoot[] =
 
 struct FetchResult {
   int code;
-  string16 text;
+  base::string16 text;
 };
 
 // A non-mock URL request which can access http:// and file:// urls.
@@ -135,7 +135,7 @@ class BasicNetworkDelegate : public NetworkDelegate {
   virtual void OnURLRequestDestroyed(URLRequest* request) OVERRIDE {}
 
   virtual void OnPACScriptError(int line_number,
-                                const string16& error) OVERRIDE {}
+                                const base::string16& error) OVERRIDE {}
 
   virtual NetworkDelegate::AuthRequiredResponse OnAuthRequired(
       URLRequest* request,
@@ -198,7 +198,7 @@ TEST_F(ProxyScriptFetcherImplTest, FileUrl) {
   ProxyScriptFetcherImpl pac_fetcher(&context_);
 
   { // Fetch a non-existent file.
-    string16 text;
+    base::string16 text;
     TestCompletionCallback callback;
     int result = pac_fetcher.Fetch(GetTestFileUrl("does-not-exist"),
                                    &text, callback.callback());
@@ -207,7 +207,7 @@ TEST_F(ProxyScriptFetcherImplTest, FileUrl) {
     EXPECT_TRUE(text.empty());
   }
   { // Fetch a file that exists.
-    string16 text;
+    base::string16 text;
     TestCompletionCallback callback;
     int result = pac_fetcher.Fetch(GetTestFileUrl("pac.txt"),
                                    &text, callback.callback());
@@ -226,7 +226,7 @@ TEST_F(ProxyScriptFetcherImplTest, HttpMimeType) {
 
   { // Fetch a PAC with mime type "text/plain"
     GURL url(test_server_.GetURL("files/pac.txt"));
-    string16 text;
+    base::string16 text;
     TestCompletionCallback callback;
     int result = pac_fetcher.Fetch(url, &text, callback.callback());
     EXPECT_EQ(ERR_IO_PENDING, result);
@@ -235,7 +235,7 @@ TEST_F(ProxyScriptFetcherImplTest, HttpMimeType) {
   }
   { // Fetch a PAC with mime type "text/html"
     GURL url(test_server_.GetURL("files/pac.html"));
-    string16 text;
+    base::string16 text;
     TestCompletionCallback callback;
     int result = pac_fetcher.Fetch(url, &text, callback.callback());
     EXPECT_EQ(ERR_IO_PENDING, result);
@@ -244,7 +244,7 @@ TEST_F(ProxyScriptFetcherImplTest, HttpMimeType) {
   }
   { // Fetch a PAC with mime type "application/x-ns-proxy-autoconfig"
     GURL url(test_server_.GetURL("files/pac.nsproxy"));
-    string16 text;
+    base::string16 text;
     TestCompletionCallback callback;
     int result = pac_fetcher.Fetch(url, &text, callback.callback());
     EXPECT_EQ(ERR_IO_PENDING, result);
@@ -260,7 +260,7 @@ TEST_F(ProxyScriptFetcherImplTest, HttpStatusCode) {
 
   { // Fetch a PAC which gives a 500 -- FAIL
     GURL url(test_server_.GetURL("files/500.pac"));
-    string16 text;
+    base::string16 text;
     TestCompletionCallback callback;
     int result = pac_fetcher.Fetch(url, &text, callback.callback());
     EXPECT_EQ(ERR_IO_PENDING, result);
@@ -269,7 +269,7 @@ TEST_F(ProxyScriptFetcherImplTest, HttpStatusCode) {
   }
   { // Fetch a PAC which gives a 404 -- FAIL
     GURL url(test_server_.GetURL("files/404.pac"));
-    string16 text;
+    base::string16 text;
     TestCompletionCallback callback;
     int result = pac_fetcher.Fetch(url, &text, callback.callback());
     EXPECT_EQ(ERR_IO_PENDING, result);
@@ -286,7 +286,7 @@ TEST_F(ProxyScriptFetcherImplTest, ContentDisposition) {
   // Fetch PAC scripts via HTTP with a Content-Disposition header -- should
   // have no effect.
   GURL url(test_server_.GetURL("files/downloadable.pac"));
-  string16 text;
+  base::string16 text;
   TestCompletionCallback callback;
   int result = pac_fetcher.Fetch(url, &text, callback.callback());
   EXPECT_EQ(ERR_IO_PENDING, result);
@@ -303,7 +303,7 @@ TEST_F(ProxyScriptFetcherImplTest, NoCache) {
   // Fetch a PAC script whose HTTP headers make it cacheable for 1 hour.
   GURL url(test_server_.GetURL("files/cacheable_1hr.pac"));
   {
-    string16 text;
+    base::string16 text;
     TestCompletionCallback callback;
     int result = pac_fetcher.Fetch(url, &text, callback.callback());
     EXPECT_EQ(ERR_IO_PENDING, result);
@@ -318,7 +318,7 @@ TEST_F(ProxyScriptFetcherImplTest, NoCache) {
   // call should fail, thus indicating that the file was not fetched from the
   // local cache.
   {
-    string16 text;
+    base::string16 text;
     TestCompletionCallback callback;
     int result = pac_fetcher.Fetch(url, &text, callback.callback());
     EXPECT_EQ(ERR_IO_PENDING, result);
@@ -353,7 +353,7 @@ TEST_F(ProxyScriptFetcherImplTest, TooLarge) {
   // after 50 bytes have been read, and fail with a too large error.
   for (size_t i = 0; i < arraysize(urls); ++i) {
     const GURL& url = urls[i];
-    string16 text;
+    base::string16 text;
     TestCompletionCallback callback;
     int result = pac_fetcher.Fetch(url, &text, callback.callback());
     EXPECT_EQ(ERR_IO_PENDING, result);
@@ -366,7 +366,7 @@ TEST_F(ProxyScriptFetcherImplTest, TooLarge) {
 
   { // Make sure we can still fetch regular URLs.
     GURL url(test_server_.GetURL("files/pac.nsproxy"));
-    string16 text;
+    base::string16 text;
     TestCompletionCallback callback;
     int result = pac_fetcher.Fetch(url, &text, callback.callback());
     EXPECT_EQ(ERR_IO_PENDING, result);
@@ -388,7 +388,7 @@ TEST_F(ProxyScriptFetcherImplTest, Hang) {
   // after 500 ms, and fail with a timeout error.
   {
     GURL url(test_server_.GetURL("slow/proxy.pac?1.2"));
-    string16 text;
+    base::string16 text;
     TestCompletionCallback callback;
     int result = pac_fetcher.Fetch(url, &text, callback.callback());
     EXPECT_EQ(ERR_IO_PENDING, result);
@@ -401,7 +401,7 @@ TEST_F(ProxyScriptFetcherImplTest, Hang) {
 
   { // Make sure we can still fetch regular URLs.
     GURL url(test_server_.GetURL("files/pac.nsproxy"));
-    string16 text;
+    base::string16 text;
     TestCompletionCallback callback;
     int result = pac_fetcher.Fetch(url, &text, callback.callback());
     EXPECT_EQ(ERR_IO_PENDING, result);
@@ -421,7 +421,7 @@ TEST_F(ProxyScriptFetcherImplTest, Encodings) {
   // Test a response that is gzip-encoded -- should get inflated.
   {
     GURL url(test_server_.GetURL("files/gzipped_pac"));
-    string16 text;
+    base::string16 text;
     TestCompletionCallback callback;
     int result = pac_fetcher.Fetch(url, &text, callback.callback());
     EXPECT_EQ(ERR_IO_PENDING, result);
@@ -433,7 +433,7 @@ TEST_F(ProxyScriptFetcherImplTest, Encodings) {
   // be converted to UTF8.
   {
     GURL url(test_server_.GetURL("files/utf16be_pac"));
-    string16 text;
+    base::string16 text;
     TestCompletionCallback callback;
     int result = pac_fetcher.Fetch(url, &text, callback.callback());
     EXPECT_EQ(ERR_IO_PENDING, result);
@@ -459,7 +459,7 @@ TEST_F(ProxyScriptFetcherImplTest, DataURLs) {
   // Test fetching a "data:"-url containing a base64 encoded PAC script.
   {
     GURL url(kEncodedUrl);
-    string16 text;
+    base::string16 text;
     TestCompletionCallback callback;
     int result = pac_fetcher.Fetch(url, &text, callback.callback());
     EXPECT_EQ(OK, result);
@@ -472,7 +472,7 @@ TEST_F(ProxyScriptFetcherImplTest, DataURLs) {
   // Test a broken "data:"-url containing a base64 encoded PAC script.
   {
     GURL url(kEncodedUrlBroken);
-    string16 text;
+    base::string16 text;
     TestCompletionCallback callback;
     int result = pac_fetcher.Fetch(url, &text, callback.callback());
     EXPECT_EQ(ERR_FAILED, result);

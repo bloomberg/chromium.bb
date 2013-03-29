@@ -155,7 +155,7 @@ class NET_EXPORT_PRIVATE ProxyScriptDecider {
   size_t current_pac_source_index_;
 
   // Filled when the PAC script fetch completes.
-  string16 pac_script_;
+  base::string16 pac_script_;
 
   // Flag indicating whether the caller requested a mandatory pac script
   // (i.e. fallback to direct connections are prohibited).

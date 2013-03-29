@@ -19,7 +19,7 @@ class NetworkDelegateErrorObserver::Core
  public:
   Core(NetworkDelegate* network_delegate, base::MessageLoopProxy* origin_loop);
 
-  void NotifyPACScriptError(int line_number, const string16& error);
+  void NotifyPACScriptError(int line_number, const base::string16& error);
 
   void Shutdown();
 
@@ -46,7 +46,7 @@ NetworkDelegateErrorObserver::Core::~Core() {}
 
 void NetworkDelegateErrorObserver::Core::NotifyPACScriptError(
     int line_number,
-    const string16& error) {
+    const base::string16& error) {
   if (!origin_loop_->BelongsToCurrentThread()) {
     origin_loop_->PostTask(
         FROM_HERE,
@@ -73,8 +73,9 @@ NetworkDelegateErrorObserver::~NetworkDelegateErrorObserver() {
   core_->Shutdown();
 }
 
-void NetworkDelegateErrorObserver::OnPACScriptError(int line_number,
-                                                    const string16& error) {
+void NetworkDelegateErrorObserver::OnPACScriptError(
+    int line_number,
+    const base::string16& error) {
   core_->NotifyPACScriptError(line_number, error);
 }
 

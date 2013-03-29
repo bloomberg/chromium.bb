@@ -84,7 +84,7 @@ class NET_EXPORT NetworkDelegate : public base::NonThreadSafe {
   void NotifyRawBytesRead(const URLRequest& request, int bytes_read);
   void NotifyCompleted(URLRequest* request, bool started);
   void NotifyURLRequestDestroyed(URLRequest* request);
-  void NotifyPACScriptError(int line_number, const string16& error);
+  void NotifyPACScriptError(int line_number, const base::string16& error);
   AuthRequiredResponse NotifyAuthRequired(URLRequest* request,
                                           const AuthChallengeInfo& auth_info,
                                           const AuthCallback& callback,
@@ -175,7 +175,8 @@ class NET_EXPORT NetworkDelegate : public base::NonThreadSafe {
   virtual void OnURLRequestDestroyed(URLRequest* request) = 0;
 
   // Corresponds to ProxyResolverJSBindings::OnError.
-  virtual void OnPACScriptError(int line_number, const string16& error) = 0;
+  virtual void OnPACScriptError(int line_number,
+                                const base::string16& error) = 0;
 
   // Called when a request receives an authentication challenge
   // specified by |auth_info|, and is unable to respond using cached

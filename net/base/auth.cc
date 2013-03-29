@@ -29,8 +29,8 @@ AuthData::~AuthData() {
 AuthCredentials::AuthCredentials() {
 }
 
-AuthCredentials::AuthCredentials(const string16& username,
-                                 const string16& password)
+AuthCredentials::AuthCredentials(const base::string16& username,
+                                 const base::string16& password)
     : username_(username),
       password_(password) {
 }
@@ -38,7 +38,8 @@ AuthCredentials::AuthCredentials(const string16& username,
 AuthCredentials::~AuthCredentials() {
 }
 
-void AuthCredentials::Set(const string16& username, const string16& password) {
+void AuthCredentials::Set(const base::string16& username,
+                          const base::string16& password) {
   username_ = username;
   password_ = password;
 }

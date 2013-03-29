@@ -143,10 +143,10 @@ std::string V8StringToUTF8(v8::Handle<v8::String> s) {
   return result;
 }
 
-// Converts a V8 String to a UTF16 string16.
-string16 V8StringToUTF16(v8::Handle<v8::String> s) {
+// Converts a V8 String to a UTF16 base::string16.
+base::string16 V8StringToUTF16(v8::Handle<v8::String> s) {
   int len = s->Length();
-  string16 result;
+  base::string16 result;
   // Note that the reinterpret cast is because on Windows string16 is an alias
   // to wstring, and hence has character type wchar_t not uint16_t.
   if (len > 0)
@@ -160,7 +160,7 @@ v8::Local<v8::String> ASCIIStringToV8String(const std::string& s) {
   return v8::String::New(s.data(), s.size());
 }
 
-// Converts a UTF16 string16 (warpped by a ProxyResolverScriptData) to a
+// Converts a UTF16 base::string16 (warpped by a ProxyResolverScriptData) to a
 // V8 string.
 v8::Local<v8::String> ScriptDataToV8String(
     const scoped_refptr<ProxyResolverScriptData>& s) {
@@ -184,7 +184,7 @@ v8::Local<v8::String> ASCIILiteralToV8String(const char* ascii) {
 // Stringizes a V8 object by calling its toString() method. Returns true
 // on success. This may fail if the toString() throws an exception.
 bool V8ObjectToUTF16String(v8::Handle<v8::Value> object,
-                           string16* utf16_result) {
+                           base::string16* utf16_result) {
   if (object.IsEmpty())
     return false;
 
@@ -203,7 +203,7 @@ bool GetHostnameArgument(const v8::Arguments& args, std::string* hostname) {
   if (args.Length() == 0 || args[0].IsEmpty() || !args[0]->IsString())
     return false;
 
-  const string16 hostname_utf16 = V8StringToUTF16(args[0]->ToString());
+  const base::string16 hostname_utf16 = V8StringToUTF16(args[0]->ToString());
 
   // If the hostname is already in ASCII, simply return it as is.
   if (IsStringASCII(hostname_utf16)) {
@@ -382,14 +382,14 @@ class ProxyResolverV8::Context {
       return ERR_PAC_SCRIPT_FAILED;
     }
 
-    string16 ret_str = V8StringToUTF16(ret->ToString());
+    base::string16 ret_str = V8StringToUTF16(ret->ToString());
 
     if (!IsStringASCII(ret_str)) {
       // TODO(eroman): Rather than failing when a wide string is returned, we
       //               could extend the parsing to handle IDNA hostnames by
       //               converting them to ASCII punycode.
       //               crbug.com/47234
-      string16 error_message =
+      base::string16 error_message =
           ASCIIToUTF16("FindProxyForURL() returned a non-ASCII string "
                        "(crbug.com/47234): ") + ret_str;
       js_bindings()->OnError(-1, error_message);
@@ -493,7 +493,7 @@ class ProxyResolverV8::Context {
 
   // Handle an exception thrown by V8.
   void HandleError(v8::Handle<v8::Message> message) {
-    string16 error_message;
+    base::string16 error_message;
     int line_number = -1;
 
     if (!message.IsEmpty()) {
@@ -534,7 +534,7 @@ class ProxyResolverV8::Context {
 
     // Like firefox we assume "undefined" if no argument was specified, and
     // disregard any arguments beyond the first.
-    string16 message;
+    base::string16 message;
     if (args.Length() == 0) {
       message = ASCIIToUTF16("undefined");
     } else {

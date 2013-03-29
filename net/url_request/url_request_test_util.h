@@ -253,7 +253,7 @@ class TestNetworkDelegate : public NetworkDelegate {
   virtual void OnCompleted(URLRequest* request, bool started) OVERRIDE;
   virtual void OnURLRequestDestroyed(URLRequest* request) OVERRIDE;
   virtual void OnPACScriptError(int line_number,
-                                const string16& error) OVERRIDE;
+                                const base::string16& error) OVERRIDE;
   virtual NetworkDelegate::AuthRequiredResponse OnAuthRequired(
       URLRequest* request,
       const AuthChallengeInfo& auth_info,

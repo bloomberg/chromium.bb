@@ -485,7 +485,7 @@ void TestNetworkDelegate::OnURLRequestDestroyed(URLRequest* request) {
 }
 
 void TestNetworkDelegate::OnPACScriptError(int line_number,
-                                           const string16& error) {
+                                           const base::string16& error) {
 }
 
 NetworkDelegate::AuthRequiredResponse TestNetworkDelegate::OnAuthRequired(

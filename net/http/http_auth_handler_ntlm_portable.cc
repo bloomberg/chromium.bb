@@ -252,7 +252,7 @@ static uint32 ReadUint32(const uint8*& buf) {
 //
 // Note: This function is not being used because our SendLM() function always
 // returns false.
-static void LM_Hash(const string16& password, uint8* hash) {
+static void LM_Hash(const base::string16& password, uint8* hash) {
   static const uint8 LM_MAGIC[] = "KGS!@#$%";
 
   // Convert password to OEM character set.  We'll just use the native
@@ -277,7 +277,7 @@ static void LM_Hash(const string16& password, uint8* hash) {
 //       null-terminated unicode password.
 // param hash
 //       16-byte result buffer
-static void NTLM_Hash(const string16& password, uint8* hash) {
+static void NTLM_Hash(const base::string16& password, uint8* hash) {
 #ifdef IS_BIG_ENDIAN
   uint32 len = password.length();
   uint8* passbuf;
@@ -438,9 +438,9 @@ static void GenerateRandom(uint8* output, size_t n) {
 }
 
 // Returns OK or a network error code.
-static int GenerateType3Msg(const string16& domain,
-                            const string16& username,
-                            const string16& password,
+static int GenerateType3Msg(const base::string16& domain,
+                            const base::string16& username,
+                            const base::string16& password,
                             const std::string& hostname,
                             const void* rand_8_bytes,
                             const void* in_buf,
@@ -460,9 +460,9 @@ static int GenerateType3Msg(const string16& domain,
 
   // Temporary buffers for unicode strings
 #ifdef IS_BIG_ENDIAN
-  string16 ucs_domain_buf, ucs_user_buf;
+  base::string16 ucs_domain_buf, ucs_user_buf;
 #endif
-  string16 ucs_host_buf;
+  base::string16 ucs_host_buf;
   // Temporary buffers for oem strings
   std::string oem_domain_buf, oem_user_buf;
   // Pointers and lengths for the string buffers; encoding is unicode if

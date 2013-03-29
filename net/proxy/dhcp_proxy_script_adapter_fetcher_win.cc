@@ -53,7 +53,7 @@ void DhcpProxyScriptAdapterFetcher::Fetch(
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(state_, STATE_START);
   result_ = ERR_IO_PENDING;
-  pac_script_ = string16();
+  pac_script_ = base::string16();
   state_ = STATE_WAIT_DHCP;
   callback_ = callback;
 
@@ -108,7 +108,7 @@ int DhcpProxyScriptAdapterFetcher::GetResult() const {
   return result_;
 }
 
-string16 DhcpProxyScriptAdapterFetcher::GetPacScript() const {
+base::string16 DhcpProxyScriptAdapterFetcher::GetPacScript() const {
   DCHECK(CalledOnValidThread());
   return pac_script_;
 }

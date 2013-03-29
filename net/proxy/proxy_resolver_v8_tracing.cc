@@ -56,7 +56,7 @@ const size_t kMaxAlertsAndErrorsBytes = 2048;
 
 // Returns event parameters for a PAC error message (line number + message).
 base::Value* NetLogErrorCallback(int line_number,
-                                 const string16* message,
+                                 const base::string16* message,
                                  NetLog::LogLevel /* log_level */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetInteger("line_number", line_number);
@@ -122,7 +122,7 @@ class ProxyResolverV8Tracing::Job
   struct AlertOrError {
     bool is_alert;
     int line_number;
-    string16 message;
+    base::string16 message;
   };
 
   virtual ~Job();
@@ -157,8 +157,8 @@ class ProxyResolverV8Tracing::Job
                           ResolveDnsOperation op,
                           std::string* output,
                           bool* terminate) OVERRIDE;
-  virtual void Alert(const string16& message) OVERRIDE;
-  virtual void OnError(int line_number, const string16& error) OVERRIDE;
+  virtual void Alert(const base::string16& message) OVERRIDE;
+  virtual void OnError(int line_number, const base::string16& error) OVERRIDE;
 
   bool ResolveDnsBlocking(const std::string& host,
                           ResolveDnsOperation op,
@@ -195,10 +195,10 @@ class ProxyResolverV8Tracing::Job
                                      ResolveDnsOperation op);
 
   void HandleAlertOrError(bool is_alert, int line_number,
-                          const string16& message);
+                          const base::string16& message);
   void DispatchBufferedAlertsAndErrors();
   void DispatchAlertOrError(bool is_alert, int line_number,
-                            const string16& message);
+                            const base::string16& message);
 
   void LogEventToCurrentRequestAndGlobally(
       NetLog::EventType type,
@@ -687,12 +687,12 @@ bool ProxyResolverV8Tracing::Job::ResolveDns(const std::string& host,
       ResolveDnsNonBlocking(host, op, output, terminate);
 }
 
-void ProxyResolverV8Tracing::Job::Alert(const string16& message) {
+void ProxyResolverV8Tracing::Job::Alert(const base::string16& message) {
   HandleAlertOrError(true, -1, message);
 }
 
 void ProxyResolverV8Tracing::Job::OnError(int line_number,
-                                          const string16& error) {
+                                          const base::string16& error) {
   HandleAlertOrError(false, line_number, error);
 }
 
@@ -956,9 +956,10 @@ std::string ProxyResolverV8Tracing::Job::MakeDnsCacheKey(
   return base::StringPrintf("%d:%s", op, host.c_str());
 }
 
-void ProxyResolverV8Tracing::Job::HandleAlertOrError(bool is_alert,
-                                                     int line_number,
-                                                     const string16& message) {
+void ProxyResolverV8Tracing::Job::HandleAlertOrError(
+    bool is_alert,
+    int line_number,
+    const base::string16& message) {
   CheckIsOnWorkerThread();
 
   if (cancelled_.IsSet())
@@ -1002,7 +1003,7 @@ void ProxyResolverV8Tracing::Job::DispatchBufferedAlertsAndErrors() {
 }
 
 void ProxyResolverV8Tracing::Job::DispatchAlertOrError(
-    bool is_alert, int line_number, const string16& message) {
+    bool is_alert, int line_number, const base::string16& message) {
   CheckIsOnWorkerThread();
 
   // Note that the handling of cancellation is racy with regard to

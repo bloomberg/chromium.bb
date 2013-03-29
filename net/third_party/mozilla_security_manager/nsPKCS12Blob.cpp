@@ -148,7 +148,7 @@ pip_ucs2_ascii_conversion_fn(PRBool toUnicode,
 int
 nsPKCS12Blob_ImportHelper(const char* pkcs12_data,
                           size_t pkcs12_len,
-                          const string16& password,
+                          const base::string16& password,
                           bool is_extractable,
                           bool try_zero_length_secitem,
                           PK11SlotInfo *slot,
@@ -353,7 +353,7 @@ void EnsurePKCS12Init() {
 int nsPKCS12Blob_Import(PK11SlotInfo* slot,
                         const char* pkcs12_data,
                         size_t pkcs12_len,
-                        const string16& password,
+                        const base::string16& password,
                         bool is_extractable,
                         net::CertificateList* imported_certs) {
 
@@ -388,7 +388,7 @@ int nsPKCS12Blob_Import(PK11SlotInfo* slot,
 int
 nsPKCS12Blob_Export(std::string* output,
                     const net::CertificateList& certs,
-                    const string16& password)
+                    const base::string16& password)
 {
   int return_count = 0;
   SECStatus srv = SECSuccess;

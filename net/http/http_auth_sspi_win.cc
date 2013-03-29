@@ -48,9 +48,9 @@ int MapAcquireCredentialsStatusToError(SECURITY_STATUS status,
 
 int AcquireExplicitCredentials(SSPILibrary* library,
                                const SEC_WCHAR* package,
-                               const string16& domain,
-                               const string16& user,
-                               const string16& password,
+                               const base::string16& domain,
+                               const base::string16& user,
+                               const base::string16& password,
                                CredHandle* cred) {
   SEC_WINNT_AUTH_IDENTITY identity;
   identity.Flags = SEC_WINNT_AUTH_IDENTITY_UNICODE;
@@ -295,8 +295,8 @@ int HttpAuthSSPI::OnFirstRound(const AuthCredentials* credentials) {
   DCHECK(!SecIsValidHandle(&cred_));
   int rv = OK;
   if (credentials) {
-    string16 domain;
-    string16 user;
+    base::string16 domain;
+    base::string16 user;
     SplitDomainAndUser(credentials->username(), &domain, &user);
     rv = AcquireExplicitCredentials(library_, security_package_, domain,
                                     user, credentials->password(), &cred_);
@@ -390,14 +390,14 @@ int HttpAuthSSPI::GetNextSecurityToken(
   return OK;
 }
 
-void SplitDomainAndUser(const string16& combined,
-                        string16* domain,
-                        string16* user) {
+void SplitDomainAndUser(const base::string16& combined,
+                        base::string16* domain,
+                        base::string16* user) {
   // |combined| may be in the form "user" or "DOMAIN\user".
   // Separate the two parts if they exist.
   // TODO(cbentzel): I believe user@domain is also a valid form.
   size_t backslash_idx = combined.find(L'\\');
-  if (backslash_idx == string16::npos) {
+  if (backslash_idx == base::string16::npos) {
     domain->clear();
     *user = combined;
   } else {

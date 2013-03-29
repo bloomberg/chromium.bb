@@ -114,14 +114,15 @@ class NET_EXPORT NSSCertDatabase {
   // of certs that were imported.
   int ImportFromPKCS12(CryptoModule* module,
                        const std::string& data,
-                       const string16& password,
+                       const base::string16& password,
                        bool is_extractable,
                        CertificateList* imported_certs);
 
   // Export the given certificates and private keys into a PKCS #12 blob,
   // storing into |output|.
   // Returns the number of certificates successfully exported.
-  int ExportToPKCS12(const CertificateList& certs, const string16& password,
+  int ExportToPKCS12(const CertificateList& certs,
+                     const base::string16& password,
                      std::string* output) const;
 
   // Uses similar logic to nsNSSCertificateDB::handleCACertDownload to find the

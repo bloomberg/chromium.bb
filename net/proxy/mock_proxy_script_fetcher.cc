@@ -20,7 +20,7 @@ MockProxyScriptFetcher::MockProxyScriptFetcher()
 MockProxyScriptFetcher::~MockProxyScriptFetcher() {}
 
 // ProxyScriptFetcher implementation.
-int MockProxyScriptFetcher::Fetch(const GURL& url, string16* text,
+int MockProxyScriptFetcher::Fetch(const GURL& url, base::string16* text,
                                   const CompletionCallback& callback) {
   DCHECK(!has_pending_request());
 

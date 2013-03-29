@@ -20,7 +20,7 @@ struct FtpDirectoryListingEntry;
 
 // Parses "ls -l" FTP directory listing. Returns true on success.
 NET_EXPORT_PRIVATE bool ParseFtpDirectoryListingLs(
-    const std::vector<string16>& lines,
+    const std::vector<base::string16>& lines,
     const base::Time& current_time,
     std::vector<FtpDirectoryListingEntry>* entries);
 

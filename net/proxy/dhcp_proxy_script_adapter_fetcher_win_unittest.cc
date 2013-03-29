@@ -152,7 +152,7 @@ class FetcherClient {
   TestCompletionCallback callback_;
   scoped_ptr<URLRequestContext> url_request_context_;
   scoped_ptr<MockDhcpProxyScriptAdapterFetcher> fetcher_;
-  string16 pac_text_;
+  base::string16 pac_text_;
 };
 
 TEST(DhcpProxyScriptAdapterFetcher, NormalCaseURLNotInDhcp) {
@@ -162,7 +162,7 @@ TEST(DhcpProxyScriptAdapterFetcher, NormalCaseURLNotInDhcp) {
   client.WaitForResult(ERR_PAC_NOT_IN_DHCP);
   ASSERT_TRUE(client.fetcher_->DidFinish());
   EXPECT_EQ(ERR_PAC_NOT_IN_DHCP, client.fetcher_->GetResult());
-  EXPECT_EQ(string16(L""), client.fetcher_->GetPacScript());
+  EXPECT_EQ(base::string16(L""), client.fetcher_->GetPacScript());
 }
 
 TEST(DhcpProxyScriptAdapterFetcher, NormalCaseURLInDhcp) {
@@ -171,7 +171,7 @@ TEST(DhcpProxyScriptAdapterFetcher, NormalCaseURLInDhcp) {
   client.WaitForResult(OK);
   ASSERT_TRUE(client.fetcher_->DidFinish());
   EXPECT_EQ(OK, client.fetcher_->GetResult());
-  EXPECT_EQ(string16(L"bingo"), client.fetcher_->GetPacScript());
+  EXPECT_EQ(base::string16(L"bingo"), client.fetcher_->GetPacScript());
   EXPECT_EQ(GURL(kPacUrl), client.fetcher_->GetPacURL());
 }
 
@@ -194,7 +194,7 @@ TEST(DhcpProxyScriptAdapterFetcher, TimeoutDuringDhcp) {
 
   ASSERT_TRUE(client.fetcher_->DidFinish());
   EXPECT_EQ(ERR_TIMED_OUT, client.fetcher_->GetResult());
-  EXPECT_EQ(string16(L""), client.fetcher_->GetPacScript());
+  EXPECT_EQ(base::string16(L""), client.fetcher_->GetPacScript());
   EXPECT_EQ(GURL(), client.fetcher_->GetPacURL());
   client.FinishTestAllowCleanup();
 }
@@ -207,7 +207,7 @@ TEST(DhcpProxyScriptAdapterFetcher, CancelWhileDhcp) {
   ASSERT_FALSE(client.fetcher_->DidFinish());
   ASSERT_TRUE(client.fetcher_->WasCancelled());
   EXPECT_EQ(ERR_ABORTED, client.fetcher_->GetResult());
-  EXPECT_EQ(string16(L""), client.fetcher_->GetPacScript());
+  EXPECT_EQ(base::string16(L""), client.fetcher_->GetPacScript());
   EXPECT_EQ(GURL(), client.fetcher_->GetPacURL());
   client.FinishTestAllowCleanup();
 }
@@ -228,7 +228,7 @@ TEST(DhcpProxyScriptAdapterFetcher, CancelWhileFetcher) {
   ASSERT_FALSE(client.fetcher_->DidFinish());
   ASSERT_TRUE(client.fetcher_->WasCancelled());
   EXPECT_EQ(ERR_ABORTED, client.fetcher_->GetResult());
-  EXPECT_EQ(string16(L""), client.fetcher_->GetPacScript());
+  EXPECT_EQ(base::string16(L""), client.fetcher_->GetPacScript());
   // GetPacURL() still returns the URL fetched in this case.
   EXPECT_EQ(GURL(kPacUrl), client.fetcher_->GetPacURL());
   client.FinishTestAllowCleanup();
@@ -243,7 +243,7 @@ TEST(DhcpProxyScriptAdapterFetcher, CancelAtCompletion) {
   // are identical expectations to the NormalCaseURLInDhcp test.
   ASSERT_TRUE(client.fetcher_->DidFinish());
   EXPECT_EQ(OK, client.fetcher_->GetResult());
-  EXPECT_EQ(string16(L"bingo"), client.fetcher_->GetPacScript());
+  EXPECT_EQ(base::string16(L"bingo"), client.fetcher_->GetPacScript());
   EXPECT_EQ(GURL(kPacUrl), client.fetcher_->GetPacURL());
   client.FinishTestAllowCleanup();
 }
@@ -288,7 +288,8 @@ TEST(DhcpProxyScriptAdapterFetcher, MockDhcpRealFetch) {
   client.WaitForResult(OK);
   ASSERT_TRUE(client.fetcher_->DidFinish());
   EXPECT_EQ(OK, client.fetcher_->GetResult());
-  EXPECT_EQ(string16(L"-downloadable.pac-\n"), client.fetcher_->GetPacScript());
+  EXPECT_EQ(base::string16(L"-downloadable.pac-\n"),
+            client.fetcher_->GetPacScript());
   EXPECT_EQ(configured_url,
             client.fetcher_->GetPacURL());
 }

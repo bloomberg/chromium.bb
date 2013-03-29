@@ -41,13 +41,13 @@ int FillInRawName(const std::string& encoding,
 
 // Parses |text| as an FTP directory listing. Fills in |entries|
 // and |server_type| and returns network error code.
-int ParseListing(const string16& text,
-                 const string16& newline_separator,
+int ParseListing(const base::string16& text,
+                 const base::string16& newline_separator,
                  const std::string& encoding,
                  const base::Time& current_time,
                  std::vector<FtpDirectoryListingEntry>* entries,
                  FtpServerType* server_type) {
-  std::vector<string16> lines;
+  std::vector<base::string16> lines;
   base::SplitStringUsingSubstr(text, newline_separator, &lines);
 
   struct {
@@ -103,7 +103,7 @@ int DecodeAndParse(const std::string& text,
 
   // Use first encoding that can be used to decode the text.
   for (size_t i = 0; i < encodings.size(); i++) {
-    string16 converted_text;
+    base::string16 converted_text;
     if (base::CodepageToUTF16(text,
                               encodings[i].c_str(),
                               base::OnStringConversionError::FAIL,

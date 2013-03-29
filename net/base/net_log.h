@@ -282,7 +282,7 @@ class NET_EXPORT NetLog {
 
   // Same as above, but takes in a UTF16 string.
   static ParametersCallback StringCallback(const char* name,
-                                           const string16* value);
+                                           const base::string16* value);
 
  protected:
   // Child classes should respond to the new entry here.  This includes

@@ -16,7 +16,7 @@ struct FtpDirectoryListingEntry;
 
 // Parses OS/2 FTP directory listing. Returns true on success.
 NET_EXPORT_PRIVATE bool ParseFtpDirectoryListingOS2(
-    const std::vector<string16>& lines,
+    const std::vector<base::string16>& lines,
     std::vector<FtpDirectoryListingEntry>* entries);
 
 }  // namespace net

@@ -33,7 +33,7 @@ class NET_EXPORT_PRIVATE ProxyResolverScriptData
 
   // Creates a script data given the UTF16 bytes of the content.
   static scoped_refptr<ProxyResolverScriptData> FromUTF16(
-      const string16& utf16);
+      const base::string16& utf16);
 
   // Creates a script data given a URL to the PAC script.
   static scoped_refptr<ProxyResolverScriptData> FromURL(const GURL& url);
@@ -47,7 +47,7 @@ class NET_EXPORT_PRIVATE ProxyResolverScriptData
 
   // Returns the contents of the script as UTF16.
   // (only valid for type() == TYPE_SCRIPT_CONTENTS).
-  const string16& utf16() const;
+  const base::string16& utf16() const;
 
   // Returns the URL of the script.
   // (only valid for type() == TYPE_SCRIPT_URL).
@@ -60,13 +60,13 @@ class NET_EXPORT_PRIVATE ProxyResolverScriptData
   friend class base::RefCountedThreadSafe<ProxyResolverScriptData>;
   ProxyResolverScriptData(Type type,
                           const GURL& url,
-                          const string16& utf16);
+                          const base::string16& utf16);
   virtual ~ProxyResolverScriptData();
 
 
   const Type type_;
   const GURL url_;
-  const string16 utf16_;
+  const base::string16 utf16_;
 };
 
 }  // namespace net

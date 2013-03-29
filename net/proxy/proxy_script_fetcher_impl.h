@@ -45,7 +45,7 @@ class NET_EXPORT ProxyScriptFetcherImpl : public ProxyScriptFetcher,
   void OnResponseCompleted(URLRequest* request);
 
   // ProxyScriptFetcher methods:
-  virtual int Fetch(const GURL& url, string16* text,
+  virtual int Fetch(const GURL& url, base::string16* text,
                     const net::CompletionCallback& callback) OVERRIDE;
   virtual void Cancel() OVERRIDE;
   virtual URLRequestContext* GetRequestContext() const OVERRIDE;
@@ -111,7 +111,7 @@ class NET_EXPORT ProxyScriptFetcherImpl : public ProxyScriptFetcher,
 
   // This buffer is owned by the owner of |callback|, and will be filled with
   // UTF16 response on completion.
-  string16* result_text_;
+  base::string16* result_text_;
 
   // The maximum number of bytes to allow in responses.
   size_t max_response_bytes_;

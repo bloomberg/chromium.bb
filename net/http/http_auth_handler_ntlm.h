@@ -156,7 +156,7 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerNTLM : public HttpAuthHandler {
   static HostNameProc get_host_name_proc_;
 #endif
 
-  string16 domain_;
+  base::string16 domain_;
   AuthCredentials credentials_;
 
   // The base64-encoded string following "NTLM" in the "WWW-Authenticate" or

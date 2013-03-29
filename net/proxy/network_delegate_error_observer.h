@@ -27,7 +27,7 @@ class NET_EXPORT_PRIVATE NetworkDelegateErrorObserver
   virtual ~NetworkDelegateErrorObserver();
 
   // ProxyResolverErrorObserver implementation.
-  virtual void OnPACScriptError(int line_number, const string16& error)
+  virtual void OnPACScriptError(int line_number, const base::string16& error)
       OVERRIDE;
 
  private:

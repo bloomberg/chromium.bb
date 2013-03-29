@@ -412,7 +412,7 @@ bool IsIDNComponentSafe(const char16* str,
 bool IDNToUnicodeOneComponent(const char16* comp,
                               size_t comp_len,
                               const std::string& languages,
-                              string16* out) {
+                              base::string16* out) {
   DCHECK(out);
   if (comp_len == 0)
     return false;
@@ -454,12 +454,12 @@ bool IDNToUnicodeOneComponent(const char16* comp,
 }
 
 // Clamps the offsets in |offsets_for_adjustment| to the length of |str|.
-void LimitOffsets(const string16& str,
+void LimitOffsets(const base::string16& str,
                   std::vector<size_t>* offsets_for_adjustment) {
   if (offsets_for_adjustment) {
     std::for_each(offsets_for_adjustment->begin(),
                   offsets_for_adjustment->end(),
-                  base::LimitOffset<string16>(str.length()));
+                  base::LimitOffset<base::string16>(str.length()));
   }
 }
 
@@ -470,17 +470,18 @@ void LimitOffsets(const string16& str,
 //
 // We may want to skip this step in the case of file URLs to allow unicode
 // UNC hostnames regardless of encodings.
-string16 IDNToUnicodeWithOffsets(const std::string& host,
-                                 const std::string& languages,
-                                 std::vector<size_t>* offsets_for_adjustment) {
-  // Convert the ASCII input to a string16 for ICU.
-  string16 input16;
+base::string16 IDNToUnicodeWithOffsets(
+    const std::string& host,
+    const std::string& languages,
+    std::vector<size_t>* offsets_for_adjustment) {
+  // Convert the ASCII input to a base::string16 for ICU.
+  base::string16 input16;
   input16.reserve(host.length());
   input16.insert(input16.end(), host.begin(), host.end());
 
   // Do each component of the host separately, since we enforce script matching
   // on a per-component basis.
-  string16 out16;
+  base::string16 out16;
   {
     base::OffsetAdjuster offset_adjuster(offsets_for_adjustment);
     for (size_t component_start = 0, component_end;
@@ -488,7 +489,7 @@ string16 IDNToUnicodeWithOffsets(const std::string& host,
          component_start = component_end + 1) {
       // Find the end of the component.
       component_end = input16.find('.', component_start);
-      if (component_end == string16::npos)
+      if (component_end == base::string16::npos)
         component_end = input16.length();  // For getting the last component.
       size_t component_length = component_end - component_start;
       size_t new_component_start = out16.length();
@@ -550,7 +551,7 @@ void AdjustForComponentTransform(
 
   DCHECK_NE(std::string::npos, original_component_begin);
   DCHECK_NE(std::string::npos, original_component_end);
-  DCHECK_NE(string16::npos, output_component_begin);
+  DCHECK_NE(base::string16::npos, output_component_begin);
   size_t offsets_size = offsets_for_adjustment->size();
   DCHECK_EQ(offsets_size, original_offsets.size());
   DCHECK_EQ(offsets_size, transformed_offsets.size());
@@ -559,8 +560,9 @@ void AdjustForComponentTransform(
     if ((original_offset >= original_component_begin) &&
         (original_offset < original_component_end)) {
       size_t transformed_offset = transformed_offsets[i];
-      (*offsets_for_adjustment)[i] = (transformed_offset == string16::npos) ?
-          string16::npos : (output_component_begin + transformed_offset);
+      (*offsets_for_adjustment)[i] =
+          (transformed_offset == base::string16::npos) ?
+          base::string16::npos : (output_component_begin + transformed_offset);
     }
   }
 }
@@ -586,14 +588,15 @@ void AdjustComponents(int delta, url_parse::Parsed* parsed) {
 }
 
 // Helper for FormatUrlWithOffsets().
-string16 FormatViewSourceUrl(const GURL& url,
-                             const std::vector<size_t>& original_offsets,
-                             const std::string& languages,
-                             FormatUrlTypes format_types,
-                             UnescapeRule::Type unescape_rules,
-                             url_parse::Parsed* new_parsed,
-                             size_t* prefix_end,
-                             std::vector<size_t>* offsets_for_adjustment) {
+base::string16 FormatViewSourceUrl(
+    const GURL& url,
+    const std::vector<size_t>& original_offsets,
+    const std::string& languages,
+    FormatUrlTypes format_types,
+    UnescapeRule::Type unescape_rules,
+    url_parse::Parsed* new_parsed,
+    size_t* prefix_end,
+    std::vector<size_t>* offsets_for_adjustment) {
   DCHECK(new_parsed);
   const char kViewSource[] = "view-source:";
   const size_t kViewSourceLength = arraysize(kViewSource) - 1;
@@ -601,7 +604,7 @@ string16 FormatViewSourceUrl(const GURL& url,
       OffsetsIntoComponent(original_offsets, kViewSourceLength));
 
   GURL real_url(url.possibly_invalid_spec().substr(kViewSourceLength));
-  string16 result(ASCIIToUTF16(kViewSource) +
+  base::string16 result(ASCIIToUTF16(kViewSource) +
       FormatUrlWithOffsets(real_url, languages, format_types, unescape_rules,
                            new_parsed, prefix_end, &offsets_into_url));
 
@@ -628,7 +631,7 @@ class AppendComponentTransform {
   AppendComponentTransform() {}
   virtual ~AppendComponentTransform() {}
 
-  virtual string16 Execute(
+  virtual base::string16 Execute(
       const std::string& component_text,
       std::vector<size_t>* offsets_into_component) const = 0;
 
@@ -644,7 +647,7 @@ class HostComponentTransform : public AppendComponentTransform {
   }
 
  private:
-  virtual string16 Execute(
+  virtual base::string16 Execute(
       const std::string& component_text,
       std::vector<size_t>* offsets_into_component) const OVERRIDE {
     return IDNToUnicodeWithOffsets(component_text, languages_,
@@ -661,7 +664,7 @@ class NonHostComponentTransform : public AppendComponentTransform {
   }
 
  private:
-  virtual string16 Execute(
+  virtual base::string16 Execute(
       const std::string& component_text,
       std::vector<size_t>* offsets_into_component) const OVERRIDE {
     return (unescape_rules_ == UnescapeRule::NONE) ?
@@ -678,7 +681,7 @@ void AppendFormattedComponent(const std::string& spec,
                               const url_parse::Component& original_component,
                               const std::vector<size_t>& original_offsets,
                               const AppendComponentTransform& transform,
-                              string16* output,
+                              base::string16* output,
                               url_parse::Component* output_component,
                               std::vector<size_t>* offsets_for_adjustment) {
   DCHECK(output);
@@ -751,7 +754,7 @@ std::string GetFileNameFromURL(const GURL& url,
   if (!IsStringUTF8(decoded_filename)) {
     // TODO(jshin): this is probably not robust enough. To be sure, we need
     // encoding detection.
-    string16 utf16_output;
+    base::string16 utf16_output;
     if (!referrer_charset.empty() &&
         base::CodepageToUTF16(unescaped_url_filename,
                               referrer_charset.c_str(),
@@ -773,8 +776,8 @@ std::string GetFileNameFromURL(const GURL& url,
 #if defined(OS_WIN)
 // Returns whether the specified extension is automatically integrated into the
 // windows shell.
-bool IsShellIntegratedExtension(const string16& extension) {
-  string16 extension_lower = StringToLowerASCII(extension);
+bool IsShellIntegratedExtension(const base::string16& extension) {
+  base::string16 extension_lower = StringToLowerASCII(extension);
 
   static const wchar_t* const integrated_extensions[] = {
     // See <http://msdn.microsoft.com/en-us/library/ms811694.aspx>.
@@ -801,7 +804,7 @@ bool IsShellIntegratedExtension(const string16& extension) {
 // Returns whether the specified file name is a reserved name on windows.
 // This includes names like "com2.zip" (which correspond to devices) and
 // desktop.ini and thumbs.db which have special meaning to the windows shell.
-bool IsReservedName(const string16& filename) {
+bool IsReservedName(const base::string16& filename) {
   // This list is taken from the MSDN article "Naming a file"
   // http://msdn2.microsoft.com/en-us/library/aa365247(VS.85).aspx
   // I also added clock$ because GetSaveFileName seems to consider it as a
@@ -811,14 +814,14 @@ bool IsReservedName(const string16& filename) {
     L"com6", L"com7", L"com8", L"com9", L"lpt1", L"lpt2", L"lpt3", L"lpt4",
     L"lpt5", L"lpt6", L"lpt7", L"lpt8", L"lpt9", L"clock$"
   };
-  string16 filename_lower = StringToLowerASCII(filename);
+  base::string16 filename_lower = StringToLowerASCII(filename);
 
   for (int i = 0; i < arraysize(known_devices); ++i) {
     // Exact match.
     if (filename_lower == known_devices[i])
       return true;
     // Starts with "DEVICE.".
-    if (filename_lower.find(string16(known_devices[i]) + L".") == 0)
+    if (filename_lower.find(base::string16(known_devices[i]) + L".") == 0)
       return true;
   }
 
@@ -975,8 +978,8 @@ std::string GetSpecificHeader(const std::string& headers,
   return ret;
 }
 
-string16 IDNToUnicode(const std::string& host,
-                      const std::string& languages) {
+base::string16 IDNToUnicode(const std::string& host,
+                            const std::string& languages) {
   return IDNToUnicodeWithOffsets(host, languages, NULL);
 }
 
@@ -1003,7 +1006,7 @@ std::string CanonicalizeHost(const std::string& host,
   return canon_host;
 }
 
-std::string GetDirectoryListingHeader(const string16& title) {
+std::string GetDirectoryListingHeader(const base::string16& title) {
   static const base::StringPiece header(
       NetModule::GetResource(IDR_DIR_HEADER_HTML));
   // This can be null in unit tests.
@@ -1067,7 +1070,7 @@ bool IsCanonicalizedHostCompliant(const std::string& host,
       (!desired_tld.empty() && IsHostCharAlpha(desired_tld[0]));
 }
 
-std::string GetDirectoryListingEntry(const string16& name,
+std::string GetDirectoryListingEntry(const base::string16& name,
                                      const std::string& raw_bytes,
                                      bool is_dir,
                                      int64 size,
@@ -1089,14 +1092,14 @@ std::string GetDirectoryListingEntry(const string16& name,
   }
 
   // Negative size means unknown or not applicable (e.g. directory).
-  string16 size_string;
+  base::string16 size_string;
   if (size >= 0)
     size_string = FormatBytesUnlocalized(size);
   base::JsonDoubleQuote(size_string, true, &result);
 
   result.append(",");
 
-  string16 modified_str;
+  base::string16 modified_str;
   // |modified| can be NULL in FTP listings.
   if (!modified.is_null()) {
     modified_str = base::TimeFormatShortDateAndTime(modified);
@@ -1108,12 +1111,12 @@ std::string GetDirectoryListingEntry(const string16& name,
   return result;
 }
 
-string16 StripWWW(const string16& text) {
-  const string16 www(ASCIIToUTF16("www."));
+base::string16 StripWWW(const base::string16& text) {
+  const base::string16 www(ASCIIToUTF16("www."));
   return StartsWith(text, www, true) ? text.substr(www.length()) : text;
 }
 
-string16 StripWWWFromHost(const GURL& url) {
+base::string16 StripWWWFromHost(const GURL& url) {
   DCHECK(url.is_valid());
   return StripWWW(ASCIIToUTF16(url.host()));
 }
@@ -1140,12 +1143,12 @@ void GenerateSafeFileName(const std::string& mime_type,
 #endif
 }
 
-string16 GetSuggestedFilename(const GURL& url,
-                              const std::string& content_disposition,
-                              const std::string& referrer_charset,
-                              const std::string& suggested_name,
-                              const std::string& mime_type,
-                              const std::string& default_name) {
+base::string16 GetSuggestedFilename(const GURL& url,
+                                    const std::string& content_disposition,
+                                    const std::string& referrer_charset,
+                                    const std::string& suggested_name,
+                                    const std::string& mime_type,
+                                    const std::string& default_name) {
   // TODO: this function to be updated to match the httpbis recommendations.
   // Talk to abarth for the latest news.
 
@@ -1197,12 +1200,12 @@ string16 GetSuggestedFilename(const GURL& url,
   }
 
 #if defined(OS_WIN)
-  string16 path = UTF8ToUTF16(filename.empty() ? default_name : filename);
+  base::string16 path = UTF8ToUTF16(filename.empty() ? default_name : filename);
   // On Windows we want to preserve or replace all characters including
   // whitespace to prevent file extension obfuscation on trusted websites
   // e.g. Gmail might think evil.exe. is safe, so we don't want it to become
   // evil.exe when we download it
-  string16::size_type path_length_before_trim = path.length();
+  base::string16::size_type path_length_before_trim = path.length();
   TrimWhitespace(path, TRIM_TRAILING, &path);
   trimmed_trailing_character_count += path_length_before_trim - path.length();
   file_util::ReplaceIllegalCharactersInPath(&path, '-');
@@ -1225,12 +1228,12 @@ base::FilePath GenerateFileName(const GURL& url,
                                 const std::string& suggested_name,
                                 const std::string& mime_type,
                                 const std::string& default_file_name) {
-  string16 file_name = GetSuggestedFilename(url,
-                                            content_disposition,
-                                            referrer_charset,
-                                            suggested_name,
-                                            mime_type,
-                                            default_file_name);
+  base::string16 file_name = GetSuggestedFilename(url,
+                                                  content_disposition,
+                                                  referrer_charset,
+                                                  suggested_name,
+                                                  mime_type,
+                                                  default_file_name);
 
 #if defined(OS_WIN)
   base::FilePath generated_name(file_name);
@@ -1473,8 +1476,8 @@ std::string GetHostName() {
 }
 
 void GetIdentityFromURL(const GURL& url,
-                        string16* username,
-                        string16* password) {
+                        base::string16* username,
+                        base::string16* password) {
   UnescapeRule::Type flags =
       UnescapeRule::SPACES | UnescapeRule::URL_SPECIAL_CHARS;
   *username = UnescapeAndDecodeUTF8URLComponent(url.username(), flags, NULL);
@@ -1487,20 +1490,21 @@ std::string GetHostOrSpecFromURL(const GURL& url) {
 
 void AppendFormattedHost(const GURL& url,
                          const std::string& languages,
-                         string16* output) {
+                         base::string16* output) {
   std::vector<size_t> offsets;
   AppendFormattedComponent(url.possibly_invalid_spec(),
       url.parsed_for_possibly_invalid_spec().host, offsets,
       HostComponentTransform(languages), output, NULL, NULL);
 }
 
-string16 FormatUrlWithOffsets(const GURL& url,
-                              const std::string& languages,
-                              FormatUrlTypes format_types,
-                              UnescapeRule::Type unescape_rules,
-                              url_parse::Parsed* new_parsed,
-                              size_t* prefix_end,
-                              std::vector<size_t>* offsets_for_adjustment) {
+base::string16 FormatUrlWithOffsets(
+    const GURL& url,
+    const std::string& languages,
+    FormatUrlTypes format_types,
+    UnescapeRule::Type unescape_rules,
+    url_parse::Parsed* new_parsed,
+    size_t* prefix_end,
+    std::vector<size_t>* offsets_for_adjustment) {
   url_parse::Parsed parsed_temp;
   if (!new_parsed)
     new_parsed = &parsed_temp;
@@ -1527,7 +1531,7 @@ string16 FormatUrlWithOffsets(const GURL& url,
   const url_parse::Parsed& parsed = url.parsed_for_possibly_invalid_spec();
 
   // Scheme & separators.  These are ASCII.
-  string16 url_string;
+  base::string16 url_string;
   url_string.insert(url_string.end(), spec.begin(),
       spec.begin() + parsed.CountCharactersBefore(url_parse::Parsed::USERNAME,
                                                   true));
@@ -1681,17 +1685,17 @@ string16 FormatUrlWithOffsets(const GURL& url,
   return url_string;
 }
 
-string16 FormatUrl(const GURL& url,
-                   const std::string& languages,
-                   FormatUrlTypes format_types,
-                   UnescapeRule::Type unescape_rules,
-                   url_parse::Parsed* new_parsed,
-                   size_t* prefix_end,
-                   size_t* offset_for_adjustment) {
+base::string16 FormatUrl(const GURL& url,
+                         const std::string& languages,
+                         FormatUrlTypes format_types,
+                         UnescapeRule::Type unescape_rules,
+                         url_parse::Parsed* new_parsed,
+                         size_t* prefix_end,
+                         size_t* offset_for_adjustment) {
   std::vector<size_t> offsets;
   if (offset_for_adjustment)
     offsets.push_back(*offset_for_adjustment);
-  string16 result = FormatUrlWithOffsets(url, languages, format_types,
+  base::string16 result = FormatUrlWithOffsets(url, languages, format_types,
       unescape_rules, new_parsed, prefix_end, &offsets);
   if (offset_for_adjustment)
     *offset_for_adjustment = offsets[0];
