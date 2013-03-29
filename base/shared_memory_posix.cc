@@ -224,18 +224,14 @@ bool SharedMemory::MapAt(off_t offset, size_t bytes) {
     return false;
 
 #if defined(OS_ANDROID)
+  // On Android, Map can be called with a size and offset of zero to use the
+  // ashmem-determined size.
   if (bytes == 0) {
+    DCHECK_EQ(0, offset);
     int ashmem_bytes = ashmem_get_size_region(mapped_file_);
     if (ashmem_bytes < 0)
       return false;
-
-    DCHECK_GE(static_cast<uint32>(ashmem_bytes), bytes);
-    // The caller wants to determine the map region size from ashmem.
-    bytes = ashmem_bytes - offset;
-    // TODO(port): we set the created size here so that it is available in
-    // transport_dib_android.cc. We should use ashmem_get_size_region()
-    // in transport_dib_android.cc.
-    mapped_size_ = ashmem_bytes;
+    bytes = ashmem_bytes;
   }
 #endif
 
@@ -244,9 +240,7 @@ bool SharedMemory::MapAt(off_t offset, size_t bytes) {
 
   bool mmap_succeeded = memory_ != (void*)-1 && memory_ != NULL;
   if (mmap_succeeded) {
-#if !defined(OS_ANDROID)
     mapped_size_ = bytes;
-#endif
     DCHECK_EQ(0U, reinterpret_cast<uintptr_t>(memory_) &
         (SharedMemory::MAP_MINIMUM_ALIGNMENT - 1));
   } else {
