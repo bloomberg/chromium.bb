@@ -36,11 +36,21 @@ function ActionChoice(dom, filesystem, params) {
     for (var i = 0; i < actions.length; i++) {
       this.registerAction_(actions[i]);
     }
+
     this.viewFilesAction_ = this.actionsById_['view-files'];
     this.importPhotosToDriveAction_ =
         this.actionsById_['import-photos-to-drive'];
     this.watchSingleVideoAction_ =
         this.actionsById_['watch-single-video'];
+
+    // Special case: if Google+ Photos is installed, then do not show Drive.
+    for (var i = 0; i < actions.length; i++) {
+      if (actions[i].extensionId == ActionChoice.GPLUS_PHOTOS_EXTENSION_ID) {
+        this.importPhotosToDriveAction_.hidden = true;
+        break;
+      }
+    }
+
     if (this.params_.advancedMode) {
       // In the advanced mode, skip auto-choice.
       this.initializeVolumes_();
@@ -66,6 +76,13 @@ ActionChoice.prototype = { __proto__: cr.EventTarget.prototype };
  * @const
  */
 ActionChoice.PREVIEW_COUNT = 3;
+
+/**
+ * Extension id of Google+ Photos app.
+ * @type {string}
+ * @const
+ */
+ActionChoice.GPLUS_PHOTOS_EXTENSION_ID = 'efjnaogkjbogokcnohkmnjdojkikgobo';
 
 /**
  * Loads app in the document body.
@@ -125,7 +142,7 @@ ActionChoice.prototype.initializeVolumes_ = function() {
     // Run the remembered action if it is available.
     if (this.rememberedChoice_) {
       var action = this.actionsById_[this.rememberedChoice_];
-      if (action && !action.hidden && !action.disabled)
+      if (action && !action.disabled)
         this.runAction_(action);
     }
   }.bind(this);
@@ -270,6 +287,7 @@ ActionChoice.prototype.loadSource_ = function(source, callback) {
       this.watchSingleVideoAction_.title = loadTimeData.getStringF(
           'ACTION_CHOICE_WATCH_SINGLE_VIDEO', videos[0].name);
       this.watchSingleVideoAction_.hidden = false;
+      this.watchSingleVideoAction_.disabled = false;
       this.renderList_();
     }
 

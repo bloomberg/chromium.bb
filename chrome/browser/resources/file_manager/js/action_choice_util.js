@@ -28,7 +28,8 @@ ActionChoiceUtil.getDefinedActions = function(loadTimeData, callback) {
   }, {
     id: 'watch-single-video',
     class: 'watch-single-video-icon',
-    hidden: true
+    hidden: true,
+    disabled: true
   }];
   chrome.mediaGalleriesPrivate.getHandlers(function(handlers) {
     for (var i = 0; i < handlers.length; i++) {
