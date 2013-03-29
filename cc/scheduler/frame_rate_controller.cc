@@ -39,8 +39,8 @@ FrameRateController::FrameRateController(scoped_refptr<TimeSource> timer)
       active_(false),
       swap_buffers_complete_supported_(true),
       is_time_source_throttling_(true),
-      weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
-      thread_(NULL) {
+      thread_(NULL),
+      weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   time_source_client_adapter_ =
       FrameRateControllerTimeSourceAdapter::Create(this);
   time_source_->SetClient(time_source_client_adapter_.get());
@@ -53,8 +53,8 @@ FrameRateController::FrameRateController(Thread* thread)
       active_(false),
       swap_buffers_complete_supported_(true),
       is_time_source_throttling_(false),
-      weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
-      thread_(thread) {}
+      thread_(thread),
+      weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {}
 
 FrameRateController::~FrameRateController() {
   if (is_time_source_throttling_)

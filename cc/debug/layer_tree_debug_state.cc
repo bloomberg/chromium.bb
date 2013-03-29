@@ -22,8 +22,8 @@ LayerTreeDebugState::LayerTreeDebugState()
       show_occluding_rects(false),
       show_non_occluding_rects(false),
       slow_down_raster_scale_factor(0),
-      trace_all_rendered_frames(false),
-      record_rendering_stats_(false) {}
+      record_rendering_stats_(false),
+      trace_all_rendered_frames(false) {}
 
 LayerTreeDebugState::~LayerTreeDebugState() {}
 

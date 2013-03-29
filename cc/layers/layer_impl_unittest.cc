@@ -139,8 +139,7 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
   EXECUTE_AND_VERIFY_ONLY_LAYER_CHANGED(
       root->SetContentsScale(arbitrary_number, arbitrary_number));
   EXECUTE_AND_VERIFY_ONLY_LAYER_CHANGED(root->SetDrawsContent(true));
-  EXECUTE_AND_VERIFY_ONLY_LAYER_CHANGED(
-      root->SetBackgroundColor(arbitrary_color));
+  EXECUTE_AND_VERIFY_ONLY_LAYER_CHANGED(root->SetBackgroundColor(SK_ColorGRAY));
   EXECUTE_AND_VERIFY_ONLY_LAYER_CHANGED(
       root->SetBackgroundFilters(arbitrary_filters));
 
@@ -262,8 +261,7 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(
       root->SetContentsScale(arbitrary_number, arbitrary_number));
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->SetDrawsContent(true));
-  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(
-      root->SetBackgroundColor(arbitrary_color));
+  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->SetBackgroundColor(SK_ColorGRAY));
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(
       root->SetBackgroundFilters(arbitrary_filters));
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->SetOpacity(arbitrary_number));
@@ -290,7 +288,7 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
       root->SetContentsScale(arbitrary_number, arbitrary_number));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->SetDrawsContent(true));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(
-      root->SetBackgroundColor(arbitrary_color));
+      root->SetBackgroundColor(SK_ColorGRAY));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(
       root->SetBackgroundFilters(arbitrary_filters));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->SetOpacity(arbitrary_number));

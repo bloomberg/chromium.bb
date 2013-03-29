@@ -117,7 +117,7 @@ class ScopedPtrHashMap {
     return it->second;
   }
 
-  inline bool contains(const Key& k) const { return data_.count(k) > 0; }
+  inline bool contains(const Key& k) const { return data_.count(k); }
 
   inline void clear() { STLDeleteValues(&data_); }
 

@@ -233,7 +233,7 @@ class PictureLayerImplTest : public testing::Test {
     // Add 1x1 rects at the centers of each tile, then re-record pile contents
     std::vector<Tile*> tiles =
         active_layer_->tilings().tiling_at(0)->AllTilesForTesting();
-    EXPECT_EQ(16u, tiles.size());
+    EXPECT_EQ(16, tiles.size());
     std::vector<SkRect> rects;
     std::vector<Tile*>::const_iterator tile_iter;
     for (tile_iter = tiles.begin(); tile_iter < tiles.end(); tile_iter++) {
@@ -261,7 +261,7 @@ class PictureLayerImplTest : public testing::Test {
       // SkPicture is perfectly aligned with the compositor's tiles.
       // Note: There are two rects: the initial clear and the explicitly
       // recorded rect. We only care about the second one.
-      EXPECT_EQ(2u, mock_canvas.rects_.size());
+      EXPECT_EQ(2, mock_canvas.rects_.size());
       EXPECT_EQ(*rect_iter, mock_canvas.rects_[1]);
       rect_iter++;
     }

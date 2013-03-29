@@ -70,7 +70,7 @@ LayerSorter::LayerSorter()
 
 LayerSorter::~LayerSorter() {}
 
-static float CheckFloatingPointNumericAccuracy(float a, float b) {
+static float const CheckFloatingPointNumericAccuracy(float a, float b) {
   float abs_dif = std::abs(b - a);
   float abs_max = std::max(std::abs(b), std::abs(a));
   // Check to see if we've got a result with a reasonable amount of error.

@@ -262,10 +262,10 @@ TEST_F(PrioritizedResourceTest, ChangePriorityCutoff) {
     impl_thread_and_main_thread_blocked(&proxy_);
     resource_manager->ReduceMemoryOnImplThread(
         TexturesMemorySize(8), 104, ResourceProvider());
-    EXPECT_EQ(0u, EvictedBackingCount(resource_manager.get()));
+    EXPECT_EQ(0, EvictedBackingCount(resource_manager.get()));
     resource_manager->ReduceMemoryOnImplThread(
         TexturesMemorySize(8), 103, ResourceProvider());
-    EXPECT_EQ(1u, EvictedBackingCount(resource_manager.get()));
+    EXPECT_EQ(1, EvictedBackingCount(resource_manager.get()));
   }
   resource_manager->UnlinkAndClearEvictedBackings();
   EXPECT_EQ(TexturesMemorySize(3), resource_manager->MemoryUseBytes());
@@ -704,19 +704,19 @@ TEST_F(PrioritizedResourceTest, ClearUploadsToEvictedResources) {
     EXPECT_TRUE(textures[i]->have_backing_texture());
 
   queue.ClearUploadsToEvictedResources();
-  EXPECT_EQ(4u, queue.FullUploadSize());
+  EXPECT_EQ(4, queue.FullUploadSize());
 
   resource_manager->ReduceMemoryOnImplThread(
       TexturesMemorySize(1),
       PriorityCalculator::AllowEverythingCutoff(),
       ResourceProvider());
   queue.ClearUploadsToEvictedResources();
-  EXPECT_EQ(1u, queue.FullUploadSize());
+  EXPECT_EQ(1, queue.FullUploadSize());
 
   resource_manager->ReduceMemoryOnImplThread(
       0, PriorityCalculator::AllowEverythingCutoff(), ResourceProvider());
   queue.ClearUploadsToEvictedResources();
-  EXPECT_EQ(0u, queue.FullUploadSize());
+  EXPECT_EQ(0, queue.FullUploadSize());
 }
 
 TEST_F(PrioritizedResourceTest, UsageStatistics) {

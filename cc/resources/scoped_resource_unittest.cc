@@ -42,7 +42,7 @@ TEST(ScopedResourceTest, CreateScopedResource) {
   EXPECT_EQ(expected_bytes, texture->bytes());
 
   EXPECT_LT(0u, texture->id());
-  EXPECT_EQ(static_cast<unsigned>(GL_RGBA), texture->format());
+  EXPECT_EQ(GL_RGBA, texture->format());
   EXPECT_EQ(gfx::Size(30, 30), texture->size());
 }
 

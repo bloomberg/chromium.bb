@@ -388,7 +388,7 @@ class LayerTreeHostAnimationTestDoNotSkipLayersWithAnimatedOpacity
   virtual void AfterTest() OVERRIDE {
     // Update() should have been called once, proving that the layer was not
     // skipped.
-    EXPECT_EQ(1u, update_check_layer_->update_count());
+    EXPECT_EQ(1, update_check_layer_->update_count());
 
     // clear update_check_layer_ so LayerTreeHost dies.
     update_check_layer_ = NULL;

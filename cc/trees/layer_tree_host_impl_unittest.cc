@@ -1579,7 +1579,6 @@ TEST_F(LayerTreeHostImplTest, PageScaleDeltaAppliedToRootScrollLayerOnly) {
   gfx::Size surface_size(10, 10);
   float default_page_scale = 1.f;
   gfx::Transform default_page_scale_matrix;
-  default_page_scale_matrix.Scale(default_page_scale, default_page_scale);
 
   float new_page_scale = 2.f;
   gfx::Transform new_page_scale_matrix;
@@ -2977,6 +2976,18 @@ class TrackingWebGraphicsContext3D : public TestWebGraphicsContext3D {
   base::hash_map<WebKit::WebGLId, bool> textures_;
   unsigned num_textures_;
 };
+
+static unsigned CreateResourceId(ResourceProvider* resource_provider) {
+  return resource_provider->CreateResource(
+      gfx::Size(20, 12),
+      resource_provider->best_texture_format(),
+      ResourceProvider::TextureUsageAny);
+}
+
+static unsigned CreateTextureId(ResourceProvider* resource_provider) {
+  return ResourceProvider::ScopedReadLockGL(
+      resource_provider, CreateResourceId(resource_provider)).texture_id();
+}
 
 TEST_F(LayerTreeHostImplTest, LayersFreeTextures) {
   scoped_ptr<TestWebGraphicsContext3D> context =

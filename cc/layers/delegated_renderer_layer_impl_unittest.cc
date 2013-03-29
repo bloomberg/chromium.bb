@@ -1021,6 +1021,8 @@ TEST_F(DelegatedRendererLayerImplTestClip,
   ASSERT_EQ(5u, root_delegated_quad_list.size());
   const SharedQuadState* root_delegated_shared_quad_state =
       root_delegated_quad_list[0]->shared_quad_state;
+  const SharedQuadState* contrib_delegated_shared_quad_state =
+      contrib_delegated_quad_list[0]->shared_quad_state;
 
   // When the quads don't have a clip of their own, the clip rect is set to
   // the drawable_content_rect of the delegated renderer layer.
@@ -1051,6 +1053,8 @@ TEST_F(DelegatedRendererLayerImplTestClip,
   ASSERT_EQ(5u, root_delegated_quad_list.size());
   const SharedQuadState* root_delegated_shared_quad_state =
       root_delegated_quad_list[0]->shared_quad_state;
+  const SharedQuadState* contrib_delegated_shared_quad_state =
+      contrib_delegated_quad_list[0]->shared_quad_state;
 
   // When the quads have a clip of their own, it is used.
   EXPECT_EQ(gfx::Rect(25, 25, 40, 40).ToString(),
@@ -1079,6 +1083,8 @@ TEST_F(DelegatedRendererLayerImplTestClip,
   ASSERT_EQ(5u, root_delegated_quad_list.size());
   const SharedQuadState* root_delegated_shared_quad_state =
       root_delegated_quad_list[0]->shared_quad_state;
+  const SharedQuadState* contrib_delegated_shared_quad_state =
+      contrib_delegated_quad_list[0]->shared_quad_state;
 
   // When the quads don't have a clip of their own, the clip rect is set to
   // the drawable_content_rect of the delegated renderer layer. When the layer
@@ -1109,6 +1115,8 @@ TEST_F(DelegatedRendererLayerImplTestClip,
   ASSERT_EQ(5u, root_delegated_quad_list.size());
   const SharedQuadState* root_delegated_shared_quad_state =
       root_delegated_quad_list[0]->shared_quad_state;
+  const SharedQuadState* contrib_delegated_shared_quad_state =
+      contrib_delegated_quad_list[0]->shared_quad_state;
 
   // When the quads have a clip of their own, it is used, but it is
   // combined with the clip rect of the delegated renderer layer.
@@ -1140,6 +1148,8 @@ TEST_F(DelegatedRendererLayerImplTestClip,
   ASSERT_EQ(5u, root_delegated_quad_list.size());
   const SharedQuadState* root_delegated_shared_quad_state =
       root_delegated_quad_list[0]->shared_quad_state;
+  const SharedQuadState* contrib_delegated_shared_quad_state =
+      contrib_delegated_quad_list[0]->shared_quad_state;
 
   // When the layer owns a surface, the quads don't need to be clipped
   // further than they already specify. If they aren't clipped, then their
@@ -1169,6 +1179,8 @@ TEST_F(DelegatedRendererLayerImplTestClip,
   ASSERT_EQ(5u, root_delegated_quad_list.size());
   const SharedQuadState* root_delegated_shared_quad_state =
       root_delegated_quad_list[0]->shared_quad_state;
+  const SharedQuadState* contrib_delegated_shared_quad_state =
+      contrib_delegated_quad_list[0]->shared_quad_state;
 
   // When the quads have a clip of their own, it is used.
   EXPECT_EQ(gfx::Rect(5, 5, 40, 40).ToString(),
@@ -1199,6 +1211,8 @@ TEST_F(DelegatedRendererLayerImplTestClip,
   ASSERT_EQ(5u, root_delegated_quad_list.size());
   const SharedQuadState* root_delegated_shared_quad_state =
       root_delegated_quad_list[0]->shared_quad_state;
+  const SharedQuadState* contrib_delegated_shared_quad_state =
+      contrib_delegated_quad_list[0]->shared_quad_state;
 
   // When the layer owns a surface, the quads don't need to be clipped
   // further than they already specify. If they aren't clipped, then their
@@ -1227,6 +1241,8 @@ TEST_F(DelegatedRendererLayerImplTestClip, QuadsClipped_LayerClipped_Surface) {
   ASSERT_EQ(5u, root_delegated_quad_list.size());
   const SharedQuadState* root_delegated_shared_quad_state =
       root_delegated_quad_list[0]->shared_quad_state;
+  const SharedQuadState* contrib_delegated_shared_quad_state =
+      contrib_delegated_quad_list[0]->shared_quad_state;
 
   // When the quads have a clip of their own, it is used, but it is
   // combined with the clip rect of the delegated renderer layer. If the
