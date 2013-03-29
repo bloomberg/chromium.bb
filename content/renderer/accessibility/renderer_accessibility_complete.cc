@@ -625,7 +625,7 @@ void RendererAccessibilityComplete::OnSetFocus(int acc_obj_id) {
 }
 
 void RendererAccessibilityComplete::OnFatalError() {
-  CHECK(false);
+  CHECK(false) << "Invalid accessibility tree.";
 }
 
 }  // namespace content
