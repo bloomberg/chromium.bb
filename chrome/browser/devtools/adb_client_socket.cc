@@ -277,7 +277,7 @@ class AdbQuerySocket : AdbClientSocket {
   bool CheckNetResultOrDie(int result) {
     if (result >= 0)
       return true;
-    callback_.Run(result, NULL);
+    callback_.Run(result, std::string());
     delete this;
     return false;
   }
