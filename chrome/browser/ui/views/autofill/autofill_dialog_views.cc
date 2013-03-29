@@ -34,6 +34,7 @@
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/separator.h"
+#include "ui/views/controls/styled_label.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/layout/box_layout.h"
@@ -523,6 +524,7 @@ AutofillDialogViews::AutofillDialogViews(AutofillDialogController* controller)
       save_in_chrome_checkbox_(NULL),
       autocheckout_progress_bar_view_(NULL),
       autocheckout_progress_bar_(NULL),
+      footnote_view_(NULL),
       focus_manager_(NULL) {
   DCHECK(controller);
   detail_groups_.insert(std::make_pair(SECTION_EMAIL,
@@ -566,6 +568,19 @@ void AutofillDialogViews::Hide() {
 
 void AutofillDialogViews::UpdateAccountChooser() {
   account_chooser_->Update();
+
+  // Update legal documents for the account.
+  if (footnote_view_) {
+    footnote_view_->SetText(controller_->LegalDocumentsText());
+
+    std::vector<ui::Range> link_ranges = controller_->LegalDocumentLinks();
+    for (size_t i = 0; i < link_ranges.size(); ++i) {
+      footnote_view_->AddLink(link_ranges[i]);
+    }
+
+    ContentsPreferredSizeChanged();
+    footnote_view_->SchedulePaint();
+  }
 }
 
 void AutofillDialogViews::UpdateButtonStrip() {
@@ -732,8 +747,8 @@ views::View* AutofillDialogViews::CreateTitlebarExtraView() {
 }
 
 views::View* AutofillDialogViews::CreateFootnoteView() {
-  // TODO(estade): add a view to contain the terms of service.
-  return NULL;
+  footnote_view_ = new views::StyledLabel(string16(), this);
+  return footnote_view_;
 }
 
 bool AutofillDialogViews::Cancel() {
@@ -849,6 +864,11 @@ void AutofillDialogViews::OnSelectedIndexChanged(views::Combobox* combobox) {
   DetailsGroup* group = GroupForView(combobox);
   DCHECK(group);
   ValidateGroup(group, AutofillDialogController::VALIDATE_EDIT);
+}
+
+void AutofillDialogViews::StyledLabelLinkClicked(const ui::Range& range,
+                                                 int event_flags) {
+  controller_->LegalDocumentLinkClicked(range);
 }
 
 void AutofillDialogViews::InitChildViews() {

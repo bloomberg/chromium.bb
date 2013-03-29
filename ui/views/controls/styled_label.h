@@ -28,6 +28,9 @@ class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
   StyledLabel(const string16& text, StyledLabelListener* listener);
   virtual ~StyledLabel();
 
+  // Sets the text to be displayed, and clears any previous styling.
+  void SetText(const string16& text);
+
   // Marks the given range within |text_| as a link.
   void AddLink(const ui::Range& range);
 

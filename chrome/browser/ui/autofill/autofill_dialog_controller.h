@@ -10,6 +10,7 @@
 #include "base/string16.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"
 #include "components/autofill/browser/field_types.h"
+#include "ui/base/range/range.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/native_widget_types.h"
@@ -52,6 +53,7 @@ class AutofillDialogController {
   virtual string16 CancelSignInText() const = 0;
   virtual string16 SaveLocallyText() const = 0;
   virtual string16 ProgressBarText() const = 0;
+  virtual string16 LegalDocumentsText() = 0;
 
   // State ---------------------------------------------------------------------
 
@@ -81,6 +83,9 @@ class AutofillDialogController {
 
   // Whether or not the |button| should be enabled.
   virtual bool IsDialogButtonEnabled(ui::DialogButton button) const = 0;
+
+  // Returns ranges to linkify in the text returned by |LegalDocumentsText()|.
+  virtual const std::vector<ui::Range>& LegalDocumentLinks() = 0;
 
   // Detail inputs -------------------------------------------------------------
 
@@ -156,6 +161,9 @@ class AutofillDialogController {
 
   // Marks the signin flow into Wallet complete.
   virtual void EndSignInFlow() = 0;
+
+  // A legal document link has been clicked.
+  virtual void LegalDocumentLinkClicked(const ui::Range& range) = 0;
 
   // Called when the view has been cancelled.
   virtual void OnCancel() = 0;

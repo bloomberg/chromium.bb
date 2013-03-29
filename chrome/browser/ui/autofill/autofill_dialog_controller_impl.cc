@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/base_window.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/native_app_window.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
@@ -444,6 +445,11 @@ string16 AutofillDialogControllerImpl::ProgressBarText() const {
       IDS_AUTOFILL_DIALOG_AUTOCHECKOUT_PROGRESS_BAR);
 }
 
+string16 AutofillDialogControllerImpl::LegalDocumentsText() {
+  EnsureLegalDocumentsText();
+  return legal_documents_text_;
+}
+
 DialogSignedInState AutofillDialogControllerImpl::SignedInState() const {
   if (signin_helper_ || !wallet_items_)
     return REQUIRES_RESPONSE;
@@ -498,6 +504,12 @@ bool AutofillDialogControllerImpl::IsDialogButtonEnabled(
   // TODO(ahutter): Make it possible for the user to cancel out of the dialog
   // while Autocheckout is in progress.
   return had_autocheckout_error_ || !did_submit_;
+}
+
+const std::vector<ui::Range>& AutofillDialogControllerImpl::
+    LegalDocumentLinks() {
+  EnsureLegalDocumentsText();
+  return legal_document_link_ranges_;
 }
 
 bool AutofillDialogControllerImpl::SectionIsActive(DialogSection section)
@@ -563,6 +575,47 @@ void AutofillDialogControllerImpl::OnWalletOrSigninUpdate() {
   // On the first successful response, compute the initial user state metric.
   if (initial_user_state_ == AutofillMetrics::DIALOG_USER_STATE_UNKNOWN)
     initial_user_state_ = GetInitialUserState();
+}
+
+void AutofillDialogControllerImpl::EnsureLegalDocumentsText() {
+  if (!wallet_items_ || wallet_items_->legal_documents().empty())
+    return;
+
+  // The text has already been constructed, no need to recompute.
+  if (!legal_documents_text_.empty())
+    return;
+
+  const std::vector<wallet::WalletItems::LegalDocument*>& documents =
+      wallet_items_->legal_documents();
+  DCHECK_LE(documents.size(), 3U);
+  DCHECK_GE(documents.size(), 2U);
+  const bool new_user = wallet_items_->HasRequiredAction(wallet::SETUP_WALLET);
+
+  const string16 privacy_policy_display_name =
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_PRIVACY_POLICY_LINK);
+  string16 text;
+  if (documents.size() == 2U) {
+    text = l10n_util::GetStringFUTF16(
+        new_user ? IDS_AUTOFILL_DIALOG_LEGAL_LINKS_NEW_2 :
+                   IDS_AUTOFILL_DIALOG_LEGAL_LINKS_UPDATED_2,
+        documents[0]->display_name(),
+        documents[1]->display_name());
+  } else {
+    text = l10n_util::GetStringFUTF16(
+        new_user ? IDS_AUTOFILL_DIALOG_LEGAL_LINKS_NEW_3 :
+                   IDS_AUTOFILL_DIALOG_LEGAL_LINKS_UPDATED_3,
+        documents[0]->display_name(),
+        documents[1]->display_name(),
+        documents[2]->display_name());
+  }
+
+  legal_document_link_ranges_.clear();
+  for (size_t i = 0; i < documents.size(); ++i) {
+    size_t link_start = text.find(documents[i]->display_name());
+    legal_document_link_ranges_.push_back(ui::Range(
+        link_start, link_start + documents[i]->display_name().size()));
+  }
+  legal_documents_text_ = text;
 }
 
 const DetailInputs& AutofillDialogControllerImpl::RequestedFieldsForSection(
@@ -1061,6 +1114,27 @@ void AutofillDialogControllerImpl::EndSignInFlow() {
   view_->HideSignIn();
 }
 
+void AutofillDialogControllerImpl::LegalDocumentLinkClicked(
+    const ui::Range& range) {
+#if !defined(OS_ANDROID)
+  for (size_t i = 0; i < legal_document_link_ranges_.size(); ++i) {
+    if (legal_document_link_ranges_[i] == range) {
+      chrome::NavigateParams params(
+          chrome::FindBrowserWithWebContents(web_contents()),
+          wallet_items_->legal_documents()[i]->url(),
+          content::PAGE_TRANSITION_AUTO_BOOKMARK);
+      params.disposition = NEW_BACKGROUND_TAB;
+      chrome::Navigate(&params);
+      return;
+    }
+  }
+
+  NOTREACHED();
+#else
+  // TODO(estade): use TabModelList?
+#endif
+}
+
 void AutofillDialogControllerImpl::OnCancel() {
   if (!did_submit_) {
     metric_logger_.LogDialogUiDuration(
@@ -1266,6 +1340,8 @@ void AutofillDialogControllerImpl::OnAutomaticSigninFailure(
 
 void AutofillDialogControllerImpl::OnDidGetWalletItems(
     scoped_ptr<wallet::WalletItems> wallet_items) {
+  legal_documents_text_.clear();
+  legal_document_link_ranges_.clear();
   // TODO(dbeam): verify all items support kCartCurrency?
   wallet_items_ = wallet_items.Pass();
   OnWalletOrSigninUpdate();

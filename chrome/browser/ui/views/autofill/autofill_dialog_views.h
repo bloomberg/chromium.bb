@@ -15,6 +15,7 @@
 #include "ui/views/controls/combobox/combobox_listener.h"
 #include "ui/views/controls/link_listener.h"
 #include "ui/views/controls/progress_bar.h"
+#include "ui/views/controls/styled_label_listener.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/window/dialog_delegate.h"
@@ -36,6 +37,7 @@ class ImageView;
 class Label;
 class Link;
 class MenuRunner;
+class StyledLabel;
 class TextButton;
 class Textfield;
 class WebView;
@@ -59,7 +61,8 @@ class AutofillDialogViews : public AutofillDialogView,
                             public views::TextfieldController,
                             public views::FocusChangeListener,
                             public views::LinkListener,
-                            public views::ComboboxListener {
+                            public views::ComboboxListener,
+                            public views::StyledLabelListener {
  public:
   explicit AutofillDialogViews(AutofillDialogController* controller);
   virtual ~AutofillDialogViews();
@@ -124,6 +127,10 @@ class AutofillDialogViews : public AutofillDialogView,
 
   // views::ComboboxListener implementation:
   virtual void OnSelectedIndexChanged(views::Combobox* combobox) OVERRIDE;
+
+  // views::StyledLabelListener implementation:
+  virtual void StyledLabelLinkClicked(const ui::Range& range, int event_flags)
+      OVERRIDE;
 
  private:
   // A class which holds a textfield and draws extra stuff on top, like
@@ -464,6 +471,10 @@ class AutofillDialogViews : public AutofillDialogView,
 
   // Progress bar for displaying Autocheckout progress.
   AutocheckoutProgressBar* autocheckout_progress_bar_;
+
+  // The view that is appended to the bottom of the dialog, below the button
+  // strip. Used to display legal document links.
+  views::StyledLabel* footnote_view_;
 
   // The focus manager for |window_|.
   views::FocusManager* focus_manager_;

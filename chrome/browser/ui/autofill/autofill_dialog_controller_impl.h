@@ -101,6 +101,7 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   virtual string16 SaveLocallyText() const OVERRIDE;
   virtual string16 CancelSignInText() const OVERRIDE;
   virtual string16 ProgressBarText() const OVERRIDE;
+  virtual string16 LegalDocumentsText() OVERRIDE;
   virtual DialogSignedInState SignedInState() const OVERRIDE;
   virtual bool ShouldShowSpinner() const OVERRIDE;
   virtual bool ShouldOfferToSaveInChrome() const OVERRIDE;
@@ -109,6 +110,7 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   virtual bool AutocheckoutIsRunning() const OVERRIDE;
   virtual bool HadAutocheckoutError() const OVERRIDE;
   virtual bool IsDialogButtonEnabled(ui::DialogButton button) const OVERRIDE;
+  virtual const std::vector<ui::Range>& LegalDocumentLinks() OVERRIDE;
   virtual bool SectionIsActive(DialogSection section) const OVERRIDE;
   virtual const DetailInputs& RequestedFieldsForSection(DialogSection section)
       const OVERRIDE;
@@ -139,6 +141,7 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   virtual std::vector<DialogNotification> CurrentNotifications() const OVERRIDE;
   virtual void StartSignInFlow() OVERRIDE;
   virtual void EndSignInFlow() OVERRIDE;
+  virtual void LegalDocumentLinkClicked(const ui::Range& range) OVERRIDE;
   virtual void OnCancel() OVERRIDE;
   virtual void OnSubmit() OVERRIDE;
   virtual Profile* profile() OVERRIDE;
@@ -267,6 +270,10 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // Should be called on the Wallet sign-in error.
   void OnWalletSigninError();
 
+  // Calculates |legal_documents_text_| and |legal_document_link_ranges_| if
+  // they have not already been calculated.
+  void EnsureLegalDocumentsText();
+
   // Creates a DataModelWrapper item for the item that's checked in the
   // suggestion model for |section|. This may represent Autofill
   // data or Wallet data, depending on whether Wallet is currently enabled.
@@ -385,6 +392,11 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // Recently received items retrieved via |wallet_client_|.
   scoped_ptr<wallet::WalletItems> wallet_items_;
   scoped_ptr<wallet::FullWallet> full_wallet_;
+
+  // The text to display when the user is accepting new terms of service, etc.
+  string16 legal_documents_text_;
+  // The ranges within |legal_documents_text_| to linkify.
+  std::vector<ui::Range> legal_document_link_ranges_;
 
   // Used to remember the state of Wallet comboboxes when Submit was clicked.
   std::string active_instrument_id_;

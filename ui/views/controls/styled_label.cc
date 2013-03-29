@@ -37,13 +37,21 @@ StyledLabel::StyledLabel(const string16& text, StyledLabelListener* listener)
 
 StyledLabel::~StyledLabel() {}
 
+void StyledLabel::SetText(const string16& text) {
+  text_ = text;
+  calculated_size_ = gfx::Size();
+  link_ranges_ = std::priority_queue<LinkRange>();
+  RemoveAllChildViews(true);
+  PreferredSizeChanged();
+}
+
 void StyledLabel::AddLink(const ui::Range& range) {
   DCHECK(!range.is_reversed());
   DCHECK(!range.is_empty());
   DCHECK(ui::Range(0, text_.size()).Contains(range));
   link_ranges_.push(LinkRange(range));
   calculated_size_ = gfx::Size();
-  InvalidateLayout();
+  PreferredSizeChanged();
 }
 
 gfx::Insets StyledLabel::GetInsets() const {
@@ -75,7 +83,7 @@ int StyledLabel::CalculateAndDoLayout(int width, bool dry_run) {
   }
 
   width -= GetInsets().width();
-  if (width <= 0)
+  if (width <= 0 || text_.empty())
     return 0;
 
   const int line_height = CalculateLineHeight();

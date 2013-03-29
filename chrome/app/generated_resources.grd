@@ -10863,6 +10863,19 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
       <message name="IDS_AUTOFILL_DIALOG_PRIVACY_POLICY_LINK" desc="The text of an extra link that is appended to the end of whatever other legal documents need to be accepted or updated.">
         Privacy Policy
       </message>
+      <message name="IDS_AUTOFILL_DIALOG_LEGAL_LINKS_NEW_2" desc="Label at the bottom of the autofill dialog that is shown when a user needs to accept updated legal documents (ex: Privacy Policy, Terms Of Service).">
+        By clicking Submit you agree to the <ph name="LEGAL_DOC_LINK_TEXT_1">$1<ex>Google Wallet Terms Of Service</ex></ph> and <ph name="LEGAL_DOC_LINK_TEXT_2">$2<ex>Privacy Policy</ex></ph>.
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_LEGAL_LINKS_NEW_3" desc="Label at the bottom of the autofill dialog that is shown when a user needs to accept updated legal documents (ex: Privacy Policy, Terms Of Service).">
+        By clicking Submit you agree to the <ph name="LEGAL_DOC_LINK_TEXT_1">$1<ex>Google Wallet Terms Of Service</ex></ph>, <ph name="LEGAL_DOC_LINK_TEXT_2">$2<ex>Virtual Card Notice</ex></ph>, and <ph name="LEGAL_DOC_LINK_TEXT_3">$3<ex>Terms Of Use</ex></ph>.
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_LEGAL_LINKS_UPDATED_2" desc="Label at the bottom of the autofill dialog that is shown when a user needs to accept updated legal documents (ex: Privacy Policy, Terms Of Service).">
+        The <ph name="LEGAL_DOC_LINK_TEXT_1">$1<ex>Google Wallet Terms Of Service</ex></ph> and <ph name="LEGAL_DOC_LINK_TEXT_2">$2<ex>Privacy Policy</ex></ph> have been updated. By clicking Submit you verify that you accept these changes.
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_LEGAL_LINKS_UPDATED_3" desc="Label at the bottom of the autofill dialog that is shown when a user needs to accept updated legal documents (ex: Privacy Policy, Terms Of Service).">
+        The <ph name="LEGAL_DOC_LINK_TEXT_1">$1<ex>Google Wallet Terms Of Service</ex></ph>, <ph name="LEGAL_DOC_LINK_TEXT_2">$2<ex>Privacy Policy</ex></ph>, and <ph name="LEGAL_DOC_LINK_TEXT_3">$3<ex>Terms Of Use</ex></ph> have been updated. By clicking Submit you verify that you accept these changes.
+      </message>
+
 
       <!-- Autocheckout bubble -->
       <message name="IDS_AUTOCHECKOUT_BUBBLE_PROMPT" desc="Text for prompting a user to start an Autocheckout flow.">
