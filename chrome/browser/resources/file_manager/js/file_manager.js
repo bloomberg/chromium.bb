@@ -485,8 +485,7 @@ DialogType.isModal = function(type) {
    * @private
    */
   FileManager.prototype.initDataTransferOperations_ = function() {
-    this.copyManager_ = new FileCopyManagerWrapper.getInstance(
-        this.filesystem_.root);
+    this.copyManager_ = new FileCopyManagerWrapper.getInstance();
 
     this.butterBar_ = new ButterBar(this.dialogDom_, this.copyManager_,
         this.metadataCache_);

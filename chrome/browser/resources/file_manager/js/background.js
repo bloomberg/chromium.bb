@@ -88,6 +88,7 @@ AppWindowWrapper.prototype.launch = function(appState) {
       delete appWindows[this.id_];
       chrome.storage.local.remove(this.id_);  // Forget the persisted state.
       this.window_ = null;
+      maybeCloseBackgroundPage();
     }.bind(this));
   }.bind(this));
 };
@@ -315,8 +316,16 @@ function restart() {
   videoPlayer.reopen();
 }
 
-chrome.app.runtime.onLaunched.addListener(launch);
+/**
+ * Closes the background page, if it is not needed.
+ */
+function maybeCloseBackgroundPage() {
+  if (Object.keys(appWindows).length === 0 &&
+      !FileCopyManager.getInstance().hasQueuedTasks())
+    close();
+}
 
+chrome.app.runtime.onLaunched.addListener(launch);
 chrome.app.runtime.onRestarted.addListener(restart);
 
 function addExecuteHandler() {

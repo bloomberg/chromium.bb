@@ -7,12 +7,9 @@
 /**
  * While FileCopyManager is run in the background page, this class is used to
  * communicate with it.
- * @param {DirectoryEntry} root Root directory entry.
  * @constructor
  */
-function FileCopyManagerWrapper(root) {
-  this.root_ = root;
-
+function FileCopyManagerWrapper() {
   this.status_ = {
     pendingItems: 0,
     pendingFiles: 0,
@@ -43,12 +40,11 @@ FileCopyManagerWrapper.prototype.__proto__ = cr.EventTarget.prototype;
 
 /**
  * Create a new instance or get existing instance of FCMW.
- * @param {DirectoryEntry} root Root directory entry.
  * @return {FileCopyManagerWrapper}  A FileCopyManagerWrapper instance.
  */
-FileCopyManagerWrapper.getInstance = function(root) {
+FileCopyManagerWrapper.getInstance = function() {
   if (!FileCopyManagerWrapper.instance_)
-    FileCopyManagerWrapper.instance_ = new FileCopyManagerWrapper(root);
+    FileCopyManagerWrapper.instance_ = new FileCopyManagerWrapper();
 
   return FileCopyManagerWrapper.instance_;
 };
@@ -62,13 +58,13 @@ FileCopyManagerWrapper.prototype.getCopyManagerAsync_ = function(callback) {
   var MAX_RETRIES = 10;
   var TIMEOUT = 100;
 
-  var root = this.root_;
   var retries = 0;
 
   var tryOnce = function() {
     var onGetBackgroundPage = function(bg) {
       if (bg) {
-        callback(bg.FileCopyManager.getInstance(root));
+        var fileCopyManager = bg.FileCopyManager.getInstance();
+        fileCopyManager.initialize(callback.bind(this, fileCopyManager));
         return;
       }
       if (++retries < MAX_RETRIES)
