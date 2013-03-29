@@ -4483,45 +4483,53 @@ TestCase remove_render_passes_cases[] = {
     "Single root pass",
     "R0ssss\n",
     "R0ssss\n"
-  }, {
+  },
+  {
     "Single pass - no quads",
     "R0\n",
     "R0\n"
-  }, {
+  },
+  {
     "Two passes, no removal",
     "R0ssssA0sss\n"
     "A0ssss\n",
     "R0ssssA0sss\n"
     "A0ssss\n"
-  }, {
+  },
+  {
     "Two passes, remove last",
     "R0ssssA0[ct]sss\n"
     "A0ssss\n",
     "R0ssssA0sss\n"
-  }, {
+  },
+  {
     "Have texture but contents changed - leave pass",
     "R0ssssA0[t]sss\n"
     "A0ssss\n",
     "R0ssssA0sss\n"
     "A0ssss\n"
-  }, {
+  },
+  {
     "Contents didn't change but no texture - leave pass",
     "R0ssssA0[c]sss\n"
     "A0ssss\n",
     "R0ssssA0sss\n"
     "A0ssss\n"
-  }, {
+  },
+  {
     "Replica: two quads reference the same pass; remove",
     "R0ssssA0[ct]A0[ct]sss\n"
     "A0ssss\n",
     "R0ssssA0A0sss\n"
-  }, {
+  },
+  {
     "Replica: two quads reference the same pass; leave",
     "R0ssssA0[c]A0[c]sss\n"
     "A0ssss\n",
     "R0ssssA0A0sss\n"
     "A0ssss\n",
-  }, {
+  },
+  {
     "Many passes, remove all",
     "R0ssssA0[ct]sss\n"
     "A0sssB0[ct]C0[ct]s\n"
@@ -4533,7 +4541,8 @@ TestCase remove_render_passes_cases[] = {
     "G0sss\n",
 
     "R0ssssA0sss\n"
-  }, {
+  },
+  {
     "Deep recursion, remove all",
 
     "R0sssssA0[ct]ssss\n"
@@ -4549,7 +4558,8 @@ TestCase remove_render_passes_cases[] = {
     "J0ssss\n",
 
     "R0sssssA0ssss\n"
-  }, {
+  },
+  {
     "Wide recursion, remove all",
     "R0A0[ct]B0[ct]C0[ct]D0[ct]E0[ct]F0[ct]G0[ct]H0[ct]I0[ct]J0[ct]\n"
     "A0s\n"
@@ -4564,7 +4574,8 @@ TestCase remove_render_passes_cases[] = {
     "J0ssss\n",
 
     "R0A0B0C0D0E0F0G0H0I0J0\n"
-  }, {
+  },
+  {
     "Remove passes regardless of cache state",
     "R0ssssA0[ct]sss\n"
     "A0sssB0C0s\n"
@@ -4576,7 +4587,8 @@ TestCase remove_render_passes_cases[] = {
     "G0sss\n",
 
     "R0ssssA0sss\n"
-  }, {
+  },
+  {
     "Leave some passes, remove others",
 
     "R0ssssA0[c]sss\n"
@@ -4590,7 +4602,8 @@ TestCase remove_render_passes_cases[] = {
     "A0sssB0C0s\n"
     "B0sssD0ss\n"
     "D0sssssss\n"
-  }, {
+  },
+  {
     0, 0, 0
   }
 };
@@ -4754,7 +4767,8 @@ TEST_F(LayerTreeHostImplTest, MaskLayerWithScaling) {
   // that should fully map onto the quad.
   float device_scale_factor = 1.f;
   host_impl_->SetViewportSize(root_size, root_size);
-  host_impl_->SetDeviceScaleFactor(device_scale_factor); {
+  host_impl_->SetDeviceScaleFactor(device_scale_factor);
+  {
     LayerTreeHostImpl::FrameData frame;
     EXPECT_TRUE(host_impl_->PrepareToDraw(&frame));
 
@@ -4781,7 +4795,8 @@ TEST_F(LayerTreeHostImplTest, MaskLayerWithScaling) {
       gfx::ToFlooredSize(gfx::ScaleSize(root_size, device_scale_factor));
   host_impl_->SetViewportSize(root_size, device_viewport);
   host_impl_->SetDeviceScaleFactor(device_scale_factor);
-  host_impl_->active_tree()->set_needs_update_draw_properties(); {
+  host_impl_->active_tree()->set_needs_update_draw_properties();
+  {
     LayerTreeHostImpl::FrameData frame;
     EXPECT_TRUE(host_impl_->PrepareToDraw(&frame));
 
@@ -4810,7 +4825,8 @@ TEST_F(LayerTreeHostImplTest, MaskLayerWithScaling) {
   content_layer->SetContentsScale(device_scale_factor, device_scale_factor);
   mask_layer->SetContentBounds(content_bounds);
   mask_layer->SetContentsScale(device_scale_factor, device_scale_factor);
-  host_impl_->active_tree()->set_needs_update_draw_properties(); {
+  host_impl_->active_tree()->set_needs_update_draw_properties();
+  {
     LayerTreeHostImpl::FrameData frame;
     EXPECT_TRUE(host_impl_->PrepareToDraw(&frame));
 
@@ -4873,7 +4889,8 @@ TEST_F(LayerTreeHostImplTest, MaskLayerWithDifferentBounds) {
   // Check that the mask fills the surface.
   float device_scale_factor = 1.f;
   host_impl_->SetViewportSize(root_size, root_size);
-  host_impl_->SetDeviceScaleFactor(device_scale_factor); {
+  host_impl_->SetDeviceScaleFactor(device_scale_factor);
+  {
     LayerTreeHostImpl::FrameData frame;
     EXPECT_TRUE(host_impl_->PrepareToDraw(&frame));
 
@@ -4900,7 +4917,8 @@ TEST_F(LayerTreeHostImplTest, MaskLayerWithDifferentBounds) {
       gfx::ToFlooredSize(gfx::ScaleSize(root_size, device_scale_factor));
   host_impl_->SetViewportSize(root_size, device_viewport);
   host_impl_->SetDeviceScaleFactor(device_scale_factor);
-  host_impl_->active_tree()->set_needs_update_draw_properties(); {
+  host_impl_->active_tree()->set_needs_update_draw_properties();
+  {
     LayerTreeHostImpl::FrameData frame;
     EXPECT_TRUE(host_impl_->PrepareToDraw(&frame));
 
@@ -4930,7 +4948,8 @@ TEST_F(LayerTreeHostImplTest, MaskLayerWithDifferentBounds) {
       gfx::ToRoundedSize(gfx::ScaleSize(mask_size, device_scale_factor));
   mask_layer->SetContentBounds(mask_size_large);
   mask_layer->SetContentsScale(device_scale_factor, device_scale_factor);
-  host_impl_->active_tree()->set_needs_update_draw_properties(); {
+  host_impl_->active_tree()->set_needs_update_draw_properties();
+  {
     LayerTreeHostImpl::FrameData frame;
     EXPECT_TRUE(host_impl_->PrepareToDraw(&frame));
 
@@ -4953,7 +4972,8 @@ TEST_F(LayerTreeHostImplTest, MaskLayerWithDifferentBounds) {
   // in the mask covering the owning layer.
   mask_layer->SetContentBounds(mask_size);
   mask_layer->SetContentsScale(device_scale_factor, device_scale_factor);
-  host_impl_->active_tree()->set_needs_update_draw_properties(); {
+  host_impl_->active_tree()->set_needs_update_draw_properties();
+  {
     LayerTreeHostImpl::FrameData frame;
     EXPECT_TRUE(host_impl_->PrepareToDraw(&frame));
 

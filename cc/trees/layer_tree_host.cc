@@ -299,7 +299,8 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
 
   if (needs_full_tree_sync_)
     sync_tree->SetRootLayer(TreeSynchronizer::SynchronizeTrees(
-        root_layer(), sync_tree->DetachLayerTree(), sync_tree)); {
+        root_layer(), sync_tree->DetachLayerTree(), sync_tree));
+  {
     TRACE_EVENT0("cc", "LayerTreeHost::PushProperties");
     TreeSynchronizer::PushProperties(root_layer(), sync_tree->root_layer());
   }

@@ -231,7 +231,8 @@ void OverdrawMetrics::RecordMetricsInternal(
       UMA_HISTOGRAM_CUSTOM_COUNTS(
           "Renderer4.contentsTextureBytes_Unscaled",
           static_cast<int>(contents_texture_use_bytes_ / 1000),
-          1000, 100000000, 50); {
+          1000, 100000000, 50);
+      {
         TRACE_COUNTER_ID1("cc",
                           "UploadTilesCulled",
                           layer_tree_host,
