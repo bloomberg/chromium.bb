@@ -27,7 +27,7 @@ bool ScopedResource::Allocate(const gfx::Size& size, GLenum format,
   allocate_thread_id_ = base::PlatformThread::CurrentId();
 #endif
 
-  return id() != 0;
+  return id();
 }
 
 void ScopedResource::Free() {

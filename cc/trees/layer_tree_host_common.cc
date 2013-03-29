@@ -1332,7 +1332,7 @@ void LayerTreeHostCommon::CalculateDrawProperties(
                                                  update_tile_priorities);
 
   // The dummy layer list should not have been used.
-  DCHECK_EQ(0u, dummy_layer_list.size());
+  DCHECK_EQ(dummy_layer_list.size(), 0);
   // A root layer render_surface should always exist after
   // CalculateDrawProperties.
   DCHECK(root_layer->render_surface());
@@ -1385,7 +1385,7 @@ void LayerTreeHostCommon::CalculateDrawProperties(
       update_tile_priorities);
 
   // The dummy layer list should not have been used.
-  DCHECK_EQ(0u, dummy_layer_list.size());
+  DCHECK_EQ(dummy_layer_list.size(), 0);
   // A root layer render_surface should always exist after
   // CalculateDrawProperties.
   DCHECK(root_layer->render_surface());

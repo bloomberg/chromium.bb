@@ -44,8 +44,8 @@ TextureLayer::TextureLayer(TextureLayerClient* client, bool uses_mailbox)
       premultiplied_alpha_(true),
       rate_limit_context_(false),
       context_lost_(false),
-      content_committed_(false),
       texture_id_(0),
+      content_committed_(false),
       own_mailbox_(false) {
   vertex_opacity_[0] = 1.0f;
   vertex_opacity_[1] = 1.0f;

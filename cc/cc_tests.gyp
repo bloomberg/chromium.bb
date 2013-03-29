@@ -4,7 +4,7 @@
 
 {
   'variables': {
-    'chromium_code': 1,
+    'chromium_code': 0,
     'cc_unit_tests_source_files': [
       'animation/animation_unittest.cc',
       'layers/content_layer_unittest.cc',

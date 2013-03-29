@@ -81,9 +81,7 @@ class SoftwareRendererTest : public testing::Test, public RendererClient {
 
 TEST_F(SoftwareRendererTest, SolidColorQuad) {
   gfx::Size outer_size(100, 100);
-#if !defined(OS_ANDROID)
   int outer_pixels = outer_size.width() * outer_size.height();
-#endif
   gfx::Size inner_size(98, 98);
   gfx::Rect outer_rect(outer_size);
   gfx::Rect inner_rect(gfx::Point(1, 1), inner_size);

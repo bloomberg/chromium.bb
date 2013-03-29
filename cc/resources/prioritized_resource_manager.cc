@@ -15,13 +15,13 @@
 namespace cc {
 
 PrioritizedResourceManager::PrioritizedResourceManager(const Proxy* proxy)
-    : max_memory_limit_bytes_(DefaultMemoryAllocationLimit()),
+    : proxy_(proxy),
+      max_memory_limit_bytes_(DefaultMemoryAllocationLimit()),
       external_priority_cutoff_(PriorityCalculator::AllowEverythingCutoff()),
       memory_use_bytes_(0),
+      max_memory_needed_bytes_(0), 
       memory_above_cutoff_bytes_(0),
-      max_memory_needed_bytes_(0),
       memory_available_bytes_(0),
-      proxy_(proxy),
       backings_tail_not_sorted_(false),
       memory_visible_bytes_(0),
       memory_visible_and_nearby_bytes_(0),

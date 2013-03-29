@@ -213,8 +213,8 @@ class LayerTreeHostContextTest : public LayerTreeTest {
   int times_to_lose_on_create_;
   int times_to_lose_during_commit_;
   int times_to_lose_during_draw_;
-  int times_to_fail_recreate_;
   int times_to_fail_reinitialize_;
+  int times_to_fail_recreate_;
   int times_to_lose_on_recreate_;
   int times_to_fail_create_offscreen_;
   int times_to_fail_recreate_offscreen_;
@@ -247,7 +247,7 @@ class LayerTreeHostContextTestLostContextSucceeds
   }
 
   virtual void AfterTest() OVERRIDE {
-    EXPECT_EQ(10u, test_case_);
+    EXPECT_EQ(10, test_case_);
     EXPECT_EQ(8 + 10 + 10, num_losses_);
   }
 
@@ -1203,14 +1203,14 @@ class ScrollbarLayerLostContext : public LayerTreeHostContextTest {
         // First (regular) update, we should upload 2 resources (thumb, and
         // backtrack).
         EXPECT_EQ(1, scrollbar_layer_->update_count());
-        EXPECT_EQ(2u, upload_count);
+        EXPECT_EQ(2, upload_count);
         LoseContext();
         break;
       case 2:
         // Second update, after the lost context, we should still upload 2
         // resources even if the contents haven't changed.
         EXPECT_EQ(2, scrollbar_layer_->update_count());
-        EXPECT_EQ(2u, upload_count);
+        EXPECT_EQ(2, upload_count);
         EndTest();
         break;
       default:

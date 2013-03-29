@@ -72,7 +72,6 @@ class ResourceUpdateControllerTest : public Test {
       : proxy_(scoped_ptr<Thread>(NULL)),
         queue_(make_scoped_ptr(new ResourceUpdateQueue)),
         resource_manager_(PrioritizedResourceManager::Create(&proxy_)),
-        query_results_available_(0),
         full_upload_count_expected_(0),
         partial_count_expected_(0),
         total_upload_count_expected_(0),
@@ -80,7 +79,8 @@ class ResourceUpdateControllerTest : public Test {
         num_consecutive_flushes_(0),
         num_dangling_uploads_(0),
         num_total_uploads_(0),
-        num_total_flushes_(0) {}
+        num_total_flushes_(0),
+        query_results_available_(0) {}
 
   virtual ~ResourceUpdateControllerTest() {
     DebugScopedSetImplThreadAndMainThreadBlocked
