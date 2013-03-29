@@ -2445,10 +2445,6 @@ void RenderViewImpl::numberOfWheelEventHandlersChanged(unsigned num_handlers) {
   Send(new ViewHostMsg_DidChangeNumWheelEvents(routing_id_, num_handlers));
 }
 
-void RenderViewImpl::hasTouchEventHandlers(bool has_handlers) {
-  Send(new ViewHostMsg_HasTouchEventHandlers(routing_id_, has_handlers));
-}
-
 void RenderViewImpl::didUpdateLayout() {
   // We don't always want to set up a timer, only if we've been put in that
   // mode by getting a |ViewMsg_EnablePreferredSizeChangedMode|

@@ -2292,6 +2292,10 @@ bool RenderWidget::WillHandleGestureEvent(
   return false;
 }
 
+void RenderWidget::hasTouchEventHandlers(bool has_handlers) {
+  Send(new ViewHostMsg_HasTouchEventHandlers(routing_id_, has_handlers));
+}
+
 bool RenderWidget::HasTouchEventHandlersAt(const gfx::Point& point) const {
   return true;
 }

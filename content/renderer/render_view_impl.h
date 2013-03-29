@@ -467,7 +467,6 @@ class CONTENT_EXPORT RenderViewImpl
   virtual void focusPrevious();
   virtual void focusedNodeChanged(const WebKit::WebNode& node);
   virtual void numberOfWheelEventHandlersChanged(unsigned num_handlers);
-  virtual void hasTouchEventHandlers(bool has_handlers);
   virtual void didUpdateLayout();
 #if defined(OS_ANDROID)
   virtual bool didTapMultipleTargets(

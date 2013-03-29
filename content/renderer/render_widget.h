@@ -477,6 +477,9 @@ class CONTENT_EXPORT RenderWidget
   // at the given point.
   virtual bool HasTouchEventHandlersAt(const gfx::Point& point) const;
 
+  // Check whether the WebWidget has any touch event handlers registered.
+  virtual void hasTouchEventHandlers(bool has_handlers);
+
   // Creates a 3D context associated with this view.
   WebKit::WebGraphicsContext3D* CreateGraphicsContext3D(
       const WebKit::WebGraphicsContext3D::Attributes& attributes);
