@@ -1023,6 +1023,9 @@ class Upgrader(object):
             oper.Warning('Not upgrading %s; it already exists in source.\n'
                          'To force upgrade of this version specify --force.' %
                          pinfo.upstream_cpv)
+    elif self._PkgUpgradeRequested(pinfo):
+      raise RuntimeError('Unable to find upstream package for upgrading %s.' %
+                         catpkg)
 
     if pinfo.upgraded_cpv:
       # Deal with keywords now if new ebuild is not stable.
@@ -1473,7 +1476,7 @@ class Upgrader(object):
           if local_cpv and not local_cpv.startswith('virtual/'):
             local_cpv = None
 
-        if not upstream_cpv and verrev:
+        if not upstream_cpv and upgrade_mode:
           # See if --unstable-ok is required for this upstream version.
           if not self._unstable_ok and self._FindUpstreamCPV(arg, True):
             raise RuntimeError('Upstream "%s" is unstable on %s.  Re-run with '

@@ -3153,14 +3153,13 @@ class ResolveAndVerifyArgsTest(CpuTestBase):
       args.append(arg)
 
       catpkg = cpu.Upgrader._GetCatPkgFromCpv(arg)
-      verrev = cpu.Upgrader._GetVerRevFromCpv(arg)
       local_arg = catpkg if catpkg else arg
 
       mocked_upgrader._FindCurrentCPV(local_arg).AndReturn(local_cpv)
       mocked_upgrader._FindUpstreamCPV(arg, mocked_upgrader._unstable_ok,
                                        ).AndReturn(upstream_cpv)
 
-      if not upstream_cpv and verrev:
+      if not upstream_cpv and upgrade_mode:
         # Real method raises an exception here.
         if not mocked_upgrader._unstable_ok:
           mocked_upgrader._FindUpstreamCPV(arg, True).AndReturn(arg)
@@ -3245,14 +3244,23 @@ class ResolveAndVerifyArgsTest(CpuTestBase):
                                            error=RuntimeError,
                                            error_checker=_error_checker)
 
-  def testResolveAndVerifyArgsNonWorldLocalOnly(self):
+  def testResolveAndVerifyArgsNonWorldLocalOny(self):
     pinfolist = [cpu.PInfo(user_arg='dev-libs/B',
                            cpv='dev-libs/B-1',
                            ),
                  ]
     cmdargs = ['--upgrade', '--unstable-ok']
-    result = self._TestResolveAndVerifyArgsNonWorld(pinfolist, cmdargs)
-    self.assertEquals(result, pinfolist)
+
+    def _error_checker(exception):
+      # RuntimeError text should start with 'Unable to find'.
+      text = str(exception)
+      phrase = 'Unable to find'
+      msg = 'Error message expected to start with "%s": %s' % (phrase, text)
+      return (text.startswith(phrase), msg)
+
+    self._TestResolveAndVerifyArgsNonWorld(pinfolist, cmdargs,
+                                           error=RuntimeError,
+                                           error_checker=_error_checker)
 
   def testResolveAndVerifyArgsNonWorldUpstreamOnly(self):
     pinfolist = [cpu.PInfo(user_arg='dev-libs/B',
