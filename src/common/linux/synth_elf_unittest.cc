@@ -234,6 +234,30 @@ TYPED_TEST(BasicElf, EmptyLE) {
   EXPECT_EQ(sizeof(Shdr), header->e_shentsize);
   EXPECT_EQ(2, header->e_shnum);
   EXPECT_EQ(1, header->e_shstrndx);
+
+  const Shdr* shdr =
+    reinterpret_cast<const Shdr*>(contents.data() + header->e_shoff);
+  EXPECT_EQ(0U, shdr[0].sh_name);
+  EXPECT_EQ(static_cast<unsigned int>(SHT_NULL), shdr[0].sh_type);
+  EXPECT_EQ(0U, shdr[0].sh_flags);
+  EXPECT_EQ(0U, shdr[0].sh_addr);
+  EXPECT_EQ(0U, shdr[0].sh_offset);
+  EXPECT_EQ(0U, shdr[0].sh_size);
+  EXPECT_EQ(0U, shdr[0].sh_link);
+  EXPECT_EQ(0U, shdr[0].sh_info);
+  EXPECT_EQ(0U, shdr[0].sh_addralign);
+  EXPECT_EQ(0U, shdr[0].sh_entsize);
+
+  EXPECT_EQ(1U, shdr[1].sh_name);
+  EXPECT_EQ(static_cast<unsigned int>(SHT_STRTAB), shdr[1].sh_type);
+  EXPECT_EQ(0U, shdr[1].sh_flags);
+  EXPECT_EQ(0U, shdr[1].sh_addr);
+  EXPECT_EQ(sizeof(Ehdr), shdr[1].sh_offset);
+  EXPECT_EQ(kStringTableSize, shdr[1].sh_size);
+  EXPECT_EQ(0U, shdr[1].sh_link);
+  EXPECT_EQ(0U, shdr[1].sh_info);
+  EXPECT_EQ(0U, shdr[1].sh_addralign);
+  EXPECT_EQ(0U, shdr[1].sh_entsize);
 }
 
 #endif  // defined(__i386__) || defined(__x86_64__)
