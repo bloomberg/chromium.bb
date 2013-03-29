@@ -7,9 +7,12 @@
 
 #include "chrome/browser/ui/host_desktop.h"
 
+class PrefRegistrySimple;
 class Profile;
 
 namespace chrome {
+
+void RegisterDefaultBrowserPromptPrefs(PrefRegistrySimple* registry);
 
 // Shows a prompt UI to set the default browser if necessary.
 void ShowDefaultBrowserPrompt(Profile* profile, HostDesktopType desktop_type);

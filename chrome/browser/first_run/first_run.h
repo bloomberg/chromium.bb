@@ -63,6 +63,10 @@ struct MasterPrefs {
   MasterPrefs();
   ~MasterPrefs();
 
+  // TODO(macourteau): as part of the master preferences refactoring effort,
+  // remove items from here which are being stored temporarily only to be later
+  // dumped into local_state. Also see related TODO in chrome_browser_main.cc.
+
   int ping_delay;
   bool homepage_defined;
   int do_import_items;
@@ -72,6 +76,7 @@ struct MasterPrefs {
   std::vector<GURL> new_tabs;
   std::vector<GURL> bookmarks;
   std::string variations_seed;
+  std::string suppress_default_browser_prompt_for_version;
 };
 
 // Returns true if this is the first time chrome is run for this user.

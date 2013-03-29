@@ -55,6 +55,9 @@ extern const char kDistroImportHomePagePref[];
 extern const char kDistroImportSearchPref[];
 // Integer. RLZ ping delay in seconds.
 extern const char kDistroPingDelay[];
+// String of Chrome version for which the "set as default browser" infobar will
+// never be shown.
+extern const char kDistroSuppressDefaultBrowserPromptPref[];
 // Boolean. Do not show first run bubble, even if it would otherwise be shown.
 extern const char kDistroSuppressFirstRunBubble[];
 // Boolean. Prevent creation of all shortcuts to chrome, including the

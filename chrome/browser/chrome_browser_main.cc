@@ -932,6 +932,12 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
     if (do_first_run_tasks_) {
       AddFirstRunNewTabs(browser_creator_.get(), master_prefs_->new_tabs);
 
+      // TODO(macourteau): refactor preferences that are copied from
+      // master_preferences into local_state, as a "local_state" section in
+      // master preferences. If possible, a generic solution would be prefered
+      // over a copy one-by-one of specific preferences. Also see related TODO
+      // in first_run.h.
+
       // Store the initial VariationsService seed in local state, if it exists
       // in master prefs.
       if (!master_prefs_->variations_seed.empty()) {
@@ -943,6 +949,12 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
         // when this value will be updated.
         local_state_->SetInt64(prefs::kVariationsSeedDate,
                                base::Time::Now().ToInternalValue());
+      }
+
+      if (!master_prefs_->suppress_default_browser_prompt_for_version.empty()) {
+        local_state_->SetString(
+            prefs::kBrowserSuppressDefaultBrowserPrompt,
+            master_prefs_->suppress_default_browser_prompt_for_version);
       }
     } else if (parsed_command_line().HasSwitch(switches::kNoFirstRun)) {
       // Create the First Run beacon anyways if --no-first-run was passed on the

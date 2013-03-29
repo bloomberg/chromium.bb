@@ -339,6 +339,10 @@ void SetupMasterPrefsFromInstallPrefs(
   }
 
   out_prefs->variations_seed = install_prefs.GetVariationsSeed();
+
+  install_prefs.GetString(
+     installer::master_preferences::kDistroSuppressDefaultBrowserPromptPref,
+     &out_prefs->suppress_default_browser_prompt_for_version);
 }
 
 void SetDefaultBrowser(installer::MasterPreferences* install_prefs){

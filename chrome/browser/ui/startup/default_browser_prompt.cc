@@ -7,7 +7,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
+#include "base/version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
@@ -17,7 +19,10 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/installer/util/master_preferences.h"
+#include "chrome/installer/util/master_preferences_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/web_contents.h"
@@ -210,10 +215,17 @@ void CheckDefaultBrowserCallback(chrome::HostDesktopType desktop_type) {
 
 namespace chrome {
 
+void RegisterDefaultBrowserPromptPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterStringPref(
+      prefs::kBrowserSuppressDefaultBrowserPrompt, std::string());
+}
+
 void ShowDefaultBrowserPrompt(Profile* profile, HostDesktopType desktop_type) {
   // We do not check if we are the default browser if:
-  // - the user said "don't ask me again" on the infobar earlier.
+  // - The user said "don't ask me again" on the infobar earlier.
   // - There is a policy in control of this setting.
+  // - The "suppress_default_browser_prompt_for_version" master preference is
+  //     set to the current version.
   if (!profile->GetPrefs()->GetBoolean(prefs::kCheckDefaultBrowser))
     return;
 
@@ -231,6 +243,20 @@ void ShowDefaultBrowserPrompt(Profile* profile, HostDesktopType desktop_type) {
     }
     return;
   }
+
+  const std::string disable_version_string =
+      g_browser_process->local_state()->GetString(
+          prefs::kBrowserSuppressDefaultBrowserPrompt);
+  const Version disable_version(disable_version_string);
+
+  DCHECK(disable_version_string.empty() || disable_version.IsValid());
+  if (disable_version.IsValid()) {
+    const chrome::VersionInfo version_info;
+    const Version chrome_version(version_info.Version());
+    if (disable_version.Equals(chrome_version))
+      return;
+  }
+
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
                           base::Bind(&CheckDefaultBrowserCallback,
                                      desktop_type));

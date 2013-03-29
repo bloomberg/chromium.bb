@@ -77,6 +77,7 @@
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
 #include "chrome/browser/ui/search_engines/keyword_editor_controller.h"
 #include "chrome/browser/ui/startup/autolaunch_prompt.h"
+#include "chrome/browser/ui/startup/default_browser_prompt.h"
 #include "chrome/browser/ui/tabs/pinned_tab_codec.h"
 #include "chrome/browser/ui/webui/extensions/extension_settings_handler.h"
 #include "chrome/browser/ui/webui/flags_ui.h"
@@ -231,6 +232,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   BackgroundModeManager::RegisterPrefs(registry);
   chrome_variations::VariationsService::RegisterPrefs(registry);
   RegisterBrowserPrefs(registry);
+  RegisterDefaultBrowserPromptPrefs(registry);
   ManagedMode::RegisterPrefs(registry);
 #endif
 

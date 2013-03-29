@@ -498,6 +498,8 @@ extern const char kUninstallMetricsUptimeSec[];
 extern const char kUninstallLastLaunchTimeSec[];
 extern const char kUninstallLastObservedRunTimeSec[];
 
+extern const char kBrowserSuppressDefaultBrowserPrompt[];
+
 extern const char kBrowserWindowPlacement[];
 extern const char kTaskManagerWindowPlacement[];
 extern const char kKeywordEditorWindowPlacement[];

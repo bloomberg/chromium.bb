@@ -1411,6 +1411,11 @@ const char kUninstallLastLaunchTimeSec[] =
 const char kUninstallLastObservedRunTimeSec[] =
     "uninstall_metrics.last_observed_running_time_sec";
 
+// String containing the version of Chrome for which Chrome will not prompt the
+// user about setting Chrome as the default browser.
+const char kBrowserSuppressDefaultBrowserPrompt[] =
+    "browser.suppress_default_browser_prompt_for_version";
+
 // A collection of position, size, and other data relating to the browser
 // window to restore on startup.
 const char kBrowserWindowPlacement[] = "browser.window_placement";

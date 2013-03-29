@@ -25,6 +25,8 @@ namespace master_preferences {
   const char kDistroImportHomePagePref[] = "import_home_page";
   const char kDistroImportSearchPref[] = "import_search_engine";
   const char kDistroPingDelay[] = "ping_delay";
+  const char kDistroSuppressDefaultBrowserPromptPref[] =
+      "suppress_default_browser_prompt_for_version";
   const char kDistroSuppressFirstRunBubble[] = "suppress_first_run_bubble";
   const char kDoNotCreateAnyShortcuts[] = "do_not_create_any_shortcuts";
   const char kDoNotCreateDesktopShortcut[] = "do_not_create_desktop_shortcut";
