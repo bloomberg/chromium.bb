@@ -45,17 +45,6 @@ if env.Bit('target_x86'):
        'dfa_validate_common.c',
        features])
 
-env.ComponentLibrary('dfa_decode_x86_32',
-                     ['gen/decoder_x86_32.c'])
-env.ComponentLibrary('dfa_decode_x86_64',
-                     ['gen/decoder_x86_64.c'])
-
-# Command-line decoder.
-decoder_test = env.ComponentProgram(
-    'decoder_test',
-    ['unreviewed/decoder_test.c'],
-    EXTRA_LIBS=['dfa_decode_x86_32', 'dfa_decode_x86_64'])
-
 # Low-level platform-independent interface supporting both 32 and 64 bit,
 # used in ncval and in validator_benchmark.
 env.ComponentLibrary('rdfa_validator',
@@ -263,11 +252,14 @@ if ragel_involved:
   # Also, since DFA generation is currently linux-only,
   # this test is somewhat platform-dependent as well.
 
-  test_env = env.Clone()
-  test_env.Append(
-      CCFLAGS=['-g', '-Wno-unused-function'],
-      LINKFLAGS='-g',
-      CPPPATH='unreviewed')
+  env.ComponentLibrary('dfa_decode_x86_32', [decoder32])
+  env.ComponentLibrary('dfa_decode_x86_64', [decoder64])
+
+  # Command-line decoder.
+  decoder_test = env.ComponentProgram(
+      'decoder_test',
+      ['unreviewed/decoder_test.c'],
+      EXTRA_LIBS=['dfa_decode_x86_32', 'dfa_decode_x86_64'])
 
   objdump, gas = env.Command(
       target=['objdump', 'gas'],
