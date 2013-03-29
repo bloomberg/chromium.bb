@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_MESSAGE_LOOP_PROXY_IMPL_H_
-#define BASE_MESSAGE_LOOP_PROXY_IMPL_H_
+#ifndef BASE_MESSAGE_LOOP_MESSAGE_LOOP_PROXY_IMPL_H_
+#define BASE_MESSAGE_LOOP_MESSAGE_LOOP_PROXY_IMPL_H_
 
 #include "base/base_export.h"
 #include "base/message_loop.h"
@@ -59,4 +59,4 @@ class BASE_EXPORT MessageLoopProxyImpl : public MessageLoopProxy {
 
 }  // namespace base
 
-#endif  // BASE_MESSAGE_LOOP_PROXY_IMPL_H_
+#endif  // BASE_MESSAGE_LOOP_MESSAGE_LOOP_PROXY_IMPL_H_
