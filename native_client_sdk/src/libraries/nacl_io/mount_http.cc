@@ -164,6 +164,8 @@ class MountNodeHttp : public MountNode {
   virtual int Write(size_t offs, const void* buf, size_t count);
   virtual size_t GetSize();
 
+  void SetCachedSize(off_t size);
+
  protected:
   MountNodeHttp(Mount* mount, const std::string& url, bool cache_content);
 
@@ -185,9 +187,16 @@ class MountNodeHttp : public MountNode {
   std::vector<char> buffer_;
 
   bool cache_content_;
+  bool has_cached_size_;
   std::vector<char> cached_data_;
-  friend class ::MountHttp;
+
+  friend class MountHttp;
 };
+
+void MountNodeHttp::SetCachedSize(off_t size) {
+  has_cached_size_ = true;
+  stat_.st_size = size;
+}
 
 int MountNodeHttp::FSync() {
   errno = ENOSYS;
@@ -225,8 +234,9 @@ int MountNodeHttp::GetStat(struct stat* stat) {
 
     size_t entity_length;
     if (ParseContentLength(response_headers, &entity_length))
-      stat_.st_size = static_cast<off_t>(entity_length);
+      SetCachedSize(static_cast<off_t>(entity_length));
     else
+      // Don't use SetCachedSize here -- it is actually unknown.
       stat_.st_size = 0;
 
     stat_.st_atime = 0; // TODO(binji): Use "Last-Modified".
@@ -269,6 +279,14 @@ int MountNodeHttp::Write(size_t offs, const void* buf, size_t count) {
 size_t MountNodeHttp::GetSize() {
   // TODO(binji): This value should be cached properly; i.e. obey the caching
   // headers returned by the server.
+  AutoLock lock(&lock_);
+  if (!has_cached_size_) {
+    // Even if DownloadToCache fails, the best result we can return is what
+    // was written to stat_.st_size.
+    if (cache_content_)
+      DownloadToCache();
+  }
+
   return stat_.st_size;
 }
 
@@ -276,7 +294,8 @@ MountNodeHttp::MountNodeHttp(Mount* mount, const std::string& url,
                              bool cache_content)
     : MountNode(mount),
       url_(url),
-      cache_content_(cache_content) {
+      cache_content_(cache_content),
+      has_cached_size_(false) {
 }
 
 bool MountNodeHttp::OpenUrl(const char* method,
@@ -389,7 +408,7 @@ int MountNodeHttp::DownloadToCache() {
     if (real_size < 0)
       return -1;
 
-    stat_.st_size = real_size;
+    SetCachedSize(real_size);
     cached_data_.resize(real_size);
     return real_size;
   }
@@ -407,7 +426,7 @@ int MountNodeHttp::DownloadToCache() {
     total_bytes_read += bytes_read;
 
     if (bytes_read < bytes_to_read) {
-      stat_.st_size = total_bytes_read;
+      SetCachedSize(total_bytes_read);
       cached_data_.resize(total_bytes_read);
       return total_bytes_read;
     }
@@ -748,9 +767,9 @@ bool MountHttp::ParseManifest(char *text) {
           path.Range(1, path.Size()) :
           path.Join());
 
-      MountNode* node = new MountNodeHttp(this, url, cache_content_);
+      MountNodeHttp* node = new MountNodeHttp(this, url, cache_content_);
       node->Init(mode);
-      node->stat_.st_size = atoi(lenstr);
+      node->SetCachedSize(atoi(lenstr));
 
       MountNodeDir* dir_node = FindOrCreateDir(path.Parent());
       dir_node->AddChild(path.Basename(), node);
@@ -763,19 +782,19 @@ bool MountHttp::ParseManifest(char *text) {
   return true;
 }
 
-char *MountHttp::LoadManifest(const std::string& manifestName) {
-  Path manifestPath(manifestName);
-  MountNode* manifiestNode = Open(manifestPath, O_RDONLY);
+char *MountHttp::LoadManifest(const std::string& manifest_name) {
+  Path manifest_path(manifest_name);
+  MountNode* manifest_node = Open(manifest_path, O_RDONLY);
 
-  if (manifiestNode) {
-    char *text = new char[manifiestNode->GetSize() + 1];
-    off_t len = manifiestNode->Read(0, text, manifiestNode->GetSize());
-    manifiestNode->Release();
+  if (manifest_node) {
+    char *text = new char[manifest_node->GetSize() + 1];
+    off_t len = manifest_node->Read(0, text, manifest_node->GetSize());
+    manifest_node->Release();
 
     text[len] = 0;
     return text;
   }
 
-  fprintf(stderr, "Could not open manifest: %s\n", manifestName.c_str());
+  fprintf(stderr, "Could not open manifest: %s\n", manifest_name.c_str());
   return NULL;
 }

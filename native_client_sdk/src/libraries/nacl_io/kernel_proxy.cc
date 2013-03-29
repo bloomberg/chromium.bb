@@ -389,6 +389,8 @@ off_t KernelProxy::lseek(int fd, off_t offset, int whence) {
 
   // check if fd is valid and handle exists
   if (NULL == handle) return -1;
+
+  AutoLock lock(&handle->lock_);
   int ret = handle->Seek(offset, whence);
 
   ReleaseHandle(handle);

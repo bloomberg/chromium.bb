@@ -312,16 +312,18 @@ TEST_F(MountHttpNodeTest, ReadCachedNoContentLength) {
   OpenNode();
   ResetMocks();
 
-  // Unknown size.
-  EXPECT_EQ(0, node_->GetSize());
-
-  char buf[10];
-  memset(&buf[0], 0, sizeof(buf));
-
   ExpectOpen("GET");
   ExpectHeaders("");
   SetResponse(200, "");  // No Content-Length response here.
   SetResponseBody("Here is some response text. And some more.");
+
+  // GetSize will Read() because it didn't get the content length from the HEAD
+  // request.
+  EXPECT_EQ(42, node_->GetSize());
+
+  char buf[10];
+  memset(&buf[0], 0, sizeof(buf));
+
   node_->Read(0, buf, sizeof(buf) - 1);
   EXPECT_STREQ("Here is s", &buf[0]);
   ResetMocks();
