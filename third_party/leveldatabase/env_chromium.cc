@@ -289,7 +289,7 @@ class ChromiumWritableFile : public WritableFile {
 
   virtual Status Flush() {
     Status result;
-    if (fflush_unlocked(file_) != 0) {
+    if (HANDLE_EINTR(fflush_unlocked(file_))) {
       result = Status::IOError(filename_, strerror(errno));
       uma_logger_->RecordErrorAt(kWritableFileFlush);
     }
@@ -299,8 +299,8 @@ class ChromiumWritableFile : public WritableFile {
   virtual Status Sync() {
     Status result;
     int error = 0;
-    
-    if (fflush_unlocked(file_))
+
+    if (HANDLE_EINTR(fflush_unlocked(file_)))
       error = errno;
     // Sync even if fflush gave an error; perhaps the data actually got out,
     // even though something went wrong.
