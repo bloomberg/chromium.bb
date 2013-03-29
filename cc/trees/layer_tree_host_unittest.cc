@@ -606,9 +606,6 @@ class LayerTreeHostTestOpacityChange : public LayerTreeHostTest {
   virtual void AfterTest() OVERRIDE {
     // Update() should have been called once.
     EXPECT_EQ(1, update_check_layer_->PaintContentsCount());
-
-    // clear update_check_layer_ so LayerTreeHost dies.
-    update_check_layer_ = NULL;
   }
 
  private:
@@ -742,10 +739,7 @@ class LayerTreeHostTestDeviceScaleFactorScalesViewportAndLayers
     EndTest();
   }
 
-  virtual void AfterTest() OVERRIDE {
-    root_layer_ = NULL;
-    child_layer_ = NULL;
-  }
+  virtual void AfterTest() OVERRIDE {}
 
  private:
   FakeContentLayerClient client_;
@@ -1202,13 +1196,6 @@ class LayerTreeHostTestSurfaceNotAllocatedForLayersOutsideMemoryLimit
     EXPECT_EQ(2, root_layer_->PaintContentsCount());
     EXPECT_EQ(2, surface_layer1_->PaintContentsCount());
     EXPECT_EQ(2, surface_layer2_->PaintContentsCount());
-
-    // Clear layer references so LayerTreeHost dies.
-    root_layer_ = NULL;
-    surface_layer1_ = NULL;
-    replica_layer1_ = NULL;
-    surface_layer2_ = NULL;
-    replica_layer2_ = NULL;
   }
 
  private:
@@ -1527,9 +1514,6 @@ class LayerTreeHostTestContinuousInvalidate : public LayerTreeHostTest {
   virtual void AfterTest() OVERRIDE {
     // Check that we didn't commit twice between first and second draw.
     EXPECT_EQ(1, num_commit_complete_);
-
-    // Clear layer references so LayerTreeHost dies.
-    content_layer_ = NULL;
   }
 
  private:
