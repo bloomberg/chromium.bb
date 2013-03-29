@@ -103,6 +103,7 @@ class OverscrollWindowDelegate : public aura::WindowDelegate {
                            OverscrollMode overscroll_mode)
       : web_contents_(web_contents),
         show_shadow_(false),
+        size_mismatch_(false),
         forward_events_(true) {
     const NavigationControllerImpl& controller = web_contents->GetController();
     const NavigationEntryImpl* entry = NULL;
@@ -120,8 +121,8 @@ class OverscrollWindowDelegate : public aura::WindowDelegate {
     image_reps.push_back(gfx::ImagePNGRep(entry->screenshot(),
           ui::GetScaleFactorForNativeView(web_contents_window())));
     image_ = gfx::Image(image_reps);
-    if (image_.AsImageSkia().size() != web_contents_window()->bounds().size())
-      image_ = gfx::Image();
+    size_mismatch_ =
+        image_.AsImageSkia().size() != web_contents_window()->bounds().size();
   }
 
   bool has_screenshot() const { return !image_.IsEmpty(); }
@@ -178,10 +179,13 @@ class OverscrollWindowDelegate : public aura::WindowDelegate {
       canvas->Save();
       canvas->Translate(gfx::Vector2d(kShadowThick, 0));
     }
-    if (image_.IsEmpty())
+    if (image_.IsEmpty()) {
       canvas->DrawColor(SK_ColorGRAY);
-    else
+    } else {
+      if (size_mismatch_)
+        canvas->DrawColor(SK_ColorWHITE);
       canvas->DrawImageInt(image_.AsImageSkia(), 0, 0);
+    }
 
     if (show_shadow_) {
       canvas->Restore();
@@ -241,6 +245,7 @@ class OverscrollWindowDelegate : public aura::WindowDelegate {
   WebContents* web_contents_;
   gfx::Image image_;
   bool show_shadow_;
+  bool size_mismatch_;
 
   // The window is displayed both during the gesture, and after the gesture
   // while the navigation is in progress. During the gesture, it is necessary to
