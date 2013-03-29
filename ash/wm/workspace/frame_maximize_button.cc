@@ -11,6 +11,8 @@
 #include "ash/shell_delegate.h"
 #include "ash/wm/maximize_bubble_controller.h"
 #include "ash/wm/property_util.h"
+#include "ash/wm/window_properties.h"
+#include "ash/wm/window_util.h"
 #include "ash/wm/workspace/phantom_window_controller.h"
 #include "ash/wm/workspace/snap_sizer.h"
 #include "grit/ash_strings.h"
@@ -165,7 +167,11 @@ void FrameMaximizeButton::OnWindowBoundsChanged(
 void FrameMaximizeButton::OnWindowPropertyChanged(aura::Window* window,
                                                   const void* key,
                                                   intptr_t old) {
-  Cancel(false);
+  // Changing the window position is managed status should not Cancel.
+  // Note that this case might happen when a non user managed window
+  // transitions from maximized to L/R maximized.
+  if (key != ash::internal::kWindowPositionManagedKey)
+    Cancel(false);
 }
 
 void FrameMaximizeButton::OnWindowDestroying(aura::Window* window) {
@@ -513,15 +519,29 @@ void FrameMaximizeButton::Snap(const SnapSizer& snap_sizer) {
       // Get the bounds in screen coordinates for restore purposes.
       gfx::Rect restore = widget->GetWindowBoundsInScreen();
       if (widget->IsMaximized() || widget->IsFullscreen()) {
+        aura::Window* window = widget->GetNativeWindow();
         // In case of maximized we have a restore boundary.
-        DCHECK(ash::GetRestoreBoundsInScreen(widget->GetNativeWindow()));
+        DCHECK(ash::GetRestoreBoundsInScreen(window));
         // If it was maximized we need to recover the old restore set.
-        restore = *ash::GetRestoreBoundsInScreen(widget->GetNativeWindow());
+        restore = *ash::GetRestoreBoundsInScreen(window);
+
+        // The auto position manager will kick in when this is the only window.
+        // To avoid interference with it we tell it temporarily to not change
+        // the coordinates of this window.
+        bool is_managed = ash::wm::IsWindowPositionManaged(window);
+        if (is_managed)
+          ash::wm::SetWindowPositionManaged(window, false);
+
         // Set the restore size we want to restore to.
-        ash::SetRestoreBoundsInScreen(widget->GetNativeWindow(),
+        ash::SetRestoreBoundsInScreen(window,
                                       ScreenBoundsForType(snap_type_,
                                                           snap_sizer));
         widget->Restore();
+
+        // After the window is where we want it to be we allow the window to be
+        // auto managed again.
+        if (is_managed)
+          ash::wm::SetWindowPositionManaged(window, true);
       } else {
         // Others might also have set up a restore rectangle already. If so,
         // we should not overwrite the restore rectangle.
