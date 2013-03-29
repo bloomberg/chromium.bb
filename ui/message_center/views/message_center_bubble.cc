@@ -277,6 +277,7 @@ class BoundedScrollView : public views::ScrollView {
 
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual int GetHeightForWidth(int width) OVERRIDE;
   virtual void Layout() OVERRIDE;
 
  private:
@@ -304,6 +305,13 @@ gfx::Size BoundedScrollView::GetPreferredSize() {
   gfx::Insets insets = GetInsets();
   size.Enlarge(insets.width(), insets.height());
   return size;
+}
+
+int BoundedScrollView::GetHeightForWidth(int width) {
+  gfx::Insets insets = GetInsets();
+  width = std::max(0, width - insets.width());
+  int height = contents()->GetHeightForWidth(width) + insets.height();
+  return std::min(std::max(height, min_height_), max_height_);
 }
 
 void BoundedScrollView::Layout() {
@@ -470,12 +478,7 @@ size_t MessageCenterView::NumMessageViews() const {
 }
 
 void MessageCenterView::Layout() {
-  // Start with a layout so scroller_ has the right width to calculate its
-  // PreferredSize (fixes http://crrev.com/222221), then do another layout after
-  // scroller_ is resized to adjust the button_view_ location.
-  // TODO(dharcourt) Change how things are done so only one layout is required.
-  views::View::Layout();
-  scroller_->SizeToPreferredSize();
+  scroller_->SetBounds(0, 0, width(), scroller_->GetHeightForWidth(width()));
   views::View::Layout();
   if (GetWidget())
     GetWidget()->GetRootView()->SchedulePaint();
@@ -485,6 +488,7 @@ void MessageCenterView::Layout() {
 void MessageCenterView::RemoveAllNotifications() {
   message_views_.clear();
   message_list_view_->RemoveAllChildViews(true);
+  scroller_->InvalidateLayout();
 }
 
 void MessageCenterView::AddNotification(const Notification& notification) {
