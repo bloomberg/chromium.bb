@@ -24,7 +24,7 @@ const size_t kMaxInstantAutocompleteResultItemCacheSize = 100;
 
 // The HTML returned when an invalid or unknown restricted ID is requested.
 const char kInvalidSuggestionHtml[] =
-    "<div style=\"background:red\">invalid rid %s</div>";
+    "<div style=\"background:red\">invalid rid %d</div>";
 
 // Checks if the input color is in valid range.
 bool IsColorValid(int color) {
@@ -436,6 +436,14 @@ bool SearchBox::GenerateDataURLForSuggestionRequest(const GURL& request_url,
       contents = result.search_query;
     }
 
+    // First, HTML-encode the text so that '&', '<' and such lose their special
+    // meaning. Next, URL-encode the text because it will be inserted into
+    // "data:" URIs; thus '%' and such lose their special meaning.
+    std::string encoded_contents = net::EscapeQueryParamValue(
+        net::EscapeForHTML(UTF16ToUTF8(contents)), false);
+    std::string encoded_description = net::EscapeQueryParamValue(
+        net::EscapeForHTML(UTF16ToUTF8(result.description)), false);
+
     response_html = base::StringPrintf(
         template_html.c_str(),
         embedder_origin.spec().c_str(),
@@ -443,10 +451,10 @@ bool SearchBox::GenerateDataURLForSuggestionRequest(const GURL& request_url,
         omnibox_font_size_,
         autocomplete_results_style_.url_color,
         autocomplete_results_style_.title_color,
-        net::EscapeForHTML(UTF16ToUTF8(contents)).c_str(),
-        net::EscapeForHTML(UTF16ToUTF8(result.description)).c_str());
+        encoded_contents.c_str(),
+        encoded_description.c_str());
   } else {
-    response_html = kInvalidSuggestionHtml;
+    response_html = base::StringPrintf(kInvalidSuggestionHtml, restricted_id);
   }
 
   *data_url = GURL("data:text/html;charset=utf-8," + response_html);
