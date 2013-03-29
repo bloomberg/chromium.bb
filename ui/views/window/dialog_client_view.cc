@@ -42,9 +42,13 @@ DialogClientView::DialogClientView(Widget* owner, View* contents_view)
       extra_view_(NULL),
       footnote_view_(NULL),
       notified_delegate_(false) {
-  const SkColor color = owner->GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_DialogBackground);
-  set_background(views::Background::CreateSolidBackground(color));
+  // When using the new style, the background color is set on the bubble frame,
+  // so a transparent background is fine.
+  if (!DialogDelegate::UseNewStyle()) {
+    const SkColor color = owner->GetNativeTheme()->GetSystemColor(
+        ui::NativeTheme::kColorId_DialogBackground);
+    set_background(views::Background::CreateSolidBackground(color));
+  }
 }
 
 DialogClientView::~DialogClientView() {
@@ -110,7 +114,7 @@ const DialogClientView* DialogClientView::AsDialogClientView() const {
 void DialogClientView::OnWillChangeFocus(View* focused_before,
                                          View* focused_now) {
   // New style dialogs do not move the default button with the focus.
-  // TODO(msw|wittman): Remove this functionality once the new style had landed.
+  // TODO(msw|wittman): Remove this functionality once the new style has landed.
   if (DialogDelegate::UseNewStyle())
     return;
 
@@ -142,7 +146,8 @@ void DialogClientView::OnDidChangeFocus(View* focused_before,
 
 gfx::Insets DialogClientView::GetInsets() const {
   // NOTE: The insets only apply to the buttons, extra view, and footnote view.
-  return DialogDelegate::UseNewStyle() ? gfx::Insets() :
+  return DialogDelegate::UseNewStyle() ?
+      gfx::Insets(20, 20, 20, 20) :
       gfx::Insets(kButtonVEdgeMargin, kButtonHEdgeMargin,
                   kButtonVEdgeMargin, kButtonHEdgeMargin);
 }

@@ -153,7 +153,7 @@ NonClientFrameView* DialogDelegate::CreateNonClientFrameView(Widget* widget) {
 
 // static
 NonClientFrameView* DialogDelegate::CreateNewStyleFrameView(Widget* widget) {
-  BubbleFrameView* frame = new BubbleFrameView(gfx::Insets(20, 20, 20, 20));
+  BubbleFrameView* frame = new BubbleFrameView(gfx::Insets());
   const SkColor color = widget->GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_DialogBackground);
   frame->SetBubbleBorder(

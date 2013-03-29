@@ -17,6 +17,10 @@
 
 namespace {
 
+// Insets, in pixels, for the title view, when it exists.
+const int kTitleTopInset = 19;
+const int kTitleLeftInset = 10;
+
 // Get the |vertical| or horizontal screen overflow of the |window_bounds|.
 int GetOffScreenLength(const gfx::Rect& monitor_bounds,
                        const gfx::Rect& window_bounds,
@@ -73,6 +77,7 @@ BubbleFrameView::~BubbleFrameView() {}
 gfx::Rect BubbleFrameView::GetBoundsForClientView() const {
   gfx::Rect client_bounds = GetLocalBounds();
   client_bounds.Inset(GetInsets());
+  client_bounds.Inset(bubble_border_->GetInsets());
   return client_bounds;
 }
 
@@ -100,11 +105,11 @@ void BubbleFrameView::UpdateWindowIcon() {}
 void BubbleFrameView::UpdateWindowTitle() {}
 
 gfx::Insets BubbleFrameView::GetInsets() const {
-  gfx::Insets insets = border()->GetInsets();
-  insets += content_margins_;
-  insets += gfx::Insets(std::max(title_->text().empty() ? 0 : title_->height(),
-                                 close_->visible() ? close_->height() : 0),
-                        0, 0, 0);
+  gfx::Insets insets = content_margins_;
+  insets += gfx::Insets(
+      std::max(title_->text().empty() ? 0 : title_->height() + kTitleTopInset,
+               close_->visible() ? close_->height() : 0),
+      0, 0, 0);
   return insets;
 }
 
@@ -121,8 +126,7 @@ void BubbleFrameView::Layout() {
   close_->SetPosition(gfx::Point(bounds.right(), bounds.y()));
 
   gfx::Rect title_bounds = bounds;
-  // Small additional insets yield the desired 20px visual title label insets.
-  title_bounds.Inset(19, 10, 0, 0);
+  title_bounds.Inset(kTitleTopInset, kTitleLeftInset, 0, 0);
 
   title_bounds.set_size(title_->GetPreferredSize());
   title_->SetBoundsRect(title_bounds);
