@@ -2701,6 +2701,15 @@
                       '-msse2',
                     ],
                   }],
+                  # Use gold linker for Android ia32 target.
+                  ['OS=="android"', {
+                    'cflags': [
+                      '-fuse-ld=gold',
+                    ],
+                    'ldflags': [
+                      '-fuse-ld=gold',
+                    ],
+                  }],
                   # Install packages have started cropping up with
                   # different headers between the 32-bit and 64-bit
                   # versions, so we have to shadow those differences off
