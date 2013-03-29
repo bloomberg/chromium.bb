@@ -469,6 +469,9 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // contacts believed to be thumbs, and when they were inserted into the map
   map<short, stime_t, kMaxFingers> thumb_;
 
+  // once a moving finger is determined lock onto this one for cursor movement.
+  short moving_finger_id_;
+
   // Tap-to-click
   // The current state:
   TapToClickState tap_to_click_state_;

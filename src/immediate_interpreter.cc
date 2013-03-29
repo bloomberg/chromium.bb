@@ -646,6 +646,7 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg,
       started_moving_time_(-1.0),
       gs_changed_time_(-1.0),
       finger_leave_time_(0.0),
+      moving_finger_id_(-1),
       tap_to_click_state_(kTtcIdle),
       tap_to_click_state_entered_(0.0),
       tap_record_(this),
@@ -758,6 +759,7 @@ Gesture* ImmediateInterpreter::SyncInterpretImpl(HardwareState* hwstate,
     ResetSameFingersState(hwstate->timestamp);
     FillStartPositions(*hwstate);
     UpdatePinchState(*hwstate, true);
+    moving_finger_id_ = -1;
   }
 
   if (hwstate->finger_cnt < state_buffer_.Get(1)->finger_cnt)
@@ -2177,14 +2179,20 @@ void ImmediateInterpreter::FillResultGesture(
       // Use highest finger (the one closes to the keyboard), excluding
       // palms, to compute motion. First, need to find out which finger that is.
       const FingerState* current = NULL;
-      for (FingerMap::const_iterator it =
-               fingers.begin(), e = fingers.end(); it != e; ++it) {
-        const FingerState* fs = hwstate.GetFingerState(*it);
-        if (!current || fs->position_y < current->position_y ||
-            (current->flags & GESTURES_FINGER_POSSIBLE_PALM &&
-             !(fs->flags & GESTURES_FINGER_POSSIBLE_PALM)))
-          current = fs;
+      if (moving_finger_id_ >= 0)
+        current = hwstate.GetFingerState(moving_finger_id_);
+
+      if (!current) {
+        for (FingerMap::const_iterator it =
+                 fingers.begin(), e = fingers.end(); it != e; ++it) {
+          const FingerState* fs = hwstate.GetFingerState(*it);
+          if (!current || fs->position_y < current->position_y ||
+              (current->flags & GESTURES_FINGER_POSSIBLE_PALM &&
+               !(fs->flags & GESTURES_FINGER_POSSIBLE_PALM)))
+            current = fs;
+        }
       }
+
       // Find corresponding finger id in previous state
       const FingerState* prev =
           state_buffer_.Get(1)->GetFingerState(current->tracking_id);
@@ -2206,6 +2214,9 @@ void ImmediateInterpreter::FillResultGesture(
       if (current->flags & GESTURES_FINGER_WARP_Y_MOVE)
         dy = 0.0;
       if (dx != 0.0 || dy != 0.0) {
+        // lock onto this finger
+        moving_finger_id_ = current->tracking_id;
+
         result_ = Gesture(kGestureMove,
                           state_buffer_.Get(1)->timestamp,
                           hwstate.timestamp,
