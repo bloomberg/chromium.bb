@@ -137,6 +137,8 @@ TEST_F(PrioritizedResourceTest, RequestTextureExceedingMaxLimit) {
             resource_manager->MemoryAboveCutoffBytes());
   EXPECT_LE(resource_manager->MemoryUseBytes(),
             resource_manager->MemoryAboveCutoffBytes());
+  EXPECT_EQ(TexturesMemorySize(2*kMaxTextures),
+            resource_manager->MaxMemoryNeededBytes());
 
   DebugScopedSetImplThreadAndMainThreadBlocked
   impl_thread_and_main_thread_blocked(&proxy_);
@@ -185,6 +187,8 @@ TEST_F(PrioritizedResourceTest, ChangeMemoryLimits) {
   EXPECT_EQ(TexturesMemorySize(5), resource_manager->MemoryAboveCutoffBytes());
   EXPECT_LE(resource_manager->MemoryUseBytes(),
             resource_manager->MemoryAboveCutoffBytes());
+  EXPECT_EQ(TexturesMemorySize(kMaxTextures),
+            resource_manager->MaxMemoryNeededBytes());
 
   // Set max limit to 4 textures
   resource_manager->SetMaxMemoryLimitBytes(TexturesMemorySize(4));
@@ -200,6 +204,8 @@ TEST_F(PrioritizedResourceTest, ChangeMemoryLimits) {
   EXPECT_EQ(TexturesMemorySize(4), resource_manager->MemoryAboveCutoffBytes());
   EXPECT_LE(resource_manager->MemoryUseBytes(),
             resource_manager->MemoryAboveCutoffBytes());
+  EXPECT_EQ(TexturesMemorySize(kMaxTextures),
+            resource_manager->MaxMemoryNeededBytes());
 
   DebugScopedSetImplThreadAndMainThreadBlocked
   impl_thread_and_main_thread_blocked(&proxy_);
@@ -504,6 +510,8 @@ TEST_F(PrioritizedResourceTest,
             resource_manager->MemoryForSelfManagedTextures());
   EXPECT_LE(resource_manager->MemoryUseBytes(),
             resource_manager->MemoryAboveCutoffBytes());
+  EXPECT_EQ(TexturesMemorySize(8),
+            resource_manager->MaxMemoryNeededBytes());
 
   DebugScopedSetImplThreadAndMainThreadBlocked
   impl_thread_and_main_thread_blocked(&proxy_);
@@ -550,6 +558,8 @@ TEST_F(PrioritizedResourceTest,
             resource_manager->MemoryForSelfManagedTextures());
   EXPECT_LE(resource_manager->MemoryUseBytes(),
             resource_manager->MemoryAboveCutoffBytes());
+  EXPECT_EQ(TexturesMemorySize(8),
+            resource_manager->MaxMemoryNeededBytes());
 
   DebugScopedSetImplThreadAndMainThreadBlocked
   impl_thread_and_main_thread_blocked(&proxy_);

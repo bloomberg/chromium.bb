@@ -174,6 +174,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       paint_time_counter_(PaintTimeCounter::Create()),
       memory_history_(MemoryHistory::Create()),
       debug_rect_history_(DebugRectHistory::Create()),
+      max_memory_needed_bytes_(0),
       last_sent_memory_visible_bytes_(0),
       last_sent_memory_visible_and_nearby_bytes_(0),
       last_sent_memory_use_bytes_(0),
@@ -899,19 +900,34 @@ void LayerTreeHostImpl::SetManagedMemoryPolicy(
   if (managed_memory_policy_ == policy)
     return;
 
+  // If there is already enough memory to draw everything imaginable and the
+  // new memory limit does not change this, then do not re-commit. Don't bother
+  // skipping commits if this is not visible (commits don't happen when not
+  // visible, there will almost always be a commit when this becomes visible).
+  bool needs_commit = true;
+  if (visible() &&
+      policy.bytes_limit_when_visible >=
+          max_memory_needed_bytes_ &&
+      managed_memory_policy_.bytes_limit_when_visible >=
+          max_memory_needed_bytes_ &&
+      policy.priority_cutoff_when_visible ==
+          managed_memory_policy_.priority_cutoff_when_visible) {
+    needs_commit = false;
+  }
+
   managed_memory_policy_ = policy;
   if (!proxy_->HasImplThread()) {
-    // TODO(ccameron): In single-thread mode, this can be called on the main
-    // thread by GLRenderer::OnMemoryAllocationChanged.
+    // In single-thread mode, this can be called on the main thread by
+    // GLRenderer::OnMemoryAllocationChanged.
     DebugScopedSetImplThread impl_thread(proxy_);
     EnforceManagedMemoryPolicy(managed_memory_policy_);
   } else {
     DCHECK(proxy_->IsImplThread());
     EnforceManagedMemoryPolicy(managed_memory_policy_);
   }
-  // We always need to commit after changing the memory policy because the new
-  // limit can result in more or less content having texture allocated for it.
-  client_->SetNeedsCommitOnImplThread();
+
+  if (needs_commit)
+    client_->SetNeedsCommitOnImplThread();
 }
 
 void LayerTreeHostImpl::OnVSyncParametersChanged(base::TimeTicks timebase,

@@ -267,6 +267,19 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
   bool new_impl_tree_has_no_evicted_resources =
       !contents_texture_manager_->LinkedEvictedBackingsExist();
 
+  // If the memory limit has been increased since this now-finishing
+  // commit began, and the extra now-available memory would have been used,
+  // then request another commit.
+  if (contents_texture_manager_->MaxMemoryLimitBytes() <
+      host_impl->memory_allocation_limit_bytes() &&
+      contents_texture_manager_->MaxMemoryLimitBytes() <
+      contents_texture_manager_->MaxMemoryNeededBytes()) {
+    host_impl->SetNeedsCommit();
+  }
+
+  host_impl->set_max_memory_needed_bytes(
+      contents_texture_manager_->MaxMemoryNeededBytes());
+
   contents_texture_manager_->UpdateBackingsInDrawingImplTree();
 
   // In impl-side painting, synchronize to the pending tree so that it has

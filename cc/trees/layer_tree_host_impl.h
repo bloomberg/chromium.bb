@@ -261,6 +261,10 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandlerClient,
       size_t memory_visible_and_nearby_bytes,
       size_t memory_use_bytes);
 
+  void set_max_memory_needed_bytes(size_t bytes) {
+    max_memory_needed_bytes_ = bytes;
+  }
+
   FrameRateCounter* fps_counter() {
     return fps_counter_.get();
   }
@@ -455,6 +459,10 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandlerClient,
   int64 cumulative_num_layers_drawn_;
 
   int64 cumulative_num_missing_tiles_;
+
+  // The maximum memory that would be used by the prioritized resource
+  // manager, if there were no limit on memory usage.
+  size_t max_memory_needed_bytes_;
 
   size_t last_sent_memory_visible_bytes_;
   size_t last_sent_memory_visible_and_nearby_bytes_;

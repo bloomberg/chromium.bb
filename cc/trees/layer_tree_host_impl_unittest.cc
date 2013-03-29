@@ -4197,10 +4197,22 @@ TEST_F(LayerTreeHostImplTest, SurfaceTextureCachingNoPartialSwap) {
 TEST_F(LayerTreeHostImplTest, ReleaseContentsTextureShouldTriggerCommit) {
   set_reduce_memory_result(false);
 
-  // Even if changing the memory limit didn't result in anything being
-  // evicted, we need to re-commit because the new value may result in us
-  // drawing something different than before.
+  // If changing the memory limit wouldn't result in changing what was
+  // committed, then no commit should be requested.
   set_reduce_memory_result(false);
+  host_impl_->set_max_memory_needed_bytes(
+      host_impl_->memory_allocation_limit_bytes() - 1);
+  host_impl_->SetManagedMemoryPolicy(ManagedMemoryPolicy(
+      host_impl_->memory_allocation_limit_bytes() - 1));
+  EXPECT_FALSE(did_request_commit_);
+  did_request_commit_ = false;
+
+  // If changing the memory limit would result in changing what was
+  // committed, then a commit should be requested, even though nothing was
+  // evicted.
+  set_reduce_memory_result(false);
+  host_impl_->set_max_memory_needed_bytes(
+      host_impl_->memory_allocation_limit_bytes());
   host_impl_->SetManagedMemoryPolicy(ManagedMemoryPolicy(
       host_impl_->memory_allocation_limit_bytes() - 1));
   EXPECT_TRUE(did_request_commit_);
@@ -4209,6 +4221,7 @@ TEST_F(LayerTreeHostImplTest, ReleaseContentsTextureShouldTriggerCommit) {
   // Especially if changing the memory limit caused evictions, we need
   // to re-commit.
   set_reduce_memory_result(true);
+  host_impl_->set_max_memory_needed_bytes(1);
   host_impl_->SetManagedMemoryPolicy(ManagedMemoryPolicy(
       host_impl_->memory_allocation_limit_bytes() - 1));
   EXPECT_TRUE(did_request_commit_);

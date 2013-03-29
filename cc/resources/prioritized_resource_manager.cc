@@ -19,6 +19,7 @@ PrioritizedResourceManager::PrioritizedResourceManager(const Proxy* proxy)
       max_memory_limit_bytes_(DefaultMemoryAllocationLimit()),
       external_priority_cutoff_(PriorityCalculator::AllowEverythingCutoff()),
       memory_use_bytes_(0),
+      max_memory_needed_bytes_(0), 
       memory_above_cutoff_bytes_(0),
       memory_available_bytes_(0),
       backings_tail_not_sorted_(false),
@@ -120,15 +121,20 @@ void PrioritizedResourceManager::PrioritizeTextures() {
   // Only allow textures if they are higher than the cutoff. All textures
   // of the same priority are accepted or rejected together, rather than
   // being partially allowed randomly.
+  max_memory_needed_bytes_ = 0;
   memory_above_cutoff_bytes_ = 0;
   for (TextureVector::iterator it = sorted_textures.begin();
        it != sorted_textures.end();
        ++it) {
+    PrioritizedResource* resource = *it;
     bool is_above_priority_cutoff = PriorityCalculator::priority_is_higher(
-        (*it)->request_priority(), priority_cutoff_);
-    (*it)->set_above_priority_cutoff(is_above_priority_cutoff);
-    if (is_above_priority_cutoff && !(*it)->is_self_managed())
-      memory_above_cutoff_bytes_ += (*it)->bytes();
+        resource->request_priority(), priority_cutoff_);
+    resource->set_above_priority_cutoff(is_above_priority_cutoff);
+    if (!resource->is_self_managed()) {
+      max_memory_needed_bytes_ += resource->bytes();
+      if (is_above_priority_cutoff)
+        memory_above_cutoff_bytes_ += resource->bytes();
+    }
   }
   sorted_textures.clear();
 
