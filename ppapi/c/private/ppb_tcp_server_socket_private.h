@@ -4,7 +4,7 @@
  */
 
 /* From private/ppb_tcp_server_socket_private.idl,
- *   modified Tue Feb 14 12:24:48 2012.
+ *   modified Thu Mar 28 10:31:11 2013.
  */
 
 #ifndef PPAPI_C_PRIVATE_PPB_TCP_SERVER_SOCKET_PRIVATE_H_
@@ -65,7 +65,7 @@ struct PPB_TCPServerSocket_Private_0_1 {
    * PPB_TCPSocket_Private and stores reference to it in
    * |tcp_socket|. |callback| is invoked when connection is accepted
    * or in the case of failure. This method can be called only after
-   * succesfull Listen call on |tcp_server_socket|.
+   * successful Listen call on |tcp_server_socket|.
    */
   int32_t (*Accept)(PP_Resource tcp_server_socket,
                     PP_Resource* tcp_socket,

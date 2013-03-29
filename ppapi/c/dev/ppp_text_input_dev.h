@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From dev/ppp_text_input_dev.idl modified Tue Mar 13 20:19:19 2012. */
+/* From dev/ppp_text_input_dev.idl modified Thu Mar 28 10:55:30 2013. */
 
 #ifndef PPAPI_C_DEV_PPP_TEXT_INPUT_DEV_H_
 #define PPAPI_C_DEV_PPP_TEXT_INPUT_DEV_H_
@@ -31,7 +31,7 @@
  */
 struct PPP_TextInput_Dev_0_1 {
   /**
-   * Requests the plugin to send back the text arround the current caret or
+   * Requests the plugin to send back the text around the current caret or
    * selection by <code>PPB_TextInput_Dev::UpdateSurroundingText</code>.
    * It is recommended to include the <code>desired_number_of_characters</code>
    * characters before and after the selection, but not mandatory.

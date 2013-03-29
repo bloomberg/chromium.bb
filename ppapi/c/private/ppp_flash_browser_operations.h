@@ -4,7 +4,7 @@
  */
 
 /* From private/ppp_flash_browser_operations.idl,
- *   modified Wed Jul 25 16:53:17 2012.
+ *   modified Thu Mar 28 10:23:11 2013.
  */
 
 #ifndef PPAPI_C_PRIVATE_PPP_FLASH_BROWSER_OPERATIONS_H_
@@ -181,7 +181,7 @@ struct PPP_Flash_BrowserOperations_1_3 {
    * @param[in] plugin_data_path String containing the directory where the
    * plugin data is stored.
    * @param[out] sites A NULL-terminated array of sites that have stored data.
-   * Use FreeSiteList on the the array when done.
+   * Use FreeSiteList on the array when done.
    *
    * See also the NPP_GetSitesWithData function in NPAPI:
    * https://wiki.mozilla.org/NPAPI:ClearSiteData

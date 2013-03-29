@@ -4,7 +4,7 @@
  */
 
 /* From private/ppb_network_monitor_private.idl,
- *   modified Fri Feb 24 10:51:22 2012.
+ *   modified Thu Mar 28 10:30:11 2013.
  */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NETWORK_MONITOR_PRIVATE_H_
@@ -57,7 +57,7 @@ struct PPB_NetworkMonitor_Private_0_2 {
    * Starts network change monitoring. The specified
    * <code>callback</code> will be called on the main thread once
    * after this method is called (to supply the initial network
-   * configuarion) and then later every time network configuration
+   * configuration) and then later every time network configuration
    * changes. Notifications are stopped when the returned resource is
    * destroyed. If the plugin doesn't have access to the network list
    * then the callback will be called once with the

@@ -29,7 +29,7 @@ enum PP_FileSystemType {
   PP_FILESYSTEMTYPE_INVALID = 0,
   /** For external file system types */
   PP_FILESYSTEMTYPE_EXTERNAL = 1,
-  /** For local persistant file system types */
+  /** For local persistent file system types */
   PP_FILESYSTEMTYPE_LOCALPERSISTENT = 2,
   /** For local temporary file system types */
   PP_FILESYSTEMTYPE_LOCALTEMPORARY = 3

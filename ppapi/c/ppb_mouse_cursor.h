@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_mouse_cursor.idl modified Mon Mar 26 22:05:07 2012. */
+/* From ppb_mouse_cursor.idl modified Thu Mar 28 10:11:32 2013. */
 
 #ifndef PPAPI_C_PPB_MOUSE_CURSOR_H_
 #define PPAPI_C_PPB_MOUSE_CURSOR_H_
@@ -104,7 +104,7 @@ struct PPB_MouseCursor_1_0 {
    * cursor, set the type to <code>PP_MOUSECURSOR_TYPE_CUSTOM</code> and
    * specify your image and hot spot.
    *
-   * @param[in] instance A <code>PP_Instance</code> indentifying the instance
+   * @param[in] instance A <code>PP_Instance</code> identifying the instance
    * that the mouse cursor will affect.
    *
    * @param[in] type A <code>PP_MouseCursor_Type</code> identifying the type of
@@ -116,7 +116,7 @@ struct PPB_MouseCursor_1_0 {
    * pixels in each direction and must be of the system's native image format.
    * When you are specifying a predefined cursor, this parameter must be 0.
    *
-   * @param[in] hot_spot When setting a custom cursor, this idenfifies the
+   * @param[in] hot_spot When setting a custom cursor, this identifies the
    * pixel position within the given image of the "hot spot" of the cursor.
    * When specifying a stock cursor, this parameter is ignored.
    *

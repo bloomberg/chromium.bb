@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From pp_touch_point.idl modified Mon Feb 11 15:42:54 2013. */
+/* From pp_touch_point.idl modified Thu Mar 28 10:13:07 2013. */
 
 #ifndef PPAPI_C_PP_TOUCH_POINT_H_
 #define PPAPI_C_PP_TOUCH_POINT_H_
@@ -25,7 +25,7 @@
  */
 /**
  * The <code>PP_TouchPoint</code> struct represents all information about a
- * single touch point, such ase position, id, rotation angle, and pressure.
+ * single touch point, such as position, id, rotation angle, and pressure.
  */
 struct PP_TouchPoint {
   /**

@@ -76,7 +76,7 @@ struct ExtensionsCallbackOutputTraits {
 };
 
 // This class provides storage for a PP_Var and a vector of objects which are
-// of type T. The PP_Var is used as an output parameter to recevie an array var
+// of type T. The PP_Var is used as an output parameter to receive an array var
 // from the browser. Each element in the array var is converted to a T object,
 // using FromVarConverter, and stores in the vector.
 template <class T>

@@ -89,7 +89,7 @@
    * calls on background threads are not currently supported. Until this
    * support is complete, you must either do asynchronous operations on the
    * main thread, or provide an adaptor for a blocking background thread to
-   * execute the operaitions on the main thread.
+   * execute the operations on the main thread.
    */
   PP_ERROR_BLOCKS_MAIN_THREAD = -13,
 

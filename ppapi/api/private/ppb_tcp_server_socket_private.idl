@@ -46,7 +46,7 @@ interface PPB_TCPServerSocket_Private {
    * PPB_TCPSocket_Private and stores reference to it in
    * |tcp_socket|. |callback| is invoked when connection is accepted
    * or in the case of failure. This method can be called only after
-   * succesfull Listen call on |tcp_server_socket|.
+   * successful Listen call on |tcp_server_socket|.
    */
   int32_t Accept([in] PP_Resource tcp_server_socket,
                  [out] PP_Resource tcp_socket,

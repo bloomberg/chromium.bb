@@ -130,7 +130,7 @@ class URLRequestInfo : public Resource {
   /// <code>PP_VARTYPE_STRING</code>) property for the request.
   /// Refer to the
   /// <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html"Header
-  /// Field Definitions</a> documentaiton for further information.
+  /// Field Definitions</a> documentation for further information.
   ///
   /// @param[in] headers_string A <code>Var</code> containing the property
   /// value.

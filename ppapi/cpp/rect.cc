@@ -89,14 +89,14 @@ Rect Rect::Subtract(const Rect& rect) const {
   int32_t rb = bottom();
 
   if (rect.y() <= y() && rect.bottom() >= bottom()) {
-    // complete int32_tersection in the y-direction
+    // complete intersection in the y-direction
     if (rect.x() <= x()) {
       rx = rect.right();
     } else {
       rr = rect.x();
     }
   } else if (rect.x() <= x() && rect.right() >= right()) {
-    // complete int32_tersection in the x-direction
+    // complete intersection in the x-direction
     if (rect.y() <= y()) {
       ry = rect.bottom();
     } else {

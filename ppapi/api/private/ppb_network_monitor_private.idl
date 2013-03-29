@@ -31,7 +31,7 @@ interface PPB_NetworkMonitor_Private {
    * Starts network change monitoring. The specified
    * <code>callback</code> will be called on the main thread once
    * after this method is called (to supply the initial network
-   * configuarion) and then later every time network configuration
+   * configuration) and then later every time network configuration
    * changes. Notifications are stopped when the returned resource is
    * destroyed. If the plugin doesn't have access to the network list
    * then the callback will be called once with the

@@ -149,7 +149,7 @@ interface PPP_Flash_BrowserOperations {
    * @param[in] plugin_data_path String containing the directory where the
    * plugin data is stored.
    * @param[out] sites A NULL-terminated array of sites that have stored data.
-   * Use FreeSiteList on the the array when done.
+   * Use FreeSiteList on the array when done.
    *
    * See also the NPP_GetSitesWithData function in NPAPI:
    * https://wiki.mozilla.org/NPAPI:ClearSiteData

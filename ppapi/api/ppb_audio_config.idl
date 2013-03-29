@@ -200,7 +200,7 @@ interface PPB_AudioConfig {
    * RecommendSampleRate() returns the native sample rate that the browser
    * is using in the backend.  Applications that use the recommended sample
    * rate will have potentially better latency and fidelity.  The return value
-   * is indended for audio output devices.  If the output sample rate cannot be
+   * is intended for audio output devices.  If the output sample rate cannot be
    * determined, this function can return PP_AUDIOSAMPLERATE_NONE.
    *
    * @param[in] instance

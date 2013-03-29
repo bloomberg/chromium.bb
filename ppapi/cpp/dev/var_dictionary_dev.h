@@ -19,14 +19,14 @@ class VarDictionary_Dev : public Var {
   /// Constructs a new dictionary var.
   VarDictionary_Dev();
 
-  /// Contructs a <code>VarDictionary_Dev</code> given a var for which
+  /// Constructs a <code>VarDictionary_Dev</code> given a var for which
   /// is_dictionary() is true. This will refer to the same dictionary var, but
   /// allow you to access methods specific to dictionary.
   ///
   /// @param[in] var A dictionary var.
   explicit VarDictionary_Dev(const Var& var);
 
-  /// Contructs a <code>VarDictionary_Dev</code> given a <code>PP_Var</code>
+  /// Constructs a <code>VarDictionary_Dev</code> given a <code>PP_Var</code>
   /// of type PP_VARTYPE_DICTIONARY.
   ///
   /// @param[in] var A <code>PP_Var</code> of type PP_VARTYPE_DICTIONARY.

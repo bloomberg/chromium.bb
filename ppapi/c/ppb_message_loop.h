@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_message_loop.idl modified Thu Jan 17 12:04:14 2013. */
+/* From ppb_message_loop.idl modified Thu Mar 28 11:08:46 2013. */
 
 #ifndef PPAPI_C_PPB_MESSAGE_LOOP_H_
 #define PPAPI_C_PPB_MESSAGE_LOOP_H_
@@ -41,7 +41,7 @@
  * suddenly see their PP_Resource handles become invalid. In this case, calls
  * will fail with PP_ERROR_BADRESOURCE. If you need to access data associated
  * with your instance, you will probably want to create some kind of threadsafe
- * proxy object that can handle asynchonous destruction of the instance object.
+ * proxy object that can handle asynchronous destruction of the instance object.
  *
  * Typical usage:
  *   On the main thread:
@@ -54,7 +54,7 @@
  *    - Call AttachToCurrentThread() with the message loop resource.
  *    - Call Run() with the message loop resource.
  *
- *   Your callacks should look like this:
+ *   Your callbacks should look like this:
  *      void DoMyWork(void* user_data, int32_t status) {
  *        if (status != PP_OK) {
  *          Cleanup();  // e.g. free user_data.
@@ -219,7 +219,7 @@ struct PPB_MessageLoop_1_0 {
    *
    * @param callback The completion callback to execute from the message loop.
    *
-   * @param delay_ms The number of millseconds to delay execution of the given
+   * @param delay_ms The number of milliseconds to delay execution of the given
    * completion callback. Passing 0 means it will get queued normally and
    * executed in order.
    *
@@ -234,7 +234,7 @@ struct PPB_MessageLoop_1_0 {
    * run your callback with an error without causing unexpected threading
    * problems). If you associate memory with the completion callback (for
    * example, you're using the C++ CompletionCallbackFactory), you will need to
-   * free this or manually run the callback. See "Desctruction and error
+   * free this or manually run the callback. See "Destruction and error
    * handling" above.
    *
    *

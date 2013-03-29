@@ -19,7 +19,7 @@ namespace pp {
 /// <code>HandleMessage</code> functions of <code>Instance</code>.
 class VarArrayBuffer : public Var {
  public:
-  /// Contruct a <code>VarArrayBuffer</code> given a var for which
+  /// Construct a <code>VarArrayBuffer</code> given a var for which
   /// is_array_buffer() is true. This will refer to the same
   /// <code>ArrayBuffer</code> as var, but allows you to access methods
   /// specific to <code>VarArrayBuffer</code>.

@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppp_instance_private.idl modified Tue Oct  2 13:42:46 2012. */
+/* From private/ppp_instance_private.idl modified Thu Mar 28 10:22:54 2013. */
 
 #ifndef PPAPI_C_PRIVATE_PPP_INSTANCE_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPP_INSTANCE_PRIVATE_H_
@@ -45,7 +45,7 @@ struct PPP_Instance_Private_0_1 {
    * The returned PP_Var should have a reference added for the caller, which
    * will be responsible for Release()ing that reference.
    *
-   * @param[in] instance A PP_Instance indentifying the instance from which the
+   * @param[in] instance A PP_Instance identifying the instance from which the
    *            instance object is being requested.
    * @return A PP_Var containing scriptable object.
    */

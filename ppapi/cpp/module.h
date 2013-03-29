@@ -82,7 +82,7 @@ class Module {
 
   /// GetBrowserInterface() returns interfaces which the browser implements
   /// (i.e. PPB interfaces).
-  /// @param[in] interface_name The browser interface for the moduel to get.
+  /// @param[in] interface_name The browser interface for the module to get.
   const void* GetBrowserInterface(const char* interface_name);
 
   /// InstanceForPPInstance() returns the object associated with this

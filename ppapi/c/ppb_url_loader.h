@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_url_loader.idl modified Wed Oct  5 14:06:02 2011. */
+/* From ppb_url_loader.idl modified Thu Mar 28 10:07:37 2013. */
 
 #ifndef PPAPI_C_PPB_URL_LOADER_H_
 #define PPAPI_C_PPB_URL_LOADER_H_
@@ -84,7 +84,7 @@ struct PPB_URLLoader_1_0 {
    * <code>URLRequestInfo</code>.
    * @param[in] callback A <code>PP_CompletionCallback</code> to run on
    * asynchronous completion of Open(). This callback will run when response
-   * headers for the url are received or error occured. This callback
+   * headers for the url are received or error occurred. This callback
    * will only run if Open() returns <code>PP_OK_COMPLETIONPENDING</code>.
    *
    * @return An int32_t containing an error code from <code>pp_errors.h</code>.

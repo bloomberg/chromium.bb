@@ -17,7 +17,7 @@ label Chrome {
  */
 interface PPP_TextInput_Dev {
   /**
-   * Requests the plugin to send back the text arround the current caret or
+   * Requests the plugin to send back the text around the current caret or
    * selection by <code>PPB_TextInput_Dev::UpdateSurroundingText</code>.
    * It is recommended to include the <code>desired_number_of_characters</code>
    * characters before and after the selection, but not mandatory.

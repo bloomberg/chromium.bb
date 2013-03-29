@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From pp_file_info.idl modified Mon Nov 14 10:36:01 2011. */
+/* From pp_file_info.idl modified Thu Mar 28 11:11:01 2013. */
 
 #ifndef PPAPI_C_PP_FILE_INFO_H_
 #define PPAPI_C_PP_FILE_INFO_H_
@@ -43,7 +43,7 @@ typedef enum {
   PP_FILESYSTEMTYPE_INVALID = 0,
   /** For external file system types */
   PP_FILESYSTEMTYPE_EXTERNAL = 1,
-  /** For local persistant file system types */
+  /** For local persistent file system types */
   PP_FILESYSTEMTYPE_LOCALPERSISTENT = 2,
   /** For local temporary file system types */
   PP_FILESYSTEMTYPE_LOCALTEMPORARY = 3

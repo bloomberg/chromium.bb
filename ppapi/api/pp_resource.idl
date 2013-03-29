@@ -9,7 +9,7 @@
  */
 
 /**
- * This typdef represents an opaque handle assigned by the browser to the
+ * This typedef represents an opaque handle assigned by the browser to the
  * resource. The handle is guaranteed never to be 0 for a valid resource, so a
  * module can initialize it to 0 to indicate a "NULL handle." Some interfaces
  * may return a NULL resource to indicate failure.

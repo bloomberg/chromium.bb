@@ -86,7 +86,7 @@ class FileChooser_Dev : public Resource {
     PP_CompletionCallback original_callback;
   };
 
-  // Provide backwards-compatability for older versions. Converts the old-style
+  // Provide backwards-compatibility for older versions. Converts the old-style
   // 0.5 "iterator" interface to the new-style 0.6 "array output" interface that
   // the caller is expecting.
   //

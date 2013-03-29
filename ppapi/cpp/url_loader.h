@@ -54,7 +54,7 @@ class URLLoader : public Resource {
   /// URLRequestInfo.
   /// @param[in] cc A <code>CompletionCallback</code> to run on asynchronous
   /// completion of Open(). This callback will run when response
-  /// headers for the url are received or error occured. This callback
+  /// headers for the url are received or error occurred. This callback
   /// will only run if Open() returns <code>PP_OK_COMPLETIONPENDING</code>.
   ///
   /// @return An int32_t containing an error code from
@@ -67,7 +67,7 @@ class URLLoader : public Resource {
   ///
   /// @param[in] cc A <code>CompletionCallback</code> to run on asynchronous
   /// completion of FollowRedirect(). This callback will run when response
-  /// headers for the redirect url are received or error occured. This callback
+  /// headers for the redirect url are received or error occurred. This callback
   /// will only run if FollowRedirect() returns
   /// <code>PP_OK_COMPLETIONPENDING</code>.
   ///

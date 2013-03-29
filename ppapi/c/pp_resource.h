@@ -1,9 +1,9 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* From pp_resource.idl modified Sat Jul 16 16:50:26 2011. */
+/* From pp_resource.idl modified Thu Mar 28 10:09:51 2013. */
 
 #ifndef PPAPI_C_PP_RESOURCE_H_
 #define PPAPI_C_PP_RESOURCE_H_
@@ -23,7 +23,7 @@
  * @{
  */
 /**
- * This typdef represents an opaque handle assigned by the browser to the
+ * This typedef represents an opaque handle assigned by the browser to the
  * resource. The handle is guaranteed never to be 0 for a valid resource, so a
  * module can initialize it to 0 to indicate a "NULL handle." Some interfaces
  * may return a NULL resource to indicate failure.

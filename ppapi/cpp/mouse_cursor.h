@@ -26,7 +26,7 @@ class MouseCursor {
   /// <code>PP_MOUSECURSOR_TYPE_CUSTOM</code> and specify your image and hot
   /// spot.
   ///
-  /// @param[in] instance A handle indentifying the instance that the mouse
+  /// @param[in] instance A handle identifying the instance that the mouse
   /// cursor will affect.
   ///
   /// @param[in] type A <code>PP_MouseCursor_Type</code> identifying the type
@@ -39,7 +39,7 @@ class MouseCursor {
   /// When you are specifying a predefined cursor, this parameter should be a
   /// default-constructed ImageData.
   ///
-  /// @param[in] hot_spot When setting a custom cursor, this idenfifies the
+  /// @param[in] hot_spot When setting a custom cursor, this identifies the
   /// pixel position within the given image of the "hot spot" of the cursor.
   /// When specifying a stock cursor, this parameter is ignored.
   ///

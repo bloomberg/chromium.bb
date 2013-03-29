@@ -26,7 +26,7 @@ enum PP_Flash_Clipboard_Type {
 };
 
 /**
- * This enumeration contains the predfined clipboard data formats.
+ * This enumeration contains the predefined clipboard data formats.
  */
 [assert_size(4)]
 enum PP_Flash_Clipboard_Format {

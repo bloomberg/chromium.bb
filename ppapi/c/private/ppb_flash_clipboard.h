@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_flash_clipboard.idl modified Mon Oct 29 12:51:16 2012. */
+/* From private/ppb_flash_clipboard.idl modified Thu Mar 28 10:23:59 2013. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_FLASH_CLIPBOARD_H_
 #define PPAPI_C_PRIVATE_PPB_FLASH_CLIPBOARD_H_
@@ -42,7 +42,7 @@ typedef enum {
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_Flash_Clipboard_Type, 4);
 
 /**
- * This enumeration contains the predfined clipboard data formats.
+ * This enumeration contains the predefined clipboard data formats.
  */
 typedef enum {
   /** Indicates an invalid or unsupported clipboard data format. */

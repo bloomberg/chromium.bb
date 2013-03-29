@@ -66,7 +66,7 @@ interface PPB_Graphics2D {
    * @param[in,out] is_always_opaque Identifies whether only opaque data
    * will be painted.
    *
-   * @return Returns <code>PP_TRUE</code> on succes or <code>PP_FALSE</code> if
+   * @return Returns <code>PP_TRUE</code> on success or <code>PP_FALSE</code> if
    * the resource is invalid. The output parameters will be set to 0 on a
    * <code>PP_FALSE</code>.
    */

@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_graphics_3d.idl modified Tue Feb 07 11:38:46 2012. */
+/* From ppb_graphics_3d.idl modified Thu Mar 28 10:12:11 2013. */
 
 #ifndef PPAPI_C_PPB_GRAPHICS_3D_H_
 #define PPAPI_C_PPB_GRAPHICS_3D_H_
@@ -211,7 +211,7 @@ struct PPB_Graphics3D_1_0 {
    * The recoverable error conditions that have no side effect are
    * detected and returned immediately by all functions in this interface.
    * In addition the implementation may get into a fatal state while
-   * processing a command. In this case the application must detroy the
+   * processing a command. In this case the application must destroy the
    * context and reinitialize client API state and objects to continue
    * rendering.
    *
@@ -219,7 +219,7 @@ struct PPB_Graphics3D_1_0 {
    * It is recommended to handle error in the SwapBuffers callback because
    * GetError is synchronous. This function may be useful in rare cases where
    * drawing a frame is expensive and you want to verify the result of
-   * ResizeBuffers before attemptimg to draw a frame.
+   * ResizeBuffers before attempting to draw a frame.
    *
    * @param[in] The 3D graphics context.
    * @return Returns:

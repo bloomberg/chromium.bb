@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From pp_array_output.idl modified Tue Mar  6 21:52:16 2012. */
+/* From pp_array_output.idl modified Thu Mar 28 11:07:53 2013. */
 
 #ifndef PPAPI_C_PP_ARRAY_OUTPUT_H_
 #define PPAPI_C_PP_ARRAY_OUTPUT_H_
@@ -65,7 +65,7 @@ typedef void* (*PP_ArrayOutput_GetDataBuffer)(void* user_data,
 /**
  * A structure that defines a way for the browser to return arrays of data
  * to the plugin. The browser can not allocate memory on behalf of the plugin
- * becaues the plugin and browser may have different allocators.
+ * because the plugin and browser may have different allocators.
  *
  * Array output works by having the browser call to the plugin to allocate a
  * buffer, and then the browser will copy the contents of the array into that

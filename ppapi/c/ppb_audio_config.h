@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_audio_config.idl modified Mon Jul  9 12:02:26 2012. */
+/* From ppb_audio_config.idl modified Thu Mar 28 10:07:11 2013. */
 
 #ifndef PPAPI_C_PPB_AUDIO_CONFIG_H_
 #define PPAPI_C_PPB_AUDIO_CONFIG_H_
@@ -179,7 +179,7 @@ struct PPB_AudioConfig_1_1 {
    * RecommendSampleRate() returns the native sample rate that the browser
    * is using in the backend.  Applications that use the recommended sample
    * rate will have potentially better latency and fidelity.  The return value
-   * is indended for audio output devices.  If the output sample rate cannot be
+   * is intended for audio output devices.  If the output sample rate cannot be
    * determined, this function can return PP_AUDIOSAMPLERATE_NONE.
    *
    * @param[in] instance

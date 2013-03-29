@@ -80,7 +80,7 @@ class ScriptableObject {
   friend class ::pp::VarPrivate;
   static const PPP_Class_Deprecated* GetClass();
 
-  // Unimplemented, copy and assigmnent is not allowed.
+  // Unimplemented, copy and assignment is not allowed.
   ScriptableObject(const ScriptableObject& other);
   ScriptableObject& operator=(const ScriptableObject& other);
 };

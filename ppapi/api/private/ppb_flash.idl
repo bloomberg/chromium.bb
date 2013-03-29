@@ -52,7 +52,7 @@ enum PP_FlashSetting {
   PP_FLASHSETTING_3DENABLED = 1,
 
   /**
-   * Specifies if the given instance is in private/inconito/off-the-record mode
+   * Specifies if the given instance is in private/incognito/off-the-record mode
    * (returns true) or "regular" mode (returns false). Returns an undefined
    * PP_Var on invalid instance.
    */
@@ -187,7 +187,7 @@ interface PPB_Flash {
       [in] PP_Module module);
 
   /**
-   * Loads the given font in a more priviledged process on Windows. Call this if
+   * Loads the given font in a more privileged process on Windows. Call this if
    * Windows is giving errors for font calls. See
    * content/renderer/font_cache_dispatcher_win.cc
    *

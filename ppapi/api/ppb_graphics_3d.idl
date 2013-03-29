@@ -209,7 +209,7 @@ interface PPB_Graphics3D {
    * The recoverable error conditions that have no side effect are
    * detected and returned immediately by all functions in this interface.
    * In addition the implementation may get into a fatal state while
-   * processing a command. In this case the application must detroy the
+   * processing a command. In this case the application must destroy the
    * context and reinitialize client API state and objects to continue
    * rendering.
    *
@@ -217,7 +217,7 @@ interface PPB_Graphics3D {
    * It is recommended to handle error in the SwapBuffers callback because
    * GetError is synchronous. This function may be useful in rare cases where
    * drawing a frame is expensive and you want to verify the result of
-   * ResizeBuffers before attemptimg to draw a frame.
+   * ResizeBuffers before attempting to draw a frame.
    *
    * @param[in] The 3D graphics context.
    * @return Returns:

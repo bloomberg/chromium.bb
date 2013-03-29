@@ -282,7 +282,7 @@ class Rect {
 
   /// Offset() moves the rectangle by a horizontal and vertical distance.
   ///
-  /// @param[in] horizontal An int32_t value representing a horzontal
+  /// @param[in] horizontal An int32_t value representing a horizontal
   /// move distance.
   /// @param[in] vertical An int32_t value representing a vertical
   /// move distance.
@@ -331,7 +331,7 @@ class Rect {
   /// @return true if the rectangle fall inside this rectangle.
   bool Contains(const Rect& rect) const;
 
-  /// Insersects() determines if this rectangle intersects the specified
+  /// Intersects() determines if this rectangle intersects the specified
   /// rectangle.
   ///
   /// @param[in] rect A pointer to a <code>Rect</code>.

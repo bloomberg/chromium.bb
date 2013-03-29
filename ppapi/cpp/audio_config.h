@@ -100,7 +100,7 @@ class AudioConfig : public Resource {
   /// @param[in] sample_rate A <code>PP_AudioSampleRate</code> which is either
   /// <code>PP_AUDIOSAMPLERATE_44100</code> or
   /// <code>PP_AUDIOSAMPLERATE_48000</code>.
-  /// @param[in] requested_sample_frame_count A uint_32t requested frame count.
+  /// @param[in] requested_sample_frame_count A uint32_t requested frame count.
   ///
   /// @return A uint32_t containing the recommended sample frame count if
   /// successful. If the sample frame count or bit rate is not supported,

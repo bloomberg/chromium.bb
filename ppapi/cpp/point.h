@@ -101,7 +101,7 @@ class Point {
   }
 
   /// Subtracts one Point from another Point by subtracting their x values
-  /// and y values. Returnes a new point with the result.
+  /// and y values. Returns a new point with the result.
   ///
   /// @param[in] other A Point.
   ///
@@ -240,7 +240,7 @@ class FloatPoint {
   }
 
   /// Subtracts one Point from another Point by subtracting their x values
-  /// and y values. Returnes a new point with the result.
+  /// and y values. Returns a new point with the result.
   ///
   /// @param[in] other A FloatPoint.
   ///

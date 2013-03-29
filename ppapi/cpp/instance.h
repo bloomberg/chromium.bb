@@ -139,7 +139,7 @@ class Instance {
   /// the clip when the instance is partially visible. Instead, update the
   /// entire region. The time saved doing partial paints is usually not
   /// significant and it can create artifacts when scrolling (this notification
-  /// is sent asynchronously from scolling so there can be flashes of old
+  /// is sent asynchronously from scrolling so there can be flashes of old
   /// content in the exposed regions).
   virtual void DidChangeView(const Rect& position, const Rect& clip);
 
@@ -333,7 +333,7 @@ class Instance {
   /// do optimizations for scroll or touch events that can be processed
   /// substantially faster if it knows there are no non-default receivers for
   /// that message. Requesting that such messages be delivered, even if they are
-  /// processed very quickly, may have a noticable effect on the performance of
+  /// processed very quickly, may have a noticeable effect on the performance of
   /// the page.
   ///
   /// When requesting input events through this function, the events will be

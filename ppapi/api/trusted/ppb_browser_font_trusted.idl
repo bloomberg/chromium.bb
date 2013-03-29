@@ -202,7 +202,7 @@ interface PPB_BrowserFont_Trusted {
    * clipped to the image.
    *
    * The image_data_is_opaque flag indicates whether subpixel antialiasing can
-   * be performend, if it is supported. When the image below the text is
+   * be performed, if it is supported. When the image below the text is
    * opaque, subpixel antialiasing is supported and you should set this to
    * PP_TRUE to pick up the user's default preferences. If your plugin is
    * partially transparent, then subpixel antialiasing is not possible and

@@ -35,7 +35,7 @@ enum PP_URLRequestProperty {
    * This corresponds to a string (<code>PP_VARTYPE_STRING</code>); \n
    * delimited. Refer to the
    * <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html"Header
-   * Field Definitions</a> documentaiton for further information.
+   * Field Definitions</a> documentation for further information.
    */
   PP_URLREQUESTPROPERTY_HEADERS = 2,
 
@@ -69,7 +69,7 @@ enum PP_URLRequestProperty {
    * This corresponds to a <code>PP_Bool</code>
    * (default=<code>PP_FALSE</code>). Set this value to <code>PP_TRUE</code> if
    * you want to be able to poll the upload progress using
-   * PPB_URLLoader.GetUplaodProgress().
+   * PPB_URLLoader.GetUploadProgress().
    */
   PP_URLREQUESTPROPERTY_RECORDUPLOADPROGRESS = 6,
 

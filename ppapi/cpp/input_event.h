@@ -103,13 +103,13 @@ class MouseInputEvent : public InputEvent {
   /// This constructor manually constructs a mouse event from the provided
   /// parameters.
   ///
-  /// @param[in] instance The instance for which this event occured.
+  /// @param[in] instance The instance for which this event occurred.
   ///
   /// @param[in] type A <code>PP_InputEvent_Type</code> identifying the type of
   /// input event.
   ///
   /// @param[in] time_stamp A <code>PP_TimeTicks</code> indicating the time
-  /// when the event occured.
+  /// when the event occurred.
   ///
   /// @param[in] modifiers A bit field combination of the
   /// <code>PP_InputEvent_Modifier</code> flags.
@@ -119,7 +119,7 @@ class MouseInputEvent : public InputEvent {
   /// mouse move, enter, and leave events.
   ///
   /// @param[in] mouse_position A <code>Point</code> containing the x and y
-  /// position of the mouse when the eent occurred.
+  /// position of the mouse when the event occurred.
   ///
   /// @param[in] click_count
   // TODO(brettw) figure out exactly what this means.
@@ -178,10 +178,10 @@ class WheelInputEvent : public InputEvent {
 
   /// Constructs a wheel input even from the given parameters.
   ///
-  /// @param[in] instance The instance for which this event occured.
+  /// @param[in] instance The instance for which this event occurred.
   ///
   /// @param[in] time_stamp A <code>PP_TimeTicks</code> indicating the time
-  /// when the event occured.
+  /// when the event occurred.
   ///
   /// @param[in] modifiers A bit field combination of the
   /// <code>PP_InputEvent_Modifier</code> flags.
@@ -216,7 +216,7 @@ class WheelInputEvent : public InputEvent {
   /// possible, for example, on some trackpads and newer mice that don't have
   /// "clicks".
   ///
-  /// @return The vertial and horizontal scroll values. The units are either in
+  /// @return The vertical and horizontal scroll values. The units are either in
   /// pixels (when scroll_by_page is false) or pages (when scroll_by_page is
   /// true). For example, y = -3 means scroll up 3 pixels when scroll_by_page
   /// is false, and scroll up 3 pages when scroll_by_page is true.
@@ -263,13 +263,13 @@ class KeyboardInputEvent : public InputEvent {
 
   /// Constructs a keyboard input even from the given parameters.
   ///
-  /// @param[in] instance The instance for which this event occured.
+  /// @param[in] instance The instance for which this event occurred.
   ///
   /// @param[in] type A <code>PP_InputEvent_Type</code> identifying the type of
   /// input event.
   ///
   /// @param[in] time_stamp A <code>PP_TimeTicks</code> indicating the time
-  /// when the event occured.
+  /// when the event occurred.
   ///
   /// @param[in]  modifiers A bit field combination of the
   /// <code>PP_InputEvent_Modifier</code> flags.
@@ -311,13 +311,13 @@ class TouchInputEvent : public InputEvent {
 
   /// Constructs a touch input even from the given parameters.
   ///
-  /// @param[in] instance The instance for which this event occured.
+  /// @param[in] instance The instance for which this event occurred.
   ///
   /// @param[in] type A <code>PP_InputEvent_Type</code> identifying the type of
   /// input event.
   ///
   /// @param[in] time_stamp A <code>PP_TimeTicks</code> indicating the time
-  /// when the event occured.
+  /// when the event occurred.
   ///
   /// @param[in]  modifiers A bit field combination of the
   /// <code>PP_InputEvent_Modifier</code> flags.

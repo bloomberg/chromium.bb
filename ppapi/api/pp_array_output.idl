@@ -43,7 +43,7 @@ typedef mem_t PP_ArrayOutput_GetDataBuffer([inout] mem_t user_data,
 /**
  * A structure that defines a way for the browser to return arrays of data
  * to the plugin. The browser can not allocate memory on behalf of the plugin
- * becaues the plugin and browser may have different allocators.
+ * because the plugin and browser may have different allocators.
  *
  * Array output works by having the browser call to the plugin to allocate a
  * buffer, and then the browser will copy the contents of the array into that

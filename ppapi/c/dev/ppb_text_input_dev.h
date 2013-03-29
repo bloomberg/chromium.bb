@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_text_input_dev.idl modified Tue Mar 13 21:18:47 2012. */
+/* From dev/ppb_text_input_dev.idl modified Thu Mar 28 10:54:47 2013. */
 
 #ifndef PPAPI_C_DEV_PPB_TEXT_INPUT_DEV_H_
 #define PPAPI_C_DEV_PPB_TEXT_INPUT_DEV_H_
@@ -93,16 +93,16 @@ struct PPB_TextInput_Dev_0_2 {
    * call, informs the browser about the current text selection and surrounding
    * text. <code>text</code> is a UTF-8 string that contains the current range
    * of text selection in the plugin. <code>caret</code> is the byte-index of
-   * the caret poisition within <code>text</code>. <code>anchor</code> is the
+   * the caret position within <code>text</code>. <code>anchor</code> is the
    * byte-index of the anchor position (i.e., if a range of text is selected,
-   * it is the other edge of selection diffrent from <code>caret</code>. If
+   * it is the other edge of selection different from <code>caret</code>. If
    * there are no selection, <code>anchor</code> is equal to <code>caret</code>.
    *
    * Typical use of this information in the browser is to enable "reconversion"
    * features of IME that puts back the already committed text into the
    * pre-commit composition state. Another use is to improve the precision
    * of suggestion of IME by taking the context into account (e.g., if the caret
-   * looks to be on the begining of a sentense, suggest capital letters in a
+   * looks to be on the beginning of a sentence, suggest capital letters in a
    * virtual keyboard).
    *
    * When the focus is not on text, call this function setting <code>text</code>

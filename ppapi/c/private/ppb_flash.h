@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_flash.idl modified Thu Jan 31 16:23:42 2013. */
+/* From private/ppb_flash.idl modified Thu Mar 28 10:30:53 2013. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_FLASH_H_
 #define PPAPI_C_PRIVATE_PPB_FLASH_H_
@@ -72,7 +72,7 @@ typedef enum {
    */
   PP_FLASHSETTING_3DENABLED = 1,
   /**
-   * Specifies if the given instance is in private/inconito/off-the-record mode
+   * Specifies if the given instance is in private/incognito/off-the-record mode
    * (returns true) or "regular" mode (returns false). Returns an undefined
    * PP_Var on invalid instance.
    */
@@ -182,7 +182,7 @@ struct PPB_Flash_13_0 {
    */
   struct PP_Var (*GetCommandLineArgs)(PP_Module module);
   /**
-   * Loads the given font in a more priviledged process on Windows. Call this if
+   * Loads the given font in a more privileged process on Windows. Call this if
    * Windows is giving errors for font calls. See
    * content/renderer/font_cache_dispatcher_win.cc
    *

@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_graphics_2d.idl modified Mon Mar 19 11:35:04 2012. */
+/* From ppb_graphics_2d.idl modified Thu Mar 28 10:10:42 2013. */
 
 #ifndef PPAPI_C_PPB_GRAPHICS_2D_H_
 #define PPAPI_C_PPB_GRAPHICS_2D_H_
@@ -81,7 +81,7 @@ struct PPB_Graphics2D_1_0 {
    * @param[in,out] is_always_opaque Identifies whether only opaque data
    * will be painted.
    *
-   * @return Returns <code>PP_TRUE</code> on succes or <code>PP_FALSE</code> if
+   * @return Returns <code>PP_TRUE</code> on success or <code>PP_FALSE</code> if
    * the resource is invalid. The output parameters will be set to 0 on a
    * <code>PP_FALSE</code>.
    */

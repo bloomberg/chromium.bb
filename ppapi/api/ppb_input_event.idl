@@ -890,7 +890,7 @@ interface PPB_TouchInputEvent {
                                 [in] uint32_t index);
 
   /**
-   * Returns the touch-point with the spcified touch-id in the specified list.
+   * Returns the touch-point with the specified touch-id in the specified list.
    *
    * @param[in] resource A <code>PP_Resource</code> corresponding to a touch
    * event.

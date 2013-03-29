@@ -15,7 +15,7 @@ namespace pp {
 
 class FileRef;
 
-/// URLResponseInfo provides an API for examaning URL responses.
+/// URLResponseInfo provides an API for examining URL responses.
 class URLResponseInfo : public Resource {
  public:
   /// Default constructor. This constructor creates an <code>is_null</code>

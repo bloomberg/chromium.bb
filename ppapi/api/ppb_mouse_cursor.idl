@@ -82,7 +82,7 @@ interface PPB_MouseCursor {
    * cursor, set the type to <code>PP_MOUSECURSOR_TYPE_CUSTOM</code> and
    * specify your image and hot spot.
    *
-   * @param[in] instance A <code>PP_Instance</code> indentifying the instance
+   * @param[in] instance A <code>PP_Instance</code> identifying the instance
    * that the mouse cursor will affect.
    *
    * @param[in] type A <code>PP_MouseCursor_Type</code> identifying the type of
@@ -94,7 +94,7 @@ interface PPB_MouseCursor {
    * pixels in each direction and must be of the system's native image format.
    * When you are specifying a predefined cursor, this parameter must be 0.
    *
-   * @param[in] hot_spot When setting a custom cursor, this idenfifies the
+   * @param[in] hot_spot When setting a custom cursor, this identifies the
    * pixel position within the given image of the "hot spot" of the cursor.
    * When specifying a stock cursor, this parameter is ignored.
    *

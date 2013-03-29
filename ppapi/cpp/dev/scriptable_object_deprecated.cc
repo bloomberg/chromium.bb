@@ -178,7 +178,7 @@ Var ScriptableObject::Call(const Var& /*method_name*/,
 
 Var ScriptableObject::Construct(const std::vector<Var>& /*args*/,
                                 Var* exception) {
-  *exception = Var("Constuct method does not exist in ScriptableObject");
+  *exception = Var("Construct method does not exist in ScriptableObject");
   return Var();
 }
 

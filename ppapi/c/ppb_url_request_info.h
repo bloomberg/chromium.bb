@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_url_request_info.idl modified Tue Jul 10 09:05:59 2012. */
+/* From ppb_url_request_info.idl modified Thu Mar 28 10:19:35 2013. */
 
 #ifndef PPAPI_C_PPB_URL_REQUEST_INFO_H_
 #define PPAPI_C_PPB_URL_REQUEST_INFO_H_
@@ -48,7 +48,7 @@ typedef enum {
    * This corresponds to a string (<code>PP_VARTYPE_STRING</code>); \n
    * delimited. Refer to the
    * <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html"Header
-   * Field Definitions</a> documentaiton for further information.
+   * Field Definitions</a> documentation for further information.
    */
   PP_URLREQUESTPROPERTY_HEADERS = 2,
   /**
@@ -78,7 +78,7 @@ typedef enum {
    * This corresponds to a <code>PP_Bool</code>
    * (default=<code>PP_FALSE</code>). Set this value to <code>PP_TRUE</code> if
    * you want to be able to poll the upload progress using
-   * PPB_URLLoader.GetUplaodProgress().
+   * PPB_URLLoader.GetUploadProgress().
    */
   PP_URLREQUESTPROPERTY_RECORDUPLOADPROGRESS = 6,
   /**

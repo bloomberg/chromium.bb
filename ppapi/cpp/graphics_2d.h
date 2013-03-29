@@ -58,7 +58,7 @@ class Graphics2D : public Resource {
 
   /// A destructor that decrements the reference count of a
   /// <code>Graphics2D</code> object made using the previous copy constructor.
-  /// It is possible that the destructor does not toally destroy the underlying
+  /// It is possible that the destructor does not totally destroy the underlying
   /// 2D context if there are outstanding references to it.
   virtual ~Graphics2D();
 

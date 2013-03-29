@@ -64,7 +64,7 @@ void NetworkListPrivate::GetIpAddresses(
   if (!has_interface<PPB_NetworkList_Private>())
     return;
 
-  // Most netword interfaces don't have more than 3 network
+  // Most network interfaces don't have more than 3 network
   // interfaces.
   addresses->resize(3);
 

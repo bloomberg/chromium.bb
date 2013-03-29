@@ -21,7 +21,7 @@ class Graphics3D : public Resource {
   /// Default constructor for creating an is_null() Graphics3D object.
   Graphics3D();
 
-  /// A constructor for creating and and initializing a 3D rendering context.
+  /// A constructor for creating and initializing a 3D rendering context.
   /// The returned context is created off-screen and must be attached
   /// to a module instance using <code>Instance::BindGraphics</code> to draw on
   /// the web page.

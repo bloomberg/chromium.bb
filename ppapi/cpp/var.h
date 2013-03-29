@@ -132,7 +132,7 @@ class Var {
 
   /// This function determines if this <code>Var</code> is a dictionary.
   ///
-  /// @return true if this <code>Var</code> is a dictinoary, otherwise false.
+  /// @return true if this <code>Var</code> is a dictionary, otherwise false.
   bool is_dictionary() const { return var_.type == PP_VARTYPE_DICTIONARY; }
 
   /// This function determines if this <code>Var</code> is an integer value.
@@ -237,7 +237,7 @@ class Var {
   std::string DebugString() const;
 
   /// This class is used when calling the raw C PPAPI when using the C++
-  /// <code>Var</code> as a possibe NULL exception. This class will handle
+  /// <code>Var</code> as a possible NULL exception. This class will handle
   /// getting the address of the internal value out if it's non-NULL and
   /// fixing up the reference count.
   ///

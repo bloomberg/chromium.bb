@@ -11,7 +11,7 @@
 
 /**
  * The <code>PP_TouchPoint</code> struct represents all information about a
- * single touch point, such ase position, id, rotation angle, and pressure.
+ * single touch point, such as position, id, rotation angle, and pressure.
  */
 [assert_size(28), returnByValue]
 struct PP_TouchPoint {

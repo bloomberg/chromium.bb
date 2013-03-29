@@ -19,14 +19,14 @@ class VarArray_Dev : public Var {
   /// Constructs a new array var.
   VarArray_Dev();
 
-  /// Contructs a <code>VarArray_Dev</code> given a var for which is_array() is
+  /// Constructs a <code>VarArray_Dev</code> given a var for which is_array() is
   /// true. This will refer to the same array var, but allow you to access
   /// methods specific to arrays.
   ///
   /// @param[in] var An array var.
   explicit VarArray_Dev(const Var& var);
 
-  /// Contructs a <code>VarArray_Dev</code> given a <code>PP_Var</code> of type
+  /// Constructs a <code>VarArray_Dev</code> given a <code>PP_Var</code> of type
   /// PP_VARTYPE_ARRAY.
   ///
   /// @param[in] var A <code>PP_Var</code> of type PP_VARTYPE_ARRAY.

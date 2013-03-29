@@ -117,7 +117,7 @@ class FileIO : public Resource {
   /// where a copy of your FileIO resource could outlive your class, the
   /// callback will still be pending when your class goes out of scope, creating
   /// the possibility of writing into invalid memory. So it's recommended to
-  /// keep your FileIO resource and any oubput buffers tightly controlled in
+  /// keep your FileIO resource and any output buffers tightly controlled in
   /// the same scope.
   ///
   /// <strong>Caveat:</strong> This Read() is potentially unsafe if you're using
@@ -229,7 +229,7 @@ class FileIO : public Resource {
     PP_CompletionCallback original_callback;
   };
 
-  // Provide backwards-compatability for older Read versions. Converts the
+  // Provide backwards-compatibility for older Read versions. Converts the
   // old-style "char*" output buffer of 1.0 to the new "PP_ArrayOutput"
   // interface in 1.1.
   //

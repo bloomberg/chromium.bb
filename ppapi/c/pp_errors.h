@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From pp_errors.idl modified Thu Dec 20 14:28:44 2012. */
+/* From pp_errors.idl modified Thu Mar 28 10:12:22 2013. */
 
 #ifndef PPAPI_C_PP_ERRORS_H_
 #define PPAPI_C_PP_ERRORS_H_
@@ -90,7 +90,7 @@ enum {
    * calls on background threads are not currently supported. Until this
    * support is complete, you must either do asynchronous operations on the
    * main thread, or provide an adaptor for a blocking background thread to
-   * execute the operaitions on the main thread.
+   * execute the operations on the main thread.
    */
   PP_ERROR_BLOCKS_MAIN_THREAD = -13,
   PP_ERROR_FILENOTFOUND = -20,
