@@ -11,16 +11,16 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/sync/glue/non_ui_data_type_controller.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
+#include "chrome/browser/webdata/autofill_web_data_service_observer.h"
 
 class AutofillWebDataService;
 
 namespace browser_sync {
 
 // A class that manages the startup and shutdown of autofill sync.
-class AutofillDataTypeController : public NonUIDataTypeController,
-                                   public content::NotificationObserver {
+class AutofillDataTypeController
+    : public NonUIDataTypeController,
+      public AutofillWebDataServiceObserverOnUIThread {
  public:
   AutofillDataTypeController(
       ProfileSyncComponentsFactory* profile_sync_factory,
@@ -35,10 +35,8 @@ class AutofillDataTypeController : public NonUIDataTypeController,
   // 163431 is addressed / implemented.
   virtual void StartAssociating(const StartCallback& start_callback) OVERRIDE;
 
-  // content::NotificationObserver implementation.
-  virtual void Observe(int notification_type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  // AutofillWebDataServiceObserverOnUIThread implementation.
+  virtual void WebDatabaseLoaded() OVERRIDE;
 
  protected:
   virtual ~AutofillDataTypeController();
@@ -60,7 +58,6 @@ class AutofillDataTypeController : public NonUIDataTypeController,
   void UpdateAutofillCullingSettings(bool cull_expired_entries);
 
   scoped_refptr<AutofillWebDataService> web_data_service_;
-  content::NotificationRegistrar notification_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillDataTypeController);
 };

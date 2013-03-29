@@ -86,7 +86,6 @@ class AutofillTableTest : public testing::Test {
   virtual ~AutofillTableTest() {}
 
  protected:
-  typedef std::vector<AutofillChange> AutofillChangeList;
   typedef std::set<AutofillEntry,
     bool (*)(const AutofillEntry&, const AutofillEntry&)> AutofillEntrySet;
   typedef std::set<AutofillEntry, bool (*)(const AutofillEntry&,

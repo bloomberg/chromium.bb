@@ -44,10 +44,8 @@
 #include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/browser/webdata/web_data_service_test_util.h"
 #include "chrome/browser/webdata/web_database.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "components/autofill/browser/autofill_common_test.h"
 #include "components/autofill/browser/personal_data_manager.h"
-#include "content/public/browser/notification_source.h"
 #include "content/public/test/test_browser_thread.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "sync/internal_api/public/base/model_type.h"
@@ -92,6 +90,15 @@ class Id;
 }
 
 class HistoryService;
+
+namespace {
+
+void RunAndSignal(const base::Closure& cb, WaitableEvent* event) {
+  cb.Run();
+  event->Signal();
+}
+
+}  // namespace
 
 class AutofillTableMock : public AutofillTable {
  public:
@@ -175,9 +182,11 @@ class TokenWebDataServiceFake : public WebDataService {
 class WebDataServiceFake : public AutofillWebDataService {
  public:
   WebDataServiceFake()
-      : AutofillWebDataService(
-            NULL, WebDataServiceBase::ProfileErrorCallback()),
+      : AutofillWebDataService(NULL,
+                               WebDataServiceBase::ProfileErrorCallback()),
         web_database_(NULL),
+        autocomplete_syncable_service_(NULL),
+        autofill_profile_syncable_service_(NULL),
         syncable_service_created_or_destroyed_(false, false) {
   }
 
@@ -213,6 +222,34 @@ class WebDataServiceFake : public AutofillWebDataService {
 
   virtual void ShutdownOnUIThread() OVERRIDE {}
 
+  void OnAutofillEntriesChanged(const AutofillChangeList& changes) {
+    WaitableEvent event(true, false);
+
+    base::Closure notify_cb =
+        base::Bind(&AutocompleteSyncableService::AutofillEntriesChanged,
+                   base::Unretained(autocomplete_syncable_service_),
+                   changes);
+    BrowserThread::PostTask(
+        BrowserThread::DB,
+        FROM_HERE,
+        base::Bind(&RunAndSignal, notify_cb, &event));
+    event.Wait();
+  }
+
+  void OnAutofillProfileChanged(const AutofillProfileChange& changes) {
+    WaitableEvent event(true, false);
+
+    base::Closure notify_cb =
+        base::Bind(&AutocompleteSyncableService::AutofillProfileChanged,
+                   base::Unretained(autofill_profile_syncable_service_),
+                   changes);
+    BrowserThread::PostTask(
+        BrowserThread::DB,
+        FROM_HERE,
+        base::Bind(&RunAndSignal, notify_cb, &event));
+    event.Wait();
+  }
+
  private:
   virtual ~WebDataServiceFake() {}
 
@@ -221,16 +258,26 @@ class WebDataServiceFake : public AutofillWebDataService {
     // These services are deleted in DestroySyncableService().
     AutocompleteSyncableService::CreateForWebDataService(this);
     AutofillProfileSyncableService::CreateForWebDataService(this);
+
+    autocomplete_syncable_service_ =
+        AutocompleteSyncableService::FromWebDataService(this);
+    autofill_profile_syncable_service_ =
+        AutofillProfileSyncableService::FromWebDataService(this);
+
     syncable_service_created_or_destroyed_.Signal();
   }
 
   void DestroySyncableService() {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::DB));
     WebDataServiceBase::ShutdownOnDBThread();
+    autocomplete_syncable_service_ = NULL;
+    autofill_profile_syncable_service_ = NULL;
     syncable_service_created_or_destroyed_.Signal();
   }
 
   WebDatabase* web_database_;
+  AutocompleteSyncableService* autocomplete_syncable_service_;
+  AutofillProfileSyncableService* autofill_profile_syncable_service_;
 
   WaitableEvent syncable_service_created_or_destroyed_;
 
@@ -351,15 +398,21 @@ class MockPersonalDataManagerService : public PersonalDataManagerService {
     return new MockPersonalDataManagerService();
   }
 
-  MockPersonalDataManagerService() {}
+  MockPersonalDataManagerService() {
+    personal_data_manager_.reset(new MockPersonalDataManager());
+  }
   virtual ~MockPersonalDataManagerService() {}
 
+  virtual void Shutdown() OVERRIDE {
+    personal_data_manager_.reset();
+  }
+
   virtual MockPersonalDataManager* GetPersonalDataManager() OVERRIDE {
-    return &personal_data_manager_;
+    return personal_data_manager_.get();
   }
 
  private:
-  MockPersonalDataManager personal_data_manager_;
+  scoped_ptr<MockPersonalDataManager> personal_data_manager_;
   DISALLOW_COPY_AND_ASSIGN(MockPersonalDataManagerService);
 };
 
@@ -427,7 +480,6 @@ class ProfileSyncServiceAutofillTest
 
     personal_data_manager_->Init(profile_.get());
 
-    // Note: This must be called *after* the notification service is created.
     web_data_service_->StartSyncableService();
   }
 
@@ -1129,12 +1181,8 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeAddEntry) {
 
   AutofillChangeList changes;
   changes.push_back(AutofillChange(AutofillChange::ADD, added_entry.key()));
-  scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(
-      db_thread_.DeprecatedGetThreadObject()));
-  notifier->Notify(chrome::NOTIFICATION_AUTOFILL_ENTRIES_CHANGED,
-                   content::Source<AutofillWebDataService>(
-                        web_data_service_.get()),
-                   content::Details<AutofillChangeList>(&changes));
+
+  web_data_service_->OnAutofillEntriesChanged(changes);
 
   std::vector<AutofillEntry> new_sync_entries;
   std::vector<AutofillProfile> new_sync_profiles;
@@ -1158,14 +1206,9 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeAddProfile) {
       "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5", "Orlando", "FL",
       "32801", "US", "19482937549");
 
-  AutofillProfileChange change(AutofillProfileChange::ADD,
-      added_profile.guid(), &added_profile);
-  scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(
-      db_thread_.DeprecatedGetThreadObject()));
-  notifier->Notify(chrome::NOTIFICATION_AUTOFILL_PROFILE_CHANGED,
-                   content::Source<AutofillWebDataService>(
-                        web_data_service_.get()),
-                   content::Details<AutofillProfileChange>(&change));
+  AutofillProfileChange change(
+      AutofillProfileChange::ADD, added_profile.guid(), &added_profile);
+  web_data_service_->OnAutofillProfileChanged(change);
 
   std::vector<AutofillProfile> new_sync_profiles;
   ASSERT_TRUE(GetAutofillProfilesFromSyncDBUnderProfileNode(
@@ -1195,12 +1238,7 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeUpdateEntry) {
   AutofillChangeList changes;
   changes.push_back(AutofillChange(AutofillChange::UPDATE,
                                    updated_entry.key()));
-  scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(
-      db_thread_.DeprecatedGetThreadObject()));
-  notifier->Notify(chrome::NOTIFICATION_AUTOFILL_ENTRIES_CHANGED,
-                   content::Source<AutofillWebDataService>(
-                        web_data_service_.get()),
-                   content::Details<AutofillChangeList>(&changes));
+  web_data_service_->OnAutofillEntriesChanged(changes);
 
   std::vector<AutofillEntry> new_sync_entries;
   std::vector<AutofillProfile> new_sync_profiles;
@@ -1226,12 +1264,7 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeRemoveEntry) {
   AutofillChangeList changes;
   changes.push_back(AutofillChange(AutofillChange::REMOVE,
                                    original_entry.key()));
-  scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(
-      db_thread_.DeprecatedGetThreadObject()));
-  notifier->Notify(chrome::NOTIFICATION_AUTOFILL_ENTRIES_CHANGED,
-                   content::Source<AutofillWebDataService>(
-                        web_data_service_.get()),
-                   content::Details<AutofillChangeList>(&changes));
+  web_data_service_->OnAutofillEntriesChanged(changes);
 
   std::vector<AutofillEntry> new_sync_entries;
   std::vector<AutofillProfile> new_sync_profiles;
@@ -1264,14 +1297,9 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeRemoveProfile) {
   StartSyncService(add_autofill.callback(), false, syncer::AUTOFILL_PROFILE);
   ASSERT_TRUE(add_autofill.success());
 
-  AutofillProfileChange change(AutofillProfileChange::REMOVE,
-                               sync_profile.guid(), NULL);
-  scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(
-      db_thread_.DeprecatedGetThreadObject()));
-  notifier->Notify(chrome::NOTIFICATION_AUTOFILL_PROFILE_CHANGED,
-                   content::Source<AutofillWebDataService>(
-                        web_data_service_.get()),
-                   content::Details<AutofillProfileChange>(&change));
+  AutofillProfileChange change(
+      AutofillProfileChange::REMOVE, sync_profile.guid(), NULL);
+  web_data_service_->OnAutofillProfileChanged(change);
 
   std::vector<AutofillProfile> new_sync_profiles;
   ASSERT_TRUE(GetAutofillProfilesFromSyncDBUnderProfileNode(

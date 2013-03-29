@@ -21,16 +21,13 @@
 #include "chrome/browser/webdata/autofill_entry.h"
 #include "chrome/browser/webdata/autofill_table.h"
 #include "chrome/browser/webdata/autofill_web_data_service.h"
+#include "chrome/browser/webdata/autofill_web_data_service_observer.h"
 #include "chrome/browser/webdata/web_data_service_test_util.h"
 #include "chrome/browser/webdata/web_database_service.h"
-#include "chrome/common/chrome_notification_types.h"
-#include "chrome/test/base/thread_observer_helper.h"
 #include "components/autofill/browser/autofill_country.h"
 #include "components/autofill/browser/autofill_profile.h"
 #include "components/autofill/browser/credit_card.h"
 #include "components/autofill/common/form_field_data.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -45,26 +42,19 @@ using testing::ElementsAreArray;
 using testing::Pointee;
 using testing::Property;
 
-typedef std::vector<AutofillChange> AutofillChangeList;
-
 static const int kWebDataServiceTimeoutSeconds = 8;
 
 ACTION_P(SignalEvent, event) {
   event->Signal();
 }
 
-class AutofillDBThreadObserverHelper : public DBThreadObserverHelper {
- protected:
-  virtual ~AutofillDBThreadObserverHelper() {}
-
-  virtual void RegisterObservers() OVERRIDE {
-    registrar_.Add(&observer_,
-                   chrome::NOTIFICATION_AUTOFILL_ENTRIES_CHANGED,
-                   content::NotificationService::AllSources());
-    registrar_.Add(&observer_,
-                   chrome::NOTIFICATION_AUTOFILL_PROFILE_CHANGED,
-                   content::NotificationService::AllSources());
-  }
+class MockAutofillWebDataServiceObserver
+    : public AutofillWebDataServiceObserverOnDBThread {
+ public:
+  MOCK_METHOD1(AutofillEntriesChanged,
+               void(const AutofillChangeList& changes));
+  MOCK_METHOD1(AutofillProfileChanged,
+               void(const AutofillProfileChange& change));
 };
 
 class WebDataServiceTest : public testing::Test {
@@ -84,8 +74,8 @@ class WebDataServiceTest : public testing::Test {
     wdbs_->AddTable(scoped_ptr<WebDatabaseTable>(new AutofillTable()));
     wdbs_->LoadDatabase(WebDatabaseService::InitCallback());
 
-    wds_ = new AutofillWebDataService(wdbs_,
-        WebDataServiceBase::ProfileErrorCallback());
+    wds_ = new AutofillWebDataService(
+        wdbs_, WebDataServiceBase::ProfileErrorCallback());
     wds_->Init();
   }
 
@@ -135,13 +125,27 @@ class WebDataServiceAutofillTest : public WebDataServiceTest {
     name2_ = ASCIIToUTF16("name2");
     value1_ = ASCIIToUTF16("value1");
     value2_ = ASCIIToUTF16("value2");
-    observer_helper_ = new AutofillDBThreadObserverHelper();
-    observer_helper_->Init();
+
+    void(AutofillWebDataService::*add_observer_func)(
+        AutofillWebDataServiceObserverOnDBThread*) =
+        &AutofillWebDataService::AddObserver;
+    BrowserThread::PostTask(
+        BrowserThread::DB,
+        FROM_HERE,
+        base::Bind(add_observer_func, wds_, &observer_));
+    WaitForDatabaseThread();
   }
 
   virtual void TearDown() {
-    // Release this first so it can get destructed on the db thread.
-    observer_helper_ = NULL;
+    void(AutofillWebDataService::*remove_observer_func)(
+        AutofillWebDataServiceObserverOnDBThread*) =
+        &AutofillWebDataService::RemoveObserver;
+    BrowserThread::PostTask(
+        BrowserThread::DB,
+        FROM_HERE,
+        base::Bind(remove_observer_func, wds_, &observer_));
+    WaitForDatabaseThread();
+
     WebDataServiceTest::TearDown();
   }
 
@@ -160,7 +164,7 @@ class WebDataServiceAutofillTest : public WebDataServiceTest {
   string16 value2_;
   int unique_id1_, unique_id2_;
   const TimeDelta test_timeout_;
-  scoped_refptr<AutofillDBThreadObserverHelper> observer_helper_;
+  testing::NiceMock<MockAutofillWebDataServiceObserver> observer_;
   WaitableEvent done_event_;
 };
 
@@ -199,13 +203,9 @@ TEST_F(WebDataServiceAutofillTest, FormFillAdd) {
 
   // This will verify that the correct notification is triggered,
   // passing the correct list of autofill keys in the details.
-  EXPECT_CALL(
-      *observer_helper_->observer(),
-      Observe(int(chrome::NOTIFICATION_AUTOFILL_ENTRIES_CHANGED),
-              content::Source<AutofillWebDataService>(wds_.get()),
-              Property(&content::Details<const AutofillChangeList>::ptr,
-                       Pointee(ElementsAreArray(expected_changes))))).
-      WillOnce(SignalEvent(&done_event_));
+  EXPECT_CALL(observer_,
+              AutofillEntriesChanged(ElementsAreArray(expected_changes)))
+      .WillOnce(SignalEvent(&done_event_));
 
   std::vector<FormFieldData> form_fields;
   AppendFormField(name1_, value1_, &form_fields);
@@ -231,8 +231,8 @@ TEST_F(WebDataServiceAutofillTest, FormFillAdd) {
 
 TEST_F(WebDataServiceAutofillTest, FormFillRemoveOne) {
   // First add some values to autofill.
-  EXPECT_CALL(*observer_helper_->observer(), Observe(_, _, _)).
-      WillOnce(SignalEvent(&done_event_));
+  EXPECT_CALL(observer_, AutofillEntriesChanged(_))
+      .WillOnce(SignalEvent(&done_event_));
   std::vector<FormFieldData> form_fields;
   AppendFormField(name1_, value1_, &form_fields);
   wds_->AddFormFields(form_fields);
@@ -245,13 +245,9 @@ TEST_F(WebDataServiceAutofillTest, FormFillRemoveOne) {
   const AutofillChange expected_changes[] = {
     AutofillChange(AutofillChange::REMOVE, AutofillKey(name1_, value1_))
   };
-  EXPECT_CALL(
-      *observer_helper_->observer(),
-      Observe(int(chrome::NOTIFICATION_AUTOFILL_ENTRIES_CHANGED),
-              content::Source<AutofillWebDataService>(wds_.get()),
-              Property(&content::Details<const AutofillChangeList>::ptr,
-                       Pointee(ElementsAreArray(expected_changes))))).
-      WillOnce(SignalEvent(&done_event_));
+  EXPECT_CALL(observer_,
+              AutofillEntriesChanged(ElementsAreArray(expected_changes)))
+      .WillOnce(SignalEvent(&done_event_));
   wds_->RemoveFormValueForElementName(name1_, value1_);
 
   // The event will be signaled when the mock observer is notified.
@@ -262,8 +258,9 @@ TEST_F(WebDataServiceAutofillTest, FormFillRemoveMany) {
   TimeDelta one_day(TimeDelta::FromDays(1));
   Time t = Time::Now();
 
-  EXPECT_CALL(*observer_helper_->observer(), Observe(_, _, _)).
-      WillOnce(SignalEvent(&done_event_));
+  EXPECT_CALL(observer_, AutofillEntriesChanged(_))
+      .WillOnce(SignalEvent(&done_event_));
+
   std::vector<FormFieldData> form_fields;
   AppendFormField(name1_, value1_, &form_fields);
   AppendFormField(name2_, value2_, &form_fields);
@@ -278,13 +275,9 @@ TEST_F(WebDataServiceAutofillTest, FormFillRemoveMany) {
     AutofillChange(AutofillChange::REMOVE, AutofillKey(name1_, value1_)),
     AutofillChange(AutofillChange::REMOVE, AutofillKey(name2_, value2_))
   };
-  EXPECT_CALL(
-      *observer_helper_->observer(),
-      Observe(int(chrome::NOTIFICATION_AUTOFILL_ENTRIES_CHANGED),
-              content::Source<AutofillWebDataService>(wds_.get()),
-              Property(&content::Details<const AutofillChangeList>::ptr,
-                       Pointee(ElementsAreArray(expected_changes))))).
-      WillOnce(SignalEvent(&done_event_));
+  EXPECT_CALL(observer_,
+              AutofillEntriesChanged(ElementsAreArray(expected_changes)))
+      .WillOnce(SignalEvent(&done_event_));
   wds_->RemoveFormElementsAddedBetween(t, t + one_day);
 
   // The event will be signaled when the mock observer is notified.
@@ -297,13 +290,8 @@ TEST_F(WebDataServiceAutofillTest, ProfileAdd) {
   // Check that GUID-based notification was sent.
   const AutofillProfileChange expected_change(
       AutofillProfileChange::ADD, profile.guid(), &profile);
-  EXPECT_CALL(
-      *observer_helper_->observer(),
-      Observe(int(chrome::NOTIFICATION_AUTOFILL_PROFILE_CHANGED),
-              content::Source<AutofillWebDataService>(wds_.get()),
-              Property(&content::Details<const AutofillProfileChange>::ptr,
-                       Pointee(expected_change)))).
-      WillOnce(SignalEvent(&done_event_));
+  EXPECT_CALL(observer_, AutofillProfileChanged(expected_change))
+      .WillOnce(SignalEvent(&done_event_));
 
   wds_->AddAutofillProfile(profile);
   done_event_.TimedWait(test_timeout_);
@@ -322,9 +310,8 @@ TEST_F(WebDataServiceAutofillTest, ProfileRemove) {
   AutofillProfile profile;
 
   // Add a profile.
-  EXPECT_CALL(*observer_helper_->observer(), Observe(_, _, _)).
-      Times(1).
-      WillOnce(SignalEvent(&done_event_));
+  EXPECT_CALL(observer_, AutofillProfileChanged(_))
+      .WillOnce(SignalEvent(&done_event_));
   wds_->AddAutofillProfile(profile);
   done_event_.TimedWait(test_timeout_);
 
@@ -340,13 +327,8 @@ TEST_F(WebDataServiceAutofillTest, ProfileRemove) {
   // Check that GUID-based notification was sent.
   const AutofillProfileChange expected_change(
       AutofillProfileChange::REMOVE, profile.guid(), NULL);
-  EXPECT_CALL(
-      *observer_helper_->observer(),
-      Observe(int(chrome::NOTIFICATION_AUTOFILL_PROFILE_CHANGED),
-              content::Source<AutofillWebDataService>(wds_.get()),
-              Property(&content::Details<const AutofillProfileChange>::ptr,
-                       Pointee(expected_change)))).
-      WillOnce(SignalEvent(&done_event_));
+  EXPECT_CALL(observer_, AutofillProfileChanged(expected_change))
+      .WillOnce(SignalEvent(&done_event_));
 
   // Remove the profile.
   wds_->RemoveAutofillProfile(profile.guid());
@@ -366,9 +348,10 @@ TEST_F(WebDataServiceAutofillTest, ProfileUpdate) {
   AutofillProfile profile2;
   profile2.SetRawInfo(NAME_FIRST, ASCIIToUTF16("Alice"));
 
-  EXPECT_CALL(*observer_helper_->observer(), Observe(_, _, _)).
-      WillOnce(DoDefault()).
-      WillOnce(SignalEvent(&done_event_));
+  EXPECT_CALL(observer_, AutofillProfileChanged(_))
+      .WillOnce(DoDefault())
+      .WillOnce(SignalEvent(&done_event_));
+
   wds_->AddAutofillProfile(profile1);
   wds_->AddAutofillProfile(profile2);
   done_event_.TimedWait(test_timeout_);
@@ -388,13 +371,8 @@ TEST_F(WebDataServiceAutofillTest, ProfileUpdate) {
   const AutofillProfileChange expected_change(
       AutofillProfileChange::UPDATE, profile1.guid(), &profile1_changed);
 
-  EXPECT_CALL(
-      *observer_helper_->observer(),
-      Observe(int(chrome::NOTIFICATION_AUTOFILL_PROFILE_CHANGED),
-              content::Source<AutofillWebDataService>(wds_.get()),
-              Property(&content::Details<const AutofillProfileChange>::ptr,
-                       Pointee(expected_change)))).
-      WillOnce(SignalEvent(&done_event_));
+  EXPECT_CALL(observer_, AutofillProfileChanged(expected_change))
+      .WillOnce(SignalEvent(&done_event_));
 
   // Update the profile.
   wds_->UpdateAutofillProfile(profile1_changed);
@@ -495,9 +473,8 @@ TEST_F(WebDataServiceAutofillTest, CreditUpdate) {
 
 TEST_F(WebDataServiceAutofillTest, AutofillRemoveModifiedBetween) {
   // Add a profile.
-  EXPECT_CALL(*observer_helper_->observer(), Observe(_, _, _)).
-      Times(1).
-      WillOnce(SignalEvent(&done_event_));
+  EXPECT_CALL(observer_, AutofillProfileChanged(_))
+      .WillOnce(SignalEvent(&done_event_));
   AutofillProfile profile;
   wds_->AddAutofillProfile(profile);
   done_event_.TimedWait(test_timeout_);
@@ -529,13 +506,8 @@ TEST_F(WebDataServiceAutofillTest, AutofillRemoveModifiedBetween) {
   // Check that GUID-based notification was sent for the profile.
   const AutofillProfileChange expected_profile_change(
       AutofillProfileChange::REMOVE, profile.guid(), NULL);
-  EXPECT_CALL(
-      *observer_helper_->observer(),
-      Observe(int(chrome::NOTIFICATION_AUTOFILL_PROFILE_CHANGED),
-              content::Source<AutofillWebDataService>(wds_.get()),
-              Property(&content::Details<const AutofillProfileChange>::ptr,
-                       Pointee(expected_profile_change)))).
-      WillOnce(SignalEvent(&done_event_));
+  EXPECT_CALL(observer_, AutofillProfileChanged(expected_profile_change))
+      .WillOnce(SignalEvent(&done_event_));
 
   // Remove the profile using time range of "all time".
   wds_->RemoveAutofillDataModifiedBetween(Time(), Time());

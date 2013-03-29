@@ -706,6 +706,10 @@ class AutofillManagerTest : public ChromeRenderViewHostTestHarness {
     file_thread_.Stop();
     ChromeRenderViewHostTestHarness::TearDown();
     io_thread_.Stop();
+
+    // Remove the BrowserContext so TestPersonalDataManager does not need to
+    // care about removing self as an observer in destruction.
+    personal_data_.SetBrowserContext(NULL);
   }
 
   virtual TestingProfile* CreateProfile() {

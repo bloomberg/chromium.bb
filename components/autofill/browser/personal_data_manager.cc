@@ -9,6 +9,7 @@
 #include <iterator>
 
 #include "base/logging.h"
+#include "base/memory/ref_counted.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
@@ -131,15 +132,20 @@ void PersonalDataManager::Init(BrowserContext* browser_context) {
   LoadProfiles();
   LoadCreditCards();
 
-  notification_registrar_.Add(
-      this,
-      chrome::NOTIFICATION_AUTOFILL_MULTIPLE_CHANGED,
-      autofill_data->GetNotificationSource());
+  autofill_data->AddObserver(this);
 }
 
 PersonalDataManager::~PersonalDataManager() {
   CancelPendingQuery(&pending_profiles_query_);
   CancelPendingQuery(&pending_creditcards_query_);
+
+  if (!browser_context_)
+    return;
+
+  scoped_refptr<AutofillWebDataService> autofill_data(
+      AutofillWebDataService::FromBrowserContext(browser_context_));
+  if (autofill_data.get())
+    autofill_data->RemoveObserver(this);
 }
 
 void PersonalDataManager::OnWebDataServiceRequestDone(
@@ -182,6 +188,10 @@ void PersonalDataManager::OnWebDataServiceRequestDone(
   }
 }
 
+void PersonalDataManager::AutofillMultipleChanged() {
+  Refresh();
+}
+
 void PersonalDataManager::AddObserver(PersonalDataManagerObserver* observer) {
   observers_.AddObserver(observer);
 }
@@ -189,22 +199,6 @@ void PersonalDataManager::AddObserver(PersonalDataManagerObserver* observer) {
 void PersonalDataManager::RemoveObserver(
     PersonalDataManagerObserver* observer) {
   observers_.RemoveObserver(observer);
-}
-
-void PersonalDataManager::Observe(int type,
-                                  const content::NotificationSource& source,
-                                  const content::NotificationDetails& details) {
-  DCHECK_EQ(type, chrome::NOTIFICATION_AUTOFILL_MULTIPLE_CHANGED);
-
-  if (DCHECK_IS_ON()) {
-    scoped_refptr<AutofillWebDataService> autofill_data(
-        AutofillWebDataService::FromBrowserContext(browser_context_));
-
-    DCHECK(autofill_data.get() &&
-           autofill_data->GetNotificationSource() == source);
-  }
-
-  Refresh();
 }
 
 bool PersonalDataManager::ImportFormData(

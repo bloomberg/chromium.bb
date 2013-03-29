@@ -11,11 +11,8 @@
 #include "chrome/browser/sync/profile_sync_components_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/webdata/autofill_web_data_service.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "components/autofill/browser/personal_data_manager.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
 #include "sync/api/sync_error.h"
 #include "sync/api/syncable_service.h"
 
@@ -30,8 +27,8 @@ AutofillProfileDataTypeController::AutofillProfileDataTypeController(
     : NonUIDataTypeController(profile_sync_factory,
                               profile,
                               sync_service),
-      personal_data_(NULL) {
-}
+      personal_data_(NULL),
+      ALLOW_THIS_IN_INITIALIZER_LIST(scoped_observer_(this)) {}
 
 syncer::ModelType AutofillProfileDataTypeController::type() const {
   return syncer::AUTOFILL_PROFILE;
@@ -42,25 +39,27 @@ syncer::ModelSafeGroup
   return syncer::GROUP_DB;
 }
 
-void AutofillProfileDataTypeController::Observe(
-    int notification_type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  notification_registrar_.RemoveAll();
+void AutofillProfileDataTypeController::WebDatabaseLoaded() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (scoped_observer_.IsObserving(web_data_service_.get()))
+    scoped_observer_.Remove(web_data_service_.get());
   OnModelLoaded();
 }
 
 void AutofillProfileDataTypeController::OnPersonalDataChanged() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_EQ(state(), MODEL_STARTING);
+
   personal_data_->RemoveObserver(this);
   web_data_service_ = AutofillWebDataService::FromBrowserContext(profile());
-  if (web_data_service_.get() && web_data_service_->IsDatabaseLoaded()) {
+
+  if (!web_data_service_)
+    return;
+
+  if (web_data_service_->IsDatabaseLoaded())
     OnModelLoaded();
-  } else {
-    notification_registrar_.Add(this, chrome::NOTIFICATION_WEB_DATABASE_LOADED,
-                                content::NotificationService::AllSources());
-  }
+  else
+    scoped_observer_.Add(web_data_service_.get());
 }
 
 AutofillProfileDataTypeController::~AutofillProfileDataTypeController() {}
@@ -85,18 +84,24 @@ bool AutofillProfileDataTypeController::StartModels() {
   }
 
   web_data_service_ = AutofillWebDataService::FromBrowserContext(profile());
-  if (web_data_service_.get() && web_data_service_->IsDatabaseLoaded())
+
+  if (!web_data_service_)
+    return false;
+
+  if (web_data_service_->IsDatabaseLoaded())
     return true;
 
-  notification_registrar_.Add(this, chrome::NOTIFICATION_WEB_DATABASE_LOADED,
-                              content::NotificationService::AllSources());
+  scoped_observer_.Add(web_data_service_.get());
   return false;
 }
 
 void AutofillProfileDataTypeController::StopModels() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(state() == STOPPING || state() == NOT_RUNNING);
-  notification_registrar_.RemoveAll();
+
+  if (scoped_observer_.IsObserving(web_data_service_.get()))
+    scoped_observer_.Remove(web_data_service_.get());
+
   personal_data_->RemoveObserver(this);
 }
 

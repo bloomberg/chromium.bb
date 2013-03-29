@@ -14,11 +14,10 @@
 #include "base/observer_list.h"
 #include "base/string16.h"
 #include "chrome/browser/api/webdata/web_data_service_consumer.h"
+#include "chrome/browser/webdata/autofill_web_data_service_observer.h"
 #include "components/autofill/browser/autofill_profile.h"
 #include "components/autofill/browser/credit_card.h"
 #include "components/autofill/browser/field_types.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 
 class AutofillMetrics;
 class FormStructure;
@@ -37,7 +36,7 @@ class BrowserContext;
 // This class also stores the profiles loaded from the database for use during
 // Autofill.
 class PersonalDataManager : public WebDataServiceConsumer,
-                            public content::NotificationObserver {
+                            public AutofillWebDataServiceObserverOnUIThread {
  public:
   // A pair of GUID and variant index. Represents a single FormGroup and a
   // specific data variant.
@@ -54,18 +53,14 @@ class PersonalDataManager : public WebDataServiceConsumer,
       WebDataServiceBase::Handle h,
       const WDTypedResult* result) OVERRIDE;
 
+  // AutofillWebDataServiceObserverOnUIThread:
+  virtual void AutofillMultipleChanged() OVERRIDE;
+
   // Adds a listener to be notified of PersonalDataManager events.
   virtual void AddObserver(PersonalDataManagerObserver* observer);
 
   // Removes |observer| as an observer of this PersonalDataManager.
   virtual void RemoveObserver(PersonalDataManagerObserver* observer);
-
-  // content::NotificationObserver:
-  // Observes "batch" changes made by Sync and refreshes data from the
-  // WebDataServiceBase in response.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
 
   // Scans the given |form| for importable Autofill data. If the form includes
   // sufficient address data, it is immediately imported. If the form includes
@@ -272,9 +267,6 @@ class PersonalDataManager : public WebDataServiceConsumer,
 
   // Whether we have already logged the number of profiles this session.
   mutable bool has_logged_profile_count_;
-
-  // Manages registration lifetime for NotificationObserver implementation.
-  content::NotificationRegistrar notification_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(PersonalDataManager);
 };

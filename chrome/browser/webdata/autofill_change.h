@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_WEBDATA_AUTOFILL_CHANGE_H__
 #define CHROME_BROWSER_WEBDATA_AUTOFILL_CHANGE_H__
 
+#include <vector>
+
 #include "chrome/browser/webdata/autofill_entry.h"
 
 class AutofillProfile;
@@ -43,6 +45,8 @@ class AutofillChange : public GenericAutofillChange<AutofillKey> {
     return type() == change.type() && key() == change.key();
   }
 };
+
+typedef std::vector<AutofillChange> AutofillChangeList;
 
 // Change notification details for Autofill profile changes.
 class AutofillProfileChange : public GenericAutofillChange<std::string> {

@@ -12,13 +12,13 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/scoped_observer.h"
 #include "base/supports_user_data.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/webdata/autofill_change.h"
 #include "chrome/browser/webdata/autofill_entry.h"
 #include "chrome/browser/webdata/autofill_web_data_service.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
+#include "chrome/browser/webdata/autofill_web_data_service_observer.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_data.h"
 #include "sync/api/sync_error.h"
@@ -38,12 +38,10 @@ class AutofillSpecifics;
 // MergeDataAndStartSyncing() called first, it does cloud->local and
 // local->cloud syncs. Then for each cloud change we receive
 // ProcessSyncChanges() and for each local change Observe() is called.
-// TODO(georgey) : remove reliance on the notifications and make it to be called
-// from web_data_service directly.
 class AutocompleteSyncableService
     : public base::SupportsUserData::Data,
       public syncer::SyncableService,
-      public content::NotificationObserver,
+      public AutofillWebDataServiceObserverOnDBThread,
       public base::NonThreadSafe {
  public:
   virtual ~AutocompleteSyncableService();
@@ -70,10 +68,9 @@ class AutocompleteSyncableService
       const tracked_objects::Location& from_here,
       const syncer::SyncChangeList& change_list) OVERRIDE;
 
-  // NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  // AutofillWebDataServiceObserverOnDBThread implementation.
+  virtual void AutofillEntriesChanged(
+      const AutofillChangeList& changes) OVERRIDE;
 
   // Called via sync to tell us if we should cull expired entries when merging
   // and/or processing sync changes.
@@ -149,7 +146,8 @@ class AutocompleteSyncableService
   // |web_data_service_| passed to it.
   AutofillWebDataService* web_data_service_;
 
-  content::NotificationRegistrar notification_registrar_;
+  ScopedObserver<AutofillWebDataService, AutocompleteSyncableService>
+      scoped_observer_;
 
   // We receive ownership of |sync_processor_| in MergeDataAndStartSyncing() and
   // destroy it in StopSyncing().

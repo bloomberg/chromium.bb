@@ -10,15 +10,14 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_vector.h"
+#include "base/scoped_observer.h"
 #include "base/supports_user_data.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/webdata/autofill_change.h"
 #include "chrome/browser/webdata/autofill_entry.h"
+#include "chrome/browser/webdata/autofill_web_data_service_observer.h"
 #include "components/autofill/browser/autofill_type.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_types.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_data.h"
 #include "sync/api/sync_error.h"
@@ -41,7 +40,7 @@ extern const char kAutofillProfileTag[];
 class AutofillProfileSyncableService
     : public base::SupportsUserData::Data,
       public syncer::SyncableService,
-      public content::NotificationObserver,
+      public AutofillWebDataServiceObserverOnDBThread,
       public base::NonThreadSafe {
  public:
   virtual ~AutofillProfileSyncableService();
@@ -68,10 +67,9 @@ class AutofillProfileSyncableService
       const tracked_objects::Location& from_here,
       const syncer::SyncChangeList& change_list) OVERRIDE;
 
-  // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  // AutofillWebDataServiceObserverOnDBThread implementation.
+  virtual void AutofillProfileChanged(
+      const AutofillProfileChange& change) OVERRIDE;
 
  protected:
   explicit AutofillProfileSyncableService(
@@ -170,7 +168,8 @@ class AutofillProfileSyncableService
   }
 
   AutofillWebDataService* web_data_service_;  // WEAK
-  content::NotificationRegistrar notification_registrar_;
+  ScopedObserver<AutofillWebDataService, AutofillProfileSyncableService>
+      scoped_observer_;
 
   // Cached Autofill profiles. *Warning* deleted profiles are still in the
   // vector - use the |profiles_map_| to iterate through actual profiles.

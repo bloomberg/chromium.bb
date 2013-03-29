@@ -15,7 +15,6 @@
 #include "chrome/browser/webdata/autofill_web_data_service.h"
 #include "chrome/browser/webdata/web_database.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/test/base/thread_observer_helper.h"
 #include "components/autofill/browser/autofill_common_test.h"
 #include "components/autofill/browser/autofill_profile.h"
 #include "components/autofill/browser/autofill_type.h"
@@ -34,38 +33,17 @@ ACTION_P(SignalEvent, event) {
   event->Signal();
 }
 
-class AutofillDBThreadObserverHelper : public DBThreadObserverHelper {
- protected:
-  virtual ~AutofillDBThreadObserverHelper() {}
-
-  virtual void RegisterObservers() OVERRIDE {
-    registrar_.Add(&observer_,
-                   chrome::NOTIFICATION_AUTOFILL_ENTRIES_CHANGED,
-                   content::NotificationService::AllSources());
-    registrar_.Add(&observer_,
-                   chrome::NOTIFICATION_AUTOFILL_PROFILE_CHANGED,
-                   content::NotificationService::AllSources());
-  }
+class MockWebDataServiceObserver
+    : public AutofillWebDataServiceObserverOnDBThread {
+ public:
+  MOCK_METHOD1(AutofillEntriesChanged,
+               void(const AutofillChangeList& changes));
 };
 
 class MockPersonalDataManagerObserver : public PersonalDataManagerObserver {
  public:
   MOCK_METHOD0(OnPersonalDataChanged, void());
 };
-
-void RemoveKeyDontBlockForSync(int profile, const AutofillKey& key) {
-  WaitableEvent done_event(false, false);
-  scoped_refptr<AutofillDBThreadObserverHelper> observer_helper(
-      new AutofillDBThreadObserverHelper());
-  observer_helper->Init();
-
-  EXPECT_CALL(*observer_helper->observer(), Observe(_, _, _)).
-      WillOnce(SignalEvent(&done_event));
-  scoped_refptr<AutofillWebDataService> wds =
-      autofill_helper::GetWebDataService(profile);
-  wds->RemoveFormValueForElementName(key.name(), key.value());
-  done_event.Wait();
-}
 
 void RunOnDBThreadAndSignal(base::Closure task,
                             base::WaitableEvent* done_event) {
@@ -81,6 +59,30 @@ void RunOnDBThreadAndBlock(base::Closure task) {
                           FROM_HERE,
                           Bind(&RunOnDBThreadAndSignal, task, &done_event));
   done_event.Wait();
+}
+
+void RemoveKeyDontBlockForSync(int profile, const AutofillKey& key) {
+  WaitableEvent done_event(false, false);
+
+  MockWebDataServiceObserver mock_observer;
+  EXPECT_CALL(mock_observer, AutofillEntriesChanged(_))
+      .WillOnce(SignalEvent(&done_event));
+
+  scoped_refptr<AutofillWebDataService> wds =
+      autofill_helper::GetWebDataService(profile);
+
+  void(AutofillWebDataService::*add_observer_func)(
+      AutofillWebDataServiceObserverOnDBThread*) =
+      &AutofillWebDataService::AddObserver;
+  RunOnDBThreadAndBlock(Bind(add_observer_func, wds, &mock_observer));
+
+  wds->RemoveFormValueForElementName(key.name(), key.value());
+  done_event.Wait();
+
+  void(AutofillWebDataService::*remove_observer_func)(
+      AutofillWebDataServiceObserverOnDBThread*) =
+      &AutofillWebDataService::RemoveObserver;
+  RunOnDBThreadAndBlock(Bind(remove_observer_func, wds, &mock_observer));
 }
 
 void GetAllAutofillEntriesOnDBThread(AutofillWebDataService* wds,
@@ -169,16 +171,25 @@ void AddKeys(int profile, const std::set<AutofillKey>& keys) {
   }
 
   WaitableEvent done_event(false, false);
-  scoped_refptr<AutofillDBThreadObserverHelper> observer_helper(
-      new AutofillDBThreadObserverHelper());
-  observer_helper->Init();
+  MockWebDataServiceObserver mock_observer;
+  EXPECT_CALL(mock_observer, AutofillEntriesChanged(_))
+      .WillOnce(SignalEvent(&done_event));
 
-  EXPECT_CALL(*observer_helper->observer(), Observe(_, _, _)).
-      WillOnce(SignalEvent(&done_event));
   scoped_refptr<AutofillWebDataService> wds = GetWebDataService(profile);
+
+  void(AutofillWebDataService::*add_observer_func)(
+      AutofillWebDataServiceObserverOnDBThread*) =
+      &AutofillWebDataService::AddObserver;
+  RunOnDBThreadAndBlock(Bind(add_observer_func, wds, &mock_observer));
+
   wds->AddFormFields(form_fields);
   done_event.Wait();
   BlockForPendingDBThreadTasks();
+
+  void(AutofillWebDataService::*remove_observer_func)(
+      AutofillWebDataServiceObserverOnDBThread*) =
+      &AutofillWebDataService::RemoveObserver;
+  RunOnDBThreadAndBlock(Bind(remove_observer_func, wds, &mock_observer));
 }
 
 void RemoveKey(int profile, const AutofillKey& key) {

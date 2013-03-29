@@ -8,25 +8,28 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
+#include "base/observer_list.h"
 #include "chrome/browser/api/webdata/autofill_web_data.h"
 #include "chrome/browser/api/webdata/web_data_results.h"
 #include "chrome/browser/api/webdata/web_data_service_base.h"
 #include "chrome/browser/api/webdata/web_data_service_consumer.h"
 #include "chrome/browser/webdata/web_database.h"
+#include "components/autofill/common/form_field_data.h"
 
 class AutofillChange;
+class AutofillProfile;
+class AutofillWebDataServiceObserverOnDBThread;
+class AutofillWebDataServiceObserverOnUIThread;
+class CreditCard;
 class WebDatabaseService;
 
 namespace content {
 class BrowserContext;
 }
 
-typedef std::vector<AutofillChange> AutofillChangeList;
-
 // API for Autofill web data.
-class AutofillWebDataService
-    : public AutofillWebData,
-      public WebDataServiceBase {
+class AutofillWebDataService : public AutofillWebData,
+                               public WebDataServiceBase {
  public:
   AutofillWebDataService();
 
@@ -45,9 +48,6 @@ class AutofillWebDataService
   // |web_data_service| may be NULL for testing purposes.
   static void NotifyOfMultipleAutofillChanges(
       AutofillWebDataService* web_data_service);
-
-  // WebDataServiceBase overrides:
-  virtual content::NotificationSource GetNotificationSource() OVERRIDE;
 
   // AutofillWebData implementation.
   virtual void AddFormFields(
@@ -75,9 +75,17 @@ class AutofillWebDataService
   virtual void RemoveAutofillDataModifiedBetween(
       const base::Time& delete_begin, const base::Time& delete_end) OVERRIDE;
 
+  void AddObserver(AutofillWebDataServiceObserverOnDBThread* observer);
+  void RemoveObserver(AutofillWebDataServiceObserverOnDBThread* observer);
+
+  void AddObserver(AutofillWebDataServiceObserverOnUIThread* observer);
+  void RemoveObserver(AutofillWebDataServiceObserverOnUIThread* observer);
 
  protected:
   virtual ~AutofillWebDataService();
+
+  // WebDataServiceBase overrides:
+  virtual void NotifyDatabaseLoadedOnUIThread() OVERRIDE;
 
  private:
   WebDatabase::State AddFormElementsImpl(
@@ -112,6 +120,11 @@ class AutofillWebDataService
   // cancelled.
   void DestroyAutofillProfileResult(const WDTypedResult* result);
   void DestroyAutofillCreditCardResult(const WDTypedResult* result);
+
+  void NotifyAutofillMultipleChangedOnUIThread();
+
+  ObserverList<AutofillWebDataServiceObserverOnDBThread> db_observer_list_;
+  ObserverList<AutofillWebDataServiceObserverOnUIThread> ui_observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillWebDataService);
 };

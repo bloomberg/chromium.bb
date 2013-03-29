@@ -281,7 +281,7 @@ class AutofillMetricsTest : public ChromeRenderViewHostTestHarness {
   content::TestBrowserThread io_thread_;
 
   scoped_ptr<TestAutofillManager> autofill_manager_;
-  TestPersonalDataManager personal_data_;
+  scoped_ptr<TestPersonalDataManager> personal_data_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AutofillMetricsTest);
@@ -309,11 +309,13 @@ void AutofillMetricsTest::SetUp() {
   ChromeRenderViewHostTestHarness::SetUp();
   io_thread_.StartIOThread();
   autofill::TabAutofillManagerDelegate::CreateForWebContents(web_contents());
-  personal_data_.SetBrowserContext(profile);
+
+  personal_data_.reset(new TestPersonalDataManager());
+  personal_data_->SetBrowserContext(profile);
   autofill_manager_.reset(new TestAutofillManager(
       web_contents(),
       autofill::TabAutofillManagerDelegate::FromWebContents(web_contents()),
-      &personal_data_));
+      personal_data_.get()));
 
   file_thread_.Start();
 }
@@ -324,6 +326,7 @@ void AutofillMetricsTest::TearDown() {
   // AutofillManager is tied to the lifetime of the WebContents, so it must
   // be destroyed at the destruction of the WebContents.
   autofill_manager_.reset();
+  personal_data_.reset();
   profile()->ResetRequestContext();
   file_thread_.Stop();
   ChromeRenderViewHostTestHarness::TearDown();
@@ -339,7 +342,7 @@ scoped_ptr<ConfirmInfoBarDelegate> AutofillMetricsTest::CreateDelegate(
   return AutofillCCInfoBarDelegate::CreateForTesting(
       metric_logger,
       base::Bind(&TestPersonalDataManager::SaveImportedCreditCard,
-                 base::Unretained(&personal_data_), credit_card));
+                 base::Unretained(personal_data_.get()), credit_card));
 }
 
 // Test that we log quality metrics appropriately.
@@ -1013,30 +1016,30 @@ TEST_F(AutofillMetricsTest, QualityMetricsWithExperimentId) {
 // Test that the profile count is logged correctly.
 TEST_F(AutofillMetricsTest, StoredProfileCount) {
   // The metric should be logged when the profiles are first loaded.
-  EXPECT_CALL(*personal_data_.metric_logger(),
+  EXPECT_CALL(*personal_data_->metric_logger(),
               LogStoredProfileCount(2)).Times(1);
-  personal_data_.LoadProfiles();
+  personal_data_->LoadProfiles();
 
   // The metric should only be logged once.
-  EXPECT_CALL(*personal_data_.metric_logger(),
+  EXPECT_CALL(*personal_data_->metric_logger(),
               LogStoredProfileCount(::testing::_)).Times(0);
-  personal_data_.LoadProfiles();
+  personal_data_->LoadProfiles();
 }
 
 // Test that we correctly log when Autofill is enabled.
 TEST_F(AutofillMetricsTest, AutofillIsEnabledAtStartup) {
-  personal_data_.set_autofill_enabled(true);
-  EXPECT_CALL(*personal_data_.metric_logger(),
+  personal_data_->set_autofill_enabled(true);
+  EXPECT_CALL(*personal_data_->metric_logger(),
               LogIsAutofillEnabledAtStartup(true)).Times(1);
-  personal_data_.Init(profile());
+  personal_data_->Init(profile());
 }
 
 // Test that we correctly log when Autofill is disabled.
 TEST_F(AutofillMetricsTest, AutofillIsDisabledAtStartup) {
-  personal_data_.set_autofill_enabled(false);
-  EXPECT_CALL(*personal_data_.metric_logger(),
+  personal_data_->set_autofill_enabled(false);
+  EXPECT_CALL(*personal_data_->metric_logger(),
               LogIsAutofillEnabledAtStartup(false)).Times(1);
-  personal_data_.Init(profile());
+  personal_data_->Init(profile());
 }
 
 // Test that we log the number of Autofill suggestions when filling a form.
@@ -1139,7 +1142,7 @@ TEST_F(AutofillMetricsTest, CreditCardInfoBar) {
   {
     scoped_ptr<ConfirmInfoBarDelegate> infobar(CreateDelegate(&metric_logger));
     ASSERT_TRUE(infobar);
-    EXPECT_CALL(personal_data_, SaveImportedCreditCard(_));
+    EXPECT_CALL(*personal_data_, SaveImportedCreditCard(_));
     EXPECT_CALL(metric_logger,
         LogCreditCardInfoBarMetric(AutofillMetrics::INFOBAR_ACCEPTED)).Times(1);
     EXPECT_CALL(metric_logger,

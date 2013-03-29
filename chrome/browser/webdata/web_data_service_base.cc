@@ -9,13 +9,9 @@
 #include "base/stl_util.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/webdata/web_database_service.h"
-#include "chrome/common/chrome_notification_types.h"
 #ifdef DEBUG
 #include "content/public/browser/browser_thread.h"
 #endif
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -98,36 +94,28 @@ void WebDataServiceBase::ShutdownOnDBThread() {
   db_thread_user_data_.reset();
 }
 
-////////////////////////////////////////////////////////////////////////////////
-//
-// The following methods are executed on the DB thread.
-//
-////////////////////////////////////////////////////////////////////////////////
+void WebDataServiceBase::NotifyDatabaseLoadedOnUIThread() {}
 
 void WebDataServiceBase::DBInitFailed(sql::InitStatus sql_status) {
   if (!profile_error_callback_.is_null())
     profile_error_callback_.Run(sql_status);
 }
 
-void WebDataServiceBase::NotifyDatabaseLoadedOnUIThread() {
+void WebDataServiceBase::DBInitSucceeded() {
   db_loaded_ = true;
-  // Notify that the database has been initialized.
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_WEB_DATABASE_LOADED,
-      content::Source<WebDataServiceBase>(this),
-      content::NotificationService::NoDetails());
+  NotifyDatabaseLoadedOnUIThread();
 }
 
+// Executed on DB thread.
 void WebDataServiceBase::DatabaseInitOnDB(sql::InitStatus status) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   if (status == sql::INIT_OK) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&WebDataServiceBase::NotifyDatabaseLoadedOnUIThread, this));
+        base::Bind(&WebDataServiceBase::DBInitSucceeded, this));
   } else {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&WebDataServiceBase::DBInitFailed, this, status));
   }
 }
-

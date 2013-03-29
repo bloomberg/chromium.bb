@@ -11,12 +11,9 @@
 #include "chrome/browser/webdata/autofill_table.h"
 #include "chrome/browser/webdata/autofill_web_data_service.h"
 #include "chrome/browser/webdata/web_database.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "components/autofill/browser/autofill_profile.h"
 #include "components/autofill/browser/form_group.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_source.h"
 #include "sync/api/sync_error.h"
 #include "sync/api/sync_error_factory.h"
 #include "sync/protocol/sync.pb.h"
@@ -45,13 +42,12 @@ const char kAutofillProfileTag[] = "google_chrome_autofill_profiles";
 
 AutofillProfileSyncableService::AutofillProfileSyncableService(
     AutofillWebDataService* web_data_service)
-    : web_data_service_(web_data_service) {
+    : web_data_service_(web_data_service),
+      ALLOW_THIS_IN_INITIALIZER_LIST(scoped_observer_(this)) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   DCHECK(web_data_service_);
-  notification_registrar_.Add(
-      this,
-      chrome::NOTIFICATION_AUTOFILL_PROFILE_CHANGED,
-      content::Source<AutofillWebDataService>(web_data_service_));
+
+  scoped_observer_.Add(web_data_service_);
 }
 
 AutofillProfileSyncableService::~AutofillProfileSyncableService() {
@@ -74,7 +70,8 @@ AutofillProfileSyncableService::FromWebDataService(
 }
 
 AutofillProfileSyncableService::AutofillProfileSyncableService()
-    : web_data_service_(NULL) {
+    : web_data_service_(NULL),
+      ALLOW_THIS_IN_INITIALIZER_LIST(scoped_observer_(this)) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
 }
 
@@ -259,22 +256,14 @@ syncer::SyncError AutofillProfileSyncableService::ProcessSyncChanges(
   return syncer::SyncError();
 }
 
-void AutofillProfileSyncableService::Observe(int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK_EQ(type, chrome::NOTIFICATION_AUTOFILL_PROFILE_CHANGED);
-  DCHECK_EQ(web_data_service_,
-            content::Source<AutofillWebDataService>(source).ptr());
+void AutofillProfileSyncableService::AutofillProfileChanged(
+    const AutofillProfileChange& change) {
   // Check if sync is on. If we receive notification prior to the sync being set
   // up we are going to process all when MergeData..() is called. If we receive
   // notification after the sync exited, it will be sinced next time Chrome
   // starts.
-  if (!sync_processor_.get())
-    return;
-
-  AutofillProfileChange* change =
-      content::Details<AutofillProfileChange>(details).ptr();
-  ActOnChange(*change);
+  if (sync_processor_.get())
+    ActOnChange(change);
 }
 
 bool AutofillProfileSyncableService::LoadAutofillData(

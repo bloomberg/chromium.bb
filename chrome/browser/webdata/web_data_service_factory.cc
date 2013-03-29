@@ -142,9 +142,8 @@ scoped_refptr<WebDataService> WebDataService::FromBrowserContext(
 }
 
 WebDataServiceFactory::WebDataServiceFactory()
-    : ProfileKeyedServiceFactory(
-          "WebDataService",
-          ProfileDependencyManager::GetInstance()) {
+    : ProfileKeyedServiceFactory("WebDataService",
+                                 ProfileDependencyManager::GetInstance()) {
   // WebDataServiceFactory has no dependecies.
 }
 

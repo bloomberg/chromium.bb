@@ -139,6 +139,10 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
     return new TestAutofillDialogView();
   }
 
+  void Init(content::BrowserContext* browser_context) {
+    test_manager_.Init(browser_context);
+  }
+
   TestAutofillDialogView* GetView() {
     return static_cast<TestAutofillDialogView*>(view());
   }
@@ -211,6 +215,7 @@ class AutofillDialogControllerTest : public testing::Test {
         metric_logger_,
         DIALOG_TYPE_REQUEST_AUTOCOMPLETE,
         callback);
+    controller_->Init(profile());
     controller_->Show();
   }
 

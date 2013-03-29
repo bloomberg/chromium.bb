@@ -38,8 +38,7 @@ using testing::_;
 using testing::NiceMock;
 using testing::Return;
 
-// Fake WebDataService implementation that stubs out the database
-// loading.
+// Fake WebDataService implementation that stubs out the database loading.
 class FakeWebDataService : public AutofillWebDataService {
  public:
   FakeWebDataService()
@@ -47,17 +46,11 @@ class FakeWebDataService : public AutofillWebDataService {
             NULL, WebDataServiceBase::ProfileErrorCallback()),
         is_database_loaded_(false) {}
 
-  // Mark the database as loaded and send out the appropriate
-  // notification.
+  // Mark the database as loaded and send out the appropriate notification.
   void LoadDatabase() {
     StartSyncableService();
     is_database_loaded_ = true;
-    // TODO(akalin): Expose WDS::NotifyDatabaseLoadedOnUIThread() and
-    // use that instead of sending this notification manually.
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_WEB_DATABASE_LOADED,
-        content::Source<AutofillWebDataService>(this),
-        content::NotificationService::NoDetails());
+    NotifyDatabaseLoadedOnUIThread();
   }
 
   virtual bool IsDatabaseLoaded() OVERRIDE {

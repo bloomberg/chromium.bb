@@ -705,27 +705,6 @@ enum NotificationType {
   // balloon host (the pointer is usable). No details are expected.
   NOTIFICATION_NOTIFY_BALLOON_DISCONNECTED,
 
-  // Web Database Service ----------------------------------------------------
-
-  // This notification is sent whenever autofill entries are
-  // changed.  The detail of this notification is a list of changes
-  // represented by a vector of AutofillChange.  Each change
-  // includes a change type (add, update, or remove) as well as the
-  // key of the entry that was affected.
-  NOTIFICATION_AUTOFILL_ENTRIES_CHANGED,
-
-  // Sent when an AutofillProfile has been added/removed/updated in the
-  // WebDatabase.  The detail is an AutofillProfileChange.
-  NOTIFICATION_AUTOFILL_PROFILE_CHANGED,
-
-  // Sent when multiple Autofill entries have been modified by Sync.
-  // The source is the WebDataService in use by Sync.  No details are specified.
-  NOTIFICATION_AUTOFILL_MULTIPLE_CHANGED,
-
-  // This notification is sent whenever the web database service has finished
-  // loading the web database.  No details are expected.
-  NOTIFICATION_WEB_DATABASE_LOADED,
-
   // Upgrade notifications ---------------------------------------------------
 
   // Sent when Chrome believes an update has been installed and available for

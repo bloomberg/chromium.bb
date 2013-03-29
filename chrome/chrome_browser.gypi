@@ -2107,6 +2107,7 @@
         'browser/webdata/autofill_table.h',
         'browser/webdata/autofill_web_data_service.cc',
         'browser/webdata/autofill_web_data_service.h',
+        'browser/webdata/autofill_web_data_service_observer.h',
         'browser/webdata/keyword_table.cc',
         'browser/webdata/keyword_table.h',
         'browser/webdata/logins_table.cc',

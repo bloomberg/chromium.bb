@@ -119,8 +119,12 @@ class WebDataServiceBase
   // by this object. Is created on first call to |GetDBUserData()|.
   scoped_ptr<SupportsUserDataAggregatable> db_thread_user_data_;
 
+  // Called after database is successfully loaded. By default this function does
+  // nothing. Subclasses can override to support notification.
+  virtual void NotifyDatabaseLoadedOnUIThread();
+
   void DBInitFailed(sql::InitStatus sql_status);
-  void NotifyDatabaseLoadedOnUIThread();
+  void DBInitSucceeded();
   void DatabaseInitOnDB(sql::InitStatus status);
 };
 
