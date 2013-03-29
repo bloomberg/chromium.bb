@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/extensions/manifest_handlers/kiosk_enabled_info.h"
 #include "chrome/common/extensions/manifest_handlers/offline_enabled_info.h"
 #include "chrome/common/extensions/manifest_handlers/requirements_handler.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
@@ -19,12 +20,13 @@ namespace extensions {
 ChromeManifestParser::ChromeManifestParser(Profile* profile)
     : profile_(profile) {
   (new DevToolsPageHandler)->Register();
+  (new KioskEnabledHandler)->Register();
   (new HomepageURLHandler)->Register();
-  (new UpdateURLHandler)->Register();
-  (new OptionsPageHandler)->Register();
-  (new URLOverridesHandler)->Register();
-  (new RequirementsHandler)->Register();
   (new OfflineEnabledHandler)->Register();
+  (new OptionsPageHandler)->Register();
+  (new RequirementsHandler)->Register();
+  (new UpdateURLHandler)->Register();
+  (new URLOverridesHandler)->Register();
 
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                  content::Source<Profile>(profile));

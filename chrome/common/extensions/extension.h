@@ -433,7 +433,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   const extensions::Manifest* manifest() const {
     return manifest_.get();
   }
-  bool kiosk_enabled() const { return kiosk_enabled_; }
   bool wants_file_access() const { return wants_file_access_; }
   // TODO(rdevlin.cronin): This is needed for ContentScriptsHandler, and should
   // be moved out as part of crbug.com/159265. This should not be used anywhere
@@ -543,7 +542,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool LoadDescription(string16* error);
   bool LoadManifestVersion(string16* error);
   bool LoadNaClModules(string16* error);
-  bool LoadKioskEnabled(string16* error);
   bool LoadTextToSpeechVoices(string16* error);
 
   // Returns true if the extension has more than one "UI surface". For example,
@@ -591,9 +589,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // The absolute path to the directory the extension is stored in.
   base::FilePath path_;
-
-  // Whether the extension or app should be enabled in app kiosk mode.
-  bool kiosk_enabled_;
 
   // Defines the set of URLs in the extension's web content.
   URLPatternSet extent_;
