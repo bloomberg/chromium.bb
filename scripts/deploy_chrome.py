@@ -451,9 +451,6 @@ def main(argv):
     staging_dir = options.staging_dir
     if not staging_dir:
       staging_dir = os.path.join(tempdir, 'chrome')
-    else:
-      if os.path.exists(staging_dir) and os.listdir(staging_dir):
-        cros_build_lib.Die('Staging directory %s must be empty.' % staging_dir)
 
     deploy = DeployChrome(options, tempdir, staging_dir)
     try:
