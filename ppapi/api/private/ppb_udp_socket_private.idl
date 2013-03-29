@@ -10,37 +10,23 @@
 label Chrome {
   M17 = 0.2,
   M19 = 0.3,
-  M23 = 0.4,
-  M28 = 0.5
+  M23 = 0.4
 };
 
 [assert_size(4)]
 enum PP_UDPSocketFeature_Private {
   // Allow the socket to share the local address to which socket will
   // be bound with other processes. Value's type should be
-  // PP_VARTYPE_BOOL. Takes effect if set before Bind().
+  // PP_VARTYPE_BOOL.
   PP_UDPSOCKETFEATURE_ADDRESS_REUSE = 0,
 
-  // Allow sending and receiving packets to and from broadcast
-  // addresses. Value's type should be PP_VARTYPE_BOOL. Takes effect
-  // if set before Bind().
+  // Allow sending and receiving packets sent to and from broadcast
+  // addresses. Value's type should be PP_VARTYPE_BOOL.
   PP_UDPSOCKETFEATURE_BROADCAST = 1,
-
-  // Specifies the total per-socket buffer space reserved for
-  // sends. Value's type should be PP_VARTYPE_INT32. Supported in v0.5
-  // and above.
-  [version=0.5]
-  PP_UDPSOCKETFEATURE_SEND_BUFFER_SIZE = 2,
-
-  // Specifies the total per-socket buffer space reserved for
-  // receives. Value's type should be PP_VARTYPE_INT32. Supported in
-  // v0.5 and above.
-  [version=0.5]
-  PP_UDPSOCKETFEATURE_RECV_BUFFER_SIZE = 3,
 
   // Special value for counting the number of available
   // features. Should not be passed to SetSocketFeature().
-  PP_UDPSOCKETFEATURE_COUNT = 4
+  PP_UDPSOCKETFEATURE_COUNT = 2
 };
 
 interface PPB_UDPSocket_Private {
@@ -55,13 +41,13 @@ interface PPB_UDPSocket_Private {
   PP_Bool IsUDPSocket([in] PP_Resource resource_id);
 
   /**
-   * Sets a socket feature to |udp_socket|. Possible values for
-   * |name|, |value| and |value|'s type are described in
-   * PP_UDPSocketFeature_Private description. If no error occurs,
-   * returns PP_OK. Otherwise, returns PP_ERROR_BADRESOURCE (if bad
-   * |udp_socket| provided), PP_ERROR_BADARGUMENT (if bad
-   * name/value/value's type provided) or PP_ERROR_FAILED in the case
-   * of internal errors.
+   * Sets a socket feature to |udp_socket|. Should be called before
+   * Bind(). Possible values for |name|, |value| and |value|'s type
+   * are described in PP_UDPSocketFeature_Private description. If no
+   * error occurs, returns PP_OK. Otherwise, returns
+   * PP_ERROR_BADRESOURCE (if bad |udp_socket| provided),
+   * PP_ERROR_BADARGUMENT (if bad name/value/value's type provided)
+   * or PP_ERROR_FAILED in the case of internal errors.
    */
   [version=0.4]
   int32_t SetSocketFeature([in] PP_Resource udp_socket,
@@ -74,48 +60,32 @@ interface PPB_UDPSocket_Private {
                [in] PP_CompletionCallback callback);
 
   /* Returns the address that the socket has bound to.  A successful
-   * call to Bind() must be called first. Returns PP_FALSE if Bind
-   * fails, or if Close() has been called.
+   * call to Bind must be called first. Returns PP_FALSE if Bind
+   * fails, or if Close has been called.
    */
   [version=0.3]
   PP_Bool GetBoundAddress([in] PP_Resource udp_socket,
                           [out] PP_NetAddress_Private addr);
 
-  /* Performs a non-blocking recvfrom call on socket.  Bind() must be
-   * called first. |callback| is invoked when recvfrom reads data, and
-   * only after invocation of |callback| it is allowed to call
-   * RecvFrom() again.  You must call GetRecvFromAddress() to recover
-   * the address the data was retrieved from.
+  /* Performs a non-blocking recvfrom call on socket.
+   * Bind must be called first. |callback| is invoked when recvfrom
+   * reads data.  You must call GetRecvFromAddress to recover the
+   * address the data was retrieved from.
    */
-  [version=0.2, deprecate=0.5]
   int32_t RecvFrom([in] PP_Resource udp_socket,
                    [out] str_t buffer,
                    [in] int32_t num_bytes,
                    [in] PP_CompletionCallback callback);
 
-  /* Performs a non-blocking recvfrom call on socket.  Bind() must be
-   * called first. |callback| is invoked when recvfrom reads data. It
-   * is possible to call RecvFrom() again on the same socket before
-   * completion of the previous call.
+  /* Upon successful completion of RecvFrom, the address that the data
+   * was received from is stored in |addr|.
    */
-  [version=0.5]
-  int32_t RecvFrom([in] PP_Resource udp_socket,
-                   [out] str_t buffer,
-                   [in] int32_t num_bytes,
-                   [out] PP_NetAddress_Private addr,
-                   [in] PP_CompletionCallback callback);
-
-  /* Upon successful completion of RecvFrom(), the address that the
-   * data was received from is stored in |addr|.
-   */
-  [version=0.2, deprecate=0.5]
   PP_Bool GetRecvFromAddress([in] PP_Resource udp_socket,
                              [out] PP_NetAddress_Private addr);
 
   /* Performs a non-blocking sendto call on the socket created and
-   * bound(has already called Bind()).  The callback |callback| is
-   * invoked when sendto completes. |buffer| and |addr| don't need to
-   * persist until |callback| is called.
+   * bound(has already called Bind).  The callback |callback| is
+   * invoked when sendto completes.
    */
   int32_t SendTo([in] PP_Resource udp_socket,
                  [in] str_t buffer,

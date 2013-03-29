@@ -25,7 +25,8 @@ UDPSocketPrivateResource::UDPSocketPrivateResource(Connection connection,
     : PluginResource(connection, instance),
       bound_(false),
       closed_(false),
-      pending_recvfrom_0_4_(false) {
+      read_buffer_(NULL),
+      bytes_to_read_(-1) {
   recvfrom_addr_.size = 0;
   memset(recvfrom_addr_.data, 0,
          arraysize(recvfrom_addr_.data) * sizeof(*recvfrom_addr_.data));
@@ -47,24 +48,16 @@ UDPSocketPrivateResource::AsPPB_UDPSocket_Private_API() {
 int32_t UDPSocketPrivateResource::SetSocketFeature(
     PP_UDPSocketFeature_Private name,
     PP_Var value) {
-  if (closed_)
+  if (bound_ || closed_)
     return PP_ERROR_FAILED;
 
   switch (name) {
     case PP_UDPSOCKETFEATURE_ADDRESS_REUSE:
     case PP_UDPSOCKETFEATURE_BROADCAST:
-      if (bound_)
-        return PP_ERROR_FAILED;
       if (value.type != PP_VARTYPE_BOOL)
         return PP_ERROR_BADARGUMENT;
       SendBoolSocketFeature(static_cast<int32_t>(name),
                             PP_ToBool(value.value.as_bool));
-      break;
-    case PP_UDPSOCKETFEATURE_SEND_BUFFER_SIZE:
-    case PP_UDPSOCKETFEATURE_RECV_BUFFER_SIZE:
-      if (value.type != PP_VARTYPE_INT32)
-        return PP_ERROR_BADARGUMENT;
-      SendInt32SocketFeature(static_cast<int32_t>(name), value.value.as_int);
       break;
     default:
       return PP_ERROR_BADARGUMENT;
@@ -97,19 +90,24 @@ PP_Bool UDPSocketPrivateResource::GetBoundAddress(PP_NetAddress_Private* addr) {
   return PP_TRUE;
 }
 
-int32_t UDPSocketPrivateResource::RecvFrom_0_4(
+int32_t UDPSocketPrivateResource::RecvFrom(
     char* buffer,
     int32_t num_bytes,
     scoped_refptr<TrackedCallback> callback) {
-  return RecvFrom(buffer, num_bytes, &recvfrom_addr_, callback, true);
-}
+  if (!buffer || num_bytes <= 0)
+    return PP_ERROR_BADARGUMENT;
+  if (!bound_)
+    return PP_ERROR_FAILED;
+  if (TrackedCallback::IsPending(recvfrom_callback_))
+    return PP_ERROR_INPROGRESS;
 
-int32_t UDPSocketPrivateResource::RecvFrom_0_5(
-    char* buffer,
-    int32_t num_bytes,
-    PP_NetAddress_Private* addr,
-    scoped_refptr<TrackedCallback> callback) {
-  return RecvFrom(buffer, num_bytes, addr, callback, false);
+  read_buffer_ = buffer;
+  bytes_to_read_ = std::min(num_bytes, kMaxReadSize);
+  recvfrom_callback_ = callback;
+
+  // Send the request, the browser will call us back via RecvFromReply.
+  SendRecvFrom(bytes_to_read_);
+  return PP_OK_COMPLETIONPENDING;
 }
 
 PP_Bool UDPSocketPrivateResource::GetRecvFromAddress(
@@ -118,31 +116,6 @@ PP_Bool UDPSocketPrivateResource::GetRecvFromAddress(
     return PP_FALSE;
   *addr = recvfrom_addr_;
   return PP_TRUE;
-}
-
-int32_t UDPSocketPrivateResource::RecvFrom(
-    char* buffer,
-    int32_t num_bytes,
-    PP_NetAddress_Private* addr,
-    scoped_refptr<TrackedCallback> callback,
-    bool recvfrom_0_4) {
-  if (!buffer || num_bytes <= 0)
-    return PP_ERROR_BADARGUMENT;
-  if (!bound_)
-    return PP_ERROR_FAILED;
-  if (recvfrom_0_4 && pending_recvfrom_0_4_)
-    return PP_ERROR_INPROGRESS;
-  if (recvfrom_0_4)
-    pending_recvfrom_0_4_ = true;
-  num_bytes = std::min(num_bytes, kMaxReadSize);
-  recvfrom_requests_.push(RecvFromRequest(callback,
-                                          buffer,
-                                          addr,
-                                          num_bytes,
-                                          recvfrom_0_4));
-  // Send the request, the browser will call us back via RecvFromReply.
-  SendRecvFrom(num_bytes);
-  return PP_OK_COMPLETIONPENDING;
 }
 
 void UDPSocketPrivateResource::PostAbortIfNecessary(
@@ -160,11 +133,13 @@ int32_t UDPSocketPrivateResource::SendTo(
     return PP_ERROR_BADARGUMENT;
   if (!bound_)
     return PP_ERROR_FAILED;
+  if (TrackedCallback::IsPending(sendto_callback_))
+    return PP_ERROR_INPROGRESS;
 
   if (num_bytes > kMaxWriteSize)
     num_bytes = kMaxWriteSize;
 
-  sendto_callbacks_.push(callback);
+  sendto_callback_ = callback;
 
   // Send the request, the browser will call us back via SendToReply.
   SendSendTo(std::string(buffer, num_bytes), *addr);
@@ -181,25 +156,12 @@ void UDPSocketPrivateResource::Close() {
   SendClose();
 
   PostAbortIfNecessary(&bind_callback_);
-  while (!recvfrom_requests_.empty()) {
-    RecvFromRequest& request = recvfrom_requests_.front();
-    PostAbortIfNecessary(&request.callback);
-    recvfrom_requests_.pop();
-  }
-  while (!sendto_callbacks_.empty()) {
-    PostAbortIfNecessary(&sendto_callbacks_.front());
-    sendto_callbacks_.pop();
-  }
+  PostAbortIfNecessary(&recvfrom_callback_);
+  PostAbortIfNecessary(&sendto_callback_);
 }
 
 void UDPSocketPrivateResource::SendBoolSocketFeature(int32_t name, bool value) {
   PpapiHostMsg_UDPSocketPrivate_SetBoolSocketFeature msg(name, value);
-  Post(BROWSER, msg);
-}
-
-void UDPSocketPrivateResource::SendInt32SocketFeature(int32_t name,
-                                                      int32_t value) {
-  PpapiHostMsg_UDPSocketPrivate_SetInt32SocketFeature msg(name, value);
   Post(BROWSER, msg);
 }
 
@@ -253,44 +215,37 @@ void UDPSocketPrivateResource::OnPluginMsgRecvFromReply(
     const ResourceMessageReplyParams& params,
     const std::string& data,
     const PP_NetAddress_Private& addr) {
-  if (recvfrom_requests_.empty())
+  if (!TrackedCallback::IsPending(recvfrom_callback_) || !read_buffer_) {
+    NOTREACHED();
     return;
-  RecvFromRequest request = recvfrom_requests_.front();
-  recvfrom_requests_.pop();
-  if (request.recvfrom_0_4_) {
-    DCHECK(pending_recvfrom_0_4_);
-    pending_recvfrom_0_4_ = false;
   }
-  if (!TrackedCallback::IsPending(request.callback))
-    return;
   bool succeeded = (params.result() == PP_OK);
-  if (succeeded && !data.empty() && request.buffer) {
-    CHECK_LE(static_cast<int32_t>(data.size()), request.num_bytes);
-    memcpy(request.buffer, data.c_str(), data.size());
+  if (succeeded) {
+    CHECK_LE(static_cast<int32_t>(data.size()), bytes_to_read_);
+    if (!data.empty())
+      memcpy(read_buffer_, data.c_str(), data.size());
   }
-  if (request.addr)
-    *request.addr = addr;
+  read_buffer_ = NULL;
+  bytes_to_read_ = -1;
+  recvfrom_addr_ = addr;
+
   if (succeeded)
-    request.callback->Run(static_cast<int32_t>(data.size()));
+    recvfrom_callback_->Run(static_cast<int32_t>(data.size()));
   else
-    request.callback->Run(params.result());
+    recvfrom_callback_->Run(params.result());
 }
 
 void UDPSocketPrivateResource::OnPluginMsgSendToReply(
     const ResourceMessageReplyParams& params,
     int32_t bytes_written) {
-  if (sendto_callbacks_.empty())
-    return;
-  scoped_refptr<TrackedCallback> callback  = sendto_callbacks_.front();
-  sendto_callbacks_.pop();
-  if (!TrackedCallback::IsPending(callback)) {
+  if (!TrackedCallback::IsPending(sendto_callback_)) {
     NOTREACHED();
     return;
   }
   if (params.result() == PP_OK)
-    callback->Run(bytes_written);
+    sendto_callback_->Run(bytes_written);
   else
-    callback->Run(params.result());
+    sendto_callback_->Run(params.result());
 }
 
 }  // namespace proxy

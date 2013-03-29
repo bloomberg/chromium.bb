@@ -5,8 +5,6 @@
 #ifndef PPAPI_PROXY_UDP_SOCKET_PRIVATE_RESOURCE_H_
 #define PPAPI_PROXY_UDP_SOCKET_PRIVATE_RESOURCE_H_
 
-#include <queue>
-
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "ppapi/proxy/plugin_resource.h"
@@ -42,15 +40,9 @@ class PPAPI_PROXY_EXPORT UDPSocketPrivateResource
   virtual int32_t Bind(const PP_NetAddress_Private* addr,
                        scoped_refptr<TrackedCallback> callback) OVERRIDE;
   virtual PP_Bool GetBoundAddress(PP_NetAddress_Private* addr) OVERRIDE;
-  virtual int32_t RecvFrom_0_4(
-      char* buffer,
-      int32_t num_bytes,
-      scoped_refptr<TrackedCallback> callback) OVERRIDE;
-  virtual int32_t RecvFrom_0_5(
-      char* buffer,
-      int32_t num_bytes,
-      PP_NetAddress_Private* addr,
-      scoped_refptr<TrackedCallback> callback) OVERRIDE;
+  virtual int32_t RecvFrom(char* buffer,
+                           int32_t num_bytes,
+                           scoped_refptr<TrackedCallback> callback) OVERRIDE;
   virtual PP_Bool GetRecvFromAddress(PP_NetAddress_Private* addr) OVERRIDE;
   virtual int32_t SendTo(const char* buffer,
                          int32_t num_bytes,
@@ -59,36 +51,9 @@ class PPAPI_PROXY_EXPORT UDPSocketPrivateResource
   virtual void Close() OVERRIDE;
 
  private:
-  struct RecvFromRequest {
-    RecvFromRequest(scoped_refptr<TrackedCallback> callback,
-                    char* buffer,
-                    PP_NetAddress_Private* addr,
-                    int32_t num_bytes,
-                    bool recvfrom_0_4)
-        : callback(callback),
-          buffer(buffer),
-          addr(addr),
-          num_bytes(num_bytes),
-          recvfrom_0_4_(recvfrom_0_4) {
-    }
-
-    scoped_refptr<TrackedCallback> callback;
-    char* buffer;
-    PP_NetAddress_Private* addr;
-    int32_t num_bytes;
-    bool recvfrom_0_4_;
-  };
-
-  int32_t RecvFrom(char* buffer,
-                   int32_t num_bytes,
-                   PP_NetAddress_Private* addr,
-                   scoped_refptr<TrackedCallback> callback,
-                   bool recvfrom_0_4);
-
   void PostAbortIfNecessary(scoped_refptr<TrackedCallback>* callback);
 
   void SendBoolSocketFeature(int32_t name, bool value);
-  void SendInt32SocketFeature(int32_t name, int32_t value);
   void SendBind(const PP_NetAddress_Private& addr);
   void SendRecvFrom(int32_t num_bytes);
   void SendSendTo(const std::string& buffer,
@@ -108,14 +73,11 @@ class PPAPI_PROXY_EXPORT UDPSocketPrivateResource
   bool closed_;
 
   scoped_refptr<TrackedCallback> bind_callback_;
+  scoped_refptr<TrackedCallback> recvfrom_callback_;
+  scoped_refptr<TrackedCallback> sendto_callback_;
 
-  // Queue of RecvFrom requests, used since v0.5.
-  std::queue<RecvFromRequest> recvfrom_requests_;
-
-  // True if RecvFrom() v0.4 is in process.
-  bool pending_recvfrom_0_4_;
-
-  std::queue<scoped_refptr<TrackedCallback> > sendto_callbacks_;
+  char* read_buffer_;
+  int32_t bytes_to_read_;
 
   PP_NetAddress_Private recvfrom_addr_;
   PP_NetAddress_Private bound_addr_;

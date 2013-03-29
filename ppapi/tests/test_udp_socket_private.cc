@@ -20,8 +20,6 @@ namespace {
 const uint16_t kPortScanFrom = 1024;
 const uint16_t kPortScanTo = 4096;
 
-const size_t kEnglishAlphabetSize = 'z' - 'a' + 1;
-
 }  // namespace
 
 TestUDPSocketPrivate::TestUDPSocketPrivate(
@@ -60,8 +58,6 @@ void TestUDPSocketPrivate::RunTests(const std::string& filter) {
   RUN_TEST_FORCEASYNC_AND_NOT(ConnectFailure, filter);
   RUN_TEST_FORCEASYNC_AND_NOT(Broadcast, filter);
   RUN_TEST_FORCEASYNC_AND_NOT(SetSocketFeatureErrors, filter);
-  RUN_TEST_FORCEASYNC_AND_NOT(QueuedRequests, filter);
-  RUN_TEST_FORCEASYNC_AND_NOT(SequentialRequests, filter);
 }
 
 std::string TestUDPSocketPrivate::GetLocalAddress(
@@ -147,22 +143,13 @@ std::string TestUDPSocketPrivate::BindUDPSocketFailure(
   PASS();
 }
 
-std::string TestUDPSocketPrivate::ReadSocket(
-    pp::UDPSocketPrivate* socket,
-    PP_NetAddress_Private* address,
-    size_t size,
-    std::string* message,
-    PP_NetAddress_Private* recvfrom_address,
-    bool is_queued_recvfrom) {
+std::string TestUDPSocketPrivate::ReadSocket(pp::UDPSocketPrivate* socket,
+                                             PP_NetAddress_Private* address,
+                                             size_t size,
+                                             std::string* message) {
   std::vector<char> buffer(size);
   TestCompletionCallback callback(instance_->pp_instance(), force_async_);
-  int32_t rv = PP_ERROR_FAILED;
-  if (is_queued_recvfrom) {
-    rv = socket->RecvFrom(&buffer[0], size, recvfrom_address,
-                          callback.GetCallback());
-  } else {
-    rv = socket->RecvFrom(&buffer[0], size, callback.GetCallback());
-  }
+  int32_t rv = socket->RecvFrom(&buffer[0], size, callback.GetCallback());
   if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
     return ReportError("PPB_UDPSocket_Private::RecvFrom force_async", rv);
   if (rv == PP_OK_COMPLETIONPENDING)
@@ -170,18 +157,13 @@ std::string TestUDPSocketPrivate::ReadSocket(
   if (rv < 0 || size != static_cast<size_t>(rv))
     return ReportError("PPB_UDPSocket_Private::RecvFrom", rv);
   message->assign(buffer.begin(), buffer.end());
-  if (!is_queued_recvfrom && recvfrom_address)
-    ASSERT_TRUE(socket->GetRecvFromAddress(recvfrom_address));
   PASS();
 }
 
-std::string TestUDPSocketPrivate::PassMessage(
-    pp::UDPSocketPrivate* target,
-    pp::UDPSocketPrivate* source,
-    PP_NetAddress_Private* address,
-    const std::string& message,
-    PP_NetAddress_Private* recvfrom_address,
-    bool is_queued_recvfrom) {
+std::string TestUDPSocketPrivate::PassMessage(pp::UDPSocketPrivate* target,
+                                              pp::UDPSocketPrivate* source,
+                                              PP_NetAddress_Private* address,
+                                              const std::string& message) {
   TestCompletionCallback callback(instance_->pp_instance(), force_async_);
   int32_t rv = source->SendTo(message.c_str(), message.size(), address,
                               callback.GetCallback());
@@ -189,13 +171,13 @@ std::string TestUDPSocketPrivate::PassMessage(
     return ReportError("PPB_UDPSocket_Private::SendTo force_async", rv);
 
   std::string str;
-  ASSERT_SUBTEST_SUCCESS(ReadSocket(target, address, message.size(),
-                                    &str, recvfrom_address,
-                                    is_queued_recvfrom));
+  ASSERT_SUBTEST_SUCCESS(ReadSocket(target, address, message.size(), &str));
+
   if (rv == PP_OK_COMPLETIONPENDING)
     rv = callback.WaitForResult();
   if (rv < 0 || message.size() != static_cast<size_t>(rv))
     return ReportError("PPB_UDPSocket_Private::SendTo", rv);
+
   ASSERT_EQ(message, str);
   PASS();
 }
@@ -209,14 +191,14 @@ std::string TestUDPSocketPrivate::TestConnect() {
   ASSERT_SUBTEST_SUCCESS(LookupPortAndBindUDPSocket(&client_socket,
                                                     &client_address));
   const std::string message = "Simple message that will be sent via UDP";
-  PP_NetAddress_Private recv_from_address;
   ASSERT_SUBTEST_SUCCESS(PassMessage(&server_socket, &client_socket,
                                      &server_address,
-                                     message,
-                                     &recv_from_address,
-                                     true));
+                                     message));
+  PP_NetAddress_Private recv_from_address;
+  ASSERT_TRUE(server_socket.GetRecvFromAddress(&recv_from_address));
   ASSERT_TRUE(pp::NetAddressPrivate::AreEqual(recv_from_address,
                                               client_address));
+
   server_socket.Close();
   client_socket.Close();
 
@@ -261,20 +243,18 @@ std::string TestUDPSocketPrivate::TestBroadcast() {
 
   ASSERT_SUBTEST_SUCCESS(PassMessage(&server1, &server2,
                                      &broadcast_address,
-                                     first_message, NULL, true));
+                                     first_message));
   // |first_message| also arrived to |server2|.
   ASSERT_SUBTEST_SUCCESS(ReadSocket(&server2, &broadcast_address,
-                                    first_message.size(), &message, NULL,
-                                    true));
+                                    first_message.size(), &message));
   ASSERT_EQ(first_message, message);
 
   ASSERT_SUBTEST_SUCCESS(PassMessage(&server2, &server1,
                                      &broadcast_address,
-                                     second_message, NULL, true));
+                                     second_message));
   // |second_message| also arrived to |server1|.
   ASSERT_SUBTEST_SUCCESS(ReadSocket(&server1, &broadcast_address,
-                                    second_message.size(), &message, NULL,
-                                    true));
+                                    second_message.size(), &message));
   ASSERT_EQ(second_message, message);
 
   server1.Close();
@@ -292,119 +272,5 @@ std::string TestUDPSocketPrivate::TestSetSocketFeatureErrors() {
   // Try to pass incorrect feature value's type.
   rv = socket.SetSocketFeature(PP_UDPSOCKETFEATURE_ADDRESS_REUSE, pp::Var(1));
   ASSERT_EQ(PP_ERROR_BADARGUMENT, rv);
-  PASS();
-}
-
-std::string TestUDPSocketPrivate::TestQueuedRequests() {
-  const size_t kMessageSize = 256;
-  const size_t kNumMessages = 256;
-  const int32_t kSocketBufferSize =
-      static_cast<int32_t>(4 * kMessageSize * kNumMessages);
-
-  pp::UDPSocketPrivate server_socket(instance_), client_socket(instance_);
-  PP_NetAddress_Private server_address, client_address;
-
-  server_socket.SetSocketFeature(PP_UDPSOCKETFEATURE_RECV_BUFFER_SIZE,
-                                 pp::Var(kSocketBufferSize));
-  client_socket.SetSocketFeature(PP_UDPSOCKETFEATURE_SEND_BUFFER_SIZE,
-                                 pp::Var(kSocketBufferSize));
-  ASSERT_SUBTEST_SUCCESS(LookupPortAndBindUDPSocket(&server_socket,
-                                                    &server_address));
-  ASSERT_SUBTEST_SUCCESS(LookupPortAndBindUDPSocket(&client_socket,
-                                                    &client_address));
-
-  std::vector<std::string> messages(kNumMessages);
-  for (size_t i = 0; i < kNumMessages; ++i)
-    messages[i].resize(kMessageSize, 'a' + i % kEnglishAlphabetSize);
-
-  std::vector<TestCompletionCallback*> sendto_callbacks(kNumMessages);
-  std::vector<int32_t> sendto_rv(kNumMessages);
-
-  std::vector<std::vector<char> > buffers(kNumMessages);
-  std::vector<TestCompletionCallback*> recvfrom_callbacks(kNumMessages);
-  std::vector<int32_t> recvfrom_rv(kNumMessages);
-
-  for (size_t i = 0; i < kNumMessages; ++i) {
-    sendto_callbacks[i] = new TestCompletionCallback(instance_->pp_instance(),
-                                                     force_async_);
-    recvfrom_callbacks[i] = new TestCompletionCallback(instance_->pp_instance(),
-                                                       force_async_);
-  }
-
-  for (size_t i = 0; i < kNumMessages; ++i) {
-    buffers[i].resize(messages[i].size());
-    recvfrom_rv[i] = server_socket.RecvFrom(
-        &buffers[i][0],
-        static_cast<int32_t>(messages[i].size()),
-        NULL,
-        recvfrom_callbacks[i]->GetCallback());
-    if (force_async_ && recvfrom_rv[i] != PP_OK_COMPLETIONPENDING) {
-      return ReportError("PPB_UDPSocket_Private::RecvFrom force_async",
-                         recvfrom_rv[i]);
-    }
-  }
-
-  for (size_t i = 0; i < kNumMessages; ++i) {
-    sendto_rv[i] = client_socket.SendTo(messages[i].c_str(),
-                                        messages[i].size(),
-                                        &server_address,
-                                        sendto_callbacks[i]->GetCallback());
-    if (force_async_ && sendto_rv[i] != PP_OK_COMPLETIONPENDING) {
-      return ReportError("PPB_UDPSocket_Private::SendTo force_async",
-                         sendto_rv[i]);
-    }
-  }
-
-  for (size_t i = 0; i < kNumMessages; ++i) {
-    if (recvfrom_rv[i] == PP_OK_COMPLETIONPENDING)
-      recvfrom_rv[i] = recvfrom_callbacks[i]->WaitForResult();
-    if (recvfrom_rv[i] < 0 ||
-        messages[i].size() != static_cast<size_t>(recvfrom_rv[i])) {
-      return ReportError("PPB_UDPSocket_Private::RecvFrom", recvfrom_rv[i]);
-    }
-
-    if (sendto_rv[i] == PP_OK_COMPLETIONPENDING)
-      sendto_rv[i] = sendto_callbacks[i]->WaitForResult();
-    if (sendto_rv[i] < 0 ||
-        messages[i].size() != static_cast<size_t>(sendto_rv[i])) {
-      return ReportError("PPB_UDPSocket_Private::SendTo", sendto_rv[i]);
-    }
-    ASSERT_EQ(messages[i], std::string(buffers[i].begin(), buffers[i].end()));
-  }
-
-  for (size_t i = 0; i < kNumMessages; ++i) {
-    delete sendto_callbacks[i];
-    delete recvfrom_callbacks[i];
-  }
-
-  server_socket.Close();
-  client_socket.Close();
-  PASS();
-}
-
-std::string TestUDPSocketPrivate::TestSequentialRequests() {
-  const size_t kMessageSize = 256;
-  const size_t kNumMessages = 256;
-
-  pp::UDPSocketPrivate server_socket(instance_), client_socket(instance_);
-  PP_NetAddress_Private server_address, client_address;
-
-  ASSERT_SUBTEST_SUCCESS(LookupPortAndBindUDPSocket(&server_socket,
-                                                    &server_address));
-  ASSERT_SUBTEST_SUCCESS(LookupPortAndBindUDPSocket(&client_socket,
-                                                    &client_address));
-  std::vector<std::string> messages(kNumMessages);
-  for (size_t i = 0; i < kNumMessages; ++i)
-    messages[i].resize(kMessageSize, 'a' + i % kEnglishAlphabetSize);
-
-  for (size_t i = 0; i < kNumMessages; ++i) {
-    ASSERT_SUBTEST_SUCCESS(PassMessage(&server_socket,
-                                       &client_socket,
-                                       &server_address,
-                                       messages[i], NULL, false));
-  }
-
-  server_socket.Close();
-  client_socket.Close();
   PASS();
 }

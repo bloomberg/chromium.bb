@@ -264,7 +264,6 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_TCPSocket_Private_0_5;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_UDPSocket_Private_0_2;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_UDPSocket_Private_0_3;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_UDPSocket_Private_0_4;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_UDPSocket_Private_0_5;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_UMA_Private_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_X509Certificate_Private_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_ContentDecryptor_Private_0_6;
@@ -3618,58 +3617,6 @@ void Pnacl_M23_PPB_UDPSocket_Private_Close(PP_Resource udp_socket) {
 
 /* End wrapper methods for PPB_UDPSocket_Private_0_4 */
 
-/* Begin wrapper methods for PPB_UDPSocket_Private_0_5 */
-
-static __attribute__((pnaclcall))
-PP_Resource Pnacl_M28_PPB_UDPSocket_Private_Create(PP_Instance instance_id) {
-  const struct PPB_UDPSocket_Private_0_5 *iface = Pnacl_WrapperInfo_PPB_UDPSocket_Private_0_5.real_iface;
-  return iface->Create(instance_id);
-}
-
-static __attribute__((pnaclcall))
-PP_Bool Pnacl_M28_PPB_UDPSocket_Private_IsUDPSocket(PP_Resource resource_id) {
-  const struct PPB_UDPSocket_Private_0_5 *iface = Pnacl_WrapperInfo_PPB_UDPSocket_Private_0_5.real_iface;
-  return iface->IsUDPSocket(resource_id);
-}
-
-static __attribute__((pnaclcall))
-int32_t Pnacl_M28_PPB_UDPSocket_Private_SetSocketFeature(PP_Resource udp_socket, PP_UDPSocketFeature_Private name, struct PP_Var value) {
-  const struct PPB_UDPSocket_Private_0_5 *iface = Pnacl_WrapperInfo_PPB_UDPSocket_Private_0_5.real_iface;
-  return iface->SetSocketFeature(udp_socket, name, value);
-}
-
-static __attribute__((pnaclcall))
-int32_t Pnacl_M28_PPB_UDPSocket_Private_Bind(PP_Resource udp_socket, const struct PP_NetAddress_Private* addr, struct PP_CompletionCallback callback) {
-  const struct PPB_UDPSocket_Private_0_5 *iface = Pnacl_WrapperInfo_PPB_UDPSocket_Private_0_5.real_iface;
-  return iface->Bind(udp_socket, addr, callback);
-}
-
-static __attribute__((pnaclcall))
-PP_Bool Pnacl_M28_PPB_UDPSocket_Private_GetBoundAddress(PP_Resource udp_socket, struct PP_NetAddress_Private* addr) {
-  const struct PPB_UDPSocket_Private_0_5 *iface = Pnacl_WrapperInfo_PPB_UDPSocket_Private_0_5.real_iface;
-  return iface->GetBoundAddress(udp_socket, addr);
-}
-
-static __attribute__((pnaclcall))
-int32_t Pnacl_M28_PPB_UDPSocket_Private_RecvFrom(PP_Resource udp_socket, char* buffer, int32_t num_bytes, struct PP_NetAddress_Private* addr, struct PP_CompletionCallback callback) {
-  const struct PPB_UDPSocket_Private_0_5 *iface = Pnacl_WrapperInfo_PPB_UDPSocket_Private_0_5.real_iface;
-  return iface->RecvFrom(udp_socket, buffer, num_bytes, addr, callback);
-}
-
-static __attribute__((pnaclcall))
-int32_t Pnacl_M28_PPB_UDPSocket_Private_SendTo(PP_Resource udp_socket, const char* buffer, int32_t num_bytes, const struct PP_NetAddress_Private* addr, struct PP_CompletionCallback callback) {
-  const struct PPB_UDPSocket_Private_0_5 *iface = Pnacl_WrapperInfo_PPB_UDPSocket_Private_0_5.real_iface;
-  return iface->SendTo(udp_socket, buffer, num_bytes, addr, callback);
-}
-
-static __attribute__((pnaclcall))
-void Pnacl_M28_PPB_UDPSocket_Private_Close(PP_Resource udp_socket) {
-  const struct PPB_UDPSocket_Private_0_5 *iface = Pnacl_WrapperInfo_PPB_UDPSocket_Private_0_5.real_iface;
-  iface->Close(udp_socket);
-}
-
-/* End wrapper methods for PPB_UDPSocket_Private_0_5 */
-
 /* Begin wrapper methods for PPB_UMA_Private_0_1 */
 
 static __attribute__((pnaclcall))
@@ -4674,17 +4621,6 @@ struct PPB_UDPSocket_Private_0_4 Pnacl_Wrappers_PPB_UDPSocket_Private_0_4 = {
     .Close = (void (*)(PP_Resource udp_socket))&Pnacl_M23_PPB_UDPSocket_Private_Close
 };
 
-struct PPB_UDPSocket_Private_0_5 Pnacl_Wrappers_PPB_UDPSocket_Private_0_5 = {
-    .Create = (PP_Resource (*)(PP_Instance instance_id))&Pnacl_M28_PPB_UDPSocket_Private_Create,
-    .IsUDPSocket = (PP_Bool (*)(PP_Resource resource_id))&Pnacl_M28_PPB_UDPSocket_Private_IsUDPSocket,
-    .SetSocketFeature = (int32_t (*)(PP_Resource udp_socket, PP_UDPSocketFeature_Private name, struct PP_Var value))&Pnacl_M28_PPB_UDPSocket_Private_SetSocketFeature,
-    .Bind = (int32_t (*)(PP_Resource udp_socket, const struct PP_NetAddress_Private* addr, struct PP_CompletionCallback callback))&Pnacl_M28_PPB_UDPSocket_Private_Bind,
-    .GetBoundAddress = (PP_Bool (*)(PP_Resource udp_socket, struct PP_NetAddress_Private* addr))&Pnacl_M28_PPB_UDPSocket_Private_GetBoundAddress,
-    .RecvFrom = (int32_t (*)(PP_Resource udp_socket, char* buffer, int32_t num_bytes, struct PP_NetAddress_Private* addr, struct PP_CompletionCallback callback))&Pnacl_M28_PPB_UDPSocket_Private_RecvFrom,
-    .SendTo = (int32_t (*)(PP_Resource udp_socket, const char* buffer, int32_t num_bytes, const struct PP_NetAddress_Private* addr, struct PP_CompletionCallback callback))&Pnacl_M28_PPB_UDPSocket_Private_SendTo,
-    .Close = (void (*)(PP_Resource udp_socket))&Pnacl_M28_PPB_UDPSocket_Private_Close
-};
-
 struct PPB_UMA_Private_0_1 Pnacl_Wrappers_PPB_UMA_Private_0_1 = {
     .HistogramCustomTimes = (void (*)(struct PP_Var name, int64_t sample, int64_t min, int64_t max, uint32_t bucket_count))&Pnacl_M18_PPB_UMA_Private_HistogramCustomTimes,
     .HistogramCustomCounts = (void (*)(struct PP_Var name, int32_t sample, int32_t min, int32_t max, uint32_t bucket_count))&Pnacl_M18_PPB_UMA_Private_HistogramCustomCounts,
@@ -5531,12 +5467,6 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_UDPSocket_Private_0_4 = {
   .real_iface = NULL
 };
 
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_UDPSocket_Private_0_5 = {
-  .iface_macro = PPB_UDPSOCKET_PRIVATE_INTERFACE_0_5,
-  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_UDPSocket_Private_0_5,
-  .real_iface = NULL
-};
-
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_UMA_Private_0_1 = {
   .iface_macro = PPB_UMA_PRIVATE_INTERFACE_0_1,
   .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_UMA_Private_0_1,
@@ -5707,7 +5637,6 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_UDPSocket_Private_0_2,
   &Pnacl_WrapperInfo_PPB_UDPSocket_Private_0_3,
   &Pnacl_WrapperInfo_PPB_UDPSocket_Private_0_4,
-  &Pnacl_WrapperInfo_PPB_UDPSocket_Private_0_5,
   &Pnacl_WrapperInfo_PPB_UMA_Private_0_1,
   &Pnacl_WrapperInfo_PPB_X509Certificate_Private_0_1,
   &Pnacl_WrapperInfo_PPB_Ext_Alarms_Dev_0_1,
