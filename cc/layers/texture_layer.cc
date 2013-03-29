@@ -64,6 +64,11 @@ TextureLayer::~TextureLayer() {
     texture_mailbox_.RunReleaseCallback(texture_mailbox_.sync_point());
 }
 
+void TextureLayer::ClearClient() {
+  client_ = NULL;
+  SetTextureId(0);
+}
+
 scoped_ptr<LayerImpl> TextureLayer::CreateLayerImpl(LayerTreeImpl* tree_impl) {
   return TextureLayerImpl::Create(tree_impl, id(), uses_mailbox_).
       PassAs<LayerImpl>();

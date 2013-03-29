@@ -8,6 +8,7 @@
 
 #include "base/callback.h"
 #include "cc/base/thread.h"
+#include "cc/layers/texture_layer_client.h"
 #include "cc/layers/texture_layer_impl.h"
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host_client.h"
@@ -473,6 +474,117 @@ TEST_F(TextureLayerImplWithMailboxTest, TestCallbackOnInUseResource) {
       .Times(1);
   provider->ReceiveFromParent(list);
 }
+
+// Check that ClearClient correctly clears the state so that the impl side
+// doesn't try to use a texture that could have been destroyed.
+class TextureLayerClientTest :
+    public LayerTreeTest,
+    public TextureLayerClient {
+ public:
+  TextureLayerClientTest()
+      : context_(NULL),
+        texture_(0),
+        commit_count_(0),
+        expected_used_textures_on_draw_(0),
+        expected_used_textures_on_commit_(0) {}
+
+  virtual scoped_ptr<OutputSurface> CreateOutputSurface() OVERRIDE {
+    scoped_ptr<TestWebGraphicsContext3D> context(
+        TestWebGraphicsContext3D::Create());
+    context_ = context.get();
+    texture_ = context->createTexture();
+    return FakeOutputSurface::Create3d(
+        context.PassAs<WebKit::WebGraphicsContext3D>()).PassAs<OutputSurface>();
+  }
+
+  virtual unsigned PrepareTexture(ResourceUpdateQueue* queue) {
+    return texture_;
+  }
+
+  virtual WebKit::WebGraphicsContext3D* Context3d() {
+    return context_;
+  }
+
+  virtual void SetupTree() OVERRIDE {
+    scoped_refptr<Layer> root = Layer::Create();
+    root->SetBounds(gfx::Size(10, 10));
+    root->SetAnchorPoint(gfx::PointF());
+    root->SetIsDrawable(true);
+
+    texture_layer_ = TextureLayer::Create(this);
+    texture_layer_->SetBounds(gfx::Size(10, 10));
+    texture_layer_->SetAnchorPoint(gfx::PointF());
+    texture_layer_->SetIsDrawable(true);
+    root->AddChild(texture_layer_);
+
+    layer_tree_host()->SetRootLayer(root);
+    LayerTreeTest::SetupTree();
+    {
+      base::AutoLock lock(lock_);
+      expected_used_textures_on_commit_ = 1;
+    }
+  }
+
+  virtual void BeginTest() OVERRIDE {
+    PostSetNeedsCommitToMainThread();
+  }
+
+  virtual void DidCommitAndDrawFrame() OVERRIDE {
+    ++commit_count_;
+    switch (commit_count_) {
+      case 1:
+        texture_layer_->ClearClient();
+        texture_layer_->SetNeedsDisplay();
+        {
+          base::AutoLock lock(lock_);
+          expected_used_textures_on_commit_ = 0;
+        }
+        texture_ = 0;
+        break;
+      case 2:
+        EndTest();
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
+  }
+
+  virtual void BeginCommitOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+    base::AutoLock lock(lock_);
+    expected_used_textures_on_draw_ = expected_used_textures_on_commit_;
+  }
+
+  virtual bool PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
+                                     LayerTreeHostImpl::FrameData* frame_data,
+                                     bool result) OVERRIDE {
+    context_->ResetUsedTextures();
+    return true;
+  }
+
+  virtual void SwapBuffersOnThread(LayerTreeHostImpl* host_impl,
+                                   bool result) OVERRIDE {
+    ASSERT_TRUE(result);
+    EXPECT_EQ(expected_used_textures_on_draw_, context_->NumUsedTextures());
+  }
+
+  virtual void AfterTest() OVERRIDE {}
+
+ private:
+  scoped_refptr<TextureLayer> texture_layer_;
+  TestWebGraphicsContext3D* context_;
+  unsigned texture_;
+  int commit_count_;
+
+  // Used only on thread.
+  unsigned expected_used_textures_on_draw_;
+
+  // Used on either thread, protected by lock_.
+  base::Lock lock_;
+  unsigned expected_used_textures_on_commit_;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(TextureLayerClientTest);
 
 }  // namespace
 }  // namespace cc

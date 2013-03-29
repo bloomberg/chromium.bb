@@ -1709,7 +1709,6 @@ void PluginInstance::UpdateLayer() {
     return;
 
   if (texture_layer_) {
-    texture_layer_->WillModifyTexture();
     texture_layer_->ClearClient();
     if (!layer_bound_to_fullscreen_)
       container_->setWebLayer(NULL);
