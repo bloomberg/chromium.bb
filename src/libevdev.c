@@ -411,8 +411,9 @@ static int EvdevReadBitmask(FILE* fp, const char* expected_name,
     unsigned int tmp;
     ret = fscanf(fp, " %02X", &tmp);
     if (ret <= 0)
-      return ret;
-    bytes[i] = (unsigned char)tmp;
+      bytes[i] = 0;
+    else
+      bytes[i] = (unsigned char)tmp;
   }
   ret = fscanf(fp, "\n");
   return 1;
