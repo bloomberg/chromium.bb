@@ -165,6 +165,10 @@ class SearchProvider : public AutocompleteProvider,
     int relevance() const { return relevance_; }
     void set_relevance(int relevance) { relevance_ = relevance; }
 
+    // Returns if this result is inlineable against the current input |input|.
+    // Non-inlineable results are stale.
+    virtual bool IsInlineable(const string16& input) const = 0;
+
     // Returns the default relevance value for this result (which may
     // be left over from a previous omnibox input) given the current
     // input and whether the current input caused a keyword provider
@@ -190,6 +194,7 @@ class SearchProvider : public AutocompleteProvider,
     const string16& suggestion() const { return suggestion_; }
 
     // Result:
+    virtual bool IsInlineable(const string16& input) const OVERRIDE;
     virtual int CalculateRelevance(
         const AutocompleteInput& input,
         bool keyword_provider_requested) const OVERRIDE;
@@ -201,7 +206,10 @@ class SearchProvider : public AutocompleteProvider,
 
   class NavigationResult : public Result {
    public:
-    NavigationResult(const GURL& url,
+    // |provider| is necessary to use StringForURLDisplay() in order to
+    // compute |formatted_url_|.
+    NavigationResult(const AutocompleteProvider& provider,
+                     const GURL& url,
                      const string16& description,
                      bool from_keyword_provider,
                      int relevance);
@@ -209,8 +217,12 @@ class SearchProvider : public AutocompleteProvider,
 
     const GURL& url() const { return url_; }
     const string16& description() const { return description_; }
+    const string16& formatted_url() const {
+      return formatted_url_;
+    }
 
     // Result:
+    virtual bool IsInlineable(const string16& input) const OVERRIDE;
     virtual int CalculateRelevance(
         const AutocompleteInput& input,
         bool keyword_provider_requested) const OVERRIDE;
@@ -218,6 +230,10 @@ class SearchProvider : public AutocompleteProvider,
    private:
     // The suggested url for navigation.
     GURL url_;
+
+    // The properly formatted ("fixed up") URL string with equivalent meaning
+    // to the one in |url_|.
+    string16 formatted_url_;
 
     // The suggested navigational result description; generally the site name.
     string16 description_;
@@ -258,8 +274,8 @@ class SearchProvider : public AutocompleteProvider,
   void RemoveStaleResults();
   static void RemoveStaleSuggestResults(SuggestResults* list,
                                         const string16& input);
-  void RemoveStaleNavigationResults(NavigationResults* list,
-                                    const string16& input);
+  static void RemoveStaleNavigationResults(NavigationResults* list,
+                                           const string16& input);
 
   // If |default_provider_suggestion_| (which was suggested for
   // |previous_input|) is still applicable given the |current_input|, adjusts it

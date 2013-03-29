@@ -197,7 +197,8 @@ void SearchProvider::FinalizeInstantQuery(const string16& input_text,
     // verbatim_relevance so that the score does not change if the user keeps
     // typing and the input changes from type UNKNOWN to URL.
     matches_.push_back(NavigationToMatch(
-        NavigationResult(GURL(UTF16ToUTF8(suggestion.text)),
+        NavigationResult(*this,
+                         GURL(UTF16ToUTF8(suggestion.text)),
                          string16(),
                          false,
                          kNonURLVerbatimRelevance + 1)));
@@ -335,6 +336,10 @@ SearchProvider::SuggestResult::SuggestResult(const string16& suggestion,
 
 SearchProvider::SuggestResult::~SuggestResult() {}
 
+bool SearchProvider::SuggestResult::IsInlineable(const string16& input) const {
+  return StartsWith(suggestion_, input, false);
+}
+
 int SearchProvider::SuggestResult::CalculateRelevance(
     const AutocompleteInput& input,
     bool keyword_provider_requested) const {
@@ -344,14 +349,24 @@ int SearchProvider::SuggestResult::CalculateRelevance(
 }
 
 SearchProvider::NavigationResult::NavigationResult(
+    const AutocompleteProvider& provider,
     const GURL& url,
     const string16& description,
     bool from_keyword_provider,
     int relevance)
     : Result(from_keyword_provider, relevance),
       url_(url),
+      formatted_url_(AutocompleteInput::FormattedStringWithEquivalentMeaning(
+          url, provider.StringForURLDisplay(url, true, false))),
       description_(description) {
   DCHECK(url_.is_valid());
+}
+
+SearchProvider::NavigationResult::~NavigationResult() {}
+
+bool SearchProvider::NavigationResult::IsInlineable(
+    const string16& input) const {
+  return URLPrefix::BestURLPrefix(formatted_url_, input) != NULL;
 }
 
 int SearchProvider::NavigationResult::CalculateRelevance(
@@ -359,8 +374,6 @@ int SearchProvider::NavigationResult::CalculateRelevance(
     bool keyword_provider_requested) const {
   return (from_keyword_provider_ || !keyword_provider_requested) ? 800 : 150;
 }
-
-SearchProvider::NavigationResult::~NavigationResult() {}
 
 class SearchProvider::CompareScoredResults {
  public:
@@ -657,15 +670,14 @@ void SearchProvider::RemoveStaleResults() {
 void SearchProvider::RemoveStaleSuggestResults(SuggestResults* list,
                                                const string16& input) {
   for (SuggestResults::iterator i = list->begin(); i < list->end();)
-    i = StartsWith(i->suggestion(), input, false) ? (i + 1) : list->erase(i);
+    i = i->IsInlineable(input) ? (i + 1) : list->erase(i);
 }
 
+// static
 void SearchProvider::RemoveStaleNavigationResults(NavigationResults* list,
                                                   const string16& input) {
   for (NavigationResults::iterator i = list->begin(); i < list->end();) {
-    const string16 fill(AutocompleteInput::FormattedStringWithEquivalentMeaning(
-        i->url(), StringForURLDisplay(i->url(), true, false)));
-    i = URLPrefix::BestURLPrefix(fill, input) ? (i + 1) : list->erase(i);
+    i = i->IsInlineable(input) ? (i + 1) : list->erase(i);
   }
 }
 
@@ -679,7 +691,8 @@ void SearchProvider::AdjustDefaultProviderSuggestion(
     // determine staleness.
     NavigationResults list;
     // Description and relevance do not matter in the check for staleness.
-    NavigationResult result(GURL(default_provider_suggestion_.text),
+    NavigationResult result(*this,
+                            GURL(default_provider_suggestion_.text),
                             string16(),
                             false,
                             100);
@@ -851,7 +864,7 @@ bool SearchProvider::ParseSuggestResults(Value* root_val, bool is_keyword) {
         if (descriptions != NULL)
           descriptions->GetString(index, &title);
         navigation_results->push_back(NavigationResult(
-            url, title, is_keyword, relevance));
+            *this, url, title, is_keyword, relevance));
       }
     } else {
       // TODO(kochi): Improve calculator result presentation.
@@ -945,7 +958,8 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
     // See comment in FinalizeInstantQuery() for why we don't use
     // |verbatim_relevance| here.
     matches_.push_back(NavigationToMatch(
-        NavigationResult(GURL(UTF16ToUTF8(default_provider_suggestion_.text)),
+        NavigationResult(*this,
+                         GURL(UTF16ToUTF8(default_provider_suggestion_.text)),
                          string16(),
                          false,
                          kNonURLVerbatimRelevance + 1)));
@@ -1408,9 +1422,7 @@ AutocompleteMatch SearchProvider::NavigationToMatch(
   // First look for the user's input inside the fill_into_edit as it would be
   // without trimming the scheme, so we can find matches at the beginning of the
   // scheme.
-  const string16 untrimmed_fill_into_edit(
-      AutocompleteInput::FormattedStringWithEquivalentMeaning(navigation.url(),
-          StringForURLDisplay(navigation.url(), true, false)));
+  const string16& untrimmed_fill_into_edit = navigation.formatted_url();
   const URLPrefix* prefix =
       URLPrefix::BestURLPrefix(untrimmed_fill_into_edit, input);
   size_t match_start = (prefix == NULL) ?
