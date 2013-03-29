@@ -6972,4 +6972,11 @@
    ...
    fun:_ZN64BackgroundApplicationListModelTest_AddRemovePermissionsTest_Test8TestBodyEv
 }
-
+{
+   bug_225028
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN31SafeBrowsingDatabaseFactoryImpl26CreateSafeBrowsingDatabaseEbbbb
+   fun:_ZN20SafeBrowsingDatabase6CreateEbbbb
+   fun:_ZN27SafeBrowsingDatabaseManager11GetDatabaseEv
+}
