@@ -51,6 +51,10 @@ body[device='tablet'] .thumbnail-cell {
   width: 230px;
 }
 
+html[dir='rtl'] body[device='tablet'] .thumbnail-cell {
+  float: right;
+}
+
 body[device='tablet'] #most_visited_list .thumbnail-container {
   border: 1px solid #999;
   height: 160px;
@@ -99,6 +103,10 @@ body[device='tablet'] #most_visited_list .title {
   width: 250px;
 }
 
+html[dir='rtl'] body[device='tablet'] #most_visited_list .title {
+  right: -10px;
+}
+
 body[device='tablet'] .recently-closed-title-container {
   color: rgba(0, 0, 0, 0.5);
   display: inline-block;
@@ -107,6 +115,10 @@ body[device='tablet'] .recently-closed-title-container {
   padding-left: 6px; /* match recently closed border & margin */
   position: relative;
   width: 100%;
+}
+
+html[dir='rtl'] body[device='tablet'] .recently-closed-title-container {
+  padding-right: 6px;
 }
 
 body[device='tablet'] .recently-closed-title-container .title {
@@ -125,6 +137,10 @@ body[device='tablet'] #recently_closed_list .cell {
   width: 188px;
 }
 
+html[dir='rtl'] body[device='tablet'] #recently_closed_list .cell {
+  float: right;
+}
+
 body[device='tablet'] #recently_closed_list .title {
   color: blue;
   font-size: 12pt;
@@ -132,6 +148,11 @@ body[device='tablet'] #recently_closed_list .title {
   padding-left: 2px;
   text-align: left;
   text-overflow: ellipsis;
+}
+
+html[dir='rtl'] body[device='tablet'] #recently_closed_list .title {
+  padding-right: 2px;
+  text-align: right;
 }
 
 body[device='tablet'] #recently_closed_list .icon {
@@ -145,3 +166,8 @@ body[device='tablet'] #recently_closed_list .icon {
   top: -1px;
   width: 16px;
 }
+
+html[dir='rtl'] body[device='tablet'] #recently_closed_list .icon {
+  float: right;
+}
+
