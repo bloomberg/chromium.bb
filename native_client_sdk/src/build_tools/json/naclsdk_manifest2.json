@@ -34,16 +34,6 @@
       "revision": 1507
     },
     {
-      "name": "pepper_21",
-      "description": "Chrome 21 bundle, revision xxxxx",
-      "stability": "post_stable",
-      "recommended": "no",
-      "version": 21,
-      "repath": "pepper_21",
-      "archives": [],
-      "revision": 0
-    },
-    {
       "name": "pepper_22",
       "description": "Chrome 22 bundle, revision xxxxx",
       "stability": "post_stable",
@@ -56,8 +46,8 @@
     {
       "name": "pepper_23",
       "description": "Chrome 23 bundle, revision xxxxx",
-      "stability": "stable",
-      "recommended": "yes",
+      "stability": "post_stable",
+      "recommended": "no",
       "version": 23,
       "repath": "pepper_23",
       "archives": [],
@@ -66,7 +56,7 @@
     {
       "name": "pepper_24",
       "description": "Chrome 24 bundle, revision xxxxx",
-      "stability": "beta",
+      "stability": "post_stable",
       "recommended": "no",
       "version": 24,
       "repath": "pepper_24",
@@ -76,7 +66,7 @@
     {
       "name": "pepper_25",
       "description": "Chrome 25 bundle, revision xxxxx",
-      "stability": "dev",
+      "stability": "post_stable",
       "recommended": "no",
       "version": 25,
       "repath": "pepper_25",
@@ -86,10 +76,20 @@
     {
       "name": "pepper_26",
       "description": "Chrome 26 bundle, revision xxxxx",
-      "stability": "dev",
-      "recommended": "no",
+      "stability": "stable",
+      "recommended": "yes",
       "version": 26,
       "repath": "pepper_26",
+      "archives": [],
+      "revision": 0
+    },
+    {
+      "name": "pepper_27",
+      "description": "Chrome 27 bundle, revision xxxxx",
+      "stability": "beta",
+      "recommended": "no",
+      "version": 27,
+      "repath": "pepper_27",
       "archives": [],
       "revision": 0
     },
