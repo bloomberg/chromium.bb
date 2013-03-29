@@ -206,7 +206,7 @@ TEST(ScrollbarLayerTest, SolidColorDrawQuads) {
     scrollbar_layer_impl->AppendQuads(&quad_culler, &data);
 
     const QuadList& quads = quad_culler.quad_list();
-    ASSERT_EQ(1, quads.size());
+    ASSERT_EQ(1u, quads.size());
     EXPECT_EQ(DrawQuad::SOLID_COLOR, quads[0]->material);
     EXPECT_RECT_EQ(gfx::Rect(1, 0, 4, 3), quads[0]->rect);
   }
@@ -220,7 +220,7 @@ TEST(ScrollbarLayerTest, SolidColorDrawQuads) {
     scrollbar_layer_impl->AppendQuads(&quad_culler, &data);
 
     const QuadList& quads = quad_culler.quad_list();
-    ASSERT_EQ(1, quads.size());
+    ASSERT_EQ(1u, quads.size());
     EXPECT_EQ(DrawQuad::SOLID_COLOR, quads[0]->material);
     EXPECT_RECT_EQ(gfx::Rect(2, 0, 8, 6), quads[0]->rect);
   }
@@ -238,7 +238,7 @@ TEST(ScrollbarLayerTest, SolidColorDrawQuads) {
     scrollbar_layer_impl->AppendQuads(&quad_culler, &data);
 
     const QuadList& quads = quad_culler.quad_list();
-    ASSERT_EQ(1, quads.size());
+    ASSERT_EQ(1u, quads.size());
     EXPECT_EQ(DrawQuad::SOLID_COLOR, quads[0]->material);
     EXPECT_RECT_EQ(gfx::Rect(4, 0, 2, 3), quads[0]->rect);
   }
@@ -270,7 +270,7 @@ TEST(ScrollbarLayerTest, LayerDrivenSolidColorDrawQuads) {
     scrollbar_layer_impl->AppendQuads(&quad_culler, &data);
 
     const QuadList& quads = quad_culler.quad_list();
-    ASSERT_EQ(1, quads.size());
+    ASSERT_EQ(1u, quads.size());
     EXPECT_EQ(DrawQuad::SOLID_COLOR, quads[0]->material);
     EXPECT_RECT_EQ(gfx::Rect(4, 0, 2, 3), quads[0]->rect);
   }
@@ -350,7 +350,7 @@ class ScrollbarLayerTestResourceCreation : public testing::Test {
   ScrollbarLayerTestResourceCreation()
       : fake_client_(FakeLayerTreeHostClient::DIRECT_3D) {}
 
-  void TestResourceUpload(int expected_resources) {
+  void TestResourceUpload(size_t expected_resources) {
     layer_tree_host_.reset(
         new MockLayerTreeHost(&fake_client_, layer_tree_settings_));
 
@@ -393,7 +393,7 @@ class ScrollbarLayerTestResourceCreation : public testing::Test {
     scrollbar_layer->SetTexturePriorities(calculator);
     layer_tree_host_->contents_texture_manager()->PrioritizeTextures();
     scrollbar_layer->Update(&queue, &occlusion_tracker, NULL);
-    EXPECT_EQ(0, queue.FullUploadSize());
+    EXPECT_EQ(0u, queue.FullUploadSize());
     EXPECT_EQ(expected_resources, queue.PartialUploadSize());
 
     testing::Mock::VerifyAndClearExpectations(layer_tree_host_.get());

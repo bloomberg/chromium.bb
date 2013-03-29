@@ -354,7 +354,7 @@ bool VideoLayerImpl::FramePlane::AllocateData(
 
   resource_id = resource_provider->CreateResource(
       size, format, ResourceProvider::TextureUsageAny);
-  return resource_id;
+  return resource_id != 0;
 }
 
 void VideoLayerImpl::FramePlane::FreeData(ResourceProvider* resource_provider) {
@@ -431,7 +431,7 @@ bool VideoLayerImpl::SetupFramePlanes(ResourceProvider* resource_provider) {
   for (size_t plane_index = 0; plane_index < plane_count; ++plane_index) {
     const VideoLayerImpl::FramePlane& plane = frame_planes_[plane_index];
     // Only planar formats planes should need upload.
-    DCHECK_EQ(plane.format, GL_LUMINANCE);
+    DCHECK_EQ(plane.format, static_cast<unsigned>(GL_LUMINANCE));
     const uint8_t* software_plane_pixels = frame_->data(plane_index);
     gfx::Rect image_rect(0,
                          0,

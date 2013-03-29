@@ -8,7 +8,7 @@
 
 namespace cc {
 
-static const float Scale(float width, const LayerTreeImpl* tree_impl) {
+static float Scale(float width, const LayerTreeImpl* tree_impl) {
   return width * (tree_impl ? tree_impl->device_scale_factor() : 1);
 }
 

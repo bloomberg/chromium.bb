@@ -78,7 +78,7 @@ void TiledLayerImpl::DumpLayerProperties(std::string* str, int indent) const {
 }
 
 bool TiledLayerImpl::HasTileAt(int i, int j) const {
-  return tiler_->TileAt(i, j);
+  return !!tiler_->TileAt(i, j);
 }
 
 bool TiledLayerImpl::HasResourceIdForTileAt(int i, int j) const {

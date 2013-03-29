@@ -235,19 +235,19 @@ TEST(LayerAnimationControllerTest, TrivialTransitionOnImpl) {
   controller_impl->UpdateState(events.get());
   EXPECT_TRUE(controller_impl->HasActiveAnimation());
   EXPECT_EQ(0.f, dummy_impl.opacity());
-  EXPECT_EQ(2, events->size());
+  EXPECT_EQ(2u, events->size());
   const AnimationEvent* start_opacity_event =
       GetMostRecentPropertyUpdateEvent(events.get());
-  EXPECT_EQ(0, start_opacity_event->opacity);
+  EXPECT_EQ(0.f, start_opacity_event->opacity);
 
   controller_impl->Animate(1.0);
   controller_impl->UpdateState(events.get());
   EXPECT_EQ(1.f, dummy_impl.opacity());
   EXPECT_FALSE(controller_impl->HasActiveAnimation());
-  EXPECT_EQ(4, events->size());
+  EXPECT_EQ(4u, events->size());
   const AnimationEvent* end_opacity_event =
       GetMostRecentPropertyUpdateEvent(events.get());
-  EXPECT_EQ(1, end_opacity_event->opacity);
+  EXPECT_EQ(1.f, end_opacity_event->opacity);
 }
 
 TEST(LayerAnimationControllerTest, TrivialTransformOnImpl) {
@@ -284,7 +284,7 @@ TEST(LayerAnimationControllerTest, TrivialTransformOnImpl) {
   controller_impl->UpdateState(events.get());
   EXPECT_TRUE(controller_impl->HasActiveAnimation());
   EXPECT_EQ(gfx::Transform(), dummy_impl.transform());
-  EXPECT_EQ(2, events->size());
+  EXPECT_EQ(2u, events->size());
   const AnimationEvent* start_transform_event =
       GetMostRecentPropertyUpdateEvent(events.get());
   ASSERT_TRUE(start_transform_event);
@@ -297,7 +297,7 @@ TEST(LayerAnimationControllerTest, TrivialTransformOnImpl) {
   controller_impl->UpdateState(events.get());
   EXPECT_EQ(expected_transform, dummy_impl.transform());
   EXPECT_FALSE(controller_impl->HasActiveAnimation());
-  EXPECT_EQ(4, events->size());
+  EXPECT_EQ(4u, events->size());
   const AnimationEvent* end_transform_event =
       GetMostRecentPropertyUpdateEvent(events.get());
   EXPECT_EQ(expected_transform, end_transform_event->transform);
@@ -882,7 +882,7 @@ TEST(LayerAnimationControllerTest, SkipUpdateState) {
   controller->UpdateState(events.get());
 
   // Should have one Started event and one Finished event.
-  EXPECT_EQ(2, events->size());
+  EXPECT_EQ(2u, events->size());
   EXPECT_NE((*events)[0].type, (*events)[1].type);
 
   // The float transition should still be at its starting point.

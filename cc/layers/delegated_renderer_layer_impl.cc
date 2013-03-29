@@ -117,7 +117,7 @@ void DelegatedRendererLayerImpl::SetFrameData(
            resource_map.begin();
        it != resource_map.end();
        ++it) {
-    bool resource_is_in_current_frame = resources_.count(it->second);
+    bool resource_is_in_current_frame = resources_.count(it->second) > 0;
     bool resource_is_in_use = resource_provider->InUseByConsumer(it->second);
     if (!resource_is_in_current_frame && !resource_is_in_use)
       unused_resources.push_back(it->second);

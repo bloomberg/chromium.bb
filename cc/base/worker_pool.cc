@@ -177,7 +177,9 @@ WorkerPool::Inner::Inner(WorkerPool* worker_pool,
         new base::DelegateSimpleThread(
           this,
           thread_name_prefix +
-          base::StringPrintf("Worker%lu", workers_.size() + 1).c_str()));
+          base::StringPrintf(
+              "Worker%lu",
+              static_cast<unsigned long>(workers_.size() + 1)).c_str()));
     worker->Start();
     workers_.push_back(worker.Pass());
   }
@@ -191,9 +193,9 @@ WorkerPool::Inner::~Inner() {
   // Cancel all pending callbacks.
   weak_ptr_factory_.InvalidateWeakPtrs();
 
-  DCHECK_EQ(pending_tasks_.size(), 0);
-  DCHECK_EQ(completed_tasks_.size(), 0);
-  DCHECK_EQ(running_task_count_, 0);
+  DCHECK_EQ(0u, pending_tasks_.size());
+  DCHECK_EQ(0u, completed_tasks_.size());
+  DCHECK_EQ(0u, running_task_count_);
 }
 
 void WorkerPool::Inner::Shutdown() {
@@ -430,7 +432,7 @@ WorkerPool::~WorkerPool() {
   // Cancel all pending callbacks.
   weak_ptr_factory_.InvalidateWeakPtrs();
 
-  DCHECK_EQ(completed_tasks_.size(), 0);
+  DCHECK_EQ(0u, completed_tasks_.size());
 }
 
 void WorkerPool::Shutdown() {

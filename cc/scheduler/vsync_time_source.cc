@@ -12,10 +12,10 @@ scoped_refptr<VSyncTimeSource> VSyncTimeSource::Create(
 }
 
 VSyncTimeSource::VSyncTimeSource(VSyncProvider* vsync_provider)
-  : vsync_provider_(vsync_provider)
-  , client_(NULL)
-  , active_(false)
-  , notification_requested_(false) {}
+    : active_(false),
+      notification_requested_(false),
+      vsync_provider_(vsync_provider),
+      client_(NULL) {}
 
 VSyncTimeSource::~VSyncTimeSource() {}
 

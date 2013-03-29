@@ -787,9 +787,9 @@ class LayerTreeHostTestAtomicCommit : public LayerTreeHostTest {
     switch (impl->active_tree()->source_frame_number()) {
       case 0:
         // Number of textures should be one for each layer
-        ASSERT_EQ(2, context->NumTextures());
+        ASSERT_EQ(2u, context->NumTextures());
         // Number of textures used for commit should be one for each layer.
-        EXPECT_EQ(2, context->NumUsedTextures());
+        EXPECT_EQ(2u, context->NumUsedTextures());
         // Verify that used texture is correct.
         EXPECT_TRUE(context->UsedTexture(context->TextureAt(0)));
         EXPECT_TRUE(context->UsedTexture(context->TextureAt(1)));
@@ -800,10 +800,10 @@ class LayerTreeHostTestAtomicCommit : public LayerTreeHostTest {
       case 1:
         // Number of textures should be doubled as the first textures
         // are used by impl thread and cannot by used for update.
-        ASSERT_EQ(4, context->NumTextures());
+        ASSERT_EQ(4u, context->NumTextures());
         // Number of textures used for commit should still be
         // one for each layer.
-        EXPECT_EQ(2, context->NumUsedTextures());
+        EXPECT_EQ(2u, context->NumUsedTextures());
         // First textures should not have been used.
         EXPECT_FALSE(context->UsedTexture(context->TextureAt(0)));
         EXPECT_FALSE(context->UsedTexture(context->TextureAt(1)));
@@ -828,7 +828,7 @@ class LayerTreeHostTestAtomicCommit : public LayerTreeHostTest {
         impl->output_surface()->context3d());
 
     // Number of textures used for draw should always be one for each layer.
-    EXPECT_EQ(2, context->NumUsedTextures());
+    EXPECT_EQ(2u, context->NumUsedTextures());
     context->ResetUsedTextures();
   }
 
@@ -916,9 +916,9 @@ class LayerTreeHostTestAtomicCommitWithPartialUpdate
     switch (impl->active_tree()->source_frame_number()) {
       case 0:
         // Number of textures should be one for each layer.
-        ASSERT_EQ(4, context->NumTextures());
+        ASSERT_EQ(4u, context->NumTextures());
         // Number of textures used for commit should be one for each layer.
-        EXPECT_EQ(4, context->NumUsedTextures());
+        EXPECT_EQ(4u, context->NumUsedTextures());
         // Verify that used textures are correct.
         EXPECT_TRUE(context->UsedTexture(context->TextureAt(0)));
         EXPECT_TRUE(context->UsedTexture(context->TextureAt(1)));
@@ -931,10 +931,10 @@ class LayerTreeHostTestAtomicCommitWithPartialUpdate
       case 1:
         // Number of textures should be two for each content layer and one
         // for each scrollbar, since they always do a partial update.
-        ASSERT_EQ(6, context->NumTextures());
+        ASSERT_EQ(6u, context->NumTextures());
         // Number of textures used for commit should be one for each content
         // layer, and one for the scrollbar layer that paints.
-        EXPECT_EQ(3, context->NumUsedTextures());
+        EXPECT_EQ(3u, context->NumUsedTextures());
 
         // First content textures should not have been used.
         EXPECT_FALSE(context->UsedTexture(context->TextureAt(0)));
@@ -953,10 +953,10 @@ class LayerTreeHostTestAtomicCommitWithPartialUpdate
       case 2:
         // Number of textures should be two for each content layer and one
         // for each scrollbar, since they always do a partial update.
-        ASSERT_EQ(6, context->NumTextures());
+        ASSERT_EQ(6u, context->NumTextures());
         // Number of textures used for commit should be one for each content
         // layer, and one for the scrollbar layer that paints.
-        EXPECT_EQ(3, context->NumUsedTextures());
+        EXPECT_EQ(3u, context->NumUsedTextures());
 
         // The non-painting scrollbar's texture wasn't updated.
         EXPECT_FALSE(context->UsedTexture(context->TextureAt(2)));
@@ -971,7 +971,7 @@ class LayerTreeHostTestAtomicCommitWithPartialUpdate
         break;
       case 3:
         // No textures should be used for commit.
-        EXPECT_EQ(0, context->NumUsedTextures());
+        EXPECT_EQ(0u, context->NumUsedTextures());
 
         context->ResetUsedTextures();
         PostSetNeedsCommitToMainThread();
@@ -980,7 +980,7 @@ class LayerTreeHostTestAtomicCommitWithPartialUpdate
         // Number of textures used for commit should be two. One for the
         // content layer, and one for the painting scrollbar. The
         // non-painting scrollbar doesn't update its texture.
-        EXPECT_EQ(2, context->NumUsedTextures());
+        EXPECT_EQ(2u, context->NumUsedTextures());
 
         context->ResetUsedTextures();
         PostSetNeedsCommitToMainThread();
@@ -1001,9 +1001,9 @@ class LayerTreeHostTestAtomicCommitWithPartialUpdate
     // Number of textures used for drawing should one per layer except for
     // frame 3 where the viewport only contains one layer.
     if (impl->active_tree()->source_frame_number() == 3)
-      EXPECT_EQ(1, context->NumUsedTextures());
+      EXPECT_EQ(1u, context->NumUsedTextures());
     else
-      EXPECT_EQ(4, context->NumUsedTextures());
+      EXPECT_EQ(4u, context->NumUsedTextures());
 
     context->ResetUsedTextures();
   }
@@ -1816,7 +1816,7 @@ class LayerTreeHostTestShutdownWithOnlySomeResourcesEvicted
   virtual void DidSetVisibleOnImplTree(LayerTreeHostImpl* host_impl,
                                        bool visible) OVERRIDE {
     // One backing should remain unevicted.
-    EXPECT_EQ(100 * 100 * 4 * 1,
+    EXPECT_EQ(100u * 100u * 4u * 1u,
               layer_tree_host()->contents_texture_manager()->MemoryUseBytes());
     // Make sure that contents textures are marked as having been
     // purged.
@@ -1831,7 +1831,7 @@ class LayerTreeHostTestShutdownWithOnlySomeResourcesEvicted
       case 1:
         // All three backings should have memory.
         EXPECT_EQ(
-            100 * 100 * 4 * 3,
+            100u * 100u * 4u * 3u,
             layer_tree_host()->contents_texture_manager()->MemoryUseBytes());
         // Set a new policy that will kick out 1 of the 3 resources.
         // Because a resource was evicted, a commit will be kicked off.
@@ -1844,7 +1844,7 @@ class LayerTreeHostTestShutdownWithOnlySomeResourcesEvicted
       case 2:
         // Only two backings should have memory.
         EXPECT_EQ(
-            100 * 100 * 4 * 2,
+            100u * 100u * 4u * 2u,
             layer_tree_host()->contents_texture_manager()->MemoryUseBytes());
         // Become backgrounded, which will cause 1 more resource to be
         // evicted.
@@ -1889,7 +1889,7 @@ class LayerTreeHostTestPinchZoomScrollbarCreation : public LayerTreeHostTest {
 
   virtual void DidCommit() OVERRIDE {
     // We always expect two pinch-zoom scrollbar layers.
-    ASSERT_EQ(2, root_layer_->children().size());
+    ASSERT_EQ(2u, root_layer_->children().size());
 
     // Pinch-zoom scrollbar layers always have invalid scrollLayerIds.
     ScrollbarLayer* layer1 = root_layer_->children()[0]->ToScrollbarLayer();
@@ -1998,7 +1998,7 @@ class LayerTreeHostTestPinchZoomScrollbarNewRootLayer
     num_commits_++;
 
     // We always expect two pinch-zoom scrollbar layers.
-    ASSERT_EQ(2, root_layer_->children().size());
+    ASSERT_EQ(2u, root_layer_->children().size());
 
     // Pinch-zoom scrollbar layers always have invalid scrollLayerIds.
     ScrollbarLayer* layer1 = root_layer_->children()[0]->ToScrollbarLayer();
