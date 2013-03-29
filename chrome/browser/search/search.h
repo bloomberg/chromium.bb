@@ -156,6 +156,9 @@ GURL CoerceCommandLineURLToTemplateURL(const GURL& instant_url,
                                        const TemplateURLRef& ref,
                                        int start_margin);
 
+// Returns true if |my_url| matches |other_url|.
+bool MatchesOriginAndPath(const GURL& my_url, const GURL& other_url);
+
 }  // namespace chrome
 
 #endif  // CHROME_BROWSER_SEARCH_SEARCH_H_

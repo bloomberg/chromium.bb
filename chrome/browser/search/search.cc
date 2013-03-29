@@ -81,15 +81,6 @@ GURL TemplateURLRefToGURL(const TemplateURLRef& ref, int start_margin) {
   return GURL(ref.ReplaceSearchTerms(search_terms_args));
 }
 
-bool MatchesOriginAndPath(const GURL& my_url, const GURL& other_url) {
-  return my_url.host() == other_url.host() &&
-         my_url.port() == other_url.port() &&
-         my_url.path() == other_url.path() &&
-         (my_url.scheme() == other_url.scheme() ||
-          (my_url.SchemeIs(chrome::kHttpsScheme) &&
-           other_url.SchemeIs(chrome::kHttpScheme)));
-}
-
 bool IsCommandLineInstantURL(const GURL& url) {
   const CommandLine* cl = CommandLine::ForCurrentProcess();
   const GURL instant_url(cl->GetSwitchValueASCII(switches::kInstantURL));
@@ -563,6 +554,15 @@ GURL CoerceCommandLineURLToTemplateURL(const GURL& instant_url,
   replacements.SetPortStr(search_port);
   replacements.SetPathStr(search_path);
   return instant_url.ReplaceComponents(replacements);
+}
+
+bool MatchesOriginAndPath(const GURL& my_url, const GURL& other_url) {
+  return my_url.host() == other_url.host() &&
+         my_url.port() == other_url.port() &&
+         my_url.path() == other_url.path() &&
+         (my_url.scheme() == other_url.scheme() ||
+          (my_url.SchemeIs(chrome::kHttpsScheme) &&
+           other_url.SchemeIs(chrome::kHttpScheme)));
 }
 
 }  // namespace chrome

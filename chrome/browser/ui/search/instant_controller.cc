@@ -213,15 +213,6 @@ bool GetURLForMostVisitedItemID(Profile* profile,
   return true;
 }
 
-bool MatchesOriginAndPath(const GURL& my_url, const GURL& other_url) {
-  return my_url.host() == other_url.host() &&
-         my_url.port() == other_url.port() &&
-         my_url.path() == other_url.path() &&
-         (my_url.scheme() == other_url.scheme() ||
-          (my_url.SchemeIs(chrome::kHttpsScheme) &&
-           other_url.SchemeIs(chrome::kHttpScheme)));
-}
-
 }  // namespace
 
 InstantController::InstantController(BrowserInstantController* browser,
@@ -1623,7 +1614,8 @@ bool InstantController::ShouldSwitchToLocalNTP() const {
   // If there is no NTP, or no Instant URL or the NTP is stale, switch.
   std::string instant_url;
   if (!ntp_ || !GetInstantURL(browser_->profile(), false, &instant_url) ||
-      !MatchesOriginAndPath(GURL(ntp_->instant_url()), GURL(instant_url))) {
+      !chrome::MatchesOriginAndPath(GURL(ntp_->instant_url()),
+                                    GURL(instant_url))) {
     return true;
   }
 
