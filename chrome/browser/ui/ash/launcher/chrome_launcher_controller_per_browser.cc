@@ -7,8 +7,6 @@
 #include <vector>
 
 #include "ash/launcher/launcher_model.h"
-#include "ash/root_window_controller.h"
-#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
@@ -300,11 +298,6 @@ ChromeLauncherControllerPerBrowser::~ChromeLauncherControllerPerBrowser() {
   // Reset the shell window controller here since it has a weak pointer to
   // this.
   shell_window_controller_.reset();
-
-  for (std::set<ash::Launcher*>::iterator iter = launchers_.begin();
-       iter != launchers_.end();
-       ++iter)
-    (*iter)->shelf_widget()->shelf_layout_manager()->RemoveObserver(this);
 
   model_->RemoveObserver(this);
   if (ash::Shell::HasInstance())
@@ -644,22 +637,6 @@ void ChromeLauncherControllerPerBrowser::SetAppImage(
   }
 }
 
-void ChromeLauncherControllerPerBrowser::OnAutoHideBehaviorChanged(
-    ash::ShelfAutoHideBehavior new_behavior) {
-    std::string behavior_string;
-  ash::Shell::RootWindowList root_windows;
-  if (ash::Shell::IsLauncherPerDisplayEnabled())
-    root_windows = ash::Shell::GetAllRootWindows();
-  else
-    root_windows.push_back(ash::Shell::GetPrimaryRootWindow());
-
-  for (ash::Shell::RootWindowList::const_iterator iter =
-           root_windows.begin();
-       iter != root_windows.end(); ++iter) {
-    SetShelfAutoHideBehaviorPrefs(new_behavior, *iter);
-  }
-}
-
 void ChromeLauncherControllerPerBrowser::SetLauncherItemImage(
     ash::LauncherID launcher_id,
     const gfx::ImageSkia& image) {
@@ -933,18 +910,6 @@ bool ChromeLauncherControllerPerBrowser::ShouldShowTooltip(
       id_to_item_controller_map_[item.id]->IsVisible())
     return false;
   return true;
-}
-
-void ChromeLauncherControllerPerBrowser::OnLauncherCreated(
-    ash::Launcher* launcher) {
-  launchers_.insert(launcher);
-  launcher->shelf_widget()->shelf_layout_manager()->AddObserver(this);
-}
-
-void ChromeLauncherControllerPerBrowser::OnLauncherDestroyed(
-    ash::Launcher* launcher) {
-  launchers_.erase(launcher);
-  launcher->shelf_widget()->shelf_layout_manager()->RemoveObserver(this);
 }
 
 void ChromeLauncherControllerPerBrowser::LauncherItemAdded(int index) {

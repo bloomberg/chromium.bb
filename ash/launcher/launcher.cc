@@ -51,11 +51,9 @@ Launcher::Launcher(LauncherModel* launcher_model,
   shelf_widget_->GetNativeView()->SetName("LauncherView");
   shelf_widget_->GetNativeView()->SetProperty(
       internal::kStayInSameRootWindowKey, true);
-  delegate_->OnLauncherCreated(this);
 }
 
 Launcher::~Launcher() {
-  delegate_->OnLauncherDestroyed(this);
 }
 
 // static

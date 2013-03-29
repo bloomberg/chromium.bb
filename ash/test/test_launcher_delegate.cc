@@ -120,11 +120,5 @@ bool TestLauncherDelegate::ShouldShowTooltip(const ash::LauncherItem& item) {
   return true;
 }
 
-void TestLauncherDelegate::OnLauncherCreated(Launcher* launcher) {
-}
-
-void TestLauncherDelegate::OnLauncherDestroyed(Launcher* launcher) {
-}
-
 }  // namespace test
 }  // namespace ash

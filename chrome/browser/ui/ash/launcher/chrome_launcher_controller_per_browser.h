@@ -13,7 +13,6 @@
 #include "ash/launcher/launcher_delegate.h"
 #include "ash/launcher/launcher_model_observer.h"
 #include "ash/launcher/launcher_types.h"
-#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_types.h"
 #include "ash/shell_observer.h"
 #include "base/basictypes.h"
@@ -66,8 +65,7 @@ class ChromeLauncherControllerPerBrowser
       public content::NotificationObserver,
       public PrefServiceSyncableObserver,
       public AppSyncUIStateObserver,
-      public ExtensionEnableFlowDelegate,
-      public ash::internal::ShelfLayoutManager::Observer {
+      public ExtensionEnableFlowDelegate {
  public:
   ChromeLauncherControllerPerBrowser(Profile* profile,
                                      ash::LauncherModel* model);
@@ -255,8 +253,6 @@ class ChromeLauncherControllerPerBrowser
   virtual ash::LauncherID GetIDByWindow(aura::Window* window) OVERRIDE;
   virtual bool IsDraggable(const ash::LauncherItem& item) OVERRIDE;
   virtual bool ShouldShowTooltip(const ash::LauncherItem& item) OVERRIDE;
-  virtual void OnLauncherCreated(ash::Launcher* launcher) OVERRIDE;
-  virtual void OnLauncherDestroyed(ash::Launcher* launcher) OVERRIDE;
 
   // ash::LauncherModelObserver overrides:
   virtual void LauncherItemAdded(int index) OVERRIDE;
@@ -291,10 +287,6 @@ class ChromeLauncherControllerPerBrowser
   // extensions::AppIconLoader overrides:
   virtual void SetAppImage(const std::string& app_id,
                            const gfx::ImageSkia& image) OVERRIDE;
-
-  // ash::internal::ShelfLayoutManager::Observer overrides:
-  virtual void OnAutoHideBehaviorChanged(
-      ash::ShelfAutoHideBehavior new_behavior) OVERRIDE;
 
  protected:
   // ChromeLauncherController overrides:
@@ -392,9 +384,6 @@ class ChromeLauncherControllerPerBrowser
   AppSyncUIState* app_sync_ui_state_;
 
   scoped_ptr<ExtensionEnableFlow> extension_enable_flow_;
-
-  // Launchers that are currently being observed.
-  std::set<ash::Launcher*> launchers_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeLauncherControllerPerBrowser);
 };

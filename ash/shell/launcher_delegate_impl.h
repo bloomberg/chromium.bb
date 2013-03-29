@@ -39,8 +39,6 @@ class LauncherDelegateImpl : public ash::LauncherDelegate {
   virtual ash::LauncherID GetIDByWindow(aura::Window* window) OVERRIDE;
   virtual bool IsDraggable(const ash::LauncherItem& item) OVERRIDE;
   virtual bool ShouldShowTooltip(const LauncherItem& item) OVERRIDE;
-  virtual void OnLauncherCreated(Launcher* launcher) OVERRIDE;
-  virtual void OnLauncherDestroyed(Launcher* launcher) OVERRIDE;
 
  private:
   // Used to update Launcher. Owned by main.
