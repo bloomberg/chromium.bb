@@ -106,8 +106,6 @@
         'browser/android/provider/run_on_ui_thread_blocking.h',
         'browser/android/tab_android.cc',
         'browser/android/tab_android.h',
-        'browser/android/tab_base_android_impl.cc',
-        'browser/android/tab_base_android_impl.h',
         'browser/api/webdata/autofill_web_data.h',
         'browser/api/webdata/web_data_results.h',
         'browser/api/webdata/web_data_service_base.h',

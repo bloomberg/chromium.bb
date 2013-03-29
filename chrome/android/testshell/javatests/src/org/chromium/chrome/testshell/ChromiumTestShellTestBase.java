@@ -11,7 +11,6 @@ import android.net.Uri;
 import android.test.ActivityInstrumentationTestCase2;
 import android.text.TextUtils;
 
-import org.chromium.chrome.browser.TabBase;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
@@ -71,7 +70,7 @@ public class ChromiumTestShellTestBase extends
                     runTestOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            TabBase tab = activity.getActiveTab();
+                            TestShellTab tab = activity.getActiveTab();
                             if (tab != null) {
                                 isLoaded.set(!tab.isLoading()
                                         && !TextUtils.isEmpty(tab.getContentView().getUrl()));

@@ -19,8 +19,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 
-import org.chromium.chrome.browser.TabBase;
-import org.chromium.chrome.browser.TabObserver;
 import org.chromium.content.browser.LoadUrlParams;
 
 /**
@@ -42,8 +40,8 @@ public class TestShellToolbar extends LinearLayout {
 
     private ClipDrawable mProgressDrawable;
 
-    private TabBase mTab;
-    private TabObserver mTabObserver = new TabObserverImpl();
+    private TestShellTab mTab;
+    private TestShellTabObserver mTabObserver = new TestShellTabObserverImpl();
 
     /**
      * @param context The Context the view is running in.
@@ -57,7 +55,7 @@ public class TestShellToolbar extends LinearLayout {
      * The toolbar will visually represent the state of {@code tab}.
      * @param tab The TabBase that should be represented.
      */
-    public void showTab(TabBase tab) {
+    public void showTab(TestShellTab tab) {
         if (mTab != null) mTab.removeObserver(mTabObserver);
         mTab = tab;
         mTab.addObserver(mTabObserver);
@@ -142,19 +140,19 @@ public class TestShellToolbar extends LinearLayout {
         }
     }
 
-    private class TabObserverImpl implements TabObserver {
+    private class TestShellTabObserverImpl implements TestShellTabObserver {
         @Override
-        public void onLoadProgressChanged(TabBase tab, int progress) {
+        public void onLoadProgressChanged(TestShellTab tab, int progress) {
             if (tab == mTab) TestShellToolbar.this.onLoadProgressChanged(progress);
         }
 
         @Override
-        public void onUpdateUrl(TabBase tab, String url) {
+        public void onUpdateUrl(TestShellTab tab, String url) {
             if (tab == mTab) TestShellToolbar.this.onUpdateUrl(url);
         }
 
         @Override
-        public void onCloseTab(TabBase tab) {
+        public void onCloseTab(TestShellTab tab) {
         }
     }
 }

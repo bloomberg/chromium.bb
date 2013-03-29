@@ -7,7 +7,7 @@
 
 #include <jni.h>
 
-#include "base/android/scoped_java_ref.h"
+#include "base/android/jni_helper.h"
 #include "base/callback_forward.h"
 #include "base/string16.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
@@ -26,7 +26,7 @@ class WebContents;
 
 class TabAndroid {
  public:
-  TabAndroid();
+  TabAndroid(JNIEnv* env, jobject obj);
 
   // Convenience method to retrieve the Tab associated with the passed
   // WebContents.  Can return NULL.
@@ -72,6 +72,7 @@ class TabAndroid {
   // derived classes may remove their implementation first.
   virtual void RunExternalProtocolDialog(const GURL& url);
 
+  static bool RegisterTabAndroid(JNIEnv* env);
  protected:
   virtual ~TabAndroid();
 
@@ -81,6 +82,9 @@ class TabAndroid {
                                                        jobject content_view);
 
   int tab_id_;
+
+ private:
+  JavaObjectWeakGlobalRef weak_java_tab_;
 };
 
 #endif  // CHROME_BROWSER_ANDROID_TAB_ANDROID_H_

@@ -17,6 +17,7 @@
         '../base/base.gyp:base',
         '../jingle/jingle.gyp:notifier',
         'chrome_android_core',
+        'chromium_testshell_jni_headers',
         'chrome.gyp:browser_ui',
       ],
       'sources': [
@@ -28,10 +29,11 @@
         'android/testshell/chrome_main_delegate_testshell_android.h',
         "android/testshell/testshell_google_location_settings_helper.cc",
         "android/testshell/testshell_google_location_settings_helper.h",
+        'android/testshell/testshell_tab.cc',
+        'android/testshell/testshell_tab.h',
         'android/testshell/testshell_stubs.cc',
       ],
       'include_dirs': [
-        '<(SHARED_INTERMEDIATE_DIR)/android',
         '<(SHARED_INTERMEDIATE_DIR)/chromium_testshell',
         '../skia/config',
       ],
@@ -67,6 +69,17 @@
         ],
       },
       'includes': [ '../build/java_apk.gypi', ],
+    },
+    {
+      'target_name': 'chromium_testshell_jni_headers',
+      'type': 'none',
+      'sources': [
+        'android/testshell/java/src/org/chromium/chrome/testshell/TestShellTab.java',
+      ],
+      'variables': {
+        'jni_gen_package': 'chromium_testshell',
+      },
+      'includes': [ '../build/jni_generator.gypi' ],
     },
     {
       # chromium_testshell creates a .jar as a side effect. Any java targets

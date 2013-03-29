@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/tab_base_android_impl.h"
+#include "chrome/android/testshell/testshell_tab.h"
 
 #include "base/android/jni_string.h"
 #include "base/logging.h"
@@ -12,7 +12,7 @@
 #include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/web_contents.h"
 #include "googleurl/src/gurl.h"
-#include "jni/TabBase_jni.h"
+#include "jni/TestShellTab_jni.h"
 #include "ui/gfx/android/window_android.h"
 
 using base::android::ConvertJavaStringToUTF8;
@@ -22,68 +22,69 @@ using chrome::android::ChromeWebContentsDelegateAndroid;
 using content::WebContents;
 using ui::WindowAndroid;
 
-TabBaseAndroidImpl::TabBaseAndroidImpl(JNIEnv* env,
-                                       jobject obj,
-                                       WebContents* web_contents,
-                                       WindowAndroid* window_android)
-    : web_contents_(web_contents) {
+TestShellTab::TestShellTab(JNIEnv* env,
+                           jobject obj,
+                           WebContents* web_contents,
+                           WindowAndroid* window_android)
+    : TabAndroid(env, obj),
+      web_contents_(web_contents) {
   InitTabHelpers(web_contents);
   WindowAndroidHelper::FromWebContents(web_contents)->
       SetWindowAndroid(window_android);
 }
 
-TabBaseAndroidImpl::~TabBaseAndroidImpl() {
+TestShellTab::~TestShellTab() {
 }
 
-void TabBaseAndroidImpl::Destroy(JNIEnv* env, jobject obj) {
+void TestShellTab::Destroy(JNIEnv* env, jobject obj) {
   delete this;
 }
 
-WebContents* TabBaseAndroidImpl::GetWebContents() {
+WebContents* TestShellTab::GetWebContents() {
   return web_contents_.get();
 }
 
-browser_sync::SyncedTabDelegate* TabBaseAndroidImpl::GetSyncedTabDelegate() {
+browser_sync::SyncedTabDelegate* TestShellTab::GetSyncedTabDelegate() {
   NOTIMPLEMENTED();
   return NULL;
 }
 
-void TabBaseAndroidImpl::OnReceivedHttpAuthRequest(jobject auth_handler,
-                                                   const string16& host,
-                                                   const string16& realm) {
+void TestShellTab::OnReceivedHttpAuthRequest(jobject auth_handler,
+                                             const string16& host,
+                                             const string16& realm) {
   NOTIMPLEMENTED();
 }
 
-void TabBaseAndroidImpl::ShowContextMenu(
+void TestShellTab::ShowContextMenu(
     const content::ContextMenuParams& params) {
   NOTIMPLEMENTED();
 }
 
-void TabBaseAndroidImpl::ShowCustomContextMenu(
+void TestShellTab::ShowCustomContextMenu(
     const content::ContextMenuParams& params,
     const base::Callback<void(int)>& callback) {
   NOTIMPLEMENTED();
 }
 
-void TabBaseAndroidImpl::AddShortcutToBookmark(
+void TestShellTab::AddShortcutToBookmark(
     const GURL& url, const string16& title, const SkBitmap& skbitmap,
     int r_value, int g_value, int b_value) {
   NOTIMPLEMENTED();
 }
 
-void TabBaseAndroidImpl::EditBookmark(int64 node_id, bool is_folder) {
+void TestShellTab::EditBookmark(int64 node_id, bool is_folder) {
   NOTIMPLEMENTED();
 }
 
-void TabBaseAndroidImpl::RunExternalProtocolDialog(const GURL& url) {
+void TestShellTab::RunExternalProtocolDialog(const GURL& url) {
   NOTIMPLEMENTED();
 }
 
-bool TabBaseAndroidImpl::RegisterTabBaseAndroidImpl(JNIEnv* env) {
+bool TestShellTab::RegisterTestShellTab(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-void TabBaseAndroidImpl::InitWebContentsDelegate(
+void TestShellTab::InitWebContentsDelegate(
     JNIEnv* env,
     jobject obj,
     jobject web_contents_delegate) {
@@ -92,9 +93,9 @@ void TabBaseAndroidImpl::InitWebContentsDelegate(
   web_contents_->SetDelegate(web_contents_delegate_.get());
 }
 
-ScopedJavaLocalRef<jstring> TabBaseAndroidImpl::FixupUrl(JNIEnv* env,
-                                                         jobject obj,
-                                                         jstring url) {
+ScopedJavaLocalRef<jstring> TestShellTab::FixupUrl(JNIEnv* env,
+                                                   jobject obj,
+                                                   jstring url) {
   GURL fixed_url(URLFixerUpper::FixupURL(ConvertJavaStringToUTF8(env, url),
                                          std::string()));
 
@@ -109,7 +110,7 @@ static jint Init(JNIEnv* env,
                  jobject obj,
                  jint web_contents_ptr,
                  jint window_android_ptr) {
-  TabBaseAndroidImpl* tab = new TabBaseAndroidImpl(
+  TestShellTab* tab = new TestShellTab(
       env,
       obj,
       reinterpret_cast<WebContents*>(web_contents_ptr),

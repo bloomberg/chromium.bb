@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/android/tab_android.h"
+
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
@@ -30,6 +31,7 @@
 #include "components/autofill/browser/autofill_manager.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/web_contents.h"
+#include "jni/TabBase_jni.h"
 
 using content::WebContents;
 
@@ -102,10 +104,19 @@ WebContents* TabAndroid::InitWebContentsFromView(JNIEnv* env,
   return web_contents;
 }
 
-TabAndroid::TabAndroid() : tab_id_(-1) {
+TabAndroid::TabAndroid(JNIEnv* env, jobject obj)
+    : tab_id_(-1),
+      weak_java_tab_(env, obj) {
+  Java_TabBase_setNativePtr(env, obj, reinterpret_cast<jint>(this));
 }
 
 TabAndroid::~TabAndroid() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = weak_java_tab_.get(env);
+  if (obj.is_null())
+    return;
+
+  Java_TabBase_destroyBase(env, obj.obj());
 }
 
 content::WebContents* TabAndroid::GetWebContents() {
@@ -117,4 +128,8 @@ ToolbarModel::SecurityLevel TabAndroid::GetSecurityLevel() {
 }
 
 void TabAndroid::RunExternalProtocolDialog(const GURL& url) {
+}
+
+bool TabAndroid::RegisterTabAndroid(JNIEnv* env) {
+  return RegisterNativesImpl(env);
 }

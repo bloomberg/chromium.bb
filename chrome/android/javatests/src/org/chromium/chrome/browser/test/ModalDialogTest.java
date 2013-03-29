@@ -17,17 +17,12 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.JavascriptAppModalDialog;
-import org.chromium.chrome.browser.TabBase;
-import org.chromium.chrome.browser.test.util.TabBaseUtils;
-import org.chromium.chrome.browser.test.util.TabBaseUtils.TestCallbackHelperContainerForTab;
 import org.chromium.chrome.testshell.ChromiumTestShellTestBase;
-import org.chromium.content.browser.ContentViewClient;
+import org.chromium.chrome.testshell.TabShellTabUtils;
+import org.chromium.chrome.testshell.TabShellTabUtils.TestCallbackHelperContainerForTab;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
-import org.chromium.content.browser.test.util.TestContentViewClient;
-import org.chromium.content.browser.test.util.TestContentViewClientWrapper;
-import org.chromium.content.browser.test.util.TestWebContentsObserver;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper;
 
 import java.util.concurrent.Callable;
@@ -422,6 +417,6 @@ public class ModalDialogTest extends ChromiumTestShellTestBase {
     }
 
     private TestCallbackHelperContainerForTab getActiveTabTestCallbackHelperContainer() {
-        return TabBaseUtils.getTestCallbackHelperContainer(getActivity().getActiveTab());
+        return TabShellTabUtils.getTestCallbackHelperContainer(getActivity().getActiveTab());
     }
 }

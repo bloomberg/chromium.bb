@@ -4,20 +4,20 @@
 
 package org.chromium.chrome.testshell;
 
-import android.util.AttributeSet;
-import android.view.ViewGroup;
 import android.content.Context;
+import android.util.AttributeSet;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
-import org.chromium.chrome.browser.TabBase;
 import org.chromium.content.browser.ContentViewRenderView;
 import org.chromium.ui.gfx.NativeWindow;
 
 /**
  * The TabManager hooks together all of the related {@link View}s that are used to represent
- * a {@link TabBase}.  It properly builds a {@link TabBase} and makes sure that the {@link Toolbar}
- * and {@link ContentViewRenderView} show the proper content.
+ * a {@link TestShellTab}.  It properly builds a {@link TestShellTab} and makes sure that the
+ * {@link Toolbar} and {@link ContentViewRenderView} show the proper content.
  */
 public class TabManager extends LinearLayout {
     private static final String DEFAULT_URL = "http://www.google.com";
@@ -27,7 +27,7 @@ public class TabManager extends LinearLayout {
     private ContentViewRenderView mContentViewRenderView;
     private TestShellToolbar mToolbar;
 
-    private TabBase mCurrentTab;
+    private TestShellTab mCurrentTab;
 
     private String mStartupUrl = DEFAULT_URL;
 
@@ -72,20 +72,20 @@ public class TabManager extends LinearLayout {
     }
 
     /**
-     * @return The currently visible {@link TabBase}.
+     * @return The currently visible {@link TestShellTab}.
      */
-    public TabBase getCurrentTab() {
+    public TestShellTab getCurrentTab() {
         return mCurrentTab;
     }
 
     /**
-     * Creates a {@link TabBase} with a URL specified by {@code url}.
-     * @param url The URL the new {@link TabBase} should start with.
+     * Creates a {@link TestShellTab} with a URL specified by {@code url}.
+     * @param url The URL the new {@link TestShellTab} should start with.
      */
     public void createTab(String url) {
         if (!isContentViewRenderViewInitialized()) return;
 
-        TabBase tab = new TabBase(getContext(), url, mWindow);
+        TestShellTab tab = new TestShellTab(getContext(), url, mWindow);
         setCurrentTab(tab);
     }
 
@@ -93,7 +93,7 @@ public class TabManager extends LinearLayout {
         return mContentViewRenderView != null && mContentViewRenderView.isInitialized();
     }
 
-    private void setCurrentTab(TabBase tab) {
+    private void setCurrentTab(TestShellTab tab) {
         if (mCurrentTab != null) {
             mContentViewHolder.removeView(mCurrentTab.getContentView());
             mCurrentTab.destroy();

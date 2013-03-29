@@ -2,24 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.test.util;
+package org.chromium.chrome.testshell;
 
-import org.chromium.chrome.browser.TabBase;
-import org.chromium.chrome.browser.TabObserver;
+import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content.browser.test.util.TestContentViewClient;
 import org.chromium.content.browser.test.util.TestContentViewClientWrapper;
 import org.chromium.content.browser.test.util.TestWebContentsObserver;
-import org.chromium.content.browser.ContentViewClient;
 
 /**
  * A utility class that contains methods generic to all Tabs tests.
  */
-public class TabBaseUtils {
-    private final static String TAG = TabBaseUtils.class.getSimpleName();
-
-    private static TestContentViewClient createTestContentViewClientForTab(TabBase tab) {
+public class TabShellTabUtils {
+    private static TestContentViewClient createTestContentViewClientForTab(TestShellTab tab) {
         ContentViewClient client = tab.getContentView().getContentViewClient();
         if (client instanceof TestContentViewClient) return (TestContentViewClient) client;
 
@@ -29,9 +25,9 @@ public class TabBaseUtils {
     }
 
     public static class TestCallbackHelperContainerForTab
-            extends TestCallbackHelperContainer implements TabObserver {
-        private OnCloseTabHelper mOnCloseTabHelper;
-        public TestCallbackHelperContainerForTab(TabBase tab) {
+            extends TestCallbackHelperContainer implements TestShellTabObserver {
+        private final OnCloseTabHelper mOnCloseTabHelper;
+        public TestCallbackHelperContainerForTab(TestShellTab tab) {
             super(createTestContentViewClientForTab(tab),
                     new TestWebContentsObserver(tab.getContentView().getContentViewCore()));
             mOnCloseTabHelper = new OnCloseTabHelper();
@@ -46,15 +42,15 @@ public class TabBaseUtils {
         }
 
         @Override
-        public void onLoadProgressChanged(TabBase tab, int progress) {
+        public void onLoadProgressChanged(TestShellTab tab, int progress) {
         }
 
         @Override
-        public void onUpdateUrl(TabBase tab, String url) {
+        public void onUpdateUrl(TestShellTab tab, String url) {
         }
 
         @Override
-        public void onCloseTab(TabBase tab) {
+        public void onCloseTab(TestShellTab tab) {
             mOnCloseTabHelper.notifyCalled();
         }
     }
@@ -63,7 +59,7 @@ public class TabBaseUtils {
      * Creates, binds and returns a TestCallbackHelperContainer for a given Tab.
      */
     public static TestCallbackHelperContainerForTab getTestCallbackHelperContainer(
-            final TabBase tab) {
+            final TestShellTab tab) {
         return tab == null ? null : new TestCallbackHelperContainerForTab(tab);
     }
 }

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_ANDROID_TAB_BASE_ANDROID_IMPL_H_
-#define CHROME_BROWSER_ANDROID_TAB_BASE_ANDROID_IMPL_H_
+#ifndef CHROME_ANDROID_TESTSHELL_TESTSHELL_TAB_H_
+#define CHROME_ANDROID_TESTSHELL_TESTSHELL_TAB_H_
 
 #include <jni.h>
 
@@ -29,12 +29,12 @@ namespace ui {
 class WindowAndroid;
 }
 
-class TabBaseAndroidImpl : public TabAndroid {
+class TestShellTab : public TabAndroid {
  public:
-  TabBaseAndroidImpl(JNIEnv* env,
-                     jobject obj,
-                     content::WebContents* web_contents,
-                     ui::WindowAndroid* window_android);
+  TestShellTab(JNIEnv* env,
+               jobject obj,
+               content::WebContents* web_contents,
+               ui::WindowAndroid* window_android);
   void Destroy(JNIEnv* env, jobject obj);
 
   // --------------------------------------------------------------------------
@@ -65,7 +65,7 @@ class TabBaseAndroidImpl : public TabAndroid {
   virtual void RunExternalProtocolDialog(const GURL& url) OVERRIDE;
 
   // Register the Tab's native methods through JNI.
-  static bool RegisterTabBaseAndroidImpl(JNIEnv* env);
+  static bool RegisterTestShellTab(JNIEnv* env);
 
   // --------------------------------------------------------------------------
   // Methods called from Java via JNI
@@ -79,14 +79,14 @@ class TabBaseAndroidImpl : public TabAndroid {
                                                       jstring url);
 
  protected:
-  virtual ~TabBaseAndroidImpl();
+  virtual ~TestShellTab();
 
  private:
   scoped_ptr<content::WebContents> web_contents_;
   scoped_ptr<chrome::android::ChromeWebContentsDelegateAndroid>
           web_contents_delegate_;
 
-  DISALLOW_COPY_AND_ASSIGN(TabBaseAndroidImpl);
+  DISALLOW_COPY_AND_ASSIGN(TestShellTab);
 };
 
-#endif  // CHROME_BROWSER_ANDROID_TAB_BASE_ANDROID_IMPL_H_
+#endif  // CHROME_ANDROID_TESTSHELL_TESTSHELL_TAB_H_

@@ -5,9 +5,15 @@
 #include "chrome/android/testshell/chrome_main_delegate_testshell_android.h"
 
 #include "base/android/jni_android.h"
+#include "base/android/jni_registrar.h"
+#include "chrome/android/testshell/testshell_tab.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 
 static const char kDefaultCountryCode[] = "US";
+
+static base::android::RegistrationMethod kRegistrationMethods[] = {
+    { "TestShellTab", TestShellTab::RegisterTestShellTab },
+};
 
 ChromeMainDelegateAndroid* ChromeMainDelegateAndroid::Create() {
   return new ChromeMainDelegateTestShellAndroid();
@@ -26,5 +32,8 @@ bool ChromeMainDelegateTestShellAndroid::BasicStartupComplete(int* exit_code) {
 
 bool ChromeMainDelegateTestShellAndroid::RegisterApplicationNativeMethods(
     JNIEnv* env) {
-  return ChromeMainDelegateAndroid::RegisterApplicationNativeMethods(env);
+  return ChromeMainDelegateAndroid::RegisterApplicationNativeMethods(env) &&
+      base::android::RegisterNativeMethods(env,
+                                           kRegistrationMethods,
+                                           arraysize(kRegistrationMethods));
 }

@@ -13,7 +13,6 @@ import android.view.KeyEvent;
 
 import org.chromium.base.ChromiumActivity;
 import org.chromium.chrome.browser.DevToolsServer;
-import org.chromium.chrome.browser.TabBase;
 import org.chromium.content.app.LibraryLoader;
 import org.chromium.content.browser.ActivityContentVideoViewDelegate;
 import org.chromium.content.browser.AndroidBrowserProcess;
@@ -85,7 +84,7 @@ public class ChromiumTestShellActivity extends ChromiumActivity {
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
-            TabBase tab = getActiveTab();
+            TestShellTab tab = getActiveTab();
             if (tab != null && tab.getContentView().canGoBack()) {
                 tab.getContentView().goBack();
                 return true;
@@ -99,7 +98,7 @@ public class ChromiumTestShellActivity extends ChromiumActivity {
     protected void onNewIntent(Intent intent) {
         String url = getUrlFromIntent(intent);
         if (!TextUtils.isEmpty(url)) {
-            TabBase tab = getActiveTab();
+            TestShellTab tab = getActiveTab();
             if (tab != null) tab.loadUrlWithSanitization(url);
         }
     }
@@ -126,9 +125,9 @@ public class ChromiumTestShellActivity extends ChromiumActivity {
     }
 
     /**
-     * @return The {@link TabBase} that is currently visible.
+     * @return The {@link TestShellTab} that is currently visible.
      */
-    public TabBase getActiveTab() {
+    public TestShellTab getActiveTab() {
         return mTabManager != null ? mTabManager.getCurrentTab() : null;
     }
 
@@ -136,13 +135,13 @@ public class ChromiumTestShellActivity extends ChromiumActivity {
      * @return The ContentView of the active tab.
      */
     public ContentView getActiveContentView() {
-        TabBase tab = getActiveTab();
+        TestShellTab tab = getActiveTab();
         return tab != null ? tab.getContentView() : null;
     }
 
     /**
-     * Creates a {@link TabBase} with a URL specified by {@code url}.
-     * @param url The URL the new {@link TabBase} should start with.
+     * Creates a {@link TestShellTab} with a URL specified by {@code url}.
+     * @param url The URL the new {@link TestShellTab} should start with.
      */
     public void createTab(String url) {
         mTabManager.createTab(url);
