@@ -113,6 +113,7 @@
             '../ipc/ipc.gyp:ipc',
             '../skia/skia.gyp:skia',
             '../third_party/icu/icu.gyp:icuuc',
+            '../third_party/icu/icu.gyp:icui18n',
             # TODO(ananta) : The WebKit dependency needs to move to a new target for NACL.
             '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',
             '../ui/surface/surface.gyp:surface',
@@ -151,6 +152,7 @@
             '../ipc/ipc.gyp:ipc',
             '../skia/skia.gyp:skia',
             '../third_party/icu/icu.gyp:icuuc',
+            '../third_party/icu/icu.gyp:icui18n',
             # TODO(ananta) : The WebKit dependency needs to move to a new target for NACL.
             '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',
             '../ui/surface/surface.gyp:surface',

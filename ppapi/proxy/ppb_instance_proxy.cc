@@ -24,6 +24,7 @@
 #include "ppapi/proxy/flash_resource.h"
 #include "ppapi/proxy/gamepad_resource.h"
 #include "ppapi/proxy/host_dispatcher.h"
+#include "ppapi/proxy/pdf_resource.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/serialized_var.h"
@@ -380,7 +381,7 @@ Resource* PPB_Instance_Proxy::GetSingletonResource(PP_Instance instance,
           static_cast<PluginDispatcher*>(dispatcher()));
       break;
     case PDF_SINGLETON_ID:
-      // TODO(raymes): fill this in.
+      new_singleton = new PDFResource(connection, instance);
       break;
 #else
     case BROWSER_FONT_SINGLETON_ID:

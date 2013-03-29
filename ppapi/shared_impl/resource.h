@@ -53,6 +53,7 @@
   F(PPB_MessageLoop_API) \
   F(PPB_NetworkList_Private_API) \
   F(PPB_NetworkMonitor_Private_API) \
+  F(PPB_PDF_API) \
   F(PPB_Printing_API) \
   F(PPB_ResourceArray_API) \
   F(PPB_Scrollbar_API) \

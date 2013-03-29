@@ -151,6 +151,7 @@
         'proxy/flash_resource_unittest.cc',
         'proxy/mock_resource.cc',
         'proxy/mock_resource.h',
+        'proxy/pdf_resource_unittest.cc',
         'proxy/plugin_dispatcher_unittest.cc',
         'proxy/plugin_resource_tracker_unittest.cc',
         'proxy/plugin_var_tracker_unittest.cc',

@@ -1714,6 +1714,54 @@ IPC_MESSAGE_CONTROL1(PpapiHostMsg_FlashMenu_Show,
 IPC_MESSAGE_CONTROL1(PpapiPluginMsg_FlashMenu_ShowReply,
                      int32_t /* selected_id */)
 
+// PDF ------------------------------------------------------------------------
+
+// Creates the PDF resource.
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_PDF_Create)
+
+// Requests the localized string for the given ID.
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_PDF_GetLocalizedString,
+                     int /* string_id */)
+// Reply for PpapiHostMsg_PDF_GetLocalizedString containing the localized
+// string.
+IPC_MESSAGE_CONTROL1(PpapiPluginMsg_PDF_GetLocalizedStringReply,
+                     std::string /* localized_string*/)
+
+// Notifies the renderer that the PDF started loading.
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_PDF_DidStartLoading)
+
+// Notifies the renderer that the PDF stopped loading.
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_PDF_DidStopLoading)
+
+// Sets any restrictions on the PDF content.
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_PDF_SetContentRestriction,
+                     int /* restrictions */)
+
+// Requests that the specified action be recorded with UMA.
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_PDF_UserMetricsRecordAction,
+                     std::string /* action */)
+
+// Notifies the renderer that the current PDF uses an unsupported feature.
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_PDF_HasUnsupportedFeature)
+
+// Notifies the renderer to print the current PDF.
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_PDF_Print)
+
+// Notifies the renderer to save the current PDF.
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_PDF_SaveAs)
+
+// Requests a resource image for the plugin at a particular scale.
+IPC_MESSAGE_CONTROL2(PpapiHostMsg_PDF_GetResourceImage,
+                     int /* image_id */,
+                     float /* scale */)
+// Reply for PpapiHostMsg_PDF_GetResourceImage containing the host resource id
+// of the image and a string (representing a PP_ImageDataDesc) containing the
+// properties of the image. Also carries a shared memory handle pointing to the
+// memory containg the image.
+IPC_MESSAGE_CONTROL2(PpapiPluginMsg_PDF_GetResourceImageReply,
+                     ppapi::HostResource /* resource_id */,
+                     std::string /* image_data_desc */)
+
 // VideoCapture_Dev, plugin -> host
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_VideoCapture_Create)
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_VideoCapture_StartCapture)

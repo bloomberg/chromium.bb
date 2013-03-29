@@ -14,6 +14,7 @@ namespace proxy {
 
 class ResourceMessageCallParams;
 class ResourceMessageReplyParams;
+class SerializedHandle;
 
 // Extends IPC::TestSink to add extra capabilities for searching for and
 // decoding resource messages.
@@ -77,10 +78,17 @@ class ResourceSyncCallHandler : public IPC::Listener {
 
   IPC::Message last_handled_msg() { return last_handled_msg_; }
 
+  // Sets a handle to be appended to the ReplyParams. The pointer is owned by
+  // the caller.
+  void set_serialized_handle(const SerializedHandle* serialized_handle) {
+    serialized_handle_ = serialized_handle;
+  }
+
  private:
   ResourceMessageTestSink* test_sink_;
   uint32 incoming_type_;
   int32_t result_;
+  const SerializedHandle* serialized_handle_;  // Non-owning pointer.
   IPC::Message reply_msg_;
   IPC::Message last_handled_msg_;
 };
