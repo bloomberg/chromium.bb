@@ -139,7 +139,7 @@ class MEDIA_EXPORT VideoRendererBase
   base::Lock lock_;
 
   // Provides video frames to VideoRendererBase.
-  VideoFrameStream video_frame_stream_;
+  scoped_refptr<VideoFrameStream> video_frame_stream_;
 
   // Queue of incoming frames yet to be painted.
   typedef std::deque<scoped_refptr<VideoFrame> > VideoFrameQueue;
