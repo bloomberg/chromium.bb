@@ -106,7 +106,7 @@ void LoginObserver::OnLoginFailure(const chromeos::LoginFailure& error) {
 }
 
 void LoginObserver::OnLoginSuccess(
-    const chromeos::UserCredentials& credentials,
+    const chromeos::UserContext& user_context,
     bool pending_requests,
     bool using_oauth) {
   controller_->set_login_status_consumer(NULL);

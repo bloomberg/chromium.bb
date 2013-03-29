@@ -14,7 +14,7 @@
 
 namespace chromeos {
 
-struct UserCredentials;
+struct UserContext;
 
 class LoginFailure {
  public:
@@ -116,12 +116,12 @@ class LoginStatusConsumer {
   // The current retail mode login attempt has succeeded.
   // Unless overridden for special processing, this should always call
   // OnLoginSuccess with the magic |kRetailModeUserEMail| constant.
-  virtual void OnRetailModeLoginSuccess();
-  // The current login attempt has succeeded for |credentials|.
+  virtual void OnRetailModeLoginSuccess(const UserContext& user_context);
+  // The current login attempt has succeeded for |user_context|.
   // If |pending_requests| is false, we're totally done.
   // If it's true, we will still have some more results to report later.
   virtual void OnLoginSuccess(
-      const UserCredentials& credentials,
+      const UserContext& user_context,
       bool pending_requests,
       bool using_oauth) = 0;
   // The current guest login attempt has succeeded.

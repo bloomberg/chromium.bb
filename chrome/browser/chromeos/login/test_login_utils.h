@@ -27,7 +27,7 @@ class TestLoginUtils : public LoginUtils {
 
   virtual void DoBrowserLaunch(Profile* profile,
                                LoginDisplayHost* login_host) OVERRIDE {}
-  virtual void PrepareProfile(const UserCredentials& credentials,
+  virtual void PrepareProfile(const UserContext& credentials,
                               const std::string& display_email,
                               bool using_oauth,
                               bool has_cookies,

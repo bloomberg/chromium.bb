@@ -127,7 +127,8 @@ class TrayAccessibilityTest : public CrosInProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(TrayAccessibilityTest, LoginStatus) {
   EXPECT_EQ(ash::user::LOGGED_IN_NONE, GetLoginStatus());
 
-  UserManager::Get()->UserLoggedIn("owner@invalid.domain", true);
+  UserManager::Get()->UserLoggedIn(
+      "owner@invalid.domain", "owner@invalid.domain", true);
   UserManager::Get()->SessionStarted();
 
   EXPECT_EQ(ash::user::LOGGED_IN_USER, GetLoginStatus());
@@ -139,7 +140,8 @@ IN_PROC_BROWSER_TEST_F(TrayAccessibilityTest, ShowTrayIcon) {
   // Confirms that the icon is invisible before login.
   EXPECT_FALSE(IsTrayIconVisible());
 
-  UserManager::Get()->UserLoggedIn("owner@invalid.domain", true);
+  UserManager::Get()->UserLoggedIn(
+      "owner@invalid.domain", "owner@invalid.domain", true);
   UserManager::Get()->SessionStarted();
 
   // Confirms that the icon is invisible just after login.
@@ -191,7 +193,8 @@ IN_PROC_BROWSER_TEST_F(TrayAccessibilityTest, ShowTrayIcon) {
 
 IN_PROC_BROWSER_TEST_F(TrayAccessibilityTest, ShowMenu) {
   // Login
-  UserManager::Get()->UserLoggedIn("owner@invalid.domain", true);
+  UserManager::Get()->UserLoggedIn(
+      "owner@invalid.domain", "owner@invalid.domain", true);
   UserManager::Get()->SessionStarted();
 
   // Sets prefs::kShouldAlwaysShowAccessibilityMenu = false.
@@ -238,7 +241,8 @@ IN_PROC_BROWSER_TEST_F(TrayAccessibilityTest, ShowMenu) {
 
 IN_PROC_BROWSER_TEST_F(TrayAccessibilityTest, ShowMenuWithShowMenuOption) {
   // Login
-  UserManager::Get()->UserLoggedIn("owner@invalid.domain", true);
+  UserManager::Get()->UserLoggedIn(
+      "owner@invalid.domain", "owner@invalid.domain", true);
   UserManager::Get()->SessionStarted();
 
   // Sets prefs::kShouldAlwaysShowAccessibilityMenu = true.

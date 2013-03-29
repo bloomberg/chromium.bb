@@ -335,7 +335,7 @@ void ExistingUserController::CreateAccount() {
   LoginAsGuest();
 }
 
-void ExistingUserController::CompleteLogin(const UserCredentials& credentials) {
+void ExistingUserController::CompleteLogin(const UserContext& user_context) {
   if (!host_) {
     // Complete login event was generated already from UI. Ignore notification.
     return;
@@ -360,11 +360,11 @@ void ExistingUserController::CompleteLogin(const UserCredentials& credentials) {
   DeviceSettingsService::Get()->GetOwnershipStatusAsync(
       base::Bind(&ExistingUserController::CompleteLoginInternal,
                  weak_factory_.GetWeakPtr(),
-                 credentials));
+                 user_context));
 }
 
 void ExistingUserController::CompleteLoginInternal(
-    const UserCredentials& credentials,
+    const UserContext& user_context,
     DeviceSettingsService::OwnershipStatus ownership_status,
     bool is_owner) {
   // Auto-enrollment must have made a decision by now. It's too late to enroll
@@ -376,18 +376,18 @@ void ExistingUserController::CompleteLoginInternal(
     // complete enrollment, or opt-out of it. So this controller shouldn't force
     // enrollment again if it is reused for another sign-in.
     do_auto_enrollment_ = false;
-    auto_enrollment_username_ = credentials.username;
+    auto_enrollment_username_ = user_context.username;
     resume_login_callback_ = base::Bind(
         &ExistingUserController::PerformLogin,
         weak_factory_.GetWeakPtr(),
-        credentials, LoginPerformer::AUTH_MODE_EXTENSION);
-    ShowEnrollmentScreen(true, credentials.username);
+        user_context, LoginPerformer::AUTH_MODE_EXTENSION);
+    ShowEnrollmentScreen(true, user_context.username);
     // Enable UI for the enrollment screen. SetUIEnabled(true) will post a
     // request to show the sign-in screen again when invoked at the sign-in
     // screen; invoke SetUIEnabled() after navigating to the enrollment screen.
     login_display_->SetUIEnabled(true);
   } else {
-    PerformLogin(credentials, LoginPerformer::AUTH_MODE_EXTENSION);
+    PerformLogin(user_context, LoginPerformer::AUTH_MODE_EXTENSION);
   }
 }
 
@@ -395,9 +395,9 @@ string16 ExistingUserController::GetConnectedNetworkName() {
   return GetCurrentNetworkName();
 }
 
-void ExistingUserController::Login(const UserCredentials& credentials) {
-  if ((credentials.username.empty() || credentials.password.empty()) &&
-      credentials.auth_code.empty())
+void ExistingUserController::Login(const UserContext& user_context) {
+  if ((user_context.username.empty() || user_context.password.empty()) &&
+      user_context.auth_code.empty())
     return;
 
   // Stop the auto-login timer when attempting login.
@@ -408,19 +408,19 @@ void ExistingUserController::Login(const UserCredentials& credentials) {
 
   BootTimesLoader::Get()->RecordLoginAttempted();
 
-  if (last_login_attempt_username_ != credentials.username) {
-    last_login_attempt_username_ = credentials.username;
+  if (last_login_attempt_username_ != user_context.username) {
+    last_login_attempt_username_ = user_context.username;
     num_login_attempts_ = 0;
     // Also reset state variables, which are used to determine password change.
     offline_failed_ = false;
     online_succeeded_for_.clear();
   }
   num_login_attempts_++;
-  PerformLogin(credentials, LoginPerformer::AUTH_MODE_INTERNAL);
+  PerformLogin(user_context, LoginPerformer::AUTH_MODE_INTERNAL);
 }
 
 void ExistingUserController::PerformLogin(
-    const UserCredentials& credentials,
+    const UserContext& user_context,
     LoginPerformer::AuthorizationMode auth_mode) {
   UserManager::Get()->GetUserFlow(last_login_attempt_username_)->
       set_host(host_);
@@ -440,14 +440,14 @@ void ExistingUserController::PerformLogin(
   }
 
   is_login_in_progress_ = true;
-  if (gaia::ExtractDomainName(credentials.username) ==
+  if (gaia::ExtractDomainName(user_context.username) ==
           UserManager::kLocallyManagedUserDomain) {
     login_performer_->LoginAsLocallyManagedUser(
-        UserCredentials(credentials.username,
-                        credentials.password,
-                        std::string()));  // auth_code
+        UserContext(user_context.username,
+                    user_context.password,
+                    std::string()));  // auth_code
   } else {
-    login_performer_->PerformLogin(credentials, auth_mode);
+    login_performer_->PerformLogin(user_context, auth_mode);
   }
   accessibility::MaybeSpeak(
       l10n_util::GetStringUTF8(IDS_CHROMEOS_ACC_LOGIN_SIGNING_IN));
@@ -725,7 +725,7 @@ void ExistingUserController::OnLoginFailure(const LoginFailure& failure) {
 }
 
 void ExistingUserController::OnLoginSuccess(
-    const UserCredentials& credentials,
+    const UserContext& user_context,
     bool pending_requests,
     bool using_oauth) {
   is_login_in_progress_ = false;
@@ -735,7 +735,7 @@ void ExistingUserController::OnLoginSuccess(
 
   bool has_cookies =
       login_performer_->auth_mode() == LoginPerformer::AUTH_MODE_EXTENSION &&
-      credentials.auth_code.empty();
+      user_context.auth_code.empty();
 
   // Login performer will be gone so cache this value to use
   // once profile is loaded.
@@ -750,7 +750,7 @@ void ExistingUserController::OnLoginSuccess(
   ignore_result(login_performer_.release());
 
   // Will call OnProfilePrepared() in the end.
-  LoginUtils::Get()->PrepareProfile(credentials,
+  LoginUtils::Get()->PrepareProfile(user_context,
                                     display_email_,
                                     using_oauth,
                                     has_cookies,
@@ -759,7 +759,7 @@ void ExistingUserController::OnLoginSuccess(
   display_email_.clear();
 
   // Notify LoginDisplay to allow it provide visual feedback to user.
-  login_display_->OnLoginSuccess(credentials.username);
+  login_display_->OnLoginSuccess(user_context.username);
 }
 
 void ExistingUserController::OnProfilePrepared(Profile* profile) {
@@ -794,10 +794,11 @@ void ExistingUserController::OnProfilePrepared(Profile* profile) {
   }
   // Inform |login_status_consumer_| about successful login. Set most
   // parameters to empty since they're not needed.
-  if (login_status_consumer_)
-    login_status_consumer_->OnLoginSuccess(UserCredentials(),
+  if (login_status_consumer_) {
+    login_status_consumer_->OnLoginSuccess(UserContext(),
                                            false,    // pending_requests
                                            false);   // using_oauth
+  }
   login_display_->OnFadeOut();
 }
 

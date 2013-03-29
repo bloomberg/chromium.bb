@@ -27,18 +27,17 @@ class MockAuthenticator : public Authenticator {
   }
 
   virtual void CompleteLogin(Profile* profile,
-                             const UserCredentials& credentials) OVERRIDE;
+                             const UserContext& user_context) OVERRIDE;
 
   virtual void AuthenticateToLogin(Profile* profile,
-                                   const UserCredentials& credentials,
+                                   const UserContext& user_context,
                                    const std::string& login_token,
                                    const std::string& login_captcha) OVERRIDE;
 
-  virtual void AuthenticateToUnlock(
-      const UserCredentials& credentials) OVERRIDE;
+  virtual void AuthenticateToUnlock(const UserContext& user_context) OVERRIDE;
 
   virtual void LoginAsLocallyManagedUser(
-      const UserCredentials& credentials) OVERRIDE;
+      const UserContext& user_context) OVERRIDE;
   virtual void LoginRetailMode() OVERRIDE;
   virtual void LoginAsPublicAccount(const std::string& username) OVERRIDE;
   virtual void LoginOffTheRecord() OVERRIDE;
@@ -55,7 +54,7 @@ class MockAuthenticator : public Authenticator {
   virtual void ResyncEncryptedData() OVERRIDE {}
 
   virtual void RetryAuth(Profile* profile,
-                         const UserCredentials& credentials,
+                         const UserContext& user_context,
                          const std::string& login_token,
                          const std::string& login_captcha) OVERRIDE {}
 

@@ -225,16 +225,16 @@ void WebUILoginDisplay::CreateAccount() {
     delegate_->CreateAccount();
 }
 
-void WebUILoginDisplay::CompleteLogin(const UserCredentials& credentials) {
+void WebUILoginDisplay::CompleteLogin(const UserContext& user_context) {
   DCHECK(delegate_);
   if (delegate_)
-    delegate_->CompleteLogin(credentials);
+    delegate_->CompleteLogin(user_context);
 }
 
-void WebUILoginDisplay::Login(const UserCredentials& credentials) {
+void WebUILoginDisplay::Login(const UserContext& user_context) {
   DCHECK(delegate_);
   if (delegate_)
-    delegate_->Login(credentials);
+    delegate_->Login(user_context);
 }
 
 void WebUILoginDisplay::LoginAsRetailModeUser() {

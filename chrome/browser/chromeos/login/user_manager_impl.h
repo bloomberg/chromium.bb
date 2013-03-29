@@ -47,6 +47,7 @@ class UserManagerImpl
   virtual UserImageManager* GetUserImageManager() OVERRIDE;
   virtual const UserList& GetUsers() const OVERRIDE;
   virtual void UserLoggedIn(const std::string& email,
+                            const std::string& username_hash,
                             bool browser_restart) OVERRIDE;
   virtual void RetailModeUserLoggedIn() OVERRIDE;
   virtual void GuestUserLoggedIn() OVERRIDE;
@@ -150,7 +151,7 @@ class UserManagerImpl
   // list. Returns |NULL| otherwise.
   const User* FindUserInList(const std::string& email) const;
 
-  // Notifies on new user session.
+  // Notifies that new user session has started.
   void NotifyOnLogin();
 
   // Reads user's oauth token status from local state preferences.

@@ -145,9 +145,9 @@ class StubLogin : public LoginStatusConsumer,
     authenticator_ = LoginUtils::Get()->CreateAuthenticator(this);
     authenticator_.get()->AuthenticateToLogin(
         g_browser_process->profile_manager()->GetDefaultProfile(),
-        UserCredentials(username,
-                        password,
-                        std::string()),  // auth_code
+        UserContext(username,
+                    password,
+                    std::string()),  // auth_code
         std::string(),   // login_token
         std::string());  // login_captcha
   }
@@ -161,13 +161,13 @@ class StubLogin : public LoginStatusConsumer,
     delete this;
   }
 
-  virtual void OnLoginSuccess(const UserCredentials& credentials,
+  virtual void OnLoginSuccess(const UserContext& user_context,
                               bool pending_requests,
                               bool using_oauth) OVERRIDE {
     pending_requests_ = pending_requests;
     if (!profile_prepared_) {
       // Will call OnProfilePrepared in the end.
-      LoginUtils::Get()->PrepareProfile(credentials,
+      LoginUtils::Get()->PrepareProfile(user_context,
                                         std::string(),  // display_email
                                         using_oauth,
                                         false,          // has_cookies
@@ -502,7 +502,11 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
         parsed_command_line().GetSwitchValueASCII(::switches::kLoginUser);
     VLOG(1) << "Relaunching browser for user: " << username;
     UserManager* user_manager = UserManager::Get();
-    user_manager->UserLoggedIn(username, true);
+    // TODO(nkostylev): Get user username_hash (cryptohome mount point)
+    // from a separate cmd line switch.
+    std::string username_hash =
+        parsed_command_line().GetSwitchValueASCII(::switches::kLoginProfile);
+    user_manager->UserLoggedIn(username, username_hash, true);
 
     // Redirects Chrome logging to the user data dir.
     logging::RedirectChromeLogging(parsed_command_line());

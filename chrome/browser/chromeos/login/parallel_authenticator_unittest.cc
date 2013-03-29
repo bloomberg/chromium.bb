@@ -89,9 +89,9 @@ class ParallelAuthenticatorTest : public testing::Test {
 
     auth_ = new ParallelAuthenticator(&consumer_);
     auth_->set_using_oauth(false);
-    state_.reset(new TestAttemptState(UserCredentials(username_,
-                                                      password_,
-                                                      std::string()),
+    state_.reset(new TestAttemptState(UserContext(username_,
+                                                  password_,
+                                                  std::string()),
                                       hash_ascii_,
                                       "",
                                       "",
@@ -129,7 +129,7 @@ class ParallelAuthenticatorTest : public testing::Test {
   // Allow test to fail and exit gracefully, even if
   // OnRetailModeLoginSuccess() wasn't supposed to happen.
   void FailOnRetailModeLoginSuccess() {
-    ON_CALL(consumer_, OnRetailModeLoginSuccess())
+    ON_CALL(consumer_, OnRetailModeLoginSuccess(_))
         .WillByDefault(Invoke(MockConsumer::OnRetailModeSuccessQuitAndFail));
   }
 
@@ -154,17 +154,19 @@ class ParallelAuthenticatorTest : public testing::Test {
   }
 
   void ExpectRetailModeLoginSuccess() {
-    EXPECT_CALL(consumer_, OnRetailModeLoginSuccess())
+    EXPECT_CALL(consumer_, OnRetailModeLoginSuccess(_))
         .WillOnce(Invoke(MockConsumer::OnRetailModeSuccessQuit))
         .RetiresOnSaturation();
   }
 
   void ExpectLoginSuccess(const std::string& username,
                           const std::string& password,
+                          const std::string& username_hash_,
                           bool pending) {
-    EXPECT_CALL(consumer_, OnLoginSuccess(UserCredentials(username,
-                                                          password,
-                                                          std::string()),
+    EXPECT_CALL(consumer_, OnLoginSuccess(UserContext(username,
+                                                      password,
+                                                      std::string(),
+                                                      username_hash_),
                                           pending,
                                           false))
         .WillOnce(Invoke(MockConsumer::OnSuccessQuit))
@@ -213,6 +215,7 @@ class ParallelAuthenticatorTest : public testing::Test {
 
   std::string username_;
   std::string password_;
+  std::string username_hash_;
   std::string hash_ascii_;
 
   ScopedDeviceSettingsTestHelper device_settings_test_helper_;
@@ -233,9 +236,10 @@ class ParallelAuthenticatorTest : public testing::Test {
 };
 
 TEST_F(ParallelAuthenticatorTest, OnLoginSuccess) {
-  EXPECT_CALL(consumer_, OnLoginSuccess(UserCredentials(username_,
-                                                        password_,
-                                                        std::string()),
+  EXPECT_CALL(consumer_, OnLoginSuccess(UserContext(username_,
+                                                    password_,
+                                                    std::string(),
+                                                    username_hash_),
                                         false, false))
       .Times(1)
       .RetiresOnSaturation();
@@ -311,9 +315,9 @@ TEST_F(ParallelAuthenticatorTest, ResolveOwnerNeededMount) {
   state_->PresetCryptohomeStatus(true, cryptohome::MOUNT_ERROR_NONE);
   SetOwnerState(false, false);
   // and test that the mount has succeeded.
-  state_.reset(new TestAttemptState(UserCredentials(username_,
-                                                    password_,
-                                                    std::string()),
+  state_.reset(new TestAttemptState(UserContext(username_,
+                                                password_,
+                                                std::string()),
                                     hash_ascii_,
                                     "",
                                     "",
@@ -357,9 +361,9 @@ TEST_F(ParallelAuthenticatorTest, ResolveOwnerNeededFailedMount) {
   // Let the owner verification run.
   device_settings_test_helper_.Flush();
   // and test that the mount has succeeded.
-  state_.reset(new TestAttemptState(UserCredentials(username_,
-                                                    password_,
-                                                    std::string()),
+  state_.reset(new TestAttemptState(UserContext(username_,
+                                                password_,
+                                                std::string()),
                                     hash_ascii_,
                                     "",
                                     "",
@@ -448,7 +452,10 @@ TEST_F(ParallelAuthenticatorTest, DriveRetailModeLoginButFail) {
 }
 
 TEST_F(ParallelAuthenticatorTest, DriveDataResync) {
-  ExpectLoginSuccess(username_, password_, false);
+  ExpectLoginSuccess(username_,
+                     password_,
+                     cryptohome::MockAsyncMethodCaller::kFakeSanitizedUsername,
+                     false);
   FailOnLoginFailure();
 
   // Set up mock cryptohome library to respond successfully to a cryptohome
@@ -460,6 +467,9 @@ TEST_F(ParallelAuthenticatorTest, DriveDataResync) {
       .RetiresOnSaturation();
   EXPECT_CALL(*mock_caller_, AsyncMount(username_, hash_ascii_,
                                         cryptohome::CREATE_IF_MISSING, _))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*mock_caller_, AsyncGetSanitizedUsername(username_, _))
       .Times(1)
       .RetiresOnSaturation();
 
@@ -498,7 +508,10 @@ TEST_F(ParallelAuthenticatorTest, DriveRequestOldPassword) {
 }
 
 TEST_F(ParallelAuthenticatorTest, DriveDataRecover) {
-  ExpectLoginSuccess(username_, password_, false);
+  ExpectLoginSuccess(username_,
+                     password_,
+                     cryptohome::MockAsyncMethodCaller::kFakeSanitizedUsername,
+                     false);
   FailOnLoginFailure();
 
   // Set up mock cryptohome library to respond successfully to a key migration.
@@ -510,6 +523,9 @@ TEST_F(ParallelAuthenticatorTest, DriveDataRecover) {
                                         cryptohome::MOUNT_FLAGS_NONE, _))
       .Times(1)
       .RetiresOnSaturation();
+  EXPECT_CALL(*mock_caller_, AsyncGetSanitizedUsername(username_, _))
+        .Times(1)
+        .RetiresOnSaturation();
   EXPECT_CALL(*mock_cryptohome_library_, GetSystemSalt())
       .WillOnce(Return(std::string()))
       .RetiresOnSaturation();
@@ -579,7 +595,10 @@ TEST_F(ParallelAuthenticatorTest, ResolveCreateNew) {
 }
 
 TEST_F(ParallelAuthenticatorTest, DriveCreateForNewUser) {
-  ExpectLoginSuccess(username_, password_, false);
+  ExpectLoginSuccess(username_,
+                     password_,
+                     cryptohome::MockAsyncMethodCaller::kFakeSanitizedUsername,
+                     false);
   FailOnLoginFailure();
 
   // Set up mock cryptohome library to respond successfully to a cryptohome
@@ -587,6 +606,9 @@ TEST_F(ParallelAuthenticatorTest, DriveCreateForNewUser) {
   mock_caller_->SetUp(true, cryptohome::MOUNT_ERROR_NONE);
   EXPECT_CALL(*mock_caller_, AsyncMount(username_, hash_ascii_,
                                         cryptohome::CREATE_IF_MISSING, _))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*mock_caller_, AsyncGetSanitizedUsername(username_, _))
       .Times(1)
       .RetiresOnSaturation();
 
@@ -602,7 +624,7 @@ TEST_F(ParallelAuthenticatorTest, DriveCreateForNewUser) {
 }
 
 TEST_F(ParallelAuthenticatorTest, DriveOfflineLogin) {
-  ExpectLoginSuccess(username_, password_, false);
+  ExpectLoginSuccess(username_, password_, username_hash_, false);
   FailOnLoginFailure();
 
   // Set up state as though a cryptohome mount attempt has occurred and
@@ -617,7 +639,7 @@ TEST_F(ParallelAuthenticatorTest, DriveOfflineLogin) {
 }
 
 TEST_F(ParallelAuthenticatorTest, DriveOfflineLoginDelayedOnline) {
-  ExpectLoginSuccess(username_, password_, true);
+  ExpectLoginSuccess(username_, password_, username_hash_, true);
   FailOnLoginFailure();
 
   // Set up state as though a cryptohome mount attempt has occurred and
@@ -638,7 +660,7 @@ TEST_F(ParallelAuthenticatorTest, DriveOfflineLoginDelayedOnline) {
 }
 
 TEST_F(ParallelAuthenticatorTest, DriveOfflineLoginGetNewPassword) {
-  ExpectLoginSuccess(username_, password_, true);
+  ExpectLoginSuccess(username_, password_, username_hash_, true);
   FailOnLoginFailure();
 
   // Set up mock cryptohome library to respond successfully to a key migration.
@@ -670,15 +692,15 @@ TEST_F(ParallelAuthenticatorTest, DriveOfflineLoginGetNewPassword) {
   RunResolve(auth_.get());
 
   // After the request below completes, OnLoginSuccess gets called again.
-  ExpectLoginSuccess(username_, password_, false);
+  ExpectLoginSuccess(username_, password_, username_hash_, false);
 
   MockURLFetcherFactory<SuccessFetcher> factory;
   TestingProfile profile;
 
   auth_->RetryAuth(&profile,
-                   UserCredentials(username_,
-                                   std::string(),
-                                   std::string()),
+                   UserContext(username_,
+                               std::string(),
+                               std::string()),
                    std::string(),
                    std::string());
   message_loop_.Run();
@@ -686,7 +708,7 @@ TEST_F(ParallelAuthenticatorTest, DriveOfflineLoginGetNewPassword) {
 }
 
 TEST_F(ParallelAuthenticatorTest, DriveOfflineLoginGetCaptchad) {
-  ExpectLoginSuccess(username_, password_, true);
+  ExpectLoginSuccess(username_, password_, username_hash_, true);
   FailOnLoginFailure();
   EXPECT_CALL(*mock_cryptohome_library_, GetSystemSalt())
       .WillOnce(Return(std::string()))
@@ -720,9 +742,9 @@ TEST_F(ParallelAuthenticatorTest, DriveOfflineLoginGetCaptchad) {
   TestingProfile profile;
 
   auth_->RetryAuth(&profile,
-                   UserCredentials(username_,
-                                   std::string(),
-                                   std::string()),
+                   UserContext(username_,
+                               std::string(),
+                               std::string()),
                    std::string(),
                    std::string());
   message_loop_.Run();
@@ -730,7 +752,7 @@ TEST_F(ParallelAuthenticatorTest, DriveOfflineLoginGetCaptchad) {
 }
 
 TEST_F(ParallelAuthenticatorTest, DriveOnlineLogin) {
-  ExpectLoginSuccess(username_, password_, false);
+  ExpectLoginSuccess(username_, password_, username_hash_, false);
   FailOnLoginFailure();
 
   // Set up state as though a cryptohome mount attempt has occurred and
@@ -746,7 +768,7 @@ TEST_F(ParallelAuthenticatorTest, DriveOnlineLogin) {
 TEST_F(ParallelAuthenticatorTest, DISABLED_DriveNeedNewPassword) {
   FailOnLoginSuccess();  // Set failing on success as the default...
   // ...but expect ONE successful login first.
-  ExpectLoginSuccess(username_, password_, true);
+  ExpectLoginSuccess(username_, password_, username_hash_, true);
   GoogleServiceAuthError error(
       GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
   LoginFailure failure = LoginFailure::FromNetworkAuthFailure(error);
@@ -762,7 +784,7 @@ TEST_F(ParallelAuthenticatorTest, DISABLED_DriveNeedNewPassword) {
 }
 
 TEST_F(ParallelAuthenticatorTest, DriveUnlock) {
-  ExpectLoginSuccess(username_, std::string(), false);
+  ExpectLoginSuccess(username_, std::string(), std::string(), false);
   FailOnLoginFailure();
 
   // Set up mock cryptohome library to respond successfully to a cryptohome
@@ -775,9 +797,9 @@ TEST_F(ParallelAuthenticatorTest, DriveUnlock) {
       .WillOnce(Return(std::string()))
       .RetiresOnSaturation();
 
-  auth_->AuthenticateToUnlock(UserCredentials(username_,
-                                              std::string(),
-                                              std::string()));
+  auth_->AuthenticateToUnlock(UserContext(username_,
+                                          std::string(),
+                                          std::string()));
   message_loop_.Run();
 }
 

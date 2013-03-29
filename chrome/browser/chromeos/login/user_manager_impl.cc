@@ -238,9 +238,12 @@ const UserList& UserManagerImpl::GetUsers() const {
 }
 
 void UserManagerImpl::UserLoggedIn(const std::string& email,
+                                   const std::string& username_hash,
                                    bool browser_restart) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!IsUserLoggedIn());
+
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kMultiProfiles))
+    DCHECK(!IsUserLoggedIn());
 
   if (email == kGuestUserEMail) {
     GuestUserLoggedIn();
@@ -275,6 +278,8 @@ void UserManagerImpl::UserLoggedIn(const std::string& email,
     session_length_limiter_.reset(new SessionLengthLimiter(NULL,
                                                            browser_restart));
   }
+  DCHECK(logged_in_user_);
+  logged_in_user_->set_username_hash(username_hash);
 
   NotifyOnLogin();
 }
@@ -293,6 +298,8 @@ void UserManagerImpl::GuestUserLoggedIn() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   WallpaperManager::Get()->SetInitialUserWallpaper(kGuestUserEMail, false);
   logged_in_user_ = User::CreateGuestUser();
+  // TODO(nkostylev): Add support for passing guest session cryptohome
+  // mount point. Legacy (--login-profile) value will be used for now.
   logged_in_user_->SetStubImage(User::kInvalidImageIndex, false);
 }
 

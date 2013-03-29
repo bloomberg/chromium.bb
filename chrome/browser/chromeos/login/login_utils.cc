@@ -143,7 +143,7 @@ class LoginUtilsImpl
   virtual void DoBrowserLaunch(Profile* profile,
                                LoginDisplayHost* login_host) OVERRIDE;
   virtual void PrepareProfile(
-      const UserCredentials& credentials,
+      const UserContext& user_context,
       const std::string& display_email,
       bool using_oauth,
       bool has_cookies,
@@ -217,7 +217,7 @@ class LoginUtilsImpl
   // Starts signing related services. Initiates TokenService token retrieval.
   void StartSignedInServices(Profile* profile);
 
-  UserCredentials credentials_;
+  UserContext user_context_;
   bool using_oauth_;
   // True if the authentication profile's cookie jar should contain
   // authentication cookies from the authentication extension log in flow.
@@ -317,23 +317,25 @@ void LoginUtilsImpl::DoBrowserLaunch(Profile* profile,
 }
 
 void LoginUtilsImpl::PrepareProfile(
-    const UserCredentials& credentials,
+    const UserContext& user_context,
     const std::string& display_email,
     bool using_oauth,
     bool has_cookies,
     LoginUtils::Delegate* delegate) {
   BootTimesLoader* btl = BootTimesLoader::Get();
 
-  VLOG(1) << "Completing login for " << credentials.username;
+  VLOG(1) << "Completing login for " << user_context.username;
 
   btl->AddLoginTimeMarker("StartSession-Start", false);
   DBusThreadManager::Get()->GetSessionManagerClient()->StartSession(
-      credentials.username);
+      user_context.username);
   btl->AddLoginTimeMarker("StartSession-End", false);
 
   btl->AddLoginTimeMarker("UserLoggedIn-Start", false);
   UserManager* user_manager = UserManager::Get();
-  user_manager->UserLoggedIn(credentials.username, false);
+  user_manager->UserLoggedIn(user_context.username,
+                             user_context.username_hash,
+                             false);
   btl->AddLoginTimeMarker("UserLoggedIn-End", false);
 
   // Switch log file as soon as possible.
@@ -342,9 +344,9 @@ void LoginUtilsImpl::PrepareProfile(
 
   // Update user's displayed email.
   if (!display_email.empty())
-    user_manager->SaveUserDisplayEmail(credentials.username, display_email);
+    user_manager->SaveUserDisplayEmail(user_context.username, display_email);
 
-  credentials_ = credentials;
+  user_context_ = user_context;
 
   using_oauth_ = using_oauth;
   has_web_auth_cookies_ = has_cookies;
@@ -363,12 +365,12 @@ void LoginUtilsImpl::PrepareProfile(
   bool wait_for_policy_fetch =
       using_oauth_ &&
       authenticator_.get() &&
-      (connector->GetUserAffiliation(credentials_.username) ==
+      (connector->GetUserAffiliation(user_context_.username) ==
            policy::USER_AFFILIATION_MANAGED);
 
   // Initialize user policy before the profile is created so the profile
   // initialization code sees the cached policy settings.
-  connector->InitializeUserPolicy(credentials_.username,
+  connector->InitializeUserPolicy(user_context_.username,
                                   user_manager->IsLoggedInAsPublicAccount(),
                                   wait_for_policy_fetch);
 
@@ -447,12 +449,12 @@ void LoginUtilsImpl::InitSessionRestoreStrategy() {
     }
 
     if (command_line->HasSwitch(::switches::kAppModeAuthCode)) {
-      credentials_.auth_code = command_line->GetSwitchValueASCII(
+      user_context_.auth_code = command_line->GetSwitchValueASCII(
           ::switches::kAppModeAuthCode);
     }
 
     DCHECK(!has_web_auth_cookies_);
-    if (!credentials_.auth_code.empty()) {
+    if (!user_context_.auth_code.empty()) {
       session_restore_strategy_ = OAuthLoginManager::RESTORE_FROM_AUTH_CODE;
     } else if (!oauth2_refresh_token_.empty()) {
       session_restore_strategy_ =
@@ -466,7 +468,7 @@ void LoginUtilsImpl::InitSessionRestoreStrategy() {
 
   if (has_web_auth_cookies_) {
     session_restore_strategy_ = OAuthLoginManager::RESTORE_FROM_COOKIE_JAR;
-  } else if (!credentials_.auth_code.empty()) {
+  } else if (!user_context_.auth_code.empty()) {
     session_restore_strategy_ = OAuthLoginManager::RESTORE_FROM_AUTH_CODE;
   } else {
     session_restore_strategy_ =
@@ -545,7 +547,7 @@ void LoginUtilsImpl::RestoreAuthSession(Profile* user_profile,
       UserManager::MERGE_STATUS_IN_PROCESS);
   // Remove legacy OAuth1 token if we have one. If it's valid, we should already
   // have OAuth2 refresh token in TokenService that could be used to retrieve
-  // all other tokens and credentials.
+  // all other tokens and user_context.
   login_manager_->RestoreSession(
       user_profile,
       authenticator_ && authenticator_->authentication_profile() ?
@@ -553,7 +555,7 @@ void LoginUtilsImpl::RestoreAuthSession(Profile* user_profile,
           NULL,
       session_restore_strategy_,
       oauth2_refresh_token_,
-      credentials_.auth_code);
+      user_context_.auth_code);
 }
 
 void LoginUtilsImpl::FinalizePrepareProfile(Profile* user_profile) {
@@ -654,18 +656,18 @@ void LoginUtilsImpl::StartSignedInServices(Profile* user_profile) {
     // We may not always have a passphrase (for example, on a restart after a
     // browser crash). Only notify the sync service if we have a passphrase,
     // so it can do any required re-encryption.
-    if (!credentials_.password.empty() && sync_service) {
+    if (!user_context_.password.empty() && sync_service) {
       GoogleServiceSigninSuccessDetails details(
           signin->GetAuthenticatedUsername(),
-          credentials_.password);
+          user_context_.password);
       content::NotificationService::current()->Notify(
           chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL,
           content::Source<Profile>(user_profile),
           content::Details<const GoogleServiceSigninSuccessDetails>(&details));
     }
   }
-  credentials_.password.clear();
-  credentials_.auth_code.clear();
+  user_context_.password.clear();
+  user_context_.auth_code.clear();
 }
 
 void LoginUtilsImpl::RespectLocalePreference(Profile* profile) {

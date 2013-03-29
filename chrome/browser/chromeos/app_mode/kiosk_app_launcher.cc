@@ -115,10 +115,11 @@ class KioskAppLauncher::ProfileLoader : public LoginUtils::Delegate {
   }
 
   void Start() {
+    // TODO(nkostylev): Pass real username_hash here.
     LoginUtils::Get()->PrepareProfile(
-        UserCredentials(GetAppUserNameFromAppId(launcher_->app_id_),
-                        std::string(),   // password
-                        std::string()),  // auth_code
+        UserContext(GetAppUserNameFromAppId(launcher_->app_id_),
+                    std::string(),   // password
+                    std::string()),  // auth_code
         std::string(),  // display email
         false,  // using_oauth
         false,  // has_cookies

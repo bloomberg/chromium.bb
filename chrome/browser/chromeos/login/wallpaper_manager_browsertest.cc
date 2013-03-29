@@ -106,7 +106,7 @@ class WallpaperManagerBrowserTest : public CrosInProcessBrowserTest,
 
   // Logs in |username|.
   void LogIn(const std::string& username) {
-    UserManager::Get()->UserLoggedIn(username, false);
+    UserManager::Get()->UserLoggedIn(username, username, false);
   }
 
   // Saves bitmap |resource_id| to disk.

@@ -17,7 +17,7 @@ namespace chromeos {
 
 class TestAttemptState : public AuthAttemptState {
  public:
-  TestAttemptState(const UserCredentials& credentials,
+  TestAttemptState(const UserContext& credentials,
                    const std::string& ascii_hash,
                    const std::string& login_token,
                    const std::string& login_captcha,

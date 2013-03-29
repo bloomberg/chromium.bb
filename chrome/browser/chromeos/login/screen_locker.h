@@ -26,7 +26,7 @@ namespace chromeos {
 class Authenticator;
 class LoginFailure;
 class User;
-struct UserCredentials;
+struct UserContext;
 
 namespace test {
 class ScreenLockerTester;
@@ -53,7 +53,7 @@ class ScreenLocker : public LoginStatusConsumer {
 
   // LoginStatusConsumer implements:
   virtual void OnLoginFailure(const chromeos::LoginFailure& error) OVERRIDE;
-  virtual void OnLoginSuccess(const UserCredentials& credentials,
+  virtual void OnLoginSuccess(const UserContext& user_context,
                               bool pending_requests,
                               bool using_oauth) OVERRIDE;
 

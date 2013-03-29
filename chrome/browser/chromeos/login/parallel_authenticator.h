@@ -73,7 +73,7 @@ class ParallelAuthenticator : public Authenticator,
 
   // Authenticator overrides.
   virtual void CompleteLogin(Profile* profile,
-                             const UserCredentials& credentials) OVERRIDE;
+                             const UserContext& user_context) OVERRIDE;
 
   // Given a |username| and |password|, this method attempts to authenticate to
   // the Google accounts servers and your Chrome OS device simultaneously.
@@ -101,22 +101,22 @@ class ParallelAuthenticator : public Authenticator,
   // we are asked to authenticate valid HOSTED account creds, we will
   // call OnLoginFailure() with HOSTED_NOT_ALLOWED.
   virtual void AuthenticateToLogin(Profile* profile,
-                                   const UserCredentials& credentials,
+                                   const UserContext& user_context,
                                    const std::string& login_token,
                                    const std::string& login_captcha) OVERRIDE;
 
-  // Given |credentials|, this method attempts to authenticate to the cached
-  // credentials. This will never contact the server even if it's online.
+  // Given |user_context|, this method attempts to authenticate to the cached
+  // user_context. This will never contact the server even if it's online.
   // The auth result is sent to LoginStatusConsumer in a same way as
   // AuthenticateToLogin does.
   virtual void AuthenticateToUnlock(
-      const UserCredentials& credentials) OVERRIDE;
+      const UserContext& user_context) OVERRIDE;
 
   // Initiates locally managed user login.
   // Creates cryptohome if missing or mounts existing one and
   // notifies consumer on the success/failure.
   virtual void LoginAsLocallyManagedUser(
-      const UserCredentials& credentials) OVERRIDE;
+      const UserContext& user_context) OVERRIDE;
 
   // Initiates retail mode login.
   // Mounts tmpfs and notifies consumer on the success/failure.
@@ -133,14 +133,14 @@ class ParallelAuthenticator : public Authenticator,
 
   // These methods must be called on the UI thread, as they make DBus calls
   // and also call back to the login UI.
-  virtual void OnRetailModeLoginSuccess()  OVERRIDE;
-  virtual void OnLoginSuccess(bool request_pending)  OVERRIDE;
+  virtual void OnRetailModeLoginSuccess() OVERRIDE;
+  virtual void OnLoginSuccess(bool request_pending) OVERRIDE;
   virtual void OnLoginFailure(const LoginFailure& error) OVERRIDE;
   virtual void RecoverEncryptedData(
       const std::string& old_password) OVERRIDE;
   virtual void ResyncEncryptedData() OVERRIDE;
   virtual void RetryAuth(Profile* profile,
-                         const UserCredentials& credentials,
+                         const UserContext& user_context,
                          const std::string& login_token,
                          const std::string& login_captcha) OVERRIDE;
   // AuthAttemptStateResolver overrides.

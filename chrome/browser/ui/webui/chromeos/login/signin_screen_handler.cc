@@ -1012,7 +1012,7 @@ void SigninScreenHandler::Observe(int type,
                            ErrorScreenActor::kErrorReasonProxyAuthSupplied,
                            true, false);
       } else if (ui_state_ == UI_STATE_GAIA_SIGNIN) {
-        // Reload auth extension as credentials are supplied.
+        // Reload auth extension as proxy credentials are supplied.
         ReloadGaiaScreen();
       }
       break;
@@ -1159,9 +1159,9 @@ void SigninScreenHandler::HandleCompleteLogin(const base::ListValue* args) {
 
   typed_email = gaia::SanitizeEmail(typed_email);
   delegate_->SetDisplayEmail(typed_email);
-  delegate_->CompleteLogin(UserCredentials(typed_email,
-                                           password,
-                                           std::string()));  // auth_code
+  delegate_->CompleteLogin(UserContext(typed_email,
+                                       password,
+                                       std::string()));  // auth_code
 }
 
 void SigninScreenHandler::HandleCompleteAuthentication(
@@ -1181,9 +1181,7 @@ void SigninScreenHandler::HandleCompleteAuthentication(
 
   email = gaia::SanitizeEmail(email);
   delegate_->SetDisplayEmail(email);
-  delegate_->CompleteLogin(UserCredentials(email,
-                                           password,
-                                           auth_code));
+  delegate_->CompleteLogin(UserContext(email, password, auth_code));
 }
 
 void SigninScreenHandler::HandleAuthenticateUser(const base::ListValue* args) {
@@ -1199,9 +1197,9 @@ void SigninScreenHandler::HandleAuthenticateUser(const base::ListValue* args) {
   }
 
   username = gaia::SanitizeEmail(username);
-  delegate_->Login(UserCredentials(username,
-                                   password,
-                                   std::string()));  // auth_code
+  delegate_->Login(UserContext(username,
+                               password,
+                               std::string()));  // auth_code
 }
 
 void SigninScreenHandler::HandleLaunchDemoUser(const base::ListValue* args) {

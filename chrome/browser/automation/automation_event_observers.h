@@ -75,7 +75,7 @@ class DomEventObserver
 #if defined(OS_CHROMEOS)
 
 namespace chromeos {
-struct UserCredentials;
+struct UserContext;
 }
 
 // Event observer that listens for the completion of login.
@@ -90,7 +90,7 @@ class LoginEventObserver
 
   virtual void OnLoginFailure(const chromeos::LoginFailure& error) OVERRIDE;
 
-  virtual void OnLoginSuccess(const chromeos::UserCredentials& credentials,
+  virtual void OnLoginSuccess(const chromeos::UserContext& user_context,
                               bool pending_requests, bool using_oauth) OVERRIDE;
   // Overridden from content::NotificationObserver.
   virtual void Observe(int type,

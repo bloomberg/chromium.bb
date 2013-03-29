@@ -83,23 +83,23 @@ class LoginPerformer : public LoginStatusConsumer,
 
   // LoginStatusConsumer implementation:
   virtual void OnLoginFailure(const LoginFailure& error) OVERRIDE;
-  virtual void OnRetailModeLoginSuccess() OVERRIDE;
+  virtual void OnRetailModeLoginSuccess(
+      const UserContext& user_context) OVERRIDE;
   virtual void OnLoginSuccess(
-      const UserCredentials& credentials,
+      const UserContext& user_context,
       bool pending_requests,
       bool using_oauth) OVERRIDE;
   virtual void OnOffTheRecordLoginSuccess() OVERRIDE;
   virtual void OnPasswordChangeDetected() OVERRIDE;
 
-  // Performs a login for |credentials|.
+  // Performs a login for |user_context|.
   // If auth_mode is AUTH_MODE_EXTENSION, there are no further auth checks,
   // AUTH_MODE_INTERNAL will perform auth checks.
-  void PerformLogin(const UserCredentials& credentials,
+  void PerformLogin(const UserContext& user_context,
                     AuthorizationMode auth_mode);
 
-  // Performs locally managed user login with a given |username| and |password|.
-  // Managed user creation should be done with CreateLocallyManagedUser().
-  void LoginAsLocallyManagedUser(const UserCredentials& credentials);
+  // Performs locally managed user login with a given |user_context|.
+  void LoginAsLocallyManagedUser(const UserContext& user_context);
 
   // Performs retail mode login.
   void LoginRetailMode();
@@ -193,7 +193,7 @@ class LoginPerformer : public LoginStatusConsumer,
   LoginFailure last_login_failure_;
 
   // User credentials for the current login attempt.
-  UserCredentials credentials_;
+  UserContext user_context_;
 
   // Notifications receiver.
   Delegate* delegate_;

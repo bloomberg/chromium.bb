@@ -24,20 +24,20 @@ OnlineAttemptHost::~OnlineAttemptHost() {
 }
 
 void OnlineAttemptHost::Check(Profile* profile,
-                              const UserCredentials& credentials) {
+                              const UserContext& user_context) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   std::string attempt_hash = base::SHA1HashString(
-      credentials.username + "\n" + credentials.password);
+      user_context.username + "\n" + user_context.password);
   if (attempt_hash != current_attempt_hash_) {
     Reset();
     current_attempt_hash_ = attempt_hash;
-    current_username_ = credentials.username;
+    current_username_ = user_context.username;
 
     state_.reset(
         new AuthAttemptState(
-            UserCredentials(gaia::CanonicalizeEmail(credentials.username),
-                            credentials.password,
-                            credentials.auth_code),
+            UserContext(gaia::CanonicalizeEmail(user_context.username),
+                        user_context.password,
+                        user_context.auth_code),
             std::string(),  // ascii_hash
             std::string(),  // login_token
             std::string(),  // login_captcha

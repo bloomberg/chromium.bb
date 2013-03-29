@@ -77,7 +77,7 @@ class UserImageManagerTest : public CrosInProcessBrowserTest,
 
   // Logs in |username|.
   void LogIn(const std::string& username) {
-    UserManager::Get()->UserLoggedIn(username, false);
+    UserManager::Get()->UserLoggedIn(username, username, false);
   }
 
   // Subscribes for image change notification.

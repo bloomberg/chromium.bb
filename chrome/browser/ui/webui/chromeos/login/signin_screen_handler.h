@@ -39,7 +39,7 @@ class ErrorScreenActor;
 class LocallyManagedUserCreationScreenHandler;
 class NativeWindowDelegate;
 class User;
-struct UserCredentials;
+struct UserContext;
 
 // An interface for WebUILoginDisplay to call SigninScreenHandler.
 class LoginDisplayWebUIHandler {
@@ -59,7 +59,7 @@ class LoginDisplayWebUIHandler {
   virtual void ShowGaiaPasswordChanged(const std::string& username) = 0;
   virtual void ShowSigninUI(const std::string& email) = 0;
   virtual void ShowPasswordChangedDialog(bool show_password_error) = 0;
-  // Show siginin screen for the given credentials.
+  // Show sign-in screen for the given credentials.
   virtual void ShowSigninScreenForCreds(const std::string& username,
                                         const std::string& password) = 0;
  protected:
@@ -75,13 +75,13 @@ class SigninScreenHandlerDelegate {
   // Create a new Google account.
   virtual void CreateAccount() = 0;
 
-  // Confirms sign up by provided |username| and |password| specified.
+  // Confirms sign up by provided credentials in |user_context|.
   // Used for new user login via GAIA extension.
-  virtual void CompleteLogin(const UserCredentials& credentials) = 0;
+  virtual void CompleteLogin(const UserContext& user_context) = 0;
 
-  // Sign in using |username| and |password| specified.
+  // Sign in using username and password specified as a part of |user_context|.
   // Used for both known and new users.
-  virtual void Login(const UserCredentials& credentials) = 0;
+  virtual void Login(const UserContext& user_context) = 0;
 
   // Sign in into a retail mode session.
   virtual void LoginAsRetailModeUser() = 0;

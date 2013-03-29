@@ -239,7 +239,15 @@ class FakeCryptohomeClient : public chromeos::CryptohomeClient {
   }
   virtual void GetSanitizedUsername(
       const std::string& username,
-      const chromeos::StringDBusMethodCallback& callback) OVERRIDE {}
+      const chromeos::StringDBusMethodCallback& callback) OVERRIDE {
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback,
+                   chromeos::DBUS_METHOD_CALL_SUCCESS,
+                   username));
+    MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(data_handler_, 1, true, username));
+  }
   virtual void AsyncMount(const std::string& username,
                           const std::string& key,
                           int flags,

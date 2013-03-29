@@ -111,21 +111,35 @@ class PublicAccountUser : public User {
   DISALLOW_COPY_AND_ASSIGN(PublicAccountUser);
 };
 
-UserCredentials::UserCredentials() {
+UserContext::UserContext() {
 }
 
-UserCredentials::UserCredentials(const std::string& username,
-                                 const std::string& password,
-                                 const std::string& auth_code)
+UserContext::UserContext(const std::string& username,
+                         const std::string& password,
+                         const std::string& auth_code)
     : username(username),
       password(password),
       auth_code(auth_code) {
 }
 
-bool UserCredentials::operator==(const UserCredentials& cred) const {
-  return cred.username == username &&
-         cred.password == password &&
-         cred.auth_code == auth_code;
+UserContext::UserContext(const std::string& username,
+                         const std::string& password,
+                         const std::string& auth_code,
+                         const std::string& username_hash)
+    : username(username),
+      password(password),
+      auth_code(auth_code),
+      username_hash(username_hash) {
+}
+
+UserContext::~UserContext() {
+}
+
+bool UserContext::operator==(const UserContext& context) const {
+  return context.username == username &&
+         context.password == password &&
+         context.auth_code == auth_code &&
+         context.username_hash == username_hash;
 }
 
 string16 User::GetDisplayName() const {
@@ -152,6 +166,10 @@ std::string User::display_email() const {
 
 bool User::can_lock() const {
   return false;
+}
+
+std::string User::username_hash() const {
+  return username_hash_;
 }
 
 User* User::CreateRegularUser(const std::string& email) {

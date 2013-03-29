@@ -673,11 +673,12 @@ class CryptohomeClientStubImpl : public CryptohomeClient {
   virtual void GetSanitizedUsername(
       const std::string& username,
       const StringDBusMethodCallback& callback) OVERRIDE {
-    const std::string kStubSanitizedUsername(
-        "0123456789ABCDEF0123456789ABCDEF01234567");
+    // Even for stub implementation we have to return different values
+    // so that multi-profiles would work.
+    std::string sanitized_username = username + "-profile";
     MessageLoop::current()->PostTask(
         FROM_HERE,
-        base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, kStubSanitizedUsername));
+        base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, sanitized_username));
   }
 
   // CryptohomeClient override.

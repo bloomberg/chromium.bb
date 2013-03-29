@@ -25,7 +25,8 @@ class MockUserManager : public UserManager {
 
   MOCK_METHOD0(Shutdown, void(void));
   MOCK_CONST_METHOD0(GetUsers, const UserList&(void));
-  MOCK_METHOD2(UserLoggedIn, void(const std::string&, bool));
+  MOCK_METHOD3(UserLoggedIn, void(
+      const std::string&, const std::string&, bool));
   MOCK_METHOD0(RetailModeUserLoggedIn, void(void));
   MOCK_METHOD0(GuestUserLoggedIn, void(void));
   MOCK_METHOD1(KioskAppLoggedIn, void(const std::string& app_id));
@@ -69,15 +70,12 @@ class MockUserManager : public UserManager {
   MOCK_METHOD0(CreateLocallyManagedUserRecord, void(void));
   MOCK_CONST_METHOD0(GetMergeSessionState, MergeSessionState(void));
   MOCK_METHOD1(SetMergeSessionState, void(MergeSessionState));
-
   MOCK_METHOD2(SetUserFlow, void(const std::string&, UserFlow*));
   MOCK_METHOD1(ResetUserFlow, void(const std::string&));
-
   MOCK_METHOD2(CreateLocallyManagedUserRecord, const User*(
       const std::string& e_mail,
       const string16& display_name));
   MOCK_METHOD0(GenerateUniqueLocallyManagedUserId, std::string(void));
-
   MOCK_METHOD1(StartLocallyManagedUserCreationTransaction,
       void(const string16&));
   MOCK_METHOD1(SetLocallyManagedUserCreationTransactionUserId,

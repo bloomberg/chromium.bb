@@ -18,7 +18,7 @@ TestLoginUtils::TestLoginUtils(const std::string& expected_username,
 TestLoginUtils::~TestLoginUtils() {}
 
 void TestLoginUtils::PrepareProfile(
-    const UserCredentials& credentials,
+    const UserContext& credentials,
     const std::string& display_email,
     bool using_oauth,
     bool has_cookies,

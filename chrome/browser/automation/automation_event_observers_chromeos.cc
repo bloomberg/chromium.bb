@@ -27,7 +27,7 @@ void LoginEventObserver::OnLoginFailure(const chromeos::LoginFailure& error) {
 }
 
 void LoginEventObserver::OnLoginSuccess(
-    const chromeos::UserCredentials& credentials,
+    const chromeos::UserContext& user_context,
     bool pending_requests,
     bool using_oauth) {
   // Profile changes after login. Ensure AutomationProvider refers to

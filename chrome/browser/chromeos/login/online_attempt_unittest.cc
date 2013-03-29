@@ -35,7 +35,7 @@ class OnlineAttemptTest : public testing::Test {
   OnlineAttemptTest()
       : message_loop_(MessageLoop::TYPE_UI),
         ui_thread_(BrowserThread::UI, &message_loop_),
-        state_(UserCredentials(), "", "", "", User::USER_TYPE_REGULAR, false),
+        state_(UserContext(), "", "", "", User::USER_TYPE_REGULAR, false),
         resolver_(new MockAuthAttemptStateResolver) {
   }
 
@@ -168,7 +168,7 @@ TEST_F(OnlineAttemptTest, HostedLoginRejected) {
   // This is how we inject fake URLFetcher objects, with a factory.
   MockURLFetcherFactory<HostedFetcher> factory;
 
-  TestAttemptState local_state(UserCredentials(), "", "", "",
+  TestAttemptState local_state(UserContext(), "", "", "",
                                User::USER_TYPE_REGULAR, true);
   attempt_.reset(new OnlineAttempt(&local_state, resolver_.get()));
   attempt_->Initiate(&profile);
@@ -193,7 +193,7 @@ TEST_F(OnlineAttemptTest, FullLogin) {
   // This is how we inject fake URLFetcher objects, with a factory.
   MockURLFetcherFactory<SuccessFetcher> factory;
 
-  TestAttemptState local_state(UserCredentials(), "", "", "",
+  TestAttemptState local_state(UserContext(), "", "", "",
                                User::USER_TYPE_REGULAR, true);
   attempt_.reset(new OnlineAttempt(&local_state, resolver_.get()));
   attempt_->Initiate(&profile);

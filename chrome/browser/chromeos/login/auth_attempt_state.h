@@ -21,7 +21,7 @@ namespace chromeos {
 class AuthAttemptState {
  public:
   // Used to initialize for a login attempt.
-  AuthAttemptState(const UserCredentials& credentials,
+  AuthAttemptState(const UserContext& user_context,
                    const std::string& ascii_hash,
                    const std::string& login_token,
                    const std::string& login_captcha,
@@ -29,7 +29,7 @@ class AuthAttemptState {
                    const bool user_is_new);
 
   // Used to initialize for a externally authenticated login.
-  AuthAttemptState(const UserCredentials& credentials,
+  AuthAttemptState(const UserContext& user_context,
                    const std::string& ascii_hash,
                    const bool user_is_new);
 
@@ -38,11 +38,20 @@ class AuthAttemptState {
 
   virtual ~AuthAttemptState();
 
-  // Copy |credentials| and copy |outcome| into this object, so we can have
+  // Copy |user_context| and copy |outcome| into this object, so we can have
   // a copy we're sure to own, and can make available on the IO thread.
   // Must be called from the IO thread.
   void RecordOnlineLoginStatus(
       const LoginFailure& outcome);
+
+  // Copy |username_hash| into this object, so we can have
+  // a copy we're sure to own, and can make available on the IO thread.
+  // Must be called from the IO thread.
+  void RecordUsernameHash(const std::string& username_hash);
+
+  // Marks username hash as being requested so that flow will block till both
+  // requests (Mount/GetUsernameHash) are completed.
+  void UsernameHashRequested();
 
   // The next attempt will not allow HOSTED accounts to log in.
   void DisableHosted();
@@ -66,9 +75,11 @@ class AuthAttemptState {
   virtual bool cryptohome_outcome();
   virtual cryptohome::MountError cryptohome_code();
 
+  virtual bool username_hash_obtained();
+
   // Saved so we can retry client login, and also so we know for whom login
   // has succeeded, in the event of successful completion.
-  const UserCredentials credentials;
+  UserContext user_context;
 
   // These fields are saved so we can retry client login.
   const std::string ascii_hash;
@@ -96,6 +107,11 @@ class AuthAttemptState {
   cryptohome::MountError cryptohome_code_;
 
  private:
+  // Status of the crypthome GetSanitizedUsername() async call.
+  // This gets initialized as being completed and those callers
+  // that would explicitly request username hash would have to reset this.
+  bool username_hash_obtained_;
+
   DISALLOW_COPY_AND_ASSIGN(AuthAttemptState);
 };
 

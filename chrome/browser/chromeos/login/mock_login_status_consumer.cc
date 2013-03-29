@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/mock_login_status_consumer.h"
 
 #include "base/message_loop.h"
+#include "chrome/browser/chromeos/login/user.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -15,12 +16,13 @@ MockConsumer::MockConsumer() {}
 MockConsumer::~MockConsumer() {}
 
 // static
-void MockConsumer::OnRetailModeSuccessQuit() {
+void MockConsumer::OnRetailModeSuccessQuit(const UserContext& user_context) {
   MessageLoop::current()->Quit();
 }
 
 // static
-void MockConsumer::OnRetailModeSuccessQuitAndFail() {
+void MockConsumer::OnRetailModeSuccessQuitAndFail(
+    const UserContext& user_context) {
   ADD_FAILURE() << "Retail mode login should have failed!";
   MessageLoop::current()->Quit();
 }
@@ -38,7 +40,7 @@ void MockConsumer::OnGuestSuccessQuitAndFail() {
 
 // static
 void MockConsumer::OnSuccessQuit(
-    const UserCredentials& credentials,
+    const UserContext& user_context,
     bool pending_requests,
     bool using_oauth) {
   MessageLoop::current()->Quit();
@@ -46,7 +48,7 @@ void MockConsumer::OnSuccessQuit(
 
 // static
 void MockConsumer::OnSuccessQuitAndFail(
-    const UserCredentials& credentials,
+    const UserContext& user_context,
     bool pending_requests,
     bool using_oauth) {
   ADD_FAILURE() << "Login should NOT have succeeded!";

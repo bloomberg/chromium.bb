@@ -37,16 +37,16 @@ class LoginDisplay : public RemoveUserDelegate {
     // Create new Google account.
     virtual void CreateAccount() = 0;
 
-    // Complete sign process with specified |credentials|.
+    // Complete sign process with specified |user_context|.
     // Used for new users authenticated through an extension.
-    virtual void CompleteLogin(const UserCredentials& credentials) = 0;
+    virtual void CompleteLogin(const UserContext& user_context) = 0;
 
     // Returns name of the currently connected network.
     virtual string16 GetConnectedNetworkName() = 0;
 
     // Sign in using |username| and |password| specified.
     // Used for known users only.
-    virtual void Login(const UserCredentials& credentials) = 0;
+    virtual void Login(const UserContext& user_context) = 0;
 
     // Sign in as a retail mode user.
     virtual void LoginAsRetailModeUser() = 0;

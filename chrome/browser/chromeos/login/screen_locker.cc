@@ -182,12 +182,12 @@ void ScreenLocker::OnLoginFailure(const LoginFailure& error) {
 }
 
 void ScreenLocker::OnLoginSuccess(
-    const UserCredentials& credentials,
+    const UserContext& user_context,
     bool pending_requests,
     bool using_oauth) {
   incorrect_passwords_count_ = 0;
   if (authentication_start_time_.is_null()) {
-    if (!credentials.username.empty())
+    if (!user_context.username.empty())
       LOG(ERROR) << "Start time is not set at authentication success";
   } else {
     base::TimeDelta delta = base::Time::Now() - authentication_start_time_;
@@ -196,14 +196,14 @@ void ScreenLocker::OnLoginSuccess(
   }
 
   Profile* profile = ProfileManager::GetDefaultProfile();
-  if (profile && !credentials.password.empty()) {
+  if (profile && !user_context.password.empty()) {
     // We have a non-empty password, so notify listeners (such as the sync
     // engine).
     SigninManager* signin = SigninManagerFactory::GetForProfile(profile);
     DCHECK(signin);
     GoogleServiceSigninSuccessDetails details(
         signin->GetAuthenticatedUsername(),
-        credentials.password);
+        user_context.password);
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL,
         content::Source<Profile>(profile),
@@ -211,7 +211,7 @@ void ScreenLocker::OnLoginSuccess(
   }
 
   authentication_capture_.reset(new AuthenticationParametersCapture());
-  authentication_capture_->username = credentials.username;
+  authentication_capture_->username = user_context.username;
   authentication_capture_->pending_requests = pending_requests;
   authentication_capture_->using_oauth = using_oauth;
 
@@ -243,9 +243,9 @@ void ScreenLocker::UnlockOnLoginSuccess() {
 
   if (login_status_consumer_) {
     login_status_consumer_->OnLoginSuccess(
-        UserCredentials(authentication_capture_->username,
-                        std::string(),   // password
-                        std::string()),  // auth_code
+        UserContext(authentication_capture_->username,
+                    std::string(),   // password
+                    std::string()),  // auth_code
         authentication_capture_->pending_requests,
         authentication_capture_->using_oauth);
   }
@@ -263,17 +263,17 @@ void ScreenLocker::Authenticate(const string16& password) {
   if (LoginPerformer::default_performer()) {
     DVLOG(1) << "Delegating authentication to LoginPerformer.";
     LoginPerformer::default_performer()->PerformLogin(
-        UserCredentials(user_.email(),
-                        UTF16ToUTF8(password),
-                        std::string()),  // auth_code
+        UserContext(user_.email(),
+                    UTF16ToUTF8(password),
+                    std::string()),  // auth_code
         LoginPerformer::AUTH_MODE_INTERNAL);
   } else {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&Authenticator::AuthenticateToUnlock, authenticator_.get(),
-                   UserCredentials(user_.email(),
-                                   UTF16ToUTF8(password),
-                                   std::string())));  // auth_code
+                   UserContext(user_.email(),
+                               UTF16ToUTF8(password),
+                               std::string())));  // auth_code
   }
 }
 

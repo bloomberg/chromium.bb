@@ -394,7 +394,7 @@ class LoginUtilsTest : public testing::Test,
     FAIL() << "OnLoginFailure not expected";
   }
 
-  virtual void OnLoginSuccess(const UserCredentials& credentials,
+  virtual void OnLoginSuccess(const UserContext& user_context,
                               bool pending_requests,
                               bool using_oauth) OVERRIDE {
     FAIL() << "OnLoginSuccess not expected";
@@ -424,20 +424,23 @@ class LoginUtilsTest : public testing::Test,
         .WillRepeatedly(Return(std::string("stub_system_salt")));
     EXPECT_CALL(*mock_async_method_caller_, AsyncMount(_, _, _, _))
         .WillRepeatedly(Return());
+    EXPECT_CALL(*mock_async_method_caller_, AsyncGetSanitizedUsername(_, _))
+        .WillRepeatedly(Return());
 
     scoped_refptr<Authenticator> authenticator =
         LoginUtils::Get()->CreateAuthenticator(this);
     authenticator->CompleteLogin(ProfileManager::GetDefaultProfile(),
-                                 UserCredentials(username,
-                                                 "password",
-                                                 ""));
+                                 UserContext(username,
+                                             "password",
+                                             std::string(),
+                                             username));   // username_hash
 
     const bool kUsingOAuth = true;
     // Setting |kHasCookies| to false prevents ProfileAuthData::Transfer from
     // waiting for an IO task before proceeding.
     const bool kHasCookies = false;
     LoginUtils::Get()->PrepareProfile(
-        UserCredentials(username, "password", std::string()),
+        UserContext(username, "password", std::string(), username),
         std::string(), kUsingOAuth, kHasCookies, this);
     device_settings_test_helper.Flush();
     RunUntilIdle();

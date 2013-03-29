@@ -10,7 +10,7 @@
 
 namespace chromeos {
 
-TestAttemptState::TestAttemptState(const UserCredentials& credentials,
+TestAttemptState::TestAttemptState(const UserContext& credentials,
                                    const std::string& ascii_hash,
                                    const std::string& login_token,
                                    const std::string& login_captcha,

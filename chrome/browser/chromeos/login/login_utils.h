@@ -20,7 +20,7 @@ namespace chromeos {
 class Authenticator;
 class LoginDisplayHost;
 class LoginStatusConsumer;
-struct UserCredentials;
+struct UserContext;
 
 class LoginUtils {
  public:
@@ -63,9 +63,10 @@ class LoginUtils {
   // If |pending_requests| is true, there's a pending online auth request.
   // If |display_email| is not empty, user's displayed email will be set to
   // this value, shown in UI.
+  // |user_context.username_hash| defines when user homedir is mounted.
   // Also see DelegateDeleted method.
   virtual void PrepareProfile(
-      const UserCredentials& credentials,
+      const UserContext& user_context,
       const std::string& display_email,
       bool using_oauth,
       bool has_cookies,

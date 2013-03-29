@@ -95,11 +95,14 @@ class UserManager {
   // is sorted by last login date with the most recent user at the beginning.
   virtual const UserList& GetUsers() const = 0;
 
-  // Indicates that a user with the given email has just logged in. The
+  // Indicates that a user with the given |email| has just logged in. The
   // persistent list is updated accordingly if the user is not ephemeral.
   // |browser_restart| is true when reloading Chrome after crash to distinguish
   // from normal sign in flow.
-  virtual void UserLoggedIn(const std::string& email, bool browser_restart) = 0;
+  // |username_hash| is used to identify homedir mount point.
+  virtual void UserLoggedIn(const std::string& email,
+                            const std::string& username_hash,
+                            bool browser_restart) = 0;
 
   // Indicates that user just logged on as the retail mode user.
   virtual void RetailModeUserLoggedIn() = 0;
