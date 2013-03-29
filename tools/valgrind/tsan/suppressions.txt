@@ -1110,3 +1110,10 @@
    fun:WebCore::SecurityOrigin::createFromString
    fun:WebKit::WebSecurityOrigin::createFromString
 }
+{
+  bug_225123
+  ThreadSanitizer:Race
+  fun:setlocale
+  ...
+  fun:gfx::GtkInitFromCommandLine
+}
