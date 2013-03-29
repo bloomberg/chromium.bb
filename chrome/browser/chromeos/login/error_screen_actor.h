@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_ERROR_SCREEN_ACTOR_H_
 
 #include "chrome/browser/chromeos/cros/network_constants.h"
+#include "chrome/browser/chromeos/login/error_screen.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 
 namespace base {
@@ -16,14 +17,6 @@ namespace chromeos {
 
 class ErrorScreenActor {
  public:
-  enum State {
-    STATE_UNKNOWN = 0,
-    STATE_PROXY_ERROR,
-    STATE_CAPTIVE_PORTAL_ERROR,
-    STATE_OFFLINE_ERROR,
-    STATE_TIMEOUT_ERROR
-  };
-
   // Possible error reasons.
   static const char kErrorReasonProxyAuthCancelled[];
   static const char kErrorReasonProxyAuthSupplied[];
@@ -40,7 +33,8 @@ class ErrorScreenActor {
   ErrorScreenActor();
   virtual ~ErrorScreenActor();
 
-  State state() const { return state_; }
+  ErrorScreen::UIState ui_state() const { return ui_state_; }
+  ErrorScreen::ErrorState error_state() const { return error_state_; }
 
   // Returns id of the screen behind error screen ("caller" screen).
   // Returns OobeUI::SCREEN_UNKNOWN if error screen isn't the current
@@ -48,7 +42,7 @@ class ErrorScreenActor {
   OobeUI::Screen parent_screen() const { return parent_screen_; }
 
   // Shows the screen.
-  virtual void Show(OobeUI::Screen parent_screen,
+  virtual void Show(OobeDisplay::Screen parent_screen,
                     base::DictionaryValue* params) = 0;
 
   // Hides the screen.
@@ -63,16 +57,16 @@ class ErrorScreenActor {
   // Hides captive portal dialog.
   virtual void HideCaptivePortal() = 0;
 
-  // Each of the following methods shows corresponding error message.
-  virtual void ShowProxyError() = 0;
-  virtual void ShowCaptivePortalError(const std::string& network) = 0;
-  virtual void ShowTimeoutError() = 0;
-  virtual void ShowOfflineError() = 0;
+  virtual void SetUIState(ErrorScreen::UIState ui_state) = 0;
+  virtual void SetErrorState(ErrorScreen::ErrorState error_state,
+                             const std::string& network) = 0;
+
   virtual void AllowGuestSignin(bool allowed) = 0;
   virtual void AllowOfflineLogin(bool allowed) = 0;
 
  protected:
-  State state_;
+  ErrorScreen::UIState ui_state_;
+  ErrorScreen::ErrorState error_state_;
   OobeUI::Screen parent_screen_;
 };
 

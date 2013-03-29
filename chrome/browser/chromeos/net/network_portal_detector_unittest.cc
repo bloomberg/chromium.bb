@@ -44,6 +44,7 @@ class NetworkPortalDetectorTest
     network_portal_detector_.reset(
         new NetworkPortalDetector(profile_->GetRequestContext()));
     network_portal_detector_->Init();
+    network_portal_detector_->set_enabled(true);
 
     set_detector(network_portal_detector_->captive_portal_detector_.get());
 

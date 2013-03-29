@@ -129,7 +129,7 @@ const char OobeUI::kScreenWrongHWID[]       = "wrong-hwid";
 
 OobeUI::OobeUI(content::WebUI* web_ui)
     : WebUIController(web_ui),
-      update_screen_actor_(NULL),
+      update_screen_handler_(NULL),
       network_screen_actor_(NULL),
       eula_screen_actor_(NULL),
       reset_screen_actor_(NULL),
@@ -151,6 +151,9 @@ OobeUI::OobeUI(content::WebUI* web_ui)
   core_handler_->SetDelegate(this);
 
   AddScreenHandler(new NetworkDropdownHandler);
+
+  update_screen_handler_ = new UpdateScreenHandler();
+  AddScreenHandler(update_screen_handler_);
 
   NetworkScreenHandler* network_screen_handler = new NetworkScreenHandler();
   network_screen_actor_ = network_screen_handler;
@@ -175,10 +178,6 @@ OobeUI::OobeUI(content::WebUI* web_ui)
       new WrongHWIDScreenHandler();
   wrong_hwid_screen_actor_ = wrong_hwid_screen_handler;
   AddScreenHandler(wrong_hwid_screen_handler);
-
-  UpdateScreenHandler* update_screen_handler = new UpdateScreenHandler();
-  update_screen_actor_ = update_screen_handler;
-  AddScreenHandler(update_screen_handler);
 
   EnterpriseOAuthEnrollmentScreenHandler*
       enterprise_oauth_enrollment_screen_handler =
@@ -246,7 +245,7 @@ void OobeUI::HideScreen(WizardScreen* screen) {
 }
 
 UpdateScreenActor* OobeUI::GetUpdateScreenActor() {
-  return update_screen_actor_;
+  return update_screen_handler_;
 }
 
 NetworkScreenActor* OobeUI::GetNetworkScreenActor() {
@@ -276,6 +275,10 @@ WrongHWIDScreenActor* OobeUI::GetWrongHWIDScreenActor() {
 
 UserImageScreenActor* OobeUI::GetUserImageScreenActor() {
   return user_image_screen_actor_;
+}
+
+ErrorScreenActor* OobeUI::GetErrorScreenActor() {
+  return error_screen_handler_;
 }
 
 ViewScreenDelegate* OobeUI::GetRegistrationScreenActor() {
@@ -369,15 +372,12 @@ void OobeUI::ShowSigninScreen(SigninScreenHandlerDelegate* delegate,
                               NativeWindowDelegate* native_window_delegate) {
   signin_screen_handler_->SetDelegate(delegate);
   signin_screen_handler_->SetNativeWindowDelegate(native_window_delegate);
-  error_screen_handler_->SetNativeWindowDelegate(native_window_delegate);
-
   signin_screen_handler_->Show(core_handler_->show_oobe_ui());
 }
 
 void OobeUI::ResetSigninScreenHandlerDelegate() {
   signin_screen_handler_->SetDelegate(NULL);
   signin_screen_handler_->SetNativeWindowDelegate(NULL);
-  error_screen_handler_->SetNativeWindowDelegate(NULL);
 }
 
 const std::string& OobeUI::GetScreenName(Screen screen) const {

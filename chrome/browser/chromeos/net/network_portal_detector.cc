@@ -74,6 +74,7 @@ NetworkPortalDetector::NetworkPortalDetector(
     const scoped_refptr<net::URLRequestContextGetter>& request_context)
     : active_connection_state_(STATE_UNKNOWN),
       test_url_(CaptivePortalDetector::kDefaultURL),
+      enabled_(false),
       weak_ptr_factory_(this),
       attempt_count_(0),
       lazy_detection_enabled_(false),
@@ -217,6 +218,24 @@ void NetworkPortalDetector::DisableLazyDetection() {
   lazy_detection_enabled_ = false;
 }
 
+void NetworkPortalDetector::ForcePortalDetection() {
+  DCHECK(CalledOnValidThread());
+
+  if (IsPortalCheckPending() || IsCheckingForPortal())
+    return;
+  DCHECK(!lazy_detection_enabled_);
+  NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
+  if (!cros)
+    return;
+  const Network* active_network = cros->active_network();
+  if (!active_network)
+    return;
+  state_ = STATE_IDLE;
+  attempt_count_ = 0;
+  portal_state_map_.erase(active_network->service_path());
+  DetectCaptivePortal(base::TimeDelta());
+}
+
 // static
 NetworkPortalDetector* NetworkPortalDetector::CreateInstance() {
   DCHECK(!g_network_portal_detector);
@@ -242,6 +261,9 @@ void NetworkPortalDetector::DetectCaptivePortal(const base::TimeDelta& delay) {
   DCHECK(!IsPortalCheckPending());
   DCHECK(!IsCheckingForPortal());
   DCHECK(attempt_count_ < kMaxRequestAttempts || lazy_detection_enabled_);
+
+  if (!enabled())
+    return;
 
   detection_task_.Cancel();
   detection_timeout_.Cancel();

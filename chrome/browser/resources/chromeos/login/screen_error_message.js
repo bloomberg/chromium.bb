@@ -16,15 +16,34 @@ cr.define('login', function() {
   /** @const */ var CURRENT_NETWORK_NAME_ID = 'captive-portal-network-name';
 
   // Link which triggers frame reload.
-  /** @const */ var RELOAD_PAGE_ID = 'proxy-error-retry-link';
+  /** @const */ var RELOAD_PAGE_ID = 'proxy-error-signin-retry-link';
 
-  // Possible states of the error screen.
-  /** @const */ var SCREEN_STATE = {
-      PROXY_ERROR: 'show-proxy-error',
-      CAPTIVE_PORTAL_ERROR: 'show-captive-portal-error',
-      TIMEOUT_ERROR: 'show-timeout-error',
-      OFFLINE_ERROR: 'show-offline-error'
+  // Array of the possible UI states of the screen. Must be in the
+  // same order as ErrorScreen::UIState enum values.
+  /** @const */ var UI_STATES = [
+    ERROR_SCREEN_UI_STATE.UNKNOWN,
+    ERROR_SCREEN_UI_STATE.UPDATE,
+    ERROR_SCREEN_UI_STATE.SIGNIN
+  ];
+
+  // Possible error states of the screen.
+  /** @const */ var ERROR_STATE = {
+    UNKNOWN: 'error-state-unknown',
+    PORTAL: 'error-state-portal',
+    OFFLINE: 'error-state-offline',
+    PROXY: 'error-state-proxy',
+    AUTH_EXT_TIMEOUT: 'error-state-auth-ext-timeout'
   };
+
+  // Possible UI states of the screen. Must be in the same order as
+  // ErrorScreen::ErrorState enum values.
+  /** @const */ var ERROR_STATES = [
+    ERROR_STATE.UNKNOWN,
+    ERROR_STATE.PORTAL,
+    ERROR_STATE.OFFLINE,
+    ERROR_STATE.PROXY,
+    ERROR_STATE.AUTH_EXT_TIMEOUT
+  ];
 
   /**
    * Creates a new offline message screen div.
@@ -44,6 +63,12 @@ cr.define('login', function() {
 
   ErrorMessageScreen.prototype = {
     __proto__: HTMLDivElement.prototype,
+
+    // Error screen initial UI state.
+    ui_state_: ERROR_SCREEN_UI_STATE.UNKNOWN,
+
+    // Error screen initial error state.
+    error_state_: ERROR_STATE.UNKNOWN,
 
     /** @override */
     decorate: function() {
@@ -72,19 +97,25 @@ cr.define('login', function() {
       $(FIX_PROXY_SETTINGS_ID).onclick = function() {
         chrome.send('openProxySettings');
       };
-
-      $('proxy-message-text').innerHTML = loadTimeData.getStringF(
-          'proxyMessageText',
+      $('update-proxy-message-text').innerHTML = loadTimeData.getStringF(
+          'updateProxyMessageText',
+          '<a id="update-proxy-error-fix-proxy" class="signin-link" href="#">',
+          '</a>');
+      $('update-proxy-error-fix-proxy').onclick = function() {
+        chrome.send('openProxySettings');
+      };
+      $('signin-proxy-message-text').innerHTML = loadTimeData.getStringF(
+          'signinProxyMessageText',
           '<a id="' + RELOAD_PAGE_ID + '" class="signin-link" href="#">',
           '</a>',
-          '<a id="proxy-error-fix-proxy" class="signin-link" href="#">',
+          '<a id="signin-proxy-error-fix-proxy" class="signin-link" href="#">',
           '</a>');
       $(RELOAD_PAGE_ID).onclick = function() {
         var gaiaScreen = $(SCREEN_GAIA_SIGNIN);
-        // Schedules a immediate retry.
+        // Schedules an immediate retry.
         gaiaScreen.doReload();
       };
-      $('proxy-error-fix-proxy').onclick = function() {
+      $('signin-proxy-error-fix-proxy').onclick = function() {
         chrome.send('openProxySettings');
       };
 
@@ -112,7 +143,9 @@ cr.define('login', function() {
      */
     onBeforeShow: function(data) {
       cr.ui.Oobe.clearErrors();
-      var lastNetworkType = data['lastNetworkType'] || 0;
+      var lastNetworkType = 0;
+      if (data && data['lastNetworkType'])
+        lastNetworkType = data['lastNetworkType'];
       cr.ui.DropDown.show('offline-networks-list', false, lastNetworkType);
     },
 
@@ -124,64 +157,37 @@ cr.define('login', function() {
     },
 
     /**
-     * Method called after content of the screen changed.
+      * Sets current UI state of the screen.
+      * @param {string} ui_state New UI state of the screen.
+      * @private
+      */
+    setUIState_: function(ui_state) {
+      this.classList.remove(this.ui_state);
+      this.ui_state = ui_state;
+      this.classList.add(this.ui_state);
+      this.onContentChange_();
+    },
+
+    /**
+      * Sets current error state of the screen.
+      * @param {string} error_state New error state of the screen.
+      * @param {string} network Name of the current network
+      * @private
+      */
+    setErrorState_: function(error_state, network) {
+      this.classList.remove(this.error_state);
+      $(CURRENT_NETWORK_NAME_ID).textContent = network;
+      this.error_state = error_state;
+      this.classList.add(this.error_state);
+      this.onContentChange_();
+    },
+
+    /* Method called after content of the screen changed.
      * @private
      */
     onContentChange_: function() {
       if (Oobe.getInstance().currentScreen === this)
         Oobe.getInstance().updateScreenSize(this);
-    },
-
-    /**
-      * Sets current state of the error screen.
-      * @param {string} state New state of the error screen.
-      * @private
-      */
-    setState_: function(state) {
-      var states = [SCREEN_STATE.PROXY_ERROR,
-                    SCREEN_STATE.CAPTIVE_PORTAL_ERROR,
-                    SCREEN_STATE.TIMEOUT_ERROR,
-                    SCREEN_STATE.OFFLINE_ERROR];
-      for (var i = 0; i < states.length; i++) {
-        if (states[i] != state)
-          this.classList.remove(states[i]);
-      }
-      this.classList.add(state);
-      this.onContentChange_();
-    },
-
-    /**
-     * Prepares error screen to show proxy error.
-     * @private
-     */
-    showProxyError_: function() {
-      this.setState_(SCREEN_STATE.PROXY_ERROR);
-    },
-
-    /**
-     * Prepares error screen to show captive portal error.
-     * @param {string} network Name of the current network
-     * @private
-     */
-    showCaptivePortalError_: function(network) {
-      $(CURRENT_NETWORK_NAME_ID).textContent = network;
-      this.setState_(SCREEN_STATE.CAPTIVE_PORTAL_ERROR);
-    },
-
-    /**
-    * Prepares error screen to show gaia loading timeout error.
-    * @private
-    */
-    showTimeoutError_: function() {
-      this.setState_(SCREEN_STATE.TIMEOUT_ERROR);
-    },
-
-    /**
-     * Prepares error screen to show offline error.
-     * @private
-     */
-    showOfflineError_: function() {
-      this.setState_(SCREEN_STATE.OFFLINE_ERROR);
     },
 
     /**
@@ -204,32 +210,22 @@ cr.define('login', function() {
   };
 
   /**
-   * Prepares error screen to show proxy error.
-   */
-  ErrorMessageScreen.showProxyError = function() {
-    $('error-message').showProxyError_();
+    * Sets current UI state of the screen.
+    * @param {number} ui_state New UI state of the screen.
+    * @private
+    */
+  ErrorMessageScreen.setUIState = function(ui_state) {
+    $('error-message').setUIState_(UI_STATES[ui_state]);
   };
 
   /**
-   * Prepares error screen to show captive portal error.
-   * @param {string} network Name of the current network
-   */
-  ErrorMessageScreen.showCaptivePortalError = function(network) {
-    $('error-message').showCaptivePortalError_(network);
-  };
-
-  /**
-   * Prepares error screen to show gaia loading timeout error.
-   */
-  ErrorMessageScreen.showTimeoutError = function() {
-    $('error-message').showTimeoutError_();
-  };
-
-  /**
-   * Prepares error screen to show offline error.
-   */
-  ErrorMessageScreen.showOfflineError = function() {
-    $('error-message').showOfflineError_();
+    * Sets current error state of the screen.
+    * @param {number} error_state New error state of the screen.
+    * @param {string} network Name of the current network
+    * @private
+    */
+  ErrorMessageScreen.setErrorState = function(error_state, network) {
+    $('error-message').setErrorState_(ERROR_STATES[error_state], network);
   };
 
   /**

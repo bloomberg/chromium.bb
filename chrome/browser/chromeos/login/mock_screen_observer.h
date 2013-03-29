@@ -25,6 +25,9 @@ class MockScreenObserver : public ScreenObserver {
                void(const std::string&, const std::string&));
   MOCK_METHOD1(SetUsageStatisticsReporting, void(bool));
   MOCK_CONST_METHOD0(GetUsageStatisticsReporting, bool());
+  MOCK_METHOD0(GetErrorScreen, ErrorScreen*());
+  MOCK_METHOD0(ShowErrorScreen, void());
+  MOCK_METHOD1(HideErrorScreen, void(WizardScreen*));
 };
 
 }  // namespace chromeos

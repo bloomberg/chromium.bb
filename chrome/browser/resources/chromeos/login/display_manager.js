@@ -41,6 +41,13 @@
   MANAGED_USER_CREATION_FLOW: 5,
 };
 
+/* Possible UI states of the error screen. */
+/** @const */ var ERROR_SCREEN_UI_STATE = {
+  UNKNOWN: 'ui-state-unknown',
+  UPDATE: 'ui-state-update',
+  SIGNIN: 'ui-state-signin'
+};
+
 cr.define('cr.ui.login', function() {
   var Bubble = cr.ui.Bubble;
 

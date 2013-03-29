@@ -3520,6 +3520,12 @@ Battery full
   <message name="IDS_LOGIN_OFFLINE_MESSAGE" desc="An offline message that shows up in OOBE sign-in screen.">
     Please connect to the Internet to sign in to your Chromebook.
   </message>
+  <message name="IDS_UPDATE_OFFLINE_MESSAGE" desc="An offline message that shows up in the OOBE update screen.">
+    Please connect to the Internet to update your Chromebook.
+  </message>
+  <message name="IDS_UPDATE_PROXY_ERROR_MESSAGE" desc="An offline message that shows up when a proxy error has appeared in the OOBE update screen.">
+    The update check failed using the current proxy settings. Please adjust your <ph name="PROXY_SETTINGS_LINK_START">$1<ex>&gt;a&lt;</ex></ph>proxy settings<ph name="PROXY_SETTINGS_LINK_END">$2<ex>&gt;/a&lt;</ex></ph>.
+  </message>
   <message name="IDS_GUEST" desc="Shown in login panel for users that would like to browse without signing in.">
     Guest
   </message>

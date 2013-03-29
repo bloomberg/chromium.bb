@@ -383,6 +383,8 @@
         'browser/chromeos/login/chrome_restart_request.h',
         'browser/chromeos/login/default_user_images.cc',
         'browser/chromeos/login/default_user_images.h',
+        'browser/chromeos/login/error_screen.cc',
+        'browser/chromeos/login/error_screen.h',
         'browser/chromeos/login/error_screen_actor.cc',
         'browser/chromeos/login/error_screen_actor.h',
         'browser/chromeos/login/enrollment/enterprise_enrollment_screen.cc',

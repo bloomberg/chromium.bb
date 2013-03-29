@@ -7,19 +7,23 @@
   min-width: 650px;
 }
 
-.show-with-proxy-error,
-.show-with-captive-portal-error,
-.show-with-timeout-error,
-.show-with-offline-error,
+.show-with-ui-state-update,
+.show-with-ui-state-signin,
+.show-with-error-state-portal,
+.show-with-error-state-offline,
+.show-with-error-state-proxy,
+.show-with-error-state-auth-ext-timeout,
 .guest-signin,
 .offline-login {
   display: none;
 }
 
-.show-captive-portal-error .show-with-captive-portal-error,
-.show-proxy-error .show-with-proxy-error,
-.show-timeout-error .show-with-timeout-error,
-.show-offline-error .show-with-offline-error,
+.ui-state-update .show-with-ui-state-update,
+.ui-state-signin .show-with-ui-state-signin,
+.error-state-portal .show-with-error-state-portal,
+.error-state-offline .show-with-error-state-offline,
+.error-state-proxy .show-with-error-state-proxy,
+.error-state-auth-ext-timeout .show-with-error-state-auth-ext-timeout,
 .allow-guest-signin .guest-signin,
 .allow-offline-login .offline-login {
   display: block;

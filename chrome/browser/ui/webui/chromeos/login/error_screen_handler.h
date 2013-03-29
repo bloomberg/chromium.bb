@@ -30,19 +30,16 @@ class ErrorScreenHandler : public BaseScreenHandler,
       const scoped_refptr<NetworkStateInformer>& network_state_informer);
   virtual ~ErrorScreenHandler();
 
-  void SetNativeWindowDelegate(NativeWindowDelegate* native_window_delegate);
-
   // ErrorScreenActor implementation:
-  virtual void Show(OobeUI::Screen parent_screen,
+  virtual void Show(OobeDisplay::Screen parent_screen,
                     base::DictionaryValue* params) OVERRIDE;
   virtual void Hide() OVERRIDE;
   virtual void FixCaptivePortal() OVERRIDE;
   virtual void ShowCaptivePortal() OVERRIDE;
   virtual void HideCaptivePortal() OVERRIDE;
-  virtual void ShowProxyError() OVERRIDE;
-  virtual void ShowCaptivePortalError(const std::string& network) OVERRIDE;
-  virtual void ShowTimeoutError() OVERRIDE;
-  virtual void ShowOfflineError() OVERRIDE;
+  virtual void SetUIState(ErrorScreen::UIState ui_state) OVERRIDE;
+  virtual void SetErrorState(ErrorScreen::ErrorState error_state,
+                             const std::string& network) OVERRIDE;
   virtual void AllowGuestSignin(bool allowed) OVERRIDE;
   virtual void AllowOfflineLogin(bool allowed) OVERRIDE;
 
@@ -63,7 +60,6 @@ class ErrorScreenHandler : public BaseScreenHandler,
   virtual void GetLocalizedStrings(
       base::DictionaryValue* localized_strings) OVERRIDE;
   virtual void Initialize() OVERRIDE;
-  virtual gfx::NativeWindow GetNativeWindow() OVERRIDE;
 
   // Proxy which manages showing of the window for captive portal entering.
   scoped_ptr<CaptivePortalWindowProxy> captive_portal_window_proxy_;

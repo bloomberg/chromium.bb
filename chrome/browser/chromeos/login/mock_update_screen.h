@@ -17,7 +17,7 @@ class MockUpdateScreen : public UpdateScreen {
   MockUpdateScreen(ScreenObserver* screen_observer, UpdateScreenActor* actor);
   virtual ~MockUpdateScreen();
 
-  MOCK_METHOD0(StartUpdate, void());
+  MOCK_METHOD0(StartNetworkCheck, void());
 };
 
 class MockUpdateScreenActor : public UpdateScreenActor {

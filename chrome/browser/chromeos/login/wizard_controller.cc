@@ -26,6 +26,7 @@
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_screen.h"
+#include "chrome/browser/chromeos/login/error_screen.h"
 #include "chrome/browser/chromeos/login/eula_screen.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/helper.h"
@@ -41,6 +42,7 @@
 #include "chrome/browser/chromeos/login/user_image_screen.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wrong_hwid_screen.h"
+#include "chrome/browser/chromeos/net/network_portal_detector.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
 #include "chrome/browser/profiles/profile.h"
@@ -118,6 +120,7 @@ const char WizardController::kEulaScreenName[] = "eula";
 const char WizardController::kRegistrationScreenName[] = "register";
 const char WizardController::kEnterpriseEnrollmentScreenName[] = "enroll";
 const char WizardController::kResetScreenName[] = "reset";
+const char WizardController::kErrorScreenName[] = "error-message";
 const char WizardController::kTermsOfServiceScreenName[] = "tos";
 const char WizardController::kWrongHWIDScreenName[] = "wrong-hwid";
 const char WizardController::kLocallyManagedUserCreationScreenName[] =
@@ -561,8 +564,8 @@ void WizardController::OnTermsOfServiceAccepted() {
 
 void WizardController::InitiateOOBEUpdate() {
   PerformPostEulaActions();
-  GetUpdateScreen()->StartUpdate();
   SetCurrentScreenSmooth(GetUpdateScreen(), true);
+  GetUpdateScreen()->StartNetworkCheck();
 }
 
 void WizardController::PerformPostEulaActions() {
@@ -571,6 +574,9 @@ void WizardController::PerformPostEulaActions() {
   chromeos::CrosLibrary::Get()->GetNetworkLibrary()->
       SetDefaultCheckPortalList();
   host_->CheckForAutoEnrollment();
+  NetworkPortalDetector* detector = NetworkPortalDetector::GetInstance();
+  if (detector)
+    detector->set_enabled(true);
 }
 
 void WizardController::PerformPostUpdateActions() {
@@ -822,6 +828,25 @@ void WizardController::SetUsageStatisticsReporting(bool val) {
 
 bool WizardController::GetUsageStatisticsReporting() const {
   return usage_statistics_reporting_;
+}
+
+chromeos::ErrorScreen* WizardController::GetErrorScreen() {
+  if (!error_screen_.get()) {
+    error_screen_.reset(
+        new chromeos::ErrorScreen(this, oobe_display_->GetErrorScreenActor()));
+  }
+  return error_screen_.get();
+}
+
+void WizardController::ShowErrorScreen() {
+  VLOG(1) << "Showing error screen.";
+  SetCurrentScreen(GetErrorScreen());
+}
+
+void WizardController::HideErrorScreen(WizardScreen* parent_screen) {
+  DCHECK(parent_screen);
+  VLOG(1) << "Hiding error screen.";
+  SetCurrentScreen(parent_screen);
 }
 
 // static

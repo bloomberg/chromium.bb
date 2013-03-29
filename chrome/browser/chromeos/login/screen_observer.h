@@ -9,6 +9,9 @@
 
 namespace chromeos {
 
+class ErrorScreen;
+class WizardScreen;
+
 // Interface that handles notifications received from any of login wizard
 // screens.
 class ScreenObserver {
@@ -53,6 +56,10 @@ class ScreenObserver {
   // Whether usage statistics reporting is enabled on EULA screen.
   virtual void SetUsageStatisticsReporting(bool val) = 0;
   virtual bool GetUsageStatisticsReporting() const = 0;
+
+  virtual ErrorScreen* GetErrorScreen() = 0;
+  virtual void ShowErrorScreen() = 0;
+  virtual void HideErrorScreen(WizardScreen* parent_screen) = 0;
 
  protected:
   virtual ~ScreenObserver() {}

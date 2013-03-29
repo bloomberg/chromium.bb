@@ -21,7 +21,8 @@ const char ErrorScreenActor::kErrorReasonNetworkChanged[] = "network changed";
 const char ErrorScreenActor::kErrorReasonUpdate[] = "update";
 
 ErrorScreenActor::ErrorScreenActor()
-    : state_(STATE_UNKNOWN),
+    : ui_state_(ErrorScreen::UI_STATE_UNKNOWN),
+      error_state_(ErrorScreen::ERROR_STATE_UNKNOWN),
       parent_screen_(OobeUI::SCREEN_UNKNOWN) {
 }
 

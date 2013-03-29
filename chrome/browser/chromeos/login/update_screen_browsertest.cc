@@ -195,7 +195,7 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestErrorIssuingUpdateCheck) {
   EXPECT_CALL(*mock_screen_observer_,
               OnExit(ScreenObserver::UPDATE_ERROR_CHECKING_FOR_UPDATE))
       .Times(1);
-  update_screen_->StartUpdate();
+  update_screen_->StartNetworkCheck();
 }
 
 IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestErrorCheckingForUpdate) {

@@ -106,8 +106,7 @@ void NetworkStateInformer::OnPortalDetectionCompleted(
     const Network* network,
     const NetworkPortalDetector::CaptivePortalState& state) {
   if (CrosLibrary::Get()) {
-    NetworkLibrary* network_library =
-        CrosLibrary::Get()->GetNetworkLibrary();
+    NetworkLibrary* network_library = CrosLibrary::Get()->GetNetworkLibrary();
     if (network_library && network_library->active_network() == network)
       OnNetworkManagerChanged(network_library);
   }

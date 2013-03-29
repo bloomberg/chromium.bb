@@ -27,6 +27,7 @@ class DictionaryValue;
 namespace chromeos {
 
 class EnterpriseEnrollmentScreen;
+class ErrorScreen;
 class EulaScreen;
 class LoginDisplayHost;
 class NetworkScreen;
@@ -154,6 +155,7 @@ class WizardController : public ScreenObserver {
   static const char kEulaScreenName[];
   static const char kEnterpriseEnrollmentScreenName[];
   static const char kResetScreenName[];
+  static const char kErrorScreenName[];
   static const char kTermsOfServiceScreenName[];
   static const char kWrongHWIDScreenName[];
   static const char kLocallyManagedUserCreationScreenName[];
@@ -219,6 +221,9 @@ class WizardController : public ScreenObserver {
                                      const std::string& password) OVERRIDE;
   virtual void SetUsageStatisticsReporting(bool val) OVERRIDE;
   virtual bool GetUsageStatisticsReporting() const OVERRIDE;
+  virtual ErrorScreen* GetErrorScreen() OVERRIDE;
+  virtual void ShowErrorScreen() OVERRIDE;
+  virtual void HideErrorScreen(WizardScreen* parent_screen) OVERRIDE;
 
   // Switches from one screen to another.
   void SetCurrentScreen(WizardScreen* screen);
@@ -247,6 +252,7 @@ class WizardController : public ScreenObserver {
   scoped_ptr<ResetScreen> reset_screen_;
   scoped_ptr<EnterpriseEnrollmentScreen>
       enterprise_enrollment_screen_;
+  scoped_ptr<ErrorScreen> error_screen_;
   scoped_ptr<TermsOfServiceScreen> terms_of_service_screen_;
   scoped_ptr<WrongHWIDScreen> wrong_hwid_screen_;
   scoped_ptr<LocallyManagedUserCreationScreen>

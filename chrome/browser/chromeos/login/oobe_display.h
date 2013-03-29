@@ -12,6 +12,7 @@
 namespace chromeos {
 
 class EnterpriseEnrollmentScreenActor;
+class ErrorScreenActor;
 class EulaScreenActor;
 class NetworkScreenActor;
 class ResetScreenActor;
@@ -28,6 +29,24 @@ class LocallyManagedUserCreationScreenHandler;
 // showing. Also it provides actors for the OOBE screens.
 class OobeDisplay {
  public:
+  enum Screen {
+    SCREEN_OOBE_NETWORK = 0,
+    SCREEN_OOBE_EULA,
+    SCREEN_OOBE_UPDATE,
+    SCREEN_OOBE_ENROLLMENT,
+    SCREEN_GAIA_SIGNIN,
+    SCREEN_ACCOUNT_PICKER,
+    SCREEN_ERROR_MESSAGE,
+    SCREEN_USER_IMAGE_PICKER,
+    SCREEN_TPM_ERROR,
+    SCREEN_PASSWORD_CHANGED,
+    SCREEN_CREATE_MANAGED_USER_DIALOG,
+    SCREEN_CREATE_MANAGED_USER_FLOW,
+    SCREEN_TERMS_OF_SERVICE,
+    SCREEN_WRONG_HWID,
+    SCREEN_UNKNOWN
+  };
+
   virtual ~OobeDisplay() {}
 
   // Shows the given screen.
@@ -46,6 +65,7 @@ class OobeDisplay {
   virtual ResetScreenActor* GetResetScreenActor() = 0;
   virtual TermsOfServiceScreenActor* GetTermsOfServiceScreenActor() = 0;
   virtual UserImageScreenActor* GetUserImageScreenActor() = 0;
+  virtual ErrorScreenActor* GetErrorScreenActor() = 0;
   // TODO(altimofeev): use real actors instead.
   virtual ViewScreenDelegate* GetRegistrationScreenActor() = 0;
   virtual WrongHWIDScreenActor* GetWrongHWIDScreenActor() = 0;

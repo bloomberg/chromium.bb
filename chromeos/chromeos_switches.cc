@@ -23,6 +23,11 @@ const char kEnableExperimentalBluetooth[] = "enable-experimental-bluetooth";
 const char kEnableNewNetworkChangeNotifier[] =
     "enable-new-network-change-notifier";
 
+// Enables portal detection and network error handling before auto
+// update.
+const char kEnableOOBEBlockingUpdate[] =
+    "enable-oobe-blocking-update";
+
 // Enables usage of the new ManagedNetworkConfigurationHandler and
 // NetworkConfigurationHandler singletons.
 const char kUseNewNetworkConfigurationHandlers[] =

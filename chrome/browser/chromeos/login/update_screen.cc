@@ -7,12 +7,17 @@
 #include <algorithm>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/message_loop.h"
 #include "base/threading/thread_restrictions.h"
+#include "chrome/browser/chromeos/cros/network_library.h"
+#include "chrome/browser/chromeos/login/error_screen.h"
 #include "chrome/browser/chromeos/login/screen_observer.h"
 #include "chrome/browser/chromeos/login/update_screen_actor.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -87,16 +92,20 @@ bool UpdateScreen::HasInstance(UpdateScreen* inst) {
   return (found != instance_set.end());
 }
 
-UpdateScreen::UpdateScreen(ScreenObserver* screen_observer,
-                           UpdateScreenActor* actor)
+UpdateScreen::UpdateScreen(
+    ScreenObserver* screen_observer,
+    UpdateScreenActor* actor)
     : WizardScreen(screen_observer),
+      state_(STATE_IDLE),
       reboot_check_delay_(0),
       is_checking_for_update_(true),
       is_downloading_update_(false),
       is_ignore_update_deadlines_(false),
       is_shown_(false),
       ignore_idle_status_(true),
-      actor_(actor) {
+      actor_(actor),
+      is_first_portal_notification_(true),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   DCHECK(actor_);
   if (actor_)
     actor_->SetDelegate(this);
@@ -222,11 +231,50 @@ void UpdateScreen::UpdateStatusChanged(
   }
 }
 
-void UpdateScreen::StartUpdate() {
-  DBusThreadManager::Get()->GetUpdateEngineClient()->AddObserver(this);
-  VLOG(1) << "Initiate update check";
-  DBusThreadManager::Get()->GetUpdateEngineClient()->RequestUpdateCheck(
-      base::Bind(StartUpdateCallback, this));
+void UpdateScreen::OnPortalDetectionCompleted(
+    const Network* network,
+    const NetworkPortalDetector::CaptivePortalState& state) {
+  VLOG(1) << "UpdateScreen::OnPortalDetectionCompleted(): "
+          << "network=" << network->service_path() << ", "
+          << "state.status=" << state.status << ", "
+          << "state.response_code=" << state.response_code;
+  NetworkPortalDetector::CaptivePortalStatus status = state.status;
+  if (state_ == STATE_ERROR) {
+    // In the case of online state hide error message and proceed to
+    // the update stage. Otherwise, update error message content.
+    if (status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE) {
+      HideErrorMessage();
+      StartUpdateCheck();
+    } else {
+      UpdateErrorMessage(network, status);
+    }
+  } else if (state_ == STATE_FIRST_PORTAL_CHECK) {
+    // In the case of online state immediately proceed to the update
+    // stage. Otherwise, prepare and show error message.
+    if (status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE) {
+      StartUpdateCheck();
+    } else {
+      UpdateErrorMessage(network, status);
+      ShowErrorMessage();
+    }
+  }
+}
+
+void UpdateScreen::StartNetworkCheck() {
+  NetworkPortalDetector* detector = NetworkPortalDetector::GetInstance();
+
+  // If portal detector is enabled and portal detection before AU is
+  // allowed, initiate network state check. Otherwise, directly
+  // proceed to update.
+  if (!NetworkPortalDetector::IsEnabled() || !detector ||
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kEnableOOBEBlockingUpdate)) {
+    StartUpdateCheck();
+    return;
+  }
+  state_ = STATE_FIRST_PORTAL_CHECK;
+  detector->AddObserver(this);
+  detector->ForcePortalDetection();
 }
 
 void UpdateScreen::CancelUpdate() {
@@ -395,6 +443,61 @@ bool UpdateScreen::HasCriticalUpdate() {
 void UpdateScreen::OnActorDestroyed(UpdateScreenActor* actor) {
   if (actor_ == actor)
     actor_ = NULL;
+}
+
+ErrorScreen* UpdateScreen::GetErrorScreen() {
+  return get_screen_observer()->GetErrorScreen();
+}
+
+void UpdateScreen::StartUpdateCheck() {
+  NetworkPortalDetector* detector = NetworkPortalDetector::GetInstance();
+  if (detector)
+    detector->RemoveObserver(this);
+  state_ = STATE_UPDATE;
+  DBusThreadManager::Get()->GetUpdateEngineClient()->AddObserver(this);
+  VLOG(1) << "Initiate update check";
+  DBusThreadManager::Get()->GetUpdateEngineClient()->RequestUpdateCheck(
+      base::Bind(StartUpdateCallback, this));
+}
+
+void UpdateScreen::ShowErrorMessage() {
+  state_ = STATE_ERROR;
+  GetErrorScreen()->SetUIState(ErrorScreen::UI_STATE_UPDATE);
+  get_screen_observer()->ShowErrorScreen();
+}
+
+void UpdateScreen::HideErrorMessage() {
+  get_screen_observer()->HideErrorScreen(this);
+}
+
+void UpdateScreen::UpdateErrorMessage(
+    const Network* network,
+    const NetworkPortalDetector::CaptivePortalStatus status) {
+  switch (status) {
+    case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN:
+    case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE:
+      NOTREACHED();
+      break;
+    case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_OFFLINE:
+      GetErrorScreen()->SetErrorState(ErrorScreen::ERROR_STATE_OFFLINE,
+                                      std::string());
+      break;
+    case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL:
+      GetErrorScreen()->SetErrorState(ErrorScreen::ERROR_STATE_PORTAL,
+                                      network->name());
+      if (is_first_portal_notification_) {
+        is_first_portal_notification_ = false;
+        GetErrorScreen()->FixCaptivePortal();
+      }
+      break;
+    case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PROXY_AUTH_REQUIRED:
+      GetErrorScreen()->SetErrorState(ErrorScreen::ERROR_STATE_PROXY,
+                                      std::string());
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
 }
 
 }  // namespace chromeos

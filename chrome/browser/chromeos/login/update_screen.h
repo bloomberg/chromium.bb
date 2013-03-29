@@ -7,16 +7,20 @@
 
 #include <set>
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time.h"
 #include "base/timer.h"
 #include "chrome/browser/chromeos/login/update_screen_actor.h"
 #include "chrome/browser/chromeos/login/wizard_screen.h"
+#include "chrome/browser/chromeos/net/network_portal_detector.h"
 #include "chromeos/dbus/update_engine_client.h"
 
 namespace chromeos {
 
+class ErrorScreen;
 class ScreenObserver;
 
 // Controller for the update screen. It does not depend on the specific
@@ -24,7 +28,8 @@ class ScreenObserver;
 // is moved to the UpdateScreenActor instead.
 class UpdateScreen: public UpdateEngineClient::Observer,
                     public UpdateScreenActor::Delegate,
-                    public WizardScreen {
+                    public WizardScreen,
+                    public NetworkPortalDetector::Observer {
  public:
   UpdateScreen(ScreenObserver* screen_observer, UpdateScreenActor* actor);
   virtual ~UpdateScreen();
@@ -39,9 +44,8 @@ class UpdateScreen: public UpdateEngineClient::Observer,
   virtual void CancelUpdate() OVERRIDE;
   virtual void OnActorDestroyed(UpdateScreenActor* actor) OVERRIDE;
 
-  // Checks for updates and performs an update if needed. Made virtual to
-  // simplify mocking.
-  virtual void StartUpdate();
+  // Starts network check. Made virtual to simplify mocking.
+  virtual void StartNetworkCheck();
 
   // Reboot check delay get/set, in seconds.
   int reboot_check_delay() const { return reboot_check_delay_; }
@@ -53,7 +57,7 @@ class UpdateScreen: public UpdateEngineClient::Observer,
   void SetIgnoreIdleStatus(bool ignore_idle_status);
 
   enum ExitReason {
-     REASON_UPDATE_CANCELED,
+     REASON_UPDATE_CANCELED = 0,
      REASON_UPDATE_INIT_FAILED,
      REASON_UPDATE_NON_CRITICAL,
      REASON_UPDATE_ENDED
@@ -65,9 +69,21 @@ class UpdateScreen: public UpdateEngineClient::Observer,
   virtual void UpdateStatusChanged(
       const UpdateEngineClient::Status& status) OVERRIDE;
 
+  // NetworkPortalDetector::Observer implementation:
+  virtual void OnPortalDetectionCompleted(
+      const Network* network,
+      const NetworkPortalDetector::CaptivePortalState& state) OVERRIDE;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(UpdateScreenTest, TestBasic);
   FRIEND_TEST_ALL_PREFIXES(UpdateScreenTest, TestUpdateAvailable);
+
+  enum State {
+    STATE_IDLE = 0,
+    STATE_FIRST_PORTAL_CHECK,
+    STATE_UPDATE,
+    STATE_ERROR
+  };
 
   // Updates downloading stats (remaining time and downloading
   // progress) on the AU screen.
@@ -83,6 +99,15 @@ class UpdateScreen: public UpdateEngineClient::Observer,
   // Checks that screen is shown, shows if not.
   void MakeSureScreenIsShown();
 
+  // Returns an instance of the error screen.
+  ErrorScreen* GetErrorScreen();
+
+  void StartUpdateCheck();
+  void ShowErrorMessage();
+  void HideErrorMessage();
+  void UpdateErrorMessage(
+      const Network* network,
+      const NetworkPortalDetector::CaptivePortalStatus status);
   // Timer for the interval to wait for the reboot.
   // If reboot didn't happen - ask user to reboot manually.
   base::OneShotTimer<UpdateScreen> reboot_timer_;
@@ -90,6 +115,9 @@ class UpdateScreen: public UpdateEngineClient::Observer,
   // Returns a static InstanceSet.
   typedef std::set<UpdateScreen*> InstanceSet;
   static InstanceSet& GetInstanceSet();
+
+  // Current state of the update screen.
+  State state_;
 
   // Time in seconds after which we decide that the device has not rebooted
   // automatically. If reboot didn't happen during this interval, ask user to
@@ -121,6 +149,10 @@ class UpdateScreen: public UpdateEngineClient::Observer,
 
   bool is_download_average_speed_computed_;
   double download_average_speed_;
+
+  bool is_first_portal_notification_;
+
+  base::WeakPtrFactory<UpdateScreen> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(UpdateScreen);
 };

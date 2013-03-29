@@ -206,7 +206,7 @@ class SigninScreenHandler
   void UpdateStateInternal(NetworkStateInformer::State state,
                            const std::string service_path,
                            ConnectionType connection_type,
-                           const std::string reason,
+                           std::string reason,
                            bool force_update);
   void SetupAndShowOfflineMessage(NetworkStateInformer::State state,
                                   const std::string& service_path,

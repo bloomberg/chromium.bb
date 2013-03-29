@@ -629,9 +629,18 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   // portal detector starts to listen for notifications from
   // NetworkLibrary about changes in the NetworkManager and initiates
   // captive portal detection for active networks.
-  if (NetworkPortalDetector::IsEnabled() &&
-      NetworkPortalDetector::GetInstance()) {
-    NetworkPortalDetector::GetInstance()->Init();
+  NetworkPortalDetector* detector = NetworkPortalDetector::GetInstance();
+  if (NetworkPortalDetector::IsEnabled() && detector) {
+    detector->Init();
+#if defined(GOOGLE_CHROME_BUILD)
+    bool is_official_build = true;
+#else
+    bool is_official_build = false;
+#endif
+    // Enable portal detector if EULA was previously accepted or if
+    // this is an unofficial build.
+    if (!is_official_build || WizardController::IsEulaAccepted())
+      detector->set_enabled(true);
   }
 
   display_configuration_observer_.reset(
@@ -705,9 +714,9 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   if (NetworkChangeNotifierFactoryChromeos::GetInstance())
     NetworkChangeNotifierFactoryChromeos::GetInstance()->Shutdown();
 
-  if (chromeos::NetworkPortalDetector::IsEnabled() &&
-      chromeos::NetworkPortalDetector::GetInstance()) {
-    chromeos::NetworkPortalDetector::GetInstance()->Shutdown();
+  if (NetworkPortalDetector::IsEnabled() &&
+      NetworkPortalDetector::GetInstance()) {
+    NetworkPortalDetector::GetInstance()->Shutdown();
   }
 
   // Tell DeviceSettingsService to stop talking to session_manager.

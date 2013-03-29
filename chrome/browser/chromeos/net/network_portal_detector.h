@@ -87,12 +87,18 @@ class NetworkPortalDetector
   virtual void OnNetworkChanged(chromeos::NetworkLibrary* cros,
                                 const chromeos::Network* network) OVERRIDE;
 
+  bool enabled() const { return enabled_; }
+  void set_enabled(bool enabled) { enabled_ = enabled; }
+
   // Enables lazy detection mode. In this mode portal detection after
   // first 3 consecutive attemps will be performed once in 30 seconds.
   void EnableLazyDetection();
 
   // Dizables lazy detection mode.
   void DisableLazyDetection();
+
+  // Forces detection attempt for active network.
+  void ForcePortalDetection();
 
   // Creates an instance of the NetworkPortalDetector.
   static NetworkPortalDetector* CreateInstance();
@@ -111,7 +117,7 @@ class NetworkPortalDetector
 
   enum State {
     // No portal check is running.
-    STATE_IDLE,
+    STATE_IDLE = 0,
     // Waiting for portal check.
     STATE_PORTAL_CHECK_PENDING,
     // Portal check is in progress.
@@ -226,6 +232,9 @@ class NetworkPortalDetector
 
   // Detector for checking active network for a portal state.
   scoped_ptr<captive_portal::CaptivePortalDetector> captive_portal_detector_;
+
+  // True if the NetworkPortalDetector is enabled.
+  bool enabled_;
 
   base::WeakPtrFactory<NetworkPortalDetector> weak_ptr_factory_;
 

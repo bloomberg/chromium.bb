@@ -175,12 +175,11 @@ bool IsSigninScreen(const OobeUI::Screen screen) {
       screen == OobeUI::SCREEN_ACCOUNT_PICKER;
 }
 
-// Returns true if |state| is related to the sign-in screen errors.
-bool IsSigninScreenError(ErrorScreenActor::State state) {
-  return state == ErrorScreenActor::STATE_PROXY_ERROR ||
-      state == ErrorScreenActor::STATE_CAPTIVE_PORTAL_ERROR ||
-      state == ErrorScreenActor::STATE_TIMEOUT_ERROR ||
-      state == ErrorScreenActor::STATE_OFFLINE_ERROR;
+bool IsSigninScreenError(ErrorScreen::ErrorState error_state) {
+  return error_state == ErrorScreen::ERROR_STATE_PORTAL ||
+      error_state == ErrorScreen::ERROR_STATE_OFFLINE ||
+      error_state == ErrorScreen::ERROR_STATE_PROXY ||
+      error_state == ErrorScreen::ERROR_STATE_AUTH_EXT_TIMEOUT;
 }
 
 // Returns a pointer to a Network instance by service path or NULL if
@@ -199,7 +198,7 @@ Network* FindNetworkByPath(const std::string& service_path) {
 std::string GetNetworkName(const std::string& service_path) {
   Network* network = FindNetworkByPath(service_path);
   if (!network)
-    return "";
+    return std::string();
   return network->name();
 }
 
@@ -207,7 +206,7 @@ std::string GetNetworkName(const std::string& service_path) {
 std::string GetNetworkUniqueId(const std::string& service_path) {
   Network* network = FindNetworkByPath(service_path);
   if (!network)
-    return "";
+    return std::string();
   return network->unique_id();
 }
 
@@ -282,18 +281,6 @@ void RecordNetworkPortalDetectorStats(const std::string& service_path) {
       NOTREACHED();
       break;
   }
-}
-
-void EnableLazyDetection() {
-  NetworkPortalDetector* detector = NetworkPortalDetector::GetInstance();
-  if (NetworkPortalDetector::IsEnabled() && detector)
-    detector->EnableLazyDetection();
-}
-
-void DisableLazyDetection() {
-  NetworkPortalDetector* detector = NetworkPortalDetector::GetInstance();
-  if (NetworkPortalDetector::IsEnabled() && detector)
-    detector->DisableLazyDetection();
 }
 
 }  // namespace
@@ -537,7 +524,7 @@ void SigninScreenHandler::UpdateStateInternal(
     NetworkStateInformer::State state,
     const std::string service_path,
     ConnectionType connection_type,
-    const std::string reason,
+    std::string reason,
     bool force_update) {
   // Skip "update" notification about OFFLINE state from
   // NetworkStateInformer if previous notification already was
@@ -673,40 +660,45 @@ void SigninScreenHandler::SetupAndShowOfflineMessage(
   RecordNetworkPortalDetectorStats(service_path);
 
   if (is_proxy_error) {
-    error_screen_actor_->ShowProxyError();
+    error_screen_actor_->SetErrorState(ErrorScreen::ERROR_STATE_PROXY,
+                                       std::string());
   } else if (is_under_captive_portal) {
     // Do not bother a user with obsessive captive portal showing. This
     // check makes captive portal being shown only once: either when error
     // screen is shown for the first time or when switching from another
     // error screen (offline, proxy).
     if (IsGaiaLogin() ||
-        (error_screen_actor_->state() !=
-         ErrorScreenActor::STATE_CAPTIVE_PORTAL_ERROR)) {
+        (error_screen_actor_->error_state() !=
+         ErrorScreen::ERROR_STATE_PORTAL)) {
       error_screen_actor_->FixCaptivePortal();
     }
     std::string network_name = GetNetworkName(service_path);
-    error_screen_actor_->ShowCaptivePortalError(network_name);
+    error_screen_actor_->SetErrorState(ErrorScreen::ERROR_STATE_PORTAL,
+                                       network_name);
   } else if (is_gaia_loading_timeout) {
-    error_screen_actor_->ShowTimeoutError();
+    error_screen_actor_->SetErrorState(
+        ErrorScreen::ERROR_STATE_AUTH_EXT_TIMEOUT, std::string());
   } else {
-    error_screen_actor_->ShowOfflineError();
+    error_screen_actor_->SetErrorState(ErrorScreen::ERROR_STATE_OFFLINE,
+                                       std::string());
   }
 
   bool guest_signin_allowed = IsGuestSigninAllowed() &&
-      IsSigninScreenError(error_screen_actor_->state());
+      IsSigninScreenError(error_screen_actor_->error_state());
   error_screen_actor_->AllowGuestSignin(guest_signin_allowed);
 
   bool offline_login_allowed = IsOfflineLoginAllowed() &&
-      IsSigninScreenError(error_screen_actor_->state()) &&
-      error_screen_actor_->state() != ErrorScreenActor::STATE_TIMEOUT_ERROR;
+      IsSigninScreenError(error_screen_actor_->error_state()) &&
+      error_screen_actor_->error_state() !=
+      ErrorScreen::ERROR_STATE_AUTH_EXT_TIMEOUT;
   error_screen_actor_->AllowOfflineLogin(offline_login_allowed);
 
   if (GetCurrentScreen() != OobeUI::SCREEN_ERROR_MESSAGE) {
     DictionaryValue params;
     params.SetInteger("lastNetworkType", static_cast<int>(connection_type));
+    error_screen_actor_->SetUIState(ErrorScreen::UI_STATE_SIGNIN);
     error_screen_actor_->Show(OobeUI::SCREEN_GAIA_SIGNIN, &params);
   }
-  EnableLazyDetection();
 }
 
 void SigninScreenHandler::HideOfflineMessage(NetworkStateInformer::State state,
@@ -714,19 +706,18 @@ void SigninScreenHandler::HideOfflineMessage(NetworkStateInformer::State state,
                                              const std::string& reason,
                                              bool is_gaia_signin,
                                              bool is_gaia_reloaded) {
-  if (IsSigninScreenHiddenByError()) {
-    std::string network_id = GetNetworkUniqueId(service_path);
-    LOG(WARNING) << "Hide offline message, "
-                 << "state=" << NetworkStateStatusString(state) << ", "
-                 << "network_id=" << network_id << ", "
-                 << "reason=" << reason;
-    error_screen_actor_->Hide();
+  if (!IsSigninScreenHiddenByError())
+    return;
+  std::string network_id = GetNetworkUniqueId(service_path);
+  LOG(WARNING) << "Hide offline message, "
+               << "state=" << NetworkStateStatusString(state) << ", "
+               << "network_id=" << network_id << ", "
+               << "reason=" << reason;
+  error_screen_actor_->Hide();
 
-    // Forces a reload for Gaia screen on hiding error message.
-    if (is_gaia_signin && !is_gaia_reloaded)
-      ReloadGaiaScreen();
-  }
-  DisableLazyDetection();
+  // Forces a reload for Gaia screen on hiding error message.
+  if (is_gaia_signin && !is_gaia_reloaded)
+    ReloadGaiaScreen();
 }
 
 void SigninScreenHandler::ReloadGaiaScreen() {
