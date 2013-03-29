@@ -22,20 +22,22 @@ message UserWhitelistProto {
 message AllowNewUsersProto {
   // Determines whether we allow arbitrary users to log into the device.
   // This interacts with the UserWhitelistProto as follows:
-  // allow_new_users | user_whitelist | anyone can log in
-  //-----------------+----------------+------------------
-  //  present, true  | not present    | Yes
-  //-----------------+----------------+------------------
-  //  present, true  | present        | Yes
-  //-----------------+----------------+------------------
-  //  present, false | not present    | (Broken) Yes
-  //-----------------+----------------+------------------
-  //  present, false | present        | No, W/L enforced
-  //-----------------+----------------+------------------
-  //  not present    | not present    | Yes
-  //-----------------+----------------+------------------
-  //  not present    | present        | No, W/L enforced
-  //-----------------+----------------+------------------
+  // allow_new_users | user_whitelist     | anyone can log in
+  //-----------------+--------------------+------------------
+  //  present, true  | not present        | Yes
+  //-----------------+--------------------+------------------
+  //  present, true  | present            | Yes
+  //-----------------+--------------------+------------------
+  //  present, false | not present        | (Broken) Yes
+  //-----------------+--------------------+------------------
+  //  present, false | present            | No, W/L enforced
+  //-----------------+--------------------+------------------
+  //  not present    | not present        | Yes
+  //-----------------+--------------------+------------------
+  //  not present    | present, empty     | Yes
+  //-----------------+--------------------+------------------
+  //  not present    | present, non-empty | No, W/L enforced
+  //-----------------+--------------------+------------------
   optional bool allow_new_users = 1 [default = true];
 }
 

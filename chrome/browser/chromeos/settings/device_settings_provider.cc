@@ -385,17 +385,20 @@ void DeviceSettingsProvider::DecodeLoginPolicies(
   //   kSignedDataRoamingEnabled has a default value of false.
   //   kAccountsPrefEphemeralUsersEnabled has a default value of false.
   if (policy.has_allow_new_users() &&
-      policy.allow_new_users().has_allow_new_users() &&
-      policy.allow_new_users().allow_new_users()) {
-    // New users allowed, user whitelist ignored.
-    new_values_cache->SetBoolean(kAccountsPrefAllowNewUser, true);
-  } else if (policy.has_user_whitelist()) {
-    // New users not explicitly allowed and user whitelist present, enforce
-    // whitelist and disallow new users.
-    new_values_cache->SetBoolean(kAccountsPrefAllowNewUser, false);
+      policy.allow_new_users().has_allow_new_users()) {
+    if (policy.allow_new_users().allow_new_users()) {
+      // New users allowed, user whitelist ignored.
+      new_values_cache->SetBoolean(kAccountsPrefAllowNewUser, true);
+    } else {
+      // New users not allowed, enforce user whitelist if present.
+      new_values_cache->SetBoolean(kAccountsPrefAllowNewUser,
+                                   !policy.has_user_whitelist());
+    }
   } else {
-    // No user whitelist present, allow new users.
-    new_values_cache->SetBoolean(kAccountsPrefAllowNewUser, true);
+    // No configured allow-new-users value, enforce whitelist if non-empty.
+    new_values_cache->SetBoolean(
+        kAccountsPrefAllowNewUser,
+        policy.user_whitelist().user_whitelist_size() == 0);
   }
 
   new_values_cache->SetBoolean(

@@ -163,9 +163,22 @@ TEST_F(CrosSettingsTest, SetWhitelistWithListOps2) {
 }
 
 TEST_F(CrosSettingsTest, SetEmptyWhitelist) {
-  // An empty whitelist should result in nobody being able to log in.
+  // Setting the whitelist empty should switch the value of
+  // kAccountsPrefAllowNewUser to true.
+  base::ListValue whitelist;
+  AddExpectation(kAccountsPrefAllowNewUser,
+                 base::Value::CreateBooleanValue(true));
+  SetPref(kAccountsPrefUsers, &whitelist);
+  FetchPref(kAccountsPrefAllowNewUser);
+  FetchPref(kAccountsPrefUsers);
+}
+
+TEST_F(CrosSettingsTest, SetEmptyWhitelistAndNoNewUsers) {
+  // Setting the whitelist empty and disallowing new users should result in no
+  // new users allowed.
   base::ListValue whitelist;
   base::FundamentalValue disallow_new(false);
+  AddExpectation(kAccountsPrefUsers, whitelist.DeepCopy());
   AddExpectation(kAccountsPrefAllowNewUser,
                  base::Value::CreateBooleanValue(false));
   SetPref(kAccountsPrefUsers, &whitelist);
