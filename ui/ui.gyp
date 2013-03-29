@@ -126,14 +126,12 @@
         'base/dragdrop/cocoa_dnd_util.h',
         'base/dragdrop/cocoa_dnd_util.mm',
         'base/dragdrop/drag_drop_types.h',
-        'base/dragdrop/drag_drop_types_gtk.cc',
         'base/dragdrop/drag_drop_types_win.cc',
         'base/dragdrop/drag_source_win.cc',
         'base/dragdrop/drag_source_win.h',
         'base/dragdrop/drag_utils.cc',
         'base/dragdrop/drag_utils.h',
         'base/dragdrop/drag_utils_aura.cc',
-        'base/dragdrop/drag_utils_gtk.cc',
         'base/dragdrop/drag_utils_win.cc',
         'base/dragdrop/drop_target_win.cc',
         'base/dragdrop/drop_target_win.h',
@@ -143,8 +141,6 @@
         'base/dragdrop/os_exchange_data.h',
         'base/dragdrop/os_exchange_data_provider_aura.cc',
         'base/dragdrop/os_exchange_data_provider_aura.h',
-        'base/dragdrop/os_exchange_data_provider_gtk.cc',
-        'base/dragdrop/os_exchange_data_provider_gtk.h',
         'base/dragdrop/os_exchange_data_provider_win.cc',
         'base/dragdrop/os_exchange_data_provider_win.h',
         'base/events/event.cc',
@@ -634,14 +630,10 @@
               # Note: because of gyp predence rules this has to be defined as
               # 'sources/' rather than 'sources!'.
               'sources/': [
-                ['exclude', '^base/dragdrop/drag_drop_types_gtk.cc'],
-                ['exclude', '^base/dragdrop/drag_utils_gtk.cc'],
                 ['exclude', '^base/dragdrop/drag_utils.cc'],
                 ['exclude', '^base/dragdrop/drag_utils.h'],
                 ['exclude', '^base/dragdrop/os_exchange_data.cc'],
                 ['exclude', '^base/dragdrop/os_exchange_data.h'],
-                ['exclude', '^base/dragdrop/os_exchange_data_provider_gtk.cc'],
-                ['exclude', '^base/dragdrop/os_exchange_data_provider_gtk.h'],
               ],
             }, {
               # Note: because of gyp predence rules this has to be defined as
