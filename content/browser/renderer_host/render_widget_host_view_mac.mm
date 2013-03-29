@@ -471,6 +471,10 @@ void RenderWidgetHostViewMac::InitAsFullscreen(
   [cocoa_view_ setCanBeKeyView:YES];
   [cocoa_view_ setFrame:[[pepper_fullscreen_window_ contentView] bounds]];
   [cocoa_view_ setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
+  // If the pepper fullscreen window isn't opaque then there are performance
+  // issues when it's on the discrete GPU and the Chrome window is being drawn
+  // to. http://crbug.com/171911
+  [pepper_fullscreen_window_ setOpaque:YES];
 
   // Note that this forms a reference cycle between the fullscreen window and
   // the rwhvmac: The PepperFlashFullscreenWindow retains cocoa_view_,
