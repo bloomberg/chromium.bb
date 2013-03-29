@@ -729,7 +729,7 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg,
       pinch_enable_(prop_reg, "Pinch Enable", 1.0),
       right_click_start_time_diff_(prop_reg,
                                    "Right Click Start Time Diff Thresh",
-                                   0.5),
+                                   0.1),
       right_click_second_finger_age_(prop_reg,
                                      "Right Click Second Finger Age Thresh",
                                      0.5) {
@@ -1900,6 +1900,21 @@ int ImmediateInterpreter::EvaluateButtonType(
     // Only one finger hot -> moving -> left click
     if (num_hot == 1)
       return GESTURES_BUTTON_LEFT;
+
+    float start_delta = fabs(finger_origin_timestamp(fingers[0]->tracking_id) -
+                             finger_origin_timestamp(fingers[1]->tracking_id));
+
+    // check if fingers are too close for a right click
+    const float kMin2fDistThreshSq = tapping_finger_min_separation_.val_ *
+        tapping_finger_min_separation_.val_;
+    float dist_sq = TwoFingerDistanceSq(hwstate);
+    if ((dist_sq < kMin2fDistThreshSq) &&
+        !(fingers[0]->flags & GESTURES_FINGER_MERGE))
+      return GESTURES_BUTTON_LEFT;
+
+    // fingers touched down at approx the same time
+    if (start_delta < right_click_start_time_diff_.val_)
+      return GESTURES_BUTTON_RIGHT;
 
     // 1 finger is cold and in the dampened zone? Probably a thumb!
     if (num_cold == 1 && FingerInDampenedZone(*fingers[0]))

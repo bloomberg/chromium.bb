@@ -2426,7 +2426,7 @@ TEST(ImmediateInterpreterTest, ClickTest) {
     // Fingers very close together - shouldn't right click
     {0, 0, 0, 0, 10, 0, 50, 50, 1, 0},
     {0, 0, 0, 0, 10, 0, 55, 50, 2, 0},
-    // Large vertical dist - shouldn't right click
+    // Large vertical dist - shouldn right click when timing is good.
     {0, 0, 0, 0, 10, 0,  8.4, 94, 1, 0},
     {0, 0, 0, 0, 10, 0, 51.2, 70, 2, 0},
   };
@@ -2452,13 +2452,14 @@ TEST(ImmediateInterpreterTest, ClickTest) {
     {{9.01,1,2,2,&finger_states[4],0,0,0,0},-1,0,0},
     {{9.02,1,2,2,&finger_states[4],0,0,0,0},-1,0,0},
     {{9.5,0,2,2,&finger_states[4],0,0,0,0},
-     -1,GESTURES_BUTTON_LEFT,GESTURES_BUTTON_LEFT},
+     -1,GESTURES_BUTTON_RIGHT,GESTURES_BUTTON_RIGHT},
     {{10,0,0,0,NULL,0,0,0,0},-1,0,0},
 
     // button down with 2 fingers, timeout, button up, fingers lift
     {{11,1,2,2,&finger_states[4],0,0,0,0},-1,0,0},
-    {{0,0,0,0,NULL,0,0,0,0},11.5,GESTURES_BUTTON_LEFT,0},
-    {{12,0,2,2,&finger_states[4],0,0,0,0},-1,0,GESTURES_BUTTON_LEFT},
+    {{0,0,0,0,NULL,0,0,0,0},11.5,0,0},
+    {{12,0,2,2,&finger_states[4],0,0,0,0},
+      -1,GESTURES_BUTTON_RIGHT,GESTURES_BUTTON_RIGHT},
     {{10,0,0,0,NULL,0,0,0,0},-1,0,0}
   };
 
