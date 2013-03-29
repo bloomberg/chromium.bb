@@ -12,10 +12,10 @@ namespace input_method {
 
 namespace {
 
-class MockComponentExtentionIMEManagerDelegate
-    : public ComponentExtentionIMEManagerDelegate {
+class MockComponentExtensionIMEManagerDelegate
+    : public ComponentExtensionIMEManagerDelegate {
  public:
-  MockComponentExtentionIMEManagerDelegate()
+  MockComponentExtensionIMEManagerDelegate()
       : load_call_count_(0), unload_call_count_(0) {
 
   }
@@ -66,7 +66,7 @@ class MockComponentExtentionIMEManagerDelegate
 
   std::vector<ComponentExtensionIME> ime_list_;
 
-  DISALLOW_COPY_AND_ASSIGN(MockComponentExtentionIMEManagerDelegate);
+  DISALLOW_COPY_AND_ASSIGN(MockComponentExtensionIMEManagerDelegate);
 };
 
 class ComponentExtensionIMEManagerTest : public testing::Test {
@@ -162,16 +162,16 @@ class ComponentExtensionIMEManagerTest : public testing::Test {
 
     ime_list_.push_back(ext3);
 
-    mock_delegate_ = new MockComponentExtentionIMEManagerDelegate();
+    mock_delegate_ = new MockComponentExtensionIMEManagerDelegate();
     mock_delegate_->set_ime_list(ime_list_);
     component_ext_mgr_.reset(
-        new ComponentExtentionIMEManager(mock_delegate_));
+        new ComponentExtensionIMEManager(mock_delegate_));
     component_ext_mgr_->Initialize();
   }
 
  protected:
-  MockComponentExtentionIMEManagerDelegate* mock_delegate_;
-  scoped_ptr<ComponentExtentionIMEManager> component_ext_mgr_;
+  MockComponentExtensionIMEManagerDelegate* mock_delegate_;
+  scoped_ptr<ComponentExtensionIMEManager> component_ext_mgr_;
   std::vector<ComponentExtensionIME> ime_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ComponentExtensionIMEManagerTest);

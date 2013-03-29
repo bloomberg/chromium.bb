@@ -14,25 +14,25 @@ ComponentExtensionIME::ComponentExtensionIME() {
 ComponentExtensionIME::~ComponentExtensionIME() {
 }
 
-ComponentExtentionIMEManagerDelegate::ComponentExtentionIMEManagerDelegate() {
+ComponentExtensionIMEManagerDelegate::ComponentExtensionIMEManagerDelegate() {
 }
 
-ComponentExtentionIMEManagerDelegate::~ComponentExtentionIMEManagerDelegate() {
+ComponentExtensionIMEManagerDelegate::~ComponentExtensionIMEManagerDelegate() {
 }
 
-ComponentExtentionIMEManager::ComponentExtentionIMEManager(
-    ComponentExtentionIMEManagerDelegate* delegate)
+ComponentExtensionIMEManager::ComponentExtensionIMEManager(
+    ComponentExtensionIMEManagerDelegate* delegate)
     : delegate_(delegate) {
 }
 
-ComponentExtentionIMEManager::~ComponentExtentionIMEManager() {
+ComponentExtensionIMEManager::~ComponentExtensionIMEManager() {
 }
 
-void ComponentExtentionIMEManager::Initialize() {
+void ComponentExtensionIMEManager::Initialize() {
   component_extension_imes_ = delegate_->ListIME();
 }
 
-bool ComponentExtentionIMEManager::LoadComponentExtensionIME(
+bool ComponentExtensionIMEManager::LoadComponentExtensionIME(
     const std::string& input_method_id) {
   ComponentExtensionIME ime;
   if (FindEngineEntry(input_method_id, &ime, NULL))
@@ -41,7 +41,7 @@ bool ComponentExtentionIMEManager::LoadComponentExtensionIME(
     return false;
 }
 
-bool ComponentExtentionIMEManager::UnloadComponentExtensionIME(
+bool ComponentExtensionIMEManager::UnloadComponentExtensionIME(
     const std::string& input_method_id) {
   ComponentExtensionIME ime;
   if (FindEngineEntry(input_method_id, &ime, NULL))
@@ -50,12 +50,12 @@ bool ComponentExtentionIMEManager::UnloadComponentExtensionIME(
     return false;
 }
 
-bool ComponentExtentionIMEManager::IsComponentExtensionIMEId(
+bool ComponentExtensionIMEManager::IsComponentExtensionIMEId(
     const std::string& input_method_id) {
   return FindEngineEntry(input_method_id, NULL, NULL);
 }
 
-std::string ComponentExtentionIMEManager::GetName(
+std::string ComponentExtensionIMEManager::GetName(
     const std::string& input_method_id) {
   IBusComponent::EngineDescription engine;
   if (!FindEngineEntry(input_method_id, NULL, &engine))
@@ -63,7 +63,7 @@ std::string ComponentExtentionIMEManager::GetName(
   return engine.display_name;
 }
 
-std::string ComponentExtentionIMEManager::GetDescription(
+std::string ComponentExtensionIMEManager::GetDescription(
     const std::string& input_method_id) {
   IBusComponent::EngineDescription engine;
   if (!FindEngineEntry(input_method_id, NULL, &engine))
@@ -71,7 +71,7 @@ std::string ComponentExtentionIMEManager::GetDescription(
   return engine.description;
 }
 
-std::vector<std::string> ComponentExtentionIMEManager::ListIMEByLanguage(
+std::vector<std::string> ComponentExtensionIMEManager::ListIMEByLanguage(
     const std::string& language) {
   std::vector<std::string> result;
   for (size_t i = 0; i < component_extension_imes_.size(); ++i) {
@@ -86,7 +86,7 @@ std::vector<std::string> ComponentExtentionIMEManager::ListIMEByLanguage(
   return result;
 }
 
-bool ComponentExtentionIMEManager::FindEngineEntry(
+bool ComponentExtensionIMEManager::FindEngineEntry(
     const std::string& input_method_id,
     ComponentExtensionIME* out_extension,
     IBusComponent::EngineDescription* out_engine) {

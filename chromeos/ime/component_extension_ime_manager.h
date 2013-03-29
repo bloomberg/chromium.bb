@@ -23,10 +23,10 @@ struct CHROMEOS_EXPORT ComponentExtensionIME {
 };
 
 // Provides an interface to list/load/unload for component extension IME.
-class CHROMEOS_EXPORT ComponentExtentionIMEManagerDelegate {
+class CHROMEOS_EXPORT ComponentExtensionIMEManagerDelegate {
  public:
-  ComponentExtentionIMEManagerDelegate();
-  virtual ~ComponentExtentionIMEManagerDelegate();
+  ComponentExtensionIMEManagerDelegate();
+  virtual ~ComponentExtensionIMEManagerDelegate();
 
   // Lists installed component extension IMEs.
   virtual std::vector<ComponentExtensionIME> ListIME() = 0;
@@ -43,12 +43,12 @@ class CHROMEOS_EXPORT ComponentExtentionIMEManagerDelegate {
 };
 
 // This class manages component extension input method.
-class CHROMEOS_EXPORT ComponentExtentionIMEManager {
+class CHROMEOS_EXPORT ComponentExtensionIMEManager {
  public:
   // This class takes the ownership of |delegate|.
-  explicit ComponentExtentionIMEManager(
-      ComponentExtentionIMEManagerDelegate* delegate);
-  virtual ~ComponentExtentionIMEManager();
+  explicit ComponentExtensionIMEManager(
+      ComponentExtensionIMEManagerDelegate* delegate);
+  virtual ~ComponentExtensionIMEManager();
 
   // Initializes component extension manager. This function create internal
   // mapping between input method id and engine components. This function must
@@ -84,11 +84,11 @@ class CHROMEOS_EXPORT ComponentExtentionIMEManager {
   bool FindEngineEntry(const std::string& input_method_id,
                        ComponentExtensionIME* out_extension,
                        IBusComponent::EngineDescription* out_engine);
-  scoped_ptr<ComponentExtentionIMEManagerDelegate> delegate_;
+  scoped_ptr<ComponentExtensionIMEManagerDelegate> delegate_;
 
   std::vector<ComponentExtensionIME> component_extension_imes_;
 
-  DISALLOW_COPY_AND_ASSIGN(ComponentExtentionIMEManager);
+  DISALLOW_COPY_AND_ASSIGN(ComponentExtensionIMEManager);
 };
 
 }  // namespace chromeos

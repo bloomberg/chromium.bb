@@ -17,14 +17,14 @@
 
 namespace chromeos {
 
-// The implementation class of ComponentExtentionIMEManagerDelegate.
-class ComponentExtentionIMEManagerImpl :
-  public ComponentExtentionIMEManagerDelegate {
+// The implementation class of ComponentExtensionIMEManagerDelegate.
+class ComponentExtensionIMEManagerImpl
+    : public ComponentExtensionIMEManagerDelegate {
  public:
-  ComponentExtentionIMEManagerImpl();
-  virtual ~ComponentExtentionIMEManagerImpl();
+  ComponentExtensionIMEManagerImpl();
+  virtual ~ComponentExtensionIMEManagerImpl();
 
-  // ComponentExtentionIMEManagerDelegate overrides:
+  // ComponentExtensionIMEManagerDelegate overrides:
   virtual std::vector<ComponentExtensionIME> ListIME() OVERRIDE;
   virtual bool Load(const std::string& extension_id,
                     const base::FilePath& file_path) OVERRIDE;
@@ -80,9 +80,9 @@ class ComponentExtentionIMEManagerImpl :
   std::set<std::string> loaded_extension_id_;
 
   base::ThreadChecker thread_checker_;
-  base::WeakPtrFactory<ComponentExtentionIMEManagerImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<ComponentExtensionIMEManagerImpl> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(ComponentExtentionIMEManagerImpl);
+  DISALLOW_COPY_AND_ASSIGN(ComponentExtensionIMEManagerImpl);
 };
 
 }  // namespace chromeos

@@ -38,20 +38,20 @@ extensions::ComponentLoader* GetComponentLoader() {
 }
 }  // namespace
 
-ComponentExtentionIMEManagerImpl::ComponentExtentionIMEManagerImpl()
+ComponentExtensionIMEManagerImpl::ComponentExtensionIMEManagerImpl()
     : is_initialized_(false),
       weak_ptr_factory_(this) {
 }
 
-ComponentExtentionIMEManagerImpl::~ComponentExtentionIMEManagerImpl() {
+ComponentExtensionIMEManagerImpl::~ComponentExtensionIMEManagerImpl() {
 }
 
-std::vector<ComponentExtensionIME> ComponentExtentionIMEManagerImpl::ListIME() {
+std::vector<ComponentExtensionIME> ComponentExtensionIMEManagerImpl::ListIME() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return component_extension_list_;
 }
 
-bool ComponentExtentionIMEManagerImpl::Load(const std::string& extension_id,
+bool ComponentExtensionIMEManagerImpl::Load(const std::string& extension_id,
                                             const base::FilePath& file_path) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (loaded_extension_id_.find(extension_id) != loaded_extension_id_.end())
@@ -63,7 +63,7 @@ bool ComponentExtentionIMEManagerImpl::Load(const std::string& extension_id,
   return true;
 }
 
-bool ComponentExtentionIMEManagerImpl::Unload(const std::string& extension_id,
+bool ComponentExtensionIMEManagerImpl::Unload(const std::string& extension_id,
                                               const base::FilePath& file_path) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (loaded_extension_id_.find(extension_id) == loaded_extension_id_.end())
@@ -73,7 +73,7 @@ bool ComponentExtentionIMEManagerImpl::Unload(const std::string& extension_id,
   return true;
 }
 
-scoped_ptr<DictionaryValue> ComponentExtentionIMEManagerImpl::GetManifest(
+scoped_ptr<DictionaryValue> ComponentExtensionIMEManagerImpl::GetManifest(
     const base::FilePath& file_path) {
   std::string error;
   scoped_ptr<DictionaryValue> manifest(
@@ -88,7 +88,7 @@ scoped_ptr<DictionaryValue> ComponentExtentionIMEManagerImpl::GetManifest(
   return manifest.Pass();
 }
 
-void ComponentExtentionIMEManagerImpl::Initialize(
+void ComponentExtensionIMEManagerImpl::Initialize(
     const scoped_refptr<base::SequencedTaskRunner>& file_task_runner,
     const base::Closure& callback) {
   DCHECK(!is_initialized_);
@@ -96,21 +96,21 @@ void ComponentExtentionIMEManagerImpl::Initialize(
       = new std::vector<ComponentExtensionIME>;
   file_task_runner->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&ComponentExtentionIMEManagerImpl::ReadComponentExtensionsInfo,
+      base::Bind(&ComponentExtensionIMEManagerImpl::ReadComponentExtensionsInfo,
                  base::Unretained(component_extension_ime_list)),
       base::Bind(
-          &ComponentExtentionIMEManagerImpl::OnReadComponentExtensionsInfo,
+          &ComponentExtensionIMEManagerImpl::OnReadComponentExtensionsInfo,
           weak_ptr_factory_.GetWeakPtr(),
           base::Owned(component_extension_ime_list),
           callback));
 }
 
-bool ComponentExtentionIMEManagerImpl::IsInitialized() {
+bool ComponentExtensionIMEManagerImpl::IsInitialized() {
   return is_initialized_;
 }
 
 // static
-bool ComponentExtentionIMEManagerImpl::ReadEngineComponent(
+bool ComponentExtensionIMEManagerImpl::ReadEngineComponent(
     const DictionaryValue& dict,
     IBusComponent::EngineDescription* out) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
@@ -139,7 +139,7 @@ bool ComponentExtentionIMEManagerImpl::ReadEngineComponent(
 }
 
 // static
-bool ComponentExtentionIMEManagerImpl::ReadExtensionInfo(
+bool ComponentExtensionIMEManagerImpl::ReadExtensionInfo(
     const DictionaryValue& manifest,
     ComponentExtensionIME* out) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
@@ -151,7 +151,7 @@ bool ComponentExtentionIMEManagerImpl::ReadExtensionInfo(
 }
 
 // static
-void ComponentExtentionIMEManagerImpl::ReadComponentExtensionsInfo(
+void ComponentExtensionIMEManagerImpl::ReadComponentExtensionsInfo(
     std::vector<ComponentExtensionIME>* out_imes) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
   DCHECK(out_imes);
@@ -185,7 +185,7 @@ void ComponentExtentionIMEManagerImpl::ReadComponentExtensionsInfo(
   }
 }
 
-void ComponentExtentionIMEManagerImpl::OnReadComponentExtensionsInfo(
+void ComponentExtensionIMEManagerImpl::OnReadComponentExtensionsInfo(
     std::vector<ComponentExtensionIME>* result,
     const base::Closure& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
