@@ -664,20 +664,15 @@ void DeepHeapProfile::GlobalStats::SnapshotMaps(
       bool first = true;
 
       do {
-        if (!first) {
-          cursor = mmap_iter->end_addr;
-          ++mmap_iter;
-          // Don't break here even if mmap_iter == EndRegionLocked().
-        }
-        first = false;
-
+        Bucket* bucket = NULL;
         DeepBucket* deep_bucket = NULL;
-        if (mmap_iter != MemoryRegionMap::EndRegionLocked()) {
+        if (!first) {
           size_t committed = deep_profile->memory_residence_info_getter_->
               CommittedSize(mmap_iter->start_addr, mmap_iter->end_addr - 1);
           // TODO(dmikurube): Store a reference to the bucket in region.
           Bucket* bucket = MemoryRegionMap::GetBucket(
               mmap_iter->call_stack_depth, mmap_iter->call_stack);
+          DeepBucket* deep_bucket = NULL;
           if (bucket != NULL) {
             deep_bucket = deep_profile->deep_table_.Lookup(
                 bucket,
@@ -692,7 +687,12 @@ void DeepHeapProfile::GlobalStats::SnapshotMaps(
           profiled_mmap_.AddToVirtualBytes(
               mmap_iter->end_addr - mmap_iter->start_addr);
           profiled_mmap_.AddToCommittedBytes(committed);
+
+          cursor = mmap_iter->end_addr;
+          ++mmap_iter;
+          // Don't break here even if mmap_iter == EndRegionLocked().
         }
+        first = false;
 
         uint64 last_address_of_unhooked;
         // If the next mmap entry is away from the current maps line.
