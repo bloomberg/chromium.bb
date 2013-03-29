@@ -483,7 +483,8 @@ bool InstantController::Update(const AutocompleteMatch& match,
 }
 
 scoped_ptr<content::WebContents> InstantController::ReleaseNTPContents() {
-  if (!extended_enabled_ || use_local_overlay_only_)
+  if (!extended_enabled_ || !browser_->profile() ||
+      browser_->profile()->IsOffTheRecord())
     return scoped_ptr<content::WebContents>(NULL);
 
   LOG_INSTANT_DEBUG_EVENT(this, "ReleaseNTPContents");
@@ -491,9 +492,7 @@ scoped_ptr<content::WebContents> InstantController::ReleaseNTPContents() {
   if (ShouldSwitchToLocalNTP())
     ResetNTP(false, true);
 
-  scoped_ptr<content::WebContents> ntp_contents;
-  if (ntp_)
-    ntp_contents = ntp_->ReleaseContents();
+  scoped_ptr<content::WebContents> ntp_contents = ntp_->ReleaseContents();
 
   // Override the blacklist on an explicit user action.
   ResetNTP(true, false);
@@ -1257,7 +1256,6 @@ void InstantController::OmniboxLostFocus(gfx::NativeView view_gaining_focus) {
 }
 
 void InstantController::ResetNTP(bool ignore_blacklist, bool use_local_ntp) {
-  ntp_.reset();
   std::string instant_url;
   if (use_local_ntp ||
       !GetInstantURL(browser_->profile(), ignore_blacklist, &instant_url))
