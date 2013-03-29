@@ -26,6 +26,7 @@
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/ppapi_permissions.h"
 #include "ppapi/shared_impl/resource_tracker.h"
+#include "ppapi/shared_impl/var.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 
 // Note that the code in the creation functions in this file should generally
@@ -64,10 +65,13 @@ PP_Resource PepperInProcessResourceCreation::CreateBrowserFont(
 PP_Resource PepperInProcessResourceCreation::CreateFileChooser(
     PP_Instance instance,
     PP_FileChooserMode_Dev mode,
-    const char* accept_types) {
+    const PP_Var& accept_types) {
+  scoped_refptr<ppapi::StringVar> string_var =
+      ppapi::StringVar::FromPPVar(accept_types);
+  std::string str = string_var ? string_var->value() : std::string();
   return (new ppapi::proxy::FileChooserResource(
       host_impl_->in_process_router()->GetPluginConnection(),
-      instance, mode, accept_types))->GetReference();
+      instance, mode, str.c_str()))->GetReference();
 }
 
 PP_Resource PepperInProcessResourceCreation::CreateFileIO(

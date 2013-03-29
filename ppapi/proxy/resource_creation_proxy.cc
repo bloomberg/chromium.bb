@@ -208,9 +208,11 @@ PP_Resource ResourceCreationProxy::CreateAudioConfig(
 PP_Resource ResourceCreationProxy::CreateFileChooser(
     PP_Instance instance,
     PP_FileChooserMode_Dev mode,
-    const char* accept_types) {
+    const PP_Var& accept_types) {
+  scoped_refptr<StringVar> string_var = StringVar::FromPPVar(accept_types);
+  std::string str = string_var ? string_var->value() : std::string();
   return (new FileChooserResource(GetConnection(), instance, mode,
-                                  accept_types))->GetReference();
+                                  str.c_str()))->GetReference();
 }
 
 PP_Resource ResourceCreationProxy::CreateGraphics2D(PP_Instance instance,

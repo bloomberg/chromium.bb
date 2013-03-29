@@ -103,7 +103,7 @@ class ResourceCreationProxy : public InterfaceProxy,
                                         uint32_t sample_frame_count) OVERRIDE;
   virtual PP_Resource CreateFileChooser(PP_Instance instance,
                                         PP_FileChooserMode_Dev mode,
-                                        const char* accept_types) OVERRIDE;
+                                        const PP_Var& accept_types) OVERRIDE;
   virtual PP_Resource CreateGraphics2D(PP_Instance pp_instance,
                                        const PP_Size& size,
                                        PP_Bool is_always_opaque) OVERRIDE;
