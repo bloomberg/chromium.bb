@@ -224,8 +224,10 @@ bool PassThroughImageTransportSurface::DeferDraws() {
 }
 
 bool PassThroughImageTransportSurface::SwapBuffers() {
-  bool result = gfx::GLSurfaceAdapter::SwapBuffers();
+  // GetVsyncValues before SwapBuffers to work around Mali driver bug:
+  // crbug.com/223558.
   SendVSyncUpdateIfAvailable();
+  bool result = gfx::GLSurfaceAdapter::SwapBuffers();
 
   if (transport_) {
     DCHECK(!is_swap_buffers_pending_);
@@ -243,8 +245,8 @@ bool PassThroughImageTransportSurface::SwapBuffers() {
 
 bool PassThroughImageTransportSurface::PostSubBuffer(
     int x, int y, int width, int height) {
-  bool result = gfx::GLSurfaceAdapter::PostSubBuffer(x, y, width, height);
   SendVSyncUpdateIfAvailable();
+  bool result = gfx::GLSurfaceAdapter::PostSubBuffer(x, y, width, height);
 
   if (transport_) {
     DCHECK(!is_swap_buffers_pending_);
