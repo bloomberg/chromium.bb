@@ -71,7 +71,6 @@
           'proxy/interface_list.h',
           'proxy/interface_proxy.cc',
           'proxy/interface_proxy.h',
-          'proxy/locking_resource_releaser.h',
           'proxy/pdf_resource.cc',
           'proxy/pdf_resource.h',
           'proxy/plugin_array_buffer_var.cc',

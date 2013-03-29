@@ -15,25 +15,17 @@
 
 namespace ppapi {
 
-ResourceTracker::ResourceTracker(ThreadMode thread_mode)
+ResourceTracker::ResourceTracker()
     : last_resource_value_(0),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
-  if (thread_mode == SINGLE_THREADED)
-    thread_checker_.reset(new base::ThreadChecker);
 }
 
 ResourceTracker::~ResourceTracker() {
 }
 
-void ResourceTracker::CheckThreadingPreconditions() const {
-  DCHECK(!thread_checker_ || thread_checker_->CalledOnValidThread());
-#ifndef NDEBUG
-  ProxyLock::AssertAcquired();
-#endif
-}
-
 Resource* ResourceTracker::GetResource(PP_Resource res) const {
-  CheckThreadingPreconditions();
+  CHECK(thread_checker_.CalledOnValidThread());
+  ProxyLock::AssertAcquired();
   ResourceMap::const_iterator i = live_resources_.find(res);
   if (i == live_resources_.end())
     return NULL;
@@ -41,7 +33,7 @@ Resource* ResourceTracker::GetResource(PP_Resource res) const {
 }
 
 void ResourceTracker::AddRefResource(PP_Resource res) {
-  CheckThreadingPreconditions();
+  CHECK(thread_checker_.CalledOnValidThread());
   DLOG_IF(ERROR, !CheckIdType(res, PP_ID_TYPE_RESOURCE))
       << res << " is not a PP_Resource.";
   ResourceMap::iterator i = live_resources_.find(res);
@@ -63,7 +55,7 @@ void ResourceTracker::AddRefResource(PP_Resource res) {
 }
 
 void ResourceTracker::ReleaseResource(PP_Resource res) {
-  CheckThreadingPreconditions();
+  CHECK(thread_checker_.CalledOnValidThread());
   DLOG_IF(ERROR, !CheckIdType(res, PP_ID_TYPE_RESOURCE))
       << res << " is not a PP_Resource.";
   ResourceMap::iterator i = live_resources_.find(res);
@@ -94,7 +86,7 @@ void ResourceTracker::ReleaseResourceSoon(PP_Resource res) {
 }
 
 void ResourceTracker::DidCreateInstance(PP_Instance instance) {
-  CheckThreadingPreconditions();
+  CHECK(thread_checker_.CalledOnValidThread());
   // Due to the infrastructure of some tests, the instance is registered
   // twice in a few cases. It would be nice not to do that and assert here
   // instead.
@@ -104,7 +96,7 @@ void ResourceTracker::DidCreateInstance(PP_Instance instance) {
 }
 
 void ResourceTracker::DidDeleteInstance(PP_Instance instance) {
-  CheckThreadingPreconditions();
+  CHECK(thread_checker_.CalledOnValidThread());
   InstanceMap::iterator found_instance = instance_map_.find(instance);
 
   // Due to the infrastructure of some tests, the instance is unregistered
@@ -159,7 +151,7 @@ void ResourceTracker::DidDeleteInstance(PP_Instance instance) {
 }
 
 int ResourceTracker::GetLiveObjectsForInstance(PP_Instance instance) const {
-  CheckThreadingPreconditions();
+  CHECK(thread_checker_.CalledOnValidThread());
   InstanceMap::const_iterator found = instance_map_.find(instance);
   if (found == instance_map_.end())
     return 0;
@@ -167,7 +159,7 @@ int ResourceTracker::GetLiveObjectsForInstance(PP_Instance instance) const {
 }
 
 PP_Resource ResourceTracker::AddResource(Resource* object) {
-  CheckThreadingPreconditions();
+  CHECK(thread_checker_.CalledOnValidThread());
   // If the plugin manages to create too many resources, don't do crazy stuff.
   if (last_resource_value_ == kMaxPPId)
     return 0;
@@ -199,7 +191,7 @@ PP_Resource ResourceTracker::AddResource(Resource* object) {
 }
 
 void ResourceTracker::RemoveResource(Resource* object) {
-  CheckThreadingPreconditions();
+  CHECK(thread_checker_.CalledOnValidThread());
   PP_Resource pp_resource = object->pp_resource();
   InstanceMap::iterator found = instance_map_.find(object->pp_instance());
   if (found != instance_map_.end())

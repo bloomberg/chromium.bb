@@ -29,29 +29,22 @@ VarTracker::VarInfo::VarInfo(Var* v, int input_ref_count)
       track_with_no_reference_count(0) {
 }
 
-VarTracker::VarTracker(ThreadMode thread_mode) : last_var_id_(0) {
-  if (thread_mode == SINGLE_THREADED)
-    thread_checker_.reset(new base::ThreadChecker);
+VarTracker::VarTracker() : last_var_id_(0) {
 }
 
 VarTracker::~VarTracker() {
 }
 
-void VarTracker::CheckThreadingPreconditions() const {
-  DCHECK(!thread_checker_ || thread_checker_->CalledOnValidThread());
-#ifndef NDEBUG
-  ProxyLock::AssertAcquired();
-#endif
-}
-
 int32 VarTracker::AddVar(Var* var) {
-  CheckThreadingPreconditions();
+  DCHECK(CalledOnValidThread());
+  ProxyLock::AssertAcquired();
 
   return AddVarInternal(var, ADD_VAR_TAKE_ONE_REFERENCE);
 }
 
 Var* VarTracker::GetVar(int32 var_id) const {
-  CheckThreadingPreconditions();
+  DCHECK(CalledOnValidThread());
+  ProxyLock::AssertAcquired();
 
   VarMap::const_iterator result = live_vars_.find(var_id);
   if (result == live_vars_.end())
@@ -60,7 +53,8 @@ Var* VarTracker::GetVar(int32 var_id) const {
 }
 
 Var* VarTracker::GetVar(const PP_Var& var) const {
-  CheckThreadingPreconditions();
+  DCHECK(CalledOnValidThread());
+  ProxyLock::AssertAcquired();
 
   if (!IsVarTypeRefcounted(var.type))
     return NULL;
@@ -68,7 +62,8 @@ Var* VarTracker::GetVar(const PP_Var& var) const {
 }
 
 bool VarTracker::AddRefVar(int32 var_id) {
-  CheckThreadingPreconditions();
+  DCHECK(CalledOnValidThread());
+  ProxyLock::AssertAcquired();
 
   DLOG_IF(ERROR, !CheckIdType(var_id, PP_ID_TYPE_VAR))
       << var_id << " is not a PP_Var ID.";
@@ -93,7 +88,8 @@ bool VarTracker::AddRefVar(int32 var_id) {
 }
 
 bool VarTracker::AddRefVar(const PP_Var& var) {
-  CheckThreadingPreconditions();
+  DCHECK(CalledOnValidThread());
+  ProxyLock::AssertAcquired();
 
   if (!IsVarTypeRefcounted(var.type))
     return true;
@@ -101,7 +97,8 @@ bool VarTracker::AddRefVar(const PP_Var& var) {
 }
 
 bool VarTracker::ReleaseVar(int32 var_id) {
-  CheckThreadingPreconditions();
+  DCHECK(CalledOnValidThread());
+  ProxyLock::AssertAcquired();
 
   DLOG_IF(ERROR, !CheckIdType(var_id, PP_ID_TYPE_VAR))
       << var_id << " is not a PP_Var ID.";
@@ -132,7 +129,8 @@ bool VarTracker::ReleaseVar(int32 var_id) {
 }
 
 bool VarTracker::ReleaseVar(const PP_Var& var) {
-  CheckThreadingPreconditions();
+  DCHECK(CalledOnValidThread());
+  ProxyLock::AssertAcquired();
 
   if (!IsVarTypeRefcounted(var.type))
     return false;
@@ -156,7 +154,8 @@ VarTracker::VarMap::iterator VarTracker::GetLiveVar(int32 id) {
 }
 
 int VarTracker::GetRefCountForObject(const PP_Var& plugin_object) {
-  CheckThreadingPreconditions();
+  DCHECK(CalledOnValidThread());
+  ProxyLock::AssertAcquired();
 
   VarMap::iterator found = GetLiveVar(plugin_object);
   if (found == live_vars_.end())
@@ -166,7 +165,8 @@ int VarTracker::GetRefCountForObject(const PP_Var& plugin_object) {
 
 int VarTracker::GetTrackedWithNoReferenceCountForObject(
     const PP_Var& plugin_object) {
-  CheckThreadingPreconditions();
+  DCHECK(CalledOnValidThread());
+  ProxyLock::AssertAcquired();
 
   VarMap::iterator found = GetLiveVar(plugin_object);
   if (found == live_vars_.end())
@@ -188,7 +188,8 @@ bool VarTracker::IsVarTypeRefcounted(PP_VarType type) const {
 }
 
 PP_Var VarTracker::MakeArrayBufferPPVar(uint32 size_in_bytes) {
-  CheckThreadingPreconditions();
+  DCHECK(CalledOnValidThread());
+  ProxyLock::AssertAcquired();
 
   scoped_refptr<ArrayBufferVar> array_buffer(CreateArrayBuffer(size_in_bytes));
   if (!array_buffer)
@@ -198,7 +199,8 @@ PP_Var VarTracker::MakeArrayBufferPPVar(uint32 size_in_bytes) {
 
 PP_Var VarTracker::MakeArrayBufferPPVar(uint32 size_in_bytes,
                                         const void* data) {
-  CheckThreadingPreconditions();
+  DCHECK(CalledOnValidThread());
+  ProxyLock::AssertAcquired();
 
   ArrayBufferVar* array_buffer = MakeArrayBufferVar(size_in_bytes, data);
   return array_buffer ? array_buffer->GetPPVar() : PP_MakeNull();
@@ -206,7 +208,8 @@ PP_Var VarTracker::MakeArrayBufferPPVar(uint32 size_in_bytes,
 
 ArrayBufferVar* VarTracker::MakeArrayBufferVar(uint32 size_in_bytes,
                                                const void* data) {
-  CheckThreadingPreconditions();
+  DCHECK(CalledOnValidThread());
+  ProxyLock::AssertAcquired();
 
   ArrayBufferVar* array_buffer(CreateArrayBuffer(size_in_bytes));
   if (!array_buffer)
@@ -217,7 +220,7 @@ ArrayBufferVar* VarTracker::MakeArrayBufferVar(uint32 size_in_bytes,
 
 PP_Var VarTracker::MakeArrayBufferPPVar(uint32 size_in_bytes,
                                         base::SharedMemoryHandle handle) {
-  CheckThreadingPreconditions();
+  DCHECK(CalledOnValidThread());
 
   scoped_refptr<ArrayBufferVar> array_buffer(
       CreateShmArrayBuffer(size_in_bytes, handle));
@@ -227,7 +230,8 @@ PP_Var VarTracker::MakeArrayBufferPPVar(uint32 size_in_bytes,
 }
 
 std::vector<PP_Var> VarTracker::GetLiveVars() {
-  CheckThreadingPreconditions();
+  DCHECK(CalledOnValidThread());
+  ProxyLock::AssertAcquired();
 
   std::vector<PP_Var> var_vector;
   var_vector.reserve(live_vars_.size());

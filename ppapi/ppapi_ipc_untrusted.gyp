@@ -23,6 +23,11 @@
             'nlib_target': 'libppapi_ipc_untrusted.a',
             'build_glibc': 0,
             'build_newlib': 1,
+            'defines': [
+              # Enable threading for the untrusted side of the proxy.
+              # TODO(bbudge) remove when this is the default.
+              'ENABLE_PEPPER_THREADING',
+            ],
           },
           'include_dirs': [
             '..',
