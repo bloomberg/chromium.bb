@@ -21,6 +21,7 @@
 #include "chrome/renderer/chrome_render_process_observer.h"
 #include "chrome/renderer/extensions/dom_activity_logger.h"
 #include "chrome/renderer/extensions/extension_groups.h"
+#include "chrome/renderer/isolated_world_ids.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "googleurl/src/gurl.h"
@@ -52,7 +53,7 @@ static const char kUserScriptTail[] = "\n})(window);";
 
 int UserScriptSlave::GetIsolatedWorldIdForExtension(const Extension* extension,
                                                     WebFrame* frame) {
-  static int g_next_isolated_world_id = 1;
+  static int g_next_isolated_world_id = chrome::ISOLATED_WORLD_ID_EXTENSIONS;
 
   IsolatedWorldMap::iterator iter = isolated_world_ids_.find(extension->id());
   if (iter != isolated_world_ids_.end()) {

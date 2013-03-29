@@ -139,6 +139,7 @@
         'renderer/extensions/webstore_bindings.h',
         'renderer/frame_sniffer.cc',
         'renderer/frame_sniffer.h',
+        'renderer/isolated_world_ids.h',
         'renderer/loadtimes_extension_bindings.cc',
         'renderer/loadtimes_extension_bindings.h',
         'renderer/net/net_error_helper.cc',
