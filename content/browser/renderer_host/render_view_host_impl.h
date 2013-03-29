@@ -271,13 +271,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   // Informs the renderer of when the current navigation was allowed to proceed.
   void SetNavigationStartTime(const base::TimeTicks& navigation_start);
 
-  // Whether the initial empty page of this view has been accessed by another
-  // page, making it unsafe to show the pending URL.  Always false after the
-  // first commit.
-  bool has_accessed_initial_document() {
-    return has_accessed_initial_document_;
-  }
-
   // Whether this RenderViewHost has been swapped out to be displayed by a
   // different process.
   bool is_swapped_out() const { return is_swapped_out_; }
@@ -563,7 +556,6 @@ class CONTENT_EXPORT RenderViewHostImpl
       const ShowDesktopNotificationHostMsgParams& params);
   void OnCancelDesktopNotification(int notification_id);
   void OnRunFileChooser(const FileChooserParams& params);
-  void OnDidAccessInitialDocument();
   void OnDomOperationResponse(const std::string& json_string,
                               int automation_id);
   void OnFrameTreeUpdated(const std::string& frame_tree);
@@ -616,12 +608,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   // WebContentsImpl will destroy the pending RVH and create a new one if a
   // second navigation occurs.
   scoped_ptr<ViewMsg_Navigate> suspended_nav_message_;
-
-  // Whether the initial empty page of this view has been accessed by another
-  // page, making it unsafe to show the pending URL.  Usually false unless
-  // another window tries to modify the blank page.  Always false after the
-  // first commit.
-  bool has_accessed_initial_document_;
 
   // Whether this RenderViewHost is currently swapped out, such that the view is
   // being rendered by another process.

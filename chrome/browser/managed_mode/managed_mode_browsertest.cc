@@ -173,9 +173,6 @@ class ManagedModeBlockModeTest : public InProcessBrowserTest {
           content::NotificationService::AllSources());
       InfoBarService* infobar_service =
           InfoBarService::FromWebContents(tab);
-      content::WindowedNotificationObserver back_observer(
-          content::NOTIFICATION_LOAD_STOP,
-          content::Source<NavigationController>(&tab->GetController()));
 
       switch (infobar_action) {
         case INFOBAR_ACCEPT:
@@ -186,7 +183,6 @@ class ManagedModeBlockModeTest : public InProcessBrowserTest {
         case INFOBAR_CANCEL:
           confirm_info_bar_delegate->InfoBarDismissed();
           ASSERT_FALSE(confirm_info_bar_delegate->Cancel());
-          back_observer.Wait();
           infobar_service->RemoveInfoBar(confirm_info_bar_delegate);
           break;
         case INFOBAR_ALREADY_ADDED:
