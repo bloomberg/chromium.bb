@@ -42,20 +42,33 @@
  */
 
 static struct NaClDescVtbl const kNaClDescIoDescVtbl;  /* fwd */
+
+static int NaClDescIoDescSubclassCtor(struct NaClDescIoDesc  *self,
+                                      struct NaClHostDesc    *hd) {
+  struct NaClDesc *basep = (struct NaClDesc *) self;
+
+  self->hd = hd;
+  basep->base.vtbl = (struct NaClRefCountVtbl const *) &kNaClDescIoDescVtbl;
+  return 1;
+}
+
 /*
  * Takes ownership of hd, will close in Dtor.
  */
 int NaClDescIoDescCtor(struct NaClDescIoDesc  *self,
                        struct NaClHostDesc    *hd) {
   struct NaClDesc *basep = (struct NaClDesc *) self;
+  int rv;
 
   basep->base.vtbl = (struct NaClRefCountVtbl const *) NULL;
   if (!NaClDescCtor(basep)) {
     return 0;
   }
-  self->hd = hd;
-  basep->base.vtbl = (struct NaClRefCountVtbl const *) &kNaClDescIoDescVtbl;
-  return 1;
+  rv = NaClDescIoDescSubclassCtor(self, hd);
+  if (!rv) {
+    (*NACL_VTBL(NaClRefCount, basep)->Dtor)((struct NaClRefCount *) basep);
+  }
+  return rv;
 }
 
 static void NaClDescIoDescDtor(struct NaClRefCount *vself) {
@@ -241,19 +254,31 @@ static int NaClDescIoDescFstat(struct NaClDesc         *vself,
 static int NaClDescIoDescExternalizeSize(struct NaClDesc *vself,
                                          size_t          *nbytes,
                                          size_t          *nhandles) {
-  UNREFERENCED_PARAMETER(vself);
+  int rv;
 
-  *nbytes = 0;
-  *nhandles = 1;
+  rv = NaClDescExternalizeSize(vself, nbytes, nhandles);
+  if (0 != rv) {
+    return rv;
+  }
+  *nhandles += 1;
   return 0;
 }
 
 static int NaClDescIoDescExternalize(struct NaClDesc           *vself,
                                      struct NaClDescXferState  *xfer) {
   struct NaClDescIoDesc *self = (struct NaClDescIoDesc *) vself;
+  int rv;
+#if NACL_WINDOWS
+  HANDLE  h;
+#endif
+
+  rv = NaClDescExternalize(vself, xfer);
+  if (0 != rv) {
+    return rv;
+  }
 
 #if NACL_WINDOWS
-  HANDLE  h = (HANDLE) _get_osfhandle(self->hd->d);
+  h = (HANDLE) _get_osfhandle(self->hd->d);
 
   *xfer->next_handle++ = (NaClHandle) h;
 #else
@@ -278,7 +303,6 @@ static struct NaClDescVtbl const kNaClDescIoDescVtbl = {
   NaClDescIoDescIoctl,
   NaClDescIoDescFstat,
   NaClDescGetdentsNotImplemented,
-  NACL_DESC_HOST_IO,
   NaClDescIoDescExternalizeSize,
   NaClDescIoDescExternalize,
   NaClDescLockNotImplemented,
@@ -297,6 +321,11 @@ static struct NaClDescVtbl const kNaClDescIoDescVtbl = {
   NaClDescPostNotImplemented,
   NaClDescSemWaitNotImplemented,
   NaClDescGetValueNotImplemented,
+  NaClDescSetMetadata,
+  NaClDescGetMetadata,
+  NaClDescSetFlags,
+  NaClDescGetFlags,
+  NACL_DESC_HOST_IO,
 };
 
 /* set *out_desc to struct NaClDescIo * output */
@@ -315,10 +344,6 @@ int NaClDescIoInternalize(struct NaClDesc               **out_desc,
   nhdp = NULL;
   ndidp = NULL;
 
-  if (xfer->next_handle == xfer->handle_buffer_end) {
-    rv = -NACL_ABI_EIO;
-    goto cleanup;
-  }
   nhdp = malloc(sizeof *nhdp);
   if (NULL == nhdp) {
     rv = -NACL_ABI_ENOMEM;
@@ -329,12 +354,20 @@ int NaClDescIoInternalize(struct NaClDesc               **out_desc,
     rv = -NACL_ABI_ENOMEM;
     goto cleanup;
   }
+  if (!NaClDescInternalizeCtor((struct NaClDesc *) ndidp, xfer)) {
+    rv = -NACL_ABI_ENOMEM;
+    goto cleanup;
+  }
+  if (xfer->next_handle == xfer->handle_buffer_end) {
+    rv = -NACL_ABI_EIO;
+    goto cleanup_ndidp_dtor;
+  }
   h = *xfer->next_handle;
   *xfer->next_handle++ = NACL_INVALID_HANDLE;
 #if NACL_WINDOWS
   if (-1 == (d = _open_osfhandle((intptr_t) h, _O_RDWR | _O_BINARY))) {
     rv = -NACL_ABI_EIO;
-    goto cleanup;
+    goto cleanup_ndidp_dtor;
   }
 #else
   d = h;
@@ -344,24 +377,29 @@ int NaClDescIoInternalize(struct NaClDesc               **out_desc,
    * try to make those syscalls (in which case we'd get EBADF).
    */
   if ((rv = NaClHostDescPosixTake(nhdp, d, NACL_ABI_O_RDWR)) < 0) {
-    goto cleanup;
+    goto cleanup_ndidp_dtor;
   }
   h = NACL_INVALID_HANDLE;  /* nhdp took ownership of h */
 
-  if (!NaClDescIoDescCtor(ndidp, nhdp)) {
+  if (!NaClDescIoDescSubclassCtor(ndidp, nhdp)) {
     rv = -NACL_ABI_ENOMEM;
-    goto cleanup_hd_dtor;
+    goto cleanup_nhdp_dtor;
   }
   /*
    * ndidp took ownership of nhdp, now give ownership of ndidp to caller.
    */
   *out_desc = (struct NaClDesc *) ndidp;
   rv = 0;
-cleanup_hd_dtor:
+ cleanup_nhdp_dtor:
   if (rv < 0) {
     (void) NaClHostDescClose(nhdp);
   }
-cleanup:
+ cleanup_ndidp_dtor:
+  if (rv < 0) {
+    NaClDescSafeUnref((struct NaClDesc *) ndidp);
+    ndidp = NULL;
+  }
+ cleanup:
   if (rv < 0) {
     free(nhdp);
     free(ndidp);

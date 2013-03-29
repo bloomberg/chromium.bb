@@ -28,17 +28,38 @@
 
 static struct NaClDescVtbl const kNaClDescConnCapVtbl;  /* fwd */
 
+/*
+ * NaClDescConnCapSubclassCtor takes a memory region of at least the
+ * size of a NaClDescConnCap in which construction of
+ * NaClDescConnCap's superclass has already occurred, and construct
+ * the remaining members (newly introduced by NaClDescConnCap).  This
+ * is needed by the *Internalize function.
+ */
+static int NaClDescConnCapSubclassCtor(struct NaClDescConnCap         *self,
+                                       struct NaClSocketAddress const *nsap) {
+  struct NaClDesc *basep = (struct NaClDesc *) self;
+
+  self->cap = *nsap;
+  basep->base.vtbl = (struct NaClRefCountVtbl const *) &kNaClDescConnCapVtbl;
+  return 1;
+}
+
 int NaClDescConnCapCtor(struct NaClDescConnCap          *self,
                         struct NaClSocketAddress const  *nsap) {
   struct NaClDesc *basep = (struct NaClDesc *) self;
+  int rv;
 
   basep->base.vtbl = (struct NaClRefCountVtbl const *) NULL;
   if (!NaClDescCtor(basep)) {
     return 0;
   }
-  self->cap = *nsap;
-  basep->base.vtbl = (struct NaClRefCountVtbl const *) &kNaClDescConnCapVtbl;
-  return 1;
+  rv = NaClDescConnCapSubclassCtor(self, nsap);
+  if (!rv) {
+    /* NaClDescConnCap construction failed, still a NaClDesc object */
+    (*NACL_VTBL(NaClRefCount, basep)->Dtor)((struct NaClRefCount *) basep);
+    /* not-an-object; caller frees */
+  }
+  return rv;
 }
 
 static void NaClDescConnCapDtor(struct NaClRefCount *vself) {
@@ -59,18 +80,29 @@ static int NaClDescConnCapFstat(struct NaClDesc          *vself,
 static int NaClDescConnCapExternalizeSize(struct NaClDesc  *vself,
                                           size_t           *nbytes,
                                           size_t           *nhandles) {
+  int rv;
+
   UNREFERENCED_PARAMETER(vself);
 
-  *nbytes = NACL_PATH_MAX;
-  *nhandles = 0;
+  rv = NaClDescExternalizeSize(vself, nbytes, nhandles);
+  if (0 != rv) {
+    return rv;
+  }
+
+  *nbytes += NACL_PATH_MAX;
 
   return 0;
 }
 
 static int NaClDescConnCapExternalize(struct NaClDesc          *vself,
                                       struct NaClDescXferState *xfer) {
-  struct NaClDescConnCap    *self;
+  struct NaClDescConnCap *self;
+  int rv;
 
+  rv = NaClDescExternalize(vself, xfer);
+  if (0 != rv) {
+    return rv;
+  }
   self = (struct NaClDescConnCap *) vself;
   memcpy(xfer->next_byte, self->cap.path, NACL_PATH_MAX);
   xfer->next_byte += NACL_PATH_MAX;
@@ -171,7 +203,6 @@ static struct NaClDescVtbl const kNaClDescConnCapVtbl = {
   NaClDescIoctlNotImplemented,
   NaClDescConnCapFstat,
   NaClDescGetdentsNotImplemented,
-  NACL_DESC_CONN_CAP,
   NaClDescConnCapExternalizeSize,
   NaClDescConnCapExternalize,
   NaClDescLockNotImplemented,
@@ -190,6 +221,11 @@ static struct NaClDescVtbl const kNaClDescConnCapVtbl = {
   NaClDescPostNotImplemented,
   NaClDescSemWaitNotImplemented,
   NaClDescGetValueNotImplemented,
+  NaClDescSetMetadata,
+  NaClDescGetMetadata,
+  NaClDescSetFlags,
+  NaClDescGetFlags,
+  NACL_DESC_CONN_CAP,
 };
 
 int NaClDescConnCapInternalize(struct NaClDesc               **out_desc,
@@ -201,20 +237,25 @@ int NaClDescConnCapInternalize(struct NaClDesc               **out_desc,
 
   UNREFERENCED_PARAMETER(quota_interface);
   rv = -NACL_ABI_EIO;  /* catch-all */
-  ndccp = NULL;
 
-  if (xfer->next_byte + NACL_PATH_MAX > xfer->byte_buffer_end) {
-    rv = -NACL_ABI_EIO;
-    goto cleanup;
-  }
-  memcpy(nsa.path, xfer->next_byte, NACL_PATH_MAX);
   ndccp = malloc(sizeof *ndccp);
   if (NULL == ndccp) {
     rv = -NACL_ABI_ENOMEM;
     goto cleanup;
   }
-  if (!NaClDescConnCapCtor(ndccp, &nsa)) {
+  if (!NaClDescInternalizeCtor((struct NaClDesc *) ndccp, xfer)) {
+    free(ndccp);
+    ndccp = NULL;
     rv = -NACL_ABI_ENOMEM;
+    goto cleanup;
+  }
+  if (xfer->next_byte + NACL_PATH_MAX > xfer->byte_buffer_end) {
+    rv = -NACL_ABI_EIO;
+    goto cleanup;
+  }
+  memcpy(nsa.path, xfer->next_byte, NACL_PATH_MAX);
+  if (!NaClDescConnCapSubclassCtor(ndccp, &nsa)) {
+    rv = -NACL_ABI_EIO;
     goto cleanup;
   }
   *out_desc = (struct NaClDesc *) ndccp;
@@ -222,7 +263,7 @@ int NaClDescConnCapInternalize(struct NaClDesc               **out_desc,
   xfer->next_byte += NACL_PATH_MAX;
 cleanup:
   if (rv < 0) {
-    free(ndccp);
+    NaClDescSafeUnref((struct NaClDesc *) ndccp);
   }
   return rv;
 }

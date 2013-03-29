@@ -22,6 +22,13 @@
 #include "native_client/src/trusted/service_runtime/internal_errno.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 
+/*
+ * Externalizing the invalid descriptor -- which shows up in untrusted
+ * user code as -1 -- loses flags and metadata.  No operations are
+ * ever be allowed for the invalid descriptor (the vtable entries are
+ * all *Unimplemented), so there is no opportunity for code to look at
+ * flags/metadata.
+ */
 static int NaClDescInvalidExternalizeSize(struct NaClDesc      *vself,
                                           size_t               *nbytes,
                                           size_t               *nhandles) {
@@ -54,7 +61,6 @@ static struct NaClDescVtbl const kNaClDescInvalidVtbl = {
   NaClDescIoctlNotImplemented,
   NaClDescFstatNotImplemented,
   NaClDescGetdentsNotImplemented,
-  NACL_DESC_INVALID,
   NaClDescInvalidExternalizeSize,
   NaClDescInvalidExternalize,
   NaClDescLockNotImplemented,
@@ -73,6 +79,11 @@ static struct NaClDescVtbl const kNaClDescInvalidVtbl = {
   NaClDescPostNotImplemented,
   NaClDescSemWaitNotImplemented,
   NaClDescGetValueNotImplemented,
+  NaClDescSetMetadata,
+  NaClDescGetMetadata,
+  NaClDescSetFlags,
+  NaClDescGetFlags,
+  NACL_DESC_INVALID,
 };
 
 static struct NaClMutex *mutex = NULL;

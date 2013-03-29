@@ -93,6 +93,19 @@ node = env.CommandTest('nacl_desc_quota_test.out',
                                 ])
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_nacl_desc_quota_test')
 
+metadata_test_exe = env.ComponentProgram('metadata_test',
+                                         ['metadata_test.c'],
+                                         EXTRA_LIBS=['nrd_xfer',
+                                                     'nacl_base',
+                                                     'imc',
+                                                     'platform'])
+
+node = env.CommandTest('metadata_test.out',
+                       command=[metadata_test_exe, metadata_test_exe])
+
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_metadata_test')
+
+
 # TODO: add comment
 if env.Bit('windows'):
   env.Append(LIBS = [ 'ws2_32', 'advapi32' ])

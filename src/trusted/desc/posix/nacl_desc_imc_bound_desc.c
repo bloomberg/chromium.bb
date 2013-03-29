@@ -209,7 +209,6 @@ static struct NaClDescVtbl const kNaClDescImcBoundDescVtbl = {
   NaClDescIoctlNotImplemented,
   NaClDescImcBoundDescFstat,
   NaClDescGetdentsNotImplemented,
-  NACL_DESC_BOUND_SOCKET,
   NaClDescExternalizeSizeNotImplemented,
   NaClDescExternalizeNotImplemented,
   NaClDescLockNotImplemented,
@@ -228,4 +227,9 @@ static struct NaClDescVtbl const kNaClDescImcBoundDescVtbl = {
   NaClDescPostNotImplemented,
   NaClDescSemWaitNotImplemented,
   NaClDescGetValueNotImplemented,
+  NaClDescSetMetadata,
+  NaClDescGetMetadata,
+  NaClDescSetFlags,
+  NaClDescGetFlags,
+  NACL_DESC_BOUND_SOCKET,
 };

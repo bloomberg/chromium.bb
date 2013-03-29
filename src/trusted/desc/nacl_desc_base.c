@@ -82,10 +82,17 @@ int NaClDescCtor(struct NaClDesc *ndp) {
             "Internal error.  NaClInternalHeader size not a"
             " multiple of 16\n");
   }
+  ndp->flags = 0;
+  ndp->metadata_type = NACL_DESC_METADATA_TYPE_NONE;
+  ndp->metadata_num_bytes = 0;
+  ndp->metadata = NULL;
   return NaClRefCountCtor(&ndp->base);
 }
 
 static void NaClDescDtor(struct NaClRefCount *nrcp) {
+  struct NaClDesc *ndp = (struct NaClDesc *) nrcp;
+  free(ndp->metadata);
+  ndp->metadata = NULL;
   nrcp->vtbl = &kNaClRefCountVtbl;
   (*nrcp->vtbl->Dtor)(nrcp);
 }
@@ -104,12 +111,89 @@ void NaClDescSafeUnref(struct NaClDesc *ndp) {
   }
 }
 
+int NaClDescExternalizeSize(struct NaClDesc *self,
+                            size_t *nbytes,
+                            size_t *nhandles) {
+  *nbytes = sizeof self->flags;
+  if (0 != (NACL_DESC_FLAGS_HAS_METADATA & self->flags)) {
+    *nbytes += (sizeof self->metadata_type +
+                sizeof self->metadata_num_bytes + self->metadata_num_bytes);
+  }
+  *nhandles = 0;
+  return 0;
+}
+
+int NaClDescExternalize(struct NaClDesc *self,
+                        struct NaClDescXferState *xfer) {
+  memcpy(xfer->next_byte, &self->flags, sizeof self->flags);
+  xfer->next_byte += sizeof self->flags;
+  if (0 != (NACL_DESC_FLAGS_HAS_METADATA & self->flags)) {
+    memcpy(xfer->next_byte, &self->metadata_type, sizeof self->metadata_type);
+    xfer->next_byte += sizeof self->metadata_type;
+    memcpy(xfer->next_byte, &self->metadata_num_bytes,
+           sizeof self->metadata_num_bytes);
+    xfer->next_byte += sizeof self->metadata_num_bytes;
+    memcpy(xfer->next_byte, self->metadata, self->metadata_num_bytes);
+    xfer->next_byte += self->metadata_num_bytes;
+  }
+  return 0;
+}
+
+int NaClDescInternalizeCtor(struct NaClDesc *vself,
+                            struct NaClDescXferState *xfer) {
+  int rv;
+  char *nxt;
+
+  rv = NaClDescCtor(vself);
+  if (0 == rv) {
+    return rv;
+  }
+  nxt = xfer->next_byte;
+  if (nxt + sizeof vself->flags > xfer->byte_buffer_end) {
+    rv = 0;
+    goto done;
+  }
+  memcpy(&vself->flags, nxt, sizeof vself->flags);
+  nxt += sizeof vself->flags;
+  if (0 == (NACL_DESC_FLAGS_HAS_METADATA & vself->flags)) {
+    xfer->next_byte = nxt;
+    rv = 1;
+    goto done;
+  }
+  if (nxt + sizeof vself->metadata_type + sizeof vself->metadata_num_bytes >
+      xfer->byte_buffer_end) {
+    rv = 0;
+    goto done;
+  }
+  memcpy(&vself->metadata_type, nxt, sizeof vself->metadata_type);
+  nxt += sizeof vself->metadata_type;
+  memcpy(&vself->metadata_num_bytes, nxt, sizeof vself->metadata_num_bytes);
+  nxt += sizeof vself->metadata_num_bytes;
+  if (nxt + vself->metadata_num_bytes > xfer->byte_buffer_end) {
+    rv = 0;
+    goto done;
+  }
+  if (NULL == (vself->metadata = malloc(vself->metadata_num_bytes))) {
+    rv = 0;
+    goto done;
+  }
+  memcpy(vself->metadata, nxt, vself->metadata_num_bytes);
+  nxt += vself->metadata_num_bytes;
+  xfer->next_byte = nxt;
+  rv = 1;
+ done:
+  if (!rv) {
+    (*NACL_VTBL(NaClRefCount, vself)->Dtor)((struct NaClRefCount *) vself);
+  }
+  return rv;
+}
+
 int (*NaClDescInternalize[NACL_DESC_TYPE_MAX])(
     struct NaClDesc **,
     struct NaClDescXferState *,
     struct NaClDescQuotaInterface *) = {
   NaClDescInvalidInternalize,
-  NaClDescDirInternalize,
+  NaClDescInternalizeNotImplemented,
   NaClDescIoInternalize,
 #if NACL_WINDOWS
   NaClDescConnCapInternalize,
@@ -498,6 +582,90 @@ int NaClSafeCloseNaClHandle(NaClHandle h) {
   return 0;
 }
 
+int NaClDescSetMetadata(struct NaClDesc *self,
+                        int32_t metadata_type,
+                        uint32_t metadata_num_bytes,
+                        uint8_t const *metadata_bytes) {
+  uint8_t *buffer = NULL;
+  int rv;
+
+  if (metadata_type < 0) {
+    return -NACL_ABI_EINVAL;
+  }
+  buffer = malloc(metadata_num_bytes);
+  if (NULL == buffer) {
+    return -NACL_ABI_ENOMEM;
+  }
+
+  NaClRefCountLock(&self->base);
+  if (0 != (self->flags & NACL_DESC_FLAGS_HAS_METADATA)) {
+    rv = -NACL_ABI_EPERM;
+    goto done;
+  }
+  memcpy(buffer, metadata_bytes, metadata_num_bytes);
+  self->metadata_type = metadata_type;
+  self->metadata_num_bytes = metadata_num_bytes;
+  self->metadata = buffer;
+  self->flags = self->flags | NACL_DESC_FLAGS_HAS_METADATA;
+  rv = 0;
+ done:
+  NaClRefCountUnlock(&self->base);
+  if (rv < 0) {
+    free(buffer);
+  }
+  return rv;
+}
+
+int32_t NaClDescGetMetadata(struct NaClDesc *self,
+                            uint32_t *metadata_buffer_bytes_in_out,
+                            uint8_t *metadata_buffer) {
+  int rv;
+  uint32_t bytes_to_copy;
+
+  NaClRefCountLock(&self->base);
+  if (0 == (NACL_DESC_FLAGS_HAS_METADATA & self->flags)) {
+    *metadata_buffer_bytes_in_out = 0;
+    rv = NACL_DESC_METADATA_TYPE_NONE;
+    goto done;
+  }
+  if (NACL_DESC_METADATA_TYPE_NONE == self->metadata_type) {
+    *metadata_buffer_bytes_in_out = 0;
+    rv = NACL_DESC_METADATA_TYPE_NONE;
+    goto done;
+  }
+  bytes_to_copy = *metadata_buffer_bytes_in_out;
+  if (bytes_to_copy > self->metadata_num_bytes) {
+    bytes_to_copy = self->metadata_num_bytes;
+  }
+  if (NULL != metadata_buffer && 0 < bytes_to_copy) {
+    memcpy(metadata_buffer, self->metadata, bytes_to_copy);
+  }
+  *metadata_buffer_bytes_in_out = self->metadata_num_bytes;
+  rv = self->metadata_type;
+ done:
+  NaClRefCountUnlock(&self->base);
+  return rv;
+}
+
+/*
+ * Consider switching to atomic word operations.  This should be
+ * infrequent enought that it should not matter.
+ */
+void NaClDescSetFlags(struct NaClDesc *self,
+                      uint32_t flags) {
+  NaClRefCountLock(&self->base);
+  self->flags = ((self->flags & ~NACL_DESC_FLAGS_PUBLIC_MASK) |
+                 (flags & NACL_DESC_FLAGS_PUBLIC_MASK));
+  NaClRefCountUnlock(&self->base);
+}
+
+uint32_t NaClDescGetFlags(struct NaClDesc *self) {
+  uint32_t rv;
+  NaClRefCountLock(&self->base);
+  rv = self->flags & NACL_DESC_FLAGS_PUBLIC_MASK;
+  NaClRefCountUnlock(&self->base);
+  return rv;
+}
 
 struct NaClDescVtbl const kNaClDescVtbl = {
   {
@@ -511,7 +679,6 @@ struct NaClDescVtbl const kNaClDescVtbl = {
   NaClDescIoctlNotImplemented,
   NaClDescFstatNotImplemented,
   NaClDescGetdentsNotImplemented,
-  (enum NaClDescTypeTag) -1,  /* NaClDesc is an abstract base class */
   NaClDescExternalizeSizeNotImplemented,
   NaClDescExternalizeNotImplemented,
   NaClDescLockNotImplemented,
@@ -530,4 +697,9 @@ struct NaClDescVtbl const kNaClDescVtbl = {
   NaClDescPostNotImplemented,
   NaClDescSemWaitNotImplemented,
   NaClDescGetValueNotImplemented,
+  NaClDescSetMetadata,
+  NaClDescGetMetadata,
+  NaClDescSetFlags,
+  NaClDescGetFlags,
+  (enum NaClDescTypeTag) -1,  /* NaClDesc is an abstract base class */
 };

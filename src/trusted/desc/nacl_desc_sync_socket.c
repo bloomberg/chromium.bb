@@ -38,19 +38,24 @@
 
 static struct NaClDescVtbl const kNaClDescSyncSocketVtbl;  /* fwd */
 
-int NaClDescSyncSocketCtor(struct NaClDescSyncSocket  *self,
-                           NaClHandle                 h) {
-  int retval;
-  retval = NaClDescCtor(&self->base);
-  if (!retval) {
-    return 0;
-  }
-
+static int NaClDescSyncSocketSubclassCtor(struct NaClDescSyncSocket  *self,
+                                          NaClHandle                 h) {
   self->h = h;
   self->base.base.vtbl =
       (struct NaClRefCountVtbl const *) &kNaClDescSyncSocketVtbl;
-
-  return retval;
+  return 1;
+}
+int NaClDescSyncSocketCtor(struct NaClDescSyncSocket  *self,
+                           NaClHandle                 h) {
+  int rv;
+  if (!NaClDescCtor(&self->base)) {
+    return 0;
+  }
+  rv = NaClDescSyncSocketSubclassCtor(self, h);
+  if (!rv) {
+    (*NACL_VTBL(NaClRefCount, self)->Dtor)((struct NaClRefCount *) self);
+  }
+  return rv;
 }
 
 struct NaClDesc *NaClDescSyncSocketMake(NaClHandle handle) {
@@ -103,19 +108,26 @@ static ssize_t NaClDescSyncSocketWrite(struct NaClDesc         *vself,
 static int NaClDescSyncSocketExternalizeSize(struct NaClDesc  *vself,
                                              size_t           *nbytes,
                                              size_t           *nhandles) {
-  UNREFERENCED_PARAMETER(vself);
+  int rv;
   NaClLog(4, "Entered NaClDescSyncSocketExternalizeSize\n");
-  *nbytes = 0;
-  *nhandles = 1;
-
+  rv = NaClDescExternalizeSize(vself, nbytes, nhandles);
+  if (0 != rv) {
+    return rv;
+  }
+  *nhandles += 1;
   return 0;
 }
 
 static int NaClDescSyncSocketExternalize(struct NaClDesc          *vself,
                                          struct NaClDescXferState *xfer) {
   struct NaClDescSyncSocket *self = ((struct NaClDescSyncSocket *) vself);
+  int rv;
 
   NaClLog(4, "Entered NaClDescSyncSocketExternalize\n");
+  rv = NaClDescExternalize(vself, xfer);
+  if (0 != rv) {
+    return rv;
+  }
   *xfer->next_handle++ = self->h;
   return 0;
 }
@@ -133,7 +145,6 @@ static struct NaClDescVtbl const kNaClDescSyncSocketVtbl = {
   NaClDescIoctlNotImplemented,
   NaClDescSyncSocketFstat,
   NaClDescGetdentsNotImplemented,
-  NACL_DESC_SYNC_SOCKET,
   NaClDescSyncSocketExternalizeSize,
   NaClDescSyncSocketExternalize,
   NaClDescLockNotImplemented,
@@ -152,6 +163,11 @@ static struct NaClDescVtbl const kNaClDescSyncSocketVtbl = {
   NaClDescPostNotImplemented,
   NaClDescSemWaitNotImplemented,
   NaClDescGetValueNotImplemented,
+  NaClDescSetMetadata,
+  NaClDescGetMetadata,
+  NaClDescSetFlags,
+  NaClDescGetFlags,
+  NACL_DESC_SYNC_SOCKET,
 };
 
 
@@ -165,7 +181,20 @@ int NaClDescSyncSocketInternalize(
   UNREFERENCED_PARAMETER(quota_interface);
   NaClLog(4, "Entered NaClDescSyncSocketInternalize\n");
   rv = -NACL_ABI_EIO;
-  ndssp = NULL;
+
+  ndssp = malloc(sizeof *ndssp);
+  if (NULL == ndssp) {
+    NaClLog(LOG_ERROR,
+            "NaClSyncSocketInternalize: no memory\n");
+    rv = -NACL_ABI_ENOMEM;
+    goto cleanup;
+  }
+  if (!NaClDescInternalizeCtor((struct NaClDesc *) ndssp, xfer)) {
+    free(ndssp);
+    ndssp = NULL;
+    rv = -NACL_ABI_ENOMEM;
+    goto cleanup;
+  }
 
   if (xfer->next_handle == xfer->handle_buffer_end) {
     NaClLog(LOG_ERROR,
@@ -174,14 +203,7 @@ int NaClDescSyncSocketInternalize(
     rv = -NACL_ABI_EIO;
     goto cleanup;
   }
-  ndssp = malloc(sizeof *ndssp);
-  if (NULL == ndssp) {
-    NaClLog(LOG_ERROR,
-            "NaClSyncSocketInternalize: no memory\n");
-    rv = -NACL_ABI_ENOMEM;
-    goto cleanup;
-  }
-  if (!NaClDescSyncSocketCtor(ndssp, *xfer->next_handle)) {
+  if (!NaClDescSyncSocketSubclassCtor(ndssp, *xfer->next_handle)) {
     NaClLog(LOG_ERROR,
             "NaClSyncSocketInternalize: descriptor ctor error\n");
     rv = -NACL_ABI_EIO;
@@ -193,7 +215,7 @@ int NaClDescSyncSocketInternalize(
 
 cleanup:
   if (rv < 0) {
-    free(ndssp);
+    NaClDescSafeUnref((struct NaClDesc *) ndssp);
   }
   return rv;
 }

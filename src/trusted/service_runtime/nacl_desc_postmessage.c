@@ -130,7 +130,6 @@ static struct NaClDescVtbl const kNaClDescPostMessageVtbl = {
   NaClDescIoctlNotImplemented,
   NaClDescPostMessageFstat,
   NaClDescGetdentsNotImplemented,
-  NACL_DESC_DEVICE_POSTMESSAGE,
   NaClDescExternalizeSizeNotImplemented,
   NaClDescExternalizeNotImplemented,
   NaClDescLockNotImplemented,
@@ -149,4 +148,9 @@ static struct NaClDescVtbl const kNaClDescPostMessageVtbl = {
   NaClDescPostNotImplemented,
   NaClDescSemWaitNotImplemented,
   NaClDescGetValueNotImplemented,
+  NaClDescSetMetadata,
+  NaClDescGetMetadata,
+  NaClDescSetFlags,
+  NaClDescGetFlags,
+  NACL_DESC_DEVICE_POSTMESSAGE,
 };

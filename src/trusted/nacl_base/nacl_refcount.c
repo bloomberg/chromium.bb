@@ -102,3 +102,11 @@ void NaClRefCountSafeUnref(struct NaClRefCount *nrcp) {
   }
   NaClRefCountUnref(nrcp);
 }
+
+void NaClRefCountLock(struct NaClRefCount *nrcp) {
+  NaClFastMutexLock(&nrcp->mu);
+}
+
+void NaClRefCountUnlock(struct NaClRefCount *nrcp) {
+  NaClFastMutexUnlock(&nrcp->mu);
+}

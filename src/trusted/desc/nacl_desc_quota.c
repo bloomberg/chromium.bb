@@ -23,14 +23,10 @@
 
 static struct NaClDescVtbl const kNaClDescQuotaVtbl;
 
-int NaClDescQuotaCtor(struct NaClDescQuota           *self,
-                      struct NaClDesc                *desc,
-                      uint8_t const                  *file_id,
-                      struct NaClDescQuotaInterface  *quota_interface) {
-  if (!NaClDescCtor(&self->base)) {
-    NACL_VTBL(NaClDescQuota, self) = NULL;
-    return 0;
-  }
+int NaClDescQuotaSubclassCtor(struct NaClDescQuota           *self,
+                              struct NaClDesc                *desc,
+                              uint8_t const                  *file_id,
+                              struct NaClDescQuotaInterface  *quota_interface) {
   if (!NaClMutexCtor(&self->mu)) {
     /* do not NaClRefCountUnref, since we cannot free: caller must do that */
     (*NACL_VTBL(NaClRefCount, self)->Dtor)((struct NaClRefCount *) self);
@@ -45,6 +41,23 @@ int NaClDescQuotaCtor(struct NaClDescQuota           *self,
   }
   NACL_VTBL(NaClDesc, self) = &kNaClDescQuotaVtbl;
   return 1;
+}
+
+int NaClDescQuotaCtor(struct NaClDescQuota           *self,
+                      struct NaClDesc                *desc,
+                      uint8_t const                  *file_id,
+                      struct NaClDescQuotaInterface  *quota_interface) {
+  int rv;
+  if (!NaClDescCtor(&self->base)) {
+    NACL_VTBL(NaClDescQuota, self) = NULL;
+    return 0;
+  }
+  rv = NaClDescQuotaSubclassCtor(self, desc, file_id, quota_interface);
+  if (!rv) {
+    (*NACL_VTBL(NaClRefCount, self)->Dtor)((struct NaClRefCount *) self);
+    return 0;
+  }
+  return rv;
 }
 
 void NaClDescQuotaDtor(struct NaClRefCount *vself) {
@@ -396,6 +409,37 @@ int NaClDescQuotaGetValue(struct NaClDesc *vself) {
   return (*NACL_VTBL(NaClDesc, self->desc)->GetValue)(self->desc);
 }
 
+int NaClDescQuotaSetMetadata(struct NaClDesc *vself,
+                             int32_t metadata_type,
+                             uint32_t metadata_num_bytes,
+                             uint8_t const *metadata_bytes) {
+  struct NaClDescQuota *self = (struct NaClDescQuota *) vself;
+  return (*NACL_VTBL(NaClDesc, self->desc)->SetMetadata)(self->desc,
+                                                         metadata_type,
+                                                         metadata_num_bytes,
+                                                         metadata_bytes);
+}
+
+int32_t NaClDescQuotaGetMetadata(struct NaClDesc *vself,
+                                 uint32_t *metadata_buffer_bytes_in_out,
+                                 uint8_t *metadata_buffer) {
+  struct NaClDescQuota *self = (struct NaClDescQuota *) vself;
+  return (*NACL_VTBL(NaClDesc,
+                     self->desc)->GetMetadata)(self->desc,
+                                               metadata_buffer_bytes_in_out,
+                                               metadata_buffer);
+}
+
+void NaClDescQuotaSetFlags(struct NaClDesc *vself,
+                           uint32_t flags) {
+  struct NaClDescQuota *self = (struct NaClDescQuota *) vself;
+  (*NACL_VTBL(NaClDesc, self->desc)->SetFlags)(self->desc, flags);
+}
+
+uint32_t NaClDescQuotaGetFlags(struct NaClDesc *vself) {
+  struct NaClDescQuota *self = (struct NaClDescQuota *) vself;
+  return (*NACL_VTBL(NaClDesc, self->desc)->GetFlags)(self->desc);
+}
 
 static struct NaClDescVtbl const kNaClDescQuotaVtbl = {
   {
@@ -413,7 +457,6 @@ static struct NaClDescVtbl const kNaClDescQuotaVtbl = {
   NaClDescQuotaIoctl,
   NaClDescQuotaFstat,
   NaClDescQuotaGetdents,
-  NACL_DESC_QUOTA,
   NaClDescQuotaExternalizeSize,
   NaClDescQuotaExternalize,
   NaClDescQuotaLock,
@@ -432,4 +475,9 @@ static struct NaClDescVtbl const kNaClDescQuotaVtbl = {
   NaClDescQuotaPost,
   NaClDescQuotaSemWait,
   NaClDescQuotaGetValue,
+  NaClDescQuotaSetMetadata,
+  NaClDescQuotaGetMetadata,
+  NaClDescQuotaSetFlags,
+  NaClDescQuotaGetFlags,
+  NACL_DESC_QUOTA,
 };

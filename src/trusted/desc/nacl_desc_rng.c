@@ -22,10 +22,7 @@
 
 static struct NaClDescVtbl const kNaClDescRngVtbl;  /* fwd */
 
-int NaClDescRngCtor(struct NaClDescRng  *self) {
-  if (!NaClDescCtor((struct NaClDesc *) self)) {
-    goto base_ctor_fail;
-  }
+static int NaClDescRngSubclassCtor(struct NaClDescRng  *self) {
   if (!NaClSecureRngCtor(&self->rng)) {
     goto rng_ctor_fail;
   }
@@ -36,8 +33,19 @@ int NaClDescRngCtor(struct NaClDescRng  *self) {
   /* failure cleanup */
  rng_ctor_fail:
   (*NACL_VTBL(NaClRefCount, self)->Dtor)((struct NaClRefCount *) self);
- base_ctor_fail:
   return 0;
+}
+
+int NaClDescRngCtor(struct NaClDescRng  *self) {
+  int rv;
+  if (!NaClDescCtor((struct NaClDesc *) self)) {
+    return 0;
+  }
+  rv = NaClDescRngSubclassCtor(self);
+  if (!rv) {
+    (*NACL_VTBL(NaClRefCount, self)->Dtor)((struct NaClRefCount *) self);
+  }
+  return rv;
 }
 
 static void NaClDescRngDtor(struct NaClRefCount *vself) {
@@ -116,19 +124,12 @@ static int NaClDescRngFstat(struct NaClDesc       *vself,
 static int NaClDescRngExternalizeSize(struct NaClDesc *vself,
                                       size_t          *nbytes,
                                       size_t          *nhandles) {
-  UNREFERENCED_PARAMETER(vself);
-
-  *nbytes = 0;
-  *nhandles = 0;
-  return 0;
+  return NaClDescExternalizeSize(vself, nbytes, nhandles);
 }
 
 static int NaClDescRngExternalize(struct NaClDesc           *vself,
                                   struct NaClDescXferState  *xfer) {
-  UNREFERENCED_PARAMETER(vself);
-  UNREFERENCED_PARAMETER(xfer);
-
-  return 0;
+  return NaClDescExternalize(vself, xfer);
 }
 
 static struct NaClDescVtbl const kNaClDescRngVtbl = {
@@ -143,7 +144,6 @@ static struct NaClDescVtbl const kNaClDescRngVtbl = {
   NaClDescIoctlNotImplemented,
   NaClDescRngFstat,
   NaClDescGetdentsNotImplemented,
-  NACL_DESC_DEVICE_RNG,
   NaClDescRngExternalizeSize,
   NaClDescRngExternalize,
   NaClDescLockNotImplemented,
@@ -162,6 +162,11 @@ static struct NaClDescVtbl const kNaClDescRngVtbl = {
   NaClDescPostNotImplemented,
   NaClDescSemWaitNotImplemented,
   NaClDescGetValueNotImplemented,
+  NaClDescSetMetadata,
+  NaClDescGetMetadata,
+  NaClDescSetFlags,
+  NaClDescGetFlags,
+  NACL_DESC_DEVICE_RNG,
 };
 
 int NaClDescRngInternalize(struct NaClDesc               **out_desc,
@@ -176,12 +181,21 @@ int NaClDescRngInternalize(struct NaClDesc               **out_desc,
     rv = -NACL_ABI_ENOMEM;
     goto cleanup;
   }
-  if (!NaClDescRngCtor(rng)) {
+  if (!NaClDescInternalizeCtor((struct NaClDesc *) rng, xfer)) {
+    free(rng);
+    rng = NULL;
+    rv = -NACL_ABI_ENOMEM;
+    goto cleanup;
+  }
+  if (!NaClDescRngSubclassCtor(rng)) {
     rv = -NACL_ABI_EIO;
     goto cleanup;
   }
   *out_desc = (struct NaClDesc *) rng;
   rv = 0;  /* yay! */
  cleanup:
+  if (rv < 0) {
+    NaClDescSafeUnref((struct NaClDesc *) rng);
+  }
   return rv;
 }

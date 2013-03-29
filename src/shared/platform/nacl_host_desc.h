@@ -111,10 +111,11 @@ extern int NaClXlateNaClSyncStatus(NaClSyncStatus status);
  *
  * start_addr and len must be multiples of NACL_MAP_PAGESIZE.
  *
- * Of prot bits, only PROT_READ and PROT_WRITE are allowed.  Of flags,
- * only MAP_ANONYMOUS is allowed.  start_addr must be specified, and
- * this code will add in MAP_FIXED.  start_address, len, and offset
- * must be a multiple of NACL_MAP_PAGESIZE.
+ * Of prot bits, only NACL_ABI_PROT_READ and NACL_ABI_PROT_WRITE are
+ * allowed.  Of flags, only NACL_ABI_MAP_ANONYMOUS is allowed.
+ * start_addr must be specified, and this code will add in MAP_FIXED.
+ * start_address, len, and offset must be a multiple of
+ * NACL_MAP_PAGESIZE.
  *
  * Note that in Windows, in order for the mapping to be coherent, the
  * mapping must arise from the same mapping handle and just using the
@@ -127,8 +128,8 @@ extern int NaClXlateNaClSyncStatus(NaClSyncStatus status);
  * read-write mapping seem rather ugly.
  *
  * Instead of this ugliness, we just say that a map operation cannot
- * request MAP_SHARED.  Anonymous mappings ignore the descriptor
- * argument.
+ * request NACL_ABI_MAP_SHARED.  Anonymous mappings ignore the
+ * descriptor argument.
  *
  * Underlying host-OS syscalls:  mmap / MapViewOfFileEx
  *
@@ -168,16 +169,16 @@ extern int NaClHostDescUnmapUnsafe(void   *start_addr,
 /*
  * These are the flags that are permitted.
  */
-#define NACL_ALLOWED_OPEN_FLAGS                 \
-  (NACL_ABI_O_ACCMODE | NACL_ABI_O_CREAT        \
-   | NACL_ABI_O_TRUNC | NACL_ABI_O_APPEND)
+#define NACL_ALLOWED_OPEN_FLAGS \
+  (NACL_ABI_O_ACCMODE | NACL_ABI_O_CREAT | NACL_ABI_O_TRUNC | NACL_ABI_O_APPEND)
 
 /*
  * Constructor for a NaClHostDesc object.
  *
- * path should be a host-OS pathname to a file.  No validation is
- * done.  flags should contain one of O_RDONLY, O_WRONLY, and O_RDWR,
- * and can additionally contain O_CREAT, O_TRUNC, and O_APPEND.
+ * |path| should be a host-OS pathname to a file.  No validation is
+ * done.  |flags| should contain one of NACL_ABI_O_RDONLY,
+ * NACL_ABI_O_WRONLY, and NACL_ABI_O_RDWR, and can additionally
+ * contain NACL_ABI_O_CREAT, NACL_ABI_O_TRUNC, and NACL_ABI_O_APPEND.
  *
  * Uses raw syscall return convention, so returns 0 for success and
  * non-zero (usually -NACL_ABI_EINVAL) for failure.

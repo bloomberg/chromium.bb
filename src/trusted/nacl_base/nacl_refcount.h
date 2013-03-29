@@ -38,8 +38,15 @@ struct NaClRefCountVtbl;
 
 struct NaClRefCount {
   struct NaClRefCountVtbl const *vtbl NACL_IS_REFCOUNT_SUBCLASS;
-  /* private */
+
+  /* protected */
   struct NaClFastMutex          mu;
+  /*
+   * To save on constructing another mutex, it is acceptable for a
+   * subclass to use this mutex for short operations.
+   */
+
+  /* private */
   size_t                        ref_count;
 };
 
@@ -68,6 +75,13 @@ void NaClRefCountUnref(struct NaClRefCount *nrcp);
  * can fail.
  */
 void NaClRefCountSafeUnref(struct NaClRefCount *nrcp);
+
+/*
+ * For subclasses that need a lock for fast operations.  Exposing this
+ * eliminates the need for constructing another lock in the subclass.
+ */
+void NaClRefCountLock(struct NaClRefCount *nrcp);
+void NaClRefCountUnlock(struct NaClRefCount *nrcp);
 
 extern struct NaClRefCountVtbl const kNaClRefCountVtbl;
 

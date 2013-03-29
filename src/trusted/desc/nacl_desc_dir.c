@@ -145,15 +145,6 @@ static int NaClDescDirDescFstat(struct NaClDesc          *vself,
   return 0;
 }
 
-static int NaClDescDirDescExternalizeSize(struct NaClDesc *vself,
-                                          size_t          *nbytes,
-                                          size_t          *nhandles) {
-  UNREFERENCED_PARAMETER(vself);
-  *nbytes = 0;
-  *nhandles = 1;
-  return 0;
-}
-
 static struct NaClDescVtbl const kNaClDescDirDescVtbl = {
   {
     NaClDescDirDescDtor,
@@ -166,8 +157,7 @@ static struct NaClDescVtbl const kNaClDescDirDescVtbl = {
   NaClDescIoctlNotImplemented,
   NaClDescDirDescFstat,
   NaClDescDirDescGetdents,
-  NACL_DESC_DIR,
-  NaClDescDirDescExternalizeSize,
+  NaClDescExternalizeSizeNotImplemented,
   NaClDescExternalizeNotImplemented,
   NaClDescLockNotImplemented,
   NaClDescTryLockNotImplemented,
@@ -185,15 +175,9 @@ static struct NaClDescVtbl const kNaClDescDirDescVtbl = {
   NaClDescPostNotImplemented,
   NaClDescSemWaitNotImplemented,
   NaClDescGetValueNotImplemented,
+  NaClDescSetMetadata,
+  NaClDescGetMetadata,
+  NaClDescSetFlags,
+  NaClDescGetFlags,
+  NACL_DESC_DIR,
 };
-
-int NaClDescDirInternalize(struct NaClDesc               **out_desc,
-                           struct NaClDescXferState      *xfer,
-                           struct NaClDescQuotaInterface *quota_interface) {
-  UNREFERENCED_PARAMETER(out_desc);
-  UNREFERENCED_PARAMETER(xfer);
-  UNREFERENCED_PARAMETER(quota_interface);
-
-  NaClLog(LOG_ERROR, "NaClDescDirDescInternalize: not implemented for dir\n");
-  return -NACL_ABI_EINVAL;
-}

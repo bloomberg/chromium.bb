@@ -52,14 +52,14 @@
  *    it for use by Chrome.
  */
 
-static int NaClDescSysvShmCtorIntern(struct NaClDescSysvShm *self,
-                                     int                    id,
-                                     nacl_off64_t           size,
-                                     int                    rmid_in_dtor) {
+static int NaClDescSysvShmSubclassCtorIntern(struct NaClDescSysvShm *self,
+                                             int id,
+                                             nacl_off64_t size,
+                                             int rmid_in_dtor) {
   struct NaClDesc *basep = (struct NaClDesc *) self;
 
   /*
-   * off_t is signed, but size_t are not; historically size_t is for
+   * off_t is signed, but size_t is not; historically size_t is for
    * sizeof and similar, and off_t is also used for stat structure
    * st_size member.  This runtime test detects large object sizes
    * that are silently converted to negative values.  Additionally,
@@ -72,14 +72,36 @@ static int NaClDescSysvShmCtorIntern(struct NaClDescSysvShm *self,
     return 0;
   }
 
-  if (!NaClDescCtor(basep)) {
-    return 0;
-  }
   self->id = id;
   self->size = size;
   self->rmid_in_dtor = rmid_in_dtor;
   basep->base.vtbl = (struct NaClRefCountVtbl const *) &kNaClDescSysvShmVtbl;
   return 1;
+}
+
+static int NaClDescSysvShmCtorIntern(struct NaClDescSysvShm *self,
+                                     int                    id,
+                                     nacl_off64_t           size,
+                                     int                    rmid_in_dtor) {
+  struct NaClDesc *basep = (struct NaClDesc *) self;
+  int rv;
+
+  NACL_VTBL(NaClRefCount, self) = (struct NaClRefCountVtbl const *) NULL;
+
+  if (!NaClDescCtor(basep)) {
+    return 0;
+  }
+  rv = NaClDescSysvShmSubclassCtorIntern(self, id, size, rmid_in_dtor);
+  if (!rv) {
+    (*NACL_VTBL(NaClRefCount, self)->Dtor)((struct NaClRefCount *) self);
+  }
+  return rv;
+}
+
+int NaClDescSysvShmImportSubclassCtor(struct NaClDescSysvShm  *self,
+                              int                     id,
+                              nacl_off64_t            size) {
+  return NaClDescSysvShmSubclassCtorIntern(self, id, size, 0);
 }
 
 int NaClDescSysvShmImportCtor(struct NaClDescSysvShm  *self,
@@ -288,9 +310,13 @@ static int NaClDescSysvShmExternalizeSize(struct NaClDesc *vself,
                                           size_t          *nbytes,
                                           size_t          *nhandles) {
   struct NaClDescSysvShm  *self = (struct NaClDescSysvShm *) vself;
+  int rv;
 
-  *nbytes = sizeof self->id + sizeof(nacl_off64_t);
-  *nhandles = 0;
+  rv = NaClDescExternalizeSize(vself, nbytes, nhandles);
+  if (0 != rv) {
+    return rv;
+  }
+  *nbytes += sizeof self->id + sizeof(nacl_off64_t);
 
   return 0;
 }
@@ -299,7 +325,12 @@ static int NaClDescSysvShmExternalize(struct NaClDesc           *vself,
                                       struct NaClDescXferState  *xfer) {
   struct NaClDescSysvShm  *self = (struct NaClDescSysvShm *) vself;
   nacl_off64_t size64 = self->size;
+  int rv;
 
+  rv = NaClDescExternalize(vself, xfer);
+  if (0 != rv) {
+    return rv;
+  }
   memcpy(xfer->next_byte, &self->id, sizeof self->id);
   xfer->next_byte += sizeof self->id;
   memcpy(xfer->next_byte, &size64, sizeof size64);
@@ -319,7 +350,6 @@ struct NaClDescVtbl const kNaClDescSysvShmVtbl = {
   NaClDescIoctlNotImplemented,
   NaClDescSysvShmFstat,
   NaClDescGetdentsNotImplemented,
-  NACL_DESC_SYSV_SHM,
   NaClDescSysvShmExternalizeSize,
   NaClDescSysvShmExternalize,
   NaClDescLockNotImplemented,
@@ -338,6 +368,11 @@ struct NaClDescVtbl const kNaClDescSysvShmVtbl = {
   NaClDescPostNotImplemented,
   NaClDescSemWaitNotImplemented,
   NaClDescGetValueNotImplemented,
+  NaClDescSetMetadata,
+  NaClDescGetMetadata,
+  NaClDescSetFlags,
+  NaClDescGetFlags,
+  NACL_DESC_SYSV_SHM,
 };
 
 int NaClDescSysvShmInternalize(struct NaClDesc               **out_desc,
@@ -350,17 +385,23 @@ int NaClDescSysvShmInternalize(struct NaClDesc               **out_desc,
 
   UNREFERENCED_PARAMETER(quota_interface);
   rv = -NACL_ABI_EIO;
-  ndisp = NULL;
-
-  if (xfer->next_byte + sizeof ndisp->id + sizeof ndisp->size >
-      xfer->byte_buffer_end) {
-    rv = -NACL_ABI_EIO;
-    goto cleanup;
-  }
 
   ndisp = malloc(sizeof *ndisp);
   if (NULL == ndisp) {
     rv = -NACL_ABI_ENOMEM;
+    goto cleanup;
+  }
+
+  if (!NaClDescInternalizeCtor((struct NaClDesc *) ndisp, xfer)) {
+    free(ndisp);
+    ndisp = NULL;
+    rv = -NACL_ABI_ENOMEM;
+    goto cleanup;
+  }
+
+  if (xfer->next_byte + sizeof ndisp->id + sizeof ndisp->size >
+      xfer->byte_buffer_end) {
+    rv = -NACL_ABI_EIO;
     goto cleanup;
   }
 
@@ -369,7 +410,7 @@ int NaClDescSysvShmInternalize(struct NaClDesc               **out_desc,
   memcpy(&size, xfer->next_byte, sizeof size);
   xfer->next_byte += sizeof size;
 
-  if (!NaClDescSysvShmImportCtor(ndisp, id, size)) {
+  if (!NaClDescSysvShmImportSubclassCtor(ndisp, id, size)) {
     rv = -NACL_ABI_EIO;
     goto cleanup;
   }
@@ -379,7 +420,7 @@ int NaClDescSysvShmInternalize(struct NaClDesc               **out_desc,
 
 cleanup:
   if (rv < 0) {
-    free(ndisp);
+    NaClDescSafeUnref((struct NaClDesc *) ndisp);
   }
   return rv;
 }

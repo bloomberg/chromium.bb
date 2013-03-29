@@ -117,7 +117,6 @@ static struct NaClDescVtbl const kNaClDescSemaphoreVtbl = {
   NaClDescIoctlNotImplemented,
   NaClDescSemaphoreFstat,
   NaClDescGetdentsNotImplemented,
-  NACL_DESC_SEMAPHORE,
   NaClDescExternalizeSizeNotImplemented,
   NaClDescExternalizeNotImplemented,
   NaClDescLockNotImplemented,
@@ -136,4 +135,9 @@ static struct NaClDescVtbl const kNaClDescSemaphoreVtbl = {
   NaClDescSemaphorePost,
   NaClDescSemaphoreSemWait,
   NaClDescSemaphoreGetValue,
+  NaClDescSetMetadata,
+  NaClDescGetMetadata,
+  NaClDescSetFlags,
+  NaClDescGetFlags,
+  NACL_DESC_SEMAPHORE,
 };

@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2010 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include "native_client/src/shared/platform/nacl_log.h"
@@ -22,19 +22,20 @@ int32_t NaClCommonDescMakeBoundSock(struct NaClDesc *pair[2]) {
 
   conn_cap = malloc(sizeof(*conn_cap));
   if (NULL == conn_cap) {
-    NaClLog(LOG_FATAL, "NaClCommonDescMakeBoundSock: allocation failed");
+    NaClLog(LOG_FATAL, "NaClCommonDescMakeBoundSock: allocation failed\n");
   }
   if (!NaClDescConnCapFdCtor(conn_cap, fd_pair[0])) {
     NaClLog(LOG_FATAL,
-            "NaClCommonDescMakeBoundSock: NaClDescConnCapFdCtor failed");
+            "NaClCommonDescMakeBoundSock: NaClDescConnCapFdCtor failed\n");
   }
 
   bound_sock = malloc(sizeof(*bound_sock));
   if (NULL == bound_sock) {
-    NaClLog(LOG_FATAL, "NaClCommonDescMakeBoundSock: allocation failed");
+    NaClLog(LOG_FATAL, "NaClCommonDescMakeBoundSock: allocation failed\n");
   }
   if (!NaClDescImcBoundDescCtor(bound_sock, fd_pair[1])) {
-    NaClLog(LOG_FATAL, "NaClCommonDescMakeBoundSock: NaClDescCtor failed");
+    NaClLog(LOG_FATAL,
+            "NaClCommonDescMakeBoundSock: NaClDescImcBoundDescCtor failed\n");
   }
 
   pair[0] = &bound_sock->base;

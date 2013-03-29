@@ -227,17 +227,6 @@ struct NaClDescVtbl {
                       size_t          count) NACL_WUR;
 
   /*
-   * typeTag is one of the enumeration values from NaClDescTypeTag.
-   *
-   * This is not a class variable, since one must access it through an
-   * instance.  Having a value in the vtable is not allowed in C++;
-   * instead, we would implement this as a virtual function that
-   * returns the type tag, or RTTI which would typically be done via
-   * examining the vtable pointer.
-   */
-  enum NaClDescTypeTag typeTag;
-
-  /*
    * Externalization queries this for how many data bytes and how many
    * handles are needed to transfer the "this" or "self" descriptor
    * via IMC.  If the descriptor is not transferrable, this should
@@ -320,14 +309,119 @@ struct NaClDescVtbl {
   int (*SemWait)(struct NaClDesc  *vself) NACL_WUR;
 
   int (*GetValue)(struct NaClDesc *vself) NACL_WUR;
+
+  /*
+   * Descriptor attributes setters and getters.  These are virtual
+   * functions because the NaClDescQuota subclass wraps other NaClDesc
+   * subclasses, and the quota descriptors should not have attributes
+   * separate from that of the wrapped descriptor -- the
+   * setters/getters of the NaClDescQuota just use the corresponding
+   * methods of the wrapped descriptor.
+   */
+
+  /*
+   * Save a copy of the |metadata_size| bytes located at |metadata|
+   * with the descriptor |self|.  The |metadata_type| argument should
+   * be a non-negative integer and should be unique for each use of
+   * the metadata interface.  Only one set of metadata may be saved
+   * with a descriptor, and it is an error to try to set metadata on a
+   * descriptor which already has metadata.
+   *
+   * Syscall-style function: returns 0 for success and negated errno
+   * (-NACL_ABI_ENOMEM if memory allocation for making a copy of the
+   * metadata fails, -NACL_ABI_EPERM if metadata already set,
+   * -NACL_ABI_EINVAL of metadata_type is negative).
+   */
+  int (*SetMetadata)(struct NaClDesc *self,
+                     int32_t metadata_type,
+                     uint32_t metadata_num_bytes,
+                     uint8_t const *metadata_bytes) NACL_WUR;
+
+  /*
+   * GetMetadata writes at most |*metadata_buffer_num_bytes_in_out|
+   * bytes of the metadata associated with the descriptor using
+   * SetMetaData to the buffer located at |metadata_buffer|.  It
+   * returns the metadata_type associated with the descriptor.  On
+   * return, the value at |*metadata_buffer_num_bytes_in_out| contains
+   * the total number of bytes that would be written if there were no
+   * size limit, i.e., the actual number of bytes written if the
+   * buffer was large enough, or the number of bytes that would have
+   * been written if the buffer were not.  Thus, on return, if the
+   * value is less than or equal to the original value at
+   * |*metadata_buffer_num_bytes_in_out|, the contents of
+   * |metadata_buffer| contains all of the metadata.
+   *
+   * To query the size of the metadata without doing any copying, call
+   * GetMetadata with |*metadata_buffer_num_bytes_in_out| equal to
+   * zero, in which case |metadata_buffer| can be NULL.
+   *
+   * Callers should always check the return value of GetMetadata to
+   * ensure that the metadata_type is the expected value.  If the type
+   * is wrong, do not process the metadata -- treat the descriptor as
+   * if it has no metadata.  To do otherwise would expose us to type
+   * confusion attacks.
+   *
+   * Returns NACL_DESC_METADATA_TYPE_NONE if no metadata is associated
+   * with the descriptor.
+   */
+  int32_t (*GetMetadata)(struct NaClDesc *self,
+                         uint32_t *metadata_buffer_num_bytes_in_out,
+                         uint8_t *metadata_buffer) NACL_WUR;
+
+
+  void (*SetFlags)(struct NaClDesc *self,
+                   uint32_t flags);
+
+  uint32_t (*GetFlags)(struct NaClDesc *self);
+
   /*
    * Inappropriate methods for the subclass will just return
    * -NACL_ABI_EINVAL.
    */
+
+  /*
+   * typeTag is one of the enumeration values from NaClDescTypeTag.
+   *
+   * This is not a class variable, since one must access it through an
+   * instance.  Having a value in the vtable is not allowed in C++;
+   * instead, we would implement this as a const virtual function that
+   * returns the type tag, or RTTI which would typically be done via
+   * examining the vtable pointer.  This is potentially cheaper, since
+   * one could choose bit patterns for the type tags that make
+   * subclass relationships easier to compute (we don't do this, since
+   * we only ever need exact type checks).
+   *
+   * We put this at the end of the vtable so that when we add new
+   * virtual functions above it, we are guaranteed to get a type
+   * mismatch if any subclass implemention did not have its vtable
+   * properly extended -- even when -Wmissing-field-initializers was
+   * omitted.
+   */
+  enum NaClDescTypeTag typeTag;
 };
 
 struct NaClDesc {
   struct NaClRefCount base NACL_IS_REFCOUNT_SUBCLASS;
+  uint32_t flags;
+  /* public flags */
+#define NACL_DESC_FLAGS_MMAP_EXEC_OK 0x1
+#define NACL_DESC_FLAGS_PUBLIC_MASK 0xffff
+  /* private flags */
+#define NACL_DESC_FLAGS_HAS_METADATA 0x10000
+  /*
+   * We could have used two uint16_t variables too, but that just
+   * makes the serialization (externalization) and deserialization
+   * (internalization) more complex; here, only the SetFlags and
+   * GetFlags need to be messy.
+   *
+   * We do not encode the presence of metadata using metadata type, so
+   * we do not have to transfer the 4 type bytes when metadata is
+   * absent.  Since the interface only allows setting the metadata
+   * once, we don't worry about
+   */
+  int32_t metadata_type;
+  uint32_t metadata_num_bytes;
+  uint8_t *metadata;
 };
 
 /*
@@ -353,6 +447,61 @@ void NaClDescUnref(struct NaClDesc *ndp);
  * can fail.
  */
 void NaClDescSafeUnref(struct NaClDesc *ndp);
+
+/*
+ * USE THE VIRTUAL FUNCTION.  THIS DECLARATION IS FOR SUBCLASSES.
+ */
+int NaClDescSetMetadata(struct NaClDesc *self,
+                        int32_t metadata_type,
+                        uint32_t metadata_num_bytes,
+                        uint8_t const *metadata_bytes) NACL_WUR;
+#define NACL_DESC_METADATA_TYPE_NONE  (-1)
+
+/*
+ * USE THE VIRTUAL FUNCTION.  THIS DECLARATION IS FOR SUBCLASSES.
+ */
+int32_t NaClDescGetMetadata(struct NaClDesc *self,
+                            uint32_t *metadata_buffer_num_bytes_in_out,
+                            uint8_t *metadata_buffer) NACL_WUR;
+
+/*
+ * USE THE VIRTUAL FUNCTION.  THIS DECLARATION IS FOR SUBCLASSES.
+ */
+void NaClDescSetFlags(struct NaClDesc *self,
+                      uint32_t flags);
+
+/*
+ * USE THE VIRTUAL FUNCTION.  THIS DECLARATION IS FOR SUBCLASSES.
+ */
+uint32_t NaClDescGetFlags(struct NaClDesc *self);
+
+
+/*
+ * Base class externalize functions; all subclass externalize
+ * functions should invoke these, up the class hierarchy, and add to
+ * the sizes or the NaClDescXferState.
+ */
+int NaClDescExternalizeSize(struct NaClDesc *self,
+                            size_t *nbytes,
+                            size_t *nhandles);
+
+int NaClDescExternalize(struct NaClDesc *self,
+                        struct NaClDescXferState *xfer);
+
+/*
+ * The top level internalize interface are factories: they allocate
+ * space, then run the internalize-in-place ctor code.  Ideally, these
+ * would be two separate functions -- the memory allocation could, in
+ * most cases, be simplified to be simply an attribute containing the
+ * desired memory size and a generic allocator used, though of course
+ * we would like to permit subclasses that contains variable size
+ * arrays (at end of struct), etc.  For base (super) classes, the
+ * memory allocation is not necessary, since the subclass internalize
+ * function will have handled it.
+ */
+int NaClDescInternalizeCtor(struct NaClDesc *vself,
+                            struct NaClDescXferState *xfer);
+
 
 /*
  * subclasses are in their own header files.

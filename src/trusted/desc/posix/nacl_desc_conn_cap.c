@@ -31,19 +31,30 @@
 
 static struct NaClDescVtbl const kNaClDescConnCapFdVtbl;  /* fwd */
 
-int NaClDescConnCapFdCtor(struct NaClDescConnCapFd  *self,
-                          NaClHandle                endpt) {
+static int NaClDescConnCapFdSubclassCtor(struct NaClDescConnCapFd  *self,
+                                         NaClHandle                endpt) {
   struct NaClDesc *basep = (struct NaClDesc *) self;
 
-  basep->base.vtbl = (struct NaClRefCountVtbl const *) NULL;
-  if (!NaClDescCtor(basep)) {
-    return 0;
-  }
   self->connect_fd = endpt;
   basep->base.vtbl = (struct NaClRefCountVtbl const *) &kNaClDescConnCapFdVtbl;
   return 1;
 }
 
+int NaClDescConnCapFdCtor(struct NaClDescConnCapFd  *self,
+                          NaClHandle                endpt) {
+  struct NaClDesc *basep = (struct NaClDesc *) self;
+  int rv;
+
+  basep->base.vtbl = (struct NaClRefCountVtbl const *) NULL;
+  if (!NaClDescCtor(basep)) {
+    return 0;
+  }
+  rv = NaClDescConnCapFdSubclassCtor(self, endpt);
+  if (!rv) {
+    (*NACL_VTBL(NaClRefCount, basep)->Dtor)((struct NaClRefCount *) self);
+  }
+  return rv;
+}
 
 static void NaClDescConnCapFdDtor(struct NaClRefCount *vself) {
   struct NaClDescConnCapFd *self = (struct NaClDescConnCapFd *) vself;
@@ -67,18 +78,26 @@ static int NaClDescConnCapFdFstat(struct NaClDesc       *vself,
 static int NaClDescConnCapFdExternalizeSize(struct NaClDesc *vself,
                                             size_t          *nbytes,
                                             size_t          *nhandles) {
-  UNREFERENCED_PARAMETER(vself);
+  int rv;
 
-  *nbytes = 0;
-  *nhandles = 1;
+  rv = NaClDescExternalizeSize(vself, nbytes, nhandles);
+  if (0 != rv) {
+    return rv;
+  }
 
+  *nhandles += 1;
   return 0;
 }
 
 static int NaClDescConnCapFdExternalize(struct NaClDesc          *vself,
                                         struct NaClDescXferState *xfer) {
   struct NaClDescConnCapFd    *self;
+  int rv;
 
+  rv = NaClDescExternalize(vself, xfer);
+  if (0 != rv) {
+    return rv;
+  }
   self = (struct NaClDescConnCapFd *) vself;
   *xfer->next_handle++ = self->connect_fd;
 
@@ -244,7 +263,6 @@ static struct NaClDescVtbl const kNaClDescConnCapFdVtbl = {
   NaClDescIoctlNotImplemented,
   NaClDescConnCapFdFstat,
   NaClDescGetdentsNotImplemented,
-  NACL_DESC_CONN_CAP_FD,
   NaClDescConnCapFdExternalizeSize,
   NaClDescConnCapFdExternalize,
   NaClDescLockNotImplemented,
@@ -263,6 +281,11 @@ static struct NaClDescVtbl const kNaClDescConnCapFdVtbl = {
   NaClDescPostNotImplemented,
   NaClDescSemWaitNotImplemented,
   NaClDescGetValueNotImplemented,
+  NaClDescSetMetadata,
+  NaClDescGetMetadata,
+  NaClDescSetFlags,
+  NaClDescGetFlags,
+  NACL_DESC_CONN_CAP_FD,
 };
 
 int NaClDescConnCapFdInternalize(
@@ -270,23 +293,34 @@ int NaClDescConnCapFdInternalize(
     struct NaClDescXferState      *xfer,
     struct NaClDescQuotaInterface *quota_interface) {
   struct NaClDescConnCapFd *conn_cap;
+  int rv;
 
   UNREFERENCED_PARAMETER(quota_interface);
-  if (xfer->next_handle == xfer->handle_buffer_end) {
-    return -NACL_ABI_EIO;
-  }
   conn_cap = malloc(sizeof(*conn_cap));
   if (NULL == conn_cap) {
     return -NACL_ABI_ENOMEM;
   }
-  if (!NaClDescCtor(&conn_cap->base)) {
+  if (!NaClDescInternalizeCtor(&conn_cap->base, xfer)) {
     free(conn_cap);
-    return -NACL_ABI_ENOMEM;
+    conn_cap = NULL;
+    rv = -NACL_ABI_ENOMEM;
+    goto cleanup;
   }
-  conn_cap->base.base.vtbl =
-      (struct NaClRefCountVtbl const *) &kNaClDescConnCapFdVtbl;
-  conn_cap->connect_fd = *xfer->next_handle;
+  if (xfer->next_handle == xfer->handle_buffer_end) {
+    rv = -NACL_ABI_EIO;
+    goto cleanup;
+  }
+  rv = NaClDescConnCapFdSubclassCtor(conn_cap, *xfer->next_handle);
+  if (!rv) {
+    rv = -NACL_ABI_ENOMEM;
+    goto cleanup;
+  }
   *xfer->next_handle++ = NACL_INVALID_HANDLE;
   *out_desc = &conn_cap->base;
-  return 0;
+  rv = 0;
+ cleanup:
+  if (rv < 0) {
+    NaClDescSafeUnref((struct NaClDesc *) conn_cap);
+  }
+  return rv;
 }

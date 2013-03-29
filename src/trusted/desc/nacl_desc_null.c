@@ -84,7 +84,10 @@ static int NaClDescNullFstat(struct NaClDesc *vself,
 
 /*
  * We allow descriptor "transfer", where in reality we create a
- * separate null device locally at the recipient end.
+ * separate null device locally at the recipient end.  Read/write
+ * operations on /dev/null are allowed, but does not make use of flags
+ * nor are there opportunity to use metadata, so like the invalid
+ * descriptor, we don't bother to transfer that data.
  */
 static int NaClDescNullExternalizeSize(struct NaClDesc *vself,
                                        size_t *nbytes,
@@ -116,7 +119,6 @@ static struct NaClDescVtbl const kNaClDescNullVtbl = {
   NaClDescIoctlNotImplemented,
   NaClDescNullFstat,
   NaClDescGetdentsNotImplemented,
-  NACL_DESC_NULL,
   NaClDescNullExternalizeSize,
   NaClDescNullExternalize,
   NaClDescLockNotImplemented,
@@ -135,6 +137,11 @@ static struct NaClDescVtbl const kNaClDescNullVtbl = {
   NaClDescPostNotImplemented,
   NaClDescSemWaitNotImplemented,
   NaClDescGetValueNotImplemented,
+  NaClDescSetMetadata,
+  NaClDescGetMetadata,
+  NaClDescSetFlags,
+  NaClDescGetFlags,
+  NACL_DESC_NULL,
 };
 
 int NaClDescNullInternalize(struct NaClDesc **out_desc,
