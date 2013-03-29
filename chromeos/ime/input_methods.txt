@@ -1,4 +1,3 @@
-# TODO(nona): Remove this file, this is only for migration.
 # The list of input methods that we support. The input methods metadata is
 # also defined here. We use this data for the following purposes.
 #

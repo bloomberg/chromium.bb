@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/logging.h"
-#include "chrome/browser/chromeos/input_method/input_method_whitelist.h"
+#include "chromeos/ime/input_method_whitelist.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
