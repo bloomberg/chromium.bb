@@ -145,9 +145,11 @@
     "channel": "stable",
     "extension_types": ["extension"],
     "whitelist": [
-      "pkedcjkdefgpdelpbcmbmeomcjbeemfm",  // CV
-      "fmfcbgogabcbclcofgocippekhfcmgfj",  // CV Staging
-      "hfaagokkkhdbgiakmmlclaapfelnkoah"   // CV Canary
+      "pkedcjkdefgpdelpbcmbmeomcjbeemfm",  // Trusted Tester
+      "fmfcbgogabcbclcofgocippekhfcmgfj",  // Staging
+      "hfaagokkkhdbgiakmmlclaapfelnkoah",  // Canary
+      "F155646B5D1CA545F7E1E4E20D573DFDD44C2540",  // Trusted Tester (public)
+      "16CA7A47AAE4BE49B1E75A6B960C3875E945B264"   // Release
     ]
   },
   "experimental": {
@@ -287,9 +289,12 @@
     "channel": "dev",
     "extension_types": ["extension", "packaged_app"],
     "whitelist": [
-      "pkedcjkdefgpdelpbcmbmeomcjbeemfm",  // CV
-      "fmfcbgogabcbclcofgocippekhfcmgfj",  // CV Staging
-      "hfaagokkkhdbgiakmmlclaapfelnkoah"   // CV Canary
+      "pkedcjkdefgpdelpbcmbmeomcjbeemfm",  // Trusted Tester
+      "fmfcbgogabcbclcofgocippekhfcmgfj",  // Staging
+      "hfaagokkkhdbgiakmmlclaapfelnkoah",  // Canary
+      "F155646B5D1CA545F7E1E4E20D573DFDD44C2540",  // Trusted Tester (public)
+      "16CA7A47AAE4BE49B1E75A6B960C3875E945B264"   // Release
+
     ]
   },
   "notifications": {
@@ -413,9 +418,11 @@
     "channel": "stable",
     "extension_types": ["extension", "packaged_app"],
     "whitelist": [
-      "pkedcjkdefgpdelpbcmbmeomcjbeemfm",  // CV
-      "fmfcbgogabcbclcofgocippekhfcmgfj",  // CV Staging
-      "hfaagokkkhdbgiakmmlclaapfelnkoah"   // CV Canary
+      "pkedcjkdefgpdelpbcmbmeomcjbeemfm",  // Trusted Tester
+      "fmfcbgogabcbclcofgocippekhfcmgfj",  // Staging
+      "hfaagokkkhdbgiakmmlclaapfelnkoah",  // Canary
+      "F155646B5D1CA545F7E1E4E20D573DFDD44C2540",  // Trusted Tester (public)
+      "16CA7A47AAE4BE49B1E75A6B960C3875E945B264"   // Release
     ]
   }],
   "terminalPrivate": {
