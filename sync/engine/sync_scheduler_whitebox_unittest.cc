@@ -105,9 +105,8 @@ class SyncSchedulerWhiteboxTest : public testing::Test {
 
   SyncSchedulerImpl::JobProcessDecision CreateAndDecideJob(
       SyncSessionJob::Purpose purpose) {
-    scoped_ptr<SyncSession> s(scheduler_->CreateSyncSession(SyncSourceInfo()));
-    SyncSessionJob job(purpose, TimeTicks::Now(), s.Pass(),
-        ConfigurationParams());
+    SyncSessionJob job(purpose, TimeTicks::Now(),
+                       SyncSourceInfo(), ConfigurationParams());
     return DecideOnJob(job, SyncSchedulerImpl::NORMAL_PRIORITY);
   }
 
@@ -156,12 +155,11 @@ TEST_F(SyncSchedulerWhiteboxTest, SaveNudgeWhileTypeThrottled) {
       ModelTypeSetToInvalidationMap(types, std::string());
 
   SyncSourceInfo info(GetUpdatesCallerInfo::LOCAL, invalidation_map);
-  scoped_ptr<SyncSession> s(scheduler_->CreateSyncSession(info));
 
   // Now schedule a nudge with just bookmarks and the change is local.
   SyncSessionJob job(SyncSessionJob::NUDGE,
                      TimeTicks::Now(),
-                     s.Pass(),
+                     info,
                      ConfigurationParams());
   SyncSchedulerImpl::JobProcessDecision decision =
       DecideOnJob(job, SyncSchedulerImpl::NORMAL_PRIORITY);
@@ -264,7 +262,7 @@ TEST_F(SyncSchedulerWhiteboxTest, ContinueCanaryJobConfig) {
   SetWaitIntervalToExponentialBackoff();
 
   SyncSessionJob job(SyncSessionJob::CONFIGURATION,
-                     TimeTicks::Now(), scoped_ptr<SyncSession>(),
+                     TimeTicks::Now(), SyncSourceInfo(),
                      ConfigurationParams());
 
   SyncSchedulerImpl::JobProcessDecision decision =

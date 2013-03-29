@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/cancelable_callback.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/linked_ptr.h"
@@ -159,11 +160,8 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl : public SyncScheduler {
 
   static const char* GetDecisionString(JobProcessDecision decision);
 
-  // Helpers that log before posting to |sync_loop_|.  These will only post
-  // the task in between calls to Start/Stop.
-  void PostTask(const tracked_objects::Location& from_here,
-                const char* name,
-                const base::Closure& task);
+  // Helper to cancel any existing delayed task and replace it with a new one.
+  // It will not post any tasks if the scheduler is in a "stopped" state.
   void PostDelayedTask(const tracked_objects::Location& from_here,
                        const char* name,
                        const base::Closure& task,
@@ -184,10 +182,12 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl : public SyncScheduler {
   // cycle from job.start_step() to job.end_step(), likely because the
   // scheduler was forced to quit the job mid-way through.
   bool FinishSyncSessionJob(SyncSessionJob* job,
-                            bool exited_prematurely);
+                            bool exited_prematurely,
+                            sessions::SyncSession* session);
 
   // Helper to schedule retries of a failed configure or nudge job.
-  void ScheduleNextSync(scoped_ptr<SyncSessionJob> finished_job);
+  void ScheduleNextSync(scoped_ptr<SyncSessionJob> finished_job,
+                        sessions::SyncSession* session);
 
   // Helper to configure polling intervals. Used by Start and ScheduleNextSync.
   void AdjustPolling(const SyncSessionJob* old_job);
@@ -196,7 +196,8 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl : public SyncScheduler {
   void RestartWaiting(scoped_ptr<SyncSessionJob> job);
 
   // Helper to ScheduleNextSync in case of consecutive sync errors.
-  void HandleContinuationError(scoped_ptr<SyncSessionJob> old_job);
+  void HandleContinuationError(scoped_ptr<SyncSessionJob> old_job,
+                               sessions::SyncSession* session);
 
   // Decide whether we should CONTINUE, SAVE or DROP the job.
   JobProcessDecision DecideOnJob(const SyncSessionJob& job,
@@ -253,9 +254,6 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl : public SyncScheduler {
 
   // Called when the root cause of the current connection error is fixed.
   void OnServerConnectionErrorFixed();
-
-  scoped_ptr<sessions::SyncSession> CreateSyncSession(
-      const sessions::SyncSourceInfo& info);
 
   // Creates a session for a poll and performs the sync.
   void PollTimerCallback();
@@ -323,6 +321,10 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl : public SyncScheduler {
   scoped_ptr<WaitInterval> wait_interval_;
 
   scoped_ptr<BackoffDelayProvider> delay_provider_;
+
+  // We allow at most one PostedTask to be pending at one time.  This is it.
+  // We will cancel this task before starting a new one.
+  base::CancelableClosure pending_wakeup_;
 
   // Invoked to run through the sync cycle.
   scoped_ptr<Syncer> syncer_;

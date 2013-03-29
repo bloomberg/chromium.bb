@@ -38,7 +38,6 @@ class SYNC_EXPORT SyncSessionSnapshot {
       int num_hierarchy_conflicts,
       int num_server_conflicts,
       const SyncSourceInfo& source,
-      const std::vector<SyncSourceInfo>& debug_info_sources_list,
       bool notifications_enabled,
       size_t num_entries,
       base::Time sync_start_time,
@@ -61,7 +60,6 @@ class SYNC_EXPORT SyncSessionSnapshot {
   int num_hierarchy_conflicts() const;
   int num_server_conflicts() const;
   SyncSourceInfo source() const;
-  const std::vector<SyncSourceInfo>& debug_info_sources_list() const;
   bool notifications_enabled() const;
   size_t num_entries() const;
   base::Time sync_start_time() const;
@@ -79,7 +77,6 @@ class SYNC_EXPORT SyncSessionSnapshot {
   int num_hierarchy_conflicts_;
   int num_server_conflicts_;
   SyncSourceInfo source_;
-  std::vector<SyncSourceInfo> debug_info_sources_list_;
   bool notifications_enabled_;
   size_t num_entries_;
   base::Time sync_start_time_;

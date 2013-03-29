@@ -13,11 +13,11 @@ SyncSessionJob::~SyncSessionJob() {
 SyncSessionJob::SyncSessionJob(
     Purpose purpose,
     base::TimeTicks start,
-    scoped_ptr<sessions::SyncSession> session,
+    const sessions::SyncSourceInfo& source_info,
     const ConfigurationParams& config_params)
     : purpose_(purpose),
+      source_info_(source_info),
       scheduled_start_(start),
-      session_(session.Pass()),
       config_params_(config_params),
       finished_(NOT_FINISHED) {
 }
@@ -35,7 +35,7 @@ const char* SyncSessionJob::GetPurposeString(SyncSessionJob::Purpose purpose) {
 }
 #undef ENUM_CASE
 
-bool SyncSessionJob::Finish(bool early_exit) {
+bool SyncSessionJob::Finish(bool early_exit, sessions::SyncSession* session) {
   DCHECK_EQ(finished_, NOT_FINISHED);
   // Did we run through all SyncerSteps from start_step() to end_step()
   // until the SyncSession returned !HasMoreToSync()?
@@ -50,12 +50,12 @@ bool SyncSessionJob::Finish(bool early_exit) {
 
   // Did we hit any errors along the way?
   if (sessions::HasSyncerError(
-      session_->status_controller().model_neutral_state())) {
+      session->status_controller().model_neutral_state())) {
     return false;
   }
 
   const sessions::ModelNeutralState& state(
-      session_->status_controller().model_neutral_state());
+      session->status_controller().model_neutral_state());
   switch (purpose_) {
     case POLL:
     case NUDGE:
@@ -75,29 +75,23 @@ bool SyncSessionJob::Finish(bool early_exit) {
   return true;
 }
 
-scoped_ptr<SyncSessionJob> SyncSessionJob::CloneAndAbandon() {
-  DCHECK_EQ(finished_, NOT_FINISHED);
-  // Clone |this|, and abandon it by NULL-ing session_.
-  return scoped_ptr<SyncSessionJob> (new SyncSessionJob(
-      purpose_, scheduled_start_, session_.Pass(),
-      config_params_));
-}
-
 scoped_ptr<SyncSessionJob> SyncSessionJob::Clone() const {
-  DCHECK_GT(finished_, NOT_FINISHED);
   return scoped_ptr<SyncSessionJob>(new SyncSessionJob(
-      purpose_, scheduled_start_, CloneSession().Pass(),
+      purpose_, scheduled_start_, source_info_,
       config_params_));
 }
 
-scoped_ptr<sessions::SyncSession> SyncSessionJob::CloneSession() const {
-  return scoped_ptr<sessions::SyncSession>(
-      new sessions::SyncSession(session_->context(),
-          session_->delegate(), session_->source()));
+void SyncSessionJob::CoalesceSources(const sessions::SyncSourceInfo& source) {
+  CoalesceStates(source.types, &source_info_.types);
+  source_info_.updates_source = source.updates_source;
 }
 
 SyncSessionJob::Purpose SyncSessionJob::purpose() const {
   return purpose_;
+}
+
+const sessions::SyncSourceInfo& SyncSessionJob::source_info() const {
+  return source_info_;
 }
 
 base::TimeTicks SyncSessionJob::scheduled_start() const {
@@ -107,14 +101,6 @@ base::TimeTicks SyncSessionJob::scheduled_start() const {
 void SyncSessionJob::set_scheduled_start(base::TimeTicks start) {
   scheduled_start_ = start;
 };
-
-const sessions::SyncSession* SyncSessionJob::session() const {
-  return session_.get();
-}
-
-sessions::SyncSession* SyncSessionJob::mutable_session() {
-  return session_.get();
-}
 
 ConfigurationParams SyncSessionJob::config_params() const {
   return config_params_;

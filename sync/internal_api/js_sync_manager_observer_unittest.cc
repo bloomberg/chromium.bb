@@ -83,7 +83,6 @@ TEST_F(JsSyncManagerObserverTest, OnSyncCycleCompleted) {
       2,
       7,
       sessions::SyncSourceInfo(),
-      std::vector<sessions::SyncSourceInfo>(),
       false,
       0,
       base::Time::Now(),

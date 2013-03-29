@@ -176,9 +176,9 @@ class SyncerTest : public testing::Test,
     GetModelSafeRoutingInfo(&info);
     ModelTypeInvalidationMap invalidation_map =
         ModelSafeRoutingInfoToInvalidationMap(info, std::string());
-    return new SyncSession(context_.get(), this,
-        sessions::SyncSourceInfo(sync_pb::GetUpdatesCallerInfo::UNKNOWN,
-                                 invalidation_map));
+    sessions::SyncSourceInfo source_info(sync_pb::GetUpdatesCallerInfo::UNKNOWN,
+                                         invalidation_map);
+    return new SyncSession(context_.get(), this, source_info);
   }
 
 

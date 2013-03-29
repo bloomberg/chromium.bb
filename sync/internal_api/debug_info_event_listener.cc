@@ -43,26 +43,6 @@ void DebugInfoEventListener::OnSyncCycleCompleted(
   sync_completed_event_info->mutable_caller_info()->set_notifications_enabled(
       snapshot.notifications_enabled());
 
-  // Log the sources and per-type payloads coalesced into this session.
-  const std::vector<sessions::SyncSourceInfo>& snap_sources =
-      snapshot.debug_info_sources_list();
-  for (std::vector<sessions::SyncSourceInfo>::const_iterator source_iter =
-       snap_sources.begin(); source_iter != snap_sources.end(); ++source_iter) {
-    sync_pb::SourceInfo* pb_source_info =
-        sync_completed_event_info->add_source_info();
-
-    pb_source_info->set_source(source_iter->updates_source);
-
-    for (ModelTypeInvalidationMap::const_iterator type_iter =
-         source_iter->types.begin();
-         type_iter != source_iter->types.end(); ++type_iter) {
-      sync_pb::TypeHint* pb_type_hint = pb_source_info->add_type_hint();
-      pb_type_hint->set_data_type_id(
-          GetSpecificsFieldNumberFromModelType(type_iter->first));
-      pb_type_hint->set_has_valid_hint(!type_iter->second.payload.empty());
-    }
-  }
-
   AddEventToQueue(event_info);
 }
 

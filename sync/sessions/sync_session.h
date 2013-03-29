@@ -101,10 +101,6 @@ class SYNC_EXPORT_PRIVATE SyncSession {
   // Builds and sends a snapshot to the session context's listeners.
   void SendEventNotification(SyncEngineEvent::EventCause cause);
 
-  // Overwrite the sync update source with the most recent and merge the
-  // type/state map.
-  void CoalesceSources(const SyncSourceInfo& source);
-
   // TODO(akalin): Split this into context() and mutable_context().
   SyncSessionContext* context() const { return context_; }
   Delegate* delegate() const { return delegate_; }
@@ -123,10 +119,6 @@ class SYNC_EXPORT_PRIVATE SyncSession {
 
   // The source for initiating this sync session.
   SyncSourceInfo source_;
-
-  // A list of sources for sessions that have been merged with this one.
-  // Currently used only for logging.
-  std::vector<SyncSourceInfo> debug_info_sources_list_;
 
   // The delegate for this session, must never be NULL.
   Delegate* const delegate_;

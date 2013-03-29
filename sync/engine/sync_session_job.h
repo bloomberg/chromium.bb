@@ -33,19 +33,17 @@ class SYNC_EXPORT_PRIVATE SyncSessionJob {
 
   SyncSessionJob(Purpose purpose,
                  base::TimeTicks start,
-                 scoped_ptr<sessions::SyncSession> session,
+                 const sessions::SyncSourceInfo& source_info,
                  const ConfigurationParams& config_params);
   ~SyncSessionJob();
 
   // Returns a new clone of the job, with a cloned SyncSession ready to be
-  // retried / rescheduled.  A job can only be cloned once it has finished, to
-  // prevent bugs where multiple jobs are scheduled with the same session.  Use
-  // CloneAndAbandon if you want to clone before finishing.
+  // retried / rescheduled.
   scoped_ptr<SyncSessionJob> Clone() const;
 
-  // Same as Clone() above, but also ejects the SyncSession from this job,
-  // preventing it from ever being used for a sync cycle.
-  scoped_ptr<SyncSessionJob> CloneAndAbandon();
+  // Overwrite the sync update source with the most recent and merge the
+  // type/state map.
+  void CoalesceSources(const sessions::SyncSourceInfo& source);
 
   // Record that the scheduler has deemed the job as finished and give it a
   // chance to perform any remaining cleanup and/or notification completion
@@ -61,7 +59,7 @@ class SYNC_EXPORT_PRIVATE SyncSessionJob {
   // timer has expired.  Most importantly, the SyncScheduler should not assume
   // that the original action that triggered the sync cycle (ie. a nudge or a
   // notification) has been properly serviced.
-  bool Finish(bool early_exit);
+  bool Finish(bool early_exit, sessions::SyncSession* session);
 
   static const char* GetPurposeString(Purpose purpose);
   static void GetSyncerStepsForPurpose(Purpose purpose,
@@ -69,10 +67,9 @@ class SYNC_EXPORT_PRIVATE SyncSessionJob {
                                        SyncerStep* end);
 
   Purpose purpose() const;
+  const sessions::SyncSourceInfo& source_info() const;
   base::TimeTicks scheduled_start() const;
   void set_scheduled_start(base::TimeTicks start);
-  const sessions::SyncSession* session() const;
-  sessions::SyncSession* mutable_session();
   SyncerStep start_step() const;
   SyncerStep end_step() const;
   ConfigurationParams config_params() const;
@@ -86,12 +83,10 @@ class SYNC_EXPORT_PRIVATE SyncSessionJob {
     FINISHED       // Indicates a "clean" finish operation.
   };
 
-  scoped_ptr<sessions::SyncSession> CloneSession() const;
-
   const Purpose purpose_;
+  sessions::SyncSourceInfo source_info_;
 
   base::TimeTicks scheduled_start_;
-  scoped_ptr<sessions::SyncSession> session_;
 
   // Only used for purpose_ == CONFIGURATION.  This, and different Finish() and
   // Succeeded() behavior may be arguments to subclass in the future.

@@ -62,11 +62,26 @@ class SyncSessionJobTest : public testing::Test {
     context_->set_routing_info(routes_);
   }
 
-  scoped_ptr<SyncSession> NewLocalSession() {
-    sessions::SyncSourceInfo info(
-        sync_pb::GetUpdatesCallerInfo::LOCAL, ModelTypeInvalidationMap());
+  scoped_ptr<SyncSession> MakeSession() {
+    sessions::SyncSourceInfo info(MakeSourceInfo());
+    std::vector<sessions::SyncSourceInfo> sources_list;
     return scoped_ptr<SyncSession>(
         new SyncSession(context_.get(), &delegate_, info));
+  }
+
+  sessions::SyncSourceInfo MakeSourceInfo() {
+    sessions::SyncSourceInfo info(sync_pb::GetUpdatesCallerInfo::LOCAL,
+                                  ModelTypeInvalidationMap());
+    return info;
+  }
+
+  ModelTypeSet ParamsMeaningAllEnabledTypes() {
+    ModelTypeSet request_params(BOOKMARKS, AUTOFILL);
+    return request_params;
+  }
+
+  ModelTypeSet ParamsMeaningJustOneEnabledType() {
+    return ModelTypeSet(AUTOFILL);
   }
 
   void GetWorkers(std::vector<ModelSafeWorker*>* out) const {
@@ -89,10 +104,8 @@ class SyncSessionJobTest : public testing::Test {
   SyncSession::Delegate* delegate() { return &delegate_; }
   const ModelSafeRoutingInfo& routes() { return routes_; }
 
-  // Checks that the two jobs are "clones" as defined by SyncSessionJob,
-  // minus location and SyncSession checking, for reuse in different
-  // scenarios.
-  void ExpectClonesBase(SyncSessionJob* job, SyncSessionJob* clone) {
+  // Checks that the two jobs are "clones" as defined by SyncSessionJob.
+  void ExpectClones(SyncSessionJob* job, SyncSessionJob* clone) {
     EXPECT_EQ(job->purpose(), clone->purpose());
     EXPECT_EQ(job->scheduled_start(), clone->scheduled_start());
     EXPECT_EQ(job->start_step(), clone->start_step());
@@ -109,78 +122,60 @@ class SyncSessionJobTest : public testing::Test {
 
 TEST_F(SyncSessionJobTest, Clone) {
   SyncSessionJob job1(SyncSessionJob::NUDGE, TimeTicks::Now(),
-      NewLocalSession().Pass(), ConfigurationParams());
+      MakeSourceInfo(), ConfigurationParams());
 
-  sessions::test_util::SimulateSuccess(job1.mutable_session(),
+  scoped_ptr<SyncSession> session1 = MakeSession().Pass();
+  sessions::test_util::SimulateSuccess(session1.get(),
                                        job1.start_step(),
                                        job1.end_step());
-  job1.Finish(false);
+  job1.Finish(false, session1.get());
   ModelSafeRoutingInfo new_routes;
   new_routes[AUTOFILL] = GROUP_PASSIVE;
   context()->set_routing_info(new_routes);
   scoped_ptr<SyncSessionJob> clone1 = job1.Clone();
 
-  ExpectClonesBase(&job1, clone1.get());
-  EXPECT_NE(job1.session(), clone1->session());
+  ExpectClones(&job1, clone1.get());
 
   context()->set_routing_info(routes());
-  sessions::test_util::SimulateSuccess(clone1->mutable_session(),
+  scoped_ptr<SyncSession> session2 = MakeSession().Pass();
+  sessions::test_util::SimulateSuccess(session2.get(),
                                        clone1->start_step(),
                                        clone1->end_step());
-  clone1->Finish(false);
+  clone1->Finish(false, session2.get());
   scoped_ptr<SyncSessionJob> clone2 = clone1->Clone();
 
-  ExpectClonesBase(clone1.get(), clone2.get());
-  EXPECT_NE(clone1->session(), clone2->session());
-  EXPECT_NE(clone1->session(), clone2->session());
+  ExpectClones(clone1.get(), clone2.get());
 
   clone1.reset();
-  ExpectClonesBase(&job1, clone2.get());
-  EXPECT_NE(job1.session(), clone2->session());
+  ExpectClones(&job1, clone2.get());
 }
 
 TEST_F(SyncSessionJobTest, CloneAfterEarlyExit) {
+  scoped_ptr<SyncSession> session = MakeSession().Pass();
   SyncSessionJob job1(SyncSessionJob::NUDGE, TimeTicks::Now(),
-      NewLocalSession().Pass(), ConfigurationParams());
-  job1.Finish(true);
+      MakeSourceInfo(), ConfigurationParams());
+  job1.Finish(true, session.get());
   scoped_ptr<SyncSessionJob> job2 = job1.Clone();
-  ExpectClonesBase(&job1, job2.get());
-}
-
-TEST_F(SyncSessionJobTest, CloneAndAbandon) {
-  scoped_ptr<SyncSession> session = NewLocalSession();
-  SyncSession* session_ptr = session.get();
-
-  SyncSessionJob job1(SyncSessionJob::NUDGE, TimeTicks::Now(),
-      session.Pass(), ConfigurationParams());
-  ModelSafeRoutingInfo new_routes;
-  new_routes[AUTOFILL] = GROUP_PASSIVE;
-  context()->set_routing_info(new_routes);
-
-  scoped_ptr<SyncSessionJob> clone1 = job1.CloneAndAbandon();
-  ExpectClonesBase(&job1, clone1.get());
-  EXPECT_FALSE(job1.session());
-  EXPECT_EQ(session_ptr, clone1->session());
+  ExpectClones(&job1, job2.get());
 }
 
 // Tests interaction between Finish and sync cycle success / failure.
 TEST_F(SyncSessionJobTest, Finish) {
   SyncSessionJob job1(SyncSessionJob::NUDGE, TimeTicks::Now(),
-      NewLocalSession().Pass(), ConfigurationParams());
+      MakeSourceInfo(), ConfigurationParams());
 
-  sessions::test_util::SimulateSuccess(job1.mutable_session(),
+  scoped_ptr<SyncSession> session1 = MakeSession().Pass();
+  sessions::test_util::SimulateSuccess(session1.get(),
                                        job1.start_step(),
                                        job1.end_step());
-  EXPECT_TRUE(job1.Finish(false /* early_exit */));
+  EXPECT_TRUE(job1.Finish(false /* early_exit */, session1.get()));
 
   scoped_ptr<SyncSessionJob> job2 = job1.Clone();
-  sessions::test_util::SimulateConnectionFailure(job2->mutable_session(),
+  scoped_ptr<SyncSession> session2 = MakeSession().Pass();
+  sessions::test_util::SimulateConnectionFailure(session2.get(),
                                                  job2->start_step(),
                                                  job2->end_step());
-  EXPECT_FALSE(job2->Finish(false));
-
-  scoped_ptr<SyncSessionJob> job3 = job2->Clone();
-  EXPECT_FALSE(job3->Finish(true));
+  EXPECT_FALSE(job2->Finish(false, session2.get()));
 }
 
 TEST_F(SyncSessionJobTest, FinishCallsReadyTask) {
@@ -195,13 +190,35 @@ TEST_F(SyncSessionJobTest, FinishCallsReadyTask) {
   scoped_ptr<SyncSession> session(
       new SyncSession(context(), delegate(), info));
 
-  SyncSessionJob job1(SyncSessionJob::CONFIGURATION, TimeTicks::Now(),
-      session.Pass(), params);
-  sessions::test_util::SimulateSuccess(job1.mutable_session(),
+  SyncSessionJob job1(
+      SyncSessionJob::CONFIGURATION, TimeTicks::Now(), info, params);
+  sessions::test_util::SimulateSuccess(session.get(),
                                        job1.start_step(),
                                        job1.end_step());
-  job1.Finish(false);
+  job1.Finish(false, session.get());
   EXPECT_TRUE(config_params_callback_invoked());
+}
+
+TEST_F(SyncSessionJobTest, CoalesceSources) {
+  ModelTypeInvalidationMap one_type =
+      ModelTypeSetToInvalidationMap(
+          ParamsMeaningJustOneEnabledType(),
+          std::string());
+  ModelTypeInvalidationMap all_types =
+      ModelTypeSetToInvalidationMap(
+          ParamsMeaningAllEnabledTypes(),
+          std::string());
+  sessions::SyncSourceInfo source_one(
+      sync_pb::GetUpdatesCallerInfo::PERIODIC, one_type);
+  sessions::SyncSourceInfo source_two(
+      sync_pb::GetUpdatesCallerInfo::LOCAL, all_types);
+
+  SyncSessionJob job(SyncSessionJob::NUDGE, TimeTicks::Now(),
+                     source_one, ConfigurationParams());
+
+  job.CoalesceSources(source_two);
+
+  EXPECT_EQ(source_two.updates_source, job.source_info().updates_source);
 }
 
 }  // namespace syncer

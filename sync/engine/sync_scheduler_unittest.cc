@@ -1184,7 +1184,7 @@ TEST_F(SyncSchedulerTest, StartWhenNotConnected) {
     .WillOnce(DoAll(Invoke(sessions::test_util::SimulateConnectionFailure),
                     Return(true)))
     .WillOnce(DoAll(Invoke(sessions::test_util::SimulateSuccess),
-                    QuitLoopNowAction()));
+                    Return(true)));
   StartSyncScheduler(SyncScheduler::NORMAL_MODE);
 
   scheduler()->ScheduleNudgeAsync(
@@ -1211,7 +1211,7 @@ TEST_F(SyncSchedulerTest, ServerConnectionChangeDuringBackoff) {
     .WillOnce(DoAll(Invoke(sessions::test_util::SimulateConnectionFailure),
                     Return(true)))
     .WillOnce(DoAll(Invoke(sessions::test_util::SimulateSuccess),
-                    QuitLoopNowAction()));
+                    Return(true)));
 
   scheduler()->ScheduleNudgeAsync(
       zero(), NUDGE_SOURCE_LOCAL, ModelTypeSet(BOOKMARKS), FROM_HERE);
@@ -1226,6 +1226,9 @@ TEST_F(SyncSchedulerTest, ServerConnectionChangeDuringBackoff) {
   MessageLoop::current()->RunUntilIdle();
 }
 
+// This was supposed to test the scenario where we receive a nudge while a
+// connection change canary is scheduled, but has not run yet.  Since we've made
+// the connection change canary synchronous, this is no longer possible.
 TEST_F(SyncSchedulerTest, ConnectionChangeCanaryPreemptedByNudge) {
   UseMockDelayProvider();
   EXPECT_CALL(*delay(), GetDelay(_))
@@ -1237,6 +1240,8 @@ TEST_F(SyncSchedulerTest, ConnectionChangeCanaryPreemptedByNudge) {
 
   EXPECT_CALL(*syncer(), SyncShare(_,_,_))
     .WillOnce(DoAll(Invoke(sessions::test_util::SimulateConnectionFailure),
+                    Return(true)))
+    .WillOnce(DoAll(Invoke(sessions::test_util::SimulateSuccess),
                     Return(true)))
     .WillOnce(DoAll(Invoke(sessions::test_util::SimulateSuccess),
                     QuitLoopNowAction()));

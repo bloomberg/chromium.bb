@@ -172,26 +172,6 @@ TEST_F(SyncSessionTest, MoreToDownloadIfGotNoChangesRemaining) {
   EXPECT_TRUE(status()->download_updates_succeeded());
 }
 
-TEST_F(SyncSessionTest, CoalesceSources) {
-  ModelTypeInvalidationMap one_type =
-      ModelTypeSetToInvalidationMap(
-          ParamsMeaningJustOneEnabledType(),
-          std::string());
-  ModelTypeInvalidationMap all_types =
-      ModelTypeSetToInvalidationMap(
-          ParamsMeaningAllEnabledTypes(),
-          std::string());
-  SyncSourceInfo source_one(sync_pb::GetUpdatesCallerInfo::PERIODIC, one_type);
-  SyncSourceInfo source_two(sync_pb::GetUpdatesCallerInfo::LOCAL, all_types);
-
-  SyncSession session(context_.get(), this, source_one);
-
-  session.CoalesceSources(source_two);
-
-  EXPECT_EQ(source_two.updates_source, session.source().updates_source);
-  EXPECT_THAT(all_types, Eq(session.source().types));
-}
-
 TEST_F(SyncSessionTest, MakeTypeInvalidationMapFromBitSet) {
   ModelTypeSet types;
   std::string payload = "test";

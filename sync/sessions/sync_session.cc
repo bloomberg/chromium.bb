@@ -23,16 +23,9 @@ SyncSession::SyncSession(
       source_(source),
       delegate_(delegate) {
   status_controller_.reset(new StatusController());
-  debug_info_sources_list_.push_back(source_);
 }
 
 SyncSession::~SyncSession() {}
-
-void SyncSession::CoalesceSources(const SyncSourceInfo& source) {
-  debug_info_sources_list_.push_back(source);
-  CoalesceStates(source.types, &source_.types);
-  source_.updates_source = source.updates_source;
-}
 
 SyncSessionSnapshot SyncSession::TakeSnapshot() const {
   syncable::Directory* dir = context_->directory();
@@ -56,7 +49,6 @@ SyncSessionSnapshot SyncSession::TakeSnapshot() const {
       status_controller_->num_hierarchy_conflicts(),
       status_controller_->num_server_conflicts(),
       source_,
-      debug_info_sources_list_,
       context_->notifications_enabled(),
       dir->GetEntriesCount(),
       status_controller_->sync_start_time(),
