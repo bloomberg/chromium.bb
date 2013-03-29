@@ -9,6 +9,7 @@
 #include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppapi_proxy_test.h"
+#include "ppapi/shared_impl/proxy_lock.h"
 
 namespace ppapi {
 namespace proxy {
@@ -40,6 +41,8 @@ class PluginResourceTrackerTest : public PluginProxyTest {
 };
 
 TEST_F(PluginResourceTrackerTest, PluginResourceForHostResource) {
+  ProxyAutoLock lock;
+
   PP_Resource host_resource = 0x5678;
 
   HostResource serialized;

@@ -6,10 +6,10 @@
 #include "ppapi/c/dev/ppb_file_chooser_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/proxy/file_chooser_resource.h"
+#include "ppapi/proxy/locking_resource_releaser.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppapi_proxy_test.h"
 #include "ppapi/shared_impl/proxy_lock.h"
-#include "ppapi/shared_impl/scoped_pp_resource.h"
 #include "ppapi/shared_impl/scoped_pp_var.h"
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/thunk/thunk.h"
@@ -67,7 +67,7 @@ bool CheckParseAcceptType(const std::string& input,
 TEST_F(FileChooserResourceTest, Show) {
   const PPB_FileChooser_Dev_0_6* chooser_iface =
       thunk::GetPPB_FileChooser_Dev_0_6_Thunk();
-  ScopedPPResource res(ScopedPPResource::PassRef(),
+  LockingResourceReleaser res(
       chooser_iface->Create(pp_instance(), PP_FILECHOOSERMODE_OPEN,
                             PP_MakeUndefined()));
 
@@ -77,7 +77,7 @@ TEST_F(FileChooserResourceTest, Show) {
   output.user_data = &dest;
 
   int32_t result = chooser_iface->Show(
-      res, output, PP_MakeCompletionCallback(&DoNothingCallback, NULL));
+      res.get(), output, PP_MakeCompletionCallback(&DoNothingCallback, NULL));
   ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
 
   // Should have sent a "show" message.
@@ -105,7 +105,7 @@ TEST_F(FileChooserResourceTest, Show) {
 
   // Should have populated our vector.
   ASSERT_EQ(1u, dest.size());
-  ScopedPPResource dest_deletor(dest[0]);  // Ensure it's cleaned up.
+  LockingResourceReleaser dest_deletor(dest[0]);  // Ensure it's cleaned up.
 
   const PPB_FileRef_1_0* file_ref_iface = thunk::GetPPB_FileRef_1_0_Thunk();
   EXPECT_EQ(PP_FILESYSTEMTYPE_EXTERNAL,

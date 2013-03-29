@@ -322,11 +322,6 @@
       # Webrtc compilation is enabled by default. Set to 0 to disable.
       'enable_webrtc%': 1,
 
-      # PPAPI by default does not support plugins making calls off the main
-      # thread. Set to 1 to turn on experimental support for out-of-process
-      # plugins to make call of the main thread.
-      'enable_pepper_threading%': 1,
-
       # Enables use of the session service, which is enabled by default.
       # Support for disabling depends on the platform.
       'enable_session_service%': 1,
@@ -683,7 +678,6 @@
     'use_x11%': '<(use_x11)',
     'use_gnome_keyring%': '<(use_gnome_keyring)',
     'linux_fpic%': '<(linux_fpic)',
-    'enable_pepper_threading%': '<(enable_pepper_threading)',
     'chromeos%': '<(chromeos)',
     'enable_viewport%': '<(enable_viewport)',
     'enable_hidpi%': '<(enable_hidpi)',
@@ -1786,9 +1780,6 @@
       }],
       ['proprietary_codecs==1', {
         'defines': ['USE_PROPRIETARY_CODECS'],
-      }],
-      ['enable_pepper_threading==1', {
-        'defines': ['ENABLE_PEPPER_THREADING'],
       }],
       ['enable_viewport==1', {
         'defines': ['ENABLE_VIEWPORT'],
