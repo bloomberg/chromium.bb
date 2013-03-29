@@ -112,9 +112,9 @@ class LayerTreeHostAnimationTestAddAnimation
     : public LayerTreeHostAnimationTest {
  public:
   LayerTreeHostAnimationTestAddAnimation()
-      : num_animates_(0)
-      , received_animation_started_notification_(false)
-      , start_time_(0.0) {
+      : num_animates_(0),
+        received_animation_started_notification_(false),
+        start_time_(0.0) {
   }
 
   virtual void BeginTest() OVERRIDE {

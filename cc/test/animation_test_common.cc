@@ -130,9 +130,7 @@ scoped_ptr<cc::AnimationCurve> FakeTransformTransition::Clone() const {
 
 
 FakeFloatTransition::FakeFloatTransition(double duration, float from, float to)
-    : duration_(duration)
-    , from_(from)
-    , to_(to) {}
+    : duration_(duration), from_(from), to_(to) {}
 
 FakeFloatTransition::~FakeFloatTransition() {}
 

@@ -33,8 +33,8 @@ namespace {
 class DelegatedRendererLayerImplTest : public testing::Test {
  public:
   DelegatedRendererLayerImplTest()
-      : proxy_(scoped_ptr<Thread>(NULL))
-      , always_impl_thread_and_main_thread_blocked_(&proxy_) {
+      : proxy_(scoped_ptr<Thread>(NULL)),
+        always_impl_thread_and_main_thread_blocked_(&proxy_) {
     LayerTreeSettings settings;
     settings.minimum_occlusion_tracking_size = gfx::Size();
 

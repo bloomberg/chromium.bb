@@ -421,10 +421,10 @@ void FragmentTexAlphaBinding::Init(WebGraphicsContext3D* context,
 }
 
 FragmentTexColorMatrixAlphaBinding::FragmentTexColorMatrixAlphaBinding()
-    : sampler_location_(-1)
-    , alpha_location_(-1)
-    , color_matrix_location_(-1)
-    , color_offset_location_(-1) {}
+    : sampler_location_(-1),
+      alpha_location_(-1),
+      color_matrix_location_(-1),
+      color_offset_location_(-1) {}
 
 void FragmentTexColorMatrixAlphaBinding::Init(WebGraphicsContext3D* context,
                                               unsigned program,
@@ -907,13 +907,13 @@ std::string FragmentShaderRGBATexAlphaMaskAA::GetShaderString() const {
 
 FragmentShaderRGBATexAlphaMaskColorMatrixAA::
     FragmentShaderRGBATexAlphaMaskColorMatrixAA()
-    : sampler_location_(-1)
-    , mask_sampler_location_(-1)
-    , alpha_location_(-1)
-    , edge_location_(-1)
-    , mask_tex_coord_scale_location_(-1)
-    , color_matrix_location_(-1)
-    , color_offset_location_(-1) {}
+        : sampler_location_(-1),
+          mask_sampler_location_(-1),
+          alpha_location_(-1),
+          edge_location_(-1),
+          mask_tex_coord_scale_location_(-1),
+          color_matrix_location_(-1),
+          color_offset_location_(-1) {}
 
 void FragmentShaderRGBATexAlphaMaskColorMatrixAA::Init(
     WebGraphicsContext3D* context,
@@ -997,11 +997,11 @@ std::string FragmentShaderRGBATexAlphaMaskColorMatrixAA::GetShaderString()
 
 FragmentShaderRGBATexAlphaColorMatrixAA::
     FragmentShaderRGBATexAlphaColorMatrixAA()
-    : sampler_location_(-1)
-    , alpha_location_(-1)
-    , edge_location_(-1)
-    , color_matrix_location_(-1)
-    , color_offset_location_(-1) {}
+        : sampler_location_(-1),
+          alpha_location_(-1),
+          edge_location_(-1),
+          color_matrix_location_(-1),
+          color_offset_location_(-1) {}
 
 void FragmentShaderRGBATexAlphaColorMatrixAA::Init(
       WebGraphicsContext3D* context, unsigned program, bool usingBindUniform,
@@ -1067,10 +1067,10 @@ std::string FragmentShaderRGBATexAlphaColorMatrixAA::GetShaderString() const {
 
 FragmentShaderRGBATexAlphaMaskColorMatrix::
     FragmentShaderRGBATexAlphaMaskColorMatrix()
-    : sampler_location_(-1)
-    , mask_sampler_location_(-1)
-    , alpha_location_(-1)
-    , mask_tex_coord_scale_location_(-1) {}
+        : sampler_location_(-1),
+          mask_sampler_location_(-1),
+          alpha_location_(-1),
+          mask_tex_coord_scale_location_(-1) {}
 
 void FragmentShaderRGBATexAlphaMaskColorMatrix::Init(
     WebGraphicsContext3D* context, unsigned program, bool usingBindUniform,

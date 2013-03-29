@@ -258,12 +258,12 @@ class GLRendererTest : public testing::Test {
 } // namespace
 
 class GLRendererShaderTest : public testing::Test {
-protected:
+ protected:
   GLRendererShaderTest()
-      : output_surface_(FakeOutputSurface::Create3d())
-      , resource_provider_(ResourceProvider::Create(output_surface_.get()))
-      , renderer_(GLRenderer::Create(&mock_client_, output_surface_.get(), resource_provider_.get()))
-  {
+      : output_surface_(FakeOutputSurface::Create3d()),
+        resource_provider_(ResourceProvider::Create(output_surface_.get())),
+        renderer_(GLRenderer::Create(&mock_client_, output_surface_.get(),
+                                     resource_provider_.get())) {
   }
 
   void TestRenderPassProgram() {
