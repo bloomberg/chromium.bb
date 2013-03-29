@@ -19,6 +19,7 @@ class Event;
 }
 
 namespace ash {
+class Launcher;
 
 // A special menu model which keeps track of an "active" menu item.
 class ASH_EXPORT LauncherMenuModel : public ui::SimpleMenuModel {
@@ -87,6 +88,14 @@ class ASH_EXPORT LauncherDelegate {
 
   // Returns true if a tooltip should be shown for the item.
   virtual bool ShouldShowTooltip(const LauncherItem& item) = 0;
+
+  // Callback used to allow delegate to perform initialization actions that
+  // depend on the Launcher being in a known state.
+  virtual void OnLauncherCreated(Launcher* launcher) = 0;
+
+  // Callback used to inform the delegate that a specific launcher no longer
+  // exists.
+  virtual void OnLauncherDestroyed(Launcher* launcher) = 0;
 };
 
 }  // namespace ash

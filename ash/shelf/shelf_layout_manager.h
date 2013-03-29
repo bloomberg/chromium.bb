@@ -49,6 +49,9 @@ class ASH_EXPORT ShelfLayoutManager :
     public ash::ShellObserver,
     public aura::client::ActivationChangeObserver {
  public:
+
+  // TODO(rharrison): Move this observer out of ash::internal::
+  //                  namespace. Tracked in crosbug.com/223936
   class ASH_EXPORT Observer {
    public:
     // Called when the target ShelfLayoutManager will be deleted.
@@ -59,6 +62,10 @@ class ASH_EXPORT ShelfLayoutManager :
 
     // Called when the auto hide state is changed.
     virtual void OnAutoHideStateChanged(ShelfAutoHideState new_state) {}
+
+    // Called when the auto hide behavior is changed.
+    virtual void OnAutoHideBehaviorChanged(
+        ShelfAutoHideBehavior new_behavior) {}
   };
 
   // We reserve a small area at the bottom of the workspace area to ensure that

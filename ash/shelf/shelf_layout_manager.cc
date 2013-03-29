@@ -180,6 +180,8 @@ void ShelfLayoutManager::SetAutoHideBehavior(ShelfAutoHideBehavior behavior) {
   UpdateVisibilityState();
   FOR_EACH_OBSERVER(Observer, observers_,
                     OnAutoHideStateChanged(state_.auto_hide_state));
+  FOR_EACH_OBSERVER(Observer, observers_,
+                    OnAutoHideBehaviorChanged(auto_hide_behavior_));
 }
 
 bool ShelfLayoutManager::IsVisible() const {
