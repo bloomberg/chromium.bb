@@ -36,6 +36,7 @@ import org.chromium.base.CalledByNative;
 import org.chromium.base.CalledByNativeUnchecked;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.database.SQLiteCursor;
+import org.chromium.sync.notifier.SyncStatusHelper;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -608,6 +609,13 @@ public class ChromeBrowserProvider extends ContentProvider {
 
     protected BookmarkNode getBookmarkNode(long nodeId, boolean getParent, boolean getChildren,
             boolean getFavicons, boolean getThumbnails) {
+        // Don't allow going up the hierarchy if sync is disabled and the requested node
+        // is the Mobile Bookmarks folder.
+        if (getParent && nodeId == getMobileBookmarksFolderId()
+                && !SyncStatusHelper.get(getContext()).isSyncEnabled()) {
+            getParent = false;
+        }
+
         BookmarkNode node = nativeGetBookmarkNode(mNativeChromeBrowserProvider, nodeId, getParent,
                 getChildren);
         if (!getFavicons && !getThumbnails) return node;
