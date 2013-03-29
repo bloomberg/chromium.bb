@@ -64,7 +64,7 @@ bool OutputSurface::BindToClient(
   set<string> extensions(extensions_list.begin(), extensions_list.end());
 
   has_gl_discard_backbuffer_ =
-      extensions.count("GL_CHROMIUM_discard_backbuffer");
+      extensions.count("GL_CHROMIUM_discard_backbuffer") > 0;
 
   return true;
 }

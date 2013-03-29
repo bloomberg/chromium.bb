@@ -33,7 +33,7 @@ static const size_t kUploadHistorySizeInitial = 100;
 static const double kDefaultEstimatedTexturesPerSecond = 48.0 * 60.0;
 
 // Flush interval when performing texture uploads.
-static const int kTextureUploadFlushPeriod = 4;
+static const size_t kTextureUploadFlushPeriod = 4;
 
 }  // anonymous namespace
 

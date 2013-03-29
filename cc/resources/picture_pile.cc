@@ -13,7 +13,7 @@
 namespace {
 // Maximum number of pictures that can overlap before we collapse them into
 // a larger one.
-const int kMaxOverlapping = 2;
+const size_t kMaxOverlapping = 2;
 // Maximum percentage area of the base picture another picture in the picture
 // list can be.  If higher, we destroy the list and recreate from scratch.
 const float kResetThreshold = 0.7f;

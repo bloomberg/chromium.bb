@@ -20,8 +20,8 @@ namespace cc {
 ContentLayerUpdater::ContentLayerUpdater(
     scoped_ptr<LayerPainter> painter,
     RenderingStatsInstrumentation* stats_instrumentation)
-    : painter_(painter.Pass()),
-      rendering_stats_instrumentation_(stats_instrumentation) {}
+    : rendering_stats_instrumentation_(stats_instrumentation),
+      painter_(painter.Pass()) {}
 
 ContentLayerUpdater::~ContentLayerUpdater() {}
 

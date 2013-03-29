@@ -31,12 +31,12 @@ namespace {
 #if defined(OS_ANDROID)
 // For reference, the Nexus10 can upload 1MB in about 2.5ms.
 // Assuming a three frame deep pipeline this implies ~20MB.
-const int kMaxPendingUploadBytes = 20 * 1024 * 1024;
+const size_t kMaxPendingUploadBytes = 20 * 1024 * 1024;
 // TODO(epenner): We should remove this upload limit (crbug.com/176197)
-const int kMaxPendingUploads = 72;
+const size_t kMaxPendingUploads = 72;
 #else
-const int kMaxPendingUploadBytes = 100 * 1024 * 1024;
-const int kMaxPendingUploads = 1000;
+const size_t kMaxPendingUploadBytes = 100 * 1024 * 1024;
+const size_t kMaxPendingUploads = 1000;
 #endif
 
 #if defined(OS_ANDROID)
@@ -165,14 +165,14 @@ TileManager::TileManager(
       bytes_pending_upload_(0),
       has_performed_uploads_since_last_flush_(false),
       ever_exceeded_memory_budget_(false),
+      rendering_stats_instrumentation_(rendering_stats_instrumentation),
       max_prepaint_tile_distance_(max_prepaint_tile_distance),
       use_cheapness_estimator_(use_cheapness_estimator),
       use_color_estimator_(use_color_estimator),
       prediction_benchmarking_(prediction_benchmarking),
       did_initialize_visible_tile_(false),
       pending_tasks_(0),
-      max_pending_tasks_(kMaxNumPendingTasksPerThread * num_raster_threads),
-      rendering_stats_instrumentation_(rendering_stats_instrumentation) {
+      max_pending_tasks_(kMaxNumPendingTasksPerThread * num_raster_threads) {
   for (int i = 0; i < NUM_STATES; ++i) {
     for (int j = 0; j < NUM_TREES; ++j) {
       for (int k = 0; k < NUM_BINS; ++k)
@@ -190,9 +190,9 @@ TileManager::~TileManager() {
   // resources.
   raster_worker_pool_.reset();
   AbortPendingTileUploads();
-  DCHECK_EQ(tiles_with_pending_upload_.size(), 0);
-  DCHECK_EQ(all_tiles_.size(), 0);
-  DCHECK_EQ(live_or_allocated_tiles_.size(), 0);
+  DCHECK_EQ(0u, tiles_with_pending_upload_.size());
+  DCHECK_EQ(0u, all_tiles_.size());
+  DCHECK_EQ(0u, live_or_allocated_tiles_.size());
 }
 
 void TileManager::SetGlobalState(
@@ -1034,7 +1034,7 @@ void TileManager::RunRasterTask(
       RecordCheapnessPredictorResults(is_predicted_cheap, is_actually_cheap);
 
       DCHECK_EQ(bitmap.rowBytes(),
-                bitmap.width() * bitmap.bytesPerPixel());
+                static_cast<size_t>(bitmap.width() * bitmap.bytesPerPixel()));
 
       RecordSolidColorPredictorResults(
           reinterpret_cast<SkColor*>(bitmap.getPixels()),

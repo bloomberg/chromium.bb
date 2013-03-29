@@ -954,7 +954,7 @@ void TestIterate(
       }
       EXPECT_TRUE(found);
     }
-    EXPECT_EQ(0, expected.size());
+    EXPECT_EQ(0u, expected.size());
   }
 
   // Make sure this also works with a difference iterator and an empty ignore.
@@ -973,7 +973,7 @@ void TestIterate(
       }
       EXPECT_TRUE(found);
     }
-    EXPECT_EQ(0, expected.size());
+    EXPECT_EQ(0u, expected.size());
   }
 }
 
@@ -1078,7 +1078,7 @@ void TestDiff(
     }
     EXPECT_TRUE(found);
   }
-  EXPECT_EQ(0, expected.size());
+  EXPECT_EQ(0u, expected.size());
 }
 
 TEST(TilingDataTest, DifferenceIteratorIgnoreGeometry) {

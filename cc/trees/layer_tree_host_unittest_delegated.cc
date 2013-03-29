@@ -410,9 +410,9 @@ class LayerTreeHostDelegatedTestRemapResourcesInQuads
     EXPECT_EQ(1u, map.count(555));
 
     ResourceProvider::ResourceId parent_resource_id1 = map.find(999)->second;
-    EXPECT_NE(parent_resource_id1, 999);
+    EXPECT_NE(parent_resource_id1, 999u);
     ResourceProvider::ResourceId parent_resource_id2 = map.find(555)->second;
-    EXPECT_NE(parent_resource_id2, 555);
+    EXPECT_NE(parent_resource_id2, 555u);
 
     // The resources in the quads should be remapped to the parent's namespace.
     const TextureDrawQuad* quad1 = TextureDrawQuad::MaterialCast(
@@ -468,7 +468,7 @@ class LayerTreeHostDelegatedTestReturnUnusedResources
         // 555 is no longer in use.
         delegated_->TakeUnusedResourcesForChildCompositor(&resources);
         EXPECT_EQ(1u, resources.size());
-        EXPECT_EQ(555, resources[0].id);
+        EXPECT_EQ(555u, resources[0].id);
 
         // Stop using any resources.
         frame = CreateFrameData(gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1));
@@ -479,11 +479,11 @@ class LayerTreeHostDelegatedTestReturnUnusedResources
         delegated_->TakeUnusedResourcesForChildCompositor(&resources);
         EXPECT_EQ(2u, resources.size());
         if (resources[0].id == 999) {
-          EXPECT_EQ(999, resources[0].id);
-          EXPECT_EQ(444, resources[1].id);
+          EXPECT_EQ(999u, resources[0].id);
+          EXPECT_EQ(444u, resources[1].id);
         } else {
-          EXPECT_EQ(444, resources[0].id);
-          EXPECT_EQ(999, resources[1].id);
+          EXPECT_EQ(444u, resources[0].id);
+          EXPECT_EQ(999u, resources[1].id);
         }
         EndTest();
         break;
@@ -548,7 +548,7 @@ class LayerTreeHostDelegatedTestReusedResources
         // The 999 resource is the only unused one.
         delegated_->TakeUnusedResourcesForChildCompositor(&resources);
         EXPECT_EQ(1u, resources.size());
-        EXPECT_EQ(999, resources[0].id);
+        EXPECT_EQ(999u, resources[0].id);
         EndTest();
         break;
     }
@@ -603,11 +603,11 @@ class LayerTreeHostDelegatedTestFrameBeforeAck
         delegated_->TakeUnusedResourcesForChildCompositor(&resources);
         EXPECT_EQ(2u, resources.size());
         if (resources[0].id == 555) {
-          EXPECT_EQ(555, resources[0].id);
-          EXPECT_EQ(444, resources[1].id);
+          EXPECT_EQ(555u, resources[0].id);
+          EXPECT_EQ(444u, resources[1].id);
         } else {
-          EXPECT_EQ(444, resources[0].id);
-          EXPECT_EQ(555, resources[1].id);
+          EXPECT_EQ(444u, resources[0].id);
+          EXPECT_EQ(555u, resources[1].id);
         }
 
         // The child compositor sends a frame before receiving an for the
@@ -806,7 +806,7 @@ class LayerTreeHostDelegatedTestBadFrame
         // The bad frame's resource is given back to the child compositor.
         delegated_->TakeUnusedResourcesForChildCompositor(&resources);
         EXPECT_EQ(1u, resources.size());
-        EXPECT_EQ(444, resources[0].id);
+        EXPECT_EQ(444u, resources[0].id);
 
         // Now send a good frame with 999 again.
         frame = CreateFrameData(gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1));
@@ -817,7 +817,7 @@ class LayerTreeHostDelegatedTestBadFrame
         // The unused 555 from the last good frame is now released.
         delegated_->TakeUnusedResourcesForChildCompositor(&resources);
         EXPECT_EQ(1u, resources.size());
-        EXPECT_EQ(555, resources[0].id);
+        EXPECT_EQ(555u, resources[0].id);
 
         EndTest();
         break;
@@ -928,7 +928,7 @@ class LayerTreeHostDelegatedTestUnnamedResource
         // The unused resource should be returned.
         delegated_->TakeUnusedResourcesForChildCompositor(&resources);
         EXPECT_EQ(1u, resources.size());
-        EXPECT_EQ(999, resources[0].id);
+        EXPECT_EQ(999u, resources[0].id);
 
         EndTest();
         break;
@@ -991,7 +991,7 @@ class LayerTreeHostDelegatedTestDontLeakResource
         // The unused resource should be returned.
         delegated_->TakeUnusedResourcesForChildCompositor(&resources);
         EXPECT_EQ(1u, resources.size());
-        EXPECT_EQ(999, resources[0].id);
+        EXPECT_EQ(999u, resources[0].id);
 
         EndTest();
         break;
@@ -1068,7 +1068,7 @@ class LayerTreeHostDelegatedTestResourceSentToParent
         // 999 was returned from the grandparent and could be released.
         delegated_->TakeUnusedResourcesForChildCompositor(&resources);
         EXPECT_EQ(1u, resources.size());
-        EXPECT_EQ(999, resources[0].id);
+        EXPECT_EQ(999u, resources[0].id);
 
         EndTest();
         break;
@@ -1183,7 +1183,7 @@ class LayerTreeHostDelegatedTestCommitWithoutTake
         // 999 and 555 are in use, but 444 should be returned now.
         delegated_->TakeUnusedResourcesForChildCompositor(&resources);
         EXPECT_EQ(1u, resources.size());
-        EXPECT_EQ(444, resources[0].id);
+        EXPECT_EQ(444u, resources[0].id);
 
         EndTest();
         break;

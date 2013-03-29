@@ -4,6 +4,7 @@
 
 {
   'variables': {
+    'chromium_code': 0,
     'cc_source_files': [
       'animation/animation.cc',
       'animation/animation.h',

@@ -20,10 +20,10 @@ scoped_refptr<RateLimiter> RateLimiter::Create(
 RateLimiter::RateLimiter(WebKit::WebGraphicsContext3D* context,
                          RateLimiterClient* client,
                          Thread* thread)
-    : thread_(thread),
-      context_(context),
+    : context_(context),
       active_(false),
-      client_(client) {
+      client_(client),
+      thread_(thread) {
   DCHECK(context);
 }
 

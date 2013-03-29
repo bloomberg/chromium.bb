@@ -70,7 +70,7 @@ class TestWebGraphicsContext3DTextureUpload : public TestWebGraphicsContext3D {
                              WGC3Denum format,
                              WGC3Denum type,
                              const void* pixels) OVERRIDE {
-    EXPECT_EQ(GL_TEXTURE_2D, target);
+    EXPECT_EQ(static_cast<unsigned>(GL_TEXTURE_2D), target);
     EXPECT_EQ(0, level);
     EXPECT_LE(0, width);
     EXPECT_LE(0, height);
@@ -83,12 +83,12 @@ class TestWebGraphicsContext3DTextureUpload : public TestWebGraphicsContext3D {
     unsigned int bytes_per_pixel = 0;
     switch (format) {
       case GL_ALPHA:
-        EXPECT_EQ(GL_UNSIGNED_BYTE, type);
+        EXPECT_EQ(static_cast<unsigned>(GL_UNSIGNED_BYTE), type);
         bytes_per_pixel = 1;
         break;
       case GL_RGB:
-        EXPECT_NE(GL_UNSIGNED_SHORT_4_4_4_4, type);
-        EXPECT_NE(GL_UNSIGNED_SHORT_5_5_5_1, type);
+        EXPECT_NE(static_cast<unsigned>(GL_UNSIGNED_SHORT_4_4_4_4), type);
+        EXPECT_NE(static_cast<unsigned>(GL_UNSIGNED_SHORT_5_5_5_1), type);
         switch (type) {
           case GL_UNSIGNED_BYTE:
             bytes_per_pixel = 3;
@@ -99,7 +99,7 @@ class TestWebGraphicsContext3DTextureUpload : public TestWebGraphicsContext3D {
         }
         break;
       case GL_RGBA:
-        EXPECT_NE(GL_UNSIGNED_SHORT_5_6_5, type);
+        EXPECT_NE(static_cast<unsigned>(GL_UNSIGNED_SHORT_5_6_5), type);
         switch (type) {
           case GL_UNSIGNED_BYTE:
             bytes_per_pixel = 4;
@@ -113,11 +113,11 @@ class TestWebGraphicsContext3DTextureUpload : public TestWebGraphicsContext3D {
         }
         break;
       case GL_LUMINANCE:
-        EXPECT_EQ(GL_UNSIGNED_BYTE, type);
+        EXPECT_EQ(static_cast<unsigned>(GL_UNSIGNED_BYTE), type);
         bytes_per_pixel = 1;
         break;
       case GL_LUMINANCE_ALPHA:
-        EXPECT_EQ(GL_UNSIGNED_BYTE, type);
+        EXPECT_EQ(static_cast<unsigned>(GL_UNSIGNED_BYTE), type);
         bytes_per_pixel = 2;
         break;
     }
@@ -144,8 +144,8 @@ class TestWebGraphicsContext3DTextureUpload : public TestWebGraphicsContext3D {
   }
 
  private:
-  unsigned unpack_alignment_;
   unsigned result_available_;
+  unsigned unpack_alignment_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWebGraphicsContext3DTextureUpload);
 };
@@ -169,19 +169,19 @@ TEST(TextureUploaderTest, NumBlockingUploads) {
       TextureUploader::Create(fake_context.get(), false, false);
 
   fake_context->SetResultAvailable(0);
-  EXPECT_EQ(0, uploader->NumBlockingUploads());
+  EXPECT_EQ(0u, uploader->NumBlockingUploads());
   UploadTexture(uploader.get(), GL_RGBA, gfx::Size(), NULL);
-  EXPECT_EQ(1, uploader->NumBlockingUploads());
+  EXPECT_EQ(1u, uploader->NumBlockingUploads());
   UploadTexture(uploader.get(), GL_RGBA, gfx::Size(), NULL);
-  EXPECT_EQ(2, uploader->NumBlockingUploads());
+  EXPECT_EQ(2u, uploader->NumBlockingUploads());
 
   fake_context->SetResultAvailable(1);
-  EXPECT_EQ(0, uploader->NumBlockingUploads());
+  EXPECT_EQ(0u, uploader->NumBlockingUploads());
   UploadTexture(uploader.get(), GL_RGBA, gfx::Size(), NULL);
-  EXPECT_EQ(0, uploader->NumBlockingUploads());
+  EXPECT_EQ(0u, uploader->NumBlockingUploads());
   UploadTexture(uploader.get(), GL_RGBA, gfx::Size(), NULL);
   UploadTexture(uploader.get(), GL_RGBA, gfx::Size(), NULL);
-  EXPECT_EQ(0, uploader->NumBlockingUploads());
+  EXPECT_EQ(0u, uploader->NumBlockingUploads());
 }
 
 TEST(TextureUploaderTest, MarkPendingUploadsAsNonBlocking) {
@@ -191,21 +191,21 @@ TEST(TextureUploaderTest, MarkPendingUploadsAsNonBlocking) {
       TextureUploader::Create(fake_context.get(), false, false);
 
   fake_context->SetResultAvailable(0);
-  EXPECT_EQ(0, uploader->NumBlockingUploads());
+  EXPECT_EQ(0u, uploader->NumBlockingUploads());
   UploadTexture(uploader.get(), GL_RGBA, gfx::Size(), NULL);
   UploadTexture(uploader.get(), GL_RGBA, gfx::Size(), NULL);
-  EXPECT_EQ(2, uploader->NumBlockingUploads());
+  EXPECT_EQ(2u, uploader->NumBlockingUploads());
 
   uploader->MarkPendingUploadsAsNonBlocking();
-  EXPECT_EQ(0, uploader->NumBlockingUploads());
+  EXPECT_EQ(0u, uploader->NumBlockingUploads());
   UploadTexture(uploader.get(), GL_RGBA, gfx::Size(), NULL);
-  EXPECT_EQ(1, uploader->NumBlockingUploads());
+  EXPECT_EQ(1u, uploader->NumBlockingUploads());
 
   fake_context->SetResultAvailable(1);
-  EXPECT_EQ(0, uploader->NumBlockingUploads());
+  EXPECT_EQ(0u, uploader->NumBlockingUploads());
   UploadTexture(uploader.get(), GL_RGBA, gfx::Size(), NULL);
   uploader->MarkPendingUploadsAsNonBlocking();
-  EXPECT_EQ(0, uploader->NumBlockingUploads());
+  EXPECT_EQ(0u, uploader->NumBlockingUploads());
 }
 
 TEST(TextureUploaderTest, UploadContentsTest) {
