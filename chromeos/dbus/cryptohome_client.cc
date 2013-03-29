@@ -665,7 +665,7 @@ class CryptohomeClientStubImpl : public CryptohomeClient {
   virtual bool GetSystemSalt(std::vector<uint8>* salt) OVERRIDE {
     const char kStubSystemSalt[] = "stub_system_salt";
     salt->assign(kStubSystemSalt,
-                 kStubSystemSalt + arraysize(kStubSystemSalt));
+                 kStubSystemSalt + arraysize(kStubSystemSalt) - 1);
     return true;
   }
 
