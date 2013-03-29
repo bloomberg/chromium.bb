@@ -20,6 +20,7 @@
 #elif defined(OS_WIN)
 #include "device/bluetooth/bluetooth_adapter_win.h"
 #elif defined(OS_MACOSX)
+#include "base/mac/mac_util.h"
 #include "device/bluetooth/bluetooth_adapter_mac.h"
 #endif
 
@@ -67,7 +68,7 @@ bool BluetoothAdapterFactory::IsBluetoothAdapterAvailable() {
 #elif defined(OS_WIN)
   return true;
 #elif defined(OS_MACOSX)
-  return true;
+  return base::mac::IsOSLionOrLater();
 #endif
   return false;
 }
