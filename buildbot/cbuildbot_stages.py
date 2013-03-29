@@ -444,10 +444,8 @@ class BootstrapStage(PatchChangesStage):
 
     # Verify that the patched manifest loads properly. Propagate any errors as
     # exceptions.
-    # TODO(rcui): Do validation on other manifests if we start relying on them.
-    git.Manifest.Cached(
-        os.path.join(checkout_dir, constants.DEFAULT_MANIFEST),
-        manifest_include_dir=checkout_dir)
+    manifest = os.path.join(checkout_dir, self._build_config['manifest'])
+    git.Manifest.Cached(manifest, manifest_include_dir=checkout_dir)
     return checkout_dir
 
   @staticmethod
@@ -564,12 +562,13 @@ class SyncStage(bs.BuilderStage):
 
     kwds.setdefault('referenced_repo', self._options.reference_repo)
     kwds.setdefault('branch', self._target_manifest_branch)
+    kwds.setdefault('manifest', self._build_config['manifest'])
 
     self.repo = repository.RepoRepository(manifest_url, build_root, **kwds)
 
   def GetNextManifest(self):
     """Returns the manifest to use."""
-    return repository.RepoRepository.DEFAULT_MANIFEST
+    return self._build_config['manifest']
 
   def ManifestCheckout(self, next_manifest):
     """Checks out the repository to the given manifest."""
@@ -706,6 +705,7 @@ class ManifestVersionedSyncStage(SyncStage):
         manifest_version.BuildSpecsManager(
             source_repo=self.repo,
             manifest_repo=self.manifest_repo,
+            manifest=self._build_config['manifest'],
             build_name=self._bot_id,
             incr_type=increment,
             force=self._force,
@@ -770,6 +770,7 @@ class LKGMCandidateSyncStage(ManifestVersionedSyncStage):
         source_repo=self.repo,
         manifest_repo=cbuildbot_config.GetManifestVersionsRepoUrl(
             internal, read_only=False),
+        manifest=self._build_config['manifest'],
         build_name=self._bot_id,
         build_type=self._build_config['build_type'],
         incr_type=increment,

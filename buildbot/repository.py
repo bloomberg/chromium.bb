@@ -147,7 +147,6 @@ class RepoRepository(object):
     depth: Mutually exclusive option to referenced_repo; this limits the
       checkout to a max commit history of the given integer.
   """
-  DEFAULT_MANIFEST = 'default'
   # Use our own repo, in case android.kernel.org (the default location) is down.
   _INIT_CMD = ['repo', 'init', '--repo-url', constants.REPO_URL]
 
@@ -155,7 +154,7 @@ class RepoRepository(object):
   LRU_THRESHOLD = 5
 
   def __init__(self, repo_url, directory, branch=None, referenced_repo=None,
-               manifest=None, depth=None):
+               manifest=constants.DEFAULT_MANIFEST, depth=None):
     self.repo_url = repo_url
     self.directory = directory
     self.branch = branch
@@ -247,7 +246,7 @@ class RepoRepository(object):
       init_cmd.extend(['--manifest-branch', self.branch])
 
     cros_build_lib.RunCommand(init_cmd, cwd=self.directory, input='\n\ny\n')
-    if local_manifest and local_manifest != self.DEFAULT_MANIFEST:
+    if local_manifest and local_manifest != self._manifest:
       self._SwitchToLocalManifest(local_manifest)
 
   @property
