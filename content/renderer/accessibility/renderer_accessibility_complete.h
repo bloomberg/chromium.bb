@@ -54,6 +54,7 @@ class CONTENT_EXPORT RendererAccessibilityComplete
     BrowserTreeNode();
     virtual ~BrowserTreeNode();
     int32 id;
+    BrowserTreeNode* parent;
     std::vector<BrowserTreeNode*> children;
   };
 

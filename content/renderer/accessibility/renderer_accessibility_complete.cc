@@ -397,24 +397,44 @@ void RendererAccessibilityComplete::SerializeChangedNodes(
     browser_root_ = CreateBrowserTreeNode();
     browser_node = browser_root_;
     browser_node->id = obj.axID();
+    browser_node->parent = NULL;
     browser_id_map_[browser_node->id] = browser_node;
   }
 
-  // Serialize this node. This fills in all of the fields in
-  // AccessibilityNodeData except child_ids, which we handle below.
-  dst->push_back(AccessibilityNodeData());
-  AccessibilityNodeData* serialized_node = &dst->back();
-  SerializeAccessibilityNode(obj, serialized_node);
-  if (serialized_node->id == browser_root_->id)
-    serialized_node->role = AccessibilityNodeData::ROLE_ROOT_WEB_AREA;
-
-  // Create set of the ids of the children of |obj| so we can quickly look
+  // Iterate over the ids of the children of |obj|.
+  // Create a set of the child ids so we can quickly look
   // up which children are new and which ones were there before.
+  // Also catch the case where a child is already in the browser tree
+  // data structure with a different parent, and make sure the old parent
+  // clears this node first.
   base::hash_set<int32> new_child_ids;
+  const WebDocument& document = GetMainDocument();
   for (unsigned i = 0; i < obj.childCount(); i++) {
     WebAccessibilityObject child = obj.childAt(i);
     if (ShouldIncludeChildNode(obj, child)) {
-      new_child_ids.insert(child.axID());
+      int new_child_id = child.axID();
+      new_child_ids.insert(new_child_id);
+
+      BrowserTreeNode* child = browser_id_map_[new_child_id];
+      if (child && child->parent != browser_node) {
+        // The child is being reparented. Find the WebKit accessibility
+        // object corresponding to the old parent, or the closest ancestor
+        // still in the tree.
+        BrowserTreeNode* parent = child->parent;
+        WebAccessibilityObject parent_obj;
+        while (parent) {
+          parent_obj = document.accessibilityObjectFromID(parent->id);
+          if (!parent_obj.isDetached())
+            break;
+          parent = parent->parent;
+        }
+        CHECK(parent);
+        // Call SerializeChangedNodes recursively on the old parent,
+        // so that the update that clears |child| from its old parent
+        // occurs stricly before the update that adds |child| to its
+        // new parent.
+        SerializeChangedNodes(parent_obj, dst);
+      }
     }
   }
 
@@ -438,6 +458,14 @@ void RendererAccessibilityComplete::SerializeChangedNodes(
       browser_child_id_map[old_child_id] = old_child;
     }
   }
+
+  // Serialize this node. This fills in all of the fields in
+  // AccessibilityNodeData except child_ids, which we handle below.
+  dst->push_back(AccessibilityNodeData());
+  AccessibilityNodeData* serialized_node = &dst->back();
+  SerializeAccessibilityNode(obj, serialized_node);
+  if (serialized_node->id == browser_root_->id)
+    serialized_node->role = AccessibilityNodeData::ROLE_ROOT_WEB_AREA;
 
   // Iterate over the children, make note of the ones that are new
   // and need to be serialized, and update the BrowserTreeNode
@@ -466,6 +494,7 @@ void RendererAccessibilityComplete::SerializeChangedNodes(
     } else {
       BrowserTreeNode* new_child = CreateBrowserTreeNode();
       new_child->id = child_id;
+      new_child->parent = browser_node;
       browser_node->children.push_back(new_child);
       browser_id_map_[child_id] = new_child;
       children_to_serialize.push_back(child);
