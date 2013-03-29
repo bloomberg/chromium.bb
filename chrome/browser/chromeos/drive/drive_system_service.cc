@@ -88,7 +88,9 @@ std::string GetDriveUserAgent() {
 
   const std::string os_cpu_info = webkit_glue::BuildOSCpuInfo();
 
-  return base::StringPrintf("%s-%s %s (%s)",
+  // Add "gzip" to receive compressed data from the server.
+  // (see https://developers.google.com/drive/performance)
+  return base::StringPrintf("%s-%s %s (%s) (gzip)",
                             kDriveClientName,
                             version.c_str(),
                             kLibraryInfo,
