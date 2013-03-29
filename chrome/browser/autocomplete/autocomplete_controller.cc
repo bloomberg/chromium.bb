@@ -88,6 +88,7 @@ AutocompleteController::AutocompleteController(
     AutocompleteControllerDelegate* delegate,
     int provider_types)
     : delegate_(delegate),
+      history_url_provider_(NULL),
       keyword_provider_(NULL),
       search_provider_(NULL),
       zero_suggest_provider_(NULL),
@@ -120,8 +121,10 @@ AutocompleteController::AutocompleteController(
     providers_.push_back(new HistoryContentsProvider(this, profile, use_hqp));
   if (use_hqp)
     providers_.push_back(new HistoryQuickProvider(this, profile));
-  if (provider_types & AutocompleteProvider::TYPE_HISTORY_URL)
-    providers_.push_back(new HistoryURLProvider(this, profile));
+  if (provider_types & AutocompleteProvider::TYPE_HISTORY_URL) {
+    history_url_provider_ = new HistoryURLProvider(this, profile);
+    providers_.push_back(history_url_provider_);
+  }
   // Search provider/"tab to search" can be used on all platforms other than
   // Android.
 #if !defined(OS_ANDROID)

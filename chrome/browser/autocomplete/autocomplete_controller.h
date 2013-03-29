@@ -17,6 +17,7 @@
 #include "chrome/browser/autocomplete/autocomplete_result.h"
 
 class AutocompleteControllerDelegate;
+class HistoryURLProvider;
 class KeywordProvider;
 class Profile;
 class SearchProvider;
@@ -118,8 +119,11 @@ class AutocompleteController : public AutocompleteProviderListener {
   GURL GetDestinationURL(const AutocompleteMatch& match,
                          base::TimeDelta query_formulation_time) const;
 
-  SearchProvider* search_provider() const { return search_provider_; }
+  HistoryURLProvider* history_url_provider() const {
+    return history_url_provider_;
+  }
   KeywordProvider* keyword_provider() const { return keyword_provider_; }
+  SearchProvider* search_provider() const { return search_provider_; }
 
   const AutocompleteInput& input() const { return input_; }
   const AutocompleteResult& result() const { return result_; }
@@ -182,6 +186,8 @@ class AutocompleteController : public AutocompleteProviderListener {
 
   // A list of all providers.
   ACProviders providers_;
+
+  HistoryURLProvider* history_url_provider_;
 
   KeywordProvider* keyword_provider_;
 
