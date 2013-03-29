@@ -56,14 +56,18 @@ void ContentLayerUpdater::PaintContents(SkCanvas* canvas,
   canvas->clipRect(layer_sk_rect);
 
   gfx::RectF opaque_layer_rect;
-  base::TimeTicks paint_begin_time;
-  if (stats)
-    paint_begin_time = base::TimeTicks::Now();
+
+  base::TimeTicks start_time =
+      rendering_stats_instrumentation_->StartRecording();
+
   painter_->Paint(canvas, layer_rect, &opaque_layer_rect);
-  if (stats) {
-    stats->total_paint_time += base::TimeTicks::Now() - paint_begin_time;
-    stats->total_pixels_painted += content_rect.width() * content_rect.height();
-  }
+
+  base::TimeDelta duration =
+      rendering_stats_instrumentation_->EndRecording(start_time);
+  rendering_stats_instrumentation_->AddPaint(
+      duration,
+      content_rect.width() * content_rect.height());
+
   canvas->restore();
 
   gfx::RectF opaque_content_rect = gfx::ScaleRect(
