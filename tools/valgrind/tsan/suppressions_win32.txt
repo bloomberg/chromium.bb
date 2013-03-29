@@ -55,6 +55,32 @@
   ...
 }
 
+{
+  bug_225040_a
+  ThreadSanitizer:Race
+  fun:.text
+  fun:AccRewriteGetHandleRights
+  ...
+  fun:file_util::ReplaceFileW
+}
+
+{
+  bug_225040_b
+  ThreadSanitizer:Race
+  fun:AccRewriteGetHandleRights
+  ...
+  fun:file_util::ReplaceFileW
+  fun:net::InfiniteCache::Worker::StoreData
+}
+{
+  bug_225040_c
+  ThreadSanitizer:Race
+  fun:AccRewriteGetNamedRights
+  ...
+  fun:file_util::ReplaceFileW
+}
+
+
 ############################
 # Chromium
 
