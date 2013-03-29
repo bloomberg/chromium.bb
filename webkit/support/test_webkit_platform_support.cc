@@ -41,7 +41,6 @@
 #include "webkit/glue/webkitplatformsupport_impl.h"
 #include "webkit/gpu/test_context_provider_factory.h"
 #include "webkit/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
-#include "webkit/gpu/webgraphicscontext3d_in_process_impl.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/support/gc_extension.h"
 #include "webkit/support/simple_database_system.h"

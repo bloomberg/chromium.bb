@@ -54,7 +54,6 @@
 #include "ui/surface/transport_dib.h"
 #include "webkit/compositor_bindings/web_rendering_stats_impl.h"
 #include "webkit/glue/webkit_glue.h"
-#include "webkit/gpu/webgraphicscontext3d_in_process_impl.h"
 #include "webkit/plugins/npapi/webplugin.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 
@@ -570,7 +569,7 @@ scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface() {
   attributes.antialias = false;
   attributes.shareResources = true;
   attributes.noAutomaticFlushes = true;
-  WebGraphicsContext3D* context = CreateGraphicsContext3D(attributes);
+  WebKit::WebGraphicsContext3D* context = CreateGraphicsContext3D(attributes);
   if (!context)
     return scoped_ptr<cc::OutputSurface>();
 
@@ -2297,8 +2296,8 @@ bool RenderWidget::HasTouchEventHandlersAt(const gfx::Point& point) const {
   return true;
 }
 
-WebGraphicsContext3D* RenderWidget::CreateGraphicsContext3D(
-    const WebGraphicsContext3D::Attributes& attributes) {
+WebKit::WebGraphicsContext3D* RenderWidget::CreateGraphicsContext3D(
+    const WebKit::WebGraphicsContext3D::Attributes& attributes) {
   if (!webwidget_)
     return NULL;
   scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context(

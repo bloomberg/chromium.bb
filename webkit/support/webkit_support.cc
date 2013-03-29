@@ -62,7 +62,6 @@
 #include "webkit/glue/weburlrequest_extradata_impl.h"
 #include "webkit/gpu/test_context_provider_factory.h"
 #include "webkit/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
-#include "webkit/gpu/webgraphicscontext3d_in_process_impl.h"
 #include "webkit/media/media_stream_client.h"
 #include "webkit/media/webmediaplayer_impl.h"
 #include "webkit/media/webmediaplayer_ms.h"
@@ -98,8 +97,6 @@ using WebKit::WebPlugin;
 using WebKit::WebPluginParams;
 using WebKit::WebString;
 using WebKit::WebURL;
-using webkit::gpu::WebGraphicsContext3DInProcessImpl;
-using webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl;
 
 namespace {
 
