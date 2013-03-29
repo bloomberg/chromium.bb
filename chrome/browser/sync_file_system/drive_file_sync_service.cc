@@ -988,6 +988,17 @@ void DriveFileSyncService::DidGetDriveDirectoryForOrigin(
     const SyncStatusCallback& callback,
     SyncStatusCode status,
     const std::string& resource_id) {
+  if (status == SYNC_FILE_ERROR_NOT_FOUND &&
+      !sync_root_resource_id().empty()) {
+    // Retry after (re-)creating the sync root directory.
+    metadata_store_->SetSyncRootDirectory(std::string());
+    EnsureOriginRootDirectory(
+        origin, base::Bind(
+            &DriveFileSyncService::DidGetDriveDirectoryForOrigin,
+            AsWeakPtr(), base::Passed(&token), origin, callback));
+    return;
+  }
+
   if (status != SYNC_STATUS_OK) {
     NotifyTaskDone(status, token.Pass());
     callback.Run(status);
