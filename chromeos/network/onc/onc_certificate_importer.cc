@@ -15,9 +15,9 @@
 #include "chromeos/network/onc/onc_constants.h"
 #include "net/base/crypto_module.h"
 #include "net/base/net_errors.h"
-#include "net/base/nss_cert_database.h"
-#include "net/base/pem_tokenizer.h"
-#include "net/base/x509_certificate.h"
+#include "net/cert/nss_cert_database.h"
+#include "net/cert/pem_tokenizer.h"
+#include "net/cert/x509_certificate.h"
 
 #define ONC_LOG_WARNING(message) NET_LOG_WARNING("ONC", message)
 #define ONC_LOG_ERROR(message) NET_LOG_ERROR("ONC", message)

@@ -10,7 +10,7 @@
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/test/mock_resource_context.h"
 #include "content/test/test_content_browser_client.h"
-#include "net/base/x509_certificate.h"
+#include "net/cert/x509_certificate.h"
 #include "net/ssl/client_cert_store.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/url_request/url_request.h"

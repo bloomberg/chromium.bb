@@ -7,7 +7,7 @@
 
 #include "content/common/content_export.h"
 #include "content/public/common/security_style.h"
-#include "net/base/cert_status_flags.h"
+#include "net/cert/cert_status_flags.h"
 
 namespace content {
 

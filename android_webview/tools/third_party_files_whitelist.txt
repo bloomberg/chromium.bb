@@ -88,7 +88,7 @@ content/browser/renderer_host/web_input_event_aurax11.cc
 # Copyright Google Inc, no license. Not used on Android.
 google_update/google_update_idl.idl
 # String '(c)' used in certificates organization names
-net/base/test_certificate_data.h
+net/test/test_certificate_data.h
 # Copyright The Chromium Authors and Netscape Communications Corporation; BSD
 # and (MPL, GPL v2 or LGPL v2) licenses. This third-party code is taken from
 # Mozilla, the license for which we already pick up from third_party/npapi/.

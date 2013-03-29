@@ -12,10 +12,10 @@
 #include "base/message_loop.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "crypto/ec_private_key.h"
-#include "net/base/asn1_util.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
-#include "net/base/x509_certificate.h"
+#include "net/cert/asn1_util.h"
+#include "net/cert/x509_certificate.h"
 #include "net/ssl/default_server_bound_cert_store.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

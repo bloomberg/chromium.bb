@@ -13,7 +13,7 @@
 #include "base/stl_util.h"
 #include "base/template_util.h"
 #include "base/threading/non_thread_safe.h"
-#include "net/base/cert_database.h"
+#include "net/cert/cert_database.h"
 #include "net/http/http_network_session.h"
 #include "net/socket/client_socket_pool_histograms.h"
 #include "net/socket/client_socket_pool_manager.h"

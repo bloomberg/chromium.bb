@@ -22,10 +22,10 @@
 #include "content/public/browser/cert_store.h"
 #include "content/public/common/ssl_status.h"
 #include "content/public/test/test_browser_thread.h"
-#include "net/base/cert_status_flags.h"
-#include "net/base/test_certificate_data.h"
-#include "net/base/x509_certificate.h"
+#include "net/cert/cert_status_flags.h"
+#include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_connection_status_flags.h"
+#include "net/test/test_certificate_data.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

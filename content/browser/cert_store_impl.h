@@ -12,7 +12,7 @@
 #include "content/public/browser/cert_store.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "net/base/x509_certificate.h"
+#include "net/cert/x509_certificate.h"
 
 namespace content {
 

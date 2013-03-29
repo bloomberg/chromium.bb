@@ -5,7 +5,7 @@
 #include "chrome/browser/ssl/ssl_add_certificate.h"
 
 #include "chrome/browser/ssl/ssl_add_cert_handler.h"
-#include "net/base/x509_certificate.h"
+#include "net/cert/x509_certificate.h"
 
 namespace chrome {
 

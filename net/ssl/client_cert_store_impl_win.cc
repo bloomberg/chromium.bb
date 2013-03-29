@@ -14,7 +14,7 @@
 
 #include "base/logging.h"
 #include "crypto/scoped_capi_types.h"
-#include "net/base/x509_util.h"
+#include "net/cert/x509_util.h"
 
 namespace net {
 

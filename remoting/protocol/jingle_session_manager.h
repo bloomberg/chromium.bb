@@ -5,12 +5,12 @@
 #ifndef REMOTING_PROTOCOL_JINGLE_SESSION_MANAGER_H_
 #define REMOTING_PROTOCOL_JINGLE_SESSION_MANAGER_H_
 
-#include <map>
 #include <list>
+#include <map>
 #include <string>
 
 #include "base/memory/ref_counted.h"
-#include "net/base/x509_certificate.h"
+#include "net/cert/x509_certificate.h"
 #include "remoting/jingle_glue/signal_strategy.h"
 #include "remoting/protocol/jingle_messages.h"
 #include "remoting/protocol/session_manager.h"

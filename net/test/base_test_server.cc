@@ -20,7 +20,7 @@
 #include "net/base/net_log.h"
 #include "net/base/net_util.h"
 #include "net/base/test_completion_callback.h"
-#include "net/base/test_root_certs.h"
+#include "net/cert/test_root_certs.h"
 #include "net/dns/host_resolver.h"
 
 namespace net {

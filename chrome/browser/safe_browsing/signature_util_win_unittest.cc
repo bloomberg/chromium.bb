@@ -12,8 +12,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
-#include "net/base/x509_cert_types.h"
-#include "net/base/x509_certificate.h"
+#include "net/cert/x509_cert_types.h"
+#include "net/cert/x509_certificate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace safe_browsing {

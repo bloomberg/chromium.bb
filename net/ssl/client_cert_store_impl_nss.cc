@@ -8,7 +8,7 @@
 #include <ssl.h>
 
 #include "base/logging.h"
-#include "net/base/x509_util.h"
+#include "net/cert/x509_util.h"
 
 namespace net {
 

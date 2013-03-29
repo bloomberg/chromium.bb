@@ -4,8 +4,8 @@
 
 #include "net/http/http_network_layer.h"
 
-#include "net/base/mock_cert_verifier.h"
 #include "net/base/net_log.h"
+#include "net/cert/mock_cert_verifier.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties_impl.h"

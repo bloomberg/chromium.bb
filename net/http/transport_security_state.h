@@ -15,8 +15,8 @@
 #include "base/threading/non_thread_safe.h"
 #include "base/time.h"
 #include "net/base/net_export.h"
-#include "net/base/x509_certificate.h"
-#include "net/base/x509_cert_types.h"
+#include "net/cert/x509_cert_types.h"
+#include "net/cert/x509_certificate.h"
 
 namespace net {
 

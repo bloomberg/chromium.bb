@@ -18,7 +18,7 @@
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/common/net/x509_certificate_model.h"
 #include "grit/generated_resources.h"
-#include "net/base/x509_certificate.h"
+#include "net/cert/x509_certificate.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/gtk/menu_label_accelerator_util.h"
 #include "ui/base/l10n/l10n_util.h"

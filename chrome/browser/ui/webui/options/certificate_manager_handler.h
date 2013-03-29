@@ -13,7 +13,7 @@
 #include "chrome/browser/certificate_manager_model.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "chrome/common/cancelable_task_tracker.h"
-#include "net/base/nss_cert_database.h"
+#include "net/cert/nss_cert_database.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 

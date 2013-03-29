@@ -22,7 +22,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/common/page_type.h"
 #include "content/public/common/security_style.h"
-#include "net/base/cert_status_flags.h"
+#include "net/cert/cert_status_flags.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 
 #if defined(OS_CHROMEOS)

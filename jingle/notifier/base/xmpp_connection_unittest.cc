@@ -14,7 +14,7 @@
 #include "jingle/glue/mock_task.h"
 #include "jingle/glue/task_pump.h"
 #include "jingle/notifier/base/weak_xmpp_client.h"
-#include "net/base/cert_verifier.h"
+#include "net/cert/cert_verifier.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_test_util.h"
 #include "talk/xmpp/prexmppauth.h"

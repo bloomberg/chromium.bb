@@ -7,9 +7,9 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "net/base/mock_cert_verifier.h"
 #include "net/base/net_log.h"
 #include "net/base/test_completion_callback.h"
+#include "net/cert/mock_cert_verifier.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_network_session.h"

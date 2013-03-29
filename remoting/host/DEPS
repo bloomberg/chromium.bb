@@ -1,18 +1,6 @@
 include_rules = [
   "+media/video/capture/screen",
-  "+net/base",
-  "+net/dns",
-  "+net/ftp",
-  "+net/http",
-  "+net/proxy",
-  "+net/ssl",
-  "+net/test",
-  "+net/url_request",
-
-  # Note: Only for net::EnableSSLServerSockets(), which must be called by
-  # at process start.
-  "+net/socket",
-
+  "+net",
   "+remoting/codec",
   "+remoting/protocol",
   "+remoting/jingle_glue",

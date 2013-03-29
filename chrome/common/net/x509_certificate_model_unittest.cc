@@ -7,9 +7,9 @@
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
-#include "net/base/cert_test_util.h"
-#include "net/base/nss_cert_database.h"
 #include "net/base/test_data_directory.h"
+#include "net/cert/nss_cert_database.h"
+#include "net/test/cert_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(X509CertificateModelTest, GetTypeCA) {

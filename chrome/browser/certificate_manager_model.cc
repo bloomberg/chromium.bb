@@ -12,7 +12,7 @@
 #include "chrome/common/net/x509_certificate_model.h"
 #include "net/base/crypto_module.h"
 #include "net/base/net_errors.h"
-#include "net/base/x509_certificate.h"
+#include "net/cert/x509_certificate.h"
 
 #if defined(OS_CHROMEOS)
 #include <cert.h>

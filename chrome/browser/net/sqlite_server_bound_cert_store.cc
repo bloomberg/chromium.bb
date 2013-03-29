@@ -20,7 +20,7 @@
 #include "chrome/browser/diagnostics/sqlite_diagnostics.h"
 #include "chrome/browser/net/clear_on_exit_policy.h"
 #include "content/public/browser/browser_thread.h"
-#include "net/base/x509_certificate.h"
+#include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_client_cert_type.h"
 #include "sql/meta_table.h"
 #include "sql/statement.h"

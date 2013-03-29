@@ -14,7 +14,7 @@
 #include "net/base/load_flags.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_data_stream.h"
-#include "net/base/x509_certificate.h"
+#include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_info.h"
 #include "net/url_request/url_request_context.h"
 

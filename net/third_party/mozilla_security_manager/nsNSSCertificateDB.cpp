@@ -47,7 +47,7 @@
 #include "crypto/nss_util_internal.h"
 #include "crypto/scoped_nss_types.h"
 #include "net/base/net_errors.h"
-#include "net/base/x509_certificate.h"
+#include "net/cert/x509_certificate.h"
 
 #if !defined(CERTDB_TERMINAL_RECORD)
 /* NSS 3.13 renames CERTDB_VALID_PEER to CERTDB_TERMINAL_RECORD

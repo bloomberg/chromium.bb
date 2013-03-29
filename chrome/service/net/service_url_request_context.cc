@@ -14,7 +14,7 @@
 #include "base/sys_info.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/service/service_process.h"
-#include "net/base/cert_verifier.h"
+#include "net/cert/cert_verifier.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/dns/host_resolver.h"
 #include "net/ftp/ftp_network_layer.h"

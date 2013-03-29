@@ -5,17 +5,17 @@
 #ifndef CONTENT_BROWSER_SSL_SSL_HOST_STATE_H_
 #define CONTENT_BROWSER_SSL_SSL_HOST_STATE_H_
 
-#include <string>
 #include <map>
 #include <set>
+#include <string>
 
-#include "base/compiler_specific.h"
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/supports_user_data.h"
 #include "base/threading/non_thread_safe.h"
 #include "content/common/content_export.h"
 #include "googleurl/src/gurl.h"
-#include "net/base/x509_certificate.h"
+#include "net/cert/x509_certificate.h"
 
 namespace content {
 class BrowserContext;

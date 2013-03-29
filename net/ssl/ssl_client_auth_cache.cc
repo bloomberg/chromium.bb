@@ -5,7 +5,7 @@
 #include "net/ssl/ssl_client_auth_cache.h"
 
 #include "base/logging.h"
-#include "net/base/x509_certificate.h"
+#include "net/cert/x509_certificate.h"
 
 namespace net {
 

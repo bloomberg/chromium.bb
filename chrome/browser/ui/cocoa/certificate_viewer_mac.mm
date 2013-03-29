@@ -11,8 +11,8 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
-#include "net/base/x509_certificate.h"
-#include "net/base/x509_util_mac.h"
+#include "net/cert/x509_certificate.h"
+#include "net/cert/x509_util_mac.h"
 
 void ShowCertificateViewer(content::WebContents* web_contents,
                            gfx::NativeWindow parent,

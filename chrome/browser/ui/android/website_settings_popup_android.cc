@@ -18,7 +18,7 @@
 #include "content/public/common/ssl_status.h"
 #include "grit/generated_resources.h"
 #include "jni/WebsiteSettingsPopup_jni.h"
-#include "net/base/x509_certificate.h"
+#include "net/cert/x509_certificate.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/android/java_bitmap.h"
 

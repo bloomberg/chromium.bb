@@ -18,7 +18,7 @@
       '../content/public/common/security_style.h',
       # Must come before cert_status_flags.h
       '../net/base/net_export.h',
-      '../net/base/cert_status_flags.h',
+      '../net/cert/cert_status_flags.h',
     ],
     'conditions': [
       ['asan==1', {

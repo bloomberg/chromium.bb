@@ -14,11 +14,11 @@
 
 #include "base/logging.h"
 #include "base/values.h"
-#include "net/base/cert_database.h"
 #include "net/base/net_errors.h"
-#include "net/base/nss_cert_database.h"
-#include "net/base/x509_cert_types.h"
-#include "net/base/x509_certificate.h"
+#include "net/cert/cert_database.h"
+#include "net/cert/nss_cert_database.h"
+#include "net/cert/x509_cert_types.h"
+#include "net/cert/x509_certificate.h"
 
 // To shorten some of those long lines below.
 using base::DictionaryValue;

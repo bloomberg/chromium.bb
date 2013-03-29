@@ -13,8 +13,8 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
-#include "net/base/test_certificate_data.h"
-#include "net/base/x509_certificate.h"
+#include "net/cert/x509_certificate.h"
+#include "net/test/test_certificate_data.h"
 #include "ui/web_dialogs/test/test_web_dialog_observer.h"
 
 // Test framework for chrome/test/data/webui/certificate_viewer_dialog_test.js.

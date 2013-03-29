@@ -47,7 +47,7 @@
 #include "base/string_util.h"
 #include "crypto/nss_util_internal.h"
 #include "net/base/net_errors.h"
-#include "net/base/x509_certificate.h"
+#include "net/cert/x509_certificate.h"
 
 namespace mozilla_security_manager {
 

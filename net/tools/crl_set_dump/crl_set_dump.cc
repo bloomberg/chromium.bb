@@ -15,7 +15,7 @@
 #include "base/file_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/string_number_conversions.h"
-#include "net/base/crl_set.h"
+#include "net/cert/crl_set.h"
 
 static int Usage(const char* argv0) {
   fprintf(stderr, "Usage: %s <crl-set file> [<delta file>]"

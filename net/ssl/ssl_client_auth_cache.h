@@ -10,8 +10,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "net/base/cert_database.h"
 #include "net/base/net_export.h"
+#include "net/cert/cert_database.h"
 
 namespace net {
 

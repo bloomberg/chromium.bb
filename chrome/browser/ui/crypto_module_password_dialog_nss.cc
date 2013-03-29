@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/crypto_module.h"
-#include "net/base/x509_certificate.h"
+#include "net/cert/x509_certificate.h"
 
 #if defined(OS_CHROMEOS)
 #include "crypto/nss_util.h"

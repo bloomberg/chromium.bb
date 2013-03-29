@@ -14,7 +14,7 @@
 #include "base/time.h"
 #include "crypto/rsa_private_key.h"
 #include "crypto/signature_creator.h"
-#include "net/base/x509_certificate.h"
+#include "net/cert/x509_certificate.h"
 
 namespace remoting {
 

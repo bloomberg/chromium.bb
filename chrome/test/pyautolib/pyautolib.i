@@ -36,7 +36,7 @@
 // Must come before cert_status_flags.h
 %include "net/base/net_export.h"
 %ignore net::MapNetErrorToCertStatus(int);
-%include "net/base/cert_status_flags.h"
+%include "net/cert/cert_status_flags.h"
 
 #if defined(OS_CHROMEOS)
 %include "chrome/browser/chromeos/cros/network_constants.h"

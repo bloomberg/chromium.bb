@@ -20,7 +20,7 @@
 #include "base/synchronization/lock.h"
 #include "crypto/mac_security_services_lock.h"
 #include "net/base/host_port_pair.h"
-#include "net/base/x509_util.h"
+#include "net/cert/x509_util.h"
 
 using base::mac::ScopedCFTypeRef;
 

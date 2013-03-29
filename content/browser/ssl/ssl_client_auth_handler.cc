@@ -9,7 +9,7 @@
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
-#include "net/base/x509_certificate.h"
+#include "net/cert/x509_certificate.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"

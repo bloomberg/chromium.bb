@@ -10,7 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/string16.h"
-#include "net/base/x509_certificate.h"
+#include "net/cert/x509_certificate.h"
 
 namespace content {
 class NavigationControllerImpl;

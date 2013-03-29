@@ -38,14 +38,14 @@
 #include "content/public/test/download_test_observer.h"
 #include "content/public/test/test_renderer_host.h"
 #include "crypto/nss_util.h"
-#include "net/base/cert_status_flags.h"
 #include "net/base/crypto_module.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_data_directory.h"
+#include "net/cert/cert_status_flags.h"
 #include "net/test/test_server.h"
 
 #if defined(USE_NSS)
-#include "net/base/nss_cert_database.h"
+#include "net/cert/nss_cert_database.h"
 #endif  // defined(USE_NSS)
 
 using content::InterstitialPage;

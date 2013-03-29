@@ -9,7 +9,7 @@
 #pragma comment(lib, "cryptui.lib")
 
 #include "base/logging.h"
-#include "net/base/x509_certificate.h"
+#include "net/cert/x509_certificate.h"
 
 #if defined(USE_AURA)
 #include "chrome/browser/ui/host_desktop.h"

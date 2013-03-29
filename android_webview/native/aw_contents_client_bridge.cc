@@ -11,7 +11,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "jni/AwContentsClientBridge_jni.h"
-#include "net/base/x509_certificate.h"
+#include "net/cert/x509_certificate.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF16;

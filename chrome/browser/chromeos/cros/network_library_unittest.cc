@@ -27,8 +27,8 @@
 #include "chromeos/network/onc/onc_utils.h"
 #include "crypto/nss_util.h"
 #include "net/base/crypto_module.h"
-#include "net/base/nss_cert_database.h"
-#include "net/base/x509_certificate.h"
+#include "net/cert/nss_cert_database.h"
+#include "net/cert/x509_certificate.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

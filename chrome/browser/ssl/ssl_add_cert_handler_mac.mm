@@ -9,12 +9,12 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_nsobject.h"
-#include "chrome/common/logging_chrome.h"
-#include "chrome/browser/ui/cocoa/last_active_browser_cocoa.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/cocoa/last_active_browser_cocoa.h"
+#include "chrome/common/logging_chrome.h"
 #include "grit/generated_resources.h"
-#include "net/base/x509_certificate.h"
+#include "net/cert/x509_certificate.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 @interface SSLAddCertHandlerCocoa : NSObject

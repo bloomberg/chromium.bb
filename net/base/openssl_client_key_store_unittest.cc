@@ -5,8 +5,8 @@
 #include "net/base/openssl_client_key_store.h"
 
 #include "base/memory/ref_counted.h"
-#include "net/base/cert_test_util.h"
 #include "net/base/test_data_directory.h"
+#include "net/test/cert_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {

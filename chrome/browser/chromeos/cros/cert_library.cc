@@ -27,8 +27,8 @@
 #include "crypto/sha2.h"
 #include "crypto/symmetric_key.h"
 #include "grit/generated_resources.h"
-#include "net/base/cert_database.h"
-#include "net/base/nss_cert_database.h"
+#include "net/cert/cert_database.h"
+#include "net/cert/nss_cert_database.h"
 #include "third_party/icu/public/i18n/unicode/coll.h"  // icu::Collator
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_collator.h"

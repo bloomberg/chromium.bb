@@ -42,7 +42,7 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
-#include "net/base/nss_cert_database.h"
+#include "net/cert/nss_cert_database.h"
 
 typedef struct CERTCertificateStr CERTCertificate;
 namespace net {

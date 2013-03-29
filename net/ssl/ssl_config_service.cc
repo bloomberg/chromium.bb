@@ -7,7 +7,7 @@
 #include "base/lazy_instance.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
-#include "net/base/crl_set.h"
+#include "net/cert/crl_set.h"
 #include "net/ssl/ssl_config_service_defaults.h"
 
 #if defined(USE_OPENSSL)

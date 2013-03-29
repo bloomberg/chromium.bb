@@ -15,7 +15,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/shell/shell_network_delegate.h"
 #include "content/shell/shell_switches.h"
-#include "net/base/cert_verifier.h"
+#include "net/cert/cert_verifier.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/mapped_host_resolver.h"

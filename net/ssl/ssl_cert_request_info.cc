@@ -4,7 +4,7 @@
 
 #include "net/ssl/ssl_cert_request_info.h"
 
-#include "net/base/x509_certificate.h"
+#include "net/cert/x509_certificate.h"
 
 namespace net {
 

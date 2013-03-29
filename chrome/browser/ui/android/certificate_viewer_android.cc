@@ -8,7 +8,7 @@
 #include "base/logging.h"
 #include "grit/generated_resources.h"
 #include "jni/CertificateViewer_jni.h"
-#include "net/base/x509_certificate.h"
+#include "net/cert/x509_certificate.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using base::android::ConvertUTF8ToJavaString;

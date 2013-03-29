@@ -8,7 +8,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "build/build_config.h"
-#include "net/base/cert_database.h"
+#include "net/cert/cert_database.h"
 #include "net/socket/client_socket_handle.h"
 #if defined(USE_OPENSSL)
 #include "net/socket/ssl_client_socket_openssl.h"

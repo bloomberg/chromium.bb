@@ -4,8 +4,8 @@
 
 #include "net/ssl/ssl_info.h"
 
-#include "net/base/cert_status_flags.h"
-#include "net/base/x509_certificate.h"
+#include "net/cert/cert_status_flags.h"
+#include "net/cert/x509_certificate.h"
 
 namespace net {
 

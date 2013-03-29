@@ -10,7 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
-#include "net/base/mock_cert_verifier.h"
+#include "net/cert/mock_cert_verifier.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_network_transaction.h"
 #include "net/http/http_server_properties_impl.h"

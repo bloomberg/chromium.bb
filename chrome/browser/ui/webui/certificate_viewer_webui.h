@@ -12,7 +12,7 @@
 #include "base/observer_list.h"
 #include "base/values.h"
 #include "content/public/browser/web_ui_message_handler.h"
-#include "net/base/x509_certificate.h"
+#include "net/cert/x509_certificate.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
 

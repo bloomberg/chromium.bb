@@ -8,7 +8,7 @@
 
 #include "base/logging.h"
 #include "jingle/notifier/base/server_information.h"
-#include "net/base/cert_verifier.h"
+#include "net/cert/cert_verifier.h"
 #include "talk/base/common.h"
 #include "talk/base/socketaddress.h"
 

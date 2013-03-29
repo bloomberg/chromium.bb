@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "net/base/cert_status_flags.h"
+#include "net/cert/cert_status_flags.h"
 
 namespace content {
 

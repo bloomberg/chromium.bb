@@ -15,7 +15,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/public/browser/browser_thread.h"
-#include "net/base/crl_set.h"
+#include "net/cert/crl_set.h"
 #include "net/ssl/ssl_config_service.h"
 
 using content::BrowserThread;

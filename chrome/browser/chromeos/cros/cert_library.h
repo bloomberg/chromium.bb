@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/string16.h"
-#include "net/base/x509_certificate.h"
+#include "net/cert/x509_certificate.h"
 
 namespace crypto {
 class SymmetricKey;

@@ -10,9 +10,9 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents.h"
-#include "net/base/cert_database.h"
 #include "net/base/net_errors.h"
-#include "net/base/x509_certificate.h"
+#include "net/cert/cert_database.h"
+#include "net/cert/x509_certificate.h"
 #include "net/url_request/url_request.h"
 
 using content::BrowserThread;

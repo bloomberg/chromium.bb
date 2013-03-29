@@ -38,17 +38,6 @@ include_rules = [
 
   # TODO(brettw) - review these; move up if it's ok, or remove the dependency
   "+crypto",
-  "+net/base",
-  "+net/cookies",
-  "+net/dns",
-  "+net/ftp",
-  "+net/http",
-  "+net/proxy",
-  "+net/ssl",
-  "+net/socket",
-  "+net/socket_stream",
-  "+net/test",
-  "+net/url_request",
-  "+net/websockets",
+  "+net",
   "+third_party/npapi/bindings",
 ]

@@ -20,7 +20,7 @@
 #include "chrome/third_party/mozilla_security_manager/nsUsageArrayHelper.h"
 #include "crypto/nss_util.h"
 #include "crypto/scoped_nss_types.h"
-#include "net/base/x509_certificate.h"
+#include "net/cert/x509_certificate.h"
 
 namespace psm = mozilla_security_manager;
 

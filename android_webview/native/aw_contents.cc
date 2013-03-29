@@ -38,7 +38,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/ssl_status.h"
 #include "jni/AwContents_jni.h"
-#include "net/base/x509_certificate.h"
+#include "net/cert/x509_certificate.h"
 #include "ui/gfx/android/java_bitmap.h"
 
 struct AwDrawSWFunctionTable;

@@ -6,7 +6,6 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
-#include "net/base/cert_test_util.h"
 #include "net/base/host_cache.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
@@ -21,6 +20,7 @@
 #include "net/spdy/spdy_stream_test_util.h"
 #include "net/spdy/spdy_test_util_common.h"
 #include "net/spdy/spdy_test_util_spdy2.h"
+#include "net/test/cert_test_util.h"
 #include "testing/platform_test.h"
 
 using namespace net::test_spdy2;
