@@ -302,8 +302,8 @@ cr.define('login', function() {
           '?id=' + UserPod.userImageSalt_[this.user.username];
 
       this.nameElement.textContent = this.user_.displayName;
-      this.actionBoxMenuRemoveElement.hidden = !this.user_.canRemove &&
-                                               !this.user_.publicAccount;
+      this.actionBoxAreaElement.hidden = this.user_.publicAccount;
+      this.actionBoxMenuRemoveElement.hidden = !this.user_.canRemove;
       this.signedInIndicatorElement.hidden = !this.user_.signedIn;
 
       var needSignin = this.needGaiaSignin;
@@ -1034,8 +1034,10 @@ cr.define('login', function() {
 
       clearTimeout(this.loadWallpaperTimeout_);
       for (var i = 0, pod; pod = this.pods[i]; ++i) {
-        if (!this.isSinglePod)
+        if (!this.isSinglePod) {
           pod.isActionBoxMenuActive = false;
+          pod.isActionBoxMenuHovered = false;
+        }
         if (pod != podToFocus) {
           pod.classList.remove('focused');
           pod.classList.remove('faded');
@@ -1228,12 +1230,9 @@ cr.define('login', function() {
         pod.isActionBoxMenuHovered = true;
 
       // Hide action boxes on other user pods.
-      for (var i = 0, p; p = this.pods[i]; ++i) {
-        if (p != pod) {
+      for (var i = 0, p; p = this.pods[i]; ++i)
+        if (p != pod && !p.isActionBoxMenuActive)
           p.isActionBoxMenuHovered = false;
-          p.isActionBoxMenuActive = false;
-        }
-      }
     },
 
     /**
@@ -1280,8 +1279,6 @@ cr.define('login', function() {
     handleKeyDown: function(e) {
       if (this.disabled)
         return;
-      for (var i = 0, pod; pod = this.pods[i]; ++i)
-        pod.isActionBoxMenuHovered = false;
       var editing = e.target.tagName == 'INPUT' && e.target.value;
       switch (e.keyIdentifier) {
         case 'Left':
