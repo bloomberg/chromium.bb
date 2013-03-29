@@ -41,7 +41,7 @@ class Notification {
                const string16& replace_id,
                NotificationDelegate* delegate);
 
-  // Initializes a notification with a given type. Takes ownership of
+  // Initializes a notification with a given type. Makes a deep copy of
   // optional_fields.
   Notification(message_center::NotificationType type,
                const GURL& origin_url,

@@ -63,8 +63,8 @@ message SyncedNotification {
   // The creator of the notification.
   optional SyncedNotificationCreator creator = 3;
 
-  // TODO(petewil): This won't build.  Import the relevant protobuf.
-  // optional MapData client_data = 4;
+  // Client specific data.
+  optional MapData client_data = 4;
 }
 
 message CoalescedSyncedNotification {
@@ -104,3 +104,27 @@ message CoalescedSyncedNotification {
 message SyncedNotificationList {
   repeated CoalescedSyncedNotification coalesced_notification = 1;
 }
+
+// MapData, Data, and ListData are used to sending aribitrary payloads
+// between instances of applications using Synced Notifications.  The
+// schema atop MapData will be defined by the client application.
+message MapData {
+  message Entry {
+    optional string key = 1;
+    optional Data value = 2;
+  };
+  repeated Entry entry = 1;
+};
+
+message Data {
+  optional bool boolean_value = 1;
+  optional int32 int_value = 2;
+  optional double float_value = 3;
+  optional string string_value = 4;
+  optional ListData list_value = 5;
+  optional MapData map_value = 6;
+};
+
+message ListData {
+  repeated Data value = 1;
+};

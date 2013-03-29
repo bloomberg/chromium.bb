@@ -54,7 +54,7 @@ class ChromeNotifierService : public syncer::SyncableService,
 
   // Get a pointer to a notification.  ChromeNotifierService owns this pointer.
   // The caller must not free it.
-  notifier::SyncedNotification* FindNotificationById(const std::string& id);
+  notifier::SyncedNotification* FindNotificationByKey(const std::string& key);
 
   // Called when we dismiss a notification.
   void MarkNotificationAsDismissed(const std::string& id);

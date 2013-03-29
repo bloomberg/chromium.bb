@@ -22,7 +22,8 @@ content::RenderViewHost* ChromeNotifierDelegate::GetRenderViewHost() const {
 }
 
 void ChromeNotifierDelegate::Close(bool by_user) {
-  chrome_notifier_->MarkNotificationAsDismissed(id_);
+  if (by_user)
+    chrome_notifier_->MarkNotificationAsDismissed(id_);
 }
 
 }  // namespace notifier

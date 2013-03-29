@@ -16,68 +16,87 @@ package sync_pb;
 // Data that is used directly by endpoints to render notifications in the case
 // where no "native" app can handle the notification.
 message SyncedNotificationRenderInfo {
-
-  // Render information for the collapsed (summary) view of a coalesced
-  // notification.
-  message CollapsedInfo {
-    message SimpleCollapsedLayout {
-      // Application icon.
-      optional SyncedNotificationImage app_icon = 1;
-
-      // Profile image(s) of the notification creator(s) to show in the
-      // collapsed UI.
-      repeated SyncedNotificationProfileImage profile_image = 2;
-
-      // Heading - often the name(s) of the notification creator(s).
-      optional string heading = 3;
-
-      // Description - often the action that generated the notification.
-      optional string description = 4;
-    }
-    optional SimpleCollapsedLayout simple_collapsed_layout = 1;
-
-    // The creation time of the notification in microseconds since the UNIX
-    // epoch.
-    optional uint64 creation_timestamp_usec = 2;
-
-    // The default destination target.
-    optional SyncedNotificationDestination default_destination = 3;
-
-    // Secondary destinations and actions grouped into a message to account for
-    // ordering.
-    message Target {
-      optional SyncedNotificationDestination destination = 1;
-      optional SyncedNotificationAction action = 2;
-    }
-    repeated Target target = 4;
-  }
+  // Render information for the collapsed (summary) view of a notification.
   optional CollapsedInfo collapsed_info = 1;
 
-  // Render information for the expanded (detail) view of a coalesced
-  // notification.
-  message ExpandedInfo {
-    message SimpleExpandedLayout {
-      // Title - often the title of the underlying entity referred to by the
-      // notification(s).
-      optional string title = 1;
-
-      // Text content - often a snippet of text from the underlying entity
-      // reference or the notification.
-      optional string text = 2;
-
-      // Media.
-      message Media {
-        // TOOD(jro): Do we need other media types?
-        optional SyncedNotificationImage image = 1;
-      }
-      repeated Media media = 3;
-    }
-    optional SimpleExpandedLayout simple_expanded_layout = 1;
-
-    // Collapsed information for each notification in the coalesced group.
-    repeated CollapsedInfo collapsed_info = 2;
-   }
+  // Render information for the expanded view of a notification.
   optional ExpandedInfo expanded_info = 2;
+}
+
+// Render information for the collapsed (summary) view of a coalesced
+// notification.
+message CollapsedInfo {
+  optional SimpleCollapsedLayout simple_collapsed_layout = 1;
+
+  // The creation time of the notification in microseconds since the UNIX
+  // epoch.
+  optional uint64 creation_timestamp_usec = 2;
+
+  // The default destination target.
+  optional SyncedNotificationDestination default_destination = 3;
+
+  repeated Target target = 4;
+}
+
+// Render information for the expanded (detail) view of a coalesced
+// notification.
+message ExpandedInfo {
+  optional SimpleExpandedLayout simple_expanded_layout = 1;
+
+  // Collapsed information for each notification in the coalesced group.
+  repeated CollapsedInfo collapsed_info = 2;
+}
+
+message SimpleCollapsedLayout {
+  // Application icon.
+  optional SyncedNotificationImage app_icon = 1;
+
+  // Profile image(s) of the notification creator(s) to show in the
+  // collapsed UI.
+  repeated SyncedNotificationProfileImage profile_image = 2;
+
+  // Heading - often the name(s) of the notification creator(s).
+  optional string heading = 3;
+
+  // Description - often the action that generated the notification.
+  optional string description = 4;
+}
+
+message SimpleExpandedLayout {
+  // Title - often the title of the underlying entity referred to by the
+  // notification(s).
+  optional string title = 1;
+
+  // Text content - often a snippet of text from the underlying entity
+  // reference or the notification.
+  optional string text = 2;
+
+  repeated Media media = 3;
+
+  // Profile image, usually this is the creator of the referenced entity.
+  optional SyncedNotificationProfileImage profile_image = 4;
+
+  // A set of targets for actions the user can take, or destinations the
+  // viewer can be taken to. Usually these relate to the referenced entity.
+  repeated Target target = 5;
+}
+
+// Media.
+message Media {
+  // TOOD(jro): Do we need other media types?
+  optional SyncedNotificationImage image = 1;
+}
+
+// Secondary destinations and actions grouped into a message to account for
+// ordering.
+message Target {
+  // URL that the user will be taken to by clicking on the notification.
+  optional SyncedNotificationDestination destination = 1;
+  // URI to POST if the user clicks on a button.
+  optional SyncedNotificationAction action = 2;
+
+  // A key to identify this target within a group of targets.
+  optional string target_key = 3;
 }
 
 // A Destination is a target URL that the user can be taken to by clicking on or
@@ -101,8 +120,8 @@ message SyncedNotificationDestination {
 // action button associated with the notification on native mobile, a link, or
 // even the notification card itself.
 message SyncedNotificationAction {
-   // The description for the Action.
-   optional string text = 1;
+  // The description for the Action.
+  optional string text = 1;
 
   // The icon to use for the Action.
   optional SyncedNotificationImage icon = 2;

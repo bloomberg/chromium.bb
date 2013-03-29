@@ -21,6 +21,7 @@
 #include "sync/protocol/sync.pb.h"
 #include "sync/protocol/synced_notification_specifics.pb.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextDirection.h"
+#include "ui/message_center/notification_types.h"
 
 namespace notifier {
 
@@ -61,9 +62,9 @@ syncer::SyncMergeResult ChromeNotifierService::MergeDataAndStartSyncing(
     DCHECK(incoming.get());
 
     // Process each incoming remote notification.
-    const std::string& id = incoming->notification_id();
-    DCHECK_GT(id.length(), 0U);
-    SyncedNotification* found = FindNotificationById(id);
+    const std::string& key = incoming->GetKey();
+    DCHECK_GT(key.length(), 0U);
+    SyncedNotification* found = FindNotificationByKey(key);
 
     if (NULL == found) {
       // If there are no conflicts, copy in the data from remote.
@@ -73,12 +74,12 @@ syncer::SyncMergeResult ChromeNotifierService::MergeDataAndStartSyncing(
       // in all fields, we don't need to do anything here.
       if (incoming->EqualsIgnoringReadState(*found)) {
 
-        if (incoming->read_state() == found->read_state()) {
+        if (incoming->GetReadState() == found->GetReadState()) {
           // Notification matches on the client and the server, nothing to do.
           continue;
         } else  {
           // If the read state is different, read wins for both places.
-          if (incoming->read_state() == SyncedNotification::kDismissed) {
+          if (incoming->GetReadState() == SyncedNotification::kDismissed) {
             // If it is marked as read on the server, but not the client.
             found->NotificationHasBeenDismissed();
             // TODO(petewil): Tell the Notification UI Manager to mark it read.
@@ -175,7 +176,7 @@ syncer::SyncData ChromeNotifierService::CreateSyncDataFromNotification(
     const SyncedNotification& notification) {
   // Construct the sync_data using the specifics from the notification.
   return syncer::SyncData::CreateLocalData(
-      notification.notification_id(), notification.notification_id(),
+      notification.GetKey(), notification.GetKey(),
       notification.GetEntitySpecifics());
 }
 
@@ -190,9 +191,8 @@ scoped_ptr<SyncedNotification>
   // Check for mandatory fields in the sync_data object.
   if (!specifics.has_coalesced_notification() ||
       !specifics.coalesced_notification().has_key() ||
-      !specifics.coalesced_notification().has_read_state()) {
+      !specifics.coalesced_notification().has_read_state())
     return scoped_ptr<SyncedNotification>();
-  }
 
   // TODO(petewil): Is this the right set?  Should I add more?
   bool is_well_formed_unread_notification =
@@ -219,9 +219,8 @@ scoped_ptr<SyncedNotification>
 
 // This returns a pointer into a vector that we own.  Caller must not free it.
 // Returns NULL if no match is found.
-// This uses the <app_id/coalescing_key> pair as a key.
-SyncedNotification* ChromeNotifierService::FindNotificationById(
-    const std::string& id) {
+SyncedNotification* ChromeNotifierService::FindNotificationByKey(
+    const std::string& key) {
   // TODO(petewil): We can make a performance trade off here.
   // While the vector has good locality of reference, a map has faster lookup.
   // Based on how big we expect this to get, maybe change this to a map.
@@ -230,15 +229,16 @@ SyncedNotification* ChromeNotifierService::FindNotificationById(
       it != notification_data_.end();
       ++it) {
     SyncedNotification* notification = *it;
-    if (id == notification->notification_id())
+    if (key == notification->GetKey())
       return *it;
   }
 
   return NULL;
 }
 
-void ChromeNotifierService::MarkNotificationAsDismissed(const std::string& id) {
-  SyncedNotification* notification = FindNotificationById(id);
+void ChromeNotifierService::MarkNotificationAsDismissed(
+    const std::string& key) {
+  SyncedNotification* notification = FindNotificationByKey(key);
   CHECK(notification != NULL);
 
   notification->NotificationHasBeenDismissed();
@@ -268,40 +268,120 @@ void ChromeNotifierService::Add(scoped_ptr<SyncedNotification> notification) {
 // Send the notification to the NotificationUIManager to show to the user.
 void ChromeNotifierService::Show(SyncedNotification* notification) {
   // Set up the fields we need to send and create a Notification object.
-  GURL origin_url(notification->origin_url());
-  GURL app_icon_url(notification->app_icon_url());
-  string16 title = UTF8ToUTF16(notification->title());
-  string16 text = UTF8ToUTF16(notification->text());
-  string16 heading = UTF8ToUTF16(notification->heading());
-  string16 description = UTF8ToUTF16(notification->description());
-
+  GURL origin_url(notification->GetOriginUrl());
+  GURL app_icon_url(notification->GetAppIconUrl());
+  GURL image_url(notification->GetImageUrl());
+  string16 title = UTF8ToUTF16(notification->GetTitle());
+  string16 text = UTF8ToUTF16(notification->GetText());
+  string16 heading = UTF8ToUTF16(notification->GetHeading());
+  string16 description = UTF8ToUTF16(notification->GetDescription());
   // TODO(petewil): What goes in the display source, is empty OK?
   string16 display_source;
-  string16 replace_id = UTF8ToUTF16(notification->notification_id());
-
-  // TODO(petewil): For now, just punt on dismissed notifications until
-  // I change the interface to let NotificationUIManager know the right way.
-  if (SyncedNotification::kRead == notification->read_state() ||
-      SyncedNotification::kDismissed == notification->read_state() ) {
-    DVLOG(2) << "Not showing dismissed notification"
-              << notification->title() << " " << notification->text();
-    return;
-  }
+  string16 replace_key = UTF8ToUTF16(notification->GetKey());
 
   // The delegate will eventually catch calls that the notification
   // was read or deleted, and send the changes back to the server.
   scoped_refptr<NotificationDelegate> delegate =
-      new ChromeNotifierDelegate(notification->notification_id(), this);
+      new ChromeNotifierDelegate(notification->GetKey(), this);
 
-  Notification ui_notification(origin_url, app_icon_url, heading, description,
+  // Some inputs and fields are only used if there is a notification center.
+#if defined(ENABLE_MESSAGE_CENTER)
+  double creation_time = static_cast<double>(notification->GetCreationTime());
+  int priority = notification->GetPriority();
+  int notification_count = notification->GetNotificationCount();
+  int button_count = notification->GetButtonCount();
+  std::string button_one_title = notification->GetButtonOneTitle();
+  std::string button_one_icon_url = notification->GetButtonOneIconUrl();
+  std::string button_two_title = notification->GetButtonTwoTitle();
+  std::string button_two_icon_url = notification->GetButtonTwoIconUrl();
+
+  // Deduce which notification template to use from the data.
+  message_center::NotificationType notification_type =
+      message_center::NOTIFICATION_TYPE_SIMPLE;
+  if (!image_url.is_empty()) {
+    notification_type = message_center::NOTIFICATION_TYPE_IMAGE;
+  } else if (notification_count > 1) {
+    notification_type = message_center::NOTIFICATION_TYPE_MULTIPLE;
+  } else if (button_count > 0) {
+    notification_type = message_center::NOTIFICATION_TYPE_BASE_FORMAT;
+  }
+
+  // Fill the optional fields with the information we need to make a
+  // notification.
+  DictionaryValue optional_fields;
+  optional_fields.SetDouble(message_center::kTimestampKey, creation_time);
+  if (priority != SyncedNotification::kUndefinedPriority)
+    optional_fields.SetInteger(message_center::kPriorityKey, priority);
+  if (!button_one_title.empty())
+    optional_fields.SetString(message_center::kButtonOneTitleKey,
+                               button_one_title);
+  if (!button_one_icon_url.empty())
+    optional_fields.SetString(message_center::kButtonOneIconUrlKey,
+                               button_one_icon_url);
+  if (!button_two_title.empty())
+    optional_fields.SetString(message_center::kButtonTwoTitleKey,
+                               button_two_title);
+  if (!button_two_icon_url.empty())
+    optional_fields.SetString(message_center::kButtonTwoIconUrlKey,
+                               button_two_icon_url);
+
+  // Fill the individual notification fields for a multiple notification.
+  if (notification_count > 1) {
+    base::ListValue* items = new base::ListValue();
+
+    for (int ii = 0; ii < notification_count; ++ii) {
+      DictionaryValue* item = new DictionaryValue();
+      item->SetString(message_center::kItemTitleKey,
+                      UTF8ToUTF16(notification->GetContainedNotificationTitle(
+                          ii)));
+      item->SetString(message_center::kItemMessageKey,
+                      UTF8ToUTF16(notification->GetContainedNotificationMessage(
+                          ii)));
+      items->Append(item);
+    }
+
+    optional_fields.Set(message_center::kItemsKey, items);
+  }
+
+  // TODO(petewil): For now, just punt on dismissed notifications until
+  // I change the interface to let NotificationUIManager know the right way.
+  if (SyncedNotification::kRead == notification->GetReadState() ||
+      SyncedNotification::kDismissed == notification->GetReadState() ) {
+    DVLOG(2) << "Dismissed notification arrived"
+             << notification->GetTitle() << " " << notification->GetText();
+    return;
+  }
+
+  Notification ui_notification(notification_type,
+                               origin_url,
+                               app_icon_url,
+                               heading,
+                               text,
                                WebKit::WebTextDirectionDefault,
-                               display_source, replace_id, delegate);
+                               display_source,
+                               replace_key,
+                               &optional_fields,
+                               delegate);
+
+
+#else  // ENABLE_MESSAGE_CENTER
+
+  Notification ui_notification(origin_url,
+                               app_icon_url,
+                               heading,
+                               text,
+                               WebKit::WebTextDirectionDefault,
+                               display_source,
+                               replace_key,
+                               delegate);
+
+#endif  // ENABLE_MESSAGE_CENTER
 
   notification_manager_->Add(ui_notification, profile_);
 
   DVLOG(1) << "Synced Notification arrived! " << title << " " << text
-           << " " << app_icon_url << " " << replace_id << " "
-           << notification->read_state();
+           << " " << app_icon_url << " " << replace_key << " "
+           << notification->GetReadState();
 
   return;
 }

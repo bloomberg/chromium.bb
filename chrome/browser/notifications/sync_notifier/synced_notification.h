@@ -34,28 +34,41 @@ class SyncedNotification {
     kDismissed = 3,
   };
 
+  static const int kUndefinedPriority = 65535;
+
   void Update(const syncer::SyncData& sync_data);
 
   // Here are some helper functions to get individual data parts out of a
   // SyncedNotification.
-  // TODO(petewil): Add more types as we expand support for the protobuf.
-  std::string title() const;
-  std::string heading() const;
-  std::string description() const;
-  std::string app_id() const;
-  std::string key() const;
-  GURL origin_url() const;
-  GURL app_icon_url() const;
-  GURL image_url() const;
-  std::string first_external_id() const;
-  std::string notification_id() const;
-  std::string text() const;
-  ReadState read_state() const;
+  std::string GetTitle() const;
+  std::string GetHeading() const;
+  std::string GetDescription() const;
+  std::string GetAppId() const;
+  std::string GetKey() const;
+  GURL GetOriginUrl() const;
+  GURL GetAppIconUrl() const;
+  GURL GetImageUrl() const;
+  std::string GetText() const;
+  ReadState GetReadState() const;
+  uint64 GetCreationTime() const;
+  int GetPriority() const;
+  std::string GetDefaultDestinationTitle() const;
+  std::string GetDefaultDestinationIconUrl() const;
+  std::string GetDefaultDestinationUrl() const;
+  std::string GetButtonOneTitle() const;
+  std::string GetButtonOneIconUrl() const;
+  std::string GetButtonOneUrl() const;
+  std::string GetButtonTwoTitle() const;
+  std::string GetButtonTwoIconUrl() const;
+  std::string GetButtonTwoUrl() const;
+  int GetNotificationCount() const;
+  int GetButtonCount() const;
+  std::string GetContainedNotificationTitle(int index) const;
+  std::string GetContainedNotificationMessage(int index) const;
+
 
   bool EqualsIgnoringReadState(const SyncedNotification& other) const;
-  bool IdMatches(const SyncedNotification& other) const;
 
-  void NotificationHasBeenRead();
   void NotificationHasBeenDismissed();
 
   // This gets a pointer to the SyncedNotificationSpecifics part
@@ -68,18 +81,6 @@ class SyncedNotification {
 
   // Parsing functions to get this information out of the sync_data and into
   // our local variables.
-  std::string ExtractTitle() const;
-  std::string ExtractHeading() const;
-  std::string ExtractDescription() const;
-  std::string ExtractAppId() const;
-  std::string ExtractKey() const;
-  GURL ExtractOriginUrl() const;
-  GURL ExtractAppIconUrl() const;
-  GURL ExtractImageUrl() const;
-  std::string ExtractFirstExternalId() const;
-  std::string ExtractNotificationId() const;
-  std::string ExtractText() const;
-  ReadState ExtractReadState() const;
 
   sync_pb::SyncedNotificationSpecifics specifics_;
 
