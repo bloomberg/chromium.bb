@@ -2214,6 +2214,11 @@ IPC_MESSAGE_ROUTED3(ViewHostMsg_LockMouse,
 // ViewHostMsg_UnlockMouse).
 IPC_MESSAGE_ROUTED0(ViewHostMsg_UnlockMouse)
 
+// Notifies that the initial empty document of a view has been accessed.
+// After this, it is no longer safe to show a pending navigation's URL without
+// making a URL spoof possible.
+IPC_MESSAGE_ROUTED0(ViewHostMsg_DidAccessInitialDocument)
+
 // Following message is used to communicate the values received by the
 // callback binding the JS to Cpp.
 // An instance of browser that has an automation host listening to it can

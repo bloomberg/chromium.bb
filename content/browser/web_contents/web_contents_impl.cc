@@ -738,7 +738,7 @@ BrowserContext* WebContentsImpl::GetBrowserContext() const {
 
 const GURL& WebContentsImpl::GetURL() const {
   // We may not have a navigation entry yet
-  NavigationEntry* entry = controller_.GetActiveEntry();
+  NavigationEntry* entry = controller_.GetVisibleEntry();
   return entry ? entry->GetVirtualURL() : GURL::EmptyGURL();
 }
 
@@ -884,7 +884,7 @@ const string16& WebContentsImpl::GetTitle() const {
       render_manager_.pending_web_ui() : render_manager_.web_ui();
   if (our_web_ui) {
     // Don't override the title in view source mode.
-    entry = controller_.GetActiveEntry();
+    entry = controller_.GetVisibleEntry();
     if (!(entry && entry->IsViewSourceMode())) {
       // Give the Web UI the chance to override our title.
       const string16& title = our_web_ui->GetOverriddenTitle();
@@ -898,6 +898,13 @@ const string16& WebContentsImpl::GetTitle() const {
   // keep the old page's title until the new load has committed and we get a new
   // title.
   entry = controller_.GetLastCommittedEntry();
+
+  // We make an exception for initial navigations, because we can have a
+  // committed entry for an initial navigation when doing a history navigation
+  // in a new tab, such as Ctrl+Back.
+  if (entry && controller_.IsInitialNavigation())
+    entry = controller_.GetVisibleEntry();
+
   if (entry) {
     return entry->GetTitleForDisplay(accept_languages);
   }
@@ -2031,6 +2038,23 @@ void WebContentsImpl::DidStartProvisionalLoadForFrame(
   if (is_main_frame)
     DidChangeLoadProgress(0);
 
+  // Create a pending entry for this provisional load (if none exists) using the
+  // current SiteInstance, and ensure the address bar updates accordingly.
+  // We don't know the referrer or extra headers at this point, but the referrer
+  // will be set properly upon commit.
+  if (is_main_frame && !controller_.GetPendingEntry()) {
+    NavigationEntryImpl* entry = NavigationEntryImpl::FromNavigationEntry(
+        controller_.CreateNavigationEntry(validated_url,
+                                          content::Referrer(),
+                                          content::PAGE_TRANSITION_LINK,
+                                          true /* is_renderer_initiated */,
+                                          std::string(), GetBrowserContext()));
+    entry->set_site_instance(
+        static_cast<SiteInstanceImpl*>(GetSiteInstance()));
+    controller_.SetPendingEntry(entry);
+    NotifyNavigationStateChanged(content::INVALIDATE_TYPE_URL);
+  }
+
   // Notify observers about the start of the provisional load.
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                     DidStartProvisionalLoadForFrame(frame_id, parent_frame_id,
@@ -2963,6 +2987,11 @@ void WebContentsImpl::DidDisownOpener(RenderViewHost* rvh) {
 
 void WebContentsImpl::DidUpdateFrameTree(RenderViewHost* rvh) {
   render_manager_.DidUpdateFrameTree(rvh);
+}
+
+void WebContentsImpl::DidAccessInitialDocument() {
+  // Update the URL display.
+  NotifyNavigationStateChanged(content::INVALIDATE_TYPE_URL);
 }
 
 void WebContentsImpl::DocumentAvailableInMainFrame(

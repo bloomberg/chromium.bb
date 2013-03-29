@@ -2749,6 +2749,13 @@ WebCookieJar* RenderViewImpl::cookieJar(WebFrame* frame) {
   return &cookie_jar_;
 }
 
+void RenderViewImpl::didAccessInitialDocument(WebFrame* frame) {
+  // Notify the browser process that it is no longer safe to show the pending
+  // URL of the main frame, since a URL spoof is now possible.
+  if (!frame->parent() && page_id_ == -1)
+    Send(new ViewHostMsg_DidAccessInitialDocument(routing_id_));
+}
+
 void RenderViewImpl::didCreateFrame(WebFrame* parent, WebFrame* child) {
   if (!updating_frame_tree_)
     SendUpdatedFrameTree(NULL);

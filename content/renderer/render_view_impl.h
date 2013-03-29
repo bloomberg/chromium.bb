@@ -524,6 +524,7 @@ class CONTENT_EXPORT RenderViewImpl
       WebKit::WebFrame* frame,
       WebKit::WebApplicationCacheHostClient* client);
   virtual WebKit::WebCookieJar* cookieJar(WebKit::WebFrame* frame);
+  virtual void didAccessInitialDocument(WebKit::WebFrame* frame);
   virtual void didCreateFrame(WebKit::WebFrame* parent,
                               WebKit::WebFrame* child);
   virtual void didDisownOpener(WebKit::WebFrame* frame);

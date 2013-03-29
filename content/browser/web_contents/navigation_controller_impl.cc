@@ -288,16 +288,29 @@ void NavigationControllerImpl::ReloadInternal(bool check_for_repost,
     return;
   }
 
-  DiscardNonCommittedEntriesInternal();
-  int current_index = GetCurrentEntryIndex();
-  // If we are no where, then we can't reload.  TODO(darin): We should add a
-  // CanReload method.
-  if (current_index == -1) {
-    return;
+  NavigationEntryImpl* entry = NULL;
+  int current_index = -1;
+
+  // If we are reloading the initial navigation, just use the current
+  // pending entry.  Otherwise look up the current entry.
+  if (IsInitialNavigation() && pending_entry_) {
+    entry = pending_entry_;
+  } else {
+    DiscardNonCommittedEntriesInternal();
+    current_index = GetCurrentEntryIndex();
+    if (current_index != -1) {
+      entry = NavigationEntryImpl::FromNavigationEntry(
+          GetEntryAtIndex(current_index));
+    }
   }
 
+  // If we are no where, then we can't reload.  TODO(darin): We should add a
+  // CanReload method.
+  if (!entry)
+    return;
+
   if (g_check_for_repost && check_for_repost &&
-      GetEntryAtIndex(current_index)->GetHasPostData()) {
+      entry->GetHasPostData()) {
     // The user is asking to reload a page with POST data. Prompt to make sure
     // they really want to do this. If they do, the dialog will call us back
     // with check_for_repost = false.
@@ -307,11 +320,8 @@ void NavigationControllerImpl::ReloadInternal(bool check_for_repost,
     web_contents_->Activate();
     web_contents_->GetDelegate()->ShowRepostFormWarningDialog(web_contents_);
   } else {
-    DiscardNonCommittedEntriesInternal();
-
-    NavigationEntryImpl* entry = entries_[current_index].get();
-    SiteInstanceImpl* site_instance = entry->site_instance();
-    DCHECK(site_instance);
+    if (!IsInitialNavigation())
+      DiscardNonCommittedEntriesInternal();
 
     // If we are reloading an entry that no longer belongs to the current
     // site instance (for example, refreshing a page for just installed app),
@@ -320,6 +330,7 @@ void NavigationControllerImpl::ReloadInternal(bool check_for_repost,
     // as new navigation (which happens to clear forward history).
     // Tabs that are discarded due to low memory conditions may not have a site
     // instance, and should not be treated as a cross-site reload.
+    SiteInstanceImpl* site_instance = entry->site_instance();
     if (site_instance &&
         site_instance->HasWrongProcessForURL(entry->GetURL())) {
       // Create a navigation entry that resembles the current one, but do not
@@ -336,15 +347,16 @@ void NavigationControllerImpl::ReloadInternal(bool check_for_repost,
       nav_entry->set_should_replace_entry(true);
       pending_entry_ = nav_entry;
     } else {
+      pending_entry_ = entry;
       pending_entry_index_ = current_index;
 
       // The title of the page being reloaded might have been removed in the
       // meanwhile, so we need to revert to the default title upon reload and
       // invalidate the previously cached title (SetTitle will do both).
       // See Chromium issue 96041.
-      entries_[pending_entry_index_]->SetTitle(string16());
+      pending_entry_->SetTitle(string16());
 
-      entries_[pending_entry_index_]->SetTransitionType(PAGE_TRANSITION_RELOAD);
+      pending_entry_->SetTransitionType(PAGE_TRANSITION_RELOAD);
     }
 
     NavigateToPendingEntry(reload_type);
@@ -392,13 +404,17 @@ void NavigationControllerImpl::LoadEntry(NavigationEntryImpl* entry) {
   // When navigating to a new page, we don't know for sure if we will actually
   // end up leaving the current page.  The new page load could for example
   // result in a download or a 'no content' response (e.g., a mailto: URL).
+  SetPendingEntry(entry);
+  NavigateToPendingEntry(NO_RELOAD);
+}
+
+void NavigationControllerImpl::SetPendingEntry(NavigationEntryImpl* entry) {
   DiscardNonCommittedEntriesInternal();
   pending_entry_ = entry;
   NotificationService::current()->Notify(
       NOTIFICATION_NAV_ENTRY_PENDING,
       Source<NavigationController>(this),
       Details<NavigationEntry>(entry));
-  NavigateToPendingEntry(NO_RELOAD);
 }
 
 NavigationEntry* NavigationControllerImpl::GetActiveEntry() const {
@@ -412,15 +428,37 @@ NavigationEntry* NavigationControllerImpl::GetActiveEntry() const {
 NavigationEntry* NavigationControllerImpl::GetVisibleEntry() const {
   if (transient_entry_index_ != -1)
     return entries_[transient_entry_index_].get();
-  // Only return the pending_entry for new (non-history), browser-initiated
-  // navigations, in order to prevent URL spoof attacks.
-  // Ideally we would also show the pending entry's URL for new renderer-
-  // initiated navigations with no last committed entry (e.g., a link opening
-  // in a new tab), but an attacker can insert content into the about:blank
-  // page while the pending URL loads in that case.
-  if (pending_entry_ &&
+  // The pending entry is safe to return for new (non-history), browser-
+  // initiated navigations.  Most renderer-initiated navigations should not
+  // show the pending entry, to prevent URL spoof attacks.
+  //
+  // We make an exception for renderer-initiated navigations in new tabs, as
+  // long as no other page has tried to access the initial empty document in
+  // the new tab.  If another page modifies this blank page, a URL spoof is
+  // possible, so we must stop showing the pending entry.
+  RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
+      web_contents_->GetRenderViewHost());
+  bool safe_to_show_pending =
+      pending_entry_ &&
+      // Require a new navigation.
       pending_entry_->GetPageID() == -1 &&
+      // Require either browser-initiated or an unmodified new tab.
+      (!pending_entry_->is_renderer_initiated() ||
+       (IsInitialNavigation() &&
+        !GetLastCommittedEntry() &&
+        !rvh->has_accessed_initial_document()));
+
+  // Also allow showing the pending entry for history navigations in a new tab,
+  // such as Ctrl+Back.  In this case, no existing page is visible and no one
+  // can script the new tab before it commits.
+  if (!safe_to_show_pending &&
+      pending_entry_ &&
+      pending_entry_->GetPageID() != -1 &&
+      IsInitialNavigation() &&
       !pending_entry_->is_renderer_initiated())
+    safe_to_show_pending = true;
+
+  if (safe_to_show_pending)
     return pending_entry_;
   return GetLastCommittedEntry();
 }
@@ -1041,6 +1079,7 @@ NavigationType NavigationControllerImpl::ClassifyNavigation(
 
   // Anything below here we know is a main frame navigation.
   if (pending_entry_ &&
+      !pending_entry_->is_renderer_initiated() &&
       existing_entry != pending_entry_ &&
       pending_entry_->GetPageID() == -1 &&
       existing_entry == GetLastCommittedEntry()) {

@@ -184,6 +184,8 @@ namespace {
 
 // This test verifies that when a navigation occurs within a tab, the tab count
 // of the Browser remains the same and the current tab bears the loaded URL.
+// Note that network URLs are not actually loaded in tests, so this also tests
+// that error pages leave the intended URL in the address bar.
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_CurrentTab) {
   ui_test_utils::NavigateToURL(browser(), GetGoogleURL());
   EXPECT_EQ(GetGoogleURL(),

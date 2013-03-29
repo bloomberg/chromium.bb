@@ -219,6 +219,11 @@ class CONTENT_EXPORT RenderViewHostDelegate {
   // the window.
   virtual void DidDisownOpener(RenderViewHost* rvh) {}
 
+  // Another page accessed the initial empty document of this RenderView,
+  // which means it is no longer safe to display a pending URL without
+  // risking a URL spoof.
+  virtual void DidAccessInitialDocument() {}
+
   // The RenderView has changed its frame hierarchy, so we need to update all
   // other renderers interested in this event.
   virtual void DidUpdateFrameTree(RenderViewHost* rvh) {}

@@ -165,6 +165,7 @@ RenderViewHostImpl::RenderViewHostImpl(
       pending_request_id_(-1),
       navigations_suspended_(false),
       suspended_nav_message_(NULL),
+      has_accessed_initial_document_(false),
       is_swapped_out_(swapped_out),
       is_subframe_(false),
       run_modal_reply_msg_(NULL),
@@ -991,6 +992,8 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowPopup, OnShowPopup)
 #endif
     IPC_MESSAGE_HANDLER(ViewHostMsg_RunFileChooser, OnRunFileChooser)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DidAccessInitialDocument,
+                        OnDidAccessInitialDocument)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DomOperationResponse,
                         OnDomOperationResponse)
     IPC_MESSAGE_HANDLER(AccessibilityHostMsg_Notifications,
@@ -1207,6 +1210,10 @@ void RenderViewHostImpl::OnNavigate(const IPC::Message& msg) {
       // iframes is ready to go.
     }
   }
+
+  // Now that something has committed, we don't need to track whether the
+  // initial page has been accessed.
+  has_accessed_initial_document_ = false;
 
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
@@ -2001,6 +2008,11 @@ void RenderViewHostImpl::OnShowPopup(
 
 void RenderViewHostImpl::OnRunFileChooser(const FileChooserParams& params) {
   delegate_->RunFileChooser(this, params);
+}
+
+void RenderViewHostImpl::OnDidAccessInitialDocument() {
+  has_accessed_initial_document_ = true;
+  delegate_->DidAccessInitialDocument();
 }
 
 void RenderViewHostImpl::OnDomOperationResponse(
