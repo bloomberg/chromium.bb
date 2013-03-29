@@ -5,6 +5,10 @@
 #ifndef CHROME_BROWSER_STORAGE_MONITOR_STORAGE_MONITOR_H_
 #define CHROME_BROWSER_STORAGE_MONITOR_STORAGE_MONITOR_H_
 
+#include <map>
+#include <string>
+#include <vector>
+
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/observer_list_threadsafe.h"
@@ -117,6 +121,7 @@ class StorageMonitor {
   class ReceiverImpl;
   friend class ReceiverImpl;
 
+  // Key: device id.
   typedef std::map<std::string, StorageInfo> RemovableStorageMap;
 
   void ProcessAttach(const StorageInfo& storage);
@@ -136,6 +141,6 @@ class StorageMonitor {
   scoped_ptr<TransientDeviceIds> transient_device_ids_;
 };
 
-} // namespace chrome
+}  // namespace chrome
 
 #endif  // CHROME_BROWSER_STORAGE_MONITOR_STORAGE_MONITOR_H_

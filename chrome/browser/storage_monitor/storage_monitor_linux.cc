@@ -110,11 +110,25 @@ std::string MakeDeviceUniqueId(struct udev_device* device) {
   return kVendorModelSerialPrefix + vendor + ":" + model + ":" + serial_short;
 }
 
-// Records GetDeviceInfo result, to see how often we fail to get device details.
-// TODO(thestig) Make this a scoper.
-void RecordGetDeviceInfoResult(bool result) {
-  UMA_HISTOGRAM_BOOLEAN("MediaDeviceNotification.UdevRequestSuccess", result);
-}
+// Records GetDeviceInfo result on destruction, to see how often we fail to get
+// device details.
+class ScopedGetDeviceInfoResultRecorder {
+ public:
+  ScopedGetDeviceInfoResultRecorder() : result_(false) {}
+  ~ScopedGetDeviceInfoResultRecorder() {
+    UMA_HISTOGRAM_BOOLEAN("MediaDeviceNotification.UdevRequestSuccess",
+                          result_);
+  }
+
+  void set_result(bool result) {
+    result_ = result;
+  }
+
+ private:
+  bool result_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedGetDeviceInfoResultRecorder);
+};
 
 // Returns the storage partition size of the device specified by |device_path|.
 // If the requested information is unavailable, returns 0.
@@ -181,34 +195,28 @@ void GetDeviceInfo(const base::FilePath& device_path,
   DCHECK(!device_path.empty());
   DCHECK(storage_info);
 
+  ScopedGetDeviceInfoResultRecorder results_recorder;
+
   ScopedUdevObject udev_obj(udev_new());
-  if (!udev_obj.get()) {
-    RecordGetDeviceInfoResult(false);
+  if (!udev_obj.get())
     return;
-  }
 
   struct stat device_stat;
-  if (stat(device_path.value().c_str(), &device_stat) < 0) {
-    RecordGetDeviceInfoResult(false);
+  if (stat(device_path.value().c_str(), &device_stat) < 0)
     return;
-  }
 
   char device_type;
-  if (S_ISCHR(device_stat.st_mode)) {
+  if (S_ISCHR(device_stat.st_mode))
     device_type = 'c';
-  } else if (S_ISBLK(device_stat.st_mode)) {
+  else if (S_ISBLK(device_stat.st_mode))
     device_type = 'b';
-  } else {
-    RecordGetDeviceInfoResult(false);
+  else
     return;  // Not a supported type.
-  }
 
   ScopedUdevDeviceObject device(
       udev_device_new_from_devnum(udev_obj, device_type, device_stat.st_rdev));
-  if (!device.get()) {
-    RecordGetDeviceInfoResult(false);
+  if (!device.get())
     return;
-  }
 
   string16 volume_label;
   string16 vendor_name;
@@ -248,7 +256,7 @@ void GetDeviceInfo(const base::FilePath& device_path,
       vendor_name,
       model_name,
       GetDeviceStorageSize(device_path, device));
-  RecordGetDeviceInfoResult(true);
+  results_recorder.set_result(true);
 }
 
 }  // namespace
