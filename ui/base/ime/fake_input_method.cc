@@ -98,7 +98,14 @@ bool FakeInputMethod::DispatchKeyEvent(const base::NativeEvent& native_event) {
 }
 
 bool FakeInputMethod::DispatchFabricatedKeyEvent(const ui::KeyEvent& event) {
-  return false;
+  bool handled = delegate_->DispatchFabricatedKeyEventPostIME(
+      event.type(), event.key_code(), event.flags());
+  if (event.type() == ET_KEY_PRESSED && text_input_client_) {
+    uint16 ch = event.GetCharacter();
+    if (ch)
+      text_input_client_->InsertChar(ch, event.flags());
+  }
+  return handled;
 }
 
 void FakeInputMethod::Init(bool focused) {}
