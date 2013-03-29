@@ -76,7 +76,7 @@ void PixelTest::SetUp() {
 }
 
 bool PixelTest::PixelsMatchReference(const base::FilePath& ref_file,
-    bool discard_transparency) {
+                                     const PixelComparator& comparator) {
   gfx::Rect device_viewport_rect(device_viewport_size_);
 
   SkBitmap bitmap;
@@ -94,8 +94,7 @@ bool PixelTest::PixelsMatchReference(const base::FilePath& ref_file,
   // To rebaseline:
   // return WritePNGFile(bitmap, test_data_dir.Append(ref_file));
 
-  return IsSameAsPNGFile(bitmap, test_data_dir.Append(ref_file),
-      discard_transparency);
+  return MatchesPNGFile(bitmap, test_data_dir.Append(ref_file), comparator);
 }
 
 }  // namespace cc

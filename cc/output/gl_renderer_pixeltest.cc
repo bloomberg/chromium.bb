@@ -95,7 +95,8 @@ TEST_F(GLRendererPixelTest, SimpleGreenRect) {
   renderer_->DrawFrame(&pass_list);
 
   EXPECT_TRUE(PixelsMatchReference(
-      base::FilePath(FILE_PATH_LITERAL("green.png")), true));
+      base::FilePath(FILE_PATH_LITERAL("green.png")),
+      ExactPixelComparator(true)));
 }
 
 TEST_F(GLRendererPixelTest, fastPassColorFilterAlpha) {
@@ -190,7 +191,8 @@ TEST_F(GLRendererPixelTest, fastPassColorFilterAlpha) {
   renderer_->DrawFrame(&pass_list);
 
   EXPECT_TRUE(PixelsMatchReference(
-      base::FilePath(FILE_PATH_LITERAL("blue_yellow_alpha.png")), false));
+      base::FilePath(FILE_PATH_LITERAL("blue_yellow_alpha.png")),
+      ExactPixelComparator(false)));
 }
 
 TEST_F(GLRendererPixelTest, fastPassColorFilterAlphaTranslation) {
@@ -290,7 +292,7 @@ TEST_F(GLRendererPixelTest, fastPassColorFilterAlphaTranslation) {
 
   EXPECT_TRUE(PixelsMatchReference(
       base::FilePath(FILE_PATH_LITERAL("blue_yellow_alpha_translate.png")),
-      false));
+      ExactPixelComparator(false)));
 }
 
 TEST_F(GLRendererPixelTest, RenderPassChangesSize) {
@@ -344,7 +346,8 @@ TEST_F(GLRendererPixelTest, RenderPassChangesSize) {
   renderer_->DrawFrame(&pass_list);
 
   EXPECT_TRUE(PixelsMatchReference(
-      base::FilePath(FILE_PATH_LITERAL("blue_yellow.png")), true));
+      base::FilePath(FILE_PATH_LITERAL("blue_yellow.png")),
+      ExactPixelComparator(true)));
 }
 
 class GLRendererPixelTestWithBackgroundFilter : public GLRendererPixelTest {
@@ -471,7 +474,8 @@ TEST_F(GLRendererPixelTestWithBackgroundFilter, InvertFilter) {
 
   DrawFrame();
   EXPECT_TRUE(PixelsMatchReference(
-      base::FilePath(FILE_PATH_LITERAL("background_filter.png")), true));
+      base::FilePath(FILE_PATH_LITERAL("background_filter.png")),
+      ExactPixelComparator(true)));
 }
 
 TEST_F(GLRendererPixelTest, AntiAliasing) {
@@ -517,7 +521,8 @@ TEST_F(GLRendererPixelTest, AntiAliasing) {
   renderer_->DrawFrame(&pass_list);
 
   EXPECT_TRUE(PixelsMatchReference(
-      base::FilePath(FILE_PATH_LITERAL("anti_aliasing.png")), true));
+      base::FilePath(FILE_PATH_LITERAL("anti_aliasing.png")),
+      ExactPixelComparator(true)));
 }
 #endif
 

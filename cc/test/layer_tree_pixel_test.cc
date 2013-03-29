@@ -66,7 +66,8 @@ void LayerTreePixelTest::SwapBuffersOnThread(LayerTreeHostImpl* host_impl,
   // To rebaseline:
   // EXPECT_TRUE(WritePNGFile(bitmap, test_data_dir.Append(ref_file_)));
 
-  EXPECT_TRUE(IsSameAsPNGFile(bitmap, test_data_dir.Append(ref_file_), true));
+  EXPECT_TRUE(MatchesPNGFile(bitmap, test_data_dir.Append(ref_file_),
+                             ExactPixelComparator(true)));
 
   EndTest();
 }

@@ -256,6 +256,8 @@
         '..'
       ],
       'sources': [
+        'test/pixel_comparator.cc',
+        'test/pixel_comparator.h',
         'test/pixel_test_utils.cc',
         'test/pixel_test_utils.h',
       ],

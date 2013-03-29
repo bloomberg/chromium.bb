@@ -6,6 +6,7 @@
 #define CC_TEST_PIXEL_TEST_UTILS_H_
 
 #include "base/files/file_path.h"
+#include "cc/test/pixel_comparator.h"
 
 class SkBitmap;
 
@@ -20,10 +21,11 @@ bool WritePNGFile(const SkBitmap& bitmap, const base::FilePath& file_path,
 // should have been encoded using |gfx::PNGCodec::Encode|.
 bool ReadPNGFile(const base::FilePath& file_path, SkBitmap* bitmap);
 
-// Compares with a PNG file on disk, and returns true if it is the same as
-// the given image. |ref_img_path| is absolute.
-bool IsSameAsPNGFile(const SkBitmap& gen_bmp, base::FilePath ref_img_path,
-    bool discard_transparency);
+// Compares with a PNG file on disk using the given PixelComparator, and returns
+// true if the comparator returns a match. |ref_img_path| is absolute.
+bool MatchesPNGFile(const SkBitmap& gen_bmp,
+                    base::FilePath ref_img_path,
+                    const PixelComparator& comparator);
 
 }  // namespace cc
 
