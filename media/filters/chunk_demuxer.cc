@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <deque>
+#include <limits>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -303,7 +304,8 @@ void ChunkDemuxerStream::Read(const ReadCB& read_cb) {
     }
   }
 
-  read_cb.Run(status, buffer);
+  base::MessageLoopProxy::current()->PostTask(FROM_HERE, base::Bind(
+      read_cb, status, buffer));
 }
 
 DemuxerStream::Type ChunkDemuxerStream::type() { return type_; }
