@@ -372,8 +372,9 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityHR) {
   RunTest(FILE_PATH_LITERAL("hr.html"));
 }
 
+// crbug.com/179717 and crbug.com/224659
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
-                       MAYBE(AccessibilityIframeCoordinates)) {
+                       DISABLED_AccessibilityIframeCoordinates) {
   RunTest(FILE_PATH_LITERAL("iframe-coordinates.html"));
 }
 
