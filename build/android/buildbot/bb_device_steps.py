@@ -271,6 +271,12 @@ def MainTestWrapper(options):
   buildbot_report.PrintNamedStep('device_status_check')
   RunCmd(['build/android/device_status_check.py'])
 
+  # Provision devices
+  if options.auto_reconnect:
+    buildbot_report.PrintNamedStep('provision_devices')
+    target = options.factory_properties.get('target', 'Debug')
+    RunCmd(['build/android/provision_devices.py', '-t', target])
+
   if options.install:
     test_obj = INSTRUMENTATION_TESTS[options.install]
     InstallApk(options, test_obj, print_step=True)
@@ -334,6 +340,9 @@ def main(argv):
                     help='Reboot devices before running tests')
   parser.add_option('--upload-to-flakiness-server', action='store_true',
                     help='Upload the results to the flakiness dashboard.')
+  parser.add_option(
+      '--auto-reconnect', action='store_true',
+      help='Push script to device which restarts adbd on disconnections.')
   options, args = parser.parse_args(argv[1:])
 
   def ParserError(msg):

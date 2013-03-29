@@ -2,12 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 #include <unistd.h>
 
 int main(int argc, char ** argv) {
   int i = fork();
+  struct stat ft;
+  time_t ct;
+
   if (i < 0) {
     printf("fork error");
     return 1;
@@ -23,13 +29,15 @@ int main(int argc, char ** argv) {
   setsid(); /* obtain a new process group */
 
   while (1) {
-    system("touch /sdcard/host_heartbeat");
     sleep(120);
-    if (fopen("/sdcard/host_heartbeat", "r") != NULL) {
-      // File exists, was not removed from host.
-      system("stop adbd");
+
+    stat("/sdcard/host_heartbeat", &ft);
+    time(&ct);
+    if (ct - ft.st_mtime  > 120) {
+      /* File was not touched for some time. */
+      system("su -c stop adbd");
       system("sleep 2");
-      system("start adbd");
+      system("su -c start adbd");
     }
   }
 
