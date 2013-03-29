@@ -43,6 +43,7 @@
 #include "ppapi/c/dev/ppb_view_dev.h"
 #include "ppapi/c/dev/ppb_widget_dev.h"
 #include "ppapi/c/dev/ppb_zoom_dev.h"
+#include "ppapi/c/extensions/dev/ppb_ext_alarms_dev.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_var.h"

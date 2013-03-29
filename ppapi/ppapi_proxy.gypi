@@ -37,6 +37,8 @@
           'proxy/dispatcher.cc',
           'proxy/dispatcher.h',
           'proxy/enter_proxy.h',
+          'proxy/extensions_common_resource.cc',
+          'proxy/extensions_common_resource.h',
           'proxy/graphics_2d_resource.cc',
           'proxy/graphics_2d_resource.h',
           'proxy/file_chooser_resource.cc',

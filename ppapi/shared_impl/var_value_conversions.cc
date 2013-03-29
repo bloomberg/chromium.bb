@@ -249,9 +249,11 @@ base::Value* CreateValueFromVar(const PP_Var& var) {
                dict_var->key_value_map().begin();
            iter != dict_var->key_value_map().end();
            ++iter) {
-        // Skip the key-value pair if the value is undefined.
-        if (iter->second.get().type == PP_VARTYPE_UNDEFINED)
+        // Skip the key-value pair if the value is undefined or null.
+        if (iter->second.get().type == PP_VARTYPE_UNDEFINED ||
+            iter->second.get().type == PP_VARTYPE_NULL) {
           continue;
+        }
 
         scoped_ptr<base::Value> child_value;
         if (!CreateValueFromVarHelper(parent_ids, iter->second.get(),
@@ -340,5 +342,50 @@ PP_Var CreateVarFromValue(const base::Value& value) {
 
   return root_var.Release();
 }
+
+base::ListValue* CreateListValueFromVarVector(
+    const std::vector<PP_Var>& vars) {
+  scoped_ptr<base::ListValue> list_value(new base::ListValue());
+
+  for (std::vector<PP_Var>::const_iterator iter = vars.begin();
+       iter != vars.end();
+       ++iter) {
+    base::Value* value = CreateValueFromVar(*iter);
+    if (!value)
+      return NULL;
+    list_value->Append(value);
+  }
+  return list_value.release();
+}
+
+bool CreateVarVectorFromListValue(const base::ListValue& list_value,
+                                  std::vector<PP_Var>* vars) {
+  if (!vars)
+    return false;
+
+  std::vector<ScopedPPVar> result;
+  result.reserve(list_value.GetSize());
+  for (base::ListValue::const_iterator iter = list_value.begin();
+       iter != list_value.end();
+       ++iter) {
+    ScopedPPVar child_var(ScopedPPVar::PassRef(),
+                          CreateVarFromValue(**iter));
+    if (child_var.get().type == PP_VARTYPE_UNDEFINED)
+      return false;
+
+    result.push_back(child_var);
+  }
+
+  vars->clear();
+  vars->reserve(result.size());
+  for (std::vector<ScopedPPVar>::iterator iter = result.begin();
+       iter != result.end();
+       ++iter) {
+    vars->push_back(iter->Release());
+  }
+
+  return true;
+}
+
 }  // namespace ppapi
 

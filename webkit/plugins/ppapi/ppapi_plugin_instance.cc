@@ -2136,6 +2136,7 @@ PP_Bool PluginInstance::GetScreenSize(PP_Instance instance, PP_Size* size) {
   switch (id) {
     case ::ppapi::BROKER_SINGLETON_ID:
     case ::ppapi::BROWSER_FONT_SINGLETON_ID:
+    case ::ppapi::EXTENSIONS_COMMON_SINGLETON_ID:
     case ::ppapi::FLASH_CLIPBOARD_SINGLETON_ID:
     case ::ppapi::FLASH_FILE_SINGLETON_ID:
     case ::ppapi::FLASH_FULLSCREEN_SINGLETON_ID:

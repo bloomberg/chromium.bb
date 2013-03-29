@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "ppapi/c/extensions/dev/ppb_alarms_dev.h"
+#include "ppapi/c/extensions/dev/ppb_ext_alarms_dev.h"
 #include "ppapi/cpp/extensions/dict_field.h"
 #include "ppapi/cpp/extensions/event_base.h"
 #include "ppapi/cpp/extensions/ext_output_traits.h"

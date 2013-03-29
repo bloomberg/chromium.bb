@@ -132,6 +132,7 @@
 
           'thunk/enter.cc',
           'thunk/enter.h',
+          'thunk/extensions_common_api.h',
           'thunk/ppb_audio_api.h',
           'thunk/ppb_audio_config_api.h',
           'thunk/ppb_audio_config_thunk.cc',
@@ -154,6 +155,7 @@
           'thunk/ppb_device_ref_dev_thunk.cc',
           'thunk/ppb_directory_reader_api.h',
           'thunk/ppb_directory_reader_thunk.cc',
+          'thunk/ppb_ext_alarms_thunk.cc',
           'thunk/ppb_file_chooser_api.h',
           'thunk/ppb_file_chooser_thunk.cc',
           'thunk/ppb_file_io_api.h',

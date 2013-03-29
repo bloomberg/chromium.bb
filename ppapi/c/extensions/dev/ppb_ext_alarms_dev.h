@@ -3,19 +3,36 @@
  * found in the LICENSE file.
  */
 
+/* From extensions/dev/ppb_ext_alarms_dev.idl,
+ *   modified Wed Mar 20 13:50:11 2013.
+ */
+
+#ifndef PPAPI_C_EXTENSIONS_DEV_PPB_EXT_ALARMS_DEV_H_
+#define PPAPI_C_EXTENSIONS_DEV_PPB_EXT_ALARMS_DEV_H_
+
+#include "ppapi/c/pp_bool.h"
+#include "ppapi/c/pp_completion_callback.h"
+#include "ppapi/c/pp_instance.h"
+#include "ppapi/c/pp_macros.h"
+#include "ppapi/c/pp_stdint.h"
+#include "ppapi/c/pp_var.h"
+
+#define PPB_EXT_ALARMS_DEV_INTERFACE_0_1 "PPB_Ext_Alarms(Dev);0.1"
+#define PPB_EXT_ALARMS_DEV_INTERFACE PPB_EXT_ALARMS_DEV_INTERFACE_0_1
+
 /**
+ * @file
  * This file defines the Pepper equivalent of the <code>chrome.alarms</code>
  * extension API.
  */
 
-label Chrome {
-  M27 = 0.1
-};
 
-#inline c
-#include "ppapi/c/extensions/dev/ppb_events_dev.h"
-#endinl
+#include "ppapi/c/extensions/dev/ppb_ext_events_dev.h"
 
+/**
+ * @addtogroup Typedefs
+ * @{
+ */
 /**
  * A dictionary <code>PP_Var</code> which contains:
  * - "name" : string <code>PP_Var</code>
@@ -30,7 +47,7 @@ label Chrome {
  * If not undefined, the alarm is a repeating alarm and will fire again in
  * <var>periodInMinutes</var> minutes.
  */
-typedef PP_Var PP_Ext_Alarms_Alarm_Dev;
+typedef struct PP_Var PP_Ext_Alarms_Alarm_Dev;
 
 /**
  * A dictionary <code>PP_Var</code> which contains
@@ -48,15 +65,22 @@ typedef PP_Var PP_Ext_Alarms_Alarm_Dev;
  * <var>when</var> or <var>delayInMinutes</var>.  If not set, the alarm will
  * only fire once.
  */
-typedef PP_Var PP_Ext_Alarms_AlarmCreateInfo_Dev;
+typedef struct PP_Var PP_Ext_Alarms_AlarmCreateInfo_Dev;
 
 /**
  * An array <code>PP_Var</code> which contains elements of
  * <code>PP_Ext_Alarms_Alarm_Dev</code>.
  */
-typedef PP_Var PP_Ext_Alarms_Alarm_Dev_Array;
+typedef struct PP_Var PP_Ext_Alarms_Alarm_Dev_Array;
+/**
+ * @}
+ */
 
-interface PPB_Ext_Alarms_Dev {
+/**
+ * @addtogroup Interfaces
+ * @{
+ */
+struct PPB_Ext_Alarms_Dev_0_1 {
   /**
    * Creates an alarm.  Near the time(s) specified by <var>alarm_info</var>,
    * the <code>PP_Ext_Alarms_OnAlarm_Dev</code> event is fired. If there is
@@ -91,11 +115,9 @@ interface PPB_Ext_Alarms_Dev {
    * <var>periodInMinutes</var> is used as the default for
    * <var>delayInMinutes</var>.
    */
-  void Create(
-      [in] PP_Instance instance,
-      [in] PP_Var name,
-      [in] PP_Ext_Alarms_AlarmCreateInfo_Dev alarm_info);
-
+  void (*Create)(PP_Instance instance,
+                 struct PP_Var name,
+                 PP_Ext_Alarms_AlarmCreateInfo_Dev alarm_info);
   /**
    * Retrieves details about the specified alarm.
    *
@@ -109,12 +131,10 @@ interface PPB_Ext_Alarms_Dev {
    *
    * @return An error code from <code>pp_errors.h</code>
    */
-  int32_t Get(
-      [in] PP_Instance instance,
-      [in] PP_Var name,
-      [out] PP_Ext_Alarms_Alarm_Dev alarm,
-      [in] PP_CompletionCallback callback);
-
+  int32_t (*Get)(PP_Instance instance,
+                 struct PP_Var name,
+                 PP_Ext_Alarms_Alarm_Dev* alarm,
+                 struct PP_CompletionCallback callback);
   /**
    * Gets an array of all the alarms.
    *
@@ -126,11 +146,9 @@ interface PPB_Ext_Alarms_Dev {
    *
    * @return An error code from <code>pp_errors.h</code>
    */
-  int32_t GetAll(
-      [in] PP_Instance instance,
-      [out] PP_Ext_Alarms_Alarm_Dev_Array alarms,
-      [in] PP_CompletionCallback callback);
-
+  int32_t (*GetAll)(PP_Instance instance,
+                    PP_Ext_Alarms_Alarm_Dev_Array* alarms,
+                    struct PP_CompletionCallback callback);
   /**
    * Clears the alarm with the given name.
    *
@@ -138,19 +156,24 @@ interface PPB_Ext_Alarms_Dev {
    * @param[in] name A string or undefined <code>PP_Var</code>. The name of the
    * alarm to clear. Defaults to the empty string.
    */
-  void Clear(
-      [in] PP_Instance instance,
-      [in] PP_Var name);
-
+  void (*Clear)(PP_Instance instance, struct PP_Var name);
   /**
    * Clears all alarms.
    *
    * @param[in] instance A <code>PP_Instance</code>.
    */
-  void ClearAll(
-      [in] PP_Instance instance);
+  void (*ClearAll)(PP_Instance instance);
 };
 
+typedef struct PPB_Ext_Alarms_Dev_0_1 PPB_Ext_Alarms_Dev;
+/**
+ * @}
+ */
+
+/**
+ * @addtogroup Typedefs
+ * @{
+ */
 /**
  * Fired when an alarm has elapsed. Useful for event pages.
  *
@@ -161,12 +184,14 @@ interface PPB_Ext_Alarms_Dev {
  * description of <code>PP_Ext_Alarms_Alarm_Dev</code>. The alarm that has
  * elapsed.
  */
-typedef void PP_Ext_Alarms_OnAlarm_Func_Dev_0_1(
-    [in] uint32_t listener_id,
-    [inout] mem_t user_data,
-    [in] PP_Ext_Alarms_Alarm_Dev alarm);
+typedef void (*PP_Ext_Alarms_OnAlarm_Func_Dev_0_1)(
+    uint32_t listener_id,
+    void* user_data,
+    PP_Ext_Alarms_Alarm_Dev alarm);
+/**
+ * @}
+ */
 
-#inline c
 PP_INLINE struct PP_Ext_EventListener PP_Ext_Alarms_OnAlarm_Dev_0_1(
     PP_Ext_Alarms_OnAlarm_Func_Dev_0_1 func,
     void* user_data) {
@@ -175,4 +200,5 @@ PP_INLINE struct PP_Ext_EventListener PP_Ext_Alarms_OnAlarm_Dev_0_1(
 }
 
 #define PP_Ext_Alarms_OnAlarm_Dev PP_Ext_Alarms_OnAlarm_Dev_0_1
-#endinl
+#endif  /* PPAPI_C_EXTENSIONS_DEV_PPB_EXT_ALARMS_DEV_H_ */
+

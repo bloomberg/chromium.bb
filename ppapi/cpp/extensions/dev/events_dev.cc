@@ -4,7 +4,7 @@
 
 #include "ppapi/cpp/extensions/dev/events_dev.h"
 
-#include "ppapi/c/extensions/dev/ppb_events_dev.h"
+#include "ppapi/c/extensions/dev/ppb_ext_events_dev.h"
 #include "ppapi/cpp/module_impl.h"
 
 namespace pp {

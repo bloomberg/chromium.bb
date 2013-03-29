@@ -77,22 +77,24 @@ bool Equals(const base::Value& value, const PP_Var& var) {
       if (!dict_var)
         return false;
 
-      size_t non_undefined_count = 0;
+      size_t count = 0;
       for (DictionaryVar::KeyValueMap::const_iterator iter =
                dict_var->key_value_map().begin();
            iter != dict_var->key_value_map().end();
            ++iter) {
-        if (iter->second.get().type == PP_VARTYPE_UNDEFINED)
+        if (iter->second.get().type == PP_VARTYPE_UNDEFINED ||
+            iter->second.get().type == PP_VARTYPE_NULL) {
           continue;
+        }
 
-        ++non_undefined_count;
+        ++count;
         const base::Value* sub_value = NULL;
         if (!dict_value.GetWithoutPathExpansion(iter->first, &sub_value) ||
             !Equals(*sub_value, iter->second.get())) {
           return false;
         }
       }
-      return non_undefined_count == dict_value.size();
+      return count == dict_value.size();
     }
     case base::Value::TYPE_LIST: {
       const base::ListValue& list_value =
@@ -114,6 +116,20 @@ bool Equals(const base::Value& value, const PP_Var& var) {
     }
   }
   NOTREACHED();
+  return false;
+}
+
+bool ConvertVarAndVerify(const PP_Var& var) {
+  scoped_ptr<base::Value> value(CreateValueFromVar(var));
+  if (value.get())
+    return Equals(*value, var);
+  return false;
+}
+
+bool ConvertValueAndVerify(const base::Value& value) {
+  ScopedPPVar var(ScopedPPVar::PassRef(), CreateVarFromValue(value));
+  if (var.get().type != PP_VARTYPE_UNDEFINED)
+    return Equals(value, var.get());
   return false;
 }
 
@@ -148,11 +164,10 @@ TEST_F(VarValueConversionsTest, CreateValueFromVar) {
     ScopedPPVar var_2(ScopedPPVar::PassRef(), array_var->GetPPVar());
 
     ASSERT_TRUE(dict_var->SetWithStringKey("key_1", var_2.get()));
-    scoped_ptr<base::Value> value(CreateValueFromVar(var_1.get()));
-    ASSERT_TRUE(value.get());
+    ASSERT_TRUE(ConvertVarAndVerify(var_1.get()));
 
     ASSERT_TRUE(array_var->Set(0, var_1.get()));
-    value.reset(CreateValueFromVar(var_1.get()));
+    scoped_ptr<base::Value> value(CreateValueFromVar(var_1.get()));
     ASSERT_EQ(NULL, value.get());
 
     // Make sure |var_1| doesn't indirectly hold a ref to itself, otherwise it
@@ -162,13 +177,8 @@ TEST_F(VarValueConversionsTest, CreateValueFromVar) {
 
   // Vars of null or undefined type are converted to null values.
   {
-    scoped_ptr<base::Value> value(CreateValueFromVar(PP_MakeNull()));
-    ASSERT_TRUE(value.get());
-    ASSERT_TRUE(Equals(*value, PP_MakeNull()));
-
-    value.reset(CreateValueFromVar(PP_MakeUndefined()));
-    ASSERT_TRUE(value.get());
-    ASSERT_TRUE(Equals(*value, PP_MakeUndefined()));
+    ASSERT_TRUE(ConvertVarAndVerify(PP_MakeNull()));
+    ASSERT_TRUE(ConvertVarAndVerify(PP_MakeUndefined()));
   }
 
   {
@@ -176,21 +186,18 @@ TEST_F(VarValueConversionsTest, CreateValueFromVar) {
     scoped_refptr<DictionaryVar> dict_var(new DictionaryVar());
     ScopedPPVar var(ScopedPPVar::PassRef(), dict_var->GetPPVar());
 
-    scoped_ptr<base::Value> value(CreateValueFromVar(var.get()));
-    ASSERT_TRUE(value.get());
-    ASSERT_TRUE(Equals(*value, var.get()));
+    ASSERT_TRUE(ConvertVarAndVerify(var.get()));
   }
 
   {
-    // Key-value pairs whose value is undefined are ignored.
+    // Key-value pairs whose value is undefined or null are ignored.
     scoped_refptr<DictionaryVar> dict_var(new DictionaryVar());
     ASSERT_TRUE(dict_var->SetWithStringKey("key_1", PP_MakeUndefined()));
     ASSERT_TRUE(dict_var->SetWithStringKey("key_2", PP_MakeInt32(1)));
+    ASSERT_TRUE(dict_var->SetWithStringKey("key_3", PP_MakeNull()));
     ScopedPPVar var(ScopedPPVar::PassRef(), dict_var->GetPPVar());
 
-    scoped_ptr<base::Value> value(CreateValueFromVar(var.get()));
-    ASSERT_TRUE(value.get());
-    ASSERT_TRUE(Equals(*value, var.get()));
+    ASSERT_TRUE(ConvertVarAndVerify(var.get()));
   }
 
   {
@@ -207,9 +214,7 @@ TEST_F(VarValueConversionsTest, CreateValueFromVar) {
     ASSERT_TRUE(dict_var_1->SetWithStringKey("key_3", string_pp_var.get()));
     ASSERT_TRUE(dict_var_2->SetWithStringKey("key_4", string_pp_var.get()));
 
-    scoped_ptr<base::Value> value(CreateValueFromVar(dict_pp_var_1.get()));
-    ASSERT_TRUE(value.get());
-    ASSERT_TRUE(Equals(*value, dict_pp_var_1.get()));
+    ASSERT_TRUE(ConvertVarAndVerify(dict_pp_var_1.get()));
   }
 
   {
@@ -217,14 +222,11 @@ TEST_F(VarValueConversionsTest, CreateValueFromVar) {
     scoped_refptr<ArrayVar> array_var(new ArrayVar());
     ScopedPPVar var(ScopedPPVar::PassRef(), array_var->GetPPVar());
 
-    scoped_ptr<base::Value> value(CreateValueFromVar(var.get()));
-    ASSERT_TRUE(value.get());
-    ASSERT_TRUE(Equals(*value, var.get()));
+    ASSERT_TRUE(ConvertVarAndVerify(var.get()));
 
     ASSERT_TRUE(array_var->Set(0, PP_MakeDouble(1)));
-    value.reset(CreateValueFromVar(var.get()));
-    ASSERT_TRUE(value.get());
-    ASSERT_TRUE(Equals(*value, var.get()));
+
+    ASSERT_TRUE(ConvertVarAndVerify(var.get()));
   }
 
   {
@@ -252,9 +254,7 @@ TEST_F(VarValueConversionsTest, CreateValueFromVar) {
     ASSERT_TRUE(array_var->Set(1, PP_MakeBool(PP_TRUE)));
     ASSERT_TRUE(array_var->SetLength(4));
 
-    scoped_ptr<base::Value> value(CreateValueFromVar(dict_pp_var_1.get()));
-    ASSERT_TRUE(value.get());
-    ASSERT_TRUE(Equals(*value, dict_pp_var_1.get()));
+    ASSERT_TRUE(ConvertVarAndVerify(dict_pp_var_1.get()));
   }
 
   {
@@ -265,9 +265,7 @@ TEST_F(VarValueConversionsTest, CreateValueFromVar) {
     ASSERT_TRUE(dict_var->SetWithStringKey("double.key", PP_MakeDouble(1)));
     ASSERT_TRUE(dict_var->SetWithStringKey("int.key..name", PP_MakeInt32(2)));
 
-    scoped_ptr<base::Value> value(CreateValueFromVar(dict_pp_var.get()));
-    ASSERT_TRUE(value.get());
-    ASSERT_TRUE(Equals(*value, dict_pp_var.get()));
+    ASSERT_TRUE(ConvertVarAndVerify(dict_pp_var.get()));
   }
 }
 
@@ -275,29 +273,24 @@ TEST_F(VarValueConversionsTest, CreateVarFromValue) {
   {
     // Test basic cases for dictionary.
     base::DictionaryValue dict_value;
-    ScopedPPVar var(ScopedPPVar::PassRef(), CreateVarFromValue(dict_value));
-    ASSERT_TRUE(Equals(dict_value, var.get()));
+    ASSERT_TRUE(ConvertValueAndVerify(dict_value));
 
     dict_value.SetInteger("int_key", 1);
-    var = ScopedPPVar(ScopedPPVar::PassRef(), CreateVarFromValue(dict_value));
-    ASSERT_TRUE(Equals(dict_value, var.get()));
+    ASSERT_TRUE(ConvertValueAndVerify(dict_value));
   }
 
   {
     // Test basic cases for array.
     base::ListValue list_value;
-    ScopedPPVar var(ScopedPPVar::PassRef(), CreateVarFromValue(list_value));
-    ASSERT_TRUE(Equals(list_value, var.get()));
+    ASSERT_TRUE(ConvertValueAndVerify(list_value));
 
     list_value.AppendInteger(1);
-    var = ScopedPPVar(ScopedPPVar::PassRef(), CreateVarFromValue(list_value));
-    ASSERT_TRUE(Equals(list_value, var.get()));
+    ASSERT_TRUE(ConvertValueAndVerify(list_value));
   }
 
   {
     // Test more complex inputs.
     base::DictionaryValue dict_value;
-    dict_value.Set("null_key", base::Value::CreateNullValue());
     dict_value.SetString("string_key", "string_value");
     dict_value.SetDouble("dict_key.double_key", 1);
 
@@ -308,8 +301,94 @@ TEST_F(VarValueConversionsTest, CreateVarFromValue) {
 
     dict_value.Set("dict_key.array_key", list_value.release());
 
-    ScopedPPVar var(ScopedPPVar::PassRef(), CreateVarFromValue(dict_value));
-    ASSERT_TRUE(Equals(dict_value, var.get()));
+    ASSERT_TRUE(ConvertValueAndVerify(dict_value));
+  }
+}
+
+TEST_F(VarValueConversionsTest, CreateListValueFromVarVector) {
+  {
+    // Test empty var vector.
+    scoped_ptr<base::ListValue> list_value(
+        CreateListValueFromVarVector(std::vector<PP_Var>()));
+    ASSERT_TRUE(list_value.get());
+    ASSERT_EQ(0u, list_value->GetSize());
+  }
+
+  {
+    // Test more complex inputs.
+    scoped_refptr<StringVar> string_var(new StringVar("string_value"));
+    ScopedPPVar string_pp_var(ScopedPPVar::PassRef(), string_var->GetPPVar());
+
+    scoped_refptr<DictionaryVar> dict_var(new DictionaryVar());
+    ScopedPPVar dict_pp_var(ScopedPPVar::PassRef(), dict_var->GetPPVar());
+    ASSERT_TRUE(dict_var->SetWithStringKey("null_key", PP_MakeNull()));
+    ASSERT_TRUE(dict_var->SetWithStringKey("string_key", string_pp_var.get()));
+
+    scoped_refptr<ArrayVar> array_var(new ArrayVar());
+    ScopedPPVar array_pp_var(ScopedPPVar::PassRef(), array_var->GetPPVar());
+    ASSERT_TRUE(array_var->Set(0, PP_MakeInt32(2)));
+    ASSERT_TRUE(array_var->Set(1, PP_MakeBool(PP_TRUE)));
+    ASSERT_TRUE(array_var->SetLength(4));
+
+    std::vector<PP_Var> vars;
+    vars.push_back(dict_pp_var.get());
+    vars.push_back(string_pp_var.get());
+    vars.push_back(array_pp_var.get());
+    vars.push_back(PP_MakeDouble(1));
+    vars.push_back(PP_MakeUndefined());
+    vars.push_back(PP_MakeNull());
+
+    scoped_ptr<base::ListValue> list_value(CreateListValueFromVarVector(vars));
+
+    ASSERT_TRUE(list_value.get());
+    ASSERT_EQ(vars.size(), list_value->GetSize());
+
+    for (size_t i = 0; i < list_value->GetSize(); ++i) {
+      const base::Value* value = NULL;
+      ASSERT_TRUE(list_value->Get(i, &value));
+      ASSERT_TRUE(Equals(*value, vars[i]));
+    }
+  }
+}
+
+TEST_F(VarValueConversionsTest, CreateVarVectorFromListValue) {
+  {
+    // Test empty list.
+    base::ListValue list_value;
+    std::vector<PP_Var> vars;
+    ASSERT_TRUE(CreateVarVectorFromListValue(list_value, &vars));
+    ASSERT_EQ(0u, vars.size());
+  }
+
+  {
+    // Test more complex inputs.
+    base::ListValue list_value;
+
+    scoped_ptr<base::DictionaryValue> dict_value(new base::DictionaryValue());
+    dict_value->SetString("string_key", "string_value");
+
+    scoped_ptr<base::ListValue> sub_list_value(new base::ListValue());
+    sub_list_value->AppendInteger(2);
+    sub_list_value->AppendBoolean(true);
+
+    list_value.Append(dict_value.release());
+    list_value.AppendString("string_value");
+    list_value.Append(sub_list_value.release());
+    list_value.AppendDouble(1);
+    list_value.Append(base::Value::CreateNullValue());
+
+    std::vector<PP_Var> vars;
+    ASSERT_TRUE(CreateVarVectorFromListValue(list_value, &vars));
+
+    ASSERT_EQ(list_value.GetSize(), vars.size());
+
+    for (size_t i = 0; i < list_value.GetSize(); ++i) {
+      const base::Value* value = NULL;
+      ASSERT_TRUE(list_value.Get(i, &value));
+      ASSERT_TRUE(Equals(*value, vars[i]));
+
+      PpapiGlobals::Get()->GetVarTracker()->ReleaseVar(vars[i]);
+    }
   }
 }
 

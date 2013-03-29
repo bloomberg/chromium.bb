@@ -136,8 +136,8 @@
       'c/trusted/ppp_broker.h',
 
       # Extensions dev interfaces.
-      'c/extensions/dev/ppb_alarms_dev.h',
-      'c/extensions/dev/ppb_events_dev.h',
+      'c/extensions/dev/ppb_ext_alarms_dev.h',
+      'c/extensions/dev/ppb_ext_events_dev.h',
     ],
     'cpp_source_files': [
       'cpp/array_output.cc',

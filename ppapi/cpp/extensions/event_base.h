@@ -5,7 +5,7 @@
 #ifndef PPAPI_CPP_EXTENSIONS_EVENT_BASE_H_
 #define PPAPI_CPP_EXTENSIONS_EVENT_BASE_H_
 
-#include "ppapi/c/extensions/dev/ppb_events_dev.h"
+#include "ppapi/c/extensions/dev/ppb_ext_events_dev.h"
 #include "ppapi/c/pp_macros.h"
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/pp_var.h"

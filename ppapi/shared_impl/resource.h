@@ -19,6 +19,7 @@
 // All resource types should be added here. This implements our hand-rolled
 // RTTI system since we don't compile with "real" RTTI.
 #define FOR_ALL_PPAPI_RESOURCE_APIS(F) \
+  F(ExtensionsCommon_API) \
   F(PPB_Audio_API) \
   F(PPB_AudioConfig_API) \
   F(PPB_AudioInput_API) \

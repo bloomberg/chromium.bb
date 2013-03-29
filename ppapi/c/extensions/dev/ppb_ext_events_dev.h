@@ -3,10 +3,12 @@
  * found in the LICENSE file.
  */
 
-/* From extensions/dev/ppb_events_dev.idl modified Sun Mar 10 10:37:48 2013. */
+/* From extensions/dev/ppb_ext_events_dev.idl,
+ *   modified Mon Mar 18 17:18:20 2013.
+ */
 
-#ifndef PPAPI_C_EXTENSIONS_DEV_PPB_EVENTS_DEV_H_
-#define PPAPI_C_EXTENSIONS_DEV_PPB_EVENTS_DEV_H_
+#ifndef PPAPI_C_EXTENSIONS_DEV_PPB_EXT_EVENTS_DEV_H_
+#define PPAPI_C_EXTENSIONS_DEV_PPB_EXT_EVENTS_DEV_H_
 
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_macros.h"
@@ -114,5 +116,5 @@ PP_INLINE struct PP_Ext_EventListener PP_Ext_MakeEventListener(
   listener.user_data = user_data;
   return listener;
 }
-#endif  /* PPAPI_C_EXTENSIONS_DEV_PPB_EVENTS_DEV_H_ */
+#endif  /* PPAPI_C_EXTENSIONS_DEV_PPB_EXT_EVENTS_DEV_H_ */
 
