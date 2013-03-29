@@ -308,7 +308,7 @@
       'message': 'Dexing <(_target_name) jar',
       'variables': {
         'conditions': [
-          ['proguard_enabled==1', {
+          ['proguard_enabled=="true" and CONFIGURATION_NAME=="Release"', {
             'dex_inputs': [ '<(obfuscated_jar_path)' ],
             'dex_generated_inputs': [],
           }, {
