@@ -156,8 +156,10 @@ public class DOMUtils {
         Rect bounds = getNodeBounds(view, viewClient, nodeName);
         Assert.assertNotNull("Failed to get DOM element bounds of '" + nodeName + "'.", bounds);
 
-        int clickX = (int) view.getRenderCoordinates().fromLocalCssToPix(bounds.exactCenterX());
-        int clickY = (int) view.getRenderCoordinates().fromLocalCssToPix(bounds.exactCenterY());
+        int clickX = (int) view.getRenderCoordinates().fromLocalCssToPix(bounds.exactCenterX())
+                + (int) view.getContentViewCore().getViewportSizeOffsetWidthPix();
+        int clickY = (int) view.getRenderCoordinates().fromLocalCssToPix(bounds.exactCenterY())
+                + (int) view.getContentViewCore().getViewportSizeOffsetHeightPix();
         return new int[] { clickX, clickY };
     }
 }

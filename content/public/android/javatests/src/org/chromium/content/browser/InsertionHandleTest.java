@@ -190,10 +190,12 @@ public class InsertionHandleTest extends ContentShellTestBase {
                 new TestCallbackHelperContainer(getContentView()), nodeId);
 
         RenderCoordinates renderCoordinates = getContentView().getRenderCoordinates();
-        float left = renderCoordinates.fromLocalCssToPix(nodeBounds.left);
-        float right = renderCoordinates.fromLocalCssToPix(nodeBounds.right);
-        float top = renderCoordinates.fromLocalCssToPix(nodeBounds.top);
-        float bottom = renderCoordinates.fromLocalCssToPix(nodeBounds.bottom);
+        int offsetX = getContentView().getContentViewCore().getViewportSizeOffsetWidthPix();
+        int offsetY = getContentView().getContentViewCore().getViewportSizeOffsetHeightPix();
+        float left = renderCoordinates.fromLocalCssToPix(nodeBounds.left) + offsetX;
+        float right = renderCoordinates.fromLocalCssToPix(nodeBounds.right) + offsetX;
+        float top = renderCoordinates.fromLocalCssToPix(nodeBounds.top) + offsetY;
+        float bottom = renderCoordinates.fromLocalCssToPix(nodeBounds.bottom) + offsetY;
 
         TouchCommon touchCommon = new TouchCommon(this);
         touchCommon.singleClickView(getContentView(),

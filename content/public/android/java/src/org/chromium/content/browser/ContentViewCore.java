@@ -833,13 +833,13 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
      * @return The amount to shrink the viewport relative to {@link #getViewportWidthPix()}.
      */
     @CalledByNative
-    private int getViewportSizeOffsetWidthPix() { return mViewportSizeOffsetWidthPix; }
+    public int getViewportSizeOffsetWidthPix() { return mViewportSizeOffsetWidthPix; }
 
     /**
      * @return The amount to shrink the viewport relative to {@link #getViewportHeightPix()}.
      */
     @CalledByNative
-    private int getViewportSizeOffsetHeightPix() { return mViewportSizeOffsetHeightPix; }
+    public int getViewportSizeOffsetHeightPix() { return mViewportSizeOffsetHeightPix; }
 
     /**
      * @see android.webkit.WebView#getContentHeight()
