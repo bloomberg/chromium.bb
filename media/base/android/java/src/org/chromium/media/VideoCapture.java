@@ -251,8 +251,8 @@ public class VideoCapture implements PreviewCallback, OnFrameAvailableListener {
         stopCapture();
         try {
             mCamera.setPreviewTexture(null);
-            mSurfaceTexture.setOnFrameAvailableListener(null);
-            GLES20.glDeleteTextures(1, mGlTextures, 0);
+            if (mGlTextures != null)
+                GLES20.glDeleteTextures(1, mGlTextures, 0);
             mCurrentCapability = null;
             mCamera.release();
             mCamera = null;
