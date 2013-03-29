@@ -60,7 +60,7 @@ public abstract class PathUtils {
      */
     @SuppressWarnings("unused")
     @CalledByNative
-    private static String getCacheDirectory(Context appContext) {
+    public static String getCacheDirectory(Context appContext) {
         if (ContextTypes.getInstance().getType(appContext) == ContextTypes.CONTEXT_TYPE_NORMAL) {
             return appContext.getCacheDir().getPath();
         }
