@@ -275,6 +275,14 @@ void AddSyncPromoTab(Profile* profile, StartupTabs* tabs) {
   sync_promo_tab.url = SyncPromoUI::GetSyncPromoURL(
       continue_url, SyncPromoUI::SOURCE_START_PAGE, false);
   sync_promo_tab.is_pinned = false;
+
+  // No need to add if the sync promo is already in the startup list.
+  for (StartupTabs::const_iterator it = tabs->begin(); it != tabs->end();
+       ++it) {
+    if (it->url == sync_promo_tab.url)
+      return;
+  }
+
   tabs->insert(tabs->begin(), sync_promo_tab);
 
   // If the next URL is the NTP then remove it, effectively replacing the NTP
