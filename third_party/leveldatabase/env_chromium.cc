@@ -367,6 +367,7 @@ class ChromiumEnv : public Env, public UMALogger {
     } else {
       if (!sync_parent(fname)) {
         fclose(f);
+        RecordErrorAt(kNewWritableFile);
         return Status::IOError(fname, strerror(errno));
       }
       *result = new ChromiumWritableFile(fname, f, this);
@@ -436,35 +437,54 @@ class ChromiumEnv : public Env, public UMALogger {
     return s;
   }
 
+  class Retrier {
+   public:
+    Retrier(base::HistogramBase* histogram, const int kMaxRetryMillis) :
+        start_(base::TimeTicks::Now()),
+        limit_(start_ + base::TimeDelta::FromMilliseconds(kMaxRetryMillis)),
+        last_(start_),
+        time_to_sleep_(base::TimeDelta::FromMilliseconds(10)),
+        success_(true),
+        histogram_(histogram) {
+    }
+    ~Retrier() {
+      if (success_)
+        histogram_->AddTime(last_ - start_);
+    }
+    bool ShouldKeepTrying() {
+      if (last_ < limit_) {
+        base::PlatformThread::Sleep(time_to_sleep_);
+        last_ = base::TimeTicks::Now();
+        return true;
+      }
+      success_ = false;
+      return false;
+    }
+   private:
+    base::TimeTicks start_;
+    base::TimeTicks limit_;
+    base::TimeTicks last_;
+    base::TimeDelta time_to_sleep_;
+    bool success_;
+    base::HistogramBase* histogram_;
+  };
+
   virtual Status RenameFile(const std::string& src, const std::string& dst) {
     Status result;
     base::FilePath src_file_path = CreateFilePath(src);
     if (!::file_util::PathExists(src_file_path))
       return result;
-    const int kRenameIntervalMillis = 10;
-    base::TimeDelta time_to_sleep =
-        base::TimeDelta::FromMilliseconds(kRenameIntervalMillis);
-    base::TimeTicks start = base::TimeTicks::Now();
-    base::TimeTicks limit = start +
-        base::TimeDelta::FromMilliseconds(kMaxRenameTimeMillis);
     base::FilePath destination = CreateFilePath(dst);
-    base::TimeTicks now = start;
-    bool first = true;
+
+    Retrier r(rename_time_histogram_, kMaxRenameTimeMillis);
     do {
-      if (first) {
-        first = false;
-      } else {
-        base::PlatformThread::Sleep(time_to_sleep);
-        now = base::TimeTicks::Now();
-      }
       if (::file_util::ReplaceFile(src_file_path, destination)) {
-        RecordTimeToRename(now - start);
         sync_parent(dst);
         if (src != dst)
           sync_parent(src);
         return result;
       }
-    } while (now < limit);
+    } while (r.ShouldKeepTrying());
 
     RecordErrorAt(kRenamefile);
     return Status::IOError(src, "Could not rename file.");
@@ -623,13 +643,12 @@ void ChromiumEnv::InitHistograms(const std::string& uma_title) {
 
   std::string retry_name(uma_title);
   retry_name.append(".TimeToRename");
-  // Do not change this value or historical data will be invalidated.
   const int kBucketSizeMillis = 25;
   // Add 2, 1 for each of the buckets <1 and >max.
   int num_buckets = kMaxRenameTimeMillis / kBucketSizeMillis + 2;
   rename_time_histogram_ = base::LinearHistogram::FactoryTimeGet(
       retry_name, base::TimeDelta::FromMilliseconds(1),
-      base::TimeDelta::FromMilliseconds(kMaxRenameTimeMillis),
+      base::TimeDelta::FromMilliseconds(kMaxRenameTimeMillis + 1),
       num_buckets,
       base::Histogram::kUmaTargetedHistogramFlag);
 }
