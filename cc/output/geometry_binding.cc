@@ -26,7 +26,7 @@ GeometryBinding::GeometryBinding(WebKit::WebGraphicsContext3D* context,
     Vertex v0, v1, v2, v3;
   };
   struct QuadIndex {
-    uint16_t data[6];
+    uint16 data[6];
   };
 
   COMPILE_ASSERT(
@@ -55,12 +55,12 @@ GeometryBinding::GeometryBinding(WebKit::WebGraphicsContext3D* context,
                   i * 4.0f + 3.0f };
     Quad x = { v0, v1, v2, v3 };
     quad_list[i] = x;
-    QuadIndex y = { { 0 + 4 * i,
-                      1 + 4 * i,
-                      2 + 4 * i,
-                      3 + 4 * i,
-                      0 + 4 * i,
-                      2 + 4 * i } };
+    QuadIndex y = { { static_cast<uint16>(0 + 4 * i),
+                      static_cast<uint16>(1 + 4 * i),
+                      static_cast<uint16>(2 + 4 * i),
+                      static_cast<uint16>(3 + 4 * i),
+                      static_cast<uint16>(0 + 4 * i),
+                      static_cast<uint16>(2 + 4 * i) } };
     quad_index_list[i] = y;
   }
 
