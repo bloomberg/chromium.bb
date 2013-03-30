@@ -453,13 +453,6 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandlerClient,
   scoped_ptr<MemoryHistory> memory_history_;
   scoped_ptr<DebugRectHistory> debug_rect_history_;
 
-  int64 num_impl_thread_scrolls_;
-  int64 num_main_thread_scrolls_;
-
-  int64 cumulative_num_layers_drawn_;
-
-  int64 cumulative_num_missing_tiles_;
-
   // The maximum memory that would be used by the prioritized resource
   // manager, if there were no limit on memory usage.
   size_t max_memory_needed_bytes_;
