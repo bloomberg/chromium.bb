@@ -4,6 +4,7 @@
 
 #include "ash/wm/frame_painter.h"
 
+#include "ash/ash_constants.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
@@ -148,6 +149,16 @@ class FramePainterTest : public ash::test::AshTestBase {
     params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     params.context = CurrentContext();
     params.keep_on_top = true;
+    widget->Init(params);
+    return widget;
+  }
+
+  Widget* CreatePanelWidget() {
+    Widget* widget = new Widget;
+    Widget::InitParams params;
+    params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+    params.context = CurrentContext();
+    params.type = Widget::InitParams::TYPE_PANEL;
     widget->Init(params);
     return widget;
   }
@@ -355,6 +366,71 @@ TEST_F(FramePainterTest, UseSoloWindowHeaderWithApp) {
   // Restoring the app window turns off solo headers.
   w2->Restore();
   EXPECT_FALSE(p1.UseSoloWindowHeader());
+}
+
+// Panels should not "count" for computing solo window headers, and the panel
+// itself should always have an opaque header.
+TEST_F(FramePainterTest, UseSoloWindowHeaderWithPanel) {
+  // Create a widget and a painter for it.
+  scoped_ptr<Widget> w1(CreateTestWidget());
+  FramePainter p1;
+  ImageButton size1(NULL);
+  ImageButton close1(NULL);
+  p1.Init(w1.get(), NULL, &size1, &close1, FramePainter::SIZE_BUTTON_MAXIMIZES);
+  w1->Show();
+
+  // We only have one window, so it should use a solo header.
+  EXPECT_TRUE(p1.UseSoloWindowHeader());
+
+  // Create a panel and a painter for it.
+  scoped_ptr<Widget> w2(CreatePanelWidget());
+  FramePainter p2;
+  ImageButton size2(NULL);
+  ImageButton close2(NULL);
+  p2.Init(w2.get(), NULL, &size2, &close2, FramePainter::SIZE_BUTTON_MAXIMIZES);
+  w2->Show();
+
+  // Despite two windows, the first window should still be considered "solo"
+  // because panels aren't included in the computation.
+  EXPECT_TRUE(p1.UseSoloWindowHeader());
+
+  // The panel itself is not considered solo.
+  EXPECT_FALSE(p2.UseSoloWindowHeader());
+
+  // Even after closing the first window, the panel is still not considered
+  // solo.
+  w1.reset();
+  EXPECT_FALSE(p2.UseSoloWindowHeader());
+}
+
+// Constrained windows should not use solo headers.
+TEST_F(FramePainterTest, UseSoloWindowHeaderConstrained) {
+  // Create a widget and a painter for it.
+  scoped_ptr<Widget> w1(CreateTestWidget());
+  FramePainter p1;
+  ImageButton size1(NULL);
+  ImageButton close1(NULL);
+  p1.Init(w1.get(), NULL, &size1, &close1, FramePainter::SIZE_BUTTON_MAXIMIZES);
+  w1->Show();
+
+  // We only have one window, so it should use a solo header.
+  EXPECT_TRUE(p1.UseSoloWindowHeader());
+
+  // Create a fake constrained window.
+  scoped_ptr<Widget> w2(CreateTestWidget());
+  w2->GetNativeWindow()->SetProperty(ash::kConstrainedWindowKey, true);
+  FramePainter p2;
+  ImageButton size2(NULL);
+  ImageButton close2(NULL);
+  p2.Init(w2.get(), NULL, &size2, &close2, FramePainter::SIZE_BUTTON_MAXIMIZES);
+  w2->Show();
+
+  // Despite two windows, the first window should still be considered "solo"
+  // because constrained windows aren't included in the computation.
+  EXPECT_TRUE(p1.UseSoloWindowHeader());
+
+  // The constrained window itself is not considered solo.
+  EXPECT_FALSE(p2.UseSoloWindowHeader());
 }
 
 #if defined(OS_WIN)

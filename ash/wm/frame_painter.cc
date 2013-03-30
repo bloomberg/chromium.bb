@@ -106,7 +106,8 @@ void TileRoundRect(gfx::Canvas* canvas,
   canvas->DrawImageInPath(image, -image_inset_x, 0, path, paint);
 }
 
-// Returns true if |child| and all ancestors are visible.
+// Returns true if |child| and all ancestors are visible. Useful to ensure that
+// a window is individually visible and is not part of a hidden workspace.
 bool IsVisibleToRoot(Window* child) {
   for (Window* window = child; window; window = window->parent()) {
     // We must use TargetVisibility() because windows animate in and out and
@@ -117,13 +118,12 @@ bool IsVisibleToRoot(Window* child) {
   return true;
 }
 
-// Returns true if |window| is a visible, normal window.
-bool IsVisibleNormalWindow(aura::Window* window) {
-  // Test visibility up to root in case the whole workspace is hidden.
+// Returns true if |window| is a "normal" window for purposes of solo window
+// computations.
+bool IsSoloWindowHeaderCandidate(aura::Window* window) {
   return window &&
-    IsVisibleToRoot(window) &&
-    (window->type() == aura::client::WINDOW_TYPE_NORMAL ||
-     window->type() == aura::client::WINDOW_TYPE_PANEL);
+      window->type() == aura::client::WINDOW_TYPE_NORMAL &&
+      !window->GetProperty(ash::kConstrainedWindowKey);
 }
 
 // Returns a list of windows in |root_window|| that potentially could have
@@ -813,6 +813,9 @@ bool FramePainter::IsCyclingThroughWorkspaces() const {
 }
 
 bool FramePainter::UseSoloWindowHeader() {
+  // Don't use transparent headers for panels, pop-ups, etc.
+  if (!IsSoloWindowHeaderCandidate(window_))
+    return false;
   aura::RootWindow* root = window_->GetRootWindow();
   if (!root || root->GetProperty(internal::kIgnoreSoloWindowFramePainterPolicy))
     return false;
@@ -832,8 +835,8 @@ bool FramePainter::UseSoloWindowHeaderInRoot(RootWindow* root_window,
     Window* window = *it;
     // Various sorts of windows "don't count" for this computation.
     if (ignore_window == window ||
-        !IsVisibleNormalWindow(window) ||
-        window->GetProperty(kConstrainedWindowKey))
+        !IsSoloWindowHeaderCandidate(window) ||
+        !IsVisibleToRoot(window))
       continue;
     if (wm::IsWindowMaximized(window))
       return false;
