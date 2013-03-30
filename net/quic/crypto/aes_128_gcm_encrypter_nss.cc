@@ -26,8 +26,8 @@ const size_t kAuthTagSize = 16;
 bool Aes128GcmEncrypter::IsSupported() {
 #if defined(USE_NSS)
   // We're using system NSS libraries. Regrettably NSS 3.14.x has a bug in the
-  // AES GCM code (NSS bug 853285) and is missing the PK11_EncryptWithSymKey
-  // function (NSS bug 854063).  Both problems should be fixed in NSS 3.15.
+  // AES GCM code (NSS bug 853285) and is missing the PK11_Encrypt function
+  // (NSS bug 854063).  Both problems should be fixed in NSS 3.15.
   return false;
 #else
   // We're using our own copy of NSS.
@@ -133,14 +133,12 @@ QuicData* Aes128GcmEncrypter::EncryptWithNonce(StringPiece nonce,
   param.len = sizeof(gcm_params);
 
   unsigned int output_len;
-  if (PK11_EncryptWithSymKey(aes_key.get(), CKM_AES_GCM, &param,
-                             reinterpret_cast<unsigned char*>(
-                                 ciphertext.get()),
-                             &output_len, ciphertext_size,
-                             reinterpret_cast<const unsigned char*>(
-                                 plaintext.data()),
-                             plaintext.size()) != SECSuccess) {
-    DLOG(INFO) << "PK11_EncryptWithSymKey failed";
+  if (PK11_Encrypt(aes_key.get(), CKM_AES_GCM, &param,
+                   reinterpret_cast<unsigned char*>(ciphertext.get()),
+                   &output_len, ciphertext_size,
+                   reinterpret_cast<const unsigned char*>(plaintext.data()),
+                   plaintext.size()) != SECSuccess) {
+    DLOG(INFO) << "PK11_Encrypt failed";
     return NULL;
   }
 

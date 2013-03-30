@@ -25,8 +25,8 @@ const size_t kAuthTagSize = 16;
 bool Aes128GcmDecrypter::IsSupported() {
 #if defined(USE_NSS)
   // We're using system NSS libraries. Regrettably NSS 3.14.x has a bug in the
-  // AES GCM code (NSS bug 853285) and is missing the PK11_DecryptWithSymKey
-  // function (NSS bug 854063).  Both problems should be fixed in NSS 3.15.
+  // AES GCM code (NSS bug 853285) and is missing the PK11_Decrypt function
+  // (NSS bug 854063).  Both problems should be fixed in NSS 3.15.
   return false;
 #else
   // We're using our own copy of NSS.
@@ -123,15 +123,12 @@ QuicData* Aes128GcmDecrypter::DecryptWithNonce(StringPiece nonce,
   unsigned int output_len;
   // If an incorrect authentication tag causes a decryption failure, the NSS
   // error is SEC_ERROR_BAD_DATA (-8190).
-  if (PK11_DecryptWithSymKey(aes_key.get(), CKM_AES_GCM, &param,
-                             reinterpret_cast<unsigned char*>(
-                                 plaintext.get()),
-                             &output_len, plaintext_capacity,
-                             reinterpret_cast<const unsigned char*>(
-                                 ciphertext.data()),
-                             ciphertext.size()) != SECSuccess) {
-    DLOG(INFO) << "PK11_DecryptWithSymKey failed: NSS error "
-               << PORT_GetError();
+  if (PK11_Decrypt(aes_key.get(), CKM_AES_GCM, &param,
+                   reinterpret_cast<unsigned char*>(plaintext.get()),
+                   &output_len, plaintext_capacity,
+                   reinterpret_cast<const unsigned char*>(ciphertext.data()),
+                   ciphertext.size()) != SECSuccess) {
+    DLOG(INFO) << "PK11_Decrypt failed: NSS error " << PORT_GetError();
     return NULL;
   }
 
