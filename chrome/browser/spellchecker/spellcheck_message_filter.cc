@@ -20,13 +20,7 @@ using content::BrowserThread;
 
 SpellCheckMessageFilter::SpellCheckMessageFilter(int render_process_id)
     : render_process_id_(render_process_id),
-      client_(new SpellingServiceClient)
-#if !defined(OS_MACOSX)
-      ,
-      route_id_(0),
-      identifier_(0)
-#endif
-      {
+      client_(new SpellingServiceClient) {
 }
 
 void SpellCheckMessageFilter::OverrideThreadForMessage(
@@ -104,18 +98,18 @@ void SpellCheckMessageFilter::OnCallSpellingService(
     const string16& text) {
   DCHECK(!text.empty());
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  route_id_ = route_id;
-  identifier_ = identifier;
-  CallSpellingService(document_tag, text);
+  CallSpellingService(document_tag, text, route_id, identifier);
 }
 
 void SpellCheckMessageFilter::OnTextCheckComplete(
     int tag,
+    int route_id,
+    int identifier,
     bool success,
     const string16& text,
     const std::vector<SpellCheckResult>& results) {
-  Send(new SpellCheckMsg_RespondSpellingService(route_id_,
-                                                identifier_,
+  Send(new SpellCheckMsg_RespondSpellingService(route_id,
+                                                identifier,
                                                 tag,
                                                 success,
                                                 text,
@@ -125,7 +119,9 @@ void SpellCheckMessageFilter::OnTextCheckComplete(
 // CallSpellingService always executes the callback OnTextCheckComplete.
 // (Which, in turn, sends a SpellCheckMsg_RespondSpellingService)
 void SpellCheckMessageFilter::CallSpellingService(int document_tag,
-                                                  const string16& text) {
+                                                  const string16& text,
+                                                  int route_id,
+                                                  int identifier) {
   Profile* profile = NULL;
   content::RenderProcessHost* host =
       content::RenderProcessHost::FromID(render_process_id_);
@@ -133,8 +129,13 @@ void SpellCheckMessageFilter::CallSpellingService(int document_tag,
     profile = Profile::FromBrowserContext(host->GetBrowserContext());
 
   client_->RequestTextCheck(
-    profile, SpellingServiceClient::SPELLCHECK, text,
+    profile,
+    SpellingServiceClient::SPELLCHECK,
+    text,
     base::Bind(&SpellCheckMessageFilter::OnTextCheckComplete,
-               base::Unretained(this), document_tag));
+               base::Unretained(this),
+               document_tag,
+               route_id,
+               identifier));
 }
 #endif
