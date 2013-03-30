@@ -500,9 +500,12 @@ void DriveFileSyncService::UninstallOrigin(
 
   // An empty resource_id indicates either one of following two cases:
   // 1) origin is not in metadata_store_ because the extension was never
-  //    run and thus no origin directory on the remote drive was created.
+  //    run or it's not managed by this service, and thus no
+  //    origin directory on the remote drive was created.
   // 2) origin or sync root folder is deleted on Drive.
   if (resource_id.empty()) {
+    token->ResetTask(FROM_HERE);
+    NotifyTaskDone(last_operation_status_, token.Pass());
     callback.Run(SYNC_STATUS_OK);
     return;
   }
