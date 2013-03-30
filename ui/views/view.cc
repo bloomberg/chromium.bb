@@ -378,7 +378,6 @@ gfx::Rect View::GetLayerBoundsInPixel() const {
   return layer()->GetTargetBounds();
 }
 
-
 gfx::Insets View::GetInsets() const {
   return border_.get() ? border_->GetInsets() : gfx::Insets();
 }

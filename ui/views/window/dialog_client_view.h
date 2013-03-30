@@ -58,7 +58,6 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
 
  protected:
   // View implementation:
-  virtual gfx::Insets GetInsets() const OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
@@ -72,14 +71,14 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
  private:
   bool has_dialog_buttons() const { return ok_button_ || cancel_button_; }
 
-  // Create the necessary dialog buttons.
-  void CreateDialogButtons();
-
   // Create a dialog button of the appropriate type.
   LabelButton* CreateDialogButton(ui::DialogButton type);
 
   // Returns the height of the row containing the buttons and the extra view.
   int GetButtonsAndExtraViewRowHeight() const;
+
+  // Returns the insets for the buttons and extra view.
+  gfx::Insets GetButtonRowInsets() const;
 
   // Create and add the extra view, if supplied by the delegate.
   void CreateExtraView();
