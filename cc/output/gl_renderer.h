@@ -155,6 +155,7 @@ class CC_EXPORT GLRenderer
                         const gfx::RectF& quad_rect,
                         int matrix_location);
   void SetBlendEnabled(bool enabled);
+  bool blend_enabled() const { return blend_shadow_; }
   void SetUseProgram(unsigned program);
 
   void CopyTextureToFramebuffer(const DrawingFrame* frame,

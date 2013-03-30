@@ -13,17 +13,18 @@ namespace cc {
 // Interface for pixel comparators.
 class PixelComparator {
  public:
+  virtual ~PixelComparator() {}
+
   virtual bool Compare(const SkBitmap& actual_bmp,
                        const SkBitmap& expected_bmp) const = 0;
-
- protected:
-  virtual ~PixelComparator() {}
 };
 
 // Exact pixel comparator. Counts the number of pixel with an error.
 class ExactPixelComparator : public PixelComparator {
  public:
   explicit ExactPixelComparator(const bool discard_alpha);
+  virtual ~ExactPixelComparator() {}
+
   // Returns true if the two bitmaps are identical. Otherwise, returns false
   // and report the number of pixels with an error on LOG(ERROR). Differences
   // in the alpha channel are ignored.
@@ -45,6 +46,8 @@ class FuzzyPixelComparator : public PixelComparator {
                        const float avg_abs_error_limit,
                        const int max_abs_error_limit,
                        const int small_error_threshold);
+  virtual ~FuzzyPixelComparator() {}
+
   // Computes error metrics and returns true if the errors don't exceed the
   // specified limits. Otherwise, returns false and reports the error metrics on
   // LOG(ERROR). Differences in the alpha channel are ignored.

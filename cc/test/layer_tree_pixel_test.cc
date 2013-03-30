@@ -6,6 +6,7 @@
 
 #include "base/path_service.h"
 #include "cc/test/paths.h"
+#include "cc/test/pixel_comparator.h"
 #include "cc/test/pixel_test_utils.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "ui/gl/gl_implementation.h"
@@ -14,7 +15,8 @@
 
 namespace cc {
 
-LayerTreePixelTest::LayerTreePixelTest() {}
+LayerTreePixelTest::LayerTreePixelTest()
+    : pixel_comparator_(new ExactPixelComparator(true)) {}
 
 LayerTreePixelTest::~LayerTreePixelTest() {}
 
@@ -66,8 +68,9 @@ void LayerTreePixelTest::SwapBuffersOnThread(LayerTreeHostImpl* host_impl,
   // To rebaseline:
   // EXPECT_TRUE(WritePNGFile(bitmap, test_data_dir.Append(ref_file_)));
 
-  EXPECT_TRUE(MatchesPNGFile(bitmap, test_data_dir.Append(ref_file_),
-                             ExactPixelComparator(true)));
+  EXPECT_TRUE(MatchesPNGFile(bitmap,
+                             test_data_dir.Append(ref_file_),
+                             *pixel_comparator_));
 
   EndTest();
 }
@@ -86,6 +89,34 @@ scoped_refptr<SolidColorLayer> LayerTreePixelTest::CreateSolidColorLayer(
   layer->SetBounds(rect.size());
   layer->SetPosition(rect.origin());
   layer->SetBackgroundColor(color);
+  return layer;
+}
+
+scoped_refptr<SolidColorLayer> LayerTreePixelTest::
+    CreateSolidColorLayerWithBorder(
+        gfx::Rect rect, SkColor color, int border_width, SkColor border_color) {
+  scoped_refptr<SolidColorLayer> layer = CreateSolidColorLayer(rect, color);
+  scoped_refptr<SolidColorLayer> border_top = CreateSolidColorLayer(
+      gfx::Rect(0, 0, rect.width(), border_width), border_color);
+  scoped_refptr<SolidColorLayer> border_left = CreateSolidColorLayer(
+      gfx::Rect(0,
+                border_width,
+                border_width,
+                rect.height() - border_width * 2),
+      border_color);
+  scoped_refptr<SolidColorLayer> border_right = CreateSolidColorLayer(
+      gfx::Rect(rect.width() - border_width,
+                border_width,
+                border_width,
+                rect.height() - border_width * 2),
+      border_color);
+  scoped_refptr<SolidColorLayer> border_bottom = CreateSolidColorLayer(
+      gfx::Rect(0, rect.height() - border_width, rect.width(), border_width),
+      border_color);
+  layer->AddChild(border_top);
+  layer->AddChild(border_left);
+  layer->AddChild(border_right);
+  layer->AddChild(border_bottom);
   return layer;
 }
 

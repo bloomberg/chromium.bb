@@ -562,11 +562,10 @@ scoped_ptr<ScopedResource> GLRenderer::DrawBackgroundFilters(
   // Pixel copies in this algorithm occur at steps 2, 3, 4, and 5.
 
   // FIXME: When this algorithm changes, update
-  // LayerTreeHost::prioritizeTextures() accordingly.
+  // LayerTreeHost::PrioritizeTextures() accordingly.
 
   const WebKit::WebFilterOperations& filters = quad->background_filters;
-  if (filters.isEmpty())
-    return scoped_ptr<ScopedResource>();
+  DCHECK(!filters.isEmpty());
 
   // FIXME: We only allow background filters on an opaque render surface because
   // other surfaces may contain translucent pixels, and the contents behind
@@ -662,11 +661,23 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
   if (!contents_device_transform.GetInverse(&contents_device_transform_inverse))
     return;
 
-  scoped_ptr<ScopedResource> background_texture =
-      DrawBackgroundFilters(frame,
-                            quad,
-                            contents_device_transform,
-                            contents_device_transform_inverse);
+  scoped_ptr<ScopedResource> background_texture;
+  if (!quad->background_filters.isEmpty()) {
+    // The pixels from the filtered background should completely replace the
+    // current pixel values.
+    bool disable_blending = blend_enabled();
+    if (disable_blending)
+      SetBlendEnabled(false);
+
+    background_texture = DrawBackgroundFilters(
+        frame,
+        quad,
+        contents_device_transform,
+        contents_device_transform_inverse);
+
+    if (disable_blending)
+      SetBlendEnabled(true);
+  }
 
   // FIXME: Cache this value so that we don't have to do it for both the surface
   // and its replica.  Apply filters to the contents texture.

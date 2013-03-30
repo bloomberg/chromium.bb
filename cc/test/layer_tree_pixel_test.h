@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/files/file_path.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/test/layer_tree_test.h"
 
@@ -11,6 +13,7 @@
 
 namespace cc {
 class LayerTreeHost;
+class PixelComparator;
 
 class LayerTreePixelTest : public LayerTreeTest {
  protected:
@@ -31,6 +34,11 @@ class LayerTreePixelTest : public LayerTreeTest {
 
   scoped_refptr<SolidColorLayer> CreateSolidColorLayer(gfx::Rect rect,
                                                        SkColor color);
+  scoped_refptr<SolidColorLayer> CreateSolidColorLayerWithBorder(
+      gfx::Rect rect,
+      SkColor color,
+      int border_width,
+      SkColor border_color);
 
   void RunPixelTest(scoped_refptr<Layer> content_root,
                     base::FilePath file_name);
@@ -41,6 +49,8 @@ class LayerTreePixelTest : public LayerTreeTest {
     kCSSBrown = 0xffa52a2a,
     kCSSGreen = 0xff008000,
   };
+
+  scoped_ptr<PixelComparator> pixel_comparator_;
 
  private:
   scoped_refptr<Layer> content_root_;
