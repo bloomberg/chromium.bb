@@ -54,6 +54,6 @@ void ActionBoxButtonView::OnMenuButtonClicked(View* source,
 }
 
 void ActionBoxButtonView::ShowMenu(scoped_ptr<ActionBoxMenuModel> menu_model) {
-  menu_ = ActionBoxMenu::Create(browser_->profile(), menu_model.Pass());
+  menu_ = ActionBoxMenu::Create(browser_, menu_model.Pass());
   menu_->RunMenu(this, menu_offset_);
 }

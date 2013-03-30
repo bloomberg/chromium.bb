@@ -5,7 +5,9 @@
 #include "chrome/browser/ui/views/action_box_menu.h"
 
 #include "chrome/browser/extensions/extension_icon_image.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/toolbar/action_box_menu_model.h"
+#include "chrome/browser/ui/views/action_box_context_menu.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "chrome/common/extensions/api/icons/icons_handler.h"
 #include "chrome/common/extensions/extension.h"
@@ -48,9 +50,9 @@ class ExtensionImageView : public views::ImageView, public IconImage::Observer {
 
 // static
 scoped_ptr<ActionBoxMenu> ActionBoxMenu::Create(
-    Profile* profile,
+    Browser* browser,
     scoped_ptr<ActionBoxMenuModel> model) {
-  scoped_ptr<ActionBoxMenu> menu(new ActionBoxMenu(profile, model.Pass()));
+  scoped_ptr<ActionBoxMenu> menu(new ActionBoxMenu(browser, model.Pass()));
   menu->PopulateMenu();
   return menu.Pass();
 }
@@ -61,19 +63,21 @@ ActionBoxMenu::~ActionBoxMenu() {
 void ActionBoxMenu::RunMenu(views::MenuButton* menu_button,
                             gfx::Point menu_offset) {
   views::View::ConvertPointToScreen(menu_button, &menu_offset);
+  menu_parent_ = menu_button->GetWidget();
 
   // Ignore the result since we don't need to handle a deleted menu specially.
   ignore_result(
-      menu_runner_->RunMenuAt(menu_button->GetWidget(),
+      menu_runner_->RunMenuAt(menu_parent_,
                               menu_button,
                               gfx::Rect(menu_offset, menu_button->size()),
                               views::MenuItemView::TOPRIGHT,
                               views::MenuRunner::HAS_MNEMONICS));
 }
 
-ActionBoxMenu::ActionBoxMenu(Profile* profile,
+ActionBoxMenu::ActionBoxMenu(Browser* browser,
                              scoped_ptr<ActionBoxMenuModel> model)
-    : profile_(profile),
+    : browser_(browser),
+      menu_parent_(NULL),
       model_(model.Pass()) {
   views::MenuItemView* menu = new views::MenuItemView(this);
   menu->set_has_icons(true);
@@ -85,6 +89,25 @@ void ActionBoxMenu::ExecuteCommand(int id) {
   model_->ExecuteCommand(id);
 }
 
+bool ActionBoxMenu::ShowContextMenu(views::MenuItemView* source,
+                             int id,
+                             const gfx::Point& p,
+                             bool is_mouse_gesture) {
+  DCHECK(menu_parent_);
+
+  int index = model_->GetIndexOfCommandId(id);
+  if (!model_->IsItemExtension(index))
+    return false;
+
+  context_menu_.reset(
+      new ActionBoxContextMenu(browser_, model_->GetExtensionAt(index)));
+  if (context_menu_->RunMenuAt(p, menu_parent_) ==
+      views::MenuRunner::MENU_DELETED)
+    return true;
+  context_menu_.reset();
+  return true;
+}
+
 void ActionBoxMenu::PopulateMenu() {
   for (int model_index = 0; model_index < model_->GetItemCount();
        ++model_index) {
@@ -94,7 +117,8 @@ void ActionBoxMenu::PopulateMenu() {
     if (model_->GetTypeAt(model_index) == ui::MenuModel::TYPE_COMMAND) {
       if (model_->IsItemExtension(model_index)) {
         const Extension* extension = model_->GetExtensionAt(model_index);
-        ExtensionImageView* view = new ExtensionImageView(profile_, extension);
+        ExtensionImageView* view = new ExtensionImageView(browser_->profile(),
+                                                          extension);
         // |menu_item| will own the |view| from now on.
         menu_item->SetIconView(view);
       }

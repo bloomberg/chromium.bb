@@ -8,11 +8,13 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/views/controls/menu/menu_delegate.h"
 
+class ActionBoxContextMenu;
 class ActionBoxMenuModel;
-class Profile;
+class Browser;
 
 namespace views {
 class MenuButton;
+class MenuItemView;
 class MenuRunner;
 }
 
@@ -20,7 +22,7 @@ class MenuRunner;
 class ActionBoxMenu : public views::MenuDelegate {
  public:
   // Constructs and initializes an ActionBoxMenu.
-  static scoped_ptr<ActionBoxMenu> Create(Profile* profile,
+  static scoped_ptr<ActionBoxMenu> Create(Browser* browser,
                                           scoped_ptr<ActionBoxMenuModel> model);
 
   virtual ~ActionBoxMenu();
@@ -29,17 +31,23 @@ class ActionBoxMenu : public views::MenuDelegate {
   void RunMenu(views::MenuButton* menu_button, gfx::Point menu_offset);
 
  private:
-  ActionBoxMenu(Profile* profile, scoped_ptr<ActionBoxMenuModel> model);
+  ActionBoxMenu(Browser* browser, scoped_ptr<ActionBoxMenuModel> model);
 
   // Overridden from views::MenuDelegate:
   virtual void ExecuteCommand(int id) OVERRIDE;
+  virtual bool ShowContextMenu(views::MenuItemView* source,
+                               int id,
+                               const gfx::Point& p,
+                               bool is_mouse_gesture) OVERRIDE;
 
   // Populates |root_| with all the child menu items from the |model_|.
   void PopulateMenu();
 
-  Profile* profile_;
+  Browser* browser_;
 
+  scoped_ptr<ActionBoxContextMenu> context_menu_;
   scoped_ptr<views::MenuRunner> menu_runner_;
+  views::Widget* menu_parent_;
 
   // The model that tracks the order of the toolbar icons.
   scoped_ptr<ActionBoxMenuModel> model_;
