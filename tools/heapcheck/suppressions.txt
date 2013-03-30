@@ -1688,6 +1688,24 @@
    fun:v8::internal::RegExpEngine::Compile
 }
 {
+   bug_169185_e
+   Heapcheck:Leak
+   fun:v8::internal::SkipList::Update
+   fun:v8::internal::PagedSpace::AllocateRaw
+   fun:v8::internal::Heap::CreateCode
+   fun:v8::internal::Factory::NewCode
+   fun:v8::internal::CodeGenerator::MakeCodeEpilogue
+   fun:v8::internal::FullCodeGenerator::MakeCode
+   fun:GenerateCode
+   fun:MakeCode
+   fun:v8::internal::Compiler::CompileLazy
+   fun:CompileLazyHelper
+   fun:v8::internal::JSFunction::CompileLazy
+   fun:v8::internal::Runtime_LazyCompile
+   ...
+   fun:Invoke
+}
+{
    bug_169678
    Heapcheck:Leak
    fun:v8::internal::SlotsBufferAllocator::AllocateBuffer
