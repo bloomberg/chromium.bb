@@ -5,7 +5,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/string_piece.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/test/scoped_locale.h"
 #include "base/utf_string_conversions.h"

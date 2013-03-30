@@ -6,7 +6,7 @@
 #define BASE_MD5_H_
 
 #include "base/base_export.h"
-#include "base/string_piece.h"
+#include "base/strings/string_piece.h"
 
 namespace base {
 

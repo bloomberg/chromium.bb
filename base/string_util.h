@@ -17,7 +17,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/string16.h"
-#include "base/string_piece.h"  // For implicit conversions.
+#include "base/strings/string_piece.h"  // For implicit conversions.
 
 // Safe standard library wrappers for all platforms.
 

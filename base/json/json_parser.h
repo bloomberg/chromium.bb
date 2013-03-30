@@ -11,7 +11,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/json/json_reader.h"
-#include "base/string_piece.h"
+#include "base/strings/string_piece.h"
 
 #if !defined(OS_CHROMEOS)
 #include "base/gtest_prod_util.h"

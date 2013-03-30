@@ -14,7 +14,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/stl_util.h"
 #include "base/string16.h"
-#include "base/string_piece.h"
+#include "base/strings/string_piece.h"
 #include "base/values.h"
 
 // JSONValueConverter converts a JSON value into a C++ struct in a

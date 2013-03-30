@@ -5,7 +5,7 @@
 #include <algorithm>
 
 #include "base/logging.h"
-#include "base/string_piece.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/utf_offset_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

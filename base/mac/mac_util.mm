@@ -20,8 +20,8 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/memory/scoped_generic_obj.h"
 #include "base/memory/scoped_nsobject.h"
-#include "base/string_piece.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/sys_string_conversions.h"
 
 namespace base {

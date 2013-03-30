@@ -10,7 +10,7 @@
 
 #include "base/base_export.h"
 #include "base/compiler_specific.h"
-#include "base/string_piece.h"
+#include "base/strings/string_piece.h"
 
 namespace test_expectations {
 

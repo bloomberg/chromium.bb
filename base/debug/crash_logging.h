@@ -10,7 +10,7 @@
 
 #include "base/base_export.h"
 #include "base/basictypes.h"
-#include "base/string_piece.h"
+#include "base/strings/string_piece.h"
 
 // These functions add metadata to the upload payload when sending crash reports
 // to the crash server.

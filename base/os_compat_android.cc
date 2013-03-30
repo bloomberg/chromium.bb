@@ -10,8 +10,8 @@
 #include <time64.h>
 
 #include "base/rand_util.h"
-#include "base/string_piece.h"
 #include "base/stringprintf.h"
+#include "base/strings/string_piece.h"
 
 // There is no futimes() avaiable in Bionic, so we provide our own
 // implementation until it is there.

@@ -6,7 +6,7 @@
 
 #include <windows.h>
 
-#include "base/string_piece.h"
+#include "base/strings/string_piece.h"
 
 namespace base {
 

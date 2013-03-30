@@ -6,7 +6,7 @@
 #include "base/metrics/stats_table.h"
 #include "base/shared_memory.h"
 #include "base/stringprintf.h"
-#include "base/string_piece.h"
+#include "base/strings/string_piece.h"
 #include "base/test/multiprocess_test.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/simple_thread.h"
