@@ -5,7 +5,7 @@
 #include "webkit/blob/blob_data.h"
 
 #include "base/logging.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 

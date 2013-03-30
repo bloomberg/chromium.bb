@@ -6,13 +6,13 @@
 #include <string>
 
 #include "base/string16.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/scoped_process_information.h"
 #include "base/win/windows_version.h"
 #include "sandbox/win/src/sandbox.h"
-#include "sandbox/win/src/sandbox_policy.h"
 #include "sandbox/win/src/sandbox_factory.h"
+#include "sandbox/win/src/sandbox_policy.h"
 #include "sandbox/win/tests/common/controller.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

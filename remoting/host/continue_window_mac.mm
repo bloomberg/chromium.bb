@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/memory/scoped_nsobject.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "remoting/host/ui_strings.h"
 
 typedef remoting::ContinueWindow::ContinueSessionCallback

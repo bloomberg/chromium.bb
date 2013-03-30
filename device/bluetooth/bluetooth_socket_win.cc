@@ -8,7 +8,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "device/bluetooth/bluetooth_init_win.h"
 #include "device/bluetooth/bluetooth_service_record_win.h"
 #include "net/base/io_buffer.h"

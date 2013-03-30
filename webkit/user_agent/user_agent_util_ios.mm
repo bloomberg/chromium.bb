@@ -6,14 +6,14 @@
 
 #import <UIKit/UIKit.h>
 
-#include <string>
 #include <sys/sysctl.h>
+#include <string>
 
 #include "base/memory/scoped_nsobject.h"
-#include "base/stringprintf.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/sys_info.h"
-#include "base/sys_string_conversions.h"
 
 namespace {
 

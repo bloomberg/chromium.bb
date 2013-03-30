@@ -4,7 +4,7 @@
 
 #include "webkit/glue/webmenurunner_mac.h"
 
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 
 @interface WebMenuRunner (PrivateAPI)
 

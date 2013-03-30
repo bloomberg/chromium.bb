@@ -15,7 +15,7 @@
 #include "base/message_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/stringprintf.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/win/scoped_handle.h"
 #include "device/bluetooth/bluetooth_init_win.h"

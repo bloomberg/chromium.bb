@@ -11,7 +11,7 @@
 #include "base/files/file_util_proxy.h"
 #include "base/message_loop.h"
 #include "base/platform_file.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"

@@ -4,9 +4,9 @@
 
 #include <CoreFoundation/CoreFoundation.h>
 #include <IOKit/IOKitLib.h>
+#include <IOKit/network/IOEthernetController.h>
 #include <IOKit/network/IOEthernetInterface.h>
 #include <IOKit/network/IONetworkInterface.h>
-#include <IOKit/network/IOEthernetController.h>
 
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
@@ -14,7 +14,7 @@
 #include "base/mac/scoped_ioobject.h"
 #include "base/string16.h"
 #include "base/stringprintf.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 
 namespace rlz_lib {

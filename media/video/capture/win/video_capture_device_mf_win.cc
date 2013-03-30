@@ -9,8 +9,8 @@
 
 #include "base/lazy_instance.h"
 #include "base/memory/ref_counted.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/sys_string_conversions.h"
 #include "base/win/scoped_co_mem.h"
 #include "base/win/windows_version.h"
 #include "media/video/capture/win/capability_list_win.h"

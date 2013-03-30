@@ -9,7 +9,7 @@
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "base/platform_file.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/fileapi/async_file_test_helper.h"

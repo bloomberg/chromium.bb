@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/memory/singleton.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 
 // When writing crypto code for Mac OS X, you may find the following
 // documentation useful:

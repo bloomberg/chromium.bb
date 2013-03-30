@@ -9,7 +9,7 @@
 
 #include "base/mac/scoped_cftyperef.h"
 #include "base/string_util.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 
 namespace syncer {
 namespace internal {

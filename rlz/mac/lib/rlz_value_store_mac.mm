@@ -7,7 +7,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "rlz/lib/assert.h"
 #include "rlz/lib/lib_values.h"
 #include "rlz/lib/recursive_cross_process_lock_posix.h"

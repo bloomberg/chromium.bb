@@ -9,7 +9,7 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/timer.h"
 #include "remoting/base/constants.h"
 #include "remoting/base/util.h"

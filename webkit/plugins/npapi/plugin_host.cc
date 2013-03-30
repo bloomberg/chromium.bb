@@ -10,7 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string_piece.h"
 #include "base/string_util.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "net/base/net_util.h"

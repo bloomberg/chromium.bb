@@ -4,7 +4,7 @@
 
 #include "printing/print_settings_initializer_mac.h"
 
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "printing/print_settings.h"
 
 namespace printing {

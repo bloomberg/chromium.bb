@@ -15,7 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/stringprintf.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "components/autofill/browser/autofill_country.h"
 #include "components/autofill/browser/autofill_profile.h"
 #include "components/autofill/browser/phone_number.h"

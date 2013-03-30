@@ -8,7 +8,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/string_util.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "remoting/host/disconnect_window.h"
 #include "remoting/host/ui_strings.h"
 

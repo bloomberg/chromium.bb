@@ -8,7 +8,7 @@
 #include <list>
 
 #include "base/string_util.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/win/scoped_variant.h"
 #include "media/video/capture/win/video_capture_device_mf_win.h"
 

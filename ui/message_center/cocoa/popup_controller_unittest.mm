@@ -6,8 +6,8 @@
 
 #include "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
-#include "base/sys_string_conversions.h"
 #import "ui/base/test/ui_cocoa_test_helper.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_change_observer.h"

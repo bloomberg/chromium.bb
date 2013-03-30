@@ -6,7 +6,7 @@
 
 #import <UIKit/UIKit.h>
 
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 
 namespace syncer {
 namespace internal {

@@ -9,7 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/string_util.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebCString.h"

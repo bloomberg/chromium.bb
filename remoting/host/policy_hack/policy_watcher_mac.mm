@@ -11,7 +11,7 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
 
 namespace remoting {
