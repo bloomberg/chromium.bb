@@ -62,7 +62,7 @@ void DisplayPowerServiceProvider::SetDisplayPower(
 
     DisplayPowerState state = static_cast<DisplayPowerState>(int_state);
     ash::Shell::GetInstance()->output_configurator()->SetDisplayPower(
-        state, false);
+        state, OutputConfigurator::kSetDisplayPowerNoFlags);
   } else {
     LOG(ERROR) << "Unable to parse " << kSetDisplayPower << " request";
   }

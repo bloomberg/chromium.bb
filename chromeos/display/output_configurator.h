@@ -78,6 +78,14 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
         const std::vector<OutputInfo>& outputs) const = 0;
   };
 
+  // Flags that can be passed to SetDisplayPower().
+  static const int kSetDisplayPowerNoFlags                     = 0;
+  // Configure displays even if the passed-in state matches |power_state_|.
+  static const int kSetDisplayPowerForceProbe                  = 1 << 0;
+  // Do not change the state if multiple displays are connected or if the
+  // only connected display is external.
+  static const int kSetDisplayPowerOnlyIfSingleInternalDisplay = 1 << 1;
+
   OutputConfigurator();
   virtual ~OutputConfigurator();
 
@@ -108,9 +116,8 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
   // Called when powerd notifies us that some set of displays should be turned
   // on or off.  This requires enabling or disabling the CRTC associated with
   // the display(s) in question so that the low power state is engaged.
-  // If |force_probe| is true, the displays will be configured even if
-  // |power_state| matches |power_state_|.
-  bool SetDisplayPower(DisplayPowerState power_state, bool force_probe);
+  // |flags| contains bitwise-or-ed kSetDisplayPower* values.
+  bool SetDisplayPower(DisplayPowerState power_state, int flags);
 
   // Force switching the display mode to |new_state|. Returns false if
   // it was called in a single-head or headless mode.
