@@ -57,7 +57,6 @@
 #include "net/cookies/cookie_store.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/http/http_cache.h"
-#include "net/http/infinite_cache.h"
 #include "net/http/transport_security_state.h"
 #include "net/ssl/server_bound_cert_service.h"
 #include "net/ssl/server_bound_cert_store.h"
@@ -708,7 +707,7 @@ void BrowsingDataRemover::DoClearCache(int rv) {
       case STATE_DELETE_MAIN:
       case STATE_DELETE_MEDIA: {
         next_cache_state_ = (next_cache_state_ == STATE_DELETE_MAIN) ?
-                                STATE_CREATE_MEDIA : STATE_DELETE_EXPERIMENT;
+                                STATE_CREATE_MEDIA : STATE_DONE;
 
         // |cache_| can be null if it cannot be initialized.
         if (cache_) {
@@ -723,29 +722,6 @@ void BrowsingDataRemover::DoClearCache(int rv) {
                            base::Unretained(this)));
           }
           cache_ = NULL;
-        }
-        break;
-      }
-      case STATE_DELETE_EXPERIMENT: {
-        cache_ = NULL;
-        next_cache_state_ = STATE_DONE;
-
-        // Get a pointer to the experiment.
-        net::HttpTransactionFactory* factory =
-            main_context_getter_->GetURLRequestContext()->
-                http_transaction_factory();
-        net::InfiniteCache* infinite_cache =
-            factory->GetCache()->infinite_cache();
-
-        if (delete_begin_.is_null()) {
-          rv = infinite_cache->DeleteData(
-              base::Bind(&BrowsingDataRemover::DoClearCache,
-                         base::Unretained(this)));
-        } else {
-          rv = infinite_cache->DeleteDataBetween(
-              delete_begin_, delete_end_,
-              base::Bind(&BrowsingDataRemover::DoClearCache,
-                         base::Unretained(this)));
         }
         break;
       }

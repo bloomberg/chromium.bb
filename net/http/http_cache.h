@@ -33,7 +33,6 @@
 #include "net/base/request_priority.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_transaction_factory.h"
-#include "net/http/infinite_cache.h"
 
 class GURL;
 
@@ -188,9 +187,6 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory,
   // Initializes the Infinite Cache, if selected by the field trial.
   void InitializeInfiniteCache(const base::FilePath& path);
 
-  // Returns a pointer to the Infinite Cache.
-  InfiniteCache* infinite_cache() { return &infinite_cache_; }
-
   // HttpTransactionFactory implementation:
   virtual int CreateTransaction(RequestPriority priority,
                                 scoped_ptr<HttpTransaction>* trans,
@@ -217,7 +213,6 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory,
   class Transaction;
   class WorkItem;
   friend class Transaction;
-  friend class InfiniteCache;
   struct PendingOp;  // Info for an entry under construction.
 
   typedef std::list<Transaction*> TransactionList;
@@ -398,8 +393,6 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory,
   PendingOpsMap pending_ops_;
 
   scoped_ptr<PlaybackCacheMap> playback_cache_map_;
-
-  InfiniteCache infinite_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(HttpCache);
 };

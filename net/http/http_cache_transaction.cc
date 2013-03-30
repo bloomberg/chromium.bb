@@ -129,8 +129,7 @@ static bool HeaderMatches(const HttpRequestHeaders& headers,
 HttpCache::Transaction::Transaction(
     RequestPriority priority,
     HttpCache* cache,
-    HttpTransactionDelegate* transaction_delegate,
-    InfiniteCacheTransaction* infinite_cache_transaction)
+    HttpTransactionDelegate* transaction_delegate)
     : next_state_(STATE_NONE),
       request_(NULL),
       priority_(priority),
@@ -138,7 +137,6 @@ HttpCache::Transaction::Transaction(
       entry_(NULL),
       new_entry_(NULL),
       network_trans_(NULL),
-      infinite_cache_transaction_(infinite_cache_transaction),
       new_response_(NULL),
       mode_(NONE),
       target_state_(STATE_NONE),
@@ -236,9 +234,6 @@ bool HttpCache::Transaction::AddTruncatedFlag() {
   if (done_reading_)
     return true;
 
-  if (infinite_cache_transaction_.get())
-    infinite_cache_transaction_->OnTruncatedResponse();
-
   truncated_ = true;
   target_state_ = STATE_NONE;
   next_state_ = STATE_CACHE_WRITE_TRUNCATED_RESPONSE;
@@ -274,20 +269,6 @@ int HttpCache::Transaction::Start(const HttpRequestInfo* request,
     return ERR_UNEXPECTED;
 
   SetRequest(net_log, request);
-  if (infinite_cache_transaction_.get()) {
-    if ((effective_load_flags_ & LOAD_BYPASS_CACHE) ||
-        (effective_load_flags_ & LOAD_ONLY_FROM_CACHE) ||
-        (effective_load_flags_ & LOAD_DISABLE_CACHE) ||
-        (effective_load_flags_ & LOAD_VALIDATE_CACHE) ||
-        (effective_load_flags_ & LOAD_PREFERRING_CACHE) ||
-        partial_.get()) {
-      if (effective_load_flags_ & LOAD_PREFERRING_CACHE)
-        infinite_cache_transaction_->OnBackForwardNavigation();
-      infinite_cache_transaction_.reset();
-    } else {
-      infinite_cache_transaction_->OnRequestStart(request);
-    }
-  }
 
   // We have to wait until the backend is initialized so we start the SM.
   next_state_ = STATE_GET_BACKEND;
@@ -862,8 +843,6 @@ int HttpCache::Transaction::DoSendRequestComplete(int result) {
 int HttpCache::Transaction::DoSuccessfulSendRequest() {
   DCHECK(!new_response_);
   const HttpResponseInfo* new_response = network_trans_->GetResponseInfo();
-  if (infinite_cache_transaction_.get())
-    infinite_cache_transaction_->OnResponseReceived(new_response);
 
   if (new_response->headers->response_code() == 401 ||
       new_response->headers->response_code() == 407) {
@@ -946,9 +925,6 @@ int HttpCache::Transaction::DoNetworkReadComplete(int result) {
 
   if (!cache_)
     return ERR_UNEXPECTED;
-
-  if (infinite_cache_transaction_.get())
-    infinite_cache_transaction_->OnDataRead(read_buf_->data(), result);
 
   // If there is an error or we aren't saving the data, we are done; just wait
   // until the destructor runs to see if we can keep the data.
@@ -1507,9 +1483,6 @@ int HttpCache::Transaction::DoCacheQueryDataComplete(int result) {
 int HttpCache::Transaction::DoCacheReadData() {
   DCHECK(entry_);
   next_state_ = STATE_CACHE_READ_DATA_COMPLETE;
-
-  if (infinite_cache_transaction_.get())
-    infinite_cache_transaction_->OnServedFromCache(&response_);
 
   if (net_log_.IsLoggingAllEvents())
     net_log_.BeginEvent(NetLog::TYPE_HTTP_CACHE_READ_DATA);

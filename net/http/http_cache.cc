@@ -15,6 +15,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/file_util.h"
 #include "base/format_macros.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
@@ -25,6 +26,7 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "base/threading/worker_pool.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -37,6 +39,15 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
 #include "net/http/http_util.h"
+
+namespace {
+
+// Adaptor to delete a file on a worker thread.
+void DeletePath(base::FilePath path) {
+  file_util::Delete(path, false);
+}
+
+}  // namespace
 
 namespace net {
 
@@ -356,7 +367,7 @@ void HttpCache::WriteMetadata(const GURL& url,
   }
 
   HttpCache::Transaction* trans =
-      new HttpCache::Transaction(priority, this, NULL, NULL);
+      new HttpCache::Transaction(priority, this, NULL);
   MetadataWriter* writer = new MetadataWriter(trans);
 
   // The writer will self destruct when done.
@@ -394,8 +405,7 @@ void HttpCache::OnExternalCacheHit(const GURL& url,
 void HttpCache::InitializeInfiniteCache(const base::FilePath& path) {
   if (base::FieldTrialList::FindFullName("InfiniteCache") != "Yes")
     return;
-  // To be enabled after everything is fully wired.
-  infinite_cache_.Init(path);
+  base::WorkerPool::PostTask(FROM_HERE, base::Bind(&DeletePath, path), true);
 }
 
 int HttpCache::CreateTransaction(RequestPriority priority,
@@ -407,10 +417,7 @@ int HttpCache::CreateTransaction(RequestPriority priority,
     CreateBackend(NULL, net::CompletionCallback());
   }
 
-  InfiniteCacheTransaction* infinite_cache_transaction =
-      infinite_cache_.CreateInfiniteCacheTransaction();
-  trans->reset(new HttpCache::Transaction(priority, this, delegate,
-                                          infinite_cache_transaction));
+  trans->reset(new HttpCache::Transaction(priority, this, delegate));
   return OK;
 }
 
