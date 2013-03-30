@@ -110,7 +110,7 @@ body {
 
 /* An X button to blacklist a tile or hide the notification. */
 .mv-x {
-  background: transparent url(images/close_bar.png);
+  background: transparent url(images/close_2.png);
   border: none;
   cursor: default;
   height: 16px;
@@ -118,11 +118,11 @@ body {
 }
 
 .mv-x:hover {
-  background: transparent url(images/close_bar_hover.png);
+  background: transparent url(images/close_2_hover.png);
 }
 
 .mv-x:active {
-  background: transparent url(images/close_bar_active.png);
+  background: transparent url(images/close_2_active.png);
 }
 
 .mv-page .mv-x {
