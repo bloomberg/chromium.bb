@@ -31,10 +31,10 @@ static const gfx::Size kNaturalSize(320, 240);
 class VideoFrameStreamTest : public testing::TestWithParam<bool> {
  public:
   VideoFrameStreamTest()
-      : video_frame_stream_(
-          message_loop_.message_loop_proxy(),
-          base::Bind(&VideoFrameStreamTest::SetDecryptorReadyCallback,
-                     base::Unretained(this))),
+      : video_frame_stream_(new VideoFrameStream(
+            message_loop_.message_loop_proxy(),
+            base::Bind(&VideoFrameStreamTest::SetDecryptorReadyCallback,
+                       base::Unretained(this)))),
         video_config_(kCodecVP8, VIDEO_CODEC_PROFILE_UNKNOWN, kVideoFormat,
                       kCodedSize, kVisibleRect, kNaturalSize, NULL, 0,
                       GetParam()),
@@ -48,6 +48,9 @@ class VideoFrameStreamTest : public testing::TestWithParam<bool> {
         .WillRepeatedly(Return(DemuxerStream::VIDEO));
     EXPECT_CALL(*demuxer_stream_, video_decoder_config())
         .WillRepeatedly(ReturnRef(video_config_));
+    EXPECT_CALL(*demuxer_stream_, Read(_))
+        .WillRepeatedly(RunCallback<0>(DemuxerStream::kOk,
+                                       scoped_refptr<DecoderBuffer>()));
 
     EXPECT_CALL(*this, SetDecryptorReadyCallback(_))
         .WillRepeatedly(RunCallback<0>(decryptor_.get()));
@@ -83,7 +86,7 @@ class VideoFrameStreamTest : public testing::TestWithParam<bool> {
   void EnterPendingInitializationState() {
     EXPECT_CALL(*decoder_, Initialize(_, _, _))
         .WillOnce(SaveArg<1>(&decoder_init_cb_));
-    video_frame_stream_.Initialize(
+    video_frame_stream_->Initialize(
         demuxer_stream_,
         decoders_,
         base::Bind(&VideoFrameStreamTest::OnStatistics, base::Unretained(this)),
@@ -104,8 +107,8 @@ class VideoFrameStreamTest : public testing::TestWithParam<bool> {
     EXPECT_CALL(*decoder_, Read(_))
         .WillOnce(SaveArg<0>(&decoder_read_cb_));
     EXPECT_CALL(*this, OnFrameRead(VideoDecoder::kOk, _));
-    video_frame_stream_.ReadFrame(base::Bind(&VideoFrameStreamTest::OnFrameRead,
-                                             base::Unretained(this)));
+    video_frame_stream_->ReadFrame(base::Bind(
+        &VideoFrameStreamTest::OnFrameRead, base::Unretained(this)));
     message_loop_.RunUntilIdle();
   }
 
@@ -119,8 +122,8 @@ class VideoFrameStreamTest : public testing::TestWithParam<bool> {
     EXPECT_CALL(*decoder_, Reset(_))
         .WillOnce(SaveArg<0>(&decoder_reset_cb_));
     EXPECT_CALL(*this, OnReset());
-    video_frame_stream_.Reset(base::Bind(&VideoFrameStreamTest::OnReset,
-                                         base::Unretained(this)));
+    video_frame_stream_->Reset(base::Bind(&VideoFrameStreamTest::OnReset,
+                                          base::Unretained(this)));
     message_loop_.RunUntilIdle();
   }
 
@@ -137,8 +140,8 @@ class VideoFrameStreamTest : public testing::TestWithParam<bool> {
         .WillRepeatedly(SaveArg<0>(&decoder_stop_cb_));
     EXPECT_CALL(*this, OnStopped())
         .WillOnce(Assign(&is_initialized_, false));
-    video_frame_stream_.Stop(base::Bind(&VideoFrameStreamTest::OnStopped,
-                                        base::Unretained(this)));
+    video_frame_stream_->Stop(base::Bind(&VideoFrameStreamTest::OnStopped,
+                                         base::Unretained(this)));
     message_loop_.RunUntilIdle();
   }
 
@@ -179,7 +182,7 @@ class VideoFrameStreamTest : public testing::TestWithParam<bool> {
  private:
   MessageLoop message_loop_;
 
-  VideoFrameStream video_frame_stream_;
+  scoped_refptr<VideoFrameStream> video_frame_stream_;
   VideoDecoderConfig video_config_;
   scoped_refptr<StrictMock<MockDemuxerStream> > demuxer_stream_;
   // Use NiceMock since we don't care about most of calls on the decryptor, e.g.

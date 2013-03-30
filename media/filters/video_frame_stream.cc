@@ -42,6 +42,7 @@ void VideoFrameStream::Initialize(const scoped_refptr<DemuxerStream>& stream,
   DCHECK(init_cb_.is_null());
   DCHECK(!init_cb.is_null());
   init_cb_ = init_cb;
+  stream_ = stream;
 
   scoped_ptr<VideoDecoderSelector> decoder_selector(
       new VideoDecoderSelector(message_loop_,
@@ -53,7 +54,7 @@ void VideoFrameStream::Initialize(const scoped_refptr<DemuxerStream>& stream,
   VideoDecoderSelector* decoder_selector_ptr = decoder_selector.get();
 
   decoder_selector_ptr->SelectVideoDecoder(
-      stream,
+      this,
       statistics_cb,
       base::Bind(&VideoFrameStream::OnDecoderSelected, weak_this_,
                  base::Passed(&decoder_selector)));
@@ -122,11 +123,44 @@ void VideoFrameStream::Stop(const base::Closure& closure) {
   }
 
   state_ = STOPPED;
+  // Break the ref-count loop so we don't leak objects.
+  // TODO(scherkus): Make DemuxerStream and/or VideoDecoder not ref-counted so
+  // we don't need this here. See: http://crbug.com/173313
+  stream_ = NULL;
+  decrypting_demuxer_stream_ = NULL;
+  decoder_ = NULL;
   message_loop_->PostTask(FROM_HERE, base::ResetAndReturn(&stop_cb_));
 }
 
 bool VideoFrameStream::HasOutputFrameAvailable() const {
+  DCHECK(message_loop_->BelongsToCurrentThread());
   return decoder_->HasOutputFrameAvailable();
+}
+
+void VideoFrameStream::Read(const ReadCB& read_cb) {
+  DCHECK(message_loop_->BelongsToCurrentThread());
+  stream_->Read(read_cb);
+}
+
+const AudioDecoderConfig& VideoFrameStream::audio_decoder_config() {
+  DCHECK(message_loop_->BelongsToCurrentThread());
+  LOG(FATAL) << "Method audio_decoder_config() called on VideoFrameStream";
+  return stream_->audio_decoder_config();
+}
+
+const VideoDecoderConfig& VideoFrameStream::video_decoder_config() {
+  DCHECK(message_loop_->BelongsToCurrentThread());
+  return stream_->video_decoder_config();
+}
+
+DemuxerStream::Type VideoFrameStream::type() {
+  DCHECK(message_loop_->BelongsToCurrentThread());
+  return VIDEO;
+}
+
+void VideoFrameStream::EnableBitstreamConverter() {
+  DCHECK(message_loop_->BelongsToCurrentThread());
+  stream_->EnableBitstreamConverter();
 }
 
 void VideoFrameStream::OnDecoderSelected(
@@ -200,6 +234,12 @@ void VideoFrameStream::OnDecoderStopped() {
   DCHECK(!stop_cb_.is_null());
 
   state_ = STOPPED;
+  // Break the ref-count loop so we don't leak objects.
+  // TODO(scherkus): Make DemuxerStream and/or VideoDecoder not ref-counted so
+  // we don't need this here. See: http://crbug.com/173313
+  stream_ = NULL;
+  decrypting_demuxer_stream_ = NULL;
+  decoder_ = NULL;
   base::ResetAndReturn(&stop_cb_).Run();
 }
 

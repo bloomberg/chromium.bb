@@ -9,9 +9,11 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "media/base/decryptor.h"
+#include "media/base/demuxer_stream.h"
 #include "media/base/media_export.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/video_decoder.h"
@@ -23,12 +25,11 @@ class MessageLoopProxy;
 namespace media {
 
 class DecryptingDemuxerStream;
-class DemuxerStream;
 class VideoDecoderSelector;
 
 // Wraps a DemuxerStream and a list of VideoDecoders and provides decoded
 // VideoFrames to its client (e.g. VideoRendererBase).
-class MEDIA_EXPORT VideoFrameStream {
+class MEDIA_EXPORT VideoFrameStream : public DemuxerStream {
  public:
   typedef std::list<scoped_refptr<VideoDecoder> > VideoDecoderList;
 
@@ -37,8 +38,6 @@ class MEDIA_EXPORT VideoFrameStream {
 
   VideoFrameStream(const scoped_refptr<base::MessageLoopProxy>& message_loop,
                    const SetDecryptorReadyCB& set_decryptor_ready_cb);
-
-  ~VideoFrameStream();
 
   // Initializes the VideoFrameStream and returns the initialization result
   // through |init_cb|. Note that |init_cb| is always called asynchronously.
@@ -70,6 +69,16 @@ class MEDIA_EXPORT VideoFrameStream {
   // Returns true if the decoder currently has the ability to decode and return
   // a VideoFrame.
   bool HasOutputFrameAvailable() const;
+
+  // DemuxerStream implementation.
+  virtual void Read(const ReadCB& read_cb) OVERRIDE;
+  virtual const AudioDecoderConfig& audio_decoder_config() OVERRIDE;
+  virtual const VideoDecoderConfig& video_decoder_config() OVERRIDE;
+  virtual Type type() OVERRIDE;
+  virtual void EnableBitstreamConverter() OVERRIDE;
+
+ protected:
+  virtual ~VideoFrameStream();
 
  private:
   enum State {
@@ -110,6 +119,8 @@ class MEDIA_EXPORT VideoFrameStream {
   base::Closure stop_cb_;
 
   SetDecryptorReadyCB set_decryptor_ready_cb_;
+
+  scoped_refptr<DemuxerStream> stream_;
 
   // These two will be set by VideoDecoderSelector::SelectVideoDecoder().
   scoped_refptr<VideoDecoder> decoder_;
