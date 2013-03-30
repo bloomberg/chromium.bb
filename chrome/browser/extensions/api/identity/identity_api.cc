@@ -6,6 +6,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/values.h"
+#include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -27,6 +28,10 @@
 #include "content/public/common/page_transition_types.h"
 #include "googleurl/src/gurl.h"
 #include "ui/base/window_open_disposition.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/user_manager.h"
+#endif
 
 namespace extensions {
 
@@ -189,15 +194,28 @@ OAuth2MintTokenFlow* IdentityGetAuthTokenFunction::CreateMintTokenFlow(
     OAuth2MintTokenFlow::Mode mode) {
   const OAuth2Info& oauth2_info = OAuth2Info::GetOAuth2Info(GetExtension());
   TokenService* token_service = TokenServiceFactory::GetForProfile(profile());
-  return new OAuth2MintTokenFlow(
-      profile()->GetRequestContext(),
-      this,
-      OAuth2MintTokenFlow::Parameters(
-          token_service->GetOAuth2LoginRefreshToken(),
-          GetExtension()->id(),
-          oauth2_info.client_id,
-          oauth2_info.scopes,
-          mode));
+  OAuth2MintTokenFlow* mint_token_flow =
+      new OAuth2MintTokenFlow(
+          profile()->GetRequestContext(),
+          this,
+          OAuth2MintTokenFlow::Parameters(
+              token_service->GetOAuth2LoginRefreshToken(),
+              GetExtension()->id(),
+              oauth2_info.client_id,
+              oauth2_info.scopes,
+              mode));
+#if defined(OS_CHROMEOS)
+  if (chrome::IsRunningInForcedAppMode()) {
+    std::string chrome_client_id;
+    std::string chrome_client_secret;
+    if (chromeos::UserManager::Get()->GetAppModeChromeClientOAuthInfo(
+           &chrome_client_id, &chrome_client_secret)) {
+      mint_token_flow->SetChromeOAuthClientInfo(chrome_client_id,
+                                                chrome_client_secret);
+    }
+  }
+#endif
+  return mint_token_flow;
 }
 
 bool IdentityGetAuthTokenFunction::HasLoginToken() const {

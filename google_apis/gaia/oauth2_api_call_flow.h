@@ -50,6 +50,11 @@ class OAuth2ApiCallFlow
   // Start the flow.
   virtual void Start();
 
+#if defined(OS_CHROMEOS)
+  void SetChromeOAuthClientInfo(const std::string& chrome_client_id,
+                                const std::string& chrome_client_secret);
+#endif
+
   // OAuth2AccessTokenFetcher implementation.
   virtual void OnGetTokenSuccess(const std::string& access_token,
                                  const base::Time& expiration_time) OVERRIDE;
@@ -112,6 +117,10 @@ class OAuth2ApiCallFlow
   std::string refresh_token_;
   std::string access_token_;
   std::vector<std::string> scopes_;
+
+  // Override values for the main chrome client id and secret.
+  std::string chrome_client_id_;
+  std::string chrome_client_secret_;
 
   State state_;
   // Whether we have already tried minting an access token once.

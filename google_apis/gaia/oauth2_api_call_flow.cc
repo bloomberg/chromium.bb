@@ -41,6 +41,9 @@ OAuth2ApiCallFlow::OAuth2ApiCallFlow(
       refresh_token_(refresh_token),
       access_token_(access_token),
       scopes_(scopes),
+      chrome_client_id_(GaiaUrls::GetInstance()->oauth2_chrome_client_id()),
+      chrome_client_secret_(
+          GaiaUrls::GetInstance()->oauth2_chrome_client_secret()),
       state_(INITIAL),
       tried_mint_access_token_(false) {
 }
@@ -50,6 +53,15 @@ OAuth2ApiCallFlow::~OAuth2ApiCallFlow() {}
 void OAuth2ApiCallFlow::Start() {
   BeginApiCall();
 }
+
+#if defined(OS_CHROMEOS)
+void OAuth2ApiCallFlow::SetChromeOAuthClientInfo(
+    const std::string& chrome_client_id,
+    const std::string& chrome_client_secret) {
+  chrome_client_id_ = chrome_client_id;
+  chrome_client_secret_ = chrome_client_secret;
+}
+#endif
 
 void OAuth2ApiCallFlow::BeginApiCall() {
   CHECK(state_ == INITIAL || state_ == MINT_ACCESS_TOKEN_DONE);
@@ -106,8 +118,8 @@ void OAuth2ApiCallFlow::BeginMintAccessToken() {
 
   oauth2_access_token_fetcher_.reset(CreateAccessTokenFetcher());
   oauth2_access_token_fetcher_->Start(
-      GaiaUrls::GetInstance()->oauth2_chrome_client_id(),
-      GaiaUrls::GetInstance()->oauth2_chrome_client_secret(),
+      chrome_client_id_,
+      chrome_client_secret_,
       refresh_token_,
       scopes_);
 }

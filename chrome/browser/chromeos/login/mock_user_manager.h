@@ -82,6 +82,11 @@ class MockUserManager : public UserManager {
       void(const std::string&));
   MOCK_METHOD0(CommitLocallyManagedUserCreationTransaction, void(void));
 
+  MOCK_METHOD2(GetAppModeChromeClientOAuthInfo, bool(std::string*,
+                                                     std::string*));
+  MOCK_METHOD2(SetAppModeChromeClientOAuthInfo, void(const std::string&,
+                                                     const std::string&));
+
   // You can't mock this function easily because nobody can create User objects
   // but the UserManagerImpl and us.
   virtual const User* GetLoggedInUser() const OVERRIDE;

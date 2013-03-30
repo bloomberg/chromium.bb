@@ -23,6 +23,7 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cert_library.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
@@ -1253,6 +1254,29 @@ void UserManagerImpl::ResetUserFlow(const std::string& email) {
     delete it->second;
     specific_flows_.erase(it);
   }
+}
+
+bool UserManagerImpl::GetAppModeChromeClientOAuthInfo(
+    std::string* chrome_client_id, std::string* chrome_client_secret) {
+  if (!chrome::IsRunningInForcedAppMode() ||
+      chrome_client_id_.empty() ||
+      chrome_client_secret_.empty()) {
+    return false;
+  }
+
+  *chrome_client_id = chrome_client_id_;
+  *chrome_client_secret = chrome_client_secret_;
+  return true;
+}
+
+void UserManagerImpl::SetAppModeChromeClientOAuthInfo(
+    const std::string& chrome_client_id,
+    const std::string& chrome_client_secret) {
+  if (!chrome::IsRunningInForcedAppMode())
+    return;
+
+  chrome_client_id_ = chrome_client_id;
+  chrome_client_secret_ = chrome_client_secret;
 }
 
 UserFlow* UserManagerImpl::GetDefaultUserFlow() const {

@@ -15,7 +15,6 @@
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
-#include "chrome/common/chrome_switches.h"
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -230,7 +229,8 @@ void KioskAppLauncher::RemoveCallback(bool success,
 
 void KioskAppLauncher::OnProfilePrepared(Profile* profile) {
   // StartupAppLauncher deletes itself when done.
-  (new chromeos::StartupAppLauncher(profile, app_id_))->Start();
+  (new chromeos::StartupAppLauncher(profile, app_id_))->Start(
+      chromeos::StartupAppLauncher::LAUNCH_ON_SESSION_START);
 
   if (BaseLoginDisplayHost::default_host())
     BaseLoginDisplayHost::default_host()->OnSessionStart();

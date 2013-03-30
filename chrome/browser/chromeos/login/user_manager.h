@@ -288,6 +288,15 @@ class UserManager {
   // Resets user flow fo user idenitified by |email|.
   virtual void ResetUserFlow(const std::string& email) = 0;
 
+  // Gets/sets chrome oauth client id and secret for kiosk app mode. The default
+  // values can be overriden with kiosk auth file.
+  virtual bool GetAppModeChromeClientOAuthInfo(
+      std::string* chrome_client_id,
+      std::string* chrome_client_secret) = 0;
+  virtual void SetAppModeChromeClientOAuthInfo(
+      const std::string& chrome_client_id,
+      const std::string& chrome_client_secret) = 0;
+
   virtual void AddObserver(Observer* obs) = 0;
   virtual void RemoveObserver(Observer* obs) = 0;
 

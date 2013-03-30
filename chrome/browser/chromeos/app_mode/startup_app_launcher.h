@@ -12,6 +12,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/timer.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "net/base/network_change_notifier.h"
 #include "ui/base/events/event_handler.h"
 
@@ -34,14 +36,29 @@ namespace chromeos {
 // If anything goes wrong, it exits app mode and goes back to login screen.
 class StartupAppLauncher
     : public base::SupportsWeakPtr<StartupAppLauncher>,
+      public content::NotificationObserver,
       public net::NetworkChangeNotifier::NetworkChangeObserver,
       public ui::EventHandler {
  public:
+  enum LaunchType {
+    LAUNCH_ON_RESTART,
+    LAUNCH_ON_SESSION_START,
+  };
+
   StartupAppLauncher(Profile* profile, const std::string& app_id);
 
-  void Start();
+  // Starts app launcher. If |skip_auth_setup| is set, we will skip
+  // TokenService initialization.
+  void Start(LaunchType launch_type);
 
  private:
+  // OAuth parameters from /home/chronos/kiosk_auth file.
+  struct KioskOAuthParams {
+    std::string refresh_token;
+    std::string client_id;
+    std::string client_secret;
+  };
+
   // Private dtor because this class manages its own lifetime.
   virtual ~StartupAppLauncher();
 
@@ -54,7 +71,19 @@ class StartupAppLauncher
   void BeginInstall();
   void InstallCallback(bool success, const std::string& error);
 
+  void InitializeTokenService();
+  void InitializeNetwork();
+
   void OnNetworkWaitTimedout();
+
+  void StartLoadingOAuthFile();
+  static void LoadOAuthFileOnBlockingPool(KioskOAuthParams* auth_params);
+  void OnOAuthFileLoaded(KioskOAuthParams* auth_params);
+
+  // content::NotificationObserver overrides.
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // net::NetworkChangeNotifier::NetworkChangeObserver overrides:
   virtual void OnNetworkChanged(
@@ -69,8 +98,10 @@ class StartupAppLauncher
   int64 launch_splash_start_time_;
 
   scoped_refptr<extensions::WebstoreStandaloneInstaller> installer_;
-
+  content::NotificationRegistrar registrar_;
   base::OneShotTimer<StartupAppLauncher> network_wait_timer_;
+  KioskOAuthParams auth_params_;
+  LaunchType launch_type_;
 
   DISALLOW_COPY_AND_ASSIGN(StartupAppLauncher);
 };
