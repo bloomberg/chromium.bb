@@ -8,6 +8,8 @@
  * provides access to gamepad devices.
  */
 
+[generate_thunk]
+
 label Chrome {
   M19 = 1.0
 };
@@ -83,7 +85,7 @@ struct PP_GamepadsSampleData {
  * The <code>PPB_Gamepad</code> interface allows retrieving data from
  * gamepad/joystick devices that are connected to the system.
  */
-[version=1.0, macro="PPB_GAMEPAD_INTERFACE"]
+[version=1.0, macro="PPB_GAMEPAD_INTERFACE", singleton_resource]
 interface PPB_Gamepad {
   /**
    * Samples the current state of the connected gamepads.
@@ -91,5 +93,4 @@ interface PPB_Gamepad {
   void Sample(
       [in] PP_Instance instance,
       [out] PP_GamepadsSampleData data);
-
 };

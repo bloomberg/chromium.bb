@@ -35,6 +35,7 @@ class ThunkBodyMetadata(object):
   """Metadata about thunk body. Used for selecting which headers to emit."""
   def __init__(self):
     self._apis = set()
+    self._builtin_includes = set()
     self._includes = set()
 
   def AddApi(self, api):
@@ -48,6 +49,12 @@ class ThunkBodyMetadata(object):
 
   def Includes(self):
     return self._includes
+
+  def AddBuiltinInclude(self, include):
+    self._builtin_includes.add(include)
+
+  def BuiltinIncludes(self):
+    return self._builtin_includes
 
 
 def _GetBaseFileName(filenode):
@@ -83,32 +90,39 @@ def _GetThunkFileName(filenode, relpath):
   return name
 
 
+def _AddApiHeader(filenode, meta):
+  """Adds an API header for the given file to the ThunkBodyMetadata."""
+  # The API header matches the file name, not the interface name.
+  api_basename = _GetBaseFileName(filenode)
+  if api_basename.endswith('_dev'):
+    api_basename = api_basename[:-len('_dev')]
+  if api_basename.endswith('_trusted'):
+    api_basename = api_basename[:-len('_trusted')]
+  meta.AddApi(api_basename + '_api')
+
+
 def _MakeEnterLine(filenode, interface, arg, handle_errors, callback, meta):
   """Returns an EnterInstance/EnterResource string for a function."""
+  api_name = interface.GetName()
+  if api_name.endswith('Trusted'):
+    api_name = api_name[:-len('Trusted')]
+  if api_name.endswith('_Dev'):
+    api_name = api_name[:-len('_Dev')]
+  api_name += '_API'
+
   if arg[0] == 'PP_Instance':
     if callback is None:
-      return 'EnterInstance enter(%s);' % arg[1]
+      arg_string = arg[1]
     else:
-      return 'EnterInstance enter(%s, %s);' % (arg[1], callback)
+      arg_string = '%s, %s' % (arg[1], callback)
+    if interface.GetProperty('singleton_resource'):
+      _AddApiHeader(filenode, meta)
+      return 'EnterInstanceAPI<%s> enter(%s);' % (api_name, arg_string)
+    else:
+      return 'EnterInstance enter(%s);' % arg_string
   elif arg[0] == 'PP_Resource':
-    api_name = interface.GetName()
-    if api_name.endswith('Trusted'):
-      api_name = api_name[:-len('Trusted')]
-    if api_name.endswith('_Dev'):
-      api_name = api_name[:-len('_Dev')]
-    api_name += '_API'
-
     enter_type = 'EnterResource<%s>' % api_name
-    # The API header matches the file name, not the interface name.
-    api_basename = _GetBaseFileName(filenode)
-    if api_basename.endswith('_dev'):
-      # Clip off _dev suffix.
-      api_basename = api_basename[:-len('_dev')]
-    if api_basename.endswith('_trusted'):
-      # Clip off _trusted suffix.
-      api_basename = api_basename[:-len('_trusted')]
-    meta.AddApi(api_basename + '_api')
-
+    _AddApiHeader(filenode, meta)
     if callback is None:
       return '%s enter(%s, %s);' % (enter_type, arg[1],
                                     str(handle_errors).lower())
@@ -240,10 +254,33 @@ def _MakeNormalMemberBody(filenode, release, node, member, rtype, args,
     body += '  return %s;\n' % value
     body += 'return enter.SetResult(%s);' % invocation
   elif rtype == 'void':
+    # On failure, zero out all output parameters.
+    out_params = []
+    callnode = member.GetOneOf('Callspec')
+    if callnode:
+      cgen = CGen()
+      for param in callnode.GetListOf('Param'):
+        mode = cgen.GetParamMode(param)
+        if mode == 'out':
+          # We use the 'store' mode when getting the parameter type, since we
+          # need to call sizeof() for memset().
+          ptype, pname, _, _ = cgen.GetComponents(param, release, 'store')
+          out_params.append((pname, ptype))
+
     body = '%s\n' % _MakeEnterLine(filenode, node, args[0], handle_errors,
                                    None, meta)
-    body += 'if (enter.succeeded())\n'
-    body += '  %s;' % invocation
+    if not out_params:
+      body += 'if (enter.succeeded())\n'
+      body += '  %s;' % invocation
+    else:
+      body += 'if (enter.succeeded()) {\n'
+      body += '  %s;\n' % invocation
+      body += '  return;\n'
+      body += '}'
+      for param in out_params:
+        body += '\nmemset(%s, 0, sizeof(%s));' % param
+      meta.AddBuiltinInclude('string.h')
+
   else:
     value = member.GetProperty('on_failure')
     if value is None:
@@ -360,6 +397,10 @@ class TGen(GeneratorByFile):
     else:
       out.Write('// %s,\n//   %s\n\n' % (from_text, modified_text))
 
+    if meta.BuiltinIncludes():
+      for include in sorted(meta.BuiltinIncludes()):
+        out.Write('#include <%s>\n' % include)
+      out.Write('\n')
 
     # TODO(teravest): Don't emit includes we don't need.
     includes = ['ppapi/c/pp_errors.h',
