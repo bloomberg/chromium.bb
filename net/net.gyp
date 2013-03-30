@@ -1399,6 +1399,7 @@
         'base/mime_util_unittest.cc',
         'base/mock_filter_context.cc',
         'base/mock_filter_context.h',
+        'base/net_log_unittest.cc',
         'base/net_log_unittest.h',
         'base/net_util_unittest.cc',
         'base/network_change_notifier_win_unittest.cc',

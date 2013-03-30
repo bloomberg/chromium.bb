@@ -171,7 +171,7 @@ TEST(ChromeNetLogTest, NetLogAddRemoveObserver) {
   AddEvent(&net_log);
   EXPECT_EQ(0, observer.count());
   EXPECT_EQ(NULL, observer.net_log());
-  EXPECT_EQ(net::NetLog::LOG_BASIC, net_log.GetLogLevel());
+  EXPECT_EQ(net::NetLog::LOG_NONE, net_log.GetLogLevel());
 
   // Add the observer and add an event.
   net_log.AddThreadSafeObserver(&observer, net::NetLog::LOG_BASIC);
@@ -194,7 +194,7 @@ TEST(ChromeNetLogTest, NetLogAddRemoveObserver) {
   // Remove observer and add an event.
   net_log.RemoveThreadSafeObserver(&observer);
   EXPECT_EQ(NULL, observer.net_log());
-  EXPECT_EQ(net::NetLog::LOG_BASIC, net_log.GetLogLevel());
+  EXPECT_EQ(net::NetLog::LOG_NONE, net_log.GetLogLevel());
 
   AddEvent(&net_log);
   EXPECT_EQ(2, observer.count());
@@ -250,7 +250,7 @@ TEST(ChromeNetLogTest, NetLogTwoObservers) {
   net_log.RemoveThreadSafeObserver(&observer[0]);
   EXPECT_EQ(NULL, observer[0].net_log());
   EXPECT_EQ(NULL, observer[1].net_log());
-  EXPECT_EQ(net::NetLog::LOG_BASIC, net_log.GetLogLevel());
+  EXPECT_EQ(net::NetLog::LOG_NONE, net_log.GetLogLevel());
 
   // Add event and make sure neither observer gets it.
   AddEvent(&net_log);

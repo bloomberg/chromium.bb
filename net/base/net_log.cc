@@ -322,8 +322,11 @@ void NetLog::AddEntry(EventType type,
                       const Source& source,
                       EventPhase phase,
                       const NetLog::ParametersCallback* parameters_callback) {
+  LogLevel log_level = GetLogLevel();
+  if (log_level == LOG_NONE)
+    return;
   Entry entry(type, source, phase, base::TimeTicks::Now(),
-              parameters_callback, GetLogLevel());
+              parameters_callback, log_level);
   OnAddEntry(entry);
 }
 

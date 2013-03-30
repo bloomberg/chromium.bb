@@ -60,6 +60,10 @@ class NET_EXPORT NetLog {
   };
 
   // Specifies the granularity of events that should be emitted to the log.
+  //
+  // Since the LogLevel may be read and set on any thread without locking, it
+  // may be possible for an Observer to receive an event or parameters that
+  // normally wouldn't be logged at the currently active log level.
   enum LogLevel {
     // Log everything possible, even if it is slow and memory expensive.
     // Includes logging of transferred bytes.
@@ -69,8 +73,12 @@ class NET_EXPORT NetLog {
     // parameters for bytes sent/received events.
     LOG_ALL_BUT_BYTES,
 
-    // Only log events which are cheap, and don't consume much memory.
+    // Only log events which are cheap, and don't consume much memory.  This is
+    // the default value for observers.
     LOG_BASIC,
+
+    // Don't log any events.
+    LOG_NONE,
   };
 
   // A callback function that return a Value representation of the parameters

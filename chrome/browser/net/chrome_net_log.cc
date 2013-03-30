@@ -18,8 +18,8 @@
 
 ChromeNetLog::ChromeNetLog()
     : last_id_(0),
-      base_log_level_(LOG_BASIC),
-      effective_log_level_(LOG_BASIC),
+      base_log_level_(LOG_NONE),
+      effective_log_level_(LOG_NONE),
       net_log_temp_file_(new NetLogTempFile(this)) {
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   // Adjust base log level based on command line switch, if present.
@@ -31,7 +31,7 @@ ChromeNetLog::ChromeNetLog()
     int command_line_log_level;
     if (base::StringToInt(log_level_string, &command_line_log_level) &&
         command_line_log_level >= LOG_ALL &&
-        command_line_log_level <= LOG_BASIC) {
+        command_line_log_level <= LOG_NONE) {
       base_log_level_ = static_cast<LogLevel>(command_line_log_level);
     }
   }
