@@ -874,48 +874,54 @@
 
   <interface name="wl_surface" version="2">
     <description summary="an onscreen surface">
-      A surface.  This is an image that is displayed on the screen.
+      A surface is a rectangular area that is displayed on the screen.
       It has a location, size and pixel contents.
+
+      Surfaces are also used for some special purposes, e.g. as
+      cursor images for pointers, drag icons, etc.
     </description>
 
     <request name="destroy" type="destructor">
       <description summary="delete surface">
-	Deletes the surface and invalidates its object id.
+	Deletes the surface and invalidates its object ID.
       </description>
     </request>
 
     <request name="attach">
       <description summary="set the surface contents">
-	Set the contents of a buffer into this surface. The x and y
-	arguments specify the location of the new pending buffer's upper
-	left corner, relative to the current buffer's upper left corner. In
-	other words, the x and y, and the width and height of the wl_buffer
-	together define in which directions the surface's size changes.
+	Set a buffer as the content of this surface.
+
+	The x and y arguments specify the location of the new pending
+	buffer's upper left corner, relative to the current buffer's
+	upper left corner. In other words, the x and y, and the width
+	and height of the wl_buffer together define in which directions
+	the surface's size changes.
 
 	Surface contents are double-buffered state, see wl_surface.commit.
 
 	The initial surface contents are void; there is no content.
-	wl_surface.attach assigns the given wl_buffer as the pending wl_buffer.
-	wl_surface.commit makes the pending wl_buffer the new
+	wl_surface.attach assigns the given wl_buffer as the pending
+	wl_buffer. wl_surface.commit makes the pending wl_buffer the new
 	surface contents, and the size of the surface becomes the size of
-	the wl_buffer. After commit, there is no pending buffer until the
-	next attach.
+	the wl_buffer, as described above. After commit, there is no
+	pending buffer until the next attach.
 
 	Committing a pending wl_buffer allows the compositor to read the
-	pixels in the wl_buffer. The compositor may access the pixels at any
-	time after the wl_surface.commit request. When the compositor will
-	not access the pixels anymore, it will send the wl_buffer.release
-	event. Only after receiving wl_buffer.release, the client may re-use
-	the wl_buffer. A wl_buffer, that has been attached and then replaced
-	by another attach instead of committed, will not receive a release
-	event, and is not used by the compositor.
+	pixels in the wl_buffer. The compositor may access the pixels at
+	any time after the wl_surface.commit request. When the compositor
+	will not access the pixels anymore, it will send the
+	wl_buffer.release event. Only after receiving wl_buffer.release,
+	the client may re-use the wl_buffer. A wl_buffer that has been
+	attached and then replaced by another attach instead of committed
+	will not receive a release event, and is not used by the
+	compositor.
 
-	Destroying the wl_buffer after wl_buffer.release does not change the
-	surface contents. However, if the client destroys the wl_buffer
-	before receiving wl_buffer.release, the surface contents become
-	undefined immediately.
+	Destroying the wl_buffer after wl_buffer.release does not change
+	the surface contents. However, if the client destroys the
+	wl_buffer before receiving wl_buffer.release, the surface
+	contents become undefined immediately.
 
-	Only if wl_surface.attach is sent with a nil wl_buffer, the
+	Only if wl_surface.attach is sent with a NULL wl_buffer, the
 	following wl_surface.commit will remove the surface content.
       </description>
 
@@ -928,18 +934,20 @@
       <description summary="mark part of the surface damaged">
 	This request is used to describe the regions where the pending
 	buffer is different from the current surface contents, and where
-	the surface therefore needs to be repainted. The pending buffer must
-	be set by wl_surface.attach before sending damage. The compositor
-	ignores the parts of the damage that fall outside of the surface.
+	the surface therefore needs to be repainted. The pending buffer
+	must be set by wl_surface.attach before sending damage. The
+	compositor ignores the parts of the damage that fall outside of
+	the surface.
 
 	Damage is double-buffered state, see wl_surface.commit.
 
 	The initial value for pending damage is empty: no damage.
-	wl_surface.damage adds pending damage: the new pending damage is the
-	union of old pending damage and the given rectangle.
-	wl_surface.commit assigns pending damage as the current damage, and
-	clears pending damage. The server will clear the current damage as
-	it repaints the surface.
+	wl_surface.damage adds pending damage: the new pending damage
+	is the union of old pending damage and the given rectangle.
+
+	wl_surface.commit assigns pending damage as the current damage,
+	and clears pending damage. The server will clear the current
+	damage as it repaints the surface.
       </description>
 
       <arg name="x" type="int"/>
@@ -972,11 +980,14 @@
     <request name="set_opaque_region">
       <description summary="set opaque region">
 	This request sets the region of the surface that contains
-	opaque content.  The opaque region is an optimization hint for
-	the compositor that lets it optimize out redrawing of content
-	behind opaque regions.  Setting an opaque region is not
-	required for correct behaviour, but marking transparent
-	content as opaque will result in repaint artifacts.
+	opaque content.
+
+	The opaque region is an optimization hint for the compositor
+	that lets it optimize out redrawing of content behind opaque
+	regions.  Setting an opaque region is not required for correct
+	behaviour, but marking transparent content as opaque will result
+	in repaint artifacts.
+
 	The compositor ignores the parts of the opaque region that fall
 	outside of the surface.
 
@@ -984,11 +995,11 @@
 
 	wl_surface.set_opaque_region changes the pending opaque region.
 	wl_surface.commit copies the pending region to the current region.
-	Otherwise the pending and current regions are never changed.
+	Otherwise, the pending and current regions are never changed.
 
 	The initial value for opaque region is empty. Setting the pending
 	opaque region has copy semantics, and the wl_region object can be
-	destroyed immediately. A nil wl_region causes the pending opaque
+	destroyed immediately. A NULL wl_region causes the pending opaque
 	region to be set to empty.
       </description>
 
@@ -998,10 +1009,11 @@
     <request name="set_input_region">
       <description summary="set input region">
 	This request sets the region of the surface that can receive
-	pointer and touch events. Input events happening outside of
-	this region will try the next surface in the server surface
-	stack. The compositor ignores the parts of the input region that
-	fall outside of the surface.
+	pointer and touch events.
+
+	Input events happening outside of this region will try the next
+	surface in the server surface stack. The compositor ignores the
+	parts of the input region that fall outside of the surface.
 
 	Input region is double-buffered state, see wl_surface.commit.
 
@@ -1011,10 +1023,11 @@
 	except cursor and icon surfaces are special cases, see
 	wl_pointer.set_cursor and wl_data_device.start_drag.
 
-	The initial value for input region is infinite. That means the whole
-	surface will accept input. Setting the pending input region has copy
-	semantics, and the wl_region object can be destroyed immediately. A
-	nil wl_region causes the input region to be set to infinite.
+	The initial value for input region is infinite. That means the
+	whole surface will accept input. Setting the pending input region
+	has copy semantics, and the wl_region object can be destroyed
+	immediately. A NULL wl_region causes the input region to be set
+	to infinite.
       </description>
 
       <arg name="region" type="object" interface="wl_region" allow-null="true"/>
@@ -1044,18 +1057,20 @@
 
     <event name="enter">
       <description summary="surface enters an output">
-        This is emitted whenever a surface's creation, movement, or resizing
-        results in some part of it being within the scanout region of an
-        output.
+	This is emitted whenever a surface's creation, movement, or resizing
+	results in some part of it being within the scanout region of an
+	output.
+
+	Note that a surface may be overlapping with zero or more outputs.
       </description>
       <arg name="output" type="object" interface="wl_output"/>
     </event>
 
     <event name="leave">
       <description summary="surface leaves an output">
-        This is emitted whenever a surface's creation, movement, or resizing
-        results in it no longer having any part of it within the scanout region
-        of an output.
+	This is emitted whenever a surface's creation, movement, or resizing
+	results in it no longer having any part of it within the scanout region
+	of an output.
       </description>
       <arg name="output" type="object" interface="wl_output"/>
     </event>
