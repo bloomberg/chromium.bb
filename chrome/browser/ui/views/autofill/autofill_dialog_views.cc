@@ -177,6 +177,10 @@ void AutofillDialogViews::AccountChooser::Update() {
   InvalidateLayout();
 }
 
+void AutofillDialogViews::AccountChooser::SetSignInLinkEnabled(bool enabled) {
+  link_->SetEnabled(enabled);
+}
+
 bool AutofillDialogViews::AccountChooser::OnMousePressed(
     const ui::MouseEvent& event) {
   // Return true so we get the release event.
@@ -665,6 +669,7 @@ const content::NavigationController* AutofillDialogViews::ShowSignIn() {
   // TODO(abodenha) We should be able to use the WebContents of the WebView
   // to navigate instead of LoadInitialURL.  Figure out why it doesn't work.
 
+  account_chooser_->SetSignInLinkEnabled(false);
   sign_in_webview_->LoadInitialURL(wallet::GetSignInUrl());
   // TODO(abodenha) Resize the dialog to avoid the need for a scroll bar on
   // sign in. See http://crbug.com/169286
@@ -676,6 +681,7 @@ const content::NavigationController* AutofillDialogViews::ShowSignIn() {
 }
 
 void AutofillDialogViews::HideSignIn() {
+  account_chooser_->SetSignInLinkEnabled(true);
   sign_in_container_->SetVisible(false);
   main_container_->SetVisible(true);
 }

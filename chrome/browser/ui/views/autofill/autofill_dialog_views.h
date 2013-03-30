@@ -173,6 +173,9 @@ class AutofillDialogViews : public AutofillDialogView,
     // Updates the view based on the state that |controller_| reports.
     void Update();
 
+    // Sets the state of the sign in link.
+    void SetSignInLinkEnabled(bool enabled);
+
     // views::View implementation.
     virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
     virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
@@ -190,7 +193,7 @@ class AutofillDialogViews : public AutofillDialogView,
     // The drop arrow.
     views::ImageView* arrow_;
 
-    // The signin link.
+    // The sign in link.
     views::Link* link_;
 
     // The controller |this| queries for logic and state.
