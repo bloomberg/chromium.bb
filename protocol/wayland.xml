@@ -1167,6 +1167,17 @@
   </interface>
 
   <interface name="wl_pointer" version="1">
+    <description summary="pointer input device">
+      The wl_pointer interface represents one or more input devices,
+      such as mice, which control the pointer location and pointer_focus
+      of a seat.
+
+      The wl_pointer interface generates motion, enter and leave
+      events for the surfaces that the pointer is located over,
+      and button and axis events for button presses, button releases
+      and scrolling.
+    </description>
+
     <request name="set_cursor">
       <description summary="set the pointer surface">
 	Set the pointer surface, i.e., the surface that contains the
@@ -1197,7 +1208,7 @@
 	undefined, and the wl_surface is unmapped.
       </description>
 
-      <arg name="serial" type="uint"/>
+      <arg name="serial" type="uint" summary="serial of the enter event"/>
       <arg name="surface" type="object" interface="wl_surface" allow-null="true"/>
       <arg name="hotspot_x" type="int"/>
       <arg name="hotspot_y" type="int"/>
@@ -1206,9 +1217,11 @@
     <event name="enter">
       <description summary="enter event">
 	Notification that this seat's pointer is focused on a certain
-	surface. When an seat's focus enters a surface, the pointer image
+	surface.
+
+	When an seat's focus enters a surface, the pointer image
 	is undefined and a client should respond to this event by setting
-	an appropriate pointer image.
+	an appropriate pointer image with the set_cursor request.
       </description>
 
       <arg name="serial" type="uint"/>
@@ -1219,6 +1232,11 @@
 
     <event name="leave">
       <description summary="leave event">
+	Notification that this seat's pointer is no longer focused on
+	a certain surface.
+
+	The leave notification is sent before the enter notification
+	for the new focus.
       </description>
       <arg name="serial" type="uint"/>
       <arg name="surface" type="object" interface="wl_surface"/>
@@ -1226,8 +1244,9 @@
 
     <event name="motion">
       <description summary="pointer motion event">
-	Notification of pointer location change. The arguments surface_[xy]
-	are the location relative to the focused surface.
+	Notification of pointer location change. The arguments
+	surface_x and surface_y are the location relative to the
+	focused surface.
       </description>
 
       <arg name="time" type="uint"/>
@@ -1240,14 +1259,16 @@
         Describes the physical state of a button which provoked the button
 	event.
       </description>
-      <entry name="released" value="0" summary="button is not pressed"/>
-      <entry name="pressed" value="1" summary="button is pressed"/>
+      <entry name="released" value="0" summary="The button is not pressed"/>
+      <entry name="pressed" value="1" summary="The button is pressed"/>
     </enum>
 
     <event name="button">
       <description summary="pointer button event">
-	Mouse button click and release notifications.  The location
-	of the click is given by the last motion or pointer_focus event.
+	Mouse button click and release notifications.
+
+	The location of the click is given by the last motion or
+	enter event.
       </description>
 
       <arg name="serial" type="uint"/>
@@ -1257,7 +1278,9 @@
     </event>
 
     <enum name="axis">
-      <description summary="axis types"/>
+      <description summary="axis types">
+	Describes the axis types of scroll events.
+      </description>
       <entry name="vertical_scroll" value="0"/>
       <entry name="horizontal_scroll" value="1"/>
     </enum>
