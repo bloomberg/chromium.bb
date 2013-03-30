@@ -543,7 +543,7 @@
 	is provided by the x an y arguments, in surface local
 	coordinates.
       </description>
-      <arg name="time" type="uint"/>
+      <arg name="time" type="uint" summary="timestamp with millisecond granularity"/>
       <arg name="x" type="fixed"/>
       <arg name="y" type="fixed"/>
     </event>
@@ -1248,7 +1248,7 @@
 	focused surface.
       </description>
 
-      <arg name="time" type="uint"/>
+      <arg name="time" type="uint" summary="timestamp with millisecond granularity"/>
       <arg name="surface_x" type="fixed"/>
       <arg name="surface_y" type="fixed"/>
     </event>
@@ -1268,10 +1268,12 @@
 
 	The location of the click is given by the last motion or
 	enter event.
+        The time argument is a timestamp with millisecond
+        granularity, with an undefined base.
       </description>
 
       <arg name="serial" type="uint"/>
-      <arg name="time" type="uint"/>
+      <arg name="time" type="uint" summary="timestamp with millisecond granularity"/>
       <arg name="button" type="uint"/>
       <arg name="state" type="uint"/>
     </event>
@@ -1304,7 +1306,7 @@
 	scroll distance.
       </description>
 
-      <arg name="time" type="uint"/>
+      <arg name="time" type="uint" summary="timestamp with millisecond granularity"/>
       <arg name="axis" type="uint"/>
       <arg name="value" type="fixed"/>
     </event>
@@ -1367,10 +1369,12 @@
     <event name="key">
       <description summary="key event">
 	A key was pressed or released.
+        The time argument is a timestamp with millisecond
+        granularity, with an undefined base.
       </description>
 
       <arg name="serial" type="uint"/>
-      <arg name="time" type="uint"/>
+      <arg name="time" type="uint" summary="timestamp with millisecond granularity"/>
       <arg name="key" type="uint"/>
       <arg name="state" type="uint"/>
     </event>
@@ -1407,7 +1411,7 @@
         of its surfaces.
       </description>
       <arg name="serial" type="uint"/>
-      <arg name="time" type="uint"/>
+      <arg name="time" type="uint" summary="timestamp with millisecond granularity"/>
       <arg name="surface" type="object" interface="wl_surface"/>
       <arg name="id" type="int" summary="ID of the touch sequence"/>
       <arg name="x" type="fixed"/>
@@ -1419,7 +1423,7 @@
         Notifies the client that a touch has ended.
       </description>
       <arg name="serial" type="uint"/>
-      <arg name="time" type="uint"/>
+      <arg name="time" type="uint" summary="timestamp with millisecond granularity"/>
       <arg name="id" type="int"/>
     </event>
 
@@ -1428,7 +1432,7 @@
         Notifies the client that the position of a contact point
         has changed.
       </description>
-      <arg name="time" type="uint"/>
+      <arg name="time" type="uint" summary="timestamp with millisecond granularity"/>
       <arg name="id" type="int" summary="ID of the touch sequence"/>
       <arg name="x" type="fixed"/>
       <arg name="y" type="fixed"/>
