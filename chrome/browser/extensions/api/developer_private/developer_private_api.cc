@@ -446,7 +446,45 @@ bool DeveloperPrivateReloadFunction::RunImpl() {
   return true;
 }
 
+bool DeveloperPrivateShowPermissionsDialogFunction::RunImpl() {
+  std::string extension_id;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &extension_id));
+  ExtensionService* service = profile()->GetExtensionService();
+  CHECK(!extension_id.empty());
+  ShellWindowRegistry* registry = ShellWindowRegistry::Get(profile());
+  DCHECK(registry);
+  ShellWindow* shell_window = registry->GetShellWindowForRenderViewHost(
+      render_view_host());
+  prompt_.reset(new ExtensionInstallPrompt(shell_window->web_contents()));
+  const Extension* extension = service->GetInstalledExtension(extension_id);
+
+  if (!extension)
+    return false;
+
+  // Released by InstallUIAbort.
+  AddRef();
+  prompt_->ReviewPermissions(this, extension);
+  return true;
+}
+
 DeveloperPrivateReloadFunction::~DeveloperPrivateReloadFunction() {}
+
+void DeveloperPrivateShowPermissionsDialogFunction::InstallUIProceed() {
+  // The permissions dialog only contains a close button.
+  NOTREACHED();
+}
+
+void DeveloperPrivateShowPermissionsDialogFunction::InstallUIAbort(
+    bool user_initiated) {
+  SendResponse(true);
+  Release();
+}
+
+DeveloperPrivateShowPermissionsDialogFunction::
+    DeveloperPrivateShowPermissionsDialogFunction() {}
+
+DeveloperPrivateShowPermissionsDialogFunction::
+    ~DeveloperPrivateShowPermissionsDialogFunction() {}
 
 bool DeveloperPrivateRestartFunction::RunImpl() {
   scoped_ptr<Restart::Params> params(Restart::Params::Create(*args_));

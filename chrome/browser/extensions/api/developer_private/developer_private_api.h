@@ -187,6 +187,28 @@ class DeveloperPrivateReloadFunction : public SyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
+class DeveloperPrivateShowPermissionsDialogFunction
+    : public SyncExtensionFunction,
+      public ExtensionInstallPrompt::Delegate {
+ public:
+  DECLARE_EXTENSION_FUNCTION("developerPrivate.showPermissionsDialog",
+                             DEVELOPERPRIVATE_PERMISSIONS);
+
+  DeveloperPrivateShowPermissionsDialogFunction();
+ protected:
+  virtual ~DeveloperPrivateShowPermissionsDialogFunction();
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
+
+  // Overridden from ExtensionInstallPrompt::Delegate
+  virtual void InstallUIProceed() OVERRIDE;
+  virtual void InstallUIAbort(bool user_initiated) OVERRIDE;
+
+  scoped_ptr<ExtensionInstallPrompt> prompt_;
+
+};
+
 class DeveloperPrivateRestartFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("developerPrivate.restart",

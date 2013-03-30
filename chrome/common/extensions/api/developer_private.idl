@@ -120,6 +120,10 @@ namespace developerPrivate {
                              boolean include_terminated,
                              ItemsInfoCallback callback);
 
+    // Opens a permissions dialog for given |itemId|.
+    static void showPermissionsDialog(DOMString itemId,
+                                      optional VoidCallback callback);
+
     // Opens an inspect window for given |options|
     static void inspect(InspectOptions options,
                         optional VoidCallback callback);

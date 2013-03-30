@@ -276,23 +276,7 @@ cr.define('apps_dev_tool', function() {
     setPermissionsLink_: function(item, el) {
       var permissions = el.querySelector('.permissions-link');
       permissions.addEventListener('click', function(e) {
-        var permissionItem = $('permissions-item');
-        permissionItem.textContent = '';
-        chrome.management.getPermissionWarningsById(
-            item.id,
-            function(warnings) {
-              warnings.forEach(function(permission) {
-                var li = document.createElement('li');
-                li.textContent = permission;
-                permissionItem.appendChild(li);
-            });
-          AppsDevTool.showOverlay($('permissions-overlay'));
-        });
-
-        $('permissions-icon').style.backgroundImage =
-            'url(' + item.icon + ')';
-        $('permissions-title').textContent = item.name;
-        e.preventDefault();
+        chrome.developerPrivate.showPermissionsDialog(item.id);
       });
     },
 
@@ -435,8 +419,7 @@ cr.define('apps_dev_tool', function() {
    */
   ItemsList.launchApp = function(id) {
     chrome.management.launchApp(id, function() {
-      // There is a delay in generation of background page for the app.
-      setTimeout(ItemsList.loadItemsInfo, 1000);
+      ItemsList.loadItemsInfo();
     });
   };
 
