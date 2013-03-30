@@ -115,6 +115,7 @@ void VaapiVideoDecodeAccelerator::SubmitDecode(
     scoped_ptr<std::queue<VABufferID> > va_bufs,
     scoped_ptr<std::queue<VABufferID> > slice_bufs) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
+  base::AutoLock auto_lock(lock_);
 
   TRACE_EVENT1("Video Decoder", "VAVDA::Decode", "output_id", output_id);
 
@@ -346,10 +347,7 @@ void VaapiVideoDecodeAccelerator::DecodeTask() {
     DCHECK(curr_input_buffer_.get());
 
     VaapiH264Decoder::DecResult res;
-    {
-      base::AutoUnlock auto_unlock(lock_);
-      res = decoder_.DecodeOneFrame(curr_input_buffer_->id);
-    }
+    res = decoder_.DecodeOneFrame(curr_input_buffer_->id);
 
     switch (res) {
       case VaapiH264Decoder::kNeedMoreStreamData:
@@ -465,6 +463,8 @@ void VaapiVideoDecodeAccelerator::FlushTask() {
   DCHECK_EQ(decoder_thread_.message_loop(), MessageLoop::current());
   DVLOG(1) << "Flush task";
 
+  base::AutoLock auto_lock(lock_);
+
   // First flush all the pictures that haven't been outputted, notifying the
   // client to output them.
   bool res = decoder_.Flush();
@@ -512,12 +512,12 @@ void VaapiVideoDecodeAccelerator::FinishFlush() {
 void VaapiVideoDecodeAccelerator::ResetTask() {
   DCHECK_EQ(decoder_thread_.message_loop(), MessageLoop::current());
 
+  base::AutoLock auto_lock(lock_);
+
   // All the decoding tasks from before the reset request from client are done
   // by now, as this task was scheduled after them and client is expected not
   // to call Decode() after Reset() and before NotifyResetDone.
   decoder_.Reset();
-
-  base::AutoLock auto_lock(lock_);
 
   // Return current input buffer, if present.
   if (curr_input_buffer_.get())
