@@ -533,9 +533,14 @@ bool PictureLayerImpl::AreVisibleResourcesReady() const {
           active_animation_controllers().empty();
 
   if (PictureLayerImpl* twin = ActiveTwin()) {
-    min_acceptable_scale = std::min(
-        min_acceptable_scale,
-        std::min(twin->ideal_contents_scale_, twin->raster_contents_scale_));
+    float twin_min_acceptable_scale =
+        std::min(twin->ideal_contents_scale_, twin->raster_contents_scale_);
+    // Ignore 0 scale in case CalculateContentsScale() has never been
+    // called for active twin.
+    if (twin_min_acceptable_scale != 0.0f) {
+      min_acceptable_scale =
+          std::min(min_acceptable_scale, twin_min_acceptable_scale);
+    }
   }
 
   Region missing_region = rect;
