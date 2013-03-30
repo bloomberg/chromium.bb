@@ -157,8 +157,8 @@ IN_PROC_BROWSER_TEST_F(PanelViewTest, CheckMinimizedHeight) {
   Panel* panel = CreatePanelWithBounds("PanelTest", bounds);
 
   // Change panel to minimized and check its height.
-  bounds.set_height(panel::kMinimizedPanelHeight);
-  panel->SetPanelBoundsInstantly(bounds);
+  panel->SetExpansionState(Panel::MINIMIZED);
+  WaitForBoundsAnimationFinished(panel);
   EXPECT_EQ(panel::kMinimizedPanelHeight, panel->GetBounds().height());
   EXPECT_EQ(0, GetPanelView(panel)->height()); // client area height.
 #if defined(OS_WIN) && !defined(USE_AURA)

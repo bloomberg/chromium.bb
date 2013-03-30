@@ -271,6 +271,34 @@ IN_PROC_BROWSER_TEST_F(PanelResizeBrowserTest, MAYBE_ResizeDetachedPanel) {
 
 // http://crbug.com/175760; several panel tests failing regularly on mac.
 #if defined(OS_MACOSX)
+#define MAYBE_TryResizePanelBelowMinimizeSize \
+  DISABLED_TryResizePanelBelowMinimizeSize
+#else
+#define MAYBE_TryResizePanelBelowMinimizeSize TryResizePanelBelowMinimizeSize
+#endif
+IN_PROC_BROWSER_TEST_F(PanelResizeBrowserTest,
+                       MAYBE_TryResizePanelBelowMinimizeSize) {
+  int initial_width = 150;
+  int initial_height = 100;
+  Panel* panel = CreateDetachedPanel("1",
+      gfx::Rect(300, 200, initial_width, initial_height));
+
+  // Try to resize the panel below the minimum size. Expect that the panel
+  // shrinks to the minimum size.
+  int resize_width = panel::kPanelMinWidth / 2 - initial_width;
+  int resize_height = panel::kPanelMinHeight / 2 - initial_height;
+  ResizePanel(panel,
+              panel::RESIZE_BOTTOM_RIGHT,
+              gfx::Vector2d(resize_width, resize_height));
+
+  EXPECT_EQ(panel::kPanelMinWidth, panel->GetBounds().width());
+  EXPECT_EQ(panel::kPanelMinHeight, panel->GetBounds().height());
+
+  PanelManager::GetInstance()->CloseAll();
+}
+
+// http://crbug.com/175760; several panel tests failing regularly on mac.
+#if defined(OS_MACOSX)
 #define MAYBE_ResizeDetachedPanelToClampSize \
   DISABLED_ResizeDetachedPanelToClampSize
 #else

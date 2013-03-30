@@ -832,10 +832,10 @@ void PanelView::Layout() {
 
 gfx::Size PanelView::GetMinimumSize() {
   // If the panel is minimized, it can be rendered to very small size, like
-  // 4-pixel lines when it is docked. Otherwise, its height should not be less
-  // than its titlebar height.
+  // 4-pixel lines when it is docked. Otherwise, its size should not be less
+  // than its minimum size.
   return panel_->IsMinimized() ? gfx::Size() :
-      gfx::Size(panel_->min_size().width(), panel::kTitlebarHeight);
+      gfx::Size(panel::kPanelMinWidth, panel::kPanelMinHeight);
 }
 
 gfx::Size PanelView::GetMaximumSize() {
