@@ -7,6 +7,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "base/time.h"
 #include "content/common/content_export.h"
@@ -88,6 +89,13 @@ struct CONTENT_EXPORT PasswordForm {
   // When parsing an HTML form, this is typically empty unless the site
   // has implemented some form of autofill.
   string16 username_value;
+
+  // This member is populated in cases where we there are multiple input
+  // elements that could possibly be the username. Used when our heuristics for
+  // determining the username are incorrect. Optional.
+  //
+  // When parsing an HTML form, this is typically empty.
+  std::vector<string16> possible_usernames;
 
   // The name of the password input element, Optional (improves scoring).
   //
