@@ -59,6 +59,7 @@ TEST_F(PDFResourceTest, GetLocalizedString) {
 }
 
 TEST_F(PDFResourceTest, SearchString) {
+  ProxyAutoLock lock;
   // Instantiate a resource explicitly so we can specify the locale.
   scoped_refptr<PDFResource> pdf_resource(
       new PDFResource(Connection(&sink(), &sink()), pp_instance()));
