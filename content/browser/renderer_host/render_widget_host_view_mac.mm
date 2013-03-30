@@ -1040,14 +1040,28 @@ bool RenderWidgetHostViewMac::CompositorSwapBuffers(uint64 surface_handle,
   if (is_hidden_)
     return true;
 
-  // TODO(shess) If the view does not have a window, or the window
-  // does not have backing, the IOSurface will log "invalid drawable"
-  // in -setView:.  It is not clear how this code is reached with such
-  // a case, so record some info into breakpad (some subset of
-  // browsers are likely to crash later for unrelated reasons).
-  // http://crbug.com/148882
   NSWindow* window = [cocoa_view_ window];
   if ([window windowNumber] <= 0) {
+    // There is no window to present so capturing during present won't work.
+    // We check if frame subscriber wants this frame and capture manually.
+    if (compositing_iosurface_.get() && frame_subscriber_.get()) {
+      scoped_refptr<media::VideoFrame> frame;
+      RenderWidgetHostViewFrameSubscriber::DeliverFrameCallback callback;
+      if (frame_subscriber_->ShouldCaptureFrame(&frame, &callback)) {
+        compositing_iosurface_->SetIOSurface(surface_handle, size);
+        compositing_iosurface_->CopyToVideoFrame(
+            gfx::Rect(size), ScaleFactor(cocoa_view_), frame,
+            base::Bind(callback, base::Time::Now()));
+        return true;
+      }
+    }
+
+    // TODO(shess) If the view does not have a window, or the window
+    // does not have backing, the IOSurface will log "invalid drawable"
+    // in -setView:.  It is not clear how this code is reached with such
+    // a case, so record some info into breakpad (some subset of
+    // browsers are likely to crash later for unrelated reasons).
+    // http://crbug.com/148882
     const char* const kCrashKey = "rwhvm_window";
     if (!window) {
       base::debug::SetCrashKeyValue(kCrashKey, "Missing window");
