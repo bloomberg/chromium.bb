@@ -4,7 +4,7 @@
 
 package org.chromium.android_webview.test;
 
-import android.test.suitebuilder.annotation.SmallTest;
+import android.test.suitebuilder.annotation.LargeTest;
 import android.test.TouchUtils;
 import android.view.KeyEvent;
 
@@ -17,7 +17,7 @@ import org.chromium.base.test.util.Feature;
 public class AwContentsClientFullScreenVideoTest extends AwTestBase {
 
     @Feature({"AndroidWebView"})
-    @SmallTest
+    @LargeTest
     public void testOnShowAndHideCustomView() throws Throwable {
         FullScreenVideoTestAwContentsClient contentsClient =
                 new FullScreenVideoTestAwContentsClient(getActivity());
@@ -30,7 +30,9 @@ public class AwContentsClientFullScreenVideoTest extends AwTestBase {
             loadUrlSync(testContainerView.getAwContents(),
                     contentsClient.getOnPageFinishedHelper(),
                     webServer.getFullScreenVideoTestURL());
-            Thread.sleep(5 * 1000);
+            // Temporary code to figure out minimal wait time for page show up.
+            // see crbug/224923.
+            Thread.sleep(10 * 1000);
             TouchUtils.clickView(AwContentsClientFullScreenVideoTest.this, testContainerView);
             contentsClient.waitForCustomViewShown();
             getInstrumentation().sendKeyDownUpSync(KeyEvent.KEYCODE_BACK);

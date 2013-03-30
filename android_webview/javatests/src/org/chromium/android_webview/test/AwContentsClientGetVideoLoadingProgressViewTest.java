@@ -4,7 +4,7 @@
 
 package org.chromium.android_webview.test;
 
-import android.test.suitebuilder.annotation.SmallTest;
+import android.test.suitebuilder.annotation.LargeTest;
 import android.test.TouchUtils;
 import android.view.View;
 
@@ -46,7 +46,7 @@ public class AwContentsClientGetVideoLoadingProgressViewTest extends AwTestBase
 
 
     @Feature({"AndroidWebView"})
-    @SmallTest
+    @LargeTest
     public void testGetVideoLoadingProgressView() throws Throwable {
         TestAwContentsClient contentsClient =
                 new FullScreenVideoTestAwContentsClient(getActivity()) {
@@ -67,7 +67,9 @@ public class AwContentsClientGetVideoLoadingProgressViewTest extends AwTestBase
         try {
             loadUrlSync(awContents, contentsClient.getOnPageFinishedHelper(),
                     webServer.getFullScreenVideoTestURL());
-            Thread.sleep(5 * 1000);
+            // Temporary solution to figure out minimal wait time for page show up.
+            // see crbug/224923.
+            Thread.sleep(10 * 1000);
             TouchUtils.clickView(AwContentsClientGetVideoLoadingProgressViewTest.this,
                     testContainerView);
             waitForViewAttached();
