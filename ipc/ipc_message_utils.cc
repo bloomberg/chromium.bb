@@ -43,9 +43,9 @@ void LogBytes(const std::vector<CharType>& data, std::string* out) {
           base::StringPrintf("[%02X]", static_cast<unsigned char>(data[i])));
   }
   if (data.size() > kMaxBytesToLog) {
-    out->append(
-        base::StringPrintf(" and %u more bytes",
-                     static_cast<unsigned>(data.size() - kMaxBytesToLog)));
+    out->append(base::StringPrintf(
+        " and %u more bytes",
+        static_cast<unsigned>(data.size() - kMaxBytesToLog)));
   }
 #endif
 }
