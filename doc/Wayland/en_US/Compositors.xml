@@ -5,57 +5,53 @@
 ]>
 <chapter id="chap-Compositors">
   <title>Types of Compositors</title>
+
+  <para>
+    Compositors come in different types, depending on which
+    role they play in the overall architecture of the OS.
+  </para>
+
   <section id="sect-Compositors-System-Compositor">
     <title>System Compositor</title>
     <para>
-      <itemizedlist>
-	<listitem>
-	  <para>
-	    ties in with graphical boot
-	  </para>
-	</listitem>
-	<listitem>
-	  <para>
-	    hosts different types of session compositors
-	  </para>
-	</listitem>
-	<listitem>
-	  <para>
-	    lets us switch between multiple sessions (fast user switching,
-	    secure/personal desktop switching)
-	  </para>
-	</listitem>
-	<listitem>
-	  <para>
-	    multiseat
-	  </para>
-	</listitem>
-	<listitem>
-	  <para>
-	    linux implementation using libudev, egl, kms, evdev, cairo
-	  </para>
-	</listitem>
-	<listitem>
-	  <para>
-	    for fullscreen clients, the system compositor can reprogram the
-	    video scanout address to source from the client provided buffer.
-	  </para>
-	</listitem>
-      </itemizedlist>
+      A system compositor can run from early boot until shutdown.
+      It effectively replaces the kernel vt system, and can tie in
+      with the systems graphical boot setup and multiseat support.
+    </para>
+    <para>
+      A system compositor can host different types of session
+      compositors, and let us switch between multiple sessions
+      (fast user switching, or secure/personal desktop switching).
+    </para>
+    <para>
+      A linux implementation of a system compositor will typically
+      use libudev, egl, kms, evdev and cairo.
+    </para>
+    <para>
+      For fullscreen clients, the system compositor can reprogram the
+      video scanout address to read directly from the client provided
+      buffer.
     </para>
   </section>
   <section id="sect-Compositors-Session-Compositor">
     <title>Session Compositor</title>
     <para>
+      A session compositor is responsible for a single user session.
+      If a system compositor is present, the session compositor will
+      run nested under the system compositor. Nesting is feasible because
+      the protocol is asynchronous; roundtrips would be too expensive
+      when nesting is involved. If no system compositor is present, a
+      session compositor can run directly on the hw.
+     </para>
+     <para>
+      X applications can continue working under a session compositor
+      by means of a root less X server that is activated on demand.
+     </para>
+    <para>
+       Possible examples for session compositors include
       <itemizedlist>
-	<listitem>
-	  <para>
-	    nested under the system compositor.  nesting is feasible because
-	    protocol is async, roundtrip would break nesting
-	  </para>
-	</listitem>
-	<listitem>
-	  <para>
+        <listitem>
+          <para>
 	    gnome-shell
 	  </para>
 	</listitem>
@@ -66,17 +62,12 @@
 	</listitem>
 	<listitem>
 	  <para>
-	    compiz?
+	    kwin
 	  </para>
 	</listitem>
 	<listitem>
 	  <para>
-	    kde compositor?
-	  </para>
-	</listitem>
-	<listitem>
-	  <para>
-	    text mode using vte
+	    kmscon
 	  </para>
 	</listitem>
 	<listitem>
@@ -89,29 +80,17 @@
 	    fullscreen X session under wayland
 	  </para>
 	</listitem>
-	<listitem>
-	  <para>
-	    can run without system compositor, on the hw where it makes
-	    sense
-	  </para>
-	</listitem>
-	<listitem>
-	  <para>
-	    root window less X server, bridging X windows into a wayland
-	    session compositor
-	  </para>
-	</listitem>
       </itemizedlist>
     </para>
   </section>
   <section id="sect-Compositors-Embedding-Compositor">
     <title>Embedding Compositor</title>
     <para>
-      X11 lets clients embed windows from other clients, or lets client copy
-      pixmap contents rendered by another client into their window.  This is
-      often used for applets in a panel, browser plugins and similar.
+      X11 lets clients embed windows from other clients, or lets clients
+      copy pixmap contents rendered by another client into their window.
+      This is often used for applets in a panel, browser plugins and similar.
       Wayland doesn't directly allow this, but clients can communicate GEM
-      buffer names out-of-band, for example, using d-bus or as command line
+      buffer names out-of-band, for example, using D-Bus, or command line
       arguments when the panel launches the applet.  Another option is to
       use a nested wayland instance.  For this, the wayland server will have
       to be a library that the host application links to.  The host
@@ -125,14 +104,8 @@
       application.
     </para>
     <para>
-      <itemizedlist>
-	<listitem>
-	  <para>
-	    firefox embedding flash by being a special purpose compositor to
-	    the plugin
-	  </para>
-	</listitem>
-      </itemizedlist>
+      An example for this kind of setup is firefox embedding the flash
+      player as a kind of special-purpose compositor.
     </para>
   </section>
 </chapter>
