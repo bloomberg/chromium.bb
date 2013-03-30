@@ -348,22 +348,26 @@
     </description>
 
     <request name="accept">
-      <description summary="accept one of the offered mime-types">
-	Indicate that the client can accept the given mime-type, or
-	NULL for not accepted.  Use for feedback during drag and drop.
+      <description summary="accept one of the offered mime types">
+	Indicate that the client can accept the given mime type, or
+	NULL for not accepted.
+
+	Used for feedback during drag-and-drop.
       </description>
 
       <arg name="serial" type="uint"/>
-      <arg name="type" type="string" allow-null="true"/>
+      <arg name="mime_type" type="string" allow-null="true"/>
     </request>
 
     <request name="receive">
       <description summary="request that the data is transferred">
 	To transfer the offered data, the client issues this request
-	and indicates the mime-type it wants to receive.  The transfer
-	happens through the passed fd (typically a pipe(7) file
-	descriptor).  The source client writes the data in the
-	mime-type representation requested and then closes the fd.
+	and indicates the mime type it wants to receive.  The transfer
+	happens through the passed file descriptor (typically created
+	with the pipe system call).  The source client writes the data
+	in the mime type representation requested and then closes the
+	file descriptor.
+
 	The receiving client reads from the read end of the pipe until
 	EOF and the closes its end, at which point the transfer is
 	complete.
@@ -372,15 +376,19 @@
       <arg name="fd" type="fd"/>
     </request>
 
-    <request name="destroy" type="destructor"/>
+    <request name="destroy" type="destructor">
+      <description summary="destroy data offer">
+	Destroy the data offer.
+      </description>
+    </request>
 
     <event name="offer">
-      <description summary="advertise offered mime-type">
+      <description summary="advertise offered mime type">
 	Sent immediately after creating the wl_data_offer object.  One
 	event per offered mime type.
       </description>
 
-      <arg name="type" type="string"/>
+      <arg name="mime_type" type="string"/>
     </event>
   </interface>
 
@@ -394,11 +402,11 @@
 
     <request name="offer">
       <description summary="add an offered mime type">
-	This request adds a mime-type to the set of mime-types
+	This request adds a mime type to the set of mime types
 	advertised to targets.  Can be called several times to offer
 	multiple types.
       </description>
-      <arg name="type" type="string"/>
+      <arg name="mime_type" type="string"/>
     </request>
 
     <request name="destroy" type="destructor">
@@ -408,9 +416,11 @@
     </request>
 
     <event name="target">
-      <description summary="a target accepts an offered mime-type">
+      <description summary="a target accepts an offered mime type">
 	Sent when a target accepts pointer_focus or motion events.  If
 	a target does not accept any of the offered types, type is NULL.
+
+	Used for feedback during drag-and-drop.
       </description>
 
       <arg name="mime_type" type="string" allow-null="true"/>
@@ -418,8 +428,9 @@
 
     <event name="send">
       <description summary="send the data">
-	Request for data from another client.  Send the data as the
-	specified mime-type over the passed fd, then close the fd.
+	Request for data from the client.  Send the data as the
+	specified mime type over the passed file descriptor, then
+	close it.
       </description>
 
       <arg name="mime_type" type="string"/>
@@ -436,9 +447,16 @@
   </interface>
 
   <interface name="wl_data_device" version="1">
+    <description summary="data transfer device">
+      There is one wl_data_device per seat which can be obtained
+      from the global wl_data_device_manager singleton.
+
+      A wl_data_device provides access to inter-client data transfer
+      mechanisms such as copy-and-paste and drag-and-drop.
+    </description>
     <request name="start_drag">
-      <description summary="start drag and drop operation">
-	This request asks the compositor to start a drag and drop
+      <description summary="start drag-and-drop operation">
+	This request asks the compositor to start a drag-and-drop
 	operation on behalf of the client.
 
 	The source argument is the data source that provides the data
@@ -451,7 +469,7 @@
 	the client must have an active implicit grab that matches the
 	serial.
 
-	The icon surface is an optional (can be nil) surface that
+	The icon surface is an optional (can be NULL) surface that
 	provides an icon to be moved around with the cursor.  Initially,
 	the top-left corner of the icon surface is placed at the cursor
 	hotspot, but subsequent wl_surface.attach request can move the
@@ -467,33 +485,39 @@
       <arg name="source" type="object" interface="wl_data_source" allow-null="true"/>
       <arg name="origin" type="object" interface="wl_surface"/>
       <arg name="icon" type="object" interface="wl_surface" allow-null="true"/>
-      <arg name="serial" type="uint"/>
+      <arg name="serial" type="uint" summary="serial of the implicit grab on the origin"/>
     </request>
 
     <request name="set_selection">
+      <description summary="copy data to the selection">
+	This request asks the compositor to set the selection
+	to the data from the source on behalf of the client.
+
+	To unset the selection, set the source to NULL.
+      </description>
       <arg name="source" type="object" interface="wl_data_source" allow-null="true"/>
-      <arg name="serial" type="uint"/>
+      <arg name="serial" type="uint" summary="serial of the event that triggered this request"/>
     </request>
 
     <event name="data_offer">
       <description summary="introduce a new wl_data_offer">
 	The data_offer event introduces a new wl_data_offer object,
 	which will subsequently be used in either the
-	data_device.enter event (for drag and drop) or the
+	data_device.enter event (for drag-and-drop) or the
 	data_device.selection event (for selections).  Immediately
 	following the data_device_data_offer event, the new data_offer
 	object will send out data_offer.offer events to describe the
-	mime-types it offers.
+	mime types it offers.
       </description>
 
       <arg name="id" type="new_id" interface="wl_data_offer"/>
     </event>
 
     <event name="enter">
-      <description summary="initiate drag and drop session">
+      <description summary="initiate drag-and-drop session">
 	This event is sent when an active drag-and-drop pointer enters
 	a surface owned by the client.  The position of the pointer at
-	enter time is provided by the @x an @y arguments, in surface
+	enter time is provided by the x an y arguments, in surface
 	local coordinates.
       </description>
 
@@ -505,7 +529,7 @@
     </event>
 
     <event name="leave">
-      <description summary="end drag and drop session">
+      <description summary="end drag-and-drop session">
 	This event is sent when the drag-and-drop pointer leaves the
 	surface and the session ends.  The client must destroy the
 	wl_data_offer introduced at enter time at this point.
@@ -513,10 +537,10 @@
     </event>
 
     <event name="motion">
-      <description summary="drag and drop session motion">
+      <description summary="drag-and-drop session motion">
 	This event is sent when the drag-and-drop pointer moves within
 	the currently focused surface. The new position of the pointer
-	is provided by the @x an @y arguments, in surface local
+	is provided by the x an y arguments, in surface local
 	coordinates.
       </description>
       <arg name="time" type="uint"/>
@@ -524,7 +548,12 @@
       <arg name="y" type="fixed"/>
     </event>
 
-    <event name="drop"/>
+    <event name="drop">
+      <description summary="end drag-and-drag session successfully">
+	The event is sent when a drag-and-drop operation is ended
+	because the implicit grab is removed.
+      </description>
+    </event>
 
     <event name="selection">
       <description summary="advertise new selection">
@@ -546,16 +575,22 @@
     <description summary="data transfer interface">
       The wl_data_device_manager is a a singleton global object that
       provides access to inter-client data transfer mechanisms such as
-      copy and paste and drag and drop.  These mechanisms are tied to
+      copy-and-paste and drag-and-drop.  These mechanisms are tied to
       a wl_seat and this interface lets a client get a wl_data_device
       corresponding to a wl_seat.
     </description>
 
     <request name="create_data_source">
+      <description summary="create a new data source">
+        Create a new data source.
+      </description>
       <arg name="id" type="new_id" interface="wl_data_source"/>
     </request>
 
     <request name="get_data_device">
+      <description summary="create a new data device">
+        Create a new data device for a given seat.
+      </description>
       <arg name="id" type="new_id" interface="wl_data_device"/>
       <arg name="seat" type="object" interface="wl_seat"/>
     </request>
