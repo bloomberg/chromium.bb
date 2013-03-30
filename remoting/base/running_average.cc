@@ -18,7 +18,7 @@ RunningAverage::~RunningAverage() {
 }
 
 void RunningAverage::Record(int64 value) {
-  DCHECK(CalledOnValidThread());
+  base::AutoLock auto_lock(lock_);
 
   data_points_.push_back(value);
   sum_ += value;
@@ -29,8 +29,8 @@ void RunningAverage::Record(int64 value) {
   }
 }
 
-double RunningAverage::Average() const {
-  DCHECK(CalledOnValidThread());
+double RunningAverage::Average() {
+  base::AutoLock auto_lock(lock_);
 
   if (data_points_.empty())
     return 0;

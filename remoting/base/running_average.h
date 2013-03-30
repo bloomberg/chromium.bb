@@ -8,14 +8,14 @@
 #include <deque>
 
 #include "base/basictypes.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/synchronization/lock.h"
 
 namespace remoting {
 
 // Calculates the average of the most recent N recorded samples.
 // This is typically used to smooth out random variation in point samples
 // over bandwidth, frame rate, etc.
-class RunningAverage : public base::NonThreadSafe {
+class RunningAverage {
  public:
   // Constructs a helper to average over the |window_size| most recent samples.
   explicit RunningAverage(int window_size);
@@ -25,12 +25,15 @@ class RunningAverage : public base::NonThreadSafe {
   void Record(int64 value);
 
   // Returns the average over up to |window_size| of the most recent samples.
-  double Average() const;
+  double Average();
 
  private:
   // Stores the desired window size, as size_t to avoid casting when comparing
   // with the size of |data_points_|.
   const size_t window_size_;
+
+  // Protects |data_points_| and |sum_|.
+  base::Lock lock_;
 
   // Stores the |window_size| most recently recorded samples.
   std::deque<int64> data_points_;
