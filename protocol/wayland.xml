@@ -1313,19 +1313,21 @@
 
   <interface name="wl_keyboard" version="1">
     <description summary="keyboard input device">
+      The wl_keyboard interface represents one or more keyboards
+      associated with a seat.
     </description>
 
     <enum name="keymap_format">
       <description summary="keyboard mapping format">
-        This enum specifies the format of the keymap provided to the client
-	with the wl_keyboard::keymap event.
+	This specifies the format of the keymap provided to the
+	client with the wl_keyboard.keymap event.
       </description>
       <entry name="xkb_v1" value="1" description="libxkbcommon compatible"/>
     </enum>
 
     <event name="keymap">
       <description summary="keyboard mapping">
-        This event provides a file descriptor to the client which can be
+	This event provides a file descriptor to the client which can be
 	memory-mapped to provide a keyboard mapping description.
       </description>
       <arg name="format" type="uint"/>
@@ -1334,19 +1336,30 @@
     </event>
 
     <event name="enter">
+      <description summary="enter event">
+	Notification that this seat's keyboard focus is on a certain
+	surface.
+      </description>
       <arg name="serial" type="uint"/>
       <arg name="surface" type="object" interface="wl_surface"/>
-      <arg name="keys" type="array"/>
+      <arg name="keys" type="array" summary="the currently pressed keys"/>
     </event>
 
     <event name="leave">
+      <description summary="leave event">
+	Notification that this seat's keyboard focus is no longer on
+	a certain surface.
+
+	The leave notification is sent before the enter notification
+	for the new focus.
+      </description>
       <arg name="serial" type="uint"/>
       <arg name="surface" type="object" interface="wl_surface"/>
     </event>
 
     <enum name="key_state">
       <description summary="physical key state">
-        Describes the physical state of a key which provoked the key event.
+	Describes the physical state of a key which provoked the key event.
       </description>
       <entry name="released" value="0" summary="key is not pressed"/>
       <entry name="pressed" value="1" summary="key is pressed"/>
@@ -1365,7 +1378,7 @@
 
     <event name="modifiers">
       <description summary="modifier and group state">
-        Notifies clients that the modifier and/or group state has
+	Notifies clients that the modifier and/or group state has
 	changed, and it should update its local state.
       </description>
 
