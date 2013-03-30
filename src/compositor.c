@@ -3462,7 +3462,8 @@ usage(int error_code)
 		"Core options:\n\n"
 		"  --version\t\tPrint weston version\n"
 		"  -B, --backend=MODULE\tBackend module, one of drm-backend.so,\n"
-		"\t\t\t\tx11-backend.so or wayland-backend.so\n"
+		"\t\t\t\tfbdev-backend.so, x11-backend.so or\n"
+		"\t\t\t\twayland-backend.so\n"
 		"  -S, --socket=NAME\tName of socket to listen on\n"
 		"  -i, --idle-time=SECS\tIdle time in seconds\n"
 		"  --modules\t\tLoad the comma-separated list of modules\n"
@@ -3476,6 +3477,11 @@ usage(int error_code)
 		"  --tty=TTY\t\tThe tty to use\n"
 		"  --use-pixman\t\tUse the pixman (CPU) renderer\n"
 		"  --current-mode\tPrefer current KMS mode over EDID preferred mode\n\n");
+
+	fprintf(stderr,
+		"Options for fbdev-backend.so:\n\n"
+		"  --tty=TTY\t\tThe tty to use\n"
+		"  --device=DEVICE\tThe framebuffer device to use\n\n");
 
 	fprintf(stderr,
 		"Options for x11-backend.so:\n\n"
