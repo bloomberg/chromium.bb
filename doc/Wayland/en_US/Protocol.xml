@@ -241,6 +241,22 @@
       with a pointer grab.
     </para>
     <para>
+      To avoid race conditions, input events that are likely to
+      trigger further requests (such as button presses, key events,
+      pointer motions) carry serial numbers, and requests such as
+      wl_surface.set_popup require that the serial number of the
+      triggering event is specified. The server maintains a
+      monotonically increasing counter for these serial numbers.
+    </para>
+    <para>
+      Input events also carry timestamps with millisecond granularity.
+      Their base is undefined, so they can't be compared against
+      system time (as obtained with clock_gettime or gettimeofday).
+      They can be compared with each other though, and for instance
+      be used to identify sequences of button presses as double
+      or triple clicks.
+    </para>
+    <para>
       See <xref linkend="protocol-spec-interface-wl_seat"/> for the
       protocol description.
     </para>
