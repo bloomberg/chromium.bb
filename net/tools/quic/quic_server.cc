@@ -93,8 +93,20 @@ bool QuicServer::Listen(const IPEndPoint& address) {
     return false;
   }
 
-  epoll_server_.RegisterFD(fd_, this, kEpollFlags);
   LOG(INFO) << "Listening on " << address.ToString();
+  if (port_ == 0) {
+    SockaddrStorage storage;
+    IPEndPoint server_address;
+    if (getsockname(fd_, storage.addr, &storage.addr_len) != 0 ||
+        !server_address.FromSockAddr(storage.addr, storage.addr_len)) {
+      LOG(ERROR) << "Unable to get self address.  Error: " << strerror(errno);
+      return false;
+    }
+    port_ = server_address.port();
+    LOG(INFO) << "Kernel assigned port is " << port_;
+  }
+
+  epoll_server_.RegisterFD(fd_, this, kEpollFlags);
 
   dispatcher_.reset(new QuicDispatcher(fd_, &epoll_server_));
 

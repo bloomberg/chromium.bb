@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string_piece.h"
 #include "base/string_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "googleurl/src/gurl.h"
 #include "net/spdy/spdy_frame_builder.h"
 #include "net/spdy/spdy_framer.h"
@@ -108,11 +109,18 @@ string SpdyUtils::SerializeRequestHeaders(
     if (request_headers.request_method() == "CONNECT") {
       path = url;
     } else {
-      path = request_uri.path() + "?" + request_uri.query();
-      host_and_port = request_uri.port();
+      path = request_uri.path();
+      if (!request_uri.query().empty()) {
+        path = path + "?" + request_uri.query();
+      }
+      host_and_port = request_uri.host();
       scheme = request_uri.scheme();
     }
   }
+
+  DCHECK(!scheme.empty());
+  DCHECK(!host_and_port.empty());
+  DCHECK(!path.empty());
 
   SpdyHeaderBlock block;
   PopulateSpdy3RequestHeaderBlock(
@@ -170,11 +178,21 @@ bool SpdyUtils::FillBalsaRequestHeaders(
   request_headers->SetRequestUri(url);
   request_headers->SetRequestMethod(method_it->second);
 
+  BlockIt cl_it = header_block.find("content-length");
+  if (cl_it != header_block.end()) {
+    int content_length;
+    if (!base::StringToInt(cl_it->second, &content_length)) {
+      return false;
+    }
+    request_headers->SetContentLength(content_length);
+  }
+
   for (BlockIt it = header_block.begin(); it != header_block.end(); ++it) {
    if (!IsSpecialSpdyHeader(it, request_headers)) {
      request_headers->AppendHeader(it->first, it->second);
    }
   }
+
   return true;
 }
 
@@ -188,12 +206,14 @@ bool ParseReasonAndStatus(StringPiece status_and_reason,
   if (status_and_reason[3] != ' ')
     return false;
 
-  const StringPiece status = StringPiece(status_and_reason.data(), 3);
-//  if (!IsDigitString(status))//FIXME
-//    return false;
+  const StringPiece status_str = StringPiece(status_and_reason.data(), 3);
+  int status;
+  if (!base::StringToInt(status_str, &status)) {
+    return false;
+  }
 
-  headers->SetResponseCode(status);
-  headers->set_parsed_response_code(atoi(status.data()));
+  headers->SetResponseCode(status_str);
+  headers->set_parsed_response_code(status);
 
   StringPiece reason(status_and_reason.data() + 4,
                      status_and_reason.length() - 4);

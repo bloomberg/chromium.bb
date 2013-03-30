@@ -87,6 +87,9 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
   Visitor* visitor() { return visitor_; }
   void set_visitor(Visitor* visitor) { visitor_ = visitor; }
 
+  uint64 stream_bytes_read() const { return stream_bytes_read_; }
+  uint64 stream_bytes_written() const { return stream_bytes_written_; }
+
  protected:
   // Returns a pair with the number of bytes consumed from data, and a boolean
   // indicating if the fin bit was consumed.  This does not indicate the data

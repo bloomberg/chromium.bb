@@ -87,7 +87,7 @@ void QuicInMemoryCache::AddResponse(const BalsaHeaders& request_headers,
                                     const BalsaHeaders& response_headers,
                                     StringPiece response_body) {
   LOG(INFO) << "Adding response for: " << GetKey(request_headers);
-  if (responses_.find(GetKey(request_headers)) == responses_.end()) {
+  if (ContainsKey(responses_, GetKey(request_headers))) {
     LOG(DFATAL) << "Response for given request already exists!";
   }
   Response* new_response = new Response();

@@ -55,6 +55,8 @@ class QuicServer : public EpollCallbackInterface {
 
   int packets_dropped() { return packets_dropped_; }
 
+  int port() { return port_; }
+
  private:
   // Accepts data from the framer and demuxes clients to sessions.
   scoped_ptr<QuicDispatcher> dispatcher_;

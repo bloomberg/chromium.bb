@@ -87,6 +87,7 @@ int QuicSpdyServerStream::ParseRequestHeaders() {
     mutable_body()->append(data + len, delta);
   }
 
+  request_headers_received_ = true;
   return len;
 }
 
