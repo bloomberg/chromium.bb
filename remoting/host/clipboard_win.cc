@@ -18,13 +18,11 @@
 #include "base/win/wrapped_window_proc.h"
 #include "remoting/base/constants.h"
 #include "remoting/base/util.h"
+#include "remoting/host/win/message_window.h"
 #include "remoting/proto/event.pb.h"
 #include "remoting/protocol/clipboard_stub.h"
 
 namespace {
-
-const WCHAR kWindowClassName[] = L"clipboardWindowClass";
-const WCHAR kWindowName[] = L"clipboardWindow";
 
 // A scoper class that opens and closes the clipboard.
 // This class was adapted from the ScopedClipboard class in
@@ -102,7 +100,8 @@ typedef BOOL (WINAPI RemoveClipboardFormatListenerFn)(HWND);
 
 namespace remoting {
 
-class ClipboardWin : public Clipboard {
+class ClipboardWin : public Clipboard,
+                     public win::MessageWindow::Delegate {
  public:
   ClipboardWin();
 
@@ -114,69 +113,64 @@ class ClipboardWin : public Clipboard {
 
  private:
   void OnClipboardUpdate();
-  bool HaveClipboardListenerApi();
 
-  static bool RegisterWindowClass();
-  static LRESULT CALLBACK WndProc(HWND hwmd, UINT msg, WPARAM wParam,
-                                  LPARAM lParam);
+  // win::MessageWindow::Delegate interface.
+  virtual bool HandleMessage(HWND hwnd,
+                             UINT message,
+                             WPARAM wparam,
+                             LPARAM lparam,
+                             LRESULT* result) OVERRIDE;
 
   scoped_ptr<protocol::ClipboardStub> client_clipboard_;
-  HWND hwnd_;
   AddClipboardFormatListenerFn* add_clipboard_format_listener_;
   RemoveClipboardFormatListenerFn* remove_clipboard_format_listener_;
-  bool load_functions_tried_;
+
+  // Used to subscribe to WM_CLIPBOARDUPDATE messages.
+  scoped_ptr<win::MessageWindow> window_;
 
   DISALLOW_COPY_AND_ASSIGN(ClipboardWin);
 };
 
 ClipboardWin::ClipboardWin()
-    : hwnd_(NULL),
-      add_clipboard_format_listener_(NULL),
-      remove_clipboard_format_listener_(NULL),
-      load_functions_tried_(false) {
+    : add_clipboard_format_listener_(NULL),
+      remove_clipboard_format_listener_(NULL) {
 }
 
 void ClipboardWin::Start(
     scoped_ptr<protocol::ClipboardStub> client_clipboard) {
+  DCHECK(!add_clipboard_format_listener_);
+  DCHECK(!remove_clipboard_format_listener_);
+  DCHECK(!window_);
+
   client_clipboard_.swap(client_clipboard);
 
-  if (!load_functions_tried_) {
-    load_functions_tried_ = true;
-    HMODULE user32_module = ::GetModuleHandle(L"user32.dll");
-    if (!user32_module) {
-      LOG(WARNING) << "Couldn't find user32.dll.";
-    } else {
-      add_clipboard_format_listener_ =
-          reinterpret_cast<AddClipboardFormatListenerFn*>(
-              ::GetProcAddress(user32_module, "AddClipboardFormatListener"));
-      remove_clipboard_format_listener_ =
-          reinterpret_cast<RemoveClipboardFormatListenerFn*>(
-              ::GetProcAddress(user32_module, "RemoveClipboardFormatListener"));
-      if (!HaveClipboardListenerApi()) {
-        LOG(WARNING) << "Couldn't load AddClipboardFormatListener or "
-                     << "RemoveClipboardFormatListener.";
-      }
-    }
+  // user32.dll is statically linked.
+  HMODULE user32 = GetModuleHandle(L"user32.dll");
+  CHECK(user32);
+
+  add_clipboard_format_listener_ =
+      reinterpret_cast<AddClipboardFormatListenerFn*>(
+          GetProcAddress(user32, "AddClipboardFormatListener"));
+  if (add_clipboard_format_listener_) {
+    remove_clipboard_format_listener_ =
+        reinterpret_cast<RemoveClipboardFormatListenerFn*>(
+            GetProcAddress(user32, "RemoveClipboardFormatListener"));
+    // If AddClipboardFormatListener() present, RemoveClipboardFormatListener()
+    // should be available too.
+    CHECK(remove_clipboard_format_listener_);
+  } else {
+    LOG(WARNING) << "AddClipboardFormatListener() is not available.";
   }
 
-  if (!RegisterWindowClass()) {
-    LOG(ERROR) << "Couldn't register clipboard window class.";
-    return;
-  }
-  hwnd_ = ::CreateWindow(kWindowClassName,
-                         kWindowName,
-                         0, 0, 0, 0, 0,
-                         HWND_MESSAGE,
-                         NULL,
-                         base::GetModuleFromAddress(&WndProc),
-                         this);
-  if (!hwnd_) {
+  window_.reset(new win::MessageWindow());
+  if (!window_->Create(this)) {
     LOG(ERROR) << "Couldn't create clipboard window.";
+    window_.reset();
     return;
   }
 
-  if (HaveClipboardListenerApi()) {
-    if (!(*add_clipboard_format_listener_)(hwnd_)) {
+  if (add_clipboard_format_listener_) {
+    if (!(*add_clipboard_format_listener_)(window_->hwnd())) {
       LOG(WARNING) << "AddClipboardFormatListener() failed: " << GetLastError();
     }
   }
@@ -185,18 +179,15 @@ void ClipboardWin::Start(
 void ClipboardWin::Stop() {
   client_clipboard_.reset();
 
-  if (hwnd_) {
-    if (HaveClipboardListenerApi()) {
-      (*remove_clipboard_format_listener_)(hwnd_);
-    }
-    ::DestroyWindow(hwnd_);
-    hwnd_ = NULL;
-  }
+  if (window_ && remove_clipboard_format_listener_)
+    (*remove_clipboard_format_listener_)(window_->hwnd());
+
+  window_.reset();
 }
 
 void ClipboardWin::InjectClipboardEvent(
     const protocol::ClipboardEvent& event) {
-  if (!hwnd_)
+  if (!window_)
     return;
 
   // Currently we only handle UTF-8 text.
@@ -210,7 +201,7 @@ void ClipboardWin::InjectClipboardEvent(
   string16 text = UTF8ToUTF16(ReplaceLfByCrLf(event.data()));
 
   ScopedClipboard clipboard;
-  if (!clipboard.Init(hwnd_)) {
+  if (!clipboard.Init(window_->hwnd())) {
     LOG(WARNING) << "Couldn't open the clipboard.";
     return;
   }
@@ -234,7 +225,7 @@ void ClipboardWin::InjectClipboardEvent(
 }
 
 void ClipboardWin::OnClipboardUpdate() {
-  DCHECK(hwnd_);
+  DCHECK(window_);
 
   if (::IsClipboardFormatAvailable(CF_UNICODETEXT)) {
     string16 text;
@@ -242,7 +233,7 @@ void ClipboardWin::OnClipboardUpdate() {
     // possible.
     {
       ScopedClipboard clipboard;
-      if (!clipboard.Init(hwnd_)) {
+      if (!clipboard.Init(window_->hwnd())) {
         LOG(WARNING) << "Couldn't open the clipboard." << GetLastError();
         return;
       }
@@ -272,49 +263,15 @@ void ClipboardWin::OnClipboardUpdate() {
   }
 }
 
-bool ClipboardWin::HaveClipboardListenerApi() {
-  return add_clipboard_format_listener_ && remove_clipboard_format_listener_;
-}
-
-bool ClipboardWin::RegisterWindowClass() {
-  // This method is only called on the UI thread, so it doesn't matter
-  // that the following test is not thread-safe.
-  static bool registered = false;
-  if (registered) {
+bool ClipboardWin::HandleMessage(
+    HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam, LRESULT* result) {
+  if (message == WM_CLIPBOARDUPDATE) {
+    OnClipboardUpdate();
+    *result = 0;
     return true;
   }
 
-  WNDCLASSEX window_class;
-  base::win::InitializeWindowClass(
-      kWindowClassName,
-      base::win::WrappedWindowProc<WndProc>,
-      0, 0, 0, NULL, NULL, NULL, NULL, NULL,
-      &window_class);
-  if (!::RegisterClassEx(&window_class)) {
-    return false;
-  }
-
-  registered = true;
-  return true;
-}
-
-LRESULT CALLBACK ClipboardWin::WndProc(HWND hwnd, UINT msg, WPARAM wparam,
-                                       LPARAM lparam) {
-  if (msg == WM_CREATE) {
-    CREATESTRUCT* cs = reinterpret_cast<CREATESTRUCT*>(lparam);
-    ::SetWindowLongPtr(hwnd,
-                       GWLP_USERDATA,
-                       reinterpret_cast<LONG_PTR>(cs->lpCreateParams));
-    return 0;
-  }
-  ClipboardWin* clipboard =
-      reinterpret_cast<ClipboardWin*>(::GetWindowLongPtr(hwnd, GWLP_USERDATA));
-  switch (msg) {
-    case WM_CLIPBOARDUPDATE:
-      clipboard->OnClipboardUpdate();
-      return 0;
-  }
-  return ::DefWindowProc(hwnd, msg, wparam, lparam);
+  return false;
 }
 
 scoped_ptr<Clipboard> Clipboard::Create() {

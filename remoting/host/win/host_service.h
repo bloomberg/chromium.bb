@@ -13,6 +13,7 @@
 #include "base/memory/singleton.h"
 #include "base/synchronization/waitable_event.h"
 #include "net/base/ip_endpoint.h"
+#include "remoting/host/win/message_window.h"
 #include "remoting/host/win/wts_terminal_monitor.h"
 
 class CommandLine;
@@ -27,7 +28,8 @@ class AutoThreadTaskRunner;
 class Stoppable;
 class WtsTerminalObserver;
 
-class HostService : public WtsTerminalMonitor {
+class HostService : public win::MessageWindow::Delegate,
+                    public WtsTerminalMonitor {
  public:
   static HostService* GetInstance();
 
@@ -68,6 +70,13 @@ class HostService : public WtsTerminalMonitor {
   // console application).
   int RunInConsole();
 
+  // win::MessageWindow::Delegate interface.
+  virtual bool HandleMessage(HWND hwnd,
+                             UINT message,
+                             WPARAM wparam,
+                             LPARAM lparam,
+                             LRESULT* result) OVERRIDE;
+
   static BOOL WINAPI ConsoleControlHandler(DWORD event);
 
   // The control handler of the service.
@@ -78,11 +87,6 @@ class HostService : public WtsTerminalMonitor {
 
   // The main service entry point.
   static VOID WINAPI ServiceMain(DWORD argc, WCHAR* argv[]);
-
-  static LRESULT CALLBACK SessionChangeNotificationProc(HWND hwnd,
-                                                        UINT message,
-                                                        WPARAM wparam,
-                                                        LPARAM lparam);
 
   struct RegisteredObserver {
     // Specifies the client address of an RDP connection or IPEndPoint() for
