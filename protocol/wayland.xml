@@ -1105,28 +1105,28 @@
    </interface>
 
   <interface name="wl_seat" version="1">
-    <description summary="seat">
-      A group of keyboards, pointer (mice, for example) and touch
-      devices . This object is published as a global during start up,
-      or when such a device is hot plugged.  A seat typically has a
-      pointer and maintains a keyboard_focus and a pointer_focus.
+    <description summary="group of input devices">
+      A seat is a group of keyboards, pointer (mice, for example) and
+      touch devices. This object is published as a global during
+      start up, or when such a device is hot plugged.  A seat typically
+      has a pointer and maintains a keyboard focus, a pointer focus and
+      a touch focus.
     </description>
 
     <enum name="capability">
       <description summary="seat capability bitmask">
         This is a bitmask of capabilities this seat has; if a member is
-	set, then it is present on the seat.
+        set, then it is present on the seat.
       </description>
-      <entry name="pointer" value="1" summary="wl_pointer"/>
-      <entry name="keyboard" value="2" summary="wl_keyboard"/>
-      <entry name="touch" value="4" summary="wl_touch"/>
+      <entry name="pointer" value="1" summary="The seat has pointer devices"/>
+      <entry name="keyboard" value="2" summary="The seat has one or more keyboards"/>
+      <entry name="touch" value="4" summary="The seat has touch devices"/>
     </enum>
-
 
     <event name="capabilities">
       <description summary="seat capabilities changed">
         This is emitted whenever a seat gains or loses the pointer,
-	keyboard or touch capabilities.  The argument is a wl_seat_caps_mask
+	keyboard or touch capabilities.  The argument is a capability
 	enum containing the complete set of capabilities this seat has.
       </description>
       <arg name="capabilities" type="uint"/>
@@ -1136,22 +1136,31 @@
       <description summary="return pointer object">
         The ID provided will be initialized to the wl_pointer interface
 	for this seat.
+
+        This request only takes effect if the seat has the pointer
+        capability.
       </description>
       <arg name="id" type="new_id" interface="wl_pointer"/>
     </request>
 
     <request name="get_keyboard">
-      <description summary="return pointer object">
+      <description summary="return keyboard object">
         The ID provided will be initialized to the wl_keyboard interface
 	for this seat.
+
+        This request only takes effect if the seat has the keyboard
+        capability.
       </description>
       <arg name="id" type="new_id" interface="wl_keyboard"/>
     </request>
 
     <request name="get_touch">
-      <description summary="return pointer object">
+      <description summary="return touch object">
         The ID provided will be initialized to the wl_touch interface
 	for this seat.
+
+        This request only takes effect if the seat has the touch
+        capability.
       </description>
       <arg name="id" type="new_id" interface="wl_touch"/>
     </request>
