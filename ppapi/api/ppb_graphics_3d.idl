@@ -8,6 +8,8 @@
  * context within the browser.
  */
 
+[generate_thunk]
+
 label Chrome {
   M15 = 1.0
 };

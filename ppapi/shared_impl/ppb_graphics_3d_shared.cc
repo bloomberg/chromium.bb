@@ -70,6 +70,12 @@ int32_t PPB_Graphics3D_Shared::SwapBuffers(
   return DoSwapBuffers();
 }
 
+int32_t PPB_Graphics3D_Shared::GetAttribMaxValue(int32_t attribute,
+                                                 int32_t* value) {
+  // TODO(alokp): Implement me.
+  return PP_ERROR_FAILED;
+}
+
 void* PPB_Graphics3D_Shared::MapTexSubImage2DCHROMIUM(GLenum target,
                                                       GLint level,
                                                       GLint xoffset,

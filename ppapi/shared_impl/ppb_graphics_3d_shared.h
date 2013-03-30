@@ -37,6 +37,8 @@ class PPAPI_SHARED_EXPORT PPB_Graphics3D_Shared
   virtual int32_t GetError() OVERRIDE;
   virtual int32_t ResizeBuffers(int32_t width, int32_t height) OVERRIDE;
   virtual int32_t SwapBuffers(scoped_refptr<TrackedCallback> callback) OVERRIDE;
+  virtual int32_t GetAttribMaxValue(int32_t attribute, int32_t* value) OVERRIDE;
+
   virtual void* MapTexSubImage2DCHROMIUM(GLenum target,
                                          GLint level,
                                          GLint xoffset,
