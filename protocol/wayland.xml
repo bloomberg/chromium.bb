@@ -36,9 +36,10 @@
     <request name="sync">
       <description summary="asynchronous roundtrip">
 	The sync request asks the server to emit the 'done' event
-	on the provided wl_callback object.  Since requests are
-	handled in-order, this can be used as a barrier to ensure all
-	previous requests have been handled.
+	on the returned wl_callback object.  Since requests are
+	handled in-order and events are delivered in-order, this can
+	used as a barrier to ensure all previous requests and the
+	resulting events have been handled.
       </description>
       <arg name="callback" type="new_id" interface="wl_callback"/>
     </request>
@@ -55,11 +56,11 @@
     <event name="error">
       <description summary="fatal error event">
 	The error event is sent out when a fatal (non-recoverable)
-	error has occurred.  The @object_id argument is the object
+	error has occurred.  The object_id argument is the object
 	where the error occurred, most often in response to a request
-	to that object.  The @code identifies the error and is defined
+	to that object.  The code identifies the error and is defined
 	by the object interface.  As such, each interface defines its
-	own set of error codes.  The @message is an brief description
+	own set of error codes.  The message is an brief description
 	of the error, for (debugging) convenience.
       </description>
       <arg name="object_id" type="object"/>
@@ -81,12 +82,12 @@
     </enum>
 
     <event name="delete_id">
-      <description summary="acknowledge object id deletion">
+      <description summary="acknowledge object ID deletion">
 	This event is used internally by the object ID management
 	logic.  When a client deletes an object, the server will send
 	this event to acknowledge that it has seen the delete request.
 	When the client receive this event, it will know that it can
-	safely reuse the object ID
+	safely reuse the object ID.
       </description>
       <arg name="id" type="uint" />
     </event>
