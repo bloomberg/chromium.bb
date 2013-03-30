@@ -114,7 +114,7 @@ def GetBotStepMap():
       B('fyi-tests', std_test_steps,
         T(std_tests, ['--experimental', flakiness_server]), None),
       B('perf-tests-rel', std_test_steps,
-        T([], ['--install=ContentShell', '--auto-reconnect']),
+        T([], ['--install=ContentShell']),
         None),
       B('webkit-latest-webkit-tests', std_test_steps,
         T(['webkit_layout', 'webkit']), None),
