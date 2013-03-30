@@ -86,6 +86,25 @@ std::vector<std::string> ComponentExtensionIMEManager::ListIMEByLanguage(
   return result;
 }
 
+input_method::InputMethodDescriptors
+    ComponentExtensionIMEManager::GetAllIMEAsInputMethodDescriptor() {
+  input_method::InputMethodDescriptors result;
+  for (size_t i = 0; i < component_extension_imes_.size(); ++i) {
+    for (size_t j = 0; j < component_extension_imes_[i].engines.size(); ++j) {
+      result.push_back(
+          input_method::InputMethodDescriptor(
+              extension_ime_util::GetInputMethodID(
+                  component_extension_imes_[i].id,
+                  component_extension_imes_[i].engines[j].engine_id),
+              component_extension_imes_[i].engines[j].display_name,
+              component_extension_imes_[i].engines[j].layout,
+              component_extension_imes_[i].engines[j].language_code,
+              false));
+    }
+  }
+  return result;
+}
+
 bool ComponentExtensionIMEManager::FindEngineEntry(
     const std::string& input_method_id,
     ComponentExtensionIME* out_extension,

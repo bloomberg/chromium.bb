@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/ibus/ibus_component.h"
+#include "chromeos/ime/input_method_descriptor.h"
 
 namespace chromeos {
 
@@ -76,6 +77,9 @@ class CHROMEOS_EXPORT ComponentExtensionIMEManager {
 
   // Returns list of input method id associated with |language|.
   std::vector<std::string> ListIMEByLanguage(const std::string& language);
+
+  // Returns all IME as InputMethodDescriptors.
+  input_method::InputMethodDescriptors GetAllIMEAsInputMethodDescriptor();
 
  private:
   // Finds ComponentExtensionIME and EngineDescription associated with

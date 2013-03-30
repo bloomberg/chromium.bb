@@ -254,6 +254,16 @@ TEST_F(ComponentExtensionIMEManagerTest, ListIMEByLanguageTest) {
   EXPECT_EQ(2UL, component_ext_mgr_->ListIMEByLanguage("ja").size());
 }
 
+TEST_F(ComponentExtensionIMEManagerTest, GetAllIMEAsInputMethodDescriptor) {
+  input_method::InputMethodDescriptors descriptors =
+      component_ext_mgr_->GetAllIMEAsInputMethodDescriptor();
+  size_t total_ime_size = 0;
+  for (size_t i = 0; i < ime_list_.size(); ++i) {
+    total_ime_size += ime_list_[i].engines.size();
+  }
+  EXPECT_EQ(total_ime_size, descriptors.size());
+}
+
 }  // namespace
 
 }  // namespace input_method
