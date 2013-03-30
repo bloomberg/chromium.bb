@@ -599,7 +599,7 @@ void InputMethodManagerImpl::Init() {
   DCHECK(!ibus_controller_.get());
 
   ibus_controller_.reset(IBusController::Create());
-  xkeyboard_.reset(XKeyboard::Create(util_));
+  xkeyboard_.reset(XKeyboard::Create());
   ibus_controller_->AddObserver(this);
 }
 

@@ -13,23 +13,24 @@
 #include "base/chromeos/chromeos_version.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop.h"
 #include "base/process_util.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
-#include "chrome/browser/chromeos/input_method/input_method_util.h"
-#include "content/public/browser/browser_thread.h"
-#include "ui/base/x/x11_util.h"
+#include "base/threading/thread_checker.h"
 
 // These includes conflict with base/tracked_objects.h so must come last.
 #include <X11/XKBlib.h>
 #include <X11/Xlib.h>
 #include <glib.h>
 
-using content::BrowserThread;
-
 namespace chromeos {
 namespace input_method {
 namespace {
+
+Display* GetXDisplay() {
+  return base::MessagePumpForUI::GetDefaultXDisplay();
+}
 
 // The default keyboard layout name in the xorg config file.
 const char kDefaultLayoutName[] = "us";
@@ -62,7 +63,7 @@ bool CheckLayoutName(const std::string& layout_name) {
 
 class XKeyboardImpl : public XKeyboard {
  public:
-  explicit XKeyboardImpl(const InputMethodUtil& util);
+  XKeyboardImpl();
   virtual ~XKeyboardImpl() {}
 
   // Overridden from XKeyboard:
@@ -91,10 +92,6 @@ class XKeyboardImpl : public XKeyboard {
   // TODO(yusukes): Use libxkbfile.so instead of the command (crosbug.com/13105)
   void MaybeExecuteSetLayoutCommand();
 
-  // Returns true if the current thread is the UI thread, or the process is
-  // running on Linux.
-  bool CurrentlyOnUIThread() const;
-
   // Called when execve'd setxkbmap process exits.
   static void OnSetLayoutFinish(pid_t pid, int status, XKeyboardImpl* self);
 
@@ -110,10 +107,12 @@ class XKeyboardImpl : public XKeyboard {
   // A queue for executing setxkbmap one by one.
   std::queue<std::string> execute_queue_;
 
+  base::ThreadChecker thread_checker_;
+
   DISALLOW_COPY_AND_ASSIGN(XKeyboardImpl);
 };
 
-XKeyboardImpl::XKeyboardImpl(const InputMethodUtil& util)
+XKeyboardImpl::XKeyboardImpl()
     : is_running_on_chrome_os_(base::chromeos::IsRunningOnChromeOS()) {
   num_lock_mask_ = GetNumLockMask();
 
@@ -200,12 +199,12 @@ bool XKeyboardImpl::CapsLockIsEnabled() {
 }
 
 unsigned int XKeyboardImpl::GetNumLockMask() {
-  CHECK(CurrentlyOnUIThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   static const unsigned int kBadMask = 0;
 
   unsigned int real_mask = kBadMask;
   XkbDescPtr xkb_desc =
-      XkbGetKeyboard(ui::GetXDisplay(), XkbAllComponentsMask, XkbUseCoreKbd);
+      XkbGetKeyboard(GetXDisplay(), XkbAllComponentsMask, XkbUseCoreKbd);
   if (!xkb_desc)
     return kBadMask;
 
@@ -213,11 +212,14 @@ unsigned int XKeyboardImpl::GetNumLockMask() {
     const std::string string_to_find(kNumLockVirtualModifierString);
     for (size_t i = 0; i < XkbNumVirtualMods; ++i) {
       const unsigned int virtual_mod_mask = 1U << i;
-      ui::XScopedString virtual_mod_str(
-          XGetAtomName(xkb_desc->dpy, xkb_desc->names->vmods[i]));
-      if (!virtual_mod_str.string())
+      char* virtual_mod_str_raw_ptr =
+          XGetAtomName(xkb_desc->dpy, xkb_desc->names->vmods[i]);
+      if (!virtual_mod_str_raw_ptr)
         continue;
-      if (string_to_find == virtual_mod_str.string()) {
+      const std::string virtual_mod_str = virtual_mod_str_raw_ptr;
+      XFree(virtual_mod_str_raw_ptr);
+
+      if (string_to_find == virtual_mod_str) {
         if (!XkbVirtualModsToReal(xkb_desc, virtual_mod_mask, &real_mask)) {
           DVLOG(1) << "XkbVirtualModsToReal failed";
           real_mask = kBadMask;  // reset the return value, just in case.
@@ -232,7 +234,7 @@ unsigned int XKeyboardImpl::GetNumLockMask() {
 
 void XKeyboardImpl::GetLockedModifiers(bool* out_caps_lock_enabled,
                                        bool* out_num_lock_enabled) {
-  CHECK(CurrentlyOnUIThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   if (out_num_lock_enabled && !num_lock_mask_) {
     DVLOG(1) << "Cannot get locked modifiers. Num Lock mask unknown.";
@@ -244,7 +246,7 @@ void XKeyboardImpl::GetLockedModifiers(bool* out_caps_lock_enabled,
   }
 
   XkbStateRec status;
-  XkbGetState(ui::GetXDisplay(), XkbUseCoreKbd, &status);
+  XkbGetState(GetXDisplay(), XkbUseCoreKbd, &status);
   if (out_caps_lock_enabled)
     *out_caps_lock_enabled = status.locked_mods & LockMask;
   if (out_num_lock_enabled)
@@ -253,7 +255,7 @@ void XKeyboardImpl::GetLockedModifiers(bool* out_caps_lock_enabled,
 
 void XKeyboardImpl::SetLockedModifiers(ModifierLockStatus new_caps_lock_status,
                                        ModifierLockStatus new_num_lock_status) {
-  CHECK(CurrentlyOnUIThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (!num_lock_mask_) {
     DVLOG(1) << "Cannot set locked modifiers. Num Lock mask unknown.";
     return;
@@ -273,7 +275,7 @@ void XKeyboardImpl::SetLockedModifiers(ModifierLockStatus new_caps_lock_status,
   }
 
   if (affect_mask)
-    XkbLockModifiers(ui::GetXDisplay(), XkbUseCoreKbd, affect_mask, value_mask);
+    XkbLockModifiers(GetXDisplay(), XkbUseCoreKbd, affect_mask, value_mask);
 }
 
 void XKeyboardImpl::SetNumLockEnabled(bool enable_num_lock) {
@@ -308,23 +310,10 @@ void XKeyboardImpl::ReapplyCurrentModifierLockStatus() {
                      current_num_lock_status_ ? kEnableLock : kDisableLock);
 }
 
-bool XKeyboardImpl::CurrentlyOnUIThread() const {
-  // It seems that the tot Chrome (as of Mar 7 2012) does not allow browser
-  // tests to call BrowserThread::CurrentlyOn(). It ends up a CHECK failure:
-  //   FATAL:sequenced_worker_pool.cc
-  //   Check failed: constructor_message_loop_.get().
-  // For now, just allow unit/browser tests to call any functions in this class.
-  // TODO(yusukes): Stop special-casing browser_tests and remove this function.
-  if (!is_running_on_chrome_os_)
-    return true;
-  return BrowserThread::CurrentlyOn(BrowserThread::UI);
-}
-
 // static
 void XKeyboardImpl::OnSetLayoutFinish(pid_t pid,
                                       int status,
                                       XKeyboardImpl* self) {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DVLOG(1) << "OnSetLayoutFinish: pid=" << pid;
   if (self->execute_queue_.empty()) {
     DVLOG(1) << "OnSetLayoutFinish: execute_queue_ is empty. "
@@ -339,22 +328,20 @@ void XKeyboardImpl::OnSetLayoutFinish(pid_t pid,
 
 // static
 bool XKeyboard::SetAutoRepeatEnabled(bool enabled) {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (enabled)
-    XAutoRepeatOn(ui::GetXDisplay());
+    XAutoRepeatOn(GetXDisplay());
   else
-    XAutoRepeatOff(ui::GetXDisplay());
+    XAutoRepeatOff(GetXDisplay());
   DVLOG(1) << "Set auto-repeat mode to: " << (enabled ? "on" : "off");
   return true;
 }
 
 // static
 bool XKeyboard::SetAutoRepeatRate(const AutoRepeatRate& rate) {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DVLOG(1) << "Set auto-repeat rate to: "
            << rate.initial_delay_in_ms << " ms delay, "
            << rate.repeat_interval_in_ms << " ms interval";
-  if (XkbSetAutoRepeatRate(ui::GetXDisplay(), XkbUseCoreKbd,
+  if (XkbSetAutoRepeatRate(GetXDisplay(), XkbUseCoreKbd,
                            rate.initial_delay_in_ms,
                            rate.repeat_interval_in_ms) != True) {
     DVLOG(1) << "Failed to set auto-repeat rate";
@@ -366,13 +353,13 @@ bool XKeyboard::SetAutoRepeatRate(const AutoRepeatRate& rate) {
 // static
 bool XKeyboard::GetAutoRepeatEnabledForTesting() {
   XKeyboardState state = {};
-  XGetKeyboardControl(ui::GetXDisplay(), &state);
+  XGetKeyboardControl(GetXDisplay(), &state);
   return state.global_auto_repeat != AutoRepeatModeOff;
 }
 
 // static
 bool XKeyboard::GetAutoRepeatRateForTesting(AutoRepeatRate* out_rate) {
-  return XkbGetAutoRepeatRate(ui::GetXDisplay(), XkbUseCoreKbd,
+  return XkbGetAutoRepeatRate(GetXDisplay(), XkbUseCoreKbd,
                               &(out_rate->initial_delay_in_ms),
                               &(out_rate->repeat_interval_in_ms)) == True;
 }
@@ -383,8 +370,8 @@ bool XKeyboard::CheckLayoutNameForTesting(const std::string& layout_name) {
 }
 
 // static
-XKeyboard* XKeyboard::Create(const InputMethodUtil& util) {
-  return new XKeyboardImpl(util);
+XKeyboard* XKeyboard::Create() {
+  return new XKeyboardImpl();
 }
 
 }  // namespace input_method

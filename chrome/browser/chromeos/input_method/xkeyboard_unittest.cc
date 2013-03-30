@@ -11,16 +11,11 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chromeos/ime/input_method_whitelist.h"
 #include "chromeos/ime/mock_input_method_delegate.h"
-#include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/x/x11_util.h"
 
 #include <X11/Xlib.h>
-
-using content::BrowserThread;
 
 namespace chromeos {
 namespace input_method {
@@ -29,31 +24,26 @@ namespace {
 
 class XKeyboardTest : public testing::Test {
  public:
-  XKeyboardTest()
-      : util_(&delegate_, whitelist_.GetSupportedInputMethods()),
-        ui_thread_(BrowserThread::UI, &message_loop_) {
+  XKeyboardTest() {
   }
 
   virtual void SetUp() {
-    xkey_.reset(XKeyboard::Create(util_));
+    xkey_.reset(XKeyboard::Create());
   }
 
   virtual void TearDown() {
     xkey_.reset();
   }
 
-  MockInputMethodDelegate delegate_;
   InputMethodWhitelist whitelist_;
-  InputMethodUtil util_;
   scoped_ptr<XKeyboard> xkey_;
 
   MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
 };
 
 // Returns true if X display is available.
 bool DisplayAvailable() {
-  return (ui::GetXDisplay() != NULL);
+  return (base::MessagePumpForUI::GetDefaultXDisplay() != NULL);
 }
 
 }  // namespace

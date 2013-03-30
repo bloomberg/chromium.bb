@@ -121,7 +121,7 @@ class XKeyboard {
 
   // Note: At this moment, classes other than InputMethodManager should not
   // instantiate the XKeyboard class.
-  static XKeyboard* Create(const InputMethodUtil& util);
+  static XKeyboard* Create();
 };
 
 }  // namespace input_method
