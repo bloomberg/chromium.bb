@@ -196,20 +196,21 @@
       The wl_shm_pool object encapsulates a piece of memory shared
       between the compositor and client.  Through the wl_shm_pool
       object, the client can allocate shared memory wl_buffer objects.
-      The objects will share the same underlying mapped memory.
-      Reusing the mapped memory avoids the setup/teardown overhead and
-      is useful when interactively resizing a surface or for many
-      small buffers.
+      All objects created through the same pool share the same
+      underlying mapped memory. Reusing the mapped memory avoids the
+      setup/teardown overhead and is useful when interactively resizing
+      a surface or for many small buffers.
     </description>
 
     <request name="create_buffer">
-      <description summary="create wl_buffer from pool">
-	Create a wl_buffer from the pool.  The buffer is created a
-	offset bytes into the pool and has width and height as
-	specified.  The stride arguments specifies the number of bytes
-	from beginning of one row to the beginning of the next.  The
-	format is the pixel format of the buffer and must be one of
-	those advertised through the wl_shm.format event.
+      <description summary="create a buffer from the pool">
+	Create a wl_buffer object from the pool.
+
+	The buffer is created offset bytes into the pool and has
+	width and height as specified.  The stride arguments specifies
+	the number of bytes from beginning of one row to the beginning
+	of the next.  The format is the pixel format of the buffer and
+	must be one of those advertised through the wl_shm.format event.
 
 	A buffer will keep a reference to the pool it was created from
 	so it is valid to destroy the pool immediately after creating
@@ -226,15 +227,19 @@
 
     <request name="destroy" type="destructor">
       <description summary="destroy the pool">
-	Destroy the pool.
+	Destroy the shared memory pool.
+
+	The mmapped memory will be released when all
+	buffers that have been created from this pool
+	are gone.
       </description>
     </request>
 
     <request name="resize">
       <description summary="change the size of the pool mapping">
 	This request will cause the server to remap the backing memory
-	for the pool from the fd passed when the pool was creating but
-	using the new size.
+	for the pool from the file descriptor passed when the pool was
+	created, but using the new size.
       </description>
 
       <arg name="size" type="int"/>
@@ -243,26 +248,41 @@
 
   <interface name="wl_shm" version="1">
     <description summary="shared memory support">
-      Support for shared memory buffers.
+      A global singleton object that provides support for shared
+      memory.
+
+      Clients can create wl_shm_pool objects using the create_pool
+      request.
+
+      At connection setup time, the wl_shm object emits one or more
+      format events to inform clients about the valid pixel formats
+      that can be used for buffers.
     </description>
 
     <enum name="error">
-      <entry name="invalid_format" value="0"/>
-      <entry name="invalid_stride" value="1"/>
-      <entry name="invalid_fd" value="2"/>
+      <description summary="wl_shm error values">
+	These errors can be emitted in response to wl_shm requests.
+      </description>
+      <entry name="invalid_format" value="0" summary="buffer format is not known"/>
+      <entry name="invalid_stride" value="1" summary="invalid size or stride during pool or buffer creation"/>
+      <entry name="invalid_fd" value="2" summary="mmapping the file descriptor failed"/>
     </enum>
 
     <enum name="format">
-      <entry name="argb8888" value="0"/>
-      <entry name="xrgb8888" value="1"/>
+      <description summary="pixel formats">
+	This describes the memory layout of an individual pixel.
+      </description>
+      <entry name="argb8888" value="0" summary="32-bit ARGB format"/>
+      <entry name="xrgb8888" value="1" summary="32-bit RGB format"/>
     </enum>
 
     <request name="create_pool">
       <description summary="create a shm pool">
-	This creates wl_shm_pool object, which can be used to create
-	shared memory based wl_buffer objects.  The server will mmap
-	size bytes of the passed fd, to use as backing memory for then
-	pool.
+	Create a new wl_shm_pool object.
+
+	The pool can be used to create shared memory based buffer
+	objects.  The server will mmap size bytes of the passed file
+        descriptor, to use as backing memory for the pool.
       </description>
 
       <arg name="id" type="new_id" interface="wl_shm_pool"/>
@@ -271,6 +291,11 @@
     </request>
 
     <event name="format">
+      <description summary="pixel format description">
+	Informs the client about a valid pixel format that
+	can be used for buffers. Known formats include
+	argb8888 and xrgb8888.
+      </description>
       <arg name="format" type="uint"/>
     </event>
   </interface>
