@@ -24,26 +24,51 @@ remoting.HostNativeMessaging = function() {
   this.nextId_ = 0;
 
   /**
-   * @type {Object.<number, {callback:function(...):void, type:string}>}
+   * @type {Object.<number, {callback:?function(...):void, type:string}>}
    * @private
    */
   this.pendingReplies_ = {};
 
-  /** @private */
-  this.port_ = chrome.runtime.connectNative(
-      'chrome-remote-desktop-native-host');
-  this.port_.onMessage.addListener(this.onIncomingMessage_.bind(this));
+  /** @type {?chrome.extension.Port} @private */
+  this.port_ = null;
+
+  /** @type {?function(boolean):void} @private */
+  this.onInitializedCallback_ = null;
+
+  /** @type {string} @private */
+  this.version_ = ''
 };
 
 /**
- * @return {boolean} True if native messaging is supported.
+ * Sets up connection to the Native Messaging host process and exchanges
+ * 'hello' messages. If Native Messaging is not available or the host
+ * process is not installed, this returns false to the callback.
+ *
+ * @param {function(boolean): void} onDone Called with the result of
+ *     initialization.
+ * @return {void} Nothing.
  */
-remoting.HostNativeMessaging.isSupported = function() {
-  // TODO(lambroslambrou): This needs to perform an asynchronous "hello"
-  // exchange with the native host component (possibly getting its version
-  // number at the same time), and report the result via a regular callback or
-  // an error callback. For now, simply return false here.
-  return false;
+remoting.HostNativeMessaging.prototype.initialize = function(onDone) {
+  if (!chrome.runtime.connectNative) {
+    console.log('Native Messaging API not available');
+    onDone(false);
+    return;
+  }
+
+  try {
+    this.port_ = chrome.runtime.connectNative(
+        'com.google.chrome.remote_desktop');
+    this.port_.onMessage.addListener(this.onIncomingMessage_.bind(this));
+    this.port_.onDisconnect.addListener(this.onDisconnect_.bind(this));
+    this.postMessage_({type: 'hello'}, null);
+  } catch (err) {
+    console.log('Native Messaging initialization failed: ',
+                /** @type {*} */ (err));
+    onDone(false);
+    return;
+  }
+
+  this.onInitializedCallback_ = onDone;
 };
 
 /**
@@ -90,8 +115,8 @@ function asAsyncResult_(result) {
  * depending on the message type.
  *
  * @param {{type: string}} message The message to post.
- * @param {function(...):void} callback The callback to be triggered on
- *     response.
+ * @param {?function(...):void} callback The callback, if any, to be triggered
+ *     on response.
  * @return {void} Nothing.
  * @private
  */
@@ -143,6 +168,20 @@ remoting.HostNativeMessaging.prototype.onIncomingMessage_ = function(message) {
   // TODO(lambroslambrou): Errors here should be passed to an error-callback
   // supplied by the caller of this interface.
   switch (type) {
+    case 'helloResponse':
+      /** @type {string} */
+      var version = message['version'];
+      if (checkType_('version', version, 'string')) {
+        this.version_ = version;
+        if (this.onInitializedCallback_) {
+          this.onInitializedCallback_(true);
+          this.onInitializedCallback_ = null;
+        } else {
+          console.error('Unexpected helloResponse received.');
+        }
+      }
+      break;
+
     case 'getHostNameResponse':
       /** @type {*} */
       var hostname = message['hostname'];
@@ -185,14 +224,6 @@ remoting.HostNativeMessaging.prototype.onIncomingMessage_ = function(message) {
       }
       break;
 
-    case 'getDaemonVersionResponse':
-      /** @type {*} */
-      var version = message['version'];
-      if (checkType_('version', version, 'string')) {
-        callback(version);
-      }
-      break;
-
     case 'getUsageStatsConsentResponse':
       /** @type {*} */
       var supported = message['supported'];
@@ -219,6 +250,18 @@ remoting.HostNativeMessaging.prototype.onIncomingMessage_ = function(message) {
       console.error('Unexpected native message: ', message);
   }
 };
+
+/**
+ * @return {void} Nothing.
+ * @private
+ */
+remoting.HostNativeMessaging.prototype.onDisconnect_ = function() {
+  console.log('Native Message port disconnected');
+  if (this.onInitializedCallback_) {
+    this.onInitializedCallback_(false);
+    this.onInitializedCallback_ = null;
+  }
+}
 
 /**
  * @param {string} email The email address of the connector.
@@ -321,7 +364,10 @@ remoting.HostNativeMessaging.prototype.getDaemonConfig = function(callback) {
  * @return {void} Nothing.
  */
 remoting.HostNativeMessaging.prototype.getDaemonVersion = function(callback) {
-  this.postMessage_({type: 'getDaemonVersion'}, callback);
+  // Return the cached version from the 'hello' exchange. This interface needs
+  // to be asynchronous because the NPAPI version is, and this implements the
+  // same interface.
+  callback(this.version_);
 };
 
 /**

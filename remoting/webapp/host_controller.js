@@ -9,34 +9,46 @@ var remoting = remoting || {};
 
 /** @constructor */
 remoting.HostController = function() {
-  /** @type {remoting.HostPlugin} @private */
-  this.plugin_ = null;
-  if (remoting.HostNativeMessaging.isSupported()) {
-    this.plugin_ = new remoting.HostNativeMessaging();
-  } else {
-    this.plugin_ = remoting.HostSession.createPlugin();
-    /** @type {HTMLElement} @private */
-    var container = document.getElementById('daemon-plugin-container');
-    container.appendChild(this.plugin_);
-  }
+  /** @type {remoting.HostController} */
+  var that = this;
 
-  /** @param {string} version */
-  var printVersion = function(version) {
-    if (version == '') {
-      console.log('Host not installed.');
-    } else {
-      console.log('Host version: ' + version);
-    }
-  };
   /** @type {boolean} @private */
   this.pluginSupported_ = true;
-  try {
-    this.plugin_.getDaemonVersion(printVersion);
-  } catch (err) {
-    console.log('Host version not available.');
-    this.pluginSupported_ = false;
+
+  /** @type {remoting.HostPlugin} @private */
+  this.plugin_ = new remoting.HostNativeMessaging();
+
+  /** @param {boolean} success */
+  var onNativeMessagingInit = function(success) {
+    if (success) {
+      console.log('Native Messaging supported.');
+    } else {
+      console.log('Native Messaging unsupported, falling back to NPAPI.');
+      that.plugin_ = remoting.HostSession.createPlugin();
+      /** @type {HTMLElement} @private */
+      var container = document.getElementById('daemon-plugin-container');
+      container.appendChild(that.plugin_);
+    }
+
+    /** @param {string} version */
+    var printVersion = function(version) {
+      if (version == '') {
+        console.log('Host not installed.');
+      } else {
+        console.log('Host version: ' + version);
+      }
+    };
+    that.pluginSupported_ = true;
+    try {
+      that.plugin_.getDaemonVersion(printVersion);
+    } catch (err) {
+      console.log('Host version not available.');
+      that.pluginSupported_ = false;
+    }
   }
-};
+
+  this.plugin_.initialize(onNativeMessagingInit);
+}
 
 // Note that the values in the enums below are copied from
 // daemon_controller.h and must be kept in sync.
