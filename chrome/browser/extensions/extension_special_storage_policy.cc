@@ -5,10 +5,12 @@
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_types.h"
 #include "chrome/common/extensions/extension.h"
@@ -33,6 +35,9 @@ bool ExtensionSpecialStoragePolicy::IsStorageProtected(const GURL& origin) {
 }
 
 bool ExtensionSpecialStoragePolicy::IsStorageUnlimited(const GURL& origin) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUnlimitedStorage))
+    return true;
+
   base::AutoLock locker(lock_);
   return unlimited_extensions_.Contains(origin);
 }

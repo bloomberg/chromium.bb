@@ -1386,6 +1386,10 @@ const char kTryChromeAgain[]                = "try-chrome-again";
 // Runs un-installation steps that were done by chrome first-run.
 const char kUninstall[]                     = "uninstall";
 
+// Overrides per-origin quota settings to unlimited storage for any
+// apps/origins.  This should be used only for testing purpose.
+const char kUnlimitedStorage[]              = "unlimited-storage";
+
 // Uses Spdy for the transport protocol instead of HTTP. This is a temporary
 // testing flag.
 const char kUseSpdy[]                       = "use-spdy";

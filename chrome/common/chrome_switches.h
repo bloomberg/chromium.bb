@@ -369,6 +369,7 @@ extern const char kTranslateScriptURL[];
 extern const char kTrustedSpdyProxy[];
 extern const char kTryChromeAgain[];
 extern const char kUninstall[];
+extern const char kUnlimitedStorage[];
 extern const char kUseSimpleCacheBackend[];
 extern const char kUseSpdy[];
 extern const char kUseSpellingSuggestions[];
