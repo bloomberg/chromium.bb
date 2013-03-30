@@ -123,6 +123,9 @@ class SearchBox : public content::RenderViewObserver,
   // trailing "/".
   void FormatURLForDisplay(string16* url) const;
 
+  // Returns true if the Instant page should use iframes to display suggestions.
+  static bool ShouldUseIframes();
+
  private:
   // Overridden from content::RenderViewObserver:
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;

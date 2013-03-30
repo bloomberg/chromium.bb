@@ -103,11 +103,22 @@ function addSuggestionToBox(suggestion, box, select) {
   suggestionDiv.classList.toggle('selected', select);
   suggestionDiv.classList.toggle('search', suggestion.is_search);
 
-  var suggestionIframe = document.createElement('iframe');
-  suggestionIframe.className = 'contents';
-  suggestionIframe.src = suggestion.destination_url;
-  suggestionIframe.id = suggestion.rid;
-  suggestionDiv.appendChild(suggestionIframe);
+  if (suggestion.destination_url) {  // iframes.
+    var suggestionIframe = document.createElement('iframe');
+    suggestionIframe.className = 'contents';
+    suggestionIframe.src = suggestion.destination_url;
+    suggestionIframe.id = suggestion.rid;
+    suggestionDiv.appendChild(suggestionIframe);
+  } else {
+    var contentsContainer = document.createElement('div');
+    var contents = suggestion.combinedNode;
+    contents.classList.add('contents');
+    contentsContainer.appendChild(contents);
+    suggestionDiv.appendChild(contentsContainer);
+    suggestionDiv.onclick = function(event) {
+      handleSuggestionClick(suggestion.rid, event.button);
+    };
+  }
 
   restrictedIds.push(suggestion.rid);
   box.appendChild(suggestionDiv);

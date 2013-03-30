@@ -109,13 +109,15 @@ if (!chrome.embeddedSearch) {
       native function NavigateSearchBox();
       native function ShowBars();
       native function HideBars();
+      native function ShouldUseIframes();
 
       function SafeWrapSuggestion(restrictedText) {
         return SafeWrap(restrictedText, 22);
       }
 
-      // Wraps the AutocompleteResult query and URL into ShadowDOM nodes so that
-      // the JS cannot access them and deletes the raw values. Also replaces the
+      // If shadowDom is to be used, wraps the AutocompleteResult query and URL
+      // into ShadowDOM nodes so that the JS cannot access them and deletes the
+      // raw values. Else if iframes are to be used, replaces the
       // destination_url with the chrome search URL that should be used as the
       // iframe.
       // TODO(shishir): Remove code to support ShadowDOM once server side
@@ -125,18 +127,27 @@ if (!chrome.embeddedSearch) {
             GetAutocompleteResults());
         var userInput = GetQuery();
         for (var i = 0, result; result = autocompleteResults[i]; ++i) {
-          var className = result.is_search ? 'chrome_search' : 'chrome_url';
-          var combinedElement = '<span class=' + className + '>' +
-              escapeHTML(result.contents) + '</span>';
-          if (result.description) {
-            combinedElement += '<span class=chrome_separator> &ndash; </span>' +
-                '<span class=chrome_title>' +
-                escapeHTML(result.description) + '</span>';
+          if (ShouldUseIframes()) {
+            result.destination_url = GetSuggestionIframeURLPrefix() +
+                result.rid;
+          } else {
+            // TODO(shishir): Fix the naming violations (chrome_search ->
+            // chrome-search etc) when the server supports both names.
+            var className = result.is_search ? 'chrome_search' : 'chrome_url';
+            var combinedElement = '<span class=' + className + '>' +
+                escapeHTML(result.contents) + '</span>';
+            if (result.description) {
+              combinedElement +=
+                  '<span class=chrome_separator> &ndash; </span>' +
+                  '<span class=chrome_title>' +
+                  escapeHTML(result.description) + '</span>';
+            }
+            result.combinedNode = SafeWrapSuggestion(combinedElement);
+            result.destination_url = null;
           }
-          result.combinedNode = SafeWrapSuggestion(combinedElement);
-          delete result.contents;
-          delete result.description;
-          result.destination_url = GetSuggestionIframeURLPrefix() + result.rid;
+          result.contents = null;
+          result.description = null;
+          result.is_search = null;
         }
         return autocompleteResults;
       }

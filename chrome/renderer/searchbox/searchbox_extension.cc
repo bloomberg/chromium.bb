@@ -396,6 +396,9 @@ class SearchBoxExtensionWrapper : public v8::Extension {
   // event is fired to notify the page.
   static v8::Handle<v8::Value> HideBars(const v8::Arguments& args);
 
+  // Returns true if the Instant page should use iframes to display suggestions.
+  static v8::Handle<v8::Value> ShouldUseIframes(const v8::Arguments& args);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(SearchBoxExtensionWrapper);
 };
@@ -479,6 +482,8 @@ v8::Handle<v8::FunctionTemplate> SearchBoxExtensionWrapper::GetNativeFunction(
     return v8::FunctionTemplate::New(ShowBars);
   if (name->Equals(v8::String::New("HideBars")))
     return v8::FunctionTemplate::New(HideBars);
+  if (name->Equals(v8::String::New("ShouldUseIframes")))
+    return v8::FunctionTemplate::New(ShouldUseIframes);
   return v8::Handle<v8::FunctionTemplate>();
 }
 
@@ -1214,6 +1219,13 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::HideBars(
   DVLOG(1) << render_view << " HideBars";
   SearchBox::Get(render_view)->HideBars();
   return v8::Undefined();
+}
+
+// static
+v8::Handle<v8::Value> SearchBoxExtensionWrapper::ShouldUseIframes(
+    const v8::Arguments& args) {
+  DVLOG(1) << "ShouldUseIframes";
+  return v8::Boolean::New(SearchBox::ShouldUseIframes());
 }
 
 // static

@@ -48,3 +48,12 @@ body {
   overflow: hidden;
   width: 100%;
 }
+
+/* Styling for native suggestions, hidden by the shadow DOM. */
+.chrome_url {
+  color: rgb(0, 153, 51);
+}
+
+.chrome_title {
+  color: #666;
+}

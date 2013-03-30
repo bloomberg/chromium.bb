@@ -4,8 +4,10 @@
 
 #include "chrome/renderer/searchbox/searchbox.h"
 
-#include "base/strings/string_number_conversions.h"
+#include "base/metrics/field_trial.h"
+#include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/searchbox/searchbox_extension.h"
@@ -399,6 +401,9 @@ bool SearchBox::GenerateDataURLForSuggestionRequest(const GURL& request_url,
                                                     GURL* data_url) const {
   DCHECK(data_url);
 
+  if (!ShouldUseIframes())
+    return false;
+
   // The origin URL is required so that the iframe knows what origin to post
   // messages to.
   WebKit::WebView* webview = render_view()->GetWebView();
@@ -478,4 +483,25 @@ void SearchBox::FormatURLForDisplay(string16* url) const {
   // Strip a lone trailing slash.
   if (EndsWith(*url, ASCIIToUTF16("/"), true))
     url->erase(url->length() - 1, 1);
+}
+
+// static
+bool SearchBox::ShouldUseIframes() {
+  // TODO(shishir): All the code below is just temporary and needs to be removed
+  // once support for ShadowDom is removed.
+
+  // The following is hacky. But given the short lifespan of this code
+  // and the amount of code that would need to be moved/copied for this change,
+  // it's probably worth it.
+  static const char kInstantExtendedFieldTrialName[] = "InstantExtended";
+  static const char kIframesEnabledFlagWithValue[] = "iframe:1";
+  std::string trial_flags =
+      base::FieldTrialList::FindFullName(kInstantExtendedFieldTrialName);
+  std::vector<std::string> flags;
+  Tokenize(trial_flags, " ", &flags);
+  for (size_t i = 0; i < flags.size(); ++i) {
+    if (flags[i] == kIframesEnabledFlagWithValue)
+      return true;
+  }
+  return false;
 }
