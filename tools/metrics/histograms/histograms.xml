@@ -1,0 +1,1191 @@
+<!--
+Copyright 2013 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<!--
+This file is used to generate a comprehensive list of Chrome histograms along
+with a detailed description for each histogram.
+
+TODO(isherman): Update this prose.
+Please pretty-print and validate your edits by running the pretty_print.py
+and update_descriptions.py scripts in the same directory as this file before
+uploading your change for review.
+
+Take a moment to page through the contents of this file. You will find
+three sections:
+
+* The histograms section describes base histograms, giving their name,
+  and optionally their units or enum type, a short one-line summary,
+  and optionally a more detailed description.
+* The enums section defines and documents the enumerated types referred to by
+  the histograms.
+* The fieldtrials section defines active field trials and their groups, along
+  with their descriptions.
+
+Each field trial lists the histograms that it affects. The complete list of
+histograms is computed by appending the field trial group names to each of
+the affected histograms. For example, define the following:
+
+  <histogram name="FileLoadLatency"/>
+
+  <fieldtrial name="SuperHttpExperiment">
+    <group name="SuperHttpEnabled">
+    <group name="SuperHttpDisabled">
+    <affected-histogram name="FileLoadLatency"/>
+  </fieldtrial>
+
+The complete list of histograms will be:
+
+  FileLoadLatency
+  FileLoadLatency_SuperHttpEnabled
+  FileLoadLatency_SuperHttpDisabled
+
+Field trial definitions can currently be used in any situation where multiple
+suffixes need to be appended to a histogram name; they do not have to
+correspond to actual field trials in the Chrome source code.
+
+TODO(mlloyd): Refactor the XML so that field trials can be distinguished from
+other types of suffix sets.
+-->
+
+<histogram-configuration>
+
+<!-- Histogram definitions -->
+
+<histograms>
+
+<histogram name="Autofill.AddressSuggestionsCount">
+  <summary>
+    The number of address suggestions shown in the Autofill popup.
+  </summary>
+</histogram>
+
+<histogram name="AutoFill.CCInfoBarAccepted">
+  <obsolete>
+    Deprecated as of 3/2011, replaced by Autofill.CreditCardInfoBar.
+  </obsolete>
+  <summary>The Autofill credit card info bar was accepted.</summary>
+</histogram>
+
+<histogram name="AutoFill.CCInfoBarDenied">
+  <obsolete>
+    Deprecated as of 3/2011, replaced by Autofill.CreditCardInfoBar.
+  </obsolete>
+  <summary>The Autofill credit card info bar was denied.</summary>
+</histogram>
+
+<histogram name="Autofill.CreditCardInfoBar" enum="AutofillCreditCardInfoBar">
+  <summary>
+    The relative frequency with which users accept, deny, or ignore the Autofill
+    credit card info bar prompt.
+  </summary>
+</histogram>
+
+<histogram name="Autofill.DeveloperEngagement"
+    enum="AutofillDeveloperEngagement">
+  <summary>
+    Measures the adoption of the HTML autocomplete type hint specification (see
+    http://is.gd/whatwg_autocomplete for more details).  For each fillable form
+    detected, logs whether that form includes author-specified type hints.
+  </summary>
+</histogram>
+
+<histogram name="Autofill.FillDuration.FromInteraction.WithAutofill">
+  <summary>
+    Time elapsed between the user's first interaction with a form and the form's
+    submission, for an autofilled form.
+  </summary>
+</histogram>
+
+<histogram name="Autofill.FillDuration.FromInteraction.WithoutAutofill">
+  <summary>
+    Time elapsed between the user's first interaction with a form and the form's
+    submission, for a non-autofilled form.
+  </summary>
+</histogram>
+
+<histogram name="Autofill.FillDuration.FromLoad.WithAutofill">
+  <summary>
+    Time elapsed between form load and form submission, for an autofilled form.
+  </summary>
+</histogram>
+
+<histogram name="Autofill.FillDuration.FromLoad.WithoutAutofill">
+  <summary>
+    Time elapsed between form load and form submission, for a non-autofilled
+    form.
+  </summary>
+</histogram>
+
+<histogram name="Autofill.IsEnabled.PageLoad" enum="BooleanEnabled">
+  <summary>
+    Tracks whether Autofill is enabled on page load for a page containing forms.
+  </summary>
+</histogram>
+
+<histogram name="Autofill.IsEnabled.Startup" enum="BooleanEnabled">
+  <summary>Tracks whether Autofill is enabled when Chrome launches.</summary>
+</histogram>
+
+<histogram name="AutoFill.ProfileCount">
+  <obsolete>
+    Deprecated as of 3/2011, replaced by Autofill.StoredProfileCount.
+  </obsolete>
+  <summary>The number of Autofill address profiles a user has.</summary>
+</histogram>
+
+<histogram name="AutoFill.Quality" enum="AutofillQuality">
+  <obsolete>
+    Deprecated as of 3/2011, replaced by Autofill.Quality.
+  </obsolete>
+  <summary>The quality of the AutoFill implementation.</summary>
+</histogram>
+
+<histogram name="Autofill.Quality" enum="AutofillQuality">
+  <summary>The quality of the Autofill implementation.</summary>
+</histogram>
+
+<histogram name="Autofill.Quality.HeuristicType" enum="AutofillTypeQuality">
+  <summary>The quality of Autofill's heuristic field type detection.</summary>
+</histogram>
+
+<histogram name="Autofill.Quality.HeuristicType.ByFieldType"
+    enum="AutofillTypeQualityByFieldType">
+  <summary>
+    The quality of Autofill's heuristic field type detection, broken down by the
+    specific field type.  Fields with multiple possible types (based on the
+    stored Autofill data) are logged as having ambiguous type.
+  </summary>
+</histogram>
+
+<histogram name="Autofill.Quality.PredictedType" enum="AutofillTypeQuality">
+  <summary>The overall quality of the Autofill field type predictions.</summary>
+</histogram>
+
+<histogram name="Autofill.Quality.PredictedType.ByFieldType"
+    enum="AutofillTypeQualityByFieldType">
+  <summary>
+    The overall quality of the Autofill field type predictions, broken down by
+    the specific field type.  Fields with multiple possible types (based on the
+    stored Autofill data) are logged as having ambiguous type.
+  </summary>
+</histogram>
+
+<histogram name="Autofill.Quality.ServerType" enum="AutofillTypeQuality">
+  <summary>The quality of the Autofill server's field type detection.</summary>
+</histogram>
+
+<histogram name="Autofill.Quality.ServerType.ByFieldType"
+    enum="AutofillTypeQualityByFieldType">
+  <summary>
+    The quality of the Autofill server's field type detection, broken down by
+    the specific field type.  Fields with multiple possible types (based on the
+    stored Autofill data) are logged as having ambiguous type.
+  </summary>
+</histogram>
+
+<histogram name="AutoFill.RequestErrorimcklfaapmppdhilegjoahjbahdgfhcn">
+  <summary>TBD.</summary>
+</histogram>
+
+<histogram name="AutoFill.RequestSuccessimcklfaapmppdhilegjoahjbahdgfhcn">
+  <summary>TBD.</summary>
+</histogram>
+
+<histogram name="Autofill.ServerExperimentId" enum="AutofillExperimentId">
+  <obsolete>
+    Deprecated as of 6/2011, replaced by Autofill.ServerExperimentId.Query.
+  </obsolete>
+  <summary>
+    The experiment ID received in response to an Autofill server query.
+  </summary>
+</histogram>
+
+<histogram name="Autofill.ServerExperimentId.Query" enum="AutofillExperimentId">
+  <summary>
+    The experiment ID received in response to an Autofill server query.
+  </summary>
+</histogram>
+
+<histogram name="Autofill.ServerExperimentId.Upload"
+    enum="AutofillExperimentId">
+  <summary>
+    The experiment ID received at the time of an Autofill upload.
+  </summary>
+</histogram>
+
+<histogram name="AutoFill.ServerQueryResponse" enum="AutofillQueryResult">
+  <obsolete>
+    Deprecated as of 3/2011, replaced by Autofill.ServerQueryResponse.
+  </obsolete>
+  <summary>The usefulness of AutoFill server information.</summary>
+</histogram>
+
+<histogram name="Autofill.ServerQueryResponse" enum="AutofillQueryResult">
+  <summary>The usefulness of Autofill server information.</summary>
+</histogram>
+
+<histogram name="Autofill.StoredProfileCount">
+  <summary>
+    The number of Autofill addresses a user has stored, measured at launch time.
+  </summary>
+</histogram>
+
+<histogram name="Autofill.UserHappiness" enum="AutofillUserHappiness">
+  <summary>
+    Measures the frequency of various events in the Autofill user interaction
+    flow.  By comparing frequencies, we can compute several interesting
+    &quot;user happiness&quot; metrics.
+  </summary>
+</histogram>
+
+<histogram name="Enterprise.Policies" enum="EnterprisePolicies">
+  <summary>
+    A set of enterprise policy rules that are in use. This is recorded every 24
+    hours and at startup, if the last recording was earlier than a day before.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.FunctionCalls" enum="ExtensionFunctions">
+  <summary>Number of calls to extension functions.</summary>
+</histogram>
+
+</histograms>
+
+<!-- Enum types -->
+
+<enums>
+
+<enum name="AutofillCreditCardInfoBar" type="int">
+  <int value="0" label="Shown"/>
+  <int value="1" label="Accepted"/>
+  <int value="2" label="Denied"/>
+  <int value="3" label="Ignored"/>
+</enum>
+
+<enum name="AutofillDeveloperEngagement" type="int">
+  <int value="0" label="Fillable form parsed"/>
+  <int value="1" label="Includes type hints"/>
+</enum>
+
+<enum name="AutofillExperimentId" type="int">
+  <int value="0" label="No Experiment"/>
+  <int value="1" label="Unknown"/>
+  <int value="2" label="ar06"/>
+  <int value="3" label="ar1"/>
+  <int value="4" label="ar2"/>
+  <int value="5" label="ar4"/>
+  <int value="6" label="ar05wlr15"/>
+  <int value="7" label="ar05wlr25"/>
+  <int value="8" label="ar05wlr25fs5"/>
+  <int value="9" label="tbar1"/>
+  <int value="10" label="ar04wr3fs4"/>
+  <int value="11" label="No Server Response"/>
+  <int value="12" label="fp05"/>
+  <int value="13" label="fp025"/>
+  <int value="14" label="fp05cc03"/>
+  <int value="15" label="fp05cco03"/>
+  <int value="16" label="fp05cco03cstd"/>
+  <int value="17" label="fp05cc03e1"/>
+</enum>
+
+<enum name="AutofillQuality" type="int">
+  <int value="0" label="Submitted"/>
+  <int value="1" label="Autofilled"/>
+  <int value="2" label="Autofill failed"/>
+  <int value="3" label="Heuristic Unknown"/>
+  <int value="4" label="Heuristic Match"/>
+  <int value="5" label="Heuristic Mismatch"/>
+  <int value="6" label="Server Unknown"/>
+  <int value="7" label="Server Match"/>
+  <int value="8" label="Server Mismatch"/>
+</enum>
+
+<enum name="AutofillQueryResult" type="int">
+  <int value="0" label="Sent"/>
+  <int value="1" label="Received"/>
+  <int value="2" label="Parsed"/>
+  <int value="3" label="Response matches local"/>
+  <int value="4" label="Response improves local (nonempty)"/>
+  <int value="5" label="Response improves local (empty)"/>
+</enum>
+
+<enum name="AutofillTypeQuality" type="int">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Match"/>
+  <int value="2" label="Mismatch"/>
+</enum>
+
+<enum name="AutofillTypeQualityByFieldType" type="int">
+  <int value="0" label="Ambiguous, Unknown"/>
+  <int value="1" label="Ambiguous, Match"/>
+  <int value="2" label="Ambiguous, Mismatch"/>
+  <int value="3" label="Name, Unknown"/>
+  <int value="4" label="Name, Match"/>
+  <int value="5" label="Name, Mismatch"/>
+  <int value="6" label="Company, Unknown"/>
+  <int value="7" label="Company, Match"/>
+  <int value="8" label="Company, Mismatch"/>
+  <int value="9" label="Addr. line 1, Unknown"/>
+  <int value="10" label="Addr. line 1, Match"/>
+  <int value="11" label="Addr. line 1, Mismatch"/>
+  <int value="12" label="Addr. line 2, Unknown"/>
+  <int value="13" label="Addr. line 2, Match"/>
+  <int value="14" label="Addr. line 2, Mismatch"/>
+  <int value="15" label="City, Unknown"/>
+  <int value="16" label="City, Match"/>
+  <int value="17" label="City, Mismatch"/>
+  <int value="18" label="State, Unknown"/>
+  <int value="19" label="State, Match"/>
+  <int value="20" label="State, Mismatch"/>
+  <int value="21" label="ZIP code, Unknown"/>
+  <int value="22" label="ZIP code, Match"/>
+  <int value="23" label="ZIP code, Mismatch"/>
+  <int value="24" label="Country, Unknown"/>
+  <int value="25" label="Country, Match"/>
+  <int value="26" label="Country, Mismatch"/>
+  <int value="27" label="Phone, Unknown"/>
+  <int value="28" label="Phone, Match"/>
+  <int value="29" label="Phone, Mismatch"/>
+  <int value="30" label="Fax, Unknown"/>
+  <int value="31" label="Fax, Match"/>
+  <int value="32" label="Fax, Mismatch"/>
+  <int value="33" label="Email, Unknown"/>
+  <int value="34" label="Email, Match"/>
+  <int value="35" label="Email, Mismatch"/>
+  <int value="36" label="Credit card: name, Unknown"/>
+  <int value="37" label="Credit card: name, Match"/>
+  <int value="38" label="Credit card: name, Mismatch"/>
+  <int value="39" label="Credit card: number, Unknown"/>
+  <int value="40" label="Credit card: number, Match"/>
+  <int value="41" label="Credit card: number, Mismatch"/>
+  <int value="42" label="Credit card: date, Unknown"/>
+  <int value="43" label="Credit card: date, Match"/>
+  <int value="44" label="Credit card: date, Mismatch"/>
+</enum>
+
+<enum name="AutofillUserHappiness" type="int">
+  <int value="0" label="Forms loaded"/>
+  <int value="1" label="Submitted fillable form, autofilled all"/>
+  <int value="2" label="Submitted fillable form, autofilled some"/>
+  <int value="3" label="Submitted fillable form, autofilled none"/>
+  <int value="4" label="Submitted non-fillable form"/>
+  <int value="5" label="User did type"/>
+  <int value="6" label="Suggestions shown"/>
+  <int value="7" label="Suggestions shown (once)"/>
+  <int value="8" label="User did autofill"/>
+  <int value="9" label="User did autofill (once)"/>
+  <int value="10" label="User edited autofilled field"/>
+  <int value="11" label="User edited autofilled field (once)"/>
+</enum>
+
+<enum name="BooleanAttempted" type="int">
+  <int value="0" label="Not Attempted"/>
+  <int value="1" label="Attempted"/>
+</enum>
+
+<enum name="BooleanCovered" type="int">
+  <int value="0" label="Not Covered"/>
+  <int value="1" label="Covered"/>
+</enum>
+
+<enum name="BooleanCredentialsLost" type="int">
+  <int value="0" label="Found Credentials"/>
+  <int value="1" label="Missing Credentials"/>
+</enum>
+
+<enum name="BooleanDelete" type="int">
+  <int value="0" label="Ignored"/>
+  <int value="1" label="Deleted"/>
+</enum>
+
+<enum name="BooleanDuplicate" type="int">
+  <int value="0" label="Not Duplicate"/>
+  <int value="1" label="Duplicate"/>
+</enum>
+
+<enum name="BooleanEnabled" type="int">
+  <int value="0" label="Disabled"/>
+  <int value="1" label="Enabled"/>
+</enum>
+
+<enum name="BooleanExpired" type="int">
+  <int value="0" label="Unexpired"/>
+  <int value="1" label="Expired"/>
+</enum>
+
+<enum name="BooleanHit" type="int">
+  <int value="0" label="Not_reached"/>
+  <int value="1" label="Hit"/>
+</enum>
+
+<enum name="BooleanHttps" type="int">
+  <int value="0" label="HTTP"/>
+  <int value="1" label="HTTPS"/>
+</enum>
+
+<enum name="BooleanOrphan" type="int">
+  <int value="0" label="Non-orphan"/>
+  <int value="1" label="Orphan"/>
+</enum>
+
+<enum name="BooleanRaced" type="int">
+  <int value="0" label="Did Not Race"/>
+  <int value="1" label="Raced"/>
+</enum>
+
+<enum name="BooleanSelected" type="int">
+  <int value="0" label="No selection"/>
+  <int value="1" label="Selected"/>
+</enum>
+
+<enum name="BooleanSuccess" type="int">
+  <int value="0" label="Failure"/>
+  <int value="1" label="Success"/>
+</enum>
+
+<enum name="BooleanTabDiscard" type="int">
+  <int value="0" label="Memory OK, no discards"/>
+  <int value="1" label="Memory low, tabs discarded"/>
+</enum>
+
+<enum name="BooleanUsage" type="int">
+  <int value="0" label="Not Used"/>
+  <int value="1" label="Used"/>
+</enum>
+
+<enum name="BooleanWiped" type="int">
+  <int value="0" label="Re-enabled"/>
+  <int value="1" label="Wiped out"/>
+</enum>
+
+<enum name="EnterprisePolicies" type="int">
+<!-- Generated from ../../../chrome/app/policy/policy_templates.json -->
+
+  <int value="1" label="Configure the home page URL"/>
+  <int value="2" label="Use New Tab Page as homepage"/>
+  <int value="3" label="Set Chrome as Default Browser"/>
+  <int value="4" label="Application locale"/>
+  <int value="5" label="Enable alternate error pages"/>
+  <int value="6" label="Enable search suggestions"/>
+  <int value="7" label="Enable network prediction"/>
+  <int value="8" label="Disable SPDY protocol"/>
+  <int value="9" label="Enable JavaScript"/>
+  <int value="10" label="Enable Incognito mode"/>
+  <int value="11" label="Disable saving browser history"/>
+  <int value="12" label="Enable printing"/>
+  <int value="13" label="Enable Google Cloud Print proxy"/>
+  <int value="14" label="Enable Safe Browsing"/>
+  <int value="15" label="Enable reporting of usage and crash-related data"/>
+  <int value="16" label="Enable the password manager"/>
+  <int value="17" label="Allow users to show passwords in Password Manager"/>
+  <int value="18" label="Enable AutoFill"/>
+  <int value="19" label="Specify a list of disabled plugins"/>
+  <int value="20" label="Disable synchronization of data with Google"/>
+  <int value="21" label="Choose how to specify proxy server settings"/>
+  <int value="22" label="Choose how to specify proxy server settings"/>
+  <int value="23" label="Address or URL of proxy server"/>
+  <int value="24" label="URL to a proxy .pac file"/>
+  <int value="25" label="Proxy bypass rules"/>
+  <int value="26" label="Supported authentication schemes"/>
+  <int value="27"
+      label="Disable CNAME lookup when negotiating Kerberos authentication"/>
+  <int value="28" label="Include non-standard port in Kerberos SPN"/>
+  <int value="29" label="Authentication server whitelist"/>
+  <int value="30" label="Kerberos delegation server whitelist"/>
+  <int value="31" label="GSSAPI library name"/>
+  <int value="32" label="Configure extension installation blacklist"/>
+  <int value="33" label="Configure extension installation whitelist"/>
+  <int value="34" label="Configure the list of force-installed extensions"/>
+  <int value="35" label="Show Home button on toolbar"/>
+  <int value="36" label="Disable Developer Tools"/>
+  <int value="37" label="Action on startup"/>
+  <int value="38" label="URLs to open on startup"/>
+  <int value="39" label="Block third party cookies"/>
+  <int value="40" label="Enable the default search provider"/>
+  <int value="41" label="Default search provider name"/>
+  <int value="42" label="Default search provider keyword"/>
+  <int value="43" label="Default search provider search URL"/>
+  <int value="44" label="Default search provider suggest URL"/>
+  <int value="45" label="Default search provider instant URL"/>
+  <int value="46" label="Default search provider icon"/>
+  <int value="47" label="Default search provider encodings"/>
+  <int value="48" label="Default cookies setting"/>
+  <int value="49" label="Default images setting"/>
+  <int value="50" label="Default JavaScript setting"/>
+  <int value="51" label="Default plugins setting"/>
+  <int value="52" label="Default popups setting"/>
+  <int value="53" label="Default notification setting"/>
+  <int value="54" label="Default geolocation setting"/>
+  <int value="55" label="Disable support for 3D graphics APIs"/>
+  <int value="56" label="Refresh rate for user policy"/>
+  <int value="57" label="Default HTML renderer for Google Chrome Frame"/>
+  <int value="58"
+      label="Always render the following URL patterns in Google Chrome Frame"/>
+  <int value="59"
+      label="Always render the following URL patterns in the host browser"/>
+  <int value="60"
+      label="Allow Google Chrome Frame to handle the listed content types"/>
+  <int value="61" label="Enable lock when the device become idle or suspended"/>
+  <int value="62" label="Enable Instant"/>
+  <int value="63" label="Set user data directory"/>
+  <int value="64" label="Set download directory"/>
+  <int value="65" label="Clear site data on browser shutdown (deprecated)"/>
+  <int value="66" label="Specify whether the plugin finder should be disabled"/>
+  <int value="67" label="Block cookies on these sites"/>
+  <int value="68" label="Allow session only cookies on these sites"/>
+  <int value="69" label="Allow images on these sites"/>
+  <int value="70" label="Block images on these sites"/>
+  <int value="71" label="Allow JavaScript on these sites"/>
+  <int value="72" label="Block JavaScript on these sites"/>
+  <int value="73" label="Allow plugins on these sites"/>
+  <int value="74" label="Block plugins on these sites"/>
+  <int value="75" label="Allow popups on these sites"/>
+  <int value="76" label="Block popups on these sites"/>
+  <int value="77" label="Allow cookies on these sites"/>
+  <int value="78" label="Specify a list of enabled plugins"/>
+  <int value="79"
+      label="Specify a list of plugins that the user can enable or disable"/>
+  <int value="80" label="Enable Translate"/>
+  <int value="81" label="Allow running plugins that are outdated"/>
+  <int value="82" label="Enable Bookmark Bar"/>
+  <int value="83" label="Enables or disables bookmark editing"/>
+  <int value="84" label="Allow invocation of file selection dialogs"/>
+  <int value="85" label="Disable URL protocol schemes"/>
+  <int value="86" label="Always runs plugins that require authorization"/>
+  <int value="87" label="Set Google Chrome Frame user data directory"/>
+  <int value="88" label="Set disk cache directory"/>
+  <int value="89" label="Cross-origin HTTP Basic Auth prompts"/>
+  <int value="90" label="Refresh rate for Device Policy"/>
+  <int value="91" label="Release channel"/>
+  <int value="92"
+      label="Maximal number of concurrent connections to the proxy server"/>
+  <int value="93" label="Incognito mode availability"/>
+  <int value="94" label="Enable firewall traversal from remote access client"/>
+  <int value="95" label="Enable firewall traversal from remote access host"/>
+  <int value="96"
+      label="Prevent app promotions from appearing on the new tab page"/>
+  <int value="97" label="Import bookmarks from default browser on first run"/>
+  <int value="98"
+      label="Import browsing history from default browser on first run"/>
+  <int value="99" label="Import of homepage from default browser on first run"/>
+  <int value="100"
+      label="Import search engines from default browser on first run"/>
+  <int value="101"
+      label="Import saved passwords from default browser on first run"/>
+  <int value="102"
+      label="Automatically select client certificates for these sites"/>
+  <int value="103" label="Block access to a list of URLs"/>
+  <int value="104" label="Allows access to a list of URLs"/>
+  <int value="105" label="Allow notifications on these sites"/>
+  <int value="106" label="Block notifications on these sites"/>
+  <int value="107" label="User-level network configuration"/>
+  <int value="108" label="Device-level network configuration"/>
+  <int value="109"
+      label="Enable submission of documents to Google Cloud Print"/>
+  <int value="110" label="Set disk cache size in bytes"/>
+  <int value="111" label="Set media disk cache size in bytes"/>
+  <int value="112" label="Enterprise web store URL"/>
+  <int value="113" label="Enterprise web store name"/>
+  <int value="114" label="Enable TLS domain-bound certificates extension"/>
+  <int value="115" label="Enable reporting memory info (JS heap size) to page"/>
+  <int value="116" label="Proxy settings"/>
+  <int value="117" label="Disable Print Preview"/>
+  <int value="118" label="Disable SSL record splitting"/>
+  <int value="119" label="Report OS and firmware version"/>
+  <int value="120" label="Report device activity times"/>
+  <int value="121" label="Report device boot mode"/>
+  <int value="122" label="Login user white list"/>
+  <int value="123" label="Allow creation of new user accounts"/>
+  <int value="124" label="Enable guest mode"/>
+  <int value="125" label="Show usernames on login screen"/>
+  <int value="126" label="Enable data roaming"/>
+  <int value="127" label="Enable metrics reporting"/>
+  <int value="128" label="Wipe user data on sign-out"/>
+  <int value="129" label="Whether online OCSP/CRL checks are performed"/>
+  <int value="130" label="Timeout until idle user log-out is executed"/>
+  <int value="131" label="Duration of the idle log-out warning message"/>
+  <int value="132"
+      label="Screen saver to be used on the sign-in screen in retail mode"/>
+  <int value="133"
+      label="Duration of inactivity before the screen saver is shown on the
+             sign-in screen in retail mode"/>
+  <int value="134"
+      label="Whether the release channel should be configurable by the user"/>
+  <int value="135" label="List of AppPack extensions"/>
+  <int value="136" label="Disables Auto Update"/>
+  <int value="137" label="Load specified urls on demo login"/>
+  <int value="138"
+      label="Continue running background apps when Google Chrome is closed"/>
+  <int value="139" label="Disables Drive"/>
+  <int value="140" label="Disables Google Drive over Cellular connections"/>
+  <int value="141"
+      label="Additional command line parameters for Google Chrome"/>
+  <int value="142" label="Target Auto Update Version"/>
+  <int value="143" label="Report device location"/>
+  <int value="144" label="List of pinned apps to show in the launcher"/>
+  <int value="145" label="Auto update scatter factor"/>
+  <int value="146" label="Connection types allowed for updates"/>
+  <int value="147"
+      label="Restrict which users are allowed to sign in to Google Chrome"/>
+  <int value="148"
+      label="Configure extension, app, and user script install sources"/>
+  <int value="149" label="Default mediastream setting"/>
+  <int value="150"
+      label="Disable proceeding from the Safe Browsing warning page"/>
+  <int value="151" label="Enable or disable spell checking web service"/>
+  <int value="152" label="Disable mounting of external storage"/>
+  <int value="153" label="Disable taking screenshots"/>
+  <int value="154"
+      label="Configure the required domain name for remote access hosts"/>
+  <int value="155"
+      label="Enable two-factor authentication for remote access hosts"/>
+  <int value="156"
+      label="Configure the TalkGadget prefix for remote access hosts"/>
+  <int value="157" label="Enable curtaining of remote access hosts"/>
+  <int value="158" label="Timezone"/>
+  <int value="159" label="Allow playing audio"/>
+  <int value="160" label="Allow or deny audio capture"/>
+  <int value="161"
+      label="List of alternate URLs for the default search provider"/>
+  <int value="162" label="Force SafeSearch"/>
+  <int value="163" label="Device-local accounts"/>
+  <int value="164" label="Add a logout button to the system tray"/>
+  <int value="165" label="Use built-in DNS client"/>
+  <int value="166" label="Control shelf auto-hiding"/>
+  <int value="167" label="Allow or deny video capture"/>
+  <int value="168" label="Configure allowed app/extension types"/>
+  <int value="169" label="Set the display name for device-local accounts"/>
+  <int value="170" label="Limit the session length"/>
+  <int value="171"
+      label="Parameter controlling search term placement for the default
+             search provider"/>
+  <int value="172" label="Screen dim delay when running on AC power"/>
+  <int value="173" label="Screen off delay when running on AC power"/>
+  <int value="174" label="Screen lock delay when running on AC power"/>
+  <int value="175" label="Idle delay when running on AC power"/>
+  <int value="176" label="Screen dim delay when running on battery power"/>
+  <int value="177" label="Screen off delay when running on battery power"/>
+  <int value="178" label="Screen lock delay when running on battery power"/>
+  <int value="179" label="Idle delay when running on battery power"/>
+  <int value="180" label="Action to take when the idle delay is reached"/>
+  <int value="181" label="Action to take when the user closes the lid"/>
+  <int value="182"
+      label="Specify whether audio activity affects power management"/>
+  <int value="183"
+      label="Specify whether video activity affects power management"/>
+  <int value="184"
+      label="Percentage by which to scale the idle delay in presentation mode"/>
+  <int value="185"
+      label="Allow users to redeem offers through Chrome OS Registration."/>
+  <int value="186" label="Set the Terms of Service for a device-local account"/>
+  <int value="187" label="Enable deleting browser and download history"/>
+  <int value="188" label="Show accessibility options in system tray menu"/>
+  <int value="189"
+      label="Hide the web store from the new tab page and app launcher"/>
+  <int value="190" label="Allows sign in to Chrome"/>
+  <int value="191" label="System wide flags to be applied on Chrome start-up"/>
+  <int value="192" label="Limit device uptime by automatically rebooting"/>
+  <int value="193" label="Automatically reboot after update"/>
+  <int value="194" label="Public session for auto-login"/>
+  <int value="195" label="Public session auto-login timer"/>
+  <int value="196"
+      label="Set the restriction on the fetching of the Variations seed"/>
+  <int value="197" label="Idle warning delay when running on AC power"/>
+  <int value="198" label="Idle warning delay when running on battery power"/>
+</enum>
+
+<enum name="ExtensionFunctions" type="int">
+<!-- Generated from ../../../chrome/browser/extensions/extension_function_histogram_value.h -->
+
+  <int value="0" label="UNKNOWN"/>
+  <int value="1" label="WEBNAVIGATION_GETALLFRAMES"/>
+  <int value="2" label="BROWSINGDATA_REMOVEWEBSQL"/>
+  <int value="3" label="ALARMS_CREATE"/>
+  <int value="4" label="FILEBROWSERPRIVATE_REMOVEFILEWATCH"/>
+  <int value="5" label="COOKIES_GET"/>
+  <int value="6" label="FONTSETTINGS_GETMINIMUMFONTSIZE"/>
+  <int value="7" label="CHROMEOSINFOPRIVATE_GET"/>
+  <int value="8" label="BOOKMARKMANAGERPRIVATE_CUT"/>
+  <int value="9" label="TABS_CAPTUREVISIBLETAB"/>
+  <int value="10" label="MANAGEMENT_SETENABLED"/>
+  <int value="11" label="HISTORY_DELETEALL"/>
+  <int value="12" label="STORAGE_GET"/>
+  <int value="13" label="SOCKET_SETKEEPALIVE"/>
+  <int value="14" label="DOWNLOADS_CANCEL"/>
+  <int value="15" label="BOOKMARKS_CREATE"/>
+  <int value="16" label="BOOKMARKS_UPDATE"/>
+  <int value="17" label="FILEBROWSERPRIVATE_GETDRIVEFILES"/>
+  <int value="18" label="TERMINALPRIVATE_ONTERMINALRESIZE"/>
+  <int value="19" label="FILEBROWSERPRIVATE_REQUESTDIRECTORYREFRESH"/>
+  <int value="20" label="BLUETOOTH_GETADAPTERSTATE"/>
+  <int value="21" label="FILEBROWSERPRIVATE_CANCELFILETRANSFERS"/>
+  <int value="22" label="FILEBROWSERPRIVATE_PINDRIVEFILE"/>
+  <int value="23" label="SOCKET_WRITE"/>
+  <int value="24" label="OMNIBOX_SETDEFAULTSUGGESTION"/>
+  <int value="25" label="TTS_SPEAK"/>
+  <int value="26" label="WALLPAPERPRIVATE_RESTOREMINIMIZEDWINDOWS"/>
+  <int value="27" label="BROWSINGDATA_REMOVEHISTORY"/>
+  <int value="28" label="FILEBROWSERPRIVATE_ISFULLSCREEN"/>
+  <int value="29" label="AUTOTESTPRIVATE_LOGOUT"/>
+  <int value="30" label="EXPERIMENTAL_HISTORY_GETMOSTVISITED"/>
+  <int value="31" label="BLUETOOTH_DISCONNECT"/>
+  <int value="32" label="BLUETOOTH_SETOUTOFBANDPAIRINGDATA"/>
+  <int value="33" label="BOOKMARKMANAGERPRIVATE_CANPASTE"/>
+  <int value="34" label="AUTOTESTPRIVATE_RESTART"/>
+  <int value="35" label="USB_CLAIMINTERFACE"/>
+  <int value="36" label="MEDIAPLAYERPRIVATE_SETWINDOWHEIGHT"/>
+  <int value="37" label="EXPERIMENTAL_PROCESSES_GETPROCESSINFO"/>
+  <int value="38" label="HISTORY_GETVISITS"/>
+  <int value="39" label="SOCKET_BIND"/>
+  <int value="40" label="TABS_MOVE"/>
+  <int value="41" label="SOCKET_DISCONNECT"/>
+  <int value="42" label="FILESYSTEM_GETWRITABLEENTRY"/>
+  <int value="43" label="SYNCFILESYSTEM_REQUESTFILESYSTEM"/>
+  <int value="44" label="COMMANDS_GETALL"/>
+  <int value="45" label="EXPERIMENTAL_DISCOVERY_REMOVESUGGESTION"/>
+  <int value="46" label="EXPERIMENTAL_INPUT_VIRTUALKEYBOARD_SENDKEYBOARDEVENT"/>
+  <int value="47" label="BOOKMARKMANAGERPRIVATE_GETSUBTREE"/>
+  <int value="48" label="EXPERIMENTAL_RLZ_RECORDPRODUCTEVENT"/>
+  <int value="49" label="BOOKMARKS_GETRECENT"/>
+  <int value="50" label="APP_CURRENTWINDOWINTERNAL_SETBOUNDS"/>
+  <int value="51" label="CLOUDPRINTPRIVATE_SETUPCONNECTOR"/>
+  <int value="52" label="SERIAL_SETCONTROLSIGNALS"/>
+  <int value="53" label="FILEBROWSERPRIVATE_SETLASTMODIFIED"/>
+  <int value="54" label="IDLE_SETDETECTIONINTERVAL"/>
+  <int value="55" label="FILEBROWSERPRIVATE_GETFILETASKS"/>
+  <int value="56" label="WEBSTOREPRIVATE_GETSTORELOGIN"/>
+  <int value="57" label="SYSTEMPRIVATE_GETINCOGNITOMODEAVAILABILITY"/>
+  <int value="58" label="EXPERIMENTAL_IDLTEST_SENDARRAYBUFFERVIEW"/>
+  <int value="59" label="SOCKET_SETNODELAY"/>
+  <int value="60" label="APP_CURRENTWINDOWINTERNAL_SHOW"/>
+  <int value="61" label="WEBSTOREPRIVATE_GETBROWSERLOGIN"/>
+  <int value="62" label="EXPERIMENTAL_IDENTITY_GETAUTHTOKEN"/>
+  <int value="63" label="SYSTEMINFO_DISPLAY_GETDISPLAYINFO"/>
+  <int value="64" label="BROWSINGDATA_REMOVEPLUGINDATA"/>
+  <int value="65" label="SOCKET_LISTEN"/>
+  <int value="66" label="MEDIAGALLERIES_GETMEDIAFILESYSTEMS"/>
+  <int value="67" label="DOWNLOADS_OPEN"/>
+  <int value="68" label="TABS_EXECUTESCRIPT"/>
+  <int value="69" label="SYNCFILESYSTEM_GETUSAGEANDQUOTA"/>
+  <int value="70" label="INPUTMETHODPRIVATE_GET"/>
+  <int value="71" label="USB_CLOSEDEVICE"/>
+  <int value="72" label="TTS_STOP"/>
+  <int value="73" label="SERIAL_GETPORTS"/>
+  <int value="74" label="FILEBROWSERPRIVATE_CLEARDRIVECACHE"/>
+  <int value="75" label="SERIAL_GETCONTROLSIGNALS"/>
+  <int value="76" label="DEVELOPERPRIVATE_ENABLE"/>
+  <int value="77" label="FILEBROWSERPRIVATE_GETDRIVEFILEPROPERTIES"/>
+  <int value="78" label="USB_FINDDEVICES"/>
+  <int value="79" label="BOOKMARKMANAGERPRIVATE_DROP"/>
+  <int value="80" label="FILEBROWSERPRIVATE_GETFILETRANSFERS"/>
+  <int value="81" label="INPUT_IME_SETMENUITEMS"/>
+  <int value="82" label="BOOKMARKS_EXPORT"/>
+  <int value="83" label="HISTORY_SEARCH"/>
+  <int value="84" label="TTSENGINE_SENDTTSEVENT"/>
+  <int value="85" label="EXPERIMENTAL_ACCESSIBILITY_GETALERTSFORTAB"/>
+  <int value="86" label="BOOKMARKS_IMPORT"/>
+  <int value="87" label="SYNCFILESYSTEM_DELETEFILESYSTEM"/>
+  <int value="88" label="DEBUGGER_SENDCOMMAND"/>
+  <int value="89" label="DEBUGGER_DETACH"/>
+  <int value="90" label="METRICSPRIVATE_RECORDSMALLCOUNT"/>
+  <int value="91" label="APP_CURRENTWINDOWINTERNAL_MINIMIZE"/>
+  <int value="92" label="DEVELOPERPRIVATE_AUTOUPDATE"/>
+  <int value="93" label="EXPERIMENTAL_DNS_RESOLVE"/>
+  <int value="94" label="EXPERIMENTAL_SYSTEMINFO_MEMORY_GET"/>
+  <int value="95" label="HISTORY_ADDURL"/>
+  <int value="96" label="TABS_GET"/>
+  <int value="97" label="BROWSERACTION_SETBADGETEXT"/>
+  <int value="98" label="TABS_RELOAD"/>
+  <int value="99" label="WINDOWS_CREATE"/>
+  <int value="100" label="DEVELOPERPRIVATE_LOADUNPACKED"/>
+  <int value="101" label="DELETED_DOWNLOADS_SETDESTINATION"/>
+  <int value="102" label="EXPERIMENTAL_PROCESSES_GETPROCESSIDFORTAB"/>
+  <int value="103" label="BOOKMARKS_GETCHILDREN"/>
+  <int value="104" label="BROWSERACTION_GETTITLE"/>
+  <int value="105" label="TERMINALPRIVATE_OPENTERMINALPROCESS"/>
+  <int value="106" label="SERIAL_CLOSE"/>
+  <int value="107" label="CONTEXTMENUS_REMOVE"/>
+  <int value="108" label="FILEBROWSERPRIVATE_REQUESTLOCALFILESYSTEM"/>
+  <int value="109" label="ECHOPRIVATE_GETREGISTRATIONCODE"/>
+  <int value="110" label="TABS_GETCURRENT"/>
+  <int value="111" label="FONTSETTINGS_CLEARDEFAULTFIXEDFONTSIZE"/>
+  <int value="112" label="MEDIAPLAYERPRIVATE_CLOSEWINDOW"/>
+  <int value="113" label="WEBREQUESTINTERNAL_ADDEVENTLISTENER"/>
+  <int value="114" label="CLOUDPRINTPRIVATE_GETPRINTERS"/>
+  <int value="115" label="STORAGE_SET"/>
+  <int value="116" label="FONTSETTINGS_GETDEFAULTFONTSIZE"/>
+  <int value="117" label="EXTENSION_SETUPDATEURLDATA"/>
+  <int value="118" label="SERIAL_WRITE"/>
+  <int value="119" label="IDLE_QUERYSTATE"/>
+  <int value="120" label="EXPERIMENTAL_RLZ_GETACCESSPOINTRLZ"/>
+  <int value="121" label="WEBSTOREPRIVATE_SETSTORELOGIN"/>
+  <int value="122" label="PAGEACTIONS_ENABLEFORTAB"/>
+  <int value="123" label="COOKIES_SET"/>
+  <int value="124" label="CONTENTSETTINGS_SET"/>
+  <int value="125" label="CONTEXTMENUS_REMOVEALL"/>
+  <int value="126" label="TABS_INSERTCSS"/>
+  <int value="127" label="WEBREQUEST_HANDLERBEHAVIORCHANGED"/>
+  <int value="128" label="INPUT_IME_SETCURSORPOSITION"/>
+  <int value="129" label="OMNIBOX_SENDSUGGESTIONS"/>
+  <int value="130" label="SYSTEMINDICATOR_ENABLE"/>
+  <int value="131" label="EVENTS_GETRULES"/>
+  <int value="132" label="BOOKMARKMANAGERPRIVATE_COPY"/>
+  <int value="133" label="SOCKET_RECVFROM"/>
+  <int value="134" label="TABS_GETALLINWINDOW"/>
+  <int value="135" label="CONTEXTMENUS_UPDATE"/>
+  <int value="136" label="BOOKMARKS_SEARCH"/>
+  <int value="137" label="EXPERIMENTAL_APP_CLEARALLNOTIFICATIONS"/>
+  <int value="138" label="BLUETOOTH_GETLOCALOUTOFBANDPAIRINGDATA"/>
+  <int value="139" label="SYSTEMPRIVATE_GETUPDATESTATUS"/>
+  <int value="140" label="FONTSETTINGS_CLEARMINIMUMFONTSIZE"/>
+  <int value="141" label="FILEBROWSERPRIVATE_GETFILELOCATIONS"/>
+  <int value="142" label="EXPERIMENTAL_DISCOVERY_SUGGEST"/>
+  <int value="143" label="FILEBROWSERPRIVATE_SETDEFAULTTASK"/>
+  <int value="144" label="BROWSERACTION_GETBADGETEXT"/>
+  <int value="145" label="APP_CURRENTWINDOWINTERNAL_HIDE"/>
+  <int value="146" label="SOCKET_CONNECT"/>
+  <int value="147" label="BOOKMARKS_GETSUBTREE"/>
+  <int value="148" label="HISTORY_DELETEURL"/>
+  <int value="149" label="EXPERIMENTAL_MEDIAGALLERIES_ASSEMBLEMEDIAFILE"/>
+  <int value="150" label="BOOKMARKMANAGERPRIVATE_STARTDRAG"/>
+  <int value="151" label="BROWSINGDATA_REMOVEPASSWORDS"/>
+  <int value="152" label="DOWNLOADS_DRAG"/>
+  <int value="153" label="INPUT_IME_SETCOMPOSITION"/>
+  <int value="154" label="METRICSPRIVATE_RECORDUSERACTION"/>
+  <int value="155" label="USB_RELEASEINTERFACE"/>
+  <int value="156" label="PAGEACTION_GETPOPUP"/>
+  <int value="157" label="SCRIPTBADGE_GETATTENTION"/>
+  <int value="158" label="FONTSETTINGS_GETFONTLIST"/>
+  <int value="159" label="PERMISSIONS_CONTAINS"/>
+  <int value="160" label="SCRIPTBADGE_GETPOPUP"/>
+  <int value="161" label="EXPERIMENTAL_ACCESSIBILITY_GETFOCUSEDCONTROL"/>
+  <int value="162" label="DEVELOPERPRIVATE_GETSTRINGS"/>
+  <int value="163" label="METRICSPRIVATE_RECORDMEDIUMCOUNT"/>
+  <int value="164" label="MANAGEMENT_GET"/>
+  <int value="165" label="PERMISSIONS_GETALL"/>
+  <int value="166" label="DOWNLOADS_SHOW"/>
+  <int value="167" label="EXPERIMENTAL_RLZ_CLEARPRODUCTSTATE"/>
+  <int value="168" label="TABS_REMOVE"/>
+  <int value="169" label="MANAGEMENT_GETPERMISSIONWARNINGSBYID"/>
+  <int value="170" label="WINDOWS_GET"/>
+  <int value="171" label="FILEBROWSERPRIVATE_EXECUTETASK"/>
+  <int value="172" label="TTS_GETVOICES"/>
+  <int value="173" label="MANAGEMENT_GETALL"/>
+  <int value="174" label="MANAGEMENT_GETPERMISSIONWARNINGSBYMANIFEST"/>
+  <int value="175" label="APP_CURRENTWINDOWINTERNAL_CLEARATTENTION"/>
+  <int value="176" label="AUTOTESTPRIVATE_SHUTDOWN"/>
+  <int value="177" label="FONTSETTINGS_CLEARDEFAULTFONTSIZE"/>
+  <int value="178" label="BOOKMARKS_GETTREE"/>
+  <int value="179" label="FILEBROWSERPRIVATE_SELECTFILES"/>
+  <int value="180" label="RUNTIME_GETBACKGROUNDPAGE"/>
+  <int value="181" label="EXPERIMENTAL_RECORD_REPLAYURLS"/>
+  <int value="182" label="WEBSTOREPRIVATE_COMPLETEINSTALL"/>
+  <int value="183" label="EXPERIMENTAL_SPEECHINPUT_START"/>
+  <int value="184" label="COOKIES_GETALL"/>
+  <int value="185" label="DOWNLOADS_GETFILEICON"/>
+  <int value="186" label="PAGEACTION_GETTITLE"/>
+  <int value="187" label="BROWSINGDATA_REMOVE"/>
+  <int value="188" label="SERIAL_OPEN"/>
+  <int value="189" label="FILESYSTEM_GETDISPLAYPATH"/>
+  <int value="190" label="FILEBROWSERPRIVATE_FORMATDEVICE"/>
+  <int value="191" label="BOOKMARKS_GET"/>
+  <int value="192" label="MANAGEDMODEPRIVATE_GET"/>
+  <int value="193" label="ALARMS_CLEAR"/>
+  <int value="194" label="SYNCFILESYSTEM_GETFILESYNCSTATUS"/>
+  <int value="195" label="SOCKET_GETINFO"/>
+  <int value="196" label="WEBSTOREPRIVATE_INSTALLBUNDLE"/>
+  <int value="197" label="BROWSERACTION_ENABLE"/>
+  <int value="198" label="METRICSPRIVATE_RECORDMEDIUMTIME"/>
+  <int value="199" label="PAGEACTION_SETTITLE"/>
+  <int value="200" label="CLOUDPRINTPRIVATE_GETHOSTNAME"/>
+  <int value="201" label="CONTENTSETTINGS_GETRESOURCEIDENTIFIERS"/>
+  <int value="202" label="SOCKET_CREATE"/>
+  <int value="203" label="DEVELOPERPRIVATE_RELOAD"/>
+  <int value="204" label="FILEBROWSERPRIVATE_GETMOUNTPOINTS"/>
+  <int value="205" label="APP_RUNTIME_POSTINTENTRESPONSE"/>
+  <int value="206" label="MANAGEDMODEPRIVATE_SETPOLICY"/>
+  <int value="207" label="WEBSTOREPRIVATE_BEGININSTALLWITHMANIFEST3"/>
+  <int value="208" label="WALLPAPERPRIVATE_SETWALLPAPER"/>
+  <int value="209" label="USB_CONTROLTRANSFER"/>
+  <int value="210" label="EXPERIMENTAL_SPEECHINPUT_STOP"/>
+  <int value="211" label="USB_BULKTRANSFER"/>
+  <int value="212" label="FILEBROWSERPRIVATE_GETVOLUMEMETADATA"/>
+  <int value="213" label="PAGECAPTURE_SAVEASMHTML"/>
+  <int value="214" label="EXTENSION_ISALLOWEDINCOGNITOACCESS"/>
+  <int value="215" label="BROWSINGDATA_REMOVEAPPCACHE"/>
+  <int value="216" label="APP_CURRENTWINDOWINTERNAL_DRAWATTENTION"/>
+  <int value="217" label="METRICSPRIVATE_RECORDCOUNT"/>
+  <int value="218" label="USB_INTERRUPTTRANSFER"/>
+  <int value="219" label="TYPES_CHROMESETTING_CLEAR"/>
+  <int value="220" label="INPUT_IME_COMMITTEXT"/>
+  <int value="221" label="EXPERIMENTAL_IDLTEST_SENDARRAYBUFFER"/>
+  <int value="222" label="WALLPAPERPRIVATE_SETWALLPAPERIFEXISTS"/>
+  <int value="223" label="SOCKET_ACCEPT"/>
+  <int value="224" label="WEBNAVIGATION_GETFRAME"/>
+  <int value="225" label="EXPERIMENTAL_POWER_RELEASEKEEPAWAKE"/>
+  <int value="226" label="APP_CURRENTWINDOWINTERNAL_SETICON"/>
+  <int value="227" label="PUSHMESSAGING_GETCHANNELID"/>
+  <int value="228" label="EXPERIMENTAL_INFOBARS_SHOW"/>
+  <int value="229" label="INPUT_IME_SETCANDIDATEWINDOWPROPERTIES"/>
+  <int value="230" label="METRICSPRIVATE_RECORDPERCENTAGE"/>
+  <int value="231" label="TYPES_CHROMESETTING_GET"/>
+  <int value="232" label="WINDOWS_GETLASTFOCUSED"/>
+  <int value="233" label="MANAGEDMODEPRIVATE_GETPOLICY"/>
+  <int value="234" label="STORAGE_CLEAR"/>
+  <int value="235" label="STORAGE_GETBYTESINUSE"/>
+  <int value="236" label="TABS_QUERY"/>
+  <int value="237" label="PAGEACTION_SETPOPUP"/>
+  <int value="238" label="DEVELOPERPRIVATE_INSPECT"/>
+  <int value="239" label="DOWNLOADS_SEARCH"/>
+  <int value="240" label="FONTSETTINGS_CLEARFONT"/>
+  <int value="241" label="WINDOWS_UPDATE"/>
+  <int value="242" label="BOOKMARKMANAGERPRIVATE_CANOPENNEWWINDOWS"/>
+  <int value="243" label="SERIAL_FLUSH"/>
+  <int value="244" label="BROWSERACTION_SETTITLE"/>
+  <int value="245" label="BOOKMARKMANAGERPRIVATE_CANEDIT"/>
+  <int value="246" label="WALLPAPERPRIVATE_SETCUSTOMWALLPAPER"/>
+  <int value="247" label="BOOKMARKS_REMOVE"/>
+  <int value="248" label="INPUT_IME_SETCANDIDATES"/>
+  <int value="249" label="TERMINALPRIVATE_CLOSETERMINALPROCESS"/>
+  <int value="250" label="HISTORY_DELETERANGE"/>
+  <int value="251" label="EXPERIMENTAL_IDLTEST_GETARRAYBUFFER"/>
+  <int value="252" label="TERMINALPRIVATE_SENDINPUT"/>
+  <int value="253" label="TABS_HIGHLIGHT"/>
+  <int value="254" label="BLUETOOTH_STARTDISCOVERY"/>
+  <int value="255" label="FILEBROWSERPRIVATE_SELECTFILE"/>
+  <int value="256" label="WINDOWS_GETCURRENT"/>
+  <int value="257" label="DEBUGGER_ATTACH"/>
+  <int value="258" label="WALLPAPERPRIVATE_SAVETHUMBNAIL"/>
+  <int value="259" label="INPUT_IME_KEYEVENTHANDLED"/>
+  <int value="260" label="FONTSETTINGS_SETDEFAULTFONTSIZE"/>
+  <int value="261" label="RUNTIME_REQUESTUPDATECHECK"/>
+  <int value="262" label="PAGEACTION_SETICON"/>
+  <int value="263" label="BROWSERACTION_SETBADGEBACKGROUNDCOLOR"/>
+  <int value="264" label="DEVELOPERPRIVATE_GETITEMSINFO"/>
+  <int value="265" label="BLUETOOTH_STOPDISCOVERY"/>
+  <int value="266" label="COOKIES_REMOVE"/>
+  <int value="267" label="EXPERIMENTAL_RLZ_SENDFINANCIALPING"/>
+  <int value="268" label="TABCAPTURE_GETCAPTUREDTABS"/>
+  <int value="269" label="WINDOWS_REMOVE"/>
+  <int value="270" label="WALLPAPERPRIVATE_GETOFFLINEWALLPAPERLIST"/>
+  <int value="271" label="BROWSERACTION_GETBADGEBACKGROUNDCOLOR"/>
+  <int value="272" label="PAGEACTIONS_DISABLEFORTAB"/>
+  <int value="273" label="DEVELOPERPRIVATE_ALLOWFILEACCESS"/>
+  <int value="274" label="FILEBROWSERPRIVATE_REMOVEMOUNT"/>
+  <int value="275" label="BLUETOOTH_CONNECT"/>
+  <int value="276" label="TABCAPTURE_CAPTURE"/>
+  <int value="277" label="NOTIFICATIONS_CREATE"/>
+  <int value="278" label="TABS_DUPLICATE"/>
+  <int value="279" label="BLUETOOTH_WRITE"/>
+  <int value="280" label="PAGEACTION_SHOW"/>
+  <int value="281" label="WALLPAPERPRIVATE_GETTHUMBNAIL"/>
+  <int value="282" label="DOWNLOADS_PAUSE"/>
+  <int value="283" label="PERMISSIONS_REQUEST"/>
+  <int value="284" label="TOPSITES_GET"/>
+  <int value="285" label="BROWSINGDATA_REMOVEDOWNLOADS"/>
+  <int value="286" label="BROWSINGDATA_REMOVELOCALSTORAGE"/>
+  <int value="287" label="FILEBROWSERHANDLERINTERNAL_SELECTFILE"/>
+  <int value="288" label="INPUT_IME_UPDATEMENUITEMS"/>
+  <int value="289" label="FILEBROWSERPRIVATE_GETSTRINGS"/>
+  <int value="290" label="CONTENTSETTINGS_GET"/>
+  <int value="291" label="FONTSETTINGS_SETDEFAULTFIXEDFONTSIZE"/>
+  <int value="292" label="EXPERIMENTAL_APP_NOTIFY"/>
+  <int value="293" label="METRICSPRIVATE_RECORDLONGTIME"/>
+  <int value="294" label="SOCKET_READ"/>
+  <int value="295" label="EXPERIMENTAL_PROCESSES_TERMINATE"/>
+  <int value="296" label="METRICSPRIVATE_RECORDTIME"/>
+  <int value="297" label="BOOKMARKMANAGERPRIVATE_GETSTRINGS"/>
+  <int value="298" label="USB_ISOCHRONOUSTRANSFER"/>
+  <int value="299" label="PERMISSIONS_REMOVE"/>
+  <int value="300" label="MANAGEMENT_UNINSTALL"/>
+  <int value="301" label="I18N_GETACCEPTLANGUAGES"/>
+  <int value="302" label="MANAGEMENT_LAUNCHAPP"/>
+  <int value="303" label="INPUT_IME_CLEARCOMPOSITION"/>
+  <int value="304" label="ALARMS_GETALL"/>
+  <int value="305" label="DIAL_DISCOVERNOW"/>
+  <int value="306" label="TYPES_CHROMESETTING_SET"/>
+  <int value="307" label="BROWSERACTION_SETICON"/>
+  <int value="308" label="EXPERIMENTAL_ACCESSIBILITY_SETACCESSIBILITYENABLED"/>
+  <int value="309" label="FILEBROWSERPRIVATE_VIEWFILES"/>
+  <int value="310" label="BLUETOOTH_GETSERVICES"/>
+  <int value="311" label="TABS_UPDATE"/>
+  <int value="312" label="BROWSINGDATA_REMOVEFORMDATA"/>
+  <int value="313" label="FILEBROWSERPRIVATE_RELOADDRIVE"/>
+  <int value="314" label="ALARMS_GET"/>
+  <int value="315" label="BROWSINGDATA_REMOVEINDEXEDDB"/>
+  <int value="316" label="FILEBROWSERPRIVATE_ADDFILEWATCH"/>
+  <int value="317" label="CONTENTSETTINGS_CLEAR"/>
+  <int value="318" label="FILEBROWSERPRIVATE_GETPREFERENCES"/>
+  <int value="319" label="BOOKMARKMANAGERPRIVATE_PASTE"/>
+  <int value="320" label="FILESYSTEM_ISWRITABLEENTRY"/>
+  <int value="321" label="USB_SETINTERFACEALTERNATESETTING"/>
+  <int value="322" label="FONTSETTINGS_SETMINIMUMFONTSIZE"/>
+  <int value="323" label="BROWSERACTION_GETPOPUP"/>
+  <int value="324" label="SOCKET_DESTROY"/>
+  <int value="325" label="BLUETOOTH_GETDEVICES"/>
+  <int value="326" label="ALARMS_CLEARALL"/>
+  <int value="327" label="FONTSETTINGS_GETDEFAULTFIXEDFONTSIZE"/>
+  <int value="328" label="FILEBROWSERPRIVATE_ZIPSELECTION"/>
+  <int value="329" label="SYSTEMINDICATOR_DISABLE"/>
+  <int value="330" label="SCRIPTBADGE_SETPOPUP"/>
+  <int value="331" label="EXTENSION_ISALLOWEDFILESCHEMEACCESS"/>
+  <int value="332" label="EXPERIMENTAL_IDENTITY_LAUNCHWEBAUTHFLOW"/>
+  <int value="333" label="FILEBROWSERPRIVATE_GETDRIVECONNECTIONSTATE"/>
+  <int value="334" label="TABS_DETECTLANGUAGE"/>
+  <int value="335" label="METRICSPRIVATE_RECORDVALUE"/>
+  <int value="336" label="BOOKMARKMANAGERPRIVATE_SORTCHILDREN"/>
+  <int value="337" label="SERIAL_READ"/>
+  <int value="338" label="APP_CURRENTWINDOWINTERNAL_MAXIMIZE"/>
+  <int value="339" label="EXPERIMENTAL_DISCOVERY_CLEARALLSUGGESTIONS"/>
+  <int value="340" label="MANAGEDMODEPRIVATE_ENTER"/>
+  <int value="341" label="FILEBROWSERPRIVATE_TRANSFERFILE"/>
+  <int value="342" label="BROWSERACTION_SETPOPUP"/>
+  <int value="343" label="TABS_GETSELECTED"/>
+  <int value="344" label="FONTSETTINGS_GETFONT"/>
+  <int value="345" label="BLUETOOTH_READ"/>
+  <int value="346" label="WEBREQUESTINTERNAL_EVENTHANDLED"/>
+  <int value="347" label="EVENTS_ADDRULES"/>
+  <int value="348" label="CONTEXTMENUS_CREATE"/>
+  <int value="349" label="MEDIAPLAYERPRIVATE_GETPLAYLIST"/>
+  <int value="350" label="DOWNLOADS_ERASE"/>
+  <int value="351" label="EXPERIMENTAL_RECORD_CAPTUREURLS"/>
+  <int value="352" label="TTS_ISSPEAKING"/>
+  <int value="353" label="BOOKMARKS_REMOVETREE"/>
+  <int value="354" label="FILEBROWSERPRIVATE_SEARCHDRIVE"/>
+  <int value="355" label="EXPERIMENTAL_SYSTEMINFO_CPU_GET"/>
+  <int value="356" label="FILEBROWSERPRIVATE_SETPREFERENCES"/>
+  <int value="357" label="FONTSETTINGS_SETFONT"/>
+  <int value="358" label="SOCKET_GETNETWORKLIST"/>
+  <int value="359" label="BOOKMARKS_MOVE"/>
+  <int value="360" label="WALLPAPERPRIVATE_MINIMIZEINACTIVEWINDOWS"/>
+  <int value="361" label="STORAGE_REMOVE"/>
+  <int value="362" label="AUTOTESTPRIVATE_LOGINSTATUS"/>
+  <int value="363" label="TABS_CREATE"/>
+  <int value="364" label="FILEBROWSERPRIVATE_CANCELDIALOG"/>
+  <int value="365" label="BROWSINGDATA_REMOVECOOKIES"/>
+  <int value="366" label="FILESYSTEM_CHOOSEENTRY"/>
+  <int value="367" label="MEDIAPLAYERPRIVATE_PLAY"/>
+  <int value="368" label="WEBSTOREPRIVATE_GETWEBGLSTATUS"/>
+  <int value="369" label="SOCKET_SENDTO"/>
+  <int value="370" label="BROWSINGDATA_REMOVEFILESYSTEMS"/>
+  <int value="371" label="WALLPAPERPRIVATE_GETSTRINGS"/>
+  <int value="372" label="BROWSINGDATA_REMOVECACHE"/>
+  <int value="373" label="BOOKMARKMANAGERPRIVATE_RECORDLAUNCH"/>
+  <int value="374" label="BROWSERACTION_DISABLE"/>
+  <int value="375" label="EXPERIMENTAL_SPEECHINPUT_ISRECORDING"/>
+  <int value="376" label="APP_WINDOW_CREATE"/>
+  <int value="377" label="RUNTIME_RELOAD"/>
+  <int value="378" label="EXPERIMENTAL_POWER_REQUESTKEEPAWAKE"/>
+  <int value="379" label="SYSTEMINDICATOR_SETICON"/>
+  <int value="380" label="FILEBROWSERPRIVATE_ADDMOUNT"/>
+  <int value="381" label="APP_CURRENTWINDOWINTERNAL_FOCUS"/>
+  <int value="382" label="EVENTS_REMOVERULES"/>
+  <int value="383" label="DOWNLOADS_DOWNLOAD"/>
+  <int value="384" label="WINDOWS_GETALL"/>
+  <int value="385" label="FILEBROWSERPRIVATE_TOGGLEFULLSCREEN"/>
+  <int value="386" label="APP_CURRENTWINDOWINTERNAL_RESTORE"/>
+  <int value="387" label="WEBSOCKETPROXYPRIVATE_GETPASSPORTFORTCP"/>
+  <int value="388" label="PAGEACTION_HIDE"/>
+  <int value="389" label="EXPERIMENTAL_SYSTEMINFO_STORAGE_GET"/>
+  <int value="390" label="DOWNLOADS_ACCEPTDANGER"/>
+  <int value="391" label="WEBSOCKETPROXYPRIVATE_GETURLFORTCP"/>
+  <int value="392" label="FILEBROWSERPRIVATE_GETSIZESTATS"/>
+  <int value="393" label="DOWNLOADS_RESUME"/>
+  <int value="394" label="COOKIES_GETALLCOOKIESTORES"/>
+  <int value="395" label="MEDIAGALLERIESPRIVATE_ADDGALLERYWATCH"/>
+  <int value="396" label="MEDIAGALLERIESPRIVATE_REMOVEGALLERYWATCH"/>
+  <int value="397" label="WEBVIEW_EXECUTESCRIPT"/>
+  <int value="398" label="NOTIFICATIONS_UPDATE"/>
+  <int value="399" label="NOTIFICATIONS_CLEAR"/>
+  <int value="400" label="SESSIONRESTORE_GETRECENTLYCLOSED"/>
+  <int value="401" label="SESSIONRESTORE_RESTORE"/>
+  <int value="402" label="MANAGEMENT_UNINSTALLSELF"/>
+  <int value="403" label="ECHOPRIVATE_GETOOBETIMESTAMP"/>
+  <int value="404" label="FILEBROWSERPRIVATE_VALIDATEPATHNAMELENGTH"/>
+  <int value="405" label="BROWSINGDATA_SETTINGS"/>
+  <int value="406" label="WEBSTOREPRIVATE_GETISLAUNCHERENABLED"/>
+  <int value="407" label="NETWORKINGPRIVATE_GETPROPERTIES"/>
+  <int value="408" label="NETWORKINGPRIVATE_GETVISIBLENETWORKS"/>
+  <int value="409" label="NETWORKINGPRIVATE_STARTCONNECT"/>
+  <int value="410" label="NETWORKINGPRIVATE_STARTDISCONNECT"/>
+  <int value="411" label="MEDIAGALLERIESPRIVATE_GETALLGALLERYWATCH"/>
+  <int value="412" label="MEDIAGALLERIESPRIVATE_REMOVEALLGALLERYWATCH"/>
+  <int value="413" label="FILEBROWSERPRIVATE_SEARCHDRIVEMETADATA"/>
+  <int value="414" label="ECHOPRIVATE_CHECKALLOWREDEEMOFFERS"/>
+  <int value="415" label="MEDIAGALLERIESPRIVATE_EJECTDEVICE"/>
+  <int value="416" label="FILEBROWSERPRIVATE_LOGOUTUSER"/>
+  <int value="417" label="DEVELOPERPRIVATE_CHOOSEPATH"/>
+  <int value="418" label="DEVELOPERPRIVATE_PACKDIRECTORY"/>
+  <int value="419" label="NETWORKINGPRIVATE_VERIFYDESTINATION"/>
+  <int value="420" label="NETWORKINGPRIVATE_VERIFYANDENCRYPTCREDENTIALS"/>
+  <int value="421" label="NETWORKINGPRIVATE_VERIFYANDENCRYPTDATA"/>
+  <int value="422" label="DEVELOPERPRIVATE_RESTART"/>
+  <int value="423" label="DEVELOPERPRIVATE_ALLOWINCOGNITO"/>
+  <int value="424" label="INPUT_IME_DELETESURROUNDINGTEXT"/>
+  <int value="425" label="FILEBROWSERPRIVATE_OPENNEWWINDOW"/>
+  <int value="426" label="CLOUDPRINTPRIVATE_GETCLIENTID"/>
+  <int value="427" label="ECHOPRIVATE_GETUSERCONSENT"/>
+  <int value="428" label="SYNCFILESYSTEM_SETCONFLICTRESOLUTIONPOLICY"/>
+  <int value="429" label="SYNCFILESYSTEM_GETCONFLICTRESOLUTIONPOLICY"/>
+  <int value="430" label="NETWORKINGPRIVATE_SETPROPERTIES"/>
+  <int value="431" label="NETWORKINGPRIVATE_GETSTATE"/>
+  <int value="432" label="POWER_REQUESTKEEPAWAKE"/>
+  <int value="433" label="POWER_RELEASEKEEPAWAKE"/>
+  <int value="434" label="WALLPAPERPRIVATE_SETCUSTOMWALLPAPERLAYOUT"/>
+  <int value="435" label="DOWNLOADSINTERNAL_DETERMINEFILENAME"/>
+  <int value="436" label="SYNCFILESYSTEM_GETFILESYNCSTATUSES"/>
+  <int value="437" label="MEDIAGALLERIESPRIVATE_GETHANDLERS"/>
+  <int value="438" label="WALLPAPERPRIVATE_RESETWALLPAPER"/>
+</enum>
+
+</enums>
+
+<!-- Field trials -->
+
+<fieldtrials>
+
+<fieldtrial name="AutofillServerExperiments">
+  <group name="ar06" label="Acceptance ratio: 0.6"/>
+  <group name="ar1" label="Acceptance ratio: 1.0"/>
+  <group name="ar2" label="Acceptance ratio: 2.0"/>
+  <group name="ar4" label="Acceptance ratio: 4.0"/>
+  <group name="ar04wr3fs4"
+      label="Acceptance ratio: 0.4; winner lead ratio: 3.0; min form score: 4"/>
+  <group name="ar05wlr15"
+      label="Acceptance ratio: 0.5; winner lead ratio: 1.5"/>
+  <group name="ar05wlr25"
+      label="Acceptance ratio: 0.5; winner lead ratio: 2.5"/>
+  <group name="ar05wr15fs5"
+      label="Acceptance ratio: 0.5; winner lead ratio: 1.5; min form score: 5"/>
+  <group name="fp05" label="Probability picker algorithm, p=0.5"/>
+  <group name="fp025" label="Probability picker algorithm, p=0.25"/>
+  <group name="fp05cc03"
+      label="Probability picker algorithm, p=0.5; p_ccname=0.3"/>
+  <group name="fp05cco03"
+      label="Probability picker algorithm, p=0.5;
+             p_ccname_given_other_cc_fields=0.3"/>
+  <group name="fp05cco03cstd"
+      label="Probability picker algorithm, p=0.5;
+             p_ccname_given_other_cc_fields=0.3; with fallback to the default
+             algorithm"/>
+  <group name="fp05cc03e1"
+      label="Probability picker algorithm, p=0.5 for cc and company name
+             fields; p_ccname_given_other_cc_fields=0.3; with fallback to the
+             default algorithm;"/>
+  <group name="tbar1" label="Use only Toolbar upload data"/>
+  <affected-histogram name="Autofill.Quality"/>
+  <affected-histogram name="AutoFill.Quality"/>
+  <affected-histogram name="Autofill.Quality.HeuristicType"/>
+  <affected-histogram name="Autofill.Quality.HeuristicType.ByFieldType"/>
+  <affected-histogram name="Autofill.Quality.PredictedType"/>
+  <affected-histogram name="Autofill.Quality.PredictedType.ByFieldType"/>
+  <affected-histogram name="Autofill.Quality.ServerType"/>
+  <affected-histogram name="Autofill.Quality.ServerType.ByFieldType"/>
+</fieldtrial>
+
+</fieldtrials>
+
+</histogram-configuration>
