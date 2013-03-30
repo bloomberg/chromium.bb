@@ -39,6 +39,16 @@ const GURL kOnlineNamespaceWithinFallback(
 const GURL kInterceptNamespace("http://blah/intercept_namespace/");
 const GURL kInterceptNamespace2("http://blah/intercept_namespace/longer/");
 const GURL kInterceptTestUrl("http://blah/intercept_namespace/longer/test");
+const GURL kInterceptPatternNamespace("http://blah/intercept_pattern/*/bar");
+const GURL kInterceptPatternTestPositiveUrl(
+    "http://blah/intercept_pattern/foo/bar");
+const GURL kInterceptPatternTestNegativeUrl(
+    "http://blah/intercept_pattern/foo/not_bar");
+const GURL kFallbackPatternNamespace("http://blah/fallback_pattern/*/bar");
+const GURL kFallbackPatternTestPositiveUrl(
+    "http://blah/fallback_pattern/foo/bar");
+const GURL kFallbackPatternTestNegativeUrl(
+    "http://blah/fallback_pattern/foo/not_bar");
 const GURL kOrigin(kManifestUrl.GetOrigin());
 
 const int kManifestEntryIdOffset = 100;
@@ -676,8 +686,8 @@ class AppCacheStorageImplTest : public testing::Test {
 
     AppCacheDatabase::NamespaceRecord fallback_namespace_record;
     fallback_namespace_record.cache_id = 1;
-    fallback_namespace_record.target_url = kEntryUrl;
-    fallback_namespace_record.namespace_url = kFallbackNamespace;
+    fallback_namespace_record.namespace_.target_url = kEntryUrl;
+    fallback_namespace_record.namespace_.namespace_url = kFallbackNamespace;
     fallback_namespace_record.origin = kManifestUrl.GetOrigin();
     EXPECT_TRUE(database()->InsertNamespace(&fallback_namespace_record));
 
@@ -896,9 +906,9 @@ class AppCacheStorageImplTest : public testing::Test {
     cache_->AddEntry(kEntryUrl, AppCacheEntry(AppCacheEntry::FALLBACK, 1));
     cache_->AddEntry(kEntryUrl2, AppCacheEntry(AppCacheEntry::FALLBACK, 2));
     cache_->fallback_namespaces_.push_back(
-        Namespace(FALLBACK_NAMESPACE, kFallbackNamespace2, kEntryUrl2));
+        Namespace(FALLBACK_NAMESPACE, kFallbackNamespace2, kEntryUrl2, false));
     cache_->fallback_namespaces_.push_back(
-        Namespace(FALLBACK_NAMESPACE, kFallbackNamespace, kEntryUrl));
+        Namespace(FALLBACK_NAMESPACE, kFallbackNamespace, kEntryUrl, false));
     AppCacheDatabase::CacheRecord cache_record;
     std::vector<AppCacheDatabase::EntryRecord> entries;
     std::vector<AppCacheDatabase::NamespaceRecord> intercepts;
@@ -964,9 +974,11 @@ class AppCacheStorageImplTest : public testing::Test {
     cache_->AddEntry(kEntryUrl, AppCacheEntry(AppCacheEntry::INTERCEPT, 1));
     cache_->AddEntry(kEntryUrl2, AppCacheEntry(AppCacheEntry::INTERCEPT, 2));
     cache_->intercept_namespaces_.push_back(
-        Namespace(INTERCEPT_NAMESPACE, kInterceptNamespace2, kEntryUrl2));
+        Namespace(INTERCEPT_NAMESPACE, kInterceptNamespace2,
+                  kEntryUrl2, false));
     cache_->intercept_namespaces_.push_back(
-        Namespace(INTERCEPT_NAMESPACE, kInterceptNamespace, kEntryUrl));
+        Namespace(INTERCEPT_NAMESPACE, kInterceptNamespace,
+                  kEntryUrl, false));
     AppCacheDatabase::CacheRecord cache_record;
     std::vector<AppCacheDatabase::EntryRecord> entries;
     std::vector<AppCacheDatabase::NamespaceRecord> intercepts;
@@ -1011,6 +1023,171 @@ class AppCacheStorageImplTest : public testing::Test {
     EXPECT_FALSE(delegate()->found_fallback_entry_.has_response_id());
     TestFinished();
   }
+
+  // FindInterceptPatternMatch ----------------------------------------
+
+  void FindInterceptPatternMatchInDatabase() {
+    FindInterceptPatternMatch(true);
+  }
+
+  void FindInterceptPatternMatchInWorkingSet() {
+    FindInterceptPatternMatch(false);
+  }
+
+  void FindInterceptPatternMatch(bool drop_from_working_set) {
+    // Setup some preconditions. Create a complete cache with an
+    // pattern matching intercept namespace and entry.
+    MakeCacheAndGroup(kManifestUrl, 2, 1, true);
+    cache_->AddEntry(kEntryUrl, AppCacheEntry(AppCacheEntry::INTERCEPT, 1));
+    cache_->intercept_namespaces_.push_back(
+        Namespace(INTERCEPT_NAMESPACE, kInterceptPatternNamespace,
+                  kEntryUrl, true));
+    AppCacheDatabase::CacheRecord cache_record;
+    std::vector<AppCacheDatabase::EntryRecord> entries;
+    std::vector<AppCacheDatabase::NamespaceRecord> intercepts;
+    std::vector<AppCacheDatabase::NamespaceRecord> fallbacks;
+    std::vector<AppCacheDatabase::OnlineWhiteListRecord> whitelists;
+    cache_->ToDatabaseRecords(group_,
+        &cache_record, &entries, &intercepts, &fallbacks, &whitelists);
+
+    std::vector<AppCacheDatabase::EntryRecord>::const_iterator iter =
+        entries.begin();
+    while (iter != entries.end()) {
+      // MakeCacheAndGroup has inserted  the default entry record already
+      if (iter->url != kDefaultEntryUrl)
+        EXPECT_TRUE(database()->InsertEntry(&(*iter)));
+      ++iter;
+    }
+
+    EXPECT_TRUE(database()->InsertNamespaceRecords(intercepts));
+    if (drop_from_working_set) {
+      EXPECT_TRUE(cache_->HasOneRef());
+      cache_ = NULL;
+      EXPECT_TRUE(group_->HasOneRef());
+      group_ = NULL;
+    }
+
+    // First test something that does not match the pattern.
+    PushNextTask(base::Bind(
+        &AppCacheStorageImplTest::Verify_FindInterceptPatternMatchNegative,
+        base::Unretained(this)));
+    storage()->FindResponseForMainRequest(
+        kInterceptPatternTestNegativeUrl, GURL(), delegate());
+    EXPECT_EQ(GURL(), delegate()->found_url_);  // Is always async.
+  }
+
+  void Verify_FindInterceptPatternMatchNegative() {
+    EXPECT_EQ(kInterceptPatternTestNegativeUrl, delegate()->found_url_);
+    EXPECT_TRUE(delegate()->found_manifest_url_.is_empty());
+    EXPECT_EQ(kNoCacheId, delegate()->found_cache_id_);
+    EXPECT_EQ(kNoResponseId, delegate()->found_entry_.response_id());
+    EXPECT_EQ(kNoResponseId, delegate()->found_fallback_entry_.response_id());
+    EXPECT_TRUE(delegate()->found_namespace_entry_url_.is_empty());
+    EXPECT_EQ(0, delegate()->found_entry_.types());
+    EXPECT_EQ(0, delegate()->found_fallback_entry_.types());
+
+    // Then test something that matches.
+    PushNextTask(base::Bind(
+        &AppCacheStorageImplTest::Verify_FindInterceptPatternMatchPositive,
+        base::Unretained(this)));
+    storage()->FindResponseForMainRequest(
+        kInterceptPatternTestPositiveUrl, GURL(), delegate());
+  }
+
+  void Verify_FindInterceptPatternMatchPositive() {
+    EXPECT_EQ(kInterceptPatternTestPositiveUrl, delegate()->found_url_);
+    EXPECT_EQ(kManifestUrl, delegate()->found_manifest_url_);
+    EXPECT_EQ(1, delegate()->found_cache_id_);
+    EXPECT_EQ(2, delegate()->found_group_id_);
+    EXPECT_EQ(1, delegate()->found_entry_.response_id());
+    EXPECT_TRUE(delegate()->found_entry_.IsIntercept());
+    EXPECT_EQ(kEntryUrl, delegate()->found_namespace_entry_url_);
+    EXPECT_FALSE(delegate()->found_fallback_entry_.has_response_id());
+    TestFinished();
+  }
+
+  // FindFallbackPatternMatch  -------------------------------
+
+  void FindFallbackPatternMatchInDatabase() {
+    FindFallbackPatternMatch(true);
+  }
+
+  void FindFallbackPatternMatchInWorkingSet() {
+    FindFallbackPatternMatch(false);
+  }
+
+  void FindFallbackPatternMatch(bool drop_from_working_set) {
+    // Setup some preconditions. Create a complete cache with a
+    // pattern matching fallback namespace and entry.
+    MakeCacheAndGroup(kManifestUrl, 2, 1, true);
+    cache_->AddEntry(kEntryUrl, AppCacheEntry(AppCacheEntry::FALLBACK, 1));
+    cache_->fallback_namespaces_.push_back(
+        Namespace(FALLBACK_NAMESPACE, kFallbackPatternNamespace,
+                  kEntryUrl, true));
+    AppCacheDatabase::CacheRecord cache_record;
+    std::vector<AppCacheDatabase::EntryRecord> entries;
+    std::vector<AppCacheDatabase::NamespaceRecord> intercepts;
+    std::vector<AppCacheDatabase::NamespaceRecord> fallbacks;
+    std::vector<AppCacheDatabase::OnlineWhiteListRecord> whitelists;
+    cache_->ToDatabaseRecords(group_,
+        &cache_record, &entries, &intercepts, &fallbacks, &whitelists);
+
+    std::vector<AppCacheDatabase::EntryRecord>::const_iterator iter =
+        entries.begin();
+    while (iter != entries.end()) {
+      // MakeCacheAndGroup has inserted the default entry record already.
+      if (iter->url != kDefaultEntryUrl)
+        EXPECT_TRUE(database()->InsertEntry(&(*iter)));
+      ++iter;
+    }
+
+    EXPECT_TRUE(database()->InsertNamespaceRecords(fallbacks));
+    if (drop_from_working_set) {
+      EXPECT_TRUE(cache_->HasOneRef());
+      cache_ = NULL;
+      EXPECT_TRUE(group_->HasOneRef());
+      group_ = NULL;
+    }
+
+    // First test something that does not match the pattern.
+    PushNextTask(base::Bind(
+        &AppCacheStorageImplTest::Verify_FindFallbackPatternMatchNegative,
+        base::Unretained(this)));
+    storage()->FindResponseForMainRequest(
+        kFallbackPatternTestNegativeUrl, GURL(), delegate());
+    EXPECT_EQ(GURL(), delegate()->found_url_);  // Is always async.
+  }
+
+  void Verify_FindFallbackPatternMatchNegative() {
+    EXPECT_EQ(kFallbackPatternTestNegativeUrl, delegate()->found_url_);
+      EXPECT_TRUE(delegate()->found_manifest_url_.is_empty());
+      EXPECT_EQ(kNoCacheId, delegate()->found_cache_id_);
+      EXPECT_EQ(kNoResponseId, delegate()->found_entry_.response_id());
+      EXPECT_EQ(kNoResponseId, delegate()->found_fallback_entry_.response_id());
+      EXPECT_TRUE(delegate()->found_namespace_entry_url_.is_empty());
+      EXPECT_EQ(0, delegate()->found_entry_.types());
+      EXPECT_EQ(0, delegate()->found_fallback_entry_.types());
+
+      // Then test something that matches.
+      PushNextTask(base::Bind(
+          &AppCacheStorageImplTest::Verify_FindFallbackPatternMatchPositive,
+          base::Unretained(this)));
+      storage()->FindResponseForMainRequest(
+          kFallbackPatternTestPositiveUrl, GURL(), delegate());
+  }
+
+  void Verify_FindFallbackPatternMatchPositive() {
+    EXPECT_EQ(kFallbackPatternTestPositiveUrl, delegate()->found_url_);
+    EXPECT_EQ(kManifestUrl, delegate()->found_manifest_url_);
+    EXPECT_EQ(1, delegate()->found_cache_id_);
+    EXPECT_EQ(2, delegate()->found_group_id_);
+    EXPECT_EQ(1, delegate()->found_fallback_entry_.response_id());
+    EXPECT_TRUE(delegate()->found_fallback_entry_.IsFallback());
+    EXPECT_EQ(kEntryUrl, delegate()->found_namespace_entry_url_);
+    EXPECT_FALSE(delegate()->found_entry_.has_response_id());
+    TestFinished();
+  }
+
   // FindMainResponseWithMultipleHits  -------------------------------
 
   void FindMainResponseWithMultipleHits() {
@@ -1066,12 +1243,12 @@ class AppCacheStorageImplTest : public testing::Test {
         AppCacheEntry(entry_record.flags, entry_record.response_id));
     AppCacheDatabase::NamespaceRecord fallback_namespace_record;
     fallback_namespace_record.cache_id = id;
-    fallback_namespace_record.target_url = entry_record.url;
-    fallback_namespace_record.namespace_url = kFallbackNamespace;
+    fallback_namespace_record.namespace_.target_url = entry_record.url;
+    fallback_namespace_record.namespace_.namespace_url = kFallbackNamespace;
     fallback_namespace_record.origin = manifest_url.GetOrigin();
     EXPECT_TRUE(database()->InsertNamespace(&fallback_namespace_record));
     cache_->fallback_namespaces_.push_back(
-        Namespace(FALLBACK_NAMESPACE, kFallbackNamespace, kEntryUrl2));
+        Namespace(FALLBACK_NAMESPACE, kFallbackNamespace, kEntryUrl2, false));
   }
 
   void Verify_FindMainResponseWithMultipleHits() {
@@ -1181,13 +1358,15 @@ class AppCacheStorageImplTest : public testing::Test {
     MakeCacheAndGroup(kManifestUrl, 1, 1, true);
     cache_->AddEntry(kEntryUrl,
         AppCacheEntry(AppCacheEntry::EXPLICIT | AppCacheEntry::FOREIGN, 1));
-    cache_->online_whitelist_namespaces_.push_back(kOnlineNamespace);
     cache_->AddEntry(kEntryUrl2, AppCacheEntry(AppCacheEntry::FALLBACK, 2));
     cache_->fallback_namespaces_.push_back(
-        Namespace(FALLBACK_NAMESPACE, kFallbackNamespace, kEntryUrl2));
-    cache_->online_whitelist_namespaces_.push_back(kOnlineNamespace);
+        Namespace(FALLBACK_NAMESPACE, kFallbackNamespace, kEntryUrl2, false));
     cache_->online_whitelist_namespaces_.push_back(
-        kOnlineNamespaceWithinFallback);
+        Namespace(NETWORK_NAMESPACE, kOnlineNamespace,
+                  GURL(), false));
+    cache_->online_whitelist_namespaces_.push_back(
+        Namespace(NETWORK_NAMESPACE, kOnlineNamespaceWithinFallback,
+                  GURL(), false));
 
     AppCacheDatabase::EntryRecord entry_record;
     entry_record.cache_id = 1;
@@ -1201,8 +1380,8 @@ class AppCacheStorageImplTest : public testing::Test {
     EXPECT_TRUE(database()->InsertOnlineWhiteList(&whitelist_record));
     AppCacheDatabase::NamespaceRecord fallback_namespace_record;
     fallback_namespace_record.cache_id = 1;
-    fallback_namespace_record.target_url = kEntryUrl2;
-    fallback_namespace_record.namespace_url = kFallbackNamespace;
+    fallback_namespace_record.namespace_.target_url = kEntryUrl2;
+    fallback_namespace_record.namespace_.namespace_url = kFallbackNamespace;
     fallback_namespace_record.origin = kManifestUrl.GetOrigin();
     EXPECT_TRUE(database()->InsertNamespace(&fallback_namespace_record));
     whitelist_record.cache_id = 1;
@@ -1417,6 +1596,26 @@ TEST_F(AppCacheStorageImplTest, FindMainResponseExclusionsInDatabase) {
 TEST_F(AppCacheStorageImplTest, FindMainResponseExclusionsInWorkingSet) {
   RunTestOnIOThread(
       &AppCacheStorageImplTest::FindMainResponseExclusionsInWorkingSet);
+}
+
+TEST_F(AppCacheStorageImplTest, FindInterceptPatternMatchInWorkingSet) {
+  RunTestOnIOThread(
+      &AppCacheStorageImplTest::FindInterceptPatternMatchInWorkingSet);
+}
+
+TEST_F(AppCacheStorageImplTest, FindInterceptPatternMatchInDatabase) {
+  RunTestOnIOThread(
+      &AppCacheStorageImplTest::FindInterceptPatternMatchInDatabase);
+}
+
+TEST_F(AppCacheStorageImplTest, FindFallbackPatternMatchInWorkingSet) {
+  RunTestOnIOThread(
+      &AppCacheStorageImplTest::FindFallbackPatternMatchInWorkingSet);
+}
+
+TEST_F(AppCacheStorageImplTest, FindFallbackPatternMatchInDatabase) {
+  RunTestOnIOThread(
+      &AppCacheStorageImplTest::FindFallbackPatternMatchInDatabase);
 }
 
 // That's all folks!

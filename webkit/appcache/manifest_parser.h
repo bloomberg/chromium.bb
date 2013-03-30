@@ -50,7 +50,7 @@ struct WEBKIT_STORAGE_EXPORT Manifest {
   base::hash_set<std::string> explicit_urls;
   NamespaceVector intercept_namespaces;
   NamespaceVector fallback_namespaces;
-  std::vector<GURL> online_whitelist_namespaces;
+  NamespaceVector online_whitelist_namespaces;
   bool online_whitelist_all;
 };
 

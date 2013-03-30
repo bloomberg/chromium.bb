@@ -134,15 +134,18 @@ TEST(AppCacheManifestParserTest, WhitelistUrls) {
   EXPECT_TRUE(manifest.intercept_namespaces.empty());
   EXPECT_FALSE(manifest.online_whitelist_all);
 
-  std::vector<GURL> online = manifest.online_whitelist_namespaces;
+  const NamespaceVector& online = manifest.online_whitelist_namespaces;
   const size_t kExpected = 6;
   ASSERT_EQ(kExpected, online.size());
-  EXPECT_EQ(GURL("http://www.bar.com/relative/one"), online[0]);
-  EXPECT_EQ(GURL("http://www.bar.com/two"), online[1]);
-  EXPECT_EQ(GURL("http://www.diff.com/three"), online[2]);
-  EXPECT_EQ(GURL("http://www.bar.com/relative/four"), online[3]);
-  EXPECT_EQ(GURL("http://www.five.com"), online[4]);
-  EXPECT_EQ(GURL("http://www.bar.com/*foo"), online[5]);
+  EXPECT_EQ(NETWORK_NAMESPACE, online[0].type);
+  EXPECT_FALSE(online[0].is_pattern);
+  EXPECT_TRUE(online[0].target_url.is_empty());
+  EXPECT_EQ(GURL("http://www.bar.com/relative/one"), online[0].namespace_url);
+  EXPECT_EQ(GURL("http://www.bar.com/two"), online[1].namespace_url);
+  EXPECT_EQ(GURL("http://www.diff.com/three"), online[2].namespace_url);
+  EXPECT_EQ(GURL("http://www.bar.com/relative/four"), online[3].namespace_url);
+  EXPECT_EQ(GURL("http://www.five.com"), online[4].namespace_url);
+  EXPECT_EQ(GURL("http://www.bar.com/*foo"), online[5].namespace_url);
 }
 
 TEST(AppCacheManifestParserTest, FallbackUrls) {
@@ -322,13 +325,17 @@ TEST(AppCacheManifestParserTest, ComboUrls) {
   EXPECT_TRUE(urls.find("http://combo.com:99/explicit-2") != urls.end());
   EXPECT_TRUE(urls.find("http://www.diff.com/explicit-3") != urls.end());
 
-  std::vector<GURL> online = manifest.online_whitelist_namespaces;
+  const NamespaceVector& online = manifest.online_whitelist_namespaces;
   expected = 4;
   ASSERT_EQ(expected, online.size());
-  EXPECT_EQ(GURL("http://combo.com/whitelist-1"), online[0]);
-  EXPECT_EQ(GURL("http://www.diff.com/whitelist-2"), online[1]);
-  EXPECT_EQ(GURL("http://combo.com:42/relative/whitelist-3"), online[2]);
-  EXPECT_EQ(GURL("http://combo.com:99/whitelist-4"), online[3]);
+  EXPECT_EQ(GURL("http://combo.com/whitelist-1"),
+                 online[0].namespace_url);
+  EXPECT_EQ(GURL("http://www.diff.com/whitelist-2"),
+                 online[1].namespace_url);
+  EXPECT_EQ(GURL("http://combo.com:42/relative/whitelist-3"),
+                 online[2].namespace_url);
+  EXPECT_EQ(GURL("http://combo.com:99/whitelist-4"),
+                 online[3].namespace_url);
 
   const NamespaceVector& fallbacks = manifest.fallback_namespaces;
   expected = 2;
@@ -397,6 +404,69 @@ TEST(AppCacheManifestParserTest, DifferentOriginUrlWithSecureScheme) {
       urls.end());
   EXPECT_TRUE(urls.find("https://www.xyz.com/secureschemedifforigin") !=
       urls.end());
+}
+
+TEST(AppCacheManifestParserTest, PatternMatching) {
+  const GURL kUrl("http://foo.com/manifest");
+  const std::string kManifestBody(
+      "CACHE MANIFEST\r"
+      "CACHE: \r"
+      "http://foo.com/page.html\r"
+      "CHROMIUM-INTERCEPT:\r"
+      "http://foo.com/intercept_prefix return /prefix\r"
+      "http://foo.com/intercept_pattern return /pattern isPattern\r"
+      "http://foo.com/*/intercept_pattern?query return /pattern isPattern\r"
+      "FALLBACK:\r"
+      "http://foo.com/fallback_prefix  /prefix wrongAnnotation\r"
+      "http://foo.com/fallback_pattern* /pattern\tisPattern    \r"
+      "NETWORK:\r"
+      "*\r"
+      "isPattern\r"  // should not be interpretted as a pattern
+      "http://foo.com/network_pattern* isPattern\r");
+
+
+  Manifest manifest;
+  EXPECT_TRUE(ParseManifest(kUrl, kManifestBody.c_str(),
+                            kManifestBody.length(), manifest));
+  EXPECT_TRUE(manifest.online_whitelist_all);
+  EXPECT_EQ(1u, manifest.explicit_urls.size());
+  EXPECT_EQ(3u, manifest.intercept_namespaces.size());
+  EXPECT_EQ(2u, manifest.fallback_namespaces.size());
+  EXPECT_EQ(2u, manifest.online_whitelist_namespaces.size());
+  EXPECT_EQ(INTERCEPT_NAMESPACE, manifest.intercept_namespaces[0].type);
+  EXPECT_EQ(FALLBACK_NAMESPACE, manifest.fallback_namespaces[0].type);
+  EXPECT_EQ(NETWORK_NAMESPACE, manifest.online_whitelist_namespaces[0].type);
+  EXPECT_FALSE(manifest.intercept_namespaces[0].is_pattern);
+  EXPECT_TRUE(manifest.intercept_namespaces[1].is_pattern);
+  EXPECT_TRUE(manifest.intercept_namespaces[2].is_pattern);
+  EXPECT_FALSE(manifest.fallback_namespaces[0].is_pattern);
+  EXPECT_TRUE(manifest.fallback_namespaces[1].is_pattern);
+  EXPECT_FALSE(manifest.online_whitelist_namespaces[0].is_pattern);
+  EXPECT_TRUE(manifest.online_whitelist_namespaces[1].is_pattern);
+  EXPECT_EQ(
+      GURL("http://foo.com/*/intercept_pattern?query"),
+      manifest.intercept_namespaces[2].namespace_url);
+  EXPECT_EQ(
+      GURL("http://foo.com/pattern"),
+      manifest.intercept_namespaces[2].target_url);
+  EXPECT_EQ(
+      GURL("http://foo.com/fallback_pattern*"),
+      manifest.fallback_namespaces[1].namespace_url);
+  EXPECT_EQ(
+      GURL("http://foo.com/pattern"),
+      manifest.fallback_namespaces[1].target_url);
+  EXPECT_EQ(
+      GURL("http://foo.com/isPattern"),
+      manifest.online_whitelist_namespaces[0].namespace_url);
+  EXPECT_EQ(
+      GURL(),
+      manifest.online_whitelist_namespaces[0].target_url);
+  EXPECT_EQ(
+      GURL("http://foo.com/network_pattern*"),
+      manifest.online_whitelist_namespaces[1].namespace_url);
+  EXPECT_EQ(
+      GURL(),
+      manifest.online_whitelist_namespaces[1].target_url);
 }
 
 }  // namespace appcache

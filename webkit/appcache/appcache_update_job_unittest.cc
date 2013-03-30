@@ -3192,7 +3192,8 @@ class AppCacheUpdateJobTest : public testing::Test,
                     Namespace(
                         FALLBACK_NAMESPACE,
                         MockHttpServer::GetMockUrl("files/fallback1"),
-                        MockHttpServer::GetMockUrl("files/fallback1a")));
+                        MockHttpServer::GetMockUrl("files/fallback1a"),
+                        false));
 
     EXPECT_TRUE(cache->online_whitelist_namespaces_.empty());
     EXPECT_TRUE(cache->online_whitelist_all_);
@@ -3219,13 +3220,15 @@ class AppCacheUpdateJobTest : public testing::Test,
                     Namespace(
                         FALLBACK_NAMESPACE,
                         MockHttpServer::GetMockUrl("files/fallback1"),
-                        MockHttpServer::GetMockUrl("files/explicit1")));
+                        MockHttpServer::GetMockUrl("files/explicit1"),
+                        false));
 
     EXPECT_EQ(expected, cache->online_whitelist_namespaces_.size());
-    EXPECT_TRUE(cache->online_whitelist_namespaces_.end() !=
-        std::find(cache->online_whitelist_namespaces_.begin(),
-                  cache->online_whitelist_namespaces_.end(),
-                  MockHttpServer::GetMockUrl("files/online1")));
+    EXPECT_TRUE(cache->online_whitelist_namespaces_[0] ==
+                    Namespace(
+                        NETWORK_NAMESPACE,
+                        MockHttpServer::GetMockUrl("files/online1"),
+                        GURL(), false));
     EXPECT_FALSE(cache->online_whitelist_all_);
 
     EXPECT_TRUE(cache->update_time_ > base::Time());

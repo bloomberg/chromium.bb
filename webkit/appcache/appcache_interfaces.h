@@ -57,7 +57,8 @@ enum LogLevel {
 
 enum NamespaceType {
   FALLBACK_NAMESPACE,
-  INTERCEPT_NAMESPACE
+  INTERCEPT_NAMESPACE,
+  NETWORK_NAMESPACE
 };
 
 struct WEBKIT_STORAGE_EXPORT AppCacheInfo {
@@ -97,12 +98,16 @@ typedef std::vector<AppCacheResourceInfo> AppCacheResourceInfoVector;
 
 struct WEBKIT_STORAGE_EXPORT Namespace {
   Namespace();  // Type is set to FALLBACK_NAMESPACE by default.
-  Namespace(NamespaceType type, const GURL& url, const GURL& target);
+  Namespace(NamespaceType type, const GURL& url, const GURL& target,
+            bool is_pattern);
   ~Namespace();
+
+  bool IsMatch(const GURL& url) const;
 
   NamespaceType type;
   GURL namespace_url;
   GURL target_url;
+  bool is_pattern;
 };
 
 typedef std::vector<Namespace> NamespaceVector;

@@ -360,15 +360,15 @@ TEST(AppCacheDatabaseTest, NamespaceRecords) {
   // Two records for two differenent caches in the Foo origin.
   record.cache_id = 1;
   record.origin = kFooOrigin;
-  record.namespace_url = kFooNameSpace1;
-  record.target_url = kFooFallbackEntry;
+  record.namespace_.namespace_url = kFooNameSpace1;
+  record.namespace_.target_url = kFooFallbackEntry;
   EXPECT_TRUE(db.InsertNamespace(&record));
   EXPECT_FALSE(db.InsertNamespace(&record));
 
   record.cache_id = 2;
   record.origin = kFooOrigin;
-  record.namespace_url = kFooNameSpace2;
-  record.target_url = kFooFallbackEntry;
+  record.namespace_.namespace_url = kFooNameSpace2;
+  record.namespace_.target_url = kFooFallbackEntry;
   EXPECT_TRUE(db.InsertNamespace(&record));
 
   fallbacks.clear();
@@ -376,28 +376,32 @@ TEST(AppCacheDatabaseTest, NamespaceRecords) {
   EXPECT_EQ(1U, fallbacks.size());
   EXPECT_EQ(1, fallbacks[0].cache_id);
   EXPECT_EQ(kFooOrigin, fallbacks[0].origin);
-  EXPECT_EQ(kFooNameSpace1, fallbacks[0].namespace_url);
-  EXPECT_EQ(kFooFallbackEntry, fallbacks[0].target_url);
+  EXPECT_EQ(kFooNameSpace1, fallbacks[0].namespace_.namespace_url);
+  EXPECT_EQ(kFooFallbackEntry, fallbacks[0].namespace_.target_url);
+  EXPECT_FALSE(fallbacks[0].namespace_.is_pattern);
 
   fallbacks.clear();
   EXPECT_TRUE(db.FindNamespacesForCache(2, &intercepts, &fallbacks));
   EXPECT_EQ(1U, fallbacks.size());
   EXPECT_EQ(2, fallbacks[0].cache_id);
   EXPECT_EQ(kFooOrigin, fallbacks[0].origin);
-  EXPECT_EQ(kFooNameSpace2, fallbacks[0].namespace_url);
-  EXPECT_EQ(kFooFallbackEntry, fallbacks[0].target_url);
+  EXPECT_EQ(kFooNameSpace2, fallbacks[0].namespace_.namespace_url);
+  EXPECT_EQ(kFooFallbackEntry, fallbacks[0].namespace_.target_url);
+  EXPECT_FALSE(fallbacks[0].namespace_.is_pattern);
 
   fallbacks.clear();
   EXPECT_TRUE(db.FindNamespacesForOrigin(kFooOrigin, &intercepts, &fallbacks));
   EXPECT_EQ(2U, fallbacks.size());
   EXPECT_EQ(1, fallbacks[0].cache_id);
   EXPECT_EQ(kFooOrigin, fallbacks[0].origin);
-  EXPECT_EQ(kFooNameSpace1, fallbacks[0].namespace_url);
-  EXPECT_EQ(kFooFallbackEntry, fallbacks[0].target_url);
+  EXPECT_EQ(kFooNameSpace1, fallbacks[0].namespace_.namespace_url);
+  EXPECT_EQ(kFooFallbackEntry, fallbacks[0].namespace_.target_url);
+  EXPECT_FALSE(fallbacks[0].namespace_.is_pattern);
   EXPECT_EQ(2, fallbacks[1].cache_id);
   EXPECT_EQ(kFooOrigin, fallbacks[1].origin);
-  EXPECT_EQ(kFooNameSpace2, fallbacks[1].namespace_url);
-  EXPECT_EQ(kFooFallbackEntry, fallbacks[1].target_url);
+  EXPECT_EQ(kFooNameSpace2, fallbacks[1].namespace_.namespace_url);
+  EXPECT_EQ(kFooFallbackEntry, fallbacks[1].namespace_.target_url);
+  EXPECT_FALSE(fallbacks[1].namespace_.is_pattern);
 
   EXPECT_TRUE(db.DeleteNamespacesForCache(1));
   fallbacks.clear();
@@ -405,28 +409,36 @@ TEST(AppCacheDatabaseTest, NamespaceRecords) {
   EXPECT_EQ(1U, fallbacks.size());
   EXPECT_EQ(2, fallbacks[0].cache_id);
   EXPECT_EQ(kFooOrigin, fallbacks[0].origin);
-  EXPECT_EQ(kFooNameSpace2, fallbacks[0].namespace_url);
-  EXPECT_EQ(kFooFallbackEntry, fallbacks[0].target_url);
+  EXPECT_EQ(kFooNameSpace2, fallbacks[0].namespace_.namespace_url);
+  EXPECT_EQ(kFooFallbackEntry, fallbacks[0].namespace_.target_url);
+  EXPECT_FALSE(fallbacks[0].namespace_.is_pattern);
 
   // Two more records for the same cache in the Bar origin.
   record.cache_id = 3;
   record.origin = kBarOrigin;
-  record.namespace_url = kBarNameSpace1;
-  record.target_url = kBarFallbackEntry;
+  record.namespace_.namespace_url = kBarNameSpace1;
+  record.namespace_.target_url = kBarFallbackEntry;
+  record.namespace_.is_pattern = true;
   EXPECT_TRUE(db.InsertNamespace(&record));
 
   record.cache_id = 3;
   record.origin = kBarOrigin;
-  record.namespace_url = kBarNameSpace2;
-  record.target_url = kBarFallbackEntry;
+  record.namespace_.namespace_url = kBarNameSpace2;
+  record.namespace_.target_url = kBarFallbackEntry;
+  record.namespace_.is_pattern = true;
   EXPECT_TRUE(db.InsertNamespace(&record));
 
   fallbacks.clear();
   EXPECT_TRUE(db.FindNamespacesForCache(3, &intercepts, &fallbacks));
   EXPECT_EQ(2U, fallbacks.size());
+  EXPECT_TRUE(fallbacks[0].namespace_.is_pattern);
+  EXPECT_TRUE(fallbacks[1].namespace_.is_pattern);
+
   fallbacks.clear();
   EXPECT_TRUE(db.FindNamespacesForOrigin(kBarOrigin, &intercepts, &fallbacks));
   EXPECT_EQ(2U, fallbacks.size());
+  EXPECT_TRUE(fallbacks[0].namespace_.is_pattern);
+  EXPECT_TRUE(fallbacks[1].namespace_.is_pattern);
 }
 
 TEST(AppCacheDatabaseTest, OnlineWhiteListRecords) {
@@ -453,14 +465,17 @@ TEST(AppCacheDatabaseTest, OnlineWhiteListRecords) {
   record.namespace_url = kFooNameSpace1;
   EXPECT_TRUE(db.InsertOnlineWhiteList(&record));
   record.namespace_url = kFooNameSpace2;
+  record.is_pattern = true;
   EXPECT_TRUE(db.InsertOnlineWhiteList(&record));
   records.clear();
   EXPECT_TRUE(db.FindOnlineWhiteListForCache(1, &records));
   EXPECT_EQ(2U, records.size());
   EXPECT_EQ(1, records[0].cache_id);
   EXPECT_EQ(kFooNameSpace1, records[0].namespace_url);
+  EXPECT_FALSE(records[0].is_pattern);
   EXPECT_EQ(1, records[1].cache_id);
   EXPECT_EQ(kFooNameSpace2, records[1].namespace_url);
+  EXPECT_TRUE(records[1].is_pattern);
 
   record.cache_id = 2;
   record.namespace_url = kBarNameSpace1;
@@ -617,11 +632,11 @@ TEST(AppCacheDatabaseTest, OriginUsage) {
   EXPECT_EQ(5000, usage_map[kOtherOrigin]);
 }
 
-TEST(AppCacheDatabaseTest, UpgradeSchema3to4) {
+TEST(AppCacheDatabaseTest, UpgradeSchema3to5) {
   // Real file on disk for this test.
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  const base::FilePath kDbFile = temp_dir.path().AppendASCII("upgrade.db");
+  const base::FilePath kDbFile = temp_dir.path().AppendASCII("upgrade3.db");
 
   const GURL kMockOrigin("http://mockorigin/");
   const char kNamespaceUrlFormat[] = "namespace%d";
@@ -808,9 +823,11 @@ TEST(AppCacheDatabaseTest, UpgradeSchema3to4) {
   EXPECT_TRUE(db.db_->DoesIndexExist("NamespacesCacheIndex"));
   EXPECT_TRUE(db.db_->DoesIndexExist("NamespacesOriginIndex"));
   EXPECT_TRUE(db.db_->DoesIndexExist("NamespacesCacheAndUrlIndex"));
+  EXPECT_TRUE(db.db_->DoesColumnExist("Namespaces", "is_pattern"));
+  EXPECT_TRUE(db.db_->DoesColumnExist("OnlineWhiteLists", "is_pattern"));
 
-  EXPECT_EQ(4, db.meta_table_->GetVersionNumber());
-  EXPECT_EQ(4, db.meta_table_->GetCompatibleVersionNumber());
+  EXPECT_EQ(5, db.meta_table_->GetVersionNumber());
+  EXPECT_EQ(5, db.meta_table_->GetCompatibleVersionNumber());
 
   std::vector<AppCacheDatabase::NamespaceRecord> intercepts;
   std::vector<AppCacheDatabase::NamespaceRecord> fallbacks;
@@ -826,10 +843,249 @@ TEST(AppCacheDatabaseTest, UpgradeSchema3to4) {
         kMockOrigin.Resolve(base::StringPrintf(kTargetUrlFormat, i)));
 
     EXPECT_EQ(i, fallbacks[i].cache_id);
-    EXPECT_EQ(FALLBACK_NAMESPACE, fallbacks[i].type);
+    EXPECT_EQ(FALLBACK_NAMESPACE, fallbacks[i].namespace_.type);
     EXPECT_EQ(kMockOrigin, fallbacks[i].origin);
-    EXPECT_EQ(expected_namespace_url, fallbacks[i].namespace_url);
-    EXPECT_EQ(expected_target_url, fallbacks[i].target_url);
+    EXPECT_EQ(expected_namespace_url, fallbacks[i].namespace_.namespace_url);
+    EXPECT_EQ(expected_target_url, fallbacks[i].namespace_.target_url);
+    EXPECT_FALSE(fallbacks[i].namespace_.is_pattern);
+  }
+}
+
+TEST(AppCacheDatabaseTest, UpgradeSchema4to5) {
+  // Real file on disk for this test.
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  const base::FilePath kDbFile = temp_dir.path().AppendASCII("upgrade4.db");
+
+  const GURL kMockOrigin("http://mockorigin/");
+  const char kNamespaceUrlFormat[] = "namespace%d";
+  const char kWhitelistUrlFormat[] = "whitelist%d";
+  const char kTargetUrlFormat[] = "target%d";
+  const int kNumNamespaces = 10;
+  const int kWhitelistCacheId = 1;
+
+  // Create a v4 schema based database containing some fallback records.
+  {
+    const int kVersion4 = 4;
+    const char kGroupsTable[] = "Groups";
+    const char kCachesTable[] = "Caches";
+    const char kEntriesTable[] = "Entries";
+    const char kNamespacesTable[] = "Namespaces";
+    const char kOnlineWhiteListsTable[] = "OnlineWhiteLists";
+    const char kDeletableResponseIdsTable[] = "DeletableResponseIds";
+
+    struct TableInfo {
+      const char* table_name;
+      const char* columns;
+    };
+
+    struct IndexInfo {
+      const char* index_name;
+      const char* table_name;
+      const char* columns;
+      bool unique;
+    };
+
+    const TableInfo kTables4[] = {
+      { kGroupsTable,
+        "(group_id INTEGER PRIMARY KEY,"
+        " origin TEXT,"
+        " manifest_url TEXT,"
+        " creation_time INTEGER,"
+        " last_access_time INTEGER)" },
+
+      { kCachesTable,
+        "(cache_id INTEGER PRIMARY KEY,"
+        " group_id INTEGER,"
+        " online_wildcard INTEGER CHECK(online_wildcard IN (0, 1)),"
+        " update_time INTEGER,"
+        " cache_size INTEGER)" },  // intentionally not normalized
+
+      { kEntriesTable,
+        "(cache_id INTEGER,"
+        " url TEXT,"
+        " flags INTEGER,"
+        " response_id INTEGER,"
+        " response_size INTEGER)" },
+
+      { kNamespacesTable,
+        "(cache_id INTEGER,"
+        " origin TEXT,"  // intentionally not normalized
+        " type INTEGER,"
+        " namespace_url TEXT,"
+        " target_url TEXT)" },
+
+      { kOnlineWhiteListsTable,
+        "(cache_id INTEGER,"
+        " namespace_url TEXT)" },
+
+      { kDeletableResponseIdsTable,
+        "(response_id INTEGER NOT NULL)" },
+    };
+
+    const IndexInfo kIndexes4[] = {
+      { "GroupsOriginIndex",
+        kGroupsTable,
+        "(origin)",
+        false },
+
+      { "GroupsManifestIndex",
+        kGroupsTable,
+        "(manifest_url)",
+        true },
+
+      { "CachesGroupIndex",
+        kCachesTable,
+        "(group_id)",
+        false },
+
+      { "EntriesCacheIndex",
+        kEntriesTable,
+        "(cache_id)",
+        false },
+
+      { "EntriesCacheAndUrlIndex",
+        kEntriesTable,
+        "(cache_id, url)",
+        true },
+
+      { "EntriesResponseIdIndex",
+        kEntriesTable,
+        "(response_id)",
+        true },
+
+      { "NamespacesCacheIndex",
+        kNamespacesTable,
+        "(cache_id)",
+        false },
+
+      { "NamespacesOriginIndex",
+        kNamespacesTable,
+        "(origin)",
+        false },
+
+      { "NamespacesCacheAndUrlIndex",
+        kNamespacesTable,
+        "(cache_id, namespace_url)",
+        true },
+
+      { "OnlineWhiteListCacheIndex",
+        kOnlineWhiteListsTable,
+        "(cache_id)",
+        false },
+
+      { "DeletableResponsesIdIndex",
+        kDeletableResponseIdsTable,
+        "(response_id)",
+        true },
+    };
+
+    const int kTableCount4 = ARRAYSIZE_UNSAFE(kTables4);
+    const int kIndexCount4 = ARRAYSIZE_UNSAFE(kIndexes4);
+
+    sql::Connection connection;
+    EXPECT_TRUE(connection.Open(kDbFile));
+
+    sql::Transaction transaction(&connection);
+    EXPECT_TRUE(transaction.Begin());
+
+    sql::MetaTable meta_table;
+    EXPECT_TRUE(meta_table.Init(&connection, kVersion4, kVersion4));
+
+    for (int i = 0; i < kTableCount4; ++i) {
+      std::string sql("CREATE TABLE ");
+      sql += kTables4[i].table_name;
+      sql += kTables4[i].columns;
+      EXPECT_TRUE(connection.Execute(sql.c_str()));
+    }
+
+    for (int i = 0; i < kIndexCount4; ++i) {
+      std::string sql;
+      if (kIndexes4[i].unique)
+        sql += "CREATE UNIQUE INDEX ";
+      else
+        sql += "CREATE INDEX ";
+      sql += kIndexes4[i].index_name;
+      sql += " ON ";
+      sql += kIndexes4[i].table_name;
+      sql += kIndexes4[i].columns;
+      EXPECT_TRUE(connection.Execute(sql.c_str()));
+    }
+
+    const char* kNamespacesSql =
+        "INSERT INTO Namespaces"
+        "  (cache_id, origin, type, namespace_url, target_url)"
+        "  VALUES (?, ?, ?, ?, ?)";
+    sql::Statement statement;
+    statement.Assign(connection.GetUniqueStatement(kNamespacesSql));
+    EXPECT_TRUE(statement.is_valid());
+    for (int i = 0; i < kNumNamespaces; ++i) {
+      GURL namespace_url(
+          kMockOrigin.Resolve(base::StringPrintf(kNamespaceUrlFormat, i)));
+      GURL target_url(
+          kMockOrigin.Resolve(base::StringPrintf(kTargetUrlFormat, i)));
+      statement.BindInt64(0, i);
+      statement.BindString(1, kMockOrigin.spec().c_str());
+      statement.BindInt(2, FALLBACK_NAMESPACE);
+      statement.BindString(3, namespace_url.spec().c_str());
+      statement.BindString(4, target_url.spec().c_str());
+      ASSERT_TRUE(statement.Run());
+      statement.Reset(true);
+    }
+
+    const char* kWhitelistsSql =
+        "INSERT INTO OnlineWhiteLists"
+        "  (cache_id, namespace_url)"
+        "  VALUES (?, ?)";
+    statement.Assign(connection.GetUniqueStatement(kWhitelistsSql));
+    EXPECT_TRUE(statement.is_valid());
+    for (int i = 0; i < kNumNamespaces; ++i) {
+      GURL namespace_url(
+          kMockOrigin.Resolve(base::StringPrintf(kWhitelistUrlFormat, i)));
+      statement.BindInt64(0, kWhitelistCacheId);
+      statement.BindString(1, namespace_url.spec().c_str());
+      ASSERT_TRUE(statement.Run());
+      statement.Reset(true);
+    }
+
+    EXPECT_TRUE(transaction.Commit());
+  }
+
+  // Open that database and verify that it got upgraded to v5.
+  AppCacheDatabase db(kDbFile);
+  EXPECT_TRUE(db.LazyOpen(true));
+  EXPECT_TRUE(db.db_->DoesColumnExist("Namespaces", "is_pattern"));
+  EXPECT_TRUE(db.db_->DoesColumnExist("OnlineWhiteLists", "is_pattern"));
+  EXPECT_EQ(5, db.meta_table_->GetVersionNumber());
+  EXPECT_EQ(5, db.meta_table_->GetCompatibleVersionNumber());
+
+  std::vector<AppCacheDatabase::NamespaceRecord> intercepts;
+  std::vector<AppCacheDatabase::NamespaceRecord> fallbacks;
+  EXPECT_TRUE(db.FindNamespacesForOrigin(kMockOrigin, &intercepts,
+                                         &fallbacks));
+  EXPECT_TRUE(intercepts.empty());
+  EXPECT_EQ(kNumNamespaces, static_cast<int>(fallbacks.size()));
+
+  std::vector<AppCacheDatabase::OnlineWhiteListRecord> whitelists;
+  EXPECT_TRUE(db.FindOnlineWhiteListForCache(kWhitelistCacheId, &whitelists));
+  EXPECT_EQ(kNumNamespaces, static_cast<int>(whitelists.size()));
+
+  for (int i = 0; i < kNumNamespaces; ++i) {
+    GURL expected_namespace_url(
+        kMockOrigin.Resolve(base::StringPrintf(kNamespaceUrlFormat, i)));
+    GURL expected_target_url(
+        kMockOrigin.Resolve(base::StringPrintf(kTargetUrlFormat, i)));
+    GURL expected_whitelist_url(
+        kMockOrigin.Resolve(base::StringPrintf(kWhitelistUrlFormat, i)));
+
+    EXPECT_EQ(i, fallbacks[i].cache_id);
+    EXPECT_EQ(FALLBACK_NAMESPACE, fallbacks[i].namespace_.type);
+    EXPECT_EQ(kMockOrigin, fallbacks[i].origin);
+    EXPECT_EQ(expected_namespace_url, fallbacks[i].namespace_.namespace_url);
+    EXPECT_EQ(expected_target_url, fallbacks[i].namespace_.target_url);
+    EXPECT_FALSE(fallbacks[i].namespace_.is_pattern);
+    EXPECT_EQ(expected_whitelist_url, whitelists[i].namespace_url);
+    EXPECT_FALSE(whitelists[i].is_pattern);
   }
 }
 

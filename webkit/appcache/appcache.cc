@@ -128,21 +128,11 @@ void AppCache::InitializeWithDatabaseRecords(
   }
   DCHECK(cache_size_ == cache_record.cache_size);
 
-  for (size_t i = 0; i < intercepts.size(); ++i) {
-    const AppCacheDatabase::NamespaceRecord& intercept = intercepts.at(i);
-    intercept_namespaces_.push_back(
-        Namespace(INTERCEPT_NAMESPACE,
-                  intercept.namespace_url,
-                  intercept.target_url));
-  }
+  for (size_t i = 0; i < intercepts.size(); ++i)
+    intercept_namespaces_.push_back(intercepts.at(i).namespace_);
 
-  for (size_t i = 0; i < fallbacks.size(); ++i) {
-    const AppCacheDatabase::NamespaceRecord& fallback = fallbacks.at(i);
-    fallback_namespaces_.push_back(
-        Namespace(FALLBACK_NAMESPACE,
-                  fallback.namespace_url,
-                  fallback.target_url));
-  }
+  for (size_t i = 0; i < fallbacks.size(); ++i)
+    fallback_namespaces_.push_back(fallbacks.at(i).namespace_);
 
   // Sort the fallback namespaces by url string length, longest to shortest,
   // since longer matches trump when matching a url to a namespace.
@@ -151,8 +141,14 @@ void AppCache::InitializeWithDatabaseRecords(
   std::sort(fallback_namespaces_.begin(), fallback_namespaces_.end(),
             SortNamespacesByLength);
 
-  for (size_t i = 0; i < whitelists.size(); ++i)
-    online_whitelist_namespaces_.push_back(whitelists.at(i).namespace_url);
+  for (size_t i = 0; i < whitelists.size(); ++i) {
+    const AppCacheDatabase::OnlineWhiteListRecord& record = whitelists.at(i);
+    online_whitelist_namespaces_.push_back(
+        Namespace(NETWORK_NAMESPACE,
+                  record.namespace_url,
+                  GURL(),
+                  record.is_pattern));
+  }
 }
 
 void AppCache::ToDatabaseRecords(
@@ -190,9 +186,7 @@ void AppCache::ToDatabaseRecords(
     AppCacheDatabase::NamespaceRecord& record = intercepts->back();
     record.cache_id = cache_id_;
     record.origin = origin;
-    record.type = INTERCEPT_NAMESPACE;
-    record.namespace_url = intercept_namespaces_[i].namespace_url;
-    record.target_url = intercept_namespaces_[i].target_url;
+    record.namespace_ = intercept_namespaces_[i];
   }
 
   for (size_t i = 0; i < fallback_namespaces_.size(); ++i) {
@@ -200,16 +194,15 @@ void AppCache::ToDatabaseRecords(
     AppCacheDatabase::NamespaceRecord& record = fallbacks->back();
     record.cache_id = cache_id_;
     record.origin = origin;
-    record.type = FALLBACK_NAMESPACE;
-    record.namespace_url = fallback_namespaces_[i].namespace_url;
-    record.target_url = fallback_namespaces_[i].target_url;
+    record.namespace_ = fallback_namespaces_[i];
   }
 
   for (size_t i = 0; i < online_whitelist_namespaces_.size(); ++i) {
     whitelists->push_back(AppCacheDatabase::OnlineWhiteListRecord());
     AppCacheDatabase::OnlineWhiteListRecord& record = whitelists->back();
     record.cache_id = cache_id_;
-    record.namespace_url = online_whitelist_namespaces_[i];
+    record.namespace_url = online_whitelist_namespaces_[i].namespace_url;
+    record.is_pattern = online_whitelist_namespaces_[i].is_pattern;
   }
 }
 
@@ -235,10 +228,8 @@ bool AppCache::FindResponseForRequest(const GURL& url,
     return true;
   }
 
-  if ((*found_network_namespace =
-         IsInNetworkNamespace(url_no_ref, online_whitelist_namespaces_))) {
+  if ((*found_network_namespace = IsInNetworkNamespace(url_no_ref)))
     return true;
-  }
 
   const Namespace* intercept_namespace = FindInterceptNamespace(url_no_ref);
   if (intercept_namespace) {
@@ -262,17 +253,6 @@ bool AppCache::FindResponseForRequest(const GURL& url,
   return *found_network_namespace;
 }
 
-const Namespace* AppCache::FindNamespace(
-    const NamespaceVector& namespaces, const GURL& url) {
-  size_t count = namespaces.size();
-  for (size_t i = 0; i < count; ++i) {
-    if (StartsWithASCII(
-            url.spec(), namespaces[i].namespace_url.spec(), true)) {
-      return &namespaces[i];
-    }
-  }
-  return NULL;
-}
 
 void AppCache::ToResourceInfoVector(AppCacheResourceInfoVector* infos) const {
   DCHECK(infos && infos->empty());
@@ -293,17 +273,15 @@ void AppCache::ToResourceInfoVector(AppCacheResourceInfoVector* infos) const {
 }
 
 // static
-bool AppCache::IsInNetworkNamespace(
-    const GURL& url,
-    const std::vector<GURL> &namespaces) {
-  // TODO(michaeln): There are certainly better 'prefix matching'
-  // structures and algorithms that can be applied here and above.
+const Namespace* AppCache::FindNamespace(
+    const NamespaceVector& namespaces,
+    const GURL& url) {
   size_t count = namespaces.size();
   for (size_t i = 0; i < count; ++i) {
-    if (StartsWithASCII(url.spec(), namespaces[i].spec(), true))
-      return true;
+    if (namespaces[i].IsMatch(url))
+      return &namespaces[i];
   }
-  return false;
+  return NULL;
 }
 
 }  // namespace appcache

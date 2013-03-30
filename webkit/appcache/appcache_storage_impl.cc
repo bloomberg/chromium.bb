@@ -811,7 +811,8 @@ class SortByCachePreference
 bool SortByLength(
     const AppCacheDatabase::NamespaceRecord& lhs,
     const AppCacheDatabase::NamespaceRecord& rhs) {
-  return lhs.namespace_url.spec().length() > rhs.namespace_url.spec().length();
+  return lhs.namespace_.namespace_url.spec().length() >
+         rhs.namespace_.namespace_url.spec().length();
 }
 
 class NetworkNamespaceHelper {
@@ -821,19 +822,18 @@ class NetworkNamespaceHelper {
   }
 
   bool IsInNetworkNamespace(const GURL& url, int64 cache_id) {
-    const std::vector<GURL> kEmptyVector;
     typedef std::pair<WhiteListMap::iterator, bool> InsertResult;
     InsertResult result = namespaces_map_.insert(
-        WhiteListMap::value_type(cache_id, kEmptyVector));
+        WhiteListMap::value_type(cache_id, NamespaceVector()));
     if (result.second)
       GetOnlineWhiteListForCache(cache_id, &result.first->second);
-    return AppCache::IsInNetworkNamespace(url, result.first->second);
+    return AppCache::FindNamespace(result.first->second, url) != NULL;
   }
 
  private:
   void GetOnlineWhiteListForCache(
-      int64 cache_id, std::vector<GURL>* urls) {
-    DCHECK(urls && urls->empty());
+      int64 cache_id, NamespaceVector* namespaces) {
+    DCHECK(namespaces && namespaces->empty());
     typedef std::vector<AppCacheDatabase::OnlineWhiteListRecord>
         WhiteListVector;
     WhiteListVector records;
@@ -841,13 +841,15 @@ class NetworkNamespaceHelper {
       return;
     WhiteListVector::const_iterator iter = records.begin();
     while (iter != records.end()) {
-      urls->push_back(iter->namespace_url);
+      namespaces->push_back(
+            Namespace(NETWORK_NAMESPACE, iter->namespace_url, GURL(),
+                      iter->is_pattern));
       ++iter;
     }
   }
 
   // Key is cache id
-  typedef std::map<int64, std::vector<GURL> > WhiteListMap;
+  typedef std::map<int64, NamespaceVector> WhiteListMap;
   WhiteListMap namespaces_map_;
   AppCacheDatabase* database_;
 };
@@ -1009,8 +1011,8 @@ FindMainResponseTask::FindNamespaceHelper(
   NamespaceRecordPtrVector other_namespaces;
   std::vector<AppCacheDatabase::NamespaceRecord>::iterator iter;
   for (iter = namespaces->begin(); iter < namespaces->end(); ++iter) {
-    // Skip those that aren't a prefix match.
-    if (!StartsWithASCII(url_.spec(), iter->namespace_url.spec(), true))
+    // Skip those that aren't a match.
+    if (!iter->namespace_.IsMatch(url_))
       continue;
 
     // Skip namespaces where the requested url falls into a network
@@ -1043,7 +1045,7 @@ FindMainResponseTask::FindFirstValidNamespace(
   NamespaceRecordPtrVector::const_iterator iter;
   for (iter = namespaces.begin(); iter < namespaces.end();  ++iter) {
     AppCacheDatabase::EntryRecord entry_record;
-    if (database_->FindEntry((*iter)->cache_id, (*iter)->target_url,
+    if (database_->FindEntry((*iter)->cache_id, (*iter)->namespace_.target_url,
                              &entry_record)) {
       AppCacheDatabase::GroupRecord group_record;
       if ((entry_record.flags & AppCacheEntry::FOREIGN) ||
@@ -1053,8 +1055,8 @@ FindMainResponseTask::FindFirstValidNamespace(
       manifest_url_ = group_record.manifest_url;
       group_id_ = group_record.group_id;
       cache_id_ = (*iter)->cache_id;
-      namespace_entry_url_ = (*iter)->target_url;
-      if ((*iter)->type == FALLBACK_NAMESPACE)
+      namespace_entry_url_ = (*iter)->namespace_.target_url;
+      if ((*iter)->namespace_.type == FALLBACK_NAMESPACE)
         fallback_entry_ = AppCacheEntry(entry_record.flags,
                                         entry_record.response_id);
       else

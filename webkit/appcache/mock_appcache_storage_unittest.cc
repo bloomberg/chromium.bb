@@ -471,10 +471,10 @@ TEST_F(MockAppCacheStorageTest, BasicFindMainFallbackResponse) {
   Manifest manifest;
   manifest.fallback_namespaces.push_back(
       Namespace(FALLBACK_NAMESPACE, kFallbackNamespaceUrl1,
-                kFallbackEntryUrl1));
+                kFallbackEntryUrl1, false));
   manifest.fallback_namespaces.push_back(
       Namespace(FALLBACK_NAMESPACE, kFallbackNamespaceUrl2,
-                kFallbackEntryUrl2));
+                kFallbackEntryUrl2, false));
 
   scoped_refptr<AppCache> cache(new AppCache(service.storage(), kCacheId));
   cache->InitializeWithManifest(&manifest);
@@ -581,8 +581,9 @@ TEST_F(MockAppCacheStorageTest, FindMainResponseExclusions) {
   const int64 kResponseId = 1;
 
   Manifest manifest;
-  manifest.online_whitelist_namespaces.push_back(kOnlineNamespaceUrl);
-
+  manifest.online_whitelist_namespaces.push_back(
+      Namespace(NETWORK_NAMESPACE, kOnlineNamespaceUrl,
+                GURL(), false));
   scoped_refptr<AppCache> cache(new AppCache(service.storage(), kCacheId));
   cache->InitializeWithManifest(&manifest);
   cache->AddEntry(

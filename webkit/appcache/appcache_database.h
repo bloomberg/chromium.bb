@@ -67,18 +67,17 @@ class WEBKIT_STORAGE_EXPORT AppCacheDatabase {
 
     int64 cache_id;
     GURL origin;
-    NamespaceType type;
-    GURL namespace_url;
-    GURL target_url;
+    Namespace namespace_;
   };
 
   typedef std::vector<NamespaceRecord> NamespaceRecordVector;
 
   struct OnlineWhiteListRecord {
-    OnlineWhiteListRecord() : cache_id(0) {}
+    OnlineWhiteListRecord() : cache_id(0), is_pattern(false) {}
 
     int64 cache_id;
     GURL namespace_url;
+    bool is_pattern;
   };
 
   explicit AppCacheDatabase(const base::FilePath& path);
@@ -215,7 +214,8 @@ class WEBKIT_STORAGE_EXPORT AppCacheDatabase {
   FRIEND_TEST_ALL_PREFIXES(AppCacheDatabaseTest, ReCreate);
   FRIEND_TEST_ALL_PREFIXES(AppCacheDatabaseTest, DeletableResponseIds);
   FRIEND_TEST_ALL_PREFIXES(AppCacheDatabaseTest, OriginUsage);
-  FRIEND_TEST_ALL_PREFIXES(AppCacheDatabaseTest, UpgradeSchema3to4);
+  FRIEND_TEST_ALL_PREFIXES(AppCacheDatabaseTest, UpgradeSchema3to5);
+  FRIEND_TEST_ALL_PREFIXES(AppCacheDatabaseTest, UpgradeSchema4to5);
 
   DISALLOW_COPY_AND_ASSIGN(AppCacheDatabase);
 };

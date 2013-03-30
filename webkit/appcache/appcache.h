@@ -117,9 +117,9 @@ class WEBKIT_STORAGE_EXPORT AppCache : public base::RefCounted<AppCache> {
   // Populates the 'infos' vector with an element per entry in the appcache.
   void ToResourceInfoVector(AppCacheResourceInfoVector* infos) const;
 
-  static bool IsInNetworkNamespace(
-      const GURL& url,
-      const std::vector<GURL> &namespaces);
+  static const Namespace* FindNamespace(
+      const NamespaceVector& namespaces,
+      const GURL& url);
 
  private:
   friend class AppCacheGroup;
@@ -140,8 +140,9 @@ class WEBKIT_STORAGE_EXPORT AppCache : public base::RefCounted<AppCache> {
   const Namespace* FindFallbackNamespace(const GURL& url) {
     return FindNamespace(fallback_namespaces_, url);
   }
-  const Namespace* FindNamespace(const NamespaceVector& namespaces,
-                                 const GURL& url);
+  bool IsInNetworkNamespace(const GURL& url) {
+    return FindNamespace(online_whitelist_namespaces_, url) != NULL;
+  }
 
   GURL GetNamespaceEntryUrl(const NamespaceVector& namespaces,
                             const GURL& namespace_url) const;
@@ -160,7 +161,7 @@ class WEBKIT_STORAGE_EXPORT AppCache : public base::RefCounted<AppCache> {
 
   NamespaceVector intercept_namespaces_;
   NamespaceVector fallback_namespaces_;
-  std::vector<GURL> online_whitelist_namespaces_;
+  NamespaceVector online_whitelist_namespaces_;
   bool online_whitelist_all_;
 
   bool is_complete_;

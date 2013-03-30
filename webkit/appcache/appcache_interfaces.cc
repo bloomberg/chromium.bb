@@ -4,6 +4,7 @@
 
 #include "webkit/appcache/appcache_interfaces.h"
 
+#include "base/string_util.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebApplicationCacheHost.h"
@@ -49,16 +50,32 @@ AppCacheResourceInfo::~AppCacheResourceInfo() {
 }
 
 Namespace::Namespace()
-    : type(FALLBACK_NAMESPACE) {
+    : type(FALLBACK_NAMESPACE),
+      is_pattern(false) {
 }
 
-Namespace::Namespace(NamespaceType type, const GURL& url, const GURL& target)
-    : type(type), namespace_url(url), target_url(target) {
+Namespace::Namespace(
+    NamespaceType type, const GURL& url, const GURL& target, bool is_pattern)
+    : type(type),
+      namespace_url(url),
+      target_url(target),
+      is_pattern(is_pattern) {
 }
 
 Namespace::~Namespace() {
 }
 
+bool Namespace::IsMatch(const GURL& url) const {
+  if (is_pattern) {
+    // We have to escape '?' characters since MatchPattern also treats those
+    // as wildcards which we don't want here, we only do '*'s.
+    std::string pattern = namespace_url.spec();
+    if (namespace_url.has_query())
+      ReplaceSubstringsAfterOffset(&pattern, 0, "?", "\\?");
+    return MatchPattern(url.spec(), pattern);
+  }
+  return StartsWithASCII(url.spec(), namespace_url.spec(), true);
+}
 
 bool IsSchemeSupported(const GURL& url) {
   bool supported = url.SchemeIs(kHttpScheme) || url.SchemeIs(kHttpsScheme);
