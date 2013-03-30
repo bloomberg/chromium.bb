@@ -62,7 +62,8 @@ function urlRequestEvents(id) {
           'Accept: text/html',
           'Accept-Encoding: gzip,deflate,sdch',
           'Accept-Language: en-US,en;q=0.8',
-          'Accept-Charset: ISO-8859-1'
+          'Accept-Charset: ISO-8859-1',
+          'X-Random-Header-With-Quotes: "Quoted String"""',
         ],
         'line': 'GET / HTTP/1.1\r\n'
       },
@@ -147,49 +148,51 @@ TEST_F('NetInternalsTest', 'netInternalsEventsViewFilter', function() {
   // |text| is the string to add to the filter.
   // |matches| is a 2-element array of booleans indicating which of the two
   //      requests passes the filter.
-  // |textFilter| is true if the filter matches the displayed text of an
-  //     entry.  Two string filter matches are concatenated when used, so
-  //     will never result in a filter match.
   var testFilters = [
-    {text: 'http://www.google.com', matches: [true, true], textFilter: true},
-    {text: 'MyMagicPony', matches: [false, false], textFilter: true},
-    {text: 'type:URL_REQUEST', matches: [true, true], textFilter: false},
-    {text: 'type:SOCKET,URL_REQUEST', matches: [true, true], textFilter: false},
-    {text: 'type:SOCKET', matches: [false, false], textFilter: false},
-    {text: 'id:31,32', matches: [true, false], textFilter: false},
-    {text: 'id:32,56,', matches: [false, true], textFilter: false},
-    {text: 'is:-active', matches: [true, false], textFilter: false},
-    {text: 'is:active', matches: [false, true], textFilter: false},
-    {text: 'is:-error', matches: [true, true], textFilter: false},
-    {text: 'is:error', matches: [false, false], textFilter: false},
+    {text: 'http://www.google.com', matches: [true, true] },
+    {text: 'MyMagicPony', matches: [false, false] },
+    {text: 'type:URL_REQUEST', matches: [true, true] },
+    {text: 'type:SOCKET,URL_REQUEST', matches: [true, true] },
+    {text: 'type:SOCKET', matches: [false, false] },
+    {text: 'id:31,32', matches: [true, false] },
+    {text: 'id:32,56,', matches: [false, true] },
+    {text: 'is:-active', matches: [true, false] },
+    {text: 'is:active', matches: [false, true] },
+    {text: 'is:-error', matches: [true, true] },
+    {text: 'is:error', matches: [false, false] },
     // Partial match of source type.
-    {text: 'URL_REQ', matches: [true, true], textFilter: true},
+    {text: 'URL_REQ', matches: [true, true] },
     // Partial match of event type type.
-    {text: 'SEND_REQUEST', matches: [true, false], textFilter: true},
+    {text: 'SEND_REQUEST', matches: [true, false] },
     // Check that ":" works in strings.
-    {text: 'Host: www.google.com', matches: [true, false], textFilter: true},
-    {text: 'Host: GET', matches: [false, false], textFilter: true},
+    { text: 'Host:', matches: [true, false] },
+    { text: '::', matches: [false, false] },
+    // Test quotes.
+    { text: '"Quoted String"', matches: [true, false] },
+    { text: '"Quoted source"', matches: [false, false] },
+    { text: '"\\"Quoted String\\""', matches: [true, false] },
+    { text: '"\\"\\"Quoted String\\""', matches: [false, false] },
+    { text: '\\"\\"\\"', matches: [true, false] },
+    { text: '\\"\\"\\"\\"', matches: [false, false] },
+    { text: '"Host: www.google.com"', matches: [true, false], },
+    { text: 'Connection:" keep-alive"', matches: [true, false], },
+    { text: '"Host: GET"', matches: [false, false] },
     // Make sure sorting has no effect on filters.  Sort by ID so order is
     // preserved.
-    {text: 'sort:id', matches: [true, true], textFilter: false},
+    { text: 'sort:"id"', matches: [true, true] },
+    // Sorting by unrecognized methods should do a text match.
+    { text: 'sort:"shoe size"', matches: [false, false] },
   ];
 
   for (var filter1 = 0; filter1 < testFilters.length; ++filter1) {
     checkFilter(testFilters[filter1].text, testFilters[filter1].matches);
-
     // Check |filter1| in combination with all the other filters.
     for (var filter2 = 0; filter2 < testFilters.length; ++filter2) {
       var matches = [];
       for (var i = 0; i < testFilters[filter1].matches.length; ++i) {
-        // The merged filter matches an entry if both individual filters do,
-        // unless both filters are text filters, since text filters are
-        // concatenated.
+        // The merged filter matches an entry if both individual filters do.
         matches[i] = testFilters[filter1].matches[i] &&
                      testFilters[filter2].matches[i];
-        if (testFilters[filter1].textFilter &&
-            testFilters[filter2].textFilter) {
-          matches[i] = false;
-        }
       }
 
       checkFilter(testFilters[filter1].text + ' ' + testFilters[filter2].text,
@@ -197,6 +200,14 @@ TEST_F('NetInternalsTest', 'netInternalsEventsViewFilter', function() {
                   1);
     }
   }
+
+  // Tests with unmatched quotes.  Unlike the strings above, combining them with
+  // other filters is not the same as applying both filters independently.
+  checkFilter('"Quoted String', [true, false]);
+  checkFilter('"Quoted String source', [false, false]);
+  checkFilter('Quoted" String', [true, false]);
+  checkFilter('Quoted" source', [false, false]);
+  checkFilter('Quoted "String', [true, false]);
 
   testDone();
 });

@@ -193,22 +193,33 @@ var SourceRow = (function() {
           return false;
       }
 
-      if (filter.text == '')
+      if (!filter.textFilters)
         return true;
 
-      // The description is not always contained in one of the log entries.
-      if (this.description_.toLowerCase().indexOf(filter.text) != -1)
-        return true;
+      // Used for searching for input strings.  Lazily initialized.
+      var tablePrinter = null;
 
-      // Allow specifying source types by name.
-      var sourceType = this.sourceEntry_.getSourceTypeString();
-      if (sourceType.toLowerCase().indexOf(filter.text) != -1)
-        return true;
+      for (var i = 0; i < filter.textFilters.length; ++i) {
+        // The description is not always contained in one of the log entries.
+        if (this.description_.toLowerCase().indexOf(
+                filter.textFilters[i]) != -1) {
+          continue;
+        }
 
-      return searchLogEntriesForText(
-          filter.text,
-          this.sourceEntry_.getLogEntries(),
-          SourceTracker.getInstance().getPrivacyStripping());
+        // Allow specifying source types by name.
+        var sourceType = this.sourceEntry_.getSourceTypeString();
+        if (sourceType.toLowerCase().indexOf(filter.textFilters[i]) != -1)
+          continue;
+
+        if (!tablePrinter) {
+          tablePrinter = createLogEntryTablePrinter(
+              this.sourceEntry_.getLogEntries(),
+              SourceTracker.getInstance().getPrivacyStripping());
+        }
+        if (!tablePrinter.search(filter.textFilters[i]))
+          return false;
+      }
+      return true;
     },
 
     isSelected: function() {
