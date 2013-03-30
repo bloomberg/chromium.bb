@@ -187,37 +187,37 @@ TEST_F(ChromeContentRendererClientTest, NaClRestriction) {
   {
     WebPluginParams params;
     EXPECT_FALSE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(), GURL("http://plus.google.com/games"),
+        GURL(), GURL("http://plus.google.com/foo"),
         kNaClRestricted,
         CreateExtension(kExtensionRestricted, kExtensionNotFromWebStore),
         &params));
     EXPECT_FALSE(AllowsDevInterfaces(params));
     EXPECT_TRUE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(), GURL("https://plus.google.com/games"),
+        GURL(), GURL("https://plus.google.com/foo"),
         kNaClRestricted,
         CreateExtension(kExtensionRestricted, kExtensionNotFromWebStore),
         &params));
     EXPECT_FALSE(AllowsDevInterfaces(params));
     EXPECT_TRUE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(), GURL("https://plus.google.com/games/209089085730"),
+        GURL(), GURL("https://plus.google.com/209089085730"),
         kNaClRestricted,
         CreateExtension(kExtensionRestricted, kExtensionNotFromWebStore),
         &params));
     EXPECT_FALSE(AllowsDevInterfaces(params));
     EXPECT_FALSE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(), GURL("http://plus.sandbox.google.com/games"),
+        GURL(), GURL("http://plus.sandbox.google.com/foo"),
         kNaClRestricted,
         CreateExtension(kExtensionRestricted, kExtensionNotFromWebStore),
         &params));
     EXPECT_FALSE(AllowsDevInterfaces(params));
     EXPECT_TRUE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(), GURL("https://plus.sandbox.google.com/games"),
+        GURL(), GURL("https://plus.sandbox.google.com/foo"),
         kNaClRestricted,
         CreateExtension(kExtensionRestricted, kExtensionNotFromWebStore),
         &params));
     EXPECT_FALSE(AllowsDevInterfaces(params));
     EXPECT_TRUE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(), GURL("https://plus.google.com/games/209089085730"),
+        GURL(), GURL("https://plus.google.com/209089085730"),
         kNaClRestricted,
         CreateExtension(kExtensionRestricted, kExtensionNotFromWebStore),
         &params));
@@ -227,7 +227,7 @@ TEST_F(ChromeContentRendererClientTest, NaClRestriction) {
   {
     WebPluginParams params;
     EXPECT_TRUE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(), GURL("https://plus.google.com/games/209089085730"),
+        GURL(), GURL("https://plus.google.com/209089085730"),
         kNaClUnrestricted,
         CreateExtension(kExtensionRestricted, kExtensionNotFromWebStore),
         &params));
@@ -239,7 +239,7 @@ TEST_F(ChromeContentRendererClientTest, NaClRestriction) {
     WebPluginParams params;
     AddFakeDevAttribute(&params);
     EXPECT_TRUE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(), GURL("https://plus.google.com/games/209089085730"),
+        GURL(), GURL("https://plus.google.com/209089085730"),
         kNaClRestricted,
         CreateExtension(kExtensionRestricted, kExtensionNotFromWebStore),
         &params));
@@ -249,22 +249,22 @@ TEST_F(ChromeContentRendererClientTest, NaClRestriction) {
   {
     WebPluginParams params;
     EXPECT_FALSE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(), GURL("https://plus.google.com.evil.com/games1"),
+        GURL(), GURL("https://plus.google.com.evil.com/foo1"),
         kNaClRestricted,
         CreateExtension(kExtensionRestricted, kExtensionNotFromWebStore),
         &params));
     EXPECT_FALSE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(), GURL("https://plus.google.com.evil.com/games2"),
+        GURL(), GURL("https://plus.google.com.evil.com/foo2"),
         kNaClRestricted,
         CreateExtension(kExtensionRestricted, kExtensionFromWebStore),
         &params));
     EXPECT_FALSE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(), GURL("https://plus.google.com.evil.com/games3"),
+        GURL(), GURL("https://plus.google.com.evil.com/foo3"),
         kNaClRestricted,
         CreateExtension(kExtensionUnrestricted, kExtensionNotFromWebStore),
         &params));
     EXPECT_FALSE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(), GURL("https://plus.google.com.evil.com/games4"),
+        GURL(), GURL("https://plus.google.com.evil.com/foo4"),
         kNaClRestricted,
         CreateExtension(kExtensionUnrestricted, kExtensionFromWebStore),
         &params));
