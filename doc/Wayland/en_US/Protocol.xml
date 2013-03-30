@@ -73,7 +73,7 @@
       <itemizedlist>
 	<listitem>
 	  <para>
-	    The first word is the sender's object id (32-bit).
+	    The first word is the sender's object ID (32-bit).
 	  </para>
 	</listitem>
 	<listitem>
@@ -167,20 +167,9 @@
   <section id="sect-Protocol-Connect-Time">
     <title>Connect Time</title>
     <para>
-      <itemizedlist>
-	<listitem>
-	  <para>
-	    no fixed format connect block, the server emits a bunch of
-	    events at connect time
-	  </para>
-	</listitem>
-	<listitem>
-	  <para>
-	    presence events for global objects: output, compositor, input
-	    devices
-	  </para>
-	</listitem>
-      </itemizedlist>
+      There is no fixed connection setup information, the server emits
+      multiple events at connect time, to indicate the presence and
+      properties of global objects: outputs, compositor, input devices.
     </para>
   </section>
   <section id="sect-Protocol-Security-and-Authentication">
