@@ -9,15 +9,15 @@
     <title>Basic Principles</title>
     <para>
       The wayland protocol is an asynchronous object oriented protocol.  All
-      requests are method invocations on some object.  The request include
-      an object id that uniquely identifies an object on the server.  Each
+      requests are method invocations on some object.  The requests include
+      an object ID that uniquely identifies an object on the server.  Each
       object implements an interface and the requests include an opcode that
       identifies which method in the interface to invoke.
     </para>
     <para>
       The server sends back events to the client, each event is emitted from
       an object.  Events can be error conditions.  The event includes the
-      object id and the event opcode, from which the client can determine
+      object ID and the event opcode, from which the client can determine
       the type of event.  Events are generated both in response to requests
       (in which case the request and the event constitutes a round trip) or
       spontaneously when the server state changes.
