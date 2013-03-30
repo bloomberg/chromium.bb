@@ -216,6 +216,8 @@
     <title>Surfaces</title>
     <para>
       Surfaces are created by the client.
+      Clients don't know the global position of their surfaces, and
+      cannot access other clients surfaces.
     </para>
     <para>
       See <xref linkend="protocol-spec-interface-wl_surface"/> for the protocol
