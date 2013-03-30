@@ -196,19 +196,10 @@
   <section id="sect-Protocol-Creating-Objects">
     <title>Creating Objects</title>
     <para>
-      <itemizedlist>
-	<listitem>
-	  <para>
-	    client allocates object ID, uses range protocol
-	  </para>
-	</listitem>
-	<listitem>
-	  <para>
-	    server tracks how many IDs are left in current range, sends
-	    new range when client is about to run out.
-	  </para>
-	</listitem>
-      </itemizedlist>
+      Each object has a unique ID. The IDs are allocated by the
+      client, from a range of IDs. The server tracks how many
+      IDs are left in the current range and sends a new range
+      when the client is about to run out.
     </para>
   </section>
   <section id="sect-Protocol-Compositor">
@@ -222,24 +213,22 @@
     </para>
   </section>
   <section id="sect-Protocol-Surface">
-    <title>Surface</title>
+    <title>Surfaces</title>
     <para>
-      Created by the client.
+      Surfaces are created by the client.
     </para>
     <para>
       See <xref linkend="protocol-spec-interface-wl_surface"/> for the protocol
       description.
     </para>
-    <para>
-      Needs a way to set input region, opaque region.
-    </para>
   </section>
   <section id="sect-Protocol-Input">
     <title>Input</title>
     <para>
-      Represents a group of input devices, including mice, keyboards.  Has a
-      keyboard and pointer focus.  Global object.  Pointer events are
-      delivered in both screen coordinates and surface local coordinates.
+      A seat represents a group of input devices including mice,
+      keyboards and touchscreens. It has a keyboard and pointer
+      focus. Seats are global objects. Pointer events are delivered
+      in surface local coordinates.
     </para>
     <para>
       See <xref linkend="protocol-spec-interface-wl_seat"/> for the
@@ -331,21 +320,23 @@
     </itemizedlist>
   </section>
   <section id="sect-Protocol-data-sharing">
-    <title>Data sharing between client (selection and drag and drop)</title>
+    <title>Data sharing between clients</title>
     <para>
-      The Wayland 1.0 protocol provides its clients a mechanism for sharing
-      data that allows the implementation of selection and drag and drop.
-      The client providing the data creates a wl_data_source object and the
-      clients obtaining the data will see it as wl_data_offer object. This
-      interface allows the clients to agree on a mutually supported mime type
-      and transfer the data through an fd that is passed through the protocol.
+      The Wayland protocol provides clients a mechanism for sharing
+      data that allows the implementation of copy-paste and
+      drag-and-drop. The client providing the data creates a
+      <function>wl_data_source</function> object and the clients
+      obtaining the data will see it as <function>wl_data_offer</function>
+      object. This interface allows the clients to agree on a mutually
+      supported mime type and transfer the data via a file descriptor
+      that is passed through the protocol.
     </para>
     <para>
-      The next section explains the negotiation between data source and data
-      offer objects. <xref linkend="sect-Protocol-data-sharing-devices"/>
-      explains how these objects are created and passed to different client
-      using the wl_data_device interface, that implements selection and drag
-      and drop support.
+      The next section explains the negotiation between data source and
+      data offer objects. <xref linkend="sect-Protocol-data-sharing-devices"/>
+      explains how these objects are created and passed to different
+      clients using the <function>wl_data_device</function> interface
+      that implements copy-paste and drag-and-drop support.
     </para>
     <para>
       See <xref linkend="protocol-spec-interface-wl_data_offer"/>,
@@ -363,7 +354,7 @@
     <section>
       <title>Data negotiation</title>
       <para>
-	A client providing data to other clients will create a wl_data_source
+	A client providing data to other clients will create a <function>wl_data_source</function>
 	object and advertise the mime types for the formats it supports for
 	that data through the <function>wl_data_source.offer</function>
 	request. On the receiving end, the data offer object will generate one
@@ -373,18 +364,18 @@
       <para>
 	The actual data transfer happens when the receiving client sends a
 	<function>wl_data_offer.receive</function> request. This request takes
-	a mime type and an fd as arguments. This request will generate a
+	a mime type and a file descriptor as arguments. This request will generate a
 	<function>wl_data_source.send</function> event on the sending client
 	with the same arguments, and the latter client is expected to write its
-	data to the given fd using the chosen mime type.
+	data to the given file descriptor using the chosen mime type.
       </para>
     </section>
     <section id="sect-Protocol-data-sharing-devices">
       <title>Data devices</title>
       <para>
 	Data devices glue data sources and offers together. A data device is
-	associated with a wl_seat and is obtained by the clients using the
-	wl_data_device_manager factory object, which is also responsible for
+	associated with a <function>wl_seat</function> and is obtained by the clients using the
+	<function>wl_data_device_manager</function> factory object, which is also responsible for
 	creating data sources.
       </para>
       <para>
@@ -392,7 +383,7 @@
 	<function>wl_data_device.data_offer</function> event. After this
 	event is generated the data offer will advertise the available mime
 	types. New data offers are introduced prior to their use for
-	selection or drag and drop.
+	copy-paste or drag-and-drop.
       </para>
       <section>
 	<title>Selection</title>
@@ -414,7 +405,7 @@
       <section>
 	<title>Drag and Drop</title>
 	<para>
-	  A drag and drop operation is started using the
+	  A drag-and-drop operation is started using the
 	  <function>wl_data_device.start_drag</function> request. This
 	  requests causes a pointer grab that will generate enter, motion and
 	  leave events on the data device. A data source is supplied as
