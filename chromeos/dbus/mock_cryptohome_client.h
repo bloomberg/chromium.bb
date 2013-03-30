@@ -90,6 +90,34 @@ class MockCryptohomeClient : public CryptohomeClient {
                     AttestationKeyType key_type,
                     const std::string& key_name,
                     const AsyncMethodCallback& callback));
+  MOCK_METHOD3(TpmAttestationDoesKeyExist,
+               void(AttestationKeyType key_type,
+                    const std::string& key_name,
+                    const BoolDBusMethodCallback& callback));
+  MOCK_METHOD3(TpmAttestationGetCertificate,
+               void(AttestationKeyType key_type,
+                    const std::string& key_name,
+                    const DataMethodCallback& callback));
+  MOCK_METHOD3(TpmAttestationGetPublicKey,
+               void(AttestationKeyType key_type,
+                    const std::string& key_name,
+                    const DataMethodCallback& callback));
+  MOCK_METHOD3(TpmAttestationRegisterKey,
+               void(AttestationKeyType key_type,
+                    const std::string& key_name,
+                    const AsyncMethodCallback& callback));
+  MOCK_METHOD6(TpmAttestationSignEnterpriseChallenge,
+               void(AttestationKeyType key_type,
+                    const std::string& key_name,
+                    const std::string& domain,
+                    const std::string& device_id,
+                    const std::string& challenge,
+                    const AsyncMethodCallback& callback));
+  MOCK_METHOD4(TpmAttestationSignSimpleChallenge,
+               void(AttestationKeyType key_type,
+                    const std::string& key_name,
+                    const std::string& challenge,
+                    const AsyncMethodCallback& callback));
 };
 
 }  // namespace chromeos

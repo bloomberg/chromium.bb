@@ -42,6 +42,10 @@ class CHROMEOS_EXPORT CryptohomeClient {
       DBusMethodCallStatus call_status,
       const std::string& label,
       const std::string& user_pin)> Pkcs11GetTpmTokenInfoCallback;
+  // A callback for methods which return both a bool result and data.
+  typedef base::Callback<void(DBusMethodCallStatus call_status,
+                              bool result,
+                              const std::string& data)> DataMethodCallback;
 
   // Options available for customizing an attestation certificate.
   enum AttestationCertificateOptions {
@@ -251,6 +255,65 @@ class CHROMEOS_EXPORT CryptohomeClient {
       const std::string& pca_response,
       AttestationKeyType key_type,
       const std::string& key_name,
+      const AsyncMethodCallback& callback) = 0;
+
+  // Checks if an attestation key already exists.  If the key specified by
+  // |key_type| and |key_name| exists, then the result sent to the callback will
+  // be true.
+  virtual void TpmAttestationDoesKeyExist(
+      AttestationKeyType key_type,
+      const std::string& key_name,
+      const BoolDBusMethodCallback& callback) = 0;
+
+  // Gets the attestation certificate for the key specified by |key_type| and
+  // |key_name|.  |callback| will be called when the operation completes.  If
+  // the key does not exist the callback |result| parameter will be false.
+  virtual void TpmAttestationGetCertificate(
+      AttestationKeyType key_type,
+      const std::string& key_name,
+      const DataMethodCallback& callback) = 0;
+
+  // Gets the public key for the key specified by |key_type| and |key_name|.
+  // |callback| will be called when the operation completes.  If the key does
+  // not exist the callback |result| parameter will be false.
+  virtual void TpmAttestationGetPublicKey(
+      AttestationKeyType key_type,
+      const std::string& key_name,
+      const DataMethodCallback& callback) = 0;
+
+  // Asynchronously registers an attestation key with the current user's
+  // PKCS #11 token.  The |callback| will be called when the dbus call
+  // completes.  When the operation completes, the AsyncCallStatusHandler signal
+  // handler is called.  |key_type| and |key_name| specify the key to register.
+  virtual void TpmAttestationRegisterKey(
+      AttestationKeyType key_type,
+      const std::string& key_name,
+      const AsyncMethodCallback& callback) = 0;
+
+  // Asynchronously signs an enterprise challenge with the key specified by
+  // |key_type| and |key_name|.  |domain| and |device_id| will be included in
+  // the challenge response.  |challenge| must be a valid enterprise attestation
+  // challenge.  The |callback| will be called when the dbus call completes.
+  // When the operation completes, the AsyncCallStatusWithDataHandler signal
+  // handler is called.
+  virtual void TpmAttestationSignEnterpriseChallenge(
+      AttestationKeyType key_type,
+      const std::string& key_name,
+      const std::string& domain,
+      const std::string& device_id,
+      const std::string& challenge,
+      const AsyncMethodCallback& callback) = 0;
+
+  // Asynchronously signs a simple challenge with the key specified by
+  // |key_type| and |key_name|.  |challenge| can be any set of arbitrary bytes.
+  // A nonce will be appended to the challenge before signing; this method
+  // cannot be used to sign arbitrary data.  The |callback| will be called when
+  // the dbus call completes.  When the operation completes, the
+  // AsyncCallStatusWithDataHandler signal handler is called.
+  virtual void TpmAttestationSignSimpleChallenge(
+      AttestationKeyType key_type,
+      const std::string& key_name,
+      const std::string& challenge,
       const AsyncMethodCallback& callback) = 0;
 
  protected:

@@ -443,6 +443,119 @@ class CryptohomeClientImpl : public CryptohomeClient {
                                   callback));
   }
 
+  // CryptohomeClient override.
+  virtual void TpmAttestationDoesKeyExist(
+      AttestationKeyType key_type,
+      const std::string& key_name,
+      const BoolDBusMethodCallback& callback) OVERRIDE {
+    dbus::MethodCall method_call(
+        cryptohome::kCryptohomeInterface,
+        cryptohome::kCryptohomeTpmAttestationDoesKeyExist);
+    dbus::MessageWriter writer(&method_call);
+    bool is_user_specific = (key_type == USER_KEY);
+    writer.AppendBool(is_user_specific);
+    writer.AppendString(key_name);
+    CallBoolMethod(&method_call, callback);
+  }
+
+  // CryptohomeClient override.
+  virtual void TpmAttestationGetCertificate(
+      AttestationKeyType key_type,
+      const std::string& key_name,
+      const DataMethodCallback& callback) OVERRIDE {
+    dbus::MethodCall method_call(
+        cryptohome::kCryptohomeInterface,
+        cryptohome::kCryptohomeTpmAttestationGetCertificate);
+    dbus::MessageWriter writer(&method_call);
+    bool is_user_specific = (key_type == USER_KEY);
+    writer.AppendBool(is_user_specific);
+    writer.AppendString(key_name);
+    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                       base::Bind(&CryptohomeClientImpl::OnDataMethod,
+                                  weak_ptr_factory_.GetWeakPtr(),
+                                  callback));
+  }
+
+  // CryptohomeClient override.
+  virtual void TpmAttestationGetPublicKey(
+      AttestationKeyType key_type,
+      const std::string& key_name,
+      const DataMethodCallback& callback) OVERRIDE {
+    dbus::MethodCall method_call(
+        cryptohome::kCryptohomeInterface,
+        cryptohome::kCryptohomeTpmAttestationGetPublicKey);
+    dbus::MessageWriter writer(&method_call);
+    bool is_user_specific = (key_type == USER_KEY);
+    writer.AppendBool(is_user_specific);
+    writer.AppendString(key_name);
+    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                       base::Bind(&CryptohomeClientImpl::OnDataMethod,
+                                  weak_ptr_factory_.GetWeakPtr(),
+                                  callback));
+  }
+
+  // CryptohomeClient override.
+  virtual void TpmAttestationRegisterKey(
+      AttestationKeyType key_type,
+      const std::string& key_name,
+      const AsyncMethodCallback& callback) OVERRIDE {
+    dbus::MethodCall method_call(
+        cryptohome::kCryptohomeInterface,
+        cryptohome::kCryptohomeTpmAttestationRegisterKey);
+    dbus::MessageWriter writer(&method_call);
+    bool is_user_specific = (key_type == USER_KEY);
+    writer.AppendBool(is_user_specific);
+    writer.AppendString(key_name);
+    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                       base::Bind(&CryptohomeClientImpl::OnAsyncMethodCall,
+                                  weak_ptr_factory_.GetWeakPtr(),
+                                  callback));
+  }
+
+  // CryptohomeClient override.
+  virtual void TpmAttestationSignEnterpriseChallenge(
+      AttestationKeyType key_type,
+      const std::string& key_name,
+      const std::string& domain,
+      const std::string& device_id,
+      const std::string& challenge,
+      const AsyncMethodCallback& callback) OVERRIDE {
+    dbus::MethodCall method_call(
+        cryptohome::kCryptohomeInterface,
+        cryptohome::kCryptohomeTpmAttestationSignEnterpriseChallenge);
+    dbus::MessageWriter writer(&method_call);
+    bool is_user_specific = (key_type == USER_KEY);
+    writer.AppendBool(is_user_specific);
+    writer.AppendString(key_name);
+    writer.AppendString(domain);
+    writer.AppendString(device_id);
+    writer.AppendString(challenge);
+    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                       base::Bind(&CryptohomeClientImpl::OnAsyncMethodCall,
+                                  weak_ptr_factory_.GetWeakPtr(),
+                                  callback));
+  }
+
+  // CryptohomeClient override.
+  virtual void TpmAttestationSignSimpleChallenge(
+      AttestationKeyType key_type,
+      const std::string& key_name,
+      const std::string& challenge,
+      const AsyncMethodCallback& callback) OVERRIDE {
+    dbus::MethodCall method_call(
+        cryptohome::kCryptohomeInterface,
+        cryptohome::kCryptohomeTpmAttestationSignEnterpriseChallenge);
+    dbus::MessageWriter writer(&method_call);
+    bool is_user_specific = (key_type == USER_KEY);
+    writer.AppendBool(is_user_specific);
+    writer.AppendString(key_name);
+    writer.AppendString(challenge);
+    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                       base::Bind(&CryptohomeClientImpl::OnAsyncMethodCall,
+                                  weak_ptr_factory_.GetWeakPtr(),
+                                  callback));
+  }
+
  private:
   // Handles the result of AsyncXXX methods.
   void OnAsyncMethodCall(const AsyncMethodCallback& callback,
@@ -527,6 +640,27 @@ class CryptohomeClientImpl : public CryptohomeClient {
       return;
     }
     callback.Run(DBUS_METHOD_CALL_SUCCESS, result);
+  }
+
+  // Handles responses for methods with a bool result and data.
+  void OnDataMethod(const DataMethodCallback& callback,
+                    dbus::Response* response) {
+    if (!response) {
+      callback.Run(DBUS_METHOD_CALL_FAILURE, false, std::string());
+      return;
+    }
+    dbus::MessageReader reader(response);
+    bool result = false;
+    if (!reader.PopBool(&result)) {
+      callback.Run(DBUS_METHOD_CALL_FAILURE, false, std::string());
+      return;
+    }
+    std::string data;
+    if (!reader.PopString(&data)) {
+      callback.Run(DBUS_METHOD_CALL_FAILURE, false, std::string());
+      return;
+    }
+    callback.Run(DBUS_METHOD_CALL_SUCCESS, result, data);
   }
 
   // Handles responses for Pkcs11GetTpmtTokenInfo.
@@ -868,6 +1002,64 @@ class CryptohomeClientStubImpl : public CryptohomeClient {
       const std::string& pca_response,
       AttestationKeyType key_type,
       const std::string& key_name,
+      const AsyncMethodCallback& callback) OVERRIDE {
+    ReturnAsyncMethodResult(callback, true);
+  }
+
+  // CryptohomeClient override.
+  virtual void TpmAttestationDoesKeyExist(
+      AttestationKeyType key_type,
+      const std::string& key_name,
+      const BoolDBusMethodCallback& callback) OVERRIDE {
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, false));
+  }
+
+  // CryptohomeClient override.
+  virtual void TpmAttestationGetCertificate(
+      AttestationKeyType key_type,
+      const std::string& key_name,
+      const DataMethodCallback& callback) OVERRIDE {
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, false, std::string()));
+  }
+
+  // CryptohomeClient override.
+  virtual void TpmAttestationGetPublicKey(
+      AttestationKeyType key_type,
+      const std::string& key_name,
+      const DataMethodCallback& callback) OVERRIDE {
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, false, std::string()));
+  }
+
+  // CryptohomeClient override.
+  virtual void TpmAttestationRegisterKey(
+      AttestationKeyType key_type,
+      const std::string& key_name,
+      const AsyncMethodCallback& callback) OVERRIDE {
+    ReturnAsyncMethodResult(callback, true);
+  }
+
+  // CryptohomeClient override.
+  virtual void TpmAttestationSignEnterpriseChallenge(
+      AttestationKeyType key_type,
+      const std::string& key_name,
+      const std::string& domain,
+      const std::string& device_id,
+      const std::string& challenge,
+      const AsyncMethodCallback& callback) OVERRIDE {
+    ReturnAsyncMethodResult(callback, true);
+  }
+
+  // CryptohomeClient override.
+  virtual void TpmAttestationSignSimpleChallenge(
+      AttestationKeyType key_type,
+      const std::string& key_name,
+      const std::string& challenge,
       const AsyncMethodCallback& callback) OVERRIDE {
     ReturnAsyncMethodResult(callback, true);
   }

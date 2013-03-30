@@ -138,6 +138,59 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller {
                 "Couldn't initiate async attestation finish cert request."));
   }
 
+  virtual void TpmAttestationRegisterKey(
+      chromeos::CryptohomeClient::AttestationKeyType key_type,
+      const std::string& key_name,
+      const Callback& callback) OVERRIDE {
+    DBusThreadManager::Get()->GetCryptohomeClient()->
+        TpmAttestationRegisterKey(
+            key_type,
+            key_name,
+            base::Bind(
+                &AsyncMethodCallerImpl::RegisterAsyncCallback,
+                weak_ptr_factory_.GetWeakPtr(),
+                callback,
+                "Couldn't initiate async attestation register key."));
+  }
+
+  virtual void TpmAttestationSignEnterpriseChallenge(
+      chromeos::CryptohomeClient::AttestationKeyType key_type,
+      const std::string& key_name,
+      const std::string& domain,
+      const std::string& device_id,
+      const std::string& challenge,
+      const DataCallback& callback) OVERRIDE {
+    DBusThreadManager::Get()->GetCryptohomeClient()->
+        TpmAttestationSignEnterpriseChallenge(
+            key_type,
+            key_name,
+            domain,
+            device_id,
+            challenge,
+            base::Bind(
+                &AsyncMethodCallerImpl::RegisterAsyncDataCallback,
+                weak_ptr_factory_.GetWeakPtr(),
+                callback,
+                "Couldn't initiate async attestation enterprise challenge."));
+  }
+
+  virtual void TpmAttestationSignSimpleChallenge(
+      chromeos::CryptohomeClient::AttestationKeyType key_type,
+      const std::string& key_name,
+      const std::string& challenge,
+      const DataCallback& callback) OVERRIDE {
+    DBusThreadManager::Get()->GetCryptohomeClient()->
+        TpmAttestationSignSimpleChallenge(
+            key_type,
+            key_name,
+            challenge,
+            base::Bind(
+                &AsyncMethodCallerImpl::RegisterAsyncDataCallback,
+                weak_ptr_factory_.GetWeakPtr(),
+                callback,
+                "Couldn't initiate async attestation simple challenge."));
+  }
+
   virtual void AsyncGetSanitizedUsername(
       const std::string& user,
       const DataCallback& callback) OVERRIDE {
