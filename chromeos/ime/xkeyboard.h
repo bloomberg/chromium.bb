@@ -1,14 +1,15 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_INPUT_METHOD_XKEYBOARD_H_
-#define CHROME_BROWSER_CHROMEOS_INPUT_METHOD_XKEYBOARD_H_
+#ifndef CHROMEOS_IME_XKEYBOARD_H_
+#define CHROMEOS_IME_XKEYBOARD_H_
 
 #include <string>
 #include <vector>
 
 #include "base/basictypes.h"
+#include "chromeos/chromeos_export.h"
 
 namespace chromeos {
 namespace input_method {
@@ -38,7 +39,7 @@ enum ModifierKey {
 
 class InputMethodUtil;
 
-class XKeyboard {
+class CHROMEOS_EXPORT XKeyboard {
  public:
   virtual ~XKeyboard() {}
 
@@ -100,24 +101,26 @@ class XKeyboard {
   // Turns on and off the auto-repeat of the keyboard. Returns true on success.
   // Do not call the function from non-UI threads.
   // TODO(yusukes): Make this function non-static so we can mock it.
-  static bool SetAutoRepeatEnabled(bool enabled);
+  static CHROMEOS_EXPORT bool SetAutoRepeatEnabled(bool enabled);
 
   // Sets the auto-repeat rate of the keyboard, initial delay in ms, and repeat
   // interval in ms.  Returns true on success. Do not call the function from
   // non-UI threads.
   // TODO(yusukes): Make this function non-static so we can mock it.
-  static bool SetAutoRepeatRate(const AutoRepeatRate& rate);
+  static CHROMEOS_EXPORT bool SetAutoRepeatRate(const AutoRepeatRate& rate);
 
   // Returns true if auto repeat is enabled. This function is protected: for
   // testability.
-  static bool GetAutoRepeatEnabledForTesting();
+  static CHROMEOS_EXPORT bool GetAutoRepeatEnabledForTesting();
 
   // On success, set current auto repeat rate on |out_rate| and returns true.
   // Returns false otherwise. This function is protected: for testability.
-  static bool GetAutoRepeatRateForTesting(AutoRepeatRate* out_rate);
+  static CHROMEOS_EXPORT bool GetAutoRepeatRateForTesting(
+      AutoRepeatRate* out_rate);
 
   // Returns false if |layout_name| contains a bad character.
-  static bool CheckLayoutNameForTesting(const std::string& layout_name);
+  static CHROMEOS_EXPORT bool CheckLayoutNameForTesting(
+      const std::string& layout_name);
 
   // Note: At this moment, classes other than InputMethodManager should not
   // instantiate the XKeyboard class.
@@ -127,4 +130,4 @@ class XKeyboard {
 }  // namespace input_method
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_INPUT_METHOD_XKEYBOARD_H_
+#endif  // CHROMEOS_IME_XKEYBOARD_H_

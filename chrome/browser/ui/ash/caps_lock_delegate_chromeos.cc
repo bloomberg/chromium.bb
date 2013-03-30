@@ -7,8 +7,8 @@
 #include "base/chromeos/chromeos_version.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "chrome/browser/chromeos/input_method/xkeyboard.h"
 #include "chrome/common/chrome_switches.h"
+#include "chromeos/ime/xkeyboard.h"
 #include "content/public/browser/browser_thread.h"
 
 CapsLockDelegate::CapsLockDelegate(chromeos::input_method::XKeyboard* xkeyboard)

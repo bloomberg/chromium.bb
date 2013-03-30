@@ -13,7 +13,7 @@
 #include "base/message_loop.h"
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
-#include "chrome/browser/chromeos/input_method/xkeyboard.h"
+#include "chromeos/ime/xkeyboard.h"
 #include "ui/base/x/x11_util.h"
 
 namespace chromeos {

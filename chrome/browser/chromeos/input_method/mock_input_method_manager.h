@@ -7,9 +7,9 @@
 
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
-#include "chrome/browser/chromeos/input_method/mock_xkeyboard.h"
 #include "chromeos/ime/input_method_whitelist.h"
 #include "chromeos/ime/mock_input_method_delegate.h"
+#include "chromeos/ime/mock_xkeyboard.h"
 
 namespace chromeos {
 namespace input_method {

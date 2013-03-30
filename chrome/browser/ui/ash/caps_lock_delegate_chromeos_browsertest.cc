@@ -4,9 +4,9 @@
 
 #include "chrome/browser/ui/ash/caps_lock_delegate_chromeos.h"
 
-#include "chrome/browser/chromeos/input_method/mock_xkeyboard.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "chromeos/ime/mock_xkeyboard.h"
 
 namespace {
 

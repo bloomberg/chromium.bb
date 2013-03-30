@@ -21,9 +21,9 @@
 
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/chromeos/input_method/mock_input_method_manager.h"
-#include "chrome/browser/chromeos/input_method/mock_xkeyboard.h"
 #include "chrome/browser/chromeos/login/mock_user_manager.h"
 #include "chrome/browser/chromeos/preferences.h"
+#include "chromeos/ime/mock_xkeyboard.h"
 #include "ui/base/x/x11_util.h"
 
 namespace {
