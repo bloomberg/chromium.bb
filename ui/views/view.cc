@@ -366,8 +366,7 @@ void View::SetY(int y) {
 
 gfx::Rect View::GetContentsBounds() const {
   gfx::Rect contents_bounds(GetLocalBounds());
-  if (border_.get())
-    contents_bounds.Inset(border_->GetInsets());
+  contents_bounds.Inset(GetInsets());
   return contents_bounds;
 }
 
