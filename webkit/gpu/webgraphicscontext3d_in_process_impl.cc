@@ -1247,8 +1247,43 @@ void WebGraphicsContext3DInProcessImpl::getShaderiv(
   glGetShaderiv(shader, pname, value);
 }
 
-DELEGATE_TO_GL_4(getShaderPrecisionFormat, GetShaderPrecisionFormat,
-                 WGC3Denum, WGC3Denum, WGC3Dint*, WGC3Dint*)
+void WebGraphicsContext3DInProcessImpl::getShaderPrecisionFormat(
+    WGC3Denum shadertype, WGC3Denum precisiontype,
+    WGC3Dint* range, WGC3Dint* precision) {
+  switch (precisiontype) {
+    case GL_LOW_INT:
+    case GL_MEDIUM_INT:
+    case GL_HIGH_INT:
+      // These values are for a 32-bit twos-complement integer format.
+      range[0] = 31;
+      range[1] = 30;
+      *precision = 0;
+      break;
+    case GL_LOW_FLOAT:
+    case GL_MEDIUM_FLOAT:
+    case GL_HIGH_FLOAT:
+      // These values are for an IEEE single-precision floating-point format.
+      range[0] = 127;
+      range[1] = 127;
+      *precision = 23;
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+
+  if (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2 &&
+      gfx::g_driver_gl.fn.glGetShaderPrecisionFormatFn) {
+    // This function is sometimes defined even though it's really just
+    // a stub, so we need to set range and precision as if it weren't
+    // defined before calling it.
+    // On Mac OS with some GPUs, calling this generates a
+    // GL_INVALID_OPERATION error. Avoid calling it on non-GLES2
+    // platforms.
+    glGetShaderPrecisionFormat(shadertype, precisiontype,
+                               range, precision);
+  }
+}
 
 WebString WebGraphicsContext3DInProcessImpl::getShaderInfoLog(WebGLId shader) {
   makeContextCurrent();
