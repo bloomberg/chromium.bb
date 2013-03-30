@@ -16,7 +16,8 @@ DialogNotification::DialogNotification(Type type, const string16& display_text)
 SkColor DialogNotification::GetBackgroundColor() const {
   switch (type_) {
     case DialogNotification::EXPLANATORY_MESSAGE:
-    case DialogNotification::WALLET_PROMO:
+    case DialogNotification::WALLET_SIGNIN_PROMO:
+    case DialogNotification::WALLET_USAGE_CONFIRMATION:
       return SkColorSetRGB(0x47, 0x89, 0xfa);
     case DialogNotification::REQUIRED_ACTION:
     case DialogNotification::WALLET_ERROR:
@@ -40,7 +41,8 @@ SkColor DialogNotification::GetTextColor() const {
     case DialogNotification::AUTOCHECKOUT_ERROR:
       return SK_ColorBLACK;
     case DialogNotification::EXPLANATORY_MESSAGE:
-    case DialogNotification::WALLET_PROMO:
+    case DialogNotification::WALLET_SIGNIN_PROMO:
+    case DialogNotification::WALLET_USAGE_CONFIRMATION:
     case DialogNotification::SECURITY_WARNING:
     case DialogNotification::VALIDATION_ERROR:
       return SK_ColorWHITE;
@@ -55,11 +57,12 @@ SkColor DialogNotification::GetTextColor() const {
 bool DialogNotification::HasArrow() const {
   return type_ == DialogNotification::EXPLANATORY_MESSAGE ||
          type_ == DialogNotification::WALLET_ERROR ||
-         type_ == DialogNotification::WALLET_PROMO;
+         type_ == DialogNotification::WALLET_SIGNIN_PROMO ||
+         type_ == DialogNotification::WALLET_USAGE_CONFIRMATION;
 }
 
 bool DialogNotification::HasCheckbox() const {
-  return type_ == DialogNotification::WALLET_PROMO;
+  return type_ == DialogNotification::WALLET_USAGE_CONFIRMATION;
 }
 
 }  // namespace autofill

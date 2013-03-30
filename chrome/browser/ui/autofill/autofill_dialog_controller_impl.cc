@@ -1052,7 +1052,7 @@ std::vector<DialogNotification>
       } else {
         notifications.push_back(
             DialogNotification(
-                DialogNotification::WALLET_PROMO,
+                DialogNotification::WALLET_USAGE_CONFIRMATION,
                 l10n_util::GetStringUTF16(
                     IDS_AUTOFILL_DIALOG_SAVE_DETAILS_IN_WALLET)));
       }
@@ -1060,7 +1060,7 @@ std::vector<DialogNotification>
       // If the user is not signed in, show an upsell notification on first run.
       notifications.push_back(
           DialogNotification(
-              DialogNotification::WALLET_PROMO,
+              DialogNotification::WALLET_SIGNIN_PROMO,
               l10n_util::GetStringUTF16(
                   IDS_AUTOFILL_DIALOG_SIGN_IN_AND_SAVE_DETAILS)));
     }

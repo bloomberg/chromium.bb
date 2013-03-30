@@ -66,7 +66,8 @@ class DialogNotification {
     SECURITY_WARNING,
     VALIDATION_ERROR,
     WALLET_ERROR,
-    WALLET_PROMO,
+    WALLET_SIGNIN_PROMO,
+    WALLET_USAGE_CONFIRMATION,
   };
 
   DialogNotification();
