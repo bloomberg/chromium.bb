@@ -71,14 +71,18 @@ void SetSecondaryDisplayLayoutAndOffset(DisplayLayout::Position position,
                                         int offset) {
   DisplayController* display_controller =
       Shell::GetInstance()->display_controller();
-  DisplayLayout layout = display_controller->default_display_layout();
-  layout.position = position;
-  layout.offset = offset;
-  display_controller->SetDefaultDisplayLayout(layout);
+  DisplayLayout layout(position, offset);
+  ASSERT_GT(Shell::GetScreen()->GetNumDisplays(), 1);
+  display_controller->SetLayoutForCurrentDisplays(layout);
 }
 
 void SetSecondaryDisplayLayout(DisplayLayout::Position position) {
   SetSecondaryDisplayLayoutAndOffset(position, 0);
+}
+
+void SetDefaultDisplayLayout(DisplayLayout::Position position) {
+  Shell::GetInstance()->display_controller()->
+      SetDefaultDisplayLayout(DisplayLayout(position, 0));
 }
 
 class DisplayControllerShutdownTest : public test::AshTestBase {
@@ -210,9 +214,9 @@ TEST_F(DisplayControllerTest, SecondaryDisplayLayout) {
 
 TEST_F(DisplayControllerTest, BoundsUpdated) {
   TestObserver observer;
-  SetSecondaryDisplayLayout(DisplayLayout::BOTTOM);
+  SetDefaultDisplayLayout(DisplayLayout::BOTTOM);
   UpdateDisplay("200x200,300x300");  // layout, resize and add.
-  EXPECT_EQ(2, observer.CountAndReset());
+  EXPECT_EQ(1, observer.CountAndReset());
 
   internal::DisplayManager* display_manager =
       Shell::GetInstance()->display_manager();

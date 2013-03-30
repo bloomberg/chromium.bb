@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_DISPLAY_DISPLAY_PREFERENCES_H_
 
 #include "base/basictypes.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 
 class PrefRegistrySimple;
 
@@ -31,13 +32,18 @@ void StoreDisplayPrefs();
 // Sets the display layout for the current displays and default.
 void SetCurrentAndDefaultDisplayLayout(const ash::DisplayLayout& layout);
 
-// Load display preferences from Local Store.
-void LoadDisplayPreferences();
+// Load display preferences from Local Store. |first_run_after_boot| is used
+// determine if a certain preference should be applied at boot time or
+// restart.
+void LoadDisplayPreferences(bool first_run_after_boot);
 
-// Stores the display layout for given display pairs.
+// Stores the display layout for given display pairs for tests.
 void StoreDisplayLayoutPrefForTest(int64 id1,
                                    int64 id2,
                                    const ash::DisplayLayout& layout);
+
+// Stores the given |power_state| for tests.
+void StoreDisplayPowerStateForTest(DisplayPowerState power_state);
 
 }  // namespace chromeos
 

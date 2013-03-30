@@ -367,13 +367,15 @@ TEST_F(DisplayManagerTest, TestNativeDisplaysChanged) {
   const int internal_display_id =
       test::DisplayManagerTestApi(display_manager()).
       SetFirstDisplayAsInternalDisplay();
+  const int external_id = 10;
+  const int mirror_id = 11;
   const int64 invalid_id = gfx::Display::kInvalidDisplayID;
-  const DisplayInfo native_display_info =
+  const DisplayInfo internal_display_info =
       CreateDisplayInfo(internal_display_id, gfx::Rect(0, 0, 500, 500));
   const DisplayInfo external_display_info =
-      CreateDisplayInfo(10, gfx::Rect(1, 1, 100, 100));
+      CreateDisplayInfo(external_id, gfx::Rect(1, 1, 100, 100));
   const DisplayInfo mirrored_display_info =
-      CreateDisplayInfo(11, gfx::Rect(0, 0, 500, 500));
+      CreateDisplayInfo(mirror_id, gfx::Rect(0, 0, 500, 500));
 
   EXPECT_EQ(1U, display_manager()->GetNumDisplays());
   EXPECT_EQ(1U, display_manager()->num_connected_displays());
@@ -392,21 +394,22 @@ TEST_F(DisplayManagerTest, TestNativeDisplaysChanged) {
   // External connected while primary was disconnected.
   display_info_list.push_back(external_display_info);
   display_manager()->OnNativeDisplaysChanged(display_info_list);
-  EXPECT_EQ(2U, display_manager()->GetNumDisplays());
+  EXPECT_EQ(1U, display_manager()->GetNumDisplays());
 
-  EXPECT_EQ(default_bounds,
-            FindDisplayForId(internal_display_id).bounds().ToString());
+  EXPECT_EQ(invalid_id, FindDisplayForId(internal_display_id).id());
   EXPECT_EQ("1,1 100x100",
-            FindDisplayInfoForId(10).bounds_in_pixel().ToString());
-  EXPECT_EQ(2U, display_manager()->num_connected_displays());
+            FindDisplayInfoForId(external_id).bounds_in_pixel().ToString());
+  EXPECT_EQ(1U, display_manager()->num_connected_displays());
   EXPECT_EQ(invalid_id, display_manager()->mirrored_display_id());
+  EXPECT_EQ(external_id, Shell::GetScreen()->GetPrimaryDisplay().id());
 
   // Primary connected, with different bounds.
   display_info_list.clear();
-  display_info_list.push_back(native_display_info);
+  display_info_list.push_back(internal_display_info);
   display_info_list.push_back(external_display_info);
   display_manager()->OnNativeDisplaysChanged(display_info_list);
   EXPECT_EQ(2U, display_manager()->GetNumDisplays());
+  // need to remember which is primary
   EXPECT_EQ("0,0 500x500",
             FindDisplayForId(internal_display_id).bounds().ToString());
   EXPECT_EQ("1,1 100x100",
@@ -415,18 +418,6 @@ TEST_F(DisplayManagerTest, TestNativeDisplaysChanged) {
   EXPECT_EQ(invalid_id, display_manager()->mirrored_display_id());
   EXPECT_EQ(StringPrintf("x-%d", internal_display_id),
             display_manager()->GetDisplayNameForId(internal_display_id));
-
-  // Turn off primary.
-  display_info_list.clear();
-  display_info_list.push_back(external_display_info);
-  display_manager()->OnNativeDisplaysChanged(display_info_list);
-  EXPECT_EQ(2U, display_manager()->GetNumDisplays());
-  EXPECT_EQ("0,0 500x500",
-            FindDisplayForId(internal_display_id).bounds().ToString());
-  EXPECT_EQ("1,1 100x100",
-            FindDisplayInfoForId(10).bounds_in_pixel().ToString());
-  EXPECT_EQ(2U, display_manager()->num_connected_displays());
-  EXPECT_EQ(invalid_id, display_manager()->mirrored_display_id());
 
   // Emulate suspend.
   display_info_list.clear();
@@ -442,7 +433,7 @@ TEST_F(DisplayManagerTest, TestNativeDisplaysChanged) {
             display_manager()->GetDisplayNameForId(internal_display_id));
 
   // External display has disconnected then resumed.
-  display_info_list.push_back(native_display_info);
+  display_info_list.push_back(internal_display_info);
   display_manager()->OnNativeDisplaysChanged(display_info_list);
   EXPECT_EQ(1U, display_manager()->GetNumDisplays());
   EXPECT_EQ("0,0 500x500",
@@ -465,7 +456,7 @@ TEST_F(DisplayManagerTest, TestNativeDisplaysChanged) {
   EXPECT_EQ(invalid_id, display_manager()->mirrored_display_id());
 
   // and resume with different external display.
-  display_info_list.push_back(native_display_info);
+  display_info_list.push_back(internal_display_info);
   display_info_list.push_back(CreateDisplayInfo(12, gfx::Rect(1, 1, 100, 100)));
   display_manager()->OnNativeDisplaysChanged(display_info_list);
   EXPECT_EQ(2U, display_manager()->GetNumDisplays());
@@ -475,7 +466,7 @@ TEST_F(DisplayManagerTest, TestNativeDisplaysChanged) {
 
   // mirrored...
   display_info_list.clear();
-  display_info_list.push_back(native_display_info);
+  display_info_list.push_back(internal_display_info);
   display_info_list.push_back(mirrored_display_info);
   display_manager()->OnNativeDisplaysChanged(display_info_list);
   EXPECT_EQ(1U, display_manager()->GetNumDisplays());
@@ -496,7 +487,7 @@ TEST_F(DisplayManagerTest, TestNativeDisplaysChanged) {
 
   // and exit mirroring.
   display_info_list.clear();
-  display_info_list.push_back(native_display_info);
+  display_info_list.push_back(internal_display_info);
   display_info_list.push_back(external_display_info);
   display_manager()->OnNativeDisplaysChanged(display_info_list);
   EXPECT_EQ(2U, display_manager()->GetNumDisplays());
@@ -506,6 +497,28 @@ TEST_F(DisplayManagerTest, TestNativeDisplaysChanged) {
             FindDisplayForId(internal_display_id).bounds().ToString());
   EXPECT_EQ("500,0 100x100",
             FindDisplayForId(10).bounds().ToString());
+
+  // Turn off internal
+  display_info_list.clear();
+  display_info_list.push_back(external_display_info);
+  display_manager()->OnNativeDisplaysChanged(display_info_list);
+  EXPECT_EQ(1U, display_manager()->GetNumDisplays());
+  EXPECT_EQ(invalid_id, FindDisplayForId(internal_display_id).id());
+  EXPECT_EQ("1,1 100x100",
+            FindDisplayInfoForId(external_id).bounds_in_pixel().ToString());
+  EXPECT_EQ(1U, display_manager()->num_connected_displays());
+  EXPECT_EQ(invalid_id, display_manager()->mirrored_display_id());
+
+  // Switched to another display
+  display_info_list.clear();
+  display_info_list.push_back(internal_display_info);
+  display_manager()->OnNativeDisplaysChanged(display_info_list);
+  EXPECT_EQ(1U, display_manager()->GetNumDisplays());
+  EXPECT_EQ(
+      "0,0 500x500",
+      FindDisplayInfoForId(internal_display_id).bounds_in_pixel().ToString());
+  EXPECT_EQ(1U, display_manager()->num_connected_displays());
+  EXPECT_EQ(invalid_id, display_manager()->mirrored_display_id());
 }
 
 #if defined(OS_WIN)
@@ -577,15 +590,15 @@ TEST_F(DisplayManagerTest, EnsurePointerInDisplays) {
 }
 
 TEST_F(DisplayManagerTest, EnsurePointerInDisplays_2ndOnLeft) {
-  UpdateDisplay("200x200,300x300");
-  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
-
   // Set the 2nd display on the left.
   DisplayController* display_controller =
       Shell::GetInstance()->display_controller();
   DisplayLayout layout = display_controller->default_display_layout();
   layout.position = DisplayLayout::LEFT;
   display_controller->SetDefaultDisplayLayout(layout);
+
+  UpdateDisplay("200x200,300x300");
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
 
   EXPECT_EQ("-300,0 300x300",
             ScreenAsh::GetSecondaryDisplay().bounds().ToString());

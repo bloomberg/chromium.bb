@@ -88,6 +88,7 @@
         'display/display_info.cc',
         'display/display_manager.cc',
         'display/display_manager.h',
+        'display/display_pref_util.h',
         'display/event_transformation_handler.cc',
         'display/event_transformation_handler.h',
         'display/mouse_cursor_event_filter.cc',

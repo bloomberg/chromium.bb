@@ -6,6 +6,7 @@
 
 #include "ash/display/display_controller.h"
 #include "ash/display/display_manager.h"
+#include "ash/display/display_pref_util.h"
 #include "ash/shell.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
@@ -18,8 +19,10 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/display/output_configurator.h"
 #include "googleurl/src/url_canon.h"
 #include "googleurl/src/url_util.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/screen.h"
@@ -84,6 +87,7 @@ void LoadDisplayLayouts() {
   ash::DisplayLayout default_layout = ash::DisplayLayout::FromInts(
       local_state->GetInteger(prefs::kSecondaryDisplayLayout),
       local_state->GetInteger(prefs::kSecondaryDisplayOffset));
+  default_layout.primary_id = local_state->GetInt64(prefs::kPrimaryDisplayID);
   display_controller->SetDefaultDisplayLayout(default_layout);
 
   const base::DictionaryValue* layouts = local_state->GetDictionary(
@@ -204,15 +208,39 @@ void StoreCurrentDisplayProperties() {
   }
 }
 
-void StorePrimaryDisplayIDPref(int64 display_id) {
-  if (!IsValidUser() || gfx::Screen::GetNativeScreen()->GetNumDisplays() < 2)
-    return;
+typedef std::map<chromeos::DisplayPowerState, std::string>
+    DisplayPowerStateToStringMap;
 
+const DisplayPowerStateToStringMap* GetDisplayPowerStateToStringMap() {
+  static const DisplayPowerStateToStringMap* map = ash::CreateToStringMap(
+      chromeos::DISPLAY_POWER_ALL_ON, "all_on",
+      chromeos::DISPLAY_POWER_ALL_OFF, "all_off",
+      chromeos::DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON,
+      "internal_off_external_on",
+      chromeos::DISPLAY_POWER_INTERNAL_ON_EXTERNAL_OFF,
+      "internal_on_external_off");
+  return map;
+}
+
+bool GetDisplayPowerStateFromString(const base::StringPiece& state,
+                                    chromeos::DisplayPowerState* field) {
+  if (ash::ReverseFind(GetDisplayPowerStateToStringMap(), state, field))
+    return true;
+  LOG(ERROR) << "Invalid display power state value:" << state;
+  return false;
+}
+
+void StoreDisplayPowerState(DisplayPowerState power_state) {
+  const DisplayPowerStateToStringMap* map = GetDisplayPowerStateToStringMap();
+  DisplayPowerStateToStringMap::const_iterator iter = map->find(power_state);
+  std::string value = iter != map->end() ? iter->second : std::string();
   PrefService* local_state = g_browser_process->local_state();
-  if (GetDisplayManager()->IsInternalDisplayId(display_id))
-    local_state->ClearPref(prefs::kPrimaryDisplayID);
-  else
-    local_state->SetInt64(prefs::kPrimaryDisplayID, display_id);
+  local_state->SetString(prefs::kDisplayPowerState, value);
+}
+
+void StoreCurrentDisplayPowerState() {
+  StoreDisplayPowerState(
+      ash::Shell::GetInstance()->output_configurator()->display_power_state());
 }
 
 }  // namespace
@@ -227,8 +255,9 @@ void RegisterDisplayLocalStatePrefs(PrefRegistrySimple* registry) {
   // Per-display preference.
   registry->RegisterDictionaryPref(prefs::kSecondaryDisplays);
   registry->RegisterDictionaryPref(prefs::kDisplayProperties);
-
-  // Primary output name.
+  DisplayPowerStateToStringMap::const_iterator iter =
+      GetDisplayPowerStateToStringMap()->find(chromeos::DISPLAY_POWER_ALL_ON);
+  registry->RegisterStringPref(prefs::kDisplayPowerState, iter->second);
   registry->RegisterInt64Pref(prefs::kPrimaryDisplayID,
                               gfx::Display::kInvalidDisplayID);
 }
@@ -236,9 +265,9 @@ void RegisterDisplayLocalStatePrefs(PrefRegistrySimple* registry) {
 void StoreDisplayPrefs() {
   if (!IsValidUser())
     return;
-  StorePrimaryDisplayIDPref(ash::Shell::GetScreen()->GetPrimaryDisplay().id());
   StoreCurrentDisplayLayoutPrefs();
   StoreCurrentDisplayProperties();
+  StoreCurrentDisplayPowerState();
 }
 
 void SetCurrentAndDefaultDisplayLayout(const ash::DisplayLayout& layout) {
@@ -259,12 +288,19 @@ void SetCurrentAndDefaultDisplayLayout(const ash::DisplayLayout& layout) {
   }
 }
 
-void LoadDisplayPreferences() {
-  PrefService* local_state = g_browser_process->local_state();
+void LoadDisplayPreferences(bool first_run_after_boot) {
   LoadDisplayLayouts();
   LoadDisplayProperties();
-  ash::Shell::GetInstance()->display_controller()->SetPrimaryDisplayId(
-      local_state->GetInt64(prefs::kPrimaryDisplayID));
+  if (!first_run_after_boot) {
+    PrefService* local_state = g_browser_process->local_state();
+    // Restore DisplayPowerState:
+    std::string value = local_state->GetString(prefs::kDisplayPowerState);
+    chromeos::DisplayPowerState power_state;
+    if (GetDisplayPowerStateFromString(value, &power_state)) {
+      ash::Shell::GetInstance()->output_configurator()->set_display_power_state(
+          power_state);
+    }
+  }
 }
 
 // Stores the display layout for given display pairs.
@@ -272,6 +308,11 @@ void StoreDisplayLayoutPrefForTest(int64 id1,
                                    int64 id2,
                                    const ash::DisplayLayout& layout) {
   StoreDisplayLayoutPref(std::make_pair(id1, id2), layout);
+}
+
+// Stores the given |power_state|.
+void StoreDisplayPowerStateForTest(DisplayPowerState power_state) {
+  StoreDisplayPowerState(power_state);
 }
 
 }  // namespace chromeos

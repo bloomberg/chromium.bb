@@ -292,6 +292,14 @@ void DisplayManager::OnNativeDisplaysChanged(
   }
   first_display_id_ = updated_displays[0].id();
   std::set<int> y_coords;
+  if (updated_displays.size() == 1) {
+    VLOG(1) << "OnNativeDisplaysChanged(1):" << updated_displays[0].ToString();
+  } else {
+    VLOG(1) << "OnNativeDisplaysChanged(" << updated_displays.size()
+            << ") [0]=" << updated_displays[0].ToString()
+            << ", [1]=" << updated_displays[1].ToString();
+  }
+
   bool internal_display_connected = false;
   num_connected_displays_ = updated_displays.size();
   mirrored_display_id_ = gfx::Display::kInvalidDisplayID;
@@ -299,11 +307,8 @@ void DisplayManager::OnNativeDisplaysChanged(
   for (DisplayInfoList::const_iterator iter = updated_displays.begin();
        iter != updated_displays.end();
        ++iter) {
-    if (!internal_display_connected) {
+    if (!internal_display_connected)
       internal_display_connected = IsInternalDisplayId(iter->id());
-      if (internal_display_connected)
-        internal_display_info_.reset(new DisplayInfo(*iter));
-    }
     // Mirrored monitors have the same y coordinates.
     int y = iter->bounds_in_pixel().y();
     if (y_coords.find(y) != y_coords.end()) {
@@ -314,18 +319,16 @@ void DisplayManager::OnNativeDisplaysChanged(
       new_display_info_list.push_back(*iter);
     }
   }
-  if (HasInternalDisplay() && !internal_display_connected) {
-    if (!internal_display_info_.get()) {
-      // TODO(oshima): Get has_custom value.
-      internal_display_info_.reset(new DisplayInfo(
-          gfx::Display::InternalDisplayId(),
-          l10n_util::GetStringUTF8(IDS_ASH_INTERNAL_DISPLAY_NAME),
-          false));
-      internal_display_info_->SetBounds(gfx::Rect(0, 0, 800, 600));
-    }
-    new_display_info_list.push_back(*internal_display_info_.get());
-    // An internal display is always considered *connected*.
-    num_connected_displays_++;
+  if (HasInternalDisplay() &&
+      !internal_display_connected &&
+      display_info_.find(gfx::Display::InternalDisplayId()) ==
+      display_info_.end()) {
+    DisplayInfo internal_display_info(
+        gfx::Display::InternalDisplayId(),
+        l10n_util::GetStringUTF8(IDS_ASH_INTERNAL_DISPLAY_NAME),
+        false  /*Internal display must not have overscan */);
+    internal_display_info.SetBounds(gfx::Rect(0, 0, 800, 600));
+    display_info_[gfx::Display::InternalDisplayId()] = internal_display_info;
   }
   UpdateDisplays(new_display_info_list);
 }
@@ -349,9 +352,6 @@ void DisplayManager::UpdateDisplays(
   DisplayList removed_displays;
   std::vector<size_t> changed_display_indices;
   std::vector<size_t> added_display_indices;
-  gfx::Display current_primary;
-  if (DisplayController::HasPrimaryDisplay())
-    current_primary = DisplayController::GetPrimaryDisplay();
 
   DisplayList::iterator curr_iter = displays_.begin();
   DisplayInfoList::const_iterator new_info_iter = new_display_info_list.begin();

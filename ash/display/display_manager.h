@@ -216,10 +216,6 @@ class ASH_EXPORT DisplayManager : public aura::RootWindowObserver {
 
   int num_connected_displays_;
 
-  // An internal display info cache used when the internal display is
-  // disconnectd.
-  scoped_ptr<DisplayInfo> internal_display_info_;
-
   bool force_bounds_changed_;
 
   // The mapping from the display ID to its internal data.

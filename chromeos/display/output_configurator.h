@@ -85,6 +85,11 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
 
   OutputState output_state() const { return output_state_; }
 
+  void set_display_power_state(DisplayPowerState power_state) {
+    power_state_ = power_state;
+  }
+  DisplayPowerState display_power_state() const { return power_state_; }
+
   void set_delegate(Delegate* delegate) { delegate_ = delegate; }
 
   // Initialization, must be called right after constructor.

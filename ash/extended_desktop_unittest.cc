@@ -37,9 +37,9 @@ namespace {
 void SetSecondaryDisplayLayout(DisplayLayout::Position position) {
   DisplayController* display_controller =
       Shell::GetInstance()->display_controller();
-  DisplayLayout layout = display_controller->default_display_layout();
+  DisplayLayout layout = display_controller->GetCurrentDisplayLayout();
   layout.position = position;
-  display_controller->SetDefaultDisplayLayout(layout);
+  display_controller->SetLayoutForCurrentDisplays(layout);
 }
 
 class ModalWidgetDelegate : public views::WidgetDelegateView {

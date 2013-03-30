@@ -94,7 +94,7 @@ bool ChromeShellDelegate::IsScreenLocked() const {
 }
 
 void ChromeShellDelegate::PreInit() {
-  chromeos::LoadDisplayPreferences();
+  chromeos::LoadDisplayPreferences(IsFirstRunAfterBoot());
 }
 
 void ChromeShellDelegate::Shutdown() {

@@ -5,9 +5,11 @@
 #include "ash/display/display_controller.h"
 
 #include <algorithm>
+#include <map>
 
 #include "ash/ash_switches.h"
 #include "ash/display/display_manager.h"
+#include "ash/display/display_pref_util.h"
 #include "ash/host/root_window_host_factory.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_ash.h"
@@ -19,6 +21,7 @@
 #include "base/json/json_value_converter.h"
 #include "base/string_piece.h"
 #include "base/stringprintf.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
@@ -32,7 +35,6 @@
 #if defined(OS_CHROMEOS)
 #include "ash/display/output_configurator_animation.h"
 #include "base/chromeos/chromeos_version.h"
-#include "base/string_number_conversions.h"
 #include "base/time.h"
 #include "chromeos/display/output_configurator.h"
 #include "ui/base/x/x11_util.h"
@@ -83,38 +85,35 @@ const int64 kSwapDisplayThrottleTimeoutMs = 500;
 const char kPositionKey[] = "position";
 const char kOffsetKey[] = "offset";
 const char kMirroredKey[] = "mirrored";
+const char kPrimaryIdKey[] = "primary-id";
+
+typedef std::map<DisplayLayout::Position, std::string> PositionToStringMap;
+
+const PositionToStringMap* GetPositionToStringMap() {
+  static const PositionToStringMap* map = CreateToStringMap(
+      DisplayLayout::TOP, "top",
+      DisplayLayout::BOTTOM, "bottom",
+      DisplayLayout::RIGHT, "right",
+      DisplayLayout::LEFT, "left");
+  return map;
+}
 
 bool GetPositionFromString(const base::StringPiece& position,
                            DisplayLayout::Position* field) {
-  if (position == "top") {
-    *field = DisplayLayout::TOP;
+  if (ReverseFind(GetPositionToStringMap(), position, field))
     return true;
-  } else if (position == "bottom") {
-    *field = DisplayLayout::BOTTOM;
-    return true;
-  } else if (position == "right") {
-    *field = DisplayLayout::RIGHT;
-    return true;
-  } else if (position == "left") {
-    *field = DisplayLayout::LEFT;
-    return true;
-  }
-  LOG(ERROR) << "Invalid position value: " << position;
+  LOG(ERROR) << "Invalid position value:" << position;
   return false;
 }
 
 std::string GetStringFromPosition(DisplayLayout::Position position) {
-  switch (position) {
-    case DisplayLayout::TOP:
-      return std::string("top");
-    case DisplayLayout::BOTTOM:
-      return std::string("bottom");
-    case DisplayLayout::RIGHT:
-      return std::string("right");
-    case DisplayLayout::LEFT:
-      return std::string("left");
-  }
-  return std::string("unknown");
+  const PositionToStringMap* map = GetPositionToStringMap();
+  PositionToStringMap::const_iterator iter = map->find(position);
+  return iter != map->end() ? iter->second : std::string("unknown");
+}
+
+bool GetDisplayIdFromString(const base::StringPiece& position, int64* field) {
+  return base::StringToInt64(position, field);
 }
 
 internal::DisplayManager* GetDisplayManager() {
@@ -227,12 +226,15 @@ DisplayLayout DisplayLayout::FromInts(int position, int offsets) {
 DisplayLayout::DisplayLayout()
     : position(RIGHT),
       offset(0),
-      mirrored(false) {}
+      mirrored(false),
+      primary_id(gfx::Display::kInvalidDisplayID) {
+}
 
 DisplayLayout::DisplayLayout(DisplayLayout::Position position, int offset)
     : position(position),
       offset(offset),
-      mirrored(false) {
+      mirrored(false),
+      primary_id(gfx::Display::kInvalidDisplayID) {
   DCHECK_LE(TOP, position);
   DCHECK_GE(LEFT, position);
 
@@ -260,7 +262,9 @@ DisplayLayout DisplayLayout::Invert() const {
       inverted_position = RIGHT;
       break;
   }
-  return DisplayLayout(inverted_position, -offset);
+  DisplayLayout ret = DisplayLayout(inverted_position, -offset);
+  ret.primary_id = primary_id;
+  return ret;
 }
 
 // static
@@ -281,6 +285,7 @@ bool DisplayLayout::ConvertToValue(const DisplayLayout& layout,
   dict_value->SetString(kPositionKey, position_str);
   dict_value->SetInteger(kOffsetKey, layout.offset);
   dict_value->SetBoolean(kMirroredKey, layout.mirrored);
+  dict_value->SetString(kPrimaryIdKey, base::Int64ToString(layout.primary_id));
   return true;
 }
 
@@ -298,6 +303,8 @@ void DisplayLayout::RegisterJSONConverter(
       kPositionKey, &DisplayLayout::position, &GetPositionFromString);
   converter->RegisterIntField(kOffsetKey, &DisplayLayout::offset);
   converter->RegisterBoolField(kMirroredKey, &DisplayLayout::mirrored);
+  converter->RegisterCustomField<int64>(
+      kPrimaryIdKey, &DisplayLayout::primary_id, &GetDisplayIdFromString);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -321,8 +328,7 @@ bool DisplayController::DisplayChangeLimiter::IsThrottled() const {
 // DisplayController
 
 DisplayController::DisplayController()
-    : desired_primary_display_id_(gfx::Display::kInvalidDisplayID),
-      primary_root_window_for_replace_(NULL) {
+    : primary_root_window_for_replace_(NULL) {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
 #if defined(OS_CHROMEOS)
   if (!command_line->HasSwitch(switches::kAshDisableDisplayChangeLimiter) &&
@@ -414,12 +420,17 @@ void DisplayController::InitSecondaryDisplays() {
     const gfx::Display* display = display_manager->GetDisplayAt(i);
     if (primary_display_id != display->id()) {
       aura::RootWindow* root = AddRootWindowForDisplay(*display);
-      if (desired_primary_display_id_ == display->id())
-        SetPrimaryDisplay(*display);
       Shell::GetInstance()->InitRootWindowForSecondaryDisplay(root);
     }
   }
-  UpdateDisplayBoundsForLayout();
+  if (display_manager->GetNumDisplays() > 1) {
+    UpdateDisplayBoundsForLayout();
+    DisplayIdPair pair = GetCurrentDisplayIdPair();
+    DisplayLayout layout = GetCurrentDisplayLayout();
+    SetPrimaryDisplayId(
+        layout.primary_id == gfx::Display::kInvalidDisplayID ?
+        pair.first : layout.primary_id);
+  }
 }
 
 void DisplayController::AddObserver(Observer* observer) {
@@ -495,14 +506,8 @@ DisplayController::GetAllRootWindowControllers() {
 
 void DisplayController::SetDefaultDisplayLayout(const DisplayLayout& layout) {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (!command_line->HasSwitch(switches::kAshSecondaryDisplayLayout) &&
-      (default_display_layout_.position != layout.position ||
-       default_display_layout_.offset != layout.offset)) {
+  if (!command_line->HasSwitch(switches::kAshSecondaryDisplayLayout))
     default_display_layout_ = layout;
-    NotifyDisplayConfigurationChanging();
-    UpdateDisplayBoundsForLayout();
-    NotifyDisplayConfigurationChanged();
-  }
 }
 
 void DisplayController::RegisterLayoutForDisplayIdPair(
@@ -540,6 +545,7 @@ void DisplayController::SetLayoutForCurrentDisplays(
   const DisplayLayout& current_layout = paired_layouts_[pair];
   if (to_set.position != current_layout.position ||
       to_set.offset != current_layout.offset) {
+    to_set.primary_id = primary.id();
     paired_layouts_[pair] = to_set;
     NotifyDisplayConfigurationChanging();
     UpdateDisplayBoundsForLayout();
@@ -634,19 +640,13 @@ void DisplayController::SwapPrimaryDisplay() {
 }
 
 void DisplayController::SetPrimaryDisplayId(int64 id) {
-  desired_primary_display_id_ = id;
-
-  if (desired_primary_display_id_ == primary_display_id)
+  DCHECK_NE(gfx::Display::kInvalidDisplayID, id);
+  if (id == gfx::Display::kInvalidDisplayID || primary_display_id == id)
     return;
 
-  internal::DisplayManager* display_manager = GetDisplayManager();
-  for (size_t i = 0; i < display_manager->GetNumDisplays(); ++i) {
-    gfx::Display* display = display_manager->GetDisplayAt(i);
-    if (display->id() == id) {
-      SetPrimaryDisplay(*display);
-      break;
-    }
-  }
+  const gfx::Display& display = GetDisplayManager()->GetDisplayForId(id);
+  if (display.is_valid())
+    SetPrimaryDisplay(display);
 }
 
 void DisplayController::SetPrimaryDisplay(
@@ -689,7 +689,7 @@ void DisplayController::SetPrimaryDisplay(
                                 old_primary_display.id());
 
   primary_display_id = new_primary_display.id();
-  desired_primary_display_id_ = primary_display_id;
+  paired_layouts_[GetCurrentDisplayIdPair()].primary_id = primary_display_id;
 
   display_manager->UpdateWorkAreaOfDisplayNearestWindow(
       primary_root, old_primary_display.GetWorkAreaInsets());
@@ -749,11 +749,11 @@ void DisplayController::OnDisplayAdded(const gfx::Display& display) {
         display_info.GetOverscanInsetsInPixel(),
         display_info.ui_scale());
   } else {
+    if (primary_display_id == gfx::Display::kInvalidDisplayID)
+      primary_display_id = display.id();
     DCHECK(!root_windows_.empty());
     aura::RootWindow* root = AddRootWindowForDisplay(display);
     UpdateDisplayBoundsForLayout();
-    if (desired_primary_display_id_ == display.id())
-      SetPrimaryDisplay(display);
     Shell::GetInstance()->InitRootWindowForSecondaryDisplay(root);
   }
 }
@@ -894,18 +894,33 @@ void DisplayController::UpdateDisplayBoundsForLayout() {
 }
 
 void DisplayController::NotifyDisplayConfigurationChanging() {
+  // |primary_display_id| is invalid during bootstrap.
+  if (primary_display_id == gfx::Display::kInvalidDisplayID)
+    return;
   FOR_EACH_OBSERVER(Observer, observers_, OnDisplayConfigurationChanging());
 }
 
 void DisplayController::NotifyDisplayConfigurationChanged() {
+  // |primary_display_id| is invalid during bootstrap.
+  if (primary_display_id == gfx::Display::kInvalidDisplayID)
+    return;
+
   internal::DisplayManager* display_manager = GetDisplayManager();
   if (display_manager->num_connected_displays() > 1) {
     DisplayIdPair pair = GetCurrentDisplayIdPair();
-    bool exists = paired_layouts_.find(pair) != paired_layouts_.end();
-    if (exists || display_manager->IsMirrored()) {
-      if (!exists)
-        paired_layouts_[pair] = default_display_layout_;
-      paired_layouts_[pair].mirrored = display_manager->IsMirrored();
+    if (paired_layouts_.find(pair) == paired_layouts_.end())
+      paired_layouts_[pair] = default_display_layout_;
+    paired_layouts_[pair].mirrored = display_manager->IsMirrored();
+    if (Shell::GetScreen()->GetNumDisplays() > 1 ) {
+      int64 primary_id = paired_layouts_[pair].primary_id;
+      SetPrimaryDisplayId(
+          primary_id == gfx::Display::kInvalidDisplayID ?
+          pair.first : primary_id);
+      // Update the primary_id in case the above call is
+      // ignored. Happens when a) default layout's primary id
+      // doesn't exist, or b) the primary_id has already been
+      // set to the same and didn't update it.
+      paired_layouts_[pair].primary_id = GetPrimaryDisplay().id();
     }
   }
   FOR_EACH_OBSERVER(Observer, observers_, OnDisplayConfigurationChanged());

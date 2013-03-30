@@ -638,9 +638,8 @@ TEST_F(WorkspaceWindowResizerTest, MAYBE_DontDragOffBottomWithMultiDisplay) {
       Shell::GetPrimaryRootWindow(), gfx::Insets(0, 0, 10, 0));
 
   // Positions the secondary display at the bottom the primary display.
-  ash::DisplayLayout display_layout(ash::DisplayLayout::BOTTOM, 0);
-  Shell::GetInstance()->display_controller()->SetDefaultDisplayLayout(
-      display_layout);
+  Shell::GetInstance()->display_controller()->SetLayoutForCurrentDisplays(
+      ash::DisplayLayout(ash::DisplayLayout::BOTTOM, 0));
 
   {
     window_->SetBounds(gfx::Rect(100, 200, 300, 400));

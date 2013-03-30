@@ -783,6 +783,9 @@ const char kUseSharedProxies[] = "settings.use_shared_proxies";
 // A boolean pref that enables the (private) pepper GetID() call.
 const char kEnableCrosDRM[] = "settings.privacy.drm_enabled";
 
+// Power state of the current displays from the last run.
+const char kDisplayPowerState[] = "settings.display.power_state";
+
 // A dictionary pref that stores per display preferences.
 const char kDisplayProperties[] = "settings.display.properties";
 

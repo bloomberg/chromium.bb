@@ -45,7 +45,8 @@ struct ASH_EXPORT DisplayLayout {
     LEFT
   };
   // Factory method to create DisplayLayout from ints. The |mirrored| is
-  // set to false. Used for persistence and webui.
+  // set to false and |primary_id| is set to gfx::Display::kInvalidDisplayId.
+  // Used for persistence and webui.
   static DisplayLayout FromInts(int position, int offsets);
 
   DisplayLayout();
@@ -71,6 +72,9 @@ struct ASH_EXPORT DisplayLayout {
 
   // True if displays are mirrored.
   bool mirrored;
+
+  // The id of the display used as a primary display.
+  int64 primary_id;
 
   // Returns string representation of the layout for debugging/testing.
   std::string ToString() const;
@@ -247,10 +251,6 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver {
 
   // Display layout per pair of devices.
   std::map<DisplayIdPair, DisplayLayout> paired_layouts_;
-
-  // The ID of the display which should be primary when connected.
-  // kInvalidDisplayID if no such preference is specified.
-  int64 desired_primary_display_id_;
 
   ObserverList<Observer> observers_;
 

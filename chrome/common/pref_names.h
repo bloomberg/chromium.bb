@@ -288,6 +288,7 @@ extern const char kShow3gPromoNotification[];
 extern const char kChromeOSReleaseNotesVersion[];
 extern const char kUseSharedProxies[];
 extern const char kEnableCrosDRM[];
+extern const char kDisplayPowerState[];
 extern const char kDisplayProperties[];
 extern const char kPrimaryDisplayID[];
 extern const char kSecondaryDisplayLayout[];
