@@ -561,3 +561,36 @@ dd {
 .imaged + p {
   clear: right;
 }
+
+/* Tabbed pane with header (tabs) and content */
+tabs {
+  margin: 25px 0;
+  display: block;
+}
+tabs header {
+  display: inline-block;
+  padding: 10px;
+  border: 1px solid #ccc;
+  margin-bottom: 0;
+  background: inherit;
+  border-bottom: 1px solid white;
+  cursor: auto;
+}
+tabs header.unselected {
+  border-bottom: 1px solid #ccc;
+  background: #eee;
+  cursor: pointer;
+}
+tabs content {
+  display: block;
+  padding: 20px;
+  border: 1px solid #ccc;
+  margin-top: -1px;
+}
+tabs content.unselected {
+  display: none;
+}
+tabs content pre {
+  margin: 0;
+  padding: 10px;
+}

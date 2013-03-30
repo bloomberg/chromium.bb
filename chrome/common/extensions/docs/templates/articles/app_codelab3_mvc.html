@@ -21,8 +21,20 @@ as long as they are CSP compliant, can be used in a Chrome App. We will use the 
 
 <ol>
 <li><p>Download the <a href="http://ajax.googleapis.com/ajax/libs/angularjs/1.0.2/angular.min.js">Angular script</a> and save it as <a href="https://github.com/GoogleChrome/chrome-app-codelab/blob/master/lab3_mvc/angularjs/simpleview/angular.min.js">angular.min.js</a>.</p></li>
-<li><p>Change your <a href="https://github.com/GoogleChrome/chrome-app-codelab/blob/master/lab3_mvc/angularjs/simpleview/index.html">index.html</a> to use a simple Angular sample:
-<pre>
+<li><p>Change your <a href="https://github.com/GoogleChrome/chrome-app-codelab/blob/master/lab3_mvc/angularjs/simpleview/index.html">index.html</a> to use a simple Angular sample:</p>
+
+<tabs data-group="source">
+
+  <header tabindex="0" data-value="js">JavaScript</header>
+  <header tabindex="0" data-value="angular">Angular</header>
+
+  <content>
+    <pre>
+      This is where the pure javascript code comes in
+    </pre>
+  </content>
+  <content>
+    <pre>
 &lt;html ng-app ng-csp&gt;
   &lt;head&gt;
     &lt;script src=&quot;angular.min.js&quot;&gt;&lt;/script&gt;
@@ -41,7 +53,12 @@ as long as they are CSP compliant, can be used in a Chrome App. We will use the 
     &lt;/div&gt;
   &lt;/body&gt;
 &lt;/html&gt;
-</pre></p></li>
+    </pre>
+  </content>
+
+</tabs>
+
+</li>
 <li><p>Add a simple stylesheet: <a href="https://github.com/GoogleChrome/chrome-app-codelab/blob/master/lab3_mvc/angularjs/simpleview/todo.css">todo.css</a>
 <pre>
 body {
