@@ -225,6 +225,12 @@ static bool LayerShouldBeSkipped(LayerType* layer) {
 }
 
 static inline bool SubtreeShouldBeSkipped(LayerImpl* layer) {
+  // If layer is on the pending tree and opacity is being animated then
+  // this subtree can't be skipped as we need to create, prioritize and
+  // include tiles for this layer when deciding if tree can be activated.
+  if (layer->layer_tree_impl()->IsPendingTree() && layer->OpacityIsAnimating())
+    return false;
+
   // The opacity of a layer always applies to its children (either implicitly
   // via a render surface or explicitly if the parent preserves 3D), so the
   // entire subtree can be skipped if this layer is fully transparent.

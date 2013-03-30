@@ -7964,6 +7964,56 @@ TEST(LayerTreeHostCommonTest, TransparentChildRenderSurfaceCreation) {
   EXPECT_FALSE(child->render_surface());
 }
 
+TEST(LayerTreeHostCommonTest, OpacityAnimatingOnPendingTree) {
+  FakeImplProxy proxy;
+  FakeLayerTreeHostImpl host_impl(&proxy);
+  host_impl.CreatePendingTree();
+  scoped_ptr<LayerImpl> root = LayerImpl::Create(host_impl.pending_tree(), 1);
+
+  const gfx::Transform identity_matrix;
+  SetLayerPropertiesForTesting(root.get(),
+                               identity_matrix,
+                               identity_matrix,
+                               gfx::PointF(),
+                               gfx::PointF(),
+                               gfx::Size(100, 100),
+                               false);
+  root->SetDrawsContent(true);
+
+  scoped_ptr<LayerImpl> child = LayerImpl::Create(host_impl.pending_tree(), 2);
+  SetLayerPropertiesForTesting(child.get(),
+                               identity_matrix,
+                               identity_matrix,
+                               gfx::PointF(),
+                               gfx::PointF(),
+                               gfx::Size(50, 50),
+                               false);
+  child->SetDrawsContent(true);
+  child->SetOpacity(0.0f);
+
+  // Add opacity animation.
+  AddOpacityTransitionToController(
+      child->layer_animation_controller(), 10.0, 0.0f, 1.0f, false);
+
+  root->AddChild(child.Pass());
+
+  std::vector<LayerImpl*> render_surface_layer_list;
+  int dummy_max_texture_size = 512;
+  LayerTreeHostCommon::CalculateDrawProperties(root.get(),
+                                               root->bounds(),
+                                               1.f,
+                                               1.f,
+                                               dummy_max_texture_size,
+                                               false,
+                                               &render_surface_layer_list,
+                                               false);
+
+  // We should have one render surface and two layers. The child
+  // layer should be included even though it is transparent.
+  ASSERT_EQ(1u, render_surface_layer_list.size());
+  ASSERT_EQ(2u, root->render_surface()->layer_list().size());
+}
+
 typedef std::tr1::tuple<bool, bool> LCDTextTestParam;
 class LCDTextTest : public testing::TestWithParam<LCDTextTestParam> {
  protected:
