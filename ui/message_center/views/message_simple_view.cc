@@ -60,6 +60,12 @@ gfx::Size MessageSimpleView::GetPreferredSize() {
   return size;
 }
 
+int MessageSimpleView::GetHeightForWidth(int width) {
+  if (!content_view_)
+    return 0;
+  return content_view_->GetHeightForWidth(width);
+}
+
 void MessageSimpleView::SetUpView(const Notification& notification) {
   views::ImageView* icon = new views::ImageView;
   icon->SetImageSize(
