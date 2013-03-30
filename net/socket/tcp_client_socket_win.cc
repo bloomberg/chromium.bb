@@ -343,8 +343,7 @@ TCPClientSocketWin::TCPClientSocketWin(const AddressList& addresses,
       next_connect_state_(CONNECT_STATE_NONE),
       connect_os_error_(0),
       net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_SOCKET)),
-      previously_disconnected_(false),
-      num_bytes_read_(0) {
+      previously_disconnected_(false) {
   net_log_.BeginEvent(NetLog::TYPE_SOCKET_ALIVE,
                       source.ToEventParametersCallback());
   EnsureWinsockInit();
@@ -501,7 +500,6 @@ int TCPClientSocketWin::DoConnect() {
   SockaddrStorage storage;
   if (!endpoint.ToSockAddr(storage.addr, &storage.addr_len))
     return ERR_INVALID_ARGUMENT;
-  connect_start_time_ = base::TimeTicks::Now();
   if (!connect(socket_, storage.addr, storage.addr_len)) {
     // Connected without waiting!
     //
@@ -542,7 +540,6 @@ int TCPClientSocketWin::DoConnectComplete(int result) {
   }
 
   if (result == OK) {
-    connect_time_micros_ = base::TimeTicks::Now() - connect_start_time_;
     use_history_.set_was_ever_connected();
     return OK;  // Done!
   }
@@ -691,14 +688,6 @@ bool TCPClientSocketWin::WasEverUsed() const {
 bool TCPClientSocketWin::UsingTCPFastOpen() const {
   // Not supported on windows.
   return false;
-}
-
-int64 TCPClientSocketWin::NumBytesRead() const {
-  return num_bytes_read_;
-}
-
-base::TimeDelta TCPClientSocketWin::GetConnectTimeMicros() const {
-  return connect_time_micros_;
 }
 
 bool TCPClientSocketWin::WasNpnNegotiated() const {
@@ -854,7 +843,6 @@ int TCPClientSocketWin::DoRead(IOBuffer* buf, int buf_len,
       if (rv > 0) {
         use_history_.set_was_used_to_convey_data();
         read_bytes.Add(rv);
-        num_bytes_read_ += rv;
       }
       net_log_.AddByteTransferEvent(NetLog::TYPE_SOCKET_BYTES_RECEIVED, rv,
                                     buf->data());
@@ -879,7 +867,6 @@ int TCPClientSocketWin::DoRead(IOBuffer* buf, int buf_len,
         if (num > 0) {
           use_history_.set_was_used_to_convey_data();
           read_bytes.Add(num);
-          num_bytes_read_ += num;
         }
         net_log_.AddByteTransferEvent(NetLog::TYPE_SOCKET_BYTES_RECEIVED, num,
                                       buf->data());
@@ -962,7 +949,6 @@ void TCPClientSocketWin::DidCompleteRead() {
   if (ok) {
     base::StatsCounter read_bytes("tcp.read_bytes");
     read_bytes.Add(num_bytes);
-    num_bytes_read_ += num_bytes;
     if (num_bytes > 0)
       use_history_.set_was_used_to_convey_data();
     net_log_.AddByteTransferEvent(NetLog::TYPE_SOCKET_BYTES_RECEIVED,

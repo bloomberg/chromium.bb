@@ -5,7 +5,6 @@
 #ifndef NET_SOCKET_STREAM_SOCKET_H_
 #define NET_SOCKET_STREAM_SOCKET_H_
 
-#include "base/time.h"
 #include "net/base/net_log.h"
 #include "net/socket/next_proto.h"
 #include "net/socket/socket.h"
@@ -79,12 +78,6 @@ class NET_EXPORT_PRIVATE StreamSocket : public Socket {
   // Returns true if the underlying transport socket is using TCP FastOpen.
   // TCP FastOpen is an experiment with sending data in the TCP SYN packet.
   virtual bool UsingTCPFastOpen() const = 0;
-
-  // Returns the number of bytes successfully read from this socket.
-  virtual int64 NumBytesRead() const = 0;
-
-  // Returns the connection setup time of this socket.
-  virtual base::TimeDelta GetConnectTimeMicros() const = 0;
 
   // Returns true if NPN was negotiated during the connection of this socket.
   virtual bool WasNpnNegotiated() const = 0;

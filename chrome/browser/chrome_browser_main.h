@@ -6,9 +6,7 @@
 #define CHROME_BROWSER_CHROME_BROWSER_MAIN_H_
 
 #include "base/basictypes.h"
-#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/metrics/field_trial.h"
 #include "base/tracked_objects.h"
 #include "chrome/browser/chrome_browser_field_trials.h"
@@ -199,11 +197,6 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   // network stack, as this can only be done once.
   static bool disable_enforcing_cookie_policies_for_tests_;
 
-  friend class BrowserMainTest;
-  FRIEND_TEST_ALL_PREFIXES(BrowserMainTest,
-                           WarmConnectionFieldTrial_WarmestSocket);
-  FRIEND_TEST_ALL_PREFIXES(BrowserMainTest, WarmConnectionFieldTrial_Random);
-  FRIEND_TEST_ALL_PREFIXES(BrowserMainTest, WarmConnectionFieldTrial_Invalid);
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainParts);
 };
 

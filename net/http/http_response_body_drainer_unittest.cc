@@ -122,8 +122,6 @@ class MockHttpStream : public HttpStream {
 
   virtual bool IsSpdyHttpStream() const OVERRIDE { return false; }
 
-  virtual void LogNumRttVsBytesMetrics() const OVERRIDE {}
-
   virtual bool GetLoadTimingInfo(
       LoadTimingInfo* load_timing_info) const OVERRIDE { return false; }
 

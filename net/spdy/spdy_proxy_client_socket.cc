@@ -173,14 +173,6 @@ bool SpdyProxyClientSocket::UsingTCPFastOpen() const {
   return false;
 }
 
-int64 SpdyProxyClientSocket::NumBytesRead() const {
-  return -1;
-}
-
-base::TimeDelta SpdyProxyClientSocket::GetConnectTimeMicros() const {
-  return base::TimeDelta::FromMicroseconds(-1);
-}
-
 bool SpdyProxyClientSocket::WasNpnNegotiated() const {
   return false;
 }

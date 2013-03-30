@@ -7,7 +7,6 @@
 
 #include "base/basictypes.h"
 #include "base/command_line.h"
-#include "base/gtest_prod_util.h"
 #include "base/time.h"
 
 class PrefService;
@@ -22,11 +21,6 @@ class ChromeBrowserFieldTrials {
   void SetupFieldTrials(PrefService* local_state);
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(BrowserMainTest,
-                           WarmConnectionFieldTrial_WarmestSocket);
-  FRIEND_TEST_ALL_PREFIXES(BrowserMainTest, WarmConnectionFieldTrial_Random);
-  FRIEND_TEST_ALL_PREFIXES(BrowserMainTest, WarmConnectionFieldTrial_Invalid);
-
   // Sets up common desktop-only field trials.
   // Add an invocation of your field trial init function to this method, or to
   // SetupFieldTrials if it is for all platforms.
@@ -40,9 +34,6 @@ class ChromeBrowserFieldTrials {
 
   // A/B test for spdy when --use-spdy not set.
   void SpdyFieldTrial();
-
-  // A/B test for warmest socket vs. most recently used socket.
-  void WarmConnectionFieldTrial();
 
   // Field trial to see what disabling DNS pre-resolution does to
   // latency of page loads.

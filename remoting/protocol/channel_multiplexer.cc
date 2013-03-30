@@ -164,14 +164,6 @@ class ChannelMultiplexer::MuxSocket : public net::StreamSocket,
   virtual bool UsingTCPFastOpen() const OVERRIDE {
     return false;
   }
-  virtual int64 NumBytesRead() const OVERRIDE {
-    NOTIMPLEMENTED();
-    return 0;
-  }
-  virtual base::TimeDelta GetConnectTimeMicros() const OVERRIDE {
-    NOTIMPLEMENTED();
-    return base::TimeDelta();
-  }
   virtual bool WasNpnNegotiated() const OVERRIDE {
     return false;
   }

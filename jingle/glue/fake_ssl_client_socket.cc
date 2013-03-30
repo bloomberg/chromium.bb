@@ -330,14 +330,6 @@ bool FakeSSLClientSocket::UsingTCPFastOpen() const {
   return transport_socket_->UsingTCPFastOpen();
 }
 
-int64 FakeSSLClientSocket::NumBytesRead() const {
-  return transport_socket_->NumBytesRead();
-}
-
-base::TimeDelta FakeSSLClientSocket::GetConnectTimeMicros() const {
-  return transport_socket_->GetConnectTimeMicros();
-}
-
 bool FakeSSLClientSocket::WasNpnNegotiated() const {
   return transport_socket_->WasNpnNegotiated();
 }

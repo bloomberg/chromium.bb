@@ -336,7 +336,6 @@ extern const char kSilentDumpOnDCHECK[];
 extern const char kSimulateUpgrade[];
 extern const char kSimulateCriticalUpdate[];
 extern const char kSimulateOutdated[];
-extern const char kSocketReusePolicy[];
 extern const char kSpeculativeResourcePrefetching[];
 extern const char kSpeculativeResourcePrefetchingDisabled[];
 extern const char kSpeculativeResourcePrefetchingLearning[];

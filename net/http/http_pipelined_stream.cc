@@ -117,10 +117,6 @@ bool HttpPipelinedStream::IsSpdyHttpStream() const {
   return false;
 }
 
-void HttpPipelinedStream::LogNumRttVsBytesMetrics() const {
-  // TODO(simonjam): I don't want to copy & paste this from http_basic_stream.
-}
-
 void HttpPipelinedStream::Drain(HttpNetworkSession* session) {
   pipeline_->Drain(this, session);
 }

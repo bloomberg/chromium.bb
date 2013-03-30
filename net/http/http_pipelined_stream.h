@@ -79,8 +79,6 @@ class HttpPipelinedStream : public HttpStream {
 
   virtual bool IsSpdyHttpStream() const OVERRIDE;
 
-  virtual void LogNumRttVsBytesMetrics() const OVERRIDE;
-
   virtual void Drain(HttpNetworkSession* session) OVERRIDE;
 
   // The SSLConfig used to establish this stream's pipeline.

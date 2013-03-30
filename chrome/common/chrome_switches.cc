@@ -1271,10 +1271,6 @@ const char kSimulateOutdated[]               = "simulate-outdated";
 // Replaces the buffered data source for <audio> and <video> with a simplified
 // resource loader that downloads the entire resource into memory.
 
-// Socket reuse policy. The value should be of type enum
-// ClientSocketReusePolicy.
-const char kSocketReusePolicy[]             = "socket-reuse-policy";
-
 // Origin for which SpdyProxy authentication is supported.
 const char kSpdyProxyAuthOrigin[]           = "spdy-proxy-auth-origin";
 

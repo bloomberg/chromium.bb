@@ -520,7 +520,6 @@
         'browser/captive_portal/testing_utils.cc',
         'browser/captive_portal/testing_utils.h',
         'browser/chrome_browser_application_mac_unittest.mm',
-        'browser/chrome_browser_main_unittest.cc',
         'browser/chrome_page_zoom_unittest.cc',
         'browser/chromeos/accessibility/magnification_manager_unittest.cc',
         'browser/chromeos/contacts/contact_database_unittest.cc',

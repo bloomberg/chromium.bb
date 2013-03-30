@@ -111,14 +111,6 @@ bool BufferedWriteStreamSocket::UsingTCPFastOpen() const {
   return wrapped_socket_->UsingTCPFastOpen();
 }
 
-int64 BufferedWriteStreamSocket::NumBytesRead() const {
-  return wrapped_socket_->NumBytesRead();
-}
-
-base::TimeDelta BufferedWriteStreamSocket::GetConnectTimeMicros() const {
-  return wrapped_socket_->GetConnectTimeMicros();
-}
-
 bool BufferedWriteStreamSocket::WasNpnNegotiated() const {
   return wrapped_socket_->WasNpnNegotiated();
 }

@@ -142,22 +142,6 @@ bool SOCKS5ClientSocket::UsingTCPFastOpen() const {
   return false;
 }
 
-int64 SOCKS5ClientSocket::NumBytesRead() const {
-  if (transport_.get() && transport_->socket()) {
-    return transport_->socket()->NumBytesRead();
-  }
-  NOTREACHED();
-  return -1;
-}
-
-base::TimeDelta SOCKS5ClientSocket::GetConnectTimeMicros() const {
-  if (transport_.get() && transport_->socket()) {
-    return transport_->socket()->GetConnectTimeMicros();
-  }
-  NOTREACHED();
-  return base::TimeDelta::FromMicroseconds(-1);
-}
-
 bool SOCKS5ClientSocket::WasNpnNegotiated() const {
   if (transport_.get() && transport_->socket()) {
     return transport_->socket()->WasNpnNegotiated();

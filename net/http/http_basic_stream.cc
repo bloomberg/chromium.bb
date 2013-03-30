@@ -4,8 +4,6 @@
 
 #include "net/http/http_basic_stream.h"
 
-#include "base/format_macros.h"
-#include "base/metrics/histogram.h"
 #include "base/stringprintf.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -15,7 +13,6 @@
 #include "net/http/http_stream_parser.h"
 #include "net/http/http_util.h"
 #include "net/socket/client_socket_handle.h"
-#include "net/socket/client_socket_pool_base.h"
 
 namespace net {
 
@@ -26,9 +23,7 @@ HttpBasicStream::HttpBasicStream(ClientSocketHandle* connection,
       parser_(parser),
       connection_(connection),
       using_proxy_(using_proxy),
-      request_info_(NULL),
-      response_(NULL),
-      bytes_read_offset_(0) {
+      request_info_(NULL) {
 }
 
 HttpBasicStream::~HttpBasicStream() {}
@@ -42,7 +37,6 @@ int HttpBasicStream::InitializeStream(
   request_info_ = request_info;
   parser_.reset(new HttpStreamParser(connection_.get(), request_info,
                                      read_buf_, net_log));
-  bytes_read_offset_ = connection_->socket()->NumBytesRead();
   return OK;
 }
 
@@ -58,7 +52,6 @@ int HttpBasicStream::SendRequest(const HttpRequestHeaders& headers,
   request_line_ = base::StringPrintf("%s %s HTTP/1.1\r\n",
                                      request_info_->method.c_str(),
                                      path.c_str());
-  response_ = response;
   return parser_->SendRequest(request_line_, headers, response, callback);
 }
 
@@ -126,10 +119,6 @@ void HttpBasicStream::GetSSLCertRequestInfo(
 
 bool HttpBasicStream::IsSpdyHttpStream() const {
   return false;
-}
-
-void HttpBasicStream::LogNumRttVsBytesMetrics() const {
-  // Log rtt metrics here.
 }
 
 void HttpBasicStream::Drain(HttpNetworkSession* session) {

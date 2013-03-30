@@ -665,8 +665,6 @@ class MockTCPClientSocket : public MockClientSocket, public AsyncSocket {
   virtual int GetPeerAddress(IPEndPoint* address) const OVERRIDE;
   virtual bool WasEverUsed() const OVERRIDE;
   virtual bool UsingTCPFastOpen() const OVERRIDE;
-  virtual int64 NumBytesRead() const OVERRIDE;
-  virtual base::TimeDelta GetConnectTimeMicros() const OVERRIDE;
   virtual bool WasNpnNegotiated() const OVERRIDE;
   virtual bool GetSSLInfo(SSLInfo* ssl_info) OVERRIDE;
 
@@ -680,7 +678,6 @@ class MockTCPClientSocket : public MockClientSocket, public AsyncSocket {
 
   SocketDataProvider* data_;
   int read_offset_;
-  int num_bytes_read_;
   MockRead read_data_;
   bool need_read_data_;
 
@@ -725,8 +722,6 @@ class DeterministicMockTCPClientSocket
   virtual bool IsConnectedAndIdle() const OVERRIDE;
   virtual bool WasEverUsed() const OVERRIDE;
   virtual bool UsingTCPFastOpen() const OVERRIDE;
-  virtual int64 NumBytesRead() const OVERRIDE;
-  virtual base::TimeDelta GetConnectTimeMicros() const OVERRIDE;
   virtual bool WasNpnNegotiated() const OVERRIDE;
   virtual bool GetSSLInfo(SSLInfo* ssl_info) OVERRIDE;
 
@@ -769,9 +764,7 @@ class MockSSLClientSocket : public MockClientSocket, public AsyncSocket {
   virtual bool IsConnected() const OVERRIDE;
   virtual bool WasEverUsed() const OVERRIDE;
   virtual bool UsingTCPFastOpen() const OVERRIDE;
-  virtual int64 NumBytesRead() const OVERRIDE;
   virtual int GetPeerAddress(IPEndPoint* address) const OVERRIDE;
-  virtual base::TimeDelta GetConnectTimeMicros() const OVERRIDE;
   virtual bool WasNpnNegotiated() const OVERRIDE;
   virtual bool GetSSLInfo(SSLInfo* ssl_info) OVERRIDE;
 

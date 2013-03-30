@@ -52,7 +52,6 @@ class NET_EXPORT_PRIVATE QuicHttpStream :
   virtual void GetSSLCertRequestInfo(
       SSLCertRequestInfo* cert_request_info) OVERRIDE;
   virtual bool IsSpdyHttpStream() const OVERRIDE;
-  virtual void LogNumRttVsBytesMetrics() const OVERRIDE {}
   virtual void Drain(HttpNetworkSession* session) OVERRIDE;
 
   // QuicReliableClientStream::Delegate implementation

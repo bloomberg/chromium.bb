@@ -196,16 +196,6 @@ bool FakeSocket::UsingTCPFastOpen() const {
   return true;
 }
 
-int64 FakeSocket::NumBytesRead() const {
-  NOTIMPLEMENTED();
-  return 0;
-}
-
-base::TimeDelta FakeSocket::GetConnectTimeMicros() const {
-  NOTIMPLEMENTED();
-  return base::TimeDelta();
-}
-
 bool FakeSocket::WasNpnNegotiated() const {
   return false;
 }

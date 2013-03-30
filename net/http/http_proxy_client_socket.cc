@@ -184,22 +184,6 @@ bool HttpProxyClientSocket::UsingTCPFastOpen() const {
   return false;
 }
 
-int64 HttpProxyClientSocket::NumBytesRead() const {
-  if (transport_.get() && transport_->socket()) {
-    return transport_->socket()->NumBytesRead();
-  }
-  NOTREACHED();
-  return -1;
-}
-
-base::TimeDelta HttpProxyClientSocket::GetConnectTimeMicros() const {
-  if (transport_.get() && transport_->socket()) {
-    return transport_->socket()->GetConnectTimeMicros();
-  }
-  NOTREACHED();
-  return base::TimeDelta::FromMicroseconds(-1);
-}
-
 bool HttpProxyClientSocket::WasNpnNegotiated() const {
   if (transport_.get() && transport_->socket()) {
     return transport_->socket()->WasNpnNegotiated();

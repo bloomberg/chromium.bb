@@ -53,8 +53,6 @@ class NET_EXPORT_PRIVATE TCPClientSocketLibevent : public StreamSocket,
   virtual void SetOmniboxSpeculation() OVERRIDE;
   virtual bool WasEverUsed() const OVERRIDE;
   virtual bool UsingTCPFastOpen() const OVERRIDE;
-  virtual int64 NumBytesRead() const OVERRIDE;
-  virtual base::TimeDelta GetConnectTimeMicros() const OVERRIDE;
   virtual bool WasNpnNegotiated() const OVERRIDE;
   virtual NextProto GetNegotiatedProtocol() const OVERRIDE;
   virtual bool GetSSLInfo(SSLInfo* ssl_info) OVERRIDE;
@@ -195,10 +193,6 @@ class NET_EXPORT_PRIVATE TCPClientSocketLibevent : public StreamSocket,
 
   // True when TCP FastOpen is in use and we have done the connect.
   bool tcp_fastopen_connected_;
-
-  base::TimeTicks connect_start_time_;
-  base::TimeDelta connect_time_micros_;
-  int64 num_bytes_read_;
 
   DISALLOW_COPY_AND_ASSIGN(TCPClientSocketLibevent);
 };

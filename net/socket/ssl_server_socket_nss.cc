@@ -293,14 +293,6 @@ bool SSLServerSocketNSS::UsingTCPFastOpen() const {
   return transport_socket_->UsingTCPFastOpen();
 }
 
-int64 SSLServerSocketNSS::NumBytesRead() const {
-  return transport_socket_->NumBytesRead();
-}
-
-base::TimeDelta SSLServerSocketNSS::GetConnectTimeMicros() const {
-  return transport_socket_->GetConnectTimeMicros();
-}
-
 bool SSLServerSocketNSS::WasNpnNegotiated() const {
   return false;
 }

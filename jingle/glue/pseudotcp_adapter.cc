@@ -563,16 +563,6 @@ bool PseudoTcpAdapter::UsingTCPFastOpen() const {
   return false;
 }
 
-int64 PseudoTcpAdapter::NumBytesRead() const {
-  DCHECK(CalledOnValidThread());
-  return -1;
-}
-
-base::TimeDelta PseudoTcpAdapter::GetConnectTimeMicros() const {
-  DCHECK(CalledOnValidThread());
-  return base::TimeDelta::FromMicroseconds(-1);
-}
-
 bool PseudoTcpAdapter::WasNpnNegotiated() const {
   DCHECK(CalledOnValidThread());
   return false;

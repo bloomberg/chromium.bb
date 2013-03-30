@@ -125,10 +125,6 @@ class MockClientSocket : public StreamSocket {
   virtual void SetOmniboxSpeculation() OVERRIDE {}
   virtual bool WasEverUsed() const OVERRIDE { return false; }
   virtual bool UsingTCPFastOpen() const OVERRIDE { return false; }
-  virtual int64 NumBytesRead() const OVERRIDE { return -1; }
-  virtual base::TimeDelta GetConnectTimeMicros() const OVERRIDE {
-    return base::TimeDelta::FromMicroseconds(-1);
-  }
   virtual bool WasNpnNegotiated() const OVERRIDE {
     return false;
   }
@@ -191,10 +187,6 @@ class MockFailingClientSocket : public StreamSocket {
   virtual void SetOmniboxSpeculation() OVERRIDE {}
   virtual bool WasEverUsed() const OVERRIDE { return false; }
   virtual bool UsingTCPFastOpen() const OVERRIDE { return false; }
-  virtual int64 NumBytesRead() const OVERRIDE { return -1; }
-  virtual base::TimeDelta GetConnectTimeMicros() const OVERRIDE {
-    return base::TimeDelta::FromMicroseconds(-1);
-  }
   virtual bool WasNpnNegotiated() const OVERRIDE {
     return false;
   }
@@ -282,10 +274,6 @@ class MockPendingClientSocket : public StreamSocket {
   virtual void SetOmniboxSpeculation() OVERRIDE {}
   virtual bool WasEverUsed() const OVERRIDE { return false; }
   virtual bool UsingTCPFastOpen() const OVERRIDE { return false; }
-  virtual int64 NumBytesRead() const OVERRIDE { return -1; }
-  virtual base::TimeDelta GetConnectTimeMicros() const OVERRIDE {
-    return base::TimeDelta::FromMicroseconds(-1);
-  }
   virtual bool WasNpnNegotiated() const OVERRIDE {
     return false;
   }

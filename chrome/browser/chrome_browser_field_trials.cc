@@ -30,7 +30,6 @@
 #include "chrome/common/metrics/variations/uniformity_field_trials.h"
 #include "chrome/common/metrics/variations/variations_util.h"
 #include "chrome/common/pref_names.h"
-#include "net/socket/client_socket_pool_base.h"
 #include "net/spdy/spdy_session.h"
 #include "ui/base/layout.h"
 
@@ -38,23 +37,9 @@
 #include "net/socket/tcp_client_socket_win.h"
 #endif  // defined(OS_WIN)
 
-namespace {
-
-void SetSocketReusePolicy(int warmest_socket_trial_group,
-                          const int socket_policy[],
-                          int num_groups) {
-  const int* result = std::find(socket_policy, socket_policy + num_groups,
-                                warmest_socket_trial_group);
-  DCHECK_NE(result, socket_policy + num_groups)
-      << "Not a valid socket reuse policy group";
-  net::SetSocketReusePolicy(result - socket_policy);
-}
-
-}  // namespace
-
 ChromeBrowserFieldTrials::ChromeBrowserFieldTrials(
-    const CommandLine& parsed_command_line) :
-        parsed_command_line_(parsed_command_line) {
+    const CommandLine& parsed_command_line)
+    : parsed_command_line_(parsed_command_line) {
 }
 
 ChromeBrowserFieldTrials::~ChromeBrowserFieldTrials() {
@@ -75,7 +60,6 @@ void ChromeBrowserFieldTrials::SetupDesktopFieldTrials(
     PrefService* local_state) {
   prerender::ConfigurePrefetchAndPrerender(parsed_command_line_);
   SpdyFieldTrial();
-  WarmConnectionFieldTrial();
   AutoLaunchChromeFieldTrial();
   gpu_util::InitializeCompositingFieldTrial();
   OmniboxFieldTrial::ActivateStaticTrials();
@@ -123,47 +107,6 @@ void ChromeBrowserFieldTrials::SpdyFieldTrial() {
   trial->AppendGroup("cwnd16", kSpdyCwnd16);
   trial->AppendGroup("cwndMin16", kSpdyCwndMin16);
   trial->AppendGroup("cwndMin10", kSpdyCwndMin10);
-}
-
-// If --socket-reuse-policy is not specified, run an A/B test for choosing the
-// warmest socket.
-void ChromeBrowserFieldTrials::WarmConnectionFieldTrial() {
-  const CommandLine& command_line = parsed_command_line_;
-  if (command_line.HasSwitch(switches::kSocketReusePolicy)) {
-    std::string socket_reuse_policy_str = command_line.GetSwitchValueASCII(
-        switches::kSocketReusePolicy);
-    int policy = -1;
-    base::StringToInt(socket_reuse_policy_str, &policy);
-
-    const int policy_list[] = { 0, 1, 2 };
-    VLOG(1) << "Setting socket_reuse_policy = " << policy;
-    SetSocketReusePolicy(policy, policy_list, arraysize(policy_list));
-    return;
-  }
-
-  const base::FieldTrial::Probability kWarmSocketDivisor = 100;
-  const base::FieldTrial::Probability kWarmSocketProbability = 33;
-
-  // Default value is USE_LAST_ACCESSED_SOCKET.
-  int last_accessed_socket = -1;
-
-  // After January 30, 2013 builds, it will always be in default group.
-  scoped_refptr<base::FieldTrial> warmest_socket_trial(
-      base::FieldTrialList::FactoryGetFieldTrial(
-          "WarmSocketImpact", kWarmSocketDivisor, "last_accessed_socket",
-          2013, 1, 30, &last_accessed_socket));
-
-  const int warmest_socket = warmest_socket_trial->AppendGroup(
-      "warmest_socket", kWarmSocketProbability);
-  const int warm_socket = warmest_socket_trial->AppendGroup(
-      "warm_socket", kWarmSocketProbability);
-
-  const int warmest_socket_trial_group = warmest_socket_trial->group();
-
-  const int policy_list[] = { warmest_socket, warm_socket,
-                              last_accessed_socket };
-  SetSocketReusePolicy(warmest_socket_trial_group, policy_list,
-                       arraysize(policy_list));
 }
 
 void ChromeBrowserFieldTrials::AutoLaunchChromeFieldTrial() {

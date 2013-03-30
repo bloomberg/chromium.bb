@@ -87,12 +87,6 @@ class ReadBufferingStreamSocket : public net::StreamSocket {
   virtual bool UsingTCPFastOpen() const OVERRIDE {
     return transport_->UsingTCPFastOpen();
   }
-  virtual int64 NumBytesRead() const OVERRIDE {
-    return transport_->NumBytesRead();
-  }
-  virtual base::TimeDelta GetConnectTimeMicros() const OVERRIDE {
-    return transport_->GetConnectTimeMicros();
-  }
   virtual bool WasNpnNegotiated() const OVERRIDE {
     return transport_->WasNpnNegotiated();
   }

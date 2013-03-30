@@ -137,8 +137,7 @@ TCPClientSocketLibevent::TCPClientSocketLibevent(
       net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_SOCKET)),
       previously_disconnected_(false),
       use_tcp_fastopen_(IsTCPFastOpenEnabled()),
-      tcp_fastopen_connected_(false),
-      num_bytes_read_(0) {
+      tcp_fastopen_connected_(false) {
   net_log_.BeginEvent(NetLog::TYPE_SOCKET_ALIVE,
                       source.ToEventParametersCallback());
 }
@@ -294,7 +293,6 @@ int TCPClientSocketLibevent::DoConnect() {
     if (!endpoint.ToSockAddr(storage.addr, &storage.addr_len))
       return ERR_INVALID_ARGUMENT;
 
-    connect_start_time_ = base::TimeTicks::Now();
     if (!HANDLE_EINTR(connect(socket_, storage.addr, storage.addr_len))) {
       // Connected without waiting!
       return OK;
@@ -335,7 +333,6 @@ int TCPClientSocketLibevent::DoConnectComplete(int result) {
   }
 
   if (result == OK) {
-    connect_time_micros_ = base::TimeTicks::Now() - connect_start_time_;
     write_socket_watcher_.StopWatchingFileDescriptor();
     use_history_.set_was_ever_connected();
     return OK;  // Done!
@@ -439,7 +436,6 @@ int TCPClientSocketLibevent::Read(IOBuffer* buf,
   if (nread >= 0) {
     base::StatsCounter read_bytes("tcp.read_bytes");
     read_bytes.Add(nread);
-    num_bytes_read_ += static_cast<int64>(nread);
     if (nread > 0)
       use_history_.set_was_used_to_convey_data();
     net_log_.AddByteTransferEvent(NetLog::TYPE_SOCKET_BYTES_RECEIVED, nread,
@@ -668,7 +664,6 @@ void TCPClientSocketLibevent::DidCompleteRead() {
     result = bytes_transferred;
     base::StatsCounter read_bytes("tcp.read_bytes");
     read_bytes.Add(bytes_transferred);
-    num_bytes_read_ += static_cast<int64>(bytes_transferred);
     if (bytes_transferred > 0)
       use_history_.set_was_used_to_convey_data();
     net_log_.AddByteTransferEvent(NetLog::TYPE_SOCKET_BYTES_RECEIVED, result,
@@ -767,14 +762,6 @@ bool TCPClientSocketLibevent::WasEverUsed() const {
 
 bool TCPClientSocketLibevent::UsingTCPFastOpen() const {
   return use_tcp_fastopen_;
-}
-
-int64 TCPClientSocketLibevent::NumBytesRead() const {
-  return num_bytes_read_;
-}
-
-base::TimeDelta TCPClientSocketLibevent::GetConnectTimeMicros() const {
-  return connect_time_micros_;
 }
 
 bool TCPClientSocketLibevent::WasNpnNegotiated() const {

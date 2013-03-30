@@ -15,7 +15,6 @@
 #include "base/files/file_path.h"
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/metrics/histogram.h"
 #include "base/string_util.h"
 #include "base/test/test_file_util.h"
 #include "base/utf_string_conversions.h"

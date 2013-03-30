@@ -36,10 +36,6 @@ class NET_EXPORT_PRIVATE HttpStream : public HttpStreamBase {
   // subclass does not support renewing the stream, NULL is returned.
   virtual HttpStream* RenewStreamForAuth() = 0;
 
-  // Record histogram of number of round trips taken to download the full
-  // response body vs bytes transferred.
-  virtual void LogNumRttVsBytesMetrics() const = 0;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(HttpStream);
 };
