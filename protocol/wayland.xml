@@ -1391,29 +1391,48 @@
   </interface>
 
   <interface name="wl_touch" version="1">
-    <description summary="touch screen input device">
+    <description summary="touchscreen input device">
+      The wl_touch interface represents a touchscreen
+      associated with a seat.
+
+      Touch interactions can consist of one or more contacts.
+      For each contact, a series of events is generated, starting
+      with a down event, followed by one or more motion events,
+      and ended with an up event. Events relating to the same
+      contact point can be identified by the ID of the sequence.
     </description>
 
     <event name="down">
+      <description summary="touch down event">
+        Notifies the client of a new contact point on one
+        of its surfaces.
+      </description>
       <arg name="serial" type="uint"/>
       <arg name="time" type="uint"/>
       <arg name="surface" type="object" interface="wl_surface"/>
-      <arg name="id" type="int" />
-      <arg name="x" type="fixed" />
-      <arg name="y" type="fixed" />
+      <arg name="id" type="int" summary="ID of the touch sequence"/>
+      <arg name="x" type="fixed"/>
+      <arg name="y" type="fixed"/>
     </event>
 
     <event name="up">
+      <description summary="touch up event">
+        Notifies the client that a touch has ended.
+      </description>
       <arg name="serial" type="uint"/>
       <arg name="time" type="uint"/>
-      <arg name="id" type="int" />
+      <arg name="id" type="int"/>
     </event>
 
     <event name="motion">
+      <description summary="touch motion event">
+        Notifies the client that the position of a contact point
+        has changed.
+      </description>
       <arg name="time" type="uint"/>
-      <arg name="id" type="int" />
-      <arg name="x" type="fixed" />
-      <arg name="y" type="fixed" />
+      <arg name="id" type="int" summary="ID of the touch sequence"/>
+      <arg name="x" type="fixed"/>
+      <arg name="y" type="fixed"/>
     </event>
 
     <event name="frame">
@@ -1430,7 +1449,6 @@
       </description>
     </event>
   </interface>
-
 
   <interface name="wl_output" version="1">
     <description summary="compositor output region">
