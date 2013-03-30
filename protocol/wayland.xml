@@ -1552,18 +1552,21 @@
 
   <interface name="wl_region" version="1">
     <description summary="region interface">
-      Region.
+      A region object describes an area.
+
+      Region objects are used to describe the opaque and input
+      regions of a surface.
     </description>
 
     <request name="destroy" type="destructor">
       <description summary="destroy region">
-	Destroy the region.  This will invalidate the object id.
+	Destroy the region.  This will invalidate the object ID.
       </description>
     </request>
 
     <request name="add">
       <description summary="add rectangle to region">
-	Add the specified rectangle to the region
+	Add the specified rectangle to the region.
       </description>
 
       <arg name="x" type="int"/>
@@ -1574,7 +1577,7 @@
 
     <request name="subtract">
       <description summary="subtract rectangle from region">
-	Subtract the specified rectangle from the region
+	Subtract the specified rectangle from the region.
       </description>
 
       <arg name="x" type="int"/>
