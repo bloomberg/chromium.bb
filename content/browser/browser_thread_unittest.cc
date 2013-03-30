@@ -59,21 +59,6 @@ class BrowserThreadTest : public testing::Test {
     MessageLoop* message_loop_;
   };
 
-  class NeverDeleted
-      : public base::RefCountedThreadSafe<
-            NeverDeleted, BrowserThread::DeleteOnWebKitThread> {
-   public:
-
-   private:
-    friend struct BrowserThread::DeleteOnThread<
-        BrowserThread::WEBKIT_DEPRECATED>;
-    friend class base::DeleteHelper<NeverDeleted>;
-
-    ~NeverDeleted() {
-      CHECK(false);
-    }
-  };
-
  private:
   scoped_ptr<BrowserThreadImpl> ui_thread_;
   scoped_ptr<BrowserThreadImpl> file_thread_;
@@ -100,10 +85,6 @@ TEST_F(BrowserThreadTest, ReleasedOnCorrectThread) {
         new DeletedOnFile(MessageLoop::current()));
   }
   MessageLoop::current()->Run();
-}
-
-TEST_F(BrowserThreadTest, NotReleasedIfTargetThreadNonExistent) {
-  scoped_refptr<NeverDeleted> test(new NeverDeleted());
 }
 
 TEST_F(BrowserThreadTest, PostTaskViaMessageLoopProxy) {
@@ -133,4 +114,4 @@ TEST_F(BrowserThreadTest, PostTaskAndReply) {
   MessageLoop::current()->Run();
 }
 
-}
+}  // namespace content

@@ -268,7 +268,6 @@ class CONTENT_EXPORT BrowserThread {
   struct DeleteOnIOThread : public DeleteOnThread<IO> { };
   struct DeleteOnFileThread : public DeleteOnThread<FILE> { };
   struct DeleteOnDBThread : public DeleteOnThread<DB> { };
-  struct DeleteOnWebKitThread : public DeleteOnThread<WEBKIT_DEPRECATED> { };
 
  private:
   friend class BrowserThreadImpl;
