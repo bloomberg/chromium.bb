@@ -322,7 +322,7 @@ void ImmersiveModeController::OnMouseEvent(ui::MouseEvent* event) {
     return;
 
   if ((reveal_state_ == SLIDING_CLOSED || reveal_state_ == CLOSED) &&
-      event->location().y() == 0) {
+      event->root_location().y() == 0) {
     // Start a reveal if the mouse touches the top of the screen and then stops
     // moving for a little while. This mirrors the Ash launcher behavior.
     top_timer_.Stop();
