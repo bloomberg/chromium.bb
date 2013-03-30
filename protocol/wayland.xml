@@ -597,7 +597,20 @@
   </interface>
 
   <interface name="wl_shell" version="1">
+    <description summary="create desktop-style surfaces">
+      This interface is implemented by servers that provide
+      desktop-style user interfaces.
+
+      It allows clients to associate a wl_shell_surface with
+      a basic surface.
+    </description>
+
     <request name="get_shell_surface">
+      <description summary="create a shell surface from a surface">
+	Create a shell surface for an existing surface.
+
+	Only one shell surface can be associated with a given surface.
+      </description>
       <arg name="id" type="new_id" interface="wl_shell_surface"/>
       <arg name="surface" type="object" interface="wl_surface"/>
     </request>
@@ -605,11 +618,18 @@
 
   <interface name="wl_shell_surface" version="1">
 
-    <description summary="desktop style meta data interface">
-      An interface implemented by a wl_surface.  On server side the
-      object is automatically destroyed when the related wl_surface is
-      destroyed.  On client side, wl_shell_surface_destroy() must be
-      called before destroying the wl_surface object.
+    <description summary="desktop-style metadata interface">
+      An interface that may be implemented by a wl_surface, for
+      implementations that provide a desktop-style user interface.
+
+      It provides requests to treat surfaces like toplevel, fullscreen
+      or popup windows, move, resize or maximize them, associate
+      metadata like title and class, etc.
+
+      On the server side the object is automatically destroyed when
+      the related wl_surface is destroyed.  On client side,
+      wl_shell_surface_destroy() must be called before destroying
+      the wl_surface object.
     </description>
 
     <request name="pong">
@@ -617,15 +637,28 @@
 	A client must respond to a ping event with a pong request or
 	the client may be deemed unresponsive.
       </description>
-      <arg name="serial" type="uint"/>
+      <arg name="serial" type="uint" summary="serial of the ping event"/>
     </request>
 
     <request name="move">
-      <arg name="seat" type="object" interface="wl_seat"/>
-      <arg name="serial" type="uint"/>
+      <description summary="start an interactive move">
+	Start a pointer-driven move of the surface.
+
+	This request must be used in response to a button press event.
+	The server may ignore move requests depending on the state of
+	the surface (e.g. fullscreen or maximized).
+      </description>
+      <arg name="seat" type="object" interface="wl_seat" summary="the wl_seat whose pointer is used"/>
+      <arg name="serial" type="uint" summary="serial of the implicit grab on the pointer"/>
     </request>
 
     <enum name="resize">
+      <description summary="edge values for resizing">
+	These values are used to indicate which edge of a surface
+	is being dragged in a resize operation. The server may
+	use this information to adapt its behavior, e.g. choose
+	an appropriate cursor image.
+      </description>
       <entry name="none" value="0"/>
       <entry name="top" value="1"/>
       <entry name="bottom" value="2"/>
@@ -638,31 +671,43 @@
     </enum>
 
     <request name="resize">
-      <arg name="seat" type="object" interface="wl_seat"/>
-      <arg name="serial" type="uint"/>
-      <arg name="edges" type="uint"/>
+      <description summary="start an interactive resize">
+	Start a pointer-driven resizing of the surface.
+
+	This request must be used in response to a button press event.
+	The server may ignore resize requests depending on the state of
+	the surface (e.g. fullscreen or maximized).
+      </description>
+      <arg name="seat" type="object" interface="wl_seat" summary="the wl_seat whose pointer is used"/>
+      <arg name="serial" type="uint" summary="serial of the implicit grab on the pointer"/>
+      <arg name="edges" type="uint" summary="which edge or corner is being dragged"/>
     </request>
 
     <request name="set_toplevel">
-      <description summary="make the surface a top level surface">
-	Make the surface a toplevel window.
+      <description summary="make the surface a toplevel surface">
+	Map the surface as a toplevel surface.
+
+	A toplevel surface is not fullscreen, maximized or transient.
       </description>
     </request>
 
     <enum name="transient">
+      <description summary="details of transient behaviour">
+	These flags specify details of the expected behaviour
+	of transient surfaces. Used in the set_transient request.
+      </description>
       <entry name="inactive" value="0x1" summary="do not set keyboard focus"/>
     </enum>
 
     <request name="set_transient">
       <description summary="make the surface a transient surface">
-	Map the surface relative to an existing surface. The x and y
-	arguments specify the locations of the upper left corner of
-	the surface relative to the upper left corner of the parent
-	surface.  The flags argument controls overflow/clipping
-	behaviour when the surface would intersect a screen edge,
-	panel or such.  And possibly whether the offset only
-	determines the initial position or if the surface is locked to
-	that relative position during moves.
+	Map the surface relative to an existing surface.
+
+	The x and y arguments specify the locations of the upper left
+	corner of the surface relative to the upper left corner of the
+	parent surface.
+
+	The flags argument controls details of the transient behaviour.
       </description>
 
       <arg name="parent" type="object" interface="wl_surface"/>
@@ -671,75 +716,67 @@
       <arg name="flags" type="uint"/>
     </request>
 
+    <enum name="fullscreen_method">
+      <description summary="different method to set the surface fullscreen">
+	Hints to indicate to the compositor how to deal with a conflict
+	between the dimensions of the surface and the dimensions of the
+	output. The compositor is free to ignore this parameter.
+      </description>
+      <entry name="default" value="0" summary="no preference, apply default policy"/>
+      <entry name="scale" value="1" summary="scale, preserve the surface's aspect ratio and center on output"/>
+      <entry name="driver" value="2" summary="switch output mode to the smallest mode that can fit the surface, add black borders to compensate size mismatch"/>
+      <entry name="fill" value="3" summary="no scaling, center on output and add black borders to compensate size mismatch"/>
+    </enum>
+
     <request name="set_fullscreen">
       <description summary="make the surface a fullscreen surface">
-        Map the surface as a fullscreen surface. If an output parameter is
-        given then the surface will be made fullscreen on that output. If the
-        client does not specify the output then the compositor will apply its
-        policy - usually choosing the output on which the surface has the
-        biggest surface area.
+	Map the surface as a fullscreen surface.
 
-        The client may specify a method to resolve a size conflict between the
-        output size and the surface size - this is provided through the
-        fullscreen_method parameter.
+	If an output parameter is given then the surface will be made
+	fullscreen on that output. If the client does not specify the
+	output then the compositor will apply its policy - usually
+	choosing the output on which the surface has the biggest surface
+	area.
 
-        The framerate parameter is used only when the fullscreen_method is set
-        to "driver", to indicate the preferred framerate. framerate=0 indicates
-        that the app does not care about framerate.  The framerate is
-        specified in mHz, that is framerate of 60000 is 60Hz.
+	The client may specify a method to resolve a size conflict
+	between the output size and the surface size - this is provided
+	through the method parameter.
 
-        The compositor must reply to this request with a configure event with
-        the dimensions for the output on which the surface will be made fullscreen.
+	The framerate parameter is used only when the method is set
+	to "driver", to indicate the preferred framerate. A value of 0
+	indicates that the app does not care about framerate.  The
+	framerate is specified in mHz, that is framerate of 60000 is 60Hz.
+
+	The compositor must reply to this request with a configure event
+	with the dimensions for the output on which the surface will
+	be made fullscreen.
       </description>
       <arg name="method" type="uint"/>
       <arg name="framerate" type="uint"/>
       <arg name="output" type="object" interface="wl_output" allow-null="true"/>
     </request>
 
-    <enum name="fullscreen_method">
-      <description summary="different method to set the surface fullscreen">
-        Hints to indicate compositor how to deal with a conflict between the
-        dimensions for the surface and the dimensions of the output. As a hint
-        the compositor is free to ignore this parameter.
-
-        "default" The client has no preference on fullscreen behavior,
-        policies are determined by compositor.
-
-        "scale" The client prefers scaling by the compositor. Scaling would
-        always preserve surface's aspect ratio with surface centered on the
-        output
-
-        "driver" The client wants to switch video mode to the smallest mode
-        that can fit the client buffer. If the sizes do not match the
-        compositor must add black borders.
-
-        "fill" The surface is centered on the output on the screen with no
-        scaling. If the surface is of insufficient size the compositor must
-        add black borders.
-      </description>
-      <entry name="default" value="0"/>
-      <entry name="scale" value="1"/>
-      <entry name="driver" value="2"/>
-      <entry name="fill" value="3"/>
-    </enum>
-
     <request name="set_popup">
       <description summary="make the surface a popup surface">
-	Popup surfaces.  Will switch an implicit grab into
-	owner-events mode, and grab will continue after the implicit
-	grab ends (button released).  Once the implicit grab is over,
-	the popup grab continues until the window is destroyed or a
-	mouse button is pressed in any other clients window.  A click
+	Map the surface as a popup.
+
+	A popup surface is a transient surface with an added pointer
+	grab.
+
+	An existing implicit grab will be changed to owner-events mode,
+	and the popup grab will continue after the implicit grab ends
+	(i.e. releasing the mouse button does not cause the popup to
+	be unmapped).
+
+	The popup grab continues until the window is destroyed or a
+	mouse button is pressed in any other clients window. A click
 	in any of the clients surfaces is reported as normal, however,
 	clicks in other clients surfaces will be discarded and trigger
 	the callback.
-
-	TODO: Grab keyboard too, maybe just terminate on any click
-	inside or outside the surface?
       </description>
 
-      <arg name="seat" type="object" interface="wl_seat"/>
-      <arg name="serial" type="uint"/>
+      <arg name="seat" type="object" interface="wl_seat" summary="the wl_seat whose pointer is used"/>
+      <arg name="serial" type="uint" summary="serial of the implicit grab on the pointer"/>
       <arg name="parent" type="object" interface="wl_surface"/>
       <arg name="x" type="int"/>
       <arg name="y" type="int"/>
@@ -748,29 +785,49 @@
 
     <request name="set_maximized">
       <description summary="make the surface a maximized surface">
-	A request from the client to notify the compositor the maximized
-	operation. The compositor will reply with a configure event telling
-        the expected new surface size. The operation is completed on the
-        next buffer attach to this surface.
-        A maximized client will fill the fullscreen of the output it is bound
-        to, except the panel area. This is the main difference between
-        a maximized shell surface and a fullscreen shell surface.
+	Map the surface as a maximized surface.
+
+	If an output parameter is given then the surface will be
+	maximized on that output. If the client does not specify the
+	output then the compositor will apply its policy - usually
+	choosing the output on which the surface has the biggest surface
+	area.
+
+	The compositor will reply with a configure event telling
+	the expected new surface size. The operation is completed
+	on the next buffer attach to this surface.
+
+	A maximized surface typically fills the entire output it is
+	bound to, except for desktop element such as panels. This is
+	the main difference between a maximized shell surface and a
+	fullscreen shell surface.
+
+	The details depend on the compositor implementation.
       </description>
       <arg name="output" type="object" interface="wl_output" allow-null="true"/>
     </request>
 
     <request name="set_title">
       <description summary="set surface title">
+	Set a short title for the surface.
+
+	This string may be used to identify the surface in a task bar,
+	window list, or other user interface elements provided by the
+	compositor.
+
+	The string must be encoded in UTF-8.
       </description>
       <arg name="title" type="string"/>
     </request>
 
     <request name="set_class">
       <description summary="set surface class">
+	Set a class for the surface.
+
 	The surface class identifies the general class of applications
-	to which the surface belongs.  The class is the file name of
-	the applications .desktop file (absolute path if non-standard
-	location). 
+	to which the surface belongs. A common convention is to use
+	the file name (full path if non-standard location) of the
+	applications .desktop file as the class.
       </description>
       <arg name="class_" type="string"/>
     </request>
@@ -786,11 +843,19 @@
     <event name="configure">
       <description summary="suggest resize">
 	The configure event asks the client to resize its surface.
+
 	The size is a hint, in the sense that the client is free to
 	ignore it if it doesn't resize, pick a smaller size (to
-	satisfy aspect ratio or resize in steps of NxM pixels).  The
-	client is free to dismiss all but the last configure event it
-	received.
+	satisfy aspect ratio or resize in steps of NxM pixels).
+
+	The edges parameter provides a hint about how the surface
+	was resized. The client may use this information to decide
+	how to adjust its content to the new size (e.g. a scrolling
+	area might adjust its content position to leave the viewable
+	content unmoved).
+
+	The client is free to dismiss all but the last configure
+	event it received.
       </description>
 
       <arg name="edges" type="uint"/>
