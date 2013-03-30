@@ -1453,14 +1453,18 @@
   <interface name="wl_output" version="1">
     <description summary="compositor output region">
       An output describes part of the compositor geometry.  The
-      compositor work in the 'compositor coordinate system' and an
+      compositor works in the 'compositor coordinate system' and an
       output corresponds to rectangular area in that space that is
       actually visible.  This typically corresponds to a monitor that
       displays part of the compositor space.  This object is published
-      as global during start up, or when a screen is hot plugged.
+      as global during start up, or when a monitor is hotplugged.
     </description>
 
     <enum name="subpixel">
+      <description summary="subpixel geometry information">
+	This enumeration describes how the physical
+	pixels on an output are layed out.
+      </description>
       <entry name="unknown" value="0"/>
       <entry name="none" value="1"/>
       <entry name="horizontal_rgb" value="2"/>
@@ -1495,7 +1499,11 @@
     </enum>
 
     <event name="geometry">
-      <description summary="properties of the output"/>
+      <description summary="properties of the output">
+	The geometry event describes geometric properties of the output.
+	The event is sent when binding to the output object and whenever
+	any of the properties change.
+      </description>
       <arg name="x" type="int"
 	   summary="x position within the global compositor space"/>
       <arg name="y" type="int"
@@ -1515,23 +1523,27 @@
     </event>
 
     <enum name="mode">
-      <description summary="values for the flags bitfield in the mode event"/>
+      <description summary="mode information">
+	These flags describe properties of an output mode.
+	They are used in the flags bitfield of the mode event.
+      </description>
       <entry name="current" value="0x1"
 	     summary="indicates this is the current mode"/>
       <entry name="preferred" value="0x2"
 	     summary="indicates this is the preferred mode"/>
     </enum>
-      
+
     <event name="mode">
       <description summary="advertise available modes for the output">
 	The mode event describes an available mode for the output.
+
 	The event is sent when binding to the output object and there
 	will always be one mode, the current mode.  The event is sent
 	again if an output changes mode, for the mode that is now
 	current.  In other words, the current mode is always the last
 	mode that was received with the current flag set.
       </description>
-      <arg name="flags" type="uint" summary="mask of wl_output_mode flags"/>
+      <arg name="flags" type="uint" summary="bitfield of mode flags"/>
       <arg name="width" type="int" summary="width of the mode in pixels"/>
       <arg name="height" type="int" summary="height of the mode in pixels"/>
       <arg name="refresh" type="int" summary="vertical refresh rate in mHz"/>
