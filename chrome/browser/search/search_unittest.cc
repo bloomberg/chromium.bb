@@ -165,7 +165,7 @@ TEST_F(SearchTest, CoerceCommandLineURLToTemplateURL) {
       TemplateURLServiceFactory::GetForProfile(profile())->
           GetDefaultSearchProvider();
   EXPECT_EQ(
-      GURL("https://foo.com/instant?bar=bar#bar=bar"),
+      GURL("https://foo.com/dev?bar=bar#bar=bar"),
       CoerceCommandLineURLToTemplateURL(
           GURL("http://myserver.com:9000/dev?bar=bar#bar=bar"),
           template_url->instant_url_ref(), kDisableStartMargin));

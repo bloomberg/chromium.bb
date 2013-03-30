@@ -81,10 +81,18 @@ GURL TemplateURLRefToGURL(const TemplateURLRef& ref, int start_margin) {
   return GURL(ref.ReplaceSearchTerms(search_terms_args));
 }
 
+bool MatchesOrigin(const GURL& my_url, const GURL& other_url) {
+  return my_url.host() == other_url.host() &&
+         my_url.port() == other_url.port() &&
+         (my_url.scheme() == other_url.scheme() ||
+          (my_url.SchemeIs(chrome::kHttpsScheme) &&
+           other_url.SchemeIs(chrome::kHttpScheme)));
+}
+
 bool IsCommandLineInstantURL(const GURL& url) {
   const CommandLine* cl = CommandLine::ForCurrentProcess();
   const GURL instant_url(cl->GetSwitchValueASCII(switches::kInstantURL));
-  return instant_url.is_valid() && MatchesOriginAndPath(url, instant_url);
+  return instant_url.is_valid() && MatchesOrigin(url, instant_url);
 }
 
 bool MatchesAnySearchURL(const GURL& url, TemplateURL* template_url) {
@@ -546,23 +554,16 @@ GURL CoerceCommandLineURLToTemplateURL(const GURL& instant_url,
   const std::string search_scheme = chrome::kHttpsScheme;
   const std::string search_host = search_url.host();
   const std::string search_port = search_url.port();
-  const std::string search_path = search_url.path();
 
   GURL::Replacements replacements;
   replacements.SetSchemeStr(search_scheme);
   replacements.SetHostStr(search_host);
   replacements.SetPortStr(search_port);
-  replacements.SetPathStr(search_path);
   return instant_url.ReplaceComponents(replacements);
 }
 
 bool MatchesOriginAndPath(const GURL& my_url, const GURL& other_url) {
-  return my_url.host() == other_url.host() &&
-         my_url.port() == other_url.port() &&
-         my_url.path() == other_url.path() &&
-         (my_url.scheme() == other_url.scheme() ||
-          (my_url.SchemeIs(chrome::kHttpsScheme) &&
-           other_url.SchemeIs(chrome::kHttpScheme)));
+  return MatchesOrigin(my_url, other_url) && my_url.path() == other_url.path();
 }
 
 }  // namespace chrome
