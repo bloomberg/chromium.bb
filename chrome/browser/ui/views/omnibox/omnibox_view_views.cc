@@ -207,7 +207,7 @@ void OmniboxViewViews::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 void OmniboxViewViews::GetAccessibleState(ui::AccessibleViewState* state) {
-  state->name = l10n_util::GetStringUTF16(IDS_ACCNAME_LOCATION);
+  location_bar_view_->GetAccessibleState(state);
 }
 
 void OmniboxViewViews::OnBoundsChanged(const gfx::Rect& previous_bounds) {
