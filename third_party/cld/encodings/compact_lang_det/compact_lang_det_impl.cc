@@ -987,6 +987,12 @@ int CompactLangDetImpl::CheapSqueezeInplace(char* isrc,
   while (src < srclimit) {
     int remaining_bytes = srclimit - src;
     int len = cld::minint(chunksize, remaining_bytes);
+    // Make len land us on a UTF-8 character boundary, and also fix
+    // mispredictions because we could get out of phase.
+    // Loop always terminates at trailing space in buffer.
+    while ((src[len] & 0xc0) == 0x80)
+      ++len; // Move past continuation bytes
+
     int space_n = CountSpaces4(src, len);
     int predb_n = CountPredictedBytes(src, len, &hash, predict_tbl);
     if ((space_n >= space_thresh) || (predb_n >= predict_thresh)) {
