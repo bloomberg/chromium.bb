@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/environment.h"
 #include "base/logging.h"
+#include "remoting/base/util.h"
 #include "remoting/protocol/channel_authenticator.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
 
@@ -101,11 +102,10 @@ void PamAuthorizer::MaybeCheckLocalLogin() {
 }
 
 bool PamAuthorizer::IsLocalLoginAllowed() {
-  std::string username;
-  if (!base::Environment::Create()->GetVar("USER", &username)) {
+  std::string username = GetUsername();
+  if (username.empty()) {
     return false;
   }
-
   struct pam_conv conv = { PamConversation, NULL };
   pam_handle_t* handle = NULL;
   int result = pam_start("chrome-remote-desktop", username.c_str(),

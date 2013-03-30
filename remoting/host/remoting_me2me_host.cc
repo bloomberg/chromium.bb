@@ -34,6 +34,7 @@
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/base/breakpad.h"
 #include "remoting/base/constants.h"
+#include "remoting/base/util.h"
 #include "remoting/host/branding.h"
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/chromoting_host_context.h"
@@ -69,7 +70,6 @@
 #include "remoting/protocol/me2me_host_authenticator_factory.h"
 
 #if defined(OS_POSIX)
-#include <pwd.h>
 #include <signal.h>
 #include "base/file_descriptor_posix.h"
 #include "remoting/host/pam_authorization_factory_posix.h"
@@ -105,35 +105,6 @@ const char kAudioPipeSwitchName[] = "audio-pipe-name";
 
 void QuitMessageLoop(MessageLoop* message_loop) {
   message_loop->PostTask(FROM_HERE, MessageLoop::QuitClosure());
-}
-
-// Returns true if GetUsername() is implemented on this platform.
-bool CanGetUsername() {
-#if defined(OS_POSIX)
-  return true;
-#else  // !defined(OS_POSIX)
-  return false;
-#endif  // defined(OS_POSIX)
-}  // namespace
-
-// Returns the username associated with this process, or the empty string on
-// error.
-std::string GetUsername() {
-#if defined(OS_POSIX)
-  long buf_size = sysconf(_SC_GETPW_R_SIZE_MAX);
-  if (buf_size <= 0)
-    return "";
-  scoped_array<char> buf(new char[buf_size]);
-  struct passwd passwd;
-  struct passwd* passwd_result = NULL;
-  getpwuid_r(getuid(), &passwd, buf.get(), buf_size, &passwd_result);
-  if (!passwd_result)
-    return "";
-  return std::string(passwd_result->pw_name);
-#else  // !defined(OS_POSIX)
-  NOTREACHED();
-  return "";
-#endif  // defined(OS_POSIX)
 }
 
 }  // namespace
@@ -798,8 +769,9 @@ bool HostProcess::OnUsernamePolicyUpdate(bool host_username_match_required) {
 
   if (host_username_match_required) {
     LOG(INFO) << "Policy requires host username match.";
-    bool shutdown = !CanGetUsername() ||
-        !StartsWithASCII(xmpp_login_, GetUsername() + std::string("@"),
+    std::string username = GetUsername();
+    bool shutdown = username.empty() ||
+        !StartsWithASCII(xmpp_login_, username + std::string("@"),
                          false);
 
 #if defined(OS_MACOSX)
