@@ -138,12 +138,12 @@ void BuildInputs(const DetailInput* input_template,
   }
 }
 
-// Uses |group| to fill in the |autofilled_value| for all inputs in |all_inputs|
+// Uses |group| to fill in the |initial_value| for all inputs in |all_inputs|
 // (an out-param).
 void FillInputFromFormGroup(FormGroup* group, DetailInputs* inputs) {
   const std::string app_locale = AutofillCountry::ApplicationLocale();
   for (size_t j = 0; j < inputs->size(); ++j) {
-    (*inputs)[j].autofilled_value =
+    (*inputs)[j].initial_value =
         group->GetInfo((*inputs)[j].type, app_locale);
   }
 }
@@ -795,7 +795,7 @@ void AutofillDialogControllerImpl::EditCancelledForSection(
     DialogSection section) {
   DetailInputs* inputs = MutableRequestedFieldsForSection(section);
   for (size_t i = 0; i < inputs->size(); ++i)
-    (*inputs)[i].autofilled_value.clear();
+    (*inputs)[i].initial_value.clear();
   section_editing_state_[section] = false;
   view_->UpdateSection(section);
 }

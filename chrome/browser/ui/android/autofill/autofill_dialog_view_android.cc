@@ -97,7 +97,7 @@ void AutofillDialogViewAndroid::UpdateSection(DialogSection section) {
     const DetailInput& input = updated_inputs[i];
 
     ScopedJavaLocalRef<jstring> autofilled =
-        base::android::ConvertUTF16ToJavaString(env, input.autofilled_value);
+        base::android::ConvertUTF16ToJavaString(env, input.initial_value);
 
     string16 placeholder16;
     if (input.placeholder_text_rid > 0)

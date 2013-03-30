@@ -53,7 +53,7 @@ void DataModelWrapper::FillFormStructure(
 
 void DataModelWrapper::FillInputs(DetailInputs* inputs) {
   for (size_t i = 0; i < inputs->size(); ++i) {
-    (*inputs)[i].autofilled_value = GetInfo((*inputs)[i].type);
+    (*inputs)[i].initial_value = GetInfo((*inputs)[i].type);
   }
 }
 
@@ -96,7 +96,7 @@ void AutofillProfileWrapper::FillInputs(DetailInputs* inputs) {
   for (size_t j = 0; j < inputs->size(); ++j) {
     std::vector<string16> values;
     profile_->GetMultiInfo((*inputs)[j].type, app_locale, &values);
-    (*inputs)[j].autofilled_value = values[variant()];
+    (*inputs)[j].initial_value = values[variant()];
   }
 }
 

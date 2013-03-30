@@ -331,7 +331,7 @@ TEST_F(AutofillDialogControllerTest, AutofillProfileVariants) {
   controller()->EditClickedForSection(SECTION_EMAIL);
   const DetailInputs& inputs =
       controller()->RequestedFieldsForSection(SECTION_EMAIL);
-  EXPECT_EQ(kEmail2, inputs[0].autofilled_value);
+  EXPECT_EQ(kEmail2, inputs[0].initial_value);
 }
 
 TEST_F(AutofillDialogControllerTest, AcceptLegalDocuments) {
@@ -409,26 +409,26 @@ TEST_F(AutofillDialogControllerTest, EditClickedCancelled) {
       controller()->MenuModelForSection(SECTION_EMAIL);
   EXPECT_EQ(2, email_model->GetItemCount());
 
-  // When unedited, the autofilled_value should be empty.
+  // When unedited, the initial_value should be empty.
   email_model->ActivatedAt(0);
   const DetailInputs& inputs0 =
       controller()->RequestedFieldsForSection(SECTION_EMAIL);
-  EXPECT_EQ(string16(), inputs0[0].autofilled_value);
+  EXPECT_EQ(string16(), inputs0[0].initial_value);
   EXPECT_EQ(kEmail, controller()->SuggestionTextForSection(SECTION_EMAIL));
 
-  // When edited, the autofilled_value should contain the value.
+  // When edited, the initial_value should contain the value.
   controller()->EditClickedForSection(SECTION_EMAIL);
   const DetailInputs& inputs1 =
       controller()->RequestedFieldsForSection(SECTION_EMAIL);
-  EXPECT_EQ(kEmail, inputs1[0].autofilled_value);
+  EXPECT_EQ(kEmail, inputs1[0].initial_value);
   EXPECT_EQ(string16(), controller()->SuggestionTextForSection(SECTION_EMAIL));
 
-  // When edit is cancelled, the autofilled_value should be empty.
+  // When edit is cancelled, the initial_value should be empty.
   controller()->EditCancelledForSection(SECTION_EMAIL);
   const DetailInputs& inputs2 =
       controller()->RequestedFieldsForSection(SECTION_EMAIL);
   EXPECT_EQ(kEmail, controller()->SuggestionTextForSection(SECTION_EMAIL));
-  EXPECT_EQ(string16(), inputs2[0].autofilled_value);
+  EXPECT_EQ(string16(), inputs2[0].initial_value);
 }
 
 }  // namespace autofill

@@ -611,13 +611,13 @@ void AutofillDialogViews::UpdateSection(DialogSection section) {
     const DetailInput& input = *iter;
     TextfieldMap::iterator text_mapping = group->textfields.find(&input);
     if (text_mapping != group->textfields.end())
-      text_mapping->second->textfield()->SetText(iter->autofilled_value);
+      text_mapping->second->textfield()->SetText(iter->initial_value);
 
     ComboboxMap::iterator combo_mapping = group->comboboxes.find(&input);
     if (combo_mapping != group->comboboxes.end()) {
       views::Combobox* combobox = combo_mapping->second;
       for (int i = 0; i < combobox->model()->GetItemCount(); ++i) {
-        if (input.autofilled_value == combobox->model()->GetItemAt(i)) {
+        if (input.initial_value == combobox->model()->GetItemAt(i)) {
           combobox->SetSelectedIndex(i);
           break;
         }
@@ -1073,19 +1073,19 @@ views::View* AutofillDialogViews::InitInputsView(DialogSection section) {
       layout->AddView(combobox);
 
       for (int i = 0; i < input_model->GetItemCount(); ++i) {
-        if (input.autofilled_value == input_model->GetItemAt(i)) {
+        if (input.initial_value == input_model->GetItemAt(i)) {
           combobox->SetSelectedIndex(i);
           break;
         }
       }
     } else {
       DecoratedTextfield* field = new DecoratedTextfield(
-          input.autofilled_value,
+          input.initial_value,
           l10n_util::GetStringUTF16(input.placeholder_text_rid),
           this);
 
       gfx::Image icon =
-          controller_->IconForField(input.type, input.autofilled_value);
+          controller_->IconForField(input.type, input.initial_value);
       field->textfield()->SetIcon(icon.AsImageSkia());
 
       textfields->insert(std::make_pair(&input, field));

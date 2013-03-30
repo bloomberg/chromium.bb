@@ -32,9 +32,9 @@ struct DetailInput {
   // A number between 0 and 1.0 that describes how much of the horizontal space
   // in the row should be allotted to this input. 0 is equivalent to 1.
   float expand_weight;
-  // When non-empty, indicates the value that should be pre-filled into the
-  // input.
-  string16 autofilled_value;
+  // When non-empty, indicates the starting value for this input. This will be
+  // used when the user is editing existing data.
+  string16 initial_value;
 };
 
 // Determines whether |input| and |field| match.
