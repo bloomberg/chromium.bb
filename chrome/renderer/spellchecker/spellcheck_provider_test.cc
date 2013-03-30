@@ -36,7 +36,6 @@ TestingSpellCheckProvider::TestingSpellCheckProvider()
 }
 
 TestingSpellCheckProvider::~TestingSpellCheckProvider() {
-  STLDeleteContainerPointers(messages_.begin(), messages_.end());
   delete spellcheck_;
 }
 
