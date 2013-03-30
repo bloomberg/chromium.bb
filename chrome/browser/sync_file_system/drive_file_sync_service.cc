@@ -2251,15 +2251,11 @@ void DriveFileSyncService::DidFetchChangesForIncrementalSync(
   }
 
   GURL next_feed;
-  if (changes->GetNextFeedURL(&next_feed)) {
-    sync_client_->ContinueListing(
-        next_feed,
-        base::Bind(&DriveFileSyncService::DidFetchChangesForIncrementalSync,
-                   AsWeakPtr(), base::Passed(&token), has_new_changes));
-    return;
-  }
+  if (changes->GetNextFeedURL(&next_feed))
+    may_have_unfetched_changes_ = true;
 
-  largest_fetched_changestamp_ = changes->largest_changestamp();
+  if (!changes->entries().empty())
+    largest_fetched_changestamp_ = changes->entries().back()->changestamp();
 
   if (has_new_changes) {
     UpdatePollingDelay(kMinimumPollingDelaySeconds);
