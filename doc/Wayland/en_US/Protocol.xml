@@ -233,6 +233,14 @@
       in surface local coordinates.
     </para>
     <para>
+      The compositor maintains an implicit grab when a button is
+      pressed, to ensure that the corresponding button release
+      event gets delivered to the same surface. But there is no way
+      for clients to take an explicit grab. Instead, surfaces can
+      be mapped as 'popup', which combines transient window semantics
+      with a pointer grab.
+    </para>
+    <para>
       See <xref linkend="protocol-spec-interface-wl_seat"/> for the
       protocol description.
     </para>
