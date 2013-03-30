@@ -1286,6 +1286,7 @@
         'browser/extensions/extension_disabled_ui_browsertest.cc',
         'browser/extensions/extension_dom_clipboard_apitest.cc',
         'browser/extensions/extension_fileapi_apitest.cc',
+        'browser/extensions/extension_functional_browsertest.cc',
         'browser/extensions/extension_function_test_utils.cc',
         'browser/extensions/extension_function_test_utils.h',
         'browser/extensions/extension_geolocation_apitest.cc',

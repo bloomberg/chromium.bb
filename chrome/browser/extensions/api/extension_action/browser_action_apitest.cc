@@ -658,5 +658,47 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, Getters) {
   ASSERT_TRUE(catcher.GetNextResult());
 }
 
+// Verify triggering browser action.
+IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, TestTriggerBrowserAction) {
+  ASSERT_TRUE(test_server()->Start());
+
+  ASSERT_TRUE(RunExtensionTest("trigger_actions/browser_action")) << message_;
+  const Extension* extension = GetSingleLoadedExtension();
+  ASSERT_TRUE(extension) << message_;
+
+  // Test that there is a browser action in the toolbar.
+  ASSERT_EQ(1, GetBrowserActionsBar().NumberOfBrowserActions());
+
+  ui_test_utils::NavigateToURL(
+     browser(),
+     test_server()->GetURL("files/simple.html"));
+
+  ExtensionAction* browser_action = GetBrowserAction(*extension);
+  EXPECT_TRUE(browser_action != NULL);
+
+  // Simulate a click on the browser action icon.
+  {
+    ResultCatcher catcher;
+    GetBrowserActionsBar().Press(0);
+    EXPECT_TRUE(catcher.GetNextResult());
+  }
+
+  WebContents* tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(tab != NULL);
+
+  // Verify that the browser action turned the background color red.
+  const std::string script =
+      "window.domAutomationController.send(document.body.style."
+      "backgroundColor);";
+  std::string result;
+  const std::string frame_xpath = "";
+  EXPECT_TRUE(content::ExecuteScriptInFrameAndExtractString(tab,
+                                                            frame_xpath,
+                                                            script,
+                                                            &result));
+  EXPECT_EQ(result, "red");
+}
+
 }  // namespace
 }  // namespace extensions
