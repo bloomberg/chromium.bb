@@ -207,10 +207,14 @@ class BookmarkModelTest : public testing::Test,
     ++extensive_changes_ended_count_;
   }
 
+  virtual void BookmarkAllNodesRemoved(BookmarkModel* model) OVERRIDE {
+    ++all_bookmarks_removed_;
+  }
+
   void ClearCounts() {
     added_count_ = moved_count_ = removed_count_ = changed_count_ =
         reordered_count_ = extensive_changes_beginning_count_ =
-        extensive_changes_ended_count_ = 0;
+        extensive_changes_ended_count_ = all_bookmarks_removed_ = 0;
   }
 
   void AssertObserverCount(int added_count,
@@ -233,6 +237,8 @@ class BookmarkModelTest : public testing::Test,
     EXPECT_EQ(extensive_changes_ended_count_, extensive_changes_ended_count);
   }
 
+  int AllNodesRemovedObserverCount() const { return all_bookmarks_removed_; }
+
  protected:
   BookmarkModel model_;
   ObserverDetails observer_details_;
@@ -245,6 +251,7 @@ class BookmarkModelTest : public testing::Test,
   int reordered_count_;
   int extensive_changes_beginning_count_;
   int extensive_changes_ended_count_;
+  int all_bookmarks_removed_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkModelTest);
 };
@@ -424,6 +431,33 @@ TEST_F(BookmarkModelTest, RemoveFolder) {
 
   // Make sure there is no mapping for the URL.
   ASSERT_TRUE(model_.GetMostRecentlyAddedNodeForURL(url) == NULL);
+}
+
+TEST_F(BookmarkModelTest, RemoveAll) {
+  const BookmarkNode* bookmark_bar_node = model_.bookmark_bar_node();
+
+  ClearCounts();
+
+  // Add a url to bookmark bar.
+  string16 title(ASCIIToUTF16("foo"));
+  GURL url("http://foo.com");
+  model_.AddURL(bookmark_bar_node, 0, title, url);
+
+  // Add a folder with child URL.
+  const BookmarkNode* folder = model_.AddFolder(bookmark_bar_node, 0, title);
+  model_.AddURL(folder, 0, title, url);
+
+  AssertObserverCount(3, 0, 0, 0, 0);
+  ClearCounts();
+
+  model_.RemoveAll();
+
+  EXPECT_EQ(0, bookmark_bar_node->child_count());
+  // No individual BookmarkNodeRemoved events are fired, so removed count
+  // should be 0.
+  AssertObserverCount(0, 0, 0, 0, 0);
+  AssertExtensiveChangesObserverCount(1, 1);
+  EXPECT_EQ(1, AllNodesRemovedObserverCount());
 }
 
 TEST_F(BookmarkModelTest, SetTitle) {

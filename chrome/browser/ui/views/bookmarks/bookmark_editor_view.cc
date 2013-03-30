@@ -387,6 +387,10 @@ void BookmarkEditorView::BookmarkNodeRemoved(BookmarkModel* model,
   }
 }
 
+void BookmarkEditorView::BookmarkAllNodesRemoved(BookmarkModel* model) {
+  Reset();
+}
+
 void BookmarkEditorView::BookmarkNodeChildrenReordered(
     BookmarkModel* model, const BookmarkNode* node) {
   Reset();

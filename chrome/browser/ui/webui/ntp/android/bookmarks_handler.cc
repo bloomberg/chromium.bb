@@ -336,9 +336,13 @@ void BookmarksHandler::BookmarkNodeRemoved(BookmarkModel* model,
   NotifyModelChanged(result);
 }
 
-void BookmarksHandler::BookmarkNodeAdded(BookmarkModel* model,
-                                         const BookmarkNode* parent,
-                                         int index) {
+void BookmarksHandler::BookmarkAllNodesRemoved(BookmarkModel* model) {
+  if (bookmark_data_requested_ && !extensive_changes_)
+    web_ui()->CallJavascriptFunction("ntp.bookmarkChanged");
+}
+
+void BookmarksHandler::BookmarkNodeAdded(
+    BookmarkModel* model, const BookmarkNode* parent, int index) {
   DictionaryValue result;
   SetParentInBookmarksResult(parent, &result);
   NotifyModelChanged(result);

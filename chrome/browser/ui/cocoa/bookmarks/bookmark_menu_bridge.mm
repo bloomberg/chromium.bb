@@ -133,6 +133,10 @@ void BookmarkMenuBridge::BookmarkNodeRemoved(BookmarkModel* model,
   InvalidateMenu();
 }
 
+void BookmarkMenuBridge::BookmarkAllNodesRemoved(BookmarkModel* model) {
+  InvalidateMenu();
+}
+
 void BookmarkMenuBridge::BookmarkNodeChanged(BookmarkModel* model,
                                              const BookmarkNode* node) {
   NSMenuItem* item = MenuItemForNode(node);

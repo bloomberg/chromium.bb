@@ -35,6 +35,10 @@ void BaseBookmarkModelObserver::BookmarkNodeRemoved(BookmarkModel* model,
   BookmarkModelChanged();
 }
 
+void BaseBookmarkModelObserver::BookmarkAllNodesRemoved(BookmarkModel* model) {
+  BookmarkModelChanged();
+}
+
 void BaseBookmarkModelObserver::BookmarkNodeChanged(BookmarkModel* model,
                                                     const BookmarkNode* node) {
   BookmarkModelChanged();

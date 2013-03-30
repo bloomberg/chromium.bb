@@ -289,6 +289,11 @@ class BookmarkModel : public content::NotificationObserver,
   // recursively removes all nodes. Observers are notified immediately.
   void Remove(const BookmarkNode* parent, int index);
 
+  // Removes all the non-permanent bookmark nodes. Observers are only notified
+  // when all nodes have been removed. There is no notification for individual
+  // node removals.
+  void RemoveAll();
+
   // Moves |node| to |new_parent| and inserts it at the given |index|.
   void Move(const BookmarkNode* node,
             const BookmarkNode* new_parent,
@@ -430,9 +435,20 @@ class BookmarkModel : public content::NotificationObserver,
   // Populates |nodes_ordered_by_url_set_| from root.
   void PopulateNodesByURL(BookmarkNode* node);
 
+  // Removes the node from its parent, but does not delete it. No notifications
+  // are sent. |removed_urls| is populated with the urls which no longer have
+  // any bookmarks associated with them.
+  // This method should be called after acquiring |url_lock_|.
+  void RemoveNodeAndGetRemovedUrls(BookmarkNode* node,
+                                   std::set<GURL>* removed_urls);
+
   // Removes the node from its parent, sends notification, and deletes it.
   // type specifies how the node should be removed.
   void RemoveAndDeleteNode(BookmarkNode* delete_me);
+
+  // Notifies the history backend about urls of removed bookmarks.
+  void NotifyHistoryAboutRemovedBookmarks(
+      const std::set<GURL>& removed_bookmark_urls) const;
 
   // Adds the |node| at |parent| in the specified |index| and notifies its
   // observers.

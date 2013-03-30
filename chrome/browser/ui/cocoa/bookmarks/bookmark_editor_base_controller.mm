@@ -149,6 +149,10 @@ class BookmarkEditorBaseControllerBridge : public BookmarkModelObserver {
       [controller_ modelChangedPreserveSelection:NO];
   }
 
+  virtual void BookmarkAllNodesRemoved(BookmarkModel* model) OVERRIDE {
+    [controller_ modelChangedPreserveSelection:NO];
+  }
+
   virtual void BookmarkNodeChanged(BookmarkModel* model,
                                    const BookmarkNode* node) OVERRIDE {
     if (!importing_ && node->is_folder())

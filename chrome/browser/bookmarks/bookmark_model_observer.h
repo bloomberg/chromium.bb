@@ -66,6 +66,9 @@ class BookmarkModelObserver {
   // update to finish.
   virtual void ExtensiveBookmarkChangesEnded(BookmarkModel* model) {}
 
+  // Invoked when all non-permanent bookmark nodes have been removed.
+  virtual void BookmarkAllNodesRemoved(BookmarkModel* model) = 0;
+
  protected:
   virtual ~BookmarkModelObserver() {}
 };

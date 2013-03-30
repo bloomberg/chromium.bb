@@ -111,6 +111,10 @@ void BookmarkTabHelper::BookmarkNodeRemoved(BookmarkModel* model,
   UpdateStarredStateForCurrentURL();
 }
 
+void BookmarkTabHelper::BookmarkAllNodesRemoved(BookmarkModel* model) {
+  UpdateStarredStateForCurrentURL();
+}
+
 void BookmarkTabHelper::BookmarkNodeChanged(BookmarkModel* model,
                                             const BookmarkNode* node) {
   UpdateStarredStateForCurrentURL();

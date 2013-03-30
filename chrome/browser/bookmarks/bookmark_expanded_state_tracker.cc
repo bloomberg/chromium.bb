@@ -88,6 +88,12 @@ void BookmarkExpandedStateTracker::BookmarkNodeRemoved(
   GetExpandedNodes();
 }
 
+void BookmarkExpandedStateTracker::BookmarkAllNodesRemoved(
+    BookmarkModel* model) {
+  // Ask for the nodes again, which removes any nodes that were deleted.
+  GetExpandedNodes();
+}
+
 void BookmarkExpandedStateTracker::UpdatePrefs(const Nodes& nodes) {
   PrefService* prefs = components::UserPrefs::Get(browser_context_);
   if (!prefs)

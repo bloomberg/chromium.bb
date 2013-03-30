@@ -40,6 +40,7 @@ class BookmarkExpandedStateTracker : public BaseBookmarkModelObserver {
                                    const BookmarkNode* parent,
                                    int old_index,
                                    const BookmarkNode* node) OVERRIDE;
+  virtual void BookmarkAllNodesRemoved(BookmarkModel* model) OVERRIDE;
 
   // Resets the value in preferences from |expanded_nodes_|.
   void UpdatePrefs(const Nodes& nodes);

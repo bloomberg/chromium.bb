@@ -17,6 +17,7 @@ using bookmarks_helper::GetOtherNode;
 using bookmarks_helper::ModelMatchesVerifier;
 using bookmarks_helper::Move;
 using bookmarks_helper::Remove;
+using bookmarks_helper::RemoveAll;
 using bookmarks_helper::SetFavicon;
 using bookmarks_helper::SetTitle;
 
@@ -207,4 +208,53 @@ IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest,
   // Check that the data was not mutated from the original.
   EXPECT_TRUE(original_favicon_bytes.get());
   EXPECT_TRUE(original_favicon_bytes->Equals(final_favicon_bytes));
+}
+
+IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest,
+                       BookmarkAllNodesRemovedEvent) {
+  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+  // Starting state:
+  // other_node
+  //    -> folder0
+  //      -> tier1_a
+  //        -> http://mail.google.com
+  //        -> http://www.google.com
+  //      -> http://news.google.com
+  //      -> http://yahoo.com
+  //    -> http://www.cnn.com
+  // bookmark_bar
+  // -> empty_folder
+  // -> folder1
+  //    -> http://yahoo.com
+  // -> http://gmail.com
+
+  const BookmarkNode* folder0 = AddFolder(0, GetOtherNode(0), 0, L"folder0");
+  const BookmarkNode* tier1_a = AddFolder(0, folder0, 0, L"tier1_a");
+  ASSERT_TRUE(AddURL(0, folder0, 1, L"News", GURL("http://news.google.com")));
+  ASSERT_TRUE(AddURL(0, folder0, 2, L"Yahoo", GURL("http://www.yahoo.com")));
+  ASSERT_TRUE(AddURL(0, tier1_a, 0, L"Gmail", GURL("http://mail.google.com")));
+  ASSERT_TRUE(AddURL(0, tier1_a, 1, L"Google", GURL("http://www.google.com")));
+  ASSERT_TRUE(
+      AddURL(0, GetOtherNode(0), 1, L"CNN", GURL("http://www.cnn.com")));
+
+  ASSERT_TRUE(AddFolder(0, GetBookmarkBarNode(0), 0, L"empty_folder"));
+  const BookmarkNode* folder1 =
+      AddFolder(0, GetBookmarkBarNode(0), 1, L"folder1");
+  ASSERT_TRUE(AddURL(0, folder1, 0, L"Yahoo", GURL("http://www.yahoo.com")));
+  ASSERT_TRUE(
+      AddURL(0, GetBookmarkBarNode(0), 2, L"Gmail", GURL("http://gmail.com")));
+
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion(
+      "Waiting for initial sync completed."));
+  ASSERT_TRUE(ModelMatchesVerifier(0));
+
+  // Remove all
+  RemoveAll(0);
+  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion("All Bookmarks removed."));
+  // Verify other node has no children now.
+  EXPECT_EQ(0, GetOtherNode(0)->child_count());
+  EXPECT_EQ(0, GetBookmarkBarNode(0)->child_count());
+  // Verify model matches verifier.
+  ASSERT_TRUE(ModelMatchesVerifier(0));
 }

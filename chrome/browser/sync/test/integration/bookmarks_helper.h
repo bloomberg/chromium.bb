@@ -121,6 +121,9 @@ void Move(
 // |parent| at position |index|.
 void Remove(int profile, const BookmarkNode* parent, int index);
 
+// Removes all non-permanent nodes in the bookmark model of profile |profile|.
+void RemoveAll(int profile);
+
 // Sorts the children of the node |parent| in the bookmark model of profile
 // |profile|.
 void SortChildren(int profile, const BookmarkNode* parent);

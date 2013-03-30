@@ -211,6 +211,13 @@ void BookmarkEventRouter::BookmarkNodeRemoved(BookmarkModel* model,
   DispatchEvent(keys::kOnBookmarkRemoved, args.Pass());
 }
 
+void BookmarkEventRouter::BookmarkAllNodesRemoved(BookmarkModel* model) {
+  NOTREACHED();
+  // TODO(shashishekhar) Currently this notification is only used on Android,
+  // which does not support extensions. If Desktop needs to support this, add
+  // a new event to the extensions api.
+}
+
 void BookmarkEventRouter::BookmarkNodeChanged(BookmarkModel* model,
                                               const BookmarkNode* node) {
   scoped_ptr<ListValue> args(new ListValue());

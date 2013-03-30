@@ -54,6 +54,7 @@ class BookmarkChangeProcessor : public BookmarkModelObserver,
                                    const BookmarkNode* parent,
                                    int index,
                                    const BookmarkNode* node) OVERRIDE;
+  virtual void BookmarkAllNodesRemoved(BookmarkModel* model) OVERRIDE;
   virtual void BookmarkNodeChanged(BookmarkModel* model,
                                    const BookmarkNode* node) OVERRIDE;
   virtual void BookmarkNodeFaviconChanged(BookmarkModel* model,
@@ -173,10 +174,16 @@ class BookmarkChangeProcessor : public BookmarkModelObserver,
                             BookmarkModel* model,
                             scoped_refptr<base::RefCountedMemory>* dst);
 
-  // Remove the sync node corresponding to |node|.  It shouldn't have
-  // any children.
-  void RemoveOneSyncNode(syncer::WriteTransaction* trans,
-                         const BookmarkNode* node);
+  // Remove |sync_node|. It should not have any children
+  void RemoveOneSyncNode(syncer::WriteNode* sync_node);
+
+  // Remove all sync nodes, except the permanent nodes.
+  void RemoveAllSyncNodes();
+
+  // Remove all children of the bookmark node with bookmark node id:
+  // |topmost_node_id|.
+  void RemoveAllChildNodes(syncer::WriteTransaction* trans,
+                           const int64& topmost_node_id);
 
   // Remove all the sync nodes associated with |node| and its children.
   void RemoveSyncNodeHierarchy(const BookmarkNode* node);

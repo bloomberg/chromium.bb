@@ -138,6 +138,8 @@ class ChromeBrowserProvider : public BaseBookmarkModelObserver,
                                   jstring title,
                                   jlong parent_id);
 
+  void RemoveAllBookmarks(JNIEnv* env, jobject obj);
+
   base::android::ScopedJavaLocalRef<jobject> GetAllBookmarkFolders(JNIEnv* env,
                                                                    jobject obj);
 

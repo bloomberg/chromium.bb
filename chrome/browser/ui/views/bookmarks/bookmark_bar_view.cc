@@ -1036,6 +1036,20 @@ void BookmarkBarView::BookmarkNodeRemoved(BookmarkModel* model,
   BookmarkNodeRemovedImpl(model, parent, old_index);
 }
 
+void BookmarkBarView::BookmarkAllNodesRemoved(BookmarkModel* model) {
+  UpdateOtherBookmarksVisibility();
+
+  StopThrobbing(true);
+
+  // Remove the existing buttons.
+  while (GetBookmarkButtonCount()) {
+    delete GetBookmarkButton(0);
+  }
+
+  Layout();
+  SchedulePaint();
+}
+
 void BookmarkBarView::BookmarkNodeChanged(BookmarkModel* model,
                                           const BookmarkNode* node) {
   BookmarkNodeChangedImpl(model, node);

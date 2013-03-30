@@ -46,6 +46,11 @@ void BookmarkModelObserverForCocoa::BookmarkNodeRemoved(
   Notify();
 }
 
+void BookmarkModelObserverForCocoa::BookmarkAllNodesRemoved(
+    BookmarkModel* model) {
+  Notify();
+}
+
 void BookmarkModelObserverForCocoa::BookmarkNodeChanged(
     BookmarkModel* model,
     const BookmarkNode* node) {

@@ -276,6 +276,28 @@ class RemoveBookmarkTask : public BookmarkModelObserverTask {
   DISALLOW_COPY_AND_ASSIGN(RemoveBookmarkTask);
 };
 
+// Utility method to remove all bookmarks.
+class RemoveAllBookmarksTask : public BookmarkModelObserverTask {
+ public:
+  explicit RemoveAllBookmarksTask(BookmarkModel* model)
+      : BookmarkModelObserverTask(model) {}
+
+  virtual ~RemoveAllBookmarksTask() {}
+
+  void Run() {
+    RunOnUIThreadBlocking::Run(
+        base::Bind(&RemoveAllBookmarksTask::RunOnUIThread, model()));
+  }
+
+  static void RunOnUIThread(BookmarkModel* model) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    model->RemoveAll();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(RemoveAllBookmarksTask);
+};
+
 // Utility method to update a bookmark.
 class UpdateBookmarkTask : public BookmarkModelObserverTask {
  public:
@@ -1486,11 +1508,13 @@ ScopedJavaLocalRef<jobject> ChromeBrowserProvider::GetAllBookmarkFolders(
   return ScopedJavaLocalRef<jobject>(jroot);
 }
 
+void ChromeBrowserProvider::RemoveAllBookmarks(JNIEnv* env, jobject obj) {
+  RemoveAllBookmarksTask task(bookmark_model_);
+  task.Run();
+}
+
 ScopedJavaLocalRef<jobject> ChromeBrowserProvider::GetBookmarkNode(
-    JNIEnv* env,
-    jobject obj,
-    jlong id,
-    jboolean get_parent,
+    JNIEnv* env, jobject obj, jlong id, jboolean get_parent,
     jboolean get_children) {
   ScopedJavaGlobalRef<jobject> jnode;
   GetBookmarkNodeTask task(bookmark_model_);

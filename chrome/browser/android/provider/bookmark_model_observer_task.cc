@@ -54,9 +54,10 @@ void BookmarkModelObserverTask::BookmarkNodeRemoved(BookmarkModel* model,
                                                     const BookmarkNode* node) {
 }
 
+void BookmarkModelObserverTask::BookmarkAllNodesRemoved(BookmarkModel* model) {}
+
 void BookmarkModelObserverTask::BookmarkNodeChanged(BookmarkModel* model,
-                                                    const BookmarkNode* node) {
-}
+                                                    const BookmarkNode* node) {}
 
 void BookmarkModelObserverTask::BookmarkNodeFaviconChanged(
     BookmarkModel* model,

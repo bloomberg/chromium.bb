@@ -181,6 +181,17 @@ cr.define('bmm', function() {
   }
 
   /**
+   * Callback for when all bookmark nodes have been deleted.
+   */
+  function handleRemoveAll() {
+    // Reload the list and the tree.
+    if (bmm.list)
+      bmm.list.reload();
+    if (bmm.tree)
+      bmm.tree.reload();
+  }
+
+  /**
    * Callback for when importing bookmark is started.
    */
   function handleImportBegan() {

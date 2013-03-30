@@ -78,3 +78,21 @@ TEST_F(BookmarkExpandedStateTrackerTest, SetExpandedNodes) {
   n1 = NULL;
   EXPECT_EQ(nodes, tracker->GetExpandedNodes());
 }
+
+TEST_F(BookmarkExpandedStateTrackerTest, RemoveAll) {
+  BookmarkModel* model = GetModel();
+  BookmarkExpandedStateTracker* tracker = model->expanded_state_tracker();
+
+  // Add a folder and mark it expanded.
+  const BookmarkNode* n1 =
+      model->AddFolder(model->bookmark_bar_node(), 0, ASCIIToUTF16("x"));
+  BookmarkExpandedStateTracker::Nodes nodes;
+  nodes.insert(n1);
+  tracker->SetExpandedNodes(nodes);
+  // Verify that the node is present.
+  EXPECT_EQ(nodes, tracker->GetExpandedNodes());
+  // Call remove all.
+  model->RemoveAll();
+  // Verify node is not present.
+  EXPECT_TRUE(tracker->GetExpandedNodes().empty());
+}

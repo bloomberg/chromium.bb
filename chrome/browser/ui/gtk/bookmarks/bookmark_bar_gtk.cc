@@ -940,6 +940,11 @@ void BookmarkBarGtk::BookmarkNodeRemoved(BookmarkModel* model,
   SetChevronState();
 }
 
+void BookmarkBarGtk::BookmarkAllNodesRemoved(BookmarkModel* model) {
+  UpdateOtherBookmarksVisibility();
+  ResetButtons();
+}
+
 void BookmarkBarGtk::BookmarkNodeChanged(BookmarkModel* model,
                                          const BookmarkNode* node) {
   if (node->parent() != model_->bookmark_bar_node()) {

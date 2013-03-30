@@ -497,6 +497,10 @@ void BookmarkEditorGtk::BookmarkNodeRemoved(BookmarkModel* model,
   }
 }
 
+void BookmarkEditorGtk::BookmarkAllNodesRemoved(BookmarkModel* model) {
+  Reset();
+}
+
 void BookmarkEditorGtk::BookmarkNodeChildrenReordered(
     BookmarkModel* model, const BookmarkNode* node) {
   Reset();

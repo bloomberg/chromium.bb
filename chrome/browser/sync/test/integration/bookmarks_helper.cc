@@ -95,6 +95,8 @@ class FaviconChangeObserver : public BookmarkModelObserver {
                                    const BookmarkNode* parent,
                                    int old_index,
                                    const BookmarkNode* node) OVERRIDE {}
+  virtual void BookmarkAllNodesRemoved(BookmarkModel* model) OVERRIDE {}
+
   virtual void BookmarkNodeChanged(BookmarkModel* model,
                                    const BookmarkNode* node) OVERRIDE {
     if (model == model_ && node == node_)
@@ -580,6 +582,19 @@ void Remove(int profile,
     GetVerifierBookmarkModel()->Remove(v_parent, index);
   }
   GetBookmarkModel(profile)->Remove(parent, index);
+}
+
+void RemoveAll(int profile) {
+  if (test()->use_verifier()) {
+    const BookmarkNode* root_node = GetVerifierBookmarkModel()->root_node();
+    for (int i = 0; i < root_node->child_count(); ++i) {
+      const BookmarkNode* permanent_node = root_node->GetChild(i);
+      for (int j = permanent_node->child_count() - 1; j >= 0; --j) {
+        GetVerifierBookmarkModel()->Remove(permanent_node, j);
+      }
+    }
+  }
+  GetBookmarkModel(profile)->RemoveAll();
 }
 
 void SortChildren(int profile, const BookmarkNode* parent) {
