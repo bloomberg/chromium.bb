@@ -12,6 +12,10 @@
 #include "net/base/net_log.h"
 #include "net/proxy/proxy_retry_info.h"
 
+namespace base {
+class ListValue;
+}
+
 namespace net {
 
 class ProxyServer;
@@ -73,6 +77,9 @@ class NET_EXPORT_PRIVATE ProxyList {
   // Returns a PAC-style semicolon-separated list of valid proxy servers.
   // For example: "PROXY xxx.xxx.xxx.xxx:xx; SOCKS yyy.yyy.yyy:yy".
   std::string ToPacString() const;
+
+  // Returns a serialized value for the list. The caller takes ownership of it.
+  base::ListValue* ToValue() const;
 
   // Marks the current proxy server as bad and deletes it from the list.  The
   // list of known bad proxies is given by proxy_retry_info.  Returns true if

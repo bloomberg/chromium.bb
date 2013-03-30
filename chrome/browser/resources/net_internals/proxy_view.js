@@ -111,7 +111,7 @@ var ProxyView = (function() {
       if (!proxySettings)
         return;
 
-      var socksProxy = getSocks5Proxy_(proxySettings.single_proxy);
+      var socksProxy = getSingleSocks5Proxy_(proxySettings.single_proxy);
       if (!socksProxy)
         return;
 
@@ -137,7 +137,19 @@ var ProxyView = (function() {
     }
   };
 
-  function getSocks5Proxy_(proxyString) {
+  function getSingleSocks5Proxy_(proxyList) {
+    var proxyString;
+    if (typeof proxyList == 'string') {
+      // Older versions of Chrome passed single_proxy as a string.
+      // TODO(eroman): This behavior changed in M27. Support for older logs can
+      //               safely be removed circa M29.
+      proxyString = proxyList;
+    } else if (Array.isArray(proxyList) && proxyList.length == 1) {
+      proxyString = proxyList[0];
+    } else {
+      return null;
+    }
+
     var pattern = /^socks5:\/\/(.*)$/;
     var matches = pattern.exec(proxyString);
 

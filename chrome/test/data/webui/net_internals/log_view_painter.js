@@ -151,7 +151,8 @@ TEST_F('NetInternalsTest', 'netInternalsLogViewPainterPrintAsText', function() {
   runTestCase(painterTestNetError());
   runTestCase(painterTestHexEncodedBytes());
   runTestCase(painterTestCertVerifierJob());
-  runTestCase(painterTestProxyConfig());
+  runTestCase(painterTestProxyConfigOneProxyAllSchemes());
+  runTestCase(painterTestProxyConfigTwoProxiesAllSchemes());
   runTestCase(painterTestDontStripCookiesURLRequest());
   runTestCase(painterTestStripCookiesURLRequest());
   runTestCase(painterTestDontStripCookiesSPDYSession());
@@ -1266,9 +1267,10 @@ function painterTestCertVerifierJob() {
 }
 
 /**
- * Tests the formatting of proxy configurations.
+ * Tests the formatting of proxy configurations when using one proxy server for
+ * all URL schemes.
  */
-function painterTestProxyConfig() {
+function painterTestProxyConfigOneProxyAllSchemes() {
   var testCase = {};
   testCase.tickOffset = '1337911098481';
 
@@ -1308,6 +1310,60 @@ function painterTestProxyConfig() {
     '                               (1) Auto-detect\n' +
     '                               (2) PAC script: https://config/wpad.dat\n' +
     '                               (3) Proxy server: cache-proxy:3128\n' +
+    '                                   Bypass list: \n' +
+    '                                     *.local\n' +
+    '                                     foo\n' +
+    '                                     <local>\n' +
+    '                               Source: SYSTEM';
+
+  return testCase;
+}
+
+/**
+ * Tests the formatting of proxy configurations when using two proxy servers for
+ * all URL schemes.
+ */
+function painterTestProxyConfigTwoProxiesAllSchemes() {
+  var testCase = {};
+  testCase.tickOffset = '1337911098481';
+
+  testCase.logEntries = [
+    {
+      'params': {
+        'new_config': {
+          'auto_detect': true,
+          'bypass_list': [
+            '*.local',
+            'foo',
+            '<local>'
+          ],
+          'pac_url': 'https://config/wpad.dat',
+          'single_proxy': ['cache-proxy:3128', 'socks4://other:999'],
+          'source': 'SYSTEM'
+        },
+        'old_config': {
+          'auto_detect': true
+        }
+      },
+      'phase': EventPhase.PHASE_NONE,
+      'source': {
+        'id': 814,
+        'type': EventSourceType.NONE
+      },
+      'time': '954443578',
+      'type': EventType.PROXY_CONFIG_CHANGED
+    }
+  ];
+
+  testCase.expectedText =
+    't=1338865542059 [st=0]  PROXY_CONFIG_CHANGED\n' +
+    '                        --> old_config =\n' +
+    '                               Auto-detect\n' +
+    '                        --> new_config =\n' +
+    '                               (1) Auto-detect\n' +
+    '                               (2) PAC script: https://config/wpad.dat\n' +
+    '                               (3) Proxy server: [cache-proxy:3128, ' +
+        'socks4://other:999]\n' +
     '                                   Bypass list: \n' +
     '                                     *.local\n' +
     '                                     foo\n' +

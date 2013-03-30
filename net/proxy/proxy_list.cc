@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/time.h"
+#include "base/values.h"
 #include "net/proxy/proxy_server.h"
 
 using base::TimeDelta;
@@ -153,6 +154,13 @@ std::string ProxyList::ToPacString() const {
     proxy_list += iter->ToPacString();
   }
   return proxy_list.empty() ? std::string() : proxy_list;
+}
+
+base::ListValue* ProxyList::ToValue() const {
+  base::ListValue* list = new base::ListValue();
+  for (size_t i = 0; i < proxies_.size(); ++i)
+    list->AppendString(proxies_[i].ToURI());
+  return list;
 }
 
 bool ProxyList::Fallback(ProxyRetryInfoMap* proxy_retry_info,

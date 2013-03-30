@@ -19,7 +19,7 @@ void AddProxyListToValue(const char* name,
                          const ProxyList& proxies,
                          base::DictionaryValue* dict) {
   if (!proxies.IsEmpty())
-    dict->SetString(name, proxies.ToPacString());
+    dict->Set(name, proxies.ToValue());
 }
 
 // Split the |uri_list| on commas and add each entry to |proxy_list| in turn.
@@ -234,7 +234,7 @@ base::Value* ProxyConfig::ToValue() const {
   if (proxy_rules_.type != ProxyRules::TYPE_NO_RULES) {
     switch (proxy_rules_.type) {
       case ProxyRules::TYPE_SINGLE_PROXY:
-        AddProxyListToValue("single_proxies",
+        AddProxyListToValue("single_proxy",
                             proxy_rules_.single_proxies, dict);
         break;
       case ProxyRules::TYPE_PROXY_PER_SCHEME: {

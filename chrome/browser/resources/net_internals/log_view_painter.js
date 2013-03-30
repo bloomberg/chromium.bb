@@ -638,6 +638,23 @@ proxySettingsToString = function(config) {
   if (!config)
     return '';
 
+  // TODO(eroman): if |config| has unexpected properties, print it as JSON
+  //               rather than hide them.
+
+  function getProxyListString(proxies) {
+    // Older versions of Chrome would set these values as strings, whereas newer
+    // logs use arrays.
+    // TODO(eroman): This behavior changed in M27. Support for older logs can
+    //               safely be removed circa M29.
+    if (Array.isArray(proxies)) {
+      var listString = proxies.join(', ');
+      if (proxies.length > 1)
+        return '[' + listString + ']';
+      return listString;
+    }
+    return proxies;
+  }
+
   // The proxy settings specify up to three major fallback choices
   // (auto-detect, custom pac url, or manual settings).
   // We enumerate these to a list so we can later number them.
@@ -654,17 +671,17 @@ proxySettingsToString = function(config) {
     var lines = [];
 
     if (config.single_proxy) {
-      lines.push('Proxy server: ' + config.single_proxy);
+      lines.push('Proxy server: ' + getProxyListString(config.single_proxy));
     } else if (config.proxy_per_scheme) {
       for (var urlScheme in config.proxy_per_scheme) {
         if (urlScheme != 'fallback') {
           lines.push('Proxy server for ' + urlScheme.toUpperCase() + ': ' +
-                     config.proxy_per_scheme[urlScheme]);
+                     getProxyListString(config.proxy_per_scheme[urlScheme]));
         }
       }
       if (config.proxy_per_scheme.fallback) {
         lines.push('Proxy server for everything else: ' +
-                   config.proxy_per_scheme.fallback);
+                   getProxyListString(config.proxy_per_scheme.fallback));
       }
     }
 

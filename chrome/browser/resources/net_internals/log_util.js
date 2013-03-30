@@ -256,6 +256,8 @@ log_util = (function() {
           showView = true;
         }
       } catch (error) {
+        errorString += 'Caught error while calling onLoadLogFinish: ' +
+                       error + '\n\n';
       }
       categoryTabSwitcher.showTabHandleNode(tabIds[i], showView);
     }
