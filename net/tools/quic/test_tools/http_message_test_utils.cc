@@ -92,12 +92,12 @@ HTTPMessage::Version HTTPMessage::StringToVersion(StringPiece str) {
 }
 
 const char* HTTPMessage::MethodToString(Method method) {
-  CHECK_LT(method, arraysize(kMethodString));
+  CHECK_LT(static_cast<size_t>(method), arraysize(kMethodString));
   return kMethodString[method];
 }
 
 const char* HTTPMessage::VersionToString(Version version) {
-  CHECK_LT(version, arraysize(kHTTPVersionString));
+  CHECK_LT(static_cast<size_t>(version), arraysize(kHTTPVersionString));
   return kHTTPVersionString[version];
 }
 
