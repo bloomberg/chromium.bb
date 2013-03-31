@@ -1092,15 +1092,22 @@ class InitSDKStage(bs.BuilderStage):
 
   def _PerformStage(self):
     chroot_path = os.path.join(self._build_root, constants.DEFAULT_CHROOT_DIR)
-    if not os.path.isdir(chroot_path) or self._build_config['chroot_replace']:
+    replace = self._build_config['chroot_replace']
+    if os.path.isdir(self._build_root) and not replace:
+      try:
+        commands.RunChrootUpgradeHooks(self._build_root)
+      except results_lib.BuildScriptFailure:
+        cros_build_lib.PrintBuildbotStepText('Replacing broken chroot')
+        cros_build_lib.PrintBuildbotStepWarnings()
+        replace = True
+
+    if not os.path.isdir(chroot_path) or replace:
       commands.MakeChroot(
           buildroot=self._build_root,
-          replace=self._build_config['chroot_replace'],
+          replace=replace,
           use_sdk=self._use_sdk,
           chrome_root=self._options.chrome_root,
           extra_env=self._env)
-    else:
-      commands.RunChrootUpgradeHooks(self._build_root)
 
 
 class SetupBoardStage(InitSDKStage):
