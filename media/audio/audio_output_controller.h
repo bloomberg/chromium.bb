@@ -18,8 +18,6 @@
 #include "media/audio/simple_sources.h"
 #include "media/base/media_export.h"
 
-class MessageLoop;
-
 // An AudioOutputController controls an AudioOutputStream and provides data
 // to this output stream. It has an important function that it executes
 // audio operations like play, pause, stop, etc. on a separate thread,

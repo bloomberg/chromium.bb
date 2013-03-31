@@ -11,8 +11,6 @@
 #include "ui/gfx/size.h"
 #include "ui/gl/gl_bindings.h"
 
-class MessageLoop;
-
 namespace media {
 class VideoFrame;
 }

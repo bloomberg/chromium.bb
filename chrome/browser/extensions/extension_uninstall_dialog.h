@@ -14,8 +14,11 @@
 #include "ui/gfx/image/image_skia.h"
 
 class Browser;
-class MessageLoop;
 class Profile;
+
+namespace base {
+class MessageLoop;
+}
 
 namespace extensions {
 class Extension;
@@ -110,7 +113,7 @@ class ExtensionUninstallDialog
   };
   State state_;
 
-  MessageLoop* ui_loop_;
+  base::MessageLoop* ui_loop_;
 
   content::NotificationRegistrar registrar_;
 

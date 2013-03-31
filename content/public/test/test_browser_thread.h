@@ -9,9 +9,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/browser_thread.h"
 
-class MessageLoop;
-
 namespace base {
+class MessageLoop;
 class Thread;
 }
 
@@ -24,7 +23,8 @@ class TestBrowserThreadImpl;
 class TestBrowserThread {
  public:
   explicit TestBrowserThread(BrowserThread::ID identifier);
-  TestBrowserThread(BrowserThread::ID identifier, MessageLoop* message_loop);
+  TestBrowserThread(BrowserThread::ID identifier,
+                    base::MessageLoop* message_loop);
   ~TestBrowserThread();
 
   // We provide a subset of the capabilities of the Thread interface

@@ -16,8 +16,6 @@
 #include "base/threading/platform_thread.h"
 #include "base/time.h"
 
-class MessageLoop;
-
 namespace remoting {
 
 // SingleThreadTaskRunner for plugin main threads.

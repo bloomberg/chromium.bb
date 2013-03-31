@@ -25,8 +25,6 @@
 #include "media/audio/audio_output_dispatcher.h"
 #include "media/audio/audio_parameters.h"
 
-class MessageLoop;
-
 namespace media {
 
 class AudioOutputProxy;

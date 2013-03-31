@@ -13,7 +13,9 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_job_factory.h"
 
+namespace base {
 class MessageLoop;
+}
 
 namespace net {
 class HostResolver;
@@ -30,8 +32,8 @@ class ShellURLRequestContextGetter : public net::URLRequestContextGetter {
   ShellURLRequestContextGetter(
       bool ignore_certificate_errors,
       const base::FilePath& base_path,
-      MessageLoop* io_loop,
-      MessageLoop* file_loop,
+      base::MessageLoop* io_loop,
+      base::MessageLoop* file_loop,
       ProtocolHandlerMap* protocol_handlers);
 
   // net::URLRequestContextGetter implementation.
@@ -47,8 +49,8 @@ class ShellURLRequestContextGetter : public net::URLRequestContextGetter {
  private:
   bool ignore_certificate_errors_;
   base::FilePath base_path_;
-  MessageLoop* io_loop_;
-  MessageLoop* file_loop_;
+  base::MessageLoop* io_loop_;
+  base::MessageLoop* file_loop_;
 
   scoped_ptr<net::ProxyConfigService> proxy_config_service_;
   scoped_ptr<net::NetworkDelegate> network_delegate_;

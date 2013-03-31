@@ -11,7 +11,9 @@
 #include "third_party/libjingle/source/talk/base/socketaddress.h"
 #include "third_party/libjingle/source/talk/base/sigslot.h"
 
+namespace base {
 class MessageLoop;
+}
 
 namespace cricket {
 class TransportChannel;
@@ -56,7 +58,7 @@ class TransportChannelSocketAdapter : public net::Socket,
   void OnWritableState(cricket::TransportChannel* channel);
   void OnChannelDestroyed(cricket::TransportChannel* channel);
 
-  MessageLoop* message_loop_;
+  base::MessageLoop* message_loop_;
 
   cricket::TransportChannel* channel_;
 

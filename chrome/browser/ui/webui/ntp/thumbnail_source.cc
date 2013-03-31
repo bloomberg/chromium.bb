@@ -68,7 +68,7 @@ std::string ThumbnailSource::GetMimeType(const std::string&) const {
   return "image/png";
 }
 
-MessageLoop* ThumbnailSource::MessageLoopForRequestPath(
+base::MessageLoop* ThumbnailSource::MessageLoopForRequestPath(
     const std::string& path) const {
   // TopSites can be accessed from the IO thread.
   return thumbnail_service_.get() ?

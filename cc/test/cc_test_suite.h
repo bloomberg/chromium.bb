@@ -9,7 +9,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/test/test_suite.h"
 
+namespace base {
 class MessageLoop;
+}
 
 namespace cc {
 
@@ -24,7 +26,7 @@ class CCTestSuite : public base::TestSuite {
   virtual void Shutdown() OVERRIDE;
 
  private:
-  scoped_ptr<MessageLoop> message_loop_;
+  scoped_ptr<base::MessageLoop> message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(CCTestSuite);
 };

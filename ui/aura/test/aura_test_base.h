@@ -44,7 +44,7 @@ class AuraTestBase : public testing::Test {
   RootWindow* root_window() { return helper_->root_window(); }
 
  private:
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   scoped_ptr<AuraTestHelper> helper_;
 
   DISALLOW_COPY_AND_ASSIGN(AuraTestBase);

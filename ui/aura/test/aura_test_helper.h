@@ -8,7 +8,9 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 
+namespace base {
 class MessageLoopForUI;
+}
 
 namespace ui {
 class InputMethod;
@@ -31,7 +33,7 @@ class TestStackingClient;
 // that are necessary to run test on Aura.
 class AuraTestHelper {
  public:
-  explicit AuraTestHelper(MessageLoopForUI* message_loop);
+  explicit AuraTestHelper(base::MessageLoopForUI* message_loop);
   ~AuraTestHelper();
 
   // Creates and initializes (shows and sizes) the RootWindow for use in tests.
@@ -49,7 +51,7 @@ class AuraTestHelper {
   TestScreen* test_screen() { return test_screen_.get(); }
 
  private:
-  MessageLoopForUI* message_loop_;
+  base::MessageLoopForUI* message_loop_;
   bool setup_called_;
   bool teardown_called_;
   bool owns_root_window_;

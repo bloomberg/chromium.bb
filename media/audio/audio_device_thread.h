@@ -15,7 +15,9 @@
 #include "media/audio/audio_parameters.h"
 #include "media/audio/shared_memory_util.h"
 
+namespace base {
 class MessageLoop;
+}
 
 namespace media {
 class AudioBus;
@@ -86,7 +88,7 @@ class MEDIA_EXPORT AudioDeviceThread {
   // in order to join the worker thread and close the thread handle later via a
   // posted task.
   // If set to NULL, function will wait for the thread to exit before returning.
-  void Stop(MessageLoop* loop_for_join);
+  void Stop(base::MessageLoop* loop_for_join);
 
   // Returns true if the thread is stopped or stopping.
   bool IsStopped();

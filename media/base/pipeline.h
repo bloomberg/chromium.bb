@@ -20,8 +20,6 @@
 #include "media/base/serial_runner.h"
 #include "ui/gfx/size.h"
 
-class MessageLoop;
-
 namespace base {
 class MessageLoopProxy;
 class TimeDelta;

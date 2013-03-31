@@ -285,7 +285,7 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl : public SyncScheduler {
 
   // The message loop this object is on.  Almost all methods have to
   // be called on this thread.
-  MessageLoop* const sync_loop_;
+  base::MessageLoop* const sync_loop_;
 
   // Set in Start(), unset in Stop().
   bool started_;

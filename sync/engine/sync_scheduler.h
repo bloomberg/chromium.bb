@@ -16,8 +16,6 @@
 #include "sync/internal_api/public/base/model_type_invalidation_map.h"
 #include "sync/sessions/sync_session.h"
 
-class MessageLoop;
-
 namespace tracked_objects {
 class Location;
 }  // namespace tracked_objects

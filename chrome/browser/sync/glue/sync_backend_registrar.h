@@ -16,8 +16,11 @@
 #include "sync/internal_api/public/engine/model_safe_worker.h"
 #include "sync/internal_api/public/sync_manager.h"
 
-class MessageLoop;
 class Profile;
+
+namespace base {
+class MessageLoop;
+}
 
 namespace syncer {
 struct UserShare;
@@ -37,7 +40,7 @@ class SyncBackendRegistrar : public syncer::SyncManager::ChangeDelegate {
   // |sync_loop|.  Must be created on the UI thread.
   SyncBackendRegistrar(const std::string& name,
                        Profile* profile,
-                       MessageLoop* sync_loop);
+                       base::MessageLoop* sync_loop);
 
   // Informs the SyncBackendRegistrar of the currently enabled set of types.
   // These types will be placed in the passive group.  This function should be
@@ -128,7 +131,7 @@ class SyncBackendRegistrar : public syncer::SyncManager::ChangeDelegate {
 
   Profile* const profile_;
 
-  MessageLoop* const sync_loop_;
+  base::MessageLoop* const sync_loop_;
 
   const scoped_refptr<UIModelWorker> ui_worker_;
 

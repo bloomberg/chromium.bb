@@ -15,7 +15,9 @@
 #include "chrome/common/mac/launchd.h"
 #include "chrome/common/multi_process_lock.h"
 
+namespace base {
 class MessageLoop;
+}
 
 // TODO(dmaclach): Write this in terms of a real mock.
 // http://crbug.com/76923
@@ -26,7 +28,7 @@ class MockLaunchd : public Launchd {
                           base::FilePath* bundle_root,
                           base::FilePath* executable);
 
-  MockLaunchd(const base::FilePath& file, MessageLoop* loop,
+  MockLaunchd(const base::FilePath& file, base::MessageLoop* loop,
               bool create_socket, bool as_service);
   virtual ~MockLaunchd();
 
@@ -62,7 +64,7 @@ class MockLaunchd : public Launchd {
  private:
   base::FilePath file_;
   std::string pipe_name_;
-  MessageLoop* message_loop_;
+  base::MessageLoop* message_loop_;
   scoped_ptr<MultiProcessLock> running_lock_;
   bool create_socket_;
   bool as_service_;

@@ -17,8 +17,11 @@
 #include "chrome/browser/search_engines/search_terms_data.h"
 #include "chrome/browser/search_engines/template_url.h"
 
-class MessageLoop;
 class Profile;
+
+namespace base {
+class MessageLoop;
+}
 
 namespace history {
 class HistoryBackend;
@@ -93,7 +96,7 @@ struct HistoryURLProviderParams {
                            const SearchTermsData& search_terms_data);
   ~HistoryURLProviderParams();
 
-  MessageLoop* message_loop;
+  base::MessageLoop* message_loop;
 
   // A copy of the autocomplete input. We need the copy since this object will
   // live beyond the original query while it runs on the history thread.

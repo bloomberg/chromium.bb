@@ -9,7 +9,9 @@
 #include "media/base/pipeline_status.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
+namespace base {
 class MessageLoop;
+}
 
 namespace media {
 
@@ -45,7 +47,7 @@ class WaitableMessageLoopEvent {
   void OnCallback(PipelineStatus status);
   void OnTimeout();
 
-  MessageLoop* message_loop_;
+  base::MessageLoop* message_loop_;
   bool signaled_;
   PipelineStatus status_;
 

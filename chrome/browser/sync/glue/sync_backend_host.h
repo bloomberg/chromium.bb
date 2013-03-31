@@ -34,8 +34,11 @@
 #include "sync/protocol/encryption.pb.h"
 #include "sync/protocol/sync_protocol_error.h"
 
-class MessageLoop;
 class Profile;
+
+namespace base {
+class MessageLoop;
+}
 
 namespace syncer {
 class SyncManagerFactory;
@@ -307,7 +310,7 @@ class SyncBackendHost
 
   struct DoInitializeOptions {
     DoInitializeOptions(
-        MessageLoop* sync_loop,
+        base::MessageLoop* sync_loop,
         SyncBackendRegistrar* registrar,
         const syncer::ModelSafeRoutingInfo& routing_info,
         const std::vector<syncer::ModelSafeWorker*>& workers,
@@ -328,7 +331,7 @@ class SyncBackendHost
             report_unrecoverable_error_function);
     ~DoInitializeOptions();
 
-    MessageLoop* sync_loop;
+    base::MessageLoop* sync_loop;
     SyncBackendRegistrar* registrar;
     syncer::ModelSafeRoutingInfo routing_info;
     std::vector<syncer::ModelSafeWorker*> workers;
@@ -509,7 +512,7 @@ class SyncBackendHost
 
   // A reference to the MessageLoop used to construct |this|, so we know how
   // to safely talk back to the SyncFrontend.
-  MessageLoop* const frontend_loop_;
+  base::MessageLoop* const frontend_loop_;
 
   Profile* const profile_;
 

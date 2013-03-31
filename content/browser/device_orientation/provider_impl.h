@@ -16,7 +16,9 @@
 #include "content/browser/device_orientation/provider.h"
 #include "content/common/content_export.h"
 
+namespace base {
 class MessageLoop;
+}
 
 namespace content {
 
@@ -55,7 +57,7 @@ class ProviderImpl : public Provider {
 
   // The Message Loop on which this object was created.
   // Typically the I/O loop, but may be something else during testing.
-  MessageLoop* creator_loop_;
+  base::MessageLoop* creator_loop_;
 
   // Members below are only to be used from the creator_loop_.
   DataFetcherFactory factory_;

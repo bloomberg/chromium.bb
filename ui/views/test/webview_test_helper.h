@@ -7,7 +7,9 @@
 
 #include "base/memory/scoped_ptr.h"
 
+namespace base {
 class MessageLoopForUI;
+}
 
 namespace content {
 class TestContentClientInitializer;
@@ -18,7 +20,7 @@ namespace views {
 
 class WebViewTestHelper {
  public:
-  explicit WebViewTestHelper(MessageLoopForUI* ui_loop);
+  explicit WebViewTestHelper(base::MessageLoopForUI* ui_loop);
   virtual ~WebViewTestHelper();
 
  private:

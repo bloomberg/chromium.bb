@@ -10,7 +10,9 @@
 
 #include "base/string16.h"
 
+namespace base {
 class MessageLoop;
+}
 
 // Exposes an easy way for the various components of the extension system to
 // report errors. This is a singleton that lives on the UI thread, with the
@@ -45,7 +47,7 @@ class ExtensionErrorReporter {
   explicit ExtensionErrorReporter(bool enable_noisy_errors);
   ~ExtensionErrorReporter();
 
-  MessageLoop* ui_loop_;
+  base::MessageLoop* ui_loop_;
   std::vector<string16> errors_;
   bool enable_noisy_errors_;
 };

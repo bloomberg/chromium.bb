@@ -12,7 +12,9 @@
 #include "net/base/net_errors.h"
 #include "net/proxy/proxy_resolver.h"
 
+namespace base {
 class MessageLoop;
+}
 
 namespace net {
 
@@ -42,7 +44,7 @@ class MockAsyncProxyResolverBase : public ProxyResolver {
     const GURL url_;
     ProxyInfo* results_;
     net::CompletionCallback callback_;
-    MessageLoop* origin_loop_;
+    base::MessageLoop* origin_loop_;
   };
 
   class SetPacScriptRequest {
@@ -61,7 +63,7 @@ class MockAsyncProxyResolverBase : public ProxyResolver {
     MockAsyncProxyResolverBase* resolver_;
     const scoped_refptr<ProxyResolverScriptData> script_data_;
     net::CompletionCallback callback_;
-    MessageLoop* origin_loop_;
+    base::MessageLoop* origin_loop_;
   };
 
   typedef std::vector<scoped_refptr<Request> > RequestsList;

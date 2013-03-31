@@ -15,7 +15,9 @@
 #include "ipc/ipc_message.h"  // For IPC_MESSAGE_LOG_ENABLED.
 #include "webkit/glue/resource_loader_bridge.h"
 
+namespace base {
 class MessageLoop;
+}
 
 namespace IPC {
 class SyncChannel;
@@ -104,7 +106,7 @@ class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
     return histogram_message_filter_.get();
   }
 
-  MessageLoop* message_loop() const { return message_loop_; }
+  base::MessageLoop* message_loop() const { return message_loop_; }
 
   // Returns the one child thread.
   static ChildThread* current();
@@ -166,7 +168,7 @@ class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
   // attempt to communicate.
   bool on_channel_error_called_;
 
-  MessageLoop* message_loop_;
+  base::MessageLoop* message_loop_;
 
   scoped_ptr<FileSystemDispatcher> file_system_dispatcher_;
 

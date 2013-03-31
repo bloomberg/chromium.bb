@@ -46,14 +46,14 @@ class ViewsTestBase : public testing::Test {
     views_delegate_.reset(views_delegate);
   }
 
-  MessageLoop* message_loop() { return &message_loop_; }
+  base::MessageLoop* message_loop() { return &message_loop_; }
 
   // Returns a context view. In aura builds, this will be the
   // RootWindow. Everywhere else, NULL.
   gfx::NativeView GetContext();
 
  private:
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   scoped_ptr<TestViewsDelegate> views_delegate_;
 #if defined(USE_AURA)
   scoped_ptr<aura::test::AuraTestHelper> aura_test_helper_;

@@ -15,8 +15,11 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/image_decoder.h"
 
-class MessageLoop;
 class SkBitmap;
+
+namespace base {
+class MessageLoop;
+}
 
 namespace chromeos {
 
@@ -77,7 +80,7 @@ class UserImageLoader : public base::RefCountedThreadSafe<UserImageLoader>,
   virtual void OnDecodeImageFailed(const ImageDecoder* decoder) OVERRIDE;
 
   // The message loop object of the thread in which we notify the delegate.
-  MessageLoop* target_message_loop_;
+  base::MessageLoop* target_message_loop_;
 
   // Specify how the file should be decoded in the utility process.
   const ImageDecoder::ImageCodec image_codec_;

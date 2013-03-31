@@ -15,9 +15,9 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/sequenced_worker_pool.h"
 
-class MessageLoop;
-
 namespace base {
+
+class MessageLoop;
 
 // Wrapper around SequencedWorkerPool for testing that blocks destruction
 // until the pool is actually destroyed.  This is so that a

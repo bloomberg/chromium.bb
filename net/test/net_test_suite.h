@@ -10,7 +10,9 @@
 #include "build/build_config.h"
 #include "net/dns/mock_host_resolver.h"
 
+namespace base {
 class MessageLoop;
+}
 
 namespace net {
 class NetworkChangeNotifier;
@@ -45,7 +47,7 @@ class NetTestSuite : public base::TestSuite {
 
  private:
   scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
-  scoped_ptr<MessageLoop> message_loop_;
+  scoped_ptr<base::MessageLoop> message_loop_;
   scoped_refptr<net::RuleBasedHostResolverProc> host_resolver_proc_;
   net::ScopedDefaultHostResolverProc scoped_host_resolver_proc_;
 };

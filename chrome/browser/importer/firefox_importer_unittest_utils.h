@@ -11,10 +11,14 @@
 #include "chrome/browser/importer/nss_decryptor.h"
 
 class FFDecryptorServerChannelListener;
-namespace IPC {
-  class Channel;
-}  // namespace IPC
+
+namespace base {
 class MessageLoopForIO;
+}
+
+namespace IPC {
+class Channel;
+}  // namespace IPC
 
 // On OS X NSSDecryptor needs to run in a separate process. To allow us to use
 // the same unit test on all platforms we use a proxy class which spawns a
@@ -52,7 +56,7 @@ class FFUnitTestDecryptorProxy {
   base::ProcessHandle child_process_;
   scoped_ptr<IPC::Channel> channel_;
   scoped_ptr<FFDecryptorServerChannelListener> listener_;
-  scoped_ptr<MessageLoopForIO> message_loop_;
+  scoped_ptr<base::MessageLoopForIO> message_loop_;
 #else
   NSSDecryptor decryptor_;
 #endif  // !OS_MACOSX

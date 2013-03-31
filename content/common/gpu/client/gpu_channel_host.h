@@ -29,11 +29,11 @@
 #include "ui/gl/gpu_preference.h"
 
 class GURL;
-class MessageLoop;
 class TransportTextureService;
 struct GPUCreateCommandBufferConfig;
 
 namespace base {
+class MessageLoop;
 class MessageLoopProxy;
 }
 
@@ -65,7 +65,7 @@ class CONTENT_EXPORT GpuChannelHostFactory {
 
   virtual bool IsMainThread() = 0;
   virtual bool IsIOThread() = 0;
-  virtual MessageLoop* GetMainLoop() = 0;
+  virtual base::MessageLoop* GetMainLoop() = 0;
   virtual scoped_refptr<base::MessageLoopProxy> GetIOLoopProxy() = 0;
   virtual base::WaitableEvent* GetShutDownEvent() = 0;
   virtual scoped_ptr<base::SharedMemory> AllocateSharedMemory(size_t size) = 0;

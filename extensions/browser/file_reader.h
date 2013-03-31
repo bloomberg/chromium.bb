@@ -11,7 +11,9 @@
 #include "base/memory/ref_counted.h"
 #include "extensions/common/extension_resource.h"
 
+namespace base {
 class MessageLoop;
+}
 
 // This file defines an interface for reading a file asynchronously on a
 // background thread.
@@ -38,7 +40,7 @@ class FileReader : public base::RefCountedThreadSafe<FileReader> {
 
   extensions::ExtensionResource resource_;
   Callback callback_;
-  MessageLoop* origin_loop_;
+  base::MessageLoop* origin_loop_;
 };
 
 #endif  // EXTENSIONS_BROWSER_FILE_READER_H_

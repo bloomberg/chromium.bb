@@ -15,7 +15,9 @@
 #include "base/time.h"
 #include "content/browser/histogram_subscriber.h"
 
+namespace base {
 class MessageLoop;
+}
 
 namespace content {
 
@@ -68,7 +70,7 @@ class HistogramSynchronizer : public HistogramSubscriber {
   // changes to histograms.  When all changes have been acquired, or when the
   // wait time expires (whichever is sooner), post the callback to the
   // specified message loop. Note the callback is posted exactly once.
-  static void FetchHistogramsAsynchronously(MessageLoop* callback_thread,
+  static void FetchHistogramsAsynchronously(base::MessageLoop* callback_thread,
                                             const base::Closure& callback,
                                             base::TimeDelta wait_time);
 
@@ -109,13 +111,14 @@ class HistogramSynchronizer : public HistogramSubscriber {
   // callaback_thread_.  This side effect should not generally happen, but is in
   // place to assure correctness (that any tasks that were set, are eventually
   // called, and never merely discarded).
-  void SetCallbackTaskAndThread(MessageLoop* callback_thread,
+  void SetCallbackTaskAndThread(base::MessageLoop* callback_thread,
                                 const base::Closure& callback);
 
   void ForceHistogramSynchronizationDoneCallback(int sequence_number);
 
   // Internal helper function, to post task, and record callback stats.
-  void InternalPostTask(MessageLoop* thread, const base::Closure& callback);
+  void InternalPostTask(base::MessageLoop* thread,
+                        const base::Closure& callback);
 
   // Gets a new sequence number to be sent to processes from browser process.
   int GetNextAvailableSequenceNumber(ProcessHistogramRequester requester);
@@ -127,7 +130,7 @@ class HistogramSynchronizer : public HistogramSubscriber {
   // the task and thread we use to post a completion notification in
   // callback_ and callback_thread_.
   base::Closure callback_;
-  MessageLoop* callback_thread_;
+  base::MessageLoop* callback_thread_;
 
   // We don't track the actual processes that are contacted for an update, only
   // the count of the number of processes, and we can sometimes time-out and

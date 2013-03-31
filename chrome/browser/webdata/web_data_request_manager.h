@@ -17,10 +17,13 @@
 #include "chrome/browser/api/webdata/web_data_service_base.h"
 #include "chrome/browser/api/webdata/web_data_service_consumer.h"
 
-class MessageLoop;
 class WebDataService;
 class WebDataServiceConsumer;
 class WebDataRequestManager;
+
+namespace base {
+class MessageLoop;
+}
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -42,7 +45,7 @@ class WebDataRequest {
   WebDataServiceConsumer* GetConsumer() const;
 
   // Retrieves the original message loop the of the request.
-  MessageLoop* GetMessageLoop() const;
+  base::MessageLoop* GetMessageLoop() const;
 
   // Returns |true| if the request was cancelled via the |Cancel()| method.
   bool IsCancelled() const;
@@ -67,7 +70,7 @@ class WebDataRequest {
   WebDataRequestManager* manager_;
 
   // Tracks loop that the request originated on.
-  MessageLoop* message_loop_;
+  base::MessageLoop* message_loop_;
 
   // Identifier for this request.
   WebDataServiceBase::Handle handle_;

@@ -27,7 +27,7 @@
 namespace aura {
 namespace test {
 
-AuraTestHelper::AuraTestHelper(MessageLoopForUI* message_loop)
+AuraTestHelper::AuraTestHelper(base::MessageLoopForUI* message_loop)
     : setup_called_(false),
       teardown_called_(false),
       owns_root_window_(false) {

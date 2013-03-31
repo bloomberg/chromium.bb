@@ -35,7 +35,7 @@ class ThumbnailSource : public content::URLDataSource {
       bool is_incognito,
       const content::URLDataSource::GotDataCallback& callback) OVERRIDE;
   virtual std::string GetMimeType(const std::string& path) const OVERRIDE;
-  virtual MessageLoop* MessageLoopForRequestPath(
+  virtual base::MessageLoop* MessageLoopForRequestPath(
       const std::string& path) const OVERRIDE;
   virtual bool ShouldServiceRequest(
       const net::URLRequest* request) const OVERRIDE;

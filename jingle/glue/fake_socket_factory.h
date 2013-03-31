@@ -16,7 +16,9 @@
 #include "third_party/libjingle/source/talk/base/asyncpacketsocket.h"
 #include "third_party/libjingle/source/talk/base/packetsocketfactory.h"
 
+namespace base {
 class MessageLoop;
+}
 
 namespace jingle_glue {
 
@@ -82,7 +84,7 @@ class FakeSocketManager : public base::RefCountedThreadSafe<FakeSocketManager> {
                      const net::IPEndPoint& to,
                      const std::vector<char>& data);
 
-  MessageLoop* message_loop_;
+  base::MessageLoop* message_loop_;
   std::map<net::IPEndPoint, FakeUDPPacketSocket*> endpoints_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeSocketManager);

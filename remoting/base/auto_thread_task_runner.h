@@ -11,8 +11,6 @@
 #include "base/message_loop.h"
 #include "base/single_thread_task_runner.h"
 
-class MessageLoop;
-
 namespace remoting {
 
 // A wrapper around |SingleThreadTaskRunner| that provides automatic lifetime

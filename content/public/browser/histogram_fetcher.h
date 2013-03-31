@@ -10,7 +10,9 @@
 #include "base/time.h"
 #include "content/common/content_export.h"
 
+namespace base {
 class MessageLoop;
+}
 
 namespace content {
 
@@ -21,9 +23,11 @@ namespace content {
 // been acquired, or when the wait time expires (whichever is sooner), post the
 // callback to the specified message loop. Note the callback is posted exactly
 // once.
-CONTENT_EXPORT void FetchHistogramsAsynchronously(MessageLoop* callback_thread,
-                                                  const base::Closure& callback,
-                                                  base::TimeDelta wait_time);
+CONTENT_EXPORT void FetchHistogramsAsynchronously(
+    base::MessageLoop* callback_thread,
+    const base::Closure& callback,
+    base::TimeDelta wait_time);
+
 }  // namespace content
 
 #endif  // CONTENT_PUBLIC_BROWSER_HISTOGRAM_FETCHER_H_

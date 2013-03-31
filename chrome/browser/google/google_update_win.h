@@ -10,7 +10,10 @@
 #include "base/string16.h"
 #include "google_update/google_update_idl.h"
 
+namespace base {
 class MessageLoop;
+}
+
 namespace views {
 class Widget;
 }
@@ -108,7 +111,8 @@ class GoogleUpdate : public base::RefCountedThreadSafe<GoogleUpdate> {
   // listener.
   // Note, after this function completes, this object will have deleted itself.
   bool ReportFailure(HRESULT hr, GoogleUpdateErrorCode error_code,
-                     const string16& error_message, MessageLoop* main_loop);
+                     const string16& error_message,
+                     base::MessageLoop* main_loop);
 
   // The update check needs to run on another thread than the main thread, and
   // therefore CheckForUpdate will delegate to this function. |main_loop| points
@@ -116,7 +120,7 @@ class GoogleUpdate : public base::RefCountedThreadSafe<GoogleUpdate> {
   // |window| should point to a foreground window. This is needed to ensure that
   // Vista/Windows 7 UAC prompts show up in the foreground. It may also be null.
   void InitiateGoogleUpdateCheck(bool install_if_newer, HWND window,
-                                 MessageLoop* main_loop);
+                                 base::MessageLoop* main_loop);
 
   // This function reports the results of the GoogleUpdate operation to the
   // listener. If results indicates an error, the |error_code| and

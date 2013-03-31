@@ -23,9 +23,9 @@
 #include "net/proxy/proxy_server.h"
 
 class GURL;
-class MessageLoop;
 
 namespace base {
+class MessageLoop;
 class SingleThreadTaskRunner;
 }  // namespace base
 
@@ -241,7 +241,7 @@ class NET_EXPORT ProxyService : public NetworkChangeNotifier::IPAddressObserver,
   // system proxy settings.
   static ProxyConfigService* CreateSystemProxyConfigService(
       base::SingleThreadTaskRunner* io_thread_task_runner,
-      MessageLoop* file_loop);
+      base::MessageLoop* file_loop);
 
   // This method should only be used by unit tests.
   void set_stall_proxy_auto_config_delay(base::TimeDelta delay) {
@@ -407,7 +407,7 @@ class NET_EXPORT ProxyService : public NetworkChangeNotifier::IPAddressObserver,
 class NET_EXPORT SyncProxyServiceHelper
     : public base::RefCountedThreadSafe<SyncProxyServiceHelper> {
  public:
-  SyncProxyServiceHelper(MessageLoop* io_message_loop,
+  SyncProxyServiceHelper(base::MessageLoop* io_message_loop,
                          ProxyService* proxy_service);
 
   int ResolveProxy(const GURL& url,
@@ -427,7 +427,7 @@ class NET_EXPORT SyncProxyServiceHelper
 
   void OnCompletion(int result);
 
-  MessageLoop* io_message_loop_;
+  base::MessageLoop* io_message_loop_;
   ProxyService* proxy_service_;
 
   base::WaitableEvent event_;

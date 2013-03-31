@@ -12,8 +12,6 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 
-class MessageLoop;
-
 namespace media {
 class VideoFrame;
 }

@@ -56,11 +56,10 @@
 #include "base/location.h"
 #include "base/time.h"
 
-class MessageLoop;
-
 namespace base {
 
 class BaseTimerTaskInternal;
+class MessageLoop;
 
 //-----------------------------------------------------------------------------
 // This class wraps MessageLoop::PostDelayedTask to manage delayed and repeating

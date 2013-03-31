@@ -42,13 +42,13 @@
 #endif
 
 namespace base {
+
 class HistogramBase;
 class RunLoop;
 class ThreadTaskRunnerHandle;
 #if defined(OS_ANDROID)
 class MessagePumpForUI;
 #endif
-}  // namespace base
 
 // A MessageLoop is used to process events for a particular thread.  There is
 // at most one MessageLoop instance per thread.
@@ -704,5 +704,13 @@ class BASE_EXPORT MessageLoopForIO : public MessageLoop {
 // data that you need should be stored on the MessageLoop's pump_ instance.
 COMPILE_ASSERT(sizeof(MessageLoop) == sizeof(MessageLoopForIO),
                MessageLoopForIO_should_not_have_extra_member_variables);
+
+}  // namespace base
+
+// TODO(brettw) remove this when all users are updated to explicitly use the
+// namespace
+using base::MessageLoop;
+using base::MessageLoopForIO;
+using base::MessageLoopForUI;
 
 #endif  // BASE_MESSAGE_LOOP_H_

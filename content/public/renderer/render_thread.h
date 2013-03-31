@@ -16,9 +16,9 @@
 #endif
 
 class GURL;
-class MessageLoop;
 
 namespace base {
+class MessageLoop;
 class MessageLoopProxy;
 }
 
@@ -45,7 +45,7 @@ class CONTENT_EXPORT RenderThread : public IPC::Sender {
   RenderThread();
   virtual ~RenderThread();
 
-  virtual MessageLoop* GetMessageLoop() = 0;
+  virtual base::MessageLoop* GetMessageLoop() = 0;
   virtual IPC::SyncChannel* GetChannel() = 0;
   virtual std::string GetLocale() = 0;
   virtual IPC::SyncMessageFilter* GetSyncMessageFilter() = 0;

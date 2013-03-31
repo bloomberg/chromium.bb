@@ -16,6 +16,7 @@
 #include "chrome_frame/utils.h"
 
 namespace base {
+class MessageLoop;
 class Thread;
 }
 
@@ -75,7 +76,7 @@ class UrlmonUrlRequestManager
   }
 
  private:
-  friend class MessageLoop;
+  friend class base::MessageLoop;
 
   // PluginUrlRequestManager implementation.
   virtual PluginUrlRequestManager::ThreadSafeFlags GetThreadSafeFlags();

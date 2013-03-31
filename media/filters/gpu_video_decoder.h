@@ -15,8 +15,8 @@
 #include "media/base/video_decoder.h"
 #include "media/video/video_decode_accelerator.h"
 
-class MessageLoop;
 template <class T> class scoped_refptr;
+
 namespace base {
 class MessageLoopProxy;
 class SharedMemory;

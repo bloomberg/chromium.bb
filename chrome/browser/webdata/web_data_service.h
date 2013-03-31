@@ -31,7 +31,6 @@ class GURL;
 #if defined(OS_WIN)
 struct IE7PasswordInfo;
 #endif
-class MessageLoop;
 class Profile;
 class SkBitmap;
 class WebDatabaseService;

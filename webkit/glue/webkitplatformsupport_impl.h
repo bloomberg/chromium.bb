@@ -25,7 +25,9 @@
 #include "webkit/glue/webthemeengine_impl_android.h"
 #endif
 
+namespace base {
 class MessageLoop;
+}
 
 namespace webkit {
 class WebCompositorSupportImpl;
@@ -177,7 +179,7 @@ class WEBKIT_GLUE_EXPORT WebKitPlatformSupportImpl :
   }
   static void DestroyCurrentThread(void*);
 
-  MessageLoop* main_loop_;
+  base::MessageLoop* main_loop_;
   base::OneShotTimer<WebKitPlatformSupportImpl> shared_timer_;
   void (*shared_timer_func_)();
   double shared_timer_fire_time_;

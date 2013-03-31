@@ -17,7 +17,10 @@
 #include "content/public/browser/notification_types.h"
 
 class PasswordStore;
+
+namespace base {
 class MessageLoop;
+}
 
 namespace browser_sync {
 
@@ -77,7 +80,7 @@ class PasswordChangeProcessor : public ChangeProcessor,
 
   content::NotificationRegistrar notification_registrar_;
 
-  MessageLoop* expected_loop_;
+  base::MessageLoop* expected_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordChangeProcessor);
 };

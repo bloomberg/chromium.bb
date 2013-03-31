@@ -14,8 +14,6 @@
 #include "remoting/jingle_glue/signal_strategy.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
-class MessageLoop;
-
 namespace buzz {
 class XmlElement;
 }  // namespace buzz

@@ -15,11 +15,11 @@
 #include "net/socket/tcp_client_socket.h"
 
 namespace base {
-class Thread;
+class MessageLoop;
 class DictionaryValue;
+class Thread;
 }
 
-class MessageLoop;
 class Profile;
 
 class DevToolsAdbBridge {
@@ -78,7 +78,7 @@ class DevToolsAdbBridge {
    public:
     static scoped_refptr<RefCountedAdbThread> GetInstance();
     RefCountedAdbThread();
-    MessageLoop* message_loop();
+    base::MessageLoop* message_loop();
 
    private:
     friend class base::RefCounted<RefCountedAdbThread>;

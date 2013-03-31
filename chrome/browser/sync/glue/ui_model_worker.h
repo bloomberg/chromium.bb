@@ -12,8 +12,6 @@
 #include "sync/internal_api/public/engine/model_safe_worker.h"
 #include "sync/internal_api/public/util/unrecoverable_error_info.h"
 
-class MessageLoop;
-
 namespace browser_sync {
 
 // A syncer::ModelSafeWorker for UI models (e.g. bookmarks) that

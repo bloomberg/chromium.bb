@@ -19,9 +19,8 @@
 #include "base/logging.h"
 #endif  // UNIT_TEST
 
-class MessageLoop;
-
 namespace base {
+class MessageLoop;
 class SequencedWorkerPool;
 class Thread;
 }
@@ -216,7 +215,7 @@ class CONTENT_EXPORT BrowserThread {
   //
   // Ownership remains with the BrowserThread implementation, so you
   // must not delete the pointer.
-  static MessageLoop* UnsafeGetMessageLoopForThread(ID identifier);
+  static base::MessageLoop* UnsafeGetMessageLoopForThread(ID identifier);
 
   // Sets the delegate for the specified BrowserThread.
   //

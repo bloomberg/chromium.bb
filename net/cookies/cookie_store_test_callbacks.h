@@ -10,9 +10,8 @@
 
 #include "net/cookies/cookie_store.h"
 
-class MessageLoop;
-
 namespace base {
+class MessageLoop;
 class Thread;
 }
 
@@ -42,9 +41,9 @@ class CookieCallback {
  private:
   bool did_run_;
   base::Thread* run_in_thread_;
-  MessageLoop* run_in_loop_;
-  MessageLoop* parent_loop_;
-  MessageLoop* loop_to_quit_;
+  base::MessageLoop* run_in_loop_;
+  base::MessageLoop* parent_loop_;
+  base::MessageLoop* loop_to_quit_;
 };
 
 // Callback implementations for the asynchronous CookieStore methods.

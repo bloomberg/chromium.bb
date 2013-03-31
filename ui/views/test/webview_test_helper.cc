@@ -11,7 +11,7 @@
 
 namespace views {
 
-WebViewTestHelper::WebViewTestHelper(MessageLoopForUI* ui_loop) {
+WebViewTestHelper::WebViewTestHelper(base::MessageLoopForUI* ui_loop) {
   test_content_client_initializer_.reset(
       new content::TestContentClientInitializer);
 

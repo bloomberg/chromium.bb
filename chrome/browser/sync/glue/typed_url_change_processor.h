@@ -17,8 +17,11 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_types.h"
 
-class MessageLoop;
 class Profile;
+
+namespace base {
+class MessageLoop;
+}
 
 namespace content {
 class NotificationService;
@@ -101,7 +104,7 @@ class TypedUrlChangeProcessor : public ChangeProcessor,
 
   content::NotificationRegistrar notification_registrar_;
 
-  MessageLoop* expected_loop_;
+  base::MessageLoop* expected_loop_;
 
   scoped_ptr<content::NotificationService> notification_service_;
 

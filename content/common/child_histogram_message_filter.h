@@ -14,8 +14,6 @@
 #include "base/metrics/histogram_snapshot_manager.h"
 #include "ipc/ipc_channel_proxy.h"
 
-class MessageLoop;
-
 namespace base {
 class HistogramSamples;
 }  // namespace base

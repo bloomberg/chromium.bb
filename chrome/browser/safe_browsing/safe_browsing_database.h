@@ -16,7 +16,8 @@
 #include "chrome/browser/safe_browsing/safe_browsing_store.h"
 
 namespace base {
-  class Time;
+class MessageLoop;
+class Time;
 }
 
 namespace safe_browsing {
@@ -24,7 +25,6 @@ class PrefixSet;
 }
 
 class GURL;
-class MessageLoop;
 class SafeBrowsingDatabase;
 
 // Factory for creating SafeBrowsingDatabase. Tests implement this factory
@@ -344,7 +344,7 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
 
   // Used to verify that various calls are made from the thread the
   // object was created on.
-  MessageLoop* creation_loop_;
+  base::MessageLoop* creation_loop_;
 
   // Lock for protecting access to variables that may be used on the
   // IO thread.  This includes |prefix_set_|, |full_browse_hashes_|,

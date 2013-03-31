@@ -15,7 +15,9 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_multiprocess_test.h"
 
+namespace base {
 class MessageLoopForIO;
+}
 
 // A test fixture for multiprocess IPC tests. Such tests include a "client" side
 // (running in a separate process). The same client may be shared between
@@ -82,7 +84,7 @@ class IPCTestBase : public base::MultiProcessTest {
 
  private:
   std::string test_client_name_;
-  scoped_ptr<MessageLoopForIO> message_loop_;
+  scoped_ptr<base::MessageLoopForIO> message_loop_;
 
   scoped_ptr<IPC::Channel> channel_;
   scoped_ptr<IPC::ChannelProxy> channel_proxy_;

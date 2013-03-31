@@ -39,11 +39,11 @@
 #include "googleurl/src/gurl.h"
 
 class MalwareDetails;
-class MessageLoop;
 class SafeBrowsingBlockingPageFactory;
 
 namespace base {
 class DictionaryValue;
+class MessageLoop;
 }
 
 namespace content {
@@ -156,7 +156,7 @@ class SafeBrowsingBlockingPage : public content::InterstitialPageDelegate {
 
   // For reporting back user actions.
   SafeBrowsingUIManager* ui_manager_;
-  MessageLoop* report_loop_;
+  base::MessageLoop* report_loop_;
 
   // True if the interstitial is blocking the main page because it is on one
   // of our lists.  False if a subresource is being blocked, or in the case of

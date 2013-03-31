@@ -16,7 +16,9 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/link_listener.h"
 
+namespace base {
 class MessageLoop;
+}
 
 namespace views {
 class GridLayout;
@@ -108,7 +110,7 @@ class OneClickSigninBubbleView : public views::BubbleDelegateView,
   BrowserWindow::StartSyncCallback start_sync_callback_;
 
   // A message loop used only with unit tests.
-  MessageLoop* message_loop_for_testing_;
+  base::MessageLoop* message_loop_for_testing_;
 
   DISALLOW_COPY_AND_ASSIGN(OneClickSigninBubbleView);
 };

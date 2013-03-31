@@ -19,8 +19,11 @@
 #include "sync/protocol/typed_url_specifics.pb.h"
 
 class GURL;
-class MessageLoop;
 class ProfileSyncService;
+
+namespace base {
+class MessageLoop;
+}
 
 namespace history {
 class HistoryBackend;
@@ -187,7 +190,7 @@ class TypedUrlModelAssociator : public AssociatorInterface {
   ProfileSyncService* sync_service_;
   history::HistoryBackend* history_backend_;
 
-  MessageLoop* expected_loop_;
+  base::MessageLoop* expected_loop_;
 
   // Lock to ensure exclusive access to the pending_abort_ flag.
   base::Lock pending_abort_lock_;

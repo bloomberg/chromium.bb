@@ -25,7 +25,9 @@
 #include "media/audio/audio_manager.h"
 #include "media/audio/audio_parameters.h"
 
+namespace base {
 class MessageLoop;
+}
 
 namespace media {
 
@@ -71,7 +73,7 @@ class MEDIA_EXPORT AudioOutputDispatcher
   // A no-reference-held pointer (we don't want circular references) back to the
   // AudioManager that owns this object.
   AudioManager* audio_manager_;
-  MessageLoop* message_loop_;
+  base::MessageLoop* message_loop_;
   AudioParameters params_;
 
  private:

@@ -9,7 +9,9 @@
 
 #include "base/memory/ref_counted.h"
 
+namespace base {
 class MessageLoop;
+}
 
 namespace net {
 class DrainableIOBuffer;
@@ -48,7 +50,7 @@ class StreamConnectionTester {
   void HandleReadResult(int result);
 
  private:
-  MessageLoop* message_loop_;
+  base::MessageLoop* message_loop_;
   net::StreamSocket* host_socket_;
   net::StreamSocket* client_socket_;
   int message_size_;
@@ -83,7 +85,7 @@ class DatagramConnectionTester {
   void OnRead(int result);
   void HandleReadResult(int result);
 
-  MessageLoop* message_loop_;
+  base::MessageLoop* message_loop_;
   net::Socket* host_socket_;
   net::Socket* client_socket_;
   int message_size_;

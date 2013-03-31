@@ -19,9 +19,8 @@
 #include "net/proxy/proxy_config_service.h"
 #include "net/proxy/proxy_server.h"
 
-class MessageLoopForIO;
-
 namespace base {
+class MessageLoopForIO;
 class SingleThreadTaskRunner;
 }  // namespace base
 
@@ -52,7 +51,7 @@ class NET_EXPORT_PRIVATE ProxyConfigServiceLinux : public ProxyConfigService {
     // gconf/gsettings calls or reading necessary files, depending on the
     // implementation.
     virtual bool Init(base::SingleThreadTaskRunner* glib_thread_task_runner,
-                      MessageLoopForIO* file_loop) = 0;
+                      base::MessageLoopForIO* file_loop) = 0;
 
     // Releases the gconf/gsettings client, which clears cached directories and
     // stops notifications.
@@ -183,7 +182,7 @@ class NET_EXPORT_PRIVATE ProxyConfigServiceLinux : public ProxyConfigService {
     void SetUpAndFetchInitialConfig(
         base::SingleThreadTaskRunner* glib_thread_task_runner,
         base::SingleThreadTaskRunner* io_thread_task_runner,
-        MessageLoopForIO* file_loop);
+        base::MessageLoopForIO* file_loop);
 
     // Handler for setting change notifications: fetches a new proxy
     // configuration from settings, and if this config is different
@@ -283,7 +282,7 @@ class NET_EXPORT_PRIVATE ProxyConfigServiceLinux : public ProxyConfigService {
   void SetupAndFetchInitialConfig(
       base::SingleThreadTaskRunner* glib_thread_task_runner,
       base::SingleThreadTaskRunner* io_thread_task_runner,
-      MessageLoopForIO* file_loop) {
+      base::MessageLoopForIO* file_loop) {
     delegate_->SetUpAndFetchInitialConfig(glib_thread_task_runner,
                                           io_thread_task_runner, file_loop);
   }

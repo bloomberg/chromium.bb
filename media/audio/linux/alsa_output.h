@@ -33,7 +33,9 @@
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_parameters.h"
 
+namespace base {
 class MessageLoop;
+}
 
 namespace media {
 
@@ -191,7 +193,7 @@ class MEDIA_EXPORT AlsaPcmOutputStream : public AudioOutputStream {
   // We hold a reference to the audio thread message loop since
   // AudioManagerBase::ShutDown() can invalidate the message loop pointer
   // before the stream gets deleted.
-  MessageLoop* message_loop_;
+  base::MessageLoop* message_loop_;
 
   // Handle to the actual PCM playback device.
   snd_pcm_t* playback_handle_;

@@ -18,11 +18,11 @@
 #include "v8/include/v8.h"
 
 class GURL;
-class MessageLoop;
 class SkBitmap;
 
 namespace base {
 class FilePath;
+class MessageLoop;
 }
 
 namespace WebKit {
@@ -231,7 +231,7 @@ class CONTENT_EXPORT ContentRendererClient {
   // Allow the embedder to specify a different renderer compositor MessageLoop.
   // If not NULL, the returned MessageLoop must be valid for the lifetime of
   // RenderThreadImpl. If NULL, then a new thread will be created.
-  virtual MessageLoop* OverrideCompositorMessageLoop() const;
+  virtual base::MessageLoop* OverrideCompositorMessageLoop() const;
 
   // Allow the embedder to disable input event filtering by the compositor.
   virtual bool ShouldCreateCompositorInputHandler() const;

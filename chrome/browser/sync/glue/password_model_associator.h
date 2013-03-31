@@ -17,9 +17,12 @@
 #include "chrome/browser/sync/glue/model_associator.h"
 #include "sync/protocol/password_specifics.pb.h"
 
-class MessageLoop;
 class PasswordStore;
 class ProfileSyncService;
+
+namespace base {
+class MessageLoop;
+}
 
 namespace content {
 struct PasswordForm;
@@ -133,7 +136,7 @@ class PasswordModelAssociator
   base::Lock abort_association_pending_lock_;
   bool abort_association_pending_;
 
-  MessageLoop* expected_loop_;
+  base::MessageLoop* expected_loop_;
 
   PasswordToSyncIdMap id_map_;
   SyncIdToPasswordMap id_map_inverse_;

@@ -9,8 +9,11 @@
 
 #include "ipc/ipc_channel_proxy.h"
 
-class MessageLoop;
 struct DevToolsMessageData;
+
+namespace base {
+class MessageLoop;
+}
 
 namespace content {
 
@@ -37,7 +40,7 @@ class DevToolsAgentFilter : public IPC::ChannelProxy::MessageFilter {
   void OnDispatchOnInspectorBackend(const std::string& message);
 
   bool message_handled_;
-  MessageLoop* render_thread_loop_;
+  base::MessageLoop* render_thread_loop_;
   int current_routing_id_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsAgentFilter);

@@ -23,11 +23,11 @@
 class Browser;
 class ExtensionInstallUI;
 class InfoBarDelegate;
-class MessageLoop;
 class Profile;
 
 namespace base {
 class DictionaryValue;
+class MessageLoop;
 }  // namespace base
 
 namespace content {
@@ -336,7 +336,7 @@ class ExtensionInstallPrompt
   // Shows the actual UI (the icon should already be loaded).
   void ShowConfirmation();
 
-  MessageLoop* ui_loop_;
+  base::MessageLoop* ui_loop_;
 
   // The extensions installation icon.
   SkBitmap icon_;

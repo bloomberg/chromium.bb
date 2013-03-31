@@ -21,8 +21,11 @@
 #include "sync/internal_api/public/http_post_provider_factory.h"
 #include "sync/internal_api/public/http_post_provider_interface.h"
 
-class MessageLoop;
 class HttpBridgeTest;
+
+namespace base {
+class MessageLoop;
+}
 
 namespace net {
 class HttpResponseHeaders;
@@ -157,7 +160,7 @@ class SYNC_EXPORT_PRIVATE HttpBridge
   // the network.
   // This should be the main syncer thread (SyncerThread) which is what blocks
   // on network IO through curl_easy_perform.
-  MessageLoop* const created_on_loop_;
+  base::MessageLoop* const created_on_loop_;
 
   // The URL to POST to.
   GURL url_for_request_;

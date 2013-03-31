@@ -10,9 +10,8 @@
 #include "base/callback.h"
 #include "content/common/content_export.h"
 
-class MessageLoop;
-
 namespace base {
+class MessageLoop;
 class RefCountedMemory;
 }
 
@@ -66,7 +65,8 @@ class CONTENT_EXPORT URLDataSource {
   // on the IO thread.  This can improve performance by satisfying such requests
   // more rapidly when there is a large amount of UI thread contention. Or the
   // delegate can return a specific thread's Messageloop if they wish.
-  virtual MessageLoop* MessageLoopForRequestPath(const std::string& path) const;
+  virtual base::MessageLoop* MessageLoopForRequestPath(
+      const std::string& path) const;
 
   // Returns true if the URLDataSource should replace an existing URLDataSource
   // with the same name that has already been registered. The default is true.
