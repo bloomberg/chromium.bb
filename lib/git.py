@@ -988,7 +988,7 @@ def CleanAndCheckoutUpstream(git_repo, refresh_upstream=True):
     cmd = ['remote', 'update', remote]
     cros_build_lib.RetryCommand(RunGit, 3, git_repo, cmd, sleep=10,
                                 retry_on=(1,))
-  RunGit(git_repo, ['clean', '-df'])
+  RunGit(git_repo, ['clean', '-dfx'])
   RunGit(git_repo, ['reset', '--hard', 'HEAD'])
   RunGit(git_repo, ['checkout', local_upstream])
 
