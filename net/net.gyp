@@ -1602,6 +1602,7 @@
         'quic/quic_stream_factory_test.cc',
         'quic/quic_stream_sequencer_test.cc',
         'quic/quic_time_test.cc',
+        'quic/quic_utils_test.cc',
         'quic/reliable_quic_stream_test.cc',
         'socket/buffered_write_stream_socket_unittest.cc',
         'socket/client_socket_pool_base_unittest.cc',

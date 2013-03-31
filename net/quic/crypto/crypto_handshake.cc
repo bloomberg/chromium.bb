@@ -9,9 +9,12 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "crypto/hkdf.h"
 #include "crypto/secure_hash.h"
 #include "net/base/net_util.h"
+#include "net/quic/crypto/aes_128_gcm_decrypter.h"
+#include "net/quic/crypto/aes_128_gcm_encrypter.h"
 #include "net/quic/crypto/crypto_framer.h"
 #include "net/quic/crypto/crypto_utils.h"
 #include "net/quic/crypto/curve25519_key_exchange.h"
@@ -319,6 +322,34 @@ string CryptoHandshakeMessage::DebugStringInternal(size_t indent) const {
   return ret;
 }
 
+SourceAddressToken::SourceAddressToken() {
+}
+
+SourceAddressToken::~SourceAddressToken() {
+}
+
+string SourceAddressToken::SerializeAsString() const {
+  return ip_ + " " + base::Int64ToString(timestamp_);
+}
+
+bool SourceAddressToken::ParseFromArray(unsigned char* plaintext,
+                                        size_t plaintext_length) {
+  string data(reinterpret_cast<const char*>(plaintext), plaintext_length);
+  std::vector<std::string> results;
+  base::SplitString(data, ' ', &results);
+  if (results.size() < 2) {
+    return false;
+  }
+
+  int64 timestamp;
+  if (!base::StringToInt64(results[1], &timestamp)) {
+    return false;
+  }
+
+  ip_ = results[0];
+  timestamp_ = timestamp;
+  return true;
+}
 
 QuicCryptoNegotiatedParameters::QuicCryptoNegotiatedParameters()
     : version(0),
@@ -392,13 +423,19 @@ const string& QuicCryptoClientConfig::CachedState::orbit() const {
   return orbit_;
 }
 
+void QuicCryptoClientConfig::CachedState::set_source_address_token(
+    StringPiece token) {
+  source_address_token_ = token.as_string();
+}
+
 void QuicCryptoClientConfig::SetDefaults() {
   // Version must be 0.
   version = kVersion;
 
   // Key exchange methods.
-  kexs.resize(1);
+  kexs.resize(2);
   kexs[0] = kC255;
+  kexs[1] = kP256;
 
   // Authenticated encryption algorithms.
   aead.resize(1);
@@ -431,7 +468,7 @@ void QuicCryptoClientConfig::FillInchoateClientHello(
   out->SetValue(kVERS, version);
 
   if (cached && !cached->source_address_token().empty()) {
-    out->SetValue(kSRCT, cached->source_address_token());
+    out->SetStringPiece(kSRCT, cached->source_address_token());
   }
 }
 
@@ -527,7 +564,7 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
     break;
   case kP256:
     key_exchange.reset(P256KeyExchange::New(
-          Curve25519KeyExchange::NewPrivateKey(rand)));
+          P256KeyExchange::NewPrivateKey()));
     break;
   default:
     DCHECK(false);
@@ -589,6 +626,11 @@ QuicErrorCode QuicCryptoClientConfig::ProcessRejection(
     return QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER;
   }
 
+  StringPiece token;
+  if (rej.GetStringPiece(kSRCT, &token)) {
+    cached->set_source_address_token(token);
+  }
+
   return QUIC_NO_ERROR;
 }
 
@@ -610,7 +652,26 @@ QuicErrorCode QuicCryptoClientConfig::ProcessServerHello(
 }
 
 
-QuicCryptoServerConfig::QuicCryptoServerConfig() {
+QuicCryptoServerConfig::QuicCryptoServerConfig(
+    StringPiece source_address_token_secret)
+    // AES-GCM is used to encrypt and authenticate source address tokens. The
+    // full, 96-bit nonce is used but we must ensure that an attacker cannot
+    // obtain two source address tokens with the same nonce. This occurs with
+    // probability 0.5 after 2**48 values. We assume that obtaining 2**48
+    // source address tokens is not possible: at a rate of 10M packets per
+    // second, it would still take the attacker a year to obtain the needed
+    // number of packets.
+    //
+    // TODO(agl): switch to an encrypter with a larger nonce space (i.e.
+    // Salsa20+Poly1305).
+    : source_address_token_encrypter_(new Aes128GcmEncrypter),
+      source_address_token_decrypter_(new Aes128GcmDecrypter) {
+  crypto::HKDF hkdf(source_address_token_secret, StringPiece()  /* no salt */,
+                    "QUIC source address token key",
+                    source_address_token_encrypter_->GetKeySize(),
+                    0 /* no fixed IV needed */);
+  source_address_token_encrypter_->SetKey(hkdf.server_write_key());
+  source_address_token_decrypter_->SetKey(hkdf.server_write_key());
 }
 
 QuicCryptoServerConfig::~QuicCryptoServerConfig() {
@@ -624,21 +685,34 @@ QuicServerConfigProtobuf* QuicCryptoServerConfig::ConfigForTesting(
     const CryptoHandshakeMessage& extra_tags)  {
   CryptoHandshakeMessage msg;
 
-  const string private_key = Curve25519KeyExchange::NewPrivateKey(rand);
+  const string curve25519_private_key =
+      Curve25519KeyExchange::NewPrivateKey(rand);
   scoped_ptr<Curve25519KeyExchange> curve25519(
-      Curve25519KeyExchange::New(private_key));
-  StringPiece public_value = curve25519->public_value();
-  string encoded_public_value;
+      Curve25519KeyExchange::New(curve25519_private_key));
+  StringPiece curve25519_public_value = curve25519->public_value();
+
+  const string p256_private_key =
+      P256KeyExchange::NewPrivateKey();
+  scoped_ptr<P256KeyExchange> p256(
+      P256KeyExchange::New(p256_private_key));
+  StringPiece p256_public_value = p256->public_value();
+
+  string encoded_public_values;
   // First two bytes encode the length of the public value.
-  encoded_public_value.push_back(public_value.size());
-  encoded_public_value.push_back(public_value.size() >> 8);
-  encoded_public_value.append(public_value.data(), public_value.size());
+  encoded_public_values.push_back(curve25519_public_value.size());
+  encoded_public_values.push_back(curve25519_public_value.size() >> 8);
+  encoded_public_values.append(curve25519_public_value.data(),
+                              curve25519_public_value.size());
+  encoded_public_values.push_back(p256_public_value.size());
+  encoded_public_values.push_back(p256_public_value.size() >> 8);
+  encoded_public_values.append(p256_public_value.data(),
+                              p256_public_value.size());
 
   msg.set_tag(kSCFG);
-  msg.SetTaglist(kKEXS, kC255, 0);
+  msg.SetTaglist(kKEXS, kC255, kP256, 0);
   msg.SetTaglist(kAEAD, kAESG, 0);
   msg.SetValue(kVERS, static_cast<uint16>(0));
-  msg.SetStringPiece(kPUBS, encoded_public_value);
+  msg.SetStringPiece(kPUBS, encoded_public_values);
   msg.Insert(extra_tags.tag_value_map().begin(),
              extra_tags.tag_value_map().end());
 
@@ -651,9 +725,12 @@ QuicServerConfigProtobuf* QuicCryptoServerConfig::ConfigForTesting(
 
   scoped_ptr<QuicServerConfigProtobuf> config(new QuicServerConfigProtobuf);
   config->set_config(serialized->AsStringPiece());
-  QuicServerConfigProtobuf::PrivateKey* key = config->add_key();
-  key->set_tag(kC255);
-  key->set_private_key(private_key);
+  QuicServerConfigProtobuf::PrivateKey* curve25519_key = config->add_key();
+  curve25519_key->set_tag(kC255);
+  curve25519_key->set_private_key(curve25519_private_key);
+  QuicServerConfigProtobuf::PrivateKey* p256_key = config->add_key();
+  p256_key->set_tag(kP256);
+  p256_key->set_private_key(p256_private_key);
 
   return config.release();
 }
@@ -739,6 +816,14 @@ CryptoHandshakeMessage* QuicCryptoServerConfig::AddConfig(
         return NULL;
       }
       break;
+    case kP256:
+      ka.reset(P256KeyExchange::New(private_key));
+      if (!ka.get()) {
+        LOG(WARNING) << "Server config contained an invalid P-256"
+                        " private key.";
+        return NULL;
+      }
+      break;
     default:
       LOG(WARNING) << "Server config message contains unknown key exchange "
                       "method: "
@@ -791,6 +876,9 @@ CryptoHandshakeMessage* QuicCryptoServerConfig::AddTestingConfig(
 QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
     const CryptoHandshakeMessage& client_hello,
     QuicGuid guid,
+    const IPEndPoint& client_ip,
+    QuicTime::Delta now_since_unix_epoch,
+    QuicRandom* rand,
     CryptoHandshakeMessage* out,
     QuicCryptoNegotiatedParameters *out_params,
     string* error_details) {
@@ -798,15 +886,27 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
   // FIXME(agl): we should use the client's SCID, not just the active config.
   const Config* config(configs_[active_config_]);
 
+  bool valid_source_address_token = false;
+  StringPiece srct;
+  if (client_hello.GetStringPiece(kSRCT, &srct) &&
+      ValidateSourceAddressToken(srct, client_ip, now_since_unix_epoch)) {
+    valid_source_address_token = true;
+  }
+
+  const string fresh_source_address_token =
+      NewSourceAddressToken(client_ip, rand, now_since_unix_epoch);
+
   StringPiece scid;
   if (!client_hello.GetStringPiece(kSCID, &scid) ||
-      scid.as_string() != config->id) {
+      scid.as_string() != config->id ||
+      !valid_source_address_token) {
     // If the client didn't provide a server config ID, or gave the wrong one,
     // then the handshake cannot possibly complete. We reject the handshake and
     // give the client enough information to do better next time.
     out->Clear();
     out->set_tag(kREJ);
     out->SetStringPiece(kSCFG, config->serialized);
+    out->SetStringPiece(kSRCT, fresh_source_address_token);
     return QUIC_NO_ERROR;
   }
 
@@ -880,7 +980,100 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
                           CryptoUtils::SERVER);
 
   out->set_tag(kSHLO);
+  out->SetStringPiece(kSRCT, fresh_source_address_token);
   return QUIC_NO_ERROR;
+}
+
+string QuicCryptoServerConfig::NewSourceAddressToken(
+    const IPEndPoint& ip,
+    QuicRandom* rand,
+    QuicTime::Delta now_since_epoch) {
+  SourceAddressToken source_address_token;
+  source_address_token.set_ip(ip.ToString());
+  source_address_token.set_timestamp(now_since_epoch.ToSeconds());
+
+  string plaintext = source_address_token.SerializeAsString();
+  char nonce[12];
+  DCHECK_EQ(sizeof(nonce),
+      source_address_token_encrypter_->GetNoncePrefixSize() +
+      sizeof(QuicPacketSequenceNumber));
+  rand->RandBytes(nonce, sizeof(nonce));
+
+  size_t ciphertext_size =
+      source_address_token_encrypter_->GetCiphertextSize(plaintext.size());
+  string result;
+  result.resize(sizeof(nonce) + ciphertext_size);
+  memcpy(&result[0], &nonce, sizeof(nonce));
+
+  if (!source_address_token_encrypter_->Encrypt(
+      StringPiece(nonce, sizeof(nonce)), StringPiece(), plaintext,
+      reinterpret_cast<unsigned char*>(&result[sizeof(nonce)]))) {
+    DCHECK(false);
+    return string();
+  }
+
+  return result;
+}
+
+bool QuicCryptoServerConfig::ValidateSourceAddressToken(
+    StringPiece token,
+    const IPEndPoint& ip,
+    QuicTime::Delta now_since_epoch) {
+  char nonce[12];
+  DCHECK_EQ(sizeof(nonce),
+      source_address_token_encrypter_->GetNoncePrefixSize() +
+      sizeof(QuicPacketSequenceNumber));
+
+  if (token.size() <= sizeof(nonce)) {
+    return false;
+  }
+  memcpy(&nonce, token.data(), sizeof(nonce));
+  token.remove_prefix(sizeof(nonce));
+
+  unsigned char plaintext_stack[128];
+  scoped_ptr<unsigned char[]> plaintext_heap;
+  unsigned char* plaintext;
+  if (token.size() <= sizeof(plaintext_stack)) {
+    plaintext = plaintext_stack;
+  } else {
+    plaintext_heap.reset(new unsigned char[token.size()]);
+    plaintext = plaintext_heap.get();
+  }
+  size_t plaintext_length;
+
+  if (!source_address_token_decrypter_->Decrypt(
+          StringPiece(nonce, sizeof(nonce)), StringPiece(), token,
+          plaintext, &plaintext_length)) {
+    return false;
+  }
+
+  SourceAddressToken source_address_token;
+  if (!source_address_token.ParseFromArray(plaintext, plaintext_length)) {
+    return false;
+  }
+
+  if (source_address_token.ip() != ip.ToString()) {
+    // It's for a different IP address.
+    return false;
+  }
+
+  const QuicTime::Delta delta(now_since_epoch.Subtract(
+      QuicTime::Delta::FromSeconds(source_address_token.timestamp())));
+  const int64 delta_secs = delta.ToSeconds();
+
+  // TODO(agl): consider whether and how these magic values should be moved to
+  // a config.
+  if (delta_secs < -3600) {
+    // We only allow timestamps to be from an hour in the future.
+    return false;
+  }
+
+  if (delta_secs > 86400) {
+    // We allow one day into the past.
+    return false;
+  }
+
+  return true;
 }
 
 QuicCryptoServerConfig::Config::Config() {

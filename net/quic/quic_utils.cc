@@ -36,14 +36,28 @@ case x: \
 return #x;
 
 // static
+const char* QuicUtils::StreamErrorToString(QuicRstStreamErrorCode error) {
+  switch (error) {
+    RETURN_STRING_LITERAL(QUIC_STREAM_NO_ERROR);
+    RETURN_STRING_LITERAL(QUIC_STREAM_CONNECTION_ERROR);
+    RETURN_STRING_LITERAL(QUIC_SERVER_ERROR_PROCESSING_STREAM);
+    RETURN_STRING_LITERAL(QUIC_MULTIPLE_TERMINATION_OFFSETS);
+    RETURN_STRING_LITERAL(QUIC_BAD_APPLICATION_PAYLOAD);
+    RETURN_STRING_LITERAL(QUIC_STREAM_PEER_GOING_AWAY);
+    RETURN_STRING_LITERAL(QUIC_STREAM_LAST_ERROR);
+  }
+  // Return a default value so that we return this when |error| doesn't match
+  // any of the QuicRstStreamErrorCodes. This can happen when the RstStream
+  // frame sent by the peer (attacker) has invalid error code.
+  return "INVALID_RST_STREAM_ERROR_CODE";
+}
+
+// static
 const char* QuicUtils::ErrorToString(QuicErrorCode error) {
   switch (error) {
     RETURN_STRING_LITERAL(QUIC_NO_ERROR);
     RETURN_STRING_LITERAL(QUIC_INTERNAL_ERROR);
     RETURN_STRING_LITERAL(QUIC_STREAM_DATA_AFTER_TERMINATION);
-    RETURN_STRING_LITERAL(QUIC_SERVER_ERROR_PROCESSING_STREAM);
-    RETURN_STRING_LITERAL(QUIC_MULTIPLE_TERMINATION_OFFSETS);
-    RETURN_STRING_LITERAL(QUIC_BAD_APPLICATION_PAYLOAD);
     RETURN_STRING_LITERAL(QUIC_INVALID_PACKET_HEADER);
     RETURN_STRING_LITERAL(QUIC_INVALID_FRAME_DATA);
     RETURN_STRING_LITERAL(QUIC_INVALID_FEC_DATA);
@@ -78,7 +92,10 @@ const char* QuicUtils::ErrorToString(QuicErrorCode error) {
     // Intentionally have no default case, so we'll break the build
     // if we add errors and don't put them here.
   }
-  return "";
+  // Return a default value so that we return this when |error| doesn't match
+  // any of the QuicErrorCodes. This can happen when the ConnectionClose
+  // frame sent by the peer (attacker) has invalid error code.
+  return "INVALID_ERROR_CODE";
 }
 
 }  // namespace net

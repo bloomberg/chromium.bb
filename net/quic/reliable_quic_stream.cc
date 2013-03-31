@@ -18,7 +18,8 @@ ReliableQuicStream::ReliableQuicStream(QuicStreamId id,
       visitor_(NULL),
       stream_bytes_read_(0),
       stream_bytes_written_(0),
-      error_(QUIC_NO_ERROR),
+      stream_error_(QUIC_STREAM_NO_ERROR),
+      connection_error_(QUIC_NO_ERROR),
       read_side_closed_(false),
       write_side_closed_(false),
       fin_buffered_(false),
@@ -59,13 +60,17 @@ bool ReliableQuicStream::OnStreamFrame(const QuicStreamFrame& frame) {
   return accepted;
 }
 
-void ReliableQuicStream::OnStreamReset(QuicErrorCode error) {
-  error_ = error;
+void ReliableQuicStream::OnStreamReset(QuicRstStreamErrorCode error) {
+  stream_error_ = error;
   TerminateFromPeer(false);  // Full close.
 }
 
 void ReliableQuicStream::ConnectionClose(QuicErrorCode error, bool from_peer) {
-  error_ = error;
+  if (error != QUIC_NO_ERROR) {
+    stream_error_ = QUIC_STREAM_CONNECTION_ERROR;
+    connection_error_ = error;
+  }
+
   if (from_peer) {
     TerminateFromPeer(false);
   } else {
@@ -81,8 +86,8 @@ void ReliableQuicStream::TerminateFromPeer(bool half_close) {
   CloseReadSide();
 }
 
-void ReliableQuicStream::Close(QuicErrorCode error) {
-  error_ = error;
+void ReliableQuicStream::Close(QuicRstStreamErrorCode error) {
+  stream_error_ = error;
   session()->SendRstStream(id(), error);
 }
 

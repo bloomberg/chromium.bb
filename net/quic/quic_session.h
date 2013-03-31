@@ -57,8 +57,7 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
                                      QuicStreamOffset offset,
                                      bool fin);
   // Called by streams when they want to close the stream in both directions.
-  void SendRstStream(QuicStreamId id,
-                     QuicErrorCode error);
+  virtual void SendRstStream(QuicStreamId id, QuicRstStreamErrorCode error);
 
   // Called when the session wants to go away and not accept any new streams.
   void SendGoAway(QuicErrorCode error_code, const std::string& reason);

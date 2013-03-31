@@ -85,7 +85,7 @@ void TcpCubicSender::OnIncomingLoss(QuicTime /*ack_receive_time*/) {
 void TcpCubicSender::SentPacket(QuicTime /*sent_time*/,
                                 QuicPacketSequenceNumber sequence_number,
                                 QuicByteCount bytes,
-                                bool is_retransmission) {
+                                Retransmission is_retransmission) {
   bytes_in_flight_ += bytes;
   if (!is_retransmission && update_end_sequence_number_) {
     end_sequence_number_ = sequence_number;
@@ -101,9 +101,10 @@ void TcpCubicSender::AbandoningPacket(QuicPacketSequenceNumber sequence_number,
   bytes_in_flight_ -= abandoned_bytes;
 }
 
-QuicTime::Delta TcpCubicSender::TimeUntilSend(QuicTime now,
-                                              bool is_retransmission,
-                                              bool has_retransmittable_data) {
+QuicTime::Delta TcpCubicSender::TimeUntilSend(
+    QuicTime now,
+    Retransmission is_retransmission,
+    HasRetransmittableData has_retransmittable_data) {
   if (is_retransmission || !has_retransmittable_data) {
     // For TCP we can always send a retransmission and/or an ACK immediately.
     return QuicTime::Delta::Zero();

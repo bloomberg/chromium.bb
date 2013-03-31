@@ -72,9 +72,8 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(QuicStreamId id,
 
   size_t total_bytes_consumed = 0;
   bool fin_consumed = false;
-  bool has_retransmittable_data = true;
 
-  while (delegate_->CanWrite(false, has_retransmittable_data)) {
+  while (delegate_->CanWrite(NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA)) {
     // TODO(rch) figure out FEC.
     // packet_creator_.MaybeStartFEC();
     QuicFrame frame;
@@ -114,8 +113,9 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(QuicStreamId id,
 }
 
 void QuicPacketGenerator::SendQueuedData() {
-  while (HasPendingData() &&
-         delegate_->CanWrite(false, packet_creator_->HasPendingFrames())) {
+  while (HasPendingData() && delegate_->CanWrite(NOT_RETRANSMISSION,
+             packet_creator_->HasPendingFrames() ?
+                 HAS_RETRANSMITTABLE_DATA : NO_RETRANSMITTABLE_DATA)) {
     if (!AddNextPendingFrame()) {
       // Packet was full, so serialize and send it.
       SerializeAndSendPacket();

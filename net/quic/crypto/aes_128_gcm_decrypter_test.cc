@@ -291,15 +291,22 @@ bool DecodeHexString(const char* in,
 namespace net {
 namespace test {
 
-class Aes128GcmDecrypterPeer {
- public:
-  static QuicData* Decrypt(Aes128GcmDecrypter* decrypter,
+// DecryptWithNonce wraps the |Decrypt| method of |decrypter| to allow passing
+// in an nonce and also to allocate the buffer needed for the plaintext.
+QuicData* DecryptWithNonce(Aes128GcmDecrypter* decrypter,
                            StringPiece nonce,
                            StringPiece associated_data,
                            StringPiece ciphertext) {
-    return decrypter->DecryptWithNonce(nonce, associated_data, ciphertext);
+  size_t plaintext_size = ciphertext.length();
+  scoped_ptr<char[]> plaintext(new char[plaintext_size]);
+
+  if (!decrypter->Decrypt(nonce, associated_data, ciphertext,
+                          reinterpret_cast<unsigned char*>(plaintext.get()),
+                          &plaintext_size)) {
+    return NULL;
   }
-};
+  return new QuicData(plaintext.release(), plaintext_size, true);
+}
 
 TEST(Aes128GcmDecrypterTest, Decrypt) {
   if (!Aes128GcmDecrypter::IsSupported()) {
@@ -321,6 +328,7 @@ TEST(Aes128GcmDecrypterTest, Decrypt) {
   size_t pt_len;
 
   for (size_t i = 0; i < arraysize(test_group_array); i++) {
+    SCOPED_TRACE(i);
     const TestVector* test_vector = test_group_array[i];
     const TestGroupInfo& test_info = test_group_info[i];
     for (size_t j = 0; test_vector[j].key != NULL; j++) {
@@ -353,8 +361,11 @@ TEST(Aes128GcmDecrypterTest, Decrypt) {
       ASSERT_TRUE(decrypter.SetKey(StringPiece(key, key_len)));
       string ciphertext(ct, ct_len);
       ciphertext.append(tag, tag_len);
-      scoped_ptr<QuicData> decrypted(Aes128GcmDecrypterPeer::Decrypt(
-          &decrypter, StringPiece(iv, iv_len), StringPiece(aad, aad_len),
+      scoped_ptr<QuicData> decrypted(DecryptWithNonce(
+          &decrypter, StringPiece(iv, iv_len),
+          // OpenSSL fails if NULL is set as the AAD, as opposed to a
+          // zero-length, non-NULL pointer.
+          StringPiece(aad_len ? aad : NULL, aad_len),
           ciphertext));
       if (!decrypted.get()) {
         EXPECT_EQ((size_t)-1, pt_len);

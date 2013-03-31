@@ -217,7 +217,7 @@ class MockConnection : public QuicConnection {
   MOCK_METHOD2(SendConnectionCloseWithDetails, void(QuicErrorCode error,
                                                     const string& details));
   MOCK_METHOD2(SendRstStream, void(QuicStreamId id,
-                                   QuicErrorCode error));
+                                   QuicRstStreamErrorCode error));
   MOCK_METHOD3(SendGoAway, void(QuicErrorCode error,
                                 QuicStreamId last_good_stream_id,
                                 const string& reason));
@@ -242,10 +242,11 @@ class PacketSavingConnection : public MockConnection {
   PacketSavingConnection(QuicGuid guid, IPEndPoint address, bool is_server);
   virtual ~PacketSavingConnection();
 
-  virtual bool SendOrQueuePacket(QuicPacketSequenceNumber sequence_number,
-                                 QuicPacket* packet,
-                                 QuicPacketEntropyHash entropy_hash,
-                                 bool has_retransmittable_data) OVERRIDE;
+  virtual bool SendOrQueuePacket(
+      QuicPacketSequenceNumber sequence_number,
+      QuicPacket* packet,
+      QuicPacketEntropyHash entropy_hash,
+      HasRetransmittableData has_retransmittable_data) OVERRIDE;
 
   std::vector<QuicPacket*> packets_;
 
@@ -291,10 +292,11 @@ class MockSendAlgorithm : public SendAlgorithmInterface {
                void(QuicPacketSequenceNumber, QuicByteCount, QuicTime::Delta));
   MOCK_METHOD1(OnIncomingLoss, void(QuicTime));
   MOCK_METHOD4(SentPacket, void(QuicTime sent_time, QuicPacketSequenceNumber,
-                                QuicByteCount, bool));
+                                QuicByteCount, Retransmission));
   MOCK_METHOD2(AbandoningPacket, void(QuicPacketSequenceNumber sequence_number,
                                       QuicByteCount abandoned_bytes));
-  MOCK_METHOD3(TimeUntilSend, QuicTime::Delta(QuicTime now, bool, bool));
+  MOCK_METHOD3(TimeUntilSend, QuicTime::Delta(QuicTime now, Retransmission,
+                                              HasRetransmittableData));
   MOCK_METHOD0(BandwidthEstimate, QuicBandwidth(void));
   MOCK_METHOD0(SmoothedRtt, QuicTime::Delta(void));
 

@@ -40,10 +40,11 @@ class TcpCubicSenderTest : public ::testing::Test {
     while (bytes_to_send > 0) {
       QuicByteCount bytes_in_packet = std::min(kMaxPacketSize, bytes_to_send);
       sender_->SentPacket(clock_.Now(), sequence_number_++, bytes_in_packet,
-                          false);
+                          NOT_RETRANSMISSION);
       bytes_to_send -= bytes_in_packet;
       if (bytes_to_send > 0) {
-        EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(), false, true).IsZero());
+        EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(), NOT_RETRANSMISSION,
+                                           NO_RETRANSMITTABLE_DATA).IsZero());
       }
     }
   }
@@ -73,31 +74,36 @@ TEST_F(TcpCubicSenderTest, SimpleSender) {
   EXPECT_EQ(kDefaultWindowTCP,
             sender_->AvailableCongestionWindow());
   // At startup make sure we can send.
-  EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(), false, true).IsZero());
+  EXPECT_TRUE(sender_->TimeUntilSend(
+      clock_.Now(), NOT_RETRANSMISSION, NO_RETRANSMITTABLE_DATA).IsZero());
   // Get default QuicCongestionFeedbackFrame from receiver.
   ASSERT_TRUE(receiver_->GenerateCongestionFeedback(&feedback));
   sender_->OnIncomingQuicCongestionFeedbackFrame(feedback, clock_.Now(),
                                                  fake_bandwidth_, not_used_);
   // Make sure we can send.
-  EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(), false, true).IsZero());
+  EXPECT_TRUE(sender_->TimeUntilSend(
+      clock_.Now(), NOT_RETRANSMISSION, NO_RETRANSMITTABLE_DATA).IsZero());
   // And that window is un-affected.
   EXPECT_EQ(kDefaultWindowTCP, sender_->AvailableCongestionWindow());
 
   // A retransmitt should always retun 0.
-  EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(), true, true).IsZero());
+  EXPECT_TRUE(sender_->TimeUntilSend(
+      clock_.Now(), IS_RETRANSMISSION, NO_RETRANSMITTABLE_DATA).IsZero());
 }
 
 TEST_F(TcpCubicSenderTest, ExponentialSlowStart) {
   const int kNumberOfAck = 20;
   QuicCongestionFeedbackFrame feedback;
   // At startup make sure we can send.
-  EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(), false, true).IsZero());
+  EXPECT_TRUE(sender_->TimeUntilSend(
+      clock_.Now(), NOT_RETRANSMISSION, NO_RETRANSMITTABLE_DATA).IsZero());
   // Get default QuicCongestionFeedbackFrame from receiver.
   ASSERT_TRUE(receiver_->GenerateCongestionFeedback(&feedback));
   sender_->OnIncomingQuicCongestionFeedbackFrame(feedback, clock_.Now(),
                                                  fake_bandwidth_, not_used_);
   // Make sure we can send.
-  EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(), false, true).IsZero());
+  EXPECT_TRUE(sender_->TimeUntilSend(
+      clock_.Now(), NOT_RETRANSMISSION, NO_RETRANSMITTABLE_DATA).IsZero());
 
   for (int n = 0; n < kNumberOfAck; ++n) {
     // Send our full congestion window.
@@ -118,13 +124,15 @@ TEST_F(TcpCubicSenderTest, SlowStartAckTrain) {
   const int kNumberOfAck = 65;
   QuicCongestionFeedbackFrame feedback;
   // At startup make sure we can send.
-  EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(), false, true).IsZero());
+  EXPECT_TRUE(sender_->TimeUntilSend(
+      clock_.Now(), NOT_RETRANSMISSION, NO_RETRANSMITTABLE_DATA).IsZero());
   // Get default QuicCongestionFeedbackFrame from receiver.
   ASSERT_TRUE(receiver_->GenerateCongestionFeedback(&feedback));
   sender_->OnIncomingQuicCongestionFeedbackFrame(feedback, clock_.Now(),
                                                  fake_bandwidth_, not_used_);
   // Make sure we can send.
-  EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(), false, true).IsZero());
+  EXPECT_TRUE(sender_->TimeUntilSend(
+      clock_.Now(), NOT_RETRANSMISSION, NO_RETRANSMITTABLE_DATA).IsZero());
 
   for (int n = 0; n < kNumberOfAck; ++n) {
     // Send our full congestion window.
@@ -159,13 +167,15 @@ TEST_F(TcpCubicSenderTest, SlowStartPacketLoss) {
   const int kNumberOfAck = 10;
   QuicCongestionFeedbackFrame feedback;
   // At startup make sure we can send.
-  EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(), false, true).IsZero());
+  EXPECT_TRUE(sender_->TimeUntilSend(
+      clock_.Now(), NOT_RETRANSMISSION, NO_RETRANSMITTABLE_DATA).IsZero());
   // Get default QuicCongestionFeedbackFrame from receiver.
   ASSERT_TRUE(receiver_->GenerateCongestionFeedback(&feedback));
   sender_->OnIncomingQuicCongestionFeedbackFrame(feedback, clock_.Now(),
                                                  fake_bandwidth_, not_used_);
   // Make sure we can send.
-  EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(), false, true).IsZero());
+  EXPECT_TRUE(sender_->TimeUntilSend(
+      clock_.Now(), NOT_RETRANSMISSION, NO_RETRANSMITTABLE_DATA).IsZero());
 
   for (int i = 0; i < kNumberOfAck; ++i) {
     // Send our full congestion window.
@@ -180,7 +190,8 @@ TEST_F(TcpCubicSenderTest, SlowStartPacketLoss) {
   sender_->OnIncomingLoss(clock_.Now());
 
   // Make sure that we should not send right now.
-  EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(), false, true).IsInfinite());
+  EXPECT_TRUE(sender_->TimeUntilSend(
+      clock_.Now(), NOT_RETRANSMISSION, NO_RETRANSMITTABLE_DATA).IsInfinite());
 
   // We should now have fallen out of slow start.
   // We expect window to be cut in half.

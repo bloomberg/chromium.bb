@@ -15,6 +15,7 @@ QuicCryptoClientStream::QuicCryptoClientStream(QuicSession* session,
                                                const string& server_hostname)
     : QuicCryptoStream(session),
       next_state_(STATE_IDLE),
+      decrypter_pushed_(false),
       server_hostname_(server_hostname) {
   config_.SetDefaults();
   crypto_config_.SetDefaults();
@@ -94,6 +95,10 @@ void QuicCryptoClientStream::DoHandshakeLoop(
         next_state_ = STATE_RECV_SHLO;
         DLOG(INFO) << "Client Sending: " << out.DebugString();
         SendHandshakeMessage(out);
+        // Be prepared to decrypt with the new server write key.
+        session()->connection()->PushDecrypter(
+            crypto_negotiated_params_.decrypter.release());
+        decrypter_pushed_ = true;
         return;
       }
       case STATE_RECV_REJ:
@@ -111,6 +116,11 @@ void QuicCryptoClientStream::DoHandshakeLoop(
             CloseConnectionWithDetails(error, error_details);
             return;
         }
+        // Clear any new server write key that we may have set before.
+        if (decrypter_pushed_) {
+          session()->connection()->PopDecrypter();
+          decrypter_pushed_ = false;
+        }
         next_state_ = STATE_SEND_CHLO;
         break;
       case STATE_RECV_SHLO:
@@ -122,6 +132,14 @@ void QuicCryptoClientStream::DoHandshakeLoop(
                                      "Expected SHLO");
           return;
         }
+        // Receiving SHLO implies the server must have processed our full
+        // CHLO and is ready to decrypt with the new client write key.  We
+        // can start to encrypt with the new client write key.
+        // TODO(wtc): when we support 0-RTT, we will need to change the
+        // encrypter when we send a full CHLO because we will be sending
+        // application data immediately after.
+        session()->connection()->ChangeEncrypter(
+            crypto_negotiated_params_.encrypter.release());
         SetHandshakeComplete(QUIC_NO_ERROR);
         return;
       case STATE_IDLE:

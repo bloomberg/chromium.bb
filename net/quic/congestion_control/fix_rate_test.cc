@@ -32,7 +32,8 @@ class FixRateTest : public ::testing::Test {
       : rtt_(QuicTime::Delta::FromMilliseconds(30)),
         unused_bandwidth_(QuicBandwidth::Zero()),
         sender_(new FixRateSender(&clock_)),
-        receiver_(new FixRateReceiverPeer()) {
+        receiver_(new FixRateReceiverPeer()),
+        start_(clock_.Now()) {
     // Make sure clock does not start at 0.
     clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(2));
   }
@@ -42,6 +43,7 @@ class FixRateTest : public ::testing::Test {
   SendAlgorithmInterface::SentPacketsMap unused_packet_map_;
   scoped_ptr<FixRateSender> sender_;
   scoped_ptr<FixRateReceiverPeer> receiver_;
+  const QuicTime start_;
 };
 
 TEST_F(FixRateTest, ReceiverAPI) {
@@ -61,21 +63,24 @@ TEST_F(FixRateTest, SenderAPI) {
   sender_->OnIncomingQuicCongestionFeedbackFrame(feedback,  clock_.Now(),
       unused_bandwidth_, unused_packet_map_);
   EXPECT_EQ(300000, sender_->BandwidthEstimate().ToBytesPerSecond());
-  EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(), false, true).IsZero());
-  sender_->SentPacket(clock_.Now(), 1, kMaxPacketSize, false);
-  EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(), false, true).IsZero());
-  sender_->SentPacket(clock_.Now(), 2, kMaxPacketSize, false);
-  sender_->SentPacket(clock_.Now(), 3, 600, false);
-  EXPECT_EQ(QuicTime::Delta::FromMilliseconds(10),
-            sender_->TimeUntilSend(clock_.Now(), false, true));
+  EXPECT_TRUE(sender_->TimeUntilSend(
+      clock_.Now(), NOT_RETRANSMISSION, NO_RETRANSMITTABLE_DATA).IsZero());
+  sender_->SentPacket(clock_.Now(), 1, kMaxPacketSize, NOT_RETRANSMISSION);
+  EXPECT_TRUE(sender_->TimeUntilSend(
+      clock_.Now(), NOT_RETRANSMISSION, NO_RETRANSMITTABLE_DATA).IsZero());
+  sender_->SentPacket(clock_.Now(), 2, kMaxPacketSize, NOT_RETRANSMISSION);
+  sender_->SentPacket(clock_.Now(), 3, 600, NOT_RETRANSMISSION);
+  EXPECT_EQ(QuicTime::Delta::FromMilliseconds(10), sender_->TimeUntilSend(
+      clock_.Now(), NOT_RETRANSMISSION, NO_RETRANSMITTABLE_DATA));
   clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(2));
-  EXPECT_EQ(QuicTime::Delta::Infinite(),
-            sender_->TimeUntilSend(clock_.Now(), false, true));
+  EXPECT_EQ(QuicTime::Delta::Infinite(), sender_->TimeUntilSend(
+      clock_.Now(), NOT_RETRANSMISSION, NO_RETRANSMITTABLE_DATA));
   clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(8));
   sender_->OnIncomingAck(1, kMaxPacketSize, rtt_);
   sender_->OnIncomingAck(2, kMaxPacketSize, rtt_);
   sender_->OnIncomingAck(3, 600, rtt_);
-  EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(), false, true).IsZero());
+  EXPECT_TRUE(sender_->TimeUntilSend(
+      clock_.Now(), NOT_RETRANSMISSION, NO_RETRANSMITTABLE_DATA).IsZero());
 }
 
 TEST_F(FixRateTest, FixRatePacing) {
@@ -90,19 +95,24 @@ TEST_F(FixRateTest, FixRatePacing) {
   QuicTime acc_advance_time(QuicTime::Zero());
   QuicPacketSequenceNumber sequence_number = 0;
   for (int i = 0; i < num_packets; i += 2) {
-    EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(), false, true).IsZero());
-    sender_->SentPacket(clock_.Now(), sequence_number++, packet_size, false);
-    EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(), false, true).IsZero());
-    sender_->SentPacket(clock_.Now(), sequence_number++, packet_size, false);
-    QuicTime::Delta advance_time = sender_->TimeUntilSend(clock_.Now(), false,
-                                                          true);
+    EXPECT_TRUE(sender_->TimeUntilSend(
+        clock_.Now(), NOT_RETRANSMISSION, NO_RETRANSMITTABLE_DATA).IsZero());
+    sender_->SentPacket(clock_.Now(), sequence_number++, packet_size,
+                        NOT_RETRANSMISSION);
+    EXPECT_TRUE(sender_->TimeUntilSend(
+        clock_.Now(), NOT_RETRANSMISSION, NO_RETRANSMITTABLE_DATA).IsZero());
+    sender_->SentPacket(clock_.Now(), sequence_number++, packet_size,
+                        NOT_RETRANSMISSION);
+    QuicTime::Delta advance_time = sender_->TimeUntilSend(
+        clock_.Now(), NOT_RETRANSMISSION, NO_RETRANSMITTABLE_DATA);
     clock_.AdvanceTime(advance_time);
     sender_->OnIncomingAck(sequence_number - 1, packet_size, rtt_);
     sender_->OnIncomingAck(sequence_number - 2, packet_size, rtt_);
     acc_advance_time = acc_advance_time.Add(advance_time);
   }
   EXPECT_EQ(num_packets * packet_size * 1000000 / bitrate.ToBytesPerSecond(),
-            static_cast<uint64>(acc_advance_time.ToMicroseconds()));
+            static_cast<uint64>(acc_advance_time.Subtract(start_)
+                                .ToMicroseconds()));
 }
 
 }  // namespace test

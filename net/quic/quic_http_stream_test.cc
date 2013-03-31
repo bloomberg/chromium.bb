@@ -121,6 +121,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<bool> {
         framer_(kQuicVersion1,
                 QuicDecrypter::Create(kNULL),
                 QuicEncrypter::Create(kNULL),
+                QuicTime::Zero(),
                 false),
         creator_(guid_, &framer_, &random_, false) {
     IPAddressNumber ip;
@@ -249,7 +250,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<bool> {
       QuicStreamId stream_id) {
     InitializeHeader(sequence_number, false);
 
-    QuicRstStreamFrame rst(stream_id, QUIC_NO_ERROR);
+    QuicRstStreamFrame rst(stream_id, QUIC_STREAM_NO_ERROR);
     return ConstructPacket(header_, QuicFrame(&rst));
   }
 

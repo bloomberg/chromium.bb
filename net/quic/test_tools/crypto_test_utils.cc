@@ -120,21 +120,21 @@ void CryptoTestUtils::CompareClientAndServerKeys(
     QuicCryptoClientStream* client,
     QuicCryptoServerStream* server) {
   StringPiece client_encrypter_key =
-      client->crypto_negotiated_params_.encrypter->GetKey();
+      client->session()->connection()->encrypter()->GetKey();
   StringPiece client_encrypter_iv =
-      client->crypto_negotiated_params_.encrypter->GetNoncePrefix();
+      client->session()->connection()->encrypter()->GetNoncePrefix();
   StringPiece client_decrypter_key =
-      client->crypto_negotiated_params_.decrypter->GetKey();
+      client->session()->connection()->decrypter()->GetKey();
   StringPiece client_decrypter_iv =
-      client->crypto_negotiated_params_.decrypter->GetNoncePrefix();
+      client->session()->connection()->decrypter()->GetNoncePrefix();
   StringPiece server_encrypter_key =
-      server->crypto_negotiated_params_.encrypter->GetKey();
+      server->session()->connection()->encrypter()->GetKey();
   StringPiece server_encrypter_iv =
-      server->crypto_negotiated_params_.encrypter->GetNoncePrefix();
+      server->session()->connection()->encrypter()->GetNoncePrefix();
   StringPiece server_decrypter_key =
-      server->crypto_negotiated_params_.decrypter->GetKey();
+      server->session()->connection()->decrypter()->GetKey();
   StringPiece server_decrypter_iv =
-      server->crypto_negotiated_params_.decrypter->GetNoncePrefix();
+      server->session()->connection()->decrypter()->GetNoncePrefix();
   CompareCharArraysWithHexError("client write key",
                                 client_encrypter_key.data(),
                                 client_encrypter_key.length(),

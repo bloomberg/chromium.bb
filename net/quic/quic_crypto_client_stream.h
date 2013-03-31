@@ -57,6 +57,8 @@ class NET_EXPORT_PRIVATE QuicCryptoClientStream : public QuicCryptoStream {
   QuicNegotiatedParameters negotiated_params_;
   QuicCryptoNegotiatedParameters crypto_negotiated_params_;
 
+  bool decrypter_pushed_;
+
   // Client's connection nonce (4-byte timestamp + 28 random bytes)
   std::string nonce_;
   // Server's hostname

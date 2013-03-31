@@ -93,6 +93,7 @@ QuicTimeWaitListManager::QuicTimeWaitListManager(
     : framer_(kQuicVersion1,
               QuicDecrypter::Create(kNULL),
               QuicEncrypter::Create(kNULL),
+              QuicTime::Zero(),
               true),
       epoll_server_(epoll_server),
       kTimeWaitPeriod_(QuicTime::Delta::FromSeconds(kTimeWaitSeconds)),

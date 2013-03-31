@@ -75,7 +75,7 @@ HKDF::HKDF(const base::StringPiece& secret,
   // On Windows, when the size of output_ is zero, dereference of 0'th element
   // results in a crash. C++11 solves this problem by adding a data() getter
   // method to std::vector.
-  if (key_bytes_to_generate > 0) {
+  if (key_bytes_to_generate) {
     client_write_key_ = base::StringPiece(reinterpret_cast<char*>(&output_[j]),
                                           key_bytes_to_generate);
     j += key_bytes_to_generate;
@@ -84,7 +84,7 @@ HKDF::HKDF(const base::StringPiece& secret,
     j += key_bytes_to_generate;
   }
 
-  if (iv_bytes_to_generate > 0) {
+  if (iv_bytes_to_generate) {
     client_write_iv_ = base::StringPiece(reinterpret_cast<char*>(&output_[j]),
                                          iv_bytes_to_generate);
     j += iv_bytes_to_generate;

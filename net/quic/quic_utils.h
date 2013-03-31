@@ -19,7 +19,10 @@ class NET_EXPORT_PRIVATE QuicUtils {
   // http://www.isthe.com/chongo/tech/comp/fnv/index.html#FNV-param
   static uint128 FNV1a_128_Hash(const char* data, int len);
 
-  // Returns the name of the quic error code as a char*
+  // Returns the name of the QuicRstStreamErrorCode as a char*
+  static const char* StreamErrorToString(QuicRstStreamErrorCode error);
+
+  // Returns the name of the QuicErrorCode as a char*
   static const char* ErrorToString(QuicErrorCode error);
 };
 

@@ -62,8 +62,8 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator {
   class NET_EXPORT_PRIVATE DelegateInterface {
    public:
     virtual ~DelegateInterface() {}
-    virtual bool CanWrite(bool is_retransmission,
-                          bool has_retransmittable_data) = 0;
+    virtual bool CanWrite(Retransmission retransmission,
+                          HasRetransmittableData retransmittable) = 0;
     virtual QuicAckFrame* CreateAckFrame() = 0;
     virtual QuicCongestionFeedbackFrame* CreateFeedbackFrame() = 0;
     // Takes ownership of |packet.packet| and |packet.retransmittable_frames|.

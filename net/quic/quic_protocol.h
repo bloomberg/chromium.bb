@@ -91,6 +91,16 @@ const uint8 kNoFecOffset = 0xFF;
 
 const int64 kDefaultTimeoutUs = 600000000;  // 10 minutes.
 
+enum Retransmission {
+  NOT_RETRANSMISSION = 0,
+  IS_RETRANSMISSION = 1,
+};
+
+enum HasRetransmittableData {
+  HAS_RETRANSMITTABLE_DATA = 0,
+  NO_RETRANSMITTABLE_DATA = 1,
+};
+
 enum QuicFrameType {
   PADDING_FRAME = 0,
   STREAM_FRAME,
@@ -117,24 +127,32 @@ enum QuicPacketPrivateFlags {
   PACKET_PRIVATE_FLAGS_MAX = (1 << 3) - 1  // All bits set.
 };
 
-enum QuicErrorCode {
-  // Stream errors.
-  QUIC_NO_ERROR = 0,
+enum QuicRstStreamErrorCode {
+  QUIC_STREAM_NO_ERROR = 0,
 
-  // Connection has reached an invalid state.
-  QUIC_INTERNAL_ERROR,
-
-  // There were data frames after the a fin or reset.
-  QUIC_STREAM_DATA_AFTER_TERMINATION,
   // There was some server error which halted stream processing.
   QUIC_SERVER_ERROR_PROCESSING_STREAM,
   // We got two fin or reset offsets which did not match.
   QUIC_MULTIPLE_TERMINATION_OFFSETS,
   // We got bad payload and can not respond to it at the protocol level.
   QUIC_BAD_APPLICATION_PAYLOAD,
+  // Stream closed due to connection error. No reset frame is sent when this
+  // happens.
+  QUIC_STREAM_CONNECTION_ERROR,
+  // GoAway frame sent. No more stream can be created.
+  QUIC_STREAM_PEER_GOING_AWAY,
 
-  // Connection errors.
+  // No error. Used as bound while iterating.
+  QUIC_STREAM_LAST_ERROR,
+};
 
+enum QuicErrorCode {
+  QUIC_NO_ERROR = 0,
+
+  // Connection has reached an invalid state.
+  QUIC_INTERNAL_ERROR,
+  // There were data frames after the a fin or reset.
+  QUIC_STREAM_DATA_AFTER_TERMINATION,
   // Control frame is malformed.
   QUIC_INVALID_PACKET_HEADER,
   // Frame data is malformed.
@@ -203,6 +221,7 @@ enum QuicErrorCode {
   // peer and ourselves.
   QUIC_CRYPTO_NO_SUPPORT,
 
+  // No error. Used as bound while iterating.
   QUIC_LAST_ERROR,
 };
 
@@ -232,10 +251,9 @@ struct NET_EXPORT_PRIVATE QuicPacketPublicHeader {
 };
 
 // Header for Data or FEC packets.
-struct QuicPacketHeader {
-  QuicPacketHeader() {}
-  explicit QuicPacketHeader(const QuicPacketPublicHeader& header)
-      : public_header(header) {}
+struct NET_EXPORT_PRIVATE QuicPacketHeader {
+  QuicPacketHeader();
+  explicit QuicPacketHeader(const QuicPacketPublicHeader& header);
 
   NET_EXPORT_PRIVATE friend std::ostream& operator<<(
       std::ostream& os, const QuicPacketHeader& s);
@@ -249,7 +267,7 @@ struct QuicPacketHeader {
   QuicFecGroupNumber fec_group;
 };
 
-struct QuicPublicResetPacket {
+struct NET_EXPORT_PRIVATE QuicPublicResetPacket {
   QuicPublicResetPacket() {}
   explicit QuicPublicResetPacket(const QuicPacketPublicHeader& header)
       : public_header(header) {}
@@ -405,13 +423,13 @@ struct NET_EXPORT_PRIVATE QuicCongestionFeedbackFrame {
 
 struct NET_EXPORT_PRIVATE QuicRstStreamFrame {
   QuicRstStreamFrame() {}
-  QuicRstStreamFrame(QuicStreamId stream_id, QuicErrorCode error_code)
+  QuicRstStreamFrame(QuicStreamId stream_id, QuicRstStreamErrorCode error_code)
       : stream_id(stream_id), error_code(error_code) {
     DCHECK_LE(error_code, std::numeric_limits<uint8>::max());
   }
 
   QuicStreamId stream_id;
-  QuicErrorCode error_code;
+  QuicRstStreamErrorCode error_code;
   std::string error_details;
 };
 

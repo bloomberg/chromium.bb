@@ -59,21 +59,15 @@ class QuicTimeTest : public ::testing::Test {
 
 TEST_F(QuicTimeTest, Initialized) {
   EXPECT_FALSE(QuicTime::Zero().IsInitialized());
-  EXPECT_TRUE(QuicTime::FromMilliseconds(1).IsInitialized());
-}
-
-TEST_F(QuicTimeTest, FromTo) {
-  EXPECT_EQ(QuicTime::FromMilliseconds(1),
-            QuicTime::FromMicroseconds(1000));
-  EXPECT_EQ(1u, QuicTime::FromMicroseconds(1000).ToMilliseconds());
-  EXPECT_EQ(1000u, QuicTime::FromMilliseconds(1).ToMicroseconds());
+  EXPECT_TRUE(QuicTime::Zero().Add(
+      QuicTime::Delta::FromMicroseconds(1)).IsInitialized());
 }
 
 TEST_F(QuicTimeTest, Add) {
-  QuicTime time_1 = QuicTime::FromMilliseconds(1);
-  QuicTime time_2 = QuicTime::FromMilliseconds(1);
-
-  time_1 = time_1.Subtract(QuicTime::Delta::FromMilliseconds(1));
+  QuicTime time_1 = QuicTime::Zero().Add(
+      QuicTime::Delta::FromMilliseconds(1));
+  QuicTime time_2 = QuicTime::Zero().Add(
+      QuicTime::Delta::FromMilliseconds(2));
 
   QuicTime::Delta diff = time_2.Subtract(time_1);
 
@@ -83,15 +77,18 @@ TEST_F(QuicTimeTest, Add) {
 }
 
 TEST_F(QuicTimeTest, Subtract) {
-  QuicTime time_1 = QuicTime::FromMilliseconds(1);
-  QuicTime time_2 = QuicTime::FromMilliseconds(2);
+  QuicTime time_1 = QuicTime::Zero().Add(
+      QuicTime::Delta::FromMilliseconds(1));
+  QuicTime time_2 = QuicTime::Zero().Add(
+      QuicTime::Delta::FromMilliseconds(2));
 
   EXPECT_EQ(QuicTime::Delta::FromMilliseconds(1), time_2.Subtract(time_1));
 }
 
 TEST_F(QuicTimeTest, SubtractDelta) {
-  QuicTime time = QuicTime::FromMilliseconds(2);
-  EXPECT_EQ(QuicTime::FromMilliseconds(1),
+  QuicTime time = QuicTime::Zero().Add(
+      QuicTime::Delta::FromMilliseconds(2));
+  EXPECT_EQ(QuicTime::Zero().Add(QuicTime::Delta::FromMilliseconds(1)),
             time.Subtract(QuicTime::Delta::FromMilliseconds(1)));
 }
 
@@ -99,7 +96,7 @@ TEST_F(QuicTimeTest, MockClock) {
   clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(1));
 
   QuicTime now = clock_.ApproximateNow();
-  QuicTime time = QuicTime::FromMicroseconds(1000);
+  QuicTime time = QuicTime::Zero().Add(QuicTime::Delta::FromMicroseconds(1000));
 
   EXPECT_EQ(now, time);
 

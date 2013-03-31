@@ -151,6 +151,7 @@ class NET_EXPORT_PRIVATE QuicFramer {
   QuicFramer(QuicVersionTag quic_version,
              QuicDecrypter* decrypter,
              QuicEncrypter* encrypter,
+             QuicTime creation_time,
              bool is_server);
 
   virtual ~QuicFramer();
@@ -269,6 +270,13 @@ class NET_EXPORT_PRIVATE QuicFramer {
       const QuicPacketPublicHeader& header,
       const QuicVersionTagList& supported_versions);
 
+  QuicDecrypter* decrypter() const { return decrypter_.get(); }
+  void push_decrypter(QuicDecrypter* decrypter);
+  void pop_decrypter();
+
+  QuicEncrypter* encrypter() const { return encrypter_.get(); }
+  void set_encrypter(QuicEncrypter* encrypter);
+
   // Returns a new encrypted packet, owned by the caller.
   QuicEncryptedPacket* EncryptPacket(QuicPacketSequenceNumber sequence_number,
                                      const QuicPacket& packet);
@@ -369,13 +377,18 @@ class NET_EXPORT_PRIVATE QuicFramer {
   scoped_ptr<QuicData> decrypted_;
   // Version of the protocol being used.
   QuicVersionTag quic_version_;
-  // Decrypter used to decrypt packets during parsing.
+  // Primary decrypter used to decrypt packets during parsing.
   scoped_ptr<QuicDecrypter> decrypter_;
+  // Backup decrypter used to decrypt packets during parsing. May be NULL.
+  scoped_ptr<QuicDecrypter> backup_decrypter_;
   // Encrypter used to encrypt packets via EncryptPacket().
   scoped_ptr<QuicEncrypter> encrypter_;
   // Tracks if the framer is being used by the entity that received the
   // connection or the entity that initiated it.
   bool is_server_;
+  // The time this frames was created.  Time written to the wire will be
+  // written as a delta from this value.
+  QuicTime creation_time_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicFramer);
 };

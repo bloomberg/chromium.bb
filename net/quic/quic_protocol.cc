@@ -15,8 +15,8 @@ namespace net {
 
 size_t GetPacketHeaderSize(bool include_version) {
   return kQuicGuidSize + kPublicFlagsSize +
-      (include_version ? kQuicVersionSize : 0) + kPrivateFlagsSize +
-      kSequenceNumberSize + kFecGroupSize;
+      (include_version ? kQuicVersionSize : 0) + kSequenceNumberSize +
+      kPrivateFlagsSize + kFecGroupSize;
 }
 
 size_t GetPublicResetPacketSize() {
@@ -29,11 +29,15 @@ size_t GetStartOfFecProtectedData(bool include_version) {
 }
 
 size_t GetStartOfEncryptedData(bool include_version) {
-  return  GetPacketHeaderSize(include_version) - kPrivateFlagsSize -
+  return GetPacketHeaderSize(include_version) - kPrivateFlagsSize -
       kFecGroupSize;
 }
 
-QuicPacketPublicHeader::QuicPacketPublicHeader() {}
+QuicPacketPublicHeader::QuicPacketPublicHeader()
+    : guid(0),
+      reset_flag(false),
+      version_flag(false) {
+}
 
 QuicPacketPublicHeader::QuicPacketPublicHeader(
     const QuicPacketPublicHeader& other)
@@ -50,10 +54,27 @@ QuicPacketPublicHeader& QuicPacketPublicHeader::operator=(
   guid = other.guid;
   reset_flag = other.reset_flag;
   version_flag = other.version_flag;
-  // Window's STL crashes when empty std::vectors are copied.
-  if (other.versions.size() > 0)
-    versions = other.versions;
+  versions = other.versions;
   return *this;
+}
+
+QuicPacketHeader::QuicPacketHeader()
+    : fec_flag(false),
+      fec_entropy_flag(false),
+      entropy_flag(false),
+      entropy_hash(0),
+      packet_sequence_number(0),
+      fec_group(0) {
+}
+
+QuicPacketHeader::QuicPacketHeader(const QuicPacketPublicHeader& header)
+    : public_header(header),
+      fec_flag(false),
+      fec_entropy_flag(false),
+      entropy_flag(false),
+      entropy_hash(0),
+      packet_sequence_number(0),
+      fec_group(0) {
 }
 
 QuicStreamFrame::QuicStreamFrame() {}
@@ -160,7 +181,7 @@ ostream& operator<<(ostream& os,
       for (TimeMap::const_iterator it =
                inter_arrival.received_packet_times.begin();
            it != inter_arrival.received_packet_times.end(); ++it) {
-        os << it->first << "@" << it->second.ToMilliseconds() << " ";
+        os << it->first << "@" << it->second.ToDebuggingValue() << " ";
       }
       os << "]";
       break;

@@ -70,15 +70,11 @@ class NET_EXPORT_PRIVATE QuicTime {
   // will return false for these times.
   static QuicTime Zero();
 
-  // Create a new QuicTime holding the time_ms.
-  static QuicTime FromMilliseconds(int64 time_ms);
-
-  // Create a new QuicTime holding the time_us.
-  static QuicTime FromMicroseconds(int64 time_us);
-
-  int64 ToMilliseconds() const;
-
-  int64 ToMicroseconds() const;
+  // Produce the internal value to be used when logging.  This value
+  // represents the number of microseconds since some epoch.  It may
+  // be the UNIX epoch on some platforms.  On others, it may
+  // be a CPU ticks based value.
+  int64 ToDebuggingValue() const;
 
   bool IsInitialized() const;
 
@@ -89,10 +85,13 @@ class NET_EXPORT_PRIVATE QuicTime {
   Delta Subtract(const QuicTime& other) const;
 
  private:
-  base::TimeTicks ticks_;
+  friend bool operator==(QuicTime lhs, QuicTime rhs);
+  friend bool operator<(QuicTime lhs, QuicTime rhs);
 
   friend class QuicClock;
   friend class QuicClockTest;
+
+  base::TimeTicks ticks_;
 };
 
 // Non-member relational operators for QuicTime::Delta.
@@ -116,13 +115,13 @@ inline bool operator>=(QuicTime::Delta lhs, QuicTime::Delta rhs) {
 }
 // Non-member relational operators for QuicTime.
 inline bool operator==(QuicTime lhs, QuicTime rhs) {
-  return lhs.ToMicroseconds() == rhs.ToMicroseconds();
+  return lhs.ticks_ == rhs.ticks_;
 }
 inline bool operator!=(QuicTime lhs, QuicTime rhs) {
   return !(lhs == rhs);
 }
 inline bool operator<(QuicTime lhs, QuicTime rhs) {
-  return lhs.ToMicroseconds() < rhs.ToMicroseconds();
+  return lhs.ticks_ < rhs.ticks_;
 }
 inline bool operator>(QuicTime lhs, QuicTime rhs) {
   return rhs < lhs;

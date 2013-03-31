@@ -61,7 +61,7 @@ class QuicTestClient :  public ReliableQuicStream::Visitor {
   // Returns NULL if the maximum number of streams have already been created.
   QuicReliableClientStream* GetOrCreateStream();
 
-  QuicErrorCode stream_error() { return stream_error_; }
+  QuicRstStreamErrorCode stream_error() { return stream_error_; }
   QuicErrorCode connection_error() { return connection_error_; }
 
   QuicClient* client() { return &client_; }
@@ -75,7 +75,7 @@ class QuicTestClient :  public ReliableQuicStream::Visitor {
   QuicClient client_;  // The actual client
   QuicReliableClientStream* stream_;
 
-  QuicErrorCode stream_error_;
+  QuicRstStreamErrorCode stream_error_;
   QuicErrorCode connection_error_;
 
   BalsaHeaders headers_;

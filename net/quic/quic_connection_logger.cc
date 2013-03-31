@@ -89,7 +89,7 @@ Value* NetLogQuicCongestionFeedbackFrameCallback(
                frame->inter_arrival.received_packet_times.begin();
            it != frame->inter_arrival.received_packet_times.end(); ++it) {
         std::string value = base::Uint64ToString(it->first) + "@" +
-            base::Uint64ToString(it->second.ToMilliseconds());
+            base::Uint64ToString(it->second.ToDebuggingValue());
         received->Append(new base::StringValue(value));
       }
       break;

@@ -46,6 +46,7 @@ QuicPacketSequenceNumber ClosestTo(QuicPacketSequenceNumber target,
 QuicFramer::QuicFramer(QuicVersionTag version,
                        QuicDecrypter* decrypter,
                        QuicEncrypter* encrypter,
+                       QuicTime creation_time,
                        bool is_server)
     : visitor_(NULL),
       fec_builder_(NULL),
@@ -54,7 +55,8 @@ QuicFramer::QuicFramer(QuicVersionTag version,
       quic_version_(version),
       decrypter_(decrypter),
       encrypter_(encrypter),
-      is_server_(is_server) {
+      is_server_(is_server),
+      creation_time_(creation_time) {
   DCHECK(IsSupportedVersion(version));
 }
 
@@ -814,10 +816,11 @@ bool QuicFramer::ProcessQuicCongestionFeedbackFrame(
           set_detailed_error("Unable to read time received.");
           return false;
         }
+        QuicTime time_received = creation_time_.Add(
+            QuicTime::Delta::FromMicroseconds(time_received_us));
 
         inter_arrival->received_packet_times.insert(
-            make_pair(smallest_received,
-                      QuicTime::FromMicroseconds(time_received_us)));
+            make_pair(smallest_received, time_received));
 
         for (int i = 0; i < num_received_packets - 1; ++i) {
           uint16 sequence_delta;
@@ -835,8 +838,8 @@ bool QuicFramer::ProcessQuicCongestionFeedbackFrame(
           }
           QuicPacketSequenceNumber packet = smallest_received + sequence_delta;
           inter_arrival->received_packet_times.insert(
-              make_pair(packet, QuicTime::FromMicroseconds(time_received_us +
-                                                           time_delta_us)));
+              make_pair(packet, time_received.Add(
+                  QuicTime::Delta::FromMicroseconds(time_delta_us))));
         }
       }
       break;
@@ -889,7 +892,14 @@ bool QuicFramer::ProcessRstStreamFrame() {
     set_detailed_error("Unable to read rst stream error code.");
     return false;
   }
-  frame.error_code = static_cast<QuicErrorCode>(error_code);
+
+  if (error_code >= QUIC_STREAM_LAST_ERROR ||
+      error_code < QUIC_STREAM_NO_ERROR) {
+    set_detailed_error("Invalid rst stream error code.");
+    return false;
+  }
+
+  frame.error_code = static_cast<QuicRstStreamErrorCode>(error_code);
 
   StringPiece error_details;
   if (!reader_->ReadStringPiece16(&error_details)) {
@@ -910,6 +920,13 @@ bool QuicFramer::ProcessConnectionCloseFrame() {
     set_detailed_error("Unable to read connection close error code.");
     return false;
   }
+
+  if (error_code >= QUIC_LAST_ERROR ||
+         error_code < QUIC_NO_ERROR) {
+    set_detailed_error("Invalid error code.");
+    return false;
+  }
+
   frame.error_code = static_cast<QuicErrorCode>(error_code);
 
   StringPiece error_details;
@@ -938,12 +955,18 @@ bool QuicFramer::ProcessGoAwayFrame() {
   }
   frame.error_code = static_cast<QuicErrorCode>(error_code);
 
+  if (error_code >= QUIC_LAST_ERROR ||
+      error_code < QUIC_NO_ERROR) {
+    set_detailed_error("Invalid error code.");
+    return false;
+  }
+
   uint32 stream_id;
   if (!reader_->ReadUInt32(&stream_id)) {
     set_detailed_error("Unable to read last good stream id.");
     return false;
   }
-  frame.last_good_stream_id = static_cast<QuicErrorCode>(stream_id);
+  frame.last_good_stream_id = static_cast<QuicStreamId>(stream_id);
 
   StringPiece reason_phrase;
   if (!reader_->ReadStringPiece16(&reason_phrase)) {
@@ -956,6 +979,7 @@ bool QuicFramer::ProcessGoAwayFrame() {
   return true;
 }
 
+// static
 StringPiece QuicFramer::GetAssociatedDataFromEncryptedPacket(
     const QuicEncryptedPacket& encrypted, bool includes_version) {
   return StringPiece(encrypted.data() + kStartOfHashData,
@@ -963,12 +987,27 @@ StringPiece QuicFramer::GetAssociatedDataFromEncryptedPacket(
                          kStartOfHashData);
 }
 
+void QuicFramer::push_decrypter(QuicDecrypter* decrypter) {
+  DCHECK(backup_decrypter_.get() == NULL);
+  backup_decrypter_.reset(decrypter_.release());
+  decrypter_.reset(decrypter);
+}
+
+void QuicFramer::pop_decrypter() {
+  DCHECK(backup_decrypter_.get() != NULL);
+  decrypter_.reset(backup_decrypter_.release());
+}
+
+void QuicFramer::set_encrypter(QuicEncrypter* encrypter) {
+  encrypter_.reset(encrypter);
+}
+
 QuicEncryptedPacket* QuicFramer::EncryptPacket(
     QuicPacketSequenceNumber packet_sequence_number,
     const QuicPacket& packet) {
-  scoped_ptr<QuicData> out(encrypter_->Encrypt(packet_sequence_number,
-                                               packet.AssociatedData(),
-                                               packet.Plaintext()));
+  scoped_ptr<QuicData> out(encrypter_->EncryptPacket(packet_sequence_number,
+                                                     packet.AssociatedData(),
+                                                     packet.Plaintext()));
   if (out.get() == NULL) {
     RaiseError(QUIC_ENCRYPTION_FAILURE);
     return NULL;
@@ -994,10 +1033,19 @@ bool QuicFramer::DecryptPayload(QuicPacketSequenceNumber sequence_number,
     return false;
   }
   DCHECK(decrypter_.get() != NULL);
-  decrypted_.reset(decrypter_->Decrypt(
+  decrypted_.reset(decrypter_->DecryptPacket(
       sequence_number,
       GetAssociatedDataFromEncryptedPacket(packet, version_flag),
       encrypted));
+  if  (decrypted_.get() == NULL && backup_decrypter_.get() != NULL) {
+    decrypted_.reset(backup_decrypter_->DecryptPacket(
+        sequence_number,
+        GetAssociatedDataFromEncryptedPacket(packet, version_flag),
+        encrypted));
+  }
+  // TODO(wtc): tell the caller or visitor which decrypter was used, so that
+  // they can verify a packet that should be encrypted is encrypted.
+  // TODO(wtc): figure out when it is safe to delete backup_decrypter_.
   if  (decrypted_.get() == NULL) {
     return false;
   }
@@ -1221,9 +1269,8 @@ bool QuicFramer::AppendQuicCongestionFeedbackFramePayload(
         }
 
         QuicTime lowest_time = it->second;
-        // TODO(ianswett): Use time deltas from the connection's first received
-        // packet.
-        if (!writer->WriteUInt64(lowest_time.ToMicroseconds())) {
+        if (!writer->WriteUInt64(
+                lowest_time.Subtract(creation_time_).ToMicroseconds())) {
           return false;
         }
 

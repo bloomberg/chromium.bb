@@ -32,9 +32,13 @@ class NET_EXPORT_PRIVATE Aes128GcmEncrypter : public QuicEncrypter {
   // QuicEncrypter implementation
   virtual bool SetKey(base::StringPiece key) OVERRIDE;
   virtual bool SetNoncePrefix(base::StringPiece nonce_prefix) OVERRIDE;
-  virtual QuicData* Encrypt(QuicPacketSequenceNumber sequence_number,
-                            base::StringPiece associated_data,
-                            base::StringPiece plaintext) OVERRIDE;
+  virtual bool Encrypt(base::StringPiece nonce,
+                       base::StringPiece associated_data,
+                       base::StringPiece plaintext,
+                       unsigned char* output) OVERRIDE;
+  virtual QuicData* EncryptPacket(QuicPacketSequenceNumber sequence_number,
+                                  base::StringPiece associated_data,
+                                  base::StringPiece plaintext) OVERRIDE;
   virtual size_t GetKeySize() const OVERRIDE;
   virtual size_t GetNoncePrefixSize() const OVERRIDE;
   virtual size_t GetMaxPlaintextSize(size_t ciphertext_size) const OVERRIDE;
@@ -43,15 +47,6 @@ class NET_EXPORT_PRIVATE Aes128GcmEncrypter : public QuicEncrypter {
   virtual base::StringPiece GetNoncePrefix() const OVERRIDE;
 
  private:
-  friend class test::Aes128GcmEncrypterPeer;
-
-  // The same as Encrypt(), except that the supplied |nonce| argument rather
-  // than the |nonce_| member is used as the nonce. This method is useful
-  // for testing the underlying AES GCM implementation.
-  QuicData* EncryptWithNonce(base::StringPiece nonce,
-                             base::StringPiece associated_data,
-                             base::StringPiece plaintext);
-
   // The 128-bit AES key.
   unsigned char key_[16];
   // The nonce, a concatenation of a four-byte fixed prefix and a 8-byte

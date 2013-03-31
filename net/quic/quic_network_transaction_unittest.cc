@@ -96,7 +96,7 @@ class QuicNetworkTransactionTest : public PlatformTest {
     header.fec_entropy_flag = false;
     header.fec_group = 0;
 
-    QuicRstStreamFrame rst(stream_id, QUIC_NO_ERROR);
+    QuicRstStreamFrame rst(stream_id, QUIC_STREAM_NO_ERROR);
     return scoped_ptr<QuicEncryptedPacket>(
         ConstructPacket(header, QuicFrame(&rst)));
   }
@@ -124,6 +124,7 @@ class QuicNetworkTransactionTest : public PlatformTest {
     QuicFramer framer(kQuicVersion1,
                       QuicDecrypter::Create(kNULL),
                       QuicEncrypter::Create(kNULL),
+                      QuicTime::Zero(),
                       false);
     QuicFrames frames;
     frames.push_back(QuicFrame(&ack));
@@ -180,6 +181,7 @@ class QuicNetworkTransactionTest : public PlatformTest {
     QuicFramer framer(kQuicVersion1,
                       QuicDecrypter::Create(kNULL),
                       QuicEncrypter::Create(kNULL),
+                      QuicTime::Zero(),
                       false);
     QuicFrames frames;
     frames.push_back(frame);

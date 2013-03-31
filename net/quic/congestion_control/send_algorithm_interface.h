@@ -7,6 +7,8 @@
 #ifndef NET_QUIC_CONGESTION_CONTROL_SEND_ALGORITHM_INTERFACE_H_
 #define NET_QUIC_CONGESTION_CONTROL_SEND_ALGORITHM_INTERFACE_H_
 
+#include <map>
+
 #include "base/basictypes.h"
 #include "net/base/net_export.h"
 #include "net/quic/quic_bandwidth.h"
@@ -58,16 +60,17 @@ class NET_EXPORT_PRIVATE SendAlgorithmInterface {
   virtual void SentPacket(QuicTime sent_time,
                           QuicPacketSequenceNumber sequence_number,
                           QuicByteCount bytes,
-                          bool is_retransmission) = 0;
+                          Retransmission is_retransmission) = 0;
 
   // Called when a packet is timed out.
   virtual void AbandoningPacket(QuicPacketSequenceNumber sequence_number,
                                 QuicByteCount abandoned_bytes) = 0;
 
   // Calculate the time until we can send the next packet.
-  virtual QuicTime::Delta TimeUntilSend(QuicTime now,
-                                        bool is_retransmission,
-                                        bool has_retransmittable_data) = 0;
+  virtual QuicTime::Delta TimeUntilSend(
+      QuicTime now,
+      Retransmission is_retransmission,
+      HasRetransmittableData has_retransmittable_data) = 0;
 
   // What's the current estimated bandwidth in bytes per second.
   // Returns 0 when it does not have an estimate.

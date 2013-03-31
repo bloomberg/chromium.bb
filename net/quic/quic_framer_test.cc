@@ -73,9 +73,16 @@ class TestEncrypter : public QuicEncrypter {
   virtual bool SetNoncePrefix(StringPiece nonce_prefix) OVERRIDE {
     return true;
   }
-  virtual QuicData* Encrypt(QuicPacketSequenceNumber sequence_number,
-                            StringPiece associated_data,
-                            StringPiece plaintext) OVERRIDE {
+  virtual bool Encrypt(StringPiece nonce,
+                       StringPiece associated_data,
+                       StringPiece plaintext,
+                       unsigned char* output) {
+    CHECK(false) << "Not implemented";
+    return false;
+  }
+  virtual QuicData* EncryptPacket(QuicPacketSequenceNumber sequence_number,
+                                  StringPiece associated_data,
+                                  StringPiece plaintext) {
     sequence_number_ = sequence_number;
     associated_data_ = associated_data.as_string();
     plaintext_ = plaintext.as_string();
@@ -113,9 +120,17 @@ class TestDecrypter : public QuicDecrypter {
   virtual bool SetNoncePrefix(StringPiece nonce_prefix) OVERRIDE {
     return true;
   }
-  virtual QuicData* Decrypt(QuicPacketSequenceNumber sequence_number,
-                            StringPiece associated_data,
-                            StringPiece ciphertext) OVERRIDE {
+  virtual bool Decrypt(StringPiece nonce,
+                       StringPiece associated_data,
+                       StringPiece ciphertext,
+                       unsigned char* output,
+                       size_t* output_length) {
+    CHECK(false) << "Not implemented";
+    return false;
+  }
+  virtual QuicData* DecryptPacket(QuicPacketSequenceNumber sequence_number,
+                                  StringPiece associated_data,
+                                  StringPiece ciphertext) {
     sequence_number_ = sequence_number;
     associated_data_ = associated_data.as_string();
     ciphertext_ = ciphertext.as_string();
@@ -255,7 +270,8 @@ class QuicFramerTest : public ::testing::Test {
   QuicFramerTest()
       : encrypter_(new test::TestEncrypter()),
         decrypter_(new test::TestDecrypter()),
-        framer_(kQuicVersion1, decrypter_, encrypter_, true) {
+        start_(QuicTime::Zero().Add(QuicTime::Delta::FromMicroseconds(0x10))),
+        framer_(kQuicVersion1, decrypter_, encrypter_, start_, true) {
     framer_.set_visitor(&visitor_);
     framer_.set_entropy_calculator(&entropy_calculator_);
   }
@@ -347,6 +363,7 @@ class QuicFramerTest : public ::testing::Test {
 
   test::TestEncrypter* encrypter_;
   test::TestDecrypter* decrypter_;
+  QuicTime start_;
   QuicFramer framer_;
   test::TestQuicVisitor visitor_;
   test::TestEntropyCalculator entropy_calculator_;
@@ -1183,10 +1200,10 @@ TEST_F(QuicFramerTest, CongestionFeedbackFrameInterArrival) {
     0x02, 0x03,
     // num received packets
     0x03,
-    // smallest ack sequence number
+    // lowest sequence number
     0xBA, 0x9A, 0x78, 0x56,
     0x34, 0x12,
-    // ack time
+    // receive time
     0x87, 0x96, 0xA5, 0xB4,
     0xC3, 0xD2, 0xE1, 0x07,
     // sequence delta
@@ -1217,16 +1234,16 @@ TEST_F(QuicFramerTest, CongestionFeedbackFrameInterArrival) {
   TimeMap::const_iterator iter =
       frame.inter_arrival.received_packet_times.begin();
   EXPECT_EQ(GG_UINT64_C(0x0123456789ABA), iter->first);
-  EXPECT_EQ(QuicTime::FromMicroseconds(GG_UINT64_C(0x07E1D2C3B4A59687)),
-            iter->second);
+  EXPECT_EQ(GG_INT64_C(0x07E1D2C3B4A59687),
+            iter->second.Subtract(start_).ToMicroseconds());
   ++iter;
   EXPECT_EQ(GG_UINT64_C(0x0123456789ABB), iter->first);
-  EXPECT_EQ(QuicTime::FromMicroseconds(GG_UINT64_C(0x07E1D2C3B4A59688)),
-            iter->second);
+  EXPECT_EQ(GG_INT64_C(0x07E1D2C3B4A59688),
+            iter->second.Subtract(start_).ToMicroseconds());
   ++iter;
   EXPECT_EQ(GG_UINT64_C(0x0123456789ABD), iter->first);
-  EXPECT_EQ(QuicTime::FromMicroseconds(GG_UINT64_C(0x07E1D2C3B4A59689)),
-            iter->second);
+  EXPECT_EQ(GG_INT64_C(0x07E1D2C3B4A59689),
+            iter->second.Subtract(start_).ToMicroseconds());
 
   // Now test framing boundaries
   for (size_t i = 0; i < 31; ++i) {
@@ -1358,7 +1375,7 @@ TEST_F(QuicFramerTest, RstStreamFrame) {
     // stream id
     0x04, 0x03, 0x02, 0x01,
     // error code
-    0x08, 0x07, 0x06, 0x05,
+    0x01, 0x00, 0x00, 0x00,
 
     // error details length
     0x0d, 0x00,
@@ -1377,7 +1394,7 @@ TEST_F(QuicFramerTest, RstStreamFrame) {
   EXPECT_TRUE(CheckDecryption(encrypted, !kIncludeVersion));
 
   EXPECT_EQ(GG_UINT64_C(0x01020304), visitor_.rst_stream_frame_.stream_id);
-  EXPECT_EQ(0x05060708, visitor_.rst_stream_frame_.error_code);
+  EXPECT_EQ(0x01, visitor_.rst_stream_frame_.error_code);
   EXPECT_EQ("because I can", visitor_.rst_stream_frame_.error_details);
 
   // Now test framing boundaries
@@ -1414,7 +1431,7 @@ TEST_F(QuicFramerTest, ConnectionCloseFrame) {
     // frame type (connection close frame)
     0x05,
     // error code
-    0x08, 0x07, 0x06, 0x05,
+    0x11, 0x00, 0x00, 0x00,
 
     // error details length
     0x0d, 0x00,
@@ -1451,7 +1468,7 @@ TEST_F(QuicFramerTest, ConnectionCloseFrame) {
 
   EXPECT_EQ(0u, visitor_.stream_frames_.size());
 
-  EXPECT_EQ(0x05060708, visitor_.connection_close_frame_.error_code);
+  EXPECT_EQ(0x11, visitor_.connection_close_frame_.error_code);
   EXPECT_EQ("because I can", visitor_.connection_close_frame_.error_details);
 
   ASSERT_EQ(1u, visitor_.ack_frames_.size());
@@ -1498,7 +1515,7 @@ TEST_F(QuicFramerTest, GoAwayFrame) {
     // frame type (go away frame)
     0x06,
     // error code
-    0x08, 0x07, 0x06, 0x05,
+    0x09, 0x00, 0x00, 0x00,
     // stream id
     0x04, 0x03, 0x02, 0x01,
     // error details length
@@ -1519,7 +1536,7 @@ TEST_F(QuicFramerTest, GoAwayFrame) {
 
   EXPECT_EQ(GG_UINT64_C(0x01020304),
             visitor_.goaway_frame_.last_good_stream_id);
-  EXPECT_EQ(0x05060708, visitor_.goaway_frame_.error_code);
+  EXPECT_EQ(0x9, visitor_.goaway_frame_.error_code);
   EXPECT_EQ("because I can", visitor_.goaway_frame_.reason_phrase);
 
   const size_t reason_size = arraysize("because I can") - 1;
@@ -1987,13 +2004,16 @@ TEST_F(QuicFramerTest, ConstructCongestionFeedbackFramePacketInterArrival) {
   frame.inter_arrival.accumulated_number_of_lost_packets = 0x0302;
   frame.inter_arrival.received_packet_times.insert(
       make_pair(GG_UINT64_C(0x0123456789ABA),
-                QuicTime::FromMicroseconds(GG_UINT64_C(0x07E1D2C3B4A59687))));
+                start_.Add(QuicTime::Delta::FromMicroseconds(
+                    GG_UINT64_C(0x07E1D2C3B4A59687)))));
   frame.inter_arrival.received_packet_times.insert(
       make_pair(GG_UINT64_C(0x0123456789ABB),
-                QuicTime::FromMicroseconds(GG_UINT64_C(0x07E1D2C3B4A59688))));
+                start_.Add(QuicTime::Delta::FromMicroseconds(
+                    GG_UINT64_C(0x07E1D2C3B4A59688)))));
   frame.inter_arrival.received_packet_times.insert(
       make_pair(GG_UINT64_C(0x0123456789ABD),
-                QuicTime::FromMicroseconds(GG_UINT64_C(0x07E1D2C3B4A59689))));
+                start_.Add(QuicTime::Delta::FromMicroseconds(
+                    GG_UINT64_C(0x07E1D2C3B4A59689)))));
   QuicFrames frames;
   frames.push_back(QuicFrame(&frame));
 
@@ -2019,10 +2039,10 @@ TEST_F(QuicFramerTest, ConstructCongestionFeedbackFramePacketInterArrival) {
     0x02, 0x03,
     // num received packets
     0x03,
-    // smallest ack sequence number
+    // lowest sequence number
     0xBA, 0x9A, 0x78, 0x56,
     0x34, 0x12,
-    // ack time
+    // receive time
     0x87, 0x96, 0xA5, 0xB4,
     0xC3, 0xD2, 0xE1, 0x07,
     // sequence delta
@@ -2130,7 +2150,7 @@ TEST_F(QuicFramerTest, ConstructRstFramePacket) {
 
   QuicRstStreamFrame rst_frame;
   rst_frame.stream_id = 0x01020304;
-  rst_frame.error_code = static_cast<QuicErrorCode>(0x05060708);
+  rst_frame.error_code = static_cast<QuicRstStreamErrorCode>(0x05060708);
   rst_frame.error_details = "because I can";
 
   unsigned char packet[] = {
@@ -2488,7 +2508,7 @@ TEST_F(QuicFramerTest, DISABLED_Truncation) {
 
   QuicConnectionCloseFrame close_frame;
   QuicAckFrame* ack_frame = &close_frame.ack_frame;
-  close_frame.error_code = static_cast<QuicErrorCode>(0x05060708);
+  close_frame.error_code = static_cast<QuicErrorCode>(0x05);
   close_frame.error_details = "because I can";
   ack_frame->received_info.largest_observed = 201;
   ack_frame->sent_info.least_unacked = 0;
@@ -2543,7 +2563,7 @@ TEST_F(QuicFramerTest, CleanTruncation) {
 
   QuicConnectionCloseFrame close_frame;
   QuicAckFrame* ack_frame = &close_frame.ack_frame;
-  close_frame.error_code = static_cast<QuicErrorCode>(0x05060708);
+  close_frame.error_code = static_cast<QuicErrorCode>(0x05);
   close_frame.error_details = "because I can";
   ack_frame->received_info.largest_observed = 201;
   ack_frame->sent_info.least_unacked = 0;

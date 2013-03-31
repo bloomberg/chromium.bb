@@ -19,9 +19,37 @@ bool NullDecrypter::SetNoncePrefix(StringPiece nonce_prefix) {
   return nonce_prefix.empty();
 }
 
-QuicData* NullDecrypter::Decrypt(QuicPacketSequenceNumber /*sequence_number*/,
-                                 StringPiece associated_data,
-                                 StringPiece ciphertext) {
+bool NullDecrypter::Decrypt(StringPiece /*nonce*/,
+                            StringPiece associated_data,
+                            StringPiece ciphertext,
+                            unsigned char* output,
+                            size_t* output_length) {
+  QuicDataReader reader(ciphertext.data(), ciphertext.length());
+
+  uint128 hash;
+  if (!reader.ReadUInt128(&hash)) {
+    return false;
+  }
+
+  StringPiece plaintext = reader.ReadRemainingPayload();
+
+  // TODO(rch): avoid buffer copy here
+  string buffer = associated_data.as_string();
+  plaintext.AppendToString(&buffer);
+
+  if (hash != QuicUtils::FNV1a_128_Hash(buffer.data(), buffer.length())) {
+    return false;
+  }
+  memcpy(output, plaintext.data(), plaintext.length());
+  *output_length = plaintext.length();
+  return true;
+}
+
+QuicData* NullDecrypter::DecryptPacket(QuicPacketSequenceNumber /*seq_number*/,
+                                       StringPiece associated_data,
+                                       StringPiece ciphertext) {
+  // It's worth duplicating |Decrypt|, above, in order to save a copy by using
+  // the shared-data QuicData constructor directly.
   QuicDataReader reader(ciphertext.data(), ciphertext.length());
 
   uint128 hash;

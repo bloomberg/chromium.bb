@@ -12,7 +12,9 @@
 namespace net {
 
 QuicCryptoServerStream::QuicCryptoServerStream(QuicSession* session)
-    : QuicCryptoStream(session) {
+    : QuicCryptoStream(session),
+      // TODO(agl): use real secret.
+      crypto_config_("secret") {
   config_.SetDefaults();
   // Use hardcoded crypto parameters for now.
   CryptoHandshakeMessage extra_tags;
@@ -56,8 +58,11 @@ void QuicCryptoServerStream::OnHandshakeMessage(
   string error_details;
   CryptoHandshakeMessage reply;
   crypto_config_.ProcessClientHello(
-      message, session()->connection()->guid(), &reply,
-      &crypto_negotiated_params_, &error_details);
+      message, session()->connection()->guid(),
+      session()->connection()->peer_address(),
+      session()->connection()->clock()->NowAsDeltaSinceUnixEpoch(),
+      session()->connection()->random_generator(),
+      &reply, &crypto_negotiated_params_, &error_details);
 
   if (reply.tag() == kSHLO) {
     // If we are returning a SHLO then we accepted the handshake.
@@ -69,6 +74,17 @@ void QuicCryptoServerStream::OnHandshakeMessage(
       return;
     }
 
+    // Receiving a full CHLO implies the client is prepared to decrypt with
+    // the new server write key.  We can start to encrypt with the new server
+    // write key.
+    //
+    // NOTE: the SHLO will be encrypted with the new server write key.
+    session()->connection()->ChangeEncrypter(
+        crypto_negotiated_params_.encrypter.release());
+    // Be prepared to decrypt with the new client write key, as the client
+    // will start to use it upon receiving the SHLO.
+    session()->connection()->PushDecrypter(
+        crypto_negotiated_params_.decrypter.release());
     SetHandshakeComplete(QUIC_NO_ERROR);
   }
 

@@ -166,7 +166,7 @@ QuicConsumedData QuicSession::WriteData(QuicStreamId id,
 }
 
 void QuicSession::SendRstStream(QuicStreamId id,
-                                QuicErrorCode error) {
+                                QuicRstStreamErrorCode error) {
   connection_->SendRstStream(id, error);
   CloseStream(id);
 }
@@ -242,7 +242,7 @@ ReliableQuicStream* QuicSession::GetIncomingReliableStream(
 
   if (goaway_sent_) {
     // We've already sent a GoAway
-    connection()->SendRstStream(stream_id, QUIC_PEER_GOING_AWAY);
+    SendRstStream(stream_id, QUIC_STREAM_PEER_GOING_AWAY);
     return NULL;
   }
 

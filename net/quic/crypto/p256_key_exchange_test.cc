@@ -7,6 +7,8 @@
 #include "base/logging.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using std::string;
+
 namespace net {
 namespace test {
 
@@ -14,8 +16,8 @@ namespace test {
 // parties end up with the same key.
 TEST(P256KeyExchange, SharedKey) {
   for (int i = 0; i < 5; i++) {
-    std::string alice_private(P256KeyExchange::NewPrivateKey());
-    std::string bob_private(P256KeyExchange::NewPrivateKey());
+    string alice_private(P256KeyExchange::NewPrivateKey());
+    string bob_private(P256KeyExchange::NewPrivateKey());
 
     ASSERT_FALSE(alice_private.empty());
     ASSERT_FALSE(bob_private.empty());

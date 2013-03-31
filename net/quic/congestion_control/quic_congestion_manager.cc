@@ -46,10 +46,10 @@ QuicCongestionManager::~QuicCongestionManager() {
 void QuicCongestionManager::SentPacket(QuicPacketSequenceNumber sequence_number,
                                        QuicTime sent_time,
                                        QuicByteCount bytes,
-                                       bool is_retransmission) {
+                                       Retransmission retransmission) {
   DCHECK(!ContainsKey(pending_packets_, sequence_number));
   send_algorithm_->SentPacket(sent_time, sequence_number, bytes,
-                              is_retransmission);
+                              retransmission);
 
   packet_history_map_[sequence_number] =
       new class SendAlgorithmInterface::SentPacket(bytes, sent_time);
@@ -122,10 +122,9 @@ void QuicCongestionManager::OnIncomingAckFrame(const QuicAckFrame& frame,
 
 QuicTime::Delta QuicCongestionManager::TimeUntilSend(
     QuicTime now,
-    bool is_retransmission,
-    bool has_retransmittable_data) {
-  return send_algorithm_->TimeUntilSend(now, is_retransmission,
-                                        has_retransmittable_data);
+    Retransmission retransmission,
+    HasRetransmittableData retransmittable) {
+  return send_algorithm_->TimeUntilSend(now, retransmission, retransmittable);
 }
 
 bool QuicCongestionManager::GenerateCongestionFeedback(

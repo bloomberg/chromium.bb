@@ -58,7 +58,7 @@ void FixRateSender::OnIncomingLoss(QuicTime /*ack_receive_time*/) {
 void FixRateSender::SentPacket(QuicTime sent_time,
                                QuicPacketSequenceNumber /*sequence_number*/,
                                QuicByteCount bytes,
-                               bool is_retransmission) {
+                               Retransmission is_retransmission) {
   fix_rate_leaky_bucket_.Add(sent_time, bytes);
   paced_sender_.SentPacket(sent_time, bytes);
   if (!is_retransmission) {
@@ -73,8 +73,8 @@ void FixRateSender::AbandoningPacket(
 
 QuicTime::Delta FixRateSender::TimeUntilSend(
     QuicTime now,
-    bool /*is_retransmission*/,
-    bool /*has_retransmittable_data*/) {
+    Retransmission /*is_retransmission*/,
+    HasRetransmittableData /*has_retransmittable_data*/) {
   if (CongestionWindow() > fix_rate_leaky_bucket_.BytesPending(now)) {
     if (CongestionWindow() <= data_in_flight_) {
       // We need an ack before we send more.

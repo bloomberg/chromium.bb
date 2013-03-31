@@ -19,7 +19,7 @@ QuicReliableClientStream::QuicReliableClientStream(QuicStreamId id,
 
 QuicReliableClientStream::~QuicReliableClientStream() {
   if (delegate_)
-    delegate_->OnClose(error());
+    delegate_->OnClose(connection_error());
 }
 
 uint32 QuicReliableClientStream::ProcessData(const char* data,
@@ -39,7 +39,7 @@ uint32 QuicReliableClientStream::ProcessData(const char* data,
 
 void QuicReliableClientStream::TerminateFromPeer(bool half_close) {
   if (delegate_) {
-    delegate_->OnClose(error());
+    delegate_->OnClose(connection_error());
     delegate_ = NULL;
   }
   ReliableQuicStream::TerminateFromPeer(half_close);

@@ -10,6 +10,7 @@
 #include "net/base/capturing_net_log.h"
 #include "net/base/net_log_unittest.h"
 #include "net/base/test_completion_callback.h"
+#include "net/quic/crypto/aes_128_gcm_encrypter.h"
 #include "net/quic/crypto/crypto_protocol.h"
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/crypto/quic_encrypter.h"
@@ -51,10 +52,20 @@ class QuicClientSessionTest : public ::testing::Test {
 };
 
 TEST_F(QuicClientSessionTest, CryptoConnect) {
+  if (!Aes128GcmEncrypter::IsSupported()) {
+    LOG(INFO) << "AES GCM not supported. Test skipped.";
+    return;
+  }
+
   CompleteCryptoHandshake();
 }
 
 TEST_F(QuicClientSessionTest, MaxNumConnections) {
+  if (!Aes128GcmEncrypter::IsSupported()) {
+    LOG(INFO) << "AES GCM not supported. Test skipped.";
+    return;
+  }
+
   CompleteCryptoHandshake();
 
   std::vector<QuicReliableClientStream*> streams;
@@ -85,6 +96,11 @@ TEST_F(QuicClientSessionTest, GoAwayReceived) {
 }
 
 TEST_F(QuicClientSessionTest, Logging) {
+  if (!Aes128GcmEncrypter::IsSupported()) {
+    LOG(INFO) << "AES GCM not supported. Test skipped.";
+    return;
+  }
+
   CompleteCryptoHandshake();
 
   // TODO(rch): Add some helper methods to simplify packet creation in tests.
@@ -92,10 +108,11 @@ TEST_F(QuicClientSessionTest, Logging) {
   QuicFramer framer(kQuicVersion1,
                     QuicDecrypter::Create(kNULL),
                     QuicEncrypter::Create(kNULL),
+                    QuicTime::Zero(),
                     false);
   QuicRstStreamFrame frame;
   frame.stream_id = 2;
-  frame.error_code = QUIC_CONNECTION_TIMED_OUT;
+  frame.error_code = QUIC_STREAM_CONNECTION_ERROR;
   frame.error_details = "doh!";
 
   QuicFrames frames;
@@ -143,7 +160,7 @@ TEST_F(QuicClientSessionTest, Logging) {
   EXPECT_EQ(frame.stream_id, static_cast<QuicStreamId>(stream_id));
   int error_code;
   ASSERT_TRUE(entries[pos].GetIntegerValue("error_code", &error_code));
-  EXPECT_EQ(frame.error_code, static_cast<QuicErrorCode>(error_code));
+  EXPECT_EQ(frame.error_code, static_cast<QuicRstStreamErrorCode>(error_code));
   std::string details;
   ASSERT_TRUE(entries[pos].GetStringValue("details", &details));
   EXPECT_EQ(frame.error_details, details);

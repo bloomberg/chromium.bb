@@ -243,15 +243,22 @@ bool DecodeHexString(const char* in,
 namespace net {
 namespace test {
 
-class Aes128GcmEncrypterPeer {
- public:
-  static QuicData* Encrypt(Aes128GcmEncrypter* encrypter,
+// EncryptWithNonce wraps the |Encrypt| method of |encrypter| to allow passing
+// in an nonce and also to allocate the buffer needed for the ciphertext.
+QuicData* EncryptWithNonce(Aes128GcmEncrypter* encrypter,
                            StringPiece nonce,
                            StringPiece associated_data,
                            StringPiece plaintext) {
-    return encrypter->EncryptWithNonce(nonce, associated_data, plaintext);
+  size_t ciphertext_size = encrypter->GetCiphertextSize(plaintext.length());
+  scoped_ptr<char[]> ciphertext(new char[ciphertext_size]);
+
+  if (!encrypter->Encrypt(nonce, associated_data, plaintext,
+                          reinterpret_cast<unsigned char*>(ciphertext.get()))) {
+    return NULL;
   }
-};
+
+  return new QuicData(ciphertext.release(), ciphertext_size, true);
+}
 
 TEST(Aes128GcmEncrypterTest, Encrypt) {
   if (!Aes128GcmEncrypter::IsSupported()) {
@@ -273,6 +280,7 @@ TEST(Aes128GcmEncrypterTest, Encrypt) {
   size_t tag_len;
 
   for (size_t i = 0; i < arraysize(test_group_array); i++) {
+    SCOPED_TRACE(i);
     const TestVector* test_vector = test_group_array[i];
     const TestGroupInfo& test_info = test_group_info[i];
     for (size_t j = 0; test_vector[j].key != NULL; j++) {
@@ -301,8 +309,12 @@ TEST(Aes128GcmEncrypterTest, Encrypt) {
 
       Aes128GcmEncrypter encrypter;
       ASSERT_TRUE(encrypter.SetKey(StringPiece(key, key_len)));
-      scoped_ptr<QuicData> encrypted(Aes128GcmEncrypterPeer::Encrypt(
-          &encrypter, StringPiece(iv, iv_len), StringPiece(aad, aad_len),
+      scoped_ptr<QuicData> encrypted(EncryptWithNonce(
+          &encrypter, StringPiece(iv, iv_len),
+          // OpenSSL fails if NULL is set as the AAD, as opposed to a
+          // zero-length, non-NULL pointer. This deliberately tests that we
+          // handle this case.
+          StringPiece(aad_len ? aad : NULL, aad_len),
           StringPiece(pt, pt_len)));
       ASSERT_TRUE(encrypted.get());
       ASSERT_EQ(ct_len + tag_len, encrypted->length());

@@ -21,18 +21,27 @@ bool NullEncrypter::SetNoncePrefix(StringPiece nonce_prefix) {
   return nonce_prefix.empty();
 }
 
-QuicData* NullEncrypter::Encrypt(QuicPacketSequenceNumber /*sequence_number*/,
-                                 StringPiece associated_data,
-                                 StringPiece plaintext) {
-  // TODO(rch): avoid buffer copy here
+bool NullEncrypter::Encrypt(
+    StringPiece /*nonce*/,
+    StringPiece associated_data,
+    StringPiece plaintext,
+    unsigned char* output) {
   string buffer = associated_data.as_string();
   plaintext.AppendToString(&buffer);
   uint128 hash = QuicUtils::FNV1a_128_Hash(buffer.data(), buffer.length());
-  QuicDataWriter writer(plaintext.length() + kHashSize);
-  writer.WriteUInt128(hash);
-  writer.WriteBytes(plaintext.data(), plaintext.length());
-  size_t len = writer.length();
-  return new QuicData(writer.take(), len, true);
+  memcpy(output, &hash, sizeof(hash));
+  memcpy(output + sizeof(hash), plaintext.data(), plaintext.size());
+  return true;
+}
+
+QuicData* NullEncrypter::EncryptPacket(
+    QuicPacketSequenceNumber /*sequence_number*/,
+    StringPiece associated_data,
+    StringPiece plaintext) {
+  const size_t len = plaintext.size() + sizeof(uint128);
+  uint8* buffer = new uint8[len];
+  Encrypt(StringPiece(), associated_data, plaintext, buffer);
+  return new QuicData(reinterpret_cast<char*>(buffer), len, true);
 }
 
 size_t NullEncrypter::GetKeySize() const {

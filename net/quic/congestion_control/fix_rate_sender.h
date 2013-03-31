@@ -36,12 +36,13 @@ class NET_EXPORT_PRIVATE FixRateSender : public SendAlgorithmInterface {
   virtual void SentPacket(QuicTime sent_time,
                           QuicPacketSequenceNumber equence_number,
                           QuicByteCount bytes,
-                          bool is_retransmission) OVERRIDE;
+                          Retransmission is_retransmission) OVERRIDE;
   virtual void AbandoningPacket(QuicPacketSequenceNumber sequence_number,
                                 QuicByteCount abandoned_bytes) OVERRIDE;
-  virtual QuicTime::Delta TimeUntilSend(QuicTime now,
-                                        bool is_retransmission,
-                                        bool has_retransmittable_data) OVERRIDE;
+  virtual QuicTime::Delta TimeUntilSend(
+      QuicTime now,
+      Retransmission is_retransmission,
+      HasRetransmittableData has_retransmittable_data) OVERRIDE;
   virtual QuicBandwidth BandwidthEstimate() OVERRIDE;
   virtual QuicTime::Delta SmoothedRtt() OVERRIDE;
   // End implementation of SendAlgorithmInterface.

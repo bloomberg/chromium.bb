@@ -157,7 +157,7 @@ bool PacketSavingConnection::SendOrQueuePacket(
     QuicPacketSequenceNumber sequence_number,
     QuicPacket* packet,
     QuicPacketEntropyHash entropy_hash,
-    bool has_retransmittable_data) {
+    HasRetransmittableData retransmittable) {
   packets_.push_back(packet);
   return true;
 }
@@ -268,6 +268,7 @@ static QuicPacket* ConstructPacketFromHandshakeMessage(
   QuicFramer quic_framer(kQuicVersion1,
                          QuicDecrypter::Create(kNULL),
                          QuicEncrypter::Create(kNULL),
+                         QuicTime::Zero(),
                          false);
 
   QuicPacketHeader header;

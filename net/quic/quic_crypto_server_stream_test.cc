@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
+#include "net/quic/crypto/aes_128_gcm_encrypter.h"
 #include "net/quic/crypto/crypto_framer.h"
 #include "net/quic/crypto/crypto_handshake.h"
 #include "net/quic/crypto/crypto_protocol.h"
@@ -66,7 +67,8 @@ class QuicCryptoServerStreamTest : public ::testing::Test {
  public:
   QuicCryptoServerStreamTest()
       : guid_(1),
-        addr_(),
+        addr_(ParseIPLiteralToNumber("192.0.2.33", &ip_) ?
+              ip_ : IPAddressNumber(), 1),
         connection_(new PacketSavingConnection(guid_, addr_, true)),
         session_(connection_, true),
         stream_(&session_) {
@@ -82,6 +84,7 @@ class QuicCryptoServerStreamTest : public ::testing::Test {
   }
 
  protected:
+  IPAddressNumber ip_;
   QuicGuid guid_;
   IPEndPoint addr_;
   PacketSavingConnection* connection_;
@@ -92,15 +95,30 @@ class QuicCryptoServerStreamTest : public ::testing::Test {
 };
 
 TEST_F(QuicCryptoServerStreamTest, NotInitiallyConected) {
+  if (!Aes128GcmEncrypter::IsSupported()) {
+    LOG(INFO) << "AES GCM not supported. Test skipped.";
+    return;
+  }
+
   EXPECT_FALSE(stream_.handshake_complete());
 }
 
 TEST_F(QuicCryptoServerStreamTest, ConnectedAfterCHLO) {
+  if (!Aes128GcmEncrypter::IsSupported()) {
+    LOG(INFO) << "AES GCM not supported. Test skipped.";
+    return;
+  }
+
   CompleteCryptoHandshake();
   EXPECT_TRUE(stream_.handshake_complete());
 }
 
 TEST_F(QuicCryptoServerStreamTest, MessageAfterHandshake) {
+  if (!Aes128GcmEncrypter::IsSupported()) {
+    LOG(INFO) << "AES GCM not supported. Test skipped.";
+    return;
+  }
+
   CompleteCryptoHandshake();
   EXPECT_CALL(*connection_, SendConnectionClose(
       QUIC_CRYPTO_MESSAGE_AFTER_HANDSHAKE_COMPLETE));
@@ -110,6 +128,11 @@ TEST_F(QuicCryptoServerStreamTest, MessageAfterHandshake) {
 }
 
 TEST_F(QuicCryptoServerStreamTest, BadMessageType) {
+  if (!Aes128GcmEncrypter::IsSupported()) {
+    LOG(INFO) << "AES GCM not supported. Test skipped.";
+    return;
+  }
+
   message_.set_tag(kSHLO);
   ConstructHandshakeMessage();
   EXPECT_CALL(*connection_, SendConnectionClose(

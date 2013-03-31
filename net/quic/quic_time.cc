@@ -72,36 +72,14 @@ bool QuicTime::Delta::IsInfinite() const {
 
 // static
 QuicTime QuicTime::Zero() {
-  return QuicTime::FromMilliseconds(0);
-}
-
-// static
-QuicTime QuicTime::FromMilliseconds(int64 time_ms) {
-  // DateTime use 100 ns as resolution make sure we don't pass down too high
-  // values.
-  DCHECK(time_ms < kQuicInfiniteTimeUs / 1000);
-  return QuicTime(base::TimeTicks() +
-                  base::TimeDelta::FromMilliseconds(time_ms));
-}
-
-// static
-QuicTime QuicTime::FromMicroseconds(int64 time_us) {
-  // DateTime use 100 ns as resolution make sure we don't pass down too high
-  // values.
-  DCHECK(time_us < kQuicInfiniteTimeUs);
-  return QuicTime(base::TimeTicks() +
-                  base::TimeDelta::FromMicroseconds(time_us));
+  return QuicTime(base::TimeTicks());
 }
 
 QuicTime::QuicTime(base::TimeTicks ticks)
     : ticks_(ticks) {
 }
 
-int64 QuicTime::ToMilliseconds() const {
-  return (ticks_ - base::TimeTicks()).InMilliseconds();
-}
-
-int64 QuicTime::ToMicroseconds() const {
+int64 QuicTime::ToDebuggingValue() const {
   return (ticks_ - base::TimeTicks()).InMicroseconds();
 }
 

@@ -46,7 +46,7 @@ class QuicCongestionManager {
   virtual void SentPacket(QuicPacketSequenceNumber sequence_number,
                           QuicTime sent_time,
                           QuicByteCount bytes,
-                          bool is_retransmission);
+                          Retransmission retransmission);
 
   // Called when a packet is timed out.
   virtual void AbandoningPacket(QuicPacketSequenceNumber sequence_number);
@@ -57,8 +57,8 @@ class QuicCongestionManager {
   // Note 2: Send algorithms may or may not use |retransmit| in their
   // calculations.
   virtual QuicTime::Delta TimeUntilSend(QuicTime now,
-                                        bool is_retransmission,
-                                        bool has_retransmittable_data);
+                                        Retransmission retransmission,
+                                        HasRetransmittableData retransmittable);
 
   // Should be called before sending an ACK packet, to decide if we need
   // to attach a QuicCongestionFeedbackFrame block.

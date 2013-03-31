@@ -22,8 +22,8 @@ TEST(NullEncrypterTest, Encrypt) {
     'b',  'y',  'e',  '!',
   };
   NullEncrypter encrypter;
-  scoped_ptr<QuicData> encrypted(encrypter.Encrypt(0, "hello world!",
-                                                   "goodbye!"));
+  scoped_ptr<QuicData> encrypted(encrypter.EncryptPacket(0, "hello world!",
+                                                         "goodbye!"));
   ASSERT_TRUE(encrypted.get());
   test::CompareCharArraysWithHexError(
       "encrypted data", encrypted->data(), encrypted->length(),

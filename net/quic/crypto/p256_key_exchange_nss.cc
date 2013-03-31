@@ -7,6 +7,10 @@
 #include "base/logging.h"
 #include "base/sys_byteorder.h"
 
+using base::StringPiece;
+using std::string;
+using std::vector;
+
 namespace net {
 
 namespace {
@@ -17,9 +21,9 @@ namespace {
 // use the same approach.
 const char kExportPassword[] = "";
 
-// Convert StringPiece to vector of uint8
-static std::vector<uint8> StringPieceToVector(base::StringPiece piece) {
-  return std::vector<uint8>(piece.data(), piece.data() + piece.length());
+// Convert StringPiece to vector of uint8.
+static vector<uint8> StringPieceToVector(StringPiece piece) {
+  return vector<uint8>(piece.data(), piece.data() + piece.length());
 }
 
 }  // namespace
@@ -34,9 +38,9 @@ P256KeyExchange::~P256KeyExchange() {
 }
 
 // static
-P256KeyExchange* P256KeyExchange::New(base::StringPiece key) {
+P256KeyExchange* P256KeyExchange::New(StringPiece key) {
   if (key.size() < 2) {
-    DLOG(INFO) << "Key pair is too small";
+    DLOG(INFO) << "Key pair is too small.";
     return NULL;
   }
 
@@ -45,18 +49,18 @@ P256KeyExchange* P256KeyExchange::New(base::StringPiece key) {
                 (static_cast<size_t>(data[1]) << 8);
   key.remove_prefix(2);
   if (key.size() < size) {
-    DLOG(INFO) << "Key pair does not contain key material";
+    DLOG(INFO) << "Key pair does not contain key material.";
     return NULL;
   }
 
-  base::StringPiece private_piece(key.data(), size);
+  StringPiece private_piece(key.data(), size);
   key.remove_prefix(size);
   if (key.empty()) {
-    DLOG(INFO) << "Key pair does not contain public key";
+    DLOG(INFO) << "Key pair does not contain public key.";
     return NULL;
   }
 
-  base::StringPiece public_piece(key);
+  StringPiece public_piece(key);
 
   scoped_ptr<crypto::ECPrivateKey> key_pair(
       crypto::ECPrivateKey::CreateFromEncryptedPrivateKeyInfo(
@@ -66,7 +70,7 @@ P256KeyExchange* P256KeyExchange::New(base::StringPiece key) {
           StringPieceToVector(public_piece)));
 
   if (!key_pair.get()) {
-    DLOG(INFO) << "Can't decrypt private key";
+    DLOG(INFO) << "Can't decrypt private key.";
     return NULL;
   }
 
@@ -76,14 +80,14 @@ P256KeyExchange* P256KeyExchange::New(base::StringPiece key) {
       public_key->u.ec.publicValue.len != kUncompressedP256PointBytes ||
       !public_key->u.ec.publicValue.data ||
       public_key->u.ec.publicValue.data[0] != kUncompressedECPointForm) {
-    DLOG(INFO) << "Key is invalid";
+    DLOG(INFO) << "Key is invalid.";
     return NULL;
   }
 
   // Ensure that the key is using the correct curve, i.e., NIST P-256.
   const SECOidData* oid_data = SECOID_FindOIDByTag(SEC_OID_SECG_EC_SECP256R1);
   if (!oid_data) {
-    DLOG(INFO) << "Can't get P-256's OID";
+    DLOG(INFO) << "Can't get P-256's OID.";
     return NULL;
   }
 
@@ -93,7 +97,7 @@ P256KeyExchange* P256KeyExchange::New(base::StringPiece key) {
       public_key->u.ec.DEREncodedParams.data[1] != oid_data->oid.len ||
       memcmp(public_key->u.ec.DEREncodedParams.data + 2,
              oid_data->oid.data, oid_data->oid.len) != 0) {
-    DLOG(INFO) << "Key is invalid";
+    DLOG(INFO) << "Key is invalid.";
   }
 
   return new P256KeyExchange(key_pair.release(),
@@ -101,29 +105,29 @@ P256KeyExchange* P256KeyExchange::New(base::StringPiece key) {
 }
 
 // static
-std::string P256KeyExchange::NewPrivateKey() {
+string P256KeyExchange::NewPrivateKey() {
   scoped_ptr<crypto::ECPrivateKey> key_pair(crypto::ECPrivateKey::Create());
 
   if (!key_pair.get()) {
-    DLOG(INFO) << "Can't generate new key pair";
-    return std::string();
+    DLOG(INFO) << "Can't generate new key pair.";
+    return string();
   }
 
-  std::vector<uint8> private_key;
+  vector<uint8> private_key;
   if (!key_pair->ExportEncryptedPrivateKey(kExportPassword,
                                            1 /* iteration */,
                                            &private_key)) {
-    DLOG(INFO) << "Can't export private key";
-    return std::string();
+    DLOG(INFO) << "Can't export private key.";
+    return string();
   }
 
   // NSS lacks the ability to import an ECC private key without
   // also importing the public key, so it is necessary to also
   // store the public key.
-  std::vector<uint8> public_key;
+  vector<uint8> public_key;
   if (!key_pair->ExportPublicKey(&public_key)) {
-    DLOG(INFO) << "Can't export public key";
-    return std::string();
+    DLOG(INFO) << "Can't export public key.";
+    return string();
   }
 
   // TODO(thaidn): determine how large encrypted private key can be
@@ -131,7 +135,7 @@ std::string P256KeyExchange::NewPrivateKey() {
   const size_t result_size = sizeof(private_key_size) +
                              private_key_size +
                              public_key.size();
-  std::vector<char> result(result_size);
+  vector<char> result(result_size);
   char* resultp = &result[0];
   // Export the key string.
   // The first two bytes are the private key's size in little endian.
@@ -142,15 +146,15 @@ std::string P256KeyExchange::NewPrivateKey() {
   resultp += private_key.size();
   memcpy(resultp, &public_key[0], public_key.size());
 
-  return std::string(&result[0], result_size);
+  return string(&result[0], result_size);
 }
 
 bool P256KeyExchange::CalculateSharedKey(
-    const base::StringPiece& peer_public_value,
-    std::string* out_result) const {
+    const StringPiece& peer_public_value,
+    string* out_result) const {
   if (peer_public_value.size() != kUncompressedP256PointBytes ||
       peer_public_value[0] != kUncompressedECPointForm) {
-    DLOG(INFO) << "Peer public value is invalid";
+    DLOG(INFO) << "Peer public value is invalid.";
     return false;
   }
 
@@ -194,18 +198,18 @@ bool P256KeyExchange::CalculateSharedKey(
           NULL));
 
   if (!premaster_secret.get()) {
-    DLOG(INFO) << "Can't derive ECDH shared key";
+    DLOG(INFO) << "Can't derive ECDH shared key.";
     return false;
   }
 
   if (PK11_ExtractKeyValue(premaster_secret.get()) != SECSuccess) {
-    DLOG(INFO) << "Can't extract raw ECDH shared key";
+    DLOG(INFO) << "Can't extract raw ECDH shared key.";
     return false;
   }
 
   SECItem* key_data = PK11_GetKeyData(premaster_secret.get());
   if (!key_data || !key_data->data || key_data->len != kP256FieldBytes) {
-    DLOG(INFO) << "ECDH shared key is invalid";
+    DLOG(INFO) << "ECDH shared key is invalid.";
     return false;
   }
 
@@ -213,9 +217,9 @@ bool P256KeyExchange::CalculateSharedKey(
   return true;
 }
 
-base::StringPiece P256KeyExchange::public_value() const {
-  return base::StringPiece(reinterpret_cast<const char*>(public_key_),
-                           sizeof(public_key_));
+StringPiece P256KeyExchange::public_value() const {
+  return StringPiece(reinterpret_cast<const char*>(public_key_),
+                     sizeof(public_key_));
 }
 
 CryptoTag P256KeyExchange::tag() const {

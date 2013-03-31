@@ -125,6 +125,7 @@ SimpleQuicFramer::SimpleQuicFramer()
     : framer_(kQuicVersion1,
               QuicDecrypter::Create(kNULL),
               QuicEncrypter::Create(kNULL),
+              QuicTime::Zero(),
               true),
       visitor_(NULL) {
 }

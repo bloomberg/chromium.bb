@@ -33,10 +33,12 @@ class QuicPacketCreatorTest : public ::testing::TestWithParam<bool> {
       : server_framer_(kQuicVersion1,
                        QuicDecrypter::Create(kNULL),
                        QuicEncrypter::Create(kNULL),
+                       QuicTime::Zero(),
                        true),
         client_framer_(kQuicVersion1,
                        QuicDecrypter::Create(kNULL),
                        QuicEncrypter::Create(kNULL),
+                       QuicTime::Zero(),
                        false),
         id_(1),
         sequence_number_(0),
@@ -183,6 +185,7 @@ TEST_F(QuicPacketCreatorTest, CreateStreamFrameFinOnly) {
 }
 
 TEST_F(QuicPacketCreatorTest, SerializeVersionNegotiationPacket) {
+  QuicPacketCreatorPeer::SetIsServer(&creator_, true);
   QuicVersionTagList versions;
   versions.push_back(kQuicVersion1);
   scoped_ptr<QuicEncryptedPacket> encrypted(

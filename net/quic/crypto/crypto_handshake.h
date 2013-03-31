@@ -11,16 +11,23 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/string_piece.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/net_export.h"
 #include "net/quic/crypto/crypto_protocol.h"
+#include "net/quic/quic_time.h"
 
 namespace net {
 
 class KeyExchange;
+class QuicClock;
 class QuicDecrypter;
 class QuicEncrypter;
 class QuicRandom;
-class QuicClock;
+class QuicServerConfigProtobuf;
+
+namespace test {
+class QuicCryptoServerConfigPeer;
+}  // namespace test
 
 // An intermediate format of a handshake message that's convenient for a
 // CryptoFramer to serialize from or parse into.
@@ -170,6 +177,37 @@ class NET_EXPORT_PRIVATE QuicServerConfigProtobuf {
   std::string config_;
 };
 
+// TODO(rtenneti): sync with server more rationally.
+class NET_EXPORT_PRIVATE SourceAddressToken {
+ public:
+  SourceAddressToken();
+  ~SourceAddressToken();
+
+  std::string SerializeAsString() const;
+
+  bool ParseFromArray(unsigned char* plaintext, size_t plaintext_length);
+
+  std::string ip() const {
+    return ip_;
+  }
+
+  int64 timestamp() const {
+    return timestamp_;
+  }
+
+  void set_ip(base::StringPiece ip) {
+    ip_ = ip.as_string();
+  }
+
+  void set_timestamp(int64 timestamp) {
+    timestamp_ = timestamp;
+  }
+
+ private:
+  std::string ip_;
+  int64 timestamp_;
+};
+
 // Parameters negotiated by the crypto handshake.
 struct NET_EXPORT_PRIVATE QuicCryptoNegotiatedParameters {
   // Initializes the members to 0 or empty values.
@@ -232,6 +270,8 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
     const std::string& server_config() const;
     const std::string& source_address_token() const;
     const std::string& orbit() const;
+
+    void set_source_address_token(base::StringPiece token);
 
    private:
     std::string server_config_id_;  // An opaque id from the server.
@@ -306,7 +346,11 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
 // need to consider locking.
 class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
  public:
-  QuicCryptoServerConfig();
+  // |source_address_token_secret|: secret key material used for encrypting and
+  //     decrypting source address tokens. It can be of any length as it is fed
+  //     into a KDF before use.
+  explicit QuicCryptoServerConfig(
+      base::StringPiece source_address_token_secret);
   ~QuicCryptoServerConfig();
 
   // ConfigForTesting generates a QuicServerConfigProtobuf protobuf suitable
@@ -332,15 +376,31 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   // ProcessClientHello processes |client_hello| and decides whether to accept
   // or reject the connection. If the connection is to be accepted, |out| is
   // set to the contents of the ServerHello, |out_params| is completed and
-  // QUIC_NO_ERROR is returned. |nonce| is used as the server's nonce.
-  // Otherwise |out| is set to be a REJ message and an error code is returned.
+  // QUIC_NO_ERROR is returned. Otherwise |out| is set to be a REJ message and
+  // an error code is returned.
+  //
+  // client_hello: the incoming client hello message.
+  // guid: the GUID for the connection, which is used in key derivation.
+  // client_ip: the IP address of the client, which is used to generate and
+  //     validate source-address tokens.
+  // now_since_epoch: the current time, as a delta since the unix epoch,
+  //     which is used to validate client nonces.
+  // rand: an entropy source
+  // out: the resulting handshake message (either REJ or SHLO)
+  // out_params: the state of the handshake
+  // error_details: used to store a string describing any error.
   QuicErrorCode ProcessClientHello(const CryptoHandshakeMessage& client_hello,
                                    QuicGuid guid,
+                                   const IPEndPoint& client_ip,
+                                   QuicTime::Delta now_since_epoch,
+                                   QuicRandom* rand,
                                    CryptoHandshakeMessage* out,
                                    QuicCryptoNegotiatedParameters* out_params,
                                    std::string* error_details);
 
  private:
+  friend class test::QuicCryptoServerConfigPeer;
+
   // Config represents a server config: a collection of preferences and
   // Diffie-Hellman public values.
   struct Config : public QuicCryptoConfig {
@@ -365,9 +425,27 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
     DISALLOW_COPY_AND_ASSIGN(Config);
   };
 
+  // NewSourceAddressToken returns a fresh source address token for the given
+  // IP address.
+  std::string NewSourceAddressToken(const IPEndPoint& ip,
+                                    QuicRandom* rand,
+                                    QuicTime::Delta now_since_epoch);
+
+  // ValidateSourceAddressToken returns true if the source address token in
+  // |token| is a valid and timely token for the IP address |ip| given that the
+  // current time is |now|.
+  bool ValidateSourceAddressToken(base::StringPiece token,
+                                  const IPEndPoint& ip,
+                                  QuicTime::Delta now_since_epoch);
+
   std::map<ServerConfigID, Config*> configs_;
 
-  std::string active_config_;
+  ServerConfigID active_config_;
+
+  // These members are used to encrypt and decrypt the source address tokens
+  // that we receive from and send to clients.
+  scoped_ptr<QuicEncrypter> source_address_token_encrypter_;
+  scoped_ptr<QuicDecrypter> source_address_token_decrypter_;
 };
 
 }  // namespace net

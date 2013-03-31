@@ -5,6 +5,7 @@
 #include "net/quic/quic_crypto_client_stream.h"
 
 #include "base/memory/scoped_ptr.h"
+#include "net/quic/crypto/aes_128_gcm_encrypter.h"
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/crypto/quic_encrypter.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
@@ -87,15 +88,30 @@ class QuicCryptoClientStreamTest : public ::testing::Test {
 };
 
 TEST_F(QuicCryptoClientStreamTest, NotInitiallyConected) {
+  if (!Aes128GcmEncrypter::IsSupported()) {
+    LOG(INFO) << "AES GCM not supported. Test skipped.";
+    return;
+  }
+
   EXPECT_FALSE(stream_.handshake_complete());
 }
 
 TEST_F(QuicCryptoClientStreamTest, ConnectedAfterSHLO) {
+  if (!Aes128GcmEncrypter::IsSupported()) {
+    LOG(INFO) << "AES GCM not supported. Test skipped.";
+    return;
+  }
+
   CompleteCryptoHandshake();
   EXPECT_TRUE(stream_.handshake_complete());
 }
 
 TEST_F(QuicCryptoClientStreamTest, MessageAfterHandshake) {
+  if (!Aes128GcmEncrypter::IsSupported()) {
+    LOG(INFO) << "AES GCM not supported. Test skipped.";
+    return;
+  }
+
   CompleteCryptoHandshake();
 
   EXPECT_CALL(*connection_, SendConnectionClose(
@@ -106,6 +122,11 @@ TEST_F(QuicCryptoClientStreamTest, MessageAfterHandshake) {
 }
 
 TEST_F(QuicCryptoClientStreamTest, BadMessageType) {
+  if (!Aes128GcmEncrypter::IsSupported()) {
+    LOG(INFO) << "AES GCM not supported. Test skipped.";
+    return;
+  }
+
   EXPECT_TRUE(stream_.CryptoConnect());
 
   message_.set_tag(kCHLO);
@@ -117,6 +138,11 @@ TEST_F(QuicCryptoClientStreamTest, BadMessageType) {
 }
 
 TEST_F(QuicCryptoClientStreamTest, NegotiatedParameters) {
+  if (!Aes128GcmEncrypter::IsSupported()) {
+    LOG(INFO) << "AES GCM not supported. Test skipped.";
+    return;
+  }
+
   CompleteCryptoHandshake();
 
   const QuicNegotiatedParameters& params(stream_.negotiated_params());

@@ -37,7 +37,7 @@ QuicTestClient::QuicTestClient(IPEndPoint address, const string& hostname)
     : server_address_(address),
       client_(address, hostname),
       stream_(NULL),
-      stream_error_(QUIC_NO_ERROR),
+      stream_error_(QUIC_STREAM_NO_ERROR),
       connection_error_(QUIC_NO_ERROR),
       bytes_read_(0),
       bytes_written_(0),
@@ -135,7 +135,7 @@ IPEndPoint QuicTestClient::LocalSocketAddress() const {
 }
 
 void QuicTestClient::ClearPerRequestState() {
-  stream_error_ = QUIC_NO_ERROR;
+  stream_error_ = QUIC_STREAM_NO_ERROR;
   connection_error_ = QUIC_NO_ERROR;
   stream_ = NULL;
   response_ = "";
@@ -170,8 +170,8 @@ size_t QuicTestClient::bytes_written() const {
 void QuicTestClient::OnClose(ReliableQuicStream* stream) {
   response_ = stream_->data();
   headers_.CopyFrom(stream_->headers());
-  stream_error_ = stream_->error();
-  connection_error_ = stream_->error();
+  stream_error_ = stream_->stream_error();
+  connection_error_ = stream_->connection_error();
   bytes_read_ = stream_->stream_bytes_read();
   bytes_written_ = stream_->stream_bytes_written();
   stream_ = NULL;
