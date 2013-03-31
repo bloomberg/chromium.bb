@@ -117,8 +117,8 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
 
   // Returns the request context appropriate for the given renderer. If the
   // renderer process doesn't have an associated installed app, or if the
-  // installed app doesn't have isolated storage, this is equivalent to calling
-  // GetRequestContext().
+  // installed app's is_storage_isolated() returns false, this is equivalent to
+  // calling GetRequestContext().
   virtual net::URLRequestContextGetter* GetRequestContextForRenderProcess(
       int renderer_child_id) = 0;
 

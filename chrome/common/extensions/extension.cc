@@ -1124,6 +1124,7 @@ Extension::Extension(const base::FilePath& path,
       converted_from_user_script_(false),
       manifest_(manifest.release()),
       finished_parsing_manifest_(false),
+      is_storage_isolated_(false),
       launch_container_(extension_misc::LAUNCH_TAB),
       launch_width_(0),
       launch_height_(0),
@@ -1216,6 +1217,9 @@ bool Extension::InitFromValue(int flags, string16* error) {
     return false;
   }
 
+  if (!LoadAppIsolation(error))
+    return false;
+
   if (!LoadSharedFeatures(error))
     return false;
 
@@ -1238,6 +1242,48 @@ bool Extension::InitFromValue(int flags, string16* error) {
       optional_api_permissions, optional_host_permissions, URLPatternSet());
   initial_api_permissions_.reset();
 
+  return true;
+}
+
+bool Extension::LoadAppIsolation(string16* error) {
+  // Platform apps always get isolated storage.
+  if (is_platform_app()) {
+    is_storage_isolated_ = true;
+    return true;
+  }
+
+  // Other apps only get it if it is requested _and_ experimental APIs are
+  // enabled.
+  if (!initial_api_permissions()->count(APIPermission::kExperimental)
+      || !is_app())
+    return true;
+
+  const Value* tmp_isolation = NULL;
+  if (!manifest_->Get(keys::kIsolation, &tmp_isolation))
+    return true;
+
+  const ListValue* isolation_list = NULL;
+  if (!tmp_isolation->GetAsList(&isolation_list)) {
+    *error = ASCIIToUTF16(errors::kInvalidIsolation);
+    return false;
+  }
+
+  for (size_t i = 0; i < isolation_list->GetSize(); ++i) {
+    std::string isolation_string;
+    if (!isolation_list->GetString(i, &isolation_string)) {
+      *error = ErrorUtils::FormatErrorMessageUTF16(
+          errors::kInvalidIsolationValue,
+          base::UintToString(i));
+      return false;
+    }
+
+    // Check for isolated storage.
+    if (isolation_string == values::kIsolatedStorage) {
+      is_storage_isolated_ = true;
+    } else {
+      DLOG(WARNING) << "Did not recognize isolation type: " << isolation_string;
+    }
+  }
   return true;
 }
 

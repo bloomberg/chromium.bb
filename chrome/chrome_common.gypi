@@ -250,8 +250,6 @@
         'common/extensions/manifest_handler.h',
         'common/extensions/manifest_handler_helpers.cc',
         'common/extensions/manifest_handler_helpers.h',
-        'common/extensions/manifest_handlers/app_isolation_info.cc',
-        'common/extensions/manifest_handlers/app_isolation_info.h',
         'common/extensions/manifest_handlers/content_scripts_handler.cc',
         'common/extensions/manifest_handlers/content_scripts_handler.h',
         'common/extensions/manifest_handlers/kiosk_enabled_info.cc',

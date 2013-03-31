@@ -28,7 +28,6 @@
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/extensions/incognito_handler.h"
 #include "chrome/common/extensions/manifest_handler.h"
-#include "chrome/common/extensions/manifest_handlers/app_isolation_info.h"
 #include "chrome/common/extensions/manifest_handlers/sandboxed_page_info.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/extensions/web_accessible_resources_handler.h"
@@ -141,7 +140,6 @@ const char kAdViewTagName[] = "ADVIEW";
 // Explicitly register all extension ManifestHandlers needed to parse
 // fields used in the renderer.
 void RegisterExtensionManifestHandlers() {
-  (new extensions::AppIsolationHandler)->Register();
   (new extensions::BackgroundManifestHandler)->Register();
   (new extensions::CSPHandler(false))->Register();  // not platform app.
   (new extensions::CSPHandler(true))->Register();  // platform app.
