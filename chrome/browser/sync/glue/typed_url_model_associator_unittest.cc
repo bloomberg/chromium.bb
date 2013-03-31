@@ -4,7 +4,7 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
-#include "base/string_piece.h"
+#include "base/strings/string_piece.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
 #include "base/time.h"

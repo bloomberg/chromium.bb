@@ -11,7 +11,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/string_piece.h"
+#include "base/strings/string_piece.h"
 #include "v8/include/v8.h"
 
 namespace WebKit {

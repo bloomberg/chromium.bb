@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
-#include "base/string_piece.h"
+#include "base/strings/string_piece.h"
 #include "chrome/browser/google_apis/test_server/http_request.h"
 
 namespace net {

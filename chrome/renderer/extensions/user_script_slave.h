@@ -13,7 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/shared_memory.h"
 #include "base/stl_util.h"
-#include "base/string_piece.h"
+#include "base/strings/string_piece.h"
 #include "chrome/common/extensions/user_script.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScriptSource.h"
 

@@ -7,7 +7,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/string_piece.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_switches.h"

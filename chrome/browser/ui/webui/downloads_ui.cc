@@ -6,7 +6,7 @@
 
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/singleton.h"
-#include "base/string_piece.h"
+#include "base/strings/string_piece.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
 #include "chrome/browser/defaults.h"

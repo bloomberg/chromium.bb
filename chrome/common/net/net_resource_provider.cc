@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "base/string_piece.h"
+#include "base/strings/string_piece.h"
 #include "base/values.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"

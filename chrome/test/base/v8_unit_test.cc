@@ -7,8 +7,8 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
-#include "base/string_piece.h"
 #include "base/stringprintf.h"
+#include "base/strings/string_piece.h"
 #include "chrome/common/chrome_paths.h"
 
 namespace {

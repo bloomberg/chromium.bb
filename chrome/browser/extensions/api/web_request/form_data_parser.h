@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 // Cannot forward declare StringPiece because it is a typedef.
-#include "base/string_piece.h"
+#include "base/strings/string_piece.h"
 
 namespace net {
 class URLRequest;

@@ -6,7 +6,7 @@
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/string_piece.h"
+#include "base/strings/string_piece.h"
 #include "chrome/renderer/extensions/object_backed_native_handler.h"
 #include "ui/base/resource/resource_bundle.h"
 

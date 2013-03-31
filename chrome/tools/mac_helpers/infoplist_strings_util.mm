@@ -15,8 +15,8 @@
 #include "base/files/file_path.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/string_piece.h"
 #include "base/string_util.h"
+#include "base/strings/string_piece.h"
 #include "grit/chromium_strings.h"
 #include "ui/base/resource/data_pack.h"
 

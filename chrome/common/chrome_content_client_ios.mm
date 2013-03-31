@@ -5,7 +5,7 @@
 #include "chrome/common/chrome_content_client.h"
 
 #include "base/logging.h"
-#include "base/string_piece.h"
+#include "base/strings/string_piece.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"

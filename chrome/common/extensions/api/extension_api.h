@@ -13,7 +13,7 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
-#include "base/string_piece.h"
+#include "base/strings/string_piece.h"
 #include "base/values.h"
 #include "chrome/common/extensions/features/feature.h"
 #include "chrome/common/extensions/features/feature_provider.h"
