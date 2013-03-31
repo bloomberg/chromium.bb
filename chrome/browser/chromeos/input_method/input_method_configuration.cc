@@ -46,7 +46,7 @@ void Initialize(
 
   InputMethodManagerImpl* impl = new InputMethodManagerImpl(
       scoped_ptr<InputMethodDelegate>(new InputMethodDelegateImpl));
-  impl->Init();
+  impl->Init(ui_task_runner, file_task_runner);
   g_input_method_manager = impl;
   g_input_method_persistence =
       new InputMethodPersistence(g_input_method_manager);

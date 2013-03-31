@@ -19,6 +19,7 @@ class Accelerator;
 }  // namespace ui
 
 namespace chromeos {
+class ComponentExtensionIMEManager;
 class InputMethodEngine;
 namespace input_method {
 
@@ -145,6 +146,9 @@ class InputMethodManager {
 
   // Returns an InputMethodUtil object.
   virtual InputMethodUtil* GetInputMethodUtil() = 0;
+
+  // Returns a ComponentExtentionIMEManager object.
+  virtual ComponentExtensionIMEManager* GetComponentExtensionIMEManager() = 0;
 
   // Switches the current input method (or keyboard layout) to the next one.
   virtual bool SwitchToNextInputMethod() = 0;

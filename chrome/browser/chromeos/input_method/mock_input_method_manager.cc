@@ -136,6 +136,11 @@ InputMethodUtil* MockInputMethodManager::GetInputMethodUtil() {
   return &util_;
 }
 
+ComponentExtensionIMEManager*
+    MockInputMethodManager::GetComponentExtensionIMEManager() {
+  return NULL;
+}
+
 void MockInputMethodManager::set_application_locale(const std::string& value) {
   delegate_.set_active_locale(value);
 }

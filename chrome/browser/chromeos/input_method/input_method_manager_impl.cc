@@ -7,14 +7,18 @@
 #include <algorithm>  // std::find
 
 #include "base/basictypes.h"
+#include "base/bind.h"
+#include "base/location.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/chromeos/input_method/candidate_window_controller.h"
+#include "chrome/browser/chromeos/input_method/component_extension_ime_manager_impl.h"
 #include "chrome/browser/chromeos/input_method/input_method_engine_ibus.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/ibus/ibus_input_context_client.h"
+#include "chromeos/ime/component_extension_ime_manager.h"
 #include "chromeos/ime/extension_ime_util.h"
 #include "chromeos/ime/input_method_delegate.h"
 #include "chromeos/ime/xkeyboard.h"
@@ -38,7 +42,8 @@ InputMethodManagerImpl::InputMethodManagerImpl(
     scoped_ptr<InputMethodDelegate> delegate)
     : delegate_(delegate.Pass()),
       state_(STATE_LOGIN_SCREEN),
-      util_(delegate_.get(), GetSupportedInputMethods()) {
+      util_(delegate_.get(), GetSupportedInputMethods()),
+      weak_ptr_factory_(this) {
   IBusDaemonController::GetInstance()->AddObserver(this);
 }
 
@@ -312,6 +317,14 @@ void InputMethodManagerImpl::ChangeInputMethodInternal(
                     InputMethodChanged(this, show_message));
 }
 
+void InputMethodManagerImpl::OnComponentExtensionInitialized(
+    ComponentExtensionIMEManagerDelegate* delegate) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  component_extension_ime_manager_.reset(
+      new ComponentExtensionIMEManager(delegate));
+  component_extension_ime_manager_->Initialize();
+}
+
 void InputMethodManagerImpl::ActivateInputMethodProperty(
     const std::string& key) {
   DCHECK(!key.empty());
@@ -568,6 +581,12 @@ InputMethodUtil* InputMethodManagerImpl::GetInputMethodUtil() {
   return &util_;
 }
 
+ComponentExtensionIMEManager*
+    InputMethodManagerImpl::GetComponentExtensionIMEManager() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return component_extension_ime_manager_.get();
+}
+
 void InputMethodManagerImpl::OnConnected() {
   for (std::map<std::string, InputMethodEngineIBus*>::iterator ite =
           extra_input_method_instances_.begin();
@@ -595,12 +614,30 @@ void InputMethodManagerImpl::OnDisconnected() {
   }
 }
 
-void InputMethodManagerImpl::Init() {
+void InputMethodManagerImpl::Init(
+    const scoped_refptr<base::SequencedTaskRunner>& ui_task_runner,
+    const scoped_refptr<base::SequencedTaskRunner>& file_task_runner) {
   DCHECK(!ibus_controller_.get());
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   ibus_controller_.reset(IBusController::Create());
   xkeyboard_.reset(XKeyboard::Create());
   ibus_controller_->AddObserver(this);
+
+  ComponentExtensionIMEManagerImpl* impl =
+      new ComponentExtensionIMEManagerImpl();
+  base::Closure callback = base::Bind(
+      &InputMethodManagerImpl::OnComponentExtensionInitialized,
+      weak_ptr_factory_.GetWeakPtr(),
+      impl);
+  // We can't call impl->Initialize here, because file thread is not available
+  // at this moment.
+  ui_task_runner->PostTask(
+      FROM_HERE,
+      base::Bind(&ComponentExtensionIMEManagerImpl::Initialize,
+                 base::Unretained(impl),
+                 file_task_runner,
+                 callback));
 }
 
 void InputMethodManagerImpl::SetIBusControllerForTesting(

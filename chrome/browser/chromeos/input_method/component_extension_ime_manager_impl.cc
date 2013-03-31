@@ -170,6 +170,7 @@ void ComponentExtensionIMEManagerImpl::ReadComponentExtensionsInfo(
     ComponentExtensionIME component_ime;
     if (!ReadExtensionInfo(*manifest.get(), &component_ime))
       continue;
+    component_ime.id = whitelisted_component_extension[i].id;
 
     const ListValue* component_list;
     if (!manifest->GetList(extension_manifest_keys::kInputComponents,

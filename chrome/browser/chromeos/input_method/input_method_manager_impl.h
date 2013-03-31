@@ -11,6 +11,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
+#include "base/threading/thread_checker.h"
 #include "chrome/browser/chromeos/input_method/candidate_window_controller.h"
 #include "chrome/browser/chromeos/input_method/ibus_controller.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
@@ -19,6 +20,8 @@
 #include "chromeos/ime/input_method_whitelist.h"
 
 namespace chromeos {
+class ComponentExtensionIMEManager;
+class ComponentExtensionIMEManagerDelegate;
 class InputMethodEngineIBus;
 namespace input_method {
 class InputMethodDelegate;
@@ -39,7 +42,8 @@ class InputMethodManagerImpl : public InputMethodManager,
   // to the InputMethodManagerImpl object. You don't have to call this function
   // if you attach them yourself (e.g. in unit tests) using the protected
   // setters.
-  void Init();
+  void Init(const scoped_refptr<base::SequencedTaskRunner>& ui_task_runner,
+            const scoped_refptr<base::SequencedTaskRunner>& file_task_runner);
 
   // Receives notification of an InputMethodManager::State transition.
   void SetState(State new_state);
@@ -84,6 +88,8 @@ class InputMethodManagerImpl : public InputMethodManager,
       GetCurrentInputMethodProperties() const OVERRIDE;
   virtual XKeyboard* GetXKeyboard() OVERRIDE;
   virtual InputMethodUtil* GetInputMethodUtil() OVERRIDE;
+  virtual ComponentExtensionIMEManager*
+      GetComponentExtensionIMEManager() OVERRIDE;
 
   // Sets |ibus_controller_|.
   void SetIBusControllerForTesting(IBusController* ibus_controller);
@@ -137,6 +143,10 @@ class InputMethodManagerImpl : public InputMethodManager,
   void ChangeInputMethodInternal(const std::string& input_method_id,
                                  bool show_message);
 
+  // Called when the ComponentExtensionIMEManagerDelegate is initialized.
+  void OnComponentExtensionInitialized(
+      ComponentExtensionIMEManagerDelegate* delegate);
+
   scoped_ptr<InputMethodDelegate> delegate_;
 
   // The current browser status.
@@ -182,9 +192,16 @@ class InputMethodManagerImpl : public InputMethodManager,
   // that |util_| is required to initialize |xkeyboard_|.
   InputMethodUtil util_;
 
+  // An object which provides component extension ime management functions.
+  scoped_ptr<ComponentExtensionIMEManager> component_extension_ime_manager_;
+
   // An object for switching XKB layouts and keyboard status like caps lock and
   // auto-repeat interval.
   scoped_ptr<XKeyboard> xkeyboard_;
+
+  base::ThreadChecker thread_checker_;
+
+  base::WeakPtrFactory<InputMethodManagerImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodManagerImpl);
 };

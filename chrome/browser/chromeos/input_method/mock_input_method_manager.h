@@ -60,6 +60,8 @@ class MockInputMethodManager : public InputMethodManager {
       GetCurrentInputMethodProperties() const OVERRIDE;
   virtual XKeyboard* GetXKeyboard() OVERRIDE;
   virtual InputMethodUtil* GetInputMethodUtil() OVERRIDE;
+  virtual ComponentExtensionIMEManager*
+      GetComponentExtensionIMEManager() OVERRIDE;
 
   // Sets an input method ID which will be returned by GetCurrentInputMethod().
   void SetCurrentInputMethodId(const std::string& input_method_id) {
