@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWER_IN_PROCESS_WEBKIT_QUOTA_CLIENT_H_
-#define CONTENT_BROWER_IN_PROCESS_WEBKIT_QUOTA_CLIENT_H_
+#ifndef CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_QUOTA_CLIENT_H_
+#define CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_QUOTA_CLIENT_H_
 
 #include <set>
 #include <string>
@@ -53,4 +53,4 @@ class IndexedDBQuotaClient : public quota::QuotaClient,
 
 }  // namespace content
 
-#endif  // CONTENT_BROWER_IN_PROCESS_WEBKIT_QUOTA_CLIENT_H_
+#endif  // CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_QUOTA_CLIENT_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/in_process_webkit/indexed_db_context_impl.h"
+#include "content/browser/indexed_db/indexed_db_context_impl.h"
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -11,7 +11,7 @@
 #include "base/message_loop_proxy.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "content/browser/in_process_webkit/indexed_db_quota_client.h"
+#include "content/browser/indexed_db/indexed_db_quota_client.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebCString.h"

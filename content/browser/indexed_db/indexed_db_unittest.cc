@@ -5,7 +5,7 @@
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "content/browser/browser_thread_impl.h"
-#include "content/browser/in_process_webkit/indexed_db_context_impl.h"
+#include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/test_browser_context.h"
