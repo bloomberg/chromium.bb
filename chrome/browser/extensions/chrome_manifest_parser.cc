@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/extensions/manifest_handlers/app_isolation_info.h"
 #include "chrome/common/extensions/manifest_handlers/kiosk_enabled_info.h"
 #include "chrome/common/extensions/manifest_handlers/offline_enabled_info.h"
 #include "chrome/common/extensions/manifest_handlers/requirements_handler.h"
@@ -19,6 +20,7 @@ namespace extensions {
 
 ChromeManifestParser::ChromeManifestParser(Profile* profile)
     : profile_(profile) {
+  (new AppIsolationHandler)->Register();
   (new DevToolsPageHandler)->Register();
   (new KioskEnabledHandler)->Register();
   (new HomepageURLHandler)->Register();

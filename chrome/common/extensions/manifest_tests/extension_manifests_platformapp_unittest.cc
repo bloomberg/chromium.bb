@@ -10,6 +10,7 @@
 #include "chrome/common/extensions/csp_handler.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/incognito_handler.h"
+#include "chrome/common/extensions/manifest_handlers/app_isolation_info.h"
 #include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -18,17 +19,20 @@ namespace errors = extension_manifest_errors;
 namespace extensions {
 
 class PlatformAppsManifestTest : public ExtensionManifestTest {
+ protected:
   virtual void SetUp() OVERRIDE {
+    testing::Test::SetUp();
     (new BackgroundManifestHandler)->Register();
     (new CSPHandler(true))->Register();  // platform app.
-    (new IncognitoHandler())->Register();
+    (new IncognitoHandler)->Register();
+    (new AppIsolationHandler)->Register();
   }
 };
 
 TEST_F(PlatformAppsManifestTest, PlatformApps) {
-  scoped_refptr<extensions::Extension> extension =
+  scoped_refptr<Extension> extension =
       LoadAndExpectSuccess("init_valid_platform_app.json");
-  EXPECT_TRUE(extension->is_storage_isolated());
+  EXPECT_TRUE(AppIsolationInfo::HasIsolatedStorage(extension));
   EXPECT_TRUE(IncognitoInfo::IsSplitMode(extension));
 
   extension =

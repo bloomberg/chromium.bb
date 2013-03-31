@@ -453,7 +453,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool is_hosted_app() const;
   bool is_legacy_packaged_app() const;
   bool is_extension() const;
-  bool is_storage_isolated() const { return is_storage_isolated_; }
   bool can_be_incognito_enabled() const;
   void AddWebExtentPattern(const URLPattern& pattern);
   const URLPatternSet& web_extent() const { return extent_; }
@@ -642,9 +641,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // initialization happens from the same thread (this can happen when certain
   // parts of the initialization process need information from previous parts).
   base::ThreadChecker thread_checker_;
-
-  // Whether this extension requests isolated storage.
-  bool is_storage_isolated_;
 
   // The local path inside the extension to use with the launcher.
   std::string launch_local_path_;

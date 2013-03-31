@@ -8,18 +8,31 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
+#include "chrome/common/extensions/manifest_handlers/app_isolation_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace errors = extension_manifest_errors;
 
-TEST_F(ExtensionManifestTest, IsolatedApps) {
+namespace extensions {
+
+class IsolatedAppsManifestTest : public ExtensionManifestTest {
+ protected:
+  virtual void SetUp() OVERRIDE {
+    testing::Test::SetUp();
+    (new AppIsolationHandler)->Register();
+  }
+};
+
+TEST_F(IsolatedAppsManifestTest, IsolatedApps) {
   // Requires --enable-experimental-extension-apis
   LoadAndExpectError("isolated_app_valid.json",
                      errors::kExperimentalFlagRequired);
 
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
-  scoped_refptr<extensions::Extension> extension2(
+  scoped_refptr<Extension> extension2(
       LoadAndExpectSuccess("isolated_app_valid.json"));
-  EXPECT_TRUE(extension2->is_storage_isolated());
+  EXPECT_TRUE(AppIsolationInfo::HasIsolatedStorage(extension2));
 }
+
+}  // namespace extensions

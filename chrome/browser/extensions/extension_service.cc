@@ -87,6 +87,7 @@
 #include "chrome/common/extensions/features/feature.h"
 #include "chrome/common/extensions/incognito_handler.h"
 #include "chrome/common/extensions/manifest.h"
+#include "chrome/common/extensions/manifest_handlers/app_isolation_info.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/startup_metric_utils.h"
@@ -293,10 +294,11 @@ const Extension* ExtensionService::GetIsolatedAppForRenderer(
 
   const extensions::Extension* extension =
       extensions_.GetByID(*(extension_ids.begin()));
-  // We still need to check is_storage_isolated(),
+  // We still need to check if the extension has isolated storage,
   // because it's common for there to be one extension in a process
-  // with is_storage_isolated() == false.
-  if (extension && extension->is_storage_isolated())
+  // without isolated storage.
+  if (extension &&
+      extensions::AppIsolationInfo::HasIsolatedStorage(extension))
     return extension;
 
   return NULL;
@@ -841,7 +843,8 @@ bool ExtensionService::UninstallExtension(
 
   GURL launch_web_url_origin(extension->launch_web_url());
   launch_web_url_origin = launch_web_url_origin.GetOrigin();
-  bool is_storage_isolated = extension->is_storage_isolated();
+  bool is_storage_isolated =
+      extensions::AppIsolationInfo::HasIsolatedStorage(extension);
 
   if (is_storage_isolated) {
     BrowserContext::AsyncObliterateStoragePartition(
@@ -3034,7 +3037,7 @@ void ExtensionService::GarbageCollectIsolatedStorage() {
       new base::hash_set<base::FilePath>());
   for (ExtensionSet::const_iterator it = extensions_.begin();
        it != extensions_.end(); ++it) {
-    if ((*it)->is_storage_isolated()) {
+    if (extensions::AppIsolationInfo::HasIsolatedStorage(*it)) {
       active_paths->insert(
           BrowserContext::GetStoragePartitionForSite(
               profile_,
