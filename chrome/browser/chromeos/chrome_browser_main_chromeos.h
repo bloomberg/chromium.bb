@@ -27,7 +27,6 @@ class IdleActionWarningObserver;
 class MagnificationManager;
 class PowerButtonObserver;
 class ResumeObserver;
-class ScreenDimmingObserver;
 class ScreenLockObserver;
 class ScreensaverController;
 class SessionManagerObserver;
@@ -87,7 +86,6 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   scoped_ptr<content::PowerSaveBlocker> retail_mode_power_save_blocker_;
   scoped_ptr<UserActivityNotifier> user_activity_notifier_;
   scoped_ptr<VideoActivityNotifier> video_activity_notifier_;
-  scoped_ptr<ScreenDimmingObserver> screen_dimming_observer_;
   scoped_refptr<StorageMonitorCros> storage_monitor_;
   scoped_ptr<system::AutomaticRebootManager> automatic_reboot_manager_;
   scoped_ptr<IdleActionWarningObserver> idle_action_warning_observer_;

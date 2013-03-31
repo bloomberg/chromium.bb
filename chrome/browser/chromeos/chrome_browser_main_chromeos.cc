@@ -59,7 +59,6 @@
 #include "chrome/browser/chromeos/power/idle_action_warning_observer.h"
 #include "chrome/browser/chromeos/power/power_button_observer.h"
 #include "chrome/browser/chromeos/power/resume_observer.h"
-#include "chrome/browser/chromeos/power/screen_dimming_observer.h"
 #include "chrome/browser/chromeos/power/screen_lock_observer.h"
 #include "chrome/browser/chromeos/power/suspend_observer.h"
 #include "chrome/browser/chromeos/power/user_activity_notifier.h"
@@ -688,7 +687,6 @@ void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
   power_button_observer_.reset(new PowerButtonObserver);
   user_activity_notifier_.reset(new UserActivityNotifier);
   video_activity_notifier_.reset(new VideoActivityNotifier);
-  screen_dimming_observer_.reset(new ScreenDimmingObserver);
 
   ChromeBrowserMainPartsLinux::PostBrowserStart();
 }
@@ -754,7 +752,6 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
 
   // Detach D-Bus clients before DBusThreadManager is shut down.
   power_button_observer_.reset();
-  screen_dimming_observer_.reset();
   screensaver_controller_.reset();
   idle_action_warning_observer_.reset();
 

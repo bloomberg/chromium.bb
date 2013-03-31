@@ -95,15 +95,6 @@ class PowerManagerClientImpl : public PowerManagerClient {
 
     power_manager_proxy_->ConnectToSignal(
         power_manager::kPowerManagerInterface,
-        power_manager::kSoftwareScreenDimmingRequestedSignal,
-        base::Bind(
-            &PowerManagerClientImpl::SoftwareScreenDimmingRequestedReceived,
-            weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&PowerManagerClientImpl::SignalConnected,
-                   weak_ptr_factory_.GetWeakPtr()));
-
-    power_manager_proxy_->ConnectToSignal(
-        power_manager::kPowerManagerInterface,
         power_manager::kInputEventSignal,
         base::Bind(&PowerManagerClientImpl::InputEventReceived,
                    weak_ptr_factory_.GetWeakPtr()),
@@ -471,29 +462,6 @@ class PowerManagerClientImpl : public PowerManagerClient {
 
     VLOG(1) << "Idle Notify: " << threshold;
     FOR_EACH_OBSERVER(Observer, observers_, IdleNotify(threshold));
-  }
-
-  void SoftwareScreenDimmingRequestedReceived(dbus::Signal* signal) {
-    dbus::MessageReader reader(signal);
-    int32 signal_state = 0;
-    if (!reader.PopInt32(&signal_state)) {
-      LOG(ERROR) << "Screen dimming signal had incorrect parameters: "
-                 << signal->ToString();
-      return;
-    }
-
-    Observer::ScreenDimmingState state = Observer::SCREEN_DIMMING_NONE;
-    switch (signal_state) {
-      case power_manager::kSoftwareScreenDimmingNone:
-        state = Observer::SCREEN_DIMMING_NONE;
-        break;
-      case power_manager::kSoftwareScreenDimmingIdle:
-        state = Observer::SCREEN_DIMMING_IDLE;
-        break;
-      default:
-        LOG(ERROR) << "Unhandled screen dimming state " << signal_state;
-    }
-    FOR_EACH_OBSERVER(Observer, observers_, ScreenDimmingRequested(state));
   }
 
   void SuspendImminentReceived(dbus::Signal* signal) {
