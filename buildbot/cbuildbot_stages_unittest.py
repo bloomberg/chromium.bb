@@ -470,7 +470,7 @@ class SetupBoardTest(AbstractBuildTest):
            '--nousepkg']
     self.assertCommandContains(cmd, expected=not dir_exists)
     cmd = ['./setup_board', '--skip_chroot_upgrade']
-    self.assertCommandContains(cmd, expected=not self.options.latest_toolchain)
+    self.assertCommandContains(cmd, expected=False)
 
   def testFullBuildWithProfile(self):
     """Tests whether full builds add profile flag when requested."""
@@ -491,10 +491,9 @@ class SetupBoardTest(AbstractBuildTest):
   def runBinBuild(self, dir_exists):
     """Helper for testing a binary builder."""
     self.runBuild(dir_exists, full=False)
-    self.assertCommandContains(['./setup_board'], expected=not dir_exists)
-    if not dir_exists:
-      cmd = ['./setup_board', '--nousepkg']
-      self.assertCommandContains(cmd, expected=self.options.latest_toolchain)
+    self.assertCommandContains(['./setup_board'])
+    cmd = ['./setup_board', '--nousepkg']
+    self.assertCommandContains(cmd, expected=self.options.latest_toolchain)
     cmd = ['./setup_board', '--skip_chroot_upgrade']
     self.assertCommandContains(cmd, expected=False)
 
@@ -507,9 +506,15 @@ class SetupBoardTest(AbstractBuildTest):
     self.runBinBuild(dir_exists=False)
 
   def testBinBuildWithLatestToolchain(self):
-    """Tests whether we use --nousepkg for creating the board"""
+    """Tests whether we use --nousepkg for creating the board."""
     self.options.latest_toolchain = True
     self.runBinBuild(dir_exists=False)
+
+  def testSDKBuild(self):
+    """Tests whether we use --skip_chroot_upgrade for SDK builds."""
+    extra_config = {'build_type': constants.CHROOT_BUILDER_TYPE}
+    self.runBuild(dir_exists=False, full=True, extra_config=extra_config)
+    self.assertCommandContains(['./setup_board', '--skip_chroot_upgrade'])
 
 
 class SDKStageTest(AbstractStageTest):
@@ -835,8 +840,7 @@ class BuildPackagesStageTest(AbstractStageTest):
     """Test the specified config."""
     with self.RunStageWithConfig(bot_id) as (cfg, rc):
       rc.assertCommandContains(['./build_packages'])
-      rc.assertCommandContains(['./build_packages', '--skip_chroot_upgrade'],
-                               expected=cfg['chroot_replace'])
+      rc.assertCommandContains(['./build_packages', '--skip_chroot_upgrade'])
       rc.assertCommandContains(['./build_packages', '--nousepkg'],
                                expected=not cfg['usepkg_build_packages'])
       rc.assertCommandContains(['./build_packages', '--nowithdebug'],
@@ -1197,6 +1201,8 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
     self.options.debug = False
     self.options.prebuilts = False
     self.options.clobber = False
+    self.options.no_sdk = False
+    self.options.latest_toolchain = False
     self.options.buildnumber = 1234
     self.options.chrome_rev = None
     results_lib.Results.Clear()

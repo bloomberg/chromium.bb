@@ -1088,7 +1088,6 @@ class InitSDKStage(bs.BuilderStage):
     if self._latest_toolchain and self._build_config['gcc_githash']:
       self._env['USE'] = 'git_gcc'
       self._env['GCC_GITHASH'] = self._build_config['gcc_githash']
-    self._use_sdk = (self._build_config['use_sdk'] and not self._options.no_sdk)
 
   def _PerformStage(self):
     chroot_path = os.path.join(self._build_root, constants.DEFAULT_CHROOT_DIR)
@@ -1102,10 +1101,11 @@ class InitSDKStage(bs.BuilderStage):
         replace = True
 
     if not os.path.isdir(chroot_path) or replace:
+      use_sdk = (self._build_config['use_sdk'] and not self._options.no_sdk)
       commands.MakeChroot(
           buildroot=self._build_root,
           replace=replace,
-          use_sdk=self._use_sdk,
+          use_sdk=use_sdk,
           chrome_root=self._options.chrome_root,
           extra_env=self._env)
 
@@ -1125,17 +1125,19 @@ class SetupBoardStage(InitSDKStage):
     usepkg = (self._build_config['usepkg_setup_board'] and
               not self._latest_toolchain)
 
-    # Skip updating the chroot for bots that just replaced it, unless we need
-    # to upgrade the toolchain.
-    chroot_upgrade = (not self._build_config['chroot_replace'] or
-                      self._latest_toolchain) and self._use_sdk
+    # We need to run chroot updates on most builders because they uprev after
+    # the InitSDK stage. For the SDK builder, we can skip updates because uprev
+    # is run prior to InitSDK. This is not just an optimization: It helps
+    # workaround http://crbug.com/225509
+    chroot_upgrade = (
+      self._build_config['build_type'] != constants.CHROOT_BUILDER_TYPE)
 
     # Iterate through boards to setup.
     chroot_path = os.path.join(self._build_root, constants.DEFAULT_CHROOT_DIR)
     for board_to_build in self._boards:
-      # Only build the board if the directory does not exist.
+      # Only update the board if we need to do so.
       board_path = os.path.join(chroot_path, 'build', board_to_build)
-      if os.path.isdir(board_path):
+      if os.path.isdir(board_path) and not chroot_upgrade:
         continue
 
       commands.SetupBoard(self._build_root,
@@ -1145,6 +1147,7 @@ class SetupBoardStage(InitSDKStage):
                           profile=self._options.profile or
                             self._build_config['profile'],
                           chroot_upgrade=chroot_upgrade)
+      chroot_upgrade = False
 
 
 class UprevStage(bs.BuilderStage):
@@ -1250,16 +1253,13 @@ class BuildPackagesStage(BoardSpecificBuilderStage):
                             self._options.tests)
 
   def _PerformStage(self):
-    # Skip updating the chroot for bots that just replaced it.
-    skip_chroot_upgrade = self._build_config['chroot_replace']
-
     commands.Build(self._build_root,
                    self._current_board,
                    build_autotest=self._build_autotest,
                    usepkg=self._build_config['usepkg_build_packages'],
                    nowithdebug=self._build_config['nowithdebug'],
                    packages=self._build_config['packages'],
-                   skip_chroot_upgrade=skip_chroot_upgrade,
+                   skip_chroot_upgrade=True,
                    chrome_root=self._options.chrome_root,
                    extra_env=self._env)
 
