@@ -835,7 +835,8 @@ class BuildPackagesStageTest(AbstractStageTest):
     """Test the specified config."""
     with self.RunStageWithConfig(bot_id) as (cfg, rc):
       rc.assertCommandContains(['./build_packages'])
-      rc.assertCommandContains(['./build_packages', '--skip_chroot_upgrade'])
+      rc.assertCommandContains(['./build_packages', '--skip_chroot_upgrade'],
+                               expected=cfg['chroot_replace'])
       rc.assertCommandContains(['./build_packages', '--nousepkg'],
                                expected=not cfg['usepkg_build_packages'])
       rc.assertCommandContains(['./build_packages', '--nowithdebug'],

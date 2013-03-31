@@ -1250,12 +1250,16 @@ class BuildPackagesStage(BoardSpecificBuilderStage):
                             self._options.tests)
 
   def _PerformStage(self):
+    # Skip updating the chroot for bots that just replaced it.
+    skip_chroot_upgrade = self._build_config['chroot_replace']
+
     commands.Build(self._build_root,
                    self._current_board,
                    build_autotest=self._build_autotest,
                    usepkg=self._build_config['usepkg_build_packages'],
                    nowithdebug=self._build_config['nowithdebug'],
                    packages=self._build_config['packages'],
+                   skip_chroot_upgrade=skip_chroot_upgrade,
                    chrome_root=self._options.chrome_root,
                    extra_env=self._env)
 
