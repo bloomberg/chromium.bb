@@ -189,7 +189,10 @@ class TestCompletionCallbackWithOutput {
   }
 
   pp::CompletionCallbackWithOutput<OutputT> GetCallback();
-  const OutputT& output() { return output_storage_.output(); }
+  OutputT output() {
+    return pp::internal::CallbackOutputTraits<OutputT>::StorageToPluginArg(
+        output_storage_);
+  }
 
   // Delegate functions to TestCompletionCallback
   void SetDelegate(TestCompletionCallback::Delegate* delegate) {
@@ -221,10 +224,7 @@ pp::CompletionCallbackWithOutput<OutputT>
 TestCompletionCallbackWithOutput<OutputT>::GetCallback() {
   callback_.Reset();
   if (callback_.callback_type() == PP_BLOCKING) {
-    pp::CompletionCallbackWithOutput<OutputT> cc(
-        &TestCompletionCallback::Handler,
-        this,
-        &output_storage_);
+    pp::CompletionCallbackWithOutput<OutputT> cc(&output_storage_);
     return cc;
   }
 
@@ -245,7 +245,8 @@ TestCompletionCallbackWithOutput<OutputT>::GetCallback() {
 #define CHECK_CALLBACK_BEHAVIOR(callback) \
 do { \
   if ((callback).failed()) \
-    return (callback).errors(); \
+    return MakeFailureMessage(__FILE__, __LINE__, \
+                              (callback).errors().c_str()); \
 } while (false)
 
 /*

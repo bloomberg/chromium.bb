@@ -117,9 +117,10 @@ int32_t ReadToArrayEntireFile(PP_Instance instance,
       return rv;
     if (rv == 0)
       break;
-    assert(rv == static_cast<int32_t>(callback.output().size()));
+    const std::vector<char>& output = callback.output();
+    assert(rv == static_cast<int32_t>(output.size()));
     offset += rv;
-    data->append(callback.output().begin(), callback.output().end());
+    data->append(output.begin(), output.end());
   }
 
   return PP_OK;
