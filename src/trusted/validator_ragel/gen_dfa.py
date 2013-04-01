@@ -718,6 +718,7 @@ class InstructionPrinter(object):
   def _PrintLegacyPrefixes(self, instruction):
     """Print a machine for all combinations of legacy prefixes."""
     legacy_prefix_combinations = GenerateLegacyPrefixes(
+        self._bitness,
         instruction.required_prefixes,
         instruction.optional_prefixes)
     assert len(legacy_prefix_combinations) > 0
@@ -1350,7 +1351,7 @@ def ParseDefFile(filename):
     yield Instruction.Parse(line)
 
 
-def GenerateLegacyPrefixes(required_prefixes, optional_prefixes):
+def GenerateLegacyPrefixes(bitness, required_prefixes, optional_prefixes):
   """Produce list of all possible combinations of legacy prefixes.
 
   Legacy prefixes are defined in processor manual:
@@ -1376,6 +1377,16 @@ def GenerateLegacyPrefixes(required_prefixes, optional_prefixes):
   Returns:
     List of tuples of prefixes.
   """
+
+  # For compatibility with old validator, disallow rep prefixes together with
+  # data16.
+  # See https://code.google.com/p/nativeclient/issues/detail?id=1950
+  # TODO(shcherbina): get rid of it when ABI is cleaned up.
+  if bitness == 32:
+    if required_prefixes == ['data16']:
+      if optional_prefixes == ['rep'] or optional_prefixes == ['condrep']:
+        optional_prefixes = []
+
   all_prefixes = required_prefixes + optional_prefixes
   assert len(set(all_prefixes)) == len(all_prefixes), 'duplicate prefixes'
 
@@ -1385,6 +1396,15 @@ def GenerateLegacyPrefixes(required_prefixes, optional_prefixes):
   for k in range(len(optional_prefixes) + 1):
     for optional in itertools.combinations(optional_prefixes, k):
       for prefixes in itertools.permutations(required_prefixes + optional):
+        # For compatibility with old validator, allow lock prefix only
+        # after data16.
+        # https://code.google.com/p/nativeclient/issues/detail?id=2518
+        # TODO(shcherbina): get rid of it when ABI is cleaned up.
+        if (bitness == 32 and
+            'lock' in prefixes and
+            'data16' in prefixes and
+            prefixes.index('lock') < prefixes.index('data16')):
+          continue
         result.append(prefixes)
 
   assert len(set(result)) == len(result), 'duplicate resulting combinations'

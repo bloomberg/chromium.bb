@@ -11,7 +11,5 @@
    0:	66 f0 83 00 01      	add [%eax], 0x1
    5:	f0 66 83 00 01      	add [%eax], 0x1
 @rdfa_output:
-  return code: 0
-@validators_disagree:
-  TODO(shcherbina): do something about it, see
-    http://code.google.com/p/nativeclient/issues/detail?id=2518
+  5: [0] unrecognized instruction
+  return code: 1

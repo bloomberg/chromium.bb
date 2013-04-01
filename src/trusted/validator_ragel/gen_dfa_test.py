@@ -14,22 +14,22 @@ class TestLegacyPrefixes(unittest.TestCase):
 
   def test_empty(self):
     self.assertEquals(
-        gen_dfa.GenerateLegacyPrefixes([], []),
+        gen_dfa.GenerateLegacyPrefixes(64, [], []),
         [()])
 
   def test_one(self):
     self.assertEquals(
-        gen_dfa.GenerateLegacyPrefixes(['req'], []),
+        gen_dfa.GenerateLegacyPrefixes(64, ['req'], []),
         [('req',)])
     self.assertEquals(
-        set(gen_dfa.GenerateLegacyPrefixes([], ['opt'])),
+        set(gen_dfa.GenerateLegacyPrefixes(64, [], ['opt'])),
         set([
             (),
             ('opt',)]))
 
   def test_many(self):
     self.assertEquals(
-        set(gen_dfa.GenerateLegacyPrefixes(['req'], ['opt1', 'opt2'])),
+        set(gen_dfa.GenerateLegacyPrefixes(64, ['req'], ['opt1', 'opt2'])),
         set([
             ('req',),
             ('opt1', 'req'),
