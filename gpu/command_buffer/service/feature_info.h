@@ -57,6 +57,7 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     bool flush_on_context_switch;
     bool delete_instead_of_resize_fbo;
     bool use_client_side_arrays_for_stream_buffers;
+    bool exit_on_context_lost;
 
     // Note: 0 here means use driver limit.
     GLint max_texture_size;

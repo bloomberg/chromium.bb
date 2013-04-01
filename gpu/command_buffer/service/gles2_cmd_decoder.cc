@@ -2853,6 +2853,15 @@ bool GLES2DecoderImpl::MakeCurrent() {
 
   if (WasContextLost()) {
     LOG(ERROR) << "  GLES2DecoderImpl: Context lost during MakeCurrent.";
+
+    // Some D3D drivers cannot recover from device lost in the GPU process
+    // sandbox. Allow a new GPU process to launch.
+    if (workarounds().exit_on_context_lost) {
+      LOG(ERROR) << "Exiting GPU process because some drivers cannot reset"
+                 << " a D3D device in the Chrome GPU process sandbox.";
+      exit(0);
+    }
+
     return false;
   }
 

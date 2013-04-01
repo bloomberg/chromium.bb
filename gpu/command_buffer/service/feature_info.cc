@@ -97,6 +97,7 @@ FeatureInfo::Workarounds::Workarounds()
       flush_on_context_switch(false),
       delete_instead_of_resize_fbo(false),
       use_client_side_arrays_for_stream_buffers(false),
+      exit_on_context_lost(false),
       max_texture_size(0),
       max_cube_map_texture_size(0) {
 }
@@ -701,6 +702,12 @@ void FeatureInfo::AddFeatures() {
     // TODO(dsinclair): Add AddExtensionString("GL_CHROMIUM_sampler_objects")
     // when available.
   }
+
+#if defined(OS_WIN)
+  // Some drivers are unable to reset the D3D device in the GPU process
+  // sandbox.
+  workarounds_.exit_on_context_lost = true;
+#endif
 }
 
 void FeatureInfo::AddExtensionString(const std::string& str) {
