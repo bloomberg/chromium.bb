@@ -17,6 +17,10 @@ In particular, ~ at the start of a string means it's a regex.
   <Match>
     <Class name="~org\.chromium\..*\.Manifest(\$\w+)?" />
   </Match>
+  <!-- Ignore bugs in NativeLibraries.java (the auto-generation confuses findbugs). -->
+  <Match>
+    <Class name="~org\.chromium\.content\..*\.NativeLibraries.*?" />
+  </Match>
   <Match>
     <Class name="~.*\.JavaBridge.*"/>
     <!-- Ignore errors in JavaBridge due to reflection. -->
