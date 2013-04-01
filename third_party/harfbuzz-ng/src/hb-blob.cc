@@ -24,6 +24,9 @@
  * Red Hat Author(s): Behdad Esfahbod
  */
 
+/* http://www.oracle.com/technetwork/articles/servers-storage-dev/standardheaderfiles-453865.html */
+#define _POSIX_C_SOURCE 199309L
+
 #include "hb-private.hh"
 
 #include "hb-blob.h"
@@ -120,7 +123,7 @@ hb_blob_create_sub_blob (hb_blob_t    *parent,
 
   blob = hb_blob_create (parent->data + offset,
 			 MIN (length, parent->length - offset),
-			 parent->mode,
+			 HB_MEMORY_MODE_READONLY,
 			 hb_blob_reference (parent),
 			 (hb_destroy_func_t) hb_blob_destroy);
 

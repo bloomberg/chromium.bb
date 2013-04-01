@@ -171,6 +171,10 @@ ASSERT_STATIC (Type::min_size + 1 <= sizeof (_Null##Type))
 	(&c->debug_depth, c->get_name (), this, HB_FUNC, \
 	 "");
 
+/* This limits sanitizing time on really broken fonts. */
+#ifndef HB_SANITIZE_MAX_EDITS
+#define HB_SANITIZE_MAX_EDITS 100
+#endif
 
 struct hb_sanitize_context_t
 {
@@ -178,7 +182,7 @@ struct hb_sanitize_context_t
   static const unsigned int max_debug_depth = HB_DEBUG_SANITIZE;
   typedef bool return_t;
   template <typename T>
-  inline return_t process (const T &obj) { return obj.sanitize (this); }
+  inline return_t dispatch (const T &obj) { return obj.sanitize (this); }
   static return_t default_return_value (void) { return true; }
   bool stop_sublookup_iteration (const return_t r HB_UNUSED) const { return false; }
 
@@ -247,6 +251,9 @@ struct hb_sanitize_context_t
 
   inline bool may_edit (const void *base HB_UNUSED, unsigned int len HB_UNUSED)
   {
+    if (this->edit_count >= HB_SANITIZE_MAX_EDITS)
+      return false;
+
     const char *p = (const char *) base;
     this->edit_count++;
 
@@ -404,7 +411,7 @@ struct hb_serialize_context_t
   template <typename Type>
   inline Type *allocate_size (unsigned int size)
   {
-    if (unlikely (this->ran_out_of_room || this->end - this->head < size)) {
+    if (unlikely (this->ran_out_of_room || this->end - this->head < ptrdiff_t (size))) {
       this->ran_out_of_room = true;
       return NULL;
     }
@@ -616,10 +623,20 @@ struct Index : USHORT {
 DEFINE_NULL_DATA (Index, "\xff\xff");
 
 /* Offset to a table, same as uint16 (length = 16 bits), Null offset = 0x0000 */
-typedef USHORT Offset;
+struct Offset : USHORT
+{
+  inline bool is_null (void) const { return 0 == *this; }
+  public:
+  DEFINE_SIZE_STATIC (2);
+};
 
 /* LongOffset to a table, same as uint32 (length = 32 bits), Null offset = 0x00000000 */
-typedef ULONG LongOffset;
+struct LongOffset : ULONG
+{
+  inline bool is_null (void) const { return 0 == *this; }
+  public:
+  DEFINE_SIZE_STATIC (4);
+};
 
 
 /* CheckSum */
@@ -672,11 +689,6 @@ struct GenericOffsetTo : OffsetType
   {
     unsigned int offset = *this;
     if (unlikely (!offset)) return Null(Type);
-    return StructAtOffset<Type> (base, offset);
-  }
-  inline Type& operator () (void *base)
-  {
-    unsigned int offset = *this;
     return StructAtOffset<Type> (base, offset);
   }
 

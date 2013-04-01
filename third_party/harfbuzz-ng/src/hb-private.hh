@@ -376,6 +376,14 @@ struct hb_prealloced_array_t
   }
 };
 
+#define HB_AUTO_ARRAY_PREALLOCED 64
+template <typename Type>
+struct hb_auto_array_t : hb_prealloced_array_t <Type, HB_AUTO_ARRAY_PREALLOCED>
+{
+  hb_auto_array_t (void) { hb_prealloced_array_t<Type, HB_AUTO_ARRAY_PREALLOCED>::init (); }
+  ~hb_auto_array_t (void) { hb_prealloced_array_t<Type, HB_AUTO_ARRAY_PREALLOCED>::finish (); }
+};
+
 
 #define HB_LOCKABLE_SET_INIT {HB_PREALLOCED_ARRAY_INIT}
 template <typename item_t, typename lock_t>
@@ -516,10 +524,12 @@ static inline uint32_t hb_uint32_swap (const uint32_t v)
 
 /* ASCII tag/character handling */
 
-static inline unsigned char ISALPHA (unsigned char c)
+static inline bool ISALPHA (unsigned char c)
 { return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'); }
-static inline unsigned char ISALNUM (unsigned char c)
+static inline bool ISALNUM (unsigned char c)
 { return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9'); }
+static inline bool ISSPACE (unsigned char c)
+{ return c == ' ' || c =='\f'|| c =='\n'|| c =='\r'|| c =='\t'|| c =='\v'; }
 static inline unsigned char TOUPPER (unsigned char c)
 { return (c >= 'a' && c <= 'z') ? c - 'a' + 'A' : c; }
 static inline unsigned char TOLOWER (unsigned char c)
@@ -594,6 +604,8 @@ _hb_debug_msg_va (const char *what,
 
   if (func)
   {
+    unsigned int func_len = strlen (func);
+#ifndef HB_DEBUG_VERBOSE
     /* Skip "typename" */
     if (0 == strncmp (func, "typename ", 9))
       func += 9;
@@ -603,7 +615,9 @@ _hb_debug_msg_va (const char *what,
       func = space + 1;
     /* Skip parameter list */
     const char *paren = strchr (func, '(');
-    unsigned int func_len = paren ? paren - func : strlen (func);
+    if (paren)
+      func_len = paren - func;
+#endif
     fprintf (stderr, "%.*s: ", func_len, func);
   }
 
@@ -841,8 +855,9 @@ hb_codepoint_parse (const char *s, unsigned int len, int base, hb_codepoint_t *o
 {
   /* Pain because we don't know whether s is nul-terminated. */
   char buf[64];
-  strncpy (buf, s, MIN (ARRAY_LENGTH (buf) - 1, len));
-  buf[MIN (ARRAY_LENGTH (buf) - 1, len)] = '\0';
+  len = MIN (ARRAY_LENGTH (buf) - 1, len);
+  strncpy (buf, s, len);
+  buf[len] = '\0';
 
   char *end;
   errno = 0;
@@ -851,6 +866,35 @@ hb_codepoint_parse (const char *s, unsigned int len, int base, hb_codepoint_t *o
   if (*end) return false;
   *out = v;
   return true;
+}
+
+
+/* Global runtime options. */
+
+struct hb_options_t
+{
+  int initialized : 1;
+  int uniscribe_bug_compatible : 1;
+};
+
+union hb_options_union_t {
+  int i;
+  hb_options_t opts;
+};
+ASSERT_STATIC (sizeof (int) == sizeof (hb_options_union_t));
+
+HB_INTERNAL void
+_hb_options_init (void);
+
+extern HB_INTERNAL hb_options_union_t _hb_options;
+
+static inline hb_options_t
+hb_options (void)
+{
+  if (unlikely (!_hb_options.i))
+    _hb_options_init ();
+
+  return _hb_options.opts;
 }
 
 
