@@ -60,10 +60,11 @@ class NavigationObserver : public content::NotificationObserver,
   }
 
   // content::WebContentsObserver
-  virtual void DidFinishLoad(int64 frame_id,
-                             const GURL& validated_url,
-                             bool is_main_frame,
-                             content::RenderViewHost* render_view_host) {
+  virtual void DidFinishLoad(
+      int64 frame_id,
+      const GURL& validated_url,
+      bool is_main_frame,
+      content::RenderViewHost* render_view_host) OVERRIDE {
     message_loop_runner_->Quit();
   }
 

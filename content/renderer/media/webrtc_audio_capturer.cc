@@ -94,7 +94,7 @@ class WebRtcAudioCapturer::SinkOwner
   };
 
  private:
-  ~SinkOwner() {}
+  virtual ~SinkOwner() {}
 
   friend class base::RefCounted<WebRtcAudioCapturer::SinkOwner>;
   WebRtcAudioCapturerSink* delegate_;

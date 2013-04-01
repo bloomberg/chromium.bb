@@ -22,7 +22,7 @@ const char kLabelLazyDecoded[] = "lazy";
 class DisableLCDTextFilter : public SkDrawFilter {
  public:
   // SkDrawFilter interface.
-  virtual bool filter(SkPaint* paint, SkDrawFilter::Type type) {
+  virtual bool filter(SkPaint* paint, SkDrawFilter::Type type) OVERRIDE {
     if (type != SkDrawFilter::kText_Type)
       return true;
 

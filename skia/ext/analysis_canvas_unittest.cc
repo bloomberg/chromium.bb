@@ -23,19 +23,21 @@ namespace skia {
 class TestPixelRef : public SkPixelRef {
  public:
   // Pure virtual implementation.
-  SkFlattenable::Factory getFactory() { return NULL; }
-  void* onLockPixels(SkColorTable**) { return NULL; }
-  void onUnlockPixels() {}
+  virtual SkFlattenable::Factory getFactory() OVERRIDE { return NULL; }
+  virtual void* onLockPixels(SkColorTable**) OVERRIDE { return NULL; }
+  virtual void onUnlockPixels() OVERRIDE {}
 };
 
 class TestLazyPixelRef : public LazyPixelRef {
  public:
   // Pure virtual implementation.
-  SkFlattenable::Factory getFactory() { return NULL; }
-  void* onLockPixels(SkColorTable**) { return NULL; }
-  void onUnlockPixels() {}
-  bool PrepareToDecode(const PrepareParams& params) { return true; }
-  void Decode() {}
+  virtual SkFlattenable::Factory getFactory() OVERRIDE { return NULL; }
+  virtual void* onLockPixels(SkColorTable**) OVERRIDE { return NULL; }
+  virtual void onUnlockPixels() OVERRIDE {}
+  virtual bool PrepareToDecode(const PrepareParams& params) OVERRIDE {
+    return true;
+  }
+  virtual void Decode() OVERRIDE {}
 };
 
 class TestShader : public SkShader {
@@ -44,16 +46,18 @@ class TestShader : public SkShader {
     : bitmap_(bitmap) {
   }
 
-  SkShader::BitmapType asABitmap(SkBitmap* bitmap,
-                                 SkMatrix*, TileMode xy[2]) const {
+  virtual SkShader::BitmapType asABitmap(
+      SkBitmap* bitmap,
+      SkMatrix*,
+      TileMode xy[2]) const OVERRIDE {
     if (bitmap)
       *bitmap = *bitmap_;
     return SkShader::kDefault_BitmapType;
   }
 
   // Pure virtual implementation.
-  void shadeSpan(int x, int y, SkPMColor[], int count) {}
-  SkFlattenable::Factory getFactory() { return NULL; }
+  virtual void shadeSpan(int x, int y, SkPMColor[], int count) OVERRIDE {}
+  virtual SkFlattenable::Factory getFactory() OVERRIDE { return NULL; }
 
  private:
 

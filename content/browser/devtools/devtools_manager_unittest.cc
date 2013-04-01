@@ -259,7 +259,7 @@ class TestExternalAgentDelegate: public DevToolsExternalAgentProxyDelegate {
   };
 
  public :
-  ~TestExternalAgentDelegate() {
+  virtual ~TestExternalAgentDelegate() {
     expectEvent(1, "Attach");
     expectEvent(1, "Detach");
     expectEvent(0, "SendMessageToBackend.message0");

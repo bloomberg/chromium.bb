@@ -43,7 +43,7 @@ class ThirdPartyAuthenticatorTest : public AuthenticatorTestBase {
         const GURL& token_url,
         const std::string& host_public_key,
         const std::string& scope,
-        const TokenFetchedCallback& token_fetched_callback) {
+        const TokenFetchedCallback& token_fetched_callback) OVERRIDE {
      ASSERT_EQ(token_url.spec(), kTokenUrl);
      ASSERT_EQ(scope, kTokenScope);
      ASSERT_FALSE(token_fetched_callback.is_null());
@@ -73,7 +73,7 @@ class ThirdPartyAuthenticatorTest : public AuthenticatorTestBase {
 
     virtual void ValidateThirdPartyToken(
         const std::string& token,
-        const TokenValidatedCallback& token_validated_callback) {
+        const TokenValidatedCallback& token_validated_callback) OVERRIDE {
       ASSERT_FALSE(token_validated_callback.is_null());
       on_token_validated_ = token_validated_callback;
     }

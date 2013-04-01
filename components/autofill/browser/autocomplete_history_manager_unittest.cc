@@ -66,7 +66,7 @@ class MockWebDataServiceWrapperCurrent : public MockWebDataServiceWrapperBase {
 
   MockWebDataServiceWrapperCurrent() {}
 
-  scoped_refptr<AutofillWebDataService> GetAutofillWebData() OVERRIDE {
+  virtual scoped_refptr<AutofillWebDataService> GetAutofillWebData() OVERRIDE {
     return MockWebDataService::GetCurrent();
   }
 

@@ -103,9 +103,9 @@ class TraceBufferRingBuffer : public TraceBuffer {
     logged_events_.reserve(kTraceEventInitialBufferSize);
   }
 
-  ~TraceBufferRingBuffer() {}
+  virtual ~TraceBufferRingBuffer() {}
 
-  void AddEvent(const TraceEvent& event) OVERRIDE {
+  virtual void AddEvent(const TraceEvent& event) OVERRIDE {
     if (unused_event_index_ < Size())
       logged_events_[unused_event_index_] = event;
     else
@@ -117,11 +117,11 @@ class TraceBufferRingBuffer : public TraceBuffer {
     }
   }
 
-  bool HasMoreEvents() const OVERRIDE {
+  virtual bool HasMoreEvents() const OVERRIDE {
     return oldest_event_index_ != unused_event_index_;
   }
 
-  const TraceEvent& NextEvent() OVERRIDE {
+  virtual const TraceEvent& NextEvent() OVERRIDE {
     DCHECK(HasMoreEvents());
 
     size_t next = oldest_event_index_;
@@ -129,12 +129,13 @@ class TraceBufferRingBuffer : public TraceBuffer {
     return GetEventAt(next);
   }
 
-  bool IsFull() const OVERRIDE {
+  virtual bool IsFull() const OVERRIDE {
     return false;
   }
 
-  size_t CountEnabledByName(const unsigned char* category,
-                            const std::string& event_name) const OVERRIDE {
+  virtual size_t CountEnabledByName(
+      const unsigned char* category,
+      const std::string& event_name) const OVERRIDE {
     size_t notify_count = 0;
     size_t index = oldest_event_index_;
     while (index != unused_event_index_) {
@@ -148,12 +149,12 @@ class TraceBufferRingBuffer : public TraceBuffer {
     return notify_count;
   }
 
-  const TraceEvent& GetEventAt(size_t index) const OVERRIDE {
+  virtual const TraceEvent& GetEventAt(size_t index) const OVERRIDE {
     DCHECK(index < logged_events_.size());
     return logged_events_[index];
   }
 
-  size_t Size() const OVERRIDE {
+  virtual size_t Size() const OVERRIDE {
     return logged_events_.size();
   }
 
@@ -171,10 +172,10 @@ class TraceBufferVector : public TraceBuffer {
     logged_events_.reserve(kTraceEventInitialBufferSize);
   }
 
-  ~TraceBufferVector() {
+  virtual ~TraceBufferVector() {
   }
 
-  void AddEvent(const TraceEvent& event) OVERRIDE {
+  virtual void AddEvent(const TraceEvent& event) OVERRIDE {
     // Note, we have two callers which need to be handled. The first is
     // AddTraceEventWithThreadIdAndTimestamp() which checks Size() and does an
     // early exit if full. The second is AddThreadNameMetadataEvents().
@@ -183,21 +184,22 @@ class TraceBufferVector : public TraceBuffer {
     logged_events_.push_back(event);
   }
 
-  bool HasMoreEvents() const OVERRIDE {
+  virtual bool HasMoreEvents() const OVERRIDE {
     return current_iteration_index_ < Size();
   }
 
-  const TraceEvent& NextEvent() OVERRIDE {
+  virtual const TraceEvent& NextEvent() OVERRIDE {
     DCHECK(HasMoreEvents());
     return GetEventAt(current_iteration_index_++);
   }
 
-  bool IsFull() const OVERRIDE {
+  virtual bool IsFull() const OVERRIDE {
     return Size() >= kTraceEventBufferSize;
   }
 
-  size_t CountEnabledByName(const unsigned char* category,
-                            const std::string& event_name) const OVERRIDE {
+  virtual size_t CountEnabledByName(
+      const unsigned char* category,
+      const std::string& event_name) const OVERRIDE {
     size_t notify_count = 0;
     for (size_t i = 0; i < Size(); i++) {
       const TraceEvent& event = GetEventAt(i);
@@ -209,12 +211,12 @@ class TraceBufferVector : public TraceBuffer {
     return notify_count;
   }
 
-  const TraceEvent& GetEventAt(size_t index) const OVERRIDE {
+  virtual const TraceEvent& GetEventAt(size_t index) const OVERRIDE {
     DCHECK(index < logged_events_.size());
     return logged_events_[index];
   }
 
-  size_t Size() const OVERRIDE {
+  virtual size_t Size() const OVERRIDE {
     return logged_events_.size();
   }
 

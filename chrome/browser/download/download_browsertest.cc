@@ -119,8 +119,8 @@ class CreatedObserver : public content::DownloadManager::Observer {
   }
 
  private:
-  virtual void OnDownloadCreated(
-      content::DownloadManager* manager, content::DownloadItem* item) {
+  virtual void OnDownloadCreated(content::DownloadManager* manager,
+                                 content::DownloadItem* item) OVERRIDE {
     DCHECK_EQ(manager_, manager);
     if (waiting_)
       MessageLoopForUI::current()->Quit();

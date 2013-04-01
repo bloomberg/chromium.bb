@@ -26,22 +26,22 @@ const CGFloat kAnchorPointY = 300;
 class MenuDelegate : public ui::SimpleMenuModel::Delegate {
  public:
   // Methods for determining the state of specific command ids.
-  virtual bool IsCommandIdChecked(int command_id) const {
+  virtual bool IsCommandIdChecked(int command_id) const OVERRIDE {
     return false;
   }
 
-  virtual bool IsCommandIdEnabled(int command_id) const {
+  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE {
     return true;
   }
 
   virtual bool GetAcceleratorForCommandId(
       int command_id,
-      ui::Accelerator* accelerator) {
+      ui::Accelerator* accelerator) OVERRIDE {
     return false;
   }
 
   // Performs the action associated with the specified command id.
-  virtual void ExecuteCommand(int command_id, int event_flags) {
+  virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE {
   }
 };
 

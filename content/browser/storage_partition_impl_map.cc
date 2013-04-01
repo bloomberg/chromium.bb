@@ -90,7 +90,7 @@ class BlobProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
 
     virtual net::URLRequestJob* MaybeCreateJob(
         net::URLRequest* request,
-        net::NetworkDelegate* network_delegate) const {
+        net::NetworkDelegate* network_delegate) const OVERRIDE {
       scoped_refptr<Stream> stream =
           stream_context_->registry()->GetStream(request->url());
       if (stream)

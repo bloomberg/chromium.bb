@@ -17,7 +17,7 @@ class StartupHelperBrowserTest : public InProcessBrowserTest {
   StartupHelperBrowserTest() {}
   virtual ~StartupHelperBrowserTest() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) {
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     command_line->AppendSwitch(switches::kNoStartupWindow);
     PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_);
     test_data_dir_ = test_data_dir_.AppendASCII("extensions");

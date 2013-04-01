@@ -22,7 +22,7 @@ class DevToolsExternalAgentProxyImpl::ForwardingAgentHost
   }
 
  private:
-  ~ForwardingAgentHost() {
+  virtual ~ForwardingAgentHost() {
   }
 
   // DevToolsAgentHostImpl implementation.

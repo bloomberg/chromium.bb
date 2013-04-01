@@ -100,10 +100,10 @@ class TestEncrypter : public QuicEncrypter {
   virtual size_t GetCiphertextSize(size_t plaintext_size) const OVERRIDE {
     return plaintext_size;
   }
-  virtual StringPiece GetKey() const {
+  virtual StringPiece GetKey() const OVERRIDE {
     return StringPiece();
   }
-  virtual StringPiece GetNoncePrefix() const {
+  virtual StringPiece GetNoncePrefix() const OVERRIDE {
     return StringPiece();
   }
   QuicPacketSequenceNumber sequence_number_;
@@ -136,10 +136,10 @@ class TestDecrypter : public QuicDecrypter {
     ciphertext_ = ciphertext.as_string();
     return new QuicData(ciphertext.data(), ciphertext.length());
   }
-  virtual StringPiece GetKey() const {
+  virtual StringPiece GetKey() const OVERRIDE {
     return StringPiece();
   }
-  virtual StringPiece GetNoncePrefix() const {
+  virtual StringPiece GetNoncePrefix() const OVERRIDE {
     return StringPiece();
   }
   QuicPacketSequenceNumber sequence_number_;

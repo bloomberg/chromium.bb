@@ -106,7 +106,7 @@ class ValidateCrxHelper : public SandboxedUnpackerClient {
   virtual void OnUnpackSuccess(const base::FilePath& temp_dir,
                                const base::FilePath& extension_root,
                                const base::DictionaryValue* original_manifest,
-                               const Extension* extension) {
+                               const Extension* extension) OVERRIDE {
     finished_ = true;
     success_ = true;
     BrowserThread::PostTask(BrowserThread::UI,
@@ -115,7 +115,7 @@ class ValidateCrxHelper : public SandboxedUnpackerClient {
                                        this));
   }
 
-  virtual void OnUnpackFailure(const string16& error) {
+  virtual void OnUnpackFailure(const string16& error) OVERRIDE {
     finished_ = true;
     success_ = false;
     error_ = error;

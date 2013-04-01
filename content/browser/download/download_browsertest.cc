@@ -436,20 +436,20 @@ class DownloadCreateObserver : DownloadManager::Observer {
     manager_->AddObserver(this);
   }
 
-  ~DownloadCreateObserver() {
+  virtual ~DownloadCreateObserver() {
     if (manager_)
       manager_->RemoveObserver(this);
     manager_ = NULL;
   }
 
-  virtual void ManagerGoingDown(DownloadManager* manager) {
+  virtual void ManagerGoingDown(DownloadManager* manager) OVERRIDE {
     DCHECK_EQ(manager_, manager);
     manager_->RemoveObserver(this);
     manager_ = NULL;
   }
 
   virtual void OnDownloadCreated(DownloadManager* manager,
-                                 DownloadItem* download) {
+                                 DownloadItem* download) OVERRIDE {
     if (!item_)
       item_ = download;
 

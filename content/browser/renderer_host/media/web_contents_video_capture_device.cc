@@ -329,12 +329,13 @@ class CaptureMachine : public WebContentsObserver,
     RenewFrameSubscription();
   }
 
-  virtual void AboutToNavigateRenderView(RenderViewHost* rvh) {
+  virtual void AboutToNavigateRenderView(RenderViewHost* rvh) OVERRIDE {
     RenewFrameSubscription();
   }
 
   virtual void DidNavigateMainFrame(
-      const LoadCommittedDetails& details, const FrameNavigateParams& params) {
+      const LoadCommittedDetails& details,
+      const FrameNavigateParams& params) OVERRIDE {
     RenewFrameSubscription();
   }
 

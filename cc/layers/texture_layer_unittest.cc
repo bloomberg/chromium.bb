@@ -497,11 +497,11 @@ class TextureLayerClientTest :
         context.PassAs<WebKit::WebGraphicsContext3D>()).PassAs<OutputSurface>();
   }
 
-  virtual unsigned PrepareTexture(ResourceUpdateQueue* queue) {
+  virtual unsigned PrepareTexture(ResourceUpdateQueue* queue) OVERRIDE {
     return texture_;
   }
 
-  virtual WebKit::WebGraphicsContext3D* Context3d() {
+  virtual WebKit::WebGraphicsContext3D* Context3d() OVERRIDE {
     return context_;
   }
 

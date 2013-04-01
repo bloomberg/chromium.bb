@@ -118,7 +118,7 @@ class MockWebDataServiceWrapperSyncable : public MockWebDataServiceWrapper {
       : MockWebDataServiceWrapper(NULL, new FakeWebDataService()) {
   }
 
-  void Shutdown() OVERRIDE {
+  virtual void Shutdown() OVERRIDE {
     static_cast<FakeWebDataService*>(
         fake_autofill_web_data_.get())->ShutdownOnUIThread();
   }

@@ -73,7 +73,7 @@ const sync_pb::CoalescedSyncedNotification_ReadState kDismissed =
 class SyncedNotificationTest : public testing::Test {
  public:
   SyncedNotificationTest() {}
-  ~SyncedNotificationTest() {}
+  virtual ~SyncedNotificationTest() {}
 
   // Methods from testing::Test.
 
