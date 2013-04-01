@@ -1222,7 +1222,7 @@
    bug_16091
    Memcheck:Leak
    ...
-   fun:_ZN4base11MessageLoop22AddDestructionObserverEPNS_19DestructionObserverE
+   fun:_ZN4base11MessageLoop22AddDestructionObserverEPNS0_19DestructionObserverE
    ...
    fun:_ZN3IPC11SyncChannel11SyncContext15OnChannelOpenedEv
 }
@@ -1231,7 +1231,7 @@
    bug_16092
    Memcheck:Leak
    fun:*
-   fun:_ZN4base11MessageLoopC1ENS_4TypeE
+   fun:_ZN4base11MessageLoopC1ENS0_4TypeE
    fun:_ZN4base6Thread10ThreadMainEv
 }
 {
@@ -1241,7 +1241,7 @@
    ...
    fun:_ZNSt11_Deque_baseIN4base11PendingTaskESaIS1_EE17_M_initialize_mapE*
    ...
-   fun:_ZN4base11MessageLoopC1ENS_4TypeE
+   fun:_ZN4base11MessageLoopC1ENS0_4TypeE
 }
 {
    # very common in ui tests
@@ -1249,7 +1249,7 @@
    Memcheck:Leak
    ...
    fun:_ZNSt14priority_queueIN11MessageLoop11PendingTaskESt6vectorIS1_SaIS1_EESt4lessIS1_EEC1ERKS6_RKS4_
-   fun:_ZN4base11MessageLoopC1ENS_4TypeE
+   fun:_ZN4base11MessageLoopC1ENS0_4TypeE
    fun:_ZN4base6Thread10ThreadMainEv
 }
 {
@@ -1363,7 +1363,7 @@
    ...
    fun:event_base_new
    fun:_ZN4base19MessagePumpLibeventC1Ev
-   fun:_ZN4base11MessageLoopC1ENS_4TypeE
+   fun:_ZN4base11MessageLoopC1ENS0_4TypeE
    fun:_ZN4base6Thread10ThreadMainEv
 }
 {
@@ -1372,7 +1372,7 @@
    ...
    fun:_ZN4base19MessagePumpLibevent4InitEv
    fun:_ZN4base19MessagePumpLibeventC1Ev
-   fun:_ZN4base11MessageLoopC1ENS_4TypeE
+   fun:_ZN4base11MessageLoopC1ENS0_4TypeE
 }
 {
    bug_19775_a
@@ -1822,7 +1822,7 @@
    fun:_ZNSt6vectorIPN11MessageLoop19DestructionObserverESaIS2_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS2_S4_EERKS2_
    fun:_ZNSt6vectorIPN11MessageLoop19DestructionObserverESaIS2_EE9push_backERKS2_
    fun:_ZN16ObserverListBaseIN11MessageLoop19DestructionObserverEE11AddObserverEPS1_
-   fun:_ZN4base11MessageLoop22AddDestructionObserverEPNS_19DestructionObserverE
+   fun:_ZN4base11MessageLoop22AddDestructionObserverEPNS0_19DestructionObserverE
 }
 {
    bug_46250
