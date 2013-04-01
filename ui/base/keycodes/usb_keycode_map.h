@@ -218,12 +218,12 @@ const usb_keymap usb_keycode_map[] = {
   // USB#070086 is used on AS/400 keyboards. Standard Keypad_= is USB#070067.
   //USB_KEYMAP(0x070086, 0x0000, 0x0000, 0xffff),  // Keypad_=
   // USB#070087 is used for Brazilian /? and Japanese _ 'ro'.
-  USB_KEYMAP(0x070087, 0x0000, 0x0000, 0x005e),  // International1
+  USB_KEYMAP(0x070087, 0x0061, 0x0000, 0x005e),  // International1
 
   // USB#070088 is used as Japanese Hiragana/Katakana key.
   USB_KEYMAP(0x070088, 0x0065, 0x0000, 0x0068),  // International2
   // USB#070089 is used as Japanese Yen key.
-  USB_KEYMAP(0x070089, 0x0000, 0x007d, 0x005d),  // International3
+  USB_KEYMAP(0x070089, 0x0084, 0x007d, 0x005d),  // International3
   // USB#07008a is used as Japanese Henkan (Convert) key.
   USB_KEYMAP(0x07008a, 0x0064, 0x0000, 0xffff),  // International4
   // USB#07008b is used as Japanese Muhenkan (No-convert) key.

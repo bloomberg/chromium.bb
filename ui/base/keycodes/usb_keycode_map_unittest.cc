@@ -13,7 +13,7 @@ namespace {
 const size_t kExpectedMappedKeyCount = 138;
 #define USB_KEYMAP(usb, xkb, win, mac) {usb, win}
 #elif defined(OS_LINUX)
-const size_t kExpectedMappedKeyCount = 143;
+const size_t kExpectedMappedKeyCount = 145;
 #define USB_KEYMAP(usb, xkb, win, mac) {usb, xkb}
 #elif defined(OS_MACOSX)
 const size_t kExpectedMappedKeyCount = 118;
