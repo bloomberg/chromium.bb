@@ -240,12 +240,12 @@ void UserImageManagerImpl::LoadUserImages(const UserList& users) {
         if (!image_path.empty()) {
           if (needs_migration) {
             // Non-JPG image will be migrated once user logs in.
-            // Stub image will be used for now.
-            return;
+            // Stub image will be used for now. Continue with other users.
+            continue;
           }
           DCHECK(safe_source);
           if (!safe_source)
-            return;
+            continue;
 
           // Load user image asynchronously - at this point we are able to use
           // JPEG image loaded since image comes from safe pref source
