@@ -53,7 +53,7 @@ MANIFEST_INT_PROJECT = 'chromeos/manifest-internal'
 MANIFEST_URL = '%s/%s' % (GIT_HTTP_URL, MANIFEST_PROJECT)
 MANIFEST_INT_URL = '%s/%s' % (GERRIT_INT_SSH_URL, MANIFEST_INT_PROJECT)
 
-DEFAULT_MANIFEST = 'default'
+DEFAULT_MANIFEST = 'default.xml'
 SHARED_CACHE_ENVVAR = 'CROS_CACHEDIR'
 
 # CrOS remotes specified in the manifests.

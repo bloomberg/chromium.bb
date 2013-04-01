@@ -147,6 +147,7 @@ class RepoRepository(object):
     depth: Mutually exclusive option to referenced_repo; this limits the
       checkout to a max commit history of the given integer.
   """
+  DEFAULT_MANIFEST = 'default'
   # Use our own repo, in case android.kernel.org (the default location) is down.
   _INIT_CMD = ['repo', 'init', '--repo-url', constants.REPO_URL]
 
@@ -154,7 +155,7 @@ class RepoRepository(object):
   LRU_THRESHOLD = 5
 
   def __init__(self, repo_url, directory, branch=None, referenced_repo=None,
-               manifest=constants.DEFAULT_MANIFEST, depth=None):
+               manifest=None, depth=None):
     self.repo_url = repo_url
     self.directory = directory
     self.branch = branch
@@ -169,7 +170,7 @@ class RepoRepository(object):
       if not IsARepoRoot(referenced_repo):
         referenced_repo = None
     self._referenced_repo = referenced_repo
-    self._manifest = '%s.xml' % manifest
+    self._manifest = manifest
 
     # If the repo exists already, force a selfupdate as the first step.
     self._repo_update_needed = IsARepoRoot(self.directory)
@@ -181,7 +182,6 @@ class RepoRepository(object):
 
   def _SwitchToLocalManifest(self, local_manifest):
     """Reinitializes the repository if the manifest has changed."""
-    local_manifest = '%s.xml' % local_manifest
     logging.debug('Moving to manifest defined by %s', local_manifest)
     # TODO: use upstream repo's manifest logic when we bump repo version.
     manifest_path = self.GetRelativePath('.repo/manifest.xml')
@@ -247,7 +247,7 @@ class RepoRepository(object):
       init_cmd.extend(['--manifest-branch', self.branch])
 
     cros_build_lib.RunCommand(init_cmd, cwd=self.directory, input='\n\ny\n')
-    if local_manifest and local_manifest != constants.DEFAULT_MANIFEST:
+    if local_manifest and local_manifest != self.DEFAULT_MANIFEST:
       self._SwitchToLocalManifest(local_manifest)
 
   @property

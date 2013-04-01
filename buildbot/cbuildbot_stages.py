@@ -443,8 +443,10 @@ class BootstrapStage(PatchChangesStage):
 
     # Verify that the patched manifest loads properly. Propagate any errors as
     # exceptions.
-    manifest = os.path.join(checkout_dir, self._build_config['manifest'])
-    git.Manifest.Cached(manifest, manifest_include_dir=checkout_dir)
+    # TODO(rcui): Do validation on other manifests if we start relying on them.
+    git.Manifest.Cached(
+        os.path.join(checkout_dir, constants.DEFAULT_MANIFEST),
+        manifest_include_dir=checkout_dir)
     return checkout_dir
 
   @staticmethod
@@ -561,13 +563,12 @@ class SyncStage(bs.BuilderStage):
 
     kwds.setdefault('referenced_repo', self._options.reference_repo)
     kwds.setdefault('branch', self._target_manifest_branch)
-    kwds.setdefault('manifest', self._build_config['manifest'])
 
     self.repo = repository.RepoRepository(manifest_url, build_root, **kwds)
 
   def GetNextManifest(self):
     """Returns the manifest to use."""
-    return self._build_config['manifest']
+    return repository.RepoRepository.DEFAULT_MANIFEST
 
   def ManifestCheckout(self, next_manifest):
     """Checks out the repository to the given manifest."""

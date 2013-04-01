@@ -237,10 +237,6 @@ _settings = dict(
 # branch -- Whether this is a branched build config. Used for pfq logic.
   branch=False,
 
-# manifest -- The name of the manifest to use. E.g., to use the buildtools
-#             manifest, specify 'buildtools'.
-  manifest=constants.DEFAULT_MANIFEST,
-
 # useflags -- emerge use flags to use while setting up the board, building
 #             packages, making images, etc.
   useflags=None,

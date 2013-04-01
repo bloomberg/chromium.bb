@@ -123,8 +123,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
   LKGM_PATH = 'LKGM/lkgm.xml'
 
   def __init__(self, source_repo, manifest_repo, build_name, build_type,
-               incr_type, force, branch, manifest=constants.DEFAULT_MANIFEST,
-               dry_run=True, master=False):
+               incr_type, force, branch, dry_run=True, master=False):
     """Initialize an LKGM Manager.
 
     Args:
@@ -133,8 +132,8 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     """
     super(LKGMManager, self).__init__(
         source_repo=source_repo, manifest_repo=manifest_repo,
-        manifest=manifest, build_name=build_name, incr_type=incr_type,
-        force=force, branch=branch, dry_run=dry_run, master=master)
+        build_name=build_name, incr_type=incr_type, force=force,
+        branch=branch, dry_run=dry_run, master=master)
 
     self.lkgm_path = os.path.join(self.manifest_dir, self.LKGM_PATH)
     self.compare_versions_fn = _LKGMCandidateInfo.VersionCompare

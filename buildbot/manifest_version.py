@@ -357,8 +357,7 @@ class BuildSpecsManager(object):
   """A Class to manage buildspecs and their states."""
 
   def __init__(self, source_repo, manifest_repo, build_name, incr_type, force,
-               branch, manifest=constants.DEFAULT_MANIFEST, dry_run=True,
-               master=False):
+               branch, dry_run=True, master=False):
     """Initializes a build specs manager.
     Args:
       source_repo: Repository object for the source code.
@@ -367,7 +366,6 @@ class BuildSpecsManager(object):
       incr_type: How we should increment this version - build|branch|patch
       force: Create a new manifest even if there are no changes.
       branch: Branch this builder is running on.
-      manifest: Manifest to use for checkout. E.g. 'full' or 'buildtools'.
       dry_run: Whether we actually commit changes we make or not.
       master: Whether we are the master builder.
     """
@@ -383,7 +381,6 @@ class BuildSpecsManager(object):
     self.incr_type = incr_type
     self.force = force
     self.branch = branch
-    self.manifest = manifest
     self.dry_run = dry_run
     self.master = master
 
@@ -597,7 +594,8 @@ class BuildSpecsManager(object):
 
   def CheckoutSourceCode(self):
     """Syncs the cros source to the latest git hashes for the branch."""
-    self.cros_source.Sync(self.manifest, cleanup=False)
+    self.cros_source.Sync(repository.RepoRepository.DEFAULT_MANIFEST,
+                          cleanup=False)
 
   def GetNextBuildSpec(self, retries=NUM_RETRIES):
     """Returns a path to the next manifest to build.
