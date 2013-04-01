@@ -520,18 +520,24 @@ bool AcceleratorController::PerformAction(int action,
     case TOGGLE_WIFI:
       Shell::GetInstance()->system_tray_delegate()->ToggleWifi();
       return true;
-    case TOUCH_HUD_CLEAR:
-      if (Shell::GetInstance()->touch_observer_hud()) {
-        Shell::GetInstance()->touch_observer_hud()->Clear();
+    case TOUCH_HUD_CLEAR: {
+      internal::RootWindowController* controller =
+          internal::RootWindowController::ForActiveRootWindow();
+      if (controller->touch_observer_hud()) {
+        controller->touch_observer_hud()->Clear();
         return true;
       }
       return false;
-    case TOUCH_HUD_MODE_CHANGE:
-      if (Shell::GetInstance()->touch_observer_hud()) {
-        Shell::GetInstance()->touch_observer_hud()->ChangeToNextMode();
+    }
+    case TOUCH_HUD_MODE_CHANGE: {
+      internal::RootWindowController* controller =
+          internal::RootWindowController::ForActiveRootWindow();
+      if (controller->touch_observer_hud()) {
+        controller->touch_observer_hud()->ChangeToNextMode();
         return true;
       }
       return false;
+    }
     case DISABLE_GPU_WATCHDOG:
       content::GpuDataManager::GetInstance()->DisableGpuWatchdog();
       return true;

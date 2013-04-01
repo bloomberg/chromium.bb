@@ -4,13 +4,18 @@
 
 #include "ash/touch/touch_observer_hud.h"
 
+#include "ash/display/display_controller.h"
+#include "ash/display/display_manager.h"
+#include "ash/root_window_controller.h"
 #include "ash/shell_window_ids.h"
+#include "ash/wm/property_util.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/stringprintf.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
-#include "base/values.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkXfermode.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/base/events/event.h"
 #include "ui/gfx/canvas.h"
@@ -178,8 +183,6 @@ class TouchHudCanvas : public views::View {
         path_index_(0),
         color_index_(0),
         scale_(1) {
-    gfx::Display display = Shell::GetScreen()->GetPrimaryDisplay();
-    gfx::Rect bounds = display.bounds();
     SetPaintToLayer(true);
     SetFillsBoundsOpaquely(false);
   }
@@ -273,16 +276,16 @@ class TouchHudCanvas : public views::View {
   DISALLOW_COPY_AND_ASSIGN(TouchHudCanvas);
 };
 
-TouchObserverHUD::TouchObserverHUD() {
+TouchObserverHUD::TouchObserverHUD(const gfx::Display& display)
+    : display_id_(display.id()) {
   views::View* content = new views::View;
 
   canvas_ = new TouchHudCanvas(this);
   content->AddChildView(canvas_);
 
-  gfx::Display display = Shell::GetScreen()->GetPrimaryDisplay();
-  gfx::Rect display_bounds = display.bounds();
-  canvas_->SetBoundsRect(display_bounds);
-  content->SetBoundsRect(display_bounds);
+  const gfx::Size& display_size = display.size();
+  canvas_->SetSize(display_size);
+  content->SetSize(display_size);
 
   label_container_ = new views::View;
   label_container_->SetLayoutManager(new views::BoxLayout(
@@ -298,7 +301,7 @@ TouchObserverHUD::TouchObserverHUD() {
     label_container_->AddChildView(touch_labels_[i]);
   }
   label_container_->SetX(0);
-  label_container_->SetY(display_bounds.height() / kReducedScale);
+  label_container_->SetY(display_size.height() / kReducedScale);
   label_container_->SetSize(label_container_->GetPreferredSize());
   label_container_->SetVisible(false);
   content->AddChildView(label_container_);
@@ -309,9 +312,10 @@ TouchObserverHUD::TouchObserverHUD() {
   params.transparent = true;
   params.can_activate = false;
   params.accept_events = false;
-  params.bounds = display_bounds;
+  params.bounds = gfx::Rect(display_size);
   params.parent = Shell::GetContainer(
-      Shell::GetPrimaryRootWindow(),
+      Shell::GetInstance()->display_controller()->GetRootWindowForDisplayId(
+          display_id_),
       internal::kShellWindowId_OverlayContainer);
   widget_->Init(params);
   widget_->SetContentsView(content);
@@ -321,11 +325,33 @@ TouchObserverHUD::TouchObserverHUD() {
   // The TouchObserverHUD's lifetime is always more than |widget_|. The
   // |widget_| is unset from the OnWidgetDestroying callback.
   widget_->AddObserver(this);
+
+  // Observe display changes to handle changes in display size.
+  Shell::GetScreen()->AddObserver(this);
 }
 
 TouchObserverHUD::~TouchObserverHUD() {
   // The widget should have already been destroyed.
   DCHECK(!widget_);
+  Shell::GetScreen()->RemoveObserver(this);
+}
+
+// static
+scoped_ptr<DictionaryValue> TouchObserverHUD::GetAllAsDictionary() {
+  scoped_ptr<DictionaryValue> value(new DictionaryValue());
+  Shell::RootWindowList roots = Shell::GetInstance()->GetAllRootWindows();
+  for (Shell::RootWindowList::iterator iter = roots.begin();
+      iter != roots.end(); ++iter) {
+    internal::RootWindowController* controller = GetRootWindowController(*iter);
+    if (controller->touch_observer_hud()) {
+      int64 display_id = (*iter)->GetProperty(kDisplayIdKey);
+      scoped_ptr<ListValue> list =
+          controller->touch_observer_hud()->GetLogAsList();
+      if (!list->empty())
+        value->Set(base::Int64ToString(display_id), list.release());
+    }
+  }
+  return value.Pass();
 }
 
 void TouchObserverHUD::ChangeToNextMode() {
@@ -348,12 +374,8 @@ void TouchObserverHUD::Clear() {
     canvas_->Clear();
 }
 
-std::string TouchObserverHUD::GetLogAsString() const {
-  std::string string;
-  scoped_ptr<ListValue> list = canvas_->GetAsList();
-  JSONStringValueSerializer json(&string);
-  json.set_pretty_print(true);
-  return json.Serialize(*list) ? string : std::string();
+scoped_ptr<ListValue> TouchObserverHUD::GetLogAsList() const {
+  return canvas_->GetAsList();
 }
 
 void TouchObserverHUD::UpdateTouchPointLabel(int index) {
@@ -388,6 +410,18 @@ void TouchObserverHUD::OnWidgetDestroying(views::Widget* widget) {
   DCHECK_EQ(widget, widget_);
   widget_ = NULL;
 }
+
+void TouchObserverHUD::OnDisplayBoundsChanged(const gfx::Display& display) {
+  const gfx::Size& size = display.size();
+  if (display.id() == display_id_) {
+    widget_->SetSize(size);
+    canvas_->SetSize(size);
+    label_container_->SetY(size.height() / kReducedScale);
+  }
+}
+
+void TouchObserverHUD::OnDisplayAdded(const gfx::Display& new_display) {}
+void TouchObserverHUD::OnDisplayRemoved(const gfx::Display& old_display) {}
 
 }  // namespace internal
 }  // namespace ash

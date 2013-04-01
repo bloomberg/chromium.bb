@@ -36,7 +36,6 @@
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
-#include "ash/touch/touch_observer_hud.h"
 #include "ash/wm/activation_controller.h"
 #include "ash/wm/always_on_top_controller.h"
 #include "ash/wm/app_list_controller.h"
@@ -253,8 +252,6 @@ Shell::~Shell() {
 #if !defined(OS_MACOSX)
   RemovePreTargetHandler(accelerator_filter_.get());
 #endif
-  if (touch_observer_hud_.get())
-    RemovePreTargetHandler(touch_observer_hud_.get());
 
   // TooltipController is deleted with the Shell so removing its references.
   RemovePreTargetHandler(tooltip_controller_.get());
@@ -521,11 +518,6 @@ void Shell::Init() {
   power_button_controller_.reset(new PowerButtonController(
       session_state_controller_.get()));
   AddShellObserver(session_state_controller_.get());
-
-  if (command_line->HasSwitch(switches::kAshTouchHud)) {
-    touch_observer_hud_.reset(new internal::TouchObserverHUD);
-    AddPreTargetHandler(touch_observer_hud_.get());
-  }
 
   mouse_cursor_filter_.reset(new internal::MouseCursorEventFilter());
   AddPreTargetHandler(mouse_cursor_filter_.get());

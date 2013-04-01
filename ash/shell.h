@@ -286,9 +286,6 @@ class ASH_EXPORT Shell
   views::corewm::TooltipController* tooltip_controller() {
     return tooltip_controller_.get();
   }
-  internal::TouchObserverHUD* touch_observer_hud() {
-    return touch_observer_hud_.get();
-  }
   internal::EventRewriterEventFilter* event_rewriter_filter() {
     return event_rewriter_filter_.get();
   }
@@ -560,10 +557,6 @@ class ASH_EXPORT Shell
 
   // An event filter that pre-handles all key events to send them to an IME.
   scoped_ptr<views::corewm::InputMethodEventFilter> input_method_filter_;
-
-  // An event filter that silently keeps track of all touch events and controls
-  // a heads-up display. This is enabled only if --ash-touch-hud flag is used.
-  scoped_ptr<internal::TouchObserverHUD> touch_observer_hud_;
 
   scoped_ptr<internal::DisplayManager> display_manager_;
 

@@ -21,6 +21,7 @@
 #include "ash/shell_window_ids.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray_delegate.h"
+#include "ash/touch/touch_observer_hud.h"
 #include "ash/wm/base_layout_manager.h"
 #include "ash/wm/boot_splash_screen.h"
 #include "ash/wm/panels/panel_layout_manager.h"
@@ -199,6 +200,9 @@ RootWindowController* RootWindowController::ForActiveRootWindow() {
 }
 
 void RootWindowController::Shutdown() {
+  // Remove touch observer HUD.
+  SetTouchObserverHUD(NULL);
+
   CloseChildWindows();
   if (Shell::GetActiveRootWindow() == root_window_.get()) {
     Shell::GetInstance()->set_active_root_window(
@@ -290,6 +294,16 @@ void RootWindowController::InitForPrimaryDisplay() {
 
 void RootWindowController::CreateContainers() {
   CreateContainersInRootWindow(root_window_.get());
+
+  // Create touch observer HUD if needed. HUD should be created after the
+  // containers have been created, so that its widget can be added to them.
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kAshTouchHud)) {
+    int64 id = root_window_->GetProperty(kDisplayIdKey);
+    const gfx::Display& display = Shell::GetInstance()->display_manager()->
+        GetDisplayForId(id);
+    SetTouchObserverHUD(new TouchObserverHUD(display));
+  }
 }
 
 void RootWindowController::CreateSystemBackground(
@@ -419,6 +433,14 @@ void RootWindowController::MoveWindowsTo(aura::RootWindow* dst) {
   } else if (active && tracker.Contains(active) && dst->Contains(active)) {
     activation_client->ActivateWindow(active);
   }
+}
+
+void RootWindowController::SetTouchObserverHUD(TouchObserverHUD* hud) {
+  if (touch_observer_hud_.get())
+    root_window_->RemovePreTargetHandler(touch_observer_hud_.get());
+  if (hud)
+    root_window_->AddPreTargetHandler(hud);
+  touch_observer_hud_.reset(hud);
 }
 
 ShelfLayoutManager* RootWindowController::GetShelfLayoutManager() {

@@ -4,8 +4,8 @@
 
 #include "chrome/browser/chromeos/system_logs/touch_log_source.h"
 
-#include "ash/shell.h"
 #include "ash/touch/touch_observer_hud.h"
+#include "base/json/json_string_value_serializer.h"
 #include "chrome/browser/feedback/feedback_util.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -24,9 +24,14 @@ void TouchLogSource::Fetch(const SysLogsSourceCallback& callback) {
   DCHECK(!callback.is_null());
 
   SystemLogsResponse response;
-  if (ash::Shell::GetInstance()->touch_observer_hud()) {
-    response[kHUDLogDataKey] =
-        ash::Shell::GetInstance()->touch_observer_hud()->GetLogAsString();
+  scoped_ptr<DictionaryValue> dictionary =
+      ash::internal::TouchObserverHUD::GetAllAsDictionary();
+  if (!dictionary->empty()) {
+    std::string touch_log;
+    JSONStringValueSerializer json(&touch_log);
+    json.set_pretty_print(true);
+    if (json.Serialize(*dictionary) && !touch_log.empty())
+      response[kHUDLogDataKey] = touch_log;
   }
   callback.Run(&response);
 }
