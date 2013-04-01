@@ -98,6 +98,13 @@ public class AutofillDialog extends AlertDialog
          * Informs AutofillDialog controller that the user clicked on the cancel button.
          */
         public void dialogCancel();
+
+        /**
+         * Returns the label string to be used for the given section.
+         * @param section Section for which the label should be returned.
+         * @return The string that should appear on the label for the given section.
+         */
+        public String getLabelForSection(int section);
     }
 
     protected AutofillDialog(Context context, AutofillDialogDelegate delegate) {
@@ -109,6 +116,11 @@ public class AutofillDialog extends AlertDialog
         ScrollView scroll = new ScrollView(context);
         mContentView = (AutofillDialogContentView) getLayoutInflater().
                 inflate(R.layout.autofill_dialog_content, null);
+        String[] labels = new String[AutofillDialogConstants.NUM_SECTIONS];
+        for (int i = 0; i < AutofillDialogConstants.NUM_SECTIONS; i++) {
+            labels[i] = mDelegate.getLabelForSection(i);
+        }
+        mContentView.initializeLabelsForEachSection(labels);
         scroll.addView(mContentView);
         setView(scroll);
         Resources resources = context.getResources();

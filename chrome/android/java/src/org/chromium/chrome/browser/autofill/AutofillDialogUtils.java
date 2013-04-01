@@ -60,8 +60,7 @@ public class AutofillDialogUtils {
     }
 
     /**
-     * Returns the {@link ViewGroup} ID for the given section in the AutofillDialog
-     * layout
+     * Returns the {@link ViewGroup} ID for the given section in the AutofillDialog layout.
      * @param section The section to return the layout ID for.
      * @return The Android ID for the edit layout for the given section.
      */
@@ -77,6 +76,30 @@ public class AutofillDialogUtils {
                 return R.id.editing_layout_billing;
             case AutofillDialogConstants.SECTION_EMAIL :
                 return INVALID_ID;
+            default:
+                assert(false);
+                return INVALID_ID;
+        }
+    }
+
+    /**
+     * Returns the label ID for the given section in the AutofillDialog
+     * layout
+     * @param section The section to return the label ID for.
+     * @return The Android ID for the label text for the given section.
+     */
+    public static int getLabelIDForSection(int section) {
+        switch (section) {
+            case AutofillDialogConstants.SECTION_CC :
+                return R.id.cc_label;
+            case AutofillDialogConstants.SECTION_CC_BILLING :
+                return R.id.cc_billing_label;
+            case AutofillDialogConstants.SECTION_SHIPPING :
+                return R.id.shipping_label;
+            case AutofillDialogConstants.SECTION_BILLING :
+                return R.id.billing_label;
+            case AutofillDialogConstants.SECTION_EMAIL :
+                return R.id.email_label;
             default:
                 assert(false);
                 return INVALID_ID;

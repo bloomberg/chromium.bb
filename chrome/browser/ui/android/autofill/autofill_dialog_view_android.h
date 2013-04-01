@@ -48,6 +48,10 @@ class AutofillDialogViewAndroid : public AutofillDialogView {
   void EditingCancel(JNIEnv* env, jobject obj, jint section);
   void DialogSubmit(JNIEnv* env, jobject obj);
   void DialogCancel(JNIEnv* env, jobject obj);
+  base::android::ScopedJavaLocalRef<jstring> GetLabelForSection(
+      JNIEnv* env,
+      jobject obj,
+      jint section);
 
   static bool RegisterAutofillDialogViewAndroid(JNIEnv* env);
 

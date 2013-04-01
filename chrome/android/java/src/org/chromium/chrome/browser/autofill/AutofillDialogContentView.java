@@ -47,6 +47,7 @@ public class AutofillDialogContentView extends LinearLayout {
     static final int LAYOUT_EDITING_CC_BILLING = 3;
     static final int LAYOUT_FETCHING = 4;
     static final int LAYOUT_STEADY = 5;
+
     private final Runnable mDismissSteadyLayoutRunnable = new Runnable() {
         @Override
         public void run() {
@@ -80,6 +81,18 @@ public class AutofillDialogContentView extends LinearLayout {
         }
 
         changeLayoutTo(LAYOUT_FETCHING);
+    }
+
+    /**
+     * Initializes the labels for each section.
+     * @param labels The label strings to be used for each section.
+     */
+    public void initializeLabelsForEachSection(String[] labels) {
+        TextView labelView;
+        for (int i = 0; i < labels.length && i < NUM_SECTIONS; i++) {
+            labelView = (TextView) findViewById(AutofillDialogUtils.getLabelIDForSection(i));
+            labelView.setText(labels[i]);
+        }
     }
 
     @Override
@@ -182,6 +195,8 @@ public class AutofillDialogContentView extends LinearLayout {
     public void setVisibilityForSection(int section, boolean visible) {
         int visibility = visible ? VISIBLE : GONE;
         mSpinners[section].setVisibility(visibility);
+        View labelView = findViewById(AutofillDialogUtils.getLabelIDForSection(section));
+        if (labelView != null) labelView.setVisibility(visibility);
     }
 
     private void addAppearAnimationForEditLayout(int mode, View layout) {

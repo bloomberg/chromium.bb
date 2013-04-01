@@ -154,6 +154,11 @@ public class AutofillDialogGlue implements AutofillDialogDelegate {
         nativeDialogCancel(mNativeDialogPopup);
     }
 
+    @Override
+    public String getLabelForSection(int section) {
+        return nativeGetLabelForSection(mNativeDialogPopup, section);
+    }
+
     // Helper methods for AutofillDialogField and AutofillDialogItem ------------------------------
 
     @CalledByNative
@@ -220,4 +225,6 @@ public class AutofillDialogGlue implements AutofillDialogDelegate {
     private native void nativeEditingCancel(int nativeAutofillDialogViewAndroid, int section);
     private native void nativeDialogSubmit(int nativeAutofillDialogViewAndroid);
     private native void nativeDialogCancel(int nativeAutofillDialogViewAndroid);
+    private native String nativeGetLabelForSection(int nativeAutofillDialogViewAndroid,
+            int section);
 }

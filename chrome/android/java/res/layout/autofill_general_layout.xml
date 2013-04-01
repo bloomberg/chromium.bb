@@ -11,52 +11,79 @@
     android:columnCount="4">
     <CheckBox
         android:id="@+id/top_notification"
-        android:padding="5dp"
-        android:textSize="12sp"
+        android:padding="@dimen/autofill_steady_margin"
+        android:textSize="@dimen/autofill_notification_text_size"
         android:visibility="gone"
         android:layout_columnSpan="4"/>
+    <TextView
+        android:id="@+id/email_label"
+        android:layout_marginLeft="@dimen/autofill_steady_margin"
+        android:layout_columnSpan="2"
+        android:textStyle="bold"
+        android:textSize="@dimen/autofill_steady_text_size"/>
+    <Space
+        android:layout_gravity="fill"
+        android:layout_columnSpan="2"/>
     <Spinner
-        android:layout_margin="5dp"
+        android:layout_margin="@dimen/autofill_steady_margin"
         android:id="@+id/email_spinner"
         android:visibility="gone"
         android:layout_gravity="fill_horizontal"
         android:layout_columnSpan="4"/>
     <TextView
-        android:text="@string/autofill_billing_title"
-        android:id="@+id/billing_title"
-        android:layout_marginLeft="5dp"
+        android:id="@+id/cc_billing_label"
+        android:layout_marginLeft="@dimen/autofill_steady_margin"
         android:layout_columnSpan="2"
-        android:textSize="14sp"/>
+        android:textStyle="bold"
+        android:textSize="@dimen/autofill_steady_text_size"/>
     <Space
         android:layout_gravity="fill"
         android:layout_columnSpan="2"/>
     <Spinner
-        android:layout_margin="5dp"
+        android:layout_margin="@dimen/autofill_steady_margin"
         android:id="@+id/cc_billing_spinner"
         android:layout_gravity="fill_horizontal"
         android:layout_columnSpan="4"/>
+    <TextView
+        android:id="@+id/cc_label"
+        android:layout_marginLeft="@dimen/autofill_steady_margin"
+        android:layout_columnSpan="2"
+        android:textStyle="bold"
+        android:textSize="@dimen/autofill_steady_text_size"/>
+    <Space
+        android:layout_gravity="fill"
+        android:layout_columnSpan="2"/>
     <Spinner
-        android:layout_margin="5dp"
+        android:layout_margin="@dimen/autofill_steady_margin"
         android:id="@+id/cc_spinner"
         android:layout_gravity="fill_horizontal"
         android:layout_columnSpan="4"/>
+    <TextView
+        android:id="@+id/billing_label"
+        android:layout_marginLeft="@dimen/autofill_steady_margin"
+        android:layout_columnSpan="2"
+        android:textStyle="bold"
+        android:textSize="@dimen/autofill_steady_text_size"/>
+    <Space
+          android:layout_gravity="fill"
+          android:layout_columnSpan="2"/>
     <Spinner
-        android:layout_margin="5dp"
+        android:layout_margin="@dimen/autofill_steady_margin"
         android:id="@+id/billing_spinner"
         android:layout_gravity="fill_horizontal"
         android:visibility="gone"
         android:layout_columnSpan="4"/>
     <TextView
-        android:text="@string/autofill_shipping_title"
-        android:id="@+id/shipping_title"
-        android:layout_marginLeft="5dp"
+        android:id="@+id/shipping_label"
+        android:layout_marginLeft="@dimen/autofill_steady_margin"
         android:layout_columnSpan="2"
-        android:textSize="14sp"/>
+        android:textStyle="bold"
+        android:textSize="@dimen/autofill_steady_text_size"/>
     <Space
           android:layout_gravity="fill"
           android:layout_columnSpan="2"/>
     <Spinner
-        android:layout_margin="5dp"
+        android:layout_margin="@dimen/autofill_steady_margin"
         android:id="@+id/address_spinner"
         android:layout_gravity="fill_horizontal"
         android:layout_columnSpan="4"/>
@@ -75,7 +102,7 @@
         android:padding="10dp"
         android:visibility="gone"
         android:id="@+id/terms_info"
-        android:textSize="11sp"
+        android:textSize="@dimen/autofill_notification_text_size"
         android:background="?android:attr/selectableItemBackground"
         android:drawableRight="@drawable/arrow"
         android:layout_columnSpan="4"

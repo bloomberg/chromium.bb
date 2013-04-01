@@ -271,6 +271,15 @@ void AutofillDialogViewAndroid::DialogCancel(JNIEnv* env, jobject obj) {
   controller_->OnCancel();
 }
 
+ScopedJavaLocalRef<jstring> AutofillDialogViewAndroid::GetLabelForSection(
+    JNIEnv* env,
+    jobject obj,
+    jint section) {
+  string16 label(controller_->LabelForSection(
+      static_cast<DialogSection>(section)));
+  return base::android::ConvertUTF16ToJavaString(env, label);
+}
+
 // static
 bool AutofillDialogViewAndroid::RegisterAutofillDialogViewAndroid(JNIEnv* env) {
   return RegisterNativesImpl(env);
