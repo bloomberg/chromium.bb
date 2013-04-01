@@ -2705,7 +2705,7 @@ void TestingAutomationProvider::SetDownloadShelfVisibleJSON(
   if (is_visible) {
     browser->window()->GetDownloadShelf()->Show();
   } else {
-    browser->window()->GetDownloadShelf()->Close();
+    browser->window()->GetDownloadShelf()->Close(DownloadShelf::AUTOMATIC);
   }
   reply.SendSuccess(NULL);
 }

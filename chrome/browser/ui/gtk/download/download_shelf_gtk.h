@@ -70,7 +70,7 @@ class DownloadShelfGtk : public DownloadShelf,
   // DownloadShelf implementation.
   virtual void DoAddDownload(content::DownloadItem* download) OVERRIDE;
   virtual void DoShow() OVERRIDE;
-  virtual void DoClose() OVERRIDE;
+  virtual void DoClose(CloseReason reason) OVERRIDE;
 
  private:
   // Remove |download_item| from the download shelf and delete it.

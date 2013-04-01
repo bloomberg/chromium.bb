@@ -84,7 +84,7 @@ TEST_F(DownloadShelfTest, ClosesShelfWhenHidden) {
 TEST_F(DownloadShelfTest, CloseWhileHiddenPreventsShowOnUnhide) {
   shelf()->Show();
   shelf()->Hide();
-  shelf()->Close();
+  shelf()->Close(DownloadShelf::AUTOMATIC);
   shelf()->Unhide();
   EXPECT_FALSE(shelf()->IsShowing());
 }

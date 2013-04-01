@@ -34,7 +34,7 @@ class TestDownloadShelf : public DownloadShelf {
  protected:
   virtual void DoAddDownload(content::DownloadItem* download) OVERRIDE;
   virtual void DoShow() OVERRIDE;
-  virtual void DoClose() OVERRIDE;
+  virtual void DoClose(CloseReason reason) OVERRIDE;
   virtual base::TimeDelta GetTransientDownloadShowDelay() OVERRIDE;
   virtual content::DownloadManager* GetDownloadManager() OVERRIDE;
 

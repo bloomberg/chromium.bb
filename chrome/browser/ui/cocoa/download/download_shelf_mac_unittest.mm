@@ -18,11 +18,12 @@
   int callCountIsVisible;
   int callCountShow;
   int callCountHide;
+  int callCountCloseWithUserAction;
 }
 
 - (BOOL)isVisible;
-- (IBAction)show:(id)sender;
-- (IBAction)hide:(id)sender;
+- (void)showDownloadShelf:(BOOL)enable
+             isUserAction:(BOOL)isUserAction;
 @end
 
 @implementation FakeDownloadShelfController
@@ -32,12 +33,14 @@
   return YES;
 }
 
-- (IBAction)show:(id)sender {
-  ++callCountShow;
-}
-
-- (IBAction)hide:(id)sender {
-  ++callCountHide;
+- (void)showDownloadShelf:(BOOL)enable
+             isUserAction:(BOOL)isUserAction {
+  if (enable)
+    ++callCountShow;
+  else
+    ++callCountHide;
+  if (isUserAction && !enable)
+    ++callCountCloseWithUserAction;
 }
 
 @end
@@ -75,8 +78,18 @@ TEST_F(DownloadShelfMacTest, ForwardsHide) {
   DownloadShelfMac shelf(browser(),
       (DownloadShelfController*)shelf_controller_.get());
   EXPECT_EQ(0, shelf_controller_.get()->callCountHide);
-  shelf.Close();
+  shelf.Close(DownloadShelf::AUTOMATIC);
   EXPECT_EQ(1, shelf_controller_.get()->callCountHide);
+  EXPECT_EQ(0, shelf_controller_.get()->callCountCloseWithUserAction);
+}
+
+TEST_F(DownloadShelfMacTest, ForwardsHideWithUserAction) {
+  DownloadShelfMac shelf(browser(),
+      (DownloadShelfController*)shelf_controller_.get());
+  EXPECT_EQ(0, shelf_controller_.get()->callCountHide);
+  shelf.Close(DownloadShelf::USER_ACTION);
+  EXPECT_EQ(1, shelf_controller_.get()->callCountHide);
+  EXPECT_EQ(1, shelf_controller_.get()->callCountCloseWithUserAction);
 }
 
 TEST_F(DownloadShelfMacTest, ForwardsIsShowing) {

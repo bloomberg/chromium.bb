@@ -77,7 +77,20 @@ class PageNavigator;
 - (id)initWithBrowser:(Browser*)browser
        resizeDelegate:(id<ViewResizer>)resizeDelegate;
 
+// Run when the user clicks the 'Show All' button.
 - (IBAction)showDownloadsTab:(id)sender;
+
+// Run when the user clicks the close button on the right side of the shelf.
+- (IBAction)handleClose:(id)sender;
+
+// Shows or hides the download shelf based on the value of |show|.
+// |isUserAction| should be YES if the operation is being triggered based on a
+// user action (currently only relevant when hiding the shelf).
+// Note: This is intended to be invoked from DownloadShelfMac. If invoked
+// directly, the shelf visibility state maintained by DownloadShelf and the
+// owning Browser will not be updated.
+- (void)showDownloadShelf:(BOOL)show
+             isUserAction:(BOOL)isUserAction;
 
 // Returns our view cast as an AnimatableView.
 - (AnimatableView*)animatableView;
@@ -85,11 +98,8 @@ class PageNavigator;
 - (DownloadShelf*)bridge;
 - (BOOL)isVisible;
 
-- (IBAction)show:(id)sender;
-
-// Run when the user clicks the close button on the right side of the shelf.
-- (IBAction)hide:(id)sender;
-
+// Add a new download item to the leftmost position of the download shelf. The
+// item should not have been already added to this shelf.
 - (void)addDownloadItem:(content::DownloadItem*)downloadItem;
 
 // Remove a download, possibly via clearing browser data.

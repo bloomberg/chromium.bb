@@ -19,6 +19,19 @@ class Browser;
 // implementations.
 class DownloadShelf {
  public:
+  // Reason for closing download shelf.
+  enum CloseReason {
+    // Closing the shelf automatically. E.g.: all remaining downloads in the
+    // shelf have been opened, last download in shelf was removed, or the
+    // browser is switching to full-screen mode.
+    AUTOMATIC,
+
+    // Closing shelf due to a user selection. E.g.: the user clicked on the
+    // 'close' button on the download shelf, or the shelf is being closed as a
+    // side-effect of the user opening the downloads page.
+    USER_ACTION
+  };
+
   DownloadShelf();
   virtual ~DownloadShelf();
 
@@ -44,7 +57,7 @@ class DownloadShelf {
   void Show();
 
   // Closes the shelf.
-  void Close();
+  void Close(CloseReason reason);
 
   // Hides the shelf. This closes the shelf if it is currently showing.
   void Hide();
@@ -61,7 +74,7 @@ class DownloadShelf {
  protected:
   virtual void DoAddDownload(content::DownloadItem* download) = 0;
   virtual void DoShow() = 0;
-  virtual void DoClose() = 0;
+  virtual void DoClose(CloseReason reason) = 0;
 
   // Time delay to wait before adding a transient download to the shelf.
   // Protected virtual for testing.

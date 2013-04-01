@@ -29,12 +29,14 @@ bool DownloadShelfMac::IsClosing() const {
 }
 
 void DownloadShelfMac::DoShow() {
-  [shelf_controller_ show:nil];
+  [shelf_controller_ showDownloadShelf:YES
+                          isUserAction:NO];
   browser_->UpdateDownloadShelfVisibility(true);
 }
 
-void DownloadShelfMac::DoClose() {
-  [shelf_controller_ hide:nil];
+void DownloadShelfMac::DoClose(CloseReason reason) {
+  [shelf_controller_ showDownloadShelf:NO
+                          isUserAction:reason == USER_ACTION];
   browser_->UpdateDownloadShelfVisibility(false);
 }
 

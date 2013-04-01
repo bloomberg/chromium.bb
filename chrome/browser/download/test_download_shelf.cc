@@ -39,7 +39,7 @@ void TestDownloadShelf::DoShow() {
   is_showing_ = true;
 }
 
-void TestDownloadShelf::DoClose() {
+void TestDownloadShelf::DoClose(CloseReason reason) {
   is_showing_ = false;
 }
 

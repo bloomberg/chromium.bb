@@ -94,7 +94,6 @@ int CenterPosition(int size, int target_size) {
 DownloadShelfView::DownloadShelfView(Browser* browser, BrowserView* parent)
     : browser_(browser),
       parent_(parent),
-      auto_closed_(true),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           mouse_watcher_(new views::MouseWatcherViewHost(this, gfx::Insets()),
                          this)) {
@@ -127,7 +126,7 @@ void DownloadShelfView::DoAddDownload(DownloadItem* download) {
 }
 
 void DownloadShelfView::MouseMovedOutOfHost() {
-  Close();
+  Close(AUTOMATIC);
 }
 
 void DownloadShelfView::OnWillChangeFocus(views::View* focused_before,
@@ -150,7 +149,7 @@ void DownloadShelfView::RemoveDownloadView(View* view) {
   RemoveChildView(view);
   delete view;
   if (download_views_.empty())
-    Close();
+    Close(AUTOMATIC);
   else if (CanAutoClose())
     mouse_watcher_.Start();
   Layout();
@@ -385,8 +384,7 @@ void DownloadShelfView::LinkClicked(views::Link* source, int event_flags) {
 
 void DownloadShelfView::ButtonPressed(
     views::Button* button, const ui::Event& event) {
-  auto_closed_ = false;
-  Close();
+  Close(USER_ACTION);
 }
 
 bool DownloadShelfView::IsShowing() const {
@@ -401,17 +399,17 @@ void DownloadShelfView::DoShow() {
   shelf_animation_->Show();
 }
 
-void DownloadShelfView::DoClose() {
+void DownloadShelfView::DoClose(CloseReason reason) {
   int num_in_progress = 0;
   for (size_t i = 0; i < download_views_.size(); ++i) {
     if (download_views_[i]->download()->IsInProgress())
       ++num_in_progress;
   }
-  download_util::RecordShelfClose(
-      download_views_.size(), num_in_progress, auto_closed_);
+  download_util::RecordShelfClose(download_views_.size(),
+                                  num_in_progress,
+                                  reason == AUTOMATIC);
   parent_->SetDownloadShelfVisible(false);
   shelf_animation_->Hide();
-  auto_closed_ = true;
 }
 
 Browser* DownloadShelfView::browser() const {

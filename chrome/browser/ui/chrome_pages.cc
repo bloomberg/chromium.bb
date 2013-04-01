@@ -80,8 +80,9 @@ void ShowDownloads(Browser* browser) {
   content::RecordAction(UserMetricsAction("ShowDownloads"));
   if (browser->window()) {
     DownloadShelf* shelf = browser->window()->GetDownloadShelf();
+    // The downloads page is always shown in response to a user action.
     if (shelf->IsShowing())
-      shelf->Close();
+      shelf->Close(DownloadShelf::USER_ACTION);
   }
   ShowSingletonTabOverwritingNTP(
       browser,
