@@ -68,6 +68,9 @@ class MockShillManagerClient : public ShillManagerClient {
                                        const std::string& data,
                                        const StringCallback& callback,
                                        const ErrorCallback& error_callback));
+  MOCK_METHOD2(ConnectToBestServices,
+               void(const base::Closure& callback,
+                    const ErrorCallback& error_callback));
   MOCK_METHOD0(GetTestInterface, TestInterface*());
 
 };

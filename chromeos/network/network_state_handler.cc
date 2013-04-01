@@ -4,6 +4,7 @@
 
 #include "chromeos/network/network_state_handler.h"
 
+#include "base/bind.h"
 #include "base/format_macros.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
@@ -297,7 +298,22 @@ void NetworkStateHandler::GetNetworkList(NetworkStateList* list) const {
 }
 
 void NetworkStateHandler::RequestScan() const {
+  network_event_log::AddEntry(kLogModule, "RequestScan", "");
   shill_property_handler_->RequestScan();
+}
+
+void NetworkStateHandler::WaitForScan(const std::string& type,
+                                      const base::Closure& callback) {
+  scan_complete_callbacks_[type].push_back(callback);
+  if (!GetScanningByType(type))
+    RequestScan();
+}
+
+void NetworkStateHandler::ConnectToBestWifiNetwork() {
+  network_event_log::AddEntry(kLogModule, "ConnectToBestWifiNetwork", "");
+  WaitForScan(flimflam::kTypeWifi,
+              base::Bind(&internal::ShillPropertyHandler::ConnectToBestServices,
+                         shill_property_handler_->AsWeakPtr()));
 }
 
 void NetworkStateHandler::SetConnectingNetwork(
@@ -386,6 +402,9 @@ void NetworkStateHandler::UpdateManagedStateProperties(
       managed->PropertyChanged(iter.key(), iter.value());
     }
   }
+  network_event_log::AddEntry(
+      kLogModule, "PropertiesReceived",
+      base::StringPrintf("%s (%s)", path.c_str(), managed->name().c_str()));
   // Notify observers.
   if (network_property_updated) {
     NetworkState* network = managed->AsNetworkState();
@@ -395,9 +414,6 @@ void NetworkStateHandler::UpdateManagedStateProperties(
       OnNetworkConnectionStateChanged(network);
     NetworkPropertiesUpdated(network);
   }
-  network_event_log::AddEntry(
-      kLogModule, "PropertiesReceived",
-      base::StringPrintf("%s (%s)", path.c_str(), managed->name().c_str()));
 }
 
 void NetworkStateHandler::UpdateNetworkServiceProperty(
@@ -410,16 +426,16 @@ void NetworkStateHandler::UpdateNetworkServiceProperty(
   std::string prev_connection_state = network->connection_state();
   if (!network->PropertyChanged(key, value))
     return;
-  if (network->connection_state() != prev_connection_state)
-    OnNetworkConnectionStateChanged(network);
-
-  NetworkPropertiesUpdated(network);
 
   std::string detail = network->name() + "." + key;
   std::string vstr = ValueAsString(value);
   if (!vstr.empty())
     detail += " = " + vstr;
   network_event_log::AddEntry(kLogModule, "NetworkPropertyUpdated", detail);
+
+  if (network->connection_state() != prev_connection_state)
+    OnNetworkConnectionStateChanged(network);
+  NetworkPropertiesUpdated(network);
 }
 
 void NetworkStateHandler::UpdateNetworkServiceIPAddress(
@@ -443,14 +459,17 @@ void NetworkStateHandler::UpdateDeviceProperty(const std::string& device_path,
   if (!device->PropertyChanged(key, value))
     return;
 
-  FOR_EACH_OBSERVER(NetworkStateHandlerObserver, observers_,
-                    DeviceListChanged());
-
   std::string detail = device->name() + "." + key;
   std::string vstr = ValueAsString(value);
   if (!vstr.empty())
     detail += " = " + vstr;
   network_event_log::AddEntry(kLogModule, "DevicePropertyUpdated", detail);
+
+  FOR_EACH_OBSERVER(NetworkStateHandlerObserver, observers_,
+                    DeviceListChanged());
+
+  if (key == flimflam::kScanningProperty && device->scanning() == false)
+    ScanCompleted(device->type());
 }
 
 void NetworkStateHandler::ManagerPropertyChanged() {
@@ -573,6 +592,21 @@ void NetworkStateHandler::NetworkPropertiesUpdated(
         base::StringPrintf("%s: %s", network->path().c_str(),
                            network->connection_state().c_str()));
   }
+}
+
+void NetworkStateHandler::ScanCompleted(const std::string& type) {
+  size_t num_callbacks = scan_complete_callbacks_.count(type);
+  network_event_log::AddEntry(
+      kLogModule, "ScanCompleted",
+      base::StringPrintf("%s: %"PRIuS, type.c_str(), num_callbacks));
+  if (num_callbacks == 0)
+    return;
+  ScanCallbackList& callback_list = scan_complete_callbacks_[type];
+  for (ScanCallbackList::iterator iter = callback_list.begin();
+       iter != callback_list.end(); ++iter) {
+    (*iter).Run();
+  }
+  scan_complete_callbacks_.erase(type);
 }
 
 }  // namespace chromeos

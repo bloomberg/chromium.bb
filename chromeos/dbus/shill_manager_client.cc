@@ -212,14 +212,15 @@ class ShillManagerClientImpl : public ShillManagerClient {
                                               error_callback);
   }
 
-  virtual void VerifyAndEncryptData(const std::string& certificate,
-                                 const std::string& public_key,
-                                 const std::string& nonce,
-                                 const std::string& signed_data,
-                                 const std::string& device_serial,
-                                 const std::string& data,
-                                 const StringCallback& callback,
-                                 const ErrorCallback& error_callback) OVERRIDE {
+  virtual void VerifyAndEncryptData(
+      const std::string& certificate,
+      const std::string& public_key,
+      const std::string& nonce,
+      const std::string& signed_data,
+      const std::string& device_serial,
+      const std::string& data,
+      const StringCallback& callback,
+      const ErrorCallback& error_callback) OVERRIDE {
     dbus::MethodCall method_call(flimflam::kFlimflamManagerInterface,
                                  shill::kVerifyAndEncryptDataFunction);
     dbus::MessageWriter writer(&method_call);
@@ -232,6 +233,16 @@ class ShillManagerClientImpl : public ShillManagerClient {
     helper_.CallStringMethodWithErrorCallback(&method_call,
                                               callback,
                                               error_callback);
+  }
+
+  virtual void ConnectToBestServices(
+      const base::Closure& callback,
+      const ErrorCallback& error_callback) OVERRIDE {
+    dbus::MethodCall method_call(flimflam::kFlimflamManagerInterface,
+                                 shill::kConnectToBestServicesFunction);
+    helper_.CallVoidMethodWithErrorCallback(&method_call,
+                                            callback,
+                                            error_callback);
   }
 
   virtual TestInterface* GetTestInterface() OVERRIDE {

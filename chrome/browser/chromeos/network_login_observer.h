@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "chrome/browser/chromeos/cros/cert_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 
 namespace views {
@@ -19,8 +20,9 @@ class WidgetDelegate;
 namespace chromeos {
 
 // The network login observer reshows a login dialog if there was an error.
-
-class NetworkLoginObserver : public NetworkLibrary::NetworkManagerObserver {
+// It is also responsible for signaling Shill to when certificates are loaded.
+class NetworkLoginObserver : public NetworkLibrary::NetworkManagerObserver,
+                             public CertLibrary::Observer {
  public:
   NetworkLoginObserver();
   virtual ~NetworkLoginObserver();
@@ -29,8 +31,11 @@ class NetworkLoginObserver : public NetworkLibrary::NetworkManagerObserver {
  private:
   void CreateModalPopup(views::WidgetDelegate* view);
 
-  // NetworkLibrary::NetworkManagerObserver implementation.
+  // NetworkLibrary::NetworkManagerObserver
   virtual void OnNetworkManagerChanged(NetworkLibrary* obj) OVERRIDE;
+
+  // CertLibrary::Observer
+  virtual void OnCertificatesLoaded(bool initial_load) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkLoginObserver);
 };

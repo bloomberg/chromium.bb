@@ -100,8 +100,7 @@ class ShillPropertyObserver : public ShillPropertyChangedObserver {
 
 ShillPropertyHandler::ShillPropertyHandler(Listener* listener)
     : listener_(listener),
-      shill_manager_(DBusThreadManager::Get()->GetShillManagerClient()),
-      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      shill_manager_(DBusThreadManager::Get()->GetShillManagerClient()) {
 }
 
 ShillPropertyHandler::~ShillPropertyHandler() {
@@ -117,7 +116,7 @@ ShillPropertyHandler::~ShillPropertyHandler() {
 void ShillPropertyHandler::Init() {
   shill_manager_->GetProperties(
       base::Bind(&ShillPropertyHandler::ManagerPropertiesCallback,
-                 weak_ptr_factory_.GetWeakPtr()));
+                 AsWeakPtr()));
   shill_manager_->AddPropertyChangedObserver(this);
 }
 
@@ -163,6 +162,14 @@ void ShillPropertyHandler::RequestScan() const {
                  kLogModule, "", network_handler::ErrorCallback()));
 }
 
+void ShillPropertyHandler::ConnectToBestServices() const {
+  network_event_log::AddEntry(kLogModule, "ConnectToBestServices", "");
+  shill_manager_->ConnectToBestServices(
+      base::Bind(&base::DoNothing),
+      base::Bind(&network_handler::ShillErrorCallbackFunction,
+                 kLogModule, "", network_handler::ErrorCallback()));
+}
+
 void ShillPropertyHandler::RequestProperties(ManagedState::ManagedType type,
                                              const std::string& path) {
   if (pending_updates_[type].find(path) != pending_updates_[type].end())
@@ -173,12 +180,12 @@ void ShillPropertyHandler::RequestProperties(ManagedState::ManagedType type,
     DBusThreadManager::Get()->GetShillServiceClient()->GetProperties(
         dbus::ObjectPath(path),
         base::Bind(&ShillPropertyHandler::GetPropertiesCallback,
-                   weak_ptr_factory_.GetWeakPtr(), type, path));
+                   AsWeakPtr(), type, path));
   } else if (type == ManagedState::MANAGED_TYPE_DEVICE) {
     DBusThreadManager::Get()->GetShillDeviceClient()->GetProperties(
         dbus::ObjectPath(path),
         base::Bind(&ShillPropertyHandler::GetPropertiesCallback,
-                   weak_ptr_factory_.GetWeakPtr(), type, path));
+                   AsWeakPtr(), type, path));
   } else {
     NOTREACHED();
   }
@@ -297,8 +304,7 @@ void ShillPropertyHandler::UpdateObserved(ManagedState::ManagedType type,
       // Create an observer for future updates.
       new_observed[path] = new ShillPropertyObserver(
           type, path, base::Bind(
-              &ShillPropertyHandler::PropertyChangedCallback,
-              weak_ptr_factory_.GetWeakPtr()));
+              &ShillPropertyHandler::PropertyChangedCallback, AsWeakPtr()));
       network_event_log::AddEntry(kLogModule, "StartObserving", path);
     }
     observer_map.erase(path);
@@ -382,7 +388,7 @@ void ShillPropertyHandler::GetPropertiesCallback(
       DBusThreadManager::Get()->GetShillIPConfigClient()->GetProperties(
           dbus::ObjectPath(ip_config_path),
           base::Bind(&ShillPropertyHandler::GetIPConfigCallback,
-                     weak_ptr_factory_.GetWeakPtr(), path));
+                     AsWeakPtr(), path));
     }
   }
 
@@ -417,7 +423,7 @@ void ShillPropertyHandler::NetworkServicePropertyChangedCallback(
     DBusThreadManager::Get()->GetShillIPConfigClient()->GetProperties(
         dbus::ObjectPath(ip_config_path),
         base::Bind(&ShillPropertyHandler::GetIPConfigCallback,
-                   weak_ptr_factory_.GetWeakPtr(), path));
+                   AsWeakPtr(), path));
   } else {
     listener_->UpdateNetworkServiceProperty(path, key, value);
   }

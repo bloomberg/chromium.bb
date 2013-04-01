@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
@@ -139,6 +140,14 @@ class CHROMEOS_EXPORT NetworkStateHandler
   // list, which will trigger the appropriate observer calls.
   void RequestScan() const;
 
+  // Request a scan if not scanning and run |callback| when the Scanning state
+  // for any Device matching |type| completes.
+  void WaitForScan(const std::string& type, const base::Closure& callback);
+
+  // Request a network scan then signal Shill to connect to the best available
+  // networks when completed.
+  void ConnectToBestWifiNetwork();
+
   // Set the user initiated connecting network.
   void SetConnectingNetwork(const std::string& service_path);
 
@@ -203,6 +212,8 @@ class CHROMEOS_EXPORT NetworkStateHandler
   void InitShillPropertyHandler();
 
  private:
+  typedef std::list<base::Closure> ScanCallbackList;
+  typedef std::map<std::string, ScanCallbackList> ScanCompleteCallbackMap;
   friend class NetworkStateHandlerTest;
   FRIEND_TEST_ALL_PREFIXES(NetworkStateHandlerTest, NetworkStateHandlerStub);
 
@@ -231,6 +242,9 @@ class CHROMEOS_EXPORT NetworkStateHandler
   // Notifies observers and updates connecting_network_.
   void NetworkPropertiesUpdated(const NetworkState* network);
 
+  // Called whenever Device.Scanning state transitions to false.
+  void ScanCompleted(const std::string& type);
+
   // Shill property handler instance, owned by this class.
   scoped_ptr<internal::ShillPropertyHandler> shill_property_handler_;
 
@@ -249,6 +263,9 @@ class CHROMEOS_EXPORT NetworkStateHandler
   // changes to something other than Connecting (after observers are notified).
   // TODO(stevenjb): Move this to NetworkConfigurationHandler.
   std::string connecting_network_;
+
+  // Callbacks to run when a scan for the technology type completes.
+  ScanCompleteCallbackMap scan_complete_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkStateHandler);
 };

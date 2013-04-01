@@ -599,14 +599,74 @@ class CertLibraryImpl
 
 //////////////////////////////////////////////////////////////////////////////
 
+class CertLibraryImplStub : public CertLibrary {
+ public:
+  CertLibraryImplStub()
+      : token_name_("StubToken"),
+        ALLOW_THIS_IN_INITIALIZER_LIST(cert_list_(this)) {
+  }
+  virtual ~CertLibraryImplStub() {}
+
+  virtual void AddObserver(Observer* observer) {}
+  virtual void RemoveObserver(Observer* observer) {}
+  virtual void LoadKeyStore() {}
+  virtual bool CertificatesLoading() const {
+    return false;
+  }
+  virtual bool CertificatesLoaded() const {
+    return true;
+  }
+  virtual bool IsHardwareBacked() const {
+    return false;
+  }
+  virtual const std::string& GetTpmTokenName() const {
+    return token_name_;
+  }
+  virtual const CertList& GetCertificates() const {
+    return cert_list_;
+  }
+  virtual const CertList& GetUserCertificates() const {
+    return cert_list_;
+  }
+  virtual const CertList& GetServerCertificates() const {
+    return cert_list_;
+  }
+  virtual const CertList& GetCACertificates() const {
+    return cert_list_;
+  }
+  virtual std::string EncryptWithSystemSalt(const std::string& token) {
+    return token;
+  }
+  virtual std::string DecryptWithSystemSalt(
+      const std::string& encrypted_token_hex) {
+    return encrypted_token_hex;
+  }
+  virtual std::string EncryptWithUserKey(const std::string& token) {
+    return token;
+  }
+  virtual std::string DecryptWithUserKey(
+      const std::string& encrypted_token_hex) {
+    return encrypted_token_hex;
+  }
+
+ private:
+  std::string token_name_;
+  CertList cert_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(CertLibraryImplStub);
+};
+
+//////////////////////////////////////////////////////////////////////////////
+
 CertLibrary::~CertLibrary() {
 }
 
 // static
 CertLibrary* CertLibrary::GetImpl(bool stub) {
-  // |stub| is ignored since we have no stub of CertLibrary.
   // TODO(stevenjb): Disassociate CertLibrary from CrosLibrary entirely.
   // crbug.com/133752
+  if (stub)
+    return new CertLibraryImplStub();
   return new CertLibraryImpl();
 }
 

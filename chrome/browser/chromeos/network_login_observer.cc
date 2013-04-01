@@ -4,17 +4,21 @@
 
 #include "chrome/browser/chromeos/network_login_observer.h"
 
+#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
+#include "chromeos/network/network_state_handler.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
 namespace chromeos {
 
 NetworkLoginObserver::NetworkLoginObserver() {
+  CrosLibrary::Get()->GetCertLibrary()->AddObserver(this);
 }
 
 NetworkLoginObserver::~NetworkLoginObserver() {
+  CrosLibrary::Get()->GetCertLibrary()->RemoveObserver(this);
 }
 
 void NetworkLoginObserver::OnNetworkManagerChanged(NetworkLibrary* cros) {
@@ -77,6 +81,13 @@ void NetworkLoginObserver::OnNetworkManagerChanged(NetworkLibrary* cros) {
         return;  // Only support one failure per notification.
       }
     }
+  }
+}
+
+void NetworkLoginObserver::OnCertificatesLoaded(bool initial_load) {
+  if (initial_load) {
+    // Once certificates have loaded, connect to the "best" available network.
+    NetworkStateHandler::Get()->ConnectToBestWifiNetwork();
   }
 }
 

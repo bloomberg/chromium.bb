@@ -254,6 +254,10 @@ void ShillManagerClientStub::VerifyAndEncryptData(
       FROM_HERE, base::Bind(callback, "encrypted_data"));
 }
 
+void ShillManagerClientStub::ConnectToBestServices(
+    const base::Closure& callback,
+    const ErrorCallback& error_callback) {
+}
 
 ShillManagerClient::TestInterface* ShillManagerClientStub::GetTestInterface() {
   return this;

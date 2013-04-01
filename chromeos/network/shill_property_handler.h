@@ -38,7 +38,8 @@ class ShillPropertyObserver;
 // It also observes Shill.Service for all services in Manager.ServiceWatchList.
 // This class must not outlive the ShillManagerClient instance.
 class CHROMEOS_EXPORT ShillPropertyHandler
-    : public ShillPropertyChangedObserver {
+    : public ShillPropertyChangedObserver,
+      public base::SupportsWeakPtr<ShillPropertyHandler> {
  public:
   typedef std::map<std::string, ShillPropertyObserver*>
       ShillPropertyObserverMap;
@@ -106,6 +107,9 @@ class CHROMEOS_EXPORT ShillPropertyHandler
 
   // Requests an immediate network scan.
   void RequestScan() const;
+
+  // Calls Manager.ConnectToBestServices().
+  void ConnectToBestServices() const;
 
   // Requests all properties for the service or device (called for new items).
   void RequestProperties(ManagedState::ManagedType type,
@@ -183,9 +187,6 @@ class CHROMEOS_EXPORT ShillPropertyHandler
   std::set<std::string> available_technologies_;
   std::set<std::string> enabled_technologies_;
   std::set<std::string> uninitialized_technologies_;
-
-  // For Shill client callbacks
-  base::WeakPtrFactory<ShillPropertyHandler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ShillPropertyHandler);
 };
