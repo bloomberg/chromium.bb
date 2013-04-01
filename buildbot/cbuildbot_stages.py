@@ -22,6 +22,7 @@ from chromite.buildbot import cbuildbot_config
 from chromite.buildbot import configure_repo
 from chromite.buildbot import cbuildbot_results as results_lib
 from chromite.buildbot import constants
+from chromite.buildbot import lab_status
 from chromite.buildbot import lkgm_manager
 from chromite.buildbot import manifest_version
 from chromite.buildbot import portage_utilities
@@ -1519,10 +1520,15 @@ class HWTestStage(ArchivingStage):
     # 2 for warnings returned by run_suite.py, or CLIENT_HTTP_CODE error
     # returned by autotest_rpc_client.py. It is the former that we care about.
     # 11, 12, 13 for cases when rpc is down, see autotest_rpc_errors.py.
-    codes_handled_as_warning = [2, 11, 12, 13]
-    if (isinstance(exception, cros_build_lib.RunCommandError) and
-        exception.result.returncode in codes_handled_as_warning and
-        not self.suite_config.critical):
+    codes_handled_as_warning = (2, 11, 12, 13)
+
+    if self.suite_config.critical:
+      return super(HWTestStage, self)._HandleStageException(exception)
+    is_lab_down = (isinstance(exception, lab_status.LabIsDownException) or
+        isinstance(exception, lab_status.BoardIsDisabledException))
+    is_warning_code = (isinstance(exception, cros_build_lib.RunCommandError) and
+        exception.result.returncode in codes_handled_as_warning)
+    if is_lab_down or is_warning_code:
       return self._HandleExceptionAsWarning(exception)
     else:
       return super(HWTestStage, self)._HandleStageException(exception)
@@ -1540,6 +1546,7 @@ class HWTestStage(ArchivingStage):
     else:
       debug = self._options.debug
     try:
+      lab_status.CheckLabStatus(self._current_board)
       with cros_build_lib.SubCommandTimeout(self.suite_config.timeout):
         commands.RunHWTestSuite(build,
                                 self.suite_config.suite,

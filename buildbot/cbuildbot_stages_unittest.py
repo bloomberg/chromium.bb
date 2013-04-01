@@ -22,6 +22,7 @@ from chromite.buildbot import cbuildbot_config as config
 from chromite.buildbot import cbuildbot_commands as commands
 from chromite.buildbot import cbuildbot_results as results_lib
 from chromite.buildbot import cbuildbot_stages as stages
+from chromite.buildbot import lab_status
 from chromite.buildbot import lkgm_manager
 from chromite.buildbot import manifest_version
 from chromite.buildbot import repository
@@ -651,6 +652,7 @@ class HWTestStageTest(AbstractStageTest):
     self.suite = self.suite_config.suite
     self.archive_stage = stages.ArchiveStage(self.options, self.build_config,
                                              self._current_board, '')
+    self.mox.StubOutWithMock(lab_status, 'CheckLabStatus')
     self.mox.StubOutWithMock(commands, 'RunHWTestSuite')
     self.mox.StubOutWithMock(cros_build_lib, 'PrintBuildbotStepWarnings')
     self.mox.StubOutWithMock(cros_build_lib, 'PrintBuildbotStepFailure')
@@ -670,6 +672,7 @@ class HWTestStageTest(AbstractStageTest):
       returncode: The return value of the HWTest command.
       fails: Whether the command as a whole should fail.
     """
+    lab_status.CheckLabStatus(mox.IgnoreArg())
     m = commands.RunHWTestSuite(mox.IgnoreArg(),
                                 self.suite,
                                 self._current_board, mox.IgnoreArg(),
@@ -744,6 +747,16 @@ class HWTestStageTest(AbstractStageTest):
     with gs_unittest.GSContextMock() as gs_mock:
       gs_mock.SetDefaultCmdResult()
       self._RunHWTestSuite()
+
+  def testHandleLabDownAsWarning(self):
+    """Test that buildbot warn when lab is down."""
+    check_lab = lab_status.CheckLabStatus(mox.IgnoreArg())
+    check_lab.AndRaise(lab_status.LabIsDownException('Lab is not up.'))
+    cros_build_lib.PrintBuildbotStepWarnings()
+    cros_build_lib.Warning(mox.IgnoreArg())
+    self.mox.ReplayAll()
+    self.RunStage()
+    self.mox.VerifyAll()
 
 
 class AUTestStageTest(AbstractStageTest,

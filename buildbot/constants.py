@@ -282,3 +282,6 @@ CHROMITE_CONFIG_DIR = os.path.expanduser('~/.chromite')
 CHROME_SDK_BASHRC = os.path.join(CHROMITE_CONFIG_DIR, 'chrome_sdk.bashrc')
 SYNC_RETRIES = 2
 SLEEP_TIMEOUT = 30
+
+# Lab status url.
+LAB_STATUS_URL = 'http://chromiumos-lab.appspot.com/current?format=json'
