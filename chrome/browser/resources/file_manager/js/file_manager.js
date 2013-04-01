@@ -1419,7 +1419,7 @@ DialogType.isModal = function(type) {
             if (action == 'gallery') {
               tasks.openGallery(urls);
             } else if (action == 'archives') {
-              tasks.mountArchives_(urls);
+              tasks.mountArchives(urls);
             }
           }.bind(this);
           this.directoryModel_.addEventListener('scan-completed', listener);

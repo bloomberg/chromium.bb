@@ -83,6 +83,42 @@ FileTasks.prototype.onTasks_ = function(tasks) {
 };
 
 /**
+ * The list of known extensions to record UMA.
+ * Note: Because the data is recorded by the index, so new item shouldn't be
+ * inserted.
+ *
+ * @const
+ * @type {Array.<string>}
+ * @private
+ */
+FileTasks.knownExtensions_ = [
+  'other', '.3ga', '.3gp', '.aac', '.alac', '.asf', '.avi', '.bmp', '.csv',
+  '.doc', '.docx', '.flac', '.gif', '.jpeg', '.jpg', '.log', '.m3u', '.m3u8',
+  '.m4a', '.m4v', '.mid', '.mkv', '.mov', '.mp3', '.mp4', '.mpg', '.odf',
+  '.odp', '.ods', '.odt', '.oga', '.ogg', '.ogv', '.pdf', '.png', '.ppt',
+  '.pptx', '.ra', '.ram', '.rar', '.rm', '.rtf', '.wav', '.webm', '.webp',
+  '.wma', '.wmv', '.xls', '.xlsx',
+];
+
+/**
+ * Records trial of opening file grouped by extensions.
+ *
+ * @param {Array.<string>} urls The path to be opened.
+ * @private
+ */
+FileTasks.recordViewingFileTypeUMA_ = function(urls) {
+  for (var i = 0; i < urls.length; i++) {
+    var url = urls[i];
+    var extension = FileType.getExtension(url).toLowerCase();
+    if (FileTasks.knownExtensions_.indexOf(extension) < 0) {
+      extension = 'other';
+    }
+    metrics.recordEnum(
+        'ViewingFileType', extension, FileTasks.knownExtensions_);
+  }
+};
+
+/**
  * Processes internal tasks.
  *
  * @param {Array.<Object>} tasks The tasks.
@@ -182,17 +218,29 @@ FileTasks.prototype.processTasks_ = function(tasks) {
  * @private
  */
 FileTasks.prototype.executeDefault_ = function() {
+  var urls = this.urls_;
+  FileTasks.recordViewingFileTypeUMA_(urls);
+  this.executeDefaultInternal_(urls);
+};
+
+/**
+ * Executes default task.
+ *
+ * @param {Array.<string>} urls Urls to execute.
+ * @private
+ */
+FileTasks.prototype.executeDefaultInternal_ = function(urls) {
   if (this.defaultTask_ != null) {
-    this.execute_(this.defaultTask_.taskId);
+    this.executeInternal_(this.defaultTask_.taskId, urls);
     return;
   }
 
   // We don't have tasks, so try to show a file in a browser tab.
   // We only do that for single selection to avoid confusion.
-  if (this.urls_.length == 1) {
+  if (urls.length == 1) {
     var callback = function(success) {
       if (!success) {
-        var filename = decodeURIComponent(this.urls_[0]);
+        var filename = decodeURIComponent(urls[0]);
         if (filename.indexOf('/') != -1)
           filename = filename.substr(filename.lastIndexOf('/') + 1);
 
@@ -204,7 +252,7 @@ FileTasks.prototype.executeDefault_ = function() {
     }.bind(this);
 
     this.checkAvailability_(function() {
-      chrome.fileBrowserPrivate.viewFiles(this.urls_, 'default', callback);
+      chrome.fileBrowserPrivate.viewFiles(urls, 'default', callback);
     }.bind(this));
   }
 
@@ -220,6 +268,18 @@ FileTasks.prototype.executeDefault_ = function() {
  */
 FileTasks.prototype.execute_ = function(taskId, opt_urls) {
   var urls = opt_urls || this.urls_;
+  FileTasks.recordViewingFileTypeUMA_(urls);
+  this.executeInternal_(taskId, urls);
+};
+
+/**
+ * The core implementation to execute a single task.
+ *
+ * @param {string} taskId Task identifier.
+ * @param {Array.<string>} urls Urls to execute.
+ * @private
+ */
+FileTasks.prototype.executeInternal_ = function(taskId, urls) {
   this.checkAvailability_(function() {
     var taskParts = taskId.split('|');
     if (taskParts[0] == util.platform.getAppId() && taskParts[1] == 'file') {
@@ -342,7 +402,7 @@ FileTasks.prototype.executeInternalTask_ = function(id, urls) {
   }
 
   if (id == 'mount-archive') {
-    this.mountArchives_(urls);
+    this.mountArchivesInternal_(urls);
     return;
   }
 
@@ -354,7 +414,7 @@ FileTasks.prototype.executeInternalTask_ = function(id, urls) {
   }
 
   if (id == 'gallery') {
-    this.openGallery(urls);
+    this.openGalleryInternal_(urls);
     return;
   }
 
@@ -372,9 +432,19 @@ FileTasks.prototype.executeInternalTask_ = function(id, urls) {
  * Mounts archives.
  *
  * @param {Array.<string>} urls Mount file urls list.
+ */
+FileTasks.prototype.mountArchives = function(urls) {
+  FileTasks.recordViewingFileTypeUMA_(urls);
+  this.mountArchivesInternal_(urls);
+};
+
+/**
+ * The core implementation of mounts archives.
+ *
+ * @param {Array.<string>} urls Mount file urls list.
  * @private
  */
-FileTasks.prototype.mountArchives_ = function(urls) {
+FileTasks.prototype.mountArchivesInternal_ = function(urls) {
   var fm = this.fileManager_;
 
   var tracker = fm.directoryModel_.createDirectoryChangeTracker();
@@ -403,6 +473,17 @@ FileTasks.prototype.mountArchives_ = function(urls) {
  * @param {Array.<string>} urls List of selected urls.
  */
 FileTasks.prototype.openGallery = function(urls) {
+  FileTasks.recordViewingFileTypeUMA_(urls);
+  this.openGalleryInternal_(urls);
+};
+
+/**
+ * The core implementation to open the Gallery.
+ *
+ * @param {Array.<string>} urls List of selected urls.
+ * @private
+ */
+FileTasks.prototype.openGalleryInternal_ = function(urls) {
   var fm = this.fileManager_;
 
   var allUrls =
