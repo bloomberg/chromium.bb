@@ -1323,7 +1323,7 @@
 	This specifies the format of the keymap provided to the
 	client with the wl_keyboard.keymap event.
       </description>
-      <entry name="xkb_v1" value="1" description="libxkbcommon compatible"/>
+      <entry name="xkb_v1" value="1" summary="libxkbcommon compatible"/>
     </enum>
 
     <event name="keymap">
