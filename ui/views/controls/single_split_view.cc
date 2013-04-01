@@ -30,6 +30,7 @@ SingleSplitView::SingleSplitView(View* leading,
     : is_horizontal_(orientation == HORIZONTAL_SPLIT),
       divider_offset_(-1),
       resize_leading_on_bounds_change_(true),
+      resize_disabled_(false),
       listener_(listener) {
   AddChildView(leading);
   AddChildView(trailing);
@@ -84,9 +85,9 @@ gfx::Size SingleSplitView::GetPreferredSize() {
     }
   }
   if (is_horizontal_)
-    width += kDividerSize;
+    width += GetDividerSize();
   else
-    height += kDividerSize;
+    height += GetDividerSize();
   return gfx::Size(width, height);
 }
 
@@ -106,7 +107,7 @@ gfx::NativeCursor SingleSplitView::GetCursor(const ui::MouseEvent& event) {
 int SingleSplitView::GetDividerSize() const {
   bool both_visible = child_count() > 1 && child_at(0)->visible() &&
       child_at(1)->visible();
-  return both_visible ? kDividerSize : 0;
+  return both_visible && !resize_disabled_ ? kDividerSize : 0;
 }
 
 void SingleSplitView::CalculateChildrenBounds(
@@ -207,6 +208,9 @@ void SingleSplitView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 }
 
 bool SingleSplitView::IsPointInDivider(const gfx::Point& p) {
+  if (resize_disabled_)
+    return false;
+
   if (child_count() < 2)
     return false;
 
@@ -221,7 +225,7 @@ bool SingleSplitView::IsPointInDivider(const gfx::Point& p) {
     divider_relative_offset = p.y() - child_at(0)->height();
   }
   return (divider_relative_offset >= 0 &&
-      divider_relative_offset < kDividerSize);
+      divider_relative_offset < GetDividerSize());
 }
 
 int SingleSplitView::CalculateDividerOffset(
@@ -241,7 +245,7 @@ int SingleSplitView::CalculateDividerOffset(
         divider_offset += new_bounds.height() - previous_bounds.height();
 
       if (divider_offset < 0)
-        divider_offset = kDividerSize;
+        divider_offset = GetDividerSize();
     }
   }
   return divider_offset;
@@ -251,10 +255,10 @@ int SingleSplitView::NormalizeDividerOffset(int divider_offset,
                                             const gfx::Rect& bounds) const {
   int primary_axis_size = GetPrimaryAxisSize(bounds.width(), bounds.height());
   if (divider_offset < 0)
-    // primary_axis_size may < kDividerSize during initial layout.
-    return std::max(0, (primary_axis_size - kDividerSize) / 2);
+    // primary_axis_size may < GetDividerSize during initial layout.
+    return std::max(0, (primary_axis_size - GetDividerSize()) / 2);
   return std::min(divider_offset,
-                  std::max(primary_axis_size - kDividerSize, 0));
+                  std::max(primary_axis_size - GetDividerSize(), 0));
 }
 
 }  // namespace views

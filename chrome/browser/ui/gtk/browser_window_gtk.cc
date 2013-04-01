@@ -2307,28 +2307,42 @@ void BrowserWindowGtk::UpdateDevToolsForContents(WebContents* contents) {
 }
 
 void BrowserWindowGtk::ShowDevToolsContainer() {
-  gtk_widget_set_size_request(devtools_container_->widget(),
-      devtools_window_->GetMinimumWidth(),
-      devtools_window_->GetMinimumHeight());
-  bool to_right = devtools_dock_side_ == DEVTOOLS_DOCK_SIDE_RIGHT;
-  gtk_paned_pack2(GTK_PANED(to_right ? contents_hsplit_ : contents_vsplit_),
-                  devtools_container_->widget(),
-                  FALSE,
-                  FALSE);
+  if (devtools_dock_side_ == DEVTOOLS_DOCK_SIDE_MINIMIZED) {
+    gtk_box_pack_end(GTK_BOX(render_area_vbox_),
+                     devtools_container_->widget(), FALSE, FALSE, 0);
+    gtk_box_reorder_child(GTK_BOX(render_area_vbox_),
+                          devtools_container_->widget(), 0);
+  } else {
+    gtk_widget_set_size_request(devtools_container_->widget(),
+        devtools_window_->GetMinimumWidth(),
+        devtools_window_->GetMinimumHeight());
+    bool to_right = devtools_dock_side_ == DEVTOOLS_DOCK_SIDE_RIGHT;
+    gtk_paned_pack2(GTK_PANED(to_right ? contents_hsplit_ : contents_vsplit_),
+                    devtools_container_->widget(),
+                    FALSE,
+                    FALSE);
+  }
   UpdateDevToolsSplitPosition();
   gtk_widget_show(devtools_container_->widget());
 }
 
 void BrowserWindowGtk::HideDevToolsContainer() {
-  bool to_right = devtools_dock_side_ == DEVTOOLS_DOCK_SIDE_RIGHT;
-  gtk_container_remove(GTK_CONTAINER(to_right ? contents_hsplit_ :
-                           contents_vsplit_),
-                       devtools_container_->widget());
+  gtk_container_remove(GTK_CONTAINER(
+          devtools_dock_side_ == DEVTOOLS_DOCK_SIDE_RIGHT ? contents_hsplit_ :
+          devtools_dock_side_ == DEVTOOLS_DOCK_SIDE_BOTTOM ? contents_vsplit_ :
+          render_area_vbox_),
+      devtools_container_->widget());
+  gtk_widget_hide(devtools_container_->widget());
 }
 
 void BrowserWindowGtk::UpdateDevToolsSplitPosition() {
   if (!window_has_shown_)
     return;
+
+  // This is required if infobar appears/disappears, or devtools container is
+  // moved between |render_area_vbox_| and |contents_{v,h}split_|.
+  gtk_container_check_resize(GTK_CONTAINER(render_area_vbox_));
+
   GtkAllocation contents_rect;
   gtk_widget_get_allocation(contents_vsplit_, &contents_rect);
   int split_size;
@@ -2338,11 +2352,14 @@ void BrowserWindowGtk::UpdateDevToolsSplitPosition() {
     int split_offset = contents_rect.width -
         devtools_window_->GetWidth(contents_rect.width) - split_size;
     gtk_paned_set_position(GTK_PANED(contents_hsplit_), split_offset);
-  } else {
+  } else if (devtools_window_->dock_side() == DEVTOOLS_DOCK_SIDE_BOTTOM) {
     gtk_widget_style_get(contents_vsplit_, "handle-size", &split_size, NULL);
     int split_offset = contents_rect.height -
         devtools_window_->GetHeight(contents_rect.height) - split_size;
     gtk_paned_set_position(GTK_PANED(contents_vsplit_), split_offset);
+  } else {
+    gtk_widget_set_size_request(devtools_container_->widget(),
+        0, devtools_window_->GetMinimizedHeight());
   }
 }
 

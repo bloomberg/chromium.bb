@@ -21,11 +21,14 @@ using content::WebContents;
 
 @interface GraySplitView : NSSplitView {
   CGFloat topContentOffset_;
+  BOOL dividerHidden_;
 }
 
 @property(assign, nonatomic) CGFloat topContentOffset;
+@property(assign, nonatomic) BOOL dividerHidden;
 
 - (NSColor*)dividerColor;
+- (CGFloat)dividerThickness;
 
 @end
 
@@ -33,9 +36,14 @@ using content::WebContents;
 @implementation GraySplitView
 
 @synthesize topContentOffset = topContentOffset_;
+@synthesize dividerHidden = dividerHidden_;
 
 - (NSColor*)dividerColor {
   return [NSColor darkGrayColor];
+}
+
+- (CGFloat)dividerThickness {
+  return dividerHidden_ ? 0 : [super dividerThickness];
 }
 
 - (void)drawDividerInRect:(NSRect)aRect {
@@ -73,6 +81,7 @@ using content::WebContents;
     [splitView_ setVertical:NO];
     [splitView_ setAutoresizingMask:NSViewWidthSizable|NSViewHeightSizable];
     [splitView_ setDelegate:self];
+    [splitView_ setDividerHidden:NO];
 
     dockSide_ = DEVTOOLS_DOCK_SIDE_BOTTOM;
   }
@@ -114,7 +123,7 @@ using content::WebContents;
     NSView* devToolsView = [subviews objectAtIndex:1];
     if (dockSide_ == DEVTOOLS_DOCK_SIDE_RIGHT)
       devToolsWindow_->SetWidth(NSWidth([devToolsView frame]));
-    else
+    else if (dockSide_ == DEVTOOLS_DOCK_SIDE_BOTTOM)
       devToolsWindow_->SetHeight(NSHeight([devToolsView frame]));
   }
 
@@ -183,13 +192,19 @@ using content::WebContents;
   NSView* devToolsView = [subviews objectAtIndex:1];
   NSRect devToolsFrame = [devToolsView frame];
 
+  BOOL noDivider = devToolsWindow_->dock_side() == DEVTOOLS_DOCK_SIDE_MINIMIZED;
+  [splitView_ setDividerHidden:noDivider];
+
   if (devToolsWindow_->dock_side() == DEVTOOLS_DOCK_SIDE_RIGHT) {
     CGFloat size = devToolsWindow_->GetWidth(NSWidth([splitView_ frame]));
     devToolsFrame.size.width = size;
     webFrame.size.width =
         NSWidth([splitView_ frame]) - ([splitView_ dividerThickness] + size);
   } else {
-    CGFloat size = devToolsWindow_->GetHeight(NSHeight([splitView_ frame]));
+    CGFloat size =
+        devToolsWindow_->dock_side() == DEVTOOLS_DOCK_SIDE_MINIMIZED ?
+            devToolsWindow_->GetMinimizedHeight() :
+            devToolsWindow_->GetHeight(NSHeight([splitView_ frame]));
     devToolsFrame.size.height = size;
     webFrame.size.height =
         NSHeight([splitView_ frame]) - ([splitView_ dividerThickness] + size);
@@ -231,6 +246,17 @@ using content::WebContents;
     return [splitView_ topContentOffset];
   }
   return proposedPosition;
+}
+
+- (NSRect)splitView:(NSSplitView*)splitView
+      effectiveRect:(NSRect)proposedEffectiveRect
+       forDrawnRect:(NSRect)drawnRect
+   ofDividerAtIndex:(NSInteger)dividerIndex {
+  if (devToolsWindow_->dock_side() == DEVTOOLS_DOCK_SIDE_MINIMIZED) {
+    return NSZeroRect;
+  } else {
+    return proposedEffectiveRect;
+  }
 }
 
 - (CGFloat)splitView:(NSSplitView*)splitView

@@ -2235,10 +2235,10 @@ void BrowserView::UpdateDevToolsForContents(WebContents* web_contents) {
     int split_size = contents_split_->GetDividerSize();
     if (devtools_dock_side_ == DEVTOOLS_DOCK_SIDE_RIGHT) {
       devtools_window_->SetWidth(contents_split_->width() -
-          (split_size / 2) - contents_split_->divider_offset());
+          split_size - contents_split_->divider_offset());
     } else if (devtools_dock_side_ == DEVTOOLS_DOCK_SIDE_BOTTOM) {
       devtools_window_->SetHeight(contents_split_->height() -
-          (split_size / 2) - contents_split_->divider_offset());
+          split_size - contents_split_->divider_offset());
     }
   }
 
@@ -2295,14 +2295,18 @@ void BrowserView::HideDevToolsContainer() {
 }
 
 void BrowserView::UpdateDevToolsSplitPosition() {
+  contents_split_->set_resize_disabled(
+      devtools_window_->dock_side() == DEVTOOLS_DOCK_SIDE_MINIMIZED);
   int split_size = contents_split_->GetDividerSize();
   if (devtools_window_->dock_side() == DEVTOOLS_DOCK_SIDE_RIGHT) {
-    int split_offset = contents_split_->width() - (split_size / 2) -
+    int split_offset = contents_split_->width() - split_size -
         devtools_window_->GetWidth(contents_split_->width());
     contents_split_->set_divider_offset(split_offset);
   } else {
-    int split_offset = contents_split_->height() - (split_size / 2) -
+    int height = devtools_window_->dock_side() == DEVTOOLS_DOCK_SIDE_MINIMIZED ?
+        devtools_window_->GetMinimizedHeight() :
         devtools_window_->GetHeight(contents_split_->height());
+    int split_offset = contents_split_->height() - split_size - height;
     contents_split_->set_divider_offset(split_offset);
   }
 }

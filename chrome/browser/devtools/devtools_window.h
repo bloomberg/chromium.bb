@@ -44,7 +44,8 @@ class Message;
 enum DevToolsDockSide {
   DEVTOOLS_DOCK_SIDE_UNDOCKED = 0,
   DEVTOOLS_DOCK_SIDE_BOTTOM,
-  DEVTOOLS_DOCK_SIDE_RIGHT
+  DEVTOOLS_DOCK_SIDE_RIGHT,
+  DEVTOOLS_DOCK_SIDE_MINIMIZED
 };
 
 class DevToolsWindow : private content::NotificationObserver,
@@ -113,6 +114,9 @@ class DevToolsWindow : private content::NotificationObserver,
 
   // Stores preferred devtools window height for this instance.
   void SetHeight(int height);
+
+  // Returns the height in minimized mode.
+  int GetMinimizedHeight();
 
  private:
   friend class DevToolsControllerTest;
@@ -201,6 +205,7 @@ class DevToolsWindow : private content::NotificationObserver,
 
   void UpdateBrowserToolbar();
   bool IsDocked();
+  void Restore();
   static DevToolsDockSide GetDockSideFromPrefs(Profile* profile);
   static std::string SideToString(DevToolsDockSide dock_side);
   static DevToolsDockSide SideFromString(const std::string& dock_side);
@@ -222,6 +227,7 @@ class DevToolsWindow : private content::NotificationObserver,
   scoped_ptr<DevToolsFileHelper> file_helper_;
   int width_;
   int height_;
+  DevToolsDockSide dock_side_before_minimized_;
   DISALLOW_COPY_AND_ASSIGN(DevToolsWindow);
 };
 

@@ -87,12 +87,14 @@ const char kPrefUndocked[] = "undocked";
 const char kDockSideBottom[] = "bottom";
 const char kDockSideRight[] = "right";
 const char kDockSideUndocked[] = "undocked";
+const char kDockSideMinimized[] = "minimized";
 
 // Minimal height of devtools pane or content pane when devtools are docked
 // to the browser window.
 const int kMinDevToolsHeight = 50;
 const int kMinDevToolsWidth = 150;
 const int kMinContentsSize = 50;
+const int kMinimizedDevToolsHeight = 24;
 
 class DevToolsWindow::InspectedWebContentsObserver
   : public content::WebContentsObserver {
@@ -239,7 +241,8 @@ DevToolsWindow::DevToolsWindow(WebContents* web_contents,
       action_on_load_(DEVTOOLS_TOGGLE_ACTION_SHOW),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       width_(-1),
-      height_(-1) {
+      height_(-1),
+      dock_side_before_minimized_(dock_side) {
   frontend_host_.reset(
       DevToolsClientHost::CreateDevToolsFrontendHost(web_contents, this));
   file_helper_.reset(new DevToolsFileHelper(web_contents, profile));
@@ -368,8 +371,6 @@ int DevToolsWindow::GetWidth(int container_width) {
   // But it should never compromise the content window size unless the entire
   // window is tiny.
   width_ = std::min(container_width - kMinContentsSize, width_);
-  if (width_ < (kMinContentsSize / 2))
-    width_ = container_width / 3;
   return width_;
 }
 
@@ -388,8 +389,6 @@ int DevToolsWindow::GetHeight(int container_height) {
 
   // But it should never compromise the content window size.
   height_ = std::min(container_height - kMinContentsSize, height_);
-  if (height_ < (kMinContentsSize / 2))
-    height_ = container_height / 3;
   return height_;
 }
 
@@ -409,6 +408,10 @@ void DevToolsWindow::SetWidth(int width) {
 void DevToolsWindow::SetHeight(int height) {
   height_ = height;
   profile_->GetPrefs()->SetInteger(prefs::kDevToolsHSplitLocation, height);
+}
+
+int DevToolsWindow::GetMinimizedHeight() {
+  return kMinimizedDevToolsHeight;
 }
 
 RenderViewHost* DevToolsWindow::GetRenderViewHost() {
@@ -727,8 +730,10 @@ DevToolsWindow* DevToolsWindow::ToggleDevToolsWindow(
   window->UpdateBrowserToolbar();
 
   // If window is docked and visible, we hide it on toggle. If window is
-  // undocked, we show (activate) it.
-  if (!window->IsDocked() || do_open)
+  // undocked, we show (activate) it. If window is minimized, we maximize it.
+  if (window->dock_side_ == DEVTOOLS_DOCK_SIDE_MINIMIZED)
+    window->Restore();
+  else if (!window->IsDocked() || do_open)
     window->Show(action);
   else
     window->CloseWindow();
@@ -812,6 +817,11 @@ void DevToolsWindow::SetDockSide(const std::string& side) {
     return;
   }
 
+  if (dock_side_ != DEVTOOLS_DOCK_SIDE_MINIMIZED &&
+      requested_side == DEVTOOLS_DOCK_SIDE_MINIMIZED) {
+    dock_side_before_minimized_ = dock_side_;
+  }
+
   dock_side_ = requested_side;
   if (dock_requested) {
     if (!is_docked) {
@@ -829,21 +839,31 @@ void DevToolsWindow::SetDockSide(const std::string& side) {
       inspected_window->UpdateDevTools();
   }
 
-  std::string pref_value = kPrefBottom;
-  switch (dock_side_) {
-    case DEVTOOLS_DOCK_SIDE_UNDOCKED:
-        pref_value = kPrefUndocked;
-        break;
-    case DEVTOOLS_DOCK_SIDE_RIGHT:
-        pref_value = kPrefRight;
-        break;
-    case DEVTOOLS_DOCK_SIDE_BOTTOM:
-        pref_value = kPrefBottom;
-        break;
+  if (dock_side_ != DEVTOOLS_DOCK_SIDE_MINIMIZED) {
+    std::string pref_value = kPrefBottom;
+    switch (dock_side_) {
+      case DEVTOOLS_DOCK_SIDE_UNDOCKED:
+          pref_value = kPrefUndocked;
+          break;
+      case DEVTOOLS_DOCK_SIDE_RIGHT:
+          pref_value = kPrefRight;
+          break;
+      case DEVTOOLS_DOCK_SIDE_BOTTOM:
+          pref_value = kPrefBottom;
+          break;
+      case DEVTOOLS_DOCK_SIDE_MINIMIZED:
+          // We don't persist minimized state.
+          break;
+    }
+    profile_->GetPrefs()->SetString(prefs::kDevToolsDockSide, pref_value);
   }
-  profile_->GetPrefs()->SetString(prefs::kDevToolsDockSide, pref_value);
 
   Show(DEVTOOLS_TOGGLE_ACTION_SHOW);
+}
+
+void DevToolsWindow::Restore() {
+  if (dock_side_ == DEVTOOLS_DOCK_SIDE_MINIMIZED)
+    SetDockSide(SideToString(dock_side_before_minimized_));
 }
 
 void DevToolsWindow::OpenInNewTab(const std::string& url) {
@@ -1026,6 +1046,7 @@ std::string DevToolsWindow::SideToString(DevToolsDockSide dock_side) {
     case DEVTOOLS_DOCK_SIDE_UNDOCKED: return kDockSideUndocked;
     case DEVTOOLS_DOCK_SIDE_RIGHT: return kDockSideRight;
     case DEVTOOLS_DOCK_SIDE_BOTTOM: return kDockSideBottom;
+    case DEVTOOLS_DOCK_SIDE_MINIMIZED: return kDockSideMinimized;
   }
   return kDockSideUndocked;
 }
@@ -1037,5 +1058,7 @@ DevToolsDockSide DevToolsWindow::SideFromString(
     return DEVTOOLS_DOCK_SIDE_RIGHT;
   if (dock_side == kDockSideBottom)
     return DEVTOOLS_DOCK_SIDE_BOTTOM;
+  if (dock_side == kDockSideMinimized)
+    return DEVTOOLS_DOCK_SIDE_MINIMIZED;
   return DEVTOOLS_DOCK_SIDE_UNDOCKED;
 }
