@@ -2790,6 +2790,7 @@ weston_compositor_init(struct weston_compositor *ec,
 	memset(&xkb_names, 0, sizeof(xkb_names));
 
 	ec->config_fd = config_fd;
+	ec->config = weston_config_parse(config_fd);
 	parse_config_file(config_fd, cs, ARRAY_LENGTH(cs), ec);
 
 	ec->wl_display = display;

@@ -73,6 +73,35 @@ int
 parse_options(const struct weston_option *options,
 	      int count, int *argc, char *argv[]);
 
+struct weston_config_section;
+struct weston_config;
+
+struct weston_config_section *
+weston_config_get_section(struct weston_config *config, const char *section,
+			  const char *key, const char *value);
+int
+weston_config_section_get_int(struct weston_config_section *section,
+			      const char *key,
+			      int32_t *value, int32_t default_value);
+int
+weston_config_section_get_uint(struct weston_config_section *section,
+			       const char *key,
+			       uint32_t *value, uint32_t default_value);
+int
+weston_config_section_get_string(struct weston_config_section *section,
+				 const char *key,
+				 char **value,
+				 const char *default_value);
+int
+weston_config_section_get_bool(struct weston_config_section *section,
+			       const char *key,
+			       int *value, int default_value);
+struct weston_config *
+weston_config_parse(int fd);
+
+void
+weston_config_destroy(struct weston_config *config);
+
 #ifdef  __cplusplus
 }
 #endif

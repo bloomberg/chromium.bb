@@ -498,6 +498,7 @@ struct weston_compositor {
 
 	struct wl_display *wl_display;
 	struct weston_shell_interface shell_interface;
+	struct weston_config *config;
 
 	struct wl_signal activate_signal;
 	struct wl_signal kill_signal;

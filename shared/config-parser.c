@@ -31,7 +31,9 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <errno.h>
 
+#include <wayland-util.h>
 #include "config-parser.h"
 
 static int
@@ -220,4 +222,269 @@ open_config_file(const char *name)
 		fprintf(stderr, "config file \"%s\" not found.\n", name);
 
 	return fd;
+}
+
+struct weston_config_entry {
+	char *key;
+	char *value;
+	struct wl_list link;
+};
+
+struct weston_config_section {
+	char *name;
+	struct wl_list entry_list;
+	struct wl_list link;
+};
+
+struct weston_config {
+	struct wl_list section_list;
+};
+
+static struct weston_config_entry *
+config_section_get_entry(struct weston_config_section *section,
+			 const char *key)
+{
+	struct weston_config_entry *e;
+
+	if (section == NULL)
+		return NULL;
+	wl_list_for_each(e, &section->entry_list, link)
+		if (strcmp(e->key, key) == 0)
+			return e;
+
+	return NULL;
+}
+
+struct weston_config_section *
+weston_config_get_section(struct weston_config *config, const char *section,
+			  const char *key, const char *value)
+{
+	struct weston_config_section *s;
+	struct weston_config_entry *e;
+
+	wl_list_for_each(s, &config->section_list, link) {
+		if (strcmp(s->name, section) != 0)
+			continue;
+		if (key == NULL)
+			return s;
+		e = config_section_get_entry(s, key);
+		if (e && strcmp(e->value, value) == 0)
+			return s;
+	}
+
+	return NULL;
+}
+
+int
+weston_config_section_get_int(struct weston_config_section *section,
+			      const char *key,
+			      int32_t *value, int32_t default_value)
+{
+	struct weston_config_entry *entry;
+	char *end;
+
+	entry = config_section_get_entry(section, key);
+	if (entry == NULL) {
+		*value = default_value;
+		errno = ENOENT;
+		return -1;
+	}
+
+	*value = strtol(entry->value, &end, 0);
+	if (*end != '\0') {
+		*value = default_value;
+		errno = EINVAL;
+		return -1;
+	}
+
+	return 0;
+}
+
+int
+weston_config_section_get_uint(struct weston_config_section *section,
+			       const char *key,
+			       uint32_t *value, uint32_t default_value)
+{
+	struct weston_config_entry *entry;
+	char *end;
+
+	entry = config_section_get_entry(section, key);
+	if (entry == NULL) {
+		*value = default_value;
+		errno = ENOENT;
+		return -1;
+	}
+
+	*value = strtoul(entry->value, &end, 0);
+	if (*end != '\0') {
+		*value = default_value;
+		errno = EINVAL;
+		return -1;
+	}
+
+	return 0;
+}
+
+int
+weston_config_section_get_string(struct weston_config_section *section,
+				 const char *key,
+				 char **value, const char *default_value)
+{
+	struct weston_config_entry *entry;
+
+	entry = config_section_get_entry(section, key);
+	if (entry == NULL) {
+		if (default_value)
+			*value = strdup(default_value);
+		else
+			*value = NULL;
+		errno = ENOENT;
+		return -1;
+	}
+
+	*value = strdup(entry->value);
+
+	return 0;
+}
+
+int
+weston_config_section_get_bool(struct weston_config_section *section,
+			       const char *key,
+			       int *value, int default_value)
+{
+	struct weston_config_entry *entry;
+
+	entry = config_section_get_entry(section, key);
+	if (entry == NULL) {
+		*value = default_value;
+		errno = ENOENT;
+		return -1;
+	}
+
+	if (strcmp(entry->value, "false") == 0)
+		*value = 0;
+	else if (strcmp(entry->value, "true") == 0)
+		*value = 1;
+	else {
+		*value = default_value;
+		errno = EINVAL;
+		return -1;
+	}
+
+	return 0;
+}
+
+static struct weston_config_section *
+config_add_section(struct weston_config *config, const char *name)
+{
+	struct weston_config_section *section;
+
+	section = malloc(sizeof *section);
+	section->name = strdup(name);
+	wl_list_init(&section->entry_list);
+	wl_list_insert(config->section_list.prev, &section->link);
+
+	return section;
+}
+
+static struct weston_config_entry *
+section_add_entry(struct weston_config_section *section,
+		  const char *key, const char *value)
+{
+	struct weston_config_entry *entry;
+
+	entry = malloc(sizeof *entry);
+	entry->key = strdup(key);
+	entry->value = strdup(value);
+	wl_list_insert(section->entry_list.prev, &entry->link);
+
+	return entry;
+}
+
+struct weston_config *
+weston_config_parse(int fd)
+{
+	FILE *fp;
+	char line[512], *p;
+	struct weston_config *config;
+	struct weston_config_section *section = NULL;
+	int i;
+
+	config = malloc(sizeof *config);
+	if (config == NULL)
+		return NULL;
+
+	wl_list_init(&config->section_list);
+
+	fp = fdopen(dup(fd), "r");
+	if (fp == NULL) {
+		free(config);
+		return NULL;
+	}
+
+	rewind(fp);
+
+	while (fgets(line, sizeof line, fp)) {
+		switch (line[0]) {
+		case '#':
+		case '\n':
+			continue;
+		case '[':
+			p = strchr(&line[1], ']');
+			if (!p || p[1] != '\n') {
+				fprintf(stderr, "malformed "
+					"section header: %s\n", line);
+				fclose(fp);
+				weston_config_destroy(config);
+				return NULL;
+			}
+			p[0] = '\0';
+			section = config_add_section(config, &line[1]);
+			continue;
+		default:
+			p = strchr(line, '=');
+			if (!p || p == line || !section) {
+				fprintf(stderr, "malformed "
+					"config line: %s\n", line);
+				fclose(fp);
+				weston_config_destroy(config);
+				return NULL;
+			}
+
+			p[0] = '\0';
+			p++;
+			while (isspace(*p))
+				p++;
+			i = strlen(p);
+			while (i > 0 && isspace(p[i - 1])) {
+				p[i - 1] = '\0';
+				i--;
+			}
+			section_add_entry(section, line, p);
+			continue;
+		}
+	}
+
+	fclose(fp);
+
+	return config;
+}
+
+void
+weston_config_destroy(struct weston_config *config)
+{
+	struct weston_config_section *s, *next_s;
+	struct weston_config_entry *e, *next_e;
+
+	wl_list_for_each_safe(s, next_s, &config->section_list, link) {
+		wl_list_for_each_safe(e, next_e, &s->entry_list, link) {
+			free(e->key);
+			free(e->value);
+			free(e);
+		}
+		free(s->name);
+		free(s);
+	}
+
+	free(config);
 }
