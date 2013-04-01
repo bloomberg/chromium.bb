@@ -12,10 +12,12 @@ FlingStopFilterInterpreter::FlingStopFilterInterpreter(PropRegistry* prop_reg,
                                                        Interpreter* next,
                                                        Tracer* tracer)
     : FilterInterpreter(NULL, next, tracer, false),
+      already_extended_(false),
       prev_touch_cnt_(0),
       fling_stop_deadline_(0.0),
       next_timer_deadline_(0.0),
-      fling_stop_timeout_(prop_reg, "Fling Stop Timeout", 0.08) {
+      fling_stop_timeout_(prop_reg, "Fling Stop Timeout", 0.03),
+      fling_stop_extra_delay_(prop_reg, "Fling Stop Extra Delay", 0.055) {
   InitName();
 }
 
@@ -25,26 +27,52 @@ Gesture* FlingStopFilterInterpreter::SyncInterpretImpl(HardwareState* hwstate,
 
   stime_t next_timeout = -1.0;
   Gesture* result = next_->SyncInterpret(hwstate, &next_timeout);
-  if (fling_stop_deadline_ != 0.0 &&
-      result && result->type == kGestureTypeScroll) {
-    // Don't need to stop fling, since the user is scrolling
-    result->details.scroll.stop_fling = 1;
-    fling_stop_deadline_ = 0.0;
-  } else if (fling_stop_deadline_ != 0.0 &&
-             (hwstate->timestamp > fling_stop_deadline_ ||
-              (result && result->type == kGestureTypeButtonsChange))) {
-    // Try to sub in a fling-stop for this gesture, as we should have received
-    // a callback by now
-    result_ = Gesture(kGestureFling, prev_timestamp_,
-                      hwstate->timestamp, 0.0, 0.0,
-                      GESTURES_FLING_TAP_DOWN);
-    AppendGesture(&result_, result);
-    result = &result_;
-    fling_stop_deadline_ = 0.0;
+
+  if (result && result->type == kGestureTypeFling) {
+    fingers_present_for_last_fling_.clear();
+    for (int i = 0; i < hwstate->finger_cnt; i++)
+      fingers_present_for_last_fling_.insert(hwstate->fingers[i].tracking_id);
+    already_extended_ = false;
+  }
+
+  if (fling_stop_deadline_ != 0.0) {
+    if (!already_extended_ && NeedsExtraTime(*hwstate)) {
+      fling_stop_deadline_ += fling_stop_extra_delay_.val_;
+      already_extended_ = true;
+    }
+
+    if (result && result->type == kGestureTypeScroll) {
+      // Don't need to stop fling, since the user is scrolling
+      result->details.scroll.stop_fling = 0;
+      fling_stop_deadline_ = 0.0;
+    } else if (hwstate->timestamp > fling_stop_deadline_ ||
+       (result && result->type == kGestureTypeButtonsChange)) {
+      // Try to sub in a fling-stop for this gesture, as we should have received
+      // a callback by now
+      result_ = Gesture(kGestureFling, prev_timestamp_,
+                        hwstate->timestamp, 0.0, 0.0,
+                        GESTURES_FLING_TAP_DOWN);
+      AppendGesture(&result_, result);
+      result = &result_;
+      fling_stop_deadline_ = 0.0;
+    }
   }
   *timeout = SetNextDeadlineAndReturnTimeoutVal(hwstate->timestamp,
                                                 next_timeout);
   return result;
+}
+
+bool FlingStopFilterInterpreter::NeedsExtraTime(
+    const HardwareState& hwstate) const {
+  int num_new_fingers = 0;
+  for (int i = 0; i < hwstate.finger_cnt; i++) {
+    const short id = hwstate.fingers[i].tracking_id;
+    if (!SetContainsValue(fingers_present_for_last_fling_, id)) {
+      num_new_fingers++;
+    }
+  }
+
+  return (num_new_fingers >= 2);
 }
 
 void FlingStopFilterInterpreter::UpdateFlingStopDeadline(

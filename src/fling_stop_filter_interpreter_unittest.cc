@@ -60,7 +60,8 @@ TEST(FlingStopFilterInterpreterTest, SimpleTest) {
       new FlingStopFilterInterpreterTestInterpreter;
   FlingStopFilterInterpreter interpreter(NULL, base_interpreter, NULL);
 
-  const stime_t kTO = interpreter.fling_stop_timeout_.val_ = 0.08;
+  const stime_t kTO = interpreter.fling_stop_timeout_.val_ = 0.03;
+  const stime_t kED= interpreter.fling_stop_extra_delay_.val_ = 0.055;
 
   SimpleTestInputs inputs[] = {
     // timeout case
@@ -70,27 +71,27 @@ TEST(FlingStopFilterInterpreterTest, SimpleTest) {
     { 0.01 + kTO, -1, false, -1,        0.0, 0.0,       -1.0, true },
 
     // multiple fingers come down, timeout
-    { 3.01,        1,  true, -1, 3.01 + kTO, 0.0,        kTO, false },
-    { 3.02,        2,  true, -1, 3.01 + kTO, 0.0, kTO - 0.01, false },
-    { 3.03,        0,  true, -1, 3.01 + kTO, 0.0, kTO - 0.02, false },
-    { 3.01 + kTO, -1, false, -1,        0.0, 0.0,       -1.0, true },
+    { 3.01,      1,  true, -1, 3.01 + kTO, 0.0,        kTO, false },
+    { 3.02,      2,  true, -1, 3.01 + kTO + kED, 0.0, kTO + kED - 0.01, false },
+    { 3.03,      0,  true, -1, 3.01 + kTO + kED, 0.0, kTO + kED - 0.02, false },
+    { 3.01 + kTO + kED, -1, false, -1,        0.0, 0.0,       -1.0, true },
 
     // Dual timeouts, local is shorter
     { 6.01,        1,  true, -1.0, 6.01 + kTO,        0.0,        kTO, false },
     { 6.02,        0,  true,  0.1, 6.01 + kTO, 6.02 + 0.1, kTO - 0.01, false },
-    { 6.01 + kTO, -1, false, -1.0,        0.0, 6.02 + 0.1,       0.03, true },
+    { 6.01 + kTO, -1, false, -1.0,        0.0, 6.02 + 0.1,       0.08, true },
     { 6.02 + 0.1, -1,  true, -1.0,        0.0,        0.0,       -1.0, false },
 
     // Dual timeouts, local is longer
     { 9.01,        1,  true, -1.0, 9.01 + kTO,        0.0,       kTO, false },
-    { 9.02,        0,  true,  .05, 9.01 + kTO, 9.02 + .05,       .05, false },
-    { 9.02 + .05, -1,  true, -1.0, 9.01 + kTO, 0.0, kTO - .05 - 0.01, false },
+    { 9.02,        0,  true,  .01, 9.01 + kTO, 9.02 + .01,       .01, false },
+    { 9.02 + .01, -1,  true, -1.0, 9.01 + kTO, 0.0, kTO - .01 - 0.01, false },
     { 9.01 + kTO, -1, false, -1.0,        0.0,        0.0,      -1.0, true },
 
     // Dual timeouts, new timeout on handling timeout
     { 12.01,      1,  true, -1.0, 12.01 + kTO,         0.0,        kTO, false },
     { 12.02,      0,  true,  0.1, 12.01 + kTO, 12.02 + 0.1, kTO - 0.01, false },
-    { 12.01 + kTO, -1, false, -1.0,       0.0, 12.02 + 0.1,       0.03, true },
+    { 12.01 + kTO, -1, false, -1.0,       0.0, 12.02 + 0.1,       0.08, true },
     { 12.02 + 0.1, -1,  true, 0.1, 0.0, 12.22, 0.1, false },
     { 12.22, -1, true, -1.0, 0.0, 0.0, -1.0, false },
 

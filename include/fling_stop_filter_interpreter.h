@@ -6,8 +6,10 @@
 #include <gtest/gtest.h>  // for FRIEND_TEST
 
 #include "gestures/include/filter_interpreter.h"
+#include "gestures/include/finger_metrics.h"
 #include "gestures/include/gestures.h"
 #include "gestures/include/prop_registry.h"
+#include "gestures/include/set.h"
 #include "gestures/include/tracer.h"
 
 #ifndef GESTURES_FLING_STOP_FILTER_INTERPRETER_H_
@@ -34,9 +36,15 @@ class FlingStopFilterInterpreter : public FilterInterpreter {
 
  private:
   // May override an outgoing gesture with a fling stop gesture.
-
+  bool NeedsExtraTime(const HardwareState& hwstate) const;
   void UpdateFlingStopDeadline(const HardwareState& hwstate);
   stime_t SetNextDeadlineAndReturnTimeoutVal(stime_t now, stime_t next_timeout);
+
+  // Has the deadline has already been extended once
+  bool already_extended_;
+
+  // Which tracking id's were on the pad at the last fling
+  set<short, kMaxFingers> fingers_present_for_last_fling_;
 
   // touch_cnt from previously input HardwareState.
   short prev_touch_cnt_;
@@ -54,6 +62,8 @@ class FlingStopFilterInterpreter : public FilterInterpreter {
   // How long to wait when new fingers arrive (and possibly scroll), before
   // halting fling
   DoubleProperty fling_stop_timeout_;
+  // How much extra time to add if it looks likely to be the start of a scroll
+  DoubleProperty fling_stop_extra_delay_;
 };
 
 }  // namespace gestures
