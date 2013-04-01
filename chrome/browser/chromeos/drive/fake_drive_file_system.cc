@@ -165,6 +165,24 @@ void FakeDriveFileSystem::GetEntryInfoByPath(
     const base::FilePath& file_path,
     const GetEntryInfoCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // Now, we only support files under my drive.
+  DCHECK(!util::IsUnderDriveMountPoint(file_path));
+
+  if (file_path == util::GetDriveMyDriveRootPath()) {
+    // Specialized for the root entry.
+    drive_service_->GetAboutResource(
+        base::Bind(
+            &FakeDriveFileSystem::GetEntryInfoByPathAfterGetAboutResource,
+            weak_ptr_factory_.GetWeakPtr(), callback));
+    return;
+  }
+
+  GetEntryInfoByPath(
+      file_path.DirName(),
+      base::Bind(
+          &FakeDriveFileSystem::GetEntryInfoByPathAfterGetParentEntryInfo,
+          weak_ptr_factory_.GetWeakPtr(), file_path.BaseName(), callback));
 }
 
 void FakeDriveFileSystem::ReadDirectoryByPath(
@@ -317,6 +335,81 @@ void FakeDriveFileSystem::GetEntryInfoByResourceIdAfterGetFilePath(
   base::FilePath file_path = parent_file_path.Append(
       base::FilePath::FromUTF8Unsafe(entry_proto->base_name()));
   callback.Run(error, file_path, entry_proto.Pass());
+}
+
+// Implementation of GetEntryInfoByPath.
+void FakeDriveFileSystem::GetEntryInfoByPathAfterGetAboutResource(
+    const GetEntryInfoCallback& callback,
+    google_apis::GDataErrorCode gdata_error,
+    scoped_ptr<google_apis::AboutResource> about_resource) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  DriveFileError error = util::GDataToDriveFileError(gdata_error);
+  if (error != DRIVE_FILE_OK) {
+    callback.Run(error, scoped_ptr<DriveEntryProto>());
+    return;
+  }
+
+  DCHECK(about_resource);
+  scoped_ptr<DriveEntryProto> root(new DriveEntryProto);
+  root->mutable_file_info()->set_is_directory(true);
+  root->set_resource_id(about_resource->root_folder_id());
+  root->set_title(util::kDriveMyDriveRootDirName);
+  callback.Run(error, root.Pass());
+}
+
+void FakeDriveFileSystem::GetEntryInfoByPathAfterGetParentEntryInfo(
+    const base::FilePath& base_name,
+    const GetEntryInfoCallback& callback,
+    DriveFileError error,
+    scoped_ptr<DriveEntryProto> parent_entry_proto) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (error != DRIVE_FILE_OK) {
+    callback.Run(error, scoped_ptr<DriveEntryProto>());
+    return;
+  }
+
+  DCHECK(parent_entry_proto);
+  drive_service_->GetResourceList(
+      GURL(),
+      0,
+      "",
+      false,
+      parent_entry_proto->resource_id(),
+      base::Bind(
+          &FakeDriveFileSystem::GetEntryInfoByPathAfterGetResourceList,
+          weak_ptr_factory_.GetWeakPtr(), base_name, callback));
+}
+
+void FakeDriveFileSystem::GetEntryInfoByPathAfterGetResourceList(
+    const base::FilePath& base_name,
+    const GetEntryInfoCallback& callback,
+    google_apis::GDataErrorCode gdata_error,
+    scoped_ptr<google_apis::ResourceList> resource_list) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  DriveFileError error = util::GDataToDriveFileError(gdata_error);
+  if (error != DRIVE_FILE_OK) {
+    callback.Run(error, scoped_ptr<DriveEntryProto>());
+    return;
+  }
+
+  DCHECK(resource_list);
+  const ScopedVector<google_apis::ResourceEntry>& entries =
+      resource_list->entries();
+  for (size_t i = 0; i < entries.size(); ++i) {
+    const google_apis::ResourceEntry& entry = *entries[i];
+    if (base::FilePath(entry.title()) == base_name) {
+      // Found the target entry.
+      scoped_ptr<DriveEntryProto> entry_proto(new DriveEntryProto(
+          ConvertResourceEntryToDriveEntryProto(entry)));
+      callback.Run(DRIVE_FILE_OK, entry_proto.Pass());
+      return;
+    }
+  }
+
+  callback.Run(DRIVE_FILE_ERROR_NOT_FOUND, scoped_ptr<DriveEntryProto>());
 }
 
 }  // namespace test_util

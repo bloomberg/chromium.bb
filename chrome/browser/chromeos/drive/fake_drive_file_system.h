@@ -37,7 +37,6 @@ namespace test_util {
 // Currently most methods are empty (not implemented).
 class FakeDriveFileSystem : public DriveFileSystemInterface {
  public:
-
   explicit FakeDriveFileSystem(
       google_apis::DriveServiceInterface* drive_service);
   virtual ~FakeDriveFileSystem();
@@ -122,7 +121,6 @@ class FakeDriveFileSystem : public DriveFileSystemInterface {
   virtual void Reload() OVERRIDE;
 
  private:
-
   // Callback to return the result of GetFilePath.
   typedef base::Callback<void(const base::FilePath& file_path)>
       GetFilePathCallback;
@@ -166,6 +164,32 @@ class FakeDriveFileSystem : public DriveFileSystemInterface {
       DriveFileError error,
       scoped_ptr<DriveEntryProto> entry_proto,
       const base::FilePath& parent_file_path);
+
+  // Helpers of GetEntryInfoByPath.
+  // How the method works:
+  // 1) If the path is root, gets AboutResrouce from the drive service
+  //    and create DriveEntryProto.
+  // 2-1) Otherwise, gets the parent's DriveEntryProto by recursive call.
+  // 2-2) Then, gets the resource list by restricting the parent with its id.
+  // 2-3) Search the results based on title, and return the DriveEntryProto.
+  // Note that adding suffix (e.g. " (2)") for files sharing a same name is
+  // not supported in FakeDriveFileSystem. Thus, even if the server has
+  // files sharing the same name under a directory, the second (or later)
+  // file cannot be taken with the suffixed name.
+  void GetEntryInfoByPathAfterGetAboutResource(
+      const GetEntryInfoCallback& callback,
+      google_apis::GDataErrorCode gdata_error,
+      scoped_ptr<google_apis::AboutResource> about_resource);
+  void GetEntryInfoByPathAfterGetParentEntryInfo(
+      const base::FilePath& base_name,
+      const GetEntryInfoCallback& callback,
+      DriveFileError error,
+      scoped_ptr<DriveEntryProto> parent_entry_proto);
+  void GetEntryInfoByPathAfterGetResourceList(
+      const base::FilePath& base_name,
+      const GetEntryInfoCallback& callback,
+      google_apis::GDataErrorCode gdata_error,
+      scoped_ptr<google_apis::ResourceList> resource_list);
 
   google_apis::DriveServiceInterface* drive_service_;  // Not owned.
 

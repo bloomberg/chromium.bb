@@ -63,5 +63,46 @@ TEST_F(FakeDriveFileSystemTest, GetEntryInfoByResourceId) {
   EXPECT_TRUE(entry);  // Just make sure something is returned.
 }
 
+TEST_F(FakeDriveFileSystemTest, GetEntryInfoByPath) {
+  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+  scoped_ptr<DriveEntryProto> entry;
+  fake_drive_file_system_->GetEntryInfoByPath(
+      util::GetDriveMyDriveRootPath().AppendASCII(
+          "Directory 1/Sub Directory Folder"),
+      google_apis::test_util::CreateCopyResultCallback(&error, &entry));
+  google_apis::test_util::RunBlockingPoolTask();
+
+  ASSERT_EQ(DRIVE_FILE_OK, error);
+  ASSERT_TRUE(entry);
+  EXPECT_EQ("folder:sub_dir_folder_resource_id", entry->resource_id());
+}
+
+TEST_F(FakeDriveFileSystemTest, GetEntryInfoByPath_Root) {
+  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+  scoped_ptr<DriveEntryProto> entry;
+  fake_drive_file_system_->GetEntryInfoByPath(
+      util::GetDriveMyDriveRootPath(),
+      google_apis::test_util::CreateCopyResultCallback(&error, &entry));
+  google_apis::test_util::RunBlockingPoolTask();
+
+  ASSERT_EQ(DRIVE_FILE_OK, error);
+  ASSERT_TRUE(entry);
+  EXPECT_TRUE(entry->file_info().is_directory());
+  EXPECT_EQ(fake_drive_service_->GetRootResourceId(), entry->resource_id());
+  EXPECT_EQ(util::kDriveMyDriveRootDirName, entry->title());
+}
+
+TEST_F(FakeDriveFileSystemTest, GetEntryInfoByPath_Invalid) {
+  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+  scoped_ptr<DriveEntryProto> entry;
+  fake_drive_file_system_->GetEntryInfoByPath(
+      util::GetDriveMyDriveRootPath().AppendASCII("Invalid File Name"),
+      google_apis::test_util::CreateCopyResultCallback(&error, &entry));
+  google_apis::test_util::RunBlockingPoolTask();
+
+  ASSERT_EQ(DRIVE_FILE_ERROR_NOT_FOUND, error);
+  ASSERT_FALSE(entry);
+}
+
 }  // namespace test_util
 }  // namespace drive
