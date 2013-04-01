@@ -211,6 +211,8 @@ void SyncFileSystemService::Initialize(
     profile_sync_service->AddObserver(this);
   }
 
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALLED,
+                 content::Source<Profile>(profile_));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
                  content::Source<Profile>(profile_));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_ENABLED,
@@ -417,12 +419,23 @@ void SyncFileSystemService::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
+  // Event notification sequence.
+  //
+  // (User action)    (Notification type)
+  // Install:         INSTALLED.
+  // Uninstall:       UNLOADED(UNINSTALL).
+  // Launch, Close:   No notification.
+  // Enable:          EABLED.
+  // Disable:         UNLOADED(DISABLE).
+  // Reload, Restart: UNLOADED(DISABLE) -> INSTALLED -> ENABLED.
+  //
   switch (type) {
-    // Delivered when an app is disabled, reloaded or restarted.
+    case chrome::NOTIFICATION_EXTENSION_INSTALLED:
+      HandleExtensionInstalled(details);
+      break;
     case chrome::NOTIFICATION_EXTENSION_UNLOADED:
       HandleExtensionUnloaded(type, details);
       break;
-    // Delivered when an app is enabled, reloaded or restarted.
     case chrome::NOTIFICATION_EXTENSION_ENABLED:
       HandleExtensionEnabled(type, details);
       break;
@@ -432,11 +445,21 @@ void SyncFileSystemService::Observe(
   }
 }
 
+void SyncFileSystemService::HandleExtensionInstalled(
+    const content::NotificationDetails& details) {
+  content::Details<const extensions::Extension> extension(details);
+  GURL app_origin =
+      extensions::Extension::GetBaseURLFromExtensionId(extension->id());
+  DVLOG(1) << "Handle extension notification for INSTALLED: " << app_origin;
+  // NOTE: When an app is uninstalled and re-installed in a sequence,
+  // |local_file_service_| may still keeps |app_origin| as disabled origin.
+  local_file_service_->SetOriginEnabled(app_origin, true);
+}
+
 void SyncFileSystemService::HandleExtensionUnloaded(
     int type,
     const content::NotificationDetails& details) {
-  content::Details<const extensions::UnloadedExtensionInfo> info =
-      content::Details<const extensions::UnloadedExtensionInfo>(details);
+  content::Details<const extensions::UnloadedExtensionInfo> info(details);
   std::string extension_id = info->extension->id();
   GURL app_origin =
       extensions::Extension::GetBaseURLFromExtensionId(extension_id);

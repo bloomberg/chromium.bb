@@ -121,6 +121,7 @@ class SyncFileSystemService
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  void HandleExtensionInstalled(const content::NotificationDetails& details);
   void HandleExtensionUnloaded(int type,
                                const content::NotificationDetails& details);
   void HandleExtensionEnabled(int type,
