@@ -109,7 +109,7 @@ void StatsTableThread::Run() {
 
 // Create a few threads and have them poke on their counters.
 // See http://crbug.com/10611 for more information.
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(THREAD_SANITIZER)
 #define MAYBE_MultipleThreads DISABLED_MultipleThreads
 #else
 #define MAYBE_MultipleThreads MultipleThreads
