@@ -36,8 +36,6 @@ public class ChildProcessConnection implements ServiceConnection {
     // Names of items placed in the bind intent or connection bundle.
     public static final String EXTRA_COMMAND_LINE =
             "com.google.android.apps.chrome.extra.command_line";
-    public static final String EXTRA_NATIVE_LIBRARY_NAME =
-            "com.google.android.apps.chrome.extra.native_library_name";
     // Note the FDs may only be passed in the connection bundle.
     public static final String EXTRA_FILES_PREFIX =
             "com.google.android.apps.chrome.extra.extraFile_";
@@ -128,19 +126,16 @@ public class ChildProcessConnection implements ServiceConnection {
      * to setup the connection parameters. (These methods are separated to allow the client
      * to pass whatever parameters they have available here, and complete the remainder
      * later while reducing the connection setup latency).
-     * @param nativeLibraryName The name of the shared native library to be loaded for the
-     *                          child process.
      * @param commandLine (Optional) Command line for the child process. If omitted, then
      *                    the command line parameters must instead be passed to setupConnection().
      */
-    void bind(String nativeLibraryName, String[] commandLine) {
+    void bind(String[] commandLine) {
         synchronized(mUiThreadLock) {
             TraceEvent.begin();
             assert !ThreadUtils.runningOnUiThread();
 
             final Intent intent = createServiceBindIntent();
 
-            intent.putExtra(EXTRA_NATIVE_LIBRARY_NAME, nativeLibraryName);
             if (commandLine != null) {
                 intent.putExtra(EXTRA_COMMAND_LINE, commandLine);
             }

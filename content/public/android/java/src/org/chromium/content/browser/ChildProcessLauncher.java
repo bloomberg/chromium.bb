@@ -18,7 +18,6 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.content.app.ChildProcessService;
 import org.chromium.content.app.PrivilegedProcessService;
 import org.chromium.content.app.SandboxedProcessService;
-import org.chromium.content.app.LibraryLoader;
 import org.chromium.content.common.IChildProcessCallback;
 import org.chromium.content.common.IChildProcessService;
 
@@ -155,10 +154,7 @@ public class ChildProcessLauncher {
             String[] commandLine, boolean inSandbox) {
         ChildProcessConnection connection = allocateConnection(context, inSandbox);
         if (connection != null) {
-            String libraryName = LibraryLoader.getLibraryToLoad();
-            assert libraryName != null : "Attempting to launch a child process without first "
-                    + "calling LibraryLoader.setLibraryToLoad";
-            connection.bind(libraryName, commandLine);
+            connection.bind(commandLine);
         }
         return connection;
     }

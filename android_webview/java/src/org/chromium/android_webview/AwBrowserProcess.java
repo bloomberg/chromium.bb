@@ -17,11 +17,6 @@ import org.chromium.content.common.ProcessInitException;
  * Wrapper for the steps needed to initialize the java and native sides of webview chromium.
  */
 public abstract class AwBrowserProcess {
-    /**
-     * The name of the library to load.
-     */
-    private static final String NATIVE_LIBRARY = "webviewchromium";
-
     private static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "webview";
 
     /**
@@ -31,7 +26,6 @@ public abstract class AwBrowserProcess {
      */
     public static void loadLibrary() {
         PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
-        LibraryLoader.setLibraryToLoad(NATIVE_LIBRARY);
         try {
             LibraryLoader.loadNow();
         } catch (ProcessInitException e) {

@@ -73,6 +73,18 @@
     'intermediate_dir': '<(PRODUCT_DIR)/<(_target_name)',
     'asset_location%': '<(intermediate_dir)/assets',
     'codegen_stamp': '<(intermediate_dir)/codegen.stamp',
+    'compile_input_paths': [ ],
+    'ordered_libraries_file': '<(intermediate_dir)/native_libraries.json',
+    # TODO(cjhopman): build/ shouldn't refer to content/. The libraryloader and
+    # nativelibraries template should be moved out of content/ (to base/?).
+    # http://crbug.com/225101
+    'native_libraries_template': '<(DEPTH)/content/public/android/java/templates/NativeLibraries.template',
+    'native_libraries_java_dir': '<(intermediate_dir)/native_libraries_java/',
+    'native_libraries_java_file': '<(native_libraries_java_dir)/NativeLibraries.java',
+    'native_libraries_java_stamp': '<(intermediate_dir)/native_libraries_java.stamp',
+    'native_libraries_template_data_dir': '<(intermediate_dir)/native_libraries/',
+    'native_libraries_template_data_file': '<(native_libraries_template_data_dir)/native_libraries_array.h',
+    'native_libraries_template_data_stamp': '<(intermediate_dir)/native_libraries_template_data.stamp',
     'compile_stamp': '<(intermediate_dir)/compile.stamp',
     'jar_stamp': '<(intermediate_dir)/jar.stamp',
     'obfuscate_stamp': '<(intermediate_dir)/obfuscate.stamp',
@@ -134,6 +146,69 @@
         'additional_R_text_files': ['<(PRODUCT_DIR)/<(package_name)/R.txt'],
       },
     }],
+    ['native_libs_paths != []', {
+      'variables': {
+        'compile_input_paths': [ '<(native_libraries_java_stamp)' ],
+        'generated_src_dirs': [ '<(native_libraries_java_dir)' ],
+      },
+      'actions': [
+        {
+          'action_name': 'ordered_libraries_<(_target_name)',
+          'message': 'Writing dependency ordered libraries for <(_target_name).',
+          'inputs': [
+            '<(DEPTH)/build/android/pylib/build_utils.py',
+            '<(DEPTH)/build/android/write_ordered_libraries.py',
+            '<@(native_libs_paths)',
+          ],
+          'outputs': [
+            '<(ordered_libraries_file)',
+          ],
+          'action': [
+            'python', '<(DEPTH)/build/android/write_ordered_libraries.py',
+            '--input-libraries=<(native_libs_paths)',
+            '--output=<(ordered_libraries_file)',
+          ],
+        },
+        {
+          'action_name': 'native_libraries_template_data_<(_target_name)',
+          'message': 'Creating native_libraries_list.h for <(_target_name).',
+          'inputs': [
+            '<(DEPTH)/build/android/pylib/build_utils.py',
+            '<(DEPTH)/build/android/create_native_libraries_header.py',
+            '<(ordered_libraries_file)',
+          ],
+          'outputs': [
+            '<(native_libraries_template_data_stamp)',
+          ],
+          'action': [
+            'python', '<(DEPTH)/build/android/create_native_libraries_header.py',
+            '--ordered-libraries=<(ordered_libraries_file)',
+            '--output=<(native_libraries_template_data_file)',
+            '--stamp=<(native_libraries_template_data_stamp)',
+          ],
+        },
+        {
+          'action_name': 'native_libraries_<(_target_name)',
+          'message': 'Creating NativeLibraries.java for <(_target_name).',
+          'inputs': [
+            '<(DEPTH)/build/android/pylib/build_utils.py',
+            '<(DEPTH)/build/android/gcc_preprocess.py',
+            '<(native_libraries_template_data_stamp)',
+            '<(native_libraries_template)',
+          ],
+          'outputs': [
+            '<(native_libraries_java_stamp)',
+          ],
+          'action': [
+            'python', '<(DEPTH)/build/android/gcc_preprocess.py',
+            '--include-path=<(native_libraries_template_data_dir)',
+            '--output=<(native_libraries_java_file)',
+            '--template=<(native_libraries_template)',
+            '--stamp=<(native_libraries_java_stamp)',
+          ],
+        },
+      ],
+    }], # native_libs_paths != []
     ['java_strings_grd != ""', {
       'variables': {
         'res_grit_dir': '<(SHARED_INTERMEDIATE_DIR)/<(package_name)_apk/res_grit',
@@ -223,6 +298,7 @@
         '>!@(find >(java_in_dir) >(additional_src_dirs) -name "*.java")',
         '>@(input_jars_paths)',
         '<(codegen_stamp)',
+        '>@(compile_input_paths)',
       ],
       'outputs': [
         '<(compile_stamp)',

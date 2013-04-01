@@ -12,7 +12,6 @@ import org.chromium.content.browser.ResourceExtractor;
 
 public class ContentBrowserTestsApplication extends Application {
 
-    private static final String NATIVE_LIBRARY = "content_browsertests";
     private static final String[] MANDATORY_PAK_FILES = new String[] {"content_shell.pak"};
     private static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "content_shell";
 
@@ -24,7 +23,6 @@ public class ContentBrowserTestsApplication extends Application {
 
     public static void initializeApplicationParameters() {
         ResourceExtractor.setMandatoryPaksToExtract(MANDATORY_PAK_FILES);
-        LibraryLoader.setLibraryToLoad(NATIVE_LIBRARY);
         PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
     }
 

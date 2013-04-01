@@ -46,7 +46,6 @@ public class ChildProcessService extends Service {
     // This is the native "Main" thread for the renderer / utility process.
     private Thread mMainThread;
     // Parameters received via IPC, only accessed while holding the mMainThread monitor.
-    private String mNativeLibraryName;  // Must be passed in via the bind command.
     private String[] mCommandLineParams;
     private int mCpuCount;
     private long mCpuFeatures;
@@ -113,12 +112,6 @@ public class ChildProcessService extends Service {
             @Override
             public void run()  {
                 try {
-                    synchronized (mMainThread) {
-                        while (mNativeLibraryName == null) {
-                            mMainThread.wait();
-                        }
-                    }
-                    LibraryLoader.setLibraryToLoad(mNativeLibraryName);
                     try {
                         LibraryLoader.loadNow();
                     } catch (ProcessInitException e) {
@@ -193,8 +186,6 @@ public class ChildProcessService extends Service {
         stopSelf();
 
         synchronized (mMainThread) {
-            mNativeLibraryName = intent.getStringExtra(
-                    ChildProcessConnection.EXTRA_NATIVE_LIBRARY_NAME);
             mCommandLineParams = intent.getStringArrayExtra(
                     ChildProcessConnection.EXTRA_COMMAND_LINE);
             mMainThread.notifyAll();

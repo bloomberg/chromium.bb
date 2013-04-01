@@ -301,6 +301,21 @@
           'includes': [ '../build/java_aidl.gypi' ],
         },
         {
+          'target_name': 'content_native_libraries_gen',
+          'type': 'none',
+          'sources': [
+            'public/android/java/templates/NativeLibraries.template',
+          ],
+          'variables': {
+            'package_name': 'org/chromium/content/app',
+            'include_path': 'public/android/java/templates',
+            'template_deps': [
+              'public/android/java/templates/native_libraries_array.h'
+            ],
+          },
+          'includes': [ '../build/android/java_cpp_template.gypi' ],
+        },
+        {
           'target_name': 'content_java',
           'type': 'none',
           'dependencies': [
@@ -312,9 +327,11 @@
             'content_common',
             'page_transition_types_java',
             'result_codes_java',
+            'content_native_libraries_gen',
           ],
           'variables': {
             'java_in_dir': '../content/public/android/java',
+            'jar_excluded_classes': [ '*/NativeLibraries.class' ],
             'has_java_resources': 1,
             'R_package': 'org.chromium.content',
             'R_package_relpath': 'org/chromium/content',

@@ -14,17 +14,15 @@ import org.chromium.content.common.ResultCodes;
 import org.chromium.content.common.TraceEvent;
 
 /**
- * This class provides functionality to load and register the native library.
- * Callers are allowed to separate loading the library from initializing it.
- * This may be an advantage for Android Webview, where the library can be loaded
+ * This class provides functionality to load and register the native libraries.
+ * Callers are allowed to separate loading the libraries from initializing them.
+ * This may be an advantage for Android Webview, where the libraries can be loaded
  * by the zygote process, but then needs per process initialization after the
  * application processes are forked from the zygote process.
  *
- * The library may be loaded and initialized from any thread. Synchronization
+ * The libraries may be loaded and initialized from any thread. Synchronization
  * primitives are used to ensure that overlapping requests from different
- * threads are handled sequentially; however, care must still be taken to
- * ensure that {@link #setLibraryToLoad(String)} is called prior to invoking
- * {@link #loadNow()} or {@link #ensureInitialized()}.
+ * threads are handled sequentially.
  *
  * See also content/app/android/library_loader_hooks.cc, which contains
  * the native counterpart to this class.
@@ -33,45 +31,23 @@ import org.chromium.content.common.TraceEvent;
 public class LibraryLoader {
     private static final String TAG = "LibraryLoader";
 
-    // The name of the library that will be loaded. Ideally this is a
-    // write-once, read-many value, but for the sake of unit tests
-    // we allow it to be mutated arbitrarily.
-    private static String sLibrary = null;
-
-    // Guards all access to the library
+    // Guards all access to the libraries
     private static final Object sLock = new Object();
 
-    // One-way switch becomes true when the library is loaded.
+    // One-way switch becomes true when the libraries are loaded.
     private static boolean sLoaded = false;
 
-    // One-way switch becomes true when the library is initialized (
+    // One-way switch becomes true when the libraries are initialized (
     // by calling nativeLibraryLoaded, which forwards to LibraryLoaded(...) in
     // library_loader_hooks.cc).
     private static boolean sInitialized = false;
 
-
+    // TODO(cjhopman): Remove this once it's unused.
     /**
-     * Sets the library name that is to be loaded.  This must be called prior to the library being
-     * loaded the first time. Outside of testing, this should only be called once.
-     *
-     * @param library The name of the library to be loaded (without the lib prefix).
+     * Doesn't do anything.
      */
+    @Deprecated
     public static void setLibraryToLoad(String library) {
-        synchronized(sLock) {
-            if (TextUtils.equals(sLibrary, library)) return;
-
-            assert !sLoaded : "Setting the library must happen before load is called.";
-            sLibrary = library;
-        }
-    }
-
-    /**
-     * @return The name of the native library set to be loaded.
-     */
-    public static String getLibraryToLoad() {
-        synchronized(sLock) {
-            return sLibrary;
-        }
     }
 
     /**
@@ -121,15 +97,14 @@ public class LibraryLoader {
 
     // Invoke System.loadLibrary(...), triggering JNI_OnLoad in native code
     private static void loadAlreadyLocked() throws ProcessInitException {
-        if (sLibrary == null) {
-            assert false : "No library specified to load.  Call setLibraryToLoad before first.";
-        }
         try {
             if (!sLoaded) {
                 assert !sInitialized;
-                Log.i(TAG, "loading: " + sLibrary);
-                System.loadLibrary(sLibrary);
-                Log.i(TAG, "loaded: " + sLibrary);
+                for (String sLibrary: NativeLibraries.libraries) {
+                    Log.i(TAG, "loading: " + sLibrary);
+                    System.loadLibrary(sLibrary);
+                    Log.i(TAG, "loaded: " + sLibrary);
+                }
                 sLoaded = true;
             }
         } catch (UnsatisfiedLinkError e) {

@@ -16,7 +16,6 @@ import org.chromium.content.browser.ResourceExtractor;
  */
 public class ChromiumTestShellApplication extends Application {
     private static final String TAG = ChromiumTestShellApplication.class.getCanonicalName();
-    private static final String NATIVE_LIBARY = "chromiumtestshell";
     private static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "chromiumtestshell";
     private static final String[] CHROME_MANDATORY_PAKS = {
         "chrome.pak",
@@ -31,7 +30,6 @@ public class ChromiumTestShellApplication extends Application {
         super.onCreate();
 
         ResourceExtractor.setMandatoryPaksToExtract(CHROME_MANDATORY_PAKS);
-        LibraryLoader.setLibraryToLoad(NATIVE_LIBARY);
         PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
     }
 }
