@@ -570,7 +570,7 @@ void ImmersiveModeController::LayoutBrowserView(bool immersive_style) {
   browser_view_->GetWidget()->non_client_view()->frame_view()->
       ResetWindowControls();
   browser_view_->tabstrip()->SetImmersiveStyle(immersive_style);
-  browser_view_->Layout();
+  browser_view_->frame()->GetRootView()->Layout();
 }
 
 void ImmersiveModeController::AnimateSlideOpen(int duration_ms) {

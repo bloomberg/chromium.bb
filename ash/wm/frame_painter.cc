@@ -671,7 +671,7 @@ void FramePainter::OnWindowBoundsChanged(aura::Window* window,
 
   // TODO(sky): this isn't quite right. What we really want is a method that
   // returns bounds ignoring transforms on certain windows (such as workspaces).
-  if (!frame_->IsMaximized() &&
+  if ((!frame_->IsMaximized() && !frame_->IsFullscreen()) &&
       ((old_bounds.y() == 0 && new_bounds.y() != 0) ||
        (old_bounds.y() != 0 && new_bounds.y() == 0))) {
     SchedulePaintForHeader();
@@ -750,11 +750,12 @@ int FramePainter::GetHeaderOpacity(HeaderMode header_mode,
   if (theme_frame_overlay)
     return kFullyOpaque;
 
-  // Maximized windows with workspaces are totally transparent, except:
+  // Maximized and fullscreen windows with workspaces are totally transparent,
+  // except:
   // - For windows whose workspace is not tracked by the workspace code (which
   //   are used for tab dragging).
   // - When the user is cycling through workspaces.
-  if (frame_->IsMaximized() &&
+  if ((frame_->IsMaximized() || frame_->IsFullscreen()) &&
       GetTrackedByWorkspace(frame_->GetNativeWindow()) &&
       !IsCyclingThroughWorkspaces()) {
     return 0;

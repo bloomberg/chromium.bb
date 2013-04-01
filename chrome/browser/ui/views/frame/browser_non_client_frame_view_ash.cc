@@ -380,11 +380,24 @@ void BrowserNonClientFrameViewAsh::LayoutAvatar() {
   DCHECK(avatar_button());
   gfx::ImageSkia incognito_icon = browser_view()->GetOTRAvatarIcon();
 
+  if (frame()->IsFullscreen()) {
+    ImmersiveModeController* immersive_controller =
+        browser_view()->immersive_mode_controller();
+    // Hide the incognito icon when the top-of-window views are closed in
+    // immersive mode as the tab indicators are too short for the incognito
+    // icon to still be recongizable.
+    if (immersive_controller->enabled() &&
+        !immersive_controller->IsRevealed()) {
+      avatar_button()->SetBoundsRect(gfx::Rect());
+      return;
+    }
+  }
+
   int avatar_bottom = GetTabStripInsets(false).top +
       browser_view()->GetTabStripHeight() - kAvatarBottomSpacing;
   int avatar_restored_y = avatar_bottom - incognito_icon.height();
-  int avatar_y = frame()->IsMaximized() ?
-      NonClientTopBorderHeight(false) + kContentShadowHeight:
+  int avatar_y = (frame()->IsMaximized() || frame()->IsFullscreen()) ?
+      NonClientTopBorderHeight(false) + kContentShadowHeight :
       avatar_restored_y;
   gfx::Rect avatar_bounds(kAvatarSideSpacing,
                           avatar_y,
