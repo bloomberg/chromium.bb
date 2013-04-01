@@ -1150,6 +1150,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
 
     // Please keep this in alphabetical order.
     static const char* const kSwitchNames[] = {
+      switches::kAllowRequestOSFileHandleAPI,
       switches::kAllowHTTPBackgroundPage,
       switches::kAllowLegacyExtensionManifests,
       switches::kAllowScriptingGallery,

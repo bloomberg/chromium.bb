@@ -224,6 +224,23 @@ int32_t FileIOResource::ReadValidated(int64_t offset,
   return PP_OK_COMPLETIONPENDING;
 }
 
+int32_t FileIOResource::RequestOSFileHandle(
+    PP_FileHandle* handle,
+    scoped_refptr<TrackedCallback> callback) {
+  int32_t rv = state_manager_.CheckOperationState(
+      FileIOStateManager::OPERATION_EXCLUSIVE, true);
+  if (rv != PP_OK)
+    return rv;
+
+  Call<PpapiPluginMsg_FileIO_RequestOSFileHandleReply>(RENDERER,
+      PpapiHostMsg_FileIO_RequestOSFileHandle(),
+      base::Bind(&FileIOResource::OnPluginMsgRequestOSFileHandleComplete, this,
+                 callback, handle));
+
+  state_manager_.SetPendingOperation(FileIOStateManager::OPERATION_EXCLUSIVE);
+  return PP_OK_COMPLETIONPENDING;
+}
+
 void FileIOResource::OnPluginMsgGeneralComplete(
     scoped_refptr<TrackedCallback> callback,
     const ResourceMessageReplyParams& params) {
@@ -286,6 +303,28 @@ void FileIOResource::OnPluginMsgReadComplete(
   callback->Run(result);
 }
 
+void FileIOResource::OnPluginMsgRequestOSFileHandleComplete(
+    scoped_refptr<TrackedCallback> callback,
+    PP_FileHandle* output_handle,
+    const ResourceMessageReplyParams& params) {
+  DCHECK(state_manager_.get_pending_operation() ==
+         FileIOStateManager::OPERATION_EXCLUSIVE);
+
+  if (!TrackedCallback::IsPending(callback)) {
+    state_manager_.SetOperationFinished();
+    return;
+  }
+
+  int32_t result = params.result();
+  IPC::PlatformFileForTransit transit_file;
+  if (!params.TakeFileHandleAtIndex(0, &transit_file))
+    result = PP_ERROR_FAILED;
+  *output_handle = IPC::PlatformFileForTransitToPlatformFile(transit_file);
+
+  // End the operation now. The callback may perform another file operation.
+  state_manager_.SetOperationFinished();
+  callback->Run(result);
+}
+
 }  // namespace proxy
 }  // namespace ppapi
-

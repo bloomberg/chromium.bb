@@ -37,12 +37,17 @@ const char kAllowHTTPBackgroundPage[]       = "allow-http-background-page";
 const char kAllowLegacyExtensionManifests[] =
     "allow-legacy-extension-manifests";
 
-// Specifies comma-separated list of extension ids to grant access to TCP/UDP
-// socket APIs.
+// Specifies comma-separated list of extension ids or hosts to grant
+// access to TCP/UDP socket APIs.
 const char kAllowNaClSocketAPI[]            = "allow-nacl-socket-api";
 
 // Don't block outdated plugins.
 const char kAllowOutdatedPlugins[]          = "allow-outdated-plugins";
+
+// Specifies command-separated list of extension ids or hosts to grant
+// access to RequestOSFileHandle private API.
+const char kAllowRequestOSFileHandleAPI[]   =
+    "allow-request-os-file-handle-api";
 
 // By default, an https page cannot run JavaScript, CSS or plug-ins from http
 // URLs. This provides an override to get the old insecure behavior.

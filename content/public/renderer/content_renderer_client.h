@@ -235,6 +235,9 @@ class CONTENT_EXPORT ContentRendererClient {
 
   // Allow the embedder to disable input event filtering by the compositor.
   virtual bool ShouldCreateCompositorInputHandler() const;
+
+  // Check if we can allow RequestOSFileHandle API access for |url|.
+  virtual bool IsRequestOSFileHandleAllowedForURL(const GURL& url) const;
 };
 
 }  // namespace content

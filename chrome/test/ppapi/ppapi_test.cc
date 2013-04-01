@@ -131,6 +131,10 @@ void PPAPITestBase::SetUpCommandLine(CommandLine* command_line) {
 
   // Smooth scrolling confuses the scrollbar test.
   command_line->AppendSwitch(switches::kDisableSmoothScrolling);
+
+  // For TestRequestOSFileHandle.
+  command_line->AppendSwitchASCII(switches::kAllowRequestOSFileHandleAPI,
+                                  "127.0.0.1");
 }
 
 void PPAPITestBase::SetUpOnMainThread() {

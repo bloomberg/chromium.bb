@@ -273,6 +273,8 @@
       # Private interfaces.
       'cpp/private/content_decryptor_private.cc',
       'cpp/private/content_decryptor_private.h',
+      'cpp/private/file_io_private.cc',
+      'cpp/private/file_io_private.h',
       'cpp/private/flash.cc',
       'cpp/private/flash.h',
       'cpp/private/flash_clipboard.cc',

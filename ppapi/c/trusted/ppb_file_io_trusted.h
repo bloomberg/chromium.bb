@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From trusted/ppb_file_io_trusted.idl modified Wed Oct  5 14:06:02 2011. */
+/* From trusted/ppb_file_io_trusted.idl modified Wed Mar 27 14:50:12 2013. */
 
 #ifndef PPAPI_C_TRUSTED_PPB_FILE_IO_TRUSTED_H_
 #define PPAPI_C_TRUSTED_PPB_FILE_IO_TRUSTED_H_
@@ -35,6 +35,8 @@ struct PPB_FileIOTrusted_0_4 {
    * descriptor. The FileIO object must have been opened with a successful
    * call to FileIO::Open.  The file descriptor will be closed automatically
    * when the FileIO object is closed or destroyed.
+   *
+   * TODO(hamaji): Remove this and use RequestOSFileHandle instead.
    */
   int32_t (*GetOSFileDescriptor)(PP_Resource file_io);
   /**

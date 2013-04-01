@@ -157,4 +157,9 @@ bool ContentRendererClient::ShouldCreateCompositorInputHandler() const {
   return true;
 }
 
+bool ContentRendererClient::IsRequestOSFileHandleAllowedForURL(
+    const GURL& url) const {
+  return false;
+}
+
 }  // namespace content

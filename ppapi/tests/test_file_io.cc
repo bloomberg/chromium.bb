@@ -4,21 +4,40 @@
 
 #include "ppapi/tests/test_file_io.h"
 
+#include <errno.h>
+#include <fcntl.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 #include <vector>
 
 #include "ppapi/c/dev/ppb_testing_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_file_io.h"
+#include "ppapi/c/private/pp_file_handle.h"
 #include "ppapi/c/trusted/ppb_file_io_trusted.h"
 #include "ppapi/cpp/file_io.h"
 #include "ppapi/cpp/file_ref.h"
 #include "ppapi/cpp/file_system.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
+#include "ppapi/cpp/private/file_io_private.h"
 #include "ppapi/tests/test_utils.h"
 #include "ppapi/tests/testing_instance.h"
+
+#if defined(PPAPI_OS_WIN)
+# include <io.h>
+# include <windows.h>
+// TODO(hamaji): Use standard windows APIs instead of compatibility layer?
+# define lseek _lseek
+# define read _read
+# define write _write
+# define ssize_t int
+#else
+# include <sys/mman.h>
+# include <unistd.h>
+#endif
 
 REGISTER_TEST_CASE(FileIO);
 
@@ -148,6 +167,7 @@ void TestFileIO::RunTests(const std::string& filter) {
   RUN_TEST_FORCEASYNC_AND_NOT(ParallelWrites, filter);
   RUN_TEST_FORCEASYNC_AND_NOT(NotAllowMixedReadWrite, filter);
   RUN_TEST_FORCEASYNC_AND_NOT(WillWriteWillSetLength, filter);
+  RUN_TEST_FORCEASYNC_AND_NOT(RequestOSFileHandle, filter);
 
   // TODO(viettrungluu): add tests:
   //  - that PP_ERROR_PENDING is correctly returned
@@ -1244,6 +1264,116 @@ std::string TestFileIO::TestWillWriteWillSetLength() {
     return ReportError("FileIO::Read", rv);
   if (read_buffer != "test")
     return ReportMismatch("FileIO::Read", read_buffer, "test");
+
+  PASS();
+}
+
+std::string TestFileIO::TestRequestOSFileHandle() {
+  TestCompletionCallback callback(instance_->pp_instance(), callback_type());
+
+  pp::FileSystem file_system(instance_, PP_FILESYSTEMTYPE_LOCALTEMPORARY);
+  pp::FileRef file_ref(file_system, "/file_os_fd");
+
+  callback.WaitForResult(file_system.Open(1024, callback.GetCallback()));
+  if (callback.result() != PP_OK)
+    return ReportError("FileSystem::Open", callback.result());
+
+  pp::FileIO_Private file_io(instance_);
+  callback.WaitForResult(file_io.Open(file_ref,
+                                      PP_FILEOPENFLAG_CREATE |
+                                      PP_FILEOPENFLAG_TRUNCATE |
+                                      PP_FILEOPENFLAG_READ |
+                                      PP_FILEOPENFLAG_WRITE,
+                                      callback.GetCallback()));
+  if (callback.result() != PP_OK)
+    return ReportError("FileIO::Open", callback.result());
+
+  PP_FileHandle handle = PP_kInvalidFileHandle;
+  callback.WaitForResult(
+      file_io.RequestOSFileHandle(&handle, callback.GetCallback()));
+  if (callback.result() != PP_OK)
+    return ReportError("FileIO::RequestOSFileHandle", callback.result());
+
+  if (handle == PP_kInvalidFileHandle)
+    return "FileIO::RequestOSFileHandle() returned a bad file handle.";
+#if defined(PPAPI_OS_WIN)
+  int fd = _open_osfhandle(reinterpret_cast<intptr_t>(handle),
+                           _O_RDWR | _O_BINARY);
+#else
+  int fd = handle;
+#endif
+  if (fd < 0)
+    return "FileIO::RequestOSFileHandle() returned a bad file descriptor.";
+
+  // Check write(2) for the native FD.
+  const std::string msg = "foobar";
+  ssize_t cnt = write(fd, msg.data(), msg.size());
+  if (cnt < 0)
+    return ReportError("write for native FD returned error", errno);
+  if (cnt != static_cast<ssize_t>(msg.size()))
+    return ReportError("write for native FD count mismatch", cnt);
+
+  // Check lseek(2) for the native FD.
+  off_t off = lseek(fd, 0, SEEK_CUR);
+  if (off == static_cast<off_t>(-1))
+    return ReportError("lseek for native FD returned error", errno);
+  if (off != static_cast<off_t>(msg.size()))
+    return ReportError("lseek for native FD offset mismatch", off);
+
+  off = lseek(fd, 0, SEEK_SET);
+  if (off == static_cast<off_t>(-1))
+    return ReportError("lseek for native FD returned error", errno);
+  if (off != 0)
+    return ReportError("lseek for native FD offset mismatch", off);
+
+  // Check read(2) for the native FD.
+  std::string buf(msg.size(), '\0');
+  cnt = read(fd, &buf[0], msg.size());
+  if (cnt < 0)
+    return ReportError("read for native FD returned error", errno);
+  if (cnt != static_cast<ssize_t>(msg.size()))
+    return ReportError("read for native FD count mismatch", cnt);
+  if (msg != buf)
+    return ReportMismatch("read for native FD", buf, msg);
+
+  // TODO(hamaji): Test CreateFileMapping for windows.
+#if !defined(PPAPI_OS_WIN)
+  // Check mmap(2) for read.
+  char* mapped = reinterpret_cast<char*>(
+      mmap(NULL, msg.size(), PROT_READ, MAP_PRIVATE, fd, 0));
+  if (mapped == MAP_FAILED)
+    return ReportError("mmap(r) for native FD returned errno", errno);
+  // Make sure the buffer is cleared.
+  buf = std::string(msg.size(), '\0');
+  memcpy(&buf[0], mapped, msg.size());
+  if (msg != buf)
+    return ReportMismatch("mmap(r) for native FD", buf, msg);
+  int r = munmap(mapped, msg.size());
+  if (r < 0)
+    return ReportError("munmap for native FD returned error", errno);
+
+  // Check mmap(2) for write.
+  mapped = reinterpret_cast<char*>(
+      mmap(NULL, msg.size(), PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0));
+  if (mapped == MAP_FAILED)
+    return ReportError("mmap(w) for native FD returned errno", errno);
+  // s/foo/baz/
+  strcpy(mapped, "baz");
+
+  r = munmap(mapped, msg.size());
+  if (r < 0)
+    return ReportError("munmap for native FD returned error", errno);
+#endif
+
+#if defined(PPAPI_OS_WIN)
+  int r = _close(fd);
+#else
+  r = close(handle);
+#endif
+  if (r < 0)
+    return ReportError("close for native FD returned error", errno);
+
+  // TODO(hamaji): Check if the file is actually updated?
 
   PASS();
 }

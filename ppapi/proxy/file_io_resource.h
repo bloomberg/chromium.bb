@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "ppapi/c/private/pp_file_handle.h"
 #include "ppapi/proxy/connection.h"
 #include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
@@ -55,6 +56,9 @@ class PPAPI_PROXY_EXPORT FileIOResource
   virtual int32_t Flush(scoped_refptr<TrackedCallback> callback) OVERRIDE;
   virtual void Close() OVERRIDE;
   virtual int32_t GetOSFileDescriptor() OVERRIDE;
+  virtual int32_t RequestOSFileHandle(
+      PP_FileHandle* handle,
+      scoped_refptr<TrackedCallback> callback) OVERRIDE;
   virtual int32_t WillWrite(int64_t offset,
                             int32_t bytes_to_write,
                             scoped_refptr<TrackedCallback> callback) OVERRIDE;
@@ -82,6 +86,10 @@ class PPAPI_PROXY_EXPORT FileIOResource
                                PP_ArrayOutput array_output,
                                const ResourceMessageReplyParams& params,
                                const std::string& data);
+  void OnPluginMsgRequestOSFileHandleComplete(
+      scoped_refptr<TrackedCallback> callback,
+      PP_FileHandle* output_handle,
+      const ResourceMessageReplyParams& params);
 
   FileIOStateManager state_manager_;
 
@@ -92,4 +100,3 @@ class PPAPI_PROXY_EXPORT FileIOResource
 }  // namespace ppapi
 
 #endif  // PPAPI_PROXY_FILE_IO_RESOURCE_H_
-

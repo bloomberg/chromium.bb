@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
+#include "base/strings/string_tokenizer.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/child_process_logging.h"
@@ -336,6 +337,10 @@ void ChromeContentRendererClient::RenderThreadStarted() {
       extension_resource_scheme);
 
   RegisterExtensionManifestHandlers();
+
+  RegisterRequestOSFileHandleAllowedHosts(
+      command_line->GetSwitchValueASCII(
+          switches::kAllowRequestOSFileHandleAPI));
 }
 
 void ChromeContentRendererClient::RenderViewCreated(
@@ -1191,6 +1196,39 @@ bool ChromeContentRendererClient::AllowBrowserPlugin(
   WebString tag_name = container->element().shadowHost().tagName();
   return tag_name.equals(WebString::fromUTF8(kWebViewTagName)) ||
     tag_name.equals(WebString::fromUTF8(kAdViewTagName));
+}
+
+void ChromeContentRendererClient::RegisterRequestOSFileHandleAllowedHosts(
+    const std::string& allowed_list) {
+  if (!allowed_list.empty()) {
+    base::StringTokenizer t(allowed_list, ",");
+    while (t.GetNext()) {
+      request_os_file_handle_allowed_hosts_.insert(t.token());
+    }
+  }
+}
+
+bool ChromeContentRendererClient::IsRequestOSFileHandleAllowedForURL(
+    const GURL& url) const {
+  if (!url.is_valid() || !url.SchemeIsFileSystem() || !url.inner_url()) {
+    return false;
+  }
+
+  const GURL& inner = *url.inner_url();
+  if (!inner.is_valid())
+    return false;
+
+  if (inner.SchemeIs(extensions::kExtensionScheme)) {
+    // TODO(hamaji): We don't need this whitelist once this issue is
+    // fixed: http://crbug.com/224123 http://crbug.com/224753
+    if (inner.host() == "dolnidnbiendbodmklboojlnlpdeeipo")
+      return true;
+  }
+
+  if (request_os_file_handle_allowed_hosts_.count(inner.host()))
+    return true;
+
+  return false;
 }
 
 }  // namespace chrome

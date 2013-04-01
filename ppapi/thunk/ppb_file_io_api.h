@@ -7,6 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "ppapi/c/ppb_file_io.h"
+#include "ppapi/c/private/pp_file_handle.h"
 #include "ppapi/thunk/ppapi_thunk_export.h"
 
 namespace ppapi {
@@ -51,6 +52,11 @@ class PPAPI_THUNK_EXPORT PPB_FileIO_API {
                             scoped_refptr<TrackedCallback> callback) = 0;
   virtual int32_t WillSetLength(int64_t length,
                                 scoped_refptr<TrackedCallback> callback) = 0;
+
+  // Private API.
+  virtual int32_t RequestOSFileHandle(
+      PP_FileHandle* handle,
+      scoped_refptr<TrackedCallback> callback) = 0;
 };
 
 }  // namespace thunk

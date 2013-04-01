@@ -19,6 +19,8 @@ interface PPB_FileIOTrusted {
    * descriptor. The FileIO object must have been opened with a successful
    * call to FileIO::Open.  The file descriptor will be closed automatically
    * when the FileIO object is closed or destroyed.
+   *
+   * TODO(hamaji): Remove this and use RequestOSFileHandle instead.
    */
   int32_t GetOSFileDescriptor([in] PP_Resource file_io);
 

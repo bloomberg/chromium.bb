@@ -287,5 +287,40 @@ TEST_F(ChromeContentRendererClientTest, NaClRestriction) {
   }
 }
 
-}  // namespace chrome
+TEST_F(ChromeContentRendererClientTest, IsRequestOSFileHandleAllowedForURL) {
+  ChromeContentRendererClient client;
+  const std::string& kWhitelistedExtensionID =
+      "dolnidnbiendbodmklboojlnlpdeeipo";
+  const std::string& kRandomExtensionID =
+      "abcdefghijklmnopqrstuvwxyzabcdef";
+  EXPECT_FALSE(client.IsRequestOSFileHandleAllowedForURL(GURL()));
+  EXPECT_FALSE(client.IsRequestOSFileHandleAllowedForURL(
+      GURL("http://example.com/")));
+  EXPECT_FALSE(client.IsRequestOSFileHandleAllowedForURL(
+      GURL("chrome-extension://" + kWhitelistedExtensionID)));
+  EXPECT_TRUE(client.IsRequestOSFileHandleAllowedForURL(
+      GURL("filesystem:chrome-extension://" +
+           kWhitelistedExtensionID + "/foo")));
+  EXPECT_FALSE(client.IsRequestOSFileHandleAllowedForURL(
+      GURL("filesystem:http://" +
+           kWhitelistedExtensionID + "/foo")));
+  EXPECT_FALSE(client.IsRequestOSFileHandleAllowedForURL(
+      GURL("filesystem:chrome-extension://" +
+           kRandomExtensionID + "/foo")));
+  EXPECT_FALSE(client.IsRequestOSFileHandleAllowedForURL(
+      GURL("filesystem:http://127.0.0.1/foo")));
 
+  client.RegisterRequestOSFileHandleAllowedHosts(
+      "127.0.0.1," + kRandomExtensionID);
+  EXPECT_TRUE(client.IsRequestOSFileHandleAllowedForURL(
+      GURL("filesystem:chrome-extension://" +
+           kRandomExtensionID + "/foo")));
+  EXPECT_TRUE(client.IsRequestOSFileHandleAllowedForURL(
+      GURL("filesystem:http://127.0.0.1/foo")));
+  EXPECT_FALSE(client.IsRequestOSFileHandleAllowedForURL(
+      GURL("http://127.0.0.1/foo")));
+  EXPECT_FALSE(client.IsRequestOSFileHandleAllowedForURL(
+      GURL("filesystem:http://192.168.0.1/foo")));
+}
+
+}  // namespace chrome

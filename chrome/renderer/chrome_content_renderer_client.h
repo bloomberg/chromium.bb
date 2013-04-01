@@ -146,8 +146,13 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
       const WebKit::WebPluginParams& params,
       const ChromeViewHostMsg_GetPluginInfo_Output& output);
 
+  virtual bool IsRequestOSFileHandleAllowedForURL(
+      const GURL& url) const OVERRIDE;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ChromeContentRendererClientTest, NaClRestriction);
+  FRIEND_TEST_ALL_PREFIXES(ChromeContentRendererClientTest,
+                           IsRequestOSFileHandleAllowedForURL);
 
   const extensions::Extension* GetExtension(
       const WebKit::WebSecurityOrigin& origin) const;
@@ -168,6 +173,9 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
                             const extensions::Extension* extension,
                             WebKit::WebPluginParams* params);
 
+  void RegisterRequestOSFileHandleAllowedHosts(
+      const std::string& allowed_list);
+
   scoped_ptr<ChromeRenderProcessObserver> chrome_observer_;
   scoped_ptr<extensions::Dispatcher> extension_dispatcher_;
   scoped_ptr<RendererNetPredictor> net_predictor_;
@@ -175,6 +183,8 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   scoped_ptr<components::VisitedLinkSlave> visited_link_slave_;
   scoped_ptr<safe_browsing::PhishingClassifierFilter> phishing_classifier_;
   scoped_ptr<prerender::PrerenderDispatcher> prerender_dispatcher_;
+  // The whitelist for RequestOSFileHandle specified by commandline.
+  std::set<std::string> request_os_file_handle_allowed_hosts_;
 };
 
 }  // namespace chrome

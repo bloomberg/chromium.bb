@@ -6,7 +6,10 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/command_line.h"
 #include "base/files/file_util_proxy.h"
+#include "content/public/common/content_client.h"
+#include "content/public/renderer/content_renderer_client.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/host/dispatch_host_message.h"
 #include "ppapi/host/ppapi_host.h"
@@ -147,6 +150,8 @@ int32_t PepperFileIOHost::OnResourceMessageReceived(
                                       OnHostMsgWillSetLength)
     PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_FileIO_GetOSFileDescriptor,
                                         OnHostMsgGetOSFileDescriptor)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_FileIO_RequestOSFileHandle,
+                                        OnHostMsgRequestOSFileHandle)
   IPC_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
@@ -446,22 +451,48 @@ int32_t PepperFileIOHost::OnHostMsgWillSetLength(
   return PP_OK_COMPLETIONPENDING;
 }
 
+int32_t PepperFileIOHost::OnHostMsgRequestOSFileHandle(
+    ppapi::host::HostMessageContext* context) {
+  if (!is_running_in_process_ &&
+      !GetContentClient()->renderer()->IsRequestOSFileHandleAllowedForURL(
+          file_system_url_))
+    return PP_ERROR_FAILED;
+
+  // TODO(hamaji): Should fail if quota is not unlimited.
+  // http://crbug.com/224123
+
+  RendererPpapiHost* renderer_ppapi_host =
+      RendererPpapiHost::GetForPPInstance(pp_instance());
+
+  IPC::PlatformFileForTransit file =
+      renderer_ppapi_host->ShareHandleWithRemote(file_, false);
+  if (file == IPC::InvalidPlatformFileForTransit())
+    return PP_ERROR_FAILED;
+  ppapi::host::ReplyMessageContext reply_context =
+      context->MakeReplyMessageContext();
+  reply_context.params.AppendHandle(ppapi::proxy::SerializedHandle(
+      ppapi::proxy::SerializedHandle::FILE, file));
+  host()->SendReply(reply_context,
+                    PpapiPluginMsg_FileIO_RequestOSFileHandleReply());
+  return PP_OK_COMPLETIONPENDING;
+}
+
 int32_t PepperFileIOHost::OnHostMsgGetOSFileDescriptor(
     ppapi::host::HostMessageContext* context) {
   if (!is_running_in_process_)
     return PP_ERROR_FAILED;
+
   int32_t fd =
 #if defined(OS_POSIX)
-    file_;
+      file_;
 #elif defined(OS_WIN)
-    reinterpret_cast<uintptr_t>(file_);
+      reinterpret_cast<uintptr_t>(file_);
 #else
-    -1;  // Platform not supported.
+      -1;
 #endif
-  // TODO(victorhsieh): Pass the file handle in the reply params once this works
-  // in-process.
+
   host()->SendReply(context->MakeReplyMessageContext(),
-      PpapiPluginMsg_FileIO_GetOSFileDescriptorReply(fd));
+                    PpapiPluginMsg_FileIO_GetOSFileDescriptorReply(fd));
   return PP_OK_COMPLETIONPENDING;
 }
 
@@ -569,4 +600,3 @@ void PepperFileIOHost::ExecutePlatformWillWriteCallback(
 }
 
 }  // namespace content
-

@@ -31,6 +31,9 @@ extern const char kAllowHTTPBackgroundPage[];
 extern const char kAllowLegacyExtensionManifests[];
 extern const char kAllowNaClSocketAPI[];
 extern const char kAllowOutdatedPlugins[];
+// TODO(hamaji): Remove this once the two issues are fixed.
+// http://crbug.com/224753 http://crbug.com/220029
+extern const char kAllowRequestOSFileHandleAPI[];
 extern const char kAllowRunningInsecureContent[];
 extern const char kAllowScriptingGallery[];
 extern const char kAlwaysAuthorizePlugins[];

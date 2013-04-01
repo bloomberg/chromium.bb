@@ -5,6 +5,7 @@
 #ifndef CONTENT_RENDERER_PEPPER_PEPPER_FILE_IO_HOST_H_
 #define CONTENT_RENDERER_PEPPER_PEPPER_FILE_IO_HOST_H_
 
+#include <set>
 #include <string>
 
 #include "base/basictypes.h"
@@ -58,6 +59,9 @@ class PepperFileIOHost : public ppapi::host::ResourceHost,
                              int64_t length);
   int32_t OnHostMsgClose(ppapi::host::HostMessageContext* context);
   int32_t OnHostMsgFlush(ppapi::host::HostMessageContext* context);
+  // Private API.
+  int32_t OnHostMsgRequestOSFileHandle(
+      ppapi::host::HostMessageContext* context);
   // Trusted API.
   int32_t OnHostMsgGetOSFileDescriptor(
       ppapi::host::HostMessageContext* context);
@@ -126,4 +130,3 @@ class PepperFileIOHost : public ppapi::host::ResourceHost,
 }  // namespace content
 
 #endif  // CONTENT_RENDERER_PEPPER_PEPPER_FILE_IO_HOST_H_
-

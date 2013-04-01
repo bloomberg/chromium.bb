@@ -6,6 +6,8 @@
 
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/process_util.h"
+#include "content/common/sandbox_util.h"
 #include "content/renderer/pepper/pepper_graphics_2d_host.h"
 #include "content/renderer/pepper/pepper_in_process_resource_creation.h"
 #include "content/renderer/pepper/pepper_in_process_router.h"
@@ -245,9 +247,13 @@ IPC::PlatformFileForTransit RendererPpapiHostImpl::ShareHandleWithRemote(
     base::PlatformFile handle,
     bool should_close_source) {
   if (!dispatcher_) {
-    if (should_close_source)
-      base::ClosePlatformFile(handle);
-    return IPC::InvalidPlatformFileForTransit();
+    DCHECK(is_running_in_process_);
+    // Duplicate the file handle for in process mode so this function
+    // has the same semantics for both in process mode and out of
+    // process mode (i.e., the remote side must cloes the handle).
+    return BrokerGetFileHandleForProcess(handle,
+                                         base::GetCurrentProcId(),
+                                         should_close_source);
   }
   return dispatcher_->ShareHandleWithRemote(handle, should_close_source);
 }

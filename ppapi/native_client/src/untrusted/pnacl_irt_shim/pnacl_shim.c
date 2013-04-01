@@ -77,6 +77,7 @@
 #include "ppapi/c/ppp_messaging.h"
 #include "ppapi/c/ppp_mouse_lock.h"
 #include "ppapi/c/private/ppb_content_decryptor_private.h"
+#include "ppapi/c/private/ppb_file_io_private.h"
 #include "ppapi/c/private/ppb_file_ref_private.h"
 #include "ppapi/c/private/ppb_flash.h"
 #include "ppapi/c/private/ppb_flash_clipboard.h"
@@ -233,6 +234,7 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_VideoDecoder_Dev_0_11;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Widget_Dev_0_2;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Zoom_Dev_0_3;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_ContentDecryptor_Private_0_6;
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileIO_Private_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileRefPrivate_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Flash_12_4;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Flash_12_5;
@@ -2429,6 +2431,16 @@ void Pnacl_M24_PPB_ContentDecryptor_Private_DeliverSamples(PP_Instance instance,
 
 /* End wrapper methods for PPB_ContentDecryptor_Private_0_6 */
 
+/* Begin wrapper methods for PPB_FileIO_Private_0_1 */
+
+static __attribute__((pnaclcall))
+int32_t Pnacl_M28_PPB_FileIO_Private_RequestOSFileHandle(PP_Resource file_io, PP_FileHandle* handle, struct PP_CompletionCallback callback) {
+  const struct PPB_FileIO_Private_0_1 *iface = Pnacl_WrapperInfo_PPB_FileIO_Private_0_1.real_iface;
+  return iface->RequestOSFileHandle(file_io, handle, callback);
+}
+
+/* End wrapper methods for PPB_FileIO_Private_0_1 */
+
 /* Begin wrapper methods for PPB_FileRefPrivate_0_1 */
 
 static __attribute__((pnaclcall))
@@ -4356,6 +4368,10 @@ struct PPB_ContentDecryptor_Private_0_6 Pnacl_Wrappers_PPB_ContentDecryptor_Priv
     .DeliverSamples = (void (*)(PP_Instance instance, PP_Resource audio_frames, const struct PP_DecryptedBlockInfo* decrypted_block_info))&Pnacl_M24_PPB_ContentDecryptor_Private_DeliverSamples
 };
 
+struct PPB_FileIO_Private_0_1 Pnacl_Wrappers_PPB_FileIO_Private_0_1 = {
+    .RequestOSFileHandle = (int32_t (*)(PP_Resource file_io, PP_FileHandle* handle, struct PP_CompletionCallback callback))&Pnacl_M28_PPB_FileIO_Private_RequestOSFileHandle
+};
+
 struct PPB_FileRefPrivate_0_1 Pnacl_Wrappers_PPB_FileRefPrivate_0_1 = {
     .GetAbsolutePath = (struct PP_Var (*)(PP_Resource file_ref))&Pnacl_M15_PPB_FileRefPrivate_GetAbsolutePath
 };
@@ -5281,6 +5297,12 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_ContentDecryptor_Private_
   .real_iface = NULL
 };
 
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileIO_Private_0_1 = {
+  .iface_macro = PPB_FILEIO_PRIVATE_INTERFACE_0_1,
+  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_FileIO_Private_0_1,
+  .real_iface = NULL
+};
+
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileRefPrivate_0_1 = {
   .iface_macro = PPB_FILEREFPRIVATE_INTERFACE_0_1,
   .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_FileRefPrivate_0_1,
@@ -5606,6 +5628,7 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_Widget_Dev_0_4,
   &Pnacl_WrapperInfo_PPB_Zoom_Dev_0_2,
   &Pnacl_WrapperInfo_PPB_ContentDecryptor_Private_0_6,
+  &Pnacl_WrapperInfo_PPB_FileIO_Private_0_1,
   &Pnacl_WrapperInfo_PPB_FileRefPrivate_0_1,
   &Pnacl_WrapperInfo_PPB_Flash_12_4,
   &Pnacl_WrapperInfo_PPB_Flash_12_5,

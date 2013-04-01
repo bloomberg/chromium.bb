@@ -160,6 +160,7 @@
           'thunk/ppb_file_chooser_dev_thunk.cc',
           'thunk/ppb_file_chooser_trusted_thunk.cc',
           'thunk/ppb_file_io_api.h',
+          'thunk/ppb_file_io_private_thunk.cc',
           'thunk/ppb_file_io_thunk.cc',
           'thunk/ppb_file_io_trusted_thunk.cc',
           'thunk/ppb_file_ref_api.h',
