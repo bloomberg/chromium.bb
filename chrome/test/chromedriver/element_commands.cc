@@ -5,8 +5,12 @@
 #include "chrome/test/chromedriver/element_commands.h"
 
 #include <list>
+#include <vector>
 
 #include "base/callback.h"
+#include "base/files/file_path.h"
+#include "base/stringprintf.h"
+#include "base/strings/string_split.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/basic_types.h"
 #include "chrome/test/chromedriver/chrome/chrome.h"
@@ -188,8 +192,44 @@ Status ExecuteSendKeysToElement(
   if (status.IsError())
     return status;
   if (is_input && is_file) {
-    // TODO(chrisgao): Implement file upload.
-    return Status(kUnknownError, "file upload is not implemented");
+    // File upload is only supported for chrome 27+.
+    if (session->chrome->GetBuildNo() < 1420) {
+      return Status(
+          kUnknownError,
+          base::StringPrintf(
+              "file upload requires chrome 27+, build 1420+,"
+              "while current one is %s",
+              session->chrome->GetVersion().c_str()));
+    }
+
+    // Compress array into a single string.
+    base::FilePath::StringType paths_string;
+    for (size_t i = 0; i < key_list->GetSize(); ++i) {
+      base::FilePath::StringType path_part;
+      if (!key_list->GetString(i, &path_part))
+        return Status(kUnknownError, "'value' is invalid");
+      paths_string.append(path_part);
+    }
+
+    // Separate the string into separate paths, delimited by '\n'.
+    std::vector<base::FilePath::StringType> paths;
+    base::SplitString(paths_string, '\n', &paths);
+
+    bool multiple = false;
+    status = IsElementAttributeEqualToIgnoreCase(
+        session, web_view, element_id, "multiple", "true", &multiple);
+    if (status.IsError())
+      return status;
+    if (!multiple && paths.size() > 1)
+      return Status(kUnknownError, "the element can not hold multiple files");
+
+    base::ListValue files;
+    for (size_t i = 0; i < paths.size(); ++i)
+      files.AppendString(paths[i]);
+
+    scoped_ptr<base::DictionaryValue> element(CreateElement(element_id));
+    return web_view->SetFileInputFiles(
+        session->GetCurrentFrameId(), *element, files);
   } else {
     return SendKeysToElement(session, web_view, element_id, key_list);
   }

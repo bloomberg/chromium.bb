@@ -299,6 +299,29 @@ Status WebViewImpl::CaptureScreenshot(std::string* screenshot) {
   return Status(kOk);
 }
 
+Status WebViewImpl::SetFileInputFiles(const std::string& frame,
+                                      const base::DictionaryValue& element,
+                                      const base::ListValue& files) {
+  int context_id;
+  Status status = GetContextIdForFrame(frame_tracker_.get(), frame,
+                                       &context_id);
+  if (status.IsError())
+    return status;
+  base::ListValue args;
+  args.Append(element.DeepCopy());
+  int node_id;
+  status = internal::GetNodeIdFromFunction(
+      client_.get(), context_id, "function(element) { return element; }",
+      args, &node_id);
+  if (status.IsError())
+    return status;
+  base::DictionaryValue params;
+  params.SetInteger("nodeId", node_id);
+  params.Set("files", files.DeepCopy());
+  return client_->SendCommand("DOM.setFileInputFiles", params);
+}
+
+
 namespace internal {
 
 Status EvaluateScript(DevToolsClient* client,

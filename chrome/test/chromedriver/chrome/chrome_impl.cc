@@ -211,6 +211,10 @@ std::string ChromeImpl::GetVersion() {
   return version_;
 }
 
+int ChromeImpl::GetBuildNo() {
+  return build_no_;
+}
+
 Status ChromeImpl::GetWebViewIds(std::list<std::string>* web_view_ids) {
   WebViewInfoList info_list;
   Status status = FetchWebViewsInfo(

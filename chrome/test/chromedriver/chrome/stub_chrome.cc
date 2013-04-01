@@ -14,6 +14,10 @@ std::string StubChrome::GetVersion() {
   return "";
 }
 
+int StubChrome::GetBuildNo() {
+  return 9999;
+}
+
 Status StubChrome::GetWebViewIds(std::list<std::string>* web_view_ids) {
   return Status(kOk);
 }

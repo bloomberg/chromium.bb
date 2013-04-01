@@ -92,3 +92,9 @@ Status StubWebView::OverrideGeolocation(const Geoposition& geoposition) {
 Status StubWebView::CaptureScreenshot(std::string* screenshot) {
   return Status(kOk);
 }
+
+Status StubWebView::SetFileInputFiles(const std::string& frame,
+                                      const base::DictionaryValue& element,
+                                      const base::ListValue& files) {
+  return Status(kOk);
+}

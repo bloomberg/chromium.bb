@@ -17,6 +17,8 @@ class Chrome {
 
   virtual std::string GetVersion() = 0;
 
+  virtual int GetBuildNo() = 0;
+
   // Return ids of opened WebViews in the same order as they are opened.
   virtual Status GetWebViewIds(std::list<std::string>* web_view_ids) = 0;
 

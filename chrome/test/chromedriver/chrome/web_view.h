@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 
 namespace base {
+class DictionaryValue;
 class ListValue;
 class Value;
 }
@@ -98,6 +99,12 @@ class WebView {
 
   // Captures the visible portions of the web view as a base64-encoded PNG.
   virtual Status CaptureScreenshot(std::string* screenshot) = 0;
+
+  // Set files in a file input element.
+  // |element| is the WebElement JSON Object of the input element.
+  virtual Status SetFileInputFiles(const std::string& frame,
+                                   const base::DictionaryValue& element,
+                                   const base::ListValue& files) = 0;
 };
 
 #endif  // CHROME_TEST_CHROMEDRIVER_CHROME_WEB_VIEW_H_

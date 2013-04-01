@@ -20,6 +20,7 @@ class StubChrome : public Chrome {
 
   // Overridden from Chrome:
   virtual std::string GetVersion() OVERRIDE;
+  virtual int GetBuildNo() OVERRIDE;
   virtual Status GetWebViewIds(std::list<std::string>* web_view_ids) OVERRIDE;
   virtual Status GetWebViewById(const std::string& id,
                                 WebView** web_view) OVERRIDE;
