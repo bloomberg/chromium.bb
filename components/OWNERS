@@ -1,5 +1,9 @@
 joi@chromium.org
 
+per-file autofill.gypi=dhollowa@chromium.org
+per-file autofill.gypi=isherman@chromium.org
+per-file autofill.gypi=kaiwang@chromium.org
+
 per-file tracing*=jbauman@chromium.org
 per-file tracing*=nduca@chromium.org
 
