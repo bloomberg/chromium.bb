@@ -88,7 +88,7 @@ public class ContentViewScrollingTest extends ContentShellTestBase {
     /**
      * @SmallTest
      * @Feature({"Main"})
-     * BUG 224458
+     * crbug.com/224458
      */
     @FlakyTest
     public void testFling() throws Throwable {
@@ -113,8 +113,12 @@ public class ContentViewScrollingTest extends ContentShellTestBase {
         assertWaitForScroll(false, false);
     }
 
-    @SmallTest
-    @Feature({"Main"})
+    /**
+     * @SmallTest
+     * @Feature({"Main"})
+     * crbug.com/224458
+     */
+    @FlakyTest
     public void testScroll() throws Throwable {
         // Vertical scroll to lower-left.
         scrollTo(0, 2500);
