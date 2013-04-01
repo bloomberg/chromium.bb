@@ -410,8 +410,10 @@ NaClErrorCode NaClAppLoadFile(struct Gio       *gp,
   return NaClAppLoadFileAslr(gp, nap, NACL_ENABLE_ASLR);
 }
 
-NaClErrorCode NaClAppLoadFileDynamically(struct NaClApp *nap,
-                                         struct Gio     *gio_file) {
+NaClErrorCode NaClAppLoadFileDynamically(
+    struct NaClApp *nap,
+    struct Gio     *gio_file,
+    struct NaClValidationMetadata *metadata) {
   struct NaClElfImage *image = NULL;
   NaClErrorCode ret = LOAD_INTERNAL;
 
@@ -419,7 +421,7 @@ NaClErrorCode NaClAppLoadFileDynamically(struct NaClApp *nap,
   if (NULL == image || LOAD_OK != ret) {
     goto done;
   }
-  ret = NaClElfImageLoadDynamically(image, nap, gio_file);
+  ret = NaClElfImageLoadDynamically(image, nap, gio_file, metadata);
   if (LOAD_OK != ret) {
     goto done;
   }

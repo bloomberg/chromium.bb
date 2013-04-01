@@ -15,6 +15,8 @@ val_lib_env = env.Clone()
 if env.Bit('validator_ragel'):
   val_lib_env.Append(CPPDEFINES=[['NACL_VALIDATOR_RAGEL', '1']])
 
+val_lib_env.ComponentLibrary('validation_cache', ['validation_cache.c'])
+
 val_lib_env.ComponentLibrary('validators', ['validator_init.c'])
 
 if env.Bit('target_x86') and not env.Bit('validator_ragel'):

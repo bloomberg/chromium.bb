@@ -54,6 +54,10 @@ LIBRARY_DEPENDENCIES_DEFAULT = {
     'testrunner_browser': [
         'ppapi',
         ],
+    'validation_cache': [
+        # For CHECK(...)
+        'platform',
+        ],
     }
 
 # Untrusted only library dependencies.
@@ -96,6 +100,7 @@ PLATFORM_LIBRARY_DEPENDENCIES = {
         'ncval_base_x86_32': [
             'platform',
             'cpu_features',
+            'validation_cache',
             ],
         'nc_opcode_modeling_verbose_x86_32': [
             'nc_opcode_modeling_x86_32',
@@ -156,6 +161,7 @@ PLATFORM_LIBRARY_DEPENDENCIES = {
         'ncval_base_x86_64': [
             'platform',
             'cpu_features',
+            'validation_cache',
             ],
         'nc_opcode_modeling_verbose_x86_64': [
             'nc_opcode_modeling_x86_64',

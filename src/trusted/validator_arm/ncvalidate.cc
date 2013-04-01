@@ -144,8 +144,10 @@ static NaClValidationStatus ApplyValidatorArm(
     int stubout_mode,
     int readonly_text,
     const NaClCPUFeatures *cpu_features,
+    const struct NaClValidationMetadata *metadata,
     struct NaClValidationCache *cache) {
   /* The ARM validator is currently unsafe w.r.t. caching. */
+  UNREFERENCED_PARAMETER(metadata);
   UNREFERENCED_PARAMETER(cache);
   CheckAddressAlignAndOverflow((uint8_t *) guest_addr, size);
   CheckAddressOverflow(data, size);

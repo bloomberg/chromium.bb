@@ -7,9 +7,14 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_VALIDATION_CACHE_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_VALIDATION_CACHE_H_
 
+#include <stddef.h>
+
 #include "native_client/src/include/nacl_base.h"
+#include "native_client/src/include/portability.h"
 
 EXTERN_C_BEGIN
+
+struct NaClValidationMetadata;
 
 /*
  * This interface allows the validator to query a database of validation results
@@ -52,6 +57,13 @@ struct NaClValidationCache {
   void (*SetKnownToValidate)(void *query);
   void (*DestroyQuery)(void *query);
 };
+
+/* Helper function for identifying the code being validated. */
+extern void AddCodeIdentity(uint8_t *data,
+                            size_t size,
+                            const struct NaClValidationMetadata *metadata,
+                            struct NaClValidationCache *cache,
+                            void *query);
 
 EXTERN_C_END
 

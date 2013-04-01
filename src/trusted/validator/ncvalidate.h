@@ -17,6 +17,7 @@
 EXTERN_C_BEGIN
 
 struct NaClValidationCache;
+struct NaClValidationMetadata;
 
 /* Defines possible validation status values. */
 typedef enum NaClValidationStatus {
@@ -63,6 +64,7 @@ typedef NaClValidationStatus (*NaClValidateFunc)(
     int stubout_mode,
     int readonly_text,
     const NaClCPUFeatures *cpu_features,
+    const struct NaClValidationMetadata *metadata,
     struct NaClValidationCache *cache);
 
 /* Function type to copy an instruction safely. Returns non-zero on success.

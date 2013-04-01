@@ -30,7 +30,8 @@ static int NaClValidateStatus(NaClValidationStatus status) {
 }
 
 int NaClValidateCode(struct NaClApp *nap, uintptr_t guest_addr,
-                     uint8_t *data, size_t size) {
+                     uint8_t *data, size_t size,
+                     const struct NaClValidationMetadata *metadata) {
   NaClValidationStatus status = NaClValidationSucceeded;
   struct NaClValidationCache *cache = nap->validation_cache;
   const struct NaClValidatorInterface *validator = nap->validator;
@@ -51,6 +52,7 @@ int NaClValidateCode(struct NaClApp *nap, uintptr_t guest_addr,
      * empirically tuned.
      * TODO(ncbray) let the syscall specify if the code is cached or not.
      */
+    metadata = NULL;
     cache = NULL;
   }
 
@@ -64,6 +66,7 @@ int NaClValidateCode(struct NaClApp *nap, uintptr_t guest_addr,
   }
   if (nap->validator_stub_out_mode) {
     /* Validation caching is currently incompatible with stubout. */
+    metadata = NULL;
     cache = NULL;
     /* In stub out mode, we do two passes.  The second pass acts as a
        sanity check that bad instructions were indeed overwritten with
@@ -72,6 +75,7 @@ int NaClValidateCode(struct NaClApp *nap, uintptr_t guest_addr,
                                  TRUE, /* stub out */
                                  FALSE, /* text is not read-only */
                                  nap->cpu_features,
+                                 metadata,
                                  cache);
   }
   if (status == NaClValidationSucceeded) {
@@ -81,6 +85,7 @@ int NaClValidateCode(struct NaClApp *nap, uintptr_t guest_addr,
                                  FALSE, /* do not stub out */
                                  readonly_text,
                                  nap->cpu_features,
+                                 metadata,
                                  cache);
   }
   return NaClValidateStatus(status);
@@ -147,8 +152,9 @@ NaClErrorCode NaClValidateImage(struct NaClApp  *nap) {
     NaClLog(LOG_ERROR, "VALIDATION SKIPPED.\n");
     return LOAD_OK;
   } else {
+    /* TODO(ncbray) metadata for the main image. */
     rcode = NaClValidateCode(nap, NACL_TRAMPOLINE_END,
-                             (uint8_t *) memp, regionsize);
+                             (uint8_t *) memp, regionsize, NULL);
     if (LOAD_OK != rcode) {
       if (nap->ignore_validator_result) {
         NaClLog(LOG_ERROR, "VALIDATION FAILED: continuing anyway...\n");

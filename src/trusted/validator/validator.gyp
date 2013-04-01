@@ -22,6 +22,16 @@
         }],
       ],
     },
+    {
+      'target_name': 'validation_cache',
+      'type': 'static_library',
+      'sources' : [
+        'validation_cache.c',
+      ],
+      'dependencies': [
+        '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
+      ],
+    },
   ],
   'conditions': [
     ['OS=="win"', {
@@ -41,6 +51,19 @@
                 'NACL_VALIDATOR_RAGEL=1',
               ],
             }],
+          ],
+        },
+        {
+          'target_name': 'validation_cache64',
+          'type': 'static_library',
+          'sources' : [
+            'validation_cache.c',
+          ],
+          'variables': {
+            'win_target': 'x64',
+          },
+          'dependencies': [
+            '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform64',
           ],
         },
       ],

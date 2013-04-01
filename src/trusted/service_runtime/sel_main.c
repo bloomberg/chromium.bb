@@ -711,7 +711,8 @@ int NaClSelLdrMain(int argc, char **argv) {
       NaClLog(LOG_INFO, "IRT loaded via command channel; ignoring -B irt\n");
     } else if (LOAD_OK == errcode) {
       NaClLog(2, "Loading blob file %s\n", blob_library_file);
-      errcode = NaClAppLoadFileDynamically(nap, (struct Gio *) &blob_file);
+      errcode = NaClAppLoadFileDynamically(nap, (struct Gio *) &blob_file,
+                                           NULL);
       if (LOAD_OK == errcode) {
         nap->irt_loaded = 1;
       } else {

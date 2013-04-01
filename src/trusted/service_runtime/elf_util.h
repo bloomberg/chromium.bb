@@ -12,6 +12,7 @@
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
 struct NaClElfImage;
+struct NaClValidationMetadata;
 struct Gio;
 
 uintptr_t NaClElfImageGetEntryPoint(struct NaClElfImage *image);
@@ -46,9 +47,11 @@ NaClErrorCode NaClElfImageLoad(struct NaClElfImage *image,
 /*
  * Loads an ELF object after NaClMemoryProtection() has been called.
  */
-NaClErrorCode NaClElfImageLoadDynamically(struct NaClElfImage *image,
-                                          struct NaClApp      *nap,
-                                          struct Gio          *gfile);
+NaClErrorCode NaClElfImageLoadDynamically(
+    struct NaClElfImage *image,
+    struct NaClApp *nap,
+    struct Gio *gfile,
+    struct NaClValidationMetadata *metadata);
 
 void NaClElfImageDelete(struct NaClElfImage *image);
 

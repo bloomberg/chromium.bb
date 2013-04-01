@@ -1175,7 +1175,7 @@ static void NaClLoadIrtRpc(struct NaClSrpcRpc      *rpc,
    */
 
   suberr = NACL_FI_VAL("load_irt", NaClErrorCode,
-                       NaClAppLoadFileDynamically(nap, load_src));
+                       NaClAppLoadFileDynamically(nap, load_src, NULL));
   (*NACL_VTBL(Gio, load_src)->Close)(load_src);
 
   if (LOAD_OK != suberr) {

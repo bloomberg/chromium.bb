@@ -624,7 +624,8 @@ static INLINE void NaClTextMapClearCacheIfNeeded(struct NaClApp *nap,
 int32_t NaClTextDyncodeCreate(struct NaClApp *nap,
                               uint32_t       dest,
                               void           *code_copy,
-                              uint32_t       size) {
+                              uint32_t       size,
+                              const struct NaClValidationMetadata *metadata) {
   uintptr_t                   dest_addr;
   uint8_t                     *mapped_addr;
   int32_t                     retval = -NACL_ABI_EINVAL;
@@ -671,7 +672,7 @@ int32_t NaClTextDyncodeCreate(struct NaClApp *nap,
    * See: http://code.google.com/p/nativeclient/issues/detail?id=2566
    */
   if (!nap->skip_validator) {
-    validator_result = NaClValidateCode(nap, dest, code_copy, size);
+    validator_result = NaClValidateCode(nap, dest, code_copy, size, metadata);
   } else {
     NaClLog(LOG_ERROR, "VALIDATION SKIPPED.\n");
     validator_result = LOAD_OK;
@@ -751,7 +752,8 @@ int32_t NaClSysDyncodeCreate(struct NaClAppThread *natp,
   }
   memcpy(code_copy, (uint8_t*) src_addr, size);
 
-  retval = NaClTextDyncodeCreate(nap, dest, code_copy, size);
+  /* Unknown data source, no metadata. */
+  retval = NaClTextDyncodeCreate(nap, dest, code_copy, size, NULL);
 
   free(code_copy);
   return retval;

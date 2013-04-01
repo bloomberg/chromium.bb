@@ -41,6 +41,7 @@
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/sel_qualify.h"
 #include "native_client/src/trusted/service_runtime/win/exception_patch/ntdll_patch.h"
+#include "native_client/src/trusted/validator/validation_metadata.h"
 
 struct NaClChromeMainArgs *NaClChromeMainArgsCreate(void) {
   struct NaClChromeMainArgs *args = malloc(sizeof(*args));
@@ -77,10 +78,33 @@ struct NaClChromeMainArgs *NaClChromeMainArgsCreate(void) {
   return args;
 }
 
+static char kFakeIrtName[] = "\0IRT";
+
+static void ValidationMetadataForFD(int file_desc,
+                                    const char* file_name,
+                                    size_t file_name_length,
+                                    struct NaClValidationMetadata *metadata) {
+  struct NaClHostDesc wrapper;
+  nacl_host_stat_t stat;
+
+  memset(metadata, 0, sizeof(*metadata));
+  wrapper.d = file_desc;
+  if(!NaClHostDescFstat(&wrapper, &stat)) {
+    metadata->identity_type = NaClCodeIdentityFile;
+    /* TODO(ncbray) plumb the real filename in from Chrome. */
+    metadata->file_name = file_name;
+    metadata->file_name_length = file_name_length;
+    metadata->file_size = stat.st_size;
+    metadata->mtime = stat.st_mtime;
+    /* TODO(ncbray) dev / ino where available. */
+  }
+}
+
 static void NaClLoadIrt(struct NaClApp *nap, int irt_fd) {
   int file_desc;
   struct GioPio gio_pio;
   struct Gio *gio_desc;
+  struct NaClValidationMetadata metadata;
   NaClErrorCode errcode;
 
   if (irt_fd == -1) {
@@ -93,6 +117,13 @@ static void NaClLoadIrt(struct NaClApp *nap, int irt_fd) {
   }
 
   /*
+   * For the IRT use a fake file name with null characters at the begining and
+   * the end of the name.
+   */
+  ValidationMetadataForFD(file_desc, kFakeIrtName, sizeof(kFakeIrtName),
+                          &metadata);
+
+  /*
    * The GioPio type is safe to use when this file descriptor is shared
    * with other processes, because it does not use the shared file position.
    */
@@ -101,7 +132,7 @@ static void NaClLoadIrt(struct NaClApp *nap, int irt_fd) {
   }
   gio_desc = (struct Gio *) &gio_pio;
 
-  errcode = NaClAppLoadFileDynamically(nap, gio_desc);
+  errcode = NaClAppLoadFileDynamically(nap, gio_desc, &metadata);
   if (errcode != LOAD_OK) {
     NaClLog(LOG_FATAL,
             "NaClLoadIrt: Failed to load the integrated runtime (IRT): %s\n",

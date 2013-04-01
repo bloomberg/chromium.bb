@@ -121,7 +121,7 @@ Bool NaClSegmentValidates(uint8_t* mbase,
       vbase, mbase, size,
       /* stubout_mode= */ FALSE, /* readonly_text= */ FALSE,
       (NaClCPUFeatures *) &cpu_features,
-      NULL);
+      NULL, NULL);
   switch (status) {
     case NaClValidationSucceeded:
       return TRUE;

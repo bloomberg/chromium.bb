@@ -73,6 +73,7 @@ struct NaClReverseQuotaInterface;
 struct NaClSignalContext;
 struct NaClThreadInterface;  /* see sel_ldr_thread_interface.h */
 struct NaClValidationCache;
+struct NaClValidationMetadata;
 
 struct NaClDebugCallbacks {
   void (*thread_create_hook)(struct NaClAppThread *natp);
@@ -461,8 +462,10 @@ NaClErrorCode NaClAppLoadFileAslr(struct Gio        *gp,
                                   enum NaClAslrMode aslr_mode) NACL_WUR;
 
 
-NaClErrorCode NaClAppLoadFileDynamically(struct NaClApp *nap,
-                                         struct Gio     *gio_file) NACL_WUR;
+NaClErrorCode NaClAppLoadFileDynamically(
+    struct NaClApp *nap,
+    struct Gio *gio_file,
+    struct NaClValidationMetadata *metadata) NACL_WUR;
 
 void  NaClAppPrintDetails(struct NaClApp  *nap,
                           struct Gio      *gp);
@@ -473,7 +476,8 @@ NaClErrorCode NaClLoadImage(struct Gio            *gp,
 int NaClValidateCode(struct NaClApp *nap,
                      uintptr_t      guest_addr,
                      uint8_t        *data,
-                     size_t         size) NACL_WUR;
+                     size_t         size,
+                     const struct NaClValidationMetadata *metadata) NACL_WUR;
 
 /*
  * Validates that the code found at data_old can safely be replaced with

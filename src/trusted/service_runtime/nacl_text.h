@@ -22,6 +22,8 @@ struct NaClDynamicRegion {
   int delete_generation;
 };
 
+struct NaClValidationMetadata;
+
 /*
  * Create a shared memory descriptor and map it into the text region
  * of the address space.  This implies that the text size must be a
@@ -34,10 +36,12 @@ int NaClDescEffectorShmCtor(struct NaClDescEffectorShm *self) NACL_WUR;
 
 int NaClMinimumThreadGeneration(struct NaClApp *nap);
 
-int32_t NaClTextDyncodeCreate(struct NaClApp *nap,
-                              uint32_t       dest,
-                              void           *code_copy,
-                              uint32_t       size) NACL_WUR;
+int32_t NaClTextDyncodeCreate(
+    struct NaClApp *nap,
+    uint32_t       dest,
+    void           *code_copy,
+    uint32_t       size,
+    const struct NaClValidationMetadata *metadata) NACL_WUR;
 
 int32_t NaClSysDyncodeCreate(struct NaClAppThread *natp,
                              uint32_t             dest,

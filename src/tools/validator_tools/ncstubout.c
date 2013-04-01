@@ -68,7 +68,9 @@ static Bool FixUpSection(uintptr_t load_address,
       load_address, code, code_size,
       /* stubout_mode= */ TRUE,
       /* readonly_text= */ FALSE,
-      cpu_features, NULL);
+      cpu_features,
+      /* metadata= */ NULL,
+      /* cache= */ NULL);
   if (status == NaClValidationSucceeded) {
     /* Now run the validator again, so that we report any errors
      * that were not fixed by stubbing out. This is done so that

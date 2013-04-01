@@ -32,6 +32,7 @@
 #include "native_client/src/trusted/service_runtime/nacl_text.h"
 #include "native_client/src/trusted/service_runtime/nacl_valgrind_hooks.h"
 #include "native_client/src/trusted/service_runtime/sel_memory.h"
+#include "native_client/src/trusted/validator/validation_metadata.h"
 
 /* private */
 struct NaClElfImage {
@@ -623,9 +624,11 @@ NaClErrorCode NaClElfImageLoad(struct NaClElfImage *image,
 }
 
 
-NaClErrorCode NaClElfImageLoadDynamically(struct NaClElfImage *image,
-                                          struct NaClApp      *nap,
-                                          struct Gio          *gfile) {
+NaClErrorCode NaClElfImageLoadDynamically(
+    struct NaClElfImage *image,
+    struct NaClApp *nap,
+    struct Gio *gfile,
+    struct NaClValidationMetadata *metadata) {
   int segnum;
   for (segnum = 0; segnum < image->ehdr.e_phnum; ++segnum) {
     const Elf_Phdr *php = &image->phdrs[segnum];
@@ -678,8 +681,11 @@ NaClErrorCode NaClElfImageLoadDynamically(struct NaClElfImage *image,
                 "failed to read code segment\n");
         return LOAD_READ_ERROR;
       }
+      if (NULL != metadata) {
+        metadata->code_offset = offset;
+      }
       result = NaClTextDyncodeCreate(nap, (uint32_t) vaddr,
-                                     code_copy, (uint32_t) filesz);
+                                     code_copy, (uint32_t) filesz, metadata);
       free(code_copy);
       if (0 != result) {
         NaClLog(LOG_ERROR, "NaClElfImageLoadDynamically: "

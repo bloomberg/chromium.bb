@@ -113,9 +113,11 @@ static NaClValidationStatus ApplyValidatorMips(
     int stubout_mode,
     int readonly_text,
     const NaClCPUFeatures *cpu_features,
+    const struct NaClValidationMetadata *metadata,
     struct NaClValidationCache *cache) {
   NaClValidationStatus status = NaClValidationFailedNotImplemented;
   UNREFERENCED_PARAMETER(cpu_features);
+  UNREFERENCED_PARAMETER(metadata);
   UNREFERENCED_PARAMETER(cache);
   if (stubout_mode) {
     NCValidateSegment(data, guest_addr, size, true);

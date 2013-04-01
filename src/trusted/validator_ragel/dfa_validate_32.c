@@ -30,11 +30,13 @@ NaClValidationStatus ApplyDfaValidator_x86_32(
     int stubout_mode,
     int readonly_text,
     const NaClCPUFeatures *f,
+    const struct NaClValidationMetadata *metadata,
     struct NaClValidationCache *cache) {
   /* TODO(jfb) Use a safe cast here. */
   NaClCPUFeaturesX86 *cpu_features = (NaClCPUFeaturesX86 *) f;
   enum NaClValidationStatus status = NaClValidationFailed;
   UNREFERENCED_PARAMETER(guest_addr);
+  UNREFERENCED_PARAMETER(metadata);
   UNREFERENCED_PARAMETER(cache);
 
   if (stubout_mode)

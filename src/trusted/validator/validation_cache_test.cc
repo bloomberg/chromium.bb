@@ -12,6 +12,7 @@
 #include "native_client/src/trusted/validator/ncvalidate.h"
 #include "native_client/src/trusted/validator/validation_cache.h"
 #include "native_client/src/trusted/cpu_features/arch/x86/cpu_x86.h"
+#include "native_client/src/trusted/validator/validation_metadata.h"
 
 #define CONTEXT_MARKER 31
 #define QUERY_MARKER 37
@@ -31,6 +32,7 @@ const char sse41[CODE_SIZE + 1] =
 struct MockContext {
   int marker; /* Sanity check that we're getting the right object. */
   int query_result;
+  int add_count_expected;
   bool set_validates_expected;
   bool query_destroyed;
 };
@@ -75,8 +77,7 @@ int MockQueryCodeValidates(void *query) {
   MockQuery *mquery = (MockQuery *) query;
   EXPECT_EQ(QUERY_MARKER, mquery->marker);
   EXPECT_EQ(QUERY_CREATED, mquery->state);
-  /* Less than two pieces of data is suspicious. */
-  EXPECT_LE(2, mquery->add_count);
+  EXPECT_EQ(mquery->context->add_count_expected, mquery->add_count);
   mquery->state = QUERY_GET_CALLED;
   return mquery->context->query_result;
 }
@@ -105,6 +106,7 @@ void MockDestroyQuery(void *query) {
 class ValidationCachingInterfaceTests : public ::testing::Test {
  protected:
   MockContext context;
+  NaClValidationMetadata *metadata_ptr;
   NaClValidationCache cache;
   const struct NaClValidatorInterface *validator;
   NaClCPUFeatures *cpu_features;
@@ -114,8 +116,11 @@ class ValidationCachingInterfaceTests : public ::testing::Test {
   void SetUp() {
     context.marker = CONTEXT_MARKER;
     context.query_result = 1;
+    context.add_count_expected = 4;
     context.set_validates_expected = false;
     context.query_destroyed = false;
+
+    metadata_ptr = NULL;
 
     cache.handle = &context;
     cache.CreateQuery = MockCreateQuery;
@@ -137,6 +142,7 @@ class ValidationCachingInterfaceTests : public ::testing::Test {
                                FALSE,  /* stubout_mode */
                                FALSE,  /* readonly_test */
                                cpu_features,
+                               metadata_ptr,
                                &cache);
   }
 
@@ -147,6 +153,7 @@ class ValidationCachingInterfaceTests : public ::testing::Test {
 
 TEST_F(ValidationCachingInterfaceTests, Sanity) {
   void *query = cache.CreateQuery(cache.handle);
+  context.add_count_expected = 2;
   cache.AddData(query, NULL, 6);
   cache.AddData(query, NULL, 128);
   EXPECT_EQ(1, cache.QueryKnownToValidate(query));
@@ -161,6 +168,7 @@ TEST_F(ValidationCachingInterfaceTests, NoCache) {
       FALSE, /* stubout_mode */
       FALSE, /* readonly_test */
       cpu_features,
+      NULL, /* metadata */
       NULL);
   EXPECT_EQ(NaClValidationSucceeded, status);
 }
@@ -211,6 +219,21 @@ TEST_F(ValidationCachingInterfaceTests, IllegalCacheHit) {
   memcpy(code_buffer, ret, CODE_SIZE);
   NaClValidationStatus status = Validate();
   // Success proves the cache shortcircuted validation.
+  EXPECT_EQ(NaClValidationSucceeded, status);
+  EXPECT_EQ(true, context.query_destroyed);
+}
+
+TEST_F(ValidationCachingInterfaceTests, Metadata) {
+  NaClValidationMetadata metadata;
+  memset(&metadata, 0, sizeof(metadata));
+  metadata.identity_type = NaClCodeIdentityFile;
+  metadata.file_name = "foobar";
+  metadata.file_name_length = strlen(metadata.file_name);
+  metadata.file_size = CODE_SIZE;
+  metadata.mtime = 100;
+  metadata_ptr = &metadata;
+  context.add_count_expected = 8;
+  NaClValidationStatus status = Validate();
   EXPECT_EQ(NaClValidationSucceeded, status);
   EXPECT_EQ(true, context.query_destroyed);
 }
