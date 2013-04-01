@@ -769,15 +769,13 @@ void FileBrowserEventRouter::ShowRemovableDeviceInFileManager(
       service->GetExtensionById(kExternalPhotoImporterExtensionId,
                                 false /* include_disable */) != NULL;
 
-  // If DCIM folder is available and there is no external photo importer,
-  // then open the action choose dialog. If DCIM folder doesn't exist, then
-  // just launch Files.app.
+  // If there is no DCIM folder or an external photo importer is not available,
+  // then launch Files.app.
   DirectoryExistsOnUIThread(
       dcim_path,
       external_photo_importer_available ?
         base::Bind(&base::DoNothing) :
-        base::Bind(&file_manager_util::OpenActionChoiceDialog, mount_path,
-                   shift_pressed_),
+        base::Bind(&file_manager_util::ViewRemovableDrive, mount_path),
       base::Bind(&file_manager_util::ViewRemovableDrive, mount_path));
 }
 
