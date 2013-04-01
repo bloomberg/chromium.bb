@@ -248,20 +248,18 @@ void AutofillDialogViewAndroid::AccountSelected(JNIEnv* env, jobject obj,
 
 void AutofillDialogViewAndroid::EditingStart(JNIEnv* env, jobject obj,
                                              jint section) {
-  // TODO(aruslan): start using this call.
-  NOTIMPLEMENTED();
+  controller_->EditClickedForSection(static_cast<DialogSection>(section));
 }
 
 void AutofillDialogViewAndroid::EditingComplete(JNIEnv* env, jobject obj,
                                            jint section) {
-  // TODO(aruslan): start using this call.
-  NOTIMPLEMENTED();
+  // Unfortunately, edits are not sent to the models, http://crbug.com/223919.
+  // TODO(aruslan): http://crbug.com/188844 We still need to validate the data.
 }
 
 void AutofillDialogViewAndroid::EditingCancel(JNIEnv* env, jobject obj,
                                               jint section) {
-  // TODO(aruslan): start using this call.
-  NOTIMPLEMENTED();
+  controller_->EditCancelledForSection(static_cast<DialogSection>(section));
 }
 
 void AutofillDialogViewAndroid::DialogSubmit(JNIEnv* env, jobject obj) {
