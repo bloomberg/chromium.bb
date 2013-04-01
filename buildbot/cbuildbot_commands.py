@@ -1053,16 +1053,22 @@ def UploadArchivedFile(archive_path, upload_url, filename, debug,
           [_GSUTIL_PATH, 'setacl', _GS_ACL, full_url],
       )
 
-    for cmd in cmds:
-      if debug:
-        cros_build_lib.Info('UploadArchivedFile would run: %s' % ' '.join(cmd))
-      else:
-        with cros_build_lib.SubCommandTimeout(timeout):
-          cros_build_lib.RunCommandCaptureOutput(cmd, debug_level=logging.DEBUG)
-
-    # Update the list of uploaded files.
-    if update_list:
-      UpdateUploadedList(filename, archive_path, upload_url, debug)
+    try:
+      for cmd in cmds:
+        if debug:
+          cros_build_lib.Info('UploadArchivedFile would run: %s', ' '.join(cmd))
+        else:
+          with cros_build_lib.SubCommandTimeout(timeout):
+            cros_build_lib.RunCommandCaptureOutput(cmd,
+                                                   debug_level=logging.DEBUG)
+    except cros_build_lib.TimeoutError:
+      cros_build_lib.Error('Timed out uploading %s', filename, exc_info=True)
+      cros_build_lib.PrintBuildbotStepWarnings()
+      cros_build_lib.PrintBuildbotLink('Upload timeout: %s' % filename, '#')
+    else:
+      # Update the list of uploaded files.
+      if update_list:
+        UpdateUploadedList(filename, archive_path, upload_url, debug)
 
 
 def UploadSymbols(buildroot, board, official):
