@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/base64.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_path.h"
@@ -20,11 +21,13 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/referrer.h"
 #include "googleurl/src/gurl.h"
+#include "ui/snapshot/snapshot.h"
 
 namespace content {
 
@@ -44,6 +47,11 @@ RendererOverridesHandler::RendererOverridesHandler(DevToolsAgentHost* agent)
       devtools::Page::navigate::kName,
       base::Bind(
           &RendererOverridesHandler::PageNavigate,
+          base::Unretained(this)));
+  RegisterCommandHandler(
+      devtools::Page::captureScreenshot::kName,
+      base::Bind(
+          &RendererOverridesHandler::PageCaptureScreenshot,
           base::Unretained(this)));
 }
 
@@ -145,6 +153,37 @@ RendererOverridesHandler::PageNavigate(
   return command->ErrorResponse(
       DevToolsProtocol::kErrorInternalError,
       "No WebContents to navigate");
+}
+
+scoped_ptr<DevToolsProtocol::Response>
+RendererOverridesHandler::PageCaptureScreenshot(
+    DevToolsProtocol::Command* command) {
+  std::string base_64_data;
+  if (!CaptureScreenshot(&base_64_data))
+    return command->ErrorResponse(DevToolsProtocol::kErrorInternalError,
+                                  "Unable to capture a screenshot");
+
+  base::DictionaryValue* response = new base::DictionaryValue();
+  response->SetString(
+      devtools::Page::captureScreenshot::kResponseData, base_64_data);
+  return command->SuccessResponse(response);
+}
+
+bool RendererOverridesHandler::CaptureScreenshot(std::string* base_64_data) {
+  RenderViewHost* host = agent_->GetRenderViewHost();
+  gfx::Rect view_bounds = host->GetView()->GetViewBounds();
+  gfx::Rect snapshot_bounds(view_bounds.size());
+  gfx::Size snapshot_size = snapshot_bounds.size();
+  std::vector<unsigned char> png;
+  if (!ui::GrabViewSnapshot(host->GetView()->GetNativeView(),
+                            &png,
+                            snapshot_bounds))
+    return false;
+
+  return base::Base64Encode(base::StringPiece(
+                                reinterpret_cast<char*>(&*png.begin()),
+                                png.size()),
+                            base_64_data);
 }
 
 }  // namespace content

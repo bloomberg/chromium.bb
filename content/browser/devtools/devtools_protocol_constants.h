@@ -37,6 +37,10 @@ namespace navigate {
   extern const char kName[];
   extern const char kParamUrl[];
 }  // navigate
+namespace captureScreenshot {
+  extern const char kName[];
+  extern const char kResponseData[];
+}  // captureScreenshot
 }  // Page
 
 }  // devtools

@@ -29,6 +29,10 @@ class RendererOverridesHandler : public DevToolsProtocol::Handler {
       DevToolsProtocol::Command* command);
   scoped_ptr<DevToolsProtocol::Response> PageNavigate(
       DevToolsProtocol::Command* command);
+  scoped_ptr<DevToolsProtocol::Response> PageCaptureScreenshot(
+      DevToolsProtocol::Command* command);
+
+  bool CaptureScreenshot(std::string* base_64_data);
 
   DevToolsAgentHost* agent_;
 

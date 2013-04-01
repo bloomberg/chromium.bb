@@ -62,8 +62,6 @@ class CONTENT_EXPORT RenderViewDevToolsAgentHost
   void OnClearBrowserCache();
   void OnClearBrowserCookies();
 
-  bool CaptureScreenshot(std::string* base_64_data);
-
   RenderViewHost* render_view_host_;
   scoped_ptr<DevToolsAgentHostRvhObserver> rvh_observer_;
   scoped_ptr<RendererOverridesHandler> overrides_handler_;

@@ -30,6 +30,10 @@ namespace navigate {
   const char kName[] = "Page.navigate";
   const char kParamUrl[] = "url";
 }  // navigate
+namespace captureScreenshot {
+  const char kName[] = "Page.captureScreenshot";
+  const char kResponseData[] = "data";
+}  // captureScreenshot
 }  // Page
 
 }  // devtools
