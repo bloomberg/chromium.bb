@@ -3128,6 +3128,7 @@ TEST(ImmediateInterpreterTest, SemiMtActiveAreaTest) {
 
 TEST(ImmediateInterpreterTest, SemiMtNoPinchTest) {
   ImmediateInterpreter ii(NULL, NULL, NULL);
+  ii.pinch_enable_.val_ = 1;
 
   HardwareProperties hwprops = {
     0,  // left edge
