@@ -386,9 +386,16 @@ void DownloadDatabase::QueryDownloads(
 
   for (std::map<DownloadID, DownloadRow*>::iterator
            it = info_map.begin(); it != info_map.end(); ++it) {
-    // Copy the contents of the stored info.
-    results->push_back(*it->second);
-    delete it->second;
+    DownloadRow* row = it->second;
+    bool empty_url_chain = row->url_chain.empty();
+    UMA_HISTOGRAM_BOOLEAN("Download.DatabaseEmptyUrlChain", empty_url_chain);
+    if (empty_url_chain) {
+      RemoveDownload(row->db_handle);
+    } else {
+      // Copy the contents of the stored info.
+      results->push_back(*row);
+    }
+    delete row;
     it->second = NULL;
   }
 }
@@ -435,8 +442,7 @@ bool DownloadDatabase::CleanUpInProgressEntries() {
   return statement.Run();
 }
 
-int64 DownloadDatabase::CreateDownload(
-    const DownloadRow& info) {
+int64 DownloadDatabase::CreateDownload(const DownloadRow& info) {
   if (next_db_handle_ == 0) {
     // This is unlikely. All current known tests and users already call
     // QueryDownloads() before CreateDownload().
@@ -444,6 +450,9 @@ int64 DownloadDatabase::CreateDownload(
     QueryDownloads(&results);
     CHECK_NE(0, next_db_handle_);
   }
+
+  if (info.url_chain.empty())
+    return kUninitializedHandle;
 
   int state = StateToInt(info.state);
   if (state == kStateInvalid)
@@ -477,8 +486,30 @@ int64 DownloadDatabase::CreateDownload(
     statement_insert.BindInt64(column++, info.end_time.ToInternalValue());
     statement_insert.BindInt(column++, info.opened ? 1 : 0);
     if (!statement_insert.Run()) {
-      LOG(WARNING) << "Main insertion for download create failed.";
+      // GetErrorCode() returns a bitmask where the lower byte is a more general
+      // code and the upper byte is a more specific code. In order to save
+      // memory, take the general code, of which there are fewer than 50. See
+      // also sql/connection.cc
+      // http://www.sqlite.org/c3ref/c_abort_rollback.html
+      UMA_HISTOGRAM_ENUMERATION("Download.DatabaseMainInsertError",
+                                GetDB().GetErrorCode() & 0xff, 50);
       return kUninitializedHandle;
+    }
+  }
+
+  {
+    sql::Statement count_urls(GetDB().GetCachedStatement(SQL_FROM_HERE,
+        "SELECT count(*) FROM downloads_url_chains WHERE id=?"));
+    count_urls.BindInt64(0, db_handle);
+    if (count_urls.Step()) {
+      bool corrupt_urls = count_urls.ColumnInt(0) > 0;
+      UMA_HISTOGRAM_BOOLEAN("Download.DatabaseCorruptUrls", corrupt_urls);
+      if (corrupt_urls) {
+        // There should not be any URLs in downloads_url_chains for this
+        // db_handle.  If there are, we don't want them to interfere with
+        // inserting the correct URLs, so just remove them.
+        RemoveDownloadURLs(db_handle);
+      }
     }
   }
 
@@ -492,7 +523,9 @@ int64 DownloadDatabase::CreateDownload(
     statement_insert_chain.BindInt(1, i);
     statement_insert_chain.BindString(2, info.url_chain[i].spec());
     if (!statement_insert_chain.Run()) {
-      LOG(WARNING) << "Url insertion for download create failed.";
+      UMA_HISTOGRAM_ENUMERATION("Download.DatabaseURLChainInsertError",
+                                GetDB().GetErrorCode() & 0xff, 50);
+      RemoveDownload(db_handle);
       return kUninitializedHandle;
     }
     statement_insert_chain.Reset(true);
@@ -500,7 +533,6 @@ int64 DownloadDatabase::CreateDownload(
 
   // TODO(benjhayden) if(info.id>next_id_){setvalue;next_id_=info.id;}
   GetMetaTable().SetValue(kNextDownloadId, ++next_id_);
-
   return db_handle;
 }
 
@@ -508,12 +540,22 @@ void DownloadDatabase::RemoveDownload(int64 handle) {
   sql::Statement downloads_statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "DELETE FROM downloads WHERE id=?"));
   downloads_statement.BindInt64(0, handle);
-  downloads_statement.Run();
+  if (!downloads_statement.Run()) {
+    UMA_HISTOGRAM_ENUMERATION("Download.DatabaseMainDeleteError",
+                              GetDB().GetErrorCode() & 0xff, 50);
+    return;
+  }
+  RemoveDownloadURLs(handle);
+}
 
+void DownloadDatabase::RemoveDownloadURLs(int64 handle) {
   sql::Statement urlchain_statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "DELETE FROM downloads_url_chains WHERE id=?"));
   urlchain_statement.BindInt64(0, handle);
-  urlchain_statement.Run();
+  if (!urlchain_statement.Run()) {
+    UMA_HISTOGRAM_ENUMERATION("Download.DatabaseURLChainDeleteError",
+                              GetDB().GetErrorCode() & 0xff, 50);
+  }
 }
 
 int DownloadDatabase::CountDownloads() {

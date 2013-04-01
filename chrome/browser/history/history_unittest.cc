@@ -462,6 +462,60 @@ TEST_F(HistoryBackendDBTest, ConfirmDownloadRowCreateAndDelete) {
   }
 }
 
+TEST_F(HistoryBackendDBTest, DownloadNukeRecordsMissingURLs) {
+  CreateBackendAndDatabase();
+  base::Time now(base::Time::Now());
+  std::vector<GURL> url_chain;
+  DownloadRow download(
+      base::FilePath(FILE_PATH_LITERAL("foo-path")),
+      base::FilePath(FILE_PATH_LITERAL("foo-path")),
+      url_chain,
+      GURL(""),
+      now,
+      now,
+      0,
+      512,
+      DownloadItem::COMPLETE,
+      content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+      content::DOWNLOAD_INTERRUPT_REASON_NONE,
+      0,
+      0);
+
+  // Creating records without any urls should fail.
+  EXPECT_EQ(DownloadDatabase::kUninitializedHandle,
+            db_->CreateDownload(download));
+
+  download.url_chain.push_back(GURL("foo-url"));
+  EXPECT_EQ(1, db_->CreateDownload(download));
+
+  // Pretend that the URLs were dropped.
+  DeleteBackend();
+  {
+    sql::Connection db;
+    ASSERT_TRUE(db.Open(history_dir_.Append(chrome::kHistoryFilename)));
+    sql::Statement statement(db.GetUniqueStatement(
+        "DELETE FROM downloads_url_chains WHERE id=1"));
+    ASSERT_TRUE(statement.Run());
+  }
+  CreateBackendAndDatabase();
+  std::vector<DownloadRow> downloads;
+  db_->QueryDownloads(&downloads);
+  EXPECT_EQ(0U, downloads.size());
+
+  // QueryDownloads should have nuked the corrupt record.
+  DeleteBackend();
+  {
+    sql::Connection db;
+    ASSERT_TRUE(db.Open(history_dir_.Append(chrome::kHistoryFilename)));
+    {
+      sql::Statement statement(db.GetUniqueStatement(
+            "SELECT count(*) from downloads"));
+      ASSERT_TRUE(statement.Step());
+      EXPECT_EQ(0, statement.ColumnInt(0));
+    }
+  }
+}
+
 struct InterruptReasonAssociation {
   std::string name;
   int value;

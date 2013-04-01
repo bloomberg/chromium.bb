@@ -81,6 +81,8 @@ class DownloadDatabase {
  private:
   bool EnsureColumnExists(const std::string& name, const std::string& type);
 
+  void RemoveDownloadURLs(int64 handle);
+
   bool owning_thread_set_;
   base::PlatformThreadId owning_thread_;
 
