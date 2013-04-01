@@ -39,9 +39,10 @@ DirectoryTreeUtil.updateChangedDirectoryItem = function(
  * @param {function(number): DirectoryEntry} iterator Function which returns
  *     the n-th Entry in the directory.
  * @param {DirectoryModel} directoryModel Current DirectoryModel.
+ * @param {boolean} recursive True if the update is recursively.
  */
 DirectoryTreeUtil.updateSubElementsFromList = function(
-    parentElement, iterator, directoryModel) {
+    parentElement, iterator, directoryModel, recursive) {
   var index = 0;
   while (iterator(index)) {
     var currentEntry = iterator(index);
@@ -52,6 +53,9 @@ DirectoryTreeUtil.updateSubElementsFromList = function(
       parentElement.add(item);
       index++;
     } else if (currentEntry.fullPath == currentElement.fullPath) {
+      if (recursive && parentElement.expanded)
+        currentElement.updateSubDirectories(true /* recursive */);
+
       index++;
     } else if (currentEntry.fullPath < currentElement.fullPath) {
       var item = new DirectoryItem(currentEntry, parentElement, directoryModel);
@@ -162,6 +166,7 @@ DirectoryItem.prototype.decorate = function(
   this.label = label;
   this.fullPath = path;
   this.dirEntry_ = dirEntry;
+  this.fileFilter_ = this.directoryModel_.getFileFilter();
 
   // Sets hasChildren=true tentatively. This will be overridden after
   // scanning sub-directories in DirectoryTreeUtil.updateSubElementsFromList.
@@ -192,7 +197,7 @@ DirectoryItem.prototype.decorate = function(
       }.bind(this));
 
   if (parentDirItem.expanded)
-    this.updateSubDirectories();
+    this.updateSubDirectories(false /* recursive */);
 };
 
 /**
@@ -201,18 +206,22 @@ DirectoryItem.prototype.decorate = function(
  * @private
  **/
 DirectoryItem.prototype.onExpand_ = function(e) {
-  this.updateSubDirectories(function() {
-    this.expanded = false;
-  }.bind(this));
+  this.updateSubDirectories(
+      false /* recursive */,
+      function() {
+        this.expanded = false;
+      }.bind(this));
 
   e.stopPropagation();
 };
 
 /**
  * Retrieves the latest subdirectories and update them on the tree.
+ * @param {boolean} recursive True if the update is recursively.
  * @param {function()=} opt_errorCallback Callback called on error.
  */
-DirectoryItem.prototype.updateSubDirectories = function(opt_errorCallback) {
+DirectoryItem.prototype.updateSubDirectories = function(
+    recursive, opt_errorCallback) {
   // Tries to retrieve new entry if the cached entry is dummy.
   if (DirectoryTreeUtil.isDummyEntry(this.dirEntry_)) {
     // Fake Drive root.
@@ -228,7 +237,7 @@ DirectoryItem.prototype.updateSubDirectories = function(opt_errorCallback) {
             return;
           }
 
-          this.updateSubDirectories(opt_errorCallback);
+          this.updateSubDirectories(recursive, opt_errorCallback);
         }.bind(this),
         opt_errorCallback);
     return;
@@ -241,7 +250,7 @@ DirectoryItem.prototype.updateSubDirectories = function(opt_errorCallback) {
     reader.readEntries(function(results) {
       if (!results.length) {
         this.entries_ = entries.sort();
-        this.redrawSubDirectoryList_();
+        this.redrawSubDirectoryList_(recursive);
         return;
       }
 
@@ -257,17 +266,23 @@ DirectoryItem.prototype.updateSubDirectories = function(opt_errorCallback) {
 };
 
 /**
- * Redraw subitems with the latest information.
+ * Redraw subitems with the latest information. The items are sorted in
+ * alphabetical order, case insensitive.
+ * @param {boolean} recursive True if the update is recursively.
  * @private
  */
-DirectoryItem.prototype.redrawSubDirectoryList_ = function() {
-  var entries = this.entries_.sort(function(a, b) {
-    return a.name.toLowerCase() > b.name.toLowerCase();
-  });
+DirectoryItem.prototype.redrawSubDirectoryList_ = function(recursive) {
+  var entries = this.entries_.
+      sort(function(a, b) {
+        return a.name.toLowerCase() > b.name.toLowerCase();
+      }).
+      filter(this.fileFilter_.filter.bind(this.fileFilter_));
+
   DirectoryTreeUtil.updateSubElementsFromList(
       this,
       function(i) { return entries[i]; },
-      this.directoryModel_);
+      this.directoryModel_,
+      recursive);
 };
 
 /**
@@ -323,6 +338,10 @@ DirectoryTree.prototype.decorate = function(directoryModel) {
 
   this.directoryModel_ = directoryModel;
 
+  this.fileFilter_ = this.directoryModel_.getFileFilter();
+  this.fileFilter_.addEventListener('changed',
+                                    this.onFilterChanged_.bind(this));
+
   this.rootsList_ = this.directoryModel_.getRootsList();
   this.rootsList_.addEventListener('change',
                                    this.onRootsListChanged_.bind(this));
@@ -372,11 +391,29 @@ DirectoryTree.prototype.setContextMenu = function(menu) {
  * @private
  */
 DirectoryTree.prototype.onRootsListChanged_ = function() {
+  this.redraw(false /* recursive */);
+};
+
+/**
+ * Redraw the list.
+ * @param {boolean} recursive True if the update is recursively. False if the
+ *     only root items are updated.
+ */
+DirectoryTree.prototype.redraw = function(recursive) {
   var rootsList = this.rootsList_;
   DirectoryTreeUtil.updateSubElementsFromList(this,
                                               rootsList.item.bind(rootsList),
-                                              this.directoryModel_);
+                                              this.directoryModel_,
+                                              recursive);
   this.setContextMenu(this.contextMenu_);
+};
+
+/**
+ * Invoked when the filter is changed.
+ * @private
+ */
+DirectoryTree.prototype.onFilterChanged_ = function() {
+  this.redraw(true /* recursive */);
 };
 
 /**

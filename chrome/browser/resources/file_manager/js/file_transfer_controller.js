@@ -15,14 +15,17 @@ var DRAG_AND_DROP_GLOBAL_DATA = '__drag_and_drop_global_data';
 /**
  * @param {HTMLDocument} doc Owning document.
  * @param {FileCopyManager} copyManager Copy manager instance.
+ * @param {MetadataCache} metadataCache Metadata cache service.
  * @param {DirectoryModel} directoryModel Directory model instance.
  * @constructor
  */
 function FileTransferController(doc,
                                 copyManager,
+                                metadataCache,
                                 directoryModel) {
   this.document_ = doc;
   this.copyManager_ = copyManager;
+  this.metadataCache_ = metadataCache;
   this.directoryModel_ = directoryModel;
 
   this.directoryModel_.getFileListSelection().addEventListener('change',
@@ -242,7 +245,7 @@ FileTransferController.prototype = {
     var thumbnailContainer = this.document_.createElement('div');
     this.preloadedThumbnailImageNode_ = thumbnailContainer;
     this.preloadedThumbnailImageNode_.className = 'img-container';
-    this.directoryModel_.getMetadataCache().get(
+    this.metadataCache_.get(
         imageUrl,
         metadataTypes,
         function(metadata) {
@@ -733,7 +736,7 @@ FileTransferController.prototype = {
     if (this.isOnDrive) {
       this.allDriveFilesAvailable = false;
       var urls = entries.map(function(e) { return e.toURL() });
-      this.directoryModel_.getMetadataCache().get(
+      this.metadataCache_.get(
           urls, 'drive', function(props) {
         // We consider directories not available offline for the purposes of
         // file transfer since we cannot afford to recursive traversal.

@@ -5,20 +5,20 @@
 'use strict';
 
 /**
+ * This class manages filters and determines a file should be shown or not.
+ * When filters are changed, a 'changed' event is fired.
+ *
  * @param {MetadataCache} metadataCache Metadata cache service.
- * @param {cr.ui.ArrayDataModel} fileList The file list.
  * @param {boolean} showHidden If files starting with '.' are shown.
  * @constructor
+ * @extends {cr.EventTarget}
  */
-function FileListContext(metadataCache, fileList, showHidden) {
+function FileFilter(metadataCache, showHidden) {
   /**
    * @type {MetadataCache}
+   * @private
    */
-  this.metadataCache = metadataCache;
-  /**
-   * @type {cr.ui.ArrayDataModel}
-   */
-  this.fileList = fileList;
+  this.metadataCache_ = metadataCache;
   /**
    * @type Object.<string, Function>
    * @private
@@ -28,35 +28,42 @@ function FileListContext(metadataCache, fileList, showHidden) {
 
   // Do not show entries marked as 'deleted'.
   this.addFilter('deleted', function(entry) {
-    var internal = this.metadataCache.getCached(entry, 'internal');
+    var internal = this.metadataCache_.getCached(entry, 'internal');
     return !(internal && internal.deleted);
   }.bind(this));
 }
+
+/*
+ * FileFilter extends cr.EventTarget.
+ */
+FileFilter.prototype = {__proto__: cr.EventTarget.prototype};
 
 /**
  * @param {string} name Filter identifier.
  * @param {function(Entry)} callback A filter — a function receiving an Entry,
  *     and returning bool.
  */
-FileListContext.prototype.addFilter = function(name, callback) {
+FileFilter.prototype.addFilter = function(name, callback) {
   this.filters_[name] = callback;
+  cr.dispatchSimpleEvent(this, 'changed');
 };
 
 /**
  * @param {string} name Filter identifier.
  */
-FileListContext.prototype.removeFilter = function(name) {
+FileFilter.prototype.removeFilter = function(name) {
   delete this.filters_[name];
+  cr.dispatchSimpleEvent(this, 'changed');
 };
 
 /**
  * @param {boolean} value If do not show hidden files.
  */
-FileListContext.prototype.setFilterHidden = function(value) {
+FileFilter.prototype.setFilterHidden = function(value) {
   if (value) {
     this.addFilter(
         'hidden',
-        function(entry) {return entry.name.substr(0, 1) !== '.';}
+        function(entry) { return entry.name.substr(0, 1) !== '.'; }
     );
   } else {
     this.removeFilter('hidden');
@@ -66,7 +73,7 @@ FileListContext.prototype.setFilterHidden = function(value) {
 /**
  * @return {boolean} If the files with names starting with "." are not shown.
  */
-FileListContext.prototype.isFilterHiddenOn = function() {
+FileFilter.prototype.isFilterHiddenOn = function() {
   return 'hidden' in this.filters_;
 };
 
@@ -74,7 +81,7 @@ FileListContext.prototype.isFilterHiddenOn = function() {
  * @param {Entry} entry File entry.
  * @return {boolean} True if the file should be shown, false otherwise.
  */
-FileListContext.prototype.filter = function(entry) {
+FileFilter.prototype.filter = function(entry) {
   for (var name in this.filters_) {
     if (!this.filters_[name](entry))
       return false;
@@ -82,6 +89,29 @@ FileListContext.prototype.filter = function(entry) {
   return true;
 };
 
+/**
+ * A context of DirectoryContents.
+ * TODO(yoshiki): remove this. crbug.com/224869.
+ *
+ * @param {FileFilter} fileFilter The file-filter context.
+ * @param {MetadataCache} metadataCache Metadata cache service.
+ * @constructor
+ */
+function FileListContext(fileFilter, metadataCache) {
+  /**
+   * @type {cr.ui.ArrayDataModel}
+   */
+  this.fileList = new cr.ui.ArrayDataModel([]);
+  /**
+   * @type {MetadataCache}
+   */
+  this.metadataCache = metadataCache;
+
+  /**
+   * @type {FileFilter}
+   */
+  this.fileFilter = fileFilter;
+}
 
 /**
  * This class is responsible for scanning directory (or search results),
@@ -98,7 +128,6 @@ function DirectoryContents(context) {
   this.scanCompletedCallback_ = null;
   this.scanFailedCallback_ = null;
   this.scanCancelled_ = false;
-  this.filter_ = context.filter.bind(context);
   this.allChunksFetched_ = false;
   this.pendingMetadataRequests_ = 0;
   this.fileList_.prepareSort = this.prepareSort_.bind(this);
@@ -258,7 +287,8 @@ DirectoryContents.prototype.onNewEntries = function(entries) {
   if (this.scanCancelled_)
     return;
 
-  var entriesFiltered = [].filter.call(entries, this.filter_);
+  var entriesFiltered = [].filter.call(
+      entries, this.context_.fileFilter.filter.bind(this.context_.fileFilter));
 
   var onPrefetched = function() {
     this.pendingMetadataRequests_--;
@@ -521,7 +551,7 @@ DirectoryContentsDriveSearch.prototype.readNextChunk = function() {
   var searchCallback = (function(results, nextFeed) {
     // TODO(tbarzic): Improve error handling.
     if (!results) {
-      console.error('Drive search encountered an error');
+      console.error('Drive search encountered an error.');
       this.lastChunkReceived();
       return;
     }

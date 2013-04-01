@@ -16,15 +16,15 @@ var SHORT_RESCAN_INTERVAL = 100;
  * @param {DirectoryEntry} root File system root.
  * @param {boolean} singleSelection True if only one file could be selected
  *                                  at the time.
+ * @param {FileFilter} fileFilter The file-filter.
  * @param {MetadataCache} metadataCache The metadata cache service.
  * @param {VolumeManager} volumeManager The volume manager.
  * @param {boolean} isDriveEnabled True if DRIVE enabled (initial value).
  * @constructor
  */
-function DirectoryModel(root, singleSelection,
+function DirectoryModel(root, singleSelection, fileFilter,
                         metadataCache, volumeManager, isDriveEnabled) {
   this.root_ = root;
-  var fileList = new cr.ui.ArrayDataModel([]);
   this.fileListSelection_ = singleSelection ?
       new cr.ui.ListSingleSelectionModel() : new cr.ui.ListSelectionModel();
 
@@ -34,8 +34,12 @@ function DirectoryModel(root, singleSelection,
   this.scanFailures_ = 0;
   this.driveEnabled_ = isDriveEnabled;
 
+  this.fileFilter_ = fileFilter;
+  this.fileFilter_.addEventListener('changed',
+                                    this.onFilterChanged_.bind(this));
+
   this.currentFileListContext_ = new FileListContext(
-      metadataCache, fileList, false);
+      fileFilter, metadataCache);
   this.currentDirContents_ = new DirectoryContentsBasic(
       this.currentFileListContext_, root);
 
@@ -104,13 +108,6 @@ DirectoryModel.prototype.start = function() {
  */
 DirectoryModel.prototype.getFileList = function() {
   return this.currentFileListContext_.fileList;
-};
-
-/**
- * @return {MetadataCache} Metadata cache.
- */
-DirectoryModel.prototype.getMetadataCache = function() {
-  return this.currentFileListContext_.metadataCache;
 };
 
 /**
@@ -228,18 +225,19 @@ DirectoryModel.prototype.isPathReadOnly = function(path) {
 };
 
 /**
- * @return {boolean} If the files with names starting with "." are not shown.
+ * Invoked when filters are changed.
+ * @private
  */
-DirectoryModel.prototype.isFilterHiddenOn = function() {
-  return this.currentFileListContext_.isFilterHiddenOn();
+DirectoryModel.prototype.onFilterChanged_ = function() {
+  this.rescanSoon();
 };
 
 /**
- * @param {boolean} value Whether files with leading "." are hidden.
+ * Returns the filter.
+ * @return {FileFilter} The file filter.
  */
-DirectoryModel.prototype.setFilterHidden = function(value) {
-  this.currentFileListContext_.setFilterHidden(value);
-  this.rescanSoon();
+DirectoryModel.prototype.getFileFilter = function() {
+  return this.fileFilter_;
 };
 
 /**
@@ -1324,23 +1322,6 @@ DirectoryModel.prototype.clearSearch_ = function() {
 };
 
 /**
- * @param {string} name Filter identifier.
- * @param {function(Entry)} callback A filter — a function receiving an Entry,
- *     and returning bool.
- */
-DirectoryModel.prototype.addFilter = function(name, callback) {
-  this.currentFileListContext_.addFilter(name, callback);
-};
-
-/**
- * @param {string} name Filter identifier.
- */
-DirectoryModel.prototype.removeFilter = function(name) {
-  this.currentFileListContext_.removeFilter(name);
-};
-
-
-/**
  * @param {DirectoryEntry} root Root entry.
  * @param {DirectoryModel} directoryModel Model to watch.
  * @param {VolumeManager} volumeManager Manager to watch.
@@ -1439,7 +1420,7 @@ FileWatcher.prototype.changeWatchedEntry = function(entry) {
         this.watchedDirectoryEntry_.toURL(),
         function(result) {
           if (!result) {
-            console.error('Failed to remove file watch');
+            console.error('Failed to remove file watch.');
           }
         });
   }
@@ -1450,7 +1431,7 @@ FileWatcher.prototype.changeWatchedEntry = function(entry) {
         this.watchedDirectoryEntry_.toURL(),
         function(result) {
           if (!result) {
-            console.error('Failed to add file watch');
+            console.error('Failed to add file watch.');
             if (this.watchedDirectoryEntry_ == entry)
               this.watchedDirectoryEntry_ = null;
           }

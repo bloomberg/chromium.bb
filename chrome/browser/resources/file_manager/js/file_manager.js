@@ -502,6 +502,7 @@ DialogType.isModal = function(type) {
     var controller = this.fileTransferController_ =
         new FileTransferController(this.document_,
                                    this.copyManager_,
+                                   this.metadataCache_,
                                    this.directoryModel_);
     controller.attachDragSource(this.table_.list);
     controller.attachDropTarget(this.table_.list);
@@ -875,9 +876,14 @@ DialogType.isModal = function(type) {
         this.dialogType == DialogType.SELECT_FOLDER ||
         this.dialogType == DialogType.SELECT_SAVEAS_FILE;
 
+    this.fileFilter_ = new FileFilter(
+        this.metadataCache_,
+        false  /* Don't show dot files by default. */);
+
     this.directoryModel_ = new DirectoryModel(
         this.filesystem_.root,
         singleSelection,
+        this.fileFilter_,
         this.metadataCache_,
         this.volumeManager_,
         this.isDriveEnabled());
@@ -1219,7 +1225,7 @@ DialogType.isModal = function(type) {
    * @private
    */
   FileManager.prototype.updateFileTypeFilter_ = function() {
-    this.directoryModel_.removeFilter('fileType');
+    this.fileFilter_.removeFilter('fileType');
     var selectedIndex = this.getSelectedFilterIndex_();
     if (selectedIndex > 0) { // Specific filter selected.
       var regexp = new RegExp('.*(' +
@@ -1227,9 +1233,8 @@ DialogType.isModal = function(type) {
       var filter = function(entry) {
         return entry.isDirectory || regexp.test(entry.name);
       };
-      this.directoryModel_.addFilter('fileType', filter);
+      this.fileFilter_.addFilter('fileType', filter);
     }
-    this.directoryModel_.rescan();
   };
 
   /**
@@ -2443,8 +2448,8 @@ DialogType.isModal = function(type) {
         return;
 
       case 'Ctrl-190':  // Ctrl-. => Toggle filter files.
-        var dm = this.directoryModel_;
-        dm.setFilterHidden(!dm.isFilterHiddenOn());
+        this.fileFilter_.setFilterHidden(
+            !this.fileFilter_.isFilterHiddenOn());
         event.preventDefault();
         return;
 
@@ -2921,7 +2926,7 @@ DialogType.isModal = function(type) {
       msg = str('ERROR_WHITESPACE_NAME');
     } else if (/^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])$/i.test(name)) {
       msg = str('ERROR_RESERVED_NAME');
-    } else if (this.directoryModel_.isFilterHiddenOn() && name[0] == '.') {
+    } else if (this.fileFilter_.isFilterHiddenOn() && name[0] == '.') {
       msg = str('ERROR_HIDDEN_NAME');
     }
 
