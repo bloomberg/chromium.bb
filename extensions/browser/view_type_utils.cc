@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/view_type_utils.h"
+#include "extensions/browser/view_type_utils.h"
 
 #include "base/lazy_instance.h"
 #include "content/public/browser/web_contents.h"
 
 using content::WebContents;
 
-namespace chrome {
+namespace extensions {
 
 namespace {
 
@@ -38,8 +38,7 @@ ViewType GetViewType(WebContents* tab) {
 }
 
 void SetViewType(WebContents* tab, ViewType type) {
-  tab->SetUserData(&kViewTypeUserDataKey,
-                   new ViewTypeUserData(type));
+  tab->SetUserData(&kViewTypeUserDataKey, new ViewTypeUserData(type));
 }
 
 }  // namespace chrome

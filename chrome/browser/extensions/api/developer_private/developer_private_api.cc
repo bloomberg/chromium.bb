@@ -25,7 +25,6 @@
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
-#include "chrome/browser/view_type_utils.h"
 #include "chrome/common/extensions/api/developer_private.h"
 #include "chrome/common/extensions/api/icons/icons_handler.h"
 #include "chrome/common/extensions/background_info.h"
@@ -37,6 +36,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/view_type_utils.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_resource.h"
 #include "grit/chromium_strings.h"
@@ -228,9 +228,9 @@ void DeveloperPrivateGetItemsInfoFunction::
     content::RenderViewHost* host = *iter;
     content::WebContents* web_contents =
         content::WebContents::FromRenderViewHost(host);
-    chrome::ViewType host_type = chrome::GetViewType(web_contents);
-    if (chrome::VIEW_TYPE_EXTENSION_POPUP == host_type ||
-        chrome::VIEW_TYPE_EXTENSION_DIALOG == host_type)
+    ViewType host_type = GetViewType(web_contents);
+    if (VIEW_TYPE_EXTENSION_POPUP == host_type ||
+        VIEW_TYPE_EXTENSION_DIALOG == host_type)
       continue;
 
     content::RenderProcessHost* process = host->GetProcess();

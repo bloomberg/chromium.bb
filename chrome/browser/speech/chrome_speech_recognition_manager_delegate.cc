@@ -17,7 +17,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/speech/chrome_speech_recognition_preferences.h"
 #include "chrome/browser/tab_contents/tab_util.h"
-#include "chrome/browser/view_type_utils.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_registrar.h"
@@ -32,6 +31,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/speech_recognition_error.h"
 #include "content/public/common/speech_recognition_result.h"
+#include "extensions/browser/view_type_utils.h"
 #include "grit/generated_resources.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -501,15 +501,15 @@ void ChromeSpeechRecognitionManagerDelegate::CheckRenderViewType(
   }
 
   WebContents* web_contents = WebContents::FromRenderViewHost(render_view_host);
-  chrome::ViewType view_type = chrome::GetViewType(web_contents);
+  extensions::ViewType view_type = extensions::GetViewType(web_contents);
 
   // TODO(kalman): Also enable speech bubble for extension popups
   // (VIEW_TYPE_EXTENSION_POPUP) once popup-like control UI works properly in
   // extensions: http://crbug.com/163851.
   // Right now the extension popup closes and dismisses immediately on user
   // click.
-  if (view_type == chrome::VIEW_TYPE_TAB_CONTENTS ||
-      view_type == chrome::VIEW_TYPE_APP_SHELL) {
+  if (view_type == extensions::VIEW_TYPE_TAB_CONTENTS ||
+      view_type == extensions::VIEW_TYPE_APP_SHELL) {
     // If it is a tab, we can show the speech input bubble or ask for
     // permission.
 

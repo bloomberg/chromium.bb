@@ -2076,8 +2076,6 @@
         'browser/value_store/value_store_frontend.h',
         'browser/value_store/value_store.cc',
         'browser/value_store/value_store.h',
-        'browser/view_type_utils.cc',
-        'browser/view_type_utils.h',
         'browser/web_applications/web_app.cc',
         'browser/web_applications/web_app.h',
         'browser/web_applications/web_app_android.cc',

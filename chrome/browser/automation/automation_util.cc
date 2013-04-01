@@ -30,13 +30,13 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/view_type_utils.h"
 #include "chrome/common/automation_id.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/view_type_utils.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_store.h"
@@ -470,17 +470,17 @@ AutomationId GetIdForExtensionView(
     const content::RenderViewHost* render_view_host) {
   AutomationId::Type type;
   WebContents* web_contents = WebContents::FromRenderViewHost(render_view_host);
-  switch (chrome::GetViewType(web_contents)) {
-    case chrome::VIEW_TYPE_EXTENSION_POPUP:
+  switch (extensions::GetViewType(web_contents)) {
+    case extensions::VIEW_TYPE_EXTENSION_POPUP:
       type = AutomationId::kTypeExtensionPopup;
       break;
-    case chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE:
+    case extensions::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE:
       type = AutomationId::kTypeExtensionBgPage;
       break;
-    case chrome::VIEW_TYPE_EXTENSION_INFOBAR:
+    case extensions::VIEW_TYPE_EXTENSION_INFOBAR:
       type = AutomationId::kTypeExtensionInfobar;
       break;
-    case chrome::VIEW_TYPE_APP_SHELL:
+    case extensions::VIEW_TYPE_APP_SHELL:
       type = AutomationId::kTypeAppShell;
       break;
     default:

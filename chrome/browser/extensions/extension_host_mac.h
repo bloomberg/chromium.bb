@@ -14,9 +14,10 @@ class Extension;
 // now that ExtensionHost is restructured to rely on WebContents.
 class ExtensionHostMac : public ExtensionHost {
  public:
-  ExtensionHostMac(const extensions::Extension* extension,
+  ExtensionHostMac(const Extension* extension,
                    content::SiteInstance* site_instance,
-                   const GURL& url, chrome::ViewType host_type) :
+                   const GURL& url,
+                   ViewType host_type) :
       ExtensionHost(extension, site_instance, url, host_type) {}
   virtual ~ExtensionHostMac();
 

@@ -15,12 +15,12 @@
 #include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
-#include "chrome/common/view_type.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/common/view_type.h"
 
 namespace extensions {
 
@@ -41,7 +41,7 @@ bool LazyBackgroundTaskQueue::ShouldEnqueueTask(
     Profile* profile, const Extension* extension) {
   DCHECK(extension);
   if (BackgroundInfo::HasBackgroundPage(extension)) {
-    ExtensionProcessManager* pm = extensions::ExtensionSystem::Get(profile)->
+    ExtensionProcessManager* pm = ExtensionSystem::Get(profile)->
         process_manager();
     ExtensionHost* background_host =
         pm->GetBackgroundHostForExtension(extension->id());
@@ -128,8 +128,7 @@ void LazyBackgroundTaskQueue::Observe(
       // events for it.
       ExtensionHost* host =
           content::Details<ExtensionHost>(details).ptr();
-      if (host->extension_host_type() ==
-              chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
+      if (host->extension_host_type() == VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
         CHECK(host->did_stop_loading());
         ProcessPendingTasks(host, host->profile(), host->extension());
       }
@@ -143,8 +142,7 @@ void LazyBackgroundTaskQueue::Observe(
       Profile* profile = content::Source<Profile>(source).ptr();
       ExtensionHost* host =
            content::Details<ExtensionHost>(details).ptr();
-      if (host->extension_host_type() ==
-              chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
+      if (host->extension_host_type() == VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
         ProcessPendingTasks(NULL, profile, host->extension());
       }
       break;

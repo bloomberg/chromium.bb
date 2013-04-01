@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_VIEW_TYPE_UTILS_H_
-#define CHROME_BROWSER_VIEW_TYPE_UTILS_H_
+#ifndef EXTENSIONS_BROWSER_VIEW_TYPE_UTILS_H_
+#define EXTENSIONS_BROWSER_VIEW_TYPE_UTILS_H_
 
-#include "chrome/common/view_type.h"
+#include "extensions/common/view_type.h"
 
 namespace content {
 class WebContents;
 }
 
-namespace chrome {
+namespace extensions {
 
 // Get/Set the type of a WebContents.
 // GetViewType handles a NULL |tab| for convenience by returning
@@ -21,4 +21,4 @@ void SetViewType(content::WebContents* tab, ViewType type);
 
 }  // namespace chrome
 
-#endif  // CHROME_BROWSER_VIEW_TYPE_UTILS_H_
+#endif  // EXTENSIONS_BROWSER_VIEW_TYPE_UTILS_H_

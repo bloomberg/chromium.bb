@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/view_type.h"
+#include "extensions/common/view_type.h"
 
-namespace chrome {
+namespace extensions {
 
 const char kViewTypeTabContents[] = "TAB";
 const char kViewTypeBackgroundPage[] = "BACKGROUND";
@@ -16,4 +16,4 @@ const char kViewTypeExtensionDialog[] = "EXTENSION_DIALOG";
 const char kViewTypeAppShell[] = "SHELL";
 const char kViewTypeAll[] = "ALL";
 
-}  // namespace chrome
+}  // namespace extensions

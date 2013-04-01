@@ -7,11 +7,11 @@
 #include "chrome/browser/extensions/api/messaging/message_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/view_type_utils.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/view_type_utils.h"
 
 using content::WebContents;
 
@@ -39,7 +39,7 @@ void MessageHandler::RenderViewHostInitialized() {
   WebContents* web_contents =
       WebContents::FromRenderViewHost(render_view_host());
   Send(new ExtensionMsg_NotifyRenderViewType(
-      routing_id(), chrome::GetViewType(web_contents)));
+      routing_id(), extensions::GetViewType(web_contents)));
 }
 
 void MessageHandler::OnPostMessage(int port_id,

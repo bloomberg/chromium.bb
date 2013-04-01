@@ -18,7 +18,6 @@
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
-#include "chrome/browser/view_type_utils.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
@@ -30,6 +29,7 @@
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
+#include "extensions/browser/view_type_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_ANDROID)
@@ -230,7 +230,7 @@ void GeolocationPermissionContextTests::AddNewTab(const GURL& url) {
       SendNavigate(extra_tabs_.size() + 1, url);
 
   // Set up required helpers, and make this be as "tabby" as the code requires.
-  chrome::SetViewType(new_tab, chrome::VIEW_TYPE_TAB_CONTENTS);
+  extensions::SetViewType(new_tab, extensions::VIEW_TYPE_TAB_CONTENTS);
   InfoBarService::CreateForWebContents(new_tab);
 
   extra_tabs_.push_back(new_tab);
@@ -257,7 +257,7 @@ void GeolocationPermissionContextTests::SetUp() {
   ChromeRenderViewHostTestHarness::SetUp();
 
   // Set up required helpers, and make this be as "tabby" as the code requires.
-  chrome::SetViewType(web_contents(), chrome::VIEW_TYPE_TAB_CONTENTS);
+  extensions::SetViewType(web_contents(), extensions::VIEW_TYPE_TAB_CONTENTS);
   InfoBarService::CreateForWebContents(web_contents());
   TabSpecificContentSettings::CreateForWebContents(web_contents());
 #if defined(OS_ANDROID)

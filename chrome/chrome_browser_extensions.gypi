@@ -57,6 +57,8 @@
         # tests and mocks.
         '../extensions/browser/file_reader.cc',
         '../extensions/browser/file_reader.h',
+        '../extensions/browser/view_type_utils.cc',
+        '../extensions/browser/view_type_utils.h',
         'browser/extensions/active_tab_permission_granter.cc',
         'browser/extensions/active_tab_permission_granter.h',
         'browser/extensions/activity_actions.h',

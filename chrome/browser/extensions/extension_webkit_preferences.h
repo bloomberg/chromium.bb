@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_WEBKIT_PREFERENCES_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_WEBKIT_PREFERENCES_H_
 
-#include "chrome/common/view_type.h"
+#include "extensions/common/view_type.h"
 
 namespace extensions {
 class Extension;
@@ -18,7 +18,7 @@ struct WebPreferences;
 namespace extension_webkit_preferences {
 
 void SetPreferences(const extensions::Extension* extension,
-                    chrome::ViewType render_view_type,
+                    extensions::ViewType render_view_type,
                     webkit_glue::WebPreferences* webkit_prefs);
 
 }  // namespace extension_webkit_preferences

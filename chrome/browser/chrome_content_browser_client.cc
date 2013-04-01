@@ -79,7 +79,6 @@
 #include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
 #include "chrome/browser/user_style_sheet_watcher.h"
 #include "chrome/browser/user_style_sheet_watcher_factory.h"
-#include "chrome/browser/view_type_utils.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -110,6 +109,7 @@
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_descriptors.h"
+#include "extensions/browser/view_type_utils.h"
 #include "extensions/common/constants.h"
 #include "grit/generated_resources.h"
 #include "grit/ui_resources.h"
@@ -1847,7 +1847,7 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
     web_prefs->force_compositing_mode = true;
 
   WebContents* web_contents = WebContents::FromRenderViewHost(rvh);
-  chrome::ViewType view_type = chrome::GetViewType(web_contents);
+  extensions::ViewType view_type = extensions::GetViewType(web_contents);
   ExtensionService* service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
   if (service) {
@@ -1863,9 +1863,9 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
     }
   }
 
-  if (view_type == chrome::VIEW_TYPE_NOTIFICATION) {
+  if (view_type == extensions::VIEW_TYPE_NOTIFICATION) {
     web_prefs->allow_scripts_to_close_windows = true;
-  } else if (view_type == chrome::VIEW_TYPE_BACKGROUND_CONTENTS) {
+  } else if (view_type == extensions::VIEW_TYPE_BACKGROUND_CONTENTS) {
     // Disable all kinds of acceleration for background pages.
     // See http://crbug.com/96005 and http://crbug.com/96006
     web_prefs->force_compositing_mode = false;

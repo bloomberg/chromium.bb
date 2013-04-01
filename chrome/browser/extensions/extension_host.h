@@ -12,12 +12,12 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/perftimer.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
-#include "chrome/common/view_type.h"
 #include "content/public/browser/javascript_dialog_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "extensions/common/view_type.h"
 
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/ui/views/extensions/extension_view_views.h"
@@ -66,7 +66,7 @@ class ExtensionHost : public content::WebContentsDelegate,
 
   ExtensionHost(const Extension* extension,
                 content::SiteInstance* site_instance,
-                const GURL& url, chrome::ViewType host_type);
+                const GURL& url, ViewType host_type);
   virtual ~ExtensionHost();
 
 #if defined(TOOLKIT_VIEWS)
@@ -105,7 +105,7 @@ class ExtensionHost : public content::WebContentsDelegate,
 
   Profile* profile() const { return profile_; }
 
-  chrome::ViewType extension_host_type() const { return extension_host_type_; }
+  ViewType extension_host_type() const { return extension_host_type_; }
   const GURL& GetURL() const;
 
   // ExtensionFunctionDispatcher::Delegate
@@ -188,8 +188,7 @@ class ExtensionHost : public content::WebContentsDelegate,
   void Close();
 
   // ExtensionFunctionDispatcher::Delegate
-  virtual extensions::WindowController*
-      GetExtensionWindowController() const OVERRIDE;
+  virtual WindowController* GetExtensionWindowController() const OVERRIDE;
 
   // Message handlers.
   void OnRequest(const ExtensionHostMsg_Request_Params& params);
@@ -247,7 +246,7 @@ class ExtensionHost : public content::WebContentsDelegate,
   ExtensionFunctionDispatcher extension_function_dispatcher_;
 
   // The type of view being hosted.
-  chrome::ViewType extension_host_type_;
+  ViewType extension_host_type_;
 
   // The relevant WebContents associated with this ExtensionHost, if any.
   content::WebContents* associated_web_contents_;

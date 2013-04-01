@@ -15,7 +15,6 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
-#include "chrome/browser/view_type_utils.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "content/public/browser/invalidate_type.h"
@@ -27,6 +26,7 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/view_type_utils.h"
 #include "ui/gfx/image/image.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
@@ -52,7 +52,7 @@ void PanelHost::Init(const GURL& url) {
   content::WebContents::CreateParams create_params(
       profile_, content::SiteInstance::CreateForURL(profile_, url));
   web_contents_.reset(content::WebContents::Create(create_params));
-  chrome::SetViewType(web_contents_.get(), chrome::VIEW_TYPE_PANEL);
+  extensions::SetViewType(web_contents_.get(), extensions::VIEW_TYPE_PANEL);
   web_contents_->SetDelegate(this);
   content::WebContentsObserver::Observe(web_contents_.get());
 

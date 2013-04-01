@@ -10,10 +10,10 @@
 
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/common/view_type.h"
 #include "content/public/common/console_message_level.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "content/public/renderer/render_view_observer_tracker.h"
+#include "extensions/common/view_type.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebURLResponse.h"
 
 class GURL;
@@ -44,7 +44,7 @@ class ExtensionHelper
   static std::vector<content::RenderView*> GetExtensionViews(
       const std::string& extension_id,
       int browser_window_id,
-      chrome::ViewType view_type);
+      ViewType view_type);
 
   // Returns the given extension's background page, or NULL if none.
   static content::RenderView* GetBackgroundPage(
@@ -55,7 +55,7 @@ class ExtensionHelper
 
   int tab_id() const { return tab_id_; }
   int browser_window_id() const { return browser_window_id_; }
-  chrome::ViewType view_type() const { return view_type_; }
+  ViewType view_type() const { return view_type_; }
   Dispatcher* dispatcher() const { return dispatcher_; }
 
  private:
@@ -89,7 +89,7 @@ class ExtensionHelper
                                        const std::string& error_message);
   void OnExecuteCode(const ExtensionMsg_ExecuteCode_Params& params);
   void OnGetApplicationInfo(int page_id);
-  void OnNotifyRendererViewType(chrome::ViewType view_type);
+  void OnNotifyRendererViewType(ViewType view_type);
   void OnSetTabId(int tab_id);
   void OnUpdateBrowserWindowId(int window_id);
   void OnAddMessageToConsole(content::ConsoleMessageLevel level,
@@ -116,7 +116,7 @@ class ExtensionHelper
   int pending_app_icon_requests_;
 
   // Type of view attached with RenderView.
-  chrome::ViewType view_type_;
+  ViewType view_type_;
 
   // Id of the tab which the RenderView is attached to.
   int tab_id_;

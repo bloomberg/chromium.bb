@@ -16,19 +16,19 @@
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/common/extensions/permissions/socket_permission_data.h"
 #include "chrome/common/extensions/permissions/usb_device_permission_data.h"
-#include "chrome/common/view_type.h"
 #include "chrome/common/web_apps.h"
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/socket_permission_request.h"
 #include "extensions/common/draggable_region.h"
 #include "extensions/common/url_pattern.h"
 #include "extensions/common/url_pattern_set.h"
+#include "extensions/common/view_type.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_macros.h"
 
 #define IPC_MESSAGE_START ExtensionMsgStart
 
-IPC_ENUM_TRAITS(chrome::ViewType)
+IPC_ENUM_TRAITS(extensions::ViewType)
 
 // Parameters structure for ExtensionHostMsg_AddAPIActionToActivityLog.
 IPC_STRUCT_BEGIN(ExtensionHostMsg_APIAction_Params)
@@ -357,7 +357,7 @@ IPC_MESSAGE_CONTROL2(ExtensionMsg_ClearTabSpecificPermissions,
 
 // Tell the renderer which type this view is.
 IPC_MESSAGE_ROUTED1(ExtensionMsg_NotifyRenderViewType,
-                    chrome::ViewType /* view_type */)
+                    extensions::ViewType /* view_type */)
 
 // Deliver a message sent with ExtensionHostMsg_PostMessage.
 IPC_MESSAGE_CONTROL3(ExtensionMsg_UsingWebRequestAPI,

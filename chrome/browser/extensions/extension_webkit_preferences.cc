@@ -13,7 +13,7 @@
 namespace extension_webkit_preferences {
 
 void SetPreferences(const extensions::Extension* extension,
-                    chrome::ViewType render_view_type,
+                    extensions::ViewType render_view_type,
                     webkit_glue::WebPreferences* webkit_prefs) {
   if (!extension)
     return;
@@ -30,7 +30,7 @@ void SetPreferences(const extensions::Extension* extension,
 
     // Disable gpu acceleration for extension background pages to avoid
     // unecessarily creating a compositor context for them.
-    if (render_view_type == chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
+    if (render_view_type == extensions::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
       webkit_prefs->accelerated_compositing_enabled = false;
       webkit_prefs->force_compositing_mode = false;
     }

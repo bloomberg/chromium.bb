@@ -41,7 +41,6 @@
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
-#include "chrome/browser/view_type_utils.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/background_info.h"
@@ -65,6 +64,7 @@
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "extensions/browser/view_type_utils.h"
 #include "extensions/common/constants.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
@@ -1018,10 +1018,10 @@ void ExtensionSettingsHandler::GetInspectablePagesForExtensionProcess(
        iter != views.end(); ++iter) {
     RenderViewHost* host = *iter;
     WebContents* web_contents = WebContents::FromRenderViewHost(host);
-    chrome::ViewType host_type = chrome::GetViewType(web_contents);
+    extensions::ViewType host_type = extensions::GetViewType(web_contents);
     if (host == deleting_rvh_ ||
-        chrome::VIEW_TYPE_EXTENSION_POPUP == host_type ||
-        chrome::VIEW_TYPE_EXTENSION_DIALOG == host_type)
+        extensions::VIEW_TYPE_EXTENSION_POPUP == host_type ||
+        extensions::VIEW_TYPE_EXTENSION_DIALOG == host_type)
       continue;
 
     GURL url = web_contents->GetURL();

@@ -7,11 +7,11 @@
 #include "chrome/browser/ui/cocoa/extensions/extension_view_mac.h"
 
 #include "chrome/browser/extensions/extension_host.h"
-#include "chrome/common/view_type.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
+#include "extensions/common/view_type.h"
 
 // The minimum/maximum dimensions of the popup.
 const CGFloat ExtensionViewMac::kMinWidth = 25.0;
@@ -53,8 +53,8 @@ void ExtensionViewMac::ResizeDueToAutoResize(const gfx::Size& new_size) {
 }
 
 void ExtensionViewMac::RenderViewCreated() {
-  chrome::ViewType host_type = extension_host_->extension_host_type();
-  if (host_type == chrome::VIEW_TYPE_EXTENSION_POPUP) {
+  extensions::ViewType host_type = extension_host_->extension_host_type();
+  if (host_type == extensions::VIEW_TYPE_EXTENSION_POPUP) {
     gfx::Size min_size(ExtensionViewMac::kMinWidth,
                        ExtensionViewMac::kMinHeight);
     gfx::Size max_size(ExtensionViewMac::kMaxWidth,

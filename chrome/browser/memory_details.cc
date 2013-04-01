@@ -14,7 +14,6 @@
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/view_type_utils.h"
 #include "chrome/common/chrome_process_type.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
@@ -27,6 +26,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/bindings_policy.h"
+#include "extensions/browser/view_type_utils.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -252,7 +252,7 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
         GURL url;
         if (contents)
           url = contents->GetURL();
-        chrome::ViewType type = chrome::GetViewType(contents);
+        extensions::ViewType type = extensions::GetViewType(contents);
         if (host->GetEnabledBindings() & content::BINDINGS_POLICY_WEB_UI) {
           process.renderer_type = ProcessMemoryInformation::RENDERER_CHROME;
         } else if (extension_process_map &&
@@ -292,14 +292,14 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
           continue;
         }
 
-        if (type == chrome::VIEW_TYPE_BACKGROUND_CONTENTS) {
+        if (type == extensions::VIEW_TYPE_BACKGROUND_CONTENTS) {
           process.titles.push_back(UTF8ToUTF16(url.spec()));
           process.renderer_type =
                     ProcessMemoryInformation::RENDERER_BACKGROUND_APP;
           continue;
         }
 
-        if (type == chrome::VIEW_TYPE_NOTIFICATION) {
+        if (type == extensions::VIEW_TYPE_NOTIFICATION) {
           process.titles.push_back(UTF8ToUTF16(url.spec()));
           process.renderer_type =
                     ProcessMemoryInformation::RENDERER_NOTIFICATION;

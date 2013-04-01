@@ -71,7 +71,6 @@
 #include "chrome/common/content_settings_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/manifest.h"
-#include "chrome/common/view_type.h"
 #include "content/public/browser/dom_operation_notification_details.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_service.h"
@@ -79,6 +78,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/process_type.h"
+#include "extensions/common/view_type.h"
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/rect.h"
@@ -2772,7 +2772,7 @@ void ExtensionPopupObserver::Observe(
   extensions::ExtensionHost* host =
       content::Details<extensions::ExtensionHost>(details).ptr();
   if (host->extension_id() == extension_id_ &&
-      host->extension_host_type() == chrome::VIEW_TYPE_EXTENSION_POPUP) {
+      host->extension_host_type() == extensions::VIEW_TYPE_EXTENSION_POPUP) {
     AutomationJSONReply(automation_, reply_message_.release())
         .SendSuccess(NULL);
     delete this;

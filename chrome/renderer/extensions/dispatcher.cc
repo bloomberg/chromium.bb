@@ -21,7 +21,6 @@
 #include "chrome/common/extensions/message_bundle.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/common/view_type.h"
 #include "chrome/renderer/chrome_render_process_observer.h"
 #include "chrome/renderer/extensions/api_activity_logger.h"
 #include "chrome/renderer/extensions/api_definitions_natives.h"
@@ -62,8 +61,8 @@
 #include "chrome/renderer/resource_bundle_source_map.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
+#include "extensions/common/view_type.h"
 #include "grit/renderer_resources.h"
-
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebURLRequest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDataSource.h"
@@ -253,7 +252,7 @@ class LazyBackgroundPageNativeHandler : public ChromeV8Extension {
 
     ExtensionHelper* helper = ExtensionHelper::Get(render_view);
     return (extension && BackgroundInfo::HasLazyBackgroundPage(extension) &&
-            helper->view_type() == chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE);
+            helper->view_type() == VIEW_TYPE_EXTENSION_BACKGROUND_PAGE);
   }
 };
 
@@ -504,7 +503,7 @@ void Dispatcher::OnSetFunctionNames(
 }
 
 void Dispatcher::OnSetChannel(int channel) {
-  extensions::Feature::SetCurrentChannel(
+  Feature::SetCurrentChannel(
       static_cast<chrome::VersionInfo::Channel>(channel));
 }
 

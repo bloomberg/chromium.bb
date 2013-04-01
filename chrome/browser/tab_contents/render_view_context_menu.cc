@@ -55,7 +55,6 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
-#include "chrome/browser/view_type_utils.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -79,6 +78,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_restriction.h"
 #include "content/public/common/ssl_status.h"
+#include "extensions/browser/view_type_utils.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebContextMenuData.h"
@@ -412,14 +412,15 @@ void RenderViewContextMenu::InitMenu() {
     return;
   }
 
-  chrome::ViewType view_type = chrome::GetViewType(source_web_contents_);
-  if (view_type == chrome::VIEW_TYPE_APP_SHELL) {
+  extensions::ViewType view_type =
+      extensions::GetViewType(source_web_contents_);
+  if (view_type == extensions::VIEW_TYPE_APP_SHELL) {
     AppendPlatformAppItems();
     return;
-  } else if (view_type == chrome::VIEW_TYPE_EXTENSION_POPUP) {
+  } else if (view_type == extensions::VIEW_TYPE_EXTENSION_POPUP) {
     AppendPopupExtensionItems();
     return;
-  } else if (view_type == chrome::VIEW_TYPE_PANEL) {
+  } else if (view_type == extensions::VIEW_TYPE_PANEL) {
     AppendPanelItems();
     return;
   }

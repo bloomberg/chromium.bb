@@ -17,7 +17,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/view_type_utils.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/api/web_navigation.h"
 #include "content/public/browser/navigation_details.h"
@@ -28,6 +27,7 @@
 #include "content/public/browser/resource_request_details.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
+#include "extensions/browser/view_type_utils.h"
 #include "net/base/net_errors.h"
 
 namespace GetFrame = extensions::api::web_navigation::GetFrame;
@@ -119,7 +119,7 @@ void WebNavigationEventRouter::TabReplacedAt(
   if (!tab_observer) {
     // If you hit this DCHECK(), please add reproduction steps to
     // http://crbug.com/109464.
-    DCHECK(chrome::GetViewType(old_contents) != chrome::VIEW_TYPE_TAB_CONTENTS);
+    DCHECK(GetViewType(old_contents) != VIEW_TYPE_TAB_CONTENTS);
     return;
   }
   const FrameNavigationState& frame_navigation_state =
@@ -167,8 +167,7 @@ void WebNavigationEventRouter::Retargeting(const RetargetingDetails* details) {
   if (!tab_observer) {
     // If you hit this DCHECK(), please add reproduction steps to
     // http://crbug.com/109464.
-    DCHECK(chrome::GetViewType(details->source_web_contents) !=
-           chrome::VIEW_TYPE_TAB_CONTENTS);
+    DCHECK(GetViewType(details->source_web_contents) != VIEW_TYPE_TAB_CONTENTS);
     return;
   }
   const FrameNavigationState& frame_navigation_state =
@@ -822,8 +821,7 @@ WebNavigationAPI::GetFactoryInstance() {
   return &g_factory.Get();
 }
 
-void WebNavigationAPI::OnListenerAdded(
-    const extensions::EventListenerInfo& details) {
+void WebNavigationAPI::OnListenerAdded(const EventListenerInfo& details) {
   web_navigation_event_router_.reset(new WebNavigationEventRouter(profile_));
   ExtensionSystem::Get(profile_)->event_router()->UnregisterObserver(this);
 }

@@ -108,7 +108,6 @@
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/search_engines/keyword_editor_controller.h"
 #include "chrome/browser/ui/startup/startup_types.h"
-#include "chrome/browser/view_type_utils.h"
 #include "chrome/common/automation_constants.h"
 #include "chrome/common/automation_events.h"
 #include "chrome/common/automation_id.h"
@@ -140,6 +139,7 @@
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/geoposition.h"
 #include "content/public/common/ssl_status.h"
+#include "extensions/browser/view_type_utils.h"
 #include "extensions/common/url_pattern.h"
 #include "extensions/common/url_pattern_set.h"
 #include "net/cookies/cookie_store.h"
@@ -2386,24 +2386,24 @@ void TestingAutomationProvider::GetBrowserInfo(
       std::string type;
       WebContents* web_contents =
           WebContents::FromRenderViewHost(render_view_host);
-      chrome::ViewType view_type = chrome::GetViewType(web_contents);
+      extensions::ViewType view_type = extensions::GetViewType(web_contents);
       switch (view_type) {
-        case chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE:
+        case extensions::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE:
           type = "EXTENSION_BACKGROUND_PAGE";
           break;
-        case chrome::VIEW_TYPE_EXTENSION_POPUP:
+        case extensions::VIEW_TYPE_EXTENSION_POPUP:
           type = "EXTENSION_POPUP";
           break;
-        case chrome::VIEW_TYPE_EXTENSION_INFOBAR:
+        case extensions::VIEW_TYPE_EXTENSION_INFOBAR:
           type = "EXTENSION_INFOBAR";
           break;
-        case chrome::VIEW_TYPE_EXTENSION_DIALOG:
+        case extensions::VIEW_TYPE_EXTENSION_DIALOG:
           type = "EXTENSION_DIALOG";
           break;
-        case chrome::VIEW_TYPE_APP_SHELL:
+        case extensions::VIEW_TYPE_APP_SHELL:
           type = "APP_SHELL";
           break;
-        case chrome::VIEW_TYPE_PANEL:
+        case extensions::VIEW_TYPE_PANEL:
           type = "PANEL";
           break;
         default:

@@ -25,7 +25,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/native_app_window.h"
 #include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
-#include "chrome/browser/view_type_utils.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/api/icons/icons_handler.h"
 #include "chrome/common/extensions/extension.h"
@@ -42,6 +41,7 @@
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/media_stream_request.h"
+#include "extensions/browser/view_type_utils.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/gfx/image/image_skia.h"
@@ -109,7 +109,7 @@ void ShellWindow::Init(const GURL& url,
   FaviconTabHelper::CreateForWebContents(web_contents);
 
   web_contents->SetDelegate(this);
-  chrome::SetViewType(web_contents, chrome::VIEW_TYPE_APP_SHELL);
+  extensions::SetViewType(web_contents, extensions::VIEW_TYPE_APP_SHELL);
 
   // Initialize the window
   window_type_ = params.window_type;

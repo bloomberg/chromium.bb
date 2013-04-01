@@ -26,11 +26,11 @@
 #include "chrome/browser/ui/sync/tab_contents_synced_tab_delegate.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/toolbar/toolbar_model_impl.h"
-#include "chrome/browser/view_type_utils.h"
 #include "components/autofill/browser/autofill_external_delegate.h"
 #include "components/autofill/browser/autofill_manager.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/view_type_utils.h"
 #include "jni/TabBase_jni.h"
 
 using content::WebContents;
@@ -54,7 +54,7 @@ void BrowserTabContents::AttachTabHelpers(WebContents* contents) {
                             new base::SupportsUserData::Data());
 
   // Set the view type.
-  chrome::SetViewType(contents, chrome::VIEW_TYPE_TAB_CONTENTS);
+  extensions::SetViewType(contents, extensions::VIEW_TYPE_TAB_CONTENTS);
 
   // SessionTabHelper comes first because it sets up the tab ID, and other
   // helpers may rely on that.

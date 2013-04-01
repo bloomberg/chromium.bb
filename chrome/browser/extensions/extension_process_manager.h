@@ -13,9 +13,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time.h"
-#include "chrome/common/view_type.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/common/view_type.h"
 
 class Browser;
 class GURL;
@@ -56,10 +56,10 @@ class ExtensionProcessManager : public content::NotificationObserver {
       const extensions::Extension* extension,
       const GURL& url,
       Browser* browser,
-      chrome::ViewType view_type);
+      extensions::ViewType view_type);
   extensions::ExtensionHost* CreateViewHost(const GURL& url,
-                                Browser* browser,
-                                chrome::ViewType view_type);
+                                            Browser* browser,
+                                            extensions::ViewType view_type);
   extensions::ExtensionHost* CreatePopupHost(
       const extensions::Extension* extension,
       const GURL& url,
@@ -177,14 +177,14 @@ class ExtensionProcessManager : public content::NotificationObserver {
   typedef std::string ExtensionId;
   typedef std::map<ExtensionId, BackgroundPageData> BackgroundPageDataMap;
   typedef std::map<content::RenderViewHost*,
-      chrome::ViewType> ExtensionRenderViews;
+      extensions::ViewType> ExtensionRenderViews;
 
   // Close the given |host| iff it's a background page.
   void CloseBackgroundHost(extensions::ExtensionHost* host);
 
   // Ensure browser object is not null except for certain situations.
   void EnsureBrowserWhenRequired(Browser* browser,
-                                 chrome::ViewType view_type);
+                                 extensions::ViewType view_type);
 
   // These are called when the extension transitions between idle and active.
   // They control the process of closing the background page when idle.

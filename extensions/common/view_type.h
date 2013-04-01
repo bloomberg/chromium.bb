@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_VIEW_TYPE_H_
-#define CHROME_COMMON_VIEW_TYPE_H_
+#ifndef EXTENSIONS_COMMON_VIEW_TYPE_H_
+#define EXTENSIONS_COMMON_VIEW_TYPE_H_
 
-namespace chrome {
+namespace extensions {
 
 // Icky RTTI used by a few systems to distinguish the host type of a given
-// RenderViewHost or WebContents.
+// WebContents.
 //
 // TODO(aa): Remove this and teach those systems to keep track of their own
 // data.
@@ -20,6 +20,8 @@ enum ViewType {
   VIEW_TYPE_EXTENSION_DIALOG,
   VIEW_TYPE_EXTENSION_INFOBAR,
   VIEW_TYPE_EXTENSION_POPUP,
+  // TODO(jam): remove this once http://crbug.com/137297 is fixed and HTML5
+  // notifications don't use WebContents.
   VIEW_TYPE_NOTIFICATION,
   VIEW_TYPE_PANEL,
   VIEW_TYPE_TAB_CONTENTS,
@@ -37,6 +39,6 @@ extern const char kViewTypePanel[];
 extern const char kViewTypePopup[];
 extern const char kViewTypeTabContents[];
 
-}  // namespace chrome
+}  // namespace extensions
 
-#endif  // CHROME_COMMON_VIEW_TYPE_H_
+#endif  // EXTENSIONS_COMMON_VIEW_TYPE_H_

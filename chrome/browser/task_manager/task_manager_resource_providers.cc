@@ -43,7 +43,6 @@
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
-#include "chrome/browser/view_type_utils.h"
 #include "chrome/common/chrome_process_type.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -59,6 +58,7 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/process_type.h"
+#include "extensions/browser/view_type_utils.h"
 #include "extensions/common/constants.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -749,7 +749,7 @@ void TaskManagerPanelResourceProvider::Observe(int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   WebContents* web_contents = content::Source<WebContents>(source).ptr();
-  if (chrome::GetViewType(web_contents) != chrome::VIEW_TYPE_PANEL)
+  if (extensions::GetViewType(web_contents) != extensions::VIEW_TYPE_PANEL)
     return;
 
   switch (type) {
@@ -1409,8 +1409,8 @@ const Extension* TaskManagerExtensionProcessResource::GetExtension() const {
 bool TaskManagerExtensionProcessResource::IsBackground() const {
   WebContents* web_contents =
       WebContents::FromRenderViewHost(render_view_host_);
-  chrome::ViewType view_type = chrome::GetViewType(web_contents);
-  return view_type == chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE;
+  extensions::ViewType view_type = extensions::GetViewType(web_contents);
+  return view_type == extensions::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1545,17 +1545,17 @@ bool TaskManagerExtensionProcessResourceProvider::
   // TaskManagerExtensionProcessResource constructor).
   if (web_contents->GetRenderProcessHost()->IsGuest())
     return false;
-  chrome::ViewType view_type = chrome::GetViewType(web_contents);
+  extensions::ViewType view_type = extensions::GetViewType(web_contents);
   // Don't add WebContents (those are handled by
   // TaskManagerTabContentsResourceProvider) or background contents (handled
   // by TaskManagerBackgroundResourceProvider).
 #if defined(USE_ASH)
-  return (view_type != chrome::VIEW_TYPE_TAB_CONTENTS &&
-          view_type != chrome::VIEW_TYPE_BACKGROUND_CONTENTS);
+  return (view_type != extensions::VIEW_TYPE_TAB_CONTENTS &&
+          view_type != extensions::VIEW_TYPE_BACKGROUND_CONTENTS);
 #else
-  return (view_type != chrome::VIEW_TYPE_TAB_CONTENTS &&
-          view_type != chrome::VIEW_TYPE_BACKGROUND_CONTENTS &&
-          view_type != chrome::VIEW_TYPE_PANEL);
+  return (view_type != extensions::VIEW_TYPE_TAB_CONTENTS &&
+          view_type != extensions::VIEW_TYPE_BACKGROUND_CONTENTS &&
+          view_type != extensions::VIEW_TYPE_PANEL);
 #endif  // USE_ASH
 }
 
