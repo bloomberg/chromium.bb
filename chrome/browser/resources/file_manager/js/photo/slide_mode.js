@@ -139,7 +139,7 @@ SlideMode.prototype.initDom_ = function() {
   this.mediaControls_ = new VideoControls(
       this.mediaToolbar_,
       this.showErrorBanner_.bind(this, 'VIDEO_ERROR'),
-      Gallery.toggleFullscreen,
+      this.toggleFullScreen_.bind(this),
       this.container_);
 
   // Ribbon and related controls.
@@ -374,6 +374,15 @@ SlideMode.prototype.getSelectedImageRect = function() {
  */
 SlideMode.prototype.getSelectedItem = function() {
   return this.getItem(this.getSelectedIndex());
+};
+
+/**
+ * Toggles the full screen mode.
+ * @private
+ */
+SlideMode.prototype.toggleFullScreen_ = function() {
+  util.toggleFullScreen(this.document_,
+                        !util.isFullScreen());
 };
 
 /**
@@ -1040,17 +1049,16 @@ SlideMode.prototype.startSlideshow = function(opt_interval, opt_event) {
   if (opt_event)  // Caused by user action, notify the Gallery.
     cr.dispatchSimpleEvent(this, 'useraction');
 
-  this.fullscreenBeforeSlideshow_ = false;
-  Gallery.getFileBrowserPrivate().isFullscreen(function(fullscreen) {
-    this.fullscreenBeforeSlideshow_ = fullscreen;
-    if (!fullscreen) {
-      // Wait until the zoom animation from the mosaic mode is done.
-      setTimeout(Gallery.toggleFullscreen, ImageView.ZOOM_ANIMATION_DURATION);
-      opt_interval = (opt_interval || SlideMode.SLIDESHOW_INTERVAL) +
-          SlideMode.FULLSCREEN_TOGGLE_DELAY;
-    }
-    this.resumeSlideshow_(opt_interval);
-  }.bind(this));
+  this.fullscreenBeforeSlideshow_ = util.isFullScreen();
+  if (!this.fullscreenBeforeSlideshow_) {
+    // Wait until the zoom animation from the mosaic mode is done.
+    setTimeout(this.toggleFullscreen_.bind(this),
+               ImageView.ZOOM_ANIMATION_DURATION);
+    opt_interval = (opt_interval || SlideMode.SLIDESHOW_INTERVAL) +
+        SlideMode.FULLSCREEN_TOGGLE_DELAY;
+  }
+
+  this.resumeSlideshow_(opt_interval);
 };
 
 /**
@@ -1067,18 +1075,18 @@ SlideMode.prototype.stopSlideshow_ = function(opt_event) {
 
   this.pauseSlideshow_();
   this.container_.removeAttribute('slideshow');
-  Gallery.getFileBrowserPrivate().isFullscreen(function(fullscreen) {
-    // Do not restore fullscreen if we exited fullscreen while in slideshow.
-    var toggleModeDelay = 0;
-    if (!this.fullscreenBeforeSlideshow_ && fullscreen) {
-      Gallery.toggleFullscreen();
-      toggleModeDelay = SlideMode.FULLSCREEN_TOGGLE_DELAY;
-    }
-    if (this.leaveAfterSlideshow_) {
-      this.leaveAfterSlideshow_ = false;
-      setTimeout(this.toggleMode_.bind(this), toggleModeDelay);
-    }
-  }.bind(this));
+
+  // Do not restore fullscreen if we exited fullscreen while in slideshow.
+  var fullscreen = util.isFullScreen();
+  var toggleModeDelay = 0;
+  if (!this.fullscreenBeforeSlideshow_ && fullscreen) {
+    this.toggleFullScreen_();
+    toggleModeDelay = SlideMode.FULLSCREEN_TOGGLE_DELAY;
+  }
+  if (this.leaveAfterSlideshow_) {
+    this.leaveAfterSlideshow_ = false;
+    setTimeout(this.toggleMode_.bind(this), toggleModeDelay);
+  }
 };
 
 /**

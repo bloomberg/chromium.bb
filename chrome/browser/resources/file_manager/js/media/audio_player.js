@@ -585,6 +585,8 @@ function FullWindowAudioControls(container, advanceTrack, onError) {
   }.bind(this));
 
   util.disableBrowserShortcutKeys(document);
+  if (!util.platform.v2())
+    util.enableNewFullScreenHandler(document);
 }
 
 FullWindowAudioControls.prototype = { __proto__: AudioControls.prototype };

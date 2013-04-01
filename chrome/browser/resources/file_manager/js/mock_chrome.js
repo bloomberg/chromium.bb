@@ -476,17 +476,6 @@ chrome.fileBrowserPrivate = {
     chrome.fileBrowserPrivate.getDriveFileProperties(urls, callback);
   },
 
-  toggleFullscreen: function() {
-    if (document.webkitIsFullScreen)
-      document.webkitCancelFullScreen();
-    else
-      document.body.webkitRequestFullScreen();
-  },
-
-  isFullscreen: function(callback) {
-    setTimeout(callback, 0, document.webkitIsFullScreen);
-  },
-
   /**
    * Return localized strings.
    */

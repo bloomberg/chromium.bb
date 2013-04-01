@@ -588,8 +588,6 @@ FileBrowserPrivateAPI::FileBrowserPrivateAPI(Profile* profile)
   registry->RegisterFunction<GetSizeStatsFunction>();
   registry->RegisterFunction<FormatDeviceFunction>();
   registry->RegisterFunction<ViewFilesFunction>();
-  registry->RegisterFunction<ToggleFullscreenFunction>();
-  registry->RegisterFunction<IsFullscreenFunction>();
   registry->RegisterFunction<GetDriveFilePropertiesFunction>();
   registry->RegisterFunction<PinDriveFileFunction>();
   registry->RegisterFunction<GetFileLocationsFunction>();
@@ -1855,22 +1853,6 @@ bool GetVolumeMetadataFunction::RunImpl() {
   }
 
   SendResponse(true);
-  return true;
-}
-
-bool ToggleFullscreenFunction::RunImpl() {
-  Browser* browser = GetCurrentBrowser();
-  if (browser) {
-    browser->ToggleFullscreenModeWithExtension(
-        file_manager_util::GetFileBrowserExtensionUrl());
-  }
-  return true;
-}
-
-bool IsFullscreenFunction::RunImpl() {
-  Browser* browser = GetCurrentBrowser();
-  SetResult(Value::CreateBooleanValue(
-      browser && browser->window() && browser->window()->IsFullscreen()));
   return true;
 }
 

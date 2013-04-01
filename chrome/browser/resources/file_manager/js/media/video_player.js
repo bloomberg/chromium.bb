@@ -51,7 +51,7 @@ function FullWindowVideoControls(
   VideoControls.call(this,
       controlsContainer,
       onPlaybackError,
-      function() { chrome.fileBrowserPrivate.toggleFullscreen() },
+      this.toggleFullscreen_.bind(this),
       videoContainer);
 
   this.playerContainer_ = playerContainer;
@@ -65,15 +65,15 @@ function FullWindowVideoControls(
       e.preventDefault();
     }
     if (e.keyIdentifier == 'U+001B') {  // Escape
-      chrome.fileBrowserPrivate.isFullscreen(function(enabled) {
-        if (enabled)
-          chrome.fileBrowserPrivate.toggleFullscreen();
-      });
+      util.toggleFullScreen(this.playerContainer_.ownerDocument,
+                            false);  // Leave the full screen mode.
       e.preventDefault();
     }
   }.bind(this));
 
   util.disableBrowserShortcutKeys(document);
+  if (!util.platform.v2())
+    util.enableNewFullScreenHandler(document);
 
   videoContainer.addEventListener('click',
       this.togglePlayStateWithFeedback.bind(this));
@@ -103,6 +103,15 @@ FullWindowVideoControls.prototype.restorePlayState = function() {
     VideoControls.prototype.restorePlayState.apply(this, arguments);
     this.play();
   }
+};
+
+/**
+ * Toggles the full screen mode.
+ * @private
+ */
+FullWindowVideoControls.prototype.toggleFullscreen_ = function() {
+  util.toggleFullScreen(this.playerContainer_.ownerDocument,
+                        !util.isFullScreen());
 };
 
 // TODO(mtomasz): Convert it to class members: crbug.com/171191.

@@ -188,6 +188,8 @@ Gallery.prototype.initListeners_ = function() {
   this.document_.body.addEventListener('keydown', this.keyDownBound_);
 
   util.disableBrowserShortcutKeys(this.document_);
+  if (!util.platform.v2())
+    util.enableNewFullScreenHandler(this.document_);
 
   this.inactivityWatcher_ = new MouseInactivityWatcher(
       this.container_, Gallery.FADE_TIMEOUT, this.hasActiveTool.bind(this));
@@ -304,10 +306,6 @@ Gallery.prototype.initDom_ = function() {
   this.shareMenu_.hidden = true;
   util.createChild(this.shareMenu_, 'bubble-point');
 
-  Gallery.getFileBrowserPrivate().isFullscreen(function(fullscreen) {
-    this.originalFullscreen_ = fullscreen;
-  }.bind(this));
-
   this.dataModel_.addEventListener('splice', this.onSplice_.bind(this));
   this.dataModel_.addEventListener('content', this.onContentChange_.bind(this));
 
@@ -397,12 +395,11 @@ Gallery.prototype.load = function(urls, selectedUrls) {
  * @private
  */
 Gallery.prototype.close_ = function() {
-  Gallery.getFileBrowserPrivate().isFullscreen(function(fullscreen) {
-    if (this.originalFullscreen_ != fullscreen) {
-      Gallery.toggleFullscreen();
-    }
-    this.context_.onClose(this.getSelectedUrls());
-  }.bind(this));
+  if (util.isFullScreen()) {
+    util.toggleFullScreen(this.document_,
+                          false);  // Leave the full screen mode.
+  }
+  this.context_.onClose(this.getSelectedUrls());
 };
 
 /**
@@ -426,13 +423,6 @@ Gallery.prototype.executeWhenReady = function(callback) {
  */
 Gallery.getFileBrowserPrivate = function() {
   return chrome.fileBrowserPrivate || window.top.chrome.fileBrowserPrivate;
-};
-
-/**
- * Switches gallery to fullscreen mode and back.
- */
-Gallery.toggleFullscreen = function() {
-  Gallery.getFileBrowserPrivate().toggleFullscreen();
 };
 
 /**

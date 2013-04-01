@@ -1266,6 +1266,21 @@ util.disableBrowserShortcutKeys = function(element) {
 };
 
 /**
+ * Enables the new full screen mode handler. This works only for Apps v1.
+ * TODO(mtomasz): Remove after porting to Apps v2.
+ *
+ * @param {Document} doc Document element.
+ */
+util.enableNewFullScreenHandler = function(doc) {
+  doc.addEventListener('keydown', function(e) {
+    if (util.getKeyModifiers(e) + e.keyCode == '122' /* F11 */) {
+      util.toggleFullScreen(doc, !util.isFullScreen());
+      e.preventDefault();
+    }
+  });
+};
+
+/**
  * Makes a redirect to the specified Files.app's window from another window.
  * @param {number} id Window id.
  * @param {string} url Target url.
@@ -1278,4 +1293,35 @@ util.redirectMainWindow = function(id, url) {
 
   windowViews[0].location.href = url;
   return true;
+};
+
+/**
+ * Checks, if the Files.app's window is in a full screen mode.
+ * @return {boolean} True if the full screen mode is enabled.
+ */
+util.isFullScreen = function() {
+  if (document.webkitIsFullScreen)
+    return true;
+
+  // Check the parent if in a iframe.
+  if (window.parent != window &&
+      window.parent.document.webkitIsFullScreen) {
+    return true;
+  }
+
+  return false;
+};
+
+/**
+ * Toggles the full screen mode. It must be called from a mouse or keyboard
+ * event handler.
+ *
+ * @param {Document} document Document to be toggled.
+ * @param {boolean} enabled True for enabling, false for disabling.
+ */
+util.toggleFullScreen = function(document, enabled) {
+  if (!enabled)
+    document.webkitCancelFullScreen();
+  else
+    document.body.webkitRequestFullScreen();
 };

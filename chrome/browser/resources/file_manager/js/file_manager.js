@@ -845,6 +845,8 @@ DialogType.isModal = function(type) {
     this.initFileTypeFilter_();
 
     util.disableBrowserShortcutKeys(this.document_);
+    if (!util.platform.v2())
+      util.enableNewFullScreenHandler(this.document_);
 
     this.updateWindowState_();
     // Populate the static localized strings.

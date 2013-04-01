@@ -12,6 +12,7 @@
   "permissions": [
     "fileBrowserHandler",
     "fileBrowserPrivate",
+    "fullscreen",
     "mediaPlayerPrivate",
     "mediaGalleriesPrivate",
     "metricsPrivate",

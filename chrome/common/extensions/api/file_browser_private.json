@@ -965,28 +965,6 @@
         ]
       },
       {
-        "name": "toggleFullscreen",
-        "description": "Switches fullscreen mode on/off for the File Browser.",
-        "parameters": []
-      },
-      {
-        "name": "isFullscreen",
-        "description": "Checks if the browser is in fullscreen mode.",
-        "parameters": [
-          {
-            "name": "callback",
-            "type": "function",
-            "parameters": [
-              {
-                "name" : "result",
-                "type": "boolean",
-                "description": "Whether the browser is in fullscreen mode."
-              }
-            ]
-          }
-        ]
-      },
-      {
         "name": "getPreferences",
         "description": "Retrieves file manager preferences .",
         "parameters": [
