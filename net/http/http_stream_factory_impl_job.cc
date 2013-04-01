@@ -177,7 +177,7 @@ void HttpStreamFactoryImpl::Job::MarkAsAlternate(
     PortAlternateProtocolPair alternate) {
   DCHECK(!original_url_.get());
   original_url_.reset(new GURL(original_url));
-  if (alternate.protocol == QUIC_1) {
+  if (alternate.protocol == QUIC) {
     DCHECK(session_->params().enable_quic);
     using_quic_ = true;
   }

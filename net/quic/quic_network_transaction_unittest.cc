@@ -42,13 +42,13 @@ namespace {
 
 // This is the expected return from a current server advertising QUIC.
 static const char kQuicAlternateProtocolHttpHeader[] =
-    "Alternate-Protocol: 443:quic/1\r\n\r\n";
+    "Alternate-Protocol: 443:quic\r\n\r\n";
 
 // Returns a vector of NPN protocol strings for negotiating QUIC.
 std::vector<std::string> QuicNextProtos() {
   std::vector<std::string> protos;
   protos.push_back("http/1.1");
-  protos.push_back("quic/1");
+  protos.push_back("quic");
   return protos;
 }
 

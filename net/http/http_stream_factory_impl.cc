@@ -189,7 +189,7 @@ PortAlternateProtocolPair HttpStreamFactoryImpl::GetAlternateProtocolRequestFor(
 
     *alternate_url = UpgradeUrlToHttps(original_url, alternate.port);
   } else {
-    DCHECK_EQ(QUIC_1, alternate.protocol);
+    DCHECK_EQ(QUIC, alternate.protocol);
     if (!session_->params().enable_quic ||
         !original_url.SchemeIs("http"))
       return kNoAlternateProtocol;

@@ -17,7 +17,7 @@ const char* const kAlternateProtocolStrings[] = {
   "npn-spdy/2",
   "npn-spdy/3",
   "npn-spdy/3.1",
-  "quic/1"
+  "quic"
 };
 const char kBrokenAlternateProtocol[] = "Broken";
 
@@ -26,7 +26,7 @@ const char* AlternateProtocolToString(AlternateProtocol protocol) {
     case NPN_SPDY_1:
     case NPN_SPDY_2:
     case NPN_SPDY_3:
-    case QUIC_1:
+    case QUIC:
       DCHECK_LT(static_cast<size_t>(protocol),
                 arraysize(kAlternateProtocolStrings));
       return kAlternateProtocolStrings[protocol];
