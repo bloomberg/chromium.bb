@@ -168,9 +168,9 @@ def buildWebApp(buildtype, version, mimetype, destination, zip_path, plugin,
     else:
       shutil.copy2(plugin, newPluginPath)
 
-  # Strip the linux build.
-  if ((platform.system() == 'Linux') and (buildtype == 'Official')):
-    subprocess.call(["strip", newPluginPath])
+    # Strip the linux build.
+    if ((platform.system() == 'Linux') and (buildtype == 'Official')):
+      subprocess.call(["strip", newPluginPath])
 
   # Patch the files, if necessary. Do this before updating any placeholders
   # in case any of the diff contexts refer to the placeholders.
