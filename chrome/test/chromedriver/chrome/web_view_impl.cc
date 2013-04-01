@@ -8,6 +8,8 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/stringprintf.h"
+#include "base/threading/platform_thread.h"
+#include "base/time.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/chrome/devtools_client_impl.h"
 #include "chrome/test/chromedriver/chrome/dom_tracker.h"
@@ -163,6 +165,70 @@ Status WebViewImpl::CallFunction(const std::string& frame,
     return status;
 
   return internal::ParseCallFunctionResult(*temp_result, result);
+}
+
+Status WebViewImpl::CallAsyncFunction(const std::string& frame,
+                                      const std::string& function,
+                                      const base::ListValue& args,
+                                      bool is_user_supplied,
+                                      const base::TimeDelta& timeout,
+                                      scoped_ptr<base::Value>* result) {
+  base::ListValue async_args;
+  async_args.AppendString("return (" + function + ").apply(null, arguments);");
+  async_args.Append(args.DeepCopy());
+  async_args.AppendBoolean(is_user_supplied);
+  async_args.AppendInteger(timeout.InMilliseconds());
+  scoped_ptr<base::Value> tmp;
+  Status status = CallFunction(
+      frame, kExecuteAsyncScriptScript, async_args, &tmp);
+  if (status.IsError())
+    return status;
+
+  const char* kDocUnloadError = "document unloaded while waiting for result";
+  std::string kQueryResult = base::StringPrintf(
+      "function() {"
+      "  var info = document.$chrome_asyncScriptInfo;"
+      "  if (!info)"
+      "    return {status: %d, value: '%s'};"
+      "  var result = info.result;"
+      "  if (!result)"
+      "    return {status: 0};"
+      "  delete info.result;"
+      "  return result;"
+      "}",
+      kJavaScriptError,
+      kDocUnloadError);
+
+  while (true) {
+    base::ListValue no_args;
+    scoped_ptr<base::Value> query_value;
+    Status status = CallFunction(frame, kQueryResult, no_args, &query_value);
+    if (status.IsError()) {
+      if (status.code() == kNoSuchFrame)
+        return Status(kJavaScriptError, kDocUnloadError);
+      return status;
+    }
+
+    base::DictionaryValue* result_info = NULL;
+    if (!query_value->GetAsDictionary(&result_info))
+      return Status(kUnknownError, "async result info is not a dictionary");
+    int status_code;
+    if (!result_info->GetInteger("status", &status_code))
+      return Status(kUnknownError, "async result info has no int 'status'");
+    if (status_code != kOk) {
+      std::string message;
+      result_info->GetString("value", &message);
+      return Status(static_cast<StatusCode>(status_code), message);
+    }
+
+    base::Value* value = NULL;
+    if (result_info->Get("value", &value)) {
+      result->reset(value->DeepCopy());
+      return Status(kOk);
+    }
+
+    base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
+  }
 }
 
 Status WebViewImpl::GetFrameByFunction(const std::string& frame,

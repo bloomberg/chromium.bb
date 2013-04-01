@@ -52,6 +52,12 @@ class WebViewImpl : public WebView {
                               const std::string& function,
                               const base::ListValue& args,
                               scoped_ptr<base::Value>* result) OVERRIDE;
+  virtual Status CallAsyncFunction(const std::string& frame,
+                                   const std::string& function,
+                                   const base::ListValue& args,
+                                   bool is_user_supplied,
+                                   const base::TimeDelta& timeout,
+                                   scoped_ptr<base::Value>* result) OVERRIDE;
   virtual Status GetFrameByFunction(const std::string& frame,
                                     const std::string& function,
                                     const base::ListValue& args,

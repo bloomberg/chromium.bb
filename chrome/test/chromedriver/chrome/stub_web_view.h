@@ -12,15 +12,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/test/chromedriver/chrome/web_view.h"
 
-namespace base {
-class ListValue;
-class Value;
-}
-
-struct KeyEvent;
-struct MouseEvent;
-class Status;
-
 class StubWebView : public WebView {
  public:
   explicit StubWebView(const std::string& id);
@@ -39,6 +30,12 @@ class StubWebView : public WebView {
                               const std::string& function,
                               const base::ListValue& args,
                               scoped_ptr<base::Value>* result) OVERRIDE;
+  virtual Status CallAsyncFunction(const std::string& frame,
+                                   const std::string& function,
+                                   const base::ListValue& args,
+                                   bool is_user_supplied,
+                                   const base::TimeDelta& timeout,
+                                   scoped_ptr<base::Value>* result) OVERRIDE;
   virtual Status GetFrameByFunction(const std::string& frame,
                                     const std::string& function,
                                     const base::ListValue& args,

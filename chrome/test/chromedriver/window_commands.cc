@@ -199,79 +199,13 @@ Status ExecuteExecuteAsyncScript(
   std::string script;
   if (!params.GetString("script", &script))
     return Status(kUnknownError, "'script' must be a string");
-  const base::ListValue* script_args;
-  if (!params.GetList("args", &script_args))
+  const base::ListValue* args;
+  if (!params.GetList("args", &args))
     return Status(kUnknownError, "'args' must be a list");
 
-  base::ListValue args;
-  args.AppendString(script);
-  args.Append(script_args->DeepCopy());
-  args.AppendInteger(session->script_timeout);
-  scoped_ptr<base::Value> tmp;
-  Status status = web_view->CallFunction(
-      session->GetCurrentFrameId(), kExecuteAsyncScriptScript, args, &tmp);
-  if (status.IsError())
-    return status;
-
-  base::Time start_time = base::Time::Now();
-  base::ListValue args_tmp;
-  const char* kGetAndClearResult =
-      "function() {"
-      "  var toReturn = {};"
-      "  var info = document.chromedriverAsyncScriptInfo;"
-      "  toReturn.finished = info.finished;"
-      "  if (info.finished) {"
-      "    toReturn.result = info.result;"
-      "    delete info.result;"
-      "  }"
-      "  return toReturn;"
-      "}";
-  while (true) {
-    scoped_ptr<base::Value> result;
-    status = web_view->CallFunction(
-        session->GetCurrentFrameId(), kGetAndClearResult, args_tmp, &result);
-    if (status.IsError()) {
-      if (status.code() == kNoSuchFrame)
-        return Status(kJavaScriptError, "page or frame unload", status);
-      return status;
-    }
-    const base::DictionaryValue* dict;
-    if (!result->GetAsDictionary(&dict))
-      return Status(kUnknownError, "failed to tell if script has finished");
-    bool finished = false;
-    if (!dict->GetBoolean("finished", &finished))
-      return Status(kUnknownError, "flag 'finished' is not returned");
-    if (finished) {
-      if (!dict->HasKey("result")) {
-        value->reset(base::Value::CreateNullValue());
-      } else {
-        const base::Value* script_result;
-        dict->Get("result", &script_result);
-        value->reset(script_result->DeepCopy());
-      }
-      return Status(kOk);
-    }
-
-    if ((base::Time::Now() - start_time).InMilliseconds() >=
-        session->script_timeout)
-      break;
-
-    base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(50));
-  }
-
-  // Clear the result if it is set, otherwise prevent the script to set result
-  // by increasing the id.
-  const char* kClearResultForTimeoutScript =
-      "var info = document.chromedriverAsyncScriptInfo;"
-      "info.id++;"
-      "delete info.result;";
-  web_view->EvaluateScript(
-      session->GetCurrentFrameId(), kClearResultForTimeoutScript, &tmp);
-
-  return Status(
-      kScriptTimeout,
-      base::StringPrintf("timed out waiting for result after %d ms",
-                         session->script_timeout));
+  return web_view->CallAsyncFunction(
+      session->GetCurrentFrameId(), "function(){" + script + "}", *args,
+      true, base::TimeDelta::FromMilliseconds(session->script_timeout), value);
 }
 
 Status ExecuteSwitchToFrame(

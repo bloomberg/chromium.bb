@@ -21,35 +21,61 @@ function assertEquals(x, y) {
 }
 
 /**
- * Runs the given test and returns whether it passed.
+ * Runs the given test.
  * @param {function()} test The test to run.
- * @return Whether the test passed.
+ * @param {function()} onPass The function to call if and when the
+ *     function passes.
  */
-function runTest(test) {
-  try {
-    test();
-  } catch (e) {
-    console.log('Failed ' + test.name);
-    console.log(e.stack);
-    return false;
-  }
-  return true;
+function runTest(test, onPass) {
+  var shouldContinue = true;
+  var runner = {
+    waitForAsync: function(description) {
+      shouldContinue = false;
+      console.log('Waiting for ', description);
+    },
+
+    continueTesting: function() {
+      shouldContinue = true;
+      window.setTimeout(function() {
+        if (shouldContinue)
+          onPass();
+      }, 0);
+    }
+  };
+
+  test(runner);
+  if (shouldContinue)
+    onPass();
 }
 
 /**
  * Runs all tests and reports the results via the console.
  */
 function runTests() {
-  var count = 0;
+  var tests = [];
   for (var i in window) {
-    if (i.indexOf('test') == 0) {
-      count++;
-      console.log('Running ', i);
-      if (!runTest(window[i]))
-        throw new Error('Test failure. Not running subsequent tests.');
-    }
+    if (i.indexOf('test') == 0)
+      tests.push(window[i]);
   }
-  console.log('All %d tests passed.', count);
+  console.log('Running %d tests...', tests.length);
+
+  var testNo = 0;
+  function runNextTest() {
+    if (testNo >= tests.length) {
+      console.log('All tests passed');
+      return;
+    }
+
+    function onPass() {
+      testNo++;
+      runNextTest();
+    }
+
+    var test = tests[testNo];
+    console.log('Running (%d/%d) -- %s', testNo + 1, tests.length, test.name);
+    runTest(test, onPass);
+  }
+  runNextTest();
 }
 
 window.addEventListener('load', function() {

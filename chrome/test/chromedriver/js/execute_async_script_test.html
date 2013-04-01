@@ -5,24 +5,20 @@
 <script>
 
 function resetAsyncScriptInfo() {
-  var info = getAsyncScriptInfo();
-  info.id = 0;
-  info.finished = false;
-  delete info.result;
+  delete document[ASYNC_INFO_KEY];
 }
 
-function testJavascriptError() {
+function testScriptThrows() {
   resetAsyncScriptInfo();
+  var info = getAsyncScriptInfo();
 
-  try {
-    executeAsyncScript('f(123);', []);
-    assert(false);
-  } catch (error) {
-    assertEquals(17, error.code);
-  }
+  executeAsyncScript('f(123);', [], true);
+  assertEquals(StatusCode.JAVASCRIPT_ERROR, info.result.status);
+  executeAsyncScript('f(123);', [], false);
+  assertEquals(StatusCode.UNKNOWN_ERROR, info.result.status);
 }
 
-function testExecuteAsyncScript() {
+function testUserScriptWithArgs() {
   resetAsyncScriptInfo();
 
   var injectedArgs = null;
@@ -34,15 +30,91 @@ function testExecuteAsyncScript() {
   var script =
       'var args = arguments; args[0](args); args[args.length - 1](args[1]);';
   var script_args = [captureArguments, 1];
-  executeAsyncScript(script, script_args);
+  executeAsyncScript(script, script_args, true);
 
   assertEquals(3, injectedArgs.length);
   assertEquals(captureArguments, injectedArgs[0]);
   assertEquals(1, injectedArgs[1]);
+
   var info = getAsyncScriptInfo();
-  assert(info.finished);
-  assertEquals(1, info.result);
-  assertEquals(1, info.id);
+  assertEquals(0, info.result.status);
+  assertEquals(1, info.result.value);
+  assertEquals(2, info.id);
+}
+
+function testNonUserScript() {
+  resetAsyncScriptInfo();
+  var info = getAsyncScriptInfo();
+
+  executeAsyncScript('arguments[1](arguments[0])', [33], false);
+  assertEquals(0, info.result.status);
+  assertEquals(33, info.result.value);
+
+  executeAsyncScript('arguments[2](new Error("ERR"))', [33], false);
+  assertEquals(StatusCode.UNKNOWN_ERROR, info.result.status);
+  assertEquals('ERR', info.result.value);
+
+  executeAsyncScript('var e = new Error("ERR"); e.code = 111; arguments[1](e)',
+                     [], false);
+  assertEquals(111, info.result.status);
+  assertEquals('ERR', info.result.value);
+}
+
+function testNoResultBeforeTimeout() {
+  resetAsyncScriptInfo();
+  var info = getAsyncScriptInfo();
+
+  executeAsyncScript(
+      'var a = arguments; window.setTimeout(function() {a[0](33)}, 0);',
+      [], true, 0);
+
+  assert(!info.result);
+}
+
+function testZeroTimeout(runner) {
+  resetAsyncScriptInfo();
+  var info = getAsyncScriptInfo();
+
+  executeAsyncScript(
+      'var a = arguments; window.setTimeout(function() {a[0](33)}, 0);',
+      [], true, 0);
+
+  window.setTimeout(function() {
+    assertEquals(0, info.result.status);
+    assertEquals(33, info.result.value);
+    runner.continueTesting();
+  }, 0);
+  runner.waitForAsync();
+}
+
+function testUserScriptTimesOut(runner) {
+  resetAsyncScriptInfo();
+  var info = getAsyncScriptInfo();
+
+  executeAsyncScript('', [], true, 500);
+
+  window.setTimeout(function() {
+    assertEquals(StatusCode.SCRIPT_TIMEOUT, info.result.status);
+    assert(info.result.value.indexOf('0.5') != -1);
+    runner.continueTesting();
+  }, 500);
+
+  runner.waitForAsync();
+}
+
+function testNonUserScriptTimesOut(runner) {
+  resetAsyncScriptInfo();
+  var info = getAsyncScriptInfo();
+
+  executeAsyncScript('', [], false, 500);
+
+  window.setTimeout(function() {
+    assertEquals(StatusCode.UNKNOWN_ERROR, info.result.status);
+    assert(info.result.value.indexOf('0.5') != -1);
+    runner.continueTesting();
+  }, 500);
+
+  runner.waitForAsync();
 }
 
 function testFirstScriptFinishAfterSecondScriptExecute() {
@@ -51,14 +123,13 @@ function testFirstScriptFinishAfterSecondScriptExecute() {
   executeAsyncScript(
       'var f = arguments[0]; setTimeout(function(){ f(1); }, 100000);', []);
   var info = getAsyncScriptInfo();
-  assert(!info.finished);
   assert(!info.hasOwnProperty('result'));
   assertEquals(1, info.id);
 
   executeAsyncScript('var fn = arguments[0]; fn(2);', []);
-  assert(info.finished);
-  assertEquals(2, info.result);
-  assertEquals(2, info.id);
+  assertEquals(0, info.result.status);
+  assertEquals(2, info.result.value);
+  assertEquals(3, info.id);
 }
 
 </script>

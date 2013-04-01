@@ -240,12 +240,14 @@ Status ExecuteSetTimeout(
     Session* session,
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value) {
-  int ms;
-  if (!params.GetInteger("ms", &ms) || ms < 0)
-    return Status(kUnknownError, "'ms' must be a non-negative integer");
+  double ms_double;
+  if (!params.GetDouble("ms", &ms_double) || ms_double < 0)
+    return Status(kUnknownError, "'ms' must be a non-negative number");
   std::string type;
   if (!params.GetString("type", &type))
     return Status(kUnknownError, "'type' must be a string");
+
+  int ms = static_cast<int>(ms_double);
   if (type == "implicit")
     session->implicit_wait = ms;
   else if (type == "script")
@@ -261,10 +263,10 @@ Status ExecuteSetScriptTimeout(
     Session* session,
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value) {
-  int ms;
-  if (!params.GetInteger("ms", &ms) || ms < 0)
-    return Status(kUnknownError, "'ms' must be a non-negative integer");
-  session->script_timeout = ms;
+  double ms;
+  if (!params.GetDouble("ms", &ms) || ms < 0)
+    return Status(kUnknownError, "'ms' must be a non-negative number");
+  session->script_timeout = static_cast<int>(ms);
   return Status(kOk);
 }
 
@@ -272,10 +274,10 @@ Status ExecuteImplicitlyWait(
     Session* session,
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value) {
-  int ms;
-  if (!params.GetInteger("ms", &ms) || ms < 0)
-    return Status(kUnknownError, "'ms' must be a non-negative integer");
-  session->implicit_wait = ms;
+  double ms;
+  if (!params.GetDouble("ms", &ms) || ms < 0)
+    return Status(kUnknownError, "'ms' must be a non-negative number");
+  session->implicit_wait = static_cast<int>(ms);
   return Status(kOk);
 }
 
