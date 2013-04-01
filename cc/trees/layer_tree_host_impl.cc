@@ -1282,8 +1282,8 @@ bool LayerTreeHostImpl::InitializeRenderer(
   if (!output_surface->BindToClient(this))
     return false;
 
-  scoped_ptr<ResourceProvider> resource_provider =
-      ResourceProvider::Create(output_surface.get());
+  scoped_ptr<ResourceProvider> resource_provider = ResourceProvider::Create(
+      output_surface.get(), settings_.highp_threshold_min);
   if (!resource_provider)
     return false;
 
@@ -1304,7 +1304,8 @@ bool LayerTreeHostImpl::InitializeRenderer(
   } else if (output_surface->context3d()) {
     renderer_ = GLRenderer::Create(this,
                                    output_surface.get(),
-                                   resource_provider.get());
+                                   resource_provider.get(),
+                                   settings_.highp_threshold_min);
   } else if (output_surface->software_device()) {
     renderer_ = SoftwareRenderer::Create(this,
                                          output_surface.get(),

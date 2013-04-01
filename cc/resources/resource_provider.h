@@ -55,7 +55,8 @@ class CC_EXPORT ResourceProvider {
     Bitmap,
   };
 
-  static scoped_ptr<ResourceProvider> Create(OutputSurface* output_surface);
+  static scoped_ptr<ResourceProvider> Create(OutputSurface* output_surface,
+                                             int highp_threshold_min);
 
   virtual ~ResourceProvider();
 
@@ -356,7 +357,7 @@ class CC_EXPORT ResourceProvider {
   }
 
   explicit ResourceProvider(OutputSurface* output_surface);
-  bool Initialize();
+  bool Initialize(int highp_threshold_min);
 
   const Resource* LockForRead(ResourceId id);
   void UnlockForRead(ResourceId id);

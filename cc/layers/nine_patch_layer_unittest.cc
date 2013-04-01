@@ -100,7 +100,7 @@ TEST_F(NinePatchLayerTest, TriggerFullUploadOnceWhenChangingBitmap) {
     DebugScopedSetImplThread impl_thread(Proxy());
     DebugScopedSetMainThreadBlocked main_thread_blocked(Proxy());
     output_surface = CreateFakeOutputSurface();
-    resource_provider = ResourceProvider::Create(output_surface.get());
+    resource_provider = ResourceProvider::Create(output_surface.get(), 0);
     params.texture->AcquireBackingTexture(resource_provider.get());
     ASSERT_TRUE(params.texture->have_backing_texture());
   }

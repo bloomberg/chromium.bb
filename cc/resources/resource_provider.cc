@@ -133,10 +133,11 @@ ResourceProvider::Child::Child() {}
 ResourceProvider::Child::~Child() {}
 
 scoped_ptr<ResourceProvider> ResourceProvider::Create(
-    OutputSurface* output_surface) {
+    OutputSurface* output_surface,
+    int highp_threshold_min) {
   scoped_ptr<ResourceProvider> resource_provider(
       new ResourceProvider(output_surface));
-  if (!resource_provider->Initialize())
+  if (!resource_provider->Initialize(highp_threshold_min))
     return scoped_ptr<ResourceProvider>();
   return resource_provider.Pass();
 }
@@ -598,7 +599,7 @@ ResourceProvider::ResourceProvider(OutputSurface* output_surface)
       max_texture_size_(0),
       best_texture_format_(0) {}
 
-bool ResourceProvider::Initialize() {
+bool ResourceProvider::Initialize(int highp_threshold_min) {
   DCHECK(thread_checker_.CalledOnValidThread());
   WebGraphicsContext3D* context3d = output_surface_->context3d();
   if (!context3d) {
@@ -631,8 +632,8 @@ bool ResourceProvider::Initialize() {
       use_bgra = true;
   }
 
-  texture_copier_ =
-      AcceleratedTextureCopier::Create(context3d, use_bind_uniform);
+  texture_copier_ = AcceleratedTextureCopier::Create(
+      context3d, use_bind_uniform, highp_threshold_min);
 
   texture_uploader_ =
       TextureUploader::Create(context3d, use_map_sub, use_shallow_flush_);

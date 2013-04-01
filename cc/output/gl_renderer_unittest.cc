@@ -66,27 +66,36 @@ class GLRendererShaderPixelTest : public PixelTest {
     EXPECT_PROGRAM_VALID(renderer_->GetTileProgramSwizzleOpaque());
     EXPECT_PROGRAM_VALID(renderer_->GetTileProgramSwizzleAA());
     EXPECT_PROGRAM_VALID(renderer_->GetTileCheckerboardProgram());
-    EXPECT_PROGRAM_VALID(renderer_->GetRenderPassProgram());
-    EXPECT_PROGRAM_VALID(renderer_->GetRenderPassProgramAA());
-    EXPECT_PROGRAM_VALID(renderer_->GetRenderPassMaskProgram());
-    EXPECT_PROGRAM_VALID(renderer_->GetRenderPassMaskProgramAA());
-    EXPECT_PROGRAM_VALID(renderer_->GetRenderPassColorMatrixProgram());
-    EXPECT_PROGRAM_VALID(renderer_->GetRenderPassMaskColorMatrixProgramAA());
-    EXPECT_PROGRAM_VALID(renderer_->GetRenderPassColorMatrixProgramAA());
-    EXPECT_PROGRAM_VALID(renderer_->GetRenderPassMaskColorMatrixProgram());
-    EXPECT_PROGRAM_VALID(renderer_->GetTextureProgram());
-    EXPECT_PROGRAM_VALID(renderer_->GetTextureProgramFlip());
-    EXPECT_PROGRAM_VALID(renderer_->GetTextureIOSurfaceProgram());
-    EXPECT_PROGRAM_VALID(renderer_->GetVideoYUVProgram());
-    // This is unlikely to be ever true in tests due to usage of osmesa.
-    if (renderer_->Capabilities().using_egl_image)
-      EXPECT_PROGRAM_VALID(renderer_->GetVideoStreamTextureProgram());
-    else
-      EXPECT_FALSE(renderer_->GetVideoStreamTextureProgram());
     EXPECT_PROGRAM_VALID(renderer_->GetDebugBorderProgram());
     EXPECT_PROGRAM_VALID(renderer_->GetSolidColorProgram());
     EXPECT_PROGRAM_VALID(renderer_->GetSolidColorProgramAA());
+    //TestShadersWithTexCoordPrecision(TexCoordPrecisionMedium);
+    TestShadersWithTexCoordPrecision(TexCoordPrecisionHigh);
     ASSERT_FALSE(renderer_->IsContextLost());
+  }
+
+  void TestShadersWithTexCoordPrecision(TexCoordPrecision precision) {
+    EXPECT_PROGRAM_VALID(renderer_->GetRenderPassProgram(precision));
+    EXPECT_PROGRAM_VALID(renderer_->GetRenderPassProgramAA(precision));
+    EXPECT_PROGRAM_VALID(renderer_->GetRenderPassMaskProgram(precision));
+    EXPECT_PROGRAM_VALID(renderer_->GetRenderPassMaskProgramAA(precision));
+    EXPECT_PROGRAM_VALID(
+        renderer_->GetRenderPassColorMatrixProgram(precision));
+    EXPECT_PROGRAM_VALID(
+        renderer_->GetRenderPassMaskColorMatrixProgramAA(precision));
+    EXPECT_PROGRAM_VALID(
+        renderer_->GetRenderPassColorMatrixProgramAA(precision));
+    EXPECT_PROGRAM_VALID(
+        renderer_->GetRenderPassMaskColorMatrixProgram(precision));
+    EXPECT_PROGRAM_VALID(renderer_->GetTextureProgram(precision));
+    EXPECT_PROGRAM_VALID(renderer_->GetTextureProgramFlip(precision));
+    EXPECT_PROGRAM_VALID(renderer_->GetTextureIOSurfaceProgram(precision));
+    EXPECT_PROGRAM_VALID(renderer_->GetVideoYUVProgram(precision));
+    // This is unlikely to be ever true in tests due to usage of osmesa.
+    if (renderer_->Capabilities().using_egl_image)
+      EXPECT_PROGRAM_VALID(renderer_->GetVideoStreamTextureProgram(precision));
+    else
+      EXPECT_FALSE(renderer_->GetVideoStreamTextureProgram(precision));
   }
 };
 
@@ -209,7 +218,7 @@ class FakeRendererGL : public GLRenderer {
   FakeRendererGL(RendererClient* client,
                  OutputSurface* output_surface,
                  ResourceProvider* resource_provider)
-      : GLRenderer(client, output_surface, resource_provider) {}
+      : GLRenderer(client, output_surface, resource_provider, 0) {}
 
   // GLRenderer methods.
 
@@ -229,7 +238,7 @@ class GLRendererTest : public testing::Test {
         output_surface_(FakeOutputSurface::Create3d(
             scoped_ptr<WebKit::WebGraphicsContext3D>(
                 new FrameCountingMemoryAllocationSettingContext()))),
-        resource_provider_(ResourceProvider::Create(output_surface_.get())),
+        resource_provider_(ResourceProvider::Create(output_surface_.get(), 0)),
         renderer_(&mock_client_,
                   output_surface_.get(),
                   resource_provider_.get()) {}
@@ -261,9 +270,9 @@ class GLRendererShaderTest : public testing::Test {
  protected:
   GLRendererShaderTest()
       : output_surface_(FakeOutputSurface::Create3d()),
-        resource_provider_(ResourceProvider::Create(output_surface_.get())),
+        resource_provider_(ResourceProvider::Create(output_surface_.get(), 0)),
         renderer_(GLRenderer::Create(&mock_client_, output_surface_.get(),
-                                     resource_provider_.get())) {
+                                     resource_provider_.get(), 0)) {
   }
 
   void TestRenderPassProgram() {
@@ -561,7 +570,7 @@ TEST(GLRendererTest2, InitializationDoesNotMakeSynchronousCalls) {
       FakeOutputSurface::Create3d(scoped_ptr<WebKit::WebGraphicsContext3D>(
           new ForbidSynchronousCallContext)));
   scoped_ptr<ResourceProvider> resource_provider(
-      ResourceProvider::Create(output_surface.get()));
+      ResourceProvider::Create(output_surface.get(), 0));
   FakeRendererGL renderer(
       &mock_client, output_surface.get(), resource_provider.get());
 
@@ -600,7 +609,7 @@ TEST(GLRendererTest2, InitializationWithQuicklyLostContextDoesNotAssert) {
       FakeOutputSurface::Create3d(scoped_ptr<WebKit::WebGraphicsContext3D>(
           new LoseContextOnFirstGetContext)));
   scoped_ptr<ResourceProvider> resource_provider(
-      ResourceProvider::Create(output_surface.get()));
+      ResourceProvider::Create(output_surface.get(), 0));
   FakeRendererGL renderer(
       &mock_client, output_surface.get(), resource_provider.get());
 
@@ -629,7 +638,7 @@ TEST(
       FakeOutputSurface::Create3d(scoped_ptr<WebKit::WebGraphicsContext3D>(
           new ContextThatDoesNotSupportMemoryManagmentExtensions)));
   scoped_ptr<ResourceProvider> resource_provider(
-      ResourceProvider::Create(output_surface.get()));
+      ResourceProvider::Create(output_surface.get(), 0));
   FakeRendererGL renderer(
       &mock_client, output_surface.get(), resource_provider.get());
 
@@ -657,7 +666,7 @@ TEST(GLRendererTest2, OpaqueBackground) {
   ClearCountingContext* context =
       static_cast<ClearCountingContext*>(output_surface->context3d());
   scoped_ptr<ResourceProvider> resource_provider(
-      ResourceProvider::Create(output_surface.get()));
+      ResourceProvider::Create(output_surface.get(), 0));
   FakeRendererGL renderer(
       &mock_client, output_surface.get(), resource_provider.get());
 
@@ -683,7 +692,7 @@ TEST(GLRendererTest2, TransparentBackground) {
   ClearCountingContext* context =
       static_cast<ClearCountingContext*>(output_surface->context3d());
   scoped_ptr<ResourceProvider> resource_provider(
-      ResourceProvider::Create(output_surface.get()));
+      ResourceProvider::Create(output_surface.get(), 0));
   FakeRendererGL renderer(
       &mock_client, output_surface.get(), resource_provider.get());
 
@@ -754,7 +763,7 @@ TEST(GLRendererTest2, VisibilityChangeIsLastCall) {
       static_cast<VisibilityChangeIsLastCallTrackingContext*>(
           output_surface->context3d());
   scoped_ptr<ResourceProvider> resource_provider(
-      ResourceProvider::Create(output_surface.get()));
+      ResourceProvider::Create(output_surface.get(), 0));
   FakeRendererGL renderer(
       &mock_client, output_surface.get(), resource_provider.get());
 
@@ -813,7 +822,7 @@ TEST(GLRendererTest2, ActiveTextureState) {
   TextureStateTrackingContext* context =
       static_cast<TextureStateTrackingContext*>(output_surface->context3d());
   scoped_ptr<ResourceProvider> resource_provider(
-      ResourceProvider::Create(output_surface.get()));
+      ResourceProvider::Create(output_surface.get(), 0));
   FakeRendererGL renderer(
       &fake_client, output_surface.get(), resource_provider.get());
 
@@ -898,7 +907,7 @@ TEST(GLRendererTest2, ShouldClearRootRenderPass) {
       static_cast<NoClearRootRenderPassMockContext*>(
           output_surface->context3d());
   scoped_ptr<ResourceProvider> resource_provider(
-      ResourceProvider::Create(output_surface.get()));
+      ResourceProvider::Create(output_surface.get(), 0));
   FakeRendererGL renderer(
       &mock_client, output_surface.get(), resource_provider.get());
   EXPECT_TRUE(renderer.Initialize());
@@ -968,7 +977,7 @@ TEST(GLRendererTest2, ScissorTestWhenClearing) {
       FakeOutputSurface::Create3d(scoped_ptr<WebKit::WebGraphicsContext3D>(
           new ScissorTestOnClearCheckingContext)));
   scoped_ptr<ResourceProvider> resource_provider(
-      ResourceProvider::Create(output_surface.get()));
+      ResourceProvider::Create(output_surface.get(), 0));
   FakeRendererGL renderer(
       &mock_client, output_surface.get(), resource_provider.get());
   EXPECT_TRUE(renderer.Initialize());
@@ -1283,7 +1292,7 @@ class MockOutputSurface : public OutputSurface {
 class MockOutputSurfaceTest : public testing::Test, public FakeRendererClient {
  protected:
   MockOutputSurfaceTest()
-      : resource_provider_(ResourceProvider::Create(&output_surface_)),
+      : resource_provider_(ResourceProvider::Create(&output_surface_, 0)),
         renderer_(this, &output_surface_, resource_provider_.get()) {}
 
   virtual void SetUp() { EXPECT_TRUE(renderer_.Initialize()); }

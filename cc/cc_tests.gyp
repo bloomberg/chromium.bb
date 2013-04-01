@@ -18,6 +18,7 @@
       'scheduler/frame_rate_controller_unittest.cc',
       'output/gl_renderer_unittest.cc',
       'output/gl_renderer_pixeltest.cc',
+      'output/shader_unittest.cc',
       'base/hash_pair_unittest.cc',
       'layers/heads_up_display_unittest.cc',
       'animation/keyframed_animation_curve_unittest.cc',

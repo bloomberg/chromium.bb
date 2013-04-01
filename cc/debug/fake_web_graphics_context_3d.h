@@ -289,7 +289,7 @@ class CC_EXPORT FakeWebGraphicsContext3D
       WebKit::WGC3Denum shadertype,
       WebKit::WGC3Denum precisiontype,
       WebKit::WGC3Dint* range,
-      WebKit::WGC3Dint* precision) {}
+      WebKit::WGC3Dint* precision);
   virtual WebKit::WebString getShaderSource(WebKit::WebGLId shader);
   virtual WebKit::WebString getString(WebKit::WGC3Denum name);
   virtual void getTexParameterfv(

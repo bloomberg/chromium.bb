@@ -56,6 +56,7 @@ class CC_EXPORT LayerTreeSettings {
   size_t max_prepaint_tile_distance;
   size_t max_tiles_for_interest_area;
   size_t max_unused_resource_memory_percentage;
+  int highp_threshold_min;
 
   LayerTreeDebugState initial_debug_state;
 };

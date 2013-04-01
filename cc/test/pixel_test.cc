@@ -62,12 +62,13 @@ void PixelTest::SetUp() {
               WebKit::WebGraphicsContext3D::Attributes()));
   output_surface_.reset(new OutputSurface(
       context3d.PassAs<WebKit::WebGraphicsContext3D>()));
-  resource_provider_ = ResourceProvider::Create(output_surface_.get());
+  resource_provider_ = ResourceProvider::Create(output_surface_.get(), 0);
   fake_client_ =
       make_scoped_ptr(new PixelTestRendererClient(device_viewport_size_));
   renderer_ = GLRenderer::Create(fake_client_.get(),
                                  output_surface_.get(),
-                                 resource_provider_.get());
+                                 resource_provider_.get(),
+                                 0);
 
   scoped_refptr<webkit::gpu::ContextProviderInProcess> offscreen_contexts =
       webkit::gpu::ContextProviderInProcess::Create();

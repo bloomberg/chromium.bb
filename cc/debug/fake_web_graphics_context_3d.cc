@@ -4,6 +4,7 @@
 
 #include "cc/debug/fake_web_graphics_context_3d.h"
 
+#include "base/logging.h"
 #include "third_party/khronos/GLES2/gl2.h"
 
 using WebKit::WGC3Dboolean;
@@ -150,6 +151,49 @@ void FakeWebGraphicsContext3D::getShaderiv(
 WebKit::WebString FakeWebGraphicsContext3D::getShaderInfoLog(
     WebGLId shader) {
   return WebKit::WebString();
+}
+
+void FakeWebGraphicsContext3D::getShaderPrecisionFormat(
+    WebKit::WGC3Denum shadertype,
+    WebKit::WGC3Denum precisiontype,
+    WebKit::WGC3Dint* range,
+    WebKit::WGC3Dint* precision) {
+  // Return the minimum precision requirements of the GLES specificatin.
+  switch (precisiontype) {
+    case GL_LOW_INT:
+      range[0] = 8;
+      range[1] = 8;
+      *precision = 0;
+      break;
+    case GL_MEDIUM_INT:
+      range[0] = 10;
+      range[1] = 10;
+      *precision = 0;
+      break;
+    case GL_HIGH_INT:
+      range[0] = 16;
+      range[1] = 16;
+      *precision = 0;
+      break;
+    case GL_LOW_FLOAT:
+      range[0] = 8;
+      range[1] = 8;
+      *precision = 8;
+      break;
+    case GL_MEDIUM_FLOAT:
+      range[0] = 14;
+      range[1] = 14;
+      *precision = 10;
+      break;
+    case GL_HIGH_FLOAT:
+      range[0] = 62;
+      range[1] = 62;
+      *precision = 16;
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
 }
 
 WebKit::WebString FakeWebGraphicsContext3D::getShaderSource(

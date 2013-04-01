@@ -45,7 +45,8 @@ class CC_EXPORT GLRenderer
  public:
   static scoped_ptr<GLRenderer> Create(RendererClient* client,
                                        OutputSurface* output_surface,
-                                       ResourceProvider* resource_provider);
+                                       ResourceProvider* resource_provider,
+                                       int highp_threshold_min);
 
   virtual ~GLRenderer();
 
@@ -83,7 +84,8 @@ class CC_EXPORT GLRenderer
  protected:
   GLRenderer(RendererClient* client,
              OutputSurface* output_surface,
-             ResourceProvider* resource_provider);
+             ResourceProvider* resource_provider,
+             int highp_threshold_min);
 
   bool IsBackbufferDiscarded() const { return is_backbuffer_discarded_; }
   bool Initialize();
@@ -281,22 +283,34 @@ class CC_EXPORT GLRenderer
   const TileProgramSwizzleAA* GetTileProgramSwizzleAA();
   const TileCheckerboardProgram* GetTileCheckerboardProgram();
 
-  const RenderPassProgram* GetRenderPassProgram();
-  const RenderPassProgramAA* GetRenderPassProgramAA();
-  const RenderPassMaskProgram* GetRenderPassMaskProgram();
-  const RenderPassMaskProgramAA* GetRenderPassMaskProgramAA();
-  const RenderPassColorMatrixProgram* GetRenderPassColorMatrixProgram();
-  const RenderPassColorMatrixProgramAA* GetRenderPassColorMatrixProgramAA();
-  const RenderPassMaskColorMatrixProgram* GetRenderPassMaskColorMatrixProgram();
+  const RenderPassProgram* GetRenderPassProgram(
+      TexCoordPrecision precision);
+  const RenderPassProgramAA* GetRenderPassProgramAA(
+      TexCoordPrecision precision);
+  const RenderPassMaskProgram* GetRenderPassMaskProgram(
+      TexCoordPrecision precision);
+  const RenderPassMaskProgramAA* GetRenderPassMaskProgramAA(
+      TexCoordPrecision precision);
+  const RenderPassColorMatrixProgram* GetRenderPassColorMatrixProgram(
+      TexCoordPrecision precision);
+  const RenderPassColorMatrixProgramAA* GetRenderPassColorMatrixProgramAA(
+      TexCoordPrecision precision);
+  const RenderPassMaskColorMatrixProgram* GetRenderPassMaskColorMatrixProgram(
+      TexCoordPrecision precision);
   const RenderPassMaskColorMatrixProgramAA*
-      GetRenderPassMaskColorMatrixProgramAA();
+      GetRenderPassMaskColorMatrixProgramAA(TexCoordPrecision precision);
 
-  const TextureProgram* GetTextureProgram();
-  const TextureProgramFlip* GetTextureProgramFlip();
-  const TextureIOSurfaceProgram* GetTextureIOSurfaceProgram();
+  const TextureProgram* GetTextureProgram(
+      TexCoordPrecision precision);
+  const TextureProgramFlip* GetTextureProgramFlip(
+      TexCoordPrecision precision);
+  const TextureIOSurfaceProgram* GetTextureIOSurfaceProgram(
+      TexCoordPrecision precision);
 
-  const VideoYUVProgram* GetVideoYUVProgram();
-  const VideoStreamTextureProgram* GetVideoStreamTextureProgram();
+  const VideoYUVProgram* GetVideoYUVProgram(
+      TexCoordPrecision precision);
+  const VideoStreamTextureProgram* GetVideoStreamTextureProgram(
+      TexCoordPrecision precision);
 
   const DebugBorderProgram* GetDebugBorderProgram();
   const SolidColorProgram* GetSolidColorProgram();
@@ -314,6 +328,10 @@ class CC_EXPORT GLRenderer
   scoped_ptr<TextureProgramFlip> texture_program_flip_;
   scoped_ptr<TextureIOSurfaceProgram> texture_io_surface_program_;
 
+  scoped_ptr<TextureProgram> texture_program_highp_;
+  scoped_ptr<TextureProgramFlip> texture_program_flip_highp_;
+  scoped_ptr<TextureIOSurfaceProgram> texture_io_surface_program_highp_;
+
   scoped_ptr<RenderPassProgram> render_pass_program_;
   scoped_ptr<RenderPassProgramAA> render_pass_program_aa_;
   scoped_ptr<RenderPassMaskProgram> render_pass_mask_program_;
@@ -326,8 +344,24 @@ class CC_EXPORT GLRenderer
   scoped_ptr<RenderPassMaskColorMatrixProgramAA>
       render_pass_mask_color_matrix_program_aa_;
 
+  scoped_ptr<RenderPassProgram> render_pass_program_highp_;
+  scoped_ptr<RenderPassProgramAA> render_pass_program_aa_highp_;
+  scoped_ptr<RenderPassMaskProgram> render_pass_mask_program_highp_;
+  scoped_ptr<RenderPassMaskProgramAA> render_pass_mask_program_aa_highp_;
+  scoped_ptr<RenderPassColorMatrixProgram>
+      render_pass_color_matrix_program_highp_;
+  scoped_ptr<RenderPassColorMatrixProgramAA>
+      render_pass_color_matrix_program_aa_highp_;
+  scoped_ptr<RenderPassMaskColorMatrixProgram>
+      render_pass_mask_color_matrix_program_highp_;
+  scoped_ptr<RenderPassMaskColorMatrixProgramAA>
+      render_pass_mask_color_matrix_program_aa_highp_;
+
   scoped_ptr<VideoYUVProgram> video_yuv_program_;
   scoped_ptr<VideoStreamTextureProgram> video_stream_texture_program_;
+
+  scoped_ptr<VideoYUVProgram> video_yuv_program_highp_;
+  scoped_ptr<VideoStreamTextureProgram> video_stream_texture_program_highp_;
 
   scoped_ptr<DebugBorderProgram> debug_border_program_;
   scoped_ptr<SolidColorProgram> solid_color_program_;
@@ -347,6 +381,7 @@ class CC_EXPORT GLRenderer
   bool blend_shadow_;
   unsigned program_shadow_;
   TexturedQuadDrawCache draw_cache_;
+  int highp_threshold_min_;
 
   scoped_ptr<ResourceProvider::ScopedWriteLockGL> current_framebuffer_lock_;
 

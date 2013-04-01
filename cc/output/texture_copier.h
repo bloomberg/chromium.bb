@@ -38,9 +38,11 @@ class CC_EXPORT AcceleratedTextureCopier : public TextureCopier {
  public:
   static scoped_ptr<AcceleratedTextureCopier> Create(
       WebKit::WebGraphicsContext3D* context,
-      bool using_bind_uniforms) {
+      bool using_bind_uniforms,
+      int highp_threshold_min) {
     return make_scoped_ptr(
-        new AcceleratedTextureCopier(context, using_bind_uniforms));
+        new AcceleratedTextureCopier(
+            context, using_bind_uniforms, highp_threshold_min));
   }
   virtual ~AcceleratedTextureCopier();
 
@@ -49,7 +51,8 @@ class CC_EXPORT AcceleratedTextureCopier : public TextureCopier {
 
  protected:
   AcceleratedTextureCopier(WebKit::WebGraphicsContext3D* context,
-                           bool using_bind_uniforms);
+                           bool using_bind_uniforms,
+                           int highp_threshold_min);
 
  private:
   typedef ProgramBinding<VertexShaderPosTexIdentity, FragmentShaderRGBATex>
@@ -59,7 +62,9 @@ class CC_EXPORT AcceleratedTextureCopier : public TextureCopier {
   GLuint fbo_;
   GLuint position_buffer_;
   scoped_ptr<BlitProgram> blit_program_;
+  scoped_ptr<BlitProgram> blit_program_highp_;
   bool using_bind_uniforms_;
+  int highp_threshold_min_;
 
   DISALLOW_COPY_AND_ASSIGN(AcceleratedTextureCopier);
 };

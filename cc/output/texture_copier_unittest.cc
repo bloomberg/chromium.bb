@@ -69,7 +69,7 @@ TEST(TextureCopierTest, TestDrawArraysCopy) {
   int dest_texture_id = mock_context->createTexture();
   gfx::Size size(256, 128);
   scoped_ptr<AcceleratedTextureCopier> copier(
-      AcceleratedTextureCopier::Create(mock_context.get(), false));
+      AcceleratedTextureCopier::Create(mock_context.get(), false, 0));
   TextureCopier::Parameters copy = { source_texture_id, dest_texture_id, size };
   copier->CopyTexture(copy);
 }

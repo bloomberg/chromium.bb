@@ -4276,7 +4276,7 @@ class TestRenderer : public GLRenderer, public RendererClient {
   TestRenderer(ResourceProvider* resource_provider,
                OutputSurface* output_surface,
                Proxy* proxy)
-      : GLRenderer(this, output_surface, resource_provider) {}
+      : GLRenderer(this, output_surface, resource_provider, 0) {}
 
  private:
   LayerTreeSettings settings_;
@@ -4611,7 +4611,7 @@ TEST_F(LayerTreeHostImplTest, TestRemoveRenderPasses) {
   scoped_ptr<OutputSurface> output_surface(CreateOutputSurface());
   ASSERT_TRUE(output_surface->context3d());
   scoped_ptr<ResourceProvider> resource_provider =
-      ResourceProvider::Create(output_surface.get());
+      ResourceProvider::Create(output_surface.get(), 0);
 
   scoped_ptr<TestRenderer> renderer =
       TestRenderer::Create(resource_provider.get(),

@@ -22,7 +22,7 @@ class PrioritizedResourceTest : public testing::Test {
         texture_format_(GL_RGBA),
         output_surface_(CreateFakeOutputSurface()) {
     DebugScopedSetImplThread impl_thread(&proxy_);
-    resource_provider_ = cc::ResourceProvider::Create(output_surface_.get());
+    resource_provider_ = cc::ResourceProvider::Create(output_surface_.get(), 0);
   }
 
   virtual ~PrioritizedResourceTest() {
@@ -73,6 +73,7 @@ class PrioritizedResourceTest : public testing::Test {
 
   void ResourceManagerAssertInvariants(
       PrioritizedResourceManager* resource_manager) {
+
 #ifndef NDEBUG
     DebugScopedSetImplThreadAndMainThreadBlocked
     impl_thread_and_main_thread_blocked(&proxy_);

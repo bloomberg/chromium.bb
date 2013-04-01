@@ -8,13 +8,35 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "cc/base/cc_export.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
+
+namespace gfx {
+class Point;
+class Size;
+}
 
 namespace WebKit {
 class WebGraphicsContext3D;
 }
 
 namespace cc {
+
+enum TexCoordPrecision {
+  TexCoordPrecisionNA,
+  TexCoordPrecisionMedium,
+  TexCoordPrecisionHigh,
+};
+
+CC_EXPORT TexCoordPrecision TexCoordPrecisionRequired(
+    WebKit::WebGraphicsContext3D* context,
+    int highp_threshold_min,
+    const gfx::Point& max_coordinate);
+
+CC_EXPORT TexCoordPrecision TexCoordPrecisionRequired(
+    WebKit::WebGraphicsContext3D* context,
+    int highp_threshold_min,
+    const gfx::Size& max_size);
 
 class VertexShaderPosTex {
  public:
@@ -237,45 +259,45 @@ class FragmentTexOpaqueBinding {
 
 class FragmentShaderRGBATexVaryingAlpha : public FragmentTexOpaqueBinding {
  public:
-  std::string GetShaderString() const;
+  std::string GetShaderString(TexCoordPrecision precision) const;
 };
 
 class FragmentShaderRGBATexAlpha : public FragmentTexAlphaBinding {
  public:
-  std::string GetShaderString() const;
+  std::string GetShaderString(TexCoordPrecision precision) const;
 };
 
 class FragmentShaderRGBATexColorMatrixAlpha
     : public FragmentTexColorMatrixAlphaBinding {
  public:
-    std::string GetShaderString() const;
+    std::string GetShaderString(TexCoordPrecision precision) const;
 };
 
 class FragmentShaderRGBATexRectVaryingAlpha : public FragmentTexAlphaBinding {
  public:
-  std::string GetShaderString() const;
+  std::string GetShaderString(TexCoordPrecision precision) const;
 };
 
 class FragmentShaderRGBATexOpaque : public FragmentTexOpaqueBinding {
  public:
-  std::string GetShaderString() const;
+  std::string GetShaderString(TexCoordPrecision precision) const;
 };
 
 class FragmentShaderRGBATex : public FragmentTexOpaqueBinding {
  public:
-  std::string GetShaderString() const;
+  std::string GetShaderString(TexCoordPrecision precision) const;
 };
 
 // Swizzles the red and blue component of sampled texel with alpha.
 class FragmentShaderRGBATexSwizzleAlpha : public FragmentTexAlphaBinding {
  public:
-  std::string GetShaderString() const;
+  std::string GetShaderString(TexCoordPrecision precision) const;
 };
 
 // Swizzles the red and blue component of sampled texel without alpha.
 class FragmentShaderRGBATexSwizzleOpaque : public FragmentTexOpaqueBinding {
  public:
-  std::string GetShaderString() const;
+  std::string GetShaderString(TexCoordPrecision precision) const;
 };
 
 // Fragment shader for external textures.
@@ -283,7 +305,7 @@ class FragmentShaderOESImageExternal : public FragmentTexAlphaBinding {
  public:
   FragmentShaderOESImageExternal();
 
-  std::string GetShaderString() const;
+  std::string GetShaderString(TexCoordPrecision precision) const;
   bool Init(WebKit::WebGraphicsContext3D*,
             unsigned program,
             bool using_bind_uniform,
@@ -302,7 +324,7 @@ class FragmentShaderRGBATexAlphaAA {
             unsigned program,
             bool using_bind_uniform,
             int* base_uniform_index);
-  std::string GetShaderString() const;
+  std::string GetShaderString(TexCoordPrecision precision) const;
 
   int alpha_location() const { return alpha_location_; }
   int sampler_location() const { return sampler_location_; }
@@ -343,20 +365,20 @@ class FragmentTexClampAlphaAABinding {
 class FragmentShaderRGBATexClampAlphaAA
     : public FragmentTexClampAlphaAABinding {
  public:
-  std::string GetShaderString() const;
+  std::string GetShaderString(TexCoordPrecision precision) const;
 };
 
 // Swizzles the red and blue component of sampled texel.
 class FragmentShaderRGBATexClampSwizzleAlphaAA
     : public FragmentTexClampAlphaAABinding {
  public:
-  std::string GetShaderString() const;
+  std::string GetShaderString(TexCoordPrecision precision) const;
 };
 
 class FragmentShaderRGBATexAlphaMask {
  public:
   FragmentShaderRGBATexAlphaMask();
-  std::string GetShaderString() const;
+  std::string GetShaderString(TexCoordPrecision precision) const;
 
   void Init(WebKit::WebGraphicsContext3D*,
             unsigned program,
@@ -385,7 +407,7 @@ class FragmentShaderRGBATexAlphaMask {
 class FragmentShaderRGBATexAlphaMaskAA {
  public:
   FragmentShaderRGBATexAlphaMaskAA();
-  std::string GetShaderString() const;
+  std::string GetShaderString(TexCoordPrecision precision) const;
 
   void Init(WebKit::WebGraphicsContext3D*,
             unsigned program,
@@ -416,7 +438,7 @@ class FragmentShaderRGBATexAlphaMaskAA {
 class FragmentShaderRGBATexAlphaMaskColorMatrixAA {
  public:
   FragmentShaderRGBATexAlphaMaskColorMatrixAA();
-  std::string GetShaderString() const;
+  std::string GetShaderString(TexCoordPrecision precision) const;
 
   void Init(WebKit::WebGraphicsContext3D*,
     unsigned program,
@@ -449,7 +471,7 @@ class FragmentShaderRGBATexAlphaMaskColorMatrixAA {
 class FragmentShaderRGBATexAlphaColorMatrixAA {
  public:
   FragmentShaderRGBATexAlphaColorMatrixAA();
-  std::string GetShaderString() const;
+  std::string GetShaderString(TexCoordPrecision precision) const;
 
   void Init(WebKit::WebGraphicsContext3D*,
             unsigned program,
@@ -472,7 +494,7 @@ class FragmentShaderRGBATexAlphaColorMatrixAA {
 class FragmentShaderRGBATexAlphaMaskColorMatrix {
  public:
   FragmentShaderRGBATexAlphaMaskColorMatrix();
-  std::string GetShaderString() const;
+  std::string GetShaderString(TexCoordPrecision precision) const;
 
   void Init(WebKit::WebGraphicsContext3D*,
             unsigned program,
@@ -503,7 +525,7 @@ class FragmentShaderRGBATexAlphaMaskColorMatrix {
 class FragmentShaderYUVVideo {
  public:
   FragmentShaderYUVVideo();
-  std::string GetShaderString() const;
+  std::string GetShaderString(TexCoordPrecision precision) const;
 
   void Init(WebKit::WebGraphicsContext3D*,
             unsigned program,
@@ -530,7 +552,7 @@ class FragmentShaderYUVVideo {
 class FragmentShaderColor {
  public:
   FragmentShaderColor();
-  std::string GetShaderString() const;
+  std::string GetShaderString(TexCoordPrecision precision) const;
 
   void Init(WebKit::WebGraphicsContext3D*,
             unsigned program,
@@ -548,7 +570,7 @@ class FragmentShaderColor {
 class FragmentShaderColorAA {
  public:
   FragmentShaderColorAA();
-  std::string GetShaderString() const;
+  std::string GetShaderString(TexCoordPrecision precision) const;
 
   void Init(WebKit::WebGraphicsContext3D*,
             unsigned program,
@@ -567,7 +589,7 @@ class FragmentShaderColorAA {
 class FragmentShaderCheckerboard {
  public:
   FragmentShaderCheckerboard();
-  std::string GetShaderString() const;
+  std::string GetShaderString(TexCoordPrecision precision) const;
 
   void Init(WebKit::WebGraphicsContext3D*,
             unsigned program,

@@ -277,6 +277,7 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
   settings.solid_color_scrollbars = true;
   settings.solid_color_scrollbar_color = SkColorSetARGB(128, 128, 128, 128);
   settings.solid_color_scrollbar_thickness_dip = 3;
+  settings.highp_threshold_min = 2048;
 #endif
 
   if (!compositor->initialize(settings))

@@ -137,7 +137,7 @@ class ResourceUpdateControllerTest : public Test {
     }
     resource_manager_->PrioritizeTextures();
 
-    resource_provider_ = ResourceProvider::Create(output_surface_.get());
+    resource_provider_ = ResourceProvider::Create(output_surface_.get(), 0);
   }
 
   void AppendFullUploadsOfIndexedTextureToUpdateQueue(int count,

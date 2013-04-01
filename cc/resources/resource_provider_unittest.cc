@@ -337,7 +337,7 @@ class ResourceProviderTest
         output_surface_(FakeOutputSurface::Create3d(
             ResourceProviderContext::Create(shared_data_.get())
                 .PassAs<WebKit::WebGraphicsContext3D>())),
-        resource_provider_(ResourceProvider::Create(output_surface_.get())) {
+        resource_provider_(ResourceProvider::Create(output_surface_.get(), 0)) {
     resource_provider_->set_default_resource_type(GetParam());
   }
 
@@ -487,7 +487,7 @@ TEST_P(ResourceProviderTest, TransferResources) {
       ResourceProviderContext::Create(shared_data_.get())
           .PassAs<WebKit::WebGraphicsContext3D>()));
   scoped_ptr<ResourceProvider> child_resource_provider(
-      ResourceProvider::Create(child_output_surface.get()));
+      ResourceProvider::Create(child_output_surface.get(), 0));
 
   gfx::Size size(1, 1);
   WGC3Denum format = GL_RGBA;
@@ -610,7 +610,7 @@ TEST_P(ResourceProviderTest, DeleteTransferredResources) {
       ResourceProviderContext::Create(shared_data_.get())
           .PassAs<WebKit::WebGraphicsContext3D>()));
   scoped_ptr<ResourceProvider> child_resource_provider(
-      ResourceProvider::Create(child_output_surface.get()));
+      ResourceProvider::Create(child_output_surface.get(), 0));
 
   gfx::Size size(1, 1);
   WGC3Denum format = GL_RGBA;
@@ -667,7 +667,7 @@ TEST_P(ResourceProviderTest, TextureFilters) {
       ResourceProviderContext::Create(shared_data_.get())
           .PassAs<WebKit::WebGraphicsContext3D>()));
   scoped_ptr<ResourceProvider> child_resource_provider(
-      ResourceProvider::Create(child_output_surface.get()));
+      ResourceProvider::Create(child_output_surface.get(), 0));
 
   gfx::Size size(1, 1);
   WGC3Denum format = GL_RGBA;
@@ -858,7 +858,7 @@ TEST_P(ResourceProviderTest, ScopedSampler) {
   TextureStateTrackingContext* context =
       static_cast<TextureStateTrackingContext*>(output_surface->context3d());
   scoped_ptr<ResourceProvider> resource_provider(
-      ResourceProvider::Create(output_surface.get()));
+      ResourceProvider::Create(output_surface.get(), 0));
 
   gfx::Size size(1, 1);
   WGC3Denum format = GL_RGBA;
@@ -931,7 +931,7 @@ TEST_P(ResourceProviderTest, ManagedResource) {
   TextureStateTrackingContext* context =
       static_cast<TextureStateTrackingContext*>(output_surface->context3d());
   scoped_ptr<ResourceProvider> resource_provider(
-      ResourceProvider::Create(output_surface.get()));
+      ResourceProvider::Create(output_surface.get(), 0));
 
   gfx::Size size(1, 1);
   WGC3Denum format = GL_RGBA;
@@ -1029,7 +1029,7 @@ TEST_P(ResourceProviderTest, TextureAllocation) {
   AllocationTrackingContext3D* context =
       static_cast<AllocationTrackingContext3D*>(output_surface->context3d());
   scoped_ptr<ResourceProvider> resource_provider(
-      ResourceProvider::Create(output_surface.get()));
+      ResourceProvider::Create(output_surface.get(), 0));
 
   // Lazy allocation. Don't allocate when creating the resource.
   EXPECT_CALL(*context, createTexture()).WillOnce(Return(texture_id));
@@ -1102,7 +1102,7 @@ TEST_P(ResourceProviderTest, ForcingAsyncUploadToComplete) {
   AllocationTrackingContext3D* context =
       static_cast<AllocationTrackingContext3D*>(output_surface->context3d());
   scoped_ptr<ResourceProvider> resource_provider(
-      ResourceProvider::Create(output_surface.get()));
+      ResourceProvider::Create(output_surface.get(), 0));
 
   EXPECT_CALL(*context, createTexture()).WillOnce(Return(texture_id));
   EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, texture_id)).Times(3);
@@ -1137,7 +1137,7 @@ TEST_P(ResourceProviderTest, AbortForcedAsyncUpload) {
   AllocationTrackingContext3D* context =
       static_cast<AllocationTrackingContext3D*>(output_surface->context3d());
   scoped_ptr<ResourceProvider> resource_provider(
-      ResourceProvider::Create(output_surface.get()));
+      ResourceProvider::Create(output_surface.get(), 0));
 
   EXPECT_CALL(*context, createTexture()).WillRepeatedly(Return(texture_id));
   EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, texture_id)).Times(4);

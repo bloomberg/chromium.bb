@@ -29,7 +29,7 @@ class SoftwareRendererTest : public testing::Test, public RendererClient {
   void InitializeRenderer() {
     output_surface_ = FakeOutputSurface::CreateSoftware(
         make_scoped_ptr(new SoftwareOutputDevice));
-    resource_provider_ = ResourceProvider::Create(output_surface_.get());
+    resource_provider_ = ResourceProvider::Create(output_surface_.get(), 0);
     renderer_ = SoftwareRenderer::Create(
         this, output_surface_.get(), resource_provider());
   }
