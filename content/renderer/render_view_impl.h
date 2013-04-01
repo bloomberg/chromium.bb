@@ -629,9 +629,7 @@ class CONTENT_EXPORT RenderViewImpl
                                         int world_id);
   virtual void didChangeScrollOffset(WebKit::WebFrame* frame);
   virtual void willInsertBody(WebKit::WebFrame* frame) OVERRIDE;
-#if defined(OS_ANDROID)
   virtual void didFirstVisuallyNonEmptyLayout(WebKit::WebFrame*) OVERRIDE;
-#endif
   virtual void didChangeContentsSize(WebKit::WebFrame* frame,
                                      const WebKit::WebSize& size);
   virtual void reportFindInPageMatchCount(int request_id,

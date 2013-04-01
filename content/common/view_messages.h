@@ -2307,6 +2307,11 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_UpdateFaviconURL,
                     int32 /* page_id */,
                     std::vector<content::FaviconURL> /* candidates */)
 
+// Sent once a paint happens after the first non empty layout. In other words
+// after the page has painted something.
+IPC_MESSAGE_ROUTED1(ViewHostMsg_DidFirstVisuallyNonEmptyPaint,
+                    int /* page_id */)
+
 #if defined(OS_ANDROID)
 // Response to ViewMsg_FindMatchRects.
 //

@@ -1983,22 +1983,6 @@ void RenderViewHostImpl::OnCancelDesktopNotification(int notification_id) {
       GetProcess()->GetID(), GetRoutingID(), notification_id);
 }
 
-#if defined(OS_MACOSX) || defined(OS_ANDROID)
-void RenderViewHostImpl::OnShowPopup(
-    const ViewHostMsg_ShowPopup_Params& params) {
-  RenderViewHostDelegateView* view = delegate_->GetDelegateView();
-  if (view) {
-    view->ShowPopupMenu(params.bounds,
-                        params.item_height,
-                        params.item_font_size,
-                        params.selected_item,
-                        params.popup_items,
-                        params.right_aligned,
-                        params.allow_multiple_selection);
-  }
-}
-#endif
-
 void RenderViewHostImpl::OnRunFileChooser(const FileChooserParams& params) {
   delegate_->RunFileChooser(this, params);
 }
@@ -2017,21 +2001,6 @@ void RenderViewHostImpl::OnFrameTreeUpdated(const std::string& frame_tree) {
   DCHECK(false);
   frame_tree_ = frame_tree;
   delegate_->DidUpdateFrameTree(this);
-}
-
-void RenderViewHostImpl::SetSwappedOut(bool is_swapped_out) {
-  is_swapped_out_ = is_swapped_out;
-
-  // Whenever we change swap out state, we should not be waiting for
-  // beforeunload or unload acks.  We clear them here to be safe, since they
-  // can cause navigations to be ignored in OnNavigate.
-  is_waiting_for_beforeunload_ack_ = false;
-  is_waiting_for_unload_ack_ = false;
-  has_timed_out_on_unload_ = false;
-}
-
-void RenderViewHostImpl::ClearPowerSaveBlockers() {
-  STLDeleteValues(&power_save_blockers_);
 }
 
 void RenderViewHostImpl::OnGetWindowSnapshot(const int snapshot_id) {
@@ -2055,6 +2024,37 @@ void RenderViewHostImpl::OnGetWindowSnapshot(const int snapshot_id) {
 
   Send(new ViewMsg_WindowSnapshotCompleted(
       GetRoutingID(), snapshot_id, gfx::Size(), png));
+}
+
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
+void RenderViewHostImpl::OnShowPopup(
+    const ViewHostMsg_ShowPopup_Params& params) {
+  RenderViewHostDelegateView* view = delegate_->GetDelegateView();
+  if (view) {
+    view->ShowPopupMenu(params.bounds,
+                        params.item_height,
+                        params.item_font_size,
+                        params.selected_item,
+                        params.popup_items,
+                        params.right_aligned,
+                        params.allow_multiple_selection);
+  }
+}
+#endif
+
+void RenderViewHostImpl::SetSwappedOut(bool is_swapped_out) {
+  is_swapped_out_ = is_swapped_out;
+
+  // Whenever we change swap out state, we should not be waiting for
+  // beforeunload or unload acks.  We clear them here to be safe, since they
+  // can cause navigations to be ignored in OnNavigate.
+  is_waiting_for_beforeunload_ack_ = false;
+  is_waiting_for_unload_ack_ = false;
+  has_timed_out_on_unload_ = false;
+}
+
+void RenderViewHostImpl::ClearPowerSaveBlockers() {
+  STLDeleteValues(&power_save_blockers_);
 }
 
 }  // namespace content

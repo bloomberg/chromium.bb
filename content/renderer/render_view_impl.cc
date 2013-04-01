@@ -82,6 +82,7 @@
 #include "content/renderer/idle_user_detector.h"
 #include "content/renderer/image_loading_helper.h"
 #include "content/renderer/input_tag_speech_dispatcher.h"
+#include "content/renderer/internal_document_state_data.h"
 #include "content/renderer/java/java_bridge_dispatcher.h"
 #include "content/renderer/load_progress_tracker.h"
 #include "content/renderer/media/audio_device_factory.h"
@@ -4176,11 +4177,15 @@ void RenderViewImpl::willInsertBody(WebKit::WebFrame* frame) {
   }
 }
 
-#if defined(OS_ANDROID)
 void RenderViewImpl::didFirstVisuallyNonEmptyLayout(WebFrame* frame) {
   if (frame != webview()->mainFrame())
     return;
 
+  InternalDocumentStateData* data =
+      InternalDocumentStateData::FromDataSource(frame->dataSource());
+  data->set_did_first_visually_non_empty_layout(true);
+
+#if defined(OS_ANDROID)
   // Update body background color if necessary.
   SkColor bg_color = webwidget_->backgroundColor();
 
@@ -4193,8 +4198,8 @@ void RenderViewImpl::didFirstVisuallyNonEmptyLayout(WebFrame* frame) {
     body_background_color_ = bg_color;
     Send(new ViewHostMsg_DidChangeBodyBackgroundColor(routing_id_, bg_color));
   }
-}
 #endif
+}
 
 void RenderViewImpl::SendFindReply(int request_id,
                                    int match_count,
@@ -5680,6 +5685,15 @@ void RenderViewImpl::DidFlushPaint() {
   if (!main_frame->provisionalDataSource()) {
     WebDataSource* ds = main_frame->dataSource();
     DocumentState* document_state = DocumentState::FromDataSource(ds);
+
+    InternalDocumentStateData* data =
+        InternalDocumentStateData::FromDataSource(ds);
+    if (data->did_first_visually_non_empty_layout() &&
+        !data->did_first_visually_non_empty_paint()) {
+      data->set_did_first_visually_non_empty_paint(true);
+      Send(new ViewHostMsg_DidFirstVisuallyNonEmptyPaint(routing_id_,
+                                                         page_id_));
+    }
 
     // TODO(jar): The following code should all be inside a method, probably in
     // NavigatorState.

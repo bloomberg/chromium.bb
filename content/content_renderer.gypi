@@ -116,6 +116,8 @@
     'renderer/image_loading_helper.h',
     'renderer/input_tag_speech_dispatcher.cc',
     'renderer/input_tag_speech_dispatcher.h',
+    'renderer/internal_document_state_data.cc',
+    'renderer/internal_document_state_data.h',
     'renderer/java/java_bridge_channel.cc',
     'renderer/java/java_bridge_channel.h',
     'renderer/java/java_bridge_dispatcher.cc',
