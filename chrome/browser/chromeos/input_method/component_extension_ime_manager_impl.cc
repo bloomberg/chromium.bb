@@ -24,10 +24,19 @@ struct WhitelistedComponentExtensionIME {
   const char* id;
   const char* path;
 } whitelisted_component_extension[] = {
+#if defined(OFFICIAL_BUILD)
   {
+    // Official Google Japanese Input.
     "fpfbhcjppmaeaijcidgiibchfbnhbelj",
     "/usr/share/chromeos-assets/input_methods/nacl_mozc",
   },
+#else
+  {
+    // Open-sourced Mozc Japanese Input.
+    "bbaiamgfapehflhememkfglaehiobjnk",
+    "/usr/share/chromeos-assets/input_methods/nacl_mozc",
+  },
+#endif
 };
 
 extensions::ComponentLoader* GetComponentLoader() {
