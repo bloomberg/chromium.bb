@@ -324,7 +324,7 @@
     "extension_types": ["extension", "packaged_app"]
   },
   "power": {
-    "channel": "dev",
+    "channel": "beta",
     "platform": "chromeos",
     "extension_types": [
       "extension", "hosted_app", "packaged_app", "platform_app"
