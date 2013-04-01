@@ -149,10 +149,11 @@ bool MouseCursorEventFilter::WarpMouseCursorIfNecessary(
 
 void MouseCursorEventFilter::UpdateHorizontalIndicatorWindowBounds() {
   bool from_primary = Shell::GetPrimaryRootWindow() == drag_source_root_;
-
-  const gfx::Rect& primary_bounds =
+  // GetPrimaryDisplay returns an object on stack, so copy the bounds
+  // instead of using reference.
+  const gfx::Rect primary_bounds =
       Shell::GetScreen()->GetPrimaryDisplay().bounds();
-  const gfx::Rect& secondary_bounds = ScreenAsh::GetSecondaryDisplay().bounds();
+  const gfx::Rect secondary_bounds = ScreenAsh::GetSecondaryDisplay().bounds();
   DisplayLayout::Position position = Shell::GetInstance()->
       display_controller()->GetCurrentDisplayLayout().position;
 
@@ -177,10 +178,11 @@ void MouseCursorEventFilter::UpdateHorizontalIndicatorWindowBounds() {
 
 void MouseCursorEventFilter::UpdateVerticalIndicatorWindowBounds() {
   bool in_primary = Shell::GetPrimaryRootWindow() == drag_source_root_;
-
-  const gfx::Rect& primary_bounds =
+  // GetPrimaryDisplay returns an object on stack, so copy the bounds
+  // instead of using reference.
+  const gfx::Rect primary_bounds =
       Shell::GetScreen()->GetPrimaryDisplay().bounds();
-  const gfx::Rect& secondary_bounds = ScreenAsh::GetSecondaryDisplay().bounds();
+  const gfx::Rect secondary_bounds = ScreenAsh::GetSecondaryDisplay().bounds();
   DisplayLayout::Position position = Shell::GetInstance()->
       display_controller()->GetCurrentDisplayLayout().position;
 
