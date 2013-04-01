@@ -234,7 +234,11 @@ def HashUrlByDownloading(url):
   Returns:
     sha1 of the data at the url.
   """
-  fh = urllib2.urlopen(url)
+  try:
+    fh = urllib2.urlopen(url)
+  except:
+    sys.stderr.write("Failed fetching URL: %s\n" % url)
+    raise
   return _HashFileHandle(fh)
 
 
