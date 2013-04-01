@@ -498,9 +498,9 @@ void RenderViewContextMenu::InitMenu() {
     AppendCopyItem();
 
   if (has_selection) {
+    AppendSearchProvider();
     if (!IsDevToolsURL(params_.page_url))
       AppendPrintItem();
-    AppendSearchProvider();
   }
 
   if (!IsDevToolsURL(params_.page_url))
