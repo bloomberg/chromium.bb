@@ -526,7 +526,7 @@ void FillFormField(const FormFieldData& data,
         data.value.substr(0, input_element->maxLength()), true);
     input_element->setAutofilled(true);
     if (is_initiating_node) {
-      int length = input_element->value().length();
+      int length = static_cast<int>(input_element->value().length());
       input_element->setSelectionRange(length, length);
       // Clear the current IME composition (the underline), if there is one.
       input_element->document().frame()->unmarkText();
@@ -565,8 +565,9 @@ void PreviewFormField(const FormFieldData& data,
   input_element->setAutofilled(true);
   if (is_initiating_node) {
     // Select the part of the text that the user didn't type.
-    input_element->setSelectionRange(input_element->value().length(),
-                                     input_element->suggestedValue().length());
+    input_element->setSelectionRange(
+        static_cast<int>(input_element->value().length()),
+        static_cast<int>(input_element->suggestedValue().length()));
   }
 }
 
@@ -997,7 +998,7 @@ bool ClearPreviewedFormWithElement(const WebInputElement& element,
     // selection to be lost. We force selection range to restore the text
     // cursor.
     if (is_initiating_node) {
-      int length = input_element->value().length();
+      int length = static_cast<int>(input_element->value().length());
       input_element->setSelectionRange(length, length);
     }
   }
