@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/android/autofill/autofill_dialog_view_android.h"
 
 #include "base/android/jni_android.h"
+#include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "chrome/browser/ui/android/window_android_helper.h"
@@ -76,7 +77,26 @@ void AutofillDialogViewAndroid::UpdateNotificationArea() {
 }
 
 void AutofillDialogViewAndroid::UpdateAccountChooser() {
-  NOTIMPLEMENTED();
+  JNIEnv* env = base::android::AttachCurrentThread();
+  std::vector<string16> account_names;
+  int selected_account_index = -1;
+
+  ui::MenuModel* model = controller_->MenuModelForAccountChooser();
+  if (!model || controller_->ShouldShowSpinner()) {
+    account_names.push_back(controller_->AccountChooserText());
+    selected_account_index = 0;
+  } else {
+    for (int i = 0; i < model->GetItemCount(); ++i) {
+      if (model->IsItemCheckedAt(i))
+        selected_account_index = i;
+      account_names.push_back(model->GetLabelAt(i));
+    }
+  }
+
+  ScopedJavaLocalRef<jobjectArray> jaccount_names =
+      base::android::ToJavaArrayOfStrings(env, account_names);
+  Java_AutofillDialogGlue_updateAccountChooser(
+      env, java_object_.obj(), jaccount_names.obj(), selected_account_index);
 }
 
 void AutofillDialogViewAndroid::UpdateButtonStrip() {
@@ -207,6 +227,19 @@ void AutofillDialogViewAndroid::HideSignIn() {
   NOTIMPLEMENTED();
 }
 
+// TODO(aruslan): bind to the automatic sign-in.
+bool AutofillDialogViewAndroid::StartAutomaticSignIn(
+    const std::string& username) {
+  if (username.empty())
+    return false;
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jstring> jusername =
+      base::android::ConvertUTF8ToJavaString(env, username);
+  Java_AutofillDialogGlue_startAutomaticSignIn(env, java_object_.obj(),
+                                               jusername.obj());
+  return true;
+}
+
 void AutofillDialogViewAndroid::UpdateProgressBar(double value) {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_AutofillDialogGlue_updateProgressBar(env, java_object_.obj(), value);
@@ -214,8 +247,9 @@ void AutofillDialogViewAndroid::UpdateProgressBar(double value) {
 
 void AutofillDialogViewAndroid::ModelChanged() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_AutofillDialogGlue_modelChanged(env, java_object_.obj(), false);
-
+  Java_AutofillDialogGlue_modelChanged(
+      env, java_object_.obj(),
+      controller_->ShouldShowSpinner());
   UpdateSection(SECTION_EMAIL);
   UpdateSection(SECTION_CC);
   UpdateSection(SECTION_BILLING);
@@ -231,6 +265,17 @@ void AutofillDialogViewAndroid::CancelForTesting() {
   controller_->OnCancel();
 }
 
+// TODO(aruslan): bind to the list of accounts population.
+std::vector<std::string> AutofillDialogViewAndroid::GetAvailableUserAccounts() {
+  std::vector<std::string> account_names;
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jobjectArray> jaccount_names =
+      Java_AutofillDialogGlue_getUserAccountNames(env, java_object_.obj());
+  base::android::AppendJavaStringArrayToStringVector(
+      env, jaccount_names.obj(), &account_names);
+  return account_names;
+}
+
 // Calls from Java to C++
 
 void AutofillDialogViewAndroid::ItemSelected(JNIEnv* env, jobject obj,
@@ -242,8 +287,11 @@ void AutofillDialogViewAndroid::ItemSelected(JNIEnv* env, jobject obj,
 
 void AutofillDialogViewAndroid::AccountSelected(JNIEnv* env, jobject obj,
                                                 jint index) {
-  // TODO(aruslan): start using this call.
-  NOTIMPLEMENTED();
+  ui::MenuModel* model = controller_->MenuModelForAccountChooser();
+  if (!model)
+    return;
+
+  model->ActivatedAt(index);
 }
 
 void AutofillDialogViewAndroid::EditingStart(JNIEnv* env, jobject obj,
@@ -278,6 +326,19 @@ ScopedJavaLocalRef<jstring> AutofillDialogViewAndroid::GetLabelForSection(
   string16 label(controller_->LabelForSection(
       static_cast<DialogSection>(section)));
   return base::android::ConvertUTF16ToJavaString(env, label);
+}
+
+void AutofillDialogViewAndroid::ContinueAutomaticSignin(
+    JNIEnv* env, jobject obj,
+    jstring jaccount_name, jstring jsid, jstring jlsid) {
+  const std::string account_name =
+      base::android::ConvertJavaStringToUTF8(env, jaccount_name);
+  const std::string sid =
+      base::android::ConvertJavaStringToUTF8(env, jsid);
+  const std::string lsid =
+      base::android::ConvertJavaStringToUTF8(env, jlsid);
+  // TODO(aruslan): bind to the automatic sign-in.
+  // controller_->ContinueAutomaticSignIn(account_name, sid, lsid);
 }
 
 // static

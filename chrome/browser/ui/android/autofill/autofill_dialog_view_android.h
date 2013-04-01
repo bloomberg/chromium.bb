@@ -52,10 +52,18 @@ class AutofillDialogViewAndroid : public AutofillDialogView {
       JNIEnv* env,
       jobject obj,
       jint section);
+  void ContinueAutomaticSignin(JNIEnv* env, jobject obj,
+                               jstring account_name, jstring sid, jstring lsid);
 
   static bool RegisterAutofillDialogViewAndroid(JNIEnv* env);
 
  private:
+  // Returns the list of available user accounts.
+  std::vector<std::string> GetAvailableUserAccounts();
+
+  // Starts an automatic sign-in attempt for a given account.
+  bool StartAutomaticSignIn(const std::string& username);
+
   // The controller that drives this view. Weak pointer, always non-NULL.
   AutofillDialogController* const controller_;
 

@@ -15,13 +15,16 @@ import org.chromium.ui.gfx.NativeWindow;
 * JNI call glue for AutofillDialog C++ and Java objects.
 */
 @JNINamespace("autofill")
-public class AutofillDialogGlue implements AutofillDialogDelegate {
+public class AutofillDialogGlue implements AutofillDialogDelegate,
+        AutofillDialogAccountHelper.SignInContinuation {
     @SuppressWarnings("unused")
     private final int mNativeDialogPopup;
-    private AutofillDialog mAutofillDialog;
+    private final AutofillDialog mAutofillDialog;
+    private final AutofillDialogAccountHelper mAccountHelper;
 
     public AutofillDialogGlue(int nativeAutofillDialogViewAndroid, NativeWindow nativeWindow) {
         mNativeDialogPopup = nativeAutofillDialogViewAndroid;
+        mAccountHelper = new AutofillDialogAccountHelper(this, nativeWindow.getContext());
 
         mAutofillDialog = new AutofillDialog(nativeWindow.getContext(), this);
         mAutofillDialog.show();
@@ -65,8 +68,9 @@ public class AutofillDialogGlue implements AutofillDialogDelegate {
      * @param accountNames List of accounts to be shown.
      * @param selectedAccountIndex Index of the currently selected account.
      */
+    @CalledByNative
     private void updateAccountChooser(String[] accountNames, int selectedAccountIndex) {
-        mAutofillDialog.updateAccountChooserAndAddTitle(accountNames, selectedAccountIndex);
+        mAutofillDialog.updateAccountChooser(accountNames, selectedAccountIndex);
     }
 
     /**
@@ -115,6 +119,34 @@ public class AutofillDialogGlue implements AutofillDialogDelegate {
     @CalledByNative
     private void updateProgressBar(double value) {
         mAutofillDialog.updateProgressBar(value);
+    }
+
+    /**
+     * Starts an automatic sign-in attempt for a given account.
+     * @param accountName An account name (email) to sign into.
+     */
+    @CalledByNative
+    private void startAutomaticSignIn(String accountName) {
+        mAccountHelper.startTokensGeneration(accountName);
+    }
+
+    /**
+     * @return An array of Google account emails the user has.
+     */
+    @CalledByNative
+    private String[] getUserAccountNames() {
+        return mAccountHelper.getAccountNames();
+    }
+
+    // AutofillDialogAccountHelper.SignInContinuation implementation.
+    @Override
+    public void onTokensGenerationSuccess(String accountName, String sid, String lsid) {
+        nativeContinueAutomaticSignin(mNativeDialogPopup, accountName, sid, lsid);
+    }
+
+    @Override
+    public void onTokensGenerationFailure() {
+        nativeContinueAutomaticSignin(mNativeDialogPopup, "", "", "");
     }
 
     // AutofillDialogDelegate implementation ------------------------------------------------------
@@ -220,6 +252,9 @@ public class AutofillDialogGlue implements AutofillDialogDelegate {
     private native void nativeItemSelected(int nativeAutofillDialogViewAndroid, int section,
             int index);
     private native void nativeAccountSelected(int nativeAutofillDialogViewAndroid, int index);
+    private native void nativeContinueAutomaticSignin(
+            int nativeAutofillDialogViewAndroid,
+            String accountName, String sid, String lsid);
     private native void nativeEditingStart(int nativeAutofillDialogViewAndroid, int section);
     private native void nativeEditingComplete(int nativeAutofillDialogViewAndroid, int section);
     private native void nativeEditingCancel(int nativeAutofillDialogViewAndroid, int section);

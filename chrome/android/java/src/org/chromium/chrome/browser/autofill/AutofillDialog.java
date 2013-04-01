@@ -37,16 +37,16 @@ public class AutofillDialog extends AlertDialog
     private static final int ADD_MENU_ITEM_INDEX = -1;
     private static final int EDIT_MENU_ITEM_INDEX = -2;
 
-    private AutofillDialogContentView mContentView;
-    private AutofillDialogTitleView mTitleView;
+    private final AutofillDialogContentView mContentView;
+    private final AutofillDialogTitleView mTitleView;
+    private final AutofillDialogDelegate mDelegate;
+
     private AutofillDialogField[][] mAutofillSectionFieldData =
             new AutofillDialogField[AutofillDialogConstants.NUM_SECTIONS][];
     private AutofillDialogMenuItem[][] mAutofillSectionMenuData =
             new AutofillDialogMenuItem[AutofillDialogConstants.NUM_SECTIONS][];
-    private final List<String> mDefaultAccountItems = new ArrayList<String>();
     private final AutofillDialogMenuItem[][] mDefaultMenuItems =
             new AutofillDialogMenuItem[AutofillDialogConstants.NUM_SECTIONS][];
-    private AutofillDialogDelegate mDelegate;
     private boolean mWillDismiss = false;
 
     /**
@@ -111,7 +111,9 @@ public class AutofillDialog extends AlertDialog
         super(context);
         mDelegate = delegate;
 
-        addTitleWithPlaceholders();
+        mTitleView = new AutofillDialogTitleView(getContext());
+        mTitleView.setOnItemSelectedListener(this);
+        setCustomTitle(mTitleView);
 
         ScrollView scroll = new ScrollView(context);
         mContentView = (AutofillDialogContentView) getLayoutInflater().
@@ -147,9 +149,6 @@ public class AutofillDialog extends AlertDialog
 
         mDefaultMenuItems[AutofillDialogConstants.SECTION_CC_BILLING] = billingItems;
         mDefaultMenuItems[AutofillDialogConstants.SECTION_SHIPPING] = shippingItems;
-
-        mDefaultAccountItems.add(resources.getString(R.string.autofill_new_account));
-        mDefaultAccountItems.add(resources.getString(R.string.autofill_use_local));
     }
 
     @Override
@@ -179,7 +178,10 @@ public class AutofillDialog extends AlertDialog
 
     @Override
     public void onItemSelected(AdapterView<?> spinner, View view, int position, long id) {
-        if (spinner.getId() == R.id.accounts_spinner) return;
+        if (spinner.getId() == R.id.accounts_spinner) {
+            mDelegate.accountSelected(position);
+            return;
+        }
 
         int section = AutofillDialogUtils.getSectionForSpinnerID(spinner.getId());
 
@@ -212,32 +214,14 @@ public class AutofillDialog extends AlertDialog
         return position >= spinner.getCount() - numDefaultItems;
     }
 
-    //TODO(yusufo): Remove this. updateAccountChooserAndAddTitle will get initiated from glue.
-    private void addTitleWithPlaceholders() {
-       String[] accounts = {
-               "placeholder@gmail.com",
-               "placeholder@google.com"
-       };
-       updateAccountChooserAndAddTitle(accounts, 0);
-    }
-
     /**
-     * Update account chooser dropdown with given accounts and create the title view if needed.
+     * Update account chooser dropdown with given accounts.
      * @param accounts The accounts to be used for the dropdown.
-     * @param selectedAccountIndex The index of a currently selected account or -1
-     *                             if the local payments should be used.
+     * @param selectedAccountIndex The index of a currently selected account.
      */
-    public void updateAccountChooserAndAddTitle(String[] accounts, int selectedAccountIndex) {
-        ArrayList<String> combinedItems =
-                new ArrayList<String>(accounts.length + mDefaultAccountItems.size());
+    public void updateAccountChooser(String[] accounts, int selectedAccountIndex) {
+        ArrayList<String> combinedItems = new ArrayList<String>(accounts.length);
         combinedItems.addAll(Arrays.asList(accounts));
-        combinedItems.addAll(mDefaultAccountItems);
-        if (mTitleView == null) {
-            mTitleView = new AutofillDialogTitleView(getContext(), combinedItems);
-            mTitleView.setOnItemSelectedListener(this);
-            setCustomTitle(mTitleView);
-            return;
-        }
         mTitleView.updateAccountsAndSelect(combinedItems, selectedAccountIndex);
     }
 

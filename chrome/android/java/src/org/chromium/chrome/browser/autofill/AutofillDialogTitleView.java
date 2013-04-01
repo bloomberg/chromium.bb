@@ -42,20 +42,10 @@ public class AutofillDialogTitleView extends FrameLayout {
     }
 
     /**
-     * Create a title using the given context with the given dropdown items.
-     * @param context The context to create the title within.
-     * @param accountNames The dropdown items to be listed.
-     */
-    public AutofillDialogTitleView(Context context, ArrayList<String> accountNames) {
-        this(context);
-        updateAccountsAndSelect(accountNames, 0);
-    }
-
-    /**
      * Update account chooser dropdown with given accounts and create the title view if needed.
      * @param accountNames The dropdown items to be listed.
-     * @param selectedAccountIndex The index of a currently selected account or -1
-     *                             if the local payments should be used.
+     * @param selectedAccountIndex The index of a currently selected account or
+     *                             -1 if nothing is selected.
      */
     public void updateAccountsAndSelect(ArrayList<String> accountNames,
             int selectedAccountIndex) {
@@ -65,8 +55,6 @@ public class AutofillDialogTitleView extends FrameLayout {
         Spinner accountsSpinner = (Spinner)findViewById(R.id.accounts_spinner);
         if (selectedAccountIndex >= 0) {
             accountsSpinner.setSelection(selectedAccountIndex);
-        } else {
-            accountsSpinner.setSelection(accountsSpinner.getCount() - 1);
         }
     }
 
