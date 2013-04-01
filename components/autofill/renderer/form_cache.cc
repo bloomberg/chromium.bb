@@ -197,7 +197,7 @@ bool FormCache::ClearFormWithElement(const WebInputElement& element) {
       // Clearing the value in the focused node (above) can cause selection
       // to be lost. We force selection range to restore the text cursor.
       if (element == *input_element) {
-        int length = static_cast<int>(input_element->value().length());
+        int length = input_element->value().length();
         input_element->setSelectionRange(length, length);
       }
     } else if (IsSelectElement(control_element)) {
