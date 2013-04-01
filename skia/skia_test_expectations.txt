@@ -48,4 +48,10 @@
 #
 # START OVERRIDES HERE
 
+# These two tests exercise the canvas 'darken' mode. This was fixed in
+# Skia r8449 thus need to be rebaselined
+crbug.com/225398 platform/chromium/virtual/gpu/fast/canvas/canvas-composite-transformclip.html [ ImageOnlyFailure ]
+crbug.com/225398 platform/chromium/virtual/gpu/fast/canvas/canvas-composite.html [ ImageOnlyFailure ]
+
+
 # END OVERRIDES HERE (this line ensures that the file is newline-terminated)
