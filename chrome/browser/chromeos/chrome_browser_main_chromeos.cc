@@ -249,6 +249,17 @@ void OptionallyRunChromeOSLoginManager(const CommandLine& parsed_command_line,
   }
 }
 
+void RunAutoLaunchKioskApp() {
+  // KioskAppLauncher deletes itself when done.
+  (new KioskAppLauncher(
+      KioskAppManager::Get()->GetAutoLaunchApp()))->Start();
+
+  // Login screen is skipped but 'login-prompt-visible' signal is still needed.
+  LOG(INFO) << "Kiosk app auto launch >> login-prompt-visible";
+  chromeos::DBusThreadManager::Get()->GetSessionManagerClient()->
+      EmitLoginPromptVisible();
+}
+
 }  // namespace
 
 namespace internal {
@@ -598,9 +609,7 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   if (!parameters().ui_task ||
       parsed_command_line().HasSwitch(::switches::kForceLoginManagerInTests)) {
     if (ShouldAutoLaunchKioskApp(parsed_command_line())) {
-      // KioskAppLauncher deletes itself when done.
-      (new KioskAppLauncher(
-          KioskAppManager::Get()->GetAutoLaunchApp()))->Start();
+      RunAutoLaunchKioskApp();
     } else {
       OptionallyRunChromeOSLoginManager(parsed_command_line(), profile());
     }
