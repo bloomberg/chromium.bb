@@ -230,9 +230,8 @@ static AudioDeviceID GetAudioDeviceIdByUId(bool is_input,
 }
 
 AudioManagerMac::AudioManagerMac()
-    : current_sample_rate_(HardwareSampleRate()) {
-  if (!GetDefaultOutputDevice(&current_output_device_))
-    current_output_device_ = kAudioDeviceUnknown;
+    : current_sample_rate_(0) {
+  current_output_device_ = kAudioDeviceUnknown;
 
   SetMaxOutputStreamsAllowed(kMaxOutputStreams);
 
@@ -508,6 +507,13 @@ AudioParameters AudioManagerMac::GetPreferredOutputStreamParameters(
 
 void AudioManagerMac::CreateDeviceListener() {
   DCHECK(GetMessageLoop()->BelongsToCurrentThread());
+
+  // Get a baseline for the sample-rate and current device,
+  // so we can intelligently handle device notifications only when necessary.
+  current_sample_rate_ = HardwareSampleRate();
+  if (!GetDefaultOutputDevice(&current_output_device_))
+    current_output_device_ = kAudioDeviceUnknown;
+
   output_device_listener_.reset(new AudioDeviceListenerMac(BindToLoop(
       GetMessageLoop(), base::Bind(
           &AudioManagerMac::HandleDeviceChanges,
