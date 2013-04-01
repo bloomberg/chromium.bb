@@ -9,6 +9,7 @@ import base64
 import optparse
 import os
 import sys
+import tempfile
 import time
 import unittest
 
@@ -512,6 +513,23 @@ class ChromeExtensionsCapabilityTest(ChromeDriverBaseTest):
     crx_2_encoded = base64.b64encode(open(crx_2, 'rb').read())
     extensions = [crx_1_encoded, crx_2_encoded]
     self.CreateDriver(chrome_extensions=extensions)
+
+
+class ChromeLogPathCapabilityTest(ChromeDriverBaseTest):
+  """Tests that chromedriver properly processes chromeOptions.logPath."""
+
+  LOG_MESSAGE = 'Welcome to ChromeLogPathCapabilityTest!'
+
+  def testChromeLogPath(self):
+    """Checks that user can specify the path of the chrome log.
+
+    Verifies that a log message is written into the specified log file.
+    """
+    tmp_log_path = tempfile.NamedTemporaryFile()
+    driver = self.CreateDriver(chrome_log_path=tmp_log_path.name)
+    driver.ExecuteScript('console.info("%s")' % self.LOG_MESSAGE)
+    driver.Quit()
+    self.assertIn(self.LOG_MESSAGE, open(tmp_log_path.name).read())
 
 
 if __name__ == '__main__':

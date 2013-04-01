@@ -40,7 +40,8 @@ Status ChromeDesktopImpl::Launch(const base::FilePath& exe,
                                  const base::ListValue* args,
                                  const base::ListValue* extensions,
                                  const base::DictionaryValue* prefs,
-                                 const base::DictionaryValue* local_state) {
+                                 const base::DictionaryValue* local_state,
+                                 const std::string& log_path) {
   base::FilePath program = exe;
   if (program.empty()) {
     if (!FindChrome(&program))
@@ -83,6 +84,16 @@ Status ChromeDesktopImpl::Launch(const base::FilePath& exe,
   }
 
   base::LaunchOptions options;
+
+#if !defined(OS_WIN)
+  base::EnvironmentVector environ;
+  if (!log_path.empty()) {
+    environ.push_back(base::EnvironmentVector::value_type("CHROME_LOG_FILE",
+                                                          log_path));
+    options.environ = &environ;
+  }
+#endif
+
   if (!base::LaunchProcess(command, options, &process_))
     return Status(kUnknownError, "chrome failed to start");
 

@@ -109,10 +109,19 @@ Status ExecuteNewSession(
                     "chrome extensions must be a list");
     }
 
+    const base::Value* log_path = NULL;
+    std::string chrome_log_path;
+    if (desired_caps->Get("chromeOptions.logPath", &log_path) &&
+        !log_path->GetAsString(&chrome_log_path)) {
+      return Status(kUnknownError,
+                    "chrome log path must be a string");
+    }
+
     scoped_ptr<ChromeDesktopImpl> chrome_desktop(new ChromeDesktopImpl(
         context_getter, port, socket_factory));
     status = chrome_desktop->Launch(chrome_exe, args_list, extensions_list,
-                                    prefs_dict, local_state_dict);
+                                    prefs_dict, local_state_dict,
+                                    chrome_log_path);
     chrome.reset(chrome_desktop.release());
   }
   if (status.IsError())

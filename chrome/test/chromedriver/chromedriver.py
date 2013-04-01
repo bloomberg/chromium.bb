@@ -57,7 +57,8 @@ class ChromeDriver(object):
   """Starts and controls a single Chrome instance on this machine."""
 
   def __init__(self, lib_path, chrome_binary=None, android_package=None,
-               chrome_switches=None, chrome_extensions=None):
+               chrome_switches=None, chrome_extensions=None,
+               chrome_log_path=None):
     self._lib = ctypes.CDLL(lib_path)
 
     options = {}
@@ -73,6 +74,10 @@ class ChromeDriver(object):
     if chrome_extensions:
       assert type(chrome_extensions) is list
       options['extensions'] = chrome_extensions
+
+    if chrome_log_path:
+      assert type(chrome_log_path) is str
+      options['logPath'] = chrome_log_path
 
     if options:
       params = {
