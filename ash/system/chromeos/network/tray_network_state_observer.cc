@@ -42,6 +42,8 @@ void TrayNetworkStateObserver::DefaultNetworkChanged(
 
 void TrayNetworkStateObserver::NetworkPropertiesUpdated(
     const chromeos::NetworkState* network) {
+  if (network == chromeos::NetworkStateHandler::Get()->DefaultNetwork())
+    delegate_->NetworkStateChanged(true);
   delegate_->NetworkServiceChanged(network);
 }
 

@@ -139,6 +139,11 @@ class CHROMEOS_EXPORT NetworkStateHandler
   // list, which will trigger the appropriate observer calls.
   void RequestScan() const;
 
+  // Set the user initiated connecting network.
+  void SetConnectingNetwork(const std::string& service_path);
+
+  const std::string& connecting_network() const { return connecting_network_; }
+
   // Generates a DictionaryValue of all NetworkState properties. Currently
   // provided for debugging purposes only.
   void GetNetworkStatePropertiesForTest(
@@ -148,11 +153,6 @@ class CHROMEOS_EXPORT NetworkStateHandler
   static const char kMatchTypeWireless[];
   static const char kMatchTypeMobile[];
   static const char kMatchTypeNonVirtual[];
-
-  const std::string& connecting_network() const { return connecting_network_; }
-  void set_connecting_network(const std::string& service_path) {
-    connecting_network_ = service_path;
-  }
 
  protected:
   NetworkStateHandler();

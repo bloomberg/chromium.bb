@@ -450,7 +450,7 @@ void Network::set_connecting() {
   state_ = STATE_CONNECT_REQUESTED;
   // Set the connecting network in NetworkStateHandler for the status area UI.
   if (NetworkStateHandler::IsInitialized())
-    NetworkStateHandler::Get()->set_connecting_network(service_path());
+    NetworkStateHandler::Get()->SetConnectingNetwork(service_path());
 }
 
 void Network::SetProfilePath(const std::string& profile_path) {

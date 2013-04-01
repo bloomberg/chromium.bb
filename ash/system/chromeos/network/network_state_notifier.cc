@@ -146,20 +146,12 @@ void NetworkStateNotifier::NetworkConnectionStateChanged(
     cached_state_[network->path()] = new_state;
     return;  // New network, no state change
   }
-  bool notify_failure = false;
-  if (new_state == flimflam::kStateFailure &&
-      prev_state != flimflam::kStateIdle) {
-    // Note: Idle -> Failure sometimes happens on resume when the network
-    // device is not ready yet, but is not an actual failure.
-    notify_failure = true;
-  } else if (new_state == flimflam::kStateIdle &&
-             NetworkState::StateIsConnecting(prev_state) &&
-             network->path() == handler->connecting_network()) {
-    // Connecting -> Idle without an error shouldn't happen but sometimes does.
-    notify_failure = true;
-  }
-  if (!notify_failure)
+
+  if (new_state != flimflam::kStateFailure)
     return;
+
+  if (network->path() != handler->connecting_network())
+    return;  // Only show notifications for explicitly connected networks
 
   chromeos::network_event_log::AddEntry(
       kLogModule, "ConnectionFailure", network->path());

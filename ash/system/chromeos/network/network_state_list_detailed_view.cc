@@ -786,7 +786,7 @@ void NetworkStateListDetailedView::ConnectToNetwork(
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kUseNewNetworkConfigurationHandlers) &&
       !network->IsConnectedState()) {
-    handler->set_connecting_network(service_path);
+    handler->SetConnectingNetwork(service_path);
     chromeos::NetworkConfigurationHandler::Get()->Connect(
         service_path,
         base::Bind(&base::DoNothing),

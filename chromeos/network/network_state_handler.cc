@@ -300,6 +300,13 @@ void NetworkStateHandler::RequestScan() const {
   shill_property_handler_->RequestScan();
 }
 
+void NetworkStateHandler::SetConnectingNetwork(
+    const std::string& service_path) {
+  connecting_network_ = service_path;
+  network_event_log::AddEntry(
+      kLogModule, "SetConnectingNetwork", service_path);
+}
+
 void NetworkStateHandler::GetNetworkStatePropertiesForTest(
     base::DictionaryValue* dictionary) const {
   for (ManagedStateList::const_iterator iter = network_list_.begin();
@@ -553,10 +560,19 @@ void NetworkStateHandler::OnDefaultNetworkChanged() {
 
 void NetworkStateHandler::NetworkPropertiesUpdated(
     const NetworkState* network) {
-  if (network->path() == connecting_network_ && !network->IsConnectingState())
-    connecting_network_.clear();
   FOR_EACH_OBSERVER(NetworkStateHandlerObserver, observers_,
                     NetworkPropertiesUpdated(network));
+  // If |connecting_network_| transitions to a non-idle, non-connecting state,
+  // clear it *after* signalling observers.
+  if (network->path() == connecting_network_ &&
+      !network->IsConnectingState() &&
+      network->connection_state() != flimflam::kStateIdle) {
+    connecting_network_.clear();
+    network_event_log::AddEntry(
+        kLogModule, "ClearConnectingNetwork",
+        base::StringPrintf("%s: %s", network->path().c_str(),
+                           network->connection_state().c_str()));
+  }
 }
 
 }  // namespace chromeos
