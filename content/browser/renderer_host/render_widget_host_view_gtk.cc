@@ -712,6 +712,8 @@ void RenderWidgetHostViewGtk::WasHidden() {
   // If we have a renderer, then inform it that we are being hidden so it can
   // reduce its resource utilization.
   host_->WasHidden();
+
+  web_contents_switch_paint_time_ = base::TimeTicks();
 }
 
 void RenderWidgetHostViewGtk::SetSize(const gfx::Size& size) {
