@@ -40,16 +40,22 @@ def DoJavac(options):
   build_utils.DeleteDirectory(output_dir)
   build_utils.MakeDirectory(output_dir)
 
-  build_utils.CheckCallDie([
+  cmd = [
       'javac',
       '-g',
-      '-Xlint:unchecked',
       '-source', '1.5',
       '-target', '1.5',
       '-classpath', ':'.join(classpath),
-      '-d', output_dir] +
-      java_files)
+      '-d', output_dir]
 
+  # Only output Java warnings for chromium code
+  if options.chromium_code:
+    cmd += ['-Xlint:unchecked']
+  else:
+    cmd += [# Suppress "Sun proprietary API" warnings. See: goo.gl/OYxUM
+            '-XDignore.symbol.file']
+
+  build_utils.CheckCallDie(cmd + java_files)
 
 def main(argv):
   parser = optparse.OptionParser()
@@ -60,6 +66,9 @@ def main(argv):
   parser.add_option('--classpath', help='Classpath for javac.')
   parser.add_option('--output-dir', help='Directory for javac output.')
   parser.add_option('--stamp', help='Path to touch on success.')
+  parser.add_option('--chromium-code', type='int', help='Whether code being '
+                    'compiled should be built with stricter warnings for '
+                    'chromium code.')
 
   # TODO(newt): remove this once http://crbug.com/177552 is fixed in ninja.
   parser.add_option('--ignore', help='Ignored.')

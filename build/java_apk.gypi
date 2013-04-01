@@ -309,6 +309,7 @@
         '--classpath=>(input_jars_paths) <(android_sdk_jar)',
         '--src-dirs=>(all_src_dirs)',
         '--javac-includes=<(javac_includes)',
+        '--chromium-code=<(chromium_code)',
         '--stamp=<(compile_stamp)',
 
         # TODO(newt): remove this once http://crbug.com/177552 is fixed in ninja.
