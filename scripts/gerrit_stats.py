@@ -58,8 +58,8 @@ def main(argv):
   logging.getLogger().setLevel(logging.WARNING)
   query = []
 
-  helper = gerrit.GerritHelper(constants.INTERNAL_REMOTE if opts.internal
-                                      else constants.EXTERNAL_REMOTE)
+  helper = gerrit.GerritHelper.FromRemote(
+      constants.INTERNAL_REMOTE if opts.internal else constants.EXTERNAL_REMOTE)
   recomposed_args = []
   for arg in args:
     if "@" not in arg:
