@@ -48,8 +48,8 @@
   machine x86_64_decoder;
   alphtype unsigned char;
   variable p current_position;
-  variable pe end_of_data;
-  variable eof end_of_data;
+  variable pe end_position;
+  variable eof end_position;
   variable cs current_state;
 
   include byte_machine "byte_machines.rl";
@@ -137,7 +137,7 @@ int DecodeChunkAMD64(const uint8_t *data, size_t size,
                      ProcessDecodingErrorFunc process_error,
                      void *userdata) {
   const uint8_t *current_position = data;
-  const uint8_t *end_of_data = data + size;
+  const uint8_t *end_position = data + size;
   const uint8_t *instruction_begin = current_position;
   /*
    * Top three bits of VEX2 are inverted: see AMD/Intel manual.

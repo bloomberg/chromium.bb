@@ -7,9 +7,17 @@ import collections
 from lxml import etree
 
 
+DFA = collections.namedtuple(
+    'DFA',
+    ['states', 'initial_state', 'error_action'])
+
+
 class State(object):
 
   __slots__ = [
+      # Index in list of all states of the automaton.
+      'index',
+
       # Dictionary {byte: transition}. If byte is not accepted, there is no
       # corresponding entry in the dictionary.
       'forward_transitions',
@@ -54,8 +62,7 @@ def ParseXml(xml_file):
     xml_file: name of the XML file to parse.
 
   Returns:
-    Pair (states, start) where states is a list of states and start is the
-    initial state.
+    DFA object.
   """
 
   xml_tree = etree.parse(xml_file)
@@ -108,6 +115,8 @@ def ParseXml(xml_file):
     assert state_id == expected_state_id
 
     state = states[state_id]
+
+    state.index = state_id
     state.forward_transitions = {}
     state.back_transitions = []
     state.is_accepting = bool(xml_state.get('final'))
@@ -163,4 +172,4 @@ def ParseXml(xml_file):
   assert len(start_states) == 1, 'Can not find the initial state in the XML'
   start_state = states[int(start_states[0].text)]
 
-  return states, start_state
+  return DFA(states, start_state, error_action)

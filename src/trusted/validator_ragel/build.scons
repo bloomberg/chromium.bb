@@ -156,7 +156,7 @@ if ragel_involved:
   # Now we are back to conditionally defining the large automata generated
   # by gen_dfa.
 
-  def MakeAutomaton(bits, automaton, ragel_flags):
+  def MakeAutomaton(bits, automaton):
     (rl_instruction_file,) = env.AutoDepsCommand(
         '%s_x86_%s_instruction.rl' % (automaton, bits),
         ['${PYTHON}',
@@ -171,19 +171,6 @@ if ragel_involved:
 
     rl_file = env.File('%s_x86_%s.rl' % (automaton, bits))
 
-    (c_file,) = env.AutoDepsCommand(
-        '%s_x86_%s.c' % (automaton, bits),
-        [ragel_binary,
-         ragel_flags,
-         '-LL',
-         '-I..',
-         '-I%s' % include_dir,
-         rl_file,
-         '-o', '${TARGET}'],
-        extra_deps=[byte_machines,
-                    rl_instruction_file,
-                    'parse_instruction.rl'])
-
     (xml_file,) = env.AutoDepsCommand(
         '%s_x86_%s.xml' % (automaton, bits),
         [ragel_binary,
@@ -195,49 +182,24 @@ if ragel_involved:
          '-o', '${TARGET}'],
         extra_deps=[byte_machines, rl_instruction_file])
 
-    def InjectGeneratedFileHeader(target, source, env):
-      source_filename = source[0].get_abspath()
-      target_filename = target[0].get_abspath()
+    c_file = env.AutoDepsCommand(
+        '%s/%s_x86_%s.c' % (gen_dir, automaton, bits),
+        ['${PYTHON}',
+         env.File('codegen.py'),
+         rl_file,
+         xml_file,
+         '${TARGET}'])
 
-      architecture = {'32': 'ia32', '64': 'x86-64'}[bits]
-
-      with open(source_filename, 'r') as source_file:
-        comment, sep, rest = source_file.read().partition('*/')
-        if sep == '':
-          raise UserError('Generated file %s does not have '
-                          'header comment block' % source_filename)
-
-      _, _, short_name = target_filename.rpartition('/native_client/')
-
-      with open(target_filename, 'w') as target_file:
-        target_file.write(
-            ('/* native_client/%s\n'
-             ' * THIS FILE IS AUTO-GENERATED. DO NOT EDIT.\n'
-             ' * Compiled for %s mode.\n'
-             ' */') % (short_name, architecture))
-
-        target_file.write(rest)
-
-    # inject comments and place files to appropriate dir
-    return (
-        env.Command(
-            target='%s/%s' % (gen_dir, c_file),
-            source=c_file,
-            action=InjectGeneratedFileHeader),
-        xml_file)
+    return c_file, xml_file
 
   (decoder32, decoder32_xml) = MakeAutomaton(
-      '32', 'decoder',
-      '-T0')
+      '32', 'decoder')
   (validator32, validator32_xml) = MakeAutomaton(
-      '32', 'validator',
-      '-G2')
+      '32', 'validator')
   (decoder64, decoder64_xml) = MakeAutomaton(
-      '64', 'decoder',
-      '-T0')
+      '64', 'decoder')
   (validator64, validator64_xml) = MakeAutomaton(
-      '64', 'validator',
-      '-GT2')
+      '64', 'validator')
 
   automata = [decoder32, validator32, decoder64, validator64]
 

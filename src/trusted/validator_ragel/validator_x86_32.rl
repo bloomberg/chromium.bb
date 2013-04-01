@@ -33,8 +33,8 @@
   machine x86_32_validator;
   alphtype unsigned char;
   variable p current_position;
-  variable pe end_of_bundle;
-  variable eof end_of_bundle;
+  variable pe end_position;
+  variable eof end_position;
   variable cs current_state;
 
   include byte_machine "byte_machines.rl";
@@ -178,7 +178,7 @@ Bool ValidateChunkIA32(const uint8_t codeblock[],
   bitmap_word *valid_targets;
   bitmap_word *jump_dests;
   const uint8_t *current_position;
-  const uint8_t *end_of_bundle;
+  const uint8_t *end_position;
   int result = TRUE;
 
   CHECK(sizeof valid_targets_small == sizeof jump_dests_small);
@@ -207,9 +207,9 @@ Bool ValidateChunkIA32(const uint8_t codeblock[],
    * instructions (and "superinstructions") can not cross borders of the bundle.
    */
   if (options & PROCESS_CHUNK_AS_A_CONTIGUOUS_STREAM)
-    end_of_bundle = codeblock + size;
+    end_position = codeblock + size;
   else
-    end_of_bundle = codeblock + kBundleSize;
+    end_position = codeblock + kBundleSize;
 
   /*
    * Main loop.  Here we process the data array bundle-after-bundle.
@@ -219,8 +219,8 @@ Bool ValidateChunkIA32(const uint8_t codeblock[],
    */
   for (current_position = codeblock;
        current_position < codeblock + size;
-       current_position = end_of_bundle,
-       end_of_bundle = current_position + kBundleSize) {
+       current_position = end_position,
+       end_position = current_position + kBundleSize) {
     /* Start of the instruction being processed.  */
     const uint8_t *instruction_begin = current_position;
     /* Only used locally in the end_of_instruction_cleanup action.  */

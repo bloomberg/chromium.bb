@@ -54,10 +54,10 @@ def Traverse(state1, state2, path):
 def main():
   filename1, filename2 = sys.argv[1:]
 
-  _, start_state1 = dfa_parser.ParseXml(filename1)
-  _, start_state2 = dfa_parser.ParseXml(filename2)
+  dfa1 = dfa_parser.ParseXml(filename1)
+  dfa2 = dfa_parser.ParseXml(filename2)
 
-  Traverse(start_state1, start_state2, [])
+  Traverse(dfa1.initial_state, dfa2.initial_state, [])
 
   print 'automata are equivalent'
 

@@ -371,7 +371,7 @@ def Worker((prefix, state_index)):
 
   try:
     dfa_traversal.TraverseTree(
-        states[state_index],
+        dfa.states[state_index],
         final_callback=worker_state.ReceiveInstruction,
         prefix=prefix,
         anyfield=0)
@@ -436,26 +436,27 @@ def ParseOptions():
 options, xml_file = ParseOptions()
 # We are doing it here to share state graph between workers spawned by
 # multiprocess. Passing it every time is slow.
-states, initial_state = dfa_parser.ParseXml(xml_file)
+dfa = dfa_parser.ParseXml(xml_file)
 
 validator.Init(options.validator_dll)
 
 
 def main():
-  assert initial_state.is_accepting
-  assert not initial_state.any_byte
+  assert dfa.initial_state.is_accepting
+  assert not dfa.initial_state.any_byte
 
-  print len(states), 'states'
+  print len(dfa.states), 'states'
 
-  num_suffixes = dfa_traversal.GetNumSuffixes(initial_state)
+  num_suffixes = dfa_traversal.GetNumSuffixes(dfa.initial_state)
 
-  # We can't just write 'num_suffixes[initial_state]' because
+  # We can't just write 'num_suffixes[dfa.initial_state]' because
   # initial state is accepting.
-  total_instructions = sum(num_suffixes[t.to_state]
-                           for t in initial_state.forward_transitions.values())
+  total_instructions = sum(
+      num_suffixes[t.to_state]
+      for t in dfa.initial_state.forward_transitions.values())
   print total_instructions, 'regular instructions total'
 
-  tasks = dfa_traversal.CreateTraversalTasks(states, initial_state)
+  tasks = dfa_traversal.CreateTraversalTasks(dfa.states, dfa.initial_state)
   print len(tasks), 'tasks'
 
   pool = multiprocessing.Pool()

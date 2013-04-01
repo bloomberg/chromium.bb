@@ -26,8 +26,8 @@
   machine x86_32_decoder;
   alphtype unsigned char;
   variable p current_position;
-  variable pe end_of_data;
-  variable eof end_of_data;
+  variable pe end_position;
+  variable eof end_position;
   variable cs current_state;
 
   include byte_machine "byte_machines.rl";
@@ -100,7 +100,7 @@ int DecodeChunkIA32(const uint8_t *data, size_t size,
                     ProcessInstructionFunc process_instruction,
                     ProcessDecodingErrorFunc process_error, void *userdata) {
   const uint8_t *current_position = data;
-  const uint8_t *end_of_data = data + size;
+  const uint8_t *end_position = data + size;
   const uint8_t *instruction_begin = current_position;
   uint8_t vex_prefix3 = 0x00;
   enum ImmediateMode imm_operand = IMMNONE;

@@ -251,16 +251,16 @@ def main():
     parser.error('need exactly one ragel XML file')
 
   xml_file = args[0]
-  states, start_state = dfa_parser.ParseXml(xml_file)
+  dfa = dfa_parser.ParseXml(xml_file)
 
-  CheckForProperCleanup(states)
+  CheckForProperCleanup(dfa.states)
 
-  collected_dangerous_paths = CheckDFAActions(start_state, states)
+  collected_dangerous_paths = CheckDFAActions(dfa.initial_state, dfa.states)
 
   all_superinstructions = set()
   for dangerous_paths in collected_dangerous_paths:
     superinstructions = []
-    CollectSandboxing(start_state, dangerous_paths, superinstructions)
+    CollectSandboxing(dfa.initial_state, dangerous_paths, superinstructions)
     assert len(superinstructions) > 0
     for superinstruction in superinstructions:
       all_superinstructions.add(
