@@ -15,6 +15,11 @@
 
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
 
+#if defined(WIDEVINE_CDM_AVAILABLE) && defined(OS_LINUX)
+#include <gnu/libc-version.h>
+#include "base/version.h"
+#endif  // defined(WIDEVINE_CDM_AVAILABLE) && defined(OS_LINUX)
+
 namespace webkit_media {
 
 // Convert a WebString to ASCII, falling back on an empty string in the case
@@ -134,6 +139,8 @@ class KeySystems {
       const std::string& key_system);
 
   KeySystemMappings key_system_map_;
+
+  DISALLOW_COPY_AND_ASSIGN(KeySystems);
 };
 
 static base::LazyInstance<KeySystems> g_key_systems = LAZY_INSTANCE_INITIALIZER;
@@ -173,17 +180,26 @@ KeySystems::KeySystems() {
   }
 }
 
+static inline bool IsSystemCompatible(const std::string& key_system) {
+#if defined(WIDEVINE_CDM_AVAILABLE) && defined(OS_LINUX)
+  if (key_system == kWidevineKeySystem) {
+    Version glibc_version(gnu_get_libc_version());
+    DCHECK(glibc_version.IsValid());
+    return !glibc_version.IsOlderThan(WIDEVINE_CDM_MIN_GLIBC_VERSION);
+  }
+#endif  // defined(WIDEVINE_CDM_AVAILABLE) && defined(OS_LINUX)
+  return true;
+}
+
 bool KeySystems::IsSupportedKeySystem(const std::string& key_system) {
   bool is_supported = key_system_map_.find(key_system) != key_system_map_.end();
-
-  return is_supported;
+  return is_supported && IsSystemCompatible(key_system);
 }
 
 bool KeySystems::IsSupportedKeySystemWithContainerAndCodec(
     const std::string& mime_type,
     const std::string& codec,
     const std::string& key_system) {
-
   KeySystemMappings::const_iterator key_system_iter =
       key_system_map_.find(key_system);
   if (key_system_iter == key_system_map_.end())
@@ -195,7 +211,7 @@ bool KeySystems::IsSupportedKeySystemWithContainerAndCodec(
     return false;
 
   const CodecMappings& codecs = mime_iter->second;
-  return (codecs.find(codec) != codecs.end());
+  return (codecs.find(codec) != codecs.end()) && IsSystemCompatible(key_system);
 }
 
 bool KeySystems::IsSupportedKeySystemWithMediaMimeType(
