@@ -1631,7 +1631,7 @@
    fun:ash::CursorManager::SetDeviceScaleFactor
    fun:ash::Shell::Init
 }
-# TODO(thestig): bug_169185_a and bug_169185_b may be obsolete?
+# TODO(thestig): bug_169185_a may be obsolete?
 {
    bug_169185_a
    Heapcheck:Leak
@@ -1655,12 +1655,11 @@
    fun:v8::internal::Factory::NewCode
    fun:v8::internal::CodeGenerator::MakeCodeEpilogue
    fun:v8::internal::FullCodeGenerator::MakeCode
-   fun:v8::internal::GenerateCode
-   fun:v8::internal::MakeCode
+   fun:*GenerateCode
+   fun:*MakeCode
    fun:v8::internal::Compiler::CompileLazy
-   fun:v8::internal::CompileLazyHelper
+   fun:*CompileLazyHelper
    fun:v8::internal::JSFunction::CompileLazy
-   fun:v8::internal::CallIC_Miss
    ...
    fun:*Invoke
 }
@@ -1686,24 +1685,6 @@
    fun:v8::internal::RegExpMacroAssemblerX64::GetCode
    fun:v8::internal::RegExpCompiler::Assemble
    fun:v8::internal::RegExpEngine::Compile
-}
-{
-   bug_169185_e
-   Heapcheck:Leak
-   fun:v8::internal::SkipList::Update
-   fun:v8::internal::PagedSpace::AllocateRaw
-   fun:v8::internal::Heap::CreateCode
-   fun:v8::internal::Factory::NewCode
-   fun:v8::internal::CodeGenerator::MakeCodeEpilogue
-   fun:v8::internal::FullCodeGenerator::MakeCode
-   fun:GenerateCode
-   fun:MakeCode
-   fun:v8::internal::Compiler::CompileLazy
-   fun:CompileLazyHelper
-   fun:v8::internal::JSFunction::CompileLazy
-   fun:v8::internal::Runtime_LazyCompile
-   ...
-   fun:Invoke
 }
 {
    bug_169678
