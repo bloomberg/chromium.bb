@@ -139,6 +139,11 @@ class CHROMEOS_EXPORT NetworkStateHandler
   // list, which will trigger the appropriate observer calls.
   void RequestScan() const;
 
+  // Generates a DictionaryValue of all NetworkState properties. Currently
+  // provided for debugging purposes only.
+  void GetNetworkStatePropertiesForTest(
+      base::DictionaryValue* dictionary) const;
+
   static const char kMatchTypeDefault[];
   static const char kMatchTypeWireless[];
   static const char kMatchTypeMobile[];

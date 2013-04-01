@@ -232,12 +232,16 @@ std::string NetworkStateToHtmlTableHeader() {
       WrapWithTH("Type") +
       WrapWithTH("State") +
       WrapWithTH("Path") +
+      WrapWithTH("Error") +
       WrapWithTH("IP Addr") +
       WrapWithTH("Security") +
       WrapWithTH("Technology") +
       WrapWithTH("Activation") +
       WrapWithTH("Romaing") +
-      WrapWithTH("Strength");
+      WrapWithTH("Strength") +
+      WrapWithTH("Auto") +
+      WrapWithTH("Fav") +
+      WrapWithTH("Pri");
   return WrapWithTR(str);
 }
 
@@ -247,12 +251,16 @@ std::string NetworkStateToHtmlTableRow(const NetworkState* network) {
       WrapWithTD(network->type()) +
       WrapWithTD(network->connection_state()) +
       WrapWithTD(network->path()) +
+      WrapWithTD(network->error()) +
       WrapWithTD(network->ip_address()) +
       WrapWithTD(network->security()) +
       WrapWithTD(network->technology()) +
       WrapWithTD(network->activation_state()) +
       WrapWithTD(network->roaming()) +
-      WrapWithTD(base::IntToString(network->signal_strength()));
+      WrapWithTD(base::IntToString(network->signal_strength())) +
+      WrapWithTD(base::IntToString(network->auto_connect())) +
+      WrapWithTD(base::IntToString(network->favorite())) +
+      WrapWithTD(base::IntToString(network->priority()));
   return WrapWithTR(str);
 }
 

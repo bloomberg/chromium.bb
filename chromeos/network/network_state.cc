@@ -11,7 +11,12 @@ namespace chromeos {
 
 NetworkState::NetworkState(const std::string& path)
     : ManagedState(MANAGED_TYPE_NETWORK, path),
-      signal_strength_(0) {
+      auto_connect_(false),
+      favorite_(false),
+      priority_(0),
+      signal_strength_(0),
+      activate_over_non_cellular_networks_(false),
+      cellular_out_of_credits_(false) {
 }
 
 NetworkState::~NetworkState() {
@@ -34,6 +39,12 @@ bool NetworkState::PropertyChanged(const std::string& key,
     return GetStringValue(key, value, &roaming_);
   } else if (key == flimflam::kSecurityProperty) {
     return GetStringValue(key, value, &security_);
+  } else if (key == flimflam::kAutoConnectProperty) {
+    return GetBooleanValue(key, value, &auto_connect_);
+  } else if (key == flimflam::kFavoriteProperty) {
+    return GetBooleanValue(key, value, &favorite_);
+  } else if (key == flimflam::kPriorityProperty) {
+    return GetIntegerValue(key, value, &priority_);
   } else if (key == flimflam::kNetworkTechnologyProperty) {
     return GetStringValue(key, value, &technology_);
   } else if (key == flimflam::kDeviceProperty) {
@@ -64,6 +75,12 @@ void NetworkState::GetProperties(base::DictionaryValue* dictionary) const {
                                             roaming());
   dictionary->SetStringWithoutPathExpansion(flimflam::kSecurityProperty,
                                             security());
+  dictionary->SetBooleanWithoutPathExpansion(flimflam::kAutoConnectProperty,
+                                             auto_connect());
+  dictionary->SetBooleanWithoutPathExpansion(flimflam::kFavoriteProperty,
+                                             favorite());
+  dictionary->SetIntegerWithoutPathExpansion(flimflam::kPriorityProperty,
+                                             priority());
   dictionary->SetStringWithoutPathExpansion(
       flimflam::kNetworkTechnologyProperty,
       technology());

@@ -300,6 +300,16 @@ void NetworkStateHandler::RequestScan() const {
   shill_property_handler_->RequestScan();
 }
 
+void NetworkStateHandler::GetNetworkStatePropertiesForTest(
+    base::DictionaryValue* dictionary) const {
+  for (ManagedStateList::const_iterator iter = network_list_.begin();
+       iter != network_list_.end(); ++iter) {
+    base::DictionaryValue* network_dict = new base::DictionaryValue;
+    (*iter)->AsNetworkState()->GetProperties(network_dict);
+    dictionary->SetWithoutPathExpansion((*iter)->path(), network_dict);
+  }
+}
+
 //------------------------------------------------------------------------------
 // ShillPropertyHandler::Delegate overrides
 

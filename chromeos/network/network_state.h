@@ -40,6 +40,9 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   const std::string& guid() const { return guid_; }
   const std::string& connection_state() const { return connection_state_; }
   const std::string& error() const { return error_; }
+  bool auto_connect() const { return auto_connect_; }
+  bool favorite() const { return favorite_; }
+  int priority() const { return priority_; }
   // Wireless property accessors
   int signal_strength() const { return signal_strength_; }
   // Cellular property accessors
@@ -74,6 +77,9 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   std::string ip_address_;
   std::string connection_state_;
   std::string error_;
+  bool auto_connect_;
+  bool favorite_;
+  int priority_;
   // Wireless properties
   int signal_strength_;
   // Cellular properties
