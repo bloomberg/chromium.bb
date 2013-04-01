@@ -93,6 +93,49 @@ int validate(const ncfile *ncf, const NaClCPUFeaturesArm *cpu_features) {
   return 0;
 }
 
+static inline uint8_t as_hex(char c) {
+  if (c >= '0' && c <= '9') return c - '0';
+  if (c >= 'a' && c <= 'f') return c - 'a' + 0xa;
+  if (c >= 'A' && c <= 'F') return c - 'A' + 0xa;
+  CHECK(false);
+  return 0;
+}
+
+int check_code(const std::string& code) {
+  NaClCPUFeaturesArm cpu_features;
+  SfiValidator validator(
+      16,  // bytes per bundle
+      kOneGig,  // code region size
+      kOneGig,  // data region size
+      nacl_arm_dec::RegisterList(nacl_arm_dec::Register::Tp()),
+      nacl_arm_dec::RegisterList(nacl_arm_dec::Register::Sp()),
+      &cpu_features);
+  NcvalProblemReporter reporter;
+
+  uint8_t* code_buf = new uint8_t[code.length()];
+  uint32_t code_len = 0;
+  for (uint32_t i = 0; i < code.length(); i += 3) {
+    code_buf[code_len++] = (as_hex(code[i]) << 4) | as_hex(code[i+1]);
+  }
+  printf("Validating code: ");
+  for (uint32_t i = 0; i < code_len; i++) {
+    printf("%02x ", code_buf[i]);
+  }
+  printf("\n");
+
+  vector<CodeSegment> segments;
+  CodeSegment segment(code_buf, 0, code_len);
+  segments.push_back(segment);
+  bool success = validator.validate(segments, &reporter);
+  if (success) {
+    printf("valid!\n");
+    return 0;
+  } else {
+    printf("invalid\n");
+    return 1;
+  }
+}
+
 int main(int argc, const char *argv[]) {
   static const char cond_mem_access_flag[] =
       "--conditional_memory_access_allowed_for_sfi";
@@ -109,6 +152,7 @@ int main(int argc, const char *argv[]) {
   int number_runs = 1;
   std::string filename;
   ncfile *ncf = NULL;
+  std::string code;
 
   for (int i = 1; i < argc; ++i) {
     std::string current_arg = argv[i];
@@ -133,6 +177,9 @@ int main(int argc, const char *argv[]) {
       // This flag is disallowed by default: not all ARM CPUs support it,
       // so be pessimistic unless the user asks for it.
       NaClSetCPUFeatureArm(&cpu_features, NaClCPUFeatureArm_CanUseTstMem, 1);
+    } else if (current_arg == "--check" && i + 1 < argc) {
+      code = argv[i+1];
+      i++;
     } else if (!filename.empty()) {
       fprintf(stderr, "Error: multiple files specified.\n");
       print_usage = true;
@@ -142,6 +189,10 @@ int main(int argc, const char *argv[]) {
       filename = current_arg;
       run_validation = true;
     }
+  }
+
+  if (!code.empty()) {
+      return check_code(code);
   }
 
   if (filename.empty()) {
