@@ -1209,8 +1209,8 @@
 
       <arg name="serial" type="uint" summary="serial of the enter event"/>
       <arg name="surface" type="object" interface="wl_surface" allow-null="true"/>
-      <arg name="hotspot_x" type="int"/>
-      <arg name="hotspot_y" type="int"/>
+      <arg name="hotspot_x" type="fixed" summary="x coordinate in surface-relative coordinates"/>
+      <arg name="hotspot_y" type="fixed" summary="y coordinate in surface-relative coordinates"/>
     </request>
 
     <event name="enter">
@@ -1225,8 +1225,8 @@
 
       <arg name="serial" type="uint"/>
       <arg name="surface" type="object" interface="wl_surface"/>
-      <arg name="surface_x" type="fixed"/>
-      <arg name="surface_y" type="fixed"/>
+      <arg name="surface_x" type="fixed" summary="x coordinate in surface-relative coordinates"/>
+      <arg name="surface_y" type="fixed" summary="y coordinate in surface-relative coordinates"/>
     </event>
 
     <event name="leave">
@@ -1249,8 +1249,8 @@
       </description>
 
       <arg name="time" type="uint" summary="timestamp with millisecond granularity"/>
-      <arg name="surface_x" type="fixed"/>
-      <arg name="surface_y" type="fixed"/>
+      <arg name="surface_x" type="fixed" summary="x coordinate in surface-relative coordinates"/>
+      <arg name="surface_y" type="fixed" summary="y coordinate in surface-relative coordinates"/>
     </event>
 
     <enum name="button_state">
@@ -1407,35 +1407,38 @@
 
     <event name="down">
       <description summary="touch down event">
-        Notifies the client of a new contact point on one
-        of its surfaces.
+	A new touch point has appeared on the surface. This touch point is
+	assigned a unique @id. Future events from this touchpoint reference
+	this ID. The ID ceases to be valid after a touch up event and may be
+	re-used in the future.
       </description>
       <arg name="serial" type="uint"/>
       <arg name="time" type="uint" summary="timestamp with millisecond granularity"/>
       <arg name="surface" type="object" interface="wl_surface"/>
-      <arg name="id" type="int" summary="ID of the touch sequence"/>
-      <arg name="x" type="fixed"/>
-      <arg name="y" type="fixed"/>
+      <arg name="id" type="int" summary="the unique ID of this touch point"/>
+      <arg name="x" type="fixed" summary="x coordinate in surface-relative coordinates"/>
+      <arg name="y" type="fixed" summary="y coordinate in surface-relative coordinates"/>
     </event>
 
     <event name="up">
-      <description summary="touch up event">
-        Notifies the client that a touch has ended.
+      <description summary="end of a touch event sequence">
+	The touch point has disappeared. No further events will be sent for
+	this touchpoint and the touch point's ID is released and may be
+	re-used in a future touch down event.
       </description>
       <arg name="serial" type="uint"/>
       <arg name="time" type="uint" summary="timestamp with millisecond granularity"/>
-      <arg name="id" type="int"/>
+      <arg name="id" type="int" summary="the unique ID of this touch point"/>
     </event>
 
     <event name="motion">
-      <description summary="touch motion event">
-        Notifies the client that the position of a contact point
-        has changed.
+      <description summary="end of a touch event sequence">
+	A touchpoint has changed coordinates.
       </description>
       <arg name="time" type="uint" summary="timestamp with millisecond granularity"/>
-      <arg name="id" type="int" summary="ID of the touch sequence"/>
-      <arg name="x" type="fixed"/>
-      <arg name="y" type="fixed"/>
+      <arg name="id" type="int" summary="the unique ID of this touch point"/>
+      <arg name="x" type="fixed" summary="x coordinate in surface-relative coordinates"/>
+      <arg name="y" type="fixed" summary="y coordinate in surface-relative coordinates"/>
     </event>
 
     <event name="frame">
@@ -1448,7 +1451,10 @@
       <description summary="touch session cancelled">
 	Sent if the compositor decides the touch stream is a global
 	gesture. No further events are sent to the clients from that
-	particular gesture.
+	particular gesture. Touch cancellation applies to all touch points
+	currently active on this client's surface. The client is
+	responsible for finalizing the touch points, future touch points on
+	this surface may re-use the touch point ID.
       </description>
     </event>
   </interface>
