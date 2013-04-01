@@ -79,7 +79,7 @@ class CrosDBusServiceImpl : public CrosDBusService {
   // Called when an ownership request is completed.
   void OnOwnership(const std::string& service_name,
                    bool success) {
-    LOG_IF(ERROR, !success) << "Failed to own: " << service_name;
+    LOG_IF(FATAL, !success) << "Failed to own: " << service_name;
   }
 
   bool service_started_;
