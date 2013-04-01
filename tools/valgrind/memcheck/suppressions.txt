@@ -1105,7 +1105,7 @@
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN4base4Bind*TaskClosureAdapterEFvvEPS2_EENS_8internal20InvokerStorageHolderINS6_15InvokerStorage1IT_T0_EEEES9_RKSA_
-   fun:_ZN11MessageLoop15PostDelayedTaskERKN15tracked_objects8LocationEP4Taskx
+   fun:_ZN4base11MessageLoop15PostDelayedTaskERKN15tracked_objects8LocationEP4Taskx
    fun:_ZN4base20MessageLoopProxyImpl14PostTaskHelperERKN15tracked_objects8LocationEP4Taskxb
    fun:_ZN4base20MessageLoopProxyImpl8PostTaskERKN15tracked_objects8LocationEP4Task
    fun:_ZN10disk_cache10InFlightIO12OnIOCompleteEPNS_12BackgroundIOE
@@ -1222,7 +1222,7 @@
    bug_16091
    Memcheck:Leak
    ...
-   fun:_ZN11MessageLoop22AddDestructionObserverEPNS_19DestructionObserverE
+   fun:_ZN4base11MessageLoop22AddDestructionObserverEPNS_19DestructionObserverE
    ...
    fun:_ZN3IPC11SyncChannel11SyncContext15OnChannelOpenedEv
 }
@@ -1231,7 +1231,7 @@
    bug_16092
    Memcheck:Leak
    fun:*
-   fun:_ZN11MessageLoopC1ENS_4TypeE
+   fun:_ZN4base11MessageLoopC1ENS_4TypeE
    fun:_ZN4base6Thread10ThreadMainEv
 }
 {
@@ -1241,7 +1241,7 @@
    ...
    fun:_ZNSt11_Deque_baseIN4base11PendingTaskESaIS1_EE17_M_initialize_mapE*
    ...
-   fun:_ZN11MessageLoopC1ENS_4TypeE
+   fun:_ZN4base11MessageLoopC1ENS_4TypeE
 }
 {
    # very common in ui tests
@@ -1249,7 +1249,7 @@
    Memcheck:Leak
    ...
    fun:_ZNSt14priority_queueIN11MessageLoop11PendingTaskESt6vectorIS1_SaIS1_EESt4lessIS1_EEC1ERKS6_RKS4_
-   fun:_ZN11MessageLoopC1ENS_4TypeE
+   fun:_ZN4base11MessageLoopC1ENS_4TypeE
    fun:_ZN4base6Thread10ThreadMainEv
 }
 {
@@ -1264,8 +1264,8 @@
    bug_16095
    Memcheck:Leak
    ...
-   fun:_ZN11MessageLoop21AddToDelayedWorkQueueERKN*PendingTaskE
-   fun:_ZN11MessageLoop6DoWorkEv
+   fun:_ZN4base11MessageLoop21AddToDelayedWorkQueueERKN*PendingTaskE
+   fun:_ZN4base11MessageLoop6DoWorkEv
 }
 {
    bug_16128
@@ -1310,7 +1310,7 @@
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN4base19MessagePumpLibevent19WatchFileDescriptorEibNS0_4ModeEPNS0_21FileDescriptorWatcherEPNS0_7WatcherE
-   fun:_ZN16MessageLoopForIO19WatchFileDescriptorEibNS_4ModeEPN4base19MessagePumpLibevent21FileDescriptorWatcherEPNS2_7WatcherE
+   fun:_ZN4base16MessageLoopForIO19WatchFileDescriptorEibNS_4ModeEPN4base19MessagePumpLibevent21FileDescriptorWatcherEPNS2_7WatcherE
    fun:_ZN3IPC7Channel11ChannelImpl7ConnectEv
    fun:_ZN3IPC7Channel7ConnectEv
    fun:_ZN3IPC12ChannelProxy7Context15OnChannelOpenedEv
@@ -1363,7 +1363,7 @@
    ...
    fun:event_base_new
    fun:_ZN4base19MessagePumpLibeventC1Ev
-   fun:_ZN11MessageLoopC1ENS_4TypeE
+   fun:_ZN4base11MessageLoopC1ENS_4TypeE
    fun:_ZN4base6Thread10ThreadMainEv
 }
 {
@@ -1372,7 +1372,7 @@
    ...
    fun:_ZN4base19MessagePumpLibevent4InitEv
    fun:_ZN4base19MessagePumpLibeventC1Ev
-   fun:_ZN11MessageLoopC1ENS_4TypeE
+   fun:_ZN4base11MessageLoopC1ENS_4TypeE
 }
 {
    bug_19775_a
@@ -1447,7 +1447,7 @@
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN4base19MessagePumpLibevent19WatchFileDescriptorEibNS0_4ModeEPNS0_21FileDescriptorWatcherEPNS0_7WatcherE
-   fun:_ZN16MessageLoopForIO19WatchFileDescriptorEibNS_4ModeEPN4base19MessagePumpLibevent21FileDescriptorWatcherEPNS2_7WatcherE
+   fun:_ZN4base16MessageLoopForIO19WatchFileDescriptorEibNS_4ModeEPN4base19MessagePumpLibevent21FileDescriptorWatcherEPNS2_7WatcherE
    fun:_ZN3IPC7Channel11ChannelImpl23ProcessOutgoingMessagesEv
    fun:_ZN3IPC7Channel11ChannelImpl4SendEPNS_7MessageE
    fun:_ZN3IPC7Channel4SendEPNS_7MessageE
@@ -1730,8 +1730,8 @@
    fun:_ZN3IPC7Channel11ChannelImpl23ProcessOutgoingMessagesEv
    ...
    fun:_ZN4base19MessagePumpLibevent3RunEPNS_11MessagePump8DelegateE
-   fun:_ZN11MessageLoop11RunInternalEv
-   fun:_ZN11MessageLoop10RunHandlerEv
+   fun:_ZN4base11MessageLoop11RunInternalEv
+   fun:_ZN4base11MessageLoop10RunHandlerEv
 }
 {
    bug_30633_39325
@@ -1822,7 +1822,7 @@
    fun:_ZNSt6vectorIPN11MessageLoop19DestructionObserverESaIS2_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS2_S4_EERKS2_
    fun:_ZNSt6vectorIPN11MessageLoop19DestructionObserverESaIS2_EE9push_backERKS2_
    fun:_ZN16ObserverListBaseIN11MessageLoop19DestructionObserverEE11AddObserverEPS1_
-   fun:_ZN11MessageLoop22AddDestructionObserverEPNS_19DestructionObserverE
+   fun:_ZN4base11MessageLoop22AddDestructionObserverEPNS_19DestructionObserverE
 }
 {
    bug_46250
@@ -1833,7 +1833,7 @@
    fun:_ZNSt6vectorIPN11MessageLoop12TaskObserverESaIS2_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS2_S4_EERKS2_
    fun:_ZNSt6vectorIPN11MessageLoop12TaskObserverESaIS2_EE9push_backERKS2_
    fun:_ZN16ObserverListBaseIN11MessageLoop12TaskObserverEE11AddObserverEPS1_
-   fun:_ZN11MessageLoop15AddTaskObserverEPNS_12TaskObserverE
+   fun:_ZN4base11MessageLoop15AddTaskObserverEPNS_12TaskObserverE
    fun:*IOJankObserver21AttachToCurrentThreadEv
 }
 {
@@ -1969,8 +1969,8 @@
    ...
    fun:*InotifyReaderTask3RunEv
    ...
-   fun:_ZN11MessageLoop11RunInternalEv
-   fun:_ZN11MessageLoop10RunHandlerEv
+   fun:_ZN4base11MessageLoop11RunInternalEv
+   fun:_ZN4base11MessageLoop10RunHandlerEv
 }
 {
    bug_52837
@@ -2086,7 +2086,7 @@
    bug_58574
    Memcheck:Unaddressable
    ...
-   fun:_ZN11MessageLoop8PostTaskERKN15tracked_objects8LocationERKN4base8CallbackIFvvEEE
+   fun:_ZN4base11MessageLoop8PostTaskERKN15tracked_objects8LocationERKN4base8CallbackIFvvEEE
    fun:_ZN3net12CertVerifier7Request8DoVerifyEv
 }
 {
@@ -2975,7 +2975,7 @@
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN4base4Bind*TaskClosureAdapterEFvvEPS2_EENS_8internal20InvokerStorageHolderINS6_15InvokerStorage1IT_T0_EEEES9_RKSA_
-   fun:_ZN11MessageLoop15PostDelayedTaskERKN15tracked_objects8LocationEP4Taskx
+   fun:_ZN4base11MessageLoop15PostDelayedTaskERKN15tracked_objects8LocationEP4Taskx
    fun:_ZN13BrowserThread14PostTaskHelperENS_2IDERKN15tracked_objects8LocationEP4Taskxb
    fun:_ZN13BrowserThread8PostTaskENS_2IDERKN15tracked_objects8LocationEP4Task
 }
@@ -2984,7 +2984,7 @@
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN4base4Bind*TaskClosureAdapterEFvvEPS2_EENS_8internal20InvokerStorageHolderINS6_15InvokerStorage1IT_T0_EEEES9_RKSA_
-   fun:_ZN11MessageLoop8PostTaskERKN15tracked_objects8LocationEP4Task
+   fun:_ZN4base11MessageLoop8PostTaskERKN15tracked_objects8LocationEP4Task
 }
 {
    bug_84224_a
@@ -2995,7 +2995,7 @@
    ...
    fun:_ZNSt5dequeIN*PendingTaskESaIS1_EE*push_back*
    fun:_ZNSt5queueIN4*PendingTask*deque*push*
-   fun:_ZN11MessageLoop18AddToIncomingQueueEPN*PendingTaskE
+   fun:_ZN4base11MessageLoop18AddToIncomingQueueEPN*PendingTaskE
 }
 {
    bug_84224_b
@@ -3005,12 +3005,12 @@
    fun:_ZN4base8internal12CallbackBaseC2ERKS1_
    fun:_ZN4base8CallbackIFvvEEC2ERKS2_
    fun:_ZN4base8CallbackIFvvEEC1ERKS2_
-   fun:_ZN11MessageLoop11PendingTaskC2ERKS0_
-   fun:_ZN11MessageLoop11PendingTaskC1ERKS0_
+   fun:_ZN4base11MessageLoop11PendingTaskC2ERKS0_
+   fun:_ZN4base11MessageLoop11PendingTaskC1ERKS0_
    fun:_ZN9__gnu_cxx13new_allocatorIN11MessageLoop11PendingTaskEE9constructEPS2_RKS2_
    fun:_ZNSt5dequeIN11MessageLoop11PendingTaskESaIS1_EE9push_backERKS1_
    fun:_ZNSt5queueIN11MessageLoop11PendingTaskESt5dequeIS1_SaIS1_EEE4pushERKS1_
-   fun:_ZN11MessageLoop18AddToIncomingQueueEPNS_11PendingTaskE
+   fun:_ZN4base11MessageLoop18AddToIncomingQueueEPNS_11PendingTaskE
 }
 {
    bug_84265
@@ -3387,7 +3387,7 @@
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN4base4BindIMNS_6subtle18TaskClosureAdapterEFvvEPS2_EENS_8internal20InvokerStorageHolderINS6_15InvokerStorage1IT_T0_EEEES9_RKSA_
-   fun:_ZN11MessageLoop8PostTaskERKN15tracked_objects8LocationEP4Task
+   fun:_ZN4base11MessageLoop8PostTaskERKN15tracked_objects8LocationEP4Task
    fun:_ZN3net18CertVerifierWorker6FinishEv
    fun:_ZN3net18CertVerifierWorker3RunEv
 }
@@ -3630,8 +3630,8 @@
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN4base19MessagePumpLibevent3RunEPNS_11MessagePump8DelegateE
-   fun:_ZN11MessageLoop11RunInternalEv
-   fun:_ZN11MessageLoop10RunHandlerEv
+   fun:_ZN4base11MessageLoop11RunInternalEv
+   fun:_ZN4base11MessageLoop10RunHandlerEv
 }
 {
    bug_100043

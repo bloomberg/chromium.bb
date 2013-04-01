@@ -422,7 +422,7 @@
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN4base19MessagePumpLibevent19WatchFileDescriptorEibNS0_4ModeEPNS0_21FileDescriptorWatcherEPNS0_7WatcherE
-   fun:_ZN16MessageLoopForIO19WatchFileDescriptorEibNS_4ModeEPN4base19MessagePumpLibevent21FileDescriptorWatcherEPNS2_7WatcherE
+   fun:_ZN4base16MessageLoopForIO19WatchFileDescriptorEibNS_4ModeEPN4base19MessagePumpLibevent21FileDescriptorWatcherEPNS2_7WatcherE
    fun:_ZN3IPC7Channel11ChannelImpl23ProcessOutgoingMessagesEv
 }
 {
@@ -687,7 +687,7 @@
    fun:event_process_active
    fun:event_base_loop
    fun:_ZN4base19MessagePumpLibevent3RunEPNS_11MessagePump8DelegateE
-   fun:_ZN11MessageLoop11RunInternalEv
+   fun:_ZN4base11MessageLoop11RunInternalEv
 }
 {
    bug_50297_b
@@ -701,7 +701,7 @@
    fun:event_process_active
    fun:event_base_loop
    fun:_ZN4base19MessagePumpLibevent3RunEPNS_11MessagePump8DelegateE
-   fun:_ZN11MessageLoop11RunInternalEv
+   fun:_ZN4base11MessageLoop11RunInternalEv
 }
 {
    bug_50638_a
@@ -1559,9 +1559,9 @@
    fun:-[NSApplication run]
    fun:_ZN4base24MessagePumpNSApplication5DoRunEPNS_11MessagePump8DelegateE
    fun:_ZN4base24MessagePumpCFRunLoopBase3RunEPNS_11MessagePump8DelegateE
-   fun:_ZN11MessageLoop11RunInternalEv
-   fun:_ZN11MessageLoop10RunHandlerEv
-   fun:_ZN11MessageLoop13RunAllPendingEv
+   fun:_ZN4base11MessageLoop11RunInternalEv
+   fun:_ZN4base11MessageLoop10RunHandlerEv
+   fun:_ZN4base11MessageLoop13RunAllPendingEv
    fun:_ZN20InProcessBrowserTest23RunTestOnMainThreadLoopEv
 }
 {
