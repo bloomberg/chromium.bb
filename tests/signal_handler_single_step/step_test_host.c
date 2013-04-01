@@ -83,7 +83,7 @@ static int32_t TestSyscall(struct NaClAppThread *natp) {
   return 0;
 }
 
-static enum NaClSignalResult TrapSignalHandler(int signal, void *ucontext) {
+static void TrapSignalHandler(int signal, void *ucontext) {
   if (signal == SIGTRAP) {
     struct NaClSignalContext context;
     int is_untrusted;
@@ -127,7 +127,6 @@ static enum NaClSignalResult TrapSignalHandler(int signal, void *ucontext) {
       g_instruction_byte_count = 0;
       g_jump_count = 0;
     }
-    return NACL_SIGNAL_RETURN;
   } else {
     SignalSafeLogStringLiteral("Error: Received unexpected signal\n");
     _exit(1);
@@ -172,7 +171,7 @@ int main(int argc, char **argv) {
 
   app.debug_stub_callbacks = &debug_callbacks;
   NaClSignalHandlerInit();
-  NaClSignalHandlerAdd(TrapSignalHandler);
+  NaClSignalHandlerSet(TrapSignalHandler);
 
   CHECK(NaClAppLoadFileFromFilename(&app, argv[1]) == LOAD_OK);
   CHECK(NaClAppPrepareToLaunch(&app) == LOAD_OK);

@@ -648,9 +648,7 @@ if env.Bit('posix'):
         'nacl_signal_unittest', 'nacl_signal_unittest.c',
         EXTRA_LIBS=['sel'])
     node = env.CommandTest('nacl_signal_unittest.out',
-                           command=[nacl_signal_exe],
-                           exit_status='trusted_sigsegv_or_equivalent',
-                           using_nacl_signal_handler=True)
+                           command=[nacl_signal_exe])
 
     env.AddNodeToTestSuite(node, ['small_tests'], 'run_nacl_signal_test')
 

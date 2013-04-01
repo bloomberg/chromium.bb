@@ -26,18 +26,6 @@
 #include <unistd.h>
 #endif
 
-#define MAX_NACL_HANDLERS 16
-
-struct NaClSignalNode {
-  struct NaClSignalNode *next;
-  NaClSignalHandler func;
-  int id;
-};
-
-
-static struct NaClSignalNode *s_FirstHandler = NULL;
-static struct NaClSignalNode *s_FreeList = NULL;
-static struct NaClSignalNode s_SignalNodes[MAX_NACL_HANDLERS];
 
 ssize_t NaClSignalErrorMessage(const char *msg) {
   /*
@@ -182,15 +170,7 @@ int NaClSignalContextIsUntrusted(struct NaClAppThread *natp,
           prog_ctr >= NACL_TRAMPOLINE_END);
 }
 
-enum NaClSignalResult NaClSignalHandleNone(int signal, void *ctx) {
-  UNREFERENCED_PARAMETER(signal);
-  UNREFERENCED_PARAMETER(ctx);
-
-  /* Don't do anything, just pass it to the OS. */
-  return NACL_SIGNAL_SKIP;
-}
-
-enum NaClSignalResult NaClSignalHandleUntrusted(int signal, void *ctx) {
+void NaClSignalHandleUntrusted(int signal, void *ctx) {
   struct NaClSignalContext sig_ctx;
   char tmp[128];
   /*
@@ -213,76 +193,8 @@ enum NaClSignalResult NaClSignalHandleUntrusted(int signal, void *ctx) {
      * can be handled by the Breakpad crash reporter.
      */
   }
-  return NACL_SIGNAL_SEARCH;
 }
 
-
-int NaClSignalHandlerAdd(NaClSignalHandler func) {
-  int id = 0;
-
-  CHECK(func != NULL);
-
-  /* If we have room... */
-  if (s_FreeList) {
-    /* Update the free list. */
-    struct NaClSignalNode *add = s_FreeList;
-    s_FreeList = add->next;
-
-    /* Construct the node. */
-    add->func = func;
-    add->next = s_FirstHandler;
-
-    /* Add node to the head. */
-    s_FirstHandler = add;
-    id = add->id;
-  }
-
-  return id;
-}
-
-
-int NaClSignalHandlerRemove(int id) {
-  /* The first node pointer is the first "next" pointer. */
-  struct NaClSignalNode **ppNode = &s_FirstHandler;
-
-  /* While the "next" pointer is valid, process what it points to. */
-  while (*ppNode) {
-    /* If the next item has a matching ID */
-    if ((*ppNode)->id == id) {
-      /* then we will free that item. */
-      struct NaClSignalNode *freeNode = *ppNode;
-
-      /* First, skip past it. */
-      *ppNode = (*ppNode)->next;
-
-      /* Then add this node to the head of the free list. */
-      freeNode->next = s_FreeList;
-      s_FreeList = freeNode;
-      return 1;
-    }
-    ppNode = &(*ppNode)->next;
-  }
-
-  return 0;
-}
-
-enum NaClSignalResult NaClSignalHandlerFind(int signal, void *ctx) {
-  enum NaClSignalResult result = NACL_SIGNAL_SEARCH;
-  struct NaClSignalNode *pNode;
-
-  /* Iterate through handlers */
-  pNode = s_FirstHandler;
-  while (pNode) {
-    result = pNode->func(signal, ctx);
-
-    /* If we are not asking for the search to continue... */
-    if (NACL_SIGNAL_SEARCH != result) break;
-
-    pNode = pNode->next;
-  }
-
-  return result;
-}
 
 /*
  * This is a separate function to make it obvious from the crash
@@ -304,17 +216,7 @@ void NaClSignalTestCrashOnStartup(void) {
 }
 
 void NaClSignalHandlerInit(void) {
-  int a;
-
-  /* Build the free list */
-  for (a = 0; a < MAX_NACL_HANDLERS; a++) {
-    s_SignalNodes[a].next = s_FreeList;
-    s_SignalNodes[a].id = a + 1;
-    s_FreeList = &s_SignalNodes[a];
-  }
-
   NaClSignalHandlerInitPlatform();
-  NaClSignalHandlerAdd(NaClSignalHandleUntrusted);
 }
 
 void NaClSignalHandlerFini(void) {

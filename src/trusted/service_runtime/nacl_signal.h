@@ -40,12 +40,6 @@ EXTERN_C_BEGIN
 struct NaClApp;
 struct NaClAppThread;
 
-enum NaClSignalResult {
-  NACL_SIGNAL_SEARCH,   /* Try our handler or OS */
-  NACL_SIGNAL_SKIP,     /* Skip our handlers and try OS */
-  NACL_SIGNAL_RETURN    /* Skip all other handlers and return */
-};
-
 /*
  * TODO(halyavin): These signal numbers are part of an external ABI
  * exposed through NaCl's GDB debug stub.  We need to find a directory
@@ -85,7 +79,7 @@ enum PosixSignals {
  * Prototype for a signal handler.  The handler will receive the POSIX
  * signal number and an opaque platform dependent signal object.
  */
-typedef enum NaClSignalResult (*NaClSignalHandler)(int sig_num, void *ctx);
+typedef void (*NaClSignalHandler)(int sig_num, void *ctx);
 
 
 /*
@@ -130,19 +124,10 @@ void NaClSignalHandlerFini(void);
 ssize_t NaClSignalErrorMessage(const char *str);
 
 /*
- * Add a signal handler to the front of the list.
- * Returns an id for the handler or returns 0 on failure.
- * This function is not thread-safe and should only be
- * called at startup.
+ * Replace the signal handler that is run after NaCl restores %gs on
+ * x86-32.  This is only used by test code.
  */
-int NaClSignalHandlerAdd(NaClSignalHandler func);
-
-/*
- * Remove a signal handler based on the ID provided, and
- * return 1 on success or zero on failure.  This function
- * is not thread-safe and should only be called at startup.
- */
-int NaClSignalHandlerRemove(int id);
+void NaClSignalHandlerSet(NaClSignalHandler func);
 
 /*
  * Fill a signal context structure from the raw platform dependent
@@ -170,25 +155,12 @@ void NaClSignalContextGetCurrentThread(const struct NaClSignalContext *sig_ctx,
                                        struct NaClAppThread **result_thread);
 
 /*
- * A basic handler which will do nothing, passing the
- * error to the OS.
- */
-enum NaClSignalResult NaClSignalHandleNone(int signal_number, void *ctx);
-
-/*
  * A basic handler which will exit with -signal_number when
  * a signal is encountered in the untrusted code, otherwise
  * the signal is passed to the next handler.
  */
-enum NaClSignalResult NaClSignalHandleUntrusted(int signal_number, void *ctx);
+void NaClSignalHandleUntrusted(int signal_number, void *ctx);
 
-
-/*
- * Traverse handler list, until a handler returns
- * NACL_SIGNAL_RETURN, or the list is exhausted, in which case
- * the signal is passed to the OS.
- */
-enum NaClSignalResult NaClSignalHandlerFind(int signal_number, void *ctx);
 
 /*
  * Platform specific code. Do not call directly.

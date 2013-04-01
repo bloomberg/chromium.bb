@@ -76,7 +76,7 @@ static int32_t TestSyscall(struct NaClAppThread *natp) {
   return 0;
 }
 
-static enum NaClSignalResult TrapSignalHandler(int signal, void *ucontext) {
+static void TrapSignalHandler(int signal, void *ucontext) {
   struct NaClSignalContext context;
   uint32_t prog_ctr;
   int is_inside_trampoline;
@@ -116,7 +116,7 @@ static enum NaClSignalResult TrapSignalHandler(int signal, void *ucontext) {
 
   if (!*(uint32_t *) NaClUserToSys(g_natp->nap,
                                    (uintptr_t) g_test_shm->regs_should_match))
-    return NACL_SIGNAL_RETURN;
+    return;
 
   len = snprintf(buf, sizeof(buf), "prog_ctr=0x%"NACL_PRIxNACL_REG": ",
                  context.prog_ctr);
@@ -151,7 +151,6 @@ static enum NaClSignalResult TrapSignalHandler(int signal, void *ucontext) {
 
     RegsAssertEqual(&context, expected_regs);
   }
-  return NACL_SIGNAL_RETURN;
 }
 
 int main(int argc, char **argv) {
@@ -174,7 +173,7 @@ int main(int argc, char **argv) {
   CHECK(NaClAppPrepareToLaunch(&app) == LOAD_OK);
 
   NaClSignalHandlerInit();
-  NaClSignalHandlerAdd(TrapSignalHandler);
+  NaClSignalHandlerSet(TrapSignalHandler);
 
   /*
    * Allocate some space in untrusted address space.  We pass the

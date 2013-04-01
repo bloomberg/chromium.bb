@@ -148,14 +148,12 @@ void Attempt(const char *str, void (WINAPI *start_fn)(void *), int sig) {
   exit(-1);
 }
 
-enum NaClSignalResult Handler(int signal_number, void *ctx) {
+void Handler(int signal_number, void *ctx) {
   UNREFERENCED_PARAMETER(ctx);
 
   g_SigFound = signal_number;
 
   siglongjmp(try_state, 1);
-
-  return NACL_SIGNAL_SKIP;
 }
 
 #define ATTEMPT(x,sig) Attempt(#x,x,sig)
@@ -172,8 +170,6 @@ int main(int argc, const char *argv[]) {
   const int kAccessUnmappedPageSignal = SIGSEGV;
   const int kDivideByZeroSignal = SIGFPE;
 
-  int none1, none2;
-  int sigHandler;
   UNREFERENCED_PARAMETER(argc);
   UNREFERENCED_PARAMETER(argv);
 
@@ -183,36 +179,12 @@ int main(int argc, const char *argv[]) {
   NaClTlsInit();
   NaClSignalHandlerInit();
 
-  /* Add this one first, we should never call it */
-  none1 = NaClSignalHandlerAdd(NaClSignalHandleNone);
-  sigHandler = NaClSignalHandlerAdd(Handler);
-
-  /* Add and remove it to make sure we can. */
-  none2 = NaClSignalHandlerAdd(NaClSignalHandleNone);
-  if (0 == NaClSignalHandlerRemove(none2)) {
-    printf("Failed to unload 'none2' handler.\n");
-    exit(-1);
-  }
+  NaClSignalHandlerSet(Handler);
 
   ATTEMPT(Exec_RW, kAccessViolationOnMappedPageSignal);
   ATTEMPT(Write_RX, kAccessViolationOnMappedPageSignal);
   ATTEMPT(ReadWriteUnmapped, kAccessUnmappedPageSignal);
   ATTEMPT(DivZero, kDivideByZeroSignal);
-
-  if (0 == NaClSignalHandlerRemove(sigHandler)) {
-    printf("Failed to unload 'sigHandler' handler.\n");
-    exit(-1);
-  }
-  if (0 == NaClSignalHandlerRemove(none1)) {
-    printf("Failed to unload 'none1' handler.\n");
-    exit(-1);
-  }
-
-  /* All handlers are unloaded, now using default to trigger an exit. */
-  ReadWriteUnmapped(NULL);
-
-  printf("Should never reach here.\n");
-  exit(-1);
 
   /* Correct shutdown order would have been:
    * NaClSignalHandlerFini();
@@ -220,6 +192,5 @@ int main(int argc, const char *argv[]) {
    * NaClLogModuleInit();
    */
 
-  /* Unreachable, but added to prevent warning. */
   return 0;
 }
