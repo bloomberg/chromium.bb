@@ -92,8 +92,11 @@ void MediaPlayerBridge::InitializePlayer() {
 }
 
 void MediaPlayerBridge::SetVideoSurface(jobject surface) {
-  if (j_media_player_.is_null() && surface != NULL)
+  if (j_media_player_.is_null()) {
+    if (surface == NULL)
+      return;
     Prepare();
+  }
 
   JNIEnv* env = base::android::AttachCurrentThread();
   CHECK(env);
