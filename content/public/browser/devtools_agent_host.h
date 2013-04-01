@@ -52,6 +52,9 @@ class CONTENT_EXPORT DevToolsAgentHost
   // Returns a list of all existing RenderViewHost's that can be debugged.
   static std::vector<RenderViewHost*> GetValidRenderViewHosts();
 
+  // Returns true if there is a client attached.
+  virtual bool IsAttached() = 0;
+
   // Starts inspecting element at position (|x|, |y|) in the specified page.
   virtual void InspectElement(int x, int y) = 0;
 

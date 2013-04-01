@@ -329,11 +329,7 @@ class AgentHostDelegate : public base::RefCountedThreadSafe<AgentHostDelegate>,
     if (!value || !value->GetAsDictionary(&dvalue))
       return;
 
-    content::DevToolsManager* manager = content::DevToolsManager::GetInstance();
-    content::DevToolsClientHost* client_host =
-        manager->GetDevToolsClientHostFor(proxy_->GetAgentHost());
-    if (client_host)
-      client_host->DispatchOnInspectorFrontend(message);
+    proxy_->DispatchOnClientHost(message);
   }
 
   void OnSocketClosed(int result) {

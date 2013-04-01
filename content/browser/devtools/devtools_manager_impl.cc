@@ -37,9 +37,7 @@ DevToolsManagerImpl::~DevToolsManagerImpl() {
 }
 
 DevToolsClientHost* DevToolsManagerImpl::GetDevToolsClientHostFor(
-    DevToolsAgentHost* agent_host) {
-  DevToolsAgentHostImpl* agent_host_impl =
-      static_cast<DevToolsAgentHostImpl*>(agent_host);
+    DevToolsAgentHostImpl* agent_host_impl) {
   AgentToClientHostMap::iterator it =
       agent_to_client_host_.find(agent_host_impl);
   if (it != agent_to_client_host_.end())
@@ -60,6 +58,12 @@ void DevToolsManagerImpl::RegisterDevToolsClientHostFor(
     DevToolsClientHost* client_host) {
   DevToolsAgentHostImpl* agent_host_impl =
       static_cast<DevToolsAgentHostImpl*>(agent_host);
+  DevToolsClientHost* old_client_host =
+      GetDevToolsClientHostFor(agent_host_impl);
+  if (old_client_host) {
+    old_client_host->ReplacedWithAnotherClient();
+    UnregisterDevToolsClientHostFor(agent_host_impl);
+  }
   BindClientHost(agent_host_impl, client_host);
   agent_host_impl->Attach();
 }
@@ -79,7 +83,9 @@ bool DevToolsManagerImpl::DispatchOnInspectorBackend(
 void DevToolsManagerImpl::DispatchOnInspectorFrontend(
     DevToolsAgentHost* agent_host,
     const std::string& message) {
-  DevToolsClientHost* client_host = GetDevToolsClientHostFor(agent_host);
+  DevToolsAgentHostImpl* agent_host_impl =
+      static_cast<DevToolsAgentHostImpl*>(agent_host);
+  DevToolsClientHost* client_host = GetDevToolsClientHostFor(agent_host_impl);
   if (!client_host) {
     // Client window was closed while there were messages
     // being sent to it.
@@ -102,12 +108,10 @@ void DevToolsManagerImpl::AgentHostClosing(DevToolsAgentHostImpl* agent_host) {
 }
 
 void DevToolsManagerImpl::UnregisterDevToolsClientHostFor(
-    DevToolsAgentHost* agent_host) {
-  DevToolsClientHost* client_host = GetDevToolsClientHostFor(agent_host);
+    DevToolsAgentHostImpl* agent_host_impl) {
+  DevToolsClientHost* client_host = GetDevToolsClientHostFor(agent_host_impl);
   if (!client_host)
     return;
-  DevToolsAgentHostImpl* agent_host_impl =
-      static_cast<DevToolsAgentHostImpl*>(agent_host);
   UnbindClientHost(agent_host_impl, client_host);
   client_host->InspectedContentsClosing();
 }
@@ -156,13 +160,13 @@ void DevToolsManagerImpl::UnbindClientHost(DevToolsAgentHostImpl* agent_host,
 }
 
 void DevToolsManagerImpl::CloseAllClientHosts() {
-  std::vector<DevToolsAgentHost*> agents;
+  std::vector<DevToolsAgentHostImpl*> agents;
   for (AgentToClientHostMap::iterator it =
            agent_to_client_host_.begin();
        it != agent_to_client_host_.end(); ++it) {
     agents.push_back(it->first);
   }
-  for (std::vector<DevToolsAgentHost*>::iterator it = agents.begin();
+  for (std::vector<DevToolsAgentHostImpl*>::iterator it = agents.begin();
        it != agents.end(); ++it) {
     UnregisterDevToolsClientHostFor(*it);
   }

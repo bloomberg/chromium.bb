@@ -166,10 +166,7 @@ class WorkerDevToolsManager::DetachedClientHosts {
 
     WorkerDevToolsAgentHost* agent = it->second;
     DevToolsManagerImpl* devtools_manager = DevToolsManagerImpl::GetInstance();
-    DevToolsClientHost* client_host =
-        devtools_manager->GetDevToolsClientHostFor(agent);
-
-    if (!client_host) {
+    if (!agent->IsAttached()) {
       // Agent has no client hosts -> delete it.
       RemovePendingWorkerData(id);
       return;

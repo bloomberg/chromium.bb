@@ -41,6 +41,8 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
   }
 
   // DevToolsAgentHost implementation.
+  virtual bool IsAttached() OVERRIDE;
+
   virtual void InspectElement(int x, int y) OVERRIDE;
 
   virtual std::string GetId() OVERRIDE;

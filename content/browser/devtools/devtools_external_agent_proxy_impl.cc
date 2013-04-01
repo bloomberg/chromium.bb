@@ -5,6 +5,7 @@
 #include "content/browser/devtools/devtools_external_agent_proxy_impl.h"
 
 #include "content/browser/devtools/devtools_agent_host_impl.h"
+#include "content/browser/devtools/devtools_manager_impl.h"
 #include "content/public/browser/devtools_external_agent_proxy_delegate.h"
 
 namespace content {
@@ -57,6 +58,12 @@ DevToolsExternalAgentProxyImpl::~DevToolsExternalAgentProxyImpl() {
 scoped_refptr<DevToolsAgentHost> DevToolsExternalAgentProxyImpl::
     GetAgentHost() {
   return agent_host_;
+}
+
+void DevToolsExternalAgentProxyImpl::DispatchOnClientHost(
+    const std::string& message) {
+  DevToolsManagerImpl::GetInstance()->DispatchOnInspectorFrontend(
+      agent_host_, message);
 }
 
 void DevToolsExternalAgentProxyImpl::ConnectionClosed() {

@@ -152,13 +152,9 @@ class DevToolsSanityTest : public InProcessBrowserTest {
 
   void CloseDevToolsWindow() {
     DevToolsManager* devtools_manager = DevToolsManager::GetInstance();
-    // UnregisterDevToolsClientHostFor may destroy window_ so store the browser
-    // first.
+    // CloseAllClientHosts may destroy window_ so store the browser first.
     Browser* browser = window_->browser();
-    scoped_refptr<DevToolsAgentHost> agent(
-        DevToolsAgentHost::GetOrCreateFor(inspected_rvh_));
-    devtools_manager->UnregisterDevToolsClientHostFor(agent);
-
+    devtools_manager->CloseAllClientHosts();
     // Wait only when DevToolsWindow has a browser. For docked DevTools, this
     // is NULL and we skip the wait.
     if (browser)

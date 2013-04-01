@@ -34,26 +34,19 @@ class CONTENT_EXPORT DevToolsManager {
   virtual bool DispatchOnInspectorBackend(DevToolsClientHost* from,
                                           const std::string& message) = 0;
 
-  // Closes all open developer tools windows.
+  // Disconnects all client hostst.
   virtual void CloseAllClientHosts() = 0;
 
-  // Returns client attached to the |agent_host| if there is one.
-  virtual DevToolsClientHost* GetDevToolsClientHostFor(
-      DevToolsAgentHost* agent_host) = 0;
-
-  // Returns agent that has |client_host| attachd to it if there is one.
+  // Returns agent that has |client_host| attached to it if there is one.
   virtual DevToolsAgentHost* GetDevToolsAgentHostFor(
       DevToolsClientHost* client_host) = 0;
 
-  // Registers new DevToolsClientHost for inspected |agent_host|. There must be
-  // no other DevToolsClientHosts registered for the |agent_host| at the moment.
+  // Registers new DevToolsClientHost for inspected |agent_host|. If there is
+  // another DevToolsClientHost registered for the |agent_host| at the moment
+  // it is disconnected.
   virtual void RegisterDevToolsClientHostFor(
       DevToolsAgentHost* agent_host,
       DevToolsClientHost* client_host) = 0;
-  // Unregisters given |agent_host|. DevToolsManager will notify corresponding
-  // client if one is attached.
-  virtual void UnregisterDevToolsClientHostFor(
-      DevToolsAgentHost* agent_host) = 0;
 
   // This method will remove all references from the manager to the
   // DevToolsClientHost and unregister all listeners related to the

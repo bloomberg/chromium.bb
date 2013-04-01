@@ -604,8 +604,7 @@ void DevToolsHttpHandlerImpl::OnWebSocketRequestUI(
     return;
   }
 
-  DevToolsManager* manager = DevToolsManager::GetInstance();
-  if (manager->GetDevToolsClientHostFor(agent)) {
+  if (agent->IsAttached()) {
     Send500(connection_id,
             "Target with given id is being inspected: " + page_id);
     return;
@@ -617,7 +616,8 @@ void DevToolsHttpHandlerImpl::OnWebSocketRequestUI(
                                  connection_id);
   connection_to_client_host_ui_[connection_id] = client_host;
 
-  manager->RegisterDevToolsClientHostFor(agent, client_host);
+  DevToolsManager::GetInstance()->
+      RegisterDevToolsClientHostFor(agent, client_host);
 
   AcceptWebSocket(connection_id, request);
 }
@@ -814,7 +814,7 @@ base::DictionaryValue* DevToolsHttpHandlerImpl::SerializePageInfo(
   dictionary->SetString(kTargetDescriptionField,
       delegate_->GetViewDescription(rvh));
 
-  if (!DevToolsManager::GetInstance()->GetDevToolsClientHostFor(agent))
+  if (!agent->IsAttached())
     SerializeDebuggerURLs(dictionary, id, host);
   return dictionary;
 }
@@ -837,7 +837,7 @@ base::DictionaryValue* DevToolsHttpHandlerImpl::SerializeWorkerInfo(
   dictionary->SetString(kTargetDescriptionField,
       base::StringPrintf("Worker pid:%d", base::GetProcId(worker.handle)));
 
-  if (!DevToolsManager::GetInstance()->GetDevToolsClientHostFor(agent))
+  if (!agent->IsAttached())
     SerializeDebuggerURLs(dictionary, id, host);
   return dictionary;
 }

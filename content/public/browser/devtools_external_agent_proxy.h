@@ -26,6 +26,9 @@ class DevToolsExternalAgentProxy {
   // Returns the local DevToolsAgentHost for the external agent.
   virtual scoped_refptr<DevToolsAgentHost> GetAgentHost() = 0;
 
+  // Sends the message to the client host.
+  virtual void DispatchOnClientHost(const std::string& message) = 0;
+
   // Informs the client that the connection has closed.
   virtual void ConnectionClosed() = 0;
 

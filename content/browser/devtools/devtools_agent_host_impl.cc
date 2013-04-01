@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/guid.h"
 #include "base/lazy_instance.h"
+#include "content/browser/devtools/devtools_manager_impl.h"
 
 namespace content {
 
@@ -35,6 +36,10 @@ scoped_refptr<DevToolsAgentHost> DevToolsAgentHost::GetForId(
   if (it == g_instances.Get().end())
     return NULL;
   return it->second;
+}
+
+bool DevToolsAgentHostImpl::IsAttached() {
+  return !!DevToolsManagerImpl::GetInstance()->GetDevToolsClientHostFor(this);
 }
 
 void DevToolsAgentHostImpl::InspectElement(int x, int y) {

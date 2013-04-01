@@ -140,9 +140,7 @@ DevToolsWindow* DevToolsWindow::GetDockedInstanceForInspectedTab(
     return NULL;
   scoped_refptr<DevToolsAgentHost> agent(DevToolsAgentHost::GetOrCreateFor(
       inspected_web_contents->GetRenderViewHost()));
-  DevToolsManager* manager = DevToolsManager::GetInstance();
-  DevToolsClientHost* client_host = manager->GetDevToolsClientHostFor(agent);
-  DevToolsWindow* window = AsDevToolsWindow(client_host);
+  DevToolsWindow* window = FindDevToolsWindow(agent);
   return window && window->IsDocked() ? window : NULL;
 }
 
@@ -155,15 +153,10 @@ bool DevToolsWindow::IsDevToolsWindow(RenderViewHost* window_rvh) {
 DevToolsWindow* DevToolsWindow::OpenDevToolsWindowForWorker(
     Profile* profile,
     DevToolsAgentHost* worker_agent) {
-  DevToolsWindow* window;
-  DevToolsClientHost* client = content::DevToolsManager::GetInstance()->
-      GetDevToolsClientHostFor(worker_agent);
-  if (client) {
-    window = AsDevToolsWindow(client);
-    if (!window)
-      return NULL;
-  } else {
+  DevToolsWindow* window = FindDevToolsWindow(worker_agent);
+  if (!window) {
     window = DevToolsWindow::CreateDevToolsWindowForWorker(profile);
+    // Will disconnect the current client host if there is one.
     DevToolsManager::GetInstance()->RegisterDevToolsClientHostFor(
         worker_agent,
         window->frontend_host_.get());
@@ -293,6 +286,10 @@ content::WebContents* DevToolsWindow::GetInspectedWebContents() {
 }
 
 void DevToolsWindow::InspectedContentsClosing() {
+  Hide();
+}
+
+void DevToolsWindow::Hide() {
   if (IsDocked()) {
     // Update dev tools to reflect removed dev tools window.
     BrowserWindow* inspected_window = GetInspectedBrowserWindow();
@@ -714,20 +711,14 @@ DevToolsWindow* DevToolsWindow::ToggleDevToolsWindow(
   scoped_refptr<DevToolsAgentHost> agent(
       DevToolsAgentHost::GetOrCreateFor(inspected_rvh));
   DevToolsManager* manager = DevToolsManager::GetInstance();
-  DevToolsClientHost* host = manager->GetDevToolsClientHostFor(agent);
-  DevToolsWindow* window = AsDevToolsWindow(host);
-  if (host && !window) {
-    // Break remote debugging / extension debugging session.
-    host->ReplacedWithAnotherClient();
-    manager->UnregisterDevToolsClientHostFor(agent);
-  }
-
+  DevToolsWindow* window = FindDevToolsWindow(agent);
   bool do_open = force_open;
   if (!window) {
     Profile* profile = Profile::FromBrowserContext(
         inspected_rvh->GetProcess()->GetBrowserContext());
     DevToolsDockSide dock_side = GetDockSideFromPrefs(profile);
     window = Create(profile, inspected_rvh, dock_side, false);
+    // Will disconnect the current client host if there is one.
     manager->RegisterDevToolsClientHostFor(agent, window->frontend_host_.get());
     do_open = true;
   }
@@ -740,20 +731,20 @@ DevToolsWindow* DevToolsWindow::ToggleDevToolsWindow(
   if (!window->IsDocked() || do_open)
     window->Show(action);
   else
-    manager->UnregisterDevToolsClientHostFor(agent);
+    window->CloseWindow();
 
   return window;
 }
 
 // static
-DevToolsWindow* DevToolsWindow::AsDevToolsWindow(
-    DevToolsClientHost* client_host) {
-  if (!client_host || g_instances == NULL)
-    return NULL;
+DevToolsWindow* DevToolsWindow::FindDevToolsWindow(
+    DevToolsAgentHost* agent_host) {
+  DevToolsManager* manager = DevToolsManager::GetInstance();
   DevToolsWindowList& instances = g_instances.Get();
   for (DevToolsWindowList::iterator it = instances.begin();
        it != instances.end(); ++it) {
-    if ((*it)->frontend_host_.get() == client_host)
+    if (manager->GetDevToolsAgentHostFor((*it)->frontend_host_.get()) ==
+        agent_host)
       return *it;
   }
   return NULL;
@@ -798,7 +789,7 @@ void DevToolsWindow::ChangeAttachedWindowHeight(unsigned height) {
 void DevToolsWindow::CloseWindow() {
   DCHECK(IsDocked());
   DevToolsManager::GetInstance()->ClientHostClosing(frontend_host_.get());
-  InspectedContentsClosing();
+  Hide();
 }
 
 void DevToolsWindow::MoveWindow(int x, int y) {

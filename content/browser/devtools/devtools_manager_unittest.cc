@@ -130,46 +130,39 @@ class DevToolsManagerTest : public RenderViewHostImplTestHarness {
 };
 
 TEST_F(DevToolsManagerTest, OpenAndManuallyCloseDevToolsClientHost) {
-  DevToolsManagerImpl manager;
+  DevToolsManager* manager = DevToolsManager::GetInstance();
 
   scoped_refptr<DevToolsAgentHost> agent(
       DevToolsAgentHost::GetOrCreateFor(rvh()));
-  DevToolsClientHost* host = manager.GetDevToolsClientHostFor(agent);
-  EXPECT_TRUE(NULL == host);
+  EXPECT_FALSE(agent->IsAttached());
 
   TestDevToolsClientHost client_host;
-  manager.RegisterDevToolsClientHostFor(agent, &client_host);
-  // Test that just registered devtools host is returned.
-  host = manager.GetDevToolsClientHostFor(agent);
-  EXPECT_TRUE(&client_host == host);
+  manager->RegisterDevToolsClientHostFor(agent, &client_host);
+  // Test that the connection is established.
+  EXPECT_TRUE(agent->IsAttached());
+  EXPECT_EQ(agent, manager->GetDevToolsAgentHostFor(&client_host));
   EXPECT_EQ(0, TestDevToolsClientHost::close_counter);
 
-  // Test that the same devtools host is returned.
-  host = manager.GetDevToolsClientHostFor(agent);
-  EXPECT_TRUE(&client_host == host);
-  EXPECT_EQ(0, TestDevToolsClientHost::close_counter);
-
-  client_host.Close(&manager);
+  client_host.Close(manager);
   EXPECT_EQ(1, TestDevToolsClientHost::close_counter);
-  host = manager.GetDevToolsClientHostFor(agent);
-  EXPECT_TRUE(NULL == host);
+  EXPECT_FALSE(agent->IsAttached());
 }
 
 TEST_F(DevToolsManagerTest, ForwardMessageToClient) {
-  DevToolsManagerImpl manager;
+  DevToolsManagerImpl* manager = DevToolsManagerImpl::GetInstance();
 
   TestDevToolsClientHost client_host;
   scoped_refptr<DevToolsAgentHost> agent_host(
       DevToolsAgentHost::GetOrCreateFor(rvh()));
-  manager.RegisterDevToolsClientHostFor(agent_host, &client_host);
+  manager->RegisterDevToolsClientHostFor(agent_host, &client_host);
   EXPECT_EQ(0, TestDevToolsClientHost::close_counter);
 
   std::string m = "test message";
   agent_host = DevToolsAgentHost::GetOrCreateFor(rvh());
-  manager.DispatchOnInspectorFrontend(agent_host, m);
+  manager->DispatchOnInspectorFrontend(agent_host, m);
   EXPECT_TRUE(&m == client_host.last_sent_message);
 
-  client_host.Close(&manager);
+  client_host.Close(manager);
   EXPECT_EQ(1, TestDevToolsClientHost::close_counter);
 }
 
@@ -227,16 +220,16 @@ TEST_F(DevToolsManagerTest, ReattachOnCancelPendingNavigation) {
   controller().LoadURL(
       url2, Referrer(), PAGE_TRANSITION_TYPED, std::string());
   EXPECT_TRUE(contents()->cross_navigation_pending());
-  EXPECT_EQ(&client_host, devtools_manager->GetDevToolsClientHostFor(
-      DevToolsAgentHost::GetOrCreateFor(pending_rvh())));
+  EXPECT_EQ(devtools_manager->GetDevToolsAgentHostFor(&client_host),
+      DevToolsAgentHost::GetOrCreateFor(pending_rvh()));
 
   // Interrupt pending navigation and navigate back to the original site.
   controller().LoadURL(
       url, Referrer(), PAGE_TRANSITION_TYPED, std::string());
   contents()->TestDidNavigate(rvh(), 1, url, PAGE_TRANSITION_TYPED);
   EXPECT_FALSE(contents()->cross_navigation_pending());
-  EXPECT_EQ(&client_host, devtools_manager->GetDevToolsClientHostFor(
-      DevToolsAgentHost::GetOrCreateFor(rvh())));
+  EXPECT_EQ(devtools_manager->GetDevToolsAgentHostFor(&client_host),
+      DevToolsAgentHost::GetOrCreateFor(rvh()));
   client_host.Close(DevToolsManager::GetInstance());
 }
 

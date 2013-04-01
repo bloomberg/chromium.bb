@@ -19,6 +19,7 @@ class DevToolsExternalAgentProxyImpl
 
   // DevToolsExternalAgentProxy implementation.
   virtual scoped_refptr<DevToolsAgentHost> GetAgentHost() OVERRIDE;
+  virtual void DispatchOnClientHost(const std::string& message) OVERRIDE;
   virtual void ConnectionClosed() OVERRIDE;
 
  private:

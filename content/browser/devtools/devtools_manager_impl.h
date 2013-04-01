@@ -49,18 +49,15 @@ class CONTENT_EXPORT DevToolsManagerImpl
   virtual bool DispatchOnInspectorBackend(DevToolsClientHost* from,
                                           const std::string& message) OVERRIDE;
   virtual void CloseAllClientHosts() OVERRIDE;
-  virtual DevToolsClientHost* GetDevToolsClientHostFor(
-      DevToolsAgentHost* agent_host) OVERRIDE;
   virtual DevToolsAgentHost* GetDevToolsAgentHostFor(
       DevToolsClientHost* client_host) OVERRIDE;
   virtual void RegisterDevToolsClientHostFor(
       DevToolsAgentHost* agent_host,
       DevToolsClientHost* client_host) OVERRIDE;
-  virtual void UnregisterDevToolsClientHostFor(
-      DevToolsAgentHost* agent_host) OVERRIDE;
   virtual void ClientHostClosing(DevToolsClientHost* host) OVERRIDE;
 
  private:
+  friend class DevToolsAgentHostImpl;
   friend struct DefaultSingletonTraits<DevToolsManagerImpl>;
 
   // DevToolsAgentHost::CloseListener implementation.
@@ -70,6 +67,11 @@ class CONTENT_EXPORT DevToolsManagerImpl
                       DevToolsClientHost* client_host);
   void UnbindClientHost(DevToolsAgentHostImpl* agent_host,
                         DevToolsClientHost* client_host);
+
+  DevToolsClientHost* GetDevToolsClientHostFor(
+      DevToolsAgentHostImpl* agent_host);
+
+  void UnregisterDevToolsClientHostFor(DevToolsAgentHostImpl* agent_host);
 
   // These two maps are for tracking dependencies between inspected contents and
   // their DevToolsClientHosts. They are useful for routing devtools messages

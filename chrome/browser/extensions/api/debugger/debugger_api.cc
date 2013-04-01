@@ -525,10 +525,7 @@ bool DebuggerAttachFunction::RunImpl() {
 
   scoped_refptr<DevToolsAgentHost> agent(DevToolsAgentHost::GetOrCreateFor(
       contents_->GetRenderViewHost()));
-  DevToolsClientHost* client_host = DevToolsManager::GetInstance()->
-      GetDevToolsClientHostFor(agent);
-
-  if (client_host != NULL) {
+  if (agent->IsAttached()) {
     FormatErrorMessage(keys::kAlreadyAttachedError);
     return false;
   }

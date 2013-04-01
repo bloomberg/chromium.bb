@@ -99,7 +99,7 @@ bool DevToolsAgentHost::IsDebuggerAttached(WebContents* web_contents) {
     RenderViewHost* rvh = (*it)->render_view_host_;
     if (rvh && rvh->GetDelegate() != delegate)
       continue;
-    if (devtools_manager->GetDevToolsClientHostFor(*it))
+    if ((*it)->IsAttached())
       return true;
   }
   return false;
@@ -232,12 +232,11 @@ void RenderViewDevToolsAgentHost::NotifyClientDetaching() {
   if (!render_view_host_)
     return;
 
-  DevToolsManager* devtools_manager = DevToolsManager::GetInstance();
   bool process_has_agents = false;
   RenderProcessHost* render_process_host = render_view_host_->GetProcess();
   for (Instances::iterator it = g_instances.Get().begin();
        it != g_instances.Get().end(); ++it) {
-    if (*it == this || !devtools_manager->GetDevToolsClientHostFor(*it))
+    if (*it == this || !(*it)->IsAttached())
       continue;
     RenderViewHost* rvh = (*it)->render_view_host();
     if (rvh && rvh->GetProcess() == render_process_host)

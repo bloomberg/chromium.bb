@@ -115,7 +115,7 @@ bool HasClientHost(RenderViewHost* rvh) {
 
   scoped_refptr<DevToolsAgentHost> agent(
       DevToolsAgentHost::GetOrCreateFor(rvh));
-  return !!DevToolsManager::GetInstance()->GetDevToolsClientHostFor(agent);
+  return agent->IsAttached();
 }
 
 DictionaryValue* BuildTargetDescriptor(RenderViewHost* rvh, bool is_tab) {

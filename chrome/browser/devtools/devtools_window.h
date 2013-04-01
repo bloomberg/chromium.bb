@@ -130,6 +130,7 @@ class DevToolsWindow : private content::NotificationObserver,
   BrowserWindow* GetInspectedBrowserWindow();
   bool IsInspectedBrowserPopupOrPanel();
   void UpdateFrontendDockSide();
+  void Hide();
 
   // Overridden from content::NotificationObserver.
   virtual void Observe(int type,
@@ -171,7 +172,7 @@ class DevToolsWindow : private content::NotificationObserver,
       const content::FileChooserParams& params) OVERRIDE;
   virtual void WebContentsFocused(content::WebContents* contents) OVERRIDE;
 
-  static DevToolsWindow* AsDevToolsWindow(content::DevToolsClientHost*);
+  static DevToolsWindow* FindDevToolsWindow(content::DevToolsAgentHost*);
   static DevToolsWindow* AsDevToolsWindow(content::RenderViewHost*);
 
   // content::DevToolsFrontendHostDelegate overrides.
