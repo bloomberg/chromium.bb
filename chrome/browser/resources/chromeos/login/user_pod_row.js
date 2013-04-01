@@ -469,6 +469,8 @@ cr.define('login', function() {
     handleActionAreaButtonClick_: function(e) {
       if (this.parentNode.disabled)
         return;
+      console.error('Action area clicked: ' + !this.isActionBoxMenuActive +
+                    ' at ' + e.x + ', ' + e.y);
       this.isActionBoxMenuActive = !this.isActionBoxMenuActive;
     },
 
@@ -482,8 +484,11 @@ cr.define('login', function() {
       switch (e.keyIdentifier) {
         case 'Enter':
         case 'U+0020':  // Space
-          if (this.parentNode.focusedPod_ && !this.isActionBoxMenuActive)
+          if (this.parentNode.focusedPod_ && !this.isActionBoxMenuActive) {
+            console.error('Action area keyed: ' + !this.isActionBoxMenuActive +
+                          ' at ' + e.x + ', ' + e.y);
             this.isActionBoxMenuActive = true;
+          }
           e.stopPropagation();
           break;
         case 'Up':
@@ -1185,6 +1190,9 @@ cr.define('login', function() {
     handleClick_: function(e) {
       if (this.disabled)
         return;
+
+      console.error('Document clicked at ' + e.x + ', ' + e.y +
+                    ', pod: ' + findAncestorByClass(e.target, 'pod'));
 
       // Clear all menus if the click is outside pod menu and its
       // button area.
