@@ -42,6 +42,7 @@
 
 #include "addressmap-inl.h"
 #include "heap-profile-table.h"
+#include "memory_region_map.h"
 
 class DeepHeapProfile {
  public:
@@ -269,6 +270,11 @@ class DeepHeapProfile {
     static void RecordAlloc(const void* pointer,
                             AllocValue* alloc_value,
                             DeepHeapProfile* deep_profile);
+
+    DeepBucket* GetInformationOfMemoryRegion(
+        const MemoryRegionMap::RegionIterator& mmap_iter,
+        const MemoryResidenceInfoGetterInterface* memory_residence_info_getter,
+        DeepHeapProfile* deep_profile);
 
     // All RegionStats members in this class contain the bytes of virtual
     // memory and committed memory.
