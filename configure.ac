@@ -168,6 +168,13 @@ AS_IF([test x$enable_fbdev_compositor = xyes], [
   PKG_CHECK_MODULES([FBDEV_COMPOSITOR], [libudev >= 136 mtdev >= 1.1.0])
 ])
 
+AC_ARG_ENABLE([rdp-compositor], [  --enable-rdp-compositor],,
+              enable_rdp_compositor=no)
+AM_CONDITIONAL([ENABLE_RDP_COMPOSITOR],
+               [test x$enable_rdp_compositor = xyes])
+if test x$enable_rdp_compositor = xyes; then
+  PKG_CHECK_MODULES(RDP_COMPOSITOR, [freerdp >= 1.1.0])
+fi
 
 AC_ARG_WITH(cairo-glesv2,
             AS_HELP_STRING([--with-cairo-glesv2],

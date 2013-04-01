@@ -98,7 +98,8 @@ module_LTLIBRARIES =				\
 	$(drm_backend)				\
 	$(wayland_backend)			\
 	$(headless_backend)			\
-	$(fbdev_backend)
+	$(fbdev_backend)			\
+	$(rdp_backend)
 
 noinst_LTLIBRARIES =
 
@@ -212,6 +213,19 @@ fbdev_backend_la_SOURCES = \
 	evdev.h \
 	evdev-touchpad.c \
 	launcher-util.c
+endif
+
+if ENABLE_RDP_COMPOSITOR
+rdp_backend = rdp-backend.la
+rdp_backend_la_LDFLAGS = -module -avoid-version
+rdp_backend_la_LIBADD = $(COMPOSITOR_LIBS) \
+	$(RDP_COMPOSITOR_LIBS) \
+	../shared/libshared.la
+rdp_backend_la_CFLAGS =			\
+	$(COMPOSITOR_CFLAGS)			\
+	$(RDP_COMPOSITOR_CFLAGS) \
+	$(GCC_CFLAGS)
+rdp_backend_la_SOURCES = compositor-rdp.c
 endif
 
 if ENABLE_DESKTOP_SHELL
