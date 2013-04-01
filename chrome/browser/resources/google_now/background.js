@@ -438,6 +438,8 @@ function onNotificationClosed(notificationId, byUser) {
   if (!byUser)
     return;
 
+  chrome.metricsPrivate.recordUserAction('GoogleNow.Dismissed');
+
   tasks.add(DISMISS_CARD_TASK_NAME, function(callback) {
     // Schedule retrying dismissing until all dismissals go through.
     // TODO(vadimt): Implement exponential backoff and unify it with getting
@@ -516,6 +518,7 @@ chrome.alarms.onAlarm.addListener(function(alarm) {
 
 chrome.notifications.onClicked.addListener(
     function(notificationId) {
+      chrome.metricsPrivate.recordUserAction('GoogleNow.MessageClicked');
       onNotificationClicked(notificationId, function(actionUrls) {
         return actionUrls.messageUrl;
       });
@@ -523,6 +526,8 @@ chrome.notifications.onClicked.addListener(
 
 chrome.notifications.onButtonClicked.addListener(
     function(notificationId, buttonIndex) {
+      chrome.metricsPrivate.recordUserAction(
+          'GoogleNow.ButtonClicked' + buttonIndex);
       onNotificationClicked(notificationId, function(actionUrls) {
         if (!Array.isArray(actionUrls.buttonUrls))
           return undefined;

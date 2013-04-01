@@ -254,15 +254,18 @@
     "channel": "stable",
     "extension_types": ["extension", "packaged_app", "platform_app"],
     "whitelist": [
-      // The file manager is a component extension, and it can currently use
-      // whitelisted interfaces without being on the corresponding whitelist.
-      // Adding it to this whitelist documents its dependency, however, and also
-      // doesn't hurt anything.
+      // The file manager and Google Now are component extensions, and they can
+      // currently use whitelisted interfaces without being on the corresponding
+      // whitelist.
+      // Adding it to this whitelist documents their dependency, however, and
+      // also doesn't hurt anything.
       "hhaomjibdihmijegdhdafkllkbggdgoj",  // File manager
       "gbkeegbaiigmenfmjfclcdgdpimamgkj",  // Quickoffice
       "ionpfmkccalenbmnddpbmocokhaknphg",  // Quickoffice dev
       "bpmcpldpdmajfigpchkicefoigmkfalc",  // Quickoffice component extension
-      "ehibbfinohgbchlgdbfpikodjaojhccn"   // Editor
+      "ehibbfinohgbchlgdbfpikodjaojhccn",  // Editor
+      "pmofbkohncoogjjhahejjfbppikbjigm",  // Google Now
+      "iejldcgjigodajhjecapkeiggcncflph"   // Google Now dev
     ]
   },
   "nativeMessaging": [

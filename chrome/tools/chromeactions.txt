@@ -58,6 +58,9 @@
 0x36adab865c373745	Accel_Fullscreen_F4
 0x125f05329e660307	Accel_KeyboardBrightnessDown_F6
 0xcdd268156ab80bb1	Accel_KeyboardBrightnessUp_F7
+0xb3ca99d79240c92f	Accel_LockScreen_L
+0x8fadf02749171923	Accel_LockScreen_LockButton
+0xaf0a974743d27634	Accel_LockScreen_PowerButton
 0x290302f64fd4dfe1	Accel_Maximize_Restore_F4
 0x5e6bce93ecde1df8	Accel_NewTab_T
 0x5a27559e6846a75e	Accel_NextWindow_F5
@@ -67,6 +70,7 @@
 0xa2654c422408df28	Accel_Reload_F3
 0x6db94baf96eb6cfd	Accel_Reload_R
 0xe315330404ef14a8	Accel_Search_LWin
+0x178d1faf1167b4ca	Accel_ShutDown_PowerButton
 0x7974ffb673dd5475	Accel_VolumeDown_F9
 0xbe6aee0aaab8ed8a	Accel_VolumeMute_F8
 0x1cbd5b055dc9a3cc	Accel_VolumeUp_F10
@@ -390,6 +394,10 @@
 0xb8ea5cd4ac9a7a71	ForwardMenu_Popup
 0x87bdcab6bfd481db	ForwardMenu_ShowFullHistory
 0x5f075ae3e1f9d038	Go
+0xab2334cdb766e7c7	GoogleNow.ButtonClicked0
+0xc06f4ecf7cf01b27	GoogleNow.ButtonClicked1
+0x813aeef215b68741	GoogleNow.Dismissed
+0x436c20892470d838	GoogleNow.MessageClicked
 0x696c3c52634726aa	HiliteColor
 0x4869b7ac0caae3fe	History_DeleteHistory
 0xddf00e6e13ebc7ab	History_DragIcon
@@ -1271,6 +1279,7 @@
 0x7e7073691a152241	OutdatedPluginInfobar.Update
 0x26da45ced13360f3	OutdatedUpgradeBubble.Later
 0xe55f92fea3aac9d0	OutdatedUpgradeBubble.Reinstall
+0x9a1b867a0b9532ca	OutdatedUpgradeBubble.Show
 0x016839db155e0468	Outdent
 0x69fae31849862d21	OverrideEncoding
 0xdcb4676e49e95259	PDF.FitToHeightButton
@@ -1496,6 +1505,9 @@
 0x5d7f9a146f393dfc	TrackpadScroll
 0x6f2d421111db4527	TrackpadScrollFling
 0xaf70b1ac863830a4	Transpose
+0x84416581e5767dfc	Tray_Help
+0x1bba1e9ab7b38249	Tray_LockScreen
+0xcb28c56123f30247	Tray_ShutDown
 0x852721aa5fc738df	Underline
 0x1cdc076b28f70afa	Undo
 0xc1a39b6a60f8b2f8	Unlink

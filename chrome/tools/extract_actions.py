@@ -336,6 +336,12 @@ def AddExtensionActions(actions):
   actions.add('FileBrowser.PhotoEditor.Edit')
   actions.add('FileBrowser.PhotoEditor.View')
 
+  # Actions sent by Google Now client.
+  actions.add('GoogleNow.MessageClicked')
+  actions.add('GoogleNow.ButtonClicked0')
+  actions.add('GoogleNow.ButtonClicked1')
+  actions.add('GoogleNow.Dismissed')
+
 def GrepForActions(path, actions):
   """Grep a source file for calls to UserMetrics functions.
 
@@ -541,7 +547,7 @@ def main(argv):
   AddBookmarkManagerActions(actions)
 
   if hash_output:
-    f = open(chromeactions_path, "w")
+    f = open(chromeactions_path, "wb")
 
 
   # Print out the actions as a sorted list.

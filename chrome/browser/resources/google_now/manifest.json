@@ -12,7 +12,8 @@
     "notifications",
     "alarms",
     "storage",
-    "tabs"
+    "tabs",
+    "metricsPrivate"
   ],
   "manifest_version": 2,
   "background": {
