@@ -248,7 +248,7 @@ chrome.app.runtime.onLaunched.addListener(function() {
     }
   }, function(win) {
        myWin = win;
-       myWin.postMessage('Just wanted to say hey.', '*');
+       myWin.contentWindow.postMessage('Just wanted to say hey.', '*');
      });
 });
 </pre>
