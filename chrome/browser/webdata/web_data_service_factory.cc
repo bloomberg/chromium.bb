@@ -53,8 +53,7 @@ WebDataServiceWrapper::WebDataServiceWrapper(Profile* profile) {
   base::FilePath path = profile->GetPath();
   path = path.Append(kWebDataFilename);
 
-  web_database_ = new WebDatabaseService(
-      path, AutofillCountry::ApplicationLocale());
+  web_database_ = new WebDatabaseService(path);
 
   // All tables objects that participate in managing the database must
   // be added here.

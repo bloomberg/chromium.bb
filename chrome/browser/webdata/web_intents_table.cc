@@ -91,7 +91,6 @@ bool WebIntentsTable::IsSyncable() {
 }
 
 bool WebIntentsTable::MigrateToVersion(int version,
-                                       const std::string& app_locale,
                                        bool* update_compatible_version) {
   if (version == 46) {
     *update_compatible_version = true;

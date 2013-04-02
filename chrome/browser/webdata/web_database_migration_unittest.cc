@@ -190,7 +190,7 @@ class WebDatabaseMigrationTest : public testing::Test {
     db.AddTable(&web_intents_table);
 
     // This causes the migration to occur.
-    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath(), std::string()));
+    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath()));
   }
 
  protected:

@@ -331,7 +331,8 @@ WebDatabaseTable::TypeKey GetKey() {
 // The maximum length allowed for form data.
 const size_t AutofillTable::kMaxDataLength = 1024;
 
-AutofillTable::AutofillTable() {
+AutofillTable::AutofillTable()
+    : app_locale_(AutofillCountry::ApplicationLocale()) {
 }
 
 AutofillTable::~AutofillTable() {
@@ -358,7 +359,6 @@ bool AutofillTable::IsSyncable() {
 }
 
 bool AutofillTable::MigrateToVersion(int version,
-                                     const std::string& app_locale,
                                      bool* update_compatible_version) {
   // Migrate if necessary.
   switch (version) {
@@ -385,7 +385,7 @@ bool AutofillTable::MigrateToVersion(int version,
       return MigrateToVersion33ProfilesBasedOnFirstName();
     case 34:
       *update_compatible_version = true;
-      return MigrateToVersion34ProfilesBasedOnCountryCode(app_locale);
+      return MigrateToVersion34ProfilesBasedOnCountryCode();
     case 35:
       *update_compatible_version = true;
       return MigrateToVersion35GreatBritainCountryCodes();
@@ -1927,8 +1927,7 @@ bool AutofillTable::MigrateToVersion33ProfilesBasedOnFirstName() {
 // we need a migration.  It is possible that the new |autofill_profiles|
 // schema is in place because the table was newly created when migrating
 // from a pre-version-22 database.
-bool AutofillTable::MigrateToVersion34ProfilesBasedOnCountryCode(
-    const std::string& app_locale) {
+bool AutofillTable::MigrateToVersion34ProfilesBasedOnCountryCode() {
   if (!db_->DoesColumnExist("autofill_profiles", "country_code")) {
     if (!db_->Execute("ALTER TABLE autofill_profiles ADD COLUMN "
                       "country_code VARCHAR")) {
@@ -1946,7 +1945,7 @@ bool AutofillTable::MigrateToVersion34ProfilesBasedOnCountryCode(
 
       string16 country = s.ColumnString16(1);
       update_s.BindString(0, AutofillCountry::GetCountryCode(country,
-                                                             app_locale));
+                                                             app_locale_));
       update_s.BindString(1, s.ColumnString(0));
 
       if (!update_s.Run())

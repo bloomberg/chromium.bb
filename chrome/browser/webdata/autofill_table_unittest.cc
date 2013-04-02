@@ -101,7 +101,7 @@ class AutofillTableTest : public testing::Test {
     table_.reset(new AutofillTable);
     db_.reset(new WebDatabase);
     db_->AddTable(table_.get());
-    ASSERT_EQ(sql::INIT_OK, db_->Init(file_, std::string()));
+    ASSERT_EQ(sql::INIT_OK, db_->Init(file_));
   }
 
   static AutofillEntry MakeAutofillEntry(const char* name,

@@ -70,7 +70,7 @@ class WebDataServiceTest : public testing::Test {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     base::FilePath path = temp_dir_.path().AppendASCII("TestWebDB");
 
-    wdbs_ = new WebDatabaseService(path, AutofillCountry::ApplicationLocale());
+    wdbs_ = new WebDatabaseService(path);
     wdbs_->AddTable(scoped_ptr<WebDatabaseTable>(new AutofillTable()));
     wdbs_->LoadDatabase(WebDatabaseService::InitCallback());
 

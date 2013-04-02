@@ -64,7 +64,6 @@ bool LoginsTable::IsSyncable() {
 }
 
 bool LoginsTable::MigrateToVersion(int version,
-                                   const std::string& app_locale,
                                    bool* update_compatible_version) {
   return true;
 }

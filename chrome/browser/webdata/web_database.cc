@@ -69,8 +69,7 @@ sql::Connection* WebDatabase::GetSQLConnection() {
   return &db_;
 }
 
-sql::InitStatus WebDatabase::Init(const base::FilePath& db_name,
-                                  const std::string& app_locale) {
+sql::InitStatus WebDatabase::Init(const base::FilePath& db_name) {
   // When running in unit tests, there is already a NotificationService object.
   // Since only one can exist at a time per thread, check first.
   if (!content::NotificationService::current())
@@ -120,15 +119,14 @@ sql::InitStatus WebDatabase::Init(const base::FilePath& db_name,
   // If the file on disk is an older database version, bring it up to date.
   // If the migration fails we return an error to caller and do not commit
   // the migration.
-  sql::InitStatus migration_status = MigrateOldVersionsAsNeeded(app_locale);
+  sql::InitStatus migration_status = MigrateOldVersionsAsNeeded();
   if (migration_status != sql::INIT_OK)
     return migration_status;
 
   return transaction.Commit() ? sql::INIT_OK : sql::INIT_FAILURE;
 }
 
-sql::InitStatus WebDatabase::MigrateOldVersionsAsNeeded(
-    const std::string& app_locale) {
+sql::InitStatus WebDatabase::MigrateOldVersionsAsNeeded() {
   // Some malware used to lower the version number, causing migration to
   // fail. Ensure the version number is at least as high as the compatible
   // version number.
@@ -164,8 +162,7 @@ sql::InitStatus WebDatabase::MigrateOldVersionsAsNeeded(
       // Any of the tables may set this to true, but by default it is false.
       bool update_compatible_version = false;
       if (!it->second->MigrateToVersion(next_version,
-                                           app_locale,
-                                           &update_compatible_version)) {
+                                        &update_compatible_version)) {
         return FailedMigrationTo(next_version);
       }
 

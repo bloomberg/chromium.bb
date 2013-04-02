@@ -49,7 +49,6 @@ bool TokenServiceTable::IsSyncable() {
 }
 
 bool TokenServiceTable::MigrateToVersion(int version,
-                                         const std::string& app_locale,
                                          bool* update_compatible_version) {
   return true;
 }

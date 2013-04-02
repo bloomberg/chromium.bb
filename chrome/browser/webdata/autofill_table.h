@@ -125,7 +125,6 @@ class AutofillTable : public WebDatabaseTable {
   virtual bool Init(sql::Connection* db, sql::MetaTable* meta_table) OVERRIDE;
   virtual bool IsSyncable() OVERRIDE;
   virtual bool MigrateToVersion(int version,
-                                const std::string& app_locale,
                                 bool* update_compatible_version) OVERRIDE;
 
   // Records the form elements in |elements| in the database in the
@@ -298,8 +297,7 @@ class AutofillTable : public WebDatabaseTable {
   bool MigrateToVersion31AddGUIDToCreditCardsAndProfiles();
   bool MigrateToVersion32UpdateProfilesAndCreditCards();
   bool MigrateToVersion33ProfilesBasedOnFirstName();
-  bool MigrateToVersion34ProfilesBasedOnCountryCode(
-      const std::string& app_locale);
+  bool MigrateToVersion34ProfilesBasedOnCountryCode();
   bool MigrateToVersion35GreatBritainCountryCodes();
   bool MigrateToVersion37MergeAndCullOlderProfiles();
 
@@ -355,6 +353,12 @@ class AutofillTable : public WebDatabaseTable {
   bool InitProfileEmailsTable();
   bool InitProfilePhonesTable();
   bool InitProfileTrashTable();
+
+  // The application locale.  The locale is needed for the migration to version
+  // 35. Since it must be read on the UI thread, it is set when the table is
+  // created (on the UI thread), and cached here so that it can be used for
+  // migrations (on the DB thread).
+  std::string app_locale_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillTable);
 };

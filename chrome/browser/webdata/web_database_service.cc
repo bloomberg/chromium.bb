@@ -27,8 +27,7 @@ class WebDataServiceBackend
     : public base::RefCountedThreadSafe<WebDataServiceBackend,
                                         BrowserThread::DeleteOnDBThread> {
  public:
-  explicit WebDataServiceBackend(
-      const FilePath& path, const std::string app_locale);
+  explicit WebDataServiceBackend(const FilePath& path);
 
   // Must call only before InitDatabaseWithCallback.
   void AddTable(scoped_ptr<WebDatabaseTable> table);
@@ -97,22 +96,15 @@ class WebDataServiceBackend
   // fails), used to avoid continually trying to reinit if the db init fails.
   bool init_complete_;
 
-  // The application locale.  The locale is needed for some database migrations,
-  // and must be read on the UI thread.  It's cached here so that we can pass it
-  // to the migration code on the DB thread.
-  const std::string app_locale_;
-
   DISALLOW_COPY_AND_ASSIGN(WebDataServiceBackend);
 };
 
 WebDataServiceBackend::WebDataServiceBackend(
-    const FilePath& path,
-    const std::string app_locale)
+    const FilePath& path)
     : db_path_(path),
       request_manager_(new WebDataRequestManager()),
       init_status_(sql::INIT_FAILURE),
-      init_complete_(false),
-      app_locale_(app_locale) {
+      init_complete_(false) {
 }
 
 void WebDataServiceBackend::AddTable(scoped_ptr<WebDatabaseTable> table) {
@@ -140,7 +132,7 @@ sql::InitStatus WebDataServiceBackend::LoadDatabaseIfNecessary() {
     db_->AddTable(*it);
   }
 
-  init_status_ = db_->Init(db_path_, app_locale_);
+  init_status_ = db_->Init(db_path_);
   if (init_status_ != sql::INIT_OK) {
     LOG(ERROR) << "Cannot initialize the web database: " << init_status_;
     db_.reset(NULL);
@@ -198,10 +190,8 @@ void WebDataServiceBackend::Commit() {
 
 ////////////////////////////////////////////////////////////////////////////////
 WebDatabaseService::WebDatabaseService(
-    const base::FilePath& path,
-    const std::string app_locale)
-    : path_(path),
-      app_locale_(app_locale) {
+    const base::FilePath& path)
+    : path_(path) {
   // WebDatabaseService should be instantiated on UI thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // WebDatabaseService requires DB thread if instantiated.
@@ -213,7 +203,7 @@ WebDatabaseService::~WebDatabaseService() {
 
 void WebDatabaseService::AddTable(scoped_ptr<WebDatabaseTable> table) {
   if (!wds_backend_) {
-    wds_backend_ = new WebDataServiceBackend(path_, app_locale_);
+    wds_backend_ = new WebDataServiceBackend(path_);
   }
   wds_backend_->AddTable(table.Pass());
 }

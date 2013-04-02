@@ -44,14 +44,10 @@ class WebDatabaseTable {
   // Migrates this table to |version|. Returns false if there was
   // migration work to do and it failed, true otherwise.
   //
-  // |app_locale| is the locale of the app. Passed as a parameter as
-  // |it can only be safely queried on the UI thread.
-  //
   // Implementations may set |*update_compatible_version| to true if
   // the compatible version should be changed to |version|.
   // Implementations should otherwise not modify this parameter.
   virtual bool MigrateToVersion(int version,
-                                const std::string& app_locale,
                                 bool* update_compatible_version) = 0;
 
  protected:

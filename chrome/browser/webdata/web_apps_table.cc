@@ -41,7 +41,6 @@ bool WebAppsTable::IsSyncable() {
 }
 
 bool WebAppsTable::MigrateToVersion(int version,
-                                    const std::string& app_locale,
                                     bool* update_compatible_version) {
   return true;
 }

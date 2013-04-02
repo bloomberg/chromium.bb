@@ -105,7 +105,7 @@ ACTION_P2(ExpectFormValuesForElementNameMatch, element_name, matcher) {
   AutofillTable autofill_table;
   WebDatabase web_database;
   web_database.AddTable(&autofill_table);
-  sql::InitStatus init_status = web_database.Init(profile_path, std::string());
+  sql::InitStatus init_status = web_database.Init(profile_path);
   EXPECT_EQ(sql::INIT_OK, init_status);
 
   if (init_status == sql::INIT_OK) {

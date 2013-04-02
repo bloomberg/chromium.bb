@@ -167,7 +167,6 @@ bool KeywordTable::IsSyncable() {
 }
 
 bool KeywordTable::MigrateToVersion(int version,
-                                    const std::string& app_locale,
                                     bool* update_compatible_version) {
   // Migrate if necessary.
   switch (version) {
