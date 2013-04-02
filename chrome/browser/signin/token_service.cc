@@ -116,6 +116,10 @@ void TokenService::AddAuthTokenManually(const std::string& service,
   if (service == GaiaConstants::kLSOService && !HasOAuthLoginToken()) {
     int index = GetServiceIndex(service);
     CHECK_GE(index, 0);
+    // iOS fetches the service tokens outside of the TokenService.
+    if (!fetchers_[index].get()) {
+      fetchers_[index].reset(new GaiaAuthFetcher(this, source_, getter_));
+    }
     fetchers_[index]->StartLsoForOAuthLoginTokenExchange(auth_token);
   }
 #endif
@@ -258,7 +262,7 @@ const std::string& TokenService::GetOAuth2LoginRefreshToken() const {
 }
 
 // static
-void TokenService::GetServiceNamesForTesting(std::vector<std::string>* names) {
+void TokenService::GetServiceNames(std::vector<std::string>* names) {
   names->resize(arraysize(kServices));
   std::copy(kServices, kServices + arraysize(kServices), names->begin());
 }

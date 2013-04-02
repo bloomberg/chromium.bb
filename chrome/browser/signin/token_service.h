@@ -196,12 +196,10 @@ class TokenService : public GaiaAuthConsumer,
     tokens_loaded_ = loaded;
   }
 
- private:
-
   // Gets the list of all service names for which tokens will be retrieved.
-  // This method is meant only for tests.
-  static void GetServiceNamesForTesting(std::vector<std::string>* names);
+  static void GetServiceNames(std::vector<std::string>* names);
 
+ private:
   void FireTokenAvailableNotification(const std::string& service,
                                       const std::string& auth_token);
 

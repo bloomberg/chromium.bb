@@ -311,7 +311,7 @@ TEST_F(TokenServiceTest, LoadTokensIntoMemoryBasic) {
   EXPECT_EQ(0U, success_tracker_.size());
 
   std::vector<std::string> services;
-  TokenService::GetServiceNamesForTesting(&services);
+  TokenService::GetServiceNames(&services);
   for (std::vector<std::string>::const_iterator i = services.begin();
        i != services.end(); ++i) {
     const std::string& service = *i;
