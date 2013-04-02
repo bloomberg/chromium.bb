@@ -9,7 +9,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
+#include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 
 namespace gfx {
 class Rect;
@@ -24,11 +24,10 @@ namespace content {
 // interfaces.
 class GLHelper {
  public:
-  GLHelper(WebKit::WebGraphicsContext3D* context,
-           WebKit::WebGraphicsContext3D* context_for_thread);
+  explicit GLHelper(WebGraphicsContext3DCommandBufferImpl* context);
   virtual ~GLHelper();
 
-  WebKit::WebGraphicsContext3D* context() const;
+  WebGraphicsContext3DCommandBufferImpl* context() const;
 
   // Copies the block of pixels specified with |src_subrect| from |src_texture|,
   // scales it to |dst_size|, and writes it into |out|.
@@ -81,12 +80,8 @@ class GLHelper {
   // Creates |copy_texture_to_impl_| if NULL.
   void InitCopyTextToImpl();
 
-  WebKit::WebGraphicsContext3D* context_;
-  WebKit::WebGraphicsContext3D* context_for_thread_;
+  WebGraphicsContext3DCommandBufferImpl* context_;
   scoped_ptr<CopyTextureToImpl> copy_texture_to_impl_;
-
-  // The number of all GLHelper instances.
-  static base::subtle::Atomic32 count_;
 
   DISALLOW_COPY_AND_ASSIGN(GLHelper);
 };

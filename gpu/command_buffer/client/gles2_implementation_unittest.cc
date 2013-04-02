@@ -2870,4 +2870,3 @@ TEST_F(GLES2ImplementationTest, Enable) {
 
 }  // namespace gles2
 }  // namespace gpu
-

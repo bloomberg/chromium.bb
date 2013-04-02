@@ -482,7 +482,10 @@ class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface {
   // for error checking.
   bool MustBeContextLost();
 
+  bool GetBoundPixelTransferBuffer(
+      GLenum target, const char* function_name, GLuint* buffer_id);
   BufferTracker::Buffer* GetBoundPixelUnpackTransferBufferIfValid(
+      GLuint buffer_id,
       const char* function_name, GLuint offset, GLsizei size);
 
   const std::string& GetLogPrefix() const;
@@ -547,7 +550,8 @@ class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface {
   // The currently bound array buffer.
   GLuint bound_array_buffer_id_;
 
-  // The currently bound pixel transfer buffer.
+  // The currently bound pixel transfer buffers.
+  GLuint bound_pixel_pack_transfer_buffer_id_;
   GLuint bound_pixel_unpack_transfer_buffer_id_;
 
   // Client side management for vertex array objects. Needed to correctly

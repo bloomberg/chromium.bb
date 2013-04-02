@@ -6956,10 +6956,16 @@ error::Error GLES2DecoderImpl::HandleReadPixels(
   }
   void* pixels = GetSharedMemoryAs<void*>(
       c.pixels_shm_id, c.pixels_shm_offset, pixels_size);
-  Result* result = GetSharedMemoryAs<Result*>(
-        c.result_shm_id, c.result_shm_offset, sizeof(*result));
-  if (!pixels || !result) {
+  if (!pixels) {
     return error::kOutOfBounds;
+  }
+  Result* result = NULL;
+  if (c.result_shm_id != 0) {
+    result = GetSharedMemoryAs<Result*>(
+        c.result_shm_id, c.result_shm_offset, sizeof(*result));
+    if (!result) {
+      return error::kOutOfBounds;
+    }
   }
 
   if (!validators_->read_pixel_format.IsValid(format)) {
@@ -7040,7 +7046,9 @@ error::Error GLES2DecoderImpl::HandleReadPixels(
   }
   GLenum error = LOCAL_PEEK_GL_ERROR("glReadPixels");
   if (error == GL_NO_ERROR) {
-    *result = true;
+    if (result != NULL) {
+      *result = true;
+    }
 
     GLenum read_format = GetBoundReadFrameBufferInternalFormat();
     uint32 channels_exist = GLES2Util::GetChannelsForFormat(read_format);

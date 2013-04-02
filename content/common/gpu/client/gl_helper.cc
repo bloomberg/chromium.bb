@@ -7,14 +7,11 @@
 #include <queue>
 
 #include "base/bind.h"
+#include "base/debug/trace_event.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
-#include "base/synchronization/lock.h"
-#include "base/synchronization/waitable_event.h"
-#include "base/threading/thread.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/time.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebCString.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 #include "third_party/skia/include/core/SkRegion.h"
@@ -26,24 +23,6 @@ using WebKit::WebGLId;
 using WebKit::WebGraphicsContext3D;
 
 namespace {
-
-const char kGLHelperThreadName[] = "GLHelperThread";
-
-class GLHelperThread : public base::Thread {
- public:
-  GLHelperThread() : base::Thread(kGLHelperThreadName) {
-    Start();
-  }
-  virtual ~GLHelperThread() {
-    Stop();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(GLHelperThread);
-};
-
-base::LazyInstance<GLHelperThread> g_gl_helper_thread =
-    LAZY_INSTANCE_INITIALIZER;
 
 class ScopedWebGLId {
  public:
@@ -99,15 +78,6 @@ class ScopedFramebuffer : public ScopedWebGLId {
                       &WebGraphicsContext3D::deleteFramebuffer) {}
 };
 
-class ScopedRenderbuffer : public ScopedWebGLId {
- public:
-  ScopedRenderbuffer(WebGraphicsContext3D* context,
-                     WebGLId id)
-      : ScopedWebGLId(context,
-                      id,
-                      &WebGraphicsContext3D::deleteRenderbuffer) {}
-};
-
 class ScopedProgram : public ScopedWebGLId {
  public:
   ScopedProgram(WebGraphicsContext3D* context,
@@ -144,19 +114,16 @@ class ScopedBinder {
                WebGLId id,
                BindFunc bind_func)
       : context_(context),
-        id_(id),
         bind_func_(bind_func) {
-    (context_->*bind_func_)(target, id_);
+    (context_->*bind_func_)(target, id);
   }
 
   virtual ~ScopedBinder() {
-    if (id_ != 0)
-      (context_->*bind_func_)(target, 0);
+    (context_->*bind_func_)(target, 0);
   }
 
  private:
   WebGraphicsContext3D* context_;
-  WebGLId id_;
   BindFunc bind_func_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedBinder);
@@ -182,17 +149,6 @@ class ScopedFramebufferBinder : ScopedBinder<target> {
           context,
           id,
           &WebGraphicsContext3D::bindFramebuffer) {}
-};
-
-template <WebKit::WGC3Denum target>
-class ScopedRenderbufferBinder : ScopedBinder<target> {
- public:
-  ScopedRenderbufferBinder(WebGraphicsContext3D* context,
-                           WebGLId id)
-      : ScopedBinder<target>(
-          context,
-          id,
-          &WebGraphicsContext3D::bindRenderbuffer) {}
 };
 
 template <WebKit::WGC3Denum target>
@@ -222,27 +178,18 @@ class ScopedFlush {
   DISALLOW_COPY_AND_ASSIGN(ScopedFlush);
 };
 
-void DeleteContext(WebGraphicsContext3D* context) {
-  delete context;
-}
-
-void SignalWaitableEvent(base::WaitableEvent* event) {
-  event->Signal();
-}
-
 }  // namespace
 
 namespace content {
 
 // Implements GLHelper::CropScaleReadbackAndCleanTexture and encapsulates the
 // data needed for it.
-class GLHelper::CopyTextureToImpl {
+class GLHelper::CopyTextureToImpl :
+      public base::SupportsWeakPtr<GLHelper::CopyTextureToImpl> {
  public:
-  CopyTextureToImpl(WebGraphicsContext3D* context,
-                    WebGraphicsContext3D* context_for_thread,
+  CopyTextureToImpl(WebGraphicsContext3DCommandBufferImpl* context,
                     GLHelper* helper)
       : context_(context),
-        context_for_thread_(context_for_thread),
         helper_(helper),
         flush_(context),
         program_(context, context->createProgram()),
@@ -253,7 +200,6 @@ class GLHelper::CopyTextureToImpl {
   }
   ~CopyTextureToImpl() {
     CancelRequests();
-    DeleteContextForThread();
   }
 
   void InitBuffer();
@@ -278,40 +224,30 @@ class GLHelper::CopyTextureToImpl {
 
  private:
   // A single request to CropScaleReadbackAndCleanTexture.
-  // Thread-safety notes: the main thread creates instances of this class. The
-  // main thread can cancel the request, before it's handled by the helper
+  // The main thread can cancel the request, before it's handled by the helper
   // thread, by resetting the texture and pixels fields. Alternatively, the
   // thread marks that it handles the request by resetting the pixels field
   // (meaning it guarantees that the callback with be called).
   // In either case, the callback must be called exactly once, and the texture
   // must be deleted by the main thread context.
-  struct Request : public base::RefCountedThreadSafe<Request> {
-    Request(CopyTextureToImpl* impl,
-            WebGLId texture_,
+  struct Request {
+    Request(WebGLId texture_,
             const gfx::Size& size_,
             unsigned char* pixels_,
             const base::Callback<void(bool)>& callback_)
-        : copy_texture_impl(impl),
-        size(size_),
-        callback(callback_),
-        lock(),
-        texture(texture_),
-        pixels(pixels_) {
+        : size(size_),
+          callback(callback_),
+          texture(texture_),
+          pixels(pixels_),
+          buffer(0) {
     }
 
-    // These members are only accessed on the main thread.
-    GLHelper::CopyTextureToImpl* copy_texture_impl;
     gfx::Size size;
     base::Callback<void(bool)> callback;
 
-    // Locks access to below members, which can be accessed on any thread.
-    base::Lock lock;
     WebGLId texture;
     unsigned char* pixels;
-
-   private:
-    friend class base::RefCountedThreadSafe<Request>;
-    ~Request() {}
+    GLuint buffer;
   };
 
   // Copies the block of pixels specified with |src_subrect| from |src_texture|,
@@ -323,14 +259,8 @@ class GLHelper::CopyTextureToImpl {
                        const gfx::Size& dst_size,
                        bool vertically_flip_texture);
 
-  // Deletes the context for GLHelperThread.
-  void DeleteContextForThread();
-  static void ReadBackFramebuffer(scoped_refptr<Request> request,
-                                  WebGraphicsContext3D* context,
-                                  scoped_refptr<base::TaskRunner> reply_loop);
-  static void ReadBackFramebufferComplete(scoped_refptr<Request> request,
-                                          bool result);
-  void FinishRequest(scoped_refptr<Request> request);
+  void ReadbackDone(Request* request);
+  void FinishRequest(Request* request, bool result);
   void CancelRequests();
 
   // Interleaved array of 2-dimentional vertex positions (x, y) and
@@ -344,8 +274,7 @@ class GLHelper::CopyTextureToImpl {
   static const WebKit::WGC3Dchar kCopyVertexShader[];
   static const WebKit::WGC3Dchar kCopyFragmentShader[];
 
-  WebGraphicsContext3D* context_;
-  WebGraphicsContext3D* context_for_thread_;
+  WebGraphicsContext3DCommandBufferImpl* context_;
   GLHelper* helper_;
 
   // A scoped flush that will ensure all resource deletions are flushed when
@@ -366,7 +295,7 @@ class GLHelper::CopyTextureToImpl {
   WebKit::WGC3Dint texture_location_;
   // The location of the texture coordinate of the sub-rectangle in the program.
   WebKit::WGC3Dint src_subrect_location_;
-  std::queue<scoped_refptr<Request> > request_queue_;
+  std::queue<Request*> request_queue_;
 };
 
 const WebKit::WGC3Dfloat GLHelper::CopyTextureToImpl::kVertexAttributes[] = {
@@ -394,6 +323,16 @@ const WebKit::WGC3Dchar GLHelper::CopyTextureToImpl::kCopyVertexShader[] =
     "  v_texcoord = src_subrect.xy + a_texcoord * src_subrect.zw;"
     "}";
 
+
+#if (SK_R32_SHIFT == 16) && !SK_B32_SHIFT
+const WebKit::WGC3Dchar GLHelper::CopyTextureToImpl::kCopyFragmentShader[] =
+    "precision mediump float;"
+    "varying vec2 v_texcoord;"
+    "uniform sampler2D s_texture;"
+    "void main() {"
+    "  gl_FragColor = texture2D(s_texture, v_texcoord).bgra;"
+    "}";
+#else
 const WebKit::WGC3Dchar GLHelper::CopyTextureToImpl::kCopyFragmentShader[] =
     "precision mediump float;"
     "varying vec2 v_texcoord;"
@@ -401,6 +340,8 @@ const WebKit::WGC3Dchar GLHelper::CopyTextureToImpl::kCopyFragmentShader[] =
     "void main() {"
     "  gl_FragColor = texture2D(s_texture, v_texcoord);"
     "}";
+#endif
+
 
 void GLHelper::CopyTextureToImpl::InitBuffer() {
   ScopedBufferBinder<GL_ARRAY_BUFFER> buffer_binder(
@@ -451,11 +392,10 @@ WebGLId GLHelper::CopyTextureToImpl::ScaleTexture(
   WebGLId dst_texture = context_->createTexture();
   {
     ScopedFramebuffer dst_framebuffer(context_, context_->createFramebuffer());
-    ScopedFramebufferBinder<GL_FRAMEBUFFER> framebuffer_binder(
-        context_, dst_framebuffer);
+    ScopedFramebufferBinder<GL_FRAMEBUFFER> framebuffer_binder(context_,
+                                                               dst_framebuffer);
     {
-      ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(
-          context_, dst_texture);
+      ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(context_, dst_texture);
       context_->texImage2D(GL_TEXTURE_2D,
                            0,
                            GL_RGBA,
@@ -475,8 +415,8 @@ WebGLId GLHelper::CopyTextureToImpl::ScaleTexture(
     ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(context_, src_texture);
     WebKit::WebGLId vertex_attributes_buffer = vertically_flip_texture ?
         flipped_vertex_attributes_buffer_ : vertex_attributes_buffer_;
-    ScopedBufferBinder<GL_ARRAY_BUFFER> buffer_binder(
-        context_, vertex_attributes_buffer);
+    ScopedBufferBinder<GL_ARRAY_BUFFER> buffer_binder(context_,
+                                                      vertex_attributes_buffer);
 
     context_->viewport(0, 0, dst_size.width(), dst_size.height());
     context_->useProgram(program_);
@@ -517,17 +457,6 @@ WebGLId GLHelper::CopyTextureToImpl::ScaleTexture(
   return dst_texture;
 }
 
-void GLHelper::CopyTextureToImpl::DeleteContextForThread() {
-  if (!context_for_thread_)
-    return;
-
-  g_gl_helper_thread.Pointer()->message_loop_proxy()->PostTask(
-      FROM_HERE,
-      base::Bind(&DeleteContext,
-                 context_for_thread_));
-  context_for_thread_ = NULL;
-}
-
 void GLHelper::CopyTextureToImpl::CropScaleReadbackAndCleanTexture(
     WebGLId src_texture,
     const gfx::Size& src_size,
@@ -535,34 +464,50 @@ void GLHelper::CopyTextureToImpl::CropScaleReadbackAndCleanTexture(
     const gfx::Size& dst_size,
     unsigned char* out,
     const base::Callback<void(bool)>& callback) {
-  if (!context_for_thread_) {
-    callback.Run(false);
-    return;
-  }
-
   WebGLId texture = ScaleTexture(src_texture,
                                  src_size,
                                  src_subrect,
                                  dst_size,
-                                 false);
+                                 true);
   context_->flush();
-  scoped_refptr<Request> request =
-      new Request(this, texture, dst_size, out, callback);
+  Request* request = new Request(texture, dst_size, out, callback);
   request_queue_.push(request);
 
-  g_gl_helper_thread.Pointer()->message_loop_proxy()->PostTask(FROM_HERE,
-      base::Bind(&ReadBackFramebuffer,
-                 request,
-                 context_for_thread_,
-                 base::MessageLoopProxy::current()));
+  ScopedFlush flush(context_);
+  ScopedFramebuffer dst_framebuffer(context_, context_->createFramebuffer());
+  gfx::Size size;
+  size = request->size;
+
+  ScopedFramebufferBinder<GL_FRAMEBUFFER> framebuffer_binder(context_,
+                                                             dst_framebuffer);
+  ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(context_, request->texture);
+  context_->framebufferTexture2D(GL_FRAMEBUFFER,
+                                 GL_COLOR_ATTACHMENT0,
+                                 GL_TEXTURE_2D,
+                                 request->texture,
+                                 0);
+  request->buffer = context_->createBuffer();
+  context_->bindBuffer(GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM,
+                       request->buffer);
+  context_->bufferData(GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM,
+                       4 * size.GetArea(),
+                       NULL,
+                       GL_STREAM_READ);
+
+  context_->readPixels(0, 0, size.width(), size.height(),
+                       GL_RGBA, GL_UNSIGNED_BYTE, 0);
+  context_->bindBuffer(GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM, 0);
+  context_->GetCommandBufferProxy()->SignalSyncPoint(
+      context_->insertSyncPoint(),
+      base::Bind(&CopyTextureToImpl::ReadbackDone, AsWeakPtr(), request));
 }
 
 void GLHelper::CopyTextureToImpl::ReadbackTextureSync(WebGLId texture,
                                                       const gfx::Rect& src_rect,
                                                       unsigned char* out) {
   ScopedFramebuffer dst_framebuffer(context_, context_->createFramebuffer());
-  ScopedFramebufferBinder<GL_FRAMEBUFFER> framebuffer_binder(
-      context_, dst_framebuffer);
+  ScopedFramebufferBinder<GL_FRAMEBUFFER> framebuffer_binder(context_,
+                                                             dst_framebuffer);
   ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(context_, texture);
   context_->framebufferTexture2D(GL_FRAMEBUFFER,
                                  GL_COLOR_ATTACHMENT0,
@@ -590,136 +535,60 @@ WebKit::WebGLId GLHelper::CopyTextureToImpl::CopyAndScaleTexture(
                       vertically_flip_texture);
 }
 
-void GLHelper::CopyTextureToImpl::ReadBackFramebuffer(
-    scoped_refptr<Request> request,
-    WebGraphicsContext3D* context,
-    scoped_refptr<base::TaskRunner> reply_loop) {
-  DCHECK(context);
-  if (!context->makeContextCurrent() || context->isContextLost()) {
-    base::AutoLock auto_lock(request->lock);
-    if (request->pixels) {
-      // Only report failure if the request wasn't canceled (otherwise the
-      // failure has already been reported).
-      request->pixels = NULL;
-      reply_loop->PostTask(
-          FROM_HERE, base::Bind(ReadBackFramebufferComplete, request, false));
+void GLHelper::CopyTextureToImpl::ReadbackDone(Request* request) {
+  TRACE_EVENT0("mirror",
+               "GLHelper::CopyTextureToImpl::CheckReadBackFramebufferComplete");
+  DCHECK(request == request_queue_.front());
+
+  bool result = false;
+  if (request->buffer != 0) {
+    context_->bindBuffer(GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM,
+                         request->buffer);
+    void* data = context_->mapBufferCHROMIUM(
+        GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM, GL_READ_ONLY);
+
+    if (data) {
+      result = true;
+      memcpy(request->pixels, data, request->size.GetArea() * 4);
+      context_->unmapBufferCHROMIUM(GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM);
     }
-    return;
+    context_->bindBuffer(GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM, 0);
   }
-  ScopedFlush flush(context);
-  ScopedFramebuffer dst_framebuffer(context, context->createFramebuffer());
-  unsigned char* pixels = NULL;
-  gfx::Size size;
-  {
-    // Note: We don't want to keep the lock while doing the readBack (since we
-    // don't want to block the UI thread). We rely on the fact that once the
-    // texture is bound to a FBO (that isn't current), deleting the texture is
-    // delayed until the FBO is deleted. We ensure ordering by flushing while
-    // the lock is held. Either the main thread cancelled before we get the
-    // lock, and we'll exit early, or we ensure that the texture is bound to the
-    // framebuffer before the main thread has a chance to delete it.
-    base::AutoLock auto_lock(request->lock);
-    if (!request->texture || !request->pixels)
-      return;
-    pixels = request->pixels;
-    request->pixels = NULL;
-    size = request->size;
-    {
-      ScopedFlush flush(context);
-      ScopedFramebufferBinder<GL_FRAMEBUFFER> framebuffer_binder(
-          context, dst_framebuffer);
-      ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(
-          context, request->texture);
-      context->framebufferTexture2D(GL_FRAMEBUFFER,
-                                    GL_COLOR_ATTACHMENT0,
-                                    GL_TEXTURE_2D,
-                                    request->texture,
-                                    0);
-    }
-  }
-  bool result = context->readBackFramebuffer(
-        pixels,
-        4 * size.GetArea(),
-        dst_framebuffer.id(),
-        size.width(),
-        size.height());
-  reply_loop->PostTask(
-      FROM_HERE, base::Bind(ReadBackFramebufferComplete, request, result));
+
+  FinishRequest(request, result);
 }
 
-void GLHelper::CopyTextureToImpl::ReadBackFramebufferComplete(
-    scoped_refptr<Request> request,
-    bool result) {
-  request->callback.Run(result);
-  if (request->copy_texture_impl)
-    request->copy_texture_impl->FinishRequest(request);
-}
-
-void GLHelper::CopyTextureToImpl::FinishRequest(
-    scoped_refptr<Request> request) {
-  CHECK(request_queue_.front() == request);
+void GLHelper::CopyTextureToImpl::FinishRequest(Request* request, bool result) {
+  DCHECK(request_queue_.front() == request);
   request_queue_.pop();
-  base::AutoLock auto_lock(request->lock);
+  request->callback.Run(result);
+  ScopedFlush flush(context_);
   if (request->texture != 0) {
     context_->deleteTexture(request->texture);
     request->texture = 0;
-    context_->flush();
   }
+  if (request->buffer != 0) {
+    context_->deleteBuffer(request->buffer);
+    request->buffer = 0;
+  }
+  delete request;
 }
 
 void GLHelper::CopyTextureToImpl::CancelRequests() {
   while (!request_queue_.empty()) {
-    scoped_refptr<Request> request = request_queue_.front();
-    request_queue_.pop();
-    request->copy_texture_impl = NULL;
-    bool cancelled = false;
-    {
-      base::AutoLock auto_lock(request->lock);
-      if (request->texture != 0) {
-        context_->deleteTexture(request->texture);
-        request->texture = 0;
-      }
-      if (request->pixels != NULL) {
-        request->pixels = NULL;
-        cancelled = true;
-      }
-    }
-    if (cancelled)
-      request->callback.Run(false);
+    Request* request = request_queue_.front();
+    FinishRequest(request, false);
   }
 }
 
-base::subtle::Atomic32 GLHelper::count_ = 0;
-
-GLHelper::GLHelper(WebGraphicsContext3D* context,
-                   WebGraphicsContext3D* context_for_thread)
-    : context_(context),
-      context_for_thread_(context_for_thread) {
-  base::subtle::NoBarrier_AtomicIncrement(&count_, 1);
+GLHelper::GLHelper(WebGraphicsContext3DCommandBufferImpl* context)
+    : context_(context) {
 }
 
 GLHelper::~GLHelper() {
-  DCHECK_NE(MessageLoop::current(),
-            g_gl_helper_thread.Pointer()->message_loop());
-  base::subtle::Atomic32 decremented_count =
-    base::subtle::NoBarrier_AtomicIncrement(&count_, -1);
-  if (decremented_count == 0) {
-    // When this is the last instance, we synchronize with the pending
-    // operations on GLHelperThread. Otherwise on shutdown we may kill the GPU
-    // process infrastructure (BrowserGpuChannelHostFactory) before they have
-    // a chance to complete, likely leading to a crash.
-    base::WaitableEvent event(false, false);
-    g_gl_helper_thread.Pointer()->message_loop_proxy()->PostTask(
-        FROM_HERE,
-        base::Bind(&SignalWaitableEvent,
-                   &event));
-    // http://crbug.com/125415
-    base::ThreadRestrictions::ScopedAllowWait allow_wait;
-    event.Wait();
-  }
 }
 
-WebGraphicsContext3D* GLHelper::context() const {
+WebGraphicsContext3DCommandBufferImpl* GLHelper::context() const {
   return context_;
 }
 
@@ -786,9 +655,7 @@ WebGLId GLHelper::CompileShaderFromSource(
 void GLHelper::InitCopyTextToImpl() {
   // Lazily initialize |copy_texture_to_impl_|
   if (!copy_texture_to_impl_.get())
-    copy_texture_to_impl_.reset(new CopyTextureToImpl(context_,
-                                                      context_for_thread_,
-                                                      this));
+    copy_texture_to_impl_.reset(new CopyTextureToImpl(context_, this));
 }
 
 void GLHelper::CopySubBufferDamage(WebKit::WebGLId texture,
@@ -798,8 +665,8 @@ void GLHelper::CopySubBufferDamage(WebKit::WebGLId texture,
   SkRegion region(old_damage);
   if (region.op(new_damage, SkRegion::kDifference_Op)) {
     ScopedFramebuffer dst_framebuffer(context_, context_->createFramebuffer());
-    ScopedFramebufferBinder<GL_FRAMEBUFFER> framebuffer_binder(
-        context_, dst_framebuffer);
+    ScopedFramebufferBinder<GL_FRAMEBUFFER> framebuffer_binder(context_,
+                                                               dst_framebuffer);
     ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(context_, texture);
     context_->framebufferTexture2D(GL_FRAMEBUFFER,
                                    GL_COLOR_ATTACHMENT0,

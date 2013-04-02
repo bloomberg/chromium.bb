@@ -464,15 +464,9 @@ class GpuProcessTransportFactory
   virtual GLHelper* GetGLHelper() OVERRIDE {
     if (!gl_helper_.get()) {
       CreateSharedContextLazy();
-      WebKit::WebGraphicsContext3D* context_for_main_thread =
+      WebGraphicsContext3DCommandBufferImpl* context_for_main_thread =
           shared_contexts_main_thread_->Context3d();
-      WebKit::WebGraphicsContext3D* context_for_thread =
-          CreateOffscreenContext();
-      if (!context_for_thread)
-        return NULL;
-
-      gl_helper_.reset(new GLHelper(context_for_main_thread,
-                                    context_for_thread));
+      gl_helper_.reset(new GLHelper(context_for_main_thread));
     }
     return gl_helper_.get();
   }

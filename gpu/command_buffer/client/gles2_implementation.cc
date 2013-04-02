@@ -96,6 +96,7 @@ GLES2Implementation::GLES2Implementation(
       bound_renderbuffer_(0),
       current_program_(0),
       bound_array_buffer_id_(0),
+      bound_pixel_pack_transfer_buffer_id_(0),
       bound_pixel_unpack_transfer_buffer_id_(0),
       error_bits_(0),
       debug_(false),
@@ -589,6 +590,9 @@ bool GLES2Implementation::GetHelper(GLenum pname, GLint* params) {
         return true;
       }
       return false;
+    case GL_PIXEL_PACK_TRANSFER_BUFFER_BINDING_CHROMIUM:
+      *params = bound_pixel_pack_transfer_buffer_id_;
+      return true;
     case GL_PIXEL_UNPACK_TRANSFER_BUFFER_BINDING_CHROMIUM:
       *params = bound_pixel_unpack_transfer_buffer_id_;
       return true;
@@ -1248,10 +1252,9 @@ void GLES2Implementation::BufferDataHelper(
     return;
   }
 
-  if (target == GL_PIXEL_UNPACK_TRANSFER_BUFFER_CHROMIUM) {
-    GLuint buffer_id = bound_pixel_unpack_transfer_buffer_id_;
+  GLuint buffer_id;
+  if (GetBoundPixelTransferBuffer(target, "glBufferData", &buffer_id)) {
     if (!buffer_id) {
-      SetGLError(GL_INVALID_VALUE, "glBufferData", "unknown buffer");
       return;
     }
 
@@ -1328,9 +1331,12 @@ void GLES2Implementation::BufferSubDataHelper(
     return;
   }
 
-  if (target == GL_PIXEL_UNPACK_TRANSFER_BUFFER_CHROMIUM) {
-    BufferTracker::Buffer* buffer = buffer_tracker_->GetBuffer(
-        bound_pixel_unpack_transfer_buffer_id_);
+  GLuint buffer_id;
+  if (GetBoundPixelTransferBuffer(target, "glBufferSubData", &buffer_id)) {
+    if (!buffer_id) {
+      return;
+    }
+    BufferTracker::Buffer* buffer = buffer_tracker_->GetBuffer(buffer_id);
     if (!buffer) {
       SetGLError(GL_INVALID_VALUE, "glBufferSubData", "unknown buffer");
       return;
@@ -1387,12 +1393,37 @@ void GLES2Implementation::BufferSubData(
   CheckGLError();
 }
 
+bool GLES2Implementation::GetBoundPixelTransferBuffer(
+    GLenum target,
+    const char* function_name,
+    GLuint* buffer_id) {
+  *buffer_id = 0;
+
+  switch (target) {
+    case GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM:
+      *buffer_id = bound_pixel_pack_transfer_buffer_id_;
+      break;
+    case GL_PIXEL_UNPACK_TRANSFER_BUFFER_CHROMIUM:
+      *buffer_id = bound_pixel_unpack_transfer_buffer_id_;
+      break;
+    default:
+      // Unknown target
+      return false;
+  }
+  if (!*buffer_id) {
+    SetGLError(GL_INVALID_OPERATION, function_name, "no buffer bound");
+  }
+  return true;
+}
+
 BufferTracker::Buffer*
 GLES2Implementation::GetBoundPixelUnpackTransferBufferIfValid(
-    const char* function_name, GLuint offset, GLsizei size)
+    GLuint buffer_id,
+    const char* function_name,
+    GLuint offset, GLsizei size)
 {
-  BufferTracker::Buffer* buffer = buffer_tracker_->GetBuffer(
-      bound_pixel_unpack_transfer_buffer_id_);
+  DCHECK(buffer_id);
+  BufferTracker::Buffer* buffer = buffer_tracker_->GetBuffer(buffer_id);
   if (!buffer) {
     SetGLError(GL_INVALID_OPERATION, function_name, "invalid buffer");
     return NULL;
@@ -1431,11 +1462,14 @@ void GLES2Implementation::CompressedTexImage2D(
   if (bound_pixel_unpack_transfer_buffer_id_) {
     GLuint offset = ToGLuint(data);
     BufferTracker::Buffer* buffer = GetBoundPixelUnpackTransferBufferIfValid(
+        bound_pixel_unpack_transfer_buffer_id_,
         "glCompressedTexImage2D", offset, image_size);
-    if (buffer)
+    if (buffer) {
       helper_->CompressedTexImage2D(
           target, level, internalformat, width, height, border, image_size,
           buffer->shm_id(), buffer->shm_offset() + offset);
+      buffer->set_transfer_ready_token(helper_->InsertToken());
+    }
     return;
   }
   SetBucketContents(kResultBucketId, data, image_size);
@@ -1469,11 +1503,15 @@ void GLES2Implementation::CompressedTexSubImage2D(
   if (bound_pixel_unpack_transfer_buffer_id_) {
     GLuint offset = ToGLuint(data);
     BufferTracker::Buffer* buffer = GetBoundPixelUnpackTransferBufferIfValid(
+        bound_pixel_unpack_transfer_buffer_id_,
         "glCompressedTexSubImage2D", offset, image_size);
-    if (buffer)
+    if (buffer) {
       helper_->CompressedTexSubImage2D(
           target, level, xoffset, yoffset, width, height, format, image_size,
           buffer->shm_id(), buffer->shm_offset() + offset);
+      buffer->set_transfer_ready_token(helper_->InsertToken());
+      CheckGLError();
+    }
     return;
   }
   SetBucketContents(kResultBucketId, data, image_size);
@@ -1552,12 +1590,15 @@ void GLES2Implementation::TexImage2D(
   if (bound_pixel_unpack_transfer_buffer_id_) {
     GLuint offset = ToGLuint(pixels);
     BufferTracker::Buffer* buffer = GetBoundPixelUnpackTransferBufferIfValid(
+        bound_pixel_unpack_transfer_buffer_id_,
         "glTexImage2D", offset, size);
-    if (buffer)
+    if (buffer) {
       helper_->TexImage2D(
           target, level, internalformat, width, height, border, format, type,
           buffer->shm_id(), buffer->shm_offset() + offset);
-    CheckGLError();
+      buffer->set_transfer_ready_token(helper_->InsertToken());
+      CheckGLError();
+    }
     return;
   }
 
@@ -1655,12 +1696,15 @@ void GLES2Implementation::TexSubImage2D(
   if (bound_pixel_unpack_transfer_buffer_id_) {
     GLuint offset = ToGLuint(pixels);
     BufferTracker::Buffer* buffer = GetBoundPixelUnpackTransferBufferIfValid(
+        bound_pixel_unpack_transfer_buffer_id_,
         "glTexSubImage2D", offset, temp_size);
-    if (buffer)
+    if (buffer) {
       helper_->TexSubImage2D(
           target, level, xoffset, yoffset, width, height, format, type,
           buffer->shm_id(), buffer->shm_offset() + offset, false);
-    CheckGLError();
+      buffer->set_transfer_ready_token(helper_->InsertToken());
+      CheckGLError();
+    }
     return;
   }
 
@@ -2113,6 +2157,27 @@ void GLES2Implementation::ReadPixels(
     SetGLError(GL_INVALID_VALUE, "glReadPixels", "size too large.");
     return;
   }
+
+  if (bound_pixel_pack_transfer_buffer_id_) {
+    GLuint offset = ToGLuint(pixels);
+    BufferTracker::Buffer* buffer = GetBoundPixelUnpackTransferBufferIfValid(
+        bound_pixel_pack_transfer_buffer_id_,
+        "glReadPixels", offset, temp_size);
+    if (buffer) {
+      helper_->ReadPixels(xoffset, yoffset, width, height, format, type,
+                          buffer->shm_id(), buffer->shm_offset(),
+                          0, 0);
+      buffer->set_transfer_ready_token(helper_->InsertToken());
+      CheckGLError();
+    }
+    return;
+  }
+
+  if (!pixels) {
+    SetGLError(GL_INVALID_OPERATION, "glReadPixels", "pixels = NULL");
+    return;
+  }
+
   // Transfer by rows.
   // The max rows we can transfer.
   while (height) {
@@ -2229,6 +2294,9 @@ bool GLES2Implementation::BindBufferHelper(
       break;
     case GL_ELEMENT_ARRAY_BUFFER:
       changed = vertex_array_object_manager_->BindElementArray(buffer);
+      break;
+    case GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM:
+      bound_pixel_pack_transfer_buffer_id_ = buffer;
       break;
     case GL_PIXEL_UNPACK_TRANSFER_BUFFER_CHROMIUM:
       bound_pixel_unpack_transfer_buffer_id_ = buffer;
@@ -3309,17 +3377,30 @@ void* GLES2Implementation::MapBufferCHROMIUM(GLuint target, GLenum access) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glMapBufferCHROMIUM("
       << target << ", " << GLES2Util::GetStringEnum(access) << ")");
-  if (target != GL_PIXEL_UNPACK_TRANSFER_BUFFER_CHROMIUM) {
-    SetGLError(
-        GL_INVALID_ENUM, "glMapBufferCHROMIUM", "invalid target");
+  switch (target)  {
+    case GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM:
+      if (access != GL_READ_ONLY) {
+        SetGLError(GL_INVALID_ENUM, "glMapBufferCHROMIUM", "bad access mode");
+        return NULL;
+      }
+      break;
+    case GL_PIXEL_UNPACK_TRANSFER_BUFFER_CHROMIUM:
+      if (access != GL_WRITE_ONLY) {
+        SetGLError(GL_INVALID_ENUM, "glMapBufferCHROMIUM", "bad access mode");
+        return NULL;
+      }
+      break;
+    default:
+      SetGLError(
+          GL_INVALID_ENUM, "glMapBufferCHROMIUM", "invalid target");
+      return NULL;
+  }
+  GLuint buffer_id;
+  GetBoundPixelTransferBuffer(target, "glMapBufferCHROMIUM", &buffer_id);
+  if (!buffer_id) {
     return NULL;
   }
-  if (access != GL_WRITE_ONLY) {
-    SetGLError(GL_INVALID_ENUM, "glMapBufferCHROMIUM", "bad access mode");
-    return NULL;
-  }
-  BufferTracker::Buffer* buffer = buffer_tracker_->GetBuffer(
-        bound_pixel_unpack_transfer_buffer_id_);
+  BufferTracker::Buffer* buffer = buffer_tracker_->GetBuffer(buffer_id);
   if (!buffer) {
     SetGLError(GL_INVALID_OPERATION, "glMapBufferCHROMIUM", "invalid buffer");
     return NULL;
@@ -3327,6 +3408,15 @@ void* GLES2Implementation::MapBufferCHROMIUM(GLuint target, GLenum access) {
   if (buffer->mapped()) {
     SetGLError(GL_INVALID_OPERATION, "glMapBufferCHROMIUM", "already mapped");
     return NULL;
+  }
+  // Here we wait for previous transfer operations to be finished.
+  // TODO(hubbe): AsyncTex(Sub)Image2dCHROMIUM does not currently work
+  // with this method of synchronization. Until this is fixed,
+  // MapBufferCHROMIUM will not block even if the transfer is not ready
+  // for these calls.
+  if (buffer->transfer_ready_token()) {
+    helper_->WaitForToken(buffer->transfer_ready_token());
+    buffer->set_transfer_ready_token(0);
   }
   buffer->set_mapped(true);
 
@@ -3340,12 +3430,14 @@ GLboolean GLES2Implementation::UnmapBufferCHROMIUM(GLuint target) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG(
       "[" << GetLogPrefix() << "] glUnmapBufferCHROMIUM(" << target << ")");
-  if (target != GL_PIXEL_UNPACK_TRANSFER_BUFFER_CHROMIUM) {
+  GLuint buffer_id;
+  if (!GetBoundPixelTransferBuffer(target, "glMapBufferCHROMIUM", &buffer_id)) {
     SetGLError(GL_INVALID_ENUM, "glUnmapBufferCHROMIUM", "invalid target");
+  }
+  if (!buffer_id) {
     return false;
   }
-  BufferTracker::Buffer* buffer = buffer_tracker_->GetBuffer(
-      bound_pixel_unpack_transfer_buffer_id_);
+  BufferTracker::Buffer* buffer = buffer_tracker_->GetBuffer(buffer_id);
   if (!buffer) {
     SetGLError(GL_INVALID_OPERATION, "glMapBufferCHROMIUM", "invalid buffer");
     return false;
@@ -3395,8 +3487,12 @@ void GLES2Implementation::AsyncTexImage2DCHROMIUM(
   }
 
   // Otherwise, async uploads require a transfer buffer to be bound.
+  // TODO(hubbe): Make MapBufferCHROMIUM block if someone tries to re-use
+  // the buffer before the transfer is finished. (Currently such
+  // synchronization has to be handled manually.)
   GLuint offset = ToGLuint(pixels);
   BufferTracker::Buffer* buffer = GetBoundPixelUnpackTransferBufferIfValid(
+      bound_pixel_unpack_transfer_buffer_id_,
       "glAsyncTexImage2DCHROMIUM", offset, size);
   if (!buffer)
     return;
@@ -3437,8 +3533,12 @@ void GLES2Implementation::AsyncTexSubImage2DCHROMIUM(
   }
 
   // Async uploads require a transfer buffer to be bound.
+  // TODO(hubbe): Make MapBufferCHROMIUM block if someone tries to re-use
+  // the buffer before the transfer is finished. (Currently such
+  // synchronization has to be handled manually.)
   GLuint offset = ToGLuint(pixels);
   BufferTracker::Buffer* buffer = GetBoundPixelUnpackTransferBufferIfValid(
+      bound_pixel_unpack_transfer_buffer_id_,
       "glAsyncTexSubImage2DCHROMIUM", offset, size);
   if (!buffer)
     return;
