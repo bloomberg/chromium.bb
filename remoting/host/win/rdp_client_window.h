@@ -103,9 +103,12 @@ class RdpClientWindow
     SINK_ENTRY_EX(1, __uuidof(mstsc::IMsTscAxEvents), 4, OnDisconnected)
     SINK_ENTRY_EX(1, __uuidof(mstsc::IMsTscAxEvents), 10, OnFatalError)
     SINK_ENTRY_EX(1, __uuidof(mstsc::IMsTscAxEvents), 15, OnConfirmClose)
+    SINK_ENTRY_EX(1, __uuidof(mstsc::IMsTscAxEvents), 18,
+                  OnAuthenticationWarningDisplayed)
   END_SINK_MAP()
 
   // mstsc::IMsTscAxEvents notifications.
+  STDMETHOD(OnAuthenticationWarningDisplayed)();
   STDMETHOD(OnConnected)();
   STDMETHOD(OnDisconnected)(long reason);
   STDMETHOD(OnFatalError)(long error_code);

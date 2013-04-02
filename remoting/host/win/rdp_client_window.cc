@@ -50,9 +50,8 @@ bool RdpClientWindow::Connect(const SkISize& screen_size) {
 }
 
 void RdpClientWindow::Disconnect() {
-  DCHECK(m_hWnd);
-
-  SendMessage(WM_CLOSE);
+  if (m_hWnd)
+    SendMessage(WM_CLOSE);
 }
 
 void RdpClientWindow::OnClose() {
@@ -198,6 +197,16 @@ done:
 void RdpClientWindow::OnDestroy() {
   client_.Release();
   client_settings_.Release();
+}
+
+HRESULT RdpClientWindow::OnAuthenticationWarningDisplayed() {
+  LOG(ERROR) << "RDP: authentication warning is about to be shown. Closing "
+                "the connection because the modal UI will block any further "
+                "progress";
+
+  DestroyWindow();
+  NotifyDisconnected();
+  return S_OK;
 }
 
 HRESULT RdpClientWindow::OnConnected() {
