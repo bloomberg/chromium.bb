@@ -12,9 +12,11 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/disk_cache/simple/simple_disk_format.h"
-
+#include "third_party/zlib/zlib.h"
 
 namespace {
+
+const uint64 kMaxEntiresInIndex = 100000000;
 
 bool WriteHashKeyToFile(const base::PlatformFile& file,
                         size_t offset,
@@ -26,6 +28,12 @@ bool WriteHashKeyToFile(const base::PlatformFile& file,
     return false;
   }
   return true;
+}
+
+bool CheckMetadata(disk_cache::SimpleIndexFile::Header metadata) {
+  return metadata.size <= kMaxEntiresInIndex &&
+      metadata.initial_magic_number == disk_cache::kSimpleInitialMagicNumber &&
+      metadata.version == disk_cache::kSimpleVersion;
 }
 
 }  // namespace
@@ -43,18 +51,62 @@ SimpleIndex::SimpleIndex(
 bool SimpleIndex::Initialize() {
   if (!OpenIndexFile())
     return false;
-  // TODO(felipeg): Add a checksum to the index file.
   // TODO(felipeg): If loading the index file fails, we should list all the
   // files in the directory.
-  // Both TODOs above should be fixed before the field experiment.
+
+  uLong incremental_crc = crc32(0L, Z_NULL, 0);
+
+  int64 index_file_offset = 0;
+  SimpleIndexFile::Header metadata;
+  if (base::ReadPlatformFile(index_file_,
+                             index_file_offset,
+                             reinterpret_cast<char*>(&metadata),
+                             sizeof(metadata)) != sizeof(metadata)) {
+    CloseIndexFile();
+    return false;
+  }
+  index_file_offset += sizeof(metadata);
+  incremental_crc = crc32(incremental_crc,
+                          reinterpret_cast<const Bytef*>(&metadata),
+                          implicit_cast<uInt>(sizeof(metadata)));
+
+  if (!CheckMetadata(metadata)) {
+    LOG(ERROR) << "Invalid metadata on Simple Cache Index.";
+    CloseIndexFile();
+    return false;
+  }
+
   char hash_key[kEntryHashKeySize];
-  int index_file_offset = 0;
-  while(base::ReadPlatformFile(index_file_,
+  while(entries_set_.size() < metadata.size) {
+    // TODO(felipeg): Read things in larger chunks/optimize this.
+    if (base::ReadPlatformFile(index_file_,
                                index_file_offset,
                                hash_key,
-                               kEntryHashKeySize) == kEntryHashKeySize) {
+                               kEntryHashKeySize) != kEntryHashKeySize) {
+      CloseIndexFile();
+      return false;
+    }
     index_file_offset += kEntryHashKeySize;
+    incremental_crc = crc32(incremental_crc,
+                            reinterpret_cast<const Bytef*>(hash_key),
+                            implicit_cast<uInt>(kEntryHashKeySize));
     entries_set_.insert(std::string(hash_key, kEntryHashKeySize));
+  }
+
+  SimpleIndexFile::Footer footer;
+  if (base::ReadPlatformFile(index_file_,
+                             index_file_offset,
+                             reinterpret_cast<char*>(&footer),
+                             sizeof(footer)) != sizeof(footer)) {
+    CloseIndexFile();
+    return false;
+  }
+  const uint32 crc_read = footer.crc;
+  const uint32 crc_calculated = incremental_crc;
+  if (crc_read != crc_calculated) {
+    DCHECK_EQ(crc_read, crc_calculated);
+    CloseIndexFile();
+    return false;
   }
 
   CloseIndexFile();
@@ -74,13 +126,40 @@ bool SimpleIndex::Has(const std::string& key) const {
   return entries_set_.count(GetEntryHashForKey(key)) != 0;
 }
 
-void SimpleIndex::Cleanup() {
-  scoped_ptr<std::string> buffer(new std::string());
-  buffer->reserve(kEntryHashKeySize * entries_set_.size());
+void SimpleIndex::Serialize(std::string* out_buffer) {
+  DCHECK(out_buffer);
+  SimpleIndexFile::Header metadata;
+  SimpleIndexFile::Footer footer;
+
+  metadata.initial_magic_number = kSimpleInitialMagicNumber;
+  metadata.version = kSimpleVersion;
+  metadata.size = entries_set_.size();
+
+  out_buffer->reserve(sizeof(metadata) +
+                      kEntryHashKeySize * entries_set_.size() +
+                      sizeof(footer));
+
+  // Metadata goes first.
+  out_buffer->append(reinterpret_cast<const char*>(&metadata),
+                     sizeof(metadata));
+
+  // Then all the hashes in the entries_set.
   for (EntrySet::const_iterator it = entries_set_.begin();
        it != entries_set_.end(); ++it) {
-    buffer->append(*it);
+    out_buffer->append(*it);
   }
+
+  // Then, CRC.
+  footer.crc = crc32(crc32(0, Z_NULL, 0),
+                     reinterpret_cast<const Bytef*>(out_buffer->data()),
+                     implicit_cast<uInt>(out_buffer->size()));
+
+  out_buffer->append(reinterpret_cast<const char*>(&footer), sizeof(footer));
+}
+
+void SimpleIndex::Cleanup() {
+  scoped_ptr<std::string> buffer(new std::string());
+  Serialize(buffer.get());
   cache_thread_->PostTask(FROM_HERE,
                             base::Bind(&SimpleIndex::UpdateFile,
                                        index_filename_,
@@ -115,7 +194,6 @@ bool SimpleIndex::CloseIndexFile() {
 void SimpleIndex::UpdateFile(const base::FilePath& index_filename,
                              const base::FilePath& temp_filename,
                              scoped_ptr<std::string> buffer) {
-  // TODO(felipeg): Add a checksum to the file.
   int bytes_written = file_util::WriteFile(
       temp_filename, buffer->data(), buffer->size());
   DCHECK_EQ(bytes_written, implicit_cast<int>(buffer->size()));
