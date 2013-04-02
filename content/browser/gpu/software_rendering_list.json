@@ -75,7 +75,7 @@
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "5.0",
+  "version": "5.1",
   "entries": [
     {
       "id": 1,
@@ -1014,6 +1014,54 @@
       },
       "features": [
         "all"
+      ]
+    },
+    {
+      "id": 69,
+      "description": "NVIDIA driver 8.17.11.9621 is buggy with Stage3D baseline mode.",
+      "cr_bugs": [172771],
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x10de",
+      "driver_version": {
+        "op": "=",
+        "number": "8.17.11.9621"
+      },
+      "features": [
+        "flash_stage3d_baseline"
+      ]
+    },
+    {
+      "id": 70,
+      "description": "NVIDIA driver 8.17.11.8267 is buggy with Stage3D baseline mode.",
+      "cr_bugs": [172771],
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x10de",
+      "driver_version": {
+        "op": "=",
+        "number": "8.17.11.8267"
+      },
+      "features": [
+        "flash_stage3d_baseline"
+      ]
+    },
+    {
+      "id": 71,
+      "description": "All Intel drivers before 8.15.10.2021 are buggy with Stage3D baseline mode.",
+      "cr_bugs": [172771],
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x8086",
+      "driver_version": {
+        "op": "<",
+        "number": "8.15.10.2021"
+      },
+      "features": [
+        "flash_stage3d_baseline"
       ]
     }
   ]
