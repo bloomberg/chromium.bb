@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_BASE_OPENSSL_CLIENT_KEY_STORE_H_
-#define NET_BASE_OPENSSL_CLIENT_KEY_STORE_H_
+#ifndef NET_SSL_OPENSSL_CLIENT_KEY_STORE_H_
+#define NET_SSL_OPENSSL_CLIENT_KEY_STORE_H_
 
 #include <openssl/evp.h>
 
@@ -105,4 +105,4 @@ class OpenSSLClientKeyStore {
 
 }  // namespace net
 
-#endif  // NET_BASE_OPENSSL_CLIENT_KEY_STORE_H_
+#endif  // NET_SSL_OPENSSL_CLIENT_KEY_STORE_H_

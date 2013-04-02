@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/base/openssl_client_key_store.h"
+#include "net/ssl/openssl_client_key_store.h"
 
 #include "base/memory/ref_counted.h"
 #include "net/base/test_data_directory.h"
