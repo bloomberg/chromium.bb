@@ -40,6 +40,8 @@ with_android=yes
 # Mac builders.
 is_asan_mac_builder_hackfix=
 with_tools_extra=
+chrome_tools="plugins"
+
 if [[ "${OS}" = "Darwin" ]]; then
   with_android=
 fi
@@ -69,6 +71,14 @@ while [[ $# > 0 ]]; do
     --with-tools-extra)
       with_tools_extra=yes
       ;;
+    --with-chrome-tools)
+      shift
+      if [[ $# == 0 ]]; then
+        echo "--with-chrome-tools requires an argument."
+        exit 1
+      fi
+      chrome_tools=$1
+      ;;
     --help)
       echo "usage: $0 [--force-local-build] [--mac-only] [--run-tests] "
       echo "--bootstrap: First build clang with CC, then with itself."
@@ -79,6 +89,10 @@ while [[ $# > 0 ]]; do
       echo "--is-asan-mac-builder-hackfix: Use older Clang" \
            "to build ASan on Mac."
       echo "--with-tools-extra: Also build the clang-tools-extra repository."
+      echo "--with-chrome-tools: Select which chrome tools to build." \
+           "Defaults to plugins."
+      echo "    Example: --with-chrome-tools 'plugins empty-string'"
+      echo
       exit 1
       ;;
   esac
@@ -375,10 +389,9 @@ fi
 
 # Build Chrome-specific clang tools. Paths in this list should be relative to
 # tools/clang.
-CHROME_TOOL_DIRS="plugins"
 # For each tool directory, copy it into the clang tree and use clang's build
 # system to compile it.
-for CHROME_TOOL_DIR in ${CHROME_TOOL_DIRS}; do
+for CHROME_TOOL_DIR in ${chrome_tools}; do
   TOOL_SRC_DIR="${THIS_DIR}/../${CHROME_TOOL_DIR}"
   TOOL_DST_DIR="${LLVM_DIR}/tools/clang/tools/chrome-${CHROME_TOOL_DIR}"
   TOOL_BUILD_DIR="${LLVM_BUILD_DIR}/tools/clang/tools/chrome-${CHROME_TOOL_DIR}"
