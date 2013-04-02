@@ -92,95 +92,6 @@ int CountFiles(const DriveEntryProtoVector& entries) {
   return num_files;
 }
 
-// A fake implementation of DriveUploaderInterface, which provides fake
-// behaviors for file uploading.
-class FakeDriveUploader : public google_apis::DriveUploaderInterface {
- public:
-  FakeDriveUploader() {}
-  virtual ~FakeDriveUploader() {}
-
-  // DriveUploaderInterface overrides.
-
-  // Pretends that a new file was uploaded successfully, and returns the
-  // contents of "chromeos/gdata/uploaded_file.json" to the caller.
-  virtual void UploadNewFile(
-      const std::string& parent_resource_id,
-      const base::FilePath& drive_file_path,
-      const base::FilePath& local_file_path,
-      const std::string& title,
-      const std::string& content_type,
-      const google_apis::UploadCompletionCallback& callback) OVERRIDE {
-    DCHECK(!callback.is_null());
-
-    scoped_ptr<base::Value> value =
-        google_apis::test_util::LoadJSONFile(
-            "chromeos/gdata/uploaded_file.json");
-    scoped_ptr<google_apis::ResourceEntry> resource_entry(
-        google_apis::ResourceEntry::ExtractAndParse(*value));
-
-    base::MessageLoopProxy::current()->PostTask(
-        FROM_HERE,
-        base::Bind(callback,
-                   google_apis::DRIVE_UPLOAD_OK,
-                   drive_file_path,
-                   local_file_path,
-                   base::Passed(&resource_entry)));
-  }
-
-  // Pretends that an existing file ("drive/File 1.txt") was uploaded
-  // successfully, and returns an entry for the file in
-  // "chromeos/gdata/root_feed.json" to the caller.
-  virtual void UploadExistingFile(
-      const std::string& resource_id,
-      const base::FilePath& drive_file_path,
-      const base::FilePath& local_file_path,
-      const std::string& content_type,
-      const std::string& etag,
-      const google_apis::UploadCompletionCallback& callback) OVERRIDE {
-    DCHECK(!callback.is_null());
-
-    // This function can only handle "drive/File 1.txt" whose resource ID is
-    // "file:2_file_resource_id".
-    DCHECK_EQ("drive/File 1.txt", drive_file_path.value());
-    const std::string kResourceId = "file:2_file_resource_id";
-    EXPECT_EQ(kResourceId, resource_id);
-
-    // Create a google_apis::ResourceEntry, which is needed to return a value
-    // from this function. TODO(satorux): This should be cleaned
-    // up. crbug.com/134240.
-    scoped_ptr<google_apis::ResourceEntry> resource_entry;
-    scoped_ptr<base::Value> value =
-        google_apis::test_util::LoadJSONFile("chromeos/gdata/root_feed.json");
-    if (!value.get())
-      return;
-
-    base::DictionaryValue* as_dict = NULL;
-    base::ListValue* entry_list = NULL;
-    if (value->GetAsDictionary(&as_dict) &&
-        as_dict->GetList("feed.entry", &entry_list)) {
-      for (size_t i = 0; i < entry_list->GetSize(); ++i) {
-        base::DictionaryValue* entry = NULL;
-        std::string entry_resource_id;
-        if (entry_list->GetDictionary(i, &entry) &&
-            entry->GetString("gd$resourceId.$t", &entry_resource_id) &&
-            entry_resource_id == kResourceId) {
-          resource_entry = google_apis::ResourceEntry::CreateFrom(*entry);
-        }
-      }
-    }
-    if (!resource_entry)
-      return;
-
-    base::MessageLoopProxy::current()->PostTask(
-        FROM_HERE,
-        base::Bind(callback,
-                   google_apis::DRIVE_UPLOAD_OK,
-                   drive_file_path,
-                   local_file_path,
-                   base::Passed(&resource_entry)));
-  }
-};
-
 }  // namespace
 
 class DriveFileSystemTest : public testing::Test {
@@ -216,7 +127,7 @@ class DriveFileSystemTest : public testing::Test {
                                 blocking_task_runner_,
                                 fake_free_disk_space_getter_.get()));
 
-    fake_uploader_.reset(new FakeDriveUploader);
+    uploader_.reset(new google_apis::DriveUploader(fake_drive_service_.get()));
     drive_webapps_registry_.reset(new DriveWebAppsRegistry);
 
 
@@ -240,7 +151,7 @@ class DriveFileSystemTest : public testing::Test {
     file_system_.reset(new DriveFileSystem(profile_.get(),
                                            cache_.get(),
                                            fake_drive_service_.get(),
-                                           fake_uploader_.get(),
+                                           uploader_.get(),
                                            drive_webapps_registry_.get(),
                                            resource_metadata_.get(),
                                            blocking_task_runner_));
@@ -544,7 +455,7 @@ class DriveFileSystemTest : public testing::Test {
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<DriveCache, test_util::DestroyHelperForTests> cache_;
-  scoped_ptr<FakeDriveUploader> fake_uploader_;
+  scoped_ptr<google_apis::DriveUploaderInterface> uploader_;
   scoped_ptr<DriveFileSystem> file_system_;
   scoped_ptr<google_apis::FakeDriveService> fake_drive_service_;
   scoped_ptr<DriveWebAppsRegistry> drive_webapps_registry_;
