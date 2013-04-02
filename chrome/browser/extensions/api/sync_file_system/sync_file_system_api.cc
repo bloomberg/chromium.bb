@@ -181,6 +181,7 @@ bool SyncFileSystemRequestFileSystemFunction::RunImpl() {
 
 fileapi::FileSystemContext*
 SyncFileSystemRequestFileSystemFunction::GetFileSystemContext() {
+  DCHECK(render_view_host());
   return BrowserContext::GetStoragePartition(
       profile(),
       render_view_host()->GetSiteInstance())->GetFileSystemContext();
@@ -192,6 +193,11 @@ void SyncFileSystemRequestFileSystemFunction::DidInitializeFileSystemContext(
   if (status != sync_file_system::SYNC_STATUS_OK) {
     error_ = sync_file_system::SyncStatusCodeToString(status);
     SendResponse(false);
+    return;
+  }
+
+  if (!render_view_host()) {
+    // The app seems to have been closed.
     return;
   }
 
