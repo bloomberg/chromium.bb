@@ -317,3 +317,11 @@ TranslateManagerTest.*
 SyncFileSystemApiTest.*
 # DrM-i#1052-c#44
 SafeBrowsingServiceShutdownTest.*
+# DrM-i#1052-c#45
+MediaStreamDevicesControllerBrowserTestInstance*
+WebUIAssertionsTestFail.*
+WebUIAssertionsTestAsyncFail.*
+WebUIBrowserAsyncGenDeferredToGlobalTest.*
+WebUIAccessibilityAuditBrowserTest_TestsDisabledInFixture.*
+PasswordManagerBrowserTest*
+RangeHistoryWebUITest*
