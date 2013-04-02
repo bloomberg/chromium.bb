@@ -9,7 +9,6 @@
     'NACL_IRT_DATA_START': '0x3ef00000',
     # Expected address for beginning of code in for the IRT.
     'NACL_IRT_TEXT_START': '0x0fa00000',
-    'nacl_enable_arm_gcc%': 0,
     # Default C compiler defines.
     'nacl_default_defines': [
       '__linux__',
@@ -63,6 +62,7 @@
         'link_flags': [],
         'include_dirs': [],
         'variables': {
+          'newlib_tls_flags': [ '-mtls-use-call' ],
           'nexe_target': '',
           'nlib_target': '',
           'nso_target': '',
@@ -108,12 +108,13 @@
         'link_flags': [],
         'include_dirs': [],
         'variables': {
+          'newlib_tls_flags': [ '-mtp=soft' ],
           'python_exe': 'python',
           'nexe_target': '',
           'nlib_target': '',
           'nso_target': '',
+          'force_arm_pnacl': 0,
           'build_newlib': 0,
-          'nacl_enable_arm_gcc%': 0,
           'build_glibc': 0,
           'disable_glibc%': 1,
           'extra_args': [],
@@ -315,8 +316,8 @@
     ['target_arch=="arm"', {
       'target_defaults': {
         'target_conditions': [
-          # GCC ARM build
-          ['nacl_enable_arm_gcc!=0 and nexe_target!="" and build_newlib!=0', {
+          # GCC ARM build (the default)
+          ['force_arm_pnacl==0 and nexe_target!="" and build_newlib!=0', {
             'variables': {
                'tool_name': 'newlib',
                'inst_dir': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib',
@@ -349,7 +350,7 @@
                   '--objdir', '>(objdir_newlib_arm)',
                   '--include-dirs=<(inst_dir)/include ^(include_dirs) >(_include_dirs)',
                   '--lib-dirs=>(lib_dirs_newlib_arm) ',
-                  '--compile_flags=^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
+                  '--compile_flags=-Wno-unused-local-typedefs -Wno-psabi ^(newlib_tls_flags) ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
                   '--defines=^(defines) >(_defines)',
                   '--link_flags=-B<(SHARED_INTERMEDIATE_DIR)/tc_newlib/libarm ^(link_flags) >(_link_flags)',
                   '--source-list=^|(<(source_list_newlib_arm) ^(_sources) ^(sources) ^(native_sources))',
@@ -357,8 +358,8 @@
               },
             ],
           }],
-          # GCC ARM library build
-          ['nacl_enable_arm_gcc!=0 and nlib_target!="" and build_newlib!=0', {
+          # GCC ARM library build (the default)
+          ['force_arm_pnacl==0 and nlib_target!="" and build_newlib!=0', {
             'variables': {
               'tool_name': 'newlib',
               'inst_dir': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib',
@@ -391,7 +392,7 @@
                   '--objdir', '>(objdir_newlib_arm)',
                   '--include-dirs=<(inst_dir)/include ^(include_dirs) >(_include_dirs)',
                   '--lib-dirs=>(lib_dirs_newlib_arm)',
-                  '--compile_flags=^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
+                  '--compile_flags=-Wno-unused-local-typedefs -Wno-psabi ^(newlib_tls_flags) ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
                   '--defines=^(defines) >(_defines)',
                   '--link_flags=-B<(SHARED_INTERMEDIATE_DIR)/tc_newlib/libarm ^(link_flags) >(_link_flags)',
                   '--source-list=^|(<(source_list_newlib_arm) ^(_sources) ^(sources) ^(native_sources))',
@@ -399,8 +400,8 @@
               },
             ],
           }],
-          # pnacl ARM build is the default (unless nacl_enable_arm_gcc is set)
-          ['nacl_enable_arm_gcc==0 and nexe_target!="" and build_newlib!=0', {
+          # pnacl ARM build (only used if force_arm_pnacl is set)
+          ['force_arm_pnacl==1 and nexe_target!="" and build_newlib!=0', {
             'variables': {
               'tool_name': 'newlib',
               'inst_dir': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib',
@@ -435,14 +436,14 @@
                   '--lib-dirs=>(lib_dirs_newlib_arm) ',
                   '--compile_flags=--pnacl-frontend-triple=armv7-unknown-nacl-gnueabi -mfloat-abi=hard ^(compile_flags) >(_compile_flags) ^(pnacl_compile_flags) >(_pnacl_compile_flags)',
                   '--defines=^(defines) >(_defines)',
-                  '--link_flags=-arch arm --pnacl-allow-translate --pnacl-allow-native -B<(SHARED_INTERMEDIATE_DIR)/tc_newlib/libarm ^(link_flags) >(_link_flags)',
+                  '--link_flags=-arch arm --pnacl-allow-translate --pnacl-allow-native -Wl,--pnacl-irt-link -B<(SHARED_INTERMEDIATE_DIR)/tc_newlib/libarm ^(link_flags) >(_link_flags)',
                   '--source-list=^|(<(source_list_newlib_arm) ^(_sources) ^(sources))',
                  ],
               },
             ],
           }],
           # pnacl ARM library build
-          ['nacl_enable_arm_gcc==0 and nlib_target!="" and build_newlib!=0', {
+          ['force_arm_pnacl==1 and nlib_target!="" and build_newlib!=0', {
             'variables': {
               'tool_name': 'newlib',
               'inst_dir': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib',
@@ -761,12 +762,6 @@
         # These are only required for the IRT but are here for all
         # nacl-gcc-compiled binaries because the IRT depends on other libs
         '-fasynchronous-unwind-tables',
-      ],
-      'newlib_tls_flags': [
-        # This option is currently only honored by x86/x64 builds.  The
-        # equivalent arm option is apparently -mtp=soft but we don't need use
-        # it at this point.
-        '-mtls-use-call',
       ],
       'pnacl_compile_flags': [
         '-Wno-extra-semi',

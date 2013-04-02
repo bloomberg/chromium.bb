@@ -67,31 +67,16 @@
         '-lplatform',
         '-lgio',
         '-lm',
+        '-Wl,--section-start,.rodata=<(NACL_IRT_DATA_START)',
+        '-Wl,-Ttext-segment=<(NACL_IRT_TEXT_START)',
       ],
       'conditions': [
         # See comment in native_client/src/untrusted/irt/nacl.scons
-        # regarding -Ttext-segment. Also see
-        # http://code.google.com/p/nativeclient/issues/detail?id=2691.
-        ['target_arch!="arm"',
-         {
-           'link_flags': [
-             '-Wl,--section-start,.rodata=<(NACL_IRT_DATA_START)',
-             '-Wl,-Ttext-segment=<(NACL_IRT_TEXT_START)',
-           ]
-         }, { # target_arch == "arm"
-           'sources': ['<@(irt_sources)',
-                       'aeabi_read_tp.S'],
-           'asflags': ['-arch', 'arm'],
-           'link_flags': [
-             '-Wl,--section-start,.rodata=<(NACL_IRT_DATA_START)',
-             '-Wl,-Ttext=<(NACL_IRT_TEXT_START)',
-             # TODO(olonho): rethink
-             '-L<(SHARED_INTERMEDIATE_DIR)/tc_newlib/libarm',
-             '-Wt,-mtls-use-call',
-             '-Wl,--pnacl-irt-link',
-           ],
-         },
-       ],
+        # regarding -Ttext-segment.
+        ['target_arch=="arm"', {
+          'sources': ['<@(irt_sources)',
+                      'aeabi_read_tp.S'],
+        }],
       ],
       'dependencies': [
         '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio_lib',
@@ -118,6 +103,9 @@
              '-r',
              '-nostartfiles',
           ],
+        }],
+        ['target_arch=="arm"', {
+          'sources': [ 'aeabi_read_tp.S' ],
         }],
       ],
       'dependencies': [

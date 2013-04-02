@@ -35,7 +35,7 @@
             'crt_fini_64',
           ],
         }],
-        ['target_arch=="arm" and nacl_enable_arm_gcc!=0', {
+        ['target_arch=="arm"', {
           'dependencies': [
             'crt_init_arm',
             'crt_fini_arm',
@@ -122,7 +122,7 @@
             },
           ]
         }],
-        ['target_arch=="arm" and nacl_enable_arm_gcc!=0 and disable_arm==0 and disable_arm_untar==0', {
+        ['target_arch=="arm" and disable_arm==0 and disable_arm_untar==0', {
           'actions': [
             {
               'action_name': 'Untar arm toolchain',
@@ -206,7 +206,7 @@
             },
           ]
         }],
-        ['target_arch=="arm" and nacl_enable_arm_gcc!=0 and disable_arm==0', {
+        ['target_arch=="arm" and disable_arm==0', {
           'actions': [
             {
               'action_name': 'Prep arm toolchain',
@@ -366,7 +366,7 @@
         }
       ],
     }],
-    ['target_arch=="arm" and nacl_enable_arm_gcc!=0', {
+    ['target_arch=="arm"', {
       'targets' : [
         {
           'target_name': 'crt_init_arm',
