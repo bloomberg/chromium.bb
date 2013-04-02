@@ -810,8 +810,8 @@ void FakeDriveService::InitiateUploadNewFile(
     return;
   }
 
-  DictionaryValue* entry = FindEntryByResourceId(parent_resource_id);
-  if (!entry) {
+  if (parent_resource_id != GetRootResourceId() &&
+      !FindEntryByResourceId(parent_resource_id)) {
     MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(callback, HTTP_NOT_FOUND, GURL()));
@@ -918,7 +918,7 @@ void FakeDriveService::InitiateUploadExistingFile(
 
   std::string entry_etag;
   entry->GetString("gd$etag", &entry_etag);
-  if (etag != entry_etag) {
+  if (!etag.empty() && etag != entry_etag) {
     MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(callback, HTTP_PRECONDITION, GURL()));
