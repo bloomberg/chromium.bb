@@ -68,9 +68,7 @@ TEST(QuicCryptoServerConfigTest, SourceAddressTokens) {
   const QuicTime::Delta original_time = now;
 
   const string token4 = peer.NewSourceAddressToken(ip4, rand, now);
-  LOG(INFO) << __LINE__ << token4;
   const string token6 = peer.NewSourceAddressToken(ip6, rand, now);
-  LOG(INFO) << __LINE__ << token6;
   EXPECT_TRUE(peer.ValidateSourceAddressToken(token4, ip4, now));
   EXPECT_FALSE(peer.ValidateSourceAddressToken(token4, ip6, now));
   EXPECT_TRUE(peer.ValidateSourceAddressToken(token6, ip6, now));
