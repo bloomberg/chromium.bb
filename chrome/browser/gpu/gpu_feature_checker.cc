@@ -14,15 +14,8 @@ namespace {
 // GPU info has been collected in a GPU process.
 bool IsFeatureAllowed(content::GpuDataManager* manager,
                       content::GpuFeatureType feature) {
-  bool feature_allowed = true;
-  if (!manager->GpuAccessAllowed()) {
-    feature_allowed = false;
-  } else {
-    uint32 blacklist_type = manager->GetBlacklistedFeatures();
-    if (blacklist_type & feature)
-      feature_allowed = false;
-  }
-  return feature_allowed;
+  return (manager->GpuAccessAllowed() &&
+          !manager->IsFeatureBlacklisted(feature));
 }
 
 }  // namespace

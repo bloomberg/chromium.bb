@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_GPU_GPU_CONTROL_LIST_H_
 #define CONTENT_BROWSER_GPU_GPU_CONTROL_LIST_H_
 
+#include <set>
 #include <string>
 #include <vector>
 
@@ -53,7 +54,7 @@ class CONTENT_EXPORT GpuControlList {
   // system and returns the union of features specified in each entry.
   // If os is kOsAny, use the current OS; if os_version is empty, use the
   // current OS version.
-  int MakeDecision(
+  std::set<int> MakeDecision(
       OsType os, std::string os_version, const GPUInfo& gpu_info);
 
   // Collects the active entries from the last MakeDecision() call.
@@ -76,8 +77,8 @@ class CONTENT_EXPORT GpuControlList {
   // Return the largest entry id.  This is used for histogramming.
   uint32 max_entry_id() const;
 
-  // Returns the version of the current blacklist.
-  std::string GetVersion() const;
+  // Returns the version of the control list.
+  std::string version() const;
 
   // Check if we need more gpu info to make the decisions.
   // This is computed from the last MakeDecision() call.
@@ -91,7 +92,9 @@ class CONTENT_EXPORT GpuControlList {
   size_t num_entries() const;
 
   // Register a feature to FeatureMap - used to construct a GpuControlList.
-  void AddFeature(const std::string& feature_name, int feature_id);
+  void AddSupportedFeature(const std::string& feature_name, int feature_id);
+  // Register whether "all" is recognized as all features.
+  void set_supports_feature_type_all(bool supported);
 
  private:
   friend class GpuControlListEntryTest;
@@ -286,7 +289,8 @@ class CONTENT_EXPORT GpuControlList {
     // Top-level entry must have an id number.  Others are exceptions.
     static ScopedGpuControlListEntry GetEntryFromValue(
         const base::DictionaryValue* value, bool top_level,
-        const FeatureMap& feature_map);
+        const FeatureMap& feature_map,
+        bool supports_feature_type_all);
 
     // Determines if a given os/gc/machine_model/driver is included in the
     // Entry set.
@@ -313,8 +317,8 @@ class CONTENT_EXPORT GpuControlList {
     const std::vector<int>& cr_bugs() const { return cr_bugs_; }
     const std::vector<int>& webkit_bugs() const { return webkit_bugs_; }
 
-    // Returns the features.
-    int GetFeatures() const;
+    // Returns the blacklisted features in this entry.
+    const std::set<int>& features() const;
 
     // Returns true if an unknown field is encountered.
     bool contains_unknown_fields() const {
@@ -405,7 +409,8 @@ class CONTENT_EXPORT GpuControlList {
                          const std::string& int_string2);
 
     bool SetFeatures(const std::vector<std::string>& features,
-                     const FeatureMap& feature_map);
+                     const FeatureMap& feature_map,
+                     bool supports_feature_type_all);
 
     void AddException(ScopedGpuControlListEntry exception);
 
@@ -441,7 +446,7 @@ class CONTENT_EXPORT GpuControlList {
     scoped_ptr<FloatInfo> perf_overall_info_;
     scoped_ptr<MachineModelInfo> machine_model_info_;
     scoped_ptr<IntInfo> gpu_count_info_;
-    int features_;
+    std::set<int> features_;
     std::vector<ScopedGpuControlListEntry> exceptions_;
     bool contains_unknown_fields_;
     bool contains_unknown_features_;
@@ -463,13 +468,13 @@ class CONTENT_EXPORT GpuControlList {
   static NumericOp StringToNumericOp(const std::string& op);
 
   std::string version_;
-  std::vector<ScopedGpuControlListEntry> feature_list_;
+  std::vector<ScopedGpuControlListEntry> entries_;
 
   std::string browser_version_;
 
   // This records all the blacklist entries that are appliable to the current
-  // user machine.  It is updated everytime MakeBlacklistDecision() is
-  // called and is used later by GetDecisionEntries().
+  // user machine.  It is updated everytime MakeDecision() is called and is
+  // used later by GetDecisionEntries().
   std::vector<ScopedGpuControlListEntry> active_entries_;
 
   uint32 max_entry_id_;
@@ -480,6 +485,7 @@ class CONTENT_EXPORT GpuControlList {
 
   // The features a GpuControlList recognizes and handles.
   FeatureMap feature_map_;
+  bool supports_feature_type_all_;
 };
 
 }  // namespace content

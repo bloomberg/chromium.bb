@@ -12,9 +12,9 @@
 namespace content {
 
 enum TestFeatureType {
-  TEST_FEATURE_0 = 1,
-  TEST_FEATURE_1 = 1 << 2,
-  TEST_FEATURE_2 = 1 << 3
+  TEST_FEATURE_0 = 0,
+  TEST_FEATURE_1,
+  TEST_FEATURE_2
 };
 
 class GpuControlListEntryTest : public testing::Test {
@@ -28,7 +28,8 @@ class GpuControlListEntryTest : public testing::Test {
 
   typedef GpuControlList::ScopedGpuControlListEntry ScopedEntry;
 
-  static ScopedEntry GetEntryFromString(const std::string& json) {
+  static ScopedEntry GetEntryFromString(
+      const std::string& json, bool supports_feature_type_all) {
     scoped_ptr<base::Value> root;
     root.reset(base::JSONReader::Read(json));
     DictionaryValue* value = NULL;
@@ -41,7 +42,11 @@ class GpuControlListEntryTest : public testing::Test {
     feature_map["test_feature_2"] = TEST_FEATURE_2;
 
     return GpuControlList::GpuControlListEntry::GetEntryFromValue(
-        value, true, feature_map);
+        value, true, feature_map, supports_feature_type_all);
+  }
+
+  static ScopedEntry GetEntryFromString(const std::string& json) {
+    return GetEntryFromString(json, false);
   }
 
   virtual void SetUp() {
@@ -99,7 +104,8 @@ TEST_F(GpuControlListEntryTest, DetailedEntry) {
   EXPECT_EQ(678, entry->cr_bugs()[1]);
   EXPECT_EQ(1u, entry->webkit_bugs().size());
   EXPECT_EQ(1950, entry->webkit_bugs()[0]);
-  EXPECT_EQ(static_cast<int>(TEST_FEATURE_0), entry->GetFeatures());
+  EXPECT_EQ(1u, entry->features().size());
+  EXPECT_EQ(1u, entry->features().count(TEST_FEATURE_0));
   EXPECT_FALSE(entry->contains_unknown_fields());
   EXPECT_FALSE(entry->contains_unknown_features());
   EXPECT_FALSE(entry->NeedsMoreInfo(gpu_info()));
@@ -332,7 +338,7 @@ TEST_F(GpuControlListEntryTest, UnknownFieldEntry) {
         "id": 1,
         "unknown_field": 0,
         "features": [
-          "test_feature_1"
+          "test_feature_0"
         ]
       }
   );
@@ -352,7 +358,7 @@ TEST_F(GpuControlListEntryTest, UnknownExceptionFieldEntry) {
           }
         ],
         "features": [
-          "test_feature_1"
+          "test_feature_0"
         ]
       }
   );
@@ -376,7 +382,8 @@ TEST_F(GpuControlListEntryTest, UnknownFeatureEntry) {
   EXPECT_TRUE(entry != NULL);
   EXPECT_FALSE(entry->contains_unknown_fields());
   EXPECT_TRUE(entry->contains_unknown_features());
-  EXPECT_EQ(static_cast<int>(TEST_FEATURE_0), entry->GetFeatures());
+  EXPECT_EQ(1u, entry->features().size());
+  EXPECT_EQ(1u, entry->features().count(TEST_FEATURE_0));
 
   const GpuControlList::OsType os_type[] = {
     GpuControlList::kOsMacosx,
@@ -676,7 +683,7 @@ TEST_F(GpuControlListEntryTest, NeedsMoreInfoEntry) {
           "number": "10.7"
         },
         "features": [
-          "test_feature_0"
+          "test_feature_1"
         ]
       }
   );
@@ -705,7 +712,7 @@ TEST_F(GpuControlListEntryTest, NeedsMoreInfoForExceptionsEntry) {
           }
         ],
         "features": [
-          "test_feature_0"
+          "test_feature_1"
         ]
       }
   );
@@ -718,6 +725,23 @@ TEST_F(GpuControlListEntryTest, NeedsMoreInfoForExceptionsEntry) {
 
   gpu_info.gl_renderer = "mesa";
   EXPECT_FALSE(entry->NeedsMoreInfo(gpu_info));
+}
+
+TEST_F(GpuControlListEntryTest, FeatureTypeAllEntry) {
+  const std::string json = LONG_STRING_CONST(
+      {
+        "id": 1,
+        "features": [
+          "all"
+        ]
+      }
+  );
+  ScopedEntry entry(GetEntryFromString(json, true));
+  EXPECT_TRUE(entry != NULL);
+  EXPECT_EQ(3u, entry->features().size());
+  EXPECT_EQ(1u, entry->features().count(TEST_FEATURE_0));
+  EXPECT_EQ(1u, entry->features().count(TEST_FEATURE_1));
+  EXPECT_EQ(1u, entry->features().count(TEST_FEATURE_2));
 }
 
 }  // namespace content

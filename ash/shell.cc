@@ -214,10 +214,9 @@ Shell::Shell(ShellDelegate* delegate)
     gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, screen_);
   display_controller_.reset(new DisplayController);
 #if defined(OS_CHROMEOS)
-  content::GpuFeatureType blacklisted_features =
-      content::GpuDataManager::GetInstance()->GetBlacklistedFeatures();
   bool is_panel_fitting_disabled =
-      (blacklisted_features & content::GPU_FEATURE_TYPE_PANEL_FITTING) ||
+      content::GpuDataManager::GetInstance()->IsFeatureBlacklisted(
+          content::GPU_FEATURE_TYPE_PANEL_FITTING) ||
       CommandLine::ForCurrentProcess()->HasSwitch(
           ::switches::kDisablePanelFitting);
 

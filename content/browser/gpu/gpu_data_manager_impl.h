@@ -7,6 +7,7 @@
 
 #include <list>
 #include <map>
+#include <set>
 #include <string>
 
 #include "base/compiler_specific.h"
@@ -25,10 +26,15 @@
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/common/gpu_info.h"
 #include "content/public/common/gpu_memory_stats.h"
+#include "content/public/common/gpu_switching_option.h"
 #include "content/public/common/three_d_api_types.h"
 
 class CommandLine;
 class GURL;
+
+namespace webkit_glue {
+struct WebPreferences;
+};
 
 namespace content {
 
@@ -60,7 +66,7 @@ class CONTENT_EXPORT GpuDataManagerImpl
   virtual void InitializeForTesting(
       const std::string& gpu_blacklist_json,
       const GPUInfo& gpu_info) OVERRIDE;
-  virtual GpuFeatureType GetBlacklistedFeatures() const OVERRIDE;
+  virtual bool IsFeatureBlacklisted(int feature) const OVERRIDE;
   virtual GPUInfo GetGPUInfo() const OVERRIDE;
   virtual void GetGpuProcessHandles(
       const GetGpuProcessHandlesCallback& callback) const OVERRIDE;
@@ -105,6 +111,9 @@ class CONTENT_EXPORT GpuDataManagerImpl
   // Insert switches into plugin process command line:
   // kDisableCoreAnimationPlugins.
   void AppendPluginCommandLine(CommandLine* command_line) const;
+
+  // Update WebPreferences for renderer based on blacklisting decisions.
+  void UpdateRendererWebPrefs(webkit_glue::WebPreferences* prefs) const;
 
   GpuSwitchingOption GetGpuSwitchingOption() const;
 
@@ -155,6 +164,9 @@ class CONTENT_EXPORT GpuDataManagerImpl
   // Disables domain blocking for 3D APIs. For use only in tests.
   void DisableDomainBlockingFor3DAPIsForTesting();
 
+  // Get number of features being blacklisted.
+  size_t GetBlacklistedFeatureCount() const;
+
  private:
   struct DomainBlockEntry {
     DomainGuilt last_guilt;
@@ -198,7 +210,7 @@ class CONTENT_EXPORT GpuDataManagerImpl
                       const std::string& gpu_driver_bug_list_json,
                       const GPUInfo& gpu_info);
 
-  void UpdateBlacklistedFeatures(GpuFeatureType features);
+  void UpdateBlacklistedFeatures(const std::set<int>& features);
 
   // This should only be called once at initialization time, when preliminary
   // gpu info is collected.
@@ -232,12 +244,12 @@ class CONTENT_EXPORT GpuDataManagerImpl
 
   bool complete_gpu_info_already_requested_;
 
-  GpuFeatureType blacklisted_features_;
-  GpuFeatureType preliminary_blacklisted_features_;
+  std::set<int> blacklisted_features_;
+  std::set<int> preliminary_blacklisted_features_;
 
   GpuSwitchingOption gpu_switching_;
 
-  int gpu_driver_bugs_;
+  std::set<int> gpu_driver_bugs_;
 
   GPUInfo gpu_info_;
   mutable base::Lock gpu_info_lock_;

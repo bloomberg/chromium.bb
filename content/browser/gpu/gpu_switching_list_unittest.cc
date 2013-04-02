@@ -104,10 +104,10 @@ TEST_F(GpuSwitchingListTest, GpuSwitching) {
   );
   scoped_ptr<GpuSwitchingList> switching_list(GpuSwitchingList::Create());
   EXPECT_TRUE(switching_list->LoadList(json, GpuControlList::kAllOs));
-  int switching = switching_list->MakeDecision(
+  std::set<int> switching = switching_list->MakeDecision(
       GpuControlList::kOsMacosx, kOsVersion, gpu_info());
-  EXPECT_EQ(GPU_SWITCHING_OPTION_FORCE_DISCRETE,
-            static_cast<GpuSwitchingOption>(switching));
+  EXPECT_EQ(1u, switching.size());
+  EXPECT_EQ(1u, switching.count(GPU_SWITCHING_OPTION_FORCE_DISCRETE));
   std::vector<uint32> entries;
   switching_list->GetDecisionEntries(&entries, false);
   ASSERT_EQ(1u, entries.size());
@@ -117,8 +117,8 @@ TEST_F(GpuSwitchingListTest, GpuSwitching) {
   EXPECT_TRUE(switching_list->LoadList(json, GpuControlList::kAllOs));
   switching = switching_list->MakeDecision(
       GpuControlList::kOsWin, kOsVersion, gpu_info());
-  EXPECT_EQ(GPU_SWITCHING_OPTION_FORCE_INTEGRATED,
-            static_cast<GpuSwitchingOption>(switching));
+  EXPECT_EQ(1u, switching.size());
+  EXPECT_EQ(1u, switching.count(GPU_SWITCHING_OPTION_FORCE_INTEGRATED));
   switching_list->GetDecisionEntries(&entries, false);
   ASSERT_EQ(1u, entries.size());
   EXPECT_EQ(2u, entries[0]);

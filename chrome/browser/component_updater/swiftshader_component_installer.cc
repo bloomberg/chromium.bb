@@ -19,6 +19,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/gpu_data_manager_observer.h"
+#include "content/public/common/gpu_feature_type.h"
 
 using content::BrowserThread;
 using content::GpuDataManager;
@@ -178,8 +179,7 @@ void UpdateChecker::OnGpuInfoUpdate() {
   GpuDataManager *gpu_data_manager = GpuDataManager::GetInstance();
 
   if (!gpu_data_manager->GpuAccessAllowed() ||
-      (gpu_data_manager->GetBlacklistedFeatures() &
-       content::GPU_FEATURE_TYPE_WEBGL) ||
+      gpu_data_manager->IsFeatureBlacklisted(content::GPU_FEATURE_TYPE_WEBGL) ||
       gpu_data_manager->ShouldUseSoftwareRendering()) {
     gpu_data_manager->RemoveObserver(this);
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));

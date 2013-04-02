@@ -18,10 +18,10 @@ GpuSwitchingList::~GpuSwitchingList() {
 // static
 GpuSwitchingList* GpuSwitchingList::Create() {
   GpuSwitchingList* list = new GpuSwitchingList();
-  list->AddFeature("force_integrated",
-                   GPU_SWITCHING_OPTION_FORCE_INTEGRATED);
-  list->AddFeature("force_discrete",
-                   GPU_SWITCHING_OPTION_FORCE_DISCRETE);
+  list->AddSupportedFeature("force_integrated",
+                            GPU_SWITCHING_OPTION_FORCE_INTEGRATED);
+  list->AddSupportedFeature("force_discrete",
+                            GPU_SWITCHING_OPTION_FORCE_DISCRETE);
   return list;
 }
 

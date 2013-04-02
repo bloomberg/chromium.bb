@@ -9,24 +9,23 @@
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/gpu_feature_type.h"
 
 namespace content {
 
 namespace {
 
 bool CanDoAcceleratedCompositing() {
-  const GpuDataManager* gpu_data_manager = GpuDataManager::GetInstance();
-  GpuFeatureType blacklisted_features =
-      gpu_data_manager->GetBlacklistedFeatures();
+  const GpuDataManager* manager = GpuDataManager::GetInstance();
 
   // Don't run the field trial if gpu access has been blocked or
   // accelerated compositing is blacklisted.
-  if (!gpu_data_manager->GpuAccessAllowed() ||
-      blacklisted_features & GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING)
+  if (!manager->GpuAccessAllowed() ||
+      manager->IsFeatureBlacklisted(GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING))
     return false;
 
   // Check for the software rasterizer (SwiftShader).
-  if (gpu_data_manager->ShouldUseSoftwareRendering())
+  if (manager->ShouldUseSoftwareRendering())
     return false;
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
@@ -37,10 +36,8 @@ bool CanDoAcceleratedCompositing() {
 }
 
 bool IsForceCompositingModeBlacklisted() {
-  GpuFeatureType blacklisted_features =
-      GpuDataManager::GetInstance()->GetBlacklistedFeatures();
-  return GPU_FEATURE_TYPE_FORCE_COMPOSITING_MODE ==
-      (blacklisted_features & GPU_FEATURE_TYPE_FORCE_COMPOSITING_MODE);
+  return GpuDataManager::GetInstance()->IsFeatureBlacklisted(
+      GPU_FEATURE_TYPE_FORCE_COMPOSITING_MODE);
 }
 
 }  // namespace

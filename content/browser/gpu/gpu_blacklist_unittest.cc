@@ -51,9 +51,10 @@ class GpuBlacklistTest : public testing::Test {
 
     scoped_ptr<GpuBlacklist> blacklist(GpuBlacklist::Create());
     EXPECT_TRUE(blacklist->LoadList(json, GpuBlacklist::kAllOs));
-    int type = blacklist->MakeDecision(
+    std::set<int> type = blacklist->MakeDecision(
         GpuBlacklist::kOsMacosx, kOsVersion, gpu_info());
-    EXPECT_EQ(static_cast<int>(feature_type), type);
+    EXPECT_EQ(1u, type.size());
+    EXPECT_EQ(1u, type.count(feature_type));
   }
 
  protected:
@@ -155,9 +156,5 @@ GPU_BLACKLIST_FEATURE_TEST(PanelFitting,
 GPU_BLACKLIST_FEATURE_TEST(ForceCompositingMode,
                            "force_compositing_mode",
                            GPU_FEATURE_TYPE_FORCE_COMPOSITING_MODE)
-
-GPU_BLACKLIST_FEATURE_TEST(All,
-                           "all",
-                           GPU_FEATURE_TYPE_ALL)
 
 }  // namespace content

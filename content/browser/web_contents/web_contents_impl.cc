@@ -547,42 +547,8 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
   prefs.visual_word_movement_enabled =
       command_line.HasSwitch(switches::kEnableVisualWordMovement);
 
-  {  // Certain GPU features might have been blacklisted.
-    GpuDataManagerImpl* gpu_data_manager = GpuDataManagerImpl::GetInstance();
-    DCHECK(gpu_data_manager);
-    uint32 blacklist_type = gpu_data_manager->GetBlacklistedFeatures();
-    if (blacklist_type & GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING)
-      prefs.accelerated_compositing_enabled = false;
-    if (blacklist_type & GPU_FEATURE_TYPE_WEBGL)
-      prefs.experimental_webgl_enabled = false;
-    if (blacklist_type & GPU_FEATURE_TYPE_FLASH3D)
-      prefs.flash_3d_enabled = false;
-    if (blacklist_type & GPU_FEATURE_TYPE_FLASH_STAGE3D) {
-      prefs.flash_stage3d_enabled = false;
-      prefs.flash_stage3d_baseline_enabled = false;
-    }
-    if (blacklist_type & GPU_FEATURE_TYPE_FLASH_STAGE3D_BASELINE)
-      prefs.flash_stage3d_baseline_enabled = false;
-    if (blacklist_type & GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS)
-      prefs.accelerated_2d_canvas_enabled = false;
-    if (blacklist_type & GPU_FEATURE_TYPE_MULTISAMPLING)
-      prefs.gl_multisampling_enabled = false;
-    if (blacklist_type & GPU_FEATURE_TYPE_3D_CSS) {
-      prefs.accelerated_compositing_for_3d_transforms_enabled = false;
-      prefs.accelerated_compositing_for_animation_enabled = false;
-    }
-    if (blacklist_type & GPU_FEATURE_TYPE_ACCELERATED_VIDEO)
-      prefs.accelerated_compositing_for_video_enabled = false;
-
-    // Accelerated video and animation are slower than regular when using a
-    // software 3d rasterizer. 3D CSS may also be too slow to be worthwhile.
-    if (gpu_data_manager->ShouldUseSoftwareRendering()) {
-      prefs.accelerated_compositing_for_video_enabled = false;
-      prefs.accelerated_compositing_for_animation_enabled = false;
-      prefs.accelerated_compositing_for_3d_transforms_enabled = false;
-      prefs.accelerated_compositing_for_plugins_enabled = false;
-    }
-  }
+  // Certain GPU features might have been blacklisted.
+  GpuDataManagerImpl::GetInstance()->UpdateRendererWebPrefs(&prefs);
 
   if (ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
           rvh->GetProcess()->GetID())) {

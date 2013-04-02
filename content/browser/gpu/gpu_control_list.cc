@@ -417,7 +417,8 @@ bool GpuControlList::IntInfo::IsValid() const {
 GpuControlList::ScopedGpuControlListEntry
 GpuControlList::GpuControlListEntry::GetEntryFromValue(
     const base::DictionaryValue* value, bool top_level,
-    const FeatureMap& feature_map) {
+    const FeatureMap& feature_map,
+    bool supports_feature_type_all) {
   DCHECK(value);
   ScopedGpuControlListEntry entry(new GpuControlListEntry());
 
@@ -724,7 +725,8 @@ GpuControlList::GpuControlListEntry::GetEntryFromValue(
           return NULL;
         }
       }
-      if (!entry->SetFeatures(feature_list, feature_map)) {
+      if (!entry->SetFeatures(
+              feature_list, feature_map, supports_feature_type_all)) {
         LOG(WARNING) << "Malformed feature entry " << entry->id();
         return NULL;
       }
@@ -741,8 +743,8 @@ GpuControlList::GpuControlListEntry::GetEntryFromValue(
           LOG(WARNING) << "Malformed exceptions entry " << entry->id();
           return NULL;
         }
-        ScopedGpuControlListEntry exception(
-            GetEntryFromValue(exception_value, false, feature_map));
+        ScopedGpuControlListEntry exception(GetEntryFromValue(
+            exception_value, false, feature_map, supports_feature_type_all));
         if (exception == NULL) {
           LOG(WARNING) << "Malformed exceptions entry " << entry->id();
           return NULL;
@@ -932,20 +934,25 @@ bool GpuControlList::GpuControlListEntry::SetGpuCountInfo(
 
 bool GpuControlList::GpuControlListEntry::SetFeatures(
     const std::vector<std::string>& feature_strings,
-    const FeatureMap& feature_map) {
+    const FeatureMap& feature_map,
+    bool supports_feature_type_all) {
   size_t size = feature_strings.size();
   if (size == 0)
     return false;
-  int features = 0;
+  features_.clear();
   for (size_t i = 0; i < size; ++i) {
     int feature = 0;
-    bool valid = StringToFeature(feature_strings[i], &feature, feature_map);
-    if (valid)
-        features |= feature;
+    if (supports_feature_type_all && feature_strings[i] == "all") {
+      for (FeatureMap::const_iterator iter = feature_map.begin();
+           iter != feature_map.end(); ++iter)
+        features_.insert(iter->second);
+      continue;
+    }
+    if (StringToFeature(feature_strings[i], &feature, feature_map))
+      features_.insert(feature);
     else
-        contains_unknown_features_ = true;
+      contains_unknown_features_ = true;
   }
-  features_ = features;
   return true;
 }
 
@@ -1107,7 +1114,7 @@ bool GpuControlList::GpuControlListEntry::disabled() const {
   return disabled_;
 }
 
-int GpuControlList::GpuControlListEntry::GetFeatures() const {
+const std::set<int>& GpuControlList::GpuControlListEntry::features() const {
   return features_;
 }
 
@@ -1126,7 +1133,8 @@ bool GpuControlList::GpuControlListEntry::StringToFeature(
 GpuControlList::GpuControlList()
     : max_entry_id_(0),
       contains_unknown_fields_(false),
-      needs_more_info_(false) {
+      needs_more_info_(false),
+      supports_feature_type_all_(false) {
 }
 
 GpuControlList::~GpuControlList() {
@@ -1188,8 +1196,8 @@ bool GpuControlList::LoadList(const base::DictionaryValue& parsed_json,
     if (browser_version_support == kUnsupported)
       continue;
     DCHECK(browser_version_support == kSupported);
-    ScopedGpuControlListEntry entry(
-        GpuControlListEntry::GetEntryFromValue(list_item, true, feature_map_));
+    ScopedGpuControlListEntry entry(GpuControlListEntry::GetEntryFromValue(
+        list_item, true, feature_map_, supports_feature_type_all_));
     if (entry == NULL)
       return false;
     if (entry->id() > max_entry_id)
@@ -1211,22 +1219,22 @@ bool GpuControlList::LoadList(const base::DictionaryValue& parsed_json,
     OsType entry_os = entries[i]->GetOsType();
     if (os_filter == GpuControlList::kAllOs ||
         entry_os == kOsAny || entry_os == my_os)
-      feature_list_.push_back(entries[i]);
+      entries_.push_back(entries[i]);
   }
   max_entry_id_ = max_entry_id;
   contains_unknown_fields_ = contains_unknown_fields;
   return true;
 }
 
-int GpuControlList::MakeDecision(
+std::set<int> GpuControlList::MakeDecision(
     GpuControlList::OsType os,
     std::string os_version,
     const GPUInfo& gpu_info) {
   active_entries_.clear();
-  int features = 0;
+  std::set<int> features;
 
   needs_more_info_ = false;
-  int possible_features = 0;
+  std::set<int> possible_features;
 
   if (os == kOsAny)
     os = GetOsType();
@@ -1240,20 +1248,18 @@ int GpuControlList::MakeDecision(
   if (!ProcessVersionString(os_version, '.', &pieces))
     os_version = "0";
 
-  for (size_t i = 0; i < feature_list_.size(); ++i) {
-    if (feature_list_[i]->Contains(os, os_version, gpu_info)) {
-      if (!feature_list_[i]->disabled()) {
-        bool not_final = feature_list_[i]->NeedsMoreInfo(gpu_info);
-        if (not_final)
-          possible_features |= feature_list_[i]->GetFeatures();
-        else
-          features |= feature_list_[i]->GetFeatures();
+  for (size_t i = 0; i < entries_.size(); ++i) {
+    if (entries_[i]->Contains(os, os_version, gpu_info)) {
+      if (!entries_[i]->disabled()) {
+        MergeFeatureSets(&possible_features, entries_[i]->features());
+        if (!entries_[i]->NeedsMoreInfo(gpu_info))
+          MergeFeatureSets(&features, entries_[i]->features());
       }
-      active_entries_.push_back(feature_list_[i]);
+      active_entries_.push_back(entries_[i]);
     }
   }
 
-  if (possible_features != 0 && (possible_features | features) != features)
+  if (possible_features.size() > features.size())
     needs_more_info_ = true;
 
   return features;
@@ -1295,14 +1301,14 @@ void GpuControlList::GetReasons(base::ListValue* problem_list) const {
 }
 
 size_t GpuControlList::num_entries() const {
-  return feature_list_.size();
+  return entries_.size();
 }
 
 uint32 GpuControlList::max_entry_id() const {
   return max_entry_id_;
 }
 
-std::string GpuControlList::GetVersion() const {
+std::string GpuControlList::version() const {
   return version_;
 }
 
@@ -1323,7 +1329,7 @@ GpuControlList::OsType GpuControlList::GetOsType() {
 }
 
 void GpuControlList::Clear() {
-  feature_list_.clear();
+  entries_.clear();
   active_entries_.clear();
   max_entry_id_ = 0;
   contains_unknown_fields_ = false;
@@ -1373,9 +1379,13 @@ GpuControlList::NumericOp GpuControlList::StringToNumericOp(
   return kUnknown;
 }
 
-void GpuControlList::AddFeature(
+void GpuControlList::AddSupportedFeature(
     const std::string& feature_name, int feature_id) {
   feature_map_[feature_name] = feature_id;
+}
+
+void GpuControlList::set_supports_feature_type_all(bool supported) {
+  supports_feature_type_all_ = supported;
 }
 
 }  // namespace content

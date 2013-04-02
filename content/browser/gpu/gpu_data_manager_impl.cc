@@ -28,12 +28,14 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/gpu_feature_type.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "grit/content_resources.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/gl/gpu_switching_manager.h"
+#include "webkit/glue/webpreferences.h"
 #include "webkit/plugins/plugin_switches.h"
 
 #if defined(OS_WIN)
@@ -105,19 +107,23 @@ void GpuDataManagerImpl::InitializeForTesting(
   InitializeImpl(gpu_blacklist_json, "", "", gpu_info);
 }
 
-GpuFeatureType GpuDataManagerImpl::GetBlacklistedFeatures() const {
+bool GpuDataManagerImpl::IsFeatureBlacklisted(int feature) const {
   if (software_rendering_) {
-    GpuFeatureType flags;
-
     // Skia's software rendering is probably more efficient than going through
     // software emulation of the GPU, so use that.
-    flags = GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS;
-    return flags;
+    if (feature == GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS)
+      return true;
+    return false;
   }
 
-  return blacklisted_features_;
+  return (blacklisted_features_.count(feature) == 1);
 }
 
+size_t GpuDataManagerImpl::GetBlacklistedFeatureCount() const {
+  if (software_rendering_)
+    return 1;
+  return blacklisted_features_.size();
+}
 
 GPUInfo GpuDataManagerImpl::GetGPUInfo() const {
   GPUInfo gpu_info;
@@ -146,11 +152,12 @@ bool GpuDataManagerImpl::GpuAccessAllowed() const {
   // We only need to block GPU process if more features are disallowed other
   // than those in the preliminary gpu feature flags because the latter work
   // through renderer commandline switches.
-  uint32 mask = ~(preliminary_blacklisted_features_);
-  if ((blacklisted_features_ & mask) != 0)
+  std::set<int> features = preliminary_blacklisted_features_;
+  MergeFeatureSets(&features, blacklisted_features_);
+  if (features.size() > preliminary_blacklisted_features_.size())
     return false;
 
-  if (blacklisted_features_ == GPU_FEATURE_TYPE_ALL) {
+  if (blacklisted_features_.size() == NUMBER_OF_GPU_FEATURE_TYPES) {
     // On Linux, we use cached GL strings to make blacklist decsions at browser
     // startup time. We need to launch the GPU process to validate these
     // strings even if all features are blacklisted. If all GPU features are
@@ -329,21 +336,21 @@ void GpuDataManagerImpl::UpdateGpuInfo(const GPUInfo& gpu_info) {
   GetContentClient()->SetGpuInfo(my_gpu_info);
 
   if (gpu_blacklist_.get()) {
-    int features = gpu_blacklist_->MakeDecision(
+    std::set<int> features = gpu_blacklist_->MakeDecision(
         GpuControlList::kOsAny, "", my_gpu_info);
     if (update_histograms_)
       UpdateStats(gpu_blacklist_.get(), features);
 
-    UpdateBlacklistedFeatures(static_cast<GpuFeatureType>(features));
+    UpdateBlacklistedFeatures(features);
   }
   if (gpu_switching_list_.get()) {
-    int option = gpu_switching_list_->MakeDecision(
+    std::set<int> option = gpu_switching_list_->MakeDecision(
         GpuControlList::kOsAny, "", my_gpu_info);
-    if (option != GPU_SWITCHING_OPTION_UNKNOWN) {
+    if (option.size() == 1) {
       // Blacklist decision should not overwrite commandline switch from users.
       CommandLine* command_line = CommandLine::ForCurrentProcess();
       if (!command_line->HasSwitch(switches::kGpuSwitching))
-        gpu_switching_ = static_cast<GpuSwitchingOption>(option);
+        gpu_switching_ = static_cast<GpuSwitchingOption>(*(option.begin()));
     }
   }
   if (gpu_driver_bug_list_.get())
@@ -364,8 +371,7 @@ void GpuDataManagerImpl::AppendRendererCommandLine(
     CommandLine* command_line) const {
   DCHECK(command_line);
 
-  uint32 flags = GetBlacklistedFeatures();
-  if ((flags & GPU_FEATURE_TYPE_WEBGL)) {
+  if (IsFeatureBlacklisted(GPU_FEATURE_TYPE_WEBGL)) {
 #if !defined(OS_ANDROID)
     if (!command_line->HasSwitch(switches::kDisableExperimentalWebGL))
       command_line->AppendSwitch(switches::kDisableExperimentalWebGL);
@@ -373,16 +379,16 @@ void GpuDataManagerImpl::AppendRendererCommandLine(
     if (!command_line->HasSwitch(switches::kDisablePepper3d))
       command_line->AppendSwitch(switches::kDisablePepper3d);
   }
-  if ((flags & GPU_FEATURE_TYPE_MULTISAMPLING) &&
+  if (IsFeatureBlacklisted(GPU_FEATURE_TYPE_MULTISAMPLING) &&
       !command_line->HasSwitch(switches::kDisableGLMultisampling))
     command_line->AppendSwitch(switches::kDisableGLMultisampling);
-  if ((flags & GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING) &&
+  if (IsFeatureBlacklisted(GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING) &&
       !command_line->HasSwitch(switches::kDisableAcceleratedCompositing))
     command_line->AppendSwitch(switches::kDisableAcceleratedCompositing);
-  if ((flags & GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS) &&
+  if (IsFeatureBlacklisted(GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS) &&
       !command_line->HasSwitch(switches::kDisableAccelerated2dCanvas))
     command_line->AppendSwitch(switches::kDisableAccelerated2dCanvas);
-  if ((flags & GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE) &&
+  if (IsFeatureBlacklisted(GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE) &&
       !command_line->HasSwitch(switches::kDisableAcceleratedVideoDecode))
     command_line->AppendSwitch(switches::kDisableAcceleratedVideoDecode);
   if (ShouldUseSoftwareRendering())
@@ -398,20 +404,19 @@ void GpuDataManagerImpl::AppendGpuCommandLine(
   base::FilePath swiftshader_path =
       CommandLine::ForCurrentProcess()->GetSwitchValuePath(
           switches::kSwiftShaderPath);
-  uint32 flags = GetBlacklistedFeatures();
-  if ((flags & GPU_FEATURE_TYPE_MULTISAMPLING) &&
+  if (IsFeatureBlacklisted(GPU_FEATURE_TYPE_MULTISAMPLING) &&
       !command_line->HasSwitch(switches::kDisableGLMultisampling))
     command_line->AppendSwitch(switches::kDisableGLMultisampling);
-  if (flags & GPU_FEATURE_TYPE_TEXTURE_SHARING)
+  if (IsFeatureBlacklisted(GPU_FEATURE_TYPE_TEXTURE_SHARING))
     command_line->AppendSwitch(switches::kDisableImageTransportSurface);
 
   if (software_rendering_) {
     command_line->AppendSwitchASCII(switches::kUseGL, "swiftshader");
     if (swiftshader_path.empty())
       swiftshader_path = swiftshader_path_;
-  } else if ((flags & (GPU_FEATURE_TYPE_WEBGL |
-                GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING |
-                GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS)) &&
+  } else if ((IsFeatureBlacklisted(GPU_FEATURE_TYPE_WEBGL) ||
+              IsFeatureBlacklisted(GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING) ||
+              IsFeatureBlacklisted(GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS)) &&
       (use_gl == "any")) {
     command_line->AppendSwitchASCII(
         switches::kUseGL, gfx::kGLImplementationOSMesaName);
@@ -483,11 +488,10 @@ void GpuDataManagerImpl::AppendPluginCommandLine(
   DCHECK(command_line);
 
 #if defined(OS_MACOSX)
-  uint32 flags = GetBlacklistedFeatures();
   // TODO(jbauman): Add proper blacklist support for core animation plugins so
   // special-casing this video card won't be necessary. See
   // http://crbug.com/134015
-  if ((flags & GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING) ||
+  if (IsFeatureBlacklisted(GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING) ||
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableAcceleratedCompositing)) {
     if (!command_line->HasSwitch(
@@ -496,6 +500,42 @@ void GpuDataManagerImpl::AppendPluginCommandLine(
           switches::kDisableCoreAnimationPlugins);
   }
 #endif
+}
+
+void GpuDataManagerImpl::UpdateRendererWebPrefs(
+    webkit_glue::WebPreferences* prefs) const {
+  DCHECK(prefs);
+  if (IsFeatureBlacklisted(GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING))
+    prefs->accelerated_compositing_enabled = false;
+  if (IsFeatureBlacklisted(GPU_FEATURE_TYPE_WEBGL))
+    prefs->experimental_webgl_enabled = false;
+  if (IsFeatureBlacklisted(GPU_FEATURE_TYPE_FLASH3D))
+    prefs->flash_3d_enabled = false;
+  if (IsFeatureBlacklisted(GPU_FEATURE_TYPE_FLASH_STAGE3D)) {
+    prefs->flash_stage3d_enabled = false;
+    prefs->flash_stage3d_baseline_enabled = false;
+  }
+  if (IsFeatureBlacklisted(GPU_FEATURE_TYPE_FLASH_STAGE3D_BASELINE))
+    prefs->flash_stage3d_baseline_enabled = false;
+  if (IsFeatureBlacklisted(GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS))
+    prefs->accelerated_2d_canvas_enabled = false;
+  if (IsFeatureBlacklisted(GPU_FEATURE_TYPE_MULTISAMPLING))
+    prefs->gl_multisampling_enabled = false;
+  if (IsFeatureBlacklisted(GPU_FEATURE_TYPE_3D_CSS)) {
+    prefs->accelerated_compositing_for_3d_transforms_enabled = false;
+    prefs->accelerated_compositing_for_animation_enabled = false;
+  }
+  if (IsFeatureBlacklisted(GPU_FEATURE_TYPE_ACCELERATED_VIDEO))
+    prefs->accelerated_compositing_for_video_enabled = false;
+
+  // Accelerated video and animation are slower than regular when using a
+  // software 3d rasterizer. 3D CSS may also be too slow to be worthwhile.
+  if (ShouldUseSoftwareRendering()) {
+    prefs->accelerated_compositing_for_video_enabled = false;
+    prefs->accelerated_compositing_for_animation_enabled = false;
+    prefs->accelerated_compositing_for_3d_transforms_enabled = false;
+    prefs->accelerated_compositing_for_plugins_enabled = false;
+  }
 }
 
 GpuSwitchingOption GpuDataManagerImpl::GetGpuSwitchingOption() const {
@@ -507,7 +547,8 @@ GpuSwitchingOption GpuDataManagerImpl::GetGpuSwitchingOption() const {
 void GpuDataManagerImpl::DisableHardwareAcceleration() {
   card_blacklisted_ = true;
 
-  blacklisted_features_ = GPU_FEATURE_TYPE_ALL;
+  for (int i = 0; i < NUMBER_OF_GPU_FEATURE_TYPES; ++i)
+    blacklisted_features_.insert(i);
 
   EnableSoftwareRenderingIfNecessary();
   NotifyGpuInfoUpdate();
@@ -515,7 +556,7 @@ void GpuDataManagerImpl::DisableHardwareAcceleration() {
 
 std::string GpuDataManagerImpl::GetBlacklistVersion() const {
   if (gpu_blacklist_.get())
-    return gpu_blacklist_->GetVersion();
+    return gpu_blacklist_->version();
   return "0";
 }
 
@@ -578,11 +619,7 @@ bool GpuDataManagerImpl::IsUsingAcceleratedSurface() const {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kDisableImageTransportSurface))
     return false;
-  uint32 flags = GetBlacklistedFeatures();
-  if (flags & GPU_FEATURE_TYPE_TEXTURE_SHARING)
-    return false;
-
-  return true;
+  return !IsFeatureBlacklisted(GPU_FEATURE_TYPE_TEXTURE_SHARING);
 }
 #endif
 
@@ -614,8 +651,6 @@ void GpuDataManagerImpl::DisableDomainBlockingFor3DAPIsForTesting() {
 
 GpuDataManagerImpl::GpuDataManagerImpl()
     : complete_gpu_info_already_requested_(false),
-      blacklisted_features_(GPU_FEATURE_TYPE_UNKNOWN),
-      preliminary_blacklisted_features_(GPU_FEATURE_TYPE_UNKNOWN),
       gpu_switching_(GPU_SWITCHING_OPTION_AUTOMATIC),
       observer_list_(new GpuDataManagerObserverList),
       software_rendering_(false),
@@ -687,21 +722,20 @@ void GpuDataManagerImpl::InitializeImpl(
 }
 
 void GpuDataManagerImpl::UpdateBlacklistedFeatures(
-    GpuFeatureType features) {
+    const std::set<int>& features) {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
-  int flags = features;
+  blacklisted_features_ = features;
 
   // Force disable using the GPU for these features, even if they would
   // otherwise be allowed.
   if (card_blacklisted_ ||
       command_line->HasSwitch(switches::kBlacklistAcceleratedCompositing)) {
-    flags |= GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING;
+    blacklisted_features_.insert(GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING);
   }
   if (card_blacklisted_ ||
       command_line->HasSwitch(switches::kBlacklistWebGL)) {
-    flags |= GPU_FEATURE_TYPE_WEBGL;
+    blacklisted_features_.insert(GPU_FEATURE_TYPE_WEBGL);
   }
-  blacklisted_features_ = static_cast<GpuFeatureType>(flags);
 
   EnableSoftwareRenderingIfNecessary();
 }
@@ -735,7 +769,7 @@ void GpuDataManagerImpl::NotifyGpuInfoUpdate() {
 
 void GpuDataManagerImpl::EnableSoftwareRenderingIfNecessary() {
   if (!GpuAccessAllowed() ||
-      (blacklisted_features_ & GPU_FEATURE_TYPE_WEBGL)) {
+      blacklisted_features_.count(GPU_FEATURE_TYPE_WEBGL)) {
     if (!swiftshader_path_.empty() &&
         !CommandLine::ForCurrentProcess()->HasSwitch(
              switches::kDisableSoftwareRasterizer))

@@ -17,6 +17,10 @@ const uint32 kNvidiaDeviceId = 0x0fd5;  // GeForce GT 650M
 
 #define LONG_STRING_CONST(...) #__VA_ARGS__
 
+#define EXPECT_EMPTY_SET(feature_set) EXPECT_EQ(0u, feature_set.size())
+#define EXPECT_SINGLE_FEATURE(feature_set, feature) \
+    EXPECT_TRUE(feature_set.size() == 1 && feature_set.count(feature) == 1)
+
 namespace content {
 
 enum TestFeatureType {
@@ -37,9 +41,9 @@ class GpuControlListTest : public testing::Test {
 
   GpuControlList* Create() {
     GpuControlList* rt = new GpuControlList();
-    rt->AddFeature("test_feature_0", TEST_FEATURE_0);
-    rt->AddFeature("test_feature_1", TEST_FEATURE_1);
-    rt->AddFeature("test_feature_2", TEST_FEATURE_2);
+    rt->AddSupportedFeature("test_feature_0", TEST_FEATURE_0);
+    rt->AddSupportedFeature("test_feature_1", TEST_FEATURE_1);
+    rt->AddSupportedFeature("test_feature_2", TEST_FEATURE_2);
     return rt;
   }
 
@@ -68,9 +72,9 @@ class GpuControlListTest : public testing::Test {
 TEST_F(GpuControlListTest, DefaultControlListSettings) {
   scoped_ptr<GpuControlList> control_list(Create());
   // Default control list settings: all feature are allowed.
-  int features = control_list->MakeDecision(
+  std::set<int> features = control_list->MakeDecision(
       GpuControlList::kOsMacosx, kOsVersion, gpu_info());
-  EXPECT_EQ(0, features);
+  EXPECT_EMPTY_SET(features);
 }
 
 TEST_F(GpuControlListTest, EmptyControlList) {
@@ -87,10 +91,10 @@ TEST_F(GpuControlListTest, EmptyControlList) {
 
   EXPECT_TRUE(control_list->LoadList(empty_list_json,
                                      GpuControlList::kAllOs));
-  EXPECT_EQ("2.5", control_list->GetVersion());
-  int features = control_list->MakeDecision(
+  EXPECT_EQ("2.5", control_list->version());
+  std::set<int> features = control_list->MakeDecision(
       GpuControlList::kOsMacosx, kOsVersion, gpu_info());
-  EXPECT_EQ(0, features);
+  EXPECT_EMPTY_SET(features);
 }
 
 TEST_F(GpuControlListTest, DetailedEntryAndInvalidJson) {
@@ -125,9 +129,9 @@ TEST_F(GpuControlListTest, DetailedEntryAndInvalidJson) {
   scoped_ptr<GpuControlList> control_list(Create());
 
   EXPECT_TRUE(control_list->LoadList(exact_list_json, GpuControlList::kAllOs));
-  int features = control_list->MakeDecision(
+  std::set<int> features = control_list->MakeDecision(
       GpuControlList::kOsMacosx, kOsVersion, gpu_info());
-  EXPECT_EQ(TEST_FEATURE_0, features);
+  EXPECT_SINGLE_FEATURE(features, TEST_FEATURE_0);
 
   // Invalid json input should not change the current control_list settings.
   const std::string invalid_json = "invalid";
@@ -135,7 +139,7 @@ TEST_F(GpuControlListTest, DetailedEntryAndInvalidJson) {
   EXPECT_FALSE(control_list->LoadList(invalid_json, GpuControlList::kAllOs));
   features = control_list->MakeDecision(
       GpuControlList::kOsMacosx, kOsVersion, gpu_info());
-  EXPECT_EQ(TEST_FEATURE_0, features);
+  EXPECT_SINGLE_FEATURE(features, TEST_FEATURE_0);
   std::vector<uint32> entries;
   control_list->GetDecisionEntries(&entries, false);
   ASSERT_EQ(1u, entries.size());
@@ -164,15 +168,15 @@ TEST_F(GpuControlListTest, VendorOnAllOsEntry) {
 
   // ControlList entries won't be filtered to the current OS only upon loading.
   EXPECT_TRUE(control_list->LoadList(vendor_json, GpuControlList::kAllOs));
-  int features = control_list->MakeDecision(
+  std::set<int> features = control_list->MakeDecision(
       GpuControlList::kOsMacosx, kOsVersion, gpu_info());
-  EXPECT_EQ(TEST_FEATURE_0, features);
+  EXPECT_SINGLE_FEATURE(features, TEST_FEATURE_0);
   features = control_list->MakeDecision(
       GpuControlList::kOsWin, kOsVersion, gpu_info());
-  EXPECT_EQ(TEST_FEATURE_0, features);
+  EXPECT_SINGLE_FEATURE(features, TEST_FEATURE_0);
   features = control_list->MakeDecision(
       GpuControlList::kOsLinux, kOsVersion, gpu_info());
-  EXPECT_EQ(TEST_FEATURE_0, features);
+  EXPECT_SINGLE_FEATURE(features, TEST_FEATURE_0);
 #if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MACOSX) || \
     defined(OS_OPENBSD)
   // ControlList entries will be filtered to the current OS only upon loading.
@@ -180,13 +184,13 @@ TEST_F(GpuControlListTest, VendorOnAllOsEntry) {
       vendor_json, GpuControlList::kCurrentOsOnly));
   features = control_list->MakeDecision(
       GpuControlList::kOsMacosx, kOsVersion, gpu_info());
-  EXPECT_EQ(TEST_FEATURE_0, features);
+  EXPECT_SINGLE_FEATURE(features, TEST_FEATURE_0);
   features = control_list->MakeDecision(
       GpuControlList::kOsWin, kOsVersion, gpu_info());
-  EXPECT_EQ(TEST_FEATURE_0, features);
+  EXPECT_SINGLE_FEATURE(features, TEST_FEATURE_0);
   features = control_list->MakeDecision(
       GpuControlList::kOsLinux, kOsVersion, gpu_info());
-  EXPECT_EQ(TEST_FEATURE_0, features);
+  EXPECT_SINGLE_FEATURE(features, TEST_FEATURE_0);
 #endif
 }
 
@@ -212,16 +216,16 @@ TEST_F(GpuControlListTest, ChromeVersionEntry) {
   scoped_ptr<GpuControlList> control_list9(Create());
   EXPECT_TRUE(control_list9->LoadList(
       "9.0", browser_version_json, GpuControlList::kAllOs));
-  int features = control_list9->MakeDecision(
+  std::set<int> features = control_list9->MakeDecision(
       GpuControlList::kOsWin, kOsVersion, gpu_info());
-  EXPECT_EQ(0, features);
+  EXPECT_EMPTY_SET(features);
 
   scoped_ptr<GpuControlList> control_list10(Create());
   EXPECT_TRUE(control_list10->LoadList(
       "10.0", browser_version_json, GpuControlList::kAllOs));
   features = control_list10->MakeDecision(
       GpuControlList::kOsWin, kOsVersion, gpu_info());
-  EXPECT_EQ(TEST_FEATURE_0, features);
+  EXPECT_SINGLE_FEATURE(features, TEST_FEATURE_0);
 }
 
 TEST_F(GpuControlListTest, UnknownField) {
@@ -252,9 +256,9 @@ TEST_F(GpuControlListTest, UnknownField) {
       unknown_field_json, GpuControlList::kAllOs));
   EXPECT_EQ(1u, control_list->num_entries());
   EXPECT_TRUE(control_list->contains_unknown_fields());
-  int features = control_list->MakeDecision(
+  std::set<int> features = control_list->MakeDecision(
       GpuControlList::kOsWin, kOsVersion, gpu_info());
-  EXPECT_EQ(TEST_FEATURE_0, features);
+  EXPECT_SINGLE_FEATURE(features, TEST_FEATURE_0);
 }
 
 TEST_F(GpuControlListTest, UnknownExceptionField) {
@@ -296,9 +300,9 @@ TEST_F(GpuControlListTest, UnknownExceptionField) {
       unknown_exception_field_json, GpuControlList::kAllOs));
   EXPECT_EQ(1u, control_list->num_entries());
   EXPECT_TRUE(control_list->contains_unknown_fields());
-  int features = control_list->MakeDecision(
+  std::set<int> features = control_list->MakeDecision(
       GpuControlList::kOsWin, kOsVersion, gpu_info());
-  EXPECT_EQ(TEST_FEATURE_0, features);
+  EXPECT_SINGLE_FEATURE(features, TEST_FEATURE_0);
 }
 
 TEST_F(GpuControlListTest, DisabledEntry) {
@@ -319,9 +323,9 @@ TEST_F(GpuControlListTest, DisabledEntry) {
   );
   scoped_ptr<GpuControlList> control_list(Create());
   EXPECT_TRUE(control_list->LoadList(disabled_json, GpuControlList::kAllOs));
-  int features = control_list->MakeDecision(
+  std::set<int> features = control_list->MakeDecision(
       GpuControlList::kOsWin, kOsVersion, gpu_info());
-  EXPECT_EQ(features, 0);
+  EXPECT_EMPTY_SET(features);
   std::vector<uint32> flag_entries;
   control_list->GetDecisionEntries(&flag_entries, false);
   EXPECT_EQ(0u, flag_entries.size());
@@ -363,15 +367,15 @@ TEST_F(GpuControlListTest, NeedsMoreInfoForExceptions) {
   EXPECT_TRUE(control_list->LoadList(json, GpuControlList::kAllOs));
 
   // The case this entry does not apply.
-  int features = control_list->MakeDecision(
+  std::set<int> features = control_list->MakeDecision(
       GpuControlList::kOsMacosx, kOsVersion, gpu_info);
-  EXPECT_EQ(0, features);
+  EXPECT_EMPTY_SET(features);
   EXPECT_FALSE(control_list->needs_more_info());
 
   // The case this entry might apply, but need more info.
   features = control_list->MakeDecision(
       GpuControlList::kOsLinux, kOsVersion, gpu_info);
-  EXPECT_EQ(0, features);
+  EXPECT_EMPTY_SET(features);
   EXPECT_TRUE(control_list->needs_more_info());
 
   // The case we have full info, and the exception applies (so the entry
@@ -379,14 +383,14 @@ TEST_F(GpuControlListTest, NeedsMoreInfoForExceptions) {
   gpu_info.gl_renderer = "mesa";
   features = control_list->MakeDecision(
       GpuControlList::kOsLinux, kOsVersion, gpu_info);
-  EXPECT_EQ(0, features);
+  EXPECT_EMPTY_SET(features);
   EXPECT_FALSE(control_list->needs_more_info());
 
   // The case we have full info, and this entry applies.
   gpu_info.gl_renderer = "my renderer";
   features = control_list->MakeDecision(GpuControlList::kOsLinux, kOsVersion,
       gpu_info);
-  EXPECT_EQ(TEST_FEATURE_0, features);
+  EXPECT_SINGLE_FEATURE(features, TEST_FEATURE_0);
   EXPECT_FALSE(control_list->needs_more_info());
 }
 
@@ -430,9 +434,9 @@ TEST_F(GpuControlListTest, IgnorableEntries) {
 
   scoped_ptr<GpuControlList> control_list(Create());
   EXPECT_TRUE(control_list->LoadList(json, GpuControlList::kAllOs));
-  int features = control_list->MakeDecision(
+  std::set<int> features = control_list->MakeDecision(
       GpuControlList::kOsLinux, kOsVersion, gpu_info);
-  EXPECT_EQ(TEST_FEATURE_0, features);
+  EXPECT_SINGLE_FEATURE(features, TEST_FEATURE_0);
   EXPECT_FALSE(control_list->needs_more_info());
 }
 

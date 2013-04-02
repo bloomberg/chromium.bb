@@ -11,8 +11,6 @@
 #include "base/callback_forward.h"
 #include "base/process.h"
 #include "content/common/content_export.h"
-#include "content/public/common/gpu_feature_type.h"
-#include "content/public/common/gpu_switching_option.h"
 
 class GURL;
 
@@ -38,7 +36,7 @@ class GpuDataManager {
   virtual void InitializeForTesting(const std::string& gpu_blacklist_json,
                                     const content::GPUInfo& gpu_info) = 0;
 
-  virtual GpuFeatureType GetBlacklistedFeatures() const = 0;
+  virtual bool IsFeatureBlacklisted(int feature) const = 0;
 
   virtual GPUInfo GetGPUInfo() const = 0;
 
