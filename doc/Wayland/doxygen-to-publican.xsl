@@ -19,11 +19,13 @@
 	  the library.
     </para>
 
-    <para>
-    <variablelist>
-    <xsl:apply-templates select="/doxygen/compounddef" />
-    </variablelist>
-    </para>
+    <xsl:if test="/doxygen/compounddef[@kind='class']">
+      <para>
+        <variablelist>
+          <xsl:apply-templates select="/doxygen/compounddef" />
+        </variablelist>
+      </para>
+    </xsl:if>
 
     <para>Methods for the respective classes.</para>
 
