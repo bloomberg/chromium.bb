@@ -182,6 +182,24 @@ class CompleteInstallFunction
   scoped_ptr<WebstoreInstaller::Approval> approval_;
 };
 
+class EnableAppLauncherFunction
+    : public AsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("webstorePrivate.enableAppLauncher",
+                             WEBSTOREPRIVATE_ENABLEAPPLAUNCHER)
+
+  EnableAppLauncherFunction();
+
+ protected:
+  virtual ~EnableAppLauncherFunction();
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
+
+ private:
+  void AfterEnableAppLauncher(bool ok);
+};
+
 class GetBrowserLoginFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webstorePrivate.getBrowserLogin",

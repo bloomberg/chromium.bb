@@ -69,6 +69,7 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   RegisterFunction<extensions::InstallBundleFunction>();
   RegisterFunction<extensions::BeginInstallWithManifestFunction>();
   RegisterFunction<extensions::CompleteInstallFunction>();
+  RegisterFunction<extensions::EnableAppLauncherFunction>();
   RegisterFunction<extensions::GetWebGLStatusFunction>();
   RegisterFunction<extensions::GetIsLauncherEnabledFunction>();
 

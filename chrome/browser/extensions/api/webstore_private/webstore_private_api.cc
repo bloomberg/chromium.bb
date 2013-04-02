@@ -125,6 +125,24 @@ DictionaryValue* CreateLoginResult(Profile* profile) {
 
 WebstoreInstaller::Delegate* test_webstore_installer_delegate = NULL;
 
+void EnableAppLauncher(base::Callback<void(bool)> callback) {
+#if defined(OS_WIN)
+  if (BrowserDistribution::GetDistribution()->AppHostIsSupported()) {
+    LOG(INFO) << "Enabling App Launcher via installation";
+    extensions::AppHostInstaller::SetInstallWithLauncher(true);
+    extensions::AppHostInstaller::EnsureAppHostInstalled(callback);
+  } else {
+    LOG(INFO) << "Enabling App Launcher via flags";
+    about_flags::SetExperimentEnabled(g_browser_process->local_state(),
+                                      apps::switches::kShowAppListShortcut,
+                                      true);
+    callback.Run(true);
+  }
+#else
+  callback.Run(true);
+#endif
+}
+
 }  // namespace
 
 // static
@@ -439,24 +457,13 @@ bool CompleteInstallFunction::RunImpl() {
   // Balanced in OnExtensionInstallSuccess() or OnExtensionInstallFailure().
   AddRef();
 
-#if defined(OS_WIN)
   if (approval_->enable_launcher) {
-    if (BrowserDistribution::GetDistribution()->AppHostIsSupported()) {
-      LOG(INFO) << "Enabling App Launcher via installation";
-      extensions::AppHostInstaller::SetInstallWithLauncher(true);
-      extensions::AppHostInstaller::EnsureAppHostInstalled(
-          base::Bind(&CompleteInstallFunction::AfterMaybeInstallAppLauncher,
-                     this));
-      return true;
-    } else {
-      LOG(INFO) << "Enabling App Launcher via flags";
-      about_flags::SetExperimentEnabled(g_browser_process->local_state(),
-                                        apps::switches::kShowAppListShortcut,
-                                        true);
-    }
+    EnableAppLauncher(
+        base::Bind(&CompleteInstallFunction::AfterMaybeInstallAppLauncher,
+                   this));
+  } else {
+    AfterMaybeInstallAppLauncher(true);
   }
-#endif
-  AfterMaybeInstallAppLauncher(true);
 
   return true;
 }
@@ -475,7 +482,7 @@ void CompleteInstallFunction::OnGetAppLauncherEnabled(
   if (app_launcher_enabled) {
     std::string name;
     if (!approval_->manifest->value()->GetString(extension_manifest_keys::kName,
-                                               &name)) {
+                                                 &name)) {
       NOTREACHED();
     }
     // Show the app list so it receives install progress notifications.
@@ -536,6 +543,22 @@ void CompleteInstallFunction::OnExtensionDownloadProgress(
   extensions::InstallTracker* tracker =
       extensions::InstallTrackerFactory::GetForProfile(profile());
   tracker->OnDownloadProgress(id, item->PercentComplete());
+}
+
+EnableAppLauncherFunction::EnableAppLauncherFunction() {}
+
+EnableAppLauncherFunction::~EnableAppLauncherFunction() {}
+
+bool EnableAppLauncherFunction::RunImpl() {
+  EnableAppLauncher(
+      base::Bind(&EnableAppLauncherFunction::AfterEnableAppLauncher, this));
+  return true;
+}
+
+void EnableAppLauncherFunction::AfterEnableAppLauncher(bool ok) {
+  if (!ok)
+    LOG(ERROR) << "Error installing app launcher";
+  SendResponse(ok);
 }
 
 bool GetBrowserLoginFunction::RunImpl() {

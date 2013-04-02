@@ -149,6 +149,18 @@
         ]
       },
       {
+        "name": "enableAppLauncher",
+        "description": "",
+        "parameters": [
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": "true",
+            "parameters": []
+          }
+        ]
+      },
+      {
         "name": "getBrowserLogin",
         "description": "Returns the logged-in sync user login if there is one, or the empty string otherwise.",
         "parameters": [
