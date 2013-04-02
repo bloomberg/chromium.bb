@@ -62,9 +62,10 @@
             </xsl:if>
         </term>
 
-        <!-- TODO: the output text is not splitting paragraphs correctly -->
         <listitem>
-            <para><xsl:value-of select="detaileddescription"/></para>
+            <xsl:for-each select="detaileddescription/para">
+            <para><xsl:value-of select="." /></para>
+            </xsl:for-each>
         </listitem>
     </varlistentry>
     </xsl:if>
