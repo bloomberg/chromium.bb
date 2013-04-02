@@ -223,11 +223,7 @@ def _CheckNoProductionCodeUsingTestOnlyFunctions(input_api, output_api):
       line_number += 1
 
   if problems:
-    if not input_api.is_committing:
-      return [output_api.PresubmitPromptWarning(_TEST_ONLY_WARNING, problems)]
-    else:
-      # We don't warn on commit, to avoid stopping commits going through CQ.
-      return [output_api.PresubmitNotifyResult(_TEST_ONLY_WARNING, problems)]
+    return [output_api.PresubmitPromptOrNotify(_TEST_ONLY_WARNING, problems)]
   else:
     return []
 
@@ -440,13 +436,7 @@ def _CheckUnwantedDependencies(input_api, output_api):
         'You added one or more #includes that violate checkdeps rules.',
         error_descriptions))
   if warning_descriptions:
-    if not input_api.is_committing:
-      warning_factory = output_api.PresubmitPromptWarning
-    else:
-      # We don't want to block use of the CQ when there is a warning
-      # of this kind, so we only show a message when committing.
-      warning_factory = output_api.PresubmitNotifyResult
-    results.append(warning_factory(
+    results.append(output_api.PresubmitPromptOrNotify(
         'You added one or more #includes of files that are temporarily\n'
         'allowed but being removed. Can you avoid introducing the\n'
         '#include? See relevant DEPS file(s) for details and contacts.',
@@ -623,12 +613,7 @@ def _CheckIncludeOrder(input_api, output_api):
 
   results = []
   if warnings:
-    if not input_api.is_committing:
-      results.append(output_api.PresubmitPromptWarning(_INCLUDE_ORDER_WARNING,
-                                                       warnings))
-    else:
-      # We don't warn on commit, to avoid stopping commits going through CQ.
-      results.append(output_api.PresubmitNotifyResult(_INCLUDE_ORDER_WARNING,
+    results.append(output_api.PresubmitPromptOrNotify(_INCLUDE_ORDER_WARNING,
                                                       warnings))
   return results
 
@@ -677,13 +662,7 @@ def _CheckHardcodedGoogleHostsInLowerLayers(input_api, output_api):
         problems.append((f.LocalPath(), line_num, line))
 
   if problems:
-    if not input_api.is_committing:
-      warning_factory = output_api.PresubmitPromptWarning
-    else:
-      # We don't want to block use of the CQ when there is a warning
-      # of this kind, so we only show a message when committing.
-      warning_factory = output_api.PresubmitNotifyResult
-    return [warning_factory(
+    return [output_api.PresubmitPromptOrNotify(
         'Most layers below src/chrome/ should not hardcode service URLs.\n'
         'Are you sure this is correct? (Contact: joi@chromium.org)',
         ['  %s:%d:  %s' % (

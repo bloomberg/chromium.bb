@@ -43,6 +43,11 @@ class MockOutputApi(object):
       MockOutputApi.PresubmitResult.__init__(self, message, items, long_text)
       self.type = 'notify'
 
+  class PresubmitPromptOrNotify(PresubmitResult):
+    def __init__(self, message, items, long_text=''):
+      MockOutputApi.PresubmitResult.__init__(self, message, items, long_text)
+      self.type = 'promptOrNotify'
+
 
 class MockFile(object):
   def __init__(self, local_path, new_contents):
@@ -246,19 +251,7 @@ class IncludeOrderTest(unittest.TestCase):
     warnings = PRESUBMIT._CheckIncludeOrder(mock_input_api, mock_output_api)
     self.assertEqual(1, len(warnings))
     self.assertEqual(2, len(warnings[0].items))
-    self.assertEqual('warning', warnings[0].type)
-
-  def testOnlyNotifyOnCommit(self):
-    mock_input_api = MockInputApi()
-    mock_input_api.is_committing = True
-    mock_output_api = MockOutputApi()
-    contents = ['#include <b.h>',
-                '#include <a.h>']
-    mock_input_api.files = [MockFile('something.cc', contents)]
-    warnings = PRESUBMIT._CheckIncludeOrder(mock_input_api, mock_output_api)
-    self.assertEqual(1, len(warnings))
-    self.assertEqual(1, len(warnings[0].items))
-    self.assertEqual('notify', warnings[0].type)
+    self.assertEqual('promptOrNotify', warnings[0].type)
 
   def testUncheckableIncludes(self):
     mock_input_api = MockInputApi()

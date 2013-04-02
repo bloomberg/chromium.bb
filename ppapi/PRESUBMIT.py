@@ -175,7 +175,7 @@ def CheckChange(input_api, output_api):
         for line in lines:
           if line[2].split()[:2] == ['#define', 'PPAPI_RELEASE']:
             results.append(
-                output_api.PresubmitNotifyResult(
+                output_api.PresubmitPromptOrNotify(
                     'PPAPI_RELEASE has changed', long_text=line[2]))
             releaseChanged = True
             break
