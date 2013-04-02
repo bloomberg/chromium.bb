@@ -132,8 +132,6 @@
     'renderer/media/audio_message_filter.h',
     'renderer/media/audio_renderer_mixer_manager.cc',
     'renderer/media/audio_renderer_mixer_manager.h',
-    'renderer/media/local_video_capture.cc',
-    'renderer/media/local_video_capture.h',
     'renderer/media/media_stream_center.h',
     'renderer/media/media_stream_dependency_factory.h',
     'renderer/media/media_stream_dispatcher.h',
