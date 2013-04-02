@@ -13,7 +13,6 @@
 
 #include "base/callback.h"
 #include "base/mac/scoped_cftyperef.h"
-#include "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/time.h"
@@ -33,6 +32,7 @@ class Rect;
 
 namespace content {
 
+class CompositingIOSurfaceContext;
 class CompositingIOSurfaceShaderPrograms;
 class CompositingIOSurfaceTransformer;
 class RenderWidgetHostViewFrameSubscriber;
@@ -110,7 +110,7 @@ class CompositingIOSurfaceMac {
   // In cocoa view units / DIPs.
   const gfx::Size& io_surface_size() const { return io_surface_size_; }
 
-  bool is_vsync_disabled() const { return is_vsync_disabled_; }
+  bool is_vsync_disabled() const;
 
   // Get vsync scheduling parameters.
   // |interval_numerator/interval_denominator| equates to fractional number of
@@ -205,10 +205,7 @@ class CompositingIOSurfaceMac {
 
   CompositingIOSurfaceMac(
       IOSurfaceSupport* io_surface_support,
-      NSOpenGLContext* glContext,
-      CGLContextObj cglContext,
-      scoped_ptr<CompositingIOSurfaceShaderPrograms> shader_program_cache,
-      bool is_vsync_disabled,
+      scoped_refptr<CompositingIOSurfaceContext> context,
       CVDisplayLinkRef display_link);
 
   bool IsVendorIntel();
@@ -286,8 +283,7 @@ class CompositingIOSurfaceMac {
   IOSurfaceSupport* io_surface_support_;
 
   // GL context
-  scoped_nsobject<NSOpenGLContext> glContext_;
-  CGLContextObj cglContext_;  // weak, backed by |glContext_|.
+  scoped_refptr<CompositingIOSurfaceContext> context_;
 
   // IOSurface data.
   uint64 io_surface_handle_;
@@ -309,12 +305,9 @@ class CompositingIOSurfaceMac {
   // Timer for finishing a copy operation.
   base::Timer finish_copy_timer_;
 
-  scoped_ptr<CompositingIOSurfaceShaderPrograms> shader_program_cache_;
   scoped_ptr<CompositingIOSurfaceTransformer> transformer_;
 
   SurfaceQuad quad_;
-
-  bool is_vsync_disabled_;
 
   // CVDisplayLink for querying Vsync timing info and throttling swaps.
   CVDisplayLinkRef display_link_;

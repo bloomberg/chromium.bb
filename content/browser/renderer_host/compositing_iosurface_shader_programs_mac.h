@@ -26,8 +26,8 @@ class CompositingIOSurfaceShaderPrograms {
   void Reset();
 
   // Begin using the "blit" program, which is set up to sample the texture at
-  // GL_TEXTURE_0 + |texture_unit_offset|.  Returns false on error.
-  bool UseBlitProgram(int texture_unit_offset);
+  // GL_TEXTURE_0.  Returns false on error.
+  bool UseBlitProgram();
 
   // Begin using the program that just draws solid white very efficiently.
   // Returns false on error.
@@ -35,10 +35,9 @@ class CompositingIOSurfaceShaderPrograms {
 
   // Begin using one of the two RGB-to-YV12 color conversion programs, as
   // specified by |pass_number| 1 or 2.  The programs will sample the texture at
-  // GL_TEXTURE0 + |texture_unit_offset|, and account for scaling in the X
-  // direction by |texel_scale_x|.  Returns false on error.
-  bool UseRGBToYV12Program(
-      int pass_number, int texture_unit_offset, float texel_scale_x);
+  // GL_TEXTURE0, and account for scaling in the X direction by |texel_scale_x|.
+  // Returns false on error.
+  bool UseRGBToYV12Program(int pass_number, float texel_scale_x);
 
  private:
   enum { kNumShaderPrograms = 4 };

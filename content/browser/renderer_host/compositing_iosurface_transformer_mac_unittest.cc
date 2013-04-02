@@ -276,7 +276,7 @@ class CompositingIOSurfaceTransformerTest : public testing::Test {
     CGLSetCurrentContext(context_);
     shader_program_cache_.reset(new CompositingIOSurfaceShaderPrograms());
     transformer_.reset(new CompositingIOSurfaceTransformer(
-        kGLTextureTarget, 0, false, shader_program_cache_.get()));
+        kGLTextureTarget, false, shader_program_cache_.get()));
   }
 
   virtual ~CompositingIOSurfaceTransformerTest() {
@@ -415,10 +415,10 @@ class CompositingIOSurfaceTransformerTest : public testing::Test {
 TEST_F(CompositingIOSurfaceTransformerTest,
        DISABLED_ShaderProgramsCompileAndLink) {
   // Attempt to use each program, binding its required uniform variables.
-  EXPECT_NO_GL_ERROR(shader_program_cache()->UseBlitProgram(0));
+  EXPECT_NO_GL_ERROR(shader_program_cache()->UseBlitProgram());
   EXPECT_NO_GL_ERROR(shader_program_cache()->UseSolidWhiteProgram());
-  EXPECT_NO_GL_ERROR(shader_program_cache()->UseRGBToYV12Program(1, 0, 1.0f));
-  EXPECT_NO_GL_ERROR(shader_program_cache()->UseRGBToYV12Program(2, 0, 1.0f));
+  EXPECT_NO_GL_ERROR(shader_program_cache()->UseRGBToYV12Program(1, 1.0f));
+  EXPECT_NO_GL_ERROR(shader_program_cache()->UseRGBToYV12Program(2, 1.0f));
 
   EXPECT_NO_GL_ERROR(glUseProgram(0));
 }

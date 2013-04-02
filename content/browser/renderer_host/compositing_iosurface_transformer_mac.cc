@@ -142,10 +142,9 @@ void DrawQuad(float src_x, float src_y, float src_width, float src_height,
 }  // namespace
 
 CompositingIOSurfaceTransformer::CompositingIOSurfaceTransformer(
-    GLenum texture_target, GLint texture_unit, bool src_texture_needs_y_flip,
+    GLenum texture_target, bool src_texture_needs_y_flip,
     CompositingIOSurfaceShaderPrograms* shader_program_cache)
     : texture_target_(texture_target),
-      texture_unit_(texture_unit),
       src_texture_needs_y_flip_(src_texture_needs_y_flip),
       shader_program_cache_(shader_program_cache) {
   DCHECK(texture_target_ == GL_TEXTURE_RECTANGLE_ARB)
@@ -168,7 +167,7 @@ bool CompositingIOSurfaceTransformer::ResizeBilinear(
   if (src_subrect.IsEmpty() || dst_size.IsEmpty())
     return false;
 
-  glActiveTexture(GL_TEXTURE0 + texture_unit_);
+  glActiveTexture(GL_TEXTURE0);
   glDisable(GL_DEPTH_TEST);
   glDisable(GL_BLEND);
 
@@ -188,7 +187,7 @@ bool CompositingIOSurfaceTransformer::ResizeBilinear(
       texture_target_, src_subrect.size() == dst_size ? GL_NEAREST : GL_LINEAR,
       GL_CLAMP_TO_EDGE);
 
-  const bool prepared = shader_program_cache_->UseBlitProgram(texture_unit_);
+  const bool prepared = shader_program_cache_->UseBlitProgram();
   DCHECK(prepared);
   SetTransformationsForOffScreenRendering(dst_size);
   DrawQuad(src_subrect.x(), src_subrect.y(),
@@ -218,7 +217,7 @@ bool CompositingIOSurfaceTransformer::TransformRGBToYV12(
 
   TRACE_EVENT0("gpu", "TransformRGBToYV12");
 
-  glActiveTexture(GL_TEXTURE0 + texture_unit_);
+  glActiveTexture(GL_TEXTURE0);
   glDisable(GL_DEPTH_TEST);
   glDisable(GL_BLEND);
 
@@ -270,7 +269,7 @@ bool CompositingIOSurfaceTransformer::TransformRGBToYV12(
 
   // Use the first-pass shader program and draw the scene.
   const bool prepared_pass_1 = shader_program_cache_->UseRGBToYV12Program(
-      1, texture_unit_,
+      1,
       static_cast<float>(src_subrect.width()) / dst_size.width());
   DCHECK(prepared_pass_1);
   SetTransformationsForOffScreenRendering(*packed_y_size);
@@ -297,7 +296,7 @@ bool CompositingIOSurfaceTransformer::TransformRGBToYV12(
 
   // Use the second-pass shader program and draw the scene.
   const bool prepared_pass_2 =
-      shader_program_cache_->UseRGBToYV12Program(2, texture_unit_, 1.0f);
+      shader_program_cache_->UseRGBToYV12Program(2, 1.0f);
   DCHECK(prepared_pass_2);
   SetTransformationsForOffScreenRendering(*packed_uv_size);
   DrawQuad(0.0f, 0.0f,

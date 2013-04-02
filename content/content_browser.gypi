@@ -654,6 +654,8 @@
     'browser/renderer_host/clipboard_message_filter_mac.mm',
     'browser/renderer_host/compositor_impl_android.cc',
     'browser/renderer_host/compositor_impl_android.h',
+    'browser/renderer_host/compositing_iosurface_context_mac.mm',
+    'browser/renderer_host/compositing_iosurface_context_mac.h',
     'browser/renderer_host/compositing_iosurface_mac.h',
     'browser/renderer_host/compositing_iosurface_mac.mm',
     'browser/renderer_host/compositing_iosurface_shader_programs_mac.cc',

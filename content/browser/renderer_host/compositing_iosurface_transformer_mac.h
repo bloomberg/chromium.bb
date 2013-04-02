@@ -25,13 +25,12 @@ class CompositingIOSurfaceTransformer {
  public:
   // Construct a transformer that always uses the given parameters for texture
   // bindings.  |texture_target| is one of the valid enums to use with
-  // glBindTexture().  |texture_unit| selects the texture unit to be used when
-  // running the shader programs (i.e., specify 0 for GL_TEXTURE0).
+  // glBindTexture().
   // |src_texture_needs_y_flip| is true when the |src_texture| argument to any
   // of the methods below uses upside-down Y coordinates.
   // |shader_program_cache| is not owned by this instance.
   CompositingIOSurfaceTransformer(
-      GLenum texture_target, int texture_unit, bool src_texture_needs_y_flip,
+      GLenum texture_target, bool src_texture_needs_y_flip,
       CompositingIOSurfaceShaderPrograms* shader_program_cache);
 
   ~CompositingIOSurfaceTransformer();
@@ -78,7 +77,6 @@ class CompositingIOSurfaceTransformer {
   // textures being created and read).  Generally, this is
   // GL_TEXTURE_RECTANGLE_ARB.
   const GLenum texture_target_;
-  const int texture_unit_;
   const bool src_texture_needs_y_flip_;
   CompositingIOSurfaceShaderPrograms* const shader_program_cache_;
 

@@ -16,6 +16,7 @@
 #include "base/mac/mac_util.h"
 #include "base/message_loop.h"
 #include "base/threading/platform_thread.h"
+#include "content/browser/renderer_host/compositing_iosurface_context_mac.h"
 #include "content/browser/renderer_host/compositing_iosurface_shader_programs_mac.h"
 #include "content/browser/renderer_host/compositing_iosurface_transformer_mac.h"
 #include "content/common/content_constants_internal.h"
@@ -26,8 +27,6 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 #include "ui/gl/gl_context.h"
-#include "ui/gl/gl_switches.h"
-#include "ui/gl/gpu_switching_manager.h"
 #include "ui/gfx/size_conversions.h"
 #include "ui/surface/io_surface_support_mac.h"
 
@@ -50,9 +49,6 @@ const int kFinishCopyRetryCycles = 100;
 // Time in milliseconds to allow asynchronous copy to finish.
 // This value is shorter than 16ms such that copy can complete within a vsync.
 const int kFinishCopyPollingPeriodMs = 10;
-
-// Everything uses only the GL_TEXTURE0 texture unit.
-const int kTextureUnit = 0;
 
 bool HasAppleFenceExtension() {
   static bool initialized_has_fence = false;
@@ -201,62 +197,8 @@ CompositingIOSurfaceMac* CompositingIOSurfaceMac::Create(SurfaceOrder order) {
     return NULL;
   }
 
-  std::vector<NSOpenGLPixelFormatAttribute> attributes;
-  attributes.push_back(NSOpenGLPFADoubleBuffer);
-  // We don't need a depth buffer - try setting its size to 0...
-  attributes.push_back(NSOpenGLPFADepthSize); attributes.push_back(0);
-  if (ui::GpuSwitchingManager::GetInstance()->SupportsDualGpus())
-    attributes.push_back(NSOpenGLPFAAllowOfflineRenderers);
-  attributes.push_back(0);
-
-  scoped_nsobject<NSOpenGLPixelFormat> glPixelFormat(
-      [[NSOpenGLPixelFormat alloc] initWithAttributes:&attributes.front()]);
-  if (!glPixelFormat) {
-    LOG(ERROR) << "NSOpenGLPixelFormat initWithAttributes failed";
-    return NULL;
-  }
-
-  scoped_nsobject<NSOpenGLContext> glContext(
-      [[NSOpenGLContext alloc] initWithFormat:glPixelFormat
-                                 shareContext:nil]);
-  if (!glContext) {
-    LOG(ERROR) << "NSOpenGLContext initWithFormat failed";
-    return NULL;
-  }
-
-  // If requested, ask the WindowServer to render the OpenGL surface underneath
-  // the window. This, combined with a hole punched in the window, will allow
-  // for views to "overlap" the GL surface from the user's point of view.
-  if (order == SURFACE_ORDER_BELOW_WINDOW) {
-    GLint belowWindow = -1;
-    [glContext setValues:&belowWindow forParameter:NSOpenGLCPSurfaceOrder];
-  }
-
-  CGLContextObj cglContext = (CGLContextObj)[glContext CGLContextObj];
-  if (!cglContext) {
-    LOG(ERROR) << "CGLContextObj failed";
-    return NULL;
-  }
-
-  // Draw at beam vsync.
-  bool is_vsync_disabled =
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableGpuVsync);
-  GLint swapInterval = is_vsync_disabled ? 0 : 1;
-  [glContext setValues:&swapInterval forParameter:NSOpenGLCPSwapInterval];
-
-  // Prepare the shader program cache.  Precompile only the shader programs
-  // needed to draw the IO Surface.
-  CGLSetCurrentContext(cglContext);
-  scoped_ptr<CompositingIOSurfaceShaderPrograms> shader_program_cache(
-      new CompositingIOSurfaceShaderPrograms());
-  const bool prepared = (shader_program_cache->UseBlitProgram(kTextureUnit) &&
-                         shader_program_cache->UseSolidWhiteProgram());
-  glUseProgram(0u);
-  CGLSetCurrentContext(0);
-  if (!prepared) {
-    LOG(ERROR) << "IOSurface failed to compile/link required shader programs.";
-    return NULL;
-  }
+  scoped_refptr<CompositingIOSurfaceContext> context =
+      CompositingIOSurfaceContext::Get(order);
 
   CVDisplayLinkRef display_link;
   CVReturn ret = CVDisplayLinkCreateWithActiveCGDisplays(&display_link);
@@ -265,23 +207,17 @@ CompositingIOSurfaceMac* CompositingIOSurfaceMac::Create(SurfaceOrder order) {
     return NULL;
   }
 
-  return new CompositingIOSurfaceMac(io_surface_support, glContext.release(),
-                                     cglContext,
-                                     shader_program_cache.Pass(),
-                                     is_vsync_disabled,
+  return new CompositingIOSurfaceMac(io_surface_support,
+                                     context,
                                      display_link);
 }
 
 CompositingIOSurfaceMac::CompositingIOSurfaceMac(
     IOSurfaceSupport* io_surface_support,
-    NSOpenGLContext* glContext,
-    CGLContextObj cglContext,
-    scoped_ptr<CompositingIOSurfaceShaderPrograms> shader_program_cache,
-    bool is_vsync_disabled,
+    scoped_refptr<CompositingIOSurfaceContext> context,
     CVDisplayLinkRef display_link)
     : io_surface_support_(io_surface_support),
-      glContext_(glContext),
-      cglContext_(cglContext),
+      context_(context),
       io_surface_handle_(0),
       texture_(0),
       finish_copy_timer_(
@@ -290,8 +226,6 @@ CompositingIOSurfaceMac::CompositingIOSurfaceMac(
           base::Bind(&CompositingIOSurfaceMac::FinishAllCopies,
                      base::Unretained(this)),
           true),
-      shader_program_cache_(shader_program_cache.Pass()),
-      is_vsync_disabled_(is_vsync_disabled),
       display_link_(display_link),
       display_link_stop_timer_(FROM_HERE, base::TimeDelta::FromSeconds(1),
                                this, &CompositingIOSurfaceMac::StopDisplayLink),
@@ -323,6 +257,10 @@ CompositingIOSurfaceMac::CompositingIOSurfaceMac(
   StopDisplayLink();
 }
 
+bool CompositingIOSurfaceMac::is_vsync_disabled() const {
+  return context_->is_vsync_disabled();
+}
+
 void CompositingIOSurfaceMac::GetVSyncParameters(base::TimeTicks* timebase,
                                                  uint32* interval_numerator,
                                                  uint32* interval_denominator) {
@@ -335,24 +273,24 @@ void CompositingIOSurfaceMac::GetVSyncParameters(base::TimeTicks* timebase,
 CompositingIOSurfaceMac::~CompositingIOSurfaceMac() {
   FailAllCopies();
   CVDisplayLinkRelease(display_link_);
-  CGLSetCurrentContext(cglContext_);
+  CGLSetCurrentContext(context_->cgl_context());
   CleanupAllCopiesWithinContext();
   UnrefIOSurfaceWithContextCurrent();
-  shader_program_cache_->Reset();
   CGLSetCurrentContext(0);
+  context_ = nil;
 }
 
 void CompositingIOSurfaceMac::SetIOSurface(uint64 io_surface_handle,
                                            const gfx::Size& size) {
   pixel_io_surface_size_ = size;
-  CGLSetCurrentContext(cglContext_);
+  CGLSetCurrentContext(context_->cgl_context());
   MapIOSurfaceToTexture(io_surface_handle);
   CGLSetCurrentContext(0);
 }
 
 int CompositingIOSurfaceMac::GetRendererID() {
   GLint current_renderer_id = -1;
-  if (CGLGetParameter(cglContext_,
+  if (CGLGetParameter(context_->cgl_context(),
                       kCGLCPCurrentRendererID,
                       &current_renderer_id) == kCGLNoError)
     return current_renderer_id & kCGLRendererIDMatchingMask;
@@ -362,14 +300,14 @@ int CompositingIOSurfaceMac::GetRendererID() {
 void CompositingIOSurfaceMac::DrawIOSurface(
     NSView* view, float scale_factor,
     RenderWidgetHostViewFrameSubscriber* frame_subscriber) {
-  CGLSetCurrentContext(cglContext_);
+  CGLSetCurrentContext(context_->cgl_context());
 
   bool has_io_surface = MapIOSurfaceToTexture(io_surface_handle_);
 
   TRACE_EVENT1("browser", "CompositingIOSurfaceMac::DrawIOSurface",
                "has_io_surface", has_io_surface);
 
-  [glContext_ setView:view];
+  [context_->nsgl_context() setView:view];
   gfx::Size window_size(NSSizeToCGSize([view frame].size));
   gfx::Size pixel_window_size = gfx::ToFlooredSize(
       gfx::ScaleSize(window_size, scale_factor));
@@ -395,8 +333,8 @@ void CompositingIOSurfaceMac::DrawIOSurface(
   glDisable(GL_BLEND);
 
   if (has_io_surface) {
-    shader_program_cache_->UseBlitProgram(kTextureUnit);
-    glActiveTexture(GL_TEXTURE0 + kTextureUnit);
+    context_->shader_program_cache()->UseBlitProgram();
+    glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_RECTANGLE_ARB, texture_);
 
     DrawQuad(quad_);
@@ -406,7 +344,7 @@ void CompositingIOSurfaceMac::DrawIOSurface(
     // Fill the resize gutters with white.
     if (window_size.width() > io_surface_size_.width() ||
         window_size.height() > io_surface_size_.height()) {
-      shader_program_cache_->UseSolidWhiteProgram();
+      context_->shader_program_cache()->UseSolidWhiteProgram();
       SurfaceQuad filler_quad;
       if (window_size.width() > io_surface_size_.width()) {
         // Draw right-side gutter down to the bottom of the window.
@@ -473,7 +411,7 @@ void CompositingIOSurfaceMac::DrawIOSurface(
     }
   }
 
-  CGLFlushDrawable(cglContext_);
+  CGLFlushDrawable(context_->cgl_context());
 
   // For latency_tests.cc:
   UNSHIPPED_TRACE_EVENT_INSTANT0("test_gpu", "CompositorSwapBuffersComplete",
@@ -492,7 +430,7 @@ void CompositingIOSurfaceMac::DrawIOSurface(
 
   StartOrContinueDisplayLink();
 
-  if (!is_vsync_disabled_)
+  if (!is_vsync_disabled())
     RateLimitDraws();
 }
 
@@ -513,7 +451,7 @@ void CompositingIOSurfaceMac::CopyTo(
       << "Stride is required to be equal to width for GPU readback.";
   output->setIsOpaque(true);
 
-  CGLSetCurrentContext(cglContext_);
+  CGLSetCurrentContext(context_->cgl_context());
   const base::Closure copy_done_callback = CopyToSelectedOutputWithinContext(
       src_pixel_subrect, src_scale_factor, gfx::Rect(dst_pixel_size), false,
       output.get(), NULL,
@@ -528,7 +466,7 @@ void CompositingIOSurfaceMac::CopyToVideoFrame(
     float src_scale_factor,
     const scoped_refptr<media::VideoFrame>& target,
     const base::Callback<void(bool)>& callback) {
-  CGLSetCurrentContext(cglContext_);
+  CGLSetCurrentContext(context_->cgl_context());
   const base::Closure copy_done_callback = CopyToVideoFrameWithinContext(
       src_pixel_subrect, src_scale_factor, false, target, callback);
   CGLSetCurrentContext(0);
@@ -596,7 +534,7 @@ bool CompositingIOSurfaceMac::MapIOSurfaceToTexture(
   glTexParameterf(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST); CHECK_GL_ERROR();
   GLuint plane = 0;
   CGLError cglerror = io_surface_support_->CGLTexImageIOSurface2D(
-      cglContext_,
+      context_->cgl_context(),
       target,
       GL_RGBA,
       rounded_size.width(),
@@ -615,7 +553,7 @@ bool CompositingIOSurfaceMac::MapIOSurfaceToTexture(
 }
 
 void CompositingIOSurfaceMac::UnrefIOSurface() {
-  CGLSetCurrentContext(cglContext_);
+  CGLSetCurrentContext(context_->cgl_context());
   UnrefIOSurfaceWithContextCurrent();
   CGLSetCurrentContext(0);
 }
@@ -634,7 +572,7 @@ void CompositingIOSurfaceMac::DrawQuad(const SurfaceQuad& quad) {
 
 bool CompositingIOSurfaceMac::IsVendorIntel() {
   GLint screen;
-  CGLGetVirtualScreen(cglContext_, &screen);
+  CGLGetVirtualScreen(context_->cgl_context(), &screen);
   if (screen != screen_)
     initialized_is_intel_ = false;
   screen_ = screen;
@@ -661,11 +599,11 @@ void CompositingIOSurfaceMac::UnrefIOSurfaceWithContextCurrent() {
 }
 
 void CompositingIOSurfaceMac::GlobalFrameDidChange() {
-  [glContext_ update];
+  [context_->nsgl_context() update];
 }
 
 void CompositingIOSurfaceMac::ClearDrawable() {
-  [glContext_ clearDrawable];
+  [context_->nsgl_context() clearDrawable];
   UnrefIOSurface();
 }
 
@@ -766,8 +704,9 @@ base::Closure CompositingIOSurfaceMac::CopyToSelectedOutputWithinContext(
   // Create the transformer_ on first use.
   if (!transformer_) {
     transformer_.reset(new CompositingIOSurfaceTransformer(
-        GL_TEXTURE_RECTANGLE_ARB, kTextureUnit, true,
-        shader_program_cache_.get()));
+        GL_TEXTURE_RECTANGLE_ARB,
+        true,
+        context_->shader_program_cache()));
   }
 
   // Send transform commands to the GPU.
@@ -873,7 +812,7 @@ void CompositingIOSurfaceMac::AsynchronousReadbackForCopy(
 
 void CompositingIOSurfaceMac::FinishAllCopies() {
   std::vector<base::Closure> done_callbacks;
-  CGLSetCurrentContext(cglContext_);
+  CGLSetCurrentContext(context_->cgl_context());
   FinishAllCopiesWithinContext(&done_callbacks);
   CGLSetCurrentContext(0);
   for (size_t i = 0; i < done_callbacks.size(); ++i)

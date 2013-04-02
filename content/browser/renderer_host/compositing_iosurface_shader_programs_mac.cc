@@ -332,13 +332,12 @@ void CompositingIOSurfaceShaderPrograms::Reset() {
     texel_scale_x_var_locations_[i] = -1;
 }
 
-bool CompositingIOSurfaceShaderPrograms::UseBlitProgram(
-    int texture_unit_offset) {
+bool CompositingIOSurfaceShaderPrograms::UseBlitProgram() {
   const GLuint program = GetShaderProgram(SHADER_PROGRAM_BLIT);
   if (program == 0u)
     return false;
   glUseProgram(program);
-  BindUniformTextureVariable(SHADER_PROGRAM_BLIT, texture_unit_offset);
+  BindUniformTextureVariable(SHADER_PROGRAM_BLIT, 0);
   return true;
 }
 
@@ -351,7 +350,7 @@ bool CompositingIOSurfaceShaderPrograms::UseSolidWhiteProgram() {
 }
 
 bool CompositingIOSurfaceShaderPrograms::UseRGBToYV12Program(
-    int pass_number, int texture_unit_offset, float texel_scale_x) {
+    int pass_number, float texel_scale_x) {
   const int which = SHADER_PROGRAM_RGB_TO_YV12__1_OF_2 + pass_number - 1;
   DCHECK_GE(which, SHADER_PROGRAM_RGB_TO_YV12__1_OF_2);
   DCHECK_LE(which, SHADER_PROGRAM_RGB_TO_YV12__2_OF_2);
@@ -360,7 +359,7 @@ bool CompositingIOSurfaceShaderPrograms::UseRGBToYV12Program(
   if (program == 0u)
     return false;
   glUseProgram(program);
-  BindUniformTextureVariable(which, texture_unit_offset);
+  BindUniformTextureVariable(which, 0);
   if (which == SHADER_PROGRAM_RGB_TO_YV12__1_OF_2) {
     BindUniformTexelScaleXVariable(which, texel_scale_x);
   } else {
