@@ -22,6 +22,7 @@ class KioskAppLaunchError {
     UNABLE_TO_REMOVE,         // Unable to remove cryptohome.
     UNABLE_TO_INSTALL,        // Unable to install app.
     USER_CANCEL,              // Canceled by user.
+    NOT_KIOSK_ENABLED,        // Not a kiosk enabled app.
   };
 
   // Returns a message for given |error|.

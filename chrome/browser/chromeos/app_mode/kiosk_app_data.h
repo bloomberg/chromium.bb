@@ -84,8 +84,7 @@ class KioskAppData : public base::SupportsWeakPtr<KioskAppData>,
   void OnIconLoadFailure();
 
   // Callbacks for WebstoreDataParser
-  void OnWebstoreParseSuccess(const SkBitmap& icon,
-                              base::DictionaryValue* parsed_manifest);
+  void OnWebstoreParseSuccess(const SkBitmap& icon);
   void OnWebstoreParseFailure();
 
   // Starts to fetch data from web store.

@@ -7,5 +7,5 @@
   "localized_name": "Name of App 1",
   "localized_description": "Description of App 1",
   "icon_url": "webstore/inlineinstall/detail/app_1_green16x16.png",
-  "manifest":"{\n \"name\": \"__MSG_appName__\",\n  \"version\": \"1\",\n  \"manifest_version\": 2,\n  \"description\": \"__MSG_appDesc__\",\n  \"default_locale\": \"en\",\n  \"app\": {\n    \"launch\": {\n      \"local_path\": \"index.html\"\n    }\n  },\n  \"icons\": {\n    \"16\": \"favicon.png\",\n    \"128\": \"128.png\"\n  },\n  \"permissions\": [] }"
+  "manifest":"{\n \"name\": \"__MSG_appName__\",\n  \"version\": \"1\",\n  \"manifest_version\": 2,\n  \"description\": \"__MSG_appDesc__\",\n  \"default_locale\": \"en\",\n  \"app\": {\n    \"background\": {\n      \"scripts\": [\"background.js\"]\n  },\n    \"launch\": {\n      \"local_path\": \"index.html\"\n    }\n  },\n  \"icons\": {\n    \"16\": \"favicon.png\",\n    \"128\": \"128.png\"\n  },\n  \"kiosk_enabled\": true,\n  \"permissions\": [] }"
 }

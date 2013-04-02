@@ -84,8 +84,7 @@ class ShowWallpaperAnimationObserver : public ui::ImplicitAnimationObserver,
 
   // Overridden from views::WidgetObserver.
   virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE {
-    desktop_widget_->RemoveObserver(this);
-    desktop_widget_ = NULL;
+    delete this;
   }
 
   aura::RootWindow* root_window_;

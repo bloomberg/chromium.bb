@@ -27,6 +27,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/manifest_handlers/kiosk_enabled_info.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
@@ -212,7 +213,12 @@ void StartupAppLauncher::Cleanup() {
 
   // Ends OpenAsh() keep alive since the session should either be bound with
   // the just launched app on success or should be ended on failure.
-  chrome::EndKeepAlive();
+  // Invoking it via a PostNonNestableTask because Cleanup() could be called
+  // before main message loop starts.
+  BrowserThread::PostNonNestableTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&chrome::EndKeepAlive));
 
   delete this;
 }
@@ -252,6 +258,11 @@ void StartupAppLauncher::Launch() {
       extension_service()->GetInstalledExtension(app_id_);
   CHECK(extension);
 
+  if (!extensions::KioskEnabledInfo::IsKioskEnabled(extension)) {
+    OnLaunchFailure(KioskAppLaunchError::NOT_KIOSK_ENABLED);
+    return;
+  }
+
   // Set the app_id for the current instance of KioskAppUpdateService.
   KioskAppUpdateService* update_service =
       KioskAppUpdateServiceFactory::GetForProfile(profile_);
@@ -279,6 +290,7 @@ void StartupAppLauncher::BeginInstall() {
 
   chromeos::UpdateAppLaunchSplashScreenState(
       chromeos::APP_LAUNCH_STATE_INSTALLING_APPLICATION);
+
   if (IsAppInstalled(profile_, app_id_)) {
     Launch();
     return;

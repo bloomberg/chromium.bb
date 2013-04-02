@@ -20,6 +20,8 @@
 #include "chrome/browser/image_decoder.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/extensions/extension_manifest_constants.h"
+#include "chrome/common/extensions/manifest.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/gfx/codec/png_codec.h"
 
@@ -56,6 +58,17 @@ void SaveIconToLocalOnBlockingPool(
   CHECK_EQ(static_cast<int>(raw_icon->size()),
            file_util::WriteFile(icon_path,
                                 raw_icon->data().c_str(), raw_icon->size()));
+}
+
+// Returns true for valid kiosk app manifest.
+bool IsValidKioskAppManifest(const extensions::Manifest& manifest) {
+  bool kiosk_enabled;
+  if (manifest.GetBoolean(extension_manifest_keys::kKioskEnabled,
+                          &kiosk_enabled)) {
+    return kiosk_enabled;
+  }
+
+  return false;
 }
 
 }  // namespace
@@ -191,25 +204,37 @@ class KioskAppData::WebstoreDataParser
 
   virtual ~WebstoreDataParser() {}
 
+  void ReportFailure() {
+    if (client_)
+      client_->OnWebstoreParseFailure();
+
+    delete this;
+  }
+
   // WebstoreInstallHelper::Delegate overrides:
   virtual void OnWebstoreParseSuccess(
       const std::string& id,
       const SkBitmap& icon,
       base::DictionaryValue* parsed_manifest) OVERRIDE {
     // Takes ownership of |parsed_manifest|.
-    scoped_ptr<base::DictionaryValue> manifest(parsed_manifest);
+    extensions::Manifest manifest(
+        extensions::Manifest::INVALID_LOCATION,
+        scoped_ptr<base::DictionaryValue>(parsed_manifest));
+
+    if (!IsValidKioskAppManifest(manifest)) {
+      ReportFailure();
+      return;
+    }
 
     if (client_)
-      client_->OnWebstoreParseSuccess(icon, manifest.release());
+      client_->OnWebstoreParseSuccess(icon);
     delete this;
   }
   virtual void OnWebstoreParseFailure(
       const std::string& id,
       InstallHelperResultCode result_code,
       const std::string& error_message) OVERRIDE {
-    if (client_)
-      client_->OnWebstoreParseFailure();
-    delete this;
+    ReportFailure();
   }
 
   base::WeakPtr<KioskAppData> client_;
@@ -334,12 +359,7 @@ void KioskAppData::OnIconLoadFailure() {
   StartFetch();
 }
 
-void KioskAppData::OnWebstoreParseSuccess(
-    const SkBitmap& icon,
-    base::DictionaryValue* parsed_manifest) {
-  // Takes ownership of |parsed_manifest|.
-  scoped_ptr<base::DictionaryValue> manifest(parsed_manifest);
-
+void KioskAppData::OnWebstoreParseSuccess(const SkBitmap& icon) {
   icon_ = gfx::ImageSkia::CreateFrom1xBitmap(icon);
   icon_.MakeThreadSafe();
 
