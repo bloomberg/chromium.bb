@@ -187,7 +187,7 @@ TEST_F(TabSpecificContentSettingsTest, AllowedContent) {
                                     "C=D",
                                     options,
                                     true);
-  ASSERT_FALSE(
+  ASSERT_TRUE(
       content_settings->IsContentAllowed(CONTENT_SETTINGS_TYPE_COOKIES));
   ASSERT_TRUE(
       content_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES));

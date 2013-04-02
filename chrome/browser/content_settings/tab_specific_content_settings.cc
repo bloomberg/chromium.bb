@@ -264,7 +264,13 @@ void TabSpecificContentSettings::OnContentBlocked(
   if (type < 0 || type >= CONTENT_SETTINGS_NUM_TYPES)
     return;
 
-  content_allowed_[type] = false;
+  // Media is different from other content setting types since it allows new
+  // setting to kick in without reloading the page, and the UI for media is
+  // always reflecting the newest permission setting.
+  if (type == CONTENT_SETTINGS_TYPE_MEDIASTREAM)
+    content_allowed_[type] = false;
+  else
+    content_allowed_[type] = true;
 
   // Unless UI for resource content settings is enabled, ignore the resource
   // identifier.
@@ -303,9 +309,13 @@ void TabSpecificContentSettings::OnContentAllowed(ContentSettingsType type) {
   DCHECK(type != CONTENT_SETTINGS_TYPE_GEOLOCATION)
       << "Geolocation settings handled by OnGeolocationPermissionSet";
   bool access_changed = false;
-  if (content_blocked_[type]) {
-    content_blocked_[type] = false;
-    access_changed = true;
+  if (type == CONTENT_SETTINGS_TYPE_MEDIASTREAM) {
+    // The setting for media is overwritten here because media does not need to
+    // reload the page to have the new setting kick in. See issue/175993.
+    if (content_blocked_[type]) {
+      content_blocked_[type] = false;
+      access_changed = true;
+    }
   }
 
   if (!content_allowed_[type]) {
