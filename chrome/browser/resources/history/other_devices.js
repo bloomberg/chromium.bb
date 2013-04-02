@@ -257,7 +257,7 @@ Device.prototype.createSessionContents_ = function(maxNumTabs) {
         var a = createElementWithClassName('a', 'device-tab-entry');
         a.href = tab.url;
         a.style.backgroundImage =
-            getFaviconImageSet(tab.url, 16, /* session-favicon */ true);
+            getFaviconImageSet(tab.url, 16, 'session-favicon');
         this.addHighlightedText_(a, tab.title);
         // Add a tooltip, since it might be ellipsized. The ones that are not
         // necessary will be removed once added to the document, so we can

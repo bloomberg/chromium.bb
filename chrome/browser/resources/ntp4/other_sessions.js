@@ -214,7 +214,7 @@ cr.define('ntp', function() {
           a.textContent = tab.title;
           a.href = tab.url;
           a.style.backgroundImage =
-              getFaviconImageSet(tab.url, 16, /* session-favicon */ true);
+              getFaviconImageSet(tab.url, 16, 'session-favicon');
 
           var clickHandler = this.makeClickHandler_(
               session.tag, String(window.sessionId), String(tab.sessionId));

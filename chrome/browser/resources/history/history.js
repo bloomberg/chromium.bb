@@ -38,6 +38,14 @@ ManagedModeManualBehavior = {
 
 MenuButton.createDropDownArrows();
 
+/**
+ * Returns true if the mobile (non-desktop) version is being shown.
+ * @return {boolean} true if the mobile version is being shown.
+ */
+function isMobileVersion() {
+  return !document.body.classList.contains('uber-frame');
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Visit:
 
@@ -122,12 +130,6 @@ Visit.prototype.getResultDOM = function(propertyBag) {
   var entryBox = createElementWithClassName('label', 'entry-box');
   var domain = createElementWithClassName('div', 'domain');
 
-  var dropDown = createElementWithClassName('button', 'drop-down');
-  dropDown.value = 'Open action menu';
-  dropDown.title = loadTimeData.getString('actionMenuDescription');
-  dropDown.setAttribute('menu', '#action-menu');
-  cr.ui.decorate(dropDown, MenuButton);
-
   this.id_ = this.model_.nextVisitId_++;
 
   // Checkbox is always created, but only visible on hover & when checked.
@@ -145,23 +147,48 @@ Visit.prototype.getResultDOM = function(propertyBag) {
   var setActiveVisit = function(e) {
     activeVisit = self;
   };
-  dropDown.addEventListener('mousedown', setActiveVisit);
-  dropDown.addEventListener('focus', setActiveVisit);
-
   domain.textContent = this.getDomainFromURL_(this.url_);
 
   // Clicking anywhere in the entryBox will check/uncheck the checkbox.
   entryBox.setAttribute('for', checkbox.id);
   entryBox.addEventListener('mousedown', entryBoxMousedown);
 
-  // Prevent clicks on the drop down from affecting the checkbox.
-  dropDown.addEventListener('click', function(e) { e.preventDefault(); });
-
-  // We use a wrapper div so that the entry contents will be shrinkwrapped.
   entryBox.appendChild(time);
-  entryBox.appendChild(this.getTitleDOM_(addTitleFavicon));
-  entryBox.appendChild(domain);
-  entryBox.appendChild(dropDown);
+  var titleAndDomainWrapper = entryBox.appendChild(
+      createElementWithClassName('div', 'title-and-domain'));
+  titleAndDomainWrapper.appendChild(this.getTitleDOM_());
+  titleAndDomainWrapper.appendChild(domain);
+  if (addTitleFavicon)
+    this.addFaviconToElement_(titleAndDomainWrapper);
+
+  if (isMobileVersion()) {
+    var removeButton = createElementWithClassName('button', 'remove-entry');
+    removeButton.classList.add('custom-appearance');
+    removeButton.addEventListener('click', function(e) {
+      self.removeFromHistory();
+      e.stopPropagation();
+      e.preventDefault();
+    });
+    entryBox.appendChild(removeButton);
+
+    // Support clicking anywhere inside the entry box.
+    entryBox.addEventListener('click', function(e) {
+      e.currentTarget.querySelector('a').click();
+    });
+  } else {
+    var dropDown = createElementWithClassName('button', 'drop-down');
+    dropDown.value = 'Open action menu';
+    dropDown.title = loadTimeData.getString('actionMenuDescription');
+    dropDown.setAttribute('menu', '#action-menu');
+    cr.ui.decorate(dropDown, MenuButton);
+
+    dropDown.addEventListener('mousedown', setActiveVisit);
+    dropDown.addEventListener('focus', setActiveVisit);
+
+    // Prevent clicks on the drop down from affecting the checkbox.
+    dropDown.addEventListener('click', function(e) { e.preventDefault(); });
+    entryBox.appendChild(dropDown);
+  }
 
   // Let the entryBox be styled appropriately when it contains keyboard focus.
   entryBox.addEventListener('focus', function() {
@@ -255,18 +282,12 @@ Visit.prototype.addHighlightedText_ = function(node, content, highlightText) {
 
 /**
  * Returns the DOM element containing a link on the title of the URL for the
- * current visit. Optionally sets the favicon as well.
- * @param {boolean} addFavicon Whether to add a favicon or not.
+ * current visit.
  * @return {Element} DOM representation for the title block.
  * @private
  */
-Visit.prototype.getTitleDOM_ = function(addFavicon) {
+Visit.prototype.getTitleDOM_ = function() {
   var node = createElementWithClassName('div', 'title');
-  if (addFavicon) {
-    node.style.backgroundImage = getFaviconImageSet(this.url_);
-    node.style.backgroundSize = '16px';
-  }
-
   var link = document.createElement('a');
   link.href = this.url_;
   link.id = 'id-' + this.id_;
@@ -294,7 +315,10 @@ Visit.prototype.getTitleDOM_ = function(addFavicon) {
  * @private
  */
 Visit.prototype.addFaviconToElement_ = function(el) {
-  el.style.backgroundImage = getFaviconImageSet(this.url_);
+  var url = isMobileVersion() ?
+      getFaviconImageSet(this.url_, 32, 'touch-icon') :
+      getFaviconImageSet(this.url_);
+  el.style.backgroundImage = url;
 };
 
 /**
@@ -668,6 +692,11 @@ function HistoryView(model) {
 
   this.currentVisits_ = [];
 
+  // If there is no search button, use the search button label as placeholder
+  // text in the search field.
+  if ($('search-button').offsetWidth == 0)
+    $('search-field').placeholder = $('search-button').value;
+
   var self = this;
 
   $('clear-browsing-data').addEventListener('click', openClearBrowsingData);
@@ -851,6 +880,14 @@ HistoryView.prototype.getOffset = function() {
  */
 HistoryView.prototype.onModelReady = function(doneLoading) {
   this.displayResults_(doneLoading);
+
+  // Allow custom styling based on whether there are any results on the page.
+  // To make this easier, add a class to the body if there are any results.
+  if (this.model_.visits_.length)
+    document.body.classList.add('has-results');
+  else
+    document.body.classList.remove('has-results');
+
   this.updateNavBar_();
 };
 
@@ -920,6 +957,24 @@ HistoryView.prototype.showNotification = function(innerHTML, isWarning) {
   var links = bar.querySelectorAll('a');
   for (var i = 0; i < links.length; i++)
     links[i].target = '_top';
+
+  this.positionNotificationBar();
+};
+
+/**
+ * Adjusts the position of the notification bar based on the size of the page.
+ */
+HistoryView.prototype.positionNotificationBar = function() {
+  var bar = $('notification-bar');
+
+  // If the bar does not fit beside the editing controls, put it into the
+  // overflow state.
+  if (bar.getBoundingClientRect().top >=
+      $('editing-controls').getBoundingClientRect().bottom) {
+    bar.classList.add('alone');
+  } else {
+    bar.classList.remove('alone');
+  }
 };
 
 // HistoryView, private: ------------------------------------------------------
@@ -936,6 +991,8 @@ HistoryView.prototype.clear_ = function() {
     visit.isRendered = false;
   });
   this.currentVisits_ = [];
+
+  document.body.classList.remove('has-results');
 };
 
 /**
@@ -1373,7 +1430,6 @@ function load() {
   uber.onContentFrameLoaded();
 
   var searchField = $('search-field');
-  searchField.focus();
 
   historyModel = new HistoryModel();
   historyView = new HistoryView(historyModel);
@@ -1391,6 +1447,9 @@ function load() {
     // Disable the group by domain control when a search is active.
     $('group-by-domain').disabled = (searchField.value != '');
     historyView.setSearch(searchField.value);
+
+    if (isMobileVersion())
+      searchField.blur();  // Dismiss the keyboard.
   };
 
   searchField.addEventListener('search', doSearch);
@@ -1426,10 +1485,30 @@ function load() {
   var title = loadTimeData.getString('title');
   uber.invokeMethodOnParent('setTitle', {title: title});
 
-  window.addEventListener('message', function(e) {
-    if (e.data.method == 'frameSelected')
-      searchField.focus();
-  });
+  // Adjust the position of the notification bar when the window size changes.
+  window.addEventListener('resize',
+      historyView.positionNotificationBar.bind(historyView));
+
+  if (isMobileVersion()) {
+    // Move the search box out of the header.
+    var resultsDisplay = $('results-display');
+    resultsDisplay.parentNode.insertBefore($('search-field'), resultsDisplay);
+
+    // Move the button to the bottom of the page.
+    document.querySelector('.page').appendChild($('clear-browsing-data'));
+
+    window.addEventListener('resize', function(e) {
+      // Don't show the Clear Browsing Data button when the soft keyboard is up.
+      $('clear-browsing-data').hidden =
+          window.innerHeight != window.outerHeight;
+    });
+  } else {
+    window.addEventListener('message', function(e) {
+      if (e.data.method == 'frameSelected')
+        searchField.focus();
+    });
+    searchField.focus();
+  }
 }
 
 /**

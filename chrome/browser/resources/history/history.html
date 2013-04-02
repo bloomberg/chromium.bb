@@ -2,7 +2,7 @@
 <html i18n-values="dir:textdirection;">
 <head>
 <meta charset="utf-8">
-<if expr="pp_ifdef('android')">
+<if expr="pp_ifdef('android') or pp_ifdef('ios')">
 <meta name="viewport" content="width=device-width, initial-scale=1.0,
                                maximum-scale=1.0, user-scalable=no">
 </if>
@@ -12,11 +12,14 @@
 <link rel="stylesheet" href="chrome://resources/css/menu.css">
 <link rel="stylesheet" href="chrome://resources/css/menu_button.css">
 <link rel="stylesheet" href="chrome://resources/css/spinner.css">
-<if expr="not pp_ifdef('android')">
+<if expr="not pp_ifdef('android') and not pp_ifdef('ios')">
 <link rel="stylesheet" href="../uber/uber_shared.css">
 </if>
 <link rel="stylesheet" href="history.css">
-<if expr="not pp_ifdef('android')">
+<if expr="pp_ifdef('android') or pp_ifdef('ios')">
+<link rel="stylesheet" href="history_mobile.css">
+</if>
+<if expr="not pp_ifdef('android') and not pp_ifdef('ios')">
 <link rel="stylesheet" href="other_devices.css">
 </if>
 
@@ -46,15 +49,15 @@
 <body class="uber-frame"
     i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
 </if>
-<if expr="pp_ifdef('android')">
-<body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
+<if expr="pp_ifdef('android') or pp_ifdef('ios')">
+<body i18n-values=".style.fontFamily:fontfamily">
 </if>
 
 <div class="page">
   <header>
     <h1 i18n-content="history"></h1>
     <div id="search-form" class="search-field-container">
-      <input type="search" id="search-field">
+      <input type="search" id="search-field" required>
       <input type="submit" id="search-button" i18n-values="value:searchButton">
     </div>
   </header>
@@ -87,18 +90,20 @@
 <if expr="not pp_ifdef('android')">
   <div id="other-devices" class="other-devices"></div>
 </if>
-  <div id="editing-controls">
-    <button id="clear-browsing-data" i18n-content="clearAllHistory"></button>
-    <button id="remove-selected" disabled="disabled"
-        i18n-content="removeSelected"></button>
-    <button id="allow-selected" i18n-content="allowItems" disabled="disabled"
-        hidden>
-    </button>
-    <button id="block-selected" i18n-content="blockItems" disabled="disabled"
-        hidden>
-    </button>
-    <button id="lock-unlock-button" i18n-content="unlockButton"></button>
-    <div id="notification-bar" class="butter-bar" hidden></div>
+  <div id="top-container">
+    <div id="editing-controls">
+      <button id="clear-browsing-data" i18n-content="clearAllHistory"></button>
+      <button id="remove-selected" disabled="disabled"
+          i18n-content="removeSelected"></button>
+      <button id="allow-selected" i18n-content="allowItems" disabled="disabled"
+          hidden>
+      </button>
+      <button id="block-selected" i18n-content="blockItems" disabled="disabled"
+          hidden>
+      </button>
+      <button id="lock-unlock-button" i18n-content="unlockButton"></button>
+    </div>
+    <div id="notification-bar" hidden></div>
   </div>
 
   <div id="results-display"></div>

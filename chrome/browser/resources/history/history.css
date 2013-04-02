@@ -2,21 +2,18 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-body:not(.uber-frame) {
-  color: rgb(48, 57, 66);
-  margin: 0 8px 0 8px;
-}
-
 html[dir=rtl] body.uber-frame > .page {
   -webkit-margin-end: 0;
 }
 
+#top-container {
+  margin-top: 16px;
+  overflow: auto;
+}
+
 #editing-controls,
 #loading-spinner {
-  margin-top: 16px;
-<if expr="not pp_ifdef('android')">
   white-space: nowrap;
-</if>
 }
 
 #lock-unlock-button:not(.profile-is-managed),
@@ -37,10 +34,6 @@ html[dir=rtl] #lock-unlock-button {
   margin: 0;
 }
 
-#loading-spinner[hidden] {
-  display: inline-block;
-}
-
 #spinner {
   position: relative;
   top: 3px;
@@ -48,29 +41,40 @@ html[dir=rtl] #lock-unlock-button {
 
 #notification-bar {
   float: right;
-  padding-bottom: 4px;
-  padding-top: 4px;
+  padding-top: 5px;
 }
 
 html[dir=rtl] #notification-bar {
   float: left;
 }
 
-#notification-bar:not(.warning) {
-  -webkit-padding-end: 0;
-  background-color: inherit;
-  border: 1px solid transparent;
-  box-shadow: none;
+#notification-bar.alone {
+  float: left;
+  margin-top: 12px;
 }
 
-#editing-controls,
+html[dir=rtl] #notification-bar.alone {
+  float: right;
+}
+
 #filter-controls,
-#results-display {
+#top-container,
+#results-display,
+#results-pagination {
   max-width: 718px;
 }
 
 #filter-controls {
   overflow: auto;
+}
+
+#editing-controls {
+  -webkit-margin-end: 12px;
+  float: left;
+}
+
+html[dir=rtl] #editing-controls {
+  float: right;
 }
 
 #editing-controls button:first-of-type {
@@ -167,10 +171,6 @@ html[dir=rtl] #range-next {
   width: 100%;
 }
 
-.day {
-  white-space: nowrap;
-}
-
 .search-results,
 .day-results {
   margin: 0 0 24px 0;
@@ -212,8 +212,10 @@ h2.timeframe {
 
 .entry .domain {
   color: rgb(151, 156, 160);
+  overflow: hidden;
   padding-left: 6px;
   padding-right: 6px;
+  white-space: nowrap;
 }
 
 .site-results .domain {
@@ -345,6 +347,11 @@ html[dir='rtl'] .site-domain {
   border-radius: 2px;
 }
 
+.entry .title-and-domain {
+  display: -webkit-flex;
+  min-width: 0;
+}
+
 .entry .title {
   min-width: 0;
   overflow: hidden;
@@ -352,16 +359,20 @@ html[dir='rtl'] .site-domain {
   white-space: nowrap;
 }
 
-.day-results > .entry .title,
-.search-results > .entry .title,
+.entry .title-and-domain,
 .site-domain {
   /* Make room for the favicon. */
   -webkit-padding-start: 20px;
 
   /* Control the favicon appearance. */
-  background-position-y: 3px;
+  background-position-y: center;
   background-repeat: no-repeat;
   background-size: 16px;
+}
+
+html[dir=rtl] .entry .title-and-domain,
+html[dir=rtl] .site-domain {
+  background-position-x: right;
 }
 
 .site-domain button {
@@ -435,4 +446,48 @@ button.menu-button.drop-down {
 #action-menu > :not(hr) {
   line-height: 29px;
   outline: none;
+}
+
+body:not(.has-results) #results-pagination {
+  display: none;
+}
+
+#older-button {
+  float: right;
+}
+
+
+html[dir=rtl] #older-button {
+  float: left;
+}
+
+html[dir=ltr] #newest-button::before {
+  -webkit-padding-end: 0.3em;
+  content: '\00AB';  /* Left-pointing double angle quotation mark. */
+}
+
+html[dir=rtl] #newest-button::after {
+  -webkit-padding-start: 0.3em;
+  content: '\00BB';  /* Right-pointing double angle quotation mark. */
+}
+
+html[dir=ltr] #newer-button::before,
+html[dir=rtl] #older-button::before {
+  -webkit-padding-end: 0.3em;
+  content: '\2039';  /* Single left-pointing angle quotation mark. */
+}
+
+html[dir=ltr] #older-button::after,
+html[dir=rtl] #newer-button::after {
+  -webkit-padding-start: 0.3em;
+  content: '\203A';  /* Single right-pointing angle quotation mark. */
+}
+
+/* Clear the float to ensure that #results-pagination encloses its children. */
+#results-pagination::after {
+  clear: both;
+  content: '';
+  display: block;
+  height: 0;
+  visibility: hidden;
 }

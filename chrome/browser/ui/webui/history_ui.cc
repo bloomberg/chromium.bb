@@ -364,7 +364,7 @@ void BrowsingHistoryHandler::RegisterMessages() {
   // Create our favicon data source.
   Profile* profile = Profile::FromWebUI(web_ui());
   content::URLDataSource::Add(
-      profile, new FaviconSource(profile, FaviconSource::FAVICON));
+      profile, new FaviconSource(profile, FaviconSource::ANY));
 
   // Get notifications when history is cleared.
   registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URLS_DELETED,

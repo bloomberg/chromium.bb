@@ -277,13 +277,13 @@ function appendParam(url, key, value) {
  * Creates a CSS -webkit-image-set for a favicon request.
  * @param {string} url The url for the favicon.
  * @param {number=} opt_size Optional preferred size of the favicon.
- * @param {boolean=} opt_sessionFavicon Optional flag to indicate if
- *     requesting a session favicon.
+ * @param {string=} opt_type Optional type of favicon to request. Valid values
+ *     are 'favicon', 'session-favicon', and 'touch-icon'. Default is 'favicon'.
  * @return {string} -webkit-image-set for the favicon.
  */
-function getFaviconImageSet(url, opt_size, opt_sessionFavicon) {
+function getFaviconImageSet(url, opt_size, opt_type) {
   var size = opt_size || 16;
-  var type = opt_sessionFavicon ? 'session-favicon' : 'favicon';
+  var type = opt_type || 'favicon';
   return imageset(
       'chrome://' + type + '/size/' + size + '@scalefactorx/' + url);
 }
