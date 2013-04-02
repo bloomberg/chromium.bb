@@ -18,6 +18,10 @@
 #include "third_party/webrtc/voice_engine/include/voe_file.h"
 #include "third_party/webrtc/voice_engine/include/voe_network.h"
 
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
+
 using media::AudioParameters;
 using testing::_;
 using testing::AnyNumber;
@@ -216,6 +220,12 @@ TEST_F(WebRTCAudioDeviceTest, TestValidOutputRates) {
 // Basic test that instantiates and initializes an instance of
 // WebRtcAudioDeviceImpl.
 TEST_F(WebRTCAudioDeviceTest, Construct) {
+#if defined(OS_WIN)
+  // This test crashes on Win XP bots.
+  if (base::win::GetVersion() <= base::win::VERSION_XP)
+    return;
+#endif
+
   AudioParameters input_params(
       AudioParameters::AUDIO_PCM_LOW_LATENCY,
       media::CHANNEL_LAYOUT_MONO,
