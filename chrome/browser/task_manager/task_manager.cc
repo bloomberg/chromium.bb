@@ -138,7 +138,7 @@ class TaskManagerModelGpuDataManagerObserver
   }
 
   static void NotifyVideoMemoryUsageStats(
-      content::GPUVideoMemoryUsageStats video_memory_usage_stats) {
+      const content::GPUVideoMemoryUsageStats& video_memory_usage_stats) {
     TaskManager::GetInstance()->model()->NotifyVideoMemoryUsageStats(
         video_memory_usage_stats);
   }
