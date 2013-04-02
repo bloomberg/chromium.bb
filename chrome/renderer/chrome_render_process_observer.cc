@@ -228,8 +228,6 @@ bool ChromeRenderProcessObserver::OnControlMessageReceived(
     IPC_MESSAGE_HANDLER(ChromeViewMsg_PurgeMemory, OnPurgeMemory)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SetContentSettingRules,
                         OnSetContentSettingRules)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_ToggleWebKitSharedTimer,
-                        OnToggleWebKitSharedTimer)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -289,10 +287,6 @@ void ChromeRenderProcessObserver::OnGetV8HeapStats() {
   v8::Isolate::GetCurrent()->GetHeapStatistics(&heap_stats);
   RenderThread::Get()->Send(new ChromeViewHostMsg_V8HeapStats(
       heap_stats.total_heap_size(), heap_stats.used_heap_size()));
-}
-
-void ChromeRenderProcessObserver::OnToggleWebKitSharedTimer(bool suspend) {
-  RenderThread::Get()->ToggleWebKitSharedTimer(suspend);
 }
 
 void ChromeRenderProcessObserver::OnPurgeMemory() {

@@ -10,7 +10,6 @@
 #include "chrome/browser/android/content_view_util.h"
 #include "chrome/browser/android/dev_tools_server.h"
 #include "chrome/browser/android/intent_helper.h"
-#include "chrome/browser/android/process_utils.h"
 #include "chrome/browser/android/provider/chrome_browser_provider.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/autofill/android/personal_data_manager_android.h"
@@ -63,7 +62,6 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
   { "NavigationPopup", NavigationPopup::RegisterNavigationPopup },
   { "PersonalDataManagerAndroid",
       PersonalDataManagerAndroid::Register},
-  { "ProcessUtils", RegisterProcessUtils },
   { "ProfileAndroid", ProfileAndroid::RegisterProfileAndroid },
   { "ProfileSyncService", ProfileSyncServiceAndroid::Register },
   { "SqliteCursor", SQLiteCursor::RegisterSqliteCursor },

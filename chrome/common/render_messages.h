@@ -414,10 +414,6 @@ IPC_MESSAGE_ROUTED0(ChromeViewMsg_GetFPS)
 // Tells the view it is displaying an interstitial page.
 IPC_MESSAGE_ROUTED0(ChromeViewMsg_SetAsInterstitial)
 
-// Tells the renderer to suspend/resume the webkit timers.
-IPC_MESSAGE_CONTROL1(ChromeViewMsg_ToggleWebKitSharedTimer,
-                     bool /* suspend */)
-
 // Provides the renderer with the results of the browser's investigation into
 // why a recent main frame load failed (currently, just DNS probe result).
 // NetErrorHelper will receive this mesage and replace or update the error
