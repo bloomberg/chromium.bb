@@ -49,6 +49,27 @@ bool TestFileRef::Init() {
   return CheckTestingInterface() && EnsureRunningOverHTTP();
 }
 
+std::string TestFileRef::MakeExternalFileRef(pp::FileRef* file_ref_ext) {
+  pp::URLRequestInfo request(instance_);
+  request.SetURL("test_url_loader_data/hello.txt");
+  request.SetStreamToFile(true);
+
+  TestCompletionCallback callback(instance_->pp_instance(), callback_type());
+
+  pp::URLLoader loader(instance_);
+  callback.WaitForResult(loader.Open(request, callback.GetCallback()));
+  CHECK_CALLBACK_BEHAVIOR(callback);
+  ASSERT_EQ(PP_OK, callback.result());
+
+  pp::URLResponseInfo response_info(loader.GetResponseInfo());
+  ASSERT_FALSE(response_info.is_null())
+  ASSERT_EQ(200, response_info.GetStatusCode());
+
+  *file_ref_ext = pp::FileRef(response_info.GetBodyAsFileRef());
+  ASSERT_EQ(PP_FILESYSTEMTYPE_EXTERNAL, file_ref_ext->GetFileSystemType())
+  PASS();
+}
+
 void TestFileRef::RunTests(const std::string& filter) {
   RUN_TEST_FORCEASYNC_AND_NOT(Create, filter);
   RUN_TEST_FORCEASYNC_AND_NOT(GetFileSystemType, filter);
@@ -59,6 +80,7 @@ void TestFileRef::RunTests(const std::string& filter) {
   RUN_TEST_FORCEASYNC_AND_NOT(QueryAndTouchFile, filter);
   RUN_TEST_FORCEASYNC_AND_NOT(DeleteFileAndDirectory, filter);
   RUN_TEST_FORCEASYNC_AND_NOT(RenameFileAndDirectory, filter);
+  RUN_CALLBACK_TEST(TestFileRef, Query, filter);
 #ifndef PPAPI_OS_NACL  // NaCl can't run this test yet.
   RUN_TEST_FORCEASYNC_AND_NOT(FileNameEscaping, filter);
 #endif
@@ -108,32 +130,10 @@ std::string TestFileRef::TestGetFileSystemType() {
   if (file_ref_temp.GetFileSystemType() != PP_FILESYSTEMTYPE_LOCALTEMPORARY)
     return "file_ref_temp expected to be temporary.";
 
-  pp::URLRequestInfo request(instance_);
-  request.SetURL("test_url_loader_data/hello.txt");
-  request.SetStreamToFile(true);
-
-  TestCompletionCallback callback(instance_->pp_instance(), force_async_);
-
-  pp::URLLoader loader(instance_);
-  int32_t rv = loader.Open(request, callback.GetCallback());
-  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
-    return ReportError("URLLoader::Open force_async", rv);
-  if (rv == PP_OK_COMPLETIONPENDING)
-    rv = callback.WaitForResult();
-  if (rv != PP_OK)
-    return "URLLoader::Open() failed.";
-
-  pp::URLResponseInfo response_info(loader.GetResponseInfo());
-  if (response_info.is_null())
-    return "URLLoader::GetResponseInfo returned null";
-  int32_t status_code = response_info.GetStatusCode();
-  if (status_code != 200)
-    return "Unexpected HTTP status code";
-
-  pp::FileRef file_ref_ext(response_info.GetBodyAsFileRef());
-  if (file_ref_ext.GetFileSystemType() != PP_FILESYSTEMTYPE_EXTERNAL)
-    return "file_ref_ext expected to be external.";
-
+  pp::FileRef file_ref_ext;
+  std::string result = MakeExternalFileRef(&file_ref_ext);
+  if (!result.empty())
+    return result;
   PASS();
 }
 
@@ -678,6 +678,69 @@ std::string TestFileRef::TestRenameFileAndDirectory() {
   } else if (rv != PP_OK) {
     return ReportError("FileSystem::Rename", rv);
   }
+
+  PASS();
+}
+
+std::string TestFileRef::TestQuery() {
+  TestCompletionCallback callback(instance_->pp_instance(), callback_type());
+
+  pp::FileSystem file_system(instance_, PP_FILESYSTEMTYPE_LOCALTEMPORARY);
+  callback.WaitForResult(file_system.Open(1024, callback.GetCallback()));
+  CHECK_CALLBACK_BEHAVIOR(callback);
+  ASSERT_EQ(PP_OK, callback.result());
+
+  pp::FileRef file_ref(file_system, "/file");
+  pp::FileIO file_io(instance_);
+  callback.WaitForResult(file_io.Open(file_ref, PP_FILEOPENFLAG_CREATE,
+                                      callback.GetCallback()));
+  CHECK_CALLBACK_BEHAVIOR(callback);
+  ASSERT_EQ(PP_OK, callback.result());
+
+  // We touch the file so we can easily check access and modified time.
+  callback.WaitForResult(file_io.Touch(0, 0, callback.GetCallback()));
+  CHECK_CALLBACK_BEHAVIOR(callback);
+  ASSERT_EQ(PP_OK, callback.result());
+
+  TestCompletionCallbackWithOutput<PP_FileInfo> out_callback(
+      instance_->pp_instance(), callback_type());
+  out_callback.WaitForResult(file_ref.Query(out_callback.GetCallback()));
+  CHECK_CALLBACK_BEHAVIOR(out_callback);
+  ASSERT_EQ(PP_OK, out_callback.result());
+
+  PP_FileInfo info = out_callback.output();
+  ASSERT_EQ(0, info.size);
+  ASSERT_EQ(PP_FILETYPE_REGULAR, info.type);
+  ASSERT_EQ(PP_FILESYSTEMTYPE_LOCALTEMPORARY, info.system_type);
+  ASSERT_DOUBLE_EQ(0.0, info.last_access_time);
+  ASSERT_DOUBLE_EQ(0.0, info.last_modified_time);
+
+  // Query a file ref on an external filesystem.
+  pp::FileRef file_ref_ext;
+  std::string result = MakeExternalFileRef(&file_ref_ext);
+  if (!result.empty())
+    return result;
+  out_callback.WaitForResult(file_ref_ext.Query(out_callback.GetCallback()));
+  CHECK_CALLBACK_BEHAVIOR(out_callback);
+  if (out_callback.result() != PP_OK)
+    return ReportError("Query() result", out_callback.result());
+  ASSERT_EQ(PP_OK, out_callback.result());
+
+  info = out_callback.output();
+  ASSERT_EQ(PP_FILETYPE_REGULAR, info.type);
+  ASSERT_EQ(PP_FILESYSTEMTYPE_EXTERNAL, info.system_type);
+
+  // We can't touch the file, so just sanity check the times.
+  ASSERT_TRUE(info.creation_time >= 0.0);
+  ASSERT_TRUE(info.last_modified_time >= 0.0);
+  ASSERT_TRUE(info.last_access_time >= 0.0);
+
+  // Query a file ref for a file that doesn't exist.
+  pp::FileRef missing_file_ref(file_system, "/missing_file");
+  out_callback.WaitForResult(missing_file_ref.Query(
+      out_callback.GetCallback()));
+  CHECK_CALLBACK_BEHAVIOR(out_callback);
+  ASSERT_EQ(PP_ERROR_FILENOTFOUND, out_callback.result());
 
   PASS();
 }

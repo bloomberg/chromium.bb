@@ -151,6 +151,23 @@ class EnterHostFromHostResourceForceCallback
       RunCallback(PP_ERROR_BADRESOURCE);
   }
 
+  // For callbacks that take three extra parameters as a closure.
+  template<class CallbackFactory, typename Method, typename A, typename B,
+           typename C>
+  EnterHostFromHostResourceForceCallback(
+      const HostResource& host_resource,
+      CallbackFactory& factory,
+      Method method,
+      const A& a,
+      const B& b,
+      const C& c)
+      : EnterHostFromHostResource<ResourceT>(host_resource,
+            factory.NewOptionalCallback(method, a, b, c)),
+        needs_running_(true) {
+    if (this->failed())
+      RunCallback(PP_ERROR_BADRESOURCE);
+  }
+
   ~EnterHostFromHostResourceForceCallback() {
     if (needs_running_) {
       NOTREACHED() << "Should always call SetResult except in the "

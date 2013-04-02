@@ -9,6 +9,10 @@
 
 #include "ppapi/tests/test_case.h"
 
+namespace pp {
+class FileRef;
+}
+
 class TestFileRef : public TestCase {
  public:
   explicit TestFileRef(TestingInstance* instance) : TestCase(instance) {}
@@ -18,6 +22,10 @@ class TestFileRef : public TestCase {
   virtual void RunTests(const std::string& filter);
 
  private:
+  // Creates a FileRef on an external filesystem.
+  // Returns "" on success, a different string otherwise.
+  std::string MakeExternalFileRef(pp::FileRef* file_ref_ext);
+
   std::string TestCreate();
   std::string TestGetFileSystemType();
   std::string TestGetName();
@@ -27,6 +35,7 @@ class TestFileRef : public TestCase {
   std::string TestQueryAndTouchFile();
   std::string TestDeleteFileAndDirectory();
   std::string TestRenameFileAndDirectory();
+  std::string TestQuery();
   std::string TestFileNameEscaping();
 };
 

@@ -4,15 +4,17 @@
 
 #include "webkit/plugins/ppapi/ppb_file_ref_impl.h"
 
+#include "base/platform_file.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
 #include "ppapi/c/pp_errors.h"
-#include "ppapi/thunk/enter.h"
-#include "ppapi/thunk/ppb_file_system_api.h"
+#include "ppapi/shared_impl/file_type_conversion.h"
 #include "ppapi/shared_impl/time_conversion.h"
 #include "ppapi/shared_impl/var.h"
+#include "ppapi/thunk/enter.h"
+#include "ppapi/thunk/ppb_file_system_api.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/file_callbacks.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
@@ -84,6 +86,64 @@ std::string GetNameForVirtualFilePath(const std::string& path) {
   size_t pos = path.rfind('/');
   CHECK(pos != std::string::npos);
   return path.substr(pos + 1);
+}
+
+void IgnoreCloseCallback(base::PlatformFileError error_code) {
+}
+
+void GetFileInfoCallback(
+    scoped_refptr<base::TaskRunner> task_runner,
+    base::PlatformFile file,
+    PP_FileInfo* info,
+    scoped_refptr<TrackedCallback> callback,
+    base::PlatformFileError error_code,
+    const base::PlatformFileInfo& file_info) {
+  base::FileUtilProxy::Close(
+      task_runner, file, base::Bind(&IgnoreCloseCallback));
+
+  if (!TrackedCallback::IsPending(callback))
+    return;
+
+  int32_t pp_error = ::ppapi::PlatformFileErrorToPepperError(error_code);
+  if (pp_error != PP_OK)
+    callback->Run(pp_error);
+
+  info->size = file_info.size;
+  if (file_info.is_symbolic_link)
+    info->type = PP_FILETYPE_OTHER;
+  else if (file_info.is_directory)
+    info->type = PP_FILETYPE_DIRECTORY;
+  else
+    info->type = PP_FILETYPE_REGULAR;
+
+  info->system_type = PP_FILESYSTEMTYPE_EXTERNAL;
+  info->creation_time = file_info.creation_time.ToDoubleT();
+  info->last_access_time = file_info.last_accessed.ToDoubleT();
+  info->last_modified_time = file_info.last_modified.ToDoubleT();
+  callback->Run(PP_OK);
+}
+
+void QueryCallback(scoped_refptr<base::TaskRunner> task_runner,
+                   PP_FileInfo* info,
+                   scoped_refptr<TrackedCallback> callback,
+                   base::PlatformFileError error_code,
+                   base::PassPlatformFile passed_file) {
+  if (!TrackedCallback::IsPending(callback))
+    return;
+
+  int32_t pp_error = ::ppapi::PlatformFileErrorToPepperError(error_code);
+  if (pp_error != PP_OK)
+    callback->Run(pp_error);
+  base::PlatformFile file = passed_file.ReleaseValue();
+
+  if (!base::FileUtilProxy::GetFileInfoFromPlatformFile(
+          task_runner, file,
+          base::Bind(&GetFileInfoCallback, task_runner, file, info,
+                     callback))) {
+    base::FileUtilProxy::Close(
+        task_runner, file, base::Bind(&IgnoreCloseCallback));
+    callback->Run(PP_ERROR_FAILED);
+  }
 }
 
 }  // namespace
@@ -291,6 +351,39 @@ bool PPB_FileRef_Impl::HasValidFileSystem() const {
 bool PPB_FileRef_Impl::IsValidNonExternalFileSystem() const {
   return file_system_ && file_system_->opened() &&
       file_system_->type() != PP_FILESYSTEMTYPE_EXTERNAL;
+}
+
+int32_t PPB_FileRef_Impl::Query(PP_FileInfo* info,
+                                scoped_refptr<TrackedCallback> callback) {
+  scoped_refptr<PluginInstance> plugin_instance =
+      ResourceHelper::GetPluginInstance(this);
+  if (!plugin_instance.get())
+    return PP_ERROR_FAILED;
+
+  if (!file_system_) {
+    // External file system
+    // We have to do something totally different for external file systems.
+
+    // TODO(teravest): Use the SequencedWorkerPool instead.
+    scoped_refptr<base::TaskRunner> task_runner =
+        plugin_instance->delegate()->GetFileThreadMessageLoopProxy();
+    if (!plugin_instance->delegate()->AsyncOpenFile(
+            GetSystemPath(),
+            base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ,
+            base::Bind(&QueryCallback, task_runner, info, callback)))
+      return PP_ERROR_FAILED;
+  } else {
+    // Non-external file system
+    if (!HasValidFileSystem())
+      return PP_ERROR_NOACCESS;
+
+    if (!plugin_instance->delegate()->Query(
+            GetFileSystemURL(),
+            new FileCallbacks(this, callback, info, file_system_)))
+      return PP_ERROR_FAILED;
+
+  }
+  return PP_OK_COMPLETIONPENDING;
 }
 
 }  // namespace ppapi

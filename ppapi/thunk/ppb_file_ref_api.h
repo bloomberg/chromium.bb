@@ -32,6 +32,8 @@ class PPAPI_THUNK_EXPORT PPB_FileRef_API {
   virtual int32_t Delete(scoped_refptr<TrackedCallback> callback) = 0;
   virtual int32_t Rename(PP_Resource new_file_ref,
                          scoped_refptr<TrackedCallback> callback) = 0;
+  virtual int32_t Query(PP_FileInfo* info,
+                        scoped_refptr<TrackedCallback> callback) = 0;
 
   // Internal function for use in proxying. Returns the internal CreateInfo
   // (the contained resource does not carry a ref on behalf of the caller).

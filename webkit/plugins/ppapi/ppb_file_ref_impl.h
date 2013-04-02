@@ -9,6 +9,7 @@
 
 #include "base/files/file_path.h"
 #include "googleurl/src/gurl.h"
+#include "ppapi/c/pp_file_info.h"
 #include "ppapi/c/ppb_file_ref.h"
 #include "ppapi/shared_impl/ppb_file_ref_shared.h"
 #include "ppapi/shared_impl/var.h"
@@ -52,6 +53,9 @@ class WEBKIT_GLUE_EXPORT PPB_FileRef_Impl
       scoped_refptr< ::ppapi::TrackedCallback> callback) OVERRIDE;
   virtual int32_t Rename(
       PP_Resource new_file_ref,
+      scoped_refptr< ::ppapi::TrackedCallback> callback) OVERRIDE;
+  virtual int32_t Query(
+      PP_FileInfo* info,
       scoped_refptr< ::ppapi::TrackedCallback> callback) OVERRIDE;
   virtual PP_Var GetAbsolutePath();
 

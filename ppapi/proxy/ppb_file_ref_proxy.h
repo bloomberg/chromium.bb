@@ -8,6 +8,8 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/bind_helpers.h"
+#include "ppapi/c/pp_file_info.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_time.h"
@@ -69,27 +71,38 @@ class PPAPI_PROXY_EXPORT PPB_FileRef_Proxy
                       PPB_FileRef_CreateInfo* result);
   void OnMsgMakeDirectory(const HostResource& host_resource,
                           PP_Bool make_ancestors,
-                          int callback_id);
+                          uint32_t callback_id);
   void OnMsgTouch(const HostResource& host_resource,
                   PP_Time last_access,
                   PP_Time last_modified,
-                  int callback_id);
+                  uint32_t callback_id);
   void OnMsgDelete(const HostResource& host_resource,
-                   int callback_id);
+                   uint32_t callback_id);
   void OnMsgRename(const HostResource& file_ref,
                    const HostResource& new_file_ref,
-                   int callback_id);
+                   uint32_t callback_id);
+  void OnMsgQuery(const HostResource& file_ref,
+                  uint32_t callback_id);
   void OnMsgGetAbsolutePath(const HostResource& host_resource,
                             SerializedVarReturnValue result);
 
   // Host -> Plugin message handlers.
   void OnMsgCallbackComplete(const HostResource& host_resource,
-                             int callback_id,
+                             uint32_t callback_id,
                              int32_t result);
+  void OnMsgQueryCallbackComplete(const HostResource& host_resource,
+                                  const PP_FileInfo& info,
+                                  uint32_t callback_id,
+                                  int32_t result);
 
   void OnCallbackCompleteInHost(int32_t result,
                                 const HostResource& host_resource,
-                                int callback_id);
+                                uint32_t callback_id);
+  void OnQueryCallbackCompleteInHost(
+      int32_t result,
+      const HostResource& host_resource,
+      base::internal::OwnedWrapper<PP_FileInfo> info,
+      uint32_t callback_id);
 
   ProxyCompletionCallbackFactory<PPB_FileRef_Proxy> callback_factory_;
 

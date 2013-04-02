@@ -9,7 +9,8 @@
  */
 
 label Chrome {
-  M14 = 1.0
+  M14 = 1.0,
+  M28 = 1.1
 };
 
 /**
@@ -166,5 +167,23 @@ interface PPB_FileRef {
   int32_t Rename([in] PP_Resource file_ref,
                  [in] PP_Resource new_file_ref,
                  [in] PP_CompletionCallback callback);
+
+  /*
+   * Query() queries info about a file or directory. You must have access to
+   * read this file or directory if it exists in the external filesystem.
+   *
+   * @param[in] file_ref A <code>PP_Resource</code> corresponding to a file
+   * reference.
+   * @param[out] info A pointer to a <code>PP_FileInfo</code> which will be
+   * populated with information about the file or directory.
+   * @param[in] callback A <code>PP_CompletionCallback</code> to be called upon
+   * completion of Query().
+   *
+   * @return An int32_t containing an error code from <code>pp_errors.h</code>.
+   */
+  [version=1.1]
+  int32_t Query([in] PP_Resource file_ref,
+                [out] PP_FileInfo info,
+                [in] PP_CompletionCallback callback);
 };
 

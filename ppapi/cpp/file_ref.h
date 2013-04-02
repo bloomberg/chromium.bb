@@ -5,6 +5,7 @@
 #ifndef PPAPI_CPP_FILE_REF_H_
 #define PPAPI_CPP_FILE_REF_H_
 
+#include "ppapi/c/pp_file_info.h"
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/ppb_file_ref.h"
 #include "ppapi/cpp/resource.h"
@@ -16,8 +17,9 @@
 
 namespace pp {
 
-class CompletionCallback;
 class FileSystem;
+class CompletionCallback;
+template <typename T> class CompletionCallbackWithOutput;
 
 /// The <code>FileRef</code> class represents a "weak pointer" to a file in
 /// a file system.
@@ -143,6 +145,16 @@ class FileRef : public Resource {
   ///
   /// @return An int32_t containing an error code from <code>pp_errors.h</code>.
   int32_t Rename(const FileRef& new_file_ref, const CompletionCallback& cc);
+
+  ///
+  /// Query() queries info about a file or directory. You must have access to
+  /// read this file or directory if it exists in the external filesystem.
+  ///
+  /// @param[in] callback A <code>CompletionCallbackWithOutput</code>
+  /// to be called upon completion of Query().
+  ///
+  /// @return An int32_t containing an error code from <code>pp_errors.h</code>.
+  int32_t Query(const CompletionCallbackWithOutput<PP_FileInfo>& callback);
 };
 
 }  // namespace pp

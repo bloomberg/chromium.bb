@@ -105,6 +105,16 @@ int32_t Rename(PP_Resource file_ref,
                                                 enter.callback()));
 }
 
+int32_t Query(PP_Resource file_ref,
+              PP_FileInfo* info,
+              PP_CompletionCallback callback) {
+  EnterFileRef enter(file_ref, callback, true);
+  if (enter.failed())
+    return enter.retval();
+  return enter.SetResult(enter.object()->Query(info,
+                                               enter.callback()));
+}
+
 PP_Var GetAbsolutePath(PP_Resource file_ref) {
   EnterFileRef enter(file_ref, true);
   if (enter.failed())
@@ -112,7 +122,7 @@ PP_Var GetAbsolutePath(PP_Resource file_ref) {
   return enter.object()->GetAbsolutePath();
 }
 
-const PPB_FileRef g_ppb_file_ref_thunk = {
+const PPB_FileRef_1_0 g_ppb_file_ref_thunk_1_0 = {
   &Create,
   &IsFileRef,
   &GetFileSystemType,
@@ -125,6 +135,20 @@ const PPB_FileRef g_ppb_file_ref_thunk = {
   &Rename
 };
 
+const PPB_FileRef_1_1 g_ppb_file_ref_thunk_1_1 = {
+  &Create,
+  &IsFileRef,
+  &GetFileSystemType,
+  &GetName,
+  &GetPath,
+  &GetParent,
+  &MakeDirectory,
+  &Touch,
+  &Delete,
+  &Rename,
+  &Query
+};
+
 const PPB_FileRefPrivate g_ppb_file_ref_private_thunk = {
   &GetAbsolutePath
 };
@@ -132,7 +156,11 @@ const PPB_FileRefPrivate g_ppb_file_ref_private_thunk = {
 }  // namespace
 
 const PPB_FileRef_1_0* GetPPB_FileRef_1_0_Thunk() {
-  return &g_ppb_file_ref_thunk;
+  return &g_ppb_file_ref_thunk_1_0;
+}
+
+const PPB_FileRef_1_1* GetPPB_FileRef_1_1_Thunk() {
+  return &g_ppb_file_ref_thunk_1_1;
 }
 
 const PPB_FileRefPrivate_0_1* GetPPB_FileRefPrivate_0_1_Thunk() {

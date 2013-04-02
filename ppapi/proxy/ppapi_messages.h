@@ -450,7 +450,14 @@ IPC_MESSAGE_ROUTED4(PpapiMsg_PPBAudio_NotifyAudioStreamCreated,
 IPC_MESSAGE_ROUTED3(
     PpapiMsg_PPBFileRef_CallbackComplete,
     ppapi::HostResource /* resource */,
-    int /* callback_id */,
+    uint32_t /* callback_id */,
+    int32_t /* result */)
+
+IPC_MESSAGE_ROUTED4(
+    PpapiMsg_PPBFileRef_QueryCallbackComplete,
+    ppapi::HostResource /* resource */,
+    PP_FileInfo /* file_info */,
+    uint32_t /* callback_id */,
     int32_t /* result */)
 
 // PPB_FileSystem.
@@ -793,19 +800,22 @@ IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBFileRef_GetParent,
 IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBFileRef_MakeDirectory,
                     ppapi::HostResource /* file_ref */,
                     PP_Bool /* make_ancestors */,
-                    int /* callback_id */)
+                    uint32_t /* callback_id */)
 IPC_MESSAGE_ROUTED4(PpapiHostMsg_PPBFileRef_Touch,
                     ppapi::HostResource /* file_ref */,
                     PP_Time /* last_access */,
                     PP_Time /* last_modified */,
-                    int /* callback_id */)
+                    uint32_t /* callback_id */)
 IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBFileRef_Delete,
                     ppapi::HostResource /* file_ref */,
-                    int /* callback_id */)
+                    uint32_t /* callback_id */)
 IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBFileRef_Rename,
                     ppapi::HostResource /* file_ref */,
                     ppapi::HostResource /* new_file_ref */,
-                    int /* callback_id */)
+                    uint32_t /* callback_id */)
+IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBFileRef_Query,
+                    ppapi::HostResource /* file_ref */,
+                    uint32_t /* callback_id */)
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBFileRef_GetAbsolutePath,
                            ppapi::HostResource /* file_ref */,
                            ppapi::proxy::SerializedVar /* result */)
