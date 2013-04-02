@@ -64,8 +64,6 @@ void TestAutofillManagerDelegate::ShowRequestAutocompleteDialog(
     const base::Callback<void(const FormStructure*,
                               const std::string&)>& callback) {}
 
-void TestAutofillManagerDelegate::RequestAutocompleteDialogClosed() {}
-
 void TestAutofillManagerDelegate::ShowAutofillPopup(
     const gfx::RectF& element_bounds,
     const std::vector<string16>& values,

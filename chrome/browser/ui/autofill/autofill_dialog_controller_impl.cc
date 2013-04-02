@@ -224,47 +224,32 @@ string16 GetValueForType(const DetailOutputMap& output,
 
 AutofillDialogController::~AutofillDialogController() {}
 
-AutofillDialogControllerImpl::AutofillDialogControllerImpl(
-    content::WebContents* contents,
-    const FormData& form,
-    const GURL& source_url,
-    const AutofillMetrics& metric_logger,
-    DialogType dialog_type,
-    const base::Callback<void(const FormStructure*,
-                              const std::string&)>& callback)
-    : profile_(Profile::FromBrowserContext(contents->GetBrowserContext())),
-      contents_(contents),
-      form_structure_(form, std::string()),
-      invoked_from_same_origin_(true),
-      source_url_(source_url),
-      ssl_status_(form.ssl_status),
-      callback_(callback),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          account_chooser_model_(this, profile_->GetPrefs())),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          wallet_client_(profile_->GetRequestContext(), this)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(suggested_email_(this)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(suggested_cc_(this)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(suggested_billing_(this)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(suggested_cc_billing_(this)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(suggested_shipping_(this)),
-      section_showing_popup_(SECTION_BILLING),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
-      metric_logger_(metric_logger),
-      initial_user_state_(AutofillMetrics::DIALOG_USER_STATE_UNKNOWN),
-      dialog_type_(dialog_type),
-      is_submitting_(false),
-      autocheckout_is_running_(false),
-      had_autocheckout_error_(false) {
-  // TODO(estade): remove duplicates from |form|?
-  DCHECK(!callback_.is_null());
-}
-
 AutofillDialogControllerImpl::~AutofillDialogControllerImpl() {
   if (popup_controller_)
     popup_controller_->Hide();
 
   metric_logger_.LogDialogInitialUserState(dialog_type_, initial_user_state_);
+}
+
+// static
+base::WeakPtr<AutofillDialogControllerImpl>
+    AutofillDialogControllerImpl::Create(
+    content::WebContents* contents,
+    const FormData& form_structure,
+    const GURL& source_url,
+    const AutofillMetrics& metric_logger,
+    const DialogType dialog_type,
+    const base::Callback<void(const FormStructure*,
+                              const std::string&)>& callback) {
+  // AutofillDialogControllerImpl owns itself.
+  AutofillDialogControllerImpl* autofill_dialog_controller =
+      new AutofillDialogControllerImpl(contents,
+                                       form_structure,
+                                       source_url,
+                                       metric_logger,
+                                       dialog_type,
+                                       callback);
+  return autofill_dialog_controller->weak_ptr_factory_.GetWeakPtr();
 }
 
 // static
@@ -1518,6 +1503,42 @@ bool AutofillDialogControllerImpl::TransmissionWillBeSecure() const {
   return source_url_.SchemeIs(chrome::kHttpsScheme) &&
          !net::IsCertStatusError(ssl_status_.cert_status) &&
          !net::IsCertStatusMinorError(ssl_status_.cert_status);
+}
+
+AutofillDialogControllerImpl::AutofillDialogControllerImpl(
+    content::WebContents* contents,
+    const FormData& form_structure,
+    const GURL& source_url,
+    const AutofillMetrics& metric_logger,
+    const DialogType dialog_type,
+    const base::Callback<void(const FormStructure*,
+                              const std::string&)>& callback)
+    : profile_(Profile::FromBrowserContext(contents->GetBrowserContext())),
+      contents_(contents),
+      form_structure_(form_structure, std::string()),
+      invoked_from_same_origin_(true),
+      source_url_(source_url),
+      ssl_status_(form_structure.ssl_status),
+      callback_(callback),
+      ALLOW_THIS_IN_INITIALIZER_LIST(
+          account_chooser_model_(this, profile_->GetPrefs())),
+      ALLOW_THIS_IN_INITIALIZER_LIST(
+          wallet_client_(profile_->GetRequestContext(), this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(suggested_email_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(suggested_cc_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(suggested_billing_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(suggested_cc_billing_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(suggested_shipping_(this)),
+      section_showing_popup_(SECTION_BILLING),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
+      metric_logger_(metric_logger),
+      initial_user_state_(AutofillMetrics::DIALOG_USER_STATE_UNKNOWN),
+      dialog_type_(dialog_type),
+      is_submitting_(false),
+      autocheckout_is_running_(false),
+      had_autocheckout_error_(false) {
+  // TODO(estade): remove duplicates from |form_structure|?
+  DCHECK(!callback_.is_null());
 }
 
 AutofillDialogView* AutofillDialogControllerImpl::CreateView() {

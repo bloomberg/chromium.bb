@@ -34,8 +34,7 @@ namespace autofill {
 TabAutofillManagerDelegate::TabAutofillManagerDelegate(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
-      web_contents_(web_contents),
-      dialog_controller_(NULL) {
+      web_contents_(web_contents) {
   DCHECK(web_contents);
 }
 
@@ -162,17 +161,13 @@ void TabAutofillManagerDelegate::ShowRequestAutocompleteDialog(
   HideRequestAutocompleteDialog();
 
   dialog_controller_ =
-      new autofill::AutofillDialogControllerImpl(web_contents_,
-                                                 form,
-                                                 source_url,
-                                                 metric_logger,
-                                                 dialog_type,
-                                                 callback);
+      autofill::AutofillDialogControllerImpl::Create(web_contents_,
+                                                     form,
+                                                     source_url,
+                                                     metric_logger,
+                                                     dialog_type,
+                                                     callback);
   dialog_controller_->Show();
-}
-
-void TabAutofillManagerDelegate::RequestAutocompleteDialogClosed() {
-  dialog_controller_ = NULL;
 }
 
 void TabAutofillManagerDelegate::ShowAutofillPopup(
@@ -208,10 +203,8 @@ void TabAutofillManagerDelegate::UpdateProgressBar(double value) {
 }
 
 void TabAutofillManagerDelegate::HideRequestAutocompleteDialog() {
-  if (dialog_controller_) {
+  if (dialog_controller_)
     dialog_controller_->Hide();
-    RequestAutocompleteDialogClosed();
-  }
 }
 
 void TabAutofillManagerDelegate::OnStateChanged() {

@@ -68,7 +68,6 @@ class TabAutofillManagerDelegate
       DialogType dialog_type,
       const base::Callback<void(const FormStructure*,
                                 const std::string&)>& callback) OVERRIDE;
-  virtual void RequestAutocompleteDialogClosed() OVERRIDE;
   virtual void ShowAutofillPopup(const gfx::RectF& element_bounds,
                                  const std::vector<string16>& values,
                                  const std::vector<string16>& labels,
@@ -92,7 +91,7 @@ class TabAutofillManagerDelegate
 
   base::Closure sync_state_changed_callback_;
   content::WebContents* const web_contents_;
-  AutofillDialogControllerImpl* dialog_controller_;  // weak.
+  base::WeakPtr<AutofillDialogControllerImpl> dialog_controller_;
   base::WeakPtr<AutocheckoutBubble> autocheckout_bubble_;
   base::WeakPtr<AutofillPopupControllerImpl> popup_controller_;
 

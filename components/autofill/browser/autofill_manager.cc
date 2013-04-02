@@ -778,10 +778,6 @@ void AutofillManager::ShowRequestAutocompleteDialog(
       form, source_url, *metric_logger_, dialog_type, callback);
 }
 
-void AutofillManager::RequestAutocompleteDialogClosed() {
-  manager_delegate_->RequestAutocompleteDialogClosed();
-}
-
 void AutofillManager::SetTestDelegate(
     autofill::AutofillManagerTestDelegate* delegate) {
   test_delegate_ = delegate;
@@ -854,7 +850,6 @@ void AutofillManager::ReturnAutocompleteResult(
 void AutofillManager::ReturnAutocompleteData(
     const FormStructure* result,
     const std::string& unused_transaction_id) {
-  RequestAutocompleteDialogClosed();
   if (!result) {
     ReturnAutocompleteResult(WebFormElement::AutocompleteResultErrorCancel,
                              FormData());

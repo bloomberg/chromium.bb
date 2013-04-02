@@ -68,7 +68,9 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
                                      public PersonalDataManagerObserver,
                                      public AccountChooserModelDelegate {
  public:
-  AutofillDialogControllerImpl(
+  virtual ~AutofillDialogControllerImpl();
+
+  static base::WeakPtr<AutofillDialogControllerImpl> Create(
       content::WebContents* contents,
       const FormData& form_structure,
       const GURL& source_url,
@@ -76,7 +78,6 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
       const DialogType dialog_type,
       const base::Callback<void(const FormStructure*,
                                 const std::string&)>& callback);
-  virtual ~AutofillDialogControllerImpl();
 
   static void RegisterUserPrefs(PrefRegistrySyncable* registry);
 
@@ -220,6 +221,16 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   DialogType dialog_type() const { return dialog_type_; }
 
  protected:
+  // Exposed for testing.
+  AutofillDialogControllerImpl(
+      content::WebContents* contents,
+      const FormData& form_structure,
+      const GURL& source_url,
+      const AutofillMetrics& metric_logger,
+      const DialogType dialog_type,
+      const base::Callback<void(const FormStructure*,
+                                const std::string&)>& callback);
+
   // Exposed for testing.
   AutofillDialogView* view() { return view_.get(); }
   virtual AutofillDialogView* CreateView();
