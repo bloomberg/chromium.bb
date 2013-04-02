@@ -558,7 +558,7 @@ void WorkerPool::RunCheapTasks() {
     }
 
     // We must be out of cheap tasks if this happens.
-    if (check_for_completed_tasks_time_.is_null() ||
+    if (!check_for_completed_tasks_pending_ ||
         now < check_for_completed_tasks_time_)
       break;
 
