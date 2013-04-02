@@ -87,7 +87,7 @@ void SharedDisplayEdgeIndicator::Show(const gfx::Rect& src_bounds,
   src_indicator_ = new IndicatorView;
   dst_indicator_ = new IndicatorView;
   CreateWidget(src_bounds, src_indicator_);
-  CreateWidget(src_bounds, dst_indicator_);
+  CreateWidget(dst_bounds, dst_indicator_);
   animation_.reset(new ui::ThrobAnimation(this));
   animation_->SetThrobDuration(kIndicatorAnimationDurationMs);
   animation_->StartThrobbing(-1 /* infinite */);
