@@ -6,7 +6,7 @@ scanned_src_files = 				\
 	$(top_srcdir)/src/wayland-client.c	\
 	$(top_srcdir)/src/wayland-client.h
 
-xml/index.xml: $(scanned_src_files)
+xml/index.xml: $(scanned_src_files) wayland.doxygen
 	doxygen wayland.doxygen
 
 clean-local:
