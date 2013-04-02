@@ -125,7 +125,7 @@ class BluetoothAdapterMacTest : public testing::Test {
       : ui_task_runner_(new base::TestSimpleTaskRunner()),
         adapter_(new BluetoothAdapterMac()),
         adapter_mac_(static_cast<BluetoothAdapterMac*>(adapter_.get())) {
-    adapter_mac_->TrackTestAdapter(ui_task_runner_);
+    adapter_mac_->InitForTest(ui_task_runner_);
     adapter_mac_->RemoveUnpairedDevices([NSArray array]);
     adapter_observer_.Clear();
   }

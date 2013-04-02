@@ -66,7 +66,4 @@ void BluetoothAdapterChromeOSExperimental::ReadLocalOutOfBandPairingData(
   error_callback.Run();
 }
 
-void BluetoothAdapterChromeOSExperimental::TrackDefaultAdapter() {
-}
-
 }  // namespace chromeos

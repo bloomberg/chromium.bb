@@ -26,7 +26,6 @@ using device::BluetoothOutOfBandPairingData;
 namespace chromeos {
 
 BluetoothAdapterChromeOS::BluetoothAdapterChromeOS() : BluetoothAdapter(),
-                                                       track_default_(false),
                                                        powered_(false),
                                                        discovering_(false),
                                                        discovering_count_(0),
@@ -37,6 +36,10 @@ BluetoothAdapterChromeOS::BluetoothAdapterChromeOS() : BluetoothAdapter(),
       AddObserver(this);
   DBusThreadManager::Get()->GetBluetoothDeviceClient()->
       AddObserver(this);
+
+  DBusThreadManager::Get()->GetBluetoothManagerClient()->
+      DefaultAdapter(base::Bind(&BluetoothAdapterChromeOS::AdapterCallback,
+                                weak_ptr_factory_.GetWeakPtr()));
 }
 
 BluetoothAdapterChromeOS::~BluetoothAdapterChromeOS() {
@@ -129,14 +132,6 @@ void BluetoothAdapterChromeOS::ReadLocalOutOfBandPairingData(
               error_callback));
 }
 
-void BluetoothAdapterChromeOS::TrackDefaultAdapter() {
-  VLOG(1) << "Tracking default adapter";
-  track_default_ = true;
-  DBusThreadManager::Get()->GetBluetoothManagerClient()->
-      DefaultAdapter(base::Bind(&BluetoothAdapterChromeOS::AdapterCallback,
-                                weak_ptr_factory_.GetWeakPtr()));
-}
-
 void BluetoothAdapterChromeOS::AdapterCallback(
     const dbus::ObjectPath& adapter_path,
     bool success) {
@@ -149,8 +144,7 @@ void BluetoothAdapterChromeOS::AdapterCallback(
 
 void BluetoothAdapterChromeOS::DefaultAdapterChanged(
     const dbus::ObjectPath& adapter_path) {
-  if (track_default_)
-    ChangeAdapter(adapter_path);
+  ChangeAdapter(adapter_path);
 }
 
 void BluetoothAdapterChromeOS::AdapterRemoved(

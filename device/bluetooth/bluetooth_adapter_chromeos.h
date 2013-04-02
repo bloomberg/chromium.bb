@@ -69,10 +69,6 @@ class BluetoothAdapterChromeOS
   BluetoothAdapterChromeOS();
   virtual ~BluetoothAdapterChromeOS();
 
-  // Obtains the default adapter object path from the Bluetooth Daemon
-  // and tracks future changes to it.
-  void TrackDefaultAdapter();
-
   // Called by dbus:: in response to the method call sent by DefaultAdapter().
   // |object_path| will contain the dbus object path of the requested adapter
   // when |success| is true.
@@ -212,10 +208,8 @@ class BluetoothAdapterChromeOS
   // List of observers interested in event notifications from us.
   ObserverList<device::BluetoothAdapter::Observer> observers_;
 
-  // Object path of adapter for this instance, this is fixed at creation time
-  // unless |track_default_| is true in which case we update it to always
+  // Object path of adapter for this instance, we update it to always
   // point at the default adapter.
-  bool track_default_;
   dbus::ObjectPath object_path_;
 
   // Tracked adapter state, cached locally so we only send change notifications

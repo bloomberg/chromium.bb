@@ -55,10 +55,6 @@ class BluetoothAdapterChromeOSExperimental
   BluetoothAdapterChromeOSExperimental();
   virtual ~BluetoothAdapterChromeOSExperimental();
 
-  // Obtains the default adapter object path from the Bluetooth Daemon
-  // and tracks future changes to it.
-  void TrackDefaultAdapter();
-
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
   base::WeakPtrFactory<BluetoothAdapterChromeOSExperimental> weak_ptr_factory_;

@@ -124,8 +124,7 @@ class BluetoothAdapterWinTest : public testing::Test {
                      base::Unretained(this)))),
         adapter_win_(static_cast<BluetoothAdapterWin*>(adapter_.get())),
         init_callback_called_(false) {
-    adapter_win_->TrackTestAdapter(ui_task_runner_,
-                                   bluetooth_task_runner_);
+    adapter_win_->InitForTest(ui_task_runner_, bluetooth_task_runner_);
   }
 
   virtual void SetUp() OVERRIDE {

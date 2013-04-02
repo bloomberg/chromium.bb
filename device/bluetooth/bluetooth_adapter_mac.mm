@@ -168,12 +168,12 @@ void BluetoothAdapterMac::ReadLocalOutOfBandPairingData(
     const ErrorCallback& error_callback) {
 }
 
-void BluetoothAdapterMac::TrackDefaultAdapter() {
+void BluetoothAdapterMac::Init() {
   ui_task_runner_ = base::ThreadTaskRunnerHandle::Get();
   PollAdapter();
 }
 
-void BluetoothAdapterMac::TrackTestAdapter(
+void BluetoothAdapterMac::InitForTest(
     scoped_refptr<base::SequencedTaskRunner> ui_task_runner) {
   ui_task_runner_ = ui_task_runner;
   PollAdapter();

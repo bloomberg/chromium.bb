@@ -84,9 +84,8 @@ class BluetoothAdapterMac : public BluetoothAdapter {
   BluetoothAdapterMac();
   virtual ~BluetoothAdapterMac();
 
-  void TrackDefaultAdapter();
-  void TrackTestAdapter(
-      scoped_refptr<base::SequencedTaskRunner> ui_task_runner);
+  void Init();
+  void InitForTest(scoped_refptr<base::SequencedTaskRunner> ui_task_runner);
   void PollAdapter();
 
   // Adds |devices| into |devices_| and notifies observers of the changes.

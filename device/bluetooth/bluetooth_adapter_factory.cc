@@ -81,22 +81,20 @@ void BluetoothAdapterFactory::GetAdapter(const AdapterCallback& callback) {
         chromeos::switches::kEnableExperimentalBluetooth)) {
       chromeos::BluetoothAdapterChromeOSExperimental* new_adapter =
           new chromeos::BluetoothAdapterChromeOSExperimental;
-      new_adapter->TrackDefaultAdapter();
       default_adapter.Get() = new_adapter->weak_ptr_factory_.GetWeakPtr();
     } else {
       chromeos::BluetoothAdapterChromeOS* new_adapter =
           new chromeos::BluetoothAdapterChromeOS;
-      new_adapter->TrackDefaultAdapter();
       default_adapter.Get() = new_adapter->weak_ptr_factory_.GetWeakPtr();
     }
 #elif defined(OS_WIN)
     BluetoothAdapterWin* new_adapter = new BluetoothAdapterWin(
         base::Bind(&RunAdapterCallbacks));
-    new_adapter->TrackDefaultAdapter();
+    new_adapter->Init();
     default_adapter.Get() = new_adapter->weak_ptr_factory_.GetWeakPtr();
 #elif defined(OS_MACOSX)
     BluetoothAdapterMac* new_adapter = new BluetoothAdapterMac();
-    new_adapter->TrackDefaultAdapter();
+    new_adapter->Init();
     default_adapter.Get() = new_adapter->weak_ptr_factory_.GetWeakPtr();
 #endif
   }

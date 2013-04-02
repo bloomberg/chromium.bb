@@ -78,8 +78,8 @@ class BluetoothAdapterWin : public BluetoothAdapter,
   explicit BluetoothAdapterWin(const InitCallback& init_callback);
   virtual ~BluetoothAdapterWin();
 
-  void TrackDefaultAdapter();
-  void TrackTestAdapter(
+  void Init();
+  void InitForTest(
       scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
       scoped_refptr<base::SequencedTaskRunner> bluetooth_task_runner);
 

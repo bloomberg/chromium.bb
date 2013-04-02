@@ -221,7 +221,7 @@ void BluetoothAdapterWin::DevicesDiscovered(
   }
 }
 
-void BluetoothAdapterWin::TrackDefaultAdapter() {
+void BluetoothAdapterWin::Init() {
   ui_task_runner_ = base::ThreadTaskRunnerHandle::Get();
   task_manager_ =
       new BluetoothTaskManagerWin(ui_task_runner_);
@@ -229,7 +229,7 @@ void BluetoothAdapterWin::TrackDefaultAdapter() {
   task_manager_->Initialize();
 }
 
-void BluetoothAdapterWin::TrackTestAdapter(
+void BluetoothAdapterWin::InitForTest(
     scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
     scoped_refptr<base::SequencedTaskRunner> bluetooth_task_runner) {
   ui_task_runner_ = ui_task_runner;
