@@ -75,6 +75,12 @@ bool SearchResultListView::IsResultViewSelected(
 
 bool SearchResultListView::OnKeyPressed(const ui::KeyEvent& event) {
   switch (event.key_code()) {
+    case ui::VKEY_TAB:
+      if (event.IsShiftDown())
+        SetSelectedIndex(std::max(selected_index_ - 1, 0));
+      else
+        SetSelectedIndex(std::min(selected_index_ + 1, last_visible_index_));
+      return true;
     case ui::VKEY_UP:
       SetSelectedIndex(std::max(selected_index_ - 1, 0));
       return true;

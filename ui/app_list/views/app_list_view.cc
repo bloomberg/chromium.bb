@@ -65,7 +65,6 @@ void AppListView::InitAsBubble(
     const gfx::Point& anchor_point,
     views::BubbleBorder::ArrowLocation arrow_location,
     bool border_accepts_events) {
-
   app_list_main_view_ = new AppListMainView(delegate_.get(),
                                             model_.get(),
                                             pagination_model,
@@ -81,6 +80,8 @@ void AppListView::InitAsBubble(
       GetSigninDelegate(),
       app_list_main_view_->GetPreferredSize().width());
   AddChildView(signin_view_);
+
+  OnSigninStatusChanged();
 
   set_anchor_view(anchor);
   set_anchor_point(anchor_point);
@@ -151,6 +152,14 @@ void AppListView::Prerender() {
   app_list_main_view_->Prerender();
 }
 
+void AppListView::OnSigninStatusChanged() {
+  const bool needs_signin =
+      GetSigninDelegate() && GetSigninDelegate()->NeedSignin();
+
+  signin_view_->SetVisible(needs_signin);
+  app_list_main_view_->SetVisible(!needs_signin);
+}
+
 views::View* AppListView::GetInitiallyFocusedView() {
   return app_list_main_view_->search_box_view()->search_box();
 }
@@ -183,19 +192,9 @@ bool AppListView::AcceleratorPressed(const ui::Accelerator& accelerator) {
 }
 
 void AppListView::Layout() {
-  if (!signin_view_) {
-    app_list_main_view_->SetBounds(0, 0, width(), height());
-    return;
-  }
-
-  if (GetSigninDelegate() && GetSigninDelegate()->NeedSignin()) {
-    signin_view_->SetBounds(0, 0, width(), height());
-    app_list_main_view_->SetBounds(width(), 0, width(), height());
-    return;
-  }
-
-  signin_view_->SetBounds(-width(), 0, width(), height());
-  app_list_main_view_->SetBounds(0, 0, width(), height());
+  const gfx::Rect contents_bounds = GetContentsBounds();
+  app_list_main_view_->SetBoundsRect(contents_bounds);
+  signin_view_->SetBoundsRect(contents_bounds);
 }
 
 void AppListView::OnWidgetDestroying(views::Widget* widget) {
@@ -225,7 +224,7 @@ void AppListView::OnWidgetVisibilityChanged(views::Widget* widget,
 }
 
 void AppListView::OnSigninSuccess() {
-  Layout();
+  OnSigninStatusChanged();
 }
 
 SigninDelegate* AppListView::GetSigninDelegate() {
