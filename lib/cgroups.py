@@ -546,55 +546,6 @@ class Cgroup(object):
     finally:
       self.TransferCurrentProcess()
 
-  @contextlib.contextmanager
-  def ContainChildren(self, pool_name=None, sigterm_timeout=10):
-    """Context manager for containing children processes.
-
-    This manager creates a job pool derived from this instance, transfers
-    the current process into it upon __enter__.
-
-    Any children processes created at that point will inherit our cgroup;
-    they can only escape the group if they're running as root and move
-    themselves out of this hierarchy.
-
-    Upon __exit__, transfer the current process back to this group, then
-    sigterm (progressing to sigkill) any immediate children in the pool,
-    finally removing the pool if possible.
-
-    If pool_name is given, that name is used rather than os.getpid() for
-    the job pool created.
-
-    Finally, note that during cleanup this will suppress SIGINT and SIGTERM
-    to ensure that it cleanses any children before returning.
-    """
-
-    pid = os.getpid()
-    if pool_name is None:
-      pool_name = str(pid)
-
-    run_kill = False
-    try:
-      # Note; we use lazy init here so that we cannot trigger a
-      # _GroupWasRemoved; we want that contained.
-      node = self.AddGroup(pool_name, autoclean=True, lazy_init=True)
-      try:
-        node.TransferCurrentProcess()
-      except _GroupWasRemoved:
-        raise SystemExit(
-            "Group %s was removed under our feet; pool shutdown is underway"
-            % node.namespace)
-      run_kill = True
-      yield
-    finally:
-      if os.getpid() == pid:
-        with signals.DeferSignals():
-          self.TransferCurrentProcess()
-          if run_kill:
-            node.KillProcesses(remove=True, sigterm_timeout=sigterm_timeout)
-          else:
-            # Non strict since the group may have failed to be created.
-            node.RemoveThisGroup(strict=False)
-
   def KillProcesses(self, poll_interval=0.05, remove=False, sigterm_timeout=10):
     """Kill all processes in this namespace."""
 
@@ -753,6 +704,63 @@ class Cgroup(object):
     return _cros_node.AddGroup(target, autoclean=False)
 
 
+class ContainChildren(cros_build_lib.MasterPidContextManager):
+  """Context manager for containing children processes.
+
+  This manager creates a job pool derived from the specified Cgroup |node|
+  and transfers the current process into it upon __enter__.
+
+  Any children processes created at that point will inherit our cgroup;
+  they can only escape the group if they're running as root and move
+  themselves out of this hierarchy.
+
+  Upon __exit__, transfer the current process back to this group, then
+  SIGTERM (progressing to SIGKILL) any immediate children in the pool,
+  finally removing the pool if possible. After sending SIGTERM, we wait
+  |sigterm_timeout| seconds before sending SIGKILL.
+
+  If |pool_name| is given, that name is used rather than os.getpid() for
+  the job pool created.
+
+  Finally, note that during cleanup this will suppress all signals
+  to ensure that it cleanses any children before returning.
+  """
+
+  def __init__(self, node, pool_name=None, sigterm_timeout=10):
+    super(ContainChildren, self).__init__()
+    self.node = node
+    self.child = None
+    self.pid = None
+    self.pool_name = pool_name
+    self.sigterm_timeout = sigterm_timeout
+    self.run_kill = False
+
+  def _enter(self):
+    self.pid = os.getpid()
+
+    # Note: We use lazy init here so that we cannot trigger a
+    # _GroupWasRemoved -- we want that to be contained.
+    pool_name = str(self.pid) if self.pool_name is None else self.pool_name
+    self.child = self.node.AddGroup(pool_name, autoclean=True, lazy_init=True)
+    try:
+      self.child.TransferCurrentProcess()
+    except _GroupWasRemoved:
+      raise SystemExit(
+          "Group %s was removed under our feet; pool shutdown is underway"
+          % self.child.namespace)
+    self.run_kill = True
+
+  def _exit(self, *_args, **_kwargs):
+    with signals.DeferSignals():
+      self.node.TransferCurrentProcess()
+      if self.run_kill:
+        self.child.KillProcesses(remove=True,
+                                 sigterm_timeout=self.sigterm_timeout)
+      else:
+        # Non-strict since the group may have failed to be created.
+        self.child.RemoveThisGroup(strict=False)
+
+
 def SimpleContainChildren(process_name, nesting=True, **kwds):
   """Convenience context manager to create a cgroup for children containment
 
@@ -763,7 +771,7 @@ def SimpleContainChildren(process_name, nesting=True, **kwds):
   if node is None:
     return cros_build_lib.NoOpContextManager()
   name = '%s:%i' % (process_name, os.getpid())
-  return node.ContainChildren(name, **kwds)
+  return ContainChildren(node, name, **kwds)
 
 # This is a generic group, not associated with any specific process id, so
 # we shouldn't autoclean it on exit; doing so would delete the group from

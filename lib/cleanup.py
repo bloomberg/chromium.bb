@@ -71,8 +71,8 @@ class EnforcedCleanupSection(object):
       # fails- failure means a code bug.  Specifically, we don't know if
       # cleanup code was run, thus just flat out bail.
       os._exit(1)
-    # Check if the parent exited cleanly; if so, we don't need to do anything.
 
+    # Check if the parent exited cleanly; if so, we don't need to do anything.
     if os.read(self._lock.fd, 1):
       for handle in (sys.__stdin__, sys.__stdout__, sys.__stderr__):
         try:
@@ -83,7 +83,7 @@ class EnforcedCleanupSection(object):
 
     # Allow masterpid context managers to run in this case, since we're
     # explicitly designed for this cleanup.
-    cros_build_lib.MasterPidContextManager._ALTERNATE_MASTER_PID = os.getpid()
+    cros_build_lib.MasterPidContextManager.ALTERNATE_MASTER_PID = os.getpid()
 
     raise RuntimeError("Parent exited uncleanly; forcing cleanup code to run.")
 

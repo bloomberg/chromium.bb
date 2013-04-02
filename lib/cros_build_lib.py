@@ -936,8 +936,7 @@ class MasterPidContextManager(object):
   # In certain cases we actually want this ran outside
   # of the main pid- specifically in backup processes
   # doing cleanup.
-
-  _ALTERNATE_MASTER_PID = None
+  ALTERNATE_MASTER_PID = None
 
   def __init__(self):
     self._invoking_pid = None
@@ -948,7 +947,7 @@ class MasterPidContextManager(object):
 
   def __exit__(self, exc_type, exc, traceback):
     curpid = os.getpid()
-    if curpid == self._ALTERNATE_MASTER_PID:
+    if curpid == self.ALTERNATE_MASTER_PID:
       self._invoking_pid = curpid
     if curpid == self._invoking_pid:
       return self._exit(exc_type, exc, traceback)
