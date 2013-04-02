@@ -32,7 +32,7 @@ GlobalError* GetSignedInServiceError(Profile* profile) {
   // errors.
   SigninManager* signin_manager = SigninManagerFactory::GetForProfile(profile);
   SigninGlobalError* signin_error = signin_manager->signin_global_error();
-  if (signin_error && signin_error->HasBadge())
+  if (signin_error && signin_error->HasMenuItem())
     return signin_error;
 
   // No auth error - now try other services. Currently the list is just hard-
@@ -42,7 +42,7 @@ GlobalError* GetSignedInServiceError(Profile* profile) {
     ProfileSyncService* service =
         ProfileSyncServiceFactory::GetForProfile(profile);
     SyncGlobalError* error = service->sync_global_error();
-    if (error && error->HasBadge())
+    if (error && error->HasMenuItem())
       return error;
   }
   return NULL;

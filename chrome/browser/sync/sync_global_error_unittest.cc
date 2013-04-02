@@ -110,10 +110,8 @@ void VerifySyncGlobalErrorResult(NiceMock<ProfileSyncServiceMock>* service,
 
   error->OnStateChanged();
 
-  // If there is an error then a wrench button badge, menu item, and bubble view
-  // should be shown.
-  EXPECT_EQ(error->HasBadge(), is_error);
-  EXPECT_EQ(error->HasMenuItem() || error->HasBadge(), is_error);
+  // If there is an error then a menu item and bubble view should be shown.
+  EXPECT_EQ(error->HasMenuItem(), is_error);
   EXPECT_EQ(error->HasBubbleView(), is_error);
 
   // If there is an error then labels should not be empty.

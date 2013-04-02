@@ -19,16 +19,11 @@ class GlobalError : public base::SupportsWeakPtr<GlobalError> {
     SEVERITY_LOW,
     SEVERITY_MEDIUM,
     SEVERITY_HIGH,
-    SEVERITY_CRITICAL,
   };
 
   GlobalError();
   virtual ~GlobalError();
 
-  // Returns true if a badge should be drawn on the wrench menu button.
-  virtual bool HasBadge() = 0;
-  // Returns the resource ID of the badge icon.
-  virtual int GetBadgeResourceID();
   // Returns the error's severity level. If there are multiple errors,
   // the error with the highest severity will display in the menu. If not
   // overridden, this is based on the badge resource ID.

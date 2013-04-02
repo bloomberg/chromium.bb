@@ -30,7 +30,6 @@ class ExtensionErrorUIDefault : public ExtensionErrorUI {
 
    private:
     // GlobalError methods.
-    virtual bool HasBadge() OVERRIDE;
     virtual bool HasMenuItem() OVERRIDE;
     virtual int MenuItemCommandID() OVERRIDE;
     virtual string16 MenuItemLabel() OVERRIDE;

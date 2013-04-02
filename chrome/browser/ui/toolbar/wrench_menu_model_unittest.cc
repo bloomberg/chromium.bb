@@ -28,12 +28,6 @@ class MenuError : public GlobalError {
 
   int execute_count() { return execute_count_; }
 
-  virtual bool HasBadge() OVERRIDE { return false; }
-  virtual int GetBadgeResourceID() OVERRIDE {
-    ADD_FAILURE();
-    return 0;
-  }
-
   virtual bool HasMenuItem() OVERRIDE { return true; }
   virtual int MenuItemCommandID() OVERRIDE { return command_id_; }
   virtual string16 MenuItemLabel() OVERRIDE { return string16(); }

@@ -134,8 +134,7 @@ class ExtensionDisabledGlobalError : public GlobalError,
   virtual ~ExtensionDisabledGlobalError();
 
   // GlobalError implementation.
-  virtual bool HasBadge() OVERRIDE;
-  virtual int GetBadgeResourceID() OVERRIDE;
+  virtual Severity GetSeverity() OVERRIDE;
   virtual bool HasMenuItem() OVERRIDE;
   virtual int MenuItemCommandID() OVERRIDE;
   virtual string16 MenuItemLabel() OVERRIDE;
@@ -200,12 +199,8 @@ ExtensionDisabledGlobalError::~ExtensionDisabledGlobalError() {
                         user_response_, EXTENSION_DISABLED_UI_BUCKET_BOUNDARY);
 }
 
-bool ExtensionDisabledGlobalError::HasBadge() {
-  return true;
-}
-
-int ExtensionDisabledGlobalError::GetBadgeResourceID() {
-  return IDR_UPDATE_BADGE;
+GlobalError::Severity ExtensionDisabledGlobalError::GetSeverity() {
+  return SEVERITY_LOW;
 }
 
 bool ExtensionDisabledGlobalError::HasMenuItem() {

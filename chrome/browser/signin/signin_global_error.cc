@@ -74,21 +74,8 @@ void SigninGlobalError::AuthStatusChanged() {
   }
 }
 
-bool SigninGlobalError::HasBadge() {
-  // Badge the wrench menu any time there is a menu item reflecting an auth
-  // error.
-  return !MenuItemLabel().empty();
-}
-
 bool SigninGlobalError::HasMenuItem() {
-  // Auth errors are only reported via a separate menu item on chromeos - on
-  // other platforms, WrenchMenuModel overlays the errors on top of the
-  // "Signed in as xxxxx" menu item.
-#if defined(OS_CHROMEOS)
-  return HasBadge();
-#else
-  return false;
-#endif
+  return !MenuItemLabel().empty();
 }
 
 int SigninGlobalError::MenuItemCommandID() {

@@ -26,8 +26,6 @@ class ErrorBadge : public GlobalError {
   virtual ~ErrorBadge();
 
   // Implementation for GlobalError:
-  virtual bool HasBadge() OVERRIDE;
-
   virtual bool HasMenuItem() OVERRIDE;
   virtual int MenuItemCommandID() OVERRIDE;
   virtual string16 MenuItemLabel() OVERRIDE;
@@ -54,10 +52,6 @@ ErrorBadge::ErrorBadge(ExtensionWarningBadgeService* badge_service)
     : badge_service_(badge_service) {}
 
 ErrorBadge::~ErrorBadge() {}
-
-bool ErrorBadge::HasBadge() {
-  return true;
-}
 
 bool ErrorBadge::HasMenuItem() {
   return true;

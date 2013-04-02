@@ -21,8 +21,6 @@ class SyncGlobalError : public GlobalError,
   SyncGlobalError(ProfileSyncService* service, SigninManager* signin);
   virtual ~SyncGlobalError();
 
-  virtual bool HasBadge() OVERRIDE;
-
   virtual bool HasMenuItem() OVERRIDE;
   virtual int MenuItemCommandID() OVERRIDE;
   virtual string16 MenuItemLabel() OVERRIDE;

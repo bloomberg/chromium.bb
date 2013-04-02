@@ -43,10 +43,6 @@ ExtensionErrorUIDefault::ExtensionGlobalError::ExtensionGlobalError(
     : error_ui_(error_ui) {
 }
 
-bool ExtensionErrorUIDefault::ExtensionGlobalError::HasBadge() {
-  return false;
-}
-
 bool ExtensionErrorUIDefault::ExtensionGlobalError::HasMenuItem() {
   return false;
 }

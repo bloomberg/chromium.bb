@@ -1164,7 +1164,7 @@ void SyncSetupHandler::OpenSyncSetup(bool force_login) {
 #if !defined(OS_CHROMEOS)
       (GetSyncService() && GetSyncService()->IsStartSuppressed()) ||
 #endif
-      signin->signin_global_error()->HasBadge()) {
+      signin->signin_global_error()->HasMenuItem()) {
     // User is not logged in, or login has been specially requested - need to
     // display login UI (cases 1-4).
     DisplayGaiaLogin(false);

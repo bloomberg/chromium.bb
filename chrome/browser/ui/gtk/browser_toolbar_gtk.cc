@@ -23,6 +23,7 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/global_error/global_error.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/browser/ui/gtk/accelerators_gtk.h"
@@ -685,8 +686,21 @@ gboolean BrowserToolbarGtk::OnWrenchMenuButtonExpose(GtkWidget* sender,
     resource_id = UpgradeDetector::GetInstance()->GetIconResourceID(
             UpgradeDetector::UPGRADE_ICON_TYPE_BADGE);
   } else {
-    resource_id = GlobalErrorServiceFactory::GetForProfile(
-        browser_->profile())->GetFirstBadgeResourceID();
+    GlobalError* error = GlobalErrorServiceFactory::GetForProfile(
+        browser_->profile())->GetHighestSeverityGlobalErrorWithWrenchMenuItem();
+    if (error) {
+      switch (error->GetSeverity()) {
+        case GlobalError::SEVERITY_LOW:
+          resource_id = IDR_UPDATE_BADGE;
+          break;
+        case GlobalError::SEVERITY_MEDIUM:
+          resource_id = IDR_UPDATE_BADGE4;
+          break;
+        case GlobalError::SEVERITY_HIGH:
+          resource_id = IDR_UPDATE_BADGE3;
+          break;
+      }
+    }
   }
 
   if (!resource_id)

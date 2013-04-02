@@ -33,19 +33,8 @@ SyncGlobalError::SyncGlobalError(ProfileSyncService* service,
 SyncGlobalError::~SyncGlobalError() {
 }
 
-bool SyncGlobalError::HasBadge() {
-  return !menu_label_.empty();
-}
-
 bool SyncGlobalError::HasMenuItem() {
-  // When we're on Chrome OS we need to add a separate menu item to the wrench
-  // menu to the show the error. On other platforms we can just reuse the
-  // "Sign in to Chrome..." menu item to show the error.
-#if defined(OS_CHROMEOS)
   return !menu_label_.empty();
-#else
-  return false;
-#endif
 }
 
 int SyncGlobalError::MenuItemCommandID() {

@@ -672,6 +672,19 @@ void WrenchMenuModel::AddGlobalErrorMenuItems() {
        it = errors.begin(); it != errors.end(); ++it) {
     GlobalError* error = *it;
     if (error->HasMenuItem()) {
+      // Don't add a signin error if it's already being displayed elsewhere.
+#if !defined(OS_CHROMEOS)
+      if (error == signin_ui_util::GetSignedInServiceError(
+                       browser_->profile()->GetOriginalProfile())) {
+        MenuModel* model = this;
+        int index = 0;
+        if (MenuModel::GetModelAndIndexForCommandId(
+                IDC_SHOW_SIGNIN, &model, &index)) {
+          continue;
+        }
+      }
+#endif
+
       AddItem(error->MenuItemCommandID(), error->MenuItemLabel());
       int icon_id = error->MenuItemIconResourceID();
       if (icon_id) {

@@ -111,8 +111,7 @@ class ExternalInstallGlobalError : public GlobalError,
   const Extension* extension() const { return extension_; }
 
   // GlobalError implementation.
-  virtual bool HasBadge() OVERRIDE;
-  virtual int GetBadgeResourceID() OVERRIDE;
+  virtual Severity GetSeverity() OVERRIDE;
   virtual bool HasMenuItem() OVERRIDE;
   virtual int MenuItemCommandID() OVERRIDE;
   virtual string16 MenuItemLabel() OVERRIDE;
@@ -152,12 +151,8 @@ ExternalInstallGlobalError::ExternalInstallGlobalError(
 ExternalInstallGlobalError::~ExternalInstallGlobalError() {
 }
 
-bool ExternalInstallGlobalError::HasBadge() {
-  return true;
-}
-
-int ExternalInstallGlobalError::GetBadgeResourceID() {
-  return IDR_UPDATE_BADGE_EXTENSION;
+GlobalError::Severity ExternalInstallGlobalError::GetSeverity() {
+  return SEVERITY_LOW;
 }
 
 bool ExternalInstallGlobalError::HasMenuItem() {

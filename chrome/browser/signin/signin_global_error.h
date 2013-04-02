@@ -48,7 +48,6 @@ class SigninGlobalError : public GlobalError {
   GoogleServiceAuthError GetLastAuthError() const { return auth_error_; }
 
   // GlobalError implementation.
-  virtual bool HasBadge() OVERRIDE;
   virtual bool HasMenuItem() OVERRIDE;
   virtual int MenuItemCommandID() OVERRIDE;
   virtual string16 MenuItemLabel() OVERRIDE;

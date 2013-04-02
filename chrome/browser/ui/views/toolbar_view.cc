@@ -368,11 +368,11 @@ gfx::ImageSkia ToolbarView::GetAppMenuIcon(
   incompatibility_badge_showing = false;
 #endif
 
-  int error_badge_id = GlobalErrorServiceFactory::GetForProfile(
-      browser_->profile())->GetFirstBadgeResourceID();
+  GlobalError* global_error = GlobalErrorServiceFactory::GetForProfile(
+      browser_->profile())->GetHighestSeverityGlobalErrorWithWrenchMenuItem();
 
   bool add_badge = ShouldShowUpgradeRecommended() ||
-                   ShouldShowIncompatibilityWarning() || error_badge_id;
+                   ShouldShowIncompatibilityWarning() || global_error;
   if (!add_badge)
     return icon;
 
@@ -392,8 +392,8 @@ gfx::ImageSkia ToolbarView::GetAppMenuIcon(
 #else
     NOTREACHED();
 #endif
-  } else if (error_badge_id) {
-    badge = *tp->GetImageSkiaNamed(error_badge_id);
+  } else if (global_error) {
+    badge = *tp->GetImageSkiaNamed(IDR_UPDATE_BADGE4);
   } else {
     NOTREACHED();
   }

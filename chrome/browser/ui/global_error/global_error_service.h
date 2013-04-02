@@ -42,9 +42,9 @@ class GlobalErrorService : public ProfileKeyedService {
   // This class maintains ownership of the returned error.
   GlobalError* GetGlobalErrorByMenuItemCommandID(int command_id) const;
 
-  // Gets the badge icon resource ID for the first error with a badge.
-  // Returns 0 if no such error exists.
-  int GetFirstBadgeResourceID() const;
+  // Gets the highest severity error that has a wrench menu item.
+  // Returns NULL if no such error exists.
+  GlobalError* GetHighestSeverityGlobalErrorWithWrenchMenuItem() const;
 
   // Gets the first error that has a bubble view which hasn't been shown yet.
   // Returns NULL if no such error exists.

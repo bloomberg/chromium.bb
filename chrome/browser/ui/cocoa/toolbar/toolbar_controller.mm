@@ -564,9 +564,14 @@ class NotificationBridge
     return;
   }
 
-  int error_badge_id = GlobalErrorServiceFactory::GetForProfile(
-      browser_->profile())->GetFirstBadgeResourceID();
-  [[wrenchButton_ cell] setOverlayImageID:error_badge_id];
+  GlobalError* error = GlobalErrorServiceFactory::GetForProfile(
+      browser_->profile())->GetHighestSeverityGlobalErrorWithWrenchMenuItem();
+  if (error) {
+    [[wrenchButton_ cell] setOverlayImageID:IDR_UPDATE_BADGE4];
+    return;
+  }
+
+  [[wrenchButton_ cell] setOverlayImageID:0];
 }
 
 - (void)prefChanged:(const std::string&)prefName {

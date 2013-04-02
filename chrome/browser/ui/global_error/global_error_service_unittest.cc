@@ -19,12 +19,6 @@ class BaseError : public GlobalError {
 
   static int count() { return count_; }
 
-  virtual bool HasBadge() OVERRIDE { return false; }
-  virtual int GetBadgeResourceID() OVERRIDE {
-    ADD_FAILURE();
-    return 0;
-  }
-
   virtual bool HasMenuItem() OVERRIDE { return false; }
   virtual int MenuItemCommandID() OVERRIDE {
     ADD_FAILURE();
@@ -80,26 +74,15 @@ class BaseError : public GlobalError {
 
 int BaseError::count_ = 0;
 
-// A simple error that only has a badge.
-class BadgeError : public BaseError {
- public:
-  explicit BadgeError(int resource_id) : resource_id_(resource_id) {}
-  virtual bool HasBadge() OVERRIDE { return true; }
-  virtual Severity GetSeverity() OVERRIDE {
-    return static_cast<Severity>(resource_id_);
-  }
-  virtual int GetBadgeResourceID() OVERRIDE { return resource_id_; }
-
- private:
-  int resource_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(BadgeError);
-};
-
 // A simple error that only has a menu item.
 class MenuError : public BaseError {
  public:
-  explicit MenuError(int command_id) : command_id_(command_id) {}
+  explicit MenuError(int command_id, Severity severity)
+      : command_id_(command_id),
+        severity_(severity) {
+  }
+
+  virtual Severity GetSeverity() { return severity_; }
 
   virtual bool HasMenuItem() OVERRIDE { return true; }
   virtual int MenuItemCommandID() OVERRIDE { return command_id_; }
@@ -108,6 +91,7 @@ class MenuError : public BaseError {
 
  private:
   int command_id_;
+  Severity severity_;
 
   DISALLOW_COPY_AND_ASSIGN(MenuError);
 };
@@ -159,9 +143,9 @@ TEST(GlobalErrorServiceTest, RemoveError) {
 
 // Test finding errors by their menu item command ID.
 TEST(GlobalErrorServiceTest, GetMenuItem) {
-  BaseError* error1 = new BaseError;
-  MenuError* error2 = new MenuError(2);
-  MenuError* error3 = new MenuError(3);
+  MenuError* error1 = new MenuError(1, GlobalError::SEVERITY_LOW);
+  MenuError* error2 = new MenuError(2, GlobalError::SEVERITY_MEDIUM);
+  MenuError* error3 = new MenuError(3, GlobalError::SEVERITY_HIGH);
 
   GlobalErrorService service(NULL);
   service.AddGlobalError(error1);
@@ -173,32 +157,28 @@ TEST(GlobalErrorServiceTest, GetMenuItem) {
   EXPECT_EQ(NULL, service.GetGlobalErrorByMenuItemCommandID(4));
 }
 
-// Test getting the badge icon resource ID of the first error.
-TEST(GlobalErrorServiceTest, GetBadgeID) {
-  BaseError* error1 = new BaseError;
-  BadgeError* error2 = new BadgeError(2);
-  BadgeError* error3 = new BadgeError(3);
-  BadgeError* error4 = new BadgeError(4);
+// Test getting the error with the higest severity.
+TEST(GlobalErrorServiceTest, HighestSeverity) {
+  MenuError* error1 = new MenuError(1, GlobalError::SEVERITY_LOW);
+  MenuError* error2 = new MenuError(2, GlobalError::SEVERITY_MEDIUM);
+  MenuError* error3 = new MenuError(3, GlobalError::SEVERITY_HIGH);
 
   GlobalErrorService service(NULL);
-  EXPECT_EQ(0, service.GetFirstBadgeResourceID());
+  EXPECT_EQ(NULL, service.GetHighestSeverityGlobalErrorWithWrenchMenuItem());
 
   service.AddGlobalError(error1);
-  EXPECT_EQ(0, service.GetFirstBadgeResourceID());
+  EXPECT_EQ(error1, service.GetHighestSeverityGlobalErrorWithWrenchMenuItem());
 
   service.AddGlobalError(error2);
-  EXPECT_EQ(2, service.GetFirstBadgeResourceID());
-
-  service.AddGlobalError(error4);
-  EXPECT_EQ(4, service.GetFirstBadgeResourceID());
+  EXPECT_EQ(error2, service.GetHighestSeverityGlobalErrorWithWrenchMenuItem());
 
   service.AddGlobalError(error3);
-  EXPECT_EQ(4, service.GetFirstBadgeResourceID());
+  EXPECT_EQ(error3, service.GetHighestSeverityGlobalErrorWithWrenchMenuItem());
 
-  // Remove the highest-severity error with a badge.
-  service.RemoveGlobalError(error4);
-  delete error4;
+  // Remove the highest-severity error.
+  service.RemoveGlobalError(error3);
+  delete error3;
 
-  // Now error3 should be the first error with a badge.
-  EXPECT_EQ(3, service.GetFirstBadgeResourceID());
+  // Now error2 should be the next highest severity error.
+  EXPECT_EQ(error2, service.GetHighestSeverityGlobalErrorWithWrenchMenuItem());
 }
