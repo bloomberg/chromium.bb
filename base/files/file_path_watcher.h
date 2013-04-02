@@ -17,7 +17,7 @@
 namespace base {
 
 // This class lets you register interest in changes on a FilePath.
-// The delegate will get called whenever the file or directory referenced by the
+// The callback will get called whenever the file or directory referenced by the
 // FilePath is changed, including created or deleted. Due to limitations in the
 // underlying OS APIs, FilePathWatcher has slightly different semantics on OS X
 // than on Windows or Linux. FilePathWatcher on Linux and Windows will detect
@@ -33,8 +33,6 @@ class BASE_EXPORT FilePathWatcher {
   typedef base::Callback<void(const FilePath& path, bool error)> Callback;
 
   // Used internally to encapsulate different members on different platforms.
-  // TODO(jhawkins): Move this into its own file. Also fix the confusing naming
-  // wrt Delegate vs PlatformDelegate.
   class PlatformDelegate : public base::RefCountedThreadSafe<PlatformDelegate> {
    public:
     PlatformDelegate();
