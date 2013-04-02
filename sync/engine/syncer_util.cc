@@ -9,12 +9,15 @@
 #include <string>
 #include <vector>
 
+#include "base/base64.h"
 #include "base/location.h"
 #include "base/metrics/histogram.h"
+#include "base/string_number_conversions.h"
 #include "sync/engine/conflict_resolver.h"
 #include "sync/engine/syncer_proto_util.h"
 #include "sync/engine/syncer_types.h"
 #include "sync/internal_api/public/base/model_type.h"
+#include "sync/internal_api/public/base/unique_position.h"
 #include "sync/protocol/bookmark_specifics.pb.h"
 #include "sync/protocol/password_specifics.pb.h"
 #include "sync/protocol/sync.pb.h"
@@ -29,13 +32,9 @@
 #include "sync/util/cryptographer.h"
 #include "sync/util/time.h"
 
-// TODO(vishwath): Remove this include after node positions have
-// shifted to completely uing Ordinals.
-// See http://crbug.com/145412 .
-#include "sync/internal_api/public/base/node_ordinal.h"
-
 namespace syncer {
 
+using syncable::BASE_SERVER_SPECIFICS;
 using syncable::BASE_VERSION;
 using syncable::CHANGES_VERSION;
 using syncable::CREATE_NEW_UPDATE_ITEM;
@@ -54,7 +53,6 @@ using syncable::META_HANDLE;
 using syncable::MTIME;
 using syncable::MutableEntry;
 using syncable::NON_UNIQUE_NAME;
-using syncable::BASE_SERVER_SPECIFICS;
 using syncable::PARENT_ID;
 using syncable::SERVER_CTIME;
 using syncable::SERVER_IS_DEL;
@@ -62,13 +60,15 @@ using syncable::SERVER_IS_DIR;
 using syncable::SERVER_MTIME;
 using syncable::SERVER_NON_UNIQUE_NAME;
 using syncable::SERVER_PARENT_ID;
-using syncable::SERVER_ORDINAL_IN_PARENT;
 using syncable::SERVER_SPECIFICS;
+using syncable::SERVER_UNIQUE_POSITION;
 using syncable::SERVER_VERSION;
-using syncable::UNIQUE_CLIENT_TAG;
-using syncable::UNIQUE_SERVER_TAG;
 using syncable::SPECIFICS;
 using syncable::SYNCER;
+using syncable::UNIQUE_BOOKMARK_TAG;
+using syncable::UNIQUE_CLIENT_TAG;
+using syncable::UNIQUE_POSITION;
+using syncable::UNIQUE_SERVER_TAG;
 using syncable::WriteTransaction;
 
 syncable::Id FindLocalIdToUpdate(
@@ -273,7 +273,32 @@ UpdateAttemptResponse AttemptToUpdateEntry(
   return SUCCESS;
 }
 
+std::string GetUniqueBookmarkTagFromUpdate(const sync_pb::SyncEntity& update) {
+  if (!update.has_originator_cache_guid() ||
+      !update.has_originator_client_item_id()) {
+    return std::string();
+  }
+
+  return syncable::GenerateSyncableBookmarkHash(
+      update.originator_cache_guid(), update.originator_client_item_id());
+}
+
+UniquePosition GetUpdatePosition(const sync_pb::SyncEntity& update,
+                                 const std::string& suffix) {
+  DCHECK(UniquePosition::IsValidSuffix(suffix));
+  if (!(SyncerProtoUtil::ShouldMaintainPosition(update))) {
+    return UniquePosition::CreateInvalid();
+  } else if (update.has_unique_position()) {
+    return UniquePosition::FromProto(update.unique_position());
+  } else if (update.has_position_in_parent()) {
+    return UniquePosition::FromInt64(update.position_in_parent(), suffix);
+  } else {
+    return UniquePosition::CreateInvalid();
+  }
+}
+
 namespace {
+
 // Helper to synthesize a new-style sync_pb::EntitySpecifics for use locally,
 // when the server speaks only the old sync_pb::SyncEntity_BookmarkData-based
 // protocol.
@@ -294,9 +319,34 @@ void UpdateBookmarkSpecifics(const std::string& singleton_tag,
   local_entry->Put(SERVER_SPECIFICS, pb);
 }
 
+void UpdateBookmarkPositioning(const sync_pb::SyncEntity& update,
+                               MutableEntry* local_entry) {
+  // Update our unique bookmark tag.  In many cases this will be identical to
+  // the tag we already have.  However, clients that have recently upgraded to
+  // versions that support unique positions will have incorrect tags.  See the
+  // v86 migration logic in directory_backing_store.cc for more information.
+  //
+  // Both the old and new values are unique to this element.  Applying this
+  // update will not risk the creation of conflicting unique tags.
+  std::string bookmark_tag = GetUniqueBookmarkTagFromUpdate(update);
+  if (UniquePosition::IsValidSuffix(bookmark_tag)) {
+    local_entry->PutUniqueBookmarkTag(bookmark_tag);
+  }
+
+  // Update our position.
+  UniquePosition update_pos =
+      GetUpdatePosition(update, local_entry->Get(UNIQUE_BOOKMARK_TAG));
+  if (update_pos.IsValid()) {
+    local_entry->Put(syncable::SERVER_UNIQUE_POSITION, update_pos);
+  } else {
+    // TODO(sync): This and other cases of unexpected input should be handled
+    // better.
+    NOTREACHED();
+  }
+}
+
 }  // namespace
 
-// Pass in name and checksum because of UTF8 conversion.
 void UpdateServerFieldsFromUpdate(
     MutableEntry* target,
     const sync_pb::SyncEntity& update,
@@ -355,9 +405,9 @@ void UpdateServerFieldsFromUpdate(
                             bookmark.bookmark_favicon(),
                             target);
   }
-  if (update.has_position_in_parent())
-    target->Put(SERVER_ORDINAL_IN_PARENT,
-                Int64ToNodeOrdinal(update.position_in_parent()));
+  if (SyncerProtoUtil::ShouldMaintainPosition(update)) {
+    UpdateBookmarkPositioning(update, target);
+  }
 
   target->Put(SERVER_IS_DEL, update.deleted());
   // We only mark the entry as unapplied if its version is greater than the
@@ -376,21 +426,6 @@ void CreateNewEntry(syncable::WriteTransaction *trans,
     syncable::MutableEntry new_entry(trans, syncable::CREATE_NEW_UPDATE_ITEM,
                                      id);
   }
-}
-
-void SplitServerInformationIntoNewEntry(
-    syncable::WriteTransaction* trans,
-    syncable::MutableEntry* entry) {
-  syncable::Id id = entry->Get(ID);
-  ChangeEntryIDAndUpdateChildren(trans, entry, trans->directory()->NextId());
-  entry->Put(BASE_VERSION, 0);
-
-  MutableEntry new_entry(trans, CREATE_NEW_UPDATE_ITEM, id);
-  CopyServerFields(entry, &new_entry);
-  ClearServerData(entry);
-
-  DVLOG(1) << "Splitting server information, local entry: " << *entry
-           << " server entry: " << new_entry;
 }
 
 // This function is called on an entry when we can update the user-facing data
@@ -415,11 +450,8 @@ void UpdateLocalDataFromServerData(
   } else {
     entry->Put(NON_UNIQUE_NAME, entry->Get(SERVER_NON_UNIQUE_NAME));
     entry->Put(PARENT_ID, entry->Get(SERVER_PARENT_ID));
+    entry->Put(UNIQUE_POSITION, entry->Get(SERVER_UNIQUE_POSITION));
     CHECK(entry->Put(IS_DEL, false));
-    Id new_predecessor =
-        entry->ComputePrevIdFromServerPosition(entry->Get(SERVER_PARENT_ID));
-    CHECK(entry->PutPredecessor(new_predecessor))
-        << " Illegal predecessor after converting from server position.";
   }
 
   entry->Put(CTIME, entry->Get(SERVER_CTIME));
@@ -446,47 +478,6 @@ VerifyCommitResult ValidateCommitEntry(syncable::Entry* entry) {
     return VERIFY_UNSYNCABLE;
   }
   return VERIFY_OK;
-}
-
-bool AddItemThenPredecessors(
-    syncable::BaseTransaction* trans,
-    syncable::Entry* item,
-    syncable::IndexedBitField inclusion_filter,
-    syncable::MetahandleSet* inserted_items,
-    std::vector<syncable::Id>* commit_ids) {
-
-  if (!inserted_items->insert(item->Get(META_HANDLE)).second)
-    return false;
-  commit_ids->push_back(item->Get(ID));
-  if (item->Get(IS_DEL))
-    return true;  // Deleted items have no predecessors.
-
-  Id prev_id = item->GetPredecessorId();
-  while (!prev_id.IsRoot()) {
-    Entry prev(trans, GET_BY_ID, prev_id);
-    CHECK(prev.good()) << "Bad id when walking predecessors.";
-    if (!prev.Get(inclusion_filter))
-      break;
-    if (!inserted_items->insert(prev.Get(META_HANDLE)).second)
-      break;
-    commit_ids->push_back(prev_id);
-    prev_id = prev.GetPredecessorId();
-  }
-  return true;
-}
-
-void AddPredecessorsThenItem(
-    syncable::BaseTransaction* trans,
-    syncable::Entry* item,
-    syncable::IndexedBitField inclusion_filter,
-    syncable::MetahandleSet* inserted_items,
-    std::vector<syncable::Id>* commit_ids) {
-  size_t initial_size = commit_ids->size();
-  if (!AddItemThenPredecessors(trans, item, inclusion_filter, inserted_items,
-                               commit_ids))
-    return;
-  // Reverse what we added to get the correct order.
-  std::reverse(commit_ids->begin() + initial_size, commit_ids->end());
 }
 
 void MarkDeletedChildrenSynced(

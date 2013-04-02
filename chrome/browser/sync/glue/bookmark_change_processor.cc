@@ -179,10 +179,7 @@ void BookmarkChangeProcessor::RemoveAllChildNodes(
     const int64 sync_node_id = dfs_sync_id_stack.top();
     syncer::WriteNode node(trans);
     node.InitByIdLookup(sync_node_id);
-    int64 child_id = node.GetFirstChildId();
-    if (child_id != syncer::kInvalidId) {
-      dfs_sync_id_stack.push(child_id);
-    } else {
+    if (!node.GetIsFolder() || node.GetFirstChildId() == syncer::kInvalidId) {
       // All children of the node has been processed, delete the node and
       // pop it off the stack.
       dfs_sync_id_stack.pop();
@@ -193,6 +190,11 @@ void BookmarkChangeProcessor::RemoveAllChildNodes(
         // if we are processing topmost node, all other nodes must be processed
         // the stack should be empty.
         DCHECK(dfs_sync_id_stack.empty());
+      }
+    } else {
+      int64 child_id = node.GetFirstChildId();
+      if (child_id != syncer::kInvalidId) {
+        dfs_sync_id_stack.push(child_id);
       }
     }
   }

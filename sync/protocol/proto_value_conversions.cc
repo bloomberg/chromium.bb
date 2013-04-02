@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
 #include "base/values.h"
+#include "sync/internal_api/public/base/unique_position.h"
 #include "sync/protocol/app_notification_specifics.pb.h"
 #include "sync/protocol/app_setting_specifics.pb.h"
 #include "sync/protocol/app_specifics.pb.h"
@@ -35,6 +36,7 @@
 #include "sync/protocol/synced_notification_specifics.pb.h"
 #include "sync/protocol/theme_specifics.pb.h"
 #include "sync/protocol/typed_url_specifics.pb.h"
+#include "sync/protocol/unique_position.pb.h"
 
 namespace syncer {
 
@@ -542,6 +544,12 @@ base::DictionaryValue* EntitySpecificsToValue(
 
 namespace {
 
+StringValue* UniquePositionToStringValue(
+    const sync_pb::UniquePosition& proto) {
+  UniquePosition pos = UniquePosition::FromProto(proto);
+  return new StringValue(pos.ToDebugString());
+}
+
 base::DictionaryValue* SyncEntityToValue(const sync_pb::SyncEntity& proto,
                                          bool include_specifics) {
   base::DictionaryValue* value = new base::DictionaryValue();
@@ -556,6 +564,7 @@ base::DictionaryValue* SyncEntityToValue(const sync_pb::SyncEntity& proto,
   SET_INT64(sync_timestamp);
   SET_STR(server_defined_unique_tag);
   SET_INT64(position_in_parent);
+  SET(unique_position, UniquePositionToStringValue);
   SET_STR(insert_after_item_id);
   SET_BOOL(deleted);
   SET_STR(originator_cache_guid);

@@ -99,13 +99,6 @@ void TestEntryFactory::CreateUnsyncedItem(
 
   WriteTransaction trans(FROM_HERE, UNITTEST, directory_);
 
-  Id predecessor_id;
-  if (model_type == BOOKMARKS) {
-    bool lookup_result = directory_->GetLastChildIdForTest(
-        &trans, parent_id, &predecessor_id);
-    DCHECK(lookup_result);
-  }
-
   MutableEntry entry(&trans, syncable::CREATE, model_type, parent_id, name);
   DCHECK(entry.good());
   entry.Put(syncable::ID, item_id);
@@ -118,12 +111,6 @@ void TestEntryFactory::CreateUnsyncedItem(
   sync_pb::EntitySpecifics default_specifics;
   AddDefaultFieldValue(model_type, &default_specifics);
   entry.Put(syncable::SPECIFICS, default_specifics);
-
-  // Bookmarks get inserted at the end of the list.
-  if (model_type == BOOKMARKS) {
-    bool put_result = entry.PutPredecessor(predecessor_id);
-    DCHECK(put_result);
-  }
 
   if (item_id.ServerKnows()) {
     entry.Put(syncable::SERVER_SPECIFICS, default_specifics);
@@ -176,12 +163,6 @@ int64 TestEntryFactory::CreateSyncedItem(
   entry.Put(syncable::IS_DIR, is_folder);
   entry.Put(syncable::IS_DEL, false);
   entry.Put(syncable::PARENT_ID, parent_id);
-
-  // TODO(sync): Place bookmarks at the end of the list?
-  if (!entry.PutPredecessor(TestIdFactory::root())) {
-    NOTREACHED();
-    return syncable::kInvalidMetaHandle;
-  }
 
   entry.Put(syncable::SERVER_VERSION, GetNextRevision());
   entry.Put(syncable::IS_UNAPPLIED_UPDATE, false);

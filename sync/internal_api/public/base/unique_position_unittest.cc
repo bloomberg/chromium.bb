@@ -69,7 +69,9 @@ const UniquePosition kSmallPositionPlusOne = FromBytes(
 const std::string kMinSuffix =
     std::string(UniquePosition::kSuffixLength - 1, '\x00') + '\x01';
 const std::string kMaxSuffix(UniquePosition::kSuffixLength, '\xFF');
-const std::string kNormalSuffix(UniquePosition::kSuffixLength, '\xAB');
+const std::string kNormalSuffix(
+    "\x68\x44\x6C\x6B\x32\x58\x78\x34\x69\x70\x46\x34\x79\x49"
+    "\x44\x4F\x66\x4C\x58\x41\x31\x34\x68\x59\x56\x43\x6F\x3D");
 
 ::testing::AssertionResult LessThan(const char* m_expr,
                                     const char* n_expr,

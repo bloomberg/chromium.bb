@@ -117,6 +117,13 @@ void UniquePosition::ToProto(sync_pb::UniquePosition* proto) const {
   proto->set_value(bytes_);
 }
 
+void UniquePosition::SerializeToString(std::string* blob) const {
+  DCHECK(blob);
+  sync_pb::UniquePosition proto;
+  ToProto(&proto);
+  proto.SerializeToString(blob);
+}
+
 int64 UniquePosition::ToInt64() const {
   uint64 y = 0;
   const std::string& s = bytes_;
@@ -140,6 +147,9 @@ bool UniquePosition::IsValid() const {
 }
 
 std::string UniquePosition::ToDebugString() const {
+  if (bytes_.empty())
+    return std::string("INVALID[]");
+
   std::string debug_string = base::HexEncode(bytes_.data(), bytes_.length());
   if (!IsValid()) {
     debug_string = "INVALID[" + debug_string + "]";

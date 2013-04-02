@@ -7,7 +7,6 @@
 
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/model_type.h"
-#include "sync/internal_api/public/base/node_ordinal.h"
 #include "sync/syncable/entry.h"
 #include "sync/syncable/metahandle_set.h"
 
@@ -52,7 +51,7 @@ class SYNC_EXPORT_PRIVATE MutableEntry : public Entry {
   bool Put(Int64Field field, const int64& value);
   bool Put(TimeField field, const base::Time& value);
   bool Put(IdField field, const Id& value);
-  bool Put(OrdinalField field, const NodeOrdinal& value);
+  bool Put(UniquePositionField field, const UniquePosition& value);
 
   // Do a simple property-only update if the PARENT_ID field.  Use with caution.
   //
@@ -74,6 +73,8 @@ class SYNC_EXPORT_PRIVATE MutableEntry : public Entry {
     return PutIsDel(value);
   }
   bool Put(IndexedBitField field, bool value);
+
+  void PutUniqueBookmarkTag(const std::string& tag);
 
   // Sets the position of this item, and updates the entry kernels of the
   // adjacent siblings so that list invariants are maintained.  Returns false

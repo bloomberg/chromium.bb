@@ -5,10 +5,11 @@
 #include "sync/syncable/mutable_entry.h"
 
 #include "base/memory/scoped_ptr.h"
-#include "sync/internal_api/public/base/node_ordinal.h"
+#include "sync/internal_api/public/base/unique_position.h"
 #include "sync/syncable/directory.h"
 #include "sync/syncable/scoped_index_updater.h"
 #include "sync/syncable/scoped_kernel_lock.h"
+#include "sync/syncable/scoped_parent_child_index_updater.h"
 #include "sync/syncable/syncable-inl.h"
 #include "sync/syncable/syncable_changes_version.h"
 #include "sync/syncable/syncable_util.h"
@@ -36,7 +37,6 @@ void MutableEntry::Init(WriteTransaction* trans,
   kernel->put(MTIME, now);
   // We match the database defaults here
   kernel->put(BASE_VERSION, CHANGES_VERSION);
-  kernel->put(SERVER_ORDINAL_IN_PARENT, NodeOrdinal::CreateInitialOrdinal());
 
   // Normally the SPECIFICS setting code is wrapped in logic to deal with
   // unknown fields and encryption.  Since all we want to do here is ensure that
@@ -63,8 +63,19 @@ MutableEntry::MutableEntry(WriteTransaction* trans,
     : Entry(trans),
       write_transaction_(trans) {
   Init(trans, model_type, parent_id, name);
-  bool insert_result = trans->directory()->InsertEntry(trans, kernel_);
-  DCHECK(insert_result);
+  // We need to have a valid position ready before we can index the item.
+  if (model_type == BOOKMARKS) {
+    // Base the tag off of our cache-guid and local "c-" style ID.
+    std::string unique_tag = syncable::GenerateSyncableBookmarkHash(
+        trans->directory()->cache_guid(), Get(ID).GetServerId());
+    kernel_->put(UNIQUE_BOOKMARK_TAG, unique_tag);
+    kernel_->put(UNIQUE_POSITION, UniquePosition::InitialPosition(unique_tag));
+  } else {
+    DCHECK(!ShouldMaintainPosition());
+  }
+
+  bool result = trans->directory()->InsertEntry(trans, kernel_);
+  DCHECK(result);
 }
 
 MutableEntry::MutableEntry(WriteTransaction* trans, CreateNewUpdateItem,
@@ -80,7 +91,6 @@ MutableEntry::MutableEntry(WriteTransaction* trans, CreateNewUpdateItem,
   kernel->put(ID, id);
   kernel->put(META_HANDLE, trans->directory_->NextMetahandle());
   kernel->mark_dirty(trans->directory_->kernel_->dirty_metahandles);
-  kernel->put(SERVER_ORDINAL_IN_PARENT, NodeOrdinal::CreateInitialOrdinal());
   kernel->put(IS_DEL, true);
   // We match the database defaults here
   kernel->put(BASE_VERSION, CHANGES_VERSION);
@@ -118,10 +128,6 @@ bool MutableEntry::PutIsDel(bool is_del) {
     return true;
   }
   if (is_del) {
-    if (!UnlinkFromOrder()) {
-      return false;
-    }
-
     // If the server never knew about this item and it's deleted then we don't
     // need to keep it around.  Unsetting IS_UNSYNCED will:
     // - Ensure that the item is never committed to the server.
@@ -139,19 +145,12 @@ bool MutableEntry::PutIsDel(bool is_del) {
     ScopedKernelLock lock(dir());
     // Some indices don't include deleted items and must be updated
     // upon a value change.
-    ScopedIndexUpdater<ParentIdAndHandleIndexer> updater(lock, kernel_,
-        dir()->kernel_->parent_id_child_index);
+    ScopedParentChildIndexUpdater updater(lock, kernel_,
+        dir()->kernel_->parent_child_index);
 
     kernel_->put(IS_DEL, is_del);
     kernel_->mark_dirty(dir()->kernel_->dirty_metahandles);
   }
-
-  if (!is_del)
-    // Restores position to the 0th index.
-    if (!PutPredecessor(Id())) {
-      // TODO(lipalani) : Propagate the error to caller. crbug.com/100444.
-      NOTREACHED();
-    }
 
   return true;
 }
@@ -185,11 +184,12 @@ bool MutableEntry::Put(IdField field, const Id& value) {
       if (!dir()->ReindexId(write_transaction(), kernel_, value))
         return false;
     } else if (PARENT_ID == field) {
-      PutParentIdPropertyOnly(value);  // Makes sibling order inconsistent.
-      // Fixes up the sibling order inconsistency.
-      if (!PutPredecessor(Id())) {
-        // TODO(lipalani) : Propagate the error to caller. crbug.com/100444.
-        NOTREACHED();
+      PutParentIdPropertyOnly(value);
+      if (!Get(IS_DEL)) {
+        if (!PutPredecessor(Id())) {
+          // TODO(lipalani) : Propagate the error to caller. crbug.com/100444.
+          NOTREACHED();
+        }
       }
     } else {
       kernel_->put(field, value);
@@ -199,15 +199,16 @@ bool MutableEntry::Put(IdField field, const Id& value) {
   return true;
 }
 
-bool MutableEntry::Put(OrdinalField field, const NodeOrdinal& value) {
+bool MutableEntry::Put(UniquePositionField field, const UniquePosition& value) {
   DCHECK(kernel_);
-  DCHECK(value.IsValid());
   write_transaction_->SaveOriginal(kernel_);
   if(!kernel_->ref(field).Equals(value)) {
+    // We should never overwrite a valid position with an invalid one.
+    DCHECK(value.IsValid());
     ScopedKernelLock lock(dir());
-    if (SERVER_ORDINAL_IN_PARENT == field) {
-      ScopedIndexUpdater<ParentIdAndHandleIndexer> updater(
-          lock, kernel_, dir()->kernel_->parent_id_child_index);
+    if (UNIQUE_POSITION == field) {
+      ScopedParentChildIndexUpdater updater(
+          lock, kernel_, dir()->kernel_->parent_child_index);
       kernel_->put(field, value);
     } else {
       kernel_->put(field, value);
@@ -375,67 +376,34 @@ bool MutableEntry::Put(IndexedBitField field, bool value) {
   return true;
 }
 
-bool MutableEntry::UnlinkFromOrder() {
-  ScopedKernelLock lock(dir());
-  return dir()->UnlinkEntryFromOrder(kernel_,
-                                     write_transaction(),
-                                     &lock,
-                                     NODE_MANIPULATION);
+void MutableEntry::PutUniqueBookmarkTag(const std::string& tag) {
+  // This unique tag will eventually be used as the unique suffix when adjusting
+  // this bookmark's position.  Let's make sure it's a valid suffix.
+  if (!UniquePosition::IsValidSuffix(tag)) {
+    NOTREACHED();
+    return;
+  }
+
+  if (!kernel_->ref(UNIQUE_BOOKMARK_TAG).empty()
+      && tag != kernel_->ref(UNIQUE_BOOKMARK_TAG)) {
+    // There is only one scenario where our tag is expected to change.  That
+    // scenario occurs when our current tag is a non-correct tag assigned during
+    // the UniquePosition migration.
+    std::string migration_generated_tag =
+        GenerateSyncableBookmarkHash(std::string(),
+                                     kernel_->ref(ID).GetServerId());
+    DCHECK_EQ(migration_generated_tag, kernel_->ref(UNIQUE_BOOKMARK_TAG));
+  }
+
+  kernel_->put(UNIQUE_BOOKMARK_TAG, tag);
+  kernel_->mark_dirty(dir()->kernel_->dirty_metahandles);
 }
 
 bool MutableEntry::PutPredecessor(const Id& predecessor_id) {
-  if (!UnlinkFromOrder())
+  MutableEntry predecessor(write_transaction_, GET_BY_ID, predecessor_id);
+  if (!predecessor.good())
     return false;
-
-  if (Get(IS_DEL)) {
-    DCHECK(predecessor_id.IsNull());
-    return true;
-  }
-
-  // TODO(ncarter): It should be possible to not maintain position for
-  // non-bookmark items.  However, we'd need to robustly handle all possible
-  // permutations of setting IS_DEL and the SPECIFICS to identify the
-  // object type; or else, we'd need to add a ModelType to the
-  // MutableEntry's Create ctor.
-  //   if (!ShouldMaintainPosition()) {
-  //     return false;
-  //   }
-
-  // This is classic insert-into-doubly-linked-list from CS 101 and your last
-  // job interview.  An "IsRoot" Id signifies the head or tail.
-  Id successor_id;
-  if (!predecessor_id.IsRoot()) {
-    MutableEntry predecessor(write_transaction(), GET_BY_ID, predecessor_id);
-    if (!predecessor.good()) {
-      LOG(ERROR) << "Predecessor is not good : "
-                 << predecessor_id.GetServerId();
-      return false;
-    }
-    if (predecessor.Get(PARENT_ID) != Get(PARENT_ID))
-      return false;
-    successor_id = predecessor.GetSuccessorId();
-    predecessor.Put(NEXT_ID, Get(ID));
-  } else {
-    syncable::Directory* dir = trans()->directory();
-    if (!dir->GetFirstChildId(trans(), Get(PARENT_ID), &successor_id)) {
-      return false;
-    }
-  }
-  if (!successor_id.IsRoot()) {
-    MutableEntry successor(write_transaction(), GET_BY_ID, successor_id);
-    if (!successor.good()) {
-      LOG(ERROR) << "Successor is not good: "
-                 << successor_id.GetServerId();
-      return false;
-    }
-    if (successor.Get(PARENT_ID) != Get(PARENT_ID))
-      return false;
-    successor.Put(PREV_ID, Get(ID));
-  }
-  DCHECK(predecessor_id != Get(ID));
-  DCHECK(successor_id != Get(ID));
-  Put(PREV_ID, predecessor_id);
-  Put(NEXT_ID, successor_id);
+  dir()->PutPredecessor(kernel_, predecessor.kernel_);
   return true;
 }
 

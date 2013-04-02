@@ -19,7 +19,6 @@
 #include "base/test/values_test_util.h"
 #include "base/threading/platform_thread.h"
 #include "base/values.h"
-#include "sync/internal_api/public/base/node_ordinal.h"
 #include "sync/protocol/bookmark_specifics.pb.h"
 #include "sync/syncable/directory_backing_store.h"
 #include "sync/syncable/directory_change_delegate.h"
@@ -230,10 +229,10 @@ TEST_F(SyncableGeneralTest, ChildrenOps) {
     Entry e(&rtrans, GET_BY_ID, id);
     ASSERT_FALSE(e.good());  // Hasn't been written yet.
 
+    Entry root(&rtrans, GET_BY_ID, rtrans.root_id());
+    ASSERT_TRUE(root.good());
     EXPECT_FALSE(dir.HasChildren(&rtrans, rtrans.root_id()));
-    Id child_id;
-    EXPECT_TRUE(dir.GetFirstChildId(&rtrans, rtrans.root_id(), &child_id));
-    EXPECT_TRUE(child_id.IsRoot());
+    EXPECT_TRUE(root.GetFirstChildId().IsRoot());
   }
 
   {
@@ -254,10 +253,10 @@ TEST_F(SyncableGeneralTest, ChildrenOps) {
     Entry child(&rtrans, GET_BY_HANDLE, written_metahandle);
     ASSERT_TRUE(child.good());
 
+    Entry root(&rtrans, GET_BY_ID, rtrans.root_id());
+    ASSERT_TRUE(root.good());
     EXPECT_TRUE(dir.HasChildren(&rtrans, rtrans.root_id()));
-    Id child_id;
-    EXPECT_TRUE(dir.GetFirstChildId(&rtrans, rtrans.root_id(), &child_id));
-    EXPECT_EQ(e.Get(ID), child_id);
+    EXPECT_EQ(e.Get(ID), root.GetFirstChildId());
   }
 
   {
@@ -273,10 +272,10 @@ TEST_F(SyncableGeneralTest, ChildrenOps) {
     Entry e(&rtrans, GET_BY_ID, id);
     ASSERT_TRUE(e.good());
 
+    Entry root(&rtrans, GET_BY_ID, rtrans.root_id());
+    ASSERT_TRUE(root.good());
     EXPECT_FALSE(dir.HasChildren(&rtrans, rtrans.root_id()));
-    Id child_id;
-    EXPECT_TRUE(dir.GetFirstChildId(&rtrans, rtrans.root_id(), &child_id));
-    EXPECT_TRUE(child_id.IsRoot());
+    EXPECT_TRUE(root.GetFirstChildId().IsRoot());
   }
 
   dir.SaveChanges();
@@ -415,6 +414,32 @@ TEST_F(SyncableGeneralTest, ToValue) {
   }
 
   dir.SaveChanges();
+}
+
+// Test that the bookmark tag generation algorithm remains unchanged.
+TEST_F(SyncableGeneralTest, BookmarkTagTest) {
+  InMemoryDirectoryBackingStore* store = new InMemoryDirectoryBackingStore("x");
+
+  // The two inputs that form the bookmark tag are the directory's cache_guid
+  // and its next_id value.  We don't need to take any action to ensure
+  // consistent next_id values, but we do need to explicitly request that our
+  // InMemoryDirectoryBackingStore always return the same cache_guid.
+  store->request_consistent_cache_guid();
+
+  Directory dir(store, &handler_, NULL, NULL, NULL);
+  ASSERT_EQ(OPENED, dir.Open("x", &delegate_, NullTransactionObserver()));
+
+  {
+    WriteTransaction wtrans(FROM_HERE, UNITTEST, &dir);
+    MutableEntry bm(&wtrans, CREATE, BOOKMARKS, wtrans.root_id(), "bm");
+    bm.Put(IS_UNSYNCED, true);
+
+    // If this assertion fails, that might indicate that the algorithm used to
+    // generate bookmark tags has been modified.  This could have implications
+    // for bookmark ordering.  Please make sure you know what you're doing if
+    // you intend to make such a change.
+    ASSERT_EQ("6wHRAb3kbnXV5GHrejp4/c1y5tw=", bm.Get(UNIQUE_BOOKMARK_TAG));
+  }
 }
 
 // A test fixture for syncable::Directory.  Uses an in-memory database to keep
@@ -1496,12 +1521,19 @@ TEST_F(SyncableDirectoryTest, OldClientLeftUnsyncedDeletedLocalItem) {
   }
 }
 
-TEST_F(SyncableDirectoryTest, OrdinalWithNullSurvivesSaveAndReload) {
+TEST_F(SyncableDirectoryTest, PositionWithNullSurvivesSaveAndReload) {
   TestIdFactory id_factory;
   Id null_child_id;
   const char null_cstr[] = "\0null\0test";
   std::string null_str(null_cstr, arraysize(null_cstr) - 1);
-  NodeOrdinal null_ord = NodeOrdinal(null_str);
+  // Pad up to the minimum length with 0x7f characters, then add a string that
+  // contains a few NULLs to the end.  This is slightly wrong, since the suffix
+  // part of a UniquePosition shouldn't contain NULLs, but it's good enough for
+  // this test.
+  std::string suffix =
+      std::string(UniquePosition::kSuffixLength - null_str.length(), '\x7f')
+      + null_str;
+  UniquePosition null_pos = UniquePosition::FromInt64(10, suffix);
 
   {
     WriteTransaction trans(FROM_HERE, UNITTEST, dir_.get());
@@ -1512,7 +1544,8 @@ TEST_F(SyncableDirectoryTest, OrdinalWithNullSurvivesSaveAndReload) {
 
     MutableEntry child(&trans, CREATE, BOOKMARKS, parent.Get(ID), "child");
     child.Put(IS_UNSYNCED, true);
-    child.Put(SERVER_ORDINAL_IN_PARENT, null_ord);
+    child.Put(UNIQUE_POSITION, null_pos);
+    child.Put(SERVER_UNIQUE_POSITION, null_pos);
 
     null_child_id = child.Get(ID);
   }
@@ -1524,9 +1557,10 @@ TEST_F(SyncableDirectoryTest, OrdinalWithNullSurvivesSaveAndReload) {
 
     Entry null_ordinal_child(&trans, GET_BY_ID, null_child_id);
     EXPECT_TRUE(
-        null_ord.Equals(null_ordinal_child.Get(SERVER_ORDINAL_IN_PARENT)));
+        null_pos.Equals(null_ordinal_child.Get(UNIQUE_POSITION)));
+    EXPECT_TRUE(
+        null_pos.Equals(null_ordinal_child.Get(SERVER_UNIQUE_POSITION)));
   }
-
 }
 
 // An OnDirectoryBackingStore that can be set to always fail SaveChanges.
@@ -1879,13 +1913,13 @@ TEST_F(OnDiskSyncableDirectoryTest,
               update_post_save.ref((ProtoField)i).SerializeAsString())
               << "Blob field #" << i << " changed during save/load";
   }
-  for ( ; i < ORDINAL_FIELDS_END; ++i) {
-    EXPECT_EQ(create_pre_save.ref((OrdinalField)i).ToInternalValue(),
-              create_post_save.ref((OrdinalField)i).ToInternalValue())
-              << "Blob field #" << i << " changed during save/load";
-    EXPECT_EQ(update_pre_save.ref((OrdinalField)i).ToInternalValue(),
-              update_post_save.ref((OrdinalField)i).ToInternalValue())
-              << "Blob field #" << i << " changed during save/load";
+  for ( ; i < UNIQUE_POSITION_FIELDS_END; ++i) {
+    EXPECT_TRUE(create_pre_save.ref((UniquePositionField)i).Equals(
+        create_post_save.ref((UniquePositionField)i)))
+        << "Position field #" << i << " changed during save/load";
+    EXPECT_TRUE(update_pre_save.ref((UniquePositionField)i).Equals(
+        update_post_save.ref((UniquePositionField)i)))
+        << "Position field #" << i << " changed during save/load";
   }
 }
 

@@ -44,6 +44,13 @@ SYNC_EXPORT_PRIVATE int GetUnsyncedEntries(BaseTransaction* trans,
 SYNC_EXPORT_PRIVATE std::string GenerateSyncableHash(
     ModelType model_type, const std::string& client_tag);
 
+// A helper for generating the bookmark type's tag.  This is required in more
+// than one place, so we define the algorithm here to make sure the
+// implementation is consistent.
+SYNC_EXPORT_PRIVATE std::string GenerateSyncableBookmarkHash(
+    const std::string originator_cache_guid,
+    const std::string originator_client_item_id);
+
 }  // namespace syncable
 }  // namespace syncer
 

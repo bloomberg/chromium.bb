@@ -51,28 +51,12 @@ class SYNC_EXPORT_PRIVATE BuildCommitCommand : public SyncerCommand {
  private:
   FRIEND_TEST_ALL_PREFIXES(BuildCommitCommandTest, InterpolatePosition);
 
-  // Functions returning constants controlling range of values.
-  static int64 GetFirstPosition();
-  static int64 GetLastPosition();
-  static int64 GetGap();
-
   void AddExtensionsActivityToMessage(sessions::SyncSession* session,
                                       sync_pb::CommitMessage* message);
 
   // Fills the config_params field of |message|.
   void AddClientConfigParamsToMessage(sessions::SyncSession* session,
                                       sync_pb::CommitMessage* message);
-
-  // Helper for computing position.  Find the numeric position value
-  // of the closest already-synced entry.  |direction| must be one of
-  // NEXT_ID or PREV_ID; this parameter controls the search direction.
-  // For an open range (no predecessor or successor), the return
-  // value will be kFirstPosition or kLastPosition.
-  int64 FindAnchorPosition(syncable::IdField direction,
-                           const syncable::Entry& entry);
-  // Given two values of the type returned by FindAnchorPosition,
-  // compute a third value in between the two ranges.
-  static int64 InterpolatePosition(int64 lo, int64 hi);
 
   DISALLOW_COPY_AND_ASSIGN(BuildCommitCommand);
 

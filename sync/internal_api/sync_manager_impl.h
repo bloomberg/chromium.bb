@@ -220,11 +220,10 @@ class SYNC_EXPORT_PRIVATE SyncManagerImpl :
   typedef std::map<std::string, JsMessageHandler> JsMessageHandlerMap;
 
   // Determine if the parents or predecessors differ between the old and new
-  // versions of an entry stored in |a| and |b|.  Note that a node's index may
-  // change without its NEXT_ID changing if the node at NEXT_ID also moved (but
-  // the relative order is unchanged).  To handle such cases, we rely on the
-  // caller to treat a position update on any sibling as updating the positions
-  // of all siblings.
+  // versions of an entry.  Note that a node's index may change without its
+  // UNIQUE_POSITION changing if its sibling nodes were changed.  To handle such
+  // cases, we rely on the caller to treat a position update on any sibling as
+  // updating the positions of all siblings.
   bool VisiblePositionsDiffer(
       const syncable::EntryKernelMutation& mutation) const;
 

@@ -17,6 +17,7 @@
 #include "sync/syncable/dir_open_result.h"
 #include "sync/syncable/entry_kernel.h"
 #include "sync/syncable/metahandle_set.h"
+#include "sync/syncable/parent_child_index.h"
 #include "sync/syncable/scoped_kernel_lock.h"
 #include "sync/syncable/syncable_delete_journal.h"
 
@@ -86,33 +87,11 @@ struct ClientTagIndexer {
   static bool ShouldInclude(const EntryKernel* a);
 };
 
-// This index contains EntryKernels ordered by parent ID and metahandle.
-// It allows efficient lookup of the children of a given parent.
-struct ParentIdAndHandleIndexer {
-  // This index is of the parent ID and metahandle.  We use a custom
-  // comparator.
-  class Comparator {
-   public:
-    bool operator() (const syncable::EntryKernel* a,
-                     const syncable::EntryKernel* b) const;
-  };
-
-  // This index does not include deleted items.
-  static bool ShouldInclude(const EntryKernel* a);
-};
-
 // Given an Indexer providing the semantics of an index, defines the
 // set type used to actually contain the index.
 template <typename Indexer>
 struct Index {
   typedef std::set<EntryKernel*, typename Indexer::Comparator> Set;
-};
-
-// Reason for unlinking.
-enum UnlinkReason {
-  NODE_MANIPULATION, // To be used by any operation manipulating the linked
-                     // list.
-  DATA_TYPE_PURGE    // To be used when purging a dataype.
 };
 
 enum InvariantCheckLevel {
@@ -126,9 +105,7 @@ class SYNC_EXPORT Directory {
   friend class Entry;
   friend class MutableEntry;
   friend class ReadTransaction;
-  friend class ReadTransactionWithoutDB;
   friend class ScopedKernelLock;
-  friend class ScopedKernelUnlock;
   friend class WriteTransaction;
   friend class SyncableDirectoryTest;
   friend class syncer::TestUserShare;
@@ -233,9 +210,8 @@ class SYNC_EXPORT Directory {
   void Close();
 
   int64 NextMetahandle();
-  // Always returns a negative id.  Positive client ids are generated
-  // by the server only.
-  Id NextId();
+  // Returns a negative integer unique to this client.
+  syncable::Id NextId();
 
   bool good() const { return NULL != kernel_; }
 
@@ -320,13 +296,6 @@ class SYNC_EXPORT Directory {
                        const Id& new_parent_id);
   void ClearDirtyMetahandles();
 
-  // These don't do semantic checking.
-  // The semantic checking is implemented higher up.
-  bool UnlinkEntryFromOrder(EntryKernel* entry,
-                            WriteTransaction* trans,
-                            ScopedKernelLock* lock,
-                            UnlinkReason unlink_reason);
-
   DirOpenResult OpenImpl(
       const std::string& name,
       DirectoryChangeDelegate* delegate,
@@ -336,8 +305,6 @@ class SYNC_EXPORT Directory {
   // These private versions expect the kernel lock to already be held
   // before calling.
   EntryKernel* GetEntryById(const Id& id, ScopedKernelLock* const lock);
-
-  template <class T> void TestAndSet(T* kernel_data, const T* data_to_set);
 
  public:
   typedef std::vector<int64> ChildHandles;
@@ -361,23 +328,27 @@ class SYNC_EXPORT Directory {
   // and fill in |*first_child_id| with its id.  Fills in a root Id if
   // parent has no children.  Returns true if the first child was
   // successfully found, or false if an error was encountered.
-  bool GetFirstChildId(BaseTransaction* trans, const Id& parent_id,
-                       Id* first_child_id) WARN_UNUSED_RESULT;
+  Id GetFirstChildId(BaseTransaction* trans, const EntryKernel* parent);
 
-  // Find the last child in the positional ordering under a parent,
-  // and fill in |*first_child_id| with its id.  Fills in a root Id if
-  // parent has no children.  Returns true if the first child was
-  // successfully found, or false if an error was encountered.
-  bool GetLastChildIdForTest(BaseTransaction* trans, const Id& parent_id,
-                             Id* last_child_id) WARN_UNUSED_RESULT;
+  // These functions allow one to fetch the next or previous item under
+  // the same folder.  Returns the "root" ID if there is no predecessor
+  // or successor.
+  //
+  // TODO(rlarocque): These functions are used mainly for tree traversal.  We
+  // should replace these with an iterator API.  See crbug.com/178275.
+  syncable::Id GetPredecessorId(EntryKernel*);
+  syncable::Id GetSuccessorId(EntryKernel*);
 
-  // Compute a local predecessor position for |update_item|.  The position
-  // is determined by the SERVER_POSITION_IN_PARENT value of |update_item|,
-  // as well as the SERVER_POSITION_IN_PARENT values of any up-to-date
-  // children of |parent_id|.
-  Id ComputePrevIdFromServerPosition(
-      const EntryKernel* update_item,
-      const syncable::Id& parent_id);
+  // Places |e| as a successor to |predecessor|.  If |predecessor| is NULL,
+  // |e| will be placed as the left-most item in its folder.
+  //
+  // Both |e| and |predecessor| must be valid entries under the same parent.
+  //
+  // TODO(rlarocque): This function includes limited support for placing items
+  // with valid positions (ie. Bookmarks) as siblings of items that have no set
+  // ordering (ie. Autofill items).  This support is required only for tests,
+  // and should be removed.  See crbug.com/178282.
+  void PutPredecessor(EntryKernel* e, EntryKernel* predecessor);
 
   // SaveChanges works by taking a consistent snapshot of the current Directory
   // state and indices (by deep copy) under a ReadTransaction, passing this
@@ -486,12 +457,9 @@ class SYNC_EXPORT Directory {
   Directory& operator = (const Directory&);
 
  public:
+  // These contain all items, including IS_DEL items.
   typedef Index<MetahandleIndexer>::Set MetahandlesIndex;
   typedef Index<IdIndexer>::Set IdsIndex;
-  // All entries in memory must be in both the MetahandlesIndex and
-  // the IdsIndex, but only non-deleted entries will be the
-  // ParentIdChildIndex.
-  typedef Index<ParentIdAndHandleIndexer>::Set ParentIdChildIndex;
 
   // Contains both deleted and existing entries with tags.
   // We can't store only existing tags because the client would create
@@ -538,7 +506,11 @@ class SYNC_EXPORT Directory {
     MetahandlesIndex* metahandles_index;
     // Entries indexed by id
     IdsIndex* ids_index;
-    ParentIdChildIndex* parent_id_child_index;
+
+    // Contains non-deleted items, indexed according to parent and position
+    // within parent.  Protected by the ScopedKernelLock.
+    ParentChildIndex* parent_child_index;
+
     ClientTagIndex* client_tag_index;
     // So we don't have to create an EntryKernel every time we want to
     // look something up in an index.  Needle in haystack metaphor.
@@ -583,35 +555,10 @@ class SYNC_EXPORT Directory {
     const WeakHandle<TransactionObserver> transaction_observer;
   };
 
-  // Helper method used to do searches on |parent_id_child_index|.
-  ParentIdChildIndex::iterator LocateInParentChildIndex(
-      const ScopedKernelLock& lock,
-      const Id& parent_id,
-      int64 position_in_parent,
-      const Id& item_id_for_tiebreaking);
-
-  // Return an iterator to the beginning of the range of the children of
-  // |parent_id| in the kernel's parent_id_child_index.
-  ParentIdChildIndex::iterator GetParentChildIndexLowerBound(
-      const ScopedKernelLock& lock,
-      const Id& parent_id);
-
-  // Return an iterator to just past the end of the range of the
-  // children of |parent_id| in the kernel's parent_id_child_index.
-  ParentIdChildIndex::iterator GetParentChildIndexUpperBound(
-      const ScopedKernelLock& lock,
-      const Id& parent_id);
-
   // Append the handles of the children of |parent_id| to |result|.
   void AppendChildHandles(
       const ScopedKernelLock& lock,
       const Id& parent_id, Directory::ChildHandles* result);
-
-  // Return a pointer to what is probably (but not certainly) the
-  // first child of |parent_id|, or NULL if |parent_id| definitely has
-  // no children.
-  EntryKernel* GetPossibleFirstChild(
-      const ScopedKernelLock& lock, const Id& parent_id);
 
   Kernel* kernel_;
 

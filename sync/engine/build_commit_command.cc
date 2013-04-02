@@ -11,6 +11,7 @@
 
 #include "base/string_util.h"
 #include "sync/engine/syncer_proto_util.h"
+#include "sync/internal_api/public/base/unique_position.h"
 #include "sync/protocol/bookmark_specifics.pb.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/sessions/ordered_commit_set.h"
@@ -22,11 +23,6 @@
 #include "sync/syncable/syncable_proto_util.h"
 #include "sync/util/time.h"
 
-// TODO(vishwath): Remove this include after node positions have
-// shifted to completely using Ordinals.
-// See http://crbug.com/145412 .
-#include "sync/internal_api/public/base/node_ordinal.h"
-
 using std::set;
 using std::string;
 using std::vector;
@@ -36,26 +32,11 @@ namespace syncer {
 using sessions::SyncSession;
 using syncable::Entry;
 using syncable::IS_DEL;
-using syncable::SERVER_ORDINAL_IN_PARENT;
 using syncable::IS_UNAPPLIED_UPDATE;
 using syncable::IS_UNSYNCED;
 using syncable::Id;
 using syncable::SPECIFICS;
-
-// static
-int64 BuildCommitCommand::GetFirstPosition() {
-  return std::numeric_limits<int64>::min();
-}
-
-// static
-int64 BuildCommitCommand::GetLastPosition() {
-  return std::numeric_limits<int64>::max();
-}
-
-// static
-int64 BuildCommitCommand::GetGap() {
-  return 1LL << 20;
-}
+using syncable::UNIQUE_POSITION;
 
 BuildCommitCommand::BuildCommitCommand(
     syncable::BaseTransaction* trans,
@@ -216,30 +197,16 @@ SyncerError BuildCommitCommand::ExecuteImpl(SyncSession* session) {
       sync_entry->set_deleted(true);
     } else {
       if (meta_entry.Get(SPECIFICS).has_bookmark()) {
-        // Common data in both new and old protocol.
+        // Both insert_after_item_id and position_in_parent fields are set only
+        // for legacy reasons.  See comments in sync.proto for more information.
         const Id& prev_id = meta_entry.GetPredecessorId();
         string prev_id_string =
             prev_id.IsRoot() ? string() : prev_id.GetServerId();
         sync_entry->set_insert_after_item_id(prev_id_string);
-
-        // Compute a numeric position based on what we know locally.
-        std::pair<int64, int64> position_block(
-            GetFirstPosition(), GetLastPosition());
-        std::map<Id, std::pair<int64, int64> >::iterator prev_pos =
-            position_map.find(prev_id);
-        if (prev_pos != position_map.end()) {
-          position_block = prev_pos->second;
-          position_map.erase(prev_pos);
-        } else {
-          position_block = std::make_pair(
-              FindAnchorPosition(syncable::PREV_ID, meta_entry),
-              FindAnchorPosition(syncable::NEXT_ID, meta_entry));
-        }
-        position_block.first = BuildCommitCommand::InterpolatePosition(
-            position_block.first, position_block.second);
-
-        position_map[id] = position_block;
-        sync_entry->set_position_in_parent(position_block.first);
+        sync_entry->set_position_in_parent(
+            meta_entry.Get(UNIQUE_POSITION).ToInt64());
+        meta_entry.Get(UNIQUE_POSITION).ToProto(
+            sync_entry->mutable_unique_position());
       }
       SetEntrySpecifics(&meta_entry, sync_entry);
     }
@@ -247,44 +214,5 @@ SyncerError BuildCommitCommand::ExecuteImpl(SyncSession* session) {
 
   return SYNCER_OK;
 }
-
-int64 BuildCommitCommand::FindAnchorPosition(syncable::IdField direction,
-                                             const syncable::Entry& entry) {
-  Id next_id = entry.Get(direction);
-  while (!next_id.IsRoot()) {
-    Entry next_entry(entry.trans(),
-                     syncable::GET_BY_ID,
-                     next_id);
-    if (!next_entry.Get(IS_UNSYNCED) && !next_entry.Get(IS_UNAPPLIED_UPDATE)) {
-      return NodeOrdinalToInt64(next_entry.Get(SERVER_ORDINAL_IN_PARENT));
-    }
-    next_id = next_entry.Get(direction);
-  }
-  return
-      direction == syncable::PREV_ID ?
-      GetFirstPosition() : GetLastPosition();
-}
-
-// static
-int64 BuildCommitCommand::InterpolatePosition(const int64 lo,
-                                              const int64 hi) {
-  DCHECK_LE(lo, hi);
-
-  // The first item to be added under a parent gets a position of zero.
-  if (lo == GetFirstPosition() && hi == GetLastPosition())
-    return 0;
-
-  // For small gaps, we do linear interpolation.  For larger gaps,
-  // we use an additive offset of |GetGap()|.  We are careful to avoid
-  // signed integer overflow.
-  uint64 delta = static_cast<uint64>(hi) - static_cast<uint64>(lo);
-  if (delta <= static_cast<uint64>(GetGap()*2))
-    return lo + (static_cast<int64>(delta) + 7) / 8;  // Interpolate.
-  else if (lo == GetFirstPosition())
-    return hi - GetGap();  // Extend range just before successor.
-  else
-    return lo + GetGap();  // Use or extend range just after predecessor.
-}
-
 
 }  // namespace syncer

@@ -306,10 +306,6 @@ ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
   return UNSPECIFIED;
 }
 
-bool ShouldMaintainPosition(ModelType model_type) {
-  return model_type == BOOKMARKS;
-}
-
 ModelTypeSet ProtocolTypes() {
   ModelTypeSet set = ModelTypeSet::All();
   set.RemoveAll(ProxyTypes());

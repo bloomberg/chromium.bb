@@ -72,15 +72,16 @@ class MigrationTest : public testing::TestWithParam<int> {
   void SetUpVersion83Database(sql::Connection* connection);
   void SetUpVersion84Database(sql::Connection* connection);
   void SetUpVersion85Database(sql::Connection* connection);
+  void SetUpVersion86Database(sql::Connection* connection);
 
   void SetUpCurrentDatabaseAndCheckVersion(sql::Connection* connection) {
-    SetUpVersion85Database(connection);  // Prepopulates data.
+    SetUpVersion86Database(connection);  // Prepopulates data.
     scoped_ptr<TestDirectoryBackingStore> dbs(
         new TestDirectoryBackingStore(GetUsername(), connection));
+    ASSERT_EQ(kCurrentDBVersion, dbs->GetVersion());
 
     ASSERT_TRUE(LoadAndIgnoreReturnedData(dbs.get()));
     ASSERT_FALSE(dbs->needs_column_refresh_);
-    ASSERT_EQ(kCurrentDBVersion, dbs->GetVersion());
   }
 
  private:
@@ -2426,6 +2427,96 @@ void MigrationTest::SetUpVersion85Database(sql::Connection* connection) {
   ASSERT_TRUE(connection->CommitTransaction());
 }
 
+void MigrationTest::SetUpVersion86Database(sql::Connection* connection) {
+  ASSERT_TRUE(connection->is_open());
+  ASSERT_TRUE(connection->BeginTransaction());
+  ASSERT_TRUE(connection->Execute(
+      "CREATE TABLE share_version (id VARCHAR(128) primary key, data INT);"
+      "INSERT INTO 'share_version' VALUES('nick@chromium.org',86);"
+      "CREATE TABLE models (model_id BLOB primary key, progress_marker BLOB,"
+         " transaction_version BIGINT default 0);"
+      "INSERT INTO 'models' VALUES(X'C2881000',X'0888810218B605',1);"
+      "CREATE TABLE 'metas'(metahandle bigint primary key ON CONFLICT FAIL,b"
+         "ase_version bigint default -1,server_version bigint default 0,local_e"
+         "xternal_id bigint default 0,transaction_version bigint default 0,mtim"
+         "e bigint default 0,server_mtime bigint default 0,ctime bigint default"
+         " 0,server_ctime bigint default 0,id varchar(255) default 'r',parent_i"
+         "d varchar(255) default 'r',server_parent_id varchar(255) default 'r',"
+         "is_unsynced bit default 0,is_unapplied_update bit default 0,is_del bi"
+         "t default 0,is_dir bit default 0,server_is_dir bit default 0,server_i"
+         "s_del bit default 0,non_unique_name varchar,server_non_unique_name va"
+         "rchar(255),unique_server_tag varchar,unique_client_tag varchar,specif"
+         "ics blob,server_specifics blob,base_server_specifics blob,server_uniq"
+         "ue_position blob,unique_position blob,unique_bookmark_tag blob);"
+      "INSERT INTO 'metas' VALUES(1,-1,0,0,0,"
+         META_PROTO_TIMES_VALS(1)
+         ",'r','r','r',0,0,0,1,0,0,NULL,NULL,NULL,NULL,"
+         "X'',X'',NULL,X'',X'',X'');"
+      "INSERT INTO 'metas' VALUES(6,694,694,6,0,"
+         META_PROTO_TIMES_VALS(6) ",'s_ID_6','s_ID_9','s_ID_9',0,0,0,1,1,0,'T"
+         "he Internet','The Internet',NULL,NULL,X'C2881000',X'C2881000',NULL,X'"
+         "',X'',X'');"
+      "INSERT INTO 'metas' VALUES(7,663,663,0,0,"
+         META_PROTO_TIMES_VALS(7) ",'s_ID_7','r','r',0,0,0,1,1,0,'Google Chro"
+         "me','Google Chrome','google_chrome',NULL,NULL,NULL,NULL,X'',X'',X'');"
+      "INSERT INTO 'metas' VALUES(8,664,664,0,0,"
+         META_PROTO_TIMES_VALS(8) ",'s_ID_8','s_ID_7','s_ID_7',0,0,0,1,1,0,'B"
+         "ookmarks','Bookmarks','google_chrome_bookmarks',NULL,X'C2881000',X'C2"
+         "881000',NULL,X'',X'',X'');"
+      "INSERT INTO 'metas' VALUES(9,665,665,1,0,"
+         META_PROTO_TIMES_VALS(9) ",'s_ID_9','s_ID_8','s_ID_8',0,0,0,1,1,0,'B"
+         "ookmark Bar','Bookmark Bar','bookmark_bar',NULL,X'C2881000',X'C288100"
+         "0',NULL,X'',X'',X'');"
+      "INSERT INTO 'metas' VALUES(10,666,666,2,0,"
+         META_PROTO_TIMES_VALS(10) ",'s_ID_10','s_ID_8','s_ID_8',0,0,0,1,1,0,"
+         "'Other Bookmarks','Other Bookmarks','other_bookmarks',NULL,X'C2881000"
+         "',X'C2881000',NULL,X'',X'',X'');"
+      "INSERT INTO 'metas' VALUES(11,683,683,8,0,"
+         META_PROTO_TIMES_VALS(11) ",'s_ID_11','s_ID_6','s_ID_6',0,0,0,0,0,0,"
+         "'Home (The Chromium Projects)','Home (The Chromium Projects)',NULL,NU"
+         "LL,X'C28810220A18687474703A2F2F6465762E6368726F6D69756D2E6F72672F1206"
+         "414741545741',X'C28810290A1D687474703A2F2F6465762E6368726F6D69756D2E6"
+         "F72672F6F7468657212084146414756415346',NULL,X'',X'',X'');"
+      "INSERT INTO 'metas' VALUES(12,685,685,9,0,"
+         META_PROTO_TIMES_VALS(12) ",'s_ID_12','s_ID_6','s_ID_6',0,0,0,1,1,0,"
+         "'Extra Bookmarks','Extra Bookmarks',NULL,NULL,X'C2881000',X'C2881000'"
+         ",NULL,X'',X'',X'');"
+      "INSERT INTO 'metas' VALUES(13,687,687,10,0,"
+         META_PROTO_TIMES_VALS(13) ",'s_ID_13','s_ID_6','s_ID_6',0,0,0,0,0,0"
+         ",'ICANN | Internet Corporation for Assigned Names and Numbers','ICANN"
+         " | Internet Corporation for Assigned Names and Numbers',NULL,NULL,X'C"
+         "28810240A15687474703A2F2F7777772E6963616E6E2E636F6D2F120B504E47415846"
+         "3041414646',X'C28810200A15687474703A2F2F7777772E6963616E6E2E636F6D2F1"
+         "20744414146415346',NULL,X'',X'',X'');"
+      "INSERT INTO 'metas' VALUES(14,692,692,11,0,"
+         META_PROTO_TIMES_VALS(14) ",'s_ID_14','s_ID_6','s_ID_6',0,0,0,0,0,0"
+         ",'The WebKit Open Source Project','The WebKit Open Source Project',NU"
+         "LL,NULL,X'C288101A0A12687474703A2F2F7765626B69742E6F72672F1204504E475"
+         "8',X'C288101C0A13687474703A2F2F7765626B69742E6F72672F781205504E473259"
+         "',NULL,X'',X'',X'');"
+      "CREATE TABLE deleted_metas (metahandle bigint primary key ON CONFLICT"
+         " FAIL,base_version bigint default -1,server_version bigint default 0,"
+         "local_external_id bigint default 0,transaction_version bigint default"
+         " 0,mtime bigint default 0,server_mtime bigint default 0,ctime bigint "
+         "default 0,server_ctime bigint default 0,id varchar(255) default 'r',p"
+         "arent_id varchar(255) default 'r',server_parent_id varchar(255) defau"
+         "lt 'r',is_unsynced bit default 0,is_unapplied_update bit default 0,is"
+         "_del bit default 0,is_dir bit default 0,server_is_dir bit default 0,s"
+         "erver_is_del bit default 0,non_unique_name varchar,server_non_unique_"
+         "name varchar(255),unique_server_tag varchar,unique_client_tag varchar"
+         ",specifics blob,server_specifics blob,base_server_specifics blob,serv"
+         "er_unique_position blob,unique_position blob,unique_bookmark_tag blob"
+         ");"
+      "CREATE TABLE 'share_info' (id TEXT primary key, name TEXT, store_birt"
+         "hday TEXT, db_create_version TEXT, db_create_time INT, next_id INT de"
+         "fault -2, cache_guid TEXT, notification_state BLOB, bag_of_chips BLOB"
+         ");"
+      "INSERT INTO 'share_info' VALUES('nick@chromium.org','nick@chromium.or"
+         "g','c27e9f59-08ca-46f8-b0cc-f16a2ed778bb','Unknown',1263522064,-13107"
+         "8,'9010788312004066376x-6609234393368420856x',NULL,NULL);"));
+  ASSERT_TRUE(connection->CommitTransaction());
+}
+
 TEST_F(DirectoryBackingStoreTest, MigrateVersion67To68) {
   sql::Connection connection;
   ASSERT_TRUE(connection.OpenInMemory());
@@ -2812,34 +2903,6 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion80To81) {
   ASSERT_EQ(expected_ordinal, actual_ordinal);
 }
 
-TEST_F(DirectoryBackingStoreTest, DetectInvalidOrdinal) {
-  sql::Connection connection;
-  ASSERT_TRUE(connection.OpenInMemory());
-  SetUpVersion81Database(&connection);
-
-  scoped_ptr<TestDirectoryBackingStore> dbs(
-      new TestDirectoryBackingStore(GetUsername(), &connection));
-  ASSERT_EQ(81, dbs->GetVersion());
-
-  // Insert row with bad ordinal.
-  const int64 now = TimeToProtoTime(base::Time::Now());
-  sql::Statement s(connection.GetUniqueStatement(
-      "INSERT INTO metas "
-      "( id, metahandle, is_dir, ctime, mtime, server_ordinal_in_parent) "
-      "VALUES( \"c-invalid\", 9999, 1, ?, ?, \" \")"));
-  s.BindInt64(0, now);
-  s.BindInt64(1, now);
-  ASSERT_TRUE(s.Run());
-
-  // Trying to unpack this entry should signal that the DB is corrupted.
-  MetahandlesIndex entry_bucket;
-  JournalIndex  delete_journals;;
-  STLElementDeleter<MetahandlesIndex> deleter(&entry_bucket);
-  Directory::KernelLoadInfo kernel_load_info;
-  ASSERT_EQ(FAILED_DATABASE_CORRUPT,
-            dbs->Load(&entry_bucket, &delete_journals, &kernel_load_info));
-}
-
 TEST_F(DirectoryBackingStoreTest, MigrateVersion81To82) {
   sql::Connection connection;
   ASSERT_TRUE(connection.OpenInMemory());
@@ -2895,6 +2958,130 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion84To85) {
   ASSERT_TRUE(dbs->MigrateVersion84To85());
   ASSERT_EQ(85, dbs->GetVersion());
   ASSERT_FALSE(connection.DoesColumnExist("models", "initial_sync_ended"));
+}
+
+TEST_F(DirectoryBackingStoreTest, MigrateVersion85To86) {
+  sql::Connection connection;
+  ASSERT_TRUE(connection.OpenInMemory());
+  SetUpVersion85Database(&connection);
+  EXPECT_TRUE(connection.DoesColumnExist("metas", "next_id"));
+  EXPECT_TRUE(connection.DoesColumnExist("metas", "prev_id"));
+  EXPECT_TRUE(connection.DoesColumnExist("metas", "server_ordinal_in_parent"));
+  EXPECT_FALSE(connection.DoesColumnExist("metas", "unique_position"));
+  EXPECT_FALSE(connection.DoesColumnExist("metas", "server_unique_position"));
+  EXPECT_FALSE(connection.DoesColumnExist("metas", "unique_bookmark_tag"));
+
+  scoped_ptr<TestDirectoryBackingStore> dbs(
+      new TestDirectoryBackingStore(GetUsername(), &connection));
+  ASSERT_TRUE(dbs->MigrateVersion85To86());
+  EXPECT_EQ(86, dbs->GetVersion());
+  EXPECT_TRUE(connection.DoesColumnExist("metas", "unique_position"));
+  EXPECT_TRUE(connection.DoesColumnExist("metas", "server_unique_position"));
+  EXPECT_TRUE(connection.DoesColumnExist("metas", "unique_bookmark_tag"));
+  ASSERT_TRUE(dbs->needs_column_refresh_);
+  ASSERT_TRUE(dbs->RefreshColumns());
+  EXPECT_FALSE(connection.DoesColumnExist("metas", "next_id"));
+  EXPECT_FALSE(connection.DoesColumnExist("metas", "prev_id"));
+  EXPECT_FALSE(connection.DoesColumnExist("metas", "server_ordinal_in_parent"));
+
+  {
+    MetahandlesIndex metas;
+    STLElementDeleter<MetahandlesIndex> deleter(&metas);
+    dbs->LoadEntries(&metas);
+
+    EntryKernel needle;
+
+    // Grab a bookmark and examine it.
+    needle.put(META_HANDLE, 5);
+    MetahandlesIndex::iterator i = metas.find(&needle);
+    ASSERT_FALSE(i == metas.end());
+    EntryKernel* bm = *i;
+    ASSERT_EQ(bm->ref(ID).value(), "s_ID_5");
+
+    EXPECT_TRUE(bm->ref(UNIQUE_POSITION).IsValid());
+    EXPECT_TRUE(bm->ref(SERVER_UNIQUE_POSITION).IsValid());
+    EXPECT_EQ(UniquePosition::kSuffixLength,
+              bm->ref(UNIQUE_BOOKMARK_TAG).length());
+
+    // Grab a non-bookmark and examine it.
+    needle.put(META_HANDLE, 1);
+    MetahandlesIndex::iterator j = metas.find(&needle);
+    ASSERT_FALSE(j == metas.end());
+    EntryKernel* root = *j;
+    ASSERT_EQ(root->ref(ID).value(), "r");
+
+    EXPECT_FALSE(root->ref(UNIQUE_POSITION).IsValid());
+    EXPECT_FALSE(root->ref(SERVER_UNIQUE_POSITION).IsValid());
+    EXPECT_TRUE(root->ref(UNIQUE_BOOKMARK_TAG).empty());
+
+    // Make sure we didn't mistake the bookmark root node for a real bookmark.
+    needle.put(META_HANDLE, 8);
+    MetahandlesIndex::iterator k = metas.find(&needle);
+    ASSERT_FALSE(k == metas.end());
+    EntryKernel* bm_root = *k;
+    ASSERT_EQ(bm_root->ref(ID).value(), "s_ID_8");
+    ASSERT_EQ(bm_root->ref(UNIQUE_SERVER_TAG), "google_chrome_bookmarks");
+
+    EXPECT_FALSE(bm_root->ref(UNIQUE_POSITION).IsValid());
+    EXPECT_FALSE(bm_root->ref(SERVER_UNIQUE_POSITION).IsValid());
+    EXPECT_TRUE(bm_root->ref(UNIQUE_BOOKMARK_TAG).empty());
+
+    // Make sure we didn't assign positions to server-created folders, either.
+    needle.put(META_HANDLE, 10);
+    MetahandlesIndex::iterator l = metas.find(&needle);
+    ASSERT_FALSE(l == metas.end());
+    EntryKernel* perm_folder = *l;
+    ASSERT_EQ(perm_folder->ref(ID).value(), "s_ID_10");
+    ASSERT_EQ(perm_folder->ref(UNIQUE_SERVER_TAG), "other_bookmarks");
+
+    EXPECT_FALSE(perm_folder->ref(UNIQUE_POSITION).IsValid());
+    EXPECT_FALSE(perm_folder->ref(SERVER_UNIQUE_POSITION).IsValid());
+    EXPECT_TRUE(perm_folder->ref(UNIQUE_BOOKMARK_TAG).empty());
+
+    // Make sure that the syncable::Directory and the migration code agree on
+    // which items should or should not have unique position values.  This test
+    // may become obsolete if the directory's definition of that function
+    // changes, but, until then, this is a useful test.
+    for (MetahandlesIndex::iterator it = metas.begin();
+         it != metas.end(); it++) {
+      SCOPED_TRACE((*it)->ref(ID));
+      if ((*it)->ShouldMaintainPosition()) {
+        EXPECT_TRUE((*it)->ref(UNIQUE_POSITION).IsValid());
+        EXPECT_TRUE((*it)->ref(SERVER_UNIQUE_POSITION).IsValid());
+        EXPECT_FALSE((*it)->ref(UNIQUE_BOOKMARK_TAG).empty());
+      } else {
+        EXPECT_FALSE((*it)->ref(UNIQUE_POSITION).IsValid());
+        EXPECT_FALSE((*it)->ref(SERVER_UNIQUE_POSITION).IsValid());
+        EXPECT_TRUE((*it)->ref(UNIQUE_BOOKMARK_TAG).empty());
+      }
+    }
+  }
+}
+
+TEST_F(DirectoryBackingStoreTest, DetectInvalidPosition) {
+  sql::Connection connection;
+  ASSERT_TRUE(connection.OpenInMemory());
+  SetUpVersion86Database(&connection);
+
+  scoped_ptr<TestDirectoryBackingStore> dbs(
+      new TestDirectoryBackingStore(GetUsername(), &connection));
+  ASSERT_EQ(86, dbs->GetVersion());
+
+  // Insert row with bad position.
+  sql::Statement s(connection.GetUniqueStatement(
+      "INSERT INTO metas "
+      "( id, metahandle, is_dir, ctime, mtime,"
+      "  unique_position, server_unique_position) "
+      "VALUES('c-invalid', 9999, 1, 0, 0, 'BAD_POS', 'BAD_POS')"));
+  ASSERT_TRUE(s.Run());
+
+  // Trying to unpack this entry should signal that the DB is corrupted.
+  MetahandlesIndex entry_bucket;
+  JournalIndex  delete_journals;;
+  STLElementDeleter<MetahandlesIndex> deleter(&entry_bucket);
+  Directory::KernelLoadInfo kernel_load_info;
+  ASSERT_EQ(FAILED_DATABASE_CORRUPT,
+            dbs->Load(&entry_bucket, &delete_journals, &kernel_load_info));
 }
 
 TEST_P(MigrationTest, ToCurrentVersion) {
@@ -2954,6 +3141,12 @@ TEST_P(MigrationTest, ToCurrentVersion) {
       break;
     case 84:
       SetUpVersion84Database(&connection);
+      break;
+    case 85:
+      SetUpVersion85Database(&connection);
+      break;
+    case 86:
+      SetUpVersion86Database(&connection);
       break;
     default:
       // If you see this error, it may mean that you've increased the
@@ -3169,7 +3362,7 @@ TEST_P(MigrationTest, ToCurrentVersion) {
 }
 
 INSTANTIATE_TEST_CASE_P(DirectoryBackingStore, MigrationTest,
-                        testing::Range(67, kCurrentDBVersion));
+                        testing::Range(67, kCurrentDBVersion + 1));
 
 TEST_F(DirectoryBackingStoreTest, ModelTypeIds) {
   ModelTypeSet protocol_types = ProtocolTypes();

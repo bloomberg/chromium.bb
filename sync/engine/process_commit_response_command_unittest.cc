@@ -32,11 +32,13 @@ namespace syncer {
 using sessions::SyncSession;
 using syncable::BASE_VERSION;
 using syncable::Entry;
+using syncable::ID;
 using syncable::IS_DIR;
 using syncable::IS_UNSYNCED;
 using syncable::Id;
 using syncable::MutableEntry;
 using syncable::NON_UNIQUE_NAME;
+using syncable::UNIQUE_POSITION;
 using syncable::UNITTEST;
 using syncable::WriteTransaction;
 
@@ -132,7 +134,6 @@ class ProcessCommitResponseCommandTest : public SyncerCommandTest {
     else
       entry_response->set_id_string(id_factory_.NewServerId().GetServerId());
     entry_response->set_version(next_new_revision_++);
-    entry_response->set_position_in_parent(next_server_position_++);
 
     // If the ID of our parent item committed earlier in the batch was
     // rewritten, rewrite it in the entry response.  This matches
@@ -218,7 +219,6 @@ TEST_F(ProcessCommitResponseCommandTest, MultipleCommitIdProjections) {
   Entry b2(&trans, syncable::GET_BY_HANDLE, bookmark2_handle);
   CheckEntry(&b1, "bookmark 1", BOOKMARKS, new_fid);
   CheckEntry(&b2, "bookmark 2", BOOKMARKS, new_fid);
-  ASSERT_TRUE(b2.GetSuccessorId().IsRoot());
 
   // Look at the prefs and autofill items.
   Entry p1(&trans, syncable::GET_BY_HANDLE, pref1_handle);
@@ -230,7 +230,6 @@ TEST_F(ProcessCommitResponseCommandTest, MultipleCommitIdProjections) {
   Entry a2(&trans, syncable::GET_BY_HANDLE, autofill2_handle);
   CheckEntry(&a1, "Autofill 1", AUTOFILL, id_factory_.root());
   CheckEntry(&a2, "Autofill 2", AUTOFILL, id_factory_.root());
-  ASSERT_TRUE(a2.GetSuccessorId().IsRoot());
 }
 
 // In this test, we test processing a commit response for a commit batch that
@@ -256,25 +255,31 @@ TEST_F(ProcessCommitResponseCommandTest, NewFolderCommitKeepsChildOrder) {
 
   // Verify that the item is reachable.
   {
-    Id child_id;
     syncable::ReadTransaction trans(FROM_HERE, directory());
     syncable::Entry root(&trans, syncable::GET_BY_ID, id_factory_.root());
     ASSERT_TRUE(root.good());
-    ASSERT_TRUE(directory()->GetFirstChildId(
-        &trans, id_factory_.root(), &child_id));
+    Id child_id = root.GetFirstChildId();
     ASSERT_EQ(folder_id, child_id);
   }
 
   // The first 25 children of the parent folder will be part of the commit
-  // batch.
+  // batch.  They will be placed left to right in order of creation.
   int batch_size = 25;
   int i = 0;
+  Id prev_id = TestIdFactory::root();
   for (; i < batch_size; ++i) {
     // Alternate between new and old child items, just for kicks.
     Id id = (i % 4 < 2) ? id_factory_.NewLocalId() : id_factory_.NewServerId();
-    CreateUnprocessedCommitResult(
+    int64 handle = CreateUnprocessedCommitResult(
         id, folder_id, base::StringPrintf("Item %d", i), false,
         BOOKMARKS, &commit_set, &request, &response);
+    {
+      syncable::WriteTransaction trans(FROM_HERE, UNITTEST, directory());
+      syncable::MutableEntry e(&trans, syncable::GET_BY_HANDLE, handle);
+      ASSERT_TRUE(e.good());
+      e.PutPredecessor(prev_id);
+    }
+    prev_id = id;
   }
   // The second 25 children will be unsynced items but NOT part of the commit
   // batch.  When the ID of the parent folder changes during the commit,
@@ -283,9 +288,17 @@ TEST_F(ProcessCommitResponseCommandTest, NewFolderCommitKeepsChildOrder) {
   for (; i < 2*batch_size; ++i) {
     // Alternate between new and old child items, just for kicks.
     Id id = (i % 4 < 2) ? id_factory_.NewLocalId() : id_factory_.NewServerId();
+    int64 handle = -1;
     test_entry_factory_->CreateUnsyncedItem(
         id, folder_id, base::StringPrintf("Item %d", i),
-        false, BOOKMARKS, NULL);
+        false, BOOKMARKS, &handle);
+    {
+      syncable::WriteTransaction trans(FROM_HERE, UNITTEST, directory());
+      syncable::MutableEntry e(&trans, syncable::GET_BY_HANDLE, handle);
+      ASSERT_TRUE(e.good());
+      e.PutPredecessor(prev_id);
+    }
+    prev_id = id;
   }
 
   // Process the commit response for the parent folder and the first
@@ -299,9 +312,9 @@ TEST_F(ProcessCommitResponseCommandTest, NewFolderCommitKeepsChildOrder) {
   syncable::ReadTransaction trans(FROM_HERE, directory());
   // Lookup the parent folder by finding a child of the root.  We can't use
   // folder_id here, because it changed during the commit.
-  Id new_fid;
-  ASSERT_TRUE(directory()->GetFirstChildId(
-          &trans, id_factory_.root(), &new_fid));
+  syncable::Entry root(&trans, syncable::GET_BY_ID, id_factory_.root());
+  ASSERT_TRUE(root.good());
+  Id new_fid = root.GetFirstChildId();
   ASSERT_FALSE(new_fid.IsRoot());
   EXPECT_TRUE(new_fid.ServerKnows());
   EXPECT_FALSE(folder_id.ServerKnows());
@@ -313,8 +326,8 @@ TEST_F(ProcessCommitResponseCommandTest, NewFolderCommitKeepsChildOrder) {
   ASSERT_LT(0, parent.Get(BASE_VERSION))
       << "Parent should have a valid (positive) server base revision";
 
-  Id cid;
-  ASSERT_TRUE(directory()->GetFirstChildId(&trans, new_fid, &cid));
+  Id cid = parent.GetFirstChildId();
+
   int child_count = 0;
   // Now loop over all the children of the parent folder, verifying
   // that they are in their original order by checking to see that their

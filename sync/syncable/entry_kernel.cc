@@ -21,6 +21,20 @@ EntryKernel::EntryKernel() : dirty_(false) {
 
 EntryKernel::~EntryKernel() {}
 
+ModelType EntryKernel::GetModelType() const {
+  ModelType specifics_type = GetModelTypeFromSpecifics(ref(SPECIFICS));
+  if (specifics_type != UNSPECIFIED)
+    return specifics_type;
+  if (ref(ID).IsRoot())
+    return TOP_LEVEL_FOLDER;
+  // Loose check for server-created top-level folders that aren't
+  // bound to a particular model type.
+  if (!ref(UNIQUE_SERVER_TAG).empty() && ref(SERVER_IS_DIR))
+    return TOP_LEVEL_FOLDER;
+
+  return UNSPECIFIED;
+}
+
 ModelType EntryKernel::GetServerModelType() const {
   ModelType specifics_type = GetModelTypeFromSpecifics(ref(SERVER_SPECIFICS));
   if (specifics_type != UNSPECIFIED)
@@ -33,6 +47,13 @@ ModelType EntryKernel::GetServerModelType() const {
     return TOP_LEVEL_FOLDER;
 
   return UNSPECIFIED;
+}
+
+bool EntryKernel::ShouldMaintainPosition() const {
+  // We maintain positions for all bookmarks, except those that are
+  // server-created top-level folders.
+  return (GetModelTypeFromSpecifics(ref(SPECIFICS)) == syncer::BOOKMARKS)
+      && !(!ref(UNIQUE_SERVER_TAG).empty() && ref(IS_DIR));
 }
 
 namespace {
@@ -96,16 +117,16 @@ base::StringValue* IdToValue(const Id& id) {
   return id.ToValue();
 }
 
-base::StringValue* OrdinalToValue(const NodeOrdinal& ord) {
-  return new base::StringValue(ord.ToDebugString());
-}
-
 base::FundamentalValue* BooleanToValue(bool bool_val) {
   return new base::FundamentalValue(bool_val);
 }
 
 base::StringValue* StringToValue(const std::string& str) {
   return new base::StringValue(str);
+}
+
+StringValue* UniquePositionToValue(const UniquePosition& pos) {
+  return Value::CreateStringValue(pos.ToDebugString());
 }
 
 }  // namespace
@@ -160,10 +181,10 @@ base::DictionaryValue* EntryKernel::ToValue(
   SetEncryptableProtoValues(*this, cryptographer, kernel_info,
                             PROTO_FIELDS_BEGIN, PROTO_FIELDS_END - 1);
 
-  // Ordinal fields
+  // UniquePosition fields
   SetFieldValues(*this, kernel_info,
-                 &GetOrdinalFieldString, &OrdinalToValue,
-                 ORDINAL_FIELDS_BEGIN, ORDINAL_FIELDS_END - 1);
+                 &GetUniquePositionFieldString, &UniquePositionToValue,
+                 UNIQUE_POSITION_FIELDS_BEGIN, UNIQUE_POSITION_FIELDS_END - 1);
 
   // Bit temps.
   SetFieldValues(*this, kernel_info,

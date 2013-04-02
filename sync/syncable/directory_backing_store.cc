@@ -10,13 +10,8 @@
 
 #include "base/base64.h"
 #include "base/debug/trace_event.h"
-#include "base/file_util.h"
-#include "base/hash_tables.h"
 #include "base/logging.h"
-#include "base/metrics/histogram.h"
 #include "base/rand_util.h"
-#include "base/stl_util.h"
-#include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
 #include "base/time.h"
 #include "sql/connection.h"
@@ -27,6 +22,7 @@
 #include "sync/protocol/sync.pb.h"
 #include "sync/syncable/syncable-inl.h"
 #include "sync/syncable/syncable_columns.h"
+#include "sync/syncable/syncable_util.h"
 #include "sync/util/time.h"
 
 using std::string;
@@ -39,7 +35,7 @@ namespace syncable {
 static const string::size_type kUpdateStatementBufferSize = 2048;
 
 // Increment this version whenever updating DB tables.
-const int32 kCurrentDBVersion = 85;
+const int32 kCurrentDBVersion = 86;
 
 // Iterate over the fields of |entry| and bind each to |statement| for
 // updating.  Returns the number of args bound.
@@ -64,13 +60,14 @@ void BindFields(const EntryKernel& entry,
   for ( ; i < STRING_FIELDS_END; ++i) {
     statement->BindString(index++, entry.ref(static_cast<StringField>(i)));
   }
-  std::string temp;
   for ( ; i < PROTO_FIELDS_END; ++i) {
+    std::string temp;
     entry.ref(static_cast<ProtoField>(i)).SerializeToString(&temp);
     statement->BindBlob(index++, temp.data(), temp.length());
   }
-  for( ; i < ORDINAL_FIELDS_END; ++i) {
-    temp = entry.ref(static_cast<OrdinalField>(i)).ToInternalValue();
+  for ( ; i < UNIQUE_POSITION_FIELDS_END; ++i) {
+    std::string temp;
+    entry.ref(static_cast<UniquePositionField>(i)).SerializeToString(&temp);
     statement->BindBlob(index++, temp.data(), temp.length());
   }
 }
@@ -104,19 +101,18 @@ scoped_ptr<EntryKernel> UnpackEntry(sql::Statement* statement) {
     kernel->mutable_ref(static_cast<ProtoField>(i)).ParseFromArray(
         statement->ColumnBlob(i), statement->ColumnByteLength(i));
   }
-  for( ; i < ORDINAL_FIELDS_END; ++i) {
+  for ( ; i < UNIQUE_POSITION_FIELDS_END; ++i) {
     std::string temp;
     statement->ColumnBlobAsString(i, &temp);
-    NodeOrdinal unpacked_ord(temp);
 
-    // Its safe to assume that an invalid ordinal is a sign that
-    // some external corruption has occurred. Return NULL to force
-    // a re-download of the sync data.
-    if(!unpacked_ord.IsValid()) {
-      DVLOG(1) << "Unpacked invalid ordinal. Signaling that the DB is corrupt";
+    sync_pb::UniquePosition proto;
+    if (!proto.ParseFromString(temp)) {
+      DVLOG(1) << "Unpacked invalid position.  Assuming the DB is corrupt";
       return scoped_ptr<EntryKernel>(NULL);
     }
-    kernel->mutable_ref(static_cast<OrdinalField>(i)) = unpacked_ord;
+
+    kernel->mutable_ref(static_cast<UniquePositionField>(i)) =
+        UniquePosition::FromProto(proto);
   }
   return kernel.Pass();
 }
@@ -398,6 +394,13 @@ bool DirectoryBackingStore::InitializeTables() {
   if (version_on_disk == 84) {
     if (MigrateVersion84To85())
       version_on_disk = 85;
+  }
+
+  // Version 86 migration converts bookmarks to the unique positioning system.
+  // It also introduces a new field to store a unique ID for each bookmark.
+  if (version_on_disk == 85) {
+    if (MigrateVersion85To86())
+      version_on_disk = 86;
   }
 
   // If one of the migrations requested it, drop columns that aren't current.
@@ -961,7 +964,8 @@ bool DirectoryBackingStore::MigrateVersion76To77() {
 #if defined(OS_WIN)
 // On Windows, we used to store timestamps in FILETIME format (100s of
 // ns since Jan 1, 1601).  Magic numbers taken from
-// http://stackoverflow.com/questions/5398557/java-library-for-dealing-with-win32-filetime
+// http://stackoverflow.com/questions/5398557/
+//     java-library-for-dealing-with-win32-filetime
 // .
 #define TO_UNIX_TIME_MS(x) #x " = " #x " / 10000 - 11644473600000"
 #else
@@ -1085,7 +1089,7 @@ bool DirectoryBackingStore::MigrateVersion83To84() {
 }
 
 bool DirectoryBackingStore::MigrateVersion84To85() {
-  // Version 84 removes the initial_sync_ended flag.
+  // Version 85 removes the initial_sync_ended flag.
   if (!db_->Execute("ALTER TABLE models RENAME TO temp_models"))
     return false;
   if (!CreateModelsTable())
@@ -1098,6 +1102,131 @@ bool DirectoryBackingStore::MigrateVersion84To85() {
   SafeDropTable("temp_models");
 
   SetVersion(85);
+  return true;
+}
+
+bool DirectoryBackingStore::MigrateVersion85To86() {
+  // Version 86 removes both server ordinals and local NEXT_ID, PREV_ID and
+  // SERVER_{POSITION,ORDINAL}_IN_PARENT and replaces them with UNIQUE_POSITION
+  // and SERVER_UNIQUE_POSITION.
+  if (!db_->Execute("ALTER TABLE metas ADD COLUMN "
+                    "server_unique_position BLOB")) {
+    return false;
+  }
+  if (!db_->Execute("ALTER TABLE metas ADD COLUMN "
+                    "unique_position BLOB")) {
+    return false;
+  }
+  if (!db_->Execute("ALTER TABLE metas ADD COLUMN "
+                    "unique_bookmark_tag VARCHAR")) {
+    return false;
+  }
+
+  // Fetch the cache_guid from the DB, because we don't otherwise have access to
+  // it from here.
+  sql::Statement get_cache_guid(db_->GetUniqueStatement(
+      "SELECT cache_guid FROM share_info"));
+  if (!get_cache_guid.Step()) {
+    return false;
+  }
+  std::string cache_guid = get_cache_guid.ColumnString(0);
+  DCHECK(!get_cache_guid.Step());
+  DCHECK(get_cache_guid.Succeeded());
+
+  sql::Statement get(db_->GetUniqueStatement(
+      "SELECT "
+      "  metahandle, "
+      "  id, "
+      "  specifics, "
+      "  is_dir, "
+      "  unique_server_tag, "
+      "  server_ordinal_in_parent "
+      "FROM metas"));
+
+  // Note that we set both the local and server position based on the server
+  // position.  We wll lose any unsynced local position changes.  Unfortunately,
+  // there's nothing we can do to avoid that.  The NEXT_ID / PREV_ID values
+  // can't be translated into a UNIQUE_POSTION in a reliable way.
+  sql::Statement put(db_->GetCachedStatement(
+      SQL_FROM_HERE,
+      "UPDATE metas SET"
+      "  server_unique_position = ?,"
+      "  unique_position = ?,"
+      "  unique_bookmark_tag = ?"
+      "WHERE metahandle = ?"));
+
+  while (get.Step()) {
+    int64 metahandle = get.ColumnInt64(0);
+
+    std::string id_string;
+    get.ColumnBlobAsString(1, &id_string);
+
+    sync_pb::EntitySpecifics specifics;
+    specifics.ParseFromArray(
+        get.ColumnBlob(2), get.ColumnByteLength(2));
+
+    bool is_dir = get.ColumnBool(3);
+
+    std::string server_unique_tag = get.ColumnString(4);
+
+    std::string ordinal_string;
+    get.ColumnBlobAsString(5, &ordinal_string);
+    NodeOrdinal ordinal(ordinal_string);
+
+
+    std::string unique_bookmark_tag;
+
+    // We only maintain positions for bookmarks that are not server-defined
+    // top-level folders.
+    UniquePosition position;
+    if (GetModelTypeFromSpecifics(specifics) == BOOKMARKS
+        && !(is_dir && !server_unique_tag.empty())) {
+      if (id_string.at(0) == 'c') {
+        // We found an uncommitted item.  This is rare, but fortunate.  This
+        // means we can set the bookmark tag according to the originator client
+        // item ID and originator cache guid, because (unlike the other case) we
+        // know that this client is the originator.
+        unique_bookmark_tag = syncable::GenerateSyncableBookmarkHash(
+            cache_guid,
+            id_string.substr(1));
+      } else {
+        // If we've already committed the item, then we don't know who the
+        // originator was.  We do not have access to the originator client item
+        // ID and originator cache guid at this point.
+        //
+        // We will base our hash entirely on the server ID instead.  This is
+        // incorrect, but at least all clients that undergo this migration step
+        // will be incorrect in the same way.
+        //
+        // To get everyone back into a synced state, we will update the bookmark
+        // tag according to the originator_cache_guid and originator_item_id
+        // when we see updates for this item.  That should ensure that commonly
+        // modified items will end up with the proper tag values eventually.
+        unique_bookmark_tag = syncable::GenerateSyncableBookmarkHash(
+            std::string(), // cache_guid left intentionally blank.
+            id_string.substr(1));
+      }
+
+      int64 int_position = NodeOrdinalToInt64(ordinal);
+      position = UniquePosition::FromInt64(int_position, unique_bookmark_tag);
+    } else {
+      // Leave bookmark_tag and position at their default (invalid) values.
+    }
+
+    std::string position_blob;
+    position.SerializeToString(&position_blob);
+    put.BindBlob(0, position_blob.data(), position_blob.length());
+    put.BindBlob(1, position_blob.data(), position_blob.length());
+    put.BindBlob(2, unique_bookmark_tag.data(), unique_bookmark_tag.length());
+    put.BindInt64(3, metahandle);
+
+    if (!put.Run())
+      return false;
+    put.Reset(true);
+  }
+
+  SetVersion(86);
+  needs_column_refresh_ = true;
   return true;
 }
 
@@ -1165,13 +1294,10 @@ bool DirectoryBackingStore::CreateTables() {
     const int64 now = TimeToProtoTime(base::Time::Now());
     sql::Statement s(db_->GetUniqueStatement(
             "INSERT INTO metas "
-            "( id, metahandle, is_dir, ctime, mtime, server_ordinal_in_parent) "
-            "VALUES ( \"r\", 1, 1, ?, ?, ?)"));
+            "( id, metahandle, is_dir, ctime, mtime ) "
+            "VALUES ( \"r\", 1, 1, ?, ? )"));
     s.BindInt64(0, now);
     s.BindInt64(1, now);
-    const std::string ord =
-        NodeOrdinal::CreateInitialOrdinal().ToInternalValue();
-    s.BindBlob(2, ord.data(), ord.length());
 
     if (!s.Run())
       return false;
@@ -1273,8 +1399,8 @@ bool DirectoryBackingStore::CreateShareInfoTableVersion71(
 }
 
 // This function checks to see if the given list of Metahandles has any nodes
-// whose PREV_ID, PARENT_ID or NEXT_ID values refer to ID values that do not
-// actually exist.  Returns true on success.
+// whose PARENT_ID values refer to ID values that do not actually exist.
+// Returns true on success.
 bool DirectoryBackingStore::VerifyReferenceIntegrity(
     const syncable::MetahandlesIndex &index) {
   TRACE_EVENT0("sync", "SyncDatabaseIntegrityCheck");
@@ -1295,10 +1421,10 @@ bool DirectoryBackingStore::VerifyReferenceIntegrity(
   for (MetahandlesIndex::const_iterator it = index.begin();
        it != index.end(); ++it) {
     EntryKernel* entry = *it;
-    bool prev_exists = (ids_set.find(entry->ref(PREV_ID).value()) != end);
     bool parent_exists = (ids_set.find(entry->ref(PARENT_ID).value()) != end);
-    bool next_exists = (ids_set.find(entry->ref(NEXT_ID).value()) != end);
-    is_ok = is_ok && prev_exists && parent_exists && next_exists;
+    if (!parent_exists) {
+      return false;
+    }
   }
   return is_ok;
 }

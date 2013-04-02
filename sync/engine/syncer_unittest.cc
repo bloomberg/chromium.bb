@@ -33,7 +33,6 @@
 #include "sync/engine/traffic_recorder.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
-#include "sync/internal_api/public/base/node_ordinal.h"
 #include "sync/protocol/bookmark_specifics.pb.h"
 #include "sync/protocol/nigori_specifics.pb.h"
 #include "sync/protocol/preference_specifics.pb.h"
@@ -59,10 +58,12 @@
 
 using base::TimeDelta;
 
+using std::count;
 using std::map;
 using std::multimap;
 using std::set;
 using std::string;
+using std::vector;
 
 namespace syncer {
 
@@ -96,7 +97,6 @@ using syncable::PARENT_ID;
 using syncable::BASE_SERVER_SPECIFICS;
 using syncable::SERVER_IS_DEL;
 using syncable::SERVER_PARENT_ID;
-using syncable::SERVER_ORDINAL_IN_PARENT;
 using syncable::SERVER_SPECIFICS;
 using syncable::SERVER_VERSION;
 using syncable::UNIQUE_CLIENT_TAG;
@@ -860,6 +860,12 @@ TEST_F(SyncerTest, EncryptionAwareConflicts) {
     EXPECT_TRUE(GetCryptographer(&wtrans)->has_pending_keys());
   }
 
+  // We need to remember the exact position of our local items, so we can
+  // make updates that do not modify those positions.
+  UniquePosition pos1;
+  UniquePosition pos2;
+  UniquePosition pos3;
+
   mock_server_->AddUpdateSpecifics(1, 0, "A", 10, 10, true, 0, bookmark,
                                    foreign_cache_guid(), "-1");
   mock_server_->AddUpdateSpecifics(2, 1, "B", 10, 10, false, 2, bookmark,
@@ -875,6 +881,15 @@ TEST_F(SyncerTest, EncryptionAwareConflicts) {
     VERIFY_ENTRY(2, false, false, false, 1, 10, 10, ids_, &rtrans);
     VERIFY_ENTRY(3, false, false, false, 1, 10, 10, ids_, &rtrans);
     VERIFY_ENTRY(4, false, false, false, 0, 10, 10, ids_, &rtrans);
+
+    Entry entry1(&rtrans, syncable::GET_BY_ID, ids_.FromNumber(1));
+    ASSERT_TRUE(entry1.Get(syncable::UNIQUE_POSITION).Equals(
+        entry1.Get(syncable::SERVER_UNIQUE_POSITION)));
+    pos1 = entry1.Get(syncable::UNIQUE_POSITION);
+    Entry entry2(&rtrans, syncable::GET_BY_ID, ids_.FromNumber(2));
+    pos2 = entry2.Get(syncable::UNIQUE_POSITION);
+    Entry entry3(&rtrans, syncable::GET_BY_ID, ids_.FromNumber(3));
+    pos3 = entry3.Get(syncable::UNIQUE_POSITION);
   }
 
   // Server side encryption will not be applied due to undecryptable data.
@@ -1418,13 +1433,29 @@ TEST_F(SyncerTest, TestCommitListOrderingWithNewItems) {
 
   SyncShareNudge();
   ASSERT_EQ(6u, mock_server_->committed_ids().size());
-  // If this test starts failing, be aware other sort orders could be valid.
-  EXPECT_TRUE(parent1_id == mock_server_->committed_ids()[0]);
-  EXPECT_TRUE(parent2_id == mock_server_->committed_ids()[1]);
-  EXPECT_TRUE(ids_.FromNumber(102) == mock_server_->committed_ids()[2]);
-  EXPECT_TRUE(ids_.FromNumber(-103) == mock_server_->committed_ids()[3]);
-  EXPECT_TRUE(ids_.FromNumber(-104) == mock_server_->committed_ids()[4]);
-  EXPECT_TRUE(ids_.FromNumber(105) == mock_server_->committed_ids()[5]);
+
+  // This strange iteration and std::count() usage is to allow the order to
+  // vary.  All we really care about is that parent1_id and parent2_id are the
+  // first two IDs, and that the children make up the next four.  Other than
+  // that, ordering doesn't matter.
+
+  vector<syncable::Id>::const_iterator i =
+      mock_server_->committed_ids().begin();
+  vector<syncable::Id>::const_iterator parents_begin = i;
+  i++;
+  i++;
+  vector<syncable::Id>::const_iterator parents_end = i;
+  vector<syncable::Id>::const_iterator children_begin = i;
+  vector<syncable::Id>::const_iterator children_end =
+      mock_server_->committed_ids().end();
+
+  EXPECT_EQ(1, count(parents_begin, parents_end, parent1_id));
+  EXPECT_EQ(1, count(parents_begin, parents_end, parent2_id));
+
+  EXPECT_EQ(1, count(children_begin, children_end, ids_.FromNumber(-103)));
+  EXPECT_EQ(1, count(children_begin, children_end, ids_.FromNumber(102)));
+  EXPECT_EQ(1, count(children_begin, children_end, ids_.FromNumber(105)));
+  EXPECT_EQ(1, count(children_begin, children_end, ids_.FromNumber(-104)));
 }
 
 TEST_F(SyncerTest, TestCommitListOrderingCounterexample) {
@@ -1456,10 +1487,15 @@ TEST_F(SyncerTest, TestCommitListOrderingCounterexample) {
 
   SyncShareNudge();
   ASSERT_EQ(3u, mock_server_->committed_ids().size());
-  // If this test starts failing, be aware other sort orders could be valid.
   EXPECT_TRUE(parent_id_ == mock_server_->committed_ids()[0]);
-  EXPECT_TRUE(child_id_ == mock_server_->committed_ids()[1]);
-  EXPECT_TRUE(child2_id == mock_server_->committed_ids()[2]);
+  // There are two possible valid orderings.
+  if (child2_id == mock_server_->committed_ids()[1]) {
+    EXPECT_TRUE(child2_id == mock_server_->committed_ids()[1]);
+    EXPECT_TRUE(child_id_ == mock_server_->committed_ids()[2]);
+  } else {
+    EXPECT_TRUE(child_id_ == mock_server_->committed_ids()[1]);
+    EXPECT_TRUE(child2_id == mock_server_->committed_ids()[2]);
+  }
 }
 
 TEST_F(SyncerTest, TestCommitListOrderingAndNewParent) {
@@ -2340,7 +2376,6 @@ TEST_F(SyncerTest, CommitsUpdateDoesntAlterEntry) {
   SyncShareNudge();
   syncable::Id id;
   int64 version;
-  NodeOrdinal server_ordinal_in_parent;
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
     Entry entry(&trans, syncable::GET_BY_HANDLE, entry_metahandle);
@@ -2348,7 +2383,6 @@ TEST_F(SyncerTest, CommitsUpdateDoesntAlterEntry) {
     id = entry.Get(ID);
     EXPECT_TRUE(id.ServerKnows());
     version = entry.Get(BASE_VERSION);
-    server_ordinal_in_parent = entry.Get(SERVER_ORDINAL_IN_PARENT);
   }
   sync_pb::SyncEntity* update = mock_server_->AddUpdateFromLastCommit();
   update->set_originator_cache_guid(local_cache_guid());
@@ -2357,9 +2391,6 @@ TEST_F(SyncerTest, CommitsUpdateDoesntAlterEntry) {
   EXPECT_EQ(id.GetServerId(), update->id_string());
   EXPECT_EQ(root_id_.GetServerId(), update->parent_id_string());
   EXPECT_EQ(version, update->version());
-  EXPECT_EQ(
-      NodeOrdinalToInt64(server_ordinal_in_parent),
-      update->position_in_parent());
   SyncShareNudge();
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
@@ -4700,225 +4731,6 @@ TEST_F(SyncerUndeletionTest, OtherClientUndeletesImmediately) {
   EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
   ExpectSyncedAndCreated();
   EXPECT_EQ("Thadeusz", Get(metahandle_, NON_UNIQUE_NAME));
-}
-
-// A group of tests exercising the syncer's handling of sibling ordering, as
-// represented in the sync protocol.
-class SyncerPositionUpdateTest : public SyncerTest {
- public:
-  SyncerPositionUpdateTest() : next_update_id_(1), next_revision_(1) {}
-
- protected:
-  void ExpectLocalItemsInServerOrder() {
-    if (position_map_.empty())
-      return;
-
-    syncable::ReadTransaction trans(FROM_HERE, directory());
-
-    Id prev_id;
-    DCHECK(prev_id.IsRoot());
-    PosMap::iterator next = position_map_.begin();
-    for (PosMap::iterator i = next++; i != position_map_.end(); ++i) {
-      Id id = i->second;
-      Entry entry_with_id(&trans, GET_BY_ID, id);
-      EXPECT_TRUE(entry_with_id.good());
-      EXPECT_EQ(prev_id, entry_with_id.GetPredecessorId());
-      EXPECT_EQ(
-          i->first,
-          NodeOrdinalToInt64(entry_with_id.Get(SERVER_ORDINAL_IN_PARENT)));
-      if (next == position_map_.end()) {
-        EXPECT_EQ(Id(), entry_with_id.GetSuccessorId());
-      } else {
-        EXPECT_EQ(next->second, entry_with_id.GetSuccessorId());
-        next++;
-      }
-      prev_id = id;
-    }
-  }
-
-  void AddRootItemWithPosition(int64 position) {
-    string id = string("ServerId") + base::Int64ToString(next_update_id_++);
-    string name = "my name is my id -- " + id;
-    int revision = next_revision_++;
-    mock_server_->AddUpdateDirectory(id, kRootId, name, revision, revision,
-                                     foreign_cache_guid(),
-                                     ids_.NewLocalId().GetServerId());
-    mock_server_->SetLastUpdatePosition(position);
-    position_map_.insert(
-        PosMap::value_type(position, Id::CreateFromServerId(id)));
-  }
- private:
-  typedef multimap<int64, Id> PosMap;
-  PosMap position_map_;
-  int next_update_id_;
-  int next_revision_;
-  DISALLOW_COPY_AND_ASSIGN(SyncerPositionUpdateTest);
-};
-
-TEST_F(SyncerPositionUpdateTest, InOrderPositive) {
-  // Add a bunch of items in increasing order, starting with just positive
-  // position values.
-  AddRootItemWithPosition(100);
-  AddRootItemWithPosition(199);
-  AddRootItemWithPosition(200);
-  AddRootItemWithPosition(201);
-  AddRootItemWithPosition(400);
-
-  SyncShareNudge();
-  ExpectLocalItemsInServerOrder();
-}
-
-TEST_F(SyncerPositionUpdateTest, InOrderNegative) {
-  // Test negative position values, but in increasing order.
-  AddRootItemWithPosition(-400);
-  AddRootItemWithPosition(-201);
-  AddRootItemWithPosition(-200);
-  AddRootItemWithPosition(-150);
-  AddRootItemWithPosition(100);
-
-  SyncShareNudge();
-  ExpectLocalItemsInServerOrder();
-}
-
-TEST_F(SyncerPositionUpdateTest, ReverseOrder) {
-  // Test when items are sent in the reverse order.
-  AddRootItemWithPosition(400);
-  AddRootItemWithPosition(201);
-  AddRootItemWithPosition(200);
-  AddRootItemWithPosition(100);
-  AddRootItemWithPosition(-150);
-  AddRootItemWithPosition(-201);
-  AddRootItemWithPosition(-200);
-  AddRootItemWithPosition(-400);
-
-  SyncShareNudge();
-  ExpectLocalItemsInServerOrder();
-}
-
-TEST_F(SyncerPositionUpdateTest, RandomOrderInBatches) {
-  // Mix it all up, interleaving position values, and try multiple batches of
-  // updates.
-  AddRootItemWithPosition(400);
-  AddRootItemWithPosition(201);
-  AddRootItemWithPosition(-400);
-  AddRootItemWithPosition(100);
-
-  SyncShareNudge();
-  ExpectLocalItemsInServerOrder();
-
-  AddRootItemWithPosition(-150);
-  AddRootItemWithPosition(-200);
-  AddRootItemWithPosition(200);
-  AddRootItemWithPosition(-201);
-
-  SyncShareNudge();
-  ExpectLocalItemsInServerOrder();
-
-  AddRootItemWithPosition(-144);
-
-  SyncShareNudge();
-  ExpectLocalItemsInServerOrder();
-}
-
-class SyncerPositionTiebreakingTest : public SyncerTest {
- public:
-  SyncerPositionTiebreakingTest()
-      : low_id_(Id::CreateFromServerId("A")),
-        mid_id_(Id::CreateFromServerId("M")),
-        high_id_(Id::CreateFromServerId("Z")),
-        next_revision_(1) {
-    DCHECK(low_id_ < mid_id_);
-    DCHECK(mid_id_ < high_id_);
-    DCHECK(low_id_ < high_id_);
-  }
-
-  // Adds the item by its Id, using a constant value for the position
-  // so that the syncer has to resolve the order some other way.
-  void Add(const Id& id) {
-    int revision = next_revision_++;
-    mock_server_->AddUpdateDirectory(id.GetServerId(), kRootId,
-        id.GetServerId(), revision, revision,
-        foreign_cache_guid(), ids_.NewLocalId().GetServerId());
-    // The update position doesn't vary.
-    mock_server_->SetLastUpdatePosition(90210);
-  }
-
-  void ExpectLocalOrderIsByServerId() {
-    syncable::ReadTransaction trans(FROM_HERE, directory());
-    Id null_id;
-    Entry low(&trans, GET_BY_ID, low_id_);
-    Entry mid(&trans, GET_BY_ID, mid_id_);
-    Entry high(&trans, GET_BY_ID, high_id_);
-    EXPECT_TRUE(low.good());
-    EXPECT_TRUE(mid.good());
-    EXPECT_TRUE(high.good());
-    EXPECT_TRUE(low.GetPredecessorId() == null_id);
-    EXPECT_TRUE(mid.GetPredecessorId() == low_id_);
-    EXPECT_TRUE(high.GetPredecessorId() == mid_id_);
-    EXPECT_TRUE(high.GetSuccessorId() == null_id);
-    EXPECT_TRUE(mid.GetSuccessorId() == high_id_);
-    EXPECT_TRUE(low.GetSuccessorId() == mid_id_);
-  }
-
- protected:
-  // When there's a tiebreak on the numeric position, it's supposed to be
-  // broken by string comparison of the ids.  These ids are in increasing
-  // order.
-  const Id low_id_;
-  const Id mid_id_;
-  const Id high_id_;
-
- private:
-  int next_revision_;
-  DISALLOW_COPY_AND_ASSIGN(SyncerPositionTiebreakingTest);
-};
-
-TEST_F(SyncerPositionTiebreakingTest, LowMidHigh) {
-  Add(low_id_);
-  Add(mid_id_);
-  Add(high_id_);
-  SyncShareNudge();
-  ExpectLocalOrderIsByServerId();
-}
-
-TEST_F(SyncerPositionTiebreakingTest, LowHighMid) {
-  Add(low_id_);
-  Add(high_id_);
-  Add(mid_id_);
-  SyncShareNudge();
-  ExpectLocalOrderIsByServerId();
-}
-
-TEST_F(SyncerPositionTiebreakingTest, HighMidLow) {
-  Add(high_id_);
-  Add(mid_id_);
-  Add(low_id_);
-  SyncShareNudge();
-  ExpectLocalOrderIsByServerId();
-}
-
-TEST_F(SyncerPositionTiebreakingTest, HighLowMid) {
-  Add(high_id_);
-  Add(low_id_);
-  Add(mid_id_);
-  SyncShareNudge();
-  ExpectLocalOrderIsByServerId();
-}
-
-TEST_F(SyncerPositionTiebreakingTest, MidHighLow) {
-  Add(mid_id_);
-  Add(high_id_);
-  Add(low_id_);
-  SyncShareNudge();
-  ExpectLocalOrderIsByServerId();
-}
-
-TEST_F(SyncerPositionTiebreakingTest, MidLowHigh) {
-  Add(mid_id_);
-  Add(low_id_);
-  Add(high_id_);
-  SyncShareNudge();
-  ExpectLocalOrderIsByServerId();
 }
 
 enum {

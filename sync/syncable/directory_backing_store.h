@@ -172,6 +172,7 @@ class SYNC_EXPORT_PRIVATE DirectoryBackingStore : public base::NonThreadSafe {
   bool MigrateVersion82To83();
   bool MigrateVersion83To84();
   bool MigrateVersion84To85();
+  bool MigrateVersion85To86();
 
   scoped_ptr<sql::Connection> db_;
   sql::Statement save_meta_statment_;

@@ -19,11 +19,6 @@
 #include "sync/syncable/syncable_write_transaction.h"
 #include "sync/util/cryptographer.h"
 
-// TODO(vishwath): Remove this include after node positions have
-// shifted to completely using Ordinals.
-// See http://crbug.com/145412 .
-#include "sync/internal_api/public/base/node_ordinal.h"
-
 using std::vector;
 
 namespace syncer {
@@ -313,12 +308,25 @@ ServerUpdateProcessingResult ProcessUpdatesCommand::ProcessUpdate(
   // (on which any current or future local changes are based) before we
   // overwrite SERVER_SPECIFICS.
   // MTIME, CTIME, and NON_UNIQUE_NAME are not enforced.
+
+  bool position_matches = false;
+  if (target_entry.ShouldMaintainPosition() && !update.deleted()) {
+    std::string update_tag = GetUniqueBookmarkTagFromUpdate(update);
+    if (UniquePosition::IsValidSuffix(update_tag)) {
+      position_matches = GetUpdatePosition(update, update_tag).Equals(
+          target_entry.Get(syncable::SERVER_UNIQUE_POSITION));
+    } else {
+      NOTREACHED();
+    }
+  } else {
+    // If this item doesn't care about positions, then set this flag to true.
+    position_matches = true;
+  }
+
   if (!update.deleted() && !target_entry.Get(syncable::SERVER_IS_DEL) &&
       (SyncableIdFromProto(update.parent_id_string()) ==
           target_entry.Get(syncable::SERVER_PARENT_ID)) &&
-      (update.position_in_parent() ==
-       NodeOrdinalToInt64(
-           target_entry.Get(syncable::SERVER_ORDINAL_IN_PARENT))) &&
+      position_matches &&
       update.has_specifics() && update.specifics().has_encrypted() &&
       !cryptographer->CanDecrypt(update.specifics().encrypted())) {
     sync_pb::EntitySpecifics prev_specifics =

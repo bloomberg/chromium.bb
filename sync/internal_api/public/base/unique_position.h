@@ -78,6 +78,9 @@ class SYNC_EXPORT_PRIVATE UniquePosition {
   // Serializes the position's internal state to a protobuf.
   void ToProto(sync_pb::UniquePosition* proto) const;
 
+  // Serializes the protobuf representation of this object as a string.
+  void SerializeToString(std::string* blob) const;
+
   // Returns a human-readable representation of this item's internal state.
   std::string ToDebugString() const;
 

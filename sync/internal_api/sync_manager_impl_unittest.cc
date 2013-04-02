@@ -532,6 +532,8 @@ namespace {
 
 void CheckNodeValue(const BaseNode& node, const base::DictionaryValue& value,
                     bool is_detailed) {
+  size_t expected_field_count = 4;
+
   ExpectInt64Value(node.GetId(), value, "id");
   {
     bool is_folder = false;
@@ -539,28 +541,22 @@ void CheckNodeValue(const BaseNode& node, const base::DictionaryValue& value,
     EXPECT_EQ(node.GetIsFolder(), is_folder);
   }
   ExpectDictStringValue(node.GetTitle(), value, "title");
-  {
-    ModelType expected_model_type = node.GetModelType();
-    std::string type_str;
-    EXPECT_TRUE(value.GetString("type", &type_str));
-    if (expected_model_type >= FIRST_REAL_MODEL_TYPE) {
-      ModelType model_type = ModelTypeFromString(type_str);
-      EXPECT_EQ(expected_model_type, model_type);
-    } else if (expected_model_type == TOP_LEVEL_FOLDER) {
-      EXPECT_EQ("Top-level folder", type_str);
-    } else if (expected_model_type == UNSPECIFIED) {
-      EXPECT_EQ("Unspecified", type_str);
-    } else {
-      ADD_FAILURE();
-    }
+
+  ModelType expected_model_type = node.GetModelType();
+  std::string type_str;
+  EXPECT_TRUE(value.GetString("type", &type_str));
+  if (expected_model_type >= FIRST_REAL_MODEL_TYPE) {
+    ModelType model_type = ModelTypeFromString(type_str);
+    EXPECT_EQ(expected_model_type, model_type);
+  } else if (expected_model_type == TOP_LEVEL_FOLDER) {
+    EXPECT_EQ("Top-level folder", type_str);
+  } else if (expected_model_type == UNSPECIFIED) {
+    EXPECT_EQ("Unspecified", type_str);
+  } else {
+    ADD_FAILURE();
   }
+
   if (is_detailed) {
-    ExpectInt64Value(node.GetParentId(), value, "parentId");
-    ExpectTimeValue(node.GetModificationTime(), value, "modificationTime");
-    ExpectInt64Value(node.GetExternalId(), value, "externalId");
-    ExpectInt64Value(node.GetPredecessorId(), value, "predecessorId");
-    ExpectInt64Value(node.GetSuccessorId(), value, "successorId");
-    ExpectInt64Value(node.GetFirstChildId(), value, "firstChildId");
     {
       scoped_ptr<base::DictionaryValue> expected_entry(
           node.GetEntry()->ToValue(NULL));
@@ -568,10 +564,27 @@ void CheckNodeValue(const BaseNode& node, const base::DictionaryValue& value,
       EXPECT_TRUE(value.Get("entry", &entry));
       EXPECT_TRUE(base::Value::Equals(entry, expected_entry.get()));
     }
-    EXPECT_EQ(11u, value.size());
-  } else {
-    EXPECT_EQ(4u, value.size());
+
+    ExpectInt64Value(node.GetParentId(), value, "parentId");
+    ExpectTimeValue(node.GetModificationTime(), value, "modificationTime");
+    ExpectInt64Value(node.GetExternalId(), value, "externalId");
+    expected_field_count += 4;
+
+    if (value.HasKey("predecessorId")) {
+      ExpectInt64Value(node.GetPredecessorId(), value, "predecessorId");
+      expected_field_count++;
+    }
+    if (value.HasKey("successorId")) {
+      ExpectInt64Value(node.GetSuccessorId(), value, "successorId");
+      expected_field_count++;
+    }
+    if (value.HasKey("firstChildId")) {
+      ExpectInt64Value(node.GetFirstChildId(), value, "firstChildId");
+      expected_field_count++;
+    }
   }
+
+  EXPECT_EQ(expected_field_count, value.size());
 }
 
 }  // namespace

@@ -7,6 +7,7 @@
 #include <iomanip>
 
 #include "base/json/string_escape.h"
+#include "base/string_util.h"
 #include "sync/syncable/blob.h"
 #include "sync/syncable/directory.h"
 #include "sync/syncable/syncable_base_transaction.h"
@@ -39,10 +40,6 @@ Entry::Entry(BaseTransaction* trans, GetByHandle, int64 metahandle)
 
 Directory* Entry::dir() const {
   return basetrans_->directory();
-}
-
-Id Entry::ComputePrevIdFromServerPosition(const Id& parent_id) const {
-  return dir()->ComputePrevIdFromServerPosition(kernel_, parent_id);
 }
 
 DictionaryValue* Entry::ToValue(Cryptographer* cryptographer) const {
@@ -96,11 +93,19 @@ ModelType Entry::GetModelType() const {
 }
 
 Id Entry::GetPredecessorId() const {
-  return kernel_->ref(PREV_ID);
+  return dir()->GetPredecessorId(kernel_);
 }
 
 Id Entry::GetSuccessorId() const {
-  return kernel_->ref(NEXT_ID);
+  return dir()->GetSuccessorId(kernel_);
+}
+
+Id Entry::GetFirstChildId() const {
+  return dir()->GetFirstChildId(basetrans_, kernel_);
+}
+
+bool Entry::ShouldMaintainPosition() const {
+  return kernel_->ShouldMaintainPosition();
 }
 
 std::ostream& operator<<(std::ostream& s, const Blob& blob) {
@@ -142,9 +147,9 @@ std::ostream& operator<<(std::ostream& os, const Entry& entry) {
         &escaped_str);
     os << g_metas_columns[i].name << ": " << escaped_str << ", ";
   }
-  for ( ; i < ORDINAL_FIELDS_END; ++i) {
+  for ( ; i < UNIQUE_POSITION_FIELDS_END; ++i) {
     os << g_metas_columns[i].name << ": "
-       << kernel->ref(static_cast<OrdinalField>(i)).ToDebugString()
+       << kernel->ref(static_cast<UniquePositionField>(i)).ToDebugString()
        << ", ";
   }
   os << "TempFlags: ";

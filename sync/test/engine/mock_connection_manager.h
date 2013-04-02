@@ -18,6 +18,7 @@
 #include "sync/engine/net/server_connection_manager.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/base/model_type_invalidation_map.h"
+#include "sync/internal_api/public/base/unique_position.h"
 #include "sync/protocol/sync.pb.h"
 
 namespace syncer {

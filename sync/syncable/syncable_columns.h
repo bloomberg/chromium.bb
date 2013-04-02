@@ -37,8 +37,6 @@ static const ColumnSpec g_metas_columns[] = {
   {"id", "varchar(255) default \"r\""},
   {"parent_id", "varchar(255) default \"r\""},
   {"server_parent_id", "varchar(255) default \"r\""},
-  {"prev_id", "varchar(255) default \"r\""},
-  {"next_id", "varchar(255) default \"r\""},
   //////////////////////////////////////
   // bits
   {"is_unsynced", "bit default 0"},
@@ -53,14 +51,16 @@ static const ColumnSpec g_metas_columns[] = {
   {"server_non_unique_name", "varchar(255)"},
   {"unique_server_tag", "varchar"},
   {"unique_client_tag", "varchar"},
+  {"unique_bookmark_tag", "varchar"},
   //////////////////////////////////////
   // Blobs (serialized protos).
   {"specifics", "blob"},
   {"server_specifics", "blob"},
   {"base_server_specifics", "blob"},
   //////////////////////////////////////
-  // Blobs (ordinals).
-  {"server_ordinal_in_parent", "blob"},
+  // Blobs (positions).
+  {"server_unique_position", "blob"},
+  {"unique_position", "blob"},
 };
 
 // At least enforce that there are equal number of column names and fields.

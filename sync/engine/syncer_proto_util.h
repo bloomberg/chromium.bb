@@ -69,6 +69,8 @@ class SYNC_EXPORT_PRIVATE SyncerProtoUtil {
   static bool Compare(const syncable::Entry& local_entry,
                       const sync_pb::SyncEntity& server_entry);
 
+  static bool ShouldMaintainPosition(const sync_pb::SyncEntity& sync_entity);
+
   // Utility methods for converting between syncable::Blobs and protobuf byte
   // fields.
   static void CopyProtoBytesIntoBlob(const std::string& proto_bytes,

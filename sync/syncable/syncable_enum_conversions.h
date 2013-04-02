@@ -41,8 +41,8 @@ SYNC_EXPORT_PRIVATE const char* GetStringFieldString(StringField string_field);
 
 SYNC_EXPORT_PRIVATE const char* GetProtoFieldString(ProtoField proto_field);
 
-SYNC_EXPORT_PRIVATE const char* GetOrdinalFieldString(
-    OrdinalField ordinal_field);
+SYNC_EXPORT_PRIVATE const char* GetUniquePositionFieldString(
+    UniquePositionField position_field);
 
 SYNC_EXPORT_PRIVATE const char* GetBitTempString(BitTemp bit_temp);
 

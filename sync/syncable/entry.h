@@ -93,7 +93,7 @@ class SYNC_EXPORT Entry {
     DCHECK(kernel_);
     return kernel_->ref(field);
   }
-  inline const NodeOrdinal& Get(OrdinalField field) const {
+  inline const UniquePosition& Get(UniquePositionField field) const {
     DCHECK(kernel_);
     return kernel_->ref(field);
   }
@@ -107,6 +107,7 @@ class SYNC_EXPORT Entry {
 
   Id GetPredecessorId() const;
   Id GetSuccessorId() const;
+  Id GetFirstChildId() const;
 
   inline bool ExistsOnClientBecauseNameIsNonEmpty() const {
     DCHECK(kernel_);
@@ -118,17 +119,15 @@ class SYNC_EXPORT Entry {
     return kernel_->ref(ID).IsRoot();
   }
 
+  // Returns true if this is an entry that is expected to maintain a certain
+  // sort ordering relative to its siblings under the same parent.
+  bool ShouldMaintainPosition() const;
+
   Directory* dir() const;
 
   const EntryKernel GetKernelCopy() const {
     return *kernel_;
   }
-
-  // Compute a local predecessor position for |update_item|, based on its
-  // absolute server position.  The returned ID will be a valid predecessor
-  // under SERVER_PARENT_ID that is consistent with the
-  // SERVER_POSITION_IN_PARENT ordering.
-  Id ComputePrevIdFromServerPosition(const Id& parent_id) const;
 
   // Dumps all entry info into a DictionaryValue and returns it.
   // Transfers ownership of the DictionaryValue to the caller.

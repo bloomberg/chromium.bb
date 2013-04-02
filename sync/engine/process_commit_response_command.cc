@@ -13,6 +13,7 @@
 #include "base/location.h"
 #include "sync/engine/syncer_proto_util.h"
 #include "sync/engine/syncer_util.h"
+#include "sync/internal_api/public/base/unique_position.h"
 #include "sync/sessions/sync_session.h"
 #include "sync/syncable/entry.h"
 #include "sync/syncable/mutable_entry.h"
@@ -21,11 +22,6 @@
 #include "sync/syncable/syncable_util.h"
 #include "sync/syncable/syncable_write_transaction.h"
 #include "sync/util/time.h"
-
-// TODO(vishwath): Remove this include after node positions have
-// shifted to completely using Ordinals.
-// See http://crbug.com/145412 .
-#include "sync/internal_api/public/base/node_ordinal.h"
 
 using std::set;
 using std::string;
@@ -50,7 +46,6 @@ using syncable::IS_UNSYNCED;
 using syncable::PARENT_ID;
 using syncable::SERVER_IS_DEL;
 using syncable::SERVER_PARENT_ID;
-using syncable::SERVER_ORDINAL_IN_PARENT;
 using syncable::SERVER_VERSION;
 using syncable::SYNCER;
 using syncable::SYNCING;
@@ -342,8 +337,11 @@ void ProcessCommitResponseCommand::UpdateServerFieldsAfterCommit(
                    ProtoTimeToTime(committed_entry.mtime()));
   local_entry->Put(syncable::SERVER_CTIME,
                    ProtoTimeToTime(committed_entry.ctime()));
-  local_entry->Put(syncable::SERVER_ORDINAL_IN_PARENT,
-                   Int64ToNodeOrdinal(entry_response.position_in_parent()));
+  if (committed_entry.has_unique_position()) {
+    local_entry->Put(syncable::SERVER_UNIQUE_POSITION,
+                     UniquePosition::FromProto(
+                         committed_entry.unique_position()));
+  }
 
   // TODO(nick): The server doesn't set entry_response.server_parent_id in
   // practice; to update SERVER_PARENT_ID appropriately here we'd need to
@@ -385,23 +383,6 @@ void ProcessCommitResponseCommand::OverrideClientFieldsAfterCommit(
     DVLOG(1) << "During commit, server changed name: " << old_name
              << " to new name: " << server_name;
     local_entry->Put(syncable::NON_UNIQUE_NAME, server_name);
-  }
-
-  // The server has the final say on positioning, so apply the absolute
-  // position that it returns.
-  if (entry_response.has_position_in_parent()) {
-    // The SERVER_ field should already have been written.
-    DCHECK_EQ(entry_response.position_in_parent(),
-              NodeOrdinalToInt64(local_entry->Get(SERVER_ORDINAL_IN_PARENT)));
-
-    // We just committed successfully, so we assume that the position
-    // value we got applies to the PARENT_ID we submitted.
-    syncable::Id new_prev = local_entry->ComputePrevIdFromServerPosition(
-        local_entry->Get(PARENT_ID));
-    if (!local_entry->PutPredecessor(new_prev)) {
-      // TODO(lipalani) : Propagate the error to caller. crbug.com/100444.
-      NOTREACHED();
-    }
   }
 }
 

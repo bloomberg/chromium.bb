@@ -22,13 +22,9 @@
 #include "sync/engine/store_timestamps_command.h"
 #include "sync/engine/syncer_types.h"
 #include "sync/engine/throttled_data_type_tracker.h"
+#include "sync/internal_api/public/base/unique_position.h"
 #include "sync/syncable/mutable_entry.h"
 #include "sync/syncable/syncable-inl.h"
-
-// TODO(vishwath): Remove this include after node positions have
-// shifted to completely using Ordinals.
-// See http://crbug.com/145412 .
-#include "sync/internal_api/public/base/node_ordinal.h"
 
 using base::Time;
 using base::TimeDelta;
@@ -45,8 +41,8 @@ using syncable::SERVER_IS_DIR;
 using syncable::SERVER_MTIME;
 using syncable::SERVER_NON_UNIQUE_NAME;
 using syncable::SERVER_PARENT_ID;
-using syncable::SERVER_ORDINAL_IN_PARENT;
 using syncable::SERVER_SPECIFICS;
+using syncable::SERVER_UNIQUE_POSITION;
 using syncable::SERVER_VERSION;
 
 #define ENUM_CASE(x) case x: return #x
@@ -198,20 +194,7 @@ void CopyServerFields(syncable::Entry* src, syncable::MutableEntry* dest) {
   dest->Put(SERVER_IS_DEL, src->Get(SERVER_IS_DEL));
   dest->Put(IS_UNAPPLIED_UPDATE, src->Get(IS_UNAPPLIED_UPDATE));
   dest->Put(SERVER_SPECIFICS, src->Get(SERVER_SPECIFICS));
-  dest->Put(SERVER_ORDINAL_IN_PARENT, src->Get(SERVER_ORDINAL_IN_PARENT));
-}
-
-void ClearServerData(syncable::MutableEntry* entry) {
-  entry->Put(SERVER_NON_UNIQUE_NAME, "");
-  entry->Put(SERVER_PARENT_ID, syncable::GetNullId());
-  entry->Put(SERVER_MTIME, Time());
-  entry->Put(SERVER_CTIME, Time());
-  entry->Put(SERVER_VERSION, 0);
-  entry->Put(SERVER_IS_DIR, false);
-  entry->Put(SERVER_IS_DEL, false);
-  entry->Put(IS_UNAPPLIED_UPDATE, false);
-  entry->Put(SERVER_SPECIFICS, sync_pb::EntitySpecifics::default_instance());
-  entry->Put(SERVER_ORDINAL_IN_PARENT, Int64ToNodeOrdinal(0));
+  dest->Put(SERVER_UNIQUE_POSITION, src->Get(SERVER_UNIQUE_POSITION));
 }
 
 }  // namespace syncer

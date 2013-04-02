@@ -11,7 +11,7 @@
 #include "base/values.h"
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/model_type.h"
-#include "sync/internal_api/public/base/node_ordinal.h"
+#include "sync/internal_api/public/base/unique_position.h"
 #include "sync/internal_api/public/util/immutable.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/syncable/metahandle_set.h"
@@ -83,9 +83,6 @@ enum IdField {
   ID = ID_FIELDS_BEGIN,
   PARENT_ID,
   SERVER_PARENT_ID,
-
-  PREV_ID,
-  NEXT_ID,
   ID_FIELDS_END
 };
 
@@ -127,6 +124,7 @@ enum StringField {
   // identifies a singleton instance.
   UNIQUE_SERVER_TAG,  // Tagged by the server
   UNIQUE_CLIENT_TAG,  // Tagged by the client
+  UNIQUE_BOOKMARK_TAG,  // Client tags for bookmark items
   STRING_FIELDS_END,
 };
 
@@ -146,21 +144,21 @@ enum ProtoField {
 
 enum {
   PROTO_FIELDS_COUNT = PROTO_FIELDS_END - PROTO_FIELDS_BEGIN,
-  ORDINAL_FIELDS_BEGIN = PROTO_FIELDS_END
+  UNIQUE_POSITION_FIELDS_BEGIN = PROTO_FIELDS_END
 };
 
-enum OrdinalField {
-  // An Ordinal that identifies the relative ordering of this object
-  // among its siblings.
-  SERVER_ORDINAL_IN_PARENT = ORDINAL_FIELDS_BEGIN,
-  ORDINAL_FIELDS_END
+enum UniquePositionField {
+  SERVER_UNIQUE_POSITION = UNIQUE_POSITION_FIELDS_BEGIN,
+  UNIQUE_POSITION,
+  UNIQUE_POSITION_FIELDS_END
 };
 
 enum {
-  ORDINAL_FIELDS_COUNT = ORDINAL_FIELDS_END - ORDINAL_FIELDS_BEGIN,
-  FIELD_COUNT = ORDINAL_FIELDS_END - BEGIN_FIELDS,
+  UNIQUE_POSITION_FIELDS_COUNT =
+      UNIQUE_POSITION_FIELDS_END - UNIQUE_POSITION_FIELDS_BEGIN,
+  FIELD_COUNT = UNIQUE_POSITION_FIELDS_END - BEGIN_FIELDS,
   // Past this point we have temporaries, stored in memory only.
-  BEGIN_TEMPS = ORDINAL_FIELDS_END,
+  BEGIN_TEMPS = UNIQUE_POSITION_FIELDS_END,
   BIT_TEMPS_BEGIN = BEGIN_TEMPS,
 };
 
@@ -184,7 +182,7 @@ struct SYNC_EXPORT_PRIVATE EntryKernel {
   int64 int64_fields[INT64_FIELDS_COUNT];
   base::Time time_fields[TIME_FIELDS_COUNT];
   Id id_fields[ID_FIELDS_COUNT];
-  NodeOrdinal ordinal_fields[ORDINAL_FIELDS_COUNT];
+  UniquePosition unique_position_fields[UNIQUE_POSITION_FIELDS_COUNT];
   std::bitset<BIT_FIELDS_COUNT> bit_fields;
   std::bitset<BIT_TEMPS_COUNT> bit_temps;
 
@@ -252,8 +250,8 @@ struct SYNC_EXPORT_PRIVATE EntryKernel {
   inline void put(ProtoField field, const sync_pb::EntitySpecifics& value) {
     specifics_fields[field - PROTO_FIELDS_BEGIN].CopyFrom(value);
   }
-  inline void put(OrdinalField field, const NodeOrdinal& value) {
-    ordinal_fields[field - ORDINAL_FIELDS_BEGIN] = value;
+  inline void put(UniquePositionField field, const UniquePosition& value) {
+    unique_position_fields[field - UNIQUE_POSITION_FIELDS_BEGIN] = value;
   }
   inline void put(BitTemp field, bool value) {
     bit_temps[field - BIT_TEMPS_BEGIN] = value;
@@ -290,8 +288,8 @@ struct SYNC_EXPORT_PRIVATE EntryKernel {
   inline const sync_pb::EntitySpecifics& ref(ProtoField field) const {
     return specifics_fields[field - PROTO_FIELDS_BEGIN];
   }
-  inline const NodeOrdinal& ref(OrdinalField field) const {
-    return ordinal_fields[field - ORDINAL_FIELDS_BEGIN];
+  inline const UniquePosition& ref(UniquePositionField field) const {
+    return unique_position_fields[field - UNIQUE_POSITION_FIELDS_BEGIN];
   }
   inline bool ref(BitTemp field) const {
     return bit_temps[field - BIT_TEMPS_BEGIN];
@@ -307,11 +305,13 @@ struct SYNC_EXPORT_PRIVATE EntryKernel {
   inline Id& mutable_ref(IdField field) {
     return id_fields[field - ID_FIELDS_BEGIN];
   }
-  inline NodeOrdinal& mutable_ref(OrdinalField field) {
-    return ordinal_fields[field - ORDINAL_FIELDS_BEGIN];
+  inline UniquePosition& mutable_ref(UniquePositionField field) {
+    return unique_position_fields[field - UNIQUE_POSITION_FIELDS_BEGIN];
   }
 
+  ModelType GetModelType() const;
   ModelType GetServerModelType() const;
+  bool ShouldMaintainPosition() const;
 
   // Dumps all kernel info into a DictionaryValue and returns it.
   // Transfers ownership of the DictionaryValue to the caller.

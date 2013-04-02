@@ -154,8 +154,9 @@ bool ChangeReorderBuffer::GetAllChangesInTreeOrder(
         CHECK_EQ(BaseNode::INIT_OK, node.InitByIdLookup(i->first));
 
         // We only care about parents of entry's with position-sensitive models.
-        if (ShouldMaintainPosition(node.GetEntry()->GetModelType())) {
+        if (node.GetEntry()->ShouldMaintainPosition()) {
           parents_of_position_changes.insert(node.GetParentId());
+          traversal.ExpandToInclude(trans, node.GetParentId());
         }
       }
     }
@@ -200,12 +201,7 @@ bool ChangeReorderBuffer::GetAllChangesInTreeOrder(
       // There were ordering changes on the children of this parent, so
       // enumerate all the children in the sibling order.
       syncable::Entry parent(trans, syncable::GET_BY_HANDLE, next);
-      syncable::Id id;
-      if (!trans->directory()->GetFirstChildId(
-              trans, parent.Get(syncable::ID), &id)) {
-        *changes = ImmutableChangeRecordList();
-        return false;
-      }
+      syncable::Id id = parent.GetFirstChildId();
       while (!id.IsRoot()) {
         syncable::Entry child(trans, syncable::GET_BY_ID, id);
         CHECK(child.good());

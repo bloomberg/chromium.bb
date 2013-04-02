@@ -56,6 +56,7 @@ namespace syncer {
 using sessions::SyncSessionContext;
 using syncable::ImmutableWriteTransactionInfo;
 using syncable::SPECIFICS;
+using syncable::UNIQUE_POSITION;
 
 namespace {
 
@@ -225,12 +226,9 @@ bool SyncManagerImpl::VisiblePositionsDiffer(
     const syncable::EntryKernelMutation& mutation) const {
   const syncable::EntryKernel& a = mutation.original;
   const syncable::EntryKernel& b = mutation.mutated;
-  // If the datatype isn't one where the browser model cares about position,
-  // don't bother notifying that data model of position-only changes.
-  if (!ShouldMaintainPosition(GetModelTypeFromSpecifics(b.ref(SPECIFICS)))) {
+  if (!b.ShouldMaintainPosition())
     return false;
-  }
-  if (a.ref(syncable::NEXT_ID) != b.ref(syncable::NEXT_ID))
+  if (!a.ref(UNIQUE_POSITION).Equals(b.ref(UNIQUE_POSITION)))
     return true;
   if (a.ref(syncable::PARENT_ID) != b.ref(syncable::PARENT_ID))
     return true;

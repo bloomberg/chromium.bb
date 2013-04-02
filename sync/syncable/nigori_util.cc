@@ -108,12 +108,7 @@ bool VerifyDataTypeEncryptionForTest(
   }
 
   std::queue<Id> to_visit;
-  Id id_string;
-  if (!trans->directory()->GetFirstChildId(
-          trans, type_root.Get(ID), &id_string)) {
-    NOTREACHED();
-    return false;
-  }
+  Id id_string = type_root.GetFirstChildId();
   to_visit.push(id_string);
   while (!to_visit.empty()) {
     id_string = to_visit.front();
@@ -127,12 +122,7 @@ bool VerifyDataTypeEncryptionForTest(
       return false;
     }
     if (child.Get(IS_DIR)) {
-      Id child_id_string;
-      if (!trans->directory()->GetFirstChildId(
-              trans, child.Get(ID), &child_id_string)) {
-        NOTREACHED();
-        return false;
-      }
+      Id child_id_string = child.GetFirstChildId();
       // Traverse the children.
       to_visit.push(child_id_string);
     }

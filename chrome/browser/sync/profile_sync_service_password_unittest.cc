@@ -253,6 +253,27 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
     }
   }
 
+  // Helper to sort the results of GetPasswordEntriesFromSyncDB.  The sorting
+  // doesn't need to be particularly intelligent, it just needs to be consistent
+  // enough that we can base our tests expectations on the ordering it provides.
+  static bool PasswordFormComparator(const PasswordForm& pf1,
+                                     const PasswordForm& pf2) {
+    if (pf1.submit_element < pf2.submit_element)
+      return true;
+    if (pf1.username_element < pf2.username_element)
+      return true;
+    if (pf1.username_value < pf2.username_value)
+      return true;
+    if (pf1.username_value < pf2.username_value)
+      return true;
+    if (pf1.password_element < pf2.password_element)
+      return true;
+    if (pf1.password_value < pf2.password_value)
+      return true;
+
+    return false;
+  }
+
   void GetPasswordEntriesFromSyncDB(std::vector<PasswordForm>* entries) {
     syncer::ReadTransaction trans(FROM_HERE, sync_service_->GetUserShare());
     syncer::ReadNode password_root(&trans);
@@ -275,6 +296,8 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
 
       child_id = child_node.GetSuccessorId();
     }
+
+    std::sort(entries->begin(), entries->end(), PasswordFormComparator);
   }
 
   bool ComparePasswords(const PasswordForm& lhs, const PasswordForm& rhs) {

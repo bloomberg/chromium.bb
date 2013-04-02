@@ -66,26 +66,12 @@ void ChangeEntryIDAndUpdateChildren(
     while (i != children.end()) {
       MutableEntry child_entry(trans, GET_BY_HANDLE, *i++);
       CHECK(child_entry.good());
-      // Use the unchecked setter here to avoid touching the child's NEXT_ID
-      // and PREV_ID fields (which Put(PARENT_ID) would normally do to
-      // maintain linked-list invariants).  In this case, NEXT_ID and PREV_ID
-      // among the children will be valid after the loop, since we update all
-      // the children at once.
+      // Use the unchecked setter here to avoid touching the child's
+      // UNIQUE_POSITION field.  In this case, UNIQUE_POSITION among the
+      // children will be valid after the loop, since we update all the children
+      // at once.
       child_entry.PutParentIdPropertyOnly(new_id);
     }
-  }
-  // Update Id references on the previous and next nodes in the sibling
-  // order.  Do this by reinserting into the linked list; the first
-  // step in PutPredecessor is to Unlink from the existing order, which
-  // will overwrite the stale Id value from the adjacent nodes.
-  if (entry->GetPredecessorId() == entry->GetSuccessorId() &&
-      entry->GetPredecessorId() == old_id) {
-    // We just need a shallow update to |entry|'s fields since it is already
-    // self looped.
-    entry->Put(NEXT_ID, new_id);
-    entry->Put(PREV_ID, new_id);
-  } else {
-    entry->PutPredecessor(entry->GetPredecessorId());
   }
 }
 
@@ -117,6 +103,13 @@ std::string GenerateSyncableHash(
   std::string encode_output;
   CHECK(base::Base64Encode(base::SHA1HashString(hash_input), &encode_output));
   return encode_output;
+}
+
+std::string GenerateSyncableBookmarkHash(
+    const std::string originator_cache_guid,
+    const std::string originator_client_item_id) {
+  return syncable::GenerateSyncableHash(
+      BOOKMARKS, originator_cache_guid + originator_client_item_id);
 }
 
 }  // namespace syncable

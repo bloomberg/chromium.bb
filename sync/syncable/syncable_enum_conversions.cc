@@ -72,14 +72,12 @@ const char* GetTimeFieldString(TimeField time_field) {
 }
 
 const char* GetIdFieldString(IdField id_field) {
-  ASSERT_ENUM_BOUNDS(ID, NEXT_ID,
+  ASSERT_ENUM_BOUNDS(ID, SERVER_PARENT_ID,
                      ID_FIELDS_BEGIN, ID_FIELDS_END - 1);
   switch (id_field) {
     ENUM_CASE(ID);
     ENUM_CASE(PARENT_ID);
     ENUM_CASE(SERVER_PARENT_ID);
-    ENUM_CASE(PREV_ID);
-    ENUM_CASE(NEXT_ID);
     case ID_FIELDS_END: break;
   }
   NOTREACHED();
@@ -122,13 +120,14 @@ const char* GetBitFieldString(BitField bit_field) {
 }
 
 const char* GetStringFieldString(StringField string_field) {
-  ASSERT_ENUM_BOUNDS(NON_UNIQUE_NAME, UNIQUE_CLIENT_TAG,
+  ASSERT_ENUM_BOUNDS(NON_UNIQUE_NAME, UNIQUE_BOOKMARK_TAG,
                      STRING_FIELDS_BEGIN, STRING_FIELDS_END - 1);
   switch (string_field) {
     ENUM_CASE(NON_UNIQUE_NAME);
     ENUM_CASE(SERVER_NON_UNIQUE_NAME);
     ENUM_CASE(UNIQUE_SERVER_TAG);
     ENUM_CASE(UNIQUE_CLIENT_TAG);
+    ENUM_CASE(UNIQUE_BOOKMARK_TAG);
     case STRING_FIELDS_END: break;
   }
   NOTREACHED();
@@ -148,12 +147,14 @@ const char* GetProtoFieldString(ProtoField proto_field) {
   return "";
 }
 
-const char* GetOrdinalFieldString(OrdinalField ordinal_field) {
-  ASSERT_ENUM_BOUNDS(SERVER_ORDINAL_IN_PARENT, SERVER_ORDINAL_IN_PARENT,
-                     ORDINAL_FIELDS_BEGIN, ORDINAL_FIELDS_END - 1);
-  switch(ordinal_field) {
-    ENUM_CASE(SERVER_ORDINAL_IN_PARENT);
-    case ORDINAL_FIELDS_END: break;
+const char* GetUniquePositionFieldString(UniquePositionField position_field) {
+  ASSERT_ENUM_BOUNDS(SERVER_UNIQUE_POSITION, UNIQUE_POSITION,
+                     UNIQUE_POSITION_FIELDS_BEGIN,
+                     UNIQUE_POSITION_FIELDS_END - 1);
+  switch(position_field) {
+    ENUM_CASE(SERVER_UNIQUE_POSITION);
+    ENUM_CASE(UNIQUE_POSITION);
+    case UNIQUE_POSITION_FIELDS_END: break;
   }
   NOTREACHED();
   return "";

@@ -158,10 +158,6 @@ SYNC_EXPORT_PRIVATE ModelType GetModelType(
 SYNC_EXPORT ModelType GetModelTypeFromSpecifics(
     const sync_pb::EntitySpecifics& specifics);
 
-// If this returns false, we shouldn't bother maintaining a position
-// value (sibling ordering) for this item.
-bool ShouldMaintainPosition(ModelType model_type);
-
 // Protocol types are those types that have actual protocol buffer
 // representations. This distinguishes them from Proxy types, which have no
 // protocol representation and are never sent to the server.

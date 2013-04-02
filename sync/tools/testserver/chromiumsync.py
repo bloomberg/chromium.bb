@@ -630,12 +630,14 @@ class SyncDataModel(object):
     was changed and Chrome now sends up the absolute position.  The server
     must store a position_in_parent value and must not maintain
     insert_after_item_id.
+    Starting in Jan 2013, the client will also send up a unique_position field
+    which should be saved and returned on subsequent GetUpdates.
 
     Args:
       entry: The entry for which to write a position.  Its ID field are
-        assumed to be server IDs.  This entry will have its parent_id_string
-        and position_in_parent fields updated; its insert_after_item_id field
-        will be cleared.
+        assumed to be server IDs.  This entry will have its parent_id_string,
+        position_in_parent and unique_position fields updated; its
+        insert_after_item_id field will be cleared.
       parent_id: The ID of the entry intended as the new parent.
     """
 
@@ -950,12 +952,14 @@ class SyncDataModel(object):
       entry = MakeTombstone(entry.id_string)
     else:
       # Comments in sync.proto detail how the representation of positional
-      # ordering works: either the 'insert_after_item_id' field or the
-      # 'position_in_parent' field may determine the sibling order during
-      # Commit operations.  The 'position_in_parent' field provides an absolute
-      # ordering in GetUpdates contexts.  Here we assume the client will
-      # always send a valid position_in_parent (this is the newer style), and
-      # we ignore insert_after_item_id (an older style).
+      # ordering works.
+      #
+      # We've almost fully deprecated the 'insert_after_item_id' field.
+      # The 'position_in_parent' field is also deprecated, but as of Jan 2013
+      # is still in common use.  The 'unique_position' field is the latest
+      # and greatest in positioning technology.
+      #
+      # This server supports 'position_in_parent' and 'unique_position'.
       self._WritePosition(entry, entry.parent_id_string)
 
     # Preserve the originator info, which the client is not required to send

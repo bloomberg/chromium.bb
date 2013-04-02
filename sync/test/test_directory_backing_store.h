@@ -48,7 +48,8 @@ class TestDirectoryBackingStore : public DirectoryBackingStore {
   FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, MigrateVersion82To83);
   FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, MigrateVersion83To84);
   FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, MigrateVersion84To85);
-  FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, DetectInvalidOrdinal);
+  FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, MigrateVersion85To86);
+  FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, DetectInvalidPosition);
   FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, ModelTypeIds);
   FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, Corruption);
   FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, DeleteEntries);

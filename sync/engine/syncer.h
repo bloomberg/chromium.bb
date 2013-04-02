@@ -95,7 +95,6 @@ class SYNC_EXPORT_PRIVATE Syncer {
 
 // Utility function declarations.
 void CopyServerFields(syncable::Entry* src, syncable::MutableEntry* dest);
-void ClearServerData(syncable::MutableEntry* entry);
 const char* SyncerStepToString(const SyncerStep);
 
 }  // namespace syncer
