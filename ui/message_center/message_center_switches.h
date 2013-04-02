@@ -20,6 +20,7 @@ namespace switches {
 //  - WebNotificationButtonView2: remove '2' suffix and replace the old one.
 //  - WebNotificationButtonViewBase: merge into WebNotificationButtonView.
 MESSAGE_CENTER_EXPORT extern const char kEnableRichNotifications[];
+MESSAGE_CENTER_EXPORT extern const char kDisableRichNotifications[];
 
 }  // namespace switches
 }  // namespace message_center

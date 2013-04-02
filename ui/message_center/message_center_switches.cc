@@ -7,6 +7,7 @@
 namespace message_center {
 namespace switches {
 
+const char kDisableRichNotifications[] = "disable-rich-notifications";
 const char kEnableRichNotifications[] = "enable-rich-notifications";
 
 }  // namespace switches

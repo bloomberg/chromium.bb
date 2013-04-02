@@ -1202,7 +1202,9 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_ENABLE_RICH_NOTIFICATIONS_NAME,
     IDS_FLAGS_ENABLE_RICH_NOTIFICATIONS_DESCRIPTION,
     kOsWin | kOsCrOS,
-    SINGLE_VALUE_TYPE(message_center::switches::kEnableRichNotifications)
+    ENABLE_DISABLE_VALUE_TYPE(
+        message_center::switches::kEnableRichNotifications,
+        message_center::switches::kDisableRichNotifications)
   },
 #endif
   {
