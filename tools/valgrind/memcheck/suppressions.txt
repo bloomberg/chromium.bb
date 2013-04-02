@@ -6409,28 +6409,6 @@
    fun:_ZN9TestShell10initializeEv
 }
 {
-   bug_172695
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN10extensions20RulesRegistryService30RegisterDefaultRulesRegistriesEv
-   fun:_ZN10extensions19ExtensionSystemImpl21InitForRegularProfileEb
-   fun:_ZN14ProfileManager22DoFinalInitForServicesEP7Profileb
-   fun:_ZN14ProfileManager11DoFinalInitEP7Profileb
-   fun:_ZN14ProfileManager10AddProfileEP7Profile
-   fun:_ZN14ProfileManager10GetProfileE*
-   ...
-   fun:_ZN22ChromeBrowserMainParts25PreMainMessageLoopRunImplEv
-   fun:_ZN22ChromeBrowserMainParts21PreMainMessageLoopRunEv
-   fun:_ZN7content15BrowserMainLoop13CreateThreadsEv
-   fun:_ZN7content21BrowserMainRunnerImpl10InitializeERKNS_18MainFunctionParamsE
-   fun:_ZN7content11BrowserMainERKNS_18MainFunctionParamsE
-   fun:_ZN7content23RunNamedProcessTypeMainERKSsRKNS_18MainFunctionParamsEPNS_19ContentMainDelegateE
-   fun:_ZN7content21ContentMainRunnerImpl3RunEv
-   fun:_ZN7content11ContentMainEiPPKcPNS_19ContentMainDelegateE
-   fun:ChromeMain
-}
-{
    bug_172884
    Memcheck:Leak
    fun:_Znw*
