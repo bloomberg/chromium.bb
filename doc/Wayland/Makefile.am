@@ -36,9 +36,12 @@ en-US/ProtocolInterfaces.xml: $(top_srcdir)/protocol/wayland.xml $(srcdir)/proto
 	$(AM_V_GEN)$(XSLTPROC) $(srcdir)/protocol-interfaces-to-docbook.xsl \
 		$(top_srcdir)/protocol/wayland.xml > en-US/ProtocolInterfaces.xml
 
-# WaylandClientAPI.xml is generated after combining all xml in one single file
-# with the exception of wayland-client_8h.xml that is omitted to not duplicate
-# the output methods.
+# WaylandClientAPI.xml:
+# * we don't want wayland-client_8h.xml to avoid duplicating output methods,
+#   move it out of the way first.
+# * use doxygen's combine.xslt to merge the xml files into one single file
+# * move wayland-client_8h.xml back to its original location
+# * transform the combined XML file into docbook format
 en-US/WaylandClientAPI.xml: $(top_builddir)/doc/doxygen/xml/index.xml $(srcdir)/doxygen-to-publican.xsl
 	$(AM_V_GEN)$(MKDIR_P) en-US/images
 	$(AM_V_GEN)mv $(top_builddir)/doc/doxygen/xml/wayland-client_8h.xml \
