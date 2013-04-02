@@ -15,10 +15,11 @@
 
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
 
-#if defined(WIDEVINE_CDM_AVAILABLE) && defined(OS_LINUX)
+#if defined(WIDEVINE_CDM_AVAILABLE) && \
+    defined(OS_LINUX) && !defined(OS_CHROMEOS)
 #include <gnu/libc-version.h>
 #include "base/version.h"
-#endif  // defined(WIDEVINE_CDM_AVAILABLE) && defined(OS_LINUX)
+#endif
 
 namespace webkit_media {
 
@@ -181,13 +182,14 @@ KeySystems::KeySystems() {
 }
 
 static inline bool IsSystemCompatible(const std::string& key_system) {
-#if defined(WIDEVINE_CDM_AVAILABLE) && defined(OS_LINUX)
+#if defined(WIDEVINE_CDM_AVAILABLE) && \
+    defined(OS_LINUX) && !defined(OS_CHROMEOS)
   if (key_system == kWidevineKeySystem) {
     Version glibc_version(gnu_get_libc_version());
     DCHECK(glibc_version.IsValid());
     return !glibc_version.IsOlderThan(WIDEVINE_CDM_MIN_GLIBC_VERSION);
   }
-#endif  // defined(WIDEVINE_CDM_AVAILABLE) && defined(OS_LINUX)
+#endif
   return true;
 }
 
