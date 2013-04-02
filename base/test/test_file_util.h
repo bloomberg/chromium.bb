@@ -27,15 +27,6 @@ bool DieFileDie(const base::FilePath& file, bool recurse);
 // to access this file will result in a cold load from the hard drive.
 bool EvictFileFromSystemCache(const base::FilePath& file);
 
-// Like CopyFileNoCache but recursively copies all files and subdirectories
-// in the given input directory to the output directory. Any files in the
-// destination that already exist will be overwritten.
-//
-// Returns true on success. False means there was some error copying, so the
-// state of the destination is unknown.
-bool CopyRecursiveDirNoCache(const base::FilePath& source_dir,
-                             const base::FilePath& dest_dir);
-
 #if defined(OS_WIN)
 // Returns true if the volume supports Alternate Data Streams.
 bool VolumeSupportsADS(const base::FilePath& path);

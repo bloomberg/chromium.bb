@@ -186,8 +186,8 @@ bool ProxyLauncher::LaunchBrowser(const LaunchState& state) {
 
   if (!state.template_user_data.empty()) {
     // Recursively copy the template directory to the user_data_dir.
-    if (!file_util::CopyRecursiveDirNoCache(
-            state.template_user_data, user_data_dir())) {
+    if (!file_util::CopyDirectory(state.template_user_data, user_data_dir(),
+                                  true)) {
       LOG(ERROR) << "Failed to copy user data directory template.";
       return false;
     }
