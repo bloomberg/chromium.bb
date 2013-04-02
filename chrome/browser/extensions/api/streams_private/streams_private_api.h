@@ -56,6 +56,7 @@ class StreamsPrivateAPI : public ProfileKeyedAPI,
     return "StreamsPrivateAPI";
   }
   static const bool kServiceIsNULLWhileTesting = true;
+  static const bool kServiceRedirectedInIncognito = true;
 
   Profile* const profile_;
   content::NotificationRegistrar registrar_;
