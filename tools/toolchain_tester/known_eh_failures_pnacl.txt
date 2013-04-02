@@ -14,6 +14,10 @@ init-temp1.C
 # fixes the problem
 spec9.C
 
+# The following tests use vectors, which PNaCl's ABI checker rejects.
+simd-1.C
+simd-3.C
+
 # ======================================================================
 # NOTE: the tests below fail on a regular gcc as well
 # ======================================================================

@@ -107,6 +107,7 @@ EXTRA_ENV = {
                 '${GOLD_PLUGIN_ARGS} ${LD_FLAGS}',
   'RUN_BCLD': ('${BCLD} ${BCLD_FLAGS} ${inputs} -o ${output}'),
 
+  'DISABLE_ABI_CHECK': '0',
   'LLVM_PASSES_TO_DISABLE': '',
 }
 
@@ -125,6 +126,7 @@ LDPatterns = [
   ( '--noirt',              "env.set('USE_IRT', '0')"),
   ( '--pnacl-irt-link', "env.set('IRT_LINK', '1')"),
 
+  ( '--pnacl-disable-abi-check', "env.set('DISABLE_ABI_CHECK', '1')"),
   # "--pnacl-disable-pass" allows an ABI simplification pass to be
   # disabled if it is causing problems.  These passes are generally
   # required for ABI-stable pexes but can be omitted when the PNaCl
@@ -368,8 +370,11 @@ def main(argv):
       # getelementptr instructions it creates.
       passes = ['-expand-constant-expr',
                 '-expand-getelementptr']
+      if not env.getbool('DISABLE_ABI_CHECK') and len(native_objects) == 0:
+        passes += ['-verify-pnaclabi-module',
+                   '-verify-pnaclabi-functions']
       chain.add(DoLLVMPasses(passes),
-                'expand_constant_exprs.' + bitcode_type)
+                'expand_features_after_opt.' + bitcode_type)
   else:
     chain = DriverChain('', output, tng)
 

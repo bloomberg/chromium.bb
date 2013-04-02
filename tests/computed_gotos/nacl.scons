@@ -5,6 +5,14 @@
 
 Import('env')
 
+if env.Bit('bitcode'):
+  env.Append(LINKFLAGS=['--pnacl-disable-pass=-verify-pnaclabi-module',
+                        '--pnacl-disable-pass=-verify-pnaclabi-functions'])
+  # TODO(mseaborn): Replace the above with the following option after
+  # a TOOL_REVISIONS roll makes the option available:
+  #   env.Append(LINKFLAGS=['--pnacl-disable-abi-check'])
+  # See https://code.google.com/p/nativeclient/issues/detail?id=2309
+
 # We are testing a GNU C extension which is disallowed by "-pedantic" mode.
 env.FilterOut(CCFLAGS=['-pedantic'])
 

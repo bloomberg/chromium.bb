@@ -158,3 +158,26 @@ strct-varg-1.c
 va-arg-22.c
 # complex va_arg
 pr44575.c
+
+# The following tests use computed gotos, which PNaCl's ABI checker rejects.
+20040302-1.c
+20041214-1.c
+20071210-1.c
+20071220-1.c
+20071220-2.c
+
+# The following tests use vectors, which PNaCl's ABI checker rejects.
+20050316-1.c
+20050316-2.c
+20050316-3.c
+20050604-1.c
+20050607-1.c
+20060420-1.c
+simd-2.c
+simd-4.c
+simd-5.c
+simd-6.c
+vector-shift.c
+vector-shift2.c
+vector-subscript-2.c
+vector-subscript-3.c
