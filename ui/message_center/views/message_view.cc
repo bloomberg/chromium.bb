@@ -224,7 +224,7 @@ MenuModel::MenuModel(message_center::NotificationChangeObserver* observer,
                                        display_source));
   }
   // Add settings menu item.
-  if (!display_source.empty()) {
+  if (message_center::IsRichNotificationEnabled() || !display_source.empty()) {
     AddItem(kShowSettingsCommand,
             l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_SETTINGS));
   }
@@ -242,7 +242,7 @@ bool MenuModel::IsCommandIdChecked(int command_id) const {
 }
 
 bool MenuModel::IsCommandIdEnabled(int command_id) const {
-  return false;
+  return true;
 }
 
 bool MenuModel::GetAcceleratorForCommandId(int command_id,
@@ -259,7 +259,10 @@ void MenuModel::ExecuteCommand(int command_id, int event_flags) {
       observer_->OnDisableNotificationsByUrl(notification_id_);
       break;
     case kShowSettingsCommand:
-      observer_->OnShowNotificationSettings(notification_id_);
+      if (message_center::IsRichNotificationEnabled())
+        observer_->OnShowNotificationSettingsDialog(NULL);
+      else
+        observer_->OnShowNotificationSettings(notification_id_);
       break;
     default:
       NOTREACHED();
