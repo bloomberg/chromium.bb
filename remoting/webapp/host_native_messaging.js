@@ -109,6 +109,26 @@ function asAsyncResult_(result) {
 }
 
 /**
+ * Returns |result| as a HostController.State. If |result| is not valid,
+ * returns null and logs an error.
+ *
+ * @param {*} result
+ * @return {remoting.HostController.State?} Converted result.
+ */
+function asHostState_(result) {
+  if (!checkType_('result', result, 'number')) {
+    return null;
+  }
+  for (var i in remoting.HostController.State) {
+    if (remoting.HostController.State[i] == result) {
+      return remoting.HostController.State[i];
+    }
+  }
+  console.error('NativeMessaging: unexpected result code: ', result);
+  return null;
+}
+
+/**
  * Attaches a new ID to the supplied message, and posts it to the Native
  * Messaging port, adding |callback| to the list of pending replies.
  * |message| should have its 'type' field set, and any other fields set
@@ -243,6 +263,13 @@ remoting.HostNativeMessaging.prototype.onIncomingMessage_ = function(message) {
       var result = asAsyncResult_(message['result']);
       if (result != null) {
         callback(result);
+      }
+      break;
+
+    case 'getDaemonStateResponse':
+      var state = asHostState_(message['state']);
+      if (state != null) {
+        callback(state);
       }
       break;
 
@@ -410,3 +437,13 @@ remoting.HostNativeMessaging.prototype.startDaemon = function(
 remoting.HostNativeMessaging.prototype.stopDaemon = function(callback) {
   this.postMessage_({type: 'stopDaemon'}, callback);
 };
+
+/**
+ * Gets the installed/running state of the Host process.
+ *
+ * @param {function(remoting.HostController.State):void} callback Callback.
+ * @return {void} Nothing.
+ */
+remoting.HostNativeMessaging.prototype.getDaemonState = function(callback) {
+  this.postMessage_({type: 'getDaemonState'}, callback);
+}

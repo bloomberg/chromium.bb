@@ -15,7 +15,7 @@ remoting.HostController = function() {
   /** @type {boolean} @private */
   this.pluginSupported_ = true;
 
-  /** @type {remoting.HostPlugin} @private */
+  /** @type {remoting.HostNativeMessaging} @private */
   this.plugin_ = new remoting.HostNativeMessaging();
 
   /** @param {boolean} success */
@@ -24,10 +24,11 @@ remoting.HostController = function() {
       console.log('Native Messaging supported.');
     } else {
       console.log('Native Messaging unsupported, falling back to NPAPI.');
-      that.plugin_ = remoting.HostSession.createPlugin();
+      var plugin = remoting.HostSession.createPlugin();
+      that.plugin_ = new remoting.HostPluginWrapper(plugin);
       /** @type {HTMLElement} @private */
       var container = document.getElementById('daemon-plugin-container');
-      container.appendChild(that.plugin_);
+      container.appendChild(plugin);
     }
 
     /** @param {string} version */
@@ -330,19 +331,11 @@ remoting.HostController.prototype.updatePin = function(newPin, callback) {
 /**
  * Get the state of the local host.
  *
- * TODO(lambroslambrou): get this via the native messaging API.
- *
  * @param {function(remoting.HostController.State):void} onDone
  *     Completion callback.
  */
 remoting.HostController.prototype.getLocalHostState = function(onDone) {
-  var state = this.plugin_.daemonState;
-  if (typeof(state) == 'undefined') {
-    // If the plug-in can't be instantiated, for example on ChromeOS, then
-    // return something sensible.
-    state = remoting.HostController.State.NOT_IMPLEMENTED;
-  }
-  onDone(state);
+  this.plugin_.getDaemonState(onDone);
 };
 
 /**

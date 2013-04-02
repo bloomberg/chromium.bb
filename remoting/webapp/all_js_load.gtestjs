@@ -38,6 +38,7 @@ AllJsLoadTest.prototype = {
     'host_list.js',
     'host_native_messaging.js',
     //'host_plugin_proto.js',  // Only used by jscompiler
+    'host_plugin_wrapper.js',
     'host_screen.js',
     'host_session.js',
     'host_setup_dialog.js',
