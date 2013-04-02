@@ -48,6 +48,9 @@ const char kForceGLFinishWorkaround[]       = "force-glfinish-workaround";
 // Sets the total amount of memory that may be allocated for GPU resources
 const char kForceGpuMemAvailableMb[]        = "force-gpu-mem-available-mb";
 
+// Force the synchronous copy path in compositing_iosurface_mac.
+const char kForceSynchronousGLReadPixels[]  = "force-synchronous-glreadpixels";
+
 // Sets the maximum size of the in-memory gpu program cache, in kb
 const char kGpuProgramCacheSizeKb[]         = "gpu-program-cache-size-kb";
 
@@ -69,6 +72,7 @@ const char* kGpuSwitches[] = {
   kEnforceGLMinimums,
   kForceGLFinishWorkaround,
   kForceGpuMemAvailableMb,
+  kForceSynchronousGLReadPixels,
   kGpuProgramCacheSizeKb,
   kTraceGL,
   kDisableGpuShaderDiskCache,

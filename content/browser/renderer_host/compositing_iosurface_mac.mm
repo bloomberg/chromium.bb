@@ -734,7 +734,10 @@ void CompositingIOSurfaceMac::StopDisplayLink() {
 bool CompositingIOSurfaceMac::IsAsynchronousReadbackSupported() {
   // Using PBO crashes on Intel drivers but not on newer Mountain Lion
   // systems. See bug http://crbug.com/152225.
-  return (HasAppleFenceExtension() &&
+  const bool forced_synchronous = CommandLine::ForCurrentProcess()->HasSwitch(
+                                      switches::kForceSynchronousGLReadPixels);
+  return (!forced_synchronous &&
+          HasAppleFenceExtension() &&
           HasPixelBufferObjectExtension() &&
           (base::mac::IsOSMountainLionOrLater() || !IsVendorIntel()));
 }
