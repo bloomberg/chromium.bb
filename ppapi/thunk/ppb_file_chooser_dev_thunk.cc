@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From dev/ppb_file_chooser_dev.idl modified Fri Mar 29 09:14:13 2013.
+// From dev/ppb_file_chooser_dev.idl modified Mon Apr  1 08:24:03 2013.
 
 #include "ppapi/c/dev/ppb_file_chooser_dev.h"
 #include "ppapi/c/pp_completion_callback.h"
@@ -22,6 +22,7 @@ namespace {
 PP_Resource Create(PP_Instance instance,
                    PP_FileChooserMode_Dev mode,
                    struct PP_Var accept_types) {
+  VLOG(4) << "PPB_FileChooser_Dev::Create()";
   EnterResourceCreation enter(instance);
   if (enter.failed())
     return 0;
@@ -29,11 +30,13 @@ PP_Resource Create(PP_Instance instance,
 }
 
 PP_Bool IsFileChooser(PP_Resource resource) {
+  VLOG(4) << "PPB_FileChooser_Dev::IsFileChooser()";
   EnterResource<PPB_FileChooser_API> enter(resource, false);
   return PP_FromBool(enter.succeeded());
 }
 
 int32_t Show_0_5(PP_Resource chooser, struct PP_CompletionCallback callback) {
+  VLOG(4) << "PPB_FileChooser_Dev::Show()";
   EnterResource<PPB_FileChooser_API> enter(chooser, callback, true);
   if (enter.failed())
     return enter.retval();
@@ -41,6 +44,7 @@ int32_t Show_0_5(PP_Resource chooser, struct PP_CompletionCallback callback) {
 }
 
 PP_Resource GetNextChosenFile(PP_Resource chooser) {
+  VLOG(4) << "PPB_FileChooser_Dev::GetNextChosenFile()";
   EnterResource<PPB_FileChooser_API> enter(chooser, true);
   if (enter.failed())
     return 0;
@@ -50,6 +54,7 @@ PP_Resource GetNextChosenFile(PP_Resource chooser) {
 int32_t Show(PP_Resource chooser,
              struct PP_ArrayOutput output,
              struct PP_CompletionCallback callback) {
+  VLOG(4) << "PPB_FileChooser_Dev::Show()";
   EnterResource<PPB_FileChooser_API> enter(chooser, callback, true);
   if (enter.failed())
     return enter.retval();

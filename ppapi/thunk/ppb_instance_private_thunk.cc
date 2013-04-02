@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From private/ppb_instance_private.idl modified Thu Dec 27 10:36:33 2012.
+// From private/ppb_instance_private.idl modified Thu Feb 28 11:58:17 2013.
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_instance_private.h"
@@ -18,6 +18,7 @@ namespace thunk {
 namespace {
 
 struct PP_Var GetWindowObject(PP_Instance instance) {
+  VLOG(4) << "PPB_Instance_Private::GetWindowObject()";
   EnterInstance enter(instance);
   if (enter.failed())
     return PP_MakeUndefined();
@@ -25,6 +26,7 @@ struct PP_Var GetWindowObject(PP_Instance instance) {
 }
 
 struct PP_Var GetOwnerElementObject(PP_Instance instance) {
+  VLOG(4) << "PPB_Instance_Private::GetOwnerElementObject()";
   EnterInstance enter(instance);
   if (enter.failed())
     return PP_MakeUndefined();
@@ -34,6 +36,7 @@ struct PP_Var GetOwnerElementObject(PP_Instance instance) {
 struct PP_Var ExecuteScript(PP_Instance instance,
                             struct PP_Var script,
                             struct PP_Var* exception) {
+  VLOG(4) << "PPB_Instance_Private::ExecuteScript()";
   EnterInstance enter(instance);
   if (enter.failed())
     return PP_MakeUndefined();

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From ppb_view.idl modified Fri Feb  8 14:28:54 2013.
+// From ppb_view.idl modified Thu Mar 28 11:12:59 2013.
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_view.h"
@@ -19,11 +19,13 @@ namespace thunk {
 namespace {
 
 PP_Bool IsView(PP_Resource resource) {
+  VLOG(4) << "PPB_View::IsView()";
   EnterResource<PPB_View_API> enter(resource, false);
   return PP_FromBool(enter.succeeded());
 }
 
 PP_Bool GetRect(PP_Resource resource, struct PP_Rect* rect) {
+  VLOG(4) << "PPB_View::GetRect()";
   EnterResource<PPB_View_API> enter(resource, true);
   if (enter.failed())
     return PP_FALSE;
@@ -31,6 +33,7 @@ PP_Bool GetRect(PP_Resource resource, struct PP_Rect* rect) {
 }
 
 PP_Bool IsFullscreen(PP_Resource resource) {
+  VLOG(4) << "PPB_View::IsFullscreen()";
   EnterResource<PPB_View_API> enter(resource, true);
   if (enter.failed())
     return PP_FALSE;
@@ -38,6 +41,7 @@ PP_Bool IsFullscreen(PP_Resource resource) {
 }
 
 PP_Bool IsVisible(PP_Resource resource) {
+  VLOG(4) << "PPB_View::IsVisible()";
   EnterResource<PPB_View_API> enter(resource, true);
   if (enter.failed())
     return PP_FALSE;
@@ -45,6 +49,7 @@ PP_Bool IsVisible(PP_Resource resource) {
 }
 
 PP_Bool IsPageVisible(PP_Resource resource) {
+  VLOG(4) << "PPB_View::IsPageVisible()";
   EnterResource<PPB_View_API> enter(resource, true);
   if (enter.failed())
     return PP_FALSE;
@@ -52,6 +57,7 @@ PP_Bool IsPageVisible(PP_Resource resource) {
 }
 
 PP_Bool GetClipRect(PP_Resource resource, struct PP_Rect* clip) {
+  VLOG(4) << "PPB_View::GetClipRect()";
   EnterResource<PPB_View_API> enter(resource, true);
   if (enter.failed())
     return PP_FALSE;

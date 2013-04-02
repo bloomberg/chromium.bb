@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From ppb_url_request_info.idl modified Thu Mar 21 14:15:28 2013.
+// From ppb_url_request_info.idl modified Mon Apr  1 08:24:03 2013.
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_url_request_info.h"
@@ -19,6 +19,7 @@ namespace thunk {
 namespace {
 
 PP_Resource Create(PP_Instance instance) {
+  VLOG(4) << "PPB_URLRequestInfo::Create()";
   EnterResourceCreation enter(instance);
   if (enter.failed())
     return 0;
@@ -26,6 +27,7 @@ PP_Resource Create(PP_Instance instance) {
 }
 
 PP_Bool IsURLRequestInfo(PP_Resource resource) {
+  VLOG(4) << "PPB_URLRequestInfo::IsURLRequestInfo()";
   EnterResource<PPB_URLRequestInfo_API> enter(resource, false);
   return PP_FromBool(enter.succeeded());
 }
@@ -33,6 +35,7 @@ PP_Bool IsURLRequestInfo(PP_Resource resource) {
 PP_Bool SetProperty(PP_Resource request,
                     PP_URLRequestProperty property,
                     struct PP_Var value) {
+  VLOG(4) << "PPB_URLRequestInfo::SetProperty()";
   EnterResource<PPB_URLRequestInfo_API> enter(request, true);
   if (enter.failed())
     return PP_FALSE;
@@ -40,6 +43,7 @@ PP_Bool SetProperty(PP_Resource request,
 }
 
 PP_Bool AppendDataToBody(PP_Resource request, const void* data, uint32_t len) {
+  VLOG(4) << "PPB_URLRequestInfo::AppendDataToBody()";
   EnterResource<PPB_URLRequestInfo_API> enter(request, true);
   if (enter.failed())
     return PP_FALSE;
@@ -51,6 +55,7 @@ PP_Bool AppendFileToBody(PP_Resource request,
                          int64_t start_offset,
                          int64_t number_of_bytes,
                          PP_Time expected_last_modified_time) {
+  VLOG(4) << "PPB_URLRequestInfo::AppendFileToBody()";
   EnterResource<PPB_URLRequestInfo_API> enter(request, true);
   if (enter.failed())
     return PP_FALSE;

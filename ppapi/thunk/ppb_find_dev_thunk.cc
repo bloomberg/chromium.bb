@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From dev/ppb_find_dev.idl modified Tue Dec  4 10:44:11 2012.
+// From dev/ppb_find_dev.idl modified Thu Dec 20 13:10:26 2012.
 
 #include "ppapi/c/dev/ppb_find_dev.h"
 #include "ppapi/c/pp_errors.h"
@@ -20,6 +20,7 @@ namespace {
 void NumberOfFindResultsChanged(PP_Instance instance,
                                 int32_t total,
                                 PP_Bool final_result) {
+  VLOG(4) << "PPB_Find_Dev::NumberOfFindResultsChanged()";
   EnterInstance enter(instance);
   if (enter.succeeded())
     enter.functions()->NumberOfFindResultsChanged(instance,
@@ -28,6 +29,7 @@ void NumberOfFindResultsChanged(PP_Instance instance,
 }
 
 void SelectedFindResultChanged(PP_Instance instance, int32_t index) {
+  VLOG(4) << "PPB_Find_Dev::SelectedFindResultChanged()";
   EnterInstance enter(instance);
   if (enter.succeeded())
     enter.functions()->SelectedFindResultChanged(instance, index);

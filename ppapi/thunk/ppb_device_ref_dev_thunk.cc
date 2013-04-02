@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From dev/ppb_device_ref_dev.idl modified Tue Jan 22 12:22:52 2013.
+// From dev/ppb_device_ref_dev.idl modified Thu Dec 20 13:10:26 2012.
 
 #include "ppapi/c/dev/ppb_device_ref_dev.h"
 #include "ppapi/c/pp_errors.h"
@@ -19,11 +19,13 @@ namespace thunk {
 namespace {
 
 PP_Bool IsDeviceRef(PP_Resource resource) {
+  VLOG(4) << "PPB_DeviceRef_Dev::IsDeviceRef()";
   EnterResource<PPB_DeviceRef_API> enter(resource, false);
   return PP_FromBool(enter.succeeded());
 }
 
 PP_DeviceType_Dev GetType(PP_Resource device_ref) {
+  VLOG(4) << "PPB_DeviceRef_Dev::GetType()";
   EnterResource<PPB_DeviceRef_API> enter(device_ref, true);
   if (enter.failed())
     return PP_DEVICETYPE_DEV_INVALID;
@@ -31,6 +33,7 @@ PP_DeviceType_Dev GetType(PP_Resource device_ref) {
 }
 
 struct PP_Var GetName(PP_Resource device_ref) {
+  VLOG(4) << "PPB_DeviceRef_Dev::GetName()";
   EnterResource<PPB_DeviceRef_API> enter(device_ref, true);
   if (enter.failed())
     return PP_MakeUndefined();

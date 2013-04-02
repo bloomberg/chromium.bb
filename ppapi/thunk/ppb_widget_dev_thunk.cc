@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From dev/ppb_widget_dev.idl modified Wed Nov 28 12:14:51 2012.
+// From dev/ppb_widget_dev.idl modified Thu Dec 20 13:10:26 2012.
 
 #include "ppapi/c/dev/ppb_widget_dev.h"
 #include "ppapi/c/pp_errors.h"
@@ -19,6 +19,7 @@ namespace thunk {
 namespace {
 
 PP_Bool IsWidget(PP_Resource resource) {
+  VLOG(4) << "PPB_Widget_Dev::IsWidget()";
   EnterResource<PPB_Widget_API> enter(resource, false);
   return PP_FromBool(enter.succeeded());
 }
@@ -26,6 +27,7 @@ PP_Bool IsWidget(PP_Resource resource) {
 PP_Bool Paint(PP_Resource widget,
               const struct PP_Rect* rect,
               PP_Resource image) {
+  VLOG(4) << "PPB_Widget_Dev::Paint()";
   EnterResource<PPB_Widget_API> enter(widget, false);
   if (enter.failed())
     return PP_FALSE;
@@ -33,6 +35,7 @@ PP_Bool Paint(PP_Resource widget,
 }
 
 PP_Bool HandleEvent(PP_Resource widget, PP_Resource input_event) {
+  VLOG(4) << "PPB_Widget_Dev::HandleEvent()";
   EnterResource<PPB_Widget_API> enter(widget, false);
   if (enter.failed())
     return PP_FALSE;
@@ -40,6 +43,7 @@ PP_Bool HandleEvent(PP_Resource widget, PP_Resource input_event) {
 }
 
 PP_Bool GetLocation(PP_Resource widget, struct PP_Rect* location) {
+  VLOG(4) << "PPB_Widget_Dev::GetLocation()";
   EnterResource<PPB_Widget_API> enter(widget, false);
   if (enter.failed())
     return PP_FALSE;
@@ -47,12 +51,14 @@ PP_Bool GetLocation(PP_Resource widget, struct PP_Rect* location) {
 }
 
 void SetLocation(PP_Resource widget, const struct PP_Rect* location) {
+  VLOG(4) << "PPB_Widget_Dev::SetLocation()";
   EnterResource<PPB_Widget_API> enter(widget, false);
   if (enter.succeeded())
     enter.object()->SetLocation(location);
 }
 
 void SetScale(PP_Resource widget, float scale) {
+  VLOG(4) << "PPB_Widget_Dev::SetScale()";
   EnterResource<PPB_Widget_API> enter(widget, false);
   if (enter.succeeded())
     enter.object()->SetScale(scale);

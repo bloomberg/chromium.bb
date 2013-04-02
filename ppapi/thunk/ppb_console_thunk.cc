@@ -18,6 +18,7 @@ namespace thunk {
 namespace {
 
 void Log(PP_Instance instance, PP_LogLevel level, struct PP_Var value) {
+  VLOG(4) << "PPB_Console::Log()";
   EnterInstance enter(instance);
   if (enter.succeeded())
     enter.functions()->Log(instance, level, value);
@@ -27,6 +28,7 @@ void LogWithSource(PP_Instance instance,
                    PP_LogLevel level,
                    struct PP_Var source,
                    struct PP_Var value) {
+  VLOG(4) << "PPB_Console::LogWithSource()";
   EnterInstance enter(instance);
   if (enter.succeeded())
     enter.functions()->LogWithSource(instance, level, source, value);

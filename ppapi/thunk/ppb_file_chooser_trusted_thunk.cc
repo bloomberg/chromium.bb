@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // From trusted/ppb_file_chooser_trusted.idl,
-//   modified Fri Mar 29 09:14:05 2013.
+//   modified Mon Apr  1 08:24:03 2013.
 
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
@@ -24,6 +24,7 @@ int32_t ShowWithoutUserGesture_0_5(PP_Resource chooser,
                                    PP_Bool save_as,
                                    struct PP_Var suggested_file_name,
                                    struct PP_CompletionCallback callback) {
+  VLOG(4) << "PPB_FileChooserTrusted::ShowWithoutUserGesture()";
   EnterResource<PPB_FileChooser_API> enter(chooser, callback, true);
   if (enter.failed())
     return enter.retval();
@@ -38,6 +39,7 @@ int32_t ShowWithoutUserGesture(PP_Resource chooser,
                                struct PP_Var suggested_file_name,
                                struct PP_ArrayOutput output,
                                struct PP_CompletionCallback callback) {
+  VLOG(4) << "PPB_FileChooserTrusted::ShowWithoutUserGesture()";
   EnterResource<PPB_FileChooser_API> enter(chooser, callback, true);
   if (enter.failed())
     return enter.retval();

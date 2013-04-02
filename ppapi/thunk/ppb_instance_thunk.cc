@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From ppb_instance.idl modified Thu Dec 27 10:36:33 2012.
+// From ppb_instance.idl modified Thu Feb 28 11:58:17 2013.
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_instance.h"
@@ -18,6 +18,7 @@ namespace thunk {
 namespace {
 
 PP_Bool BindGraphics(PP_Instance instance, PP_Resource device) {
+  VLOG(4) << "PPB_Instance::BindGraphics()";
   EnterInstance enter(instance);
   if (enter.failed())
     return PP_FALSE;
@@ -25,6 +26,7 @@ PP_Bool BindGraphics(PP_Instance instance, PP_Resource device) {
 }
 
 PP_Bool IsFullFrame(PP_Instance instance) {
+  VLOG(4) << "PPB_Instance::IsFullFrame()";
   EnterInstance enter(instance);
   if (enter.failed())
     return PP_FALSE;

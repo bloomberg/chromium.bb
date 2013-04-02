@@ -22,6 +22,7 @@ PP_Resource Create(PP_Instance instance,
                    PP_Resource config,
                    PPB_Audio_Callback audio_callback,
                    void* user_data) {
+  VLOG(4) << "PPB_Audio::Create()";
   EnterResourceCreation enter(instance);
   if (enter.failed())
     return 0;
@@ -32,11 +33,13 @@ PP_Resource Create(PP_Instance instance,
 }
 
 PP_Bool IsAudio(PP_Resource resource) {
+  VLOG(4) << "PPB_Audio::IsAudio()";
   EnterResource<PPB_Audio_API> enter(resource, false);
   return PP_FromBool(enter.succeeded());
 }
 
 PP_Resource GetCurrentConfig(PP_Resource audio) {
+  VLOG(4) << "PPB_Audio::GetCurrentConfig()";
   EnterResource<PPB_Audio_API> enter(audio, true);
   if (enter.failed())
     return 0;
@@ -44,6 +47,7 @@ PP_Resource GetCurrentConfig(PP_Resource audio) {
 }
 
 PP_Bool StartPlayback(PP_Resource audio) {
+  VLOG(4) << "PPB_Audio::StartPlayback()";
   EnterResource<PPB_Audio_API> enter(audio, true);
   if (enter.failed())
     return PP_FALSE;
@@ -51,6 +55,7 @@ PP_Bool StartPlayback(PP_Resource audio) {
 }
 
 PP_Bool StopPlayback(PP_Resource audio) {
+  VLOG(4) << "PPB_Audio::StopPlayback()";
   EnterResource<PPB_Audio_API> enter(audio, true);
   if (enter.failed())
     return PP_FALSE;

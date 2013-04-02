@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From ppb_graphics_3d.idl modified Fri Mar 29 10:54:38 2013.
+// From ppb_graphics_3d.idl modified Mon Apr  1 08:24:03 2013.
 
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
@@ -22,6 +22,7 @@ namespace {
 int32_t GetAttribMaxValue(PP_Resource instance,
                           int32_t attribute,
                           int32_t* value) {
+  VLOG(4) << "PPB_Graphics3D::GetAttribMaxValue()";
   EnterResource<PPB_Graphics3D_API> enter(instance, true);
   if (enter.failed())
     return enter.retval();
@@ -31,6 +32,7 @@ int32_t GetAttribMaxValue(PP_Resource instance,
 PP_Resource Create(PP_Instance instance,
                    PP_Resource share_context,
                    const int32_t attrib_list[]) {
+  VLOG(4) << "PPB_Graphics3D::Create()";
   EnterResourceCreation enter(instance);
   if (enter.failed())
     return 0;
@@ -40,11 +42,13 @@ PP_Resource Create(PP_Instance instance,
 }
 
 PP_Bool IsGraphics3D(PP_Resource resource) {
+  VLOG(4) << "PPB_Graphics3D::IsGraphics3D()";
   EnterResource<PPB_Graphics3D_API> enter(resource, false);
   return PP_FromBool(enter.succeeded());
 }
 
 int32_t GetAttribs(PP_Resource context, int32_t attrib_list[]) {
+  VLOG(4) << "PPB_Graphics3D::GetAttribs()";
   EnterResource<PPB_Graphics3D_API> enter(context, true);
   if (enter.failed())
     return enter.retval();
@@ -52,6 +56,7 @@ int32_t GetAttribs(PP_Resource context, int32_t attrib_list[]) {
 }
 
 int32_t SetAttribs(PP_Resource context, const int32_t attrib_list[]) {
+  VLOG(4) << "PPB_Graphics3D::SetAttribs()";
   EnterResource<PPB_Graphics3D_API> enter(context, true);
   if (enter.failed())
     return enter.retval();
@@ -59,6 +64,7 @@ int32_t SetAttribs(PP_Resource context, const int32_t attrib_list[]) {
 }
 
 int32_t GetError(PP_Resource context) {
+  VLOG(4) << "PPB_Graphics3D::GetError()";
   EnterResource<PPB_Graphics3D_API> enter(context, true);
   if (enter.failed())
     return enter.retval();
@@ -66,6 +72,7 @@ int32_t GetError(PP_Resource context) {
 }
 
 int32_t ResizeBuffers(PP_Resource context, int32_t width, int32_t height) {
+  VLOG(4) << "PPB_Graphics3D::ResizeBuffers()";
   EnterResource<PPB_Graphics3D_API> enter(context, true);
   if (enter.failed())
     return enter.retval();
@@ -74,6 +81,7 @@ int32_t ResizeBuffers(PP_Resource context, int32_t width, int32_t height) {
 
 int32_t SwapBuffers(PP_Resource context,
                     struct PP_CompletionCallback callback) {
+  VLOG(4) << "PPB_Graphics3D::SwapBuffers()";
   EnterResource<PPB_Graphics3D_API> enter(context, callback, true);
   if (enter.failed())
     return enter.retval();

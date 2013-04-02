@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From ppb_gamepad.idl modified Thu Mar 28 15:36:32 2013.
+// From ppb_gamepad.idl modified Mon Apr  1 08:24:03 2013.
 
 #include <string.h>
 
@@ -21,6 +21,7 @@ namespace thunk {
 namespace {
 
 void Sample(PP_Instance instance, struct PP_GamepadsSampleData* data) {
+  VLOG(4) << "PPB_Gamepad::Sample()";
   EnterInstanceAPI<PPB_Gamepad_API> enter(instance);
   if (enter.succeeded()) {
     enter.functions()->Sample(instance, data);

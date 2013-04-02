@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From ppb_file_io.idl modified Thu Dec 20 13:10:26 2012.
+// From ppb_file_io.idl modified Mon Mar 18 13:58:22 2013.
 
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
@@ -20,6 +20,7 @@ namespace thunk {
 namespace {
 
 PP_Resource Create(PP_Instance instance) {
+  VLOG(4) << "PPB_FileIO::Create()";
   EnterResourceCreation enter(instance);
   if (enter.failed())
     return 0;
@@ -27,6 +28,7 @@ PP_Resource Create(PP_Instance instance) {
 }
 
 PP_Bool IsFileIO(PP_Resource resource) {
+  VLOG(4) << "PPB_FileIO::IsFileIO()";
   EnterResource<PPB_FileIO_API> enter(resource, false);
   return PP_FromBool(enter.succeeded());
 }
@@ -35,6 +37,7 @@ int32_t Open(PP_Resource file_io,
              PP_Resource file_ref,
              int32_t open_flags,
              struct PP_CompletionCallback callback) {
+  VLOG(4) << "PPB_FileIO::Open()";
   EnterResource<PPB_FileIO_API> enter(file_io, callback, true);
   if (enter.failed())
     return enter.retval();
@@ -46,6 +49,7 @@ int32_t Open(PP_Resource file_io,
 int32_t Query(PP_Resource file_io,
               struct PP_FileInfo* info,
               struct PP_CompletionCallback callback) {
+  VLOG(4) << "PPB_FileIO::Query()";
   EnterResource<PPB_FileIO_API> enter(file_io, callback, true);
   if (enter.failed())
     return enter.retval();
@@ -56,6 +60,7 @@ int32_t Touch(PP_Resource file_io,
               PP_Time last_access_time,
               PP_Time last_modified_time,
               struct PP_CompletionCallback callback) {
+  VLOG(4) << "PPB_FileIO::Touch()";
   EnterResource<PPB_FileIO_API> enter(file_io, callback, true);
   if (enter.failed())
     return enter.retval();
@@ -69,6 +74,7 @@ int32_t Read(PP_Resource file_io,
              char* buffer,
              int32_t bytes_to_read,
              struct PP_CompletionCallback callback) {
+  VLOG(4) << "PPB_FileIO::Read()";
   EnterResource<PPB_FileIO_API> enter(file_io, callback, true);
   if (enter.failed())
     return enter.retval();
@@ -83,6 +89,7 @@ int32_t Write(PP_Resource file_io,
               const char* buffer,
               int32_t bytes_to_write,
               struct PP_CompletionCallback callback) {
+  VLOG(4) << "PPB_FileIO::Write()";
   EnterResource<PPB_FileIO_API> enter(file_io, callback, true);
   if (enter.failed())
     return enter.retval();
@@ -95,6 +102,7 @@ int32_t Write(PP_Resource file_io,
 int32_t SetLength(PP_Resource file_io,
                   int64_t length,
                   struct PP_CompletionCallback callback) {
+  VLOG(4) << "PPB_FileIO::SetLength()";
   EnterResource<PPB_FileIO_API> enter(file_io, callback, true);
   if (enter.failed())
     return enter.retval();
@@ -102,6 +110,7 @@ int32_t SetLength(PP_Resource file_io,
 }
 
 int32_t Flush(PP_Resource file_io, struct PP_CompletionCallback callback) {
+  VLOG(4) << "PPB_FileIO::Flush()";
   EnterResource<PPB_FileIO_API> enter(file_io, callback, true);
   if (enter.failed())
     return enter.retval();
@@ -109,6 +118,7 @@ int32_t Flush(PP_Resource file_io, struct PP_CompletionCallback callback) {
 }
 
 void Close(PP_Resource file_io) {
+  VLOG(4) << "PPB_FileIO::Close()";
   EnterResource<PPB_FileIO_API> enter(file_io, true);
   if (enter.succeeded())
     enter.object()->Close();
@@ -119,6 +129,7 @@ int32_t ReadToArray(PP_Resource file_io,
                     int32_t max_read_length,
                     struct PP_ArrayOutput* output,
                     struct PP_CompletionCallback callback) {
+  VLOG(4) << "PPB_FileIO::ReadToArray()";
   EnterResource<PPB_FileIO_API> enter(file_io, callback, true);
   if (enter.failed())
     return enter.retval();

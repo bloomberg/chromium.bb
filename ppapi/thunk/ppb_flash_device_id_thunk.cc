@@ -20,6 +20,7 @@ namespace thunk {
 namespace {
 
 PP_Resource Create(PP_Instance instance) {
+  VLOG(4) << "PPB_Flash_DeviceID::Create()";
   EnterResourceCreation enter(instance);
   if (enter.failed())
     return 0;
@@ -29,6 +30,7 @@ PP_Resource Create(PP_Instance instance) {
 int32_t GetDeviceID(PP_Resource device_id,
                     struct PP_Var* id,
                     struct PP_CompletionCallback callback) {
+  VLOG(4) << "PPB_Flash_DeviceID::GetDeviceID()";
   EnterResource<PPB_Flash_DeviceID_API> enter(device_id, callback, true);
   if (enter.failed())
     return enter.retval();

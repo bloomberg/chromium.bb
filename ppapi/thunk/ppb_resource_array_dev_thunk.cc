@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From dev/ppb_resource_array_dev.idl modified Tue Dec  4 10:44:11 2012.
+// From dev/ppb_resource_array_dev.idl modified Thu Dec 20 13:10:26 2012.
 
 #include "ppapi/c/dev/ppb_resource_array_dev.h"
 #include "ppapi/c/pp_errors.h"
@@ -21,6 +21,7 @@ namespace {
 PP_Resource Create(PP_Instance instance,
                    const PP_Resource elements[],
                    uint32_t size) {
+  VLOG(4) << "PPB_ResourceArray_Dev::Create()";
   EnterResourceCreation enter(instance);
   if (enter.failed())
     return 0;
@@ -28,11 +29,13 @@ PP_Resource Create(PP_Instance instance,
 }
 
 PP_Bool IsResourceArray(PP_Resource resource) {
+  VLOG(4) << "PPB_ResourceArray_Dev::IsResourceArray()";
   EnterResource<PPB_ResourceArray_API> enter(resource, false);
   return PP_FromBool(enter.succeeded());
 }
 
 uint32_t GetSize(PP_Resource resource_array) {
+  VLOG(4) << "PPB_ResourceArray_Dev::GetSize()";
   EnterResource<PPB_ResourceArray_API> enter(resource_array, true);
   if (enter.failed())
     return 0;
@@ -40,6 +43,7 @@ uint32_t GetSize(PP_Resource resource_array) {
 }
 
 PP_Resource GetAt(PP_Resource resource_array, uint32_t index) {
+  VLOG(4) << "PPB_ResourceArray_Dev::GetAt()";
   EnterResource<PPB_ResourceArray_API> enter(resource_array, true);
   if (enter.failed())
     return 0;

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From ppb_websocket.idl modified Thu Dec 27 10:36:33 2012.
+// From ppb_websocket.idl modified Thu Feb 28 11:58:17 2013.
 
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
@@ -20,6 +20,7 @@ namespace thunk {
 namespace {
 
 PP_Resource Create(PP_Instance instance) {
+  VLOG(4) << "PPB_WebSocket::Create()";
   EnterResourceCreation enter(instance);
   if (enter.failed())
     return 0;
@@ -27,6 +28,7 @@ PP_Resource Create(PP_Instance instance) {
 }
 
 PP_Bool IsWebSocket(PP_Resource resource) {
+  VLOG(4) << "PPB_WebSocket::IsWebSocket()";
   EnterResource<PPB_WebSocket_API> enter(resource, false);
   return PP_FromBool(enter.succeeded());
 }
@@ -36,6 +38,7 @@ int32_t Connect(PP_Resource web_socket,
                 const struct PP_Var protocols[],
                 uint32_t protocol_count,
                 struct PP_CompletionCallback callback) {
+  VLOG(4) << "PPB_WebSocket::Connect()";
   EnterResource<PPB_WebSocket_API> enter(web_socket, callback, false);
   if (enter.failed())
     return enter.retval();
@@ -49,6 +52,7 @@ int32_t Close(PP_Resource web_socket,
               uint16_t code,
               struct PP_Var reason,
               struct PP_CompletionCallback callback) {
+  VLOG(4) << "PPB_WebSocket::Close()";
   EnterResource<PPB_WebSocket_API> enter(web_socket, callback, false);
   if (enter.failed())
     return enter.retval();
@@ -58,6 +62,7 @@ int32_t Close(PP_Resource web_socket,
 int32_t ReceiveMessage(PP_Resource web_socket,
                        struct PP_Var* message,
                        struct PP_CompletionCallback callback) {
+  VLOG(4) << "PPB_WebSocket::ReceiveMessage()";
   EnterResource<PPB_WebSocket_API> enter(web_socket, callback, false);
   if (enter.failed())
     return enter.retval();
@@ -66,6 +71,7 @@ int32_t ReceiveMessage(PP_Resource web_socket,
 }
 
 int32_t SendMessage(PP_Resource web_socket, struct PP_Var message) {
+  VLOG(4) << "PPB_WebSocket::SendMessage()";
   EnterResource<PPB_WebSocket_API> enter(web_socket, false);
   if (enter.failed())
     return enter.retval();
@@ -73,6 +79,7 @@ int32_t SendMessage(PP_Resource web_socket, struct PP_Var message) {
 }
 
 uint64_t GetBufferedAmount(PP_Resource web_socket) {
+  VLOG(4) << "PPB_WebSocket::GetBufferedAmount()";
   EnterResource<PPB_WebSocket_API> enter(web_socket, false);
   if (enter.failed())
     return 0;
@@ -80,6 +87,7 @@ uint64_t GetBufferedAmount(PP_Resource web_socket) {
 }
 
 uint16_t GetCloseCode(PP_Resource web_socket) {
+  VLOG(4) << "PPB_WebSocket::GetCloseCode()";
   EnterResource<PPB_WebSocket_API> enter(web_socket, false);
   if (enter.failed())
     return 0;
@@ -87,6 +95,7 @@ uint16_t GetCloseCode(PP_Resource web_socket) {
 }
 
 struct PP_Var GetCloseReason(PP_Resource web_socket) {
+  VLOG(4) << "PPB_WebSocket::GetCloseReason()";
   EnterResource<PPB_WebSocket_API> enter(web_socket, false);
   if (enter.failed())
     return PP_MakeUndefined();
@@ -94,6 +103,7 @@ struct PP_Var GetCloseReason(PP_Resource web_socket) {
 }
 
 PP_Bool GetCloseWasClean(PP_Resource web_socket) {
+  VLOG(4) << "PPB_WebSocket::GetCloseWasClean()";
   EnterResource<PPB_WebSocket_API> enter(web_socket, false);
   if (enter.failed())
     return PP_FALSE;
@@ -101,6 +111,7 @@ PP_Bool GetCloseWasClean(PP_Resource web_socket) {
 }
 
 struct PP_Var GetExtensions(PP_Resource web_socket) {
+  VLOG(4) << "PPB_WebSocket::GetExtensions()";
   EnterResource<PPB_WebSocket_API> enter(web_socket, false);
   if (enter.failed())
     return PP_MakeUndefined();
@@ -108,6 +119,7 @@ struct PP_Var GetExtensions(PP_Resource web_socket) {
 }
 
 struct PP_Var GetProtocol(PP_Resource web_socket) {
+  VLOG(4) << "PPB_WebSocket::GetProtocol()";
   EnterResource<PPB_WebSocket_API> enter(web_socket, false);
   if (enter.failed())
     return PP_MakeUndefined();
@@ -115,6 +127,7 @@ struct PP_Var GetProtocol(PP_Resource web_socket) {
 }
 
 PP_WebSocketReadyState GetReadyState(PP_Resource web_socket) {
+  VLOG(4) << "PPB_WebSocket::GetReadyState()";
   EnterResource<PPB_WebSocket_API> enter(web_socket, false);
   if (enter.failed())
     return PP_WEBSOCKETREADYSTATE_INVALID;
@@ -122,6 +135,7 @@ PP_WebSocketReadyState GetReadyState(PP_Resource web_socket) {
 }
 
 struct PP_Var GetURL(PP_Resource web_socket) {
+  VLOG(4) << "PPB_WebSocket::GetURL()";
   EnterResource<PPB_WebSocket_API> enter(web_socket, false);
   if (enter.failed())
     return PP_MakeUndefined();

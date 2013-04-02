@@ -311,15 +311,16 @@ def DefineMember(filenode, node, member, release, include_version, meta):
   """
   cgen = CGen()
   rtype, name, arrays, args = cgen.GetComponents(member, release, 'return')
+  body = 'VLOG(4) << \"%s::%s()\";\n' % (node.GetName(), member.GetName())
 
   if _IsTypeCheck(node, member):
-    body = '%s\n' % _MakeEnterLine(filenode, node, args[0], False, None, meta)
+    body += '%s\n' % _MakeEnterLine(filenode, node, args[0], False, None, meta)
     body += 'return PP_FromBool(enter.succeeded());'
   elif member.GetName() == 'Create':
-    body = _MakeCreateMemberBody(node, member, args)
+    body += _MakeCreateMemberBody(node, member, args)
   else:
-    body = _MakeNormalMemberBody(filenode, release, node, member, rtype, args,
-                                 include_version, meta)
+    body += _MakeNormalMemberBody(filenode, release, node, member, rtype, args,
+                                  include_version, meta)
 
   signature = cgen.GetSignature(member, release, 'return', func_as_ptr=False,
                                 include_version=include_version)

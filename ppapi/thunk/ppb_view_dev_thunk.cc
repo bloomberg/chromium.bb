@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From dev/ppb_view_dev.idl modified Fri Feb  8 14:28:54 2013.
+// From dev/ppb_view_dev.idl modified Thu Mar 28 11:12:59 2013.
 
 #include "ppapi/c/dev/ppb_view_dev.h"
 #include "ppapi/c/pp_errors.h"
@@ -19,6 +19,7 @@ namespace thunk {
 namespace {
 
 float GetDeviceScale(PP_Resource resource) {
+  VLOG(4) << "PPB_View_Dev::GetDeviceScale()";
   EnterResource<PPB_View_API> enter(resource, true);
   if (enter.failed())
     return 0.0f;
@@ -26,6 +27,7 @@ float GetDeviceScale(PP_Resource resource) {
 }
 
 float GetCSSScale(PP_Resource resource) {
+  VLOG(4) << "PPB_View_Dev::GetCSSScale()";
   EnterResource<PPB_View_API> enter(resource, true);
   if (enter.failed())
     return 0.0f;

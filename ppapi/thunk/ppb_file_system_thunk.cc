@@ -20,6 +20,7 @@ namespace thunk {
 namespace {
 
 PP_Resource Create(PP_Instance instance, PP_FileSystemType type) {
+  VLOG(4) << "PPB_FileSystem::Create()";
   EnterResourceCreation enter(instance);
   if (enter.failed())
     return 0;
@@ -27,6 +28,7 @@ PP_Resource Create(PP_Instance instance, PP_FileSystemType type) {
 }
 
 PP_Bool IsFileSystem(PP_Resource resource) {
+  VLOG(4) << "PPB_FileSystem::IsFileSystem()";
   EnterResource<PPB_FileSystem_API> enter(resource, false);
   return PP_FromBool(enter.succeeded());
 }
@@ -34,6 +36,7 @@ PP_Bool IsFileSystem(PP_Resource resource) {
 int32_t Open(PP_Resource file_system,
              int64_t expected_size,
              struct PP_CompletionCallback callback) {
+  VLOG(4) << "PPB_FileSystem::Open()";
   EnterResource<PPB_FileSystem_API> enter(file_system, callback, true);
   if (enter.failed())
     return enter.retval();
@@ -41,6 +44,7 @@ int32_t Open(PP_Resource file_system,
 }
 
 PP_FileSystemType GetType(PP_Resource file_system) {
+  VLOG(4) << "PPB_FileSystem::GetType()";
   EnterResource<PPB_FileSystem_API> enter(file_system, true);
   if (enter.failed())
     return PP_FILESYSTEMTYPE_INVALID;

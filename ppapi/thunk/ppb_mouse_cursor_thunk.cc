@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From ppb_mouse_cursor.idl modified Mon Feb 25 16:10:34 2013.
+// From ppb_mouse_cursor.idl modified Mon Apr  1 08:24:03 2013.
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_mouse_cursor.h"
@@ -21,6 +21,7 @@ PP_Bool SetCursor(PP_Instance instance,
                   enum PP_MouseCursor_Type type,
                   PP_Resource image,
                   const struct PP_Point* hot_spot) {
+  VLOG(4) << "PPB_MouseCursor::SetCursor()";
   EnterInstance enter(instance);
   if (enter.failed())
     return PP_FALSE;
