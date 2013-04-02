@@ -40,6 +40,8 @@
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/install_util.h"
 #include "policy/policy_constants.h"
+#include "sandbox/win/src/nt_internals.h"
+#include "sandbox/win/src/sidestep/preamble_patcher.h"
 
 // userenv.dll is required for GetProfileType().
 #pragma comment(lib, "userenv.lib")
@@ -868,6 +870,56 @@ static bool DeferredUploadsSupported(bool system_install) {
   return true;
 }
 
+typedef NTSTATUS (WINAPI* NtTerminateProcessPtr)(HANDLE ProcessHandle,
+                                                 NTSTATUS ExitStatus);
+char* g_real_terminate_process_stub = NULL;
+
+NTSTATUS WINAPI HookNtTerminateProcess(HANDLE ProcessHandle,
+                                       NTSTATUS ExitStatus) {
+  if (ProcessHandle == ::GetCurrentProcess())
+    DumpProcessWithoutCrash();
+
+  NtTerminateProcessPtr real_proc =
+      reinterpret_cast<NtTerminateProcessPtr>(
+          static_cast<char*>(g_real_terminate_process_stub));
+  return real_proc(ProcessHandle, ExitStatus);
+}
+
+static void InitTerminateProcessHooks() {
+  NtTerminateProcessPtr terminate_process_func_address =
+      reinterpret_cast<NtTerminateProcessPtr>(::GetProcAddress(
+          ::GetModuleHandle(L"ntdll.dll"), "NtTerminateProcess"));
+  if (terminate_process_func_address == NULL)
+    return;
+
+  DWORD old_protect = 0;
+  if (!::VirtualProtect(terminate_process_func_address, 5,
+                        PAGE_EXECUTE_READWRITE, &old_protect))
+    return;
+
+  g_real_terminate_process_stub = reinterpret_cast<char*>(VirtualAllocEx(
+      ::GetCurrentProcess(), NULL, sidestep::kMaxPreambleStubSize,
+      MEM_COMMIT, PAGE_EXECUTE_READWRITE));
+  if (g_real_terminate_process_stub == NULL)
+    return;
+
+  sidestep::SideStepError patch_result =
+      sidestep::PreamblePatcher::Patch(
+          terminate_process_func_address, HookNtTerminateProcess,
+          g_real_terminate_process_stub, sidestep::kMaxPreambleStubSize);
+  CHECK(patch_result == sidestep::SIDESTEP_SUCCESS);
+
+  DWORD dummy = 0;
+  CHECK(::VirtualProtect(terminate_process_func_address,
+                         5,
+                         old_protect,
+                         &dummy));
+  CHECK(::VirtualProtect(g_real_terminate_process_stub,
+                         sidestep::kMaxPreambleStubSize,
+                         old_protect,
+                         &old_protect));
+}
+
 static void InitPipeNameEnvVar(bool is_per_user_install) {
   scoped_ptr<base::Environment> env(base::Environment::Create());
   if (env->HasVar(kPipeNameVar)) {
@@ -1032,6 +1084,15 @@ void InitCrashReporter() {
     // This might break JIT debuggers, but at least it will always
     // generate a crashdump for these exceptions.
     g_breakpad->set_handle_debug_exceptions(true);
+
+#ifndef _WIN64
+    std::string headless;
+    if (process_type != L"browser" && !GetEnvironmentVariable(
+            ASCIIToWide(env_vars::kHeadless).c_str(), NULL, 0)) {
+      // Initialize the hook TerminateProcess to catch unexpected exits.
+      InitTerminateProcessHooks();
+    }
+#endif
   }
 }
 
