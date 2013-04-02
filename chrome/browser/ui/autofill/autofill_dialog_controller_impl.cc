@@ -388,7 +388,7 @@ void AutofillDialogControllerImpl::Show() {
   // If signed-in, fetch the user's Wallet data.
   // Otherwise, see if the user could be signed in passively.
   // TODO(aruslan): UMA metrics for sign-in.
-  if (IsPayingWithWallet())
+  if (account_chooser_model_.WalletIsSelected())
     StartFetchingWalletItems();
 }
 
@@ -465,11 +465,12 @@ DialogSignedInState AutofillDialogControllerImpl::SignedInState() const {
 }
 
 bool AutofillDialogControllerImpl::ShouldShowSpinner() const {
-  return IsPayingWithWallet() && SignedInState() == REQUIRES_RESPONSE;
+  return account_chooser_model_.WalletIsSelected() &&
+         SignedInState() == REQUIRES_RESPONSE;
 }
 
 string16 AutofillDialogControllerImpl::AccountChooserText() const {
-  if (!IsPayingWithWallet())
+  if (!account_chooser_model_.WalletIsSelected())
     return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_PAY_WITHOUT_WALLET);
 
   // TODO(dbeam): real strings and l10n.
@@ -528,7 +529,6 @@ bool AutofillDialogControllerImpl::HasCompleteWallet() const {
 }
 
 void AutofillDialogControllerImpl::StartFetchingWalletItems() {
-  DCHECK(IsPayingWithWallet());
   // TODO(dbeam): Add Risk capabilites once the UI supports risk challenges.
   GetWalletClient()->GetWalletItems(
       source_url_,
@@ -537,7 +537,6 @@ void AutofillDialogControllerImpl::StartFetchingWalletItems() {
 
 void AutofillDialogControllerImpl::OnWalletOrSigninUpdate() {
   if (wallet_items_.get()) {
-    DCHECK(IsPayingWithWallet());
     DCHECK(!signin_helper_.get());
     switch (SignedInState()) {
       case SIGNED_IN:
@@ -663,7 +662,7 @@ ui::MenuModel* AutofillDialogControllerImpl::MenuModelForSection(
 ui::MenuModel* AutofillDialogControllerImpl::MenuModelForAccountChooser() {
   // When paying with wallet, but not signed in, there is no menu, just a
   // sign in link.
-  if (IsPayingWithWallet() && SignedInState() != SIGNED_IN)
+  if (account_chooser_model_.WalletIsSelected() && SignedInState() != SIGNED_IN)
     return NULL;
 
   return &account_chooser_model_;
@@ -1022,14 +1021,15 @@ void AutofillDialogControllerImpl::ViewClosed() {
         metric);
   }
 
-  // On a successful submit, save the payment type for next time. If there
-  // was a Wallet server error, try to pay with Wallet again next time.
   // Reset the view so that updates to the pref aren't processed.
   view_.reset();
-  bool pay_without_wallet = !IsPayingWithWallet() &&
+  // On a successful submit, if the user manually selected "pay without wallet",
+  // stop trying to pay with Wallet on future runs of the dialog.
+  bool manually_selected_pay_without_wallet =
+      !account_chooser_model_.WalletIsSelected() &&
       !account_chooser_model_.had_wallet_error();
   profile_->GetPrefs()->SetBoolean(prefs::kAutofillDialogPayWithoutWallet,
-                                   pay_without_wallet);
+                                   manually_selected_pay_without_wallet);
 
   delete this;
 }
@@ -1038,8 +1038,7 @@ std::vector<DialogNotification>
     AutofillDialogControllerImpl::CurrentNotifications() const {
   std::vector<DialogNotification> notifications;
 
-  if (IsPayingWithWallet()) {
-    // TODO(dbeam): what about REQUIRES_PASSIVE_SIGN_IN?
+  if (account_chooser_model_.WalletIsSelected()) {
     if (SignedInState() == SIGNED_IN) {
       // On first run with a complete wallet profile, show a notification
       // explaining where this data came from.
@@ -1243,7 +1242,7 @@ void AutofillDialogControllerImpl::Observe(
       content::Details<content::LoadCommittedDetails>(details).ptr();
   if (wallet::IsSignInContinueUrl(load_details->entry->GetVirtualURL())) {
     EndSignInFlow();
-    if (IsPayingWithWallet())
+    if (account_chooser_model_.WalletIsSelected())
       StartFetchingWalletItems();
   }
 }
@@ -1299,7 +1298,6 @@ void AutofillDialogControllerImpl::OnDidGetFullWallet(
 
 void AutofillDialogControllerImpl::OnPassiveSigninSuccess(
     const std::string& username) {
-  DCHECK(IsPayingWithWallet());
   current_username_ = username;
   signin_helper_.reset();
   wallet_items_.reset();
@@ -1308,7 +1306,6 @@ void AutofillDialogControllerImpl::OnPassiveSigninSuccess(
 
 void AutofillDialogControllerImpl::OnUserNameFetchSuccess(
     const std::string& username) {
-  DCHECK(IsPayingWithWallet());
   current_username_ = username;
   signin_helper_.reset();
   OnWalletOrSigninUpdate();
@@ -1421,7 +1418,7 @@ void AutofillDialogControllerImpl::AccountChoiceChanged() {
   // This will trigger a passive sign-in if required.
   // TODO(aruslan): integrate an automatic sign-in.
   wallet_items_.reset();
-  if (IsPayingWithWallet())
+  if (account_chooser_model_.WalletIsSelected())
     StartFetchingWalletItems();
 
   GenerateSuggestionsModels();
@@ -1470,7 +1467,8 @@ wallet::WalletClient* AutofillDialogControllerImpl::GetWalletClient() {
 }
 
 bool AutofillDialogControllerImpl::IsPayingWithWallet() const {
-  return account_chooser_model_.WalletIsSelected();
+  return account_chooser_model_.WalletIsSelected() &&
+         SignedInState() == SIGNED_IN;
 }
 
 void AutofillDialogControllerImpl::DisableWallet() {
@@ -1500,29 +1498,27 @@ void AutofillDialogControllerImpl::GenerateSuggestionsModels() {
   suggested_shipping_.Reset();
 
   if (IsPayingWithWallet()) {
-    if (wallet_items_.get()) {
-      // TODO(estade): seems we need to hardcode the email address.
+    // TODO(estade): fill in the email address.
 
-      const std::vector<wallet::Address*>& addresses =
-          wallet_items_->addresses();
-      for (size_t i = 0; i < addresses.size(); ++i) {
-        // TODO(dbeam): respect wallet_items_->default_instrument_id().
-        suggested_shipping_.AddKeyedItemWithSublabel(
-            base::IntToString(i),
-            addresses[i]->DisplayName(),
-            addresses[i]->DisplayNameDetail());
-      }
+    const std::vector<wallet::Address*>& addresses =
+        wallet_items_->addresses();
+    for (size_t i = 0; i < addresses.size(); ++i) {
+      // TODO(dbeam): respect wallet_items_->default_instrument_id().
+      suggested_shipping_.AddKeyedItemWithSublabel(
+          base::IntToString(i),
+          addresses[i]->DisplayName(),
+          addresses[i]->DisplayNameDetail());
+    }
 
-      const std::vector<wallet::WalletItems::MaskedInstrument*>& instruments =
-          wallet_items_->instruments();
-      for (size_t i = 0; i < instruments.size(); ++i) {
-        // TODO(dbeam): respect wallet_items_->default_address_id().
-        suggested_cc_billing_.AddKeyedItemWithSublabelAndIcon(
-            base::IntToString(i),
-            instruments[i]->DisplayName(),
-            instruments[i]->DisplayNameDetail(),
-            instruments[i]->CardIcon());
-      }
+    const std::vector<wallet::WalletItems::MaskedInstrument*>& instruments =
+        wallet_items_->instruments();
+    for (size_t i = 0; i < instruments.size(); ++i) {
+      // TODO(dbeam): respect wallet_items_->default_address_id().
+      suggested_cc_billing_.AddKeyedItemWithSublabelAndIcon(
+          base::IntToString(i),
+          instruments[i]->DisplayName(),
+          instruments[i]->DisplayNameDetail(),
+          instruments[i]->CardIcon());
     }
 
     suggested_cc_billing_.AddKeyedItem(
