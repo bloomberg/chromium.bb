@@ -39,7 +39,7 @@ bool BasicMouseWheelSmoothScrollGesture::ForwardInputEvents(
 
   WebKit::WebMouseWheelEvent event;
   event.type = WebKit::WebInputEvent::MouseWheel;
-  event.hasPreciseScrollingDeltas = 1;
+  event.hasPreciseScrollingDeltas = 0;
   event.deltaY = scroll_down_ ? -positionDelta : positionDelta;
   // TODO(vollick): find a proper way to access
   // WebCore::WheelEvent::tickMultiplier.
