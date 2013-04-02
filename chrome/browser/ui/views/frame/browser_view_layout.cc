@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/frame/browser_view_layout.h"
 
+#include "base/observer_list.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
@@ -20,6 +21,7 @@
 #include "chrome/browser/ui/views/infobars/infobar_container_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar_view.h"
+#include "chrome/browser/ui/web_contents_modal_dialog_host.h"
 #include "ui/base/hit_test.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/scrollbar_size.h"
@@ -56,6 +58,49 @@ bool ConvertedHitTest(views::View* src, views::View* dst, gfx::Point* point) {
 
 }  // namespace
 
+class BrowserViewLayout::WebContentsModalDialogHostViews
+    : public WebContentsModalDialogHost {
+ public:
+  explicit WebContentsModalDialogHostViews(
+      BrowserViewLayout* browser_view_layout)
+          : browser_view_layout_(browser_view_layout) {
+  }
+
+  void NotifyPositionRequiresUpdate() {
+    FOR_EACH_OBSERVER(WebContentsModalDialogHostObserver,
+                      observer_list_,
+                      OnPositionRequiresUpdate());
+  }
+
+ private:
+  // Center horizontally over the content area, with the top overlapping the
+  // browser chrome.
+  virtual gfx::Point GetDialogPosition(const gfx::Size& size) OVERRIDE {
+    int top_y = browser_view_layout_->web_contents_modal_dialog_top_y_;
+    gfx::Rect content_area =
+        browser_view_layout_->browser_view_->GetClientAreaBounds();
+    int middle_x = content_area.x() + content_area.width() / 2;
+    return gfx::Point(middle_x - size.width() / 2, top_y);
+  }
+
+  // Add/remove observer.
+  virtual void AddObserver(
+      WebContentsModalDialogHostObserver* observer) OVERRIDE {
+    observer_list_.AddObserver(observer);
+  }
+  virtual void RemoveObserver(
+      WebContentsModalDialogHostObserver* observer) OVERRIDE {
+    observer_list_.RemoveObserver(observer);
+  }
+
+  const BrowserViewLayout* browser_view_layout_;
+
+  ObserverList<WebContentsModalDialogHostObserver> observer_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebContentsModalDialogHostViews);
+};
+
+
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserViewLayout, public:
 
@@ -65,16 +110,17 @@ BrowserViewLayout::BrowserViewLayout()
       download_shelf_(NULL),
       browser_view_(NULL),
       find_bar_y_(0),
-      constrained_window_top_y_(-1) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(
+          dialog_host_(new WebContentsModalDialogHostViews(this))),
+      web_contents_modal_dialog_top_y_(-1) {
 }
 
 BrowserViewLayout::~BrowserViewLayout() {
 }
 
-bool BrowserViewLayout::GetConstrainedWindowTopY(int* top_y) {
-  DCHECK(top_y);
-  *top_y = constrained_window_top_y_;
-  return (constrained_window_top_y_ >= 0);
+WebContentsModalDialogHost*
+    BrowserViewLayout::GetWebContentsModalDialogHost() {
+  return dialog_host_.get();
 }
 
 gfx::Size BrowserViewLayout::GetMinimumSize() {
@@ -314,6 +360,9 @@ void BrowserViewLayout::Layout(views::View* host) {
     browser()->GetFindBarController()->find_bar()->MoveWindowIfNecessary(
         gfx::Rect(), true);
   }
+
+  // Adjust any web contents modal dialogs.
+  dialog_host_->NotifyPositionRequiresUpdate();
 }
 
 // Return the preferred size which is the size required to give each
@@ -402,7 +451,7 @@ int BrowserViewLayout::LayoutToolbar(int top) {
 }
 
 int BrowserViewLayout::LayoutBookmarkAndInfoBars(int top) {
-  constrained_window_top_y_ =
+  web_contents_modal_dialog_top_y_ =
       top + browser_view_->y() - kConstrainedWindowOverlap;
   find_bar_y_ = top + browser_view_->y() - 1;
   BookmarkBarView* bookmark_bar = browser_view_->bookmark_bar_view_.get();

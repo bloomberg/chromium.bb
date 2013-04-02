@@ -11,6 +11,7 @@
 #include "chrome/browser/certificate_viewer.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
 #include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
+#include "chrome/browser/ui/web_contents_modal_dialog_manager_delegate.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
@@ -140,11 +141,13 @@ void SSLClientCertificateSelector::Init() {
 
   StartObserving();
 
-  window_ = CreateWebContentsModalDialogViews(
-      this,
-      web_contents_->GetView()->GetNativeView());
   WebContentsModalDialogManager* web_contents_modal_dialog_manager =
       WebContentsModalDialogManager::FromWebContents(web_contents_);
+  window_ = CreateWebContentsModalDialogViews(
+      this,
+      web_contents_->GetView()->GetNativeView(),
+      web_contents_modal_dialog_manager->delegate()->
+          GetWebContentsModalDialogHost());
   web_contents_modal_dialog_manager->ShowDialog(window_->GetNativeView());
 
   // Select the first row automatically.  This must be done after the dialog has

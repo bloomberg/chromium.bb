@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/layout/layout_manager.h"
 
@@ -18,6 +19,7 @@ class DownloadShelfView;
 class TabContentsContainer;
 class TabStrip;
 class ToolbarView;
+class WebContentsModalDialogHost;
 
 namespace gfx {
 class Point;
@@ -34,7 +36,7 @@ class BrowserViewLayout : public views::LayoutManager {
   BrowserViewLayout();
   virtual ~BrowserViewLayout();
 
-  bool GetConstrainedWindowTopY(int* top_y);
+  WebContentsModalDialogHost* GetWebContentsModalDialogHost();
 
   // Returns the minimum size of the browser view.
   gfx::Size GetMinimumSize();
@@ -60,6 +62,8 @@ class BrowserViewLayout : public views::LayoutManager {
   virtual gfx::Size GetPreferredSize(views::View* host) OVERRIDE;
 
  protected:
+  class WebContentsModalDialogHostViews;
+
   Browser* browser();
   const Browser* browser() const;
 
@@ -113,9 +117,12 @@ class BrowserViewLayout : public views::LayoutManager {
   // The distance the FindBar is from the top of the window, in pixels.
   int find_bar_y_;
 
-  // The distance the constrained window is from the top of the window,
+  // The host for use in positioning the web contents modal dialog.
+  scoped_ptr<WebContentsModalDialogHostViews> dialog_host_;
+
+  // The distance the web contents modal dialog is from the top of the window,
   // in pixels.
-  int constrained_window_top_y_;
+  int web_contents_modal_dialog_top_y_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserViewLayout);
 };

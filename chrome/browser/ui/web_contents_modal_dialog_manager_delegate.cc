@@ -10,10 +10,10 @@ void WebContentsModalDialogManagerDelegate::SetWebContentsBlocked(
     content::WebContents* web_contents, bool blocked) {
 }
 
+WebContentsModalDialogHost*
+    WebContentsModalDialogManagerDelegate::GetWebContentsModalDialogHost() {
+  return NULL;
+}
+
 WebContentsModalDialogManagerDelegate::~WebContentsModalDialogManagerDelegate(
 ) {}
-
-bool WebContentsModalDialogManagerDelegate::GetDialogTopCenter(
-    gfx::Point* point) {
-  return false;
-}

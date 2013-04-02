@@ -1454,8 +1454,8 @@ FindBar* BrowserView::CreateFindBar() {
   return chrome::CreateFindBar(this);
 }
 
-bool BrowserView::GetConstrainedWindowTopY(int* top_y) {
-  return GetBrowserViewLayout()->GetConstrainedWindowTopY(top_y);
+WebContentsModalDialogHost* BrowserView::GetWebContentsModalDialogHost() {
+  return GetBrowserViewLayout()->GetWebContentsModalDialogHost();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

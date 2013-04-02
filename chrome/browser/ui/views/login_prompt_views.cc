@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/views/constrained_window_views.h"
 #include "chrome/browser/ui/views/login_view.h"
 #include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
+#include "chrome/browser/ui/web_contents_modal_dialog_manager_delegate.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
@@ -148,11 +149,13 @@ class LoginHandlerViews : public LoginHandler,
     // will occur via an InvokeLater on the UI thread, which is guaranteed
     // to happen after this is called (since this was InvokeLater'd first).
     WebContents* requesting_contents = GetWebContentsForLogin();
-    dialog_ = CreateWebContentsModalDialogViews(
-        this,
-        requesting_contents->GetView()->GetNativeView());
     WebContentsModalDialogManager* web_contents_modal_dialog_manager =
         WebContentsModalDialogManager::FromWebContents(requesting_contents);
+    dialog_ = CreateWebContentsModalDialogViews(
+        this,
+        requesting_contents->GetView()->GetNativeView(),
+        web_contents_modal_dialog_manager->delegate()->
+            GetWebContentsModalDialogHost());
     web_contents_modal_dialog_manager->ShowDialog(dialog_->GetNativeView());
     NotifyAuthNeeded();
   }

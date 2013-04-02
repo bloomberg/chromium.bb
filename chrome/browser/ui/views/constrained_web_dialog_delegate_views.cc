@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/views/constrained_window_views.h"
 #include "chrome/browser/ui/views/unhandled_keyboard_event_handler.h"
 #include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
+#include "chrome/browser/ui/web_contents_modal_dialog_manager_delegate.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
@@ -212,12 +213,13 @@ ConstrainedWebDialogDelegate* CreateConstrainedWebDialog(
   ConstrainedWebDialogDelegateViewViews* constrained_delegate =
       new ConstrainedWebDialogDelegateViewViews(
           browser_context, delegate, tab_delegate);
-  views::Widget* window =
-      CreateWebContentsModalDialogViews(
-          constrained_delegate,
-          web_contents->GetView()->GetNativeView());
   WebContentsModalDialogManager* web_contents_modal_dialog_manager =
       WebContentsModalDialogManager::FromWebContents(web_contents);
+  views::Widget* window = CreateWebContentsModalDialogViews(
+      constrained_delegate,
+      web_contents->GetView()->GetNativeView(),
+      web_contents_modal_dialog_manager->delegate()->
+          GetWebContentsModalDialogHost());
   web_contents_modal_dialog_manager->ShowDialog(window->GetNativeView());
   constrained_delegate->SetWindow(window);
   return constrained_delegate;

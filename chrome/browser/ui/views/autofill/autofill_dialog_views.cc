@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/autofill/autofill_dialog_controller.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
 #include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
+#include "chrome/browser/ui/web_contents_modal_dialog_manager_delegate.h"
 #include "components/autofill/browser/wallet/wallet_service_url.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/navigation_controller.h"
@@ -556,12 +557,14 @@ void AutofillDialogViews::Show() {
 
   // Ownership of |contents_| is handed off by this call. The widget will take
   // care of deleting itself after calling DeleteDelegate().
-  window_ = CreateWebContentsModalDialogViews(
-      this,
-      controller_->web_contents()->GetView()->GetNativeView());
   WebContentsModalDialogManager* web_contents_modal_dialog_manager =
       WebContentsModalDialogManager::FromWebContents(
           controller_->web_contents());
+  window_ = CreateWebContentsModalDialogViews(
+      this,
+      controller_->web_contents()->GetView()->GetNativeView(),
+      web_contents_modal_dialog_manager->delegate()->
+          GetWebContentsModalDialogHost());
   web_contents_modal_dialog_manager->ShowDialog(window_->GetNativeView());
   focus_manager_ = window_->GetFocusManager();
   focus_manager_->AddFocusChangeListener(this);

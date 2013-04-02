@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_WEB_CONTENTS_MODAL_DIALOG_MANAGER_DELEGATE_H_
 #define CHROME_BROWSER_UI_WEB_CONTENTS_MODAL_DIALOG_MANAGER_DELEGATE_H_
 
+class WebContentsModalDialogHost;
+
 namespace content {
 class WebContents;
 }
@@ -22,12 +24,9 @@ class WebContentsModalDialogManagerDelegate {
   virtual void SetWebContentsBlocked(content::WebContents* web_contents,
                                      bool blocked);
 
-  // Fills in |point| with the coordinates for positioning web contents modal
-  // dialogs. The dialog should position itself such that its top center is at
-  // |point|. Return false if the default position should be used.
-  // TODO(wittman): Remove this function once we have migrated positioning
-  // functionality to a ShowDialog function on WebContentsModalDialogManager.
-  virtual bool GetDialogTopCenter(gfx::Point* point);
+  // Returns the WebContentsModalDialogHost for use in positioning web contents
+  // modal dialogs within the browser window.
+  virtual WebContentsModalDialogHost* GetWebContentsModalDialogHost();
 
  protected:
   virtual ~WebContentsModalDialogManagerDelegate();

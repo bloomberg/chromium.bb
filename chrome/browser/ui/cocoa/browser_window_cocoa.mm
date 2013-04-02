@@ -642,8 +642,9 @@ FindBar* BrowserWindowCocoa::CreateFindBar() {
   return bridge;
 }
 
-bool BrowserWindowCocoa::GetConstrainedWindowTopY(int* top_y) {
-  return false;
+WebContentsModalDialogHost*
+    BrowserWindowCocoa::GetWebContentsModalDialogHost() {
+  return NULL;
 }
 
 extensions::ActiveTabPermissionGranter*

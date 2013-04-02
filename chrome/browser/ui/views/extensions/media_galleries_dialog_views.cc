@@ -7,6 +7,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
 #include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
+#include "chrome/browser/ui/web_contents_modal_dialog_manager_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "grit/generated_resources.h"
@@ -80,12 +81,14 @@ MediaGalleriesDialogViews::MediaGalleriesDialogViews(
 
   // Ownership of |contents_| is handed off by this call. |window_| will take
   // care of deleting itself after calling DeleteDelegate().
-  window_ = CreateWebContentsModalDialogViews(
-      this,
-      controller->web_contents()->GetView()->GetNativeView());
   WebContentsModalDialogManager* web_contents_modal_dialog_manager =
       WebContentsModalDialogManager::FromWebContents(
           controller->web_contents());
+  window_ = CreateWebContentsModalDialogViews(
+      this,
+      controller->web_contents()->GetView()->GetNativeView(),
+      web_contents_modal_dialog_manager->delegate()->
+          GetWebContentsModalDialogHost());
   web_contents_modal_dialog_manager->ShowDialog(window_->GetNativeView());
 }
 

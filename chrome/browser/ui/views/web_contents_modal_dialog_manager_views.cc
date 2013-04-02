@@ -111,6 +111,7 @@ class NativeWebContentsModalDialogManagerViews
     if (view && view->parent())
       view->parent()->ClearProperty(aura::client::kAnimationsDisabledKey);
 #endif
+    widget->RemoveObserver(this);
     native_delegate_->WillClose(widget->GetNativeView());
     observed_widgets_.erase(widget);
   }

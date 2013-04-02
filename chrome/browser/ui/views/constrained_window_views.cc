@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/theme_image_mapper.h"
+#include "chrome/browser/ui/web_contents_modal_dialog_host.h"
 #include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
 #include "chrome/common/chrome_constants.h"
 #include "content/public/browser/navigation_controller.h"
@@ -39,6 +40,7 @@
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_observer.h"
 #include "ui/views/window/client_view.h"
 #include "ui/views/window/dialog_client_view.h"
 #include "ui/views/window/dialog_delegate.h"
@@ -70,6 +72,58 @@ using base::TimeDelta;
 namespace views {
 class ClientView;
 }
+
+namespace {
+// The name of a key to store on the window handle to associate
+// WebContentsModalDialogHostObserverViews with the Widget.
+const char* const kWebContentsModalDialogHostObserverViewsKey =
+    "__WEB_CONTENTS_MODAL_DIALOG_HOST_OBSERVER_VIEWS__";
+
+// Applies positioning changes from the WebContentsModalDialogHost to the
+// Widget.
+class WebContentsModalDialogHostObserverViews
+    : public views::WidgetObserver,
+      public WebContentsModalDialogHostObserver {
+ public:
+  WebContentsModalDialogHostObserverViews(
+      WebContentsModalDialogHost* host,
+      views::Widget* target_widget,
+      const char *const native_window_property)
+      : host_(host),
+        target_widget_(target_widget),
+        native_window_property_(native_window_property) {
+    host_->AddObserver(this);
+    target_widget_->AddObserver(this);
+  }
+
+  virtual ~WebContentsModalDialogHostObserverViews() {
+    host_->RemoveObserver(this);
+    target_widget_->RemoveObserver(this);
+    target_widget_->SetNativeWindowProperty(native_window_property_,
+                                            NULL);
+  }
+
+  // WidgetObserver overrides
+  virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE {
+    delete this;
+  }
+
+  // WebContentsModalDialogHostObserver overrides
+  virtual void OnPositionRequiresUpdate() OVERRIDE {
+    gfx::Size size = target_widget_->GetWindowBoundsInScreen().size();
+    gfx::Point position = host_->GetDialogPosition(size);
+    target_widget_->SetBounds(gfx::Rect(position, size));
+  }
+
+ private:
+  WebContentsModalDialogHost* host_;
+  views::Widget* target_widget_;
+  const char* const native_window_property_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebContentsModalDialogHostObserverViews);
+};
+
+}  // namespace
 
 // An enumeration of image resources used by this window.
 enum {
@@ -570,15 +624,33 @@ class ConstrainedWindowFrameViewAsh : public ash::CustomFrameViewAsh {
 
 views::Widget* CreateWebContentsModalDialogViews(
     views::WidgetDelegate* widget_delegate,
-    gfx::NativeView parent) {
+    gfx::NativeView parent,
+    WebContentsModalDialogHost* dialog_host) {
   views::Widget* dialog = new views::Widget;
 
   views::Widget::InitParams params;
   params.delegate = widget_delegate;
   params.child = true;
-  params.parent = parent;
+  WebContentsModalDialogHostObserver* dialog_host_observer = NULL;
+  if (views::DialogDelegate::UseNewStyle()) {
+    params.parent =
+        views::Widget::GetTopLevelWidgetForNativeView(parent)->GetNativeView();
+    dialog_host_observer =
+        new WebContentsModalDialogHostObserverViews(
+            dialog_host,
+            dialog,
+            kWebContentsModalDialogHostObserverViewsKey);
+  } else {
+    params.parent = parent;
+  }
 
   dialog->Init(params);
+
+  if (dialog_host_observer) {
+    dialog_host_observer->OnPositionRequiresUpdate();
+    dialog->SetNativeWindowProperty(kWebContentsModalDialogHostObserverViewsKey,
+                                    dialog_host_observer);
+  }
 
   return dialog;
 }

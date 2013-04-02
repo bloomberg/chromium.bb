@@ -64,6 +64,7 @@ class TabStripModel;
 class TabStripModelDelegate;
 struct SearchMode;
 struct WebApplicationInfo;
+class WebContentsModalDialogHost;
 
 namespace chrome {
 class BrowserCommandController;
@@ -644,7 +645,8 @@ class Browser : public TabStripModelObserver,
   // Overridden from WebContentsModalDialogManagerDelegate:
   virtual void SetWebContentsBlocked(content::WebContents* web_contents,
                                      bool blocked) OVERRIDE;
-  virtual bool GetDialogTopCenter(gfx::Point* point) OVERRIDE;
+  virtual WebContentsModalDialogHost*
+      GetWebContentsModalDialogHost() OVERRIDE;
 
   // Overridden from BlockedContentTabHelperDelegate:
   virtual content::WebContents* GetConstrainingWebContents(

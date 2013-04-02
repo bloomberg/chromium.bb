@@ -28,6 +28,7 @@ class TemplateURL;
 #if !defined(OS_MACOSX)
 class ToolbarView;
 #endif
+class WebContentsModalDialogHost;
 
 namespace autofill {
 class PasswordGenerator;
@@ -321,11 +322,9 @@ class BrowserWindow : public BaseWindow {
   // Construct a FindBar implementation for the |browser|.
   virtual FindBar* CreateFindBar() = 0;
 
-  // Updates the |top_y| where the top of the constrained window should be
-  // positioned. When implemented, the method returns true and the value of
-  // |top_y| is non-negative. When not implemented, the method returns false and
-  // the value of |top_y| is not defined.
-  virtual bool GetConstrainedWindowTopY(int* top_y) = 0;
+  // Return the WebContentsModalDialogHost for use in positioning web contents
+  // modal dialogs within the browser window.
+  virtual WebContentsModalDialogHost* GetWebContentsModalDialogHost() = 0;
 
   // Invoked when the preferred size of the contents in current tab has been
   // changed. We might choose to update the window size to accomodate this
