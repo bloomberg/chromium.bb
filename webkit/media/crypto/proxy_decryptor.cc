@@ -117,7 +117,7 @@ bool ProxyDecryptor::GenerateKeyRequest(const std::string& key_system,
   if (!decryptor_) {
     decryptor_ = CreateDecryptor(key_system);
     if (!decryptor_) {
-      key_error_cb_.Run(key_system, "", media::Decryptor::kUnknownError, 0);
+      key_error_cb_.Run(key_system, "", media::Decryptor::kClientError, 0);
       return false;
     }
   }
