@@ -2,109 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * ADB Device representation. This class has static methods for querying for
- * devices as well as instance methods for device manipulation.
- * @param {string} deviceLine Raw device descriprion line.
- * @constructor
- */
-function AdbDevice(deviceLine) {
-  var tokens = deviceLine.split(/[ \t]/);
-  this.serial = tokens[0];
-  var modelQuery = 'host:transport:' + this.serial +
-      '|shell:getprop ro.product.model';
-  this.model = String(AdbDevice.adbQuery_(modelQuery)).trim();
-}
-
-/**
- * Returns discoverable devices, establishes port forwarding for them.
- * @return {Array.<AdbDevice>} Device array.
- */
-AdbDevice.queryDevices = function() {
-  var deviceList = AdbDevice.adbQuery_('host:devices');
-  if (!deviceList)
-    return [];
-
-  var forwards = AdbDevice.collectForwards_();
-
-  var rows = deviceList.split('\n');
-  var devices = [];
-  for (var i = 0; i < rows.length; i++) {
-    if (!rows[i])
-      continue;
-    var device = new AdbDevice(rows[i]);
-    devices.push(device);
-
-    // Assign / bind TCP ports.
-    device.tcpPort = forwards[device.serial];
-    if (!device.tcpPort) {
-      var port = AdbDevice.nextAvailablePort_(forwards);
-      if (!port)
-        continue;
-      AdbDevice.adbQuery_('host-serial:' + device.serial + ':forward:tcp:' +
-          port + ';localabstract:chrome_devtools_remote');
-      forwards = AdbDevice.collectForwards_();
-    }
-  }
-
-  return devices;
-};
-
-/**
- * Collects and returns port forward map for all connected devices.
- * @return {Array.<Object<string, string>>} Forwarding map.
- * @private
- */
-AdbDevice.collectForwards_ = function() {
-  var response = AdbDevice.adbQuery_('host:list-forward');
-  if (!response)
-    return [];
-
-  var forwards = {};
-  var rows = response.split('\n');
-  for (var i = 0; i < rows.length; i++) {
-    var row = rows[i];
-    if (!row)
-      continue;
-
-    var tokens = row.split(' ');
-    if (tokens.length != 3 ||
-        tokens[1].indexOf('tcp:') != 0 ||
-        tokens[2] != 'localabstract:chrome_devtools_remote')
-      continue;
-    var tcpPort = tokens[1].substring(4);
-    forwards[tokens[0]] = tcpPort;
-  }
-  return forwards;
-};
-
-/**
- * Issues synchronous adb query.
- * @param {string} query ADB query.
- * @return {?Object} ADB query result.
- * @private
- */
-AdbDevice.adbQuery_ = function(query) {
-  var xhr = new XMLHttpRequest();
-  xhr.open('GET', 'adb-query/' + query, false);
-  xhr.send(null);
-  if (xhr.status !== 200)
-    return null;
-
-  try {
-    var result = JSON.parse(xhr.responseText);
-    return result[0] ? null : result[1];
-  } catch (e) {
-  }
-  return null;
-};
-
-/**
- * Discovers ADB devices.
- * @return {?Object} ADB query result.
- * @private
- */
-AdbDevice.adbPages_ = function() {
+function adbPages() {
   var xhr = new XMLHttpRequest();
   xhr.open('GET', 'adb-pages', false);
   xhr.send(null);
@@ -116,83 +14,7 @@ AdbDevice.adbPages_ = function() {
   } catch (e) {
   }
   return null;
-};
-
-/**
- * Returns next available (unmapped) port to use in forwarding.
- * @param {Object<string,string>} forwards Forwards map.
- * @return {number} Next available port.
- * @private
- */
-AdbDevice.nextAvailablePort_ = function(forwards) {
-  for (var port = 9232; port < 9252; port++) {
-    var taken = false;
-    for (var serial in forwards) {
-       if (forwards[serial] == port) {
-         taken = true;
-         break;
-       }
-    }
-    if (taken)
-      continue;
-    return port;
-  }
-  return 0;
-};
-
-/**
- * Returns /json/version JSON object with target device description.
- * @return {?Object} Version object.
- */
-AdbDevice.prototype.version = function() {
-  return this.queryJson_('version');
-};
-
-/**
- * Returns the list of inspectable targets in the target format suitable
- * for rendering as target rows.
- * @return {Array.<Object>} Target list.
- */
-AdbDevice.prototype.targets = function() {
-  var pages = this.queryJson_('list');
-  var targets = [];
-  for (var j = 0; pages && j < pages.length; j++) {
-    var json = pages[j];
-    var target = {};
-    target['type'] = 'mobile';
-    target['name'] = json['title'];
-    target['url'] = json['url'];
-    target['attached'] = !json['webSocketDebuggerUrl'];
-    target['faviconUrl'] = json['faviconUrl'];
-    target['inspectUrl'] = json['devtoolsFrontendUrl'];
-    targets.push(target);
-  }
-  return targets;
-};
-
-/**
- * Issues synchronous json request against target device.
- * @param {string} query DevTools protocol /json query.
- * @return {?Object} Result object.
- * @private
- */
-AdbDevice.prototype.queryJson_ = function(query) {
-  if (!this.tcpPort)
-    return null;
-
-  var xhr = new XMLHttpRequest();
-  xhr.open('GET', 'local-xhr/' + this.tcpPort + '/json/' + query, false);
-  xhr.send(null);
-  if (xhr.status !== 200)
-    return null;
-
-  try {
-    var result = JSON.parse(xhr.responseText);
-    return result[0] ? null : JSON.parse(result[1]);
-  } catch (e) {
-  }
-  return null;
-};
+}
 
 function requestData() {
   var xhr = new XMLHttpRequest();
@@ -204,18 +26,11 @@ function requestData() {
 }
 
 function inspect(data) {
-  if (data['inspectUrl']) {
-    window.open(data['inspectUrl'], undefined,
-        'location=0,width=800,height=600');
-    return;
-  }
-  chrome.send('inspect',
-              [String(data.processId), String(data.routeId)]);
+  chrome.send('inspect', [data]);
 }
 
 function terminate(data) {
-  chrome.send('terminate',
-              [String(data.processId), String(data.routeId)]);
+  chrome.send('terminate', [data]);
 }
 
 function removeChildren(element_id) {
@@ -249,37 +64,40 @@ function populateLists() {
 }
 
 function populateDeviceLists() {
+  var pages = adbPages();
+  var pagesDigest = JSON.stringify(pages);
+  if (!pages || pagesDigest == window.pagesDigest) {
+    setTimeout(populateDeviceLists, 1000);
+    return;
+  }
+  window.pagesDigest = pagesDigest;
+
   // Clear existing entries
   var deviceElements = document.querySelectorAll('.device');
   for (var i = 0; i < deviceElements.length; i++)
     deviceElements[i].remove();
 
-  var devices = AdbDevice.queryDevices();
-  for (var i = 0; i < devices.length; i++) {
-    var device = devices[i];
-    var version = device.version();
-    if (!version)
-      continue;
+  // Populate with new entries
+  for (var i = 0; pages && i < pages.length; i++) {
+    var page = pages[i];
 
-    var targets = device.targets();
-    if (!targets.length)
-      continue;
+    var listId = 'device-' + page.adbSerial;
+    var listElement = document.getElementById(listId);
+    if (!listElement) {
+      var sectionElement = document.createElement('div');
+      sectionElement.className = 'section device';
+      sectionElement.textContent = page.adbModel;
 
-    var sectionElement = document.createElement('div');
-    sectionElement.className = 'section device';
-    var details = version['Browser'] || version['User-Agent'];
-    sectionElement.textContent = device.model + ' (' + details + ')';
-    var listElement = document.createElement('div');
-    listElement.id = 'device-' + device.serial;
-    listElement.className = 'list device';
-    document.body.appendChild(sectionElement);
-    document.body.appendChild(listElement);
-
-    for (var j = 0; j < targets.length; j++) {
-      addTargetToList(targets[j], 'device-' + device.serial,
-            ['faviconUrl', 'name', 'url']);
+      listElement = document.createElement('div');
+      listElement.className = 'list device';
+      listElement.id = listId;
+      document.body.appendChild(sectionElement);
+      document.body.appendChild(listElement);
     }
+
+    addTargetToList(page, listId, ['faviconUrl', 'name', 'url']);
   }
+
   setTimeout(populateDeviceLists, 1000);
 }
 
@@ -332,7 +150,9 @@ function addTargetToList(data, listId, properties, canTerminate) {
   for (var j = 0; j < properties.length; j++)
     row.appendChild(formatValue(data, properties[j]));
 
-  row.appendChild(createInspectElement(data));
+  if (!data['adbSerial'] || data['adbDebugUrl'])
+    row.appendChild(createInspectElement(data));
+
   if (canTerminate)
     row.appendChild(createTerminateElement(data));
 

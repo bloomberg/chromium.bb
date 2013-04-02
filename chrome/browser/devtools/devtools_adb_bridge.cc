@@ -20,6 +20,7 @@
 #include "base/threading/thread.h"
 #include "base/values.h"
 #include "chrome/browser/devtools/adb_client_socket.h"
+#include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
@@ -390,12 +391,9 @@ class AdbAttachCommand : public base::RefCounted<AdbAttachCommand> {
       delegate = it->second;
     else
       delegate = new AgentHostDelegate(id, bridge->adb_thread_, socket);
-    // TODO(pfeldman): uncomment once DevToolsWindow is ready for external
-    // hosts.
-    // DevToolsWindow::OpenExternalFrontend(bridge->profile_,
-    //                                      frontend_url_,
-    //                                      delegate->GetAgentHost());
-    LOG(INFO) << delegate;
+    DevToolsWindow::OpenExternalFrontend(bridge->profile_,
+                                         frontend_url_,
+                                         delegate->GetAgentHost());
   }
 
   base::WeakPtr<DevToolsAdbBridge> bridge_;

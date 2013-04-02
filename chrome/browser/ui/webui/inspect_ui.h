@@ -48,19 +48,6 @@ class InspectUI : public content::WebUIController,
       const std::string& path,
       const content::WebUIDataSource::GotDataCallback& callback);
 
-  bool HandleAdbQueryCallback(
-      const std::string& path,
-      const content::WebUIDataSource::GotDataCallback& callback);
-
-  bool HandleLocalXhrCallback(
-      const std::string& path,
-      const content::WebUIDataSource::GotDataCallback& callback);
-
-  void RespondOnUIThread(
-      const content::WebUIDataSource::GotDataCallback& callback,
-      int result,
-      const std::string& response);
-
   void OnAdbPages(const content::WebUIDataSource::GotDataCallback& callback,
                   int result,
                   DevToolsAdbBridge::RemotePages* pages);

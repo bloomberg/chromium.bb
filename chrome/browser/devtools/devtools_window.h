@@ -68,6 +68,9 @@ class DevToolsWindow : private content::NotificationObserver,
   static DevToolsWindow* ToggleDevToolsWindow(
       Browser* browser,
       DevToolsToggleAction action);
+  static void OpenExternalFrontend(Profile* profile,
+                                   const std::string& frontend_uri,
+                                   content::DevToolsAgentHost* agent_host);
 
   // Exposed for testing, normal clients should not use this method.
   static DevToolsWindow* ToggleDevToolsWindow(
@@ -121,11 +124,13 @@ class DevToolsWindow : private content::NotificationObserver,
  private:
   friend class DevToolsControllerTest;
   static DevToolsWindow* Create(Profile* profile,
+                                const GURL& frontend_url,
                                 content::RenderViewHost* inspected_rvh,
                                 DevToolsDockSide dock_side,
                                 bool shared_worker_frontend);
   DevToolsWindow(content::WebContents* web_contents,
                  Profile* profile,
+                 const GURL& frontend_url,
                  content::RenderViewHost* inspected_rvh,
                  DevToolsDockSide dock_side);
 
@@ -143,7 +148,8 @@ class DevToolsWindow : private content::NotificationObserver,
 
   void ScheduleAction(DevToolsToggleAction action);
   void DoAction();
-  static GURL GetDevToolsUrl(Profile* profile,
+  static GURL GetDevToolsURL(Profile* profile,
+                             const GURL& base_url,
                              DevToolsDockSide dock_side,
                              bool shared_worker_frontend);
   void UpdateTheme();

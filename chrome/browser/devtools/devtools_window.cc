@@ -30,6 +30,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/webui/devtools_ui.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
@@ -170,7 +171,7 @@ DevToolsWindow* DevToolsWindow::OpenDevToolsWindowForWorker(
 // static
 DevToolsWindow* DevToolsWindow::CreateDevToolsWindowForWorker(
     Profile* profile) {
-  return Create(profile, NULL, DEVTOOLS_DOCK_SIDE_UNDOCKED, true);
+  return Create(profile, GURL(), NULL, DEVTOOLS_DOCK_SIDE_UNDOCKED, true);
 }
 
 // static
@@ -207,30 +208,52 @@ void DevToolsWindow::InspectElement(RenderViewHost* inspected_rvh,
   OpenDevToolsWindow(inspected_rvh);
 }
 
+// static
+void DevToolsWindow::OpenExternalFrontend(
+    Profile* profile,
+    const std::string& frontend_url,
+    content::DevToolsAgentHost* agent_host) {
+  DevToolsWindow* window = FindDevToolsWindow(agent_host);
+  if (!window) {
+    window = Create(profile, DevToolsUI::GetProxyURL(frontend_url), NULL,
+                    DEVTOOLS_DOCK_SIDE_UNDOCKED, false);
+    DevToolsManager::GetInstance()->RegisterDevToolsClientHostFor(
+        agent_host, window->frontend_host_.get());
+  }
+  window->Show(DEVTOOLS_TOGGLE_ACTION_SHOW);
+}
+
 DevToolsWindow* DevToolsWindow::Create(
     Profile* profile,
+    const GURL& frontend_url,
     RenderViewHost* inspected_rvh,
     DevToolsDockSide dock_side,
     bool shared_worker_frontend) {
   // Create WebContents with devtools.
   WebContents* web_contents =
       WebContents::Create(WebContents::CreateParams(profile));
-  web_contents->GetController().LoadURL(
-      GetDevToolsUrl(profile, dock_side, shared_worker_frontend),
-      content::Referrer(),
-      content::PAGE_TRANSITION_AUTO_TOPLEVEL,
-      std::string());
+  GURL url = GetDevToolsURL(profile, frontend_url, dock_side,
+                            shared_worker_frontend);
+  web_contents->GetController().LoadURL(url, content::Referrer(),
+      content::PAGE_TRANSITION_AUTO_TOPLEVEL, std::string());
 
   RenderViewHost* render_view_host = web_contents->GetRenderViewHost();
-  int process_id = render_view_host->GetProcess()->GetID();
-  content::ChildProcessSecurityPolicy::GetInstance()->GrantScheme(
-      process_id, chrome::kFileScheme);
   content::DevToolsClientHost::SetupDevToolsFrontendClient(render_view_host);
-  return new DevToolsWindow(web_contents, profile, inspected_rvh, dock_side);
+
+  if (url.path().find(chrome::kChromeUIDevToolsHostedPath) == 0) {
+    // Only allow file scheme in embedded front-end by default.
+    int process_id = render_view_host->GetProcess()->GetID();
+    content::ChildProcessSecurityPolicy::GetInstance()->GrantScheme(
+        process_id, chrome::kFileScheme);
+  }
+
+  return new DevToolsWindow(web_contents, profile, frontend_url, inspected_rvh,
+                            dock_side);
 }
 
 DevToolsWindow::DevToolsWindow(WebContents* web_contents,
                                Profile* profile,
+                               const GURL& frontend_url,
                                RenderViewHost* inspected_rvh,
                                DevToolsDockSide dock_side)
     : profile_(profile),
@@ -625,7 +648,8 @@ std::string SkColorToRGBAString(SkColor color) {
 }
 
 // static
-GURL DevToolsWindow::GetDevToolsUrl(Profile* profile,
+GURL DevToolsWindow::GetDevToolsURL(Profile* profile,
+                                    const GURL& base_url,
                                     DevToolsDockSide dock_side,
                                     bool shared_worker_frontend) {
   ThemeService* tp = ThemeServiceFactory::GetForProfile(profile);
@@ -640,9 +664,14 @@ GURL DevToolsWindow::GetDevToolsUrl(Profile* profile,
   bool experiments_enabled =
       command_line.HasSwitch(switches::kEnableDevToolsExperiments);
 
-  std::string url_string = base::StringPrintf("%s?"
+  std::string frontend_url = base_url.is_empty() ?
+      chrome::kChromeUIDevToolsURL : base_url.spec();
+  std::string params_separator =
+      frontend_url.find("?") == std::string::npos ? "?" : "&";
+  std::string url_string = base::StringPrintf("%s%s"
       "dockSide=%s&toolbarColor=%s&textColor=%s%s%s",
-      chrome::kChromeUIDevToolsURL,
+      frontend_url.c_str(),
+      params_separator.c_str(),
       SideToString(dock_side).c_str(),
       SkColorToRGBAString(color_toolbar).c_str(),
       SkColorToRGBAString(color_tab_text).c_str(),
@@ -720,8 +749,7 @@ DevToolsWindow* DevToolsWindow::ToggleDevToolsWindow(
     Profile* profile = Profile::FromBrowserContext(
         inspected_rvh->GetProcess()->GetBrowserContext());
     DevToolsDockSide dock_side = GetDockSideFromPrefs(profile);
-    window = Create(profile, inspected_rvh, dock_side, false);
-    // Will disconnect the current client host if there is one.
+    window = Create(profile, GURL(), inspected_rvh, dock_side, false);
     manager->RegisterDevToolsClientHostFor(agent, window->frontend_host_.get());
     do_open = true;
   }

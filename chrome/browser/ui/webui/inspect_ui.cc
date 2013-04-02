@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/string_util.h"
@@ -15,10 +16,10 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/devtools/devtools_window.h"
-#include "chrome/browser/devtools/protocol_http_request.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
@@ -62,9 +63,7 @@ using content::WorkerServiceObserver;
 namespace {
 
 static const char kDataFile[] = "targets-data.json";
-static const char kAdbQuery[] = "adb-query/";
 static const char kAdbPages[] = "adb-pages";
-static const char kLocalXhr[] = "local-xhr/";
 
 static const char kExtensionTargetType[]  = "extension";
 static const char kPageTargetType[]  = "page";
@@ -84,8 +83,8 @@ static const char kFaviconUrlField[] = "faviconUrl";
 static const char kPidField[]  = "pid";
 static const char kAdbSerialField[] = "adbSerial";
 static const char kAdbModelField[] = "adbModel";
-static const char kAdbPageIdField[] = "adbPageId";
-static const char kAdbDebugUrl[] = "adbDebugUrl";
+static const char kAdbDebugUrlField[] = "adbDebugUrl";
+static const char kAdbFrontendUrlField[] = "adbFrontendUrl";
 
 DictionaryValue* BuildTargetDescriptor(
     const std::string& target_type,
@@ -205,7 +204,8 @@ bool HandleDataRequestCallback(
 
 class InspectMessageHandler : public WebUIMessageHandler {
  public:
-  InspectMessageHandler() {}
+  explicit InspectMessageHandler(DevToolsAdbBridge* adb_bridge)
+      : adb_bridge_(adb_bridge) {}
   virtual ~InspectMessageHandler() {}
 
  private:
@@ -215,6 +215,12 @@ class InspectMessageHandler : public WebUIMessageHandler {
   // Callback for "openDevTools" message.
   void HandleInspectCommand(const ListValue* args);
   void HandleTerminateCommand(const ListValue* args);
+
+  bool GetProcessAndRouteId(const ListValue* args,
+                            int* process_id,
+                            int* route_id);
+
+  DevToolsAdbBridge* adb_bridge_;
 
   DISALLOW_COPY_AND_ASSIGN(InspectMessageHandler);
 };
@@ -229,20 +235,23 @@ void InspectMessageHandler::RegisterMessages() {
 }
 
 void InspectMessageHandler::HandleInspectCommand(const ListValue* args) {
-  std::string process_id_str;
-  std::string route_id_str;
   int process_id;
   int route_id;
-  CHECK(args->GetSize() == 2);
-  CHECK(args->GetString(0, &process_id_str));
-  CHECK(args->GetString(1, &route_id_str));
-  CHECK(base::StringToInt(process_id_str,
-                          &process_id));
-  CHECK(base::StringToInt(route_id_str, &route_id));
-
-  Profile* profile = Profile::FromWebUI(web_ui());
-  if (!profile)
+  if (!GetProcessAndRouteId(args, &process_id, &route_id) || process_id == 0
+      || route_id == 0) {
+    // Check for ADB serial
+    const DictionaryValue* data;
+    std::string serial;
+    std::string debug_url;
+    std::string frontend_url;
+    if (args->GetSize() == 1 && args->GetDictionary(0, &data) &&
+        data->GetString(kAdbSerialField, &serial) &&
+        data->GetString(kAdbDebugUrlField, &debug_url) &&
+        data->GetString(kAdbFrontendUrlField, &frontend_url)) {
+      adb_bridge_->Attach(serial, debug_url, frontend_url);
+    }
     return;
+  }
 
   RenderViewHost* rvh = RenderViewHost::FromID(process_id, route_id);
   if (rvh) {
@@ -250,10 +259,15 @@ void InspectMessageHandler::HandleInspectCommand(const ListValue* args) {
     return;
   }
 
+  Profile* profile = Profile::FromWebUI(web_ui());
+  if (!profile)
+    return;
   scoped_refptr<DevToolsAgentHost> agent_host(
       DevToolsAgentHost::GetForWorker(process_id, route_id));
-  if (agent_host)
-    DevToolsWindow::OpenDevToolsWindowForWorker(profile, agent_host);
+  if (!agent_host)
+    return;
+
+  DevToolsWindow::OpenDevToolsWindowForWorker(profile, agent_host);
 }
 
 static void TerminateWorker(int process_id, int route_id) {
@@ -261,19 +275,25 @@ static void TerminateWorker(int process_id, int route_id) {
 }
 
 void InspectMessageHandler::HandleTerminateCommand(const ListValue* args) {
-  std::string process_id_str;
-  std::string route_id_str;
   int process_id;
   int route_id;
-  CHECK(args->GetSize() == 2);
-  CHECK(args->GetString(0, &process_id_str));
-  CHECK(args->GetString(1, &route_id_str));
-  CHECK(base::StringToInt(process_id_str,
-                          &process_id));
-  CHECK(base::StringToInt(route_id_str, &route_id));
+  if (!GetProcessAndRouteId(args, &process_id, &route_id))
+    return;
 
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
       base::Bind(&TerminateWorker, process_id, route_id));
+}
+
+bool InspectMessageHandler::GetProcessAndRouteId(const ListValue* args,
+                                                 int* process_id,
+                                                 int* route_id) {
+  const DictionaryValue* data;
+  if (args->GetSize() == 1 && args->GetDictionary(0, &data) &&
+      data->GetInteger(kProcessIdField, process_id) &&
+      data->GetInteger(kRouteIdField, route_id)) {
+    return true;
+  }
+  return false;
 }
 
 }  // namespace
@@ -340,10 +360,9 @@ InspectUI::InspectUI(content::WebUI* web_ui)
     : WebUIController(web_ui),
       observer_(new WorkerCreationDestructionListener(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
-  web_ui->AddMessageHandler(new InspectMessageHandler());
-
   Profile* profile = Profile::FromWebUI(web_ui);
   adb_bridge_.reset(new DevToolsAdbBridge(profile));
+  web_ui->AddMessageHandler(new InspectMessageHandler(adb_bridge_.get()));
   content::WebUIDataSource::Add(profile, CreateInspectUIHTMLSource());
 
   registrar_.Add(this,
@@ -410,25 +429,12 @@ bool InspectUI::HandleRequestCallback(
     const content::WebUIDataSource::GotDataCallback& callback) {
   if (path == kDataFile)
     return HandleDataRequestCallback(path, callback);
-  if (path.find(kAdbPages) == 0)
-    return HandleAdbPagesCallback(path, callback);
-  if (path.find(kAdbQuery) == 0)
-    return HandleAdbQueryCallback(path, callback);
-  if (path.find(kLocalXhr) == 0)
-    return HandleLocalXhrCallback(path, callback);
+  if (path.find(kAdbPages) == 0) {
+    const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+    if (command_line.HasSwitch(switches::kEnableHostedDevToolsFrontend))
+      return HandleAdbPagesCallback(path, callback);
+  }
   return false;
-}
-
-bool InspectUI::HandleAdbQueryCallback(
-    const std::string& path,
-    const content::WebUIDataSource::GotDataCallback& callback) {
-  std::string query = net::UnescapeURLComponent(
-      path.substr(strlen(kAdbQuery)),
-      net::UnescapeRule::NORMAL | net::UnescapeRule::SPACES |
-          net::UnescapeRule::URL_SPECIAL_CHARS);
-  adb_bridge_->Query(query, base::Bind(&InspectUI::RespondOnUIThread,
-                                       weak_factory_.GetWeakPtr(), callback));
-  return true;
 }
 
 bool InspectUI::HandleAdbPagesCallback(
@@ -456,34 +462,12 @@ void InspectUI::OnAdbPages(
         0);
     target_data->SetString(kAdbSerialField, page->serial());
     target_data->SetString(kAdbModelField, page->model());
-    target_data->SetString(kAdbPageIdField, page->id());
-    target_data->SetString(kAdbDebugUrl, page->debug_url());
+    target_data->SetString(kAdbDebugUrlField, page->debug_url());
+    target_data->SetString(kAdbFrontendUrlField, page->frontend_url());
     targets.Append(target_data);
   }
 
   std::string json_string = "";
   base::JSONWriter::Write(&targets, &json_string);
-  callback.Run(base::RefCountedString::TakeString(&json_string));
-}
-
-bool InspectUI::HandleLocalXhrCallback(
-    const std::string& path,
-    const content::WebUIDataSource::GotDataCallback& callback) {
-  std::string url = "http://localhost:" + path.substr(strlen(kLocalXhr));
-  new ProtocolHttpRequest(Profile::FromWebUI(web_ui()), url,
-      base::Bind(&InspectUI::RespondOnUIThread,
-                 weak_factory_.GetWeakPtr(), callback));
-  return true;
-}
-
-void InspectUI::RespondOnUIThread(
-    const content::WebUIDataSource::GotDataCallback& callback,
-    int result_code,
-    const std::string& response) {
-  ListValue result;
-  result.AppendInteger(result_code);
-  result.AppendString(response);
-  std::string json_string;
-  base::JSONWriter::Write(&result, &json_string);
   callback.Run(base::RefCountedString::TakeString(&json_string));
 }
