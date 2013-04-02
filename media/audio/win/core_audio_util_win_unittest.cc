@@ -232,6 +232,33 @@ TEST_F(CoreAudioUtilWinTest, GetSharedModeMixFormat) {
   EXPECT_EQ(format.Format.wFormatTag, WAVE_FORMAT_EXTENSIBLE);
 }
 
+TEST_F(CoreAudioUtilWinTest, IsChannelLayoutSupported) {
+  if (!CanRunAudioTest())
+    return;
+
+  // The preferred channel layout should always be supported. Being supported
+  // means that it is possible to initialize a shared mode stream with the
+  // particular channel layout.
+  AudioParameters mix_params;
+  HRESULT hr = CoreAudioUtil::GetPreferredAudioParameters(eRender, eConsole,
+                                                          &mix_params);
+  EXPECT_TRUE(SUCCEEDED(hr));
+  EXPECT_TRUE(mix_params.IsValid());
+  EXPECT_TRUE(CoreAudioUtil::IsChannelLayoutSupported(
+      eRender, eConsole, mix_params.channel_layout()));
+
+  // Check if it is possible to modify the channel layout to stereo for a
+  // device which reports that it prefers to be openen up in an other
+  // channel configuration.
+  if (mix_params.channel_layout() != CHANNEL_LAYOUT_STEREO) {
+    ChannelLayout channel_layout = CHANNEL_LAYOUT_STEREO;
+    // TODO(henrika): it might be too pessimistic to assume false as return
+    // value here.
+    EXPECT_FALSE(CoreAudioUtil::IsChannelLayoutSupported(
+        eRender, eConsole, channel_layout));
+  }
+}
+
 TEST_F(CoreAudioUtilWinTest, GetDevicePeriod) {
   if (!CanRunAudioTest())
     return;

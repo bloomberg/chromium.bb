@@ -390,6 +390,14 @@ AudioParameters AudioManagerWin::GetPreferredOutputStreamParameters(
   }
 
   if (input_params.IsValid()) {
+    if (CoreAudioUtil::IsChannelLayoutSupported(
+        eRender, eConsole, input_params.channel_layout())) {
+      // Open up using the same channel layout as the source if it is
+      // supported by the hardware.
+      channel_layout = input_params.channel_layout();
+      VLOG(1) << "Hardware channel layout is not used; using same "
+              << "layout as the source instead (" << channel_layout << ")";
+    }
     input_channels = input_params.input_channels();
     if (use_input_params) {
       // If WASAPI isn't supported we'll fallback to WaveOut, which will take
