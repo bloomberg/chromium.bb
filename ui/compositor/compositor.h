@@ -13,6 +13,7 @@
 #include "base/observer_list.h"
 #include "base/time.h"
 #include "cc/trees/layer_tree_host_client.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/compositor/compositor_export.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
@@ -264,6 +265,10 @@ class COMPOSITOR_EXPORT Compositor
 
   // Returns the size of the widget that is being drawn to in pixel coordinates.
   const gfx::Size& size() const { return size_; }
+
+  // Sets the background color used for areas that aren't covered by
+  // the |root_layer|.
+  void SetBackgroundColor(SkColor color);
 
   // Returns the widget for this compositor.
   gfx::AcceleratedWidget widget() const { return widget_; }

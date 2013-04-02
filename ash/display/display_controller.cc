@@ -28,6 +28,7 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_property.h"
+#include "ui/compositor/compositor.h"
 #include "ui/compositor/dip_util.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
@@ -818,7 +819,7 @@ aura::RootWindow* DisplayController::CreateRootWindowForDisplay(
   aura::RootWindow* root_window = new aura::RootWindow(params);
   root_window->SetName(
       base::StringPrintf("RootWindow-%d", root_window_count++));
-
+  root_window->compositor()->SetBackgroundColor(SK_ColorBLACK);
   // No need to remove RootWindowObserver because
   // the DisplayManager object outlives RootWindow objects.
   root_window->AddRootWindowObserver(GetDisplayManager());
