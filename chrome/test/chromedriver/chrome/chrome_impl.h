@@ -37,8 +37,9 @@ class ChromeImpl : public Chrome {
       const std::string& prompt_text) OVERRIDE;
 
  protected:
-  ChromeImpl();
-  Status Init(scoped_ptr<DevToolsHttpClient> client);
+  ChromeImpl(scoped_ptr<DevToolsHttpClient> client,
+             const std::string& version,
+             int build_no);
 
  private:
   typedef std::list<linked_ptr<WebViewImpl> > WebViewList;

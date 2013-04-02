@@ -7,11 +7,12 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
 #include "base/strings/string_split.h"
 #include "base/values.h"
-#include "chrome/test/chromedriver/chrome/chrome_desktop_impl.h"
 #include "chrome/test/chromedriver/chrome/status.h"
+#include "chrome/test/chromedriver/chrome_launcher.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(ProcessCommandLineArgs, NoArgs) {

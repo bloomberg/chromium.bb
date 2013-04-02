@@ -15,6 +15,7 @@
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/chrome/version.h"
 #include "chrome/test/chromedriver/chrome/web_view.h"
+#include "chrome/test/chromedriver/chrome_launcher.h"
 #include "chrome/test/chromedriver/net/net_util.h"
 #include "chrome/test/chromedriver/net/url_request_context_getter.h"
 #include "chrome/test/chromedriver/session.h"
@@ -58,14 +59,13 @@ Status ExecuteNewSession(
     return Status(kUnknownError, "cannot find dict 'desiredCapabilities'");
 
   scoped_ptr<Chrome> chrome;
-  Status status(kOk);
   std::string android_package;
   if (desired_caps->GetString("chromeOptions.android_package",
                               &android_package)) {
-    scoped_ptr<ChromeAndroidImpl> chrome_android(new ChromeAndroidImpl());
-    status = chrome_android->Launch(
-        context_getter, port, socket_factory, android_package);
-    chrome.reset(chrome_android.release());
+    Status status = LaunchAndroidChrome(
+        context_getter, port, socket_factory, android_package, &chrome);
+    if (status.IsError())
+      return status;
   } else {
     base::FilePath::StringType path_str;
     base::FilePath chrome_exe;
@@ -117,18 +117,16 @@ Status ExecuteNewSession(
                     "chrome log path must be a string");
     }
 
-    scoped_ptr<ChromeDesktopImpl> chrome_desktop(new ChromeDesktopImpl());
-    status = chrome_desktop->Launch(
+    Status status = LaunchDesktopChrome(
         context_getter, port, socket_factory,
         chrome_exe, args_list, extensions_list,
-        prefs_dict, local_state_dict, chrome_log_path);
-    chrome.reset(chrome_desktop.release());
+        prefs_dict, local_state_dict, chrome_log_path, &chrome);
+    if (status.IsError())
+      return status;
   }
-  if (status.IsError())
-    return Status(kSessionNotCreatedException, status.message());
 
   std::list<std::string> web_view_ids;
-  status = chrome->GetWebViewIds(&web_view_ids);
+  Status status = chrome->GetWebViewIds(&web_view_ids);
   if (status.IsError() || web_view_ids.empty()) {
     chrome->Quit();
     return status.IsError() ? status :

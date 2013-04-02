@@ -4,15 +4,10 @@
 
 #include "chrome/test/chromedriver/chrome/chrome_impl.h"
 
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/string_split.h"
-#include "base/threading/platform_thread.h"
-#include "base/time.h"
 #include "chrome/test/chromedriver/chrome/devtools_client.h"
 #include "chrome/test/chromedriver/chrome/devtools_http_client.h"
 #include "chrome/test/chromedriver/chrome/javascript_dialog_manager.h"
 #include "chrome/test/chromedriver/chrome/status.h"
-#include "chrome/test/chromedriver/chrome/version.h"
 #include "chrome/test/chromedriver/chrome/web_view_impl.h"
 
 ChromeImpl::~ChromeImpl() {
@@ -129,37 +124,13 @@ Status ChromeImpl::HandleJavaScriptDialog(bool accept,
   return manager->HandleDialog(accept, prompt_text);
 }
 
-ChromeImpl::ChromeImpl() {}
-
-Status ChromeImpl::Init(scoped_ptr<DevToolsHttpClient> client) {
-  devtools_http_client_ = client.Pass();
-
-  base::Time deadline = base::Time::Now() + base::TimeDelta::FromSeconds(20);
-  std::string version;
-  Status status(kOk);
-  while (base::Time::Now() < deadline) {
-    status = devtools_http_client_->GetVersion(&version);
-    if (status.IsOk())
-      break;
-    if (status.code() != kChromeNotReachable)
-      return status;
-    base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
-  }
-  if (status.IsError())
-    return status;
-  status = ParseAndCheckVersion(version);
-  if (status.IsError())
-    return status;
-
-  while (base::Time::Now() < deadline) {
-    WebViewsInfo views_info;
-    devtools_http_client_->GetWebViewsInfo(&views_info);
-    if (views_info.GetSize())
-      return Status(kOk);
-    base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
-  }
-  return Status(kUnknownError, "unable to discover open pages");
-}
+ChromeImpl::ChromeImpl(
+    scoped_ptr<DevToolsHttpClient> client,
+    const std::string& version,
+    int build_no)
+    : devtools_http_client_(client.Pass()),
+      version_(version),
+      build_no_(build_no) {}
 
 Status ChromeImpl::GetDialogManagerForOpenDialog(
     JavaScriptDialogManager** manager) {
@@ -180,35 +151,5 @@ Status ChromeImpl::GetDialogManagerForOpenDialog(
     }
   }
   *manager = NULL;
-  return Status(kOk);
-}
-
-Status ChromeImpl::ParseAndCheckVersion(const std::string& version) {
-  if (version.empty()) {
-    // Content Shell has an empty product version and a fake user agent.
-    // There's no way to detect the actual version, so assume it is tip of tree.
-    version_ = "content shell";
-    build_no_ = 9999;
-    return Status(kOk);
-  }
-  std::string prefix = "Chrome/";
-  if (version.find(prefix) != 0u)
-    return Status(kUnknownError, "unrecognized Chrome version: " + version);
-
-  std::string stripped_version = version.substr(prefix.length());
-  int build_no;
-  std::vector<std::string> version_parts;
-  base::SplitString(stripped_version, '.', &version_parts);
-  if (version_parts.size() != 4 ||
-      !base::StringToInt(version_parts[2], &build_no)) {
-    return Status(kUnknownError, "unrecognized Chrome version: " + version);
-  }
-
-  if (build_no < kMinimumSupportedChromeBuildNo) {
-    return Status(kUnknownError, "Chrome version must be >= " +
-        GetMinimumSupportedChromeVersion());
-  }
-  version_ = stripped_version;
-  build_no_ = build_no;
   return Status(kOk);
 }
