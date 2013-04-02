@@ -1,61 +1,34 @@
 <!DOCTYPE html>
 <html i18n-values="dir:textdirection">
 <head>
-<if expr="pp_ifdef('android')">
 <meta name="viewport" content="width=device-width" />
-</if>
 <title i18n-content="title">
 </title>
 <style>
+
 body {
-  background-color: white;
+  background-color: #E6E6E6;
   font-family: Helvetica, Arial, sans-serif;
-  margin: 0;
+  font-size: 10pt;
+  margin: 50px 40px 20px 40px;
+  text-align: center;
 }
 
-html[main-frame] body {
-  background-color: #CCC;
-}
-
-/* On Android, gradient is broken due to background-attachment: fixed being
-   currently disabled on Android; see crbug.com/135942 */
-<if expr="not pp_ifdef('android')">
-html[main-frame][high-color-depth] body {
-  background: -webkit-linear-gradient(#CCC, #AAA);
-  background-attachment: fixed;
-}
-</if>
-
-html[main-frame] #cell {
-<if expr="not pp_ifdef('android')">
-  padding: 40px;
-</if>
-<if expr="pp_ifdef('android')">
-  padding: 20px;
-</if>
+#cell {
+  margin: auto;
+  max-width: 540px;
+  min-width: 200px;
 }
 
 #box {
-  background-color: white;
+  background-color: #fbfbfb;
+  border: 1px solid #AAA;
+  border-bottom: 1px solid #888;
+  border-radius: 3px;
   color: black;
-  font-size: 10pt;
-  line-height: 18px;
-  margin: auto;
-  max-width: 750px;
-  min-width: 200px;
-  padding: 5px;
-}
-
-html[main-frame] #box {
-  border-radius: 5px;
-  -webkit-box-shadow: 2px 5px 12px #555;
-<if expr="not pp_ifdef('android')">
-  padding: 20px;
-  width: 80%;
-</if>
-<if expr="pp_ifdef('android')">
-  padding: 10px;
-  width: 90%;
+<if expr="not pp_ifdef('android') and not pp_ifdef('ios')">
+  /* Not done on mobile for performance reasons. */
+  box-shadow: 0px 2px 2px #AAA;
 </if>
 }
 
@@ -69,30 +42,14 @@ li {
 }
 
 h1 {
-  font-size: 12pt;
-  line-height: 20px;
-  margin: 0;
-}
-
-html[main-frame] h1 {
-  font-size: 18pt;
-  line-height: 30px;
-}
-
-h1 img {
-  border: 0;
-  float: right;
-  -webkit-margin-start: 20px;
-  margin-top: -4px;
-}
-
-html[dir=rtl] h1 img {
-  float: left;
+  color: #666;
+  margin: 10px 0px 25px 0px;
+  font-weight: normal;
+  font-size: 1.5em;
 }
 
 h2 {
-  font-size: 10pt;
-  font-weight: bold;
+  font-weight: normal;
   margin: 0;
   padding: 0;
 }
@@ -109,27 +66,101 @@ a:visited {
   color: #551a8b;
 }
 
-#errorSummary, #suggestions, #search {
-  -webkit-margin-start: 3px;
+#content-top {
+  margin: 20px 20px 20px 25px;
+}
+
+#help-box-outer {
+  overflow: hidden;
+  -webkit-transition: height ease-in 218ms;
+}
+
+#help-box-inner {
+  background-color: #f9f9f9;
+  border-top: 1px solid #EEE;
+  color: #444;
+  padding: 25px 20px;
+  text-align: left;
+}
+
+#suggestions {
   margin-top: 15px;
 }
 
-#errorDetails {
-  color: #777;
-  -webkit-margin-start: 3px;
-  margin-top: 30px;
+#details {
+  color: #8F8F8F;
+  margin: 20px;
+<if expr="not pp_ifdef('android') and not pp_ifdef('ios')">
+  /* Not done on mobile for performance reasons. */
+  text-shadow: 0 1px 0 rgba(255,255,255,0.3);
+</if>
 }
 
 .failedUrl {
   word-wrap: break-word;
 }
 
-#logo-img {
-  /* "Not allowed to load local resource: chrome://theme/IDR_PRODUCT_LOGO",
-      so embed the resource manually. */
-  content: -webkit-image-set(
-      url('../../app/theme/default_100_percent/%DISTRIBUTION%/product_logo.png') 1x,
-      url('../../app/theme/default_200_percent/%DISTRIBUTION%/product_logo.png') 2x);
+button {
+  background-image: linear-gradient(#f6f6f6 5%, #efefef 50%, #ddd);
+  border: 1px solid #d1d1d3;
+  border-bottom: 1px solid #c1c1c3;
+  color: #666;
+  font-weight: bold;
+  margin: 0 5px;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.8);
+  -webkit-user-select: none;
+  padding: 8px 13px;
+<if expr="not pp_ifdef('android') and not pp_ifdef('ios')">
+  /* Not done on mobile for performance reasons. */
+  border-radius: 2px;
+  box-shadow: inset 0 1px 0 #fff;
+</if>
+}
+
+#reloadButton {
+  background-image: linear-gradient(#5499f4 5%, #5294f2 50%, #4b85f1);
+  border: 1px solid #5187df;
+  border-bottom: 1px solid #3870cf;
+  box-shadow: inset 0 1px 0 #5fa8f7;
+  color: #fff;
+  text-shadow: 0 1px 0 rgba(0,0,0,0.2);
+}
+
+.failedUrl {
+  word-wrap: break-word;
+}
+
+.hidden {
+  display: none;
+}
+
+/* Increase line height at higher resolutions. */
+@media (min-width: 641px) and (min-height: 641px) {
+  #details {
+    line-height: 18px;
+  }
+  #help-box-inner {
+    line-height: 20px;
+  }
+}
+
+/* Decrease padding at low sizes. */
+@media (max-width: 640px), (max-height: 640px) {
+  body {
+    margin: 15px;
+  }
+  h1 {
+    margin: 10px 0px 15px 0px;
+  }
+  #content-top {
+    margin: 15px;
+  }
+  #help-box-inner {
+    padding: 20px;
+  }
+  #details {
+    margin: 15px;
+  }
 }
 
 </style>
@@ -155,72 +186,83 @@ document.addEventListener('DOMContentLoaded',
                           setJsContentElementClasses,
                           false);
 
-// A grey border and larger font is used when the error page is
-// in the main frame.
-if (window.top.location == window.location)
-  document.documentElement.setAttribute('main-frame', '');
+function toggleHelpBox() {
+  var helpBoxOuter = document.getElementById('help-box-outer');
+  helpBoxOuter.classList.toggle('hidden');
+  var moreLessButton = document.getElementById('moreLessButton');
+  if (helpBoxOuter.classList.contains('hidden')) {
+    moreLessButton.innerText = moreLessButton.moreText;
+  } else {
+    moreLessButton.innerText = moreLessButton.lessText;
+  }
+}
 
-// The border only uses a gradient when using at least 24-bit color.
-if (window.screen.colorDepth >= 24)
-  document.documentElement.setAttribute('high-color-depth', '');
 </script>
 
 <body id="t">
 <div id="cell">
  <div id="box">
-  <h1>
-   <img id="logo-img">
-   <span i18n-content="heading"></span>
-  </h1>
+  <div id="content-top">
+    <h1>
+     <span i18n-content="heading"></span>
+    </h1>
 
-  <div id="errorSummary" jsselect="summary">
-   <span jsvalues=".innerHTML:msg"></span>
+    <button id="reloadButton" onclick="location = this.url" jsselect="reload" jsvalues=".url:reloadUrl" jscontent="msg"></button>
+    <button id="moreLessButton" onclick="toggleHelpBox()" jsdisplay="more" jsvalues=".moreText:more; .lessText:less;" jscontent="more"></button>
   </div>
 
-  <div id="suggestions" jsdisplay="suggestionsHeading">
-   <h2 i18n-content="suggestionsHeading"></h2>
-   <ul>
-    <li jsselect="suggestionsReload">
-      <span jsvalues=".innerHTML:msg"></span>
-    </li>
-    <li jsselect="suggestionsHomepage">
-      <span jscontent="suggestionsHomepageMsg"></span>
-      <a jscontent="hostName" jsvalues="href:homePage"></a>
-    </li>
-    <li jsselect="suggestionsCheckConnection">
-      <span jsvalues=".innerHTML:msg"></span>
-    </li>
-    <li jsselect="suggestionsDNSConfig">
-      <span jsvalues=".innerHTML:msg"></span>
-    </li>
-    <li jsselect="suggestionsDisableNetworkPrediction">
-      <span jsvalues=".innerHTML:msg"></span>
-    </li>
-    <li jsselect="suggestionsFirewallConfig">
-      <span jsvalues=".innerHTML:msg"></span>
-    </li>
-    <li jsselect="suggestionsProxyConfig">
-      <span jsvalues=".innerHTML:msg"></span>
-    </li>
-    <li jsselect="suggestionsProxyDisable">
-      <span jsvalues=".innerHTML:msg"></span>
-    </li>
-    <li jsselect="suggestionsDisableExtension">
-      <span jsvalues=".innerHTML:msg"></span>
-    </li>
-    <li jsselect="suggestionsLearnMore">
-      <span jsvalues=".innerHTML:msg"></span>
-    </li>
-    <li jsselect="suggestionsViewPolicies">
-      <span jsvalues=".innerHTML:msg"></span>
-    </li>
-    <li jsselect="suggestionsContactAdministrator">
-      <span jsvalues=".innerHTML:msg"></span>
-    </li>
-   </ul>
-  </div>
+  <!-- Outer and inner divs are needed both for margins and sizing. -->
+  <div id="help-box-outer" class="hidden">
+   <div id="help-box-inner">
+    <div id="errorSummary" jsselect="summary">
+     <span jsvalues=".innerHTML:msg"></span>
+    </div>
 
-  <div id="errorDetails" jsselect="details" jscontent="$this"></div>
+    <div id="suggestions" jsdisplay="suggestionsHeading">
+     <h2 i18n-content="suggestionsHeading"></h2>
+     <ul>
+      <li jsselect="suggestionsHomepage">
+        <span jscontent="suggestionsHomepageMsg"></span>
+        <a jscontent="hostName" jsvalues="href:homePage"></a>
+      </li>
+      <li jsselect="suggestionsCheckConnection">
+        <span jsvalues=".innerHTML:msg"></span>
+      </li>
+      <li jsselect="suggestionsDNSConfig">
+        <span jsvalues=".innerHTML:msg"></span>
+      </li>
+      <li jsselect="suggestionsDisableNetworkPrediction">
+        <span jsvalues=".innerHTML:msg"></span>
+      </li>
+      <li jsselect="suggestionsFirewallConfig">
+        <span jsvalues=".innerHTML:msg"></span>
+      </li>
+      <li jsselect="suggestionsProxyConfig">
+        <span jsvalues=".innerHTML:msg"></span>
+      </li>
+      <li jsselect="suggestionsProxyDisable">
+        <span jsvalues=".innerHTML:msg"></span>
+      </li>
+      <li jsselect="suggestionsDisableExtension">
+        <span jsvalues=".innerHTML:msg"></span>
+      </li>
+      <li jsselect="suggestionsLearnMore">
+        <span jsvalues=".innerHTML:msg"></span>
+      </li>
+      <li jsselect="suggestionsViewPolicies">
+        <span jsvalues=".innerHTML:msg"></span>
+      </li>
+      <li jsselect="suggestionsContactAdministrator">
+        <span jsvalues=".innerHTML:msg"></span>
+      </li>
+     </ul>
+    </div>
+   </div>
+  </div>
+ </div>
+ <div id="details">
+  <div jsdisplay="errorDetails" jscontent="errorDetails"></div>
+  <div jscontent="errorCode"></div>
  </div>
 </div>
 </body>

@@ -42,6 +42,7 @@ class LocalizedError {
   // warns against reposting form data. This is special cased because the form
   // repost "error page" has no real error associated with it, and doesn't have
   // enough strings localized to meaningfully fill the net error template.
+  // TODO(mmenke):  Get rid of this and merge with GetStrings.
   static void GetFormRepostStrings(const GURL& display_url,
                                    base::DictionaryValue* error_strings);
 

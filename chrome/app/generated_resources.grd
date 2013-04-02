@@ -9304,16 +9304,16 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       </message>
 
       <!-- error page messages -->
+      <message name="IDS_ERRORPAGES_BUTTON_MORE" desc="Label for the button that expands the details on an error page">
+        More
+      </message>
+      <message name="IDS_ERRORPAGES_BUTTON_LESS" desc="Label for the button that hides the details on an error page">
+        Less
+      </message>
+      <message name="IDS_ERRORPAGES_BUTTON_RELOAD" desc="Label for the button on an error page to reload the page">
+        Reload
+      </message>
       <if expr="pp_ifdef('android')">
-        <message name="IDS_ERRORPAGES_BUTTON_MORE" desc="Mobile: Label for the button that expands the details on an error page">
-          More
-        </message>
-        <message name="IDS_ERRORPAGES_BUTTON_LESS" desc="Mobile: Label for the button that hides the details on an error page">
-          Less
-        </message>
-        <message name="IDS_ERRORPAGES_BUTTON_RELOAD" desc="Mobile: Label for the button on an error page to reload the page">
-          Reload
-        </message>
         <message name="IDS_ERRORPAGES_BUTTON_SETTINGS" desc="Mobile: Label for the button on an error page to launch system settings menu">
           Settings
         </message>
@@ -9323,9 +9323,6 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         Here are some suggestions:
       </message>
 
-      <message name="IDS_ERRORPAGES_SUGGESTION_RELOAD" desc="When a page fails to load, we provide a suggestion that the user try reloading the page later">
-        <ph name="BEGIN_LINK">&lt;a jsvalues="href:reloadUrl"&gt;</ph>Reload<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph> this webpage later.
-      </message>
       <message name="IDS_ERRORPAGES_SUGGESTION_DISABLE_EXTENSION" desc="When a page fails to load, we provide a suggestion that the user try disabling an extension that's blocking it">
         Disable your extensions and then <ph name="BEGIN_LINK">&lt;a jsvalues="href:reloadUrl"&gt;</ph>reload<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph> this webpage.
       </message>
@@ -9646,11 +9643,8 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         won't use insecure connections in order to protect your privacy.
       </message>
 
-      <message name="IDS_ERRORPAGES_DETAILS_TEMPLATE" desc="On the bottom of the error page text, there is a box that includes extra information for tech savvy users.">
-        Error <ph name="ERROR_NUMBER">$1<ex>5</ex></ph> (<ph name="ERROR_NAME">$2<ex>net::ERR_FILE_NOT_FOUND</ex></ph>): <ph name="ERROR_TEXT">$3<ex>The requested file is not found.</ex></ph>
-      </message>
-      <message name="IDS_ERRORPAGES_HTTP_DETAILS_TEMPLATE" desc="On the bottom of the error page text for http errors, there is a box that includes extra information for tech savvy users.">
-        HTTP Error <ph name="ERROR_NUMBER">$1<ex>500</ex></ph> (<ph name="ERROR_NAME">$2<ex>Internal Server Error</ex></ph>): <ph name="ERROR_TEXT">$3<ex>The server encountered an internal error.</ex></ph>
+      <message name="IDS_ERRORPAGES_ERROR_CODE" desc="At the bottom of error pages, a non-internationalized string or numeric code is displayed for debugging purposes">
+        Error code: <ph name="ERROR_NAME">$1<ex>ERR_FILE_NOT_FOUND</ex></ph>
       </message>
 
       <message name="IDS_ERRORPAGES_DETAILS_TIMED_OUT" desc="The error message displayed when a page takes too long to load.">

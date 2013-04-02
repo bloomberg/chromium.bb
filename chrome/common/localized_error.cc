@@ -7,6 +7,7 @@
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/string16.h"
+#include "base/string_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -21,6 +22,7 @@
 #include "net/base/net_errors.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebURLError.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/webui/web_ui_util.h"
 #include "webkit/glue/webkit_glue.h"
 
 #if defined(OS_WIN)
@@ -28,6 +30,9 @@
 #endif
 
 using WebKit::WebURLError;
+
+// Some error pages have no details.
+const unsigned int kErrorPagesNoDetails = 0;
 
 namespace {
 
@@ -350,53 +355,6 @@ const LocalizedErrorMap http_error_options[] = {
   },
 };
 
-const char* HttpErrorToString(int status_code) {
-  switch (status_code) {
-  case 403:
-    return "Forbidden";
-  case 410:
-    return "Gone";
-  case 500:
-    return "Internal Server Error";
-  case 501:
-    return "Not Implemented";
-  case 502:
-    return "Bad Gateway";
-  case 503:
-    return "Service Unavailable";
-  case 504:
-    return "Gateway Timeout";
-  case 505:
-    return "HTTP Version Not Supported";
-  default:
-    return "";
-  }
-}
-
-string16 GetErrorDetailsString(const std::string& error_domain,
-                               int error_code,
-                               const string16& details) {
-  int error_page_template;
-  const char* error_string;
-  if (error_domain == net::kErrorDomain) {
-    error_page_template = IDS_ERRORPAGES_DETAILS_TEMPLATE;
-    error_string = net::ErrorToString(error_code);
-    DCHECK(error_code < 0);  // Net error codes are negative.
-    error_code = -error_code;
-  } else if (error_domain == LocalizedError::kHttpErrorDomain) {
-    error_page_template = IDS_ERRORPAGES_HTTP_DETAILS_TEMPLATE;
-    error_string = HttpErrorToString(error_code);
-  } else {
-    NOTREACHED();
-    return string16();
-  }
-  return l10n_util::GetStringFUTF16(
-      error_page_template,
-      base::IntToString16(error_code),
-      ASCIIToUTF16(error_string),
-      details);
-}
-
 const LocalizedErrorMap* FindErrorMapInArray(const LocalizedErrorMap* maps,
                                                    size_t num_maps,
                                                    int error_code) {
@@ -461,7 +419,7 @@ void LocalizedError::GetStrings(const WebKit::WebURLError& error,
     IDS_ERRORPAGES_TITLE_NOT_AVAILABLE,
     IDS_ERRORPAGES_HEADING_NOT_AVAILABLE,
     IDS_ERRORPAGES_SUMMARY_NOT_AVAILABLE,
-    IDS_ERRORPAGES_DETAILS_UNKNOWN,
+    kErrorPagesNoDetails,
     SUGGEST_NONE,
   };
 
@@ -471,12 +429,6 @@ void LocalizedError::GetStrings(const WebKit::WebURLError& error,
       LookupErrorMap(error_domain, error_code);
   if (error_map)
     options = *error_map;
-
-  if (options.suggestions != SUGGEST_NONE) {
-    error_strings->SetString(
-        "suggestionsHeading",
-        l10n_util::GetStringUTF16(IDS_ERRORPAGES_SUGGESTION_HEADING));
-  }
 
   const GURL failed_url = error.unreachableURL;
 
@@ -492,6 +444,14 @@ void LocalizedError::GetStrings(const WebKit::WebURLError& error,
     options.summary_resource_id = IDS_ERRORPAGES_SUMMARY_FILE_ACCESS_DENIED;
     options.details_resource_id = IDS_ERRORPAGES_DETAILS_FILE_ACCESS_DENIED;
     options.suggestions = SUGGEST_NONE;
+  }
+
+  // If there are any suggestions other than reload, populate the suggestion
+  // heading (reload has a button, rather than a suggestion in the list).
+  if ((options.suggestions & ~SUGGEST_RELOAD) != SUGGEST_NONE) {
+    error_strings->SetString(
+        "suggestionsHeading",
+        l10n_util::GetStringUTF16(IDS_ERRORPAGES_SUGGESTION_HEADING));
   }
 
   string16 failed_url_string(UTF8ToUTF16(failed_url.spec()));
@@ -512,11 +472,31 @@ void LocalizedError::GetStrings(const WebKit::WebURLError& error,
   summary->SetString("hostName", failed_url.host());
   summary->SetString("productName",
                      l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
+
+  error_strings->SetString(
+      "more", l10n_util::GetStringUTF16(IDS_ERRORPAGES_BUTTON_MORE));
+  error_strings->SetString(
+      "less", l10n_util::GetStringUTF16(IDS_ERRORPAGES_BUTTON_LESS));
   error_strings->Set("summary", summary);
 
-  string16 details = l10n_util::GetStringUTF16(options.details_resource_id);
-  error_strings->SetString("details",
-      GetErrorDetailsString(error_domain, error_code, details));
+  if (options.details_resource_id != kErrorPagesNoDetails) {
+    error_strings->SetString(
+        "errorDetails", l10n_util::GetStringUTF16(options.details_resource_id));
+  }
+
+  string16 error_string;
+  if (error_domain == net::kErrorDomain) {
+    // Non-internationalized error string, for debugging Chrome itself.
+    std::string ascii_error_string = net::ErrorToString(error_code);
+    // Remove the leading "net::" from the returned string.
+    RemoveChars(ascii_error_string, "net:", &ascii_error_string);
+    error_string = ASCIIToUTF16(ascii_error_string);
+  } else {
+    DCHECK_EQ(LocalizedError::kHttpErrorDomain, error_domain);
+    error_string = base::IntToString16(error_code);
+  }
+  error_strings->SetString("errorCode",
+      l10n_util::GetStringFUTF16(IDS_ERRORPAGES_ERROR_CODE, error_string));
 
   // Platform specific instructions for diagnosing network issues on OSX and
   // Windows.
@@ -549,11 +529,11 @@ void LocalizedError::GetStrings(const WebKit::WebURLError& error,
 #endif  // defined(OS_MACOSX) || defined(OS_WIN)
 
   if (options.suggestions & SUGGEST_RELOAD) {
-    DictionaryValue* suggest_reload = new DictionaryValue;
-    suggest_reload->SetString("msg",
-        l10n_util::GetStringUTF16(IDS_ERRORPAGES_SUGGESTION_RELOAD));
-    suggest_reload->SetString("reloadUrl", failed_url_string);
-    error_strings->Set("suggestionsReload", suggest_reload);
+    DictionaryValue* reload_button = new DictionaryValue;
+    reload_button->SetString("msg",
+        l10n_util::GetStringUTF16(IDS_ERRORPAGES_BUTTON_RELOAD));
+    reload_button->SetString("reloadUrl", failed_url_string);
+    error_strings->Set("reload", reload_button);
   }
 
   if (options.suggestions & SUGGEST_HOSTNAME) {
