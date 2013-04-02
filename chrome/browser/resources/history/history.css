@@ -212,6 +212,7 @@ h2.timeframe {
 
 .entry .domain {
   color: rgb(151, 156, 160);
+  min-width: -webkit-min-content;
   overflow: hidden;
   padding-left: 6px;
   padding-right: 6px;
@@ -251,6 +252,7 @@ html[dir='rtl'] .site-domain {
 
 .entry .time {
   color: rgb(151, 156, 160);
+  min-width: 90px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
