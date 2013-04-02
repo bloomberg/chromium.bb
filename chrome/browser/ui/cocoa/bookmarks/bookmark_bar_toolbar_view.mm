@@ -115,8 +115,8 @@ const CGFloat kBorderRadius = 3.0;
     [border setClip];
     NSGraphicsContext* context = [NSGraphicsContext currentContext];
     CGContextRef cgContext = static_cast<CGContextRef>([context graphicsPort]);
-    CGContextBeginTransparencyLayer(cgContext, NULL);
     CGContextSetAlpha(cgContext, 1 - morph);
+    CGContextBeginTransparencyLayer(cgContext, NULL);
     [context setPatternPhase:[[self window] themePatternPhase]];
     [self drawBackgroundWithOpaque:YES];
     CGContextEndTransparencyLayer(cgContext);
@@ -156,7 +156,7 @@ const CGFloat kBorderRadius = 3.0;
   [[NSColor whiteColor] set];
   NSRectFill([self bounds]);
 
-  // Overlay with a ligher background color.
+  // Overlay with a lighter background color.
   NSColor* toolbarColor = gfx::SkColorToCalibratedNSColor(
         chrome::GetDetachedBookmarkBarBackgroundColor(themeProvider));
   CGFloat alpha = morph * [toolbarColor alphaComponent];
@@ -168,8 +168,8 @@ const CGFloat kBorderRadius = 3.0;
     gfx::ScopedNSGraphicsContextSaveGState bgScopedState;
     NSGraphicsContext* context = [NSGraphicsContext currentContext];
     CGContextRef cgContext = static_cast<CGContextRef>([context graphicsPort]);
-    CGContextBeginTransparencyLayer(cgContext, NULL);
     CGContextSetAlpha(cgContext, 1 - morph);
+    CGContextBeginTransparencyLayer(cgContext, NULL);
     [context setPatternPhase:[[self window] themePatternPhase]];
     [self drawBackgroundWithOpaque:YES];
     CGContextEndTransparencyLayer(cgContext);
