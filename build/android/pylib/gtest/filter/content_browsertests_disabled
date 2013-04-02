@@ -6,7 +6,6 @@ ExternalClearKey/EncryptedMediaTest.*
 ClearKey/EncryptedMediaTest.*
 WorkerTest.*
 MediaTest.*
-AudioLayoutTest.*
 WebGLConformanceTest.*
 MessagePortTest.Tests
 EncryptedMediaTest.InvalidKeySystem
@@ -17,21 +16,30 @@ IndexedDBBrowserTest.ValueSizeTest
 IndexedDBBrowserTest.ConnectionsClosedOnTabClose
 CrossPlatformAccessibilityBrowserTest.*
 DatabaseTest.*
+IndexedDBLayoutTest.BasicTests
 
 # Failures
-WorkerLayoutTest.*
-MediaLayoutTest.*
-IndexedDBLayoutTest.*
 RenderViewHostTest.BaseURLParam
 OffTheRecordClipboardTest.ClearContentData
-FileSystemLayoutTest.*
 GpuPixelBrowserTest.*
-BlobLayoutTest.XhrResponseBlob
 FileSystemBrowserTestWithLowQuota.QuotaTest
-BlobLayoutTest.*
 ChildProcessSecurityPolicyInProcessBrowserTest.NoLeak
-
-# Crashes
+AudioLayoutTest.AudioDataUrl
+FileSystemLayoutTest.WorkersFileWriterEventsSharedWorker
+MediaLayoutTest.VideoAutoplayTest
+MediaLayoutTest.VideoLoopTest
+WorkerLayoutTest.SharedWorkerFastContextGC
+WorkerLayoutTest.SharedWorkerFastException
+WorkerLayoutTest.SharedWorkerFastGC
+WorkerLayoutTest.SharedWorkerFastInIframe
+WorkerLayoutTest.SharedWorkerFastLocation
+WorkerLayoutTest.SharedWorkerFastName
+WorkerLayoutTest.SharedWorkerFastNavigator
+WorkerLayoutTest.SharedWorkerFastReplaceGlobalConstructor
+WorkerLayoutTest.SharedWorkerFastReplaceSelf
+WorkerLayoutTest.SharedWorkerFastScriptError
+WorkerLayoutTest.SharedWorkerFastShared
+WorkerLayoutTest.SharedWorkerFastSimple
 WorkerXHRHttpLayoutTest.Tests
 
 # Needs to start the test server before

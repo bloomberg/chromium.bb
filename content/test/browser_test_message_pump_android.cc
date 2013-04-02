@@ -56,7 +56,6 @@ void BrowserTestMessagePumpAndroid::Run(Delegate* delegate) {
   RunState state(delegate, state_ ? state_->run_depth + 1 : 1);
   RunState* previous_state = state_;
   state_ = &state;
-  DCHECK(state_->run_depth <= 1) << "Only one level nested loops supported";
 
   JNIEnv* env = base::android::AttachCurrentThread();
   DCHECK(env);

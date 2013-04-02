@@ -131,6 +131,29 @@ def _GetDataFilesForTestSuite(test_suite_basename):
     ]
   return []
 
+def _GetOptionalDataFilesForTestSuite(test_suite_basename):
+  """Returns a list of data files/dirs that are pushed if present.
+
+  Args:
+    test_suite_basename: The test suite basename for which to return file paths.
+
+  Returns:
+    A list of test file and directory paths.
+  """
+  if test_suite_basename == 'content_browsertests':
+    # See http://crbug.com/105104 for why these are needed.
+    return [
+      'third_party/WebKit/LayoutTests/fast/events',
+      'third_party/WebKit/LayoutTests/fast/files',
+      'third_party/WebKit/LayoutTests/fast/filesystem',
+      'third_party/WebKit/LayoutTests/fast/js/resources',
+      'third_party/WebKit/LayoutTests/fast/workers',
+      'third_party/WebKit/LayoutTests/http/tests',
+      'third_party/WebKit/LayoutTests/media',
+      'third_party/WebKit/LayoutTests/storage/indexeddb',
+    ]
+  return []
+
 
 def _TestSuiteRequiresMockTestServer(test_suite_basename):
   """Returns True if the test suite requires mock test server."""
@@ -206,6 +229,13 @@ class TestRunner(base_test_runner.BaseTestRunner):
       self.adb.WaitForSdCardReady(20)
       for data in test_data:
         self.CopyTestData([data], self.adb.GetExternalStorage())
+    optional_test_data = _GetOptionalDataFilesForTestSuite(
+        self.test_package.test_suite_basename)
+    if optional_test_data:
+      self.adb.WaitForSdCardReady(20)
+      for data in optional_test_data:
+        if os.path.exists(data):
+          self.CopyTestData([data], self.adb.GetExternalStorage())
     if self.test_package.test_suite_basename == 'webkit_unit_tests':
       self.PushWebKitUnitTestsData()
 
