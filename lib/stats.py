@@ -5,8 +5,10 @@
 
 """Library for uploading command stats to AppEngine."""
 
+import contextlib
 import logging
 import os
+import parallel
 import urllib
 import urllib2
 
@@ -14,15 +16,6 @@ from chromite.buildbot import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import git
 from chromite.lib import osutils
-
-# To test with an app engine instance on localhost, set envvar
-# export CROS_BUILD_STATS_SITE="http://localhost:8080"
-
-PAGE = 'upload_command_stats'
-DEFAULT_SITE = 'https://chromiumos-build-stats.appspot.com'
-SITE = os.environ.get('CROS_BUILD_STATS_SITE', DEFAULT_SITE)
-URL = '%s/%s' % (SITE, PAGE)
-UPLOAD_TIMEOUT = 5
 
 
 class Stats(object):
@@ -86,6 +79,14 @@ class Stats(object):
 class StatsUploader(object):
   """Functionality to upload the stats to the AppEngine server."""
 
+  # To test with an app engine instance on localhost, set envvar
+  # export CROS_BUILD_STATS_SITE="http://localhost:8080"
+  _PAGE = 'upload_command_stats'
+  _DEFAULT_SITE = 'https://chromiumos-build-stats.appspot.com'
+  _SITE = os.environ.get('CROS_BUILD_STATS_SITE', _DEFAULT_SITE)
+  URL = '%s/%s' % (_SITE, _PAGE)
+  UPLOAD_TIMEOUT = 5
+
   _DISABLE_FILE = '~/.disable_build_stats_upload'
 
   _DOMAIN_WHITELIST = (constants.CORP_DOMAIN, constants.GOLO_DOMAIN)
@@ -123,7 +124,7 @@ class StatsUploader(object):
     return upload
 
   @classmethod
-  def Upload(cls, stats, url=URL, timeout=UPLOAD_TIMEOUT):
+  def Upload(cls, stats, url=None, timeout=None):
     """Upload |stats| to |url|.
 
       Does nothing if upload conditions aren't met.
@@ -133,12 +134,17 @@ class StatsUploader(object):
         url: The url to send the request to.
         timeout: A timeout value to set, in seconds.
     """
+    if url is None:
+      url = cls.URL
+    if timeout is None:
+      timeout = cls.UPLOAD_TIMEOUT
+
     if not cls._UploadConditionsMet(stats):
       return
 
     with cros_build_lib.SubCommandTimeout(timeout):
       try:
-        cls._Upload(stats, url=url)
+        cls._Upload(stats, url)
       # Stats upload errors are silenced, for the sake of user experience.
       except cros_build_lib.TimeoutError:
         logging.debug(cls.TIMEOUT_ERROR, timeout)
@@ -146,8 +152,30 @@ class StatsUploader(object):
         logging.debug(cls.ENVIRONMENT_ERROR, exc_info=True)
 
   @classmethod
-  def _Upload(cls, stats, url=URL):
+  def _Upload(cls, stats, url):
     logging.debug('Uploading command stats to %r', url)
     data = urllib.urlencode(stats.data)
     request = urllib2.Request(url)
     urllib2.urlopen(request, data)
+
+
+UNCAUGHT_UPLOAD_ERROR = 'Uncaught command stats exception'
+
+
+@contextlib.contextmanager
+def UploadContext():
+  """Provides a context where stats are uploaded in the background.
+
+  Yields:
+    A queue that accepts an arg-list of the format [stats, url, timeout].
+  """
+  try:
+    # We need to use parallel.BackgroundTaskRunner, and not
+    # parallel.RunParallelTasks, because with RunParallelTasks, both the
+    # uploader and the subcommand are treated as background tasks, and the
+    # subcommand will lose responsiveness, since its output will be buffered.
+    with parallel.BackgroundTaskRunner(StatsUploader.Upload) as queue:
+      yield queue
+  except parallel.BackgroundFailure:
+    # Display unexpected errors, but don't propagate the error.
+    logging.error('Uncaught command stats exception', exc_info=True)

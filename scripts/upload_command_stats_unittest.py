@@ -13,16 +13,17 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import stats
+from chromite.lib import stats_unittest
 from chromite.scripts import upload_command_stats
 
 TEST_FILE = """\
 Chromium OS Build Command Stats - Version 1
 cpu_count 32
 cmd_args --board=lumpy
-host typewriter.corp.google.com
+host typewriter.mtv.corp.google.com
 run_time 0
 cmd_line ./build_packages --board=lumpy
-username rcui@chromium.org
+username monkey@chromium.org
 cmd_base build_packages
 cpu_type Intel(R) Xeon(R) CPU E5-2690 0 @ 2.90GHz
 board lumpy
@@ -39,7 +40,7 @@ class RunScriptTest(cros_test_lib.MockTempDirTestCase,
     self.argv = [self.upload_file]
     self.PatchObject(cros_build_lib, 'GetHostDomain', autospec=True,
                      return_value='noname.com')
-    self.PatchObject(stats.StatsUploader, '_Upload', autospec=True)
+    self.StartPatcher(stats_unittest.StatsUploaderMock())
 
   def testNormalRun(self):
     """Going for code coverage."""

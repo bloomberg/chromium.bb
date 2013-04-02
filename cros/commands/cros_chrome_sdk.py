@@ -16,6 +16,7 @@ from chromite.lib import cros_build_lib
 from chromite.lib import gclient
 from chromite.lib import gs
 from chromite.lib import osutils
+from chromite.lib import stats
 from chromite.buildbot import cbuildbot_config
 from chromite.buildbot import constants
 
@@ -217,6 +218,19 @@ class ChromeSDKCommand(cros.CrosCommand):
       'GOLD_SET',
       'GYP_DEFINES',
   )
+
+  # Override base class property to enable stats upload.
+  upload_stats = True
+
+  @property
+  def upload_stats_timeout(self):
+    # Give a longer timeout for interactive SDK shell invocations, since the
+    # user will not notice a longer wait because it's happening in the
+    # background.
+    if self.options.cmd:
+      return super(ChromeSDKCommand, self).upload_stats_timeout
+    else:
+      return stats.StatsUploader.UPLOAD_TIMEOUT
 
   @classmethod
   def AddParser(cls, parser):

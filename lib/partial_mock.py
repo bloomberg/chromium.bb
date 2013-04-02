@@ -327,6 +327,7 @@ class PartialMock(object):
     self.backup = {}
     self.patchers = {}
     self.patched = {}
+    self.external_patchers = []
     self.create_tempdir = create_tempdir
 
     # Set when start() is called.
@@ -336,8 +337,14 @@ class PartialMock(object):
     self.started = False
 
     self._results = {}
-    for attr in self.ATTRS:
-      self._results[attr] = MockedCallResults(attr)
+
+    if not all([self.TARGET, self.ATTRS]) and any([self.TARGET, self.ATTRS]):
+      raise AssertionError('TARGET=%r but ATTRS=%r!'
+                           % (self.TARGET, self.ATTRS))
+
+    if self.ATTRS is not None:
+      for attr in self.ATTRS:
+        self._results[attr] = MockedCallResults(attr)
 
   def __enter__(self):
     return self.start()
@@ -359,7 +366,15 @@ class PartialMock(object):
     not be deleted until after this function returns.
     """
 
+  def StartPatcher(self, patcher):
+    """PartialMock will stop the patcher when stop() is called."""
+    patcher.start()
+    self.external_patchers.append(patcher)
+
   def _start(self):
+    if not all([self.TARGET, self.ATTRS]):
+      return
+
     chunks = self.TARGET.rsplit('.', 1)
     module = cros_build_lib.load_module(chunks[0])
 
@@ -403,7 +418,8 @@ class PartialMock(object):
       if self.__saved_env__ is not None:
         osutils.SetEnvironment(self.__saved_env__)
 
-      tasks = [self.PreStop] + [p.stop for p in self.patchers.itervalues()]
+      tasks = ([self.PreStop] + [p.stop for p in self.patchers.itervalues()] +
+               [p.stop for p in self.external_patchers])
       if self._tempdir_obj is not None:
         tasks += [self._tempdir_obj.Cleanup]
       cros_build_lib.SafeRun(tasks)
