@@ -183,7 +183,10 @@ bool WebNotificationTray::ShowPopups() {
     // No bubble wrappers here, since |popup_collection_| is not a bubble but a
     // collection of widgets.
     popup_collection_.reset(new message_center::MessagePopupCollection(
-        GetWidget()->GetNativeView(), message_center()));
+        ash::Shell::GetContainer(
+            GetWidget()->GetNativeView()->GetRootWindow(),
+            internal::kShellWindowId_SettingBubbleContainer),
+        message_center()));
   } else {
     message_center::MessagePopupBubble* popup_bubble =
         new message_center::MessagePopupBubble(message_center());

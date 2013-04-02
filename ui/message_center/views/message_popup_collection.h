@@ -37,9 +37,9 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
     : public views::WidgetObserver,
       public base::SupportsWeakPtr<MessagePopupCollection> {
  public:
-  // |context| specifies the context to create toast windows. It can be NULL
-  // for non-aura environment. See comments in ui/views/widget/widget.h.
-  MessagePopupCollection(gfx::NativeView context,
+  // |parent| specifies the parent widget of the toast windows. The default
+  // parent will be used for NULL.
+  MessagePopupCollection(gfx::NativeView parent,
                          MessageCenter* message_center);
   virtual ~MessagePopupCollection();
 
@@ -58,7 +58,7 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
   // Overridden from views::WidgetObserver:
   virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE;
 
-  gfx::NativeView context_;
+  gfx::NativeView parent_;
   MessageCenter* message_center_;
   ToastContainer toasts_;
 

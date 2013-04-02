@@ -42,12 +42,12 @@ class ToastContentsView : public views::WidgetDelegateView {
     delay_ = base::TimeDelta::FromSeconds(seconds);
   }
 
-  views::Widget* CreateWidget(gfx::NativeView context) {
+  views::Widget* CreateWidget(gfx::NativeView parent) {
     views::Widget::InitParams params(
         views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
     params.keep_on_top = true;
-    if (context)
-      params.context = context;
+    if (parent)
+      params.parent = parent;
     else
       params.top_level = true;
     params.transparent = true;
@@ -142,9 +142,9 @@ class ToastContentsView : public views::WidgetDelegateView {
   DISALLOW_COPY_AND_ASSIGN(ToastContentsView);
 };
 
-MessagePopupCollection::MessagePopupCollection(gfx::NativeView context,
+MessagePopupCollection::MessagePopupCollection(gfx::NativeView parent,
                                                MessageCenter* message_center)
-    : context_(context),
+    : parent_(parent),
       message_center_(message_center) {
   DCHECK(message_center_);
   UpdatePopups();
@@ -164,15 +164,15 @@ void MessagePopupCollection::UpdatePopups() {
   }
 
   gfx::Rect work_area;
-  if (!context_) {
-    // On Win+Aura, we don't have a context since the popups currently show up
+  if (!parent_) {
+    // On Win+Aura, we don't have a parent since the popups currently show up
     // on the Windows desktop, not in the Aura/Ash desktop.  This code will
     // display the popups on the primary display.
     gfx::Screen* screen = gfx::Screen::GetNativeScreen();
     work_area = screen->GetPrimaryDisplay().work_area();
   } else {
-    gfx::Screen* screen = gfx::Screen::GetScreenFor(context_);
-    work_area = screen->GetDisplayNearestWindow(context_).work_area();
+    gfx::Screen* screen = gfx::Screen::GetScreenFor(parent_);
+    work_area = screen->GetDisplayNearestWindow(parent_).work_area();
   }
 
   std::set<std::string> old_toast_ids;
@@ -205,7 +205,7 @@ void MessagePopupCollection::UpdatePopups() {
       toast_iter->second->SetContents(view);
     } else {
       ToastContentsView* toast = new ToastContentsView(*iter, AsWeakPtr());
-      widget = toast->CreateWidget(context_);
+      widget = toast->CreateWidget(parent_);
       toast->SetContents(view);
       widget->AddObserver(this);
       toast->StartTimer();
