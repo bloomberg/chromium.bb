@@ -56,7 +56,6 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
   virtual void OnDidChangeFocus(View* focused_before,
                                 View* focused_now) OVERRIDE;
 
- protected:
   // View implementation:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
@@ -67,6 +66,19 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
 
   // ButtonListener implementation:
   virtual void ButtonPressed(Button* sender, const ui::Event& event) OVERRIDE;
+
+ protected:
+  // For testing.
+  DialogClientView(View* contents_view);
+
+  // Returns the DialogDelegate for the window. Virtual for testing.
+  virtual DialogDelegate* GetDialogDelegate() const;
+
+  // Create and add the extra view, if supplied by the delegate.
+  void CreateExtraView();
+
+  // Creates and adds the footnote view, if supplied by the delegate.
+  void CreateFootnoteView();
 
  private:
   bool has_dialog_buttons() const { return ok_button_ || cancel_button_; }
@@ -79,15 +91,6 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
 
   // Returns the insets for the buttons and extra view.
   gfx::Insets GetButtonRowInsets() const;
-
-  // Create and add the extra view, if supplied by the delegate.
-  void CreateExtraView();
-
-  // Creates and adds the footnote view, if supplied by the delegate.
-  void CreateFootnoteView();
-
-  // Returns the DialogDelegate for the window.
-  DialogDelegate* GetDialogDelegate() const;
 
   // Closes the widget.
   void Close();

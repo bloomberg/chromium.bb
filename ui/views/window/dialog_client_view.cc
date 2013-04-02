@@ -28,6 +28,12 @@ void UpdateButton(LabelButton* button,
   button->SetEnabled(dialog->IsDialogButtonEnabled(type));
 }
 
+// Returns true if the given view should be shown (i.e. exists and is
+// visible).
+bool ShouldShow(View* view) {
+  return view && view->visible();
+}
+
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -177,8 +183,9 @@ gfx::Size DialogClientView::GetPreferredSize() {
       (ok_button_ ? ok_button_->GetPreferredSize().width() : 0) +
       (cancel_button_ ? cancel_button_->GetPreferredSize().width() : 0) +
       (cancel_button_ && ok_button_ ? kRelatedButtonHSpacing : 0) +
-      (extra_view_ ? extra_view_->GetPreferredSize().width() : 0) +
-      (extra_view_ && has_dialog_buttons() ? kRelatedButtonHSpacing : 0),
+      (ShouldShow(extra_view_) ? extra_view_->GetPreferredSize().width() : 0) +
+      (ShouldShow(extra_view_) && has_dialog_buttons() ?
+           kRelatedButtonHSpacing : 0),
       0);
 
   int buttons_height = GetButtonsAndExtraViewRowHeight();
@@ -189,20 +196,22 @@ gfx::Size DialogClientView::GetPreferredSize() {
     size.Enlarge(insets.width(), insets.height());
   }
 
-  // Increase the size as needed to fit the footnote view.
-  if (footnote_view_ && footnote_view_->visible()) {
-    gfx::Size footnote_size = footnote_view_->GetPreferredSize();
-    if (!footnote_size.IsEmpty()) {
-      size.Enlarge(0, footnote_size.height() + kRelatedControlVerticalSpacing);
-      size.set_width(std::max(size.width(), footnote_size.width()));
-    }
-  }
-
   // Increase the size as needed to fit the contents view.
   // NOTE: The contents view is not inset on the top or side client view edges.
   gfx::Size contents_size = contents_view()->GetPreferredSize();
   size.Enlarge(0, contents_size.height());
   size.set_width(std::max(size.width(), contents_size.width()));
+
+  // Increase the size as needed to fit the footnote view.
+  if (ShouldShow(footnote_view_)) {
+    gfx::Size footnote_size = footnote_view_->GetPreferredSize();
+    if (!footnote_size.IsEmpty())
+      size.set_width(std::max(size.width(), footnote_size.width()));
+
+    int footnote_height = footnote_view_->GetHeightForWidth(size.width());
+    size.Enlarge(0, footnote_height);
+  }
+
   return size;
 }
 
@@ -210,18 +219,17 @@ void DialogClientView::Layout() {
   gfx::Rect bounds = GetContentsBounds();
 
   // Layout the footnote view.
-  if (footnote_view_ && footnote_view_->visible()) {
+  if (ShouldShow(footnote_view_)) {
     const int height = footnote_view_->GetHeightForWidth(bounds.width());
     footnote_view_->SetBounds(bounds.x(), bounds.bottom() - height,
                               bounds.width(), height);
     if (height != 0)
-      bounds.Inset(0, 0, 0, height + kRelatedControlVerticalSpacing);
+      bounds.Inset(0, 0, 0, height);
   }
-
-  bounds.Inset(GetButtonRowInsets());
 
   // Layout the row containing the buttons and the extra view.
   if (has_dialog_buttons() || extra_view_) {
+    bounds.Inset(GetButtonRowInsets());
     const int height = GetButtonsAndExtraViewRowHeight();
     gfx::Rect row_bounds(bounds.x(), bounds.bottom() - height,
                          bounds.width(), height);
@@ -234,7 +242,7 @@ void DialogClientView::Layout() {
     }
     if (ok_button_) {
       const gfx::Size size = ok_button_->GetPreferredSize();
-        row_bounds.set_width(row_bounds.width() - size.width());
+      row_bounds.set_width(row_bounds.width() - size.width());
       ok_button_->SetBounds(row_bounds.right(), row_bounds.y(),
                             size.width(), height);
       row_bounds.set_width(row_bounds.width() - kRelatedButtonHSpacing);
@@ -294,41 +302,20 @@ void DialogClientView::ButtonPressed(Button* sender, const ui::Event& event) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// DialogClientView, private:
+// DialogClientView, protected:
 
-LabelButton* DialogClientView::CreateDialogButton(ui::DialogButton type) {
-  const string16 title = GetDialogDelegate()->GetDialogButtonLabel(type);
-  LabelButton* button = new LabelButton(this, title);
-  button->SetStyle(Button::STYLE_NATIVE_TEXTBUTTON);
+DialogClientView::DialogClientView(View* contents_view)
+    : ClientView(NULL, contents_view),
+      ok_button_(NULL),
+      cancel_button_(NULL),
+      default_button_(NULL),
+      focus_manager_(NULL),
+      extra_view_(NULL),
+      footnote_view_(NULL),
+      notified_delegate_(false) {}
 
-  const int kDialogMinButtonWidth = 75;
-  button->set_min_size(gfx::Size(kDialogMinButtonWidth, 0));
-  button->SetGroup(kButtonGroup);
-  if (type == GetDialogDelegate()->GetDefaultDialogButton()) {
-    default_button_ = button;
-    button->SetIsDefault(true);
-  }
-  return button;
-}
-
-int DialogClientView::GetButtonsAndExtraViewRowHeight() const {
-  int extra_view_height = extra_view_ && extra_view_->visible() ?
-      extra_view_->GetPreferredSize().height() : 0;
-  int buttons_height = std::max(
-      ok_button_ ? ok_button_->GetPreferredSize().height() : 0,
-      cancel_button_ ? cancel_button_->GetPreferredSize().height() : 0);
-  return std::max(extra_view_height, buttons_height);
-}
-
-gfx::Insets DialogClientView::GetButtonRowInsets() const {
-  if (GetButtonsAndExtraViewRowHeight() == 0)
-    return gfx::Insets();
-
-  // NOTE: The insets only apply to the buttons, extra view, and footnote view.
-  return DialogDelegate::UseNewStyle() ?
-      gfx::Insets(0, 20, 20, 20) :
-      gfx::Insets(0, kButtonHEdgeMargin,
-                  kButtonVEdgeMargin, kButtonHEdgeMargin);
+DialogDelegate* DialogClientView::GetDialogDelegate() const {
+  return GetWidget()->widget_delegate()->AsDialogDelegate();
 }
 
 void DialogClientView::CreateExtraView() {
@@ -351,8 +338,42 @@ void DialogClientView::CreateFootnoteView() {
     AddChildView(footnote_view_);
 }
 
-DialogDelegate* DialogClientView::GetDialogDelegate() const {
-  return GetWidget()->widget_delegate()->AsDialogDelegate();
+////////////////////////////////////////////////////////////////////////////////
+// DialogClientView, private:
+
+LabelButton* DialogClientView::CreateDialogButton(ui::DialogButton type) {
+  const string16 title = GetDialogDelegate()->GetDialogButtonLabel(type);
+  LabelButton* button = new LabelButton(this, title);
+  button->SetStyle(Button::STYLE_NATIVE_TEXTBUTTON);
+
+  const int kDialogMinButtonWidth = 75;
+  button->set_min_size(gfx::Size(kDialogMinButtonWidth, 0));
+  button->SetGroup(kButtonGroup);
+  if (type == GetDialogDelegate()->GetDefaultDialogButton()) {
+    default_button_ = button;
+    button->SetIsDefault(true);
+  }
+  return button;
+}
+
+int DialogClientView::GetButtonsAndExtraViewRowHeight() const {
+  int extra_view_height = ShouldShow(extra_view_) ?
+      extra_view_->GetPreferredSize().height() : 0;
+  int buttons_height = std::max(
+      ok_button_ ? ok_button_->GetPreferredSize().height() : 0,
+      cancel_button_ ? cancel_button_->GetPreferredSize().height() : 0);
+  return std::max(extra_view_height, buttons_height);
+}
+
+gfx::Insets DialogClientView::GetButtonRowInsets() const {
+  if (GetButtonsAndExtraViewRowHeight() == 0)
+    return gfx::Insets();
+
+  // NOTE: The insets only apply to the buttons, extra view, and footnote view.
+  return DialogDelegate::UseNewStyle() ?
+      gfx::Insets(0, 20, 20, 20) :
+      gfx::Insets(0, kButtonHEdgeMargin,
+                  kButtonVEdgeMargin, kButtonHEdgeMargin);
 }
 
 void DialogClientView::Close() {

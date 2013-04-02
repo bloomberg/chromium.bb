@@ -5,45 +5,12 @@
 #include "ui/views/layout/box_layout.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/views/test/test_views.h"
 #include "ui/views/view.h"
 
 namespace views {
 
 namespace {
-
-class StaticSizedView : public View {
- public:
-  explicit StaticSizedView(const gfx::Size& size)
-    : size_(size) {
-  }
-  virtual ~StaticSizedView() {}
-
-  virtual gfx::Size GetPreferredSize() OVERRIDE {
-    return size_;
-  }
-
- private:
-  gfx::Size size_;
-
-  DISALLOW_COPY_AND_ASSIGN(StaticSizedView);
-};
-
-class ProportionallySizedView : public View {
- public:
-  explicit ProportionallySizedView(int factor) : factor_(factor) {}
-  virtual ~ProportionallySizedView() {}
-
-  virtual int GetHeightForWidth(int w) OVERRIDE {
-    return w * factor_;
-  }
-
- private:
-  // The multiplicative factor between width and height, i.e.
-  // height = width * factor_.
-  int factor_;
-
-  DISALLOW_COPY_AND_ASSIGN(ProportionallySizedView);
-};
 
 class BoxLayoutTest : public testing::Test {
  public:
