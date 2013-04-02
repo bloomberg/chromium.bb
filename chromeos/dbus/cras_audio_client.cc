@@ -293,7 +293,7 @@ class CrasAudioClientImpl : public CrasAudioClient {
 class CrasAudioClientStubImpl : public CrasAudioClient {
  public:
   CrasAudioClientStubImpl() {
-    LOG(ERROR) << "CrasAudioClientStubImpl is created";
+    VLOG(1) << "CrasAudioClientStubImpl is created";
   }
   ~CrasAudioClientStubImpl() {}
 
