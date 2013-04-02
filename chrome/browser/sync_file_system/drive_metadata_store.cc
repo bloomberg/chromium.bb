@@ -92,11 +92,15 @@ void MetadataKeyToOriginAndPath(const std::string& metadata_key,
 }
 
 bool UpdateResourceIdMap(ResourceIdByOrigin* map,
+                         OriginByResourceId* reverse_map,
                          const GURL& origin,
                          const std::string& resource_id) {
   ResourceIdByOrigin::iterator found = map->find(origin);
   if (found == map->end())
     return false;
+  reverse_map->erase(found->second);
+  reverse_map->insert(std::make_pair(resource_id, origin));
+
   found->second = resource_id;
   return true;
 }
@@ -510,14 +514,19 @@ void DriveMetadataStore::SetOriginRootDirectory(
   DCHECK(IsKnownOrigin(origin));
 
   DriveMetadataDB::OriginSyncType sync_type;
-  if (UpdateResourceIdMap(&batch_sync_origins_, origin, resource_id))
+  if (UpdateResourceIdMap(&batch_sync_origins_, &origin_by_resource_id_,
+                          origin, resource_id)) {
     sync_type = DriveMetadataDB::BATCH_SYNC_ORIGIN;
-  else if (UpdateResourceIdMap(&incremental_sync_origins_, origin, resource_id))
+  } else if (UpdateResourceIdMap(
+      &incremental_sync_origins_, &origin_by_resource_id_,
+      origin, resource_id)) {
     sync_type = DriveMetadataDB::INCREMENTAL_SYNC_ORIGIN;
-  else if (UpdateResourceIdMap(&disabled_origins_, origin, resource_id))
+  } else if (UpdateResourceIdMap(&disabled_origins_, &origin_by_resource_id_,
+                                 origin, resource_id)) {
     sync_type = DriveMetadataDB::DISABLED_ORIGIN;
-  else
+  } else {
     return;
+  }
   base::PostTaskAndReplyWithResult(
       file_task_runner_, FROM_HERE,
       base::Bind(&DriveMetadataDB::SetOriginRootDirectory,
