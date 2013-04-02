@@ -16,6 +16,9 @@
 # include "fcntl.h"
 #endif
 
+#include <string.h>
+
+#include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/shared/imc/nacl_imc_c.h"
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
 #include "native_client/src/trusted/desc/nacl_desc_effector.h"
@@ -76,7 +79,9 @@ static void NaClDescIoDescDtor(struct NaClRefCount *vself) {
 
   NaClLog(4, "NaClDescIoDescDtor(0x%08"NACL_PRIxPTR").\n",
           (uintptr_t) vself);
-  NaClHostDescClose(self->hd);
+  if (0 != NaClHostDescClose(self->hd)) {
+    NaClLog(LOG_FATAL, "NaClDescIoDescDtor: NaClHostDescClose failed\n");
+  }
   free(self->hd);
   self->hd = NULL;
   vself->vtbl = (struct NaClRefCountVtbl const *) &kNaClDescVtbl;
@@ -150,12 +155,12 @@ static uintptr_t NaClDescIoDescMap(struct NaClDesc         *vself,
   uintptr_t             addr;
 
   /*
-   * prot must be PROT_NONE or a combination of PROT_{READ|WRITE}
+   * prot must only contain NACL_ABI_PROT_* flags.
    */
-  if (0 != (~(NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE) & prot)) {
+  if (0 != (~(NACL_ABI_PROT_MASK) & prot)) {
     NaClLog(LOG_INFO,
             ("NaClDescIoDescMap: prot has other bits"
-             " than PROT_{READ|WRITE}\n"));
+             " than NACL_ABI_PROT_{READ|WRITE|EXEC}\n"));
     return -NACL_ABI_EINVAL;
   }
 
@@ -254,6 +259,7 @@ static int NaClDescIoDescFstat(struct NaClDesc         *vself,
 static int NaClDescIoDescExternalizeSize(struct NaClDesc *vself,
                                          size_t          *nbytes,
                                          size_t          *nhandles) {
+  struct NaClDescIoDesc *self = (struct NaClDescIoDesc *) vself;
   int rv;
 
   rv = NaClDescExternalizeSize(vself, nbytes, nhandles);
@@ -261,6 +267,8 @@ static int NaClDescIoDescExternalizeSize(struct NaClDesc *vself,
     return rv;
   }
   *nhandles += 1;
+  *nbytes += sizeof self->hd->flags;
+  /* For Windows, we do not need to send flProtect since it is a cache */
   return 0;
 }
 
@@ -277,9 +285,10 @@ static int NaClDescIoDescExternalize(struct NaClDesc           *vself,
     return rv;
   }
 
+  memcpy(xfer->next_byte, &self->hd->flags, sizeof self->hd->flags);
+  xfer->next_byte += sizeof self->hd->flags;
 #if NACL_WINDOWS
   h = (HANDLE) _get_osfhandle(self->hd->d);
-
   *xfer->next_handle++ = (NaClHandle) h;
 #else
   *xfer->next_handle++ = self->hd->d;
@@ -335,6 +344,7 @@ int NaClDescIoInternalize(struct NaClDesc               **out_desc,
   int                   rv;
   NaClHandle            h;
   int                   d;
+  int                   flags;
   struct NaClHostDesc   *nhdp;
   struct NaClDescIoDesc *ndidp;
 
@@ -358,10 +368,16 @@ int NaClDescIoInternalize(struct NaClDesc               **out_desc,
     rv = -NACL_ABI_ENOMEM;
     goto cleanup;
   }
-  if (xfer->next_handle == xfer->handle_buffer_end) {
+  if (xfer->next_handle == xfer->handle_buffer_end ||
+      xfer->next_byte + sizeof ndidp->hd->flags > xfer->byte_buffer_end) {
     rv = -NACL_ABI_EIO;
     goto cleanup_ndidp_dtor;
   }
+
+  NACL_COMPILE_TIME_ASSERT(sizeof flags == sizeof(ndidp->hd->flags));
+  memcpy(&flags, xfer->next_byte, sizeof flags);
+  xfer->next_byte += sizeof flags;
+
   h = *xfer->next_handle;
   *xfer->next_handle++ = NACL_INVALID_HANDLE;
 #if NACL_WINDOWS
@@ -376,7 +392,7 @@ int NaClDescIoInternalize(struct NaClDesc               **out_desc,
    * We mark it as read/write, but don't really know for sure until we
    * try to make those syscalls (in which case we'd get EBADF).
    */
-  if ((rv = NaClHostDescPosixTake(nhdp, d, NACL_ABI_O_RDWR)) < 0) {
+  if ((rv = NaClHostDescPosixTake(nhdp, d, flags)) < 0) {
     goto cleanup_ndidp_dtor;
   }
   h = NACL_INVALID_HANDLE;  /* nhdp took ownership of h */
@@ -392,7 +408,9 @@ int NaClDescIoInternalize(struct NaClDesc               **out_desc,
   rv = 0;
  cleanup_nhdp_dtor:
   if (rv < 0) {
-    (void) NaClHostDescClose(nhdp);
+    if (0 != NaClHostDescClose(nhdp)) {
+      NaClLog(LOG_FATAL, "NaClDescIoInternalize: NaClHostDescClose failed\n");
+    }
   }
  cleanup_ndidp_dtor:
   if (rv < 0) {

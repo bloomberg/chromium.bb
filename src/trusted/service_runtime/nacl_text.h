@@ -16,6 +16,16 @@ EXTERN_C_BEGIN
 struct NaClApp;
 struct NaClAppThread;
 
+/*
+ * If/when we decide to support munmap of validated text regions
+ * into the dynamic code region, we will need another bit per page
+ * to know whether a page is backed by shm or by an mmapped file --
+ * i.e., if it was a file, we will need to restore the shm mapping
+ * (this is costly, so should be avoided if it's unnecessary;
+ * additionally, if it wasn't, the munmap should fail, and
+ * conversely, dyncode_delete should fail on an mmapped region).
+ */
+
 struct NaClDynamicRegion {
   uintptr_t start;
   size_t size;

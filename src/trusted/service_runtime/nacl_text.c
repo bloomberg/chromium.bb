@@ -170,9 +170,11 @@ NaClErrorCode NaClMakeDynamicTextShared(struct NaClApp *nap) {
   {
     /*
      * We need a loop here because the Map() call above creates one
-     * mapping per page.  However, there is no need for it to do that
-     * for the dynamic code area.
-     * TODO(mseaborn): Create a single mapping here.
+     * mapping per page.  This is needed for mmap of validated file
+     * regions, since we do not know where such destination map pages
+     * will be, so the later over-mapping may occur from any
+     * NACL_MAP_PAGESIZE boundary to any other such boundary within
+     * the dynamic code region.
      */
     uintptr_t offset;
     for (offset = 0; offset < dynamic_text_size; offset += NACL_MAP_PAGESIZE) {

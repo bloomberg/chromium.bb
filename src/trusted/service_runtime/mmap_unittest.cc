@@ -210,7 +210,7 @@ TEST_F(MmapTest, TestUnmapFileMapping) {
 
   uintptr_t sysaddr = NaClUserToSys(&app, addr);
 #if NACL_WINDOWS
-  CheckMapping(sysaddr, size, MEM_COMMIT, PAGE_WRITECOPY, MEM_MAPPED);
+  CheckMapping(sysaddr, size, MEM_COMMIT, PAGE_READWRITE, MEM_MAPPED);
 #elif NACL_LINUX
   CheckMapping(sysaddr, size, PROT_READ | PROT_WRITE, MAP_SHARED);
 #elif NACL_OSX
@@ -323,7 +323,7 @@ TEST_F(MmapTest, TestProtectFileMapping) {
 
   uintptr_t sysaddr = NaClUserToSys(&app, addr);
 #if NACL_WINDOWS
-  CheckMapping(sysaddr, size, MEM_COMMIT, PAGE_WRITECOPY, MEM_MAPPED);
+  CheckMapping(sysaddr, size, MEM_COMMIT, PAGE_READWRITE, MEM_MAPPED);
 #elif NACL_LINUX
   CheckMapping(sysaddr, size, PROT_READ | PROT_WRITE, MAP_SHARED);
 #elif NACL_OSX

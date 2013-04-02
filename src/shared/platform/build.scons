@@ -149,12 +149,12 @@ nacl_host_dir_test_exe = env.ComponentProgram('nacl_host_dir_test',
 
 tmpdir = tempfile.mkdtemp()
 
-def CleanupBinder(dirname):
+def CleanupDirBinder(dirname):
   def Cleanup():
     shutil.rmtree(dirname, True)
   return Cleanup
 
-atexit.register(CleanupBinder(tmpdir))
+atexit.register(CleanupDirBinder(tmpdir))
 
 node = env.CommandTest('nacl_host_dir_test.out',
                        [nacl_host_dir_test_exe,
@@ -186,5 +186,29 @@ for flavor in ['lock_lock', 'lock_trylock',
                          [nacl_sync_test_exe, '-T', flavor])
 
   env.AddNodeToTestSuite(node, ['small_tests'], 'run_' + name)
+
+nacl_host_desc_mmap_test_exe = env.ComponentProgram(
+    'nacl_host_desc_mmap_test',
+    ['nacl_host_desc_mmap_test.c'],
+    EXTRA_LIBS=['platform',
+                'nrd_xfer'])  # nrd_xfer for NaClDescEffectorTrustedMem
+
+temporary_file = tempfile.mktemp()
+
+def CleanupFileBinder(fn):
+  def Cleanup():
+    try:
+      os.unlink(fn)
+    except OSError:
+      pass
+  return Cleanup
+
+atexit.register(CleanupFileBinder(temporary_file))
+
+node = env.CommandTest('nacl_host_desc_mmap_test.out',
+                       [nacl_host_desc_mmap_test_exe, '-f', temporary_file])
+
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_nacl_host_desc_mmap_test',
+                       is_broken=env.UsingEmulator())
 
 env.EnsureRequiredBuildWarnings()

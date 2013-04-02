@@ -20,6 +20,7 @@
 #include "native_client/src/trusted/desc/nacl_desc_io.h"
 #include "native_client/src/trusted/desc/nrd_all_modules.h"
 #include "native_client/src/trusted/desc/nrd_xfer.h"
+#include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 
 
 static PyTypeObject nacldesc_type;
@@ -129,7 +130,9 @@ static PyObject *PyDescFromOsFileDescriptor(PyObject *self, PyObject *args) {
 #endif
   /* The "mode" argument is only used for a sanity check and is not
      stored, so passing 0 works. */
-  nacldesc = NaClDescIoDescMake(NaClHostDescPosixMake(fd, /* mode= */ 0));
+  nacldesc = NaClDescIoDescMake(NaClHostDescPosixMake(fd,
+                                                      /* flags= */
+                                                      NACL_ABI_O_RDWR));
   if (nacldesc == NULL) {
     PyErr_SetString(PyExc_MemoryError, "Failed to create NaClDesc wrapper");
     return NULL;

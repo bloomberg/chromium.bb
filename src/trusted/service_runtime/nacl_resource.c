@@ -122,13 +122,15 @@ static struct NaClDesc *NaClResourceFileFactory(char const *resource_locator,
           resource_locator, nacl_flags, mode);
   if (0 != NaClHostDescOpen(hd, resource_locator, nacl_flags, mode)) {
     NaClLog(LOG_INFO,
-            "NaClResourceNaClAppFileOpen: NaClHostDescOpen failed\n");
+            "NaClResourceFileFactory: NaClHostDescOpen failed\n");
     goto done;
   }
   if (!NaClDescIoDescCtor(did, hd)) {
     NaClLog(LOG_INFO,
-            "NaClResourceNaClAppFileOpen: NaClDescIoDescCtor failed\n");
-    (void) NaClHostDescClose(hd);
+            "NaClResourceFileFactory: NaClDescIoDescCtor failed\n");
+    if (0 != NaClHostDescClose(hd)) {
+      NaClLog(LOG_FATAL, "NaClResourceFileFactory: NaClHostDescClose failed\n");
+    }
     goto done;
   }
   hd = NULL;  /* ownership passed into did */

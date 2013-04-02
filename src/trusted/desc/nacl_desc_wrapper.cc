@@ -46,7 +46,9 @@ struct NaClDesc* OpenHostFileCommon(const char* fname, int flags, int mode) {
   }
   struct NaClDescIoDesc* ndiodp = NaClDescIoDescMake(nhdp);
   if (NULL == ndiodp) {
-    NaClHostDescClose(nhdp);
+    if (0 != NaClHostDescClose(nhdp)) {
+      NaClLog(LOG_FATAL, "OpenHostFileCommon: NaClHostDescClose failed\n");
+    }
     free(nhdp);
     return NULL;
   }
@@ -60,7 +62,9 @@ struct NaClDesc* ImportHostDescCommon(int host_os_desc, int mode) {
   }
   NaClDescIoDesc* ndiodp = NaClDescIoDescMake(nhdp);
   if (NULL == ndiodp) {
-    NaClHostDescClose(nhdp);
+    if (0 != NaClHostDescClose(nhdp)) {
+      NaClLog(LOG_FATAL, "ImportHostDescCommon: NaClHostDescClose failed\n");
+    }
     free(nhdp);
     return NULL;
   }

@@ -317,7 +317,7 @@ struct NaClApp {
 
   /*
    * The array of dynamic_regions is maintained in sorted order
-   * Accesses must be protected by dynamic_load_mutex
+   * Accesses must be protected by dynamic_load_mutex.
    */
   struct NaClDynamicRegion  *dynamic_regions;
   int                       num_dynamic_regions;

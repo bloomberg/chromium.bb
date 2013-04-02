@@ -1336,8 +1336,8 @@ int32_t NaClSysMmapIntern(struct NaClApp        *nap,
   /*
    * Exactly one of NACL_ABI_MAP_SHARED and NACL_ABI_MAP_PRIVATE is set.
    */
-  if ((0 == (flags & NACL_ABI_MAP_SHARED))
-      == (0 == (flags & NACL_ABI_MAP_PRIVATE))) {
+  if ((0 == (flags & NACL_ABI_MAP_SHARED)) ==
+      (0 == (flags & NACL_ABI_MAP_PRIVATE))) {
     map_result = -NACL_ABI_EINVAL;
     goto cleanup;
   }
