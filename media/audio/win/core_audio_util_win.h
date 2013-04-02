@@ -117,14 +117,6 @@ class MEDIA_EXPORT CoreAudioUtil {
                                 AUDCLNT_SHAREMODE share_mode,
                                 const WAVEFORMATPCMEX* format);
 
-  // Returns true if the specified |channel_layout| is supported for the
-  // default IMMDevice where flow direction and role is define by |data_flow|
-  // and |role|. If this method returns true for a certain channel layout, it
-  // means that SharedModeInitialize() will succeed using a format based on
-  // the preferred format where the channel layout has been modified.
-  static bool IsChannelLayoutSupported(EDataFlow data_flow, ERole role,
-                                       ChannelLayout channel_layout);
-
   // For a shared-mode stream, the audio engine periodically processes the
   // data in the endpoint buffer at the period obtained in |device_period|.
   // For an exclusive mode stream, |device_period| corresponds to the minimum

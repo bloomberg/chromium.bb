@@ -22,8 +22,6 @@ using base::win::ScopedHandle;
 
 namespace media {
 
-enum { KSAUDIO_SPEAKER_UNSUPPORTED = 0 };
-
 typedef uint32 ChannelConfig;
 
 // Converts Microsoft's channel configuration to ChannelLayout.
@@ -64,62 +62,9 @@ static ChannelLayout ChannelConfigToChannelLayout(ChannelConfig config) {
       DVLOG(2) << "KSAUDIO_SPEAKER_7POINT1_SURROUND=>CHANNEL_LAYOUT_7_1";
       return CHANNEL_LAYOUT_7_1;
     default:
-      DVLOG(2) << "Unsupported channel configuration: " << config;
+      DVLOG(2) << "Unsupported channel layout: " << config;
       return CHANNEL_LAYOUT_UNSUPPORTED;
   }
-}
-
-// TODO(henrika): add mapping for all types in the ChannelLayout enumerator.
-static ChannelConfig ChannelLayoutToChannelConfig(ChannelLayout layout) {
-  switch (layout) {
-    case CHANNEL_LAYOUT_NONE:
-      DVLOG(2) << "CHANNEL_LAYOUT_NONE=>KSAUDIO_SPEAKER_UNSUPPORTED";
-      return KSAUDIO_SPEAKER_UNSUPPORTED;
-    case CHANNEL_LAYOUT_UNSUPPORTED:
-      DVLOG(2) << "CHANNEL_LAYOUT_UNSUPPORTED=>KSAUDIO_SPEAKER_UNSUPPORTED";
-      return KSAUDIO_SPEAKER_UNSUPPORTED;
-    case CHANNEL_LAYOUT_MONO:
-      DVLOG(2) << "CHANNEL_LAYOUT_MONO=>KSAUDIO_SPEAKER_MONO";
-      return KSAUDIO_SPEAKER_MONO;
-    case CHANNEL_LAYOUT_STEREO:
-      DVLOG(2) << "CHANNEL_LAYOUT_STEREO=>KSAUDIO_SPEAKER_STEREO";
-      return KSAUDIO_SPEAKER_STEREO;
-    case CHANNEL_LAYOUT_QUAD:
-      DVLOG(2) << "CHANNEL_LAYOUT_QUAD=>KSAUDIO_SPEAKER_QUAD";
-      return KSAUDIO_SPEAKER_QUAD;
-    case CHANNEL_LAYOUT_4_0:
-      DVLOG(2) << "CHANNEL_LAYOUT_4_0=>KSAUDIO_SPEAKER_SURROUND";
-      return KSAUDIO_SPEAKER_SURROUND;
-    case CHANNEL_LAYOUT_5_1_BACK:
-      DVLOG(2) << "CHANNEL_LAYOUT_5_1_BACK=>KSAUDIO_SPEAKER_5POINT1";
-      return KSAUDIO_SPEAKER_5POINT1;
-    case CHANNEL_LAYOUT_5_1:
-      DVLOG(2) << "CHANNEL_LAYOUT_5_1=>KSAUDIO_SPEAKER_5POINT1_SURROUND";
-      return KSAUDIO_SPEAKER_5POINT1_SURROUND;
-    case CHANNEL_LAYOUT_7_1_WIDE:
-      DVLOG(2) << "CHANNEL_LAYOUT_7_1_WIDE=>KSAUDIO_SPEAKER_7POINT1";
-      return KSAUDIO_SPEAKER_7POINT1;
-    case CHANNEL_LAYOUT_7_1:
-      DVLOG(2) << "CHANNEL_LAYOUT_7_1=>KSAUDIO_SPEAKER_7POINT1_SURROUND";
-      return KSAUDIO_SPEAKER_7POINT1_SURROUND;
-    default:
-      DVLOG(2) << "Unsupported channel layout: " << layout;
-      return KSAUDIO_SPEAKER_UNSUPPORTED;
-  }
-}
-
-static std::ostream& operator<<(std::ostream& os,
-                                const WAVEFORMATPCMEX& format) {
-  os << "wFormatTag: 0x" << std::hex << format.Format.wFormatTag
-     << ", nChannels: " << std::dec << format.Format.nChannels
-     << ", nSamplesPerSec: " << format.Format.nSamplesPerSec
-     << ", nAvgBytesPerSec: " << format.Format.nAvgBytesPerSec
-     << ", nBlockAlign: " << format.Format.nBlockAlign
-     << ", wBitsPerSample: " << format.Format.wBitsPerSample
-     << ", cbSize: " << format.Format.cbSize
-     << ", wValidBitsPerSample: " << format.Samples.wValidBitsPerSample
-     << ", dwChannelMask: 0x" << std::hex << format.dwChannelMask;
-  return os;
 }
 
 bool LoadAudiosesDll() {
@@ -404,7 +349,16 @@ HRESULT CoreAudioUtil::GetSharedModeMixFormat(
   DCHECK_EQ(bytes, sizeof(WAVEFORMATPCMEX));
 
   memcpy(format, format_pcmex, bytes);
-  DVLOG(2) << *format;
+
+  DVLOG(2) << "wFormatTag: 0x" << std::hex << format->Format.wFormatTag
+           << ", nChannels: " << std::dec << format->Format.nChannels
+           << ", nSamplesPerSec: " << format->Format.nSamplesPerSec
+           << ", nAvgBytesPerSec: " << format->Format.nAvgBytesPerSec
+           << ", nBlockAlign: " << format->Format.nBlockAlign
+           << ", wBitsPerSample: " << format->Format.wBitsPerSample
+           << ", cbSize: " << format->Format.cbSize
+           << ", wValidBitsPerSample: " << format->Samples.wValidBitsPerSample
+           << ", dwChannelMask: 0x" << std::hex << format->dwChannelMask;
 
   return hr;
 }
@@ -436,58 +390,13 @@ bool CoreAudioUtil::IsFormatSupported(IAudioClient* client,
   // This log can be triggered both for shared and exclusive modes.
   DLOG_IF(ERROR, hr == AUDCLNT_E_UNSUPPORTED_FORMAT) << "Unsupported format.";
   if (hr == S_FALSE) {
-    DVLOG(2) << *closest_match;
+    DVLOG(2) << "wFormatTag: " << closest_match->Format.wFormatTag
+             << ", nChannels: " << closest_match->Format.nChannels
+             << ", nSamplesPerSec: " << closest_match->Format.nSamplesPerSec
+             << ", wBitsPerSample: " << closest_match->Format.wBitsPerSample;
   }
 
   return (hr == S_OK);
-}
-
-bool CoreAudioUtil::IsChannelLayoutSupported(EDataFlow data_flow, ERole role,
-                                             ChannelLayout channel_layout) {
-  DCHECK(IsSupported());
-
-  // First, get the preferred mixing format for shared mode streams.
-
-  ScopedComPtr<IAudioClient> client(CreateDefaultClient(data_flow, role));
-  if (!client)
-    return false;
-
-  WAVEFORMATPCMEX format;
-  HRESULT hr = CoreAudioUtil::GetSharedModeMixFormat(client, &format);
-  if (FAILED(hr))
-    return false;
-
-  // Next, check if it is possible to use an alternative format where the
-  // channel layout (and possibly number of channels) is modified.
-
-  // Convert generic channel layout into Windows-specific channel configuration.
-  ChannelConfig new_config = ChannelLayoutToChannelConfig(channel_layout);
-  if (new_config == KSAUDIO_SPEAKER_UNSUPPORTED) {
-    return false;
-  }
-  format.dwChannelMask = new_config;
-
-  // Modify the format if the new channel layout has changed the number of
-  // utilized channels.
-  const int channels = ChannelLayoutToChannelCount(channel_layout);
-  if (channels != format.Format.nChannels) {
-    format.Format.nChannels = channels;
-    format.Format.nBlockAlign = (format.Format.wBitsPerSample / 8) * channels;
-    format.Format.nAvgBytesPerSec = format.Format.nSamplesPerSec *
-                                    format.Format.nBlockAlign;
-  }
-  DVLOG(2) << format;
-
-  // Some devices can initialize a shared-mode stream with a format that is
-  // not identical to the mix format obtained from the GetMixFormat() method.
-  // However, chances of succeeding increases if we use the same number of
-  // channels and the same sample rate as the mix format. I.e, this call will
-  // return true only in those cases where the audio engine is able to support
-  // an even wider range of shared-mode formats where the installation package
-  // for the audio device includes a local effects (LFX) audio processing
-  // object (APO) that can handle format conversions.
-  return CoreAudioUtil::IsFormatSupported(client, AUDCLNT_SHAREMODE_SHARED,
-                                          &format);
 }
 
 HRESULT CoreAudioUtil::GetDevicePeriod(IAudioClient* client,
