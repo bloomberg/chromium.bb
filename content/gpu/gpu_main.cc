@@ -345,11 +345,6 @@ void WarmUpSandbox(const GPUInfo& gpu_info,
 
 #if defined(OS_WIN)
   {
-    TRACE_EVENT0("gpu", "Initialize COM");
-    base::win::ScopedCOMInitializer com_initializer;
-  }
-
-  {
     TRACE_EVENT0("gpu", "Preload setupapi.dll");
     // Preload this DLL because the sandbox prevents it from loading.
     LoadLibrary(L"setupapi.dll");
