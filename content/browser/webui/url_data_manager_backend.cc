@@ -33,6 +33,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
+#include "net/http/http_status_code.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job.h"
@@ -108,6 +109,7 @@ class URLRequestChromeJob : public net::URLRequestJob,
                            int buf_size,
                            int* bytes_read) OVERRIDE;
   virtual bool GetMimeType(std::string* mime_type) const OVERRIDE;
+  virtual int GetResponseCode() const OVERRIDE;
   virtual void GetResponseInfo(net::HttpResponseInfo* info) OVERRIDE;
 
   // Used to notify that the requested data's |mime_type| is ready.
@@ -236,6 +238,10 @@ void URLRequestChromeJob::Kill() {
 bool URLRequestChromeJob::GetMimeType(std::string* mime_type) const {
   *mime_type = mime_type_;
   return !mime_type_.empty();
+}
+
+int URLRequestChromeJob::GetResponseCode() const {
+  return net::HTTP_OK;
 }
 
 void URLRequestChromeJob::GetResponseInfo(net::HttpResponseInfo* info) {
