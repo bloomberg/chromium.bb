@@ -170,6 +170,11 @@ void IndexedDBDispatcher::OnMessageReceived(const IPC::Message& msg) {
 }
 
 bool IndexedDBDispatcher::Send(IPC::Message* msg) {
+  if (!ChildThread::current()) {
+    // Unexpected - this may be happening during shutdown.
+    NOTREACHED();
+    return false;
+  }
   if (CurrentWorkerId()) {
     scoped_refptr<IPC::SyncMessageFilter> filter(
         ChildThread::current()->sync_message_filter());
