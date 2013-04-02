@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+#
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -26,7 +27,7 @@ import os
 import re
 import sys
 
-sys.path.insert(1, os.path.join(sys.path[0], '..', '..', 'tools', 'python'))
+sys.path.insert(1, os.path.join(sys.path[0], '..', '..', 'python'))
 from google import path_utils
 
 # Files that are known to use content::RecordComputedAction(), which means
@@ -108,6 +109,9 @@ INPUT_METHOD_IDS = (
   'xkb:us:dvorak:eng', 'xkb:us:intl:eng',
 )
 
+# The path to the root of the repository.
+REPOSITORY_ROOT = os.path.join(path_utils.ScriptDir(), '..', '..', '..')
+
 number_of_files_total = 0
 
 
@@ -152,8 +156,8 @@ def AddWebKitEditorActions(actions):
   """
   action_re = re.compile(r'''\{ [\w']+, +\w+, +"(.*)" +\},''')
 
-  editor_file = os.path.join(path_utils.ScriptDir(), '..', '..', 'webkit',
-                             'api', 'src','EditorClientImpl.cc')
+  editor_file = os.path.join(REPOSITORY_ROOT, 'webkit', 'api', 'src',
+                             'EditorClientImpl.cc')
   for line in open(editor_file):
     match = action_re.search(line)
     if match:  # Plain call to RecordAction
@@ -274,7 +278,7 @@ def AddAboutFlagsActions(actions):
   Arguments:
     actions: set of actions to add to.
   """
-  about_flags = os.path.join(path_utils.ScriptDir(), '..', 'browser',
+  about_flags = os.path.join(REPOSITORY_ROOT, 'chrome', 'browser',
                              'about_flags.cc')
   flag_name_re = re.compile(r'\s*"([0-9a-zA-Z\-_]+)",\s*// FLAGS:RECORD_UMA')
   for line in open(about_flags):
@@ -468,13 +472,11 @@ def AddLiteralActions(actions):
   EXTENSIONS = ('.cc', '.mm', '.c', '.m')
 
   # Walk the source tree to process all .cc files.
-  chrome_root = os.path.normpath(os.path.join(path_utils.ScriptDir(), '..'))
+  chrome_root = os.path.normpath(os.path.join(REPOSITORY_ROOT, 'chrome'))
   WalkDirectory(chrome_root, actions, EXTENSIONS, GrepForActions)
-  content_root = os.path.normpath(os.path.join(path_utils.ScriptDir(),
-                                               '..', '..', 'content'))
+  content_root = os.path.normpath(os.path.join(REPOSITORY_ROOT, 'content'))
   WalkDirectory(content_root, actions, EXTENSIONS, GrepForActions)
-  webkit_root = os.path.normpath(os.path.join(path_utils.ScriptDir(),
-                                              '..', '..', 'webkit'))
+  webkit_root = os.path.normpath(os.path.join(REPOSITORY_ROOT, 'webkit'))
   WalkDirectory(os.path.join(webkit_root, 'glue'), actions, EXTENSIONS,
                 GrepForActions)
   WalkDirectory(os.path.join(webkit_root, 'port'), actions, EXTENSIONS,
@@ -486,7 +488,7 @@ def AddWebUIActions(actions):
   Arguments:
     actions: set of actions to add to.
   """
-  resources_root = os.path.join(path_utils.ScriptDir(), '..', 'browser',
+  resources_root = os.path.join(REPOSITORY_ROOT, 'chrome', 'browser',
                                 'resources')
   WalkDirectory(resources_root, actions, ('.html'), GrepForWebUIActions)
 
@@ -498,9 +500,8 @@ def AddRendererActions(actions):
   """
   EXTENSIONS = ('.cc', '.mm', '.c', '.m')
 
-  chrome_renderer_root = os.path.join(path_utils.ScriptDir(), '..', 'renderer')
-  content_renderer_root = os.path.join(path_utils.ScriptDir(), '..', '..',
-      'content', 'renderer')
+  chrome_renderer_root = os.path.join(REPOSITORY_ROOT, 'chrome', 'renderer')
+  content_renderer_root = os.path.join(REPOSITORY_ROOT, 'content', 'renderer')
   WalkDirectory(chrome_renderer_root, actions, EXTENSIONS,
                 GrepForRendererActions)
   WalkDirectory(content_renderer_root, actions, EXTENSIONS,
