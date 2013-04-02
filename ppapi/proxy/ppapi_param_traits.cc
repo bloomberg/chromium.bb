@@ -174,25 +174,6 @@ void ParamTraits<PP_NetAddress_Private>::Log(const param_type& p,
   l->append(" bytes)>");
 }
 
-// PP_ObjectProperty -----------------------------------------------------------
-
-// static
-void ParamTraits<PP_ObjectProperty>::Write(Message* m, const param_type& p) {
-  // FIXME(brettw);
-}
-
-// static
-bool ParamTraits<PP_ObjectProperty>::Read(const Message* m,
-                                          PickleIterator* iter,
-                                          param_type* r) {
-  // FIXME(brettw);
-  return true;
-}
-
-// static
-void ParamTraits<PP_ObjectProperty>::Log(const param_type& p, std::string* l) {
-}
-
 // PPB_FileRef_CreateInfo ------------------------------------------------------
 
 // static

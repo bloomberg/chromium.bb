@@ -19,7 +19,6 @@
 #include "ppapi/shared_impl/ppb_file_ref_shared.h"
 
 struct PP_FileInfo;
-struct PP_ObjectProperty;
 struct PP_NetAddress_Private;
 
 namespace ppapi {
@@ -64,14 +63,6 @@ struct PPAPI_PROXY_EXPORT ParamTraits<PP_NetAddress_Private> {
   typedef PP_NetAddress_Private param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, PickleIterator* iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template<>
-struct PPAPI_PROXY_EXPORT ParamTraits<PP_ObjectProperty> {
-  typedef PP_ObjectProperty param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
 
