@@ -1290,6 +1290,15 @@ def CMDupload(parser, args):
     if not options.reviewers and hook_results.reviewers:
       options.reviewers = hook_results.reviewers
 
+  if cl.GetIssue():
+    latest_patchset = cl.GetMostRecentPatchset(cl.GetIssue())
+    local_patchset = cl.GetPatchset()
+    if local_patchset != latest_patchset:
+      print ('The last upload made from this repository was patchset #%d but '
+            'the most recent patchset on the server is #%d.'
+            % (local_patchset, latest_patchset))
+      ask_for_data('About to upload; enter to confirm.')
+
   print_stats(options.similarity, options.find_copies, args)
   if settings.GetIsGerrit():
     return GerritUpload(options, args, cl)
