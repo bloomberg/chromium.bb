@@ -31,6 +31,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_view_host.h"
+#include "net/base/escape.h"
 #include "webkit/fileapi/external_mount_points.h"
 
 namespace {
@@ -41,10 +42,50 @@ const char kKeyboardTestFileName[] = "world.mpeg";
 const int kKeyboardTestFileSize = 1000;
 const char kKeyboardTestFileCopyName[] = "world (1).mpeg";
 
+// The base test class. Used by FileManagerBrowserLocalTest and
+// FileManagerBrowserDriveTest.
+// TODO(satorux): Add the latter: crbug.com/224534.
+class FileManagerBrowserTestBase : public ExtensionApiTest {
+ protected:
+  // Loads the file manager extension, navigating it to |directory_path| for
+  // testing, and waits for it to finish initializing. This is invoked at the
+  // start of each test (it crashes if run in SetUp).
+  void StartFileManager(const std::string& directory_path);
+
+  // Loads our testing extension and sends it a string identifying the current
+  // test.
+  void StartTest(const std::string& test_name);
+};
+
+void FileManagerBrowserTestBase::StartFileManager(
+    const std::string& directory_path) {
+  std::string file_manager_url =
+      (std::string("chrome-extension://") +
+       kFileManagerExtensionId +
+       "/main.html#" +
+       net::EscapeQueryParamValue(directory_path, false /* use_plus */));
+
+  ui_test_utils::NavigateToURL(browser(), GURL(file_manager_url));
+
+  // This is sent by the file manager when it's finished initializing.
+  ExtensionTestMessageListener listener("worker-initialized", false);
+  ASSERT_TRUE(listener.WaitUntilSatisfied());
+}
+
+void FileManagerBrowserTestBase::StartTest(const std::string& test_name) {
+  base::FilePath path = test_data_dir_.AppendASCII("file_manager_browsertest");
+  const extensions::Extension* extension = LoadExtensionAsComponent(path);
+  ASSERT_TRUE(extension);
+
+  ExtensionTestMessageListener listener("which test", true);
+  ASSERT_TRUE(listener.WaitUntilSatisfied());
+  listener.Reply(test_name);
+}
+
 // The boolean parameter, retrieved by GetParam(), is true if testing in the
 // guest mode. See SetUpCommandLine() below for details.
-class FileManagerBrowserTest : public ExtensionApiTest,
-                               public ::testing::WithParamInterface<bool> {
+class FileManagerBrowserLocalTest : public FileManagerBrowserTestBase,
+                                    public ::testing::WithParamInterface<bool> {
  public:
   virtual void SetUp() OVERRIDE {
     extensions::ComponentLoader::EnableBackgroundExtensionsForTesting();
@@ -84,22 +125,11 @@ class FileManagerBrowserTest : public ExtensionApiTest,
   void CreateTestDirectory(const std::string& name,
                            const std::string& modification_time);
 
-  // Loads the file manager extension, giving it a fake Downloads folder for
-  // testing, and waits for it to finish initializing. This is invoked at the
-  // start of each test (it crashes if run in SetUp).
-  void StartFileManager();
+  // Add a mount point to the fake Downloads directory. Should be called
+  // before StartFileManager().
+  void AddMountPointToFakeDownloads();
 
-  // By default the file manager waits 30 seconds before deleting a file to give
-  // the user a chance to undo. This hack removes the delay for testing.
-  void SetShorterDeleteTimeout();
-
-  // Reduces the directory refresh interval from 1000ms to 100ms.
-  void SetShorterRefreshInterval();
-
-  // Loads our testing extension and sends it a string identifying the current
-  // test.
-  void StartTest(const std::string& test_name);
-
+  // Path to the fake Downloads directory used in the test.
   base::FilePath downloads_path_;
 
  private:
@@ -107,14 +137,14 @@ class FileManagerBrowserTest : public ExtensionApiTest,
 };
 
 INSTANTIATE_TEST_CASE_P(InGuestMode,
-                        FileManagerBrowserTest,
+                        FileManagerBrowserLocalTest,
                         ::testing::Values(true));
 
 INSTANTIATE_TEST_CASE_P(InNonGuestMode,
-                        FileManagerBrowserTest,
+                        FileManagerBrowserLocalTest,
                         ::testing::Values(false));
 
-void FileManagerBrowserTest::CreateTestFile(
+void FileManagerBrowserLocalTest::CreateTestFile(
     const std::string& name,
     int length,
     const std::string& modification_time) {
@@ -134,7 +164,7 @@ void FileManagerBrowserTest::CreateTestFile(
   ASSERT_TRUE(file_util::SetLastModifiedTime(path, time));
 }
 
-void FileManagerBrowserTest::CreateTestDirectory(
+void FileManagerBrowserLocalTest::CreateTestDirectory(
     const std::string& name,
     const std::string& modification_time) {
   base::FilePath path = downloads_path_.AppendASCII(name);
@@ -144,48 +174,13 @@ void FileManagerBrowserTest::CreateTestDirectory(
   ASSERT_TRUE(file_util::SetLastModifiedTime(path, time));
 }
 
-void FileManagerBrowserTest::StartFileManager() {
+void FileManagerBrowserLocalTest::AddMountPointToFakeDownloads() {
   // Install our fake Downloads mount point first.
   fileapi::ExternalMountPoints* mount_points =
       content::BrowserContext::GetMountPoints(profile());
   ASSERT_TRUE(mount_points->RevokeFileSystem("Downloads"));
   ASSERT_TRUE(mount_points->RegisterFileSystem(
       "Downloads", fileapi::kFileSystemTypeNativeLocal, downloads_path_));
-
-  std::string kFileManagerUrl = std::string("chrome-extension://") +
-      kFileManagerExtensionId + "/main.html#Downloads";
-  ui_test_utils::NavigateToURL(browser(), GURL(kFileManagerUrl));
-
-  // This is sent by the file manager when it's finished initializing.
-  ExtensionTestMessageListener listener("worker-initialized", false);
-  ASSERT_TRUE(listener.WaitUntilSatisfied());
-}
-
-void FileManagerBrowserTest::SetShorterDeleteTimeout() {
-  const char set_timeout_code[] = "FileCopyManager.DELETE_TIMEOUT = 0";
-  // FileCopyManager runs in the background page.
-  content::RenderViewHost* host =
-      extensions::ExtensionSystem::Get(profile())->process_manager()->
-      GetBackgroundHostForExtension(kFileManagerExtensionId)->
-      render_view_host();
-  host->ExecuteJavascriptInWebFrame(string16(), ASCIIToUTF16(set_timeout_code));
-}
-
-void FileManagerBrowserTest::SetShorterRefreshInterval() {
-  const char set_timeout_code[] = "SIMULTANEOUS_RESCAN_INTERVAL = 100";
-  content::RenderViewHost* host =
-      browser()->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost();
-  host->ExecuteJavascriptInWebFrame(string16(), ASCIIToUTF16(set_timeout_code));
-}
-
-void FileManagerBrowserTest::StartTest(const std::string& test_name) {
-  base::FilePath path = test_data_dir_.AppendASCII("file_manager_browsertest");
-  const extensions::Extension* extension = LoadExtensionAsComponent(path);
-  ASSERT_TRUE(extension);
-
-  ExtensionTestMessageListener listener("which test", true);
-  ASSERT_TRUE(listener.WaitUntilSatisfied());
-  listener.Reply(test_name);
 }
 
 // Monitors changes to a single file until the supplied condition callback
@@ -302,9 +297,9 @@ bool DeletedFileGone(const base::FilePath& path) {
   return !file_util::PathExists(path);
 };
 
-IN_PROC_BROWSER_TEST_P(FileManagerBrowserTest, TestFileDisplay) {
-  StartFileManager();
-  SetShorterRefreshInterval();
+IN_PROC_BROWSER_TEST_P(FileManagerBrowserLocalTest, TestFileDisplay) {
+  AddMountPointToFakeDownloads();
+  StartFileManager("/Downloads");
 
   ResultCatcher catcher;
 
@@ -318,9 +313,9 @@ IN_PROC_BROWSER_TEST_P(FileManagerBrowserTest, TestFileDisplay) {
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-IN_PROC_BROWSER_TEST_P(FileManagerBrowserTest, TestKeyboardCopy) {
-  StartFileManager();
-  SetShorterRefreshInterval();
+IN_PROC_BROWSER_TEST_P(FileManagerBrowserLocalTest, TestKeyboardCopy) {
+  AddMountPointToFakeDownloads();
+  StartFileManager("/Downloads");
 
   base::FilePath copy_path =
       downloads_path_.AppendASCII(kKeyboardTestFileCopyName);
@@ -340,13 +335,9 @@ IN_PROC_BROWSER_TEST_P(FileManagerBrowserTest, TestKeyboardCopy) {
   ASSERT_TRUE(file_util::PathExists(source_path));
 }
 
-IN_PROC_BROWSER_TEST_P(FileManagerBrowserTest, TestKeyboardDelete) {
-  StartFileManager();
-  SetShorterRefreshInterval();
-
-  // There is currently no check that this call does what it's supposed to do.
-  // If it doesn't, this test will take more than 30 seconds to complete.
-  SetShorterDeleteTimeout();
+IN_PROC_BROWSER_TEST_P(FileManagerBrowserLocalTest, TestKeyboardDelete) {
+  AddMountPointToFakeDownloads();
+  StartFileManager("/Downloads");
 
   base::FilePath delete_path =
       downloads_path_.AppendASCII(kKeyboardTestFileName);
