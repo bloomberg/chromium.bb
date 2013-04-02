@@ -308,7 +308,6 @@ void Clipboard::ReadAvailableTypes(Clipboard::Buffer buffer,
 void Clipboard::ReadText(Clipboard::Buffer buffer, string16* result) const {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(buffer, BUFFER_STANDARD);
-  ReportAction(buffer, READ_TEXT);
   NSPasteboard* pb = GetPasteboard();
   NSString* contents = [pb stringForType:NSStringPboardType];
 
@@ -321,7 +320,6 @@ void Clipboard::ReadAsciiText(Clipboard::Buffer buffer,
                               std::string* result) const {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(buffer, BUFFER_STANDARD);
-  ReportAction(buffer, READ_TEXT);
   NSPasteboard* pb = GetPasteboard();
   NSString* contents = [pb stringForType:NSStringPboardType];
 
@@ -365,7 +363,6 @@ void Clipboard::ReadHTML(Clipboard::Buffer buffer, string16* markup,
 void Clipboard::ReadRTF(Buffer buffer, std::string* result) const {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(buffer, BUFFER_STANDARD);
-  ReportAction(buffer, READ_TEXT);
 
   return ReadData(GetRtfFormatType(), result);
 }
