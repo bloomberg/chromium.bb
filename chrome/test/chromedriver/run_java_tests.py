@@ -27,13 +27,6 @@ from common import util
 import test_environment
 
 
-DESKTOP_TEST_ENVIRONMENT_CLASS = test_environment.DesktopTestEnvironment
-if util.IsLinux():
-  DESKTOP_TEST_ENVIRONMENT_CLASS = test_environment.LinuxTestEnvironment
-elif util.IsWindows():
-  DESKTOP_TEST_ENVIRONMENT_CLASS = test_environment.WindowsTestEnvironment
-
-
 class TestResult(object):
   """A result for an attempted single test case."""
 
@@ -248,7 +241,8 @@ def main():
       parser.error('Android does not support the --chrome-revision argument.')
     environment = test_environment.AndroidTestEnvironment()
   else:
-    environment = DESKTOP_TEST_ENVIRONMENT_CLASS(options.chrome_revision)
+    environment = test_environment.DesktopTestEnvironment(
+        options.chrome_revision)
 
   try:
     environment.GlobalSetUp()

@@ -73,6 +73,7 @@ _ANDROID_NEGATIVE_FILTER['com.google.android.apps.chrome'] = (
         'ChromeDriverTest.testSendKeysToElement',
         # https://code.google.com/p/chromedriver/issues/detail?id=270
         'ChromeDriverTest.testPopups',
+        'ChromeLogPathCapabilityTest.testChromeLogPath',
     ]
 )
 _ANDROID_NEGATIVE_FILTER['org.chromium.chrome.testshell'] = (
