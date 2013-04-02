@@ -16,6 +16,7 @@ def main():
 
   if sys.platform in ('darwin', 'win32'):
     # Check for case-insensitive file system. This happens on Windows and OSX.
+    # The log should still list test_file.txt.
     open('Test_File.txt', 'rb').close()
   else:
     open('test_file.txt', 'rb').close()

@@ -440,7 +440,9 @@ class TraceInputsImport(TraceInputsBase):
     def blacklist(f):
       return f.endswith(('.pyc', 'do_not_care.txt', '.git', '.svn'))
     simplified = self.trace_inputs.extract_directories(
-        unicode(ROOT_DIR), results.files, blacklist)
+        self.trace_inputs.get_native_path_case(unicode(ROOT_DIR)),
+        results.files,
+        blacklist)
     self.assertEquals(files, [f.path for f in simplified])
 
   def test_trace_multiple(self):

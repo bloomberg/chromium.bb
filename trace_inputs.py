@@ -3400,7 +3400,8 @@ def CMDread(args):
   options, args = parser.parse_args(args)
 
   if options.root_dir:
-    options.root_dir = unicode(os.path.abspath(options.root_dir))
+    options.root_dir = get_native_path_case(
+        unicode(os.path.abspath(options.root_dir)))
 
   variables = dict(options.variables)
   api = get_api()
