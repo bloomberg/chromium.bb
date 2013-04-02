@@ -569,7 +569,7 @@ class SyncDataModelTest(unittest.TestCase):
     sieve = chromiumsync.UpdateSieve(msg, migrator)
     sieve.CheckMigrationState()
 
-  def testCreateSyncedBookmaks(self):
+  def testCreateSyncedBookmarks(self):
     version1, changes, remaining = (
         self.GetChangesFromTimestamp([chromiumsync.BOOKMARK], 0))
     id_string = self.model._MakeCurrentId(chromiumsync.BOOKMARK,
