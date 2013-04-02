@@ -24,6 +24,9 @@ public class DeviceUtils {
      * @return        Whether the app is should treat the device as a tablet for layout.
      */
     public static boolean isTablet(Context context) {
+        if (isTv(context)) {
+            return true;
+        }
         int minimumScreenWidthDp = context.getResources().getConfiguration().smallestScreenWidthDp;
         return minimumScreenWidthDp >= MINIMUM_TABLET_WIDTH_DP;
     }
@@ -49,7 +52,7 @@ public class DeviceUtils {
      * @param context The context for the caller activity.
      */
     public static void addDeviceSpecificUserAgentSwitch(Context context) {
-        if (isTv(context) || isTablet(context)) {
+        if (isTablet(context)) {
             CommandLine.getInstance().appendSwitch(CommandLine.TABLET_UI);
         } else {
             CommandLine.getInstance().appendSwitch(CommandLine.USE_MOBILE_UA);
