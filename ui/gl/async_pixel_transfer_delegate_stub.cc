@@ -4,7 +4,7 @@
 
 #include "ui/gl/async_pixel_transfer_delegate_stub.h"
 
-#include "base/shared_memory.h"
+#include "base/memory/shared_memory.h"
 #include "build/build_config.h"
 #include "ui/gl/gl_bindings.h"
 

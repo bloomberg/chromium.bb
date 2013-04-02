@@ -12,11 +12,11 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/shared_memory.h"
 #include "base/process.h"
-#include "base/shared_memory.h"
 #include "base/string16.h"
-#include "base/threading/thread_checker.h"
 #include "base/threading/platform_thread.h"
+#include "base/threading/thread_checker.h"
 #include "ui/base/ui_export.h"
 
 #if defined(TOOLKIT_GTK)

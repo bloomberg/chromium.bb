@@ -8,9 +8,9 @@
 #include <unistd.h>
 
 #include "base/logging.h"
-#include "base/posix/eintr_wrapper.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/shared_memory.h"
+#include "base/memory/shared_memory.h"
+#include "base/posix/eintr_wrapper.h"
 #include "skia/ext/platform_canvas.h"
 
 TransportDIB::TransportDIB()

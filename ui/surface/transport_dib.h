@@ -9,7 +9,7 @@
 #include "ui/surface/surface_export.h"
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_ANDROID)
-#include "base/shared_memory.h"
+#include "base/memory/shared_memory.h"
 #endif
 
 #if defined(OS_WIN)

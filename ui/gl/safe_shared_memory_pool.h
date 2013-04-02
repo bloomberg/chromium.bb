@@ -8,7 +8,7 @@
 #include <map>
 
 #include "base/basictypes.h"
-#include "base/shared_memory.h"
+#include "base/memory/shared_memory.h"
 #include "base/synchronization/lock.h"
 #include "build/build_config.h"
 
