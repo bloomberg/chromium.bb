@@ -27,6 +27,15 @@ class ChromeBrowserFieldTrials {
   // |local_state| is needed by some other methods called from within this one.
   void SetupDesktopFieldTrials(PrefService* local_state);
 
+#if defined(OS_ANDROID) || defined(OS_IOS)
+  // Sets up mobile-only field trials.
+  // Add invocation of your field trial initialization code in this method.
+  void SetupMobileFieldTrials();
+
+  // Mobile compression rollout field trial.
+  void DataCompressionProxyFieldTrial();
+#endif  // defined(OS_ANDROID) || defined(OS_IOS)
+
   // This is not quite a field trial initialization, but it's an initialization
   // that depends on a field trial, so why not? :-)
   // |local_state| is needed to reset a local pref based on the chosen group.

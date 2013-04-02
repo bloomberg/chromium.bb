@@ -51,10 +51,53 @@ void ChromeBrowserFieldTrials::SetupFieldTrials(PrefService* local_state) {
   DCHECK(!install_time.is_null());
   chrome_variations::SetupUniformityFieldTrials(install_time);
   SetUpSimpleCacheFieldTrial();
-#if !defined(OS_ANDROID)
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
   SetupDesktopFieldTrials(local_state);
 #endif  // defined(OS_ANDROID)
+
+#if defined(OS_ANDROID) || defined(OS_IOS)
+  SetupMobileFieldTrials();
+#endif  // defined(OS_ANDROID) || defined(OS_IOS)
 }
+
+
+#if defined(OS_ANDROID) || defined(OS_IOS)
+void ChromeBrowserFieldTrials::SetupMobileFieldTrials() {
+  DataCompressionProxyFieldTrial();
+}
+
+// Governs the rollout of the compression proxy for Chrome on mobile platforms.
+// Always enabled in DEV and BETA versions.
+// Stable percentage will be controlled from server.
+void ChromeBrowserFieldTrials::DataCompressionProxyFieldTrial() {
+  const char kDataCompressionProxyFieldTrialName[] =
+      "DataCompressionProxyRollout";
+  const base::FieldTrial::Probability kDataCompressionProxyDivisor = 1000;
+  const base::FieldTrial::Probability kDataCompressionProxyStable = 0;
+  const char kEnabled[] = "Enabled";
+  const char kDisabled[] = "Disabled";
+
+  // Find out if this is a stable channel.
+  const bool kIsStableChannel =
+      chrome::VersionInfo::GetChannel() == chrome::VersionInfo::CHANNEL_STABLE;
+
+  // Experiment enabled until Jan 1, 2015. By default, disabled.
+  scoped_refptr<base::FieldTrial> trial(
+      base::FieldTrialList::FactoryGetFieldTrial(
+          kDataCompressionProxyFieldTrialName, kDataCompressionProxyDivisor,
+          kDisabled, 2015, 1, 1, NULL));
+
+  // Non-stable channels will run with probability 1.
+  const int kEnabledGroup = trial->AppendGroup(
+      kEnabled,
+      kIsStableChannel ?
+          kDataCompressionProxyStable : kDataCompressionProxyDivisor);
+
+  const int v = trial->group();
+  VLOG(1) << "DataCompression proxy enabled group id: " << kEnabledGroup
+          << ". Selected group id: " << v;
+}
+#endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
 void ChromeBrowserFieldTrials::SetupDesktopFieldTrials(
     PrefService* local_state) {
