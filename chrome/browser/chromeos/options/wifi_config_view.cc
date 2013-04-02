@@ -927,10 +927,12 @@ void WifiConfigView::Init(WifiNetwork* wifi, bool show_8021x) {
   // Security select
   if (!wifi && !show_8021x) {
     layout->StartRow(0, column_view_set_id);
-    layout->AddView(new views::Label(l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SECURITY)));
+    string16 label_text = l10n_util::GetStringUTF16(
+        IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SECURITY);
+    layout->AddView(new views::Label(label_text));
     security_combobox_model_.reset(new internal::SecurityComboboxModel);
     security_combobox_ = new views::Combobox(security_combobox_model_.get());
+    security_combobox_->SetAccessibleName(label_text);
     security_combobox_->set_listener(this);
     layout->AddView(security_combobox_);
     layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
@@ -946,11 +948,13 @@ void WifiConfigView::Init(WifiNetwork* wifi, bool show_8021x) {
 
     // EAP method
     layout->StartRow(0, column_view_set_id);
-    layout->AddView(new views::Label(l10n_util::GetStringUTF16(
-        IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_EAP_METHOD)));
+    string16 eap_label_text = l10n_util::GetStringUTF16(
+        IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_EAP_METHOD);
+    layout->AddView(new views::Label(eap_label_text));
     eap_method_combobox_model_.reset(new internal::EAPMethodComboboxModel);
     eap_method_combobox_ = new views::Combobox(
         eap_method_combobox_model_.get());
+    eap_method_combobox_->SetAccessibleName(eap_label_text);
     eap_method_combobox_->set_listener(this);
     eap_method_combobox_->SetEnabled(eap_method_ui_data_.editable());
     layout->AddView(eap_method_combobox_);
@@ -959,13 +963,15 @@ void WifiConfigView::Init(WifiNetwork* wifi, bool show_8021x) {
 
     // Phase 2 authentication
     layout->StartRow(0, column_view_set_id);
-    phase_2_auth_label_ = new views::Label(l10n_util::GetStringUTF16(
-        IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PHASE_2_AUTH));
+    string16 phase_2_label_text = l10n_util::GetStringUTF16(
+        IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PHASE_2_AUTH);
+    phase_2_auth_label_ = new views::Label(phase_2_label_text);
     layout->AddView(phase_2_auth_label_);
     phase_2_auth_combobox_model_.reset(
         new internal::Phase2AuthComboboxModel(eap_method_combobox_));
     phase_2_auth_combobox_ = new views::Combobox(
         phase_2_auth_combobox_model_.get());
+    phase_2_auth_combobox_->SetAccessibleName(phase_2_label_text);
     phase_2_auth_label_->SetEnabled(false);
     phase_2_auth_combobox_->SetEnabled(false);
     phase_2_auth_combobox_->set_listener(this);
@@ -975,14 +981,16 @@ void WifiConfigView::Init(WifiNetwork* wifi, bool show_8021x) {
 
     // Server CA certificate
     layout->StartRow(0, column_view_set_id);
-    server_ca_cert_label_ = new views::Label(l10n_util::GetStringUTF16(
-        IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_SERVER_CA));
+    string16 server_ca_cert_label_text = l10n_util::GetStringUTF16(
+        IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_SERVER_CA);
+    server_ca_cert_label_ = new views::Label(server_ca_cert_label_text);
     layout->AddView(server_ca_cert_label_);
     server_ca_cert_combobox_model_.reset(
         new internal::ServerCACertComboboxModel(cert_library_));
     server_ca_cert_combobox_ = new ComboboxWithWidth(
         server_ca_cert_combobox_model_.get(),
         ChildNetworkConfigView::kInputFieldMinWidth);
+    server_ca_cert_combobox_->SetAccessibleName(server_ca_cert_label_text);
     server_ca_cert_label_->SetEnabled(false);
     server_ca_cert_combobox_->SetEnabled(false);
     server_ca_cert_combobox_->set_listener(this);
@@ -993,12 +1001,14 @@ void WifiConfigView::Init(WifiNetwork* wifi, bool show_8021x) {
 
     // User certificate
     layout->StartRow(0, column_view_set_id);
-    user_cert_label_ = new views::Label(l10n_util::GetStringUTF16(
-        IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT));
+    string16 user_cert_label_text = l10n_util::GetStringUTF16(
+        IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT);
+    user_cert_label_ = new views::Label(user_cert_label_text);
     layout->AddView(user_cert_label_);
     user_cert_combobox_model_.reset(
         new internal::UserCertComboboxModel(cert_library_));
     user_cert_combobox_ = new views::Combobox(user_cert_combobox_model_.get());
+    user_cert_combobox_->SetAccessibleName(user_cert_label_text);
     user_cert_label_->SetEnabled(false);
     user_cert_combobox_->SetEnabled(false);
     user_cert_combobox_->set_listener(this);
@@ -1008,11 +1018,13 @@ void WifiConfigView::Init(WifiNetwork* wifi, bool show_8021x) {
 
     // Identity
     layout->StartRow(0, column_view_set_id);
-    identity_label_ = new views::Label(l10n_util::GetStringUTF16(
-        IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_IDENTITY));
+    string16 identity_label_text = l10n_util::GetStringUTF16(
+        IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_IDENTITY);
+    identity_label_ = new views::Label(identity_label_text);
     layout->AddView(identity_label_);
     identity_textfield_ = new views::Textfield(
         views::Textfield::STYLE_DEFAULT);
+    identity_textfield_->SetAccessibleName(identity_label_text);
     identity_textfield_->SetController(this);
     if (wifi && !wifi->identity().empty())
       identity_textfield_->SetText(UTF8ToUTF16(wifi->identity()));
@@ -1025,8 +1037,8 @@ void WifiConfigView::Init(WifiNetwork* wifi, bool show_8021x) {
   // Passphrase input
   layout->StartRow(0, column_view_set_id);
   int label_text_id = IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PASSPHRASE;
-  passphrase_label_ = new views::Label(
-      l10n_util::GetStringUTF16(label_text_id));
+  string16 passphrase_label_text = l10n_util::GetStringUTF16(label_text_id);
+  passphrase_label_ = new views::Label(passphrase_label_text);
   layout->AddView(passphrase_label_);
   passphrase_textfield_ = new views::Textfield(
       views::Textfield::STYLE_OBSCURED);
@@ -1036,8 +1048,7 @@ void WifiConfigView::Init(WifiNetwork* wifi, bool show_8021x) {
   // Disable passphrase input initially for other network.
   passphrase_label_->SetEnabled(wifi != NULL);
   passphrase_textfield_->SetEnabled(wifi && passphrase_ui_data_.editable());
-  passphrase_textfield_->SetAccessibleName(l10n_util::GetStringUTF16(
-      label_text_id));
+  passphrase_textfield_->SetAccessibleName(passphrase_label_text);
   layout->AddView(passphrase_textfield_);
 
   if (passphrase_ui_data_.managed()) {
@@ -1045,6 +1056,7 @@ void WifiConfigView::Init(WifiNetwork* wifi, bool show_8021x) {
   } else {
     // Password visible button.
     passphrase_visible_button_ = new views::ToggleImageButton(this);
+    passphrase_visible_button_->set_focusable(true);
     passphrase_visible_button_->SetTooltipText(
         l10n_util::GetStringUTF16(
             IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PASSPHRASE_SHOW));
