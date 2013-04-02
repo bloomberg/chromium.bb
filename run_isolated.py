@@ -66,7 +66,7 @@ DELAY_BETWEEN_UPDATES_IN_SECS = 30
 COUNT_KEY = 'UrlOpenAttempt'
 
 # The maximum number of attempts to trying opening a url before aborting.
-MAX_URL_OPEN_ATTEMPTS = 20
+MAX_URL_OPEN_ATTEMPTS = 30
 
 
 class ConfigError(ValueError):
@@ -465,7 +465,7 @@ def url_open_request(make_request, retry_404=False):
     # Only sleep if we are going to try again.
     if attempt != MAX_URL_OPEN_ATTEMPTS - 1:
       duration = random.random() * 3 + math.pow(1.5, (attempt + 1))
-      duration = min(10, max(0.1, duration))
+      duration = min(20, max(0.1, duration))
       time.sleep(duration)
 
   logging.error('Unable to open given url, %s, after %d attempts.\n%s',
