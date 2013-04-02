@@ -294,7 +294,7 @@ void WebKitTestController::OverrideWebkitPrefs(
     ApplyLayoutTestDefaultPreferences(prefs);
     if (is_compositing_test_) {
       CommandLine& command_line = *CommandLine::ForCurrentProcess();
-      if (command_line.HasSwitch(switches::kEnableSoftwareCompositing))
+      if (!command_line.HasSwitch(switches::kEnableSoftwareCompositing))
         prefs->accelerated_2d_canvas_enabled = true;
       prefs->accelerated_compositing_for_video_enabled = true;
       prefs->mock_scrollbars_enabled = true;
