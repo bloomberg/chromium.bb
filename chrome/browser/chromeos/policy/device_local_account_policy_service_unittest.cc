@@ -16,6 +16,7 @@
 #include "chrome/browser/policy/cloud/mock_device_management_service.h"
 #include "chrome/browser/policy/cloud/policy_builder.h"
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
+#include "chromeos/dbus/power_policy_controller.h"
 #include "policy/policy_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -46,6 +47,12 @@ class DeviceLocalAccountPolicyServiceTest
     DeviceSettingsTestBase::SetUp();
 
     // Values implicitly enforced for public accounts.
+    expected_policy_map_.Set(key::kLidCloseAction,
+                             POLICY_LEVEL_MANDATORY,
+                             POLICY_SCOPE_USER,
+                             base::Value::CreateIntegerValue(
+                                 chromeos::PowerPolicyController::
+                                     ACTION_STOP_SESSION));
     expected_policy_map_.Set(key::kShelfAutoHideBehavior,
                              POLICY_LEVEL_MANDATORY,
                              POLICY_SCOPE_USER,
