@@ -295,6 +295,10 @@ void PictureLayerImpl::DidBecomeActive() {
 void PictureLayerImpl::DidLoseOutputSurface() {
   if (tilings_)
     tilings_->RemoveAllTilings();
+
+  raster_page_scale_ = 0;
+  raster_device_scale_ = 0;
+  raster_source_scale_ = 0;
 }
 
 void PictureLayerImpl::CalculateContentsScale(

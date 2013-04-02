@@ -692,5 +692,40 @@ TEST_F(PictureLayerImplTest, CleanUpTilings) {
   ASSERT_EQ(2u, active_layer_->tilings().num_tilings());
 }
 
+TEST_F(PictureLayerImplTest, DidLoseOutputSurface) {
+  gfx::Size tile_size(400, 400);
+  gfx::Size layer_bounds(1300, 1900);
+
+  scoped_refptr<TestablePicturePileImpl> pending_pile =
+      TestablePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+  scoped_refptr<TestablePicturePileImpl> active_pile =
+      TestablePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+
+  float result_scale_x, result_scale_y;
+  gfx::Size result_bounds;
+
+  SetupTrees(pending_pile, active_pile);
+  EXPECT_EQ(0u, pending_layer_->tilings().num_tilings());
+
+  // These are included in the scale given to the layer.
+  host_impl_.SetDeviceScaleFactor(1.7f);
+  host_impl_.pending_tree()->SetPageScaleFactorAndLimits(3.2f, 3.2f, 3.2f);
+
+  pending_layer_->CalculateContentsScale(
+      1.3f, false, &result_scale_x, &result_scale_y, &result_bounds);
+  EXPECT_EQ(2u, pending_layer_->tilings().num_tilings());
+
+  // All tilings should be removed when losing output surface.
+  active_layer_->DidLoseOutputSurface();
+  EXPECT_EQ(0u, active_layer_->tilings().num_tilings());
+  pending_layer_->DidLoseOutputSurface();
+  EXPECT_EQ(0u, pending_layer_->tilings().num_tilings());
+
+  // This should create new tilings.
+  pending_layer_->CalculateContentsScale(
+      1.3f, false, &result_scale_x, &result_scale_y, &result_bounds);
+  EXPECT_EQ(2u, pending_layer_->tilings().num_tilings());
+}
+
 }  // namespace
 }  // namespace cc
