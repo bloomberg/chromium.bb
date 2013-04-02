@@ -13,8 +13,11 @@
 #include "ui/gfx/size.h"
 
 namespace cc {
+class CompositorFrame;
+class Layer;
 class SolidColorLayer;
 class TextureLayer;
+class DelegatedRendererLayer;
 }
 
 namespace WebKit {
@@ -33,6 +36,7 @@ class CONTENT_EXPORT BrowserPluginCompositingHelper :
                                  BrowserPluginManager* manager,
                                  int instance_id,
                                  int host_routing_id);
+  void DidCommitCompositorFrame();
   void EnableCompositing(bool);
   void OnContainerDestroy();
   void OnBuffersSwapped(const gfx::Size& size,
@@ -40,12 +44,18 @@ class CONTENT_EXPORT BrowserPluginCompositingHelper :
                         int gpu_route_id,
                         int gpu_host_id,
                         float device_scale_factor);
+  void OnCompositorFrameSwapped(scoped_ptr<cc::CompositorFrame> frame,
+                                int route_id,
+                                int host_id);
   void UpdateVisibility(bool);
  protected:
   // Friend RefCounted so that the dtor can be non-public.
   friend class base::RefCounted<BrowserPluginCompositingHelper>;
  private:
   ~BrowserPluginCompositingHelper();
+  void CheckSizeAndAdjustLayerBounds(const gfx::Size& new_size,
+                                     float device_scale_factor,
+                                     cc::Layer* layer);
   void FreeMailboxMemory(const std::string& mailbox_name,
                          unsigned sync_point);
   void MailboxReleased(const std::string& mailbox_name,
@@ -54,8 +64,8 @@ class CONTENT_EXPORT BrowserPluginCompositingHelper :
                        unsigned sync_point);
   int instance_id_;
   int host_routing_id_;
-  int last_gpu_route_id_;
-  int last_gpu_host_id_;
+  int last_route_id_;
+  int last_host_id_;
   bool last_mailbox_valid_;
   bool ack_pending_;
   bool ack_pending_for_crashed_guest_;
@@ -64,6 +74,7 @@ class CONTENT_EXPORT BrowserPluginCompositingHelper :
 
   scoped_refptr<cc::SolidColorLayer> background_layer_;
   scoped_refptr<cc::TextureLayer> texture_layer_;
+  scoped_refptr<cc::DelegatedRendererLayer> delegated_layer_;
   scoped_ptr<WebKit::WebLayer> web_layer_;
   WebKit::WebPluginContainer* container_;
 

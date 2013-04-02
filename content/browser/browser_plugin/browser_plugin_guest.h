@@ -52,6 +52,10 @@ struct ViewHostMsg_UpdateRect_Params;
 class WebCursor;
 struct WebDropData;
 
+namespace cc {
+class CompositorFrameAck;
+}
+
 namespace WebKit {
 class WebInputEvent;
 }
@@ -273,6 +277,11 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
                                   bool user_gesture);
 
   // Message handlers for messages from embedder.
+
+  void OnCompositorFrameACK(int instance_id,
+                            int route_id,
+                            int renderer_host_id,
+                            const cc::CompositorFrameAck& ack);
 
   // Allows or denies a permission request access, after the embedder has had a
   // chance to decide.

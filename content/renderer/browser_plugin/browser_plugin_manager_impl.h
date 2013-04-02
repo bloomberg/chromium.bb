@@ -34,6 +34,8 @@ class BrowserPluginManagerImpl : public BrowserPluginManager {
 
   // RenderViewObserver override. Call on render thread.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void DidCommitCompositorFrame() OVERRIDE;
+
  private:
   virtual ~BrowserPluginManagerImpl();
 

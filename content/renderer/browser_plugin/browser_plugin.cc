@@ -173,6 +173,8 @@ bool BrowserPlugin::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(BrowserPlugin, message)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_AdvanceFocus, OnAdvanceFocus)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_BuffersSwapped, OnBuffersSwapped)
+    IPC_MESSAGE_HANDLER_GENERIC(BrowserPluginMsg_CompositorFrameSwapped,
+                                OnCompositorFrameSwapped(message))
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_GuestContentWindowReady,
                         OnGuestContentWindowReady)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_GuestGone, OnGuestGone)
@@ -446,6 +448,11 @@ void BrowserPlugin::SetInstanceID(int instance_id, bool new_guest) {
                                            create_guest_params));
 }
 
+void BrowserPlugin::DidCommitCompositorFrame() {
+  if (compositing_helper_)
+    compositing_helper_->DidCommitCompositorFrame();
+}
+
 void BrowserPlugin::OnAdvanceFocus(int instance_id, bool reverse) {
   DCHECK(render_view_);
   render_view_->GetWebView()->advanceFocus(reverse);
@@ -464,6 +471,19 @@ void BrowserPlugin::OnBuffersSwapped(int instance_id,
                                         gpu_route_id,
                                         gpu_host_id,
                                         GetDeviceScaleFactor());
+}
+
+void BrowserPlugin::OnCompositorFrameSwapped(const IPC::Message& message) {
+  BrowserPluginMsg_CompositorFrameSwapped::Param param;
+  if (!BrowserPluginMsg_CompositorFrameSwapped::Read(&message, &param))
+    return;
+  scoped_ptr<cc::CompositorFrame> frame(new cc::CompositorFrame);
+  param.b.AssignTo(frame.get());
+
+  EnableCompositing(true);
+  compositing_helper_->OnCompositorFrameSwapped(frame.Pass(),
+                                                param.c /* route_id */,
+                                                param.d /* host_id */);
 }
 
 void BrowserPlugin::OnGuestContentWindowReady(int instance_id,
@@ -1224,6 +1244,7 @@ bool BrowserPlugin::ShouldForwardToBrowserPlugin(
   switch (message.type()) {
     case BrowserPluginMsg_AdvanceFocus::ID:
     case BrowserPluginMsg_BuffersSwapped::ID:
+    case BrowserPluginMsg_CompositorFrameSwapped::ID:
     case BrowserPluginMsg_GuestContentWindowReady::ID:
     case BrowserPluginMsg_GuestGone::ID:
     case BrowserPluginMsg_GuestResponsive::ID:

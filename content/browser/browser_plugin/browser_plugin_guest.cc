@@ -156,6 +156,8 @@ bool BrowserPluginGuest::OnMessageReceivedFromEmbedder(
   IPC_BEGIN_MESSAGE_MAP(BrowserPluginGuest, message)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_BuffersSwappedACK,
                         OnSwapBuffersACK)
+    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_CompositorFrameACK,
+                        OnCompositorFrameACK)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_DragStatusUpdate,
                         OnDragStatusUpdate)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_Go, OnGo)
@@ -622,6 +624,7 @@ bool BrowserPluginGuest::ShouldForwardToBrowserPluginGuest(
     const IPC::Message& message) {
   switch (message.type()) {
     case BrowserPluginHostMsg_BuffersSwappedACK::ID:
+    case BrowserPluginHostMsg_CompositorFrameACK::ID:
     case BrowserPluginHostMsg_DragStatusUpdate::ID:
     case BrowserPluginHostMsg_Go::ID:
     case BrowserPluginHostMsg_HandleInputEvent::ID:
@@ -718,6 +721,16 @@ void BrowserPluginGuest::Attach(
     SendMessageToEmbedder(
         new BrowserPluginMsg_UpdatedName(instance_id_, name_));
   }
+}
+
+void BrowserPluginGuest::OnCompositorFrameACK(
+    int instance_id,
+    int route_id,
+    int renderer_host_id,
+    const cc::CompositorFrameAck& ack) {
+  RenderWidgetHostImpl::SendSwapCompositorFrameAck(route_id,
+                                                   renderer_host_id,
+                                                   ack);
 }
 
 void BrowserPluginGuest::OnDragStatusUpdate(int instance_id,

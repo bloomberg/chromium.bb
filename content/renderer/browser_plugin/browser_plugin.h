@@ -153,6 +153,10 @@ class CONTENT_EXPORT BrowserPlugin :
   // browser process.
   void SetInstanceID(int instance_id, bool new_guest);
 
+  // Notify the plugin about a compositor commit so that frame ACKs could be
+  // sent, if needed.
+  void DidCommitCompositorFrame();
+
   // Returns whether a message should be forwarded to BrowserPlugin.
   static bool ShouldForwardToBrowserPlugin(const IPC::Message& message);
 
@@ -324,6 +328,7 @@ class CONTENT_EXPORT BrowserPlugin :
                         std::string mailbox_name,
                         int gpu_route_id,
                         int gpu_host_id);
+  void OnCompositorFrameSwapped(const IPC::Message& message);
   void OnGuestContentWindowReady(int instance_id,
                                  int content_window_routing_id);
   void OnGuestGone(int instance_id, int process_id, int status);

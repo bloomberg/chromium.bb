@@ -10,6 +10,8 @@
 #include "base/process.h"
 #include "base/shared_memory.h"
 #include "base/values.h"
+#include "cc/output/compositor_frame.h"
+#include "cc/output/compositor_frame_ack.h"
 #include "content/common/browser_plugin/browser_plugin_message_enums.h"
 #include "content/common/content_export.h"
 #include "content/common/content_param_traits.h"
@@ -220,6 +222,13 @@ IPC_MESSAGE_ROUTED5(BrowserPluginHostMsg_BuffersSwappedACK,
                     std::string /* mailbox_name */,
                     uint32 /* sync_point */)
 
+// Acknowledge that we presented an ubercomp frame.
+IPC_MESSAGE_ROUTED4(BrowserPluginHostMsg_CompositorFrameACK,
+                    int /* instance_id */,
+                    int /* route_id */,
+                    int /* renderer_host_id */,
+                    cc::CompositorFrameAck /* ack */)
+
 // When a BrowserPlugin has been removed from the embedder's DOM, it informs
 // the browser process to cleanup the guest.
 IPC_MESSAGE_ROUTED1(BrowserPluginHostMsg_PluginDestroyed,
@@ -397,6 +406,12 @@ IPC_MESSAGE_CONTROL5(BrowserPluginMsg_BuffersSwapped,
                      std::string /* mailbox_name */,
                      int /* route_id */,
                      int /* gpu_host_id */)
+
+IPC_MESSAGE_CONTROL4(BrowserPluginMsg_CompositorFrameSwapped,
+                     int /* instance_id */,
+                     cc::CompositorFrame /* frame */,
+                     int /* route_id */,
+                     int /* renderer_host_id */)
 
 // When the guest requests permission, the browser process forwards this
 // request to the embeddder through this message.

@@ -67,6 +67,14 @@ bool BrowserPluginManagerImpl::OnMessageReceived(
   return handled;
 }
 
+void BrowserPluginManagerImpl::DidCommitCompositorFrame() {
+  IDMap<BrowserPlugin>::iterator iter(&instances_);
+  while (!iter.IsAtEnd()) {
+    iter.GetCurrentValue()->DidCommitCompositorFrame();
+    iter.Advance();
+  }
+}
+
 void BrowserPluginManagerImpl::OnAllocateInstanceIDACK(
     const IPC::Message& message, int request_id, int instance_id) {
   BrowserPlugin* plugin =

@@ -166,6 +166,17 @@ void RenderWidgetHostViewGuest::AcceleratedSurfacePostSubBuffer(
   NOTREACHED();
 }
 
+void RenderWidgetHostViewGuest::OnSwapCompositorFrame(
+    scoped_ptr<cc::CompositorFrame> frame) {
+  guest_->clear_damage_buffer();
+  guest_->SendMessageToEmbedder(
+      new BrowserPluginMsg_CompositorFrameSwapped(
+          guest_->instance_id(),
+          *frame,
+          host_->GetRoutingID(),
+          host_->GetProcess()->GetID()));
+}
+
 void RenderWidgetHostViewGuest::SetBounds(const gfx::Rect& rect) {
   platform_view_->SetBounds(rect);
 }

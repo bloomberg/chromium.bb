@@ -119,6 +119,8 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   virtual void AcceleratedSurfacePostSubBuffer(
       const GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params& params,
       int gpu_host_id) OVERRIDE;
+  virtual void OnSwapCompositorFrame(
+      scoped_ptr<cc::CompositorFrame> frame) OVERRIDE;
   virtual void AcceleratedSurfaceSuspend() OVERRIDE;
   virtual void AcceleratedSurfaceRelease() OVERRIDE;
   virtual bool HasAcceleratedSurface(const gfx::Size& desired_size) OVERRIDE;
