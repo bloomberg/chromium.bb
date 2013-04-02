@@ -18,6 +18,22 @@ class TimeDelta;
 
 class AutofillMetrics {
  public:
+  // The possible results of an Autocheckout flow.
+  enum AutocheckoutBuyFlowMetric {
+    // The user has initated Autocheckout. The baseline metric.
+    AUTOCHECKOUT_BUY_FLOW_STARTED,
+    // Autocheckout completed successfully.
+    AUTOCHECKOUT_BUY_FLOW_SUCCESS,
+    // Autocheckout failed due to missing server side data.
+    AUTOCHECKOUT_BUY_FLOW_MISSING_FIELDMAPPING,
+    // Autocheckout failed due to a missing proceed element.
+    AUTOCHECKOUT_BUY_FLOW_MISSING_ADVANCE_ELEMENT,
+    // Autocheckout failed for any number of other reasons, e.g, the proceed
+    // element click failed, the page numbers were not increasing, etc.
+    AUTOCHECKOUT_BUY_FLOW_CANNOT_PROCEED,
+    NUM_AUTOCHECKOUT_BUY_FLOW_METRICS
+  };
+
   // The success or failure of Autocheckout.
   enum AutocheckoutCompletionStatus {
     AUTOCHECKOUT_FAILED,     // The user canceled out of the dialog after
@@ -28,10 +44,12 @@ class AutofillMetrics {
 
   // The action a user took to dismiss a bubble.
   enum BubbleMetric {
-    BUBBLE_CREATED = 0,  // The bubble was created.
-    BUBBLE_ACCEPTED,     // The user accepted, i.e. confirmed, the bubble.
-    BUBBLE_DISMISSED,    // The user dismissed the bubble.
-    BUBBLE_IGNORED,      // The user did not interact with the bubble.
+    BUBBLE_CREATED = 0,         // The bubble was created.
+    BUBBLE_ACCEPTED,            // The user accepted, i.e. confirmed, the
+                                // bubble.
+    BUBBLE_DISMISSED,           // The user dismissed the bubble.
+    BUBBLE_IGNORED,             // The user did not interact with the bubble.
+    BUBBLE_COULD_BE_DISPLAYED,  // The bubble could be displayed.
     NUM_BUBBLE_METRICS,
   };
 
@@ -272,6 +290,10 @@ class AutofillMetrics {
 
   // Logs how the user interacted with the Autocheckout bubble.
   virtual void LogAutocheckoutBubbleMetric(BubbleMetric metric) const;
+
+  // Logs the result of an Autocheckout buy flow.
+  virtual void LogAutocheckoutBuyFlowMetric(
+      AutocheckoutBuyFlowMetric metric) const;
 
   virtual void LogCreditCardInfoBarMetric(InfoBarMetric metric) const;
 

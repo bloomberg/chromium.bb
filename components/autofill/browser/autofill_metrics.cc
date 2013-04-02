@@ -336,6 +336,14 @@ void AutofillMetrics::LogAutocheckoutBubbleMetric(BubbleMetric metric) const {
   UMA_HISTOGRAM_ENUMERATION("Autocheckout.Bubble", metric, NUM_BUBBLE_METRICS);
 }
 
+void AutofillMetrics::LogAutocheckoutBuyFlowMetric(
+    AutocheckoutBuyFlowMetric metric) const {
+  DCHECK_LT(metric, NUM_AUTOCHECKOUT_BUY_FLOW_METRICS);
+
+  UMA_HISTOGRAM_ENUMERATION("Autocheckout.BuyFlow", metric,
+                            NUM_AUTOCHECKOUT_BUY_FLOW_METRICS);
+}
+
 void AutofillMetrics::LogCreditCardInfoBarMetric(InfoBarMetric metric) const {
   DCHECK_LT(metric, NUM_INFO_BAR_METRICS);
 

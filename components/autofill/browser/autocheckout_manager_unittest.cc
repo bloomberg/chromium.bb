@@ -9,6 +9,7 @@
 #include "components/autofill/browser/autocheckout_manager.h"
 #include "components/autofill/browser/autofill_common_test.h"
 #include "components/autofill/browser/autofill_manager.h"
+#include "components/autofill/browser/autofill_metrics.h"
 #include "components/autofill/browser/form_structure.h"
 #include "components/autofill/browser/test_autofill_manager_delegate.h"
 #include "components/autofill/common/autofill_messages.h"
@@ -142,6 +143,13 @@ scoped_ptr<AutocheckoutPageMetaData> CreateInFlowMetaData() {
   in_flow->total_pages = 3;
   in_flow->proceed_element_descriptor = CreateProceedElement().Pass();
   return in_flow.Pass();
+}
+
+scoped_ptr<AutocheckoutPageMetaData> CreateNotInFlowMetaData() {
+  scoped_ptr<AutocheckoutPageMetaData> not_in_flow(
+      new AutocheckoutPageMetaData());
+  not_in_flow->proceed_element_descriptor = CreateProceedElement().Pass();
+  return not_in_flow.Pass();
 }
 
 scoped_ptr<AutocheckoutPageMetaData> CreateEndOfFlowMetaData() {
@@ -282,15 +290,32 @@ class TestAutofillManager : public AutofillManager {
   }
 };
 
+class MockAutofillMetrics : public AutofillMetrics {
+ public:
+  MockAutofillMetrics() {}
+  MOCK_CONST_METHOD1(LogAutocheckoutBubbleMetric, void(BubbleMetric));
+  MOCK_CONST_METHOD1(LogAutocheckoutBuyFlowMetric,
+                     void(AutocheckoutBuyFlowMetric));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockAutofillMetrics);
+};
 
 class TestAutocheckoutManager: public AutocheckoutManager {
-  public:
-   explicit TestAutocheckoutManager(AutofillManager* autofill_manager)
-       : AutocheckoutManager(autofill_manager) {}
+ public:
+  explicit TestAutocheckoutManager(AutofillManager* autofill_manager)
+      : AutocheckoutManager(autofill_manager) {
+    set_metric_logger(scoped_ptr<AutofillMetrics>(new MockAutofillMetrics));
+  }
 
-   using AutocheckoutManager::in_autocheckout_flow;
-   using AutocheckoutManager::autocheckout_offered;
-   using AutocheckoutManager::MaybeShowAutocheckoutDialog;
+  const MockAutofillMetrics& metric_logger() const {
+    return static_cast<const MockAutofillMetrics&>(
+       AutocheckoutManager::metric_logger());
+   }
+
+  using AutocheckoutManager::in_autocheckout_flow;
+  using AutocheckoutManager::autocheckout_offered;
+  using AutocheckoutManager::MaybeShowAutocheckoutDialog;
 };
 
 }  // namespace
@@ -332,6 +357,9 @@ class AutocheckoutManagerTest : public ChromeRenderViewHostTestHarness {
     EXPECT_FALSE(autocheckout_manager_->in_autocheckout_flow());
     EXPECT_FALSE(
         autofill_manager_delegate_->request_autocomplete_dialog_open());
+    EXPECT_CALL(autocheckout_manager_->metric_logger(),
+                LogAutocheckoutBubbleMetric(
+                    AutofillMetrics::BUBBLE_COULD_BE_DISPLAYED)).Times(1);
     autocheckout_manager_->OnLoadedPageMetaData(CreateStartOfFlowMetaData());
     // Simulate the user submitting some data via the requestAutocomplete UI.
     autofill_manager_delegate_->SetUserSuppliedData(
@@ -340,6 +368,9 @@ class AutocheckoutManagerTest : public ChromeRenderViewHostTestHarness {
     content::SSLStatus ssl_status;
     EXPECT_CALL(*autofill_manager_delegate_,
                 UpdateProgressBar(testing::DoubleEq(1.0/3.0))).Times(1);
+    EXPECT_CALL(autocheckout_manager_->metric_logger(),
+                LogAutocheckoutBuyFlowMetric(
+                    AutofillMetrics::AUTOCHECKOUT_BUY_FLOW_STARTED)).Times(1);
     autocheckout_manager_->MaybeShowAutocheckoutDialog(frame_url,
                                                        ssl_status,
                                                        true);
@@ -448,6 +479,9 @@ TEST_F(AutocheckoutManagerTest, OnFormsSeenTest) {
   content::SSLStatus ssl_status;
   gfx::NativeView native_view;
   gfx::RectF bounding_box;
+  EXPECT_CALL(autocheckout_manager_->metric_logger(),
+              LogAutocheckoutBubbleMetric(
+                  AutofillMetrics::BUBBLE_COULD_BE_DISPLAYED)).Times(1);
   autocheckout_manager_->OnLoadedPageMetaData(CreateStartOfFlowMetaData());
   autocheckout_manager_->MaybeShowAutocheckoutBubble(frame_url,
                                                      ssl_status,
@@ -459,11 +493,28 @@ TEST_F(AutocheckoutManagerTest, OnFormsSeenTest) {
   EXPECT_FALSE(autocheckout_manager_->autocheckout_offered());
 }
 
+TEST_F(AutocheckoutManagerTest, OnClickFailedTest) {
+  OpenRequestAutocompleteDialog();
+
+  EXPECT_CALL(*autofill_manager_delegate_, OnAutocheckoutError()).Times(1);
+  EXPECT_CALL(
+      autocheckout_manager_->metric_logger(),
+      LogAutocheckoutBuyFlowMetric(
+          AutofillMetrics::AUTOCHECKOUT_BUY_FLOW_MISSING_ADVANCE_ELEMENT))
+      .Times(1);
+  autocheckout_manager_->OnClickFailed(MISSING_ADVANCE);
+  EXPECT_FALSE(autocheckout_manager_->in_autocheckout_flow());
+  HideRequestAutocompleteDialog();
+}
+
 TEST_F(AutocheckoutManagerTest, MaybeShowAutocheckoutBubbleTest) {
   GURL frame_url;
   content::SSLStatus ssl_status;
   gfx::NativeView native_view;
   gfx::RectF bounding_box;
+  EXPECT_CALL(autocheckout_manager_->metric_logger(),
+              LogAutocheckoutBubbleMetric(
+                  AutofillMetrics::BUBBLE_COULD_BE_DISPLAYED)).Times(1);
   autocheckout_manager_->OnLoadedPageMetaData(CreateStartOfFlowMetaData());
   // MaybeShowAutocheckoutBubble shows bubble if it has not been shown.
   autocheckout_manager_->MaybeShowAutocheckoutBubble(frame_url,
@@ -488,24 +539,37 @@ TEST_F(AutocheckoutManagerTest, MaybeShowAutocheckoutBubbleTest) {
   EXPECT_FALSE(autofill_manager_delegate_->request_autocomplete_dialog_open());
 }
 
-TEST_F(AutocheckoutManagerTest, OnLoadedPageMetaDataTest) {
+TEST_F(AutocheckoutManagerTest, OnLoadedPageMetaDataMissingMetaData) {
   // Gettting no meta data after any autocheckout page is an error.
   OpenRequestAutocompleteDialog();
   EXPECT_CALL(*autofill_manager_delegate_, OnAutocheckoutError()).Times(1);
+  EXPECT_CALL(
+      autocheckout_manager_->metric_logger(),
+      LogAutocheckoutBuyFlowMetric(
+          AutofillMetrics::AUTOCHECKOUT_BUY_FLOW_MISSING_FIELDMAPPING))
+      .Times(1);
   autocheckout_manager_->OnLoadedPageMetaData(
       scoped_ptr<AutocheckoutPageMetaData>());
   EXPECT_FALSE(autocheckout_manager_->in_autocheckout_flow());
   EXPECT_EQ(0U, process()->sink().message_count());
   HideRequestAutocompleteDialog();
+}
 
+TEST_F(AutocheckoutManagerTest, OnLoadedPageMetaDataRepeatedStartPage) {
   // Getting start page twice in a row is an error.
   OpenRequestAutocompleteDialog();
   EXPECT_CALL(*autofill_manager_delegate_, OnAutocheckoutError()).Times(1);
+  EXPECT_CALL(
+      autocheckout_manager_->metric_logger(),
+      LogAutocheckoutBuyFlowMetric(
+          AutofillMetrics::AUTOCHECKOUT_BUY_FLOW_CANNOT_PROCEED)).Times(1);
   autocheckout_manager_->OnLoadedPageMetaData(CreateStartOfFlowMetaData());
   EXPECT_FALSE(autocheckout_manager_->in_autocheckout_flow());
   EXPECT_EQ(0U, process()->sink().message_count());
   HideRequestAutocompleteDialog();
+}
 
+TEST_F(AutocheckoutManagerTest, OnLoadedPageMetaDataRepeatedPage) {
   // Repeating a page is an error.
   OpenRequestAutocompleteDialog();
   // Go to second page.
@@ -515,19 +579,52 @@ TEST_F(AutocheckoutManagerTest, OnLoadedPageMetaDataTest) {
   EXPECT_TRUE(autocheckout_manager_->in_autocheckout_flow());
   CheckFillFormsAndClickIpc();
   EXPECT_CALL(*autofill_manager_delegate_, OnAutocheckoutError()).Times(1);
+  EXPECT_CALL(
+      autocheckout_manager_->metric_logger(),
+      LogAutocheckoutBuyFlowMetric(
+          AutofillMetrics::AUTOCHECKOUT_BUY_FLOW_CANNOT_PROCEED)).Times(1);
   autocheckout_manager_->OnLoadedPageMetaData(CreateInFlowMetaData());
   EXPECT_FALSE(autocheckout_manager_->in_autocheckout_flow());
   EXPECT_EQ(0U, process()->sink().message_count());
   HideRequestAutocompleteDialog();
+}
 
+TEST_F(AutocheckoutManagerTest, OnLoadedPageMetaDataNotInFlow) {
+  // Repeating a page is an error.
+  OpenRequestAutocompleteDialog();
+  // Go to second page.
+  EXPECT_CALL(*autofill_manager_delegate_,
+              UpdateProgressBar(testing::DoubleEq(2.0/3.0))).Times(1);
+  autocheckout_manager_->OnLoadedPageMetaData(CreateInFlowMetaData());
+  EXPECT_TRUE(autocheckout_manager_->in_autocheckout_flow());
+  CheckFillFormsAndClickIpc();
+  EXPECT_CALL(*autofill_manager_delegate_, OnAutocheckoutError()).Times(1);
+  EXPECT_CALL(
+      autocheckout_manager_->metric_logger(),
+      LogAutocheckoutBuyFlowMetric(
+          AutofillMetrics::AUTOCHECKOUT_BUY_FLOW_MISSING_FIELDMAPPING))
+      .Times(1);
+  autocheckout_manager_->OnLoadedPageMetaData(CreateNotInFlowMetaData());
+  EXPECT_FALSE(autocheckout_manager_->in_autocheckout_flow());
+  EXPECT_EQ(0U, process()->sink().message_count());
+  HideRequestAutocompleteDialog();
+}
+
+TEST_F(AutocheckoutManagerTest,
+       OnLoadedPageMetaDataShouldNotFillFormsIfNotInFlow) {
   // If not in flow, OnLoadedPageMetaData does not fill forms.
+  EXPECT_CALL(autocheckout_manager_->metric_logger(),
+              LogAutocheckoutBubbleMetric(
+                  AutofillMetrics::BUBBLE_COULD_BE_DISPLAYED)).Times(1);
   autocheckout_manager_->OnLoadedPageMetaData(CreateStartOfFlowMetaData());
   // Go to second page.
   EXPECT_CALL(*autofill_manager_delegate_,
               UpdateProgressBar(testing::_)).Times(0);
   autocheckout_manager_->OnLoadedPageMetaData(CreateInFlowMetaData());
   EXPECT_EQ(0U, process()->sink().message_count());
+}
 
+TEST_F(AutocheckoutManagerTest, FullAutocheckoutFlow) {
   // Test for progression through last page.
   OpenRequestAutocompleteDialog();
   // Go to second page.
@@ -538,6 +635,9 @@ TEST_F(AutocheckoutManagerTest, OnLoadedPageMetaDataTest) {
   CheckFillFormsAndClickIpc();
   // Go to third page.
   EXPECT_CALL(*autofill_manager_delegate_, UpdateProgressBar(1)).Times(1);
+  EXPECT_CALL(autocheckout_manager_->metric_logger(),
+              LogAutocheckoutBuyFlowMetric(
+                  AutofillMetrics::AUTOCHECKOUT_BUY_FLOW_SUCCESS)).Times(1);
   autocheckout_manager_->OnLoadedPageMetaData(CreateEndOfFlowMetaData());
   CheckFillFormsAndClickIpc();
   EXPECT_FALSE(autocheckout_manager_->in_autocheckout_flow());
@@ -549,6 +649,9 @@ TEST_F(AutocheckoutManagerTest, SinglePageFlow) {
   EXPECT_FALSE(autocheckout_manager_->in_autocheckout_flow());
   EXPECT_FALSE(
       autofill_manager_delegate_->request_autocomplete_dialog_open());
+  EXPECT_CALL(autocheckout_manager_->metric_logger(),
+              LogAutocheckoutBubbleMetric(
+                  AutofillMetrics::BUBBLE_COULD_BE_DISPLAYED)).Times(1);
   autocheckout_manager_->OnLoadedPageMetaData(CreateOnePageFlowMetaData());
   // Simulate the user submitting some data via the requestAutocomplete UI.
   autofill_manager_delegate_->SetUserSuppliedData(
@@ -557,6 +660,12 @@ TEST_F(AutocheckoutManagerTest, SinglePageFlow) {
   content::SSLStatus ssl_status;
   EXPECT_CALL(*autofill_manager_delegate_,
               UpdateProgressBar(testing::DoubleEq(1))).Times(1);
+  EXPECT_CALL(autocheckout_manager_->metric_logger(),
+              LogAutocheckoutBuyFlowMetric(
+                  AutofillMetrics::AUTOCHECKOUT_BUY_FLOW_STARTED)).Times(1);
+  EXPECT_CALL(autocheckout_manager_->metric_logger(),
+              LogAutocheckoutBuyFlowMetric(
+                  AutofillMetrics::AUTOCHECKOUT_BUY_FLOW_SUCCESS)).Times(1);
   autocheckout_manager_->MaybeShowAutocheckoutDialog(frame_url,
                                                      ssl_status,
                                                      true);

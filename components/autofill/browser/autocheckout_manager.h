@@ -16,6 +16,7 @@
 
 class AutofillField;
 class AutofillManager;
+class AutofillMetrics;
 class AutofillProfile;
 class CreditCard;
 class FormStructure;
@@ -81,6 +82,9 @@ class AutocheckoutManager {
                                            const content::SSLStatus& ssl_status,
                                            bool show_dialog);
 
+  const AutofillMetrics& metric_logger() const { return *metric_logger_; }
+  void set_metric_logger(scoped_ptr<AutofillMetrics> metric_logger);
+
  private:
   // Whether or not the current page is the start of a multipage Autofill flow.
   bool IsStartOfAutofillableFlow() const;
@@ -112,6 +116,8 @@ class AutocheckoutManager {
 
   // Autocheckout specific page meta data.
   scoped_ptr<AutocheckoutPageMetaData> page_meta_data_;
+
+  scoped_ptr<AutofillMetrics> metric_logger_;
 
   // Whether or not the Autocheckout bubble has been displayed to the user for
   // the current forms. Ensures the Autocheckout bubble is only shown to a

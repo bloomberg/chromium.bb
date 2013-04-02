@@ -11,6 +11,7 @@
 #include "components/autofill/browser/autofill_country.h"
 #include "components/autofill/browser/autofill_field.h"
 #include "components/autofill/browser/autofill_manager.h"
+#include "components/autofill/browser/autofill_metrics.h"
 #include "components/autofill/browser/autofill_profile.h"
 #include "components/autofill/browser/credit_card.h"
 #include "components/autofill/browser/field_types.h"
@@ -28,6 +29,8 @@
 using content::RenderViewHost;
 using content::SSLStatus;
 using content::WebContents;
+
+namespace autofill {
 
 namespace {
 
@@ -68,14 +71,30 @@ FormData BuildAutocheckoutFormData() {
   return formdata;
 }
 
+AutofillMetrics::AutocheckoutBuyFlowMetric AutocheckoutStatusToUmaMetric(
+    AutocheckoutStatus status) {
+  switch (status) {
+    case SUCCESS:
+      return AutofillMetrics::AUTOCHECKOUT_BUY_FLOW_SUCCESS;
+    case MISSING_FIELDMAPPING:
+      return AutofillMetrics::AUTOCHECKOUT_BUY_FLOW_MISSING_FIELDMAPPING;
+    case MISSING_ADVANCE:
+      return AutofillMetrics::AUTOCHECKOUT_BUY_FLOW_MISSING_ADVANCE_ELEMENT;
+    case CANNOT_PROCEED:
+      return AutofillMetrics::AUTOCHECKOUT_BUY_FLOW_CANNOT_PROCEED;
+  }
+
+  NOTREACHED();
+  return AutofillMetrics::NUM_AUTOCHECKOUT_BUY_FLOW_METRICS;
+}
+
 const char kTransactionIdNotSet[] = "transaction id not set";
 
 }  // namespace
 
-namespace autofill {
-
 AutocheckoutManager::AutocheckoutManager(AutofillManager* autofill_manager)
     : autofill_manager_(autofill_manager),
+      metric_logger_(new AutofillMetrics),
       autocheckout_offered_(false),
       is_autocheckout_bubble_showing_(false),
       in_autocheckout_flow_(false),
@@ -120,8 +139,12 @@ void AutocheckoutManager::FillForms() {
 }
 
 void AutocheckoutManager::OnClickFailed(AutocheckoutStatus status) {
+  DCHECK(in_autocheckout_flow_);
+  DCHECK_NE(MISSING_FIELDMAPPING, status);
+
   SendAutocheckoutStatus(status);
   autofill_manager_->delegate()->OnAutocheckoutError();
+  in_autocheckout_flow_ = false;
 }
 
 void AutocheckoutManager::OnLoadedPageMetaData(
@@ -129,6 +152,14 @@ void AutocheckoutManager::OnLoadedPageMetaData(
   scoped_ptr<AutocheckoutPageMetaData> old_meta_data =
       page_meta_data_.Pass();
   page_meta_data_ = page_meta_data.Pass();
+
+  // Don't log that the bubble could be displayed if the user entered an
+  // Autocheckout flow and sees the first page of the flow again due to an
+  // error.
+  if (IsStartOfAutofillableFlow() && !in_autocheckout_flow_) {
+    metric_logger_->LogAutocheckoutBubbleMetric(
+        AutofillMetrics::BUBBLE_COULD_BE_DISPLAYED);
+  }
 
   // On the first page of an Autocheckout flow, when this function is called the
   // user won't have opted into the flow yet.
@@ -203,6 +234,11 @@ void AutocheckoutManager::MaybeShowAutocheckoutBubble(
   autocheckout_offered_ = true;
 }
 
+void AutocheckoutManager::set_metric_logger(
+    scoped_ptr<AutofillMetrics> metric_logger) {
+  metric_logger_ = metric_logger.Pass();
+}
+
 void AutocheckoutManager::MaybeShowAutocheckoutDialog(
     const GURL& frame_url,
     const SSLStatus& ssl_status,
@@ -236,6 +272,8 @@ void AutocheckoutManager::ReturnAutocheckoutData(
 
   google_transaction_id_ = google_transaction_id;
   in_autocheckout_flow_ = true;
+  metric_logger_->LogAutocheckoutBuyFlowMetric(
+      AutofillMetrics::AUTOCHECKOUT_BUY_FLOW_STARTED);
 
   profile_.reset(new AutofillProfile());
   credit_card_.reset(new CreditCard());
@@ -323,6 +361,10 @@ void AutocheckoutManager::SendAutocheckoutStatus(AutocheckoutStatus status) {
       status,
       autofill_manager_->GetWebContents()->GetURL(),
       google_transaction_id_);
+
+  // Log the result of this Autocheckout flow to UMA.
+  metric_logger_->LogAutocheckoutBuyFlowMetric(
+      AutocheckoutStatusToUmaMetric(status));
 
   google_transaction_id_ = kTransactionIdNotSet;
 }
