@@ -3,9 +3,9 @@ cevans@chromium.org
 jln@chromium.org
 
 # For security review of sandboxes
-per-file sandbox_policy.cc=set noparent
-per-file sandbox_policy.cc=jschuh@chromium.org
-per-file sandbox_policy.cc=cpu@chromium.org
+per-file sandbox_win.cc=set noparent
+per-file sandbox_win.cc=jschuh@chromium.org
+per-file sandbox_win.cc=cpu@chromium.org
 
 # Mac Sandbox.
 per-file sandbox_init_mac.*=jeremy@chromium.org
