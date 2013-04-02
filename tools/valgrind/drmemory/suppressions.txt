@@ -235,7 +235,7 @@ name=CrashingChildProcess deliberate crash
 
 UNADDRESSABLE ACCESS
 name=::Crasher::Run deliberate crash
-*!`anonymous namespace'::Crasher::Run
+*!base::`anonymous namespace'::Crasher::Run
 
 ############################
 # Benign issues in Chromium
