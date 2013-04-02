@@ -264,7 +264,8 @@ class IsolateModeBase(IsolateBase):
     expected = {
       u'command': [],
       u'files': self._gen_files(read_only, empty_file, True),
-      u'isolate_file': unicode(self.filename()),
+      u'isolate_file': isolate.trace_inputs.get_native_path_case(
+          unicode(self.filename())),
       u'isolated_files': [self.isolated],
       u'relative_cwd': unicode(RELATIVE_CWD[self.case()]),
       u'variables': {
@@ -357,10 +358,11 @@ class IsolateModeBase(IsolateBase):
       out = e.stderr
     self._expect_no_tree()
     self._expect_no_result()
+    root = isolate.trace_inputs.get_native_path_case(unicode(ROOT_DIR))
     expected = (
       '\n'
       'Error: Input directory %s must have a trailing slash\n' %
-          os.path.join(ROOT_DIR, 'tests', 'isolate', 'files1')
+          os.path.join(root, 'tests', 'isolate', 'files1')
     )
     self.assertEquals(expected, out)
 
@@ -373,10 +375,11 @@ class IsolateModeBase(IsolateBase):
       out = e.stderr
     self._expect_no_tree()
     self._expect_no_result()
+    root = isolate.trace_inputs.get_native_path_case(unicode(ROOT_DIR))
     expected = (
       '\n'
       'Error: Input file %s doesn\'t exist\n' %
-          os.path.join(ROOT_DIR, 'tests', 'isolate', 'A_file_that_do_not_exist')
+          os.path.join(root, 'tests', 'isolate', 'A_file_that_do_not_exist')
     )
     self.assertEquals(expected, out)
 
