@@ -4,7 +4,7 @@
 %BOOK_ENTITIES;
 ]>
 <chapter id="chap-Protocol">
-  <title>Wayland Protocol Overview</title>
+  <title>Wayland Protocol and Model of Operation</title>
   <section id="sect-Protocol-Basic-Principles">
     <title>Basic Principles</title>
     <para>
