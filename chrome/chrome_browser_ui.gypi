@@ -1403,6 +1403,8 @@
         'browser/ui/toolbar/toolbar_model_impl.h',
         'browser/ui/toolbar/toolbar_model_delegate.h',
         'browser/ui/toolbar/toolbar_model_security_level_list.h',
+        'browser/ui/toolbar/wrench_icon_painter.cc',
+        'browser/ui/toolbar/wrench_icon_painter.h',
         'browser/ui/toolbar/wrench_menu_model.cc',
         'browser/ui/toolbar/wrench_menu_model.h',
         'browser/ui/top_level_widget.h',

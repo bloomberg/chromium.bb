@@ -42,7 +42,7 @@ namespace {
 // Version number of the current theme pack. We just throw out and rebuild
 // theme packs that aren't int-equal to this. Increment this number if you
 // change default theme assets.
-const int kThemePackVersion = 29;
+const int kThemePackVersion = 30;
 
 // IDs that are in the DataPack won't clash with the positive integer
 // uint16. kHeaderID should always have the maximum value because we want the
@@ -158,6 +158,9 @@ PersistingImagesTable kPersistingImages[] = {
   { 43, IDR_THROBBER, NULL },
   { 44, IDR_THROBBER_WAITING, NULL },
   { 45, IDR_THROBBER_LIGHT, NULL },
+  { 46, IDR_TOOLBAR_BEZEL_HOVER, NULL },
+  { 47, IDR_TOOLBAR_BEZEL_PRESSED, NULL },
+  { 48, IDR_TOOLS_BAR, NULL },
 };
 const size_t kPersistingImagesLength = arraysize(kPersistingImages);
 

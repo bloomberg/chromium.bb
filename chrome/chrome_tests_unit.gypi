@@ -1419,6 +1419,7 @@
         'browser/ui/toolbar/toolbar_model_unittest.cc',
         'browser/ui/toolbar/test_toolbar_model.cc',
         'browser/ui/toolbar/test_toolbar_model.h',
+        'browser/ui/toolbar/wrench_icon_painter_unittest.cc',
         'browser/ui/toolbar/wrench_menu_model_unittest.cc',
         'browser/ui/views/accelerator_table_unittest.cc',
         'browser/ui/views/accessibility/accessibility_event_router_views_unittest.cc',
