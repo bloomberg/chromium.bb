@@ -18,7 +18,8 @@
 #fi
 
 # Source functions script.  The file is in the same directory as this script.
-. "$(dirname $BASH_SOURCE)"/envsetup_functions.sh
+SCRIPT_DIR="$(dirname "${BASH_SOURCE:-$0}")"
+. "${SCRIPT_DIR}"/envsetup_functions.sh
 
 export ANDROID_SDK_BUILD=1  # Default to SDK build.
 
@@ -71,7 +72,7 @@ case "${host_os}" in
     return 1
 esac
 
-CURRENT_DIR="$(readlink -f "$(dirname $BASH_SOURCE)/../../")"
+CURRENT_DIR="$(readlink -f "${SCRIPT_DIR}/../../")"
 if [[ -z "${CHROME_SRC}" ]]; then
   # If $CHROME_SRC was not set, assume current directory is CHROME_SRC.
   export CHROME_SRC="${CURRENT_DIR}"

@@ -172,7 +172,7 @@ print_usage() {
 process_options() {
   host_os=$(uname -s | sed -e 's/Linux/linux/;s/Darwin/mac/')
   try_32bit_host_build=
-  while [[ $1 ]]; do
+  while [[ -n $1 ]]; do
     case "$1" in
       --target-arch=*)
         target_arch="$(echo "$1" | sed 's/^[^=]*=//')"
