@@ -629,16 +629,10 @@ class InstructionPrinter(object):
           assert self._NeedOperandInfo(operand)
           self._out.write('@lock_extends_cr_operand%d\n' % operand.index)
 
-    # TODO(shcherbina): 'memory' format?
     for operand in instruction.operands:
       if self._NeedOperandInfo(operand):
         self._out.write('@operand%d_%s\n' %
                         (operand.index, operand.GetFormat(self._bitness)))
-
-    # TODO(shcherbina): print operand sources and extract implicit operands.
-
-    # TODO(shcherbina): print '@modifiable_instruction' in validator64 if
-    # attribute 'nacl-amd64-modifiable' is present.
 
     for attr in instruction.attributes:
       if attr.startswith('CPUFeature_'):
@@ -712,8 +706,6 @@ class InstructionPrinter(object):
         self._PrintOperandSource(operand, 'from_vex')
       elif operand.arg_type == def_format.OperandType.X87_ST:
         self._PrintOperandSource(operand, 'st')
-
-    # TODO(shcherbina): handle other implicit operands.
 
   def _PrintLegacyPrefixes(self, instruction):
     """Print a machine for all combinations of legacy prefixes."""
