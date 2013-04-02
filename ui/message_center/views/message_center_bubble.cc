@@ -291,6 +291,8 @@ BoundedScrollView::BoundedScrollView(int min_height, int max_height)
     : min_height_(min_height),
       max_height_(max_height) {
   set_notify_enter_exit_on_child(true);
+  // Cancels the default dashed focus border.
+  set_focus_border(NULL);
   if (IsRichNotificationEnabled()) {
     set_background(views::Background::CreateSolidBackground(
         kMessageCenterBackgroundColor));
@@ -394,6 +396,7 @@ class MessageCenterView : public views::View {
  protected:
   // Overridden from views::View:
   virtual void Layout() OVERRIDE;
+  virtual bool OnMouseWheel(const ui::MouseWheelEvent& event) OVERRIDE;
 
  private:
   void RemoveAllNotifications();
@@ -469,6 +472,7 @@ void MessageCenterView::UpdateAllNotifications(
   } else {
     button_view_->SetCloseAllVisible(true);
     scroller_->set_focusable(true);
+    scroller_->RequestFocus();
   }
   Layout();
 }
@@ -483,6 +487,16 @@ void MessageCenterView::Layout() {
   if (GetWidget())
     GetWidget()->GetRootView()->SchedulePaint();
   bubble_->bubble_view()->UpdateBubble();
+}
+
+bool MessageCenterView::OnMouseWheel(const ui::MouseWheelEvent& event) {
+  // Do not rely on the default scroll event handler of ScrollView because
+  // the scroll happens only when the focus is on the ScrollView. The
+  // notification center will allow the scrolling even when the focus is on
+  // the buttons.
+  if (scroller_->bounds().Contains(event.location()))
+    return scroller_->OnMouseWheel(event);
+  return views::View::OnMouseWheel(event);
 }
 
 void MessageCenterView::RemoveAllNotifications() {
