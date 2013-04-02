@@ -281,7 +281,7 @@ void ChromeBrowserMainPartsMac::PreMainMessageLoopStart() {
 }
 
 void ChromeBrowserMainPartsMac::PreProfileInit() {
-  storage_monitor_.reset(new chrome::StorageMonitorMac());
+  storage_monitor_ = new chrome::StorageMonitorMac();
 
   ChromeBrowserMainPartsPosix::PreProfileInit();
 }

@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_CHROME_BROWSER_MAIN_MAC_H_
 #define CHROME_BROWSER_CHROME_BROWSER_MAIN_MAC_H_
 
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chrome_browser_main_posix.h"
+#include "base/memory/ref_counted.h"
 
 namespace chrome {
 class StorageMonitorMac;
@@ -29,7 +29,7 @@ class ChromeBrowserMainPartsMac : public ChromeBrowserMainPartsPosix {
   static void DidEndMainMessageLoop();
 
  private:
-  scoped_ptr<chrome::StorageMonitorMac> storage_monitor_;
+  scoped_refptr<chrome::StorageMonitorMac> storage_monitor_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainPartsMac);
 };
