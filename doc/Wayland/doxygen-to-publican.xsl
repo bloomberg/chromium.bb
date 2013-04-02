@@ -25,7 +25,7 @@
     </variablelist>
     </para>
 
-    <para>And methods for the respective classes.</para>
+    <para>Methods for the respective classes.</para>
 
     <para>
     <variablelist>
