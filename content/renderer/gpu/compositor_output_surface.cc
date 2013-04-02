@@ -22,8 +22,6 @@
 #include <sys/resource.h>
 #endif
 
-using cc::CompositorFrame;
-using cc::SoftwareOutputDevice;
 using WebKit::WebGraphicsContext3D;
 
 namespace {

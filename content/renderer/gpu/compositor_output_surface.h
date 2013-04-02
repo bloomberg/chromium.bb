@@ -24,6 +24,7 @@ class Message;
 }
 
 namespace cc {
+class CompositorFrame;
 class CompositorFrameAck;
 }
 

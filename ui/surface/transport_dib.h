@@ -106,6 +106,10 @@ class SURFACE_EXPORT TransportDIB {
       return shmkey < other.shmkey;
     }
 
+    bool operator==(const Id& other) const {
+      return shmkey == other.shmkey;
+    }
+
     int shmkey;
   };
 

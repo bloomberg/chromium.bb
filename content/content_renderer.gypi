@@ -94,6 +94,8 @@
     'renderer/geolocation_dispatcher.h',
     'renderer/gpu/compositor_output_surface.cc',
     'renderer/gpu/compositor_output_surface.h',
+    'renderer/gpu/compositor_software_output_device.cc',
+    'renderer/gpu/compositor_software_output_device.h',
     'renderer/gpu/compositor_software_output_device_gl_adapter.cc',
     'renderer/gpu/compositor_software_output_device_gl_adapter.h',
     'renderer/gpu/input_event_filter.cc',
