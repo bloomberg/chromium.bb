@@ -27,6 +27,7 @@ class ComponentExtensionIMEManagerImpl
   // ComponentExtensionIMEManagerDelegate overrides:
   virtual std::vector<ComponentExtensionIME> ListIME() OVERRIDE;
   virtual bool Load(const std::string& extension_id,
+                    const std::string& manifest,
                     const base::FilePath& file_path) OVERRIDE;
   virtual bool Unload(const std::string& extension_id,
                       const base::FilePath& file_path) OVERRIDE;

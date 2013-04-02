@@ -25,6 +25,7 @@ class MockComponentExtensionIMEManagerDelegate
   }
 
   virtual bool Load(const std::string& extension_id,
+                    const std::string& manifest,
                     const base::FilePath& path) OVERRIDE {
     last_loaded_extension_id_ = extension_id;
     load_call_count_++;

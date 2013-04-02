@@ -19,6 +19,7 @@ struct CHROMEOS_EXPORT ComponentExtensionIME {
   ComponentExtensionIME();
   ~ComponentExtensionIME();
   std::string id;  // extension id.
+  std::string manifest;  // the contents of manifest.json
   std::string description;  // description of extension.
   base::FilePath path;
   std::vector<IBusComponent::EngineDescription> engines;
@@ -36,6 +37,7 @@ class CHROMEOS_EXPORT ComponentExtensionIMEManagerDelegate {
   // Loads component extension IME associated with |extension_id|.
   // Returns false if it fails, otherwise returns true.
   virtual bool Load(const std::string& extension_id,
+                    const std::string& manifest,
                     const base::FilePath& path) = 0;
 
   // Unloads component extension IME associated with |extension_id|.

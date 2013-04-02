@@ -62,12 +62,13 @@ std::vector<ComponentExtensionIME> ComponentExtensionIMEManagerImpl::ListIME() {
 }
 
 bool ComponentExtensionIMEManagerImpl::Load(const std::string& extension_id,
+                                            const std::string& manifest,
                                             const base::FilePath& file_path) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (loaded_extension_id_.find(extension_id) != loaded_extension_id_.end())
     return false;
   const std::string loaded_extension_id =
-      GetComponentLoader()->AddOrReplace(file_path);
+      GetComponentLoader()->Add(manifest, file_path);
   DCHECK_EQ(loaded_extension_id, extension_id);
   loaded_extension_id_.insert(extension_id);
   return true;
@@ -166,17 +167,24 @@ void ComponentExtensionIMEManagerImpl::ReadComponentExtensionsInfo(
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
   DCHECK(out_imes);
   for (size_t i = 0; i < arraysize(whitelisted_component_extension); ++i) {
-    const base::FilePath extension_path = base::FilePath(
+    ComponentExtensionIME component_ime;
+    component_ime.path = base::FilePath(
         whitelisted_component_extension[i].path);
 
-    if (!file_util::PathExists(extension_path))
+    const base::FilePath manifest_path =
+        component_ime.path.Append("manifest.json");
+
+    if (!file_util::PathExists(component_ime.path) ||
+        !file_util::PathExists(manifest_path))
       continue;
 
-    scoped_ptr<DictionaryValue> manifest = GetManifest(extension_path);
+    if (!file_util::ReadFileToString(manifest_path, &component_ime.manifest))
+      continue;
+
+    scoped_ptr<DictionaryValue> manifest = GetManifest(component_ime.path);
     if (!manifest.get())
       continue;
 
-    ComponentExtensionIME component_ime;
     if (!ReadExtensionInfo(*manifest.get(), &component_ime))
       continue;
     component_ime.id = whitelisted_component_extension[i].id;

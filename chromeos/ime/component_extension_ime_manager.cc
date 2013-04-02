@@ -43,7 +43,7 @@ bool ComponentExtensionIMEManager::LoadComponentExtensionIME(
     const std::string& input_method_id) {
   ComponentExtensionIME ime;
   if (FindEngineEntry(input_method_id, &ime, NULL))
-    return delegate_->Load(ime.id, ime.path);
+    return delegate_->Load(ime.id, ime.manifest, ime.path);
   else
     return false;
 }
