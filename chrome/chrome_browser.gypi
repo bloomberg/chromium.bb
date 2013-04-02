@@ -1782,8 +1782,6 @@
         'browser/status_icons/status_icon_observer.h',
         'browser/status_icons/status_tray.cc',
         'browser/status_icons/status_tray.h',
-        'browser/storage_monitor/disk_info_mac.h',
-        'browser/storage_monitor/disk_info_mac.mm',
         'browser/storage_monitor/image_capture_device.h',
         'browser/storage_monitor/image_capture_device.mm',
         'browser/storage_monitor/image_capture_device_manager.h',
