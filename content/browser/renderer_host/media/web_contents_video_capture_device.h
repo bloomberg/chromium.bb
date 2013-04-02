@@ -38,8 +38,7 @@ class CONTENT_EXPORT WebContentsVideoCaptureDevice
   // WebContentsVideoCaptureDevice is itself deleted.
   // TODO(miu): Passing a destroy callback suggests needing to revisit the
   // design philosophy of an asynchronous DeAllocate().  http://crbug.com/158641
-  static media::VideoCaptureDevice* Create(const std::string& device_id,
-                                           const base::Closure& destroy_cb);
+  static media::VideoCaptureDevice* Create(const std::string& device_id);
 
   virtual ~WebContentsVideoCaptureDevice();
 
@@ -60,13 +59,13 @@ class CONTENT_EXPORT WebContentsVideoCaptureDevice
 
  private:
   class Impl;
+
   WebContentsVideoCaptureDevice(const Name& name,
                                 int render_process_id,
-                                int render_view_id,
-                                const base::Closure& destroy_cb);
+                                int render_view_id);
 
   Name device_name_;
-  scoped_refptr<Impl> capturer_;
+  const scoped_ptr<Impl> impl_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsVideoCaptureDevice);
 };

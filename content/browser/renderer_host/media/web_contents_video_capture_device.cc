@@ -750,7 +750,8 @@ CaptureMachine::CaptureMachine(
       fullscreen_widget_id_(MSG_ROUTING_NONE) {}
 
 CaptureMachine::~CaptureMachine() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
+         !BrowserThread::IsMessageLoopValid(BrowserThread::UI));
 
   // Stop observing the web contents.
   subscription_.reset();
@@ -921,6 +922,12 @@ void CaptureMachine::RenewFrameSubscription() {
       base::Bind(&CaptureMachine::Capture, this->AsWeakPtr())));
 }
 
+void DeleteCaptureMachineOnUIThread(
+    scoped_ptr<CaptureMachine> capture_machine) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  capture_machine.reset();
+}
+
 }  // namespace
 
 // The "meat" of the video capture implementation, which is a ref-counted class.
@@ -932,15 +939,11 @@ void CaptureMachine::RenewFrameSubscription() {
 // pipeline (see notes at top of this file).  It times the start of successive
 // captures and facilitates the processing of each through the stages of the
 // pipeline.
-class WebContentsVideoCaptureDevice::Impl
-    : public base::RefCountedThreadSafe<Impl> {
+class WebContentsVideoCaptureDevice::Impl : public base::SupportsWeakPtr<Impl> {
  public:
 
-  // |destroy_cb| will be invoked after WebContentsVideoCaptureDevice::Impl is
-  // fully destroyed, to synchronize tear-down.
-  Impl(int render_process_id,
-       int render_view_id,
-       const base::Closure& destroy_cb);
+  Impl(int render_process_id, int render_view_id);
+  virtual ~Impl();
 
   // Asynchronous requests to change WebContentsVideoCaptureDevice::Impl state.
   void Allocate(int width,
@@ -952,7 +955,6 @@ class WebContentsVideoCaptureDevice::Impl
   void DeAllocate();
 
  private:
-  friend class base::RefCountedThreadSafe<Impl>;
 
   // Flag indicating current state.
   enum State {
@@ -962,20 +964,17 @@ class WebContentsVideoCaptureDevice::Impl
     kError
   };
 
-  virtual ~Impl();
-
   void TransitionStateTo(State next_state);
 
   // Stops capturing and notifies consumer_ of an error state.
   void Error();
 
-  bool CreateCaptureMachineOnUIThread(
-      const scoped_refptr<base::SequencedTaskRunner>& render_task_runner,
-      const scoped_refptr<CaptureOracle>& oracle);
-  void DestroyCaptureMachineOnUIThread();
-
-  // Response callback for CreateCaptureMachineOnUIThread.
-  void DidCreateCaptureMachine(bool created);
+  // Called in response to CaptureMachine::Create that runs on the UI thread.
+  // It will assign the capture machine to the Impl class if it still exists
+  // otherwise it will post a task to delete CaptureMachine on the UI thread.
+  static void AssignCaptureMachine(
+      base::WeakPtr<WebContentsVideoCaptureDevice::Impl> impl,
+      scoped_ptr<CaptureMachine> capture_machine);
 
   // Tracks that all activity occurs on the media stream manager's thread.
   base::ThreadChecker thread_checker_;
@@ -1006,21 +1005,16 @@ class WebContentsVideoCaptureDevice::Impl
   // system with direct access to |consumer_|.
   scoped_refptr<CaptureOracle> oracle_;
 
-  // Invoked once WebContentsVideoCaptureDevice::Impl is destroyed.
-  base::Closure destroy_cb_;
-
   DISALLOW_COPY_AND_ASSIGN(Impl);
 };
 
 WebContentsVideoCaptureDevice::Impl::Impl(int render_process_id,
-                                          int render_view_id,
-                                          const base::Closure& destroy_cb)
+                                          int render_view_id)
     : initial_render_process_id_(render_process_id),
       initial_render_view_id_(render_view_id),
       consumer_(NULL),
       state_(kIdle),
-      render_thread_("WebContentsVideo_RenderThread"),
-      destroy_cb_(destroy_cb) {
+      render_thread_("WebContentsVideo_RenderThread") {
 }
 
 void WebContentsVideoCaptureDevice::Impl::Allocate(
@@ -1078,6 +1072,19 @@ void WebContentsVideoCaptureDevice::Impl::Allocate(
   consumer_->OnFrameInfo(settings);
   oracle_ = new CaptureOracle(consumer_, capture_period);
 
+  // Allocates the CaptureMachine. The CaptureMachine will be tracking render
+  // view swapping over its lifetime, and we don't want to lose our reference to
+  // the current render view by starting over with the stale
+  // |initial_render_view_id_|.
+  DCHECK(!capture_machine_.get());
+  BrowserThread::PostTaskAndReplyWithResult(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&CaptureMachine::Create,
+                 initial_render_process_id_,
+                 initial_render_view_id_,
+                 render_thread_.message_loop_proxy(), oracle_),
+      base::Bind(&Impl::AssignCaptureMachine, AsWeakPtr()));
+
   TransitionStateTo(kAllocated);
 }
 
@@ -1091,49 +1098,29 @@ void WebContentsVideoCaptureDevice::Impl::Start() {
   TransitionStateTo(kCapturing);
 
   oracle_->Start();
-
-  BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&Impl::CreateCaptureMachineOnUIThread, this,
-                 render_thread_.message_loop_proxy(), oracle_),
-      base::Bind(&Impl::DidCreateCaptureMachine, this));
 }
 
-// Thread safety note: The only data members that this method may use are (a)
-// |capture_machine_|, which is used exclusively from the UI thread, (b) members
-// ones that are set in the ctor, like |initial_render_process_id_|. In
-// particular it would be improper to reference |oracle_| here, as Stop() and
-// Deallocate() may already have occurred.
-bool WebContentsVideoCaptureDevice::Impl::CreateCaptureMachineOnUIThread(
-    const scoped_refptr<base::SequencedTaskRunner>& render_task_runner,
-    const scoped_refptr<CaptureOracle>& oracle) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+// static
+void WebContentsVideoCaptureDevice::Impl::AssignCaptureMachine(
+    base::WeakPtr<WebContentsVideoCaptureDevice::Impl> impl,
+    scoped_ptr<CaptureMachine> capture_machine) {
+  DCHECK(!impl || impl->thread_checker_.CalledOnValidThread());
 
-  // Only create the CaptureMachine if we haven't already. The CaptureMachine
-  // will be tracking render view swapping over its lifetime, and we don't want
-  // to lose our reference to the current render view by starting over with the
-  // stale |initial_render_view_id_|.
-
-  if (!capture_machine_) {
-    capture_machine_ = CaptureMachine::Create(
-        initial_render_process_id_, initial_render_view_id_,
-        render_task_runner, oracle).Pass();
+  if (!impl.get()) {
+    // If WCVD::Impl was destroyed before we got back on it's thread and
+    // capture_machine is not NULL, then we need to return to the UI thread to
+    // safely cleanup the CaptureMachine.
+    if (capture_machine.get()) {
+      BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE, base::Bind(
+              &DeleteCaptureMachineOnUIThread, base::Passed(&capture_machine)));
+      return;
+    }
+  } else if (!capture_machine.get()) {
+    impl->Error();
+  } else {
+    impl->capture_machine_ = capture_machine.Pass();
   }
-
-  return capture_machine_ != NULL;
-}
-
-// Thread safety note: same restrictions as CreateCaptureMachineOnUIThread().
-void WebContentsVideoCaptureDevice::Impl::DestroyCaptureMachineOnUIThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  capture_machine_.reset();
-}
-
-void WebContentsVideoCaptureDevice::Impl::DidCreateCaptureMachine(
-    bool created) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (!created)
-    Error();
 }
 
 void WebContentsVideoCaptureDevice::Impl::Stop() {
@@ -1159,25 +1146,26 @@ void WebContentsVideoCaptureDevice::Impl::DeAllocate() {
     oracle_ = NULL;
     render_thread_.Stop();
 
-    // The above call to InvalidateConsumer() has shut-off capture at the
-    // |consumer_| interface. But there is still a capture pipeline running that
-    // is checking in with the oracle, and processing captures that are already
-    // started in flight. That pipeline must be shut down asynchronously, on the
-    // UI thread.
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&Impl::DestroyCaptureMachineOnUIThread, this));
-
     TransitionStateTo(kIdle);
   }
 }
 
 WebContentsVideoCaptureDevice::Impl::~Impl() {
+  // There is still a capture pipeline running that is checking in with the
+  // oracle, and processing captures that are already started in flight. That
+  // pipeline must be shut down asynchronously, on the UI thread.
+  if (capture_machine_.get()) {
+    // The task that is posted to the UI thread might not run if we are shutting
+    // down, so we transfer ownership of CaptureMachine to the closure so that
+    // it is still cleaned up when the closure is deleted.
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE, base::Bind(
+            &DeleteCaptureMachineOnUIThread, base::Passed(&capture_machine_)));
+  }
+
   DCHECK(!capture_machine_) << "Cleanup on UI thread did not happen.";
   DCHECK(!consumer_) << "Device not DeAllocated -- possible data race.";
   DVLOG(1) << "WebContentsVideoCaptureDevice::Impl@" << this << " destroying.";
-  if (!destroy_cb_.is_null())
-    destroy_cb_.Run();
 }
 
 void WebContentsVideoCaptureDevice::Impl::TransitionStateTo(State next_state) {
@@ -1210,12 +1198,10 @@ void WebContentsVideoCaptureDevice::Impl::Error() {
 WebContentsVideoCaptureDevice::WebContentsVideoCaptureDevice(
     const media::VideoCaptureDevice::Name& name,
     int render_process_id,
-    int render_view_id,
-    const base::Closure& destroy_cb)
+    int render_view_id)
     : device_name_(name),
-      capturer_(new WebContentsVideoCaptureDevice::Impl(render_process_id,
-                                                        render_view_id,
-                                                        destroy_cb)) {}
+      impl_(new WebContentsVideoCaptureDevice::Impl(render_process_id,
+                                                    render_view_id)) {}
 
 WebContentsVideoCaptureDevice::~WebContentsVideoCaptureDevice() {
   DVLOG(2) << "WebContentsVideoCaptureDevice@" << this << " destroying.";
@@ -1223,8 +1209,7 @@ WebContentsVideoCaptureDevice::~WebContentsVideoCaptureDevice() {
 
 // static
 media::VideoCaptureDevice* WebContentsVideoCaptureDevice::Create(
-    const std::string& device_id,
-    const base::Closure& destroy_cb) {
+    const std::string& device_id) {
   // Parse device_id into render_process_id and render_view_id.
   int render_process_id = -1;
   int render_view_id = -1;
@@ -1240,29 +1225,25 @@ media::VideoCaptureDevice* WebContentsVideoCaptureDevice::Create(
   name.unique_id = device_id;
 
   return new WebContentsVideoCaptureDevice(
-      name, render_process_id, render_view_id, destroy_cb);
+      name, render_process_id, render_view_id);
 }
 
 void WebContentsVideoCaptureDevice::Allocate(
     int width, int height, int frame_rate,
     VideoCaptureDevice::EventHandler* consumer) {
-  DCHECK(capturer_);
-  capturer_->Allocate(width, height, frame_rate, consumer);
+  impl_->Allocate(width, height, frame_rate, consumer);
 }
 
 void WebContentsVideoCaptureDevice::Start() {
-  DCHECK(capturer_);
-  capturer_->Start();
+  impl_->Start();
 }
 
 void WebContentsVideoCaptureDevice::Stop() {
-  DCHECK(capturer_);
-  capturer_->Stop();
+  impl_->Stop();
 }
 
 void WebContentsVideoCaptureDevice::DeAllocate() {
-  DCHECK(capturer_);
-  capturer_->DeAllocate();
+  impl_->DeAllocate();
 }
 
 const media::VideoCaptureDevice::Name&

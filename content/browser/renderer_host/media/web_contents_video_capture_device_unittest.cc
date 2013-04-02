@@ -135,16 +135,6 @@ class CaptureTestSourceController {
     RunCurrentLoopWithDeadline();
   }
 
-  void OnShutdown() {
-    base::AutoLock guard(lock_);
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, shutdown_hook_);
-  }
-
-  void SetShutdownHook(base::Closure shutdown_hook) {
-    base::AutoLock guard(lock_);
-    shutdown_hook_ = shutdown_hook;
-  }
-
  private:
   base::Lock lock_;  // Guards changes to all members.
   SkColor color_;
@@ -152,7 +142,6 @@ class CaptureTestSourceController {
   bool can_copy_to_video_frame_;
   bool use_frame_subscriber_;
   base::Closure copy_done_;
-  base::Closure shutdown_hook_;
 
   DISALLOW_COPY_AND_ASSIGN(CaptureTestSourceController);
 };
@@ -463,11 +452,7 @@ class WebContentsVideoCaptureDeviceTest : public testing::Test {
             base::StringPrintf("%d:%d", rwh->GetProcess()->GetID(),
                                rwh->GetRoutingID()));
 
-    base::Closure destroy_cb = base::Bind(
-        &CaptureTestSourceController::OnShutdown,
-        base::Unretained(&controller_));
-
-    device_.reset(WebContentsVideoCaptureDevice::Create(device_id, destroy_cb));
+    device_.reset(WebContentsVideoCaptureDevice::Create(device_id));
 
     content::RunAllPendingInMessageLoop();
   }
@@ -478,11 +463,10 @@ class WebContentsVideoCaptureDeviceTest : public testing::Test {
     // The device is destroyed asynchronously, and will notify the
     // CaptureTestSourceController when it finishes destruction.
     // Trigger this, and wait.
-    base::RunLoop shutdown_loop;
-    controller_.SetShutdownHook(shutdown_loop.QuitClosure());
-    device_->DeAllocate();
-    device_.reset();
-    shutdown_loop.Run();
+    if (device_) {
+      device_->DeAllocate();
+      device_.reset();
+    }
 
     content::RunAllPendingInMessageLoop();
 
@@ -515,6 +499,8 @@ class WebContentsVideoCaptureDeviceTest : public testing::Test {
           NotificationService::NoDetails());
     }
   }
+
+  void DestroyVideoCaptureDevice() { device_.reset(); }
 
  private:
   // The consumer is the ultimate recipient of captured pixel data.
@@ -586,6 +572,7 @@ TEST_F(WebContentsVideoCaptureDeviceTest,
   // Make a point of not running the UI messageloop here.
   device()->Stop();
   device()->DeAllocate();
+  DestroyVideoCaptureDevice();
 
   // Currently, there should be CreateCaptureMachineOnUIThread() and
   // DestroyCaptureMachineOnUIThread() tasks pending on the current (UI) message
