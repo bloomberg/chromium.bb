@@ -145,7 +145,9 @@ class InputMethodManagerImpl : public InputMethodManager,
 
   // Called when the ComponentExtensionIMEManagerDelegate is initialized.
   void OnComponentExtensionInitialized(
-      ComponentExtensionIMEManagerDelegate* delegate);
+      scoped_ptr<ComponentExtensionIMEManagerDelegate> delegate);
+  void InitializeComponentExtension(
+      const scoped_refptr<base::SequencedTaskRunner>& file_task_runner);
 
   scoped_ptr<InputMethodDelegate> delegate_;
 

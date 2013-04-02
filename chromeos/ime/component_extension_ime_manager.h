@@ -7,6 +7,7 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/observer_list.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/ibus/ibus_component.h"
 #include "chromeos/ime/input_method_descriptor.h"
@@ -46,15 +47,22 @@ class CHROMEOS_EXPORT ComponentExtensionIMEManagerDelegate {
 // This class manages component extension input method.
 class CHROMEOS_EXPORT ComponentExtensionIMEManager {
  public:
-  // This class takes the ownership of |delegate|.
-  explicit ComponentExtensionIMEManager(
-      ComponentExtensionIMEManagerDelegate* delegate);
+  class Observer {
+   public:
+    // Called when the initialization is done.
+    virtual void OnInitialized() = 0;
+  };
+
+  ComponentExtensionIMEManager();
   virtual ~ComponentExtensionIMEManager();
 
   // Initializes component extension manager. This function create internal
   // mapping between input method id and engine components. This function must
   // be called before using any other function.
-  void Initialize();
+  void Initialize(scoped_ptr<ComponentExtensionIMEManagerDelegate> delegate);
+
+  // Returns true if the initialization is done, otherwise returns false.
+  bool IsInitialized();
 
   // Loads |input_method_id| component extension IME. This function returns true
   // on success. This function is safe to call multiple times. Returns false if
@@ -81,6 +89,9 @@ class CHROMEOS_EXPORT ComponentExtensionIMEManager {
   // Returns all IME as InputMethodDescriptors.
   input_method::InputMethodDescriptors GetAllIMEAsInputMethodDescriptor();
 
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
+
  private:
   // Finds ComponentExtensionIME and EngineDescription associated with
   // |input_method_id|. This function retruns true if it is found, otherwise
@@ -91,6 +102,10 @@ class CHROMEOS_EXPORT ComponentExtensionIMEManager {
   scoped_ptr<ComponentExtensionIMEManagerDelegate> delegate_;
 
   std::vector<ComponentExtensionIME> component_extension_imes_;
+
+  ObserverList<Observer> observers_;
+
+  bool is_initialized_;
 
   DISALLOW_COPY_AND_ASSIGN(ComponentExtensionIMEManager);
 };

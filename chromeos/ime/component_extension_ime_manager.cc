@@ -20,16 +20,23 @@ ComponentExtensionIMEManagerDelegate::ComponentExtensionIMEManagerDelegate() {
 ComponentExtensionIMEManagerDelegate::~ComponentExtensionIMEManagerDelegate() {
 }
 
-ComponentExtensionIMEManager::ComponentExtensionIMEManager(
-    ComponentExtensionIMEManagerDelegate* delegate)
-    : delegate_(delegate) {
+ComponentExtensionIMEManager::ComponentExtensionIMEManager()
+    : is_initialized_(false) {
 }
 
 ComponentExtensionIMEManager::~ComponentExtensionIMEManager() {
 }
 
-void ComponentExtensionIMEManager::Initialize() {
+void ComponentExtensionIMEManager::Initialize(
+    scoped_ptr<ComponentExtensionIMEManagerDelegate> delegate) {
+  delegate_ = delegate.Pass();
   component_extension_imes_ = delegate_->ListIME();
+  is_initialized_ = true;
+  FOR_EACH_OBSERVER(Observer, observers_, OnInitialized());
+}
+
+bool ComponentExtensionIMEManager::IsInitialized() {
+  return is_initialized_;
 }
 
 bool ComponentExtensionIMEManager::LoadComponentExtensionIME(
@@ -103,6 +110,14 @@ input_method::InputMethodDescriptors
     }
   }
   return result;
+}
+
+void ComponentExtensionIMEManager::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void ComponentExtensionIMEManager::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 bool ComponentExtensionIMEManager::FindEngineEntry(

@@ -43,6 +43,7 @@ InputMethodManagerImpl::InputMethodManagerImpl(
     : delegate_(delegate.Pass()),
       state_(STATE_LOGIN_SCREEN),
       util_(delegate_.get(), GetSupportedInputMethods()),
+      component_extension_ime_manager_(new ComponentExtensionIMEManager()),
       weak_ptr_factory_(this) {
   IBusDaemonController::GetInstance()->AddObserver(this);
 }
@@ -318,11 +319,9 @@ void InputMethodManagerImpl::ChangeInputMethodInternal(
 }
 
 void InputMethodManagerImpl::OnComponentExtensionInitialized(
-    ComponentExtensionIMEManagerDelegate* delegate) {
+    scoped_ptr<ComponentExtensionIMEManagerDelegate> delegate) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  component_extension_ime_manager_.reset(
-      new ComponentExtensionIMEManager(delegate));
-  component_extension_ime_manager_->Initialize();
+  component_extension_ime_manager_->Initialize(delegate.Pass());
 }
 
 void InputMethodManagerImpl::ActivateInputMethodProperty(
@@ -614,6 +613,18 @@ void InputMethodManagerImpl::OnDisconnected() {
   }
 }
 
+void InputMethodManagerImpl::InitializeComponentExtension(
+    const scoped_refptr<base::SequencedTaskRunner>& file_task_runner) {
+  ComponentExtensionIMEManagerImpl* impl =
+      new ComponentExtensionIMEManagerImpl();
+  scoped_ptr<ComponentExtensionIMEManagerDelegate> delegate(impl);
+  impl->Initialize(file_task_runner,
+                   base::Bind(
+                       &InputMethodManagerImpl::OnComponentExtensionInitialized,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       base::Passed(&delegate)));
+}
+
 void InputMethodManagerImpl::Init(
     const scoped_refptr<base::SequencedTaskRunner>& ui_task_runner,
     const scoped_refptr<base::SequencedTaskRunner>& file_task_runner) {
@@ -624,20 +635,13 @@ void InputMethodManagerImpl::Init(
   xkeyboard_.reset(XKeyboard::Create());
   ibus_controller_->AddObserver(this);
 
-  ComponentExtensionIMEManagerImpl* impl =
-      new ComponentExtensionIMEManagerImpl();
-  base::Closure callback = base::Bind(
-      &InputMethodManagerImpl::OnComponentExtensionInitialized,
-      weak_ptr_factory_.GetWeakPtr(),
-      impl);
   // We can't call impl->Initialize here, because file thread is not available
   // at this moment.
   ui_task_runner->PostTask(
       FROM_HERE,
-      base::Bind(&ComponentExtensionIMEManagerImpl::Initialize,
-                 base::Unretained(impl),
-                 file_task_runner,
-                 callback));
+      base::Bind(&InputMethodManagerImpl::InitializeComponentExtension,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 file_task_runner));
 }
 
 void InputMethodManagerImpl::SetIBusControllerForTesting(
