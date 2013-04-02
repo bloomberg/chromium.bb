@@ -334,7 +334,14 @@ class SavedFileEntryLauncher
  private:
   friend class base::RefCountedThreadSafe<SavedFileEntryLauncher>;
   ~SavedFileEntryLauncher() {}
+
   void GrantAccessToFilesAndLaunch(ExtensionHost* host) {
+    // If there was an error loading the app page, |host| will be NULL.
+    if (!host) {
+      LOG(ERROR) << "Could not load app page for " << extension_->id();
+      return;
+    }
+
     int renderer_id = host->render_process_host()->GetID();
     std::vector<GrantedFileEntry> granted_file_entries;
     for (std::vector<SavedFileEntry>::const_iterator it =
