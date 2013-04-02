@@ -1109,8 +1109,7 @@
       A seat is a group of keyboards, pointer (mice, for example) and
       touch devices. This object is published as a global during
       start up, or when such a device is hot plugged.  A seat typically
-      has a pointer and maintains a keyboard focus, a pointer focus and
-      a touch focus.
+      has a pointer and maintains a keyboard focus and a pointer focus.
     </description>
 
     <enum name="capability">
