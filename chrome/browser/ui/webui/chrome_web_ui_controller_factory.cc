@@ -200,6 +200,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<WebDialogUI>;
   if (url.spec() == chrome::kChromeUIConstrainedHTMLTestURL)
     return &NewWebUI<ConstrainedWebDialogUI>;
+  if (url.host() == chrome::kChromeUICrashesHost)
+    return &NewWebUI<CrashesUI>;
   if (url.host() == chrome::kChromeUIFlagsHost)
     return &NewWebUI<FlagsUI>;
   if (url.host() == chrome::kChromeUIHistoryFrameHost)
@@ -257,9 +259,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   // Bookmarks are part of NTP on Android.
   if (url.host() == chrome::kChromeUIBookmarksHost)
     return &NewWebUI<BookmarksUI>;
-  // Crashes page not supported on Android for now.
-  if (url.host() == chrome::kChromeUICrashesHost)
-    return &NewWebUI<CrashesUI>;
   if (url.host() == chrome::kChromeUIDevToolsHost)
     return &NewWebUI<DevToolsUI>;
   // Downloads list on Android uses the built-in download manager.
