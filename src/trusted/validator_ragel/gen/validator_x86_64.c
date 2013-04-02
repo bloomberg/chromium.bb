@@ -1431,139 +1431,6 @@ if (current_position == end_position) {
     continue;
   }
 switch (_dfa_transitions[current_state][*current_position][0]) {
-  case 310:
-current_state = 508; current_position++; goto _again;
-  break;
-  case 195:
-current_state = 363; current_position++; goto _again;
-  break;
-  case 43:
-current_state = 89; current_position++; goto _again;
-  break;
-  case 302:
-current_state = 489; current_position++; goto _again;
-  break;
-  case 119:
-current_state = 178; current_position++; goto _again;
-  break;
-  case 419:
-current_state = 619; current_position++; goto _again;
-  break;
-  case 66:
- SET_CPU_FEATURE(CPUFeature_SSE);         break;
-  case 56:
-current_state = 100; current_position++; goto _again;
-  break;
-  case 194:
-current_state = 362; current_position++; goto _again;
-  break;
-  case 123:
-
-    instruction_info_collected |= MODIFIABLE_INSTRUCTION;
-    break;
-  case 80:
-current_state = 68; current_position++; goto _again;
-  break;
-  case 283:
-
-    SET_VEX_PREFIX2(*current_position);
-    break;
-  case 59:
- SET_CPU_FEATURE(CPUFeature_FXSR);        break;
-  case 441:
-current_state = 671; current_position++; goto _again;
-  break;
-  case 122:
-current_state = 181; current_position++; goto _again;
-  break;
-  case 385:
-current_state = 658; current_position++; goto _again;
-  break;
-  case 317:
-current_state = 530; current_position++; goto _again;
-  break;
-  case 309:
-current_state = 505; current_position++; goto _again;
-  break;
-  case 432:
-current_state = 298; current_position++; goto _again;
-  break;
-  case 53:
-current_state = 98; current_position++; goto _again;
-  break;
-  case 427:
-current_state = 705; current_position++; goto _again;
-  break;
-  case 109:
-current_state = 168; current_position++; goto _again;
-  break;
-  case 47:
-current_state = 92; current_position++; goto _again;
-  break;
-  case 102:
-current_state = 152; current_position++; goto _again;
-  break;
-  case 167:
-current_state = 254; current_position++; goto _again;
-  break;
-  case 2:
-current_state = 2; current_position++; goto _again;
-  break;
-  case 186:
-current_state = 337; current_position++; goto _again;
-  break;
-  case 228:
- SET_CPU_FEATURE(CPUFeature_SSE41);       break;
-  case 60:
- SET_CPU_FEATURE(CPUFeature_3DPRFTCH);    break;
-  case 88:
-
-    SET_REX_PREFIX(*current_position);
-    break;
-  case 355:
-current_state = 615; current_position++; goto _again;
-  break;
-  case 218:
-current_state = 305; current_position++; goto _again;
-  break;
-  case 31:
-current_state = 76; current_position++; goto _again;
-  break;
-  case 45:
-current_state = 90; current_position++; goto _again;
-  break;
-  case 393:
-current_state = 697; current_position++; goto _again;
-  break;
-  case 340:
-current_state = 577; current_position++; goto _again;
-  break;
-  case 131:
-current_state = 149; current_position++; goto _again;
-  break;
-  case 403:
-
-      ProcessNaclCallOrJmpAddToRegWithRex(&instruction_info_collected,
-                                          &instruction_begin,
-                                          current_position,
-                                          codeblock,
-                                          valid_targets);
-      break;
-  case 386:
-current_state = 667; current_position++; goto _again;
-  break;
-  case 384:
-current_state = 657; current_position++; goto _again;
-  break;
-  case 443:
-current_state = 441; current_position++; goto _again;
-  break;
-  case 226:
-current_state = 314; current_position++; goto _again;
-  break;
-  case 49:
-current_state = 94; current_position++; goto _again;
-  break;
   case 0:
 
     result &= user_callback(instruction_begin, current_position,
@@ -1578,568 +1445,6 @@ current_state = 94; current_position++; goto _again;
      */
     continue;
     break;
-  case 217:
-current_state = 333; current_position++; goto _again;
-  break;
-  case 213:
-current_state = 328; current_position++; goto _again;
-  break;
-  case 12:
-
-    SET_DISPLACEMENT_FORMAT(DISP8);
-    SET_DISPLACEMENT_POINTER(current_position);
-    break;
-  case 344:
-current_state = 587; current_position++; goto _again;
-  break;
-  case 81:
-current_state = 74; current_position++; goto _again;
-  break;
-  case 424:
-current_state = 724; current_position++; goto _again;
-  break;
-  case 32:
-current_state = 77; current_position++; goto _again;
-  break;
-  case 338:
-current_state = 573; current_position++; goto _again;
-  break;
-  case 254:
-current_state = 381; current_position++; goto _again;
-  break;
-  case 350:
-current_state = 602; current_position++; goto _again;
-  break;
-  case 193:
-current_state = 361; current_position++; goto _again;
-  break;
-  case 125:
-current_state = 187; current_position++; goto _again;
-  break;
-  case 190:
-current_state = 351; current_position++; goto _again;
-  break;
-  case 199:
-current_state = 367; current_position++; goto _again;
-  break;
-  case 222:
-current_state = 309; current_position++; goto _again;
-  break;
-  case 112:
-current_state = 171; current_position++; goto _again;
-  break;
-  case 149:
-current_state = 247; current_position++; goto _again;
-  break;
-  case 68:
-current_state = 43; current_position++; goto _again;
-  break;
-  case 262:
-current_state = 392; current_position++; goto _again;
-  break;
-  case 365:
-current_state = 631; current_position++; goto _again;
-  break;
-  case 341:
-current_state = 579; current_position++; goto _again;
-  break;
-  case 87:
-current_state = 107; current_position++; goto _again;
-  break;
-  case 219:
-current_state = 307; current_position++; goto _again;
-  break;
-  case 247:
-current_state = 373; current_position++; goto _again;
-  break;
-  case 389:
-
-       ExpandSuperinstructionBySandboxingBytes(
-         6 /* sandbox_rsi_6_bytes */ + 6 /* sandbox_rdi_6_bytes */,
-         &instruction_begin,
-         codeblock,
-         valid_targets);
-      break;
-  case 94:
-current_state = 116; current_position++; goto _again;
-  break;
-  case 387:
-
-       ExpandSuperinstructionBySandboxingBytes(
-         6 /* sandbox_rsi_6_bytes */,
-         &instruction_begin,
-         codeblock,
-         valid_targets);
-      break;
-  case 282:
-current_state = 446; current_position++; goto _again;
-  break;
-  case 383:
-current_state = 656; current_position++; goto _again;
-  break;
-  case 91:
-current_state = 1; current_position++; goto _again;
-  break;
-  case 153:
-current_state = 196; current_position++; goto _again;
-  break;
-  case 360:
-current_state = 622; current_position++; goto _again;
-  break;
-  case 286:
-current_state = 453; current_position++; goto _again;
-  break;
-  case 439:
-current_state = 423; current_position++; goto _again;
-  break;
-  case 110:
-current_state = 169; current_position++; goto _again;
-  break;
-  case 130:
-current_state = 145; current_position++; goto _again;
-  break;
-  case 396:
-current_state = 716; current_position++; goto _again;
-  break;
-  case 296:
-current_state = 476; current_position++; goto _again;
-  break;
-  case 38:
-current_state = 81; current_position++; goto _again;
-  break;
-  case 116:
-current_state = 175; current_position++; goto _again;
-  break;
-  case 39:
-current_state = 82; current_position++; goto _again;
-  break;
-  case 205:
-current_state = 310; current_position++; goto _again;
-  break;
-  case 367:
-current_state = 634; current_position++; goto _again;
-  break;
-  case 101:
-current_state = 146; current_position++; goto _again;
-  break;
-  case 100:
-current_state = 137; current_position++; goto _again;
-  break;
-  case 210:
-current_state = 325; current_position++; goto _again;
-  break;
-  case 303:
-current_state = 492; current_position++; goto _again;
-  break;
-  case 260:
-current_state = 386; current_position++; goto _again;
-  break;
-  case 30:
-current_state = 65; current_position++; goto _again;
-  break;
-  case 332:
-current_state = 560; current_position++; goto _again;
-  break;
-  case 358:
-current_state = 624; current_position++; goto _again;
-  break;
-  case 261:
-current_state = 391; current_position++; goto _again;
-  break;
-  case 48:
-current_state = 93; current_position++; goto _again;
-  break;
-  case 271:
-current_state = 415; current_position++; goto _again;
-  break;
-  case 160:
-current_state = 204; current_position++; goto _again;
-  break;
-  case 300:
-current_state = 486; current_position++; goto _again;
-  break;
-  case 248:
-current_state = 375; current_position++; goto _again;
-  break;
-  case 197:
-current_state = 365; current_position++; goto _again;
-  break;
-  case 308:
-current_state = 503; current_position++; goto _again;
-  break;
-  case 364:
-current_state = 630; current_position++; goto _again;
-  break;
-  case 375:
-current_state = 644; current_position++; goto _again;
-  break;
-  case 305:
-current_state = 498; current_position++; goto _again;
-  break;
-  case 202:
-current_state = 369; current_position++; goto _again;
-  break;
-  case 103:
-current_state = 153; current_position++; goto _again;
-  break;
-  case 17:
-
-    SET_IMMEDIATE_FORMAT(IMM32);
-    SET_IMMEDIATE_POINTER(current_position - 3);
-    break;
-  case 14:
-
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-    break;
-  case 75:
- SET_CPU_FEATURE(CPUFeature_MOVBE);       break;
-  case 29:
-current_state = 60; current_position++; goto _again;
-  break;
-  case 246:
-current_state = 372; current_position++; goto _again;
-  break;
-  case 270:
-current_state = 412; current_position++; goto _again;
-  break;
-  case 236:
- SET_CPU_FEATURE(CPUFeature_CLMUL);       break;
-  case 321:
-current_state = 536; current_position++; goto _again;
-  break;
-  case 298:
- SET_CPU_FEATURE(CPUFeature_LWP);         break;
-  case 188:
-current_state = 341; current_position++; goto _again;
-  break;
-  case 184:
-current_state = 303; current_position++; goto _again;
-  break;
-  case 64:
-current_state = 46; current_position++; goto _again;
-  break;
-  case 316:
-current_state = 528; current_position++; goto _again;
-  break;
-  case 438:
-current_state = 688; current_position++; goto _again;
-  break;
-  case 147:
-current_state = 245; current_position++; goto _again;
-  break;
-  case 394:
-
-       ExpandSuperinstructionBySandboxingBytes(
-         7 /* sandbox_rsi_7_bytes */ + 7 /* sandbox_rdi_7_bytes */,
-         &instruction_begin,
-         codeblock,
-         valid_targets);
-      break;
-  case 453:
-current_state = 722; current_position++; goto _again;
-  break;
-  case 371:
-
-    SET_SECOND_IMMEDIATE_FORMAT(IMM8);
-    SET_SECOND_IMMEDIATE_POINTER(current_position);
-    break;
-  case 71:
-current_state = 61; current_position++; goto _again;
-  break;
-  case 203:
-
-    SET_IMMEDIATE_FORMAT(IMM16);
-    SET_IMMEDIATE_POINTER(current_position - 1);
-    break;
-  case 142:
-current_state = 224; current_position++; goto _again;
-  break;
-  case 276:
-current_state = 426; current_position++; goto _again;
-  break;
-  case 331:
-current_state = 558; current_position++; goto _again;
-  break;
-  case 274:
-current_state = 420; current_position++; goto _again;
-  break;
-  case 346:
-current_state = 593; current_position++; goto _again;
-  break;
-  case 242:
-current_state = 352; current_position++; goto _again;
-  break;
-  case 89:
-current_state = 109; current_position++; goto _again;
-  break;
-  case 294:
-current_state = 473; current_position++; goto _again;
-  break;
-  case 15:
- SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);   break;
-  case 391:
-current_state = 693; current_position++; goto _again;
-  break;
-  case 440:
-current_state = 669; current_position++; goto _again;
-  break;
-  case 132:
-current_state = 155; current_position++; goto _again;
-  break;
-  case 329:
-current_state = 554; current_position++; goto _again;
-  break;
-  case 135:
- SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT);   break;
-  case 44:
-current_state = 20; current_position++; goto _again;
-  break;
-  case 232:
-current_state = 318; current_position++; goto _again;
-  break;
-  case 269:
-current_state = 410; current_position++; goto _again;
-  break;
-  case 225:
-current_state = 313; current_position++; goto _again;
-  break;
-  case 451:
-current_state = 719; current_position++; goto _again;
-  break;
-  case 431:
-current_state = 708; current_position++; goto _again;
-  break;
-  case 401:
-current_state = 732; current_position++; goto _again;
-  break;
-  case 42:
-current_state = 88; current_position++; goto _again;
-  break;
-  case 216:
-current_state = 332; current_position++; goto _again;
-  break;
-  case 328:
-current_state = 551; current_position++; goto _again;
-  break;
-  case 214:
-current_state = 329; current_position++; goto _again;
-  break;
-  case 227:
-current_state = 315; current_position++; goto _again;
-  break;
-  case 55:
-current_state = 99; current_position++; goto _again;
-  break;
-  case 231:
-current_state = 317; current_position++; goto _again;
-  break;
-  case 181:
-current_state = 296; current_position++; goto _again;
-  break;
-  case 265:
-current_state = 398; current_position++; goto _again;
-  break;
-  case 380:
-current_state = 651; current_position++; goto _again;
-  break;
-  case 158:
-current_state = 202; current_position++; goto _again;
-  break;
-  case 170:
- if (restricted_register == REG_RSP)
-         instruction_info_collected |= RESTRICTED_REGISTER_USED;
-       else
-         instruction_info_collected |= UNRESTRICTED_RSP_PROCESSED;
-       restricted_register = NO_REG;
-       UnmarkValidJumpTarget((instruction_begin - codeblock), valid_targets);
-      break;
-  case 65:
-
-    instruction_info_collected |= LAST_BYTE_IS_NOT_IMMEDIATE;
-    break;
-  case 251:
-current_state = 374; current_position++; goto _again;
-  break;
-  case 150:
-current_state = 248; current_position++; goto _again;
-  break;
-  case 144:
-current_state = 226; current_position++; goto _again;
-  break;
-  case 272:
-current_state = 418; current_position++; goto _again;
-  break;
-  case 448:
-current_state = 682; current_position++; goto _again;
-  break;
-  case 320:
- SET_CPU_FEATURE(CPUFeature_F16C);        break;
-  case 57:
-current_state = 101; current_position++; goto _again;
-  break;
-  case 191:
-current_state = 360; current_position++; goto _again;
-  break;
-  case 313:
-current_state = 517; current_position++; goto _again;
-  break;
-  case 284:
-
-    SET_VEX_PREFIX3(*current_position);
-    break;
-  case 319:
-current_state = 533; current_position++; goto _again;
-  break;
-  case 237:
- SET_CPU_FEATURE(CPUFeature_SSE4A);       break;
-  case 348:
-current_state = 596; current_position++; goto _again;
-  break;
-  case 58:
- SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT);   break;
-  case 98:
-current_state = 126; current_position++; goto _again;
-  break;
-  case 97:
-current_state = 117; current_position++; goto _again;
-  break;
-  case 390:
-current_state = 691; current_position++; goto _again;
-  break;
-  case 434:
-current_state = 702; current_position++; goto _again;
-  break;
-  case 433:
-current_state = 700; current_position++; goto _again;
-  break;
-  case 318:
- SET_CPU_FEATURE(CPUFeature_AESAVX);      break;
-  case 151:
-current_state = 249; current_position++; goto _again;
-  break;
-  case 345:
-current_state = 590; current_position++; goto _again;
-  break;
-  case 442:
-current_state = 428; current_position++; goto _again;
-  break;
-  case 381:
-current_state = 654; current_position++; goto _again;
-  break;
-  case 25:
-current_state = 57; current_position++; goto _again;
-  break;
-  case 183:
-current_state = 300; current_position++; goto _again;
-  break;
-  case 92:
-current_state = 10; current_position++; goto _again;
-  break;
-  case 240:
-current_state = 336; current_position++; goto _again;
-  break;
-  case 196:
-current_state = 364; current_position++; goto _again;
-  break;
-  case 239:
-current_state = 335; current_position++; goto _again;
-  break;
-  case 259:
-current_state = 390; current_position++; goto _again;
-  break;
-  case 211:
-current_state = 326; current_position++; goto _again;
-  break;
-  case 172:
-current_state = 259; current_position++; goto _again;
-  break;
-  case 257:
-current_state = 385; current_position++; goto _again;
-  break;
-  case 412:
-current_state = 106; current_position++; goto _again;
-  break;
-  case 314:
-current_state = 518; current_position++; goto _again;
-  break;
-  case 40:
-current_state = 86; current_position++; goto _again;
-  break;
-  case 243:
-current_state = 358; current_position++; goto _again;
-  break;
-  case 221:
-current_state = 308; current_position++; goto _again;
-  break;
-  case 138:
-current_state = 193; current_position++; goto _again;
-  break;
-  case 289:
-current_state = 461; current_position++; goto _again;
-  break;
-  case 78:
-
-    Rel32Operand(current_position + 1, codeblock, jump_dests, size,
-                 &instruction_info_collected);
-    break;
-  case 297:
-current_state = 479; current_position++; goto _again;
-  break;
-  case 325:
-current_state = 543; current_position++; goto _again;
-  break;
-  case 407:
-current_state = 747; current_position++; goto _again;
-  break;
-  case 256:
-current_state = 384; current_position++; goto _again;
-  break;
-  case 279:
-current_state = 436; current_position++; goto _again;
-  break;
-  case 187:
-current_state = 378; current_position++; goto _again;
-  break;
-  case 267:
-current_state = 402; current_position++; goto _again;
-  break;
-  case 280:
-current_state = 442; current_position++; goto _again;
-  break;
-  case 447:
-current_state = 646; current_position++; goto _again;
-  break;
-  case 366:
-current_state = 632; current_position++; goto _again;
-  break;
-  case 36:
-current_state = 80; current_position++; goto _again;
-  break;
-  case 445:
-current_state = 618; current_position++; goto _again;
-  break;
-  case 425:
-current_state = 725; current_position++; goto _again;
-  break;
-  case 422:
-current_state = 713; current_position++; goto _again;
-  break;
-  case 295:
-current_state = 475; current_position++; goto _again;
-  break;
-  case 327:
-current_state = 549; current_position++; goto _again;
-  break;
-  case 16:
-
-    SET_IMMEDIATE_FORMAT(IMM8);
-    SET_IMMEDIATE_POINTER(current_position);
-    break;
-  case 378:
-current_state = 649; current_position++; goto _again;
-  break;
   case 1:
 
     SET_DISPLACEMENT_FORMAT(DISPNONE);
@@ -2149,408 +1454,30 @@ current_state = 649; current_position++; goto _again;
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
     break;
-  case 410:
-current_state = 757; current_position++; goto _again;
+  case 2:
+current_state = 2; current_position++; goto _again;
   break;
-  case 113:
-current_state = 172; current_position++; goto _again;
-  break;
-  case 277:
+  case 3:
 
-       ExpandSuperinstructionBySandboxingBytes(
-         6 /* sandbox_rdi_6_bytes */,
-         &instruction_begin,
-         codeblock,
-         valid_targets);
-      break;
-  case 281:
-current_state = 444; current_position++; goto _again;
-  break;
-  case 291:
-current_state = 466; current_position++; goto _again;
-  break;
-  case 148:
-current_state = 246; current_position++; goto _again;
-  break;
-  case 120:
-current_state = 179; current_position++; goto _again;
-  break;
-  case 223:
-current_state = 311; current_position++; goto _again;
-  break;
-  case 304:
-current_state = 497; current_position++; goto _again;
-  break;
-  case 287:
-current_state = 456; current_position++; goto _again;
-  break;
-  case 200:
-current_state = 383; current_position++; goto _again;
-  break;
-  case 230:
- SET_CPU_FEATURE(CPUFeature_AES);         break;
-  case 285:
-current_state = 450; current_position++; goto _again;
-  break;
-  case 411:
-current_state = 34; current_position++; goto _again;
-  break;
-  case 416:
-current_state = 424; current_position++; goto _again;
-  break;
-  case 369:
-current_state = 638; current_position++; goto _again;
-  break;
-  case 141:
-current_state = 223; current_position++; goto _again;
-  break;
-  case 420:
-current_state = 663; current_position++; goto _again;
-  break;
-  case 406:
-current_state = 743; current_position++; goto _again;
-  break;
-  case 392:
-
-      ProcessNaclCallOrJmpAddToRMNoRex(&instruction_info_collected,
-                                       &instruction_begin,
-                                       current_position,
-                                       codeblock,
-                                       valid_targets);
-      break;
-  case 209:
-current_state = 324; current_position++; goto _again;
-  break;
-  case 204:
-current_state = 304; current_position++; goto _again;
-  break;
-  case 253:
-current_state = 380; current_position++; goto _again;
-  break;
-  case 429:
-current_state = 668; current_position++; goto _again;
-  break;
-  case 333:
-current_state = 563; current_position++; goto _again;
-  break;
-  case 311:
-current_state = 513; current_position++; goto _again;
-  break;
-  case 161:
-current_state = 195; current_position++; goto _again;
-  break;
-  case 430:
-current_state = 706; current_position++; goto _again;
-  break;
-  case 162:
- SET_CPU_FEATURE(CPUFeature_CX16);        break;
-  case 342:
-current_state = 583; current_position++; goto _again;
-  break;
-  case 73:
-current_state = 64; current_position++; goto _again;
-  break;
-  case 368:
-current_state = 637; current_position++; goto _again;
-  break;
-  case 334:
- SET_CPU_FEATURE(CPUFeature_AVX);         break;
-  case 398:
-current_state = 734; current_position++; goto _again;
-  break;
-  case 118:
-current_state = 177; current_position++; goto _again;
-  break;
-  case 19:
-
-    Process0Operands(&restricted_register, &instruction_info_collected);
+    // Case where ModRM.mod = 00 and ModRM.r/m = 101.
+    // In 64-bit mode it corresponds to RIP-relative addressing.
+    SET_MODRM_BASE(REG_RIP);
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
     break;
-  case 136:
-current_state = 191; current_position++; goto _again;
-  break;
-  case 395:
+  case 4:
 
-       ExpandSuperinstructionBySandboxingBytes(
-         7 /* sandbox_rsi_7_bytes */,
-         &instruction_begin,
-         codeblock,
-         valid_targets);
-      break;
-  case 450:
-current_state = 685; current_position++; goto _again;
-  break;
-  case 11:
-
-    SET_DISPLACEMENT_FORMAT(DISP32);
-    SET_DISPLACEMENT_POINTER(current_position - 3);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
     break;
-  case 347:
-current_state = 594; current_position++; goto _again;
-  break;
-  case 352:
-current_state = 607; current_position++; goto _again;
-  break;
-  case 336:
-current_state = 568; current_position++; goto _again;
-  break;
-  case 323:
-current_state = 541; current_position++; goto _again;
-  break;
-  case 273:
-current_state = 673; current_position++; goto _again;
-  break;
-  case 178:
-current_state = 275; current_position++; goto _again;
-  break;
-  case 357:
-current_state = 620; current_position++; goto _again;
-  break;
-  case 238:
- SET_CPU_FEATURE(CPUFeature_SSE3);        break;
-  case 235:
-current_state = 321; current_position++; goto _again;
-  break;
-  case 74:
- SET_CPU_FEATURE(CPUFeature_SSSE3);       break;
-  case 108:
- SET_CPU_FEATURE(CPUFeature_x87);         break;
-  case 46:
-current_state = 91; current_position++; goto _again;
-  break;
-  case 104:
-current_state = 156; current_position++; goto _again;
-  break;
-  case 379:
-current_state = 650; current_position++; goto _again;
-  break;
-  case 363:
-current_state = 629; current_position++; goto _again;
-  break;
-  case 452:
-current_state = 720; current_position++; goto _again;
-  break;
-  case 169:
-current_state = 256; current_position++; goto _again;
-  break;
-  case 79:
- SET_CPU_FEATURE(CPUFeature_CMOV);        break;
-  case 166:
-current_state = 253; current_position++; goto _again;
-  break;
-  case 93:
-current_state = 11; current_position++; goto _again;
-  break;
-  case 436:
-current_state = 677; current_position++; goto _again;
-  break;
-  case 70:
- SET_CPU_FEATURE(CPUFeature_SSE2);        break;
-  case 67:
-current_state = 37; current_position++; goto _again;
-  break;
-  case 278:
-current_state = 431; current_position++; goto _again;
-  break;
-  case 255:
-current_state = 382; current_position++; goto _again;
-  break;
-  case 418:
-current_state = 662; current_position++; goto _again;
-  break;
-  case 128:
-current_state = 138; current_position++; goto _again;
-  break;
-  case 155:
-current_state = 198; current_position++; goto _again;
-  break;
-  case 173:
-current_state = 710; current_position++; goto _again;
-  break;
-  case 171:
- if (restricted_register == REG_RBP)
-         /* RESTRICTED_REGISTER_USED is informational flag used in tests.  */
-         instruction_info_collected |= RESTRICTED_REGISTER_USED;
-       else
-         /* UNRESTRICTED_RSP_PROCESSED is error flag used in production.  */
-         instruction_info_collected |= UNRESTRICTED_RBP_PROCESSED;
-       restricted_register = NO_REG;
-       UnmarkValidJumpTarget((instruction_begin - codeblock), valid_targets);
-      break;
-  case 250:
-current_state = 377; current_position++; goto _again;
-  break;
-  case 404:
-current_state = 738; current_position++; goto _again;
-  break;
-  case 154:
-current_state = 197; current_position++; goto _again;
-  break;
-  case 99:
-current_state = 136; current_position++; goto _again;
-  break;
-  case 437:
-current_state = 687; current_position++; goto _again;
-  break;
-  case 133:
-current_state = 157; current_position++; goto _again;
-  break;
-  case 156:
-current_state = 199; current_position++; goto _again;
-  break;
-  case 84:
-
-    SET_OPERAND_NAME(1, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-    break;
-  case 63:
-current_state = 54; current_position++; goto _again;
-  break;
-  case 22:
-current_state = 45; current_position++; goto _again;
-  break;
-  case 163:
-
-    SET_IMMEDIATE_FORMAT(IMM64);
-    SET_IMMEDIATE_POINTER(current_position - 7);
-    break;
-  case 76:
-current_state = 66; current_position++; goto _again;
-  break;
-  case 353:
-current_state = 610; current_position++; goto _again;
-  break;
-  case 82:
-current_state = 75; current_position++; goto _again;
-  break;
-  case 206:
-current_state = 316; current_position++; goto _again;
+  case 5:
+current_state = 8; current_position++; goto _again;
   break;
   case 6:
 current_state = 9; current_position++; goto _again;
-  break;
-  case 145:
-current_state = 227; current_position++; goto _again;
-  break;
-  case 301:
-current_state = 488; current_position++; goto _again;
-  break;
-  case 126:
-current_state = 188; current_position++; goto _again;
-  break;
-  case 233:
-current_state = 319; current_position++; goto _again;
-  break;
-  case 215:
-current_state = 330; current_position++; goto _again;
-  break;
-  case 192:
-current_state = 331; current_position++; goto _again;
-  break;
-  case 356:
-current_state = 617; current_position++; goto _again;
-  break;
-  case 244:
-current_state = 359; current_position++; goto _again;
-  break;
-  case 185:
-current_state = 334; current_position++; goto _again;
-  break;
-  case 264:
-current_state = 396; current_position++; goto _again;
-  break;
-  case 61:
-current_state = 47; current_position++; goto _again;
-  break;
-  case 62:
-current_state = 53; current_position++; goto _again;
-  break;
-  case 293:
-current_state = 471; current_position++; goto _again;
-  break;
-  case 20:
-current_state = 36; current_position++; goto _again;
-  break;
-  case 337:
-current_state = 570; current_position++; goto _again;
-  break;
-  case 402:
-current_state = 736; current_position++; goto _again;
-  break;
-  case 326:
-current_state = 547; current_position++; goto _again;
-  break;
-  case 351:
-current_state = 605; current_position++; goto _again;
-  break;
-  case 399:
-current_state = 730; current_position++; goto _again;
-  break;
-  case 152:
-current_state = 194; current_position++; goto _again;
-  break;
-  case 377:
-current_state = 648; current_position++; goto _again;
-  break;
-  case 423:
-current_state = 714; current_position++; goto _again;
-  break;
-  case 69:
-current_state = 44; current_position++; goto _again;
-  break;
-  case 114:
-current_state = 173; current_position++; goto _again;
-  break;
-  case 234:
-current_state = 320; current_position++; goto _again;
-  break;
-  case 417:
-current_state = 447; current_position++; goto _again;
-  break;
-  case 72:
-current_state = 63; current_position++; goto _again;
-  break;
-  case 376:
-current_state = 647; current_position++; goto _again;
-  break;
-  case 324:
- SET_CPU_FEATURE(CPUFeature_CLMULAVX);    break;
-  case 359:
-current_state = 621; current_position++; goto _again;
-  break;
-  case 252:
-current_state = 379; current_position++; goto _again;
-  break;
-  case 157:
-current_state = 201; current_position++; goto _again;
-  break;
-  case 201:
-current_state = 368; current_position++; goto _again;
-  break;
-  case 388:
-current_state = 679; current_position++; goto _again;
-  break;
-  case 299:
-current_state = 485; current_position++; goto _again;
-  break;
-  case 10:
-  break;
-  case 21:
- SET_CPU_FEATURE(CPUFeature_3DNOW);       break;
-  case 168:
-current_state = 255; current_position++; goto _again;
-  break;
-  case 85:
-current_state = 67; current_position++; goto _again;
-  break;
-  case 129:
-current_state = 144; current_position++; goto _again;
-  break;
-  case 24:
-current_state = 56; current_position++; goto _again;
-  break;
-  case 23:
-current_state = 55; current_position++; goto _again;
   break;
   case 7:
 
@@ -2558,86 +1485,6 @@ current_state = 55; current_position++; goto _again;
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     break;
-  case 35:
-current_state = 79; current_position++; goto _again;
-  break;
-  case 426:
-current_state = 263; current_position++; goto _again;
-  break;
-  case 51:
-current_state = 96; current_position++; goto _again;
-  break;
-  case 428:
-current_state = 665; current_position++; goto _again;
-  break;
-  case 26:
-current_state = 58; current_position++; goto _again;
-  break;
-  case 179:
-current_state = 278; current_position++; goto _again;
-  break;
-  case 343:
-current_state = 585; current_position++; goto _again;
-  break;
-  case 139:
-current_state = 205; current_position++; goto _again;
-  break;
-  case 95:
-current_state = 110; current_position++; goto _again;
-  break;
-  case 229:
- SET_CPU_FEATURE(CPUFeature_SSE42);       break;
-  case 330:
-current_state = 557; current_position++; goto _again;
-  break;
-  case 33:
-current_state = 62; current_position++; goto _again;
-  break;
-  case 208:
-current_state = 323; current_position++; goto _again;
-  break;
-  case 408:
-current_state = 751; current_position++; goto _again;
-  break;
-  case 421:
-current_state = 664; current_position++; goto _again;
-  break;
-  case 354:
-current_state = 612; current_position++; goto _again;
-  break;
-  case 189:
-current_state = 350; current_position++; goto _again;
-  break;
-  case 307:
-current_state = 502; current_position++; goto _again;
-  break;
-  case 134:
- SET_CPU_FEATURE(CPUFeature_CMOVx87);     break;
-  case 405:
-current_state = 741; current_position++; goto _again;
-  break;
-  case 13:
- SET_OPERAND_FORMAT(0, OPERAND_FORMAT_8_BIT);   break;
-  case 258:
-current_state = 389; current_position++; goto _again;
-  break;
-  case 266:
-
-      ProcessNaclCallOrJmpAddToRegNoRex(&instruction_info_collected,
-                                        &instruction_begin,
-                                        current_position,
-                                        codeblock,
-                                        valid_targets);
-      break;
-  case 361:
-current_state = 626; current_position++; goto _again;
-  break;
-  case 96:
-current_state = 111; current_position++; goto _again;
-  break;
-  case 288:
-current_state = 458; current_position++; goto _again;
-  break;
   case 8:
 
     SET_DISPLACEMENT_FORMAT(DISPNONE);
@@ -2649,64 +1496,152 @@ current_state = 458; current_position++; goto _again;
                                     IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
     SET_MODRM_SCALE(ScaleFromSIB(*current_position));
     break;
-  case 198:
-current_state = 366; current_position++; goto _again;
+  case 9:
+
+    SET_DISPLACEMENT_FORMAT(DISPNONE);
+    SET_MODRM_BASE(NO_REG);
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
+    break;
+  case 10:
   break;
-  case 370:
-current_state = 633; current_position++; goto _again;
+  case 11:
+
+    SET_DISPLACEMENT_FORMAT(DISP32);
+    SET_DISPLACEMENT_POINTER(current_position - 3);
+    break;
+  case 12:
+
+    SET_DISPLACEMENT_FORMAT(DISP8);
+    SET_DISPLACEMENT_POINTER(current_position);
+    break;
+  case 13:
+ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_8_BIT);   break;
+  case 14:
+
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+    break;
+  case 15:
+ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);   break;
+  case 16:
+
+    SET_IMMEDIATE_FORMAT(IMM8);
+    SET_IMMEDIATE_POINTER(current_position);
+    break;
+  case 17:
+
+    SET_IMMEDIATE_FORMAT(IMM32);
+    SET_IMMEDIATE_POINTER(current_position - 3);
+    break;
+  case 18:
+current_state = 35; current_position++; goto _again;
   break;
-  case 444:
-current_state = 525; current_position++; goto _again;
+  case 19:
+
+    Process0Operands(&restricted_register, &instruction_info_collected);
+    break;
+  case 20:
+current_state = 36; current_position++; goto _again;
   break;
-  case 111:
-current_state = 170; current_position++; goto _again;
+  case 21:
+ SET_CPU_FEATURE(CPUFeature_3DNOW);       break;
+  case 22:
+current_state = 45; current_position++; goto _again;
   break;
-  case 374:
-current_state = 643; current_position++; goto _again;
+  case 23:
+current_state = 55; current_position++; goto _again;
   break;
-  case 164:
-current_state = 251; current_position++; goto _again;
+  case 24:
+current_state = 56; current_position++; goto _again;
   break;
-  case 117:
-current_state = 176; current_position++; goto _again;
+  case 25:
+current_state = 57; current_position++; goto _again;
   break;
-  case 241:
-current_state = 340; current_position++; goto _again;
+  case 26:
+current_state = 58; current_position++; goto _again;
   break;
-  case 174:
-current_state = 261; current_position++; goto _again;
+  case 27:
+current_state = 59; current_position++; goto _again;
+  break;
+  case 28:
+ SET_CPU_FEATURE(CPUFeature_TSC);         break;
+  case 29:
+current_state = 60; current_position++; goto _again;
+  break;
+  case 30:
+current_state = 65; current_position++; goto _again;
+  break;
+  case 31:
+current_state = 76; current_position++; goto _again;
+  break;
+  case 32:
+current_state = 77; current_position++; goto _again;
+  break;
+  case 33:
+current_state = 62; current_position++; goto _again;
+  break;
+  case 34:
+current_state = 78; current_position++; goto _again;
+  break;
+  case 35:
+current_state = 79; current_position++; goto _again;
+  break;
+  case 36:
+current_state = 80; current_position++; goto _again;
+  break;
+  case 37:
+ SET_CPU_FEATURE(CPUFeature_MMX);         break;
+  case 38:
+current_state = 81; current_position++; goto _again;
+  break;
+  case 39:
+current_state = 82; current_position++; goto _again;
+  break;
+  case 40:
+current_state = 86; current_position++; goto _again;
   break;
   case 41:
 current_state = 87; current_position++; goto _again;
   break;
-  case 127:
-current_state = 189; current_position++; goto _again;
+  case 42:
+current_state = 88; current_position++; goto _again;
   break;
-  case 306:
-current_state = 500; current_position++; goto _again;
+  case 43:
+current_state = 89; current_position++; goto _again;
   break;
-  case 106:
-current_state = 158; current_position++; goto _again;
+  case 44:
+current_state = 20; current_position++; goto _again;
   break;
-  case 159:
-current_state = 203; current_position++; goto _again;
+  case 45:
+current_state = 90; current_position++; goto _again;
   break;
-  case 165:
-current_state = 252; current_position++; goto _again;
+  case 46:
+current_state = 91; current_position++; goto _again;
   break;
-  case 115:
-current_state = 174; current_position++; goto _again;
+  case 47:
+current_state = 92; current_position++; goto _again;
   break;
-  case 3:
-
-    // Case where ModRM.mod = 00 and ModRM.r/m = 101.
-    // In 64-bit mode it corresponds to RIP-relative addressing.
-    SET_MODRM_BASE(REG_RIP);
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-    break;
-  case 34:
-current_state = 78; current_position++; goto _again;
+  case 48:
+current_state = 93; current_position++; goto _again;
+  break;
+  case 49:
+current_state = 94; current_position++; goto _again;
+  break;
+  case 50:
+current_state = 95; current_position++; goto _again;
+  break;
+  case 51:
+current_state = 96; current_position++; goto _again;
+  break;
+  case 52:
+current_state = 97; current_position++; goto _again;
+  break;
+  case 53:
+current_state = 98; current_position++; goto _again;
   break;
   case 54:
 
@@ -2714,74 +1649,680 @@ current_state = 78; current_position++; goto _again;
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     break;
-  case 373:
-current_state = 642; current_position++; goto _again;
+  case 55:
+current_state = 99; current_position++; goto _again;
   break;
-  case 268:
-current_state = 408; current_position++; goto _again;
+  case 56:
+current_state = 100; current_position++; goto _again;
   break;
-  case 52:
-current_state = 97; current_position++; goto _again;
+  case 57:
+current_state = 101; current_position++; goto _again;
   break;
-  case 413:
-current_state = 407; current_position++; goto _again;
+  case 58:
+ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT);   break;
+  case 59:
+ SET_CPU_FEATURE(CPUFeature_FXSR);        break;
+  case 60:
+ SET_CPU_FEATURE(CPUFeature_3DPRFTCH);    break;
+  case 61:
+current_state = 47; current_position++; goto _again;
   break;
-  case 382:
-current_state = 655; current_position++; goto _again;
+  case 62:
+current_state = 53; current_position++; goto _again;
   break;
-  case 292:
-current_state = 468; current_position++; goto _again;
+  case 63:
+current_state = 54; current_position++; goto _again;
   break;
-  case 400:
+  case 64:
+current_state = 46; current_position++; goto _again;
+  break;
+  case 65:
 
-      ProcessNaclCallOrJmpAddToRMWithRex(&instruction_info_collected,
-                                         &instruction_begin,
-                                         current_position,
-                                         codeblock,
-                                         valid_targets);
-      break;
+    instruction_info_collected |= LAST_BYTE_IS_NOT_IMMEDIATE;
+    break;
+  case 66:
+ SET_CPU_FEATURE(CPUFeature_SSE);         break;
+  case 67:
+current_state = 37; current_position++; goto _again;
+  break;
+  case 68:
+current_state = 43; current_position++; goto _again;
+  break;
+  case 69:
+current_state = 44; current_position++; goto _again;
+  break;
+  case 70:
+ SET_CPU_FEATURE(CPUFeature_SSE2);        break;
+  case 71:
+current_state = 61; current_position++; goto _again;
+  break;
+  case 72:
+current_state = 63; current_position++; goto _again;
+  break;
+  case 73:
+current_state = 64; current_position++; goto _again;
+  break;
+  case 74:
+ SET_CPU_FEATURE(CPUFeature_SSSE3);       break;
+  case 75:
+ SET_CPU_FEATURE(CPUFeature_MOVBE);       break;
+  case 76:
+current_state = 66; current_position++; goto _again;
+  break;
+  case 77:
+ SET_CPU_FEATURE(CPUFeature_EMMXSSE);     break;
+  case 78:
+
+    Rel32Operand(current_position + 1, codeblock, jump_dests, size,
+                 &instruction_info_collected);
+    break;
+  case 79:
+ SET_CPU_FEATURE(CPUFeature_CMOV);        break;
+  case 80:
+current_state = 68; current_position++; goto _again;
+  break;
+  case 81:
+current_state = 74; current_position++; goto _again;
+  break;
+  case 82:
+current_state = 75; current_position++; goto _again;
+  break;
+  case 83:
+ SET_CPU_FEATURE(CPUFeature_CLFLUSH);     break;
+  case 84:
+
+    SET_OPERAND_NAME(1, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+    break;
+  case 85:
+current_state = 67; current_position++; goto _again;
+  break;
   case 86:
  SET_CPU_FEATURE(CPUFeature_CX8);         break;
-  case 249:
-current_state = 376; current_position++; goto _again;
+  case 87:
+current_state = 107; current_position++; goto _again;
   break;
-  case 140:
-current_state = 214; current_position++; goto _again;
+  case 88:
+
+    SET_REX_PREFIX(*current_position);
+    break;
+  case 89:
+current_state = 109; current_position++; goto _again;
+  break;
+  case 90:
+
+    Rel8Operand(current_position + 1, codeblock, jump_dests, size,
+                &instruction_info_collected);
+    break;
+  case 91:
+current_state = 1; current_position++; goto _again;
+  break;
+  case 92:
+current_state = 10; current_position++; goto _again;
+  break;
+  case 93:
+current_state = 11; current_position++; goto _again;
+  break;
+  case 94:
+current_state = 116; current_position++; goto _again;
+  break;
+  case 95:
+current_state = 110; current_position++; goto _again;
+  break;
+  case 96:
+current_state = 111; current_position++; goto _again;
+  break;
+  case 97:
+current_state = 117; current_position++; goto _again;
+  break;
+  case 98:
+current_state = 126; current_position++; goto _again;
+  break;
+  case 99:
+current_state = 136; current_position++; goto _again;
+  break;
+  case 100:
+current_state = 137; current_position++; goto _again;
+  break;
+  case 101:
+current_state = 146; current_position++; goto _again;
+  break;
+  case 102:
+current_state = 152; current_position++; goto _again;
+  break;
+  case 103:
+current_state = 153; current_position++; goto _again;
+  break;
+  case 104:
+current_state = 156; current_position++; goto _again;
+  break;
+  case 105:
+current_state = 267; current_position++; goto _again;
+  break;
+  case 106:
+current_state = 158; current_position++; goto _again;
+  break;
+  case 107:
+current_state = 167; current_position++; goto _again;
+  break;
+  case 108:
+ SET_CPU_FEATURE(CPUFeature_x87);         break;
+  case 109:
+current_state = 168; current_position++; goto _again;
+  break;
+  case 110:
+current_state = 169; current_position++; goto _again;
+  break;
+  case 111:
+current_state = 170; current_position++; goto _again;
+  break;
+  case 112:
+current_state = 171; current_position++; goto _again;
+  break;
+  case 113:
+current_state = 172; current_position++; goto _again;
+  break;
+  case 114:
+current_state = 173; current_position++; goto _again;
+  break;
+  case 115:
+current_state = 174; current_position++; goto _again;
+  break;
+  case 116:
+current_state = 175; current_position++; goto _again;
+  break;
+  case 117:
+current_state = 176; current_position++; goto _again;
+  break;
+  case 118:
+current_state = 177; current_position++; goto _again;
+  break;
+  case 119:
+current_state = 178; current_position++; goto _again;
+  break;
+  case 120:
+current_state = 179; current_position++; goto _again;
   break;
   case 121:
 current_state = 180; current_position++; goto _again;
   break;
-  case 207:
-current_state = 322; current_position++; goto _again;
+  case 122:
+current_state = 181; current_position++; goto _again;
   break;
-  case 349:
-current_state = 600; current_position++; goto _again;
+  case 123:
+
+    instruction_info_collected |= MODIFIABLE_INSTRUCTION;
+    break;
+  case 124:
+current_state = 186; current_position++; goto _again;
   break;
-  case 245:
-current_state = 371; current_position++; goto _again;
+  case 125:
+current_state = 187; current_position++; goto _again;
   break;
-  case 77:
- SET_CPU_FEATURE(CPUFeature_EMMXSSE);     break;
-  case 263:
-current_state = 387; current_position++; goto _again;
+  case 126:
+current_state = 188; current_position++; goto _again;
   break;
-  case 315:
-current_state = 522; current_position++; goto _again;
+  case 127:
+current_state = 189; current_position++; goto _again;
   break;
-  case 176:
-current_state = 266; current_position++; goto _again;
+  case 128:
+current_state = 138; current_position++; goto _again;
   break;
-  case 372:
-current_state = 641; current_position++; goto _again;
+  case 129:
+current_state = 144; current_position++; goto _again;
   break;
-  case 50:
-current_state = 95; current_position++; goto _again;
+  case 130:
+current_state = 145; current_position++; goto _again;
+  break;
+  case 131:
+current_state = 149; current_position++; goto _again;
+  break;
+  case 132:
+current_state = 155; current_position++; goto _again;
+  break;
+  case 133:
+current_state = 157; current_position++; goto _again;
+  break;
+  case 134:
+ SET_CPU_FEATURE(CPUFeature_CMOVx87);     break;
+  case 135:
+ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT);   break;
+  case 136:
+current_state = 191; current_position++; goto _again;
+  break;
+  case 137:
+current_state = 192; current_position++; goto _again;
+  break;
+  case 138:
+current_state = 193; current_position++; goto _again;
+  break;
+  case 139:
+current_state = 205; current_position++; goto _again;
+  break;
+  case 140:
+current_state = 214; current_position++; goto _again;
+  break;
+  case 141:
+current_state = 223; current_position++; goto _again;
+  break;
+  case 142:
+current_state = 224; current_position++; goto _again;
+  break;
+  case 143:
+current_state = 200; current_position++; goto _again;
+  break;
+  case 144:
+current_state = 226; current_position++; goto _again;
+  break;
+  case 145:
+current_state = 227; current_position++; goto _again;
   break;
   case 146:
 current_state = 228; current_position++; goto _again;
   break;
-  case 18:
-current_state = 35; current_position++; goto _again;
+  case 147:
+current_state = 245; current_position++; goto _again;
+  break;
+  case 148:
+current_state = 246; current_position++; goto _again;
+  break;
+  case 149:
+current_state = 247; current_position++; goto _again;
+  break;
+  case 150:
+current_state = 248; current_position++; goto _again;
+  break;
+  case 151:
+current_state = 249; current_position++; goto _again;
+  break;
+  case 152:
+current_state = 194; current_position++; goto _again;
+  break;
+  case 153:
+current_state = 196; current_position++; goto _again;
+  break;
+  case 154:
+current_state = 197; current_position++; goto _again;
+  break;
+  case 155:
+current_state = 198; current_position++; goto _again;
+  break;
+  case 156:
+current_state = 199; current_position++; goto _again;
+  break;
+  case 157:
+current_state = 201; current_position++; goto _again;
+  break;
+  case 158:
+current_state = 202; current_position++; goto _again;
+  break;
+  case 159:
+current_state = 203; current_position++; goto _again;
+  break;
+  case 160:
+current_state = 204; current_position++; goto _again;
+  break;
+  case 161:
+current_state = 195; current_position++; goto _again;
+  break;
+  case 162:
+ SET_CPU_FEATURE(CPUFeature_CX16);        break;
+  case 163:
+
+    SET_IMMEDIATE_FORMAT(IMM64);
+    SET_IMMEDIATE_POINTER(current_position - 7);
+    break;
+  case 164:
+current_state = 251; current_position++; goto _again;
+  break;
+  case 165:
+current_state = 252; current_position++; goto _again;
+  break;
+  case 166:
+current_state = 253; current_position++; goto _again;
+  break;
+  case 167:
+current_state = 254; current_position++; goto _again;
+  break;
+  case 168:
+current_state = 255; current_position++; goto _again;
+  break;
+  case 169:
+current_state = 256; current_position++; goto _again;
+  break;
+  case 170:
+ if (restricted_register == REG_RSP)
+         instruction_info_collected |= RESTRICTED_REGISTER_USED;
+       else
+         instruction_info_collected |= UNRESTRICTED_RSP_PROCESSED;
+       restricted_register = NO_REG;
+       UnmarkValidJumpTarget((instruction_begin - codeblock), valid_targets);
+      break;
+  case 171:
+ if (restricted_register == REG_RBP)
+         /* RESTRICTED_REGISTER_USED is informational flag used in tests.  */
+         instruction_info_collected |= RESTRICTED_REGISTER_USED;
+       else
+         /* UNRESTRICTED_RSP_PROCESSED is error flag used in production.  */
+         instruction_info_collected |= UNRESTRICTED_RBP_PROCESSED;
+       restricted_register = NO_REG;
+       UnmarkValidJumpTarget((instruction_begin - codeblock), valid_targets);
+      break;
+  case 172:
+current_state = 259; current_position++; goto _again;
+  break;
+  case 173:
+current_state = 710; current_position++; goto _again;
+  break;
+  case 174:
+current_state = 261; current_position++; goto _again;
+  break;
+  case 175:
+
+       ExpandSuperinstructionBySandboxingBytes(
+         7 /* sandbox_rdi_7_bytes */,
+         &instruction_begin,
+         codeblock,
+         valid_targets);
+      break;
+  case 176:
+current_state = 266; current_position++; goto _again;
+  break;
+  case 177:
+current_state = 269; current_position++; goto _again;
+  break;
+  case 178:
+current_state = 275; current_position++; goto _again;
+  break;
+  case 179:
+current_state = 278; current_position++; goto _again;
+  break;
+  case 180:
+current_state = 295; current_position++; goto _again;
+  break;
+  case 181:
+current_state = 296; current_position++; goto _again;
+  break;
+  case 182:
+current_state = 299; current_position++; goto _again;
+  break;
+  case 183:
+current_state = 300; current_position++; goto _again;
+  break;
+  case 184:
+current_state = 303; current_position++; goto _again;
+  break;
+  case 185:
+current_state = 334; current_position++; goto _again;
+  break;
+  case 186:
+current_state = 337; current_position++; goto _again;
+  break;
+  case 187:
+current_state = 378; current_position++; goto _again;
+  break;
+  case 188:
+current_state = 341; current_position++; goto _again;
+  break;
+  case 189:
+current_state = 350; current_position++; goto _again;
+  break;
+  case 190:
+current_state = 351; current_position++; goto _again;
+  break;
+  case 191:
+current_state = 360; current_position++; goto _again;
+  break;
+  case 192:
+current_state = 331; current_position++; goto _again;
+  break;
+  case 193:
+current_state = 361; current_position++; goto _again;
+  break;
+  case 194:
+current_state = 362; current_position++; goto _again;
+  break;
+  case 195:
+current_state = 363; current_position++; goto _again;
+  break;
+  case 196:
+current_state = 364; current_position++; goto _again;
+  break;
+  case 197:
+current_state = 365; current_position++; goto _again;
+  break;
+  case 198:
+current_state = 366; current_position++; goto _again;
+  break;
+  case 199:
+current_state = 367; current_position++; goto _again;
+  break;
+  case 200:
+current_state = 383; current_position++; goto _again;
+  break;
+  case 201:
+current_state = 368; current_position++; goto _again;
+  break;
+  case 202:
+current_state = 369; current_position++; goto _again;
+  break;
+  case 203:
+
+    SET_IMMEDIATE_FORMAT(IMM16);
+    SET_IMMEDIATE_POINTER(current_position - 1);
+    break;
+  case 204:
+current_state = 304; current_position++; goto _again;
+  break;
+  case 205:
+current_state = 310; current_position++; goto _again;
+  break;
+  case 206:
+current_state = 316; current_position++; goto _again;
+  break;
+  case 207:
+current_state = 322; current_position++; goto _again;
+  break;
+  case 208:
+current_state = 323; current_position++; goto _again;
+  break;
+  case 209:
+current_state = 324; current_position++; goto _again;
+  break;
+  case 210:
+current_state = 325; current_position++; goto _again;
+  break;
+  case 211:
+current_state = 326; current_position++; goto _again;
+  break;
+  case 212:
+current_state = 327; current_position++; goto _again;
+  break;
+  case 213:
+current_state = 328; current_position++; goto _again;
+  break;
+  case 214:
+current_state = 329; current_position++; goto _again;
+  break;
+  case 215:
+current_state = 330; current_position++; goto _again;
+  break;
+  case 216:
+current_state = 332; current_position++; goto _again;
+  break;
+  case 217:
+current_state = 333; current_position++; goto _again;
+  break;
+  case 218:
+current_state = 305; current_position++; goto _again;
+  break;
+  case 219:
+current_state = 307; current_position++; goto _again;
+  break;
+  case 220:
+current_state = 306; current_position++; goto _again;
+  break;
+  case 221:
+current_state = 308; current_position++; goto _again;
+  break;
+  case 222:
+current_state = 309; current_position++; goto _again;
+  break;
+  case 223:
+current_state = 311; current_position++; goto _again;
+  break;
+  case 224:
+current_state = 312; current_position++; goto _again;
+  break;
+  case 225:
+current_state = 313; current_position++; goto _again;
+  break;
+  case 226:
+current_state = 314; current_position++; goto _again;
+  break;
+  case 227:
+current_state = 315; current_position++; goto _again;
+  break;
+  case 228:
+ SET_CPU_FEATURE(CPUFeature_SSE41);       break;
+  case 229:
+ SET_CPU_FEATURE(CPUFeature_SSE42);       break;
+  case 230:
+ SET_CPU_FEATURE(CPUFeature_AES);         break;
+  case 231:
+current_state = 317; current_position++; goto _again;
+  break;
+  case 232:
+current_state = 318; current_position++; goto _again;
+  break;
+  case 233:
+current_state = 319; current_position++; goto _again;
+  break;
+  case 234:
+current_state = 320; current_position++; goto _again;
+  break;
+  case 235:
+current_state = 321; current_position++; goto _again;
+  break;
+  case 236:
+ SET_CPU_FEATURE(CPUFeature_CLMUL);       break;
+  case 237:
+ SET_CPU_FEATURE(CPUFeature_SSE4A);       break;
+  case 238:
+ SET_CPU_FEATURE(CPUFeature_SSE3);        break;
+  case 239:
+current_state = 335; current_position++; goto _again;
+  break;
+  case 240:
+current_state = 336; current_position++; goto _again;
+  break;
+  case 241:
+current_state = 340; current_position++; goto _again;
+  break;
+  case 242:
+current_state = 352; current_position++; goto _again;
+  break;
+  case 243:
+current_state = 358; current_position++; goto _again;
+  break;
+  case 244:
+current_state = 359; current_position++; goto _again;
+  break;
+  case 245:
+current_state = 371; current_position++; goto _again;
+  break;
+  case 246:
+current_state = 372; current_position++; goto _again;
+  break;
+  case 247:
+current_state = 373; current_position++; goto _again;
+  break;
+  case 248:
+current_state = 375; current_position++; goto _again;
+  break;
+  case 249:
+current_state = 376; current_position++; goto _again;
+  break;
+  case 250:
+current_state = 377; current_position++; goto _again;
+  break;
+  case 251:
+current_state = 374; current_position++; goto _again;
+  break;
+  case 252:
+current_state = 379; current_position++; goto _again;
+  break;
+  case 253:
+current_state = 380; current_position++; goto _again;
+  break;
+  case 254:
+current_state = 381; current_position++; goto _again;
+  break;
+  case 255:
+current_state = 382; current_position++; goto _again;
+  break;
+  case 256:
+current_state = 384; current_position++; goto _again;
+  break;
+  case 257:
+current_state = 385; current_position++; goto _again;
+  break;
+  case 258:
+current_state = 389; current_position++; goto _again;
+  break;
+  case 259:
+current_state = 390; current_position++; goto _again;
+  break;
+  case 260:
+current_state = 386; current_position++; goto _again;
+  break;
+  case 261:
+current_state = 391; current_position++; goto _again;
+  break;
+  case 262:
+current_state = 392; current_position++; goto _again;
+  break;
+  case 263:
+current_state = 387; current_position++; goto _again;
+  break;
+  case 264:
+current_state = 396; current_position++; goto _again;
+  break;
+  case 265:
+current_state = 398; current_position++; goto _again;
+  break;
+  case 266:
+
+      ProcessNaclCallOrJmpAddToRegNoRex(&instruction_info_collected,
+                                        &instruction_begin,
+                                        current_position,
+                                        codeblock,
+                                        valid_targets);
+      break;
+  case 267:
+current_state = 402; current_position++; goto _again;
+  break;
+  case 268:
+current_state = 408; current_position++; goto _again;
+  break;
+  case 269:
+current_state = 410; current_position++; goto _again;
+  break;
+  case 270:
+current_state = 412; current_position++; goto _again;
+  break;
+  case 271:
+current_state = 415; current_position++; goto _again;
+  break;
+  case 272:
+current_state = 418; current_position++; goto _again;
+  break;
+  case 273:
+current_state = 673; current_position++; goto _again;
+  break;
+  case 274:
+current_state = 420; current_position++; goto _again;
   break;
   case 275:
 
@@ -2792,123 +2333,2527 @@ current_state = 35; current_position++; goto _again;
          codeblock,
          valid_targets);
       break;
-  case 290:
-current_state = 463; current_position++; goto _again;
+  case 276:
+current_state = 426; current_position++; goto _again;
   break;
-  case 137:
-current_state = 192; current_position++; goto _again;
-  break;
-  case 107:
-current_state = 167; current_position++; goto _again;
-  break;
-  case 335:
-current_state = 566; current_position++; goto _again;
-  break;
-  case 143:
-current_state = 200; current_position++; goto _again;
-  break;
-  case 83:
- SET_CPU_FEATURE(CPUFeature_CLFLUSH);     break;
-  case 177:
-current_state = 269; current_position++; goto _again;
-  break;
-  case 212:
-current_state = 327; current_position++; goto _again;
-  break;
-  case 220:
-current_state = 306; current_position++; goto _again;
-  break;
-  case 105:
-current_state = 267; current_position++; goto _again;
-  break;
-  case 182:
-current_state = 299; current_position++; goto _again;
-  break;
-  case 5:
-current_state = 8; current_position++; goto _again;
-  break;
-  case 446:
-current_state = 628; current_position++; goto _again;
-  break;
-  case 339:
-current_state = 576; current_position++; goto _again;
-  break;
-  case 9:
-
-    SET_DISPLACEMENT_FORMAT(DISPNONE);
-    SET_MODRM_BASE(NO_REG);
-    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
-                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
-                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
-    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
-    break;
-  case 312:
-current_state = 514; current_position++; goto _again;
-  break;
-  case 28:
- SET_CPU_FEATURE(CPUFeature_TSC);         break;
-  case 415:
-current_state = 413; current_position++; goto _again;
-  break;
-  case 180:
-current_state = 295; current_position++; goto _again;
-  break;
-  case 224:
-current_state = 312; current_position++; goto _again;
-  break;
-  case 124:
-current_state = 186; current_position++; goto _again;
-  break;
-  case 175:
+  case 277:
 
        ExpandSuperinstructionBySandboxingBytes(
-         7 /* sandbox_rdi_7_bytes */,
+         6 /* sandbox_rdi_6_bytes */,
          &instruction_begin,
          codeblock,
          valid_targets);
       break;
+  case 278:
+current_state = 431; current_position++; goto _again;
+  break;
+  case 279:
+current_state = 436; current_position++; goto _again;
+  break;
+  case 280:
+current_state = 442; current_position++; goto _again;
+  break;
+  case 281:
+current_state = 444; current_position++; goto _again;
+  break;
+  case 282:
+current_state = 446; current_position++; goto _again;
+  break;
+  case 283:
+
+    SET_VEX_PREFIX2(*current_position);
+    break;
+  case 284:
+
+    SET_VEX_PREFIX3(*current_position);
+    break;
+  case 285:
+current_state = 450; current_position++; goto _again;
+  break;
+  case 286:
+current_state = 453; current_position++; goto _again;
+  break;
+  case 287:
+current_state = 456; current_position++; goto _again;
+  break;
+  case 288:
+current_state = 458; current_position++; goto _again;
+  break;
+  case 289:
+current_state = 461; current_position++; goto _again;
+  break;
+  case 290:
+current_state = 463; current_position++; goto _again;
+  break;
+  case 291:
+current_state = 466; current_position++; goto _again;
+  break;
+  case 292:
+current_state = 468; current_position++; goto _again;
+  break;
+  case 293:
+current_state = 471; current_position++; goto _again;
+  break;
+  case 294:
+current_state = 473; current_position++; goto _again;
+  break;
+  case 295:
+current_state = 475; current_position++; goto _again;
+  break;
+  case 296:
+current_state = 476; current_position++; goto _again;
+  break;
+  case 297:
+current_state = 479; current_position++; goto _again;
+  break;
+  case 298:
+ SET_CPU_FEATURE(CPUFeature_LWP);         break;
+  case 299:
+current_state = 485; current_position++; goto _again;
+  break;
+  case 300:
+current_state = 486; current_position++; goto _again;
+  break;
+  case 301:
+current_state = 488; current_position++; goto _again;
+  break;
+  case 302:
+current_state = 489; current_position++; goto _again;
+  break;
+  case 303:
+current_state = 492; current_position++; goto _again;
+  break;
+  case 304:
+current_state = 497; current_position++; goto _again;
+  break;
+  case 305:
+current_state = 498; current_position++; goto _again;
+  break;
+  case 306:
+current_state = 500; current_position++; goto _again;
+  break;
+  case 307:
+current_state = 502; current_position++; goto _again;
+  break;
+  case 308:
+current_state = 503; current_position++; goto _again;
+  break;
+  case 309:
+current_state = 505; current_position++; goto _again;
+  break;
+  case 310:
+current_state = 508; current_position++; goto _again;
+  break;
+  case 311:
+current_state = 513; current_position++; goto _again;
+  break;
+  case 312:
+current_state = 514; current_position++; goto _again;
+  break;
+  case 313:
+current_state = 517; current_position++; goto _again;
+  break;
+  case 314:
+current_state = 518; current_position++; goto _again;
+  break;
+  case 315:
+current_state = 522; current_position++; goto _again;
+  break;
+  case 316:
+current_state = 528; current_position++; goto _again;
+  break;
+  case 317:
+current_state = 530; current_position++; goto _again;
+  break;
+  case 318:
+ SET_CPU_FEATURE(CPUFeature_AESAVX);      break;
+  case 319:
+current_state = 533; current_position++; goto _again;
+  break;
+  case 320:
+ SET_CPU_FEATURE(CPUFeature_F16C);        break;
+  case 321:
+current_state = 536; current_position++; goto _again;
+  break;
   case 322:
 current_state = 539; current_position++; goto _again;
   break;
-  case 37:
- SET_CPU_FEATURE(CPUFeature_MMX);         break;
+  case 323:
+current_state = 541; current_position++; goto _again;
+  break;
+  case 324:
+ SET_CPU_FEATURE(CPUFeature_CLMULAVX);    break;
+  case 325:
+current_state = 543; current_position++; goto _again;
+  break;
+  case 326:
+current_state = 547; current_position++; goto _again;
+  break;
+  case 327:
+current_state = 549; current_position++; goto _again;
+  break;
+  case 328:
+current_state = 551; current_position++; goto _again;
+  break;
+  case 329:
+current_state = 554; current_position++; goto _again;
+  break;
+  case 330:
+current_state = 557; current_position++; goto _again;
+  break;
+  case 331:
+current_state = 558; current_position++; goto _again;
+  break;
+  case 332:
+current_state = 560; current_position++; goto _again;
+  break;
+  case 333:
+current_state = 563; current_position++; goto _again;
+  break;
+  case 334:
+ SET_CPU_FEATURE(CPUFeature_AVX);         break;
+  case 335:
+current_state = 566; current_position++; goto _again;
+  break;
+  case 336:
+current_state = 568; current_position++; goto _again;
+  break;
+  case 337:
+current_state = 570; current_position++; goto _again;
+  break;
+  case 338:
+current_state = 573; current_position++; goto _again;
+  break;
+  case 339:
+current_state = 576; current_position++; goto _again;
+  break;
+  case 340:
+current_state = 577; current_position++; goto _again;
+  break;
+  case 341:
+current_state = 579; current_position++; goto _again;
+  break;
+  case 342:
+current_state = 583; current_position++; goto _again;
+  break;
+  case 343:
+current_state = 585; current_position++; goto _again;
+  break;
+  case 344:
+current_state = 587; current_position++; goto _again;
+  break;
+  case 345:
+current_state = 590; current_position++; goto _again;
+  break;
+  case 346:
+current_state = 593; current_position++; goto _again;
+  break;
+  case 347:
+current_state = 594; current_position++; goto _again;
+  break;
+  case 348:
+current_state = 596; current_position++; goto _again;
+  break;
+  case 349:
+current_state = 600; current_position++; goto _again;
+  break;
+  case 350:
+current_state = 602; current_position++; goto _again;
+  break;
+  case 351:
+current_state = 605; current_position++; goto _again;
+  break;
+  case 352:
+current_state = 607; current_position++; goto _again;
+  break;
+  case 353:
+current_state = 610; current_position++; goto _again;
+  break;
+  case 354:
+current_state = 612; current_position++; goto _again;
+  break;
+  case 355:
+current_state = 615; current_position++; goto _again;
+  break;
+  case 356:
+current_state = 617; current_position++; goto _again;
+  break;
+  case 357:
+current_state = 620; current_position++; goto _again;
+  break;
+  case 358:
+current_state = 624; current_position++; goto _again;
+  break;
+  case 359:
+current_state = 621; current_position++; goto _again;
+  break;
+  case 360:
+current_state = 622; current_position++; goto _again;
+  break;
+  case 361:
+current_state = 626; current_position++; goto _again;
+  break;
   case 362:
 current_state = 627; current_position++; goto _again;
   break;
-  case 90:
+  case 363:
+current_state = 629; current_position++; goto _again;
+  break;
+  case 364:
+current_state = 630; current_position++; goto _again;
+  break;
+  case 365:
+current_state = 631; current_position++; goto _again;
+  break;
+  case 366:
+current_state = 632; current_position++; goto _again;
+  break;
+  case 367:
+current_state = 634; current_position++; goto _again;
+  break;
+  case 368:
+current_state = 637; current_position++; goto _again;
+  break;
+  case 369:
+current_state = 638; current_position++; goto _again;
+  break;
+  case 370:
+current_state = 633; current_position++; goto _again;
+  break;
+  case 371:
 
-    Rel8Operand(current_position + 1, codeblock, jump_dests, size,
-                &instruction_info_collected);
+    SET_SECOND_IMMEDIATE_FORMAT(IMM8);
+    SET_SECOND_IMMEDIATE_POINTER(current_position);
     break;
-  case 435:
-current_state = 676; current_position++; goto _again;
+  case 372:
+current_state = 641; current_position++; goto _again;
   break;
-  case 409:
-current_state = 753; current_position++; goto _again;
+  case 373:
+current_state = 642; current_position++; goto _again;
   break;
-  case 27:
-current_state = 59; current_position++; goto _again;
+  case 374:
+current_state = 643; current_position++; goto _again;
   break;
-  case 449:
-current_state = 683; current_position++; goto _again;
+  case 375:
+current_state = 644; current_position++; goto _again;
   break;
-  case 414:
-current_state = 393; current_position++; goto _again;
+  case 376:
+current_state = 647; current_position++; goto _again;
+  break;
+  case 377:
+current_state = 648; current_position++; goto _again;
+  break;
+  case 378:
+current_state = 649; current_position++; goto _again;
+  break;
+  case 379:
+current_state = 650; current_position++; goto _again;
+  break;
+  case 380:
+current_state = 651; current_position++; goto _again;
+  break;
+  case 381:
+current_state = 654; current_position++; goto _again;
+  break;
+  case 382:
+current_state = 655; current_position++; goto _again;
+  break;
+  case 383:
+current_state = 656; current_position++; goto _again;
+  break;
+  case 384:
+current_state = 657; current_position++; goto _again;
+  break;
+  case 385:
+current_state = 658; current_position++; goto _again;
+  break;
+  case 386:
+current_state = 667; current_position++; goto _again;
+  break;
+  case 387:
+
+       ExpandSuperinstructionBySandboxingBytes(
+         6 /* sandbox_rsi_6_bytes */,
+         &instruction_begin,
+         codeblock,
+         valid_targets);
+      break;
+  case 388:
+current_state = 679; current_position++; goto _again;
+  break;
+  case 389:
+
+       ExpandSuperinstructionBySandboxingBytes(
+         6 /* sandbox_rsi_6_bytes */ + 6 /* sandbox_rdi_6_bytes */,
+         &instruction_begin,
+         codeblock,
+         valid_targets);
+      break;
+  case 390:
+current_state = 691; current_position++; goto _again;
+  break;
+  case 391:
+current_state = 693; current_position++; goto _again;
+  break;
+  case 392:
+
+      ProcessNaclCallOrJmpAddToRMNoRex(&instruction_info_collected,
+                                       &instruction_begin,
+                                       current_position,
+                                       codeblock,
+                                       valid_targets);
+      break;
+  case 393:
+current_state = 697; current_position++; goto _again;
+  break;
+  case 394:
+
+       ExpandSuperinstructionBySandboxingBytes(
+         7 /* sandbox_rsi_7_bytes */ + 7 /* sandbox_rdi_7_bytes */,
+         &instruction_begin,
+         codeblock,
+         valid_targets);
+      break;
+  case 395:
+
+       ExpandSuperinstructionBySandboxingBytes(
+         7 /* sandbox_rsi_7_bytes */,
+         &instruction_begin,
+         codeblock,
+         valid_targets);
+      break;
+  case 396:
+current_state = 716; current_position++; goto _again;
   break;
   case 397:
 current_state = 728; current_position++; goto _again;
   break;
+  case 398:
+current_state = 734; current_position++; goto _again;
+  break;
+  case 399:
+current_state = 730; current_position++; goto _again;
+  break;
+  case 400:
+
+      ProcessNaclCallOrJmpAddToRMWithRex(&instruction_info_collected,
+                                         &instruction_begin,
+                                         current_position,
+                                         codeblock,
+                                         valid_targets);
+      break;
+  case 401:
+current_state = 732; current_position++; goto _again;
+  break;
+  case 402:
+current_state = 736; current_position++; goto _again;
+  break;
+  case 403:
+
+      ProcessNaclCallOrJmpAddToRegWithRex(&instruction_info_collected,
+                                          &instruction_begin,
+                                          current_position,
+                                          codeblock,
+                                          valid_targets);
+      break;
+  case 404:
+current_state = 738; current_position++; goto _again;
+  break;
+  case 405:
+current_state = 741; current_position++; goto _again;
+  break;
+  case 406:
+current_state = 743; current_position++; goto _again;
+  break;
+  case 407:
+current_state = 747; current_position++; goto _again;
+  break;
+  case 408:
+current_state = 751; current_position++; goto _again;
+  break;
+  case 409:
+current_state = 753; current_position++; goto _again;
+  break;
+  case 410:
+current_state = 757; current_position++; goto _again;
+  break;
+  case 411:
+current_state = 34; current_position++; goto _again;
+  break;
+  case 412:
+current_state = 106; current_position++; goto _again;
+  break;
+  case 413:
+current_state = 407; current_position++; goto _again;
+  break;
+  case 414:
+current_state = 393; current_position++; goto _again;
+  break;
+  case 415:
+current_state = 413; current_position++; goto _again;
+  break;
+  case 416:
+current_state = 424; current_position++; goto _again;
+  break;
+  case 417:
+current_state = 447; current_position++; goto _again;
+  break;
+  case 418:
+current_state = 662; current_position++; goto _again;
+  break;
+  case 419:
+current_state = 619; current_position++; goto _again;
+  break;
+  case 420:
+current_state = 663; current_position++; goto _again;
+  break;
+  case 421:
+current_state = 664; current_position++; goto _again;
+  break;
+  case 422:
+current_state = 713; current_position++; goto _again;
+  break;
+  case 423:
+current_state = 714; current_position++; goto _again;
+  break;
+  case 424:
+current_state = 724; current_position++; goto _again;
+  break;
+  case 425:
+current_state = 725; current_position++; goto _again;
+  break;
+  case 426:
+current_state = 263; current_position++; goto _again;
+  break;
+  case 427:
+current_state = 705; current_position++; goto _again;
+  break;
+  case 428:
+current_state = 665; current_position++; goto _again;
+  break;
+  case 429:
+current_state = 668; current_position++; goto _again;
+  break;
+  case 430:
+current_state = 706; current_position++; goto _again;
+  break;
+  case 431:
+current_state = 708; current_position++; goto _again;
+  break;
+  case 432:
+current_state = 298; current_position++; goto _again;
+  break;
+  case 433:
+current_state = 700; current_position++; goto _again;
+  break;
+  case 434:
+current_state = 702; current_position++; goto _again;
+  break;
+  case 435:
+current_state = 676; current_position++; goto _again;
+  break;
+  case 436:
+current_state = 677; current_position++; goto _again;
+  break;
+  case 437:
+current_state = 687; current_position++; goto _again;
+  break;
+  case 438:
+current_state = 688; current_position++; goto _again;
+  break;
+  case 439:
+current_state = 423; current_position++; goto _again;
+  break;
+  case 440:
+current_state = 669; current_position++; goto _again;
+  break;
+  case 441:
+current_state = 671; current_position++; goto _again;
+  break;
+  case 442:
+current_state = 428; current_position++; goto _again;
+  break;
+  case 443:
+current_state = 441; current_position++; goto _again;
+  break;
+  case 444:
+current_state = 525; current_position++; goto _again;
+  break;
+  case 445:
+current_state = 618; current_position++; goto _again;
+  break;
+  case 446:
+current_state = 628; current_position++; goto _again;
+  break;
+  case 447:
+current_state = 646; current_position++; goto _again;
+  break;
+  case 448:
+current_state = 682; current_position++; goto _again;
+  break;
+  case 449:
+current_state = 683; current_position++; goto _again;
+  break;
+  case 450:
+current_state = 685; current_position++; goto _again;
+  break;
+  case 451:
+current_state = 719; current_position++; goto _again;
+  break;
+  case 452:
+current_state = 720; current_position++; goto _again;
+  break;
+  case 453:
+current_state = 722; current_position++; goto _again;
+  break;
+}
+switch (_dfa_transitions[current_state][*current_position][1]) {
+  case 0:
+  break;
+  case 1:
+
+    CheckMemoryAccess(instruction_begin - codeblock,
+                      base,
+                      index,
+                      restricted_register,
+                      valid_targets,
+                      &instruction_info_collected);
+   
+    Process0Operands(&restricted_register, &instruction_info_collected);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
+  break;
+  case 2:
+current_state = 3; current_position++; goto _again;
+  break;
+  case 3:
+current_state = 7; current_position++; goto _again;
+  break;
   case 4:
+ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_8_BIT);  
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
+  break;
+  case 5:
+current_state = 4; current_position++; goto _again;
+  break;
+  case 6:
+current_state = 5; current_position++; goto _again;
+  break;
+  case 7:
+current_state = 6; current_position++; goto _again;
+  break;
+  case 8:
+ 
+    CheckMemoryAccess(instruction_begin - codeblock,
+                      base,
+                      index,
+                      restricted_register,
+                      valid_targets,
+                      &instruction_info_collected);
+   
+    Process0Operands(&restricted_register, &instruction_info_collected);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
+  break;
+  case 9:
+ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);  
+    Process1OperandZeroExtends(&restricted_register,
+                               &instruction_info_collected, rex_prefix,
+                               operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
+  break;
+  case 10:
+
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   
+    SET_DISPLACEMENT_FORMAT(DISPNONE);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   
+    CheckMemoryAccess(instruction_begin - codeblock,
+                      base,
+                      index,
+                      restricted_register,
+                      valid_targets,
+                      &instruction_info_collected);
+   
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
+  break;
+  case 11:
+
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   current_state = 12; current_position++; goto _again;
+  break;
+  case 12:
+
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   
+    // Case where ModRM.mod = 00 and ModRM.r/m = 101.
+    // In 64-bit mode it corresponds to RIP-relative addressing.
+    SET_MODRM_BASE(REG_RIP);
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 13; current_position++; goto _again;
+  break;
+  case 13:
+
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 17; current_position++; goto _again;
+  break;
+  case 14:
+
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   current_state = 18; current_position++; goto _again;
+  break;
+  case 15:
+
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 13; current_position++; goto _again;
+  break;
+  case 16:
+
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   current_state = 19; current_position++; goto _again;
+  break;
+  case 17:
+
+    CheckMemoryAccess(instruction_begin - codeblock,
+                      base,
+                      index,
+                      restricted_register,
+                      valid_targets,
+                      &instruction_info_collected);
+   
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
+  break;
+  case 18:
+current_state = 13; current_position++; goto _again;
+  break;
+  case 19:
+current_state = 14; current_position++; goto _again;
+  break;
+  case 20:
+current_state = 15; current_position++; goto _again;
+  break;
+  case 21:
+current_state = 16; current_position++; goto _again;
+  break;
+  case 22:
+ 
+    CheckMemoryAccess(instruction_begin - codeblock,
+                      base,
+                      index,
+                      restricted_register,
+                      valid_targets,
+                      &instruction_info_collected);
+   
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
+  break;
+  case 23:
+current_state = 17; current_position++; goto _again;
+  break;
+  case 24:
+
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   
+    SET_DISPLACEMENT_FORMAT(DISPNONE);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   
+    CheckMemoryAccess(instruction_begin - codeblock,
+                      base,
+                      index,
+                      restricted_register,
+                      valid_targets,
+                      &instruction_info_collected);
+   
+    Process1OperandZeroExtends(&restricted_register,
+                               &instruction_info_collected, rex_prefix,
+                               operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
+  break;
+  case 25:
+
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   current_state = 21; current_position++; goto _again;
+  break;
+  case 26:
+
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   
+    // Case where ModRM.mod = 00 and ModRM.r/m = 101.
+    // In 64-bit mode it corresponds to RIP-relative addressing.
+    SET_MODRM_BASE(REG_RIP);
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 22; current_position++; goto _again;
+  break;
+  case 27:
+
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 26; current_position++; goto _again;
+  break;
+  case 28:
+
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   current_state = 27; current_position++; goto _again;
+  break;
+  case 29:
+
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 22; current_position++; goto _again;
+  break;
+  case 30:
+
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   current_state = 28; current_position++; goto _again;
+  break;
+  case 31:
+
+    CheckMemoryAccess(instruction_begin - codeblock,
+                      base,
+                      index,
+                      restricted_register,
+                      valid_targets,
+                      &instruction_info_collected);
+   
+    Process1OperandZeroExtends(&restricted_register,
+                               &instruction_info_collected, rex_prefix,
+                               operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
+  break;
+  case 32:
+current_state = 22; current_position++; goto _again;
+  break;
+  case 33:
+current_state = 23; current_position++; goto _again;
+  break;
+  case 34:
+current_state = 24; current_position++; goto _again;
+  break;
+  case 35:
+current_state = 25; current_position++; goto _again;
+  break;
+  case 36:
+ 
+    CheckMemoryAccess(instruction_begin - codeblock,
+                      base,
+                      index,
+                      restricted_register,
+                      valid_targets,
+                      &instruction_info_collected);
+   
+    Process1OperandZeroExtends(&restricted_register,
+                               &instruction_info_collected, rex_prefix,
+                               operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
+  break;
+  case 37:
+current_state = 26; current_position++; goto _again;
+  break;
+  case 38:
+ 
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
+  break;
+  case 39:
+current_state = 31; current_position++; goto _again;
+  break;
+  case 40:
+current_state = 32; current_position++; goto _again;
+  break;
+  case 41:
+current_state = 33; current_position++; goto _again;
+  break;
+  case 42:
+ 
+    Process1OperandZeroExtends(&restricted_register,
+                               &instruction_info_collected, rex_prefix,
+                               operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
+  break;
+  case 43:
+
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
+  break;
+  case 44:
+
+    Process0Operands(&restricted_register, &instruction_info_collected);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
+  break;
+  case 45:
+ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);  
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
+  break;
+  case 46:
+ SET_CPU_FEATURE(CPUFeature_MON);         SET_OPERAND_NAME(0, REG_RDX);  
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
+  break;
+  case 47:
+ SET_CPU_FEATURE(CPUFeature_MON);         SET_OPERAND_NAME(0, REG_RCX);  
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
+  break;
+  case 48:
+
+    SET_DISPLACEMENT_FORMAT(DISPNONE);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   
+    Process0Operands(&restricted_register, &instruction_info_collected);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
+  break;
+  case 49:
+current_state = 37; current_position++; goto _again;
+  break;
+  case 50:
+
+    // Case where ModRM.mod = 00 and ModRM.r/m = 101.
+    // In 64-bit mode it corresponds to RIP-relative addressing.
+    SET_MODRM_BASE(REG_RIP);
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 38; current_position++; goto _again;
+  break;
+  case 51:
 
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
-    break;
-}
-switch (_dfa_transitions[current_state][*current_position][1]) {
-  case 357:
+   current_state = 42; current_position++; goto _again;
+  break;
+  case 52:
+current_state = 43; current_position++; goto _again;
+  break;
+  case 53:
+
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 38; current_position++; goto _again;
+  break;
+  case 54:
+current_state = 44; current_position++; goto _again;
+  break;
+  case 55:
+current_state = 38; current_position++; goto _again;
+  break;
+  case 56:
+current_state = 39; current_position++; goto _again;
+  break;
+  case 57:
+current_state = 40; current_position++; goto _again;
+  break;
+  case 58:
+current_state = 41; current_position++; goto _again;
+  break;
+  case 59:
+ 
+    Process0Operands(&restricted_register, &instruction_info_collected);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
+  break;
+  case 60:
+current_state = 42; current_position++; goto _again;
+  break;
+  case 61:
+
+    CheckMemoryAccess(instruction_begin - codeblock,
+                      base,
+                      index,
+                      restricted_register,
+                      valid_targets,
+                      &instruction_info_collected);
+   current_state = 46; current_position++; goto _again;
+  break;
+  case 62:
+current_state = 48; current_position++; goto _again;
+  break;
+  case 63:
+current_state = 52; current_position++; goto _again;
+  break;
+  case 64:
+ SET_CPU_FEATURE(CPUFeature_E3DNOW);     
+    Process0Operands(&restricted_register, &instruction_info_collected);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
+  break;
+  case 65:
+ SET_CPU_FEATURE(CPUFeature_3DNOW);      
+    Process0Operands(&restricted_register, &instruction_info_collected);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
+  break;
+  case 66:
+current_state = 49; current_position++; goto _again;
+  break;
+  case 67:
+current_state = 50; current_position++; goto _again;
+  break;
+  case 68:
+current_state = 51; current_position++; goto _again;
+  break;
+  case 69:
+ 
+    CheckMemoryAccess(instruction_begin - codeblock,
+                      base,
+                      index,
+                      restricted_register,
+                      valid_targets,
+                      &instruction_info_collected);
+   current_state = 46; current_position++; goto _again;
+  break;
+  case 70:
+
+    SET_DISPLACEMENT_FORMAT(DISPNONE);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   
+    CheckMemoryAccess(instruction_begin - codeblock,
+                      base,
+                      index,
+                      restricted_register,
+                      valid_targets,
+                      &instruction_info_collected);
+   
+    Process0Operands(&restricted_register, &instruction_info_collected);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
+  break;
+  case 71:
+current_state = 2; current_position++; goto _again;
+  break;
+  case 72:
+
+    // Case where ModRM.mod = 00 and ModRM.r/m = 101.
+    // In 64-bit mode it corresponds to RIP-relative addressing.
+    SET_MODRM_BASE(REG_RIP);
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 3; current_position++; goto _again;
+  break;
+  case 73:
+
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 7; current_position++; goto _again;
+  break;
+  case 74:
+current_state = 8; current_position++; goto _again;
+  break;
+  case 75:
+
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 3; current_position++; goto _again;
+  break;
+  case 76:
+current_state = 9; current_position++; goto _again;
+  break;
+  case 77:
+ SET_CPU_FEATURE(CPUFeature_MOVBE);      
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   
+    SET_DISPLACEMENT_FORMAT(DISPNONE);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   
+    CheckMemoryAccess(instruction_begin - codeblock,
+                      base,
+                      index,
+                      restricted_register,
+                      valid_targets,
+                      &instruction_info_collected);
+   
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
+  break;
+  case 78:
+ SET_CPU_FEATURE(CPUFeature_MOVBE);      
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   current_state = 12; current_position++; goto _again;
+  break;
+  case 79:
+ SET_CPU_FEATURE(CPUFeature_MOVBE);      
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   
+    // Case where ModRM.mod = 00 and ModRM.r/m = 101.
+    // In 64-bit mode it corresponds to RIP-relative addressing.
+    SET_MODRM_BASE(REG_RIP);
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 13; current_position++; goto _again;
+  break;
+  case 80:
+ SET_CPU_FEATURE(CPUFeature_MOVBE);      
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 17; current_position++; goto _again;
+  break;
+  case 81:
+ SET_CPU_FEATURE(CPUFeature_MOVBE);      
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   current_state = 18; current_position++; goto _again;
+  break;
+  case 82:
+ SET_CPU_FEATURE(CPUFeature_MOVBE);      
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 13; current_position++; goto _again;
+  break;
+  case 83:
+ SET_CPU_FEATURE(CPUFeature_MOVBE);      
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   current_state = 19; current_position++; goto _again;
+  break;
+  case 84:
+
+    SET_DISPLACEMENT_FORMAT(DISPNONE);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   
+    CheckMemoryAccess(instruction_begin - codeblock,
+                      base,
+                      index,
+                      restricted_register,
+                      valid_targets,
+                      &instruction_info_collected);
+   current_state = 67; current_position++; goto _again;
+  break;
+  case 85:
+current_state = 68; current_position++; goto _again;
+  break;
+  case 86:
+
+    // Case where ModRM.mod = 00 and ModRM.r/m = 101.
+    // In 64-bit mode it corresponds to RIP-relative addressing.
+    SET_MODRM_BASE(REG_RIP);
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 69; current_position++; goto _again;
+  break;
+  case 87:
+
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 73; current_position++; goto _again;
+  break;
+  case 88:
+current_state = 74; current_position++; goto _again;
+  break;
+  case 89:
+
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 69; current_position++; goto _again;
+  break;
+  case 90:
+current_state = 75; current_position++; goto _again;
+  break;
+  case 91:
+current_state = 67; current_position++; goto _again;
+  break;
+  case 92:
+
+    CheckMemoryAccess(instruction_begin - codeblock,
+                      base,
+                      index,
+                      restricted_register,
+                      valid_targets,
+                      &instruction_info_collected);
+   current_state = 67; current_position++; goto _again;
+  break;
+  case 93:
+current_state = 69; current_position++; goto _again;
+  break;
+  case 94:
+current_state = 70; current_position++; goto _again;
+  break;
+  case 95:
+current_state = 71; current_position++; goto _again;
+  break;
+  case 96:
+current_state = 72; current_position++; goto _again;
+  break;
+  case 97:
+ 
+    CheckMemoryAccess(instruction_begin - codeblock,
+                      base,
+                      index,
+                      restricted_register,
+                      valid_targets,
+                      &instruction_info_collected);
+   current_state = 67; current_position++; goto _again;
+  break;
+  case 98:
+current_state = 73; current_position++; goto _again;
+  break;
+  case 99:
+ SET_CPU_FEATURE(CPUFeature_CMOV);       
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   
+    SET_DISPLACEMENT_FORMAT(DISPNONE);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   
+    CheckMemoryAccess(instruction_begin - codeblock,
+                      base,
+                      index,
+                      restricted_register,
+                      valid_targets,
+                      &instruction_info_collected);
+   
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
+  break;
+  case 100:
+ SET_CPU_FEATURE(CPUFeature_CMOV);       
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   current_state = 12; current_position++; goto _again;
+  break;
+  case 101:
+ SET_CPU_FEATURE(CPUFeature_CMOV);       
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   
+    // Case where ModRM.mod = 00 and ModRM.r/m = 101.
+    // In 64-bit mode it corresponds to RIP-relative addressing.
+    SET_MODRM_BASE(REG_RIP);
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 13; current_position++; goto _again;
+  break;
+  case 102:
+ SET_CPU_FEATURE(CPUFeature_CMOV);       
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 17; current_position++; goto _again;
+  break;
+  case 103:
+ SET_CPU_FEATURE(CPUFeature_CMOV);       
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   current_state = 18; current_position++; goto _again;
+  break;
+  case 104:
+ SET_CPU_FEATURE(CPUFeature_CMOV);       
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 13; current_position++; goto _again;
+  break;
+  case 105:
+ SET_CPU_FEATURE(CPUFeature_CMOV);       
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   current_state = 19; current_position++; goto _again;
+  break;
+  case 106:
+ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);   SET_CPU_FEATURE(CPUFeature_CMOV);       
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
+  break;
+  case 107:
+ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);   SET_CPU_FEATURE(CPUFeature_SSE);        
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
+  break;
+  case 108:
+ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);   SET_CPU_FEATURE(CPUFeature_MMX);        
+    Process1OperandZeroExtends(&restricted_register,
+                               &instruction_info_collected, rex_prefix,
+                               operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
+  break;
+  case 109:
+current_state = 83; current_position++; goto _again;
+  break;
+  case 110:
+current_state = 84; current_position++; goto _again;
+  break;
+  case 111:
+current_state = 85; current_position++; goto _again;
+  break;
+  case 112:
+ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_8_BIT);   SET_CPU_FEATURE(CPUFeature_CMOV);       
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
+  break;
+  case 113:
+ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);  current_state = 29; current_position++; goto _again;
+  break;
+  case 114:
+
+    SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
+                        BaseExtentionFromREX(GET_REX_PREFIX()) |
+                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_OPERAND_FORMAT(1, OPERAND_FORMAT_8_BIT);   SET_OPERAND_FORMAT(0, OPERAND_FORMAT_8_BIT);  
+    Process2Operands(&restricted_register, &instruction_info_collected,
+                     rex_prefix, operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
+  break;
+  case 115:
+
+    SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
+                        BaseExtentionFromREX(GET_REX_PREFIX()) |
+                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_OPERAND_FORMAT(1, OPERAND_FORMAT_32_BIT);   SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);  
+    Process2Operands(&restricted_register, &instruction_info_collected,
+                     rex_prefix, operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
+  break;
+  case 116:
+
+    SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
+                        BaseExtentionFromREX(GET_REX_PREFIX()) |
+                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_OPERAND_FORMAT(1, OPERAND_FORMAT_32_BIT);   SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);  
+    Process2OperandsZeroExtends(&restricted_register,
+                                &instruction_info_collected, rex_prefix,
+                                operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
+  break;
+  case 117:
+ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);   SET_CPU_FEATURE(CPUFeature_EMMXSSE);    current_state = 29; current_position++; goto _again;
+  break;
+  case 118:
+ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);   SET_CPU_FEATURE(CPUFeature_EMMXSSE);    
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
+  break;
+  case 119:
+current_state = 103; current_position++; goto _again;
+  break;
+  case 120:
+current_state = 104; current_position++; goto _again;
+  break;
+  case 121:
+current_state = 105; current_position++; goto _again;
+  break;
+  case 122:
+current_state = 108; current_position++; goto _again;
+  break;
+  case 123:
+current_state = 112; current_position++; goto _again;
+  break;
+  case 124:
+current_state = 113; current_position++; goto _again;
+  break;
+  case 125:
+current_state = 114; current_position++; goto _again;
+  break;
+  case 126:
+ SET_OPERAND_NAME(0, REG_RAX);  current_state = 29; current_position++; goto _again;
+  break;
+  case 127:
+ SET_OPERAND_NAME(0, REG_RAX);  current_state = 30; current_position++; goto _again;
+  break;
+  case 128:
+ SET_OPERAND_NAME(0, REG_RAX);  current_state = 102; current_position++; goto _again;
+  break;
+  case 129:
  SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT);  
     Process1Operand(&restricted_register, &instruction_info_collected,
                     rex_prefix, operand_states);
@@ -2945,787 +4890,17 @@ switch (_dfa_transitions[current_state][*current_position][1]) {
     operand_states = 0;
     base = 0;
     index = 0;
-   current_state = 770; current_position++; goto _again;
-  break;
-  case 263:
-
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 229; current_position++; goto _again;
-  break;
-  case 609:
-current_state = 661; current_position++; goto _again;
-  break;
-  case 499:
-current_state = 601; current_position++; goto _again;
-  break;
-  case 497:
-current_state = 597; current_position++; goto _again;
-  break;
-  case 534:
- SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);   SET_CPU_FEATURE(CPUFeature_SSE42);      
-    Process1Operand(&restricted_register, &instruction_info_collected,
-                    rex_prefix, operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
    current_state = 760; current_position++; goto _again;
   break;
-  case 219:
-current_state = 185; current_position++; goto _again;
-  break;
-  case 478:
-current_state = 569; current_position++; goto _again;
-  break;
-  case 294:
+  case 130:
 
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 284; current_position++; goto _again;
-  break;
-  case 257:
- 
-    CheckMemoryAccess(instruction_begin - codeblock,
-                      base,
-                      index,
-                      restricted_register,
-                      valid_targets,
-                      &instruction_info_collected);
-   current_state = 29; current_position++; goto _again;
-  break;
-  case 240:
-current_state = 208; current_position++; goto _again;
-  break;
-  case 248:
-
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 220; current_position++; goto _again;
-  break;
-  case 516:
-current_state = 625; current_position++; goto _again;
-  break;
-  case 332:
-current_state = 345; current_position++; goto _again;
-  break;
-  case 375:
-current_state = 454; current_position++; goto _again;
-  break;
-  case 101:
- SET_CPU_FEATURE(CPUFeature_CMOV);       
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    // Case where ModRM.mod = 00 and ModRM.r/m = 101.
-    // In 64-bit mode it corresponds to RIP-relative addressing.
-    SET_MODRM_BASE(REG_RIP);
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 13; current_position++; goto _again;
-  break;
-  case 571:
- SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);   SET_CPU_FEATURE(CPUFeature_LZCNT);      
-    Process1Operand(&restricted_register, &instruction_info_collected,
-                    rex_prefix, operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 760; current_position++; goto _again;
-  break;
-  case 618:
-current_state = 260; current_position++; goto _again;
-  break;
-  case 397:
- SET_CPU_FEATURE(CPUFeature_BMI1);       
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 211; current_position++; goto _again;
-  break;
-  case 668:
-current_state = 737; current_position++; goto _again;
-  break;
-  case 552:
- SET_CPU_FEATURE(CPUFeature_POPCNT);     
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 18; current_position++; goto _again;
-  break;
-  case 85:
-current_state = 68; current_position++; goto _again;
-  break;
-  case 544:
- SET_CPU_FEATURE(CPUFeature_SSE);        
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 17; current_position++; goto _again;
-  break;
-  case 62:
-current_state = 48; current_position++; goto _again;
-  break;
-  case 539:
-current_state = 653; current_position++; goto _again;
-  break;
-  case 81:
- SET_CPU_FEATURE(CPUFeature_MOVBE);      
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 18; current_position++; goto _again;
-  break;
-  case 440:
-current_state = 524; current_position++; goto _again;
-  break;
-  case 480:
-current_state = 572; current_position++; goto _again;
-  break;
-  case 652:
-current_state = 439; current_position++; goto _again;
-  break;
-  case 235:
-
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 207; current_position++; goto _again;
-  break;
-  case 518:
-current_state = 640; current_position++; goto _again;
-  break;
-  case 517:
-current_state = 639; current_position++; goto _again;
-  break;
-  case 100:
- SET_CPU_FEATURE(CPUFeature_CMOV);       
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 12; current_position++; goto _again;
-  break;
-  case 268:
-
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 236; current_position++; goto _again;
-  break;
-  case 606:
-current_state = 190; current_position++; goto _again;
-  break;
-  case 56:
-current_state = 39; current_position++; goto _again;
-  break;
-  case 647:
-current_state = 433; current_position++; goto _again;
-  break;
-  case 249:
-
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 221; current_position++; goto _again;
-  break;
-  case 341:
-current_state = 356; current_position++; goto _again;
-  break;
-  case 466:
-current_state = 540; current_position++; goto _again;
-  break;
-  case 679:
-current_state = 756; current_position++; goto _again;
-  break;
-  case 71:
-current_state = 2; current_position++; goto _again;
-  break;
-  case 12:
-
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    // Case where ModRM.mod = 00 and ModRM.r/m = 101.
-    // In 64-bit mode it corresponds to RIP-relative addressing.
-    SET_MODRM_BASE(REG_RIP);
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 13; current_position++; goto _again;
-  break;
-  case 681:
-current_state = 759; current_position++; goto _again;
-  break;
-  case 191:
-
-    instruction_info_collected |= MODIFIABLE_INSTRUCTION;
-   
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    // Case where ModRM.mod = 00 and ModRM.r/m = 101.
-    // In 64-bit mode it corresponds to RIP-relative addressing.
-    SET_MODRM_BASE(REG_RIP);
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 22; current_position++; goto _again;
-  break;
-  case 298:
-current_state = 285; current_position++; goto _again;
-  break;
-  case 267:
-
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 230; current_position++; goto _again;
-  break;
-  case 459:
- SET_CPU_FEATURE(CPUFeature_BMI1);       
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 472; current_position++; goto _again;
-  break;
-  case 617:
-current_state = 712; current_position++; goto _again;
-  break;
-  case 41:
-current_state = 33; current_position++; goto _again;
-  break;
-  case 180:
- SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);  
-    instruction_info_collected |= MODIFIABLE_INSTRUCTION;
-   
-    Process1OperandZeroExtends(&restricted_register,
-                               &instruction_info_collected, rex_prefix,
-                               operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 763; current_position++; goto _again;
-  break;
-  case 288:
-current_state = 264; current_position++; goto _again;
-  break;
-  case 264:
-
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    // Case where ModRM.mod = 00 and ModRM.r/m = 101.
-    // In 64-bit mode it corresponds to RIP-relative addressing.
-    SET_MODRM_BASE(REG_RIP);
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 230; current_position++; goto _again;
-  break;
-  case 401:
-current_state = 465; current_position++; goto _again;
-  break;
-  case 525:
- SET_CPU_FEATURE(CPUFeature_SSE2);       
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 13; current_position++; goto _again;
-  break;
-  case 272:
-current_state = 232; current_position++; goto _again;
-  break;
-  case 501:
- SET_CPU_FEATURE(CPUFeature_BMI1);       
-    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
-   current_state = 18; current_position++; goto _again;
-  break;
-  case 51:
-
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 42; current_position++; goto _again;
-  break;
-  case 660:
-current_state = 698; current_position++; goto _again;
-  break;
-  case 472:
- SET_CPU_FEATURE(CPUFeature_BMI1);       
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 12; current_position++; goto _again;
-  break;
-  case 654:
-current_state = 678; current_position++; goto _again;
-  break;
-  case 245:
-
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    SET_DISPLACEMENT_FORMAT(DISPNONE);
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   
-    CheckMemoryAccess(instruction_begin - codeblock,
-                      base,
-                      index,
-                      restricted_register,
-                      valid_targets,
-                      &instruction_info_collected);
-   current_state = 29; current_position++; goto _again;
-  break;
-  case 431:
-current_state = 510; current_position++; goto _again;
-  break;
-  case 125:
-current_state = 114; current_position++; goto _again;
-  break;
-  case 453:
-current_state = 613; current_position++; goto _again;
-  break;
-  case 450:
-current_state = 598; current_position++; goto _again;
-  break;
-  case 181:
- SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);  
-    instruction_info_collected |= MODIFIABLE_INSTRUCTION;
-   
-    Process1OperandZeroExtends(&restricted_register,
-                               &instruction_info_collected, rex_prefix,
-                               operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 767; current_position++; goto _again;
-  break;
-  case 553:
- SET_CPU_FEATURE(CPUFeature_POPCNT);     
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 13; current_position++; goto _again;
-  break;
-  case 532:
- SET_CPU_FEATURE(CPUFeature_SSE42);      
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 13; current_position++; goto _again;
-  break;
-  case 186:
-
-    instruction_info_collected |= MODIFIABLE_INSTRUCTION;
-   
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 18; current_position++; goto _again;
-  break;
-  case 535:
-current_state = 635; current_position++; goto _again;
-  break;
-  case 33:
-current_state = 23; current_position++; goto _again;
-  break;
-  case 307:
-current_state = 339; current_position++; goto _again;
-  break;
-  case 626:
-current_state = 294; current_position++; goto _again;
-  break;
-  case 435:
-current_state = 516; current_position++; goto _again;
-  break;
-  case 141:
-
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 125; current_position++; goto _again;
-  break;
-  case 208:
-current_state = 164; current_position++; goto _again;
-  break;
-  case 13:
-
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 17; current_position++; goto _again;
-  break;
-  case 11:
-
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 12; current_position++; goto _again;
-  break;
-  case 31:
-
-    CheckMemoryAccess(instruction_begin - codeblock,
-                      base,
-                      index,
-                      restricted_register,
-                      valid_targets,
-                      &instruction_info_collected);
-   
-    Process1OperandZeroExtends(&restricted_register,
-                               &instruction_info_collected, rex_prefix,
-                               operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 760; current_position++; goto _again;
-  break;
-  case 455:
-current_state = 529; current_position++; goto _again;
-  break;
-  case 412:
-current_state = 480; current_position++; goto _again;
-  break;
-  case 308:
-current_state = 370; current_position++; goto _again;
-  break;
-  case 150:
-
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    SET_DISPLACEMENT_FORMAT(DISPNONE);
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   
-    CheckMemoryAccess(instruction_begin - codeblock,
-                      base,
-                      index,
-                      restricted_register,
-                      valid_targets,
-                      &instruction_info_collected);
-   current_state = 127; current_position++; goto _again;
-  break;
-  case 389:
- SET_CPU_FEATURE(CPUFeature_BMI1);       
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 212; current_position++; goto _again;
-  break;
-  case 340:
-current_state = 355; current_position++; goto _again;
-  break;
-  case 557:
- SET_CPU_FEATURE(CPUFeature_TZCNT);      
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 12; current_position++; goto _again;
-  break;
-  case 159:
-current_state = 129; current_position++; goto _again;
-  break;
-  case 171:
-current_state = 141; current_position++; goto _again;
-  break;
-  case 297:
-current_state = 283; current_position++; goto _again;
-  break;
-  case 193:
-
-    instruction_info_collected |= MODIFIABLE_INSTRUCTION;
-   
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 27; current_position++; goto _again;
-  break;
-  case 206:
-current_state = 162; current_position++; goto _again;
-  break;
-  case 173:
- 
-    CheckMemoryAccess(instruction_begin - codeblock,
-                      base,
-                      index,
-                      restricted_register,
-                      valid_targets,
-                      &instruction_info_collected);
-   current_state = 111; current_position++; goto _again;
-  break;
-  case 204:
-current_state = 160; current_position++; goto _again;
-  break;
-  case 88:
-current_state = 74; current_position++; goto _again;
-  break;
-  case 302:
-current_state = 290; current_position++; goto _again;
-  break;
-  case 662:
-current_state = 715; current_position++; goto _again;
-  break;
-  case 591:
-
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 717; current_position++; goto _again;
-  break;
-  case 37:
-current_state = 26; current_position++; goto _again;
-  break;
-  case 659:
-current_state = 696; current_position++; goto _again;
-  break;
-  case 137:
-
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    // Case where ModRM.mod = 00 and ModRM.r/m = 101.
-    // In 64-bit mode it corresponds to RIP-relative addressing.
-    SET_MODRM_BASE(REG_RIP);
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 119; current_position++; goto _again;
-  break;
-  case 26:
-
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    // Case where ModRM.mod = 00 and ModRM.r/m = 101.
-    // In 64-bit mode it corresponds to RIP-relative addressing.
-    SET_MODRM_BASE(REG_RIP);
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 22; current_position++; goto _again;
-  break;
-  case 223:
- SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT);   SET_CPU_FEATURE(CPUFeature_CMOV);       
-    Process1Operand(&restricted_register, &instruction_info_collected,
-                    rex_prefix, operand_states);
+    SET_OPERAND_NAME(0, RegFromOpcode(*current_position) |
+                        BaseExtentionFromREX(GET_REX_PREFIX()) |
+                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_OPERAND_FORMAT(1, OPERAND_FORMAT_32_BIT);   SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);   SET_OPERAND_NAME(1, REG_RAX);  
+    Process2OperandsZeroExtends(&restricted_register,
+                                &instruction_info_collected, rex_prefix,
+                                operand_states);
    
     /* Call user-supplied callback.  */
     instruction_end = current_position + 1;
@@ -3801,1408 +4976,18 @@ current_state = 696; current_position++; goto _again;
     index = 0;
    current_state = 760; current_position++; goto _again;
   break;
-  case 202:
-
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 166; current_position++; goto _again;
+  case 132:
+ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_8_BIT);  
+    instruction_info_collected |= MODIFIABLE_INSTRUCTION;
+   current_state = 29; current_position++; goto _again;
   break;
-  case 637:
-current_state = 405; current_position++; goto _again;
-  break;
-  case 112:
- SET_OPERAND_FORMAT(0, OPERAND_FORMAT_8_BIT);   SET_CPU_FEATURE(CPUFeature_CMOV);       
-    Process1Operand(&restricted_register, &instruction_info_collected,
-                    rex_prefix, operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 760; current_position++; goto _again;
-  break;
-  case 255:
-current_state = 218; current_position++; goto _again;
-  break;
-  case 622:
-current_state = 273; current_position++; goto _again;
-  break;
-  case 500:
- SET_CPU_FEATURE(CPUFeature_BMI1);       
-    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
-   current_state = 472; current_position++; goto _again;
-  break;
-  case 538:
-current_state = 652; current_position++; goto _again;
-  break;
-  case 10:
-
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    SET_DISPLACEMENT_FORMAT(DISPNONE);
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   
-    CheckMemoryAccess(instruction_begin - codeblock,
-                      base,
-                      index,
-                      restricted_register,
-                      valid_targets,
-                      &instruction_info_collected);
-   
-    Process1Operand(&restricted_register, &instruction_info_collected,
-                    rex_prefix, operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 760; current_position++; goto _again;
-  break;
-  case 318:
-
-    SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
-                        BaseExtentionFromREX(GET_REX_PREFIX()) |
-                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_OPERAND_FORMAT(1, OPERAND_FORMAT_16_BIT);   SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT);  
-    Process2Operands(&restricted_register, &instruction_info_collected,
-                     rex_prefix, operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 760; current_position++; goto _again;
-  break;
-  case 636:
-current_state = 404; current_position++; goto _again;
-  break;
-  case 473:
-current_state = 556; current_position++; goto _again;
-  break;
-  case 304:
-current_state = 292; current_position++; goto _again;
-  break;
-  case 237:
- SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT);  current_state = 102; current_position++; goto _again;
-  break;
-  case 52:
-current_state = 43; current_position++; goto _again;
-  break;
-  case 79:
- SET_CPU_FEATURE(CPUFeature_MOVBE);      
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    // Case where ModRM.mod = 00 and ModRM.r/m = 101.
-    // In 64-bit mode it corresponds to RIP-relative addressing.
-    SET_MODRM_BASE(REG_RIP);
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 13; current_position++; goto _again;
-  break;
-  case 300:
-current_state = 287; current_position++; goto _again;
-  break;
-  case 655:
-current_state = 681; current_position++; goto _again;
-  break;
-  case 328:
- SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT);  current_state = 301; current_position++; goto _again;
-  break;
-  case 40:
-current_state = 32; current_position++; goto _again;
-  break;
-  case 422:
-current_state = 504; current_position++; goto _again;
-  break;
-  case 30:
-
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 28; current_position++; goto _again;
-  break;
-  case 587:
-current_state = 703; current_position++; goto _again;
-  break;
-  case 420:
-current_state = 499; current_position++; goto _again;
-  break;
-  case 395:
-current_state = 462; current_position++; goto _again;
-  break;
-  case 322:
-
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 342; current_position++; goto _again;
-  break;
-  case 299:
-current_state = 286; current_position++; goto _again;
-  break;
-  case 119:
-current_state = 103; current_position++; goto _again;
-  break;
-  case 142:
- SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);  current_state = 30; current_position++; goto _again;
-  break;
-  case 464:
-current_state = 542; current_position++; goto _again;
-  break;
-  case 287:
-
-    Process1Operand(&restricted_register, &instruction_info_collected,
-                    rex_prefix, operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 766; current_position++; goto _again;
-  break;
-  case 670:
-current_state = 742; current_position++; goto _again;
-  break;
-  case 423:
- SET_CPU_FEATURE(CPUFeature_TBM);        
-    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
-   
-    SET_DISPLACEMENT_FORMAT(DISPNONE);
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   
-    CheckMemoryAccess(instruction_begin - codeblock,
-                      base,
-                      index,
-                      restricted_register,
-                      valid_targets,
-                      &instruction_info_collected);
-   
-    Process1Operand(&restricted_register, &instruction_info_collected,
-                    rex_prefix, operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 760; current_position++; goto _again;
-  break;
-  case 381:
-current_state = 490; current_position++; goto _again;
-  break;
-  case 25:
-
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 21; current_position++; goto _again;
-  break;
-  case 619:
-current_state = 265; current_position++; goto _again;
-  break;
-  case 604:
-current_state = 151; current_position++; goto _again;
-  break;
-  case 570:
- SET_CPU_FEATURE(CPUFeature_LZCNT);      
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 19; current_position++; goto _again;
-  break;
-  case 671:
-current_state = 744; current_position++; goto _again;
-  break;
-  case 117:
- SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);   SET_CPU_FEATURE(CPUFeature_EMMXSSE);    current_state = 29; current_position++; goto _again;
-  break;
-  case 215:
-current_state = 145; current_position++; goto _again;
-  break;
-  case 578:
+  case 133:
  SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);  
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
-   
-    Process1OperandZeroExtends(&restricted_register,
-                               &instruction_info_collected, rex_prefix,
-                               operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 777; current_position++; goto _again;
+   current_state = 30; current_position++; goto _again;
   break;
-  case 330:
-current_state = 343; current_position++; goto _again;
-  break;
-  case 360:
-current_state = 409; current_position++; goto _again;
-  break;
-  case 121:
-current_state = 105; current_position++; goto _again;
-  break;
-  case 576:
-current_state = 670; current_position++; goto _again;
-  break;
-  case 347:
-
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 357; current_position++; goto _again;
-  break;
-  case 316:
- SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);   SET_CPU_FEATURE(CPUFeature_SSE2);       
-    Process1OperandZeroExtends(&restricted_register,
-                               &instruction_info_collected, rex_prefix,
-                               operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 760; current_position++; goto _again;
-  break;
-  case 281:
-current_state = 244; current_position++; goto _again;
-  break;
-  case 424:
- SET_CPU_FEATURE(CPUFeature_TBM);        
-    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
-   
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 17; current_position++; goto _again;
-  break;
-  case 643:
-current_state = 422; current_position++; goto _again;
-  break;
-  case 128:
- SET_OPERAND_NAME(0, REG_RAX);  current_state = 102; current_position++; goto _again;
-  break;
-  case 214:
-
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 139; current_position++; goto _again;
-  break;
-  case 236:
-
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 213; current_position++; goto _again;
-  break;
-  case 339:
-current_state = 354; current_position++; goto _again;
-  break;
-  case 111:
-current_state = 85; current_position++; goto _again;
-  break;
-  case 222:
- SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT);  
-    instruction_info_collected |= MODIFIABLE_INSTRUCTION;
-   current_state = 237; current_position++; goto _again;
-  break;
-  case 567:
- SET_CPU_FEATURE(CPUFeature_LZCNT);      
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 17; current_position++; goto _again;
-  break;
-  case 32:
-current_state = 22; current_position++; goto _again;
-  break;
-  case 210:
-current_state = 138; current_position++; goto _again;
-  break;
-  case 625:
-current_state = 277; current_position++; goto _again;
-  break;
-  case 201:
-
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 160; current_position++; goto _again;
-  break;
-  case 527:
- SET_CPU_FEATURE(CPUFeature_SSE42);      
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    SET_DISPLACEMENT_FORMAT(DISPNONE);
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   
-    CheckMemoryAccess(instruction_begin - codeblock,
-                      base,
-                      index,
-                      restricted_register,
-                      valid_targets,
-                      &instruction_info_collected);
-   
-    Process1Operand(&restricted_register, &instruction_info_collected,
-                    rex_prefix, operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 760; current_position++; goto _again;
-  break;
-  case 658:
-current_state = 695; current_position++; goto _again;
-  break;
-  case 569:
- SET_CPU_FEATURE(CPUFeature_LZCNT);      
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 13; current_position++; goto _again;
-  break;
-  case 58:
-current_state = 41; current_position++; goto _again;
-  break;
-  case 506:
-current_state = 609; current_position++; goto _again;
-  break;
-  case 329:
-
-    CheckMemoryAccess(instruction_begin - codeblock,
-                      base,
-                      index,
-                      restricted_register,
-                      valid_targets,
-                      &instruction_info_collected);
-   current_state = 301; current_position++; goto _again;
-  break;
-  case 428:
- SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT);   SET_CPU_FEATURE(CPUFeature_LWP);        
-    Process1Operand(&restricted_register, &instruction_info_collected,
-                    rex_prefix, operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 760; current_position++; goto _again;
-  break;
-  case 212:
-
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 143; current_position++; goto _again;
-  break;
-  case 630:
-current_state = 395; current_position++; goto _again;
-  break;
-  case 220:
- 
-    Process0Operands(&restricted_register, &instruction_info_collected);
-   
-      if (((current_position - codeblock) & kBundleMask) != kBundleMask)
-        instruction_info_collected |= BAD_CALL_ALIGNMENT;
-     
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 760; current_position++; goto _again;
-  break;
-  case 405:
-current_state = 474; current_position++; goto _again;
-  break;
-  case 157:
- SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);  current_state = 127; current_position++; goto _again;
-  break;
-  case 563:
- SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);   SET_CPU_FEATURE(CPUFeature_TZCNT);      
-    Process1Operand(&restricted_register, &instruction_info_collected,
-                    rex_prefix, operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 760; current_position++; goto _again;
-  break;
-  case 50:
-
-    // Case where ModRM.mod = 00 and ModRM.r/m = 101.
-    // In 64-bit mode it corresponds to RIP-relative addressing.
-    SET_MODRM_BASE(REG_RIP);
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 38; current_position++; goto _again;
-  break;
-  case 262:
-
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    SET_DISPLACEMENT_FORMAT(DISPNONE);
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   
-    Process1Operand(&restricted_register, &instruction_info_collected,
-                    rex_prefix, operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 760; current_position++; goto _again;
-  break;
-  case 149:
-current_state = 123; current_position++; goto _again;
-  break;
-  case 314:
- SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT);   SET_CPU_FEATURE(CPUFeature_CMOV);       
-    Process1Operand(&restricted_register, &instruction_info_collected,
-                    rex_prefix, operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 760; current_position++; goto _again;
-  break;
-  case 588:
-current_state = 707; current_position++; goto _again;
-  break;
-  case 47:
- SET_CPU_FEATURE(CPUFeature_MON);         SET_OPERAND_NAME(0, REG_RCX);  
-    Process1Operand(&restricted_register, &instruction_info_collected,
-                    rex_prefix, operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 760; current_position++; goto _again;
-  break;
-  case 368:
-
-    Process1Operand(&restricted_register, &instruction_info_collected,
-                    rex_prefix, operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 774; current_position++; goto _again;
-  break;
-  case 404:
-current_state = 470; current_position++; goto _again;
-  break;
-  case 145:
-current_state = 120; current_position++; goto _again;
-  break;
-  case 144:
-current_state = 119; current_position++; goto _again;
-  break;
-  case 677:
-current_state = 754; current_position++; goto _again;
-  break;
-  case 396:
- SET_CPU_FEATURE(CPUFeature_BMI1);       
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    SET_DISPLACEMENT_FORMAT(DISPNONE);
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   
-    CheckMemoryAccess(instruction_begin - codeblock,
-                      base,
-                      index,
-                      restricted_register,
-                      valid_targets,
-                      &instruction_info_collected);
-   current_state = 102; current_position++; goto _again;
-  break;
-  case 503:
-current_state = 604; current_position++; goto _again;
-  break;
-  case 334:
- 
-    CheckMemoryAccess(instruction_begin - codeblock,
-                      base,
-                      index,
-                      restricted_register,
-                      valid_targets,
-                      &instruction_info_collected);
-   current_state = 301; current_position++; goto _again;
-  break;
-  case 192:
-
-    instruction_info_collected |= MODIFIABLE_INSTRUCTION;
-   
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 26; current_position++; goto _again;
-  break;
-  case 374:
-current_state = 448; current_position++; goto _again;
-  break;
-  case 642:
-current_state = 419; current_position++; goto _again;
-  break;
-  case 515:
-current_state = 623; current_position++; goto _again;
-  break;
-  case 510:
- SET_CPU_FEATURE(CPUFeature_BMI1);       
-    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
-   
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 13; current_position++; goto _again;
-  break;
-  case 18:
-current_state = 13; current_position++; goto _again;
-  break;
-  case 140:
-
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 119; current_position++; goto _again;
-  break;
-  case 586:
-current_state = 701; current_position++; goto _again;
-  break;
-  case 184:
-
-    instruction_info_collected |= MODIFIABLE_INSTRUCTION;
-   
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    // Case where ModRM.mod = 00 and ModRM.r/m = 101.
-    // In 64-bit mode it corresponds to RIP-relative addressing.
-    SET_MODRM_BASE(REG_RIP);
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 13; current_position++; goto _again;
-  break;
-  case 594:
-current_state = 723; current_position++; goto _again;
-  break;
-  case 580:
-
-    Process1Operand(&restricted_register, &instruction_info_collected,
-                    rex_prefix, operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 778; current_position++; goto _again;
-  break;
-  case 583:
-current_state = 689; current_position++; goto _again;
-  break;
-  case 530:
- SET_CPU_FEATURE(CPUFeature_SSE42);      
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 17; current_position++; goto _again;
-  break;
-  case 657:
-current_state = 694; current_position++; goto _again;
-  break;
-  case 226:
- SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT);  current_state = 29; current_position++; goto _again;
-  break;
-  case 629:
-current_state = 274; current_position++; goto _again;
-  break;
-  case 358:
-
-       instruction_info_collected |= SPECIAL_INSTRUCTION;
-     
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 770; current_position++; goto _again;
-  break;
-  case 247:
-
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    // Case where ModRM.mod = 00 and ModRM.r/m = 101.
-    // In 64-bit mode it corresponds to RIP-relative addressing.
-    SET_MODRM_BASE(REG_RIP);
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 216; current_position++; goto _again;
-  break;
-  case 492:
-current_state = 588; current_position++; goto _again;
-  break;
-  case 94:
-current_state = 70; current_position++; goto _again;
-  break;
-  case 635:
-current_state = 401; current_position++; goto _again;
-  break;
-  case 35:
-current_state = 25; current_position++; goto _again;
-  break;
-  case 387:
-current_state = 452; current_position++; goto _again;
-  break;
-  case 416:
-current_state = 491; current_position++; goto _again;
-  break;
-  case 388:
- SET_CPU_FEATURE(CPUFeature_BMI1);       
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 451; current_position++; goto _again;
-  break;
-  case 44:
-
-    Process0Operands(&restricted_register, &instruction_info_collected);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 760; current_position++; goto _again;
-  break;
-  case 113:
- SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);  current_state = 29; current_position++; goto _again;
-  break;
-  case 138:
-
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 123; current_position++; goto _again;
-  break;
-  case 345:
-current_state = 352; current_position++; goto _again;
-  break;
-  case 87:
-
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 73; current_position++; goto _again;
-  break;
-  case 504:
-current_state = 606; current_position++; goto _again;
-  break;
-  case 169:
- SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);  current_state = 102; current_position++; goto _again;
-  break;
-  case 378:
-current_state = 469; current_position++; goto _again;
-  break;
-  case 663:
-current_state = 718; current_position++; goto _again;
-  break;
-  case 597:
- SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT);  
-    Process1Operand(&restricted_register, &instruction_info_collected,
-                    rex_prefix, operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 783; current_position++; goto _again;
-  break;
-  case 373:
-current_state = 445; current_position++; goto _again;
-  break;
-  case 323:
-
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    // Case where ModRM.mod = 00 and ModRM.r/m = 101.
-    // In 64-bit mode it corresponds to RIP-relative addressing.
-    SET_MODRM_BASE(REG_RIP);
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 343; current_position++; goto _again;
-  break;
-  case 277:
-current_state = 240; current_position++; goto _again;
-  break;
-  case 231:
-
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 206; current_position++; goto _again;
-  break;
-  case 266:
-
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 235; current_position++; goto _again;
-  break;
-  case 445:
-current_state = 562; current_position++; goto _again;
-  break;
-  case 303:
-current_state = 291; current_position++; goto _again;
-  break;
-  case 209:
-
-    SET_DISPLACEMENT_FORMAT(DISPNONE);
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   
-    CheckMemoryAccess(instruction_begin - codeblock,
-                      base,
-                      index,
-                      restricted_register,
-                      valid_targets,
-                      &instruction_info_collected);
-   current_state = 111; current_position++; goto _again;
-  break;
-  case 190:
-
-    instruction_info_collected |= MODIFIABLE_INSTRUCTION;
-   
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 21; current_position++; goto _again;
+  case 134:
+current_state = 182; current_position++; goto _again;
   break;
   case 135:
 
@@ -5225,14 +5010,110 @@ current_state = 291; current_position++; goto _again;
                       &instruction_info_collected);
    current_state = 30; current_position++; goto _again;
   break;
-  case 462:
-current_state = 531; current_position++; goto _again;
-  break;
-  case 376:
-current_state = 459; current_position++; goto _again;
-  break;
-  case 84:
+  case 136:
 
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   current_state = 118; current_position++; goto _again;
+  break;
+  case 137:
+
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   
+    // Case where ModRM.mod = 00 and ModRM.r/m = 101.
+    // In 64-bit mode it corresponds to RIP-relative addressing.
+    SET_MODRM_BASE(REG_RIP);
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 119; current_position++; goto _again;
+  break;
+  case 138:
+
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 123; current_position++; goto _again;
+  break;
+  case 139:
+
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   current_state = 124; current_position++; goto _again;
+  break;
+  case 140:
+
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 119; current_position++; goto _again;
+  break;
+  case 141:
+
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   current_state = 125; current_position++; goto _again;
+  break;
+  case 142:
+ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);  current_state = 30; current_position++; goto _again;
+  break;
+  case 143:
+
+    CheckMemoryAccess(instruction_begin - codeblock,
+                      base,
+                      index,
+                      restricted_register,
+                      valid_targets,
+                      &instruction_info_collected);
+   current_state = 30; current_position++; goto _again;
+  break;
+  case 144:
+current_state = 119; current_position++; goto _again;
+  break;
+  case 145:
+current_state = 120; current_position++; goto _again;
+  break;
+  case 146:
+current_state = 121; current_position++; goto _again;
+  break;
+  case 147:
+current_state = 122; current_position++; goto _again;
+  break;
+  case 148:
+ 
+    CheckMemoryAccess(instruction_begin - codeblock,
+                      base,
+                      index,
+                      restricted_register,
+                      valid_targets,
+                      &instruction_info_collected);
+   current_state = 30; current_position++; goto _again;
+  break;
+  case 149:
+current_state = 123; current_position++; goto _again;
+  break;
+  case 150:
+
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   
     SET_DISPLACEMENT_FORMAT(DISPNONE);
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
@@ -5246,143 +5127,17 @@ current_state = 459; current_position++; goto _again;
                       restricted_register,
                       valid_targets,
                       &instruction_info_collected);
-   current_state = 67; current_position++; goto _again;
+   current_state = 127; current_position++; goto _again;
   break;
-  case 579:
+  case 151:
 
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 680; current_position++; goto _again;
+   current_state = 128; current_position++; goto _again;
   break;
-  case 83:
- SET_CPU_FEATURE(CPUFeature_MOVBE);      
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 19; current_position++; goto _again;
-  break;
-  case 293:
+  case 152:
 
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 282; current_position++; goto _again;
-  break;
-  case 254:
-current_state = 217; current_position++; goto _again;
-  break;
-  case 366:
- SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);  
-    instruction_info_collected |= MODIFIABLE_INSTRUCTION;
-   
-    Process1OperandZeroExtends(&restricted_register,
-                               &instruction_info_collected, rex_prefix,
-                               operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 773; current_position++; goto _again;
-  break;
-  case 590:
- SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);  
-    instruction_info_collected |= MODIFIABLE_INSTRUCTION;
-   
-    Process1OperandZeroExtends(&restricted_register,
-                               &instruction_info_collected, rex_prefix,
-                               operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 780; current_position++; goto _again;
-  break;
-  case 377:
-current_state = 464; current_position++; goto _again;
-  break;
-  case 672:
-current_state = 745; current_position++; goto _again;
-  break;
-  case 581:
-current_state = 684; current_position++; goto _again;
-  break;
-  case 127:
- SET_OPERAND_NAME(0, REG_RAX);  current_state = 30; current_position++; goto _again;
-  break;
-  case 398:
- SET_CPU_FEATURE(CPUFeature_BMI1);       
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 207; current_position++; goto _again;
-  break;
-  case 543:
- SET_CPU_FEATURE(CPUFeature_SSE);        
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
@@ -5392,64 +5147,74 @@ current_state = 684; current_position++; goto _again;
     SET_MODRM_BASE(REG_RIP);
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
-   current_state = 13; current_position++; goto _again;
+   current_state = 129; current_position++; goto _again;
   break;
-  case 203:
+  case 153:
 
-    Process1OperandZeroExtends(&restricted_register,
-                               &instruction_info_collected, rex_prefix,
-                               operand_states);
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
    
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 760; current_position++; goto _again;
-  break;
-  case 278:
-current_state = 241; current_position++; goto _again;
-  break;
-  case 661:
-current_state = 699; current_position++; goto _again;
-  break;
-  case 75:
-
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
-   current_state = 3; current_position++; goto _again;
+   current_state = 133; current_position++; goto _again;
   break;
-  case 36:
+  case 154:
+
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   current_state = 134; current_position++; goto _again;
+  break;
+  case 155:
+
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 129; current_position++; goto _again;
+  break;
+  case 156:
+
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   current_state = 135; current_position++; goto _again;
+  break;
+  case 157:
+ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);  current_state = 127; current_position++; goto _again;
+  break;
+  case 158:
+
+    CheckMemoryAccess(instruction_begin - codeblock,
+                      base,
+                      index,
+                      restricted_register,
+                      valid_targets,
+                      &instruction_info_collected);
+   current_state = 127; current_position++; goto _again;
+  break;
+  case 159:
+current_state = 129; current_position++; goto _again;
+  break;
+  case 160:
+current_state = 130; current_position++; goto _again;
+  break;
+  case 161:
+current_state = 131; current_position++; goto _again;
+  break;
+  case 162:
+current_state = 132; current_position++; goto _again;
+  break;
+  case 163:
  
     CheckMemoryAccess(instruction_begin - codeblock,
                       base,
@@ -5457,272 +5222,13 @@ current_state = 699; current_position++; goto _again;
                       restricted_register,
                       valid_targets,
                       &instruction_info_collected);
-   
-    Process1OperandZeroExtends(&restricted_register,
-                               &instruction_info_collected, rex_prefix,
-                               operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 760; current_position++; goto _again;
+   current_state = 127; current_position++; goto _again;
   break;
-  case 21:
-current_state = 16; current_position++; goto _again;
+  case 164:
+current_state = 133; current_position++; goto _again;
   break;
-  case 403:
- SET_CPU_FEATURE(CPUFeature_BMI1);       
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    // Case where ModRM.mod = 00 and ModRM.r/m = 101.
-    // In 64-bit mode it corresponds to RIP-relative addressing.
-    SET_MODRM_BASE(REG_RIP);
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 207; current_position++; goto _again;
-  break;
-  case 439:
-current_state = 523; current_position++; goto _again;
-  break;
-  case 479:
-current_state = 571; current_position++; goto _again;
-  break;
-  case 265:
-
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 234; current_position++; goto _again;
-  break;
-  case 282:
- SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT);  
-    instruction_info_collected |= MODIFIABLE_INSTRUCTION;
-   current_state = 102; current_position++; goto _again;
-  break;
-  case 393:
- SET_CPU_FEATURE(CPUFeature_BMI1);       
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 206; current_position++; goto _again;
-  break;
-  case 598:
- SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT);  
-    Process1Operand(&restricted_register, &instruction_info_collected,
-                    rex_prefix, operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 784; current_position++; goto _again;
-  break;
-  case 43:
-
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 760; current_position++; goto _again;
-  break;
-  case 326:
-
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 343; current_position++; goto _again;
-  break;
-  case 572:
- SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT);   SET_CPU_FEATURE(CPUFeature_POPCNT);     
-    Process1Operand(&restricted_register, &instruction_info_collected,
-                    rex_prefix, operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 760; current_position++; goto _again;
-  break;
-  case 664:
-current_state = 729; current_position++; goto _again;
-  break;
-  case 45:
- SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);  
-    Process1Operand(&restricted_register, &instruction_info_collected,
-                    rex_prefix, operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 760; current_position++; goto _again;
-  break;
-  case 346:
-
-    // Case where ModRM.mod = 00 and ModRM.r/m = 101.
-    // In 64-bit mode it corresponds to RIP-relative addressing.
-    SET_MODRM_BASE(REG_RIP);
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 353; current_position++; goto _again;
-  break;
-  case 650:
-current_state = 437; current_position++; goto _again;
+  case 165:
+ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_8_BIT);  current_state = 29; current_position++; goto _again;
   break;
   case 166:
 
@@ -5734,14 +5240,160 @@ current_state = 437; current_position++; goto _again;
                       &instruction_info_collected);
    current_state = 111; current_position++; goto _again;
   break;
-  case 623:
-current_state = 704; current_position++; goto _again;
+  case 167:
+current_state = 139; current_position++; goto _again;
   break;
-  case 641:
-current_state = 675; current_position++; goto _again;
+  case 168:
+current_state = 143; current_position++; goto _again;
   break;
-  case 160:
-current_state = 130; current_position++; goto _again;
+  case 169:
+ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);  current_state = 102; current_position++; goto _again;
+  break;
+  case 170:
+current_state = 140; current_position++; goto _again;
+  break;
+  case 171:
+current_state = 141; current_position++; goto _again;
+  break;
+  case 172:
+current_state = 142; current_position++; goto _again;
+  break;
+  case 173:
+ 
+    CheckMemoryAccess(instruction_begin - codeblock,
+                      base,
+                      index,
+                      restricted_register,
+                      valid_targets,
+                      &instruction_info_collected);
+   current_state = 111; current_position++; goto _again;
+  break;
+  case 174:
+ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);  current_state = 147; current_position++; goto _again;
+  break;
+  case 175:
+ 
+    Process1OperandZeroExtends(&restricted_register,
+                               &instruction_info_collected, rex_prefix,
+                               operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 761; current_position++; goto _again;
+  break;
+  case 176:
+ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);  current_state = 150; current_position++; goto _again;
+  break;
+  case 177:
+ 
+    Process1OperandZeroExtends(&restricted_register,
+                               &instruction_info_collected, rex_prefix,
+                               operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 762; current_position++; goto _again;
+  break;
+  case 178:
+ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_8_BIT);  
+    instruction_info_collected |= MODIFIABLE_INSTRUCTION;
+   
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
   break;
   case 179:
  SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);  
@@ -5785,1526 +5437,7 @@ current_state = 130; current_position++; goto _again;
     index = 0;
    current_state = 760; current_position++; goto _again;
   break;
-  case 15:
-
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 13; current_position++; goto _again;
-  break;
-  case 566:
- SET_CPU_FEATURE(CPUFeature_LZCNT);      
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    // Case where ModRM.mod = 00 and ModRM.r/m = 101.
-    // In 64-bit mode it corresponds to RIP-relative addressing.
-    SET_MODRM_BASE(REG_RIP);
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 13; current_position++; goto _again;
-  break;
-  case 526:
- SET_CPU_FEATURE(CPUFeature_SSE2);       
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 19; current_position++; goto _again;
-  break;
-  case 402:
-current_state = 467; current_position++; goto _again;
-  break;
-  case 675:
-current_state = 749; current_position++; goto _again;
-  break;
-  case 593:
-current_state = 721; current_position++; goto _again;
-  break;
-  case 680:
-current_state = 758; current_position++; goto _again;
-  break;
-  case 490:
-current_state = 584; current_position++; goto _again;
-  break;
-  case 0:
-  break;
-  case 16:
-
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 19; current_position++; goto _again;
-  break;
-  case 95:
-current_state = 71; current_position++; goto _again;
-  break;
-  case 465:
-current_state = 544; current_position++; goto _again;
-  break;
-  case 461:
- SET_CPU_FEATURE(CPUFeature_BMI1);       
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 19; current_position++; goto _again;
-  break;
-  case 261:
- SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT);  
-    instruction_info_collected |= MODIFIABLE_INSTRUCTION;
-   
-    Process1Operand(&restricted_register, &instruction_info_collected,
-                    rex_prefix, operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 760; current_position++; goto _again;
-  break;
-  case 335:
-current_state = 347; current_position++; goto _again;
-  break;
-  case 292:
-
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 280; current_position++; goto _again;
-  break;
-  case 430:
-current_state = 509; current_position++; goto _again;
-  break;
-  case 350:
-current_state = 359; current_position++; goto _again;
-  break;
-  case 470:
-current_state = 552; current_position++; goto _again;
-  break;
-  case 211:
-
-    // Case where ModRM.mod = 00 and ModRM.r/m = 101.
-    // In 64-bit mode it corresponds to RIP-relative addressing.
-    SET_MODRM_BASE(REG_RIP);
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 139; current_position++; goto _again;
-  break;
-  case 218:
-current_state = 184; current_position++; goto _again;
-  break;
-  case 382:
-current_state = 495; current_position++; goto _again;
-  break;
-  case 28:
-
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 27; current_position++; goto _again;
-  break;
-  case 232:
-
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    // Case where ModRM.mod = 00 and ModRM.r/m = 101.
-    // In 64-bit mode it corresponds to RIP-relative addressing.
-    SET_MODRM_BASE(REG_RIP);
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 207; current_position++; goto _again;
-  break;
-  case 413:
-current_state = 484; current_position++; goto _again;
-  break;
-  case 106:
- SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);   SET_CPU_FEATURE(CPUFeature_CMOV);       
-    Process1Operand(&restricted_register, &instruction_info_collected,
-                    rex_prefix, operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 760; current_position++; goto _again;
-  break;
-  case 528:
- SET_CPU_FEATURE(CPUFeature_SSE42);      
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 12; current_position++; goto _again;
-  break;
-  case 474:
-current_state = 559; current_position++; goto _again;
-  break;
-  case 313:
- SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);   SET_CPU_FEATURE(CPUFeature_SSE41);      current_state = 29; current_position++; goto _again;
-  break;
-  case 76:
-current_state = 9; current_position++; goto _again;
-  break;
-  case 542:
- SET_CPU_FEATURE(CPUFeature_SSE);        
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 12; current_position++; goto _again;
-  break;
-  case 585:
-
-       instruction_info_collected |= SPECIAL_INSTRUCTION;
-     
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 779; current_position++; goto _again;
-  break;
-  case 256:
-current_state = 219; current_position++; goto _again;
-  break;
-  case 143:
-
-    CheckMemoryAccess(instruction_begin - codeblock,
-                      base,
-                      index,
-                      restricted_register,
-                      valid_targets,
-                      &instruction_info_collected);
-   current_state = 30; current_position++; goto _again;
-  break;
-  case 59:
- 
-    Process0Operands(&restricted_register, &instruction_info_collected);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 760; current_position++; goto _again;
-  break;
-  case 498:
-current_state = 599; current_position++; goto _again;
-  break;
-  case 251:
-
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 222; current_position++; goto _again;
-  break;
-  case 39:
-current_state = 31; current_position++; goto _again;
-  break;
-  case 521:
- SET_CPU_FEATURE(CPUFeature_SSE2);       
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 12; current_position++; goto _again;
-  break;
-  case 55:
-current_state = 38; current_position++; goto _again;
-  break;
-  case 118:
- SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);   SET_CPU_FEATURE(CPUFeature_EMMXSSE);    
-    Process1Operand(&restricted_register, &instruction_info_collected,
-                    rex_prefix, operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 760; current_position++; goto _again;
-  break;
-  case 577:
-current_state = 672; current_position++; goto _again;
-  break;
-  case 511:
- SET_CPU_FEATURE(CPUFeature_BMI1);       
-    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
-   
-    Process1Operand(&restricted_register, &instruction_info_collected,
-                    rex_prefix, operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 760; current_position++; goto _again;
-  break;
-  case 434:
-current_state = 515; current_position++; goto _again;
-  break;
-  case 523:
- SET_CPU_FEATURE(CPUFeature_SSE2);       
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 17; current_position++; goto _again;
-  break;
-  case 205:
-current_state = 161; current_position++; goto _again;
-  break;
-  case 460:
- SET_CPU_FEATURE(CPUFeature_BMI1);       
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 18; current_position++; goto _again;
-  break;
-  case 244:
-current_state = 211; current_position++; goto _again;
-  break;
-  case 352:
- SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT);   SET_CPU_FEATURE(CPUFeature_SSE2);       
-    Process1Operand(&restricted_register, &instruction_info_collected,
-                    rex_prefix, operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 760; current_position++; goto _again;
-  break;
-  case 311:
- SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT);  
-    instruction_info_collected |= MODIFIABLE_INSTRUCTION;
-   current_state = 301; current_position++; goto _again;
-  break;
-  case 168:
-current_state = 143; current_position++; goto _again;
-  break;
-  case 172:
-current_state = 142; current_position++; goto _again;
-  break;
-  case 531:
- SET_CPU_FEATURE(CPUFeature_SSE42);      
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 18; current_position++; goto _again;
-  break;
-  case 614:
-current_state = 250; current_position++; goto _again;
-  break;
-  case 259:
- SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT);  current_state = 225; current_position++; goto _again;
-  break;
-  case 639:
-current_state = 417; current_position++; goto _again;
-  break;
-  case 555:
- SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);   SET_CPU_FEATURE(CPUFeature_POPCNT);     
-    Process1Operand(&restricted_register, &instruction_info_collected,
-                    rex_prefix, operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 760; current_position++; goto _again;
-  break;
-  case 392:
-current_state = 457; current_position++; goto _again;
-  break;
-  case 17:
-
-    CheckMemoryAccess(instruction_begin - codeblock,
-                      base,
-                      index,
-                      restricted_register,
-                      valid_targets,
-                      &instruction_info_collected);
-   
-    Process1Operand(&restricted_register, &instruction_info_collected,
-                    rex_prefix, operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 760; current_position++; goto _again;
-  break;
-  case 238:
-
-    CheckMemoryAccess(instruction_begin - codeblock,
-                      base,
-                      index,
-                      restricted_register,
-                      valid_targets,
-                      &instruction_info_collected);
-   current_state = 102; current_position++; goto _again;
-  break;
-  case 385:
-current_state = 520; current_position++; goto _again;
-  break;
-  case 665:
-current_state = 731; current_position++; goto _again;
-  break;
-  case 252:
-
-    CheckMemoryAccess(instruction_begin - codeblock,
-                      base,
-                      index,
-                      restricted_register,
-                      valid_targets,
-                      &instruction_info_collected);
-   current_state = 29; current_position++; goto _again;
-  break;
-  case 93:
-current_state = 69; current_position++; goto _again;
-  break;
-  case 197:
-
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 159; current_position++; goto _again;
-  break;
-  case 178:
- SET_OPERAND_FORMAT(0, OPERAND_FORMAT_8_BIT);  
-    instruction_info_collected |= MODIFIABLE_INSTRUCTION;
-   
-    Process1Operand(&restricted_register, &instruction_info_collected,
-                    rex_prefix, operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 760; current_position++; goto _again;
-  break;
-  case 312:
-current_state = 302; current_position++; goto _again;
-  break;
-  case 103:
- SET_CPU_FEATURE(CPUFeature_CMOV);       
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 18; current_position++; goto _again;
-  break;
-  case 99:
- SET_CPU_FEATURE(CPUFeature_CMOV);       
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    SET_DISPLACEMENT_FORMAT(DISPNONE);
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   
-    CheckMemoryAccess(instruction_begin - codeblock,
-                      base,
-                      index,
-                      restricted_register,
-                      valid_targets,
-                      &instruction_info_collected);
-   
-    Process1Operand(&restricted_register, &instruction_info_collected,
-                    rex_prefix, operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 760; current_position++; goto _again;
-  break;
-  case 595:
-current_state = 726; current_position++; goto _again;
-  break;
-  case 502:
- SET_CPU_FEATURE(CPUFeature_BMI1);       
-    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
-   current_state = 19; current_position++; goto _again;
-  break;
-  case 89:
-
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 69; current_position++; goto _again;
-  break;
-  case 156:
-
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 135; current_position++; goto _again;
-  break;
-  case 161:
-current_state = 131; current_position++; goto _again;
-  break;
-  case 67:
-current_state = 50; current_position++; goto _again;
-  break;
-  case 200:
-
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 165; current_position++; goto _again;
-  break;
-  case 446:
-current_state = 564; current_position++; goto _again;
-  break;
-  case 92:
-
-    CheckMemoryAccess(instruction_begin - codeblock,
-                      base,
-                      index,
-                      restricted_register,
-                      valid_targets,
-                      &instruction_info_collected);
-   current_state = 67; current_position++; goto _again;
-  break;
-  case 508:
- SET_CPU_FEATURE(CPUFeature_BMI1);       
-    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
-   
-    SET_DISPLACEMENT_FORMAT(DISPNONE);
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   
-    CheckMemoryAccess(instruction_begin - codeblock,
-                      base,
-                      index,
-                      restricted_register,
-                      valid_targets,
-                      &instruction_info_collected);
-   
-    Process1Operand(&restricted_register, &instruction_info_collected,
-                    rex_prefix, operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 760; current_position++; goto _again;
-  break;
-  case 371:
-current_state = 429; current_position++; goto _again;
-  break;
-  case 628:
-current_state = 268; current_position++; goto _again;
-  break;
-  case 627:
-current_state = 297; current_position++; goto _again;
-  break;
-  case 46:
- SET_CPU_FEATURE(CPUFeature_MON);         SET_OPERAND_NAME(0, REG_RDX);  
-    Process1Operand(&restricted_register, &instruction_info_collected,
-                    rex_prefix, operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 760; current_position++; goto _again;
-  break;
-  case 260:
-
-       instruction_info_collected |= SPECIAL_INSTRUCTION;
-     
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 760; current_position++; goto _again;
-  break;
-  case 400:
- SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT);   SET_CPU_FEATURE(CPUFeature_BMI1);       current_state = 102; current_position++; goto _again;
-  break;
-  case 276:
-current_state = 239; current_position++; goto _again;
-  break;
-  case 187:
-
-    instruction_info_collected |= MODIFIABLE_INSTRUCTION;
-   
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 13; current_position++; goto _again;
-  break;
-  case 229:
- SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT);   SET_CPU_FEATURE(CPUFeature_EMMXSSE);    
-    Process1Operand(&restricted_register, &instruction_info_collected,
-                    rex_prefix, operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 760; current_position++; goto _again;
-  break;
-  case 610:
-current_state = 406; current_position++; goto _again;
-  break;
-  case 458:
-current_state = 535; current_position++; goto _again;
-  break;
-  case 669:
-current_state = 739; current_position++; goto _again;
-  break;
-  case 545:
- SET_CPU_FEATURE(CPUFeature_SSE);        
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 18; current_position++; goto _again;
-  break;
-  case 7:
-current_state = 6; current_position++; goto _again;
-  break;
-  case 406:
- SET_CPU_FEATURE(CPUFeature_TBM);        
-    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
-   current_state = 472; current_position++; goto _again;
-  break;
-  case 324:
-
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 347; current_position++; goto _again;
-  break;
-  case 441:
-current_state = 526; current_position++; goto _again;
-  break;
-  case 98:
-current_state = 73; current_position++; goto _again;
-  break;
-  case 146:
-current_state = 121; current_position++; goto _again;
-  break;
-  case 60:
-current_state = 42; current_position++; goto _again;
-  break;
-  case 457:
-current_state = 534; current_position++; goto _again;
-  break;
-  case 108:
- SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);   SET_CPU_FEATURE(CPUFeature_MMX);        
-    Process1OperandZeroExtends(&restricted_register,
-                               &instruction_info_collected, rex_prefix,
-                               operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 760; current_position++; goto _again;
-  break;
-  case 436:
-current_state = 519; current_position++; goto _again;
-  break;
-  case 336:
-
-    CheckMemoryAccess(instruction_begin - codeblock,
-                      base,
-                      index,
-                      restricted_register,
-                      valid_targets,
-                      &instruction_info_collected);
-   current_state = 337; current_position++; goto _again;
-  break;
-  case 139:
-
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 124; current_position++; goto _again;
-  break;
-  case 342:
- 
-    CheckMemoryAccess(instruction_begin - codeblock,
-                      base,
-                      index,
-                      restricted_register,
-                      valid_targets,
-                      &instruction_info_collected);
-   current_state = 337; current_position++; goto _again;
-  break;
-  case 327:
-
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 349; current_position++; goto _again;
-  break;
-  case 349:
-
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 353; current_position++; goto _again;
-  break;
-  case 429:
-current_state = 507; current_position++; goto _again;
-  break;
-  case 536:
- current_state = 636; current_position++; goto _again;
-  break;
-  case 529:
- SET_CPU_FEATURE(CPUFeature_SSE42);      
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    // Case where ModRM.mod = 00 and ModRM.r/m = 101.
-    // In 64-bit mode it corresponds to RIP-relative addressing.
-    SET_MODRM_BASE(REG_RIP);
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 13; current_position++; goto _again;
-  break;
-  case 419:
-current_state = 496; current_position++; goto _again;
-  break;
-  case 134:
-current_state = 182; current_position++; goto _again;
-  break;
-  case 258:
-current_state = 220; current_position++; goto _again;
-  break;
-  case 666:
-current_state = 733; current_position++; goto _again;
-  break;
-  case 370:
-
-    Process1Operand(&restricted_register, &instruction_info_collected,
-                    rex_prefix, operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 776; current_position++; goto _again;
-  break;
-  case 549:
- SET_CPU_FEATURE(CPUFeature_POPCNT);     
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 12; current_position++; goto _again;
-  break;
-  case 611:
-current_state = 740; current_position++; goto _again;
-  break;
-  case 596:
- SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT);  
-    Process1Operand(&restricted_register, &instruction_info_collected,
-                    rex_prefix, operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 782; current_position++; goto _again;
-  break;
-  case 279:
-current_state = 242; current_position++; goto _again;
-  break;
-  case 615:
-current_state = 258; current_position++; goto _again;
-  break;
-  case 582:
-current_state = 686; current_position++; goto _again;
-  break;
-  case 565:
- SET_CPU_FEATURE(CPUFeature_LZCNT);      
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 12; current_position++; goto _again;
-  break;
-  case 162:
-current_state = 132; current_position++; goto _again;
-  break;
-  case 520:
- SET_CPU_FEATURE(CPUFeature_SSE2);       
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    SET_DISPLACEMENT_FORMAT(DISPNONE);
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   
-    CheckMemoryAccess(instruction_begin - codeblock,
-                      base,
-                      index,
-                      restricted_register,
-                      valid_targets,
-                      &instruction_info_collected);
-   
-    Process1Operand(&restricted_register, &instruction_info_collected,
-                    rex_prefix, operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 760; current_position++; goto _again;
-  break;
-  case 1:
-
-    CheckMemoryAccess(instruction_begin - codeblock,
-                      base,
-                      index,
-                      restricted_register,
-                      valid_targets,
-                      &instruction_info_collected);
-   
-    Process0Operands(&restricted_register, &instruction_info_collected);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 760; current_position++; goto _again;
-  break;
-  case 372:
-current_state = 443; current_position++; goto _again;
-  break;
-  case 414:
-current_state = 487; current_position++; goto _again;
-  break;
-  case 421:
-current_state = 501; current_position++; goto _again;
-  break;
-  case 24:
-
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    SET_DISPLACEMENT_FORMAT(DISPNONE);
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   
-    CheckMemoryAccess(instruction_begin - codeblock,
-                      base,
-                      index,
-                      restricted_register,
-                      valid_targets,
-                      &instruction_info_collected);
-   
-    Process1OperandZeroExtends(&restricted_register,
-                               &instruction_info_collected, rex_prefix,
-                               operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 760; current_position++; goto _again;
-  break;
-  case 452:
-current_state = 608; current_position++; goto _again;
-  break;
-  case 34:
-current_state = 24; current_position++; goto _again;
-  break;
-  case 64:
- SET_CPU_FEATURE(CPUFeature_E3DNOW);     
-    Process0Operands(&restricted_register, &instruction_info_collected);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 760; current_position++; goto _again;
-  break;
-  case 72:
-
-    // Case where ModRM.mod = 00 and ModRM.r/m = 101.
-    // In 64-bit mode it corresponds to RIP-relative addressing.
-    SET_MODRM_BASE(REG_RIP);
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 3; current_position++; goto _again;
-  break;
-  case 379:
-current_state = 477; current_position++; goto _again;
-  break;
-  case 471:
-current_state = 553; current_position++; goto _again;
-  break;
-  case 270:
-current_state = 230; current_position++; goto _again;
-  break;
-  case 126:
- SET_OPERAND_NAME(0, REG_RAX);  current_state = 29; current_position++; goto _again;
-  break;
-  case 602:
-current_state = 115; current_position++; goto _again;
-  break;
-  case 486:
-current_state = 575; current_position++; goto _again;
-  break;
-  case 285:
+  case 180:
  SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);  
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
    
@@ -7344,267 +5477,12 @@ current_state = 575; current_position++; goto _again;
     operand_states = 0;
     base = 0;
     index = 0;
-   current_state = 765; current_position++; goto _again;
+   current_state = 763; current_position++; goto _again;
   break;
-  case 69:
- 
-    CheckMemoryAccess(instruction_begin - codeblock,
-                      base,
-                      index,
-                      restricted_register,
-                      valid_targets,
-                      &instruction_info_collected);
-   current_state = 46; current_position++; goto _again;
-  break;
-  case 20:
-current_state = 15; current_position++; goto _again;
-  break;
-  case 410:
-current_state = 481; current_position++; goto _again;
-  break;
-  case 380:
-current_state = 483; current_position++; goto _again;
-  break;
-  case 130:
-
-    SET_OPERAND_NAME(0, RegFromOpcode(*current_position) |
-                        BaseExtentionFromREX(GET_REX_PREFIX()) |
-                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_OPERAND_FORMAT(1, OPERAND_FORMAT_32_BIT);   SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);   SET_OPERAND_NAME(1, REG_RAX);  
-    Process2OperandsZeroExtends(&restricted_register,
-                                &instruction_info_collected, rex_prefix,
-                                operand_states);
+  case 181:
+ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);  
+    instruction_info_collected |= MODIFIABLE_INSTRUCTION;
    
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 760; current_position++; goto _again;
-  break;
-  case 305:
-current_state = 293; current_position++; goto _again;
-  break;
-  case 433:
-current_state = 512; current_position++; goto _again;
-  break;
-  case 321:
-
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    SET_DISPLACEMENT_FORMAT(DISPNONE);
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   
-    CheckMemoryAccess(instruction_begin - codeblock,
-                      base,
-                      index,
-                      restricted_register,
-                      valid_targets,
-                      &instruction_info_collected);
-   current_state = 301; current_position++; goto _again;
-  break;
-  case 537:
- SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT);   SET_CPU_FEATURE(CPUFeature_SSE42);      
-    Process1Operand(&restricted_register, &instruction_info_collected,
-                    rex_prefix, operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 760; current_position++; goto _again;
-  break;
-  case 541:
- SET_CPU_FEATURE(CPUFeature_SSE);        
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    SET_DISPLACEMENT_FORMAT(DISPNONE);
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   
-    CheckMemoryAccess(instruction_begin - codeblock,
-                      base,
-                      index,
-                      restricted_register,
-                      valid_targets,
-                      &instruction_info_collected);
-   
-    Process1Operand(&restricted_register, &instruction_info_collected,
-                    rex_prefix, operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 760; current_position++; goto _again;
-  break;
-  case 438:
-current_state = 521; current_position++; goto _again;
-  break;
-  case 467:
-current_state = 546; current_position++; goto _again;
-  break;
-  case 519:
-current_state = 645; current_position++; goto _again;
-  break;
-  case 114:
-
-    SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
-                        BaseExtentionFromREX(GET_REX_PREFIX()) |
-                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_OPERAND_FORMAT(1, OPERAND_FORMAT_8_BIT);   SET_OPERAND_FORMAT(0, OPERAND_FORMAT_8_BIT);  
-    Process2Operands(&restricted_register, &instruction_info_collected,
-                     rex_prefix, operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 760; current_position++; goto _again;
-  break;
-  case 73:
-
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 7; current_position++; goto _again;
-  break;
-  case 158:
-
-    CheckMemoryAccess(instruction_begin - codeblock,
-                      base,
-                      index,
-                      restricted_register,
-                      valid_targets,
-                      &instruction_info_collected);
-   current_state = 127; current_position++; goto _again;
-  break;
-  case 175:
- 
     Process1OperandZeroExtends(&restricted_register,
                                &instruction_info_collected, rex_prefix,
                                operand_states);
@@ -7641,17 +5519,80 @@ current_state = 645; current_position++; goto _again;
     operand_states = 0;
     base = 0;
     index = 0;
-   current_state = 761; current_position++; goto _again;
+   current_state = 767; current_position++; goto _again;
   break;
-  case 560:
- SET_CPU_FEATURE(CPUFeature_TZCNT);      
+  case 182:
+
+    instruction_info_collected |= MODIFIABLE_INSTRUCTION;
+   
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 18; current_position++; goto _again;
+   
+    SET_DISPLACEMENT_FORMAT(DISPNONE);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   
+    CheckMemoryAccess(instruction_begin - codeblock,
+                      base,
+                      index,
+                      restricted_register,
+                      valid_targets,
+                      &instruction_info_collected);
+   
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
   break;
-  case 550:
- SET_CPU_FEATURE(CPUFeature_POPCNT);     
+  case 183:
+
+    instruction_info_collected |= MODIFIABLE_INSTRUCTION;
+   
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   current_state = 12; current_position++; goto _again;
+  break;
+  case 184:
+
+    instruction_info_collected |= MODIFIABLE_INSTRUCTION;
+   
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
@@ -7662,60 +5603,6 @@ current_state = 645; current_position++; goto _again;
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 13; current_position++; goto _again;
-  break;
-  case 110:
-current_state = 84; current_position++; goto _again;
-  break;
-  case 678:
-current_state = 755; current_position++; goto _again;
-  break;
-  case 61:
-
-    CheckMemoryAccess(instruction_begin - codeblock,
-                      base,
-                      index,
-                      restricted_register,
-                      valid_targets,
-                      &instruction_info_collected);
-   current_state = 46; current_position++; goto _again;
-  break;
-  case 163:
- 
-    CheckMemoryAccess(instruction_begin - codeblock,
-                      base,
-                      index,
-                      restricted_register,
-                      valid_targets,
-                      &instruction_info_collected);
-   current_state = 127; current_position++; goto _again;
-  break;
-  case 608:
-current_state = 660; current_position++; goto _again;
-  break;
-  case 667:
-current_state = 735; current_position++; goto _again;
-  break;
-  case 195:
-
-    instruction_info_collected |= MODIFIABLE_INSTRUCTION;
-   
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 28; current_position++; goto _again;
-  break;
-  case 454:
-current_state = 527; current_position++; goto _again;
-  break;
-  case 568:
- SET_CPU_FEATURE(CPUFeature_LZCNT);      
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 18; current_position++; goto _again;
-  break;
-  case 383:
-current_state = 506; current_position++; goto _again;
   break;
   case 185:
 
@@ -7732,310 +5619,38 @@ current_state = 506; current_position++; goto _again;
     SET_MODRM_SCALE(0);
    current_state = 17; current_position++; goto _again;
   break;
-  case 477:
-current_state = 567; current_position++; goto _again;
-  break;
-  case 57:
-current_state = 40; current_position++; goto _again;
-  break;
-  case 174:
- SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);  current_state = 147; current_position++; goto _again;
-  break;
-  case 554:
- SET_CPU_FEATURE(CPUFeature_POPCNT);     
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 19; current_position++; goto _again;
-  break;
-  case 362:
- SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);  
+  case 186:
+
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
    
-    Process1OperandZeroExtends(&restricted_register,
-                               &instruction_info_collected, rex_prefix,
-                               operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 771; current_position++; goto _again;
-  break;
-  case 632:
-current_state = 397; current_position++; goto _again;
-  break;
-  case 115:
-
-    SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
-                        BaseExtentionFromREX(GET_REX_PREFIX()) |
-                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_OPERAND_FORMAT(1, OPERAND_FORMAT_32_BIT);   SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);  
-    Process2Operands(&restricted_register, &instruction_info_collected,
-                     rex_prefix, operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 760; current_position++; goto _again;
-  break;
-  case 369:
-
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 427; current_position++; goto _again;
-  break;
-  case 562:
- SET_CPU_FEATURE(CPUFeature_TZCNT);      
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 19; current_position++; goto _again;
-  break;
-  case 14:
-
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
    current_state = 18; current_position++; goto _again;
   break;
-  case 337:
-current_state = 353; current_position++; goto _again;
-  break;
-  case 230:
+  case 187:
 
+    instruction_info_collected |= MODIFIABLE_INSTRUCTION;
+   
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
    
-    SET_DISPLACEMENT_FORMAT(DISPNONE);
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
+   current_state = 13; current_position++; goto _again;
+  break;
+  case 188:
+
+    instruction_info_collected |= MODIFIABLE_INSTRUCTION;
    
-    CheckMemoryAccess(instruction_begin - codeblock,
-                      base,
-                      index,
-                      restricted_register,
-                      valid_targets,
-                      &instruction_info_collected);
-   current_state = 102; current_position++; goto _again;
-  break;
-  case 269:
-
-    Process1Operand(&restricted_register, &instruction_info_collected,
-                    rex_prefix, operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 760; current_position++; goto _again;
-  break;
-  case 495:
-current_state = 592; current_position++; goto _again;
-  break;
-  case 408:
- SET_CPU_FEATURE(CPUFeature_TBM);        
-    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
    current_state = 19; current_position++; goto _again;
-  break;
-  case 164:
-current_state = 133; current_position++; goto _again;
-  break;
-  case 489:
-current_state = 582; current_position++; goto _again;
-  break;
-  case 22:
- 
-    CheckMemoryAccess(instruction_begin - codeblock,
-                      base,
-                      index,
-                      restricted_register,
-                      valid_targets,
-                      &instruction_info_collected);
-   
-    Process1Operand(&restricted_register, &instruction_info_collected,
-                    rex_prefix, operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 760; current_position++; goto _again;
-  break;
-  case 631:
-current_state = 690; current_position++; goto _again;
-  break;
-  case 315:
- SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);   SET_CPU_FEATURE(CPUFeature_SSE2);       
-    Process1Operand(&restricted_register, &instruction_info_collected,
-                    rex_prefix, operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 760; current_position++; goto _again;
-  break;
-  case 86:
-
-    // Case where ModRM.mod = 00 and ModRM.r/m = 101.
-    // In 64-bit mode it corresponds to RIP-relative addressing.
-    SET_MODRM_BASE(REG_RIP);
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 69; current_position++; goto _again;
-  break;
-  case 3:
-current_state = 7; current_position++; goto _again;
-  break;
-  case 275:
-current_state = 238; current_position++; goto _again;
   break;
   case 189:
 
@@ -8097,18 +5712,94 @@ current_state = 238; current_position++; goto _again;
     index = 0;
    current_state = 760; current_position++; goto _again;
   break;
-  case 487:
-current_state = 578; current_position++; goto _again;
-  break;
-  case 116:
+  case 190:
 
-    SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
-                        BaseExtentionFromREX(GET_REX_PREFIX()) |
-                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_OPERAND_FORMAT(1, OPERAND_FORMAT_32_BIT);   SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);  
-    Process2OperandsZeroExtends(&restricted_register,
-                                &instruction_info_collected, rex_prefix,
-                                operand_states);
+    instruction_info_collected |= MODIFIABLE_INSTRUCTION;
+   
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   current_state = 21; current_position++; goto _again;
+  break;
+  case 191:
+
+    instruction_info_collected |= MODIFIABLE_INSTRUCTION;
+   
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   
+    // Case where ModRM.mod = 00 and ModRM.r/m = 101.
+    // In 64-bit mode it corresponds to RIP-relative addressing.
+    SET_MODRM_BASE(REG_RIP);
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 22; current_position++; goto _again;
+  break;
+  case 192:
+
+    instruction_info_collected |= MODIFIABLE_INSTRUCTION;
+   
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 26; current_position++; goto _again;
+  break;
+  case 193:
+
+    instruction_info_collected |= MODIFIABLE_INSTRUCTION;
+   
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   current_state = 27; current_position++; goto _again;
+  break;
+  case 194:
+
+    instruction_info_collected |= MODIFIABLE_INSTRUCTION;
+   
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 22; current_position++; goto _again;
+  break;
+  case 195:
+
+    instruction_info_collected |= MODIFIABLE_INSTRUCTION;
+   
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   current_state = 28; current_position++; goto _again;
+  break;
+  case 196:
+
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   
+    SET_DISPLACEMENT_FORMAT(DISPNONE);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   
+    Process1OperandZeroExtends(&restricted_register,
+                               &instruction_info_collected, rex_prefix,
+                               operand_states);
    
     /* Call user-supplied callback.  */
     instruction_end = current_position + 1;
@@ -8144,8 +5835,2922 @@ current_state = 578; current_position++; goto _again;
     index = 0;
    current_state = 760; current_position++; goto _again;
   break;
-  case 603:
-current_state = 148; current_position++; goto _again;
+  case 197:
+
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   current_state = 159; current_position++; goto _again;
+  break;
+  case 198:
+
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   
+    // Case where ModRM.mod = 00 and ModRM.r/m = 101.
+    // In 64-bit mode it corresponds to RIP-relative addressing.
+    SET_MODRM_BASE(REG_RIP);
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 160; current_position++; goto _again;
+  break;
+  case 199:
+
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 164; current_position++; goto _again;
+  break;
+  case 200:
+
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   current_state = 165; current_position++; goto _again;
+  break;
+  case 201:
+
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 160; current_position++; goto _again;
+  break;
+  case 202:
+
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   current_state = 166; current_position++; goto _again;
+  break;
+  case 203:
+
+    Process1OperandZeroExtends(&restricted_register,
+                               &instruction_info_collected, rex_prefix,
+                               operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
+  break;
+  case 204:
+current_state = 160; current_position++; goto _again;
+  break;
+  case 205:
+current_state = 161; current_position++; goto _again;
+  break;
+  case 206:
+current_state = 162; current_position++; goto _again;
+  break;
+  case 207:
+current_state = 163; current_position++; goto _again;
+  break;
+  case 208:
+current_state = 164; current_position++; goto _again;
+  break;
+  case 209:
+
+    SET_DISPLACEMENT_FORMAT(DISPNONE);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   
+    CheckMemoryAccess(instruction_begin - codeblock,
+                      base,
+                      index,
+                      restricted_register,
+                      valid_targets,
+                      &instruction_info_collected);
+   current_state = 111; current_position++; goto _again;
+  break;
+  case 210:
+current_state = 138; current_position++; goto _again;
+  break;
+  case 211:
+
+    // Case where ModRM.mod = 00 and ModRM.r/m = 101.
+    // In 64-bit mode it corresponds to RIP-relative addressing.
+    SET_MODRM_BASE(REG_RIP);
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 139; current_position++; goto _again;
+  break;
+  case 212:
+
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 143; current_position++; goto _again;
+  break;
+  case 213:
+current_state = 144; current_position++; goto _again;
+  break;
+  case 214:
+
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 139; current_position++; goto _again;
+  break;
+  case 215:
+current_state = 145; current_position++; goto _again;
+  break;
+  case 216:
+ SET_CPU_FEATURE(CPUFeature_x87);         SET_OPERAND_NAME(0, REG_RAX);  
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
+  break;
+  case 217:
+current_state = 183; current_position++; goto _again;
+  break;
+  case 218:
+current_state = 184; current_position++; goto _again;
+  break;
+  case 219:
+current_state = 185; current_position++; goto _again;
+  break;
+  case 220:
+ 
+    Process0Operands(&restricted_register, &instruction_info_collected);
+   
+      if (((current_position - codeblock) & kBundleMask) != kBundleMask)
+        instruction_info_collected |= BAD_CALL_ALIGNMENT;
+     
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
+  break;
+  case 221:
+ SET_OPERAND_FORMAT(1, OPERAND_FORMAT_64_BIT);   SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT);   SET_OPERAND_NAME(1, REG_RAX);  
+    Process2Operands(&restricted_register, &instruction_info_collected,
+                     rex_prefix, operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
+  break;
+  case 222:
+ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT);  
+    instruction_info_collected |= MODIFIABLE_INSTRUCTION;
+   current_state = 237; current_position++; goto _again;
+  break;
+  case 223:
+ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT);   SET_CPU_FEATURE(CPUFeature_CMOV);       
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
+  break;
+  case 224:
+ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT);   SET_CPU_FEATURE(CPUFeature_SSE);        
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
+  break;
+  case 225:
+ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT);   SET_CPU_FEATURE(CPUFeature_MMX);        
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
+  break;
+  case 226:
+ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT);  current_state = 29; current_position++; goto _again;
+  break;
+  case 227:
+
+    SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
+                        BaseExtentionFromREX(GET_REX_PREFIX()) |
+                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_OPERAND_FORMAT(1, OPERAND_FORMAT_64_BIT);   SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT);  
+    Process2Operands(&restricted_register, &instruction_info_collected,
+                     rex_prefix, operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
+  break;
+  case 228:
+ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT);   SET_CPU_FEATURE(CPUFeature_EMMXSSE);    current_state = 29; current_position++; goto _again;
+  break;
+  case 229:
+ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT);   SET_CPU_FEATURE(CPUFeature_EMMXSSE);    
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
+  break;
+  case 230:
+
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   
+    SET_DISPLACEMENT_FORMAT(DISPNONE);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   
+    CheckMemoryAccess(instruction_begin - codeblock,
+                      base,
+                      index,
+                      restricted_register,
+                      valid_targets,
+                      &instruction_info_collected);
+   current_state = 102; current_position++; goto _again;
+  break;
+  case 231:
+
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   current_state = 206; current_position++; goto _again;
+  break;
+  case 232:
+
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   
+    // Case where ModRM.mod = 00 and ModRM.r/m = 101.
+    // In 64-bit mode it corresponds to RIP-relative addressing.
+    SET_MODRM_BASE(REG_RIP);
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 207; current_position++; goto _again;
+  break;
+  case 233:
+
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 211; current_position++; goto _again;
+  break;
+  case 234:
+
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   current_state = 212; current_position++; goto _again;
+  break;
+  case 235:
+
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 207; current_position++; goto _again;
+  break;
+  case 236:
+
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   current_state = 213; current_position++; goto _again;
+  break;
+  case 237:
+ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT);  current_state = 102; current_position++; goto _again;
+  break;
+  case 238:
+
+    CheckMemoryAccess(instruction_begin - codeblock,
+                      base,
+                      index,
+                      restricted_register,
+                      valid_targets,
+                      &instruction_info_collected);
+   current_state = 102; current_position++; goto _again;
+  break;
+  case 239:
+current_state = 207; current_position++; goto _again;
+  break;
+  case 240:
+current_state = 208; current_position++; goto _again;
+  break;
+  case 241:
+current_state = 209; current_position++; goto _again;
+  break;
+  case 242:
+current_state = 210; current_position++; goto _again;
+  break;
+  case 243:
+ 
+    CheckMemoryAccess(instruction_begin - codeblock,
+                      base,
+                      index,
+                      restricted_register,
+                      valid_targets,
+                      &instruction_info_collected);
+   current_state = 102; current_position++; goto _again;
+  break;
+  case 244:
+current_state = 211; current_position++; goto _again;
+  break;
+  case 245:
+
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   
+    SET_DISPLACEMENT_FORMAT(DISPNONE);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   
+    CheckMemoryAccess(instruction_begin - codeblock,
+                      base,
+                      index,
+                      restricted_register,
+                      valid_targets,
+                      &instruction_info_collected);
+   current_state = 29; current_position++; goto _again;
+  break;
+  case 246:
+
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   current_state = 215; current_position++; goto _again;
+  break;
+  case 247:
+
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   
+    // Case where ModRM.mod = 00 and ModRM.r/m = 101.
+    // In 64-bit mode it corresponds to RIP-relative addressing.
+    SET_MODRM_BASE(REG_RIP);
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 216; current_position++; goto _again;
+  break;
+  case 248:
+
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 220; current_position++; goto _again;
+  break;
+  case 249:
+
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   current_state = 221; current_position++; goto _again;
+  break;
+  case 250:
+
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 216; current_position++; goto _again;
+  break;
+  case 251:
+
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   current_state = 222; current_position++; goto _again;
+  break;
+  case 252:
+
+    CheckMemoryAccess(instruction_begin - codeblock,
+                      base,
+                      index,
+                      restricted_register,
+                      valid_targets,
+                      &instruction_info_collected);
+   current_state = 29; current_position++; goto _again;
+  break;
+  case 253:
+current_state = 216; current_position++; goto _again;
+  break;
+  case 254:
+current_state = 217; current_position++; goto _again;
+  break;
+  case 255:
+current_state = 218; current_position++; goto _again;
+  break;
+  case 256:
+current_state = 219; current_position++; goto _again;
+  break;
+  case 257:
+ 
+    CheckMemoryAccess(instruction_begin - codeblock,
+                      base,
+                      index,
+                      restricted_register,
+                      valid_targets,
+                      &instruction_info_collected);
+   current_state = 29; current_position++; goto _again;
+  break;
+  case 258:
+current_state = 220; current_position++; goto _again;
+  break;
+  case 259:
+ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT);  current_state = 225; current_position++; goto _again;
+  break;
+  case 260:
+
+       instruction_info_collected |= SPECIAL_INSTRUCTION;
+     
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
+  break;
+  case 261:
+ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT);  
+    instruction_info_collected |= MODIFIABLE_INSTRUCTION;
+   
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
+  break;
+  case 262:
+
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   
+    SET_DISPLACEMENT_FORMAT(DISPNONE);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
+  break;
+  case 263:
+
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   current_state = 229; current_position++; goto _again;
+  break;
+  case 264:
+
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   
+    // Case where ModRM.mod = 00 and ModRM.r/m = 101.
+    // In 64-bit mode it corresponds to RIP-relative addressing.
+    SET_MODRM_BASE(REG_RIP);
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 230; current_position++; goto _again;
+  break;
+  case 265:
+
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 234; current_position++; goto _again;
+  break;
+  case 266:
+
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   current_state = 235; current_position++; goto _again;
+  break;
+  case 267:
+
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 230; current_position++; goto _again;
+  break;
+  case 268:
+
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   current_state = 236; current_position++; goto _again;
+  break;
+  case 269:
+
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
+  break;
+  case 270:
+current_state = 230; current_position++; goto _again;
+  break;
+  case 271:
+current_state = 231; current_position++; goto _again;
+  break;
+  case 272:
+current_state = 232; current_position++; goto _again;
+  break;
+  case 273:
+current_state = 233; current_position++; goto _again;
+  break;
+  case 274:
+current_state = 234; current_position++; goto _again;
+  break;
+  case 275:
+current_state = 238; current_position++; goto _again;
+  break;
+  case 276:
+current_state = 239; current_position++; goto _again;
+  break;
+  case 277:
+current_state = 240; current_position++; goto _again;
+  break;
+  case 278:
+current_state = 241; current_position++; goto _again;
+  break;
+  case 279:
+current_state = 242; current_position++; goto _again;
+  break;
+  case 280:
+current_state = 243; current_position++; goto _again;
+  break;
+  case 281:
+current_state = 244; current_position++; goto _again;
+  break;
+  case 282:
+ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT);  
+    instruction_info_collected |= MODIFIABLE_INSTRUCTION;
+   current_state = 102; current_position++; goto _again;
+  break;
+  case 283:
+
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   current_state = 257; current_position++; goto _again;
+  break;
+  case 284:
+
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 764; current_position++; goto _again;
+  break;
+  case 285:
+ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);  
+    instruction_info_collected |= MODIFIABLE_INSTRUCTION;
+   
+    Process1OperandZeroExtends(&restricted_register,
+                               &instruction_info_collected, rex_prefix,
+                               operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 765; current_position++; goto _again;
+  break;
+  case 286:
+
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   current_state = 262; current_position++; goto _again;
+  break;
+  case 287:
+
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 766; current_position++; goto _again;
+  break;
+  case 288:
+current_state = 264; current_position++; goto _again;
+  break;
+  case 289:
+
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   current_state = 270; current_position++; goto _again;
+  break;
+  case 290:
+
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 768; current_position++; goto _again;
+  break;
+  case 291:
+
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   current_state = 279; current_position++; goto _again;
+  break;
+  case 292:
+
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   current_state = 280; current_position++; goto _again;
+  break;
+  case 293:
+
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   current_state = 282; current_position++; goto _again;
+  break;
+  case 294:
+
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   current_state = 284; current_position++; goto _again;
+  break;
+  case 295:
+
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   current_state = 289; current_position++; goto _again;
+  break;
+  case 296:
+current_state = 281; current_position++; goto _again;
+  break;
+  case 297:
+current_state = 283; current_position++; goto _again;
+  break;
+  case 298:
+current_state = 285; current_position++; goto _again;
+  break;
+  case 299:
+current_state = 286; current_position++; goto _again;
+  break;
+  case 300:
+current_state = 287; current_position++; goto _again;
+  break;
+  case 301:
+current_state = 288; current_position++; goto _again;
+  break;
+  case 302:
+current_state = 290; current_position++; goto _again;
+  break;
+  case 303:
+current_state = 291; current_position++; goto _again;
+  break;
+  case 304:
+current_state = 292; current_position++; goto _again;
+  break;
+  case 305:
+current_state = 293; current_position++; goto _again;
+  break;
+  case 306:
+ SET_OPERAND_NAME(0, REG_RAX);  current_state = 301; current_position++; goto _again;
+  break;
+  case 307:
+current_state = 339; current_position++; goto _again;
+  break;
+  case 308:
+current_state = 370; current_position++; goto _again;
+  break;
+  case 309:
+ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT);  
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
+  break;
+  case 310:
+ SET_OPERAND_FORMAT(1, OPERAND_FORMAT_16_BIT);   SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT);   SET_OPERAND_NAME(1, REG_RAX);  
+    Process2Operands(&restricted_register, &instruction_info_collected,
+                     rex_prefix, operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
+  break;
+  case 311:
+ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT);  
+    instruction_info_collected |= MODIFIABLE_INSTRUCTION;
+   current_state = 301; current_position++; goto _again;
+  break;
+  case 312:
+current_state = 302; current_position++; goto _again;
+  break;
+  case 313:
+ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);   SET_CPU_FEATURE(CPUFeature_SSE41);      current_state = 29; current_position++; goto _again;
+  break;
+  case 314:
+ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT);   SET_CPU_FEATURE(CPUFeature_CMOV);       
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
+  break;
+  case 315:
+ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);   SET_CPU_FEATURE(CPUFeature_SSE2);       
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
+  break;
+  case 316:
+ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);   SET_CPU_FEATURE(CPUFeature_SSE2);       
+    Process1OperandZeroExtends(&restricted_register,
+                               &instruction_info_collected, rex_prefix,
+                               operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
+  break;
+  case 317:
+ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT);  current_state = 29; current_position++; goto _again;
+  break;
+  case 318:
+
+    SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
+                        BaseExtentionFromREX(GET_REX_PREFIX()) |
+                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_OPERAND_FORMAT(1, OPERAND_FORMAT_16_BIT);   SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT);  
+    Process2Operands(&restricted_register, &instruction_info_collected,
+                     rex_prefix, operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
+  break;
+  case 319:
+ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);   SET_CPU_FEATURE(CPUFeature_SSE2);       current_state = 29; current_position++; goto _again;
+  break;
+  case 320:
+current_state = 338; current_position++; goto _again;
+  break;
+  case 321:
+
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   
+    SET_DISPLACEMENT_FORMAT(DISPNONE);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   
+    CheckMemoryAccess(instruction_begin - codeblock,
+                      base,
+                      index,
+                      restricted_register,
+                      valid_targets,
+                      &instruction_info_collected);
+   current_state = 301; current_position++; goto _again;
+  break;
+  case 322:
+
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   current_state = 342; current_position++; goto _again;
+  break;
+  case 323:
+
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   
+    // Case where ModRM.mod = 00 and ModRM.r/m = 101.
+    // In 64-bit mode it corresponds to RIP-relative addressing.
+    SET_MODRM_BASE(REG_RIP);
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 343; current_position++; goto _again;
+  break;
+  case 324:
+
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 347; current_position++; goto _again;
+  break;
+  case 325:
+
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   current_state = 348; current_position++; goto _again;
+  break;
+  case 326:
+
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 343; current_position++; goto _again;
+  break;
+  case 327:
+
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   current_state = 349; current_position++; goto _again;
+  break;
+  case 328:
+ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT);  current_state = 301; current_position++; goto _again;
+  break;
+  case 329:
+
+    CheckMemoryAccess(instruction_begin - codeblock,
+                      base,
+                      index,
+                      restricted_register,
+                      valid_targets,
+                      &instruction_info_collected);
+   current_state = 301; current_position++; goto _again;
+  break;
+  case 330:
+current_state = 343; current_position++; goto _again;
+  break;
+  case 331:
+current_state = 344; current_position++; goto _again;
+  break;
+  case 332:
+current_state = 345; current_position++; goto _again;
+  break;
+  case 333:
+current_state = 346; current_position++; goto _again;
+  break;
+  case 334:
+ 
+    CheckMemoryAccess(instruction_begin - codeblock,
+                      base,
+                      index,
+                      restricted_register,
+                      valid_targets,
+                      &instruction_info_collected);
+   current_state = 301; current_position++; goto _again;
+  break;
+  case 335:
+current_state = 347; current_position++; goto _again;
+  break;
+  case 336:
+
+    CheckMemoryAccess(instruction_begin - codeblock,
+                      base,
+                      index,
+                      restricted_register,
+                      valid_targets,
+                      &instruction_info_collected);
+   current_state = 337; current_position++; goto _again;
+  break;
+  case 337:
+current_state = 353; current_position++; goto _again;
+  break;
+  case 338:
+current_state = 357; current_position++; goto _again;
+  break;
+  case 339:
+current_state = 354; current_position++; goto _again;
+  break;
+  case 340:
+current_state = 355; current_position++; goto _again;
+  break;
+  case 341:
+current_state = 356; current_position++; goto _again;
+  break;
+  case 342:
+ 
+    CheckMemoryAccess(instruction_begin - codeblock,
+                      base,
+                      index,
+                      restricted_register,
+                      valid_targets,
+                      &instruction_info_collected);
+   current_state = 337; current_position++; goto _again;
+  break;
+  case 343:
+ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT);  
+    instruction_info_collected |= MODIFIABLE_INSTRUCTION;
+   
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
+  break;
+  case 344:
+
+    SET_DISPLACEMENT_FORMAT(DISPNONE);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   
+    CheckMemoryAccess(instruction_begin - codeblock,
+                      base,
+                      index,
+                      restricted_register,
+                      valid_targets,
+                      &instruction_info_collected);
+   current_state = 337; current_position++; goto _again;
+  break;
+  case 345:
+current_state = 352; current_position++; goto _again;
+  break;
+  case 346:
+
+    // Case where ModRM.mod = 00 and ModRM.r/m = 101.
+    // In 64-bit mode it corresponds to RIP-relative addressing.
+    SET_MODRM_BASE(REG_RIP);
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 353; current_position++; goto _again;
+  break;
+  case 347:
+
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 357; current_position++; goto _again;
+  break;
+  case 348:
+current_state = 358; current_position++; goto _again;
+  break;
+  case 349:
+
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 353; current_position++; goto _again;
+  break;
+  case 350:
+current_state = 359; current_position++; goto _again;
+  break;
+  case 351:
+ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT);   SET_CPU_FEATURE(CPUFeature_SSE41);      current_state = 29; current_position++; goto _again;
+  break;
+  case 352:
+ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT);   SET_CPU_FEATURE(CPUFeature_SSE2);       
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
+  break;
+  case 353:
+ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT);   SET_CPU_FEATURE(CPUFeature_SSE2);       current_state = 29; current_position++; goto _again;
+  break;
+  case 354:
+current_state = 388; current_position++; goto _again;
+  break;
+  case 355:
+ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);  current_state = 394; current_position++; goto _again;
+  break;
+  case 356:
+ 
+    Process1OperandZeroExtends(&restricted_register,
+                               &instruction_info_collected, rex_prefix,
+                               operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 769; current_position++; goto _again;
+  break;
+  case 357:
+ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT);  
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 770; current_position++; goto _again;
+  break;
+  case 358:
+
+       instruction_info_collected |= SPECIAL_INSTRUCTION;
+     
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 770; current_position++; goto _again;
+  break;
+  case 359:
+
+       instruction_info_collected |= SPECIAL_INSTRUCTION;
+     
+      if (((current_position - codeblock) & kBundleMask) != kBundleMask)
+        instruction_info_collected |= BAD_CALL_ALIGNMENT;
+     
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
+  break;
+  case 360:
+current_state = 409; current_position++; goto _again;
+  break;
+  case 361:
+current_state = 411; current_position++; goto _again;
+  break;
+  case 362:
+ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);  
+    instruction_info_collected |= MODIFIABLE_INSTRUCTION;
+   
+    Process1OperandZeroExtends(&restricted_register,
+                               &instruction_info_collected, rex_prefix,
+                               operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 771; current_position++; goto _again;
+  break;
+  case 363:
+ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);  
+    instruction_info_collected |= MODIFIABLE_INSTRUCTION;
+   
+    Process1OperandZeroExtends(&restricted_register,
+                               &instruction_info_collected, rex_prefix,
+                               operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 775; current_position++; goto _again;
+  break;
+  case 364:
+
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   current_state = 416; current_position++; goto _again;
+  break;
+  case 365:
+
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 772; current_position++; goto _again;
+  break;
+  case 366:
+ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);  
+    instruction_info_collected |= MODIFIABLE_INSTRUCTION;
+   
+    Process1OperandZeroExtends(&restricted_register,
+                               &instruction_info_collected, rex_prefix,
+                               operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 773; current_position++; goto _again;
+  break;
+  case 367:
+
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   current_state = 421; current_position++; goto _again;
+  break;
+  case 368:
+
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 774; current_position++; goto _again;
+  break;
+  case 369:
+
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   current_state = 427; current_position++; goto _again;
+  break;
+  case 370:
+
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 776; current_position++; goto _again;
+  break;
+  case 371:
+current_state = 429; current_position++; goto _again;
+  break;
+  case 372:
+current_state = 443; current_position++; goto _again;
+  break;
+  case 373:
+current_state = 445; current_position++; goto _again;
+  break;
+  case 374:
+current_state = 448; current_position++; goto _again;
+  break;
+  case 375:
+current_state = 454; current_position++; goto _again;
+  break;
+  case 376:
+current_state = 459; current_position++; goto _again;
+  break;
+  case 377:
+current_state = 464; current_position++; goto _again;
+  break;
+  case 378:
+current_state = 469; current_position++; goto _again;
+  break;
+  case 379:
+current_state = 477; current_position++; goto _again;
+  break;
+  case 380:
+current_state = 483; current_position++; goto _again;
+  break;
+  case 381:
+current_state = 490; current_position++; goto _again;
+  break;
+  case 382:
+current_state = 495; current_position++; goto _again;
+  break;
+  case 383:
+current_state = 506; current_position++; goto _again;
+  break;
+  case 384:
+current_state = 511; current_position++; goto _again;
+  break;
+  case 385:
+current_state = 520; current_position++; goto _again;
+  break;
+  case 386:
+current_state = 449; current_position++; goto _again;
+  break;
+  case 387:
+current_state = 452; current_position++; goto _again;
+  break;
+  case 388:
+ SET_CPU_FEATURE(CPUFeature_BMI1);       
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   current_state = 451; current_position++; goto _again;
+  break;
+  case 389:
+ SET_CPU_FEATURE(CPUFeature_BMI1);       
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   current_state = 212; current_position++; goto _again;
+  break;
+  case 390:
+ SET_CPU_FEATURE(CPUFeature_BMI1);       
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   current_state = 213; current_position++; goto _again;
+  break;
+  case 391:
+current_state = 455; current_position++; goto _again;
+  break;
+  case 392:
+current_state = 457; current_position++; goto _again;
+  break;
+  case 393:
+ SET_CPU_FEATURE(CPUFeature_BMI1);       
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   current_state = 206; current_position++; goto _again;
+  break;
+  case 394:
+current_state = 460; current_position++; goto _again;
+  break;
+  case 395:
+current_state = 462; current_position++; goto _again;
+  break;
+  case 396:
+ SET_CPU_FEATURE(CPUFeature_BMI1);       
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   
+    SET_DISPLACEMENT_FORMAT(DISPNONE);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   
+    CheckMemoryAccess(instruction_begin - codeblock,
+                      base,
+                      index,
+                      restricted_register,
+                      valid_targets,
+                      &instruction_info_collected);
+   current_state = 102; current_position++; goto _again;
+  break;
+  case 397:
+ SET_CPU_FEATURE(CPUFeature_BMI1);       
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 211; current_position++; goto _again;
+  break;
+  case 398:
+ SET_CPU_FEATURE(CPUFeature_BMI1);       
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 207; current_position++; goto _again;
+  break;
+  case 399:
+ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);   SET_CPU_FEATURE(CPUFeature_BMI1);       current_state = 102; current_position++; goto _again;
+  break;
+  case 400:
+ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT);   SET_CPU_FEATURE(CPUFeature_BMI1);       current_state = 102; current_position++; goto _again;
+  break;
+  case 401:
+current_state = 465; current_position++; goto _again;
+  break;
+  case 402:
+current_state = 467; current_position++; goto _again;
+  break;
+  case 403:
+ SET_CPU_FEATURE(CPUFeature_BMI1);       
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   
+    // Case where ModRM.mod = 00 and ModRM.r/m = 101.
+    // In 64-bit mode it corresponds to RIP-relative addressing.
+    SET_MODRM_BASE(REG_RIP);
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 207; current_position++; goto _again;
+  break;
+  case 404:
+current_state = 470; current_position++; goto _again;
+  break;
+  case 405:
+current_state = 474; current_position++; goto _again;
+  break;
+  case 406:
+ SET_CPU_FEATURE(CPUFeature_TBM);        
+    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
+   current_state = 472; current_position++; goto _again;
+  break;
+  case 407:
+ SET_CPU_FEATURE(CPUFeature_TBM);        
+    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
+   current_state = 18; current_position++; goto _again;
+  break;
+  case 408:
+ SET_CPU_FEATURE(CPUFeature_TBM);        
+    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
+   current_state = 19; current_position++; goto _again;
+  break;
+  case 409:
+current_state = 478; current_position++; goto _again;
+  break;
+  case 410:
+current_state = 481; current_position++; goto _again;
+  break;
+  case 411:
+current_state = 482; current_position++; goto _again;
+  break;
+  case 412:
+current_state = 480; current_position++; goto _again;
+  break;
+  case 413:
+current_state = 484; current_position++; goto _again;
+  break;
+  case 414:
+current_state = 487; current_position++; goto _again;
+  break;
+  case 415:
+ SET_CPU_FEATURE(CPUFeature_TBM);        
+    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
+   current_state = 12; current_position++; goto _again;
+  break;
+  case 416:
+current_state = 491; current_position++; goto _again;
+  break;
+  case 417:
+current_state = 493; current_position++; goto _again;
+  break;
+  case 418:
+current_state = 494; current_position++; goto _again;
+  break;
+  case 419:
+current_state = 496; current_position++; goto _again;
+  break;
+  case 420:
+current_state = 499; current_position++; goto _again;
+  break;
+  case 421:
+current_state = 501; current_position++; goto _again;
+  break;
+  case 422:
+current_state = 504; current_position++; goto _again;
+  break;
+  case 423:
+ SET_CPU_FEATURE(CPUFeature_TBM);        
+    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
+   
+    SET_DISPLACEMENT_FORMAT(DISPNONE);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   
+    CheckMemoryAccess(instruction_begin - codeblock,
+                      base,
+                      index,
+                      restricted_register,
+                      valid_targets,
+                      &instruction_info_collected);
+   
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
+  break;
+  case 424:
+ SET_CPU_FEATURE(CPUFeature_TBM);        
+    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
+   
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 17; current_position++; goto _again;
+  break;
+  case 425:
+ SET_CPU_FEATURE(CPUFeature_TBM);        
+    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
+   
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 13; current_position++; goto _again;
+  break;
+  case 426:
+ SET_CPU_FEATURE(CPUFeature_TBM);        
+    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
+   
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
+  break;
+  case 427:
+ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);   SET_CPU_FEATURE(CPUFeature_LWP);        
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
+  break;
+  case 428:
+ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT);   SET_CPU_FEATURE(CPUFeature_LWP);        
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
+  break;
+  case 429:
+current_state = 507; current_position++; goto _again;
+  break;
+  case 430:
+current_state = 509; current_position++; goto _again;
+  break;
+  case 431:
+current_state = 510; current_position++; goto _again;
+  break;
+  case 432:
+current_state = 111; current_position++; goto _again;
+  break;
+  case 433:
+current_state = 512; current_position++; goto _again;
+  break;
+  case 434:
+current_state = 515; current_position++; goto _again;
+  break;
+  case 435:
+current_state = 516; current_position++; goto _again;
+  break;
+  case 436:
+current_state = 519; current_position++; goto _again;
+  break;
+  case 437:
+ SET_CPU_FEATURE(CPUFeature_TBM);        
+    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
+   
+    // Case where ModRM.mod = 00 and ModRM.r/m = 101.
+    // In 64-bit mode it corresponds to RIP-relative addressing.
+    SET_MODRM_BASE(REG_RIP);
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 13; current_position++; goto _again;
+  break;
+  case 438:
+current_state = 521; current_position++; goto _again;
+  break;
+  case 439:
+current_state = 523; current_position++; goto _again;
+  break;
+  case 440:
+current_state = 524; current_position++; goto _again;
+  break;
+  case 441:
+current_state = 526; current_position++; goto _again;
+  break;
+  case 442:
+current_state = 537; current_position++; goto _again;
+  break;
+  case 443:
+current_state = 545; current_position++; goto _again;
+  break;
+  case 444:
+current_state = 555; current_position++; goto _again;
+  break;
+  case 445:
+current_state = 562; current_position++; goto _again;
+  break;
+  case 446:
+current_state = 564; current_position++; goto _again;
+  break;
+  case 447:
+current_state = 574; current_position++; goto _again;
+  break;
+  case 448:
+current_state = 581; current_position++; goto _again;
+  break;
+  case 449:
+current_state = 591; current_position++; goto _again;
+  break;
+  case 450:
+current_state = 598; current_position++; goto _again;
+  break;
+  case 451:
+current_state = 603; current_position++; goto _again;
+  break;
+  case 452:
+current_state = 608; current_position++; goto _again;
+  break;
+  case 453:
+current_state = 613; current_position++; goto _again;
+  break;
+  case 454:
+current_state = 527; current_position++; goto _again;
+  break;
+  case 455:
+current_state = 529; current_position++; goto _again;
+  break;
+  case 456:
+current_state = 532; current_position++; goto _again;
+  break;
+  case 457:
+current_state = 534; current_position++; goto _again;
+  break;
+  case 458:
+current_state = 535; current_position++; goto _again;
+  break;
+  case 459:
+ SET_CPU_FEATURE(CPUFeature_BMI1);       
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   current_state = 472; current_position++; goto _again;
+  break;
+  case 460:
+ SET_CPU_FEATURE(CPUFeature_BMI1);       
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   current_state = 18; current_position++; goto _again;
+  break;
+  case 461:
+ SET_CPU_FEATURE(CPUFeature_BMI1);       
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   current_state = 19; current_position++; goto _again;
+  break;
+  case 462:
+current_state = 531; current_position++; goto _again;
+  break;
+  case 463:
+current_state = 538; current_position++; goto _again;
+  break;
+  case 464:
+current_state = 542; current_position++; goto _again;
+  break;
+  case 465:
+current_state = 544; current_position++; goto _again;
+  break;
+  case 466:
+current_state = 540; current_position++; goto _again;
+  break;
+  case 467:
+current_state = 546; current_position++; goto _again;
+  break;
+  case 468:
+current_state = 548; current_position++; goto _again;
+  break;
+  case 469:
+current_state = 550; current_position++; goto _again;
+  break;
+  case 470:
+current_state = 552; current_position++; goto _again;
+  break;
+  case 471:
+current_state = 553; current_position++; goto _again;
+  break;
+  case 472:
+ SET_CPU_FEATURE(CPUFeature_BMI1);       
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   current_state = 12; current_position++; goto _again;
+  break;
+  case 473:
+current_state = 556; current_position++; goto _again;
+  break;
+  case 474:
+current_state = 559; current_position++; goto _again;
+  break;
+  case 475:
+current_state = 561; current_position++; goto _again;
+  break;
+  case 476:
+current_state = 565; current_position++; goto _again;
+  break;
+  case 477:
+current_state = 567; current_position++; goto _again;
+  break;
+  case 478:
+current_state = 569; current_position++; goto _again;
+  break;
+  case 479:
+current_state = 571; current_position++; goto _again;
+  break;
+  case 480:
+current_state = 572; current_position++; goto _again;
+  break;
+  case 481:
+ SET_CPU_FEATURE(CPUFeature_BMI1);       
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   
+    SET_DISPLACEMENT_FORMAT(DISPNONE);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   
+    CheckMemoryAccess(instruction_begin - codeblock,
+                      base,
+                      index,
+                      restricted_register,
+                      valid_targets,
+                      &instruction_info_collected);
+   
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
   break;
   case 482:
  SET_CPU_FEATURE(CPUFeature_BMI1);       
@@ -8160,31 +8765,1050 @@ current_state = 148; current_position++; goto _again;
     SET_MODRM_SCALE(0);
    current_state = 17; current_position++; goto _again;
   break;
-  case 49:
-current_state = 37; current_position++; goto _again;
-  break;
-  case 463:
-current_state = 538; current_position++; goto _again;
-  break;
-  case 183:
-
-    instruction_info_collected |= MODIFIABLE_INSTRUCTION;
+  case 483:
+ SET_CPU_FEATURE(CPUFeature_BMI1);       
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
    
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 13; current_position++; goto _again;
+  break;
+  case 484:
+ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);   SET_CPU_FEATURE(CPUFeature_BMI1);       
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
+  break;
+  case 485:
+ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT);   SET_CPU_FEATURE(CPUFeature_BMI1);       
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
+  break;
+  case 486:
+current_state = 575; current_position++; goto _again;
+  break;
+  case 487:
+current_state = 578; current_position++; goto _again;
+  break;
+  case 488:
+current_state = 580; current_position++; goto _again;
+  break;
+  case 489:
+current_state = 582; current_position++; goto _again;
+  break;
+  case 490:
+current_state = 584; current_position++; goto _again;
+  break;
+  case 491:
+current_state = 586; current_position++; goto _again;
+  break;
+  case 492:
+current_state = 588; current_position++; goto _again;
+  break;
+  case 493:
+current_state = 589; current_position++; goto _again;
+  break;
+  case 494:
+ SET_CPU_FEATURE(CPUFeature_BMI1);       
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   
+    // Case where ModRM.mod = 00 and ModRM.r/m = 101.
+    // In 64-bit mode it corresponds to RIP-relative addressing.
+    SET_MODRM_BASE(REG_RIP);
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 13; current_position++; goto _again;
+  break;
+  case 495:
+current_state = 592; current_position++; goto _again;
+  break;
+  case 496:
+current_state = 595; current_position++; goto _again;
+  break;
+  case 497:
+current_state = 597; current_position++; goto _again;
+  break;
+  case 498:
+current_state = 599; current_position++; goto _again;
+  break;
+  case 499:
+current_state = 601; current_position++; goto _again;
+  break;
+  case 500:
+ SET_CPU_FEATURE(CPUFeature_BMI1);       
+    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
+   current_state = 472; current_position++; goto _again;
+  break;
+  case 501:
+ SET_CPU_FEATURE(CPUFeature_BMI1);       
+    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
+   current_state = 18; current_position++; goto _again;
+  break;
+  case 502:
+ SET_CPU_FEATURE(CPUFeature_BMI1);       
+    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
+   current_state = 19; current_position++; goto _again;
+  break;
+  case 503:
+current_state = 604; current_position++; goto _again;
+  break;
+  case 504:
+current_state = 606; current_position++; goto _again;
+  break;
+  case 505:
+ SET_CPU_FEATURE(CPUFeature_BMI1);       
+    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
+   current_state = 12; current_position++; goto _again;
+  break;
+  case 506:
+current_state = 609; current_position++; goto _again;
+  break;
+  case 507:
+current_state = 611; current_position++; goto _again;
+  break;
+  case 508:
+ SET_CPU_FEATURE(CPUFeature_BMI1);       
+    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
+   
+    SET_DISPLACEMENT_FORMAT(DISPNONE);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   
+    CheckMemoryAccess(instruction_begin - codeblock,
+                      base,
+                      index,
+                      restricted_register,
+                      valid_targets,
+                      &instruction_info_collected);
+   
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
+  break;
+  case 509:
+ SET_CPU_FEATURE(CPUFeature_BMI1);       
+    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
+   
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 17; current_position++; goto _again;
+  break;
+  case 510:
+ SET_CPU_FEATURE(CPUFeature_BMI1);       
+    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
+   
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 13; current_position++; goto _again;
+  break;
+  case 511:
+ SET_CPU_FEATURE(CPUFeature_BMI1);       
+    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
+   
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
+  break;
+  case 512:
+current_state = 614; current_position++; goto _again;
+  break;
+  case 513:
+current_state = 616; current_position++; goto _again;
+  break;
+  case 514:
+ SET_CPU_FEATURE(CPUFeature_BMI1);       
+    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
+   
+    // Case where ModRM.mod = 00 and ModRM.r/m = 101.
+    // In 64-bit mode it corresponds to RIP-relative addressing.
+    SET_MODRM_BASE(REG_RIP);
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 13; current_position++; goto _again;
+  break;
+  case 515:
+current_state = 623; current_position++; goto _again;
+  break;
+  case 516:
+current_state = 625; current_position++; goto _again;
+  break;
+  case 517:
+current_state = 639; current_position++; goto _again;
+  break;
+  case 518:
+current_state = 640; current_position++; goto _again;
+  break;
+  case 519:
+current_state = 645; current_position++; goto _again;
+  break;
+  case 520:
+ SET_CPU_FEATURE(CPUFeature_SSE2);       
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   
+    SET_DISPLACEMENT_FORMAT(DISPNONE);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   
+    CheckMemoryAccess(instruction_begin - codeblock,
+                      base,
+                      index,
+                      restricted_register,
+                      valid_targets,
+                      &instruction_info_collected);
+   
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
+  break;
+  case 521:
+ SET_CPU_FEATURE(CPUFeature_SSE2);       
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
    current_state = 12; current_position++; goto _again;
   break;
-  case 407:
- SET_CPU_FEATURE(CPUFeature_TBM);        
-    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
+  case 522:
+ SET_CPU_FEATURE(CPUFeature_SSE2);       
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   
+    // Case where ModRM.mod = 00 and ModRM.r/m = 101.
+    // In 64-bit mode it corresponds to RIP-relative addressing.
+    SET_MODRM_BASE(REG_RIP);
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 13; current_position++; goto _again;
+  break;
+  case 523:
+ SET_CPU_FEATURE(CPUFeature_SSE2);       
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 17; current_position++; goto _again;
+  break;
+  case 524:
+ SET_CPU_FEATURE(CPUFeature_SSE2);       
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
    current_state = 18; current_position++; goto _again;
   break;
-  case 418:
-current_state = 494; current_position++; goto _again;
+  case 525:
+ SET_CPU_FEATURE(CPUFeature_SSE2);       
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 13; current_position++; goto _again;
   break;
-  case 309:
- SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT);  
+  case 526:
+ SET_CPU_FEATURE(CPUFeature_SSE2);       
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   current_state = 19; current_position++; goto _again;
+  break;
+  case 527:
+ SET_CPU_FEATURE(CPUFeature_SSE42);      
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   
+    SET_DISPLACEMENT_FORMAT(DISPNONE);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   
+    CheckMemoryAccess(instruction_begin - codeblock,
+                      base,
+                      index,
+                      restricted_register,
+                      valid_targets,
+                      &instruction_info_collected);
+   
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
+  break;
+  case 528:
+ SET_CPU_FEATURE(CPUFeature_SSE42);      
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   current_state = 12; current_position++; goto _again;
+  break;
+  case 529:
+ SET_CPU_FEATURE(CPUFeature_SSE42);      
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   
+    // Case where ModRM.mod = 00 and ModRM.r/m = 101.
+    // In 64-bit mode it corresponds to RIP-relative addressing.
+    SET_MODRM_BASE(REG_RIP);
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 13; current_position++; goto _again;
+  break;
+  case 530:
+ SET_CPU_FEATURE(CPUFeature_SSE42);      
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 17; current_position++; goto _again;
+  break;
+  case 531:
+ SET_CPU_FEATURE(CPUFeature_SSE42);      
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   current_state = 18; current_position++; goto _again;
+  break;
+  case 532:
+ SET_CPU_FEATURE(CPUFeature_SSE42);      
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 13; current_position++; goto _again;
+  break;
+  case 533:
+ SET_CPU_FEATURE(CPUFeature_SSE42);      
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   current_state = 19; current_position++; goto _again;
+  break;
+  case 534:
+ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);   SET_CPU_FEATURE(CPUFeature_SSE42);      
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
+  break;
+  case 535:
+current_state = 635; current_position++; goto _again;
+  break;
+  case 536:
+ current_state = 636; current_position++; goto _again;
+  break;
+  case 537:
+ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT);   SET_CPU_FEATURE(CPUFeature_SSE42);      
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
+  break;
+  case 538:
+current_state = 652; current_position++; goto _again;
+  break;
+  case 539:
+current_state = 653; current_position++; goto _again;
+  break;
+  case 540:
+current_state = 659; current_position++; goto _again;
+  break;
+  case 541:
+ SET_CPU_FEATURE(CPUFeature_SSE);        
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   
+    SET_DISPLACEMENT_FORMAT(DISPNONE);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   
+    CheckMemoryAccess(instruction_begin - codeblock,
+                      base,
+                      index,
+                      restricted_register,
+                      valid_targets,
+                      &instruction_info_collected);
+   
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
+  break;
+  case 542:
+ SET_CPU_FEATURE(CPUFeature_SSE);        
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   current_state = 12; current_position++; goto _again;
+  break;
+  case 543:
+ SET_CPU_FEATURE(CPUFeature_SSE);        
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   
+    // Case where ModRM.mod = 00 and ModRM.r/m = 101.
+    // In 64-bit mode it corresponds to RIP-relative addressing.
+    SET_MODRM_BASE(REG_RIP);
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 13; current_position++; goto _again;
+  break;
+  case 544:
+ SET_CPU_FEATURE(CPUFeature_SSE);        
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 17; current_position++; goto _again;
+  break;
+  case 545:
+ SET_CPU_FEATURE(CPUFeature_SSE);        
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   current_state = 18; current_position++; goto _again;
+  break;
+  case 546:
+ SET_CPU_FEATURE(CPUFeature_SSE);        
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 13; current_position++; goto _again;
+  break;
+  case 547:
+ SET_CPU_FEATURE(CPUFeature_SSE);        
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   current_state = 19; current_position++; goto _again;
+  break;
+  case 548:
+ SET_CPU_FEATURE(CPUFeature_POPCNT);     
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   
+    SET_DISPLACEMENT_FORMAT(DISPNONE);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   
+    CheckMemoryAccess(instruction_begin - codeblock,
+                      base,
+                      index,
+                      restricted_register,
+                      valid_targets,
+                      &instruction_info_collected);
+   
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
+  break;
+  case 549:
+ SET_CPU_FEATURE(CPUFeature_POPCNT);     
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   current_state = 12; current_position++; goto _again;
+  break;
+  case 550:
+ SET_CPU_FEATURE(CPUFeature_POPCNT);     
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   
+    // Case where ModRM.mod = 00 and ModRM.r/m = 101.
+    // In 64-bit mode it corresponds to RIP-relative addressing.
+    SET_MODRM_BASE(REG_RIP);
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 13; current_position++; goto _again;
+  break;
+  case 551:
+ SET_CPU_FEATURE(CPUFeature_POPCNT);     
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 17; current_position++; goto _again;
+  break;
+  case 552:
+ SET_CPU_FEATURE(CPUFeature_POPCNT);     
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   current_state = 18; current_position++; goto _again;
+  break;
+  case 553:
+ SET_CPU_FEATURE(CPUFeature_POPCNT);     
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 13; current_position++; goto _again;
+  break;
+  case 554:
+ SET_CPU_FEATURE(CPUFeature_POPCNT);     
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   current_state = 19; current_position++; goto _again;
+  break;
+  case 555:
+ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);   SET_CPU_FEATURE(CPUFeature_POPCNT);     
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
+  break;
+  case 556:
+ SET_CPU_FEATURE(CPUFeature_TZCNT);      
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   
+    SET_DISPLACEMENT_FORMAT(DISPNONE);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   
+    CheckMemoryAccess(instruction_begin - codeblock,
+                      base,
+                      index,
+                      restricted_register,
+                      valid_targets,
+                      &instruction_info_collected);
+   
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
+  break;
+  case 557:
+ SET_CPU_FEATURE(CPUFeature_TZCNT);      
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   current_state = 12; current_position++; goto _again;
+  break;
+  case 558:
+ SET_CPU_FEATURE(CPUFeature_TZCNT);      
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   
+    // Case where ModRM.mod = 00 and ModRM.r/m = 101.
+    // In 64-bit mode it corresponds to RIP-relative addressing.
+    SET_MODRM_BASE(REG_RIP);
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 13; current_position++; goto _again;
+  break;
+  case 559:
+ SET_CPU_FEATURE(CPUFeature_TZCNT);      
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 17; current_position++; goto _again;
+  break;
+  case 560:
+ SET_CPU_FEATURE(CPUFeature_TZCNT);      
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   current_state = 18; current_position++; goto _again;
+  break;
+  case 561:
+ SET_CPU_FEATURE(CPUFeature_TZCNT);      
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 13; current_position++; goto _again;
+  break;
+  case 562:
+ SET_CPU_FEATURE(CPUFeature_TZCNT);      
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   current_state = 19; current_position++; goto _again;
+  break;
+  case 563:
+ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);   SET_CPU_FEATURE(CPUFeature_TZCNT);      
     Process1Operand(&restricted_register, &instruction_info_collected,
                     rex_prefix, operand_states);
    
@@ -8279,327 +9903,18 @@ current_state = 494; current_position++; goto _again;
     index = 0;
    current_state = 760; current_position++; goto _again;
   break;
-  case 274:
-current_state = 234; current_position++; goto _again;
-  break;
-  case 284:
-
-    Process1Operand(&restricted_register, &instruction_info_collected,
-                    rex_prefix, operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 764; current_position++; goto _again;
-  break;
-  case 182:
-
-    instruction_info_collected |= MODIFIABLE_INSTRUCTION;
-   
+  case 565:
+ SET_CPU_FEATURE(CPUFeature_LZCNT);      
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    SET_DISPLACEMENT_FORMAT(DISPNONE);
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   
-    CheckMemoryAccess(instruction_begin - codeblock,
-                      base,
-                      index,
-                      restricted_register,
-                      valid_targets,
-                      &instruction_info_collected);
-   
-    Process1Operand(&restricted_register, &instruction_info_collected,
-                    rex_prefix, operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 760; current_position++; goto _again;
+   current_state = 12; current_position++; goto _again;
   break;
-  case 409:
-current_state = 478; current_position++; goto _again;
-  break;
-  case 674:
-current_state = 748; current_position++; goto _again;
-  break;
-  case 509:
- SET_CPU_FEATURE(CPUFeature_BMI1);       
-    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
-   
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 17; current_position++; goto _again;
-  break;
-  case 493:
-current_state = 589; current_position++; goto _again;
-  break;
-  case 38:
- 
-    Process1Operand(&restricted_register, &instruction_info_collected,
-                    rex_prefix, operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 760; current_position++; goto _again;
-  break;
-  case 325:
-
+  case 566:
+ SET_CPU_FEATURE(CPUFeature_LZCNT);      
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 348; current_position++; goto _again;
-  break;
-  case 599:
-
-       instruction_info_collected |= SPECIAL_INSTRUCTION;
-     
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 784; current_position++; goto _again;
-  break;
-  case 507:
-current_state = 611; current_position++; goto _again;
-  break;
-  case 484:
- SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);   SET_CPU_FEATURE(CPUFeature_BMI1);       
-    Process1Operand(&restricted_register, &instruction_info_collected,
-                    rex_prefix, operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 760; current_position++; goto _again;
-  break;
-  case 90:
-current_state = 75; current_position++; goto _again;
-  break;
-  case 540:
-current_state = 659; current_position++; goto _again;
-  break;
-  case 283:
-
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 257; current_position++; goto _again;
-  break;
-  case 151:
-
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 128; current_position++; goto _again;
-  break;
-  case 253:
-current_state = 216; current_position++; goto _again;
-  break;
-  case 216:
- SET_CPU_FEATURE(CPUFeature_x87);         SET_OPERAND_NAME(0, REG_RAX);  
-    Process1Operand(&restricted_register, &instruction_info_collected,
-                    rex_prefix, operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 760; current_position++; goto _again;
-  break;
-  case 444:
-current_state = 555; current_position++; goto _again;
-  break;
-  case 612:
-current_state = 750; current_position++; goto _again;
-  break;
-  case 512:
-current_state = 614; current_position++; goto _again;
-  break;
-  case 437:
- SET_CPU_FEATURE(CPUFeature_TBM);        
-    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
    
     // Case where ModRM.mod = 00 and ModRM.r/m = 101.
     // In 64-bit mode it corresponds to RIP-relative addressing.
@@ -8608,8 +9923,123 @@ current_state = 614; current_position++; goto _again;
     SET_MODRM_SCALE(0);
    current_state = 13; current_position++; goto _again;
   break;
-  case 280:
-current_state = 243; current_position++; goto _again;
+  case 567:
+ SET_CPU_FEATURE(CPUFeature_LZCNT);      
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 17; current_position++; goto _again;
+  break;
+  case 568:
+ SET_CPU_FEATURE(CPUFeature_LZCNT);      
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   current_state = 18; current_position++; goto _again;
+  break;
+  case 569:
+ SET_CPU_FEATURE(CPUFeature_LZCNT);      
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+   current_state = 13; current_position++; goto _again;
+  break;
+  case 570:
+ SET_CPU_FEATURE(CPUFeature_LZCNT);      
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
+   current_state = 19; current_position++; goto _again;
+  break;
+  case 571:
+ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);   SET_CPU_FEATURE(CPUFeature_LZCNT);      
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
+  break;
+  case 572:
+ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT);   SET_CPU_FEATURE(CPUFeature_POPCNT);     
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 760; current_position++; goto _again;
   break;
   case 573:
  SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT);   SET_CPU_FEATURE(CPUFeature_TZCNT);      
@@ -8650,1482 +10080,6 @@ current_state = 243; current_position++; goto _again;
     index = 0;
    current_state = 760; current_position++; goto _again;
   break;
-  case 673:
-current_state = 746; current_position++; goto _again;
-  break;
-  case 448:
-current_state = 581; current_position++; goto _again;
-  break;
-  case 198:
-
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    // Case where ModRM.mod = 00 and ModRM.r/m = 101.
-    // In 64-bit mode it corresponds to RIP-relative addressing.
-    SET_MODRM_BASE(REG_RIP);
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 160; current_position++; goto _again;
-  break;
-  case 242:
-current_state = 210; current_position++; goto _again;
-  break;
-  case 165:
- SET_OPERAND_FORMAT(0, OPERAND_FORMAT_8_BIT);  current_state = 29; current_position++; goto _again;
-  break;
-  case 227:
-
-    SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
-                        BaseExtentionFromREX(GET_REX_PREFIX()) |
-                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_OPERAND_FORMAT(1, OPERAND_FORMAT_64_BIT);   SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT);  
-    Process2Operands(&restricted_register, &instruction_info_collected,
-                     rex_prefix, operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 760; current_position++; goto _again;
-  break;
-  case 638:
-current_state = 414; current_position++; goto _again;
-  break;
-  case 546:
- SET_CPU_FEATURE(CPUFeature_SSE);        
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 13; current_position++; goto _again;
-  break;
-  case 648:
-current_state = 434; current_position++; goto _again;
-  break;
-  case 616:
-current_state = 711; current_position++; goto _again;
-  break;
-  case 241:
-current_state = 209; current_position++; goto _again;
-  break;
-  case 443:
-current_state = 545; current_position++; goto _again;
-  break;
-  case 386:
-current_state = 449; current_position++; goto _again;
-  break;
-  case 271:
-current_state = 231; current_position++; goto _again;
-  break;
-  case 338:
-current_state = 357; current_position++; goto _again;
-  break;
-  case 355:
- SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);  current_state = 394; current_position++; goto _again;
-  break;
-  case 8:
- 
-    CheckMemoryAccess(instruction_begin - codeblock,
-                      base,
-                      index,
-                      restricted_register,
-                      valid_targets,
-                      &instruction_info_collected);
-   
-    Process0Operands(&restricted_register, &instruction_info_collected);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 760; current_position++; goto _again;
-  break;
-  case 475:
-current_state = 561; current_position++; goto _again;
-  break;
-  case 194:
-
-    instruction_info_collected |= MODIFIABLE_INSTRUCTION;
-   
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 22; current_position++; goto _again;
-  break;
-  case 425:
- SET_CPU_FEATURE(CPUFeature_TBM);        
-    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
-   
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 13; current_position++; goto _again;
-  break;
-  case 54:
-current_state = 44; current_position++; goto _again;
-  break;
-  case 558:
- SET_CPU_FEATURE(CPUFeature_TZCNT);      
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    // Case where ModRM.mod = 00 and ModRM.r/m = 101.
-    // In 64-bit mode it corresponds to RIP-relative addressing.
-    SET_MODRM_BASE(REG_RIP);
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 13; current_position++; goto _again;
-  break;
-  case 250:
-
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 216; current_position++; goto _again;
-  break;
-  case 390:
- SET_CPU_FEATURE(CPUFeature_BMI1);       
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 213; current_position++; goto _again;
-  break;
-  case 415:
- SET_CPU_FEATURE(CPUFeature_TBM);        
-    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
-   current_state = 12; current_position++; goto _again;
-  break;
-  case 367:
-
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 421; current_position++; goto _again;
-  break;
-  case 66:
-current_state = 49; current_position++; goto _again;
-  break;
-  case 633:
-current_state = 399; current_position++; goto _again;
-  break;
-  case 129:
- SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT);  
-    Process1Operand(&restricted_register, &instruction_info_collected,
-                    rex_prefix, operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 760; current_position++; goto _again;
-  break;
-  case 273:
-current_state = 233; current_position++; goto _again;
-  break;
-  case 320:
-current_state = 338; current_position++; goto _again;
-  break;
-  case 296:
-current_state = 281; current_position++; goto _again;
-  break;
-  case 548:
- SET_CPU_FEATURE(CPUFeature_POPCNT);     
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    SET_DISPLACEMENT_FORMAT(DISPNONE);
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   
-    CheckMemoryAccess(instruction_begin - codeblock,
-                      base,
-                      index,
-                      restricted_register,
-                      valid_targets,
-                      &instruction_info_collected);
-   
-    Process1Operand(&restricted_register, &instruction_info_collected,
-                    rex_prefix, operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 760; current_position++; goto _again;
-  break;
-  case 394:
-current_state = 460; current_position++; goto _again;
-  break;
-  case 221:
- SET_OPERAND_FORMAT(1, OPERAND_FORMAT_64_BIT);   SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT);   SET_OPERAND_NAME(1, REG_RAX);  
-    Process2Operands(&restricted_register, &instruction_info_collected,
-                     rex_prefix, operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 760; current_position++; goto _again;
-  break;
-  case 91:
-current_state = 67; current_position++; goto _again;
-  break;
-  case 624:
-current_state = 276; current_position++; goto _again;
-  break;
-  case 5:
-current_state = 4; current_position++; goto _again;
-  break;
-  case 213:
-current_state = 144; current_position++; goto _again;
-  break;
-  case 80:
- SET_CPU_FEATURE(CPUFeature_MOVBE);      
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 17; current_position++; goto _again;
-  break;
-  case 451:
-current_state = 603; current_position++; goto _again;
-  break;
-  case 29:
-
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 22; current_position++; goto _again;
-  break;
-  case 120:
-current_state = 104; current_position++; goto _again;
-  break;
-  case 533:
- SET_CPU_FEATURE(CPUFeature_SSE42);      
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 19; current_position++; goto _again;
-  break;
-  case 364:
-
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 416; current_position++; goto _again;
-  break;
-  case 243:
- 
-    CheckMemoryAccess(instruction_begin - codeblock,
-                      base,
-                      index,
-                      restricted_register,
-                      valid_targets,
-                      &instruction_info_collected);
-   current_state = 102; current_position++; goto _again;
-  break;
-  case 233:
-
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 211; current_position++; goto _again;
-  break;
-  case 136:
-
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 118; current_position++; goto _again;
-  break;
-  case 605:
-current_state = 154; current_position++; goto _again;
-  break;
-  case 449:
-current_state = 591; current_position++; goto _again;
-  break;
-  case 613:
-current_state = 727; current_position++; goto _again;
-  break;
-  case 592:
-
-    Process1Operand(&restricted_register, &instruction_info_collected,
-                    rex_prefix, operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 781; current_position++; goto _again;
-  break;
-  case 188:
-
-    instruction_info_collected |= MODIFIABLE_INSTRUCTION;
-   
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 19; current_position++; goto _again;
-  break;
-  case 600:
- SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT);  
-    Process1Operand(&restricted_register, &instruction_info_collected,
-                    rex_prefix, operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 785; current_position++; goto _again;
-  break;
-  case 485:
- SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT);   SET_CPU_FEATURE(CPUFeature_BMI1);       
-    Process1Operand(&restricted_register, &instruction_info_collected,
-                    rex_prefix, operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 760; current_position++; goto _again;
-  break;
-  case 319:
- SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);   SET_CPU_FEATURE(CPUFeature_SSE2);       current_state = 29; current_position++; goto _again;
-  break;
-  case 48:
-
-    SET_DISPLACEMENT_FORMAT(DISPNONE);
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   
-    Process0Operands(&restricted_register, &instruction_info_collected);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 760; current_position++; goto _again;
-  break;
-  case 491:
-current_state = 586; current_position++; goto _again;
-  break;
-  case 132:
- SET_OPERAND_FORMAT(0, OPERAND_FORMAT_8_BIT);  
-    instruction_info_collected |= MODIFIABLE_INSTRUCTION;
-   current_state = 29; current_position++; goto _again;
-  break;
-  case 176:
- SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);  current_state = 150; current_position++; goto _again;
-  break;
-  case 63:
-current_state = 52; current_position++; goto _again;
-  break;
-  case 301:
-current_state = 288; current_position++; goto _again;
-  break;
-  case 225:
- SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT);   SET_CPU_FEATURE(CPUFeature_MMX);        
-    Process1Operand(&restricted_register, &instruction_info_collected,
-                    rex_prefix, operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 760; current_position++; goto _again;
-  break;
-  case 133:
- SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);  
-    instruction_info_collected |= MODIFIABLE_INSTRUCTION;
-   current_state = 30; current_position++; goto _again;
-  break;
-  case 289:
-
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 270; current_position++; goto _again;
-  break;
-  case 601:
-
-       instruction_info_collected |= SPECIAL_INSTRUCTION;
-     
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 785; current_position++; goto _again;
-  break;
-  case 155:
-
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 129; current_position++; goto _again;
-  break;
-  case 361:
-current_state = 411; current_position++; goto _again;
-  break;
-  case 246:
-
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 215; current_position++; goto _again;
-  break;
-  case 107:
- SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);   SET_CPU_FEATURE(CPUFeature_SSE);        
-    Process1Operand(&restricted_register, &instruction_info_collected,
-                    rex_prefix, operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 760; current_position++; goto _again;
-  break;
-  case 207:
-current_state = 163; current_position++; goto _again;
-  break;
-  case 365:
-
-    Process1Operand(&restricted_register, &instruction_info_collected,
-                    rex_prefix, operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 772; current_position++; goto _again;
-  break;
-  case 331:
-current_state = 344; current_position++; goto _again;
-  break;
-  case 77:
- SET_CPU_FEATURE(CPUFeature_MOVBE);      
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    SET_DISPLACEMENT_FORMAT(DISPNONE);
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   
-    CheckMemoryAccess(instruction_begin - codeblock,
-                      base,
-                      index,
-                      restricted_register,
-                      valid_targets,
-                      &instruction_info_collected);
-   
-    Process1Operand(&restricted_register, &instruction_info_collected,
-                    rex_prefix, operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 760; current_position++; goto _again;
-  break;
-  case 196:
-
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    SET_DISPLACEMENT_FORMAT(DISPNONE);
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   
-    Process1OperandZeroExtends(&restricted_register,
-                               &instruction_info_collected, rex_prefix,
-                               operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 760; current_position++; goto _again;
-  break;
-  case 494:
- SET_CPU_FEATURE(CPUFeature_BMI1);       
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    // Case where ModRM.mod = 00 and ModRM.r/m = 101.
-    // In 64-bit mode it corresponds to RIP-relative addressing.
-    SET_MODRM_BASE(REG_RIP);
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 13; current_position++; goto _again;
-  break;
-  case 102:
- SET_CPU_FEATURE(CPUFeature_CMOV);       
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 17; current_position++; goto _again;
-  break;
-  case 468:
-current_state = 548; current_position++; goto _again;
-  break;
-  case 656:
-current_state = 692; current_position++; goto _again;
-  break;
-  case 348:
-current_state = 358; current_position++; goto _again;
-  break;
-  case 217:
-current_state = 183; current_position++; goto _again;
-  break;
-  case 170:
-current_state = 140; current_position++; goto _again;
-  break;
-  case 476:
-current_state = 565; current_position++; goto _again;
-  break;
-  case 167:
-current_state = 139; current_position++; goto _again;
-  break;
-  case 354:
-current_state = 388; current_position++; goto _again;
-  break;
-  case 147:
-current_state = 122; current_position++; goto _again;
-  break;
-  case 286:
-
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 262; current_position++; goto _again;
-  break;
-  case 559:
- SET_CPU_FEATURE(CPUFeature_TZCNT);      
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 17; current_position++; goto _again;
-  break;
-  case 505:
- SET_CPU_FEATURE(CPUFeature_BMI1);       
-    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
-   current_state = 12; current_position++; goto _again;
-  break;
-  case 53:
-
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 38; current_position++; goto _again;
-  break;
-  case 447:
-current_state = 574; current_position++; goto _again;
-  break;
-  case 343:
- SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT);  
-    instruction_info_collected |= MODIFIABLE_INSTRUCTION;
-   
-    Process1Operand(&restricted_register, &instruction_info_collected,
-                    rex_prefix, operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 760; current_position++; goto _again;
-  break;
-  case 432:
-current_state = 111; current_position++; goto _again;
-  break;
-  case 317:
- SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT);  current_state = 29; current_position++; goto _again;
-  break;
-  case 384:
-current_state = 511; current_position++; goto _again;
-  break;
-  case 426:
- SET_CPU_FEATURE(CPUFeature_TBM);        
-    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
-   
-    Process1Operand(&restricted_register, &instruction_info_collected,
-                    rex_prefix, operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 760; current_position++; goto _again;
-  break;
-  case 607:
-current_state = 403; current_position++; goto _again;
-  break;
-  case 634:
-current_state = 400; current_position++; goto _again;
-  break;
-  case 148:
- 
-    CheckMemoryAccess(instruction_begin - codeblock,
-                      base,
-                      index,
-                      restricted_register,
-                      valid_targets,
-                      &instruction_info_collected);
-   current_state = 30; current_position++; goto _again;
-  break;
-  case 442:
-current_state = 537; current_position++; goto _again;
-  break;
-  case 363:
- SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);  
-    instruction_info_collected |= MODIFIABLE_INSTRUCTION;
-   
-    Process1OperandZeroExtends(&restricted_register,
-                               &instruction_info_collected, rex_prefix,
-                               operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 775; current_position++; goto _again;
-  break;
-  case 96:
-current_state = 72; current_position++; goto _again;
-  break;
-  case 104:
- SET_CPU_FEATURE(CPUFeature_CMOV);       
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 13; current_position++; goto _again;
-  break;
-  case 513:
-current_state = 616; current_position++; goto _again;
-  break;
-  case 70:
-
-    SET_DISPLACEMENT_FORMAT(DISPNONE);
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   
-    CheckMemoryAccess(instruction_begin - codeblock,
-                      base,
-                      index,
-                      restricted_register,
-                      valid_targets,
-                      &instruction_info_collected);
-   
-    Process0Operands(&restricted_register, &instruction_info_collected);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 760; current_position++; goto _again;
-  break;
-  case 551:
- SET_CPU_FEATURE(CPUFeature_POPCNT);     
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 17; current_position++; goto _again;
-  break;
-  case 353:
- SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT);   SET_CPU_FEATURE(CPUFeature_SSE2);       current_state = 29; current_position++; goto _again;
-  break;
-  case 224:
- SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT);   SET_CPU_FEATURE(CPUFeature_SSE);        
-    Process1Operand(&restricted_register, &instruction_info_collected,
-                    rex_prefix, operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 760; current_position++; goto _again;
-  break;
-  case 344:
-
-    SET_DISPLACEMENT_FORMAT(DISPNONE);
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   
-    CheckMemoryAccess(instruction_begin - codeblock,
-                      base,
-                      index,
-                      restricted_register,
-                      valid_targets,
-                      &instruction_info_collected);
-   current_state = 337; current_position++; goto _again;
-  break;
-  case 2:
-current_state = 3; current_position++; goto _again;
-  break;
-  case 676:
-current_state = 752; current_position++; goto _again;
-  break;
-  case 68:
-current_state = 51; current_position++; goto _again;
-  break;
-  case 199:
-
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 164; current_position++; goto _again;
-  break;
-  case 154:
-
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 134; current_position++; goto _again;
-  break;
-  case 391:
-current_state = 455; current_position++; goto _again;
-  break;
-  case 4:
- SET_OPERAND_FORMAT(0, OPERAND_FORMAT_8_BIT);  
-    Process1Operand(&restricted_register, &instruction_info_collected,
-                    rex_prefix, operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 760; current_position++; goto _again;
-  break;
-  case 123:
-current_state = 112; current_position++; goto _again;
-  break;
-  case 290:
-
-    Process1Operand(&restricted_register, &instruction_info_collected,
-                    rex_prefix, operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 768; current_position++; goto _again;
-  break;
-  case 456:
-current_state = 532; current_position++; goto _again;
-  break;
   case 574:
  SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT);   SET_CPU_FEATURE(CPUFeature_LZCNT);      
     Process1Operand(&restricted_register, &instruction_info_collected,
@@ -10165,8 +10119,19 @@ current_state = 532; current_position++; goto _again;
     index = 0;
    current_state = 760; current_position++; goto _again;
   break;
-  case 9:
+  case 575:
+current_state = 666; current_position++; goto _again;
+  break;
+  case 576:
+current_state = 670; current_position++; goto _again;
+  break;
+  case 577:
+current_state = 672; current_position++; goto _again;
+  break;
+  case 578:
  SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);  
+    instruction_info_collected |= MODIFIABLE_INSTRUCTION;
+   
     Process1OperandZeroExtends(&restricted_register,
                                &instruction_info_collected, rex_prefix,
                                operand_states);
@@ -10203,77 +10168,17 @@ current_state = 532; current_position++; goto _again;
     operand_states = 0;
     base = 0;
     index = 0;
-   current_state = 760; current_position++; goto _again;
+   current_state = 777; current_position++; goto _again;
   break;
-  case 228:
- SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT);   SET_CPU_FEATURE(CPUFeature_EMMXSSE);    current_state = 29; current_position++; goto _again;
-  break;
-  case 356:
- 
-    Process1OperandZeroExtends(&restricted_register,
-                               &instruction_info_collected, rex_prefix,
-                               operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
+  case 579:
 
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 769; current_position++; goto _again;
-  break;
-  case 399:
- SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);   SET_CPU_FEATURE(CPUFeature_BMI1);       current_state = 102; current_position++; goto _again;
-  break;
-  case 620:
-current_state = 271; current_position++; goto _again;
-  break;
-  case 556:
- SET_CPU_FEATURE(CPUFeature_TZCNT);      
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    SET_DISPLACEMENT_FORMAT(DISPNONE);
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   
-    CheckMemoryAccess(instruction_begin - codeblock,
-                      base,
-                      index,
-                      restricted_register,
-                      valid_targets,
-                      &instruction_info_collected);
-   
+   current_state = 680; current_position++; goto _again;
+  break;
+  case 580:
+
     Process1Operand(&restricted_register, &instruction_info_collected,
                     rex_prefix, operand_states);
    
@@ -10309,219 +10214,16 @@ current_state = 271; current_position++; goto _again;
     operand_states = 0;
     base = 0;
     index = 0;
-   current_state = 760; current_position++; goto _again;
+   current_state = 778; current_position++; goto _again;
   break;
-  case 6:
-current_state = 5; current_position++; goto _again;
+  case 581:
+current_state = 684; current_position++; goto _again;
   break;
-  case 481:
- SET_CPU_FEATURE(CPUFeature_BMI1);       
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    SET_DISPLACEMENT_FORMAT(DISPNONE);
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   
-    CheckMemoryAccess(instruction_begin - codeblock,
-                      base,
-                      index,
-                      restricted_register,
-                      valid_targets,
-                      &instruction_info_collected);
-   
-    Process1Operand(&restricted_register, &instruction_info_collected,
-                    rex_prefix, operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 760; current_position++; goto _again;
+  case 582:
+current_state = 686; current_position++; goto _again;
   break;
-  case 589:
-current_state = 709; current_position++; goto _again;
-  break;
-  case 359:
-
-       instruction_info_collected |= SPECIAL_INSTRUCTION;
-     
-      if (((current_position - codeblock) & kBundleMask) != kBundleMask)
-        instruction_info_collected |= BAD_CALL_ALIGNMENT;
-     
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 760; current_position++; goto _again;
-  break;
-  case 82:
- SET_CPU_FEATURE(CPUFeature_MOVBE);      
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 13; current_position++; goto _again;
-  break;
-  case 42:
- 
-    Process1OperandZeroExtends(&restricted_register,
-                               &instruction_info_collected, rex_prefix,
-                               operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 760; current_position++; goto _again;
-  break;
-  case 522:
- SET_CPU_FEATURE(CPUFeature_SSE2);       
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    // Case where ModRM.mod = 00 and ModRM.r/m = 101.
-    // In 64-bit mode it corresponds to RIP-relative addressing.
-    SET_MODRM_BASE(REG_RIP);
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 13; current_position++; goto _again;
-  break;
-  case 122:
-current_state = 108; current_position++; goto _again;
-  break;
-  case 547:
- SET_CPU_FEATURE(CPUFeature_SSE);        
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 19; current_position++; goto _again;
-  break;
-  case 152:
-
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    // Case where ModRM.mod = 00 and ModRM.r/m = 101.
-    // In 64-bit mode it corresponds to RIP-relative addressing.
-    SET_MODRM_BASE(REG_RIP);
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 129; current_position++; goto _again;
-  break;
-  case 153:
-
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 133; current_position++; goto _again;
-  break;
-  case 640:
-current_state = 674; current_position++; goto _again;
-  break;
-  case 644:
-current_state = 425; current_position++; goto _again;
+  case 583:
+current_state = 689; current_position++; goto _again;
   break;
   case 584:
  SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT);  
@@ -10562,43 +10264,10 @@ current_state = 425; current_position++; goto _again;
     index = 0;
    current_state = 779; current_position++; goto _again;
   break;
-  case 524:
- SET_CPU_FEATURE(CPUFeature_SSE2);       
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 18; current_position++; goto _again;
-  break;
-  case 575:
-current_state = 666; current_position++; goto _again;
-  break;
-  case 417:
-current_state = 493; current_position++; goto _again;
-  break;
-  case 19:
-current_state = 14; current_position++; goto _again;
-  break;
-  case 27:
+  case 585:
 
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 26; current_position++; goto _again;
-  break;
-  case 651:
-current_state = 438; current_position++; goto _again;
-  break;
-  case 427:
- SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);   SET_CPU_FEATURE(CPUFeature_LWP);        
-    Process1Operand(&restricted_register, &instruction_info_collected,
-                    rex_prefix, operand_states);
-   
+       instruction_info_collected |= SPECIAL_INSTRUCTION;
+     
     /* Call user-supplied callback.  */
     instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -10631,187 +10300,24 @@ current_state = 438; current_position++; goto _again;
     operand_states = 0;
     base = 0;
     index = 0;
-   current_state = 760; current_position++; goto _again;
+   current_state = 779; current_position++; goto _again;
   break;
-  case 649:
-current_state = 435; current_position++; goto _again;
+  case 586:
+current_state = 701; current_position++; goto _again;
   break;
-  case 514:
- SET_CPU_FEATURE(CPUFeature_BMI1);       
-    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
+  case 587:
+current_state = 703; current_position++; goto _again;
+  break;
+  case 588:
+current_state = 707; current_position++; goto _again;
+  break;
+  case 589:
+current_state = 709; current_position++; goto _again;
+  break;
+  case 590:
+ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);  
+    instruction_info_collected |= MODIFIABLE_INSTRUCTION;
    
-    // Case where ModRM.mod = 00 and ModRM.r/m = 101.
-    // In 64-bit mode it corresponds to RIP-relative addressing.
-    SET_MODRM_BASE(REG_RIP);
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 13; current_position++; goto _again;
-  break;
-  case 333:
-current_state = 346; current_position++; goto _again;
-  break;
-  case 306:
- SET_OPERAND_NAME(0, REG_RAX);  current_state = 301; current_position++; goto _again;
-  break;
-  case 646:
-current_state = 432; current_position++; goto _again;
-  break;
-  case 291:
-
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 279; current_position++; goto _again;
-  break;
-  case 105:
- SET_CPU_FEATURE(CPUFeature_CMOV);       
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 19; current_position++; goto _again;
-  break;
-  case 496:
-current_state = 595; current_position++; goto _again;
-  break;
-  case 74:
-current_state = 8; current_position++; goto _again;
-  break;
-  case 483:
- SET_CPU_FEATURE(CPUFeature_BMI1);       
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 13; current_position++; goto _again;
-  break;
-  case 124:
-current_state = 113; current_position++; goto _again;
-  break;
-  case 561:
- SET_CPU_FEATURE(CPUFeature_TZCNT);      
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   
-    SET_MODRM_BASE(BaseFromSIB(*current_position) |
-                   BaseExtentionFromREX(GET_REX_PREFIX()) |
-                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-   current_state = 13; current_position++; goto _again;
-  break;
-  case 295:
-
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 289; current_position++; goto _again;
-  break;
-  case 411:
-current_state = 482; current_position++; goto _again;
-  break;
-  case 653:
-current_state = 440; current_position++; goto _again;
-  break;
-  case 109:
-current_state = 83; current_position++; goto _again;
-  break;
-  case 65:
- SET_CPU_FEATURE(CPUFeature_3DNOW);      
-    Process0Operands(&restricted_register, &instruction_info_collected);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 760; current_position++; goto _again;
-  break;
-  case 621:
-current_state = 272; current_position++; goto _again;
-  break;
-  case 645:
-current_state = 430; current_position++; goto _again;
-  break;
-  case 351:
- SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT);   SET_CPU_FEATURE(CPUFeature_SSE41);      current_state = 29; current_position++; goto _again;
-  break;
-  case 310:
- SET_OPERAND_FORMAT(1, OPERAND_FORMAT_16_BIT);   SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT);   SET_OPERAND_NAME(1, REG_RAX);  
-    Process2Operands(&restricted_register, &instruction_info_collected,
-                     rex_prefix, operand_states);
-   
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(
-          instruction_begin, instruction_end,
-          instruction_info_collected |
-          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-           RESTRICTED_REGISTER_MASK), callback_data);
-    }
-
-    /* On successful match the instruction_begin must point to the next byte
-     * to be able to report the new offset as the start of instruction
-     * causing error.  */
-    instruction_begin = instruction_end;
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Clear variables.  */
-    instruction_info_collected = 0;
-    SET_REX_PREFIX(FALSE);
-    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-    SET_VEX_PREFIX3(0x00);
-    operand_states = 0;
-    base = 0;
-    index = 0;
-   current_state = 760; current_position++; goto _again;
-  break;
-  case 488:
-current_state = 580; current_position++; goto _again;
-  break;
-  case 177:
- 
     Process1OperandZeroExtends(&restricted_register,
                                &instruction_info_collected, rex_prefix,
                                operand_states);
@@ -10848,40 +10354,534 @@ current_state = 580; current_position++; goto _again;
     operand_states = 0;
     base = 0;
     index = 0;
-   current_state = 762; current_position++; goto _again;
+   current_state = 780; current_position++; goto _again;
   break;
-  case 469:
-current_state = 550; current_position++; goto _again;
-  break;
-  case 78:
- SET_CPU_FEATURE(CPUFeature_MOVBE);      
-    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
-                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
-                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 12; current_position++; goto _again;
-  break;
-  case 234:
+  case 591:
 
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
-   current_state = 212; current_position++; goto _again;
+   current_state = 717; current_position++; goto _again;
   break;
-  case 97:
- 
-    CheckMemoryAccess(instruction_begin - codeblock,
-                      base,
-                      index,
-                      restricted_register,
-                      valid_targets,
-                      &instruction_info_collected);
-   current_state = 67; current_position++; goto _again;
+  case 592:
+
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 781; current_position++; goto _again;
   break;
-  case 23:
-current_state = 17; current_position++; goto _again;
+  case 593:
+current_state = 721; current_position++; goto _again;
   break;
-  case 239:
-current_state = 207; current_position++; goto _again;
+  case 594:
+current_state = 723; current_position++; goto _again;
+  break;
+  case 595:
+current_state = 726; current_position++; goto _again;
+  break;
+  case 596:
+ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT);  
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 782; current_position++; goto _again;
+  break;
+  case 597:
+ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT);  
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 783; current_position++; goto _again;
+  break;
+  case 598:
+ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT);  
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 784; current_position++; goto _again;
+  break;
+  case 599:
+
+       instruction_info_collected |= SPECIAL_INSTRUCTION;
+     
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 784; current_position++; goto _again;
+  break;
+  case 600:
+ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT);  
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
+   
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 785; current_position++; goto _again;
+  break;
+  case 601:
+
+       instruction_info_collected |= SPECIAL_INSTRUCTION;
+     
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_begin, instruction_end,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+
+    /* On successful match the instruction_begin must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_begin = instruction_end;
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+   current_state = 785; current_position++; goto _again;
+  break;
+  case 602:
+current_state = 115; current_position++; goto _again;
+  break;
+  case 603:
+current_state = 148; current_position++; goto _again;
+  break;
+  case 604:
+current_state = 151; current_position++; goto _again;
+  break;
+  case 605:
+current_state = 154; current_position++; goto _again;
+  break;
+  case 606:
+current_state = 190; current_position++; goto _again;
+  break;
+  case 607:
+current_state = 403; current_position++; goto _again;
+  break;
+  case 608:
+current_state = 660; current_position++; goto _again;
+  break;
+  case 609:
+current_state = 661; current_position++; goto _again;
+  break;
+  case 610:
+current_state = 406; current_position++; goto _again;
+  break;
+  case 611:
+current_state = 740; current_position++; goto _again;
+  break;
+  case 612:
+current_state = 750; current_position++; goto _again;
+  break;
+  case 613:
+current_state = 727; current_position++; goto _again;
+  break;
+  case 614:
+current_state = 250; current_position++; goto _again;
+  break;
+  case 615:
+current_state = 258; current_position++; goto _again;
+  break;
+  case 616:
+current_state = 711; current_position++; goto _again;
+  break;
+  case 617:
+current_state = 712; current_position++; goto _again;
+  break;
+  case 618:
+current_state = 260; current_position++; goto _again;
+  break;
+  case 619:
+current_state = 265; current_position++; goto _again;
+  break;
+  case 620:
+current_state = 271; current_position++; goto _again;
+  break;
+  case 621:
+current_state = 272; current_position++; goto _again;
+  break;
+  case 622:
+current_state = 273; current_position++; goto _again;
+  break;
+  case 623:
+current_state = 704; current_position++; goto _again;
+  break;
+  case 624:
+current_state = 276; current_position++; goto _again;
+  break;
+  case 625:
+current_state = 277; current_position++; goto _again;
+  break;
+  case 626:
+current_state = 294; current_position++; goto _again;
+  break;
+  case 627:
+current_state = 297; current_position++; goto _again;
+  break;
+  case 628:
+current_state = 268; current_position++; goto _again;
+  break;
+  case 629:
+current_state = 274; current_position++; goto _again;
+  break;
+  case 630:
+current_state = 395; current_position++; goto _again;
+  break;
+  case 631:
+current_state = 690; current_position++; goto _again;
+  break;
+  case 632:
+current_state = 397; current_position++; goto _again;
+  break;
+  case 633:
+current_state = 399; current_position++; goto _again;
+  break;
+  case 634:
+current_state = 400; current_position++; goto _again;
+  break;
+  case 635:
+current_state = 401; current_position++; goto _again;
+  break;
+  case 636:
+current_state = 404; current_position++; goto _again;
+  break;
+  case 637:
+current_state = 405; current_position++; goto _again;
+  break;
+  case 638:
+current_state = 414; current_position++; goto _again;
+  break;
+  case 639:
+current_state = 417; current_position++; goto _again;
+  break;
+  case 640:
+current_state = 674; current_position++; goto _again;
+  break;
+  case 641:
+current_state = 675; current_position++; goto _again;
+  break;
+  case 642:
+current_state = 419; current_position++; goto _again;
+  break;
+  case 643:
+current_state = 422; current_position++; goto _again;
+  break;
+  case 644:
+current_state = 425; current_position++; goto _again;
+  break;
+  case 645:
+current_state = 430; current_position++; goto _again;
+  break;
+  case 646:
+current_state = 432; current_position++; goto _again;
+  break;
+  case 647:
+current_state = 433; current_position++; goto _again;
+  break;
+  case 648:
+current_state = 434; current_position++; goto _again;
+  break;
+  case 649:
+current_state = 435; current_position++; goto _again;
+  break;
+  case 650:
+current_state = 437; current_position++; goto _again;
+  break;
+  case 651:
+current_state = 438; current_position++; goto _again;
+  break;
+  case 652:
+current_state = 439; current_position++; goto _again;
+  break;
+  case 653:
+current_state = 440; current_position++; goto _again;
+  break;
+  case 654:
+current_state = 678; current_position++; goto _again;
+  break;
+  case 655:
+current_state = 681; current_position++; goto _again;
+  break;
+  case 656:
+current_state = 692; current_position++; goto _again;
+  break;
+  case 657:
+current_state = 694; current_position++; goto _again;
+  break;
+  case 658:
+current_state = 695; current_position++; goto _again;
+  break;
+  case 659:
+current_state = 696; current_position++; goto _again;
+  break;
+  case 660:
+current_state = 698; current_position++; goto _again;
+  break;
+  case 661:
+current_state = 699; current_position++; goto _again;
+  break;
+  case 662:
+current_state = 715; current_position++; goto _again;
+  break;
+  case 663:
+current_state = 718; current_position++; goto _again;
+  break;
+  case 664:
+current_state = 729; current_position++; goto _again;
+  break;
+  case 665:
+current_state = 731; current_position++; goto _again;
+  break;
+  case 666:
+current_state = 733; current_position++; goto _again;
+  break;
+  case 667:
+current_state = 735; current_position++; goto _again;
+  break;
+  case 668:
+current_state = 737; current_position++; goto _again;
+  break;
+  case 669:
+current_state = 739; current_position++; goto _again;
+  break;
+  case 670:
+current_state = 742; current_position++; goto _again;
+  break;
+  case 671:
+current_state = 744; current_position++; goto _again;
+  break;
+  case 672:
+current_state = 745; current_position++; goto _again;
+  break;
+  case 673:
+current_state = 746; current_position++; goto _again;
+  break;
+  case 674:
+current_state = 748; current_position++; goto _again;
+  break;
+  case 675:
+current_state = 749; current_position++; goto _again;
+  break;
+  case 676:
+current_state = 752; current_position++; goto _again;
+  break;
+  case 677:
+current_state = 754; current_position++; goto _again;
+  break;
+  case 678:
+current_state = 755; current_position++; goto _again;
+  break;
+  case 679:
+current_state = 756; current_position++; goto _again;
+  break;
+  case 680:
+current_state = 758; current_position++; goto _again;
+  break;
+  case 681:
+current_state = 759; current_position++; goto _again;
   break;
 }
 _done: ;

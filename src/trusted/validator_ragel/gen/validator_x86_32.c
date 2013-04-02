@@ -353,164 +353,20 @@ if (current_position == end_position) {
     continue;
   }
 switch (_dfa_transitions[current_state][*current_position][0]) {
-  case 162:
- SET_CPU_FEATURE(CPUFeature_AESAVX);      break;
-  case 18:
-current_state = 30; current_position++; goto _again;
-  break;
-  case 55:
-current_state = 36; current_position++; goto _again;
-  break;
-  case 217:
-current_state = 209; current_position++; goto _again;
-  break;
-  case 174:
-current_state = 185; current_position++; goto _again;
-  break;
-  case 102:
-current_state = 80; current_position++; goto _again;
-  break;
-  case 112:
-current_state = 89; current_position++; goto _again;
-  break;
-  case 131:
-current_state = 123; current_position++; goto _again;
-  break;
-  case 143:
-current_state = 208; current_position++; goto _again;
-  break;
-  case 169:
- SET_CPU_FEATURE(CPUFeature_x87);         break;
-  case 160:
-current_state = 153; current_position++; goto _again;
-  break;
-  case 10:
+  case 0:
 
-    SET_IMMEDIATE_FORMAT(IMM8);
-    SET_IMMEDIATE_POINTER(current_position);
+    result &= user_callback(instruction_begin, current_position,
+                            UNRECOGNIZED_INSTRUCTION, callback_data);
+    /*
+     * Process the next bundle: "continue" here is for the "for" cycle in
+     * the ValidateChunkIA32 function.
+     *
+     * It does not affect the case which we really care about (when code
+     * is validatable), but makes it possible to detect more errors in one
+     * run in tools like ncval.
+     */
+    continue;
     break;
-  case 201:
-current_state = 172; current_position++; goto _again;
-  break;
-  case 86:
-current_state = 118; current_position++; goto _again;
-  break;
-  case 128:
-current_state = 120; current_position++; goto _again;
-  break;
-  case 11:
-
-    SET_IMMEDIATE_FORMAT(IMM32);
-    SET_IMMEDIATE_POINTER(current_position - 3);
-    break;
-  case 52:
- SET_CPU_FEATURE(CPUFeature_SSE);         break;
-  case 87:
-current_state = 119; current_position++; goto _again;
-  break;
-  case 118:
-current_state = 100; current_position++; goto _again;
-  break;
-  case 61:
-current_state = 44; current_position++; goto _again;
-  break;
-  case 202:
-current_state = 173; current_position++; goto _again;
-  break;
-  case 57:
- SET_CPU_FEATURE(CPUFeature_MOVBE);       break;
-  case 189:
-current_state = 68; current_position++; goto _again;
-  break;
-  case 148:
-
-    SET_VEX_PREFIX3(*current_position);
-    break;
-  case 40:
-current_state = 63; current_position++; goto _again;
-  break;
-  case 25:
-current_state = 48; current_position++; goto _again;
-  break;
-  case 37:
-current_state = 60; current_position++; goto _again;
-  break;
-  case 27:
-current_state = 49; current_position++; goto _again;
-  break;
-  case 167:
- SET_CPU_FEATURE(CPUFeature_CLMULAVX);    break;
-  case 47:
-current_state = 21; current_position++; goto _again;
-  break;
-  case 114:
- SET_CPU_FEATURE(CPUFeature_CLMUL);       break;
-  case 80:
-current_state = 98; current_position++; goto _again;
-  break;
-  case 153:
- SET_CPU_FEATURE(CPUFeature_LWP);         break;
-  case 177:
-current_state = 190; current_position++; goto _again;
-  break;
-  case 213:
-current_state = 201; current_position++; goto _again;
-  break;
-  case 65:
-current_state = 39; current_position++; goto _again;
-  break;
-  case 197:
-current_state = 168; current_position++; goto _again;
-  break;
-  case 95:
-current_state = 92; current_position++; goto _again;
-  break;
-  case 195:
-current_state = 166; current_position++; goto _again;
-  break;
-  case 159:
-current_state = 152; current_position++; goto _again;
-  break;
-  case 89:
-current_state = 125; current_position++; goto _again;
-  break;
-  case 7:
-  break;
-  case 14:
- SET_CPU_FEATURE(CPUFeature_3DNOW);       break;
-  case 77:
-current_state = 73; current_position++; goto _again;
-  break;
-  case 2:
-current_state = 2; current_position++; goto _again;
-  break;
-  case 126:
-current_state = 113; current_position++; goto _again;
-  break;
-  case 71:
-current_state = 67; current_position++; goto _again;
-  break;
-  case 129:
-current_state = 121; current_position++; goto _again;
-  break;
-  case 147:
-current_state = 144; current_position++; goto _again;
-  break;
-  case 151:
- SET_CPU_FEATURE(CPUFeature_TBM);         break;
-  case 109:
- SET_CPU_FEATURE(CPUFeature_AES);         break;
-  case 38:
-current_state = 61; current_position++; goto _again;
-  break;
-  case 32:
-current_state = 56; current_position++; goto _again;
-  break;
-  case 44:
- SET_CPU_FEATURE(CPUFeature_3DPRFTCH);    break;
-  case 54:
-current_state = 34; current_position++; goto _again;
-  break;
   case 1:
 
     /* Mark start of this instruction as a valid target for jump.  */
@@ -534,563 +390,667 @@ current_state = 34; current_position++; goto _again;
     /* Clear variables (well, one variable currently).  */
     instruction_info_collected = 0;
     break;
-  case 101:
-current_state = 79; current_position++; goto _again;
-  break;
-  case 74:
-current_state = 70; current_position++; goto _again;
-  break;
-  case 48:
-current_state = 25; current_position++; goto _again;
-  break;
-  case 22:
-current_state = 33; current_position++; goto _again;
-  break;
-  case 99:
-current_state = 96; current_position++; goto _again;
-  break;
-  case 156:
- SET_CPU_FEATURE(CPUFeature_BMI1);        break;
-  case 35:
-current_state = 58; current_position++; goto _again;
-  break;
-  case 172:
-current_state = 182; current_position++; goto _again;
-  break;
-  case 113:
-current_state = 90; current_position++; goto _again;
-  break;
-  case 215:
-current_state = 205; current_position++; goto _again;
-  break;
-  case 108:
- SET_CPU_FEATURE(CPUFeature_SSE42);       break;
-  case 194:
-current_state = 149; current_position++; goto _again;
-  break;
-  case 17:
-current_state = 29; current_position++; goto _again;
-  break;
-  case 192:
-current_state = 135; current_position++; goto _again;
-  break;
-  case 127:
-current_state = 114; current_position++; goto _again;
-  break;
-  case 31:
-current_state = 52; current_position++; goto _again;
-  break;
-  case 39:
-current_state = 62; current_position++; goto _again;
-  break;
-  case 73:
-current_state = 69; current_position++; goto _again;
-  break;
-  case 161:
-current_state = 155; current_position++; goto _again;
-  break;
-  case 181:
-current_state = 194; current_position++; goto _again;
-  break;
-  case 15:
-current_state = 18; current_position++; goto _again;
-  break;
-  case 176:
-current_state = 187; current_position++; goto _again;
-  break;
-  case 46:
-current_state = 20; current_position++; goto _again;
-  break;
-  case 214:
-current_state = 203; current_position++; goto _again;
-  break;
-  case 219:
-current_state = 213; current_position++; goto _again;
-  break;
-  case 168:
-current_state = 164; current_position++; goto _again;
-  break;
-  case 182:
-current_state = 195; current_position++; goto _again;
-  break;
-  case 209:
-current_state = 196; current_position++; goto _again;
-  break;
-  case 97:
-current_state = 94; current_position++; goto _again;
-  break;
-  case 83:
-current_state = 115; current_position++; goto _again;
-  break;
-  case 163:
-current_state = 157; current_position++; goto _again;
-  break;
-  case 185:
- SET_CPU_FEATURE(CPUFeature_LZCNT);       break;
-  case 90:
-
-    SET_IMMEDIATE_FORMAT(IMM16);
-    SET_IMMEDIATE_POINTER(current_position - 1);
-    break;
-  case 111:
-current_state = 88; current_position++; goto _again;
-  break;
-  case 187:
-current_state = 15; current_position++; goto _again;
-  break;
-  case 150:
-current_state = 141; current_position++; goto _again;
-  break;
-  case 121:
-current_state = 104; current_position++; goto _again;
-  break;
-  case 33:
-current_state = 1; current_position++; goto _again;
-  break;
-  case 9:
-
-    SET_DISPLACEMENT_FORMAT(DISP8);
-    SET_DISPLACEMENT_POINTER(current_position);
-    break;
-  case 166:
-current_state = 162; current_position++; goto _again;
-  break;
-  case 158:
-current_state = 159; current_position++; goto _again;
-  break;
-  case 41:
-current_state = 64; current_position++; goto _again;
-  break;
-  case 190:
-current_state = 74; current_position++; goto _again;
-  break;
-  case 130:
-current_state = 122; current_position++; goto _again;
-  break;
-  case 79:
-current_state = 77; current_position++; goto _again;
-  break;
-  case 49:
-current_state = 26; current_position++; goto _again;
-  break;
-  case 88:
-current_state = 124; current_position++; goto _again;
-  break;
-  case 12:
-current_state = 16; current_position++; goto _again;
-  break;
-  case 91:
-current_state = 78; current_position++; goto _again;
-  break;
-  case 51:
-
-    instruction_info_collected |= LAST_BYTE_IS_NOT_IMMEDIATE;
-    break;
-  case 199:
-current_state = 170; current_position++; goto _again;
-  break;
-  case 76:
-current_state = 72; current_position++; goto _again;
-  break;
-  case 178:
-
-    SET_SECOND_IMMEDIATE_FORMAT(IMM8);
-    SET_SECOND_IMMEDIATE_POINTER(current_position);
-    break;
-  case 205:
-current_state = 176; current_position++; goto _again;
-  break;
-  case 208:
-current_state = 191; current_position++; goto _again;
-  break;
-  case 142:
-current_state = 206; current_position++; goto _again;
-  break;
-  case 110:
-current_state = 87; current_position++; goto _again;
-  break;
-  case 134:
-current_state = 128; current_position++; goto _again;
-  break;
-  case 105:
-current_state = 84; current_position++; goto _again;
-  break;
-  case 203:
-current_state = 174; current_position++; goto _again;
+  case 2:
+current_state = 2; current_position++; goto _again;
   break;
   case 3:
 current_state = 3; current_position++; goto _again;
   break;
-  case 164:
- SET_CPU_FEATURE(CPUFeature_F16C);        break;
-  case 81:
-current_state = 101; current_position++; goto _again;
+  case 4:
+current_state = 7; current_position++; goto _again;
   break;
-  case 200:
-current_state = 171; current_position++; goto _again;
+  case 5:
+current_state = 8; current_position++; goto _again;
   break;
-  case 29:
-current_state = 51; current_position++; goto _again;
+  case 6:
+current_state = 9; current_position++; goto _again;
   break;
-  case 207:
-current_state = 183; current_position++; goto _again;
-  break;
-  case 135:
-current_state = 132; current_position++; goto _again;
+  case 7:
   break;
   case 8:
 
     SET_DISPLACEMENT_FORMAT(DISP32);
     SET_DISPLACEMENT_POINTER(current_position - 3);
     break;
+  case 9:
+
+    SET_DISPLACEMENT_FORMAT(DISP8);
+    SET_DISPLACEMENT_POINTER(current_position);
+    break;
+  case 10:
+
+    SET_IMMEDIATE_FORMAT(IMM8);
+    SET_IMMEDIATE_POINTER(current_position);
+    break;
+  case 11:
+
+    SET_IMMEDIATE_FORMAT(IMM32);
+    SET_IMMEDIATE_POINTER(current_position - 3);
+    break;
+  case 12:
+current_state = 16; current_position++; goto _again;
+  break;
+  case 13:
+current_state = 17; current_position++; goto _again;
+  break;
+  case 14:
+ SET_CPU_FEATURE(CPUFeature_3DNOW);       break;
+  case 15:
+current_state = 18; current_position++; goto _again;
+  break;
   case 16:
 current_state = 28; current_position++; goto _again;
   break;
-  case 211:
-current_state = 198; current_position++; goto _again;
+  case 17:
+current_state = 29; current_position++; goto _again;
   break;
-  case 60:
-current_state = 40; current_position++; goto _again;
-  break;
-  case 100:
-current_state = 97; current_position++; goto _again;
-  break;
-  case 20:
-current_state = 32; current_position++; goto _again;
-  break;
-  case 50:
-current_state = 27; current_position++; goto _again;
-  break;
-  case 115:
- SET_CPU_FEATURE(CPUFeature_SSE4A);       break;
-  case 116:
- SET_CPU_FEATURE(CPUFeature_SSE3);        break;
-  case 216:
-current_state = 207; current_position++; goto _again;
-  break;
-  case 69:
- SET_CPU_FEATURE(CPUFeature_CX8);         break;
-  case 56:
- SET_CPU_FEATURE(CPUFeature_SSSE3);       break;
-  case 123:
-current_state = 107; current_position++; goto _again;
-  break;
-  case 94:
-current_state = 91; current_position++; goto _again;
-  break;
-  case 107:
- SET_CPU_FEATURE(CPUFeature_SSE41);       break;
-  case 206:
-current_state = 180; current_position++; goto _again;
-  break;
-  case 136:
-current_state = 133; current_position++; goto _again;
-  break;
-  case 191:
-current_state = 126; current_position++; goto _again;
-  break;
-  case 120:
-current_state = 103; current_position++; goto _again;
-  break;
-  case 133:
-current_state = 127; current_position++; goto _again;
-  break;
-  case 85:
-current_state = 117; current_position++; goto _again;
-  break;
-  case 62:
- SET_CPU_FEATURE(CPUFeature_CMOV);        break;
-  case 4:
-current_state = 7; current_position++; goto _again;
-  break;
-  case 42:
- SET_CPU_FEATURE(CPUFeature_MON);         break;
-  case 124:
-current_state = 108; current_position++; goto _again;
-  break;
-  case 186:
-
-      UnmarkValidJumpTarget((current_position - codeblock) - 1, valid_targets);
-      instruction_begin -= 3;
-      instruction_info_collected |= SPECIAL_INSTRUCTION;
-      break;
-  case 132:
-current_state = 11; current_position++; goto _again;
-  break;
-  case 63:
- SET_CPU_FEATURE(CPUFeature_EMMXSSE);     break;
-  case 75:
-current_state = 71; current_position++; goto _again;
-  break;
-  case 45:
-current_state = 19; current_position++; goto _again;
-  break;
-  case 53:
- SET_CPU_FEATURE(CPUFeature_SSE2);        break;
-  case 155:
-current_state = 148; current_position++; goto _again;
-  break;
-  case 170:
- SET_CPU_FEATURE(CPUFeature_CMOVx87);     break;
-  case 23:
-current_state = 37; current_position++; goto _again;
-  break;
-  case 146:
-current_state = 138; current_position++; goto _again;
-  break;
-  case 144:
-current_state = 210; current_position++; goto _again;
-  break;
-  case 179:
-current_state = 192; current_position++; goto _again;
-  break;
-  case 98:
-current_state = 95; current_position++; goto _again;
-  break;
-  case 43:
- SET_CPU_FEATURE(CPUFeature_FXSR);        break;
-  case 26:
-current_state = 35; current_position++; goto _again;
-  break;
-  case 198:
-current_state = 169; current_position++; goto _again;
-  break;
-  case 171:
-current_state = 181; current_position++; goto _again;
-  break;
-  case 173:
-current_state = 184; current_position++; goto _again;
-  break;
-  case 157:
-current_state = 150; current_position++; goto _again;
-  break;
-  case 92:
-current_state = 81; current_position++; goto _again;
-  break;
-  case 204:
-current_state = 175; current_position++; goto _again;
-  break;
-  case 103:
-current_state = 82; current_position++; goto _again;
-  break;
-  case 196:
-current_state = 167; current_position++; goto _again;
-  break;
-  case 119:
-current_state = 102; current_position++; goto _again;
-  break;
-  case 68:
- SET_CPU_FEATURE(CPUFeature_CLFLUSH);     break;
-  case 210:
-current_state = 197; current_position++; goto _again;
-  break;
-  case 138:
-current_state = 136; current_position++; goto _again;
-  break;
-  case 6:
-current_state = 9; current_position++; goto _again;
-  break;
-  case 193:
-current_state = 137; current_position++; goto _again;
-  break;
-  case 137:
-current_state = 134; current_position++; goto _again;
-  break;
-  case 0:
-
-    result &= user_callback(instruction_begin, current_position,
-                            UNRECOGNIZED_INSTRUCTION, callback_data);
-    /*
-     * Process the next bundle: "continue" here is for the "for" cycle in
-     * the ValidateChunkIA32 function.
-     *
-     * It does not affect the case which we really care about (when code
-     * is validatable), but makes it possible to detect more errors in one
-     * run in tools like ncval.
-     */
-    continue;
-    break;
-  case 212:
-current_state = 199; current_position++; goto _again;
-  break;
-  case 139:
-current_state = 200; current_position++; goto _again;
-  break;
-  case 5:
-current_state = 8; current_position++; goto _again;
-  break;
-  case 149:
-current_state = 140; current_position++; goto _again;
-  break;
-  case 66:
-current_state = 45; current_position++; goto _again;
-  break;
-  case 188:
-current_state = 65; current_position++; goto _again;
-  break;
-  case 67:
-current_state = 46; current_position++; goto _again;
-  break;
-  case 122:
-current_state = 105; current_position++; goto _again;
+  case 18:
+current_state = 30; current_position++; goto _again;
   break;
   case 19:
 current_state = 31; current_position++; goto _again;
   break;
-  case 82:
-current_state = 106; current_position++; goto _again;
-  break;
-  case 58:
-current_state = 38; current_position++; goto _again;
-  break;
-  case 70:
-current_state = 66; current_position++; goto _again;
-  break;
-  case 78:
-current_state = 75; current_position++; goto _again;
+  case 20:
+current_state = 32; current_position++; goto _again;
   break;
   case 21:
  SET_CPU_FEATURE(CPUFeature_TSC);         break;
-  case 165:
-current_state = 161; current_position++; goto _again;
+  case 22:
+current_state = 33; current_position++; goto _again;
   break;
-  case 106:
-current_state = 85; current_position++; goto _again;
+  case 23:
+current_state = 37; current_position++; goto _again;
   break;
-  case 96:
-current_state = 93; current_position++; goto _again;
+  case 24:
+current_state = 47; current_position++; goto _again;
   break;
-  case 154:
-current_state = 146; current_position++; goto _again;
+  case 25:
+current_state = 48; current_position++; goto _again;
   break;
-  case 93:
-current_state = 86; current_position++; goto _again;
+  case 26:
+current_state = 35; current_position++; goto _again;
   break;
-  case 218:
-current_state = 211; current_position++; goto _again;
+  case 27:
+current_state = 49; current_position++; goto _again;
   break;
-  case 141:
-current_state = 204; current_position++; goto _again;
+  case 28:
+current_state = 50; current_position++; goto _again;
   break;
-  case 117:
-current_state = 99; current_position++; goto _again;
+  case 29:
+current_state = 51; current_position++; goto _again;
   break;
-  case 180:
-current_state = 193; current_position++; goto _again;
+  case 30:
+ SET_CPU_FEATURE(CPUFeature_MMX);         break;
+  case 31:
+current_state = 52; current_position++; goto _again;
   break;
-  case 104:
-current_state = 83; current_position++; goto _again;
+  case 32:
+current_state = 56; current_position++; goto _again;
   break;
-  case 175:
-current_state = 186; current_position++; goto _again;
+  case 33:
+current_state = 1; current_position++; goto _again;
   break;
+  case 34:
+current_state = 57; current_position++; goto _again;
+  break;
+  case 35:
+current_state = 58; current_position++; goto _again;
+  break;
+  case 36:
+current_state = 59; current_position++; goto _again;
+  break;
+  case 37:
+current_state = 60; current_position++; goto _again;
+  break;
+  case 38:
+current_state = 61; current_position++; goto _again;
+  break;
+  case 39:
+current_state = 62; current_position++; goto _again;
+  break;
+  case 40:
+current_state = 63; current_position++; goto _again;
+  break;
+  case 41:
+current_state = 64; current_position++; goto _again;
+  break;
+  case 42:
+ SET_CPU_FEATURE(CPUFeature_MON);         break;
+  case 43:
+ SET_CPU_FEATURE(CPUFeature_FXSR);        break;
+  case 44:
+ SET_CPU_FEATURE(CPUFeature_3DPRFTCH);    break;
+  case 45:
+current_state = 19; current_position++; goto _again;
+  break;
+  case 46:
+current_state = 20; current_position++; goto _again;
+  break;
+  case 47:
+current_state = 21; current_position++; goto _again;
+  break;
+  case 48:
+current_state = 25; current_position++; goto _again;
+  break;
+  case 49:
+current_state = 26; current_position++; goto _again;
+  break;
+  case 50:
+current_state = 27; current_position++; goto _again;
+  break;
+  case 51:
+
+    instruction_info_collected |= LAST_BYTE_IS_NOT_IMMEDIATE;
+    break;
+  case 52:
+ SET_CPU_FEATURE(CPUFeature_SSE);         break;
+  case 53:
+ SET_CPU_FEATURE(CPUFeature_SSE2);        break;
+  case 54:
+current_state = 34; current_position++; goto _again;
+  break;
+  case 55:
+current_state = 36; current_position++; goto _again;
+  break;
+  case 56:
+ SET_CPU_FEATURE(CPUFeature_SSSE3);       break;
+  case 57:
+ SET_CPU_FEATURE(CPUFeature_MOVBE);       break;
+  case 58:
+current_state = 38; current_position++; goto _again;
+  break;
+  case 59:
+current_state = 10; current_position++; goto _again;
+  break;
+  case 60:
+current_state = 40; current_position++; goto _again;
+  break;
+  case 61:
+current_state = 44; current_position++; goto _again;
+  break;
+  case 62:
+ SET_CPU_FEATURE(CPUFeature_CMOV);        break;
+  case 63:
+ SET_CPU_FEATURE(CPUFeature_EMMXSSE);     break;
   case 64:
 
     Rel32Operand(current_position + 1, codeblock, jump_dests, size,
                  &instruction_info_collected);
     break;
-  case 84:
-current_state = 116; current_position++; goto _again;
+  case 65:
+current_state = 39; current_position++; goto _again;
   break;
-  case 125:
-current_state = 112; current_position++; goto _again;
+  case 66:
+current_state = 45; current_position++; goto _again;
+  break;
+  case 67:
+current_state = 46; current_position++; goto _again;
+  break;
+  case 68:
+ SET_CPU_FEATURE(CPUFeature_CLFLUSH);     break;
+  case 69:
+ SET_CPU_FEATURE(CPUFeature_CX8);         break;
+  case 70:
+current_state = 66; current_position++; goto _again;
+  break;
+  case 71:
+current_state = 67; current_position++; goto _again;
   break;
   case 72:
 
     Rel8Operand(current_position + 1, codeblock, jump_dests, size,
                 &instruction_info_collected);
     break;
-  case 152:
-current_state = 143; current_position++; goto _again;
+  case 73:
+current_state = 69; current_position++; goto _again;
   break;
-  case 184:
- SET_CPU_FEATURE(CPUFeature_TZCNT);       break;
-  case 36:
-current_state = 59; current_position++; goto _again;
+  case 74:
+current_state = 70; current_position++; goto _again;
+  break;
+  case 75:
+current_state = 71; current_position++; goto _again;
+  break;
+  case 76:
+current_state = 72; current_position++; goto _again;
+  break;
+  case 77:
+current_state = 73; current_position++; goto _again;
+  break;
+  case 78:
+current_state = 75; current_position++; goto _again;
+  break;
+  case 79:
+current_state = 77; current_position++; goto _again;
+  break;
+  case 80:
+current_state = 98; current_position++; goto _again;
+  break;
+  case 81:
+current_state = 101; current_position++; goto _again;
+  break;
+  case 82:
+current_state = 106; current_position++; goto _again;
+  break;
+  case 83:
+current_state = 115; current_position++; goto _again;
+  break;
+  case 84:
+current_state = 116; current_position++; goto _again;
+  break;
+  case 85:
+current_state = 117; current_position++; goto _again;
+  break;
+  case 86:
+current_state = 118; current_position++; goto _again;
+  break;
+  case 87:
+current_state = 119; current_position++; goto _again;
+  break;
+  case 88:
+current_state = 124; current_position++; goto _again;
+  break;
+  case 89:
+current_state = 125; current_position++; goto _again;
+  break;
+  case 90:
+
+    SET_IMMEDIATE_FORMAT(IMM16);
+    SET_IMMEDIATE_POINTER(current_position - 1);
+    break;
+  case 91:
+current_state = 78; current_position++; goto _again;
+  break;
+  case 92:
+current_state = 81; current_position++; goto _again;
+  break;
+  case 93:
+current_state = 86; current_position++; goto _again;
+  break;
+  case 94:
+current_state = 91; current_position++; goto _again;
+  break;
+  case 95:
+current_state = 92; current_position++; goto _again;
+  break;
+  case 96:
+current_state = 93; current_position++; goto _again;
+  break;
+  case 97:
+current_state = 94; current_position++; goto _again;
+  break;
+  case 98:
+current_state = 95; current_position++; goto _again;
+  break;
+  case 99:
+current_state = 96; current_position++; goto _again;
+  break;
+  case 100:
+current_state = 97; current_position++; goto _again;
+  break;
+  case 101:
+current_state = 79; current_position++; goto _again;
+  break;
+  case 102:
+current_state = 80; current_position++; goto _again;
+  break;
+  case 103:
+current_state = 82; current_position++; goto _again;
+  break;
+  case 104:
+current_state = 83; current_position++; goto _again;
+  break;
+  case 105:
+current_state = 84; current_position++; goto _again;
+  break;
+  case 106:
+current_state = 85; current_position++; goto _again;
+  break;
+  case 107:
+ SET_CPU_FEATURE(CPUFeature_SSE41);       break;
+  case 108:
+ SET_CPU_FEATURE(CPUFeature_SSE42);       break;
+  case 109:
+ SET_CPU_FEATURE(CPUFeature_AES);         break;
+  case 110:
+current_state = 87; current_position++; goto _again;
+  break;
+  case 111:
+current_state = 88; current_position++; goto _again;
+  break;
+  case 112:
+current_state = 89; current_position++; goto _again;
+  break;
+  case 113:
+current_state = 90; current_position++; goto _again;
+  break;
+  case 114:
+ SET_CPU_FEATURE(CPUFeature_CLMUL);       break;
+  case 115:
+ SET_CPU_FEATURE(CPUFeature_SSE4A);       break;
+  case 116:
+ SET_CPU_FEATURE(CPUFeature_SSE3);        break;
+  case 117:
+current_state = 99; current_position++; goto _again;
+  break;
+  case 118:
+current_state = 100; current_position++; goto _again;
+  break;
+  case 119:
+current_state = 102; current_position++; goto _again;
+  break;
+  case 120:
+current_state = 103; current_position++; goto _again;
+  break;
+  case 121:
+current_state = 104; current_position++; goto _again;
+  break;
+  case 122:
+current_state = 105; current_position++; goto _again;
+  break;
+  case 123:
+current_state = 107; current_position++; goto _again;
+  break;
+  case 124:
+current_state = 108; current_position++; goto _again;
+  break;
+  case 125:
+current_state = 112; current_position++; goto _again;
+  break;
+  case 126:
+current_state = 113; current_position++; goto _again;
+  break;
+  case 127:
+current_state = 114; current_position++; goto _again;
+  break;
+  case 128:
+current_state = 120; current_position++; goto _again;
+  break;
+  case 129:
+current_state = 121; current_position++; goto _again;
+  break;
+  case 130:
+current_state = 122; current_position++; goto _again;
+  break;
+  case 131:
+current_state = 123; current_position++; goto _again;
+  break;
+  case 132:
+current_state = 11; current_position++; goto _again;
+  break;
+  case 133:
+current_state = 127; current_position++; goto _again;
+  break;
+  case 134:
+current_state = 128; current_position++; goto _again;
+  break;
+  case 135:
+current_state = 132; current_position++; goto _again;
+  break;
+  case 136:
+current_state = 133; current_position++; goto _again;
+  break;
+  case 137:
+current_state = 134; current_position++; goto _again;
+  break;
+  case 138:
+current_state = 136; current_position++; goto _again;
+  break;
+  case 139:
+current_state = 200; current_position++; goto _again;
   break;
   case 140:
 current_state = 202; current_position++; goto _again;
   break;
-  case 183:
- SET_CPU_FEATURE(CPUFeature_POPCNT);      break;
-  case 34:
-current_state = 57; current_position++; goto _again;
+  case 141:
+current_state = 204; current_position++; goto _again;
   break;
-  case 59:
-current_state = 10; current_position++; goto _again;
+  case 142:
+current_state = 206; current_position++; goto _again;
+  break;
+  case 143:
+current_state = 208; current_position++; goto _again;
+  break;
+  case 144:
+current_state = 210; current_position++; goto _again;
   break;
   case 145:
 current_state = 212; current_position++; goto _again;
   break;
-  case 24:
-current_state = 47; current_position++; goto _again;
+  case 146:
+current_state = 138; current_position++; goto _again;
   break;
-  case 13:
-current_state = 17; current_position++; goto _again;
+  case 147:
+current_state = 144; current_position++; goto _again;
   break;
-  case 28:
-current_state = 50; current_position++; goto _again;
+  case 148:
+
+    SET_VEX_PREFIX3(*current_position);
+    break;
+  case 149:
+current_state = 140; current_position++; goto _again;
   break;
-  case 30:
- SET_CPU_FEATURE(CPUFeature_MMX);         break;
+  case 150:
+current_state = 141; current_position++; goto _again;
+  break;
+  case 151:
+ SET_CPU_FEATURE(CPUFeature_TBM);         break;
+  case 152:
+current_state = 143; current_position++; goto _again;
+  break;
+  case 153:
+ SET_CPU_FEATURE(CPUFeature_LWP);         break;
+  case 154:
+current_state = 146; current_position++; goto _again;
+  break;
+  case 155:
+current_state = 148; current_position++; goto _again;
+  break;
+  case 156:
+ SET_CPU_FEATURE(CPUFeature_BMI1);        break;
+  case 157:
+current_state = 150; current_position++; goto _again;
+  break;
+  case 158:
+current_state = 159; current_position++; goto _again;
+  break;
+  case 159:
+current_state = 152; current_position++; goto _again;
+  break;
+  case 160:
+current_state = 153; current_position++; goto _again;
+  break;
+  case 161:
+current_state = 155; current_position++; goto _again;
+  break;
+  case 162:
+ SET_CPU_FEATURE(CPUFeature_AESAVX);      break;
+  case 163:
+current_state = 157; current_position++; goto _again;
+  break;
+  case 164:
+ SET_CPU_FEATURE(CPUFeature_F16C);        break;
+  case 165:
+current_state = 161; current_position++; goto _again;
+  break;
+  case 166:
+current_state = 162; current_position++; goto _again;
+  break;
+  case 167:
+ SET_CPU_FEATURE(CPUFeature_CLMULAVX);    break;
+  case 168:
+current_state = 164; current_position++; goto _again;
+  break;
+  case 169:
+ SET_CPU_FEATURE(CPUFeature_x87);         break;
+  case 170:
+ SET_CPU_FEATURE(CPUFeature_CMOVx87);     break;
+  case 171:
+current_state = 181; current_position++; goto _again;
+  break;
+  case 172:
+current_state = 182; current_position++; goto _again;
+  break;
+  case 173:
+current_state = 184; current_position++; goto _again;
+  break;
+  case 174:
+current_state = 185; current_position++; goto _again;
+  break;
+  case 175:
+current_state = 186; current_position++; goto _again;
+  break;
+  case 176:
+current_state = 187; current_position++; goto _again;
+  break;
+  case 177:
+current_state = 190; current_position++; goto _again;
+  break;
+  case 178:
+
+    SET_SECOND_IMMEDIATE_FORMAT(IMM8);
+    SET_SECOND_IMMEDIATE_POINTER(current_position);
+    break;
+  case 179:
+current_state = 192; current_position++; goto _again;
+  break;
+  case 180:
+current_state = 193; current_position++; goto _again;
+  break;
+  case 181:
+current_state = 194; current_position++; goto _again;
+  break;
+  case 182:
+current_state = 195; current_position++; goto _again;
+  break;
+  case 183:
+ SET_CPU_FEATURE(CPUFeature_POPCNT);      break;
+  case 184:
+ SET_CPU_FEATURE(CPUFeature_TZCNT);       break;
+  case 185:
+ SET_CPU_FEATURE(CPUFeature_LZCNT);       break;
+  case 186:
+
+      UnmarkValidJumpTarget((current_position - codeblock) - 1, valid_targets);
+      instruction_begin -= 3;
+      instruction_info_collected |= SPECIAL_INSTRUCTION;
+      break;
+  case 187:
+current_state = 15; current_position++; goto _again;
+  break;
+  case 188:
+current_state = 65; current_position++; goto _again;
+  break;
+  case 189:
+current_state = 68; current_position++; goto _again;
+  break;
+  case 190:
+current_state = 74; current_position++; goto _again;
+  break;
+  case 191:
+current_state = 126; current_position++; goto _again;
+  break;
+  case 192:
+current_state = 135; current_position++; goto _again;
+  break;
+  case 193:
+current_state = 137; current_position++; goto _again;
+  break;
+  case 194:
+current_state = 149; current_position++; goto _again;
+  break;
+  case 195:
+current_state = 166; current_position++; goto _again;
+  break;
+  case 196:
+current_state = 167; current_position++; goto _again;
+  break;
+  case 197:
+current_state = 168; current_position++; goto _again;
+  break;
+  case 198:
+current_state = 169; current_position++; goto _again;
+  break;
+  case 199:
+current_state = 170; current_position++; goto _again;
+  break;
+  case 200:
+current_state = 171; current_position++; goto _again;
+  break;
+  case 201:
+current_state = 172; current_position++; goto _again;
+  break;
+  case 202:
+current_state = 173; current_position++; goto _again;
+  break;
+  case 203:
+current_state = 174; current_position++; goto _again;
+  break;
+  case 204:
+current_state = 175; current_position++; goto _again;
+  break;
+  case 205:
+current_state = 176; current_position++; goto _again;
+  break;
+  case 206:
+current_state = 180; current_position++; goto _again;
+  break;
+  case 207:
+current_state = 183; current_position++; goto _again;
+  break;
+  case 208:
+current_state = 191; current_position++; goto _again;
+  break;
+  case 209:
+current_state = 196; current_position++; goto _again;
+  break;
+  case 210:
+current_state = 197; current_position++; goto _again;
+  break;
+  case 211:
+current_state = 198; current_position++; goto _again;
+  break;
+  case 212:
+current_state = 199; current_position++; goto _again;
+  break;
+  case 213:
+current_state = 201; current_position++; goto _again;
+  break;
+  case 214:
+current_state = 203; current_position++; goto _again;
+  break;
+  case 215:
+current_state = 205; current_position++; goto _again;
+  break;
+  case 216:
+current_state = 207; current_position++; goto _again;
+  break;
+  case 217:
+current_state = 209; current_position++; goto _again;
+  break;
+  case 218:
+current_state = 211; current_position++; goto _again;
+  break;
+  case 219:
+current_state = 213; current_position++; goto _again;
+  break;
 }
 switch (_dfa_transitions[current_state][*current_position][1]) {
-  case 31:
-current_state = 53; current_position++; goto _again;
+  case 0:
   break;
-  case 65:
-current_state = 188; current_position++; goto _again;
+  case 1:
+current_state = 214; current_position++; goto _again;
   break;
-  case 51:
-current_state = 132; current_position++; goto _again;
+  case 2:
+current_state = 4; current_position++; goto _again;
   break;
-  case 55:
-current_state = 154; current_position++; goto _again;
+  case 3:
+current_state = 5; current_position++; goto _again;
   break;
-  case 54:
-current_state = 151; current_position++; goto _again;
+  case 4:
+current_state = 6; current_position++; goto _again;
   break;
-  case 47:
-current_state = 147; current_position++; goto _again;
-  break;
-  case 20:
- current_state = 19; current_position++; goto _again;
-  break;
-  case 21:
-current_state = 10; current_position++; goto _again;
-  break;
-  case 43:
+  case 5:
  
-    /* Mark start of this instruction as a valid target for jump.  */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(instruction_begin, instruction_end,
-                              instruction_info_collected, callback_data);
-    }
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    instruction_begin = instruction_end;
-
-    /* Clear variables (well, one variable currently).  */
-    instruction_info_collected = 0;
-   current_state = 215; current_position++; goto _again;
-  break;
-  case 8:
-current_state = 14; current_position++; goto _again;
-  break;
-  case 67:
-
-      if (((current_position - codeblock) & kBundleMask) != kBundleMask)
-        instruction_info_collected |= BAD_CALL_ALIGNMENT;
-     
     /* Mark start of this instruction as a valid target for jump.  */
     MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
 
@@ -1113,17 +1073,53 @@ current_state = 14; current_position++; goto _again;
     instruction_info_collected = 0;
    current_state = 214; current_position++; goto _again;
   break;
-  case 35:
-current_state = 109; current_position++; goto _again;
+  case 6:
+current_state = 12; current_position++; goto _again;
   break;
-  case 42:
- current_state = 11; current_position++; goto _again;
+  case 7:
+current_state = 13; current_position++; goto _again;
   break;
-  case 58:
-current_state = 160; current_position++; goto _again;
+  case 8:
+current_state = 14; current_position++; goto _again;
   break;
-  case 30:
- current_state = 10; current_position++; goto _again;
+  case 9:
+
+    /* Mark start of this instruction as a valid target for jump.  */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(instruction_begin, instruction_end,
+                              instruction_info_collected, callback_data);
+    }
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    instruction_begin = instruction_end;
+
+    /* Clear variables (well, one variable currently).  */
+    instruction_info_collected = 0;
+   current_state = 214; current_position++; goto _again;
+  break;
+  case 10:
+current_state = 2; current_position++; goto _again;
+  break;
+  case 11:
+current_state = 3; current_position++; goto _again;
+  break;
+  case 12:
+current_state = 7; current_position++; goto _again;
+  break;
+  case 13:
+current_state = 8; current_position++; goto _again;
+  break;
+  case 14:
+current_state = 9; current_position++; goto _again;
   break;
   case 15:
  SET_CPU_FEATURE(CPUFeature_E3DNOW);     
@@ -1149,83 +1145,8 @@ current_state = 160; current_position++; goto _again;
     instruction_info_collected = 0;
    current_state = 214; current_position++; goto _again;
   break;
-  case 50:
-current_state = 128; current_position++; goto _again;
-  break;
-  case 71:
- 
-    /* Mark start of this instruction as a valid target for jump.  */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(instruction_begin, instruction_end,
-                              instruction_info_collected, callback_data);
-    }
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    instruction_begin = instruction_end;
-
-    /* Clear variables (well, one variable currently).  */
-    instruction_info_collected = 0;
-   current_state = 219; current_position++; goto _again;
-  break;
-  case 57:
-current_state = 158; current_position++; goto _again;
-  break;
-  case 14:
-current_state = 9; current_position++; goto _again;
-  break;
-  case 49:
-current_state = 127; current_position++; goto _again;
-  break;
-  case 56:
-current_state = 156; current_position++; goto _again;
-  break;
-  case 53:
-current_state = 134; current_position++; goto _again;
-  break;
-  case 11:
-current_state = 3; current_position++; goto _again;
-  break;
-  case 72:
- 
-    /* Mark start of this instruction as a valid target for jump.  */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(instruction_begin, instruction_end,
-                              instruction_info_collected, callback_data);
-    }
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    instruction_begin = instruction_end;
-
-    /* Clear variables (well, one variable currently).  */
-    instruction_info_collected = 0;
-   current_state = 220; current_position++; goto _again;
-  break;
-  case 66:
- current_state = 189; current_position++; goto _again;
-  break;
-  case 24:
-current_state = 44; current_position++; goto _again;
-  break;
-  case 5:
- 
+  case 16:
+ SET_CPU_FEATURE(CPUFeature_3DNOW);      
     /* Mark start of this instruction as a valid target for jump.  */
     MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
 
@@ -1248,26 +1169,167 @@ current_state = 44; current_position++; goto _again;
     instruction_info_collected = 0;
    current_state = 214; current_position++; goto _again;
   break;
-  case 41:
-current_state = 131; current_position++; goto _again;
+  case 17:
+current_state = 22; current_position++; goto _again;
   break;
-  case 13:
-current_state = 8; current_position++; goto _again;
+  case 18:
+current_state = 23; current_position++; goto _again;
   break;
-  case 32:
-current_state = 54; current_position++; goto _again;
+  case 19:
+current_state = 24; current_position++; goto _again;
+  break;
+  case 20:
+ current_state = 19; current_position++; goto _again;
+  break;
+  case 21:
+current_state = 10; current_position++; goto _again;
+  break;
+  case 22:
+current_state = 39; current_position++; goto _again;
+  break;
+  case 23:
+current_state = 40; current_position++; goto _again;
+  break;
+  case 24:
+current_state = 44; current_position++; goto _again;
   break;
   case 25:
 current_state = 45; current_position++; goto _again;
   break;
-  case 29:
-current_state = 43; current_position++; goto _again;
-  break;
   case 26:
 current_state = 46; current_position++; goto _again;
   break;
-  case 18:
-current_state = 23; current_position++; goto _again;
+  case 27:
+current_state = 41; current_position++; goto _again;
+  break;
+  case 28:
+current_state = 42; current_position++; goto _again;
+  break;
+  case 29:
+current_state = 43; current_position++; goto _again;
+  break;
+  case 30:
+ current_state = 10; current_position++; goto _again;
+  break;
+  case 31:
+current_state = 53; current_position++; goto _again;
+  break;
+  case 32:
+current_state = 54; current_position++; goto _again;
+  break;
+  case 33:
+current_state = 55; current_position++; goto _again;
+  break;
+  case 34:
+current_state = 76; current_position++; goto _again;
+  break;
+  case 35:
+current_state = 109; current_position++; goto _again;
+  break;
+  case 36:
+current_state = 110; current_position++; goto _again;
+  break;
+  case 37:
+current_state = 111; current_position++; goto _again;
+  break;
+  case 38:
+ current_state = 75; current_position++; goto _again;
+  break;
+  case 39:
+current_state = 129; current_position++; goto _again;
+  break;
+  case 40:
+current_state = 130; current_position++; goto _again;
+  break;
+  case 41:
+current_state = 131; current_position++; goto _again;
+  break;
+  case 42:
+ current_state = 11; current_position++; goto _again;
+  break;
+  case 43:
+ 
+    /* Mark start of this instruction as a valid target for jump.  */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(instruction_begin, instruction_end,
+                              instruction_info_collected, callback_data);
+    }
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    instruction_begin = instruction_end;
+
+    /* Clear variables (well, one variable currently).  */
+    instruction_info_collected = 0;
+   current_state = 215; current_position++; goto _again;
+  break;
+  case 44:
+current_state = 139; current_position++; goto _again;
+  break;
+  case 45:
+current_state = 142; current_position++; goto _again;
+  break;
+  case 46:
+current_state = 145; current_position++; goto _again;
+  break;
+  case 47:
+current_state = 147; current_position++; goto _again;
+  break;
+  case 48:
+current_state = 11; current_position++; goto _again;
+  break;
+  case 49:
+current_state = 127; current_position++; goto _again;
+  break;
+  case 50:
+current_state = 128; current_position++; goto _again;
+  break;
+  case 51:
+current_state = 132; current_position++; goto _again;
+  break;
+  case 52:
+current_state = 133; current_position++; goto _again;
+  break;
+  case 53:
+current_state = 134; current_position++; goto _again;
+  break;
+  case 54:
+current_state = 151; current_position++; goto _again;
+  break;
+  case 55:
+current_state = 154; current_position++; goto _again;
+  break;
+  case 56:
+current_state = 156; current_position++; goto _again;
+  break;
+  case 57:
+current_state = 158; current_position++; goto _again;
+  break;
+  case 58:
+current_state = 160; current_position++; goto _again;
+  break;
+  case 59:
+current_state = 163; current_position++; goto _again;
+  break;
+  case 60:
+current_state = 165; current_position++; goto _again;
+  break;
+  case 61:
+current_state = 177; current_position++; goto _again;
+  break;
+  case 62:
+current_state = 178; current_position++; goto _again;
+  break;
+  case 63:
+current_state = 179; current_position++; goto _again;
   break;
   case 64:
  
@@ -1296,11 +1358,38 @@ current_state = 23; current_position++; goto _again;
     instruction_info_collected = 0;
    current_state = 214; current_position++; goto _again;
   break;
-  case 61:
-current_state = 177; current_position++; goto _again;
+  case 65:
+current_state = 188; current_position++; goto _again;
   break;
-  case 23:
-current_state = 40; current_position++; goto _again;
+  case 66:
+ current_state = 189; current_position++; goto _again;
+  break;
+  case 67:
+
+      if (((current_position - codeblock) & kBundleMask) != kBundleMask)
+        instruction_info_collected |= BAD_CALL_ALIGNMENT;
+     
+    /* Mark start of this instruction as a valid target for jump.  */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(instruction_begin, instruction_end,
+                              instruction_info_collected, callback_data);
+    }
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    instruction_begin = instruction_end;
+
+    /* Clear variables (well, one variable currently).  */
+    instruction_info_collected = 0;
+   current_state = 214; current_position++; goto _again;
   break;
   case 68:
  
@@ -1326,11 +1415,8 @@ current_state = 40; current_position++; goto _again;
     instruction_info_collected = 0;
    current_state = 216; current_position++; goto _again;
   break;
-  case 7:
-current_state = 13; current_position++; goto _again;
-  break;
-  case 9:
-
+  case 69:
+ 
     /* Mark start of this instruction as a valid target for jump.  */
     MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
 
@@ -1351,31 +1437,7 @@ current_state = 13; current_position++; goto _again;
 
     /* Clear variables (well, one variable currently).  */
     instruction_info_collected = 0;
-   current_state = 214; current_position++; goto _again;
-  break;
-  case 19:
-current_state = 24; current_position++; goto _again;
-  break;
-  case 46:
-current_state = 145; current_position++; goto _again;
-  break;
-  case 38:
- current_state = 75; current_position++; goto _again;
-  break;
-  case 59:
-current_state = 163; current_position++; goto _again;
-  break;
-  case 17:
-current_state = 22; current_position++; goto _again;
-  break;
-  case 40:
-current_state = 130; current_position++; goto _again;
-  break;
-  case 22:
-current_state = 39; current_position++; goto _again;
-  break;
-  case 60:
-current_state = 165; current_position++; goto _again;
+   current_state = 217; current_position++; goto _again;
   break;
   case 70:
  
@@ -1401,16 +1463,7 @@ current_state = 165; current_position++; goto _again;
     instruction_info_collected = 0;
    current_state = 218; current_position++; goto _again;
   break;
-  case 1:
-current_state = 214; current_position++; goto _again;
-  break;
-  case 4:
-current_state = 6; current_position++; goto _again;
-  break;
-  case 36:
-current_state = 110; current_position++; goto _again;
-  break;
-  case 69:
+  case 71:
  
     /* Mark start of this instruction as a valid target for jump.  */
     MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
@@ -1432,25 +1485,31 @@ current_state = 110; current_position++; goto _again;
 
     /* Clear variables (well, one variable currently).  */
     instruction_info_collected = 0;
-   current_state = 217; current_position++; goto _again;
+   current_state = 219; current_position++; goto _again;
   break;
-  case 3:
-current_state = 5; current_position++; goto _again;
-  break;
-  case 52:
-current_state = 133; current_position++; goto _again;
-  break;
-  case 39:
-current_state = 129; current_position++; goto _again;
-  break;
-  case 45:
-current_state = 142; current_position++; goto _again;
-  break;
-  case 10:
-current_state = 2; current_position++; goto _again;
-  break;
-  case 44:
-current_state = 139; current_position++; goto _again;
+  case 72:
+ 
+    /* Mark start of this instruction as a valid target for jump.  */
+    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
+
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(instruction_begin, instruction_end,
+                              instruction_info_collected, callback_data);
+    }
+
+    /*
+     * We may set instruction_begin at the first byte of the instruction instead
+     * of here but in the case of incorrect one byte instructions user callback
+     * may be called before instruction_begin is set.
+     */
+    instruction_begin = instruction_end;
+
+    /* Clear variables (well, one variable currently).  */
+    instruction_info_collected = 0;
+   current_state = 220; current_position++; goto _again;
   break;
   case 73:
  
@@ -1476,21 +1535,6 @@ current_state = 139; current_position++; goto _again;
     instruction_info_collected = 0;
    current_state = 221; current_position++; goto _again;
   break;
-  case 27:
-current_state = 41; current_position++; goto _again;
-  break;
-  case 12:
-current_state = 7; current_position++; goto _again;
-  break;
-  case 2:
-current_state = 4; current_position++; goto _again;
-  break;
-  case 28:
-current_state = 42; current_position++; goto _again;
-  break;
-  case 6:
-current_state = 12; current_position++; goto _again;
-  break;
   case 74:
  
     /* Mark start of this instruction as a valid target for jump.  */
@@ -1514,50 +1558,6 @@ current_state = 12; current_position++; goto _again;
     /* Clear variables (well, one variable currently).  */
     instruction_info_collected = 0;
    current_state = 222; current_position++; goto _again;
-  break;
-  case 48:
-current_state = 11; current_position++; goto _again;
-  break;
-  case 0:
-  break;
-  case 34:
-current_state = 76; current_position++; goto _again;
-  break;
-  case 62:
-current_state = 178; current_position++; goto _again;
-  break;
-  case 63:
-current_state = 179; current_position++; goto _again;
-  break;
-  case 33:
-current_state = 55; current_position++; goto _again;
-  break;
-  case 16:
- SET_CPU_FEATURE(CPUFeature_3DNOW);      
-    /* Mark start of this instruction as a valid target for jump.  */
-    MarkValidJumpTarget(instruction_begin - codeblock, valid_targets);
-
-    /* Call user-supplied callback.  */
-    instruction_end = current_position + 1;
-    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(instruction_begin, instruction_end,
-                              instruction_info_collected, callback_data);
-    }
-
-    /*
-     * We may set instruction_begin at the first byte of the instruction instead
-     * of here but in the case of incorrect one byte instructions user callback
-     * may be called before instruction_begin is set.
-     */
-    instruction_begin = instruction_end;
-
-    /* Clear variables (well, one variable currently).  */
-    instruction_info_collected = 0;
-   current_state = 214; current_position++; goto _again;
-  break;
-  case 37:
-current_state = 111; current_position++; goto _again;
   break;
 }
 _done: ;

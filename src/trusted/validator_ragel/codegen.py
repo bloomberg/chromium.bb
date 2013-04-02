@@ -71,7 +71,7 @@ class Generator(object):
   def WriteCodeTable(self, code_table, selector):
     self.c_file.write(
         'switch (%s) {\n' % selector)
-    for code, index in code_table.items():
+    for code, index in sorted(code_table.items(), key=lambda (_, index): index):
       self.c_file.write(
           '  case %d:\n' % index)
       self.c_file.write(' '.join(code))
