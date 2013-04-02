@@ -690,6 +690,7 @@
             '../testing/gmock.gyp:gmock',
             '../testing/gtest.gyp:gtest',
             '../third_party/mesa/mesa.gyp:osmesa',
+            '../third_party/widevine/cdm/widevine_cdm.gyp:widevine_cdm_version_h',
             '../ui/gl/gl.gyp:gl',
             '../ui/snapshot/snapshot.gyp:snapshot',
             '../ui/ui.gyp:shell_dialogs',
@@ -700,6 +701,7 @@
           ],
           'include_dirs': [
             '..',
+            '<(SHARED_INTERMEDIATE_DIR)',  # Needed by encrypted_media_browsertest.cc
           ],
           'includes': [
             'browser/gpu/test_support_gpu.gypi',

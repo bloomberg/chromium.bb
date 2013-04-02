@@ -41,12 +41,10 @@ var EXTERNAL_CLEAR_KEY_HEARTBEAT_URL =
 function isHeartbeatMessage(msg) {
   if (msg.length < HEART_BEAT_HEADER.length)
     return false;
-
   for (var i = 0; i < HEART_BEAT_HEADER.length; ++i) {
     if (String.fromCharCode(msg[i]) != HEART_BEAT_HEADER[i])
       return false;
   }
-
   return true;
 }
 
@@ -87,6 +85,7 @@ function loadEncryptedMedia(video, mediaFile, keySystem, key) {
   video.receivedKeyAdded = false;
   video.receivedHeartbeat = false;
   video.isHeartbeatExpected = keySystem === EXTERNAL_CLEAR_KEY_KEY_SYSTEM;
+  video.receivedKeyMessage = false;
 
   if (!(video && mediaFile && keySystem && key))
     failTest('Missing parameters in loadEncryptedMedia().');
@@ -126,6 +125,7 @@ function loadEncryptedMedia(video, mediaFile, keySystem, key) {
   }
 
   function onKeyMessage(e) {
+    video.receivedKeyMessage = true;
     if (!e.keySystem) {
       failTest('keymessage without a keySystem: ' + e.keySystem);
       return;
@@ -180,7 +180,9 @@ function loadEncryptedMedia(video, mediaFile, keySystem, key) {
   mediaSource.addEventListener('webkitsourceopen', onSourceOpen);
   video.addEventListener('webkitneedkey', onNeedKey);
   video.addEventListener('webkitkeymessage', onKeyMessage);
-  video.addEventListener('webkitkeyerror', failTest);
+  video.addEventListener('webkitkeyerror', function() {
+      setResultInTitle("WebKitKeyError");
+  });
   video.addEventListener('webkitkeyadded', onKeyAdded);
   installTitleEventHandler(video, 'error');
 
