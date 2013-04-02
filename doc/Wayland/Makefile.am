@@ -3,6 +3,8 @@ publican_sources = \
 	$(srcdir)/en_US/Architecture.xml \
 	$(srcdir)/en_US/Author_Group.xml \
 	$(srcdir)/en_US/Book_Info.xml \
+	$(srcdir)/en_US/Foreword.xml \
+	$(srcdir)/en_US/Preface.xml \
 	$(srcdir)/en_US/Wayland.xml \
 	$(srcdir)/en_US/Protocol.xml \
 	$(srcdir)/en_US/Library.xml \
