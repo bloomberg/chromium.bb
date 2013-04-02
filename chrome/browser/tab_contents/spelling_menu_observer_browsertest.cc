@@ -233,7 +233,7 @@ IN_PROC_BROWSER_TEST_F(SpellingMenuObserverTest, InitMenuWithCorrectWord) {
 }
 
 // Tests that right-clicking a misspelled word adds four items:
-// "No spelling suggestions", "Add to dictionary", "Ask Google for suggesitons",
+// "No spelling suggestions", "Add to dictionary", "Ask Google for suggestions",
 // and a separator.
 IN_PROC_BROWSER_TEST_F(SpellingMenuObserverTest, InitMenuWithMisspelledWord) {
   scoped_ptr<MockRenderViewContextMenu> menu(new MockRenderViewContextMenu);
@@ -343,23 +343,28 @@ IN_PROC_BROWSER_TEST_F(SpellingMenuObserverTest, SeparatorAfterSuggestions) {
   params.misspelled_word = ASCIIToUTF16("jhhj");
   observer->InitMenu(params);
 
-  // The test should see "No spelling suggestions" (from system checker),
+  // The test should see a top separator, "No spelling suggestions",
   // "No more Google suggestions" (from SpellingService) and a separator
-  // as the first three items, then possibly more (not relevant here).
-  EXPECT_LT(3U, menu->GetMenuSize());
+  // as the first four items, then possibly more (not relevant here).
+  EXPECT_LT(4U, menu->GetMenuSize());
 
   MockRenderViewContextMenu::MockMenuItem item;
   menu->GetMenuItem(0, &item);
-  EXPECT_EQ(IDC_CONTENT_CONTEXT_SPELLING_SUGGESTION, item.command_id);
+  EXPECT_EQ(-1, item.command_id);
   EXPECT_FALSE(item.enabled);
   EXPECT_FALSE(item.hidden);
 
   menu->GetMenuItem(1, &item);
-  EXPECT_EQ(IDC_CONTENT_CONTEXT_NO_SPELLING_SUGGESTIONS, item.command_id);
+  EXPECT_EQ(IDC_CONTENT_CONTEXT_SPELLING_SUGGESTION, item.command_id);
   EXPECT_FALSE(item.enabled);
   EXPECT_FALSE(item.hidden);
 
   menu->GetMenuItem(2, &item);
+  EXPECT_EQ(IDC_CONTENT_CONTEXT_NO_SPELLING_SUGGESTIONS, item.command_id);
+  EXPECT_FALSE(item.enabled);
+  EXPECT_FALSE(item.hidden);
+
+  menu->GetMenuItem(3, &item);
   EXPECT_EQ(-1, item.command_id);
   EXPECT_FALSE(item.enabled);
   EXPECT_FALSE(item.hidden);
@@ -389,18 +394,22 @@ IN_PROC_BROWSER_TEST_F(SpellingMenuObserverTest,
   params.dictionary_suggestions.push_back(ASCIIToUTF16("asdf"));
   observer->InitMenu(params);
 
-  // The test should see a suggestion (from SpellingService) and a separator
+  // The test should see a separator, a suggestion and another separator
   // as the first two items, then possibly more (not relevant here).
-  EXPECT_LT(2U, menu->GetMenuSize());
+  EXPECT_LT(3U, menu->GetMenuSize());
 
   MockRenderViewContextMenu::MockMenuItem item;
   menu->GetMenuItem(0, &item);
+  EXPECT_EQ(-1, item.command_id);
+  EXPECT_FALSE(item.enabled);
+  EXPECT_FALSE(item.hidden);
+
+  menu->GetMenuItem(1, &item);
   EXPECT_EQ(IDC_SPELLCHECK_SUGGESTION_0, item.command_id);
   EXPECT_TRUE(item.enabled);
   EXPECT_FALSE(item.hidden);
 
-  menu->GetMenuItem(1, &item);
-  EXPECT_NE(IDC_CONTENT_CONTEXT_NO_SPELLING_SUGGESTIONS, item.command_id);
+  menu->GetMenuItem(2, &item);
   EXPECT_EQ(-1, item.command_id);
   EXPECT_FALSE(item.enabled);
   EXPECT_FALSE(item.hidden);
@@ -462,3 +471,64 @@ IN_PROC_BROWSER_TEST_F(SpellingMenuObserverTest,
   menu->GetProfile()->AsTestingProfile()->set_incognito(false);
 }
 
+// Test that the menu is preceeded by a separator if there are any suggestions,
+// or if the SpellingServiceClient is available
+IN_PROC_BROWSER_TEST_F(SpellingMenuObserverTest, SuggestionsForceTopSeparator) {
+  scoped_ptr<MockRenderViewContextMenu> menu(new MockRenderViewContextMenu);
+  scoped_ptr<SpellingMenuObserver> observer(
+      new SpellingMenuObserver(menu.get()));
+  menu->SetObserver(observer.get());
+  menu->GetPrefs()->SetBoolean(prefs::kSpellCheckUseSpellingService, false);
+
+  // First case: Misspelled word, no suggestions, no spellcheck service.
+  content::ContextMenuParams params;
+  params.is_editable = true;
+  params.misspelled_word = ASCIIToUTF16("asdfkj");
+  params.dictionary_suggestions.clear();
+
+  observer->InitMenu(params);
+  // See SpellingMenuObserverTest.InitMenuWithMisspelledWord on why 4 items.
+  EXPECT_EQ(static_cast<size_t>(4), menu->GetMenuSize());
+  MockRenderViewContextMenu::MockMenuItem item;
+  menu->GetMenuItem(0, &item);
+  EXPECT_NE(-1, item.command_id);
+
+  // Case #2. Misspelled word, suggestions, no spellcheck service.
+  observer.reset();
+  menu.reset(new MockRenderViewContextMenu);
+  observer.reset(new SpellingMenuObserver(menu.get()));
+  menu->SetObserver(observer.get());
+  menu->GetPrefs()->SetBoolean(prefs::kSpellCheckUseSpellingService, false);
+  params.is_editable = true;
+  params.misspelled_word = ASCIIToUTF16("asdfkj");
+  params.dictionary_suggestions.clear();
+  params.dictionary_suggestions.push_back(ASCIIToUTF16("asdf"));
+  observer->InitMenu(params);
+
+  // Expect at least separator and 4 default entries.
+  EXPECT_LT(static_cast<size_t>(5), menu->GetMenuSize());
+  // This test only cares that the first one is a separator.
+  menu->GetMenuItem(0, &item);
+  EXPECT_EQ(-1, item.command_id);
+
+  // Case #3. Misspelled word, suggestion service is on.
+  observer.reset();
+  menu.reset(new MockRenderViewContextMenu);
+  observer.reset(new SpellingMenuObserver(menu.get()));
+  menu->SetObserver(observer.get());
+  menu->GetPrefs()->SetBoolean(prefs::kSpellCheckUseSpellingService, true);
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  command_line->AppendSwitch(switches::kUseSpellingSuggestions);
+  params.is_editable = true;
+  params.misspelled_word = ASCIIToUTF16("asdfkj");
+  params.dictionary_suggestions.clear();
+  menu->CreateRequestContext();
+  observer->InitMenu(params);
+
+  // Should have at least 2 entries. Separator, suggestion.
+  EXPECT_LT(2U, menu->GetMenuSize());
+  menu->GetMenuItem(0, &item);
+  EXPECT_EQ(-1, item.command_id);
+  menu->GetMenuItem(1, &item);
+  EXPECT_EQ(IDC_CONTENT_CONTEXT_SPELLING_SUGGESTION, item.command_id);
+}

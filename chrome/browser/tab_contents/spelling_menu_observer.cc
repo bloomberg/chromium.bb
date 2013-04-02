@@ -64,8 +64,16 @@ void SpellingMenuObserver::InitMenu(const content::ContextMenuParams& params) {
   if (params.misspelled_word.empty())
     return;
 
-  // Append Dictionary spell check suggestions.
+  bool useSpellingService = SpellingServiceClient::IsAvailable(
+      profile, SpellingServiceClient::SPELLCHECK);
+  bool useSuggestions = SpellingServiceClient::IsAvailable(
+      profile, SpellingServiceClient::SUGGEST);
   suggestions_ = params.dictionary_suggestions;
+
+  if (!suggestions_.empty() || (useSuggestions && !useSpellingService))
+    proxy_->AddSeparator();
+
+  // Append Dictionary spell check suggestions.
   for (size_t i = 0; i < params.dictionary_suggestions.size() &&
        IDC_SPELLCHECK_SUGGESTION_0 + i <= IDC_SPELLCHECK_SUGGESTION_LAST;
        ++i) {
@@ -77,10 +85,6 @@ void SpellingMenuObserver::InitMenu(const content::ContextMenuParams& params) {
   // send a request to the service if we can retrieve suggestions from it.
   // Also, see if we can use the spelling service to get an ideal suggestion.
   // Otherwise, we'll fall back to the set of suggestions.
-  bool useSpellingService = SpellingServiceClient::IsAvailable(
-      profile, SpellingServiceClient::SPELLCHECK);
-  bool useSuggestions = SpellingServiceClient::IsAvailable(
-      profile, SpellingServiceClient::SUGGEST);
   if (useSuggestions || useSpellingService) {
     // Initialize variables used in OnTextCheckComplete(). We copy the input
     // text to the result text so we can replace its misspelled regions with
