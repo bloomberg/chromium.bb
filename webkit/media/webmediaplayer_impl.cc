@@ -728,6 +728,30 @@ bool WebMediaPlayerImpl::copyVideoTextureToPlatformTexture(
   return false;
 }
 
+// Helper functions to report media EME related stats to UMA. They follow the
+// convention of more commonly used macros UMA_HISTOGRAM_ENUMERATION and
+// UMA_HISTOGRAM_COUNTS. The reason that we cannot use those macros directly is
+// that UMA_* macros require the names to be constant throughout the process'
+// lifetime.
+static void EmeUMAHistogramEnumeration(const std::string& key_system,
+                                       const std::string& method,
+                                       int sample,
+                                       int boundary_value) {
+  base::LinearHistogram::FactoryGet(
+      kMediaEme + KeySystemNameForUMA(key_system) + "." + method,
+      1, boundary_value, boundary_value + 1,
+      base::Histogram::kUmaTargetedHistogramFlag)->Add(sample);
+}
+
+static void EmeUMAHistogramCounts(const std::string& key_system,
+                                  const std::string& method,
+                                  int sample) {
+  // Use the same parameters as UMA_HISTOGRAM_COUNTS.
+  base::Histogram::FactoryGet(
+      kMediaEme + KeySystemNameForUMA(key_system) + "." + method,
+      1, 1000000, 50, base::Histogram::kUmaTargetedHistogramFlag)->Add(sample);
+}
+
 // Helper enum for reporting generateKeyRequest/addKey histograms.
 enum MediaKeyException {
   kUnknownResultId,
@@ -759,10 +783,8 @@ static void ReportMediaKeyExceptionToUMA(
     WebMediaPlayer::MediaKeyException e) {
   MediaKeyException result_id = MediaKeyExceptionForUMA(e);
   DCHECK_NE(result_id, kUnknownResultId) << e;
-  base::LinearHistogram::FactoryGet(
-      kMediaEme + KeySystemNameForUMA(key_system) + "." + method, 1,
-      kMaxMediaKeyException, kMaxMediaKeyException + 1,
-      base::Histogram::kUmaTargetedHistogramFlag)->Add(result_id);
+  EmeUMAHistogramEnumeration(
+      key_system.utf8(), method, result_id, kMaxMediaKeyException);
 }
 
 WebMediaPlayer::MediaKeyException
@@ -818,7 +840,6 @@ WebMediaPlayer::MediaKeyException WebMediaPlayerImpl::addKey(
   ReportMediaKeyExceptionToUMA("addKey", key_system, e);
   return e;
 }
-
 
 WebMediaPlayer::MediaKeyException WebMediaPlayerImpl::AddKeyInternal(
     const WebString& key_system,
@@ -953,11 +974,8 @@ void WebMediaPlayerImpl::OnPipelineError(PipelineStatus error) {
 
     case media::PIPELINE_ERROR_DECRYPT:
       // Decrypt error.
-      base::Histogram::FactoryGet(
-          (kMediaEme + KeySystemNameForUMA(current_key_system_) +
-           ".DecryptError"),
-          1, 1000000, 50,
-          base::Histogram::kUmaTargetedHistogramFlag)->Add(1);
+      EmeUMAHistogramCounts(current_key_system_.utf8(), "DecryptError", 1);
+
       // TODO(xhwang): Change to use NetworkStateDecryptError once it's added in
       // Webkit (see http://crbug.com/124486).
       SetNetworkState(WebMediaPlayer::NetworkStateDecodeError);
@@ -1006,12 +1024,7 @@ void WebMediaPlayerImpl::OnDemuxerOpened(
 void WebMediaPlayerImpl::OnKeyAdded(const std::string& key_system,
                                     const std::string& session_id) {
   DCHECK(main_loop_->BelongsToCurrentThread());
-
-  base::Histogram::FactoryGet(
-      kMediaEme + KeySystemNameForUMA(key_system) + ".KeyAdded",
-      1, 1000000, 50,
-      base::Histogram::kUmaTargetedHistogramFlag)->Add(1);
-
+  EmeUMAHistogramCounts(key_system, "KeyAdded", 1);
   GetClient()->keyAdded(WebString::fromUTF8(key_system),
                         WebString::fromUTF8(session_id));
 }
@@ -1057,10 +1070,8 @@ void WebMediaPlayerImpl::OnKeyError(const std::string& key_system,
                                     int system_code) {
   DCHECK(main_loop_->BelongsToCurrentThread());
 
-  base::LinearHistogram::FactoryGet(
-      kMediaEme + KeySystemNameForUMA(key_system) + ".KeyError", 1,
-      media::Decryptor::kMaxKeyError, media::Decryptor::kMaxKeyError + 1,
-      base::Histogram::kUmaTargetedHistogramFlag)->Add(error_code);
+  EmeUMAHistogramEnumeration(
+      key_system, "KeyError", error_code, media::Decryptor::kMaxKeyError);
 
   GetClient()->keyError(
       WebString::fromUTF8(key_system),
