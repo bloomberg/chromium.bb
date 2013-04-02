@@ -1817,11 +1817,11 @@
    bug_43471
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN9__gnu_cxx13new_allocatorIPN11MessageLoop19DestructionObserverEE8allocateE*
-   fun:_ZNSt12_Vector_baseIPN11MessageLoop19DestructionObserverESaIS2_EE11_M_allocateE*
-   fun:_ZNSt6vectorIPN11MessageLoop19DestructionObserverESaIS2_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS2_S4_EERKS*
-   fun:_ZNSt6vectorIPN11MessageLoop19DestructionObserverESaIS2_EE9push_backERKS2_
-   fun:_ZN16ObserverListBaseIN11MessageLoop19DestructionObserverEE11AddObserverEPS1_
+   fun:_ZN9__gnu_cxx13new_allocatorIPN4base11MessageLoop19DestructionObserverEE8allocateE*
+   fun:_ZNSt12_Vector_baseIPN4base11MessageLoop19DestructionObserverESaIS*
+   fun:_ZNSt6vectorIPN4base11MessageLoop19DestructionObserverESaIS*
+   fun:_ZNSt6vectorIPN4base11MessageLoop19DestructionObserverESaIS*
+   fun:_ZN16ObserverListBaseIN4base11MessageLoop19DestructionObserverEE11AddObserverEPS*
    fun:_ZN4base11MessageLoop22AddDestructionObserverEPNS0_19DestructionObserverE
 }
 {
