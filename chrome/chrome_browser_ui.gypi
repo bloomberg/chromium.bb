@@ -896,10 +896,6 @@
         'browser/ui/global_error/global_error_service.h',
         'browser/ui/global_error/global_error_service_factory.cc',
         'browser/ui/global_error/global_error_service_factory.h',
-        'browser/ui/google_now/google_now_service.cc',
-        'browser/ui/google_now/google_now_service.h',
-        'browser/ui/google_now/google_now_service_factory.cc',
-        'browser/ui/google_now/google_now_service_factory.h',
         'browser/ui/gtk/accelerators_gtk.cc',
         'browser/ui/gtk/accelerators_gtk.h',
         'browser/ui/gtk/action_box_button_gtk.cc',
@@ -2319,14 +2315,6 @@
             'browser/ui/views/sync/one_click_signin_bubble_view.cc',
             'browser/ui/views/sync/one_click_signin_bubble_view.h',
           ]
-        }],
-        ['enable_google_now==0', {
-          'sources!': [
-            'browser/ui/google_now/google_now_service.cc',
-            'browser/ui/google_now/google_now_service.h',
-            'browser/ui/google_now/google_now_service_factory.cc',
-            'browser/ui/google_now/google_now_service_factory.h',
-          ],
         }],
         ['enable_task_manager==0', {
           'sources/': [

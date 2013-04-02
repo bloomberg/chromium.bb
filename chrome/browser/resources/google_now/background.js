@@ -19,7 +19,6 @@
 
 // TODO(vadimt): Use background permission to show notifications even when all
 // browser windows are closed.
-// TODO(vadimt): Remove the C++ implementation.
 // TODO(vadimt): Decide what to do in incognito mode.
 // TODO(vadimt): Gather UMAs.
 // TODO(vadimt): Honor the flag the enables Google Now integration.

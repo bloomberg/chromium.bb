@@ -195,10 +195,6 @@
 #include "policy/policy_constants.h"
 #endif
 
-#if defined(ENABLE_GOOGLE_NOW)
-#include "chrome/browser/ui/google_now/google_now_service_factory.h"
-#endif
-
 #if defined(ENABLE_LANGUAGE_DETECTION)
 #include "chrome/browser/language_usage_metrics.h"
 #endif
