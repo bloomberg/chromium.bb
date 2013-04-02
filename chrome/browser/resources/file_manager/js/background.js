@@ -48,10 +48,31 @@ function AppWindowWrapper(url, id, options) {
 }
 
 /**
+ * Shift distance to avoid overlapping windows.
+ * @type {number}
+ * @const
+ */
+AppWindowWrapper.SHIFT_DISTANCE = 40;
+
+/**
  * @return {boolean} True if the window is currently open.
  */
 AppWindowWrapper.prototype.isOpen = function() {
   return this.window_ && !this.window_.contentWindow.closed;
+};
+
+/**
+ * Gets similar windows, it means with the same initial url.
+ * @return {Array.<AppWindow>} List of similar windows.
+ * @private
+ */
+AppWindowWrapper.prototype.getSimilarWindows_ = function() {
+  var result = [];
+  for (var appID in appWindows) {
+    if (appWindows[appID].contentWindow.appInitialURL == this.url_)
+      result.push(appWindows[appID]);
+  }
+  return result;
 };
 
 /**
@@ -68,29 +89,71 @@ AppWindowWrapper.prototype.launch = function(appState) {
   var options = this.options_;
   if (typeof options == 'function')
     options = options();
-  options.id = this.id_;
+  options.id = this.url_;  // This is to make Chrome reuse window geometries.
+  options.singleton = false;
+  options.hidden = true;
 
-  chrome.app.window.create(this.url_, options, function(appWindow) {
-    this.creating_ = false;
-    this.window_ = appWindow;
-    appWindows[this.id_] = appWindow;
-    var contentWindow = appWindow.contentWindow;
-    contentWindow.appID = this.id_;
-    contentWindow.appState = this.appState_;
-    appWindow.onClosed.addListener(function() {
-      if (contentWindow.unload)
-        contentWindow.unload();
-      if (contentWindow.saveOnExit) {
-        contentWindow.saveOnExit.forEach(function(entry) {
-          util.AppCache.update(entry.key, entry.value);
-        });
+  // Get similar windows, it means with the same initial url, eg. different
+  // main windows of Files.app.
+  var similarWindows = this.getSimilarWindows_();
+
+  // Closure creating the window, once all preprocessing tasks are finished.
+  var createWindow = function() {
+    chrome.app.window.onRestored.removeListener(createWindow);
+    chrome.app.window.create(this.url_, options, function(appWindow) {
+      this.creating_ = false;
+      this.window_ = appWindow;
+
+      // If we have already another window of the same kind, then shift this
+      // window to avoid overlapping with the previous one.
+      if (similarWindows.length) {
+        var bounds = appWindow.getBounds();
+        appWindow.moveTo(bounds.left + AppWindowWrapper.SHIFT_DISTANCE,
+                         bounds.top + AppWindowWrapper.SHIFT_DISTANCE);
       }
-      delete appWindows[this.id_];
-      chrome.storage.local.remove(this.id_);  // Forget the persisted state.
-      this.window_ = null;
-      maybeCloseBackgroundPage();
+
+      // Show after changing bounds is done.
+      appWindow.show();
+
+      appWindows[this.id_] = appWindow;
+      var contentWindow = appWindow.contentWindow;
+      contentWindow.appID = this.id_;
+      contentWindow.appState = this.appState_;
+      contentWindow.appInitialURL = this.url_;
+      appWindow.onClosed.addListener(function() {
+        if (contentWindow.unload)
+          contentWindow.unload();
+        if (contentWindow.saveOnExit) {
+          contentWindow.saveOnExit.forEach(function(entry) {
+            util.AppCache.update(entry.key, entry.value);
+          });
+        }
+        delete appWindows[this.id_];
+        chrome.storage.local.remove(this.id_);  // Forget the persisted state.
+        this.window_ = null;
+        maybeCloseBackgroundPage();
+      }.bind(this));
     }.bind(this));
-  }.bind(this));
+  }.bind(this);
+
+  // Restore maximized windows, to avoid hiding them to tray, which can be
+  // confusing for users.
+  for (var index = 0; index < similarWindows.length; index++) {
+    if (similarWindows[index].isMaximized()) {
+      var createWindowAndRemoveListener = function() {
+        createWindow();
+        similarWindows[index].onRestored.removeListener(
+            createWindowAndRemoveListener);
+      };
+      similarWindows[index].onRestored.addListener(
+          createWindowAndRemoveListener);
+      similarWindows[index].restore();
+      return;
+    }
+  }
+
+  // If no maximized windows, then create the window immediately.
+  createWindow();
 };
 
 /**
@@ -175,8 +238,12 @@ var nextFileManagerWindowID = 0;
  */
 function createFileManagerOptions() {
   return {
+    defaultLeft: Math.round(window.screen.availWidth * 0.1),
+    defaultTop: Math.round(window.screen.availHeight * 0.1),
     defaultWidth: Math.round(window.screen.availWidth * 0.8),
-    defaultHeight: Math.round(window.screen.availHeight * 0.8)
+    defaultHeight: Math.round(window.screen.availHeight * 0.8),
+    minWidth: 320,
+    minHeight: 240
   };
 }
 
