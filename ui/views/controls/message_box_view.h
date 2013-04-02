@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/string16.h"
+#include "ui/base/clipboard/clipboard.h"
 #include "ui/views/view.h"
 
 namespace gfx {
@@ -52,6 +53,7 @@ class VIEWS_EXPORT MessageBoxView : public View {
     int left_inset;
     int right_inset;
     int inter_row_vertical_spacing;
+    ui::Clipboard::SourceTag clipboard_source_tag;
   };
 
   explicit MessageBoxView(const InitParams& params);
@@ -123,6 +125,9 @@ class VIEWS_EXPORT MessageBoxView : public View {
 
   // Spacing between rows in the grid layout.
   int inter_row_vertical_spacing_;
+
+  // Source tag to be written to the clipboard when Ctrl-C pressed.
+  ui::Clipboard::SourceTag source_tag_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageBoxView);
 };

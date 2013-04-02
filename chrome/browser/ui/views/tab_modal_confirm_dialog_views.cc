@@ -5,7 +5,9 @@
 #include "chrome/browser/ui/views/tab_modal_confirm_dialog_views.h"
 
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog_delegate.h"
@@ -20,6 +22,24 @@
 #include "ui/views/controls/message_box_view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_client_view.h"
+
+namespace {
+
+views::MessageBoxView::InitParams GetInitParams(
+    const string16& message,
+    content::WebContents* web_contents) {
+  views::MessageBoxView::InitParams params(message);
+  if (web_contents) {
+    if (Browser* browser = chrome::FindBrowserWithWebContents(web_contents)) {
+      params.clipboard_source_tag =
+        content::BrowserContext::GetMarkerForOffTheRecordContext(
+            browser->profile());
+    }
+  }
+  return params;
+}
+
+} // namespace
 
 // static
 TabModalConfirmDialog* TabModalConfirmDialog::Create(
@@ -37,7 +57,7 @@ TabModalConfirmDialogViews::TabModalConfirmDialogViews(
     content::WebContents* web_contents)
     : delegate_(delegate),
       message_box_view_(new views::MessageBoxView(
-          views::MessageBoxView::InitParams(delegate->GetMessage()))),
+          GetInitParams(delegate->GetMessage(), web_contents))),
       dialog_(NULL),
       browser_context_(web_contents->GetBrowserContext()) {
   WebContentsModalDialogManager* web_contents_modal_dialog_manager =
