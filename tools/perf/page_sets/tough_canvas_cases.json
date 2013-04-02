@@ -137,6 +137,26 @@
     {
       "url":"http://www.smashcat.org/av/canvas_test/",
       "smoothness": { "action": "wait", "condition": "duration", "seconds": 5 }
+    },
+    {
+      "url": "file:///tough_canvas_cases/compositing_huge_div/index.html",
+      "smoothness": { "action": "wait", "condition": "duration", "seconds": 5 }
+    },
+    {
+      "url": "file:///tough_canvas_cases/canvas2d_balls_common/bouncing_balls.html?ball=canvas_sprite&back=canvas",
+      "smoothness": { "action": "wait", "condition": "duration", "seconds": 5 }
+    },
+    {
+      "url": "file:///tough_canvas_cases/canvas2d_balls_common/bouncing_balls.html?ball=image_with_shadow&back=image",
+      "smoothness": { "action": "wait", "condition": "duration", "seconds": 5 }
+    },
+    {
+      "url": "file:///tough_canvas_cases/canvas2d_balls_common/bouncing_balls.html?ball=filled_path&back=gradient",
+      "smoothness": { "action": "wait", "condition": "duration", "seconds": 5 }
+    },
+    {
+      "url": "file:///tough_canvas_cases/canvas2d_balls_common/bouncing_balls.html?ball=text&back=white&ball_count=15",
+      "smoothness": { "action": "wait", "condition": "duration", "seconds": 5 }
     }
   ]
 }
