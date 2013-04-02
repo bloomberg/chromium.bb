@@ -1658,7 +1658,6 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DisableAudioOutput) {
   bool prior_state = audio_handler->IsMuted();
   // Make sure we are not muted and then toggle the policy and observe if the
   // trigger was successful.
-  EXPECT_CALL(*mock, OnMuteToggled()).Times(1);
   audio_handler->SetMuted(false);
   EXPECT_FALSE(audio_handler->IsMuted());
   EXPECT_CALL(*mock, OnMuteToggled()).Times(1);

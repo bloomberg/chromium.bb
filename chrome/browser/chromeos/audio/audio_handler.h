@@ -100,6 +100,10 @@ class AudioHandler {
 
   PrefChangeRegistrar pref_change_registrar_;
 
+  // Track state for triggering callbacks
+  double volume_percent_;
+  bool muted_;
+
   DISALLOW_COPY_AND_ASSIGN(AudioHandler);
 };
 

@@ -109,7 +109,10 @@ void AudioHandler::SetVolumePercent(double volume_percent) {
 void AudioHandler::SetVolumePercentInternal(double volume_percent) {
   mixer_->SetVolumePercent(volume_percent);
   local_state_->SetDouble(prefs::kAudioVolumePercent, volume_percent);
-  FOR_EACH_OBSERVER(VolumeObserver, volume_observers_, OnVolumeChanged());
+  if (volume_percent != volume_percent_) {
+    volume_percent_ = volume_percent;
+    FOR_EACH_OBSERVER(VolumeObserver, volume_observers_, OnVolumeChanged());
+  }
 }
 
 void AudioHandler::AdjustVolumeByPercent(double adjust_by_percent) {
@@ -133,7 +136,10 @@ void AudioHandler::SetMuted(bool mute) {
         SetVolumePercentInternal(kDefaultUnmuteVolumePercent);
       }
     }
-    FOR_EACH_OBSERVER(VolumeObserver, volume_observers_, OnMuteToggled());
+    if (mute != muted_) {
+      muted_ = mute;
+      FOR_EACH_OBSERVER(VolumeObserver, volume_observers_, OnMuteToggled());
+    }
   }
 }
 
@@ -156,12 +162,17 @@ void AudioHandler::RemoveVolumeObserver(VolumeObserver* observer) {
 
 AudioHandler::AudioHandler(AudioMixer* mixer)
     : mixer_(mixer),
-      local_state_(g_browser_process->local_state()) {
+      local_state_(g_browser_process->local_state()),
+      volume_percent_(0),
+      muted_(false) {
   InitializePrefObservers();
   mixer_->Init();
   ApplyAudioPolicy();
-  SetMuted(local_state_->GetInteger(prefs::kAudioMute) == kPrefMuteOn);
-  SetVolumePercentInternal(local_state_->GetDouble(prefs::kAudioVolumePercent));
+  // Set initial state so that notifications are not triggered.
+  muted_ = (local_state_->GetInteger(prefs::kAudioMute) == kPrefMuteOn);
+  volume_percent_ = local_state_->GetDouble(prefs::kAudioVolumePercent);
+  SetMuted(muted_);
+  SetVolumePercentInternal(volume_percent_);
 }
 
 AudioHandler::~AudioHandler() {
@@ -178,14 +189,19 @@ void AudioHandler::InitializePrefObservers() {
 
 void AudioHandler::ApplyAudioPolicy() {
   mixer_->SetMuteLocked(false);
+  bool muted = false;
   if (local_state_->GetBoolean(prefs::kAudioOutputAllowed)) {
-    mixer_->SetMuted(
-        local_state_->GetInteger(prefs::kAudioMute) == kPrefMuteOn);
+    muted = (local_state_->GetInteger(prefs::kAudioMute) == kPrefMuteOn);
+    mixer_->SetMuted(muted);
   } else {
-    mixer_->SetMuted(true);
+    muted = true;
+    mixer_->SetMuted(muted);
     mixer_->SetMuteLocked(true);
   }
-  FOR_EACH_OBSERVER(VolumeObserver, volume_observers_, OnMuteToggled());
+  if (muted_ != muted) {
+    muted_ = muted;
+    FOR_EACH_OBSERVER(VolumeObserver, volume_observers_, OnMuteToggled());
+  }
   mixer_->SetCaptureMuteLocked(false);
   if (local_state_->GetBoolean(prefs::kAudioCaptureAllowed)) {
     mixer_->SetCaptureMuted(false);
