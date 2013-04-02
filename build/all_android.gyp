@@ -43,6 +43,7 @@
         '../android_webview/android_webview.gyp:android_webview_unittests',
         '../base/android/jni_generator/jni_generator.gyp:jni_generator_tests',
         '../base/base.gyp:base_unittests',
+        '../build/android/tests/multiple_proguards/multiple_proguards.gyp:multiple_proguards_test_apk',
         '../cc/cc_tests.gyp:cc_perftests_apk',
         '../cc/cc_tests.gyp:cc_unittests',
         '../chrome/chrome.gyp:unit_tests',

@@ -129,7 +129,7 @@
              are added under the <proguard> call below.
         -->
         <path id="proguard.configpath">
-          <pathelement path="${proguard.config}"/>
+          <filelist files="${proguard.config}"/>
         </path>
         <pathconvert pathsep='" -include "' property="proguard.configcmd"
           refid="proguard.configpath"/>

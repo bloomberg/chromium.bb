@@ -59,7 +59,7 @@
     'app_manifest_version_name%': '<(android_app_version_name)',
     'app_manifest_version_code%': '<(android_app_version_code)',
     'proguard_enabled%': 'false',
-    'proguard_flags_path%': '<(DEPTH)/build/android/empty_proguard.flags',
+    'proguard_flags_paths%': ['<(DEPTH)/build/android/empty_proguard.flags'],
     'native_libs_paths': [],
     'jar_name': 'chromium_apk_<(_target_name).jar',
     'resource_dir%':'<(DEPTH)/build/android/ant/empty/res',
@@ -346,7 +346,7 @@
         '<(DEPTH)/build/android/ant/apk-obfuscate.xml',
         '<(DEPTH)/build/android/ant/create-test-jar.js',
         '<(compile_stamp)',
-        '<(proguard_flags_path)',
+        '>@(proguard_flags_paths)',
       ],
       'outputs': [
         '<(obfuscate_stamp)',
@@ -367,7 +367,7 @@
         '-DOBFUSCATED_JAR_PATH=<(obfuscated_jar_path)',
         '-DOUT_DIR=<(intermediate_dir)',
         '-DPROGUARD_ENABLED=<(proguard_enabled)',
-        '-DPROGUARD_FLAGS=<(proguard_flags_path)',
+        '-DPROGUARD_FLAGS=<(proguard_flags_paths)',
         '-DTEST_JAR_PATH=<(PRODUCT_DIR)/test.lib.java/<(apk_name).jar',
 
         '-DSTAMP=<(obfuscate_stamp)',
