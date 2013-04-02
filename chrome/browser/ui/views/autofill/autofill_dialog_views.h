@@ -292,6 +292,9 @@ class AutofillDialogViews : public AutofillDialogView,
                    AutofillDialogViews* autofill_dialog);
     virtual ~SuggestionView();
 
+    // Whether this section is editable or not.
+    void SetEditable(bool editable);
+
     // Sets the display text of the suggestion.
     void SetSuggestionText(const string16& text);
 
@@ -316,6 +319,8 @@ class AutofillDialogViews : public AutofillDialogView,
     views::View* label_container_;
     // The input set by ShowTextfield.
     DecoratedTextfield* decorated_;
+    // An "Edit" link that flips to editable inputs rather than suggestion text.
+    views::Link* edit_link_;
 
     DISALLOW_COPY_AND_ASSIGN(SuggestionView);
   };

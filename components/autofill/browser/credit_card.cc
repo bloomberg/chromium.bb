@@ -220,6 +220,29 @@ const string16 CreditCard::StripSeparators(const string16& number) {
   return stripped;
 }
 
+// static
+string16 CreditCard::TypeForDisplay(const std::string& type) {
+  if (type == kAmericanExpressCard)
+    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_AMEX);
+  if (type == kDinersCard)
+    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_DINERS);
+  if (type == kDiscoverCard)
+    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_DISCOVER);
+  if (type == kJCBCard)
+    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_JCB);
+  if (type == kMasterCard)
+    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_MASTERCARD);
+  if (type == kSoloCard)
+    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_SOLO);
+  if (type == kVisaCard)
+    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_VISA);
+
+  // If you hit this DCHECK, the above list of cases needs to be updated to
+  // include a new card.
+  DCHECK_EQ(kGenericCard, type);
+  return string16();
+}
+
 std::string CreditCard::GetGUID() const {
   return guid();
 }
@@ -416,25 +439,7 @@ string16 CreditCard::LastFourDigits() const {
 }
 
 string16 CreditCard::TypeForDisplay() const {
-  if (type_ == kAmericanExpressCard)
-    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_AMEX);
-  if (type_ == kDinersCard)
-    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_DINERS);
-  if (type_ == kDiscoverCard)
-    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_DISCOVER);
-  if (type_ == kJCBCard)
-    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_JCB);
-  if (type_ == kMasterCard)
-    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_MASTERCARD);
-  if (type_ == kSoloCard)
-    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_SOLO);
-  if (type_ == kVisaCard)
-    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_VISA);
-
-  // If you hit this DCHECK, the above list of cases needs to be updated to
-  // include a new card.
-  DCHECK_EQ(kGenericCard, type_);
-  return string16();
+  return CreditCard::TypeForDisplay(type_);
 }
 
 string16 CreditCard::TypeAndLastFourDigits() const {

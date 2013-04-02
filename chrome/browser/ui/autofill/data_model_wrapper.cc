@@ -61,6 +61,8 @@ void DataModelWrapper::FillFormField(AutofillField* field) {
   field->value = GetInfo(field->type());
 }
 
+DataModelWrapper::DataModelWrapper() {}
+
 gfx::Image DataModelWrapper::GetIcon() {
   return gfx::Image();
 }

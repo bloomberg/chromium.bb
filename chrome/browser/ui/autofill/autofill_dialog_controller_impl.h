@@ -25,7 +25,6 @@
 #include "components/autofill/browser/form_structure.h"
 #include "components/autofill/browser/personal_data_manager.h"
 #include "components/autofill/browser/personal_data_manager_observer.h"
-#include "components/autofill/browser/wallet/required_action.h"
 #include "components/autofill/browser/wallet/wallet_client.h"
 #include "components/autofill/browser/wallet/wallet_client_delegate.h"
 #include "components/autofill/browser/wallet/wallet_signin_helper_delegate.h"
@@ -119,8 +118,8 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
       AutofillFieldType type) OVERRIDE;
   virtual ui::MenuModel* MenuModelForSection(DialogSection section) OVERRIDE;
   virtual string16 LabelForSection(DialogSection section) const OVERRIDE;
-  virtual string16 SuggestionTextForSection(DialogSection section) OVERRIDE;
-  virtual gfx::Image SuggestionIconForSection(DialogSection section) OVERRIDE;
+  virtual SuggestionState SuggestionStateForSection(
+      DialogSection section) OVERRIDE;
   virtual void EditClickedForSection(DialogSection section) OVERRIDE;
   virtual void EditCancelledForSection(DialogSection section) OVERRIDE;
   virtual gfx::Image IconForField(AutofillFieldType type,
@@ -144,7 +143,7 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   virtual void EndSignInFlow() OVERRIDE;
   virtual void LegalDocumentLinkClicked(const ui::Range& range) OVERRIDE;
   virtual void OnCancel() OVERRIDE;
-  virtual void OnSubmit() OVERRIDE;
+  virtual void OnAccept() OVERRIDE;
   virtual Profile* profile() OVERRIDE;
   virtual content::WebContents* web_contents() OVERRIDE;
 
@@ -303,6 +302,19 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   DialogSection SectionForSuggestionsMenuModel(
       const SuggestionsMenuModel& model);
 
+  // Suggested text and icons for sections. Suggestion text is used to show an
+  // abidged overview of the currently used suggestion. Extra text is used when
+  // part of a section is suggested but part must be manually input (e.g. during
+  // a CVC challenge or when using Autofill's CC section [never stores CVC]).
+  string16 SuggestionTextForSection(DialogSection section);
+  string16 RequiredActionTextForSection(DialogSection section) const;
+  gfx::Image SuggestionIconForSection(DialogSection section);
+  string16 ExtraSuggestionTextForSection(DialogSection section) const;
+  gfx::Image ExtraSuggestionIconForSection(DialogSection section) const;
+
+  // Whether |section| should be showing an "Edit" link.
+  bool EditEnabledForSection(DialogSection section) const;
+
   // Loads profiles that can suggest data for |type|. |field_contents| is the
   // part the user has already typed. |inputs| is the rest of section.
   // Identifying info is loaded into the last three outparams as well as
@@ -344,6 +356,9 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // Gets a full wallet from Online Wallet so the user can purchase something.
   // This information is decoded to reveal a fronting (proxy) card.
   void GetFullWallet();
+
+  // Whether submission is currently waiting for |action| to be handled.
+  bool IsSubmitPausedOn(wallet::RequiredAction action) const;
 
   // Called when there's nothing left to accept, update, save, or authenticate
   // in order to fill |form_structure_| and pass data back to the invoking page.
@@ -455,8 +470,9 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // Whether this is an Autocheckout or a requestAutocomplete dialog.
   const DialogType dialog_type_;
 
-  // True if the termination action was a submit.
-  bool did_submit_;
+  // True after the user first accepts the dialog and presses "Submit". May
+  // continue to be true while processing required actions.
+  bool is_submitting_;
 
   // Whether or not an Autocheckout flow is running.
   bool autocheckout_is_running_;

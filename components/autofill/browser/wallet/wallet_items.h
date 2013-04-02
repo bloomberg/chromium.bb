@@ -88,6 +88,9 @@ class WalletItems {
     // Gets info that corresponds with |type|.
     string16 GetInfo(AutofillFieldType type) const;
 
+    // Returns the display type of the and last four digits (e.g. Visa - 4444).
+    string16 TypeAndLastFourDigits() const;
+
     const string16& descriptive_name() const { return descriptive_name_; }
     const Type& type() const { return type_; }
     const std::vector<string16>& supported_currencies() const {
@@ -214,6 +217,10 @@ class WalletItems {
     DCHECK(legal_document.get());
     legal_documents_.push_back(legal_document.release());
   }
+
+  // Return the corresponding instrument for |id| or NULL if it doesn't exist.
+  const WalletItems::MaskedInstrument* GetInstrumentById(
+      const std::string& object_id) const;
 
   // Whether or not |action| is in |required_actions_|.
   bool HasRequiredAction(RequiredAction action) const;

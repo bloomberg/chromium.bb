@@ -28,6 +28,9 @@ class CreditCard : public FormGroup {
   // Returns a version of |number| that has any separator characters removed.
   static const string16 StripSeparators(const string16& number);
 
+  // The user-visible type of the card, e.g. 'Mastercard'.
+  static string16 TypeForDisplay(const std::string& type);
+
   // FormGroup implementation:
   virtual std::string GetGUID() const OVERRIDE;
   virtual void GetMatchingTypes(const string16& text,

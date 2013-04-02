@@ -258,7 +258,7 @@ void AutofillDialogViewAndroid::ModelChanged() {
 }
 
 void AutofillDialogViewAndroid::SubmitForTesting() {
-  controller_->OnSubmit();
+  controller_->OnAccept();
 }
 
 void AutofillDialogViewAndroid::CancelForTesting() {
@@ -312,7 +312,7 @@ void AutofillDialogViewAndroid::EditingCancel(JNIEnv* env, jobject obj,
 
 void AutofillDialogViewAndroid::DialogSubmit(JNIEnv* env, jobject obj) {
   // TODO(aurimas): add validation step.
-  controller_->OnSubmit();
+  controller_->OnAccept();
 }
 
 void AutofillDialogViewAndroid::DialogCancel(JNIEnv* env, jobject obj) {

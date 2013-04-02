@@ -12,6 +12,7 @@
 #include "base/string16.h"
 #include "components/autofill/browser/field_types.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/image/image.h"
 
 class AutofillField;
 
@@ -85,6 +86,7 @@ class DialogNotification {
   bool HasCheckbox() const;
 
   const string16& display_text() const { return display_text_; }
+  Type type() const { return type_; }
 
  private:
   Type type_;
@@ -96,6 +98,20 @@ enum DialogSignedInState {
   REQUIRES_SIGN_IN,
   REQUIRES_PASSIVE_SIGN_IN,
   SIGNED_IN,
+};
+
+struct SuggestionState {
+  SuggestionState(const string16& text,
+                  const gfx::Image& icon,
+                  const string16& extra_text,
+                  const gfx::Image& extra_icon,
+                  bool editable);
+  ~SuggestionState();
+  string16 text;
+  gfx::Image icon;
+  string16 extra_text;
+  gfx::Image extra_icon;
+  bool editable;
 };
 
 typedef std::vector<DetailInput> DetailInputs;

@@ -65,4 +65,16 @@ bool DialogNotification::HasCheckbox() const {
   return type_ == DialogNotification::WALLET_USAGE_CONFIRMATION;
 }
 
+SuggestionState::SuggestionState(const string16& text,
+                                 const gfx::Image& icon,
+                                 const string16& extra_text,
+                                 const gfx::Image& extra_icon,
+                                 bool editable)
+    : text(text),
+      icon(icon),
+      extra_text(extra_text),
+      extra_icon(extra_icon),
+      editable(editable) {}
+SuggestionState::~SuggestionState() {}
+
 }  // namespace autofill

@@ -10,6 +10,7 @@
 #include "base/string16.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"
 #include "components/autofill/browser/field_types.h"
+#include "components/autofill/browser/wallet/required_action.h"
 #include "ui/base/range/range.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/image/image.h"
@@ -105,9 +106,11 @@ class AutofillDialogController {
   // Returns the model for suggestions for fields that fall under |section|.
   virtual ui::MenuModel* MenuModelForSection(DialogSection section) = 0;
 
+  // Returns the label text used to describe the section (i.e. Billing).
   virtual string16 LabelForSection(DialogSection section) const = 0;
-  virtual string16 SuggestionTextForSection(DialogSection section) = 0;
-  virtual gfx::Image SuggestionIconForSection(DialogSection section) = 0;
+
+  // Returns the current state of suggestions for |section|.
+  virtual SuggestionState SuggestionStateForSection(DialogSection section) = 0;
 
   // Should be called when the user starts editing of the section.
   virtual void EditClickedForSection(DialogSection section) = 0;
@@ -168,8 +171,9 @@ class AutofillDialogController {
   // Called when the view has been cancelled.
   virtual void OnCancel() = 0;
 
-  // Called when the view has been accepted.
-  virtual void OnSubmit() = 0;
+  // Called when the view has been accepted. This could be to submit the payment
+  // info or to handle a required action.
+  virtual void OnAccept() = 0;
 
   // Returns the profile for this dialog.
   virtual Profile* profile() = 0;

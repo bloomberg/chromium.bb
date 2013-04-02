@@ -6,8 +6,10 @@
 
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "components/autofill/browser/autofill_type.h"
+#include "components/autofill/browser/credit_card.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "grit/webkit_resources.h"
@@ -227,6 +229,19 @@ bool WalletItems::HasRequiredAction(RequiredAction action) const {
                    action) != required_actions_.end();
 }
 
+const WalletItems::MaskedInstrument* WalletItems::GetInstrumentById(
+    const std::string& object_id) const {
+  if (object_id.empty())
+    return NULL;
+
+  for (size_t i = 0; i < instruments_.size(); ++i) {
+    if (instruments_[i]->object_id() == object_id)
+      return instruments_[i];
+  }
+
+  return NULL;
+}
+
 string16 WalletItems::MaskedInstrument::DisplayName() const {
 #if defined(OS_ANDROID)
   // TODO(aruslan): improve this stub implementation.
@@ -243,6 +258,26 @@ string16 WalletItems::MaskedInstrument::DisplayNameDetail() const {
 #else
   return string16();
 #endif
+}
+
+string16 WalletItems::MaskedInstrument::TypeAndLastFourDigits() const {
+  string16 display_type;
+
+  if (type_ == AMEX)
+    display_type = CreditCard::TypeForDisplay(kAmericanExpressCard);
+  else if (type_ == DISCOVER)
+    display_type = CreditCard::TypeForDisplay(kDiscoverCard);
+  else if (type_ == MASTER_CARD)
+    display_type = CreditCard::TypeForDisplay(kMasterCard);
+  else if (type_ == SOLO)
+    display_type = CreditCard::TypeForDisplay(kSoloCard);
+  else if (type_ == VISA)
+    display_type = CreditCard::TypeForDisplay(kVisaCard);
+  else
+    display_type = CreditCard::TypeForDisplay(kGenericCard);
+
+  // TODO(dbeam): i18n.
+  return display_type + ASCIIToUTF16(" - ") + last_four_digits();
 }
 
 const gfx::Image& WalletItems::MaskedInstrument::CardIcon() const {

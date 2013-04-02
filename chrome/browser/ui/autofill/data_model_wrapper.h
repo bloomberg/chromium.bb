@@ -57,8 +57,13 @@ class DataModelWrapper {
       FormStructure* form_structure);
 
  protected:
+  DataModelWrapper();
+
   // Fills in |field| with data from the model.
   virtual void FillFormField(AutofillField* field);
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DataModelWrapper);
 };
 
 // A DataModelWrapper for Autofill data.
@@ -77,6 +82,8 @@ class AutofillFormGroupWrapper : public DataModelWrapper {
  private:
   const FormGroup* form_group_;
   const size_t variant_;
+
+  DISALLOW_COPY_AND_ASSIGN(AutofillFormGroupWrapper);
 };
 
 // A DataModelWrapper for Autofill profiles.
@@ -89,6 +96,8 @@ class AutofillProfileWrapper : public AutofillFormGroupWrapper {
 
  private:
   const AutofillProfile* profile_;
+
+  DISALLOW_COPY_AND_ASSIGN(AutofillProfileWrapper);
 };
 
 // A DataModelWrapper specifically for Autofill CreditCard data.
@@ -106,6 +115,8 @@ class AutofillCreditCardWrapper : public AutofillFormGroupWrapper {
 
  private:
   const CreditCard* card_;
+
+  DISALLOW_COPY_AND_ASSIGN(AutofillCreditCardWrapper);
 };
 
 // A DataModelWrapper for Wallet addresses.
@@ -118,6 +129,8 @@ class WalletAddressWrapper : public DataModelWrapper {
 
  private:
   const wallet::Address* address_;
+
+  DISALLOW_COPY_AND_ASSIGN(WalletAddressWrapper);
 };
 
 // A DataModelWrapper for Wallet instruments.
@@ -133,6 +146,8 @@ class WalletInstrumentWrapper : public DataModelWrapper {
 
  private:
   const wallet::WalletItems::MaskedInstrument* instrument_;
+
+  DISALLOW_COPY_AND_ASSIGN(WalletInstrumentWrapper);
 };
 
 // A DataModelWrapper for FullWallets billing data.
@@ -145,6 +160,8 @@ class FullWalletBillingWrapper : public DataModelWrapper {
 
  private:
   wallet::FullWallet* full_wallet_;
+
+  DISALLOW_COPY_AND_ASSIGN(FullWalletBillingWrapper);
 };
 
 // A DataModelWrapper for FullWallets shipping data.
@@ -157,6 +174,8 @@ class FullWalletShippingWrapper : public DataModelWrapper {
 
  private:
   wallet::FullWallet* full_wallet_;
+
+  DISALLOW_COPY_AND_ASSIGN(FullWalletShippingWrapper);
 };
 
 }  // namespace autofill

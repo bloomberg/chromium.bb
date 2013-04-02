@@ -12,6 +12,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/browser/autofill_common_test.h"
 #include "components/autofill/browser/autofill_metrics.h"
+#include "components/autofill/browser/wallet/full_wallet.h"
 #include "components/autofill/browser/wallet/instrument.h"
 #include "components/autofill/browser/wallet/wallet_address.h"
 #include "components/autofill/browser/wallet/wallet_client.h"
@@ -92,6 +93,11 @@ class TestWalletClient : public wallet::WalletClient {
       void(const std::vector<wallet::WalletItems::LegalDocument*>& documents,
            const std::string& google_transaction_id,
            const GURL& source_url));
+
+  MOCK_METHOD3(AuthenticateInstrument,
+      void(const std::string& instrument_id,
+           const std::string& card_verification_number,
+           const std::string& obfuscated_gaia_id));
 
   MOCK_METHOD1(GetFullWallet,
       void(const wallet::WalletClient::FullWalletRequest& request));
@@ -208,7 +214,9 @@ class AutofillDialogControllerTest : public testing::Test {
     test_web_contents_.reset(
         content::WebContentsTester::CreateTestWebContents(profile(), NULL));
 
-    base::Callback<void(const FormStructure*, const std::string&)> callback;
+    base::Callback<void(const FormStructure*, const std::string&)> callback =
+        base::Bind(&AutofillDialogControllerTest::FinishedCallback,
+                   base::Unretained(this));
     controller_ = new TestAutofillDialogController(
         test_web_contents_.get(),
         form_data,
@@ -225,11 +233,25 @@ class AutofillDialogControllerTest : public testing::Test {
   }
 
  protected:
+  size_t CountNotificationsOfType(DialogNotification::Type type) {
+    size_t count = 0;
+    const std::vector<DialogNotification>& notifications =
+        controller()->CurrentNotifications();
+    for (size_t i = 0; i < notifications.size(); ++i) {
+      if (notifications[i].type() == type)
+        ++count;
+    }
+    return count;
+  }
+
   TestAutofillDialogController* controller() { return controller_; }
 
   TestingProfile* profile() { return &profile_; }
 
  private:
+  void FinishedCallback(const FormStructure* form_structure,
+                        const std::string& google_transaction_id) {}
+
   // A bunch of threads are necessary for classes like TestWebContents and
   // URLRequestContextGetter not to fall over.
   MessageLoopForUI loop_;
@@ -324,9 +346,11 @@ TEST_F(AutofillDialogControllerTest, AutofillProfileVariants) {
   EXPECT_EQ(3, email_model->GetItemCount());
 
   email_model->ActivatedAt(0);
-  EXPECT_EQ(kEmail1, controller()->SuggestionTextForSection(SECTION_EMAIL));
+  EXPECT_EQ(kEmail1,
+            controller()->SuggestionStateForSection(SECTION_EMAIL).text);
   email_model->ActivatedAt(1);
-  EXPECT_EQ(kEmail2, controller()->SuggestionTextForSection(SECTION_EMAIL));
+  EXPECT_EQ(kEmail2,
+            controller()->SuggestionStateForSection(SECTION_EMAIL).text);
 
   controller()->EditClickedForSection(SECTION_EMAIL);
   const DetailInputs& inputs =
@@ -348,7 +372,7 @@ TEST_F(AutofillDialogControllerTest, AcceptLegalDocuments) {
   wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
   wallet_items->AddAddress(wallet::GetTestShippingAddress());
   controller()->OnDidGetWalletItems(wallet_items.Pass());
-  controller()->OnSubmit();
+  controller()->OnAccept();
 }
 
 TEST_F(AutofillDialogControllerTest, SaveAddress) {
@@ -361,7 +385,7 @@ TEST_F(AutofillDialogControllerTest, SaveAddress) {
   scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
   wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
   controller()->OnDidGetWalletItems(wallet_items.Pass());
-  controller()->OnSubmit();
+  controller()->OnAccept();
 }
 
 TEST_F(AutofillDialogControllerTest, SaveInstrument) {
@@ -374,7 +398,7 @@ TEST_F(AutofillDialogControllerTest, SaveInstrument) {
   scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
   wallet_items->AddAddress(wallet::GetTestShippingAddress());
   controller()->OnDidGetWalletItems(wallet_items.Pass());
-  controller()->OnSubmit();
+  controller()->OnAccept();
 }
 
 TEST_F(AutofillDialogControllerTest, SaveInstrumentAndAddress) {
@@ -385,11 +409,13 @@ TEST_F(AutofillDialogControllerTest, SaveInstrumentAndAddress) {
               SaveInstrumentAndAddress(_, _, _, _)).Times(1);
 
   controller()->OnDidGetWalletItems(wallet::GetTestWalletItems());
-  controller()->OnSubmit();
+  controller()->OnAccept();
 }
 
-TEST_F(AutofillDialogControllerTest, Cancel) {
+TEST_F(AutofillDialogControllerTest, CancelNoSave) {
   controller()->set_is_paying_with_wallet(true);
+  EXPECT_CALL(*controller()->GetTestingWalletClient(),
+              SaveInstrumentAndAddress(_, _, _, _)).Times(0);
 
   EXPECT_CALL(*controller()->GetView(), ModelChanged()).Times(1);
 
@@ -414,21 +440,73 @@ TEST_F(AutofillDialogControllerTest, EditClickedCancelled) {
   const DetailInputs& inputs0 =
       controller()->RequestedFieldsForSection(SECTION_EMAIL);
   EXPECT_EQ(string16(), inputs0[0].initial_value);
-  EXPECT_EQ(kEmail, controller()->SuggestionTextForSection(SECTION_EMAIL));
+  EXPECT_EQ(kEmail,
+            controller()->SuggestionStateForSection(SECTION_EMAIL).text);
 
   // When edited, the initial_value should contain the value.
   controller()->EditClickedForSection(SECTION_EMAIL);
   const DetailInputs& inputs1 =
       controller()->RequestedFieldsForSection(SECTION_EMAIL);
   EXPECT_EQ(kEmail, inputs1[0].initial_value);
-  EXPECT_EQ(string16(), controller()->SuggestionTextForSection(SECTION_EMAIL));
+  EXPECT_EQ(string16(),
+            controller()->SuggestionStateForSection(SECTION_EMAIL).text);
 
   // When edit is cancelled, the initial_value should be empty.
   controller()->EditCancelledForSection(SECTION_EMAIL);
   const DetailInputs& inputs2 =
       controller()->RequestedFieldsForSection(SECTION_EMAIL);
-  EXPECT_EQ(kEmail, controller()->SuggestionTextForSection(SECTION_EMAIL));
+  EXPECT_EQ(kEmail,
+            controller()->SuggestionStateForSection(SECTION_EMAIL).text);
   EXPECT_EQ(string16(), inputs2[0].initial_value);
+}
+
+TEST_F(AutofillDialogControllerTest, VerifyCvv) {
+  controller()->set_is_paying_with_wallet(true);
+
+  EXPECT_CALL(*controller()->GetView(), ModelChanged()).Times(2);
+  EXPECT_CALL(*controller()->GetTestingWalletClient(),
+              GetFullWallet(_)).Times(1);
+  EXPECT_CALL(*controller()->GetTestingWalletClient(),
+              AuthenticateInstrument(_, _, _)).Times(1);
+
+  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
+  wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
+  wallet_items->AddAddress(wallet::GetTestShippingAddress());
+  controller()->OnDidGetWalletItems(wallet_items.Pass());
+  controller()->OnAccept();
+
+  EXPECT_EQ(0U, CountNotificationsOfType(DialogNotification::REQUIRED_ACTION));
+  EXPECT_TRUE(controller()->SectionIsActive(SECTION_EMAIL));
+  EXPECT_TRUE(controller()->SectionIsActive(SECTION_SHIPPING));
+  EXPECT_TRUE(controller()->SectionIsActive(SECTION_CC_BILLING));
+  EXPECT_FALSE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
+  EXPECT_TRUE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_CANCEL));
+
+  SuggestionState suggestion_state =
+      controller()->SuggestionStateForSection(SECTION_CC_BILLING);
+  EXPECT_TRUE(suggestion_state.extra_text.empty());
+
+  base::DictionaryValue dict;
+  scoped_ptr<base::ListValue> list(new base::ListValue());
+  list->AppendString("verify_cvv");
+  dict.Set("required_action", list.release());
+  controller()->OnDidGetFullWallet(wallet::FullWallet::CreateFullWallet(dict));
+
+  EXPECT_EQ(1U, CountNotificationsOfType(DialogNotification::REQUIRED_ACTION));
+  EXPECT_FALSE(controller()->SectionIsActive(SECTION_EMAIL));
+  EXPECT_FALSE(controller()->SectionIsActive(SECTION_SHIPPING));
+  EXPECT_TRUE(controller()->SectionIsActive(SECTION_CC_BILLING));
+
+  suggestion_state =
+      controller()->SuggestionStateForSection(SECTION_CC_BILLING);
+  EXPECT_FALSE(suggestion_state.extra_text.empty());
+  EXPECT_EQ(
+      0, controller()->MenuModelForSection(SECTION_CC_BILLING)->GetItemCount());
+
+  EXPECT_TRUE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
+  EXPECT_TRUE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_CANCEL));
+
+  controller()->OnAccept();
 }
 
 }  // namespace autofill

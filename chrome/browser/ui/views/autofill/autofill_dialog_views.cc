@@ -23,6 +23,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/combobox_model.h"
+#include "ui/base/models/menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/background.h"
@@ -354,10 +355,11 @@ AutofillDialogViews::SectionContainer::SectionContainer(
 AutofillDialogViews::SectionContainer::~SectionContainer() {}
 
 void AutofillDialogViews::SectionContainer::SetActive(bool active) {
-  if (active == !!background())
+  bool is_active = active && proxy_button_->visible();
+  if (is_active == !!background())
     return;
 
-  set_background(active ?
+  set_background(is_active ?
       views::Background::CreateSolidBackground(SkColorSetARGB(9, 0, 0, 0)):
       NULL);
   SchedulePaint();
@@ -432,7 +434,8 @@ AutofillDialogViews::SuggestionView::SuggestionView(
       icon_(new views::ImageView()),
       label_container_(new views::View()),
       decorated_(
-          new DecoratedTextfield(string16(), string16(), autofill_dialog)) {
+          new DecoratedTextfield(string16(), string16(), autofill_dialog)),
+      edit_link_(new views::Link(edit_label)) {
   // Label and icon.
   label_container_->SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0,
@@ -450,22 +453,25 @@ AutofillDialogViews::SuggestionView::SuggestionView(
   AddChildView(label_line_2_);
 
   // TODO(estade): The link needs to have a different color when hovered.
-  views::Link* edit_link = new views::Link(edit_label);
-  edit_link->set_listener(autofill_dialog);
-  edit_link->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  edit_link->SetUnderline(false);
+  edit_link_->set_listener(autofill_dialog);
+  edit_link_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  edit_link_->SetUnderline(false);
 
   // This container prevents the edit link from being horizontally stretched.
   views::View* link_container = new views::View();
   link_container->SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
-  link_container->AddChildView(edit_link);
+  link_container->AddChildView(edit_link_);
   AddChildView(link_container);
 
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
 }
 
 AutofillDialogViews::SuggestionView::~SuggestionView() {}
+
+void AutofillDialogViews::SuggestionView::SetEditable(bool editable) {
+  edit_link_->SetVisible(editable);
+}
 
 void AutofillDialogViews::SuggestionView::SetSuggestionText(
     const string16& text) {
@@ -651,8 +657,10 @@ void AutofillDialogViews::GetUserInput(DialogSection section,
 }
 
 string16 AutofillDialogViews::GetCvc() {
-  return GroupForSection(SECTION_CC)->suggested_info->decorated_textfield()->
-      textfield()->text();
+  DialogSection billing_section = controller_->SectionIsActive(SECTION_CC) ?
+      SECTION_CC : SECTION_CC_BILLING;
+  return GroupForSection(billing_section)->suggested_info->
+      decorated_textfield()->textfield()->text();
 }
 
 bool AutofillDialogViews::UseBillingForShipping() {
@@ -775,12 +783,10 @@ bool AutofillDialogViews::Cancel() {
 }
 
 bool AutofillDialogViews::Accept() {
-  if (!ValidateForm())
-    return false;
+  if (ValidateForm())
+    controller_->OnAccept();
 
-  controller_->OnSubmit();
-
-  // Let |controller_| decide when to hide the dialog.
+  // |controller_| decides when to hide the dialog.
   return false;
 }
 
@@ -810,6 +816,9 @@ void AutofillDialogViews::ButtonPressed(views::Button* sender,
       }
     }
     DCHECK(group);
+
+    if (!group->suggested_button->visible())
+      return;
 
     menu_runner_.reset(new views::MenuRunner(
                            controller_->MenuModelForSection(group->section)));
@@ -863,7 +872,7 @@ void AutofillDialogViews::OnDidChangeFocus(
 
   // If user leaves an edit-field, revalidate the group it belongs to.
   DetailsGroup* group = GroupForView(focused_before);
-  if (group)
+  if (group && group->container->visible())
     ValidateGroup(group, AutofillDialogController::VALIDATE_EDIT);
 }
 
@@ -1000,7 +1009,7 @@ views::View* AutofillDialogViews::CreateInputsContainer(DialogSection section) {
   layout->StartRow(0, kColumnSetId);
 
   // The |info_view| holds |manual_inputs| and |suggested_info|, allowing the
-  // dialog toggle which is shown.
+  // dialog to toggle which is shown.
   views::View* info_view = new views::View();
   info_view->SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
@@ -1019,14 +1028,6 @@ views::View* AutofillDialogViews::CreateInputsContainer(DialogSection section) {
       new SuggestionView(controller_->EditSuggestionText(), this);
   info_view->AddChildView(suggested_info);
   layout->AddView(info_view);
-
-  if (section == SECTION_CC) {
-    // TODO(estade): don't hardcode this string.
-    suggested_info->ShowTextfield(
-        ASCIIToUTF16("CVC"),
-        controller_->IconForField(CREDIT_CARD_VERIFICATION_CODE,
-                                  string16()).AsImageSkia());
-  }
 
   // TODO(estade): Fix the appearance of this button.
   views::ImageButton* menu_button = new views::ImageButton(this);
@@ -1115,13 +1116,19 @@ views::View* AutofillDialogViews::InitInputsView(DialogSection section) {
 }
 
 void AutofillDialogViews::UpdateDetailsGroupState(const DetailsGroup& group) {
-  string16 suggestion_text =
-      controller_->SuggestionTextForSection(group.section);
-  bool show_suggestions = !suggestion_text.empty();
+  const SuggestionState& suggestion_state =
+      controller_->SuggestionStateForSection(group.section);
+  bool show_suggestions = !suggestion_state.text.empty();
   group.suggested_info->SetVisible(show_suggestions);
-  group.suggested_info->SetSuggestionText(suggestion_text);
-  gfx::Image icon = controller_->SuggestionIconForSection(group.section);
-  group.suggested_info->SetSuggestionIcon(icon);
+  group.suggested_info->SetSuggestionText(suggestion_state.text);
+  group.suggested_info->SetSuggestionIcon(suggestion_state.icon);
+  group.suggested_info->SetEditable(suggestion_state.editable);
+
+  if (!suggestion_state.extra_text.empty()) {
+    group.suggested_info->ShowTextfield(
+        suggestion_state.extra_text,
+        suggestion_state.extra_icon.AsImageSkia());
+  }
 
   if (group.section == SECTION_SHIPPING) {
     bool show_checkbox = !show_suggestions;
@@ -1143,8 +1150,14 @@ void AutofillDialogViews::UpdateDetailsGroupState(const DetailsGroup& group) {
   save_in_chrome_checkbox_->SetVisible(
       controller_->ShouldOfferToSaveInChrome() && AtLeastOneSectionIsEditing());
 
+  const bool has_suggestions =
+      controller_->MenuModelForSection(group.section)->GetItemCount() > 0;
+
+  if (group.suggested_button)
+    group.suggested_button->SetVisible(has_suggestions);
+
   if (group.container) {
-    group.container->SetForwardMouseEvents(show_suggestions);
+    group.container->SetForwardMouseEvents(has_suggestions && show_suggestions);
     group.container->SetVisible(controller_->SectionIsActive(group.section));
   }
 
@@ -1225,8 +1238,8 @@ bool AutofillDialogViews::ValidateForm() {
     if (!group->container->visible())
       continue;
 
-   if (!ValidateGroup(group, AutofillDialogController::VALIDATE_FINAL))
-     all_valid = false;
+    if (!ValidateGroup(group, AutofillDialogController::VALIDATE_FINAL))
+      all_valid = false;
   }
 
   return all_valid;

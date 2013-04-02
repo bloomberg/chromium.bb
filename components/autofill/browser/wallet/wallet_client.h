@@ -159,7 +159,7 @@ class WalletClient
   };
 
   // |context_getter| is reference counted so it has no lifetime or ownership
-  // requirements. |observer| must outlive |this|.
+  // requirements. |delegate| must outlive |this|.
   WalletClient(net::URLRequestContextGetter* context_getter,
                WalletClientDelegate* delegate);
 
@@ -183,11 +183,12 @@ class WalletClient
 
   // Authenticates that |card_verification_number| is for the backing instrument
   // with |instrument_id|. |obfuscated_gaia_id| is used as a key when escrowing
-  // |card_verification_number|. |observer| is notified when the request is
+  // |card_verification_number|. |delegate_| is notified when the request is
   // complete. Used to respond to Risk challenges.
-  void AuthenticateInstrument(const std::string& instrument_id,
-                              const std::string& card_verification_number,
-                              const std::string& obfuscated_gaia_id);
+  virtual void AuthenticateInstrument(
+      const std::string& instrument_id,
+      const std::string& card_verification_number,
+      const std::string& obfuscated_gaia_id);
 
   // GetFullWallet retrieves the a FullWallet for the user.
   virtual void GetFullWallet(const FullWalletRequest& full_wallet_request);
