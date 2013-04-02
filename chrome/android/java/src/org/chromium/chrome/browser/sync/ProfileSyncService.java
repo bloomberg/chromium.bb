@@ -488,8 +488,8 @@ public class ProfileSyncService {
         if (syncEverything || enabledTypes.contains(ModelType.PASSWORD)) {
             modelTypeSelection |= ModelTypeSelection.PASSWORD;
         }
-        if (syncEverything || enabledTypes.contains(ModelType.SESSION)) {
-            modelTypeSelection |= ModelTypeSelection.SESSION;
+        if (syncEverything || enabledTypes.contains(ModelType.PROXY_TABS)) {
+            modelTypeSelection |= ModelTypeSelection.PROXY_TABS;
         }
         if (syncEverything || enabledTypes.contains(ModelType.TYPED_URL)) {
             modelTypeSelection |= ModelTypeSelection.TYPED_URL;

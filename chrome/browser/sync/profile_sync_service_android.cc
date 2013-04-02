@@ -521,8 +521,8 @@ void ProfileSyncServiceAndroid::SetPreferredDataTypes(
     types.Put(syncer::BOOKMARKS);
   if (model_type_selection & PASSWORD)
     types.Put(syncer::PASSWORDS);
-  if (model_type_selection & SESSION)
-    types.Put(syncer::SESSIONS);
+  if (model_type_selection & PROXY_TABS)
+    types.Put(syncer::PROXY_TABS);
   if (model_type_selection & TYPED_URL)
     types.Put(syncer::TYPED_URLS);
   DCHECK(syncer::UserSelectableTypes().HasAll(types));
