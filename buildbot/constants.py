@@ -27,6 +27,12 @@ REEXEC_API_MAJOR = 0
 REEXEC_API_MINOR = 2
 REEXEC_API_VERSION = '%i.%i' % (REEXEC_API_MAJOR, REEXEC_API_MINOR)
 
+GOOGLE_EMAIL = '@google.com'
+CHROMIUM_EMAIL = '@chromium.org'
+
+CORP_DOMAIN = 'corp.google.com'
+GOLO_DOMAIN = 'golo.chromium.org'
+
 GERRIT_PORT = '29418'
 GERRIT_INT_PORT = '29419'
 
