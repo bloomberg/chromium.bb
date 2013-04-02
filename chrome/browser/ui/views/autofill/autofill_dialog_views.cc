@@ -276,6 +276,8 @@ void AutofillDialogViews::NotificationArea::SetNotifications(
         notification.GetBackgroundColor()));
     AddChildView(view.release());
   }
+
+  PreferredSizeChanged();
 }
 
 bool AutofillDialogViews::NotificationArea::CheckboxIsChecked() const {
@@ -583,7 +585,6 @@ void AutofillDialogViews::UpdateAccountChooser() {
     }
 
     ContentsPreferredSizeChanged();
-    footnote_view_->SchedulePaint();
   }
 }
 
@@ -595,8 +596,8 @@ void AutofillDialogViews::UpdateButtonStrip() {
   details_container_->SetVisible(!(controller_->AutocheckoutIsRunning() ||
                                    controller_->HadAutocheckoutError()));
 
-  ContentsPreferredSizeChanged();
   GetDialogClientView()->UpdateDialogButtons();
+  ContentsPreferredSizeChanged();
 }
 
 void AutofillDialogViews::UpdateNotificationArea() {
@@ -664,8 +665,6 @@ bool AutofillDialogViews::SaveDetailsLocally() {
 }
 
 const content::NavigationController* AutofillDialogViews::ShowSignIn() {
-  // TODO(abodenha) Also hide Submit and Cancel buttons.
-  // See http://crbug.com/165193
   // TODO(abodenha) We should be able to use the WebContents of the WebView
   // to navigate instead of LoadInitialURL.  Figure out why it doesn't work.
 
@@ -676,7 +675,8 @@ const content::NavigationController* AutofillDialogViews::ShowSignIn() {
   sign_in_webview_->SetPreferredSize(contents_->GetPreferredSize());
   main_container_->SetVisible(false);
   sign_in_container_->SetVisible(true);
-  contents_->Layout();
+  GetDialogClientView()->UpdateDialogButtons();
+  ContentsPreferredSizeChanged();
   return &sign_in_webview_->web_contents()->GetController();
 }
 
@@ -684,6 +684,8 @@ void AutofillDialogViews::HideSignIn() {
   account_chooser_->SetSignInLinkEnabled(true);
   sign_in_container_->SetVisible(false);
   main_container_->SetVisible(true);
+  GetDialogClientView()->UpdateDialogButtons();
+  ContentsPreferredSizeChanged();
 }
 
 void AutofillDialogViews::UpdateProgressBar(double value) {
@@ -732,6 +734,13 @@ const views::Widget* AutofillDialogViews::GetWidget() const {
 
 views::View* AutofillDialogViews::GetContentsView() {
   return contents_;
+}
+
+int AutofillDialogViews::GetDialogButtons() const {
+  if (sign_in_container_->visible())
+    return ui::DIALOG_BUTTON_NONE;
+
+  return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
 }
 
 string16 AutofillDialogViews::GetDialogButtonLabel(ui::DialogButton button)
