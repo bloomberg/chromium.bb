@@ -133,7 +133,7 @@ bool GLTestHelper::CheckPixels(
   scoped_array<uint8> pixels(new uint8[size]);
   memset(pixels.get(), kCheckClearValue, size);
   glReadPixels(x, y, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels.get());
-  bool same = true;
+  int bad_count = 0;
   for (GLint yy = 0; yy < height; ++yy) {
     for (GLint xx = 0; xx < width; ++xx) {
       int offset = yy * width * 4 + xx * 4;
@@ -145,12 +145,17 @@ bool GLTestHelper::CheckPixels(
         if (diff > tolerance) {
           EXPECT_EQ(expected, actual) << " at " << (xx + x) << ", " << (yy + y)
                                       << " channel " << jj;
-          same = false;
+          ++bad_count;
+          // Exit early just so we don't spam the log but we print enough
+          // to hopefully make it easy to diagnose the issue.
+          if (bad_count > 16) {
+            return false;
+          }
         }
       }
     }
   }
-  return same;
+  return bad_count == 0;
 }
 
 namespace {

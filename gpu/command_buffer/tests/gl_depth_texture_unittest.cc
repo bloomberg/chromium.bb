@@ -118,6 +118,10 @@ TEST_F(DepthTextureTest, MAYBE_RenderTo) {
   glTexImage2D(
       GL_TEXTURE_2D, 0, GL_RGBA, kResolution, kResolution,
       0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glFramebufferTexture2D(
       GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, color_texture, 0);
 
@@ -134,13 +138,14 @@ TEST_F(DepthTextureTest, MAYBE_RenderTo) {
   glUniform2f(resolution_loc, kResolution, kResolution);
 
   static const FormatType format_types[] = {
-    { GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, },
-    { GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, },
-    { GL_DEPTH_STENCIL_OES, GL_UNSIGNED_INT_24_8_OES, },
+    { GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT },
+    { GL_DEPTH_COMPONENT, GL_UNSIGNED_INT },
+    { GL_DEPTH_STENCIL_OES, GL_UNSIGNED_INT_24_8_OES },
   };
   for (size_t ii = 0; ii < arraysize(format_types); ++ii) {
-    GLenum format = format_types[ii].format;
-    GLenum type = format_types[ii].type;
+    const FormatType& format_type = format_types[ii];
+    GLenum format = format_type.format;
+    GLenum type = format_type.type;
 
     if (format == GL_DEPTH_STENCIL_OES && !have_depth_stencil) {
       continue;
@@ -152,10 +157,16 @@ TEST_F(DepthTextureTest, MAYBE_RenderTo) {
         0, format, type, NULL);
 
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-    EXPECT_TRUE(
-        glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
+    GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE), status)
+        << "iteration: " << ii;
+    if (status != GL_FRAMEBUFFER_COMPLETE) {
+      continue;
+    }
 
-    GLTestHelper::CheckGLError("no errors", __LINE__);
+    if (!GLTestHelper::CheckGLError("no errors after setup", __LINE__)) {
+      continue;
+    }
 
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -166,37 +177,63 @@ TEST_F(DepthTextureTest, MAYBE_RenderTo) {
     // Render to the fbo.
     glDrawArrays(GL_TRIANGLES, 0, 6);
 
+    if (!GLTestHelper::CheckGLError("no errors after depth draw", __LINE__)) {
+      continue;
+    }
+
     // Render with the depth texture.
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glBindTexture(GL_TEXTURE_2D, depth_texture);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glDrawArrays(GL_TRIANGLES, 0, 6);
 
+    if (!GLTestHelper::CheckGLError("no errors after texture draw", __LINE__)) {
+      continue;
+    }
+
     uint8 actual_pixels[kResolution * kResolution * 4] = { 0, };
     glReadPixels(
         0, 0, kResolution, kResolution, GL_RGBA, GL_UNSIGNED_BYTE,
         actual_pixels);
 
+    if (!GLTestHelper::CheckGLError("no errors after readpixels", __LINE__)) {
+      continue;
+    }
+
     // Check that each pixel's RGB are the same and that it's value is less
     // than the previous pixel in either direction. Basically verify we have a
     // gradient.
-    for (GLint yy = 0; yy < kResolution; ++yy) {
-      for (GLint xx = 0; xx < kResolution; ++xx) {
+    int bad_count = 0;  // used to not spam the log with too many messages.
+    for (GLint yy = 0; bad_count < 16 && yy < kResolution; ++yy) {
+      for (GLint xx = 0; bad_count < 16 && xx < kResolution; ++xx) {
         const uint8* actual = &actual_pixels[(yy * kResolution + xx) * 4];
         const uint8* left = actual - 4;
         const uint8* down = actual - kResolution * 4;
 
-        EXPECT_EQ(actual[0], actual[1]);
-        EXPECT_EQ(actual[1], actual[2]);
+        EXPECT_EQ(actual[0], actual[1]) << "pixel at " << xx << ", " << yy;
+        EXPECT_EQ(actual[1], actual[2]) << "pixel at " << xx << ", " << yy;
+        bad_count += (actual[0] == actual[1] ? 0 : 1);
 
-        if (xx > 0) {
-          EXPECT_GT(actual[0], left[0]);
-        }
-        if (yy > 0) {
-          EXPECT_GT(actual[0], down[0]);
+        // NOTE: Qualcomm on Nexus 4 the right most column has the same
+        // values as the next to right most column. (bad interpolator?)
+        if (xx > 0 && xx < kResolution - 1) {
+          EXPECT_GT(actual[0], left[0])
+              << "pixel at " << xx << ", " << yy
+              << " actual[0] =" << static_cast<unsigned>(actual[0])
+              << " left[0] =" << static_cast<unsigned>(left[0])
+              << " actual =" << reinterpret_cast<const void*>(actual)
+              << " left =" << reinterpret_cast<const void*>(left);
+          bad_count += (actual[0] > left[0] ? 0 : 1);
         }
 
-        EXPECT_TRUE(actual[3] == actual[0] || actual[3] == 0xFF);
+        if (yy > 0 && yy < kResolution - 1) {
+          EXPECT_GT(actual[0], down[0]) << "pixel at " << xx << ", " << yy;
+          bad_count += (actual[0] > down[0] ? 0 : 1);
+        }
+
+        EXPECT_TRUE(actual[3] == actual[0] || actual[3] == 0xFF)
+            << "pixel at " << xx << ", " << yy;
+        bad_count += ((actual[3] == actual[0] || actual[3] == 0xFF) ? 0 : 1);
       }
     }
 
@@ -204,11 +241,13 @@ TEST_F(DepthTextureTest, MAYBE_RenderTo) {
     EXPECT_GT(
         actual_pixels[(kResolution * kResolution - 1) * 4] - actual_pixels[0],
         0xC0);
-    GLTestHelper::CheckGLError("no errors", __LINE__);
+
+    GLTestHelper::CheckGLError("no errors after everything", __LINE__);
   }
 }
 
 }  // namespace gpu
+
 
 
 

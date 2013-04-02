@@ -31,6 +31,36 @@ TEST_F(GLTest, Basic) {
   glClear(GL_COLOR_BUFFER_BIT);
   uint8 expected[] = { 0, 255, 0, 255, };
   EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, 1, 1, 0, expected));
+  GLTestHelper::CheckGLError("no errors", __LINE__);
+}
+
+TEST_F(GLTest, BasicFBO) {
+  GLuint tex = 0;
+  glGenTextures(1, &tex);
+  GLuint fbo = 0;
+  glGenFramebuffers(1, &fbo);
+  glBindTexture(GL_TEXTURE_2D, tex);
+  scoped_array<uint8> pixels(new uint8 [16*16*4]);
+  memset(pixels.get(), 0, 16*16*4);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 16, 16, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+               pixels.get());
+  glGenerateMipmap(GL_TEXTURE_2D);
+  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+                         tex, 0);
+  EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE),
+            glCheckFramebufferStatus(GL_FRAMEBUFFER));
+  glClearColor(0.0f, 1.0f, 0.0f, 1.0f);
+  glClear(GL_COLOR_BUFFER_BIT);
+  uint8 expected[] = { 0, 255, 0, 255, };
+  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, 16, 16, 0, expected));
+  glDeleteFramebuffers(1, &fbo);
+  glDeleteTextures(1, &tex);
+  GLTestHelper::CheckGLError("no errors", __LINE__);
 }
 
 TEST_F(GLTest, SimpleShader) {

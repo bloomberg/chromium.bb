@@ -306,9 +306,10 @@ void FeatureInfo::AddFeatures() {
   // get rid of it.
   //
   bool enable_depth_texture = false;
-  if (extensions.Contains("GL_ARB_depth_texture") ||
-      extensions.Contains("GL_OES_depth_texture") ||
-      extensions.Contains("GL_ANGLE_depth_texture")) {
+  if (!is_qualcomm &&
+      (extensions.Contains("GL_ARB_depth_texture") ||
+       extensions.Contains("GL_OES_depth_texture") ||
+       extensions.Contains("GL_ANGLE_depth_texture"))) {
     enable_depth_texture = true;
   }
 

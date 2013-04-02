@@ -219,7 +219,7 @@ void GLManager::SetupBaseContext() {
           gfx::GLContext::CreateGLContext(base_share_group_->get(),
                                           base_surface_->get(),
                                           gpu_preference));
-     #endif
+    #endif
   }
   ++use_count_;
 }
