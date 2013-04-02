@@ -26,7 +26,6 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "grit/generated_resources.h"
@@ -629,10 +628,7 @@ void BookmarkModel::SortChildren(const BookmarkNode* parent) {
   }
 
   UErrorCode error = U_ZERO_ERROR;
-  icu::Locale application_locale(
-      content::GetContentClient()->browser()->GetApplicationLocale().c_str());
-  scoped_ptr<icu::Collator> collator(
-      icu::Collator::createInstance(application_locale, error));
+  scoped_ptr<icu::Collator> collator(icu::Collator::createInstance(error));
   if (U_FAILURE(error))
     collator.reset(NULL);
   BookmarkNode* mutable_parent = AsMutable(parent);
