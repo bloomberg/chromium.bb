@@ -29,7 +29,7 @@
       'type': 'static_library',
       'variables': { 'enable_wexit_time_destructors': 1, },
       'include_dirs': [
-        '<(SHARED_INTERMEDIATE_DIR)',  # Needed by key_systems_info.cc.
+        '<(SHARED_INTERMEDIATE_DIR)',  # Needed by key_systems.cc.
       ],
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
@@ -68,8 +68,6 @@
         'cache_util.h',
         'crypto/key_systems.cc',
         'crypto/key_systems.h',
-        'crypto/key_systems_info.cc',
-        'crypto/key_systems_info.h',
         'crypto/ppapi_decryptor.cc',
         'crypto/ppapi_decryptor.h',
         'crypto/proxy_decryptor.cc',
@@ -125,11 +123,6 @@
         }, { # OS != "android"'
           'sources/': [
             ['exclude', '^android/'],
-          ],
-        }],
-        ['google_tv == 1', {
-          'sources!': [
-            'crypto/key_systems_info.cc',
           ],
         }],
       ],
