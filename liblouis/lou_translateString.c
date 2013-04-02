@@ -1921,15 +1921,16 @@ translateString ()
 		}
 	      else
 		{
-		  for (k = src; k < (src + transCharslen); k++)
+		  for (k = 0; k < transCharslen; k++)
 		    {
-		      if (!putCharacter (currentInput[k]))
+		      if (!putCharacter (currentInput[src]))
 			goto failure;
+		      src++;
 		    }
 		}
 	      if (cursorStatus == 2)
 		cursorStatus = 1;
-	      else
+	      else if (transRule->dotslen)
 		src += transCharslen;
 	    }
 	  break;
