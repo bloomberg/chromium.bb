@@ -710,8 +710,8 @@
    fun:timeout_correct
    fun:event_base_loop
    fun:base::MessagePumpLibevent::Run
-   fun:MessageLoop::RunInternal
-   fun:MessageLoop::RunHandler
+   fun:base::MessageLoop::RunInternal
+   fun:base::MessageLoop::RunHandler
 }
 {
   bug_104776_maybe_benign

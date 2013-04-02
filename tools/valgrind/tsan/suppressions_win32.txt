@@ -117,8 +117,8 @@
   bug_81793b
   ThreadSanitizer:Race
   ...
-  fun:MessageLoop::CalculateDelayedRuntime
-  fun:MessageLoop::Post*Task
+  fun:base::MessageLoop::CalculateDelayedRuntime
+  fun:base::MessageLoop::Post*Task
 }
 {
   bug_93932a
