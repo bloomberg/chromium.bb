@@ -12,7 +12,7 @@
 
 .device {
   float: left;
-  width: 246px;  /* 1/3 of body.uber-frame header max-width */
+  width: 246px;  /* 1/3 of body.uber-frame header max-width. */
 }
 
 .device h3 {
@@ -23,6 +23,8 @@
 .device-timestamp {
   color: rgb(151, 156, 160);
   font-size: 12px;
+  line-height: 1.2em;
+  margin-top: 4px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
