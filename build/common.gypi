@@ -186,8 +186,9 @@
       # Override branding to select the desired branding flavor.
       'branding%': 'Chromium',
 
-      # Set to 1 to enable fast builds. It disables debug info for fastest
-      # compilation.
+      # Set to 1 to enable fast builds. Set to 2 for even faster builds
+      # (it disables debug info for fastest compilation - only for use
+      # on compile-only bots).
       'fastbuild%': 0,
 
       # Set to 1 to enable dcheck in release without having to use the flag.
@@ -1798,11 +1799,11 @@
         'defines': ['ENABLE_HIDPI=1'],
       }],
       ['fastbuild!=0', {
-        # Clang creates chubby debug information, which makes linking very
-        # slow. For now, don't create debug information with clang.  See
-        # http://crbug.com/70000
         'conditions': [
           ['clang==1', {
+            # Clang creates chubby debug information, which makes linking very
+            # slow. For now, don't create debug information with clang.  See
+            # http://crbug.com/70000
             'conditions': [
               ['OS=="linux"', {
                 'variables': {
@@ -1819,8 +1820,18 @@
             ],
           }, { # else clang!=1
             'conditions': [
-              # For Windows and Mac, we don't genererate debug information.
-              ['OS=="win"', {
+              ['OS=="win" and fastbuild==2', {
+                # Completely disable debug information.
+                'msvs_settings': {
+                  'VCLinkerTool': {
+                    'GenerateDebugInformation': 'false',
+                  },
+                  'VCCLCompilerTool': {
+                    'DebugInformationFormat': '0',
+                  },
+                },
+              }],
+              ['OS=="win" and fastbuild==1', {
                 'msvs_settings': {
                   'VCLinkerTool': {
                     # This tells the linker to generate .pdbs, so that
@@ -1838,12 +1849,23 @@
                   'GCC_GENERATE_DEBUGGING_SYMBOLS': 'NO',
                 },
               }],
-              ['OS=="linux"', {
+              ['OS=="linux" and fastbuild==2', {
+                'variables': {
+                  'debug_extra_cflags': '-g0',
+                },
+              }],
+              ['OS=="linux" and fastbuild==1', {
                 'variables': {
                   'debug_extra_cflags': '-g1',
                 },
               }],
-              ['OS=="android"', {
+              ['OS=="android" and fastbuild==2', {
+                'variables': {
+                  'debug_extra_cflags': '-g0',
+                  'release_extra_cflags': '-g0',
+                },
+              }],
+              ['OS=="android" and fastbuild==1', {
                 'variables': {
                   'debug_extra_cflags': '-g1',
                   'release_extra_cflags': '-g1',
