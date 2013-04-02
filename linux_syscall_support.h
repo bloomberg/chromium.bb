@@ -2036,7 +2036,7 @@ struct kernel_statfs {
                            "addq   $(1b-0b),%0\n"
                            : "=a" (res)
                            : "i"  (__NR_rt_sigreturn));
-      return (void (*)())(uintptr_t)res;
+      return (void (*)(void))(uintptr_t)res;
     }
   #elif defined(__ARM_ARCH_3__)
     /* Most definitions of _syscallX() neglect to mark "memory" as being
