@@ -1555,7 +1555,7 @@
 {
    bug_159551_message_loop
    Heapcheck:Leak
-   fun:MessageLoop::MessageLoop
+   fun:MessageLoop
    ...
    fun:testing::internal::TestFactoryImpl::CreateTest
 }
@@ -1768,7 +1768,7 @@
 {
    bug_177285
    Heapcheck:Leak
-   fun:MessageLoop::MessageLoop
+   fun:MessageLoop
    fun:FileSystemURLRequestJobTest
 }
 {
