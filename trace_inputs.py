@@ -219,6 +219,10 @@ if sys.platform == 'win32':
       p = ':'.join(items[0:2])
       suffix = ''.join(':' + i for i in items[2:])
 
+    # TODO(maruel): Use os.path.normpath?
+    if p.endswith('.\\'):
+      p = p[:-2]
+
     # Windows used to have an option to turn on case sensitivity on non Win32
     # subsystem but that's out of scope here and isn't supported anymore.
     # Go figure why GetShortPathName() is needed.
@@ -326,6 +330,7 @@ elif sys.platform == 'darwin':
       logging.debug('get_native_path_case(%s) = %s' % (path, resolved))
       return resolved
 
+    # TODO(maruel): Use os.path.normpath?
     if resolved.lower() + './' == path.lower():
       return resolved[:-2]
 
