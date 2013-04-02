@@ -95,9 +95,11 @@
         <xsl:if test="name() = 'entry'" >
           <para>Value: <xsl:value-of select="@value"/></para>
         </xsl:if>
-      <para>
-        <xsl:value-of select="@summary"/>
-      </para>
+        <xsl:if test="@summary" >
+          <para>
+            <xsl:value-of select="@summary"/>
+          </para>
+        </xsl:if>
     </listitem>
   </varlistentry>
 </xsl:template>
