@@ -284,7 +284,8 @@ unsigned WebMediaPlayerAndroid::videoDecodedByteCount() const {
   return 0;
 }
 
-void WebMediaPlayerAndroid::OnMediaPrepared(base::TimeDelta duration) {
+void WebMediaPlayerAndroid::OnMediaMetadataChanged(
+    base::TimeDelta duration, int width, int height, bool success) {
   if (url_.SchemeIs("file"))
     UpdateNetworkState(WebMediaPlayer::NetworkStateLoaded);
 
@@ -292,6 +293,9 @@ void WebMediaPlayerAndroid::OnMediaPrepared(base::TimeDelta duration) {
     UpdateReadyState(WebMediaPlayer::ReadyStateHaveMetadata);
     UpdateReadyState(WebMediaPlayer::ReadyStateHaveEnoughData);
   }
+
+  if (success)
+    OnVideoSizeChanged(width, height);
 
   if (hasVideo() && !video_weblayer_ && client_->needsWebLayerForVideo()) {
     video_weblayer_.reset(

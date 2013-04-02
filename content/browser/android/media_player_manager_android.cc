@@ -123,7 +123,7 @@ void MediaPlayerManagerAndroid::OnInitialize(
                  base::Unretained(this)),
       base::Bind(&MediaPlayerManagerAndroid::OnBufferingUpdate,
                  base::Unretained(this)),
-      base::Bind(&MediaPlayerManagerAndroid::OnPrepared,
+      base::Bind(&MediaPlayerManagerAndroid::OnMediaMetadataChanged,
                  base::Unretained(this)),
       base::Bind(&MediaPlayerManagerAndroid::OnPlaybackComplete,
                  base::Unretained(this)),
@@ -133,10 +133,6 @@ void MediaPlayerManagerAndroid::OnInitialize(
                  base::Unretained(this)),
       base::Bind(&MediaPlayerManagerAndroid::OnMediaInterrupted,
                  base::Unretained(this))));
-
-  // Send a MediaPrepared message to webkit so that Load() can finish.
-  Send(new MediaPlayerMsg_MediaPrepared(
-      routing_id(), player_id, GetPlayer(player_id)->GetDuration()));
 }
 
 void MediaPlayerManagerAndroid::OnStart(int player_id) {
@@ -238,9 +234,11 @@ MediaPlayerBridge* MediaPlayerManagerAndroid::GetFullscreenPlayer() {
   return GetPlayer(fullscreen_player_id_);
 }
 
-void MediaPlayerManagerAndroid::OnPrepared(int player_id,
-                                           base::TimeDelta duration) {
-  Send(new MediaPlayerMsg_MediaPrepared(routing_id(), player_id, duration));
+void MediaPlayerManagerAndroid::OnMediaMetadataChanged(
+    int player_id, base::TimeDelta duration, int width, int height,
+    bool success) {
+  Send(new MediaPlayerMsg_MediaMetadataChanged(
+      routing_id(), player_id, duration, width, height, success));
   if (fullscreen_player_id_ != -1)
     video_view_.UpdateMediaMetadata();
 }

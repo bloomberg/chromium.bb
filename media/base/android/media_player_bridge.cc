@@ -8,7 +8,6 @@
 #include "base/android/jni_string.h"
 #include "base/basictypes.h"
 #include "base/logging.h"
-#include "base/stringprintf.h"
 #include "base/message_loop_proxy.h"
 #include "jni/MediaPlayerBridge_jni.h"
 #include "jni/MediaPlayer_jni.h"
@@ -21,13 +20,11 @@ using base::android::ScopedJavaLocalRef;
 // Time update happens every 250ms.
 static const int kTimeUpdateInterval = 250;
 
-// Because we create the media player lazily on android, the duration of the
-// media is initially unknown to us. This makes the user unable to perform
+// Android MediaMetadataRetriever may fail to extract the metadata from the
+// media under some circumstances. This makes the user unable to perform
 // seek. To solve this problem, we use a temporary duration of 100 seconds when
 // the duration is unknown. And we scale the seek position later when duration
 // is available.
-// TODO(qinmin): create a thread and use android MediaMetadataRetriever
-// class to extract the duration.
 static const int kTemporaryDuration = 100;
 
 namespace media {
@@ -42,7 +39,7 @@ MediaPlayerBridge::MediaPlayerBridge(
     const MediaErrorCB& media_error_cb,
     const VideoSizeChangedCB& video_size_changed_cb,
     const BufferingUpdateCB& buffering_update_cb,
-    const MediaPreparedCB& media_prepared_cb,
+    const MediaMetadataChangedCB& media_metadata_changed_cb,
     const PlaybackCompleteCB& playback_complete_cb,
     const SeekCompleteCB& seek_complete_cb,
     const TimeUpdateCB& time_update_cb,
@@ -50,7 +47,7 @@ MediaPlayerBridge::MediaPlayerBridge(
     : media_error_cb_(media_error_cb),
       video_size_changed_cb_(video_size_changed_cb),
       buffering_update_cb_(buffering_update_cb),
-      media_prepared_cb_(media_prepared_cb),
+      media_metadata_changed_cb_(media_metadata_changed_cb),
       playback_complete_cb_(playback_complete_cb),
       seek_complete_cb_(seek_complete_cb),
       media_interrupted_cb_(media_interrupted_cb),
@@ -72,14 +69,32 @@ MediaPlayerBridge::MediaPlayerBridge(
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_this_(this)),
       listener_(base::MessageLoopProxy::current(),
                 weak_this_.GetWeakPtr()) {
-  has_cookies_ = url_.SchemeIsFileSystem() || url_.SchemeIsFile();
+  Initialize();
 }
 
 MediaPlayerBridge::~MediaPlayerBridge() {
   Release();
 }
 
-void MediaPlayerBridge::InitializePlayer() {
+void MediaPlayerBridge::Initialize() {
+  if (url_.SchemeIsFile()) {
+    cookies_.clear();
+    ExtractMediaMetadata(url_.spec());
+    return;
+  }
+
+  if (url_.SchemeIsFileSystem()) {
+    cookies_.clear();
+    resource_getter_->GetPlatformPathFromFileSystemURL(url_, base::Bind(
+        &MediaPlayerBridge::ExtractMediaMetadata, weak_this_.GetWeakPtr()));
+    return;
+  }
+
+  resource_getter_->GetCookies(url_, first_party_for_cookies_, base::Bind(
+      &MediaPlayerBridge::OnCookiesRetrieved, weak_this_.GetWeakPtr()));
+}
+
+void MediaPlayerBridge::CreateMediaPlayer() {
   JNIEnv* env = base::android::AttachCurrentThread();
   CHECK(env);
 
@@ -107,23 +122,7 @@ void MediaPlayerBridge::SetVideoSurface(jobject surface) {
 
 void MediaPlayerBridge::Prepare() {
   if (j_media_player_.is_null())
-    InitializePlayer();
-
-  if (has_cookies_) {
-    GetCookiesCallback(cookies_);
-  } else {
-    resource_getter_->GetCookies(url_, first_party_for_cookies_, base::Bind(
-        &MediaPlayerBridge::GetCookiesCallback, weak_this_.GetWeakPtr()));
-  }
-}
-
-void MediaPlayerBridge::GetCookiesCallback(const std::string& cookies) {
-  cookies_ = cookies;
-  has_cookies_ = true;
-
-  if (j_media_player_.is_null())
-    return;
-
+    CreateMediaPlayer();
   if (url_.SchemeIsFileSystem()) {
     resource_getter_->GetPlatformPathFromFileSystemURL(url_, base::Bind(
         &MediaPlayerBridge::SetDataSource, weak_this_.GetWeakPtr()));
@@ -157,6 +156,28 @@ void MediaPlayerBridge::SetDataSource(const std::string& url) {
   } else {
     media_error_cb_.Run(player_id_, MEDIA_ERROR_FORMAT);
   }
+}
+
+void MediaPlayerBridge::OnCookiesRetrieved(const std::string& cookies) {
+  cookies_ = cookies;
+  ExtractMediaMetadata(url_.spec());
+}
+
+void MediaPlayerBridge::ExtractMediaMetadata(const std::string& url) {
+  resource_getter_->ExtractMediaMetadata(
+      url, cookies_, base::Bind(&MediaPlayerBridge::OnMediaMetadataExtracted,
+                                weak_this_.GetWeakPtr()));
+}
+
+void MediaPlayerBridge::OnMediaMetadataExtracted(
+    base::TimeDelta duration, int width, int height, bool success) {
+  if (success) {
+    duration_ = duration;
+    width_ = width;
+    height_ = height;
+  }
+  media_metadata_changed_cb_.Run(player_id_, duration_, width_, height_,
+                                 success);
 }
 
 void MediaPlayerBridge::Start() {
@@ -325,12 +346,11 @@ void MediaPlayerBridge::OnMediaPrepared() {
     pending_play_ = false;
   }
 
-  GetMetadata();
-
-  media_prepared_cb_.Run(player_id_, duration_);
+  GetAllowedOperations();
+  media_metadata_changed_cb_.Run(player_id_, duration_, width_, height_, true);
 }
 
-void MediaPlayerBridge::GetMetadata() {
+void MediaPlayerBridge::GetAllowedOperations() {
   JNIEnv* env = base::android::AttachCurrentThread();
   CHECK(env);
 

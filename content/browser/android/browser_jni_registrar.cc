@@ -17,6 +17,7 @@
 #include "content/browser/android/download_controller_android_impl.h"
 #include "content/browser/android/interstitial_page_delegate_android.h"
 #include "content/browser/android/load_url_params.h"
+#include "content/browser/android/media_resource_getter_impl.h"
 #include "content/browser/android/surface_texture_peer_browser_impl.h"
 #include "content/browser/android/touch_point.h"
 #include "content/browser/android/tracing_intent_handler.h"
@@ -44,6 +45,8 @@ base::android::RegistrationMethod kContentRegisteredMethods[] = {
   { "InterstitialPageDelegateAndroid",
     content::InterstitialPageDelegateAndroid
         ::RegisterInterstitialPageDelegateAndroid },
+  { "MediaResourceGetterImpl",
+    content::MediaResourceGetterImpl::RegisterMediaResourceGetter },
   { "LoadUrlParams", content::RegisterLoadUrlParams },
   { "RegisterImeAdapter", content::RegisterImeAdapter },
   { "TouchPoint", content::RegisterTouchPoint },

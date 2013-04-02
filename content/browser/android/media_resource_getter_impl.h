@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_ANDROID_MEDIA_RESOURCE_GETTER_IMPL_H_
 #define CONTENT_BROWSER_ANDROID_MEDIA_RESOURCE_GETTER_IMPL_H_
 
+#include <jni.h>
 #include <string>
 
 #include "base/memory/ref_counted.h"
@@ -46,6 +47,11 @@ class MediaResourceGetterImpl : public media::MediaResourceGetter {
   virtual void GetPlatformPathFromFileSystemURL(
       const GURL& url,
       const GetPlatformPathCB& callback) OVERRIDE;
+  virtual void ExtractMediaMetadata(
+      const std::string& url, const std::string& cookies,
+      const ExtractMediaMetadataCB& callback) OVERRIDE;
+
+  static bool RegisterMediaResourceGetter(JNIEnv* env);
 
  private:
   // Called when GetCookies() finishes.

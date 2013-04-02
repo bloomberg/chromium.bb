@@ -27,7 +27,8 @@ bool WebMediaPlayerProxyImplAndroid::OnMessageReceived(
     const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(WebMediaPlayerProxyImplAndroid, msg)
-    IPC_MESSAGE_HANDLER(MediaPlayerMsg_MediaPrepared, OnMediaPrepared)
+    IPC_MESSAGE_HANDLER(MediaPlayerMsg_MediaMetadataChanged,
+                        OnMediaMetadataChanged)
     IPC_MESSAGE_HANDLER(MediaPlayerMsg_MediaPlaybackCompleted,
                         OnMediaPlaybackCompleted)
     IPC_MESSAGE_HANDLER(MediaPlayerMsg_MediaBufferingUpdate,
@@ -74,13 +75,16 @@ void WebMediaPlayerProxyImplAndroid::DestroyPlayer(int player_id) {
   Send(new MediaPlayerHostMsg_DestroyMediaPlayer(routing_id(), player_id));
 }
 
-void WebMediaPlayerProxyImplAndroid::OnMediaPrepared(
+void WebMediaPlayerProxyImplAndroid::OnMediaMetadataChanged(
     int player_id,
-    base::TimeDelta duration) {
+    base::TimeDelta duration,
+    int width,
+    int height,
+    bool success) {
   webkit_media::WebMediaPlayerImplAndroid* player =
       GetWebMediaPlayer(player_id);
   if (player)
-    player->OnMediaPrepared(duration);
+    player->OnMediaMetadataChanged(duration, width, height, success);
 }
 
 void WebMediaPlayerProxyImplAndroid::OnMediaPlaybackCompleted(

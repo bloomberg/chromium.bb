@@ -49,7 +49,8 @@ class MediaPlayerManagerAndroid
   void OnTimeUpdate(int player_id, base::TimeDelta current_time);
 
   // Callbacks needed by media::MediaPlayerBridge.
-  void OnPrepared(int player_id, base::TimeDelta duration);
+  void OnMediaMetadataChanged(int player_id, base::TimeDelta duration,
+                              int width, int height, bool success);
   void OnPlaybackComplete(int player_id);
   void OnMediaInterrupted(int player_id);
   void OnBufferingUpdate(int player_id, int percentage);

@@ -4,8 +4,11 @@
 
 #include "content/browser/android/media_resource_getter_impl.h"
 
+#include "base/android/jni_android.h"
+#include "base/android/jni_string.h"
 #include "base/bind.h"
 #include "base/path_service.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/fileapi/browser_file_system_helper.h"
 #include "content/public/browser/browser_context.h"
@@ -13,6 +16,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
 #include "googleurl/src/gurl.h"
+#include "jni/MediaResourceGetter_jni.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_store.h"
 #include "net/url_request/url_request_context.h"
@@ -25,6 +29,31 @@ static void ReturnResultOnUIThread(
     const std::string& result) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE, base::Bind(callback, result));
+}
+
+// Get the metadata from a media URL. When finished, a task is posted to the UI
+// thread to run the callback function.
+static void GetMediaMetadata(
+    const std::string& url, const std::string& cookies,
+    const media::MediaResourceGetter::ExtractMediaMetadataCB& callback) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+
+  base::android::ScopedJavaLocalRef<jstring> j_url_string =
+      base::android::ConvertUTF8ToJavaString(env, url);
+  base::android::ScopedJavaLocalRef<jstring> j_cookies =
+      base::android::ConvertUTF8ToJavaString(env, cookies);
+  jobject j_context = base::android::GetApplicationContext();
+  base::android::ScopedJavaLocalRef<jobject> j_metadata =
+      Java_MediaResourceGetter_extractMediaMetadata(
+          env, j_context, j_url_string.obj(), j_cookies.obj());
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(callback, base::TimeDelta::FromMilliseconds(
+                     Java_MediaMetadata_getDurationInMilliseconds(
+                         env, j_metadata.obj())),
+                 Java_MediaMetadata_getWidth(env, j_metadata.obj()),
+                 Java_MediaMetadata_getHeight(env, j_metadata.obj()),
+                 Java_MediaMetadata_isSuccess(env, j_metadata.obj())));
 }
 
 // The task object that retrieves cookie on the IO thread.
@@ -184,9 +213,9 @@ MediaResourceGetterImpl::MediaResourceGetterImpl(
 
 MediaResourceGetterImpl::~MediaResourceGetterImpl() {}
 
-void MediaResourceGetterImpl::GetCookies(const GURL& url,
-                                  const GURL& first_party_for_cookies,
-                                  const GetCookieCB& callback) {
+void MediaResourceGetterImpl::GetCookies(
+    const GURL& url, const GURL& first_party_for_cookies,
+    const GetCookieCB& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   scoped_refptr<CookieGetterTask> task = new CookieGetterTask(
       browser_context_, renderer_id_, routing_id_);
@@ -228,6 +257,20 @@ void MediaResourceGetterImpl::GetPlatformPathCallback(
     const GetPlatformPathCB& callback, const std::string& platform_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   callback.Run(platform_path);
+}
+
+void MediaResourceGetterImpl::ExtractMediaMetadata(
+    const std::string& url, const std::string& cookies,
+    const ExtractMediaMetadataCB& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  base::SequencedWorkerPool* pool = content::BrowserThread::GetBlockingPool();
+  pool->PostWorkerTask(
+      FROM_HERE, base::Bind(&GetMediaMetadata, url, cookies, callback));
+}
+
+// static
+bool MediaResourceGetterImpl::RegisterMediaResourceGetter(JNIEnv* env) {
+  return RegisterNativesImpl(env);
 }
 
 }  // namespace content

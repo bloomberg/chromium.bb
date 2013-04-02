@@ -50,7 +50,8 @@ class WebMediaPlayerProxyImplAndroid
   webkit_media::WebMediaPlayerImplAndroid* GetWebMediaPlayer(int player_id);
 
   // Message handlers.
-  void OnMediaPrepared(int player_id, base::TimeDelta duration);
+  void OnMediaMetadataChanged(int player_id, base::TimeDelta duration,
+                              int width, int height, bool success);
   void OnMediaPlaybackCompleted(int player_id);
   void OnMediaBufferingUpdate(int player_id, int percent);
   void OnMediaSeekCompleted(int player_id, base::TimeDelta current_time);

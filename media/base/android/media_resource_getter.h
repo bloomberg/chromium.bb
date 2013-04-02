@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/time.h"
 #include "googleurl/src/gurl.h"
 #include "media/base/media_export.h"
 
@@ -20,6 +21,8 @@ class MEDIA_EXPORT MediaResourceGetter {
  public:
   typedef base::Callback<void(const std::string&)> GetCookieCB;
   typedef base::Callback<void(const std::string&)> GetPlatformPathCB;
+  typedef base::Callback<void(base::TimeDelta, int, int, bool)>
+      ExtractMediaMetadataCB;
   virtual ~MediaResourceGetter();
 
   // Method for getting the cookies for a given URL.
@@ -31,6 +34,13 @@ class MEDIA_EXPORT MediaResourceGetter {
   virtual void GetPlatformPathFromFileSystemURL(
       const GURL& url,
       const GetPlatformPathCB& callback) = 0;
+
+  // Extract the metadata from a media URL. Once completed, the provided
+  // callback function will be run.
+  virtual void ExtractMediaMetadata(
+      const std::string& url,
+      const std::string& cookies,
+      const ExtractMediaMetadataCB& callback) = 0;
 };
 
 }  // namespace media

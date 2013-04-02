@@ -32,10 +32,13 @@ IPC_MESSAGE_ROUTED2(MediaPlayerMsg_MediaError,
 IPC_MESSAGE_ROUTED1(MediaPlayerMsg_MediaPlaybackCompleted,
                     int /* player_id */)
 
-// Player is prepared.
-IPC_MESSAGE_ROUTED2(MediaPlayerMsg_MediaPrepared,
+// Media metadata has changed.
+IPC_MESSAGE_ROUTED5(MediaPlayerMsg_MediaMetadataChanged,
                     int /* player_id */,
-                    base::TimeDelta /* duration */)
+                    base::TimeDelta /* duration */,
+                    int /* width */,
+                    int /* height */,
+                    bool /* success */)
 
 // Media seek is completed.
 IPC_MESSAGE_ROUTED2(MediaPlayerMsg_MediaSeekCompleted,

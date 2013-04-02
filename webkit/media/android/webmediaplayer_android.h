@@ -104,7 +104,8 @@ class WebMediaPlayerAndroid
       OVERRIDE;
 
   // Media player callback handlers.
-  virtual void OnMediaPrepared(base::TimeDelta duration);
+  virtual void OnMediaMetadataChanged(base::TimeDelta duration, int width,
+                                      int height, bool success);
   virtual void OnPlaybackComplete();
   virtual void OnBufferingUpdate(int percentage);
   virtual void OnSeekComplete(base::TimeDelta current_time);

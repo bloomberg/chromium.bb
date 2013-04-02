@@ -52,7 +52,8 @@ class MEDIA_EXPORT MediaPlayerBridge {
   typedef base::Callback<void(int, int)> BufferingUpdateCB;
 
   // Callback when player got prepared. Args: player ID, duration of the media.
-  typedef base::Callback<void(int, base::TimeDelta)> MediaPreparedCB;
+  typedef base::Callback<void(int, base::TimeDelta, int, int, bool)>
+      MediaMetadataChangedCB;
 
   // Callbacks when seek completed. Args: player ID, current time.
   typedef base::Callback<void(int, base::TimeDelta)> SeekCompleteCB;
@@ -83,7 +84,7 @@ class MEDIA_EXPORT MediaPlayerBridge {
                     const MediaErrorCB& media_error_cb,
                     const VideoSizeChangedCB& video_size_changed_cb,
                     const BufferingUpdateCB& buffering_update_cb,
-                    const MediaPreparedCB& media_prepared_cb,
+                    const MediaMetadataChangedCB& media_prepared_cb,
                     const PlaybackCompleteCB& playback_complete_cb,
                     const SeekCompleteCB& seek_complete_cb,
                     const TimeUpdateCB& time_update_cb,
@@ -117,8 +118,8 @@ class MEDIA_EXPORT MediaPlayerBridge {
   base::TimeDelta GetDuration();
   bool IsPlaying();
 
-  // Get metadata from the media.
-  void GetMetadata();
+  // Get allowed operations from the player.
+  void GetAllowedOperations();
 
   // Called by the timer to check for current time routinely and generates
   // time update events.
@@ -139,8 +140,9 @@ class MEDIA_EXPORT MediaPlayerBridge {
   // be called with an error type.
   void Prepare();
 
-  // Callback function passed to |resource_getter_|.
-  void GetCookiesCallback(const std::string& cookies);
+  // Callback function passed to |resource_getter_|. Called when the cookies
+  // are retrieved.
+  void OnCookiesRetrieved(const std::string& cookies);
 
   int player_id() { return player_id_; }
   bool can_pause() { return can_pause_; }
@@ -149,8 +151,11 @@ class MEDIA_EXPORT MediaPlayerBridge {
   bool prepared() { return prepared_; }
 
  private:
+  // Initialize this object and extract the metadata from the media.
+  void Initialize();
+
   // Create the actual android media player.
-  void InitializePlayer();
+  void CreateMediaPlayer();
 
   // Set the data source for the media player.
   void SetDataSource(const std::string& url);
@@ -160,11 +165,17 @@ class MEDIA_EXPORT MediaPlayerBridge {
   void PauseInternal();
   void SeekInternal(base::TimeDelta time);
 
+  // Extract the media metadata from a url, asynchronously.
+  // OnMediaMetadataExtracted() will be called when this call finishes.
+  void ExtractMediaMetadata(const std::string& url);
+  void OnMediaMetadataExtracted(base::TimeDelta duration, int width, int height,
+                                bool success);
+
   // Callbacks when events are received.
   MediaErrorCB media_error_cb_;
   VideoSizeChangedCB video_size_changed_cb_;
   BufferingUpdateCB buffering_update_cb_;
-  MediaPreparedCB media_prepared_cb_;
+  MediaMetadataChangedCB media_metadata_changed_cb_;
   PlaybackCompleteCB playback_complete_cb_;
   SeekCompleteCB seek_complete_cb_;
   MediaInterruptedCB media_interrupted_cb_;
@@ -189,9 +200,6 @@ class MEDIA_EXPORT MediaPlayerBridge {
 
   // First party url for cookies.
   GURL first_party_for_cookies_;
-
-  // Whether cookies are available.
-  bool has_cookies_;
 
   // Hide url log from media player.
   bool hide_url_log_;
