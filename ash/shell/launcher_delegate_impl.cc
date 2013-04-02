@@ -69,5 +69,11 @@ bool LauncherDelegateImpl::ShouldShowTooltip(const ash::LauncherItem& item) {
   return true;
 }
 
+void LauncherDelegateImpl::OnLauncherCreated(Launcher* launcher) {
+}
+
+void LauncherDelegateImpl::OnLauncherDestroyed(Launcher* launcher) {
+}
+
 }  // namespace shell
 }  // namespace ash

@@ -48,6 +48,8 @@ class TestLauncherDelegate : public LauncherDelegate,
   virtual ash::LauncherID GetIDByWindow(aura::Window* window) OVERRIDE;
   virtual bool IsDraggable(const ash::LauncherItem& item) OVERRIDE;
   virtual bool ShouldShowTooltip(const LauncherItem& item) OVERRIDE;
+  virtual void OnLauncherCreated(Launcher* launcher) OVERRIDE;
+  virtual void OnLauncherDestroyed(Launcher* launcher) OVERRIDE;
 
  private:
   typedef std::map<aura::Window*, ash::LauncherID> WindowToID;

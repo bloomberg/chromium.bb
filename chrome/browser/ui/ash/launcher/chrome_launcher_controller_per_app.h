@@ -7,12 +7,14 @@
 
 #include <list>
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
 #include "ash/display/display_controller.h"
 #include "ash/launcher/launcher_model_observer.h"
 #include "ash/launcher/launcher_types.h"
+#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_types.h"
 #include "ash/shell_observer.h"
 #include "base/basictypes.h"
@@ -61,15 +63,17 @@ class WebContents;
 // * App shell windows have ShellWindowLauncherItemController, owned by
 //   ShellWindowLauncherController.
 // * Shortcuts have no LauncherItemController.
-class ChromeLauncherControllerPerApp : public ash::LauncherModelObserver,
-                                       public ash::ShellObserver,
-                                       public ash::DisplayController::Observer,
-                                       public ChromeLauncherController,
-                                       public content::NotificationObserver,
-                                       public PrefServiceSyncableObserver,
-                                       public AppSyncUIStateObserver,
-                                       public ExtensionEnableFlowDelegate,
-                                       public chrome::BrowserListObserver {
+class ChromeLauncherControllerPerApp
+    : public ash::LauncherModelObserver,
+      public ash::ShellObserver,
+      public ash::DisplayController::Observer,
+      public ChromeLauncherController,
+      public content::NotificationObserver,
+      public PrefServiceSyncableObserver,
+      public AppSyncUIStateObserver,
+      public ExtensionEnableFlowDelegate,
+      public chrome::BrowserListObserver,
+      public ash::internal::ShelfLayoutManager::Observer {
  public:
   ChromeLauncherControllerPerApp(Profile* profile, ash::LauncherModel* model);
   virtual ~ChromeLauncherControllerPerApp();
@@ -262,6 +266,8 @@ class ChromeLauncherControllerPerApp : public ash::LauncherModelObserver,
   virtual ash::LauncherID GetIDByWindow(aura::Window* window) OVERRIDE;
   virtual bool IsDraggable(const ash::LauncherItem& item) OVERRIDE;
   virtual bool ShouldShowTooltip(const ash::LauncherItem& item) OVERRIDE;
+  virtual void OnLauncherCreated(ash::Launcher* launcher) OVERRIDE;
+  virtual void OnLauncherDestroyed(ash::Launcher* launcher) OVERRIDE;
 
   // ash::LauncherModelObserver overrides:
   virtual void LauncherItemAdded(int index) OVERRIDE;
@@ -296,6 +302,10 @@ class ChromeLauncherControllerPerApp : public ash::LauncherModelObserver,
   // extensions::AppIconLoader overrides:
   virtual void SetAppImage(const std::string& app_id,
                            const gfx::ImageSkia& image) OVERRIDE;
+
+  // ash::internal::ShelfLayoutManager::Observer overrides:
+  virtual void OnAutoHideBehaviorChanged(
+      ash::ShelfAutoHideBehavior new_behavior) OVERRIDE;
 
   // Get the list of all running incarnations of this item.
   // |event_flags| specifies the flags which were set by the event which
@@ -463,6 +473,9 @@ class ChromeLauncherControllerPerApp : public ash::LauncherModelObserver,
   AppSyncUIState* app_sync_ui_state_;
 
   scoped_ptr<ExtensionEnableFlow> extension_enable_flow_;
+
+  // Launchers that are currently being observed.
+  std::set<ash::Launcher*> launchers_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeLauncherControllerPerApp);
 };
