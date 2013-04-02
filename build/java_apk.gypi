@@ -98,6 +98,8 @@
     'dex_path': '<(intermediate_dir)/classes.dex',
     'android_manifest': '<(java_in_dir)/AndroidManifest.xml',
     'codegen_input_paths': [],
+    'final_apk_path': '<(PRODUCT_DIR)/apks/<(apk_name).apk',
+    'apk_install_stamp': '<(intermediate_dir)/apk_install.stamp',
   },
   # Pass the jar path to the apk's "fake" jar target.  This would be better as
   # direct_dependent_settings, but a variable set by a direct_dependent_settings
@@ -230,6 +232,28 @@
             'grit_resource_ids': '',
           },
           'includes': ['../build/grit_action.gypi'],
+        },
+      ],
+    }],
+    ['gyp_managed_install == 1', {
+      'actions': [
+        {
+          'action_name': 'apk_install_<(_target_name)',
+          'message': 'Installing <(apk_name).apk',
+          'inputs': [
+            '<(DEPTH)/build/android/pylib/build_utils.py',
+            '<(DEPTH)/build/android/gyp/apk_install.py',
+            '<(final_apk_path)',
+          ],
+          'outputs': [
+            '<(apk_install_stamp)'
+          ],
+          'action': [
+            'python', '<(DEPTH)/build/android/gyp/apk_install.py',
+            '--android-sdk-tools=<(android_sdk_tools)',
+            '--apk-path=<(final_apk_path)',
+            '--stamp=<(apk_install_stamp)'
+          ],
         },
       ],
     }],
@@ -439,7 +463,7 @@
         }],
       ],
       'outputs': [
-        '<(PRODUCT_DIR)/apks/<(apk_name).apk',
+        '<(final_apk_path)',
       ],
       'action': [
         'ant', '-quiet',

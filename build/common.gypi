@@ -740,6 +740,7 @@
     'use_libjpeg_turbo%': '<(use_libjpeg_turbo)',
     'use_system_libjpeg%': '<(use_system_libjpeg)',
     'android_webview_build%': '<(android_webview_build)',
+    'gyp_managed_install%': 0,
     'google_tv%': '<(google_tv)',
     'enable_app_list%': '<(enable_app_list)',
     'enable_message_center%': '<(enable_message_center)',
