@@ -7,7 +7,7 @@
 namespace message_center {
 
 const int kNotificationIconSize = 80;
-const int kNotificationPreferredImageSize = 300;
+const int kNotificationPreferredImageSize = kNotificationWidth;
 const int kNotificationButtonIconSize = 16;
 const int kSettingsIconSize = 16;
 
@@ -17,7 +17,7 @@ const int kIconToTextPadding = 16;
 
 const int kTextTopPadding = 6;
 
-const int kNotificationWidth = 300;
+const int kNotificationWidth = 360;
 
 const int kNotificationMaximumImageHeight = kNotificationWidth;
 
