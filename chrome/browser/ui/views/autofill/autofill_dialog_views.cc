@@ -590,7 +590,9 @@ void AutofillDialogViews::UpdateAccountChooser() {
 
     std::vector<ui::Range> link_ranges = controller_->LegalDocumentLinks();
     for (size_t i = 0; i < link_ranges.size(); ++i) {
-      footnote_view_->AddLink(link_ranges[i]);
+      footnote_view_->AddStyleRange(
+          link_ranges[i],
+          views::StyledLabel::RangeStyleInfo::CreateForLink());
     }
 
     ContentsPreferredSizeChanged();

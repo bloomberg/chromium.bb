@@ -51,7 +51,8 @@ void EchoDialogView::InitForEnabledEcho(const string16& service_name,
   // TODO(tbarzic): Set style for service_name substring.
 
   label_ = new views::StyledLabel(text, this);
-  label_->AddLink(ui::Range(offsets[1], offsets[1] + link.length()));
+  label_->AddStyleRange(ui::Range(offsets[1], offsets[1] + link.length()),
+                        views:: StyledLabel::RangeStyleInfo::CreateForLink());
 
   SetLabelBorderAndBounds();
 
@@ -70,7 +71,8 @@ void EchoDialogView::InitForDisabledEcho() {
       IDS_ECHO_DISABLED_CONSENT_DIALOG_TEXT, link, &offset);
 
   label_ = new views::StyledLabel(text, this);
-  label_->AddLink(ui::Range(offset, offset + link.length()));
+  label_->AddStyleRange(ui::Range(offset, offset + link.length()),
+                        views::StyledLabel::RangeStyleInfo::CreateForLink());
 
   SetLabelBorderAndBounds();
 
