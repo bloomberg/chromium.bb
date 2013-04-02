@@ -73,6 +73,8 @@ class CHROMEOS_EXPORT NetworkChangeNotifierChromeos
   NetworkChangeNotifier::ConnectionType connection_type_;
   // IP address for the current default network.
   std::string ip_address_;
+  // DNS servers for the current default network.
+  std::vector<std::string> dns_servers_;
   // Service path for the current default network.
   std::string service_path_;
 

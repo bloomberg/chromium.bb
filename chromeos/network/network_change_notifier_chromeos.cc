@@ -6,6 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
+#include "base/string_util.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/network_change_notifier_chromeos.h"
 #include "chromeos/network/network_state.h"
@@ -111,21 +112,19 @@ void NetworkChangeNotifierChromeos::UpdateState(
   *connection_type_changed = false;
   *ip_address_changed = false;
   *dns_changed = false;
-  // TODO(gauravsh): DNS changes will be detected once ip config
-  // support is hooked into NetworkStateHandler. For now,
-  // we report a DNS change on changes to the default network (including
-  // loss).
   if (!default_network || !default_network->IsConnectedState()) {
     // If we lost a default network, we must update our state and notify
-    // observers, otherwise we have nothing do. (Under normal circumstances,
+    // observers, otherwise we have nothing to do. (Under normal circumstances,
     // we should never get duplicate no default network notifications).
     if (connection_type_ != CONNECTION_NONE) {
+      VLOG(1) << "Lost default network!";
       *ip_address_changed = true;
       *dns_changed = true;
       *connection_type_changed = true;
       connection_type_ = CONNECTION_NONE;
       service_path_.clear();
       ip_address_.clear();
+      dns_servers_.clear();
     }
     return;
   }
@@ -138,20 +137,33 @@ void NetworkChangeNotifierChromeos::UpdateState(
     VLOG(1) << "Connection type changed from " << connection_type_ << " -> "
             << new_connection_type;
     *connection_type_changed = true;
-    *dns_changed = true;
   }
-  if (default_network->path() != service_path_ ||
-      default_network->ip_address() != ip_address_) {
+  if (default_network->path() != service_path_) {
     VLOG(1) << "Service path changed from " << service_path_ << " -> "
             << default_network->path();
-    VLOG(1) << "IP Address changed from " << ip_address_ << " -> "
-            << default_network->ip_address();
+    // If we had a default network service change, network resources
+    // must always be invalidated.
     *ip_address_changed = true;
     *dns_changed = true;
   }
+  if (default_network->ip_address() != ip_address_) {
+    VLOG(1) << "IP Address changed from " << ip_address_ << " -> "
+            << default_network->ip_address();
+    *ip_address_changed = true;
+  }
+  if (default_network->dns_servers() != dns_servers_) {
+    VLOG(1) << "DNS servers changed.\n"
+            << "Old DNS servers were: "
+            << JoinString(dns_servers_, ",") << "\n"
+            << "New DNS servers are: "
+            << JoinString(default_network->dns_servers(), ",");
+    *dns_changed = true;
+  }
+
   connection_type_ = new_connection_type;
   service_path_ = default_network->path();
   ip_address_ = default_network->ip_address();
+  dns_servers_ = default_network->dns_servers();
 }
 
 // static

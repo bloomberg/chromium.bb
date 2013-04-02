@@ -49,6 +49,12 @@ class CHROMEOS_EXPORT ShillServiceClient {
                             const std::string& type,
                             const std::string& state,
                             bool add_to_watch_list) = 0;
+    virtual void AddServiceWithIPConfig(const std::string& service_path,
+                                        const std::string& name,
+                                        const std::string& type,
+                                        const std::string& state,
+                                        const std::string& ipconfig_path,
+                                        bool add_to_watch_list) = 0;
     virtual void RemoveService(const std::string& service_path) = 0;
     virtual void SetServiceProperty(const std::string& service_path,
                                     const std::string& property,

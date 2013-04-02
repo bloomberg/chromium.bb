@@ -4,8 +4,24 @@
 
 #include "chromeos/network/network_state.h"
 
+#include "base/stringprintf.h"
 #include "base/values.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
+
+namespace {
+
+bool ConvertListValueToStringVector(const base::ListValue& string_list,
+                                    std::vector<std::string>* result) {
+  for (size_t i = 0; i < string_list.GetSize(); ++i) {
+    std::string str;
+    if (!string_list.GetString(i, &str))
+      return false;
+    result->push_back(str);
+  }
+  return true;
+}
+
+}  // namespace
 
 namespace chromeos {
 
@@ -33,6 +49,14 @@ bool NetworkState::PropertyChanged(const std::string& key,
     return GetStringValue(key, value, &connection_state_);
   } else if (key == flimflam::kErrorProperty) {
     return GetStringValue(key, value, &error_);
+  } else if (key == IPConfigProperty(flimflam::kAddressProperty)) {
+    return GetStringValue(key, value, &ip_address_);
+  } else if (key == IPConfigProperty(flimflam::kNameServersProperty)) {
+    dns_servers_.clear();
+    const base::ListValue* dns_servers;
+    if (value.GetAsList(&dns_servers) &&
+        ConvertListValueToStringVector(*dns_servers, &dns_servers_))
+      return true;
   } else if (key == flimflam::kActivationStateProperty) {
     return GetStringValue(key, value, &activation_state_);
   } else if (key == flimflam::kRoamingStateProperty) {
@@ -69,6 +93,16 @@ void NetworkState::GetProperties(base::DictionaryValue* dictionary) const {
                                             connection_state());
   dictionary->SetStringWithoutPathExpansion(flimflam::kErrorProperty,
                                             error());
+  base::DictionaryValue* ipconfig_properties = new DictionaryValue;
+  ipconfig_properties->SetStringWithoutPathExpansion(flimflam::kAddressProperty,
+                                                     ip_address());
+  base::ListValue* name_servers = new ListValue;
+  name_servers->AppendStrings(dns_servers());
+  ipconfig_properties->SetWithoutPathExpansion(flimflam::kNameServersProperty,
+                                               name_servers);
+  dictionary->SetWithoutPathExpansion(shill::kIPConfigProperty,
+                                      ipconfig_properties);
+
   dictionary->SetStringWithoutPathExpansion(flimflam::kActivationStateProperty,
                                             activation_state());
   dictionary->SetStringWithoutPathExpansion(flimflam::kRoamingStateProperty,
@@ -114,6 +148,11 @@ bool NetworkState::StateIsConnecting(const std::string& connection_state) {
   return (connection_state == flimflam::kStateAssociation ||
           connection_state == flimflam::kStateConfiguration ||
           connection_state == flimflam::kStateCarrier);
+}
+
+// static
+std::string NetworkState::IPConfigProperty(const char* key) {
+  return base::StringPrintf("%s.%s", shill::kIPConfigProperty, key);
 }
 
 }  // namespace chromeos

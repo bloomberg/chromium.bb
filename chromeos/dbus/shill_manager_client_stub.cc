@@ -176,8 +176,12 @@ void ShillManagerClientStub::ConfigureService(
     return;
   }
 
+  std::string ipconfig_path;
+  properties.GetString(shill::kIPConfigProperty, &ipconfig_path);
+
   // Add the service to the service client stub if not already there.
-  service_client->AddService(guid, guid, type, flimflam::kStateIdle, true);
+  service_client->AddServiceWithIPConfig(guid, guid, type, flimflam::kStateIdle,
+                                         ipconfig_path, true);
 
   // Merge the new properties with existing properties, if any.
   scoped_ptr<base::DictionaryValue> merged_properties;

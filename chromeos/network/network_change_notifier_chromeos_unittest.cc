@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/strings/string_split.h"
 #include "chromeos/network/network_change_notifier_factory_chromeos.h"
 #include "chromeos/network/network_state.h"
 #include "net/base/network_change_notifier.h"
@@ -14,6 +15,44 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
+
+namespace {
+
+const char kDnsServers1[] = "192.168.0.1,192.168.0.2";
+const char kDnsServers2[] = "192.168.3.1,192.168.3.2";
+const char kIpAddress1[] = "192.168.1.1";
+const char kIpAddress2[] = "192.168.1.2";
+const char kService1[] = "/service/1";
+const char kService2[] = "/service/2";
+const char kService3[] = "/service/3";
+
+struct NotifierState {
+  net::NetworkChangeNotifier::ConnectionType type;
+  const char* service_path;
+  const char* ip_address;
+  const char* dns_servers;
+};
+
+struct DefaultNetworkState {
+  bool is_connected;
+  const char* type;
+  const char* technology;
+  const char* service_path;
+  const char* ip_address;
+  const char* dns_servers;
+};
+
+struct NotifierUpdateTestCase {
+  const char* test_description;
+  NotifierState initial_state;
+  DefaultNetworkState default_network_state;
+  NotifierState expected_state;
+  bool expected_type_changed;
+  bool expected_ip_changed;
+  bool expected_dns_changed;
+};
+
+} // namespace
 
 using net::NetworkChangeNotifier;
 
@@ -67,42 +106,44 @@ class NetworkChangeNotifierChromeosUpdateTest : public testing::Test {
   }
   virtual ~NetworkChangeNotifierChromeosUpdateTest() {}
 
-  void SetNotifierState(NetworkChangeNotifier::ConnectionType type,
-                        std::string service_path,
-                        std::string ip_address) {
-    notifier_.ip_address_ = ip_address;
-    notifier_.service_path_ = service_path;
-    notifier_.connection_type_ = type;
+  void SetNotifierState(const NotifierState& notifier_state) {
+    notifier_.connection_type_ = notifier_state.type;
+    notifier_.service_path_ = notifier_state.service_path;
+    notifier_.ip_address_ = notifier_state.ip_address;
+    std::vector<std::string> dns_servers;
+    base::SplitString(notifier_state.dns_servers, ',', &dns_servers);
+    notifier_.dns_servers_ = dns_servers;
   }
 
-  void VerifyNotifierState(NetworkChangeNotifier::ConnectionType expected_type,
-                           std::string expected_service_path,
-                           std::string expected_ip_address) {
-    EXPECT_EQ(expected_type, notifier_.connection_type_);
-    EXPECT_EQ(expected_ip_address, notifier_.ip_address_);
-    EXPECT_EQ(expected_service_path, notifier_.service_path_);
+  void VerifyNotifierState(const NotifierState& notifier_state) {
+    EXPECT_EQ(notifier_state.type, notifier_.connection_type_);
+    EXPECT_EQ(notifier_state.service_path, notifier_.service_path_);
+    EXPECT_EQ(notifier_state.ip_address, notifier_.ip_address_);
+    std::vector<std::string> dns_servers;
+    base::SplitString(notifier_state.dns_servers, ',', &dns_servers);
+    EXPECT_EQ(dns_servers, notifier_.dns_servers_);
   }
 
   // Sets the default network state used for notifier updates.
-  void SetDefaultNetworkState(bool is_connected,
-                             std::string type,
-                             std::string technology,
-                             std::string service_path,
-                             std::string ip_address) {
-    if (is_connected)
+  void SetDefaultNetworkState(
+      const DefaultNetworkState& default_network_state) {
+    if (default_network_state.is_connected)
       default_network_.connection_state_ = flimflam::kStateOnline;
     else
       default_network_.connection_state_ = flimflam::kStateConfiguration;
-    default_network_.type_ = type;
-    default_network_.technology_ = technology;
-    default_network_.path_ = service_path;
-    default_network_.ip_address_ = ip_address;
+    default_network_.type_ = default_network_state.type;
+    default_network_.technology_ = default_network_state.technology;
+    default_network_.path_ = default_network_state.service_path;
+    default_network_.set_ip_address(default_network_state.ip_address);
+    std::vector<std::string> dns_servers;
+    base::SplitString(default_network_state.dns_servers, ',', &dns_servers);
+    default_network_.set_dns_servers(dns_servers);
   }
 
   // Process an default network update based on the state of |default_network_|.
   void ProcessDefaultNetworkUpdate(bool* type_changed,
-                                  bool* ip_changed,
-                                  bool* dns_changed) {
+                                   bool* ip_changed,
+                                   bool* dns_changed) {
     notifier_.UpdateState(&default_network_, type_changed, ip_changed,
                           dns_changed);
   }
@@ -112,74 +153,74 @@ class NetworkChangeNotifierChromeosUpdateTest : public testing::Test {
   NetworkChangeNotifierChromeos notifier_;
 };
 
-TEST_F(NetworkChangeNotifierChromeosUpdateTest, UpdateDefaultNetworkOffline) {
-  // Test that Online to Offline transitions are correctly handled.
-  SetNotifierState(NetworkChangeNotifier::CONNECTION_ETHERNET, "/service/1",
-                   "192.168.1.1");
-  SetDefaultNetworkState(false,  // offline.
-                        flimflam::kTypeEthernet, "", "/service/1", "");
-  bool type_changed = false, ip_changed = false, dns_changed = false;
-  ProcessDefaultNetworkUpdate(&type_changed, &ip_changed, &dns_changed);
-  VerifyNotifierState(NetworkChangeNotifier::CONNECTION_NONE, "", "");
-  EXPECT_TRUE(type_changed);
-  EXPECT_TRUE(ip_changed);
-  EXPECT_TRUE(dns_changed);
-}
+NotifierUpdateTestCase test_cases[] = {
+  { "Online -> Offline",
+    { NetworkChangeNotifier::CONNECTION_ETHERNET, kService1, kIpAddress1,
+      kDnsServers1 },
+    { false, flimflam::kTypeEthernet, "", kService1, "", "" },
+    { NetworkChangeNotifier::CONNECTION_NONE, "", "", "" },
+    true, true, true
+  },
+  { "Offline -> Offline",
+    { NetworkChangeNotifier::CONNECTION_NONE, "", "", "" },
+    { false, flimflam::kTypeEthernet, "", kService1, kIpAddress1,
+      kDnsServers1 },
+    { NetworkChangeNotifier::CONNECTION_NONE, "", "", "" },
+    false, false, false
+  },
+  { "Offline -> Online",
+    { NetworkChangeNotifier::CONNECTION_NONE, "", "", "" },
+    { true, flimflam::kTypeEthernet, "", kService1, kIpAddress1, kDnsServers1 },
+    { NetworkChangeNotifier::CONNECTION_ETHERNET, kService1, kIpAddress1,
+      kDnsServers1 },
+    true, true, true
+  },
+  { "Online -> Online (new default service, different connection type)",
+    { NetworkChangeNotifier::CONNECTION_ETHERNET, kService1, kIpAddress1,
+      kDnsServers1 },
+    { true, flimflam::kTypeWifi, "", kService2, kIpAddress1, kDnsServers1 },
+    { NetworkChangeNotifier::CONNECTION_WIFI, kService2, kIpAddress1,
+      kDnsServers1 },
+    true, true, true
+  },
+  { "Online -> Online (new default service, same connection type)",
+    { NetworkChangeNotifier::CONNECTION_WIFI, kService2, kIpAddress1,
+      kDnsServers1 },
+    { true, flimflam::kTypeWifi, "", kService3, kIpAddress1, kDnsServers1 },
+    { NetworkChangeNotifier::CONNECTION_WIFI, kService3, kIpAddress1,
+      kDnsServers1 },
+    false, true, true
+  },
+  { "Online -> Online (same default service, new IP address, same DNS)",
+    { NetworkChangeNotifier::CONNECTION_WIFI, kService3, kIpAddress1,
+      kDnsServers1 },
+    { true, flimflam::kTypeWifi, "", kService3, kIpAddress2, kDnsServers1 },
+    { NetworkChangeNotifier::CONNECTION_WIFI, kService3, kIpAddress2,
+      kDnsServers1 },
+    false, true, false
+  },
+  { "Online -> Online (same default service, same IP address, new DNS)",
+    { NetworkChangeNotifier::CONNECTION_WIFI, kService3, kIpAddress2,
+      kDnsServers1 },
+    { true, flimflam::kTypeWifi, "", kService3, kIpAddress2, kDnsServers2 },
+    { NetworkChangeNotifier::CONNECTION_WIFI, kService3, kIpAddress2,
+      kDnsServers2 },
+    false, false, true
+  }
+};
 
-TEST_F(NetworkChangeNotifierChromeosUpdateTest, UpdateDefaultNetworkOnline) {
-  // Test that Offline to Online transitions are correctly handled.
-  SetNotifierState(NetworkChangeNotifier::CONNECTION_NONE, "", "");
-
-  SetDefaultNetworkState(false,  // offline.
-                        flimflam::kTypeEthernet, "",
-                        "192.168.0.1", "/service/1");
-  bool type_changed = false, ip_changed = false, dns_changed = false;
-  ProcessDefaultNetworkUpdate(&type_changed, &ip_changed, &dns_changed);
-  // If the new default network is still offline, nothing should have changed.
-  VerifyNotifierState(NetworkChangeNotifier::CONNECTION_NONE, "", "");
-  EXPECT_FALSE(type_changed);
-  EXPECT_FALSE(ip_changed);
-  EXPECT_FALSE(dns_changed);
-
-  SetDefaultNetworkState(true,  // online.
-                        flimflam::kTypeEthernet, "", "/service/1",
-                        "192.168.0.1");
-  ProcessDefaultNetworkUpdate(&type_changed, &ip_changed, &dns_changed);
-  // Now the new default network is online, so this should trigger a notifier
-  // state change.
-  VerifyNotifierState(NetworkChangeNotifier::CONNECTION_ETHERNET, "/service/1",
-                      "192.168.0.1");
-  EXPECT_TRUE(type_changed);
-  EXPECT_TRUE(ip_changed);
-  EXPECT_TRUE(dns_changed);
-}
-
-TEST_F(NetworkChangeNotifierChromeosUpdateTest, UpdateDefaultNetworkChanged) {
-  // Test that Online to Online transitions (default network changes) are
-  // correctly handled.
-  SetNotifierState(NetworkChangeNotifier::CONNECTION_ETHERNET, "/service/1",
-                   "192.168.1.1");
-
-  SetDefaultNetworkState(true,  // online.
-                        flimflam::kTypeWifi, "", "/service/2", "192.168.1.2");
-  bool type_changed = false, ip_changed = false, dns_changed = false;
-  ProcessDefaultNetworkUpdate(&type_changed, &ip_changed, &dns_changed);
-  VerifyNotifierState(NetworkChangeNotifier::CONNECTION_WIFI, "/service/2",
-                      "192.168.1.2" );
-  EXPECT_TRUE(type_changed);
-  EXPECT_TRUE(ip_changed);
-  EXPECT_TRUE(dns_changed);
-
-  SetDefaultNetworkState(true,  // online.
-                        flimflam::kTypeWifi, "", "/service/3", "192.168.1.2");
-  ProcessDefaultNetworkUpdate(&type_changed, &ip_changed, &dns_changed);
-  VerifyNotifierState(NetworkChangeNotifier::CONNECTION_WIFI, "/service/3",
-                      "192.168.1.2" );
-  EXPECT_FALSE(type_changed);
-  // A service path change (even with a corresponding IP change) should still
-  // trigger an IP address update to observers.
-  EXPECT_TRUE(ip_changed);
-  EXPECT_TRUE(dns_changed);
+TEST_F(NetworkChangeNotifierChromeosUpdateTest, UpdateDefaultNetwork) {
+  for (size_t i = 0; i < arraysize(test_cases); ++i) {
+    SCOPED_TRACE(test_cases[i].test_description);
+    SetNotifierState(test_cases[i].initial_state);
+    SetDefaultNetworkState(test_cases[i].default_network_state);
+    bool type_changed = false, ip_changed = false, dns_changed = false;
+    ProcessDefaultNetworkUpdate(&type_changed, &ip_changed, &dns_changed);
+    VerifyNotifierState(test_cases[i].expected_state);
+    EXPECT_TRUE(type_changed == test_cases[i].expected_type_changed);
+    EXPECT_TRUE(ip_changed == test_cases[i].expected_ip_changed);
+    EXPECT_TRUE(dns_changed == test_cases[i].expected_dns_changed);
+  }
 }
 
 }  // namespace chromeos

@@ -42,10 +42,12 @@ class ShillIPConfigClientStub : public ShillIPConfigClient {
                       const VoidDBusMethodCallback& callback) OVERRIDE;
 
  private:
-  // Runs callback with |properties_|.
-  void PassProperties(const DictionaryValueCallback& callback) const;
+  // Runs callback with |values|.
+  void PassProperties(const base::DictionaryValue* values,
+                      const DictionaryValueCallback& callback) const;
 
-  base::DictionaryValue properties_;
+  // Dictionary of <ipconfig_path, property dictionaries>
+  base::DictionaryValue ipconfigs_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

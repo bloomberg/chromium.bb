@@ -98,9 +98,9 @@ class ShillManagerClientStub : public ShillManagerClient,
   virtual void RemoveService(const std::string& service_path) OVERRIDE;
   virtual void AddTechnology(const std::string& type, bool enabled) OVERRIDE;
   virtual void RemoveTechnology(const std::string& type) OVERRIDE;
-  virtual void ClearProperties() OVERRIDE;
   virtual void AddGeoNetwork(const std::string& technology,
                              const base::DictionaryValue& network) OVERRIDE;
+  virtual void ClearProperties() OVERRIDE;
 
  private:
   void AddServiceToWatchList(const std::string& service_path);

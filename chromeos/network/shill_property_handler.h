@@ -72,12 +72,6 @@ class CHROMEOS_EXPORT ShillPropertyHandler
     // changes.
     virtual void ManagerPropertyChanged() = 0;
 
-    // Called whent the IP address of a service has been updated. Occurs after
-    // UpdateManagedStateProperties is called for the service.
-    virtual void UpdateNetworkServiceIPAddress(
-        const std::string& service_path,
-        const std::string& ip_address) = 0;
-
     // Called when a managed state list has changed, after properties for any
     // new entries in the list have been received and
     // UpdateManagedStateProperties has been called for each new entry.

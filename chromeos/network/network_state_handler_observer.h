@@ -33,8 +33,11 @@ class CHROMEOS_EXPORT NetworkStateHandlerObserver {
   // The list of devices changed, or a property changed (e.g. scanning).
   virtual void DeviceListChanged();
 
-  // The default network changed (includes VPNs) or its connection state
-  // changed. |network| will be NULL if there is no longer a default network.
+  // The default network changed (includes VPNs) or one of its properties
+  // changed. This won't be called if the WiFi signal strength property
+  // changes. If interested in those events, use NetworkPropertiesUpdated()
+  // below.
+  // |network| will be NULL if there is no longer a default network.
   virtual void DefaultNetworkChanged(const NetworkState* network);
 
   // The connection state of |network| changed.

@@ -16,6 +16,7 @@
 #include "chromeos/dbus/shill_manager_client.h"
 #include "chromeos/dbus/shill_service_client.h"
 #include "chromeos/network/network_event_log.h"
+#include "chromeos/network/network_state.h"
 #include "dbus/object_path.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -415,7 +416,7 @@ void ShillPropertyHandler::NetworkServicePropertyChangedCallback(
     const std::string& key,
     const base::Value& value) {
   if (key == shill::kIPConfigProperty) {
-    // Handle IPConfig here and call listener_->UpdateNetworkServiceIPAddress
+    // Request the IPConfig for the network and update network properties
     // when the request completes.
     std::string ip_config_path;
     value.GetAsString(&ip_config_path);
@@ -434,16 +435,30 @@ void ShillPropertyHandler::GetIPConfigCallback(
     DBusMethodCallStatus call_status,
     const base::DictionaryValue& properties)  {
   if (call_status != DBUS_METHOD_CALL_SUCCESS) {
-    LOG(ERROR) << "Failed to get IP properties for: " << service_path;
+    LOG(ERROR) << "Failed to get IP Config properties for: " << service_path;
     return;
   }
-  std::string ip_address;
-  if (!properties.GetStringWithoutPathExpansion(flimflam::kAddressProperty,
-                                                &ip_address)) {
+  const base::Value* ip_address;
+  if (!properties.GetWithoutPathExpansion(flimflam::kAddressProperty,
+                                          &ip_address)) {
     LOG(ERROR) << "Failed to get IP Address property for: " << service_path;
     return;
   }
-  listener_->UpdateNetworkServiceIPAddress(service_path, ip_address);
+  listener_->UpdateNetworkServiceProperty(
+      service_path,
+      NetworkState::IPConfigProperty(flimflam::kAddressProperty),
+      *ip_address);
+
+  const base::Value* dns_servers = NULL;
+  if (!properties.GetWithoutPathExpansion(
+          flimflam::kNameServersProperty, &dns_servers)) {
+    LOG(ERROR) << "Failed to get Name servers property for: " << service_path;
+    return;
+  }
+  listener_->UpdateNetworkServiceProperty(
+      service_path,
+      NetworkState::IPConfigProperty(flimflam::kNameServersProperty),
+      *dns_servers);
 }
 
 void ShillPropertyHandler::NetworkDevicePropertyChangedCallback(

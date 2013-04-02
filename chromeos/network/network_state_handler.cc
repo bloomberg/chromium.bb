@@ -433,20 +433,16 @@ void NetworkStateHandler::UpdateNetworkServiceProperty(
     detail += " = " + vstr;
   network_event_log::AddEntry(kLogModule, "NetworkPropertyUpdated", detail);
 
-  if (network->connection_state() != prev_connection_state)
+  if (network->connection_state() != prev_connection_state) {
     OnNetworkConnectionStateChanged(network);
-  NetworkPropertiesUpdated(network);
-}
+  }
+  else if (network->path() == default_network_path_ &&
+           key != flimflam::kSignalStrengthProperty) {
+    // WiFi signal strength updates are too noisy, so don't
+    // trigger default network updates for those changes.
+    OnDefaultNetworkChanged();
+  }
 
-void NetworkStateHandler::UpdateNetworkServiceIPAddress(
-    const std::string& service_path,
-    const std::string& ip_address) {
-  NetworkState* network = GetModifiableNetworkState(service_path);
-  if (!network)
-    return;
-  std::string detail = network->name() + ".IPAddress = " + ip_address;
-  network_event_log::AddEntry(kLogModule, "NetworkIPChanged", detail);
-  network->set_ip_address(ip_address);
   NetworkPropertiesUpdated(network);
 }
 

@@ -186,11 +186,6 @@ class CHROMEOS_EXPORT NetworkStateHandler
       const std::string& key,
       const base::Value& value) OVERRIDE;
 
-  // Sets the IP Address for the network associated with |service_path|.
-  virtual void UpdateNetworkServiceIPAddress(
-      const std::string& service_path,
-      const std::string& ip_address) OVERRIDE;
-
   // Called by ShillPropertyHandler when a watched device property changes.
   virtual void UpdateDeviceProperty(
       const std::string& device_path,

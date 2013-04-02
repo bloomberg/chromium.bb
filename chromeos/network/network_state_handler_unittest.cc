@@ -42,7 +42,8 @@ class TestObserver : public chromeos::NetworkStateHandlerObserver {
   explicit TestObserver(NetworkStateHandler* handler)
       : handler_(handler),
         manager_changed_count_(0),
-        network_count_(0) {
+        network_count_(0),
+        default_network_change_count_(0) {
   }
 
   virtual ~TestObserver() {
@@ -63,6 +64,7 @@ class TestObserver : public chromeos::NetworkStateHandlerObserver {
   }
 
   virtual void DefaultNetworkChanged(const NetworkState* network) OVERRIDE {
+    ++default_network_change_count_;
     default_network_ = network ? network->path() : "";
     default_network_connection_state_ =
         network ?  network->connection_state() : "";
@@ -81,6 +83,9 @@ class TestObserver : public chromeos::NetworkStateHandlerObserver {
 
   size_t manager_changed_count() { return manager_changed_count_; }
   size_t network_count() { return network_count_; }
+  size_t default_network_change_count() {
+    return default_network_change_count_;
+  }
   std::string default_network() { return default_network_; }
   std::string default_network_connection_state() {
     return default_network_connection_state_;
@@ -103,6 +108,7 @@ class TestObserver : public chromeos::NetworkStateHandlerObserver {
   NetworkStateHandler* handler_;
   size_t manager_changed_count_;
   size_t network_count_;
+  size_t default_network_change_count_;
   std::string default_network_;
   std::string default_network_connection_state_;
   std::map<std::string, int> property_updates_;
@@ -282,6 +288,26 @@ TEST_F(NetworkStateHandlerTest, DefaultServiceChanged) {
   EXPECT_EQ(wifi1, test_observer_->default_network());
   EXPECT_EQ(flimflam::kStateOnline,
             test_observer_->default_network_connection_state());
+  // We should have seen 2 default network updates - for the default
+  // service change, and for the state change.
+  EXPECT_EQ(2u, test_observer_->default_network_change_count());
+
+  // Updating a property on the default network should trigger
+  // a default network change.
+  DBusThreadManager::Get()->GetShillServiceClient()->SetProperty(
+      dbus::ObjectPath(wifi1),
+      flimflam::kSecurityProperty, base::StringValue("TestSecurity"),
+      base::Bind(&base::DoNothing), base::Bind(&ErrorCallbackFunction));
+  message_loop_.RunUntilIdle();
+  EXPECT_EQ(3u, test_observer_->default_network_change_count());
+
+  // No default network updates for signal strength changes.
+  DBusThreadManager::Get()->GetShillServiceClient()->SetProperty(
+      dbus::ObjectPath(wifi1),
+      flimflam::kSignalStrengthProperty, base::FundamentalValue(32),
+      base::Bind(&base::DoNothing), base::Bind(&ErrorCallbackFunction));
+  message_loop_.RunUntilIdle();
+  EXPECT_EQ(3u, test_observer_->default_network_change_count());
 }
 
 }  // namespace chromeos

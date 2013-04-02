@@ -254,6 +254,17 @@ void ShillServiceClientStub::AddService(const std::string& service_path,
                                         const std::string& type,
                                         const std::string& state,
                                         bool add_to_watch_list) {
+  AddServiceWithIPConfig(service_path, name, type, state, "",
+                         add_to_watch_list);
+}
+
+void ShillServiceClientStub::AddServiceWithIPConfig(
+    const std::string& service_path,
+    const std::string& name,
+    const std::string& type,
+    const std::string& state,
+    const std::string& ipconfig_path,
+    bool add_to_watch_list) {
   DBusThreadManager::Get()->GetShillManagerClient()->GetTestInterface()->
       AddService(service_path, add_to_watch_list);
 
@@ -271,6 +282,10 @@ void ShillServiceClientStub::AddService(const std::string& service_path,
   properties->SetWithoutPathExpansion(
       flimflam::kStateProperty,
       base::Value::CreateStringValue(state));
+  if (!ipconfig_path.empty())
+    properties->SetWithoutPathExpansion(
+        shill::kIPConfigProperty,
+        base::Value::CreateStringValue(ipconfig_path));
 }
 
 void ShillServiceClientStub::RemoveService(const std::string& service_path) {
