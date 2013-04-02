@@ -588,7 +588,7 @@
     'download': ['rdsmith+dwatch@chromium.org', 'benjhayden+dwatch@chromium.org'],
     'downloads_ext': ['benjhayden+dwatch@chromium.org'],
     'downloads_ui': ['asanka@chromium.org', 'rdsmith@chromium.org', 'benjhayden+dwatch@chromium.org'],
-    'drive': ['achuith+watch@chromium.org'],
+    'drive': ['achuith+watch@chromium.org', 'tfarina@chromium.org'],
     'extension': ['aa@chromium.org',
                   'chromium-apps-reviews@chromium.org'],
     'fileapi': ['kinuko+watch@chromium.org', 'tzik+watch@chromium.org'],
