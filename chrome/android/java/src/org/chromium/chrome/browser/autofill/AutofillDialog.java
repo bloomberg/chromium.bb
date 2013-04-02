@@ -274,10 +274,17 @@ public class AutofillDialog extends AlertDialog
      * @param notifications Array of notifications to be displayed in the dialog.
      */
     public void updateNotificationArea(AutofillDialogNotification[] notifications) {
+        // Clear all the previous notifications
+        CheckBox checkBox = ((CheckBox) findViewById(R.id.top_notification));
+        checkBox.setVisibility(View.GONE);
+        ViewGroup notificationsContainer =
+                ((ViewGroup) findViewById(R.id.bottom_notifications));
+        notificationsContainer.removeAllViews();
+
+        // Add new notifications
         for (AutofillDialogNotification notification: notifications) {
             if (notification.mHasArrow && notification.mHasCheckbox) {
                 // Assuming that there will always be only one top notification.
-                CheckBox checkBox = ((CheckBox) findViewById(R.id.top_notification));
                 checkBox.setBackgroundColor(notification.mBackgroundColor);
                 checkBox.setTextColor(notification.mTextColor);
                 checkBox.setText(notification.mText);
@@ -293,9 +300,6 @@ public class AutofillDialog extends AlertDialog
                 int padding = getContext().getResources().
                         getDimensionPixelSize(R.dimen.autofill_notification_padding);
                 notificationView.setPadding(padding, padding, padding, padding);
-
-                ViewGroup notificationsContainer =
-                        ((ViewGroup) findViewById(R.id.bottom_notifications));
                 notificationsContainer.addView(notificationView);
                 notificationsContainer.setVisibility(View.VISIBLE);
             }
