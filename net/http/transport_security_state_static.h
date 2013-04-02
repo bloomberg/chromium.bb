@@ -406,6 +406,7 @@ static const struct HSTSPreload kPreloadedSTS[] = {
   {16, true, "\012googleplex\003com", true, kGooglePins, DOMAIN_GOOGLEPLEX_COM },
   {19, true, "\006groups\006google\003com", true, kGooglePins, DOMAIN_GOOGLE_COM },
   {17, true, "\004apis\006google\003com", true, kGooglePins, DOMAIN_GOOGLE_COM },
+  {38, true, "\030chrome-devtools-frontend\007appspot\003com", true, kGooglePins, DOMAIN_APPSPOT_COM },
   {32, true, "\022chromiumcodereview\007appspot\003com", true, kGooglePins, DOMAIN_APPSPOT_COM },
   {24, true, "\012codereview\007appspot\003com", true, kGooglePins, DOMAIN_APPSPOT_COM },
   {25, true, "\012codereview\010chromium\003org", true, kGooglePins, DOMAIN_CHROMIUM_ORG },
