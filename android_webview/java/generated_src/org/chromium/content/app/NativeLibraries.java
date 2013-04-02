@@ -10,4 +10,3 @@ public class NativeLibraries {
     // TODO(torne, cjhopman): Use a generated file for this.
     static String[] libraries = { "webviewchromium" };
 }
-

@@ -14,4 +14,3 @@ public class NativeLibraries {
 #include <native_libraries_array.h>
       ;
 }
-

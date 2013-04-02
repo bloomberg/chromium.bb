@@ -100,7 +100,7 @@ public class LibraryLoader {
         try {
             if (!sLoaded) {
                 assert !sInitialized;
-                for (String sLibrary: NativeLibraries.libraries) {
+                for (String sLibrary : NativeLibraries.libraries) {
                     Log.i(TAG, "loading: " + sLibrary);
                     System.loadLibrary(sLibrary);
                     Log.i(TAG, "loaded: " + sLibrary);
