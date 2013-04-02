@@ -125,7 +125,7 @@ cr.define('options', function() {
 
   ClearBrowserDataOverlay.setBannerVisibility = function(args) {
     var visible = args[0];
-    $('info-banner').hidden = !visible;
+    $('clear-browser-data-info-banner').hidden = !visible;
   };
 
   ClearBrowserDataOverlay.doneClearing = function() {

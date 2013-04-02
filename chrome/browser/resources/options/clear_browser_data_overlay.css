@@ -21,7 +21,7 @@
   padding-top: 5px;
 }
 
-#info-banner {
+#clear-browser-data-info-banner {
   background-color: rgb(249, 237, 184);
   border: solid 1px rgb(237, 201, 103);
   border-radius: 2px;
@@ -29,4 +29,3 @@
   margin: 0 20px 11px 17px;
   padding: 6px 8px;
 }
-

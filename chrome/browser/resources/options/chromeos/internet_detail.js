@@ -399,7 +399,7 @@ cr.define('options.internet', function() {
      * @private
      */
     updateProxyBannerVisibility_: function() {
-      var bannerDiv = $('info-banner');
+      var bannerDiv = $('network-proxy-info-banner');
       // Show banner and determine its message if necessary.
       var controlledBy = $('direct-proxy').controlledBy;
       if (!controlledBy || controlledBy == '') {
