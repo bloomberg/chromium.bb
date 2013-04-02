@@ -175,11 +175,11 @@ class TrueTypeFont_Dev : public Resource {
 namespace internal {
 
 // A specialization of CallbackOutputTraits to provide the callback system the
-// information on how to handle pp::TrueTypeFontDesc_Dev. This converts
+ // information on how to handle pp::TrueTypeFontDesc_Dev. This converts
 // PP_TrueTypeFontDesc_Dev to pp::TrueTypeFontDesc_Dev when passing to the
 // plugin, and specifically manages the PP_Var embedded in the desc_ field.
 template<>
-struct CallbackOutputTraits<pp::TrueTypeFontDesc_Dev> {
+struct CallbackOutputTraits<TrueTypeFontDesc_Dev> {
   typedef PP_TrueTypeFontDesc_Dev* APIArgType;
   typedef PP_TrueTypeFontDesc_Dev StorageType;
 
@@ -187,8 +187,8 @@ struct CallbackOutputTraits<pp::TrueTypeFontDesc_Dev> {
     return &t;
   }
 
-  static inline pp::TrueTypeFontDesc_Dev StorageToPluginArg(StorageType& t) {
-    return pp::TrueTypeFontDesc_Dev(PASS_REF, t);
+  static inline TrueTypeFontDesc_Dev StorageToPluginArg(StorageType& t) {
+    return TrueTypeFontDesc_Dev(PASS_REF, t);
   }
 };
 

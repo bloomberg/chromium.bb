@@ -428,6 +428,8 @@
       'tests/test_tcp_server_socket_private.h',
       'tests/test_tcp_socket_private.cc',
       'tests/test_tcp_socket_private.h',
+      'tests/test_truetype_font.cc',
+      'tests/test_truetype_font.h',
       'tests/test_udp_socket_private.cc',
       'tests/test_udp_socket_private.h',
       'tests/test_url_loader.cc',
