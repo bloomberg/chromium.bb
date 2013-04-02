@@ -129,7 +129,6 @@ void DiskCacheEntryTest::InternalSyncIO() {
 }
 
 TEST_F(DiskCacheEntryTest, InternalSyncIO) {
-  SetDirectMode();
   InitCache();
   InternalSyncIO();
 }
@@ -291,7 +290,6 @@ void DiskCacheEntryTest::InternalAsyncIO() {
 }
 
 TEST_F(DiskCacheEntryTest, InternalAsyncIO) {
-  SetDirectMode();
   InitCache();
   InternalAsyncIO();
 }
@@ -362,13 +360,11 @@ void DiskCacheEntryTest::ExternalSyncIO() {
 }
 
 TEST_F(DiskCacheEntryTest, ExternalSyncIO) {
-  SetDirectMode();
   InitCache();
   ExternalSyncIO();
 }
 
 TEST_F(DiskCacheEntryTest, ExternalSyncIONoBuffer) {
-  SetDirectMode();
   InitCache();
   cache_impl_->SetFlags(disk_cache::kNoBuffering);
   ExternalSyncIO();
@@ -493,13 +489,11 @@ void DiskCacheEntryTest::ExternalAsyncIO() {
 }
 
 TEST_F(DiskCacheEntryTest, ExternalAsyncIO) {
-  SetDirectMode();
   InitCache();
   ExternalAsyncIO();
 }
 
 TEST_F(DiskCacheEntryTest, ExternalAsyncIONoBuffer) {
-  SetDirectMode();
   InitCache();
   cache_impl_->SetFlags(disk_cache::kNoBuffering);
   ExternalAsyncIO();
@@ -528,7 +522,6 @@ void DiskCacheEntryTest::ReleaseBuffer() {
 }
 
 TEST_F(DiskCacheEntryTest, ReleaseBuffer) {
-  SetDirectMode();
   InitCache();
   cache_impl_->SetFlags(disk_cache::kNoBuffering);
   ReleaseBuffer();
@@ -762,7 +755,6 @@ TEST_F(DiskCacheEntryTest, GrowData) {
 }
 
 TEST_F(DiskCacheEntryTest, GrowDataNoBuffer) {
-  SetDirectMode();
   InitCache();
   cache_impl_->SetFlags(disk_cache::kNoBuffering);
   GrowData();
@@ -840,7 +832,6 @@ TEST_F(DiskCacheEntryTest, TruncateData) {
 }
 
 TEST_F(DiskCacheEntryTest, TruncateDataNoBuffer) {
-  SetDirectMode();
   InitCache();
   cache_impl_->SetFlags(disk_cache::kNoBuffering);
   TruncateData();
@@ -896,7 +887,6 @@ TEST_F(DiskCacheEntryTest, ZeroLengthIO) {
 }
 
 TEST_F(DiskCacheEntryTest, ZeroLengthIONoBuffer) {
-  SetDirectMode();
   InitCache();
   cache_impl_->SetFlags(disk_cache::kNoBuffering);
   ZeroLengthIO();
@@ -991,7 +981,6 @@ TEST_F(DiskCacheEntryTest, Buffering) {
 }
 
 TEST_F(DiskCacheEntryTest, BufferingNoBuffer) {
-  SetDirectMode();
   InitCache();
   cache_impl_->SetFlags(disk_cache::kNoBuffering);
   Buffering();
@@ -1078,7 +1067,6 @@ TEST_F(DiskCacheEntryTest, SizeChanges) {
 }
 
 TEST_F(DiskCacheEntryTest, SizeChangesNoBuffer) {
-  SetDirectMode();
   InitCache();
   cache_impl_->SetFlags(disk_cache::kNoBuffering);
   SizeChanges();
@@ -1111,14 +1099,12 @@ void DiskCacheEntryTest::ReuseEntry(int size) {
 }
 
 TEST_F(DiskCacheEntryTest, ReuseExternalEntry) {
-  SetDirectMode();
   SetMaxSize(200 * 1024);
   InitCache();
   ReuseEntry(20 * 1024);
 }
 
 TEST_F(DiskCacheEntryTest, MemoryOnlyReuseExternalEntry) {
-  SetDirectMode();
   SetMemoryOnlyMode();
   SetMaxSize(200 * 1024);
   InitCache();
@@ -1126,14 +1112,12 @@ TEST_F(DiskCacheEntryTest, MemoryOnlyReuseExternalEntry) {
 }
 
 TEST_F(DiskCacheEntryTest, ReuseInternalEntry) {
-  SetDirectMode();
   SetMaxSize(100 * 1024);
   InitCache();
   ReuseEntry(10 * 1024);
 }
 
 TEST_F(DiskCacheEntryTest, MemoryOnlyReuseInternalEntry) {
-  SetDirectMode();
   SetMemoryOnlyMode();
   SetMaxSize(100 * 1024);
   InitCache();
@@ -1211,7 +1195,6 @@ TEST_F(DiskCacheEntryTest, InvalidData) {
 }
 
 TEST_F(DiskCacheEntryTest, InvalidDataNoBuffer) {
-  SetDirectMode();
   InitCache();
   cache_impl_->SetFlags(disk_cache::kNoBuffering);
   InvalidData();
@@ -1278,7 +1261,6 @@ void DiskCacheEntryTest::DoomNormalEntry() {
 }
 
 TEST_F(DiskCacheEntryTest, DoomEntry) {
-  SetDirectMode();
   InitCache();
   DoomNormalEntry();
 }
@@ -1360,7 +1342,6 @@ void DiskCacheEntryTest::DoomedEntry() {
 }
 
 TEST_F(DiskCacheEntryTest, DoomedEntry) {
-  SetDirectMode();
   InitCache();
   DoomedEntry();
 }
@@ -1373,7 +1354,6 @@ TEST_F(DiskCacheEntryTest, MemoryOnlyDoomedEntry) {
 
 // Tests that we discard entries if the data is missing.
 TEST_F(DiskCacheEntryTest, MissingData) {
-  SetDirectMode();
   InitCache();
 
   std::string key("the first key");
@@ -1779,7 +1759,6 @@ void DiskCacheEntryTest::UpdateSparseEntry() {
 }
 
 TEST_F(DiskCacheEntryTest, UpdateSparseEntry) {
-  SetDirectMode();
   SetCacheType(net::MEDIA_CACHE);
   InitCache();
   UpdateSparseEntry();
@@ -1850,7 +1829,6 @@ void DiskCacheEntryTest::DoomSparseEntry() {
 }
 
 TEST_F(DiskCacheEntryTest, DoomSparseEntry) {
-  SetDirectMode();
   UseCurrentThread();
   InitCache();
   DoomSparseEntry();
@@ -1885,7 +1863,6 @@ class SparseTestCompletionCallback: public net::TestCompletionCallback {
 // Tests that we don't crash when the backend is deleted while we are working
 // deleting the sub-entries of a sparse entry.
 TEST_F(DiskCacheEntryTest, DoomSparseEntry2) {
-  SetDirectMode();
   UseCurrentThread();
   InitCache();
   std::string key("the key");

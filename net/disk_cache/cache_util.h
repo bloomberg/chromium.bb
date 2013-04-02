@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "net/base/net_export.h"
+#include "net/disk_cache/disk_cache.h"
 
 namespace base {
 class FilePath;
@@ -30,6 +31,46 @@ NET_EXPORT_PRIVATE void DeleteCache(const base::FilePath& path,
 
 // Deletes a cache file.
 NET_EXPORT_PRIVATE bool DeleteCacheFile(const base::FilePath& name);
+
+// Renames cache directory synchronously and fires off a background cleanup
+// task. Used by cache creator itself or by backends for self-restart on error.
+bool DelayedCacheCleanup(const base::FilePath& full_path);
+
+// Builds an instance of the backend depending on platform, type, experiments
+// etc. Takes care of the retry state. This object will self-destroy when
+// finished.
+class NET_EXPORT_PRIVATE CacheCreator {
+ public:
+  CacheCreator(const base::FilePath& path, bool force, int max_bytes,
+               net::CacheType type, uint32 flags,
+               base::MessageLoopProxy* thread, net::NetLog* net_log,
+               disk_cache::Backend** backend,
+               const net::CompletionCallback& callback);
+
+  // Creates the backend.
+  int Run();
+
+ private:
+  ~CacheCreator();
+
+  void DoCallback(int result);
+
+  void OnIOComplete(int result);
+
+  const base::FilePath& path_;
+  bool force_;
+  bool retry_;
+  int max_bytes_;
+  net::CacheType type_;
+  uint32 flags_;
+  scoped_refptr<base::MessageLoopProxy> thread_;
+  disk_cache::Backend** backend_;
+  net::CompletionCallback callback_;
+  disk_cache::Backend* created_cache_;
+  net::NetLog* net_log_;
+
+  DISALLOW_COPY_AND_ASSIGN(CacheCreator);
+};
 
 }  // namespace disk_cache
 

@@ -59,7 +59,10 @@ class DiskCacheTestWithCache : public DiskCacheTest {
   DiskCacheTestWithCache();
   virtual ~DiskCacheTestWithCache();
 
+  void CreateBackend(uint32 flags, base::Thread* thread);
+
   void InitCache();
+  void InitDefaultCacheViaCreator();
   void SimulateCrash();
   void SetTestMode();
 
@@ -67,9 +70,8 @@ class DiskCacheTestWithCache : public DiskCacheTest {
     memory_only_ = true;
   }
 
-  // Use the implementation directly instead of the factory provided object.
-  void SetDirectMode() {
-    implementation_ = true;
+  void SetSimpleCacheMode() {
+    simple_cache_mode_ = true;
   }
 
   void SetMask(uint32 mask) {
@@ -148,7 +150,7 @@ class DiskCacheTestWithCache : public DiskCacheTest {
   int size_;
   net::CacheType type_;
   bool memory_only_;
-  bool implementation_;
+  bool simple_cache_mode_;
   bool force_creation_;
   bool new_eviction_;
   bool first_cleanup_;
@@ -160,7 +162,6 @@ class DiskCacheTestWithCache : public DiskCacheTest {
  private:
   void InitMemoryCache();
   void InitDiskCache();
-  void InitDiskCacheImpl();
 
   base::Thread cache_thread_;
   DISALLOW_COPY_AND_ASSIGN(DiskCacheTestWithCache);

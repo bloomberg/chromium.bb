@@ -217,24 +217,18 @@ TEST_F(DiskCacheTest, CreateBackend) {
     ASSERT_TRUE(cache_thread.StartWithOptions(
                     base::Thread::Options(MessageLoop::TYPE_IO, 0)));
 
-    // Test the private factory methods.
+    // Test the private factory method(s).
     disk_cache::Backend* cache = NULL;
-    int rv = disk_cache::BackendImpl::CreateBackend(
-        cache_path_, false, 0, net::DISK_CACHE, disk_cache::kNoRandom,
-        cache_thread.message_loop_proxy(), NULL, &cache, cb.callback());
-    ASSERT_EQ(net::OK, cb.GetResult(rv));
-    ASSERT_TRUE(cache);
-    delete cache;
-
     cache = disk_cache::MemBackendImpl::CreateBackend(0, NULL);
     ASSERT_TRUE(cache);
     delete cache;
     cache = NULL;
 
     // Now test the public API.
-    rv = disk_cache::CreateCacheBackend(net::DISK_CACHE, cache_path_, 0, false,
-                                        cache_thread.message_loop_proxy(),
-                                        NULL, &cache, cb.callback());
+    int rv = disk_cache::CreateCacheBackend(net::DISK_CACHE, cache_path_, 0,
+                                            false,
+                                            cache_thread.message_loop_proxy(),
+                                            NULL, &cache, cb.callback());
     ASSERT_EQ(net::OK, cb.GetResult(rv));
     ASSERT_TRUE(cache);
     delete cache;
@@ -260,7 +254,7 @@ TEST_F(DiskCacheBackendTest, CreateBackend_MissingFile) {
   SetForceCreation();
 
   bool prev = base::ThreadRestrictions::SetIOAllowed(false);
-  InitCache();
+  InitDefaultCacheViaCreator();
   base::ThreadRestrictions::SetIOAllowed(prev);
 }
 
@@ -297,18 +291,15 @@ void DiskCacheBackendTest::BackendShutdownWithPendingFileIO(bool fast) {
     ASSERT_TRUE(cache_thread.StartWithOptions(
                     base::Thread::Options(MessageLoop::TYPE_IO, 0)));
 
-    disk_cache::Backend* cache;
     uint32 flags = disk_cache::kNoBuffering;
     if (!fast)
       flags |= disk_cache::kNoRandom;
-    rv = disk_cache::BackendImpl::CreateBackend(
-             cache_path_, false, 0, net::DISK_CACHE, flags,
-             base::MessageLoopProxy::current(), NULL,
-             &cache, cb.callback());
-    ASSERT_EQ(net::OK, cb.GetResult(rv));
+
+    UseCurrentThread();
+    CreateBackend(flags, NULL);
 
     disk_cache::EntryImpl* entry;
-    rv = cache->CreateEntry(
+    rv = cache_->CreateEntry(
         "some key", reinterpret_cast<disk_cache::Entry**>(&entry),
         cb.callback());
     ASSERT_EQ(net::OK, cb.GetResult(rv));
@@ -332,7 +323,9 @@ void DiskCacheBackendTest::BackendShutdownWithPendingFileIO(bool fast) {
     entry->Release();
 
     // The cache destructor will see one pending operation here.
-    delete cache;
+    delete cache_;
+    // Prevent the TearDown() to delete the backend again.
+    cache_ = NULL;
 
     if (rv == net::ERR_IO_PENDING) {
       if (fast)
@@ -375,23 +368,22 @@ void DiskCacheBackendTest::BackendShutdownWithPendingIO(bool fast) {
     ASSERT_TRUE(cache_thread.StartWithOptions(
                     base::Thread::Options(MessageLoop::TYPE_IO, 0)));
 
-    disk_cache::Backend* cache;
     uint32 flags = disk_cache::kNoBuffering;
     if (!fast)
       flags |= disk_cache::kNoRandom;
-    int rv = disk_cache::BackendImpl::CreateBackend(
-        cache_path_, false, 0, net::DISK_CACHE, flags,
-        cache_thread.message_loop_proxy(), NULL, &cache, cb.callback());
-    ASSERT_EQ(net::OK, cb.GetResult(rv));
+
+    CreateBackend(flags, &cache_thread);
 
     disk_cache::Entry* entry;
-    rv = cache->CreateEntry("some key", &entry, cb.callback());
+    int rv = cache_->CreateEntry("some key", &entry, cb.callback());
     ASSERT_EQ(net::OK, cb.GetResult(rv));
 
     entry->Close();
 
     // The cache destructor will see one pending operation here.
-    delete cache;
+    delete cache_;
+    // Prevent the TearDown() to delete the backend again.
+    cache_ = NULL;
   }
 
   MessageLoop::current()->RunUntilIdle();
@@ -419,19 +411,17 @@ void DiskCacheBackendTest::BackendShutdownWithPendingCreate(bool fast) {
     ASSERT_TRUE(cache_thread.StartWithOptions(
                     base::Thread::Options(MessageLoop::TYPE_IO, 0)));
 
-    disk_cache::Backend* cache;
     disk_cache::BackendFlags flags =
       fast ? disk_cache::kNone : disk_cache::kNoRandom;
-    int rv = disk_cache::BackendImpl::CreateBackend(
-        cache_path_, false, 0, net::DISK_CACHE, flags,
-        cache_thread.message_loop_proxy(), NULL, &cache, cb.callback());
-    ASSERT_EQ(net::OK, cb.GetResult(rv));
+    CreateBackend(flags, &cache_thread);
 
     disk_cache::Entry* entry;
-    rv = cache->CreateEntry("some key", &entry, cb.callback());
+    int rv = cache_->CreateEntry("some key", &entry, cb.callback());
     ASSERT_EQ(net::ERR_IO_PENDING, rv);
 
-    delete cache;
+    delete cache_;
+    // Prevent the TearDown() to delete the backend again.
+    cache_ = NULL;
     EXPECT_FALSE(cb.have_result());
   }
 
@@ -461,8 +451,8 @@ TEST_F(DiskCacheTest, TruncatedIndex) {
   net::TestCompletionCallback cb;
 
   disk_cache::Backend* backend = NULL;
-  int rv = disk_cache::BackendImpl::CreateBackend(
-      cache_path_, false, 0, net::DISK_CACHE, disk_cache::kNone,
+  int rv = disk_cache::CreateCacheBackend(
+      net::DISK_CACHE, cache_path_, 0, false,
       cache_thread.message_loop_proxy(), NULL, &backend, cb.callback());
   ASSERT_NE(net::OK, cb.GetResult(rv));
 
@@ -471,7 +461,6 @@ TEST_F(DiskCacheTest, TruncatedIndex) {
 }
 
 void DiskCacheBackendTest::BackendSetSize() {
-  SetDirectMode();
   const int cache_size = 0x10000;  // 64 kB
   SetMaxSize(cache_size);
   InitCache();
@@ -644,7 +633,6 @@ TEST_F(DiskCacheBackendTest, ShaderCacheChain) {
 
 TEST_F(DiskCacheBackendTest, NewEvictionTrim) {
   SetNewEviction();
-  SetDirectMode();
   InitCache();
 
   disk_cache::Entry* entry;
@@ -675,7 +663,6 @@ TEST_F(DiskCacheBackendTest, NewEvictionTrim) {
 
 // Before looking for invalid entries, let's check a valid entry.
 void DiskCacheBackendTest::BackendValidEntry() {
-  SetDirectMode();
   InitCache();
 
   std::string key("Some key");
@@ -712,8 +699,6 @@ TEST_F(DiskCacheBackendTest, NewEvictionValidEntry) {
 // entry to be invalid, simulating a crash in the middle.
 // We'll be leaking memory from this test.
 void DiskCacheBackendTest::BackendInvalidEntry() {
-  // Use the implementation directly... we need to simulate a crash.
-  SetDirectMode();
   InitCache();
 
   std::string key("Some key");
@@ -761,8 +746,6 @@ TEST_F(DiskCacheBackendTest, ShaderCacheInvalidEntry) {
 // Almost the same test, but this time crash the cache after reading an entry.
 // We'll be leaking memory from this test.
 void DiskCacheBackendTest::BackendInvalidEntryRead() {
-  // Use the implementation directly... we need to simulate a crash.
-  SetDirectMode();
   InitCache();
 
   std::string key("Some key");
@@ -888,9 +871,6 @@ TEST_F(DiskCacheBackendTest, ShaderCacheInvalidEntryWithLoad) {
 
 // We'll be leaking memory from this test.
 void DiskCacheBackendTest::BackendTrimInvalidEntry() {
-  // Use the implementation directly... we need to simulate a crash.
-  SetDirectMode();
-
   const int kSize = 0x3000;  // 12 kB
   SetMaxSize(kSize * 10);
   InitCache();
@@ -943,8 +923,6 @@ TEST_F(DiskCacheBackendTest, NewEvictionTrimInvalidEntry) {
 
 // We'll be leaking memory from this test.
 void DiskCacheBackendTest::BackendTrimInvalidEntry2() {
-  // Use the implementation directly... we need to simulate a crash.
-  SetDirectMode();
   SetMask(0xf);  // 16-entry table.
 
   const int kSize = 0x3000;  // 12 kB
@@ -1186,8 +1164,6 @@ TEST_F(DiskCacheBackendTest, ShaderCacheEnumerationReadData) {
 // Verify handling of invalid entries while doing enumerations.
 // We'll be leaking memory from this test.
 void DiskCacheBackendTest::BackendInvalidEntryEnumeration() {
-  // Use the implementation directly... we need to simulate a crash.
-  SetDirectMode();
   InitCache();
 
   std::string key("Some key");
@@ -1546,26 +1522,26 @@ TEST_F(DiskCacheBackendTest, NewEvictionRecoverWithEviction) {
   BackendRecoverWithEviction();
 }
 
-// Tests dealing with cache files that cannot be recovered.
-TEST_F(DiskCacheTest, DeleteOld) {
+// Tests that the |BackendImpl| fails to start with the wrong cache version.
+TEST_F(DiskCacheTest, WrongVersion) {
   ASSERT_TRUE(CopyTestCache("wrong_version"));
   base::Thread cache_thread("CacheThread");
   ASSERT_TRUE(cache_thread.StartWithOptions(
                   base::Thread::Options(MessageLoop::TYPE_IO, 0)));
   net::TestCompletionCallback cb;
 
-  disk_cache::Backend* cache;
-  int rv = disk_cache::BackendImpl::CreateBackend(
-               cache_path_, true, 0, net::DISK_CACHE, disk_cache::kNoRandom,
-               cache_thread.message_loop_proxy(), NULL, &cache, cb.callback());
-  ASSERT_EQ(net::OK, cb.GetResult(rv));
-
-  MessageLoopHelper helper;
-
-  ASSERT_TRUE(NULL != cache);
-  ASSERT_EQ(0, cache->GetEntryCount());
+  disk_cache::BackendImpl* cache = new disk_cache::BackendImpl(
+      cache_path_, cache_thread.message_loop_proxy(), NULL);
+  int rv = cache->Init(cb.callback());
+  ASSERT_EQ(net::ERR_FAILED, cb.GetResult(rv));
 
   delete cache;
+}
+
+// Tests that the cache is properly restarted on recovery error.
+TEST_F(DiskCacheBackendTest, DeleteOld) {
+  ASSERT_TRUE(CopyTestCache("wrong_version"));
+  InitDefaultCacheViaCreator();
 }
 
 // We want to be able to deal with messed up entries on disk.
@@ -1719,7 +1695,6 @@ TEST_F(DiskCacheBackendTest, NewEvictionInvalidEntry6) {
 // Tests handling of corrupt entries by keeping the rankings node around, with
 // a fatal failure.
 void DiskCacheBackendTest::BackendInvalidEntry7() {
-  SetDirectMode();
   const int kSize = 0x3000;  // 12 kB.
   SetMaxSize(kSize * 10);
   InitCache();
@@ -1764,7 +1739,6 @@ TEST_F(DiskCacheBackendTest, NewEvictionInvalidEntry7) {
 // Tests handling of corrupt entries by keeping the rankings node around, with
 // a non fatal failure.
 void DiskCacheBackendTest::BackendInvalidEntry8() {
-  SetDirectMode();
   const int kSize = 0x3000;  // 12 kB
   SetMaxSize(kSize * 10);
   InitCache();
@@ -1812,7 +1786,6 @@ TEST_F(DiskCacheBackendTest, NewEvictionInvalidEntry8) {
 // codepaths so they are tighlty coupled with the code, but that is better than
 // not testing error handling code.
 void DiskCacheBackendTest::BackendInvalidEntry9(bool eviction) {
-  SetDirectMode();
   const int kSize = 0x3000;  // 12 kB.
   SetMaxSize(kSize * 10);
   InitCache();
@@ -1877,7 +1850,6 @@ TEST_F(DiskCacheBackendTest, NewEvictionTrimInvalidEntry9) {
 
 // Tests handling of corrupt entries detected by enumerations.
 void DiskCacheBackendTest::BackendInvalidEntry10(bool eviction) {
-  SetDirectMode();
   const int kSize = 0x3000;  // 12 kB.
   SetMaxSize(kSize * 10);
   SetNewEviction();
@@ -1941,7 +1913,6 @@ TEST_F(DiskCacheBackendTest, TrimInvalidEntry10) {
 
 // Tests handling of corrupt entries detected by enumerations.
 void DiskCacheBackendTest::BackendInvalidEntry11(bool eviction) {
-  SetDirectMode();
   const int kSize = 0x3000;  // 12 kB.
   SetMaxSize(kSize * 10);
   SetNewEviction();
@@ -2013,7 +1984,6 @@ TEST_F(DiskCacheBackendTest, TrimInvalidEntry11) {
 
 // Tests handling of corrupt entries in the middle of a long eviction run.
 void DiskCacheBackendTest::BackendTrimInvalidEntry12() {
-  SetDirectMode();
   const int kSize = 0x3000;  // 12 kB
   SetMaxSize(kSize * 10);
   InitCache();
@@ -2090,7 +2060,6 @@ void DiskCacheBackendTest::BackendInvalidRankings() {
 TEST_F(DiskCacheBackendTest, InvalidRankingsSuccess) {
   ASSERT_TRUE(CopyTestCache("bad_rankings"));
   DisableFirstCleanup();
-  SetDirectMode();
   InitCache();
   BackendInvalidRankings();
 }
@@ -2098,7 +2067,6 @@ TEST_F(DiskCacheBackendTest, InvalidRankingsSuccess) {
 TEST_F(DiskCacheBackendTest, NewEvictionInvalidRankingsSuccess) {
   ASSERT_TRUE(CopyTestCache("bad_rankings"));
   DisableFirstCleanup();
-  SetDirectMode();
   SetNewEviction();
   InitCache();
   BackendInvalidRankings();
@@ -2107,7 +2075,6 @@ TEST_F(DiskCacheBackendTest, NewEvictionInvalidRankingsSuccess) {
 TEST_F(DiskCacheBackendTest, InvalidRankingsFailure) {
   ASSERT_TRUE(CopyTestCache("bad_rankings"));
   DisableFirstCleanup();
-  SetDirectMode();
   InitCache();
   SetTestMode();  // Fail cache reinitialization.
   BackendInvalidRankings();
@@ -2116,7 +2083,6 @@ TEST_F(DiskCacheBackendTest, InvalidRankingsFailure) {
 TEST_F(DiskCacheBackendTest, NewEvictionInvalidRankingsFailure) {
   ASSERT_TRUE(CopyTestCache("bad_rankings"));
   DisableFirstCleanup();
-  SetDirectMode();
   SetNewEviction();
   InitCache();
   SetTestMode();  // Fail cache reinitialization.
@@ -2143,7 +2109,6 @@ void DiskCacheBackendTest::BackendDisable() {
 TEST_F(DiskCacheBackendTest, DisableSuccess) {
   ASSERT_TRUE(CopyTestCache("bad_rankings"));
   DisableFirstCleanup();
-  SetDirectMode();
   InitCache();
   BackendDisable();
 }
@@ -2151,7 +2116,6 @@ TEST_F(DiskCacheBackendTest, DisableSuccess) {
 TEST_F(DiskCacheBackendTest, NewEvictionDisableSuccess) {
   ASSERT_TRUE(CopyTestCache("bad_rankings"));
   DisableFirstCleanup();
-  SetDirectMode();
   SetNewEviction();
   InitCache();
   BackendDisable();
@@ -2160,7 +2124,6 @@ TEST_F(DiskCacheBackendTest, NewEvictionDisableSuccess) {
 TEST_F(DiskCacheBackendTest, DisableFailure) {
   ASSERT_TRUE(CopyTestCache("bad_rankings"));
   DisableFirstCleanup();
-  SetDirectMode();
   InitCache();
   SetTestMode();  // Fail cache reinitialization.
   BackendDisable();
@@ -2169,7 +2132,6 @@ TEST_F(DiskCacheBackendTest, DisableFailure) {
 TEST_F(DiskCacheBackendTest, NewEvictionDisableFailure) {
   ASSERT_TRUE(CopyTestCache("bad_rankings"));
   DisableFirstCleanup();
-  SetDirectMode();
   SetNewEviction();
   InitCache();
   SetTestMode();  // Fail cache reinitialization.
@@ -2197,7 +2159,6 @@ void DiskCacheBackendTest::BackendDisable2() {
 TEST_F(DiskCacheBackendTest, DisableSuccess2) {
   ASSERT_TRUE(CopyTestCache("list_loop"));
   DisableFirstCleanup();
-  SetDirectMode();
   InitCache();
   BackendDisable2();
 }
@@ -2206,7 +2167,6 @@ TEST_F(DiskCacheBackendTest, NewEvictionDisableSuccess2) {
   ASSERT_TRUE(CopyTestCache("list_loop"));
   DisableFirstCleanup();
   SetNewEviction();
-  SetDirectMode();
   InitCache();
   BackendDisable2();
 }
@@ -2214,7 +2174,6 @@ TEST_F(DiskCacheBackendTest, NewEvictionDisableSuccess2) {
 TEST_F(DiskCacheBackendTest, DisableFailure2) {
   ASSERT_TRUE(CopyTestCache("list_loop"));
   DisableFirstCleanup();
-  SetDirectMode();
   InitCache();
   SetTestMode();  // Fail cache reinitialization.
   BackendDisable2();
@@ -2223,7 +2182,6 @@ TEST_F(DiskCacheBackendTest, DisableFailure2) {
 TEST_F(DiskCacheBackendTest, NewEvictionDisableFailure2) {
   ASSERT_TRUE(CopyTestCache("list_loop"));
   DisableFirstCleanup();
-  SetDirectMode();
   SetNewEviction();
   InitCache();
   SetTestMode();  // Fail cache reinitialization.
@@ -2316,7 +2274,6 @@ void DiskCacheBackendTest::BackendDisable4() {
 TEST_F(DiskCacheBackendTest, DisableSuccess4) {
   ASSERT_TRUE(CopyTestCache("bad_rankings"));
   DisableFirstCleanup();
-  SetDirectMode();
   InitCache();
   BackendDisable4();
 }
@@ -2324,7 +2281,6 @@ TEST_F(DiskCacheBackendTest, DisableSuccess4) {
 TEST_F(DiskCacheBackendTest, NewEvictionDisableSuccess4) {
   ASSERT_TRUE(CopyTestCache("bad_rankings"));
   DisableFirstCleanup();
-  SetDirectMode();
   SetNewEviction();
   InitCache();
   BackendDisable4();
@@ -2460,12 +2416,12 @@ TEST_F(DiskCacheTest, MultipleInstances) {
   const int kNumberOfCaches = 2;
   disk_cache::Backend* cache[kNumberOfCaches];
 
-  int rv = disk_cache::BackendImpl::CreateBackend(
-      store1.path(), false, 0, net::DISK_CACHE, disk_cache::kNone,
+  int rv = disk_cache::CreateCacheBackend(
+      net::DISK_CACHE, store1.path(), 0, false,
       cache_thread.message_loop_proxy(), NULL, &cache[0], cb.callback());
   ASSERT_EQ(net::OK, cb.GetResult(rv));
-  rv = disk_cache::BackendImpl::CreateBackend(
-      store2.path(), false, 0, net::MEDIA_CACHE, disk_cache::kNone,
+  rv = disk_cache::CreateCacheBackend(
+      net::MEDIA_CACHE, store2.path(), 0, false,
       cache_thread.message_loop_proxy(), NULL, &cache[1], cb.callback());
   ASSERT_EQ(net::OK, cb.GetResult(rv));
 
@@ -2534,7 +2490,6 @@ TEST_F(DiskCacheTest, AutomaticMaxSize) {
 // Tests that we can "migrate" a running instance from one experiment group to
 // another.
 TEST_F(DiskCacheBackendTest, Histograms) {
-  SetDirectMode();
   InitCache();
   disk_cache::BackendImpl* backend_ = cache_impl_;  // Needed be the macro.
 
@@ -2546,7 +2501,6 @@ TEST_F(DiskCacheBackendTest, Histograms) {
 // Make sure that we keep the total memory used by the internal buffers under
 // control.
 TEST_F(DiskCacheBackendTest, TotalBuffersSize1) {
-  SetDirectMode();
   InitCache();
   std::string key("the first key");
   disk_cache::Entry* entry;
@@ -2579,7 +2533,6 @@ TEST_F(DiskCacheBackendTest, TotalBuffersSize1) {
 
 // This test assumes at least 150MB of system memory.
 TEST_F(DiskCacheBackendTest, TotalBuffersSize2) {
-  SetDirectMode();
   InitCache();
 
   const int kOneMB = 1024 * 1024;
@@ -2607,7 +2560,6 @@ TEST_F(DiskCacheBackendTest, TotalBuffersSize2) {
 // Tests that sharing of external files works and we are able to delete the
 // files when we need to.
 TEST_F(DiskCacheBackendTest, FileSharing) {
-  SetDirectMode();
   InitCache();
 
   disk_cache::Addr address(0x80000001);
@@ -2646,7 +2598,6 @@ TEST_F(DiskCacheBackendTest, FileSharing) {
 }
 
 TEST_F(DiskCacheBackendTest, UpdateRankForExternalCacheHit) {
-  SetDirectMode();
   InitCache();
 
   disk_cache::Entry* entry;
@@ -2670,7 +2621,6 @@ TEST_F(DiskCacheBackendTest, UpdateRankForExternalCacheHit) {
 
 TEST_F(DiskCacheBackendTest, ShaderCacheUpdateRankForExternalCacheHit) {
   SetCacheType(net::SHADER_CACHE);
-  SetDirectMode();
   InitCache();
 
   disk_cache::Entry* entry;

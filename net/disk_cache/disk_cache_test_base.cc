@@ -11,8 +11,11 @@
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "net/disk_cache/backend_impl.h"
+#include "net/disk_cache/cache_util.h"
+#include "net/disk_cache/disk_cache.h"
 #include "net/disk_cache/disk_cache_test_util.h"
 #include "net/disk_cache/mem_backend_impl.h"
+#include "net/disk_cache/simple/simple_backend_impl.h"
 
 DiskCacheTest::DiskCacheTest() {
   CHECK(temp_dir_.CreateUniqueTempDir());
@@ -53,7 +56,7 @@ DiskCacheTestWithCache::DiskCacheTestWithCache()
       size_(0),
       type_(net::DISK_CACHE),
       memory_only_(false),
-      implementation_(false),
+      simple_cache_mode_(false),
       force_creation_(false),
       new_eviction_(false),
       first_cleanup_(true),
@@ -65,9 +68,6 @@ DiskCacheTestWithCache::DiskCacheTestWithCache()
 DiskCacheTestWithCache::~DiskCacheTestWithCache() {}
 
 void DiskCacheTestWithCache::InitCache() {
-  if (mask_ || new_eviction_)
-    implementation_ = true;
-
   if (memory_only_)
     InitMemoryCache();
   else
@@ -80,7 +80,7 @@ void DiskCacheTestWithCache::InitCache() {
 
 // We are expected to leak memory when simulating crashes.
 void DiskCacheTestWithCache::SimulateCrash() {
-  ASSERT_TRUE(implementation_ && !memory_only_);
+  ASSERT_TRUE(!memory_only_);
   net::TestCompletionCallback cb;
   int rv = cache_impl_->FlushQueueForTest(cb.callback());
   ASSERT_EQ(net::OK, cb.GetResult(rv));
@@ -89,11 +89,11 @@ void DiskCacheTestWithCache::SimulateCrash() {
   delete cache_impl_;
   EXPECT_TRUE(CheckCacheIntegrity(cache_path_, new_eviction_, mask_));
 
-  InitDiskCacheImpl();
+  CreateBackend(disk_cache::kNoRandom, &cache_thread_);
 }
 
 void DiskCacheTestWithCache::SetTestMode() {
-  ASSERT_TRUE(implementation_ && !memory_only_);
+  ASSERT_TRUE(!memory_only_);
   cache_impl_->SetUnitTestMode();
 }
 
@@ -236,11 +236,6 @@ void DiskCacheTestWithCache::TearDown() {
 }
 
 void DiskCacheTestWithCache::InitMemoryCache() {
-  if (!implementation_) {
-    cache_ = disk_cache::MemBackendImpl::CreateBackend(size_, NULL);
-    return;
-  }
-
   mem_cache_ = new disk_cache::MemBackendImpl(NULL);
   cache_ = mem_cache_;
   ASSERT_TRUE(NULL != cache_);
@@ -256,46 +251,66 @@ void DiskCacheTestWithCache::InitDiskCache() {
     ASSERT_TRUE(CleanupCacheDir());
 
   if (!cache_thread_.IsRunning()) {
-    EXPECT_TRUE(cache_thread_.StartWithOptions(
+    ASSERT_TRUE(cache_thread_.StartWithOptions(
                     base::Thread::Options(MessageLoop::TYPE_IO, 0)));
   }
   ASSERT_TRUE(cache_thread_.message_loop() != NULL);
 
-  if (implementation_)
-    return InitDiskCacheImpl();
+  CreateBackend(disk_cache::kNoRandom, &cache_thread_);
+}
 
-  scoped_refptr<base::MessageLoopProxy> thread =
-      use_current_thread_ ? base::MessageLoopProxy::current() :
-                            cache_thread_.message_loop_proxy();
+// Testing backend creation retry logic is hard because the CacheCreator and
+// cache backend(s) are tightly coupled. So we take the default backend often.
+// Tests themselves need to be adjusted for platforms where the BackendImpl is
+// not the default backend.
+void DiskCacheTestWithCache::InitDefaultCacheViaCreator() {
+  if (!cache_thread_.IsRunning()) {
+    ASSERT_TRUE(cache_thread_.StartWithOptions(
+                    base::Thread::Options(MessageLoop::TYPE_IO, 0)));
+  }
+  ASSERT_TRUE(cache_thread_.message_loop() != NULL);
 
   net::TestCompletionCallback cb;
-  int rv = disk_cache::BackendImpl::CreateBackend(
-               cache_path_, force_creation_, size_, type_,
-               disk_cache::kNoRandom, thread, NULL, &cache_, cb.callback());
+  disk_cache::CacheCreator* creator = new disk_cache::CacheCreator(
+      cache_path_, true, 0, net::DISK_CACHE, disk_cache::kNoRandom,
+      cache_thread_.message_loop_proxy(), NULL, &cache_, cb.callback());
+  int rv = creator->Run();
   ASSERT_EQ(net::OK, cb.GetResult(rv));
 }
 
-void DiskCacheTestWithCache::InitDiskCacheImpl() {
-  scoped_refptr<base::MessageLoopProxy> thread =
-      use_current_thread_ ? base::MessageLoopProxy::current() :
-                            cache_thread_.message_loop_proxy();
-  if (mask_)
-    cache_impl_ = new disk_cache::BackendImpl(cache_path_, mask_, thread, NULL);
+void DiskCacheTestWithCache::CreateBackend(uint32 flags, base::Thread* thread) {
+  base::MessageLoopProxy* runner;
+  if (use_current_thread_)
+    runner = base::MessageLoopProxy::current();
   else
-    cache_impl_ = new disk_cache::BackendImpl(cache_path_, thread, NULL);
+    runner = thread->message_loop_proxy();
 
+  if (simple_cache_mode_) {
+    net::TestCompletionCallback cb;
+    disk_cache::Backend* simple_backend;
+    // TODO(pasko): split Simple Backend construction from initialization.
+    int rv = disk_cache::SimpleBackendImpl::CreateBackend(cache_path_, size_,
+        type_, disk_cache::kNone, make_scoped_refptr(runner), NULL,
+        &simple_backend, cb.callback());
+    ASSERT_EQ(net::OK, cb.GetResult(rv));
+    cache_ = simple_backend;
+    return;
+  }
+
+  if (mask_)
+    cache_impl_ = new disk_cache::BackendImpl(cache_path_, mask_, runner, NULL);
+  else
+    cache_impl_ = new disk_cache::BackendImpl(cache_path_, runner, NULL);
   cache_ = cache_impl_;
   ASSERT_TRUE(NULL != cache_);
-
   if (size_)
     EXPECT_TRUE(cache_impl_->SetMaxSize(size_));
-
   if (new_eviction_)
     cache_impl_->SetNewEviction();
-
   cache_impl_->SetType(type_);
-  cache_impl_->SetFlags(disk_cache::kNoRandom);
+  cache_impl_->SetFlags(flags);
   net::TestCompletionCallback cb;
   int rv = cache_impl_->Init(cb.callback());
   ASSERT_EQ(net::OK, cb.GetResult(rv));
+  cache_ = cache_impl_;
 }

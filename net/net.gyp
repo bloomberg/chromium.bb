@@ -7,7 +7,6 @@
     'chromium_code': 1,
 
     'linux_link_kerberos%': 0,
-    'use_simple_cache_backend%': 0,
     'conditions': [
       ['chromeos==1 or OS=="android" or OS=="ios"', {
         # Disable Kerberos on ChromeOS, Android and iOS, at least for now.
@@ -333,7 +332,9 @@
         'disk_cache/bitmap.h',
         'disk_cache/block_files.cc',
         'disk_cache/block_files.h',
+        'disk_cache/cache_creator.cc',
         'disk_cache/cache_util.h',
+        'disk_cache/cache_util.cc',
         'disk_cache/cache_util_posix.cc',
         'disk_cache/cache_util_win.cc',
         'disk_cache/disk_cache.h',
@@ -1079,11 +1080,6 @@
             'dns/address_sorter_posix.h',
             'dns/dns_client.cc',
           ],
-        }],
-	['use_simple_cache_backend==1', {
-          'defines': [
-            'USE_SIMPLE_CACHE_BACKEND',
-          ]
         }],
         ['use_openssl==1', {
             'sources!': [

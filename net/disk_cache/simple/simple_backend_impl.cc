@@ -42,7 +42,6 @@ namespace disk_cache {
 // static
 int SimpleBackendImpl::CreateBackend(
     const FilePath& full_path,
-    bool force,
     int max_bytes,
     net::CacheType type,
     uint32 flags,

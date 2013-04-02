@@ -49,14 +49,6 @@ class NET_EXPORT_PRIVATE BackendImpl : public Backend {
               base::MessageLoopProxy* cache_thread, net::NetLog* net_log);
   virtual ~BackendImpl();
 
-  // Returns a new backend with the desired flags. See the declaration of
-  // CreateCacheBackend().
-  static int CreateBackend(const base::FilePath& full_path, bool force,
-                           int max_bytes, net::CacheType type,
-                           uint32 flags, base::MessageLoopProxy* thread,
-                           net::NetLog* net_log, Backend** backend,
-                           const CompletionCallback& callback);
-
   // Performs general initialization for this current instance of the cache.
   int Init(const CompletionCallback& callback);
 

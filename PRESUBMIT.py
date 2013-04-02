@@ -159,6 +159,7 @@ _BANNED_CPP_FUNCTIONS = (
       True,
       (
         r"^content[\\\/]shell[\\\/]shell_browser_main\.cc$",
+        r"^net[\\\/]disk_cache[\\\/]cache_util\.cc$",
       ),
     ),
 )

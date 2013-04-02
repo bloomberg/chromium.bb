@@ -27,12 +27,11 @@ namespace disk_cache {
 
 class SimpleIndex;
 
-class SimpleBackendImpl : public Backend {
+class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend {
  public:
   virtual ~SimpleBackendImpl();
 
   static int CreateBackend(const base::FilePath& full_path,
-                           bool force,
                            int max_bytes,
                            net::CacheType type,
                            uint32 flags,

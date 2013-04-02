@@ -18,7 +18,6 @@
 #include "base/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/threading/worker_pool.h"
 #include "base/time.h"
 #include "base/timer.h"
 #include "net/base/net_errors.h"
@@ -27,8 +26,6 @@
 #include "net/disk_cache/errors.h"
 #include "net/disk_cache/experiments.h"
 #include "net/disk_cache/file.h"
-#include "net/disk_cache/mem_backend_impl.h"
-#include "net/disk_cache/simple/simple_backend_impl.h"
 
 // This has to be defined before including histogram_macros.h from this file.
 #define NET_DISK_CACHE_BACKEND_IMPL_CC_
@@ -41,7 +38,6 @@ using base::TimeTicks;
 namespace {
 
 const char* kIndexName = "index";
-const int kMaxOldFolders = 100;
 
 // Seems like ~240 MB correspond to less than 50k entries for 99% of the people.
 // Note that the actual target is to keep the index table load factor under 55%
@@ -78,72 +74,6 @@ size_t GetIndexSize(int table_len) {
 
 // ------------------------------------------------------------------------
 
-// Returns a fully qualified name from path and name, using a given name prefix
-// and index number. For instance, if the arguments are "/foo", "bar" and 5, it
-// will return "/foo/old_bar_005".
-base::FilePath GetPrefixedName(const base::FilePath& path,
-                               const std::string& name,
-                               int index) {
-  std::string tmp = base::StringPrintf("%s%s_%03d", "old_",
-                                       name.c_str(), index);
-  return path.AppendASCII(tmp);
-}
-
-// This is a simple callback to cleanup old caches.
-void CleanupCallback(const base::FilePath& path, const std::string& name) {
-  for (int i = 0; i < kMaxOldFolders; i++) {
-    base::FilePath to_delete = GetPrefixedName(path, name, i);
-    disk_cache::DeleteCache(to_delete, true);
-  }
-}
-
-// Returns a full path to rename the current cache, in order to delete it. path
-// is the current folder location, and name is the current folder name.
-base::FilePath GetTempCacheName(const base::FilePath& path,
-                                const std::string& name) {
-  // We'll attempt to have up to kMaxOldFolders folders for deletion.
-  for (int i = 0; i < kMaxOldFolders; i++) {
-    base::FilePath to_delete = GetPrefixedName(path, name, i);
-    if (!file_util::PathExists(to_delete))
-      return to_delete;
-  }
-  return base::FilePath();
-}
-
-// Moves the cache files to a new folder and creates a task to delete them.
-bool DelayedCacheCleanup(const base::FilePath& full_path) {
-  // GetTempCacheName() and MoveCache() use synchronous file
-  // operations.
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
-
-  base::FilePath current_path = full_path.StripTrailingSeparators();
-
-  base::FilePath path = current_path.DirName();
-  base::FilePath name = current_path.BaseName();
-#if defined(OS_POSIX)
-  std::string name_str = name.value();
-#elif defined(OS_WIN)
-  // We created this file so it should only contain ASCII.
-  std::string name_str = WideToASCII(name.value());
-#endif
-
-  base::FilePath to_delete = GetTempCacheName(path, name_str);
-  if (to_delete.empty()) {
-    LOG(ERROR) << "Unable to get another cache folder";
-    return false;
-  }
-
-  if (!disk_cache::MoveCache(full_path, to_delete)) {
-    LOG(ERROR) << "Unable to move cache folder " << full_path.value() << " to "
-               << to_delete.value();
-    return false;
-  }
-
-  base::WorkerPool::PostTask(
-      FROM_HERE, base::Bind(&CleanupCallback, path, name_str), true);
-  return true;
-}
-
 // Sets group for the current experiment. Returns false if the files should be
 // discarded.
 bool InitExperiment(disk_cache::IndexHeader* header) {
@@ -157,96 +87,6 @@ bool InitExperiment(disk_cache::IndexHeader* header) {
   return true;
 }
 
-// ------------------------------------------------------------------------
-
-// This class takes care of building an instance of the backend.
-class CacheCreator {
- public:
-  CacheCreator(const base::FilePath& path, bool force, int max_bytes,
-               net::CacheType type, uint32 flags,
-               base::MessageLoopProxy* thread, net::NetLog* net_log,
-               disk_cache::Backend** backend,
-               const net::CompletionCallback& callback)
-      : path_(path),
-        force_(force),
-        retry_(false),
-        max_bytes_(max_bytes),
-        type_(type),
-        flags_(flags),
-        thread_(thread),
-        backend_(backend),
-        callback_(callback),
-        cache_(NULL),
-        net_log_(net_log) {
-  }
-  ~CacheCreator() {}
-
-  // Creates the backend.
-  int Run();
-
- private:
-  void DoCallback(int result);
-
-  // Callback implementation.
-  void OnIOComplete(int result);
-
-  const base::FilePath& path_;
-  bool force_;
-  bool retry_;
-  int max_bytes_;
-  net::CacheType type_;
-  uint32 flags_;
-  scoped_refptr<base::MessageLoopProxy> thread_;
-  disk_cache::Backend** backend_;
-  net::CompletionCallback callback_;
-  disk_cache::BackendImpl* cache_;
-  net::NetLog* net_log_;
-
-  DISALLOW_COPY_AND_ASSIGN(CacheCreator);
-};
-
-int CacheCreator::Run() {
-  cache_ = new disk_cache::BackendImpl(path_, thread_, net_log_);
-  cache_->SetMaxSize(max_bytes_);
-  cache_->SetType(type_);
-  cache_->SetFlags(flags_);
-  int rv = cache_->Init(
-      base::Bind(&CacheCreator::OnIOComplete, base::Unretained(this)));
-  DCHECK_EQ(net::ERR_IO_PENDING, rv);
-  return rv;
-}
-
-void CacheCreator::DoCallback(int result) {
-  DCHECK_NE(net::ERR_IO_PENDING, result);
-  if (result == net::OK) {
-    *backend_ = cache_;
-  } else {
-    LOG(ERROR) << "Unable to create cache";
-    *backend_ = NULL;
-    delete cache_;
-  }
-  callback_.Run(result);
-  delete this;
-}
-
-void CacheCreator::OnIOComplete(int result) {
-  if (result == net::OK || !force_ || retry_)
-    return DoCallback(result);
-
-  // This is a failure and we are supposed to try again, so delete the object,
-  // delete all the files, and try again.
-  retry_ = true;
-  delete cache_;
-  cache_ = NULL;
-  if (!DelayedCacheCleanup(path_))
-    return DoCallback(result);
-
-  // The worker thread will start deleting files soon, but the original folder
-  // is not there anymore... let's create a new set of files.
-  int rv = Run();
-  DCHECK_EQ(net::ERR_IO_PENDING, rv);
-}
-
 // A callback to perform final cleanup on the background thread.
 void FinalCleanupCallback(disk_cache::BackendImpl* backend) {
   backend->CleanupCache();
@@ -257,32 +97,6 @@ void FinalCleanupCallback(disk_cache::BackendImpl* backend) {
 // ------------------------------------------------------------------------
 
 namespace disk_cache {
-
-int CreateCacheBackend(net::CacheType type, const base::FilePath& path,
-                       int max_bytes,
-                       bool force, base::MessageLoopProxy* thread,
-                       net::NetLog* net_log, Backend** backend,
-                       const net::CompletionCallback& callback) {
-  // TODO(pasko): Separate out cache creation when landing cache tracer.
-  DCHECK(!callback.is_null());
-  if (type == net::MEMORY_CACHE) {
-    *backend = MemBackendImpl::CreateBackend(max_bytes, net_log);
-    return *backend ? net::OK : net::ERR_FAILED;
-  }
-  DCHECK(thread);
-
-#if defined(USE_SIMPLE_CACHE_BACKEND)
-  // TODO(gavinp,pasko): While simple backend development proceeds, we're only
-  // testing it against net::DISK_CACHE. Turn it on for more cache types as
-  // appropriate.
-  if (type == net::DISK_CACHE) {
-    return SimpleBackendImpl::CreateBackend(path, force, max_bytes, type, kNone,
-                                            thread, net_log, backend, callback);
-  }
-#endif
-  return BackendImpl::CreateBackend(path, force, max_bytes, type, kNone,
-                                    thread, net_log, backend, callback);
-}
 
 // Returns the preferred maximum number of bytes for the cache given the
 // number of available bytes.
@@ -387,29 +201,6 @@ BackendImpl::~BackendImpl() {
     base::ThreadRestrictions::ScopedAllowWait allow_wait;
     done_.Wait();
   }
-}
-
-// If the initialization of the cache fails, and force is true, we will discard
-// the whole cache and create a new one. In order to process a potentially large
-// number of files, we'll rename the cache folder to old_ + original_name +
-// number, (located on the same parent folder), and spawn a worker thread to
-// delete all the files on all the stale cache folders. The whole process can
-// still fail if we are not able to rename the cache folder (for instance due to
-// a sharing violation), and in that case a cache for this profile (on the
-// desired path) cannot be created.
-//
-// Static.
-int BackendImpl::CreateBackend(const base::FilePath& full_path, bool force,
-                               int max_bytes, net::CacheType type,
-                               uint32 flags, base::MessageLoopProxy* thread,
-                               net::NetLog* net_log, Backend** backend,
-                               const CompletionCallback& callback) {
-  DCHECK(!callback.is_null());
-  CacheCreator* creator =
-      new CacheCreator(full_path, force, max_bytes, type, flags, thread,
-                       net_log, backend, callback);
-  // This object will self-destroy when finished.
-  return creator->Run();
 }
 
 int BackendImpl::Init(const CompletionCallback& callback) {
