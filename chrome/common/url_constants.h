@@ -201,6 +201,7 @@ extern const char kChromeUIUserActionsHost[];
 extern const char kChromeUIVersionHost[];
 extern const char kChromeUIWorkersHost[];
 
+extern const char kChromeUIDevToolsHostedPath[];
 extern const char kChromeUIScreenshotPath[];
 extern const char kChromeUIThemePath[];
 

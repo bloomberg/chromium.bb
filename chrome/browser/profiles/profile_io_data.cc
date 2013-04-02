@@ -146,7 +146,8 @@ Profile* GetProfileOnUI(ProfileManager* profile_manager, Profile* profile) {
 #if defined(DEBUG_DEVTOOLS)
 bool IsSupportedDevToolsURL(const GURL& url, base::FilePath* path) {
   if (!url.SchemeIs(chrome::kChromeDevToolsScheme) ||
-      url.host() != chrome::kChromeUIDevToolsHost) {
+      url.host() != chrome::kChromeUIDevToolsHost ||
+      url.path().find(chrome::kChromeUIDevToolsHostedPath) == 1) {
     return false;
   }
 

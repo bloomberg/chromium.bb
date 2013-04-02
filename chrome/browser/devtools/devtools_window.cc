@@ -640,7 +640,7 @@ GURL DevToolsWindow::GetDevToolsUrl(Profile* profile,
   bool experiments_enabled =
       command_line.HasSwitch(switches::kEnableDevToolsExperiments);
 
-  std::string url_string = base::StringPrintf("%sdevtools.html?"
+  std::string url_string = base::StringPrintf("%s?"
       "dockSide=%s&toolbarColor=%s&textColor=%s%s%s",
       chrome::kChromeUIDevToolsURL,
       SideToString(dock_side).c_str(),

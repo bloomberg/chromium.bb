@@ -29,7 +29,7 @@ const char kChromeUIConflictsURL[] = "chrome://conflicts/";
 const char kChromeUIConstrainedHTMLTestURL[] = "chrome://constrained-test/";
 const char kChromeUICrashesURL[] = "chrome://crashes/";
 const char kChromeUICreditsURL[] = "chrome://credits/";
-const char kChromeUIDevToolsURL[] = "chrome-devtools://devtools/";
+const char kChromeUIDevToolsURL[] = "chrome-devtools://devtools/devtools.html";
 const char kChromeUIDownloadsURL[] = "chrome://downloads/";
 const char kChromeUIEditSearchEngineDialogURL[] = "chrome://editsearchengine/";
 const char kChromeUIExtensionActivityURL[] = "chrome://extension-activity/";
@@ -209,6 +209,7 @@ const char kChromeUIUserActionsHost[] = "user-actions";
 const char kChromeUIVersionHost[] = "version";
 const char kChromeUIWorkersHost[] = "workers";
 
+const char kChromeUIDevToolsHostedPath[] = "hosted/";
 const char kChromeUIScreenshotPath[] = "screenshots";
 const char kChromeUIThemePath[] = "theme";
 

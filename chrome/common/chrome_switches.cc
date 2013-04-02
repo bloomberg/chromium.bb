@@ -495,6 +495,9 @@ const char kEnableDesktopGuestMode[]        = "enable-desktop-guest-mode";
 // If true devtools experimental settings are enabled.
 const char kEnableDevToolsExperiments[]     = "enable-devtools-experiments";
 
+// If true devtools is allowed to load hosted front-ends.
+const char kEnableHostedDevToolsFrontend[]  = "enable-hosted-devtools-frontend";
+
 // Enables an interactive autocomplete UI and a way to invoke this UI from
 // WebKit by enabling HTMLFormElement#requestAutocomplete (and associated
 // autocomplete* events and logic).

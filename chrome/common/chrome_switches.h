@@ -154,6 +154,7 @@ extern const char kEnableExtensionActivityLogTesting[];
 extern const char kEnableExtensionActivityUI[];
 extern const char kEnableFileCookies[];
 extern const char kEnableGoogleNowIntegration[];
+extern const char kEnableHostedDevToolsFrontend[];
 extern const char kEnableInstantExtendedAPI[];
 extern const char kEnableInteractiveAutocomplete[];
 extern const char kEnableIPCFuzzing[];
