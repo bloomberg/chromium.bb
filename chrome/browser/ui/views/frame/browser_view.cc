@@ -247,8 +247,7 @@ bool ShouldSaveOrRestoreWindowPos() {
 // for the tab entering fullscreen).
 bool UseImmersiveFullscreenForUrl(const GURL& url) {
   bool is_browser_fullscreen = url.is_empty();
-  return is_browser_fullscreen &&
-      ImmersiveModeController::UseImmersiveFullscreen();
+  return is_browser_fullscreen && chrome::UseImmersiveFullscreen();
 }
 
 }  // namespace
@@ -453,8 +452,7 @@ BrowserView::BrowserView(Browser* browser)
       ticker_(0),
 #endif
       force_location_bar_focus_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          immersive_mode_controller_(new ImmersiveModeController)),
+      immersive_mode_controller_(chrome::CreateImmersiveModeController()),
       ALLOW_THIS_IN_INITIALIZER_LIST(color_change_listener_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(activate_modal_dialog_factory_(this)) {
   browser_->tab_strip_model()->AddObserver(this);
@@ -567,7 +565,7 @@ gfx::Point BrowserView::OffsetPointForToolbarBackgroundImage(
 
 bool BrowserView::IsTabStripVisible() const {
   if (immersive_mode_controller_->ShouldHideTopViews() &&
-      immersive_mode_controller_->hide_tab_indicators())
+      immersive_mode_controller_->ShouldHideTabIndicators())
     return false;
   return browser_->SupportsWindowFeature(Browser::FEATURE_TABSTRIP);
 }
@@ -872,7 +870,7 @@ void BrowserView::UpdateFullscreenExitBubbleContent(
 bool BrowserView::ShouldHideUIForFullscreen() const {
 #if defined(USE_ASH)
   // Immersive mode needs UI for the slide-down top panel.
-  return IsFullscreen() && !immersive_mode_controller_->enabled();
+  return IsFullscreen() && !immersive_mode_controller_->IsEnabled();
 #endif
   return IsFullscreen();
 }

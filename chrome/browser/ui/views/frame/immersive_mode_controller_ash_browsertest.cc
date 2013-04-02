@@ -2,9 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
+#include "chrome/browser/ui/views/frame/immersive_mode_controller_ash.h"
 
 #include "ash/ash_switches.h"
+#include "ash/root_window_controller.h"
+#include "ash/shelf/shelf_layout_manager.h"
+#include "ash/shelf/shelf_types.h"
+#include "ash/shell.h"
+#include "ash/wm/window_properties.h"
 #include "base/command_line.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -24,14 +29,6 @@
 #include "ui/gfx/rect.h"
 #include "ui/views/view.h"
 
-#if defined(USE_ASH)
-#include "ash/root_window_controller.h"
-#include "ash/shelf/shelf_layout_manager.h"
-#include "ash/shelf/shelf_types.h"
-#include "ash/shell.h"
-#include "ash/wm/window_properties.h"
-#endif
-
 namespace {
 
 // Returns the bounds of |view| in widget coordinates.
@@ -45,10 +42,10 @@ gfx::Rect GetRectInWidget(views::View* view) {
 // it to other Aura platforms (win_aura, linux_aura).  http://crbug.com/163931
 #if defined(OS_CHROMEOS)
 
-class ImmersiveModeControllerTest : public InProcessBrowserTest {
+class ImmersiveModeControllerAshTest : public InProcessBrowserTest {
  public:
-  ImmersiveModeControllerTest() {}
-  virtual ~ImmersiveModeControllerTest() {}
+  ImmersiveModeControllerAshTest() {}
+  virtual ~ImmersiveModeControllerAshTest() {}
 
   // Callback for when the onbeforeunload dialog closes for the sake of testing
   // the dialog with immersive mode.
@@ -63,21 +60,22 @@ class ImmersiveModeControllerTest : public InProcessBrowserTest {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ImmersiveModeControllerTest);
+  DISALLOW_COPY_AND_ASSIGN(ImmersiveModeControllerAshTest);
 };
 
-IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerTest, ImmersiveMode) {
+IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshTest, ImmersiveMode) {
   ui::ScopedAnimationDurationScaleMode zero_duration_mode(
       ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
-  ASSERT_TRUE(ImmersiveModeController::UseImmersiveFullscreen());
+  ASSERT_TRUE(chrome::UseImmersiveFullscreen());
 
   BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
-  ImmersiveModeController* controller =
-      browser_view->immersive_mode_controller();
+  ImmersiveModeControllerAsh* controller =
+      static_cast<ImmersiveModeControllerAsh*>(
+          browser_view->immersive_mode_controller());
   views::View* contents_view = browser_view->GetTabContentsContainerView();
 
   // Immersive mode is not on by default.
-  EXPECT_FALSE(controller->enabled());
+  EXPECT_FALSE(controller->IsEnabled());
   EXPECT_FALSE(controller->ShouldHideTopViews());
 
   // Top-of-window views are visible.
@@ -93,7 +91,7 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerTest, ImmersiveMode) {
   // the top-of-window views while leaving the tab strip visible.
   chrome::ToggleFullscreenMode(browser());
   ASSERT_TRUE(browser_view->IsFullscreen());
-  EXPECT_TRUE(controller->enabled());
+  EXPECT_TRUE(controller->IsEnabled());
   EXPECT_TRUE(controller->ShouldHideTopViews());
   EXPECT_FALSE(controller->IsRevealed());
   EXPECT_TRUE(browser_view->tabstrip()->IsImmersiveStyle());
@@ -111,7 +109,7 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerTest, ImmersiveMode) {
   // Trigger a reveal keeps us in immersive mode, but top-of-window views
   // become visible.
   controller->StartRevealForTest(true);
-  EXPECT_TRUE(controller->enabled());
+  EXPECT_TRUE(controller->IsEnabled());
   EXPECT_FALSE(controller->ShouldHideTopViews());
   EXPECT_TRUE(controller->IsRevealed());
   EXPECT_FALSE(browser_view->tabstrip()->IsImmersiveStyle());
@@ -126,7 +124,7 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerTest, ImmersiveMode) {
 
   // Ending a reveal keeps us in immersive mode, but toolbar goes invisible.
   controller->CancelReveal();
-  EXPECT_TRUE(controller->enabled());
+  EXPECT_TRUE(controller->IsEnabled());
   EXPECT_TRUE(controller->ShouldHideTopViews());
   EXPECT_FALSE(controller->IsRevealed());
   EXPECT_TRUE(browser_view->tabstrip()->IsImmersiveStyle());
@@ -136,7 +134,7 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerTest, ImmersiveMode) {
   // Disabling immersive mode puts us back to the beginning.
   chrome::ToggleFullscreenMode(browser());
   ASSERT_FALSE(browser_view->IsFullscreen());
-  EXPECT_FALSE(controller->enabled());
+  EXPECT_FALSE(controller->IsEnabled());
   EXPECT_FALSE(controller->ShouldHideTopViews());
   EXPECT_FALSE(controller->IsRevealed());
   EXPECT_FALSE(browser_view->tabstrip()->IsImmersiveStyle());
@@ -147,12 +145,12 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerTest, ImmersiveMode) {
   // the beginning.
   chrome::ToggleFullscreenMode(browser());
   ASSERT_TRUE(browser_view->IsFullscreen());
-  EXPECT_TRUE(controller->enabled());
+  EXPECT_TRUE(controller->IsEnabled());
   controller->StartRevealForTest(true);
 
   chrome::ToggleFullscreenMode(browser());
   ASSERT_FALSE(browser_view->IsFullscreen());
-  EXPECT_FALSE(controller->enabled());
+  EXPECT_FALSE(controller->IsEnabled());
   EXPECT_FALSE(controller->ShouldHideTopViews());
   EXPECT_FALSE(controller->IsRevealed());
   EXPECT_FALSE(browser_view->tabstrip()->IsImmersiveStyle());
@@ -181,30 +179,30 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerTest, ImmersiveMode) {
   // Reveal ends when the mouse moves out of the reveal view.
   chrome::ToggleFullscreenMode(browser());
   ASSERT_TRUE(browser_view->IsFullscreen());
-  EXPECT_TRUE(controller->enabled());
+  EXPECT_TRUE(controller->IsEnabled());
   controller->StartRevealForTest(true);
   controller->SetMouseHoveredForTest(false);
   EXPECT_FALSE(controller->IsRevealed());
 
   // Window restore tracking is only implemented in the Aura port.
   // Also, Windows Aura does not trigger maximize/restore notifications.
-#if defined(USE_AURA) && !defined(OS_WIN)
+#if !defined(OS_WIN)
   // Restoring the window exits immersive mode.
   browser_view->GetWidget()->Restore();
   ASSERT_FALSE(browser_view->IsFullscreen());
-  EXPECT_FALSE(controller->enabled());
+  EXPECT_FALSE(controller->IsEnabled());
   EXPECT_FALSE(controller->ShouldHideTopViews());
   EXPECT_FALSE(controller->IsRevealed());
   EXPECT_FALSE(browser_view->tabstrip()->IsImmersiveStyle());
   EXPECT_TRUE(browser_view->IsTabStripVisible());
   EXPECT_TRUE(browser_view->IsToolbarVisible());
-#endif  // defined(USE_AURA) && !defined(OS_WIN)
+#endif  // !defined(OS_WIN)
 
   // Don't crash if we exit the test during a reveal.
   if (!browser_view->IsFullscreen())
     chrome::ToggleFullscreenMode(browser());
   ASSERT_TRUE(browser_view->IsFullscreen());
-  ASSERT_TRUE(controller->enabled());
+  ASSERT_TRUE(controller->IsEnabled());
   controller->StartRevealForTest(true);
 }
 
@@ -212,15 +210,16 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerTest, ImmersiveMode) {
 // Do not test under windows because focus testing is not reliable on
 // Windows, crbug.com/79493
 #if !defined(OS_WIN)
-IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerTest, Focus) {
+IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshTest, Focus) {
   ui::ScopedAnimationDurationScaleMode zero_duration_mode(
       ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
-  ASSERT_TRUE(ImmersiveModeController::UseImmersiveFullscreen());
+  ASSERT_TRUE(chrome::UseImmersiveFullscreen());
   chrome::ToggleFullscreenMode(browser());
 
   BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
-  ImmersiveModeController* controller =
-      browser_view->immersive_mode_controller();
+  ImmersiveModeControllerAsh* controller =
+      static_cast<ImmersiveModeControllerAsh*>(
+          browser_view->immersive_mode_controller());
 
   // 1) Test that focusing the location bar automatically reveals the
   // top-of-window views.
@@ -277,7 +276,7 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerTest, Focus) {
       string16(),
       false,
       base::Bind(
-          &ImmersiveModeControllerTest::OnBeforeUnloadJavaScriptDialogClosed,
+          &ImmersiveModeControllerAshTest::OnBeforeUnloadJavaScriptDialogClosed,
           base::Unretained(this)));
   EXPECT_TRUE(queue->HasActiveDialog());
   EXPECT_FALSE(controller->IsRevealed());
@@ -285,15 +284,17 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerTest, Focus) {
 #endif  // OS_WIN
 
 // Test behavior when the mouse becomes hovered without moving.
-IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerTest, MouseHoveredWithoutMoving) {
+IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshTest,
+                       MouseHoveredWithoutMoving) {
   ui::ScopedAnimationDurationScaleMode zero_duration_mode(
       ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
-  ASSERT_TRUE(ImmersiveModeController::UseImmersiveFullscreen());
+  ASSERT_TRUE(chrome::UseImmersiveFullscreen());
   chrome::ToggleFullscreenMode(browser());
 
   BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
-  ImmersiveModeController* controller =
-      browser_view->immersive_mode_controller();
+  ImmersiveModeControllerAsh* controller =
+      static_cast<ImmersiveModeControllerAsh*>(
+          browser_view->immersive_mode_controller());
   scoped_ptr<ImmersiveModeController::RevealedLock> lock(NULL);
 
   // 1) Test that if the mouse becomes hovered without the mouse moving due to a
@@ -336,20 +337,21 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerTest, MouseHoveredWithoutMoving) {
 }
 
 // GetRevealedLock() specific tests.
-IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerTest, RevealedLock) {
+IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshTest, RevealedLock) {
   scoped_ptr<ImmersiveModeController::RevealedLock> lock1(NULL);
   scoped_ptr<ImmersiveModeController::RevealedLock> lock2(NULL);
 
   ui::ScopedAnimationDurationScaleMode zero_duration_mode(
       ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
-  ASSERT_TRUE(ImmersiveModeController::UseImmersiveFullscreen());
+  ASSERT_TRUE(chrome::UseImmersiveFullscreen());
 
   BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
-  ImmersiveModeController* controller =
-      browser_view->immersive_mode_controller();
+  ImmersiveModeControllerAsh* controller =
+      static_cast<ImmersiveModeControllerAsh*>(
+          browser_view->immersive_mode_controller());
 
   // Immersive mode is not on by default.
-  EXPECT_FALSE(controller->enabled());
+  EXPECT_FALSE(controller->IsEnabled());
 
   // Move the mouse out of the way.
   controller->SetMouseHoveredForTest(false);
@@ -358,30 +360,30 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerTest, RevealedLock) {
   // is disabled. Acquiring or releasing the lock should have no effect till
   // immersive mode is enabled.
   lock1.reset(controller->GetRevealedLock());
-  EXPECT_FALSE(controller->enabled());
+  EXPECT_FALSE(controller->IsEnabled());
   EXPECT_FALSE(controller->IsRevealed());
   EXPECT_FALSE(controller->ShouldHideTopViews());
 
   // Immersive mode should start in the revealed state due to the lock.
   chrome::ToggleFullscreenMode(browser());
-  EXPECT_TRUE(controller->enabled());
+  EXPECT_TRUE(controller->IsEnabled());
   EXPECT_TRUE(controller->IsRevealed());
   EXPECT_FALSE(controller->ShouldHideTopViews());
 
   chrome::ToggleFullscreenMode(browser());
-  EXPECT_FALSE(controller->enabled());
+  EXPECT_FALSE(controller->IsEnabled());
   EXPECT_FALSE(controller->IsRevealed());
   EXPECT_FALSE(controller->ShouldHideTopViews());
 
   lock1.reset();
-  EXPECT_FALSE(controller->enabled());
+  EXPECT_FALSE(controller->IsEnabled());
   EXPECT_FALSE(controller->IsRevealed());
   EXPECT_FALSE(controller->ShouldHideTopViews());
 
   // Immersive mode should start in the closed state because the lock is no
   // longer held.
   chrome::ToggleFullscreenMode(browser());
-  EXPECT_TRUE(controller->enabled());
+  EXPECT_TRUE(controller->IsEnabled());
   EXPECT_FALSE(controller->IsRevealed());
   EXPECT_TRUE(controller->ShouldHideTopViews());
 
@@ -403,13 +405,15 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerTest, RevealedLock) {
 }
 
 // Shelf-specific immersive mode tests.
-IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerTest, ImmersiveShelf) {
+IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshTest, ImmersiveShelf) {
   ui::ScopedAnimationDurationScaleMode zero_duration_mode(
       ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
+  ASSERT_TRUE(chrome::UseImmersiveFullscreen());
 
   BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
-  ImmersiveModeController* immersive_controller =
-      browser_view->immersive_mode_controller();
+  ImmersiveModeControllerAsh* immersive_controller =
+      static_cast<ImmersiveModeControllerAsh*>(
+          browser_view->immersive_mode_controller());
 
   // Shelf is visible when the test starts.
   ash::internal::ShelfLayoutManager* shelf =
@@ -419,13 +423,13 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerTest, ImmersiveShelf) {
   // Turning immersive mode on sets the shelf to auto-hide.
   chrome::ToggleFullscreenMode(browser());
   ASSERT_TRUE(browser_view->IsFullscreen());
-  ASSERT_TRUE(immersive_controller->enabled());
+  ASSERT_TRUE(immersive_controller->IsEnabled());
   EXPECT_EQ(ash::SHELF_AUTO_HIDE, shelf->visibility_state());
 
   // Disabling immersive mode puts it back.
   chrome::ToggleFullscreenMode(browser());
   ASSERT_FALSE(browser_view->IsFullscreen());
-  ASSERT_FALSE(immersive_controller->enabled());
+  ASSERT_FALSE(immersive_controller->IsEnabled());
   EXPECT_EQ(ash::SHELF_VISIBLE, shelf->visibility_state());
 
   // The user could toggle the launcher behavior.
@@ -435,21 +439,21 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerTest, ImmersiveShelf) {
   // Enabling immersive mode keeps auto-hide.
   chrome::ToggleFullscreenMode(browser());
   ASSERT_TRUE(browser_view->IsFullscreen());
-  ASSERT_TRUE(immersive_controller->enabled());
+  ASSERT_TRUE(immersive_controller->IsEnabled());
   EXPECT_EQ(ash::SHELF_AUTO_HIDE, shelf->visibility_state());
 
   // Disabling immersive mode maintains the user's auto-hide selection.
   chrome::ToggleFullscreenMode(browser());
   ASSERT_FALSE(browser_view->IsFullscreen());
-  ASSERT_FALSE(immersive_controller->enabled());
+  ASSERT_FALSE(immersive_controller->IsEnabled());
   EXPECT_EQ(ash::SHELF_AUTO_HIDE, shelf->visibility_state());
 
   // Setting the window property directly toggles immersive mode.
   aura::Window* window = browser_view->GetWidget()->GetNativeWindow();
   window->SetProperty(ash::internal::kImmersiveModeKey, true);
-  EXPECT_TRUE(immersive_controller->enabled());
+  EXPECT_TRUE(immersive_controller->IsEnabled());
   window->SetProperty(ash::internal::kImmersiveModeKey, false);
-  EXPECT_FALSE(immersive_controller->enabled());
+  EXPECT_FALSE(immersive_controller->IsEnabled());
 }
 
 #endif  // defined(OS_CHROMEOS)

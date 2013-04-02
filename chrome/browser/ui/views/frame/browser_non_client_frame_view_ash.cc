@@ -187,13 +187,13 @@ void BrowserNonClientFrameViewAsh::GetWindowMask(const gfx::Size& size,
 }
 
 void BrowserNonClientFrameViewAsh::ResetWindowControls() {
-  if (ImmersiveModeController::UseImmersiveFullscreen()) {
+  if (chrome::UseImmersiveFullscreen()) {
     // Hide the caption buttons in immersive mode because it's confusing when
     // the user hovers or clicks in the top-right of the screen and hits one.
     // Only show them during a reveal.
     ImmersiveModeController* controller =
         browser_view()->immersive_mode_controller();
-    if (controller->enabled()) {
+    if (controller->IsEnabled()) {
       bool revealed = controller->IsRevealed();
       size_button_->SetVisible(revealed);
       close_button_->SetVisible(revealed);
@@ -386,7 +386,7 @@ void BrowserNonClientFrameViewAsh::LayoutAvatar() {
     // Hide the incognito icon when the top-of-window views are closed in
     // immersive mode as the tab indicators are too short for the incognito
     // icon to still be recongizable.
-    if (immersive_controller->enabled() &&
+    if (immersive_controller->IsEnabled() &&
         !immersive_controller->IsRevealed()) {
       avatar_button()->SetBoundsRect(gfx::Rect());
       return;
