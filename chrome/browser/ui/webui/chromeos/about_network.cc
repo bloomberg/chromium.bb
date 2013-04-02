@@ -238,6 +238,7 @@ std::string NetworkStateToHtmlTableHeader() {
       WrapWithTH("Technology") +
       WrapWithTH("Activation") +
       WrapWithTH("Romaing") +
+      WrapWithTH("OOC") +
       WrapWithTH("Strength") +
       WrapWithTH("Auto") +
       WrapWithTH("Fav") +
@@ -257,6 +258,7 @@ std::string NetworkStateToHtmlTableRow(const NetworkState* network) {
       WrapWithTD(network->technology()) +
       WrapWithTD(network->activation_state()) +
       WrapWithTD(network->roaming()) +
+      WrapWithTD(base::IntToString(network->cellular_out_of_credits())) +
       WrapWithTD(base::IntToString(network->signal_strength())) +
       WrapWithTD(base::IntToString(network->auto_connect())) +
       WrapWithTD(base::IntToString(network->favorite())) +

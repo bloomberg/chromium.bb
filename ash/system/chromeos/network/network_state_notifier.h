@@ -45,7 +45,7 @@ class ASH_EXPORT NetworkStateNotifier :
   void InitializeNetworks();
 
   CachedStateMap cached_state_;
-  std::string last_default_network_;
+  std::string last_active_network_;
   std::string cellular_network_;
   bool cellular_out_of_credits_;
   base::Time out_of_credits_notify_time_;
