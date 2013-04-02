@@ -6932,3 +6932,11 @@
    fun:_ZN20SafeBrowsingDatabase6CreateEbbbb
    fun:_ZN27SafeBrowsingDatabaseManager11GetDatabaseEv
 }
+{
+  bug_225596
+  Memcheck:Leak
+  fun:_Znw*
+  fun:_ZN8chromeos12input_method22InputMethodManagerImpl4InitERK13scoped_refptrIN4base19SequencedTaskRunnerEES7_
+  fun:_ZN8chromeos12input_method10InitializeERK13scoped_refptrIN4base19SequencedTaskRunnerEES6_
+  fun:_ZN8chromeos12input_method48InputMethodConfigurationTest_TestInitialize_Test8TestBodyEv
+}

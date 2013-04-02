@@ -1807,3 +1807,10 @@
    ...
    fun:ProfileSigninConfirmationDialogTest_*_Test::TestBody
 }
+{
+  bug_225596
+  Heapcheck:Leak
+  fun:chromeos::input_method::InputMethodManagerImpl::Init
+  fun:chromeos::input_method::Initialize
+  fun:chromeos::input_method::InputMethodConfigurationTest_TestInitialize_Test::TestBody
+}
