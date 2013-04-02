@@ -92,6 +92,7 @@ class CC_EXPORT PictureLayerImpl
   PictureLayerImpl* ActiveTwin() const;
   float MinimumContentsScale() const;
   void UpdateLCDTextStatus();
+  void ResetRasterScale();
 
   virtual void GetDebugBorderProperties(
       SkColor* color, float* width) const OVERRIDE;

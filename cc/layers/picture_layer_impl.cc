@@ -296,9 +296,7 @@ void PictureLayerImpl::DidLoseOutputSurface() {
   if (tilings_)
     tilings_->RemoveAllTilings();
 
-  raster_page_scale_ = 0;
-  raster_device_scale_ = 0;
-  raster_source_scale_ = 0;
+  ResetRasterScale();
 }
 
 void PictureLayerImpl::CalculateContentsScale(
@@ -422,11 +420,7 @@ void PictureLayerImpl::SyncFromActiveLayer() {
   DCHECK(layer_tree_impl()->IsPendingTree());
 
   if (!DrawsContent()) {
-    raster_page_scale_ = 0;
-    raster_device_scale_ = 0;
-    raster_source_scale_ = 0;
-    raster_contents_scale_ = 0;
-    low_res_raster_contents_scale_ = 0;
+    ResetRasterScale();
     return;
   }
 
@@ -634,7 +628,11 @@ void PictureLayerImpl::ManageTilings(bool animating_transform_to_screen) {
     return;
 
   bool change_target_tiling =
-      !raster_page_scale_ || !raster_device_scale_ || !raster_source_scale_ ||
+      raster_page_scale_ == 0.f ||
+      raster_device_scale_ == 0.f ||
+      raster_source_scale_ == 0.f ||
+      raster_contents_scale_ == 0.f ||
+      low_res_raster_contents_scale_ == 0.f ||
       ShouldAdjustRasterScale(animating_transform_to_screen);
 
   if (layer_tree_impl()->IsActiveTree()) {
@@ -859,6 +857,14 @@ void PictureLayerImpl::UpdateLCDTextStatus() {
   // TODO(enne): if we tracked text regions, we could just invalidate those
   // directly rather than tossing away every tile.
   pending_layer->tilings_->Invalidate(gfx::Rect(bounds()));
+}
+
+void PictureLayerImpl::ResetRasterScale() {
+  raster_page_scale_ = 0.f;
+  raster_device_scale_ = 0.f;
+  raster_source_scale_ = 0.f;
+  raster_contents_scale_ = 0.f;
+  low_res_raster_contents_scale_ = 0.f;
 }
 
 void PictureLayerImpl::GetDebugBorderProperties(
