@@ -128,7 +128,7 @@ std::string GetTestPolicy(int key_version) {
       "  \"%s\": {"
       "    \"mandatory\": {"
       "      \"ShowHomeButton\": true,"
-      "      \"MaxConnectionsPerProxy\": 42,"
+      "      \"RestoreOnStartup\": 4,"
       "      \"URLBlacklist\": [ \"dev.chromium.org\", \"youtube.com\" ]"
       "    },"
       "    \"recommended\": {"
@@ -149,8 +149,8 @@ std::string GetTestPolicy(int key_version) {
 void GetExpectedTestPolicy(PolicyMap* expected) {
   expected->Set(key::kShowHomeButton, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                 base::Value::CreateBooleanValue(true));
-  expected->Set(key::kMaxConnectionsPerProxy, POLICY_LEVEL_MANDATORY,
-                POLICY_SCOPE_USER, base::Value::CreateIntegerValue(42));
+  expected->Set(key::kRestoreOnStartup, POLICY_LEVEL_MANDATORY,
+                POLICY_SCOPE_USER, base::Value::CreateIntegerValue(4));
   base::ListValue list;
   list.AppendString("dev.chromium.org");
   list.AppendString("youtube.com");
@@ -370,7 +370,7 @@ TEST(CloudPolicyProtoTest, VerifyProtobufEquivalence) {
   chrome_settings.mutable_homepagelocation()->set_homepagelocation(
       "chromium.org");
   chrome_settings.mutable_showhomebutton()->set_showhomebutton(true);
-  chrome_settings.mutable_policyrefreshrate()->set_policyrefreshrate(100);
+  chrome_settings.mutable_restoreonstartup()->set_restoreonstartup(4);
   em::StringList* list =
       chrome_settings.mutable_disabledschemes()->mutable_disabledschemes();
   list->add_entries("ftp");
@@ -387,7 +387,7 @@ TEST(CloudPolicyProtoTest, VerifyProtobufEquivalence) {
   em::CloudPolicySettings cloud_policy;
   cloud_policy.mutable_homepagelocation()->set_value("chromium.org");
   cloud_policy.mutable_showhomebutton()->set_value(true);
-  cloud_policy.mutable_policyrefreshrate()->set_value(100);
+  cloud_policy.mutable_restoreonstartup()->set_value(4);
   list = cloud_policy.mutable_disabledschemes()->mutable_value();
   list->add_entries("ftp");
   list->add_entries("mailto");
