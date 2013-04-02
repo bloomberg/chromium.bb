@@ -1712,6 +1712,8 @@ class LayerTreeHostTestCapturePicture : public LayerTreeHostTest {
   virtual void BeginTest() OVERRIDE {
     layer_->SetIsDrawable(true);
     layer_->SetBounds(bounds_);
+    // Outside viewport so tiles don't have to be initialized for commit.
+    layer_->SetPosition(gfx::Point(100, 100));
     layer_tree_host()->SetViewportSize(bounds_, bounds_);
     layer_tree_host()->SetRootLayer(layer_);
 

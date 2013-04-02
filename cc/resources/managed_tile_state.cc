@@ -13,7 +13,6 @@ namespace cc {
 ManagedTileState::ManagedTileState()
     : can_use_gpu_memory(false),
       need_to_gather_pixel_refs(true),
-      raster_state(IDLE_STATE),
       picture_pile_analyzed(false),
       gpu_memmgr_stats_bin(NEVER_BIN),
       resolution(NON_IDEAL_RESOLUTION),
@@ -63,7 +62,6 @@ scoped_ptr<base::Value> ManagedTileState::AsValue() const {
   state->SetBoolean("has_resource", drawing_info.resource_.get() != 0);
   state->SetBoolean("resource_is_being_initialized",
       drawing_info.resource_is_being_initialized_);
-  state->Set("raster_state", TileRasterStateAsValue(raster_state).release());
   state->Set("bin.0", TileManagerBinAsValue(bin[ACTIVE_TREE]).release());
   state->Set("bin.1", TileManagerBinAsValue(bin[PENDING_TREE]).release());
   state->Set("gpu_memmgr_stats_bin",

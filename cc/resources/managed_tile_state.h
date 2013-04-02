@@ -106,7 +106,6 @@ class CC_EXPORT ManagedTileState {
   bool can_use_gpu_memory;
   bool need_to_gather_pixel_refs;
   std::list<skia::LazyPixelRef*> pending_pixel_refs;
-  TileRasterState raster_state;
   DrawingInfo drawing_info;
   PicturePileImpl::Analysis picture_pile_analysis;
   bool picture_pile_analyzed;

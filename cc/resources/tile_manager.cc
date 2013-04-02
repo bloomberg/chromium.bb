@@ -123,31 +123,6 @@ scoped_ptr<base::Value> TileManagerBinPriorityAsValue(
   }
 }
 
-scoped_ptr<base::Value> TileRasterStateAsValue(
-    TileRasterState raster_state) {
-  switch (raster_state) {
-  case IDLE_STATE:
-      return scoped_ptr<base::Value>(base::Value::CreateStringValue(
-          "IDLE_STATE"));
-  case WAITING_FOR_RASTER_STATE:
-      return scoped_ptr<base::Value>(base::Value::CreateStringValue(
-          "WAITING_FOR_RASTER_STATE"));
-  case RASTER_STATE:
-      return scoped_ptr<base::Value>(base::Value::CreateStringValue(
-          "RASTER_STATE"));
-  case UPLOAD_STATE:
-      return scoped_ptr<base::Value>(base::Value::CreateStringValue(
-          "UPLOAD_STATE"));
-  case FORCED_UPLOAD_COMPLETION_STATE:
-      return scoped_ptr<base::Value>(base::Value::CreateStringValue(
-          "FORCED_UPLOAD_COMPLETION_STATE"));
-  default:
-      DCHECK(false) << "Unrecognized TileRasterState value";
-      return scoped_ptr<base::Value>(base::Value::CreateStringValue(
-          "<unknown TileRasterState value>"));
-  }
-}
-
 TileManager::TileManager(
     TileManagerClient* client,
     ResourceProvider* resource_provider,
@@ -173,12 +148,6 @@ TileManager::TileManager(
       did_initialize_visible_tile_(false),
       pending_tasks_(0),
       max_pending_tasks_(kMaxNumPendingTasksPerThread * num_raster_threads) {
-  for (int i = 0; i < NUM_STATES; ++i) {
-    for (int j = 0; j < NUM_TREES; ++j) {
-      for (int k = 0; k < NUM_BINS; ++k)
-        raster_state_count_[i][j][k] = 0;
-    }
-  }
 }
 
 TileManager::~TileManager() {
@@ -207,11 +176,6 @@ void TileManager::SetGlobalState(
 
 void TileManager::RegisterTile(Tile* tile) {
   all_tiles_.insert(tile);
-
-  const ManagedTileState& mts = tile->managed_state();
-  for (int i = 0; i < NUM_TREES; ++i)
-    ++raster_state_count_[mts.raster_state][i][mts.tree_bin[i]];
-
   ScheduleManageTiles();
 }
 
@@ -239,9 +203,6 @@ void TileManager::UnregisterTile(Tile* tile) {
   }
   TileSet::iterator it = all_tiles_.find(tile);
   DCHECK(it != all_tiles_.end());
-  const ManagedTileState& mts = tile->managed_state();
-  for (int i = 0; i < NUM_TREES; ++i)
-    --raster_state_count_[mts.raster_state][i][mts.tree_bin[i]];
   FreeResourcesForTile(tile);
   all_tiles_.erase(it);
 }
@@ -410,7 +371,6 @@ void TileManager::CheckForCompletedTileUploads() {
     tile->drawing_info().can_be_freed_ = true;
 
     bytes_pending_upload_ -= tile->bytes_consumed_if_allocated();
-    DidTileRasterStateChange(tile, IDLE_STATE);
     DidFinishTileInitialization(tile);
 
     tiles_with_pending_upload_.pop();
@@ -435,20 +395,16 @@ void TileManager::AbortPendingTileUploads() {
     FreeResourcesForTile(tile);
 
     bytes_pending_upload_ -= tile->bytes_consumed_if_allocated();
-    DidTileRasterStateChange(tile, IDLE_STATE);
     tiles_with_pending_upload_.pop();
   }
 }
 
 void TileManager::ForceTileUploadToComplete(Tile* tile) {
   DCHECK(tile);
-  ManagedTileState& managed_tile_state = tile->managed_state();
-  if (managed_tile_state.raster_state == UPLOAD_STATE) {
-    Resource* resource = tile->drawing_info().resource_.get();
-    DCHECK(resource);
+  if (tile->drawing_info().resource_ &&
+      tile->drawing_info().resource_is_being_initialized_) {
     resource_pool_->resource_provider()->
-        ForceSetPixelsToComplete(resource->id());
-    DidTileRasterStateChange(tile, FORCED_UPLOAD_COMPLETION_STATE);
+        ForceSetPixelsToComplete(tile->drawing_info().resource_->id());
     DidFinishTileInitialization(tile);
   }
 
@@ -516,32 +472,6 @@ scoped_ptr<base::Value> TileManager::GetMemoryRequirementsAsValue() const {
   return requirements.PassAs<base::Value>();
 }
 
-bool TileManager::HasPendingWorkScheduled(WhichTree tree) const {
-  // Always true when ManageTiles() call is pending.
-  if (manage_tiles_pending_)
-    return true;
-
-  for (int i = 0; i < NUM_STATES; ++i) {
-    switch (i) {
-      case WAITING_FOR_RASTER_STATE:
-      case RASTER_STATE:
-      case UPLOAD_STATE:
-      case FORCED_UPLOAD_COMPLETION_STATE:
-        for (int j = 0; j < NEVER_BIN; ++j) {
-          if (raster_state_count_[i][tree][j])
-            return true;
-        }
-        break;
-      case IDLE_STATE:
-        break;
-      default:
-        NOTREACHED();
-    }
-  }
-
-  return false;
-}
-
 void TileManager::DidFinishDispatchingWorkerPoolCompletionCallbacks() {
   // If a flush is needed, do it now before starting to dispatch more tasks.
   if (has_performed_uploads_since_last_flush_) {
@@ -568,21 +498,16 @@ void TileManager::AssignGpuMemoryToTiles() {
   // By clearing the tiles_that_need_to_be_rasterized_ vector and
   // tiles_with_image_decoding_tasks_ list above we move all tiles
   // currently waiting for raster to idle state.
-  // Call DidTileRasterStateChange() for each of these tiles to
-  // have this state change take effect.
   // Some memory cannot be released. We figure out how much in this
   // loop as well.
   for (TileVector::iterator it = live_or_allocated_tiles_.begin();
        it != live_or_allocated_tiles_.end(); ++it) {
     Tile* tile = *it;
-    ManagedTileState& mts = tile->managed_state();
     if (!tile->drawing_info().requires_resource())
       continue;
 
     if (!tile->drawing_info().can_be_freed_)
       unreleasable_bytes += tile->bytes_consumed_if_allocated();
-    if (mts.raster_state == WAITING_FOR_RASTER_STATE)
-      DidTileRasterStateChange(tile, IDLE_STATE);
   }
 
   size_t bytes_allocatable =
@@ -623,7 +548,6 @@ void TileManager::AssignGpuMemoryToTiles() {
     if (!tile->drawing_info().resource_ &&
         !tile->drawing_info().resource_is_being_initialized_) {
       tiles_that_need_to_be_rasterized_.push_back(tile);
-      DidTileRasterStateChange(tile, WAITING_FOR_RASTER_STATE);
     }
   }
 
@@ -694,7 +618,6 @@ void TileManager::DispatchMoreTasks() {
 
     AnalyzeTile(tile);
     if (!tile->drawing_info().requires_resource()) {
-      DidTileRasterStateChange(tile, IDLE_STATE);
       tiles_that_need_to_be_rasterized_.pop_back();
       continue;
     }
@@ -837,7 +760,6 @@ scoped_ptr<ResourcePool::Resource> TileManager::PrepareTileForRaster(
   tile->drawing_info().resource_is_being_initialized_ = true;
   tile->drawing_info().can_be_freed_ = false;
 
-  DidTileRasterStateChange(tile, RASTER_STATE);
   return resource.Pass();
 }
 
@@ -936,13 +858,11 @@ void TileManager::OnRasterTaskCompleted(
     tile->drawing_info().resource_ = resource.Pass();
 
     bytes_pending_upload_ += tile->bytes_consumed_if_allocated();
-    DidTileRasterStateChange(tile, UPLOAD_STATE);
     tiles_with_pending_upload_.push(tile);
   } else {
     resource_pool_->resource_provider()->ReleasePixelBuffer(resource->id());
     resource_pool_->ReleaseResource(resource.Pass());
     tile->drawing_info().resource_is_being_initialized_ = false;
-    DidTileRasterStateChange(tile, IDLE_STATE);
   }
 }
 
@@ -952,34 +872,10 @@ void TileManager::DidFinishTileInitialization(Tile* tile) {
     did_initialize_visible_tile_ = true;
 }
 
-void TileManager::DidTileRasterStateChange(Tile* tile, TileRasterState state) {
-  ManagedTileState& mts = tile->managed_state();
-  DCHECK_LT(state, NUM_STATES);
-
-  for (int i = 0; i < NUM_TREES; ++i) {
-    // Decrement count for current state.
-    --raster_state_count_[mts.raster_state][i][mts.tree_bin[i]];
-    DCHECK_GE(raster_state_count_[mts.raster_state][i][mts.tree_bin[i]], 0);
-
-    // Increment count for new state.
-    ++raster_state_count_[state][i][mts.tree_bin[i]];
-  }
-
-  mts.raster_state = state;
-}
-
 void TileManager::DidTileTreeBinChange(Tile* tile,
                                        TileManagerBin new_tree_bin,
                                        WhichTree tree) {
   ManagedTileState& mts = tile->managed_state();
-
-  // Decrement count for current bin.
-  --raster_state_count_[mts.raster_state][tree][mts.tree_bin[tree]];
-  DCHECK_GE(raster_state_count_[mts.raster_state][tree][mts.tree_bin[tree]], 0);
-
-  // Increment count for new bin.
-  ++raster_state_count_[mts.raster_state][tree][new_tree_bin];
-
   mts.tree_bin[tree] = new_tree_bin;
 }
 

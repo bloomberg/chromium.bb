@@ -56,17 +56,6 @@ enum TileManagerBinPriority {
 scoped_ptr<base::Value> TileManagerBinPriorityAsValue(
     TileManagerBinPriority bin);
 
-enum TileRasterState {
-  IDLE_STATE = 0,
-  WAITING_FOR_RASTER_STATE = 1,
-  RASTER_STATE = 2,
-  UPLOAD_STATE = 3,
-  FORCED_UPLOAD_COMPLETION_STATE = 4,
-  NUM_STATES = 5
-};
-scoped_ptr<base::Value> TileRasterStateAsValue(
-    TileRasterState bin);
-
 // This class manages tiles, deciding which should get rasterized and which
 // should no longer have any memory assigned to them. Tile objects are "owned"
 // by layers; they automatically register with the manager when they are
@@ -99,7 +88,6 @@ class CC_EXPORT TileManager : public WorkerPoolClient {
   void GetMemoryStats(size_t* memory_required_bytes,
                       size_t* memory_nice_to_have_bytes,
                       size_t* memory_used_bytes) const;
-  bool HasPendingWorkScheduled(WhichTree tree) const;
 
   const MemoryHistory::Entry& memory_stats_from_last_assign() const {
     return memory_stats_from_last_assign_;
@@ -158,7 +146,6 @@ class CC_EXPORT TileManager : public WorkerPoolClient {
       scoped_ptr<ResourcePool::Resource> resource,
       int manage_tiles_call_count_when_dispatched);
   void DidFinishTileInitialization(Tile* tile);
-  void DidTileRasterStateChange(Tile* tile, TileRasterState state);
   void DidTileTreeBinChange(Tile* tile,
                             TileManagerBin new_tree_bin,
                             WhichTree tree);
@@ -217,7 +204,6 @@ class CC_EXPORT TileManager : public WorkerPoolClient {
   size_t max_prepaint_tile_distance_;
   bool use_cheapness_estimator_;
   bool use_color_estimator_;
-  int raster_state_count_[NUM_STATES][NUM_TREES][NUM_BINS];
   bool prediction_benchmarking_;
   bool did_initialize_visible_tile_;
 
