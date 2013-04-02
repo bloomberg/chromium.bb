@@ -24,3 +24,5 @@ in a separate tree.
 In addition, all unneeded files from the root directory and src/ directory
 (hb-icu-le, hb-ucdn, hb-old, scripts to generate data tables, automake/conf
 files) are deleted.
+
+_POSIX_C_SOURCE is undefined in src/hb-blob.cc before (re)defining it.
