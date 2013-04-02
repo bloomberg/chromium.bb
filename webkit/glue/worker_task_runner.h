@@ -20,7 +20,7 @@ class WEBKIT_GLUE_EXPORT WorkerTaskRunner {
  public:
   WorkerTaskRunner();
 
-  void PostTask(int id, const base::Closure& task);
+  bool PostTask(int id, const base::Closure& task);
   int CurrentWorkerId();
   static WorkerTaskRunner* Instance();
 

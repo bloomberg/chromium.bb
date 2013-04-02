@@ -43,13 +43,14 @@ WorkerTaskRunner::WorkerTaskRunner() {
   DCHECK(!id);
 }
 
-void WorkerTaskRunner::PostTask(
+bool WorkerTaskRunner::PostTask(
     int id, const base::Closure& closure) {
   DCHECK(id > 0);
   base::AutoLock locker(loop_map_lock_);
   IDToLoopMap::iterator found = loop_map_.find(id);
   if (found != loop_map_.end())
     found->second.postTask(new RunClosureTask(closure));
+  return found != loop_map_.end();
 }
 
 int WorkerTaskRunner::CurrentWorkerId() {
