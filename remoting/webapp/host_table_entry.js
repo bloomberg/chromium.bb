@@ -176,9 +176,7 @@ remoting.HostTableEntry.prototype.updateStatus = function(opt_forEdit) {
       /** @type {string} */
       var encodedHostId = encodeURIComponent(this.host.hostId)
       this.onConnectReference_ = function() {
-        var hostUrl = chrome.extension.getURL('main.html') +
-            '?mode=me2me&hostId=' + encodedHostId;
-        window.location.assign(hostUrl);
+        remoting.connectMe2Me(encodedHostId);
       };
       this.tableRow.addEventListener('click', this.onConnectReference_, false);
     }

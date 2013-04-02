@@ -111,9 +111,9 @@ remoting.ClientSession = function(hostJid, clientJid, hostPublicKey, accessCode,
 
   if (this.mode == remoting.ClientSession.Mode.IT2ME) {
     // Resize-to-client is not supported for IT2Me hosts.
-    this.resizeToClientButton_.parentNode.removeChild(
-        this.resizeToClientButton_);
+    this.resizeToClientButton_.hidden = true;
   } else {
+    this.resizeToClientButton_.hidden = false;
     this.resizeToClientButton_.addEventListener(
         'click', this.callSetScreenMode_, false);
   }

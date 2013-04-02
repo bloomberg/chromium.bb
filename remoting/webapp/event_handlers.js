@@ -8,8 +8,8 @@
 var remoting = remoting || {};
 
 function onLoad() {
-  var restartWebapp = function() {
-    window.location.replace(chrome.extension.getURL('main.html'));
+  var goHome = function() {
+    remoting.setMode(remoting.AppMode.HOME);
   };
   var goEnterAccessCode = function() {
     // We don't need a token until we authenticate, but asking for one here
@@ -26,11 +26,8 @@ function onLoad() {
     if (remoting.currentMode == remoting.AppMode.CLIENT_CONNECT_FAILED_IT2ME) {
       remoting.setMode(remoting.AppMode.CLIENT_UNCONNECTED);
     } else {
-      restartWebapp();
+      remoting.setMode(remoting.AppMode.HOME);
     }
-  };
-  var reload = function() {
-    window.location.reload();
   };
   /** @param {Event} event The event. */
   var sendAccessCode = function(event) {
@@ -62,13 +59,13 @@ function onLoad() {
       { event: 'click', id: 'access-mode-button', fn: goEnterAccessCode },
       { event: 'click', id: 'cancel-share-button', fn: remoting.cancelShare },
       { event: 'click', id: 'stop-sharing-button', fn: remoting.cancelShare },
-      { event: 'click', id: 'host-finished-button', fn: restartWebapp },
-      { event: 'click', id: 'client-finished-it2me-button', fn: restartWebapp },
-      { event: 'click', id: 'client-finished-me2me-button', fn: restartWebapp },
-      { event: 'click', id: 'cancel-pin-entry-button', fn: restartWebapp },
-      { event: 'click', id: 'client-reconnect-button', fn: reload },
+      { event: 'click', id: 'host-finished-button', fn: goHome },
+      { event: 'click', id: 'client-finished-it2me-button', fn: goHome },
+      { event: 'click', id: 'client-finished-me2me-button', fn: goHome },
+      { event: 'click', id: 'client-reconnect-button',
+        fn: function() { remoting.connector.reconnect(); } },
       { event: 'click', id: 'cancel-access-code-button', fn: cancelAccessCode},
-      { event: 'click', id: 'cancel-connect-button', fn: restartWebapp },
+      { event: 'click', id: 'cancel-connect-button', fn: goHome },
       { event: 'click', id: 'toolbar-stub',
         fn: function() { remoting.toolbar.toggle(); } },
       { event: 'click', id: 'start-daemon',
@@ -81,14 +78,10 @@ function onLoad() {
         fn: remoting.showIT2MeUiAndSave },
       { event: 'click', id: 'get-started-me2me',
         fn: remoting.showMe2MeUiAndSave },
-      { event: 'click', id: 'daemon-pin-cancel',
-        fn: function() { remoting.setMode(remoting.AppMode.HOME); } },
-      { event: 'click', id: 'host-config-done-dismiss',
-        fn: function() { remoting.setMode(remoting.AppMode.HOME); } },
-      { event: 'click', id: 'host-config-error-dismiss',
-        fn: function() { remoting.setMode(remoting.AppMode.HOME); } },
-      { event: 'click', id: 'token-refresh-error-ok',
-        fn: function() { remoting.setMode(remoting.AppMode.HOME); } },
+      { event: 'click', id: 'daemon-pin-cancel', fn: goHome },
+      { event: 'click', id: 'host-config-done-dismiss', fn: goHome },
+      { event: 'click', id: 'host-config-error-dismiss', fn: goHome },
+      { event: 'click', id: 'token-refresh-error-ok', fn: goHome },
       { event: 'click', id: 'token-refresh-error-sign-in', fn: doAuthRedirect }
   ];
 
