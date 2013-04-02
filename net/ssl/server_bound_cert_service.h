@@ -29,7 +29,14 @@ class ServerBoundCertServiceJob;
 class ServerBoundCertServiceRequest;
 class ServerBoundCertServiceWorker;
 
-// A class for creating and fetching server bound certs.
+// A class for creating and fetching server bound certs. These certs are used
+// to identify users' machines; their public keys are used as channel IDs in
+// http://tools.ietf.org/html/draft-balfanz-tls-channelid-00.
+// As a result although certs are set to be invalid after one year, we don't
+// actually expire them. Once generated, certs are valid as long as the users
+// want. Users can delete existing certs, and new certs will be generated
+// automatically.
+
 // Inherits from NonThreadSafe in order to use the function
 // |CalledOnValidThread|.
 class NET_EXPORT ServerBoundCertService

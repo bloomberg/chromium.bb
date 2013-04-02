@@ -528,7 +528,7 @@ TEST_F(ServerBoundCertServiceTest, Expiration) {
   TestCompletionCallback callback;
   ServerBoundCertService::RequestHandle request_handle;
 
-  // Cert still valid - synchronous completion.
+  // Cert is valid - synchronous completion.
   SSLClientCertType type1;
   std::string private_key_info1, der_cert1;
   error = service_->GetDomainBoundCert(
@@ -541,20 +541,18 @@ TEST_F(ServerBoundCertServiceTest, Expiration) {
   EXPECT_STREQ("a", private_key_info1.c_str());
   EXPECT_STREQ("b", der_cert1.c_str());
 
-  // Cert expired - New cert will be generated, asynchronous completion.
+  // Expired cert is valid as well - synchronous completion.
   SSLClientCertType type2;
   std::string private_key_info2, der_cert2;
   error = service_->GetDomainBoundCert(
       "https://expired", types, &type2, &private_key_info2, &der_cert2,
       callback.callback(), &request_handle);
-  EXPECT_EQ(ERR_IO_PENDING, error);
-  EXPECT_TRUE(request_handle.is_active());
-  error = callback.WaitForResult();
   EXPECT_EQ(OK, error);
+  EXPECT_FALSE(request_handle.is_active());
   EXPECT_EQ(2, service_->cert_count());
   EXPECT_EQ(CLIENT_CERT_ECDSA_SIGN, type2);
-  EXPECT_LT(1U, private_key_info2.size());
-  EXPECT_LT(1U, der_cert2.size());
+  EXPECT_STREQ("c", private_key_info2.c_str());
+  EXPECT_STREQ("d", der_cert2.c_str());
 }
 
 #endif  // !defined(USE_OPENSSL)
