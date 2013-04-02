@@ -12,6 +12,8 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
       left for backwards compatibility.
     - New hyphenation dictionary for Russian thanks to Igor B.
       Poretsky.
+    - Updated hyphenation tables for the Norwegian language (nynorsk
+      and bokmål) thanks to Lars Bjørndal.
 
 ** Braille Table Improvements
    - da-dk-g2.ctb, mostly rewritten to use nocross and hyphenation table.

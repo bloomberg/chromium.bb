@@ -57,7 +57,6 @@ table_files = \
 	devanagari.cti \
 	digits6DotsPlusDot6.uti \
 	digits6Dots.uti \
-	litdigits6Dots.uti \
 	digits8Dots.uti \
 	dra.ctb \
 	en_CA.ctb \
@@ -125,8 +124,9 @@ table_files = \
 	hyph_fr_FR.dic \
 	hyph_hu_HU.dic \
 	hyph_it_IT.dic \
+	hyph_nb_NO.dic \
 	hyph_nl_NL.dic \
-	hyph_no_NO.dic \
+	hyph_nn_NO.dic \
 	hyph_pl_PL.dic \
 	hyph_pt_PT.dic \
 	hyph_ru.dic \
@@ -148,6 +148,7 @@ table_files = \
 	lang2table \
 	latinLetterDef6Dots.uti \
 	latinLetterDef8Dots.uti \
+	litdigits6Dots.uti \
 	loweredDigits6Dots.uti \
 	loweredDigits8Dots.uti \
 	lt.ctb \
