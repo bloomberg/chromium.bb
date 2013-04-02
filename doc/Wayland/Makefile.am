@@ -1,3 +1,20 @@
+# Documentation is built with publican
+# https://fedorahosted.org/publican/
+# Publican takes docbook-style input files and compiles them to various
+# output formats.
+#
+# How this build works:
+# * the main target is Wayland, documentation ends up in $(builddir)/Wayland/
+# * hand-written chapters are located in en_US
+#   Publican does not take a source path, so to support out-of-tree builds
+#   these are copied to $(builddir)/en-US which is the actual directory
+#   Publican uses.
+# * ProtocolSpec.xml is generated from $(top_srcdir)/protocol/wayland.xml,
+#   changed into docbook via XSLT and saved in $(builddir)/en-US/
+# * ProtocolInterfaces.xml, same as above, uses a different XSLT
+# * WaylandClientAPI.xml is generated from the doxygen output and saved in
+#   $(builddir)/en-US
+# * run Publican on en-US
 publican_sources = \
 	$(srcdir)/en_US/Wayland.ent \
 	$(srcdir)/en_US/Wayland.xml \
