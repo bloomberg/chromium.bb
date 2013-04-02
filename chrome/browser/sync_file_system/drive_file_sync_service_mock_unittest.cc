@@ -489,6 +489,12 @@ class DriveFileSyncServiceMockTest : public testing::Test {
         .RetiresOnSaturation();
   }
 
+  void SetUpDriveServiceExpectCallsForIncrementalSync() {
+    EXPECT_CALL(*mock_drive_service(),
+                GetResourceList(
+                    GURL(), 1, std::string(), false, std::string(), _));
+  }
+
   void SetUpDriveServiceExpectCallsForGetSyncRoot() {
     scoped_ptr<Value> result_value(LoadJSONFile(
         "chromeos/sync_file_system/sync_root_found.json"));
@@ -598,6 +604,7 @@ TEST_F(DriveFileSyncServiceMockTest, BatchSyncOnInitialization) {
   EXPECT_CALL(*mock_remote_observer(), OnRemoteChangeQueueUpdated(0))
       .InSequence(change_queue_seq);
   EXPECT_CALL(*mock_remote_observer(), OnRemoteChangeQueueUpdated(3))
+      .Times(AnyNumber())
       .InSequence(change_queue_seq);
 
   EXPECT_CALL(*mock_remote_observer(),
@@ -613,6 +620,10 @@ TEST_F(DriveFileSyncServiceMockTest, BatchSyncOnInitialization) {
   EXPECT_CALL(*mock_remote_observer(),
               OnRemoteServiceStateUpdated(REMOTE_SERVICE_OK, _))
       .Times(AnyNumber());
+
+  // The service will get called for incremental sync at the end after
+  // batch sync's done.
+  SetUpDriveServiceExpectCallsForIncrementalSync();
 
   SetUpDriveSyncService(true);
   message_loop()->RunUntilIdle();
@@ -757,6 +768,8 @@ TEST_F(DriveFileSyncServiceMockTest, UnregisterOrigin) {
       std::string(),
       kDirectoryResourceId1);
 
+  SetUpDriveServiceExpectCallsForIncrementalSync();
+
   SetUpDriveSyncService(true);
   message_loop()->RunUntilIdle();
 
@@ -900,6 +913,8 @@ TEST_F(DriveFileSyncServiceMockTest, RemoteChange_Busy) {
               ClearLocalChanges(CreateURL(kOrigin, kFileName), _))
       .WillOnce(InvokeCompletionCallback());
 
+  SetUpDriveServiceExpectCallsForIncrementalSync();
+
   SetUpDriveSyncService(true);
 
   scoped_ptr<ResourceEntry> entry(ResourceEntry::ExtractAndParse(
@@ -944,6 +959,8 @@ TEST_F(DriveFileSyncServiceMockTest, RemoteChange_NewFile) {
               ApplyRemoteChange(_, _, CreateURL(kOrigin, kFileName), _))
       .WillOnce(InvokeDidApplyRemoteChange());
 
+  SetUpDriveServiceExpectCallsForIncrementalSync();
+
   SetUpDriveSyncService(true);
 
   scoped_ptr<ResourceEntry> entry(ResourceEntry::ExtractAndParse(
@@ -987,6 +1004,8 @@ TEST_F(DriveFileSyncServiceMockTest, RemoteChange_UpdateFile) {
   EXPECT_CALL(*mock_remote_processor(),
               ApplyRemoteChange(_, _, CreateURL(kOrigin, kFileName), _))
       .WillOnce(InvokeDidApplyRemoteChange());
+
+  SetUpDriveServiceExpectCallsForIncrementalSync();
 
   SetUpDriveSyncService(true);
 

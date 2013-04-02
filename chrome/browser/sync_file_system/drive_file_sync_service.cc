@@ -295,7 +295,7 @@ DriveFileSyncService::DriveFileSyncService(Profile* profile)
       push_notification_registered_(false),
       push_notification_enabled_(false),
       polling_delay_seconds_(kMinimumPollingDelaySeconds),
-      may_have_unfetched_changes_(true),
+      may_have_unfetched_changes_(false),
       remote_change_processor_(NULL),
       conflict_resolution_(kDefaultPolicy),
       weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
@@ -909,6 +909,7 @@ void DriveFileSyncService::DidInitializeMetadataStore(
 
   NotifyTaskDone(status, token.Pass());
   RegisterDriveNotifications();
+  may_have_unfetched_changes_ = true;
 }
 
 void DriveFileSyncService::UpdateRegisteredOrigins() {
