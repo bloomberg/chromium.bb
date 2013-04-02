@@ -877,17 +877,18 @@ void DriveFileSyncService::DidInitializeMetadataStore(
     return;
   }
 
+  DCHECK(pending_batch_sync_origins_.empty());
+
   UpdateRegisteredOrigins();
 
   largest_fetched_changestamp_ = metadata_store_->GetLargestChangeStamp();
 
   // Mark all the batch sync origins as 'pending' so that we can start
   // batch sync when we're ready.
-  DCHECK(pending_batch_sync_origins_.empty());
   for (std::map<GURL, std::string>::const_iterator itr =
-          metadata_store_->batch_sync_origins().begin();
-        itr != metadata_store_->batch_sync_origins().end();
-        ++itr) {
+           metadata_store_->batch_sync_origins().begin();
+       itr != metadata_store_->batch_sync_origins().end();
+       ++itr) {
     pending_batch_sync_origins_.insert(itr->first);
   }
 
