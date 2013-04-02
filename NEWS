@@ -35,6 +35,7 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
      duplication. Move litdigit opcode common parts and include where needed.
    - Removed obsolete en-us-g1.utb, which has been replaced by en-us-g1.ctb.
    - en-ueb-g2.ctb, added dictionary harness tests.
+   - Corrections to Nemeth character definitions thanks to Neil Soiffer.
 
 ** Bug Fixes
    - Cursor position calculation is now based on the same code that
