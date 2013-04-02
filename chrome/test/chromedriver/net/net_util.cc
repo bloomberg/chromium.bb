@@ -63,10 +63,10 @@ class SyncUrlFetcher : public net::URLFetcherDelegate {
 
 }  // namespace
 
-bool FetchUrl(const GURL& url,
+bool FetchUrl(const std::string& url,
               URLRequestContextGetter* getter,
               std::string* response) {
-  return SyncUrlFetcher(url, getter, response).Fetch();
+  return SyncUrlFetcher(GURL(url), getter, response).Fetch();
 }
 
 bool FindOpenPort(int* port) {

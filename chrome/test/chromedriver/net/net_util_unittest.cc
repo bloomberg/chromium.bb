@@ -16,7 +16,6 @@
 #include "base/threading/thread.h"
 #include "chrome/test/chromedriver/net/net_util.h"
 #include "chrome/test/chromedriver/net/url_request_context_getter.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/base/tcp_listen_socket.h"
@@ -59,8 +58,7 @@ class FetchUrlTest : public testing::Test,
     server_ = new net::HttpServer(factory, this);
     net::IPEndPoint address;
     CHECK_EQ(net::OK, server_->GetLocalAddress(&address));
-    server_url_ = GURL(
-        base::StringPrintf("http://127.0.0.1:%d", address.port()));
+    server_url_ = base::StringPrintf("http://127.0.0.1:%d", address.port());
     event->Signal();
   }
 
@@ -108,7 +106,7 @@ class FetchUrlTest : public testing::Test,
   ServerResponse response_;
   scoped_refptr<net::HttpServer> server_;
   scoped_refptr<URLRequestContextGetter> context_getter_;
-  GURL server_url_;
+  std::string server_url_;
 };
 
 }  // namespace
@@ -135,7 +133,6 @@ TEST_F(FetchUrlTest, ConnectionClose) {
 
 TEST_F(FetchUrlTest, NoServer) {
   std::string response("stuff");
-  GURL bogus_url("http://localhost:33333");
-  ASSERT_FALSE(FetchUrl(bogus_url, context_getter_, &response));
+  ASSERT_FALSE(FetchUrl("http://localhost:33333", context_getter_, &response));
   ASSERT_STREQ("stuff", response.c_str());
 }

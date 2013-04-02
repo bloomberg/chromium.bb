@@ -20,7 +20,6 @@
 #include "chrome/test/chromedriver/chrome/navigation_tracker.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/chrome/ui_events.h"
-#include "chrome/test/chromedriver/chrome/web_view_delegate.h"
 
 namespace {
 
@@ -94,18 +93,15 @@ const char* GetAsString(KeyEventType type) {
 }  // namespace
 
 WebViewImpl::WebViewImpl(const std::string& id,
-                         DevToolsClient* client,
-                         WebViewDelegate* delegate,
-                         const CloserFunc& closer_func)
+                         scoped_ptr<DevToolsClient> client)
     : id_(id),
-      dom_tracker_(new DomTracker(client)),
-      frame_tracker_(new FrameTracker(client)),
-      navigation_tracker_(new NavigationTracker(client)),
-      dialog_manager_(new JavaScriptDialogManager(client)),
-      geolocation_override_manager_(new GeolocationOverrideManager(client)),
-      client_(client),
-      delegate_(delegate),
-      closer_func_(closer_func) {}
+      dom_tracker_(new DomTracker(client.get())),
+      frame_tracker_(new FrameTracker(client.get())),
+      navigation_tracker_(new NavigationTracker(client.get())),
+      dialog_manager_(new JavaScriptDialogManager(client.get())),
+      geolocation_override_manager_(
+          new GeolocationOverrideManager(client.get())),
+      client_(client.release()) {}
 
 WebViewImpl::~WebViewImpl() {}
 
@@ -115,13 +111,6 @@ std::string WebViewImpl::GetId() {
 
 Status WebViewImpl::ConnectIfNecessary() {
   return client_->ConnectIfNecessary();
-}
-
-Status WebViewImpl::Close() {
-  Status status = closer_func_.Run();
-  if (status.IsOk())
-    delegate_->OnWebViewClose(this);
-  return status;
 }
 
 Status WebViewImpl::Load(const std::string& url) {

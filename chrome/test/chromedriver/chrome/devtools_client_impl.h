@@ -84,6 +84,8 @@ class DevToolsClientImpl : public DevToolsClient {
       const ConditionalFunc& conditional_func) OVERRIDE;
 
  private:
+  typedef std::map<int, base::DictionaryValue*> ResponseMap;
+
   Status SendCommandInternal(
       const std::string& method,
       const base::DictionaryValue& params,
@@ -92,6 +94,7 @@ class DevToolsClientImpl : public DevToolsClient {
   bool HasReceivedCommandResponse(int cmd_id);
   Status EnsureListenersNotifiedOfConnect();
   Status EnsureListenersNotifiedOfEvent();
+
   scoped_ptr<SyncWebSocket> socket_;
   GURL url_;
   FrontendCloserFunc frontend_closer_func_;
@@ -100,7 +103,6 @@ class DevToolsClientImpl : public DevToolsClient {
   std::list<DevToolsEventListener*> unnotified_connect_listeners_;
   std::list<DevToolsEventListener*> unnotified_event_listeners_;
   internal::InspectorEvent* unnotified_event_;
-  typedef std::map<int, base::DictionaryValue*> ResponseMap;
   ResponseMap cmd_response_map_;
   int next_id_;
   int stack_count_;

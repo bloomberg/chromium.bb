@@ -16,14 +16,15 @@ class URLRequestContextGetter;
 
 class ChromeAndroidImpl : public ChromeImpl {
  public:
-  ChromeAndroidImpl(URLRequestContextGetter* context_getter,
-                    int port,
-                    const SyncWebSocketFactory& socket_factory);
+  ChromeAndroidImpl();
   virtual ~ChromeAndroidImpl();
 
-  virtual Status Launch(const std::string& package_name);
+  virtual Status Launch(URLRequestContextGetter* context_getter,
+                        int port,
+                        const SyncWebSocketFactory& socket_factory,
+                        const std::string& package_name);
 
-  // Overriden from Chrome:
+  // Overridden from Chrome:
   virtual std::string GetOperatingSystemName() OVERRIDE;
 
   // Overridden from ChromeImpl:

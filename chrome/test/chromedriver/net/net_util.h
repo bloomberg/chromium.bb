@@ -7,12 +7,11 @@
 
 #include <string>
 
-class GURL;
 class URLRequestContextGetter;
 
 // Synchronously fetches data from a GET HTTP request to the given URL.
 // Returns true if response is 200 OK and sets response body to |response|.
-bool FetchUrl(const GURL& url,
+bool FetchUrl(const std::string& url,
               URLRequestContextGetter* getter,
               std::string* response);
 

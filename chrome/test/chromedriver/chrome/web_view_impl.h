@@ -27,22 +27,16 @@ struct KeyEvent;
 struct MouseEvent;
 class NavigationTracker;
 class Status;
-class WebViewDelegate;
 
 class WebViewImpl : public WebView {
  public:
-  typedef base::Callback<Status()> CloserFunc;
-  // Takes ownership of |client|.
   WebViewImpl(const std::string& id,
-              DevToolsClient* client,
-              WebViewDelegate* delegate,
-              const CloserFunc& closer_func);
+              scoped_ptr<DevToolsClient> client);
   virtual ~WebViewImpl();
 
   // Overridden from WebView:
   virtual std::string GetId() OVERRIDE;
   virtual Status ConnectIfNecessary() OVERRIDE;
-  virtual Status Close() OVERRIDE;
   virtual Status Load(const std::string& url) OVERRIDE;
   virtual Status Reload() OVERRIDE;
   virtual Status EvaluateScript(const std::string& frame,
@@ -88,8 +82,6 @@ class WebViewImpl : public WebView {
   scoped_ptr<JavaScriptDialogManager> dialog_manager_;
   scoped_ptr<GeolocationOverrideManager> geolocation_override_manager_;
   scoped_ptr<DevToolsClient> client_;
-  WebViewDelegate* delegate_;
-  CloserFunc closer_func_;
 };
 
 namespace internal {

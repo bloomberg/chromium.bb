@@ -20,23 +20,23 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/chrome/chrome_finder.h"
+#include "chrome/test/chromedriver/chrome/devtools_http_client.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/chrome/user_data_dir.h"
 #include "chrome/test/chromedriver/chrome/zip.h"
 #include "chrome/test/chromedriver/net/sync_websocket_impl.h"
 #include "chrome/test/chromedriver/net/url_request_context_getter.h"
 
-ChromeDesktopImpl::ChromeDesktopImpl(
-    URLRequestContextGetter* context_getter,
-    int port,
-    const SyncWebSocketFactory& socket_factory)
-    : ChromeImpl(context_getter, port, socket_factory) {}
+ChromeDesktopImpl::ChromeDesktopImpl() {}
 
 ChromeDesktopImpl::~ChromeDesktopImpl() {
   base::CloseProcessHandle(process_);
 }
 
-Status ChromeDesktopImpl::Launch(const base::FilePath& exe,
+Status ChromeDesktopImpl::Launch(URLRequestContextGetter* context_getter,
+                                 int port,
+                                 const SyncWebSocketFactory& socket_factory,
+                                 const base::FilePath& exe,
                                  const base::ListValue* args,
                                  const base::ListValue* extensions,
                                  const base::DictionaryValue* prefs,
@@ -50,8 +50,7 @@ Status ChromeDesktopImpl::Launch(const base::FilePath& exe,
   LOG(INFO) << "Using chrome from " << program.value();
 
   CommandLine command(program);
-  command.AppendSwitchASCII("remote-debugging-port",
-                            base::IntToString(GetPort()));
+  command.AppendSwitchASCII("remote-debugging-port", base::IntToString(port));
   command.AppendSwitch("no-first-run");
   command.AppendSwitch("enable-logging");
   command.AppendSwitchASCII("logging-level", "1");
@@ -97,7 +96,9 @@ Status ChromeDesktopImpl::Launch(const base::FilePath& exe,
   if (!base::LaunchProcess(command, options, &process_))
     return Status(kUnknownError, "chrome failed to start");
 
-  Status status = Init();
+  scoped_ptr<DevToolsHttpClient> devtools_client(
+      new DevToolsHttpClient(port, context_getter, socket_factory));
+  Status status = Init(devtools_client.Pass());
   if (status.IsError()) {
     Quit();
     return status;

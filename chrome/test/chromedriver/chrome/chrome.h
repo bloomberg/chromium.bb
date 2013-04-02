@@ -25,6 +25,9 @@ class Chrome {
   // Return the WebView for the given id.
   virtual Status GetWebViewById(const std::string& id, WebView** web_view) = 0;
 
+  // Closes the specified WebView.
+  virtual Status CloseWebView(const std::string& id) = 0;
+
   // Returns whether a JavaScript dialog is open.
   virtual Status IsJavaScriptDialogOpen(bool* is_open) = 0;
 

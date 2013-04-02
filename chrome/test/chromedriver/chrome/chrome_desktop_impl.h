@@ -26,19 +26,20 @@ class ListValue;
 
 class ChromeDesktopImpl : public ChromeImpl {
  public:
-  ChromeDesktopImpl(URLRequestContextGetter* context_getter,
-                    int port,
-                    const SyncWebSocketFactory& socket_factory);
+  ChromeDesktopImpl();
   virtual ~ChromeDesktopImpl();
 
-  virtual Status Launch(const base::FilePath& exe,
+  virtual Status Launch(URLRequestContextGetter* context_getter,
+                        int port,
+                        const SyncWebSocketFactory& socket_factory,
+                        const base::FilePath& exe,
                         const base::ListValue* args,
                         const base::ListValue* extensions,
                         const base::DictionaryValue* prefs,
                         const base::DictionaryValue* local_state,
                         const std::string& log_path);
 
-  // Overriden from Chrome:
+  // Overridden from Chrome:
   virtual std::string GetOperatingSystemName() OVERRIDE;
 
   // Overridden from ChromeImpl:

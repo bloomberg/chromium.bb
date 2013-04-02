@@ -26,6 +26,10 @@ Status StubChrome::GetWebViewById(const std::string& id, WebView** web_view) {
   return Status(kOk);
 }
 
+Status StubChrome::CloseWebView(const std::string& id) {
+  return Status(kOk);
+}
+
 Status StubChrome::IsJavaScriptDialogOpen(bool* is_open) {
   return Status(kOk);
 }

@@ -62,9 +62,9 @@ Status ExecuteNewSession(
   std::string android_package;
   if (desired_caps->GetString("chromeOptions.android_package",
                               &android_package)) {
-    scoped_ptr<ChromeAndroidImpl> chrome_android(new ChromeAndroidImpl(
-        context_getter, port, socket_factory));
-    status = chrome_android->Launch(android_package);
+    scoped_ptr<ChromeAndroidImpl> chrome_android(new ChromeAndroidImpl());
+    status = chrome_android->Launch(
+        context_getter, port, socket_factory, android_package);
     chrome.reset(chrome_android.release());
   } else {
     base::FilePath::StringType path_str;
@@ -117,11 +117,11 @@ Status ExecuteNewSession(
                     "chrome log path must be a string");
     }
 
-    scoped_ptr<ChromeDesktopImpl> chrome_desktop(new ChromeDesktopImpl(
-        context_getter, port, socket_factory));
-    status = chrome_desktop->Launch(chrome_exe, args_list, extensions_list,
-                                    prefs_dict, local_state_dict,
-                                    chrome_log_path);
+    scoped_ptr<ChromeDesktopImpl> chrome_desktop(new ChromeDesktopImpl());
+    status = chrome_desktop->Launch(
+        context_getter, port, socket_factory,
+        chrome_exe, args_list, extensions_list,
+        prefs_dict, local_state_dict, chrome_log_path);
     chrome.reset(chrome_desktop.release());
   }
   if (status.IsError())

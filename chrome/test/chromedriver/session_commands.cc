@@ -132,7 +132,7 @@ Status ExecuteClose(
   if (status.IsError())
     return status;
 
-  status = web_view->Close();
+  status = session->chrome->CloseWebView(web_view->GetId());
   if (status.IsError())
     return status;
 

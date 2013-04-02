@@ -19,10 +19,6 @@ Status StubWebView::ConnectIfNecessary() {
   return Status(kOk);
 }
 
-Status StubWebView::Close() {
-  return Status(kOk);
-}
-
 Status StubWebView::Load(const std::string& url) {
   return Status(kOk);
 }
