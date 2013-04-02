@@ -74,8 +74,6 @@ message DriveEntryProto {
   // used to upload a new file to that directory. See
   // https://developers.google.com/google-apps/documents-list/
   optional string upload_url = 8;
-  // This stores a DriveEntryKind defined in drive_entry_kinds.h.
-  optional int32 kind = 12;
   // This field is used for processing the feeds from the server. Deleted
   // entries won't be stored in the metadata storage.
   optional bool deleted = 11;

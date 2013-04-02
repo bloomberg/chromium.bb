@@ -63,7 +63,6 @@ DriveEntryProto ConvertResourceEntryToDriveEntryProto(
   }
 
   entry_proto.set_deleted(entry.deleted());
-  entry_proto.set_kind(entry.kind());
   entry_proto.set_shared_with_me(HasSharedWithMeLabel(entry));
 
   PlatformFileInfoProto* file_info = entry_proto.mutable_file_info();

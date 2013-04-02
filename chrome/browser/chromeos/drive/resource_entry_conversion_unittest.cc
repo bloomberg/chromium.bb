@@ -35,8 +35,6 @@ TEST(ResourceEntryConversionTest, ConvertResourceEntryToDriveEntryProto_File) {
   EXPECT_EQ("",  entry_proto.parent_resource_id());
 
   EXPECT_FALSE(entry_proto.deleted());
-  EXPECT_EQ(google_apis::ENTRY_KIND_FILE, entry_proto.kind());
-
   EXPECT_FALSE(entry_proto.shared_with_me());
 
   base::Time expected_creation_time;
@@ -120,8 +118,6 @@ TEST(ResourceEntryConversionTest,
   EXPECT_EQ("",  entry_proto.parent_resource_id());
 
   EXPECT_FALSE(entry_proto.deleted());
-  EXPECT_EQ(google_apis::ENTRY_KIND_DOCUMENT, entry_proto.kind());
-
   EXPECT_FALSE(entry_proto.shared_with_me());
 
   // 2011-12-12T23:28:52.783Z
@@ -208,8 +204,6 @@ TEST(ResourceEntryConversionTest,
   EXPECT_EQ("folder:1_folder_resource_id",  entry_proto.parent_resource_id());
 
   EXPECT_FALSE(entry_proto.deleted());
-  EXPECT_EQ(google_apis::ENTRY_KIND_FOLDER, entry_proto.kind());
-
   EXPECT_FALSE(entry_proto.shared_with_me());
 
   // 2011-04-01T18:34:08.234Z
@@ -286,8 +280,6 @@ TEST(ResourceEntryConversionTest,
   EXPECT_EQ("",  entry_proto.parent_resource_id());
 
   EXPECT_TRUE(entry_proto.deleted());  // The document was deleted.
-  EXPECT_EQ(google_apis::ENTRY_KIND_DOCUMENT, entry_proto.kind());
-
   EXPECT_FALSE(entry_proto.shared_with_me());
 
   // 2012-04-10T22:50:55.797Z
