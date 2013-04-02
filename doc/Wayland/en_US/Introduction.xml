@@ -64,7 +64,7 @@
   </section>
 
   <section id="sect-Compositing-manager-display-server">
-    <title>Compositing manager as the display server</title>
+    <title>The compositing manager as the display server</title>
     <para>
       Wayland is a new display server and compositing protocol, and Weston
       is the implementation of this protocol which builds on top of all the
