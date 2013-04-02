@@ -52,6 +52,13 @@ extern const char kPolicyMissingMitigationMode[];
 extern const char kAllowRedeemChromeOsRegistrationOffers[];
 
 extern const char kStartUpFlags[];
+
+extern const char kKioskAppSettingsPrefix[];
+extern const int kKioskAppSettingsPrefixLength;
+extern const char kKioskApps[];
+extern const char kKioskAutoLaunch[];
+extern const char kKioskDisableBailoutShortcut[];
+
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_SETTINGS_CROS_SETTINGS_NAMES_H_

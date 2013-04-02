@@ -11,7 +11,10 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launcher.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
+#include "content/public/browser/notification_details.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -21,11 +24,11 @@ namespace chromeos {
 
 KioskAppMenuHandler::KioskAppMenuHandler()
     : initialized_(false) {
-  KioskAppManager::Get()->AddObserver(this);
+  CrosSettings::Get()->AddSettingsObserver(kKioskApps, this);
 }
 
 KioskAppMenuHandler::~KioskAppMenuHandler() {
-  KioskAppManager::Get()->RemoveObserver(this);
+  CrosSettings::Get()->RemoveSettingsObserver(kKioskApps, this);
 }
 
 void KioskAppMenuHandler::GetLocalizedStrings(
@@ -109,17 +112,14 @@ void KioskAppMenuHandler::HandleCheckKioskAppLaunchError(
                                    base::StringValue(error_message));
 }
 
-void KioskAppMenuHandler::OnKioskAutoLaunchAppChanged() {
-}
+void KioskAppMenuHandler::Observe(int type,
+                                  const content::NotificationSource& source,
+                                  const content::NotificationDetails& details) {
+  DCHECK_EQ(chrome::NOTIFICATION_SYSTEM_SETTING_CHANGED, type);
+  DCHECK_EQ(kKioskApps,
+            *content::Details<const std::string>(details).ptr());
 
-void KioskAppMenuHandler::OnKioskAppsChanged() {
   SendKioskApps();
-}
-
-void KioskAppMenuHandler::OnKioskAppDataChanged(const std::string& app_id) {
-}
-
-void KioskAppMenuHandler::OnKioskAppDataLoadFailure(const std::string& app_id) {
 }
 
 }  // namespace chromeos

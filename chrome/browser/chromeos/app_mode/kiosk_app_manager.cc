@@ -10,11 +10,14 @@
 #include "base/path_service.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/stl_util.h"
+#include "base/values.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_data.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager_observer.h"
-#include "chrome/browser/chromeos/app_mode/kiosk_app_prefs_local_state.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chromeos/cryptohome/async_method_caller.h"
+#include "content/public/browser/notification_details.h"
 
 namespace chromeos {
 
@@ -43,6 +46,14 @@ KioskAppManager* KioskAppManager::Get() {
 }
 
 // static
+void KioskAppManager::Shutdown() {
+  if (instance == NULL)
+    return;
+
+  instance.Pointer()->CleanUp();
+}
+
+// static
 void KioskAppManager::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(kKioskDictionaryName);
 }
@@ -58,19 +69,25 @@ KioskAppManager::App::App() : is_loading(false) {}
 KioskAppManager::App::~App() {}
 
 std::string KioskAppManager::GetAutoLaunchApp() const {
-  return prefs_->GetAutoLaunchApp();
+  std::string app_id;
+  if (CrosSettings::Get()->GetString(kKioskAutoLaunch, &app_id))
+    return app_id;
+
+  return std::string();
 }
 
 void KioskAppManager::SetAutoLaunchApp(const std::string& app_id) {
-  prefs_->SetAutoLaunchApp(app_id);
+  CrosSettings::Get()->SetString(kKioskAutoLaunch, app_id);
 }
 
 void KioskAppManager::AddApp(const std::string& app_id) {
-  prefs_->AddApp(app_id);
+  base::StringValue value(app_id);
+  CrosSettings::Get()->AppendToList(kKioskApps, &value);
 }
 
 void KioskAppManager::RemoveApp(const std::string& app_id) {
-  prefs_->RemoveApp(app_id);
+  base::StringValue value(app_id);
+  CrosSettings::Get()->RemoveFromList(kKioskApps, &value);
 }
 
 void KioskAppManager::GetApps(Apps* apps) const {
@@ -97,6 +114,14 @@ const base::RefCountedString* KioskAppManager::GetAppRawIcon(
   return data->raw_icon();
 }
 
+bool KioskAppManager::GetDisableBailoutShortcut() const {
+  bool disable;
+  if (CrosSettings::Get()->GetBoolean(kKioskDisableBailoutShortcut, &disable))
+    return disable;
+
+  return false;
+}
+
 void KioskAppManager::AddObserver(KioskAppManagerObserver* observer) {
   observers_.AddObserver(observer);
 }
@@ -105,14 +130,16 @@ void KioskAppManager::RemoveObserver(KioskAppManagerObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-KioskAppManager::KioskAppManager()
-    : prefs_(new KioskAppPrefsLocalState) {
+KioskAppManager::KioskAppManager() {
   UpdateAppData();
-  prefs_->AddObserver(this);
+  CrosSettings::Get()->AddSettingsObserver(kKioskApps, this);
 }
 
-KioskAppManager::~KioskAppManager() {
-  prefs_->RemoveObserver(this);
+KioskAppManager::~KioskAppManager() {}
+
+void KioskAppManager::CleanUp() {
+  CrosSettings::Get()->RemoveSettingsObserver(kKioskApps, this);
+  apps_.clear();
 }
 
 const KioskAppData* KioskAppManager::GetAppData(
@@ -133,15 +160,20 @@ void KioskAppManager::UpdateAppData() {
     old_apps[apps_[i]->id()] = apps_[i];
   apps_.weak_clear();  // |old_apps| takes ownership
 
+  const base::ListValue* new_apps;
+  CHECK(CrosSettings::Get()->GetList(kKioskApps, &new_apps));
+
   // Re-populates |apps_| and reuses existing KioskAppData when possible.
-  KioskAppPrefs::AppIds app_ids;
-  prefs_->GetApps(&app_ids);
-  for (size_t i = 0; i < app_ids.size(); ++i) {
-    const std::string& id = app_ids[i];
-    std::map<std::string, KioskAppData*>::iterator it = old_apps.find(id);
-    if (it != old_apps.end()) {
-      apps_.push_back(it->second);
-      old_apps.erase(it);
+  for (base::ListValue::const_iterator new_it = new_apps->begin();
+       new_it != new_apps->end();
+       ++new_it) {
+    std::string id;
+    CHECK((*new_it)->GetAsString(&id));
+
+    std::map<std::string, KioskAppData*>::iterator old_it = old_apps.find(id);
+    if (old_it != old_apps.end()) {
+      apps_.push_back(old_it->second);
+      old_apps.erase(old_it);
     } else {
       KioskAppData* new_app = new KioskAppData(this, id);
       apps_.push_back(new_app);  // Takes ownership of |new_app|.
@@ -159,18 +191,14 @@ void KioskAppManager::UpdateAppData() {
   STLDeleteValues(&old_apps);
 }
 
-void KioskAppManager::OnKioskAutoLaunchAppChanged()  {
-  FOR_EACH_OBSERVER(KioskAppManagerObserver,
-                    observers_,
-                    OnKioskAutoLaunchAppChanged());
-}
+void KioskAppManager::Observe(int type,
+                              const content::NotificationSource& source,
+                              const content::NotificationDetails& details) {
+  DCHECK_EQ(chrome::NOTIFICATION_SYSTEM_SETTING_CHANGED, type);
+  DCHECK_EQ(kKioskApps,
+            *content::Details<const std::string>(details).ptr());
 
-void KioskAppManager::OnKioskAppsChanged() {
   UpdateAppData();
-
-  FOR_EACH_OBSERVER(KioskAppManagerObserver,
-                    observers_,
-                    OnKioskAppsChanged());
 }
 
 void KioskAppManager::GetKioskAppIconCacheDir(base::FilePath* cache_dir) {

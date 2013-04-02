@@ -41,8 +41,8 @@ content::WebUIDataSource* CreateWebUIDataSource() {
       l10n_util::GetStringFUTF16(IDS_APP_START_BAILOUT_SHORTCUT_FORMAT,
                                  product_os_name));
 
-  // TODO(xiyuan): Wire this with settings when that change lands.
-  source->AddBoolean("shortcutEnabled", true);
+  source->AddBoolean("shortcutEnabled",
+                     !KioskAppManager::Get()->GetDisableBailoutShortcut());
 
   source->SetJsonPath("strings.js");
   source->AddResourcePath("app_launch.js", IDR_APP_LAUNCH_SPLASH_JS);

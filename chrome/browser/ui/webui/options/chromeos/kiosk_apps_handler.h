@@ -5,8 +5,15 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_OPTIONS_CHROMEOS_KIOSK_APPS_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS_CHROMEOS_KIOSK_APPS_HANDLER_H_
 
+#include <string>
+
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager_observer.h"
-#include "chrome/browser/ui/webui/options/options_ui.h"
+#include "chrome/browser/ui/webui/options/chromeos/core_chromeos_options_handler.h"
+
+namespace base {
+class DictionaryValue;
+class ListValue;
+}
 
 namespace chromeos {
 
@@ -14,7 +21,7 @@ class KioskAppManager;
 
 namespace options {
 
-class KioskAppsHandler : public ::options::OptionsPageUIHandler,
+class KioskAppsHandler : public CoreChromeOSOptionsHandler,
                          public KioskAppManagerObserver {
  public:
   KioskAppsHandler();
@@ -26,8 +33,6 @@ class KioskAppsHandler : public ::options::OptionsPageUIHandler,
       base::DictionaryValue* localized_strings) OVERRIDE;
 
   // KioskAppPrefsObserver overrides:
-  virtual void OnKioskAutoLaunchAppChanged() OVERRIDE;
-  virtual void OnKioskAppsChanged() OVERRIDE;
   virtual void OnKioskAppDataChanged(const std::string& app_id) OVERRIDE;
   virtual void OnKioskAppDataLoadFailure(const std::string& app_id) OVERRIDE;
 

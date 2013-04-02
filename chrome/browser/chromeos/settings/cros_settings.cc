@@ -12,6 +12,7 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/settings/device_settings_provider.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
+#include "chrome/browser/chromeos/settings/kiosk_app_local_settings.h"
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
 #include "chrome/browser/chromeos/settings/system_settings_provider.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -284,6 +285,8 @@ CrosSettings::CrosSettings() {
   }
   // System settings are not mocked currently.
   AddSettingsProvider(new SystemSettingsProvider(notify_cb));
+  // Kiosk app settings are not mocked.
+  AddSettingsProvider(new KioskAppLocalSettings(notify_cb));
 }
 
 CrosSettings::~CrosSettings() {

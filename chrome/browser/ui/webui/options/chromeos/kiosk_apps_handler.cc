@@ -20,6 +20,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_ui.h"
 #include "googleurl/src/gurl.h"
+#include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/webui/web_ui_util.h"
@@ -139,14 +140,27 @@ void KioskAppsHandler::GetLocalizedValues(
   localized_strings->SetString(
       "invalidApp",
       l10n_util::GetStringUTF16(IDS_OPTIONS_KIOSK_INVALID_APP));
-}
-
-void KioskAppsHandler::OnKioskAutoLaunchAppChanged() {
-  SendKioskApps();
-}
-
-void KioskAppsHandler::OnKioskAppsChanged() {
-  SendKioskApps();
+  localized_strings->SetString(
+      "kioskDiableBailoutShortcutLabel",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_KIOSK_DISABLE_BAILOUT_SHORTCUT_LABEL));
+  localized_strings->SetString(
+      "kioskDisableBailoutShortcutWarningBold",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_KIOSK_DISABLE_BAILOUT_SHORTCUT_WARNING_BOLD));
+  const string16 product_os_name =
+      l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_OS_NAME);
+  localized_strings->SetString(
+      "kioskDisableBailoutShortcutWarning",
+      l10n_util::GetStringFUTF16(
+          IDS_OPTIONS_KIOSK_DISABLE_BAILOUT_SHORTCUT_WARNING_FORMAT,
+          product_os_name));
+  localized_strings->SetString(
+      "kioskDisableBailoutShortcutConfirm",
+      l10n_util::GetStringUTF16(IDS_CONFIRM_MESSAGEBOX_YES_BUTTON_LABEL));
+  localized_strings->SetString(
+      "kioskDisableBailoutShortcutCancel",
+      l10n_util::GetStringUTF16(IDS_CONFIRM_MESSAGEBOX_NO_BUTTON_LABEL));
 }
 
 void KioskAppsHandler::OnKioskAppDataChanged(const std::string& app_id) {

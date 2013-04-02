@@ -778,6 +778,9 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   // subsystems.
   automatic_reboot_manager_.reset();
 
+  // Clean up dependency on CrosSettings and stop pending data fetches.
+  KioskAppManager::Shutdown();
+
   ChromeBrowserMainPartsLinux::PostMainMessageLoopRun();
 }
 

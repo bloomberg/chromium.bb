@@ -13,6 +13,7 @@
 #include "base/time.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_update_service.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/ui/app_launch_view.h"
@@ -345,6 +346,9 @@ void StartupAppLauncher::OnNetworkChanged(
 
 void StartupAppLauncher::OnKeyEvent(ui::KeyEvent* event) {
   if (event->type() != ui::ET_KEY_PRESSED)
+    return;
+
+  if (KioskAppManager::Get()->GetDisableBailoutShortcut())
     return;
 
   if (event->key_code() != ui::VKEY_S ||

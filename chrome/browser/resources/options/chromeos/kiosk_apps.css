@@ -76,3 +76,11 @@
 .kiosk-app-list-item:not([auto-launch]):hover .enable-auto-launch-button {
   display: inline-block;
 }
+
+#kiosk-disable-bailout-confirm-overlay {
+  width: 250px
+}
+
+#kiosk-disable-bailout-warning-bold {
+  font-weight: bold;
+}

@@ -11,12 +11,6 @@ namespace chromeos {
 
 class KioskAppManagerObserver {
  public:
-  // Invoked when the auto launch app is changed.
-  virtual void OnKioskAutoLaunchAppChanged() = 0;
-
-  // Invoked when an app is added or removed from kiosk app list.
-  virtual void OnKioskAppsChanged() = 0;
-
   // Invoked when the app data is changed or loading state is changed.
   virtual void OnKioskAppDataChanged(const std::string& app_id) = 0;
 

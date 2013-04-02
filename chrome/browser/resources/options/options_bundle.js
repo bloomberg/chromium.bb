@@ -42,6 +42,7 @@
   var BluetoothPairing = options.BluetoothPairing;
   var KeyboardOverlay = options.KeyboardOverlay;
   var KioskAppsOverlay = options.KioskAppsOverlay;
+  var KioskDisableBailoutConfirm = options.KioskDisableBailoutConfirm;
   var PointerOverlay = options.PointerOverlay;
   var UIAccountTweaks = uiAccountTweaks.UIAccountTweaks;
 </if>

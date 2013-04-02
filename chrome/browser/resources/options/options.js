@@ -194,6 +194,8 @@ function load() {
     OptionsPage.registerOverlay(KioskAppsOverlay.getInstance(),
                                 BrowserOptions.getInstance(),
                                 [$('manage-kiosk-apps-button')]);
+    OptionsPage.registerOverlay(KioskDisableBailoutConfirm.getInstance(),
+                                KioskAppsOverlay.getInstance());
     OptionsPage.registerOverlay(PointerOverlay.getInstance(),
                                 BrowserOptions.getInstance(),
                                 [$('pointer-settings-button')]);

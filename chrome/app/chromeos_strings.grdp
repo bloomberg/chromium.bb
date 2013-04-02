@@ -2651,7 +2651,7 @@ Battery full
     Manage kiosk applications
   </message>
   <message name="IDS_OPTIONS_KIOSK_OVERLAY_TITLE" desc="The title text of the kiosk settings overlay.">
-    Kiosk
+    Manage Kiosk Applications
   </message>
   <message name="IDS_OPTIONS_KIOSK_ADD_APP" desc="Label above the application id text input in the kiosk settings overlay.">
     Add kiosk application:
@@ -2660,16 +2660,25 @@ Battery full
     Enter application id or webstore URL.
   </message>
   <message name="IDS_OPTIONS_KIOSK_ENABLE_AUTO_LAUNCH" desc="Text for a button that enables an application to auto launch on startup in the kiosk settings overlay.">
-    Enable Auto Launch
+    Set to auto-launch
   </message>
   <message name="IDS_OPTIONS_KIOSK_DISABLE_AUTO_LAUNCH" desc="Text for a button that disables an application to auto launch on startup in the kiosk settings overlay.">
-    Disable Auto Launch
+    Disable auto-launch
   </message>
   <message name="IDS_OPTIONS_KIOSK_AUTO_LAUNCH" desc="Text shows besides an application that is set to auto launch on start up in the kiosk settings overlay.">
-    Auto Launch
+    (auto-launched)
   </message>
   <message name="IDS_OPTIONS_KIOSK_INVALID_APP" desc="Text shows besides an application that is not valid in the kiosk settings overlay.">
     Invalid application.
+  </message>
+  <message name="IDS_OPTIONS_KIOSK_DISABLE_BAILOUT_SHORTCUT_LABEL" desc="Label text for a checkbox to disable kiosk application launch bail out shortcut.">
+    Permanently keep this device in kiosk mode.
+  </message>
+  <message name="IDS_OPTIONS_KIOSK_DISABLE_BAILOUT_SHORTCUT_WARNING_BOLD" desc="Bold text of the warning dialog for disabling kiosk application launch bail out shortcut.">
+    Are you sure you want to permanently keep this device in kiosk mode?
+  </message>
+  <message name="IDS_OPTIONS_KIOSK_DISABLE_BAILOUT_SHORTCUT_WARNING_FORMAT" desc="Warning text of disabling kiosk application launch bail out shortcut.">
+    The only way to undo this is to re-install <ph name="IDS_SHORT_PRODUCT_OS_NAME">$1<ex>Chrome OS</ex></ph>.
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_LEARN_MORE" desc="The text of the learn more link on the keyboard overlay.">
     Learn more

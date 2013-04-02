@@ -10,11 +10,10 @@
 
 #include "base/basictypes.h"
 #include "base/lazy_instance.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_data_delegate.h"
-#include "chrome/browser/chromeos/app_mode/kiosk_app_prefs_observer.h"
+#include "content/public/browser/notification_observer.h"
 #include "ui/gfx/image/image_skia.h"
 
 class PrefRegistrySimple;
@@ -27,10 +26,9 @@ namespace chromeos {
 
 class KioskAppData;
 class KioskAppManagerObserver;
-class KioskAppPrefs;
 
-// KioskAppManager manages kiosk app prefs and cached app data.
-class KioskAppManager : public KioskAppPrefsObserver,
+// KioskAppManager manages cached app data.
+class KioskAppManager : public content::NotificationObserver,
                         public KioskAppDataDelegate {
  public:
   // Struct to hold app info returned from GetApps() call.
@@ -71,6 +69,9 @@ class KioskAppManager : public KioskAppPrefsObserver,
   // Gets the KioskAppManager instance, which is lazily created on first call..
   static KioskAppManager* Get();
 
+  // Prepares for shutdown and calls CleanUp() if needed.
+  static void Shutdown();
+
   // Registers kiosk app entries in local state.
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
@@ -96,6 +97,9 @@ class KioskAppManager : public KioskAppPrefsObserver,
   // is unknown.
   const base::RefCountedString* GetAppRawIcon(const std::string& app_id) const;
 
+  // Gets whether the bailout shortcut is disabled.
+  bool GetDisableBailoutShortcut() const;
+
   void AddObserver(KioskAppManagerObserver* observer);
   void RemoveObserver(KioskAppManagerObserver* observer);
 
@@ -107,22 +111,25 @@ class KioskAppManager : public KioskAppPrefsObserver,
   KioskAppManager();
   virtual ~KioskAppManager();
 
+  // Stop all data loading and remove its dependency on CrosSettings.
+  void CleanUp();
+
   // Gets KioskAppData for the given app id.
   const KioskAppData* GetAppData(const std::string& app_id) const;
 
   // Update app data |apps_| based on |prefs_|.
   void UpdateAppData();
 
-  // KioskAppPrefsObserver overrides:
-  virtual void OnKioskAutoLaunchAppChanged() OVERRIDE;
-  virtual void OnKioskAppsChanged() OVERRIDE;
+  // content::NotificationObserver overrides:
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // KioskAppDataDelegate overrides:
   virtual void GetKioskAppIconCacheDir(base::FilePath* cache_dir) OVERRIDE;
   virtual void OnKioskAppDataChanged(const std::string& app_id) OVERRIDE;
   virtual void OnKioskAppDataLoadFailure(const std::string& app_id) OVERRIDE;
 
-  scoped_ptr<KioskAppPrefs> prefs_;
   ScopedVector<KioskAppData> apps_;
   ObserverList<KioskAppManagerObserver, true> observers_;
 

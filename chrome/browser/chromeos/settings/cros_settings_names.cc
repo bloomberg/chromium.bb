@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
 
+#include "base/basictypes.h"
+
 namespace chromeos {
 
 const char kCrosSettingsPrefix[] = "cros.";
@@ -96,4 +98,22 @@ const char kAllowRedeemChromeOsRegistrationOffers[] =
 // A list pref storing the flags that need to be applied to the browser upon
 // start-up.
 const char kStartUpFlags[] = "cros.startup_flags";
+
+// A prefix for all kiosk app setting names.
+const char kKioskAppSettingsPrefix[] = "cros.kiosk.";
+const int kKioskAppSettingsPrefixLength =
+    arraysize(kKioskAppSettingsPrefix) - 1;  // exclude NULL terminator.
+
+// A list of available kiosk application IDs.
+const char kKioskApps[] = "cros.kiosk.apps";
+
+// An app id string of the current auto launch app. Empty string means no auto
+// launch app. Default is empty.
+const char kKioskAutoLaunch[] = "cros.kiosk.auto_launch";
+
+// A boolean pref of whether the app launch bailout shortcut should be disabled.
+// When set to true, the bailout shortcut is disabled. Default is false.
+const char kKioskDisableBailoutShortcut[] =
+    "cros.kiosk.disable_bailout_shortcut";
+
 }  // namespace chromeos

@@ -28,8 +28,6 @@ class TestKioskAppManagerObserver : public KioskAppManagerObserver {
  public:
   explicit TestKioskAppManagerObserver(KioskAppManager* manager)
       : manager_(manager),
-        auto_launch_app_changed_count_(0),
-        apps_changed_count_(0),
         data_changed_count_(0),
         load_failure_count_(0) {
     manager_->AddObserver(this);
@@ -39,27 +37,15 @@ class TestKioskAppManagerObserver : public KioskAppManagerObserver {
   }
 
   void Reset() {
-    auto_launch_app_changed_count_ = 0;
-    apps_changed_count_ = 0;
     data_changed_count_ = 0;
     load_failure_count_ = 0;
   }
 
-  int auto_launch_app_changed_count() const {
-    return auto_launch_app_changed_count_;
-  }
-  int apps_changed_count() const { return apps_changed_count_; }
   int data_changed_count() const { return data_changed_count_; }
   int load_failure_count() const { return load_failure_count_; }
 
  private:
   // KioskAppManagerObserver overrides:
-  virtual void OnKioskAutoLaunchAppChanged() OVERRIDE {
-    ++auto_launch_app_changed_count_;
-  }
-  virtual void OnKioskAppsChanged() OVERRIDE {
-    ++apps_changed_count_;
-  }
   virtual void OnKioskAppDataChanged(const std::string& app_id) OVERRIDE {
     ++data_changed_count_;
   }
@@ -68,8 +54,6 @@ class TestKioskAppManagerObserver : public KioskAppManagerObserver {
   }
 
   KioskAppManager* manager_;
-  int auto_launch_app_changed_count_;
-  int apps_changed_count_;
   int data_changed_count_;
   int load_failure_count_;
 
@@ -95,8 +79,6 @@ class AppDataLoadWaiter : public KioskAppManagerObserver {
 
  private:
   // KioskAppManagerObserver overrides:
-  virtual void OnKioskAutoLaunchAppChanged() OVERRIDE {}
-  virtual void OnKioskAppsChanged() OVERRIDE {}
   virtual void OnKioskAppDataChanged(const std::string& app_id) OVERRIDE {
     loaded_ = true;
     MessageLoop::current()->Quit();
@@ -141,9 +123,9 @@ class KioskAppManagerTest : public InProcessBrowserTest {
     manager_.reset(new KioskAppManager);
   }
   virtual void CleanUpOnMainThread() OVERRIDE {
-    // Release |manager_| while main thread still runs.
+    // Clean up while main thread still runs.
     // See http://crbug.com/176659.
-    manager_.reset();
+    manager_->CleanUp();
   }
 
   std::string GetAppIds() const {
@@ -158,10 +140,6 @@ class KioskAppManagerTest : public InProcessBrowserTest {
     }
 
     return str;
-  }
-
-  void ReloadPrefs() {
-    manager_->UpdateAppData();
   }
 
   KioskAppManager* manager() { return manager_.get(); }
@@ -199,13 +177,12 @@ IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, Basic) {
   // Set a none exist app as auto launch.
   TestKioskAppManagerObserver observer(manager());
   manager()->SetAutoLaunchApp("none_exist_app");
-  EXPECT_EQ(0, observer.auto_launch_app_changed_count());
   EXPECT_EQ("", manager()->GetAutoLaunchApp());
 
   // Add an exist app again.
   observer.Reset();
   manager()->AddApp("app_1");
-  EXPECT_EQ(0, observer.apps_changed_count());
+  EXPECT_EQ("app_1", GetAppIds());
 }
 
 IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, LoadCached) {
@@ -224,7 +201,8 @@ IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, LoadCached) {
                                    KioskAppManager::kKioskDictionaryName);
   dict_update->Set(KioskAppManager::kKeyApps, apps_dict.release());
 
-  ReloadPrefs();
+  // Triggers reload prefs.
+  manager()->RemoveApp("dummy");
 
   AppDataLoadWaiter waiter(manager());
   waiter.Wait();

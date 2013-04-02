@@ -147,3 +147,34 @@ TEST_F('KioskAppSettingsWebUITest', 'testShowError', function() {
   KioskAppsOverlay.showError('A bad app');
   expectTrue($('kiosk-apps-error-banner').classList.contains('visible'));
 });
+
+// Verify that checking disable bailout checkbox brings up confirmation UI and
+// the check only remains when the confirmation UI is acknowledged.
+TEST_F('KioskAppSettingsWebUITest', 'testCheckDisableBailout', function() {
+  var checkbox = $('kiosk-disable-bailout-shortcut');
+  var confirmOverlay = KioskDisableBailoutConfirm.getInstance();
+  expectFalse(confirmOverlay.visible);
+
+  // Un-checking the box does not trigger confirmation.
+  checkbox.checked = false;
+  cr.dispatchSimpleEvent(checkbox, 'change');
+  expectFalse(confirmOverlay.visible);
+
+  // Checking the box trigger confirmation.
+  checkbox.checked = true;
+  cr.dispatchSimpleEvent(checkbox, 'change');
+  expectTrue(confirmOverlay.visible);
+
+  // Confirm it and the check remains.
+  cr.dispatchSimpleEvent($('kiosk-disable-bailout-confirm-button'), 'click');
+  expectTrue(checkbox.checked);
+  expectFalse(confirmOverlay.visible);
+
+  // And canceling resets the check.
+  checkbox.checked = true;
+  cr.dispatchSimpleEvent(checkbox, 'change');
+  expectTrue(confirmOverlay.visible);
+  cr.dispatchSimpleEvent($('kiosk-disable-bailout-cancel-button'), 'click');
+  expectFalse(checkbox.checked);
+  expectFalse(confirmOverlay.visible);
+});
