@@ -26,6 +26,9 @@
     <dimen name="autofill_steady_margin">5dp</dimen>
     <dimen name="autofill_edit_text_size">18sp</dimen>
     <dimen name="autofill_edit_height">48dp</dimen>
+    <dimen name="autofill_menu_item_padding">5dp</dimen>
+    <dimen name="autofill_field_icon_width">40dp</dimen>
+    <dimen name="autofill_field_icon_height">30dp</dimen>
     <dimen name="autofill_menu_item_size">44dp</dimen>
     <dimen name="autofill_notification_padding">5dp</dimen>
     <dimen name="autofill_notification_text_size">12sp</dimen>

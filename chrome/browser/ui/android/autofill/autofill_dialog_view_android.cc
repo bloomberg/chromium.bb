@@ -8,6 +8,7 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/android/window_android_helper.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/AutofillDialogGlue_jni.h"
@@ -283,6 +284,28 @@ void AutofillDialogViewAndroid::ItemSelected(JNIEnv* env, jobject obj,
   ui::MenuModel* menuModel =
       controller_->MenuModelForSection(static_cast<DialogSection>(section));
   menuModel->ActivatedAt(index);
+}
+
+ScopedJavaLocalRef<jobject> AutofillDialogViewAndroid::GetIconForField(
+    JNIEnv* env,
+    jobject obj,
+    jint field_id,
+    jstring jinput) {
+  string16 input = base::android::ConvertJavaStringToUTF16(env, jinput);
+  gfx::Image icon = controller_->
+      IconForField(static_cast<AutofillFieldType>(field_id), input);
+  const SkBitmap& sk_icon = icon.AsBitmap();
+  return gfx::ConvertToJavaBitmap(&sk_icon);
+}
+
+ScopedJavaLocalRef<jstring> AutofillDialogViewAndroid::GetPlaceholderForField(
+    JNIEnv* env,
+    jobject obj,
+    jint section,
+    jint field_id) {
+  // TODO(aruslan): We shouldn't be hardcoding this.
+  string16 cvc(ASCIIToUTF16("CVC"));
+  return base::android::ConvertUTF16ToJavaString(env, cvc);
 }
 
 void AutofillDialogViewAndroid::AccountSelected(JNIEnv* env, jobject obj,

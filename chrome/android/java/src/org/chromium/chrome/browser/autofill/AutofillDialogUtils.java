@@ -60,6 +60,17 @@ public class AutofillDialogUtils {
     }
 
     /**
+     * Returns whether the given section contains any credit card related
+     * information.
+     * @param section The section to check.
+     * @return Whether the given section is related with credit card information.
+     */
+    public static boolean containsCreditCardInfo(int section) {
+        return section == AutofillDialogConstants.SECTION_CC
+                || section == AutofillDialogConstants.SECTION_CC_BILLING;
+    }
+
+    /**
      * Returns the {@link ViewGroup} ID for the given section in the AutofillDialog layout.
      * @param section The section to return the layout ID for.
      * @return The Android ID for the edit layout for the given section.

@@ -38,6 +38,7 @@
             android:layout_height="@dimen/autofill_edit_height"
             android:id="@+id/cvc_code"
             android:layout_margin="@dimen/autofill_edit_margin"
+            android:drawablePadding="@dimen/autofill_menu_item_padding"
             android:textSize="@dimen/autofill_edit_text_size"
             android:layout_gravity="right"/>
         <EditText

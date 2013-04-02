@@ -187,6 +187,16 @@ public class AutofillDialogGlue implements AutofillDialogDelegate,
     }
 
     @Override
+    public Bitmap getIconForField(int fieldType, String input) {
+        return nativeGetIconForField(mNativeDialogPopup, fieldType, input);
+    }
+
+    @Override
+    public String getPlaceholderForField(int section, int fieldType) {
+        return nativeGetPlaceholderForField(mNativeDialogPopup, section, fieldType);
+    }
+
+    @Override
     public String getLabelForSection(int section) {
         return nativeGetLabelForSection(mNativeDialogPopup, section);
     }
@@ -262,4 +272,8 @@ public class AutofillDialogGlue implements AutofillDialogDelegate,
     private native void nativeDialogCancel(int nativeAutofillDialogViewAndroid);
     private native String nativeGetLabelForSection(int nativeAutofillDialogViewAndroid,
             int section);
+    private native Bitmap nativeGetIconForField(int nativeAutofillDialogViewAndroid,
+            int fieldType, String input);
+    private native String nativeGetPlaceholderForField(int nativeAutofillDialogViewAndroid,
+            int section, int fieldType);
 }

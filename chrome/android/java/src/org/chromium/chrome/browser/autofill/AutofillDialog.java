@@ -10,6 +10,7 @@ import android.content.DialogInterface;
 
 import android.content.DialogInterface.OnClickListener;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
 import android.text.TextUtils;
 import android.util.TypedValue;
 import android.view.View;
@@ -105,6 +106,22 @@ public class AutofillDialog extends AlertDialog
          * @return The string that should appear on the label for the given section.
          */
         public String getLabelForSection(int section);
+
+        /**
+         * Returns the bitmap icon associated with the given field.
+         * @param fieldType The field type to return the icon for.
+         * @param input The current user input on the field.
+         * @return The bitmap resource that should be shown on the field.
+         */
+        public Bitmap getIconForField(int fieldType, String input);
+
+        /**
+         * Returns the placeholder string associated with the given field.
+         * @param section The section associated with the field.
+         * @param fieldType The field type to return the icon for.
+         * @return The placeholder string that should be shown on the field.
+         */
+        public String getPlaceholderForField(int section, int fieldType);
     }
 
     protected AutofillDialog(Context context, AutofillDialogDelegate delegate) {
@@ -149,11 +166,24 @@ public class AutofillDialog extends AlertDialog
 
         mDefaultMenuItems[AutofillDialogConstants.SECTION_CC_BILLING] = billingItems;
         mDefaultMenuItems[AutofillDialogConstants.SECTION_SHIPPING] = shippingItems;
+
+        String hint = mDelegate.getPlaceholderForField(
+                AutofillDialogConstants.SECTION_CC,
+                AutofillDialogConstants.CREDIT_CARD_VERIFICATION_CODE);
+        Bitmap icon = mDelegate.getIconForField(
+                AutofillDialogConstants.CREDIT_CARD_VERIFICATION_CODE, "");
+        mContentView.setCVCInfo(hint, icon);
     }
 
     @Override
     public void dismiss() {
         if (mWillDismiss) super.dismiss();
+    }
+
+    @Override
+    public void show() {
+        mContentView.createAdaptersForEachSection();
+        super.show();
     }
 
     @Override
@@ -288,6 +318,12 @@ public class AutofillDialog extends AlertDialog
         for (int i = 0; i < dialogInputs.length; i++) {
             currentField = (EditText) findViewById(AutofillDialogUtils.getEditTextIDForField(
                     section, dialogInputs[i].mFieldType));
+            if (AutofillDialogUtils.containsCreditCardInfo(section)
+                    && dialogInputs[i].mFieldType
+                            == AutofillDialogConstants.CREDIT_CARD_VERIFICATION_CODE) {
+                currentField.setCompoundDrawables(
+                        null, null, mContentView.getCVCDrawable(), null);
+            }
             if (currentField == null) continue;
             currentField.setHint(dialogInputs[i].mPlaceholder);
             inputValue = dialogInputs[i].getValue();
@@ -359,10 +395,9 @@ public class AutofillDialog extends AlertDialog
       * @return The currently entered or previously saved CVC value in the dialog.
       */
     public String getCvc() {
-        EditText cvcEdit = (EditText) findViewById(AutofillDialogUtils.getEditTextIDForField(
-                AutofillDialogConstants.SECTION_CC,
-                        AutofillDialogConstants.CREDIT_CARD_VERIFICATION_CODE));
-        return cvcEdit.getText().toString();
+        EditText cvcEdit = (EditText) findViewById(R.id.cvc_challenge);
+        if (cvcEdit != null) return cvcEdit.getText().toString();
+        return "";
     }
 
     /**
