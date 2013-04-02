@@ -13,7 +13,6 @@
         'common_net',
         'chrome_resources.gyp:chrome_resources',
         'chrome_resources.gyp:chrome_strings',
-        '../components/components.gyp:autofill_renderer',
         '../components/components.gyp:visitedlink_renderer',
         '../content/content.gyp:content_renderer',
         '../net/net.gyp:net',
@@ -302,6 +301,22 @@
         'renderer/translate_helper.h',
         'renderer/webview_color_overlay.cc',
         'renderer/webview_color_overlay.h',
+
+        # TODO(joi): Move to components/autofill.gypi once last
+        # remaining dependencies are broken.
+        '../components/autofill/renderer/autofill_agent.cc',
+        '../components/autofill/renderer/autofill_agent.h',
+        '../components/autofill/renderer/form_autofill_util.cc',
+        '../components/autofill/renderer/form_autofill_util.h',
+        '../components/autofill/renderer/form_cache.cc',
+        '../components/autofill/renderer/form_cache.h',
+        '../components/autofill/renderer/page_click_listener.h',
+        '../components/autofill/renderer/page_click_tracker.cc',
+        '../components/autofill/renderer/page_click_tracker.h',
+        '../components/autofill/renderer/password_autofill_manager.cc',
+        '../components/autofill/renderer/password_autofill_manager.h',
+        '../components/autofill/renderer/password_generation_manager.cc',
+        '../components/autofill/renderer/password_generation_manager.h',
       ],
       'conditions': [
         ['disable_nacl!=1', {
@@ -353,11 +368,11 @@
             '../sandbox/sandbox.gyp:sandbox',
           ],
         }],
-        ['enable_automation==0', {
-          'sources/': [
+	['enable_automation==0', {
+	  'sources/': [
             ['exclude', '^renderer/automation/']
-          ]
-        }],
+	  ]
+	}],
         ['OS=="android"', {
           'sources!': [
             'renderer/prerender/prerender_webmediaplayer.cc',
