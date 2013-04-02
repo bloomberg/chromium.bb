@@ -16,14 +16,6 @@ BluetoothAdapter::~BluetoothAdapter() {
   STLDeleteValues(&devices_);
 }
 
-const std::string& BluetoothAdapter::address() const {
-  return address_;
-}
-
-const std::string& BluetoothAdapter::name() const {
-  return name_;
-}
-
 BluetoothAdapter::DeviceList BluetoothAdapter::GetDevices() {
   ConstDeviceList const_devices =
     const_cast<const BluetoothAdapter *>(this)->GetDevices();

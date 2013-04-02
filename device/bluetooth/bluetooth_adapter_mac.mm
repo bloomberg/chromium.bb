@@ -117,6 +117,14 @@ void BluetoothAdapterMac::RemoveObserver(BluetoothAdapter::Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
+std::string BluetoothAdapterMac::address() const {
+  return address_;
+}
+
+std::string BluetoothAdapterMac::name() const {
+  return name_;
+}
+
 bool BluetoothAdapterMac::IsInitialized() const {
   return true;
 }

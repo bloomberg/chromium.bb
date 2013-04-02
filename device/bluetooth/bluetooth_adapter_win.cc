@@ -45,6 +45,14 @@ void BluetoothAdapterWin::RemoveObserver(BluetoothAdapter::Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
+std::string BluetoothAdapterWin::address() const {
+  return address_;
+}
+
+std::string BluetoothAdapterWin::name() const {
+  return name_;
+}
+
 // TODO(youngki): Return true when |task_manager_| initializes the adapter
 // state.
 bool BluetoothAdapterWin::IsInitialized() const {

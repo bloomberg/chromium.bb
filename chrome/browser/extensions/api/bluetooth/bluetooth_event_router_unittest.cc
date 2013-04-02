@@ -8,20 +8,12 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace {
-
-const char* kAdapterAddress = "Mock Adapter address for testing";
-const char* kName = "Mock Adapter name for testing";
-
-}  // namespace
-
 namespace extensions {
 
 class ExtensionBluetoothEventRouterTest : public testing::Test {
  public:
   ExtensionBluetoothEventRouterTest()
-      : mock_adapter_(new testing::StrictMock<device::MockBluetoothAdapter>(
-            kAdapterAddress, kName)),
+      : mock_adapter_(new testing::StrictMock<device::MockBluetoothAdapter>()),
         router_(&test_profile_) {
     router_.SetAdapterForTest(mock_adapter_);
   }

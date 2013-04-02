@@ -36,6 +36,8 @@ class BluetoothAdapterWin : public BluetoothAdapter,
   // BluetoothAdapter override
   virtual void AddObserver(BluetoothAdapter::Observer* observer) OVERRIDE;
   virtual void RemoveObserver(BluetoothAdapter::Observer* observer) OVERRIDE;
+  virtual std::string address() const OVERRIDE;
+  virtual std::string name() const OVERRIDE;
   virtual bool IsInitialized() const OVERRIDE;
   virtual bool IsPresent() const OVERRIDE;
   virtual bool IsPowered() const OVERRIDE;
@@ -87,6 +89,8 @@ class BluetoothAdapterWin : public BluetoothAdapter,
   void MaybePostStopDiscoveryTask();
 
   InitCallback init_callback_;
+  std::string address_;
+  std::string name_;
   bool initialized_;
   bool powered_;
   DiscoveryStatus discovery_status_;

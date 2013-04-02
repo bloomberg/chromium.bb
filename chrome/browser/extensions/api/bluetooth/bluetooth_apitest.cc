@@ -56,8 +56,7 @@ class BluetoothApiTest : public ExtensionApiTest {
 
   void SetUpMockAdapter() {
     // The browser will clean this up when it is torn down
-    mock_adapter_ = new testing::StrictMock<MockBluetoothAdapter>(
-        kAdapterAddress, kName);
+    mock_adapter_ = new testing::StrictMock<MockBluetoothAdapter>();
     event_router()->SetAdapterForTest(mock_adapter_);
 
     device1_.reset(new testing::NiceMock<MockBluetoothDevice>(
@@ -143,6 +142,10 @@ static void CallConnectToServiceCallback(
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(BluetoothApiTest, OnAdapterStateChanged) {
+  EXPECT_CALL(*mock_adapter_, address())
+      .WillOnce(testing::Return(kAdapterAddress));
+  EXPECT_CALL(*mock_adapter_, name())
+      .WillOnce(testing::Return(kName));
   EXPECT_CALL(*mock_adapter_, IsPresent())
       .WillOnce(testing::Return(false));
   EXPECT_CALL(*mock_adapter_, IsPowered())
@@ -311,6 +314,10 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, DiscoveryCallback) {
 }
 
 IN_PROC_BROWSER_TEST_F(BluetoothApiTest, DiscoveryInProgress) {
+  EXPECT_CALL(*mock_adapter_, address())
+      .WillOnce(testing::Return(kAdapterAddress));
+  EXPECT_CALL(*mock_adapter_, name())
+      .WillOnce(testing::Return(kName));
   EXPECT_CALL(*mock_adapter_, IsPresent())
       .WillOnce(testing::Return(true));
   EXPECT_CALL(*mock_adapter_, IsPowered())
@@ -362,6 +369,10 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, Events) {
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("bluetooth/events")));
   EXPECT_TRUE(listener.WaitUntilSatisfied());
 
+  EXPECT_CALL(*mock_adapter_, address())
+      .WillOnce(testing::Return(kAdapterAddress));
+  EXPECT_CALL(*mock_adapter_, name())
+      .WillOnce(testing::Return(kName));
   EXPECT_CALL(*mock_adapter_, IsPresent())
       .WillOnce(testing::Return(false));
   EXPECT_CALL(*mock_adapter_, IsPowered())
@@ -370,6 +381,10 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, Events) {
       .WillOnce(testing::Return(false));
   event_router()->AdapterPoweredChanged(mock_adapter_, false);
 
+  EXPECT_CALL(*mock_adapter_, address())
+      .WillOnce(testing::Return(kAdapterAddress));
+  EXPECT_CALL(*mock_adapter_, name())
+      .WillOnce(testing::Return(kName));
   EXPECT_CALL(*mock_adapter_, IsPresent())
       .WillOnce(testing::Return(true));
   EXPECT_CALL(*mock_adapter_, IsPowered())
@@ -378,6 +393,10 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, Events) {
       .WillOnce(testing::Return(true));
   event_router()->AdapterPresentChanged(mock_adapter_, true);
 
+  EXPECT_CALL(*mock_adapter_, address())
+      .WillOnce(testing::Return(kAdapterAddress));
+  EXPECT_CALL(*mock_adapter_, name())
+      .WillOnce(testing::Return(kName));
   EXPECT_CALL(*mock_adapter_, IsPresent())
       .WillOnce(testing::Return(true));
   EXPECT_CALL(*mock_adapter_, IsPowered())

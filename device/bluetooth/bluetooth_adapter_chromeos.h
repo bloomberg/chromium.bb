@@ -42,6 +42,8 @@ class BluetoothAdapterChromeOS
       device::BluetoothAdapter::Observer* observer) OVERRIDE;
   virtual void RemoveObserver(
       device::BluetoothAdapter::Observer* observer) OVERRIDE;
+  virtual std::string address() const OVERRIDE;
+  virtual std::string name() const OVERRIDE;
   virtual bool IsInitialized() const OVERRIDE;
   virtual bool IsPresent() const OVERRIDE;
   virtual bool IsPowered() const OVERRIDE;
@@ -214,6 +216,8 @@ class BluetoothAdapterChromeOS
 
   // Tracked adapter state, cached locally so we only send change notifications
   // to observers on a genuine change.
+  std::string address_;
+  std::string name_;
   bool powered_;
   bool discovering_;
 

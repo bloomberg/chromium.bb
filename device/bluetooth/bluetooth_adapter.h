@@ -86,10 +86,10 @@ class BluetoothAdapter : public base::RefCounted<BluetoothAdapter> {
 
   // The address of this adapter.  The address format is "XX:XX:XX:XX:XX:XX",
   // where each XX is a hexadecimal number.
-  virtual const std::string& address() const;
+  virtual std::string address() const = 0;
 
   // The name of the adapter.
-  virtual const std::string& name() const;
+  virtual std::string name() const = 0;
 
   // Indicates whether the adapter is initialized and ready to use.
   virtual bool IsInitialized() const = 0;
@@ -156,12 +156,6 @@ class BluetoothAdapter : public base::RefCounted<BluetoothAdapter> {
   friend class base::RefCounted<BluetoothAdapter>;
   BluetoothAdapter();
   virtual ~BluetoothAdapter();
-
-  // Address of the adapter.
-  std::string address_;
-
-  // Name of the adapter.
-  std::string name_;
 
   // Devices paired with, connected to, discovered by, or visible to the
   // adapter. The key is the Bluetooth address of the device and the value
