@@ -4,6 +4,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import json
 import optparse
 import os
 import sys
@@ -25,18 +26,31 @@ def main(argv):
       help='Path to the toolchain\'s strip binary')
   parser.add_option('--android-strip-arg', action='append',
       help='Argument to be passed to strip')
+  parser.add_option('--libraries-dir',
+      help='Directory for un-stripped libraries')
   parser.add_option('--stripped-libraries-dir',
       help='Directory for stripped libraries')
+  parser.add_option('--libraries-file',
+      help='Path to json file containing list of libraries')
+  parser.add_option('--stamp', help='Path to touch on success')
 
-  options, paths = parser.parse_args()
+
+  options, _ = parser.parse_args()
+
+  with open(options.libraries_file, 'r') as libfile:
+    libraries = json.load(libfile)
 
   build_utils.MakeDirectory(options.stripped_libraries_dir)
 
-  for library_path in paths:
-    stripped_library_path = os.path.join(options.stripped_libraries_dir,
-        os.path.basename(library_path))
+  for library in libraries:
+    library_path = os.path.join(options.libraries_dir, library)
+    stripped_library_path = os.path.join(
+        options.stripped_libraries_dir, library)
     StripLibrary(options.android_strip, options.android_strip_arg, library_path,
         stripped_library_path)
+
+  if options.stamp:
+    build_utils.Touch(options.stamp)
 
 
 if __name__ == '__main__':

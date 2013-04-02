@@ -74,6 +74,7 @@
     'asset_location%': '<(intermediate_dir)/assets',
     'codegen_stamp': '<(intermediate_dir)/codegen.stamp',
     'compile_input_paths': [ ],
+    'package_input_paths': [ ],
     'ordered_libraries_file': '<(intermediate_dir)/native_libraries.json',
     # TODO(cjhopman): build/ shouldn't refer to content/. The libraryloader and
     # nativelibraries template should be moved out of content/ (to base/?).
@@ -88,6 +89,7 @@
     'compile_stamp': '<(intermediate_dir)/compile.stamp',
     'jar_stamp': '<(intermediate_dir)/jar.stamp',
     'obfuscate_stamp': '<(intermediate_dir)/obfuscate.stamp',
+    'strip_stamp': '<(intermediate_dir)/strip.stamp',
     'classes_dir': '<(intermediate_dir)/classes',
     'javac_includes': [],
     'jar_excluded_classes': [],
@@ -97,9 +99,6 @@
     'android_manifest': '<(java_in_dir)/AndroidManifest.xml',
     'codegen_input_paths': [],
   },
-  'sources': [
-      '<@(native_libs_paths)',
-  ],
   # Pass the jar path to the apk's "fake" jar target.  This would be better as
   # direct_dependent_settings, but a variable set by a direct_dependent_settings
   # cannot be lifted in a dependent to all_dependent_settings.
@@ -108,29 +107,6 @@
       'apk_output_jar_path': '<(PRODUCT_DIR)/lib.java/<(jar_name)',
     },
   },
-  'rules': [
-    {
-      'rule_name': 'copy_and_strip_native_libraries',
-      'extension': 'so',
-      'variables': {
-        'apk_libraries_dir': '<(intermediate_dir)/libs/<(android_app_abi)',
-        'stripped_library_path': '<(apk_libraries_dir)/<(RULE_INPUT_ROOT).so',
-      },
-      'inputs': [
-        '<(DEPTH)/build/android/strip_library_for_apk.py',
-      ],
-      'outputs': [
-        '<(stripped_library_path)',
-      ],
-      'action': [
-        'python', '<(DEPTH)/build/android/strip_library_for_apk.py',
-        '--android-strip=<(android_strip)',
-        '--android-strip-arg=--strip-unneeded',
-        '--stripped-libraries-dir=<(apk_libraries_dir)',
-        '<(RULE_INPUT_PATH)',
-      ],
-    },
-  ],
   'conditions': [
     ['resource_dir!=""', {
       'variables': {
@@ -150,6 +126,7 @@
       'variables': {
         'compile_input_paths': [ '<(native_libraries_java_stamp)' ],
         'generated_src_dirs': [ '<(native_libraries_java_dir)' ],
+        'package_input_paths': [ '<(strip_stamp)' ],
       },
       'actions': [
         {
@@ -205,6 +182,30 @@
             '--output=<(native_libraries_java_file)',
             '--template=<(native_libraries_template)',
             '--stamp=<(native_libraries_java_stamp)',
+          ],
+        },
+        {
+          'action_name': 'strip_native_libraries',
+          'message': 'Stripping libraries for <(_target_name)',
+          'variables': {
+            'apk_libraries_dir': '<(intermediate_dir)/libs/<(android_app_abi)',
+          },
+          'inputs': [
+            '<(DEPTH)/build/android/pylib/build_utils.py',
+            '<(DEPTH)/build/android/strip_library_for_apk.py',
+            '<(ordered_libraries_file)'
+          ],
+          'outputs': [
+            '<(strip_stamp)',
+          ],
+          'action': [
+            'python', '<(DEPTH)/build/android/strip_library_for_apk.py',
+            '--android-strip=<(android_strip)',
+            '--android-strip-arg=--strip-unneeded',
+            '--stripped-libraries-dir=<(apk_libraries_dir)',
+            '--libraries-dir=<(SHARED_LIB_DIR)',
+            '--libraries-file=<(ordered_libraries_file)',
+            '--stamp=<(strip_stamp)',
           ],
         },
       ],
@@ -424,11 +425,10 @@
       'message': 'Packaging <(_target_name).',
       'inputs': [
         '<(DEPTH)/build/android/ant/apk-package.xml',
-        #TODO(cjhopman): this should be the stripped library paths.
-        '>@(native_libs_paths)',
         '<(dex_path)',
         '<(codegen_stamp)',
         '<(obfuscate_stamp)',
+        '>@(package_input_paths)',
       ],
       'conditions': [
         ['is_test_apk == 1', {
