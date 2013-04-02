@@ -161,7 +161,7 @@ wl_signal_add(struct wl_signal *signal, struct wl_listener *listener)
 }
 
 static inline struct wl_listener *
-wl_signal_get(struct wl_signal *signal, void *notify)
+wl_signal_get(struct wl_signal *signal, wl_notify_func_t notify)
 {
 	struct wl_listener *l;
 
