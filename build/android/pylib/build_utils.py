@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import fnmatch
+import json
 import os
 import pipes
 import shlex
@@ -53,6 +54,17 @@ def ParseGypList(gyp_string):
   # is addressed.
   gyp_string = gyp_string.replace('##', '$')
   return shlex.split(gyp_string)
+
+
+def CheckOptions(options, parser, required=[]):
+  for option_name in required:
+    if not getattr(options, option_name):
+      parser.error('--%s is required' % option_name.replace('_', '-'))
+
+
+def ReadJson(path):
+  with open(path, 'r') as jsonfile:
+    return json.load(jsonfile)
 
 
 # This can be used in most cases like subprocess.check_call. The output,

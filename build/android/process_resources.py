@@ -45,9 +45,7 @@ def ParseArgs():
   # Check that required options have been provided.
   required_options = ('android_sdk', 'android_sdk_tools', 'R_dir', 'res_dirs',
                       'crunch_input_dir', 'crunch_output_dir')
-  for option_name in required_options:
-    if not getattr(options, option_name):
-      parser.error('--%s is required' % option_name.replace('_', '-'))
+  build_utils.CheckOptions(options, parser, required=required_options)
 
   return options
 

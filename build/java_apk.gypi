@@ -73,8 +73,8 @@
     'intermediate_dir': '<(PRODUCT_DIR)/<(_target_name)',
     'asset_location%': '<(intermediate_dir)/assets',
     'codegen_stamp': '<(intermediate_dir)/codegen.stamp',
-    'compile_input_paths': [ ],
-    'package_input_paths': [ ],
+    'compile_input_paths': [],
+    'package_input_paths': [],
     'ordered_libraries_file': '<(intermediate_dir)/native_libraries.json',
     # TODO(cjhopman): build/ shouldn't refer to content/. The libraryloader and
     # nativelibraries template should be moved out of content/ (to base/?).
@@ -97,6 +97,8 @@
     'obfuscated_jar_path': '<(intermediate_dir)/obfuscated.jar',
     'dex_path': '<(intermediate_dir)/classes.dex',
     'android_manifest': '<(java_in_dir)/AndroidManifest.xml',
+    'push_stamp': '<(intermediate_dir)/push.stamp',
+    'link_stamp': '<(intermediate_dir)/link.stamp',
     'codegen_input_paths': [],
     'final_apk_path': '<(PRODUCT_DIR)/apks/<(apk_name).apk',
     'apk_install_stamp': '<(intermediate_dir)/apk_install.stamp',
@@ -128,7 +130,6 @@
       'variables': {
         'compile_input_paths': [ '<(native_libraries_java_stamp)' ],
         'generated_src_dirs': [ '<(native_libraries_java_dir)' ],
-        'package_input_paths': [ '<(strip_stamp)' ],
       },
       'actions': [
         {
@@ -189,9 +190,6 @@
         {
           'action_name': 'strip_native_libraries',
           'message': 'Stripping libraries for <(_target_name)',
-          'variables': {
-            'apk_libraries_dir': '<(intermediate_dir)/libs/<(android_app_abi)',
-          },
           'inputs': [
             '<(DEPTH)/build/android/pylib/build_utils.py',
             '<(DEPTH)/build/android/strip_library_for_apk.py',
@@ -210,6 +208,62 @@
             '--stamp=<(strip_stamp)',
           ],
         },
+      ],
+      'conditions': [
+        ['gyp_managed_install == 1', {
+          'variables': {
+            'apk_libraries_dir': '<(intermediate_dir)/lib.stripped/',
+            'device_library_dir': '/data/local/tmp/chromium/lib.stripped/<(_target_name)',
+          },
+          'dependencies': [
+            '<(DEPTH)/tools/android/md5sum/md5sum.gyp:md5sum',
+          ],
+          'actions': [
+            {
+              'action_name': 'push_libraries_<(_target_name)',
+              'message': 'Pushing libraries to device for <(_target_name)',
+              'inputs': [
+                '<(DEPTH)/build/android/pylib/build_utils.py',
+                '<(DEPTH)/build/android/gyp/push_libraries.py',
+                '<(strip_stamp)',
+              ],
+              'outputs': [
+                '<(push_stamp)'
+              ],
+              'action': [
+                'python', '<(DEPTH)/build/android/gyp/push_libraries.py',
+                '--libraries-dir=<(apk_libraries_dir)',
+                '--device-dir=<(device_library_dir)',
+                '--libraries-json=<(ordered_libraries_file)',
+                '--stamp=<(push_stamp)',
+              ],
+            },
+            {
+              'action_name': 'create_library_links',
+              'message': 'Creating links on device for <(_target_name).',
+              'inputs': [
+                '<(DEPTH)/build/android/gyp/create_device_library_links.py',
+                '<(apk_install_stamp)',
+                '<(push_stamp)'
+              ],
+              'outputs': [
+                '<(link_stamp)'
+              ],
+              'action': [
+                'python', '<(DEPTH)/build/android/gyp/create_device_library_links.py',
+                '--apk=<(final_apk_path)',
+                '--libraries-json=<(ordered_libraries_file)',
+                '--target-dir=<(device_library_dir)',
+                '--stamp=<(link_stamp)',
+              ],
+            },
+          ],
+        }, {
+          'variables': {
+            'apk_libraries_dir': '<(intermediate_dir)/libs/<(android_app_abi)',
+            'package_input_paths': [ '<(strip_stamp)' ],
+          },
+        }],
       ],
     }], # native_libs_paths != []
     ['java_strings_grd != ""', {
