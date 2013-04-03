@@ -192,7 +192,7 @@ class RunTestCases(unittest.TestCase):
         'expected': {'stdout': 'printingprinting'},
       },
     ]
-    for data in combinations:
+    for i, data in enumerate(combinations):
       cmd = [sys.executable, OUTPUT] + data['cmd']
       p = run_test_cases.Popen(
           cmd, stdout=data['stdout'], stderr=data['stderr'])
@@ -208,7 +208,7 @@ class RunTestCases(unittest.TestCase):
           break
         actual.setdefault(pipe, '')
         actual[pipe] += d
-      self.assertEqual(data['expected'], actual)
+      self.assertEqual(data['expected'], actual, (i, data['expected'], actual))
       self.assertEqual((None, None), p.recv_any())
       self.assertEquals(0, p.returncode)
 
@@ -324,17 +324,19 @@ class RunTestCases(unittest.TestCase):
         (False, ['A\nB\n'], {}),
         (False, ['A\n', 'B\n'], {'PYTHONUNBUFFERED': 'x'}),
     )
-    for flush, exp, env in values:
+    for i, (flush, exp, env) in enumerate(values):
       for duration in (0.1, 0.5, 2):
         expected = exp[:]
         try:
           proc = self._get_output_sleep_proc(flush, env, duration)
           got_none = False
-          while proc.poll() is None:
+          while True:
             p, data = proc.recv_any(timeout=0)
             if not p:
-              got_none = True
-              continue
+              if proc.poll() is None:
+                got_none = True
+                continue
+              break
             self.assertEqual('stdout', p)
             if not expected:
               self.fail(data)
@@ -346,6 +348,7 @@ class RunTestCases(unittest.TestCase):
                 expected.insert(0, e[len(data):])
                 e = e[:len(data)]
             self.assertEqual(e, data)
+
           self.assertEqual(0, proc.returncode)
           self.assertEqual([], expected)
           self.assertEqual(True, got_none)
@@ -353,6 +356,7 @@ class RunTestCases(unittest.TestCase):
           if duration != 2:
             print('Sleeping rocks. trying more slowly.')
             continue
+          print >> sys.stderr, 'Failure at index %d' % i
           raise
 
   def test_gtest_filter(self):
