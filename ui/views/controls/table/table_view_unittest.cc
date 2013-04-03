@@ -533,6 +533,10 @@ TEST_F(TableViewTest, KeyUpDown) {
 
   PressKey(ui::VKEY_DOWN);
   EXPECT_EQ(1, observer.GetChangedCountAndClear());
+  EXPECT_EQ("active=1 anchor=1 selection=0 1", SelectionStateAsString());
+
+  PressKey(ui::VKEY_DOWN);
+  EXPECT_EQ(1, observer.GetChangedCountAndClear());
   EXPECT_EQ("active=2 anchor=2 selection=2", SelectionStateAsString());
 
   PressKey(ui::VKEY_DOWN);
@@ -540,12 +544,24 @@ TEST_F(TableViewTest, KeyUpDown) {
   EXPECT_EQ("active=3 anchor=3 selection=3 4", SelectionStateAsString());
 
   PressKey(ui::VKEY_DOWN);
+  EXPECT_EQ(1, observer.GetChangedCountAndClear());
+  EXPECT_EQ("active=4 anchor=4 selection=3 4", SelectionStateAsString());
+
+  PressKey(ui::VKEY_DOWN);
   EXPECT_EQ(0, observer.GetChangedCountAndClear());
+  EXPECT_EQ("active=4 anchor=4 selection=3 4", SelectionStateAsString());
+
+  PressKey(ui::VKEY_UP);
+  EXPECT_EQ(1, observer.GetChangedCountAndClear());
   EXPECT_EQ("active=3 anchor=3 selection=3 4", SelectionStateAsString());
 
   PressKey(ui::VKEY_UP);
   EXPECT_EQ(1, observer.GetChangedCountAndClear());
   EXPECT_EQ("active=2 anchor=2 selection=2", SelectionStateAsString());
+
+  PressKey(ui::VKEY_UP);
+  EXPECT_EQ(1, observer.GetChangedCountAndClear());
+  EXPECT_EQ("active=1 anchor=1 selection=0 1", SelectionStateAsString());
 
   PressKey(ui::VKEY_UP);
   EXPECT_EQ(1, observer.GetChangedCountAndClear());
@@ -581,11 +597,27 @@ TEST_F(TableViewTest, KeyUpDown) {
 
   PressKey(ui::VKEY_DOWN);
   EXPECT_EQ(1, observer.GetChangedCountAndClear());
+  EXPECT_EQ("active=4 anchor=4 selection=3 4", SelectionStateAsString());
+
+  PressKey(ui::VKEY_DOWN);
+  EXPECT_EQ(1, observer.GetChangedCountAndClear());
   EXPECT_EQ("active=0 anchor=0 selection=0 1", SelectionStateAsString());
 
   PressKey(ui::VKEY_DOWN);
+  EXPECT_EQ(1, observer.GetChangedCountAndClear());
+  EXPECT_EQ("active=1 anchor=1 selection=0 1", SelectionStateAsString());
+
+  PressKey(ui::VKEY_DOWN);
   EXPECT_EQ(0, observer.GetChangedCountAndClear());
+  EXPECT_EQ("active=1 anchor=1 selection=0 1", SelectionStateAsString());
+
+  PressKey(ui::VKEY_UP);
+  EXPECT_EQ(1, observer.GetChangedCountAndClear());
   EXPECT_EQ("active=0 anchor=0 selection=0 1", SelectionStateAsString());
+
+  PressKey(ui::VKEY_UP);
+  EXPECT_EQ(1, observer.GetChangedCountAndClear());
+  EXPECT_EQ("active=4 anchor=4 selection=3 4", SelectionStateAsString());
 
   PressKey(ui::VKEY_UP);
   EXPECT_EQ(1, observer.GetChangedCountAndClear());
@@ -631,7 +663,7 @@ TEST_F(TableViewTest, HomeEnd) {
 
   PressKey(ui::VKEY_END);
   EXPECT_EQ(1, observer.GetChangedCountAndClear());
-  EXPECT_EQ("active=3 anchor=3 selection=3 4", SelectionStateAsString());
+  EXPECT_EQ("active=4 anchor=4 selection=3 4", SelectionStateAsString());
 
   table_->SetObserver(NULL);
 }
@@ -667,12 +699,12 @@ TEST_F(TableViewTest, Multiselection) {
   // Click on the last row, should select it and the row before it.
   ClickOnRow(4, 0);
   EXPECT_EQ(1, observer.GetChangedCountAndClear());
-  EXPECT_EQ("active=3 anchor=3 selection=3 4", SelectionStateAsString());
+  EXPECT_EQ("active=4 anchor=4 selection=3 4", SelectionStateAsString());
 
   // Shift click on the third row, should extend selection to it.
   ClickOnRow(2, ui::EF_SHIFT_DOWN);
   EXPECT_EQ(1, observer.GetChangedCountAndClear());
-  EXPECT_EQ("active=2 anchor=3 selection=2 3 4", SelectionStateAsString());
+  EXPECT_EQ("active=2 anchor=4 selection=2 3 4", SelectionStateAsString());
 
   // Control click on third row, should toggle it.
   ClickOnRow(2, ui::EF_CONTROL_DOWN);
@@ -687,7 +719,7 @@ TEST_F(TableViewTest, Multiselection) {
   // Click on last row again.
   ClickOnRow(4, 0);
   EXPECT_EQ(1, observer.GetChangedCountAndClear());
-  EXPECT_EQ("active=3 anchor=3 selection=3 4", SelectionStateAsString());
+  EXPECT_EQ("active=4 anchor=4 selection=3 4", SelectionStateAsString());
 
   table_->SetObserver(NULL);
 }
@@ -727,12 +759,12 @@ TEST_F(TableViewTest, MultiselectionWithSort) {
   // Click on the third row, should select it and the second row.
   ClickOnRow(2, 0);
   EXPECT_EQ(1, observer.GetChangedCountAndClear());
-  EXPECT_EQ("active=3 anchor=3 selection=3 4", SelectionStateAsString());
+  EXPECT_EQ("active=4 anchor=4 selection=3 4", SelectionStateAsString());
 
   // Extend selection to first row.
   ClickOnRow(0, ui::EF_SHIFT_DOWN);
   EXPECT_EQ(1, observer.GetChangedCountAndClear());
-  EXPECT_EQ("active=2 anchor=3 selection=2 3 4", SelectionStateAsString());
+  EXPECT_EQ("active=2 anchor=4 selection=2 3 4", SelectionStateAsString());
 
   table_->SetObserver(NULL);
 }

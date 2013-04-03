@@ -67,10 +67,7 @@ void TableExample::CreateExampleView(View* container) {
   columns.push_back(TestTableColumn(3, "Price"));
   columns.back().alignment = ui::TableColumn::RIGHT;
   table_ = new TableView(this, columns, ICON_AND_TEXT, true, true, true);
-  // TODO(sky): remove ifdef once we get rid of win32 table.
-#if defined(USE_AURA)
   table_->SetGrouper(this);
-#endif
   table_->SetObserver(this);
   icon1_.setConfig(SkBitmap::kARGB_8888_Config, 16, 16);
   icon1_.allocPixels();
@@ -111,6 +108,9 @@ int TableExample::RowCount() {
 }
 
 string16 TableExample::GetText(int row, int column_id) {
+  if (row == -1)
+    return string16();
+
   const char* const cells[5][4] = {
     { "Orange", "Orange", "South america", "$5" },
     { "Apple", "Green", "Canada", "$3" },
@@ -143,12 +143,14 @@ void TableExample::GetGroupRange(int model_index, GroupRange* range) {
 
 void TableExample::OnSelectionChanged() {
   PrintStatus("Selected: %s",
-              UTF16ToASCII(GetText(table_->FirstSelectedRow(), 0)).c_str());
+              UTF16ToASCII(GetText(table_->selection_model().active(),
+                                   0)).c_str());
 }
 
 void TableExample::OnDoubleClick() {
   PrintStatus("Double Click: %s",
-              UTF16ToASCII(GetText(table_->FirstSelectedRow(), 0)).c_str());
+              UTF16ToASCII(GetText(table_->selection_model().active(),
+                                   0)).c_str());
 }
 
 void TableExample::OnMiddleClick() {}

@@ -481,15 +481,14 @@ void TableView::OnPaint(gfx::Canvas* canvas) {
     const int model_index = ViewToModel(i);
     const bool is_selected = selection_model_.IsSelected(model_index);
     if (is_selected) {
-      const gfx::Rect row_bounds(GetRowBounds(i));
-      canvas->FillRect(row_bounds, selected_bg_color);
-      if (HasFocus() && !header_ && !grouper_)
-        canvas->DrawFocusRect(row_bounds);
+      canvas->FillRect(GetRowBounds(i), selected_bg_color);
     } else if (row_background_painter_) {
       row_background_painter_->PaintRowBackground(model_index,
                                                   GetRowBounds(i),
                                                   canvas);
     }
+    if (selection_model_.active() == i && HasFocus())
+      canvas->DrawFocusRect(GetRowBounds(i));
     for (int j = region.min_column; j < region.max_column; ++j) {
       const gfx::Rect cell_bounds(GetCellBounds(i, j));
       int text_x = kTextHorizontalPadding + cell_bounds.x();
@@ -728,10 +727,14 @@ gfx::Rect TableView::GetPaintBounds(gfx::Canvas* canvas) const {
 }
 
 void TableView::SchedulePaintForSelection() {
-  if (selection_model_.size() == 1)
-    SchedulePaintInRect(GetRowBounds(ModelToView(FirstSelectedRow())));
-  else if (selection_model_.size() > 1)
+  if (selection_model_.size() == 1) {
+    const int first_model_row = FirstSelectedRow();
+    SchedulePaintInRect(GetRowBounds(ModelToView(first_model_row)));
+    if (first_model_row != selection_model_.active())
+      SchedulePaintInRect(GetRowBounds(ModelToView(selection_model_.active())));
+  } else if (selection_model_.size() > 1) {
     SchedulePaint();
+  }
 }
 
 ui::TableColumn TableView::FindColumnByID(int id) const {
@@ -747,8 +750,8 @@ void TableView::SelectByViewIndex(int view_index) {
   ui::ListSelectionModel new_selection;
   if (view_index != -1) {
     SelectRowsInRangeFrom(view_index, true, &new_selection);
-    new_selection.set_anchor(new_selection.selected_indices()[0]);
-    new_selection.set_active(new_selection.selected_indices()[0]);
+    new_selection.set_anchor(ViewToModel(view_index));
+    new_selection.set_active(ViewToModel(view_index));
   }
 
   SetSelectionModel(new_selection);
@@ -783,32 +786,26 @@ void TableView::AdvanceSelection(AdvanceDirection direction) {
     SelectByViewIndex(0);
     return;
   }
-  const GroupRange range(GetGroupRange(selection_model_.active()));
   int view_index = ModelToView(selection_model_.active());
-  if (direction == ADVANCE_DECREMENT) {
-    view_index = std::max(0, view_index -
-                          (selection_model_.active() - range.start + 1));
-  } else {
-    view_index =
-        std::min(RowCount() - 1,
-                 view_index + (selection_model_.active() - range.start +
-                               range.length));
-  }
+  if (direction == ADVANCE_DECREMENT)
+    view_index = std::max(0, view_index - 1);
+  else
+    view_index = std::min(RowCount() - 1, view_index + 1);
   SelectByViewIndex(view_index);
 }
 
 void TableView::ConfigureSelectionModelForEvent(
     const ui::MouseEvent& event,
     ui::ListSelectionModel* model) const {
-  int view_index = event.y() / row_height_;
+  const int view_index = event.y() / row_height_;
   DCHECK(view_index >= 0 && view_index < RowCount());
 
   if (selection_model_.anchor() == -1 ||
       single_selection_ ||
       (!event.IsControlDown() && !event.IsShiftDown())) {
     SelectRowsInRangeFrom(view_index, true, model);
-    model->set_anchor(model->selected_indices()[0]);
-    model->set_active(model->selected_indices()[0]);
+    model->set_anchor(ViewToModel(view_index));
+    model->set_active(ViewToModel(view_index));
     return;
   }
   if ((event.IsControlDown() && event.IsShiftDown()) || event.IsShiftDown()) {
