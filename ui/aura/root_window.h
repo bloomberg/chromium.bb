@@ -25,7 +25,6 @@
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_observer.h"
 #include "ui/compositor/layer_animation_observer.h"
-#include "ui/gfx/insets.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/transform.h"
@@ -53,6 +52,7 @@ class TestScreen;
 class RootWindow;
 class RootWindowHost;
 class RootWindowObserver;
+class RootWindowTransformer;
 
 // RootWindow is responsible for hosting a set of windows.
 class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
@@ -70,10 +70,6 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
     ~CreateParams() {}
 
     gfx::Rect initial_bounds;
-
-    gfx::Insets initial_insets;
-
-    float initial_root_window_scale;
 
     // A host to use in place of the default one that RootWindow will create.
     // NULL by default.
@@ -112,12 +108,8 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   void SetHostSize(const gfx::Size& size_in_pixel);
   gfx::Size GetHostSize() const;
 
-  // Sets the bounds and insets of the host window.
+  // Sets the bounds of the host window.
   void SetHostBounds(const gfx::Rect& size_in_pizel);
-  void SetHostBoundsAndInsetsAndRootWindowScale(
-      const gfx::Rect& bounds_in_pixel,
-      const gfx::Insets& insets_in_pixel,
-      float root_window_scale);
 
   // Returns where the RootWindow is on screen.
   gfx::Point GetHostOrigin() const;
@@ -294,12 +286,7 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // window that ate mouse downs).
   void ClearMouseHandlers();
 
-  // Sets the window's transform and inverted transform. This is necessary
-  // to reverse translate the point without computation error.
-  // TODO(oshima): Remove this once the computation error is resolved.
-  // crbug.com/222483.
-  void SetTransformPair(const gfx::Transform& transform,
-                        const gfx::Transform& inverted);
+  void SetRootWindowTransformer(scoped_ptr<RootWindowTransformer> transformer);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(RootWindowTest, KeepTranslatedEventInRoot);
@@ -358,9 +345,6 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // transform and insets.
   void UpdateWindowSize(const gfx::Size& host_size);
 
-  void SetTransformInternal(const gfx::Transform& transform,
-                            const gfx::Transform& insert);
-
   // Overridden from ui::EventDispatcherDelegate.
   virtual bool CanDispatchToTarget(EventTarget* target) OVERRIDE;
 
@@ -415,7 +399,7 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   void SynthesizeMouseMoveEvent();
 
   gfx::Transform GetRootTransform() const;
-  gfx::Transform GetInvertedRootTransform() const;
+  gfx::Transform GetInverseRootTransform() const;
 
   scoped_ptr<ui::Compositor> compositor_;
 
@@ -466,14 +450,7 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
 
   scoped_ptr<ui::ViewProp> prop_;
 
-  // The scale of the root window. This is used to expand the
-  // area of the root window (useful in HighDPI display).
-  // Note that this should not be confused with the device scale
-  // factor, which specfies the pixel density of the display.
-  float root_window_scale_;
-
-  // The invert of |layer()|'s transform.
-  gfx::Transform invert_transform_;
+  scoped_ptr<RootWindowTransformer> transformer_;
 
   DISALLOW_COPY_AND_ASSIGN(RootWindow);
 };

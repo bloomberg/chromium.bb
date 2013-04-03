@@ -21,6 +21,7 @@
 #include "ui/aura/env.h"
 #include "ui/aura/root_window_host.h"
 #include "ui/aura/root_window_observer.h"
+#include "ui/aura/root_window_transformer.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_tracker.h"
@@ -88,11 +89,51 @@ RootWindowHost* CreateHost(RootWindow* root_window,
   return host;
 }
 
+class SimpleRootWindowTransformer : public RootWindowTransformer {
+ public:
+  SimpleRootWindowTransformer(const RootWindow* root_window,
+                              const gfx::Transform& transform)
+      : root_window_(root_window),
+        transform_(transform) {
+  }
+
+  // RootWindowTransformer overrides:
+  virtual gfx::Transform GetTransform() const OVERRIDE {
+    return transform_;
+  }
+
+  virtual gfx::Transform GetInverseTransform() const OVERRIDE {
+    gfx::Transform invert;
+    if (!transform_.GetInverse(&invert))
+      return transform_;
+    return invert;
+  }
+
+  virtual gfx::Rect GetRootWindowBounds(
+      const gfx::Size& host_size) const OVERRIDE {
+    gfx::Rect bounds(host_size);
+    gfx::RectF new_bounds(ui::ConvertRectToDIP(root_window_->layer(), bounds));
+    transform_.TransformRect(&new_bounds);
+    return gfx::Rect(gfx::ToFlooredSize(new_bounds.size()));
+  }
+
+  virtual gfx::Insets GetHostInsets() const OVERRIDE {
+    return gfx::Insets();
+  }
+
+ private:
+  virtual ~SimpleRootWindowTransformer() {}
+
+  const RootWindow* root_window_;
+  const gfx::Transform transform_;
+
+  DISALLOW_COPY_AND_ASSIGN(SimpleRootWindowTransformer);
+};
+
 }  // namespace
 
 RootWindow::CreateParams::CreateParams(const gfx::Rect& a_initial_bounds)
     : initial_bounds(a_initial_bounds),
-      initial_root_window_scale(1.0f),
       host(NULL) {
 }
 
@@ -119,11 +160,8 @@ RootWindow::RootWindow(const CreateParams& params)
       defer_draw_scheduling_(false),
       mouse_move_hold_count_(0),
       ALLOW_THIS_IN_INITIALIZER_LIST(held_event_factory_(this)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(repostable_event_factory_(this)),
-      root_window_scale_(1.0f) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(repostable_event_factory_(this)) {
   SetName("RootWindow");
-  root_window_scale_ = params.initial_root_window_scale;
-  host_->SetInsets(params.initial_insets);
 
   compositor_.reset(new ui::Compositor(this, host_->GetAcceleratedWidget()));
   DCHECK(compositor_.get());
@@ -159,8 +197,7 @@ void RootWindow::Init() {
                                 host_->GetBounds().size());
   Window::Init(ui::LAYER_NOT_DRAWN);
   compositor()->SetRootLayer(layer());
-  gfx::Transform identity;
-  SetTransformInternal(identity, identity);
+  transformer_.reset(new SimpleRootWindowTransformer(this, gfx::Transform()));
   UpdateWindowSize(host_->GetBounds().size());
   Env::GetInstance()->NotifyRootWindowInitialized(this);
   Show();
@@ -223,21 +260,8 @@ gfx::Size RootWindow::GetHostSize() const {
 }
 
 void RootWindow::SetHostBounds(const gfx::Rect& bounds_in_pixel) {
-  SetHostBoundsAndInsetsAndRootWindowScale(
-      bounds_in_pixel, gfx::Insets(), 1.0f);
-}
-
-void RootWindow::SetHostBoundsAndInsetsAndRootWindowScale(
-    const gfx::Rect& bounds_in_pixel,
-    const gfx::Insets& insets_in_pixel,
-    float root_window_scale) {
   DCHECK(!bounds_in_pixel.IsEmpty());
   DispatchHeldEvents();
-  root_window_scale_ = root_window_scale;
-  // Scale the composited result if the |root_window_scale_| is specified,
-  // rather than sacling each layers.
-  layer()->SetForceRenderSurface(root_window_scale_ != 1.0f);
-  host_->SetInsets(insets_in_pixel);
   host_->SetBounds(bounds_in_pixel);
   synthesize_mouse_move_ = false;
 }
@@ -404,7 +428,7 @@ void RootWindow::ConvertPointToHost(gfx::Point* point) const {
 
 void RootWindow::ConvertPointFromHost(gfx::Point* point) const {
   gfx::Point3F point_3f(*point);
-  GetInvertedRootTransform().TransformPoint(point_3f);
+  GetInverseRootTransform().TransformPoint(point_3f);
   *point = gfx::ToFlooredPoint(point_3f.AsPointF());
 }
 
@@ -494,40 +518,20 @@ const RootWindow* RootWindow::GetRootWindow() const {
 }
 
 void RootWindow::SetTransform(const gfx::Transform& transform) {
-  gfx::Transform invert;
-  if (!transform.GetInverse(&invert))
-    NOTREACHED() << "Singular matrix is set.";
-  SetTransformPair(transform, invert);
+  scoped_ptr<RootWindowTransformer> transformer(
+      new SimpleRootWindowTransformer(this, transform));
+  SetRootWindowTransformer(transformer.Pass());
 }
 
-void RootWindow::SetTransformPair(const gfx::Transform& transform,
-                                  const gfx::Transform& invert) {
-  SetTransformInternal(transform, invert);
-
+void RootWindow::SetRootWindowTransformer(
+    scoped_ptr<RootWindowTransformer> transformer) {
+  transformer_ = transformer.Pass();
+  host_->SetInsets(transformer_->GetHostInsets());
+  Window::SetTransform(transformer_->GetTransform());
   // If the layer is not animating, then we need to update the host size
   // immediately.
   if (!layer()->GetAnimator()->is_animating())
     OnHostResized(host_->GetBounds().size());
-}
-
-void RootWindow::SetTransformInternal(const gfx::Transform& transform,
-                                      const gfx::Transform& inverted) {
-  gfx::Insets insets = host_->GetInsets();
-  gfx::Transform translate;
-  invert_transform_ = inverted;
-  invert_transform_.Scale(root_window_scale_, root_window_scale_);
-
-  if (insets.top() != 0 || insets.left() != 0) {
-    float device_scale_factor = GetDeviceScaleFactor();
-    float x_offset = insets.left() / device_scale_factor;
-    float y_offset = insets.top() / device_scale_factor;
-    translate.Translate(x_offset, y_offset);
-    invert_transform_.Translate(-x_offset, -y_offset);
-  }
-  float inverted_scale = 1.0f / root_window_scale_;
-  translate.Scale(inverted_scale, inverted_scale);
-
-  Window::SetTransform(translate * transform);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -686,7 +690,7 @@ void RootWindow::ClearMouseHandlers() {
 
 void RootWindow::TransformEventForDeviceScaleFactor(bool keep_inside_root,
                                                     ui::LocatedEvent* event) {
-  event->UpdateForRootTransform(GetInvertedRootTransform());
+  event->UpdateForRootTransform(GetInverseRootTransform());
 #if defined(OS_CHROMEOS)
   const gfx::Rect& root_bounds = bounds();
   if (keep_inside_root &
@@ -827,25 +831,7 @@ void RootWindow::CleanupGestureRecognizerState(Window* window) {
 }
 
 void RootWindow::UpdateWindowSize(const gfx::Size& host_size) {
-  gfx::Rect bounds(host_size);
-  bounds.Inset(host_->GetInsets());
-  bounds = ui::ConvertRectToDIP(layer(), bounds);
-  gfx::RectF new_bounds(bounds);
-  layer()->transform().TransformRect(&new_bounds);
-  // It makes little sense to scale beyond the original
-  // resolution.
-  DCHECK_LE(root_window_scale_, GetDeviceScaleFactor());
-  // Apply |root_window_scale_| twice as the downscaling
-  // is already applied once in |SetTransformInternal()|.
-  // TODO(oshima): This is a bit ugly. Consider specifying
-  // the pseudo host resolution instead.
-  new_bounds.Scale(root_window_scale_ * root_window_scale_);
-  // Ignore the origin because RootWindow's insets are handled by
-  // the transform.
-  // Floor the size because the bounds is no longer aligned to
-  // backing pixel when |root_window_scale_| is specified
-  // (850 height at 1.25 scale becomes 1062.5 for example.)
-  SetBounds(gfx::Rect(gfx::ToFlooredSize(new_bounds.size())));
+  SetBounds(transformer_->GetRootWindowBounds(host_size));
 }
 
 void RootWindow::OnWindowAddedToRootWindow(Window* attached) {
@@ -1190,15 +1176,15 @@ gfx::Transform RootWindow::GetRootTransform() const {
   float scale = ui::GetDeviceScaleFactor(layer());
   gfx::Transform transform;
   transform.Scale(scale, scale);
-  transform *= layer()->transform();
+  transform *= transformer_->GetTransform();
   return transform;
 }
 
-gfx::Transform RootWindow::GetInvertedRootTransform() const {
+gfx::Transform RootWindow::GetInverseRootTransform() const {
   float scale = ui::GetDeviceScaleFactor(layer());
   gfx::Transform transform;
   transform.Scale(1.0f / scale, 1.0f / scale);
-  return invert_transform_ * transform;
+  return transformer_->GetInverseTransform() * transform;
 }
 
 }  // namespace aura

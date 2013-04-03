@@ -87,6 +87,7 @@
         'root_window_host_x11.h',
         'root_window_mac.h',
         'root_window_mac.mm',
+        'root_window_transformer.h',
         'root_window_view_mac.h',
         'root_window_view_mac.mm',
         'root_window.cc',

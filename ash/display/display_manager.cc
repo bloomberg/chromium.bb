@@ -12,6 +12,7 @@
 #include "ash/display/display_controller.h"
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
+#include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
@@ -420,6 +421,9 @@ void DisplayManager::UpdateDisplays(
   }
 
   displays_ = new_displays;
+
+  base::AutoReset<bool> resetter(&change_display_upon_host_resize_, false);
+
   // Temporarily add displays to be removed because display object
   // being removed are accessed during shutting down the root.
   displays_.insert(displays_.end(), removed_displays.begin(),

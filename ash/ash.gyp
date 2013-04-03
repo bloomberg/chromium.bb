@@ -60,6 +60,8 @@
         'accelerators/nested_dispatcher_controller.h',
         'ash_constants.cc',
         'ash_constants.h',
+        'ash_root_window_transformer.cc',
+        'ash_root_window_transformer.h',
         'ash_switches.cc',
         'ash_switches.h',
         'cancel_mode.cc',

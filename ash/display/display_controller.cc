@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <map>
 
+#include "ash/ash_root_window_transformer.h"
 #include "ash/ash_switches.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/display_pref_util.h"
@@ -167,7 +168,13 @@ void RotateRootWindow(aura::RootWindow* root_window,
                                -(display.bounds().height() - 1));
       break;
   }
-  root_window->SetTransformPair(rotate, reverse_rotate);
+  scoped_ptr<aura::RootWindowTransformer> transformer(
+      new AshRootWindowTransformer(root_window,
+                                   rotate,
+                                   reverse_rotate,
+                                   info.GetOverscanInsetsInPixel(),
+                                   info.ui_scale()));
+  root_window->SetRootWindowTransformer(transformer.Pass());
 }
 
 void SetDisplayPropertiesOnHostWindow(aura::RootWindow* root,
@@ -724,11 +731,8 @@ void DisplayController::OnDisplayBoundsChanged(const gfx::Display& display) {
 
   UpdateDisplayBoundsForLayout();
   aura::RootWindow* root = root_windows_[display.id()];
-  root->SetHostBoundsAndInsetsAndRootWindowScale(
-      display_info.bounds_in_pixel(),
-      display_info.GetOverscanInsetsInPixel(),
-      display_info.ui_scale());
   SetDisplayPropertiesOnHostWindow(root, display);
+  root->SetHostBounds(display_info.bounds_in_pixel());
 }
 
 void DisplayController::OnDisplayAdded(const gfx::Display& display) {
@@ -745,10 +749,8 @@ void DisplayController::OnDisplayAdded(const gfx::Display& display) {
     UpdateDisplayBoundsForLayout();
     const internal::DisplayInfo& display_info =
         GetDisplayManager()->GetDisplayInfo(display.id());
-    root_windows_[display.id()]->SetHostBoundsAndInsetsAndRootWindowScale(
-        display_info.bounds_in_pixel(),
-        display_info.GetOverscanInsetsInPixel(),
-        display_info.ui_scale());
+    root_windows_[display.id()]->SetHostBounds(
+        display_info.bounds_in_pixel());
   } else {
     if (primary_display_id == gfx::Display::kInvalidDisplayID)
       primary_display_id = display.id();
@@ -814,8 +816,6 @@ aura::RootWindow* DisplayController::CreateRootWindowForDisplay(
   aura::RootWindow::CreateParams params(bounds_in_pixel);
   params.host = Shell::GetInstance()->root_window_host_factory()->
       CreateRootWindowHost(bounds_in_pixel);
-  params.initial_insets = display_info.GetOverscanInsetsInPixel();
-  params.initial_root_window_scale = display_info.ui_scale();
   aura::RootWindow* root_window = new aura::RootWindow(params);
   root_window->SetName(
       base::StringPrintf("RootWindow-%d", root_window_count++));
