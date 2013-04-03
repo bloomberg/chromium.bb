@@ -789,7 +789,7 @@ int32_t NaClSysWrite(struct NaClAppThread *natp,
     goto cleanup;
   }
 
-  NaClLog(4, "In NaClSysWrite(%d, %.*s, %"NACL_PRIdS")\n",
+  NaClLog(8, "In NaClSysWrite(%d, %.*s, %"NACL_PRIdS")\n",
           d, (int) count, (char *) sysaddr, count);
 
   /*
