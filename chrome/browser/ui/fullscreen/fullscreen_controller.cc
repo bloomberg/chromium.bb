@@ -273,8 +273,11 @@ void FullscreenController::WindowFullscreenStateChanged() {
   bool exiting_fullscreen = !window_->IsFullscreen();
 
   PostFullscreenChangeNotification(!exiting_fullscreen);
-  if (exiting_fullscreen)
+  if (exiting_fullscreen) {
+    toggled_into_fullscreen_ = false;
+    extension_caused_fullscreen_ = GURL();
     NotifyTabOfExitIfNecessary();
+  }
   if (exiting_fullscreen)
     window_->GetDownloadShelf()->Unhide();
   else

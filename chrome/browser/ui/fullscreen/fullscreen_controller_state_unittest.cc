@@ -569,3 +569,19 @@ TEST_F(FullscreenControllerStateUnitTest, DISABLED_DebugLogStateTables) {
   output << GetStateTransitionsAsString();
   LOG(INFO) << output.str();
 }
+
+// Test that the fullscreen exit bubble is closed by
+// WindowFullscreenStateChanged() if fullscreen is exited via BrowserWindow.
+// This currently occurs when an extension exits fullscreen via changing the
+// browser bounds.
+TEST_F(FullscreenControllerStateUnitTest, ExitFullscreenViaBrowserWindow) {
+  AddTab(browser(), GURL(chrome::kAboutBlankURL));
+  ASSERT_TRUE(InvokeEvent(TOGGLE_FULLSCREEN));
+  ASSERT_TRUE(InvokeEvent(WINDOW_CHANGE));
+  ASSERT_TRUE(browser()->window()->IsFullscreen());
+  // Exit fullscreen without going through fullscreen controller.
+  browser()->window()->ExitFullscreen();
+  ChangeWindowFullscreenState();
+  EXPECT_EQ(FEB_TYPE_NONE,
+            browser()->fullscreen_controller()->GetFullscreenExitBubbleType());
+}
