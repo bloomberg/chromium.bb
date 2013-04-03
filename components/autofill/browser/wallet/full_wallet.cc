@@ -193,6 +193,10 @@ bool FullWallet::operator!=(const FullWallet& other) const {
 }
 
 void FullWallet::DecryptCardInfo() {
+  // base::HexStringToBytes expects an even length string.
+  if (encrypted_rest_.size() % 2 != 0)
+    encrypted_rest_ = '0' + encrypted_rest_;
+
   std::vector<uint8> operating_data;
   // Convert |encrypted_rest_| to bytes so we can decrypt it with |otp|.
   if (!base::HexStringToBytes(encrypted_rest_, &operating_data)) {

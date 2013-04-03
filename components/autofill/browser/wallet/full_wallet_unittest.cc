@@ -5,10 +5,12 @@
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "components/autofill/browser/wallet/full_wallet.h"
 #include "components/autofill/browser/wallet/required_action.h"
+#include "components/autofill/browser/wallet/wallet_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -31,14 +33,14 @@ const char kFullWalletValidResponse[] =
     "        \"address_line_2\""
     "      ],"
     "      \"locality_name\":\"locality_name\","
-    "      \"administrative_area_name\":\"administrative_area_name\","
+    "      \"administrative_area_name\":\"admin_area_name\","
     "      \"postal_code_number\":\"postal_code_number\","
     "      \"country_name_code\":\"country_name_code\""
     "    }"
     "  },"
     "  \"shipping_address\":"
     "  {"
-    "    \"id\":\"ship_id\","
+    "    \"id\":\"address_id\","
     "    \"phone_number\":\"ship_phone_number\","
     "    \"postal_address\":"
     "    {"
@@ -84,7 +86,7 @@ const char kFullWalletMissingExpirationMonth[] =
     "  },"
     "  \"shipping_address\":"
     "  {"
-    "    \"id\":\"ship_id\","
+    "    \"id\":\"address_id\","
     "    \"phone_number\":\"ship_phone_number\","
     "    \"postal_address\":"
     "    {"
@@ -130,7 +132,7 @@ const char kFullWalletMissingExpirationYear[] =
     "  },"
     "  \"shipping_address\":"
     "  {"
-    "    \"id\":\"ship_id\","
+    "    \"id\":\"address_id\","
     "    \"phone_number\":\"ship_phone_number\","
     "    \"postal_address\":"
     "    {"
@@ -176,7 +178,7 @@ const char kFullWalletMissingIin[] =
     "  },"
     "  \"shipping_address\":"
     "  {"
-    "    \"id\":\"ship_id\","
+    "    \"id\":\"address_id\","
     "    \"phone_number\":\"ship_phone_number\","
     "    \"postal_address\":"
     "    {"
@@ -222,7 +224,7 @@ const char kFullWalletMissingRest[] =
     "  },"
     "  \"shipping_address\":"
     "  {"
-    "    \"id\":\"ship_id\","
+    "    \"id\":\"address_id\","
     "    \"phone_number\":\"ship_phone_number\","
     "    \"postal_address\":"
     "    {"
@@ -251,7 +253,7 @@ const char kFullWalletMissingBillingAddress[] =
     "  \"rest\":\"rest\","
     "  \"shipping_address\":"
     "  {"
-    "    \"id\":\"ship_id\","
+    "    \"id\":\"address_id\","
     "    \"phone_number\":\"ship_phone_number\","
     "    \"postal_address\":"
     "    {"
@@ -320,7 +322,7 @@ const char kFullWalletMalformedBillingAddress[] =
     "  },"
     "  \"shipping_address\":"
     "  {"
-    "    \"id\":\"ship_id\","
+    "    \"id\":\"address_id\","
     "    \"phone_number\":\"ship_phone_number\","
     "    \"postal_address\":"
     "    {"
@@ -427,39 +429,52 @@ TEST_F(FullWalletTest, CreateFullWalletWithInvalidRequiredActions) {
 
 TEST_F(FullWalletTest, CreateFullWallet) {
   SetUpDictionary(kFullWalletValidResponse);
-  // NOTE: FullWallet billing address doesn't require an ID.
-  scoped_ptr<Address> billing_address(new Address(
-      "country_name_code",
-      ASCIIToUTF16("recipient_name"),
-      ASCIIToUTF16("address_line_1"),
-      ASCIIToUTF16("address_line_2"),
-      ASCIIToUTF16("locality_name"),
-      ASCIIToUTF16("administrative_area_name"),
-      ASCIIToUTF16("postal_code_number"),
-      ASCIIToUTF16("phone_number"),
-      ""));
-  scoped_ptr<Address> shipping_address(new Address(
-      "ship_country_name_code",
-      ASCIIToUTF16("ship_recipient_name"),
-      ASCIIToUTF16("ship_address_line_1"),
-      ASCIIToUTF16("ship_address_line_2"),
-      ASCIIToUTF16("ship_locality_name"),
-      ASCIIToUTF16("ship_admin_area_name"),
-      ASCIIToUTF16("ship_postal_code_number"),
-      ASCIIToUTF16("ship_phone_number"),
-      "ship_id"));
   std::vector<RequiredAction> required_actions;
   FullWallet full_wallet(12,
                          2012,
                          "iin",
                          "rest",
-                         billing_address.Pass(),
-                         shipping_address.Pass(),
+                         GetTestAddress(),
+                         GetTestShippingAddress(),
                          required_actions);
   EXPECT_EQ(full_wallet, *FullWallet::CreateFullWallet(*dict));
 }
 
-// TODO(ahutter): Add tests for GetPan and GetCvn.
+TEST_F(FullWalletTest, EvenRestDecryptionTest) {
+  std::vector<RequiredAction> required_actions;
+  FullWallet full_wallet(12,
+                         2012,
+                         "528512",
+                         "5ec4feecf9d6",
+                         GetTestAddress(),
+                         GetTestShippingAddress(),
+                         required_actions);
+  std::vector<uint8> one_time_pad;
+  EXPECT_TRUE(base::HexStringToBytes("5F04A8704183", &one_time_pad));
+  full_wallet.set_one_time_pad(one_time_pad);
+  EXPECT_EQ(ASCIIToUTF16("5285121925598459"),
+            full_wallet.GetInfo(CREDIT_CARD_NUMBER));
+  EXPECT_EQ(ASCIIToUTF16("989"),
+            full_wallet.GetInfo(CREDIT_CARD_VERIFICATION_CODE));
+}
+
+TEST_F(FullWalletTest, OddRestDecryptionTest) {
+  std::vector<RequiredAction> required_actions;
+  FullWallet full_wallet(12,
+                         2012,
+                         "528512",
+                         "1a068673eb0",
+                         GetTestAddress(),
+                         GetTestShippingAddress(),
+                         required_actions);
+  std::vector<uint8> one_time_pad;
+  EXPECT_TRUE(base::HexStringToBytes("075DA779F98B", &one_time_pad));
+  full_wallet.set_one_time_pad(one_time_pad);
+  EXPECT_EQ(ASCIIToUTF16("5285127687171393"),
+            full_wallet.GetInfo(CREDIT_CARD_NUMBER));
+  EXPECT_EQ(ASCIIToUTF16("339"),
+            full_wallet.GetInfo(CREDIT_CARD_VERIFICATION_CODE));
+}
 
 }  // namespace wallet
 }  // namespace autofill

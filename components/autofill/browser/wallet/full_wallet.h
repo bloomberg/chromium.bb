@@ -67,6 +67,8 @@ class FullWallet {
   friend class FullWalletTest;
   FRIEND_TEST_ALL_PREFIXES(FullWalletTest, CreateFullWallet);
   FRIEND_TEST_ALL_PREFIXES(FullWalletTest, CreateFullWalletWithRequiredActions);
+  FRIEND_TEST_ALL_PREFIXES(FullWalletTest, EvenRestDecryptionTest);
+  FRIEND_TEST_ALL_PREFIXES(FullWalletTest, OddRestDecryptionTest);
   FullWallet(int expiration_month,
              int expiration_year,
              const std::string& iin,
