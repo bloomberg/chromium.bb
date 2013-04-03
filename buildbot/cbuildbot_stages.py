@@ -1101,7 +1101,7 @@ class InitSDKStage(bs.BuilderStage):
         replace = True
 
     if not os.path.isdir(chroot_path) or replace:
-      use_sdk = (self._build_config['use_sdk'] and not self._options.no_sdk)
+      use_sdk = (self._build_config['use_sdk'] and not self._options.nosdk)
       commands.MakeChroot(
           buildroot=self._build_root,
           replace=replace,

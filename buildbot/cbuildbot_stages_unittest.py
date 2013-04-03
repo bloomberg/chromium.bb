@@ -446,13 +446,13 @@ class InitSDKTest(AbstractBuildTest):
     self.assertCommandContains(['cros_sdk'])
 
   def testBinBuildWithNoSDK(self):
-    """Tests whether the --no-sdk option works."""
-    self.options.no_sdk = True
+    """Tests whether the --nosdk option works."""
+    self.options.nosdk = True
     self.runBuild(dir_exists=False, full=False)
     self.assertCommandContains(['cros_sdk', '--bootstrap'])
 
   def testBinBuildWithExistingChroot(self):
-    """Tests whether the --no-sdk option works."""
+    """Tests whether the --nosdk option works."""
     self.runBuild(dir_exists=True, full=False)
     self.assertCommandContains(['cros_sdk'], expected=False)
 
@@ -1210,7 +1210,7 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
     self.options.debug = False
     self.options.prebuilts = False
     self.options.clobber = False
-    self.options.no_sdk = False
+    self.options.nosdk = False
     self.options.latest_toolchain = False
     self.options.buildnumber = 1234
     self.options.chrome_rev = None

@@ -789,12 +789,18 @@ def _CreateParser():
   parser = CustomParser(usage=usage, caching=FindCacheDir)
 
   # Main options
-  # The remote_pass_through parameter to add_option is implemented by the
-  # CustomOption class.  See CustomOption for more information.
+  parser.add_option('-l', '--list', action='store_true', dest='list',
+                    default=False,
+                    help='List the suggested trybot configs to use (see --all)')
   parser.add_option('-a', '--all', action='store_true', dest='print_all',
                     default=False,
-                    help=('List all of the buildbot configs available. Use '
-                          'with the --list option'))
+                    help='List all of the buildbot configs available w/--list')
+
+  parser.add_option('--local', default=False, action='store_true',
+                    help='Specifies that this tryjob should be run locally')
+  parser.add_option('--remote', default=False, action='store_true',
+                    help='Specifies that this tryjob should be run remotely')
+
   parser.add_remote_option('-b', '--branch',
                            help='The manifest branch to test.  The branch to '
                                 'check the buildroot out to.')
@@ -808,42 +814,66 @@ def _CreateParser():
                            callback=_CheckChromeRevOption,
                            help=('Revision of Chrome to use, of type [%s]'
                                  % '|'.join(constants.VALID_CHROME_REVISIONS)))
-  parser.add_remote_option('-g', '--gerrit-patches', action='extend',
-                           default=[], type='string',
-                           metavar="'Id1 *int_Id2...IdN'",
-                           help=("Space-separated list of short-form Gerrit "
-                                 "Change-Id's or change numbers to patch. "
-                                 "Please prepend '*' to internal Change-Id's"))
-  parser.add_remote_option('-G', '--rietveld-patches', action='extend',
-                           default=[], type='string',
-                           metavar="'id1[:subdir1]...idN[:subdirN]'",
-                           help=("Space-separated list of short-form Rietveld "
-                                 "issue numbers to patch. If no subdir is "
-                                 "specified, the src directory is used."))
-  parser.add_option('-l', '--list', action='store_true', dest='list',
-                    default=False,
-                    help=('List the suggested trybot configs to use.  Use '
-                          '--all to list all of the available configs.'))
-  parser.add_option('--local', default=False, action='store_true',
-                    help=('Specifies that this tryjob should be run locally.'))
-  parser.add_option('-p', '--local-patches', action='extend', default=[],
-                    metavar="'<project1>[:<branch1>]...<projectN>[:<branchN>]'",
-                    help=('Space-separated list of project branches with '
-                          'patches to apply.  Projects are specified by name. '
-                          'If no branch is specified the current branch of the '
-                          'project will be used.'))
   parser.add_remote_option('--profile', default=None, type='string',
                            action='store', dest='profile',
                            help='Name of profile to sub-specify board variant.')
-  parser.add_option('--remote', default=False, action='store_true',
-                    help=('Specifies that this tryjob should be run remotely.'))
-  parser.add_option('--remote-description', default=None,
-                    help=('Attach an optional description to a --remote run '
-                          'to make it easier to identify the results when it '
-                          'finishes.'))
 
   #
-  # Advanced options
+  # Patch selection options.
+  #
+
+  group = CustomGroup(
+      parser,
+      'Patch Options')
+
+  group.add_remote_option('-g', '--gerrit-patches', action='extend',
+                          default=[], type='string',
+                          metavar="'Id1 *int_Id2...IdN'",
+                          help="Space-separated list of short-form Gerrit "
+                               "Change-Id's or change numbers to patch. "
+                               "Please prepend '*' to internal Change-Id's")
+  group.add_remote_option('-G', '--rietveld-patches', action='extend',
+                          default=[], type='string',
+                          metavar="'id1[:subdir1]...idN[:subdirN]'",
+                          help='Space-separated list of short-form Rietveld '
+                               'issue numbers to patch. If no subdir is '
+                               'specified, the src directory is used.')
+  group.add_option('-p', '--local-patches', action='extend', default=[],
+                   metavar="'<project1>[:<branch1>]...<projectN>[:<branchN>]'",
+                   help='Space-separated list of project branches with '
+                        'patches to apply.  Projects are specified by name. '
+                        'If no branch is specified the current branch of the '
+                        'project will be used.')
+
+  parser.add_option_group(group)
+
+  #
+  # Remote trybot options.
+  #
+
+  group = CustomGroup(
+      parser,
+      'Remote Trybot Options (--remote)')
+
+  group.add_remote_option('--hwtest', dest='hwtest', action='store_true',
+                           default=False,
+                           help='Run the HWTest stage (tests on real hardware)')
+  group.add_option('--remote-description', default=None,
+                   help='Attach an optional description to a --remote run '
+                        'to make it easier to identify the results when it '
+                        'finishes')
+  group.add_option('--slaves', action='extend', default=[],
+                   help='Specify specific remote tryslaves to run on (e.g. '
+                        'build149-m2); if the bot is busy, it will be queued')
+  group.add_option('--test-tryjob', action='store_true',
+                   default=False,
+                   help='Submit a tryjob to the test repository.  Will not '
+                        'show up on the production trybot waterfall.')
+
+  parser.add_option_group(group)
+
+  #
+  # Advanced options.
   #
 
   group = CustomGroup(
@@ -851,6 +881,9 @@ def _CreateParser():
       'Advanced Options',
       'Caution: use these options at your own risk.')
 
+  group.add_remote_option('--bootstrap-args', action='append', default=[],
+                          help='Args passed directly to the bootstrap re-exec '
+                               'to skip verification by the bootstrap code')
   group.add_remote_option('--buildbot', dest='buildbot', action='store_true',
                           default=False, help='This is running on a buildbot')
   group.add_remote_option('--buildnumber', help='build number', type='int',
@@ -866,9 +899,9 @@ def _CreateParser():
   group.add_remote_option('--clobber', action='store_true', dest='clobber',
                           default=False,
                           help='Clears an old checkout before syncing')
-  group.add_remote_option('--hwtest', dest='hwtest', action='store_true',
-                           default=False,
-                           help='This adds HW test for remote trybot')
+  group.add_remote_option('--latest-toolchain', action='store_true',
+                          default=False,
+                          help='Use the latest toolchain.')
   parser.add_option('--log_dir', dest='log_dir', type='path',
                     help=('Directory where logs are stored.'))
   group.add_remote_option('--maxarchives', dest='max_archive_builds',
@@ -893,6 +926,9 @@ def _CreateParser():
   group.add_remote_option('--noprebuilts', action='store_false',
                           dest='prebuilts', default=True,
                           help="Don't upload prebuilts.")
+  group.add_remote_option('--nosdk', action='store_true',
+                          default=False,
+                          help='Re-create the SDK from scratch.')
   group.add_remote_option('--nosync', action='store_false', dest='sync',
                           default=True, help="Don't sync before building.")
   group.add_remote_option('--notests', action='store_false', dest='tests',
@@ -918,16 +954,24 @@ def _CreateParser():
                                'can run for, at which point the build will be '
                                'aborted.  If set to zero, then there is no '
                                'timeout.')
-  group.add_option('--test-tryjob', action='store_true',
-                   default=False,
-                   help='Submit a tryjob to the test repository.  Will not '
-                        'show up on the production trybot waterfall.')
-  group.add_remote_option('--validation_pool', default=None,
-                          help='Path to a pickled validation pool. Intended '
-                               'for use only with the commit queue.')
   group.add_remote_option('--version', dest='force_version', default=None,
                           help='Used with manifest logic.  Forces use of this '
                                'version rather than create or get latest.')
+
+  parser.add_option_group(group)
+
+  #
+  # Internal options.
+  #
+
+  group = CustomGroup(
+      parser,
+      'Internal ChromeOS Build Team Options',
+      'Caution: these are for meant for the ChromeOS build team only')
+
+  group.add_remote_option('--archive-base', type='gs_path',
+                          help='Base GS URL (gs://<bucket_name>/<path>) to '
+                               'upload archive artifacts to')
   group.add_remote_option('--cq-gerrit-query', dest='cq_gerrit_override',
                           default=None,
                           help=
@@ -936,55 +980,34 @@ def _CreateParser():
       "query it defaults to.  Use with care- note additionally this setting "
       "only has an effect if the buildbot target is a cq target, and we're "
       "in buildbot mode.")
-  group.add_remote_option('--latest-toolchain', action='store_true',
-                          default=False,
-                          help='Use the latest toolchain.')
-  group.add_remote_option('--no-sdk', action='store_true',
-                          default=False,
-                          help='Re-create the SDK from scratch.')
-
-  parser.add_option_group(group)
-
-  #
-  # Hidden options.
-  #
-
-  # The base GS URL (gs://<bucket_name>/<path>) to archive artifacts to.
-  parser.add_remote_option('--archive-base', type='gs_path',
-                          help=optparse.SUPPRESS_HELP)
-  # bootstrap-args are not verified by the bootstrap code.  It gets passed
-  # direcly to the bootstrap re-execution.
-  parser.add_remote_option('--bootstrap-args', action='append',
-                          default=[], help=optparse.SUPPRESS_HELP)
-  parser.add_option('--pass-through', dest='pass_through_args', action='append',
-                   type='string', default=[], help=optparse.SUPPRESS_HELP)
-  # Used for handling forwards/backwards compatibility for --resume and
-  # --bootstrap.
-  parser.add_option('--reexec-api-version', dest='output_api_version',
+  group.add_option('--pass-through', dest='pass_through_args', action='append',
+                   type='string', default=[])
+  group.add_option('--reexec-api-version', dest='output_api_version',
                    action='store_true', default=False,
-                   help=optparse.SUPPRESS_HELP)
-  # Indicates this is running on a remote trybot machine.
-  parser.add_option('--remote-trybot', dest='remote_trybot',
-                    action='store_true', default=False,
-                    help=optparse.SUPPRESS_HELP)
-  # Patches uploaded by trybot client when run using the -p option.
-  parser.add_remote_option('--remote-patches', action='extend', default=[],
-                          help=optparse.SUPPRESS_HELP)
-  # Specify specific remote tryslaves to run on.
-  parser.add_option('--slaves', action='extend', default=[],
-                   help=optparse.SUPPRESS_HELP)
-  parser.add_option('--sourceroot', type='path', default=constants.SOURCE_ROOT,
-                   help=optparse.SUPPRESS_HELP)
-  # Causes cbuildbot to bootstrap itself twice, in the sequence A->B->C.
-  # A(unpatched) patches and bootstraps B.  B patches and bootstraps C.
-  parser.add_remote_option('--test-bootstrap', action='store_true',
-                          default=False, help=optparse.SUPPRESS_HELP)
+                   help='Used for handling forwards/backwards compatibility '
+                        'with --resume and --bootstrap')
+  group.add_option('--remote-trybot', dest='remote_trybot',
+                   action='store_true', default=False,
+                   help='Indicates this is running on a remote trybot machine')
+  group.add_remote_option('--remote-patches', action='extend', default=[],
+                          help='Patches uploaded by the trybot client when run '
+                               'using the -p option')
   # Note the default here needs to be hardcoded to 3; that is the last version
   # that lacked this functionality.
-  # This is used so that cbuildbot when processing tryjobs from
-  # older chromite instances, we can use it for handling compatibility.
-  parser.add_option('--remote-version', default=3, type=int, action='store',
-                    help=optparse.SUPPRESS_HELP)
+  group.add_option('--remote-version', default=3, type=int, action='store',
+                   help='Used for compatibility checks w/tryjobs running in '
+                        'older chromite instances')
+  group.add_option('--sourceroot', type='path', default=constants.SOURCE_ROOT)
+  group.add_remote_option('--test-bootstrap', action='store_true',
+                          default=False,
+                          help='Causes cbuildbot to bootstrap itself twice, in '
+                               'the sequence A->B->C: A(unpatched) patches and '
+                               'bootstraps B; B patches and bootstraps C')
+  group.add_remote_option('--validation_pool', default=None,
+                          help='Path to a pickled validation pool. Intended '
+                               'for use only with the commit queue.')
+
+  parser.add_option_group(group)
 
   #
   # Debug options
