@@ -345,6 +345,7 @@ LabelButton* DialogClientView::CreateDialogButton(ui::DialogButton type) {
   const string16 title = GetDialogDelegate()->GetDialogButtonLabel(type);
   LabelButton* button = new LabelButton(this, title);
   button->SetStyle(Button::STYLE_NATIVE_TEXTBUTTON);
+  button->set_focusable(true);
 
   const int kDialogMinButtonWidth = 75;
   button->set_min_size(gfx::Size(kDialogMinButtonWidth, 0));

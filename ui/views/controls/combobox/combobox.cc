@@ -121,11 +121,13 @@ bool Combobox::OnKeyReleased(const ui::KeyEvent& e) {
 
 void Combobox::OnFocus() {
   // Forward the focus to the wrapper.
-  if (native_wrapper_)
+  if (native_wrapper_) {
     native_wrapper_->SetFocus();
-  else
+    NotifyAccessibilityEvent(ui::AccessibilityTypes::EVENT_FOCUS, true);
+  } else {
     View::OnFocus();  // Will focus the RootView window (so we still get
                       // keyboard messages).
+  }
 }
 
 void Combobox::OnBlur() {

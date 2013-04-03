@@ -52,6 +52,8 @@ LabelButton::LabelButton(ButtonListener* listener, const string16& text)
 
   // Initialize the colors, border, and layout.
   SetStyle(style_);
+
+  SetAccessibleName(text);
 }
 
 LabelButton::~LabelButton() {}
@@ -73,6 +75,7 @@ const string16& LabelButton::GetText() const {
 
 void LabelButton::SetText(const string16& text) {
   label_->SetText(text);
+  SetAccessibleName(text);
 }
 
 void LabelButton::SetTextColor(ButtonState for_state, SkColor color) {

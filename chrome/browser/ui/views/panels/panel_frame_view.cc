@@ -278,7 +278,6 @@ void PanelFrameView::Init() {
                                    views::ImageButton::ALIGN_MIDDLE);
   string16 tooltip_text = l10n_util::GetStringUTF16(IDS_PANEL_CLOSE_TOOLTIP);
   close_button_->SetTooltipText(tooltip_text);
-  close_button_->SetAccessibleName(tooltip_text);
   AddChildView(close_button_);
 
   minimize_button_ = new views::ImageButton(this);
@@ -290,7 +289,6 @@ void PanelFrameView::Init() {
                              rb.GetImageSkiaNamed(IDR_PANEL_MINIMIZE_C));
   tooltip_text = l10n_util::GetStringUTF16(IDS_PANEL_MINIMIZE_TOOLTIP);
   minimize_button_->SetTooltipText(tooltip_text);
-  minimize_button_->SetAccessibleName(tooltip_text);
   minimize_button_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
                                       views::ImageButton::ALIGN_MIDDLE);
   AddChildView(minimize_button_);
@@ -306,7 +304,6 @@ void PanelFrameView::Init() {
                                      views::ImageButton::ALIGN_MIDDLE);
   tooltip_text = l10n_util::GetStringUTF16(IDS_PANEL_RESTORE_TOOLTIP);
   restore_button_->SetTooltipText(tooltip_text);
-  restore_button_->SetAccessibleName(tooltip_text);
   restore_button_->SetVisible(false);  // only visible when panel is minimized
   AddChildView(restore_button_);
 

@@ -350,9 +350,11 @@ std::string AccessibilityEventRouterViews::GetViewContext(views::View* view) {
       return UTF16ToUTF8(state.name);
     }
 
-    // A control inside of an alert (like an infobar) should grab the
-    // first static text descendant as the context; that's the prompt.
-    if (state.role == ui::AccessibilityTypes::ROLE_ALERT) {
+    // A control inside of an alert or dialog (including an infobar)
+    // should grab the first static text descendant as the context;
+    // that's the prompt.
+    if (state.role == ui::AccessibilityTypes::ROLE_ALERT ||
+        state.role == ui::AccessibilityTypes::ROLE_DIALOG) {
       views::View* static_text_child = FindDescendantWithAccessibleRole(
           parent, ui::AccessibilityTypes::ROLE_STATICTEXT);
       if (static_text_child) {
