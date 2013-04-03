@@ -94,10 +94,10 @@ def is_url(path):
   return bool(re.match(r'^https?://.+$', path))
 
 
-def default_blacklist(f):
+def chromium_default_blacklist(f):
   """Filters unimportant files normally ignored."""
   return (
-      f.endswith(('.pyc', '.run_test_cases', 'testserver.log')) or
+      f.endswith(('.pyc', '.swp', '.run_test_cases', 'testserver.log')) or
       _GIT_PATH in f or
       _SVN_PATH in f or
       f in ('.git', '.svn'))
@@ -612,9 +612,9 @@ def generate_simplified(
   # part untracked, the directory will not be extracted. Tracked files should be
   # 'promoted' to be untracked as needed.
   tracked = trace_inputs.extract_directories(
-      root_dir, tracked, default_blacklist)
+      root_dir, tracked, chromium_default_blacklist)
   untracked = trace_inputs.extract_directories(
-      root_dir, untracked, default_blacklist)
+      root_dir, untracked, chromium_default_blacklist)
   # touched is not compressed, otherwise it would result in files to be archived
   # that we don't need.
 
@@ -1693,7 +1693,7 @@ def read_trace_as_isolate_dict(complete_state):
     raise ExecutionError(
         'No log file \'%s\' to read, did you forget to \'trace\'?' % logfile)
   try:
-    data = api.parse_log(logfile, default_blacklist, None)
+    data = api.parse_log(logfile, chromium_default_blacklist, None)
     exceptions = [i['exception'] for i in data if 'exception' in i]
     results = (i['results'] for i in data if 'results' in i)
     results_stripped = (i.strip_root(complete_state.root_dir) for i in results)

@@ -40,7 +40,7 @@ def isolate_test_cases(
   api = trace_inputs.get_api()
   logs = dict(
       (i.pop('trace'), i)
-      for i in api.parse_log(logname, isolate.default_blacklist, None))
+      for i in api.parse_log(logname, isolate.chromium_default_blacklist, None))
   exception = None
   try:
     inputs = []
