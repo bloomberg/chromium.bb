@@ -216,6 +216,7 @@ class InstantController : public InstantPage::Delegate,
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, ValidatesSuggestions);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest,
       OmniboxCommitsWhenShownFullHeight);
+  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, LocalNTPIsNotLocalOverlay);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedManualTest,
                            MANUAL_OmniboxFocusLoadsInstant);
 
@@ -312,19 +313,10 @@ class InstantController : public InstantPage::Delegate,
   // Send the omnibox popup bounds to the page.
   void SendPopupBoundsToPage();
 
-  // Determines the Instant URL based on a number of factors:
-  // If |extended_enabled_|:
-  //   - If |use_local_overlay_only_| is true return kLocalOmniboxPopupURL, else
-  //   - If the Instant URL is specified by command line, returns it, else
-  //   - If the default Instant URL is present returns it.
-  // If !|extended_enabled_|:
-  //   - If the Instant URL is specified by command line, returns it, else
-  //   - If the default Instant URL is present returns it.
-  //
-  // If |ignore_blacklist| is set to true, Instant URLs are not filtered through
-  // the blacklist.
-  //
-  // Returns true if a valid Instant URL could be found that is not blacklisted.
+  // Returns the default search engine's Instant URL (possibly overridden by
+  // the --instant-url commandline param), if it's not blacklisted already.
+  // Ignores the blacklist if |ignore_blacklist| is true. Returns true if a
+  // valid Instant URL was assigned to |instant_url|; false otherwise.
   bool GetInstantURL(Profile* profile,
                      bool ignore_blacklist,
                      std::string* instant_url) const;

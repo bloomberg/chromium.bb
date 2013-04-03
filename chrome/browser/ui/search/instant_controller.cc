@@ -1430,13 +1430,8 @@ void InstantController::SendPopupBoundsToPage() {
 bool InstantController::GetInstantURL(Profile* profile,
                                       bool ignore_blacklist,
                                       std::string* instant_url) const {
-  DCHECK(profile);
-  instant_url->clear();
-
-  if (extended_enabled_ && use_local_overlay_only_) {
-    *instant_url = chrome::kChromeSearchLocalOmniboxPopupURL;
-    return true;
-  }
+  if (extended_enabled_ && use_local_overlay_only_)
+    return false;
 
   const GURL instant_url_obj = chrome::GetInstantURL(profile,
                                                      omnibox_bounds_.x());

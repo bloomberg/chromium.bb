@@ -1355,3 +1355,16 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, AutocompleteProvidersDone) {
   EXPECT_TRUE(UpdateSearchState(overlay));
   EXPECT_EQ(1, on_native_suggestions_calls_);
 }
+
+// Test that the local NTP doesn't end up with the local overlay's URL.
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest, LocalNTPIsNotLocalOverlay) {
+  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+
+  EXPECT_EQ(instant_url(), instant()->ntp_->contents()->GetURL());
+
+  // The second argument says to use only the local overlay.
+  instant()->SetInstantEnabled(false, true);
+
+  EXPECT_EQ(GURL(chrome::kChromeSearchLocalNtpUrl),
+            instant()->ntp_->contents()->GetURL());
+}
