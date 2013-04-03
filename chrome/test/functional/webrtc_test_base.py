@@ -4,6 +4,7 @@
 # found in the LICENSE file.
 
 import os
+import platform
 import re
 import subprocess
 
@@ -179,6 +180,14 @@ class WebrtcTestBase(pyauto.PyUITest):
     if self.IsWin():
       path += '.exe'
     return path
+
+  def PlatformIsWinXP(self):
+    """Check if the executing platform is Windows XP.
+
+    Return:
+      True if the platform is Windows XP.
+    """
+    return platform.system() == 'Windows' and platform.release() == 'XP'
 
   def StartPeerConnectionServer(self):
     """Starts peerconnection_server.

@@ -3,8 +3,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import platform
-
 import pyauto_functional
 import webrtc_test_base
 
@@ -22,6 +20,9 @@ class WebrtcBrutalityTest(webrtc_test_base.WebrtcTestBase):
     The test will make repeated getUserMedia requests with refreshes between
     them. Sometimes it will click past the bar and then refresh.
     """
+    if self.PlatformIsWinXP():
+      print 'Skipping this test on Windows XP due to flakiness.'
+      return
     self.LoadTestPageInOneTab()
     for i in range(1, 100):
       if i % 10 == 0:
@@ -35,7 +36,7 @@ class WebrtcBrutalityTest(webrtc_test_base.WebrtcTestBase):
 
     The test will alternate unanswered requests with requests that get answered.
     """
-    if platform.system() == 'Windows' and platform.release() == 'XP':
+    if self.PlatformIsWinXP():
       print 'Skipping this test on Windows XP due to flakiness.'
       return
     self.LoadTestPageInOneTab()
