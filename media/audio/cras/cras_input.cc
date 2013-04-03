@@ -108,6 +108,7 @@ void CrasInputStream::Start(AudioInputCallback* callback) {
     return;
 
   callback_ = callback;
+  LOG(ERROR) << "Input Start";
 
   // Prepare |audio_format| and |stream_params| for the stream we
   // will create.

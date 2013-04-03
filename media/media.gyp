@@ -110,8 +110,8 @@
         'audio/cras/audio_manager_cras.h',
         'audio/cras/cras_input.cc',
         'audio/cras/cras_input.h',
-        'audio/cras/cras_output.cc',
-        'audio/cras/cras_output.h',
+        'audio/cras/cras_unified.cc',
+        'audio/cras/cras_unified.h',
         'audio/cross_process_notification.cc',
         'audio/cross_process_notification.h',
         'audio/cross_process_notification_posix.cc',
@@ -645,8 +645,8 @@
                 'audio/cras/audio_manager_cras.h',
                 'audio/cras/cras_input.cc',
                 'audio/cras/cras_input.h',
-                'audio/cras/cras_output.cc',
-                'audio/cras/cras_output.h',
+                'audio/cras/cras_unified.cc',
+                'audio/cras/cras_unified.h',
               ],
             }],
           ],
@@ -657,8 +657,8 @@
             'audio/cras/audio_manager_cras.h',
             'audio/cras/cras_input.cc',
             'audio/cras/cras_input.h',
-            'audio/cras/cras_output.cc',
-            'audio/cras/cras_output.h',
+            'audio/cras/cras_unified.cc',
+            'audio/cras/cras_unified.h',
           ],
         }],
         ['use_pulseaudio==1', {
@@ -1047,7 +1047,7 @@
             ['use_cras == 1', {
               'sources': [
                 'audio/cras/cras_input_unittest.cc',
-                'audio/cras/cras_output_unittest.cc',
+                'audio/cras/cras_unified_unittest.cc',
               ],
               'defines': [
                 'USE_CRAS',

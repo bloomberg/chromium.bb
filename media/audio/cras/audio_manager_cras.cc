@@ -12,7 +12,7 @@
 #include "base/stl_util.h"
 #include "media/audio/audio_util.h"
 #include "media/audio/cras/cras_input.h"
-#include "media/audio/cras/cras_output.h"
+#include "media/audio/cras/cras_unified.h"
 #include "media/base/channel_layout.h"
 
 namespace media {
@@ -119,7 +119,7 @@ AudioParameters AudioManagerCras::GetPreferredOutputStreamParameters(
 
 AudioOutputStream* AudioManagerCras::MakeOutputStream(
     const AudioParameters& params) {
-  return new CrasOutputStream(params, this);
+  return new CrasUnifiedStream(params, this);
 }
 
 AudioInputStream* AudioManagerCras::MakeInputStream(
