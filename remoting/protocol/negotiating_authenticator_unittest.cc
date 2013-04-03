@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/protocol/negotiating_authenticator.h"
-
 #include "base/bind.h"
 #include "net/base/net_errors.h"
 #include "remoting/base/rsa_key_pair.h"
 #include "remoting/protocol/authenticator_test_base.h"
 #include "remoting/protocol/channel_authenticator.h"
 #include "remoting/protocol/connection_tester.h"
+#include "remoting/protocol/negotiating_authenticator_base.h"
+#include "remoting/protocol/negotiating_client_authenticator.h"
+#include "remoting/protocol/negotiating_host_authenticator.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
@@ -48,8 +49,8 @@ class NegotiatingAuthenticatorTest : public AuthenticatorTestBase {
       bool client_hmac_only) {
     std::string host_secret_hash = AuthenticationMethod::ApplyHashFunction(
         hash_function, kTestHostId, host_secret);
-    host_ = NegotiatingAuthenticator::CreateForHost(
-        host_cert_, key_pair_, host_secret_hash, hash_function);
+    host_.reset(new NegotiatingHostAuthenticator(
+        host_cert_, key_pair_, host_secret_hash, hash_function));
 
     std::vector<AuthenticationMethod> methods;
     methods.push_back(AuthenticationMethod::Spake2(
@@ -58,9 +59,9 @@ class NegotiatingAuthenticatorTest : public AuthenticatorTestBase {
       methods.push_back(AuthenticationMethod::Spake2(
           AuthenticationMethod::NONE));
     }
-    client_ = NegotiatingAuthenticator::CreateForClient(
+    client_.reset(new NegotiatingClientAuthenticator(
         kTestHostId, base::Bind(&NegotiatingAuthenticatorTest::FetchSecret,
-                                client_secret), methods);
+                                client_secret), methods));
   }
 
   static void FetchSecret(

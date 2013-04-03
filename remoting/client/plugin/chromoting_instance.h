@@ -39,7 +39,7 @@
 #include "remoting/protocol/cursor_shape_stub.h"
 #include "remoting/protocol/input_event_tracker.h"
 #include "remoting/protocol/mouse_input_filter.h"
-#include "remoting/protocol/negotiating_authenticator.h"
+#include "remoting/protocol/negotiating_client_authenticator.h"
 
 namespace base {
 class DictionaryValue;

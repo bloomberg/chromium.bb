@@ -10,7 +10,7 @@
 
 #include "base/basictypes.h"
 #include "remoting/protocol/authentication_method.h"
-#include "remoting/protocol/negotiating_authenticator.h"
+#include "remoting/protocol/negotiating_client_authenticator.h"
 
 namespace remoting {
 

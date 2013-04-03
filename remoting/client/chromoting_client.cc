@@ -14,7 +14,7 @@
 #include "remoting/proto/video.pb.h"
 #include "remoting/protocol/authentication_method.h"
 #include "remoting/protocol/connection_to_host.h"
-#include "remoting/protocol/negotiating_authenticator.h"
+#include "remoting/protocol/negotiating_client_authenticator.h"
 #include "remoting/protocol/session_config.h"
 #include "remoting/protocol/transport.h"
 
@@ -53,7 +53,7 @@ void ChromotingClient::Start(
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   scoped_ptr<protocol::Authenticator> authenticator(
-      protocol::NegotiatingAuthenticator::CreateForClient(
+      new protocol::NegotiatingClientAuthenticator(
           config_.authentication_tag, config_.fetch_secret_callback,
           config_.authentication_methods));
 

@@ -8,7 +8,7 @@
 #include "base/string_util.h"
 #include "remoting/base/rsa_key_pair.h"
 #include "remoting/protocol/channel_authenticator.h"
-#include "remoting/protocol/negotiating_authenticator.h"
+#include "remoting/protocol/negotiating_host_authenticator.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
 
 namespace remoting {
@@ -91,9 +91,9 @@ scoped_ptr<Authenticator> Me2MeHostAuthenticatorFactory::CreateAuthenticator(
     return scoped_ptr<Authenticator>(new RejectingAuthenticator());
   }
 
-  return NegotiatingAuthenticator::CreateForHost(
+  return scoped_ptr<Authenticator>(new NegotiatingHostAuthenticator(
       local_cert_, key_pair_, shared_secret_hash_.value,
-      shared_secret_hash_.hash_function);
+      shared_secret_hash_.hash_function));
 }
 
 }  // namespace protocol
