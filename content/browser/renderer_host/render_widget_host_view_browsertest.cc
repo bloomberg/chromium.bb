@@ -152,10 +152,13 @@ static void DeliverFrameFunc(const scoped_refptr<base::MessageLoopProxy>& loop,
 #endif
 
 #if defined(OS_MACOSX)
+// TODO(miu): We're forcing synchronous copy for M27.  Need to re-enable these
+// tests once the asynchronous method is ready for M28.  http://crbug.com/223326
+
 // Tests that the callback passed to CopyFromBackingStore is always called, even
 // when the RenderWidgetHost is deleting in the middle of an async copy.
 IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewBrowserTest,
-                       MacAsyncCopyFromBackingStoreCallbackTest) {
+                       DISABLED_MacAsyncCopyFromBackingStoreCallbackTest) {
   if (!SetupCompositingSurface()) {
     LOG(WARNING) << "Accelerated compositing not running.";
     return;
@@ -187,7 +190,7 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewBrowserTest,
 // an async copy.
 IN_PROC_BROWSER_TEST_F(
     RenderWidgetHostViewBrowserTest,
-    MacAsyncCopyFromCompositingSurfaceToVideoFrameCallbackTest) {
+    DISABLED_MacAsyncCopyFromCompositingSurfaceToVideoFrameCallbackTest) {
   if (!SetupCompositingSurface()) {
     LOG(WARNING) << "Accelerated compositing not running.";
     return;

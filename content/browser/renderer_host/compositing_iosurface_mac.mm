@@ -691,7 +691,9 @@ base::Closure CompositingIOSurfaceMac::CopyToSelectedOutputWithinContext(
   DCHECK_NE(bitmap_output != NULL, video_frame_output != NULL);
   DCHECK(!done_callback.is_null());
 
-  const bool async_copy = IsAsynchronousReadbackSupported();
+  // TODO(miu): Forcing synchronous copy for M27.  Will work on fixing the
+  // desired asynchronous method for M28.  http://crbug.com/223326
+  const bool async_copy = false;
   TRACE_EVENT2(
       "browser", "CompositingIOSurfaceMac::CopyToSelectedOutputWithinContext",
       "output", bitmap_output ? "SkBitmap (ARGB)" : "VideoFrame (YV12)",
