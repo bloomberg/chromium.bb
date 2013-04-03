@@ -13,25 +13,14 @@
 
 namespace {
 
-class OverrideLocaleHolder {
- public:
-  OverrideLocaleHolder() {}
-  const std::string& value() const { return value_; }
-  void set_value(const std::string override_value) { value_ = override_value; }
- private:
-  DISALLOW_COPY_AND_ASSIGN(OverrideLocaleHolder);
-  std::string value_;
-};
-
-base::LazyInstance<OverrideLocaleHolder>
-    override_locale_holder = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<std::string> g_overridden_locale = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
 namespace l10n_util {
 
 const std::string& GetLocaleOverride() {
-  return override_locale_holder.Get().value();
+  return g_overridden_locale.Get();
 }
 
 void OverrideLocaleWithCocoaLocale() {
@@ -59,7 +48,7 @@ void OverrideLocaleWithCocoaLocale() {
   if (locale_value == "en")
     locale_value = "en-US";
 
-  override_locale_holder.Get().set_value(locale_value);
+  g_overridden_locale.Get() = locale_value;
 }
 
 // Remove the Windows-style accelerator marker and change "..." into an
