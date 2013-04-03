@@ -14,7 +14,12 @@ class APIFeature : public SimpleFeature {
   APIFeature();
   virtual ~APIFeature();
 
+  virtual bool IsInternal() const OVERRIDE;
+
   virtual std::string Parse(const DictionaryValue* value) OVERRIDE;
+
+ private:
+  bool internal_;
 };
 
 }  // extensions

@@ -9,7 +9,6 @@
       "implemented_in": "chrome/browser/chromeos/extensions/file_browser_handler_api.h"
     },
     "nodoc": true,
-    "internal": true,
     "platforms": ["chromeos"],
     "types": [
       {

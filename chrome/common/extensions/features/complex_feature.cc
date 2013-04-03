@@ -67,6 +67,11 @@ std::set<Feature::Context>* ComplexFeature::GetContexts() {
   return features_[0]->GetContexts();
 }
 
+bool ComplexFeature::IsInternal() const {
+  NOTREACHED();
+  return false;
+}
+
 std::string ComplexFeature::GetAvailabilityMessage(AvailabilityResult result,
                                                    Manifest::Type type,
                                                    const GURL& url) const {

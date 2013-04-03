@@ -334,7 +334,7 @@ ExtensionAPI::~ExtensionAPI() {
 
 void ExtensionAPI::InitDefaultConfiguration() {
   RegisterDependencyProvider(
-      "api", BaseFeatureProvider::GetApiFeatures());
+      "api", BaseFeatureProvider::GetAPIFeatures());
   RegisterDependencyProvider(
       "manifest", BaseFeatureProvider::GetManifestFeatures());
   RegisterDependencyProvider(

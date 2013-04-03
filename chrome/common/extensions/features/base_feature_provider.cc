@@ -137,7 +137,7 @@ BaseFeatureProvider::~BaseFeatureProvider() {
 }
 
 // static
-BaseFeatureProvider* BaseFeatureProvider::GetApiFeatures() {
+BaseFeatureProvider* BaseFeatureProvider::GetAPIFeatures() {
   return g_static.Get().api_features.get();
 }
 

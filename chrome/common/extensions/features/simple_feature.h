@@ -86,6 +86,8 @@ class SimpleFeature : public Feature {
 
   virtual std::set<Context>* GetContexts() OVERRIDE;
 
+  virtual bool IsInternal() const OVERRIDE;
+
  protected:
   Availability CreateAvailability(AvailabilityResult result) const;
   Availability CreateAvailability(AvailabilityResult result,

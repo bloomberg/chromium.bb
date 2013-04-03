@@ -8,7 +8,6 @@
     "compiler_options": {
       "implemented_in": "chrome/browser/extensions/api/declarative/declarative_api.h"
     },
-    "internal": true,
     "unprivileged": true,
     "types": [
       {

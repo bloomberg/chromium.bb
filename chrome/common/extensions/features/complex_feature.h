@@ -47,6 +47,8 @@ class ComplexFeature : public Feature {
 
   virtual std::set<Context>* GetContexts() OVERRIDE;
 
+  virtual bool IsInternal() const OVERRIDE;
+
  private:
   FeatureList features_;
 

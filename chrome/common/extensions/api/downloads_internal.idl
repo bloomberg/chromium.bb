@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-[permissions=downloads_internal, internal=true, nodoc=true]
+[permissions=downloads_internal, nodoc=true]
 namespace downloadsInternal {
   interface Functions {
     // Secretly called when onDeterminingFilename handlers return.

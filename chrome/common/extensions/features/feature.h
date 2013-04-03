@@ -135,6 +135,9 @@ class Feature {
 
   virtual std::set<Context>* GetContexts() = 0;
 
+  // Tests whether this is an internal API or not.
+  virtual bool IsInternal() const = 0;
+
   // Returns true if the feature is available to be parsed into a new extension
   // manifest.
   Availability IsAvailableToManifest(const std::string& extension_id,

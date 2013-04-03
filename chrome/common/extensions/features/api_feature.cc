@@ -6,16 +6,22 @@
 
 namespace extensions {
 
-APIFeature::APIFeature() {
+APIFeature::APIFeature() : internal_(false) {
 }
 
 APIFeature::~APIFeature() {
+}
+
+bool APIFeature::IsInternal() const {
+  return internal_;
 }
 
 std::string APIFeature::Parse(const DictionaryValue* value) {
   std::string error = SimpleFeature::Parse(value);
   if (!error.empty())
     return error;
+
+  value->GetBoolean("internal", &internal_);
 
   if (GetContexts()->empty())
     return name() + ": API features must specify at least one context.";

@@ -16,6 +16,7 @@
 #include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
+#include "chrome/common/extensions/features/base_feature_provider.h"
 #include "chrome/common/extensions/features/feature.h"
 #include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/message_bundle.h"
@@ -679,6 +680,11 @@ void Dispatcher::RegisterSchemaGeneratedBindings(
   for (std::set<std::string>::iterator it = apis.begin();
        it != apis.end(); ++it) {
     const std::string& api_name = *it;
+
+    Feature* feature =
+        BaseFeatureProvider::GetAPIFeatures()->GetFeature(api_name);
+    if (feature && feature->IsInternal())
+      continue;
 
     std::vector<std::string> split;
     base::SplitString(api_name, '.', &split);

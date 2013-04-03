@@ -6,7 +6,6 @@
   {
     "namespace": "webRequestInternal",
     "nodoc": true,
-    "internal": true,
     "functions": [
       {
         "name": "addEventListener",

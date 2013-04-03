@@ -35,3 +35,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, LastError) {
       host->render_view_host(), "testLastError()", &result));
   EXPECT_TRUE(result);
 }
+
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, InternalAPIsNotOnChromeObject) {
+  ASSERT_TRUE(RunExtensionSubtest(
+      "bindings/internal_apis_not_on_chrome_object",
+      "page.html")) << message_;
+}

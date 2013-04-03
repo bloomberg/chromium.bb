@@ -406,6 +406,11 @@ std::set<Feature::Context>* SimpleFeature::GetContexts() {
   return &contexts_;
 }
 
+bool SimpleFeature::IsInternal() const {
+  NOTREACHED();
+  return false;
+}
+
 bool SimpleFeature::IsIdInWhitelist(const std::string& extension_id) const {
   // An empty whitelist means the absence of a whitelist, rather than a
   // whitelist that allows no ID through. This could be surprising behavior, so

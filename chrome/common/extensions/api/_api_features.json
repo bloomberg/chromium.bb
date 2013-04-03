@@ -3,10 +3,36 @@
 // found in the LICENSE file.
 
 {
+  "app.currentWindowInternal": {
+    "internal": true,
+    "channel": "stable",
+    "contexts": ["blessed_extension", "unblessed_extension", "content_script"]
+  },
   "bookmarks": {
     "channel": "stable",
     "dependencies": ["permission:bookmarks"],
     "contexts": ["blessed_extension"]
+  },
+  "downloadsInternal": {
+    "internal": true,
+    "channel": "stable",
+    "contexts": ["blessed_extension", "unblessed_extension", "content_script"]
+  },
+  "events": {
+    "internal": true,
+    "channel": "stable",
+    "contexts": ["blessed_extension", "unblessed_extension", "content_script", "web_page"],
+    "matches": ["<all_urls>"]
+  },
+  "fileBrowserHandlerInternal": {
+    "internal": true,
+    "channel": "stable",
+    "contexts": ["blessed_extension", "unblessed_extension", "content_script"]
+  },
+  "webRequestInternal": {
+    "internal": true,
+    "channel": "stable",
+    "contexts": ["blessed_extension", "unblessed_extension", "content_script"]
   },
   "webstore": {
     // Hosted apps can use the webstore API from within a blessed context.

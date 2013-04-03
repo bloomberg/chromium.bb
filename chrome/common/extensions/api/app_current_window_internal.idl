@@ -4,7 +4,7 @@
 
 // This is used by the app window API internally to pass through messages to
 // the shell window.
-[internal, nodoc] namespace app.currentWindowInternal {
+[nodoc] namespace app.currentWindowInternal {
 
   // TODO(asargent) - We need to add support for referencing types in
   // other namespaces (crbug.com/158654). For now just duplicate this

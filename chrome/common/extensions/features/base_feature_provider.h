@@ -28,7 +28,7 @@ class BaseFeatureProvider : public FeatureProvider {
 
   // Gets an instance for the _api_features.json file that is baked into
   // Chrome as a resource.
-  static BaseFeatureProvider* GetApiFeatures();
+  static BaseFeatureProvider* GetAPIFeatures();
 
   // Gets an instance for the _manifest_features.json file that is baked into
   // Chrome as a resource.
