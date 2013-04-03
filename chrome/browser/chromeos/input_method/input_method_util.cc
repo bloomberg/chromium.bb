@@ -665,6 +665,19 @@ std::string InputMethodUtil::GetHardwareInputMethodId() const {
   return input_method_id;
 }
 
+void InputMethodUtil::SetComponentExtensions(
+    const InputMethodDescriptors& imes) {
+  component_extension_ime_id_to_descriptor_.clear();
+  for (size_t i = 0; i < imes.size(); ++i) {
+    const InputMethodDescriptor& input_method = imes.at(i);
+    const std::string language_code = input_method.language_code();
+    id_to_language_code_.insert(
+        std::make_pair(input_method.id(), language_code));
+    id_to_descriptor_.insert(
+        std::make_pair(input_method.id(), input_method));
+  }
+}
+
 void InputMethodUtil::ReloadInternalMaps() {
   if (supported_input_methods_->size() <= 1) {
     DVLOG(1) << "GetSupportedInputMethods returned a fallback ID";

@@ -151,6 +151,9 @@ class InputMethodUtil {
   // Returns all extra language code list.
   std::vector<std::string> GetExtraLanguageCodeList() const;
 
+  // Sets the list of component extension IMEs.
+  void SetComponentExtensions(const InputMethodDescriptors& imes);
+
  protected:
   // This method is ONLY for unit testing. Returns true if the given string is
   // supported (i.e. the string is associated with a resource ID). protected:
@@ -188,11 +191,14 @@ class InputMethodUtil {
     std::string, InputMethodDescriptor> InputMethodIdToDescriptorMap;
   // Map from XKB layout ID to associated input method descriptor.
   typedef std::map<std::string, InputMethodDescriptor> XkbIdToDescriptorMap;
+  // Map from component extention IME id to associated input method descriptor.
+  typedef std::map<std::string, InputMethodDescriptor> ComponentExtIMEMap;
 
   LanguageCodeToIdsMap language_code_to_ids_;
   std::map<std::string, std::string> id_to_language_code_;
   InputMethodIdToDescriptorMap id_to_descriptor_;
   XkbIdToDescriptorMap xkb_id_to_descriptor_;
+  ComponentExtIMEMap component_extension_ime_id_to_descriptor_;
 
   typedef base::hash_map<std::string, int> HashType;
   HashType english_to_resource_id_;

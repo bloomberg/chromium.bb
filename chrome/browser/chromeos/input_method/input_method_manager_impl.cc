@@ -322,6 +322,8 @@ void InputMethodManagerImpl::OnComponentExtensionInitialized(
     scoped_ptr<ComponentExtensionIMEManagerDelegate> delegate) {
   DCHECK(thread_checker_.CalledOnValidThread());
   component_extension_ime_manager_->Initialize(delegate.Pass());
+  util_.SetComponentExtensions(
+      component_extension_ime_manager_->GetAllIMEAsInputMethodDescriptor());
 }
 
 void InputMethodManagerImpl::ActivateInputMethodProperty(
