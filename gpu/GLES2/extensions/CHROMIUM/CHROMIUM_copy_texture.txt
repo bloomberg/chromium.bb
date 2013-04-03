@@ -8,7 +8,7 @@ Name Strings
 
 Version
 
-    Last Modifed Date: April 3, 2012
+    Last Modifed Date: April 1, 2013
 
 Dependencies
 
@@ -30,7 +30,8 @@ Overview
     GL_UNPACK_UNPREMULTIPLY_ALPHA_CHROMIUM are enabled.  Then no alpha
     processing occurs.  This is the equivalent of having neither flag set.
 
-    The extension also supports copying BGRA textures, which is not explicitly
+    The extension also supports copying BGRA textures and copying
+    EXTERNAL_OES texture to BGRA texture, which is not explicitly
     granted by EXT_texture_format_BGRA8888.
 
 New Procedures and Functions
@@ -55,8 +56,11 @@ New Procedures and Functions
     INVALID_VALUE is generated if <source_id> or <dest_id> are not valid texture
     objects.
 
-    INVALID_VALUE is generated if textures corresponding to <source_id> and
-    <dest_id> have not been bound as GL_TEXTURE_2D objects.
+    INVALID_VALUE is generated if textures corresponding to <dest_id> have not
+    been bound as GL_TEXTURE_2D object.
+
+    INVALID_VALUE is generated if textures corresponding to <source_id> have not
+    been bound as GL_TEXTURE_2D or GL_TEXTURE_EXTERNAL_OES objects.
 
     INVALID_VALUE is generated if <level> is not a valid level of the
     destination texture, or if level 0 of the source texture is not defined.

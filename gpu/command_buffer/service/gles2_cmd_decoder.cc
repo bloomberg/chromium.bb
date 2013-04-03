@@ -3777,22 +3777,22 @@ void GLES2DecoderImpl::RestoreFramebufferBindings() const {
     glBindFramebufferEXT(GL_READ_FRAMEBUFFER, service_id);
   }
   OnFboChanged();
-
 }
 
 void GLES2DecoderImpl::RestoreTextureState(unsigned service_id) const {
   GLuint client_id = 0;
   if (texture_manager()->GetClientId(service_id, &client_id)) {
     Texture* texture = GetTexture(client_id);
-    glBindTexture(GL_TEXTURE_2D, service_id);
+    GLenum target = texture->target();
+    glBindTexture(target, service_id);
     glTexParameteri(
-        GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, texture->wrap_s());
+        target, GL_TEXTURE_WRAP_S, texture->wrap_s());
     glTexParameteri(
-        GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, texture->wrap_t());
+        target, GL_TEXTURE_WRAP_T, texture->wrap_t());
     glTexParameteri(
-        GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, texture->min_filter());
+        target, GL_TEXTURE_MIN_FILTER, texture->min_filter());
     glTexParameteri(
-        GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, texture->mag_filter());
+        target, GL_TEXTURE_MAG_FILTER, texture->mag_filter());
     RestoreTextureUnitBindings(state_.active_texture_unit);
   }
 }
@@ -9765,7 +9765,8 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
   }
 
   if (dest_texture->target() != GL_TEXTURE_2D ||
-      source_texture->target() != GL_TEXTURE_2D) {
+      (source_texture->target() != GL_TEXTURE_2D &&
+      source_texture->target() != GL_TEXTURE_EXTERNAL_OES)) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_VALUE,
         "glCopyTextureCHROMIUM", "invalid texture target binding");
@@ -9773,21 +9774,33 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
   }
 
   int source_width, source_height, dest_width, dest_height;
-  if (!source_texture->GetLevelSize(GL_TEXTURE_2D, 0, &source_width,
-                                 &source_height)) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_VALUE,
-        "glCopyTextureChromium", "source texture has no level 0");
-    return;
-  }
 
-  // Check that this type of texture is allowed.
-  if (!texture_manager()->ValidForTarget(GL_TEXTURE_2D, level, source_width,
-                                         source_height, 1)) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_VALUE,
-        "glCopyTextureCHROMIUM", "Bad dimensions");
-    return;
+  // When the source texture is GL_TEXTURE_EXTERNAL_OES, we assume width
+  // and height are the same as destination texture. The caller needs to
+  // make sure they allocate a destination texture which is the same size
+  // as the source. This is due to the limitation of the StreamTexture.
+  // There is no way to find out the size of the texture from the GL consumer
+  // side. But StreamTextures are unique per video stream and should never
+  // change, so we could find out the size of the video stream and allocate
+  // a equal size RGBA texture for copy. TODO(hkuang): Add support to get
+  // width/height of StreamTexture crbug.com/225781.
+  if (source_texture->target() == GL_TEXTURE_2D) {
+    if (!source_texture->GetLevelSize(GL_TEXTURE_2D, 0, &source_width,
+                                      &source_height)) {
+      LOCAL_SET_GL_ERROR(
+          GL_INVALID_VALUE,
+          "glCopyTextureChromium", "source texture has no level 0");
+      return;
+    }
+
+    // Check that this type of texture is allowed.
+    if (!texture_manager()->ValidForTarget(GL_TEXTURE_2D, level, source_width,
+                                           source_height, 1)) {
+      LOCAL_SET_GL_ERROR(
+          GL_INVALID_VALUE,
+          "glCopyTextureCHROMIUM", "Bad dimensions");
+      return;
+    }
   }
 
   // Defer initializing the CopyTextureCHROMIUMResourceManager until it is
@@ -9813,6 +9826,13 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
     GLenum source_internal_format;
     source_texture->GetLevelType(GL_TEXTURE_2D, 0, &dest_type,
                                  &source_internal_format);
+  }
+
+  // Set source texture's width and height to be the same as
+  // destination texture when source is GL_TEXTURE_EXTERNAL_OES.
+  if (source_texture->target() == GL_TEXTURE_EXTERNAL_OES) {
+    source_width = dest_width;
+    source_height = dest_height;
   }
 
   // Resize the destination texture to the dimensions of the source texture.
