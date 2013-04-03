@@ -24,6 +24,12 @@
 
 namespace extensions {
 
+// This method does a security check whether chrome-extension:// URLs can be
+// requested by the renderer. Since this is in an untrusted process, the browser
+// has a similar check to enforce the policy, in case this process is exploited.
+// If you are changing this function, ensure equivalent checks are added to
+// extension_protocols.cc's AllowExtensionResourceLoad.
+
 // static
 bool ResourceRequestPolicy::CanRequestResource(
     const GURL& resource_url,

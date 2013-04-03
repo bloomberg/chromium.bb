@@ -1118,6 +1118,7 @@
         'browser/chrome_content_browser_client_browsertest.cc',
         'browser/chrome_main_browsertest.cc',
         'browser/chrome_plugin_browsertest.cc',
+        'browser/chrome_security_exploit_browsertest.cc',
         'browser/chrome_switches_browsertest.cc',
         'browser/chromeos/accessibility/magnification_manager_browsertest.cc',
         'browser/chromeos/app_mode/kiosk_app_manager_browsertest.cc',
