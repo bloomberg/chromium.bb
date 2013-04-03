@@ -495,7 +495,6 @@ class HWTestConfig(object):
 
 def PGORecordTest(**dargs):
   default_dict = dict(pool=constants.HWTEST_CHROME_PFQ_POOL,
-                      timeout=constants.PGO_GENERATE_TIMEOUT,
                       critical=True, num=1, file_bugs=False)
   # Allows dargs overrides to default_dict for cq.
   default_dict.update(dargs)
