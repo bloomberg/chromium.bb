@@ -9,9 +9,11 @@
 
 #include "base/mac/mac_util.h"
 #include "base/memory/scoped_nsobject.h"
+#include "ui/base/ui_export.h"
 
 // A utility class to manage the fullscreen mode for a given window. This class
 // also updates the window frame if the screen changes.
+UI_EXPORT
 @interface FullscreenWindowManager : NSObject {
  @private
   scoped_nsobject<NSWindow> window_;

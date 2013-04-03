@@ -9,8 +9,10 @@
 
 #import "base/memory/scoped_nsobject.h"
 #import "ui/base/cocoa/hover_button.h"
+#include "ui/base/ui_export.h"
 
 // A button that changes images when you hover over it and click it.
+UI_EXPORT
 @interface HoverImageButton : HoverButton {
  @private
   float defaultOpacity_;

@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/memory/scoped_nsobject.h"
+#include "webkit/glue/webkit_glue_export.h"
 #include "webkit/glue/webmenuitem.h"
 
 
@@ -19,6 +20,7 @@
 // item is selected, MenuDelegate is informed and sets a flag which can be
 // queried after the menu has finished running.
 
+WEBKIT_GLUE_EXPORT
 @interface WebMenuRunner : NSObject {
  @private
   // The native menu control.

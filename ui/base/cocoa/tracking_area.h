@@ -14,6 +14,7 @@
 
 // The CrTrackingArea can be used in place of an NSTrackingArea to shut off
 // messaging to the |owner| at a specific point in time.
+UI_EXPORT
 @interface CrTrackingArea : NSTrackingArea {
  @private
   scoped_nsobject<CrTrackingAreaOwnerProxy> ownerProxy_;

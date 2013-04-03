@@ -8,6 +8,7 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
+#include "content/common/content_export.h"
 #include "googleurl/src/gurl.h"
 
 struct WebDropData;
@@ -17,6 +18,7 @@ class WebContentsImpl;
 
 // A class that handles tracking and event processing for a drag and drop
 // originating from the content area.
+CONTENT_EXPORT
 @interface WebDragSource : NSObject {
  @private
   // Our contents. Weak reference (owns or co-owns us).

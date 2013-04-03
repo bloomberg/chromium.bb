@@ -8,6 +8,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/memory/scoped_nsobject.h"
+#include "ui/base/ui_export.h"
 #import "ui/base/cocoa/tracking_area.h"
 #include "ui/gfx/rect.h"
 
@@ -15,7 +16,7 @@
 // - Automatic registration for mouse-moved events.
 // - Funneling of mouse and key events to two methods
 // - Coordinate conversion utilities
-
+UI_EXPORT
 @interface BaseView : NSView {
  @private
   ui::ScopedCrTrackingArea trackingArea_;

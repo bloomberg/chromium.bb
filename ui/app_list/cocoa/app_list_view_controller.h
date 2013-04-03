@@ -9,6 +9,7 @@
 
 #include "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
+#include "ui/app_list/app_list_export.h"
 #import "ui/app_list/cocoa/apps_pagination_model_observer.h"
 
 namespace app_list {
@@ -20,6 +21,7 @@ class AppListViewDelegate;
 // Controller for the top-level view of the app list UI. It creates and hosts an
 // AppsGridController (displaying an AppListModel), and pager control for
 // navigating between pages in the grid.
+APP_LIST_EXPORT
 @interface AppListViewController :
     NSViewController<AppsPaginationModelObserver> {
  @private

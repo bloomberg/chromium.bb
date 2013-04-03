@@ -6,6 +6,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
+#include "content/common/content_export.h"
 #include "webkit/glue/webdropdata.h"
 
 
@@ -21,7 +22,7 @@ typedef content::RenderViewHost* RenderViewHostIdentifier;
 // A class that handles tracking and event processing for a drag and drop
 // over the content area. Assumes something else initiates the drag, this is
 // only for processing during a drag.
-
+CONTENT_EXPORT
 @interface WebDragDest : NSObject {
  @private
   // Our associated WebContentsImpl. Weak reference.

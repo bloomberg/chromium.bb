@@ -9,6 +9,7 @@
 
 #include "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
+#include "ui/app_list/app_list_export.h"
 #import "ui/app_list/cocoa/scroll_view_with_no_scrollbars.h"
 
 namespace app_list {
@@ -21,6 +22,7 @@ class AppsGridDelegateBridge;
 @protocol AppsPaginationModelObserver;
 
 // Controls a grid of views, representing AppListModel::Apps sub models.
+APP_LIST_EXPORT
 @interface AppsGridController : NSViewController<GestureScrollDelegate> {
  @private
   scoped_ptr<app_list::AppListModel> model_;

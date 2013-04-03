@@ -25,6 +25,7 @@ UI_EXPORT extern NSString* kFindPasteboardChangedNotification;
 // This is not thread-safe and must be used on the main thread.
 //
 // This is supposed to be a singleton.
+UI_EXPORT
 @interface FindPasteboard : NSObject {
  @private
   scoped_nsobject<NSString> findText_;

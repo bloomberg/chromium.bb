@@ -12,6 +12,7 @@
 
 #include "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
+#include "content/common/content_export.h"
 #include "content/common/drag_event_source_info.h"
 #include "content/port/browser/render_view_host_delegate_view.h"
 #include "content/port/browser/web_contents_view_port.h"
@@ -33,6 +34,7 @@ namespace gfx {
 class Vector2d;
 }
 
+CONTENT_EXPORT
 @interface WebContentsViewCocoa : BaseView {
  @private
   content::WebContentsViewMac* webContentsView_;  // WEAK; owns us

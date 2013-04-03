@@ -935,8 +935,22 @@
           'link_settings': {
             'libraries': [
               '$(SDKROOT)/System/Library/Frameworks/Cocoa.framework',
+              '$(SDKROOT)/System/Library/Frameworks/QuartzCore.framework',
             ],
           },
+          'conditions': [
+            ['component=="shared_library"', {
+              # GTM is third-party code, so we don't want to add _EXPORT
+              # annotations to it, so build it without -fvisibility=hidden
+              # (else the interface class symbols will be hidden in a 64bit
+              # build). Only do this in a component build, so that the shipping
+              # chrome binary doesn't end up with unnecessarily exported
+              # symbols.
+              'xcode_settings': {
+                'GCC_SYMBOLS_PRIVATE_EXTERN': 'NO',
+              },
+            }],
+          ],
         },
       ],
     }],
