@@ -59,16 +59,13 @@ class BurnControllerImpl
   }
 
   // BurnManager::Observer override.
-  virtual void OnImageFileFetchDownloadProgressUpdated(
+  virtual void OnProgressWithRemainingTime(
+      ProgressType progress_type,
       int64 received_bytes,
       int64 total_bytes,
       const base::TimeDelta& estimated_remaining_time) OVERRIDE {
-    if (state_machine_->state() == StateMachine::DOWNLOADING) {
-      delegate_->OnProgressWithRemainingTime(DOWNLOADING,
-                                             received_bytes,
-                                             total_bytes,
-                                             estimated_remaining_time);
-    }
+    delegate_->OnProgressWithRemainingTime(
+        progress_type, received_bytes, total_bytes, estimated_remaining_time);
   }
 
   // BurnManager::Observer override.

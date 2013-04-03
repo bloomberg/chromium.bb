@@ -479,10 +479,14 @@ void BurnManager::OnURLFetchDownloadProgress(const net::URLFetcher* source,
             base::TimeTicks::Now() - tick_image_download_start_;
         estimated_remaining_time = elapsed_time * (total - current) / current;
       }
-      FOR_EACH_OBSERVER(
-          Observer, observers_,
-          OnImageFileFetchDownloadProgressUpdated(
-              current, total, estimated_remaining_time));
+
+      // TODO(hidehiko): We should be able to clean the state check here.
+      if (state_machine_->state() == StateMachine::DOWNLOADING) {
+        FOR_EACH_OBSERVER(
+            Observer, observers_,
+            OnProgressWithRemainingTime(
+                DOWNLOADING, current, total, estimated_remaining_time));
+      }
     }
   }
 }

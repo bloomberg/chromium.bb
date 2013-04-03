@@ -52,6 +52,14 @@ struct ImageBurnStatus {
 
 namespace imageburner {
 
+// An enum used to describe what type of progress is being made.
+// TODO(hidehiko): This should be merged into the StateMachine's state.
+enum ProgressType {
+  DOWNLOADING,
+  UNZIPPING,
+  BURNING
+};
+
 // Config file properties.
 extern const char kName[];
 extern const char kHwid[];
@@ -220,7 +228,8 @@ class BurnManager : public net::URLFetcherDelegate,
     // Triggered during the image file downloading periodically.
     // |estimated_remaining_time| is the remaining duration to download the
     // remaining content estimated based on the elapsed time.
-    virtual void OnImageFileFetchDownloadProgressUpdated(
+    virtual void OnProgressWithRemainingTime(
+        ProgressType progress_type,
         int64 received_bytes,
         int64 total_bytes,
         const base::TimeDelta& estimated_remaining_time) = 0;

@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "chrome/browser/chromeos/imageburner/burn_manager.h"
 #include "chromeos/disks/disk_mount_manager.h"
 
 namespace base {
@@ -21,13 +22,6 @@ class WebContents;
 
 namespace chromeos {
 namespace imageburner {
-
-// An enum used to describe what type of progress is being made.
-enum ProgressType {
-  DOWNLOADING,
-  UNZIPPING,
-  BURNING
-};
 
 // A class to control recovery media creating process.
 class BurnController {
