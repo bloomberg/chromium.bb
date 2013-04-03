@@ -758,6 +758,17 @@ HRESULT NativeThemeWin::PaintButton(HDC hdc,
     DrawFocusRect(hdc, rect);
   }
 
+  // Classic theme doesn't support indeterminate checkboxes.  We draw
+  // a recangle inside a checkbox like IE10 does.
+  if (part_id == BP_CHECKBOX && extra.indeterminate) {
+    RECT inner_rect = *rect;
+    // "4 / 13" is same as IE10 in classic theme.
+    int padding = (inner_rect.right - inner_rect.left) * 4 / 13;
+    InflateRect(&inner_rect, -padding, -padding);
+    int color_index = state == kDisabled ? COLOR_GRAYTEXT : COLOR_WINDOWTEXT;
+    FillRect(hdc, &inner_rect, GetSysColorBrush(color_index));
+  }
+
   return S_OK;
 }
 
