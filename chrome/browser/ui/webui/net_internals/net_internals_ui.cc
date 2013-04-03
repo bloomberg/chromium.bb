@@ -1519,7 +1519,7 @@ void NetInternalsMessageHandler::OnImportONCFile(const ListValue* list) {
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
   if (!cros_network->LoadOncNetworks(onc_blob, passcode,
                                      chromeos::onc::ONC_SOURCE_USER_IMPORT,
-                                     false)) {  // allow web trust from policy
+                                     NULL)) {
     error = "Errors occurred during the ONC import.";
     LOG(ERROR) << error;
   }

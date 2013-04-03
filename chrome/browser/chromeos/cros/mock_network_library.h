@@ -195,7 +195,7 @@ class MockNetworkLibrary : public NetworkLibrary {
   MOCK_METHOD4(LoadOncNetworks, bool(const std::string&,
                                      const std::string&,
                                      onc::ONCSource,
-                                     bool));
+                                     net::CertificateList*));
   MOCK_METHOD2(SetActiveNetwork, bool(ConnectionType, const std::string&));
 };
 

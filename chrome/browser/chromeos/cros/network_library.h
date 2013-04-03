@@ -21,6 +21,7 @@
 #include "chromeos/network/network_ip_config.h"
 #include "chromeos/network/network_util.h"
 #include "chromeos/network/onc/onc_constants.h"
+#include "net/cert/x509_certificate.h"
 
 namespace base {
 class DictionaryValue;
@@ -1725,10 +1726,11 @@ class NetworkLibrary {
 
   // Load networks from an Open Network Configuration blob.
   // If there was an error, returns false.
-  virtual bool LoadOncNetworks(const std::string& onc_blob,
-                               const std::string& passcode,
-                               onc::ONCSource source,
-                               bool allow_web_trust_from_policy) = 0;
+  virtual bool LoadOncNetworks(
+      const std::string& onc_blob,
+      const std::string& passcode,
+      onc::ONCSource source,
+      net::CertificateList* onc_trusted_certificates) = 0;
 
   // This sets the active network for the network type. Note: priority order
   // is unchanged (i.e. if a wifi network is set to active, but an ethernet

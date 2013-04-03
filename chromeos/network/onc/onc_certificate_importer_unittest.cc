@@ -90,17 +90,21 @@ class ONCCertificateImporterTest : public testing::Test {
     certificates->GetDictionary(0, &certificate);
     certificate->GetStringWithoutPathExpansion(certificate::kGUID, guid);
 
+    web_trust_certificates_.clear();
     CertificateImporter importer(true /* allow web trust */);
     EXPECT_EQ(CertificateImporter::IMPORT_OK,
-              importer.ParseAndStoreCertificates(*certificates));
+              importer.ParseAndStoreCertificates(*certificates,
+                                                 &web_trust_certificates_));
 
-    net::CertificateList result_list;
-    CertificateImporter::ListCertsWithNickname(*guid, &result_list);
-    ASSERT_EQ(1ul, result_list.size());
-    EXPECT_EQ(expected_type, GetCertType(result_list[0]->os_cert_handle()));
+    result_list_.clear();
+    CertificateImporter::ListCertsWithNickname(*guid, &result_list_);
+    ASSERT_EQ(1ul, result_list_.size());
+    EXPECT_EQ(expected_type, GetCertType(result_list_[0]->os_cert_handle()));
   }
 
   scoped_refptr<net::CryptoModule> slot_;
+  net::CertificateList result_list_;
+  net::CertificateList web_trust_certificates_;
 
  private:
   net::CertificateList ListCertsInSlot(PK11SlotInfo* slot) {
@@ -135,6 +139,7 @@ class ONCCertificateImporterTest : public testing::Test {
 TEST_F(ONCCertificateImporterTest, AddClientCertificate) {
   std::string guid;
   AddCertificateFromFile("certificate-client.onc", net::USER_CERT, &guid);
+  EXPECT_TRUE(web_trust_certificates_.empty());
 
   SECKEYPrivateKeyList* privkey_list =
       PK11_ListPrivKeysInSlot(slot_->os_module_handle(), NULL, NULL);
@@ -179,11 +184,35 @@ TEST_F(ONCCertificateImporterTest, AddServerCertificate) {
   SECKEYPublicKeyList* pubkey_list =
       PK11_ListPublicKeysInSlot(slot_->os_module_handle(), NULL);
   EXPECT_FALSE(pubkey_list);
+
+  ASSERT_EQ(1u, web_trust_certificates_.size());
+  ASSERT_EQ(1u, result_list_.size());
+  EXPECT_TRUE(CERT_CompareCerts(result_list_[0]->os_cert_handle(),
+                                web_trust_certificates_[0]->os_cert_handle()));
 }
 
 TEST_F(ONCCertificateImporterTest, AddWebAuthorityCertificate) {
   std::string guid;
   AddCertificateFromFile("certificate-web-authority.onc", net::CA_CERT, &guid);
+
+  SECKEYPrivateKeyList* privkey_list =
+      PK11_ListPrivKeysInSlot(slot_->os_module_handle(), NULL, NULL);
+  EXPECT_FALSE(privkey_list);
+
+  SECKEYPublicKeyList* pubkey_list =
+      PK11_ListPublicKeysInSlot(slot_->os_module_handle(), NULL);
+  EXPECT_FALSE(pubkey_list);
+
+  ASSERT_EQ(1u, web_trust_certificates_.size());
+  ASSERT_EQ(1u, result_list_.size());
+  EXPECT_TRUE(CERT_CompareCerts(result_list_[0]->os_cert_handle(),
+                                web_trust_certificates_[0]->os_cert_handle()));
+}
+
+TEST_F(ONCCertificateImporterTest, AddAuthorityCertificateWithoutWebTrust) {
+  std::string guid;
+  AddCertificateFromFile("certificate-authority.onc", net::CA_CERT, &guid);
+  EXPECT_TRUE(web_trust_certificates_.empty());
 
   SECKEYPrivateKeyList* privkey_list =
       PK11_ListPrivKeysInSlot(slot_->os_module_handle(), NULL, NULL);

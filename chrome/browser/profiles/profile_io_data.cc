@@ -58,6 +58,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/resource_context.h"
 #include "extensions/common/constants.h"
+#include "net/cert/cert_verifier.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/http/http_transaction_factory.h"
@@ -82,9 +83,11 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/drive/drive_protocol_handler.h"
+#include "chrome/browser/chromeos/policy/policy_cert_verifier.h"
 #include "chrome/browser/chromeos/proxy_config_service_impl.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
+#include "chrome/browser/policy/browser_policy_connector.h"
 #endif  // defined(OS_CHROMEOS)
 
 using content::BrowserContext;
@@ -263,6 +266,11 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   params->managed_mode_url_filter =
       managed_user_service->GetURLFilterForIOThread();
 #endif
+#if defined(OS_CHROMEOS)
+  policy::BrowserPolicyConnector* connector =
+      g_browser_process->browser_policy_connector();
+  params->trust_anchor_provider = connector->GetCertTrustAnchorProvider();
+#endif
 
   params->profile = profile;
   profile_params_.reset(params.release());
@@ -371,6 +379,9 @@ ProfileIOData::ProfileParams::ProfileParams()
     : io_thread(NULL),
 #if defined(ENABLE_NOTIFICATIONS)
       notification_service(NULL),
+#endif
+#if defined(OS_CHROMEOS)
+      trust_anchor_provider(NULL),
 #endif
       profile(NULL) {
 }
@@ -692,6 +703,15 @@ void ProfileIOData::Init(content::ProtocolHandlerMap* protocol_handlers) const {
 
 #if defined(ENABLE_MANAGED_USERS)
   managed_mode_url_filter_ = profile_params_->managed_mode_url_filter;
+#endif
+
+#if defined(OS_CHROMEOS)
+  cert_verifier_.reset(new policy::PolicyCertVerifier(
+      profile_params_->profile, profile_params_->trust_anchor_provider));
+  main_request_context_->set_cert_verifier(cert_verifier_.get());
+#else
+  main_request_context_->set_cert_verifier(
+      io_thread_globals->cert_verifier.get());
 #endif
 
   InitializeInternal(profile_params_.get(), protocol_handlers);
