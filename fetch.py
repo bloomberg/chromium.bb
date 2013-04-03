@@ -156,6 +156,8 @@ def handle_args(argv):
   """Gets the recipe name from the command line arguments."""
   if len(argv) <= 1:
     usage('Must specify a recipe.')
+  if argv[1] in ('-h', '--help', 'help'):
+    usage()
 
   def looks_like_arg(arg):
     return arg.startswith('--') and arg.count('=') == 1
