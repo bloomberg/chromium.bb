@@ -192,8 +192,7 @@ bool AreUserNamesEqual(const string16& user1, const string16& user2) {
 }
 
 bool IsKeystoreEncryptionEnabled() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kSyncKeystoreEncryption);
+  return true;
 }
 
 void BringTabToFront(WebContents* web_contents) {

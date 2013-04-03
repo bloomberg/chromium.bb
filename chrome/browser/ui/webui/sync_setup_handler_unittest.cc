@@ -372,6 +372,8 @@ class SyncSetupHandlerTest : public testing::TestWithParam<bool> {
         Return(syncer::IMPLICIT_PASSPHRASE));
     ON_CALL(*mock_pss_, GetPassphraseTime()).WillByDefault(
         Return(base::Time()));
+    ON_CALL(*mock_pss_, GetExplicitPassphraseTime()).WillByDefault(
+        Return(base::Time()));
     mock_signin_ = static_cast<SigninManagerMock*>(
         SigninManagerFactory::GetInstance()->SetTestingFactoryAndUse(
             profile_.get(), BuildSigninManagerMock));
