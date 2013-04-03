@@ -195,25 +195,6 @@ outside the <code>table-cell</code>.</p>
 page in and out.  The content outside the <code>iframe</code> zooms, but the
 content inside the <code>iframe</code> does not zoom.</p>
 
-<h3><a name="bugfix-imgresample">bugfix/imgresample</a> (Shezan Baig; D32353761)</h3>
-<p>The change for this branch is only noticable when the <code><a
-        href="#bugfix-svgscale">bugfix/svgscale</a></code> branch has been
-applied to make SVG images scale properly.  Therefore, we cannot reproduce the
-issue in Chrome until bug <a
-    href="https://bugs.webkit.org/show_bug.cgi?id=85335">85335</a> is fixed
-upstream.  However, we can build a <code>test_shell</code> with
-<code>bugfix/svgscale</code> merged in to test this.</p>
-<p>Open <a href="repros/svgscale.html">this link</a> in a
-<code>test_shell</code> that has been patched with
-<code>bugfix/svgscale</code>.  The second icon is using an
-<code>&lt;img&gt;</code> element, and the third icon is using an
-<code>&lt;embed&gt;</code> element.  Without the
-<code>bugfix/imgresample</code> patch, the second icon appears a little fuzzier
-than the third icon (you may need to zoom in to the pixel level to notice the
-difference).</p>
-<p>Once the <code>bugfix/imgresample</code> patch is applied, the second icon
-matches the third icon more closely.</p>
-
 <h3><a name="bugfix-indentpre">bugfix/indentpre</a> (Shezan Baig; D31922188)</h3>
 <p>Open <a href="repros/indentpre.html">this link</a> in Chrome.  The "Hello"
 text will be selected on load.  Each time you indent the text, the "Hello" will
@@ -355,12 +336,6 @@ when filling selection rects.</p>
 <p>Open <a href="repros/singleCellDelete.html">this link</a> in Chrome, and
 delete the text in the single table cell.  The entire table will get deleted,
 but we only expect the text inside the cell to be deleted.</p>
-
-<h3><a name="bugfix-svgscale">bugfix/svgscale</a> (Shezan Baig; D32353761; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=85335">85335</a>)</h3>
-<p>Open <a href="repros/svgscale.html">this link</a> in Chrome.  When a SVG
-file is used as a css background, or in an <code>img</code> element, it does
-not scale properly.  It only scales properly when used in an <code>embed</code>
-element.</p>
 
 <h3><a name="bugfix-tooltip_refresh">bugfix/tooltip_refresh</a> (Shezan Baig; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=84375">84375</a>)</h3>
 <p>Open <a href="repros/tooltip_refresh.html">this link</a> in Chrome.  Each
@@ -607,6 +582,10 @@ available upstream.</p>
 <p>Retired as of the <code>20.0.1132.47</code> snapshot because the new flexbox
 implementation no longer reproduces the issue.</p>
 
+<h3><a name="bugfix-imgresample">bugfix/imgresample</a> (Shezan Baig; D32353761)</h3>
+<p>Retired as of the <code>26.0.1410.33</code> snapshot because the original
+issue is no longer reproducable (it appears to be fixed upstream).</p>
+
 <h3><a name="bugfix-indentLink">bugfix/indentLink</a> (Shezan Baig; D32418391; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=87428">87428</a>)</h3>
 <p>Retired as of the <code>21.0.1180.60</code> snapshot because the fix is
 available upstream.</p>
@@ -634,6 +613,10 @@ available upstream.</p>
 <h3><a name="bugfix-spellCheckOnLoad">bugfix/spellCheckOnLoad</a> (Shezan Baig; D32468818)</h3>
 <p>Retired in favor of <code><a
         href="#feature-checkSpellingCommand">feature/checkSpellingCommand</a></code></p>
+
+<h3><a name="bugfix-svgscale">bugfix/svgscale</a> (Shezan Baig; D32353761; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=85335">85335</a>)</h3>
+<p>Retired as of the <code>26.0.1410.33</code> snapshot because the fix is
+available upstream.</p>
 
 <h3><a name="bugfix-tablecellpaste">bugfix/tablecellpaste</a> (Shezan Baig; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=53933">53933</a>)</h3>
 <p>Retired as of the <code>23.0.1271.97</code> snapshot because the fix is
