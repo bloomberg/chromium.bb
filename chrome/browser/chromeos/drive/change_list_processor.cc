@@ -41,9 +41,10 @@ ChangeList::ChangeList(const google_apis::ResourceList& resource_list)
     root_upload_url_ = root_feed_upload_link->href();
   resource_list.GetNextFeedURL(&next_url_);
 
+  entries_.resize(resource_list.entries().size());
   for (size_t i = 0; i < resource_list.entries().size(); ++i) {
-    entries_.push_back(
-        ConvertResourceEntryToDriveEntryProto(*resource_list.entries()[i]));
+    ConvertResourceEntryToDriveEntryProto(*resource_list.entries()[i]).Swap(
+        &entries_[i]);
   }
 }
 
@@ -374,14 +375,11 @@ void ChangeListProcessor::FeedToEntryProtoMap(
       DCHECK_GE(change_list->largest_changestamp(), 0);
     }
 
-    // Iterate over |entries| with pop_back() to avoid redundant memory usage,
-    // there is no need to have duplicated copies of DriveEntryProto in
-    // |entries| and |entry_proto_map_| at the same time.
     std::vector<DriveEntryProto>* entries = change_list->mutable_entries();
-    for (; !entries->empty(); entries->pop_back()) {
-      const DriveEntryProto& entry_proto = entries->back();
+    for (size_t i = 0; i < entries->size(); ++i) {
+      DriveEntryProto* entry_proto = &(*entries)[i];
       // Some document entries don't map into files (i.e. sites).
-      if (entry_proto.resource_id().empty())
+      if (entry_proto->resource_id().empty())
         continue;
 
       // TODO(haruki): Apply mapping from an empty parent to special dummy
@@ -392,21 +390,22 @@ void ChangeListProcessor::FeedToEntryProtoMap(
       // - The user unselect all the parent using drive.google.com UI.
       // ChangeListProcessor just ignores the incoming changes and keeps stale
       // metadata. We need to work on this ASAP to reduce confusion.
-      if (entry_proto.parent_resource_id().empty()) {
+      if (entry_proto->parent_resource_id().empty()) {
         continue;
       }
 
       // Count the number of files.
-      if (uma_stats && !entry_proto.file_info().is_directory()) {
+      if (uma_stats && !entry_proto->file_info().is_directory()) {
         uma_stats->IncrementNumFiles(
-            entry_proto.file_specific_info().is_hosted_document());
+            entry_proto->file_specific_info().is_hosted_document());
       }
 
       std::pair<DriveEntryProtoMap::iterator, bool> ret = entry_proto_map_.
-          insert(std::make_pair(entry_proto.resource_id(), entry_proto));
-      DCHECK(ret.second);
-      if (!ret.second)
-        LOG(WARNING) << "Found duplicate file " << entry_proto.base_name();
+          insert(std::make_pair(entry_proto->resource_id(), DriveEntryProto()));
+      if (ret.second)
+        ret.first->second.Swap(entry_proto);
+      else
+        LOG(DFATAL) << "Found duplicate file " << entry_proto->base_name();
     }
   }
 }
