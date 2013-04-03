@@ -567,16 +567,20 @@ TEST_F(ProcessUtilTest, MacTerminateOnHeapCorruption) {
   // Assert that freeing an unallocated pointer will crash the process.
   char buf[3];
   asm("" : "=r" (buf));  // Prevent clang from being too smart.
-#if !defined(ADDRESS_SANITIZER)
-  ASSERT_DEATH(free(buf), "being freed.*"
-      "\\*\\*\\* set a breakpoint in malloc_error_break to debug.*"
-      "Terminating process due to a potential for future heap corruption");
-#else
+#if ARCH_CPU_64_BITS
+  // On 64 bit Macs, the malloc system automatically abort()s on heap corruption
+  // but does not output anything.
+  ASSERT_DEATH(free(buf), "");
+#elif defined(ADDRESS_SANITIZER)
   // AddressSanitizer replaces malloc() and prints a different error message on
   // heap corruption.
   ASSERT_DEATH(free(buf), "attempting free on address which "
       "was not malloc\\(\\)-ed");
-#endif  // !defined(ADDRESS_SANITIZER)
+#else
+  ASSERT_DEATH(free(buf), "being freed.*"
+      "\\*\\*\\* set a breakpoint in malloc_error_break to debug.*"
+      "Terminating process due to a potential for future heap corruption");
+#endif  // ARCH_CPU_64_BITS || defined(ADDRESS_SANITIZER)
 }
 
 #endif  // defined(OS_MACOSX)
