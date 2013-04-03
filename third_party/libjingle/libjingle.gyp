@@ -858,6 +858,11 @@
                 ],
               },
             }],
+            ['OS=="mac" and libpeer_target_type=="shared_library"', {
+              'xcode_settings': {
+                'DYLIB_INSTALL_NAME_BASE': '@loader_path/Libraries',
+              },
+            }],
           ],
         },  # target peerconnection
       ],

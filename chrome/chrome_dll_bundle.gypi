@@ -108,6 +108,7 @@
         'theme_dir_name': 'chromium',
       }],
     ],
+    'libpeer_target_type%': 'static_library',
     'repack_path': '../tools/grit/grit/format/repack.py',
   },
   'postbuilds': [
@@ -287,6 +288,14 @@
       'mac_bundle_resources': [
         '<(SHARED_INTERMEDIATE_DIR)/repack/chrome_200_percent.pak',
       ],
+    }],
+    ['enable_webrtc==1 and libpeer_target_type=="shared_library"', {
+      'copies': [{
+       'destination': '<(PRODUCT_DIR)/$(CONTENTS_FOLDER_PATH)/Libraries',
+       'files': [
+          '<(PRODUCT_DIR)/libpeerconnection.dylib',
+        ],
+      }],
     }],
   ],  # conditions
 }
