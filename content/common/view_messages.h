@@ -869,8 +869,7 @@ IPC_MESSAGE_ROUTED2(ViewMsg_HandleInputEvent,
                     bool /* is_keyboard_shortcut */)
 
 // Tells the render widget that a smooth scroll completed.
-IPC_MESSAGE_ROUTED1(ViewMsg_SmoothScrollCompleted,
-                    int /* gesture_id */)
+IPC_MESSAGE_ROUTED0(ViewMsg_SmoothScrollCompleted)
 
 // This message notifies the renderer that the next key event is bound to one
 // or more pre-defined edit commands. If the next key event is not handled
@@ -1701,9 +1700,9 @@ IPC_STRUCT_BEGIN(ViewHostMsg_BeginSmoothScroll_Params)
   IPC_STRUCT_MEMBER(int, mouse_event_y)
 IPC_STRUCT_END()
 
-IPC_MESSAGE_ROUTED2(ViewHostMsg_BeginSmoothScroll,
-                    int /* gesture_id */,
-                    ViewHostMsg_BeginSmoothScroll_Params /* params */)
+IPC_SYNC_MESSAGE_ROUTED1_1(ViewHostMsg_BeginSmoothScroll,
+                           ViewHostMsg_BeginSmoothScroll_Params /* params */,
+                           bool /* smooth_scroll_started */)
 
 IPC_MESSAGE_ROUTED0(ViewHostMsg_Focus)
 IPC_MESSAGE_ROUTED0(ViewHostMsg_Blur)

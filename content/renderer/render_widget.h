@@ -180,7 +180,7 @@ class CONTENT_EXPORT RenderWidget
   // performance characteristics as a user-initiated scroll. Returns an ID of
   // the scroll gesture. |mouse_event_x| and |mouse_event_y| are expected to be
   // in local DIP coordinates.
-  void BeginSmoothScroll(bool scroll_down,
+  bool BeginSmoothScroll(bool scroll_down,
                          const SmoothScrollCompletionCallback& callback,
                          int pixels_to_scroll,
                          int mouse_event_x,
@@ -309,7 +309,7 @@ class CONTENT_EXPORT RenderWidget
                      const gfx::Size& page_size,
                      const gfx::Size& desired_size);
   void OnRepaint(const gfx::Size& size_to_paint);
-  void OnSmoothScrollCompleted(int gesture_id);
+  void OnSmoothScrollCompleted();
   void OnSetTextDirection(WebKit::WebTextDirection direction);
   void OnGetFPS();
   void OnScreenInfoChanged(const WebKit::WebScreenInfo& screen_info);
@@ -683,10 +683,7 @@ class CONTENT_EXPORT RenderWidget
   bool throttle_input_events_;
 
   // State associated with the BeginSmoothScroll synthetic scrolling function.
-  int next_smooth_scroll_gesture_id_;
-  typedef std::map<int, SmoothScrollCompletionCallback>
-      PendingSmoothScrollGestureMap;
-  PendingSmoothScrollGestureMap pending_smooth_scroll_gestures_;
+  SmoothScrollCompletionCallback pending_smooth_scroll_gesture_;
 
   // Specified whether the compositor will run in its own thread.
   bool is_threaded_compositing_enabled_;

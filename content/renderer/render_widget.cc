@@ -170,7 +170,6 @@ RenderWidget::RenderWidget(WebKit::WebPopupType popup_type,
       screen_info_(screen_info),
       device_scale_factor_(screen_info_.deviceScaleFactor),
       throttle_input_events_(true),
-      next_smooth_scroll_gesture_id_(0),
       is_threaded_compositing_enabled_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   if (!swapped_out)
@@ -1889,12 +1888,8 @@ void RenderWidget::OnRepaint(const gfx::Size& size_to_paint) {
   }
 }
 
-void RenderWidget::OnSmoothScrollCompleted(int gesture_id) {
-  PendingSmoothScrollGestureMap::iterator it =
-      pending_smooth_scroll_gestures_.find(gesture_id);
-  DCHECK(it != pending_smooth_scroll_gestures_.end());
-  it->second.Run();
-  pending_smooth_scroll_gestures_.erase(it);
+void RenderWidget::OnSmoothScrollCompleted() {
+  pending_smooth_scroll_gesture_.Run();
 }
 
 void RenderWidget::OnSetTextDirection(WebTextDirection direction) {
@@ -2264,14 +2259,13 @@ bool RenderWidget::GetGpuRenderingStats(GpuRenderingStats* stats) const {
   return gpu_channel->CollectRenderingStatsForSurface(surface_id(), stats);
 }
 
-void RenderWidget::BeginSmoothScroll(
+bool RenderWidget::BeginSmoothScroll(
     bool down,
     const SmoothScrollCompletionCallback& callback,
     int pixels_to_scroll,
     int mouse_event_x,
     int mouse_event_y) {
   DCHECK(!callback.is_null());
-  int id = next_smooth_scroll_gesture_id_++;
 
   ViewHostMsg_BeginSmoothScroll_Params params;
   params.scroll_down = down;
@@ -2279,8 +2273,10 @@ void RenderWidget::BeginSmoothScroll(
   params.mouse_event_x = mouse_event_x;
   params.mouse_event_y = mouse_event_y;
 
-  Send(new ViewHostMsg_BeginSmoothScroll(routing_id_, id, params));
-  pending_smooth_scroll_gestures_.insert(std::make_pair(id, callback));
+  bool ret = false;
+  Send(new ViewHostMsg_BeginSmoothScroll(routing_id_, params, &ret));
+  pending_smooth_scroll_gesture_ = callback;
+  return ret;
 }
 
 bool RenderWidget::WillHandleMouseEvent(const WebKit::WebMouseEvent& event) {
