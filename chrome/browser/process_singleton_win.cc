@@ -546,7 +546,7 @@ LRESULT ProcessSingleton::OnCopyData(HWND hwnd, const COPYDATASTRUCT* cds) {
 #else
     // Attempt to place ourselves in the foreground / flash the task bar.
     if (foreground_window_ != NULL && ::IsWindow(foreground_window_)) {
-      ::SetForegroundWindow(foreground_window_);
+      DoSetForegroundWindow(foreground_window_);
     } else {
       // Read the command line and store it. It will be replayed when the
       // ProcessSingleton becomes unlocked.
@@ -566,6 +566,10 @@ LRESULT ProcessSingleton::OnCopyData(HWND hwnd, const COPYDATASTRUCT* cds) {
     return TRUE;
   return notification_callback_.Run(parsed_command_line, current_directory) ?
       TRUE : FALSE;
+}
+
+void ProcessSingleton::DoSetForegroundWindow(HWND target_window) {
+  ::SetForegroundWindow(target_window);
 }
 
 LRESULT ProcessSingleton::WndProc(HWND hwnd, UINT message,

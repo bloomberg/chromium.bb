@@ -157,6 +157,8 @@ class ProcessSingleton : public base::NonThreadSafe {
 
   bool EscapeVirtualization(const base::FilePath& user_data_dir);
 
+  virtual void DoSetForegroundWindow(HWND target_window);
+
   HWND remote_window_;  // The HWND_MESSAGE of another browser.
   HWND window_;  // The HWND_MESSAGE window.
   bool is_virtualized_;  // Stuck inside Microsoft Softricity VM environment.

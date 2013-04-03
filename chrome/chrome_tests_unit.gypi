@@ -997,6 +997,7 @@
         'browser/process_info_snapshot_mac_unittest.cc',
         'browser/process_singleton_linux_unittest.cc',
         'browser/process_singleton_mac_unittest.cc',
+        'browser/process_singleton_win_unittest.cc',
         'browser/profiles/avatar_menu_model_unittest.cc',
         'browser/profiles/gaia_info_update_service_unittest.cc',
         'browser/profiles/off_the_record_profile_impl_unittest.cc',
