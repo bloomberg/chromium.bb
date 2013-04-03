@@ -6,6 +6,7 @@
 #define GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_COPY_TEXTURE_CHROMIUM_H_
 
 #include "gpu/command_buffer/service/gl_utils.h"
+#include "gpu/gpu_export.h"
 
 namespace gpu {
 namespace gles2 {
@@ -17,7 +18,7 @@ class GLES2Decoder;
 // This class encapsulates the resources required to implement the
 // GL_CHROMIUM_copy_texture extension.  The copy operation is performed
 // via a blit to a framebuffer object.
-class CopyTextureCHROMIUMResourceManager {
+class GPU_EXPORT CopyTextureCHROMIUMResourceManager {
  public:
   CopyTextureCHROMIUMResourceManager() : initialized_(false) {}
 

@@ -259,6 +259,11 @@
             'android_native_window.cc',
             'android_native_window.h',
           ],
+          'link_settings': {
+            'libraries': [
+              '-landroid',
+            ],
+          },
           'sources!': [
             'gl_context_osmesa.cc',
             'system_monitor_posix.cc',

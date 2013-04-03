@@ -640,6 +640,9 @@
           ],
         }],
         ['OS == "android"', {
+          'dependencies': [
+            '../ui/ui.gyp:shell_dialogs',
+          ],
           'sources!': [
             'browser/geolocation/device_data_provider_unittest.cc',
             'browser/geolocation/gps_location_provider_unittest_linux.cc',
@@ -760,8 +763,6 @@
             'browser/web_contents/web_contents_view_aura_browsertest.cc',
             'browser/webkit_browsertest.cc',
             'browser/worker_host/test/worker_browsertest.cc',
-            'common/content_constants_internal.cc',
-            'common/content_constants_internal.h',
             'renderer/accessibility/renderer_accessibility_browsertest.cc',
             'renderer/browser_plugin/mock_browser_plugin.h',
             'renderer/browser_plugin/mock_browser_plugin.cc',
@@ -851,11 +852,6 @@
             ['OS=="android"', {
               'sources!': [
                 'browser/accessibility/dump_accessibility_tree_browsertest.cc',
-                # These are included via dependency on content_common and hence
-                # we get multiple definition errors in a shared library build.
-                # Other builds need it as the symbols are not exported.
-                'common/content_constants_internal.cc',
-                'common/content_constants_internal.h',
               ],
               'sources': [
                 'shell/android/browsertests_apk/content_browser_tests_android.cc',

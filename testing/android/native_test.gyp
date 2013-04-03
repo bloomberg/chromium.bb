@@ -67,6 +67,7 @@
           'dependencies': [
             '../../base/base.gyp:base',
             '../../base/base.gyp:test_support_base',
+            '../../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
             '../gtest.gyp:gtest',
             'native_test_jni_headers',
             'native_test_util',

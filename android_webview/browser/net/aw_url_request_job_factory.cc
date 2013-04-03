@@ -47,10 +47,10 @@ URLRequestJob* AwURLRequestJobFactory::MaybeCreateJobWithProtocolHandler(
   if (job)
     return job;
 
-  // If the URLRequestJobManager supports the scheme NULL should be returned
-  // from this method. In that case the built in handlers in
-  // URLRequestJobManager will then be used to create the job.
-  if (net::URLRequestJobManager::GetInstance()->SupportsScheme(scheme))
+  // If URLRequest supports the scheme NULL should be returned from this method.
+  // In that case the built in handlers will then be used to create the job.
+  // NOTE(joth): See the assumption in IsHandledProtocol above.
+  if (net::URLRequest::IsHandledProtocol(scheme))
     return NULL;
 
   return new net::URLRequestErrorJob(

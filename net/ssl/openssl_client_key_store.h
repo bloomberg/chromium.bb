@@ -26,7 +26,7 @@ class X509Certificate;
 //
 // This class is not thread-safe and should only be used from the network
 // thread.
-class OpenSSLClientKeyStore {
+class NET_EXPORT OpenSSLClientKeyStore {
  public:
   // Platforms must define this factory function as appropriate.
   static OpenSSLClientKeyStore* GetInstance();

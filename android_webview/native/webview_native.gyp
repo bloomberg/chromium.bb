@@ -11,8 +11,13 @@
       'type': 'static_library',
       'dependencies': [
         '../../base/base.gyp:base_static',
+        '../../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../../components/components.gyp:web_contents_delegate_android',
+        '../../cc/cc.gyp:cc',
+        '../../net/net.gyp:net',
         '../../skia/skia.gyp:skia',
+        '../../webkit/support/webkit_support.gyp:user_agent',
+        '../../webkit/support/webkit_support.gyp:webkit_storage',
         'android_webview_native_jni',
       ],
       'include_dirs': [

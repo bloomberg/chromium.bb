@@ -220,7 +220,7 @@ CONTENT_EXPORT extern const char kUseMobileUserAgent[];
 extern const char kDisableMediaHistoryLogging[];
 extern const char kDisableGestureRequirementForMediaPlayback[];
 extern const char kNetworkCountryIso[];
-extern const char kEnableWebViewSynchronousAPIs[];
+CONTENT_EXPORT extern const char kEnableWebViewSynchronousAPIs[];
 #endif
 
 #if defined(OS_CHROMEOS)

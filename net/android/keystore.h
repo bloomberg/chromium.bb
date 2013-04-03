@@ -81,7 +81,7 @@ bool GetPrivateKeyEncodedBytes(jobject private_key,
 // |signature| will receive the signature on success.
 // Returns true on success, false on failure.
 //
-bool RawSignDigestWithPrivateKey(
+NET_EXPORT bool RawSignDigestWithPrivateKey(
     jobject private_key,
     const base::StringPiece& digest,
     std::vector<uint8>* signature);
