@@ -143,7 +143,14 @@ bool SendFinancialPing(const std::string& brand,
                                    rlz_lib::NO_ACCESS_POINT};
   std::string lang_ascii(UTF16ToASCII(lang));
   std::string referral_ascii(UTF16ToASCII(referral));
-  return rlz_lib::SendFinancialPing(rlz_lib::CHROME, points, "chrome",
+  std::string product_signature;
+#if defined(OS_CHROMEOS)
+  product_signature = "chromeos";
+#else
+  product_signature = "chrome";
+#endif
+  return rlz_lib::SendFinancialPing(rlz_lib::CHROME, points,
+                                    product_signature.c_str(),
                                     brand.c_str(), referral_ascii.c_str(),
                                     lang_ascii.c_str(), false, true);
 }
