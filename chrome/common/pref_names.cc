@@ -2365,4 +2365,14 @@ const char kRLZDisabled[] = "rlz.disabled";
 // app launcher.
 extern const char kAppListProfile[] = "app_list.profile";
 
+// The number of times the app launcher was launched since last ping and
+// the time of the last ping.
+extern const char kAppListLaunchCount[] = "app_list.launch_count";
+extern const char kLastAppListLaunchPing[] = "app_list.last_launch_ping";
+
+// The number of times the an app was launched from the app launcher since last
+// ping and the time of the last ping.
+extern const char kAppListAppLaunchCount[] = "app_list.app_launch_count";
+extern const char kLastAppListAppLaunchPing[] = "app_list.last_app_launch_ping";
+
 }  // namespace prefs

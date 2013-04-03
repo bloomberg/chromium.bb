@@ -379,6 +379,7 @@ void AppListControllerDelegateWin::CreateNewWindow(Profile* profile,
 
 void AppListControllerDelegateWin::ActivateApp(
     Profile* profile, const extensions::Extension* extension, int event_flags) {
+  AppListService::RecordAppListAppLaunch();
   LaunchApp(profile, extension, event_flags);
 }
 
@@ -532,11 +533,13 @@ void AppListController::ShowAppList(Profile* profile) {
   current_view_->GetWidget()->Show();
   current_view_->GetWidget()->GetTopLevelWidget()->UpdateWindowIcon();
   current_view_->GetWidget()->Activate();
+  RecordAppListLaunch();
 }
 
 void AppListController::InitView(Profile* profile) {
   if (current_view_)
     return;
+  AppListService::SendAppListStats();
   PopulateViewFromProfile(profile);
   current_view_->Prerender();
 }

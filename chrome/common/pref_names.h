@@ -880,6 +880,11 @@ extern const char kRLZDisabled[];
 
 extern const char kAppListProfile[];
 
+extern const char kLastAppListLaunchPing[];
+extern const char kAppListLaunchCount[];
+extern const char kLastAppListAppLaunchPing[];
+extern const char kAppListAppLaunchCount[];
+
 }  // namespace prefs
 
 #endif  // CHROME_COMMON_PREF_NAMES_H_

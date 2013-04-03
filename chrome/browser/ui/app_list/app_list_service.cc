@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/app_list/app_list_service.h"
 
+#include "base/metrics/histogram.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
@@ -11,8 +12,60 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
 
+namespace {
+
+void SendAppListAppLaunch(int count) {
+  UMA_HISTOGRAM_CUSTOM_COUNTS(
+      "Apps.AppListDailyAppLaunches", count, 1, 1000, 50);
+}
+
+void SendAppListLaunch(int count) {
+  UMA_HISTOGRAM_CUSTOM_COUNTS(
+      "Apps.AppListDailyLaunches", count, 1, 1000, 50);
+}
+
+bool SendDailyEventFrequency(
+    const char* last_ping_pref,
+    const char* count_pref,
+    void (*send_callback)(int count)) {
+  PrefService* local_state = g_browser_process->local_state();
+
+  base::Time now = base::Time::Now();
+  base::Time last = base::Time::FromInternalValue(local_state->GetInt64(
+      last_ping_pref));
+  int days = (now - last).InDays();
+  if (days > 0) {
+    send_callback(local_state->GetInteger(count_pref));
+    local_state->SetInt64(
+        last_ping_pref,
+        (last + base::TimeDelta::FromDays(days)).ToInternalValue());
+    local_state->SetInteger(count_pref, 0);
+    return true;
+  }
+  return false;
+}
+
+void RecordDailyEventFrequency(
+    const char* last_ping_pref,
+    const char* count_pref,
+    void (*send_callback)(int count)) {
+  PrefService* local_state = g_browser_process->local_state();
+
+  int count = local_state->GetInteger(count_pref);
+  local_state->SetInteger(count_pref, count + 1);
+  if (SendDailyEventFrequency(last_ping_pref, count_pref, send_callback)) {
+    local_state->SetInteger(count_pref, 1);
+  }
+}
+
+}  // namespace
+
 // static
 void AppListService::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterInt64Pref(prefs::kLastAppListLaunchPing, 0);
+  registry->RegisterIntegerPref(prefs::kAppListLaunchCount, 0);
+  registry->RegisterInt64Pref(prefs::kLastAppListAppLaunchPing, 0);
+  registry->RegisterIntegerPref(prefs::kAppListAppLaunchCount, 0);
   registry->RegisterStringPref(prefs::kAppListProfile, "");
 #if defined(OS_WIN)
   registry->RegisterBooleanPref(prefs::kRestartWithAppList, false);
@@ -41,6 +94,30 @@ base::FilePath AppListService::GetAppListProfilePath(
       app_list_profile;
 
   return user_data_dir.AppendASCII(profile_path);
+}
+
+// static
+void AppListService::RecordAppListLaunch() {
+  RecordDailyEventFrequency(prefs::kLastAppListLaunchPing,
+                            prefs::kAppListLaunchCount,
+                            &SendAppListLaunch);
+}
+
+// static
+void AppListService::RecordAppListAppLaunch() {
+  RecordDailyEventFrequency(prefs::kLastAppListAppLaunchPing,
+                            prefs::kAppListAppLaunchCount,
+                            &SendAppListAppLaunch);
+}
+
+// static
+void AppListService::SendAppListStats() {
+  SendDailyEventFrequency(prefs::kLastAppListLaunchPing,
+                          prefs::kAppListLaunchCount,
+                          &SendAppListLaunch);
+  SendDailyEventFrequency(prefs::kLastAppListAppLaunchPing,
+                          prefs::kAppListAppLaunchCount,
+                          &SendAppListAppLaunch);
 }
 
 void AppListService::ShowAppList(Profile* profile) {}

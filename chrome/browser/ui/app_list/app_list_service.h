@@ -33,6 +33,10 @@ class AppListService : public ProfileInfoCacheObserver {
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
+  static void RecordAppListLaunch();
+  static void RecordAppListAppLaunch();
+  static void SendAppListStats();
+
   virtual base::FilePath GetAppListProfilePath(
       const base::FilePath& user_data_dir);
 
