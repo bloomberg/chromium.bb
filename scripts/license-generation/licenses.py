@@ -6,20 +6,46 @@
 #
 # TODO?: recursively look in packages to see if they have license files not
 # at their top level.
+#
+# FIXME(merlin): remove this after fixing the current code.
+# pylint: disable-msg=W0621
 
 """Script that attempts to generate an HTML file containing license
 information and homepage links for all installed packages.
-
-Usage:
-  license.py $board license-out.html
 
 WARNING: this script in its current form is not finished or considered
 production quality/code style compliant. This is an intermediate checkin
 to allow for incremental cleanups and improvements that will make it
 production quality.
+
+Usage:
+For this script to work, you must have built the architecture
+this is being run against, _after_ you've last run repo sync.
+Otherwise, it will query newer source code and then fail to work on packages
+that are out of date in your build.
+
+Recommended build:
+  cros_sdk
+  sudo rm -rf /build/$board
+  setup_board --board=$board
+  build_packages --board=$board --nowithautotest --nowithtest --nowithdev
+  cd ~/trunk/chromite/scripts/license-generation
+  ./license.py $board out.html
+
+The output file is meant to update
+http://src.chromium.org/viewvc/chrome/trunk/src/chrome/browser/resources/ +
+  chromeos/about_os_credits.html?view=log
+(gclient config svn://svn.chromium.org/chrome/trunk/src)
+For an example CL, see https://codereview.chromium.org/13496002/
+
+After that, it needs to be merged into the branch being released, which is
+apparently done by adding a Merge-Requested label to Iteration-xx in the
+tracking bug, and having karen@ merge it for you:
+http://crbug.com/221281
 """
 
 import cgi
+import logging
 import multiprocessing
 import os
 import portage
@@ -49,7 +75,7 @@ SKIPPED_CATEGORIES = [
 SKIPPED_PACKAGES = [
   # Fix these packages by adding a real license in the code.
   'chromeos-base/madison-cromo-plugin-0.1-r40',
-  'dev-util/perf',
+  'dev-python/unittest2',
 
   # These are Chrome-OS-specific packages.
   'dev-util/hdctools',
@@ -268,6 +294,14 @@ class PackageInfo:
     return '%s/%s' % (self.category, self.name)
 
   def _RunEbuildPhases(self, path, *phases, **kwargs):
+    """Receives something like:
+      path = /mnt/host/source/src/
+                 third_party/portage-stable/net-misc/rsync/rsync-3.0.8.ebuild
+      phases = ['clean', 'fetch'] or ['unpack']."""
+
+    logging.debug("vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv")
+    logging.debug('ebuild-%s | %s | %s', board, path, str(list(phases)))
+    logging.debug("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
     subprocess.check_call(
       ['ebuild-%s' % board, path] + list(phases), **kwargs)
 
@@ -329,22 +363,22 @@ class PackageInfo:
           licenses.append(name)
 
     if not licenses:
-      print "%s: couldn't find license file in %s" % \
-        (self.fullname, workdir)
+      logging.warn("%s: couldn't find license file in %s",
+          self.fullname, workdir)
       return False
 
-    print '%s: using %s' % (self.fullname, ' '.join(licenses))
+    logging.info('%s: using %s', self.fullname, ' '.join(licenses))
     license_file = licenses[0]
     self.license_text = open(os.path.join(workdir, license_file)).read()
     return True
 
   def GetStockLicense(self):
     if not self.license_names:
-      print '%s: no stock licenses from ebuild' % self.fullname
+      logging.info('%s: no stock licenses from ebuild', self.fullname)
       return False
 
-    print '%s: using stock license %s' % \
-      (self.fullname, ','.join(self.license_names))
+    logging.info('%s: using stock license %s',
+        self.fullname, ','.join(self.license_names))
 
     license_texts = []
     for license_name in self.license_names:
@@ -359,11 +393,11 @@ class PackageInfo:
       else:
         # TODO: We should probably report failure if we're unable to
         # find one of the licenses from a dual-licensed package.
-        print '%s: stock license %s does not exist' % \
-          (self.fullname, license_name)
+        logging.warning('%s: stock license %s does not exist',
+            self.fullname, license_name)
 
     if not license_texts:
-      print '%s: couldn\'t find any stock licenses' % self.fullname
+      logging.warning('%s: couldn\'t find any stock licenses', self.fullname)
       return False
 
     self.license_text = '\n'.join(license_texts)
@@ -372,6 +406,9 @@ class PackageInfo:
 
 def ListInstalledPackages(board):
   """Return a list of all packages installed for a particular board."""
+  # FIXME(merlin): davidjames pointed out that this is
+  # not the right way to get the package list as it does not apply
+  # filters. This should change to ~/trunk/src/scripts/get_package_list
   args = [ EQUERY_BASE % board, 'list', '*' ]
   p = subprocess.Popen(args, stdout=subprocess.PIPE)
   return [s.strip() for s in p.stdout.readlines()]
@@ -400,7 +437,16 @@ def GetEbuildPath(board, name):
     ['equery-%s' % board, 'which', name], stdout=subprocess.PIPE)
   stdout = p.communicate()[0]
   p.wait()
-  return stdout.strip()
+  path = stdout.strip()
+  logging.debug("vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv")
+  logging.debug("equery-%s which %s", board, name)
+  logging.debug("  -> %s", path)
+  logging.debug("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
+  if not path:
+    raise AssertionError('GetEbuildPath for %s failed.\n'
+                         'Is your tree clean? Delete /build/%s and rebuild' %
+                         (name, board))
+  return path
 
 
 def GetPackageInfo(fullname):
@@ -439,12 +485,12 @@ def GetPackageInfo(fullname):
     licenses = lines[1].split()
 
   info.license_names = []
-  for license in licenses:
-    if license in INVALID_STOCK_LICENSES:
-      print '%s: skipping invalid stock license %s' % \
-            (info.fullname, license)
+  for license_name in licenses:
+    if license_name in INVALID_STOCK_LICENSES:
+      logging.info('%s: skipping invalid stock license %s',
+                   info.fullname, license_name)
     else:
-      info.license_names.append(license)
+      info.license_names.append(license_name)
 
   info.description = '\n'.join(lines[2:])
 
@@ -476,7 +522,11 @@ if __name__ == '__main__':
     singlethreaded = True
     debug = True
     sys.argv.pop(0)
-    print >> sys.stderr, '>>> Debug enabled, using single threading <<<\n'
+    logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
+    logging.debug('>>> Debug enabled, using single threading <<<')
+  else:
+    logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
+
 
   if len(sys.argv) != 3:
     print >> sys.stderr, (__doc__)
@@ -498,11 +548,10 @@ if __name__ == '__main__':
 
   board = sys.argv[1]
   packages = ListInstalledPackages(board)
-  if debug:
-    print "Package list to work through:"
-    print "\n".join(packages)
-    print "\n\nWill skip these packages:"
-    print "\n".join(SKIPPED_PACKAGES)
+  logging.debug("Package list to work through:")
+  logging.debug("\n".join(packages))
+  logging.debug("\n\nWill skip these packages:")
+  logging.debug("\n".join(SKIPPED_PACKAGES))
 
   if singlethreaded:
     data = [ProcessPkg(x) for x in packages]
