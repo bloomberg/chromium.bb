@@ -88,6 +88,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_process_policy.h"
 #include "chrome/common/extensions/extension_set.h"
+#include "chrome/common/extensions/manifest_handlers/app_isolation_info.h"
 #include "chrome/common/extensions/permissions/socket_permission.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pref_names.h"
@@ -323,7 +324,8 @@ RenderProcessHostPrivilege GetPrivilegeRequiredByUrl(
   if (url.SchemeIs(extensions::kExtensionScheme)) {
     const Extension* extension =
         service->extensions()->GetByID(url.host());
-    if (extension && extension->is_storage_isolated())
+    if (extension &&
+        extensions::AppIsolationInfo::HasIsolatedStorage(extension))
       return PRIV_ISOLATED;
     if (extension && extension->is_hosted_app())
       return PRIV_HOSTED;
@@ -346,7 +348,8 @@ RenderProcessHostPrivilege GetProcessPrivilege(
   for (std::set<std::string>::iterator iter = extension_ids.begin();
        iter != extension_ids.end(); ++iter) {
     const Extension* extension = service->GetExtensionById(*iter, false);
-    if (extension && extension->is_storage_isolated())
+    if (extension &&
+        extensions::AppIsolationInfo::HasIsolatedStorage(extension))
       return PRIV_ISOLATED;
     if (extension && extension->is_hosted_app())
       return PRIV_HOSTED;
@@ -597,7 +600,8 @@ void ChromeContentBrowserClient::GetStoragePartitionConfigForSite(
       if (extension_service) {
         extension = extension_service->extensions()->
             GetExtensionOrAppByURL(ExtensionURLInfo(site));
-        if (extension && extension->is_storage_isolated()) {
+        if (extension &&
+            extensions::AppIsolationInfo::HasIsolatedStorage(extension)) {
           is_isolated = true;
         }
       }
