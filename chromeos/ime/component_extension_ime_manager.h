@@ -76,8 +76,23 @@ class CHROMEOS_EXPORT ComponentExtensionIMEManager {
   // false if already corresponding component extension is unloaded.
   bool UnloadComponentExtensionIME(const std::string& input_method_id);
 
-  // Returns true if |input_method_id| is component extension ime id.
-  bool IsComponentExtensionIMEId(const std::string& input_method_id);
+  // Returns true if |input_method_id| is component extension ime id. Note that
+  // this function does not check the |input_method_id| is really whitelisted
+  // one or not. If you want to check |input_method_id| is whitelisted component
+  // extension ime, please use IsWhitelisted instead.
+  static bool IsComponentExtensionIMEId(const std::string& input_method_id);
+
+  // Returns true if |input_method_id| is whitelisted component extension input
+  // method.
+  bool IsWhitelisted(const std::string& input_method_id);
+
+  // Returns true if |extension_id| is whitelisted component extension.
+  bool IsWhitelistedExtension(const std::string& extension_id);
+
+  // Returns InputMethodId. This function returns empty string if |extension_id|
+  // and |engine_id| is not a whitelisted component extention IME.
+  std::string GetId(const std::string& extension_id,
+                    const std::string& engine_id);
 
   // Returns localized name of |input_method_id|.
   std::string GetName(const std::string& input_method_id);
@@ -93,6 +108,14 @@ class CHROMEOS_EXPORT ComponentExtensionIMEManager {
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
+
+ protected:
+  // Returns InputMethodId for |engine_id| in |extension_id|. This function does
+  // not check |extension_id| is component one or |engine_id| is really a member
+  // of |extension_id|. Do not use this function outside from this class, just
+  // for protected for unit testing.
+  static std::string GetComponentExtensionIMEId(const std::string& extension_id,
+                                                const std::string& engine_id);
 
  private:
   // Finds ComponentExtensionIME and EngineDescription associated with
